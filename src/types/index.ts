@@ -17,15 +17,6 @@ export interface University {
   scaleDescription: string;
 }
 
-export interface Degree {
-  id: string;
-  name: string;
-  thresholds: Record<UniversityId, number | null>;
-  isTauEngineering: boolean;
-  // Per-university psychometric-only cutoff for direct admission tracks (קבלה ישירה).
-  // If the applicant's raw psychometric ≥ this value the combined-index check is skipped.
-  directPsychometric?: Partial<Record<UniversityId, number>>;
-}
 
 export interface EngineeringOptions {
   hasMath5: boolean;

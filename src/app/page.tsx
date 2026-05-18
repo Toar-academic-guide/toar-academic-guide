@@ -10,7 +10,8 @@ import {
   UniversityResult,
   UserScores,
 } from '@/types';
-import { UNIVERSITIES, DEGREES } from '@/data/degreesData';
+import { UNIVERSITIES } from '@/data/degreesData';
+import { allPrograms } from '@/data/degrees';
 import { getRecommendations } from '@/utils/recommendationEngine';
 import { evaluateUniversities } from '@/utils/sekhemCalculators';
 import { calculateRiasecScores } from '@/utils/riasecEngine';
@@ -28,7 +29,7 @@ export default function Home() {
     scores: RiasecScores;
     environment: EnvironmentPreference;
   } | null>(null);
-  const [selectedDegreeId, setSelectedDegreeId] = useState(DEGREES[0].id);
+  const [selectedDegreeId, setSelectedDegreeId] = useState(allPrograms[0].id);
   const [results, setResults] = useState<UniversityResult[] | null>(null);
   const [degreeName, setDegreeName] = useState('');
 
@@ -50,7 +51,7 @@ export default function Home() {
   }
 
   function handleCalculate(scores: UserScores, degreeId: string, engineering: EngineeringOptions) {
-    const degree = DEGREES.find((d) => d.id === degreeId)!;
+    const degree = allPrograms.find((p) => p.id === degreeId)!;
     const evaluated = evaluateUniversities(UNIVERSITIES, degree, scores, engineering);
     setResults(evaluated);
     setDegreeName(degree.name);
@@ -94,9 +95,7 @@ export default function Home() {
 
       {/* ── Step: Onboarding ───────────────────────────────────── */}
       {step === 'onboarding' && (
-        <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
-          <OnboardingFunnel onComplete={handleOnboardingComplete} />
-        </section>
+        <OnboardingFunnel onComplete={handleOnboardingComplete} />
       )}
 
       {/* ── Step: Recommendations ─────────────────────────────── */}

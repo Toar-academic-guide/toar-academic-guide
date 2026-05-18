@@ -5,7 +5,7 @@ import {
   Lightbulb, Sparkles, DollarSign, Zap,
   Headphones, Users, Layers,
   Monitor, MapPin, Globe,
-  Wand2, Crown, Ruler,
+  Wand2, Crown, Ruler, Hammer,
 } from 'lucide-react';
 import type { RiasecDimension, EnvironmentPreference } from '@/types';
 
@@ -52,6 +52,8 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
       { label: 'מודיעין / ניתוח',   sublabel: 'עיבוד מידע, זיהוי דפוסים',       icon: Brain,         riasecDeltas: { I: 2 } },
       { label: 'רפואה / חובש',       sublabel: 'טיפול, פרוצדורות רפואיות',       icon: Stethoscope,   riasecDeltas: { S: 1, I: 1 } },
       { label: 'לוגיסטיקה / מנהל',  sublabel: 'ארגון, תיאום, תכנון',            icon: Package,       riasecDeltas: { C: 2, E: 1 } },
+      { label: 'תוכן, עיצוב והסברה',      sublabel: 'כתיבה, צילום, חשיבה מחוץ לקופסה, פיתוח הדרכה יצירתי', icon: Palette, riasecDeltas: { A: 5, S: 1 } },
+      { label: 'מכניקה, שטח ועבודת כפיים', sublabel: 'עבודה עם הידיים, תפעול ואחזקת ציוד, פתרון בעיות פיזיות בשטח', icon: Hammer, riasecDeltas: { R: 5, C: 1 } },
     ],
   },
   {

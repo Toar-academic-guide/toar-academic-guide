@@ -1,4 +1,5 @@
-import { University, Degree, UserScores, UniversityResult, DeltaNeeded, EngineeringOptions } from '@/types';
+import { University, UserScores, UniversityResult, DeltaNeeded, EngineeringOptions } from '@/types';
+import type { Program } from '@/data/degrees/types';
 
 // ── TAU Engineering & Exact Sciences bonuses ─────────────────────────────────
 // TAU's Faculty of Exact Sciences and Engineering applies direct additive
@@ -46,7 +47,7 @@ function tauEngineeringBonus(opts: EngineeringOptions): number {
 export function calculateSekhem(
   university: University,
   scores: UserScores,
-  degree: Degree,
+  degree: Program,
   engineeringOptions: EngineeringOptions
 ): number {
   if (university.formulaType === 'technion_linear') {
@@ -55,7 +56,7 @@ export function calculateSekhem(
 
   const base = sekhemWeighted(university, scores);
 
-  if (university.id === 'tau' && degree.isTauEngineering) {
+  if (university.id === 'tau' && (degree.isTauEngineering ?? false)) {
     // Cap at 800 — the upper bound of the TAU/HUJI/BGU scale
     return Math.min(base + tauEngineeringBonus(engineeringOptions), 800);
   }
@@ -89,12 +90,12 @@ export function calculateDelta(deficit: number, university: University): DeltaNe
 // ── Main evaluator ────────────────────────────────────────────────────────────
 export function evaluateUniversities(
   universities: University[],
-  degree: Degree,
+  degree: Program,
   scores: UserScores,
   engineeringOptions: EngineeringOptions
 ): UniversityResult[] {
   return universities.map((university) => {
-    const threshold = degree.thresholds[university.id];
+    const threshold = degree.thresholds?.[university.id] ?? null;
 
     if (threshold === null) {
       return { university, sekhem: 0, threshold: null, status: 'unavailable' };

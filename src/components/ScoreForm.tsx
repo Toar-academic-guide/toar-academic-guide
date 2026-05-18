@@ -2,7 +2,9 @@
 
 import { useState } from 'react';
 import { UserScores, EngineeringOptions } from '@/types';
-import { DEGREES } from '@/data/degreesData';
+import { allPrograms } from '@/data/degrees';
+
+const SEKHEM_PROGRAMS = allPrograms.filter((p) => p.admissionType === 'sekhem');
 
 interface Props {
   onSubmit: (scores: UserScores, degreeId: string, engineering: EngineeringOptions) => void;
@@ -12,13 +14,13 @@ interface Props {
 export default function ScoreForm({ onSubmit, defaultDegreeId }: Props) {
   const [psychometric, setPsychometric] = useState('');
   const [bagrut, setBagrut] = useState('');
-  const [degreeId, setDegreeId] = useState(defaultDegreeId ?? DEGREES[0].id);
+  const [degreeId, setDegreeId] = useState(defaultDegreeId ?? SEKHEM_PROGRAMS[0].id);
   const [hasMath5, setHasMath5] = useState(false);
   const [hasPhysics5, setHasPhysics5] = useState(false);
   const [errors, setErrors] = useState<{ psychometric?: string; bagrut?: string }>({});
 
-  const selectedDegree = DEGREES.find((d) => d.id === degreeId)!;
-  const showEngineeringSection = selectedDegree.isTauEngineering;
+  const selectedDegree = SEKHEM_PROGRAMS.find((d) => d.id === degreeId)!;
+  const showEngineeringSection = selectedDegree.isTauEngineering ?? false;
 
   function validate(): boolean {
     const errs: typeof errors = {};
@@ -108,7 +110,7 @@ export default function ScoreForm({ onSubmit, defaultDegreeId }: Props) {
           onChange={(e) => setDegreeId(e.target.value)}
           className={`${inputBase} ${inputNormal}`}
         >
-          {DEGREES.map((degree) => (
+          {SEKHEM_PROGRAMS.map((degree) => (
             <option key={degree.id} value={degree.id}>
               {degree.name}
             </option>
