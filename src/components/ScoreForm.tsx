@@ -9,11 +9,20 @@ const SEKHEM_PROGRAMS = allPrograms.filter((p) => p.admissionType === 'sekhem');
 interface Props {
   onSubmit: (scores: UserScores, degreeId: string, engineering: EngineeringOptions) => void;
   defaultDegreeId?: string;
+  /** Pre-fill from user profile (overall psychometric score, 200–800) */
+  defaultPsychometric?: number;
+  /** Pre-fill from user profile (weighted bagrut average, 60–120) */
+  defaultBagrut?: number;
 }
 
-export default function ScoreForm({ onSubmit, defaultDegreeId }: Props) {
-  const [psychometric, setPsychometric] = useState('');
-  const [bagrut, setBagrut] = useState('');
+export default function ScoreForm({
+  onSubmit,
+  defaultDegreeId,
+  defaultPsychometric,
+  defaultBagrut,
+}: Props) {
+  const [psychometric, setPsychometric] = useState(defaultPsychometric?.toString() ?? '');
+  const [bagrut, setBagrut] = useState(defaultBagrut?.toString() ?? '');
   const [degreeId, setDegreeId] = useState(defaultDegreeId ?? SEKHEM_PROGRAMS[0].id);
   const [hasMath5, setHasMath5] = useState(false);
   const [hasPhysics5, setHasPhysics5] = useState(false);

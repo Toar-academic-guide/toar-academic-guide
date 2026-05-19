@@ -39,15 +39,20 @@ export default function OnboardingFunnel({ onComplete }: Props) {
   const isLastStep = currentStep === totalSteps - 1;
   const progressPercent = Math.round(((currentStep + 1) / totalSteps) * 100);
 
-  function toggleAnswer(idx: number) {
+  function toggleAnswer(label: string) {
     if (isMultiSelect) {
-      if (currentAnswers.includes(idx)) {
-        setAnswers({ ...answers, [question.id]: currentAnswers.filter((i) => i !== idx) });
+      if (currentAnswers.includes(label)) {
+        // deselect
+        setAnswers({ ...answers, [question.id]: currentAnswers.filter((l) => l !== label) });
       } else if (currentAnswers.length < maxSelect) {
-        setAnswers({ ...answers, [question.id]: [...currentAnswers, idx] });
+        // select normally
+        setAnswers({ ...answers, [question.id]: [...currentAnswers, label] });
+      } else {
+        // at max — deselect oldest (first added), add new at end
+        setAnswers({ ...answers, [question.id]: [...currentAnswers.slice(1), label] });
       }
     } else {
-      setAnswers({ ...answers, [question.id]: [idx] });
+      setAnswers({ ...answers, [question.id]: [label] });
     }
   }
 
@@ -65,15 +70,7 @@ export default function OnboardingFunnel({ onComplete }: Props) {
   }
 
   return (
-    /* ── Dot-grid backdrop ─────────────────────────────────────────── */
-    <div
-      className="w-full px-2 py-8 sm:px-4"
-      style={{
-        background: '#f8fafc',
-        backgroundImage: 'radial-gradient(circle, #cbd5e1 1.2px, transparent 1.2px)',
-        backgroundSize: '24px 24px',
-      }}
-    >
+    <div className="w-full bg-white px-2 py-8 sm:px-4">
       {/* ── Floating canvas card ────────────────────────────────────── */}
       <div className="mx-auto max-w-3xl rounded-3xl border border-slate-100 bg-white p-8 shadow-2xl md:p-12">
 
@@ -115,23 +112,19 @@ export default function OnboardingFunnel({ onComplete }: Props) {
             {/* Answer grid — 2 columns */}
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               {question.answers.map((answer, idx) => {
-                const selected = currentAnswers.includes(idx);
-                const exhausted =
-                  isMultiSelect && !selected && currentAnswers.length >= maxSelect;
+                const selected = currentAnswers.includes(answer.label);
                 const Icon = answer.icon;
                 const iconPalette = ICON_PALETTES[idx % ICON_PALETTES.length];
 
                 return (
                   <button
-                    key={idx}
-                    onClick={() => !exhausted && toggleAnswer(idx)}
+                    key={answer.label}
+                    onClick={() => toggleAnswer(answer.label)}
                     className={[
                       'relative flex w-full items-center gap-4 rounded-2xl p-5 text-right',
                       'border-2 transition-all duration-200 select-none',
                       selected
                         ? 'scale-[1.02] border-purple-600 bg-purple-50/40 shadow-lg'
-                        : exhausted
-                        ? 'cursor-not-allowed border-slate-200 bg-slate-50 opacity-40'
                         : 'border-slate-200 bg-white shadow-sm hover:scale-[1.01] hover:border-indigo-300 hover:shadow-md',
                     ].join(' ')}
                   >

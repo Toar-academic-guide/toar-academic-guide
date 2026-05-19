@@ -55,7 +55,47 @@ export interface EnvironmentPreference {
   deskScore: number; // 0 = dynamic/field, 3 = desk/indoor
 }
 
-export type RiasecAnswers = Record<string, number[]>; // questionId → selected answer indices
+export type RiasecAnswers = Record<string, string[]>; // questionId → selected answer labels
+
+// ── Geographic Preference ─────────────────────────────────────────────────────
+
+/** Where the student wants to study. 'any' = no preference. */
+export type GeographicRegion = 'center' | 'north' | 'south' | 'any';
+
+// ── Academic Scores ───────────────────────────────────────────────────────────
+
+/** Sub-scores from the Israeli Psychometric Entrance Test (PET). */
+export interface PsychometricScores {
+  /** Overall composite score, 200–800 */
+  overall?: number;
+  /** Quantitative section score, 50–150 */
+  quantitative?: number;
+  /** Verbal section score, 50–150 */
+  verbal?: number;
+  /** English section score, 50–150 */
+  english?: number;
+}
+
+/** Matriculation (Bagrut) academic record. */
+export interface BagrutRecord {
+  /** Weighted average including all generic bonuses, 60–120 */
+  weightedAverage?: number;
+}
+
+/** Combined academic-scores object stored in the user profile. */
+export interface AcademicScores {
+  psychometric?: PsychometricScores;
+  bagrut?: BagrutRecord;
+}
+
+/** Persisted user profile (localStorage-backed). */
+export interface UserProfile {
+  geographicPreference: GeographicRegion;
+  /** Academic scores entered in the profile setup step */
+  academicScores?: AcademicScores;
+  /** IDs of programs the user has bookmarked ("bucket list") */
+  savedProgramIds?: string[];
+}
 
 // ── Recommendations ───────────────────────────────────────────────────────────
 

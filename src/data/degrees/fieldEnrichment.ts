@@ -101,6 +101,15 @@ export const PROGRAM_FIELD_MAP: Record<string, string> = {
   // ── New accounting & info-systems programs ────────────────────────────────
   tau_accounting: 'accounting', huji_accounting: 'accounting', bgu_accounting: 'accounting',
   tau_infosystems: 'infoSystems',
+
+  // ── New specialised programs ───────────────────────────────────────────────
+  hit_visual_comm:              'graphicDesign',
+  hit_industrial_design:        'industrialDesign',
+  kinneret_sound_eng:           'soundEngineering',
+  ruppin_marine_bio:            'marineBiology',
+  tau_occupational_therapy:     'occupationalTherapy',
+  huji_occupational_therapy:    'occupationalTherapy',
+  pardeshana_integrative:       'homeopathy',
 };
 
 export const FIELD_ENRICHMENT: Record<string, FieldEnrichment> = {
@@ -297,7 +306,7 @@ export const FIELD_ENRICHMENT: Record<string, FieldEnrichment> = {
     marketStatus: 'ביקוש יציב בסוכנויות פרסום וחברות הייטק. שכר ממוצע 8,000–18,000 ₪. UX/UI Designer מגיע ל-20,000–35,000 ₪.',
     endGoalJobs: ['מעצב/ת גרפי/ת', 'מעצב/ת UX/UI', 'Creative Director', 'Art Director', 'Brand Designer'],
     advancedDegreesSteps: 'קורסי UX/UI ממוקדים (כמו של Google UX Design Certificate) מאיצים מעבר לתחום ההייטק.',
-    programIds: ['shenkar_graphic_design'],
+    programIds: ['shenkar_graphic_design', 'hit_visual_comm'],
   },
 
   fineArts: {
@@ -315,7 +324,7 @@ export const FIELD_ENRICHMENT: Record<string, FieldEnrichment> = {
     aboutText: 'עיצוב תעשייתי עוסק בתכנון מוצרים — מריהוט ועד אלקטרוניקה. הלימודים משלבים הבנת חומרים, ארגונומיה, עיצוב לייצור והנדסה בסיסית. תחום הגשר בין הנדסה לאמנות.',
     marketStatus: 'ביקוש ממוצע בתעשיית המוצר. תפקידי Product / UX Designer בהייטק מאוד מבוקשים. שכר ממוצע 12,000–28,000 ₪.',
     endGoalJobs: ['מעצב/ת מוצר', 'Product Designer', 'מעצב/ת UX', 'Interaction Designer', 'Creative Director'],
-    programIds: ['bezalel_industrial_design', 'shenkar_industrial_design'],
+    programIds: ['bezalel_industrial_design', 'shenkar_industrial_design', 'hit_industrial_design'],
   },
 
   photography: {
@@ -424,7 +433,7 @@ export const FIELD_ENRICHMENT: Record<string, FieldEnrichment> = {
     aboutText: 'הומאופתיה מבוססת על עקרון "דומה מרפא דומה" ושימוש בתמיסות מדוללות. הלימודים דורשים הבנה עמוקה של פרמטרים פיזיולוגיים.',
     marketStatus: 'נישה נאמנה. קליניקה פרטית. שכר 8,000–18,000 ₪.',
     endGoalJobs: ['הומאופת/ית', 'מטפל/ת הוליסטי/ת'],
-    programIds: ['reidman_homeopathy', 'broshim_homeopathy'],
+    programIds: ['reidman_homeopathy', 'broshim_homeopathy', 'pardeshana_integrative'],
   },
 
   psychotherapy: {
@@ -482,6 +491,38 @@ export const FIELD_ENRICHMENT: Record<string, FieldEnrichment> = {
     marketStatus: 'ביקוש גבוה מאוד. מחסור בבעלי ניסיון Cloud. שכר 20,000–40,000 ₪.',
     endGoalJobs: ['DevOps Engineer', 'Cloud Architect', 'SRE', 'Platform Engineer'],
     programIds: ['johnbryce_cloud_devops'],
+  },
+
+  // ── New specialised fields ─────────────────────────────────────────────────
+
+  soundEngineering: {
+    name: 'הנדסת קול וסאונד',
+    emoji: '🎵',
+    aboutText: 'הנדסת קול וסאונד מכשירה מהנדסי אודיו לעבודה בסטודיואי הקלטה, תיאטרון, שידור ופיתוח גיימינג. הלימודים משלבים אלקטרוניקה, אקוסטיקה, עיבוד אותות דיגיטלי (DSP) ותוכנות DAW (Pro Tools, Logic Pro, Ableton). מסלולים מתמקדים בעיצוב סאונד, הפקה מוזיקלית ומערכות שמע מקצועיות.',
+    marketStatus: 'ביקוש יציב בתעשיות הבידור, הקולנוע, הגיימינג ומערכות שמע מוסדיות. שכר ממוצע 12,000–26,000 ₪; מהנדסים בכירים ומפיקים עצמאיים מרוויחים יותר.',
+    endGoalJobs: ['מהנדס/ת קול', 'מפיק/ה מוזיקלי/ת', 'Sound Designer לקולנוע וגיימינג', 'טכנאי/ת שמע לאולמות', 'Audio Engineer בסטודיו'],
+    advancedDegreesSteps: 'הסמכות בינלאומיות (Pro Tools Certified, Dolby Atmos) מאיצות קריירה. תואר שני במוזיקה טכנולוגית פותח דלתות לתפקידי מחקר ופיתוח.',
+    programIds: ['kinneret_sound_eng'],
+  },
+
+  marineBiology: {
+    name: 'ביולוגיה ימית',
+    emoji: '🌊',
+    aboutText: 'ביולוגיה ימית עוסקת במחקר האוקיינוסים — אוכלוסיות דגים, אקולוגיה ימית, אלמוגים, פלנקטון ומדעי מכמורת. לישראל חוף ים תיכוני וים סוף המשמשים שדה מחקר פעיל. הלימודים משלבים ביולוגיה, כימיה ימית, אוקיינוגרפיה ומחקר שטח.',
+    marketStatus: 'ביקוש מוגבל בישראל — בעיקר מחקר אקדמי, רשות הטבע, וחברות גידול דגים. ביקוש גבוה יותר בחו"ל ובארגונים בינלאומיים. שכר ממוצע 10,000–22,000 ₪.',
+    endGoalJobs: ['חוקר/ת ביולוגיה ימית', 'מדען/ת סביבה', 'מנהל/ת שמורות טבע ימיות', 'יועץ/ת דיג מקיים', 'מדריך/ת צלילה מדעי/ת'],
+    advancedDegreesSteps: 'תואר שני ושלישי נדרשים לתפקידי מחקר בכירים. מלגות לחקר ים תיכוני ניתן לקבל דרך אוניברסיטאות בינלאומיות.',
+    programIds: ['ruppin_marine_bio'],
+  },
+
+  occupationalTherapy: {
+    name: 'ריפוי בעיסוק',
+    emoji: '🖐️',
+    aboutText: 'ריפוי בעיסוק (Occupational Therapy) מסייע לאנשים עם מגבלות פיזיות, קוגניטיביות או נפשיות להשתתף בפעילויות היומיום. המקצוע בין-תחומי ודורש ידע רפואי, פסיכולוגי, התנהגותי ויצירתיות. בוגרים עובדים בבתי חולים, מרפאות, בתי ספר ובמרכזי שיקום.',
+    marketStatus: 'ביקוש גבוה מאוד. מחסור כרוני בישראל, במיוחד לאוכלוסיות מיוחדות, ילדים ומבוגרים. שכר ממוצע 14,000–26,000 ₪; מרפאים בכירים ובמגזר הפרטי מרוויחים יותר.',
+    endGoalJobs: ['מרפא/ה בעיסוק', 'מרפא/ה בעיסוק – ילדים', 'מרפא/ה בעיסוק – שיקום נוירולוגי', 'מנהל/ת מחלקת שיקום', 'יועץ/ת נגישות'],
+    advancedDegreesSteps: 'תואר שני בריפוי בעיסוק פותח דלתות למחקר, הוראה והתמחויות קליניות מתקדמות. רישיון מקצועי ניתן לאחר סיום התואר ושנת התמחות.',
+    programIds: ['tau_occupational_therapy', 'huji_occupational_therapy'],
   },
 };
 

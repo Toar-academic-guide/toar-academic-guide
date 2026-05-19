@@ -9,44 +9,88 @@ import {
   RecommendedField,
   UniversityResult,
   UserScores,
+  GeographicRegion,
 } from '@/types';
+import { useUserProfile } from '@/hooks/useUserProfile';
 import { UNIVERSITIES } from '@/data/degreesData';
 import { allPrograms } from '@/data/degrees';
 import { getRecommendations } from '@/utils/recommendationEngine';
 import { evaluateUniversities } from '@/utils/sekhemCalculators';
 import { calculateRiasecScores } from '@/utils/riasecEngine';
+import Image from 'next/image';
+import { Bookmark, BookmarkCheck } from 'lucide-react';
 import OnboardingFunnel from '@/components/OnboardingFunnel';
+import LandingPage from '@/components/LandingPage';
+import QuizIntro from '@/components/QuizIntro';
+import AcademicProfileForm from '@/components/AcademicProfileForm';
 import RecommendationResults from '@/components/RecommendationResults';
+import BucketList from '@/components/BucketList';
 import ScoreForm from '@/components/ScoreForm';
 import ResultsDashboard from '@/components/ResultsDashboard';
+import type { AcademicScores } from '@/types';
 
-type AppStep = 'onboarding' | 'recommendations' | 'calculator';
+type AppStep =
+  | 'landing'
+  | 'intro'
+  | 'academic-profile'
+  | 'onboarding'
+  | 'recommendations'
+  | 'calculator'
+  | 'bucket-list';
 
 export default function Home() {
-  const [step, setStep] = useState<AppStep>('onboarding');
+  const [step, setStep] = useState<AppStep>('landing');
   const [recommendations, setRecommendations] = useState<RecommendedField[]>([]);
+  const { profile, updateProfile } = useUserProfile();
+
   const [riasecProfile, setRiasecProfile] = useState<{
     scores: RiasecScores;
     environment: EnvironmentPreference;
+    geographicPreference: GeographicRegion;
   } | null>(null);
   const [selectedDegreeId, setSelectedDegreeId] = useState(allPrograms[0].id);
   const [results, setResults] = useState<UniversityResult[] | null>(null);
   const [degreeName, setDegreeName] = useState('');
 
   function handleOnboardingComplete(rawAnswers: RiasecAnswers) {
-    const { scores, environment } = calculateRiasecScores(rawAnswers);
+    const { scores, environment, geographicPreference } = calculateRiasecScores(rawAnswers);
+    // Persist geographic preference for return visits
+    updateProfile({ geographicPreference });
     const recs = getRecommendations(scores, environment);
-    setRiasecProfile({ scores, environment });
+    setRiasecProfile({ scores, environment, geographicPreference });
     setRecommendations(recs);
     setResults(null);
     setStep('recommendations');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  // ── Bucket list ────────────────────────────────────────────────────────────
+  function handleToggleSave(programId: string) {
+    const current = profile.savedProgramIds ?? [];
+    const next = current.includes(programId)
+      ? current.filter((id) => id !== programId)
+      : [...current, programId];
+    updateProfile({ savedProgramIds: next });
+  }
+
+  function handleRemoveFromBucket(programId: string) {
+    const next = (profile.savedProgramIds ?? []).filter((id) => id !== programId);
+    updateProfile({ savedProgramIds: next });
+  }
+
   function handleSelectDegree(degreeId: string) {
     setSelectedDegreeId(degreeId);
     setResults(null);
     setStep('calculator');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ── Logo home navigation ────────────────────────────────────────────────────
+  // Resets transient UI state only — profile, quiz answers, and recommendations
+  // are intentionally preserved so the user doesn't lose their progress.
+  function handleGoHome() {
+    setStep('landing');
+    setResults(null);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -60,38 +104,139 @@ export default function Home() {
     }, 50);
   }
 
+  /* ── Landing gate ─────────────────────────────────────────────── */
+  if (step === 'landing') {
+    return <LandingPage onStart={() => setStep('intro')} />;
+  }
+
+  if (step === 'intro') {
+    return <QuizIntro onStart={() => setStep('academic-profile')} />;
+  }
+
+  if (step === 'academic-profile') {
+    return (
+      <AcademicProfileForm
+        initialScores={profile.academicScores}
+        onComplete={(scores: AcademicScores) => {
+          updateProfile({ academicScores: scores });
+          setStep('onboarding');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+        onSkip={() => {
+          setStep('onboarding');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+      />
+    );
+  }
+
   return (
-    <main className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-4 py-12 sm:px-6">
-      {/* Breadcrumb */}
-      {step !== 'onboarding' && (
-        <nav className="flex items-center gap-1.5 text-sm text-gray-400" aria-label="ניווט">
+    <>
+      {/* ── Persistent site header (hidden on landing) ───────────── */}
+      <header className="border-b border-gray-200 bg-white py-10">
+        <div className="mx-auto flex max-w-5xl flex-col items-center gap-4 px-4 sm:px-6">
           <button
-            onClick={() => { setStep('onboarding'); setResults(null); }}
-            className="transition hover:text-gray-800"
+            type="button"
+            onClick={handleGoHome}
+            aria-label="חזרה לדף הבית"
+            title="חזרה לדף הבית"
+            className="cursor-pointer rounded-xl outline-none transition-opacity duration-200 hover:opacity-80 focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2"
           >
-            שאלון
+            <Image
+              src="/logo.jpg.PNG"
+              alt="לוגו — לחץ לחזרה לדף הבית"
+              width={880}
+              height={300}
+              className="h-52 w-auto object-contain md:h-64"
+              priority
+            />
           </button>
-          {step === 'recommendations' && (
-            <>
-              <span>/</span>
-              <span className="font-medium text-gray-700">המלצות</span>
-            </>
-          )}
-          {step === 'calculator' && (
-            <>
-              <span>/</span>
+        </div>
+      </header>
+
+    <main className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-4 py-12 sm:px-6">
+      {/* Breadcrumb + Bucket List nav */}
+      {step !== 'onboarding' && (() => {
+        const savedCount = profile.savedProgramIds?.length ?? 0;
+        const isBucketActive = step === 'bucket-list';
+        return (
+          <nav
+            className="flex items-center justify-between text-sm text-gray-400"
+            aria-label="ניווט"
+          >
+            {/* ── Trail (right side in RTL) ─────────────────────────── */}
+            <div className="flex items-center gap-1.5">
               <button
-                onClick={() => { setStep('recommendations'); setResults(null); }}
+                onClick={() => { setStep('onboarding'); setResults(null); }}
                 className="transition hover:text-gray-800"
               >
-                המלצות
+                שאלון
               </button>
-              <span>/</span>
-              <span className="font-medium text-gray-700">חישוב</span>
-            </>
-          )}
-        </nav>
-      )}
+              {(step === 'recommendations') && (
+                <>
+                  <span>/</span>
+                  <span className="font-medium text-gray-700">המלצות</span>
+                </>
+              )}
+              {step === 'calculator' && (
+                <>
+                  <span>/</span>
+                  <button
+                    onClick={() => { setStep('recommendations'); setResults(null); }}
+                    className="transition hover:text-gray-800"
+                  >
+                    המלצות
+                  </button>
+                  <span>/</span>
+                  <span className="font-medium text-gray-700">חישוב</span>
+                </>
+              )}
+              {step === 'bucket-list' && (
+                <>
+                  <span>/</span>
+                  <button
+                    onClick={() => { setStep('recommendations'); setResults(null); }}
+                    className="transition hover:text-gray-800"
+                  >
+                    המלצות
+                  </button>
+                  <span>/</span>
+                  <span className="font-medium text-gray-700">רשימת הייעוד</span>
+                </>
+              )}
+            </div>
+
+            {/* ── Bucket list button (left side in RTL) ─────────────── */}
+            <button
+              onClick={() => setStep('bucket-list')}
+              aria-label={`רשימת הייעוד — ${savedCount} פריטים`}
+              className={[
+                'flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition',
+                isBucketActive
+                  ? 'border-indigo-300 bg-indigo-50 text-indigo-700'
+                  : 'border-gray-200 bg-white text-gray-500 hover:border-gray-400 hover:text-gray-800',
+              ].join(' ')}
+            >
+              {savedCount > 0 ? (
+                <BookmarkCheck size={13} className={isBucketActive ? 'text-indigo-600' : 'text-indigo-400'} />
+              ) : (
+                <Bookmark size={13} />
+              )}
+              <span>רשימת הייעוד</span>
+              {savedCount > 0 && (
+                <span
+                  className={[
+                    'rounded-full px-1.5 py-0.5 text-[10px] font-bold',
+                    isBucketActive ? 'bg-indigo-200 text-indigo-800' : 'bg-indigo-100 text-indigo-700',
+                  ].join(' ')}
+                >
+                  {savedCount}
+                </span>
+              )}
+            </button>
+          </nav>
+        );
+      })()}
 
       {/* ── Step: Onboarding ───────────────────────────────────── */}
       {step === 'onboarding' && (
@@ -105,6 +250,19 @@ export default function Home() {
           onSelectDegree={handleSelectDegree}
           riasecScores={riasecProfile.scores}
           environment={riasecProfile.environment}
+          geographicPreference={riasecProfile.geographicPreference}
+          savedProgramIds={profile.savedProgramIds}
+          onToggleSave={handleToggleSave}
+        />
+      )}
+
+      {/* ── Step: Bucket List ─────────────────────────────────── */}
+      {step === 'bucket-list' && (
+        <BucketList
+          savedProgramIds={profile.savedProgramIds ?? []}
+          academicScores={profile.academicScores}
+          onRemove={handleRemoveFromBucket}
+          onBack={() => { setStep('recommendations'); setResults(null); }}
         />
       )}
 
@@ -116,7 +274,12 @@ export default function Home() {
             <p className="mb-6 text-sm text-gray-400">
               הממוצע בגרות כולל בונוסים (למשל מתמטיקה 5 יח׳ מוסיפה עד 35 נקודות).
             </p>
-            <ScoreForm onSubmit={handleCalculate} defaultDegreeId={selectedDegreeId} />
+            <ScoreForm
+              onSubmit={handleCalculate}
+              defaultDegreeId={selectedDegreeId}
+              defaultPsychometric={profile.academicScores?.psychometric?.overall}
+              defaultBagrut={profile.academicScores?.bagrut?.weightedAverage}
+            />
           </section>
 
           {results && (
@@ -125,5 +288,6 @@ export default function Home() {
         </>
       )}
     </main>
+    </>
   );
 }

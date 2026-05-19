@@ -7,9 +7,15 @@ import {
   Cpu, Zap, Settings, Building2, Activity, Microscope,
   PieChart, Brain, Stethoscope, Scale, Briefcase, TrendingUp,
   Heart, Shield, Film,
-  UtensilsCrossed, Compass, Palette, Camera, Scissors, Sparkles, Leaf, FlaskConical,
+  UtensilsCrossed, Palette, Camera, Sparkles, Leaf, FlaskConical,
+  LineChart, Database, Music, Anchor,
+  Cake, ChefHat, PenTool, Clapperboard, Ruler,
+  Bookmark, BookmarkCheck,
 } from 'lucide-react';
-import { RecommendedField, RiasecScores, EnvironmentPreference, RiasecDimension } from '@/types';
+import { RecommendedField, RiasecScores, EnvironmentPreference, RiasecDimension, GeographicRegion } from '@/types';
+import { INSTITUTION_REGIONS, REGION_LABEL, REGION_EMOJI, REGION_BADGE_COLOR } from '@/data/geography';
+import { INSTITUTION_BY_NAME } from '@/data/institutions';
+import InstitutionLogo from '@/components/InstitutionLogo';
 import { allPrograms } from '@/data/degrees';
 import type { Program } from '@/data/degrees/types';
 import { PROGRAM_FIELD_MAP, FIELD_ENRICHMENT } from '@/data/degrees/fieldEnrichment';
@@ -20,6 +26,9 @@ interface Props {
   onSelectDegree: (degreeId: string) => void;
   riasecScores: RiasecScores;
   environment: EnvironmentPreference;
+  geographicPreference?: GeographicRegion;
+  savedProgramIds?: string[];
+  onToggleSave?: (programId: string) => void;
 }
 
 const DEMAND_COLOR: Record<RecommendedField['marketDemand'], string> = {
@@ -57,19 +66,19 @@ const FIELD_ICON: Record<string, FieldIconMeta> = {
   dataAnalysis:     { icon: PieChart,        color: 'bg-indigo-50 text-indigo-600',   accent: 'border-r-indigo-400'    },
   cloudDevOps:      { icon: Activity,        color: 'bg-teal-50 text-teal-600',       accent: 'border-r-teal-400'      },
   // ── Arts & design ─────────────────────────────────────────────────────────
-  industrialDesign: { icon: Compass,         color: 'bg-blue-50 text-blue-600',       accent: 'border-r-blue-400'      },
+  industrialDesign: { icon: PenTool,         color: 'bg-blue-50 text-blue-600',       accent: 'border-r-blue-400'      },
   fineArts:         { icon: Palette,         color: 'bg-purple-50 text-purple-600',   accent: 'border-r-purple-400'    },
   photography:      { icon: Camera,          color: 'bg-slate-50 text-slate-600',     accent: 'border-r-slate-400'     },
-  fashion:          { icon: Scissors,        color: 'bg-pink-50 text-pink-600',       accent: 'border-r-pink-400'      },
+  fashion:          { icon: Ruler,           color: 'bg-pink-50 text-pink-600',       accent: 'border-r-pink-400'      },
   graphicDesign:    { icon: Palette,         color: 'bg-violet-50 text-violet-600',   accent: 'border-r-violet-400'    },
-  animation:        { icon: Sparkles,        color: 'bg-violet-50 text-violet-600',   accent: 'border-r-violet-400'    },
+  animation:        { icon: Clapperboard,    color: 'bg-violet-50 text-violet-600',   accent: 'border-r-violet-400'    },
   dance:            { icon: Sparkles,        color: 'bg-rose-50 text-rose-600',       accent: 'border-r-rose-400'      },
   cinema:           { icon: Film,            color: 'bg-violet-50 text-violet-600',   accent: 'border-r-violet-400'    },
   screenwriting:    { icon: Film,            color: 'bg-violet-50 text-violet-600',   accent: 'border-r-violet-400'    },
   documentary:      { icon: Film,            color: 'bg-violet-50 text-violet-600',   accent: 'border-r-violet-400'    },
   // ── Culinary ──────────────────────────────────────────────────────────────
-  chef:             { icon: UtensilsCrossed, color: 'bg-amber-50 text-amber-600',     accent: 'border-r-amber-400'     },
-  pastry:           { icon: UtensilsCrossed, color: 'bg-amber-50 text-amber-600',     accent: 'border-r-amber-400'     },
+  chef:             { icon: ChefHat,         color: 'bg-amber-50 text-amber-600',     accent: 'border-r-amber-400'     },
+  pastry:           { icon: Cake,            color: 'bg-amber-50 text-amber-600',     accent: 'border-r-amber-400'     },
   restaurantMgmt:   { icon: UtensilsCrossed, color: 'bg-amber-50 text-amber-600',     accent: 'border-r-amber-400'     },
   // ── Integrative medicine ──────────────────────────────────────────────────
   chineseMedicine:  { icon: Leaf,            color: 'bg-emerald-50 text-emerald-600', accent: 'border-r-emerald-400'   },
@@ -77,7 +86,45 @@ const FIELD_ICON: Record<string, FieldIconMeta> = {
   homeopathy:       { icon: FlaskConical,    color: 'bg-teal-50 text-teal-600',       accent: 'border-r-teal-400'      },
   reflexology:      { icon: Heart,           color: 'bg-rose-50 text-rose-600',       accent: 'border-r-rose-400'      },
   psychotherapy:    { icon: Brain,           color: 'bg-purple-50 text-purple-600',   accent: 'border-r-purple-400'    },
+  // ── Business cluster ──────────────────────────────────────────────────────────
+  accounting:          { icon: LineChart,  color: 'bg-slate-50 text-slate-600',     accent: 'border-r-slate-400'     },
+  infoSystems:         { icon: Database,   color: 'bg-cyan-50 text-cyan-600',       accent: 'border-r-cyan-400'      },
+  // ── New specialised fields ─────────────────────────────────────────────────
+  soundEngineering:    { icon: Music,      color: 'bg-violet-50 text-violet-600',   accent: 'border-r-violet-400'    },
+  marineBiology:       { icon: Anchor,     color: 'bg-cyan-50 text-cyan-600',       accent: 'border-r-cyan-400'      },
+  occupationalTherapy: { icon: Heart,      color: 'bg-red-50 text-red-600',         accent: 'border-r-red-400'       },
 };
+
+// InstitutionLogo is imported from @/components/InstitutionLogo (shared)
+
+// ── Expandable program description ───────────────────────────────────────────
+// Click-to-reveal on any device; smooth max-height CSS transition.
+function ExpandableDescription({ text }: { text: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="flex flex-col">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        className="flex w-fit items-center gap-1.5 rounded px-1 py-0.5 text-[11px] font-medium text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-600"
+      >
+        <span
+          className="transition-transform duration-200"
+          style={{ display: 'inline-block', transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
+        >
+          ▾
+        </span>
+        <span>על התוכנית</span>
+      </button>
+      <p
+        className={`overflow-hidden text-xs leading-relaxed text-slate-600 transition-all duration-300 ${open ? 'max-h-40 pt-1.5' : 'max-h-0'}`}
+      >
+        {text}
+      </p>
+    </div>
+  );
+}
 
 // ── Sheba-style program sub-card ──────────────────────────────────────────────
 
@@ -88,24 +135,24 @@ interface SubCardProps {
 }
 
 function ProgramSubCard({ program, fieldId, onSelect }: SubCardProps) {
-  const meta  = FIELD_ICON[fieldId];
-  const Icon  = meta?.icon;
-  const badge = meta?.color ?? 'bg-slate-50 text-slate-500';
-  const accent = meta?.accent ?? 'border-r-slate-300';
+  const Icon = FIELD_ICON[fieldId]?.icon;
 
   return (
     <button
       onClick={onSelect}
-      className={`flex w-full items-center gap-3 rounded-2xl border border-slate-100 bg-white px-4 py-3.5 text-right shadow-sm transition-all hover:border-slate-300 hover:shadow-md active:scale-[0.98] cursor-pointer border-r-[3px] ${accent}`}
+      className="group relative flex w-full cursor-pointer items-center justify-between overflow-hidden rounded-xl border border-slate-100 bg-white p-4 text-right shadow-sm transition-all duration-200 hover:border-slate-200 hover:shadow-md"
     >
-      <span className={`flex shrink-0 items-center justify-center rounded-xl p-2.5 ${badge}`}>
-        {Icon && <Icon className="h-5 w-5" />}
-      </span>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-semibold text-slate-800">{program.name}</p>
-        <p className="mt-1 text-xs text-slate-400">{program.institution}</p>
+      <div className="absolute bottom-0 right-0 top-0 w-[4px] bg-purple-600" />
+      <div className="flex items-center gap-3 pr-2">
+        <div className="rounded-lg border border-slate-100 bg-slate-50 p-2 text-slate-700 transition-colors duration-200 group-hover:bg-indigo-50 group-hover:text-indigo-600">
+          {Icon && <Icon className="h-5 w-5" />}
+        </div>
+        <div className="text-right">
+          <h4 className="text-sm font-semibold leading-none text-slate-800">{program.name}</h4>
+          <span className="mt-2 block text-xs text-slate-400">לחץ לפרטים ודרישות קבלה</span>
+        </div>
       </div>
-      <ChevronLeft className="h-4 w-4 shrink-0 text-slate-300" />
+      <ChevronLeft className="h-4 w-4 shrink-0 text-slate-300 transition-all duration-200 group-hover:-translate-x-1 group-hover:text-slate-600" />
     </button>
   );
 }
@@ -130,7 +177,7 @@ function SubTabPanel({ suggestedPrograms, onSelectProgram }: SubTabPanelProps) {
 
   const fieldProgramIds = FIELD_ENRICHMENT[activeFieldId]?.programIds ?? [];
   const seenIds = new Set<string>();
-  const tabPrograms = allPrograms
+  const clusterPrograms = allPrograms
     .filter((p) => {
       if (!fieldProgramIds.includes(p.id) || p.institution === 'אוניברסיטה') return false;
       if (seenIds.has(p.id)) return false;
@@ -140,40 +187,43 @@ function SubTabPanel({ suggestedPrograms, onSelectProgram }: SubTabPanelProps) {
     .sort((a, b) => (a.admissionType === 'sekhem' ? 0 : 1) - (b.admissionType === 'sekhem' ? 0 : 1))
     .slice(0, 6);
 
+  const uniquePrograms = clusterPrograms.filter(
+    (v, i, a) => a.findIndex((t) => t.name === v.name) === i
+  );
+
   if (tabs.length === 0) return null;
 
   return (
     <div>
-      {/* Tab bar — LTR scroll container so tabs flow left→right */}
-      <div className="overflow-x-auto" dir="ltr">
-        <div className="flex min-w-max border-b border-slate-200">
-          {tabs.map((tab) => {
-            const TabIcon = FIELD_ICON[tab.fieldId]?.icon;
-            return (
-              <button
-                key={tab.fieldId}
-                onClick={() => setActiveFieldId(tab.fieldId)}
-                className={`relative flex items-center gap-1.5 whitespace-nowrap px-4 py-2.5 text-sm font-medium transition-colors ${
-                  activeFieldId === tab.fieldId
-                    ? 'text-gray-900'
-                    : 'text-slate-400 hover:text-slate-700'
-                }`}
-              >
+      {/* Tab bar — RTL, thin underline active indicator */}
+      <div className="mb-6 flex gap-2 overflow-x-auto border-b border-slate-100" dir="rtl">
+        {tabs.map((tab) => {
+          const TabIcon = FIELD_ICON[tab.fieldId]?.icon;
+          const isActive = activeFieldId === tab.fieldId;
+          return (
+            <button
+              key={tab.fieldId}
+              onClick={() => setActiveFieldId(tab.fieldId)}
+              className={`relative whitespace-nowrap pb-3 px-2 text-sm font-medium transition-all ${
+                isActive ? 'font-semibold text-slate-950' : 'text-slate-400 hover:text-slate-600'
+              }`}
+            >
+              <span className="flex items-center gap-2">
                 {TabIcon && <TabIcon className="h-4 w-4 shrink-0" />}
-                <span>{tab.label}</span>
-                {activeFieldId === tab.fieldId && (
-                  <span className="absolute bottom-0 left-0 right-0 h-0.5 rounded-full bg-purple-600" />
-                )}
-              </button>
-            );
-          })}
-        </div>
+                {tab.label}
+              </span>
+              {isActive && (
+                <div className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full bg-slate-900" />
+              )}
+            </button>
+          );
+        })}
       </div>
 
       {/* Program cards under active tab */}
-      {tabPrograms.length > 0 ? (
-        <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-2">
-          {tabPrograms.map((p) => (
+      {uniquePrograms.length > 0 ? (
+        <div className="grid grid-cols-1 gap-3 md:grid-cols-2" dir="rtl">
+          {uniquePrograms.map((p) => (
             <ProgramSubCard
               key={p.id}
               program={p}
@@ -195,9 +245,15 @@ interface DetailProps {
   program: Program;
   onBack: () => void;
   onSelectDegree: (id: string) => void;
+  geographicPreference?: GeographicRegion;
+  savedProgramIds?: string[];
+  onToggleSave?: (programId: string) => void;
 }
 
-function ProgramDetailView({ program, onBack, onSelectDegree }: DetailProps) {
+function ProgramDetailView({
+  program, onBack, onSelectDegree, geographicPreference,
+  savedProgramIds, onToggleSave,
+}: DetailProps) {
   const fieldId    = PROGRAM_FIELD_MAP[program.id];
   const enrichment = fieldId ? FIELD_ENRICHMENT[fieldId] : null;
   const FieldIcon  = fieldId ? FIELD_ICON[fieldId]?.icon : undefined;
@@ -213,7 +269,16 @@ function ProgramDetailView({ program, onBack, onSelectDegree }: DetailProps) {
       seenIds.add(p.id);
       return true;
     })
-    .sort((a, b) => (a.admissionType === 'sekhem' ? 0 : 1) - (b.admissionType === 'sekhem' ? 0 : 1));
+    .sort((a, b) => {
+      // Primary sort: institutions in the preferred region float to the top
+      if (geographicPreference && geographicPreference !== 'any') {
+        const aMatch = INSTITUTION_REGIONS[a.institution] === geographicPreference ? 0 : 1;
+        const bMatch = INSTITUTION_REGIONS[b.institution] === geographicPreference ? 0 : 1;
+        if (aMatch !== bMatch) return aMatch - bMatch;
+      }
+      // Secondary sort: sekhem-track before requirements-track
+      return (a.admissionType === 'sekhem' ? 0 : 1) - (b.admissionType === 'sekhem' ? 0 : 1);
+    });
 
   const sekhemInstitutions = institutionPrograms.filter((p) => p.admissionType === 'sekhem');
   const reqInstitutions    = institutionPrograms.filter((p) => p.admissionType === 'requirements');
@@ -304,24 +369,122 @@ function ProgramDetailView({ program, onBack, onSelectDegree }: DetailProps) {
           {/* Sekhem-track universities */}
           {sekhemInstitutions.length > 0 && (
             <div className="mb-5 flex flex-col gap-3">
-              <p className="text-xs font-semibold text-slate-500">אוניברסיטאות — חישוב סכ"ם</p>
-              {sekhemInstitutions.map((p) => (
-                <div
-                  key={p.id}
-                  className="flex items-center justify-between gap-4 rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3"
-                >
-                  <div>
-                    <p className="text-sm font-semibold text-slate-800">{p.institution}</p>
-                    <p className="text-xs text-slate-500">{p.name}</p>
-                  </div>
-                  <button
-                    onClick={() => { onSelectDegree(p.id); onBack(); }}
-                    className="shrink-0 rounded-xl bg-gray-900 px-4 py-2 text-xs font-semibold text-white transition hover:bg-gray-700 active:scale-95"
+              <p className="text-xs font-semibold text-slate-500">אוניברסיטאות — פרטי קבלה</p>
+              {sekhemInstitutions.map((p) => {
+                const detail      = p.institutionDetails?.[0];
+                const instRecord  = INSTITUTION_BY_NAME[p.institution];
+                const region      = instRecord?.region ?? INSTITUTION_REGIONS[p.institution];
+                const isPreferred = geographicPreference && geographicPreference !== 'any' && region === geographicPreference;
+                const isSaved     = savedProgramIds?.includes(p.id) ?? false;
+                return (
+                  <div
+                    key={p.id}
+                    className={[
+                      'flex flex-col gap-3 rounded-2xl border px-4 py-4',
+                      isPreferred
+                        ? 'border-indigo-200 bg-indigo-50/40'
+                        : 'border-slate-100 bg-slate-50',
+                    ].join(' ')}
                   >
-                    חשב סיכויי קבלה ←
-                  </button>
-                </div>
-              ))}
+                    {/* Institution name + logo + quick stats + save button */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-2.5">
+                        <InstitutionLogo institution={p.institution} record={instRecord} />
+                        <div>
+                          <p className="text-sm font-semibold text-slate-800">{p.institution}</p>
+                          <p className="text-xs text-slate-500">{p.name}</p>
+                        </div>
+                      </div>
+                      <div className="flex shrink-0 items-start gap-2">
+                        {detail && (
+                          <div className="flex flex-col items-end gap-0.5 text-right text-xs text-slate-500">
+                            <span>{detail.durationYears} שנות לימוד</span>
+                            <span>{detail.estimatedStudentsPerYear}</span>
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => onToggleSave?.(p.id)}
+                          aria-label={isSaved ? 'הסר מרשימת הייעוד' : 'שמור לרשימת הייעוד'}
+                          title={isSaved ? 'הסר מרשימת הייעוד' : 'שמור לרשימת הייעוד'}
+                          className={[
+                            'flex h-8 w-8 items-center justify-center rounded-lg transition',
+                            isSaved
+                              ? 'text-indigo-600 hover:text-indigo-800'
+                              : 'text-slate-300 hover:text-slate-600',
+                          ].join(' ')}
+                        >
+                          {isSaved ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
+                        </button>
+                      </div>
+                    </div>
+                    {detail && (
+                      <>
+                        {/* Section-score minimums as chips */}
+                        {(detail.quantitativeMinRequirement !== null || detail.englishMinRequirement !== null) && (
+                          <div className="flex flex-wrap gap-1.5" dir="rtl">
+                            {detail.quantitativeMinRequirement !== null && (
+                              <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700">
+                                כמותי ≥ {detail.quantitativeMinRequirement}
+                              </span>
+                            )}
+                            {detail.englishMinRequirement !== null && (
+                              <span className="rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700">
+                                אנגלית ≥ {detail.englishMinRequirement}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                        {/* Admission requirements headline + notes */}
+                        {detail.specificAdmissionNotes.length > 0 && (
+                          <>
+                            <p className="text-xs font-semibold text-slate-700">מה נדרש כדי להתקבל</p>
+                            <ul className="space-y-0.5" dir="rtl">
+                              {detail.specificAdmissionNotes.map((note, i) => (
+                                <li key={i} className="text-xs text-slate-600">• {note}</li>
+                              ))}
+                            </ul>
+                          </>
+                        )}
+                        {/* Program description (expandable) */}
+                        {detail.programDescription && (
+                          <ExpandableDescription text={detail.programDescription} />
+                        )}
+                        {/* Dual-action CTA — program info + admission calculator */}
+                        <div className="flex flex-col gap-2 sm:flex-row">
+                          {detail.programUrl && (
+                            <a
+                              href={detail.programUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 active:scale-95"
+                            >
+                              מידע על המסלול ↗
+                            </a>
+                          )}
+                          <a
+                            href={detail.calculatorUrl ?? detail.officialCalculatorUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-blue-700 active:scale-95"
+                          >
+                            בדיקת סיכויי קבלה ומחשבון סכם ↗
+                          </a>
+                        </div>
+                      </>
+                    )}
+                    {/* Fallback when institutionDetails not yet populated */}
+                    {!detail && (
+                      <button
+                        onClick={() => { onSelectDegree(p.id); onBack(); }}
+                        className="rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-blue-700 active:scale-95"
+                      >
+                        חשב סיכויי קבלה ←
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
 
@@ -329,32 +492,114 @@ function ProgramDetailView({ program, onBack, onSelectDegree }: DetailProps) {
           {reqInstitutions.length > 0 && (
             <div className="flex flex-col gap-3">
               <p className="text-xs font-semibold text-slate-500">
-                מכללות ובתי ספר — קבלה על פי דרישות
+                מכללות ומוסדות — קבלה על פי דרישות
               </p>
-              {reqInstitutions.map((p) => (
-                <div
-                  key={p.id}
-                  className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3"
-                >
-                  <div className="mb-1.5 flex items-baseline gap-2">
-                    <p className="text-sm font-semibold text-slate-800">{p.institution}</p>
-                    {p.type === 'academic' && (
-                      <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold text-violet-700">
-                        מוסד אקדמי
-                      </span>
+              {reqInstitutions.map((p) => {
+                const detail      = p.institutionDetails?.[0];
+                const instRecord  = INSTITUTION_BY_NAME[p.institution];
+                const region      = instRecord?.region ?? INSTITUTION_REGIONS[p.institution];
+                const isPreferred = geographicPreference && geographicPreference !== 'any' && region === geographicPreference;
+                const isSaved     = savedProgramIds?.includes(p.id) ?? false;
+                return (
+                  <div
+                    key={p.id}
+                    className={[
+                      'flex flex-col gap-3 rounded-2xl border px-4 py-4',
+                      isPreferred
+                        ? 'border-indigo-200 bg-indigo-50/40'
+                        : 'border-slate-100 bg-slate-50',
+                    ].join(' ')}
+                  >
+                    {/* Institution name + logo + save button */}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-2.5">
+                        <InstitutionLogo institution={p.institution} record={instRecord} />
+                        <div className="flex flex-col gap-0.5">
+                          <p className="text-sm font-semibold text-slate-800">{p.institution}</p>
+                          {p.type === 'academic' && (
+                            <span className="w-fit rounded-full bg-violet-100 px-2 py-0.5 text-[10px] font-semibold text-violet-700">
+                              מוסד אקדמי
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex shrink-0 items-start gap-2">
+                        {detail && (
+                          <div className="flex flex-col items-end gap-0.5 text-right text-xs text-slate-500">
+                            <span>{detail.durationYears} שנות לימוד</span>
+                            <span>{detail.estimatedStudentsPerYear}</span>
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => onToggleSave?.(p.id)}
+                          aria-label={isSaved ? 'הסר מרשימת הייעוד' : 'שמור לרשימת הייעוד'}
+                          title={isSaved ? 'הסר מרשימת הייעוד' : 'שמור לרשימת הייעוד'}
+                          className={[
+                            'flex h-8 w-8 items-center justify-center rounded-lg transition',
+                            isSaved
+                              ? 'text-indigo-600 hover:text-indigo-800'
+                              : 'text-slate-300 hover:text-slate-600',
+                          ].join(' ')}
+                        >
+                          {isSaved ? <BookmarkCheck size={16} /> : <Bookmark size={16} />}
+                        </button>
+                      </div>
+                    </div>
+                    {detail ? (
+                      <>
+                        {/* Admission requirements headline + notes from institutionDetails */}
+                        {detail.specificAdmissionNotes.length > 0 && (
+                          <>
+                            <p className="text-xs font-semibold text-slate-700">מה נדרש כדי להתקבל</p>
+                            <ul className="space-y-0.5" dir="rtl">
+                              {detail.specificAdmissionNotes.map((note, i) => (
+                                <li key={i} className="text-xs text-slate-600">• {note}</li>
+                              ))}
+                            </ul>
+                          </>
+                        )}
+                        {/* Program description (expandable) */}
+                        {detail.programDescription && (
+                          <ExpandableDescription text={detail.programDescription} />
+                        )}
+                        {/* Dual-action CTA — program info + admission portal */}
+                        <div className="flex flex-col gap-2 sm:flex-row">
+                          {detail.programUrl && (
+                            <a
+                              href={detail.programUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 active:scale-95"
+                            >
+                              מידע על המסלול ↗
+                            </a>
+                          )}
+                          <a
+                            href={detail.calculatorUrl ?? detail.officialCalculatorUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-blue-700 active:scale-95"
+                          >
+                            בדיקת סיכויי קבלה ומחשבון סכם ↗
+                          </a>
+                        </div>
+                      </>
+                    ) : (
+                      p.admissionRequirements.length > 0 && (
+                        <>
+                          <p className="text-xs font-semibold text-slate-700">מה נדרש כדי להתקבל</p>
+                          <ul className="space-y-0.5">
+                            {p.admissionRequirements.map((req, i) => (
+                              <li key={i} className="text-xs text-slate-600">• {req}</li>
+                            ))}
+                          </ul>
+                        </>
+                      )
                     )}
                   </div>
-                  {p.admissionRequirements.length > 0 && (
-                    <ul className="space-y-0.5">
-                      {p.admissionRequirements.map((req, i) => (
-                        <li key={i} className="text-xs text-slate-600">
-                          • {req}
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </section>
@@ -370,6 +615,9 @@ export default function RecommendationResults({
   onSelectDegree,
   riasecScores,
   environment,
+  geographicPreference = 'any',
+  savedProgramIds,
+  onToggleSave,
 }: Props) {
   const [selectedProgramId, setSelectedProgramId] = useState<string | null>(null);
 
@@ -389,6 +637,9 @@ export default function RecommendationResults({
             program={program}
             onBack={() => setSelectedProgramId(null)}
             onSelectDegree={onSelectDegree}
+            geographicPreference={geographicPreference}
+            savedProgramIds={savedProgramIds}
+            onToggleSave={onToggleSave}
           />
         </div>
       );
@@ -418,6 +669,11 @@ export default function RecommendationResults({
                 {DIMENSION_LABELS[dim].name} · {score}
               </span>
             ))}
+            {geographicPreference !== 'any' && (
+              <span className={`rounded-full px-3 py-1 text-xs font-semibold ${REGION_BADGE_COLOR[geographicPreference]}`}>
+                {REGION_EMOJI[geographicPreference]} העדפה: {REGION_LABEL[geographicPreference]}
+              </span>
+            )}
           </div>
         )}
       </section>

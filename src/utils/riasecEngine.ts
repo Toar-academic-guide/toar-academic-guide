@@ -1,20 +1,29 @@
-import { RiasecDimension, RiasecScores, EnvironmentPreference } from '@/types';
+import { RiasecDimension, RiasecScores, EnvironmentPreference, GeographicRegion } from '@/types';
 import { QUIZ_QUESTIONS } from '@/data/questions';
 
 export { QUIZ_QUESTIONS };
 
-export function calculateRiasecScores(answers: Record<string, number[]>): {
+export function calculateRiasecScores(answers: Record<string, string[]>): {
   scores: RiasecScores;
   environment: EnvironmentPreference;
+  geographicPreference: GeographicRegion;
 } {
   const scores: RiasecScores = { R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 };
   const environment: EnvironmentPreference = { soloScore: 1, deskScore: 1 };
+  let geographicPreference: GeographicRegion = 'any';
 
   for (const question of QUIZ_QUESTIONS) {
-    const selectedIndices = answers[question.id] ?? [];
-    for (const idx of selectedIndices) {
-      const answer = question.answers[idx];
+    const selectedLabels = answers[question.id] ?? [];
+    for (const label of selectedLabels) {
+      const answer = question.answers.find((a) => a.label === label);
       if (!answer) continue;
+
+      // Geographic question — extract tag, skip RIASEC accumulation
+      if (question.id === 'geography') {
+        if (answer.geographicTag) geographicPreference = answer.geographicTag;
+        continue;
+      }
+
       for (const [dim, delta] of Object.entries(answer.riasecDeltas ?? {})) {
         scores[dim as RiasecDimension] += delta as number;
       }
@@ -26,7 +35,7 @@ export function calculateRiasecScores(answers: Record<string, number[]>): {
     }
   }
 
-  return { scores, environment };
+  return { scores, environment, geographicPreference };
 }
 
 export function getTopDimensions(scores: RiasecScores): [RiasecDimension, RiasecDimension] {
