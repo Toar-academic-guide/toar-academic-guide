@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { INSTITUTION_BY_NAME, type InstitutionRecord } from '@/data/institutions';
 
 /**
@@ -8,19 +9,18 @@ import { INSTITUTION_BY_NAME, type InstitutionRecord } from '@/data/institutions
  * Logo resolution order:
  *   1. `record.logoUrl`  — explicit Wikimedia CDN SVG  (highest quality)
  *   2. `record.domain`   — Google favicon proxy at 64 px
- *   3. First-letter avatar — stable hue derived from institution name
+ *   3. First-letter avatar — stable HSL hue derived from institution name
  *
- * Two call patterns are supported:
- *   a) Caller pre-resolved the record via INSTITUTION_BY_NAME or INSTITUTION_BY_ID:
- *        <InstitutionLogo institution={p.institution} record={instRecord} />
- *      → fastest path: skips the internal dict lookup entirely.
- *
- *   b) Name-only (legacy / convenience):
- *        <InstitutionLogo institution={p.institution} />
- *      → performs INSTITUTION_BY_NAME[institution] internally.
+ * Rendering strategy:
+ *   - The component is EITHER an <img> OR a letter avatar — never both stacked.
+ *   - `imgFailed` state tracks load errors so React re-renders to the avatar
+ *     cleanly without any DOM mutation tricks.
+ *   - Explicit `width`/`height` HTML attributes are set on every <img> so that
+ *     SVGs without intrinsic dimensions (viewBox-only) always render at the
+ *     correct pixel size instead of collapsing to 0×0.
  */
 
-/** Derives a stable HSL hue (0–359) from an arbitrary string. */
+/** Stable HSL hue (0–359) derived from an arbitrary string. */
 function nameToHue(name: string): number {
   let hash = 0;
   for (let i = 0; i < name.length; i++) {
@@ -41,50 +41,64 @@ export default function InstitutionLogo({
   /** 'sm' = 32 px  |  'md' = 40 px (default) */
   size?: 'sm' | 'md';
 }) {
+  const [imgFailed, setImgFailed] = useState(false);
+
   // Prefer the caller-supplied record; fall back to INSTITUTION_BY_NAME lookup.
   const record = recordProp ?? INSTITUTION_BY_NAME[institution];
 
-  // Resolve the image src: logoUrl (SVG) > favicon proxy > null (avatar fallback)
+  // Resolve image source: logoUrl (SVG) → favicon proxy → null (avatar fallback)
   const src =
     record?.logoUrl ??
     (record?.domain
       ? `https://www.google.com/s2/favicons?domain=${record.domain}&sz=64`
       : null);
 
-  const dim      = size === 'sm' ? 'h-8 w-8'   : 'h-10 w-10';
+  // Explicit pixel dimensions — used on both the container and the <img> tag.
+  const dimPx    = size === 'sm' ? 32 : 40;
+  const imgPx    = dimPx - 8;            // 4 px inset on each side
+  const dimClass = size === 'sm' ? 'h-8 w-8' : 'h-10 w-10';
   const textSize = size === 'sm' ? 'text-[11px]' : 'text-[13px]';
 
-  // First letter of the display name — Hebrew institutions read right-to-left
-  // but charAt(0) still returns the leftmost Unicode scalar, which is the first
-  // character of the romanised / Hebrew string and works as a visual anchor.
   const displayName = record?.name ?? institution;
   const firstLetter = [...displayName][0] ?? '?';
   const hue         = nameToHue(displayName);
-  const avatarStyle = {
-    backgroundColor: `hsl(${hue} 55% 88%)`,
-    color:           `hsl(${hue} 45% 32%)`,
-  };
+
+  // Only show the <img> if we have a src and it hasn't errored.
+  const showImg = !!src && !imgFailed;
 
   return (
     <div
-      className={`relative flex ${dim} shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-100`}
-      style={avatarStyle}
+      className={`flex ${dimClass} shrink-0 items-center justify-center rounded-lg border border-slate-100`}
+      style={
+        showImg
+          ? { background: '#ffffff' }
+          : {
+              backgroundColor: `hsl(${hue} 55% 88%)`,
+              color:           `hsl(${hue} 45% 32%)`,
+            }
+      }
     >
-      {/* First-letter avatar — always rendered beneath the img layer */}
-      <span className={`select-none font-semibold leading-none ${textSize}`}>
-        {firstLetter}
-      </span>
-
-      {src && (
+      {showImg ? (
         <img
           src={src}
           alt={displayName}
-          className="absolute inset-0 h-full w-full object-contain bg-white p-1.5"
-          onError={(e) => {
-            // Hide broken img; the letter avatar underneath becomes visible.
-            e.currentTarget.style.display = 'none';
+          /* Explicit HTML attributes force SVG viewBox-only files to render at
+             the correct pixel size. Without these, SVGs with no intrinsic
+             width/height collapse to 0×0. */
+          width={imgPx}
+          height={imgPx}
+          style={{
+            width:     imgPx,
+            height:    imgPx,
+            objectFit: 'contain',
+            display:   'block',
           }}
+          onError={() => setImgFailed(true)}
         />
+      ) : (
+        <span className={`select-none font-semibold leading-none ${textSize}`}>
+          {firstLetter}
+        </span>
       )}
     </div>
   );

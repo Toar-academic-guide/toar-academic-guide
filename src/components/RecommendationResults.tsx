@@ -450,11 +450,13 @@ function ProgramDetailView({
                         {detail.programDescription && (
                           <ExpandableDescription text={detail.programDescription} />
                         )}
-                        {/* Dual-action CTA — program info + admission calculator */}
+                        {/* Dual-action CTA — program info + admission calculator
+                            Falls back to the master institution record URLs when
+                            the program-level detail fields are absent. */}
                         <div className="flex flex-col gap-2 sm:flex-row">
-                          {detail.programUrl && (
+                          {(detail.programUrl ?? instRecord?.programUrl) && (
                             <a
-                              href={detail.programUrl}
+                              href={detail.programUrl ?? instRecord?.programUrl}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 active:scale-95"
@@ -463,7 +465,11 @@ function ProgramDetailView({
                             </a>
                           )}
                           <a
-                            href={detail.calculatorUrl ?? detail.officialCalculatorUrl}
+                            href={
+                              detail.calculatorUrl
+                                ?? detail.officialCalculatorUrl
+                                ?? instRecord?.calculatorUrl
+                            }
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-blue-700 active:scale-95"
@@ -563,11 +569,13 @@ function ProgramDetailView({
                         {detail.programDescription && (
                           <ExpandableDescription text={detail.programDescription} />
                         )}
-                        {/* Dual-action CTA — program info + admission portal */}
+                        {/* Dual-action CTA — program info + admission portal
+                            Falls back to the master institution record URLs when
+                            the program-level detail fields are absent. */}
                         <div className="flex flex-col gap-2 sm:flex-row">
-                          {detail.programUrl && (
+                          {(detail.programUrl ?? instRecord?.programUrl) && (
                             <a
-                              href={detail.programUrl}
+                              href={detail.programUrl ?? instRecord?.programUrl}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 active:scale-95"
@@ -576,7 +584,11 @@ function ProgramDetailView({
                             </a>
                           )}
                           <a
-                            href={detail.calculatorUrl ?? detail.officialCalculatorUrl}
+                            href={
+                              detail.calculatorUrl
+                                ?? detail.officialCalculatorUrl
+                                ?? instRecord?.calculatorUrl
+                            }
                             target="_blank"
                             rel="noopener noreferrer"
                             className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-blue-700 active:scale-95"

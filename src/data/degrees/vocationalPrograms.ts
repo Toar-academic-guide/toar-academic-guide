@@ -31,6 +31,19 @@ const R: Record<string, Program['riasecScore']> = {
   cyber:            { R: 3, I: 5, A: 1, S: 0, E: 2, C: 3 },
   dataAnalysis:     { R: 1, I: 5, A: 0, S: 0, E: 2, C: 4 },
   cloudDevOps:      { R: 2, I: 4, A: 0, S: 1, E: 2, C: 4 },
+  // ── Music ──────────────────────────────────────────────────────────────────
+  classicalMusic:   { R: 2, I: 2, A: 5, S: 3, E: 2, C: 3 },
+  jazzMusic:        { R: 2, I: 3, A: 5, S: 3, E: 2, C: 2 },
+  musicEducation:   { R: 1, I: 2, A: 5, S: 4, E: 2, C: 2 },
+  // ── Theater & Performing Arts ─────────────────────────────────────────────
+  acting:           { R: 1, I: 2, A: 5, S: 4, E: 3, C: 1 },
+  directing:        { R: 1, I: 3, A: 5, S: 3, E: 4, C: 2 },
+  artEducation:     { R: 2, I: 2, A: 5, S: 4, E: 2, C: 1 },
+  // ── Sports & Physical Education ───────────────────────────────────────────
+  sportsCoaching:   { R: 5, I: 3, A: 2, S: 4, E: 3, C: 2 },
+  physicalEd:       { R: 5, I: 2, A: 2, S: 5, E: 2, C: 2 },
+  // ── Tourism & Hospitality ─────────────────────────────────────────────────
+  tourismMgmt:      { R: 2, I: 2, A: 3, S: 4, E: 4, C: 3 },
 };
 
 export const vocationalPrograms: Program[] = [
@@ -711,5 +724,224 @@ export const vocationalPrograms: Program[] = [
       'מבחן כניסה',
       'ידע בסיסי בלינוקס ורשתות',
     ],
+  },
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // MUSIC
+  // ════════════════════════════════════════════════════════════════════════════
+
+  // ── האקדמיה למוזיקה ולמחול ירושלים ─────────────────────────────────────────
+  // Israel's leading music and dance conservatory; B.Mus degree.
+  {
+    id: 'jerusalem_academy_classical',
+    name: 'מוזיקה קלאסית – ביצוע',
+    institution: 'האקדמיה למוזיקה ולמחול ירושלים',
+    institutionId: 'jerusalem_academy',
+    type: 'academic',
+    category: 'מוזיקה ותיאטרון',
+    riasecScore: R.classicalMusic,
+    admissionType: 'requirements',
+    admissionRequirements: [
+      'אודישן מקצועי על כלי הנגינה / קול',
+      'מבחן תיאוריה מוזיקלית',
+      'ראיון קבלה',
+    ],
+  },
+  {
+    id: 'jerusalem_academy_jazz',
+    name: 'ג׳אז ומוזיקה עכשווית',
+    institution: 'האקדמיה למוזיקה ולמחול ירושלים',
+    institutionId: 'jerusalem_academy',
+    type: 'academic',
+    category: 'מוזיקה ותיאטרון',
+    riasecScore: R.jazzMusic,
+    admissionType: 'requirements',
+    admissionRequirements: [
+      'אודישן ג׳אז ואלתור',
+      'מבחן תיאוריה מוזיקלית',
+      'ראיון קבלה',
+    ],
+  },
+
+  // ── בית הספר למוזיקה ע"ש בוכמן-מהטה – אוניברסיטת תל אביב ─────────────────
+  // TAU's conservatory; B.Mus degree with academic university affiliation.
+  {
+    id: 'rubin_classical',
+    name: 'מוזיקה קלאסית – ביצוע',
+    institution: 'בית הספר למוזיקה ע"ש בוכמן-מהטה – אוניברסיטת תל אביב',
+    institutionId: 'rubin',
+    type: 'academic',
+    category: 'מוזיקה ותיאטרון',
+    riasecScore: R.classicalMusic,
+    admissionType: 'requirements',
+    admissionRequirements: [
+      'אודישן מקצועי',
+      'מבחן תיאוריה ואוזן מוזיקלית',
+      'ראיון קבלה',
+    ],
+  },
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // THEATER & PERFORMING ARTS
+  // ════════════════════════════════════════════════════════════════════════════
+
+  // ── בית הספר למשחק ניסן נתיב ────────────────────────────────────────────────
+  // Israel's most prestigious acting school; 3-year professional diploma.
+  {
+    id: 'nativ_acting',
+    name: 'משחק',
+    institution: 'בית הספר למשחק ניסן נתיב',
+    institutionId: 'nativ',
+    type: 'certificate',
+    category: 'מוזיקה ותיאטרון',
+    riasecScore: R.acting,
+    admissionType: 'requirements',
+    admissionRequirements: [
+      'אודישן בפני ועדת קבלה אמנותית',
+      'מונולוג מוכן + אלתור',
+      'ראיון אישי',
+    ],
+  },
+
+  // ── בית צבי – בית הספר הגבוה לאמנויות הבמה ─────────────────────────────────
+  // CHE-accredited performing arts school; B.F.A. in acting and directing.
+  {
+    id: 'beit_zvi_acting',
+    name: 'משחק',
+    institution: 'בית צבי – בית הספר הגבוה לאמנויות הבמה',
+    institutionId: 'beit_zvi',
+    type: 'academic',
+    category: 'מוזיקה ותיאטרון',
+    riasecScore: R.acting,
+    admissionType: 'requirements',
+    admissionRequirements: [
+      'אודישן',
+      'מונולוג קלאסי + מודרני',
+      'ראיון קבלה',
+    ],
+  },
+  {
+    id: 'beit_zvi_directing',
+    name: 'במאות',
+    institution: 'בית צבי – בית הספר הגבוה לאמנויות הבמה',
+    institutionId: 'beit_zvi',
+    type: 'academic',
+    category: 'מוזיקה ותיאטרון',
+    riasecScore: R.directing,
+    admissionType: 'requirements',
+    admissionRequirements: [
+      'פרויקט קונספט בימתי',
+      'ראיון עם ועדה אמנותית',
+      'ניסיון קודם בתיאטרון (יתרון)',
+    ],
+  },
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // EDUCATION & ARTS AT SEMINAR
+  // ════════════════════════════════════════════════════════════════════════════
+
+  // ── סמינר הקיבוצים – המכללה לחינוך, לטכנולוגיה ולאמנויות ──────────────────
+  // CHE-accredited education college; unique blend of arts, teaching and culture.
+  {
+    id: 'seminar_art_education',
+    name: 'חינוך לאמנות',
+    institution: 'סמינר הקיבוצים – המכללה לחינוך, לטכנולוגיה ולאמנויות',
+    institutionId: 'seminar',
+    type: 'academic',
+    category: 'חינוך',
+    riasecScore: R.artEducation,
+    admissionType: 'requirements',
+    admissionRequirements: [
+      'תיק עבודות אמנותי',
+      'ראיון קבלה',
+      'בגרות מלאה',
+    ],
+  },
+  {
+    id: 'seminar_music_education',
+    name: 'חינוך מוזיקלי',
+    institution: 'סמינר הקיבוצים – המכללה לחינוך, לטכנולוגיה ולאמנויות',
+    institutionId: 'seminar',
+    type: 'academic',
+    category: 'חינוך',
+    riasecScore: R.musicEducation,
+    admissionType: 'requirements',
+    admissionRequirements: [
+      'אודישן מוזיקלי',
+      'ראיון קבלה',
+      'בגרות מלאה',
+    ],
+  },
+  {
+    id: 'seminar_dance',
+    name: 'ריקוד עכשווי',
+    institution: 'סמינר הקיבוצים – המכללה לחינוך, לטכנולוגיה ולאמנויות',
+    institutionId: 'seminar',
+    type: 'academic',
+    category: 'מוזיקה ותיאטרון',
+    riasecScore: R.acting,
+    admissionType: 'requirements',
+    admissionRequirements: [
+      'אודישן מחול',
+      'מבחן גמישות ומוטוריקה',
+      'ראיון קבלה',
+    ],
+  },
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // SPORTS & PHYSICAL EDUCATION
+  // ════════════════════════════════════════════════════════════════════════════
+
+  // ── מכללת לוינסקי-וינגייט ───────────────────────────────────────────────────
+  // Israel's national sports & education college; B.Ed and B.Sc programs.
+  {
+    id: 'wingate_coaching',
+    name: 'אימון ספורטיבי',
+    institution: 'מכללת לוינסקי-וינגייט',
+    institutionId: 'wingate',
+    type: 'academic',
+    category: 'ספורט',
+    riasecScore: R.sportsCoaching,
+    admissionType: 'requirements',
+    admissionRequirements: [
+      'מבחן כושר גופני',
+      'תעודת בגרות',
+      'ראיון קבלה',
+    ],
+  },
+  {
+    id: 'wingate_physical_ed',
+    name: 'חינוך גופני',
+    institution: 'מכללת לוינסקי-וינגייט',
+    institutionId: 'wingate',
+    type: 'academic',
+    category: 'ספורט',
+    riasecScore: R.physicalEd,
+    admissionType: 'requirements',
+    admissionRequirements: [
+      'מבחן כושר גופני',
+      'תעודת בגרות',
+      'ראיון קבלה',
+    ],
+  },
+
+  // ════════════════════════════════════════════════════════════════════════════
+  // TOURISM & HOSPITALITY
+  // ════════════════════════════════════════════════════════════════════════════
+
+  // ── מכללת ניהול ──────────────────────────────────────────────────────────────
+  // Colman offers one of Israel's few accredited tourism management degrees.
+  {
+    id: 'colman_tourism',
+    name: 'תיירות ומלונאות',
+    institution: 'מכללת ניהול – לימודים אקדמיים',
+    institutionId: 'colman',
+    type: 'academic',
+    category: 'תיירות ואירוח',
+    riasecScore: R.tourismMgmt,
+    admissionType: 'sekhem',
+    admissionRequirements: [],
+    thresholds: { tau: null, huji: null, technion: null, bgu: null },
+    isTauEngineering: false,
   },
 ];

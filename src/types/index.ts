@@ -1,5 +1,14 @@
 export type UniversityId = 'tau' | 'huji' | 'technion' | 'bgu';
 
+// ── Avoidance tags ────────────────────────────────────────────────────────────
+// Captured in the quiz ("what do you want to avoid?") and used to apply a
+// −40% score penalty per overlap in the recommendation engine.
+export type AvoidanceTag =
+  | 'heavy-math'    // advanced maths, formulas, statistics
+  | 'heavy-reading' // lots of reading, long papers, seminars
+  | 'bureaucracy'   // forms, regulations, admin
+  | 'solo-work';    // isolated screen / solo study
+
 // 'weighted_scaled': Sekhem = w_psy×Psy + w_bag×(Bagrut/120×800), range 200–800
 // 'technion_linear': official formula Sekhem = 0.5×Bagrut + 0.075×Psy - 18, range ~60–100
 export type FormulaType = 'weighted_scaled' | 'technion_linear';

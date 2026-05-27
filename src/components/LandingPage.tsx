@@ -19,13 +19,13 @@ export default function LandingPage({ onStart }: Props) {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-white px-4">
       {/* ── Logo ───────────────────────────────────────────────── */}
-      <motion.div {...FADE_UP(0)} className="mb-10">
+      <motion.div {...FADE_UP(0)} className="mb-10 overflow-hidden">
         <Image
           src="/logo.jpg.PNG"
           alt="לוגו נאה תואר"
           width={960}
           height={320}
-          className="h-72 w-auto object-contain drop-shadow-sm md:h-96"
+          className="h-72 w-auto scale-[1.1] object-contain drop-shadow-sm md:h-96"
           priority
         />
       </motion.div>
@@ -33,9 +33,9 @@ export default function LandingPage({ onStart }: Props) {
       {/* ── Sub-headline ───────────────────────────────────────── */}
       <motion.p
         {...FADE_UP(0.28)}
-        className="mb-12 whitespace-nowrap text-center text-2xl font-bold tracking-wide text-slate-900 md:text-3xl"
+        className="mb-12 text-center text-2xl font-bold tracking-wide text-slate-900 md:text-3xl"
       >
-        הדרך שלך לדיוק העצמי שלך בעולם האקדמי מתחילה כאן
+        הדרך לדיוק העצמי שלך בעולם האקדמי והתעסוקתי מתחילה כאן!
       </motion.p>
 
       {/* ── CTA ────────────────────────────────────────────────── */}

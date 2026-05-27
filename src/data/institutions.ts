@@ -19,7 +19,28 @@ export type InstitutionId =
   // ── Culinary schools ──────────────────────────────────────────────────────
   | 'danon' | 'bishulim'
   // ── Tech bootcamps ────────────────────────────────────────────────────────
-  | 'hackeru' | 'elevation' | 'itc' | 'johnbryce';
+  | 'hackeru' | 'elevation' | 'itc' | 'johnbryce'
+  // ── Music academies ───────────────────────────────────────────────────────
+  | 'jerusalem_academy' | 'rubin'
+  // ── Theater & performing arts ─────────────────────────────────────────────
+  | 'nativ' | 'beit_zvi'
+  // ── Education & sports colleges ───────────────────────────────────────────
+  | 'wingate' | 'seminar'
+  // ── Open / distance university & upgraded colleges ───────────────────────
+  | 'open_university' | 'kiryat_shmona'
+  // ── Art & design (additional) ─────────────────────────────────────────────
+  | 'wizo' | 'neri_bloomfield' | 'beit_ziv'
+  // ── Engineering colleges ──────────────────────────────────────────────────
+  | 'ort_braude' | 'azrieli' | 'sce'
+  // ── Multi-disciplinary academic colleges ──────────────────────────────────
+  | 'sapir' | 'galil_maaravi' | 'zefat' | 'emek_yezreel' | 'hadassah' | 'ashkelon'
+  | 'lev' | 'achva' | 'shalem' | 'peres' | 'lander'
+  | 'netanya' | 'ramat_gan' | 'shaare_mishpat' | 'jerusalem_college' | 'schechter'
+  // ── Teacher-training colleges ─────────────────────────────────────────────
+  | 'oranim' | 'beit_berl' | 'gordon_college' | 'david_yellin' | 'kaye'
+  | 'shaanan' | 'al_qasemi' | 'arab_college_haifa' | 'ohalo' | 'herzog'
+  | 'talpiot' | 'hamdat_darom' | 'orot' | 'givat_washington' | 'emuna'
+  | 'sakhnin' | 'lifshitz' | 'morashah';
 
 // ── Record shape ──────────────────────────────────────────────────────────────
 
@@ -222,6 +243,54 @@ export const INSTITUTIONS: InstitutionRecord[] = [
   },
 
   // ══════════════════════════════════════════════════════════════════════════
+  // Music academies
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id:     'jerusalem_academy',
+    name:   'האקדמיה למוזיקה ולמחול ירושלים',
+    domain: 'jamd.ac.il',
+    region: 'center',
+  },
+  {
+    id:     'rubin',
+    name:   'בית הספר למוזיקה ע"ש בוכמן-מהטה – אוניברסיטת תל אביב',
+    domain: 'tau.ac.il',
+    region: 'center',
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // Theater & performing arts
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id:     'nativ',
+    name:   'בית הספר למשחק ניסן נתיב',
+    domain: 'nisan-nativ.co.il',
+    region: 'center',
+  },
+  {
+    id:     'beit_zvi',
+    name:   'בית צבי – בית הספר הגבוה לאמנויות הבמה',
+    domain: 'beit-zvi.ac.il',
+    region: 'center',
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // Education & sports colleges
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id:     'wingate',
+    name:   'מכללת לוינסקי-וינגייט',
+    domain: 'wincol.ac.il',
+    region: 'center',
+  },
+  {
+    id:     'seminar',
+    name:   'סמינר הקיבוצים – המכללה לחינוך, לטכנולוגיה ולאמנויות',
+    domain: 'smkb.ac.il',
+    region: 'center',
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
   // Integrative medicine colleges
   // ══════════════════════════════════════════════════════════════════════════
   {
@@ -278,6 +347,278 @@ export const INSTITUTIONS: InstitutionRecord[] = [
     id:     'johnbryce',
     name:   'ג׳ון ברייס',
     domain: 'johnbryce.co.il',
+    region: 'center',
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // Open / distance university & upgraded colleges
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id:     'open_university',
+    name:   'האוניברסיטה הפתוחה',
+    domain: 'openu.ac.il',
+    region: 'center',
+  },
+  {
+    id:     'kiryat_shmona',
+    name:   'אוניברסיטת קרית שמונה',
+    domain: 'telhai.ac.il',
+    region: 'north',
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // Art & design (additional)
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id:     'wizo',
+    name:   'ויצו-חיפה – אקדמיה לעיצוב ולחינוך',
+    domain: 'wizo.ac.il',
+    region: 'north',
+  },
+  {
+    id:     'neri_bloomfield',
+    name:   'מכללת נרי בלומפלד לעיצוב ולחינוך',
+    domain: 'nbloomfield.ac.il',
+    region: 'north',
+  },
+  {
+    id:     'beit_ziv',
+    name:   'בית זיו לאמנויות הבמה',
+    domain: 'beit-ziv.co.il',
+    region: 'center',
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // Engineering colleges
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id:     'ort_braude',
+    name:   'המכללה האקדמית להנדסה אורט בראודה',
+    domain: 'braude.ac.il',
+    region: 'north',
+  },
+  {
+    id:     'azrieli',
+    name:   'המכללה האקדמית להנדסה עזריאלי ירושלים',
+    domain: 'jce.ac.il',
+    region: 'center',
+  },
+  {
+    id:     'sce',
+    name:   'המכללה האקדמית להנדסה סמי שמעון – SCE',
+    domain: 'sce.ac.il',
+    region: 'south',
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // Multi-disciplinary academic colleges
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id:     'sapir',
+    name:   'המכללה האקדמית ספיר',
+    domain: 'sapir.ac.il',
+    region: 'south',
+  },
+  {
+    id:     'galil_maaravi',
+    name:   'מכללת הגליל המערבי',
+    domain: 'wgalil.ac.il',
+    region: 'north',
+  },
+  {
+    id:     'zefat',
+    name:   'מכללת צפת',
+    domain: 'zefat.ac.il',
+    region: 'north',
+  },
+  {
+    id:     'emek_yezreel',
+    name:   'המכללה האקדמית עמק יזרעאל',
+    domain: 'yvc.ac.il',
+    region: 'north',
+  },
+  {
+    id:     'hadassah',
+    name:   'המכללה האקדמית הדסה ירושלים',
+    domain: 'hadassah.ac.il',
+    region: 'center',
+  },
+  {
+    id:     'ashkelon',
+    name:   'המכללה האקדמית אשקלון',
+    domain: 'ac.il',
+    region: 'south',
+  },
+  {
+    id:     'lev',
+    name:   'מרכז אקדמי לב – JCT',
+    domain: 'lev.ac.il',
+    region: 'center',
+  },
+  {
+    id:     'achva',
+    name:   'המכללה האקדמית אחוה',
+    domain: 'achva.ac.il',
+    region: 'south',
+  },
+  {
+    id:     'shalem',
+    name:   'מכללת שלם',
+    domain: 'shalem.org.il',
+    region: 'center',
+  },
+  {
+    id:     'peres',
+    name:   'מרכז אקדמי פרס',
+    domain: 'pac.ac.il',
+    region: 'center',
+  },
+  {
+    id:     'lander',
+    name:   'מכון לנדר',
+    domain: 'lander.ac.il',
+    region: 'center',
+  },
+  {
+    id:     'netanya',
+    name:   'המכללה האקדמית נתניה',
+    domain: 'netanya.ac.il',
+    region: 'center',
+  },
+  {
+    id:     'ramat_gan',
+    name:   'המרכז האקדמי למשפט ולעסקים – רמת גן',
+    domain: 'rg.ac.il',
+    region: 'center',
+  },
+  {
+    id:     'shaare_mishpat',
+    name:   'מכללה אקדמית שערי משפט',
+    domain: 'sha.ac.il',
+    region: 'center',
+  },
+  {
+    id:     'jerusalem_college',
+    name:   'מכללת ירושלים',
+    domain: 'jer-college.ac.il',
+    region: 'center',
+  },
+  {
+    id:     'schechter',
+    name:   'מכון שכטר למדעי היהדות',
+    domain: 'schechter.ac.il',
+    region: 'center',
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // Teacher-training colleges
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id:     'oranim',
+    name:   'מכללת אורנים – המכללה האקדמית לחינוך',
+    domain: 'oranim.ac.il',
+    region: 'north',
+  },
+  {
+    id:     'beit_berl',
+    name:   'מכללת בית ברל',
+    domain: 'beitberl.ac.il',
+    region: 'center',
+  },
+  {
+    id:     'gordon_college',
+    name:   'מכללת גורדון לחינוך',
+    domain: 'gordon.ac.il',
+    region: 'north',
+  },
+  {
+    id:     'david_yellin',
+    name:   'מכללת דוד ילין לחינוך',
+    domain: 'dyellin.ac.il',
+    region: 'center',
+  },
+  {
+    id:     'kaye',
+    name:   'מכללת קיי לחינוך',
+    domain: 'kaye.ac.il',
+    region: 'south',
+  },
+  {
+    id:     'shaanan',
+    name:   'מכללת שאנן – המכללה הדתית לחינוך',
+    domain: 'shaanan.ac.il',
+    region: 'north',
+  },
+  {
+    id:     'al_qasemi',
+    name:   'מכללת אל-קאסמי',
+    domain: 'alqasemi.ac.il',
+    region: 'center',
+  },
+  {
+    id:     'arab_college_haifa',
+    name:   'המכללה הערבית לחינוך בישראל – חיפה',
+    domain: 'arabcol.ac.il',
+    region: 'north',
+  },
+  {
+    id:     'ohalo',
+    name:   'מכללת אוהלו',
+    domain: 'ohalo.ac.il',
+    region: 'north',
+  },
+  {
+    id:     'herzog',
+    name:   'מכללת הרצוג',
+    domain: 'herzog.ac.il',
+    region: 'center',
+  },
+  {
+    id:     'talpiot',
+    name:   'מכללת תלפיות',
+    domain: 'talpiot.ac.il',
+    region: 'center',
+  },
+  {
+    id:     'hamdat_darom',
+    name:   'מכללת חמדת הדרום',
+    domain: 'hd.ac.il',
+    region: 'south',
+  },
+  {
+    id:     'orot',
+    name:   'מכללת אורות ישראל',
+    domain: 'orot.ac.il',
+    region: 'center',
+  },
+  {
+    id:     'givat_washington',
+    name:   'מכללת גבעת ושינגטון',
+    domain: 'gwa.ac.il',
+    region: 'center',
+  },
+  {
+    id:     'emuna',
+    name:   'מכללת אמונה',
+    domain: 'emuna.ac.il',
+    region: 'center',
+  },
+  {
+    id:     'sakhnin',
+    name:   'המכללה האקדמית להכשרת מורים בסכנין',
+    domain: 'sakhnin.ac.il',
+    region: 'north',
+  },
+  {
+    id:     'lifshitz',
+    name:   'מכללת ליפשיץ לחינוך',
+    domain: 'lifshitz.ac.il',
+    region: 'center',
+  },
+  {
+    id:     'morashah',
+    name:   'מכללת מורשת יעקב',
+    domain: 'morashah.ac.il',
     region: 'center',
   },
 ];

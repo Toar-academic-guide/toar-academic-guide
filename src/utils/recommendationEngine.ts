@@ -1,4 +1,4 @@
-import { RiasecScores, EnvironmentPreference, RecommendedField, RiasecDimension } from '@/types';
+import { RiasecScores, EnvironmentPreference, RecommendedField, RiasecDimension, AvoidanceTag } from '@/types';
 import { allPrograms } from '@/data/degrees';
 import type { Program } from '@/data/degrees/types';
 import { DIMENSION_LABELS } from './riasecEngine';
@@ -142,6 +142,26 @@ const CATEGORY_META: Record<string, CategoryMeta> = {
 
 const DIMS: RiasecDimension[] = ['R', 'I', 'A', 'S', 'E', 'C'];
 
+// ── Avoidance penalty map ─────────────────────────────────────────────────────
+// Maps each program category to the avoidance tags it carries.
+// If the user selected a tag that overlaps with a category's tags, the category
+// score is multiplied by 0.6 per overlap (−40% per match, cumulative).
+const CATEGORY_AVOIDANCE: Record<string, AvoidanceTag[]> = {
+  'הנדסה וטכנולוגיה': ['heavy-math', 'solo-work'],
+  'מדעי המחשב':       ['heavy-math', 'solo-work'],
+  'הנדסה':            ['heavy-math'],
+  'מדעי החברה':       ['heavy-reading'],
+  'משפטים':           ['heavy-reading', 'bureaucracy'],
+  'כלכלה ועסקים':     ['heavy-math'],
+  'מדעי החיים':       ['heavy-reading', 'solo-work'],
+  'מדעי הבריאות':     ['bureaucracy'],
+  'רפואה':            ['heavy-reading', 'bureaucracy'],
+  'אמנות ועיצוב':     [],
+  'קולינריה וגסטרונומיה': [],
+  'רפואה אינטגרטיבית': ['bureaucracy'],
+  'טכנולוגיה ופיתוח': ['heavy-math', 'solo-work'],
+};
+
 function dotProduct(user: RiasecScores, program: Program['riasecScore']): number {
   return DIMS.reduce((sum, d) => sum + user[d] * program[d], 0);
 }
@@ -183,9 +203,13 @@ function buildMatchReason(
   return `הפרופיל ה${names.join('-')} שלך הוא התאמה מצוינת לתחום הזה`;
 }
 
+/** Neutral environment preference — used when no env data is collected */
+const NEUTRAL_ENV: EnvironmentPreference = { soloScore: 1, deskScore: 1 };
+
 export function getRecommendations(
   scores: RiasecScores,
-  env: EnvironmentPreference
+  env: EnvironmentPreference = NEUTRAL_ENV,
+  avoidances: AvoidanceTag[] = []
 ): RecommendedField[] {
   type Scored = { program: Program; score: number };
 
@@ -216,6 +240,17 @@ export function getRecommendations(
     const meta = CATEGORY_META[cat];
     if (meta.soloFriendly && env.soloScore >= 2) data.catScore += 15;
     if (!meta.soloFriendly && env.soloScore <= 1) data.catScore += 15;
+  }
+
+  // 3b. Apply avoidance penalty (−40% per overlapping tag, multiplicative)
+  if (avoidances.length > 0) {
+    for (const [cat, data] of byCategory) {
+      const catAvoidances = CATEGORY_AVOIDANCE[cat] ?? [];
+      const overlaps = avoidances.filter((t) => catAvoidances.includes(t)).length;
+      if (overlaps > 0) {
+        data.catScore *= Math.pow(0.6, overlaps);
+      }
+    }
   }
 
   // 4. Sort categories, keep top 5

@@ -1,16 +1,39 @@
-import { RiasecDimension, RiasecScores, EnvironmentPreference, GeographicRegion } from '@/types';
+import { RiasecDimension, RiasecScores, GeographicRegion, AvoidanceTag } from '@/types';
 import { QUIZ_QUESTIONS } from '@/data/questions';
+import { MAX_RAW_SCORE } from '@/data/riasecItems';
 
 export { QUIZ_QUESTIONS };
 
-export function calculateRiasecScores(answers: Record<string, string[]>): {
-  scores: RiasecScores;
-  environment: EnvironmentPreference;
+// ── Normalisation ─────────────────────────────────────────────────────────────
+
+/**
+ * Convert raw RIASEC exam scores (0–14 per dimension) to the 0–5 scale used
+ * by the recommendation engine's dot-product.
+ */
+export function normalizeRiasecScores(
+  rawScores: Record<RiasecDimension, number>
+): RiasecScores {
+  const dims: RiasecDimension[] = ['R', 'I', 'A', 'S', 'E', 'C'];
+  const out = {} as RiasecScores;
+  for (const d of dims) {
+    out[d] = Math.round((rawScores[d] / MAX_RAW_SCORE) * 5);
+  }
+  return out;
+}
+
+// ── Filter-question extraction ────────────────────────────────────────────────
+
+/**
+ * Extract geographic preference and avoidance selections from the two
+ * post-exam filter questions ('geography' and 'avoidances').
+ * This no longer accumulates RIASEC scores — that is done by RiasecExam.
+ */
+export function extractFilterAnswers(answers: Record<string, string[]>): {
   geographicPreference: GeographicRegion;
+  avoidances: AvoidanceTag[];
 } {
-  const scores: RiasecScores = { R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 };
-  const environment: EnvironmentPreference = { soloScore: 1, deskScore: 1 };
   let geographicPreference: GeographicRegion = 'any';
+  const avoidances: AvoidanceTag[] = [];
 
   for (const question of QUIZ_QUESTIONS) {
     const selectedLabels = answers[question.id] ?? [];
@@ -18,25 +41,23 @@ export function calculateRiasecScores(answers: Record<string, string[]>): {
       const answer = question.answers.find((a) => a.label === label);
       if (!answer) continue;
 
-      // Geographic question — extract tag, skip RIASEC accumulation
-      if (question.id === 'geography') {
-        if (answer.geographicTag) geographicPreference = answer.geographicTag;
-        continue;
+      if (question.id === 'geography' && answer.geographicTag) {
+        geographicPreference = answer.geographicTag;
       }
-
-      for (const [dim, delta] of Object.entries(answer.riasecDeltas ?? {})) {
-        scores[dim as RiasecDimension] += delta as number;
-      }
-      if (answer.environmentDelta) {
-        for (const [key, val] of Object.entries(answer.environmentDelta)) {
-          environment[key as keyof EnvironmentPreference] = val as number;
-        }
+      if (question.id === 'avoidances' && answer.avoidanceTag) {
+        avoidances.push(answer.avoidanceTag);
       }
     }
   }
 
-  return { scores, environment, geographicPreference };
+  return { geographicPreference, avoidances };
 }
+
+// ── Legacy alias ──────────────────────────────────────────────────────────────
+// Kept to avoid breaking any future callers; prefer extractFilterAnswers().
+export { extractFilterAnswers as calculateRiasecScores };
+
+// ── Dimension display labels ──────────────────────────────────────────────────
 
 export function getTopDimensions(scores: RiasecScores): [RiasecDimension, RiasecDimension] {
   const sorted = (Object.entries(scores) as [RiasecDimension, number][]).sort(
