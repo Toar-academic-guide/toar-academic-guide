@@ -26,6 +26,7 @@ export default function LandingPage({ onStart }: Props) {
           width={960}
           height={320}
           className="h-72 w-auto scale-[1.1] object-contain drop-shadow-sm md:h-96"
+          style={{ filter: 'hue-rotate(260deg) saturate(200%)' }}
           priority
         />
       </motion.div>
