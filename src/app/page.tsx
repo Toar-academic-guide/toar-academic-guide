@@ -15,9 +15,9 @@ import { UNIVERSITIES } from '@/data/degreesData';
 import { allPrograms } from '@/data/degrees';
 import { getRecommendations } from '@/utils/recommendationEngine';
 import { evaluateUniversities } from '@/utils/sekhemCalculators';
-import { extractFilterAnswers, normalizeRiasecScores } from '@/utils/riasecEngine';
-import Image from 'next/image';
-import { Bookmark, BookmarkCheck } from 'lucide-react';
+import { extractFilterAnswers } from '@/utils/riasecEngine';
+import { ArrowRight } from 'lucide-react';
+import NavBar from '@/components/NavBar';
 import RiasecExam from '@/components/RiasecExam';
 import OnboardingFunnel from '@/components/OnboardingFunnel';
 import LandingPage from '@/components/LandingPage';
@@ -57,9 +57,9 @@ export default function Home() {
   const [degreeName, setDegreeName] = useState('');
 
   // ── Step: RIASEC exam complete ──────────────────────────────────────────────
-  function handleRiasecComplete(rawScores: Record<RiasecDimension, number>) {
-    const normalized = normalizeRiasecScores(rawScores);
-    setPendingScores(normalized);
+  function handleRiasecComplete(scores: Record<RiasecDimension, number>) {
+    // RiasecExam already returns normalised 0–5 scores — use them directly.
+    setPendingScores(scores);
     setStep('quick-filters');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -105,6 +105,43 @@ export default function Home() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  // Map of each step → its previous step (for the "back" button)
+  const previousStep: Record<AppStep, AppStep | null> = {
+    landing: null,
+    intro: 'landing',
+    'academic-profile': 'intro',
+    'riasec-exam': 'academic-profile',
+    'quick-filters': 'riasec-exam',
+    recommendations: 'quick-filters',
+    calculator: 'recommendations',
+    'bucket-list': 'recommendations',
+  };
+
+  function handleGoBack() {
+    const prev = previousStep[step];
+    if (!prev) return;
+    if (prev === 'recommendations' || prev === 'quick-filters') setResults(null);
+    setStep(prev);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  const showBackButton = step !== 'landing';
+
+  // Floating back button — visible on every page except the landing page
+  const BackButton = () =>
+    showBackButton ? (
+      <button
+        type="button"
+        onClick={handleGoBack}
+        aria-label="חזרה לעמוד הקודם"
+        title="חזרה לעמוד הקודם"
+        className="fixed bottom-6 left-4 z-50 flex items-center gap-1.5 rounded-full border border-white/20 bg-[#1e1b4b]/80 px-3.5 py-2 text-sm font-medium text-white/80 shadow-lg backdrop-blur transition hover:bg-[#1e1b4b] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+      >
+        <ArrowRight size={16} />
+        <span>חזרה</span>
+      </button>
+    ) : null;
+
   function handleCalculate(scores: UserScores, degreeId: string, engineering: EngineeringOptions) {
     const degree = allPrograms.find((p) => p.id === degreeId)!;
     const evaluated = evaluateUniversities(UNIVERSITIES, degree, scores, engineering);
@@ -121,141 +158,68 @@ export default function Home() {
   }
 
   if (step === 'intro') {
-    return <QuizIntro onStart={() => setStep('academic-profile')} />;
+    return (
+      <>
+        <BackButton />
+        <QuizIntro onStart={() => setStep('academic-profile')} />
+      </>
+    );
   }
 
   if (step === 'academic-profile') {
     return (
-      <AcademicProfileForm
-        initialScores={profile.academicScores}
-        onComplete={(scores: AcademicScores) => {
-          updateProfile({ academicScores: scores });
-          setStep('riasec-exam');
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }}
-        onSkip={() => {
-          setStep('riasec-exam');
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }}
-      />
+      <>
+        <BackButton />
+        <AcademicProfileForm
+          initialScores={profile.academicScores}
+          onComplete={(scores: AcademicScores) => {
+            updateProfile({ academicScores: scores });
+            setStep('riasec-exam');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          onSkip={() => {
+            setStep('riasec-exam');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+        />
+      </>
     );
   }
 
   if (step === 'riasec-exam') {
-    return <RiasecExam onComplete={handleRiasecComplete} />;
+    return (
+      <>
+        <BackButton />
+        <RiasecExam onComplete={handleRiasecComplete} />
+      </>
+    );
   }
 
   if (step === 'quick-filters') {
-    return <OnboardingFunnel onComplete={handleFiltersComplete} />;
+    return (
+      <>
+        <BackButton />
+        <OnboardingFunnel onComplete={handleFiltersComplete} />
+      </>
+    );
   }
 
   /* ── Steps with persistent header ───────────────────────────────────────── */
-  const hideBreadcrumb = false;
   const savedCount = profile.savedProgramIds?.length ?? 0;
-  const isBucketActive = step === 'bucket-list';
 
   return (
     <>
-      {/* ── Persistent site header ──────────────────────────────── */}
-      <header className="border-b border-gray-200 bg-white py-10">
-        <div className="mx-auto flex max-w-5xl flex-col items-center gap-4 px-4 sm:px-6">
-          <button
-            type="button"
-            onClick={handleGoHome}
-            aria-label="חזרה לדף הבית"
-            title="חזרה לדף הבית"
-            className="cursor-pointer rounded-xl outline-none transition-opacity duration-200 hover:opacity-80 focus-visible:ring-2 focus-visible:ring-indigo-400 focus-visible:ring-offset-2"
-          >
-            <Image
-              src="/logo.jpg.PNG"
-              alt="לוגו — לחץ לחזרה לדף הבית"
-              width={880}
-              height={300}
-              className="h-52 w-auto object-contain md:h-64"
-              priority
-            />
-          </button>
-        </div>
-      </header>
+      <BackButton />
+      <NavBar
+        step={step}
+        savedCount={savedCount}
+        onGoHome={handleGoHome}
+        onGoToExam={() => { setStep('riasec-exam'); setResults(null); setPendingScores(null); }}
+        onGoToRecommendations={() => { setStep('recommendations'); setResults(null); }}
+        onGoToBucket={() => setStep('bucket-list')}
+      />
 
       <main className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-4 py-12 sm:px-6">
-
-        {/* Breadcrumb + Bucket List nav */}
-        {!hideBreadcrumb && (
-          <nav
-            className="flex items-center justify-between text-sm text-gray-400"
-            aria-label="ניווט"
-          >
-            <div className="flex items-center gap-1.5">
-              <button
-                onClick={() => { setStep('riasec-exam'); setResults(null); setPendingScores(null); }}
-                className="transition hover:text-gray-800"
-              >
-                שאלון
-              </button>
-              {step === 'recommendations' && (
-                <>
-                  <span>/</span>
-                  <span className="font-medium text-gray-700">המלצות</span>
-                </>
-              )}
-              {step === 'calculator' && (
-                <>
-                  <span>/</span>
-                  <button
-                    onClick={() => { setStep('recommendations'); setResults(null); }}
-                    className="transition hover:text-gray-800"
-                  >
-                    המלצות
-                  </button>
-                  <span>/</span>
-                  <span className="font-medium text-gray-700">חישוב</span>
-                </>
-              )}
-              {step === 'bucket-list' && (
-                <>
-                  <span>/</span>
-                  <button
-                    onClick={() => { setStep('recommendations'); setResults(null); }}
-                    className="transition hover:text-gray-800"
-                  >
-                    המלצות
-                  </button>
-                  <span>/</span>
-                  <span className="font-medium text-gray-700">רשימת הייעוד</span>
-                </>
-              )}
-            </div>
-
-            <button
-              onClick={() => setStep('bucket-list')}
-              aria-label={`רשימת הייעוד — ${savedCount} פריטים`}
-              className={[
-                'flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition',
-                isBucketActive
-                  ? 'border-indigo-300 bg-indigo-50 text-indigo-700'
-                  : 'border-gray-200 bg-white text-gray-500 hover:border-gray-400 hover:text-gray-800',
-              ].join(' ')}
-            >
-              {savedCount > 0 ? (
-                <BookmarkCheck size={13} className={isBucketActive ? 'text-indigo-600' : 'text-indigo-400'} />
-              ) : (
-                <Bookmark size={13} />
-              )}
-              <span>רשימת הייעוד</span>
-              {savedCount > 0 && (
-                <span
-                  className={[
-                    'rounded-full px-1.5 py-0.5 text-[10px] font-bold',
-                    isBucketActive ? 'bg-indigo-200 text-indigo-800' : 'bg-indigo-100 text-indigo-700',
-                  ].join(' ')}
-                >
-                  {savedCount}
-                </span>
-              )}
-            </button>
-          </nav>
-        )}
 
         {/* ── Step: Recommendations ─────────────────────────────── */}
         {step === 'recommendations' && riasecProfile && (
@@ -283,7 +247,7 @@ export default function Home() {
         {/* ── Step: Calculator ──────────────────────────────────── */}
         {step === 'calculator' && (
           <>
-            <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+            <section className="rounded-2xl border border-[#e5e7eb] bg-white p-6 shadow-sm sm:p-8">
               <h2 className="mb-1 text-lg font-semibold text-gray-800">הזן את הנתונים שלך</h2>
               <p className="mb-6 text-sm text-gray-400">
                 הממוצע בגרות כולל בונוסים (למשל מתמטיקה 5 יח׳ מוסיפה עד 35 נקודות).

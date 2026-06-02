@@ -142,7 +142,7 @@ function ProgramSubCard({ program, fieldId, onSelect }: SubCardProps) {
       onClick={onSelect}
       className="group relative flex w-full cursor-pointer items-center justify-between overflow-hidden rounded-xl border border-slate-100 bg-white p-4 text-right shadow-sm transition-all duration-200 hover:border-slate-200 hover:shadow-md"
     >
-      <div className="absolute bottom-0 right-0 top-0 w-[4px] bg-purple-600" />
+      <div className="absolute bottom-0 right-0 top-0 w-[4px] bg-[#6366f1]" />
       <div className="flex items-center gap-3 pr-2">
         <div className="rounded-lg border border-slate-100 bg-slate-50 p-2 text-slate-700 transition-colors duration-200 group-hover:bg-indigo-50 group-hover:text-indigo-600">
           {Icon && <Icon className="h-5 w-5" />}
@@ -205,7 +205,7 @@ function SubTabPanel({ suggestedPrograms, onSelectProgram }: SubTabPanelProps) {
               key={tab.fieldId}
               onClick={() => setActiveFieldId(tab.fieldId)}
               className={`relative whitespace-nowrap pb-3 px-2 text-sm font-medium transition-all ${
-                isActive ? 'font-semibold text-slate-950' : 'text-slate-400 hover:text-slate-600'
+                isActive ? 'font-semibold text-[#4f46e5]' : 'text-slate-400 hover:text-slate-600'
               }`}
             >
               <span className="flex items-center gap-2">
@@ -213,7 +213,7 @@ function SubTabPanel({ suggestedPrograms, onSelectProgram }: SubTabPanelProps) {
                 {tab.label}
               </span>
               {isActive && (
-                <div className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full bg-slate-900" />
+                <div className="absolute bottom-0 left-0 right-0 h-[2px] rounded-full bg-[#6366f1]" />
               )}
             </button>
           );
@@ -472,7 +472,7 @@ function ProgramDetailView({
                             }
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-blue-700 active:scale-95"
+                            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#4f46e5] px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#4338ca] active:scale-95"
                           >
                             בדיקת סיכויי קבלה ומחשבון סכם ↗
                           </a>
@@ -483,7 +483,7 @@ function ProgramDetailView({
                     {!detail && (
                       <button
                         onClick={() => { onSelectDegree(p.id); onBack(); }}
-                        className="rounded-xl bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-blue-700 active:scale-95"
+                        className="rounded-xl bg-[#4f46e5] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#4338ca] active:scale-95"
                       >
                         חשב סיכויי קבלה ←
                       </button>
@@ -591,7 +591,7 @@ function ProgramDetailView({
                             }
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-blue-700 active:scale-95"
+                            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#4f46e5] px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#4338ca] active:scale-95"
                           >
                             בדיקת סיכויי קבלה ומחשבון סכם ↗
                           </a>
@@ -662,7 +662,7 @@ export default function RecommendationResults({
   return (
     <div className="flex flex-col gap-6">
       {/* Profile card */}
-      <section className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+      <section className="rounded-2xl border border-[#e5e7eb] bg-white p-6 shadow-sm sm:p-8">
         <p className="text-xs font-semibold uppercase tracking-widest text-gray-400">
           הפרופיל התעסוקתי שלך
         </p>
@@ -704,11 +704,11 @@ export default function RecommendationResults({
           return (
             <section
               key={rec.id}
-              className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8"
+              className="rounded-2xl border border-[#e5e7eb] bg-white p-6 shadow-sm sm:p-8"
             >
               {/* Header */}
               <div className="mb-4 flex items-start gap-3">
-                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-gray-900 text-xs font-bold text-white">
+                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#4f46e5] text-xs font-bold text-white">
                   {i + 1}
                 </span>
                 <div>

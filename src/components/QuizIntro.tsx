@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import Image from 'next/image';
+import LogoCanvas from './LogoCanvas';
 
 interface Props {
   onStart: () => void;
@@ -17,18 +17,11 @@ const FADE_UP = (delay: number) => ({
 
 export default function QuizIntro({ onStart }: Props) {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white px-4 py-12">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-[#f5f4f0] px-4 py-12">
 
       {/* ── Logo ─────────────────────────────────────────────────── */}
       <motion.div {...FADE_UP(0)} className="mb-10">
-        <Image
-          src="/logo.jpg.PNG"
-          alt="לוגו נאה תואר"
-          width={480}
-          height={160}
-          className="h-24 w-auto object-contain md:h-32"
-          priority
-        />
+        <LogoCanvas size={80} brighten={false} />
       </motion.div>
 
       {/* ── Body copy ────────────────────────────────────────────── */}
@@ -65,7 +58,8 @@ export default function QuizIntro({ onStart }: Props) {
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.97 }}
           onClick={onStart}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-8 rounded-full shadow-sm transition-all duration-300"
+          className="rounded-full px-8 py-3 text-base font-bold text-white shadow-md transition-all duration-200 hover:opacity-90"
+          style={{ background: 'linear-gradient(90deg, #4f46e5, #7c3aed)' }}
         >
           בוא ניקח כיוון
         </motion.button>
