@@ -1,25 +1,10 @@
 import { RiasecDimension, RiasecScores, GeographicRegion, AvoidanceTag } from '@/types';
 import { QUIZ_QUESTIONS } from '@/data/questions';
-import { MAX_RAW_SCORE } from '@/data/riasecItems';
 
 export { QUIZ_QUESTIONS };
 
-// ── Normalisation ─────────────────────────────────────────────────────────────
-
-/**
- * Convert raw RIASEC exam scores (0–14 per dimension) to the 0–5 scale used
- * by the recommendation engine's dot-product.
- */
-export function normalizeRiasecScores(
-  rawScores: Record<RiasecDimension, number>
-): RiasecScores {
-  const dims: RiasecDimension[] = ['R', 'I', 'A', 'S', 'E', 'C'];
-  const out = {} as RiasecScores;
-  for (const d of dims) {
-    out[d] = Math.round((rawScores[d] / MAX_RAW_SCORE) * 5);
-  }
-  return out;
-}
+// Note: RIASEC scoring + 0–5 normalisation now lives entirely in RiasecExam.tsx.
+// This module only handles the post-exam filter questions and display labels.
 
 // ── Filter-question extraction ────────────────────────────────────────────────
 

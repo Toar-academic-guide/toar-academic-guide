@@ -8,9 +8,9 @@ import {
   SCREEN_SEQUENCE,
   SCENARIOS,
   RATING_ITEMS,
+  SITUATIONALS,
   MILITARY_OPTIONS,
   ANSWER_SCORES,
-  BASE_MAX,
   MILITARY_BONUS,
   type RiasecAnswer,
   type RatingItem,
@@ -35,8 +35,9 @@ const SLIDE: import('framer-motion').Transition = {
 // ── Lookups ─────────────────────────────────────────────────────────────────
 const SCENARIO_BY_ID = new Map(SCENARIOS.map((s) => [s.id, s]));
 const RATING_BY_ID = new Map(RATING_ITEMS.map((r) => [r.id, r]));
+const SITUATIONAL_BY_ID = new Map(SITUATIONALS.map((s) => [s.id, s]));
 
-// ── כן / אולי / לא button config (Style B) ─────────────────────────────────────
+// ── כן / אולי / לא button config (Part 1) ──────────────────────────────────────
 const CHOICES: {
   value: RiasecAnswer;
   label: string;
@@ -69,11 +70,13 @@ const CHOICES: {
 
 type RatingMap = Partial<Record<string, RiasecAnswer>>;   // itemId → answer
 type ScenarioMap = Partial<Record<string, 'a' | 'b'>>;    // scenarioId → side
+type SituationalMap = Partial<Record<string, number>>;    // situationalId → option index
 
 export default function RiasecExam({ onComplete }: Props) {
   const [screenIndex, setScreenIndex] = useState(0);
   const [ratings, setRatings] = useState<RatingMap>({});
   const [scenarios, setScenarios] = useState<ScenarioMap>({});
+  const [situationals, setSituationals] = useState<SituationalMap>({});
   const [militaryLoved, setMilitaryLoved] = useState<RiasecDimension[]>([]);
   const [militaryDrained, setMilitaryDrained] = useState<RiasecDimension[]>([]);
   const [slideDir, setSlideDir] = useState<1 | -1>(1);
@@ -83,8 +86,10 @@ export default function RiasecExam({ onComplete }: Props) {
 
   // ── Per-screen completion gate ──────────────────────────────────────────────
   function isScreenComplete(s: Screen): boolean {
-    if (s.kind === 'military') return true; // 0–2 picks; skippable
+    if (s.kind === 'military') return true;     // 0–2 picks; skippable
+    if (s.kind === 'transition') return true;   // breather screen
     if (s.kind === 'scenario') return scenarios[s.scenarioId] !== undefined;
+    if (s.kind === 'situational') return situationals[s.situationalId] !== undefined;
     return s.itemIds.every((id) => ratings[id] !== undefined);
   }
   const canAdvance = isScreenComplete(screen);
@@ -93,9 +98,11 @@ export default function RiasecExam({ onComplete }: Props) {
   function setRating(itemId: string, value: RiasecAnswer) {
     setRatings((prev) => ({ ...prev, [itemId]: value }));
   }
-
   function setScenario(scenarioId: string, side: 'a' | 'b') {
     setScenarios((prev) => ({ ...prev, [scenarioId]: side }));
+  }
+  function setSituational(situationalId: string, optionIndex: number) {
+    setSituationals((prev) => ({ ...prev, [situationalId]: optionIndex }));
   }
 
   function toggleMilitary(mode: 'loved' | 'drained', dim: RiasecDimension) {
@@ -127,34 +134,56 @@ export default function RiasecExam({ onComplete }: Props) {
     }
   }
 
-  // ── Scoring: raw per dim → clamp [0, BASE_MAX] → normalise to 0–5 ────────────
+  // ── Scoring: weighted per-dimension raw + max → normalise to 0–5 ─────────────
+  // Each dimension is normalised against its OWN max-possible, so the 3 formats
+  // stay balanced and every dimension sits on the same 0–5 scale.
   function computeScores(): Record<RiasecDimension, number> {
     const raw = { R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 } as Record<RiasecDimension, number>;
+    const max = { R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 } as Record<RiasecDimension, number>;
 
-    // Style B — rating items
+    // Part 1 — classic rating items
     for (const item of RATING_ITEMS) {
       raw[item.dim] += ANSWER_SCORES[ratings[item.id] ?? 'no'];
+      max[item.dim] += ANSWER_SCORES.yes;
     }
-    // Style A — scenario wins (+2 to the chosen side's dimension)
+
+    // Part 2 — "זה או זה" (chosen side +2; each side counts toward its dim's max)
     for (const sc of SCENARIOS) {
+      max[sc.a.dim] += 2;
+      max[sc.b.dim] += 2;
       const side = scenarios[sc.id];
       if (side === 'a') raw[sc.a.dim] += 2;
       else if (side === 'b') raw[sc.b.dim] += 2;
     }
-    // Military — loved adds, drained subtracts
+
+    // Part 3 — situational (chosen option's weights; per-dim max = best option for that dim)
+    for (const sit of SITUATIONALS) {
+      for (const d of DIMS) {
+        let best = 0;
+        for (const opt of sit.options) best = Math.max(best, opt.weights[d] ?? 0);
+        max[d] += best;
+      }
+      const chosen = situationals[sit.id];
+      if (chosen !== undefined) {
+        const opt = sit.options[chosen];
+        for (const d of DIMS) raw[d] += opt.weights[d] ?? 0;
+      }
+    }
+
+    // Part 0 — military: loved adds, drained subtracts (clamped into the dim's range)
     for (const d of militaryLoved) raw[d] += MILITARY_BONUS;
     for (const d of militaryDrained) raw[d] -= MILITARY_BONUS;
 
     const normalized = {} as Record<RiasecDimension, number>;
     for (const d of DIMS) {
-      const clamped = Math.max(0, Math.min(BASE_MAX, raw[d]));
-      normalized[d] = Math.round((clamped / BASE_MAX) * 5);
+      const m = max[d] || 1;
+      const clamped = Math.max(0, Math.min(m, raw[d]));
+      normalized[d] = Math.round((clamped / m) * 5);
     }
     return normalized;
   }
 
   const xIn = slideDir * 60;
-
   const isLast = screenIndex === TOTAL_SCREENS - 1;
 
   return (
@@ -184,29 +213,39 @@ export default function RiasecExam({ onComplete }: Props) {
           transition={SLIDE}
           className="flex flex-col gap-6"
         >
-            {screen.kind === 'military' && (
-              <MilitaryScreen
-                mode={screen.mode}
-                selected={screen.mode === 'loved' ? militaryLoved : militaryDrained}
-                onToggle={(dim) => toggleMilitary(screen.mode, dim)}
-              />
-            )}
+          {screen.kind === 'military' && (
+            <MilitaryScreen
+              mode={screen.mode}
+              selected={screen.mode === 'loved' ? militaryLoved : militaryDrained}
+              onToggle={(dim) => toggleMilitary(screen.mode, dim)}
+            />
+          )}
 
-            {screen.kind === 'scenario' && (
-              <ScenarioScreen
-                scenarioId={screen.scenarioId}
-                selected={scenarios[screen.scenarioId]}
-                onSelect={(side) => setScenario(screen.scenarioId, side)}
-              />
-            )}
+          {screen.kind === 'transition' && <TransitionScreen screen={screen} />}
 
-            {screen.kind === 'rating' && (
-              <RatingScreen
-                itemIds={screen.itemIds}
-                answers={ratings}
-                onAnswer={setRating}
-              />
-            )}
+          {screen.kind === 'scenario' && (
+            <ScenarioScreen
+              scenarioId={screen.scenarioId}
+              selected={scenarios[screen.scenarioId]}
+              onSelect={(side) => setScenario(screen.scenarioId, side)}
+            />
+          )}
+
+          {screen.kind === 'situational' && (
+            <SituationalScreen
+              situationalId={screen.situationalId}
+              selected={situationals[screen.situationalId]}
+              onSelect={(idx) => setSituational(screen.situationalId, idx)}
+            />
+          )}
+
+          {screen.kind === 'rating' && (
+            <RatingScreen
+              itemIds={screen.itemIds}
+              answers={ratings}
+              onAnswer={setRating}
+            />
+          )}
         </motion.div>
 
         {/* ── Navigation ────────────────────────────────────────────── */}
@@ -236,7 +275,7 @@ export default function RiasecExam({ onComplete }: Props) {
               'disabled:cursor-not-allowed disabled:opacity-40',
             ].join(' ')}
           >
-            <span>{isLast ? 'סיום הבחינה' : 'הבא'}</span>
+            <span>{isLast ? 'סיום הבחינה' : screen.kind === 'transition' ? 'יאללה, מתחילים' : 'הבא'}</span>
             <ChevronLeft size={16} />
           </motion.button>
         </div>
@@ -249,6 +288,24 @@ export default function RiasecExam({ onComplete }: Props) {
 /* ════════════════════════════════════════════════════════════════════════════
  *  Screen renderers
  * ════════════════════════════════════════════════════════════════════════════ */
+
+// ── Part transition (breather between the 3 parts) ──────────────────────────────
+function TransitionScreen({
+  screen,
+}: {
+  screen: Extract<Screen, { kind: 'transition' }>;
+}) {
+  return (
+    <div className="flex flex-col items-center gap-4 py-10 text-center">
+      <span className="text-5xl">{screen.emoji}</span>
+      <span className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-bold uppercase tracking-widest text-indigo-500">
+        {screen.part}
+      </span>
+      <h2 className="text-3xl font-black tracking-tight text-slate-900">{screen.title}</h2>
+      <p className="max-w-md text-sm leading-relaxed text-slate-500">{screen.subtitle}</p>
+    </div>
+  );
+}
 
 // ── Military (multi-select up to 2) ─────────────────────────────────────────────
 function MilitaryScreen({
@@ -313,7 +370,7 @@ function MilitaryScreen({
   );
 }
 
-// ── Scenario "זה או זה" (single choice) ─────────────────────────────────────────
+// ── Scenario "זה או זה" (single choice of two) ──────────────────────────────────
 function ScenarioScreen({
   scenarioId,
   selected,
@@ -367,6 +424,66 @@ function ScenarioScreen({
   );
 }
 
+// ── Situational "מה היית עושה?" (single choice of six) ──────────────────────────
+function SituationalScreen({
+  situationalId,
+  selected,
+  onSelect,
+}: {
+  situationalId: string;
+  selected?: number;
+  onSelect: (optionIndex: number) => void;
+}) {
+  const sit = SITUATIONAL_BY_ID.get(situationalId);
+  if (!sit) return null;
+
+  return (
+    <>
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center gap-2">
+          <span className="text-3xl">{sit.emoji}</span>
+          <h2 className="text-xl font-bold leading-relaxed tracking-tight text-slate-900">
+            {sit.prompt}
+          </h2>
+        </div>
+        <p className="text-xs text-slate-400">בחר/י את התגובה שהכי מתארת אותך</p>
+      </div>
+
+      <div className="flex flex-col gap-2.5">
+        {sit.options.map((opt, idx) => {
+          const isSelected = selected === idx;
+          return (
+            <motion.button
+              key={idx}
+              whileTap={{ scale: 0.99 }}
+              onClick={() => onSelect(idx)}
+              aria-pressed={isSelected}
+              className={[
+                'flex items-center gap-3 rounded-2xl border-2 p-4 text-right transition-all duration-150',
+                isSelected
+                  ? 'border-indigo-500 bg-indigo-50 shadow-sm'
+                  : 'border-slate-200 bg-white hover:border-indigo-300 hover:bg-slate-50',
+              ].join(' ')}
+            >
+              <span
+                className={[
+                  'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition',
+                  isSelected ? 'border-indigo-500 bg-indigo-500 text-white' : 'border-slate-300 text-transparent',
+                ].join(' ')}
+              >
+                <Check size={12} strokeWidth={3} />
+              </span>
+              <span className={`text-sm leading-relaxed ${isSelected ? 'font-semibold text-indigo-900' : 'text-slate-700'}`}>
+                {opt.text}
+              </span>
+            </motion.button>
+          );
+        })}
+      </div>
+    </>
+  );
+}
+
 // ── Rating group (כן / אולי / לא) ───────────────────────────────────────────────
 function RatingScreen({
   itemIds,
@@ -377,7 +494,9 @@ function RatingScreen({
   answers: RatingMap;
   onAnswer: (itemId: string, value: RiasecAnswer) => void;
 }) {
-  const items = itemIds.map((id) => RATING_BY_ID.get(id)).filter((x) => x !== undefined);
+  const items = itemIds
+    .map((id) => RATING_BY_ID.get(id))
+    .filter((x): x is RatingItem => x !== undefined);
   const answeredCount = itemIds.filter((id) => answers[id] !== undefined).length;
   const allAnswered = answeredCount === itemIds.length;
 
