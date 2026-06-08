@@ -209,12 +209,13 @@ const NEUTRAL_ENV: EnvironmentPreference = { soloScore: 1, deskScore: 1 };
 export function getRecommendations(
   scores: RiasecScores,
   env: EnvironmentPreference = NEUTRAL_ENV,
-  avoidances: AvoidanceTag[] = []
+  avoidances: AvoidanceTag[] = [],
+  programs: Program[] = allPrograms
 ): RecommendedField[] {
   type Scored = { program: Program; score: number };
 
   // 1. Dot-product score every program (skip generic placeholder rows)
-  const scored: Scored[] = allPrograms
+  const scored: Scored[] = programs
     .filter((p) => p.institution !== 'אוניברסיטה')
     .map((p) => ({
       program: p,

@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Toar Academic Guide
 
-## Getting Started
-
-First, run the development server:
+## Local commands
 
 ```bash
+npm install
+npm test
+npm run build
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The test suite covers the current recommendation, bucket-list, and admission-calculation behavior before the catalogue moves behind the backend boundary.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+cp .env.example .env.local
+```
 
-## Learn More
+`DATABASE_URL` is only required when you want the DB-backed catalogue path or seed script. Without it, the app and the catalogue API routes fall back to the existing static catalogue.
 
-To learn more about Next.js, take a look at the following resources:
+## Database workflow
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm run db:generate
+npm run db:seed:dry-run
+# npm run db:seed
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+`db:seed:dry-run` validates the current static catalogue and prints row counts without touching a database.
 
-## Deploy on Vercel
+## Backend foundation
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- DB code lives under `src/db/`
+- server catalogue queries and serializers live under `src/server/catalogue/`
+- read-only catalogue routes live under `src/app/api/catalog/`
+- client access is isolated behind `src/lib/catalogueClient.ts`
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See [docs/backend-data-model.md](/Users/amitmalichi/Desktop/toar-academic-guide/docs/backend-data-model.md:1) for the schema shape and review-flow model.
+
+## Notes
+
+- The first slice keeps `localStorage` as the live user-profile path.
+- The catalogue API returns static fallback data when DB env is absent.
+- Raw ingestion payloads remain separate from canonical reviewed rows.
