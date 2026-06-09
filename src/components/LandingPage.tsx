@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import Image from 'next/image';
+import LogoCanvas from './LogoCanvas';
 
 interface Props {
   onStart: () => void;
@@ -17,38 +17,53 @@ const FADE_UP = (delay: number) => ({
 
 export default function LandingPage({ onStart }: Props) {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-white px-4">
-      {/* ── Logo ───────────────────────────────────────────────── */}
-      <motion.div {...FADE_UP(0)} className="mb-10 overflow-hidden">
-        <Image
-          src="/logo.jpg.PNG"
-          alt="לוגו נאה תואר"
-          width={960}
-          height={320}
-          className="h-72 w-auto scale-[1.1] object-contain drop-shadow-sm md:h-96"
-          style={{ filter: 'hue-rotate(260deg) saturate(200%)' }}
-          priority
-        />
+    <div
+      className="min-h-screen flex flex-col items-center justify-center px-4"
+      style={{ background: 'linear-gradient(150deg, #1e1b4b 0%, #312e81 55%, #4f46e5 100%)' }}
+    >
+      {/* ── Badge chip ─────────────────────────────────────────── */}
+      <motion.div {...FADE_UP(0)} className="mb-6">
+        <span
+          className="inline-block rounded-full px-3 py-1 text-xs font-bold tracking-widest text-indigo-300"
+          style={{ background: 'rgba(99,102,241,0.25)' }}
+        >
+          גרסה 2025 ✦
+        </span>
       </motion.div>
+
+      {/* ── Logo ───────────────────────────────────────────────── */}
+      <motion.div {...FADE_UP(0.1)} className="mb-8">
+        <LogoCanvas size={120} brighten={false} />
+      </motion.div>
+
+      {/* ── Headline ───────────────────────────────────────────── */}
+      <motion.h1
+        {...FADE_UP(0.22)}
+        className="mb-4 text-center text-4xl font-black leading-tight tracking-tight text-white md:text-5xl"
+        style={{ letterSpacing: '-0.02em' }}
+      >
+        גלה לאן<br />הכישרונות שלך<br />מובילים
+      </motion.h1>
 
       {/* ── Sub-headline ───────────────────────────────────────── */}
       <motion.p
-        {...FADE_UP(0.28)}
-        className="mb-12 text-center text-2xl font-bold tracking-wide text-slate-900 md:text-3xl"
+        {...FADE_UP(0.34)}
+        className="mb-10 text-center text-base font-medium text-white/55 md:text-lg"
       >
         הדרך לדיוק העצמי שלך בעולם האקדמי והתעסוקתי מתחילה כאן!
       </motion.p>
 
       {/* ── CTA ────────────────────────────────────────────────── */}
-      <motion.div {...FADE_UP(0.52)}>
+      <motion.div {...FADE_UP(0.46)} className="flex items-center gap-4">
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.97 }}
           onClick={onStart}
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-10 rounded-full shadow-md transition-colors duration-300"
+          className="rounded-full bg-white px-10 py-3 text-base font-bold text-indigo-700 shadow-lg transition-colors duration-200 hover:bg-indigo-50"
         >
-          מתחילים
+          מתחילים ←
         </motion.button>
+        <span className="text-sm text-white/35">ללא הרשמה · חינמי</span>
       </motion.div>
     </div>
   );

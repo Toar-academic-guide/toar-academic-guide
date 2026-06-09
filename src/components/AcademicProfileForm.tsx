@@ -84,7 +84,7 @@ export default function AcademicProfileForm({
     'focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100';
 
   return (
-    <div className="min-h-screen bg-white px-4 py-10">
+    <div className="min-h-screen bg-[#f5f4f0] px-4 py-10">
       <div className="mx-auto flex max-w-2xl flex-col items-center gap-8">
 
         {/* ── Logo ─────────────────────────────────────────────────────── */}
@@ -102,7 +102,7 @@ export default function AcademicProfileForm({
         {/* ── Card ─────────────────────────────────────────────────────── */}
         <motion.div
           {...fadeUp(0.18)}
-          className="w-full rounded-3xl border border-slate-100 bg-white p-8 shadow-2xl md:p-10"
+          className="w-full rounded-3xl border border-[#e5e7eb] bg-white p-8 shadow-lg md:p-10"
         >
           {/* Card header */}
           <div className="mb-8">

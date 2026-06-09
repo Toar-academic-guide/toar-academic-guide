@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
 import { RiasecAnswers } from '@/types';
 import { QUIZ_QUESTIONS } from '@/data/questions';
@@ -70,9 +70,9 @@ export default function OnboardingFunnel({ onComplete }: Props) {
   }
 
   return (
-    <div className="w-full bg-white px-2 py-8 sm:px-4">
+    <div className="min-h-screen w-full bg-[#f5f4f0] px-2 py-8 sm:px-4">
       {/* ── Floating canvas card ────────────────────────────────────── */}
-      <div className="mx-auto max-w-3xl rounded-3xl border border-slate-100 bg-white p-8 shadow-2xl md:p-12">
+      <div className="mx-auto max-w-3xl rounded-3xl border border-[#e5e7eb] bg-white p-8 shadow-lg md:p-12">
 
         {/* Progress */}
         <div className="mb-8 flex flex-col gap-2">
@@ -89,16 +89,14 @@ export default function OnboardingFunnel({ onComplete }: Props) {
           </div>
         </div>
 
-        {/* ── Animated question block ─────────────────────────────── */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentStep}
-            initial={{ opacity: 0, x: 56 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -56 }}
-            transition={SLIDE}
-            className="flex flex-col gap-7"
-          >
+        {/* ── Animated question block (keyed re-mount plays the slide-in) ─ */}
+        <motion.div
+          key={currentStep}
+          initial={{ opacity: 0, x: 56 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={SLIDE}
+          className="flex flex-col gap-7"
+        >
             {/* Question header */}
             <div>
               <h2 className="text-2xl font-bold tracking-tight text-slate-900">
@@ -129,19 +127,16 @@ export default function OnboardingFunnel({ onComplete }: Props) {
                     ].join(' ')}
                   >
                     {/* Checkmark badge (appears on select) */}
-                    <AnimatePresence>
-                      {selected && (
-                        <motion.span
-                          initial={{ scale: 0, opacity: 0 }}
-                          animate={{ scale: 1, opacity: 1 }}
-                          exit={{ scale: 0, opacity: 0 }}
-                          transition={{ duration: 0.15, ease: 'backOut' }}
-                          className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-purple-600 text-white"
-                        >
-                          <Check size={11} strokeWidth={3} />
-                        </motion.span>
-                      )}
-                    </AnimatePresence>
+                    {selected && (
+                      <motion.span
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        transition={{ duration: 0.15, ease: 'backOut' }}
+                        className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-purple-600 text-white"
+                      >
+                        <Check size={11} strokeWidth={3} />
+                      </motion.span>
+                    )}
 
                     {/* Text (RIGHT in RTL) */}
                     <div className="min-w-0 flex-1">
@@ -179,8 +174,7 @@ export default function OnboardingFunnel({ onComplete }: Props) {
                 );
               })}
             </div>
-          </motion.div>
-        </AnimatePresence>
+        </motion.div>
 
         {/* ── Navigation ─────────────────────────────────────────── */}
         <div className="mt-8 flex items-center justify-between border-t border-slate-100 pt-6">

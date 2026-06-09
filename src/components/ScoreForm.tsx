@@ -129,7 +129,7 @@ export default function ScoreForm({
 
       {/* TAU Engineering bonus section — shown only for STEM degrees */}
       {showEngineeringSection && (
-        <div className="flex flex-col gap-3 rounded-xl border border-blue-100 bg-blue-50 p-4">
+        <div className="flex flex-col gap-3 rounded-xl border border-indigo-100 bg-indigo-50 p-4">
           <div>
             <p className="text-sm font-semibold text-blue-900">
               סכם הנדסה ומדעים מדויקים — אוניברסיטת תל אביב
@@ -143,7 +143,7 @@ export default function ScoreForm({
           <div className="flex flex-wrap gap-3">
             {/* Math 5 */}
             <label className="flex cursor-pointer items-center gap-2.5 rounded-xl border-2 bg-white px-4 py-2.5 text-sm font-medium transition select-none
-              has-[:checked]:border-blue-600 has-[:checked]:bg-blue-600 has-[:checked]:text-white
+              has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-600 has-[:checked]:text-white
               border-gray-200 text-gray-700 hover:border-blue-300">
               <input
                 type="checkbox"
@@ -152,14 +152,14 @@ export default function ScoreForm({
                 onChange={(e) => setHasMath5(e.target.checked)}
               />
               <span>📐 מתמטיקה 5 יח׳</span>
-              <span className="rounded-full bg-blue-100 px-1.5 py-0.5 text-xs font-bold text-blue-700 has-[:checked]:bg-blue-500 has-[:checked]:text-white">
+              <span className="rounded-full bg-indigo-100 px-1.5 py-0.5 text-xs font-bold text-indigo-700 has-[:checked]:bg-blue-500 has-[:checked]:text-white">
                 +35
               </span>
             </label>
 
             {/* Physics 5 */}
             <label className="flex cursor-pointer items-center gap-2.5 rounded-xl border-2 bg-white px-4 py-2.5 text-sm font-medium transition select-none
-              has-[:checked]:border-blue-600 has-[:checked]:bg-blue-600 has-[:checked]:text-white
+              has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-600 has-[:checked]:text-white
               border-gray-200 text-gray-700 hover:border-blue-300">
               <input
                 type="checkbox"
@@ -168,7 +168,7 @@ export default function ScoreForm({
                 onChange={(e) => setHasPhysics5(e.target.checked)}
               />
               <span>⚛️ פיזיקה 5 יח׳</span>
-              <span className="rounded-full bg-blue-100 px-1.5 py-0.5 text-xs font-bold text-blue-700">
+              <span className="rounded-full bg-indigo-100 px-1.5 py-0.5 text-xs font-bold text-indigo-700">
                 +25
               </span>
             </label>
@@ -187,7 +187,8 @@ export default function ScoreForm({
 
       <button
         type="submit"
-        className="mt-1 rounded-xl bg-gray-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-gray-700 active:scale-95"
+        className="mt-1 rounded-xl px-6 py-3 text-sm font-bold text-white transition hover:opacity-90 active:scale-95"
+        style={{ background: 'linear-gradient(90deg, #4f46e5, #7c3aed)' }}
       >
         חשב סיכויי קבלה ←
       </button>
