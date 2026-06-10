@@ -3,7 +3,7 @@
 import { Bookmark, BookmarkCheck } from 'lucide-react';
 import LogoCanvas from './LogoCanvas';
 
-type AppStep = 'landing' | 'intro' | 'academic-profile' | 'riasec-exam' | 'quick-filters' | 'recommendations' | 'calculator' | 'bucket-list';
+type AppStep = 'landing' | 'intro' | 'academic-profile' | 'riasec-exam' | 'quick-filters' | 'recommendations' | 'calculator' | 'bucket-list' | 'degree-picker';
 
 interface Props {
   step: AppStep;

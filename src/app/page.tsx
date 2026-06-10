@@ -25,6 +25,7 @@ import QuizIntro from '@/components/QuizIntro';
 import AcademicProfileForm from '@/components/AcademicProfileForm';
 import RecommendationResults from '@/components/RecommendationResults';
 import BucketList from '@/components/BucketList';
+import DegreePicker from '@/components/DegreePicker';
 import ScoreForm from '@/components/ScoreForm';
 import ResultsDashboard from '@/components/ResultsDashboard';
 import type { AcademicScores, RiasecAnswers } from '@/types';
@@ -37,7 +38,8 @@ type AppStep =
   | 'quick-filters'      // NEW: geography + avoidances only
   | 'recommendations'
   | 'calculator'
-  | 'bucket-list';
+  | 'bucket-list'
+  | 'degree-picker';     // NEW: "I already know what I want to study" browse
 
 export default function Home() {
   const [step, setStep] = useState<AppStep>('landing');
@@ -55,6 +57,11 @@ export default function Home() {
   const [selectedDegreeId, setSelectedDegreeId] = useState(allPrograms[0].id);
   const [results, setResults] = useState<UniversityResult[] | null>(null);
   const [degreeName, setDegreeName] = useState('');
+
+  // Where BucketList's "back" button should land. Defaults to recommendations
+  // (the normal RIASEC flow). Set to 'degree-picker' when arriving via the
+  // "I already know what I want to study" branch.
+  const [bucketReturnsTo, setBucketReturnsTo] = useState<AppStep>('recommendations');
 
   // ── Step: RIASEC exam complete ──────────────────────────────────────────────
   function handleRiasecComplete(scores: Record<RiasecDimension, number>) {
@@ -114,7 +121,8 @@ export default function Home() {
     'quick-filters': 'riasec-exam',
     recommendations: 'quick-filters',
     calculator: 'recommendations',
-    'bucket-list': 'recommendations',
+    'bucket-list': bucketReturnsTo,
+    'degree-picker': 'landing',
   };
 
   function handleGoBack() {
@@ -154,7 +162,32 @@ export default function Home() {
 
   /* ── Full-screen steps (no header) ───────────────────────────────────────── */
   if (step === 'landing') {
-    return <LandingPage onStart={() => setStep('intro')} />;
+    return (
+      <LandingPage
+        onAlreadyKnow={() => {
+          setBucketReturnsTo('degree-picker');
+          setStep('degree-picker');
+        }}
+        onNeedHelp={() => {
+          setBucketReturnsTo('recommendations');
+          setStep('intro');
+        }}
+      />
+    );
+  }
+
+  if (step === 'degree-picker') {
+    return (
+      <>
+        <BackButton />
+        <DegreePicker
+          allPrograms={allPrograms}
+          savedProgramIds={profile.savedProgramIds ?? []}
+          onToggleSave={handleToggleSave}
+          onDone={() => setStep('bucket-list')}
+        />
+      </>
+    );
   }
 
   if (step === 'intro') {
@@ -240,7 +273,9 @@ export default function Home() {
             savedProgramIds={profile.savedProgramIds ?? []}
             academicScores={profile.academicScores}
             onRemove={handleRemoveFromBucket}
-            onBack={() => { setStep('recommendations'); setResults(null); }}
+            onBack={() => { setStep(bucketReturnsTo); setResults(null); }}
+            backLabel={bucketReturnsTo === 'degree-picker' ? 'חזרה לבחירת תארים' : 'חזרה להמלצות'}
+            emptyCtaLabel={bucketReturnsTo === 'degree-picker' ? 'חזור לבחור תארים ←' : 'עבור להמלצות ←'}
           />
         )}
 
