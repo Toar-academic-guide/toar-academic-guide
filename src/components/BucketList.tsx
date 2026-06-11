@@ -24,6 +24,10 @@ interface Props {
   academicScores?: AcademicScores;
   onRemove: (programId: string) => void;
   onBack: () => void;
+  /** Optional override for the back-button text and empty-state CTA.
+   *  Default behaviour assumes user came from the recommendations screen. */
+  backLabel?: string;
+  emptyCtaLabel?: string;
 }
 
 // ── Individual saved-item card ────────────────────────────────────────────────
@@ -186,6 +190,8 @@ export default function BucketList({
   academicScores,
   onRemove,
   onBack,
+  backLabel = 'חזרה להמלצות',
+  emptyCtaLabel = 'עבור להמלצות ←',
 }: Props) {
   // Build UserScores only when both required fields are present
   const userScores = useMemo(() => {
@@ -217,7 +223,7 @@ export default function BucketList({
           className="flex items-center gap-2 self-start rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 shadow-sm transition hover:border-slate-400 hover:text-slate-900"
         >
           <ArrowRight size={14} />
-          חזרה להמלצות
+          {backLabel}
         </button>
 
         <section className="flex flex-col items-center gap-4 rounded-3xl border border-slate-100 bg-white px-8 py-16 text-center shadow-sm">
@@ -234,7 +240,7 @@ export default function BucketList({
             onClick={onBack}
             className="mt-2 rounded-full bg-gradient-to-l from-indigo-600 to-violet-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:brightness-110"
           >
-            עבור להמלצות ←
+            {emptyCtaLabel}
           </button>
         </section>
       </div>
@@ -252,7 +258,7 @@ export default function BucketList({
           className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 shadow-sm transition hover:border-slate-400 hover:text-slate-900"
         >
           <ArrowRight size={14} />
-          חזרה להמלצות
+          {backLabel}
         </button>
 
         <div className="text-left">
