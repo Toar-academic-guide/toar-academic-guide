@@ -63,7 +63,7 @@ function buildInstitutionDetails(
 
       const detail: InstitutionDetail = {
         institutionName: institution.name,
-        durationYears: requirement.durationYears ?? 0,
+        durationYears: requirement.durationYears,
         estimatedStudentsPerYear: requirement.estimatedStudentsPerYear ?? '',
         quantitativeMinRequirement: requirement.quantitativeMinRequirement ?? null,
         englishMinRequirement: requirement.englishMinRequirement ?? null,
