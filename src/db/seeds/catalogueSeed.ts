@@ -6,10 +6,12 @@ import {
   programs,
   requirementVersions,
   sourceUrls,
+  universityCalculatorConfigs,
 } from '@/db/schema';
 import { allPrograms } from '@/data/degrees';
 import type { InstitutionDetail, Program } from '@/data/degrees/types';
 import { INSTITUTIONS, INSTITUTION_BY_NAME, type InstitutionId } from '@/data/institutions';
+import { UNIVERSITIES } from '@/data/degreesData';
 import type { UniversityId } from '@/types';
 
 export interface CatalogueSeedValidationError {
@@ -19,6 +21,7 @@ export interface CatalogueSeedValidationError {
 
 export interface CatalogueSeedPayload {
   institutions: typeof institutions.$inferInsert[];
+  universityCalculatorConfigs: typeof universityCalculatorConfigs.$inferInsert[];
   programs: typeof programs.$inferInsert[];
   programInstitutions: typeof programInstitutions.$inferInsert[];
   admissionRequirements: typeof admissionRequirements.$inferInsert[];
@@ -87,6 +90,15 @@ export function buildCatalogueSeed(seedPrograms: Program[] = allPrograms): Catal
   }));
 
   const programRows: typeof programs.$inferInsert[] = [];
+  const calculatorConfigRows: typeof universityCalculatorConfigs.$inferInsert[] = UNIVERSITIES.map(
+    (university) => ({
+      institutionId: university.id,
+      formulaType: university.formulaType,
+      psyWeight: university.sekhemWeight?.psy ?? null,
+      bagrutWeight: university.sekhemWeight?.bag ?? null,
+      scaleDescription: university.scaleDescription,
+    })
+  );
   const relationRows: typeof programInstitutions.$inferInsert[] = [];
   const requirementRows: typeof admissionRequirements.$inferInsert[] = [];
   const thresholdRows: typeof admissionThresholds.$inferInsert[] = [];
@@ -232,6 +244,7 @@ export function buildCatalogueSeed(seedPrograms: Program[] = allPrograms): Catal
 
   return {
     institutions: institutionRows,
+    universityCalculatorConfigs: calculatorConfigRows,
     programs: programRows,
     programInstitutions: relationRows,
     admissionRequirements: requirementRows,
@@ -267,6 +280,19 @@ export async function upsertCatalogueSeed(payload: CatalogueSeedPayload) {
         universityId: institutions.universityId,
       },
     });
+
+    await tx
+      .insert(universityCalculatorConfigs)
+      .values(payload.universityCalculatorConfigs)
+      .onConflictDoUpdate({
+        target: universityCalculatorConfigs.institutionId,
+        set: {
+          formulaType: universityCalculatorConfigs.formulaType,
+          psyWeight: universityCalculatorConfigs.psyWeight,
+          bagrutWeight: universityCalculatorConfigs.bagrutWeight,
+          scaleDescription: universityCalculatorConfigs.scaleDescription,
+        },
+      });
 
     await tx.insert(programs).values(payload.programs).onConflictDoUpdate({
       target: programs.id,

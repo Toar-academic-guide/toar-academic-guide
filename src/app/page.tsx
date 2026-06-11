@@ -11,9 +11,9 @@ import {
   RiasecDimension,
 } from '@/types';
 import { useUserProfile } from '@/hooks/useUserProfile';
-import { UNIVERSITIES } from '@/data/degreesData';
-import { getStaticCataloguePrograms } from '@/lib/catalogueStatic';
-import { fetchCataloguePrograms } from '@/lib/catalogueClient';
+import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
+import { fetchCatalogueInstitutions, fetchCataloguePrograms } from '@/lib/catalogueClient';
+import { getCalculatorInstitutionsFromCatalogue } from '@/lib/calculatorInstitutions';
 import { getRecommendations } from '@/utils/recommendationEngine';
 import { evaluateUniversities } from '@/utils/sekhemCalculators';
 import { extractFilterAnswers } from '@/utils/riasecEngine';
@@ -29,7 +29,7 @@ import BucketList from '@/components/BucketList';
 import ScoreForm from '@/components/ScoreForm';
 import ResultsDashboard from '@/components/ResultsDashboard';
 import type { AcademicScores, RiasecAnswers } from '@/types';
-import type { CatalogueProgram } from '@/types/catalogue';
+import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 
 type AppStep =
   | 'landing'
@@ -43,6 +43,9 @@ type AppStep =
 
 export default function Home() {
   const staticCataloguePrograms = getStaticCataloguePrograms();
+  const staticCatalogueInstitutions = getStaticCatalogueInstitutions();
+  const [catalogueInstitutions, setCatalogueInstitutions] =
+    useState<CatalogueInstitution[]>(staticCatalogueInstitutions);
   const [step, setStep] = useState<AppStep>('landing');
   const [recommendations, setRecommendations] = useState<RecommendedField[]>([]);
   const [cataloguePrograms, setCataloguePrograms] = useState<CatalogueProgram[]>(staticCataloguePrograms);
@@ -59,19 +62,24 @@ export default function Home() {
   const [selectedDegreeId, setSelectedDegreeId] = useState(staticCataloguePrograms[0].id);
   const [results, setResults] = useState<UniversityResult[] | null>(null);
   const [degreeName, setDegreeName] = useState('');
+  const calculatorInstitutions = getCalculatorInstitutionsFromCatalogue(catalogueInstitutions);
 
   useEffect(() => {
     let isMounted = true;
 
-    fetchCataloguePrograms().then((programs) => {
-      if (!isMounted || programs.length === 0) {
+    Promise.all([fetchCataloguePrograms(), fetchCatalogueInstitutions()]).then(([programs, institutions]) => {
+      if (!isMounted) {
         return;
       }
 
-      setCataloguePrograms(programs);
-      setSelectedDegreeId((current) =>
-        programs.some((program) => program.id === current) ? current : programs[0].id
-      );
+      if (programs.length > 0) {
+        setCataloguePrograms(programs);
+        setSelectedDegreeId((current) =>
+          programs.some((program) => program.id === current) ? current : programs[0].id
+        );
+      }
+
+      setCatalogueInstitutions(institutions);
     });
 
     return () => {
@@ -167,7 +175,7 @@ export default function Home() {
 
   function handleCalculate(scores: UserScores, degreeId: string, engineering: EngineeringOptions) {
     const degree = cataloguePrograms.find((p) => p.id === degreeId)!;
-    const evaluated = evaluateUniversities(UNIVERSITIES, degree, scores, engineering);
+    const evaluated = evaluateUniversities(calculatorInstitutions, degree, scores, engineering);
     setResults(evaluated);
     setDegreeName(degree.name);
     setTimeout(() => {
@@ -262,6 +270,7 @@ export default function Home() {
         {step === 'bucket-list' && (
           <BucketList
             programs={cataloguePrograms}
+            calculatorInstitutions={calculatorInstitutions}
             savedProgramIds={profile.savedProgramIds ?? []}
             academicScores={profile.academicScores}
             onRemove={handleRemoveFromBucket}

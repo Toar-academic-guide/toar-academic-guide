@@ -8,6 +8,7 @@ describe('catalogueSeed', () => {
     const payload = buildCatalogueSeed();
 
     expect(payload.institutions).toHaveLength(INSTITUTIONS.length);
+    expect(payload.universityCalculatorConfigs).toHaveLength(4);
     expect(payload.programs).toHaveLength(allPrograms.length);
   });
 

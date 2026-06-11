@@ -12,11 +12,13 @@ import type {
   savedPrograms,
   sourceUrls,
   uploadedDocuments,
+  universityCalculatorConfigs,
   userProfiles,
   users,
 } from './schema';
 
 export type InstitutionRow = typeof institutions.$inferSelect;
+export type UniversityCalculatorConfigRow = typeof universityCalculatorConfigs.$inferSelect;
 export type ProgramRow = typeof programs.$inferSelect;
 export type ProgramInstitutionRow = typeof programInstitutions.$inferSelect;
 export type AdmissionRequirementRow = typeof admissionRequirements.$inferSelect;

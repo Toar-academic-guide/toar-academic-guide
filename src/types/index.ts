@@ -1,4 +1,4 @@
-export type UniversityId = 'tau' | 'huji' | 'technion' | 'bgu';
+export type UniversityId = string;
 
 // ── Avoidance tags ────────────────────────────────────────────────────────────
 // Captured in the quiz ("what do you want to avoid?") and used to apply a
