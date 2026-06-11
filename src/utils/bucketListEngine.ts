@@ -40,11 +40,12 @@ export interface BucketEntry {
 export function analyzeBucketList(
   savedProgramIds: string[],
   userScores: UserScores | null,
+  programs: Program[] = allPrograms,
 ): BucketEntry[] {
   const entries: BucketEntry[] = [];
 
   for (const id of savedProgramIds) {
-    const program = allPrograms.find((p) => p.id === id);
+    const program = programs.find((p) => p.id === id);
     if (!program) continue;
 
     // ── Requirements-track: no sekhem calculation possible ───────────────────

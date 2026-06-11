@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   RiasecScores,
   EngineeringOptions,
@@ -12,7 +12,8 @@ import {
 } from '@/types';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { UNIVERSITIES } from '@/data/degreesData';
-import { allPrograms } from '@/data/degrees';
+import { getStaticCataloguePrograms } from '@/lib/catalogueStatic';
+import { fetchCataloguePrograms } from '@/lib/catalogueClient';
 import { getRecommendations } from '@/utils/recommendationEngine';
 import { evaluateUniversities } from '@/utils/sekhemCalculators';
 import { extractFilterAnswers } from '@/utils/riasecEngine';
@@ -28,6 +29,7 @@ import BucketList from '@/components/BucketList';
 import ScoreForm from '@/components/ScoreForm';
 import ResultsDashboard from '@/components/ResultsDashboard';
 import type { AcademicScores, RiasecAnswers } from '@/types';
+import type { CatalogueProgram } from '@/types/catalogue';
 
 type AppStep =
   | 'landing'
@@ -40,8 +42,10 @@ type AppStep =
   | 'bucket-list';
 
 export default function Home() {
+  const staticCataloguePrograms = getStaticCataloguePrograms();
   const [step, setStep] = useState<AppStep>('landing');
   const [recommendations, setRecommendations] = useState<RecommendedField[]>([]);
+  const [cataloguePrograms, setCataloguePrograms] = useState<CatalogueProgram[]>(staticCataloguePrograms);
   const { profile, updateProfile } = useUserProfile();
 
   // RIASEC scores from the exam (stored before filter answers arrive)
@@ -52,9 +56,28 @@ export default function Home() {
     geographicPreference: GeographicRegion;
   } | null>(null);
 
-  const [selectedDegreeId, setSelectedDegreeId] = useState(allPrograms[0].id);
+  const [selectedDegreeId, setSelectedDegreeId] = useState(staticCataloguePrograms[0].id);
   const [results, setResults] = useState<UniversityResult[] | null>(null);
   const [degreeName, setDegreeName] = useState('');
+
+  useEffect(() => {
+    let isMounted = true;
+
+    fetchCataloguePrograms().then((programs) => {
+      if (!isMounted || programs.length === 0) {
+        return;
+      }
+
+      setCataloguePrograms(programs);
+      setSelectedDegreeId((current) =>
+        programs.some((program) => program.id === current) ? current : programs[0].id
+      );
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   // ── Step: RIASEC exam complete ──────────────────────────────────────────────
   function handleRiasecComplete(scores: Record<RiasecDimension, number>) {
@@ -70,7 +93,7 @@ export default function Home() {
     const scores = pendingScores ?? ({ R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 } as RiasecScores);
 
     updateProfile({ geographicPreference });
-    const recs = getRecommendations(scores, undefined, avoidances);
+    const recs = getRecommendations(scores, undefined, avoidances, cataloguePrograms);
     setRiasecProfile({ scores, geographicPreference });
     setRecommendations(recs);
     setResults(null);
@@ -143,7 +166,7 @@ export default function Home() {
     ) : null;
 
   function handleCalculate(scores: UserScores, degreeId: string, engineering: EngineeringOptions) {
-    const degree = allPrograms.find((p) => p.id === degreeId)!;
+    const degree = cataloguePrograms.find((p) => p.id === degreeId)!;
     const evaluated = evaluateUniversities(UNIVERSITIES, degree, scores, engineering);
     setResults(evaluated);
     setDegreeName(degree.name);
@@ -224,6 +247,7 @@ export default function Home() {
         {/* ── Step: Recommendations ─────────────────────────────── */}
         {step === 'recommendations' && riasecProfile && (
           <RecommendationResults
+            programs={cataloguePrograms}
             recommendations={recommendations}
             onSelectDegree={handleSelectDegree}
             riasecScores={riasecProfile.scores}
@@ -237,6 +261,7 @@ export default function Home() {
         {/* ── Step: Bucket List ─────────────────────────────────── */}
         {step === 'bucket-list' && (
           <BucketList
+            programs={cataloguePrograms}
             savedProgramIds={profile.savedProgramIds ?? []}
             academicScores={profile.academicScores}
             onRemove={handleRemoveFromBucket}
@@ -253,6 +278,7 @@ export default function Home() {
                 הממוצע בגרות כולל בונוסים (למשל מתמטיקה 5 יח׳ מוסיפה עד 35 נקודות).
               </p>
               <ScoreForm
+                programs={cataloguePrograms}
                 onSubmit={handleCalculate}
                 defaultDegreeId={selectedDegreeId}
                 defaultPsychometric={profile.academicScores?.psychometric?.overall}
