@@ -13,10 +13,6 @@ interface Props {
   onDone: () => void;
 }
 
-/**
- * Normalize Hebrew/Latin text for substring search.
- * Lowercases (harmless for Hebrew) and strips Hebrew vowel marks (nikud) in case they ever appear.
- */
 function normalize(s: string): string {
   return s.toLowerCase().replace(/[֑-ׇ]/g, '');
 }
@@ -30,7 +26,6 @@ export default function DegreePicker({
   const [query, setQuery] = useState('');
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
-  // ── Build category → programs map ──────────────────────────────────────────
   const programsByCategory = useMemo(() => {
     const map = new Map<string, Program[]>();
     for (const p of allPrograms) {
@@ -46,7 +41,6 @@ export default function DegreePicker({
     [programsByCategory],
   );
 
-  // ── Search filter ──────────────────────────────────────────────────────────
   const searchActive = query.trim().length > 0;
   const filtered = useMemo(() => {
     if (!searchActive) return [] as Program[];
@@ -66,7 +60,6 @@ export default function DegreePicker({
   return (
     <div className="min-h-screen" style={{ background: '#f5f4f0' }}>
       <div className="mx-auto max-w-3xl px-4 py-10 pb-32 sm:px-6">
-        {/* ── Page header ─────────────────────────────────────────────────── */}
         <div className="mb-6 text-center">
           <h1 className="mb-2 text-2xl font-black text-slate-900 md:text-3xl">
             בחר את התארים שמעניינים אותך
@@ -76,7 +69,6 @@ export default function DegreePicker({
           </p>
         </div>
 
-        {/* ── Search box ──────────────────────────────────────────────────── */}
         <div className="mb-8">
           <div className="relative">
             <Search
@@ -103,7 +95,6 @@ export default function DegreePicker({
           </div>
         </div>
 
-        {/* ── Search results (flat) ───────────────────────────────────────── */}
         {searchActive && (
           <SearchResults
             filtered={filtered}
@@ -113,7 +104,6 @@ export default function DegreePicker({
           />
         )}
 
-        {/* ── Category grid (accordion) ───────────────────────────────────── */}
         {!searchActive && (
           <div className="flex flex-col gap-3">
             {categories.map((cat) => {
@@ -181,7 +171,6 @@ export default function DegreePicker({
         )}
       </div>
 
-      {/* ── Sticky floating CTA ─────────────────────────────────────────── */}
       <AnimatePresence>
         {savedCount > 0 && (
           <motion.div
@@ -209,7 +198,6 @@ export default function DegreePicker({
   );
 }
 
-// ── Single program row inside an expanded category ──────────────────────────
 function ProgramRow({
   program,
   isSaved,
@@ -252,7 +240,6 @@ function ProgramRow({
   );
 }
 
-// ── Flat search results (no accordion) ──────────────────────────────────────
 function SearchResults({
   filtered,
   savedSet,

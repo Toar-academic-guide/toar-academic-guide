@@ -16,12 +16,12 @@ import { RecommendedField, RiasecScores, EnvironmentPreference, RiasecDimension,
 import { INSTITUTION_REGIONS, REGION_LABEL, REGION_EMOJI, REGION_BADGE_COLOR } from '@/data/geography';
 import { INSTITUTION_BY_NAME } from '@/data/institutions';
 import InstitutionLogo from '@/components/InstitutionLogo';
-import { allPrograms } from '@/data/degrees';
 import type { Program } from '@/data/degrees/types';
 import { PROGRAM_FIELD_MAP, FIELD_ENRICHMENT } from '@/data/degrees/fieldEnrichment';
 import { getTopDimensions, DIMENSION_LABELS } from '@/utils/riasecEngine';
 
 interface Props {
+  programs: Program[];
   recommendations: RecommendedField[];
   onSelectDegree: (degreeId: string) => void;
   riasecScores: RiasecScores;
@@ -160,11 +160,12 @@ function ProgramSubCard({ program, fieldId, onSelect }: SubCardProps) {
 // ── Tabbed field sub-navigation ───────────────────────────────────────────────
 
 interface SubTabPanelProps {
+  programs: Program[];
   suggestedPrograms: Program[];
   onSelectProgram: (id: string) => void;
 }
 
-function SubTabPanel({ suggestedPrograms, onSelectProgram }: SubTabPanelProps) {
+function SubTabPanel({ programs, suggestedPrograms, onSelectProgram }: SubTabPanelProps) {
   const tabs = suggestedPrograms.map((p) => {
     const fieldId = PROGRAM_FIELD_MAP[p.id] ?? p.id;
     return {
@@ -177,7 +178,7 @@ function SubTabPanel({ suggestedPrograms, onSelectProgram }: SubTabPanelProps) {
 
   const fieldProgramIds = FIELD_ENRICHMENT[activeFieldId]?.programIds ?? [];
   const seenIds = new Set<string>();
-  const clusterPrograms = allPrograms
+  const clusterPrograms = programs
     .filter((p) => {
       if (!fieldProgramIds.includes(p.id) || p.institution === 'אוניברסיטה') return false;
       if (seenIds.has(p.id)) return false;
@@ -242,6 +243,7 @@ function SubTabPanel({ suggestedPrograms, onSelectProgram }: SubTabPanelProps) {
 // ── Level 2: Program Detail View ─────────────────────────────────────────────
 
 interface DetailProps {
+  programs: Program[];
   program: Program;
   onBack: () => void;
   onSelectDegree: (id: string) => void;
@@ -251,7 +253,7 @@ interface DetailProps {
 }
 
 function ProgramDetailView({
-  program, onBack, onSelectDegree, geographicPreference,
+  programs, program, onBack, onSelectDegree, geographicPreference,
   savedProgramIds, onToggleSave,
 }: DetailProps) {
   const fieldId    = PROGRAM_FIELD_MAP[program.id];
@@ -262,7 +264,7 @@ function ProgramDetailView({
   // All institution programs for "where to study", deduped by ID
   const relatedProgramIds = enrichment?.programIds ?? [program.id];
   const seenIds = new Set<string>();
-  const institutionPrograms = allPrograms
+  const institutionPrograms = programs
     .filter((p) => {
       if (!relatedProgramIds.includes(p.id) || p.institution === 'אוניברסיטה') return false;
       if (seenIds.has(p.id)) return false;
@@ -398,7 +400,7 @@ function ProgramDetailView({
                       <div className="flex shrink-0 items-start gap-2">
                         {detail && (
                           <div className="flex flex-col items-end gap-0.5 text-right text-xs text-slate-500">
-                            <span>{detail.durationYears} שנות לימוד</span>
+                            {detail.durationYears !== null && <span>{detail.durationYears} שנות לימוד</span>}
                             <span>{detail.estimatedStudentsPerYear}</span>
                           </div>
                         )}
@@ -532,7 +534,7 @@ function ProgramDetailView({
                       <div className="flex shrink-0 items-start gap-2">
                         {detail && (
                           <div className="flex flex-col items-end gap-0.5 text-right text-xs text-slate-500">
-                            <span>{detail.durationYears} שנות לימוד</span>
+                            {detail.durationYears !== null && <span>{detail.durationYears} שנות לימוד</span>}
                             <span>{detail.estimatedStudentsPerYear}</span>
                           </div>
                         )}
@@ -623,6 +625,7 @@ function ProgramDetailView({
 // ── Level 1: Category Overview ────────────────────────────────────────────────
 
 export default function RecommendationResults({
+  programs,
   recommendations,
   onSelectDegree,
   riasecScores,
@@ -641,11 +644,12 @@ export default function RecommendationResults({
 
   // Level 2 — show program detail
   if (selectedProgramId !== null) {
-    const program = allPrograms.find((p) => p.id === selectedProgramId);
+    const program = programs.find((p) => p.id === selectedProgramId);
     if (program) {
       return (
         <div className="flex flex-col gap-6">
           <ProgramDetailView
+            programs={programs}
             program={program}
             onBack={() => setSelectedProgramId(null)}
             onSelectDegree={onSelectDegree}
@@ -695,7 +699,7 @@ export default function RecommendationResults({
         {recommendations.map((rec, i) => {
           // Unique programs by ID (guard against any upstream duplicate IDs)
           const seen = new Set<string>();
-          const suggestedPrograms = allPrograms.filter((p) => {
+          const suggestedPrograms = programs.filter((p) => {
             if (!rec.suggestedDegreeIds.includes(p.id) || seen.has(p.id)) return false;
             seen.add(p.id);
             return true;
@@ -760,6 +764,7 @@ export default function RecommendationResults({
                     מסלולים לחקור
                   </p>
                   <SubTabPanel
+                    programs={programs}
                     suggestedPrograms={suggestedPrograms}
                     onSelectProgram={setSelectedProgramId}
                   />

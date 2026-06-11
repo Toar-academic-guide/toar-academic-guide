@@ -14,14 +14,6 @@ interface Props {
   disabled?: boolean;
 }
 
-/**
- * Neo-brutalist button — black border, hard offset shadow on hover, cyan fill.
- * Used on LandingPage (Yes/No), DegreePicker (add / floating CTA), and elsewhere.
- *
- * Visual spec provided by the user:
- *   h-12 border-black border-2 p-2.5 bg-[#A6FAFF] hover:bg-[#79F7FF]
- *   hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] active:bg-[#00E1EF] rounded-full
- */
 export default function NeoButton({
   children,
   onClick,

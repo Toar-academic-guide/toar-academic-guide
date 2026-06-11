@@ -1,8 +1,7 @@
-import { UNIVERSITIES } from '@/data/degreesData';
 import { allPrograms } from '@/data/degrees';
 import { calculateSekhem, calculateDelta } from '@/utils/sekhemCalculators';
-import { INSTITUTION_BY_NAME } from '@/data/institutions';
-import type { UserScores, DeltaNeeded } from '@/types';
+import { UNIVERSITIES } from '@/data/degreesData';
+import type { UserScores, DeltaNeeded, University } from '@/types';
 import type { Program } from '@/data/degrees/types';
 
 // ── Result types ──────────────────────────────────────────────────────────────
@@ -30,21 +29,22 @@ export interface BucketEntry {
  * Given an array of saved program IDs and the user's current academic scores,
  * returns a `BucketEntry[]` — one entry per resolved program ID.
  *
- * Institution → UniversityId resolution uses the master INSTITUTIONS dictionary
- * (via `INSTITUTION_BY_NAME[program.institution].universityId`) instead of a
- * brittle hand-rolled name map.
- *
  * Unknown IDs are silently skipped so stale saved data never throws.
  * TAU engineering bonuses are not applied (conservative baseline).
  */
 export function analyzeBucketList(
   savedProgramIds: string[],
   userScores: UserScores | null,
+  programs: Program[] = allPrograms,
+  calculatorInstitutions: University[] = UNIVERSITIES
 ): BucketEntry[] {
   const entries: BucketEntry[] = [];
+  const calculatorInstitutionsById = new Map(
+    calculatorInstitutions.map((institution) => [institution.id, institution])
+  );
 
   for (const id of savedProgramIds) {
-    const program = allPrograms.find((p) => p.id === id);
+    const program = programs.find((p) => p.id === id);
     if (!program) continue;
 
     // ── Requirements-track: no sekhem calculation possible ───────────────────
@@ -53,11 +53,18 @@ export function analyzeBucketList(
       continue;
     }
 
-    // ── Sekhem-track: resolve university via master dict ─────────────────────
-    const instRecord  = INSTITUTION_BY_NAME[program.institution];
-    const univId      = instRecord?.universityId;
-    const university  = univId ? UNIVERSITIES.find((u) => u.id === univId) : undefined;
-    const threshold   = univId ? (program.thresholds?.[univId] ?? null) : null;
+    // ── Sekhem-track: resolve the calculator config from DB-backed institutions ──
+    const thresholdIds = Object.entries(program.thresholds ?? {})
+      .filter(([, threshold]) => threshold !== null)
+      .map(([institutionId]) => institutionId);
+    const calculatorInstitutionId =
+      (program.institutionId && calculatorInstitutionsById.has(program.institutionId)
+        ? program.institutionId
+        : undefined) ?? thresholdIds.find((institutionId) => calculatorInstitutionsById.has(institutionId));
+    const university = calculatorInstitutionId
+      ? calculatorInstitutionsById.get(calculatorInstitutionId)
+      : undefined;
+    const threshold = calculatorInstitutionId ? (program.thresholds?.[calculatorInstitutionId] ?? null) : null;
 
     if (!university || threshold === null) {
       entries.push({ program, status: 'no-data' });
