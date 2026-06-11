@@ -3,7 +3,7 @@ import type { InstitutionId } from '@/data/institutions';
 
 export interface InstitutionDetail {
   institutionName: string;
-  durationYears: number;
+  durationYears: number | null;
   estimatedStudentsPerYear: string;
   quantitativeMinRequirement: number | null;
   englishMinRequirement: number | null;

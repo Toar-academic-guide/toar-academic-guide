@@ -400,7 +400,7 @@ function ProgramDetailView({
                       <div className="flex shrink-0 items-start gap-2">
                         {detail && (
                           <div className="flex flex-col items-end gap-0.5 text-right text-xs text-slate-500">
-                            <span>{detail.durationYears} שנות לימוד</span>
+                            {detail.durationYears !== null && <span>{detail.durationYears} שנות לימוד</span>}
                             <span>{detail.estimatedStudentsPerYear}</span>
                           </div>
                         )}
@@ -534,7 +534,7 @@ function ProgramDetailView({
                       <div className="flex shrink-0 items-start gap-2">
                         {detail && (
                           <div className="flex flex-col items-end gap-0.5 text-right text-xs text-slate-500">
-                            <span>{detail.durationYears} שנות לימוד</span>
+                            {detail.durationYears !== null && <span>{detail.durationYears} שנות לימוד</span>}
                             <span>{detail.estimatedStudentsPerYear}</span>
                           </div>
                         )}
