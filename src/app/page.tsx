@@ -25,6 +25,7 @@ import QuizIntro from '@/components/QuizIntro';
 import AcademicProfileForm from '@/components/AcademicProfileForm';
 import RecommendationResults from '@/components/RecommendationResults';
 import BucketList from '@/components/BucketList';
+import DegreePicker from '@/components/DegreePicker';
 import ScoreForm from '@/components/ScoreForm';
 import ResultsDashboard from '@/components/ResultsDashboard';
 import type { AcademicScores, RiasecAnswers } from '@/types';
@@ -33,18 +34,18 @@ type AppStep =
   | 'landing'
   | 'intro'
   | 'academic-profile'
-  | 'riasec-exam'        // NEW: full 42-item RIASEC assessment
-  | 'quick-filters'      // NEW: geography + avoidances only
+  | 'riasec-exam'
+  | 'quick-filters'
   | 'recommendations'
   | 'calculator'
-  | 'bucket-list';
+  | 'bucket-list'
+  | 'degree-picker';
 
 export default function Home() {
   const [step, setStep] = useState<AppStep>('landing');
   const [recommendations, setRecommendations] = useState<RecommendedField[]>([]);
   const { profile, updateProfile } = useUserProfile();
 
-  // RIASEC scores from the exam (stored before filter answers arrive)
   const [pendingScores, setPendingScores] = useState<RiasecScores | null>(null);
 
   const [riasecProfile, setRiasecProfile] = useState<{
@@ -56,15 +57,17 @@ export default function Home() {
   const [results, setResults] = useState<UniversityResult[] | null>(null);
   const [degreeName, setDegreeName] = useState('');
 
-  // ── Step: RIASEC exam complete ──────────────────────────────────────────────
+  // Tracks which entry point led to bucket-list. Defaults to 'recommendations'
+  // (the normal questionnaire path). Set to 'degree-picker' when the user
+  // arrives via the "I already know what I want to study" landing branch.
+  const [bucketReturnsTo, setBucketReturnsTo] = useState<AppStep>('recommendations');
+
   function handleRiasecComplete(scores: Record<RiasecDimension, number>) {
-    // RiasecExam already returns normalised 0–5 scores — use them directly.
     setPendingScores(scores);
     setStep('quick-filters');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // ── Step: Filter questions complete ────────────────────────────────────────
   function handleFiltersComplete(rawAnswers: RiasecAnswers) {
     const { geographicPreference, avoidances } = extractFilterAnswers(rawAnswers);
     const scores = pendingScores ?? ({ R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 } as RiasecScores);
@@ -78,7 +81,6 @@ export default function Home() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // ── Bucket list ────────────────────────────────────────────────────────────
   function handleToggleSave(programId: string) {
     const current = profile.savedProgramIds ?? [];
     const next = current.includes(programId)
@@ -105,7 +107,6 @@ export default function Home() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // Map of each step → its previous step (for the "back" button)
   const previousStep: Record<AppStep, AppStep | null> = {
     landing: null,
     intro: 'landing',
@@ -114,7 +115,8 @@ export default function Home() {
     'quick-filters': 'riasec-exam',
     recommendations: 'quick-filters',
     calculator: 'recommendations',
-    'bucket-list': 'recommendations',
+    'bucket-list': bucketReturnsTo,
+    'degree-picker': 'landing',
   };
 
   function handleGoBack() {
@@ -127,7 +129,6 @@ export default function Home() {
 
   const showBackButton = step !== 'landing';
 
-  // Floating back button — visible on every page except the landing page
   const BackButton = () =>
     showBackButton ? (
       <button
@@ -135,9 +136,9 @@ export default function Home() {
         onClick={handleGoBack}
         aria-label="חזרה לעמוד הקודם"
         title="חזרה לעמוד הקודם"
-        className="fixed bottom-6 left-4 z-50 flex items-center gap-1.5 rounded-full border border-white/20 bg-[#1e1b4b]/80 px-3.5 py-2 text-sm font-medium text-white/80 shadow-lg backdrop-blur transition hover:bg-[#1e1b4b] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+        className="fixed top-6 right-4 z-50 flex items-center gap-2 rounded-full border border-white/20 bg-[#1e1b4b]/80 px-5 py-2.5 text-base font-medium text-white/80 shadow-lg backdrop-blur transition hover:bg-[#1e1b4b] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
       >
-        <ArrowRight size={16} />
+        <ArrowRight size={18} />
         <span>חזרה</span>
       </button>
     ) : null;
@@ -154,7 +155,32 @@ export default function Home() {
 
   /* ── Full-screen steps (no header) ───────────────────────────────────────── */
   if (step === 'landing') {
-    return <LandingPage onStart={() => setStep('intro')} />;
+    return (
+      <LandingPage
+        onAlreadyKnow={() => {
+          setBucketReturnsTo('degree-picker');
+          setStep('degree-picker');
+        }}
+        onNeedHelp={() => {
+          setBucketReturnsTo('recommendations');
+          setStep('intro');
+        }}
+      />
+    );
+  }
+
+  if (step === 'degree-picker') {
+    return (
+      <>
+        <BackButton />
+        <DegreePicker
+          allPrograms={allPrograms}
+          savedProgramIds={profile.savedProgramIds ?? []}
+          onToggleSave={handleToggleSave}
+          onDone={() => setStep('bucket-list')}
+        />
+      </>
+    );
   }
 
   if (step === 'intro') {
@@ -207,6 +233,18 @@ export default function Home() {
   /* ── Steps with persistent header ───────────────────────────────────────── */
   const savedCount = profile.savedProgramIds?.length ?? 0;
 
+  // Source-aware: only navigate to recommendations when the user has a
+  // riasecProfile (i.e. came through the questionnaire). Degree-picker users
+  // have no riasecProfile — route them back to degree-picker instead.
+  function handleGoToRecommendations() {
+    if (!riasecProfile) {
+      setStep(bucketReturnsTo === 'degree-picker' ? 'degree-picker' : 'landing');
+      return;
+    }
+    setStep('recommendations');
+    setResults(null);
+  }
+
   return (
     <>
       <BackButton />
@@ -215,8 +253,9 @@ export default function Home() {
         savedCount={savedCount}
         onGoHome={handleGoHome}
         onGoToExam={() => { setStep('riasec-exam'); setResults(null); setPendingScores(null); }}
-        onGoToRecommendations={() => { setStep('recommendations'); setResults(null); }}
+        onGoToRecommendations={handleGoToRecommendations}
         onGoToBucket={() => setStep('bucket-list')}
+        bucketSource={bucketReturnsTo === 'degree-picker' ? 'degree-picker' : 'questionnaire'}
       />
 
       <main className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-4 py-12 sm:px-6">
@@ -240,7 +279,9 @@ export default function Home() {
             savedProgramIds={profile.savedProgramIds ?? []}
             academicScores={profile.academicScores}
             onRemove={handleRemoveFromBucket}
-            onBack={() => { setStep('recommendations'); setResults(null); }}
+            onBack={() => { setStep(bucketReturnsTo); setResults(null); }}
+            backLabel={bucketReturnsTo === 'degree-picker' ? 'חזרה לבחירת תארים' : 'חזרה להמלצות'}
+            emptyCtaLabel={bucketReturnsTo === 'degree-picker' ? 'חזור לבחור תארים ←' : 'עבור להמלצות ←'}
           />
         )}
 

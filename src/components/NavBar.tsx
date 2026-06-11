@@ -3,7 +3,7 @@
 import { Bookmark, BookmarkCheck } from 'lucide-react';
 import LogoCanvas from './LogoCanvas';
 
-type AppStep = 'landing' | 'intro' | 'academic-profile' | 'riasec-exam' | 'quick-filters' | 'recommendations' | 'calculator' | 'bucket-list';
+type AppStep = 'landing' | 'intro' | 'academic-profile' | 'riasec-exam' | 'quick-filters' | 'recommendations' | 'calculator' | 'bucket-list' | 'degree-picker';
 
 interface Props {
   step: AppStep;
@@ -12,9 +12,11 @@ interface Props {
   onGoToExam: () => void;
   onGoToRecommendations: () => void;
   onGoToBucket: () => void;
+  /** Controls the breadcrumb label when step is 'bucket-list'. */
+  bucketSource?: 'questionnaire' | 'degree-picker';
 }
 
-export default function NavBar({ step, savedCount, onGoHome, onGoToExam, onGoToRecommendations, onGoToBucket }: Props) {
+export default function NavBar({ step, savedCount, onGoHome, onGoToExam, onGoToRecommendations, onGoToBucket, bucketSource }: Props) {
   const isBucketActive = step === 'bucket-list';
 
   return (
@@ -60,7 +62,9 @@ export default function NavBar({ step, savedCount, onGoHome, onGoToExam, onGoToR
           {step === 'bucket-list' && (
             <>
               <span className="text-white/30">/</span>
-              <button onClick={onGoToRecommendations} className="text-white/50 transition hover:text-white/80">המלצות</button>
+              <button onClick={onGoToRecommendations} className="text-white/50 transition hover:text-white/80">
+                {bucketSource === 'degree-picker' ? 'בחירת תארים' : 'המלצות'}
+              </button>
               <span className="text-white/30">/</span>
               <span className="font-semibold text-indigo-300">רשימת הייעוד</span>
             </>
