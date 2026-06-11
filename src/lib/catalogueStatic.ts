@@ -1,6 +1,7 @@
 import { allPrograms } from '@/data/degrees';
 import type { Program } from '@/data/degrees/types';
 import { INSTITUTIONS, INSTITUTION_BY_NAME, type InstitutionId } from '@/data/institutions';
+import { getStaticCalculatorConfig } from '@/lib/calculatorInstitutions';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 
 function getLinkedInstitutionIds(program: Program): InstitutionId[] {
@@ -53,5 +54,6 @@ export function getStaticCatalogueInstitutions(): CatalogueInstitution[] {
     programUrl: institution.programUrl,
     calculatorUrl: institution.calculatorUrl,
     universityId: institution.universityId,
+    calculatorConfig: getStaticCalculatorConfig(institution.id),
   }));
 }

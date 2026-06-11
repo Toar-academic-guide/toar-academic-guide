@@ -5,6 +5,7 @@ import {
   pgEnum,
   pgTable,
   primaryKey,
+  real,
   text,
   timestamp,
   uniqueIndex,
@@ -13,6 +14,10 @@ import {
 export const geographicRegionEnum = pgEnum('geographic_region', ['center', 'north', 'south', 'any']);
 export const programTypeEnum = pgEnum('program_type', ['academic', 'certificate', 'vocational']);
 export const admissionTypeEnum = pgEnum('admission_type', ['sekhem', 'requirements']);
+export const calculatorFormulaTypeEnum = pgEnum('calculator_formula_type', [
+  'weighted_scaled',
+  'technion_linear',
+]);
 export const thresholdKindEnum = pgEnum('threshold_kind', ['sekhem', 'direct_psychometric']);
 export const sourceUrlKindEnum = pgEnum('source_url_kind', ['program', 'calculator', 'institution']);
 export const reviewStatusEnum = pgEnum('review_status', ['seeded', 'reviewed', 'published']);
@@ -37,6 +42,18 @@ export const institutions = pgTable('institutions', {
   programUrl: text('program_url'),
   calculatorUrl: text('calculator_url'),
   universityId: text('university_id'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const universityCalculatorConfigs = pgTable('university_calculator_configs', {
+  institutionId: text('institution_id')
+    .primaryKey()
+    .references(() => institutions.id, { onDelete: 'cascade' }),
+  formulaType: calculatorFormulaTypeEnum('formula_type').notNull(),
+  psyWeight: real('psy_weight'),
+  bagrutWeight: real('bagrut_weight'),
+  scaleDescription: text('scale_description').notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 });

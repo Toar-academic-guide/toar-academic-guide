@@ -10,7 +10,7 @@ import {
   ArrowRight,
   AlertCircle,
 } from 'lucide-react';
-import type { AcademicScores } from '@/types';
+import type { AcademicScores, University } from '@/types';
 import type { Program } from '@/data/degrees/types';
 import { analyzeBucketList, type BucketEntry } from '@/utils/bucketListEngine';
 import InstitutionLogo from '@/components/InstitutionLogo';
@@ -19,6 +19,7 @@ import InstitutionLogo from '@/components/InstitutionLogo';
 
 interface Props {
   programs: Program[];
+  calculatorInstitutions: University[];
   savedProgramIds: string[];
   academicScores?: AcademicScores;
   onRemove: (programId: string) => void;
@@ -180,6 +181,7 @@ function SectionHeader({
 
 export default function BucketList({
   programs,
+  calculatorInstitutions,
   savedProgramIds,
   academicScores,
   onRemove,
@@ -195,8 +197,8 @@ export default function BucketList({
   }, [academicScores]);
 
   const entries = useMemo(
-    () => analyzeBucketList(savedProgramIds, userScores, programs),
-    [savedProgramIds, userScores, programs],
+    () => analyzeBucketList(savedProgramIds, userScores, programs, calculatorInstitutions),
+    [savedProgramIds, userScores, programs, calculatorInstitutions],
   );
 
   const qualified    = entries.filter((e) => e.status === 'qualified');

@@ -10,6 +10,7 @@ import {
   programInstitutions,
   programs,
   sourceUrls,
+  universityCalculatorConfigs,
 } from '@/db/schema';
 import { hasDatabaseUrl } from '@/env';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
@@ -34,7 +35,18 @@ export async function listCatalogueInstitutions(): Promise<CatalogueInstitution[
   try {
     const db = getDb();
     const rows = await db.select().from(institutions);
-    return rows.map(serializeInstitutionRow);
+    const calculatorConfigRows =
+      rows.length === 0
+        ? []
+        : await db
+            .select()
+            .from(universityCalculatorConfigs)
+            .where(inArray(universityCalculatorConfigs.institutionId, rows.map((row) => row.id)));
+    const calculatorConfigsByInstitutionId = new Map(
+      calculatorConfigRows.map((row) => [row.institutionId, row])
+    );
+
+    return rows.map((row) => serializeInstitutionRow(row, calculatorConfigsByInstitutionId.get(row.id)));
   } catch (error) {
     throw new CatalogueQueryError(
       'CATALOGUE_INSTITUTIONS_UNAVAILABLE',

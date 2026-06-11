@@ -7,9 +7,30 @@ import type {
   ProgramInstitutionRow,
   ProgramRow,
   SourceUrlRow,
+  UniversityCalculatorConfigRow,
 } from '@/db/types';
 
-export function serializeInstitutionRow(row: InstitutionRow): CatalogueInstitution {
+function serializeCalculatorConfigRow(
+  row: UniversityCalculatorConfigRow
+): NonNullable<CatalogueInstitution['calculatorConfig']> {
+  return {
+    formulaType: row.formulaType,
+    scaleDescription: row.scaleDescription,
+    ...(row.psyWeight !== null && row.bagrutWeight !== null
+      ? {
+          sekhemWeight: {
+            psy: row.psyWeight,
+            bag: row.bagrutWeight,
+          },
+        }
+      : {}),
+  };
+}
+
+export function serializeInstitutionRow(
+  row: InstitutionRow,
+  calculatorConfig?: UniversityCalculatorConfigRow
+): CatalogueInstitution {
   return {
     id: row.id as CatalogueInstitution['id'],
     name: row.name,
@@ -19,6 +40,7 @@ export function serializeInstitutionRow(row: InstitutionRow): CatalogueInstituti
     programUrl: row.programUrl ?? undefined,
     calculatorUrl: row.calculatorUrl ?? undefined,
     universityId: (row.universityId ?? undefined) as CatalogueInstitution['universityId'],
+    calculatorConfig: calculatorConfig ? serializeCalculatorConfigRow(calculatorConfig) : undefined,
   };
 }
 

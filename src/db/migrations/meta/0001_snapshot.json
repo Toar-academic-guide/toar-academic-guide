@@ -1,0 +1,1537 @@
+{
+  "id": "1317ebe1-a1da-4777-9d60-ba5c8e394b7c",
+  "prevId": "fcbc2e72-4bcf-4792-881c-415c21a04041",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.admission_requirements": {
+      "name": "admission_requirements",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "program_id": {
+          "name": "program_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "institution_id": {
+          "name": "institution_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "duration_years": {
+          "name": "duration_years",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "estimated_students_per_year": {
+          "name": "estimated_students_per_year",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "quantitative_min_requirement": {
+          "name": "quantitative_min_requirement",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "english_min_requirement": {
+          "name": "english_min_requirement",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "admission_requirements": {
+          "name": "admission_requirements",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "specific_admission_notes": {
+          "name": "specific_admission_notes",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "program_description": {
+          "name": "program_description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "review_status": {
+          "name": "review_status",
+          "type": "review_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'seeded'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "admission_requirements_program_id_programs_id_fk": {
+          "name": "admission_requirements_program_id_programs_id_fk",
+          "tableFrom": "admission_requirements",
+          "tableTo": "programs",
+          "columnsFrom": [
+            "program_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "admission_requirements_institution_id_institutions_id_fk": {
+          "name": "admission_requirements_institution_id_institutions_id_fk",
+          "tableFrom": "admission_requirements",
+          "tableTo": "institutions",
+          "columnsFrom": [
+            "institution_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.admission_thresholds": {
+      "name": "admission_thresholds",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "program_id": {
+          "name": "program_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "institution_id": {
+          "name": "institution_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "university_id": {
+          "name": "university_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "threshold_kind": {
+          "name": "threshold_kind",
+          "type": "threshold_kind",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "threshold_value": {
+          "name": "threshold_value",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "admission_thresholds_scope_unique": {
+          "name": "admission_thresholds_scope_unique",
+          "columns": [
+            {
+              "expression": "program_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "institution_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "university_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "threshold_kind",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": true,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "admission_thresholds_program_id_programs_id_fk": {
+          "name": "admission_thresholds_program_id_programs_id_fk",
+          "tableFrom": "admission_thresholds",
+          "tableTo": "programs",
+          "columnsFrom": [
+            "program_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "admission_thresholds_institution_id_institutions_id_fk": {
+          "name": "admission_thresholds_institution_id_institutions_id_fk",
+          "tableFrom": "admission_thresholds",
+          "tableTo": "institutions",
+          "columnsFrom": [
+            "institution_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.ingestion_jobs": {
+      "name": "ingestion_jobs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "source_id": {
+          "name": "source_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "ingestion_job_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "difficulty": {
+          "name": "difficulty",
+          "type": "source_difficulty",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "started_at": {
+          "name": "started_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "completed_at": {
+          "name": "completed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "error_text": {
+          "name": "error_text",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "ingestion_jobs_source_id_ingestion_sources_id_fk": {
+          "name": "ingestion_jobs_source_id_ingestion_sources_id_fk",
+          "tableFrom": "ingestion_jobs",
+          "tableTo": "ingestion_sources",
+          "columnsFrom": [
+            "source_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.ingestion_payloads": {
+      "name": "ingestion_payloads",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "job_id": {
+          "name": "job_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "payload": {
+          "name": "payload",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "ingestion_payloads_job_id_ingestion_jobs_id_fk": {
+          "name": "ingestion_payloads_job_id_ingestion_jobs_id_fk",
+          "tableFrom": "ingestion_payloads",
+          "tableTo": "ingestion_jobs",
+          "columnsFrom": [
+            "job_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.ingestion_sources": {
+      "name": "ingestion_sources",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "institution_id": {
+          "name": "institution_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "program_id": {
+          "name": "program_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "difficulty": {
+          "name": "difficulty",
+          "type": "source_difficulty",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_url": {
+          "name": "source_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "notes": {
+          "name": "notes",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "ingestion_sources_institution_id_institutions_id_fk": {
+          "name": "ingestion_sources_institution_id_institutions_id_fk",
+          "tableFrom": "ingestion_sources",
+          "tableTo": "institutions",
+          "columnsFrom": [
+            "institution_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        },
+        "ingestion_sources_program_id_programs_id_fk": {
+          "name": "ingestion_sources_program_id_programs_id_fk",
+          "tableFrom": "ingestion_sources",
+          "tableTo": "programs",
+          "columnsFrom": [
+            "program_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.institutions": {
+      "name": "institutions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "region": {
+          "name": "region",
+          "type": "geographic_region",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "domain": {
+          "name": "domain",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "logo_url": {
+          "name": "logo_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "program_url": {
+          "name": "program_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "calculator_url": {
+          "name": "calculator_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "university_id": {
+          "name": "university_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.program_institutions": {
+      "name": "program_institutions",
+      "schema": "",
+      "columns": {
+        "program_id": {
+          "name": "program_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "institution_id": {
+          "name": "institution_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "program_institutions_program_id_programs_id_fk": {
+          "name": "program_institutions_program_id_programs_id_fk",
+          "tableFrom": "program_institutions",
+          "tableTo": "programs",
+          "columnsFrom": [
+            "program_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "program_institutions_institution_id_institutions_id_fk": {
+          "name": "program_institutions_institution_id_institutions_id_fk",
+          "tableFrom": "program_institutions",
+          "tableTo": "institutions",
+          "columnsFrom": [
+            "institution_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "program_institutions_program_id_institution_id_pk": {
+          "name": "program_institutions_program_id_institution_id_pk",
+          "columns": [
+            "program_id",
+            "institution_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.programs": {
+      "name": "programs",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "name": {
+          "name": "name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "institution_name": {
+          "name": "institution_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "institution_id": {
+          "name": "institution_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "type": {
+          "name": "type",
+          "type": "program_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "category": {
+          "name": "category",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "admission_type": {
+          "name": "admission_type",
+          "type": "admission_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "riasec_r": {
+          "name": "riasec_r",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "riasec_i": {
+          "name": "riasec_i",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "riasec_a": {
+          "name": "riasec_a",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "riasec_s": {
+          "name": "riasec_s",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "riasec_e": {
+          "name": "riasec_e",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "riasec_c": {
+          "name": "riasec_c",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "is_tau_engineering": {
+          "name": "is_tau_engineering",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "programs_institution_id_institutions_id_fk": {
+          "name": "programs_institution_id_institutions_id_fk",
+          "tableFrom": "programs",
+          "tableTo": "institutions",
+          "columnsFrom": [
+            "institution_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.requirement_versions": {
+      "name": "requirement_versions",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "admission_requirement_id": {
+          "name": "admission_requirement_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "version_number": {
+          "name": "version_number",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "duration_years": {
+          "name": "duration_years",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "estimated_students_per_year": {
+          "name": "estimated_students_per_year",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "quantitative_min_requirement": {
+          "name": "quantitative_min_requirement",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "english_min_requirement": {
+          "name": "english_min_requirement",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "admission_requirements": {
+          "name": "admission_requirements",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "specific_admission_notes": {
+          "name": "specific_admission_notes",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "program_description": {
+          "name": "program_description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "source_snapshot": {
+          "name": "source_snapshot",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "requirement_versions_admission_requirement_id_admission_requirements_id_fk": {
+          "name": "requirement_versions_admission_requirement_id_admission_requirements_id_fk",
+          "tableFrom": "requirement_versions",
+          "tableTo": "admission_requirements",
+          "columnsFrom": [
+            "admission_requirement_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.review_items": {
+      "name": "review_items",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "payload_id": {
+          "name": "payload_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "admission_requirement_id": {
+          "name": "admission_requirement_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "target_field": {
+          "name": "target_field",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "proposed_value": {
+          "name": "proposed_value",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "review_item_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'pending'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "reviewed_at": {
+          "name": "reviewed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "review_items_payload_id_ingestion_payloads_id_fk": {
+          "name": "review_items_payload_id_ingestion_payloads_id_fk",
+          "tableFrom": "review_items",
+          "tableTo": "ingestion_payloads",
+          "columnsFrom": [
+            "payload_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "review_items_admission_requirement_id_admission_requirements_id_fk": {
+          "name": "review_items_admission_requirement_id_admission_requirements_id_fk",
+          "tableFrom": "review_items",
+          "tableTo": "admission_requirements",
+          "columnsFrom": [
+            "admission_requirement_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.saved_programs": {
+      "name": "saved_programs",
+      "schema": "",
+      "columns": {
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "program_id": {
+          "name": "program_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "saved_programs_user_id_users_id_fk": {
+          "name": "saved_programs_user_id_users_id_fk",
+          "tableFrom": "saved_programs",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "saved_programs_program_id_programs_id_fk": {
+          "name": "saved_programs_program_id_programs_id_fk",
+          "tableFrom": "saved_programs",
+          "tableTo": "programs",
+          "columnsFrom": [
+            "program_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "saved_programs_user_id_program_id_pk": {
+          "name": "saved_programs_user_id_program_id_pk",
+          "columns": [
+            "user_id",
+            "program_id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.source_urls": {
+      "name": "source_urls",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "admission_requirement_id": {
+          "name": "admission_requirement_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "institution_id": {
+          "name": "institution_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "program_id": {
+          "name": "program_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "source_url_kind",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "url": {
+          "name": "url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "source_urls_admission_requirement_id_admission_requirements_id_fk": {
+          "name": "source_urls_admission_requirement_id_admission_requirements_id_fk",
+          "tableFrom": "source_urls",
+          "tableTo": "admission_requirements",
+          "columnsFrom": [
+            "admission_requirement_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "source_urls_institution_id_institutions_id_fk": {
+          "name": "source_urls_institution_id_institutions_id_fk",
+          "tableFrom": "source_urls",
+          "tableTo": "institutions",
+          "columnsFrom": [
+            "institution_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "source_urls_program_id_programs_id_fk": {
+          "name": "source_urls_program_id_programs_id_fk",
+          "tableFrom": "source_urls",
+          "tableTo": "programs",
+          "columnsFrom": [
+            "program_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.uploaded_documents": {
+      "name": "uploaded_documents",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "kind": {
+          "name": "kind",
+          "type": "document_kind",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "storage_provider": {
+          "name": "storage_provider",
+          "type": "storage_provider",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "storage_path": {
+          "name": "storage_path",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "original_file_name": {
+          "name": "original_file_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "mime_type": {
+          "name": "mime_type",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "size_bytes": {
+          "name": "size_bytes",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "uploaded_at": {
+          "name": "uploaded_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "uploaded_documents_user_id_users_id_fk": {
+          "name": "uploaded_documents_user_id_users_id_fk",
+          "tableFrom": "uploaded_documents",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.user_profiles": {
+      "name": "user_profiles",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "user_id": {
+          "name": "user_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "geographic_preference": {
+          "name": "geographic_preference",
+          "type": "geographic_region",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'any'"
+        },
+        "psychometric_overall": {
+          "name": "psychometric_overall",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "psychometric_quantitative": {
+          "name": "psychometric_quantitative",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "psychometric_verbal": {
+          "name": "psychometric_verbal",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "psychometric_english": {
+          "name": "psychometric_english",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bagrut_weighted_average": {
+          "name": "bagrut_weighted_average",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "riasec_r": {
+          "name": "riasec_r",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "riasec_i": {
+          "name": "riasec_i",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "riasec_a": {
+          "name": "riasec_a",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "riasec_s": {
+          "name": "riasec_s",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "riasec_e": {
+          "name": "riasec_e",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "riasec_c": {
+          "name": "riasec_c",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "avoidance_tags": {
+          "name": "avoidance_tags",
+          "type": "text[]",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'"
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "user_profiles_user_id_users_id_fk": {
+          "name": "user_profiles_user_id_users_id_fk",
+          "tableFrom": "user_profiles",
+          "tableTo": "users",
+          "columnsFrom": [
+            "user_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.users": {
+      "name": "users",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "email": {
+          "name": "email",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.university_calculator_configs": {
+      "name": "university_calculator_configs",
+      "schema": "",
+      "columns": {
+        "institution_id": {
+          "name": "institution_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "formula_type": {
+          "name": "formula_type",
+          "type": "calculator_formula_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "psy_weight": {
+          "name": "psy_weight",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "bagrut_weight": {
+          "name": "bagrut_weight",
+          "type": "real",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "scale_description": {
+          "name": "scale_description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "university_calculator_configs_institution_id_institutions_id_fk": {
+          "name": "university_calculator_configs_institution_id_institutions_id_fk",
+          "tableFrom": "university_calculator_configs",
+          "tableTo": "institutions",
+          "columnsFrom": [
+            "institution_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": true
+    }
+  },
+  "enums": {
+    "public.admission_type": {
+      "name": "admission_type",
+      "schema": "public",
+      "values": [
+        "sekhem",
+        "requirements"
+      ]
+    },
+    "public.document_kind": {
+      "name": "document_kind",
+      "schema": "public",
+      "values": [
+        "psychometric",
+        "bagrut",
+        "other"
+      ]
+    },
+    "public.geographic_region": {
+      "name": "geographic_region",
+      "schema": "public",
+      "values": [
+        "center",
+        "north",
+        "south",
+        "any"
+      ]
+    },
+    "public.ingestion_job_status": {
+      "name": "ingestion_job_status",
+      "schema": "public",
+      "values": [
+        "pending",
+        "running",
+        "succeeded",
+        "failed",
+        "needs_review"
+      ]
+    },
+    "public.program_type": {
+      "name": "program_type",
+      "schema": "public",
+      "values": [
+        "academic",
+        "certificate",
+        "vocational"
+      ]
+    },
+    "public.review_item_status": {
+      "name": "review_item_status",
+      "schema": "public",
+      "values": [
+        "pending",
+        "approved",
+        "rejected"
+      ]
+    },
+    "public.review_status": {
+      "name": "review_status",
+      "schema": "public",
+      "values": [
+        "seeded",
+        "reviewed",
+        "published"
+      ]
+    },
+    "public.source_difficulty": {
+      "name": "source_difficulty",
+      "schema": "public",
+      "values": [
+        "easy",
+        "browser_required",
+        "hard_manual"
+      ]
+    },
+    "public.source_url_kind": {
+      "name": "source_url_kind",
+      "schema": "public",
+      "values": [
+        "program",
+        "calculator",
+        "institution"
+      ]
+    },
+    "public.storage_provider": {
+      "name": "storage_provider",
+      "schema": "public",
+      "values": [
+        "local",
+        "supabase_storage",
+        "s3",
+        "other"
+      ]
+    },
+    "public.threshold_kind": {
+      "name": "threshold_kind",
+      "schema": "public",
+      "values": [
+        "sekhem",
+        "direct_psychometric"
+      ]
+    },
+    "public.calculator_formula_type": {
+      "name": "calculator_formula_type",
+      "schema": "public",
+      "values": [
+        "weighted_scaled",
+        "technion_linear"
+      ]
+    }
+  },
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
