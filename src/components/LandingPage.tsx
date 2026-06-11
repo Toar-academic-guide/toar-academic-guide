@@ -25,25 +25,28 @@ export default function LandingPage({ onAlreadyKnow, onNeedHelp }: Props) {
     <div dir="rtl" className="min-h-screen bg-white">
 
       {/* ── Sticky Nav ──────────────────────────────────────────── */}
-      <header className="sticky top-0 z-50 bg-white border-b border-[#e5e7eb]">
+      <header className="sticky top-0 z-50 border-b border-[#e5e7eb] bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-2">
-          <button type="button" className="cursor-pointer rounded-lg outline-none hover:opacity-80 transition-opacity">
+          <button type="button" className="cursor-pointer rounded-lg outline-none transition-opacity hover:opacity-80">
             <LogoCanvas size={52} brighten={false} />
           </button>
 
-          <nav className="hidden md:flex items-center gap-7">
-            <button type="button" onClick={() => scrollToSection('how-it-works')} className="text-sm text-slate-500 hover:text-slate-900 transition">
+          <nav className="hidden items-center gap-7 md:flex">
+            <button type="button" onClick={() => scrollToSection('how-it-works')} className="text-sm text-slate-500 transition hover:text-slate-900">
               איך זה עובד
             </button>
-            <button type="button" onClick={scrollToStart} className="text-sm text-slate-500 hover:text-slate-900 transition">
+            <button type="button" onClick={scrollToStart} className="text-sm text-slate-500 transition hover:text-slate-900">
               תחומי לימוד
+            </button>
+            <button type="button" className="text-sm text-slate-500 transition hover:text-slate-900">
+              מי אנחנו
             </button>
           </nav>
 
           <button
             type="button"
             onClick={scrollToStart}
-            className="rounded-full bg-[#1e1b4b] px-5 py-2 text-sm font-semibold text-white hover:bg-[#2d2a6e] transition"
+            className="rounded-full bg-[#1e1b4b] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#2d2a6e]"
           >
             מתחילים ←
           </button>
@@ -106,7 +109,7 @@ export default function LandingPage({ onAlreadyKnow, onNeedHelp }: Props) {
             <button
               type="button"
               onClick={scrollToStart}
-              className="rounded-full bg-[#1e1b4b] px-8 py-3.5 text-base font-semibold text-white hover:bg-[#2d2a6e] transition"
+              className="rounded-full bg-[#1e1b4b] px-8 py-3.5 text-base font-semibold text-white transition hover:bg-[#2d2a6e]"
             >
               מתחילים ←
             </button>

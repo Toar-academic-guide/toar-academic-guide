@@ -205,7 +205,7 @@ export default function Home() {
       <>
         <BackButton />
         <DegreePicker
-          allPrograms={allPrograms}
+          allPrograms={cataloguePrograms}
           savedProgramIds={profile.savedProgramIds ?? []}
           onToggleSave={handleToggleSave}
           onDone={() => setStep('bucket-list')}
