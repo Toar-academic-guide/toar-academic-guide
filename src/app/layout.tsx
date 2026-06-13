@@ -3,8 +3,8 @@ import { AuthProvider } from '@/context/AuthContext';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'מדריך האקדמיה לחייל המשוחרר',
-  description: 'כלי לחישוב סיכויי קבלה לאוניברסיטאות בישראל',
+  title: 'Way — מה.איפה.איך',
+  description: 'השותף שלך לדרך האקדמית — שאלון אישיות, המלצות תחומי לימוד, וחישוב סיכויי קבלה',
 };
 
 export default function RootLayout({

@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
-import { BarChart3, Sparkles, Target } from 'lucide-react';
+import { Target, Sparkles, BarChart3 } from 'lucide-react';
 import LogoCanvas from './LogoCanvas';
 import NeoButton from './NeoButton';
 
@@ -24,34 +24,28 @@ export default function LandingPage({ onAlreadyKnow, onNeedHelp, onSignIn }: Pro
 
   return (
     <div dir="rtl" className="min-h-screen bg-white">
-      <header className="sticky top-0 z-50 border-b border-[#e5e7eb] bg-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-2">
-          <button
-            type="button"
-            className="cursor-pointer rounded-lg outline-none transition-opacity hover:opacity-80"
-          >
-            <LogoCanvas size={52} brighten={false} />
-          </button>
 
-          <nav className="hidden items-center gap-7 md:flex">
-            <button
-              type="button"
-              onClick={() => scrollToSection('how-it-works')}
-              className="text-sm text-slate-500 transition hover:text-slate-900"
-            >
-              איך זה עובד
+      {/* ── Sticky Nav ──────────────────────────────────────────── */}
+      <header className="sticky top-0 z-50 border-b border-[#e5e7eb] bg-white">
+        <div className="flex items-center justify-between py-2 pl-8 pr-4 sm:pl-12 sm:pr-6">
+          {/* Logo + nav links grouped together on the right (RTL) */}
+          <div className="flex items-center gap-8">
+            <button type="button" className="cursor-pointer rounded-lg outline-none transition-opacity hover:opacity-80">
+              <LogoCanvas size={120} brighten={false} />
             </button>
-            <button
-              type="button"
-              onClick={scrollToStart}
-              className="text-sm text-slate-500 transition hover:text-slate-900"
-            >
-              תחומי לימוד
-            </button>
-            <button type="button" className="text-sm text-slate-500 transition hover:text-slate-900">
-              מי אנחנו
-            </button>
-          </nav>
+
+            <nav className="hidden items-center gap-7 md:flex">
+              <button type="button" onClick={() => scrollToSection('how-it-works')} className="text-sm text-slate-500 transition hover:text-slate-900">
+                איך זה עובד
+              </button>
+              <button type="button" onClick={scrollToStart} className="text-sm text-slate-500 transition hover:text-slate-900">
+                תחומי לימוד
+              </button>
+              <button type="button" className="text-sm text-slate-500 transition hover:text-slate-900">
+                מי אנחנו
+              </button>
+            </nav>
+          </div>
 
           <div className="flex items-center gap-3">
             <button
@@ -72,56 +66,36 @@ export default function LandingPage({ onAlreadyKnow, onNeedHelp, onSignIn }: Pro
         </div>
       </header>
 
-      <section className="flex flex-col md:flex-row" style={{ minHeight: '92vh' }}>
-        {/* RIGHT 2/3: Bauhaus visual (first in DOM = right side in RTL) */}
-        <div className="relative order-2 overflow-hidden md:order-1 md:flex-[2]" style={{ minHeight: '260px', background: '#f7f6f2' }}>
-          <svg
-            viewBox="0 0 800 500"
-            preserveAspectRatio="xMidYMid slice"
-            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
-            aria-hidden="true"
-          >
-            <rect width="800" height="500" fill="#f7f6f2" />
-            {/* Grid lines: extensions of blue quad edges */}
-            <line x1="0" y1="116" x2="800" y2="45" stroke="#cac7bc" strokeWidth="0.6" />
-            <line x1="0" y1="388" x2="800" y2="316" stroke="#cac7bc" strokeWidth="0.6" />
-            <line x1="173" y1="0" x2="210" y2="500" stroke="#cac7bc" strokeWidth="0.6" />
-            <line x1="454" y1="0" x2="491" y2="500" stroke="#cac7bc" strokeWidth="0.6" />
-            {/* Blue quadrilateral */}
-            <polygon points="180,100 460,75 480,345 200,370" fill="#2563a4" />
-            {/* Yellow triangle */}
-            <polygon points="330,20 550,20 440,230" fill="#f4b800" />
-            {/* Red circle */}
-            <circle cx="620" cy="330" r="155" fill="#c8322a" />
-          </svg>
-        </div>
-
-        {/* LEFT 1/3: text (second in DOM = left side in RTL) */}
-        <div className="order-1 flex flex-col justify-center px-10 py-16 md:order-2 md:w-1/3">
-          <div
-            className="mb-5 inline-flex w-fit items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold"
-            style={{ background: '#eef2ff', color: '#4f46e5' }}
-          >
-            <span>✦</span>
-            כלי חינמי לחיילים משוחררים
-          </div>
+      {/* ── Hero ────────────────────────────────────────────────── */}
+      <section
+        className="px-6 py-16 text-center md:py-20"
+        style={{ background: 'radial-gradient(ellipse at center, #f3fdff 0%, #e8f7fa 60%, #e5f7fb 100%)' }}
+      >
+        <div className="mx-auto max-w-lg">
+          <img
+            src="/way-logo.png"
+            alt="Way"
+            className="mx-auto mb-4"
+            style={{
+              height: '180px',
+              objectFit: 'contain',
+              WebkitMaskImage: 'radial-gradient(ellipse 85% 85% at center, black 40%, transparent 70%)',
+              maskImage: 'radial-gradient(ellipse 85% 85% at center, black 40%, transparent 70%)',
+            }}
+          />
 
           <h1
-            className="mb-4 text-4xl font-black leading-tight text-slate-900 md:text-5xl"
-            style={{ letterSpacing: '-0.02em' }}
+            className="mb-2 text-2xl font-black text-slate-900 md:text-3xl"
+            style={{ letterSpacing: '0.02em' }}
           >
-            גלה את המסלול
-            <br />
-            האקדמי שלך
-            <br />
-            אחרי הצבא
+            מה<span className="mx-1 text-[#4f46e5]">.</span>איפה<span className="mx-1 text-[#4f46e5]">.</span>איך
           </h1>
 
-          <p className="mb-8 max-w-sm text-base leading-relaxed text-slate-500">
-            שאלון אישיות, המלצות תחומי לימוד, וחישוב סיכויי קבלה ל-35 מוסדות אקדמיים בישראל.
+          <p className="mb-8 text-base text-slate-500">
+            השותף שלך לדרך
           </p>
 
-          <div className="flex items-center gap-4">
+          <div className="mb-10 flex items-center justify-center">
             <button
               type="button"
               onClick={scrollToStart}
@@ -129,11 +103,26 @@ export default function LandingPage({ onAlreadyKnow, onNeedHelp, onSignIn }: Pro
             >
               מתחילים ←
             </button>
-            <span className="text-sm text-slate-400">ללא הרשמה · חינמי לחלוטין</span>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 text-center shadow-sm">
+              <h3 className="mb-1 text-lg font-black text-slate-900">מה</h3>
+              <p className="text-xs leading-relaxed text-slate-500">שאלון אישיות שמגלה מה מתאים לך</p>
+            </div>
+            <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 text-center shadow-sm">
+              <h3 className="mb-1 text-lg font-black text-slate-900">איך</h3>
+              <p className="text-xs leading-relaxed text-slate-500">חישוב סיכויי קבלה ל-35 מוסדות</p>
+            </div>
+            <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 text-center shadow-sm">
+              <h3 className="mb-1 text-lg font-black text-slate-900">איפה</h3>
+              <p className="text-xs leading-relaxed text-slate-500">המלצות מותאמות למוסד הנכון</p>
+            </div>
           </div>
         </div>
       </section>
 
+      {/* ── How it works ────────────────────────────────────────── */}
       <section id="how-it-works" className="bg-white px-6 py-20">
         <div className="mx-auto max-w-4xl">
           <h2 className="mb-2 text-center text-3xl font-black tracking-tight text-slate-900" style={{ letterSpacing: '-0.02em' }}>
@@ -174,6 +163,7 @@ export default function LandingPage({ onAlreadyKnow, onNeedHelp, onSignIn }: Pro
         </div>
       </section>
 
+      {/* ── Testimonials ────────────────────────────────────────── */}
       <section className="px-6 py-20" style={{ background: '#f8f9fc' }}>
         <div className="mx-auto max-w-4xl">
           <h2 className="mb-2 text-center text-3xl font-black tracking-tight text-slate-900" style={{ letterSpacing: '-0.02em' }}>
@@ -186,7 +176,7 @@ export default function LandingPage({ onAlreadyKnow, onNeedHelp, onSignIn }: Pro
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
             <div className="rounded-2xl border border-[#e5e7eb] bg-white p-7 shadow-sm">
               <p className="mb-5 text-sm italic leading-relaxed text-slate-700">
-                &quot;לא ידעתי בכלל מה לעשות אחרי הצבא. TOAR עזר לי להבין שהנדסת תוכנה זה בדיוק מה שמתאים לי.&quot;
+                &quot;לא ידעתי בכלל מה לעשות אחרי הצבא. Way עזר לי להבין שהנדסת תוכנה זה בדיוק מה שמתאים לי.&quot;
               </p>
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold" style={{ background: '#eef2ff', color: '#4f46e5' }}>
@@ -217,6 +207,7 @@ export default function LandingPage({ onAlreadyKnow, onNeedHelp, onSignIn }: Pro
         </div>
       </section>
 
+      {/* ── Bottom CTA with Yes / No ─────────────────────────────── */}
       <section
         ref={startRef}
         id="start"
@@ -252,6 +243,7 @@ export default function LandingPage({ onAlreadyKnow, onNeedHelp, onSignIn }: Pro
           </div>
         </div>
       </section>
+
     </div>
   );
 }

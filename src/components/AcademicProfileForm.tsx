@@ -90,7 +90,7 @@ export default function AcademicProfileForm({
         {/* ── Logo ─────────────────────────────────────────────────────── */}
         <motion.div {...fadeUp(0)}>
           <Image
-            src="/logo.jpg.PNG"
+            src="/way-logo.png"
             alt="לוגו"
             width={440}
             height={150}

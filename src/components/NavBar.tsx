@@ -53,14 +53,14 @@ export default function NavBar({
       className="sticky top-0 z-50"
       style={{ background: 'linear-gradient(90deg, #1e1b4b 0%, #3730a3 100%)' }}
     >
-      <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-2 sm:px-6">
+      <div className="flex items-center justify-between px-8 py-2 sm:px-10">
         <button
           type="button"
           onClick={onGoHome}
           aria-label="חזרה לדף הבית"
           className="cursor-pointer rounded-lg outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-white/50"
         >
-          <LogoCanvas size={70} brighten={true} />
+          <LogoCanvas size={160} brighten={true} />
         </button>
 
         <nav className="flex items-center gap-1.5 text-sm" aria-label="ניווט">
