@@ -24,7 +24,7 @@ export default function NeoButton({
   disabled = false,
 }: Props) {
   const base =
-    'inline-flex items-center justify-center gap-2 rounded-full border-2 border-black font-bold text-slate-900 transition disabled:opacity-50 disabled:cursor-not-allowed';
+    'inline-flex items-center justify-center gap-2 rounded-full border-2 border-black font-bold text-slate-900 transition disabled:cursor-not-allowed disabled:opacity-50';
 
   const variants: Record<Variant, string> = {
     cyan:

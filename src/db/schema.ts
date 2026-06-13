@@ -9,6 +9,7 @@ import {
   text,
   timestamp,
   uniqueIndex,
+  uuid,
 } from 'drizzle-orm/pg-core';
 
 export const geographicRegionEnum = pgEnum('geographic_region', ['center', 'north', 'south', 'any']);
@@ -170,18 +171,8 @@ export const requirementVersions = pgTable('requirement_versions', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
-export const users = pgTable('users', {
-  id: text('id').primaryKey(),
-  email: text('email'),
-  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
-  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
-});
-
 export const userProfiles = pgTable('user_profiles', {
-  id: text('id').primaryKey(),
-  userId: text('user_id')
-    .notNull()
-    .references(() => users.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id').primaryKey().notNull(),
   geographicPreference: geographicRegionEnum('geographic_preference').default('any').notNull(),
   psychometricOverall: integer('psychometric_overall'),
   psychometricQuantitative: integer('psychometric_quantitative'),
@@ -202,9 +193,7 @@ export const userProfiles = pgTable('user_profiles', {
 export const savedPrograms = pgTable(
   'saved_programs',
   {
-    userId: text('user_id')
-      .notNull()
-      .references(() => users.id, { onDelete: 'cascade' }),
+    userId: uuid('user_id').notNull(),
     programId: text('program_id')
       .notNull()
       .references(() => programs.id, { onDelete: 'cascade' }),
@@ -217,7 +206,7 @@ export const savedPrograms = pgTable(
 
 export const uploadedDocuments = pgTable('uploaded_documents', {
   id: text('id').primaryKey(),
-  userId: text('user_id').references(() => users.id, { onDelete: 'cascade' }),
+  userId: uuid('user_id'),
   kind: documentKindEnum('kind').notNull(),
   storageProvider: storageProviderEnum('storage_provider').notNull(),
   storagePath: text('storage_path').notNull(),

@@ -1,16 +1,17 @@
 'use client';
 
 import { useRef } from 'react';
-import { Target, Sparkles, BarChart3 } from 'lucide-react';
+import { BarChart3, Sparkles, Target } from 'lucide-react';
 import LogoCanvas from './LogoCanvas';
 import NeoButton from './NeoButton';
 
 interface Props {
   onAlreadyKnow: () => void;
   onNeedHelp: () => void;
+  onSignIn: () => void;
 }
 
-export default function LandingPage({ onAlreadyKnow, onNeedHelp }: Props) {
+export default function LandingPage({ onAlreadyKnow, onNeedHelp, onSignIn }: Props) {
   const startRef = useRef<HTMLElement>(null);
 
   function scrollToStart() {
@@ -23,19 +24,28 @@ export default function LandingPage({ onAlreadyKnow, onNeedHelp }: Props) {
 
   return (
     <div dir="rtl" className="min-h-screen bg-white">
-
-      {/* ── Sticky Nav ──────────────────────────────────────────── */}
       <header className="sticky top-0 z-50 border-b border-[#e5e7eb] bg-white">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-2">
-          <button type="button" className="cursor-pointer rounded-lg outline-none transition-opacity hover:opacity-80">
+          <button
+            type="button"
+            className="cursor-pointer rounded-lg outline-none transition-opacity hover:opacity-80"
+          >
             <LogoCanvas size={52} brighten={false} />
           </button>
 
           <nav className="hidden items-center gap-7 md:flex">
-            <button type="button" onClick={() => scrollToSection('how-it-works')} className="text-sm text-slate-500 transition hover:text-slate-900">
+            <button
+              type="button"
+              onClick={() => scrollToSection('how-it-works')}
+              className="text-sm text-slate-500 transition hover:text-slate-900"
+            >
               איך זה עובד
             </button>
-            <button type="button" onClick={scrollToStart} className="text-sm text-slate-500 transition hover:text-slate-900">
+            <button
+              type="button"
+              onClick={scrollToStart}
+              className="text-sm text-slate-500 transition hover:text-slate-900"
+            >
               תחומי לימוד
             </button>
             <button type="button" className="text-sm text-slate-500 transition hover:text-slate-900">
@@ -43,24 +53,31 @@ export default function LandingPage({ onAlreadyKnow, onNeedHelp }: Props) {
             </button>
           </nav>
 
-          <button
-            type="button"
-            onClick={scrollToStart}
-            className="rounded-full bg-[#1e1b4b] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#2d2a6e]"
-          >
-            מתחילים ←
-          </button>
+          <div className="flex items-center gap-3">
+            <button
+              type="button"
+              onClick={onSignIn}
+              className="text-sm font-semibold text-slate-600 transition hover:text-slate-900"
+            >
+              התחברות
+            </button>
+            <button
+              type="button"
+              onClick={scrollToStart}
+              className="rounded-full bg-[#1e1b4b] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#2d2a6e]"
+            >
+              מתחילים ←
+            </button>
+          </div>
         </div>
       </header>
 
-      {/* ── Hero ────────────────────────────────────────────────── */}
       <section
         className="grid grid-cols-1 md:grid-cols-2"
         style={{ background: 'linear-gradient(150deg, #f0f0ff 0%, #fafaff 55%, #ffffff 100%)', minHeight: '520px' }}
       >
-        {/* Illustration — left column */}
         <div
-          className="flex items-center justify-center p-10 order-2 md:order-1"
+          className="order-2 flex items-center justify-center p-10 md:order-1"
           style={{ background: 'linear-gradient(135deg, #eef2ff 0%, #f5f3ff 100%)' }}
         >
           <svg width="280" height="280" viewBox="0 0 280 280" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -82,8 +99,7 @@ export default function LandingPage({ onAlreadyKnow, onNeedHelp }: Props) {
           </svg>
         </div>
 
-        {/* Text — right column */}
-        <div className="flex flex-col justify-center px-10 py-16 order-1 md:order-2">
+        <div className="order-1 flex flex-col justify-center px-10 py-16 md:order-2">
           <div
             className="mb-5 inline-flex w-fit items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold"
             style={{ background: '#eef2ff', color: '#4f46e5' }}
@@ -96,8 +112,10 @@ export default function LandingPage({ onAlreadyKnow, onNeedHelp }: Props) {
             className="mb-4 text-4xl font-black leading-tight text-slate-900 md:text-5xl"
             style={{ letterSpacing: '-0.02em' }}
           >
-            גלה את המסלול<br />
-            האקדמי שלך<br />
+            גלה את המסלול
+            <br />
+            האקדמי שלך
+            <br />
             אחרי הצבא
           </h1>
 
@@ -118,7 +136,6 @@ export default function LandingPage({ onAlreadyKnow, onNeedHelp }: Props) {
         </div>
       </section>
 
-      {/* ── How it works ────────────────────────────────────────── */}
       <section id="how-it-works" className="bg-white px-6 py-20">
         <div className="mx-auto max-w-4xl">
           <h2 className="mb-2 text-center text-3xl font-black tracking-tight text-slate-900" style={{ letterSpacing: '-0.02em' }}>
@@ -159,7 +176,6 @@ export default function LandingPage({ onAlreadyKnow, onNeedHelp }: Props) {
         </div>
       </section>
 
-      {/* ── Testimonials ────────────────────────────────────────── */}
       <section className="px-6 py-20" style={{ background: '#f8f9fc' }}>
         <div className="mx-auto max-w-4xl">
           <h2 className="mb-2 text-center text-3xl font-black tracking-tight text-slate-900" style={{ letterSpacing: '-0.02em' }}>
@@ -203,7 +219,6 @@ export default function LandingPage({ onAlreadyKnow, onNeedHelp }: Props) {
         </div>
       </section>
 
-      {/* ── Bottom CTA with Yes / No ─────────────────────────────── */}
       <section
         ref={startRef}
         id="start"
@@ -239,7 +254,6 @@ export default function LandingPage({ onAlreadyKnow, onNeedHelp }: Props) {
           </div>
         </div>
       </section>
-
     </div>
   );
 }

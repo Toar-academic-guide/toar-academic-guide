@@ -12,6 +12,8 @@
     "db:seed:dry-run": "node scripts/seed-catalogue.mjs --dry-run"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.0",
+    "@supabase/supabase-js": "^2.108.1",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.16.0",
     "next": "16.2.6",

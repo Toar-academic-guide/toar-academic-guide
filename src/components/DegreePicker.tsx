@@ -1,24 +1,24 @@
 'use client';
 
 import { useMemo, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Search, ChevronDown, ChevronUp, Check, Plus, X } from 'lucide-react';
-import type { Program } from '@/data/degrees/types';
+import { AnimatePresence, motion } from 'framer-motion';
+import { Check, ChevronDown, ChevronUp, Plus, Search, X } from 'lucide-react';
+import type { CatalogueProgram } from '@/types/catalogue';
 import NeoButton from './NeoButton';
 
 interface Props {
-  allPrograms: Program[];
+  programs: CatalogueProgram[];
   savedProgramIds: string[];
   onToggleSave: (programId: string) => void;
   onDone: () => void;
 }
 
-function normalize(s: string): string {
-  return s.toLowerCase().replace(/[֑-ׇ]/g, '');
+function normalize(value: string) {
+  return value.toLowerCase().replace(/[֑-ׇ]/g, '');
 }
 
 export default function DegreePicker({
-  allPrograms,
+  programs,
   savedProgramIds,
   onToggleSave,
   onDone,
@@ -27,32 +27,39 @@ export default function DegreePicker({
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
   const programsByCategory = useMemo(() => {
-    const map = new Map<string, Program[]>();
-    for (const p of allPrograms) {
-      const cat = p.category?.trim() || 'אחר';
-      if (!map.has(cat)) map.set(cat, []);
-      map.get(cat)!.push(p);
-    }
-    return map;
-  }, [allPrograms]);
+    const categories = new Map<string, CatalogueProgram[]>();
 
-  const categories = useMemo(
-    () => Array.from(programsByCategory.keys()).sort((a, b) => a.localeCompare(b, 'he')),
-    [programsByCategory],
+    for (const program of programs) {
+      const category = program.category.trim() || 'אחר';
+      if (!categories.has(category)) {
+        categories.set(category, []);
+      }
+      categories.get(category)?.push(program);
+    }
+
+    return categories;
+  }, [programs]);
+
+  const categoryNames = useMemo(
+    () => Array.from(programsByCategory.keys()).sort((left, right) => left.localeCompare(right, 'he')),
+    [programsByCategory]
   );
 
   const searchActive = query.trim().length > 0;
-  const filtered = useMemo(() => {
-    if (!searchActive) return [] as Program[];
-    const q = normalize(query.trim());
-    return allPrograms.filter((p) => {
+  const filteredPrograms = useMemo(() => {
+    if (!searchActive) {
+      return [] as CatalogueProgram[];
+    }
+
+    const normalizedQuery = normalize(query.trim());
+    return programs.filter((program) => {
       return (
-        normalize(p.name).includes(q) ||
-        normalize(p.institution).includes(q) ||
-        normalize(p.category || '').includes(q)
+        normalize(program.name).includes(normalizedQuery) ||
+        normalize(program.institution).includes(normalizedQuery) ||
+        normalize(program.category).includes(normalizedQuery)
       );
     });
-  }, [searchActive, query, allPrograms]);
+  }, [programs, query, searchActive]);
 
   const savedSet = useMemo(() => new Set(savedProgramIds), [savedProgramIds]);
   const savedCount = savedProgramIds.length;
@@ -78,7 +85,7 @@ export default function DegreePicker({
             <input
               type="search"
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(event) => setQuery(event.target.value)}
               placeholder="חפש תואר, מוסד או תחום…"
               className="h-12 w-full rounded-full border-2 border-black bg-white px-12 pr-12 text-base text-slate-900 placeholder-slate-400 outline-none transition focus:shadow-[2px_2px_0px_rgba(0,0,0,1)]"
             />
@@ -95,30 +102,28 @@ export default function DegreePicker({
           </div>
         </div>
 
-        {searchActive && (
+        {searchActive ? (
           <SearchResults
-            filtered={filtered}
+            programs={filteredPrograms}
             savedSet={savedSet}
             onToggleSave={onToggleSave}
             onClear={() => setQuery('')}
           />
-        )}
-
-        {!searchActive && (
+        ) : (
           <div className="flex flex-col gap-3">
-            {categories.map((cat) => {
-              const programs = programsByCategory.get(cat) || [];
-              const isOpen = expandedCategory === cat;
-              const savedInCat = programs.filter((p) => savedSet.has(p.id)).length;
+            {categoryNames.map((category) => {
+              const categoryPrograms = programsByCategory.get(category) ?? [];
+              const isOpen = expandedCategory === category;
+              const savedInCategory = categoryPrograms.filter((program) => savedSet.has(program.id)).length;
 
               return (
                 <div
-                  key={cat}
+                  key={category}
                   className="overflow-hidden rounded-2xl border-2 border-black bg-white transition"
                 >
                   <button
                     type="button"
-                    onClick={() => setExpandedCategory(isOpen ? null : cat)}
+                    onClick={() => setExpandedCategory(isOpen ? null : category)}
                     className="flex w-full items-center justify-between px-5 py-4 text-right transition hover:bg-slate-50"
                     aria-expanded={isOpen}
                   >
@@ -129,16 +134,16 @@ export default function DegreePicker({
                         <ChevronDown size={20} className="text-slate-500" />
                       )}
                       <span className="text-sm text-slate-500">
-                        {programs.length} תארים
-                        {savedInCat > 0 && (
+                        {categoryPrograms.length} תארים
+                        {savedInCategory > 0 && (
                           <span className="mr-2 inline-flex items-center gap-1 rounded-full bg-[#A6FAFF] px-2 py-0.5 text-xs font-bold text-slate-900">
                             <Check size={11} />
-                            {savedInCat} נבחרו
+                            {savedInCategory} נבחרו
                           </span>
                         )}
                       </span>
                     </div>
-                    <h3 className="text-lg font-bold text-slate-900">{cat}</h3>
+                    <h3 className="text-lg font-bold text-slate-900">{category}</h3>
                   </button>
 
                   <AnimatePresence initial={false}>
@@ -151,12 +156,12 @@ export default function DegreePicker({
                       >
                         <div className="border-t border-slate-200 px-3 py-3">
                           <div className="flex flex-col divide-y divide-slate-100">
-                            {programs.map((p) => (
+                            {categoryPrograms.map((program) => (
                               <ProgramRow
-                                key={p.id}
-                                program={p}
-                                isSaved={savedSet.has(p.id)}
-                                onToggle={() => onToggleSave(p.id)}
+                                key={program.id}
+                                program={program}
+                                isSaved={savedSet.has(program.id)}
+                                onToggle={() => onToggleSave(program.id)}
                               />
                             ))}
                           </div>
@@ -203,7 +208,7 @@ function ProgramRow({
   isSaved,
   onToggle,
 }: {
-  program: Program;
+  program: CatalogueProgram;
   isSaved: boolean;
   onToggle: () => void;
 }) {
@@ -241,22 +246,20 @@ function ProgramRow({
 }
 
 function SearchResults({
-  filtered,
+  programs,
   savedSet,
   onToggleSave,
   onClear,
 }: {
-  filtered: Program[];
+  programs: CatalogueProgram[];
   savedSet: Set<string>;
   onToggleSave: (id: string) => void;
   onClear: () => void;
 }) {
-  if (filtered.length === 0) {
+  if (programs.length === 0) {
     return (
       <div className="rounded-2xl border-2 border-dashed border-slate-300 bg-white px-6 py-12 text-center">
-        <p className="mb-2 text-base font-semibold text-slate-900">
-          לא נמצאו תארים תואמים
-        </p>
+        <p className="mb-2 text-base font-semibold text-slate-900">לא נמצאו תארים תואמים</p>
         <p className="mb-4 text-sm text-slate-500">נסה חיפוש אחר או דפדף לפי קטגוריה.</p>
         <button
           type="button"
@@ -272,15 +275,15 @@ function SearchResults({
   return (
     <div className="rounded-2xl border-2 border-black bg-white">
       <div className="border-b border-slate-200 px-5 py-3 text-sm text-slate-500">
-        נמצאו <span className="font-bold text-slate-900">{filtered.length}</span> תארים
+        נמצאו <span className="font-bold text-slate-900">{programs.length}</span> תארים
       </div>
       <div className="flex flex-col divide-y divide-slate-100 px-3 py-2">
-        {filtered.map((p) => (
+        {programs.map((program) => (
           <ProgramRow
-            key={p.id}
-            program={p}
-            isSaved={savedSet.has(p.id)}
-            onToggle={() => onToggleSave(p.id)}
+            key={program.id}
+            program={program}
+            isSaved={savedSet.has(program.id)}
+            onToggle={() => onToggleSave(program.id)}
           />
         ))}
       </div>

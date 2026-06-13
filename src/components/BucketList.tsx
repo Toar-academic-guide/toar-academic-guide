@@ -24,8 +24,6 @@ interface Props {
   academicScores?: AcademicScores;
   onRemove: (programId: string) => void;
   onBack: () => void;
-  /** Optional override for the back-button text and empty-state CTA.
-   *  Default behaviour assumes user came from the recommendations screen. */
   backLabel?: string;
   emptyCtaLabel?: string;
 }

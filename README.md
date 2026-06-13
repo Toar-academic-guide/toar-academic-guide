@@ -14,10 +14,12 @@ The test suite covers the current recommendation, bucket-list, and admission-cal
 ## Environment
 
 ```bash
-cp .env.example .env.local
+cp .env.local.example .env.local
 ```
 
-`DATABASE_URL` is only required when you want the DB-backed catalogue path or seed script. Without it, the app and the catalogue API routes fall back to the existing static catalogue.
+`DATABASE_URL` is required for DB-backed catalogue and authenticated profile persistence.
+
+`NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` enable sign-up, sign-in, session refresh, and authenticated user persistence. Without them, the app still supports anonymous browsing and local draft persistence.
 
 ## Database workflow
 
@@ -40,6 +42,7 @@ See [docs/backend-data-model.md](/Users/amitmalichi/Desktop/toar-academic-guide/
 
 ## Notes
 
-- The first slice keeps `localStorage` as the live user-profile path.
+- `localStorage` now acts as an anonymous draft store and first-sign-in migration source.
+- Authenticated profile data and saved programs are persisted through Supabase-backed APIs.
 - The catalogue API returns static fallback data when DB env is absent.
 - Raw ingestion payloads remain separate from canonical reviewed rows.

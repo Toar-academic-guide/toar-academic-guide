@@ -15,6 +15,13 @@
       "when": 1781300000000,
       "tag": "0001_calculator_configs",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781295195148,
+      "tag": "0002_loud_texas_twister",
+      "breakpoints": true
     }
   ]
 }
