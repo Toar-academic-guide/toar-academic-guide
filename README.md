@@ -19,7 +19,7 @@ cp .env.local.example .env.local
 
 `DATABASE_URL` is required for DB-backed catalogue and authenticated profile persistence.
 
-`NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` enable sign-up, sign-in, session refresh, and authenticated user persistence. Without them, the app still supports anonymous browsing and local draft persistence.
+`NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` enable sign-up, sign-in, session refresh, and authenticated user persistence. The runtime still accepts `NEXT_PUBLIC_SUPABASE_ANON_KEY` as a temporary fallback during migration. Without the public Supabase vars, the app still supports anonymous browsing and local draft persistence.
 
 ## Database workflow
 

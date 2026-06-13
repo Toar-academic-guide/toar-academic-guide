@@ -2,9 +2,9 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-export const isSupabaseServerConfigured =
-  Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL) &&
-  Boolean(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+import { getSupabaseEnv, isSupabaseConfigured } from './env';
+
+export const isSupabaseServerConfigured = isSupabaseConfigured;
 
 export async function createSupabaseServerClient(): Promise<SupabaseClient | null> {
   if (!isSupabaseServerConfigured) {
@@ -12,10 +12,11 @@ export async function createSupabaseServerClient(): Promise<SupabaseClient | nul
   }
 
   const cookieStore = await cookies();
+  const { supabaseUrl, supabasePublishableKey } = getSupabaseEnv();
 
   return createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseUrl!,
+    supabasePublishableKey!,
     {
       cookies: {
         getAll() {
@@ -34,4 +35,3 @@ export async function createSupabaseServerClient(): Promise<SupabaseClient | nul
     }
   );
 }
-
