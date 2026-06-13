@@ -72,34 +72,32 @@ export default function LandingPage({ onAlreadyKnow, onNeedHelp, onSignIn }: Pro
         </div>
       </header>
 
-      <section
-        className="grid grid-cols-1 md:grid-cols-2"
-        style={{ background: 'linear-gradient(150deg, #f0f0ff 0%, #fafaff 55%, #ffffff 100%)', minHeight: '520px' }}
-      >
-        <div
-          className="order-2 flex items-center justify-center p-10 md:order-1"
-          style={{ background: 'linear-gradient(135deg, #eef2ff 0%, #f5f3ff 100%)' }}
-        >
-          <svg width="280" height="280" viewBox="0 0 280 280" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <circle cx="140" cy="140" r="115" fill="#e8eaff" opacity="0.45" />
-            <path d="M45 220 Q90 145 140 120 Q185 95 235 65" stroke="#4f46e5" strokeWidth="2" strokeDasharray="7 5" fill="none" opacity="0.35" />
-            <path d="M45 220 Q75 190 125 175 Q175 158 215 115" stroke="#7c3aed" strokeWidth="2" strokeDasharray="7 5" fill="none" opacity="0.35" />
-            <circle cx="140" cy="140" r="32" fill="#4f46e5" opacity="0.12" />
-            <circle cx="140" cy="140" r="20" fill="#4f46e5" opacity="0.25" />
-            <circle cx="140" cy="140" r="11" fill="#4f46e5" />
-            <circle cx="235" cy="65" r="16" fill="#7c3aed" opacity="0.78" />
-            <circle cx="215" cy="115" r="11" fill="#6366f1" opacity="0.65" />
-            <circle cx="68" cy="200" r="9" fill="#818cf8" opacity="0.6" />
-            <rect x="196" y="43" width="60" height="20" rx="10" fill="#e8eaff" />
-            <text x="226" y="57" textAnchor="middle" fontSize="10" fill="#4338ca" fontFamily="sans-serif">הנדסה</text>
-            <rect x="168" y="132" width="60" height="20" rx="10" fill="#ede9fe" />
-            <text x="198" y="146" textAnchor="middle" fontSize="10" fill="#7c3aed" fontFamily="sans-serif">משפטים</text>
-            <rect x="24" y="192" width="56" height="20" rx="10" fill="#e0e7ff" />
-            <text x="52" y="206" textAnchor="middle" fontSize="10" fill="#4338ca" fontFamily="sans-serif">רפואה</text>
+      <section className="flex flex-col md:flex-row" style={{ minHeight: '92vh' }}>
+        {/* RIGHT 2/3: Bauhaus visual (first in DOM = right side in RTL) */}
+        <div className="relative order-2 overflow-hidden md:order-1 md:flex-[2]" style={{ minHeight: '260px', background: '#f7f6f2' }}>
+          <svg
+            viewBox="0 0 800 500"
+            preserveAspectRatio="xMidYMid slice"
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+            aria-hidden="true"
+          >
+            <rect width="800" height="500" fill="#f7f6f2" />
+            {/* Grid lines: extensions of blue quad edges */}
+            <line x1="0" y1="116" x2="800" y2="45" stroke="#cac7bc" strokeWidth="0.6" />
+            <line x1="0" y1="388" x2="800" y2="316" stroke="#cac7bc" strokeWidth="0.6" />
+            <line x1="173" y1="0" x2="210" y2="500" stroke="#cac7bc" strokeWidth="0.6" />
+            <line x1="454" y1="0" x2="491" y2="500" stroke="#cac7bc" strokeWidth="0.6" />
+            {/* Blue quadrilateral */}
+            <polygon points="180,100 460,75 480,345 200,370" fill="#2563a4" />
+            {/* Yellow triangle */}
+            <polygon points="330,20 550,20 440,230" fill="#f4b800" />
+            {/* Red circle */}
+            <circle cx="620" cy="330" r="155" fill="#c8322a" />
           </svg>
         </div>
 
-        <div className="order-1 flex flex-col justify-center px-10 py-16 md:order-2">
+        {/* LEFT 1/3: text (second in DOM = left side in RTL) */}
+        <div className="order-1 flex flex-col justify-center px-10 py-16 md:order-2 md:w-1/3">
           <div
             className="mb-5 inline-flex w-fit items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold"
             style={{ background: '#eef2ff', color: '#4f46e5' }}
