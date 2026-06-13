@@ -14,7 +14,6 @@ import type {
   uploadedDocuments,
   universityCalculatorConfigs,
   userProfiles,
-  users,
 } from './schema';
 
 export type InstitutionRow = typeof institutions.$inferSelect;
@@ -25,7 +24,6 @@ export type AdmissionRequirementRow = typeof admissionRequirements.$inferSelect;
 export type AdmissionThresholdRow = typeof admissionThresholds.$inferSelect;
 export type SourceUrlRow = typeof sourceUrls.$inferSelect;
 export type RequirementVersionRow = typeof requirementVersions.$inferSelect;
-export type UserRow = typeof users.$inferSelect;
 export type UserProfileRow = typeof userProfiles.$inferSelect;
 export type SavedProgramRow = typeof savedPrograms.$inferSelect;
 export type UploadedDocumentRow = typeof uploadedDocuments.$inferSelect;

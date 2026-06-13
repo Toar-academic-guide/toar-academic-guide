@@ -10,6 +10,7 @@ import {
   GeographicRegion,
   RiasecDimension,
 } from '@/types';
+import { useAuth } from '@/context/AuthContext';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import { fetchCatalogueInstitutions, fetchCataloguePrograms } from '@/lib/catalogueClient';
@@ -22,10 +23,12 @@ import NavBar from '@/components/NavBar';
 import RiasecExam from '@/components/RiasecExam';
 import OnboardingFunnel from '@/components/OnboardingFunnel';
 import LandingPage from '@/components/LandingPage';
+import AuthScreen from '@/components/AuthScreen';
 import QuizIntro from '@/components/QuizIntro';
 import AcademicProfileForm from '@/components/AcademicProfileForm';
 import RecommendationResults from '@/components/RecommendationResults';
 import BucketList from '@/components/BucketList';
+import DegreePicker from '@/components/DegreePicker';
 import ScoreForm from '@/components/ScoreForm';
 import ResultsDashboard from '@/components/ResultsDashboard';
 import type { AcademicScores, RiasecAnswers } from '@/types';
@@ -33,15 +36,18 @@ import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 
 type AppStep =
   | 'landing'
+  | 'auth'
   | 'intro'
   | 'academic-profile'
   | 'riasec-exam'        // NEW: full 42-item RIASEC assessment
   | 'quick-filters'      // NEW: geography + avoidances only
   | 'recommendations'
   | 'calculator'
-  | 'bucket-list';
+  | 'bucket-list'
+  | 'degree-picker';
 
 export default function Home() {
+  const { loading: authLoading, signOut, user } = useAuth();
   const staticCataloguePrograms = getStaticCataloguePrograms();
   const staticCatalogueInstitutions = getStaticCatalogueInstitutions();
   const [catalogueInstitutions, setCatalogueInstitutions] =
@@ -49,7 +55,16 @@ export default function Home() {
   const [step, setStep] = useState<AppStep>('landing');
   const [recommendations, setRecommendations] = useState<RecommendedField[]>([]);
   const [cataloguePrograms, setCataloguePrograms] = useState<CatalogueProgram[]>(staticCataloguePrograms);
-  const { profile, updateProfile } = useUserProfile();
+  const {
+    profile,
+    hydrated,
+    isAuthenticated,
+    removeSavedProgram,
+    syncError,
+    syncing,
+    toggleSavedProgram,
+    updateProfile,
+  } = useUserProfile();
 
   // RIASEC scores from the exam (stored before filter answers arrive)
   const [pendingScores, setPendingScores] = useState<RiasecScores | null>(null);
@@ -63,6 +78,8 @@ export default function Home() {
   const [results, setResults] = useState<UniversityResult[] | null>(null);
   const [degreeName, setDegreeName] = useState('');
   const calculatorInstitutions = getCalculatorInstitutionsFromCatalogue(catalogueInstitutions);
+  const [bucketReturnsTo, setBucketReturnsTo] = useState<AppStep>('recommendations');
+  const [authReturnTo, setAuthReturnTo] = useState<Exclude<AppStep, 'auth'>>('landing');
 
   useEffect(() => {
     let isMounted = true;
@@ -105,22 +122,18 @@ export default function Home() {
     setRiasecProfile({ scores, geographicPreference });
     setRecommendations(recs);
     setResults(null);
+    setBucketReturnsTo('recommendations');
     setStep('recommendations');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   // ── Bucket list ────────────────────────────────────────────────────────────
   function handleToggleSave(programId: string) {
-    const current = profile.savedProgramIds ?? [];
-    const next = current.includes(programId)
-      ? current.filter((id) => id !== programId)
-      : [...current, programId];
-    updateProfile({ savedProgramIds: next });
+    void toggleSavedProgram(programId);
   }
 
   function handleRemoveFromBucket(programId: string) {
-    const next = (profile.savedProgramIds ?? []).filter((id) => id !== programId);
-    updateProfile({ savedProgramIds: next });
+    void removeSavedProgram(programId);
   }
 
   function handleSelectDegree(degreeId: string) {
@@ -139,13 +152,15 @@ export default function Home() {
   // Map of each step → its previous step (for the "back" button)
   const previousStep: Record<AppStep, AppStep | null> = {
     landing: null,
+    auth: authReturnTo,
     intro: 'landing',
     'academic-profile': 'intro',
     'riasec-exam': 'academic-profile',
     'quick-filters': 'riasec-exam',
     recommendations: 'quick-filters',
     calculator: 'recommendations',
-    'bucket-list': 'recommendations',
+    'bucket-list': bucketReturnsTo,
+    'degree-picker': 'landing',
   };
 
   function handleGoBack() {
@@ -156,7 +171,7 @@ export default function Home() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  const showBackButton = step !== 'landing';
+  const showBackButton = step !== 'landing' && step !== 'auth';
 
   // Floating back button — visible on every page except the landing page
   const BackButton = () =>
@@ -185,7 +200,48 @@ export default function Home() {
 
   /* ── Full-screen steps (no header) ───────────────────────────────────────── */
   if (step === 'landing') {
-    return <LandingPage onStart={() => setStep('intro')} />;
+    return (
+      <LandingPage
+        onAlreadyKnow={() => {
+          setBucketReturnsTo('degree-picker');
+          setStep('degree-picker');
+        }}
+        onNeedHelp={() => {
+          setBucketReturnsTo('recommendations');
+          setStep('intro');
+        }}
+        onSignIn={() => {
+          setAuthReturnTo('landing');
+          setStep('auth');
+        }}
+      />
+    );
+  }
+
+  if (step === 'auth') {
+    return (
+      <AuthScreen
+        onBack={() => setStep(authReturnTo)}
+        onSuccess={() => {
+          setStep(authReturnTo);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+      />
+    );
+  }
+
+  if (step === 'degree-picker') {
+    return (
+      <>
+        <BackButton />
+        <DegreePicker
+          programs={cataloguePrograms}
+          savedProgramIds={profile.savedProgramIds ?? []}
+          onToggleSave={handleToggleSave}
+          onDone={() => setStep('bucket-list')}
+        />
+      </>
+    );
   }
 
   if (step === 'intro') {
@@ -244,13 +300,39 @@ export default function Home() {
       <NavBar
         step={step}
         savedCount={savedCount}
+        authLoading={authLoading}
+        isAuthenticated={isAuthenticated}
+        userEmail={user?.email ?? undefined}
         onGoHome={handleGoHome}
         onGoToExam={() => { setStep('riasec-exam'); setResults(null); setPendingScores(null); }}
         onGoToRecommendations={() => { setStep('recommendations'); setResults(null); }}
         onGoToBucket={() => setStep('bucket-list')}
+        onGoToAuth={() => {
+          setAuthReturnTo(step);
+          setStep('auth');
+        }}
+        onSignOut={() => {
+          void signOut();
+        }}
+        bucketSourceLabel={bucketReturnsTo === 'degree-picker' ? 'בחירת תארים' : 'המלצות'}
+        onGoToBucketSource={() => {
+          setStep(bucketReturnsTo);
+          setResults(null);
+        }}
       />
 
       <main className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-4 py-12 sm:px-6">
+        {!hydrated || syncing ? (
+          <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+            מסנכרנים את הפרופיל שלך...
+          </div>
+        ) : null}
+
+        {syncError ? (
+          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            {syncError}
+          </div>
+        ) : null}
 
         {/* ── Step: Recommendations ─────────────────────────────── */}
         {step === 'recommendations' && riasecProfile && (
@@ -274,7 +356,9 @@ export default function Home() {
             savedProgramIds={profile.savedProgramIds ?? []}
             academicScores={profile.academicScores}
             onRemove={handleRemoveFromBucket}
-            onBack={() => { setStep('recommendations'); setResults(null); }}
+            onBack={() => { setStep(bucketReturnsTo); setResults(null); }}
+            backLabel={bucketReturnsTo === 'degree-picker' ? 'חזרה לבחירת תארים' : 'חזרה להמלצות'}
+            emptyCtaLabel={bucketReturnsTo === 'degree-picker' ? 'חזור לבחור תארים ←' : 'עבור להמלצות ←'}
           />
         )}
 

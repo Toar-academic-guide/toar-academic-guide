@@ -11,14 +11,13 @@ Canonical requirement rows stay traceable through `source_urls`, and historical 
 
 ## User persistence
 
-The first slice does not move live UI persistence away from `localStorage`, but the schema is ready for that migration:
+Authenticated user persistence now uses Supabase Auth identities as the ownership boundary:
 
-- `users`
 - `user_profiles`
 - `saved_programs`
 - `uploaded_documents`
 
-This keeps profile persistence, saved programs, and document metadata compatible with a future auth decision.
+`localStorage` remains as a client-side draft and migration source, but authenticated server persistence is the durable source of truth for profile data and saved programs. User-owned tables are expected to be protected by server-side user checks plus Supabase row-level security policies when running against a Supabase-backed database.
 
 ## Seed strategy
 
