@@ -42,7 +42,7 @@ export default function DegreePicker({
 
   const categoryNames = useMemo(
     () => Array.from(programsByCategory.keys()).sort((left, right) => left.localeCompare(right, 'he')),
-    [programsByCategory],
+    [programsByCategory]
   );
 
   const searchActive = query.trim().length > 0;

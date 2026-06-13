@@ -54,8 +54,6 @@ export default function NavBar({
       style={{ background: 'linear-gradient(90deg, #1e1b4b 0%, #3730a3 100%)' }}
     >
       <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-2 sm:px-6">
-
-        {/* Logo — links home */}
         <button
           type="button"
           onClick={onGoHome}
@@ -65,7 +63,6 @@ export default function NavBar({
           <LogoCanvas size={70} brighten={true} />
         </button>
 
-        {/* Breadcrumb */}
         <nav className="flex items-center gap-1.5 text-sm" aria-label="ניווט">
           <button
             onClick={onGoToExam}
@@ -83,7 +80,9 @@ export default function NavBar({
           {step === 'calculator' && (
             <>
               <span className="text-white/30">/</span>
-              <button onClick={onGoToRecommendations} className="text-white/50 transition hover:text-white/80">המלצות</button>
+              <button onClick={onGoToRecommendations} className="text-white/50 transition hover:text-white/80">
+                המלצות
+              </button>
               <span className="text-white/30">/</span>
               <span className="font-semibold text-indigo-300">חישוב</span>
             </>
@@ -110,10 +109,10 @@ export default function NavBar({
             {authLoading
               ? 'טוען...'
               : isAuthenticated
-              ? userEmail
-                ? `התנתק (${userEmail})`
-                : 'התנתק'
-              : 'התחברות'}
+                ? userEmail
+                  ? `התנתק (${userEmail})`
+                  : 'התנתק'
+                : 'התחברות'}
           </button>
 
           <button
@@ -127,22 +126,23 @@ export default function NavBar({
             ].join(' ')}
           >
             {savedCount > 0 ? (
-              <BookmarkCheck size={13} className={isBucketActive ? 'text-indigo-300' : 'text-indigo-300'} />
+              <BookmarkCheck size={13} className="text-indigo-300" />
             ) : (
               <Bookmark size={13} />
             )}
             <span>רשימת הייעוד</span>
             {savedCount > 0 && (
-              <span className={[
-                'rounded-full px-1.5 py-0.5 text-[10px] font-bold',
-                isBucketActive ? 'bg-indigo-400/50 text-white' : 'bg-indigo-400/40 text-indigo-200',
-              ].join(' ')}>
+              <span
+                className={[
+                  'rounded-full px-1.5 py-0.5 text-[10px] font-bold',
+                  isBucketActive ? 'bg-indigo-400/50 text-white' : 'bg-indigo-400/40 text-indigo-200',
+                ].join(' ')}
+              >
                 {savedCount}
               </span>
             )}
           </button>
         </div>
-
       </div>
     </header>
   );

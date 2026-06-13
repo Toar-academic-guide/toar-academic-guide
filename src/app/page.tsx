@@ -39,8 +39,8 @@ type AppStep =
   | 'auth'
   | 'intro'
   | 'academic-profile'
-  | 'riasec-exam'        // NEW: full 42-item RIASEC assessment
-  | 'quick-filters'      // NEW: geography + avoidances only
+  | 'riasec-exam'
+  | 'quick-filters'
   | 'recommendations'
   | 'calculator'
   | 'bucket-list'
@@ -66,7 +66,6 @@ export default function Home() {
     updateProfile,
   } = useUserProfile();
 
-  // RIASEC scores from the exam (stored before filter answers arrive)
   const [pendingScores, setPendingScores] = useState<RiasecScores | null>(null);
 
   const [riasecProfile, setRiasecProfile] = useState<{
@@ -104,15 +103,12 @@ export default function Home() {
     };
   }, []);
 
-  // ── Step: RIASEC exam complete ──────────────────────────────────────────────
   function handleRiasecComplete(scores: Record<RiasecDimension, number>) {
-    // RiasecExam already returns normalised 0–5 scores — use them directly.
     setPendingScores(scores);
     setStep('quick-filters');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // ── Step: Filter questions complete ────────────────────────────────────────
   function handleFiltersComplete(rawAnswers: RiasecAnswers) {
     const { geographicPreference, avoidances } = extractFilterAnswers(rawAnswers);
     const scores = pendingScores ?? ({ R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 } as RiasecScores);
@@ -127,7 +123,6 @@ export default function Home() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // ── Bucket list ────────────────────────────────────────────────────────────
   function handleToggleSave(programId: string) {
     void toggleSavedProgram(programId);
   }
@@ -149,7 +144,6 @@ export default function Home() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  // Map of each step → its previous step (for the "back" button)
   const previousStep: Record<AppStep, AppStep | null> = {
     landing: null,
     auth: authReturnTo,
@@ -173,7 +167,6 @@ export default function Home() {
 
   const showBackButton = step !== 'landing' && step !== 'auth';
 
-  // Floating back button — visible on every page except the landing page
   const BackButton = () =>
     showBackButton ? (
       <button
@@ -181,9 +174,9 @@ export default function Home() {
         onClick={handleGoBack}
         aria-label="חזרה לעמוד הקודם"
         title="חזרה לעמוד הקודם"
-        className="fixed bottom-6 left-4 z-50 flex items-center gap-1.5 rounded-full border border-white/20 bg-[#1e1b4b]/80 px-3.5 py-2 text-sm font-medium text-white/80 shadow-lg backdrop-blur transition hover:bg-[#1e1b4b] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+        className="fixed top-6 right-4 z-50 flex items-center gap-2 rounded-full border border-white/20 bg-[#1e1b4b]/80 px-5 py-2.5 text-base font-medium text-white/80 shadow-lg backdrop-blur transition hover:bg-[#1e1b4b] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
       >
-        <ArrowRight size={16} />
+        <ArrowRight size={18} />
         <span>חזרה</span>
       </button>
     ) : null;
@@ -294,6 +287,18 @@ export default function Home() {
   /* ── Steps with persistent header ───────────────────────────────────────── */
   const savedCount = profile.savedProgramIds?.length ?? 0;
 
+  // Source-aware: only navigate to recommendations when the user has a
+  // riasecProfile (i.e. came through the questionnaire). Degree-picker users
+  // have no riasecProfile — route them back to degree-picker instead.
+  function handleGoToRecommendations() {
+    if (!riasecProfile) {
+      setStep(bucketReturnsTo === 'degree-picker' ? 'degree-picker' : 'landing');
+      return;
+    }
+    setStep('recommendations');
+    setResults(null);
+  }
+
   return (
     <>
       <BackButton />
@@ -305,7 +310,7 @@ export default function Home() {
         userEmail={user?.email ?? undefined}
         onGoHome={handleGoHome}
         onGoToExam={() => { setStep('riasec-exam'); setResults(null); setPendingScores(null); }}
-        onGoToRecommendations={() => { setStep('recommendations'); setResults(null); }}
+        onGoToRecommendations={handleGoToRecommendations}
         onGoToBucket={() => setStep('bucket-list')}
         onGoToAuth={() => {
           setAuthReturnTo(step);
