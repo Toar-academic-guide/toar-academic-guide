@@ -58,6 +58,8 @@ export function serializeUserProfileSnapshot(
       : undefined;
 
   return {
+    ...(profileRow.firstName ? { firstName: profileRow.firstName } : {}),
+    ...(profileRow.lastName ? { lastName: profileRow.lastName } : {}),
     geographicPreference: profileRow.geographicPreference,
     ...(academicScores ? { academicScores } : {}),
     savedProgramIds: savedProgramRows.map((row) => row.programId),
@@ -67,6 +69,8 @@ export function serializeUserProfileSnapshot(
 export function buildUserProfileRow(userId: string, profile: UserProfile) {
   return {
     userId,
+    firstName: profile.firstName?.trim() || null,
+    lastName: profile.lastName?.trim() || null,
     geographicPreference: profile.geographicPreference,
     psychometricOverall: profile.academicScores?.psychometric?.overall ?? null,
     psychometricQuantitative: profile.academicScores?.psychometric?.quantitative ?? null,
@@ -75,4 +79,3 @@ export function buildUserProfileRow(userId: string, profile: UserProfile) {
     bagrutWeightedAverage: profile.academicScores?.bagrut?.weightedAverage ?? null,
   };
 }
-
