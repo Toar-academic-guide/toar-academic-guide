@@ -1,8 +1,12 @@
-import { RiasecScores, EnvironmentPreference, RecommendedField, RiasecDimension, AvoidanceTag } from '@/types';
+import { RiasecScores, EnvironmentPreference, RecommendedField, RiasecDimension, AvoidanceTag, ProfileDimension } from '@/types';
 import { allPrograms } from '@/data/degrees';
 import type { Program } from '@/data/degrees/types';
 import { DIMENSION_LABELS } from './riasecEngine';
 import { PROGRAM_FIELD_MAP } from '@/data/degrees/fieldEnrichment';
+
+const RIASEC_TO_PROFILE: Record<RiasecDimension, ProfileDimension> = {
+  R: 'TE', I: 'AN', A: 'CR', S: 'SO', E: 'LE', C: 'OR',
+};
 
 interface CategoryMeta {
   name: string;
@@ -162,8 +166,8 @@ const CATEGORY_AVOIDANCE: Record<string, AvoidanceTag[]> = {
   'טכנולוגיה ופיתוח': ['heavy-math', 'solo-work'],
 };
 
-function dotProduct(user: RiasecScores, program: Program['riasecScore']): number {
-  return DIMS.reduce((sum, d) => sum + user[d] * program[d], 0);
+function dotProduct(user: RiasecScores, program: Program): number {
+  return DIMS.reduce((sum, d) => sum + user[d] * program.profileScore[RIASEC_TO_PROFILE[d]], 0);
 }
 
 function topUserDims(scores: RiasecScores): [RiasecDimension, RiasecDimension] {
@@ -190,16 +194,26 @@ function buildWarning(
   return { hasWarning: false };
 }
 
+const PROFILE_DIM_LABELS: Record<ProfileDimension, { name: string; nameF: string }> = {
+  AN: { name: 'אנליטי', nameF: 'אנליטית' },
+  TE: { name: 'טכני', nameF: 'טכנית' },
+  CR: { name: 'יצירתי', nameF: 'יצירתית' },
+  SO: { name: 'חברתי', nameF: 'חברתית' },
+  LE: { name: 'מנהיגותי', nameF: 'מנהיגותית' },
+  OR: { name: 'מערכתי', nameF: 'מערכתית' },
+  DI: { name: 'דיגיטלי', nameF: 'דיגיטלית' },
+  ER: { name: 'עיוני', nameF: 'עיונית' },
+};
+
 function buildMatchReason(
-  matched: RiasecDimension[],
-  top: [RiasecDimension, RiasecDimension]
+  matched: ProfileDimension[],
+  topRiasec: [RiasecDimension, RiasecDimension]
 ): string {
   if (matched.length === 0) return 'תחום זה משלים כישורים נוספים שיעשירו את הפרופיל שלך';
   if (matched.length === 1) {
-    // "נטייה" is feminine — use the feminine adjectival form (nameF)
-    return `הנטייה ה${DIMENSION_LABELS[matched[0]].nameF} שלך מתאימה במיוחד לתחום הזה`;
+    return `הנטייה ה${PROFILE_DIM_LABELS[matched[0]].nameF} שלך מתאימה במיוחד לתחום הזה`;
   }
-  const names = matched.map((d) => DIMENSION_LABELS[d].name);
+  const names = matched.map((d) => PROFILE_DIM_LABELS[d].name);
   return `הפרופיל ה${names.join('-')} שלך הוא התאמה מצוינת לתחום הזה`;
 }
 
@@ -219,7 +233,7 @@ export function getRecommendations(
     .filter((p) => p.institution !== 'אוניברסיטה')
     .map((p) => ({
       program: p,
-      score: dotProduct(scores, p.riasecScore),
+      score: dotProduct(scores, p),
     }));
 
   // 2. Group by category; category score = max single-program score within it
@@ -278,10 +292,11 @@ export function getRecommendations(
 
     // Dimensions that are both top-user dims AND prominent in top programs (avg >= 3)
     const avgDimScore = (d: RiasecDimension) =>
-      topPrograms.reduce((sum, p) => sum + p.riasecScore[d], 0) / topPrograms.length;
-    const matchedDimensions = ([primary, secondary] as RiasecDimension[]).filter(
+      topPrograms.reduce((sum, p) => sum + p.profileScore[RIASEC_TO_PROFILE[d]], 0) / topPrograms.length;
+    const matchedRiasec = ([primary, secondary] as RiasecDimension[]).filter(
       (d) => avgDimScore(d) >= 3
     );
+    const matchedDimensions: ProfileDimension[] = matchedRiasec.map((d) => RIASEC_TO_PROFILE[d]);
 
     const { hasWarning, warningText } = buildWarning(meta, scores, env);
     const matchReason = buildMatchReason(matchedDimensions, [primary, secondary]);

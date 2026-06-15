@@ -46,25 +46,52 @@ export interface UniversityResult {
   admissionTrack?: 'direct'; // present when accepted via psychometric-only direct track
 }
 
-// ── RIASEC (Holland Codes) ────────────────────────────────────────────────────
+// ── Career Profile Dimensions ─────────────────────────────────────────────────
 
-export type RiasecDimension = 'R' | 'I' | 'A' | 'S' | 'E' | 'C';
+export type ProfileDimension =
+  | 'AN'  // Analytical   — research, data, problem-solving
+  | 'TE'  // Technical    — building, fixing, engineering, hardware
+  | 'CR'  // Creative     — design, art, innovation, expression
+  | 'SO'  // Social       — helping, teaching, care, counseling
+  | 'LE'  // Leadership   — managing, business, persuading
+  | 'OR'  // Organizational — structure, detail, processes
+  | 'DI'  // Digital/Tech — coding, AI, apps, cyber, startups
+  | 'ER'; // Erudition    — deep study, academic pursuit, reading
 
-export interface RiasecScores {
-  R: number; // Realistic   — hands-on, technical
-  I: number; // Investigative — research, analysis
-  A: number; // Artistic    — creative, expressive
-  S: number; // Social      — helping, interpersonal
-  E: number; // Enterprising — leadership, persuasion
-  C: number; // Conventional — organized, systematic
+export interface ProfileScores {
+  AN: number; // Analytical
+  TE: number; // Technical
+  CR: number; // Creative
+  SO: number; // Social
+  LE: number; // Leadership
+  OR: number; // Organizational
+  DI: number; // Digital/Tech
+  ER: number; // Erudition
 }
+
+export interface ValuesProfile {
+  incomeVsImpact: number;    // -2 (income) to +2 (impact)
+  independenceVsTeam: number; // -2 (independence) to +2 (team)
+  growthVsStability: number;  // -2 (growth) to +2 (stability)
+  prestigeVsMeaning: number;  // -2 (prestige) to +2 (meaning)
+}
+
+export type StudyTypePreference = 'degree' | 'short-course' | 'all';
 
 export interface EnvironmentPreference {
   soloScore: number; // 0 = strongly team-oriented, 3 = strongly solo
   deskScore: number; // 0 = dynamic/field, 3 = desk/indoor
 }
 
-export type RiasecAnswers = Record<string, string[]>; // questionId → selected answer labels
+// ── Legacy RIASEC aliases (removed file-by-file during migration) ────────────
+/** @deprecated Use ProfileDimension */
+export type RiasecDimension = 'R' | 'I' | 'A' | 'S' | 'E' | 'C';
+/** @deprecated Use ProfileScores */
+export interface RiasecScores {
+  R: number; I: number; A: number; S: number; E: number; C: number;
+}
+/** @deprecated */
+export type RiasecAnswers = Record<string, string[]>;
 
 // ── Geographic Preference ─────────────────────────────────────────────────────
 
@@ -114,7 +141,7 @@ export interface RecommendedField {
   description: string;
   suggestedDegreeIds: string[];
   score: number;
-  matchedDimensions: RiasecDimension[];
+  matchedDimensions: ProfileDimension[];
   matchReason: string;
   marketDemand: 'גבוה מאוד' | 'גבוה' | 'בינוני';
   aiResilience: 'גבוהה' | 'בינונית' | 'נמוכה';
@@ -122,4 +149,5 @@ export interface RecommendedField {
   dailyWorkflow: string;
   hasWarning?: boolean;
   warningText?: string;
+  suggestedPairings?: { programId: string; reason: string }[];
 }

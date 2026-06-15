@@ -2,13 +2,13 @@
 
 import { useEffect, useState } from 'react';
 import {
-  RiasecScores,
+  ProfileScores,
+  ValuesProfile,
   EngineeringOptions,
   RecommendedField,
   UniversityResult,
   UserScores,
   GeographicRegion,
-  RiasecDimension,
 } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -20,7 +20,7 @@ import { evaluateUniversities } from '@/utils/sekhemCalculators';
 import { extractFilterAnswers } from '@/utils/riasecEngine';
 import { ArrowRight } from 'lucide-react';
 import NavBar from '@/components/NavBar';
-import RiasecExam from '@/components/RiasecExam';
+import CareerAssessment from '@/components/CareerAssessment';
 import OnboardingFunnel from '@/components/OnboardingFunnel';
 import LandingPage from '@/components/LandingPage';
 import AuthScreen from '@/components/AuthScreen';
@@ -31,7 +31,7 @@ import BucketList from '@/components/BucketList';
 import DegreePicker from '@/components/DegreePicker';
 import ScoreForm from '@/components/ScoreForm';
 import ResultsDashboard from '@/components/ResultsDashboard';
-import type { AcademicScores, RiasecAnswers } from '@/types';
+import type { AcademicScores, RiasecAnswers, RiasecScores } from '@/types';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 
 type AppStep =
@@ -39,7 +39,7 @@ type AppStep =
   | 'auth'
   | 'intro'
   | 'academic-profile'
-  | 'riasec-exam'
+  | 'career-assessment'
   | 'quick-filters'
   | 'recommendations'
   | 'calculator'
@@ -66,7 +66,8 @@ export default function Home() {
     updateProfile,
   } = useUserProfile();
 
-  const [pendingScores, setPendingScores] = useState<RiasecScores | null>(null);
+  const [pendingScores, setPendingScores] = useState<ProfileScores | null>(null);
+  const [pendingValues, setPendingValues] = useState<ValuesProfile | null>(null);
 
   const [riasecProfile, setRiasecProfile] = useState<{
     scores: RiasecScores;
@@ -103,15 +104,27 @@ export default function Home() {
     };
   }, []);
 
-  function handleRiasecComplete(scores: Record<RiasecDimension, number>) {
-    setPendingScores(scores);
+  function handleAssessmentComplete(profileScores: ProfileScores, valuesProfile: ValuesProfile) {
+    setPendingScores(profileScores);
+    setPendingValues(valuesProfile);
     setStep('quick-filters');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function handleFiltersComplete(rawAnswers: RiasecAnswers) {
     const { geographicPreference, avoidances } = extractFilterAnswers(rawAnswers);
-    const scores = pendingScores ?? ({ R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 } as RiasecScores);
+
+    // Bridge: map 8-dim ProfileScores → old 6-dim RiasecScores until
+    // recommendationEngine is updated to use 8 dimensions (Step 6).
+    const p = pendingScores ?? { AN: 0, TE: 0, CR: 0, SO: 0, LE: 0, OR: 0, DI: 0, ER: 0 };
+    const scores: RiasecScores = {
+      R: p.TE,
+      I: Math.max(p.AN, p.DI),
+      A: p.CR,
+      S: p.SO,
+      E: p.LE,
+      C: p.OR,
+    };
 
     updateProfile({ geographicPreference });
     const recs = getRecommendations(scores, undefined, avoidances, cataloguePrograms);
@@ -149,8 +162,8 @@ export default function Home() {
     auth: authReturnTo,
     intro: 'landing',
     'academic-profile': 'intro',
-    'riasec-exam': 'academic-profile',
-    'quick-filters': 'riasec-exam',
+    'career-assessment': 'academic-profile',
+    'quick-filters': 'career-assessment',
     recommendations: 'quick-filters',
     calculator: 'recommendations',
     'bucket-list': bucketReturnsTo,
@@ -254,11 +267,11 @@ export default function Home() {
           initialScores={profile.academicScores}
           onComplete={(scores: AcademicScores) => {
             updateProfile({ academicScores: scores });
-            setStep('riasec-exam');
+            setStep('career-assessment');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
           onSkip={() => {
-            setStep('riasec-exam');
+            setStep('career-assessment');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
         />
@@ -266,11 +279,11 @@ export default function Home() {
     );
   }
 
-  if (step === 'riasec-exam') {
+  if (step === 'career-assessment') {
     return (
       <>
         <BackButton />
-        <RiasecExam onComplete={handleRiasecComplete} />
+        <CareerAssessment onComplete={handleAssessmentComplete} />
       </>
     );
   }
@@ -309,7 +322,7 @@ export default function Home() {
         isAuthenticated={isAuthenticated}
         userEmail={user?.email ?? undefined}
         onGoHome={handleGoHome}
-        onGoToExam={() => { setStep('riasec-exam'); setResults(null); setPendingScores(null); }}
+        onGoToExam={() => { setStep('career-assessment'); setResults(null); setPendingScores(null); setPendingValues(null); }}
         onGoToRecommendations={handleGoToRecommendations}
         onGoToBucket={() => setStep('bucket-list')}
         onGoToAuth={() => {

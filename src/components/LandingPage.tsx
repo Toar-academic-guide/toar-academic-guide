@@ -31,17 +31,17 @@ export default function LandingPage({ onAlreadyKnow, onNeedHelp, onSignIn }: Pro
           {/* Logo + nav links grouped together on the right (RTL) */}
           <div className="flex items-center gap-8">
             <button type="button" className="cursor-pointer rounded-lg outline-none transition-opacity hover:opacity-80">
-              <LogoCanvas size={120} brighten={false} />
+              <LogoCanvas size={34} brighten={false} />
             </button>
 
             <nav className="hidden items-center gap-7 md:flex">
-              <button type="button" onClick={() => scrollToSection('how-it-works')} className="text-sm text-slate-500 transition hover:text-slate-900">
+              <button type="button" onClick={() => scrollToSection('how-it-works')} className="text-base text-slate-900 transition hover:text-slate-600">
                 איך זה עובד
               </button>
-              <button type="button" onClick={scrollToStart} className="text-sm text-slate-500 transition hover:text-slate-900">
+              <button type="button" onClick={scrollToStart} className="text-base text-slate-900 transition hover:text-slate-600">
                 תחומי לימוד
               </button>
-              <button type="button" className="text-sm text-slate-500 transition hover:text-slate-900">
+              <button type="button" className="text-base text-slate-900 transition hover:text-slate-600">
                 מי אנחנו
               </button>
             </nav>
@@ -68,55 +68,84 @@ export default function LandingPage({ onAlreadyKnow, onNeedHelp, onSignIn }: Pro
 
       {/* ── Hero ────────────────────────────────────────────────── */}
       <section
-        className="px-6 py-16 text-center md:py-20"
+        className="px-6 py-16 md:py-20"
         style={{ background: 'radial-gradient(ellipse at center, #f3fdff 0%, #e8f7fa 60%, #e5f7fb 100%)' }}
       >
-        <div className="mx-auto max-w-lg">
-          <img
-            src="/way-logo.png"
-            alt="Way"
-            className="mx-auto mb-4"
-            style={{
-              height: '180px',
-              objectFit: 'contain',
-              WebkitMaskImage: 'radial-gradient(ellipse 85% 85% at center, black 40%, transparent 70%)',
-              maskImage: 'radial-gradient(ellipse 85% 85% at center, black 40%, transparent 70%)',
-            }}
-          />
+        <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-8 md:grid-cols-3 md:gap-10">
+          {/* Content panel — right 2/3 in RTL */}
+          <div className="text-center md:col-span-2">
+            <div className="mb-4 flex justify-center">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-3.5 py-1.5 text-xs font-semibold text-indigo-700">
+                <Sparkles size={13} />
+                כלי חינמי לחיילים וחיילות משוחררים
+              </span>
+            </div>
 
-          <h1
-            className="mb-2 text-2xl font-black text-slate-900 md:text-3xl"
-            style={{ letterSpacing: '0.02em' }}
-          >
-            מה<span className="mx-1 text-[#4f46e5]">.</span>איפה<span className="mx-1 text-[#4f46e5]">.</span>איך
-          </h1>
+            <img
+              src="/way-logo.png"
+              alt="Way"
+              className="mx-auto mb-3"
+              style={{
+                height: '150px',
+                objectFit: 'contain',
+                WebkitMaskImage: 'radial-gradient(ellipse 85% 85% at center, black 40%, transparent 70%)',
+                maskImage: 'radial-gradient(ellipse 85% 85% at center, black 40%, transparent 70%)',
+              }}
+            />
 
-          <p className="mb-8 text-base text-slate-500">
-            השותף שלך לדרך
-          </p>
-
-          <div className="mb-10 flex items-center justify-center">
-            <button
-              type="button"
-              onClick={scrollToStart}
-              className="rounded-full bg-[#1e1b4b] px-8 py-3.5 text-base font-semibold text-white transition hover:bg-[#2d2a6e]"
+            <h1
+              className="mb-3 text-2xl font-black text-slate-900 md:text-3xl"
+              style={{ letterSpacing: '0.02em' }}
             >
-              מתחילים ←
-            </button>
+              מה<span className="mx-1 text-[#4f46e5]">.</span>איפה<span className="mx-1 text-[#4f46e5]">.</span>איך
+            </h1>
+
+            <p className="mb-1.5 text-base font-bold text-slate-800 md:text-lg">
+              מה ללמוד <span className="text-[#4f46e5]">·</span> איפה ללמוד <span className="text-[#4f46e5]">·</span> איך להתקבל
+              <span className="text-[#4f46e5]"> — הכול במקום אחד</span>
+            </p>
+
+            <p className="mb-8 text-sm text-slate-400">
+              השותף שלך לדרך
+            </p>
+
+            <div className="mb-10 flex items-center justify-center">
+              <button
+                type="button"
+                onClick={scrollToStart}
+                className="rounded-full bg-[#1e1b4b] px-8 py-3.5 text-base font-semibold text-white transition hover:bg-[#2d2a6e]"
+              >
+                מתחילים ←
+              </button>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3">
+              <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 text-center shadow-sm">
+                <h3 className="mb-1 text-lg font-black text-slate-900">מה</h3>
+                <p className="text-xs leading-relaxed text-slate-500">שאלון אישיות שמגלה מה מתאים לך</p>
+              </div>
+              <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 text-center shadow-sm">
+                <h3 className="mb-1 text-lg font-black text-slate-900">איך</h3>
+                <p className="text-xs leading-relaxed text-slate-500">חישוב סיכויי קבלה ל-35 מוסדות</p>
+              </div>
+              <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 text-center shadow-sm">
+                <h3 className="mb-1 text-lg font-black text-slate-900">איפה</h3>
+                <p className="text-xs leading-relaxed text-slate-500">המלצות מותאמות למוסד הנכון</p>
+              </div>
+            </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
-            <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 text-center shadow-sm">
-              <h3 className="mb-1 text-lg font-black text-slate-900">מה</h3>
-              <p className="text-xs leading-relaxed text-slate-500">שאלון אישיות שמגלה מה מתאים לך</p>
-            </div>
-            <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 text-center shadow-sm">
-              <h3 className="mb-1 text-lg font-black text-slate-900">איך</h3>
-              <p className="text-xs leading-relaxed text-slate-500">חישוב סיכויי קבלה ל-35 מוסדות</p>
-            </div>
-            <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 text-center shadow-sm">
-              <h3 className="mb-1 text-lg font-black text-slate-900">איפה</h3>
-              <p className="text-xs leading-relaxed text-slate-500">המלצות מותאמות למוסד הנכון</p>
+          {/* Art panel — left 1/3 in RTL */}
+          <div className="md:col-span-1">
+            <div
+              className="mx-auto overflow-hidden rounded-3xl shadow-sm"
+              style={{ background: '#f3f0e7' }}
+            >
+              <img
+                src="/bars-painting.png"
+                alt=""
+                className="h-full w-full object-contain"
+              />
             </div>
           </div>
         </div>

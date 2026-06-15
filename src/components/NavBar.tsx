@@ -7,7 +7,7 @@ type AppStep =
   | 'landing'
   | 'intro'
   | 'academic-profile'
-  | 'riasec-exam'
+  | 'career-assessment'
   | 'quick-filters'
   | 'recommendations'
   | 'calculator'
