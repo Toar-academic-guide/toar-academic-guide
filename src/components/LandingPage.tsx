@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef } from 'react';
-import { BarChart3, Sparkles, Target } from 'lucide-react';
+import { Target, Sparkles, BarChart3 } from 'lucide-react';
 import LogoCanvas from './LogoCanvas';
 import NeoButton from './NeoButton';
 
@@ -24,34 +24,28 @@ export default function LandingPage({ onAlreadyKnow, onNeedHelp, onSignIn }: Pro
 
   return (
     <div dir="rtl" className="min-h-screen bg-white">
-      <header className="sticky top-0 z-50 border-b border-[#e5e7eb] bg-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-2">
-          <button
-            type="button"
-            className="cursor-pointer rounded-lg outline-none transition-opacity hover:opacity-80"
-          >
-            <LogoCanvas size={52} brighten={false} />
-          </button>
 
-          <nav className="hidden items-center gap-7 md:flex">
-            <button
-              type="button"
-              onClick={() => scrollToSection('how-it-works')}
-              className="text-sm text-slate-500 transition hover:text-slate-900"
-            >
-              איך זה עובד
+      {/* ── Sticky Nav ──────────────────────────────────────────── */}
+      <header className="sticky top-0 z-50 border-b border-[#e5e7eb] bg-white">
+        <div className="flex items-center justify-between py-2 pl-8 pr-4 sm:pl-12 sm:pr-6">
+          {/* Logo + nav links grouped together on the right (RTL) */}
+          <div className="flex items-center gap-8">
+            <button type="button" className="cursor-pointer rounded-lg outline-none transition-opacity hover:opacity-80">
+              <LogoCanvas size={120} brighten={false} />
             </button>
-            <button
-              type="button"
-              onClick={scrollToStart}
-              className="text-sm text-slate-500 transition hover:text-slate-900"
-            >
-              תחומי לימוד
-            </button>
-            <button type="button" className="text-sm text-slate-500 transition hover:text-slate-900">
-              מי אנחנו
-            </button>
-          </nav>
+
+            <nav className="hidden items-center gap-7 md:flex">
+              <button type="button" onClick={() => scrollToSection('how-it-works')} className="text-sm text-slate-500 transition hover:text-slate-900">
+                איך זה עובד
+              </button>
+              <button type="button" onClick={scrollToStart} className="text-sm text-slate-500 transition hover:text-slate-900">
+                תחומי לימוד
+              </button>
+              <button type="button" className="text-sm text-slate-500 transition hover:text-slate-900">
+                מי אנחנו
+              </button>
+            </nav>
+          </div>
 
           <div className="flex items-center gap-3">
             <button
@@ -72,58 +66,36 @@ export default function LandingPage({ onAlreadyKnow, onNeedHelp, onSignIn }: Pro
         </div>
       </header>
 
+      {/* ── Hero ────────────────────────────────────────────────── */}
       <section
-        className="grid grid-cols-1 md:grid-cols-2"
-        style={{ background: 'linear-gradient(150deg, #f0f0ff 0%, #fafaff 55%, #ffffff 100%)', minHeight: '520px' }}
+        className="px-6 py-16 text-center md:py-20"
+        style={{ background: 'radial-gradient(ellipse at center, #f3fdff 0%, #e8f7fa 60%, #e5f7fb 100%)' }}
       >
-        <div
-          className="order-2 flex items-center justify-center p-10 md:order-1"
-          style={{ background: 'linear-gradient(135deg, #eef2ff 0%, #f5f3ff 100%)' }}
-        >
-          <svg width="280" height="280" viewBox="0 0 280 280" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <circle cx="140" cy="140" r="115" fill="#e8eaff" opacity="0.45" />
-            <path d="M45 220 Q90 145 140 120 Q185 95 235 65" stroke="#4f46e5" strokeWidth="2" strokeDasharray="7 5" fill="none" opacity="0.35" />
-            <path d="M45 220 Q75 190 125 175 Q175 158 215 115" stroke="#7c3aed" strokeWidth="2" strokeDasharray="7 5" fill="none" opacity="0.35" />
-            <circle cx="140" cy="140" r="32" fill="#4f46e5" opacity="0.12" />
-            <circle cx="140" cy="140" r="20" fill="#4f46e5" opacity="0.25" />
-            <circle cx="140" cy="140" r="11" fill="#4f46e5" />
-            <circle cx="235" cy="65" r="16" fill="#7c3aed" opacity="0.78" />
-            <circle cx="215" cy="115" r="11" fill="#6366f1" opacity="0.65" />
-            <circle cx="68" cy="200" r="9" fill="#818cf8" opacity="0.6" />
-            <rect x="196" y="43" width="60" height="20" rx="10" fill="#e8eaff" />
-            <text x="226" y="57" textAnchor="middle" fontSize="10" fill="#4338ca" fontFamily="sans-serif">הנדסה</text>
-            <rect x="168" y="132" width="60" height="20" rx="10" fill="#ede9fe" />
-            <text x="198" y="146" textAnchor="middle" fontSize="10" fill="#7c3aed" fontFamily="sans-serif">משפטים</text>
-            <rect x="24" y="192" width="56" height="20" rx="10" fill="#e0e7ff" />
-            <text x="52" y="206" textAnchor="middle" fontSize="10" fill="#4338ca" fontFamily="sans-serif">רפואה</text>
-          </svg>
-        </div>
-
-        <div className="order-1 flex flex-col justify-center px-10 py-16 md:order-2">
-          <div
-            className="mb-5 inline-flex w-fit items-center gap-2 rounded-full px-4 py-1.5 text-xs font-semibold"
-            style={{ background: '#eef2ff', color: '#4f46e5' }}
-          >
-            <span>✦</span>
-            כלי חינמי לחיילים משוחררים
-          </div>
+        <div className="mx-auto max-w-lg">
+          <img
+            src="/way-logo.png"
+            alt="Way"
+            className="mx-auto mb-4"
+            style={{
+              height: '180px',
+              objectFit: 'contain',
+              WebkitMaskImage: 'radial-gradient(ellipse 85% 85% at center, black 40%, transparent 70%)',
+              maskImage: 'radial-gradient(ellipse 85% 85% at center, black 40%, transparent 70%)',
+            }}
+          />
 
           <h1
-            className="mb-4 text-4xl font-black leading-tight text-slate-900 md:text-5xl"
-            style={{ letterSpacing: '-0.02em' }}
+            className="mb-2 text-2xl font-black text-slate-900 md:text-3xl"
+            style={{ letterSpacing: '0.02em' }}
           >
-            גלה את המסלול
-            <br />
-            האקדמי שלך
-            <br />
-            אחרי הצבא
+            מה<span className="mx-1 text-[#4f46e5]">.</span>איפה<span className="mx-1 text-[#4f46e5]">.</span>איך
           </h1>
 
-          <p className="mb-8 max-w-sm text-base leading-relaxed text-slate-500">
-            שאלון אישיות, המלצות תחומי לימוד, וחישוב סיכויי קבלה ל-35 מוסדות אקדמיים בישראל.
+          <p className="mb-8 text-base text-slate-500">
+            השותף שלך לדרך
           </p>
 
-          <div className="flex items-center gap-4">
+          <div className="mb-10 flex items-center justify-center">
             <button
               type="button"
               onClick={scrollToStart}
@@ -131,11 +103,26 @@ export default function LandingPage({ onAlreadyKnow, onNeedHelp, onSignIn }: Pro
             >
               מתחילים ←
             </button>
-            <span className="text-sm text-slate-400">ללא הרשמה · חינמי לחלוטין</span>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 text-center shadow-sm">
+              <h3 className="mb-1 text-lg font-black text-slate-900">מה</h3>
+              <p className="text-xs leading-relaxed text-slate-500">שאלון אישיות שמגלה מה מתאים לך</p>
+            </div>
+            <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 text-center shadow-sm">
+              <h3 className="mb-1 text-lg font-black text-slate-900">איך</h3>
+              <p className="text-xs leading-relaxed text-slate-500">חישוב סיכויי קבלה ל-35 מוסדות</p>
+            </div>
+            <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 text-center shadow-sm">
+              <h3 className="mb-1 text-lg font-black text-slate-900">איפה</h3>
+              <p className="text-xs leading-relaxed text-slate-500">המלצות מותאמות למוסד הנכון</p>
+            </div>
           </div>
         </div>
       </section>
 
+      {/* ── How it works ────────────────────────────────────────── */}
       <section id="how-it-works" className="bg-white px-6 py-20">
         <div className="mx-auto max-w-4xl">
           <h2 className="mb-2 text-center text-3xl font-black tracking-tight text-slate-900" style={{ letterSpacing: '-0.02em' }}>
@@ -176,6 +163,7 @@ export default function LandingPage({ onAlreadyKnow, onNeedHelp, onSignIn }: Pro
         </div>
       </section>
 
+      {/* ── Testimonials ────────────────────────────────────────── */}
       <section className="px-6 py-20" style={{ background: '#f8f9fc' }}>
         <div className="mx-auto max-w-4xl">
           <h2 className="mb-2 text-center text-3xl font-black tracking-tight text-slate-900" style={{ letterSpacing: '-0.02em' }}>
@@ -188,7 +176,7 @@ export default function LandingPage({ onAlreadyKnow, onNeedHelp, onSignIn }: Pro
           <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
             <div className="rounded-2xl border border-[#e5e7eb] bg-white p-7 shadow-sm">
               <p className="mb-5 text-sm italic leading-relaxed text-slate-700">
-                &quot;לא ידעתי בכלל מה לעשות אחרי הצבא. TOAR עזר לי להבין שהנדסת תוכנה זה בדיוק מה שמתאים לי.&quot;
+                &quot;לא ידעתי בכלל מה לעשות אחרי הצבא. Way עזר לי להבין שהנדסת תוכנה זה בדיוק מה שמתאים לי.&quot;
               </p>
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold" style={{ background: '#eef2ff', color: '#4f46e5' }}>
@@ -219,6 +207,7 @@ export default function LandingPage({ onAlreadyKnow, onNeedHelp, onSignIn }: Pro
         </div>
       </section>
 
+      {/* ── Bottom CTA with Yes / No ─────────────────────────────── */}
       <section
         ref={startRef}
         id="start"
@@ -254,6 +243,7 @@ export default function LandingPage({ onAlreadyKnow, onNeedHelp, onSignIn }: Pro
           </div>
         </div>
       </section>
+
     </div>
   );
 }
