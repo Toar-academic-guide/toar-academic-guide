@@ -2,6 +2,7 @@ import type { CatalogueSourceMode } from '@/types/catalogue';
 
 const DATABASE_URL_KEY = 'DATABASE_URL';
 const CATALOGUE_SOURCE_MODE_KEY = 'CATALOGUE_SOURCE_MODE';
+const VERCEL_ENV_KEY = 'VERCEL_ENV';
 const CATALOGUE_SOURCE_MODES = ['auto', 'database', 'static'] as const;
 
 function readEnv(name: string): string | undefined {
@@ -40,5 +41,10 @@ export function getCatalogueSourceMode(): CatalogueSourceMode {
 }
 
 export function isProductionRuntime(): boolean {
+  const vercelEnv = readEnv(VERCEL_ENV_KEY);
+  if (vercelEnv) {
+    return vercelEnv === 'production';
+  }
+
   return process.env.NODE_ENV === 'production';
 }

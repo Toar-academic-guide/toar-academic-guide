@@ -24,6 +24,21 @@ const hoistedMocks = vi.hoisted(() => ({
   ]),
 }));
 
+function createDbMock(sequence: unknown[][]) {
+  return {
+    select: () => ({
+      from: () => {
+        const rows = sequence.shift() ?? [];
+        const query = Promise.resolve(rows) as Promise<unknown[]> & {
+          where: () => Promise<unknown[]>;
+        };
+        query.where = () => Promise.resolve(rows);
+        return query;
+      },
+    }),
+  };
+}
+
 var mockEnv = {
   mode: 'static' as 'auto' | 'database' | 'static',
   hasDatabaseUrl: false,
@@ -86,6 +101,31 @@ describe('catalogue queries', () => {
       catalogueSourceMode: 'auto',
       catalogueSource: 'static',
       fallbackReason: 'DATABASE_URL is not configured.',
+    });
+  });
+
+  it('falls back to static data in auto mode for unhealthy preview catalogue data', async () => {
+    mockEnv.mode = 'auto';
+    mockEnv.hasDatabaseUrl = true;
+    hoistedMocks.getDb.mockReturnValue(
+      createDbMock([
+        [{ id: 'haifa' }],
+        [],
+        [{ id: 'haifa_cs', admissionType: 'sekhem' }],
+        [{ programId: 'haifa_cs', institutionId: 'haifa' }],
+        [],
+        [],
+        [],
+      ])
+    );
+
+    const result = await listCataloguePrograms();
+
+    expect(result.data).toEqual(hoistedMocks.getStaticCataloguePrograms.mock.results[0]?.value);
+    expect(result.meta).toEqual({
+      catalogueSourceMode: 'auto',
+      catalogueSource: 'static',
+      fallbackReason: 'Sekhem programs missing thresholds: haifa_cs',
     });
   });
 
