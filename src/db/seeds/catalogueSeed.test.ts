@@ -1,4 +1,5 @@
 import { allPrograms } from '@/data/degrees';
+import { UNIVERSITIES } from '@/data/degreesData';
 import { INSTITUTIONS } from '@/data/institutions';
 import type { Program } from '@/data/degrees/types';
 import { buildCatalogueSeed } from '@/db/seeds/catalogueSeed';
@@ -8,7 +9,9 @@ describe('catalogueSeed', () => {
     const payload = buildCatalogueSeed();
 
     expect(payload.institutions).toHaveLength(INSTITUTIONS.length);
-    expect(payload.universityCalculatorConfigs).toHaveLength(4);
+    expect(payload.universityCalculatorConfigs.map((row) => row.institutionId).sort()).toEqual(
+      UNIVERSITIES.map((row) => row.id).sort()
+    );
     expect(payload.programs).toHaveLength(allPrograms.length);
   });
 

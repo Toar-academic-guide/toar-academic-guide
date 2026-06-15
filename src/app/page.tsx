@@ -12,8 +12,11 @@ import {
 } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 import { useUserProfile } from '@/hooks/useUserProfile';
-import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
-import { fetchCatalogueInstitutions, fetchCataloguePrograms } from '@/lib/catalogueClient';
+import {
+  CatalogueApiError,
+  fetchCatalogueInstitutions,
+  fetchCataloguePrograms,
+} from '@/lib/catalogueClient';
 import { getCalculatorInstitutionsFromCatalogue } from '@/lib/calculatorInstitutions';
 import { getRecommendations } from '@/utils/recommendationEngine';
 import { evaluateUniversities } from '@/utils/sekhemCalculators';
@@ -34,6 +37,8 @@ import ResultsDashboard from '@/components/ResultsDashboard';
 import type { AcademicScores, RiasecAnswers } from '@/types';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 
+type CatalogueStatus = 'loading' | 'ready' | 'error';
+
 type AppStep =
   | 'landing'
   | 'auth'
@@ -46,15 +51,26 @@ type AppStep =
   | 'bucket-list'
   | 'degree-picker';
 
+function toCatalogueError(error: unknown): CatalogueApiError {
+  if (error instanceof CatalogueApiError) {
+    return error;
+  }
+
+  if (error instanceof Error) {
+    return new CatalogueApiError(error.message, { cause: error });
+  }
+
+  return new CatalogueApiError('Unable to load the catalogue.');
+}
+
 export default function Home() {
   const { loading: authLoading, signOut, user } = useAuth();
-  const staticCataloguePrograms = getStaticCataloguePrograms();
-  const staticCatalogueInstitutions = getStaticCatalogueInstitutions();
-  const [catalogueInstitutions, setCatalogueInstitutions] =
-    useState<CatalogueInstitution[]>(staticCatalogueInstitutions);
+  const [catalogueStatus, setCatalogueStatus] = useState<CatalogueStatus>('loading');
+  const [catalogueError, setCatalogueError] = useState<CatalogueApiError | null>(null);
+  const [catalogueInstitutions, setCatalogueInstitutions] = useState<CatalogueInstitution[]>([]);
   const [step, setStep] = useState<AppStep>('landing');
   const [recommendations, setRecommendations] = useState<RecommendedField[]>([]);
-  const [cataloguePrograms, setCataloguePrograms] = useState<CatalogueProgram[]>(staticCataloguePrograms);
+  const [cataloguePrograms, setCataloguePrograms] = useState<CatalogueProgram[]>([]);
   const {
     profile,
     hydrated,
@@ -72,8 +88,13 @@ export default function Home() {
     scores: RiasecScores;
     geographicPreference: GeographicRegion;
   } | null>(null);
+  const [recommendationRequest, setRecommendationRequest] = useState<{
+    scores: RiasecScores;
+    geographicPreference: GeographicRegion;
+    avoidances: string[];
+  } | null>(null);
 
-  const [selectedDegreeId, setSelectedDegreeId] = useState(staticCataloguePrograms[0].id);
+  const [selectedDegreeId, setSelectedDegreeId] = useState<string | null>(null);
   const [results, setResults] = useState<UniversityResult[] | null>(null);
   const [degreeName, setDegreeName] = useState('');
   const calculatorInstitutions = getCalculatorInstitutionsFromCatalogue(catalogueInstitutions);
@@ -83,25 +104,56 @@ export default function Home() {
   useEffect(() => {
     let isMounted = true;
 
-    Promise.all([fetchCataloguePrograms(), fetchCatalogueInstitutions()]).then(([programs, institutions]) => {
-      if (!isMounted) {
-        return;
-      }
+    setCatalogueStatus('loading');
+    setCatalogueError(null);
 
-      if (programs.length > 0) {
+    Promise.all([fetchCataloguePrograms(), fetchCatalogueInstitutions()])
+      .then(([programs, institutions]) => {
+        if (!isMounted) {
+          return;
+        }
+
         setCataloguePrograms(programs);
+        setCatalogueInstitutions(institutions);
         setSelectedDegreeId((current) =>
-          programs.some((program) => program.id === current) ? current : programs[0].id
+          current && programs.some((program) => program.id === current)
+            ? current
+            : (programs[0]?.id ?? null)
         );
-      }
+        setCatalogueStatus('ready');
+      })
+      .catch((error) => {
+        if (!isMounted) {
+          return;
+        }
 
-      setCatalogueInstitutions(institutions);
-    });
+        setCataloguePrograms([]);
+        setCatalogueInstitutions([]);
+        setSelectedDegreeId(null);
+        setRecommendations([]);
+        setCatalogueError(toCatalogueError(error));
+        setCatalogueStatus('error');
+      });
 
     return () => {
       isMounted = false;
     };
   }, []);
+
+  useEffect(() => {
+    if (catalogueStatus !== 'ready' || !recommendationRequest) {
+      return;
+    }
+
+    setRecommendations(
+      getRecommendations(
+        recommendationRequest.scores,
+        undefined,
+        recommendationRequest.avoidances,
+        cataloguePrograms
+      )
+    );
+  }, [cataloguePrograms, catalogueStatus, recommendationRequest]);
 
   function handleRiasecComplete(scores: Record<RiasecDimension, number>) {
     setPendingScores(scores);
@@ -114,9 +166,13 @@ export default function Home() {
     const scores = pendingScores ?? ({ R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 } as RiasecScores);
 
     updateProfile({ geographicPreference });
-    const recs = getRecommendations(scores, undefined, avoidances, cataloguePrograms);
     setRiasecProfile({ scores, geographicPreference });
-    setRecommendations(recs);
+    setRecommendationRequest({ scores, geographicPreference, avoidances });
+    setRecommendations(
+      catalogueStatus === 'ready'
+        ? getRecommendations(scores, undefined, avoidances, cataloguePrograms)
+        : []
+    );
     setResults(null);
     setBucketReturnsTo('recommendations');
     setStep('recommendations');
@@ -181,8 +237,52 @@ export default function Home() {
       </button>
     ) : null;
 
+  function renderCatalogueState(title: string, description: string) {
+    if (catalogueStatus === 'loading') {
+      return (
+        <section className="mx-auto flex max-w-2xl flex-col items-center gap-3 rounded-3xl border border-slate-200 bg-white px-8 py-16 text-center shadow-sm">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-indigo-600" />
+          <div>
+            <h2 className="text-lg font-bold text-slate-900">{title}</h2>
+            <p className="mt-1.5 text-sm text-slate-500">{description}</p>
+          </div>
+        </section>
+      );
+    }
+
+    if (catalogueStatus === 'error') {
+      return (
+        <section className="mx-auto flex max-w-2xl flex-col items-center gap-4 rounded-3xl border border-rose-200 bg-rose-50 px-8 py-16 text-center shadow-sm">
+          <div className="rounded-full bg-white px-4 py-1 text-xs font-semibold text-rose-700">
+            קטלוג לא זמין
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-slate-900">לא הצלחנו לטעון את קטלוג התארים</h2>
+            <p className="mt-1.5 text-sm text-slate-600">{catalogueError?.message}</p>
+            {catalogueError?.details[0] ? (
+              <p className="mt-2 text-sm text-slate-500">{catalogueError.details[0]}</p>
+            ) : null}
+          </div>
+          <button
+            type="button"
+            onClick={handleGoHome}
+            className="rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700"
+          >
+            חזרה לעמוד הבית
+          </button>
+        </section>
+      );
+    }
+
+    return null;
+  }
+
   function handleCalculate(scores: UserScores, degreeId: string, engineering: EngineeringOptions) {
-    const degree = cataloguePrograms.find((p) => p.id === degreeId)!;
+    const degree = cataloguePrograms.find((program) => program.id === degreeId);
+    if (!degree) {
+      return;
+    }
+
     const evaluated = evaluateUniversities(calculatorInstitutions, degree, scores, engineering);
     setResults(evaluated);
     setDegreeName(degree.name);
@@ -227,12 +327,18 @@ export default function Home() {
     return (
       <>
         <BackButton />
-        <DegreePicker
-          programs={cataloguePrograms}
-          savedProgramIds={profile.savedProgramIds ?? []}
-          onToggleSave={handleToggleSave}
-          onDone={() => setStep('bucket-list')}
-        />
+        {catalogueStatus === 'ready' ? (
+          <DegreePicker
+            programs={cataloguePrograms}
+            savedProgramIds={profile.savedProgramIds ?? []}
+            onToggleSave={handleToggleSave}
+            onDone={() => setStep('bucket-list')}
+          />
+        ) : (
+          <div className="min-h-screen bg-[#f5f4f0] px-4 py-10 sm:px-6">
+            {renderCatalogueState('טוענים את קטלוג התארים', 'רק לאחר שהקטלוג ייטען אפשר לבחור תארים להשוואה.')}
+          </div>
+        )}
       </>
     );
   }
@@ -299,6 +405,11 @@ export default function Home() {
     setResults(null);
   }
 
+  const shouldBlockCatalogueStep =
+    catalogueStatus !== 'ready' &&
+    (step === 'recommendations' || step === 'bucket-list' || step === 'calculator');
+  const sekhemPrograms = cataloguePrograms.filter((program) => program.admissionType === 'sekhem');
+
   return (
     <>
       <BackButton />
@@ -339,8 +450,15 @@ export default function Home() {
           </div>
         ) : null}
 
+        {shouldBlockCatalogueStep ? (
+          renderCatalogueState(
+            'טוענים את הקטלוג',
+            'הקטלוג נטען דרך ה-API לפני שאפשר להציג המלצות, מחשבון או רשימת ייעוד.'
+          )
+        ) : null}
+
         {/* ── Step: Recommendations ─────────────────────────────── */}
-        {step === 'recommendations' && riasecProfile && (
+        {!shouldBlockCatalogueStep && step === 'recommendations' && riasecProfile && (
           <RecommendationResults
             programs={cataloguePrograms}
             recommendations={recommendations}
@@ -354,7 +472,7 @@ export default function Home() {
         )}
 
         {/* ── Step: Bucket List ─────────────────────────────────── */}
-        {step === 'bucket-list' && (
+        {!shouldBlockCatalogueStep && step === 'bucket-list' && (
           <BucketList
             programs={cataloguePrograms}
             calculatorInstitutions={calculatorInstitutions}
@@ -368,20 +486,26 @@ export default function Home() {
         )}
 
         {/* ── Step: Calculator ──────────────────────────────────── */}
-        {step === 'calculator' && (
+        {!shouldBlockCatalogueStep && step === 'calculator' && (
           <>
             <section className="rounded-2xl border border-[#e5e7eb] bg-white p-6 shadow-sm sm:p-8">
               <h2 className="mb-1 text-lg font-semibold text-gray-800">הזן את הנתונים שלך</h2>
               <p className="mb-6 text-sm text-gray-400">
                 הממוצע בגרות כולל בונוסים (למשל מתמטיקה 5 יח׳ מוסיפה עד 35 נקודות).
               </p>
-              <ScoreForm
-                programs={cataloguePrograms}
-                onSubmit={handleCalculate}
-                defaultDegreeId={selectedDegreeId}
-                defaultPsychometric={profile.academicScores?.psychometric?.overall}
-                defaultBagrut={profile.academicScores?.bagrut?.weightedAverage}
-              />
+              {sekhemPrograms.length > 0 ? (
+                <ScoreForm
+                  programs={cataloguePrograms}
+                  onSubmit={handleCalculate}
+                  defaultDegreeId={selectedDegreeId ?? undefined}
+                  defaultPsychometric={profile.academicScores?.psychometric?.overall}
+                  defaultBagrut={profile.academicScores?.bagrut?.weightedAverage}
+                />
+              ) : (
+                <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                  אין כרגע תוכניות עם מחשבון קבלה זמין בקטלוג.
+                </div>
+              )}
             </section>
 
             {results && (
