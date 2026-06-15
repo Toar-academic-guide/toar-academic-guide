@@ -328,6 +328,13 @@ export default function Home() {
     return (
       <>
         <BackButton />
+        {syncError && (
+          <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-xl px-4">
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 shadow-md">
+              {syncError}
+            </div>
+          </div>
+        )}
         {catalogueStatus === 'ready' ? (
           <DegreePicker
             programs={cataloguePrograms}
