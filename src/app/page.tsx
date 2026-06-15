@@ -359,6 +359,7 @@ export default function Home() {
         <BackButton />
         <AcademicProfileForm
           initialScores={profile.academicScores}
+          initialDocuments={profile.uploadedDocuments}
           onComplete={(scores: AcademicScores) => {
             updateProfile({ academicScores: scores });
             setStep('riasec-exam');
