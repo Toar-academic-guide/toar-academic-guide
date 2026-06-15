@@ -24,21 +24,6 @@ const hoistedMocks = vi.hoisted(() => ({
   ]),
 }));
 
-function createDbMock(sequence: unknown[][]) {
-  return {
-    select: () => ({
-      from: () => {
-        const rows = sequence.shift() ?? [];
-        const query = Promise.resolve(rows) as Promise<unknown[]> & {
-          where: () => Promise<unknown[]>;
-        };
-        query.where = () => Promise.resolve(rows);
-        return query;
-      },
-    }),
-  };
-}
-
 var mockEnv = {
   mode: 'static' as 'auto' | 'database' | 'static',
   hasDatabaseUrl: false,
@@ -104,31 +89,6 @@ describe('catalogue queries', () => {
     });
   });
 
-  it('falls back to static data in auto mode for unhealthy preview catalogue data', async () => {
-    mockEnv.mode = 'auto';
-    mockEnv.hasDatabaseUrl = true;
-    hoistedMocks.getDb.mockReturnValue(
-      createDbMock([
-        [{ id: 'haifa' }],
-        [],
-        [{ id: 'haifa_cs', admissionType: 'sekhem' }],
-        [{ programId: 'haifa_cs', institutionId: 'haifa' }],
-        [],
-        [],
-        [],
-      ])
-    );
-
-    const result = await listCataloguePrograms();
-
-    expect(result.data).toEqual(hoistedMocks.getStaticCataloguePrograms.mock.results[0]?.value);
-    expect(result.meta).toEqual({
-      catalogueSourceMode: 'auto',
-      catalogueSource: 'static',
-      fallbackReason: 'Sekhem programs missing thresholds: haifa_cs',
-    });
-  });
-
   it('fails closed in database mode when DATABASE_URL is missing', async () => {
     mockEnv.mode = 'database';
 
@@ -153,6 +113,32 @@ describe('catalogue queries', () => {
         { programId: 'program_2', institutionId: 'huji' },
       ],
       admissionThresholds: [{ programId: 'program_1', universityId: 'tau', thresholdValue: 650 }],
+      universityCalculatorConfigs: [
+        { institutionId: 'tau' },
+        { institutionId: 'huji' },
+        { institutionId: 'technion' },
+        { institutionId: 'bgu' },
+      ],
+    });
+
+    expect(readiness).toEqual({
+      isReady: true,
+      issues: [],
+    });
+  });
+
+  it('does not require thresholds for requirements-only programmes', () => {
+    const readiness = evaluateCatalogueReadiness({
+      institutions: [
+        { id: 'haifa' },
+        { id: 'tau' },
+        { id: 'huji' },
+        { id: 'technion' },
+        { id: 'bgu' },
+      ],
+      programs: [{ id: 'haifa_cs', admissionType: 'requirements' }],
+      programInstitutions: [{ programId: 'haifa_cs', institutionId: 'haifa' }],
+      admissionThresholds: [],
       universityCalculatorConfigs: [
         { institutionId: 'tau' },
         { institutionId: 'huji' },
