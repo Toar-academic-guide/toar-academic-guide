@@ -127,6 +127,32 @@ describe('catalogue queries', () => {
     });
   });
 
+  it('does not require thresholds for requirements-only programmes', () => {
+    const readiness = evaluateCatalogueReadiness({
+      institutions: [
+        { id: 'haifa' },
+        { id: 'tau' },
+        { id: 'huji' },
+        { id: 'technion' },
+        { id: 'bgu' },
+      ],
+      programs: [{ id: 'haifa_cs', admissionType: 'requirements' }],
+      programInstitutions: [{ programId: 'haifa_cs', institutionId: 'haifa' }],
+      admissionThresholds: [],
+      universityCalculatorConfigs: [
+        { institutionId: 'tau' },
+        { institutionId: 'huji' },
+        { institutionId: 'technion' },
+        { institutionId: 'bgu' },
+      ],
+    });
+
+    expect(readiness).toEqual({
+      isReady: true,
+      issues: [],
+    });
+  });
+
   it('blocks readiness when calculator configs are missing', () => {
     const readiness = evaluateCatalogueReadiness({
       institutions: [{ id: 'tau' }, { id: 'huji' }, { id: 'technion' }, { id: 'bgu' }],
