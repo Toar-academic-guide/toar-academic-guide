@@ -173,6 +173,8 @@ export const requirementVersions = pgTable('requirement_versions', {
 
 export const userProfiles = pgTable('user_profiles', {
   userId: uuid('user_id').primaryKey().notNull(),
+  firstName: text('first_name'),
+  lastName: text('last_name'),
   geographicPreference: geographicRegionEnum('geographic_preference').default('any').notNull(),
   psychometricOverall: integer('psychometric_overall'),
   psychometricQuantitative: integer('psychometric_quantitative'),

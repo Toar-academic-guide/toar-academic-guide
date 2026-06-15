@@ -7,6 +7,8 @@ describe('user profile serializers', () => {
     const snapshot = serializeUserProfileSnapshot(
       {
         userId: '00000000-0000-0000-0000-000000000001',
+        firstName: 'מלי',
+        lastName: 'כהן',
         geographicPreference: 'south',
         psychometricOverall: 701,
         psychometricQuantitative: null,
@@ -27,6 +29,8 @@ describe('user profile serializers', () => {
     );
 
     expect(snapshot).toEqual({
+      firstName: 'מלי',
+      lastName: 'כהן',
       geographicPreference: 'south',
       academicScores: {
         psychometric: {
@@ -43,6 +47,8 @@ describe('user profile serializers', () => {
 
   it('builds a DB row with nulls for missing score fields', () => {
     const row = buildUserProfileRow('00000000-0000-0000-0000-000000000002', {
+      firstName: 'Dana',
+      lastName: 'Levi',
       geographicPreference: 'any',
       academicScores: {
         psychometric: {
@@ -53,6 +59,8 @@ describe('user profile serializers', () => {
 
     expect(row).toMatchObject({
       userId: '00000000-0000-0000-0000-000000000002',
+      firstName: 'Dana',
+      lastName: 'Levi',
       geographicPreference: 'any',
       psychometricOverall: 650,
       psychometricQuantitative: null,
@@ -61,5 +69,35 @@ describe('user profile serializers', () => {
       bagrutWeightedAverage: null,
     });
   });
-});
 
+  it('keeps legacy rows without names backward-compatible', () => {
+    const snapshot = serializeUserProfileSnapshot(
+      {
+        userId: '00000000-0000-0000-0000-000000000003',
+        firstName: null,
+        lastName: null,
+        geographicPreference: 'any',
+        psychometricOverall: null,
+        psychometricQuantitative: null,
+        psychometricVerbal: null,
+        psychometricEnglish: null,
+        bagrutWeightedAverage: null,
+        riasecR: null,
+        riasecI: null,
+        riasecA: null,
+        riasecS: null,
+        riasecE: null,
+        riasecC: null,
+        avoidanceTags: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      []
+    );
+
+    expect(snapshot).toEqual({
+      geographicPreference: 'any',
+      savedProgramIds: [],
+    });
+  });
+});

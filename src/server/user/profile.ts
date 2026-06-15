@@ -38,6 +38,8 @@ export async function replaceUserProfileSnapshot(
       .onConflictDoUpdate({
         target: userProfiles.userId,
         set: {
+          firstName: profile.firstName?.trim() || null,
+          lastName: profile.lastName?.trim() || null,
           geographicPreference: profile.geographicPreference,
           psychometricOverall: profile.academicScores?.psychometric?.overall ?? null,
           psychometricQuantitative: profile.academicScores?.psychometric?.quantitative ?? null,

@@ -11,9 +11,15 @@ import {
 import type { Session, SupabaseClient, User } from '@supabase/supabase-js';
 
 import { createSupabaseBrowserClient, isSupabaseConfigured } from '@/lib/supabase/client';
+import { getSupabaseEnv } from '@/lib/supabase/env';
 
 interface AuthResult {
   error: string | null;
+}
+
+export interface SignUpProfileIdentity {
+  firstName: string;
+  lastName: string;
 }
 
 interface AuthContextValue {
@@ -23,7 +29,7 @@ interface AuthContextValue {
   user: User | null;
   supabase: SupabaseClient | null;
   signInWithPassword: (email: string, password: string) => Promise<AuthResult>;
-  signUp: (email: string, password: string) => Promise<AuthResult>;
+  signUp: (email: string, password: string, identity: SignUpProfileIdentity) => Promise<AuthResult>;
   signOut: () => Promise<void>;
 }
 
@@ -77,15 +83,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         const { error } = await supabase.auth.signInWithPassword({ email, password });
-        return { error: error ? translateAuthError(error.message) : null };
+        return { error: error ? translateAuthError(error) : null };
       },
-      async signUp(email, password) {
+      async signUp(email, password, identity) {
         if (!supabase) {
           return { error: 'ההרשמה עדיין לא זמינה.' };
         }
 
-        const { error } = await supabase.auth.signUp({ email, password });
-        return { error: error ? translateAuthError(error.message) : null };
+        const { publicAppUrl } = getSupabaseEnv();
+        const emailRedirectTo = buildEmailRedirectTo(
+          publicAppUrl,
+          typeof window === 'undefined' ? null : window.location.origin
+        );
+
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: {
+              first_name: identity.firstName,
+              last_name: identity.lastName,
+            },
+            ...(emailRedirectTo ? { emailRedirectTo } : {}),
+          },
+        });
+
+        const duplicateMessage = resolveSignupDuplicateMessage(data);
+        if (duplicateMessage) {
+          return { error: duplicateMessage };
+        }
+
+        const pendingMessage = resolvePendingSignupMessage(data);
+        if (pendingMessage) {
+          return { error: pendingMessage };
+        }
+
+        return { error: error ? translateAuthError(error) : null };
       },
       async signOut() {
         if (!supabase) {
@@ -111,7 +144,67 @@ export function useAuth() {
   return context;
 }
 
-function translateAuthError(message: string): string {
+interface AuthErrorLike {
+  code?: string | null;
+  message?: string | null;
+}
+
+interface SignUpDataLike {
+  user?: {
+    identities?: unknown[] | null;
+    created_at?: string | null;
+    confirmation_sent_at?: string | null;
+  } | null;
+  session?: Session | null;
+}
+
+export function buildEmailRedirectTo(configuredAppUrl: string | null, browserOrigin: string | null) {
+  const candidate = configuredAppUrl?.trim() || browserOrigin?.trim();
+  if (!candidate) {
+    return undefined;
+  }
+
+  try {
+    return new URL(candidate).toString();
+  } catch {
+    return undefined;
+  }
+}
+
+export function resolveSignupDuplicateMessage(data: SignUpDataLike | undefined): string | null {
+  if (!data || data.session || !data.user) {
+    return null;
+  }
+
+  if (Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+    return 'כבר קיים חשבון עם האימייל הזה. נסה להתחבר במקום להירשם שוב.';
+  }
+
+  return null;
+}
+
+export function resolvePendingSignupMessage(data: SignUpDataLike | undefined): string | null {
+  if (!data || data.session || !data.user?.created_at || !data.user.confirmation_sent_at) {
+    return null;
+  }
+
+  const createdAt = Date.parse(data.user.created_at);
+  const confirmationSentAt = Date.parse(data.user.confirmation_sent_at);
+
+  if (Number.isNaN(createdAt) || Number.isNaN(confirmationSentAt)) {
+    return null;
+  }
+
+  if (confirmationSentAt - createdAt > 30_000) {
+    return 'כבר התחלת הרשמה עם האימייל הזה. פתח את מייל האישור ואז התחבר.';
+  }
+
+  return null;
+}
+
+export function translateAuthError(error: string | AuthErrorLike): string {
+  const message = typeof error === 'string' ? error : error.message ?? '';
+  const code = typeof error === 'string' ? '' : error.code?.toLowerCase() ?? '';
   const normalized = message.toLowerCase();
 
   if (normalized.includes('invalid login credentials')) {
@@ -119,7 +212,7 @@ function translateAuthError(message: string): string {
   }
 
   if (normalized.includes('user already registered')) {
-    return 'כבר קיים חשבון עם האימייל הזה.';
+    return 'כבר קיים חשבון עם האימייל הזה. נסה להתחבר במקום להירשם שוב.';
   }
 
   if (normalized.includes('password should be at least')) {
@@ -130,10 +223,18 @@ function translateAuthError(message: string): string {
     return 'כתובת האימייל אינה תקינה.';
   }
 
-  if (normalized.includes('email not confirmed')) {
+  if (code === 'email_not_confirmed' || normalized.includes('email not confirmed')) {
     return 'צריך לאשר את האימייל לפני ההתחברות.';
+  }
+
+  if (
+    code.includes('rate') ||
+    normalized.includes('rate limit') ||
+    normalized.includes('security purposes') ||
+    normalized.includes('too many requests')
+  ) {
+    return 'כבר שלחנו מייל אימות לאחרונה. חכה רגע ונסה שוב.';
   }
 
   return 'אירעה שגיאה. נסה שוב.';
 }
-

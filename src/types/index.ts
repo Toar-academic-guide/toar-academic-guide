@@ -99,6 +99,9 @@ export interface AcademicScores {
 
 /** Persisted user profile (localStorage-backed). */
 export interface UserProfile {
+  /** Signup/profile identity fields kept in the app-owned profile model */
+  firstName?: string;
+  lastName?: string;
   geographicPreference: GeographicRegion;
   /** Academic scores entered in the profile setup step */
   academicScores?: AcademicScores;

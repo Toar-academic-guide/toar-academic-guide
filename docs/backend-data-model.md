@@ -19,6 +19,8 @@ Authenticated user persistence now uses Supabase Auth identities as the ownershi
 
 `localStorage` remains as a client-side draft and migration source, but authenticated server persistence is the durable source of truth for profile data and saved programs. User-owned tables are expected to be protected by server-side user checks plus Supabase row-level security policies when running against a Supabase-backed database.
 
+`user_profiles` is the durable source for app-owned identity fields such as `first_name` and `last_name`. Supabase signup metadata can carry those values at account creation time, but the product should continue to read and write names from the app profile model.
+
 ## Seed strategy
 
 `src/db/seeds/catalogueSeed.ts` converts the current static catalogue into stable seed rows.
