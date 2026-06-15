@@ -1,6 +1,17 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+const hoistedMocks = vi.hoisted(() => ({
+  getDb: vi.fn(),
+}));
+
+vi.mock('server-only', () => ({}));
+
+vi.mock('@/db/client', () => ({
+  getDb: hoistedMocks.getDb,
+}));
 
 import { buildUserProfileRow, serializeUserProfileSnapshot } from '@/server/user/serializers';
+import { getUserProfileSnapshot } from '@/server/user/profile';
 
 describe('user profile serializers', () => {
   it('serializes a sparse row into the frontend profile shape', () => {
@@ -42,6 +53,7 @@ describe('user profile serializers', () => {
         },
       },
       savedProgramIds: ['tau_cs'],
+      uploadedDocuments: [],
     });
   });
 
@@ -98,6 +110,143 @@ describe('user profile serializers', () => {
     expect(snapshot).toEqual({
       geographicPreference: 'any',
       savedProgramIds: [],
+      uploadedDocuments: [],
+    });
+  });
+
+  it('serializes uploaded documents metadata when present', () => {
+    const snapshot = serializeUserProfileSnapshot(
+      {
+        userId: '00000000-0000-0000-0000-000000000004',
+        firstName: 'Dana',
+        lastName: 'Levi',
+        geographicPreference: 'any',
+        psychometricOverall: null,
+        psychometricQuantitative: null,
+        psychometricVerbal: null,
+        psychometricEnglish: null,
+        bagrutWeightedAverage: null,
+        riasecR: null,
+        riasecI: null,
+        riasecA: null,
+        riasecS: null,
+        riasecE: null,
+        riasecC: null,
+        avoidanceTags: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      [],
+      [
+        {
+          id: 'doc-1',
+          userId: '00000000-0000-0000-0000-000000000004',
+          kind: 'psychometric',
+          storageProvider: 'supabase_storage',
+          storagePath: '00000000-0000-0000-0000-000000000004/psychometric/file-1',
+          originalFileName: 'report.pdf',
+          mimeType: 'application/pdf',
+          sizeBytes: 102400,
+          uploadedAt: new Date(),
+        },
+      ]
+    );
+
+    expect(snapshot).toEqual({
+      firstName: 'Dana',
+      lastName: 'Levi',
+      geographicPreference: 'any',
+      savedProgramIds: [],
+      uploadedDocuments: [
+        {
+          id: 'doc-1',
+          kind: 'psychometric',
+          originalFileName: 'report.pdf',
+          sizeBytes: 102400,
+        },
+      ],
+    });
+  });
+});
+
+describe('getUserProfileSnapshot', () => {
+  it('correctly queries database for user profile, saved programs, and uploaded documents', async () => {
+    const mockSelect = vi.fn();
+    const mockDb = { select: mockSelect };
+    hoistedMocks.getDb.mockReturnValue(mockDb);
+
+    const profileRow = {
+      userId: 'user-123',
+      firstName: 'Test',
+      lastName: 'User',
+      geographicPreference: 'north',
+      psychometricOverall: 700,
+      psychometricQuantitative: 140,
+      psychometricVerbal: 135,
+      psychometricEnglish: 125,
+      bagrutWeightedAverage: 105,
+    };
+
+    const savedProgramRows = [
+      { programId: 'huji_cs' },
+    ];
+
+    const documentRows = [
+      {
+        id: 'doc-1',
+        userId: 'user-123',
+        kind: 'psychometric',
+        storageProvider: 'supabase_storage',
+        storagePath: 'user-123/psychometric/file-1',
+        originalFileName: 'report.pdf',
+        mimeType: 'application/pdf',
+        sizeBytes: 100000,
+        uploadedAt: new Date(),
+      },
+    ];
+
+    // Chaining mock for Profile query
+    const mockLimit = vi.fn().mockResolvedValueOnce([profileRow]);
+    const mockWhere1 = vi.fn().mockReturnValueOnce({ limit: mockLimit });
+    const mockFrom1 = vi.fn().mockReturnValueOnce({ where: mockWhere1 });
+    mockSelect.mockReturnValueOnce({ from: mockFrom1 });
+
+    // Chaining mock for Saved Programs query
+    const mockWhere2 = vi.fn().mockResolvedValueOnce(savedProgramRows);
+    const mockFrom2 = vi.fn().mockReturnValueOnce({ where: mockWhere2 });
+    mockSelect.mockReturnValueOnce({ from: mockFrom2 });
+
+    // Chaining mock for Documents query
+    const mockWhere3 = vi.fn().mockResolvedValueOnce(documentRows);
+    const mockFrom3 = vi.fn().mockReturnValueOnce({ where: mockWhere3 });
+    mockSelect.mockReturnValueOnce({ from: mockFrom3 });
+
+    const snapshot = await getUserProfileSnapshot('user-123');
+
+    expect(snapshot).toEqual({
+      firstName: 'Test',
+      lastName: 'User',
+      geographicPreference: 'north',
+      academicScores: {
+        psychometric: {
+          overall: 700,
+          quantitative: 140,
+          verbal: 135,
+          english: 125,
+        },
+        bagrut: {
+          weightedAverage: 105,
+        },
+      },
+      savedProgramIds: ['huji_cs'],
+      uploadedDocuments: [
+        {
+          id: 'doc-1',
+          kind: 'psychometric',
+          originalFileName: 'report.pdf',
+          sizeBytes: 100000,
+        },
+      ],
     });
   });
 });
