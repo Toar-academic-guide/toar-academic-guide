@@ -9,6 +9,7 @@ import {
   UserScores,
   GeographicRegion,
   RiasecDimension,
+  AvoidanceTag,
 } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -91,7 +92,7 @@ export default function Home() {
   const [recommendationRequest, setRecommendationRequest] = useState<{
     scores: RiasecScores;
     geographicPreference: GeographicRegion;
-    avoidances: string[];
+    avoidances: AvoidanceTag[];
   } | null>(null);
 
   const [selectedDegreeId, setSelectedDegreeId] = useState<string | null>(null);
