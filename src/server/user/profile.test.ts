@@ -42,6 +42,7 @@ describe('user profile serializers', () => {
         },
       },
       savedProgramIds: ['tau_cs'],
+      uploadedDocuments: [],
     });
   });
 
@@ -98,6 +99,61 @@ describe('user profile serializers', () => {
     expect(snapshot).toEqual({
       geographicPreference: 'any',
       savedProgramIds: [],
+      uploadedDocuments: [],
+    });
+  });
+
+  it('serializes uploaded documents metadata when present', () => {
+    const snapshot = serializeUserProfileSnapshot(
+      {
+        userId: '00000000-0000-0000-0000-000000000004',
+        firstName: 'Dana',
+        lastName: 'Levi',
+        geographicPreference: 'any',
+        psychometricOverall: null,
+        psychometricQuantitative: null,
+        psychometricVerbal: null,
+        psychometricEnglish: null,
+        bagrutWeightedAverage: null,
+        riasecR: null,
+        riasecI: null,
+        riasecA: null,
+        riasecS: null,
+        riasecE: null,
+        riasecC: null,
+        avoidanceTags: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      [],
+      [
+        {
+          id: 'doc-1',
+          userId: '00000000-0000-0000-0000-000000000004',
+          kind: 'psychometric',
+          storageProvider: 'supabase_storage',
+          storagePath: '00000000-0000-0000-0000-000000000004/psychometric/file-1',
+          originalFileName: 'report.pdf',
+          mimeType: 'application/pdf',
+          sizeBytes: 102400,
+          uploadedAt: new Date(),
+        },
+      ]
+    );
+
+    expect(snapshot).toEqual({
+      firstName: 'Dana',
+      lastName: 'Levi',
+      geographicPreference: 'any',
+      savedProgramIds: [],
+      uploadedDocuments: [
+        {
+          id: 'doc-1',
+          kind: 'psychometric',
+          originalFileName: 'report.pdf',
+          sizeBytes: 102400,
+        },
+      ],
     });
   });
 });

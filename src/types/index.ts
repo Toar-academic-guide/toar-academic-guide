@@ -107,6 +107,12 @@ export interface UserProfile {
   academicScores?: AcademicScores;
   /** IDs of programs the user has bookmarked ("bucket list") */
   savedProgramIds?: string[];
+  uploadedDocuments?: Array<{
+    id: string;
+    kind: 'psychometric' | 'bagrut' | 'other';
+    originalFileName: string;
+    sizeBytes: number | null;
+  }>;
 }
 
 // ── Recommendations ───────────────────────────────────────────────────────────
