@@ -458,9 +458,11 @@ function ValueSliderScreen({
     thumbRef.current?.setAttribute('r', String(r));
     dotRef.current?.setAttribute('cx', String(x));
     dotRef.current?.setAttribute('r', String(dr));
-    fillLRef.current?.setAttribute('x', String(x));
-    fillLRef.current?.setAttribute('width', String(Math.max(0, 230 - x)));
-    fillRRef.current?.setAttribute('width', String(Math.max(0, x - 230)));
+    const lx = x <= 30 ? 0 : x;
+    fillLRef.current?.setAttribute('x', String(lx));
+    fillLRef.current?.setAttribute('width', String(Math.max(0, 230 - lx)));
+    const rx = x >= 430 ? 460 : x;
+    fillRRef.current?.setAttribute('width', String(Math.max(0, rx - 230)));
   }, []);
 
   const toSvgX = useCallback((clientX: number) => {
