@@ -71,7 +71,12 @@ const QP_CHOICES: {
 ];
 
 export default function CareerAssessment({ onComplete }: Props) {
-  const [screenIndex, setScreenIndex] = useState(0);
+  const [screenIndex, setScreenIndex] = useState(() => {
+    if (typeof window === 'undefined') return 0;
+    const p = new URLSearchParams(window.location.search).get('screen');
+    const n = p ? parseInt(p, 10) : 0;
+    return Number.isFinite(n) && n >= 0 && n < SCREEN_SEQUENCE.length ? n : 0;
+  });
   const [slideDir, setSlideDir] = useState<1 | -1>(1);
 
   const [multiSelectAnswers, setMultiSelectAnswers] = useState<

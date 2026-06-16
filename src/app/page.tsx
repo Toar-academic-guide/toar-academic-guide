@@ -52,7 +52,10 @@ export default function Home() {
   const staticCatalogueInstitutions = getStaticCatalogueInstitutions();
   const [catalogueInstitutions, setCatalogueInstitutions] =
     useState<CatalogueInstitution[]>(staticCatalogueInstitutions);
-  const [step, setStep] = useState<AppStep>('landing');
+  const [step, setStep] = useState<AppStep>(() => {
+    if (typeof window === 'undefined') return 'landing';
+    return new URLSearchParams(window.location.search).has('screen') ? 'career-assessment' : 'landing';
+  });
   const [recommendations, setRecommendations] = useState<RecommendedField[]>([]);
   const [cataloguePrograms, setCataloguePrograms] = useState<CatalogueProgram[]>(staticCataloguePrograms);
   const {
