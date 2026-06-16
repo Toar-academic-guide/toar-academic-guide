@@ -453,9 +453,9 @@ function ValueSliderScreen({
     thumbRef.current?.setAttribute('r', String(r));
     dotRef.current?.setAttribute('cx', String(x));
     dotRef.current?.setAttribute('r', String(dr));
-    fillLRef.current?.setAttribute('width', String(Math.max(0, x)));
-    fillRRef.current?.setAttribute('x', String(x));
-    fillRRef.current?.setAttribute('width', String(Math.max(0, 460 - x)));
+    fillLRef.current?.setAttribute('x', String(x));
+    fillLRef.current?.setAttribute('width', String(Math.max(0, 230 - x)));
+    fillRRef.current?.setAttribute('width', String(Math.max(0, x - 230)));
   }, []);
 
   const toSvgX = useCallback((clientX: number) => {
@@ -570,14 +570,14 @@ function ValueSliderScreen({
           <path d={TRACK_PATH} fill="#e8f7fa" stroke="#c8e8ee" strokeWidth="0.5" />
           <rect
             ref={fillLRef}
-            x="0" y="0" width="230" height="60"
-            fill={value <= 0 ? '#85B7EB' : '#e8f7fa'}
+            x="230" y="0" width="0" height="60"
+            fill="#85B7EB"
             clipPath={`url(#track-clip-${slider.id})`}
           />
           <rect
             ref={fillRRef}
-            x="230" y="0" width="230" height="60"
-            fill={value >= 0 ? '#85B7EB' : '#e8f7fa'}
+            x="230" y="0" width="0" height="60"
+            fill="#85B7EB"
             clipPath={`url(#track-clip-${slider.id})`}
           />
           <circle
