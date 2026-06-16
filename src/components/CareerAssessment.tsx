@@ -416,7 +416,7 @@ function ValueSliderScreen({
   return (
     <div className="py-8">
       <h3 className="mb-8 text-center text-lg font-semibold text-slate-800">
-        כשאתה חושב על הקריירה שלך, מה מרגיש לך יותר חשוב?
+        כשאת/ה חושב/ת על הקריירה שלך, מה מרגיש לך יותר חשוב?
       </h3>
 
       <div className="flex items-stretch justify-between gap-4">
@@ -462,7 +462,7 @@ function ValueSliderScreen({
               key={s}
               className={`w-8 text-center ${value === s ? 'font-bold text-indigo-600' : ''}`}
             >
-              {s === 0 ? 'שווה' : Math.abs(s) === 2 ? 'נקודה' : '½'}
+              {s === 0 ? 'שווה' : Math.abs(s) === 2 ? 'בהחלט' : 'נוטה'}
             </span>
           ))}
         </div>
