@@ -462,7 +462,7 @@ function ValueSliderScreen({
               key={s}
               className={`w-8 text-center ${value === s ? 'font-bold text-indigo-600' : ''}`}
             >
-              {s === 0 ? 'שווה' : Math.abs(s) === 2 ? 'בהחלט' : 'נוטה'}
+              {s === 0 ? 'שווה' : Math.abs(s) === 2 ? 'ממש' : 'קצת'}
             </span>
           ))}
         </div>
