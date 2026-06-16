@@ -17,6 +17,8 @@ Always use the Compound Engineering plugin (`ce`) for project work. Pick the mos
 - `ce-frontend-design` and `ce-polish` for frontend UI work and visual refinement.
 - `ce-worktree`, `ce-commit`, `ce-commit-push-pr`, and `ce-resolve-pr-feedback` for branch, commit, PR, and review-feedback workflows.
 - `ce-compound` and `ce-compound-refresh` for capturing or refreshing project learnings.
+- `docs/solutions/` — documented solutions to past problems (bugs, best practices, workflow patterns), organized by category with YAML frontmatter. Relevant when implementing or debugging in documented areas.
+- `CONCEPTS.md` — shared domain vocabulary (entities, named processes, status concepts) at the repository root. Relevant when orienting to the codebase or discussing domain concepts.
 
 ## GitHub Workflow
 
