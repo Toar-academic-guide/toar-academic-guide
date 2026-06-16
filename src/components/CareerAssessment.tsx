@@ -347,8 +347,8 @@ function MultiSelectScreen({
                   {isSelected && <Check size={12} strokeWidth={3} />}
                 </div>
                 <div>
-                  <span className="font-semibold text-slate-800">{option.title}</span>
-                  <span className="text-slate-500"> — {option.subtitle}</span>
+                  <span className="font-semibold text-slate-800">{option.title.replace(/:$/, '')}</span>
+                  <span className="text-slate-500"> - {option.subtitle}</span>
                 </div>
               </div>
             </button>
@@ -462,7 +462,7 @@ function ValueSliderScreen({
               key={s}
               className={`w-8 text-center ${value === s ? 'font-bold text-indigo-600' : ''}`}
             >
-              {s === 0 ? 'שווה' : s < 0 ? '←' : '→'}
+              {s === 0 ? 'שווה' : Math.abs(s) === 2 ? 'נקודה' : '½'}
             </span>
           ))}
         </div>
