@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Check, Minus, X, SkipForward } from 'lucide-react';
 import type { ProfileScores, ValuesProfile } from '@/types';
@@ -400,6 +400,31 @@ function QuickPicksScreen({
   );
 }
 
+const SLIDER_STOPS = [30, 130, 230, 330, 430] as const;
+const SLIDER_VALUES = [-2, -1, 0, 1, 2] as const;
+const SLIDER_LABELS = ['ממש', 'קצת', 'שווה', 'קצת', 'ממש'] as const;
+const TRACK_PATH = 'M 30,2 C 140,2 195,25 230,25 C 265,25 320,2 430,2 A 28,28 0 0 1 430,58 C 320,58 265,35 230,35 C 195,35 140,58 30,58 A 28,28 0 0 1 30,2 Z';
+
+function thumbRadius(x: number) {
+  const d = Math.abs(x - 230) / 200;
+  return 9 + d * 10;
+}
+
+function thumbDotRadius(x: number) {
+  const d = Math.abs(x - 230) / 200;
+  return 3 + d * 3;
+}
+
+function nearestStop(x: number) {
+  let best = 0;
+  let bestD = Infinity;
+  SLIDER_STOPS.forEach((s, i) => {
+    const d = Math.abs(x - s);
+    if (d < bestD) { bestD = d; best = i; }
+  });
+  return best;
+}
+
 function ValueSliderScreen({
   slider,
   value,
@@ -409,7 +434,92 @@ function ValueSliderScreen({
   value: number;
   onChange: (value: number) => void;
 }) {
-  const steps = [-2, -1, 0, 1, 2];
+  const svgRef = useRef<SVGSVGElement>(null);
+  const thumbRef = useRef<SVGCircleElement>(null);
+  const dotRef = useRef<SVGCircleElement>(null);
+  const fillLRef = useRef<SVGRectElement>(null);
+  const fillRRef = useRef<SVGRectElement>(null);
+  const draggingRef = useRef(false);
+  const curXRef = useRef<number>(SLIDER_STOPS[value + 2] ?? 230);
+  const animRef = useRef<number>(0);
+
+  const valueIdx = value + 2;
+
+  const renderThumb = useCallback((x: number) => {
+    curXRef.current = x;
+    const r = thumbRadius(x);
+    const dr = thumbDotRadius(x);
+    thumbRef.current?.setAttribute('cx', String(x));
+    thumbRef.current?.setAttribute('r', String(r));
+    dotRef.current?.setAttribute('cx', String(x));
+    dotRef.current?.setAttribute('r', String(dr));
+    fillLRef.current?.setAttribute('width', String(Math.max(0, x)));
+    fillRRef.current?.setAttribute('x', String(x));
+    fillRRef.current?.setAttribute('width', String(Math.max(0, 460 - x)));
+  }, []);
+
+  const toSvgX = useCallback((clientX: number) => {
+    const rect = svgRef.current?.getBoundingClientRect();
+    if (!rect) return 230;
+    const ratio = (clientX - rect.left) / rect.width;
+    return Math.max(30, Math.min(430, (1 - ratio) * 460));
+  }, []);
+
+  const snapTo = useCallback((targetIdx: number) => {
+    cancelAnimationFrame(animRef.current);
+    const tx = SLIDER_STOPS[targetIdx];
+    const sx = curXRef.current;
+    const start = performance.now();
+    const dur = 180;
+    const tick = (now: number) => {
+      let t = Math.min(1, (now - start) / dur);
+      t = t * (2 - t);
+      renderThumb(sx + (tx - sx) * t);
+      if (t < 1) animRef.current = requestAnimationFrame(tick);
+    };
+    animRef.current = requestAnimationFrame(tick);
+    onChange(SLIDER_VALUES[targetIdx]);
+  }, [onChange, renderThumb]);
+
+  useEffect(() => {
+    renderThumb(SLIDER_STOPS[value + 2] ?? 230);
+  }, [value, renderThumb]);
+
+  useEffect(() => {
+    const handleMove = (clientX: number) => {
+      if (!draggingRef.current) return;
+      const x = toSvgX(clientX);
+      renderThumb(x);
+    };
+    const handleUp = () => {
+      if (!draggingRef.current) return;
+      draggingRef.current = false;
+      const idx = nearestStop(curXRef.current);
+      snapTo(idx);
+    };
+    const onMouseMove = (e: MouseEvent) => handleMove(e.clientX);
+    const onTouchMove = (e: TouchEvent) => handleMove(e.touches[0].clientX);
+    const onMouseUp = () => handleUp();
+    const onTouchEnd = () => handleUp();
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('touchmove', onTouchMove);
+    document.addEventListener('mouseup', onMouseUp);
+    document.addEventListener('touchend', onTouchEnd);
+    return () => {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('touchmove', onTouchMove);
+      document.removeEventListener('mouseup', onMouseUp);
+      document.removeEventListener('touchend', onTouchEnd);
+      cancelAnimationFrame(animRef.current);
+    };
+  }, [toSvgX, renderThumb, snapTo]);
+
+  const handlePointerDown = useCallback((clientX: number) => {
+    cancelAnimationFrame(animRef.current);
+    draggingRef.current = true;
+    renderThumb(toSvgX(clientX));
+  }, [toSvgX, renderThumb]);
+
   const leftActive = value < 0;
   const rightActive = value > 0;
 
@@ -420,11 +530,10 @@ function ValueSliderScreen({
       </h3>
 
       <div className="flex items-stretch justify-between gap-4">
-        {/* Left pole */}
         <div
           className={`flex-1 rounded-xl border-2 p-4 text-center transition ${
             leftActive
-              ? 'border-indigo-500 bg-indigo-50'
+              ? 'border-[#534AB7] bg-[#EEEDFE]'
               : 'border-slate-200'
           }`}
         >
@@ -432,11 +541,10 @@ function ValueSliderScreen({
           <p className="mt-1 text-sm text-slate-500">{slider.leftDescription}</p>
         </div>
 
-        {/* Right pole */}
         <div
           className={`flex-1 rounded-xl border-2 p-4 text-center transition ${
             rightActive
-              ? 'border-indigo-500 bg-indigo-50'
+              ? 'border-[#534AB7] bg-[#EEEDFE]'
               : 'border-slate-200'
           }`}
         >
@@ -445,25 +553,62 @@ function ValueSliderScreen({
         </div>
       </div>
 
-      {/* Slider */}
-      <div className="mt-8 flex flex-col items-center">
-        <input
-          type="range"
-          min={-2}
-          max={2}
-          step={1}
-          value={value}
-          onChange={(e) => onChange(Number(e.target.value))}
-          className="w-full max-w-md accent-indigo-500"
-        />
-        <div className="mt-2 flex w-full max-w-md justify-between text-xs text-slate-400">
-          {steps.map((s) => (
-            <span
-              key={s}
-              className={`w-8 text-center ${value === s ? 'font-bold text-indigo-600' : ''}`}
+      <div className="mt-8 mx-auto max-w-[460px] px-1">
+        <svg
+          ref={svgRef}
+          viewBox="0 0 460 60"
+          className="w-full block cursor-pointer select-none"
+          style={{ transform: 'scaleX(-1)' }}
+          onMouseDown={(e) => { e.preventDefault(); handlePointerDown(e.clientX); }}
+          onTouchStart={(e) => handlePointerDown(e.touches[0].clientX)}
+        >
+          <defs>
+            <clipPath id={`track-clip-${slider.id}`}>
+              <path d={TRACK_PATH} />
+            </clipPath>
+          </defs>
+          <path d={TRACK_PATH} fill="#e8f7fa" stroke="#c8e8ee" strokeWidth="0.5" />
+          <rect
+            ref={fillLRef}
+            x="0" y="0" width="230" height="60"
+            fill={value <= 0 ? '#85B7EB' : '#e8f7fa'}
+            clipPath={`url(#track-clip-${slider.id})`}
+          />
+          <rect
+            ref={fillRRef}
+            x="230" y="0" width="230" height="60"
+            fill={value >= 0 ? '#85B7EB' : '#e8f7fa'}
+            clipPath={`url(#track-clip-${slider.id})`}
+          />
+          <circle
+            ref={thumbRef}
+            cx={SLIDER_STOPS[valueIdx]}
+            cy="30"
+            r={thumbRadius(SLIDER_STOPS[valueIdx])}
+            fill="white"
+            stroke="#534AB7"
+            strokeWidth="2.5"
+            className="cursor-grab"
+          />
+          <circle
+            ref={dotRef}
+            cx={SLIDER_STOPS[valueIdx]}
+            cy="30"
+            r={thumbDotRadius(SLIDER_STOPS[valueIdx])}
+            fill="#534AB7"
+            pointerEvents="none"
+          />
+        </svg>
+        <div className="mt-2 flex justify-between text-xs text-slate-400">
+          {SLIDER_LABELS.map((label, i) => (
+            <button
+              key={i}
+              type="button"
+              onClick={() => snapTo(i)}
+              className={`w-12 text-center ${valueIdx === i ? 'font-bold text-indigo-600' : ''}`}
             >
-              {s === 0 ? 'שווה' : Math.abs(s) === 2 ? 'ממש' : 'קצת'}
-            </span>
+              {label}
+            </button>
           ))}
         </div>
       </div>
