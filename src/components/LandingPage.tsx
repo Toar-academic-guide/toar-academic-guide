@@ -3,6 +3,7 @@
 import { useRef } from 'react';
 import { Target, Sparkles, BarChart3 } from 'lucide-react';
 import LogoCanvas from './LogoCanvas';
+import PaintingCanvas from './PaintingCanvas';
 import NeoButton from './NeoButton';
 
 interface Props {
@@ -71,45 +72,40 @@ export default function LandingPage({ onAlreadyKnow, onNeedHelp, onSignIn }: Pro
         className="px-6 py-16 md:py-20"
         style={{ background: 'radial-gradient(ellipse at center, #f3fdff 0%, #e8f7fa 60%, #e5f7fb 100%)' }}
       >
-        <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-8 md:grid-cols-3 md:gap-10">
+        <div className="mx-auto grid max-w-6xl grid-cols-1 items-stretch gap-8 md:grid-cols-3 md:gap-10">
           {/* Content panel — right 2/3 in RTL */}
-          <div className="text-center md:col-span-2">
-            <div className="mb-4 flex justify-center">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-indigo-50 px-3.5 py-1.5 text-xs font-semibold text-indigo-700">
-                <Sparkles size={13} />
-                כלי חינמי לחיילים וחיילות משוחררים
-              </span>
-            </div>
-
-            <img
-              src="/way-logo.png"
-              alt="Way"
-              className="mx-auto mb-3"
-              style={{
-                height: '150px',
-                objectFit: 'contain',
-                WebkitMaskImage: 'radial-gradient(ellipse 85% 85% at center, black 40%, transparent 70%)',
-                maskImage: 'radial-gradient(ellipse 85% 85% at center, black 40%, transparent 70%)',
-              }}
-            />
-
+          <div className="text-right md:col-span-2">
             <h1
-              className="mb-3 text-2xl font-black text-slate-900 md:text-3xl"
+              className="mb-3 text-4xl font-black text-slate-900 md:text-5xl"
               style={{ letterSpacing: '0.02em' }}
             >
               מה<span className="mx-1 text-[#4f46e5]">.</span>איפה<span className="mx-1 text-[#4f46e5]">.</span>איך
             </h1>
 
-            <p className="mb-1.5 text-base font-bold text-slate-800 md:text-lg">
-              מה ללמוד <span className="text-[#4f46e5]">·</span> איפה ללמוד <span className="text-[#4f46e5]">·</span> איך להתקבל
-              <span className="text-[#4f46e5]"> — הכול במקום אחד</span>
-            </p>
-
-            <p className="mb-8 text-sm text-slate-400">
+            <p className="mb-3 text-lg font-bold text-slate-800 md:text-xl">
               השותף שלך לדרך
             </p>
 
-            <div className="mb-10 flex items-center justify-center">
+            <p className="mb-8 max-w-2xl text-base leading-relaxed text-slate-600 md:text-lg">
+              הכול מתחיל בהבנה של מי אתה ומה החוזקות שלך — ומשם לתחום שמתאים לך, לקריירה שבה תבלוט, למוסד המדויק עבורך ולדרך הקצרה והמעשית ביותר להגשים את המטרות שלך.
+            </p>
+
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 shadow-sm">
+                <h3 className="mb-1 text-lg font-black text-slate-900">מה</h3>
+                <p className="text-xs leading-relaxed text-slate-500">שאלון אישיות מקצועי ורלוונטי, המותאם לקצב השינוי של העולם.</p>
+              </div>
+              <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 shadow-sm">
+                <h3 className="mb-1 text-lg font-black text-slate-900">איפה</h3>
+                <p className="text-xs leading-relaxed text-slate-500">הבנה ודיוק של ההבדלים בין המוסדות השונים ומה מביניהם יתאים לך בצורה הטובה ביותר</p>
+              </div>
+              <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 shadow-sm">
+                <h3 className="mb-1 text-lg font-black text-slate-900">איך</h3>
+                <p className="text-xs leading-relaxed text-slate-500">שקלול כלל הנתונים הנוכחיים שלך והבנה מהי הדרך הנכונה ביותר עבורך, בכדי להשיג את מטרותיך, מבין כלל האפשרויות הקיימות</p>
+              </div>
+            </div>
+
+            <div className="mt-8 flex justify-start">
               <button
                 type="button"
                 onClick={scrollToStart}
@@ -118,35 +114,11 @@ export default function LandingPage({ onAlreadyKnow, onNeedHelp, onSignIn }: Pro
                 מתחילים ←
               </button>
             </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 text-center shadow-sm">
-                <h3 className="mb-1 text-lg font-black text-slate-900">מה</h3>
-                <p className="text-xs leading-relaxed text-slate-500">שאלון אישיות שמגלה מה מתאים לך</p>
-              </div>
-              <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 text-center shadow-sm">
-                <h3 className="mb-1 text-lg font-black text-slate-900">איך</h3>
-                <p className="text-xs leading-relaxed text-slate-500">חישוב סיכויי קבלה ל-35 מוסדות</p>
-              </div>
-              <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 text-center shadow-sm">
-                <h3 className="mb-1 text-lg font-black text-slate-900">איפה</h3>
-                <p className="text-xs leading-relaxed text-slate-500">המלצות מותאמות למוסד הנכון</p>
-              </div>
-            </div>
           </div>
 
-          {/* Art panel — left 1/3 in RTL */}
-          <div className="md:col-span-1">
-            <div
-              className="mx-auto overflow-hidden rounded-3xl shadow-sm"
-              style={{ background: '#f3f0e7' }}
-            >
-              <img
-                src="/bars-painting.png"
-                alt=""
-                className="h-full w-full object-contain"
-              />
-            </div>
+          {/* Art panel — left 1/3 in RTL; white panel, cream backdrop knocked out */}
+          <div className="flex items-center justify-center rounded-3xl bg-white p-8 md:col-span-1">
+            <PaintingCanvas className="block h-auto w-full" />
           </div>
         </div>
       </section>
