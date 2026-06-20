@@ -1,10 +1,12 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { motion } from 'framer-motion';
 import { Target, Sparkles, BarChart3 } from 'lucide-react';
 import LogoCanvas from './LogoCanvas';
 import PaintingCanvas from './PaintingCanvas';
 import NeoButton from './NeoButton';
+import KineticTextSwapper from './KineticTextSwapper';
 import type { CatalogueProgram } from '@/types/catalogue';
 
 interface Props {
@@ -78,11 +80,11 @@ export default function LandingPage({
 
       {/* ── Sticky Nav ──────────────────────────────────────────── */}
       <header className="sticky top-0 z-50 border-b border-[#e5e7eb] bg-white">
-        <div className="flex items-center justify-between py-2 pl-8 pr-4 sm:pl-12 sm:pr-6">
+        <div className="flex items-center justify-between py-4 pl-8 pr-4 sm:pl-12 sm:pr-6">
           {/* Logo + nav links grouped together on the right (RTL) */}
           <div className="flex items-center gap-8">
             <button type="button" className="cursor-pointer rounded-lg outline-none transition-opacity hover:opacity-80">
-              <LogoCanvas size={34} brighten={false} />
+              <LogoCanvas size={44} brighten={false} />
             </button>
 
             <nav className="hidden items-center gap-7 md:flex">
@@ -132,54 +134,109 @@ export default function LandingPage({
 
       {/* ── Hero ────────────────────────────────────────────────── */}
       <section
-        className="px-6 py-16 md:py-20"
+        className="flex min-h-screen items-center px-8 py-16 md:px-16 md:py-20"
         style={{ background: 'radial-gradient(ellipse at center, #f3fdff 0%, #e8f7fa 60%, #e5f7fb 100%)' }}
       >
-        <div className="mx-auto grid max-w-6xl grid-cols-1 items-start gap-8 md:grid-cols-2 md:gap-10">
+        <div className="grid w-full grid-cols-1 items-center gap-10 md:grid-cols-[3fr_2fr] md:gap-16" dir="rtl">
           {/* Content panel — right side in RTL */}
           <div className="text-right">
-            <p className="mb-1 text-base font-bold text-slate-900">
+            <p className="mb-2 text-2xl font-bold text-slate-900 md:text-3xl">
               חושב/ת על לימודים?
             </p>
 
-            <p className="mb-3 text-base font-semibold italic text-[#4f46e5]" dir="ltr">
+            <p className="mb-4 text-3xl font-semibold italic text-[#4f46e5] md:text-4xl" dir="ltr">
               Let&apos;s find your way!
             </p>
 
             <h1
-              className="mb-2 text-5xl font-black text-slate-900 md:text-6xl"
-              style={{ letterSpacing: '0.02em' }}
+              className="mb-3 font-black text-slate-900"
+              style={{ fontSize: 'clamp(44px, 6vw, 90px)', letterSpacing: '0.02em', lineHeight: 1 }}
             >
-              מה<span className="mx-1 text-[#4f46e5]">.</span>איפה<span className="mx-1 text-[#4f46e5]">.</span>איך
+              מה<span className="text-[#4f46e5]">.</span>איפה<span className="text-[#4f46e5]">.</span>איך
             </h1>
 
-            <p className="mb-8 text-base font-bold text-slate-900">
+            <p className="mb-10 text-xl font-bold text-slate-900 md:text-2xl">
               הכל במקום אחד
             </p>
 
-            <div className="grid grid-cols-3 gap-3 text-center">
-              <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 shadow-sm">
-                <h3 className="mb-1 text-lg font-black text-slate-900">מה</h3>
-                <p className="text-xs leading-relaxed text-slate-500">כל אפשרויות הלימודים</p>
-              </div>
-              <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 shadow-sm">
-                <h3 className="mb-1 text-lg font-black text-slate-900">איפה</h3>
-                <p className="text-xs leading-relaxed text-slate-500">הבדלים בין מוסדות</p>
-              </div>
-              <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 shadow-sm">
-                <h3 className="mb-1 text-lg font-black text-slate-900">איך</h3>
-                <p className="text-xs leading-relaxed text-slate-500">שקלול הנתונים שלך</p>
-              </div>
+            <div className="flex items-center gap-4" dir="rtl">
+
+              {/* מה — compact cloud */}
+              <motion.div
+                className="relative"
+                style={{ flex: '0.85' }}
+                animate={{ y: [0, -6, 2, -4, 0], x: [0, 3, -2, 1, 0] }}
+                transition={{ duration: 7, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <svg viewBox="0 0 210 140" className="w-full" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <filter id="hd1" x="-20%" y="-20%" width="140%" height="140%">
+                      <feTurbulence type="fractalNoise" baseFrequency="0.04" numOctaves="4" seed="7"/>
+                      <feDisplacementMap in="SourceGraphic" scale="2.8" xChannelSelector="R" yChannelSelector="G"/>
+                    </filter>
+                  </defs>
+                  <path filter="url(#hd1)" d="M 28,86 C 12,76 10,56 24,46 C 22,30 38,20 55,26 C 60,10 80,4 98,15 C 110,4 132,6 140,22 C 156,16 172,28 174,48 C 188,55 190,76 176,86 C 174,104 152,112 132,102 C 118,114 82,114 68,102 C 50,112 28,106 28,86 Z" fill="white" stroke="#000000" strokeWidth="1.5"/>
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center" style={{ padding: '6% 15%' }}>
+                  <p className="text-2xl font-black leading-none text-slate-900">מה</p>
+                  <p className="mt-2 text-sm leading-snug text-slate-500">כל אפשרויות הלימודים</p>
+                </div>
+              </motion.div>
+
+              {/* איפה — wide cloud */}
+              <motion.div
+                className="relative"
+                style={{ flex: '1.2' }}
+                animate={{ y: [0, 5, -3, 6, 0], x: [0, -2, 3, -1, 0] }}
+                transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <svg viewBox="0 0 275 145" className="w-full" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <filter id="hd2" x="-20%" y="-20%" width="140%" height="140%">
+                      <feTurbulence type="fractalNoise" baseFrequency="0.038" numOctaves="4" seed="12"/>
+                      <feDisplacementMap in="SourceGraphic" scale="2.8" xChannelSelector="R" yChannelSelector="G"/>
+                    </filter>
+                  </defs>
+                  <path filter="url(#hd2)" d="M 34,90 C 14,80 8,60 22,46 C 26,28 46,20 66,28 C 72,12 94,4 116,14 C 128,2 154,2 166,16 C 184,8 204,20 208,42 C 226,46 238,64 228,80 C 232,98 220,116 198,116 C 180,130 148,128 130,116 C 108,128 74,126 54,112 C 36,120 22,106 34,90 Z" fill="white" stroke="#000000" strokeWidth="1.5"/>
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center" style={{ padding: '6% 15%' }}>
+                  <p className="text-2xl font-black leading-none text-slate-900">איפה</p>
+                  <p className="mt-2 text-sm leading-snug text-slate-500">הבדלים בין מוסדות</p>
+                </div>
+              </motion.div>
+
+              {/* איך — tall irregular cloud */}
+              <motion.div
+                className="relative"
+                style={{ flex: '0.95' }}
+                animate={{ y: [0, -4, 5, -2, 0], x: [0, 2, -3, 2, 0] }}
+                transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+              >
+                <svg viewBox="0 0 235 158" className="w-full" xmlns="http://www.w3.org/2000/svg">
+                  <defs>
+                    <filter id="hd3" x="-20%" y="-20%" width="140%" height="140%">
+                      <feTurbulence type="fractalNoise" baseFrequency="0.042" numOctaves="4" seed="20"/>
+                      <feDisplacementMap in="SourceGraphic" scale="2.8" xChannelSelector="R" yChannelSelector="G"/>
+                    </filter>
+                  </defs>
+                  <path filter="url(#hd3)" d="M 42,112 C 18,100 10,78 24,60 C 22,40 40,28 60,36 C 56,18 74,6 96,12 C 104,0 130,0 142,14 C 160,4 182,14 186,36 C 206,36 218,56 212,76 C 226,86 222,112 200,118 C 190,136 162,138 144,122 C 124,136 92,134 72,120 C 54,130 36,122 42,112 Z" fill="white" stroke="#000000" strokeWidth="1.5"/>
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center" style={{ padding: '6% 15%' }}>
+                  <p className="text-2xl font-black leading-none text-slate-900">איך</p>
+                  <p className="mt-2 text-sm leading-snug text-slate-500">שקלול הנתונים שלך</p>
+                </div>
+              </motion.div>
+
             </div>
 
             {/* PaintingCanvas below the cards */}
-            <div className="mt-8 flex justify-center">
-              <PaintingCanvas className="block h-auto w-full max-w-xs" />
+            <div className="mt-10 flex justify-center">
+              <PaintingCanvas className="block h-auto w-full max-w-lg md:max-w-xl" />
             </div>
           </div>
 
           {/* Calculator card — left side in RTL */}
-          <div className="rounded-2xl border border-[#e5e7eb] bg-white p-6 shadow-sm sm:p-8">
+          <div className="mt-12 flex flex-col self-stretch rounded-2xl border border-[#e5e7eb] bg-white p-8 shadow-sm sm:p-10">
             <h2 className="mb-6 text-xl font-black text-slate-900">בדיקת סיכויי קבלה</h2>
 
             <div className="flex flex-col gap-4">
@@ -263,45 +320,58 @@ export default function LandingPage({
         </div>
       </section>
 
+      {/* ── Kinetic text swapper ──────────────────────────────── */}
+      <KineticTextSwapper />
+
       {/* ── How it works ────────────────────────────────────────── */}
-      <section id="how-it-works" className="bg-white px-6 py-20">
-        <div className="mx-auto max-w-4xl">
-          <h2 className="mb-2 text-center text-3xl font-black tracking-tight text-slate-900" style={{ letterSpacing: '-0.02em' }}>
+      <section id="how-it-works" className="bg-white px-6 py-28">
+        <div className="mx-auto max-w-5xl">
+          <h2 className="mb-3 text-center text-5xl font-black tracking-tight text-slate-900" style={{ letterSpacing: '-0.02em' }}>
             איך זה עובד?
           </h2>
-          <p className="mb-12 text-center text-base text-slate-500">
+          <p className="mb-16 text-center text-xl text-slate-500">
             שלושה שלבים — פחות מ-10 דקות מהתחלה ועד תוצאה
           </p>
 
-          <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
-            <div className="rounded-2xl border border-[#e5e7eb] bg-white p-7 text-center shadow-sm">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full" style={{ background: '#eef2ff' }}>
-                <Target size={22} color="#4f46e5" />
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+            <div className="rounded-2xl border border-[#e5e7eb] bg-white p-10 text-center shadow-sm">
+              <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full" style={{ background: '#eef2ff' }}>
+                <Target size={28} color="#4f46e5" />
               </div>
-              <div className="mb-1 text-xs font-bold tracking-widest" style={{ color: '#4f46e5' }}>שלב 01</div>
-              <h3 className="mb-2 text-base font-black text-slate-900">שאלון אישיות</h3>
-              <p className="text-sm leading-relaxed text-slate-500">42 שאלות קצרות שמגלות מה מניע אותך ולאן כדאי לך ללכת</p>
+              <div className="mb-2 text-sm font-bold tracking-widest" style={{ color: '#4f46e5' }}>שלב 01</div>
+              <h3 className="mb-3 text-xl font-black text-slate-900">שאלון אישיות</h3>
+              <p className="text-base leading-relaxed text-slate-500">42 שאלות קצרות שמגלות מה מניע אותך ולאן כדאי לך ללכת</p>
             </div>
 
-            <div className="rounded-2xl border border-[#e5e7eb] bg-white p-7 text-center shadow-sm">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full" style={{ background: '#f5f3ff' }}>
-                <Sparkles size={22} color="#7c3aed" />
+            <div className="rounded-2xl border border-[#e5e7eb] bg-white p-10 text-center shadow-sm">
+              <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full" style={{ background: '#f5f3ff' }}>
+                <Sparkles size={28} color="#7c3aed" />
               </div>
-              <div className="mb-1 text-xs font-bold tracking-widest" style={{ color: '#7c3aed' }}>שלב 02</div>
-              <h3 className="mb-2 text-base font-black text-slate-900">המלצות מותאמות</h3>
-              <p className="text-sm leading-relaxed text-slate-500">5 תחומי לימוד שמתאימים לפרופיל האישיות הייחודי שלך</p>
+              <div className="mb-2 text-sm font-bold tracking-widest" style={{ color: '#7c3aed' }}>שלב 02</div>
+              <h3 className="mb-3 text-xl font-black text-slate-900">המלצות מותאמות</h3>
+              <p className="text-base leading-relaxed text-slate-500">5 תחומי לימוד שמתאימים לפרופיל האישיות הייחודי שלך</p>
             </div>
 
-            <div className="rounded-2xl border border-[#e5e7eb] bg-white p-7 text-center shadow-sm">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full" style={{ background: '#ecfdf5' }}>
-                <BarChart3 size={22} color="#059669" />
+            <div className="rounded-2xl border border-[#e5e7eb] bg-white p-10 text-center shadow-sm">
+              <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-full" style={{ background: '#ecfdf5' }}>
+                <BarChart3 size={28} color="#059669" />
               </div>
-              <div className="mb-1 text-xs font-bold tracking-widest" style={{ color: '#059669' }}>שלב 03</div>
-              <h3 className="mb-2 text-base font-black text-slate-900">בדיקת סיכויי קבלה</h3>
-              <p className="text-sm leading-relaxed text-slate-500">חישוב סכ״מ ל-35 מוסדות אקדמיים ובדיקה מה נדרש כדי להתקבל</p>
+              <div className="mb-2 text-sm font-bold tracking-widest" style={{ color: '#059669' }}>שלב 03</div>
+              <h3 className="mb-3 text-xl font-black text-slate-900">בדיקת סיכויי קבלה</h3>
+              <p className="text-base leading-relaxed text-slate-500">חישוב סכ״מ ל-35 מוסדות אקדמיים ובדיקה מה נדרש כדי להתקבל</p>
             </div>
           </div>
         </div>
+      </section>
+
+      {/* ── After cartoon ───────────────────────────────────────── */}
+      <section className="flex justify-end bg-white px-8 py-4 pr-0 md:px-16 md:pr-0">
+        <img
+          src="/way-cartoon-after.png"
+          alt="That's way easier than I thought"
+          className="h-auto w-full max-w-3xl md:max-w-5xl"
+          style={{ mixBlendMode: 'multiply', filter: 'brightness(1.1) contrast(1.2)' }}
+        />
       </section>
 
       {/* ── Testimonials ────────────────────────────────────────── */}

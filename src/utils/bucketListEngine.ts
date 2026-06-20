@@ -77,6 +77,29 @@ export function analyzeBucketList(
       continue;
     }
 
+    // ── Minimum-floors model (colleges) ────────────────────────────────────
+    if (university.formulaType === 'minimum_floors') {
+      const psyDeficit = threshold - userScores.psychometric;
+      const bagMin = university.minBagrut ?? 0;
+      const bagDeficit = bagMin - userScores.bagrut;
+
+      if (psyDeficit <= 0 && bagDeficit <= 0) {
+        entries.push({ program, status: 'qualified', sekhem: userScores.psychometric, threshold });
+      } else {
+        entries.push({
+          program,
+          status: 'gap',
+          sekhem: userScores.psychometric,
+          threshold,
+          delta: {
+            psychometric: Math.max(0, Math.ceil(psyDeficit)),
+            bagrut: Math.max(0, Math.ceil(bagDeficit)),
+          },
+        });
+      }
+      continue;
+    }
+
     // ── Calculate and compare ────────────────────────────────────────────────
     // Engineering bonuses are skipped for a conservative baseline estimate.
     const raw    = calculateSekhem(university, userScores, program, { hasMath5: false, hasPhysics5: false });

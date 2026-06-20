@@ -37,9 +37,13 @@ export const PROGRAM_FIELD_MAP: Record<string, string> = {
   bgu_economics: 'economics', bgu_business: 'business', bgu_biology: 'biology',
   bgu_nursing: 'nursing', bgu_socialwork: 'socialWork', bgu_medicine: 'medicine',
 
-  // ── Haifa (requirements-based) ───────────────────────────────────────────────
+  // ── Haifa ─────────────────────────────────────────────────────────────────────
   haifa_cs: 'cs', haifa_psychology: 'psychology', haifa_law: 'law',
-  haifa_economics: 'economics',
+  haifa_economics: 'economics', haifa_accounting: 'accounting',
+  haifa_communication: 'communication', haifa_politicalscience: 'politicalScience',
+  haifa_statistics: 'statistics', haifa_math: 'math',
+  haifa_infosystems: 'infoSystems', haifa_physiotherapy: 'physiotherapy',
+  haifa_sociology: 'sociology',
 
   // ── Arts & Design ───────────────────────────────────────────────────────────
   bezalel_industrial_design: 'industrialDesign', shenkar_industrial_design: 'industrialDesign',
@@ -71,8 +75,25 @@ export const PROGRAM_FIELD_MAP: Record<string, string> = {
   hackeru_data: 'dataAnalysis', itc_data_science: 'dataAnalysis',
   johnbryce_cloud_devops: 'cloudDevOps',
 
-  // ── Haifa (additional programs missing from initial map) ──────────────────
+  // ── Haifa (additional programs) ──────────────────────────────────────────────
   haifa_biology: 'biology', haifa_socialwork: 'socialWork', haifa_nursing: 'nursing',
+
+  // ── Bar-Ilan ──────────────────────────────────────────────────────────────
+  biu_cs: 'cs', biu_psychology: 'psychology', biu_law: 'law', biu_ee: 'ee',
+  biu_medicine: 'medicine', biu_lifesciences: 'biology',
+  biu_biotech: 'biotech', biu_computational_bio: 'computationalBio',
+  biu_socialwork: 'socialWork', biu_criminology: 'criminology', biu_optometry: 'optometry',
+
+  // ── Ariel ─────────────────────────────────────────────────────────────────
+  ariel_cs: 'cs', ariel_ee: 'ee', ariel_civil_eng: 'civilEng',
+  ariel_industrial_eng: 'industrialEng', ariel_me: 'me',
+  ariel_chemical_eng: 'chemicalEng', ariel_economics: 'economics',
+  ariel_socialwork: 'socialWork', ariel_psychology: 'psychology',
+  ariel_architecture: 'architecture', ariel_communication: 'communication',
+  ariel_criminology: 'criminology', ariel_molecular_bio: 'molecularBio',
+  ariel_chemistry: 'chemistry', ariel_math: 'math', ariel_physics: 'physics',
+  ariel_health_systems: 'healthSystems', ariel_nutrition: 'nutrition',
+  ariel_nursing: 'nursing',
 
   // ── Reichman (IDC Herzliya) ───────────────────────────────────────────────
   reichman_cs: 'cs', reichman_psychology: 'psychology', reichman_law: 'law',
@@ -120,7 +141,7 @@ export const FIELD_ENRICHMENT: Record<string, FieldEnrichment> = {
     marketStatus: 'שוק עבודה חם במיוחד. ישראל מדורגת בין מדינות הטכנולוגיה המובילות בעולם. הביקוש לבוגרי מדעי המחשב נמצא בשיא, עם שכר ממוצע של 25,000–50,000 ₪ למנוסים.',
     endGoalJobs: ['מפתח/ת תוכנה', 'ארכיטקט/ית תוכנה', 'מהנדס/ת ML / AI', 'Tech Lead', 'מנהל/ת R&D', 'CTO'],
     advancedDegreesSteps: 'תואר שני (M.Sc.) פותח דלתות לתפקידי מחקר ב-R&D ולחברות כמו Google ו-Meta. לחלופין, MBA לאחר שנות ניסיון מכוון לניהול מוצר ו-Startup founding.',
-    programIds: ['cs', 'tau_cs', 'huji_cs', 'technion_cs', 'bgu_cs', 'haifa_cs'],
+    programIds: ['cs', 'tau_cs', 'huji_cs', 'technion_cs', 'bgu_cs', 'haifa_cs', 'biu_cs', 'ariel_cs'],
   },
 
   datascience: {
@@ -140,7 +161,7 @@ export const FIELD_ENRICHMENT: Record<string, FieldEnrichment> = {
     marketStatus: 'ביקוש גבוה, במיוחד בתעשיית הביטחון (אלביט, רפאל, תע"א) ובהייטק. שכר ממוצע 20,000–38,000 ₪. Embedded ו-VLSI מבוקשים מאוד.',
     endGoalJobs: ['מהנדס/ת חשמל', 'מהנדס/ת Embedded', 'מהנדס/ת RF', 'מהנדס/ת VLSI', 'מהנדס/ת אנרגיה מתחדשת'],
     advancedDegreesSteps: 'תואר שני בהנדסת חשמל, תקשורת, או ניהול מערכות. הסמכות אנרגיה מתחדשת פופולריות בקרב בוגרים.',
-    programIds: ['ee', 'tau_ee', 'technion_ee', 'bgu_ee'],
+    programIds: ['ee', 'tau_ee', 'technion_ee', 'bgu_ee', 'biu_ee', 'ariel_ee'],
   },
 
   me: {
@@ -150,7 +171,7 @@ export const FIELD_ENRICHMENT: Record<string, FieldEnrichment> = {
     marketStatus: 'ביקוש יציב ומתמיד. תעשיות הביטחון, הרפואה והרכב החשמלי (EV) מגדילות ביקוש. שכר ממוצע 18,000–35,000 ₪.',
     endGoalJobs: ['מהנדס/ת מכונות', 'מהנדס/ת R&D מוצר', 'מהנדס/ת ייצור', 'מהנדס/ת Robotics', 'מנהל/ת פרויקט הנדסי'],
     advancedDegreesSteps: 'תואר שני בהנדסת מכונות, Mechatronics, או ניהול הנדסי. Robotics ו-Autonomous Vehicles הם מסלולים חמים.',
-    programIds: ['me', 'tau_me', 'technion_me', 'bgu_me'],
+    programIds: ['me', 'tau_me', 'technion_me', 'bgu_me', 'ariel_me'],
   },
 
   industrialEng: {
@@ -159,7 +180,7 @@ export const FIELD_ENRICHMENT: Record<string, FieldEnrichment> = {
     aboutText: 'הנדסת תעשייה וניהול היא הגשר בין הנדסה לניהול. הלימודים כוללים חקר ביצועים, ניהול שרשרת אספקה, כלכלה הנדסית ומערכות ייצור. הבוגרים מתאימים לתפקידי ניהול תפעולי ואנליזה כמותית.',
     marketStatus: 'ביקוש גבוה בלוגיסטיקה, שירותי בריאות ופינטק. שכר ממוצע 16,000–30,000 ₪.',
     endGoalJobs: ['מנהל/ת תפעול', 'אנליסט/ית תהליכים', 'Supply Chain Manager', 'מנהל/ת פרויקטים', 'יועץ/ת ניהולי/ת'],
-    programIds: ['tau_industrial', 'technion_industrial', 'bgu_industrial'],
+    programIds: ['tau_industrial', 'technion_industrial', 'bgu_industrial', 'ariel_industrial_eng'],
   },
 
   civilEng: {
@@ -168,7 +189,7 @@ export const FIELD_ENRICHMENT: Record<string, FieldEnrichment> = {
     aboutText: 'הנדסה אזרחית עוסקת בתכנון ובנייה של תשתיות: גשרים, כבישים, מבנים ומערכות מים. ישראל משקיעה בפיתוח תשתיות רחב היקף, מה שמביא לביקוש יציב.',
     marketStatus: 'ביקוש יציב, בעיקר בפרויקטים ממשלתיים ובנייה. שכר ממוצע 15,000–28,000 ₪.',
     endGoalJobs: ['מהנדס/ת אזרחי/ת', 'מנהל/ת פרויקט תשתיות', 'מהנדס/ת קונסטרוקציה', 'מתכנן/ת עירוני/ת'],
-    programIds: ['technion_civil'],
+    programIds: ['technion_civil', 'ariel_civil_eng'],
   },
 
   biomedical: {
@@ -187,7 +208,7 @@ export const FIELD_ENRICHMENT: Record<string, FieldEnrichment> = {
     marketStatus: 'ביקוש גבוה, במיוחד לאחר תואר שני קליני. שכר ממוצע של פסיכולוגים קליניים: 12,000–25,000 ₪. טיפול פרטי יכול להניב יותר.',
     endGoalJobs: ['פסיכולוג/ית קלינ/ית', 'פסיכולוג/ית ארגוני/ת', 'יועץ/ת חינוכי/ת', 'פסיכותרפיסט/ית', 'חוקר/ת'],
     advancedDegreesSteps: 'בישראל, עיסוק קליני עצמאי מחייב תואר שני (M.A.) בפסיכולוגיה קלינית + 2–3 שנות התמחות מפוקחת + רישיון ממשרד הבריאות. התהליך כולל אורך כ-8–10 שנים. תואר ראשון פותח דלת לתפקידי שיקום, HR ומחקר בסיסי.',
-    programIds: ['psychology', 'tau_psychology', 'huji_psychology', 'bgu_psychology', 'haifa_psychology'],
+    programIds: ['psychology', 'tau_psychology', 'huji_psychology', 'bgu_psychology', 'haifa_psychology', 'biu_psychology', 'ariel_psychology'],
   },
 
   socialWork: {
@@ -197,7 +218,7 @@ export const FIELD_ENRICHMENT: Record<string, FieldEnrichment> = {
     marketStatus: 'ביקוש גבוה ויציב, בעיקר בשירות הציבורי והמגזר השלישי. שכר ממוצע 9,000–18,000 ₪. מנהלים בכירים מגיעים לשכר גבוה יותר.',
     endGoalJobs: ['עובד/ת סוציאלי/ת', 'מנהל/ת שירותים חברתיים', 'מטפל/ת משפחתי/ת', 'יועץ/ת לרשויות מקומיות'],
     advancedDegreesSteps: 'תואר שני (M.S.W.) נדרש לתפקידי פיקוח ומחקר. רישיון עובד סוציאלי ניתן לאחר שנת התמחות מפוקחת.',
-    programIds: ['tau_socialwork', 'huji_socialwork', 'bgu_socialwork'],
+    programIds: ['tau_socialwork', 'huji_socialwork', 'bgu_socialwork', 'haifa_socialwork', 'biu_socialwork', 'ariel_socialwork'],
   },
 
   law: {
@@ -207,7 +228,7 @@ export const FIELD_ENRICHMENT: Record<string, FieldEnrichment> = {
     marketStatus: 'שוק תחרותי. עורכי דין בשנים הראשונות מרוויחים 8,000–15,000 ₪. מנוסים בתחומים מסחריים ופיננסיים — 30,000 ₪ ומעלה.',
     endGoalJobs: ['עורך/ת דין', 'יועץ/ת משפטי/ת', 'שופט/ת (אחרי ניסיון)', 'יועץ/ת רגולטורי/ת', 'מנהל/ת משפטי/ת'],
     advancedDegreesSteps: 'לאחר הסמכה, עורכי דין מתמחים ב-IP, M&A, פלילים, נדל"ן. LL.M. בחו"ל (US/UK) פותח דלתות בינלאומיות.',
-    programIds: ['law', 'tau_law', 'huji_law', 'bgu_law', 'haifa_law'],
+    programIds: ['law', 'tau_law', 'huji_law', 'bgu_law', 'haifa_law', 'biu_law'],
   },
 
   economics: {
@@ -219,7 +240,7 @@ export const FIELD_ENRICHMENT: Record<string, FieldEnrichment> = {
     advancedDegreesSteps: 'תואר שני בכלכלה (M.A. מחקרי) נפוץ לתפקידי מחקר אקדמיים ובנקאיים. Ph.D. לאקדמיה בלבד.',
     programIds: [
       'economics', 'tau_economics', 'huji_economics', 'bgu_economics', 'haifa_economics',
-      'reichman_economics', 'tlvyaffo_economics', 'colmgmt_economics',
+      'ariel_economics', 'reichman_economics', 'tlvyaffo_economics', 'colmgmt_economics',
     ],
   },
 
@@ -244,7 +265,7 @@ export const FIELD_ENRICHMENT: Record<string, FieldEnrichment> = {
     endGoalJobs: ['רואה/ת חשבון (CPA)', 'מנהל/ת כספים (CFO)', 'מבקר/ת פנים', 'יועץ/ת מס', 'Financial Controller'],
     advancedDegreesSteps: 'לאחר הבחינות המקצועיות (רו"ח) ניתן להתמחות ב-Tax, M&A Accounting, או Forensic Accounting. MBA פותח דלתות לניהול כספי בכיר.',
     programIds: [
-      'tau_accounting', 'huji_accounting', 'bgu_accounting', 'colmgmt_accounting',
+      'tau_accounting', 'huji_accounting', 'bgu_accounting', 'haifa_accounting', 'colmgmt_accounting',
     ],
   },
 
@@ -256,7 +277,7 @@ export const FIELD_ENRICHMENT: Record<string, FieldEnrichment> = {
     endGoalJobs: ['Business Analyst', 'מנהל/ת מוצר (PM)', 'מנהל/ת IT', 'יועץ/ת דיגיטלי/ת', 'Data Analyst'],
     advancedDegreesSteps: 'MBA עם התמחות בטכנולוגיה או M.Sc. ב-Information Systems מחזקים תפקידי ניהול. הסמכות PMP ו-Scrum Master נפוצות.',
     programIds: [
-      'tau_infosystems', 'reichman_infosystems', 'colmgmt_infosystems',
+      'tau_infosystems', 'haifa_infosystems', 'reichman_infosystems', 'colmgmt_infosystems',
     ],
   },
 
@@ -267,7 +288,7 @@ export const FIELD_ENRICHMENT: Record<string, FieldEnrichment> = {
     marketStatus: 'ביקוש מתון לבוגרי B.Sc. בלבד. עם תואר שני/שלישי — ביקוש גבוה בביוטק ותרופות. שכר ממוצע 12,000–25,000 ₪.',
     endGoalJobs: ['חוקר/ת ביולוגי/ת', 'מדען/ת ביוטכנולוגיה', 'רגולציה פרמצבטית', 'מדריך/ת'],
     advancedDegreesSteps: 'תואר שני ושלישי כמעט חובה לתפקידי מחקר עצמאיים. תעשיית הביוטק מאפשרת כניסה עם M.Sc. בלבד.',
-    programIds: ['tau_biology', 'huji_biology', 'bgu_biology'],
+    programIds: ['tau_biology', 'huji_biology', 'bgu_biology', 'haifa_biology', 'biu_lifesciences'],
   },
 
   nursing: {
@@ -277,7 +298,7 @@ export const FIELD_ENRICHMENT: Record<string, FieldEnrichment> = {
     marketStatus: 'ביקוש גבוה מאוד ויציב. ישראל נמצאת במחסור כרוני בסיעוד. שכר ממוצע 15,000–28,000 ₪, כולל תוספות תורנות.',
     endGoalJobs: ['אחות/אח מוסמך/ת', 'ראש/ת צוות', 'אחות/אח מומחה/ית', 'מרכז/ת חינוך סיעודי'],
     advancedDegreesSteps: 'תואר שני בסיעוד (M.S.N.) מכשיר לניהול, מחקר וייעוץ קליני מתקדם.',
-    programIds: ['bgu_nursing'],
+    programIds: ['bgu_nursing', 'haifa_nursing', 'ariel_nursing'],
   },
 
   medicine: {
@@ -287,7 +308,7 @@ export const FIELD_ENRICHMENT: Record<string, FieldEnrichment> = {
     marketStatus: 'ביקוש גבוה מאוד. ישראל מתמודדת עם מחסור ברופאים. שכר מתמחים: 15,000–22,000 ₪. שכר רופאים ותיקים: 30,000–80,000 ₪ ומעלה.',
     endGoalJobs: ['רופא/ה מתמחה', 'רופא/ה מומחה/ית', 'מנהל/ת מחלקה', 'רופא/ה חוקר/ת'],
     advancedDegreesSteps: 'לאחר ה-M.D., Residency של 4–7 שנים בהתמחות נבחרת. Fellowship להתמחות-על. Ph.D. לנתיב אקדמי-קליני.',
-    programIds: ['medicine', 'tau_medicine', 'huji_medicine', 'technion_medicine', 'bgu_medicine'],
+    programIds: ['medicine', 'tau_medicine', 'huji_medicine', 'technion_medicine', 'bgu_medicine', 'biu_medicine'],
   },
 
   animation: {

@@ -54,6 +54,10 @@ export function calculateSekhem(
     return sekhemTechnion(scores);
   }
 
+  if (university.formulaType === 'minimum_floors') {
+    return scores.psychometric;
+  }
+
   const base = sekhemWeighted(university, scores);
 
   if (university.id === 'tau' && (degree.isTauEngineering ?? false)) {
@@ -75,6 +79,12 @@ export function calculateDelta(deficit: number, university: University): DeltaNe
     return {
       psychometric: Math.ceil(deficit / 0.075),
       bagrut: Math.ceil(deficit / 0.5),
+    };
+  }
+  if (university.formulaType === 'minimum_floors') {
+    return {
+      psychometric: Math.ceil(deficit),
+      bagrut: 0,
     };
   }
   const w = university.sekhemWeight!;
@@ -99,6 +109,30 @@ export function evaluateUniversities(
 
     if (threshold === null) {
       return { university, sekhem: 0, threshold: null, status: 'unavailable' };
+    }
+
+    // ── Minimum-floors model (colleges) ──────────────────────────────────────
+    // threshold = minimum psychometric; university.minBagrut = minimum bagrut.
+    // Both must be met independently.
+    if (university.formulaType === 'minimum_floors') {
+      const psyDeficit = threshold - scores.psychometric;
+      const bagMin = university.minBagrut ?? 0;
+      const bagDeficit = bagMin - scores.bagrut;
+      const meetsAll = psyDeficit <= 0 && bagDeficit <= 0;
+
+      if (meetsAll) {
+        return { university, sekhem: scores.psychometric, threshold, status: 'accepted' };
+      }
+      return {
+        university,
+        sekhem: scores.psychometric,
+        threshold,
+        status: 'below',
+        deltaNeeded: {
+          psychometric: Math.max(0, Math.ceil(psyDeficit)),
+          bagrut: Math.max(0, Math.ceil(bagDeficit)),
+        },
+      };
     }
 
     const raw = calculateSekhem(university, scores, degree, engineeringOptions);
