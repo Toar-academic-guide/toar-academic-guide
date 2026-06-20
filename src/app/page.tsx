@@ -31,6 +31,7 @@ import BucketList from '@/components/BucketList';
 import DegreePicker from '@/components/DegreePicker';
 import ScoreForm from '@/components/ScoreForm';
 import ResultsDashboard from '@/components/ResultsDashboard';
+import CalculatorResults from '@/components/CalculatorResults';
 import type { AcademicScores, RiasecAnswers, RiasecScores } from '@/types';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 
@@ -44,7 +45,27 @@ type AppStep =
   | 'recommendations'
   | 'calculator'
   | 'bucket-list'
-  | 'degree-picker';
+  | 'degree-picker'
+  | 'calculator-results';
+
+const APP_STEPS: AppStep[] = [
+  'landing', 'auth', 'intro', 'academic-profile', 'career-assessment',
+  'quick-filters', 'recommendations', 'calculator', 'bucket-list', 'degree-picker',
+  'calculator-results',
+];
+
+// Dev shortcut: ?step=<stepname> or ?screen=N (assessment only)
+function getDevStep(): AppStep {
+  if (typeof window === 'undefined') return 'landing';
+  const params = new URLSearchParams(window.location.search);
+  if (params.has('screen')) return 'career-assessment';
+  const s = params.get('step');
+  return APP_STEPS.includes(s as AppStep) ? (s as AppStep) : 'landing';
+}
+
+// Neutral RIASEC profile used when jumping straight to recommendations
+const DEV_RIASEC: RiasecScores = { R: 3, I: 4, A: 3, S: 3, E: 3, C: 3 };
+const DEV_GEO: GeographicRegion = 'any';
 
 export default function Home() {
   const { loading: authLoading, signOut, user } = useAuth();
@@ -52,11 +73,12 @@ export default function Home() {
   const staticCatalogueInstitutions = getStaticCatalogueInstitutions();
   const [catalogueInstitutions, setCatalogueInstitutions] =
     useState<CatalogueInstitution[]>(staticCatalogueInstitutions);
-  const [step, setStep] = useState<AppStep>(() => {
-    if (typeof window === 'undefined') return 'landing';
-    return new URLSearchParams(window.location.search).has('screen') ? 'career-assessment' : 'landing';
-  });
-  const [recommendations, setRecommendations] = useState<RecommendedField[]>([]);
+  const [step, setStep] = useState<AppStep>(getDevStep);
+  const [recommendations, setRecommendations] = useState<RecommendedField[]>(() =>
+    getDevStep() === 'recommendations'
+      ? getRecommendations(DEV_RIASEC, undefined, [], getStaticCataloguePrograms())
+      : []
+  );
   const [cataloguePrograms, setCataloguePrograms] = useState<CatalogueProgram[]>(staticCataloguePrograms);
   const {
     profile,
@@ -75,7 +97,11 @@ export default function Home() {
   const [riasecProfile, setRiasecProfile] = useState<{
     scores: RiasecScores;
     geographicPreference: GeographicRegion;
-  } | null>(null);
+  } | null>(() =>
+    getDevStep() === 'recommendations'
+      ? { scores: DEV_RIASEC, geographicPreference: DEV_GEO }
+      : null
+  );
 
   const [selectedDegreeId, setSelectedDegreeId] = useState(staticCataloguePrograms[0].id);
   const [results, setResults] = useState<UniversityResult[] | null>(null);
@@ -83,6 +109,11 @@ export default function Home() {
   const calculatorInstitutions = getCalculatorInstitutionsFromCatalogue(catalogueInstitutions);
   const [bucketReturnsTo, setBucketReturnsTo] = useState<AppStep>('recommendations');
   const [authReturnTo, setAuthReturnTo] = useState<Exclude<AppStep, 'auth'>>('landing');
+  const [landingCalcScores, setLandingCalcScores] = useState<{
+    psychometric: number;
+    bagrut: number;
+    degreeId: string;
+  } | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -171,6 +202,7 @@ export default function Home() {
     calculator: 'recommendations',
     'bucket-list': bucketReturnsTo,
     'degree-picker': 'landing',
+    'calculator-results': 'landing',
   };
 
   function handleGoBack() {
@@ -222,6 +254,34 @@ export default function Home() {
         onSignIn={() => {
           setAuthReturnTo('landing');
           setStep('auth');
+        }}
+        onCalculate={(psychometric, bagrut, degreeId) => {
+          setLandingCalcScores({ psychometric, bagrut, degreeId });
+          setStep('calculator-results');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+        onGoToProfile={() => {
+          setStep('academic-profile');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+        programs={cataloguePrograms}
+        authLoading={authLoading}
+        isAuthenticated={isAuthenticated}
+        userEmail={user?.email ?? undefined}
+        onSignOut={() => { void signOut(); }}
+      />
+    );
+  }
+
+  if (step === 'calculator-results' && landingCalcScores) {
+    return (
+      <CalculatorResults
+        psychometric={landingCalcScores.psychometric}
+        bagrut={landingCalcScores.bagrut}
+        degreeId={landingCalcScores.degreeId}
+        onBack={() => {
+          setStep('landing');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
       />
     );

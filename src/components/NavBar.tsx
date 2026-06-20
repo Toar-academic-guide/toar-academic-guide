@@ -12,7 +12,8 @@ type AppStep =
   | 'recommendations'
   | 'calculator'
   | 'bucket-list'
-  | 'degree-picker';
+  | 'degree-picker'
+  | 'calculator-results';
 
 interface Props {
   step: AppStep;

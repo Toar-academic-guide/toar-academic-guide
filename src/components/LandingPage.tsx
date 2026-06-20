@@ -1,19 +1,69 @@
 'use client';
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
 import { Target, Sparkles, BarChart3 } from 'lucide-react';
 import LogoCanvas from './LogoCanvas';
 import PaintingCanvas from './PaintingCanvas';
 import NeoButton from './NeoButton';
+import type { CatalogueProgram } from '@/types/catalogue';
 
 interface Props {
   onAlreadyKnow: () => void;
   onNeedHelp: () => void;
   onSignIn: () => void;
+  onCalculate: (psychometric: number, bagrut: number, degreeId: string) => void;
+  onGoToProfile: () => void;
+  programs: CatalogueProgram[];
+  authLoading?: boolean;
+  isAuthenticated?: boolean;
+  userEmail?: string;
+  onSignOut?: () => void;
 }
 
-export default function LandingPage({ onAlreadyKnow, onNeedHelp, onSignIn }: Props) {
+function getInitials(email: string): string {
+  const prefix = email.split('@')[0];
+  const parts = prefix.split(/[._-]/);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return prefix.slice(0, 2).toUpperCase();
+}
+
+export default function LandingPage({
+  onAlreadyKnow,
+  onNeedHelp,
+  onSignIn,
+  onCalculate,
+  onGoToProfile,
+  programs,
+  authLoading = false,
+  isAuthenticated = false,
+  userEmail,
+  onSignOut,
+}: Props) {
   const startRef = useRef<HTMLElement>(null);
+  const [psychometric, setPsychometric] = useState('');
+  const [bagrut, setBagrut] = useState('');
+  const [selectedDegreeId, setSelectedDegreeId] = useState(programs[0]?.id ?? '');
+  const [calcErrors, setCalcErrors] = useState<{ psychometric?: string; bagrut?: string }>({});
+
+  const uniqueCategories = [...new Set(programs.map((p) => p.category))].sort();
+
+  function handleCalcSubmit() {
+    const errs: typeof calcErrors = {};
+    const psy = Number(psychometric);
+    const bag = Number(bagrut);
+    if (!psychometric || isNaN(psy) || psy < 200 || psy > 800) {
+      errs.psychometric = 'ציון בין 200 ל-800';
+    }
+    if (!bagrut || isNaN(bag) || bag < 60 || bag > 120) {
+      errs.bagrut = 'ממוצע בין 60 ל-120';
+    }
+    setCalcErrors(errs);
+    if (Object.keys(errs).length === 0) {
+      onCalculate(psy, bag, selectedDegreeId);
+    }
+  }
 
   function scrollToStart() {
     startRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -49,13 +99,26 @@ export default function LandingPage({ onAlreadyKnow, onNeedHelp, onSignIn }: Pro
           </div>
 
           <div className="flex items-center gap-3">
-            <button
-              type="button"
-              onClick={onSignIn}
-              className="text-sm font-semibold text-slate-600 transition hover:text-slate-900"
-            >
-              התחברות
-            </button>
+            {authLoading ? (
+              <div className="h-9 w-9 animate-pulse rounded-full bg-slate-200" />
+            ) : isAuthenticated && userEmail ? (
+              <button
+                type="button"
+                onClick={onSignOut}
+                title={`מחובר כ-${userEmail} — לחץ להתנתקות`}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1e1b4b] text-xs font-bold text-white shadow transition hover:bg-[#2d2a6e]"
+              >
+                {getInitials(userEmail)}
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={onSignIn}
+                className="text-sm font-semibold text-slate-600 transition hover:text-slate-900"
+              >
+                התחברות
+              </button>
+            )}
             <button
               type="button"
               onClick={scrollToStart}
@@ -72,53 +135,130 @@ export default function LandingPage({ onAlreadyKnow, onNeedHelp, onSignIn }: Pro
         className="px-6 py-16 md:py-20"
         style={{ background: 'radial-gradient(ellipse at center, #f3fdff 0%, #e8f7fa 60%, #e5f7fb 100%)' }}
       >
-        <div className="mx-auto grid max-w-6xl grid-cols-1 items-stretch gap-8 md:grid-cols-3 md:gap-10">
-          {/* Content panel — right 2/3 in RTL */}
-          <div className="text-right md:col-span-2">
+        <div className="mx-auto grid max-w-6xl grid-cols-1 items-start gap-8 md:grid-cols-2 md:gap-10">
+          {/* Content panel — right side in RTL */}
+          <div className="text-right">
+            <p className="mb-1 text-base font-bold text-slate-900">
+              חושב/ת על לימודים?
+            </p>
+
+            <p className="mb-3 text-base font-semibold italic text-[#4f46e5]" dir="ltr">
+              Let&apos;s find your way!
+            </p>
+
             <h1
-              className="mb-3 text-4xl font-black text-slate-900 md:text-5xl"
+              className="mb-2 text-5xl font-black text-slate-900 md:text-6xl"
               style={{ letterSpacing: '0.02em' }}
             >
               מה<span className="mx-1 text-[#4f46e5]">.</span>איפה<span className="mx-1 text-[#4f46e5]">.</span>איך
             </h1>
 
-            <p className="mb-3 text-lg font-bold text-slate-800 md:text-xl">
-              השותף שלך לדרך
-            </p>
-
-            <p className="mb-8 max-w-2xl text-base leading-relaxed text-slate-600 md:text-lg">
-              הכול מתחיל בהבנה של מי אתה ומה החוזקות שלך — ומשם לתחום שמתאים לך, לקריירה שבה תבלוט, למוסד המדויק עבורך ולדרך הקצרה והמעשית ביותר להגשים את המטרות שלך.
+            <p className="mb-8 text-base font-bold text-slate-900">
+              הכל במקום אחד
             </p>
 
             <div className="grid grid-cols-3 gap-3 text-center">
               <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 shadow-sm">
                 <h3 className="mb-1 text-lg font-black text-slate-900">מה</h3>
-                <p className="text-xs leading-relaxed text-slate-500">שאלון אישיות מקצועי ורלוונטי, המותאם לקצב השינוי של העולם.</p>
+                <p className="text-xs leading-relaxed text-slate-500">כל אפשרויות הלימודים</p>
               </div>
               <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 shadow-sm">
                 <h3 className="mb-1 text-lg font-black text-slate-900">איפה</h3>
-                <p className="text-xs leading-relaxed text-slate-500">הבנה ודיוק של ההבדלים בין המוסדות השונים ומה מביניהם יתאים לך בצורה הטובה ביותר</p>
+                <p className="text-xs leading-relaxed text-slate-500">הבדלים בין מוסדות</p>
               </div>
               <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 shadow-sm">
                 <h3 className="mb-1 text-lg font-black text-slate-900">איך</h3>
-                <p className="text-xs leading-relaxed text-slate-500">שקלול כלל הנתונים הנוכחיים שלך והבנה מהי הדרך הנכונה ביותר עבורך, בכדי להשיג את מטרותיך, מבין כלל האפשרויות הקיימות</p>
+                <p className="text-xs leading-relaxed text-slate-500">שקלול הנתונים שלך</p>
               </div>
             </div>
 
-            <div className="mt-8 flex justify-start">
-              <button
-                type="button"
-                onClick={scrollToStart}
-                className="rounded-full bg-[#1e1b4b] px-8 py-3.5 text-base font-semibold text-white transition hover:bg-[#2d2a6e]"
-              >
-                מתחילים ←
-              </button>
+            {/* PaintingCanvas below the cards */}
+            <div className="mt-8 flex justify-center">
+              <PaintingCanvas className="block h-auto w-full max-w-xs" />
             </div>
           </div>
 
-          {/* Art panel — left 1/3 in RTL; white panel, cream backdrop knocked out */}
-          <div className="flex items-center justify-center rounded-3xl bg-white p-8 md:col-span-1">
-            <PaintingCanvas className="block h-auto w-full" />
+          {/* Calculator card — left side in RTL */}
+          <div className="rounded-2xl border border-[#e5e7eb] bg-white p-6 shadow-sm sm:p-8">
+            <h2 className="mb-6 text-xl font-black text-slate-900">בדיקת סיכויי קבלה</h2>
+
+            <div className="flex flex-col gap-4">
+              {/* Psychometric */}
+              <div>
+                <label htmlFor="calc-psychometric" className="mb-1 block text-sm font-semibold text-slate-700">
+                  ציון פסיכומטרי
+                </label>
+                <input
+                  id="calc-psychometric"
+                  type="number"
+                  min={200}
+                  max={800}
+                  placeholder="200–800"
+                  value={psychometric}
+                  onChange={(e) => { setPsychometric(e.target.value); setCalcErrors((p) => ({ ...p, psychometric: undefined })); }}
+                  className={`w-full rounded-xl border-2 ${calcErrors.psychometric ? 'border-red-400' : 'border-[#e5e7eb]'} bg-white px-4 py-3 text-base text-slate-900 outline-none transition focus:border-[#4f46e5]`}
+                />
+                {calcErrors.psychometric && <p className="mt-1 text-xs text-red-500">{calcErrors.psychometric}</p>}
+              </div>
+
+              {/* Bagrut */}
+              <div>
+                <label htmlFor="calc-bagrut" className="mb-1 block text-sm font-semibold text-slate-700">
+                  ממוצע בגרות
+                </label>
+                <input
+                  id="calc-bagrut"
+                  type="number"
+                  min={60}
+                  max={120}
+                  placeholder="60–120"
+                  value={bagrut}
+                  onChange={(e) => { setBagrut(e.target.value); setCalcErrors((p) => ({ ...p, bagrut: undefined })); }}
+                  className={`w-full rounded-xl border-2 ${calcErrors.bagrut ? 'border-red-400' : 'border-[#e5e7eb]'} bg-white px-4 py-3 text-base text-slate-900 outline-none transition focus:border-[#4f46e5]`}
+                />
+                {calcErrors.bagrut && <p className="mt-1 text-xs text-red-500">{calcErrors.bagrut}</p>}
+              </div>
+
+              {/* Degree category */}
+              <div>
+                <label htmlFor="calc-degree" className="mb-1 block text-sm font-semibold text-slate-700">
+                  מה תרצה/י ללמוד?
+                </label>
+                <select
+                  id="calc-degree"
+                  value={selectedDegreeId}
+                  onChange={(e) => setSelectedDegreeId(e.target.value)}
+                  className="w-full appearance-none rounded-xl border-2 border-[#e5e7eb] bg-white px-4 py-3 text-base text-slate-900 outline-none transition focus:border-[#4f46e5]"
+                >
+                  {uniqueCategories.map((cat) => (
+                    <optgroup key={cat} label={cat}>
+                      {programs.filter((p) => p.category === cat).map((p) => (
+                        <option key={p.id} value={p.id}>{p.name} — {p.institution}</option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+              </div>
+
+              {/* CTA */}
+              <NeoButton onClick={handleCalcSubmit} className="mt-2 w-full py-3.5 text-base">
+                חשב סיכויים ←
+              </NeoButton>
+            </div>
+
+            {/* Disclaimer */}
+            <div className="mt-5 border-t border-[#e5e7eb] pt-4">
+              <p className="text-xs leading-relaxed text-slate-400">
+                מחשבון זה נועד לספק תמונה כללית. לצורך וודאות מלאה, יש להזין את ציוני הבגרות בכל מקצוע{' '}
+                <button
+                  type="button"
+                  onClick={onGoToProfile}
+                  className="font-semibold text-[#4f46e5] underline decoration-[#a5b4fc] underline-offset-2 transition hover:text-[#3730a3]"
+                >
+                  באזור האישי
+                </button>.
+              </p>
+            </div>
           </div>
         </div>
       </section>
@@ -213,17 +353,14 @@ export default function LandingPage({ onAlreadyKnow, onNeedHelp, onSignIn }: Pro
         ref={startRef}
         id="start"
         className="px-6 py-24 text-center"
-        style={{ background: 'linear-gradient(90deg, #1e1b4b 0%, #3730a3 100%)' }}
+        style={{ background: 'radial-gradient(ellipse at center, #f3fdff 0%, #e8f7fa 60%, #e5f7fb 100%)' }}
       >
         <div className="mx-auto max-w-lg">
-          <h2 className="mb-3 text-3xl font-black tracking-tight text-white" style={{ letterSpacing: '-0.02em' }}>
-            מוכן להתחיל?
+          <h2 className="mb-3 text-3xl font-black tracking-tight text-slate-900" style={{ letterSpacing: '-0.02em' }}>
+            קדימה בוא נתחיל!
           </h2>
-          <p className="mb-8 text-base text-white/60">
-            ספר לנו קצת עליך ונסייע לך למצוא את הדרך הנכונה
-          </p>
-          <p className="mb-6 text-base font-semibold text-white/85">
-            האם כבר ידוע לך מה תרצה ללמוד?
+          <p className="mb-6 text-base font-semibold text-slate-700">
+            האם כבר ידוע לך מה תרצה/י ללמוד?
           </p>
           <div className="flex items-center justify-center gap-4">
             <NeoButton
