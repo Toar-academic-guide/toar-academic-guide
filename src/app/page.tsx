@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import posthog from 'posthog-js';
 import {
   RiasecScores,
   EngineeringOptions,
@@ -157,6 +158,9 @@ export default function Home() {
   }, [cataloguePrograms, catalogueStatus, recommendationRequest]);
 
   function handleRiasecComplete(scores: Record<RiasecDimension, number>) {
+    posthog.capture('assessment_completed', {
+      top_dimension: Object.entries(scores).sort((a, b) => b[1] - a[1])[0]?.[0],
+    });
     setPendingScores(scores);
     setStep('quick-filters');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -166,6 +170,13 @@ export default function Home() {
     const { geographicPreference, avoidances } = extractFilterAnswers(rawAnswers);
     const scores = pendingScores ?? ({ R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 } as RiasecScores);
 
+    posthog.capture('quick_filters_completed', {
+      geographic_preference: geographicPreference,
+      avoidances_count: avoidances.length,
+    });
+    posthog.capture('recommendations_viewed', {
+      geographic_preference: geographicPreference,
+    });
     updateProfile({ geographicPreference });
     setRiasecProfile({ scores, geographicPreference });
     setRecommendationRequest({ scores, geographicPreference, avoidances });
@@ -181,14 +192,20 @@ export default function Home() {
   }
 
   function handleToggleSave(programId: string) {
+    const isSaved = profile.savedProgramIds?.includes(programId) ?? false;
+    if (!isSaved) {
+      posthog.capture('program_saved', { program_id: programId });
+    }
     void toggleSavedProgram(programId);
   }
 
   function handleRemoveFromBucket(programId: string) {
+    posthog.capture('program_removed_from_bucket', { program_id: programId });
     void removeSavedProgram(programId);
   }
 
   function handleSelectDegree(degreeId: string) {
+    posthog.capture('degree_selected_for_calculator', { degree_id: degreeId });
     setSelectedDegreeId(degreeId);
     setResults(null);
     setStep('calculator');
@@ -284,6 +301,13 @@ export default function Home() {
       return;
     }
 
+    posthog.capture('degree_calculator_submitted', {
+      degree_id: degreeId,
+      degree_name: degree.name,
+      psychometric: scores.psychometric,
+      bagrut: scores.bagrut,
+    });
+
     const evaluated = evaluateUniversities(calculatorInstitutions, degree, scores, engineering);
     setResults(evaluated);
     setDegreeName(degree.name);
@@ -297,10 +321,12 @@ export default function Home() {
     return (
       <LandingPage
         onAlreadyKnow={() => {
+          posthog.capture('landing_cta_clicked', { cta: 'already_know' });
           setBucketReturnsTo('degree-picker');
           setStep('degree-picker');
         }}
         onNeedHelp={() => {
+          posthog.capture('landing_cta_clicked', { cta: 'need_help' });
           setBucketReturnsTo('recommendations');
           setStep('intro');
         }}
@@ -368,11 +394,16 @@ export default function Home() {
           initialScores={profile.academicScores}
           initialDocuments={profile.uploadedDocuments}
           onComplete={(scores: AcademicScores) => {
+            posthog.capture('academic_profile_completed', {
+              has_psychometric: !!scores.psychometric?.overall,
+              has_bagrut: !!scores.bagrut?.weightedAverage,
+            });
             updateProfile({ academicScores: scores });
             setStep('riasec-exam');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
           onSkip={() => {
+            posthog.capture('academic_profile_skipped');
             setStep('riasec-exam');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}

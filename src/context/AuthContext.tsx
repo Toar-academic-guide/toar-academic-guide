@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from 'react';
 import type { Session, SupabaseClient, User } from '@supabase/supabase-js';
+import posthog from 'posthog-js';
 
 import { createSupabaseBrowserClient, isSupabaseConfigured } from '@/lib/supabase/client';
 import { getSupabaseEnv } from '@/lib/supabase/env';
@@ -62,6 +63,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       setSession(nextSession);
       setLoading(false);
+      if (nextSession?.user?.email) {
+        posthog.identify(nextSession.user.id, { email: nextSession.user.email });
+      }
     });
 
     return () => {
@@ -125,6 +129,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return;
         }
 
+        posthog.capture('user_signed_out');
+        posthog.reset();
         await supabase.auth.signOut();
         setSession(null);
       },

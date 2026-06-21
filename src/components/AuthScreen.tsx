@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { ArrowRight, Loader2, Lock, Mail } from 'lucide-react';
+import posthog from 'posthog-js';
 
 import { useAuth } from '@/context/AuthContext';
 import { saveUserProfileIdentityDraft } from '@/hooks/useUserProfile';
@@ -64,12 +65,14 @@ export default function AuthScreen({ onBack, onSuccess }: AuthScreenProps) {
         firstName: trimmedFirstName,
         lastName: trimmedLastName,
       });
+      posthog.capture('user_signed_up', { email: email.trim() });
       setInfo('שלחנו מייל לאישור החשבון. אשר אותו ואז חזור להתחבר.');
       setMode('login');
       setPassword('');
       return;
     }
 
+    posthog.capture('user_signed_in', { email: email.trim() });
     onSuccess();
   }
 
