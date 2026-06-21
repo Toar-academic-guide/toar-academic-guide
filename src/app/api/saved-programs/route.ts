@@ -1,5 +1,6 @@
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { addSavedProgram, removeSavedProgram } from '@/server/user/profile';
+import { getPostHogClient } from '@/lib/posthog-server';
 
 export const dynamic = 'force-dynamic';
 
@@ -25,6 +26,11 @@ export async function POST(request: Request) {
     }
 
     const data = await addSavedProgram(userId, programId);
+    getPostHogClient().capture({
+      distinctId: userId,
+      event: 'server_program_saved',
+      properties: { program_id: programId },
+    });
     return Response.json({ data });
   } catch (error) {
     return toErrorResponse(error);
@@ -49,6 +55,11 @@ export async function DELETE(request: Request) {
     }
 
     const data = await removeSavedProgram(userId, programId);
+    getPostHogClient().capture({
+      distinctId: userId,
+      event: 'server_program_removed',
+      properties: { program_id: programId },
+    });
     return Response.json({ data });
   } catch (error) {
     return toErrorResponse(error);
