@@ -1,49 +1,49 @@
 import type { Program, InstitutionDetail } from './types';
 
-// ── RIASEC reference profiles (Holland Occupational Themes, 0–5 scale) ───────
-// Vocational / creative disciplines. Artistic (A) dominates design tracks;
-// Investigative (I) dominates technical tracks; Social (S) dominates therapy.
-const R: Record<string, Program['riasecScore']> = {
+// ── 8-dimension profile reference (0–5 scale) ───────────────────────────────
+// AN=Analytical  TE=Technical  CR=Creative  SO=Social
+// LE=Leadership  OR=Organizational  DI=Digital/Tech  ER=Erudition
+const P: Record<string, Program['profileScore']> = {
   // ── Arts & Design ──────────────────────────────────────────────────────────
-  industrialDesign: { R: 3, I: 2, A: 5, S: 1, E: 2, C: 2 },
-  fineArts:         { R: 1, I: 1, A: 5, S: 1, E: 2, C: 1 },
-  photography:      { R: 2, I: 1, A: 5, S: 2, E: 2, C: 1 },
-  fashion:          { R: 2, I: 1, A: 5, S: 1, E: 3, C: 2 },
-  graphicDesign:    { R: 1, I: 2, A: 5, S: 1, E: 2, C: 2 },
-  animation:        { R: 2, I: 3, A: 5, S: 1, E: 2, C: 2 },
-  dance:            { R: 3, I: 0, A: 5, S: 3, E: 2, C: 1 },
-  cinema:           { R: 2, I: 2, A: 5, S: 2, E: 3, C: 1 },
-  screenwriting:    { R: 0, I: 2, A: 5, S: 2, E: 3, C: 1 },
-  documentary:      { R: 1, I: 3, A: 5, S: 3, E: 2, C: 1 },
+  industrialDesign: { AN: 2, TE: 3, CR: 5, SO: 1, LE: 2, OR: 2, DI: 2, ER: 1 },
+  fineArts:         { AN: 1, TE: 1, CR: 5, SO: 1, LE: 2, OR: 1, DI: 0, ER: 2 },
+  photography:      { AN: 1, TE: 2, CR: 5, SO: 2, LE: 2, OR: 1, DI: 2, ER: 1 },
+  fashion:          { AN: 1, TE: 2, CR: 5, SO: 1, LE: 3, OR: 2, DI: 1, ER: 1 },
+  graphicDesign:    { AN: 2, TE: 1, CR: 5, SO: 1, LE: 2, OR: 2, DI: 3, ER: 1 },
+  animation:        { AN: 3, TE: 2, CR: 5, SO: 1, LE: 2, OR: 2, DI: 4, ER: 1 },
+  dance:            { AN: 0, TE: 3, CR: 5, SO: 3, LE: 2, OR: 1, DI: 0, ER: 1 },
+  cinema:           { AN: 2, TE: 2, CR: 5, SO: 2, LE: 3, OR: 1, DI: 2, ER: 2 },
+  screenwriting:    { AN: 2, TE: 0, CR: 5, SO: 2, LE: 3, OR: 1, DI: 0, ER: 4 },
+  documentary:      { AN: 3, TE: 1, CR: 5, SO: 3, LE: 2, OR: 1, DI: 1, ER: 3 },
   // ── Culinary ───────────────────────────────────────────────────────────────
-  chef:             { R: 3, I: 1, A: 4, S: 2, E: 2, C: 2 },
-  pastry:           { R: 3, I: 1, A: 4, S: 1, E: 2, C: 3 },
-  restaurantMgmt:   { R: 1, I: 2, A: 2, S: 3, E: 4, C: 3 },
-  culinaryArts:     { R: 3, I: 2, A: 5, S: 2, E: 2, C: 2 },
+  chef:             { AN: 1, TE: 3, CR: 4, SO: 2, LE: 2, OR: 2, DI: 0, ER: 0 },
+  pastry:           { AN: 1, TE: 3, CR: 4, SO: 1, LE: 2, OR: 3, DI: 0, ER: 0 },
+  restaurantMgmt:   { AN: 2, TE: 1, CR: 2, SO: 3, LE: 4, OR: 3, DI: 1, ER: 1 },
+  culinaryArts:     { AN: 2, TE: 3, CR: 5, SO: 2, LE: 2, OR: 2, DI: 0, ER: 1 },
   // ── Integrative Medicine ───────────────────────────────────────────────────
-  chineseMedicine:  { R: 2, I: 3, A: 1, S: 4, E: 1, C: 2 },
-  homeopathy:       { R: 1, I: 3, A: 1, S: 4, E: 1, C: 2 },
-  psychotherapy:    { R: 0, I: 3, A: 2, S: 5, E: 1, C: 1 },
-  naturopathy:      { R: 2, I: 3, A: 1, S: 4, E: 1, C: 2 },
-  reflexology:      { R: 2, I: 2, A: 1, S: 4, E: 1, C: 2 },
+  chineseMedicine:  { AN: 3, TE: 2, CR: 1, SO: 4, LE: 1, OR: 2, DI: 0, ER: 3 },
+  homeopathy:       { AN: 3, TE: 1, CR: 1, SO: 4, LE: 1, OR: 2, DI: 0, ER: 3 },
+  psychotherapy:    { AN: 3, TE: 0, CR: 2, SO: 5, LE: 1, OR: 1, DI: 0, ER: 4 },
+  naturopathy:      { AN: 3, TE: 2, CR: 1, SO: 4, LE: 1, OR: 2, DI: 0, ER: 3 },
+  reflexology:      { AN: 2, TE: 2, CR: 1, SO: 4, LE: 1, OR: 2, DI: 0, ER: 2 },
   // ── Tech Bootcamps ─────────────────────────────────────────────────────────
-  fullstack:        { R: 2, I: 4, A: 2, S: 1, E: 2, C: 3 },
-  cyber:            { R: 3, I: 5, A: 1, S: 0, E: 2, C: 3 },
-  dataAnalysis:     { R: 1, I: 5, A: 0, S: 0, E: 2, C: 4 },
-  cloudDevOps:      { R: 2, I: 4, A: 0, S: 1, E: 2, C: 4 },
+  fullstack:        { AN: 4, TE: 2, CR: 2, SO: 1, LE: 2, OR: 3, DI: 5, ER: 1 },
+  cyber:            { AN: 5, TE: 3, CR: 1, SO: 0, LE: 2, OR: 3, DI: 5, ER: 2 },
+  dataAnalysis:     { AN: 5, TE: 1, CR: 0, SO: 0, LE: 2, OR: 4, DI: 5, ER: 2 },
+  cloudDevOps:      { AN: 4, TE: 2, CR: 0, SO: 1, LE: 2, OR: 4, DI: 5, ER: 1 },
   // ── Music ──────────────────────────────────────────────────────────────────
-  classicalMusic:   { R: 2, I: 2, A: 5, S: 3, E: 2, C: 3 },
-  jazzMusic:        { R: 2, I: 3, A: 5, S: 3, E: 2, C: 2 },
-  musicEducation:   { R: 1, I: 2, A: 5, S: 4, E: 2, C: 2 },
+  classicalMusic:   { AN: 2, TE: 2, CR: 5, SO: 3, LE: 2, OR: 3, DI: 0, ER: 3 },
+  jazzMusic:        { AN: 3, TE: 2, CR: 5, SO: 3, LE: 2, OR: 2, DI: 0, ER: 2 },
+  musicEducation:   { AN: 2, TE: 1, CR: 5, SO: 4, LE: 2, OR: 2, DI: 0, ER: 2 },
   // ── Theater & Performing Arts ─────────────────────────────────────────────
-  acting:           { R: 1, I: 2, A: 5, S: 4, E: 3, C: 1 },
-  directing:        { R: 1, I: 3, A: 5, S: 3, E: 4, C: 2 },
-  artEducation:     { R: 2, I: 2, A: 5, S: 4, E: 2, C: 1 },
+  acting:           { AN: 2, TE: 1, CR: 5, SO: 4, LE: 3, OR: 1, DI: 0, ER: 2 },
+  directing:        { AN: 3, TE: 1, CR: 5, SO: 3, LE: 4, OR: 2, DI: 0, ER: 2 },
+  artEducation:     { AN: 2, TE: 2, CR: 5, SO: 4, LE: 2, OR: 1, DI: 0, ER: 2 },
   // ── Sports & Physical Education ───────────────────────────────────────────
-  sportsCoaching:   { R: 5, I: 3, A: 2, S: 4, E: 3, C: 2 },
-  physicalEd:       { R: 5, I: 2, A: 2, S: 5, E: 2, C: 2 },
+  sportsCoaching:   { AN: 3, TE: 5, CR: 2, SO: 4, LE: 3, OR: 2, DI: 0, ER: 1 },
+  physicalEd:       { AN: 2, TE: 5, CR: 2, SO: 5, LE: 2, OR: 2, DI: 0, ER: 1 },
   // ── Tourism & Hospitality ─────────────────────────────────────────────────
-  tourismMgmt:      { R: 2, I: 2, A: 3, S: 4, E: 4, C: 3 },
+  tourismMgmt:      { AN: 2, TE: 2, CR: 3, SO: 4, LE: 4, OR: 3, DI: 1, ER: 1 },
 };
 
 export const vocationalPrograms: Program[] = [
@@ -61,7 +61,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'bezalel',
     type: 'academic',
     category: 'אמנות ועיצוב',
-    riasecScore: R.industrialDesign,
+    profileScore: P.industrialDesign,
     admissionType: 'requirements',
     admissionRequirements: [
       'תיק עבודות יצירתי',
@@ -76,7 +76,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'bezalel',
     type: 'academic',
     category: 'אמנות ועיצוב',
-    riasecScore: R.fineArts,
+    profileScore: P.fineArts,
     admissionType: 'requirements',
     admissionRequirements: [
       'תיק עבודות יצירתי',
@@ -91,7 +91,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'bezalel',
     type: 'academic',
     category: 'אמנות ועיצוב',
-    riasecScore: R.photography,
+    profileScore: P.photography,
     admissionType: 'requirements',
     admissionRequirements: [
       'תיק עבודות – סדרת צילומים מקורית',
@@ -106,7 +106,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'bezalel',
     type: 'academic',
     category: 'אמנות ועיצוב',
-    riasecScore: R.fashion,
+    profileScore: P.fashion,
     admissionType: 'requirements',
     admissionRequirements: [
       'תיק עבודות',
@@ -124,7 +124,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'shenkar',
     type: 'academic',
     category: 'אמנות ועיצוב',
-    riasecScore: R.industrialDesign,
+    profileScore: P.industrialDesign,
     admissionType: 'requirements',
     admissionRequirements: [
       'תיק עבודות',
@@ -139,7 +139,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'shenkar',
     type: 'academic',
     category: 'אמנות ועיצוב',
-    riasecScore: R.fashion,
+    profileScore: P.fashion,
     admissionType: 'requirements',
     admissionRequirements: [
       'תיק עבודות',
@@ -154,7 +154,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'shenkar',
     type: 'academic',
     category: 'אמנות ועיצוב',
-    riasecScore: R.graphicDesign,
+    profileScore: P.graphicDesign,
     admissionType: 'requirements',
     admissionRequirements: [
       'תיק עבודות',
@@ -169,7 +169,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'shenkar',
     type: 'academic',
     category: 'אמנות ועיצוב',
-    riasecScore: R.animation,
+    profileScore: P.animation,
     admissionType: 'requirements',
     admissionRequirements: [
       'תיק עבודות – כולל ניסיון ציור ידני',
@@ -190,7 +190,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'hit',
     type: 'academic',
     category: 'אמנות ועיצוב',
-    riasecScore: R.graphicDesign,
+    profileScore: P.graphicDesign,
     admissionType: 'requirements',
     admissionRequirements: [],
     institutionDetails: [{
@@ -215,7 +215,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'hit',
     type: 'academic',
     category: 'אמנות ועיצוב',
-    riasecScore: R.industrialDesign,
+    profileScore: P.industrialDesign,
     admissionType: 'requirements',
     admissionRequirements: [],
     institutionDetails: [{
@@ -242,7 +242,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'minshar',
     type: 'certificate',
     category: 'אמנות ועיצוב',
-    riasecScore: R.fineArts,
+    profileScore: P.fineArts,
     admissionType: 'requirements',
     admissionRequirements: [
       'תיק עבודות',
@@ -256,7 +256,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'minshar',
     type: 'certificate',
     category: 'אמנות ועיצוב',
-    riasecScore: R.photography,
+    profileScore: P.photography,
     admissionType: 'requirements',
     admissionRequirements: [
       'תיק עבודות – עבודות צילום מקוריות',
@@ -270,7 +270,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'minshar',
     type: 'certificate',
     category: 'אמנות ועיצוב',
-    riasecScore: R.animation,
+    profileScore: P.animation,
     admissionType: 'requirements',
     admissionRequirements: [
       'תיק עבודות',
@@ -285,7 +285,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'minshar',
     type: 'certificate',
     category: 'אמנות ועיצוב',
-    riasecScore: R.dance,
+    profileScore: P.dance,
     admissionType: 'requirements',
     admissionRequirements: [
       'אודישן מעשי',
@@ -304,7 +304,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'spieldocs',
     type: 'certificate',
     category: 'אמנות ועיצוב',
-    riasecScore: R.cinema,
+    profileScore: P.cinema,
     admissionType: 'requirements',
     admissionRequirements: [
       'בגרות מלאה',
@@ -319,7 +319,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'spieldocs',
     type: 'certificate',
     category: 'אמנות ועיצוב',
-    riasecScore: R.screenwriting,
+    profileScore: P.screenwriting,
     admissionType: 'requirements',
     admissionRequirements: [
       'תסריט קצר מקורי (עד 10 עמ׳)',
@@ -333,7 +333,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'spieldocs',
     type: 'certificate',
     category: 'אמנות ועיצוב',
-    riasecScore: R.documentary,
+    profileScore: P.documentary,
     admissionType: 'requirements',
     admissionRequirements: [
       'פרויקט תיעודי קצר או מסמך פיתוח',
@@ -353,7 +353,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'danon',
     type: 'vocational',
     category: 'קולינריה וגסטרונומיה',
-    riasecScore: R.chef,
+    profileScore: P.chef,
     admissionType: 'requirements',
     admissionRequirements: [
       'מבחן התאמה מעשי במטבח',
@@ -367,7 +367,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'danon',
     type: 'vocational',
     category: 'קולינריה וגסטרונומיה',
-    riasecScore: R.pastry,
+    profileScore: P.pastry,
     admissionType: 'requirements',
     admissionRequirements: [
       'מבחן התאמה מעשי',
@@ -380,7 +380,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'danon',
     type: 'vocational',
     category: 'קולינריה וגסטרונומיה',
-    riasecScore: R.culinaryArts,
+    profileScore: P.culinaryArts,
     admissionType: 'requirements',
     admissionRequirements: [
       'מבחן התאמה מעשי במטבח',
@@ -396,7 +396,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'bishulim',
     type: 'vocational',
     category: 'קולינריה וגסטרונומיה',
-    riasecScore: R.chef,
+    profileScore: P.chef,
     admissionType: 'requirements',
     admissionRequirements: [
       'מבחן טעימה וזיהוי חומרי גלם',
@@ -410,7 +410,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'bishulim',
     type: 'vocational',
     category: 'קולינריה וגסטרונומיה',
-    riasecScore: R.pastry,
+    profileScore: P.pastry,
     admissionType: 'requirements',
     admissionRequirements: [
       'מבחן התאמה מעשי',
@@ -423,7 +423,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'bishulim',
     type: 'vocational',
     category: 'קולינריה וגסטרונומיה',
-    riasecScore: R.restaurantMgmt,
+    profileScore: P.restaurantMgmt,
     admissionType: 'requirements',
     admissionRequirements: [
       'ראיון קבלה',
@@ -445,7 +445,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'reidman',
     type: 'certificate',
     category: 'רפואה אינטגרטיבית',
-    riasecScore: R.chineseMedicine,
+    profileScore: P.chineseMedicine,
     admissionType: 'requirements',
     admissionRequirements: [
       'בגרות מלאה',
@@ -459,7 +459,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'reidman',
     type: 'certificate',
     category: 'רפואה אינטגרטיבית',
-    riasecScore: R.naturopathy,
+    profileScore: P.naturopathy,
     admissionType: 'requirements',
     admissionRequirements: [
       'בגרות מלאה',
@@ -473,7 +473,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'reidman',
     type: 'certificate',
     category: 'רפואה אינטגרטיבית',
-    riasecScore: R.homeopathy,
+    profileScore: P.homeopathy,
     admissionType: 'requirements',
     admissionRequirements: [
       'בגרות מלאה',
@@ -487,7 +487,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'reidman',
     type: 'certificate',
     category: 'רפואה אינטגרטיבית',
-    riasecScore: R.reflexology,
+    profileScore: P.reflexology,
     admissionType: 'requirements',
     admissionRequirements: [
       'בגרות מלאה',
@@ -503,7 +503,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'broshim',
     type: 'certificate',
     category: 'רפואה אינטגרטיבית',
-    riasecScore: R.homeopathy,
+    profileScore: P.homeopathy,
     admissionType: 'requirements',
     admissionRequirements: [
       'בגרות מלאה',
@@ -517,7 +517,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'broshim',
     type: 'certificate',
     category: 'רפואה אינטגרטיבית',
-    riasecScore: R.psychotherapy,
+    profileScore: P.psychotherapy,
     admissionType: 'requirements',
     admissionRequirements: [
       'תואר ראשון בכל תחום (יתרון לתחום טיפולי)',
@@ -531,7 +531,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'broshim',
     type: 'certificate',
     category: 'רפואה אינטגרטיבית',
-    riasecScore: R.naturopathy,
+    profileScore: P.naturopathy,
     admissionType: 'requirements',
     admissionRequirements: [
       'בגרות מלאה',
@@ -547,7 +547,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'ono_ce',
     type: 'certificate',
     category: 'רפואה אינטגרטיבית',
-    riasecScore: R.chineseMedicine,
+    profileScore: P.chineseMedicine,
     admissionType: 'requirements',
     admissionRequirements: [
       'בגרות מלאה',
@@ -562,7 +562,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'ono_ce',
     type: 'certificate',
     category: 'רפואה אינטגרטיבית',
-    riasecScore: R.psychotherapy,
+    profileScore: P.psychotherapy,
     admissionType: 'requirements',
     admissionRequirements: [
       'תואר ראשון בכל תחום',
@@ -579,7 +579,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'pardeshana',
     type: 'certificate',
     category: 'רפואה אינטגרטיבית',
-    riasecScore: R.homeopathy,
+    profileScore: P.homeopathy,
     admissionType: 'requirements',
     admissionRequirements: [],
     institutionDetails: [{
@@ -609,7 +609,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'hackeru',
     type: 'vocational',
     category: 'טכנולוגיה ופיתוח',
-    riasecScore: R.fullstack,
+    profileScore: P.fullstack,
     admissionType: 'requirements',
     admissionRequirements: [
       'מבחן התאמה טכני מקוון',
@@ -623,7 +623,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'hackeru',
     type: 'vocational',
     category: 'טכנולוגיה ופיתוח',
-    riasecScore: R.cyber,
+    profileScore: P.cyber,
     admissionType: 'requirements',
     admissionRequirements: [
       'מבחן התאמה טכני',
@@ -637,7 +637,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'hackeru',
     type: 'vocational',
     category: 'טכנולוגיה ופיתוח',
-    riasecScore: R.dataAnalysis,
+    profileScore: P.dataAnalysis,
     admissionType: 'requirements',
     admissionRequirements: [
       'מבחן התאמה כמותי-לוגי',
@@ -654,7 +654,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'elevation',
     type: 'vocational',
     category: 'טכנולוגיה ופיתוח',
-    riasecScore: R.cyber,
+    profileScore: P.cyber,
     admissionType: 'requirements',
     admissionRequirements: [
       'מבחן כניסה טכני',
@@ -669,7 +669,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'elevation',
     type: 'vocational',
     category: 'טכנולוגיה ופיתוח',
-    riasecScore: R.fullstack,
+    profileScore: P.fullstack,
     admissionType: 'requirements',
     admissionRequirements: [
       'מבחן כניסה',
@@ -686,7 +686,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'itc',
     type: 'vocational',
     category: 'טכנולוגיה ופיתוח',
-    riasecScore: R.dataAnalysis,
+    profileScore: P.dataAnalysis,
     admissionType: 'requirements',
     admissionRequirements: [
       'מבחן כניסה כמותי',
@@ -704,7 +704,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'johnbryce',
     type: 'vocational',
     category: 'טכנולוגיה ופיתוח',
-    riasecScore: R.cyber,
+    profileScore: P.cyber,
     admissionType: 'requirements',
     admissionRequirements: [
       'מבחן כניסה',
@@ -718,7 +718,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'johnbryce',
     type: 'vocational',
     category: 'טכנולוגיה ופיתוח',
-    riasecScore: R.cloudDevOps,
+    profileScore: P.cloudDevOps,
     admissionType: 'requirements',
     admissionRequirements: [
       'מבחן כניסה',
@@ -739,7 +739,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'jerusalem_academy',
     type: 'academic',
     category: 'מוזיקה ותיאטרון',
-    riasecScore: R.classicalMusic,
+    profileScore: P.classicalMusic,
     admissionType: 'requirements',
     admissionRequirements: [
       'אודישן מקצועי על כלי הנגינה / קול',
@@ -754,7 +754,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'jerusalem_academy',
     type: 'academic',
     category: 'מוזיקה ותיאטרון',
-    riasecScore: R.jazzMusic,
+    profileScore: P.jazzMusic,
     admissionType: 'requirements',
     admissionRequirements: [
       'אודישן ג׳אז ואלתור',
@@ -772,7 +772,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'rubin',
     type: 'academic',
     category: 'מוזיקה ותיאטרון',
-    riasecScore: R.classicalMusic,
+    profileScore: P.classicalMusic,
     admissionType: 'requirements',
     admissionRequirements: [
       'אודישן מקצועי',
@@ -794,7 +794,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'nativ',
     type: 'certificate',
     category: 'מוזיקה ותיאטרון',
-    riasecScore: R.acting,
+    profileScore: P.acting,
     admissionType: 'requirements',
     admissionRequirements: [
       'אודישן בפני ועדת קבלה אמנותית',
@@ -812,7 +812,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'beit_zvi',
     type: 'academic',
     category: 'מוזיקה ותיאטרון',
-    riasecScore: R.acting,
+    profileScore: P.acting,
     admissionType: 'requirements',
     admissionRequirements: [
       'אודישן',
@@ -827,7 +827,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'beit_zvi',
     type: 'academic',
     category: 'מוזיקה ותיאטרון',
-    riasecScore: R.directing,
+    profileScore: P.directing,
     admissionType: 'requirements',
     admissionRequirements: [
       'פרויקט קונספט בימתי',
@@ -849,7 +849,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'seminar',
     type: 'academic',
     category: 'חינוך',
-    riasecScore: R.artEducation,
+    profileScore: P.artEducation,
     admissionType: 'requirements',
     admissionRequirements: [
       'תיק עבודות אמנותי',
@@ -864,7 +864,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'seminar',
     type: 'academic',
     category: 'חינוך',
-    riasecScore: R.musicEducation,
+    profileScore: P.musicEducation,
     admissionType: 'requirements',
     admissionRequirements: [
       'אודישן מוזיקלי',
@@ -879,7 +879,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'seminar',
     type: 'academic',
     category: 'מוזיקה ותיאטרון',
-    riasecScore: R.acting,
+    profileScore: P.acting,
     admissionType: 'requirements',
     admissionRequirements: [
       'אודישן מחול',
@@ -901,7 +901,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'wingate',
     type: 'academic',
     category: 'ספורט',
-    riasecScore: R.sportsCoaching,
+    profileScore: P.sportsCoaching,
     admissionType: 'requirements',
     admissionRequirements: [
       'מבחן כושר גופני',
@@ -916,7 +916,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'wingate',
     type: 'academic',
     category: 'ספורט',
-    riasecScore: R.physicalEd,
+    profileScore: P.physicalEd,
     admissionType: 'requirements',
     admissionRequirements: [
       'מבחן כושר גופני',
@@ -938,7 +938,7 @@ export const vocationalPrograms: Program[] = [
     institutionId: 'colman',
     type: 'academic',
     category: 'תיירות ואירוח',
-    riasecScore: R.tourismMgmt,
+    profileScore: P.tourismMgmt,
     admissionType: 'sekhem',
     admissionRequirements: [],
     thresholds: { tau: null, huji: null, technion: null, bgu: null },

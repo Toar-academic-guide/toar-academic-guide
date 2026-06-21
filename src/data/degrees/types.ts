@@ -25,11 +25,18 @@ export interface Program {
   institution: string;
   /** Typed reference to the master institutions dictionary */
   institutionId?: InstitutionId;
-  type: 'academic' | 'certificate' | 'vocational';
+  type: 'academic' | 'certificate' | 'vocational' | 'short-course';
   category: string;
-  riasecScore: { R: number; I: number; A: number; S: number; E: number; C: number };
+  profileScore: {
+    AN: number; TE: number; CR: number; SO: number;
+    LE: number; OR: number; DI: number; ER: number;
+  };
+  /** @deprecated kept during migration — will be removed */
+  riasecScore?: { R: number; I: number; A: number; S: number; E: number; C: number };
   admissionType: 'sekhem' | 'requirements';
   admissionRequirements: string[];
+  canCombine?: boolean;
+  commonPairings?: string[];
   // ── Sekhem-track fields (required when admissionType === 'sekhem') ─────────
   thresholds?: Record<UniversityId, number | null>;
   isTauEngineering?: boolean;
