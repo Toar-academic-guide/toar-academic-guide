@@ -4,7 +4,10 @@ import { useState } from 'react';
 import { ArrowRight, Check, ChevronDown } from 'lucide-react';
 import { INSTITUTIONS, type InstitutionRecord } from '@/data/institutions';
 import { REGION_LABEL } from '@/data/geography';
-import type { GeographicRegion } from '@/types';
+import { evaluateUniversities } from '@/utils/sekhemCalculators';
+import InstitutionLogo from '@/components/InstitutionLogo';
+import type { CatalogueProgram } from '@/types/catalogue';
+import type { GeographicRegion, University, UniversityResult } from '@/types';
 
 const UNIVERSITY_IDS = new Set([
   'tau', 'huji', 'technion', 'bgu', 'haifa', 'biu', 'ariel',
@@ -12,7 +15,7 @@ const UNIVERSITY_IDS = new Set([
 ]);
 
 type InstitutionType = 'university' | 'college';
-type DisplayRegion = 'north' | 'center' | 'south';
+type DisplayRegion = Exclude<GeographicRegion, 'any'>;
 
 const DISPLAY_REGIONS: DisplayRegion[] = ['north', 'center', 'south'];
 
@@ -26,20 +29,23 @@ function getInstitutionType(inst: InstitutionRecord): InstitutionType {
   return UNIVERSITY_IDS.has(inst.id) ? 'university' : 'college';
 }
 
-function getLogoSrc(inst: InstitutionRecord): string | null {
-  if (inst.logoUrl) return inst.logoUrl;
-  if (inst.domain) return `https://www.google.com/s2/favicons?domain=${inst.domain}&sz=64`;
-  return null;
-}
-
 interface Props {
   psychometric: number;
   bagrut: number;
   degreeId: string;
+  programs: CatalogueProgram[];
+  calculatorInstitutions: University[];
   onBack: () => void;
 }
 
-export default function CalculatorResults({ onBack }: Props) {
+export default function CalculatorResults({
+  psychometric,
+  bagrut,
+  degreeId,
+  programs,
+  calculatorInstitutions,
+  onBack,
+}: Props) {
   const [selectedTypes, setSelectedTypes] = useState<Set<InstitutionType>>(
     new Set(['university', 'college']),
   );
@@ -48,8 +54,17 @@ export default function CalculatorResults({ onBack }: Props) {
   );
   const [expandedRegions, setExpandedRegions] = useState<Set<DisplayRegion>>(new Set());
 
-  const allInstitutions = INSTITUTIONS.filter(
-    (inst) => inst.region !== 'any',
+  const selectedProgram = programs.find((program) => program.id === degreeId);
+  const evaluatedResults = selectedProgram
+    ? evaluateUniversities(
+        calculatorInstitutions,
+        selectedProgram,
+        { psychometric, bagrut },
+        { hasMath5: false, hasPhysics5: false },
+      )
+    : [];
+  const resultsByUniversityId = new Map(
+    evaluatedResults.map((result) => [result.university.id, result])
   );
 
   function toggleType(t: InstitutionType) {
@@ -87,27 +102,37 @@ export default function CalculatorResults({ onBack }: Props) {
     });
   }
 
-  const filtered = allInstitutions.filter(
-    (inst) =>
-      selectedTypes.has(getInstitutionType(inst)) &&
-      selectedRegions.has(inst.region as DisplayRegion),
+  const groupedInstitutions = new Map<DisplayRegion, InstitutionRecord[]>(
+    DISPLAY_REGIONS.map((region) => [region, []])
   );
+
+  for (const inst of INSTITUTIONS) {
+    if (inst.region === 'any') continue;
+    if (!selectedRegions.has(inst.region) || !selectedTypes.has(getInstitutionType(inst))) continue;
+    groupedInstitutions.get(inst.region)?.push(inst);
+  }
 
   const groupedByRegion = DISPLAY_REGIONS.map((region) => ({
     region,
-    institutions: filtered.filter((inst) => inst.region === region),
+    institutions: groupedInstitutions.get(region) ?? [],
   })).filter((g) => g.institutions.length > 0);
 
-  // Placeholder status — will be replaced with real sekhem logic later
-  function getPlaceholderStatus(inst: InstitutionRecord): 'accepted' | 'close' | 'rejected' {
-    if (UNIVERSITY_IDS.has(inst.id)) {
-      const uniOrder = ['tau', 'huji', 'technion', 'bgu', 'haifa', 'biu', 'ariel'];
-      const idx = uniOrder.indexOf(inst.id);
-      if (idx <= 1) return 'accepted';
-      if (idx <= 4) return 'close';
+  function getInstitutionResult(inst: InstitutionRecord): UniversityResult | undefined {
+    return resultsByUniversityId.get(inst.universityId ?? inst.id);
+  }
+
+  function getAdmissionStatus(inst: InstitutionRecord): 'accepted' | 'close' | 'rejected' {
+    const result = getInstitutionResult(inst);
+    if (!result || result.status === 'unavailable') {
       return 'rejected';
     }
-    return 'accepted';
+    if (result.status === 'accepted') {
+      return 'accepted';
+    }
+
+    const psychometricGap = result.deltaNeeded?.psychometric ?? Number.POSITIVE_INFINITY;
+    const bagrutGap = result.deltaNeeded?.bagrut ?? Number.POSITIVE_INFINITY;
+    return psychometricGap <= 40 || bagrutGap <= 6 ? 'close' : 'rejected';
   }
 
   const STATUS_CONFIG = {
@@ -135,6 +160,15 @@ export default function CalculatorResults({ onBack }: Props) {
 
       <div className="mx-auto max-w-4xl px-6 py-8">
         <p className="mb-6 text-sm text-slate-500">סנן/י לפי סוג מוסד ואזור גיאוגרפי</p>
+        <div className="mb-6 rounded-2xl border-2 border-black bg-white p-4">
+          <p className="text-xs font-bold uppercase tracking-wide text-slate-400">הנתונים שחושבו</p>
+          <p className="mt-1 text-base font-black text-slate-900">
+            {selectedProgram?.name ?? 'תוכנית לא נמצאה'}
+          </p>
+          <p className="mt-1 text-sm text-slate-500">
+            פסיכומטרי {psychometric} · ממוצע בגרות {bagrut}
+          </p>
+        </div>
 
         {/* Filter: Institution type */}
         <div className="mb-6">
@@ -225,9 +259,8 @@ export default function CalculatorResults({ onBack }: Props) {
 
               <div className="flex flex-col gap-2">
                 {visible.map((inst) => {
-                  const status = getPlaceholderStatus(inst);
+                  const status = getAdmissionStatus(inst);
                   const cfg = STATUS_CONFIG[status];
-                  const logo = getLogoSrc(inst);
                   const instType = getInstitutionType(inst);
 
                   return (
@@ -236,21 +269,7 @@ export default function CalculatorResults({ onBack }: Props) {
                       className="flex items-center justify-between rounded-[14px] border-2 border-black bg-white px-4 py-3"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-slate-100">
-                          {logo ? (
-                            <img
-                              src={logo}
-                              alt=""
-                              className="h-5 w-5 object-contain"
-                              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                            />
-                          ) : (
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#64748b" strokeWidth="2">
-                              <path d="M3 21h18M5 21V7l7-4 7 4v14" />
-                              <path d="M9 21v-4h6v4" />
-                            </svg>
-                          )}
-                        </div>
+                        <InstitutionLogo institution={inst.name} record={inst} size="sm" />
                         <div className="min-w-0">
                           <p className="truncate text-sm font-bold text-slate-900">{inst.name}</p>
                           <p className="text-[10px] text-slate-500">
@@ -258,7 +277,10 @@ export default function CalculatorResults({ onBack }: Props) {
                           </p>
                         </div>
                       </div>
-                      <span className={`${cfg.bg} flex-shrink-0 rounded-full border-2 border-black px-3 py-1 text-[10px] font-extrabold text-black`}>
+                      <span
+                        aria-label={`${inst.name}: ${cfg.label}`}
+                        className={`${cfg.bg} flex-shrink-0 rounded-full border-2 border-black px-3 py-1 text-[10px] font-extrabold text-black`}
+                      >
                         {cfg.label}
                       </span>
                     </div>

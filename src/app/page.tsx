@@ -53,10 +53,11 @@ const APP_STEPS: AppStep[] = [
   'quick-filters', 'recommendations', 'calculator', 'bucket-list', 'degree-picker',
   'calculator-results',
 ];
+const ENABLE_DEV_SHORTCUTS = process.env.NODE_ENV !== 'production';
 
 // Dev shortcut: ?step=<stepname> or ?screen=N (assessment only)
 function getDevStep(): AppStep {
-  if (typeof window === 'undefined') return 'landing';
+  if (!ENABLE_DEV_SHORTCUTS || typeof window === 'undefined') return 'landing';
   const params = new URLSearchParams(window.location.search);
   if (params.has('screen')) return 'career-assessment';
   const s = params.get('step');
@@ -66,20 +67,21 @@ function getDevStep(): AppStep {
 // Neutral RIASEC profile used when jumping straight to recommendations
 const DEV_RIASEC: RiasecScores = { R: 3, I: 4, A: 3, S: 3, E: 3, C: 3 };
 const DEV_GEO: GeographicRegion = 'any';
+const STATIC_CATALOGUE_PROGRAMS = getStaticCataloguePrograms();
+const STATIC_CATALOGUE_INSTITUTIONS = getStaticCatalogueInstitutions();
 
 export default function Home() {
   const { loading: authLoading, signOut, user } = useAuth();
-  const staticCataloguePrograms = getStaticCataloguePrograms();
-  const staticCatalogueInstitutions = getStaticCatalogueInstitutions();
+  const [initialStep] = useState<AppStep>(getDevStep);
   const [catalogueInstitutions, setCatalogueInstitutions] =
-    useState<CatalogueInstitution[]>(staticCatalogueInstitutions);
-  const [step, setStep] = useState<AppStep>(getDevStep);
+    useState<CatalogueInstitution[]>(STATIC_CATALOGUE_INSTITUTIONS);
+  const [step, setStep] = useState<AppStep>(initialStep);
   const [recommendations, setRecommendations] = useState<RecommendedField[]>(() =>
-    getDevStep() === 'recommendations'
-      ? getRecommendations(DEV_RIASEC, undefined, [], getStaticCataloguePrograms())
+    initialStep === 'recommendations'
+      ? getRecommendations(DEV_RIASEC, undefined, [], STATIC_CATALOGUE_PROGRAMS)
       : []
   );
-  const [cataloguePrograms, setCataloguePrograms] = useState<CatalogueProgram[]>(staticCataloguePrograms);
+  const [cataloguePrograms, setCataloguePrograms] = useState<CatalogueProgram[]>(STATIC_CATALOGUE_PROGRAMS);
   const {
     profile,
     hydrated,
@@ -98,12 +100,12 @@ export default function Home() {
     scores: RiasecScores;
     geographicPreference: GeographicRegion;
   } | null>(() =>
-    getDevStep() === 'recommendations'
+    initialStep === 'recommendations'
       ? { scores: DEV_RIASEC, geographicPreference: DEV_GEO }
       : null
   );
 
-  const [selectedDegreeId, setSelectedDegreeId] = useState(staticCataloguePrograms[0].id);
+  const [selectedDegreeId, setSelectedDegreeId] = useState(STATIC_CATALOGUE_PROGRAMS[0].id);
   const [results, setResults] = useState<UniversityResult[] | null>(null);
   const [degreeName, setDegreeName] = useState('');
   const calculatorInstitutions = getCalculatorInstitutionsFromCatalogue(catalogueInstitutions);
@@ -279,6 +281,8 @@ export default function Home() {
         psychometric={landingCalcScores.psychometric}
         bagrut={landingCalcScores.bagrut}
         degreeId={landingCalcScores.degreeId}
+        programs={cataloguePrograms}
+        calculatorInstitutions={calculatorInstitutions}
         onBack={() => {
           setStep('landing');
           window.scrollTo({ top: 0, behavior: 'smooth' });

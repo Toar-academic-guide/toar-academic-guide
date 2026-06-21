@@ -97,6 +97,26 @@ export function calculateDelta(deficit: number, university: University): DeltaNe
   };
 }
 
+export function evaluateMinimumFloorsAdmission(
+  university: University,
+  threshold: number,
+  scores: UserScores
+): {
+  meetsAll: boolean;
+  deltaNeeded: DeltaNeeded;
+} {
+  const psychometricGap = threshold - scores.psychometric;
+  const bagrutGap = (university.minBagrut ?? 0) - scores.bagrut;
+
+  return {
+    meetsAll: psychometricGap <= 0 && bagrutGap <= 0,
+    deltaNeeded: {
+      psychometric: Math.max(0, Math.ceil(psychometricGap)),
+      bagrut: Math.max(0, Math.ceil(bagrutGap)),
+    },
+  };
+}
+
 // ── Main evaluator ────────────────────────────────────────────────────────────
 export function evaluateUniversities(
   universities: University[],
@@ -115,10 +135,7 @@ export function evaluateUniversities(
     // threshold = minimum psychometric; university.minBagrut = minimum bagrut.
     // Both must be met independently.
     if (university.formulaType === 'minimum_floors') {
-      const psyDeficit = threshold - scores.psychometric;
-      const bagMin = university.minBagrut ?? 0;
-      const bagDeficit = bagMin - scores.bagrut;
-      const meetsAll = psyDeficit <= 0 && bagDeficit <= 0;
+      const { meetsAll, deltaNeeded } = evaluateMinimumFloorsAdmission(university, threshold, scores);
 
       if (meetsAll) {
         return { university, sekhem: scores.psychometric, threshold, status: 'accepted' };
@@ -128,10 +145,7 @@ export function evaluateUniversities(
         sekhem: scores.psychometric,
         threshold,
         status: 'below',
-        deltaNeeded: {
-          psychometric: Math.max(0, Math.ceil(psyDeficit)),
-          bagrut: Math.max(0, Math.ceil(bagDeficit)),
-        },
+        deltaNeeded,
       };
     }
 

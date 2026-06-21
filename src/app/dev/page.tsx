@@ -1,4 +1,10 @@
+import { notFound } from 'next/navigation';
+
 export default function DevShortcuts() {
+  if (process.env.NODE_ENV === 'production') {
+    notFound();
+  }
+
   const steps = [
     { label: 'דף הבית', url: '/', desc: 'Landing page' },
     { label: 'מבוא לשאלון', url: '/?step=intro', desc: 'Quiz intro screen' },
