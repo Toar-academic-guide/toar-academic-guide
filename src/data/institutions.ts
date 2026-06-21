@@ -9,6 +9,8 @@ export type InstitutionId =
   | 'tau' | 'huji' | 'technion' | 'bgu'
   // ── Research universities (no sekhem formula) ──────────────────────────────
   | 'haifa' | 'biu' | 'ariel'
+  // ── Graduate research institute ───────────────────────────────────────────
+  | 'weizmann'
   // ── Private universities & regional colleges ───────────────────────────────
   | 'reichman' | 'ruppin' | 'kinneret' | 'telhai' | 'pardeshana'
   | 'afeka' | 'mta' | 'colman' | 'ono' | 'ono_ce'
@@ -36,6 +38,7 @@ export type InstitutionId =
   | 'sapir' | 'galil_maaravi' | 'zefat' | 'emek_yezreel' | 'hadassah' | 'ashkelon'
   | 'lev' | 'achva' | 'shalem' | 'peres' | 'lander'
   | 'netanya' | 'ramat_gan' | 'shaare_mishpat' | 'jerusalem_college' | 'schechter'
+  | 'carmel_academic' | 'israel_academic' | 'tech_management'
   // ── Teacher-training colleges ─────────────────────────────────────────────
   | 'oranim' | 'beit_berl' | 'gordon_college' | 'david_yellin' | 'kaye'
   | 'shaanan' | 'al_qasemi' | 'arab_college_haifa' | 'ohalo' | 'herzog'
@@ -123,24 +126,33 @@ export const INSTITUTIONS: InstitutionRecord[] = [
   // Research universities (no sekhem formula in this platform)
   // ══════════════════════════════════════════════════════════════════════════
   {
-    id:      'haifa',
-    name:    'אוניברסיטת חיפה',
-    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/e/e1/University_of_Haifa_logo.svg',
-    domain:  'haifa.ac.il',
-    region:  'north',
+    id:           'haifa',
+    name:         'אוניברסיטת חיפה',
+    logoUrl:      'https://upload.wikimedia.org/wikipedia/commons/e/e1/University_of_Haifa_logo.svg',
+    domain:       'haifa.ac.il',
+    region:       'north',
+    universityId: 'haifa',
+    programUrl:    'https://www.haifa.ac.il/ba_programs/',
+    calculatorUrl: 'https://applicants.haifa.ac.il/enrollmentChances/index.html',
   },
   {
-    id:      'biu',
-    name:    'אוניברסיטת בר-אילן',
-    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/5/5f/Bar_Ilan_University_Logo.svg',
-    domain:  'biu.ac.il',
-    region:  'center',
+    id:           'biu',
+    name:         'אוניברסיטת בר-אילן',
+    logoUrl:      'https://upload.wikimedia.org/wikipedia/commons/5/5f/Bar_Ilan_University_Logo.svg',
+    domain:       'biu.ac.il',
+    region:       'center',
+    universityId: 'biu',
+    programUrl:    'https://www.biu.ac.il/en/node/376',
+    calculatorUrl: 'https://shoham.biu.ac.il/kabala/',
   },
   {
-    id:     'ariel',
-    name:   'אוניברסיטת אריאל',
-    domain: 'ariel.ac.il',
-    region: 'center',
+    id:           'ariel',
+    name:         'אוניברסיטת אריאל',
+    domain:       'ariel.ac.il',
+    region:       'center',
+    universityId: 'ariel',
+    programUrl:    'https://www.ariel.ac.il/wp/registration-and-acceptance/',
+    calculatorUrl: 'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/',
   },
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -438,9 +450,10 @@ export const INSTITUTIONS: InstitutionRecord[] = [
     region: 'north',
   },
   {
+    // Formerly Hadassah College Jerusalem — renamed to MACAM
     id:     'hadassah',
-    name:   'המכללה האקדמית הדסה ירושלים',
-    domain: 'hadassah.ac.il',
+    name:   'המרכז האקדמי הרב-תחומי ירושלים',
+    domain: 'macam.ac.il',
     region: 'center',
   },
   {
@@ -507,6 +520,34 @@ export const INSTITUTIONS: InstitutionRecord[] = [
     id:     'schechter',
     name:   'מכון שכטר למדעי היהדות',
     domain: 'schechter.ac.il',
+    region: 'center',
+  },
+  {
+    id:     'carmel_academic',
+    name:   'המרכז האקדמי כרמל',
+    domain: 'carmel.ac.il',
+    region: 'north',
+  },
+  {
+    id:     'israel_academic',
+    name:   'המכללה האקדמית ישראל ברמת גן',
+    domain: 'israc.ac.il',
+    region: 'center',
+  },
+  {
+    id:     'tech_management',
+    name:   'המכללה לטכנולוגיה שייסדה מכללת ניהול',
+    domain: 'colman.ac.il',
+    region: 'center',
+  },
+
+  // ══════════════════════════════════════════════════════════════════════════
+  // Graduate research institute (no undergraduate programs)
+  // ══════════════════════════════════════════════════════════════════════════
+  {
+    id:     'weizmann',
+    name:   'מכון ויצמן למדע',
+    domain: 'weizmann.ac.il',
     region: 'center',
   },
 

@@ -11,7 +11,8 @@ export type AvoidanceTag =
 
 // 'weighted_scaled': Sekhem = w_psy×Psy + w_bag×(Bagrut/120×800), range 200–800
 // 'technion_linear': official formula Sekhem = 0.5×Bagrut + 0.075×Psy - 18, range ~60–100
-export type FormulaType = 'weighted_scaled' | 'technion_linear';
+// 'minimum_floors': college model — separate minimum psychometric AND minimum bagrut
+export type FormulaType = 'weighted_scaled' | 'technion_linear' | 'minimum_floors';
 
 export interface UserScores {
   psychometric: number; // 200–800
@@ -23,6 +24,8 @@ export interface University {
   name: string;
   formulaType: FormulaType;
   sekhemWeight?: { psy: number; bag: number }; // only for weighted_scaled
+  minPsychometric?: number; // only for minimum_floors
+  minBagrut?: number;       // only for minimum_floors
   scaleDescription: string;
 }
 

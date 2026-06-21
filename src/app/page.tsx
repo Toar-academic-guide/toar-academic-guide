@@ -14,6 +14,7 @@ import {
 } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import {
   CatalogueApiError,
   fetchCatalogueInstitutions,
@@ -36,6 +37,7 @@ import BucketList from '@/components/BucketList';
 import DegreePicker from '@/components/DegreePicker';
 import ScoreForm from '@/components/ScoreForm';
 import ResultsDashboard from '@/components/ResultsDashboard';
+import CalculatorResults from '@/components/CalculatorResults';
 import type { AcademicScores, RiasecAnswers } from '@/types';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 
@@ -51,7 +53,45 @@ type AppStep =
   | 'recommendations'
   | 'calculator'
   | 'bucket-list'
-  | 'degree-picker';
+  | 'degree-picker'
+  | 'calculator-results';
+
+const APP_STEPS: AppStep[] = [
+  'landing', 'auth', 'intro', 'academic-profile', 'career-assessment',
+  'quick-filters', 'recommendations', 'calculator', 'bucket-list', 'degree-picker',
+  'calculator-results',
+];
+const ENABLE_DEV_SHORTCUTS = process.env.NODE_ENV !== 'production';
+
+// Dev shortcut: ?step=<stepname> or ?screen=N (assessment only)
+function getDevStep(): AppStep {
+  if (!ENABLE_DEV_SHORTCUTS || typeof window === 'undefined') return 'landing';
+  const params = new URLSearchParams(window.location.search);
+  if (params.has('screen')) return 'career-assessment';
+  const s = params.get('step');
+  return APP_STEPS.includes(s as AppStep) ? (s as AppStep) : 'landing';
+}
+
+const DEV_PROFILE_SCORES: ProfileScores = {
+  AN: 3,
+  TE: 4,
+  CR: 3,
+  SO: 3,
+  LE: 3,
+  OR: 3,
+  DI: 3,
+  ER: 3,
+};
+const DEV_VALUES: ValuesProfile = {
+  incomeVsImpact: 0,
+  independenceVsTeam: 0,
+  growthVsStability: 0,
+  prestigeVsMeaning: 0,
+};
+const DEV_GEO: GeographicRegion = 'any';
+const DEV_AVOIDANCES: AvoidanceTag[] = [];
+const STATIC_CATALOGUE_PROGRAMS = getStaticCataloguePrograms();
+const STATIC_CATALOGUE_INSTITUTIONS = getStaticCatalogueInstitutions();
 
 function toCatalogueError(error: unknown): CatalogueApiError {
   if (error instanceof CatalogueApiError) {
@@ -67,15 +107,24 @@ function toCatalogueError(error: unknown): CatalogueApiError {
 
 export default function Home() {
   const { loading: authLoading, signOut, user } = useAuth();
+  const [initialStep] = useState<AppStep>(getDevStep);
   const [catalogueStatus, setCatalogueStatus] = useState<CatalogueStatus>('loading');
   const [catalogueError, setCatalogueError] = useState<CatalogueApiError | null>(null);
-  const [catalogueInstitutions, setCatalogueInstitutions] = useState<CatalogueInstitution[]>([]);
-  const [step, setStep] = useState<AppStep>(() => {
-    if (typeof window === 'undefined') return 'landing';
-    return new URLSearchParams(window.location.search).has('screen') ? 'career-assessment' : 'landing';
-  });
-  const [recommendations, setRecommendations] = useState<RecommendedField[]>([]);
-  const [cataloguePrograms, setCataloguePrograms] = useState<CatalogueProgram[]>([]);
+  const [catalogueInstitutions, setCatalogueInstitutions] =
+    useState<CatalogueInstitution[]>(STATIC_CATALOGUE_INSTITUTIONS);
+  const [step, setStep] = useState<AppStep>(initialStep);
+  const [recommendations, setRecommendations] = useState<RecommendedField[]>(() =>
+    initialStep === 'recommendations'
+      ? getRecommendations(
+          DEV_PROFILE_SCORES,
+          DEV_VALUES,
+          undefined,
+          DEV_AVOIDANCES,
+          STATIC_CATALOGUE_PROGRAMS
+        )
+      : []
+  );
+  const [cataloguePrograms, setCataloguePrograms] = useState<CatalogueProgram[]>(STATIC_CATALOGUE_PROGRAMS);
   const {
     profile,
     hydrated,
@@ -94,20 +143,44 @@ export default function Home() {
     scores: ProfileScores;
     values: ValuesProfile;
     geographicPreference: GeographicRegion;
-  } | null>(null);
+  } | null>(() =>
+    initialStep === 'recommendations'
+      ? {
+          scores: DEV_PROFILE_SCORES,
+          values: DEV_VALUES,
+          geographicPreference: DEV_GEO,
+        }
+      : null
+  );
   const [recommendationRequest, setRecommendationRequest] = useState<{
     scores: ProfileScores;
     values: ValuesProfile;
     geographicPreference: GeographicRegion;
     avoidances: AvoidanceTag[];
-  } | null>(null);
+  } | null>(() =>
+    initialStep === 'recommendations'
+      ? {
+          scores: DEV_PROFILE_SCORES,
+          values: DEV_VALUES,
+          geographicPreference: DEV_GEO,
+          avoidances: DEV_AVOIDANCES,
+        }
+      : null
+  );
 
-  const [selectedDegreeId, setSelectedDegreeId] = useState<string | null>(null);
+  const [selectedDegreeId, setSelectedDegreeId] = useState<string | null>(
+    STATIC_CATALOGUE_PROGRAMS[0]?.id ?? null
+  );
   const [results, setResults] = useState<UniversityResult[] | null>(null);
   const [degreeName, setDegreeName] = useState('');
   const calculatorInstitutions = getCalculatorInstitutionsFromCatalogue(catalogueInstitutions);
   const [bucketReturnsTo, setBucketReturnsTo] = useState<AppStep>('recommendations');
   const [authReturnTo, setAuthReturnTo] = useState<Exclude<AppStep, 'auth'>>('landing');
+  const [landingCalcScores, setLandingCalcScores] = useState<{
+    psychometric: number;
+    bagrut: number;
+    degreeId: string;
+  } | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -135,10 +208,6 @@ export default function Home() {
           return;
         }
 
-        setCataloguePrograms([]);
-        setCatalogueInstitutions([]);
-        setSelectedDegreeId(null);
-        setRecommendations([]);
         setCatalogueError(toCatalogueError(error));
         setCatalogueStatus('error');
       });
@@ -252,6 +321,7 @@ export default function Home() {
     calculator: 'recommendations',
     'bucket-list': bucketReturnsTo,
     'degree-picker': 'landing',
+    'calculator-results': 'landing',
   };
 
   function handleGoBack() {
@@ -356,6 +426,36 @@ export default function Home() {
         onSignIn={() => {
           setAuthReturnTo('landing');
           setStep('auth');
+        }}
+        onCalculate={(psychometric, bagrut, degreeId) => {
+          setLandingCalcScores({ psychometric, bagrut, degreeId });
+          setStep('calculator-results');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+        onGoToProfile={() => {
+          setStep('academic-profile');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+        programs={cataloguePrograms}
+        authLoading={authLoading}
+        isAuthenticated={isAuthenticated}
+        userEmail={user?.email ?? undefined}
+        onSignOut={() => { void signOut(); }}
+      />
+    );
+  }
+
+  if (step === 'calculator-results' && landingCalcScores) {
+    return (
+      <CalculatorResults
+        psychometric={landingCalcScores.psychometric}
+        bagrut={landingCalcScores.bagrut}
+        degreeId={landingCalcScores.degreeId}
+        programs={cataloguePrograms}
+        calculatorInstitutions={calculatorInstitutions}
+        onBack={() => {
+          setStep('landing');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
       />
     );

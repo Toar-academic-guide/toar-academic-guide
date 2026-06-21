@@ -30,4 +30,25 @@ export const UNIVERSITIES: University[] = [
     sekhemWeight: { psy: 0.45, bag: 0.55 },
     scaleDescription: 'סכם 200–800',
   },
+  {
+    id: 'haifa',
+    name: 'אוניברסיטת חיפה',
+    formulaType: 'weighted_scaled',
+    sekhemWeight: { psy: 0.75, bag: 0.25 },
+    scaleDescription: 'סכם 200–800 (יחס 1:3 בגרות:פסיכומטרי — רוב החוגים)',
+  },
+  {
+    id: 'biu',
+    name: 'אוניברסיטת בר-אילן',
+    formulaType: 'weighted_scaled',
+    sekhemWeight: { psy: 0.6, bag: 0.4 },
+    scaleDescription: 'סכם 200–800',
+  },
+  {
+    id: 'ariel',
+    name: 'אוניברסיטת אריאל',
+    formulaType: 'weighted_scaled',
+    sekhemWeight: { psy: 0.5, bag: 0.5 },
+    scaleDescription: 'סכם 200–800 (משקל שווה פסיכומטרי ובגרות)',
+  },
 ];

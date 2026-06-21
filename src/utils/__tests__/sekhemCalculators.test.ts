@@ -1,6 +1,6 @@
 import { academicPrograms } from '@/data/degrees/academicPrograms';
 import { UNIVERSITIES } from '@/data/degreesData';
-import { calculateSekhem, evaluateUniversities } from '@/utils/sekhemCalculators';
+import { calculateSekhem, evaluateMinimumFloorsAdmission, evaluateUniversities } from '@/utils/sekhemCalculators';
 
 function getUniversity(id: 'tau' | 'huji' | 'technion' | 'bgu') {
   const university = UNIVERSITIES.find((entry) => entry.id === id);
@@ -74,5 +74,26 @@ describe('sekhemCalculators', () => {
 
     expect(result?.status).toBe('accepted');
     expect(result?.admissionTrack).toBe('direct');
+  });
+
+  it('evaluates minimum-floors admission with separate psychometric and bagrut gaps', () => {
+    const result = evaluateMinimumFloorsAdmission(
+      {
+        id: 'test-college',
+        name: 'Test College',
+        formulaType: 'minimum_floors',
+        minPsychometric: 620,
+        minBagrut: 90,
+        scaleDescription: 'Direct minimums',
+      },
+      620,
+      { psychometric: 600, bagrut: 84 }
+    );
+
+    expect(result.meetsAll).toBe(false);
+    expect(result.deltaNeeded).toEqual({
+      psychometric: 20,
+      bagrut: 6,
+    });
   });
 });

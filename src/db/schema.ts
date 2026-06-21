@@ -18,6 +18,7 @@ export const admissionTypeEnum = pgEnum('admission_type', ['sekhem', 'requiremen
 export const calculatorFormulaTypeEnum = pgEnum('calculator_formula_type', [
   'weighted_scaled',
   'technion_linear',
+  'minimum_floors',
 ]);
 export const thresholdKindEnum = pgEnum('threshold_kind', ['sekhem', 'direct_psychometric']);
 export const sourceUrlKindEnum = pgEnum('source_url_kind', ['program', 'calculator', 'institution']);
@@ -54,6 +55,8 @@ export const universityCalculatorConfigs = pgTable('university_calculator_config
   formulaType: calculatorFormulaTypeEnum('formula_type').notNull(),
   psyWeight: real('psy_weight'),
   bagrutWeight: real('bagrut_weight'),
+  minPsychometric: integer('min_psychometric'),
+  minBagrut: integer('min_bagrut'),
   scaleDescription: text('scale_description').notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),

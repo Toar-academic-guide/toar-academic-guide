@@ -65,7 +65,7 @@ export default function DegreePicker({
   const savedCount = savedProgramIds.length;
 
   return (
-    <div className="min-h-screen" style={{ background: '#f5f4f0' }}>
+    <div className="min-h-screen" dir="rtl" style={{ background: '#f5f4f0' }}>
       <div className="mx-auto max-w-3xl px-4 py-10 pb-32 sm:px-6">
         <div className="mb-6 text-center">
           <h1 className="mb-2 text-2xl font-black text-slate-900 md:text-3xl">
@@ -124,26 +124,26 @@ export default function DegreePicker({
                   <button
                     type="button"
                     onClick={() => setExpandedCategory(isOpen ? null : category)}
-                    className="flex w-full items-center justify-between px-5 py-4 text-right transition hover:bg-slate-50"
+                    className="flex w-full items-center justify-between px-5 py-4 transition hover:bg-slate-50"
                     aria-expanded={isOpen}
                   >
+                    <h3 className="text-lg font-bold text-slate-900">{category}</h3>
                     <div className="flex items-center gap-3">
-                      {isOpen ? (
-                        <ChevronUp size={20} className="text-slate-500" />
-                      ) : (
-                        <ChevronDown size={20} className="text-slate-500" />
-                      )}
                       <span className="text-sm text-slate-500">
                         {categoryPrograms.length} תארים
                         {savedInCategory > 0 && (
-                          <span className="mr-2 inline-flex items-center gap-1 rounded-full bg-[#A6FAFF] px-2 py-0.5 text-xs font-bold text-slate-900">
+                          <span className="ml-2 inline-flex items-center gap-1 rounded-full bg-[#A6FAFF] px-2 py-0.5 text-xs font-bold text-slate-900">
                             <Check size={11} />
                             {savedInCategory} נבחרו
                           </span>
                         )}
                       </span>
+                      {isOpen ? (
+                        <ChevronUp size={20} className="text-slate-500" />
+                      ) : (
+                        <ChevronDown size={20} className="text-slate-500" />
+                      )}
                     </div>
-                    <h3 className="text-lg font-bold text-slate-900">{category}</h3>
                   </button>
 
                   <AnimatePresence initial={false}>

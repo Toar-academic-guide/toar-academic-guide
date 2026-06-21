@@ -12,6 +12,8 @@ export interface CatalogueCalculatorConfig {
     psy: number;
     bag: number;
   };
+  minPsychometric?: number;
+  minBagrut?: number;
 }
 
 export interface CatalogueInstitution

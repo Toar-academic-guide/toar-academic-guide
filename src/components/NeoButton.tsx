@@ -28,9 +28,9 @@ export default function NeoButton({
 
   const variants: Record<Variant, string> = {
     cyan:
-      'bg-[#A6FAFF] hover:bg-[#79F7FF] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] active:bg-[#00E1EF]',
+      'bg-[#00E5FF] hover:bg-[#79F7FF] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)] active:bg-[#00BCD4]',
     'cyan-filled':
-      'bg-[#00E1EF] hover:bg-[#79F7FF] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)]',
+      'bg-[#00E5FF] hover:bg-[#79F7FF] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)]',
     ghost:
       'bg-white hover:bg-slate-50 hover:shadow-[2px_2px_0px_rgba(0,0,0,1)]',
   };
