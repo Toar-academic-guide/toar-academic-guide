@@ -19,17 +19,43 @@ cp .env.local.example .env.local
 
 `DATABASE_URL` is required for DB-backed catalogue and authenticated profile persistence.
 
+`CATALOGUE_SOURCE_MODE` controls catalogue runtime behavior:
+
+- `auto`: use the DB when available and healthy, but allow static fallback only in non-production environments
+- `database`: require a seeded, healthy DB-backed catalogue and fail closed if it is unavailable
+- `static`: always serve the static catalogue
+
+Production should be configured with `CATALOGUE_SOURCE_MODE=database`. Local and preview environments can use `auto` or `static` intentionally.
+If a preview deployment is meant to validate the DB cutover, it also needs `DATABASE_URL`; otherwise `auto` mode will fall back to static data and the preview will not exercise the database-backed path.
+
 `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` enable sign-up, sign-in, session refresh, and authenticated user persistence. The runtime still accepts `NEXT_PUBLIC_SUPABASE_ANON_KEY` as a temporary fallback during migration. Without the public Supabase vars, the app still supports anonymous browsing and local draft persistence.
+
+`NEXT_PUBLIC_APP_URL` should point at the deployed app URL used in Supabase email confirmations. In local development, the signup flow falls back to the current browser origin if this env var is absent.
+
+Supabase Auth also needs the deployed app URL allow-listed under redirect URL configuration before email confirmation links will return to the app correctly.
 
 ## Database workflow
 
 ```bash
 npm run db:generate
 npm run db:seed:dry-run
+npm run db:seed:verify
 # npm run db:seed
 ```
 
 `db:seed:dry-run` validates the current static catalogue and prints row counts without touching a database.
+`db:seed:verify` compares the target database snapshot to the current git-tracked seed payload and exits non-zero when programmes, programme links, threshold rows, or calculator configs drift.
+`db:seed` now reseeds managed catalogue rows and immediately runs the same verification pass, so a successful seed run proves convergence instead of only reporting row counts.
+
+## Catalogue cutover
+
+1. Apply the tracked migrations to the target database.
+2. Run `npm run db:seed:verify` first if you are diagnosing a failing environment; inspect the reported mismatches before changing source mode.
+3. Seed the catalogue from git-tracked data with `npm run db:seed`.
+4. Re-run `npm run db:seed:verify` until it reports a clean match.
+5. Verify `/api/catalog/programs` and `/api/catalog/institutions` return `200` with `meta.catalogueSource` set to `database`.
+6. Set `CATALOGUE_SOURCE_MODE=database` in production only after readiness passes.
+7. If the seeded DB is unhealthy after cutover, fix the reported seed drift first; only use `static` or `auto` as an intentional rollback, not as the default repair path.
 
 ## Backend foundation
 
@@ -43,6 +69,7 @@ See [docs/backend-data-model.md](/Users/amitmalichi/Desktop/toar-academic-guide/
 ## Notes
 
 - `localStorage` now acts as an anonymous draft store and first-sign-in migration source.
+- Signup stores first and last name in the app-owned `user_profiles` row, with Supabase signup metadata used only as a handoff during account creation.
 - Authenticated profile data and saved programs are persisted through Supabase-backed APIs.
-- The catalogue API returns static fallback data when DB env is absent.
+- The catalogue API owns source selection; client code no longer falls back to static catalogue data on its own.
 - Raw ingestion payloads remain separate from canonical reviewed rows.

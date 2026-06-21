@@ -2,6 +2,9 @@ import type { InstitutionRecord } from '@/data/institutions';
 import type { Program } from '@/data/degrees/types';
 import type { FormulaType } from '@/types';
 
+export type CatalogueSourceMode = 'auto' | 'database' | 'static';
+export type CatalogueSource = 'database' | 'static';
+
 export interface CatalogueCalculatorConfig {
   formulaType: FormulaType;
   scaleDescription: string;
@@ -28,9 +31,17 @@ export interface CatalogueProgram extends Program {
 export interface ApiErrorPayload {
   code: string;
   message: string;
+  details?: string[];
+}
+
+export interface ApiMetaPayload {
+  catalogueSourceMode?: CatalogueSourceMode;
+  catalogueSource?: CatalogueSource;
+  fallbackReason?: string;
 }
 
 export interface ApiEnvelope<T> {
   data?: T;
   error?: ApiErrorPayload;
+  meta?: ApiMetaPayload;
 }

@@ -12,19 +12,20 @@ import {
   Cake, ChefHat, PenTool, Clapperboard, Ruler,
   Bookmark, BookmarkCheck,
 } from 'lucide-react';
-import { RecommendedField, RiasecScores, EnvironmentPreference, RiasecDimension, GeographicRegion } from '@/types';
+import { RecommendedField, ProfileScores, EnvironmentPreference, ProfileDimension, GeographicRegion } from '@/types';
+import { DIMENSION_LABELS } from '@/data/testItems';
 import { INSTITUTION_REGIONS, REGION_LABEL, REGION_EMOJI, REGION_BADGE_COLOR } from '@/data/geography';
 import { INSTITUTION_BY_NAME } from '@/data/institutions';
 import InstitutionLogo from '@/components/InstitutionLogo';
 import type { Program } from '@/data/degrees/types';
 import { PROGRAM_FIELD_MAP, FIELD_ENRICHMENT } from '@/data/degrees/fieldEnrichment';
-import { getTopDimensions, DIMENSION_LABELS } from '@/utils/riasecEngine';
+import { getTopDimensions } from '@/utils/scoringEngine';
 
 interface Props {
   programs: Program[];
   recommendations: RecommendedField[];
   onSelectDegree: (degreeId: string) => void;
-  riasecScores: RiasecScores;
+  profileScores: ProfileScores;
   environment: EnvironmentPreference;
   geographicPreference?: GeographicRegion;
   savedProgramIds?: string[];
@@ -628,7 +629,7 @@ export default function RecommendationResults({
   programs,
   recommendations,
   onSelectDegree,
-  riasecScores,
+  profileScores,
   environment,
   geographicPreference = 'any',
   savedProgramIds,
@@ -636,9 +637,9 @@ export default function RecommendationResults({
 }: Props) {
   const [selectedProgramId, setSelectedProgramId] = useState<string | null>(null);
 
-  const [primary, secondary] = getTopDimensions(riasecScores);
+  const [primary, secondary] = getTopDimensions(profileScores);
   const profileLabel = `${DIMENSION_LABELS[primary].name}-${DIMENSION_LABELS[secondary].name}`;
-  const dimensionsSorted = (Object.entries(riasecScores) as [RiasecDimension, number][])
+  const dimensionsSorted = (Object.entries(profileScores) as [ProfileDimension, number][])
     .filter(([, score]) => score > 0)
     .sort((a, b) => b[1] - a[1]);
 

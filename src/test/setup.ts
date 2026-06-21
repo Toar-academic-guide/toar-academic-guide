@@ -1,32 +1,51 @@
 import { cleanup } from '@testing-library/react';
 import { afterEach, vi } from 'vitest';
 
-if (typeof window !== 'undefined' && !window.localStorage) {
-  let store: Record<string, string> = {};
+function createMemoryStorage(): Storage {
+  const store = new Map<string, string>();
 
-  Object.defineProperty(window, 'localStorage', {
-    configurable: true,
-    value: {
-      clear() {
-        store = {};
-      },
-      getItem(key: string) {
-        return store[key] ?? null;
-      },
-      key(index: number) {
-        return Object.keys(store)[index] ?? null;
-      },
-      get length() {
-        return Object.keys(store).length;
-      },
-      removeItem(key: string) {
-        delete store[key];
-      },
-      setItem(key: string, value: string) {
-        store[key] = value;
-      },
+  return {
+    get length() {
+      return store.size;
     },
-  });
+    clear() {
+      store.clear();
+    },
+    getItem(key) {
+      return store.has(key) ? store.get(key)! : null;
+    },
+    key(index) {
+      return Array.from(store.keys())[index] ?? null;
+    },
+    removeItem(key) {
+      store.delete(key);
+    },
+    setItem(key, value) {
+      store.set(key, value);
+    },
+  };
+}
+
+if (typeof window !== 'undefined') {
+  let hasLocalStorage = false;
+
+  try {
+    hasLocalStorage = typeof window.localStorage !== 'undefined';
+  } catch {
+    hasLocalStorage = false;
+  }
+
+  if (!hasLocalStorage) {
+    const storage = createMemoryStorage();
+    Object.defineProperty(window, 'localStorage', {
+      configurable: true,
+      value: storage,
+    });
+    Object.defineProperty(globalThis, 'localStorage', {
+      configurable: true,
+      value: storage,
+    });
+  }
 }
 
 afterEach(() => {

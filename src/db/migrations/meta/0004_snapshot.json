@@ -1,6 +1,6 @@
 {
-  "id": "8397164e-4785-46c1-adb2-b88a441b1c91",
-  "prevId": "1f63c4b3-f0d5-4aa1-bf1b-0a181fc875e5",
+  "id": "7ba8523b-a71f-4feb-8910-3bcfb5a3b5b3",
+  "prevId": "8397164e-4785-46c1-adb2-b88a441b1c91",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -1099,6 +1099,18 @@
           "primaryKey": false,
           "notNull": false
         },
+        "min_psychometric": {
+          "name": "min_psychometric",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "min_bagrut": {
+          "name": "min_bagrut",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
         "scale_description": {
           "name": "scale_description",
           "type": "text",
@@ -1353,7 +1365,8 @@
       "schema": "public",
       "values": [
         "weighted_scaled",
-        "technion_linear"
+        "technion_linear",
+        "minimum_floors"
       ]
     },
     "public.document_kind": {

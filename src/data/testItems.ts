@@ -645,6 +645,17 @@ export const SCREEN_SEQUENCE: Screen[] = [
   { kind: 'value-slider', sliderId: 'V4' },
 ];
 
+export function getScreenSection(screen: Screen): number {
+  if (screen.kind === 'transition') return screen.section;
+  if (screen.kind === 'multi-select') {
+    return getMultiSelectQuestion(screen.questionId)?.section ?? 1;
+  }
+  if (screen.kind === 'quick-picks') {
+    return getQuickPickItem(screen.itemIds[0])?.section ?? 1;
+  }
+  return getValueSlider(screen.sliderId)?.section ?? 1;
+}
+
 // ── Convenience lookups ─────────────────────────────────────────────────────
 
 const ALL_MULTI_SELECT = [...ICEBREAKER_QUESTIONS, ...ARMY_QUESTIONS, ...STYLE_QUESTIONS];
