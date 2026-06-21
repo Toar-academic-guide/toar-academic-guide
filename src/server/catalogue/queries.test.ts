@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { UNIVERSITIES } from '@/data/degreesData';
 
 const hoistedMocks = vi.hoisted(() => ({
   getDb: vi.fn(),
@@ -54,6 +55,9 @@ import {
 } from '@/server/catalogue/queries';
 
 describe('catalogue queries', () => {
+  const universityInstitutionRows = UNIVERSITIES.map((university) => ({ id: university.id }));
+  const universityConfigRows = UNIVERSITIES.map((university) => ({ institutionId: university.id }));
+
   beforeEach(() => {
     mockEnv = {
       mode: 'static',
@@ -103,7 +107,7 @@ describe('catalogue queries', () => {
 
   it('treats the seeded calculator coverage as part of catalogue readiness', () => {
     const readiness = evaluateCatalogueReadiness({
-      institutions: [{ id: 'tau' }, { id: 'huji' }, { id: 'technion' }, { id: 'bgu' }],
+      institutions: universityInstitutionRows,
       programs: [
         { id: 'program_1', admissionType: 'sekhem' },
         { id: 'program_2', admissionType: 'requirements' },
@@ -113,12 +117,7 @@ describe('catalogue queries', () => {
         { programId: 'program_2', institutionId: 'huji' },
       ],
       admissionThresholds: [{ programId: 'program_1', universityId: 'tau', thresholdValue: 650 }],
-      universityCalculatorConfigs: [
-        { institutionId: 'tau' },
-        { institutionId: 'huji' },
-        { institutionId: 'technion' },
-        { institutionId: 'bgu' },
-      ],
+      universityCalculatorConfigs: universityConfigRows,
     });
 
     expect(readiness).toEqual({
@@ -129,22 +128,11 @@ describe('catalogue queries', () => {
 
   it('does not require thresholds for requirements-only programmes', () => {
     const readiness = evaluateCatalogueReadiness({
-      institutions: [
-        { id: 'haifa' },
-        { id: 'tau' },
-        { id: 'huji' },
-        { id: 'technion' },
-        { id: 'bgu' },
-      ],
+      institutions: universityInstitutionRows,
       programs: [{ id: 'haifa_cs', admissionType: 'requirements' }],
       programInstitutions: [{ programId: 'haifa_cs', institutionId: 'haifa' }],
       admissionThresholds: [],
-      universityCalculatorConfigs: [
-        { institutionId: 'tau' },
-        { institutionId: 'huji' },
-        { institutionId: 'technion' },
-        { institutionId: 'bgu' },
-      ],
+      universityCalculatorConfigs: universityConfigRows,
     });
 
     expect(readiness).toEqual({
@@ -154,8 +142,9 @@ describe('catalogue queries', () => {
   });
 
   it('blocks readiness when calculator configs are missing', () => {
+    const missingInstitutionIds = ['tau', 'technion', 'bgu', 'haifa', 'biu', 'ariel'];
     const readiness = evaluateCatalogueReadiness({
-      institutions: [{ id: 'tau' }, { id: 'huji' }, { id: 'technion' }, { id: 'bgu' }],
+      institutions: universityInstitutionRows,
       programs: [{ id: 'program_1', admissionType: 'sekhem' }],
       programInstitutions: [{ programId: 'program_1', institutionId: 'tau' }],
       admissionThresholds: [{ programId: 'program_1', universityId: 'tau', thresholdValue: 650 }],
@@ -163,6 +152,8 @@ describe('catalogue queries', () => {
     });
 
     expect(readiness.isReady).toBe(false);
-    expect(readiness.issues).toContain('Institutions missing calculator configs: tau, technion, bgu');
+    expect(readiness.issues).toContain(
+      `Institutions missing calculator configs: ${missingInstitutionIds.join(', ')}`
+    );
   });
 });

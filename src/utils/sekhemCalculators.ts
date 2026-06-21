@@ -54,6 +54,10 @@ export function calculateSekhem(
     return sekhemTechnion(scores);
   }
 
+  if (university.formulaType === 'minimum_floors') {
+    return scores.psychometric;
+  }
+
   const base = sekhemWeighted(university, scores);
 
   if (university.id === 'tau' && (degree.isTauEngineering ?? false)) {
@@ -77,6 +81,12 @@ export function calculateDelta(deficit: number, university: University): DeltaNe
       bagrut: Math.ceil(deficit / 0.5),
     };
   }
+  if (university.formulaType === 'minimum_floors') {
+    return {
+      psychometric: Math.ceil(deficit),
+      bagrut: 0,
+    };
+  }
   const w = university.sekhemWeight!;
   // d(sekhem)/d(psy)  = w.psy
   // d(sekhem)/d(bag)  = w.bag × (800/120)   (chain rule through normalizeBagrut)
@@ -84,6 +94,26 @@ export function calculateDelta(deficit: number, university: University): DeltaNe
   return {
     psychometric: Math.ceil(deficit / w.psy),
     bagrut: Math.ceil(deficit / dBag),
+  };
+}
+
+export function evaluateMinimumFloorsAdmission(
+  university: University,
+  threshold: number,
+  scores: UserScores
+): {
+  meetsAll: boolean;
+  deltaNeeded: DeltaNeeded;
+} {
+  const psychometricGap = threshold - scores.psychometric;
+  const bagrutGap = (university.minBagrut ?? 0) - scores.bagrut;
+
+  return {
+    meetsAll: psychometricGap <= 0 && bagrutGap <= 0,
+    deltaNeeded: {
+      psychometric: Math.max(0, Math.ceil(psychometricGap)),
+      bagrut: Math.max(0, Math.ceil(bagrutGap)),
+    },
   };
 }
 
@@ -99,6 +129,24 @@ export function evaluateUniversities(
 
     if (threshold === null) {
       return { university, sekhem: 0, threshold: null, status: 'unavailable' };
+    }
+
+    // ── Minimum-floors model (colleges) ──────────────────────────────────────
+    // threshold = minimum psychometric; university.minBagrut = minimum bagrut.
+    // Both must be met independently.
+    if (university.formulaType === 'minimum_floors') {
+      const { meetsAll, deltaNeeded } = evaluateMinimumFloorsAdmission(university, threshold, scores);
+
+      if (meetsAll) {
+        return { university, sekhem: scores.psychometric, threshold, status: 'accepted' };
+      }
+      return {
+        university,
+        sekhem: scores.psychometric,
+        threshold,
+        status: 'below',
+        deltaNeeded,
+      };
     }
 
     const raw = calculateSekhem(university, scores, degree, engineeringOptions);

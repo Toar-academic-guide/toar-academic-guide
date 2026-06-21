@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ArrowRight, Loader2, Lock, Mail } from 'lucide-react';
+import { ArrowRight, Eye, EyeOff, Loader2, Lock, Mail } from 'lucide-react';
 import posthog from 'posthog-js';
 
 import { useAuth } from '@/context/AuthContext';
@@ -23,6 +23,7 @@ export default function AuthScreen({ onBack, onSuccess }: AuthScreenProps) {
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
@@ -144,14 +145,22 @@ export default function AuthScreen({ onBack, onSuccess }: AuthScreenProps) {
           <label className="relative block">
             <Lock size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               dir="ltr"
               autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               placeholder="••••••••"
-              className="h-12 w-full rounded-full border-2 border-black bg-white px-4 pr-12 text-base text-slate-900 placeholder-slate-400 outline-none transition focus:shadow-[2px_2px_0px_rgba(0,0,0,1)]"
+              className="h-12 w-full rounded-full border-2 border-black bg-white px-4 pl-12 pr-12 text-base text-slate-900 placeholder-slate-400 outline-none transition focus:shadow-[2px_2px_0px_rgba(0,0,0,1)]"
             />
+            <button
+              type="button"
+              onClick={() => setShowPassword((v) => !v)}
+              aria-label={showPassword ? 'הסתר סיסמה' : 'הצג סיסמה'}
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-700"
+            >
+              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+            </button>
           </label>
 
           {error ? (

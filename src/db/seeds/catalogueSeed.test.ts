@@ -12,6 +12,7 @@ describe('catalogueSeed', () => {
     const payload = buildCatalogueSeed();
 
     expect(payload.institutions).toHaveLength(INSTITUTIONS.length);
+    expect(payload.universityCalculatorConfigs).toHaveLength(UNIVERSITIES.length);
     expect(payload.universityCalculatorConfigs.map((row) => row.institutionId).sort()).toEqual(
       UNIVERSITIES.map((row) => row.id).sort()
     );
@@ -27,7 +28,7 @@ describe('catalogueSeed', () => {
     expect(payload.sourceUrls.some((row) => row.programId === 'tau_cs')).toBe(true);
   });
 
-  it('keeps the Haifa programmes as requirements-only seed records', () => {
+  it('keeps the Haifa programmes as sekhem seed records with thresholds', () => {
     const payload = buildCatalogueSeed();
     const haifaProgramIds = [
       'haifa_cs',
@@ -44,12 +45,10 @@ describe('catalogueSeed', () => {
     ).toEqual(
       haifaProgramIds.map((programId) => ({
         id: programId,
-        admissionType: 'requirements',
+        admissionType: 'sekhem',
       }))
     );
-    expect(payload.admissionThresholds.some((threshold) => haifaProgramIds.includes(threshold.programId))).toBe(
-      false
-    );
+    expect(payload.admissionThresholds.some((threshold) => haifaProgramIds.includes(threshold.programId))).toBe(true);
   });
 
   it('is deterministic across repeated runs', () => {
@@ -83,12 +82,12 @@ describe('catalogueSeed', () => {
     expect(payload.validationErrors[0]?.programId).toBe('invalid_program');
   });
 
-  it('reports stale Haifa sekhem state during seed verification', () => {
+  it('reports stale Haifa requirements state during seed verification', () => {
     const payload = buildCatalogueSeed();
 
     const verification = buildCatalogueSeedVerificationReport(payload, {
       programs: [
-        { id: 'haifa_cs', admissionType: 'sekhem' },
+        { id: 'haifa_cs', admissionType: 'requirements' },
         ...payload.programs
           .filter((program) => program.id !== 'haifa_cs')
           .map((program) => ({ id: program.id, admissionType: program.admissionType })),
@@ -110,12 +109,12 @@ describe('catalogueSeed', () => {
     expect(verification.admissionTypeMismatches).toEqual([
       {
         programId: 'haifa_cs',
-        expected: 'requirements',
-        actual: 'sekhem',
+        expected: 'sekhem',
+        actual: 'requirements',
       },
     ]);
     expect(verification.issues).toContain(
-      'Program admissionType mismatches: haifa_cs (sekhem -> requirements)'
+      'Program admissionType mismatches: haifa_cs (requirements -> sekhem)'
     );
   });
 });
