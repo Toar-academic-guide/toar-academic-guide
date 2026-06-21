@@ -1,8 +1,60 @@
-import { RiasecScores, EnvironmentPreference, RecommendedField, RiasecDimension, AvoidanceTag } from '@/types';
+import {
+  ProfileScores,
+  ValuesProfile,
+  EnvironmentPreference,
+  RecommendedField,
+  AvoidanceTag,
+  ProfileDimension,
+} from '@/types';
 import { allPrograms } from '@/data/degrees';
 import type { Program } from '@/data/degrees/types';
-import { DIMENSION_LABELS } from './riasecEngine';
 import { PROGRAM_FIELD_MAP } from '@/data/degrees/fieldEnrichment';
+
+const PROFILE_DIMS: ProfileDimension[] = ['AN', 'TE', 'CR', 'SO', 'LE', 'OR', 'DI', 'ER'];
+const VALUE_KEYS: (keyof ValuesProfile)[] = [
+  'incomeVsImpact',
+  'independenceVsTeam',
+  'growthVsStability',
+  'prestigeVsMeaning',
+];
+
+const NEUTRAL_ENV: EnvironmentPreference = { soloScore: 1, deskScore: 1 };
+const NEUTRAL_VALUES: ValuesProfile = {
+  incomeVsImpact: 0,
+  independenceVsTeam: 0,
+  growthVsStability: 0,
+  prestigeVsMeaning: 0,
+};
+
+const PROFILE_DIM_LABELS: Record<ProfileDimension, { name: string; nameF: string }> = {
+  AN: { name: 'אנליטי', nameF: 'אנליטית' },
+  TE: { name: 'טכני', nameF: 'טכנית' },
+  CR: { name: 'יצירתי', nameF: 'יצירתית' },
+  SO: { name: 'חברתי', nameF: 'חברתית' },
+  LE: { name: 'מנהיגותי', nameF: 'מנהיגותית' },
+  OR: { name: 'מערכתי', nameF: 'מערכתית' },
+  DI: { name: 'דיגיטלי', nameF: 'דיגיטלית' },
+  ER: { name: 'עיוני', nameF: 'עיונית' },
+};
+
+const VALUE_LABELS: Record<keyof ValuesProfile, { left: string; right: string }> = {
+  incomeVsImpact: {
+    left: 'ביטחון כלכלי',
+    right: 'משמעות והשפעה',
+  },
+  independenceVsTeam: {
+    left: 'עצמאות',
+    right: 'שייכות ועבודת צוות',
+  },
+  growthVsStability: {
+    left: 'צמיחה מתמדת',
+    right: 'יציבות',
+  },
+  prestigeVsMeaning: {
+    left: 'קריירה מוכרת ומוערכת',
+    right: 'דרך אישית ונכונה לך',
+  },
+};
 
 interface CategoryMeta {
   name: string;
@@ -13,6 +65,7 @@ interface CategoryMeta {
   dailyWorkflow: string;
   soloFriendly: boolean;
   requiresSoloInvestigative?: boolean;
+  valueSignals?: Partial<Record<keyof ValuesProfile, 1 | -1>>;
 }
 
 const CATEGORY_META: Record<string, CategoryMeta> = {
@@ -25,6 +78,7 @@ const CATEGORY_META: Record<string, CategoryMeta> = {
     dailyWorkflow: 'כתיבת קוד, קוד ריביו, ספרינטים, דיבאגינג, תיכנון ארכיטקטורה',
     soloFriendly: true,
     requiresSoloInvestigative: true,
+    valueSignals: { incomeVsImpact: -1, independenceVsTeam: -1, growthVsStability: -1 },
   },
   'מדעי המחשב': {
     name: 'מדעי המחשב ותוכנה',
@@ -35,6 +89,7 @@ const CATEGORY_META: Record<string, CategoryMeta> = {
     dailyWorkflow: 'כתיבת קוד, ביקורות קוד, ספרינטים, דיבאגינג, ארכיטקטורה',
     soloFriendly: true,
     requiresSoloInvestigative: true,
+    valueSignals: { incomeVsImpact: -1, independenceVsTeam: -1, growthVsStability: -1 },
   },
   'הנדסה': {
     name: 'הנדסה קלאסית',
@@ -45,6 +100,7 @@ const CATEGORY_META: Record<string, CategoryMeta> = {
     dailyWorkflow: 'CAD, סימולציות, מעבדות, עבודה עם ספקים ובניית אב-טיפוסים',
     soloFriendly: true,
     requiresSoloInvestigative: true,
+    valueSignals: { incomeVsImpact: -1, growthVsStability: -1 },
   },
   'מדעי החברה': {
     name: 'מדעי החברה והבריאות',
@@ -54,6 +110,7 @@ const CATEGORY_META: Record<string, CategoryMeta> = {
     aiResilienceNote: 'אמפתיה, ברית טיפולית ותקשורת אנושית הם בלתי ניתנים לאוטומציה',
     dailyWorkflow: 'פגישות מטופלים, הדרכות, עבודה קלינית, כתיבת דוחות',
     soloFriendly: false,
+    valueSignals: { incomeVsImpact: 1, independenceVsTeam: 1, prestigeVsMeaning: 1 },
   },
   'משפטים': {
     name: 'משפטים ומדיניות',
@@ -63,6 +120,7 @@ const CATEGORY_META: Record<string, CategoryMeta> = {
     aiResilienceNote: 'שיקול דעת משפטי ותקשורת בפני ערכאות נשארים אנושיים; מחקר פסיקה מתאמט',
     dailyWorkflow: 'כתיבת בריפים, ישיבות לקוח, דיונים בבית משפט, חקר פסיקה',
     soloFriendly: false,
+    valueSignals: { incomeVsImpact: -1, independenceVsTeam: 1, prestigeVsMeaning: -1 },
   },
   'כלכלה ועסקים': {
     name: 'כלכלה, עסקים וניהול',
@@ -72,6 +130,7 @@ const CATEGORY_META: Record<string, CategoryMeta> = {
     aiResilienceNote: 'ניהול אנשים, משא ומתן ואסטרטגיה ארגונית לא ניתנים לאוטומציה מלאה',
     dailyWorkflow: 'פגישות ניהוליות, ניתוח עסקי, תיאום בין-מחלקתי, קבלת החלטות',
     soloFriendly: false,
+    valueSignals: { incomeVsImpact: -1, independenceVsTeam: 1, prestigeVsMeaning: -1 },
   },
   'מדעי החיים': {
     name: 'מדעי החיים והביולוגיה',
@@ -82,6 +141,7 @@ const CATEGORY_META: Record<string, CategoryMeta> = {
     dailyWorkflow: 'עבודת מעבדה, ניסויים, ניתוח נתונים, כתיבת מאמרים',
     soloFriendly: true,
     requiresSoloInvestigative: true,
+    valueSignals: { incomeVsImpact: 1, growthVsStability: -1 },
   },
   'מדעי הבריאות': {
     name: 'מדעי הבריאות והסיעוד',
@@ -91,6 +151,7 @@ const CATEGORY_META: Record<string, CategoryMeta> = {
     aiResilienceNote: 'מגע אנושי, אמפתיה וקבלת החלטות קליניות בשטח — לא ניתנים לאוטומציה',
     dailyWorkflow: 'טיפול בחולים, עבודת צוות, שמירת תיעוד, תיאום עם רופאים',
     soloFriendly: false,
+    valueSignals: { incomeVsImpact: 1, independenceVsTeam: 1, prestigeVsMeaning: 1 },
   },
   'רפואה': {
     name: 'רפואה',
@@ -100,6 +161,7 @@ const CATEGORY_META: Record<string, CategoryMeta> = {
     aiResilienceNote: 'AI מסייע לאבחון, אך שיקול דעת קליני ואמון המטופל יישארו אנושיים לחלוטין',
     dailyWorkflow: 'ויזיטות, מיון, ניתוחים, עבודת צוות רפואי, עדכון תיקים',
     soloFriendly: false,
+    valueSignals: { incomeVsImpact: 1, independenceVsTeam: 1, prestigeVsMeaning: -1 },
   },
   'אמנות ועיצוב': {
     name: 'אמנות, עיצוב ויצירה',
@@ -109,6 +171,7 @@ const CATEGORY_META: Record<string, CategoryMeta> = {
     aiResilienceNote: 'יצירתיות אנושית וקול אמנותי ייחודי נשארים בשוק; חלק מהטכניקות מתאמטות',
     dailyWorkflow: 'עבודת סטודיו, פרויקטים יצירתיים, הצגת עבודות ללקוחות, שיתופי פעולה',
     soloFriendly: true,
+    valueSignals: { independenceVsTeam: -1, growthVsStability: -1, prestigeVsMeaning: 1 },
   },
   'קולינריה וגסטרונומיה': {
     name: 'קולינריה וגסטרונומיה',
@@ -118,6 +181,7 @@ const CATEGORY_META: Record<string, CategoryMeta> = {
     aiResilienceNote: 'מגע עם אוכל, יצירתיות קולינרית וחוויית אורח — לא ניתנים לשכפול דיגיטלי',
     dailyWorkflow: 'הכנת מנות, ניהול מטבח, פיתוח תפריטים, עבודה עם ספקים',
     soloFriendly: false,
+    valueSignals: { independenceVsTeam: 1, growthVsStability: -1, prestigeVsMeaning: 1 },
   },
   'רפואה אינטגרטיבית': {
     name: 'רפואה אינטגרטיבית',
@@ -127,6 +191,7 @@ const CATEGORY_META: Record<string, CategoryMeta> = {
     aiResilienceNote: 'טיפול הוליסטי, מגע ואמון מטופל — לא ניתנים לאוטומציה',
     dailyWorkflow: 'פגישות מטופלים, טיפולים, בניית תוכנית טיפול, מעקב',
     soloFriendly: false,
+    valueSignals: { incomeVsImpact: 1, independenceVsTeam: 1, prestigeVsMeaning: 1 },
   },
   'טכנולוגיה ופיתוח': {
     name: 'טכנולוגיה, פיתוח וסייבר',
@@ -137,49 +202,49 @@ const CATEGORY_META: Record<string, CategoryMeta> = {
     dailyWorkflow: "כתיבת קוד, בניית מוצרים, עבודה בצוות אג'ייל, דיפלוי לענן",
     soloFriendly: true,
     requiresSoloInvestigative: true,
+    valueSignals: { incomeVsImpact: -1, independenceVsTeam: -1, growthVsStability: -1 },
   },
 };
 
-const DIMS: RiasecDimension[] = ['R', 'I', 'A', 'S', 'E', 'C'];
-
-// ── Avoidance penalty map ─────────────────────────────────────────────────────
-// Maps each program category to the avoidance tags it carries.
-// If the user selected a tag that overlaps with a category's tags, the category
-// score is multiplied by 0.6 per overlap (−40% per match, cumulative).
 const CATEGORY_AVOIDANCE: Record<string, AvoidanceTag[]> = {
   'הנדסה וטכנולוגיה': ['heavy-math', 'solo-work'],
-  'מדעי המחשב':       ['heavy-math', 'solo-work'],
-  'הנדסה':            ['heavy-math'],
-  'מדעי החברה':       ['heavy-reading'],
-  'משפטים':           ['heavy-reading', 'bureaucracy'],
-  'כלכלה ועסקים':     ['heavy-math'],
-  'מדעי החיים':       ['heavy-reading', 'solo-work'],
-  'מדעי הבריאות':     ['bureaucracy'],
-  'רפואה':            ['heavy-reading', 'bureaucracy'],
-  'אמנות ועיצוב':     [],
+  'מדעי המחשב': ['heavy-math', 'solo-work'],
+  'הנדסה': ['heavy-math'],
+  'מדעי החברה': ['heavy-reading'],
+  'משפטים': ['heavy-reading', 'bureaucracy'],
+  'כלכלה ועסקים': ['heavy-math'],
+  'מדעי החיים': ['heavy-reading', 'solo-work'],
+  'מדעי הבריאות': ['bureaucracy'],
+  'רפואה': ['heavy-reading', 'bureaucracy'],
+  'אמנות ועיצוב': [],
   'קולינריה וגסטרונומיה': [],
   'רפואה אינטגרטיבית': ['bureaucracy'],
   'טכנולוגיה ופיתוח': ['heavy-math', 'solo-work'],
 };
 
-function dotProduct(user: RiasecScores, program: Program['riasecScore']): number {
-  return DIMS.reduce((sum, d) => sum + user[d] * program[d], 0);
+function dotProduct(user: ProfileScores, program: Program): number {
+  return PROFILE_DIMS.reduce((sum, dim) => sum + user[dim] * program.profileScore[dim], 0);
 }
 
-function topUserDims(scores: RiasecScores): [RiasecDimension, RiasecDimension] {
-  const sorted = DIMS.filter((d) => scores[d] > 0).sort((a, b) => scores[b] - scores[a]);
-  return [sorted[0] ?? 'I', sorted[1] ?? 'C'];
+function topUserDims(scores: ProfileScores): [ProfileDimension, ProfileDimension] {
+  const sorted = (Object.entries(scores) as [ProfileDimension, number][])
+    .filter(([, score]) => score > 0)
+    .sort((a, b) => b[1] - a[1]);
+  return [sorted[0]?.[0] ?? 'AN', sorted[1]?.[0] ?? 'OR'];
 }
 
 function buildWarning(
   meta: CategoryMeta,
-  scores: RiasecScores,
+  scores: ProfileScores,
   env: EnvironmentPreference
 ): { hasWarning: boolean; warningText?: string } {
   if (!meta.requiresSoloInvestigative) return { hasWarning: false };
-  const socialDominant = scores.S >= 4 && scores.S > scores.I;
+
+  const investigativeStrength = Math.max(scores.AN, scores.DI, scores.ER);
+  const socialDominant = scores.SO >= 4 && scores.SO > investigativeStrength;
   const teamOriented = env.soloScore <= 1;
-  const lowInvestigative = scores.I <= 2;
+  const lowInvestigative = investigativeStrength <= 2;
+
   if (socialDominant && teamOriented && lowInvestigative) {
     return {
       hasWarning: true,
@@ -187,110 +252,155 @@ function buildWarning(
         'שים/י לב: הפרופיל שלך חברתי ומוכוון-צוות בעיקרו. תחום זה דורש עבודה עצמאית ממושכת ועיסוק אנליטי-טכני עמוק. ייתכן שתחומים עם יותר אינטראקציה אנושית יתאימו לך טוב יותר.',
     };
   }
+
   return { hasWarning: false };
 }
 
-function buildMatchReason(
-  matched: RiasecDimension[],
-  top: [RiasecDimension, RiasecDimension]
-): string {
-  if (matched.length === 0) return 'תחום זה משלים כישורים נוספים שיעשירו את הפרופיל שלך';
-  if (matched.length === 1) {
-    // "נטייה" is feminine — use the feminine adjectival form (nameF)
-    return `הנטייה ה${DIMENSION_LABELS[matched[0]].nameF} שלך מתאימה במיוחד לתחום הזה`;
+function buildValueReason(values: ValuesProfile, meta: CategoryMeta): string | null {
+  const signals = meta.valueSignals;
+  if (!signals) return null;
+
+  let best:
+    | {
+        key: keyof ValuesProfile;
+        direction: 1 | -1;
+        alignment: number;
+      }
+    | null = null;
+
+  for (const key of VALUE_KEYS) {
+    const direction = signals[key];
+    if (!direction) continue;
+
+    const alignment = values[key] * direction;
+    if (alignment <= 0) continue;
+
+    if (!best || alignment > best.alignment) {
+      best = { key, direction, alignment };
+    }
   }
-  const names = matched.map((d) => DIMENSION_LABELS[d].name);
-  return `הפרופיל ה${names.join('-')} שלך הוא התאמה מצוינת לתחום הזה`;
+
+  if (!best || best.alignment < 1) return null;
+
+  const labels = VALUE_LABELS[best.key];
+  const label = best.direction === 1 ? labels.right : labels.left;
+  return `הכיוון הזה מתחבר גם להעדפה שלך ל${label}.`;
 }
 
-/** Neutral environment preference — used when no env data is collected */
-const NEUTRAL_ENV: EnvironmentPreference = { soloScore: 1, deskScore: 1 };
+function scoreValueAlignment(values: ValuesProfile, meta: CategoryMeta): number {
+  const signals = meta.valueSignals;
+  if (!signals) return 0;
+
+  let bonus = 0;
+  for (const key of VALUE_KEYS) {
+    const direction = signals[key];
+    if (!direction) continue;
+    bonus += values[key] * direction;
+  }
+
+  // Keep values as a ranking nudge instead of the primary score driver.
+  return bonus * 2;
+}
+
+function buildMatchReason(
+  matched: ProfileDimension[],
+  values: ValuesProfile,
+  meta: CategoryMeta
+): string {
+  const baseReason =
+    matched.length === 0
+      ? 'תחום זה משלים כישורים נוספים שיעשירו את הפרופיל שלך'
+      : matched.length === 1
+        ? `הנטייה ה${PROFILE_DIM_LABELS[matched[0]].nameF} שלך מתאימה במיוחד לתחום הזה`
+        : `הפרופיל ה${matched.map((d) => PROFILE_DIM_LABELS[d].name).join('-')} שלך הוא התאמה מצוינת לתחום הזה`;
+
+  const valueReason = buildValueReason(values, meta);
+  return valueReason ? `${baseReason}. ${valueReason}` : baseReason;
+}
 
 export function getRecommendations(
-  scores: RiasecScores,
+  scores: ProfileScores,
+  values: ValuesProfile = NEUTRAL_VALUES,
   env: EnvironmentPreference = NEUTRAL_ENV,
   avoidances: AvoidanceTag[] = [],
   programs: Program[] = allPrograms
 ): RecommendedField[] {
   type Scored = { program: Program; score: number };
 
-  // 1. Dot-product score every program (skip generic placeholder rows)
   const scored: Scored[] = programs
-    .filter((p) => p.institution !== 'אוניברסיטה')
-    .map((p) => ({
-      program: p,
-      score: dotProduct(scores, p.riasecScore),
+    .filter((program) => program.institution !== 'אוניברסיטה')
+    .map((program) => ({
+      program,
+      score: dotProduct(scores, program),
     }));
 
-  // 2. Group by category; category score = max single-program score within it
   const byCategory = new Map<string, { programs: Scored[]; catScore: number }>();
-  for (const s of scored) {
-    const cat = s.program.category;
-    if (!CATEGORY_META[cat]) continue;
-    const existing = byCategory.get(cat);
+  for (const scoredProgram of scored) {
+    const category = scoredProgram.program.category;
+    if (!CATEGORY_META[category]) continue;
+
+    const existing = byCategory.get(category);
     if (!existing) {
-      byCategory.set(cat, { programs: [s], catScore: s.score });
-    } else {
-      existing.programs.push(s);
-      if (s.score > existing.catScore) existing.catScore = s.score;
+      byCategory.set(category, { programs: [scoredProgram], catScore: scoredProgram.score });
+      continue;
+    }
+
+    existing.programs.push(scoredProgram);
+    if (scoredProgram.score > existing.catScore) {
+      existing.catScore = scoredProgram.score;
     }
   }
 
-  // 3. Apply environment preference bonus
-  for (const [cat, data] of byCategory) {
-    const meta = CATEGORY_META[cat];
+  for (const [category, data] of byCategory) {
+    const meta = CATEGORY_META[category];
     if (meta.soloFriendly && env.soloScore >= 2) data.catScore += 15;
     if (!meta.soloFriendly && env.soloScore <= 1) data.catScore += 15;
+    data.catScore += scoreValueAlignment(values, meta);
   }
 
-  // 3b. Apply avoidance penalty (−40% per overlapping tag, multiplicative)
   if (avoidances.length > 0) {
-    for (const [cat, data] of byCategory) {
-      const catAvoidances = CATEGORY_AVOIDANCE[cat] ?? [];
-      const overlaps = avoidances.filter((t) => catAvoidances.includes(t)).length;
+    for (const [category, data] of byCategory) {
+      const categoryAvoidances = CATEGORY_AVOIDANCE[category] ?? [];
+      const overlaps = avoidances.filter((tag) => categoryAvoidances.includes(tag)).length;
       if (overlaps > 0) {
         data.catScore *= Math.pow(0.6, overlaps);
       }
     }
   }
 
-  // 4. Sort categories, keep top 5
   const [primary, secondary] = topUserDims(scores);
-  const topCats = [...byCategory.entries()]
+  const topCategories = [...byCategory.entries()]
     .sort((a, b) => b[1].catScore - a[1].catScore)
     .slice(0, 5);
 
-  // 5. Build one RecommendedField per top category
-  return topCats.map(([cat, data]) => {
-    const meta = CATEGORY_META[cat];
+  return topCategories.map(([category, data]) => {
+    const meta = CATEGORY_META[category];
 
-    // Top 3 programs per category, one representative per unique field key
     const topPrograms: Program[] = [];
     const seenFields = new Set<string>();
-    for (const s of [...data.programs].sort((a, b) => b.score - a.score)) {
-      const fk = PROGRAM_FIELD_MAP[s.program.id] ?? s.program.id;
-      if (!seenFields.has(fk)) {
-        seenFields.add(fk);
-        topPrograms.push(s.program);
-        if (topPrograms.length === 3) break;
-      }
+    for (const scoredProgram of [...data.programs].sort((a, b) => b.score - a.score)) {
+      const fieldKey = PROGRAM_FIELD_MAP[scoredProgram.program.id] ?? scoredProgram.program.id;
+      if (seenFields.has(fieldKey)) continue;
+
+      seenFields.add(fieldKey);
+      topPrograms.push(scoredProgram.program);
+      if (topPrograms.length === 3) break;
     }
 
-    // Dimensions that are both top-user dims AND prominent in top programs (avg >= 3)
-    const avgDimScore = (d: RiasecDimension) =>
-      topPrograms.reduce((sum, p) => sum + p.riasecScore[d], 0) / topPrograms.length;
-    const matchedDimensions = ([primary, secondary] as RiasecDimension[]).filter(
-      (d) => avgDimScore(d) >= 3
+    const avgDimScore = (dim: ProfileDimension) =>
+      topPrograms.reduce((sum, program) => sum + program.profileScore[dim], 0) / topPrograms.length;
+    const matchedDimensions = ([primary, secondary] as ProfileDimension[]).filter(
+      (dim) => avgDimScore(dim) >= 3
     );
 
     const { hasWarning, warningText } = buildWarning(meta, scores, env);
-    const matchReason = buildMatchReason(matchedDimensions, [primary, secondary]);
+    const matchReason = buildMatchReason(matchedDimensions, values, meta);
 
     return {
-      id: cat,
+      id: category,
       name: meta.name,
       description: meta.description,
-      suggestedDegreeIds: topPrograms.map((p) => p.id),
+      suggestedDegreeIds: topPrograms.map((program) => program.id),
       score: data.catScore,
       matchedDimensions,
       matchReason,

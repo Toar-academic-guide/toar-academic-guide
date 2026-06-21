@@ -3,13 +3,13 @@
 import { useEffect, useState } from 'react';
 import posthog from 'posthog-js';
 import {
-  RiasecScores,
+  ProfileScores,
+  ValuesProfile,
   EngineeringOptions,
   RecommendedField,
   UniversityResult,
   UserScores,
   GeographicRegion,
-  RiasecDimension,
   AvoidanceTag,
 } from '@/types';
 import { useAuth } from '@/context/AuthContext';
@@ -25,7 +25,7 @@ import { evaluateUniversities } from '@/utils/sekhemCalculators';
 import { extractFilterAnswers } from '@/utils/riasecEngine';
 import { ArrowRight } from 'lucide-react';
 import NavBar from '@/components/NavBar';
-import RiasecExam from '@/components/RiasecExam';
+import CareerAssessment from '@/components/CareerAssessment';
 import OnboardingFunnel from '@/components/OnboardingFunnel';
 import LandingPage from '@/components/LandingPage';
 import AuthScreen from '@/components/AuthScreen';
@@ -46,7 +46,7 @@ type AppStep =
   | 'auth'
   | 'intro'
   | 'academic-profile'
-  | 'riasec-exam'
+  | 'career-assessment'
   | 'quick-filters'
   | 'recommendations'
   | 'calculator'
@@ -70,7 +70,10 @@ export default function Home() {
   const [catalogueStatus, setCatalogueStatus] = useState<CatalogueStatus>('loading');
   const [catalogueError, setCatalogueError] = useState<CatalogueApiError | null>(null);
   const [catalogueInstitutions, setCatalogueInstitutions] = useState<CatalogueInstitution[]>([]);
-  const [step, setStep] = useState<AppStep>('landing');
+  const [step, setStep] = useState<AppStep>(() => {
+    if (typeof window === 'undefined') return 'landing';
+    return new URLSearchParams(window.location.search).has('screen') ? 'career-assessment' : 'landing';
+  });
   const [recommendations, setRecommendations] = useState<RecommendedField[]>([]);
   const [cataloguePrograms, setCataloguePrograms] = useState<CatalogueProgram[]>([]);
   const {
@@ -84,14 +87,17 @@ export default function Home() {
     updateProfile,
   } = useUserProfile();
 
-  const [pendingScores, setPendingScores] = useState<RiasecScores | null>(null);
+  const [pendingScores, setPendingScores] = useState<ProfileScores | null>(null);
+  const [pendingValues, setPendingValues] = useState<ValuesProfile | null>(null);
 
-  const [riasecProfile, setRiasecProfile] = useState<{
-    scores: RiasecScores;
+  const [assessmentProfile, setAssessmentProfile] = useState<{
+    scores: ProfileScores;
+    values: ValuesProfile;
     geographicPreference: GeographicRegion;
   } | null>(null);
   const [recommendationRequest, setRecommendationRequest] = useState<{
-    scores: RiasecScores;
+    scores: ProfileScores;
+    values: ValuesProfile;
     geographicPreference: GeographicRegion;
     avoidances: AvoidanceTag[];
   } | null>(null);
@@ -150,6 +156,7 @@ export default function Home() {
     setRecommendations(
       getRecommendations(
         recommendationRequest.scores,
+        recommendationRequest.values,
         undefined,
         recommendationRequest.avoidances,
         cataloguePrograms
@@ -157,18 +164,34 @@ export default function Home() {
     );
   }, [cataloguePrograms, catalogueStatus, recommendationRequest]);
 
-  function handleRiasecComplete(scores: Record<RiasecDimension, number>) {
+  function handleAssessmentComplete(profileScores: ProfileScores, valuesProfile: ValuesProfile) {
     posthog.capture('assessment_completed', {
-      top_dimension: Object.entries(scores).sort((a, b) => b[1] - a[1])[0]?.[0],
+      top_dimension: Object.entries(profileScores).sort((a, b) => b[1] - a[1])[0]?.[0],
     });
-    setPendingScores(scores);
+    setPendingScores(profileScores);
+    setPendingValues(valuesProfile);
     setStep('quick-filters');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   function handleFiltersComplete(rawAnswers: RiasecAnswers) {
     const { geographicPreference, avoidances } = extractFilterAnswers(rawAnswers);
-    const scores = pendingScores ?? ({ R: 0, I: 0, A: 0, S: 0, E: 0, C: 0 } as RiasecScores);
+    const scores = pendingScores ?? {
+      AN: 0,
+      TE: 0,
+      CR: 0,
+      SO: 0,
+      LE: 0,
+      OR: 0,
+      DI: 0,
+      ER: 0,
+    };
+    const values = pendingValues ?? {
+      incomeVsImpact: 0,
+      independenceVsTeam: 0,
+      growthVsStability: 0,
+      prestigeVsMeaning: 0,
+    };
 
     posthog.capture('quick_filters_completed', {
       geographic_preference: geographicPreference,
@@ -178,11 +201,11 @@ export default function Home() {
       geographic_preference: geographicPreference,
     });
     updateProfile({ geographicPreference });
-    setRiasecProfile({ scores, geographicPreference });
-    setRecommendationRequest({ scores, geographicPreference, avoidances });
+    setAssessmentProfile({ scores, values, geographicPreference });
+    setRecommendationRequest({ scores, values, geographicPreference, avoidances });
     setRecommendations(
       catalogueStatus === 'ready'
-        ? getRecommendations(scores, undefined, avoidances, cataloguePrograms)
+        ? getRecommendations(scores, values, undefined, avoidances, cataloguePrograms)
         : []
     );
     setResults(null);
@@ -223,8 +246,8 @@ export default function Home() {
     auth: authReturnTo,
     intro: 'landing',
     'academic-profile': 'intro',
-    'riasec-exam': 'academic-profile',
-    'quick-filters': 'riasec-exam',
+    'career-assessment': 'academic-profile',
+    'quick-filters': 'career-assessment',
     recommendations: 'quick-filters',
     calculator: 'recommendations',
     'bucket-list': bucketReturnsTo,
@@ -399,12 +422,12 @@ export default function Home() {
               has_bagrut: !!scores.bagrut?.weightedAverage,
             });
             updateProfile({ academicScores: scores });
-            setStep('riasec-exam');
+            setStep('career-assessment');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
           onSkip={() => {
             posthog.capture('academic_profile_skipped');
-            setStep('riasec-exam');
+            setStep('career-assessment');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
         />
@@ -412,11 +435,11 @@ export default function Home() {
     );
   }
 
-  if (step === 'riasec-exam') {
+  if (step === 'career-assessment') {
     return (
       <>
         <BackButton />
-        <RiasecExam onComplete={handleRiasecComplete} />
+        <CareerAssessment onComplete={handleAssessmentComplete} />
       </>
     );
   }
@@ -434,10 +457,10 @@ export default function Home() {
   const savedCount = profile.savedProgramIds?.length ?? 0;
 
   // Source-aware: only navigate to recommendations when the user has a
-  // riasecProfile (i.e. came through the questionnaire). Degree-picker users
-  // have no riasecProfile — route them back to degree-picker instead.
+  // saved assessment profile (i.e. came through the questionnaire). Degree-picker users
+  // have no assessmentProfile — route them back to degree-picker instead.
   function handleGoToRecommendations() {
-    if (!riasecProfile) {
+    if (!assessmentProfile) {
       setStep(bucketReturnsTo === 'degree-picker' ? 'degree-picker' : 'landing');
       return;
     }
@@ -460,7 +483,7 @@ export default function Home() {
         isAuthenticated={isAuthenticated}
         userEmail={user?.email ?? undefined}
         onGoHome={handleGoHome}
-        onGoToExam={() => { setStep('riasec-exam'); setResults(null); setPendingScores(null); }}
+        onGoToExam={() => { setStep('career-assessment'); setResults(null); setPendingScores(null); setPendingValues(null); }}
         onGoToRecommendations={handleGoToRecommendations}
         onGoToBucket={() => setStep('bucket-list')}
         onGoToAuth={() => {
@@ -498,14 +521,14 @@ export default function Home() {
         ) : null}
 
         {/* ── Step: Recommendations ─────────────────────────────── */}
-        {!shouldBlockCatalogueStep && step === 'recommendations' && riasecProfile && (
+        {!shouldBlockCatalogueStep && step === 'recommendations' && assessmentProfile && (
           <RecommendationResults
             programs={cataloguePrograms}
             recommendations={recommendations}
             onSelectDegree={handleSelectDegree}
-            riasecScores={riasecProfile.scores}
+            profileScores={assessmentProfile.scores}
             environment={{ soloScore: 1, deskScore: 1 }}
-            geographicPreference={riasecProfile.geographicPreference}
+            geographicPreference={assessmentProfile.geographicPreference}
             savedProgramIds={profile.savedProgramIds}
             onToggleSave={handleToggleSave}
           />

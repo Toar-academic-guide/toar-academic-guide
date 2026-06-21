@@ -20,6 +20,7 @@ export default function LogoCanvas({ size = 70, brighten = false, className }: P
       const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
+      // Draw at full resolution for pixel processing
       canvas.width = img.naturalWidth;
       canvas.height = img.naturalHeight;
       ctx.drawImage(img, 0, 0);
@@ -42,7 +43,29 @@ export default function LogoCanvas({ size = 70, brighten = false, className }: P
       }
       ctx.putImageData(imageData, 0, 0);
 
-      const aspect = img.naturalWidth / img.naturalHeight;
+      // Find tight bounding box of non-transparent pixels
+      let minX = canvas.width, minY = canvas.height, maxX = 0, maxY = 0;
+      for (let y = 0; y < canvas.height; y++) {
+        for (let x = 0; x < canvas.width; x++) {
+          if (d[(y * canvas.width + x) * 4 + 3] > 10) {
+            if (x < minX) minX = x;
+            if (x > maxX) maxX = x;
+            if (y < minY) minY = y;
+            if (y > maxY) maxY = y;
+          }
+        }
+      }
+
+      // Crop canvas to content bounds
+      const cw = maxX - minX + 1;
+      const ch = maxY - minY + 1;
+      const cropped = ctx.getImageData(minX, minY, cw, ch);
+      canvas.width = cw;
+      canvas.height = ch;
+      ctx.putImageData(cropped, 0, 0);
+
+      // Scale to requested size
+      const aspect = cw / ch;
       canvas.style.height = `${size}px`;
       canvas.style.width  = `${size * aspect}px`;
     };

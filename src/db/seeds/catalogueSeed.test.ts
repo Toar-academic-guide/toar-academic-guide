@@ -72,7 +72,7 @@ describe('catalogueSeed', () => {
       institution: 'מוסד לא קיים',
       type: 'academic',
       category: 'מדעי החברה',
-      riasecScore: { R: 0, I: 1, A: 1, S: 3, E: 1, C: 1 },
+      profileScore: { AN: 1, TE: 0, CR: 1, SO: 3, LE: 1, OR: 1, DI: 0, ER: 2 },
       admissionType: 'requirements',
       admissionRequirements: [],
     };

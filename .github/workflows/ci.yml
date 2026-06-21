@@ -1,0 +1,77 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test-build-and-dry-run:
+    name: Test, build, and catalogue dry-run
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+      CATALOGUE_SOURCE_MODE: static
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Validate catalogue seed without DB writes
+        run: npm run db:seed:dry-run
+
+      - name: Build application
+        run: npm run build
+
+  db-seed-verify:
+    name: DB-backed catalogue verification
+    runs-on: ubuntu-latest
+    needs: test-build-and-dry-run
+    if: ${{ github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' }}
+    env:
+      CI: true
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      CATALOGUE_SOURCE_MODE: database
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Skip DB verification when DATABASE_URL is missing
+        if: ${{ env.DATABASE_URL == '' }}
+        run: echo "DATABASE_URL secret is not configured; skipping DB-backed seed verification."
+
+      - name: Install dependencies
+        if: ${{ env.DATABASE_URL != '' }}
+        run: npm ci
+
+      - name: Verify seeded database catalogue
+        if: ${{ env.DATABASE_URL != '' }}
+        run: npm run db:seed:verify

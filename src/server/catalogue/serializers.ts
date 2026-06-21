@@ -1,4 +1,5 @@
 import type { InstitutionDetail } from '@/data/degrees/types';
+import { allPrograms } from '@/data/degrees';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type {
   AdmissionRequirementRow,
@@ -9,6 +10,10 @@ import type {
   SourceUrlRow,
   UniversityCalculatorConfigRow,
 } from '@/db/types';
+
+const STATIC_PROGRAMS_BY_ID = new Map(
+  allPrograms.map((program) => [program.id, program])
+);
 
 function serializeCalculatorConfigRow(
   row: UniversityCalculatorConfigRow
@@ -109,6 +114,8 @@ export function serializeProgramRow(args: {
     }
   }
 
+  const staticProgram = STATIC_PROGRAMS_BY_ID.get(program.id);
+
   return {
     id: program.id,
     name: program.name,
@@ -116,13 +123,15 @@ export function serializeProgramRow(args: {
     institutionId: (program.institutionId ?? undefined) as CatalogueProgram['institutionId'],
     type: program.type,
     category: program.category,
-    riasecScore: {
-      R: program.riasecR,
-      I: program.riasecI,
-      A: program.riasecA,
-      S: program.riasecS,
-      E: program.riasecE,
-      C: program.riasecC,
+    profileScore: staticProgram?.profileScore ?? {
+      AN: program.riasecR,
+      TE: program.riasecI,
+      CR: program.riasecA,
+      SO: program.riasecS,
+      LE: program.riasecE,
+      OR: program.riasecC,
+      DI: 0,
+      ER: 0,
     },
     admissionType: program.admissionType,
     admissionRequirements: requirements.flatMap((requirement) => requirement.admissionRequirements),

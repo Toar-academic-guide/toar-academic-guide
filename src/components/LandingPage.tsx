@@ -3,6 +3,7 @@
 import { useRef } from 'react';
 import { Target, Sparkles, BarChart3 } from 'lucide-react';
 import LogoCanvas from './LogoCanvas';
+import PaintingCanvas from './PaintingCanvas';
 import NeoButton from './NeoButton';
 
 interface Props {
@@ -31,17 +32,17 @@ export default function LandingPage({ onAlreadyKnow, onNeedHelp, onSignIn }: Pro
           {/* Logo + nav links grouped together on the right (RTL) */}
           <div className="flex items-center gap-8">
             <button type="button" className="cursor-pointer rounded-lg outline-none transition-opacity hover:opacity-80">
-              <LogoCanvas size={120} brighten={false} />
+              <LogoCanvas size={34} brighten={false} />
             </button>
 
             <nav className="hidden items-center gap-7 md:flex">
-              <button type="button" onClick={() => scrollToSection('how-it-works')} className="text-sm text-slate-500 transition hover:text-slate-900">
+              <button type="button" onClick={() => scrollToSection('how-it-works')} className="text-base text-slate-900 transition hover:text-slate-600">
                 איך זה עובד
               </button>
-              <button type="button" onClick={scrollToStart} className="text-sm text-slate-500 transition hover:text-slate-900">
+              <button type="button" onClick={scrollToStart} className="text-base text-slate-900 transition hover:text-slate-600">
                 תחומי לימוד
               </button>
-              <button type="button" className="text-sm text-slate-500 transition hover:text-slate-900">
+              <button type="button" className="text-base text-slate-900 transition hover:text-slate-600">
                 מי אנחנו
               </button>
             </nav>
@@ -68,56 +69,56 @@ export default function LandingPage({ onAlreadyKnow, onNeedHelp, onSignIn }: Pro
 
       {/* ── Hero ────────────────────────────────────────────────── */}
       <section
-        className="px-6 py-16 text-center md:py-20"
+        className="px-6 py-16 md:py-20"
         style={{ background: 'radial-gradient(ellipse at center, #f3fdff 0%, #e8f7fa 60%, #e5f7fb 100%)' }}
       >
-        <div className="mx-auto max-w-lg">
-          <img
-            src="/way-logo.png"
-            alt="Way"
-            className="mx-auto mb-4"
-            style={{
-              height: '180px',
-              objectFit: 'contain',
-              WebkitMaskImage: 'radial-gradient(ellipse 85% 85% at center, black 40%, transparent 70%)',
-              maskImage: 'radial-gradient(ellipse 85% 85% at center, black 40%, transparent 70%)',
-            }}
-          />
-
-          <h1
-            className="mb-2 text-2xl font-black text-slate-900 md:text-3xl"
-            style={{ letterSpacing: '0.02em' }}
-          >
-            מה<span className="mx-1 text-[#4f46e5]">.</span>איפה<span className="mx-1 text-[#4f46e5]">.</span>איך
-          </h1>
-
-          <p className="mb-8 text-base text-slate-500">
-            השותף שלך לדרך
-          </p>
-
-          <div className="mb-10 flex items-center justify-center">
-            <button
-              type="button"
-              onClick={scrollToStart}
-              className="rounded-full bg-[#1e1b4b] px-8 py-3.5 text-base font-semibold text-white transition hover:bg-[#2d2a6e]"
+        <div className="mx-auto grid max-w-6xl grid-cols-1 items-stretch gap-8 md:grid-cols-3 md:gap-10">
+          {/* Content panel — right 2/3 in RTL */}
+          <div className="text-right md:col-span-2">
+            <h1
+              className="mb-3 text-4xl font-black text-slate-900 md:text-5xl"
+              style={{ letterSpacing: '0.02em' }}
             >
-              מתחילים ←
-            </button>
+              מה<span className="mx-1 text-[#4f46e5]">.</span>איפה<span className="mx-1 text-[#4f46e5]">.</span>איך
+            </h1>
+
+            <p className="mb-3 text-lg font-bold text-slate-800 md:text-xl">
+              השותף שלך לדרך
+            </p>
+
+            <p className="mb-8 max-w-2xl text-base leading-relaxed text-slate-600 md:text-lg">
+              הכול מתחיל בהבנה של מי אתה ומה החוזקות שלך — ומשם לתחום שמתאים לך, לקריירה שבה תבלוט, למוסד המדויק עבורך ולדרך הקצרה והמעשית ביותר להגשים את המטרות שלך.
+            </p>
+
+            <div className="grid grid-cols-3 gap-3 text-center">
+              <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 shadow-sm">
+                <h3 className="mb-1 text-lg font-black text-slate-900">מה</h3>
+                <p className="text-xs leading-relaxed text-slate-500">שאלון אישיות מקצועי ורלוונטי, המותאם לקצב השינוי של העולם.</p>
+              </div>
+              <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 shadow-sm">
+                <h3 className="mb-1 text-lg font-black text-slate-900">איפה</h3>
+                <p className="text-xs leading-relaxed text-slate-500">הבנה ודיוק של ההבדלים בין המוסדות השונים ומה מביניהם יתאים לך בצורה הטובה ביותר</p>
+              </div>
+              <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 shadow-sm">
+                <h3 className="mb-1 text-lg font-black text-slate-900">איך</h3>
+                <p className="text-xs leading-relaxed text-slate-500">שקלול כלל הנתונים הנוכחיים שלך והבנה מהי הדרך הנכונה ביותר עבורך, בכדי להשיג את מטרותיך, מבין כלל האפשרויות הקיימות</p>
+              </div>
+            </div>
+
+            <div className="mt-8 flex justify-start">
+              <button
+                type="button"
+                onClick={scrollToStart}
+                className="rounded-full bg-[#1e1b4b] px-8 py-3.5 text-base font-semibold text-white transition hover:bg-[#2d2a6e]"
+              >
+                מתחילים ←
+              </button>
+            </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-3">
-            <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 text-center shadow-sm">
-              <h3 className="mb-1 text-lg font-black text-slate-900">מה</h3>
-              <p className="text-xs leading-relaxed text-slate-500">שאלון אישיות שמגלה מה מתאים לך</p>
-            </div>
-            <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 text-center shadow-sm">
-              <h3 className="mb-1 text-lg font-black text-slate-900">איך</h3>
-              <p className="text-xs leading-relaxed text-slate-500">חישוב סיכויי קבלה ל-35 מוסדות</p>
-            </div>
-            <div className="rounded-2xl border border-[#e5e7eb] bg-white p-5 text-center shadow-sm">
-              <h3 className="mb-1 text-lg font-black text-slate-900">איפה</h3>
-              <p className="text-xs leading-relaxed text-slate-500">המלצות מותאמות למוסד הנכון</p>
-            </div>
+          {/* Art panel — left 1/3 in RTL; white panel, cream backdrop knocked out */}
+          <div className="flex items-center justify-center rounded-3xl bg-white p-8 md:col-span-1">
+            <PaintingCanvas className="block h-auto w-full" />
           </div>
         </div>
       </section>

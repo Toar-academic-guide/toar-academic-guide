@@ -8,7 +8,7 @@ const requirementProgram: Program = {
   institutionId: 'ono',
   type: 'academic',
   category: 'מדעי החברה',
-  riasecScore: { R: 0, I: 2, A: 1, S: 5, E: 1, C: 1 },
+  profileScore: { AN: 2, TE: 0, CR: 1, SO: 5, LE: 1, OR: 1, DI: 0, ER: 3 },
   admissionType: 'requirements',
   admissionRequirements: ['ראיון אישי'],
 };
@@ -20,7 +20,7 @@ const sekhemProgram: Program = {
   institutionId: 'tau',
   type: 'academic',
   category: 'מדעי המחשב',
-  riasecScore: { R: 2, I: 5, A: 0, S: 0, E: 1, C: 3 },
+  profileScore: { AN: 5, TE: 2, CR: 0, SO: 0, LE: 1, OR: 3, DI: 5, ER: 2 },
   admissionType: 'sekhem',
   admissionRequirements: [],
   thresholds: { tau: 700, huji: null, technion: null, bgu: null },
