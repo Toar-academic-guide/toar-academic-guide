@@ -7,6 +7,7 @@ export function hasMeaningfulProfileData(profile: UserProfile | null | undefined
     return false;
   }
 
+  const hasIdentity = Boolean(profile.firstName?.trim()) || Boolean(profile.lastName?.trim());
   const hasSavedPrograms = (profile.savedProgramIds?.length ?? 0) > 0;
   const hasNonDefaultRegion = profile.geographicPreference !== undefined && profile.geographicPreference !== 'any';
   const hasAcademicScores = Boolean(
@@ -17,7 +18,7 @@ export function hasMeaningfulProfileData(profile: UserProfile | null | undefined
       profile.academicScores?.bagrut?.weightedAverage
   );
 
-  return hasSavedPrograms || hasNonDefaultRegion || hasAcademicScores;
+  return hasIdentity || hasSavedPrograms || hasNonDefaultRegion || hasAcademicScores;
 }
 
 export function mergeUserProfileDraft(
@@ -29,6 +30,16 @@ export function mergeUserProfileDraft(
   const baseScores = base.academicScores;
 
   return {
+    ...(base.firstName?.trim()
+      ? { firstName: base.firstName }
+      : draft.firstName?.trim()
+      ? { firstName: draft.firstName.trim() }
+      : {}),
+    ...(base.lastName?.trim()
+      ? { lastName: base.lastName }
+      : draft.lastName?.trim()
+      ? { lastName: draft.lastName.trim() }
+      : {}),
     geographicPreference:
       base.geographicPreference !== 'any'
         ? base.geographicPreference
@@ -89,4 +100,3 @@ function mergeAcademicScores(
 
   return Object.keys(merged).length > 0 ? merged : undefined;
 }
-

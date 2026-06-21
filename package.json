@@ -9,7 +9,8 @@
     "test": "vitest run",
     "db:generate": "drizzle-kit generate",
     "db:seed": "node scripts/seed-catalogue.mjs",
-    "db:seed:dry-run": "node scripts/seed-catalogue.mjs --dry-run"
+    "db:seed:dry-run": "node scripts/seed-catalogue.mjs --dry-run",
+    "db:seed:verify": "node scripts/seed-catalogue.mjs --verify"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.0",

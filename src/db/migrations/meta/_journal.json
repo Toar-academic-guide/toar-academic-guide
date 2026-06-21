@@ -22,6 +22,13 @@
       "when": 1781295195148,
       "tag": "0002_loud_texas_twister",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1781369959987,
+      "tag": "0003_dry_marten_broadcloak",
+      "breakpoints": true
     }
   ]
 }

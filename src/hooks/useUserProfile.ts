@@ -213,6 +213,16 @@ function readStoredProfile(): UserProfile | null {
   }
 }
 
+export function saveUserProfileIdentityDraft(identity: Pick<UserProfile, 'firstName' | 'lastName'>) {
+  const nextProfile = {
+    ...(readStoredProfile() ?? DEFAULT_PROFILE),
+    ...(identity.firstName?.trim() ? { firstName: identity.firstName.trim() } : {}),
+    ...(identity.lastName?.trim() ? { lastName: identity.lastName.trim() } : {}),
+  };
+
+  writeStoredProfile(nextProfile);
+}
+
 function writeStoredProfile(profile: UserProfile) {
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
@@ -223,6 +233,8 @@ function writeStoredProfile(profile: UserProfile) {
 
 function hasMeaningfulDraft(profile: UserProfile): boolean {
   return (
+    Boolean(profile.firstName?.trim()) ||
+    Boolean(profile.lastName?.trim()) ||
     profile.geographicPreference !== 'any' ||
     Boolean(profile.academicScores?.psychometric?.overall) ||
     Boolean(profile.academicScores?.psychometric?.quantitative) ||
@@ -290,4 +302,3 @@ function toErrorMessage(error: unknown, fallback: string) {
 }
 
 export type { GeographicRegion };
-

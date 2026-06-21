@@ -1,3 +1,4 @@
+import { inArray } from 'drizzle-orm';
 import {
   admissionRequirements,
   admissionThresholds,
@@ -8,6 +9,12 @@ import {
   sourceUrls,
   universityCalculatorConfigs,
 } from '@/db/schema';
+import type {
+  AdmissionThresholdRow,
+  ProgramInstitutionRow,
+  ProgramRow,
+  UniversityCalculatorConfigRow,
+} from '@/db/types';
 import { allPrograms } from '@/data/degrees';
 import type { InstitutionDetail, Program } from '@/data/degrees/types';
 import { INSTITUTIONS, INSTITUTION_BY_NAME, type InstitutionId } from '@/data/institutions';
@@ -29,6 +36,30 @@ export interface CatalogueSeedPayload {
   sourceUrls: typeof sourceUrls.$inferInsert[];
   requirementVersions: typeof requirementVersions.$inferInsert[];
   validationErrors: CatalogueSeedValidationError[];
+}
+
+export interface CatalogueSeedVerificationSnapshot {
+  programs: Pick<ProgramRow, 'id' | 'admissionType'>[];
+  programInstitutions: Pick<ProgramInstitutionRow, 'programId' | 'institutionId'>[];
+  admissionThresholds: Pick<AdmissionThresholdRow, 'id' | 'programId'>[];
+  universityCalculatorConfigs: Pick<UniversityCalculatorConfigRow, 'institutionId'>[];
+}
+
+export interface CatalogueSeedVerificationReport {
+  isMatching: boolean;
+  issues: string[];
+  missingPrograms: string[];
+  unexpectedPrograms: string[];
+  admissionTypeMismatches: Array<{
+    programId: string;
+    expected: string;
+    actual: string;
+  }>;
+  missingProgramInstitutionLinks: string[];
+  unexpectedProgramInstitutionLinks: string[];
+  missingThresholdIds: string[];
+  unexpectedThresholdIds: string[];
+  missingCalculatorConfigInstitutionIds: string[];
 }
 
 function getProgramInstitutionIds(program: Program): InstitutionId[] {
@@ -255,6 +286,184 @@ export function buildCatalogueSeed(seedPrograms: Program[] = allPrograms): Catal
   };
 }
 
+function buildRelationKey(programId: string, institutionId: string): string {
+  return `${programId}:${institutionId}`;
+}
+
+export function buildCatalogueSeedVerificationReport(
+  payload: CatalogueSeedPayload,
+  snapshot: CatalogueSeedVerificationSnapshot
+): CatalogueSeedVerificationReport {
+  const expectedPrograms = new Map(payload.programs.map((program) => [program.id, program.admissionType]));
+  const actualPrograms = new Map(snapshot.programs.map((program) => [program.id, program.admissionType]));
+
+  const missingPrograms = [...expectedPrograms.keys()].filter((programId) => !actualPrograms.has(programId));
+  const unexpectedPrograms = [...actualPrograms.keys()].filter((programId) => !expectedPrograms.has(programId));
+  const admissionTypeMismatches = [...expectedPrograms.entries()]
+    .filter(([programId, expectedAdmissionType]) => {
+      const actualAdmissionType = actualPrograms.get(programId);
+      return actualAdmissionType !== undefined && actualAdmissionType !== expectedAdmissionType;
+    })
+    .map(([programId, expectedAdmissionType]) => ({
+      programId,
+      expected: expectedAdmissionType,
+      actual: actualPrograms.get(programId)!,
+    }));
+
+  const expectedRelationKeys = new Set(
+    payload.programInstitutions.map((row) => buildRelationKey(row.programId, row.institutionId))
+  );
+  const actualRelationKeys = new Set(
+    snapshot.programInstitutions
+      .filter((row) => expectedPrograms.has(row.programId))
+      .map((row) => buildRelationKey(row.programId, row.institutionId))
+  );
+
+  const missingProgramInstitutionLinks = [...expectedRelationKeys].filter(
+    (relationKey) => !actualRelationKeys.has(relationKey)
+  );
+  const unexpectedProgramInstitutionLinks = [...actualRelationKeys].filter(
+    (relationKey) => !expectedRelationKeys.has(relationKey)
+  );
+
+  const expectedThresholdIds = new Set(payload.admissionThresholds.map((row) => row.id));
+  const actualThresholdIds = new Set(
+    snapshot.admissionThresholds
+      .filter((row) => expectedPrograms.has(row.programId))
+      .map((row) => row.id)
+  );
+
+  const missingThresholdIds = [...expectedThresholdIds].filter(
+    (thresholdId) => !actualThresholdIds.has(thresholdId)
+  );
+  const unexpectedThresholdIds = [...actualThresholdIds].filter(
+    (thresholdId) => !expectedThresholdIds.has(thresholdId)
+  );
+
+  const expectedCalculatorConfigInstitutionIds = new Set(
+    payload.universityCalculatorConfigs.map((row) => row.institutionId)
+  );
+  const actualCalculatorConfigInstitutionIds = new Set(
+    snapshot.universityCalculatorConfigs.map((row) => row.institutionId)
+  );
+  const missingCalculatorConfigInstitutionIds = [...expectedCalculatorConfigInstitutionIds].filter(
+    (institutionId) => !actualCalculatorConfigInstitutionIds.has(institutionId)
+  );
+
+  const issues: string[] = [];
+
+  if (missingPrograms.length > 0) {
+    issues.push(
+      `Missing programs: ${missingPrograms.slice(0, 10).join(', ')}${
+        missingPrograms.length > 10 ? '…' : ''
+      }`
+    );
+  }
+
+  if (unexpectedPrograms.length > 0) {
+    issues.push(
+      `Unexpected programs: ${unexpectedPrograms.slice(0, 10).join(', ')}${
+        unexpectedPrograms.length > 10 ? '…' : ''
+      }`
+    );
+  }
+
+  if (admissionTypeMismatches.length > 0) {
+    issues.push(
+      `Program admissionType mismatches: ${admissionTypeMismatches
+        .slice(0, 10)
+        .map((mismatch) => `${mismatch.programId} (${mismatch.actual} -> ${mismatch.expected})`)
+        .join(', ')}${admissionTypeMismatches.length > 10 ? '…' : ''}`
+    );
+  }
+
+  if (missingProgramInstitutionLinks.length > 0) {
+    issues.push(
+      `Missing program institution links: ${missingProgramInstitutionLinks.slice(0, 10).join(', ')}${
+        missingProgramInstitutionLinks.length > 10 ? '…' : ''
+      }`
+    );
+  }
+
+  if (unexpectedProgramInstitutionLinks.length > 0) {
+    issues.push(
+      `Unexpected program institution links: ${unexpectedProgramInstitutionLinks
+        .slice(0, 10)
+        .join(', ')}${unexpectedProgramInstitutionLinks.length > 10 ? '…' : ''}`
+    );
+  }
+
+  if (missingThresholdIds.length > 0) {
+    issues.push(
+      `Missing threshold rows: ${missingThresholdIds.slice(0, 10).join(', ')}${
+        missingThresholdIds.length > 10 ? '…' : ''
+      }`
+    );
+  }
+
+  if (unexpectedThresholdIds.length > 0) {
+    issues.push(
+      `Unexpected threshold rows: ${unexpectedThresholdIds.slice(0, 10).join(', ')}${
+        unexpectedThresholdIds.length > 10 ? '…' : ''
+      }`
+    );
+  }
+
+  if (missingCalculatorConfigInstitutionIds.length > 0) {
+    issues.push(
+      `Missing calculator configs: ${missingCalculatorConfigInstitutionIds.join(', ')}`
+    );
+  }
+
+  return {
+    isMatching: issues.length === 0,
+    issues,
+    missingPrograms,
+    unexpectedPrograms,
+    admissionTypeMismatches,
+    missingProgramInstitutionLinks,
+    unexpectedProgramInstitutionLinks,
+    missingThresholdIds,
+    unexpectedThresholdIds,
+    missingCalculatorConfigInstitutionIds,
+  };
+}
+
+export async function loadCatalogueSeedVerificationSnapshot(): Promise<CatalogueSeedVerificationSnapshot> {
+  const { getDb } = await import('@/db/client');
+  const db = getDb();
+
+  const [programRows, relationRows, thresholdRows, calculatorConfigRows] = await Promise.all([
+    db.select({ id: programs.id, admissionType: programs.admissionType }).from(programs),
+    db
+      .select({
+        programId: programInstitutions.programId,
+        institutionId: programInstitutions.institutionId,
+      })
+      .from(programInstitutions),
+    db.select({ id: admissionThresholds.id, programId: admissionThresholds.programId }).from(admissionThresholds),
+    db
+      .select({
+        institutionId: universityCalculatorConfigs.institutionId,
+      })
+      .from(universityCalculatorConfigs),
+  ]);
+
+  return {
+    programs: programRows,
+    programInstitutions: relationRows,
+    admissionThresholds: thresholdRows,
+    universityCalculatorConfigs: calculatorConfigRows,
+  };
+}
+
+export async function verifyCatalogueSeed(
+  payload: CatalogueSeedPayload
+): Promise<CatalogueSeedVerificationReport> {
+  const snapshot = await loadCatalogueSeedVerificationSnapshot();
+  return buildCatalogueSeedVerificationReport(payload, snapshot);
+}
+
 export async function upsertCatalogueSeed(payload: CatalogueSeedPayload) {
   if (payload.validationErrors.length > 0) {
     throw new Error(
@@ -266,6 +475,7 @@ export async function upsertCatalogueSeed(payload: CatalogueSeedPayload) {
 
   const { getDb } = await import('@/db/client');
   const db = getDb();
+  const managedProgramIds = payload.programs.map((program) => program.id);
 
   await db.transaction(async (tx) => {
     await tx.insert(institutions).values(payload.institutions).onConflictDoUpdate({
@@ -312,6 +522,19 @@ export async function upsertCatalogueSeed(payload: CatalogueSeedPayload) {
         isTauEngineering: programs.isTauEngineering,
       },
     });
+
+    if (managedProgramIds.length > 0) {
+      // Rebuild managed dependent rows so rerunning the seed converges stale DB state.
+      await tx
+        .delete(admissionThresholds)
+        .where(inArray(admissionThresholds.programId, managedProgramIds));
+      await tx
+        .delete(programInstitutions)
+        .where(inArray(programInstitutions.programId, managedProgramIds));
+      await tx
+        .delete(admissionRequirements)
+        .where(inArray(admissionRequirements.programId, managedProgramIds));
+    }
 
     await tx.insert(programInstitutions).values(payload.programInstitutions).onConflictDoNothing();
     await tx.insert(admissionRequirements).values(payload.admissionRequirements).onConflictDoUpdate({

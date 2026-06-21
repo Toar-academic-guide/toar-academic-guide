@@ -5,6 +5,7 @@ const root = fileURLToPath(new URL('..', import.meta.url));
 
 async function main() {
   const dryRun = process.argv.includes('--dry-run');
+  const verifyOnly = process.argv.includes('--verify');
   const vite = await createServer({
     root,
     appType: 'custom',
@@ -18,7 +19,7 @@ async function main() {
   });
 
   try {
-    const { buildCatalogueSeed, upsertCatalogueSeed } = await vite.ssrLoadModule(
+    const { buildCatalogueSeed, upsertCatalogueSeed, verifyCatalogueSeed } = await vite.ssrLoadModule(
       '/src/db/seeds/catalogueSeed.ts'
     );
     const { hasDatabaseUrl } = await vite.ssrLoadModule('/src/env.ts');
@@ -52,7 +53,25 @@ async function main() {
       );
     }
 
+    if (verifyOnly) {
+      const verification = await verifyCatalogueSeed(payload);
+      console.log(
+        JSON.stringify(
+          {
+            verification,
+          },
+          null,
+          2
+        )
+      );
+      if (!verification.isMatching) {
+        process.exitCode = 1;
+      }
+      return;
+    }
+
     await upsertCatalogueSeed(payload);
+    const verification = await verifyCatalogueSeed(payload);
     console.log(
       JSON.stringify(
         {
@@ -65,11 +84,15 @@ async function main() {
             sourceUrls: payload.sourceUrls.length,
             requirementVersions: payload.requirementVersions.length,
           },
+          verification,
         },
         null,
         2
       )
     );
+    if (!verification.isMatching) {
+      process.exitCode = 1;
+    }
   } finally {
     await vite.close();
   }
