@@ -31,7 +31,7 @@ import BucketList from '@/components/BucketList';
 import DegreePicker from '@/components/DegreePicker';
 import ScoreForm from '@/components/ScoreForm';
 import ResultsDashboard from '@/components/ResultsDashboard';
-import type { AcademicScores, RiasecAnswers, RiasecScores } from '@/types';
+import type { AcademicScores, RiasecAnswers } from '@/types';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 
 type AppStep =
@@ -72,8 +72,9 @@ export default function Home() {
   const [pendingScores, setPendingScores] = useState<ProfileScores | null>(null);
   const [pendingValues, setPendingValues] = useState<ValuesProfile | null>(null);
 
-  const [riasecProfile, setRiasecProfile] = useState<{
-    scores: RiasecScores;
+  const [assessmentProfile, setAssessmentProfile] = useState<{
+    scores: ProfileScores;
+    values: ValuesProfile;
     geographicPreference: GeographicRegion;
   } | null>(null);
 
@@ -116,22 +117,26 @@ export default function Home() {
 
   function handleFiltersComplete(rawAnswers: RiasecAnswers) {
     const { geographicPreference, avoidances } = extractFilterAnswers(rawAnswers);
-
-    // Bridge: map 8-dim ProfileScores → old 6-dim RiasecScores until
-    // recommendationEngine is updated to use 8 dimensions (Step 6).
-    const p = pendingScores ?? { AN: 0, TE: 0, CR: 0, SO: 0, LE: 0, OR: 0, DI: 0, ER: 0 };
-    const scores: RiasecScores = {
-      R: p.TE,
-      I: Math.max(p.AN, p.DI),
-      A: p.CR,
-      S: p.SO,
-      E: p.LE,
-      C: p.OR,
+    const scores = pendingScores ?? {
+      AN: 0,
+      TE: 0,
+      CR: 0,
+      SO: 0,
+      LE: 0,
+      OR: 0,
+      DI: 0,
+      ER: 0,
+    };
+    const values = pendingValues ?? {
+      incomeVsImpact: 0,
+      independenceVsTeam: 0,
+      growthVsStability: 0,
+      prestigeVsMeaning: 0,
     };
 
     updateProfile({ geographicPreference });
-    const recs = getRecommendations(scores, undefined, avoidances, cataloguePrograms);
-    setRiasecProfile({ scores, geographicPreference });
+    const recs = getRecommendations(scores, values, undefined, avoidances, cataloguePrograms);
+    setAssessmentProfile({ scores, values, geographicPreference });
     setRecommendations(recs);
     setResults(null);
     setBucketReturnsTo('recommendations');
@@ -304,10 +309,10 @@ export default function Home() {
   const savedCount = profile.savedProgramIds?.length ?? 0;
 
   // Source-aware: only navigate to recommendations when the user has a
-  // riasecProfile (i.e. came through the questionnaire). Degree-picker users
-  // have no riasecProfile — route them back to degree-picker instead.
+  // saved assessment profile (i.e. came through the questionnaire). Degree-picker users
+  // have no assessmentProfile — route them back to degree-picker instead.
   function handleGoToRecommendations() {
-    if (!riasecProfile) {
+    if (!assessmentProfile) {
       setStep(bucketReturnsTo === 'degree-picker' ? 'degree-picker' : 'landing');
       return;
     }
@@ -356,14 +361,14 @@ export default function Home() {
         ) : null}
 
         {/* ── Step: Recommendations ─────────────────────────────── */}
-        {step === 'recommendations' && riasecProfile && (
+        {step === 'recommendations' && assessmentProfile && (
           <RecommendationResults
             programs={cataloguePrograms}
             recommendations={recommendations}
             onSelectDegree={handleSelectDegree}
-            riasecScores={riasecProfile.scores}
+            profileScores={assessmentProfile.scores}
             environment={{ soloScore: 1, deskScore: 1 }}
-            geographicPreference={riasecProfile.geographicPreference}
+            geographicPreference={assessmentProfile.geographicPreference}
             savedProgramIds={profile.savedProgramIds}
             onToggleSave={handleToggleSave}
           />
