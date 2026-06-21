@@ -179,7 +179,7 @@ export default function LandingPage({
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center" style={{ padding: '6% 15%' }}>
                   <p className="text-2xl font-black leading-none text-slate-900">מה</p>
-                  <p className="mt-2 text-sm leading-snug text-slate-500">כל אפשרויות הלימודים</p>
+                  <p className="mt-2 text-base leading-snug text-slate-500">כל אפשרויות הלימודים</p>
                 </div>
               </motion.div>
 
@@ -201,7 +201,7 @@ export default function LandingPage({
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center" style={{ padding: '6% 15%' }}>
                   <p className="text-2xl font-black leading-none text-slate-900">איפה</p>
-                  <p className="mt-2 text-sm leading-snug text-slate-500">הבדלים בין מוסדות</p>
+                  <p className="mt-2 text-base leading-snug text-slate-500">הבדלים בין מוסדות</p>
                 </div>
               </motion.div>
 
@@ -223,7 +223,7 @@ export default function LandingPage({
                 </svg>
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center" style={{ padding: '6% 15%' }}>
                   <p className="text-2xl font-black leading-none text-slate-900">איך</p>
-                  <p className="mt-2 text-sm leading-snug text-slate-500">שקלול הנתונים שלך</p>
+                  <p className="mt-2 text-base leading-snug text-slate-500">שקלול הנתונים שלך</p>
                 </div>
               </motion.div>
 
@@ -236,85 +236,89 @@ export default function LandingPage({
           </div>
 
           {/* Calculator card — left side in RTL */}
-          <div className="mt-12 flex flex-col self-stretch rounded-2xl border border-[#e5e7eb] bg-white p-8 shadow-sm sm:p-10">
-            <h2 className="mb-6 text-xl font-black text-slate-900">בדיקת סיכויי קבלה</h2>
+          <div className="flex flex-col self-start rounded-2xl border border-[#e5e7eb] bg-white p-10 shadow-sm sm:p-12">
+            <h2 className="mb-8 text-5xl font-black text-slate-900">בדיקת סיכויי קבלה</h2>
 
-            <div className="flex flex-col gap-4">
-              {/* Psychometric */}
-              <div>
-                <label htmlFor="calc-psychometric" className="mb-1 block text-sm font-semibold text-slate-700">
-                  ציון פסיכומטרי
-                </label>
-                <input
-                  id="calc-psychometric"
-                  type="number"
-                  min={200}
-                  max={800}
-                  placeholder="200–800"
-                  value={psychometric}
-                  onChange={(e) => { setPsychometric(e.target.value); setCalcErrors((p) => ({ ...p, psychometric: undefined })); }}
-                  className={`w-full rounded-xl border-2 ${calcErrors.psychometric ? 'border-red-400' : 'border-[#e5e7eb]'} bg-white px-4 py-3 text-base text-slate-900 outline-none transition focus:border-[#4f46e5]`}
-                />
-                {calcErrors.psychometric && <p className="mt-1 text-xs text-red-500">{calcErrors.psychometric}</p>}
+            <div className="flex flex-1 flex-col gap-6">
+              <div className="flex flex-col gap-6">
+                {/* Psychometric */}
+                <div>
+                  <label htmlFor="calc-psychometric" className="mb-2 block text-2xl font-semibold text-slate-700">
+                    ציון פסיכומטרי
+                  </label>
+                  <input
+                    id="calc-psychometric"
+                    type="number"
+                    min={200}
+                    max={800}
+                    placeholder="200–800"
+                    value={psychometric}
+                    onChange={(e) => { setPsychometric(e.target.value); setCalcErrors((p) => ({ ...p, psychometric: undefined })); }}
+                    className={`w-full rounded-xl border-2 ${calcErrors.psychometric ? 'border-red-400' : 'border-[#e5e7eb]'} bg-white px-5 py-4 text-2xl text-slate-900 outline-none transition focus:border-[#4f46e5]`}
+                  />
+                  {calcErrors.psychometric && <p className="mt-1 text-base text-red-500">{calcErrors.psychometric}</p>}
+                </div>
+
+                {/* Bagrut */}
+                <div>
+                  <label htmlFor="calc-bagrut" className="mb-2 block text-2xl font-semibold text-slate-700">
+                    ממוצע בגרות
+                  </label>
+                  <input
+                    id="calc-bagrut"
+                    type="number"
+                    min={60}
+                    max={120}
+                    placeholder="60–120"
+                    value={bagrut}
+                    onChange={(e) => { setBagrut(e.target.value); setCalcErrors((p) => ({ ...p, bagrut: undefined })); }}
+                    className={`w-full rounded-xl border-2 ${calcErrors.bagrut ? 'border-red-400' : 'border-[#e5e7eb]'} bg-white px-5 py-4 text-2xl text-slate-900 outline-none transition focus:border-[#4f46e5]`}
+                  />
+                  {calcErrors.bagrut && <p className="mt-1 text-base text-red-500">{calcErrors.bagrut}</p>}
+                </div>
+
+                {/* Degree category */}
+                <div>
+                  <label htmlFor="calc-degree" className="mb-2 block text-2xl font-semibold text-slate-700">
+                    מה תרצה/י ללמוד?
+                  </label>
+                  <select
+                    id="calc-degree"
+                    value={selectedDegreeId}
+                    onChange={(e) => setSelectedDegreeId(e.target.value)}
+                    className="w-full appearance-none rounded-xl border-2 border-[#e5e7eb] bg-white px-5 py-4 text-2xl text-slate-900 outline-none transition focus:border-[#4f46e5]"
+                  >
+                    {uniqueCategories.map((cat) => (
+                      <optgroup key={cat} label={cat}>
+                        {programs.filter((p) => p.category === cat).map((p) => (
+                          <option key={p.id} value={p.id}>{p.name} — {p.institution}</option>
+                        ))}
+                      </optgroup>
+                    ))}
+                  </select>
+                </div>
               </div>
 
-              {/* Bagrut */}
               <div>
-                <label htmlFor="calc-bagrut" className="mb-1 block text-sm font-semibold text-slate-700">
-                  ממוצע בגרות
-                </label>
-                <input
-                  id="calc-bagrut"
-                  type="number"
-                  min={60}
-                  max={120}
-                  placeholder="60–120"
-                  value={bagrut}
-                  onChange={(e) => { setBagrut(e.target.value); setCalcErrors((p) => ({ ...p, bagrut: undefined })); }}
-                  className={`w-full rounded-xl border-2 ${calcErrors.bagrut ? 'border-red-400' : 'border-[#e5e7eb]'} bg-white px-4 py-3 text-base text-slate-900 outline-none transition focus:border-[#4f46e5]`}
-                />
-                {calcErrors.bagrut && <p className="mt-1 text-xs text-red-500">{calcErrors.bagrut}</p>}
+                {/* CTA */}
+                <NeoButton onClick={handleCalcSubmit} className="w-full py-5 text-2xl">
+                  חשב סיכויים ←
+                </NeoButton>
+
+                {/* Disclaimer */}
+                <div className="mt-6 border-t border-[#e5e7eb] pt-5">
+                  <p className="text-2xl leading-relaxed text-slate-400">
+                    מחשבון זה נועד לספק תמונה כללית. לצורך וודאות מלאה, יש להזין את ציוני הבגרות בכל מקצוע{' '}
+                    <button
+                      type="button"
+                      onClick={onGoToProfile}
+                      className="cursor-pointer font-semibold text-[#4f46e5] underline decoration-[#a5b4fc] underline-offset-2 transition hover:text-[#3730a3]"
+                    >
+                      באזור האישי
+                    </button>.
+                  </p>
+                </div>
               </div>
-
-              {/* Degree category */}
-              <div>
-                <label htmlFor="calc-degree" className="mb-1 block text-sm font-semibold text-slate-700">
-                  מה תרצה/י ללמוד?
-                </label>
-                <select
-                  id="calc-degree"
-                  value={selectedDegreeId}
-                  onChange={(e) => setSelectedDegreeId(e.target.value)}
-                  className="w-full appearance-none rounded-xl border-2 border-[#e5e7eb] bg-white px-4 py-3 text-base text-slate-900 outline-none transition focus:border-[#4f46e5]"
-                >
-                  {uniqueCategories.map((cat) => (
-                    <optgroup key={cat} label={cat}>
-                      {programs.filter((p) => p.category === cat).map((p) => (
-                        <option key={p.id} value={p.id}>{p.name} — {p.institution}</option>
-                      ))}
-                    </optgroup>
-                  ))}
-                </select>
-              </div>
-
-              {/* CTA */}
-              <NeoButton onClick={handleCalcSubmit} className="mt-2 w-full py-3.5 text-base">
-                חשב סיכויים ←
-              </NeoButton>
-            </div>
-
-            {/* Disclaimer */}
-            <div className="mt-5 border-t border-[#e5e7eb] pt-4">
-              <p className="text-xs leading-relaxed text-slate-400">
-                מחשבון זה נועד לספק תמונה כללית. לצורך וודאות מלאה, יש להזין את ציוני הבגרות בכל מקצוע{' '}
-                <button
-                  type="button"
-                  onClick={onGoToProfile}
-                  className="font-semibold text-[#4f46e5] underline decoration-[#a5b4fc] underline-offset-2 transition hover:text-[#3730a3]"
-                >
-                  באזור האישי
-                </button>.
-              </p>
             </div>
           </div>
         </div>
@@ -365,7 +369,7 @@ export default function LandingPage({
       </section>
 
       {/* ── After cartoon ───────────────────────────────────────── */}
-      <section className="flex justify-end bg-white px-8 py-4 pr-0 md:px-16 md:pr-0">
+      <section className="flex justify-end bg-white px-8 py-4 pr-0 md:px-16 md:pr-0" dir="ltr">
         <img
           src="/way-cartoon-after.png"
           alt="That's way easier than I thought"
