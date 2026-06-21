@@ -3,8 +3,9 @@
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { Upload, FileText, X, Brain, GraduationCap } from 'lucide-react';
+import { Upload, FileText, X, Brain, GraduationCap, Check } from 'lucide-react';
 import type { AcademicScores } from '@/types';
+import BagrutCalculatorWizard from './BagrutCalculatorWizard';
 
 // ── Framer Motion tokens ────────────────────────────────────────────────────
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
@@ -49,12 +50,13 @@ export default function AcademicProfileForm({
   const [bagrutAverage, setBagrutAverage] = useState(
     initialScores?.bagrut?.weightedAverage?.toString() ?? '',
   );
+  const [bagrutConfirmed, setBagrutConfirmed] = useState(
+    Boolean(initialScores?.bagrut?.weightedAverage),
+  );
 
-  // ── File states (display-only — not serialised to localStorage) ─────────
+  // ── Psychometric file state (display-only) ───────────────────────────────
   const [psyFile, setPsyFile] = useState<FileInfo | null>(null);
-  const [bagrutFile, setBagrutFile] = useState<FileInfo | null>(null);
   const psyFileRef = useRef<HTMLInputElement>(null);
-  const bagrutFileRef = useRef<HTMLInputElement>(null);
 
   // ── Save handler ────────────────────────────────────────────────────────
   function handleSave() {
@@ -268,83 +270,32 @@ export default function AcademicProfileForm({
               </div>
               <div>
                 <h2 className="text-sm font-semibold text-slate-800">ציוני בגרות</h2>
-                <p className="text-xs text-slate-400">ממוצע סופי כולל בונוסים גנריים (60–120)</p>
+                <p className="text-xs text-slate-400">חשב את הממוצע המשוקלל לפי מקצועות ויחידות</p>
               </div>
             </div>
 
-            {/* Weighted average input */}
-            <div className="flex flex-col gap-1.5">
-              <label htmlFor="bagrut-avg" className="text-xs font-medium text-slate-600">
-                ממוצע משוקלל כולל בונוסים
-              </label>
-              <input
-                id="bagrut-avg"
-                type="number"
-                min={60}
-                max={120}
-                step={0.1}
-                placeholder="למשל: 102.5"
-                value={bagrutAverage}
-                onChange={(e) => setBagrutAverage(e.target.value)}
-                className={`${inputBase} sm:max-w-xs`}
-              />
-              <p className="text-xs text-slate-400">
-                הממוצע הסופי לאחר כל הבונוסים הגנריים — מקסימום 120 נקודות
-              </p>
-            </div>
-
-            {/* Diploma upload */}
-            <div className="mt-4">
-              <input
-                ref={bagrutFileRef}
-                type="file"
-                accept="image/*,.pdf"
-                className="sr-only"
-                aria-label="העלאת גיליון ציוני בגרות"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) setBagrutFile({ name: f.name, size: f.size });
-                }}
-              />
-              {bagrutFile ? (
-                /* Success state */
-                <div className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
-                  <div className="flex items-center gap-2 text-xs text-emerald-700">
-                    <FileText size={14} className="shrink-0" />
-                    <span className="max-w-[18rem] truncate font-medium">{bagrutFile.name}</span>
-                    <span className="shrink-0 text-emerald-400">
-                      ({(bagrutFile.size / 1024).toFixed(0)} KB)
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    aria-label="הסר קובץ"
-                    onClick={() => {
-                      setBagrutFile(null);
-                      if (bagrutFileRef.current) bagrutFileRef.current.value = '';
-                    }}
-                    className="ml-2 text-emerald-400 transition hover:text-emerald-700"
-                  >
-                    <X size={14} />
-                  </button>
+            {bagrutConfirmed ? (
+              <div className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+                <div className="flex items-center gap-2 text-sm text-emerald-800">
+                  <Check size={16} className="shrink-0 text-emerald-600" />
+                  <span className="font-semibold">ממוצע בגרות מחושב: {bagrutAverage}</span>
                 </div>
-              ) : (
-                /* Upload prompt */
                 <button
                   type="button"
-                  onClick={() => bagrutFileRef.current?.click()}
-                  className={[
-                    'flex w-full items-center justify-center gap-2',
-                    'rounded-xl border-2 border-dashed border-slate-200 bg-slate-50',
-                    'px-4 py-3.5 text-xs font-medium text-slate-400',
-                    'transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-600',
-                  ].join(' ')}
+                  onClick={() => { setBagrutConfirmed(false); setBagrutAverage(''); }}
+                  className="text-xs text-emerald-500 transition hover:text-emerald-800"
                 >
-                  <Upload size={14} />
-                  <span>העלה גיליון ציוני בגרות (תמונה / PDF)</span>
+                  ערוך מחדש
                 </button>
-              )}
-            </div>
+              </div>
+            ) : (
+              <BagrutCalculatorWizard
+                onComplete={(avg) => {
+                  setBagrutAverage(avg.toString());
+                  setBagrutConfirmed(true);
+                }}
+              />
+            )}
           </section>
 
           {/* ── Actions ──────────────────────────────────────────────── */}
