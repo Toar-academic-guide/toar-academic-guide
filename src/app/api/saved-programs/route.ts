@@ -1,6 +1,7 @@
-import { createSupabaseServerClient } from '@/lib/supabase/server';
 import { addSavedProgram, removeSavedProgram } from '@/server/user/profile';
 import { getPostHogClient } from '@/lib/posthog-server';
+import { requireAuthenticatedUserId } from '@/app/api/_lib/auth';
+import { toErrorResponse } from '@/app/api/_lib/errors';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,7 +34,10 @@ export async function POST(request: Request) {
     });
     return Response.json({ data });
   } catch (error) {
-    return toErrorResponse(error);
+    return toErrorResponse(error, {
+      code: 'SAVED_PROGRAMS_INTERNAL_ERROR',
+      message: 'Unable to update saved programs.',
+    });
   }
 }
 
@@ -62,60 +66,9 @@ export async function DELETE(request: Request) {
     });
     return Response.json({ data });
   } catch (error) {
-    return toErrorResponse(error);
+    return toErrorResponse(error, {
+      code: 'SAVED_PROGRAMS_INTERNAL_ERROR',
+      message: 'Unable to update saved programs.',
+    });
   }
-}
-
-async function requireAuthenticatedUserId() {
-  const supabase = await createSupabaseServerClient();
-  if (!supabase) {
-    throw new ApiRouteError(503, 'SUPABASE_AUTH_UNAVAILABLE', 'Supabase auth is not configured.');
-  }
-
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-
-  if (error || !user) {
-    throw new ApiRouteError(401, 'AUTH_REQUIRED', 'Authentication is required.');
-  }
-
-  return user.id;
-}
-
-class ApiRouteError extends Error {
-  constructor(
-    readonly status: number,
-    readonly code: string,
-    message: string
-  ) {
-    super(message);
-  }
-}
-
-function toErrorResponse(error: unknown) {
-  if (error instanceof ApiRouteError) {
-    return Response.json(
-      {
-        error: {
-          code: error.code,
-          message: error.message,
-        },
-      },
-      { status: error.status }
-    );
-  }
-
-  const message = error instanceof Error ? error.message : 'Unable to update saved programs.';
-
-  return Response.json(
-    {
-      error: {
-        code: 'SAVED_PROGRAMS_INTERNAL_ERROR',
-        message,
-      },
-    },
-    { status: 500 }
-  );
 }
