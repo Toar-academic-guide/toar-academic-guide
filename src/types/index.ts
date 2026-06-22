@@ -127,7 +127,7 @@ export interface AcademicScores {
   bagrut?: BagrutRecord;
 }
 
-/** Persisted user profile (localStorage-backed). */
+/** User profile snapshot used by the browser and authenticated profile APIs. */
 export interface UserProfile {
   /** Signup/profile identity fields kept in the app-owned profile model */
   firstName?: string;
@@ -139,8 +139,9 @@ export interface UserProfile {
   savedProgramIds?: string[];
   uploadedDocuments?: Array<{
     id: string;
-    kind: 'psychometric' | 'bagrut' | 'other';
-    originalFileName: string;
+    kind: 'psychometric' | 'bagrut';
+    /** Generic, display-safe label. Raw filenames are not exposed in the public profile snapshot. */
+    displayName: string;
     sizeBytes: number | null;
   }>;
 }

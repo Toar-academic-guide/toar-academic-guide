@@ -14,13 +14,13 @@ describe('AcademicProfileForm', () => {
       {
         id: '1',
         kind: 'psychometric' as const,
-        originalFileName: 'psy_cert.pdf',
+        displayName: 'תדפיס פסיכומטרי',
         sizeBytes: 153600, // 150 KB
       },
       {
         id: '2',
         kind: 'bagrut' as const,
-        originalFileName: 'bagrut_cert.png',
+        displayName: 'גיליון ציוני בגרות',
         sizeBytes: 204800, // 200 KB
       },
     ];
@@ -28,14 +28,15 @@ describe('AcademicProfileForm', () => {
     render(
       <AcademicProfileForm
         onComplete={vi.fn()}
+        onClearLocalProfileData={vi.fn().mockResolvedValue(undefined)}
         onSkip={vi.fn()}
         initialDocuments={initialDocuments}
       />
     );
 
-    expect(screen.getByText('psy_cert.pdf')).toBeTruthy();
+    expect(screen.getByText('תדפיס פסיכומטרי')).toBeTruthy();
     expect(screen.getByText('(150 KB)')).toBeTruthy();
-    expect(screen.getByText('bagrut_cert.png')).toBeTruthy();
+    expect(screen.getByText('גיליון ציוני בגרות')).toBeTruthy();
     expect(screen.getByText('(200 KB)')).toBeTruthy();
   });
 
@@ -47,7 +48,13 @@ describe('AcademicProfileForm', () => {
     });
     vi.stubGlobal('fetch', fetchMock);
 
-    render(<AcademicProfileForm onComplete={onComplete} onSkip={vi.fn()} />);
+    render(
+      <AcademicProfileForm
+        onComplete={onComplete}
+        onClearLocalProfileData={vi.fn().mockResolvedValue(undefined)}
+        onSkip={vi.fn()}
+      />
+    );
 
     // Mock choosing a file for psychometric
     const file = new File(['hello'], 'test_psy.pdf', { type: 'application/pdf' });
@@ -87,7 +94,7 @@ describe('AcademicProfileForm', () => {
       {
         id: '1',
         kind: 'psychometric' as const,
-        originalFileName: 'psy_cert.pdf',
+        displayName: 'תדפיס פסיכומטרי',
         sizeBytes: 153600,
       },
     ];
@@ -101,19 +108,20 @@ describe('AcademicProfileForm', () => {
     render(
       <AcademicProfileForm
         onComplete={onComplete}
+        onClearLocalProfileData={vi.fn().mockResolvedValue(undefined)}
         onSkip={vi.fn()}
         initialDocuments={initialDocuments}
       />
     );
 
     // Verify initially rendered
-    expect(screen.getByText('psy_cert.pdf')).toBeTruthy();
+    expect(screen.getByText('תדפיס פסיכומטרי')).toBeTruthy();
 
     // Click remove button
     fireEvent.click(screen.getByRole('button', { name: 'הסר קובץ' }));
 
     // Verify it is removed from UI
-    expect(screen.queryByText('psy_cert.pdf')).toBeNull();
+    expect(screen.queryByText('תדפיס פסיכומטרי')).toBeNull();
 
     // Save
     fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
@@ -138,7 +146,13 @@ describe('AcademicProfileForm', () => {
     });
     vi.stubGlobal('fetch', fetchMock);
 
-    render(<AcademicProfileForm onComplete={onComplete} onSkip={vi.fn()} />);
+    render(
+      <AcademicProfileForm
+        onComplete={onComplete}
+        onClearLocalProfileData={vi.fn().mockResolvedValue(undefined)}
+        onSkip={vi.fn()}
+      />
+    );
 
     const file = new File(['hello'], 'large.pdf', { type: 'application/pdf' });
     const fileInput = screen.getByLabelText('העלאת תדפיס פסיכומטרי');
@@ -152,5 +166,47 @@ describe('AcademicProfileForm', () => {
 
     expect(onComplete).not.toHaveBeenCalled();
     expect(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }).hasAttribute('disabled')).toBe(false);
+  });
+
+  it('clears signed-out local form state through the device-data control', async () => {
+    const onClearLocalProfileData = vi.fn().mockResolvedValue(undefined);
+
+    render(
+      <AcademicProfileForm
+        onComplete={vi.fn()}
+        onClearLocalProfileData={onClearLocalProfileData}
+        onSkip={vi.fn()}
+        initialScores={{
+          psychometric: { overall: 700 },
+          bagrut: { weightedAverage: 105 },
+        }}
+      />
+    );
+
+    expect(screen.getByDisplayValue('700')).toBeTruthy();
+    expect(screen.getByDisplayValue('105')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'נקה נתונים מהמכשיר הזה' }));
+
+    await waitFor(() => expect(onClearLocalProfileData).toHaveBeenCalled());
+    expect(screen.queryByDisplayValue('700')).toBeNull();
+    expect(screen.queryByDisplayValue('105')).toBeNull();
+  });
+
+  it('shows signed-in copy that the clear action does not delete account data', () => {
+    render(
+      <AcademicProfileForm
+        onComplete={vi.fn()}
+        onClearLocalProfileData={vi.fn().mockResolvedValue(undefined)}
+        onSkip={vi.fn()}
+        isAuthenticated={true}
+      />
+    );
+
+    expect(
+      screen.getByText(
+        'הפעולה הזאת מוחקת רק נתונים שנשמרו בדפדפן במכשיר הזה. נתוני החשבון, רשימת הייעוד והמסמכים שנשמרו בחשבון לא יימחקו כאן.'
+      )
+    ).toBeTruthy();
   });
 });

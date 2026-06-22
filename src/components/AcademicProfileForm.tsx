@@ -23,15 +23,19 @@ interface FileInfo {
 interface Props {
   onComplete: (scores: AcademicScores) => void;
   onSkip: () => void;
+  onClearLocalProfileData: () => Promise<void>;
   initialScores?: AcademicScores;
   initialDocuments?: UserProfile['uploadedDocuments'];
+  isAuthenticated?: boolean;
 }
 
 export default function AcademicProfileForm({
   onComplete,
   onSkip,
+  onClearLocalProfileData,
   initialScores,
   initialDocuments = [],
+  isAuthenticated = false,
 }: Props) {
   // ── Psychometric fields ─────────────────────────────────────────────────
   const [psyOverall, setPsyOverall] = useState(
@@ -59,12 +63,12 @@ export default function AcademicProfileForm({
   // ── File states (display-only — not serialised to localStorage) ─────────
   const [psyFile, setPsyFile] = useState<FileInfo | null>(
     initialPsy
-      ? { name: initialPsy.originalFileName, size: initialPsy.sizeBytes ?? 0 }
+      ? { name: initialPsy.displayName, size: initialPsy.sizeBytes ?? 0 }
       : null,
   );
   const [bagrutFile, setBagrutFile] = useState<FileInfo | null>(
     initialBagrut
-      ? { name: initialBagrut.originalFileName, size: initialBagrut.sizeBytes ?? 0 }
+      ? { name: initialBagrut.displayName, size: initialBagrut.sizeBytes ?? 0 }
       : null,
   );
 
@@ -77,6 +81,24 @@ export default function AcademicProfileForm({
 
   const psyFileRef = useRef<HTMLInputElement>(null);
   const bagrutFileRef = useRef<HTMLInputElement>(null);
+
+  function resetLocalDraftFields() {
+    setPsyOverall('');
+    setPsyQuantitative('');
+    setPsyVerbal('');
+    setPsyEnglish('');
+    setBagrutAverage('');
+    setPsyFile(null);
+    setBagrutFile(null);
+    setPsyFileObject(null);
+    setBagrutFileObject(null);
+    if (psyFileRef.current) {
+      psyFileRef.current.value = '';
+    }
+    if (bagrutFileRef.current) {
+      bagrutFileRef.current.value = '';
+    }
+  }
 
   // ── Save handler ────────────────────────────────────────────────────────
   async function handleSave() {
@@ -466,6 +488,34 @@ export default function AcademicProfileForm({
                   <span>העלה גיליון ציוני בגרות (תמונה / PDF)</span>
                 </button>
               )}
+            </div>
+          </section>
+
+          <section className="mb-8 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div className="max-w-xl">
+                <h2 className="text-sm font-semibold text-slate-800">פרטיות ושליטה בנתונים</h2>
+                <p className="mt-1 text-xs leading-6 text-slate-500">
+                  {isAuthenticated
+                    ? 'הפעולה הזאת מוחקת רק נתונים שנשמרו בדפדפן במכשיר הזה. נתוני החשבון, רשימת הייעוד והמסמכים שנשמרו בחשבון לא יימחקו כאן.'
+                    : 'הפעולה הזאת מוחקת את טיוטת הפרופיל שנשמרה בדפדפן במכשיר הזה, כולל ציונים ומסמכים שהוצגו מקומית.'}
+                </p>
+              </div>
+              <button
+                type="button"
+                disabled={isSaving}
+                onClick={async () => {
+                  await onClearLocalProfileData();
+                  setError(null);
+
+                  if (!isAuthenticated) {
+                    resetLocalDraftFields();
+                  }
+                }}
+                className="rounded-full border border-slate-300 bg-white px-4 py-2 text-xs font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                נקה נתונים מהמכשיר הזה
+              </button>
             </div>
           </section>
 

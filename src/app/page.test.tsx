@@ -39,6 +39,7 @@ vi.mock('@/context/AuthContext', () => ({
 
 vi.mock('@/hooks/useUserProfile', () => ({
   useUserProfile: () => ({
+    clearLocalProfileData: vi.fn(),
     profile: { savedProgramIds: [] },
     hydrated: true,
     isAuthenticated: false,

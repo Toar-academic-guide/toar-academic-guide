@@ -23,8 +23,8 @@ const academicScoresSchema = z.strictObject({
 
 const uploadedDocumentSchema = z.strictObject({
   id: trimmedNonEmptyString,
-  kind: z.enum(['psychometric', 'bagrut', 'other']),
-  originalFileName: trimmedNonEmptyString,
+  kind: z.enum(['psychometric', 'bagrut']),
+  displayName: trimmedNonEmptyString,
   sizeBytes: z.number().int().nonnegative().nullable(),
 });
 
