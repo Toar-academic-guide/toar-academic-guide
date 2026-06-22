@@ -112,7 +112,7 @@ export async function POST(request: Request) {
       data: {
         id: newDocId,
         kind,
-        originalFileName: file.name,
+        displayName: buildDocumentDisplayName(kind),
         sizeBytes: file.size,
       },
     });
@@ -224,4 +224,13 @@ function toErrorResponse(error: unknown) {
     },
     { status: 500 }
   );
+}
+
+function buildDocumentDisplayName(kind: 'psychometric' | 'bagrut') {
+  switch (kind) {
+    case 'psychometric':
+      return 'תדפיס פסיכומטרי';
+    case 'bagrut':
+      return 'גיליון ציוני בגרות';
+  }
 }

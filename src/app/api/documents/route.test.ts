@@ -174,7 +174,7 @@ describe('documents API route', () => {
 
       const json = await res.json();
       expect(json.data.kind).toBe('psychometric');
-      expect(json.data.originalFileName).toBe('report.pdf');
+      expect(json.data.displayName).toBe('תדפיס פסיכומטרי');
       expect(json.data.id).toBeTypeOf('string');
 
       // Verify Storage upload called

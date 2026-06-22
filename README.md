@@ -83,8 +83,10 @@ See [docs/backend-data-model.md](/Users/amitmalichi/Desktop/toar-academic-guide/
 
 ## Notes
 
-- `localStorage` now acts as an anonymous draft store and first-sign-in migration source.
+- `localStorage` acts as an anonymous draft store and first-sign-in migration source. Authenticated profile snapshots are fetched from the server at runtime rather than cached back into the browser draft key.
 - Signup stores first and last name in the app-owned `user_profiles` row, with Supabase signup metadata used only as a handoff during account creation.
 - Authenticated profile data and saved programs are persisted through Supabase-backed APIs.
+- The current "clear data" control is device-scoped only: it removes browser draft data on the current device, but it does not delete account-level profile rows, saved programs, or uploaded files.
+- Uploaded document snapshots exposed to the browser use generic display labels rather than raw filenames.
 - The catalogue API owns source selection; client code no longer falls back to static catalogue data on its own.
 - Raw ingestion payloads remain separate from canonical reviewed rows.

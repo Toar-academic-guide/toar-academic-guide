@@ -126,6 +126,7 @@ export default function Home() {
   );
   const [cataloguePrograms, setCataloguePrograms] = useState<CatalogueProgram[]>(STATIC_CATALOGUE_PROGRAMS);
   const {
+    clearLocalProfileData,
     profile,
     hydrated,
     isAuthenticated,
@@ -521,6 +522,8 @@ export default function Home() {
         <AcademicProfileForm
           initialScores={profile.academicScores}
           initialDocuments={profile.uploadedDocuments}
+          isAuthenticated={isAuthenticated}
+          onClearLocalProfileData={clearLocalProfileData}
           onComplete={(scores: AcademicScores) => {
             posthog.capture('academic_profile_completed', {
               has_psychometric: !!scores.psychometric?.overall,

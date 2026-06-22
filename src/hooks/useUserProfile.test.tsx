@@ -45,7 +45,7 @@ describe('useUserProfile', () => {
     expect(result.current.profile.savedProgramIds).toEqual(['tau_cs']);
   });
 
-  it('hydrates from the authenticated server snapshot and rewrites localStorage', async () => {
+  it('hydrates from the authenticated server snapshot without rewriting localStorage', async () => {
     mockAuthState.user = {
       id: '00000000-0000-0000-0000-000000000001',
       email: 'test@example.com',
@@ -72,7 +72,7 @@ describe('useUserProfile', () => {
     const { result } = renderHook(() => useUserProfile());
 
     await waitFor(() => expect(result.current.profile.savedProgramIds).toEqual(['huji_law']));
-    expect(window.localStorage.getItem('sag_user_profile_v1')).toContain('huji_law');
+    expect(window.localStorage.getItem('sag_user_profile_v1')).toBeNull();
   });
 
   it('optimistically toggles saved programs for anonymous users', async () => {
@@ -86,6 +86,71 @@ describe('useUserProfile', () => {
 
     expect(result.current.profile.savedProgramIds).toEqual(['tau_cs']);
     expect(window.localStorage.getItem('sag_user_profile_v1')).toContain('tau_cs');
+  });
+
+  it('clears signed-out device data and resets the local profile state', async () => {
+    window.localStorage.setItem(
+      'sag_user_profile_v1',
+      JSON.stringify({
+        geographicPreference: 'north',
+        savedProgramIds: ['tau_cs'],
+      })
+    );
+    window.localStorage.setItem('sag_user_profile_migrated_user-1', '1');
+
+    const { result } = renderHook(() => useUserProfile());
+
+    await waitFor(() => expect(result.current.hydrated).toBe(true));
+
+    await act(async () => {
+      await result.current.clearLocalProfileData();
+    });
+
+    expect(result.current.profile).toEqual({
+      geographicPreference: 'any',
+    });
+    expect(window.localStorage.getItem('sag_user_profile_v1')).toBeNull();
+    expect(window.localStorage.getItem('sag_user_profile_migrated_user-1')).toBeNull();
+  });
+
+  it('clears signed-in device data without mutating the server profile', async () => {
+    mockAuthState.user = {
+      id: '00000000-0000-0000-0000-000000000011',
+      email: 'signed-in@example.com',
+    };
+    window.localStorage.setItem(
+      'sag_user_profile_v1',
+      JSON.stringify({
+        geographicPreference: 'north',
+        savedProgramIds: ['tau_cs'],
+      })
+    );
+    window.localStorage.setItem('sag_user_profile_migrated_00000000-0000-0000-0000-000000000011', '1');
+
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        data: {
+          geographicPreference: 'south',
+          savedProgramIds: ['huji_law'],
+        },
+      }),
+    });
+
+    vi.stubGlobal('fetch', fetchMock);
+
+    const { result } = renderHook(() => useUserProfile());
+
+    await waitFor(() => expect(result.current.profile.savedProgramIds).toEqual(['huji_law']));
+
+    await act(async () => {
+      await result.current.clearLocalProfileData();
+    });
+
+    expect(result.current.profile.savedProgramIds).toEqual(['huji_law']);
+    expect(window.localStorage.getItem('sag_user_profile_v1')).toBeNull();
+    expect(window.localStorage.getItem('sag_user_profile_migrated_00000000-0000-0000-0000-000000000011')).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it('merges stored signup names into the authenticated snapshot when the server is empty', async () => {
@@ -132,6 +197,7 @@ describe('useUserProfile', () => {
 
     await waitFor(() => expect(result.current.profile.firstName).toBe('מלי'));
     expect(result.current.profile.lastName).toBe('כהן');
+    expect(window.localStorage.getItem('sag_user_profile_v1')).toBeNull();
     const secondCall = fetchMock.mock.calls[1];
     const secondCallBody = JSON.parse(secondCall?.[1]?.body as string);
 

@@ -5,11 +5,34 @@ export interface UserProfileSnapshot extends UserProfile {
   savedProgramIds: string[];
 }
 
+type PublicUploadedDocument = NonNullable<UserProfileSnapshot['uploadedDocuments']>[number];
+
 export const DEFAULT_USER_PROFILE_SNAPSHOT: UserProfileSnapshot = {
   geographicPreference: 'any',
   savedProgramIds: [],
   uploadedDocuments: [],
 };
+
+function isPublicUploadedDocumentKind(
+  kind: UploadedDocumentRow['kind']
+): kind is PublicUploadedDocument['kind'] {
+  return kind === 'psychometric' || kind === 'bagrut';
+}
+
+function isPublicUploadedDocumentRow(
+  row: UploadedDocumentRow
+): row is UploadedDocumentRow & { kind: PublicUploadedDocument['kind'] } {
+  return isPublicUploadedDocumentKind(row.kind);
+}
+
+function buildUploadedDocumentDisplayName(kind: PublicUploadedDocument['kind']) {
+  switch (kind) {
+    case 'psychometric':
+      return 'תדפיס פסיכומטרי';
+    case 'bagrut':
+      return 'גיליון ציוני בגרות';
+  }
+}
 
 export function serializeUserProfileSnapshot(
   profileRow: UserProfileRow | undefined,
@@ -20,12 +43,15 @@ export function serializeUserProfileSnapshot(
     return {
       ...DEFAULT_USER_PROFILE_SNAPSHOT,
       savedProgramIds: savedProgramRows.map((row) => row.programId),
-      uploadedDocuments: uploadedDocumentRows?.map((row) => ({
-        id: row.id,
-        kind: row.kind,
-        originalFileName: row.originalFileName,
-        sizeBytes: row.sizeBytes,
-      })) || [],
+      uploadedDocuments:
+        uploadedDocumentRows
+          ?.filter(isPublicUploadedDocumentRow)
+          .map((row) => ({
+            id: row.id,
+            kind: row.kind,
+            displayName: buildUploadedDocumentDisplayName(row.kind),
+            sizeBytes: row.sizeBytes,
+          })) || [],
     };
   }
 
@@ -71,12 +97,15 @@ export function serializeUserProfileSnapshot(
     geographicPreference: profileRow.geographicPreference,
     ...(academicScores ? { academicScores } : {}),
     savedProgramIds: savedProgramRows.map((row) => row.programId),
-    uploadedDocuments: uploadedDocumentRows?.map((row) => ({
-      id: row.id,
-      kind: row.kind,
-      originalFileName: row.originalFileName,
-      sizeBytes: row.sizeBytes,
-    })) || [],
+    uploadedDocuments:
+      uploadedDocumentRows
+        ?.filter(isPublicUploadedDocumentRow)
+        .map((row) => ({
+          id: row.id,
+          kind: row.kind,
+          displayName: buildUploadedDocumentDisplayName(row.kind),
+          sizeBytes: row.sizeBytes,
+        })) || [],
   };
 }
 

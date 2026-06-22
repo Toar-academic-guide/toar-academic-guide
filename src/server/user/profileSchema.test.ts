@@ -38,7 +38,7 @@ describe('userProfileSchema', () => {
         {
           id: ' doc-1 ',
           kind: 'psychometric',
-          originalFileName: ' report.pdf ',
+          displayName: ' תדפיס פסיכומטרי ',
           sizeBytes: 1200,
         },
       ],
@@ -64,11 +64,27 @@ describe('userProfileSchema', () => {
         {
           id: 'doc-1',
           kind: 'psychometric',
-          originalFileName: 'report.pdf',
+          displayName: 'תדפיס פסיכומטרי',
           sizeBytes: 1200,
         },
       ],
     });
+  });
+
+  it('rejects unsupported document kinds in the public profile snapshot', () => {
+    expect(() =>
+      userProfileSchema.parse({
+        geographicPreference: 'any',
+        uploadedDocuments: [
+          {
+            id: 'doc-1',
+            kind: 'other',
+            displayName: 'מסמך אחר',
+            sizeBytes: 12,
+          },
+        ],
+      })
+    ).toThrow();
   });
 
   it('rejects out-of-range academic scores', () => {

@@ -21,6 +21,31 @@ Authenticated user persistence now uses Supabase Auth identities as the ownershi
 
 `user_profiles` is the durable source for app-owned identity fields such as `first_name` and `last_name`. Supabase signup metadata can carry those values at account creation time, but the product should continue to read and write names from the app profile model.
 
+## Privacy and data controls
+
+The product now distinguishes between device data and account data.
+
+- Device data:
+  - the browser `localStorage` draft under `sag_user_profile_v1`
+  - browser migration markers under `sag_user_profile_migrated_*`
+- Account data:
+  - `user_profiles` rows
+  - `saved_programs` rows
+  - `uploaded_documents` rows
+  - private files in the Supabase Storage `documents` bucket
+
+The first shipped "clear data" control is device-scoped only. It removes browser-resident draft data and migration markers for the current device. It does not delete authenticated profile rows, saved programs, uploaded-document metadata, or uploaded files from the user's account.
+
+## Uploaded document lifecycle
+
+Uploaded academic documents are owned by the authenticated `/api/documents` route and its backing storage/database flow:
+
+- Files live in the private Supabase Storage bucket `documents`.
+- File replacement and explicit deletion are owned by `/api/documents`, not by generic profile writes.
+- `uploaded_documents` remains the durable metadata table for stored files.
+- The public `UserProfile` snapshot intentionally exposes only minimized document metadata: document `id`, supported `kind`, a generic display-safe `displayName`, and `sizeBytes`.
+- Raw filenames are not part of the public profile snapshot or device draft contract.
+
 ## Access model
 
 The exposed `public` schema is partitioned into three access classes:

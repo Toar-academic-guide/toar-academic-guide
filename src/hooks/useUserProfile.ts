@@ -23,7 +23,7 @@ interface ApiEnvelope<T> {
 interface UseUserProfileResult {
   profile: UserProfile;
   updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
-  clearProfile: () => Promise<void>;
+  clearLocalProfileData: () => Promise<void>;
   toggleSavedProgram: (programId: string) => Promise<void>;
   removeSavedProgram: (programId: string) => Promise<void>;
   hydrated: boolean;
@@ -79,8 +79,7 @@ export function useUserProfile(): UseUserProfileResult {
           nextProfile = await putProfileSnapshot(storedProfile, 'merge_local_draft');
           window.localStorage.setItem(migrationKey, '1');
         }
-
-        writeStoredProfile(nextProfile);
+        clearStoredProfile();
 
         if (!cancelled) {
           setProfile(nextProfile);
@@ -106,10 +105,10 @@ export function useUserProfile(): UseUserProfileResult {
     const nextProfile = { ...previousProfile, ...updates };
 
     setProfile(nextProfile);
-    writeStoredProfile(nextProfile);
     setSyncError(null);
 
     if (!user) {
+      writeStoredProfile(nextProfile);
       return;
     }
 
@@ -117,18 +116,22 @@ export function useUserProfile(): UseUserProfileResult {
     try {
       const savedProfile = await putProfileSnapshot(nextProfile, 'replace');
       setProfile(savedProfile);
-      writeStoredProfile(savedProfile);
     } catch (error) {
       setSyncError(toErrorMessage(error, 'שמירת הפרופיל נכשלה.'));
       setProfile(previousProfile);
-      writeStoredProfile(previousProfile);
     } finally {
       setSyncing(false);
     }
   }
 
-  async function clearProfile() {
-    await updateProfile(DEFAULT_PROFILE);
+  async function clearLocalProfileData() {
+    clearStoredProfile();
+    clearStoredMigrationMarkers();
+    setSyncError(null);
+
+    if (!user) {
+      setProfile(DEFAULT_PROFILE);
+    }
   }
 
   async function toggleSavedProgram(programId: string) {
@@ -141,10 +144,10 @@ export function useUserProfile(): UseUserProfileResult {
     const previousProfile = profile;
     const nextProfile = { ...profile, savedProgramIds: [...current, programId] };
     setProfile(nextProfile);
-    writeStoredProfile(nextProfile);
     setSyncError(null);
 
     if (!user) {
+      writeStoredProfile(nextProfile);
       return;
     }
 
@@ -152,11 +155,9 @@ export function useUserProfile(): UseUserProfileResult {
     try {
       const savedProfile = await mutateSavedProgram(programId, 'POST');
       setProfile(savedProfile);
-      writeStoredProfile(savedProfile);
     } catch (error) {
       setSyncError(toErrorMessage(error, 'שמירת התוכנית נכשלה.'));
       setProfile(previousProfile);
-      writeStoredProfile(previousProfile);
     } finally {
       setSyncing(false);
     }
@@ -170,10 +171,10 @@ export function useUserProfile(): UseUserProfileResult {
     };
 
     setProfile(nextProfile);
-    writeStoredProfile(nextProfile);
     setSyncError(null);
 
     if (!user) {
+      writeStoredProfile(nextProfile);
       return;
     }
 
@@ -181,11 +182,9 @@ export function useUserProfile(): UseUserProfileResult {
     try {
       const savedProfile = await mutateSavedProgram(programId, 'DELETE');
       setProfile(savedProfile);
-      writeStoredProfile(savedProfile);
     } catch (error) {
       setSyncError(toErrorMessage(error, 'הסרת התוכנית נכשלה.'));
       setProfile(previousProfile);
-      writeStoredProfile(previousProfile);
     } finally {
       setSyncing(false);
     }
@@ -194,7 +193,7 @@ export function useUserProfile(): UseUserProfileResult {
   return {
     profile,
     updateProfile,
-    clearProfile,
+    clearLocalProfileData,
     toggleSavedProgram,
     removeSavedProgram,
     hydrated,
@@ -226,6 +225,33 @@ export function saveUserProfileIdentityDraft(identity: Pick<UserProfile, 'firstN
 function writeStoredProfile(profile: UserProfile) {
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
+  } catch {
+    // Ignore local storage write errors.
+  }
+}
+
+function clearStoredProfile() {
+  try {
+    window.localStorage.removeItem(STORAGE_KEY);
+  } catch {
+    // Ignore local storage write errors.
+  }
+}
+
+function clearStoredMigrationMarkers() {
+  try {
+    const keysToRemove: string[] = [];
+
+    for (let index = 0; index < window.localStorage.length; index += 1) {
+      const key = window.localStorage.key(index);
+      if (key?.startsWith(MIGRATION_KEY_PREFIX)) {
+        keysToRemove.push(key);
+      }
+    }
+
+    for (const key of keysToRemove) {
+      window.localStorage.removeItem(key);
+    }
   } catch {
     // Ignore local storage write errors.
   }

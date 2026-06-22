@@ -161,11 +161,52 @@ describe('user profile serializers', () => {
         {
           id: 'doc-1',
           kind: 'psychometric',
-          originalFileName: 'report.pdf',
+          displayName: 'תדפיס פסיכומטרי',
           sizeBytes: 102400,
         },
       ],
     });
+  });
+
+  it('omits unsupported uploaded document kinds from the public snapshot', () => {
+    const snapshot = serializeUserProfileSnapshot(
+      {
+        userId: '00000000-0000-0000-0000-000000000010',
+        firstName: null,
+        lastName: null,
+        geographicPreference: 'any',
+        psychometricOverall: null,
+        psychometricQuantitative: null,
+        psychometricVerbal: null,
+        psychometricEnglish: null,
+        bagrutWeightedAverage: null,
+        riasecR: null,
+        riasecI: null,
+        riasecA: null,
+        riasecS: null,
+        riasecE: null,
+        riasecC: null,
+        avoidanceTags: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      [],
+      [
+        {
+          id: 'doc-2',
+          userId: '00000000-0000-0000-0000-000000000010',
+          kind: 'other',
+          storageProvider: 'supabase_storage',
+          storagePath: '00000000-0000-0000-0000-000000000010/other/file-1',
+          originalFileName: 'other.pdf',
+          mimeType: 'application/pdf',
+          sizeBytes: 4096,
+          uploadedAt: new Date(),
+        },
+      ]
+    );
+
+    expect(snapshot.uploadedDocuments).toEqual([]);
   });
 });
 
@@ -243,7 +284,7 @@ describe('getUserProfileSnapshot', () => {
         {
           id: 'doc-1',
           kind: 'psychometric',
-          originalFileName: 'report.pdf',
+          displayName: 'תדפיס פסיכומטרי',
           sizeBytes: 100000,
         },
       ],
