@@ -21,6 +21,22 @@ Authenticated user persistence now uses Supabase Auth identities as the ownershi
 
 `user_profiles` is the durable source for app-owned identity fields such as `first_name` and `last_name`. Supabase signup metadata can carry those values at account creation time, but the product should continue to read and write names from the app profile model.
 
+## Access model
+
+The exposed `public` schema is partitioned into three access classes:
+
+- Public-read catalogue tables: `institutions`, `programs`, `program_institutions`, `admission_requirements`, `admission_thresholds`, `source_urls`, and `university_calculator_configs`
+- User-owned tables: `user_profiles`, `saved_programs`, and `uploaded_documents`
+- Private operational tables: `requirement_versions`, `ingestion_sources`, `ingestion_jobs`, `ingestion_payloads`, and `review_items`
+
+The intended Supabase posture is:
+
+- Public-read catalogue tables: `anon` and `authenticated` may `SELECT`, but may not write
+- User-owned tables: only `authenticated` may access rows, and RLS limits that access to `auth.uid() = user_id`
+- Private operational tables: no `anon` or `authenticated` access through the exposed schema
+
+This posture secures the exposed Supabase Data API surface. The current app runtime still reads and writes through a direct `postgres.js` connection, so least-privilege runtime DB access remains a separate hardening track.
+
 ## Seed strategy
 
 `src/db/seeds/catalogueSeed.ts` converts the current static catalogue into stable seed rows.
