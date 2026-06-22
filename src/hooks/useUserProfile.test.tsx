@@ -3,6 +3,8 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { profileRequestBodySchema } from '@/server/user/profileSchema';
+
 var mockAuthState = {
   loading: false,
   user: null as null | { id: string; email?: string | null },
@@ -130,6 +132,9 @@ describe('useUserProfile', () => {
 
     await waitFor(() => expect(result.current.profile.firstName).toBe('מלי'));
     expect(result.current.profile.lastName).toBe('כהן');
+    const secondCall = fetchMock.mock.calls[1];
+    const secondCallBody = JSON.parse(secondCall?.[1]?.body as string);
+
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
       '/api/profile',
@@ -145,6 +150,7 @@ describe('useUserProfile', () => {
         }),
       })
     );
+    expect(profileRequestBodySchema.safeParse(secondCallBody).success).toBe(true);
   });
 
   it('fails closed when local storage is malformed', async () => {

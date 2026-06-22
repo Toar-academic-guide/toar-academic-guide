@@ -19,14 +19,21 @@ cp .env.local.example .env.local
 
 `DATABASE_URL` is required for DB-backed catalogue and authenticated profile persistence.
 
+Connection posture depends on where the code runs:
+
+- Local development uses a direct Postgres URL by default. The checked-in examples point at `localhost:5432`, and local Drizzle workflows are long-lived enough that they do not need a server-side pooler.
+- The Vercel app runtime should use a Supabase transaction-pooling connection string rather than a direct database host. The catalogue routes are `force-dynamic`, the authenticated user routes run per request, and the app uses `postgres(..., { max: 1, prepare: false })`, which is compatible with transaction pooling for transient serverless traffic.
+- The GitHub Actions `test-build-and-dry-run` job does not need a database at all. The optional `db-seed-verify` job is the only CI path that reads `DATABASE_URL`; treat that secret as an operational verification connection, not as app-runtime traffic.
+
+`prepare: false` is deliberate. Supabase documents transaction-mode poolers as the right fit for serverless or edge traffic and notes that transaction mode does not support prepared statements, while `postgres.js` documents `prepare: false` as the compatibility switch for transaction-pooled connections. The app keeps `max: 1` because the shared singleton client only needs a minimal app-side pool on top of a server-side pooler for request-scoped runtime traffic.
+
 `CATALOGUE_SOURCE_MODE` controls catalogue runtime behavior:
 
 - `auto`: use the DB when available and healthy, but allow static fallback only in non-production environments
 - `database`: require a seeded, healthy DB-backed catalogue and fail closed if it is unavailable
 - `static`: always serve the static catalogue
 
-Production should be configured with `CATALOGUE_SOURCE_MODE=database`. Local and preview environments can use `auto` or `static` intentionally.
-If a preview deployment is meant to validate the DB cutover, it also needs `DATABASE_URL`; otherwise `auto` mode will fall back to static data and the preview will not exercise the database-backed path.
+Production should be configured with `CATALOGUE_SOURCE_MODE=database`. Preview can run in `auto` or `database`, but it only exercises the DB-backed path when `DATABASE_URL` is configured with the intended pooled runtime URL. If a preview deployment is meant to validate the DB cutover, it also needs `DATABASE_URL`; otherwise `auto` mode will fall back to static data and the preview will not exercise the database-backed path.
 
 `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` enable sign-up, sign-in, session refresh, and authenticated user persistence. The runtime still accepts `NEXT_PUBLIC_SUPABASE_ANON_KEY` as a temporary fallback during migration. Without the public Supabase vars, the app still supports anonymous browsing and local draft persistence.
 

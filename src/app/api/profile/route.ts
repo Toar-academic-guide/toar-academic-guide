@@ -1,18 +1,13 @@
-import type { UserProfile } from '@/types';
 import { createSupabaseServerClient } from '@/lib/supabase/server';
 import {
   getUserProfileSnapshot,
   mergeUserProfileDraftIntoSnapshot,
   replaceUserProfileSnapshot,
 } from '@/server/user/profile';
+import { profileRequestBodySchema } from '@/server/user/profileSchema';
 import { getPostHogClient } from '@/lib/posthog-server';
 
 export const dynamic = 'force-dynamic';
-
-interface ProfileRequestBody {
-  profile: UserProfile;
-  mode?: 'replace' | 'merge_local_draft';
-}
 
 export async function GET() {
   try {
@@ -27,20 +22,8 @@ export async function GET() {
 export async function PUT(request: Request) {
   try {
     const userId = await requireAuthenticatedUserId();
-    const body = (await request.json()) as ProfileRequestBody;
+    const body = await parseProfileRequestBody(request);
     const profile = body.profile;
-
-    if (!profile || !profile.geographicPreference) {
-      return Response.json(
-        {
-          error: {
-            code: 'PROFILE_PAYLOAD_INVALID',
-            message: 'Profile payload is missing required fields.',
-          },
-        },
-        { status: 400 }
-      );
-    }
 
     const data =
       body.mode === 'merge_local_draft'
@@ -56,6 +39,25 @@ export async function PUT(request: Request) {
     return Response.json({ data });
   } catch (error) {
     return toErrorResponse(error);
+  }
+}
+
+async function parseProfileRequestBody(request: Request) {
+  const body = await readJsonBody(request, 'PROFILE_PAYLOAD_INVALID', 'Profile payload is invalid.');
+  const parsed = profileRequestBodySchema.safeParse(body);
+
+  if (!parsed.success) {
+    throw new ApiRouteError(400, 'PROFILE_PAYLOAD_INVALID', 'Profile payload is invalid.');
+  }
+
+  return parsed.data;
+}
+
+async function readJsonBody(request: Request, code: string, message: string) {
+  try {
+    return (await request.json()) as unknown;
+  } catch {
+    throw new ApiRouteError(400, code, message);
   }
 }
 
@@ -112,4 +114,3 @@ function toErrorResponse(error: unknown) {
     { status: 500 }
   );
 }
-
