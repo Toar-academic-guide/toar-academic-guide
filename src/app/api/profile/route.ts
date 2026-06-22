@@ -1,11 +1,12 @@
 import type { UserProfile } from '@/types';
-import { createSupabaseServerClient } from '@/lib/supabase/server';
 import {
   getUserProfileSnapshot,
   mergeUserProfileDraftIntoSnapshot,
   replaceUserProfileSnapshot,
 } from '@/server/user/profile';
 import { getPostHogClient } from '@/lib/posthog-server';
+import { requireAuthenticatedUserId } from '@/app/api/_lib/auth';
+import { toErrorResponse } from '@/app/api/_lib/errors';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,7 +21,10 @@ export async function GET() {
     const data = await getUserProfileSnapshot(userId);
     return Response.json({ data });
   } catch (error) {
-    return toErrorResponse(error);
+    return toErrorResponse(error, {
+      code: 'PROFILE_INTERNAL_ERROR',
+      message: 'Unable to load profile.',
+    });
   }
 }
 
@@ -55,61 +59,9 @@ export async function PUT(request: Request) {
 
     return Response.json({ data });
   } catch (error) {
-    return toErrorResponse(error);
+    return toErrorResponse(error, {
+      code: 'PROFILE_INTERNAL_ERROR',
+      message: 'Unable to load profile.',
+    });
   }
 }
-
-async function requireAuthenticatedUserId() {
-  const supabase = await createSupabaseServerClient();
-  if (!supabase) {
-    throw new ApiRouteError(503, 'SUPABASE_AUTH_UNAVAILABLE', 'Supabase auth is not configured.');
-  }
-
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser();
-
-  if (error || !user) {
-    throw new ApiRouteError(401, 'AUTH_REQUIRED', 'Authentication is required.');
-  }
-
-  return user.id;
-}
-
-class ApiRouteError extends Error {
-  constructor(
-    readonly status: number,
-    readonly code: string,
-    message: string
-  ) {
-    super(message);
-  }
-}
-
-function toErrorResponse(error: unknown) {
-  if (error instanceof ApiRouteError) {
-    return Response.json(
-      {
-        error: {
-          code: error.code,
-          message: error.message,
-        },
-      },
-      { status: error.status }
-    );
-  }
-
-  const message = error instanceof Error ? error.message : 'Unable to load profile.';
-
-  return Response.json(
-    {
-      error: {
-        code: 'PROFILE_INTERNAL_ERROR',
-        message,
-      },
-    },
-    { status: 500 }
-  );
-}
-
