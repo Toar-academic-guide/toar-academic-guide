@@ -428,6 +428,11 @@ export default function Home() {
           setStep('auth');
         }}
         onCalculate={(psychometric, bagrut, degreeId) => {
+          posthog.capture('landing_calculator_submitted', {
+            degree_id: degreeId,
+            psychometric,
+            bagrut,
+          });
           setLandingCalcScores({ psychometric, bagrut, degreeId });
           setStep('calculator-results');
           window.scrollTo({ top: 0, behavior: 'smooth' });

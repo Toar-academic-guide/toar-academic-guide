@@ -32,6 +32,24 @@ Authenticated user persistence now uses Supabase Auth identities as the ownershi
 
 The seed builder validates missing institution mappings before any write path runs.
 
+## Connection posture
+
+The repo currently uses one shared `postgres.js` client in `src/db/client.ts` with:
+
+- `max: 1`
+- `prepare: false`
+
+That posture is intentional for the app runtime. Supabase recommends transaction-mode poolers for temporary clients such as serverless or edge functions, and transaction mode does not support prepared statements. `prepare: false` keeps `postgres.js` compatible with that mode, while `max: 1` avoids building a second large app-side pool on top of the database-side pooler for request-scoped traffic.
+
+Use different connection shapes for different execution surfaces:
+
+- Local development: direct local Postgres URL (`localhost:5432` in the checked-in examples)
+- Vercel preview/production runtime: pooled connection string for request-driven app traffic
+- CI test/build job: no DB connection required
+- CI verification job (`npm run db:seed:verify`): operational DB URL only when that job is intentionally enabled
+
+For non-serverless operational workflows such as migrations, `pg_dump`, or other native Postgres admin tasks, prefer a direct connection string when the runner can reach it. That is a separate concern from the app runtime client configuration.
+
 ## Production catalogue cutover
 
 The runtime catalogue now has three explicit source modes:

@@ -11,6 +11,8 @@ declare global {
 export function getDb() {
   if (!globalThis.__toarAcademicGuideDb__) {
     const sql = postgres(requireDatabaseUrl(), {
+      // Keep the app-side pool intentionally small for request-scoped/serverless traffic.
+      // `prepare: false` stays compatible with transaction-pooling URLs used by transient runtimes.
       max: 1,
       prepare: false,
     });

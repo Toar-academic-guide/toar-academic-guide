@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ArrowRight, Check, ChevronDown } from 'lucide-react';
+import posthog from 'posthog-js';
 import { INSTITUTIONS, type InstitutionRecord } from '@/data/institutions';
 import { REGION_LABEL } from '@/data/geography';
 import { evaluateUniversities } from '@/utils/sekhemCalculators';
@@ -65,6 +66,10 @@ export default function CalculatorResults({
   calculatorInstitutions,
   onBack,
 }: Props) {
+  useEffect(() => {
+    posthog.capture('calculator_results_viewed', { degree_id: degreeId, psychometric, bagrut });
+  }, [degreeId, psychometric, bagrut]);
+
   const [selectedTypes, setSelectedTypes] = useState<Set<InstitutionType>>(
     new Set(['university', 'college']),
   );

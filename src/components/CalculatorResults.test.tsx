@@ -1,10 +1,17 @@
 // @vitest-environment jsdom
 
 import { render, screen } from '@testing-library/react';
+import { vi } from 'vitest';
 
 import CalculatorResults from '@/components/CalculatorResults';
 import { getCalculatorInstitutionsFromCatalogue } from '@/lib/calculatorInstitutions';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
+
+vi.mock('posthog-js', () => ({
+  default: {
+    capture: vi.fn(),
+  },
+}));
 
 const programs = getStaticCataloguePrograms();
 const calculatorInstitutions = getCalculatorInstitutionsFromCatalogue(getStaticCatalogueInstitutions());
