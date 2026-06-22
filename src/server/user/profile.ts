@@ -3,7 +3,7 @@ import 'server-only';
 import { and, eq, notInArray } from 'drizzle-orm';
 
 import { getDb } from '@/db/client';
-import { savedPrograms, userProfiles } from '@/db/schema';
+import { savedPrograms, uploadedDocuments, userProfiles } from '@/db/schema';
 import type { UserProfile } from '@/types';
 
 import { mergeUserProfileDraft } from './migration';
@@ -20,8 +20,12 @@ export async function getUserProfileSnapshot(userId: string): Promise<UserProfil
     .select({ programId: savedPrograms.programId })
     .from(savedPrograms)
     .where(eq(savedPrograms.userId, userId));
+  const uploadedDocumentRows = await db
+    .select()
+    .from(uploadedDocuments)
+    .where(eq(uploadedDocuments.userId, userId));
 
-  return serializeUserProfileSnapshot(profileRow, savedProgramRows);
+  return serializeUserProfileSnapshot(profileRow, savedProgramRows, uploadedDocumentRows);
 }
 
 export async function replaceUserProfileSnapshot(
@@ -38,6 +42,8 @@ export async function replaceUserProfileSnapshot(
       .onConflictDoUpdate({
         target: userProfiles.userId,
         set: {
+          firstName: profile.firstName?.trim() || null,
+          lastName: profile.lastName?.trim() || null,
           geographicPreference: profile.geographicPreference,
           psychometricOverall: profile.academicScores?.psychometric?.overall ?? null,
           psychometricQuantitative: profile.academicScores?.psychometric?.quantitative ?? null,

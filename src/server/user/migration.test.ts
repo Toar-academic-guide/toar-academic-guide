@@ -25,11 +25,20 @@ describe('user profile migration helpers', () => {
         },
       })
     ).toBe(true);
+
+    expect(
+      hasMeaningfulProfileData({
+        firstName: 'Dana',
+        geographicPreference: 'any',
+      })
+    ).toBe(true);
   });
 
   it('prefers existing scalar values while unioning saved programs during merge', () => {
     const merged = mergeUserProfileDraft(
       {
+        firstName: 'Server',
+        lastName: 'Name',
         geographicPreference: 'north',
         academicScores: {
           psychometric: {
@@ -39,6 +48,8 @@ describe('user profile migration helpers', () => {
         savedProgramIds: ['tau_cs'],
       },
       {
+        firstName: 'Draft',
+        lastName: 'User',
         geographicPreference: 'south',
         academicScores: {
           psychometric: {
@@ -53,6 +64,8 @@ describe('user profile migration helpers', () => {
       }
     );
 
+    expect(merged.firstName).toBe('Server');
+    expect(merged.lastName).toBe('Name');
     expect(merged.geographicPreference).toBe('north');
     expect(merged.academicScores?.psychometric?.overall).toBe(710);
     expect(merged.academicScores?.psychometric?.verbal).toBe(130);
@@ -60,4 +73,3 @@ describe('user profile migration helpers', () => {
     expect(merged.savedProgramIds).toEqual(['tau_cs', 'huji_law']);
   });
 });
-

@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import posthog from 'posthog-js';
 import LogoCanvas from './LogoCanvas';
 
 interface Props {
@@ -57,7 +58,7 @@ export default function QuizIntro({ onStart }: Props) {
         <motion.button
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.97 }}
-          onClick={onStart}
+          onClick={() => { posthog.capture('quiz_started'); onStart(); }}
           className="rounded-full px-8 py-3 text-base font-bold text-white shadow-md transition-all duration-200 hover:opacity-90"
           style={{ background: 'linear-gradient(90deg, #4f46e5, #7c3aed)' }}
         >

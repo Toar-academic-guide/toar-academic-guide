@@ -1,14 +1,21 @@
 import { allPrograms } from '@/data/degrees';
+import { UNIVERSITIES } from '@/data/degreesData';
 import { INSTITUTIONS } from '@/data/institutions';
 import type { Program } from '@/data/degrees/types';
-import { buildCatalogueSeed } from '@/db/seeds/catalogueSeed';
+import {
+  buildCatalogueSeed,
+  buildCatalogueSeedVerificationReport,
+} from '@/db/seeds/catalogueSeed';
 
 describe('catalogueSeed', () => {
   it('maps every institution and program into exactly one seed row', () => {
     const payload = buildCatalogueSeed();
 
     expect(payload.institutions).toHaveLength(INSTITUTIONS.length);
-    expect(payload.universityCalculatorConfigs).toHaveLength(7);
+    expect(payload.universityCalculatorConfigs).toHaveLength(UNIVERSITIES.length);
+    expect(payload.universityCalculatorConfigs.map((row) => row.institutionId).sort()).toEqual(
+      UNIVERSITIES.map((row) => row.id).sort()
+    );
     expect(payload.programs).toHaveLength(allPrograms.length);
   });
 
@@ -19,6 +26,29 @@ describe('catalogueSeed', () => {
     expect(targetProgram?.institutionDetails?.length).toBeGreaterThan(0);
     expect(payload.admissionRequirements.some((row) => row.programId === 'tau_cs')).toBe(true);
     expect(payload.sourceUrls.some((row) => row.programId === 'tau_cs')).toBe(true);
+  });
+
+  it('keeps the Haifa programmes as sekhem seed records with thresholds', () => {
+    const payload = buildCatalogueSeed();
+    const haifaProgramIds = [
+      'haifa_cs',
+      'haifa_psychology',
+      'haifa_law',
+      'haifa_economics',
+      'haifa_biology',
+    ];
+
+    expect(
+      payload.programs
+        .filter((program) => haifaProgramIds.includes(program.id))
+        .map((program) => ({ id: program.id, admissionType: program.admissionType }))
+    ).toEqual(
+      haifaProgramIds.map((programId) => ({
+        id: programId,
+        admissionType: 'sekhem',
+      }))
+    );
+    expect(payload.admissionThresholds.some((threshold) => haifaProgramIds.includes(threshold.programId))).toBe(true);
   });
 
   it('is deterministic across repeated runs', () => {
@@ -50,5 +80,41 @@ describe('catalogueSeed', () => {
 
     expect(payload.validationErrors).toHaveLength(1);
     expect(payload.validationErrors[0]?.programId).toBe('invalid_program');
+  });
+
+  it('reports stale Haifa requirements state during seed verification', () => {
+    const payload = buildCatalogueSeed();
+
+    const verification = buildCatalogueSeedVerificationReport(payload, {
+      programs: [
+        { id: 'haifa_cs', admissionType: 'requirements' },
+        ...payload.programs
+          .filter((program) => program.id !== 'haifa_cs')
+          .map((program) => ({ id: program.id, admissionType: program.admissionType })),
+      ],
+      programInstitutions: payload.programInstitutions.map((row) => ({
+        programId: row.programId,
+        institutionId: row.institutionId,
+      })),
+      admissionThresholds: payload.admissionThresholds.map((row) => ({
+        id: row.id,
+        programId: row.programId,
+      })),
+      universityCalculatorConfigs: payload.universityCalculatorConfigs.map((row) => ({
+        institutionId: row.institutionId,
+      })),
+    });
+
+    expect(verification.isMatching).toBe(false);
+    expect(verification.admissionTypeMismatches).toEqual([
+      {
+        programId: 'haifa_cs',
+        expected: 'sekhem',
+        actual: 'requirements',
+      },
+    ]);
+    expect(verification.issues).toContain(
+      'Program admissionType mismatches: haifa_cs (requirements -> sekhem)'
+    );
   });
 });

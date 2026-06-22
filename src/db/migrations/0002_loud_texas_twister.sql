@@ -1,17 +1,17 @@
 ALTER TABLE "university_calculator_configs" DISABLE ROW LEVEL SECURITY;--> statement-breakpoint
 ALTER TABLE "users" DISABLE ROW LEVEL SECURITY;--> statement-breakpoint
 DROP TABLE "users" CASCADE;--> statement-breakpoint
-ALTER TABLE "saved_programs" DROP CONSTRAINT "saved_programs_user_id_users_id_fk";
+ALTER TABLE "saved_programs" DROP CONSTRAINT IF EXISTS "saved_programs_user_id_users_id_fk";
 --> statement-breakpoint
-ALTER TABLE "uploaded_documents" DROP CONSTRAINT "uploaded_documents_user_id_users_id_fk";
+ALTER TABLE "uploaded_documents" DROP CONSTRAINT IF EXISTS "uploaded_documents_user_id_users_id_fk";
 --> statement-breakpoint
-ALTER TABLE "user_profiles" DROP CONSTRAINT "user_profiles_user_id_users_id_fk";
+ALTER TABLE "user_profiles" DROP CONSTRAINT IF EXISTS "user_profiles_user_id_users_id_fk";
 --> statement-breakpoint
-ALTER TABLE "saved_programs" ALTER COLUMN "user_id" SET DATA TYPE uuid;--> statement-breakpoint
-ALTER TABLE "uploaded_documents" ALTER COLUMN "user_id" SET DATA TYPE uuid;--> statement-breakpoint
-ALTER TABLE "user_profiles" ADD PRIMARY KEY ("user_id");--> statement-breakpoint
-ALTER TABLE "user_profiles" ALTER COLUMN "user_id" SET DATA TYPE uuid;--> statement-breakpoint
+ALTER TABLE "saved_programs" ALTER COLUMN "user_id" SET DATA TYPE uuid USING user_id::uuid;--> statement-breakpoint
+ALTER TABLE "uploaded_documents" ALTER COLUMN "user_id" SET DATA TYPE uuid USING user_id::uuid;--> statement-breakpoint
 ALTER TABLE "user_profiles" DROP COLUMN "id";--> statement-breakpoint
+ALTER TABLE "user_profiles" ALTER COLUMN "user_id" SET DATA TYPE uuid USING user_id::uuid;--> statement-breakpoint
+ALTER TABLE "user_profiles" ADD PRIMARY KEY ("user_id");--> statement-breakpoint
 
 DO $$
 BEGIN

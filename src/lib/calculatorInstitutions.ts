@@ -7,9 +7,7 @@ export function toCatalogueCalculatorConfig(university: University): CatalogueCa
     formulaType: university.formulaType,
     scaleDescription: university.scaleDescription,
     ...(university.sekhemWeight ? { sekhemWeight: university.sekhemWeight } : {}),
-    ...(university.minPsychometric !== undefined
-      ? { minPsychometric: university.minPsychometric }
-      : {}),
+    ...(university.minPsychometric !== undefined ? { minPsychometric: university.minPsychometric } : {}),
     ...(university.minBagrut !== undefined ? { minBagrut: university.minBagrut } : {}),
   };
 }

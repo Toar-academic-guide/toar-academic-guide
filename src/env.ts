@@ -1,4 +1,8 @@
+import type { CatalogueSourceMode } from '@/types/catalogue';
+
 const DATABASE_URL_KEY = 'DATABASE_URL';
+const CATALOGUE_SOURCE_MODE_KEY = 'CATALOGUE_SOURCE_MODE';
+const CATALOGUE_SOURCE_MODES = ['auto', 'database', 'static'] as const;
 
 function readEnv(name: string): string | undefined {
   const value = process.env[name]?.trim();
@@ -18,4 +22,23 @@ export function requireDatabaseUrl(): string {
   }
 
   return value;
+}
+
+export function getCatalogueSourceMode(): CatalogueSourceMode {
+  const value = readEnv(CATALOGUE_SOURCE_MODE_KEY);
+  if (!value) {
+    return 'auto';
+  }
+
+  if ((CATALOGUE_SOURCE_MODES as readonly string[]).includes(value)) {
+    return value as CatalogueSourceMode;
+  }
+
+  throw new Error(
+    `Invalid CATALOGUE_SOURCE_MODE "${value}". Expected one of: ${CATALOGUE_SOURCE_MODES.join(', ')}.`
+  );
+}
+
+export function isProductionRuntime(): boolean {
+  return process.env.NODE_ENV === 'production';
 }

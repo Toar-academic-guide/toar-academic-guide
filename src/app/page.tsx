@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import posthog from 'posthog-js';
 import {
   ProfileScores,
   ValuesProfile,
@@ -9,13 +10,17 @@ import {
   UniversityResult,
   UserScores,
   GeographicRegion,
+  AvoidanceTag,
 } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
-import { fetchCatalogueInstitutions, fetchCataloguePrograms } from '@/lib/catalogueClient';
+import {
+  CatalogueApiError,
+  fetchCatalogueInstitutions,
+  fetchCataloguePrograms,
+} from '@/lib/catalogueClient';
 import { getCalculatorInstitutionsFromCatalogue } from '@/lib/calculatorInstitutions';
-import { calculateLandingCalculatorState } from '@/lib/landingCalculator';
 import { getRecommendations } from '@/utils/recommendationEngine';
 import { evaluateUniversities } from '@/utils/sekhemCalculators';
 import { extractFilterAnswers } from '@/utils/riasecEngine';
@@ -33,8 +38,10 @@ import DegreePicker from '@/components/DegreePicker';
 import ScoreForm from '@/components/ScoreForm';
 import ResultsDashboard from '@/components/ResultsDashboard';
 import CalculatorResults from '@/components/CalculatorResults';
-import type { AcademicScores, RiasecAnswers, RiasecScores } from '@/types';
+import type { AcademicScores, RiasecAnswers } from '@/types';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
+
+type CatalogueStatus = 'loading' | 'ready' | 'error';
 
 type AppStep =
   | 'landing'
@@ -54,33 +61,70 @@ const APP_STEPS: AppStep[] = [
   'quick-filters', 'recommendations', 'calculator', 'bucket-list', 'degree-picker',
   'calculator-results',
 ];
+const ENABLE_DEV_SHORTCUTS = process.env.NODE_ENV !== 'production';
 
 // Dev shortcut: ?step=<stepname> or ?screen=N (assessment only)
 function getDevStep(): AppStep {
-  if (typeof window === 'undefined') return 'landing';
+  if (!ENABLE_DEV_SHORTCUTS || typeof window === 'undefined') return 'landing';
   const params = new URLSearchParams(window.location.search);
   if (params.has('screen')) return 'career-assessment';
   const s = params.get('step');
   return APP_STEPS.includes(s as AppStep) ? (s as AppStep) : 'landing';
 }
 
-// Neutral RIASEC profile used when jumping straight to recommendations
-const DEV_RIASEC: RiasecScores = { R: 3, I: 4, A: 3, S: 3, E: 3, C: 3 };
+const DEV_PROFILE_SCORES: ProfileScores = {
+  AN: 3,
+  TE: 4,
+  CR: 3,
+  SO: 3,
+  LE: 3,
+  OR: 3,
+  DI: 3,
+  ER: 3,
+};
+const DEV_VALUES: ValuesProfile = {
+  incomeVsImpact: 0,
+  independenceVsTeam: 0,
+  growthVsStability: 0,
+  prestigeVsMeaning: 0,
+};
 const DEV_GEO: GeographicRegion = 'any';
+const DEV_AVOIDANCES: AvoidanceTag[] = [];
+const STATIC_CATALOGUE_PROGRAMS = getStaticCataloguePrograms();
+const STATIC_CATALOGUE_INSTITUTIONS = getStaticCatalogueInstitutions();
+
+function toCatalogueError(error: unknown): CatalogueApiError {
+  if (error instanceof CatalogueApiError) {
+    return error;
+  }
+
+  if (error instanceof Error) {
+    return new CatalogueApiError(error.message, { cause: error });
+  }
+
+  return new CatalogueApiError('Unable to load the catalogue.');
+}
 
 export default function Home() {
   const { loading: authLoading, signOut, user } = useAuth();
-  const staticCataloguePrograms = getStaticCataloguePrograms();
-  const staticCatalogueInstitutions = getStaticCatalogueInstitutions();
+  const [initialStep] = useState<AppStep>(getDevStep);
+  const [catalogueStatus, setCatalogueStatus] = useState<CatalogueStatus>('loading');
+  const [catalogueError, setCatalogueError] = useState<CatalogueApiError | null>(null);
   const [catalogueInstitutions, setCatalogueInstitutions] =
-    useState<CatalogueInstitution[]>(staticCatalogueInstitutions);
-  const [step, setStep] = useState<AppStep>(getDevStep);
+    useState<CatalogueInstitution[]>(STATIC_CATALOGUE_INSTITUTIONS);
+  const [step, setStep] = useState<AppStep>(initialStep);
   const [recommendations, setRecommendations] = useState<RecommendedField[]>(() =>
-    getDevStep() === 'recommendations'
-      ? getRecommendations(DEV_RIASEC, undefined, [], getStaticCataloguePrograms())
+    initialStep === 'recommendations'
+      ? getRecommendations(
+          DEV_PROFILE_SCORES,
+          DEV_VALUES,
+          undefined,
+          DEV_AVOIDANCES,
+          STATIC_CATALOGUE_PROGRAMS
+        )
       : []
   );
-  const [cataloguePrograms, setCataloguePrograms] = useState<CatalogueProgram[]>(staticCataloguePrograms);
+  const [cataloguePrograms, setCataloguePrograms] = useState<CatalogueProgram[]>(STATIC_CATALOGUE_PROGRAMS);
   const {
     profile,
     hydrated,
@@ -95,50 +139,104 @@ export default function Home() {
   const [pendingScores, setPendingScores] = useState<ProfileScores | null>(null);
   const [pendingValues, setPendingValues] = useState<ValuesProfile | null>(null);
 
-  const [riasecProfile, setRiasecProfile] = useState<{
-    scores: RiasecScores;
+  const [assessmentProfile, setAssessmentProfile] = useState<{
+    scores: ProfileScores;
+    values: ValuesProfile;
     geographicPreference: GeographicRegion;
   } | null>(() =>
-    getDevStep() === 'recommendations'
-      ? { scores: DEV_RIASEC, geographicPreference: DEV_GEO }
+    initialStep === 'recommendations'
+      ? {
+          scores: DEV_PROFILE_SCORES,
+          values: DEV_VALUES,
+          geographicPreference: DEV_GEO,
+        }
+      : null
+  );
+  const [recommendationRequest, setRecommendationRequest] = useState<{
+    scores: ProfileScores;
+    values: ValuesProfile;
+    geographicPreference: GeographicRegion;
+    avoidances: AvoidanceTag[];
+  } | null>(() =>
+    initialStep === 'recommendations'
+      ? {
+          scores: DEV_PROFILE_SCORES,
+          values: DEV_VALUES,
+          geographicPreference: DEV_GEO,
+          avoidances: DEV_AVOIDANCES,
+        }
       : null
   );
 
-  const [selectedDegreeId, setSelectedDegreeId] = useState(staticCataloguePrograms[0].id);
+  const [selectedDegreeId, setSelectedDegreeId] = useState<string | null>(
+    STATIC_CATALOGUE_PROGRAMS[0]?.id ?? null
+  );
   const [results, setResults] = useState<UniversityResult[] | null>(null);
   const [degreeName, setDegreeName] = useState('');
   const calculatorInstitutions = getCalculatorInstitutionsFromCatalogue(catalogueInstitutions);
   const [bucketReturnsTo, setBucketReturnsTo] = useState<AppStep>('recommendations');
   const [authReturnTo, setAuthReturnTo] = useState<Exclude<AppStep, 'auth'>>('landing');
-  const [landingCalculatorState, setLandingCalculatorState] = useState<{
-    degreeName: string;
-    results: UniversityResult[];
+  const [landingCalcScores, setLandingCalcScores] = useState<{
+    psychometric: number;
+    bagrut: number;
+    degreeId: string;
   } | null>(null);
 
   useEffect(() => {
     let isMounted = true;
 
-    Promise.all([fetchCataloguePrograms(), fetchCatalogueInstitutions()]).then(([programs, institutions]) => {
-      if (!isMounted) {
-        return;
-      }
+    setCatalogueStatus('loading');
+    setCatalogueError(null);
 
-      if (programs.length > 0) {
+    Promise.all([fetchCataloguePrograms(), fetchCatalogueInstitutions()])
+      .then(([programs, institutions]) => {
+        if (!isMounted) {
+          return;
+        }
+
         setCataloguePrograms(programs);
+        setCatalogueInstitutions(institutions);
         setSelectedDegreeId((current) =>
-          programs.some((program) => program.id === current) ? current : programs[0].id
+          current && programs.some((program) => program.id === current)
+            ? current
+            : (programs[0]?.id ?? null)
         );
-      }
+        setCatalogueStatus('ready');
+      })
+      .catch((error) => {
+        if (!isMounted) {
+          return;
+        }
 
-      setCatalogueInstitutions(institutions);
-    });
+        setCatalogueError(toCatalogueError(error));
+        setCatalogueStatus('error');
+      });
 
     return () => {
       isMounted = false;
     };
   }, []);
 
+  useEffect(() => {
+    if (catalogueStatus !== 'ready' || !recommendationRequest) {
+      return;
+    }
+
+    setRecommendations(
+      getRecommendations(
+        recommendationRequest.scores,
+        recommendationRequest.values,
+        undefined,
+        recommendationRequest.avoidances,
+        cataloguePrograms
+      )
+    );
+  }, [cataloguePrograms, catalogueStatus, recommendationRequest]);
+
   function handleAssessmentComplete(profileScores: ProfileScores, valuesProfile: ValuesProfile) {
+    posthog.capture('assessment_completed', {
+      top_dimension: Object.entries(profileScores).sort((a, b) => b[1] - a[1])[0]?.[0],
+    });
     setPendingScores(profileScores);
     setPendingValues(valuesProfile);
     setStep('quick-filters');
@@ -147,23 +245,38 @@ export default function Home() {
 
   function handleFiltersComplete(rawAnswers: RiasecAnswers) {
     const { geographicPreference, avoidances } = extractFilterAnswers(rawAnswers);
-
-    // Bridge: map 8-dim ProfileScores → old 6-dim RiasecScores until
-    // recommendationEngine is updated to use 8 dimensions (Step 6).
-    const p = pendingScores ?? { AN: 0, TE: 0, CR: 0, SO: 0, LE: 0, OR: 0, DI: 0, ER: 0 };
-    const scores: RiasecScores = {
-      R: p.TE,
-      I: Math.max(p.AN, p.DI),
-      A: p.CR,
-      S: p.SO,
-      E: p.LE,
-      C: p.OR,
+    const scores = pendingScores ?? {
+      AN: 0,
+      TE: 0,
+      CR: 0,
+      SO: 0,
+      LE: 0,
+      OR: 0,
+      DI: 0,
+      ER: 0,
+    };
+    const values = pendingValues ?? {
+      incomeVsImpact: 0,
+      independenceVsTeam: 0,
+      growthVsStability: 0,
+      prestigeVsMeaning: 0,
     };
 
+    posthog.capture('quick_filters_completed', {
+      geographic_preference: geographicPreference,
+      avoidances_count: avoidances.length,
+    });
+    posthog.capture('recommendations_viewed', {
+      geographic_preference: geographicPreference,
+    });
     updateProfile({ geographicPreference });
-    const recs = getRecommendations(scores, undefined, avoidances, cataloguePrograms);
-    setRiasecProfile({ scores, geographicPreference });
-    setRecommendations(recs);
+    setAssessmentProfile({ scores, values, geographicPreference });
+    setRecommendationRequest({ scores, values, geographicPreference, avoidances });
+    setRecommendations(
+      catalogueStatus === 'ready'
+        ? getRecommendations(scores, values, undefined, avoidances, cataloguePrograms)
+        : []
+    );
     setResults(null);
     setBucketReturnsTo('recommendations');
     setStep('recommendations');
@@ -171,14 +284,20 @@ export default function Home() {
   }
 
   function handleToggleSave(programId: string) {
+    const isSaved = profile.savedProgramIds?.includes(programId) ?? false;
+    if (!isSaved) {
+      posthog.capture('program_saved', { program_id: programId });
+    }
     void toggleSavedProgram(programId);
   }
 
   function handleRemoveFromBucket(programId: string) {
+    posthog.capture('program_removed_from_bucket', { program_id: programId });
     void removeSavedProgram(programId);
   }
 
   function handleSelectDegree(degreeId: string) {
+    posthog.capture('degree_selected_for_calculator', { degree_id: degreeId });
     setSelectedDegreeId(degreeId);
     setResults(null);
     setStep('calculator');
@@ -229,8 +348,59 @@ export default function Home() {
       </button>
     ) : null;
 
+  function renderCatalogueState(title: string, description: string) {
+    if (catalogueStatus === 'loading') {
+      return (
+        <section className="mx-auto flex max-w-2xl flex-col items-center gap-3 rounded-3xl border border-slate-200 bg-white px-8 py-16 text-center shadow-sm">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-indigo-600" />
+          <div>
+            <h2 className="text-lg font-bold text-slate-900">{title}</h2>
+            <p className="mt-1.5 text-sm text-slate-500">{description}</p>
+          </div>
+        </section>
+      );
+    }
+
+    if (catalogueStatus === 'error') {
+      return (
+        <section className="mx-auto flex max-w-2xl flex-col items-center gap-4 rounded-3xl border border-rose-200 bg-rose-50 px-8 py-16 text-center shadow-sm">
+          <div className="rounded-full bg-white px-4 py-1 text-xs font-semibold text-rose-700">
+            קטלוג לא זמין
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-slate-900">לא הצלחנו לטעון את קטלוג התארים</h2>
+            <p className="mt-1.5 text-sm text-slate-600">{catalogueError?.message}</p>
+            {catalogueError?.details[0] ? (
+              <p className="mt-2 text-sm text-slate-500">{catalogueError.details[0]}</p>
+            ) : null}
+          </div>
+          <button
+            type="button"
+            onClick={handleGoHome}
+            className="rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700"
+          >
+            חזרה לעמוד הבית
+          </button>
+        </section>
+      );
+    }
+
+    return null;
+  }
+
   function handleCalculate(scores: UserScores, degreeId: string, engineering: EngineeringOptions) {
-    const degree = cataloguePrograms.find((p) => p.id === degreeId)!;
+    const degree = cataloguePrograms.find((program) => program.id === degreeId);
+    if (!degree) {
+      return;
+    }
+
+    posthog.capture('degree_calculator_submitted', {
+      degree_id: degreeId,
+      degree_name: degree.name,
+      psychometric: scores.psychometric,
+      bagrut: scores.bagrut,
+    });
+
     const evaluated = evaluateUniversities(calculatorInstitutions, degree, scores, engineering);
     setResults(evaluated);
     setDegreeName(degree.name);
@@ -244,10 +414,12 @@ export default function Home() {
     return (
       <LandingPage
         onAlreadyKnow={() => {
+          posthog.capture('landing_cta_clicked', { cta: 'already_know' });
           setBucketReturnsTo('degree-picker');
           setStep('degree-picker');
         }}
         onNeedHelp={() => {
+          posthog.capture('landing_cta_clicked', { cta: 'need_help' });
           setBucketReturnsTo('recommendations');
           setStep('intro');
         }}
@@ -256,13 +428,7 @@ export default function Home() {
           setStep('auth');
         }}
         onCalculate={(psychometric, bagrut, degreeId) => {
-          setLandingCalculatorState(
-            calculateLandingCalculatorState(cataloguePrograms, catalogueInstitutions, {
-              psychometric,
-              bagrut,
-              degreeId,
-            })
-          );
+          setLandingCalcScores({ psychometric, bagrut, degreeId });
           setStep('calculator-results');
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
@@ -279,12 +445,14 @@ export default function Home() {
     );
   }
 
-  if (step === 'calculator-results' && landingCalculatorState) {
+  if (step === 'calculator-results' && landingCalcScores) {
     return (
       <CalculatorResults
-        degreeName={landingCalculatorState.degreeName}
-        institutions={catalogueInstitutions}
-        results={landingCalculatorState.results}
+        psychometric={landingCalcScores.psychometric}
+        bagrut={landingCalcScores.bagrut}
+        degreeId={landingCalcScores.degreeId}
+        programs={cataloguePrograms}
+        calculatorInstitutions={calculatorInstitutions}
         onBack={() => {
           setStep('landing');
           window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -309,12 +477,25 @@ export default function Home() {
     return (
       <>
         <BackButton />
-        <DegreePicker
-          programs={cataloguePrograms}
-          savedProgramIds={profile.savedProgramIds ?? []}
-          onToggleSave={handleToggleSave}
-          onDone={() => setStep('bucket-list')}
-        />
+        {syncError && (
+          <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-xl px-4">
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 shadow-md">
+              {syncError}
+            </div>
+          </div>
+        )}
+        {catalogueStatus === 'ready' ? (
+          <DegreePicker
+            programs={cataloguePrograms}
+            savedProgramIds={profile.savedProgramIds ?? []}
+            onToggleSave={handleToggleSave}
+            onDone={() => setStep('bucket-list')}
+          />
+        ) : (
+          <div className="min-h-screen bg-[#f5f4f0] px-4 py-10 sm:px-6">
+            {renderCatalogueState('טוענים את קטלוג התארים', 'רק לאחר שהקטלוג ייטען אפשר לבחור תארים להשוואה.')}
+          </div>
+        )}
       </>
     );
   }
@@ -334,12 +515,18 @@ export default function Home() {
         <BackButton />
         <AcademicProfileForm
           initialScores={profile.academicScores}
+          initialDocuments={profile.uploadedDocuments}
           onComplete={(scores: AcademicScores) => {
+            posthog.capture('academic_profile_completed', {
+              has_psychometric: !!scores.psychometric?.overall,
+              has_bagrut: !!scores.bagrut?.weightedAverage,
+            });
             updateProfile({ academicScores: scores });
             setStep('career-assessment');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
           onSkip={() => {
+            posthog.capture('academic_profile_skipped');
             setStep('career-assessment');
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
@@ -370,16 +557,21 @@ export default function Home() {
   const savedCount = profile.savedProgramIds?.length ?? 0;
 
   // Source-aware: only navigate to recommendations when the user has a
-  // riasecProfile (i.e. came through the questionnaire). Degree-picker users
-  // have no riasecProfile — route them back to degree-picker instead.
+  // saved assessment profile (i.e. came through the questionnaire). Degree-picker users
+  // have no assessmentProfile — route them back to degree-picker instead.
   function handleGoToRecommendations() {
-    if (!riasecProfile) {
+    if (!assessmentProfile) {
       setStep(bucketReturnsTo === 'degree-picker' ? 'degree-picker' : 'landing');
       return;
     }
     setStep('recommendations');
     setResults(null);
   }
+
+  const shouldBlockCatalogueStep =
+    catalogueStatus !== 'ready' &&
+    (step === 'recommendations' || step === 'bucket-list' || step === 'calculator');
+  const sekhemPrograms = cataloguePrograms.filter((program) => program.admissionType === 'sekhem');
 
   return (
     <>
@@ -421,22 +613,29 @@ export default function Home() {
           </div>
         ) : null}
 
+        {shouldBlockCatalogueStep ? (
+          renderCatalogueState(
+            'טוענים את הקטלוג',
+            'הקטלוג נטען דרך ה-API לפני שאפשר להציג המלצות, מחשבון או רשימת ייעוד.'
+          )
+        ) : null}
+
         {/* ── Step: Recommendations ─────────────────────────────── */}
-        {step === 'recommendations' && riasecProfile && (
+        {!shouldBlockCatalogueStep && step === 'recommendations' && assessmentProfile && (
           <RecommendationResults
             programs={cataloguePrograms}
             recommendations={recommendations}
             onSelectDegree={handleSelectDegree}
-            riasecScores={riasecProfile.scores}
+            profileScores={assessmentProfile.scores}
             environment={{ soloScore: 1, deskScore: 1 }}
-            geographicPreference={riasecProfile.geographicPreference}
+            geographicPreference={assessmentProfile.geographicPreference}
             savedProgramIds={profile.savedProgramIds}
             onToggleSave={handleToggleSave}
           />
         )}
 
         {/* ── Step: Bucket List ─────────────────────────────────── */}
-        {step === 'bucket-list' && (
+        {!shouldBlockCatalogueStep && step === 'bucket-list' && (
           <BucketList
             programs={cataloguePrograms}
             calculatorInstitutions={calculatorInstitutions}
@@ -450,20 +649,26 @@ export default function Home() {
         )}
 
         {/* ── Step: Calculator ──────────────────────────────────── */}
-        {step === 'calculator' && (
+        {!shouldBlockCatalogueStep && step === 'calculator' && (
           <>
             <section className="rounded-2xl border border-[#e5e7eb] bg-white p-6 shadow-sm sm:p-8">
               <h2 className="mb-1 text-lg font-semibold text-gray-800">הזן את הנתונים שלך</h2>
               <p className="mb-6 text-sm text-gray-400">
                 הממוצע בגרות כולל בונוסים (למשל מתמטיקה 5 יח׳ מוסיפה עד 35 נקודות).
               </p>
-              <ScoreForm
-                programs={cataloguePrograms}
-                onSubmit={handleCalculate}
-                defaultDegreeId={selectedDegreeId}
-                defaultPsychometric={profile.academicScores?.psychometric?.overall}
-                defaultBagrut={profile.academicScores?.bagrut?.weightedAverage}
-              />
+              {sekhemPrograms.length > 0 ? (
+                <ScoreForm
+                  programs={cataloguePrograms}
+                  onSubmit={handleCalculate}
+                  defaultDegreeId={selectedDegreeId ?? undefined}
+                  defaultPsychometric={profile.academicScores?.psychometric?.overall}
+                  defaultBagrut={profile.academicScores?.bagrut?.weightedAverage}
+                />
+              ) : (
+                <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                  אין כרגע תוכניות עם מחשבון קבלה זמין בקטלוג.
+                </div>
+              )}
             </section>
 
             {results && (

@@ -44,4 +44,6 @@ next-env.d.ts
 # tooling
 .claude/
 .superpowers/
+
+# supabase
 supabase/.temp/

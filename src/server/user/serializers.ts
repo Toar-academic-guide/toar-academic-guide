@@ -1,5 +1,5 @@
 import type { UserProfile } from '@/types';
-import type { SavedProgramRow, UserProfileRow } from '@/db/types';
+import type { SavedProgramRow, UserProfileRow, UploadedDocumentRow } from '@/db/types';
 
 export interface UserProfileSnapshot extends UserProfile {
   savedProgramIds: string[];
@@ -8,16 +8,24 @@ export interface UserProfileSnapshot extends UserProfile {
 export const DEFAULT_USER_PROFILE_SNAPSHOT: UserProfileSnapshot = {
   geographicPreference: 'any',
   savedProgramIds: [],
+  uploadedDocuments: [],
 };
 
 export function serializeUserProfileSnapshot(
   profileRow: UserProfileRow | undefined,
-  savedProgramRows: Pick<SavedProgramRow, 'programId'>[]
+  savedProgramRows: Pick<SavedProgramRow, 'programId'>[],
+  uploadedDocumentRows?: UploadedDocumentRow[]
 ): UserProfileSnapshot {
   if (!profileRow) {
     return {
       ...DEFAULT_USER_PROFILE_SNAPSHOT,
       savedProgramIds: savedProgramRows.map((row) => row.programId),
+      uploadedDocuments: uploadedDocumentRows?.map((row) => ({
+        id: row.id,
+        kind: row.kind,
+        originalFileName: row.originalFileName,
+        sizeBytes: row.sizeBytes,
+      })) || [],
     };
   }
 
@@ -58,15 +66,25 @@ export function serializeUserProfileSnapshot(
       : undefined;
 
   return {
+    ...(profileRow.firstName ? { firstName: profileRow.firstName } : {}),
+    ...(profileRow.lastName ? { lastName: profileRow.lastName } : {}),
     geographicPreference: profileRow.geographicPreference,
     ...(academicScores ? { academicScores } : {}),
     savedProgramIds: savedProgramRows.map((row) => row.programId),
+    uploadedDocuments: uploadedDocumentRows?.map((row) => ({
+      id: row.id,
+      kind: row.kind,
+      originalFileName: row.originalFileName,
+      sizeBytes: row.sizeBytes,
+    })) || [],
   };
 }
 
 export function buildUserProfileRow(userId: string, profile: UserProfile) {
   return {
     userId,
+    firstName: profile.firstName?.trim() || null,
+    lastName: profile.lastName?.trim() || null,
     geographicPreference: profile.geographicPreference,
     psychometricOverall: profile.academicScores?.psychometric?.overall ?? null,
     psychometricQuantitative: profile.academicScores?.psychometric?.quantitative ?? null,
@@ -75,4 +93,3 @@ export function buildUserProfileRow(userId: string, profile: UserProfile) {
     bagrutWeightedAverage: profile.academicScores?.bagrut?.weightedAverage ?? null,
   };
 }
-

@@ -4,6 +4,10 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { getSupabaseEnv, isSupabaseConfigured } from '@/lib/supabase/env';
 
 export async function proxy(request: NextRequest) {
+  if (process.env.NODE_ENV === 'production' && request.nextUrl.pathname === '/dev') {
+    return new NextResponse(null, { status: 404 });
+  }
+
   let response = NextResponse.next({
     request,
   });

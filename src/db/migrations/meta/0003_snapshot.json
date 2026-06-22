@@ -1,5 +1,5 @@
 {
-  "id": "6115fbaa-c348-4a6f-ba7e-24a76932d590",
+  "id": "8397164e-4785-46c1-adb2-b88a441b1c91",
   "prevId": "1f63c4b3-f0d5-4aa1-bf1b-0a181fc875e5",
   "version": "7",
   "dialect": "postgresql",
@@ -1099,18 +1099,6 @@
           "primaryKey": false,
           "notNull": false
         },
-        "min_psychometric": {
-          "name": "min_psychometric",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "min_bagrut": {
-          "name": "min_bagrut",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
         "scale_description": {
           "name": "scale_description",
           "type": "text",
@@ -1234,6 +1222,18 @@
           "primaryKey": true,
           "notNull": true
         },
+        "first_name": {
+          "name": "first_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_name": {
+          "name": "last_name",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "geographic_preference": {
           "name": "geographic_preference",
           "type": "geographic_region",
@@ -1353,8 +1353,7 @@
       "schema": "public",
       "values": [
         "weighted_scaled",
-        "technion_linear",
-        "minimum_floors"
+        "technion_linear"
       ]
     },
     "public.document_kind": {

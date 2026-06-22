@@ -1,4 +1,5 @@
 import { serializeInstitutionRow, serializeProgramRow } from '@/server/catalogue/serializers';
+import { allPrograms } from '@/data/degrees';
 import type {
   AdmissionRequirementRow,
   InstitutionRow,
@@ -60,6 +61,42 @@ describe('catalogue serializers', () => {
     });
 
     expect(serialized.institutionDetails?.[0]?.durationYears).toBeNull();
+  });
+
+  it('restores full eight-dimension profile scores from the static catalogue bridge', () => {
+    const staticProgram = allPrograms.find(
+      (program) => program.profileScore.DI > 0 || program.profileScore.ER > 0
+    );
+
+    expect(staticProgram).toBeDefined();
+
+    const program = {
+      id: staticProgram!.id,
+      name: staticProgram!.name,
+      institutionName: staticProgram!.institution,
+      institutionId: staticProgram!.institutionId ?? 'test_university',
+      type: staticProgram!.type,
+      category: staticProgram!.category,
+      riasecR: 1,
+      riasecI: 1,
+      riasecA: 1,
+      riasecS: 1,
+      riasecE: 1,
+      riasecC: 1,
+      admissionType: staticProgram!.admissionType,
+      isTauEngineering: false,
+    } as ProgramRow;
+
+    const serialized = serializeProgramRow({
+      program,
+      relations: [],
+      requirements: [],
+      thresholds: [],
+      sourceUrls: [],
+      institutionsById: new Map(),
+    });
+
+    expect(serialized.profileScore).toEqual(staticProgram!.profileScore);
   });
 
   it('preserves minimum-floor calculator fields on serialized institutions', () => {

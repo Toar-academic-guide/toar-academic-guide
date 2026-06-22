@@ -81,7 +81,7 @@ export default function KineticTextSwapper() {
         <img
           src="/way-cartoon.png"
           alt="I'm not sure which way to go"
-          className="h-auto max-w-2xl md:max-w-4xl"
+          className="h-auto w-full max-w-2xl md:max-w-4xl"
           style={{ mixBlendMode: 'multiply', filter: 'brightness(1.1) contrast(1.2)' }}
         />
       </div>

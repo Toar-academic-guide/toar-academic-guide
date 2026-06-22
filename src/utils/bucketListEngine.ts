@@ -1,5 +1,5 @@
 import { allPrograms } from '@/data/degrees';
-import { calculateSekhem, calculateDelta } from '@/utils/sekhemCalculators';
+import { calculateSekhem, calculateDelta, evaluateMinimumFloorsAdmission } from '@/utils/sekhemCalculators';
 import { UNIVERSITIES } from '@/data/degreesData';
 import type { UserScores, DeltaNeeded, University } from '@/types';
 import type { Program } from '@/data/degrees/types';
@@ -79,11 +79,9 @@ export function analyzeBucketList(
 
     // ── Minimum-floors model (colleges) ────────────────────────────────────
     if (university.formulaType === 'minimum_floors') {
-      const psyDeficit = threshold - userScores.psychometric;
-      const bagMin = university.minBagrut ?? 0;
-      const bagDeficit = bagMin - userScores.bagrut;
+      const { meetsAll, deltaNeeded } = evaluateMinimumFloorsAdmission(university, threshold, userScores);
 
-      if (psyDeficit <= 0 && bagDeficit <= 0) {
+      if (meetsAll) {
         entries.push({ program, status: 'qualified', sekhem: userScores.psychometric, threshold });
       } else {
         entries.push({
@@ -91,10 +89,7 @@ export function analyzeBucketList(
           status: 'gap',
           sekhem: userScores.psychometric,
           threshold,
-          delta: {
-            psychometric: Math.max(0, Math.ceil(psyDeficit)),
-            bagrut: Math.max(0, Math.ceil(bagDeficit)),
-          },
+          delta: deltaNeeded,
         });
       }
       continue;

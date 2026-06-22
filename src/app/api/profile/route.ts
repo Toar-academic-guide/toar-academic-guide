@@ -5,6 +5,7 @@ import {
   mergeUserProfileDraftIntoSnapshot,
   replaceUserProfileSnapshot,
 } from '@/server/user/profile';
+import { getPostHogClient } from '@/lib/posthog-server';
 
 export const dynamic = 'force-dynamic';
 
@@ -45,6 +46,12 @@ export async function PUT(request: Request) {
       body.mode === 'merge_local_draft'
         ? await mergeUserProfileDraftIntoSnapshot(userId, profile)
         : await replaceUserProfileSnapshot(userId, profile);
+
+    getPostHogClient().capture({
+      distinctId: userId,
+      event: 'server_profile_updated',
+      properties: { mode: body.mode ?? 'replace' },
+    });
 
     return Response.json({ data });
   } catch (error) {

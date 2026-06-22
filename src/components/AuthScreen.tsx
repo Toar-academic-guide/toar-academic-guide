@@ -2,8 +2,10 @@
 
 import { useState } from 'react';
 import { ArrowRight, Eye, EyeOff, Loader2, Lock, Mail } from 'lucide-react';
+import posthog from 'posthog-js';
 
 import { useAuth } from '@/context/AuthContext';
+import { saveUserProfileIdentityDraft } from '@/hooks/useUserProfile';
 import LogoCanvas from './LogoCanvas';
 import NeoButton from './NeoButton';
 
@@ -17,6 +19,8 @@ type AuthMode = 'login' | 'signup';
 export default function AuthScreen({ onBack, onSuccess }: AuthScreenProps) {
   const { configured, signInWithPassword, signUp } = useAuth();
   const [mode, setMode] = useState<AuthMode>('login');
+  const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -34,9 +38,22 @@ export default function AuthScreen({ onBack, onSuccess }: AuthScreenProps) {
       return;
     }
 
+    const trimmedFirstName = firstName.trim();
+    const trimmedLastName = lastName.trim();
+
+    if (mode === 'signup' && (!trimmedFirstName || !trimmedLastName)) {
+      setError('יש למלא שם פרטי ושם משפחה.');
+      return;
+    }
+
     setSubmitting(true);
-    const action = mode === 'login' ? signInWithPassword : signUp;
-    const result = await action(email.trim(), password);
+    const result =
+      mode === 'login'
+        ? await signInWithPassword(email.trim(), password)
+        : await signUp(email.trim(), password, {
+            firstName: trimmedFirstName,
+            lastName: trimmedLastName,
+          });
     setSubmitting(false);
 
     if (result.error) {
@@ -45,12 +62,18 @@ export default function AuthScreen({ onBack, onSuccess }: AuthScreenProps) {
     }
 
     if (mode === 'signup') {
-      setInfo('החשבון נוצר. אם נדרש אישור אימייל, אשר אותו ואז התחבר.');
+      saveUserProfileIdentityDraft({
+        firstName: trimmedFirstName,
+        lastName: trimmedLastName,
+      });
+      posthog.capture('user_signed_up', { email: email.trim() });
+      setInfo('שלחנו מייל לאישור החשבון. אשר אותו ואז חזור להתחבר.');
       setMode('login');
       setPassword('');
       return;
     }
 
+    posthog.capture('user_signed_in', { email: email.trim() });
     onSuccess();
   }
 
@@ -80,6 +103,32 @@ export default function AuthScreen({ onBack, onSuccess }: AuthScreenProps) {
         )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+          {mode === 'signup' ? (
+            <>
+              <label className="relative block">
+                <input
+                  type="text"
+                  autoComplete="given-name"
+                  value={firstName}
+                  onChange={(event) => setFirstName(event.target.value)}
+                  placeholder="שם פרטי"
+                  className="h-12 w-full rounded-full border-2 border-black bg-white px-4 text-base text-slate-900 placeholder-slate-400 outline-none transition focus:shadow-[2px_2px_0px_rgba(0,0,0,1)]"
+                />
+              </label>
+
+              <label className="relative block">
+                <input
+                  type="text"
+                  autoComplete="family-name"
+                  value={lastName}
+                  onChange={(event) => setLastName(event.target.value)}
+                  placeholder="שם משפחה"
+                  className="h-12 w-full rounded-full border-2 border-black bg-white px-4 text-base text-slate-900 placeholder-slate-400 outline-none transition focus:shadow-[2px_2px_0px_rgba(0,0,0,1)]"
+                />
+              </label>
+            </>
+          ) : null}
+
           <label className="relative block">
             <Mail size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
@@ -157,4 +206,3 @@ export default function AuthScreen({ onBack, onSuccess }: AuthScreenProps) {
     </div>
   );
 }
-

@@ -11,6 +11,7 @@ import {
   MIN_ANSWERED_ITEMS,
   getMultiSelectQuestion,
   getQuickPickItem,
+  getScreenSection,
   getValueSlider,
   QUICK_PICK_ITEMS,
   type Screen,
@@ -90,15 +91,7 @@ export default function CareerAssessment({ onComplete }: Props) {
 
   const screen = SCREEN_SEQUENCE[screenIndex];
   const progressPercent = Math.round(((screenIndex + 1) / TOTAL_SCREENS) * 100);
-  const currentSection = screen.kind === 'transition' ? screen.section : getSectionForScreen(screenIndex);
-
-  function getSectionForScreen(idx: number): number {
-    for (let i = idx; i >= 0; i--) {
-      const s = SCREEN_SEQUENCE[i];
-      if (s.kind === 'transition') return s.section;
-    }
-    return 1;
-  }
+  const currentSection = getScreenSection(screen);
 
   // ── Collect answers into the shape the scoring engine expects ────────────
 
