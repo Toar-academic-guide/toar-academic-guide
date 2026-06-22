@@ -50,62 +50,59 @@ export default function NavBar({
   const goToBucketSource = onGoToBucketSource ?? onGoToRecommendations;
 
   return (
-    <header
-      className="sticky top-0 z-50"
-      style={{ background: 'linear-gradient(90deg, #1e1b4b 0%, #3730a3 100%)' }}
-    >
-      <div className="flex items-center justify-between px-8 py-2 sm:px-10">
+    <header className="sticky top-0 z-50 border-b border-[#e5e7eb] bg-white">
+      <div className="flex items-center justify-between py-4 pl-8 pr-4 sm:pl-12 sm:pr-6">
         <button
           type="button"
           onClick={onGoHome}
           aria-label="חזרה לדף הבית"
-          className="cursor-pointer rounded-lg outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-white/50"
+          className="cursor-pointer rounded-lg outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-[#1e1b4b]/30"
         >
-          <LogoCanvas size={160} brighten={true} />
+          <LogoCanvas size={44} brighten={false} />
         </button>
 
-        <nav className="flex items-center gap-1.5 text-sm" aria-label="ניווט">
+        <nav className="flex items-center gap-1.5 text-sm text-slate-600" aria-label="ניווט">
           <button
             onClick={onGoToExam}
-            className="text-white/50 transition hover:text-white/80"
+            className="transition hover:text-slate-900"
           >
             שאלון
           </button>
 
           {step === 'recommendations' && (
             <>
-              <span className="text-white/30">/</span>
-              <span className="font-semibold text-indigo-300">המלצות</span>
+              <span className="text-slate-300">/</span>
+              <span className="font-semibold text-slate-900">המלצות</span>
             </>
           )}
           {step === 'calculator' && (
             <>
-              <span className="text-white/30">/</span>
-              <button onClick={onGoToRecommendations} className="text-white/50 transition hover:text-white/80">
+              <span className="text-slate-300">/</span>
+              <button onClick={onGoToRecommendations} className="transition hover:text-slate-900">
                 המלצות
               </button>
-              <span className="text-white/30">/</span>
-              <span className="font-semibold text-indigo-300">חישוב</span>
+              <span className="text-slate-300">/</span>
+              <span className="font-semibold text-slate-900">חישוב</span>
             </>
           )}
           {step === 'bucket-list' && (
             <>
-              <span className="text-white/30">/</span>
-              <button onClick={goToBucketSource} className="text-white/50 transition hover:text-white/80">
+              <span className="text-slate-300">/</span>
+              <button onClick={goToBucketSource} className="transition hover:text-slate-900">
                 {bucketSourceLabel}
               </button>
-              <span className="text-white/30">/</span>
-              <span className="font-semibold text-indigo-300">רשימת הייעוד</span>
+              <span className="text-slate-300">/</span>
+              <span className="font-semibold text-slate-900">רשימת הייעוד</span>
             </>
           )}
         </nav>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <button
             type="button"
             onClick={isAuthenticated ? onSignOut : onGoToAuth}
             disabled={authLoading}
-            className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-medium text-white/70 transition hover:border-white/40 hover:text-white disabled:opacity-50"
+            className="text-sm font-semibold text-slate-600 transition hover:text-slate-900 disabled:opacity-50"
           >
             {authLoading
               ? 'טוען...'
@@ -120,25 +117,20 @@ export default function NavBar({
             onClick={onGoToBucket}
             aria-label={`רשימת הייעוד — ${savedCount} פריטים`}
             className={[
-              'flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition',
+              'flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition',
               isBucketActive
-                ? 'border-indigo-300 bg-indigo-500/30 text-indigo-200'
-                : 'border-white/20 bg-white/10 text-white/70 hover:border-white/40 hover:text-white',
+                ? 'bg-[#1e1b4b] text-white'
+                : 'bg-[#1e1b4b] text-white hover:bg-[#2d2a6e]',
             ].join(' ')}
           >
             {savedCount > 0 ? (
-              <BookmarkCheck size={13} className="text-indigo-300" />
+              <BookmarkCheck size={14} />
             ) : (
-              <Bookmark size={13} />
+              <Bookmark size={14} />
             )}
             <span>רשימת הייעוד</span>
             {savedCount > 0 && (
-              <span
-                className={[
-                  'rounded-full px-1.5 py-0.5 text-[10px] font-bold',
-                  isBucketActive ? 'bg-indigo-400/50 text-white' : 'bg-indigo-400/40 text-indigo-200',
-                ].join(' ')}
-              >
+              <span className="rounded-full bg-white/20 px-1.5 py-0.5 text-[10px] font-bold">
                 {savedCount}
               </span>
             )}
