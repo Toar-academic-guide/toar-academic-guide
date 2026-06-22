@@ -4,7 +4,7 @@ const hoistedMocks = vi.hoisted(() => ({
   createSupabaseServerClient: vi.fn(),
   addSavedProgram: vi.fn(),
   removeSavedProgram: vi.fn(),
-  capture: vi.fn(),
+  getPostHogClient: vi.fn(),
 }));
 
 vi.mock('@/lib/supabase/server', () => ({
@@ -17,19 +17,20 @@ vi.mock('@/server/user/profile', () => ({
 }));
 
 vi.mock('@/lib/posthog-server', () => ({
-  getPostHogClient: () => ({
-    capture: hoistedMocks.capture,
-  }),
+  getPostHogClient: hoistedMocks.getPostHogClient,
 }));
+
+vi.mock('server-only', () => ({}));
 
 import { DELETE, POST } from './route';
 
-describe('saved-programs API route', () => {
+describe('saved programs API route', () => {
   let mockSupabase: {
     auth: {
       getUser: ReturnType<typeof vi.fn>;
     };
   };
+  let mockCapture: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
     vi.restoreAllMocks();
@@ -43,10 +44,44 @@ describe('saved-programs API route', () => {
       },
     };
 
-    hoistedMocks.createSupabaseServerClient.mockResolvedValue(mockSupabase);
+    mockCapture = vi.fn();
+
+    hoistedMocks.createSupabaseServerClient.mockReset();
     hoistedMocks.addSavedProgram.mockReset();
     hoistedMocks.removeSavedProgram.mockReset();
-    hoistedMocks.capture.mockReset();
+    hoistedMocks.getPostHogClient.mockReset();
+
+    hoistedMocks.createSupabaseServerClient.mockResolvedValue(mockSupabase);
+    hoistedMocks.addSavedProgram.mockResolvedValue({
+      geographicPreference: 'any',
+      savedProgramIds: ['program-1'],
+    });
+    hoistedMocks.removeSavedProgram.mockResolvedValue({
+      geographicPreference: 'any',
+      savedProgramIds: [],
+    });
+    hoistedMocks.getPostHogClient.mockReturnValue({
+      capture: mockCapture,
+    });
+  });
+
+  it('returns 503 when Supabase auth is not configured', async () => {
+    hoistedMocks.createSupabaseServerClient.mockResolvedValueOnce(null);
+
+    const response = await POST(
+      new Request('http://localhost/api/saved-programs', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ programId: 'tau_cs' }),
+      })
+    );
+
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toMatchObject({
+      error: { code: 'SUPABASE_AUTH_UNAVAILABLE' },
+    });
   });
 
   it('accepts a valid POST payload and trims the program id', async () => {
@@ -67,7 +102,7 @@ describe('saved-programs API route', () => {
 
     expect(response.status).toBe(200);
     expect(hoistedMocks.addSavedProgram).toHaveBeenCalledWith('user-123', 'tau_cs');
-    expect(hoistedMocks.capture).toHaveBeenCalledWith(
+    expect(mockCapture).toHaveBeenCalledWith(
       expect.objectContaining({
         distinctId: 'user-123',
         event: 'server_program_saved',
@@ -94,6 +129,13 @@ describe('saved-programs API route', () => {
 
     expect(response.status).toBe(200);
     expect(hoistedMocks.removeSavedProgram).toHaveBeenCalledWith('user-123', 'tau_cs');
+    expect(mockCapture).toHaveBeenCalledWith(
+      expect.objectContaining({
+        distinctId: 'user-123',
+        event: 'server_program_removed',
+        properties: { program_id: 'tau_cs' },
+      })
+    );
   });
 
   it('returns 400 for missing or whitespace-only program ids', async () => {
@@ -169,9 +211,7 @@ describe('saved-programs API route', () => {
 
     expect(response.status).toBe(401);
     await expect(response.json()).resolves.toMatchObject({
-      error: {
-        code: 'AUTH_REQUIRED',
-      },
+      error: { code: 'AUTH_REQUIRED' },
     });
   });
 
