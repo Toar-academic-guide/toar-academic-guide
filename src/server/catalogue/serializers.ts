@@ -24,6 +24,8 @@ function serializeCalculatorConfigRow(
           },
         }
       : {}),
+    ...(row.minPsychometric !== null ? { minPsychometric: row.minPsychometric } : {}),
+    ...(row.minBagrut !== null ? { minBagrut: row.minBagrut } : {}),
   };
 }
 

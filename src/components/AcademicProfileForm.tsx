@@ -3,7 +3,7 @@
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { Upload, FileText, X, Brain, GraduationCap, Check } from 'lucide-react';
+import { Upload, FileText, X, Brain, GraduationCap } from 'lucide-react';
 import type { AcademicScores } from '@/types';
 import BagrutCalculatorWizard from './BagrutCalculatorWizard';
 
@@ -50,9 +50,7 @@ export default function AcademicProfileForm({
   const [bagrutAverage, setBagrutAverage] = useState(
     initialScores?.bagrut?.weightedAverage?.toString() ?? '',
   );
-  const [bagrutConfirmed, setBagrutConfirmed] = useState(
-    Boolean(initialScores?.bagrut?.weightedAverage),
-  );
+  const [bagrutEstimate, setBagrutEstimate] = useState<number | null>(null);
 
   // ── Psychometric file state (display-only) ───────────────────────────────
   const [psyFile, setPsyFile] = useState<FileInfo | null>(null);
@@ -270,32 +268,55 @@ export default function AcademicProfileForm({
               </div>
               <div>
                 <h2 className="text-sm font-semibold text-slate-800">ציוני בגרות</h2>
-                <p className="text-xs text-slate-400">חשב את הממוצע המשוקלל לפי מקצועות ויחידות</p>
+                <p className="text-xs text-slate-400">הזן את הממוצע הרשמי הכולל בונוסים. האשף למטה הוא כלי עזר בלבד.</p>
               </div>
             </div>
 
-            {bagrutConfirmed ? (
-              <div className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
-                <div className="flex items-center gap-2 text-sm text-emerald-800">
-                  <Check size={16} className="shrink-0 text-emerald-600" />
-                  <span className="font-semibold">ממוצע בגרות מחושב: {bagrutAverage}</span>
+            <div className="flex flex-col gap-1.5">
+              <label htmlFor="bagrut-avg" className="text-xs font-medium text-slate-600">
+                ממוצע משוקלל כולל בונוסים
+              </label>
+              <input
+                id="bagrut-avg"
+                type="number"
+                min={60}
+                max={120}
+                step={0.1}
+                placeholder="למשל: 102.5"
+                value={bagrutAverage}
+                onChange={(e) => setBagrutAverage(e.target.value)}
+                className={`${inputBase} sm:max-w-xs`}
+              />
+              <p className="text-xs text-slate-400">
+                יש להזין את הממוצע הרשמי שחושב עבורך כולל בונוסים גנריים. האשף למטה נותן אומדן לצורך בדיקה בלבד.
+              </p>
+            </div>
+
+            {bagrutEstimate !== null && (
+              <div className="mt-4 flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+                <div className="text-sm text-emerald-800">
+                  <span className="font-semibold">אומדן מהאשף: {bagrutEstimate.toFixed(1)}</span>
+                  <p className="mt-1 text-xs text-emerald-700">
+                    האומדן אינו מחליף ממוצע משוקלל רשמי של המוסד או משרד החינוך.
+                  </p>
                 </div>
                 <button
                   type="button"
-                  onClick={() => { setBagrutConfirmed(false); setBagrutAverage(''); }}
-                  className="text-xs text-emerald-500 transition hover:text-emerald-800"
+                  onClick={() => setBagrutAverage(bagrutEstimate.toFixed(1))}
+                  className="text-xs text-emerald-600 transition hover:text-emerald-800"
                 >
-                  ערוך מחדש
+                  העתק לשדה
                 </button>
               </div>
-            ) : (
+            )}
+
+            <div className="mt-4">
               <BagrutCalculatorWizard
                 onComplete={(avg) => {
-                  setBagrutAverage(avg.toString());
-                  setBagrutConfirmed(true);
+                  setBagrutEstimate(avg);
                 }}
               />
-            )}
+            </div>
           </section>
 
           {/* ── Actions ──────────────────────────────────────────────── */}

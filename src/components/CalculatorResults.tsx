@@ -2,14 +2,9 @@
 
 import { useState } from 'react';
 import { ArrowRight, Check, ChevronDown } from 'lucide-react';
-import { INSTITUTIONS, type InstitutionRecord } from '@/data/institutions';
 import { REGION_LABEL } from '@/data/geography';
-import type { GeographicRegion } from '@/types';
-
-const UNIVERSITY_IDS = new Set([
-  'tau', 'huji', 'technion', 'bgu', 'haifa', 'biu', 'ariel',
-  'weizmann', 'reichman', 'open_university',
-]);
+import type { GeographicRegion, UniversityResult } from '@/types';
+import type { CatalogueInstitution } from '@/types/catalogue';
 
 type InstitutionType = 'university' | 'college';
 type DisplayRegion = 'north' | 'center' | 'south';
@@ -22,24 +17,48 @@ const REGION_COUNT_STYLE: Record<DisplayRegion, string> = {
   south: 'bg-amber-50 text-amber-700 border-amber-200',
 };
 
-function getInstitutionType(inst: InstitutionRecord): InstitutionType {
-  return UNIVERSITY_IDS.has(inst.id) ? 'university' : 'college';
+function getInstitutionType(inst: CatalogueInstitution): InstitutionType {
+  return inst.universityId ? 'university' : 'college';
 }
 
-function getLogoSrc(inst: InstitutionRecord): string | null {
+function getLogoSrc(inst: CatalogueInstitution): string | null {
   if (inst.logoUrl) return inst.logoUrl;
   if (inst.domain) return `https://www.google.com/s2/favicons?domain=${inst.domain}&sz=64`;
   return null;
 }
 
 interface Props {
-  psychometric: number;
-  bagrut: number;
-  degreeId: string;
+  degreeName: string;
+  institutions: CatalogueInstitution[];
+  results: UniversityResult[];
   onBack: () => void;
 }
 
-export default function CalculatorResults({ onBack }: Props) {
+function getResultSummary(result: UniversityResult): string {
+  if (result.status === 'accepted') {
+    return `סכם ${result.sekhem}${result.threshold !== null ? ` · סף ${result.threshold}` : ''}`;
+  }
+
+  if (result.status === 'below' && result.deltaNeeded) {
+    const parts = [];
+    if (result.deltaNeeded.psychometric > 0) {
+      parts.push(`+${result.deltaNeeded.psychometric} פסיכומטרי`);
+    }
+    if (result.deltaNeeded.bagrut > 0) {
+      parts.push(`+${result.deltaNeeded.bagrut} בגרות`);
+    }
+    return parts.length > 0 ? parts.join(' · ') : 'נדרשים נתונים נוספים';
+  }
+
+  return 'אין סף קבלה זמין למסלול זה';
+}
+
+export default function CalculatorResults({
+  degreeName,
+  institutions,
+  results,
+  onBack,
+}: Props) {
   const [selectedTypes, setSelectedTypes] = useState<Set<InstitutionType>>(
     new Set(['university', 'college']),
   );
@@ -47,9 +66,12 @@ export default function CalculatorResults({ onBack }: Props) {
     new Set(DISPLAY_REGIONS),
   );
   const [expandedRegions, setExpandedRegions] = useState<Set<DisplayRegion>>(new Set());
+  const resultsByUniversityId = new Map(results.map((result) => [result.university.id, result]));
 
-  const allInstitutions = INSTITUTIONS.filter(
-    (inst) => inst.region !== 'any',
+  const allInstitutions = institutions.filter(
+    (inst) =>
+      inst.region !== 'any' &&
+      resultsByUniversityId.has(inst.universityId ?? inst.id),
   );
 
   function toggleType(t: InstitutionType) {
@@ -98,22 +120,10 @@ export default function CalculatorResults({ onBack }: Props) {
     institutions: filtered.filter((inst) => inst.region === region),
   })).filter((g) => g.institutions.length > 0);
 
-  // Placeholder status — will be replaced with real sekhem logic later
-  function getPlaceholderStatus(inst: InstitutionRecord): 'accepted' | 'close' | 'rejected' {
-    if (UNIVERSITY_IDS.has(inst.id)) {
-      const uniOrder = ['tau', 'huji', 'technion', 'bgu', 'haifa', 'biu', 'ariel'];
-      const idx = uniOrder.indexOf(inst.id);
-      if (idx <= 1) return 'accepted';
-      if (idx <= 4) return 'close';
-      return 'rejected';
-    }
-    return 'accepted';
-  }
-
   const STATUS_CONFIG = {
     accepted: { label: 'מתקבל/ת', bg: 'bg-[#34D399]' },
-    close: { label: 'קרוב/ה לסף', bg: 'bg-[#FCD34D]' },
-    rejected: { label: 'לא מתאפשרת קבלה', bg: 'bg-[#EF0000]' },
+    below: { label: 'נדרש שיפור', bg: 'bg-[#FCD34D]' },
+    unavailable: { label: 'חסר מידע', bg: 'bg-slate-300' },
   } as const;
 
   return (
@@ -129,7 +139,10 @@ export default function CalculatorResults({ onBack }: Props) {
             <ArrowRight size={16} />
             חזרה
           </button>
-          <h1 className="text-xl font-black text-slate-900">סיכויי הקבלה שלך</h1>
+          <div>
+            <h1 className="text-xl font-black text-slate-900">סיכויי הקבלה שלך</h1>
+            <p className="text-sm text-slate-500">{degreeName}</p>
+          </div>
         </div>
       </div>
 
@@ -225,8 +238,12 @@ export default function CalculatorResults({ onBack }: Props) {
 
               <div className="flex flex-col gap-2">
                 {visible.map((inst) => {
-                  const status = getPlaceholderStatus(inst);
-                  const cfg = STATUS_CONFIG[status];
+                  const result = resultsByUniversityId.get(inst.universityId ?? inst.id);
+                  if (!result) {
+                    return null;
+                  }
+
+                  const cfg = STATUS_CONFIG[result.status];
                   const logo = getLogoSrc(inst);
                   const instType = getInstitutionType(inst);
 
@@ -253,8 +270,8 @@ export default function CalculatorResults({ onBack }: Props) {
                         </div>
                         <div className="min-w-0">
                           <p className="truncate text-sm font-bold text-slate-900">{inst.name}</p>
-                          <p className="text-[10px] text-slate-500">
-                            {instType === 'university' ? 'אוניברסיטה' : 'מכללה'}
+                          <p className="text-[10px] text-slate-500" dir="ltr">
+                            {instType === 'university' ? 'אוניברסיטה' : 'מכללה'} · {getResultSummary(result)}
                           </p>
                         </div>
                       </div>

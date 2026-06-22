@@ -566,13 +566,13 @@ export default function BagrutCalculatorWizard({ onComplete }: Props) {
       {/* ── Step 4: Result ───────────────────────────────────────────── */}
       {step === 4 && (
         <div className="p-7">
-          <h3 className="mb-4 text-xl font-black text-slate-900">ממוצע הבגרות שלך</h3>
+          <h3 className="mb-4 text-xl font-black text-slate-900">אומדן ממוצע הציונים שלך</h3>
 
           <div className="mb-4 rounded-2xl border-2 border-[#00E5FF] bg-[#e8f9ff] py-6 text-center">
             <div className="text-5xl font-black tracking-tight text-slate-900">
               {computedAvg !== null && computedAvg > 0 ? computedAvg.toFixed(1) : '—'}
             </div>
-            <div className="mt-1 text-sm text-slate-500">ממוצע בגרות משוקלל</div>
+            <div className="mt-1 text-sm text-slate-500">אומדן לפי ציונים ויחידות לימוד</div>
           </div>
 
           <div className="mb-4 grid grid-cols-3 gap-2">
@@ -592,9 +592,9 @@ export default function BagrutCalculatorWizard({ onComplete }: Props) {
           </div>
 
           <div className="mb-4 rounded-xl border border-[#e0f9ff] bg-[#f8feff] px-4 py-3.5 text-xs leading-relaxed text-slate-500">
-            <strong className="font-bold text-slate-900">שים לב — ממוצע זה הוא הערכה כללית בלבד.</strong>{' '}
-            כל מוסד אקדמי מחשב את ממוצע הבגרות בנוסחה שונה מעט. הממוצע הקובע הוא תמיד זה שמחושב
-            במשרד הרישום של כל מוסד. בקרוב נוסיף חישוב מותאם לכל מוסד בנפרד.
+            <strong className="font-bold text-slate-900">שים לב — זהו אומדן ראשוני בלבד.</strong>{' '}
+            הוא מחושב מציונים ויחידות בלבד ואינו מחליף ממוצע בגרות משוקלל רשמי כולל בונוסים.
+            הממוצע הקובע הוא תמיד זה שמחושב במשרד הרישום של כל מוסד.
           </div>
 
           <div className="flex gap-3">
@@ -603,7 +603,7 @@ export default function BagrutCalculatorWizard({ onComplete }: Props) {
                 onClick={() => onComplete(Math.round(computedAvg * 10) / 10)}
                 className="flex-1"
               >
-                שמור ממוצע זה ←
+                השתמש/י באומדן זה ←
               </WizBtn>
             )}
             <WizBtn onClick={resetWizard} ghost>

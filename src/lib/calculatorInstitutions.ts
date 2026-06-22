@@ -7,6 +7,10 @@ export function toCatalogueCalculatorConfig(university: University): CatalogueCa
     formulaType: university.formulaType,
     scaleDescription: university.scaleDescription,
     ...(university.sekhemWeight ? { sekhemWeight: university.sekhemWeight } : {}),
+    ...(university.minPsychometric !== undefined
+      ? { minPsychometric: university.minPsychometric }
+      : {}),
+    ...(university.minBagrut !== undefined ? { minBagrut: university.minBagrut } : {}),
   };
 }
 
@@ -31,6 +35,12 @@ export function getCalculatorInstitutionsFromCatalogue(
         scaleDescription: institution.calculatorConfig.scaleDescription,
         ...(institution.calculatorConfig.sekhemWeight
           ? { sekhemWeight: institution.calculatorConfig.sekhemWeight }
+          : {}),
+        ...(institution.calculatorConfig.minPsychometric !== undefined
+          ? { minPsychometric: institution.calculatorConfig.minPsychometric }
+          : {}),
+        ...(institution.calculatorConfig.minBagrut !== undefined
+          ? { minBagrut: institution.calculatorConfig.minBagrut }
           : {}),
       },
     ];

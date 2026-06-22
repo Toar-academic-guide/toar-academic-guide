@@ -15,6 +15,7 @@ import { useUserProfile } from '@/hooks/useUserProfile';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import { fetchCatalogueInstitutions, fetchCataloguePrograms } from '@/lib/catalogueClient';
 import { getCalculatorInstitutionsFromCatalogue } from '@/lib/calculatorInstitutions';
+import { calculateLandingCalculatorState } from '@/lib/landingCalculator';
 import { getRecommendations } from '@/utils/recommendationEngine';
 import { evaluateUniversities } from '@/utils/sekhemCalculators';
 import { extractFilterAnswers } from '@/utils/riasecEngine';
@@ -109,10 +110,9 @@ export default function Home() {
   const calculatorInstitutions = getCalculatorInstitutionsFromCatalogue(catalogueInstitutions);
   const [bucketReturnsTo, setBucketReturnsTo] = useState<AppStep>('recommendations');
   const [authReturnTo, setAuthReturnTo] = useState<Exclude<AppStep, 'auth'>>('landing');
-  const [landingCalcScores, setLandingCalcScores] = useState<{
-    psychometric: number;
-    bagrut: number;
-    degreeId: string;
+  const [landingCalculatorState, setLandingCalculatorState] = useState<{
+    degreeName: string;
+    results: UniversityResult[];
   } | null>(null);
 
   useEffect(() => {
@@ -256,7 +256,13 @@ export default function Home() {
           setStep('auth');
         }}
         onCalculate={(psychometric, bagrut, degreeId) => {
-          setLandingCalcScores({ psychometric, bagrut, degreeId });
+          setLandingCalculatorState(
+            calculateLandingCalculatorState(cataloguePrograms, catalogueInstitutions, {
+              psychometric,
+              bagrut,
+              degreeId,
+            })
+          );
           setStep('calculator-results');
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }}
@@ -273,12 +279,12 @@ export default function Home() {
     );
   }
 
-  if (step === 'calculator-results' && landingCalcScores) {
+  if (step === 'calculator-results' && landingCalculatorState) {
     return (
       <CalculatorResults
-        psychometric={landingCalcScores.psychometric}
-        bagrut={landingCalcScores.bagrut}
-        degreeId={landingCalcScores.degreeId}
+        degreeName={landingCalculatorState.degreeName}
+        institutions={catalogueInstitutions}
+        results={landingCalculatorState.results}
         onBack={() => {
           setStep('landing');
           window.scrollTo({ top: 0, behavior: 'smooth' });

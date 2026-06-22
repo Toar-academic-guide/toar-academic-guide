@@ -96,6 +96,8 @@ export function buildCatalogueSeed(seedPrograms: Program[] = allPrograms): Catal
       formulaType: university.formulaType,
       psyWeight: university.sekhemWeight?.psy ?? null,
       bagrutWeight: university.sekhemWeight?.bag ?? null,
+      minPsychometric: university.minPsychometric ?? null,
+      minBagrut: university.minBagrut ?? null,
       scaleDescription: university.scaleDescription,
     })
   );
