@@ -1,10 +1,17 @@
 // @vitest-environment jsdom
 
 import { render, screen } from '@testing-library/react';
+import { vi } from 'vitest';
 
 import CalculatorResults from '@/components/CalculatorResults';
 import { getCalculatorInstitutionsFromCatalogue } from '@/lib/calculatorInstitutions';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
+
+vi.mock('posthog-js', () => ({
+  default: {
+    capture: vi.fn(),
+  },
+}));
 
 const programs = getStaticCataloguePrograms();
 const calculatorInstitutions = getCalculatorInstitutionsFromCatalogue(getStaticCatalogueInstitutions());
@@ -26,6 +33,6 @@ describe('CalculatorResults', () => {
 
     rerender(<CalculatorResults {...props} psychometric={300} bagrut={70} />);
 
-    expect(screen.getByLabelText('אוניברסיטת תל אביב: לא מתאפשרת קבלה')).toBeTruthy();
+    expect(screen.getByLabelText('אוניברסיטת תל אביב: נדרש שיפור')).toBeTruthy();
   });
 });

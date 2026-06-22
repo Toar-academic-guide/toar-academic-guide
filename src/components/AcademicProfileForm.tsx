@@ -5,8 +5,8 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { Upload, FileText, X, Brain, GraduationCap, Loader2 } from 'lucide-react';
 import type { AcademicScores, UserProfile } from '@/types';
+import BagrutCalculatorWizard from './BagrutCalculatorWizard';
 
-// ── Framer Motion tokens ────────────────────────────────────────────────────
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 const fadeUp = (delay: number) => ({
   initial: { opacity: 0, y: 18 },
@@ -14,7 +14,6 @@ const fadeUp = (delay: number) => ({
   transition: { duration: 0.72, ease: EASE, delay },
 });
 
-// ── Lightweight file metadata (File object not persisted) ───────────────────
 interface FileInfo {
   name: string;
   size: number;
@@ -37,7 +36,6 @@ export default function AcademicProfileForm({
   initialDocuments = [],
   isAuthenticated = false,
 }: Props) {
-  // ── Psychometric fields ─────────────────────────────────────────────────
   const [psyOverall, setPsyOverall] = useState(
     initialScores?.psychometric?.overall?.toString() ?? '',
   );
@@ -50,17 +48,14 @@ export default function AcademicProfileForm({
   const [psyEnglish, setPsyEnglish] = useState(
     initialScores?.psychometric?.english?.toString() ?? '',
   );
-
-  // ── Bagrut field ────────────────────────────────────────────────────────
   const [bagrutAverage, setBagrutAverage] = useState(
     initialScores?.bagrut?.weightedAverage?.toString() ?? '',
   );
+  const [bagrutEstimate, setBagrutEstimate] = useState<number | null>(null);
 
-  // Find initial docs if provided
-  const initialPsy = initialDocuments?.find((d) => d.kind === 'psychometric');
-  const initialBagrut = initialDocuments?.find((d) => d.kind === 'bagrut');
+  const initialPsy = initialDocuments?.find((document) => document.kind === 'psychometric');
+  const initialBagrut = initialDocuments?.find((document) => document.kind === 'bagrut');
 
-  // ── File states (display-only — not serialised to localStorage) ─────────
   const [psyFile, setPsyFile] = useState<FileInfo | null>(
     initialPsy
       ? { name: initialPsy.displayName, size: initialPsy.sizeBytes ?? 0 }
@@ -71,11 +66,8 @@ export default function AcademicProfileForm({
       ? { name: initialBagrut.displayName, size: initialBagrut.sizeBytes ?? 0 }
       : null,
   );
-
-  // ── Real File objects (kept in state to upload on save) ──────────────────
   const [psyFileObject, setPsyFileObject] = useState<File | null>(null);
   const [bagrutFileObject, setBagrutFileObject] = useState<File | null>(null);
-
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -99,18 +91,15 @@ export default function AcademicProfileForm({
       bagrutFileRef.current.value = '';
     }
   }
-
-  // ── Save handler ────────────────────────────────────────────────────────
   async function handleSave() {
     setIsSaving(true);
     setError(null);
 
     const scores: AcademicScores = {};
-
-    const overall      = psyOverall      ? Number(psyOverall)      : undefined;
+    const overall = psyOverall ? Number(psyOverall) : undefined;
     const quantitative = psyQuantitative ? Number(psyQuantitative) : undefined;
-    const verbal       = psyVerbal       ? Number(psyVerbal)       : undefined;
-    const english      = psyEnglish      ? Number(psyEnglish)      : undefined;
+    const verbal = psyVerbal ? Number(psyVerbal) : undefined;
+    const english = psyEnglish ? Number(psyEnglish) : undefined;
 
     if (overall !== undefined || quantitative !== undefined || verbal !== undefined || english !== undefined) {
       scores.psychometric = { overall, quantitative, verbal, english };
@@ -124,22 +113,17 @@ export default function AcademicProfileForm({
     try {
       const promises: Promise<void>[] = [];
 
-      // Check if we need to delete psy
-      const shouldDeletePsy = initialPsy && !psyFile;
-      if (shouldDeletePsy) {
+      if (initialPsy && !psyFile) {
         promises.push(
-          fetch('/api/documents?kind=psychometric', { method: 'DELETE' }).then(
-            async (res) => {
-              if (!res.ok) {
-                const body = await res.json().catch(() => ({}));
-                throw new Error(body.error?.message || 'Failed to delete psychometric document');
-              }
+          fetch('/api/documents?kind=psychometric', { method: 'DELETE' }).then(async (response) => {
+            if (!response.ok) {
+              const body = await response.json().catch(() => ({}));
+              throw new Error(body.error?.message || 'Failed to delete psychometric document');
             }
-          )
+          }),
         );
       }
 
-      // Check if we need to upload psy
       if (psyFileObject) {
         const formData = new FormData();
         formData.append('file', psyFileObject);
@@ -148,31 +132,26 @@ export default function AcademicProfileForm({
           fetch('/api/documents', {
             method: 'POST',
             body: formData,
-          }).then(async (res) => {
-            if (!res.ok) {
-              const body = await res.json().catch(() => ({}));
+          }).then(async (response) => {
+            if (!response.ok) {
+              const body = await response.json().catch(() => ({}));
               throw new Error(body.error?.message || 'Failed to upload psychometric document');
             }
-          })
+          }),
         );
       }
 
-      // Check if we need to delete bagrut
-      const shouldDeleteBagrut = initialBagrut && !bagrutFile;
-      if (shouldDeleteBagrut) {
+      if (initialBagrut && !bagrutFile) {
         promises.push(
-          fetch('/api/documents?kind=bagrut', { method: 'DELETE' }).then(
-            async (res) => {
-              if (!res.ok) {
-                const body = await res.json().catch(() => ({}));
-                throw new Error(body.error?.message || 'Failed to delete bagrut document');
-              }
+          fetch('/api/documents?kind=bagrut', { method: 'DELETE' }).then(async (response) => {
+            if (!response.ok) {
+              const body = await response.json().catch(() => ({}));
+              throw new Error(body.error?.message || 'Failed to delete bagrut document');
             }
-          )
+          }),
         );
       }
 
-      // Check if we need to upload bagrut
       if (bagrutFileObject) {
         const formData = new FormData();
         formData.append('file', bagrutFileObject);
@@ -181,26 +160,24 @@ export default function AcademicProfileForm({
           fetch('/api/documents', {
             method: 'POST',
             body: formData,
-          }).then(async (res) => {
-            if (!res.ok) {
-              const body = await res.json().catch(() => ({}));
+          }).then(async (response) => {
+            if (!response.ok) {
+              const body = await response.json().catch(() => ({}));
               throw new Error(body.error?.message || 'Failed to upload bagrut document');
             }
-          })
+          }),
         );
       }
 
       await Promise.all(promises);
-
       onComplete(scores);
-    } catch (err: any) {
-      console.error('[AcademicProfileForm] Error saving documents:', err);
-      setError(err.message || 'התרחשה שגיאה בשמירת המסמכים. אנא נסה שנית.');
+    } catch (caughtError: any) {
+      console.error('[AcademicProfileForm] Error saving documents:', caughtError);
+      setError(caughtError.message || 'התרחשה שגיאה בשמירת המסמכים. אנא נסה שנית.');
       setIsSaving(false);
     }
   }
 
-  // ── Shared input class ──────────────────────────────────────────────────
   const inputBase =
     'w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm ' +
     'text-slate-800 placeholder-slate-300 outline-none transition ' +
@@ -209,8 +186,6 @@ export default function AcademicProfileForm({
   return (
     <div className="min-h-screen bg-[#f5f4f0] px-4 py-10">
       <div className="mx-auto flex max-w-2xl flex-col items-center gap-8">
-
-        {/* ── Logo ─────────────────────────────────────────────────────── */}
         <motion.div {...fadeUp(0)}>
           <Image
             src="/way-logo.png"
@@ -222,12 +197,10 @@ export default function AcademicProfileForm({
           />
         </motion.div>
 
-        {/* ── Card ─────────────────────────────────────────────────────── */}
         <motion.div
           {...fadeUp(0.18)}
           className="w-full rounded-3xl border border-[#e5e7eb] bg-white p-8 shadow-lg md:p-10"
         >
-          {/* Card header */}
           <div className="mb-8">
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">
               הזן את הנתונים האקדמיים שלך
@@ -237,11 +210,7 @@ export default function AcademicProfileForm({
             </p>
           </div>
 
-          {/* ════════════════════════════════════════════════════════════ */}
-          {/* Section 1 — Psychometric                                    */}
-          {/* ════════════════════════════════════════════════════════════ */}
           <section className="mb-8">
-            {/* Section header */}
             <div className="mb-5 flex items-center gap-3">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-indigo-50">
                 <Brain size={17} className="text-indigo-600" />
@@ -252,9 +221,7 @@ export default function AcademicProfileForm({
               </div>
             </div>
 
-            {/* 2 × 2 input grid */}
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-              {/* Overall */}
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="psy-overall" className="text-xs font-medium text-slate-600">
                   ציון כללי
@@ -266,13 +233,12 @@ export default function AcademicProfileForm({
                   max={800}
                   placeholder="למשל: 650"
                   value={psyOverall}
-                  onChange={(e) => setPsyOverall(e.target.value)}
+                  onChange={(event) => setPsyOverall(event.target.value)}
                   disabled={isSaving}
-                  className={`${inputBase} disabled:opacity-50 disabled:cursor-not-allowed`}
+                  className={`${inputBase} disabled:cursor-not-allowed disabled:opacity-50`}
                 />
               </div>
 
-              {/* Quantitative */}
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="psy-quant" className="text-xs font-medium text-slate-600">
                   דגש כמותי
@@ -284,13 +250,12 @@ export default function AcademicProfileForm({
                   max={150}
                   placeholder="למשל: 135"
                   value={psyQuantitative}
-                  onChange={(e) => setPsyQuantitative(e.target.value)}
+                  onChange={(event) => setPsyQuantitative(event.target.value)}
                   disabled={isSaving}
-                  className={`${inputBase} disabled:opacity-50 disabled:cursor-not-allowed`}
+                  className={`${inputBase} disabled:cursor-not-allowed disabled:opacity-50`}
                 />
               </div>
 
-              {/* Verbal */}
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="psy-verbal" className="text-xs font-medium text-slate-600">
                   דגש מילולי
@@ -302,13 +267,12 @@ export default function AcademicProfileForm({
                   max={150}
                   placeholder="למשל: 120"
                   value={psyVerbal}
-                  onChange={(e) => setPsyVerbal(e.target.value)}
+                  onChange={(event) => setPsyVerbal(event.target.value)}
                   disabled={isSaving}
-                  className={`${inputBase} disabled:opacity-50 disabled:cursor-not-allowed`}
+                  className={`${inputBase} disabled:cursor-not-allowed disabled:opacity-50`}
                 />
               </div>
 
-              {/* English */}
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="psy-english" className="text-xs font-medium text-slate-600">
                   אנגלית
@@ -320,14 +284,13 @@ export default function AcademicProfileForm({
                   max={150}
                   placeholder="למשל: 130"
                   value={psyEnglish}
-                  onChange={(e) => setPsyEnglish(e.target.value)}
+                  onChange={(event) => setPsyEnglish(event.target.value)}
                   disabled={isSaving}
-                  className={`${inputBase} disabled:opacity-50 disabled:cursor-not-allowed`}
+                  className={`${inputBase} disabled:cursor-not-allowed disabled:opacity-50`}
                 />
               </div>
             </div>
 
-            {/* Screenshot upload */}
             <div className="mt-4">
               <input
                 ref={psyFileRef}
@@ -336,16 +299,15 @@ export default function AcademicProfileForm({
                 className="sr-only"
                 aria-label="העלאת תדפיס פסיכומטרי"
                 disabled={isSaving}
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) {
-                    setPsyFile({ name: f.name, size: f.size });
-                    setPsyFileObject(f);
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  if (file) {
+                    setPsyFile({ name: file.name, size: file.size });
+                    setPsyFileObject(file);
                   }
                 }}
               />
               {psyFile ? (
-                /* Success state */
                 <div className="flex items-center justify-between rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3">
                   <div className="flex items-center gap-2 text-xs text-indigo-700">
                     <FileText size={14} className="shrink-0" />
@@ -361,7 +323,9 @@ export default function AcademicProfileForm({
                     onClick={() => {
                       setPsyFile(null);
                       setPsyFileObject(null);
-                      if (psyFileRef.current) psyFileRef.current.value = '';
+                      if (psyFileRef.current) {
+                        psyFileRef.current.value = '';
+                      }
                     }}
                     className="ml-2 text-indigo-400 transition hover:text-indigo-700 disabled:opacity-50"
                   >
@@ -369,7 +333,6 @@ export default function AcademicProfileForm({
                   </button>
                 </div>
               ) : (
-                /* Upload prompt */
                 <button
                   type="button"
                   disabled={isSaving}
@@ -379,7 +342,7 @@ export default function AcademicProfileForm({
                     'rounded-xl border-2 border-dashed border-slate-200 bg-slate-50',
                     'px-4 py-3.5 text-xs font-medium text-slate-400',
                     'transition hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-600',
-                    'disabled:opacity-50 disabled:cursor-not-allowed',
+                    'disabled:cursor-not-allowed disabled:opacity-50',
                   ].join(' ')}
                 >
                   <Upload size={14} />
@@ -389,25 +352,19 @@ export default function AcademicProfileForm({
             </div>
           </section>
 
-          {/* Divider */}
           <div className="mb-8 h-px w-full bg-slate-100" />
 
-          {/* ════════════════════════════════════════════════════════════ */}
-          {/* Section 2 — Bagrut                                          */}
-          {/* ════════════════════════════════════════════════════════════ */}
           <section className="mb-8">
-            {/* Section header */}
             <div className="mb-5 flex items-center gap-3">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-50">
                 <GraduationCap size={17} className="text-emerald-600" />
               </div>
               <div>
                 <h2 className="text-sm font-semibold text-slate-800">ציוני בגרות</h2>
-                <p className="text-xs text-slate-400">ממוצע סופי כולל בונוסים גנריים (60–120)</p>
+                <p className="text-xs text-slate-400">הזן את הממוצע הרשמי הכולל בונוסים. האשף למטה הוא כלי עזר בלבד.</p>
               </div>
             </div>
 
-            {/* Weighted average input */}
             <div className="flex flex-col gap-1.5">
               <label htmlFor="bagrut-avg" className="text-xs font-medium text-slate-600">
                 ממוצע משוקלל כולל בונוסים
@@ -420,16 +377,34 @@ export default function AcademicProfileForm({
                 step={0.1}
                 placeholder="למשל: 102.5"
                 value={bagrutAverage}
-                onChange={(e) => setBagrutAverage(e.target.value)}
+                onChange={(event) => setBagrutAverage(event.target.value)}
                 disabled={isSaving}
-                className={`${inputBase} sm:max-w-xs disabled:opacity-50 disabled:cursor-not-allowed`}
+                className={`${inputBase} sm:max-w-xs disabled:cursor-not-allowed disabled:opacity-50`}
               />
               <p className="text-xs text-slate-400">
-                הממוצע הסופי לאחר כל הבונוסים הגנריים — מקסימום 120 נקודות
+                יש להזין את הממוצע הרשמי שחושב עבורך כולל בונוסים גנריים. האשף למטה נותן אומדן לצורך בדיקה בלבד.
               </p>
             </div>
 
-            {/* Diploma upload */}
+            {bagrutEstimate !== null ? (
+              <div className="mt-4 flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
+                <div className="text-sm text-emerald-800">
+                  <span className="font-semibold">אומדן מהאשף: {bagrutEstimate.toFixed(1)}</span>
+                  <p className="mt-1 text-xs text-emerald-700">
+                    האומדן אינו מחליף ממוצע משוקלל רשמי של המוסד או משרד החינוך.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  disabled={isSaving}
+                  onClick={() => setBagrutAverage(bagrutEstimate.toFixed(1))}
+                  className="text-xs text-emerald-600 transition hover:text-emerald-800 disabled:opacity-50"
+                >
+                  העתק לשדה
+                </button>
+              </div>
+            ) : null}
+
             <div className="mt-4">
               <input
                 ref={bagrutFileRef}
@@ -438,16 +413,15 @@ export default function AcademicProfileForm({
                 className="sr-only"
                 aria-label="העלאת גיליון ציוני בגרות"
                 disabled={isSaving}
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) {
-                    setBagrutFile({ name: f.name, size: f.size });
-                    setBagrutFileObject(f);
+                onChange={(event) => {
+                  const file = event.target.files?.[0];
+                  if (file) {
+                    setBagrutFile({ name: file.name, size: file.size });
+                    setBagrutFileObject(file);
                   }
                 }}
               />
               {bagrutFile ? (
-                /* Success state */
                 <div className="flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3">
                   <div className="flex items-center gap-2 text-xs text-emerald-700">
                     <FileText size={14} className="shrink-0" />
@@ -463,7 +437,9 @@ export default function AcademicProfileForm({
                     onClick={() => {
                       setBagrutFile(null);
                       setBagrutFileObject(null);
-                      if (bagrutFileRef.current) bagrutFileRef.current.value = '';
+                      if (bagrutFileRef.current) {
+                        bagrutFileRef.current.value = '';
+                      }
                     }}
                     className="ml-2 text-emerald-400 transition hover:text-emerald-700 disabled:opacity-50"
                   >
@@ -471,7 +447,6 @@ export default function AcademicProfileForm({
                   </button>
                 </div>
               ) : (
-                /* Upload prompt */
                 <button
                   type="button"
                   disabled={isSaving}
@@ -481,13 +456,17 @@ export default function AcademicProfileForm({
                     'rounded-xl border-2 border-dashed border-slate-200 bg-slate-50',
                     'px-4 py-3.5 text-xs font-medium text-slate-400',
                     'transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-600',
-                    'disabled:opacity-50 disabled:cursor-not-allowed',
+                    'disabled:cursor-not-allowed disabled:opacity-50',
                   ].join(' ')}
                 >
                   <Upload size={14} />
                   <span>העלה גיליון ציוני בגרות (תמונה / PDF)</span>
                 </button>
               )}
+            </div>
+
+            <div className="mt-4">
+              <BagrutCalculatorWizard onComplete={(average) => setBagrutEstimate(average)} />
             </div>
           </section>
 
@@ -519,14 +498,12 @@ export default function AcademicProfileForm({
             </div>
           </section>
 
-          {/* Error Message */}
-          {error && (
+          {error ? (
             <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-600">
               {error}
             </div>
-          )}
+          ) : null}
 
-          {/* ── Actions ──────────────────────────────────────────────── */}
           <motion.div {...fadeUp(0.38)} className="flex flex-col items-center gap-3">
             <button
               type="button"
@@ -537,23 +514,22 @@ export default function AcademicProfileForm({
                 'bg-gradient-to-l from-indigo-600 to-violet-600',
                 'shadow-lg shadow-indigo-200/70',
                 'transition hover:brightness-110 hover:shadow-xl active:scale-[0.98]',
-                'disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2',
+                'flex items-center justify-center gap-2 disabled:cursor-not-allowed disabled:opacity-50',
               ].join(' ')}
             >
-              {isSaving && <Loader2 size={16} className="animate-spin" />}
+              {isSaving ? <Loader2 size={16} className="animate-spin" /> : null}
               <span>שמור והמשך לשאלון ←</span>
             </button>
             <button
               type="button"
               disabled={isSaving}
               onClick={onSkip}
-              className="text-sm text-slate-400 transition hover:text-slate-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="text-sm text-slate-400 transition hover:text-slate-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
               דלג — אמלא מאוחר יותר
             </button>
           </motion.div>
         </motion.div>
-
       </div>
     </div>
   );

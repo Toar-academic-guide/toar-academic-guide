@@ -1,10 +1,11 @@
-import { serializeProgramRow } from '@/server/catalogue/serializers';
+import { serializeInstitutionRow, serializeProgramRow } from '@/server/catalogue/serializers';
 import { allPrograms } from '@/data/degrees';
 import type {
   AdmissionRequirementRow,
   InstitutionRow,
   ProgramInstitutionRow,
   ProgramRow,
+  UniversityCalculatorConfigRow,
 } from '@/db/types';
 
 describe('catalogue serializers', () => {
@@ -96,5 +97,38 @@ describe('catalogue serializers', () => {
     });
 
     expect(serialized.profileScore).toEqual(staticProgram!.profileScore);
+  });
+
+  it('preserves minimum-floor calculator fields on serialized institutions', () => {
+    const institution = {
+      id: 'test_college',
+      name: 'מכללת בדיקה',
+      region: 'center',
+      domain: null,
+      logoUrl: null,
+      programUrl: null,
+      calculatorUrl: null,
+      universityId: null,
+    } as InstitutionRow;
+
+    const calculatorConfig = {
+      institutionId: 'test_college',
+      formulaType: 'minimum_floors',
+      psyWeight: null,
+      bagrutWeight: null,
+      minPsychometric: 560,
+      minBagrut: 85,
+      scaleDescription: 'בדיקה',
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    } as UniversityCalculatorConfigRow;
+
+    const serialized = serializeInstitutionRow(institution, calculatorConfig);
+
+    expect(serialized.calculatorConfig).toMatchObject({
+      formulaType: 'minimum_floors',
+      minPsychometric: 560,
+      minBagrut: 85,
+    });
   });
 });
