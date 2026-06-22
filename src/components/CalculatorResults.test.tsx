@@ -26,6 +26,6 @@ describe('CalculatorResults', () => {
 
     rerender(<CalculatorResults {...props} psychometric={300} bagrut={70} />);
 
-    expect(screen.getByLabelText('אוניברסיטת תל אביב: לא מתאפשרת קבלה')).toBeTruthy();
+    expect(screen.getByLabelText('אוניברסיטת תל אביב: נדרש שיפור')).toBeTruthy();
   });
 });

@@ -77,7 +77,7 @@ export default function KineticTextSwapper() {
         </div>
       </div>
 
-      <div className="pb-8 md:pb-12" dir="ltr">
+      <div className="flex justify-start pb-8 md:pb-12" dir="ltr">
         <img
           src="/way-cartoon.png"
           alt="I'm not sure which way to go"
