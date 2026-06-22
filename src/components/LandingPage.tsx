@@ -365,7 +365,7 @@ export default function LandingPage({
       </section>
 
       {/* ── After cartoon ───────────────────────────────────────── */}
-      <section className="flex justify-end bg-white px-8 py-4 pr-0 md:px-16 md:pr-0">
+      <section className="flex justify-end bg-white px-8 py-4 pr-0 md:px-16 md:pr-0" dir="ltr">
         <img
           src="/way-cartoon-after.png"
           alt="That's way easier than I thought"
