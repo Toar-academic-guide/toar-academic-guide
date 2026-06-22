@@ -54,6 +54,14 @@ npm run db:seed:verify
 `db:seed:verify` compares the target database snapshot to the current git-tracked seed payload and exits non-zero when programmes, programme links, threshold rows, or calculator configs drift.
 `db:seed` now reseeds managed catalogue rows and immediately runs the same verification pass, so a successful seed run proves convergence instead of only reporting row counts.
 
+Tracked DB access policy now follows three classes:
+
+- catalogue tables are public-read and no-public-write through the exposed Supabase schema
+- user-owned tables are limited to the owning authenticated user by RLS
+- ingestion, review, and historical operational tables are private to privileged runtime or admin paths
+
+The current Next.js runtime still uses a direct `postgres.js` connection for server-side DB access. That path is separate from the exposed Supabase Data API and remains a follow-up least-privilege hardening concern.
+
 ## Catalogue cutover
 
 1. Apply the tracked migrations to the target database.
