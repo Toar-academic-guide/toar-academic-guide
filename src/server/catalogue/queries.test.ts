@@ -1,5 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { UNIVERSITIES } from '@/data/degreesData';
+import {
+  admissionRequirements,
+  admissionThresholds,
+  institutions,
+  programInstitutions,
+  programs,
+  sourceUrls,
+  universityCalculatorConfigs,
+} from '@/db/schema';
 
 const hoistedMocks = vi.hoisted(() => ({
   getDb: vi.fn(),
@@ -52,7 +61,94 @@ import {
   CatalogueQueryError,
   evaluateCatalogueReadiness,
   listCataloguePrograms,
+  resetDatabaseCatalogueSnapshotCache,
 } from '@/server/catalogue/queries';
+
+function createMockDb(dataset: {
+  admissionRequirements?: unknown[];
+  admissionThresholds?: unknown[];
+  institutions?: unknown[];
+  programInstitutions?: unknown[];
+  programs?: unknown[];
+  sourceUrls?: unknown[];
+  universityCalculatorConfigs?: unknown[];
+}) {
+  const tableRows = new Map<object, unknown[]>([
+    [institutions, dataset.institutions ?? []],
+    [universityCalculatorConfigs, dataset.universityCalculatorConfigs ?? []],
+    [programs, dataset.programs ?? []],
+    [programInstitutions, dataset.programInstitutions ?? []],
+    [admissionRequirements, dataset.admissionRequirements ?? []],
+    [admissionThresholds, dataset.admissionThresholds ?? []],
+    [sourceUrls, dataset.sourceUrls ?? []],
+  ]);
+
+  const from = vi.fn((table: object) => ({
+    then(resolve: (rows: unknown[]) => unknown) {
+      return Promise.resolve(resolve(tableRows.get(table) ?? []));
+    },
+    where: vi.fn().mockResolvedValue(tableRows.get(table) ?? []),
+  }));
+
+  return {
+    db: {
+      select: vi.fn(() => ({
+        from,
+      })),
+    },
+    from,
+  };
+}
+
+function createDatabaseBackedDataset() {
+  return {
+    institutions: [
+      {
+        id: 'tau',
+        name: 'TAU',
+        region: 'center',
+        domain: null,
+        logoUrl: null,
+        programUrl: null,
+        calculatorUrl: null,
+        universityId: 'tau',
+      },
+    ],
+    universityCalculatorConfigs: [
+      ...UNIVERSITIES.map((university) => ({
+        institutionId: university.id,
+        formulaType: 'weighted_scaled',
+        scaleDescription: 'Weighted scale',
+        psyWeight: 0.5,
+        bagrutWeight: 0.5,
+        minPsychometric: null,
+        minBagrut: null,
+      })),
+    ],
+    programs: [
+      {
+        id: 'computer_science',
+        name: 'Computer Science',
+        institutionName: 'TAU',
+        institutionId: 'tau',
+        type: 'academic',
+        category: 'Engineering',
+        admissionType: 'requirements',
+        riasecR: 1,
+        riasecI: 1,
+        riasecA: 1,
+        riasecS: 1,
+        riasecE: 1,
+        riasecC: 1,
+        isTauEngineering: false,
+      },
+    ],
+    programInstitutions: [{ programId: 'computer_science', institutionId: 'tau' }],
+    admissionRequirements: [],
+    admissionThresholds: [],
+    sourceUrls: [],
+  };
+}
 
 describe('catalogue queries', () => {
   const universityInstitutionRows = UNIVERSITIES.map((university) => ({ id: university.id }));
@@ -64,6 +160,8 @@ describe('catalogue queries', () => {
       hasDatabaseUrl: false,
       isProduction: false,
     };
+    vi.useRealTimers();
+    resetDatabaseCatalogueSnapshotCache();
     hoistedMocks.getDb.mockReset();
     hoistedMocks.getStaticCataloguePrograms.mockClear();
     hoistedMocks.getStaticCatalogueInstitutions.mockClear();
@@ -155,5 +253,54 @@ describe('catalogue queries', () => {
     expect(readiness.issues).toContain(
       `Institutions missing calculator configs: ${missingInstitutionIds.join(', ')}`
     );
+  });
+
+  it('records cache misses on the first database-backed catalogue read', async () => {
+    mockEnv.mode = 'database';
+    mockEnv.hasDatabaseUrl = true;
+
+    const { db } = createMockDb(createDatabaseBackedDataset());
+
+    hoistedMocks.getDb.mockReturnValue(db);
+
+    const result = await listCataloguePrograms();
+
+    expect(result.meta.catalogueSourceMode).toBe('database');
+    expect(result.meta.catalogueSource).toBe('database');
+    expect(result.meta.catalogueSnapshotCacheStatus).toBe('miss');
+  });
+
+  it('reuses the cached snapshot for repeated database-backed reads within the TTL', async () => {
+    mockEnv.mode = 'database';
+    mockEnv.hasDatabaseUrl = true;
+
+    const { db } = createMockDb(createDatabaseBackedDataset());
+
+    hoistedMocks.getDb.mockReturnValue(db);
+
+    const firstResult = await listCataloguePrograms();
+    const secondResult = await listCataloguePrograms();
+
+    expect(firstResult.meta.catalogueSnapshotCacheStatus).toBe('miss');
+    expect(secondResult.meta.catalogueSnapshotCacheStatus).toBe('hit');
+    expect(hoistedMocks.getDb).toHaveBeenCalledTimes(1);
+  });
+
+  it('reloads the snapshot after the TTL expires', async () => {
+    mockEnv.mode = 'database';
+    mockEnv.hasDatabaseUrl = true;
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-06-23T00:00:00Z'));
+
+    const { db } = createMockDb(createDatabaseBackedDataset());
+
+    hoistedMocks.getDb.mockReturnValue(db);
+
+    await listCataloguePrograms();
+    vi.setSystemTime(new Date('2026-06-23T00:01:01Z'));
+    const secondResult = await listCataloguePrograms();
+
+    expect(secondResult.meta.catalogueSnapshotCacheStatus).toBe('miss');
+    expect(hoistedMocks.getDb).toHaveBeenCalledTimes(2);
   });
 });

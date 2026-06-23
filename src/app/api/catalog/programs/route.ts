@@ -1,12 +1,23 @@
 import { CatalogueQueryError, listCataloguePrograms } from '@/server/catalogue/queries';
+import {
+  buildCatalogueErrorResponse,
+  buildCatalogueSuccessResponse,
+  logCatalogueResponse,
+} from '@/server/catalogue/routeMetrics';
 import type { ApiEnvelope, CatalogueProgram } from '@/types/catalogue';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
+  const startedAtMs = Date.now();
+
   try {
     const { data, meta } = await listCataloguePrograms();
-    return Response.json({ data, meta } satisfies ApiEnvelope<CatalogueProgram[]>);
+    const { envelope, summary } = buildCatalogueSuccessResponse('programs', data, meta, startedAtMs);
+
+    logCatalogueResponse('programs', envelope.meta, summary);
+
+    return Response.json(envelope satisfies ApiEnvelope<CatalogueProgram[]>);
   } catch (error) {
     const code =
       error instanceof CatalogueQueryError ? error.code : 'CATALOGUE_PROGRAMS_INTERNAL_ERROR';
@@ -15,17 +26,19 @@ export async function GET() {
     const details = error instanceof CatalogueQueryError ? error.details : undefined;
     const meta = error instanceof CatalogueQueryError ? error.meta : undefined;
     const status = error instanceof CatalogueQueryError ? error.status : 503;
-
-    return Response.json(
+    const { envelope, summary } = buildCatalogueErrorResponse(
       {
-        error: {
-          code,
-          message,
-          ...(details && details.length > 0 ? { details } : {}),
-        },
-        ...(meta ? { meta } : {}),
-      } satisfies ApiEnvelope<CatalogueProgram[]>,
-      { status }
+        code,
+        message,
+        ...(details && details.length > 0 ? { details } : {}),
+      },
+      meta,
+      startedAtMs,
+      status
     );
+
+    logCatalogueResponse('programs', envelope.meta, summary);
+
+    return Response.json(envelope satisfies ApiEnvelope<CatalogueProgram[]>, { status });
   }
 }

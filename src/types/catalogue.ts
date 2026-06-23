@@ -4,6 +4,7 @@ import type { FormulaType } from '@/types';
 
 export type CatalogueSourceMode = 'auto' | 'database' | 'static';
 export type CatalogueSource = 'database' | 'static';
+export type CatalogueSnapshotCacheStatus = 'hit' | 'miss';
 
 export interface CatalogueCalculatorConfig {
   formulaType: FormulaType;
@@ -37,7 +38,12 @@ export interface ApiErrorPayload {
 export interface ApiMetaPayload {
   catalogueSourceMode?: CatalogueSourceMode;
   catalogueSource?: CatalogueSource;
+  catalogueSnapshotCacheStatus?: CatalogueSnapshotCacheStatus;
   fallbackReason?: string;
+  durationMs?: number;
+  responseBytes?: number;
+  programCount?: number;
+  institutionCount?: number;
 }
 
 export interface ApiEnvelope<T> {

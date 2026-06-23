@@ -36,4 +36,28 @@ describe('catalogueClient', () => {
       },
     });
   });
+
+  it('ignores additive measurement metadata on successful responses', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          data: [{ id: 'computer_science', name: 'Computer Science' }],
+          meta: {
+            catalogueSourceMode: 'database',
+            catalogueSource: 'database',
+            catalogueSnapshotCacheStatus: 'hit',
+            durationMs: 12,
+            responseBytes: 256,
+            programCount: 1,
+          },
+        }),
+      })
+    );
+
+    await expect(fetchCataloguePrograms()).resolves.toEqual([
+      { id: 'computer_science', name: 'Computer Science' },
+    ]);
+  });
 });
