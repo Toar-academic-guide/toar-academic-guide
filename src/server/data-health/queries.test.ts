@@ -252,4 +252,27 @@ describe('getDataHealthReport', () => {
       message: 'Operational data health is not configured.',
     });
   });
+
+  it('returns an unavailable state when the ops database query stalls', async () => {
+    vi.useFakeTimers();
+    hoistedMocks.getOpsDb.mockReturnValue({
+      select: vi.fn(() => ({
+        from: vi.fn(() => new Promise<never>(() => {})),
+      })),
+    });
+
+    try {
+      const reportPromise = getDataHealthReport(now, { timeoutMs: 10 });
+
+      await vi.advanceTimersByTimeAsync(10);
+
+      await expect(reportPromise).resolves.toEqual({
+        status: 'unavailable',
+        message:
+          'Operational data health did not respond in time. Check OPS_DATABASE_URL and Supabase pooler connectivity.',
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });
