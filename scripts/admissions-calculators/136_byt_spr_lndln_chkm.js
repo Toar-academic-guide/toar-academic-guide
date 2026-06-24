@@ -10,7 +10,7 @@ async function getAdmissionsData() {
     location: `דרך השלום 7, תל אביב`,
     programName: `בית ספר לנדלן חכם`,
     degreeType: `תעודה מקצועית`,
-    officialUrl: ``,
+    officialUrl: `https://yoram.walla.co.il/institute/20789`,
     admissionRequirements: {
       sekhemThreshold: ``,
       calculatorUrl: ``,
@@ -39,7 +39,7 @@ async function getAdmissionsData() {
       ]
     },
     dataReliability: {
-      officialSource: ``,
+      officialSource: `https://yoram.walla.co.il/institute/20789`,
       checkDate: `2026-06-24`,
       confidenceLevel: "גבוהה (על בסיס בדיקה רשמית)",
       barriersAndNotes: ``

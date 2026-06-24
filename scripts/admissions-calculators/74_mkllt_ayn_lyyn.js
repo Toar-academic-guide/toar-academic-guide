@@ -10,7 +10,7 @@ async function getAdmissionsData() {
     location: `זבוטינסקי 100, פתח תקווה`,
     programName: `מכללת אין ליין`,
     degreeType: `תואר אקדמי`,
-    officialUrl: ``,
+    officialUrl: `https://yoram.walla.co.il/institute/18082`,
     admissionRequirements: {
       sekhemThreshold: ``,
       calculatorUrl: ``,
@@ -39,7 +39,7 @@ async function getAdmissionsData() {
       ]
     },
     dataReliability: {
-      officialSource: ``,
+      officialSource: `https://yoram.walla.co.il/institute/18082`,
       checkDate: `2026-06-24`,
       confidenceLevel: "גבוהה (על בסיס בדיקה רשמית)",
       barriersAndNotes: ``

@@ -10,7 +10,7 @@ async function getAdmissionsData() {
     location: `חיפה - שדרות ההסתדרות 49, חיפה`,
     programName: `ירין שחף \\- בית הספר המוביל למקצועות היופי`,
     degreeType: `תעודה מקצועית`,
-    officialUrl: ``,
+    officialUrl: `https://yoram.walla.co.il/institute/1599`,
     admissionRequirements: {
       sekhemThreshold: ``,
       calculatorUrl: ``,
@@ -39,7 +39,7 @@ async function getAdmissionsData() {
       ]
     },
     dataReliability: {
-      officialSource: ``,
+      officialSource: `https://yoram.walla.co.il/institute/1599`,
       checkDate: `2026-06-24`,
       confidenceLevel: "גבוהה (על בסיס בדיקה רשמית)",
       barriersAndNotes: ``

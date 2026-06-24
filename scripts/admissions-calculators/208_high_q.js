@@ -10,7 +10,7 @@ async function getAdmissionsData() {
     location: `HIGH Q אונליין - , און ליין`,
     programName: `HIGH Q`,
     degreeType: `תעודה מקצועית`,
-    officialUrl: ``,
+    officialUrl: `https://yoram.walla.co.il/institute/18179`,
     admissionRequirements: {
       sekhemThreshold: ``,
       calculatorUrl: ``,
@@ -39,7 +39,7 @@ async function getAdmissionsData() {
       ]
     },
     dataReliability: {
-      officialSource: ``,
+      officialSource: `https://yoram.walla.co.il/institute/18179`,
       checkDate: `2026-06-24`,
       confidenceLevel: "גבוהה (על בסיס בדיקה רשמית)",
       barriersAndNotes: ``

@@ -10,7 +10,7 @@ async function getAdmissionsData() {
     location: `רמת הגולן 90, אריאל`,
     programName: `המכינה הקדם אקדמית אריאל בשומרון`,
     degreeType: `תואר אקדמי`,
-    officialUrl: ``,
+    officialUrl: `https://yoram.walla.co.il/institute/4122`,
     admissionRequirements: {
       sekhemThreshold: ``,
       calculatorUrl: ``,
@@ -39,7 +39,7 @@ async function getAdmissionsData() {
       ]
     },
     dataReliability: {
-      officialSource: ``,
+      officialSource: `https://yoram.walla.co.il/institute/4122`,
       checkDate: `2026-06-24`,
       confidenceLevel: "גבוהה (על בסיס בדיקה רשמית)",
       barriersAndNotes: ``

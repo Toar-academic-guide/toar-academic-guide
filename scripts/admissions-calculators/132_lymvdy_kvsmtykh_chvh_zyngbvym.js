@@ -10,7 +10,7 @@ async function getAdmissionsData() {
     location: `קמפוס חיפה - ההסתדרות (סינמול קומה 1) 55, חיפה`,
     programName: `לימודי קוסמטיקה חוה זינגבוים`,
     degreeType: `תעודה מקצועית`,
-    officialUrl: ``,
+    officialUrl: `https://yoram.walla.co.il/institute/20744`,
     admissionRequirements: {
       sekhemThreshold: ``,
       calculatorUrl: ``,
@@ -39,7 +39,7 @@ async function getAdmissionsData() {
       ]
     },
     dataReliability: {
-      officialSource: ``,
+      officialSource: `https://yoram.walla.co.il/institute/20744`,
       checkDate: `2026-06-24`,
       confidenceLevel: "גבוהה (על בסיס בדיקה רשמית)",
       barriersAndNotes: ``

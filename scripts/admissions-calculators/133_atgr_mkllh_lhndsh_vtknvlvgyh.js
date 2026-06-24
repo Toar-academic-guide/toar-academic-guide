@@ -10,7 +10,7 @@ async function getAdmissionsData() {
     location: `סניף אשדוד - מקיף ו' , אשדוד`,
     programName: `אתגר מכללה להנדסה וטכנולוגיה`,
     degreeType: `תואר אקדמי`,
-    officialUrl: ``,
+    officialUrl: `https://yoram.walla.co.il/institute/20759`,
     admissionRequirements: {
       sekhemThreshold: ``,
       calculatorUrl: ``,
@@ -39,7 +39,7 @@ async function getAdmissionsData() {
       ]
     },
     dataReliability: {
-      officialSource: ``,
+      officialSource: `https://yoram.walla.co.il/institute/20759`,
       checkDate: `2026-06-24`,
       confidenceLevel: "גבוהה (על בסיס בדיקה רשמית)",
       barriersAndNotes: ``

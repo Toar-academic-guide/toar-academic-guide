@@ -10,7 +10,7 @@ async function getAdmissionsData() {
     location: `האקדמיה לפיננסים מבית פירמת הענק BDO זיו האפט - סניף אונליין - , און ליין`,
     programName: `האקדמיה לפיננסים מבית BDO`,
     degreeType: `תואר אקדמי`,
-    officialUrl: ``,
+    officialUrl: `https://yoram.walla.co.il/institute/20620`,
     admissionRequirements: {
       sekhemThreshold: ``,
       calculatorUrl: ``,
@@ -39,7 +39,7 @@ async function getAdmissionsData() {
       ]
     },
     dataReliability: {
-      officialSource: ``,
+      officialSource: `https://yoram.walla.co.il/institute/20620`,
       checkDate: `2026-06-24`,
       confidenceLevel: "גבוהה (על בסיס בדיקה רשמית)",
       barriersAndNotes: ``

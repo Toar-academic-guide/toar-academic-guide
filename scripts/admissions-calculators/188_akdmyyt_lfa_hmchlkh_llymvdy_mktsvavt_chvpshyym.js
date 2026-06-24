@@ -10,7 +10,7 @@ async function getAdmissionsData() {
     location: `אקדמיית LFA - המחלקה ללימודי מקצועות חופשיים - הכבאי 3, כרמיאל`,
     programName: `אקדמיית LFA - המחלקה ללימודי מקצועות חופשיים`,
     degreeType: `תואר אקדמי`,
-    officialUrl: ``,
+    officialUrl: `https://yoram.walla.co.il/institute/20685`,
     admissionRequirements: {
       sekhemThreshold: ``,
       calculatorUrl: ``,
@@ -39,7 +39,7 @@ async function getAdmissionsData() {
       ]
     },
     dataReliability: {
-      officialSource: ``,
+      officialSource: `https://yoram.walla.co.il/institute/20685`,
       checkDate: `2026-06-24`,
       confidenceLevel: "גבוהה (על בסיס בדיקה רשמית)",
       barriersAndNotes: ``

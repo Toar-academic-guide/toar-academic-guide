@@ -10,7 +10,7 @@ async function getAdmissionsData() {
     location: `לימודי משחק לבמה ומול מצלמה בהנהלת השחקן אייל רוזלס - חומה ומגדל 16, תל אביב`,
     programName: `לימודי משחק לבמה ומול מצלמה בהנהלת השחקן אייל רוזלס`,
     degreeType: `תעודה מקצועית`,
-    officialUrl: ``,
+    officialUrl: `https://yoram.walla.co.il/institute/20892`,
     admissionRequirements: {
       sekhemThreshold: ``,
       calculatorUrl: ``,
@@ -39,7 +39,7 @@ async function getAdmissionsData() {
       ]
     },
     dataReliability: {
-      officialSource: ``,
+      officialSource: `https://yoram.walla.co.il/institute/20892`,
       checkDate: `2026-06-24`,
       confidenceLevel: "גבוהה (על בסיס בדיקה רשמית)",
       barriersAndNotes: ``

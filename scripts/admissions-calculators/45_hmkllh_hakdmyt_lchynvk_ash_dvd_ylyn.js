@@ -10,7 +10,7 @@ async function getAdmissionsData() {
     location: `מעגל בית המדרש 7, ירושלים`,
     programName: `המכללה האקדמית לחינוך ע"ש דוד ילין`,
     degreeType: `תואר אקדמי`,
-    officialUrl: ``,
+    officialUrl: `https://yoram.walla.co.il/institute/736`,
     admissionRequirements: {
       sekhemThreshold: ``,
       calculatorUrl: ``,
@@ -39,7 +39,7 @@ async function getAdmissionsData() {
       ]
     },
     dataReliability: {
-      officialSource: ``,
+      officialSource: `https://yoram.walla.co.il/institute/736`,
       checkDate: `2026-06-24`,
       confidenceLevel: "גבוהה (על בסיס בדיקה רשמית)",
       barriersAndNotes: `שנה א' חינם לבוגרי שירות צבאי, לאומי או אזרחי; בוגרי שנה אחת של שירות לאומי או אזרחי זכאות לחצי שכר לימוד שנה א; מימון מלא כולל מלגת קיום לסטודנטים מצטיינים – תוכנית רג"ב; הסדר מימון שכר לימוד; מלגת סיוע מקרן אבינועם ילין`

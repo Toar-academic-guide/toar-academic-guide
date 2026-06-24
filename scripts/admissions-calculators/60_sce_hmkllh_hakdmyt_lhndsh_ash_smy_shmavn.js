@@ -10,7 +10,7 @@ async function getAdmissionsData() {
     location: `sce - המכללה האקדמית להנדסה סמי שמעון - קמפוס אשדוד - זבוטינסקי 84, אשדוד`,
     programName: `SCE המכללה האקדמית להנדסה ע"ש סמי שמעון`,
     degreeType: `תואר אקדמי`,
-    officialUrl: ``,
+    officialUrl: `https://yoram.walla.co.il/institute/2986`,
     admissionRequirements: {
       sekhemThreshold: ``,
       calculatorUrl: ``,
@@ -39,7 +39,7 @@ async function getAdmissionsData() {
       ]
     },
     dataReliability: {
-      officialSource: ``,
+      officialSource: `https://yoram.walla.co.il/institute/2986`,
       checkDate: `2026-06-24`,
       confidenceLevel: "גבוהה (על בסיס בדיקה רשמית)",
       barriersAndNotes: ``

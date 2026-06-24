@@ -10,7 +10,7 @@ async function getAdmissionsData() {
     location: `בית הספר למאמנים ומדריכים בספורט גבעת ושינגטון - , קבוצת יבנה`,
     programName: `בית ספר 'ליגה" -בית הספר למאמנים ומדריכים בספורט גבעת ושינגטון`,
     degreeType: `תעודה מקצועית`,
-    officialUrl: ``,
+    officialUrl: `https://yoram.walla.co.il/institute/21317`,
     admissionRequirements: {
       sekhemThreshold: ``,
       calculatorUrl: ``,
@@ -39,7 +39,7 @@ async function getAdmissionsData() {
       ]
     },
     dataReliability: {
-      officialSource: ``,
+      officialSource: `https://yoram.walla.co.il/institute/21317`,
       checkDate: `2026-06-24`,
       confidenceLevel: "גבוהה (על בסיס בדיקה רשמית)",
       barriersAndNotes: ``

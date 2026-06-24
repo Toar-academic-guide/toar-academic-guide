@@ -10,7 +10,7 @@ async function getAdmissionsData() {
     location: `מכללת ICCM - המכללה הבינ"ל למאמנים ומנטורים- אונליין - , און ליין`,
     programName: `מכללת ICCM - המכללה הבינ"ל למאמנים ומנטורים`,
     degreeType: `תואר אקדמי`,
-    officialUrl: ``,
+    officialUrl: `https://yoram.walla.co.il/institute/20642`,
     admissionRequirements: {
       sekhemThreshold: ``,
       calculatorUrl: ``,
@@ -39,7 +39,7 @@ async function getAdmissionsData() {
       ]
     },
     dataReliability: {
-      officialSource: ``,
+      officialSource: `https://yoram.walla.co.il/institute/20642`,
       checkDate: `2026-06-24`,
       confidenceLevel: "גבוהה (על בסיס בדיקה רשמית)",
       barriersAndNotes: ``
