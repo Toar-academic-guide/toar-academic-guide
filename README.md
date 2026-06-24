@@ -78,6 +78,9 @@ The current Next.js runtime still uses a direct `postgres.js` connection for ser
 - server catalogue queries and serializers live under `src/server/catalogue/`
 - read-only catalogue routes live under `src/app/api/catalog/`
 - client access is isolated behind `src/lib/catalogueClient.ts`
+- catalogue responses include lightweight timing, size, and item-count measurement in `meta`
+- database-backed catalogue snapshot loads use a short per-instance TTL cache to avoid rebuilding the same multi-table snapshot on every request
+- the snapshot cache is best-effort and server-instance-local; it is not a distributed freshness guarantee
 
 See [docs/backend-data-model.md](/Users/amitmalichi/Desktop/toar-academic-guide/docs/backend-data-model.md:1) for the schema shape and review-flow model.
 

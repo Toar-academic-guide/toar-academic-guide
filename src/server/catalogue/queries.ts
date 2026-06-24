@@ -29,6 +29,7 @@ import type {
   CatalogueInstitution,
   CatalogueProgram,
   CatalogueSource,
+  CatalogueSnapshotCacheStatus,
   CatalogueSourceMode,
 } from '@/types/catalogue';
 import { serializeInstitutionRow, serializeProgramRow } from './serializers';
@@ -61,22 +62,51 @@ interface DatabaseCatalogueSnapshot extends CatalogueReadinessSnapshot {
   universityCalculatorConfigs: UniversityCalculatorConfigRow[];
 }
 
+interface DatabaseSnapshotLoadResult {
+  cacheStatus: CatalogueSnapshotCacheStatus;
+  snapshot: DatabaseCatalogueSnapshot;
+}
+
 interface CatalogueSourceResolution {
   source: CatalogueSource;
   meta: ApiMetaPayload;
   snapshot?: DatabaseCatalogueSnapshot;
 }
 
+interface DatabaseCatalogueSnapshotCache {
+  expiresAt: number;
+  inFlight: Promise<DatabaseSnapshotLoadResult> | null;
+  snapshot: DatabaseCatalogueSnapshot | null;
+}
+
+const DATABASE_CATALOGUE_SNAPSHOT_TTL_MS = 60_000;
+
+// This cache is intentionally process-local. It reduces duplicate snapshot
+// rebuilds on one server instance, but it is not a distributed freshness layer.
+const databaseCatalogueSnapshotCache: DatabaseCatalogueSnapshotCache = {
+  expiresAt: 0,
+  inFlight: null,
+  snapshot: null,
+};
+
 function createMeta(
   catalogueSourceMode: CatalogueSourceMode,
   catalogueSource: CatalogueSource,
-  fallbackReason?: string
+  fallbackReason?: string,
+  cacheStatus?: CatalogueSnapshotCacheStatus
 ): ApiMetaPayload {
   return {
     catalogueSourceMode,
     catalogueSource,
+    ...(cacheStatus ? { catalogueSnapshotCacheStatus: cacheStatus } : {}),
     ...(fallbackReason ? { fallbackReason } : {}),
   };
+}
+
+export function resetDatabaseCatalogueSnapshotCache() {
+  databaseCatalogueSnapshotCache.expiresAt = 0;
+  databaseCatalogueSnapshotCache.inFlight = null;
+  databaseCatalogueSnapshotCache.snapshot = null;
 }
 
 export class CatalogueQueryError extends Error {
@@ -233,11 +263,48 @@ async function loadDatabaseCatalogueSnapshot(): Promise<DatabaseCatalogueSnapsho
   };
 }
 
+async function loadDatabaseCatalogueSnapshotWithCache(): Promise<DatabaseSnapshotLoadResult> {
+  const now = Date.now();
+
+  if (
+    databaseCatalogueSnapshotCache.snapshot &&
+    databaseCatalogueSnapshotCache.expiresAt > now
+  ) {
+    return {
+      cacheStatus: 'hit',
+      snapshot: databaseCatalogueSnapshotCache.snapshot,
+    };
+  }
+
+  if (databaseCatalogueSnapshotCache.inFlight) {
+    return databaseCatalogueSnapshotCache.inFlight;
+  }
+
+  const refreshPromise = (async () => {
+    const snapshot = await loadDatabaseCatalogueSnapshot();
+    databaseCatalogueSnapshotCache.snapshot = snapshot;
+    databaseCatalogueSnapshotCache.expiresAt = Date.now() + DATABASE_CATALOGUE_SNAPSHOT_TTL_MS;
+
+    return {
+      cacheStatus: 'miss' as const,
+      snapshot,
+    };
+  })();
+
+  databaseCatalogueSnapshotCache.inFlight = refreshPromise;
+
+  try {
+    return await refreshPromise;
+  } finally {
+    databaseCatalogueSnapshotCache.inFlight = null;
+  }
+}
+
 async function loadDatabaseCatalogueOrThrow(
   mode: CatalogueSourceMode
-): Promise<DatabaseCatalogueSnapshot> {
+): Promise<DatabaseSnapshotLoadResult> {
   try {
-    return await loadDatabaseCatalogueSnapshot();
+    return await loadDatabaseCatalogueSnapshotWithCache();
   } catch (error) {
     throw new CatalogueQueryError(
       'CATALOGUE_DATABASE_UNAVAILABLE',
@@ -297,7 +364,7 @@ async function resolveCatalogueSource(): Promise<CatalogueSourceResolution> {
   }
 
   try {
-    const snapshot = await loadDatabaseCatalogueOrThrow(mode);
+    const { cacheStatus, snapshot } = await loadDatabaseCatalogueOrThrow(mode);
     const readiness = evaluateCatalogueReadiness(snapshot);
 
     if (!readiness.isReady) {
@@ -313,7 +380,7 @@ async function resolveCatalogueSource(): Promise<CatalogueSourceResolution> {
 
     return {
       source: 'database',
-      meta: createMeta(mode, 'database'),
+      meta: createMeta(mode, 'database', undefined, cacheStatus),
       snapshot,
     };
   } catch (error) {
