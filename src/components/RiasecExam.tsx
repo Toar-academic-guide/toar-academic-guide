@@ -49,28 +49,28 @@ const CHOICES: {
     value: 'yes',
     label: 'כן',
     icon: Check,
-    base:   'border-slate-200 text-slate-400 hover:border-emerald-400 hover:text-emerald-500 hover:bg-emerald-50',
+    base: 'border-slate-200 text-slate-400 hover:border-emerald-400 hover:text-emerald-500 hover:bg-emerald-50',
     active: 'border-emerald-500 bg-emerald-50 text-emerald-700',
   },
   {
     value: 'maybe',
     label: 'אולי',
     icon: Minus,
-    base:   'border-slate-200 text-slate-400 hover:border-amber-400 hover:text-amber-500 hover:bg-amber-50',
+    base: 'border-slate-200 text-slate-400 hover:border-amber-400 hover:text-amber-500 hover:bg-amber-50',
     active: 'border-amber-400 bg-amber-50 text-amber-700',
   },
   {
     value: 'no',
     label: 'לא',
     icon: X,
-    base:   'border-slate-200 text-slate-400 hover:border-rose-300 hover:text-rose-500 hover:bg-rose-50',
+    base: 'border-slate-200 text-slate-400 hover:border-rose-300 hover:text-rose-500 hover:bg-rose-50',
     active: 'border-rose-400 bg-rose-50 text-rose-600',
   },
 ];
 
-type RatingMap = Partial<Record<string, RiasecAnswer>>;   // itemId → answer
-type ScenarioMap = Partial<Record<string, 'a' | 'b'>>;    // scenarioId → side
-type SituationalMap = Partial<Record<string, number>>;    // situationalId → option index
+type RatingMap = Partial<Record<string, RiasecAnswer>>; // itemId → answer
+type ScenarioMap = Partial<Record<string, 'a' | 'b'>>; // scenarioId → side
+type SituationalMap = Partial<Record<string, number>>; // situationalId → option index
 
 export default function RiasecExam({ onComplete }: Props) {
   const [screenIndex, setScreenIndex] = useState(0);
@@ -86,8 +86,8 @@ export default function RiasecExam({ onComplete }: Props) {
 
   // ── Per-screen completion gate ──────────────────────────────────────────────
   function isScreenComplete(s: Screen): boolean {
-    if (s.kind === 'military') return true;     // 0–2 picks; skippable
-    if (s.kind === 'transition') return true;   // breather screen
+    if (s.kind === 'military') return true; // 0–2 picks; skippable
+    if (s.kind === 'transition') return true; // breather screen
     if (s.kind === 'scenario') return scenarios[s.scenarioId] !== undefined;
     if (s.kind === 'situational') return situationals[s.situationalId] !== undefined;
     return s.itemIds.every((id) => ratings[id] !== undefined);
@@ -107,9 +107,7 @@ export default function RiasecExam({ onComplete }: Props) {
 
   function toggleMilitary(mode: 'loved' | 'drained', dim: RiasecDimension) {
     const [list, setList] =
-      mode === 'loved'
-        ? [militaryLoved, setMilitaryLoved]
-        : [militaryDrained, setMilitaryDrained];
+      mode === 'loved' ? [militaryLoved, setMilitaryLoved] : [militaryDrained, setMilitaryDrained];
     if (list.includes(dim)) {
       setList(list.filter((d) => d !== dim));
     } else if (list.length < MAX_MILITARY_PICKS) {
@@ -189,11 +187,12 @@ export default function RiasecExam({ onComplete }: Props) {
   return (
     <div className="min-h-screen w-full bg-[#f5f4f0] px-2 py-10 sm:px-4">
       <div className="mx-auto max-w-3xl rounded-3xl border border-[#e5e7eb] bg-white p-8 shadow-lg md:p-12">
-
         {/* ── Progress ───────────────────────────────────────────────── */}
         <div className="mb-8 flex flex-col gap-2">
           <div className="flex items-center justify-between text-xs font-medium text-slate-400">
-            <span>שלב {screenIndex + 1} מתוך {TOTAL_SCREENS}</span>
+            <span>
+              שלב {screenIndex + 1} מתוך {TOTAL_SCREENS}
+            </span>
             <span>{progressPercent}%</span>
           </div>
           <div className="h-0.5 w-full overflow-hidden rounded-full bg-slate-100">
@@ -240,11 +239,7 @@ export default function RiasecExam({ onComplete }: Props) {
           )}
 
           {screen.kind === 'rating' && (
-            <RatingScreen
-              itemIds={screen.itemIds}
-              answers={ratings}
-              onAnswer={setRating}
-            />
+            <RatingScreen itemIds={screen.itemIds} answers={ratings} onAnswer={setRating} />
           )}
         </motion.div>
 
@@ -275,11 +270,12 @@ export default function RiasecExam({ onComplete }: Props) {
               'disabled:cursor-not-allowed disabled:opacity-40',
             ].join(' ')}
           >
-            <span>{isLast ? 'סיום הבחינה' : screen.kind === 'transition' ? 'יאללה, מתחילים' : 'הבא'}</span>
+            <span>
+              {isLast ? 'סיום הבחינה' : screen.kind === 'transition' ? 'יאללה, מתחילים' : 'הבא'}
+            </span>
             <ChevronLeft size={16} />
           </motion.button>
         </div>
-
       </div>
     </div>
   );
@@ -290,11 +286,7 @@ export default function RiasecExam({ onComplete }: Props) {
  * ════════════════════════════════════════════════════════════════════════════ */
 
 // ── Part transition (breather between the 3 parts) ──────────────────────────────
-function TransitionScreen({
-  screen,
-}: {
-  screen: Extract<Screen, { kind: 'transition' }>;
-}) {
+function TransitionScreen({ screen }: { screen: Extract<Screen, { kind: 'transition' }> }) {
   return (
     <div className="flex flex-col items-center gap-4 py-10 text-center">
       <span className="text-5xl">{screen.emoji}</span>
@@ -320,9 +312,7 @@ function MilitaryScreen({
   const atMax = selected.length >= MAX_MILITARY_PICKS;
   const title = mode === 'loved' ? 'מה הכי הדליק אותך בשירות?' : 'ומה הכי שחק לך את העצבים?';
   const sub =
-    mode === 'loved'
-      ? 'בחר/י עד 2 — מה שהכי אהבת לעשות'
-      : 'בחר/י עד 2 — מה שהכי לא התחברת אליו';
+    mode === 'loved' ? 'בחר/י עד 2 — מה שהכי אהבת לעשות' : 'בחר/י עד 2 — מה שהכי לא התחברת אליו';
 
   return (
     <>
@@ -340,9 +330,7 @@ function MilitaryScreen({
           const isSelected = selected.includes(opt.dim);
           const dimmed = atMax && !isSelected;
           const activeColor =
-            mode === 'loved'
-              ? 'border-indigo-400 bg-indigo-50'
-              : 'border-rose-300 bg-rose-50';
+            mode === 'loved' ? 'border-indigo-400 bg-indigo-50' : 'border-rose-300 bg-rose-50';
           const activeText = mode === 'loved' ? 'text-indigo-800' : 'text-rose-700';
           return (
             <motion.button
@@ -359,7 +347,9 @@ function MilitaryScreen({
               ].join(' ')}
             >
               <span className="shrink-0 text-2xl">{opt.emoji}</span>
-              <span className={`text-sm font-semibold ${isSelected ? activeText : 'text-slate-700'}`}>
+              <span
+                className={`text-sm font-semibold ${isSelected ? activeText : 'text-slate-700'}`}
+              >
                 {opt.label}
               </span>
             </motion.button>
@@ -391,7 +381,9 @@ function ScenarioScreen({
   return (
     <>
       <div className="flex flex-col gap-1">
-        <span className="text-xs font-semibold uppercase tracking-wider text-indigo-400">מה יותר אתה?</span>
+        <span className="text-xs font-semibold uppercase tracking-wider text-indigo-400">
+          מה יותר אתה?
+        </span>
         <h2 className="text-xl font-bold leading-relaxed tracking-tight text-slate-900">
           {sc.prompt}
         </h2>
@@ -413,7 +405,9 @@ function ScenarioScreen({
                   : 'border-slate-200 bg-white hover:border-indigo-300 hover:bg-slate-50',
               ].join(' ')}
             >
-              <span className={`text-sm leading-relaxed ${isSelected ? 'font-semibold text-indigo-900' : 'text-slate-700'}`}>
+              <span
+                className={`text-sm leading-relaxed ${isSelected ? 'font-semibold text-indigo-900' : 'text-slate-700'}`}
+              >
                 {text}
               </span>
             </motion.button>
@@ -468,12 +462,16 @@ function SituationalScreen({
               <span
                 className={[
                   'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition',
-                  isSelected ? 'border-indigo-500 bg-indigo-500 text-white' : 'border-slate-300 text-transparent',
+                  isSelected
+                    ? 'border-indigo-500 bg-indigo-500 text-white'
+                    : 'border-slate-300 text-transparent',
                 ].join(' ')}
               >
                 <Check size={12} strokeWidth={3} />
               </span>
-              <span className={`text-sm leading-relaxed ${isSelected ? 'font-semibold text-indigo-900' : 'text-slate-700'}`}>
+              <span
+                className={`text-sm leading-relaxed ${isSelected ? 'font-semibold text-indigo-900' : 'text-slate-700'}`}
+              >
                 {opt.text}
               </span>
             </motion.button>
@@ -530,8 +528,12 @@ function RatingScreen({
           return (
             <div key={item.id} className="flex items-center gap-3 py-3">
               <div className="flex flex-1 items-start gap-2 text-right">
-                <span className="mt-0.5 shrink-0 text-xs font-medium text-slate-300">{idx + 1}.</span>
-                <p className={`text-sm leading-relaxed ${current !== undefined ? 'font-medium text-slate-800' : 'text-slate-600'}`}>
+                <span className="mt-0.5 shrink-0 text-xs font-medium text-slate-300">
+                  {idx + 1}.
+                </span>
+                <p
+                  className={`text-sm leading-relaxed ${current !== undefined ? 'font-medium text-slate-800' : 'text-slate-600'}`}
+                >
                   {item.text}
                 </p>
               </div>
@@ -574,7 +576,9 @@ function RatingScreen({
             />
           ))}
         </div>
-        <span>{allAnswered ? 'כל הפריטים נענו ✓' : `${answeredCount} מתוך ${itemIds.length} נענו`}</span>
+        <span>
+          {allAnswered ? 'כל הפריטים נענו ✓' : `${answeredCount} מתוך ${itemIds.length} נענו`}
+        </span>
       </div>
     </>
   );

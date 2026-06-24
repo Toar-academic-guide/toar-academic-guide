@@ -12,7 +12,12 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 
-export const geographicRegionEnum = pgEnum('geographic_region', ['center', 'north', 'south', 'any']);
+export const geographicRegionEnum = pgEnum('geographic_region', [
+  'center',
+  'north',
+  'south',
+  'any',
+]);
 export const programTypeEnum = pgEnum('program_type', ['academic', 'certificate', 'vocational']);
 export const admissionTypeEnum = pgEnum('admission_type', ['sekhem', 'requirements']);
 export const calculatorFormulaTypeEnum = pgEnum('calculator_formula_type', [
@@ -21,9 +26,17 @@ export const calculatorFormulaTypeEnum = pgEnum('calculator_formula_type', [
   'minimum_floors',
 ]);
 export const thresholdKindEnum = pgEnum('threshold_kind', ['sekhem', 'direct_psychometric']);
-export const sourceUrlKindEnum = pgEnum('source_url_kind', ['program', 'calculator', 'institution']);
+export const sourceUrlKindEnum = pgEnum('source_url_kind', [
+  'program',
+  'calculator',
+  'institution',
+]);
 export const reviewStatusEnum = pgEnum('review_status', ['seeded', 'reviewed', 'published']);
-export const sourceDifficultyEnum = pgEnum('source_difficulty', ['easy', 'browser_required', 'hard_manual']);
+export const sourceDifficultyEnum = pgEnum('source_difficulty', [
+  'easy',
+  'browser_required',
+  'hard_manual',
+]);
 export const ingestionJobStatusEnum = pgEnum('ingestion_job_status', [
   'pending',
   'running',
@@ -31,9 +44,18 @@ export const ingestionJobStatusEnum = pgEnum('ingestion_job_status', [
   'failed',
   'needs_review',
 ]);
-export const reviewItemStatusEnum = pgEnum('review_item_status', ['pending', 'approved', 'rejected']);
+export const reviewItemStatusEnum = pgEnum('review_item_status', [
+  'pending',
+  'approved',
+  'rejected',
+]);
 export const documentKindEnum = pgEnum('document_kind', ['psychometric', 'bagrut', 'other']);
-export const storageProviderEnum = pgEnum('storage_provider', ['local', 'supabase_storage', 's3', 'other']);
+export const storageProviderEnum = pgEnum('storage_provider', [
+  'local',
+  'supabase_storage',
+  's3',
+  'other',
+]);
 
 export const institutions = pgTable('institutions', {
   id: text('id').primaryKey(),
@@ -93,7 +115,7 @@ export const programInstitutions = pgTable(
   },
   (table) => ({
     pk: primaryKey({ columns: [table.programId, table.institutionId] }),
-  })
+  }),
 );
 
 export const admissionRequirements = pgTable('admission_requirements', {
@@ -136,9 +158,9 @@ export const admissionThresholds = pgTable(
       table.programId,
       table.institutionId,
       table.universityId,
-      table.thresholdKind
+      table.thresholdKind,
     ),
-  })
+  }),
 );
 
 export const sourceUrls = pgTable('source_urls', {
@@ -170,7 +192,10 @@ export const requirementVersions = pgTable('requirement_versions', {
   admissionRequirements: text('admission_requirements').array().default([]).notNull(),
   specificAdmissionNotes: text('specific_admission_notes').array().default([]).notNull(),
   programDescription: text('program_description'),
-  sourceSnapshot: jsonb('source_snapshot').$type<Record<string, string | null>>().default({}).notNull(),
+  sourceSnapshot: jsonb('source_snapshot')
+    .$type<Record<string, string | null>>()
+    .default({})
+    .notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 
@@ -206,7 +231,7 @@ export const savedPrograms = pgTable(
   },
   (table) => ({
     pk: primaryKey({ columns: [table.userId, table.programId] }),
-  })
+  }),
 );
 
 export const uploadedDocuments = pgTable('uploaded_documents', {
@@ -258,9 +283,12 @@ export const reviewItems = pgTable('review_items', {
   payloadId: text('payload_id')
     .notNull()
     .references(() => ingestionPayloads.id, { onDelete: 'cascade' }),
-  admissionRequirementId: text('admission_requirement_id').references(() => admissionRequirements.id, {
-    onDelete: 'set null',
-  }),
+  admissionRequirementId: text('admission_requirement_id').references(
+    () => admissionRequirements.id,
+    {
+      onDelete: 'set null',
+    },
+  ),
   targetField: text('target_field').notNull(),
   proposedValue: jsonb('proposed_value').$type<unknown>().notNull(),
   status: reviewItemStatusEnum('status').default('pending').notNull(),

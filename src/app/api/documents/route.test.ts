@@ -215,7 +215,9 @@ describe('documents API route', () => {
       expect(res.status).toBe(200);
 
       // Verify deletion of old file was called on storage
-      expect(mockSupabase.storage.from().remove).toHaveBeenCalledWith(['user-123/psychometric/old-uuid']);
+      expect(mockSupabase.storage.from().remove).toHaveBeenCalledWith([
+        'user-123/psychometric/old-uuid',
+      ]);
       expect(mockTx.delete).toHaveBeenCalled();
     });
   });
@@ -246,7 +248,9 @@ describe('documents API route', () => {
 
       // Verify deletion from DB and Storage
       expect(mockDb.delete).toHaveBeenCalled();
-      expect(mockSupabase.storage.from().remove).toHaveBeenCalledWith(['user-123/psychometric/some-uuid']);
+      expect(mockSupabase.storage.from().remove).toHaveBeenCalledWith([
+        'user-123/psychometric/some-uuid',
+      ]);
     });
 
     it('returns null if document to delete does not exist', async () => {

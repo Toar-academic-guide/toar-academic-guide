@@ -4,17 +4,53 @@ import { useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
   ChevronLeft,
-  Cpu, Zap, Settings, Building2, Activity, Microscope,
-  PieChart, Brain, Stethoscope, Scale, Briefcase, TrendingUp,
-  Heart, Shield, Film,
-  UtensilsCrossed, Palette, Camera, Sparkles, Leaf, FlaskConical,
-  LineChart, Database, Music, Anchor,
-  Cake, ChefHat, PenTool, Clapperboard, Ruler,
-  Bookmark, BookmarkCheck,
+  Cpu,
+  Zap,
+  Settings,
+  Building2,
+  Activity,
+  Microscope,
+  PieChart,
+  Brain,
+  Stethoscope,
+  Scale,
+  Briefcase,
+  TrendingUp,
+  Heart,
+  Shield,
+  Film,
+  UtensilsCrossed,
+  Palette,
+  Camera,
+  Sparkles,
+  Leaf,
+  FlaskConical,
+  LineChart,
+  Database,
+  Music,
+  Anchor,
+  Cake,
+  ChefHat,
+  PenTool,
+  Clapperboard,
+  Ruler,
+  Bookmark,
+  BookmarkCheck,
 } from 'lucide-react';
-import { RecommendedField, ProfileScores, EnvironmentPreference, ProfileDimension, GeographicRegion } from '@/types';
+import {
+  RecommendedField,
+  ProfileScores,
+  EnvironmentPreference,
+  ProfileDimension,
+  GeographicRegion,
+} from '@/types';
 import { DIMENSION_LABELS } from '@/data/testItems';
-import { INSTITUTION_REGIONS, REGION_LABEL, REGION_EMOJI, REGION_BADGE_COLOR } from '@/data/geography';
+import {
+  INSTITUTION_REGIONS,
+  REGION_LABEL,
+  REGION_EMOJI,
+  REGION_BADGE_COLOR,
+} from '@/data/geography';
 import { INSTITUTION_BY_NAME } from '@/data/institutions';
 import InstitutionLogo from '@/components/InstitutionLogo';
 import type { Program } from '@/data/degrees/types';
@@ -34,66 +70,126 @@ interface Props {
 
 const DEMAND_COLOR: Record<RecommendedField['marketDemand'], string> = {
   'גבוה מאוד': 'bg-green-100 text-green-800',
-  'גבוה':      'bg-blue-100 text-blue-800',
-  'בינוני':    'bg-yellow-100 text-yellow-800',
+  גבוה: 'bg-blue-100 text-blue-800',
+  בינוני: 'bg-yellow-100 text-yellow-800',
 };
 const RESILIENCE_COLOR: Record<RecommendedField['aiResilience'], string> = {
-  'גבוהה':   'bg-green-100 text-green-800',
-  'בינונית': 'bg-yellow-100 text-yellow-800',
-  'נמוכה':   'bg-red-100 text-red-800',
+  גבוהה: 'bg-green-100 text-green-800',
+  בינונית: 'bg-yellow-100 text-yellow-800',
+  נמוכה: 'bg-red-100 text-red-800',
 };
 
-interface FieldIconMeta { icon: LucideIcon; color: string; accent: string }
+interface FieldIconMeta {
+  icon: LucideIcon;
+  color: string;
+  accent: string;
+}
 const FIELD_ICON: Record<string, FieldIconMeta> = {
   // ── Academic ──────────────────────────────────────────────────────────────
-  cs:               { icon: Cpu,             color: 'bg-blue-50 text-blue-600',       accent: 'border-r-blue-400'      },
-  datascience:      { icon: PieChart,        color: 'bg-indigo-50 text-indigo-600',   accent: 'border-r-indigo-400'    },
-  ee:               { icon: Zap,             color: 'bg-yellow-50 text-yellow-600',   accent: 'border-r-yellow-400'    },
-  me:               { icon: Settings,        color: 'bg-orange-50 text-orange-600',   accent: 'border-r-orange-400'    },
-  civilEng:         { icon: Building2,       color: 'bg-stone-50 text-stone-600',     accent: 'border-r-stone-400'     },
-  industrialEng:    { icon: Activity,        color: 'bg-teal-50 text-teal-600',       accent: 'border-r-teal-400'      },
-  biomedical:       { icon: Microscope,      color: 'bg-pink-50 text-pink-600',       accent: 'border-r-pink-400'      },
-  psychology:       { icon: Brain,           color: 'bg-purple-50 text-purple-600',   accent: 'border-r-purple-400'    },
-  medicine:         { icon: Stethoscope,     color: 'bg-red-50 text-red-600',         accent: 'border-r-red-400'       },
-  law:              { icon: Scale,           color: 'bg-amber-50 text-amber-600',     accent: 'border-r-amber-400'     },
-  business:         { icon: Briefcase,       color: 'bg-emerald-50 text-emerald-600', accent: 'border-r-emerald-400'   },
-  economics:        { icon: TrendingUp,      color: 'bg-green-50 text-green-600',     accent: 'border-r-green-400'     },
-  biology:          { icon: Microscope,      color: 'bg-lime-50 text-lime-600',       accent: 'border-r-lime-400'      },
-  socialWork:       { icon: Heart,           color: 'bg-rose-50 text-rose-600',       accent: 'border-r-rose-400'      },
-  nursing:          { icon: Shield,          color: 'bg-red-50 text-red-500',         accent: 'border-r-red-300'       },
+  cs: { icon: Cpu, color: 'bg-blue-50 text-blue-600', accent: 'border-r-blue-400' },
+  datascience: {
+    icon: PieChart,
+    color: 'bg-indigo-50 text-indigo-600',
+    accent: 'border-r-indigo-400',
+  },
+  ee: { icon: Zap, color: 'bg-yellow-50 text-yellow-600', accent: 'border-r-yellow-400' },
+  me: { icon: Settings, color: 'bg-orange-50 text-orange-600', accent: 'border-r-orange-400' },
+  civilEng: { icon: Building2, color: 'bg-stone-50 text-stone-600', accent: 'border-r-stone-400' },
+  industrialEng: { icon: Activity, color: 'bg-teal-50 text-teal-600', accent: 'border-r-teal-400' },
+  biomedical: { icon: Microscope, color: 'bg-pink-50 text-pink-600', accent: 'border-r-pink-400' },
+  psychology: { icon: Brain, color: 'bg-purple-50 text-purple-600', accent: 'border-r-purple-400' },
+  medicine: { icon: Stethoscope, color: 'bg-red-50 text-red-600', accent: 'border-r-red-400' },
+  law: { icon: Scale, color: 'bg-amber-50 text-amber-600', accent: 'border-r-amber-400' },
+  business: {
+    icon: Briefcase,
+    color: 'bg-emerald-50 text-emerald-600',
+    accent: 'border-r-emerald-400',
+  },
+  economics: {
+    icon: TrendingUp,
+    color: 'bg-green-50 text-green-600',
+    accent: 'border-r-green-400',
+  },
+  biology: { icon: Microscope, color: 'bg-lime-50 text-lime-600', accent: 'border-r-lime-400' },
+  socialWork: { icon: Heart, color: 'bg-rose-50 text-rose-600', accent: 'border-r-rose-400' },
+  nursing: { icon: Shield, color: 'bg-red-50 text-red-500', accent: 'border-r-red-300' },
   // ── Tech bootcamps ────────────────────────────────────────────────────────
-  fullstack:        { icon: Cpu,             color: 'bg-blue-50 text-blue-600',       accent: 'border-r-blue-400'      },
-  cyber:            { icon: Shield,          color: 'bg-slate-50 text-slate-600',     accent: 'border-r-slate-400'     },
-  dataAnalysis:     { icon: PieChart,        color: 'bg-indigo-50 text-indigo-600',   accent: 'border-r-indigo-400'    },
-  cloudDevOps:      { icon: Activity,        color: 'bg-teal-50 text-teal-600',       accent: 'border-r-teal-400'      },
+  fullstack: { icon: Cpu, color: 'bg-blue-50 text-blue-600', accent: 'border-r-blue-400' },
+  cyber: { icon: Shield, color: 'bg-slate-50 text-slate-600', accent: 'border-r-slate-400' },
+  dataAnalysis: {
+    icon: PieChart,
+    color: 'bg-indigo-50 text-indigo-600',
+    accent: 'border-r-indigo-400',
+  },
+  cloudDevOps: { icon: Activity, color: 'bg-teal-50 text-teal-600', accent: 'border-r-teal-400' },
   // ── Arts & design ─────────────────────────────────────────────────────────
-  industrialDesign: { icon: PenTool,         color: 'bg-blue-50 text-blue-600',       accent: 'border-r-blue-400'      },
-  fineArts:         { icon: Palette,         color: 'bg-purple-50 text-purple-600',   accent: 'border-r-purple-400'    },
-  photography:      { icon: Camera,          color: 'bg-slate-50 text-slate-600',     accent: 'border-r-slate-400'     },
-  fashion:          { icon: Ruler,           color: 'bg-pink-50 text-pink-600',       accent: 'border-r-pink-400'      },
-  graphicDesign:    { icon: Palette,         color: 'bg-violet-50 text-violet-600',   accent: 'border-r-violet-400'    },
-  animation:        { icon: Clapperboard,    color: 'bg-violet-50 text-violet-600',   accent: 'border-r-violet-400'    },
-  dance:            { icon: Sparkles,        color: 'bg-rose-50 text-rose-600',       accent: 'border-r-rose-400'      },
-  cinema:           { icon: Film,            color: 'bg-violet-50 text-violet-600',   accent: 'border-r-violet-400'    },
-  screenwriting:    { icon: Film,            color: 'bg-violet-50 text-violet-600',   accent: 'border-r-violet-400'    },
-  documentary:      { icon: Film,            color: 'bg-violet-50 text-violet-600',   accent: 'border-r-violet-400'    },
+  industrialDesign: {
+    icon: PenTool,
+    color: 'bg-blue-50 text-blue-600',
+    accent: 'border-r-blue-400',
+  },
+  fineArts: { icon: Palette, color: 'bg-purple-50 text-purple-600', accent: 'border-r-purple-400' },
+  photography: { icon: Camera, color: 'bg-slate-50 text-slate-600', accent: 'border-r-slate-400' },
+  fashion: { icon: Ruler, color: 'bg-pink-50 text-pink-600', accent: 'border-r-pink-400' },
+  graphicDesign: {
+    icon: Palette,
+    color: 'bg-violet-50 text-violet-600',
+    accent: 'border-r-violet-400',
+  },
+  animation: {
+    icon: Clapperboard,
+    color: 'bg-violet-50 text-violet-600',
+    accent: 'border-r-violet-400',
+  },
+  dance: { icon: Sparkles, color: 'bg-rose-50 text-rose-600', accent: 'border-r-rose-400' },
+  cinema: { icon: Film, color: 'bg-violet-50 text-violet-600', accent: 'border-r-violet-400' },
+  screenwriting: {
+    icon: Film,
+    color: 'bg-violet-50 text-violet-600',
+    accent: 'border-r-violet-400',
+  },
+  documentary: { icon: Film, color: 'bg-violet-50 text-violet-600', accent: 'border-r-violet-400' },
   // ── Culinary ──────────────────────────────────────────────────────────────
-  chef:             { icon: ChefHat,         color: 'bg-amber-50 text-amber-600',     accent: 'border-r-amber-400'     },
-  pastry:           { icon: Cake,            color: 'bg-amber-50 text-amber-600',     accent: 'border-r-amber-400'     },
-  restaurantMgmt:   { icon: UtensilsCrossed, color: 'bg-amber-50 text-amber-600',     accent: 'border-r-amber-400'     },
+  chef: { icon: ChefHat, color: 'bg-amber-50 text-amber-600', accent: 'border-r-amber-400' },
+  pastry: { icon: Cake, color: 'bg-amber-50 text-amber-600', accent: 'border-r-amber-400' },
+  restaurantMgmt: {
+    icon: UtensilsCrossed,
+    color: 'bg-amber-50 text-amber-600',
+    accent: 'border-r-amber-400',
+  },
   // ── Integrative medicine ──────────────────────────────────────────────────
-  chineseMedicine:  { icon: Leaf,            color: 'bg-emerald-50 text-emerald-600', accent: 'border-r-emerald-400'   },
-  naturopathy:      { icon: Leaf,            color: 'bg-green-50 text-green-600',     accent: 'border-r-green-400'     },
-  homeopathy:       { icon: FlaskConical,    color: 'bg-teal-50 text-teal-600',       accent: 'border-r-teal-400'      },
-  reflexology:      { icon: Heart,           color: 'bg-rose-50 text-rose-600',       accent: 'border-r-rose-400'      },
-  psychotherapy:    { icon: Brain,           color: 'bg-purple-50 text-purple-600',   accent: 'border-r-purple-400'    },
+  chineseMedicine: {
+    icon: Leaf,
+    color: 'bg-emerald-50 text-emerald-600',
+    accent: 'border-r-emerald-400',
+  },
+  naturopathy: { icon: Leaf, color: 'bg-green-50 text-green-600', accent: 'border-r-green-400' },
+  homeopathy: {
+    icon: FlaskConical,
+    color: 'bg-teal-50 text-teal-600',
+    accent: 'border-r-teal-400',
+  },
+  reflexology: { icon: Heart, color: 'bg-rose-50 text-rose-600', accent: 'border-r-rose-400' },
+  psychotherapy: {
+    icon: Brain,
+    color: 'bg-purple-50 text-purple-600',
+    accent: 'border-r-purple-400',
+  },
   // ── Business cluster ──────────────────────────────────────────────────────────
-  accounting:          { icon: LineChart,  color: 'bg-slate-50 text-slate-600',     accent: 'border-r-slate-400'     },
-  infoSystems:         { icon: Database,   color: 'bg-cyan-50 text-cyan-600',       accent: 'border-r-cyan-400'      },
+  accounting: {
+    icon: LineChart,
+    color: 'bg-slate-50 text-slate-600',
+    accent: 'border-r-slate-400',
+  },
+  infoSystems: { icon: Database, color: 'bg-cyan-50 text-cyan-600', accent: 'border-r-cyan-400' },
   // ── New specialised fields ─────────────────────────────────────────────────
-  soundEngineering:    { icon: Music,      color: 'bg-violet-50 text-violet-600',   accent: 'border-r-violet-400'    },
-  marineBiology:       { icon: Anchor,     color: 'bg-cyan-50 text-cyan-600',       accent: 'border-r-cyan-400'      },
-  occupationalTherapy: { icon: Heart,      color: 'bg-red-50 text-red-600',         accent: 'border-r-red-400'       },
+  soundEngineering: {
+    icon: Music,
+    color: 'bg-violet-50 text-violet-600',
+    accent: 'border-r-violet-400',
+  },
+  marineBiology: { icon: Anchor, color: 'bg-cyan-50 text-cyan-600', accent: 'border-r-cyan-400' },
+  occupationalTherapy: { icon: Heart, color: 'bg-red-50 text-red-600', accent: 'border-r-red-400' },
 };
 
 // InstitutionLogo is imported from @/components/InstitutionLogo (shared)
@@ -190,7 +286,7 @@ function SubTabPanel({ programs, suggestedPrograms, onSelectProgram }: SubTabPan
     .slice(0, 6);
 
   const uniquePrograms = clusterPrograms.filter(
-    (v, i, a) => a.findIndex((t) => t.name === v.name) === i
+    (v, i, a) => a.findIndex((t) => t.name === v.name) === i,
   );
 
   if (tabs.length === 0) return null;
@@ -254,13 +350,20 @@ interface DetailProps {
 }
 
 function ProgramDetailView({
-  programs, program, onBack, onSelectDegree, geographicPreference,
-  savedProgramIds, onToggleSave,
+  programs,
+  program,
+  onBack,
+  onSelectDegree,
+  geographicPreference,
+  savedProgramIds,
+  onToggleSave,
 }: DetailProps) {
-  const fieldId    = PROGRAM_FIELD_MAP[program.id];
+  const fieldId = PROGRAM_FIELD_MAP[program.id];
   const enrichment = fieldId ? FIELD_ENRICHMENT[fieldId] : null;
-  const FieldIcon  = fieldId ? FIELD_ICON[fieldId]?.icon : undefined;
-  const iconBadge  = fieldId ? (FIELD_ICON[fieldId]?.color ?? 'bg-slate-50 text-slate-500') : 'bg-slate-50 text-slate-500';
+  const FieldIcon = fieldId ? FIELD_ICON[fieldId]?.icon : undefined;
+  const iconBadge = fieldId
+    ? (FIELD_ICON[fieldId]?.color ?? 'bg-slate-50 text-slate-500')
+    : 'bg-slate-50 text-slate-500';
 
   // All institution programs for "where to study", deduped by ID
   const relatedProgramIds = enrichment?.programIds ?? [program.id];
@@ -284,7 +387,7 @@ function ProgramDetailView({
     });
 
   const sekhemInstitutions = institutionPrograms.filter((p) => p.admissionType === 'sekhem');
-  const reqInstitutions    = institutionPrograms.filter((p) => p.admissionType === 'requirements');
+  const reqInstitutions = institutionPrograms.filter((p) => p.admissionType === 'requirements');
 
   return (
     <div className="flex flex-col gap-5">
@@ -299,13 +402,13 @@ function ProgramDetailView({
       {/* Hero card */}
       <section className="rounded-3xl border border-slate-100 bg-white p-7 shadow-sm sm:p-10">
         <div className="mb-5 flex items-center gap-4">
-          <span className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl shadow-sm ${iconBadge}`}>
+          <span
+            className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-2xl shadow-sm ${iconBadge}`}
+          >
             {FieldIcon ? <FieldIcon className="h-8 w-8" /> : null}
           </span>
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">
-              {enrichment?.name ?? program.name}
-            </h2>
+            <h2 className="text-2xl font-bold text-gray-900">{enrichment?.name ?? program.name}</h2>
             <p className="mt-0.5 text-sm text-slate-500">{program.category}</p>
           </div>
         </div>
@@ -374,11 +477,14 @@ function ProgramDetailView({
             <div className="mb-5 flex flex-col gap-3">
               <p className="text-xs font-semibold text-slate-500">אוניברסיטאות — פרטי קבלה</p>
               {sekhemInstitutions.map((p) => {
-                const detail      = p.institutionDetails?.[0];
-                const instRecord  = INSTITUTION_BY_NAME[p.institution];
-                const region      = instRecord?.region ?? INSTITUTION_REGIONS[p.institution];
-                const isPreferred = geographicPreference && geographicPreference !== 'any' && region === geographicPreference;
-                const isSaved     = savedProgramIds?.includes(p.id) ?? false;
+                const detail = p.institutionDetails?.[0];
+                const instRecord = INSTITUTION_BY_NAME[p.institution];
+                const region = instRecord?.region ?? INSTITUTION_REGIONS[p.institution];
+                const isPreferred =
+                  geographicPreference &&
+                  geographicPreference !== 'any' &&
+                  region === geographicPreference;
+                const isSaved = savedProgramIds?.includes(p.id) ?? false;
                 return (
                   <div
                     key={p.id}
@@ -401,7 +507,9 @@ function ProgramDetailView({
                       <div className="flex shrink-0 items-start gap-2">
                         {detail && (
                           <div className="flex flex-col items-end gap-0.5 text-right text-xs text-slate-500">
-                            {detail.durationYears !== null && <span>{detail.durationYears} שנות לימוד</span>}
+                            {detail.durationYears !== null && (
+                              <span>{detail.durationYears} שנות לימוד</span>
+                            )}
                             <span>{detail.estimatedStudentsPerYear}</span>
                           </div>
                         )}
@@ -424,7 +532,8 @@ function ProgramDetailView({
                     {detail && (
                       <>
                         {/* Section-score minimums as chips */}
-                        {(detail.quantitativeMinRequirement !== null || detail.englishMinRequirement !== null) && (
+                        {(detail.quantitativeMinRequirement !== null ||
+                          detail.englishMinRequirement !== null) && (
                           <div className="flex flex-wrap gap-1.5" dir="rtl">
                             {detail.quantitativeMinRequirement !== null && (
                               <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-medium text-blue-700">
@@ -441,10 +550,14 @@ function ProgramDetailView({
                         {/* Admission requirements headline + notes */}
                         {detail.specificAdmissionNotes.length > 0 && (
                           <>
-                            <p className="text-xs font-semibold text-slate-700">מה נדרש כדי להתקבל</p>
+                            <p className="text-xs font-semibold text-slate-700">
+                              מה נדרש כדי להתקבל
+                            </p>
                             <ul className="space-y-0.5" dir="rtl">
                               {detail.specificAdmissionNotes.map((note, i) => (
-                                <li key={i} className="text-xs text-slate-600">• {note}</li>
+                                <li key={i} className="text-xs text-slate-600">
+                                  • {note}
+                                </li>
                               ))}
                             </ul>
                           </>
@@ -469,9 +582,9 @@ function ProgramDetailView({
                           )}
                           <a
                             href={
-                              detail.calculatorUrl
-                                ?? detail.officialCalculatorUrl
-                                ?? instRecord?.calculatorUrl
+                              detail.calculatorUrl ??
+                              detail.officialCalculatorUrl ??
+                              instRecord?.calculatorUrl
                             }
                             target="_blank"
                             rel="noopener noreferrer"
@@ -485,7 +598,10 @@ function ProgramDetailView({
                     {/* Fallback when institutionDetails not yet populated */}
                     {!detail && (
                       <button
-                        onClick={() => { onSelectDegree(p.id); onBack(); }}
+                        onClick={() => {
+                          onSelectDegree(p.id);
+                          onBack();
+                        }}
                         className="rounded-xl bg-[#4f46e5] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#4338ca] active:scale-95"
                       >
                         חשב סיכויי קבלה ←
@@ -504,11 +620,14 @@ function ProgramDetailView({
                 מכללות ומוסדות — קבלה על פי דרישות
               </p>
               {reqInstitutions.map((p) => {
-                const detail      = p.institutionDetails?.[0];
-                const instRecord  = INSTITUTION_BY_NAME[p.institution];
-                const region      = instRecord?.region ?? INSTITUTION_REGIONS[p.institution];
-                const isPreferred = geographicPreference && geographicPreference !== 'any' && region === geographicPreference;
-                const isSaved     = savedProgramIds?.includes(p.id) ?? false;
+                const detail = p.institutionDetails?.[0];
+                const instRecord = INSTITUTION_BY_NAME[p.institution];
+                const region = instRecord?.region ?? INSTITUTION_REGIONS[p.institution];
+                const isPreferred =
+                  geographicPreference &&
+                  geographicPreference !== 'any' &&
+                  region === geographicPreference;
+                const isSaved = savedProgramIds?.includes(p.id) ?? false;
                 return (
                   <div
                     key={p.id}
@@ -535,7 +654,9 @@ function ProgramDetailView({
                       <div className="flex shrink-0 items-start gap-2">
                         {detail && (
                           <div className="flex flex-col items-end gap-0.5 text-right text-xs text-slate-500">
-                            {detail.durationYears !== null && <span>{detail.durationYears} שנות לימוד</span>}
+                            {detail.durationYears !== null && (
+                              <span>{detail.durationYears} שנות לימוד</span>
+                            )}
                             <span>{detail.estimatedStudentsPerYear}</span>
                           </div>
                         )}
@@ -560,10 +681,14 @@ function ProgramDetailView({
                         {/* Admission requirements headline + notes from institutionDetails */}
                         {detail.specificAdmissionNotes.length > 0 && (
                           <>
-                            <p className="text-xs font-semibold text-slate-700">מה נדרש כדי להתקבל</p>
+                            <p className="text-xs font-semibold text-slate-700">
+                              מה נדרש כדי להתקבל
+                            </p>
                             <ul className="space-y-0.5" dir="rtl">
                               {detail.specificAdmissionNotes.map((note, i) => (
-                                <li key={i} className="text-xs text-slate-600">• {note}</li>
+                                <li key={i} className="text-xs text-slate-600">
+                                  • {note}
+                                </li>
                               ))}
                             </ul>
                           </>
@@ -588,9 +713,9 @@ function ProgramDetailView({
                           )}
                           <a
                             href={
-                              detail.calculatorUrl
-                                ?? detail.officialCalculatorUrl
-                                ?? instRecord?.calculatorUrl
+                              detail.calculatorUrl ??
+                              detail.officialCalculatorUrl ??
+                              instRecord?.calculatorUrl
                             }
                             target="_blank"
                             rel="noopener noreferrer"
@@ -606,7 +731,9 @@ function ProgramDetailView({
                           <p className="text-xs font-semibold text-slate-700">מה נדרש כדי להתקבל</p>
                           <ul className="space-y-0.5">
                             {p.admissionRequirements.map((req, i) => (
-                              <li key={i} className="text-xs text-slate-600">• {req}</li>
+                              <li key={i} className="text-xs text-slate-600">
+                                • {req}
+                              </li>
                             ))}
                           </ul>
                         </>
@@ -687,7 +814,9 @@ export default function RecommendationResults({
               </span>
             ))}
             {geographicPreference !== 'any' && (
-              <span className={`rounded-full px-3 py-1 text-xs font-semibold ${REGION_BADGE_COLOR[geographicPreference]}`}>
+              <span
+                className={`rounded-full px-3 py-1 text-xs font-semibold ${REGION_BADGE_COLOR[geographicPreference]}`}
+              >
                 {REGION_EMOJI[geographicPreference]} העדפה: {REGION_LABEL[geographicPreference]}
               </span>
             )}
@@ -741,7 +870,9 @@ export default function RecommendationResults({
               <div className="mb-5 grid gap-3 sm:grid-cols-3">
                 <div className="flex flex-col gap-1.5 rounded-xl border border-gray-100 p-3">
                   <p className="text-xs font-semibold text-gray-400">ביקוש בשוק</p>
-                  <span className={`w-fit rounded-full px-2.5 py-0.5 text-xs font-bold ${DEMAND_COLOR[rec.marketDemand]}`}>
+                  <span
+                    className={`w-fit rounded-full px-2.5 py-0.5 text-xs font-bold ${DEMAND_COLOR[rec.marketDemand]}`}
+                  >
                     {rec.marketDemand}
                   </span>
                 </div>
@@ -751,7 +882,9 @@ export default function RecommendationResults({
                 </div>
                 <div className="flex flex-col gap-1.5 rounded-xl border border-gray-100 p-3">
                   <p className="text-xs font-semibold text-gray-400">עמידות בפני AI</p>
-                  <span className={`w-fit rounded-full px-2.5 py-0.5 text-xs font-bold ${RESILIENCE_COLOR[rec.aiResilience]}`}>
+                  <span
+                    className={`w-fit rounded-full px-2.5 py-0.5 text-xs font-bold ${RESILIENCE_COLOR[rec.aiResilience]}`}
+                  >
                     {rec.aiResilience}
                   </span>
                   <p className="text-xs leading-relaxed text-gray-500">{rec.aiResilienceNote}</p>

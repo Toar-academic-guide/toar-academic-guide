@@ -11,11 +11,15 @@ vi.mock('@/server/catalogue/queries', () => ({
     meta?: Record<string, unknown>;
     status: number;
 
-    constructor(code: string, message: string, options?: {
-      details?: string[];
-      meta?: Record<string, unknown>;
-      status?: number;
-    }) {
+    constructor(
+      code: string,
+      message: string,
+      options?: {
+        details?: string[];
+        meta?: Record<string, unknown>;
+        status?: number;
+      },
+    ) {
       super(message);
       this.code = code;
       this.details = options?.details ?? [];

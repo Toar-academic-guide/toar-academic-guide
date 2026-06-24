@@ -28,8 +28,14 @@ export interface Program {
   type: 'academic' | 'certificate' | 'vocational' | 'short-course';
   category: string;
   profileScore: {
-    AN: number; TE: number; CR: number; SO: number;
-    LE: number; OR: number; DI: number; ER: number;
+    AN: number;
+    TE: number;
+    CR: number;
+    SO: number;
+    LE: number;
+    OR: number;
+    DI: number;
+    ER: number;
   };
   /** @deprecated kept during migration — will be removed */
   riasecScore?: { R: number; I: number; A: number; S: number; E: number; C: number };

@@ -49,19 +49,17 @@ export default function InstitutionLogo({
   // Resolve image source: logoUrl (SVG) → favicon proxy → null (avatar fallback)
   const src =
     record?.logoUrl ??
-    (record?.domain
-      ? `https://www.google.com/s2/favicons?domain=${record.domain}&sz=64`
-      : null);
+    (record?.domain ? `https://www.google.com/s2/favicons?domain=${record.domain}&sz=64` : null);
 
   // Explicit pixel dimensions — used on both the container and the <img> tag.
-  const dimPx    = size === 'sm' ? 32 : 40;
-  const imgPx    = dimPx - 8;            // 4 px inset on each side
+  const dimPx = size === 'sm' ? 32 : 40;
+  const imgPx = dimPx - 8; // 4 px inset on each side
   const dimClass = size === 'sm' ? 'h-8 w-8' : 'h-10 w-10';
   const textSize = size === 'sm' ? 'text-[11px]' : 'text-[13px]';
 
   const displayName = record?.name ?? institution;
   const firstLetter = [...displayName][0] ?? '?';
-  const hue         = nameToHue(displayName);
+  const hue = nameToHue(displayName);
 
   // Only show the <img> if we have a src and it hasn't errored.
   const showImg = !!src && !imgFailed;
@@ -74,7 +72,7 @@ export default function InstitutionLogo({
           ? { background: '#ffffff' }
           : {
               backgroundColor: `hsl(${hue} 55% 88%)`,
-              color:           `hsl(${hue} 45% 32%)`,
+              color: `hsl(${hue} 45% 32%)`,
             }
       }
     >
@@ -88,17 +86,15 @@ export default function InstitutionLogo({
           width={imgPx}
           height={imgPx}
           style={{
-            width:     imgPx,
-            height:    imgPx,
+            width: imgPx,
+            height: imgPx,
             objectFit: 'contain',
-            display:   'block',
+            display: 'block',
           }}
           onError={() => setImgFailed(true)}
         />
       ) : (
-        <span className={`select-none font-semibold leading-none ${textSize}`}>
-          {firstLetter}
-        </span>
+        <span className={`select-none font-semibold leading-none ${textSize}`}>{firstLetter}</span>
       )}
     </div>
   );

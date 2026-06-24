@@ -6,7 +6,7 @@ import type { Program } from '@/data/degrees/types';
 // bonuses to the admission index for students with 5-unit Bagrut subjects.
 // These are applied on top of the base weighted formula and are specific to
 // programs flagged as isTauEngineering (CS, EE, ME, Data Science).
-const TAU_MATH5_BONUS = 35;    // 5 units of Mathematics
+const TAU_MATH5_BONUS = 35; // 5 units of Mathematics
 const TAU_PHYSICS5_BONUS = 25; // 5 units of Physics
 
 // ── Bagrut normalization ──────────────────────────────────────────────────────
@@ -48,7 +48,7 @@ export function calculateSekhem(
   university: University,
   scores: UserScores,
   degree: Program,
-  engineeringOptions: EngineeringOptions
+  engineeringOptions: EngineeringOptions,
 ): number {
   if (university.formulaType === 'technion_linear') {
     return sekhemTechnion(scores);
@@ -100,7 +100,7 @@ export function calculateDelta(deficit: number, university: University): DeltaNe
 export function evaluateMinimumFloorsAdmission(
   university: University,
   threshold: number,
-  scores: UserScores
+  scores: UserScores,
 ): {
   meetsAll: boolean;
   deltaNeeded: DeltaNeeded;
@@ -122,7 +122,7 @@ export function evaluateUniversities(
   universities: University[],
   degree: Program,
   scores: UserScores,
-  engineeringOptions: EngineeringOptions
+  engineeringOptions: EngineeringOptions,
 ): UniversityResult[] {
   return universities.map((university) => {
     const threshold = degree.thresholds?.[university.id] ?? null;
@@ -135,7 +135,11 @@ export function evaluateUniversities(
     // threshold = minimum psychometric; university.minBagrut = minimum bagrut.
     // Both must be met independently.
     if (university.formulaType === 'minimum_floors') {
-      const { meetsAll, deltaNeeded } = evaluateMinimumFloorsAdmission(university, threshold, scores);
+      const { meetsAll, deltaNeeded } = evaluateMinimumFloorsAdmission(
+        university,
+        threshold,
+        scores,
+      );
 
       if (meetsAll) {
         return { university, sekhem: scores.psychometric, threshold, status: 'accepted' };
@@ -152,9 +156,7 @@ export function evaluateUniversities(
     const raw = calculateSekhem(university, scores, degree, engineeringOptions);
     // Technion: keep 1 decimal; others: round to integer
     const sekhem =
-      university.formulaType === 'technion_linear'
-        ? Math.round(raw * 10) / 10
-        : Math.round(raw);
+      university.formulaType === 'technion_linear' ? Math.round(raw * 10) / 10 : Math.round(raw);
 
     // ── Direct admission track (קבלה ישירה) ──────────────────────────────────
     // Some universities admit applicants whose raw psychometric score alone

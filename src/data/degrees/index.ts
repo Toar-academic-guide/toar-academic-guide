@@ -9,8 +9,4 @@ import { vocationalPrograms } from './vocationalPrograms';
 
 // Single combined catalogue.
 // Add future sub-modules by spreading their arrays here.
-export const allPrograms = [
-  ...ACADEMIC_PROGRAMS,
-  ...academicPrograms,
-  ...vocationalPrograms,
-];
+export const allPrograms = [...ACADEMIC_PROGRAMS, ...academicPrograms, ...vocationalPrograms];

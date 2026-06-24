@@ -75,7 +75,7 @@ describe('saved programs API route', () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ programId: 'tau_cs' }),
-      })
+      }),
     );
 
     expect(response.status).toBe(503);
@@ -97,7 +97,7 @@ describe('saved programs API route', () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ programId: ' tau_cs ' }),
-      })
+      }),
     );
 
     expect(response.status).toBe(200);
@@ -107,7 +107,7 @@ describe('saved programs API route', () => {
         distinctId: 'user-123',
         event: 'server_program_saved',
         properties: { program_id: 'tau_cs' },
-      })
+      }),
     );
   });
 
@@ -124,7 +124,7 @@ describe('saved programs API route', () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ programId: 'tau_cs' }),
-      })
+      }),
     );
 
     expect(response.status).toBe(200);
@@ -134,7 +134,7 @@ describe('saved programs API route', () => {
         distinctId: 'user-123',
         event: 'server_program_removed',
         properties: { program_id: 'tau_cs' },
-      })
+      }),
     );
   });
 
@@ -146,7 +146,7 @@ describe('saved programs API route', () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({}),
-      })
+      }),
     );
 
     expect(missingResponse.status).toBe(400);
@@ -163,7 +163,7 @@ describe('saved programs API route', () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ programId: '   ' }),
-      })
+      }),
     );
 
     expect(emptyResponse.status).toBe(400);
@@ -182,7 +182,7 @@ describe('saved programs API route', () => {
           'Content-Type': 'application/json',
         },
         body: '{',
-      })
+      }),
     );
 
     expect(response.status).toBe(400);
@@ -206,7 +206,7 @@ describe('saved programs API route', () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ programId: 'tau_cs' }),
-      })
+      }),
     );
 
     expect(response.status).toBe(401);
@@ -225,7 +225,7 @@ describe('saved programs API route', () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ programId: 'tau_cs' }),
-      })
+      }),
     );
 
     expect(response.status).toBe(500);

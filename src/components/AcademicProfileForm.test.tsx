@@ -10,7 +10,9 @@ vi.mock('next/image', () => ({
 
 vi.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => <div {...props}>{children}</div>,
+    div: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) => (
+      <div {...props}>{children}</div>
+    ),
   },
 }));
 
@@ -70,7 +72,7 @@ describe('AcademicProfileForm', () => {
         onComplete={onComplete}
         onClearLocalProfileData={vi.fn().mockResolvedValue(undefined)}
         onSkip={() => undefined}
-      />
+      />,
     );
 
     fireEvent.click(screen.getByRole('button', { name: 'חשב אומדן' }));
@@ -87,7 +89,7 @@ describe('AcademicProfileForm', () => {
         onComplete={onComplete}
         onClearLocalProfileData={vi.fn().mockResolvedValue(undefined)}
         onSkip={() => undefined}
-      />
+      />,
     );
 
     fireEvent.click(screen.getByRole('button', { name: 'חשב אומדן' }));
@@ -114,7 +116,7 @@ describe('AcademicProfileForm', () => {
         onComplete={onComplete}
         onClearLocalProfileData={vi.fn().mockResolvedValue(undefined)}
         onSkip={vi.fn()}
-      />
+      />,
     );
 
     const file = new File(['hello'], 'test_psy.pdf', { type: 'application/pdf' });
@@ -127,7 +129,9 @@ describe('AcademicProfileForm', () => {
     fireEvent.change(screen.getByPlaceholderText('למשל: 650'), { target: { value: '710' } });
     fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
 
-    expect(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }).hasAttribute('disabled')).toBe(true);
+    expect(
+      screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }).hasAttribute('disabled'),
+    ).toBe(true);
 
     await waitFor(() => expect(onComplete).toHaveBeenCalled());
 
@@ -199,7 +203,7 @@ describe('AcademicProfileForm', () => {
         onComplete={onComplete}
         onClearLocalProfileData={vi.fn().mockResolvedValue(undefined)}
         onSkip={vi.fn()}
-      />
+      />,
     );
 
     const file = new File(['hello'], 'large.pdf', { type: 'application/pdf' });
@@ -213,7 +217,9 @@ describe('AcademicProfileForm', () => {
     });
 
     expect(onComplete).not.toHaveBeenCalled();
-    expect(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }).hasAttribute('disabled')).toBe(false);
+    expect(
+      screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }).hasAttribute('disabled'),
+    ).toBe(false);
   });
 
   it('clears signed-out local form state through the device-data control', async () => {
@@ -228,7 +234,7 @@ describe('AcademicProfileForm', () => {
           psychometric: { overall: 700 },
           bagrut: { weightedAverage: 105 },
         }}
-      />
+      />,
     );
 
     expect(screen.getByDisplayValue('700')).toBeTruthy();
@@ -248,13 +254,13 @@ describe('AcademicProfileForm', () => {
         onClearLocalProfileData={vi.fn().mockResolvedValue(undefined)}
         onSkip={vi.fn()}
         isAuthenticated={true}
-      />
+      />,
     );
 
     expect(
       screen.getByText(
-        'הפעולה הזאת מוחקת רק נתונים שנשמרו בדפדפן במכשיר הזה. נתוני החשבון, רשימת הייעוד והמסמכים שנשמרו בחשבון לא יימחקו כאן.'
-      )
+        'הפעולה הזאת מוחקת רק נתונים שנשמרו בדפדפן במכשיר הזה. נתוני החשבון, רשימת הייעוד והמסמכים שנשמרו בחשבון לא יימחקו כאן.',
+      ),
     ).toBeTruthy();
   });
 });

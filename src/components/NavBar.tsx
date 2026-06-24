@@ -62,10 +62,7 @@ export default function NavBar({
         </button>
 
         <nav className="flex items-center gap-1.5 text-sm text-slate-600" aria-label="ניווט">
-          <button
-            onClick={onGoToExam}
-            className="transition hover:text-slate-900"
-          >
+          <button onClick={onGoToExam} className="transition hover:text-slate-900">
             שאלון
           </button>
 
@@ -123,11 +120,7 @@ export default function NavBar({
                 : 'bg-[#1e1b4b] text-white hover:bg-[#2d2a6e]',
             ].join(' ')}
           >
-            {savedCount > 0 ? (
-              <BookmarkCheck size={14} />
-            ) : (
-              <Bookmark size={14} />
-            )}
+            {savedCount > 0 ? <BookmarkCheck size={14} /> : <Bookmark size={14} />}
             <span>רשימת הייעוד</span>
             {savedCount > 0 && (
               <span className="rounded-full bg-white/20 px-1.5 py-0.5 text-[10px] font-bold">

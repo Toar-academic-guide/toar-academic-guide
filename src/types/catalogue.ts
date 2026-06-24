@@ -17,11 +17,10 @@ export interface CatalogueCalculatorConfig {
   minBagrut?: number;
 }
 
-export interface CatalogueInstitution
-  extends Pick<
-    InstitutionRecord,
-    'id' | 'name' | 'region' | 'domain' | 'logoUrl' | 'programUrl' | 'calculatorUrl' | 'universityId'
-  > {
+export interface CatalogueInstitution extends Pick<
+  InstitutionRecord,
+  'id' | 'name' | 'region' | 'domain' | 'logoUrl' | 'programUrl' | 'calculatorUrl' | 'universityId'
+> {
   calculatorConfig?: CatalogueCalculatorConfig;
 }
 

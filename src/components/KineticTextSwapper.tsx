@@ -43,10 +43,7 @@ export default function KineticTextSwapper() {
   }, []);
 
   return (
-    <section
-      className="relative flex min-h-screen flex-col bg-white px-8 md:px-16"
-      dir="rtl"
-    >
+    <section className="relative flex min-h-screen flex-col bg-white px-8 md:px-16" dir="rtl">
       <div className="flex flex-1 items-center">
         <div className="w-full text-right">
           <div

@@ -8,8 +8,15 @@
  */
 import type { LucideIcon } from 'lucide-react';
 import {
-  Calculator, BookOpen, FileText, Coffee, Monitor,
-  Home, Mountain, Sun, Globe,
+  Calculator,
+  BookOpen,
+  FileText,
+  Coffee,
+  Monitor,
+  Home,
+  Mountain,
+  Sun,
+  Globe,
 } from 'lucide-react';
 import type { GeographicRegion, AvoidanceTag } from '@/types';
 
@@ -33,7 +40,6 @@ export interface QuizQuestion {
 }
 
 export const QUIZ_QUESTIONS: QuizQuestion[] = [
-
   // ── Avoidance filter ──────────────────────────────────────────────────────
   // Answers drive the −40% penalty in the recommendation engine.
   {
@@ -83,27 +89,27 @@ export const QUIZ_QUESTIONS: QuizQuestion[] = [
     sublabel: 'ההעדפה תשפיע על סדר המוסדות בהמלצות',
     answers: [
       {
-        label:         'להישאר קרוב/ה לבית במרכז',
-        sublabel:      'ת"א, ירושלים, הרצליה ואזור גוש דן',
-        icon:          Home,
+        label: 'להישאר קרוב/ה לבית במרכז',
+        sublabel: 'ת"א, ירושלים, הרצליה ואזור גוש דן',
+        icon: Home,
         geographicTag: 'center',
       },
       {
-        label:         'מחפש/ת הרפתקה חדשה ומעבר לצפון',
-        sublabel:      'טכניון, חיפה, כנרת, תל-חי ואזור הגליל',
-        icon:          Mountain,
+        label: 'מחפש/ת הרפתקה חדשה ומעבר לצפון',
+        sublabel: 'טכניון, חיפה, כנרת, תל-חי ואזור הגליל',
+        icon: Mountain,
         geographicTag: 'north',
       },
       {
-        label:         'לרדת דרומה לשינוי אווירה',
-        sublabel:      'בן-גוריון, ספיר ואזור הנגב',
-        icon:          Sun,
+        label: 'לרדת דרומה לשינוי אווירה',
+        sublabel: 'בן-גוריון, ספיר ואזור הנגב',
+        icon: Sun,
         geographicTag: 'south',
       },
       {
-        label:         'פתוח/ה לכל האפשרויות',
-        sublabel:      'המיקום פחות חשוב — תעדוף לפי תוכן',
-        icon:          Globe,
+        label: 'פתוח/ה לכל האפשרויות',
+        sublabel: 'המיקום פחות חשוב — תעדוף לפי תוכן',
+        icon: Globe,
         geographicTag: 'any',
       },
     ],

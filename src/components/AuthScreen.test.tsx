@@ -3,7 +3,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-var mockAuth = {
+let mockAuth = {
   configured: true,
   signInWithGoogle: vi.fn(),
   signInWithPassword: vi.fn(),
@@ -46,7 +46,9 @@ describe('AuthScreen', () => {
     fireEvent.click(screen.getByRole('button', { name: 'אין לך חשבון? צור חשבון' }));
     fireEvent.change(screen.getByPlaceholderText('שם פרטי'), { target: { value: 'מלי' } });
     fireEvent.change(screen.getByPlaceholderText('שם משפחה'), { target: { value: 'כהן' } });
-    fireEvent.change(screen.getByPlaceholderText('you@example.com'), { target: { value: 'user@example.com' } });
+    fireEvent.change(screen.getByPlaceholderText('you@example.com'), {
+      target: { value: 'user@example.com' },
+    });
     fireEvent.change(screen.getByPlaceholderText('••••••••'), { target: { value: 'secret123' } });
     fireEvent.click(screen.getByRole('button', { name: 'צור חשבון' }));
 
@@ -54,7 +56,7 @@ describe('AuthScreen', () => {
       expect(mockAuth.signUp).toHaveBeenCalledWith('user@example.com', 'secret123', {
         firstName: 'מלי',
         lastName: 'כהן',
-      })
+      }),
     );
     expect(onSuccess).not.toHaveBeenCalled();
     expect(screen.getByText('שלחנו מייל לאישור החשבון. אשר אותו ואז חזור להתחבר.')).toBeTruthy();
@@ -66,7 +68,9 @@ describe('AuthScreen', () => {
     fireEvent.click(screen.getByRole('button', { name: 'אין לך חשבון? צור חשבון' }));
     fireEvent.change(screen.getByPlaceholderText('שם פרטי'), { target: { value: '  ' } });
     fireEvent.change(screen.getByPlaceholderText('שם משפחה'), { target: { value: 'כהן' } });
-    fireEvent.change(screen.getByPlaceholderText('you@example.com'), { target: { value: 'user@example.com' } });
+    fireEvent.change(screen.getByPlaceholderText('you@example.com'), {
+      target: { value: 'user@example.com' },
+    });
     fireEvent.change(screen.getByPlaceholderText('••••••••'), { target: { value: 'secret123' } });
     fireEvent.click(screen.getByRole('button', { name: 'צור חשבון' }));
 
@@ -84,17 +88,23 @@ describe('AuthScreen', () => {
     fireEvent.click(screen.getByRole('button', { name: 'אין לך חשבון? צור חשבון' }));
     fireEvent.change(screen.getByPlaceholderText('שם פרטי'), { target: { value: 'מלי' } });
     fireEvent.change(screen.getByPlaceholderText('שם משפחה'), { target: { value: 'כהן' } });
-    fireEvent.change(screen.getByPlaceholderText('you@example.com'), { target: { value: 'user@example.com' } });
+    fireEvent.change(screen.getByPlaceholderText('you@example.com'), {
+      target: { value: 'user@example.com' },
+    });
     fireEvent.change(screen.getByPlaceholderText('••••••••'), { target: { value: 'secret123' } });
     fireEvent.click(screen.getByRole('button', { name: 'צור חשבון' }));
 
     await waitFor(() =>
-      expect(screen.getByText('כבר קיים חשבון עם האימייל הזה. נסה להתחבר במקום להירשם שוב.')).toBeTruthy()
+      expect(
+        screen.getByText('כבר קיים חשבון עם האימייל הזה. נסה להתחבר במקום להירשם שוב.'),
+      ).toBeTruthy(),
     );
 
     fireEvent.click(screen.getByRole('button', { name: 'כבר יש לך חשבון? התחבר' }));
 
-    expect(screen.queryByText('כבר קיים חשבון עם האימייל הזה. נסה להתחבר במקום להירשם שוב.')).toBeNull();
+    expect(
+      screen.queryByText('כבר קיים חשבון עם האימייל הזה. נסה להתחבר במקום להירשם שוב.'),
+    ).toBeNull();
   });
 
   it('disables the Google action when auth is not configured', () => {

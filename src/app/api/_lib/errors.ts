@@ -2,7 +2,7 @@ export class ApiRouteError extends Error {
   constructor(
     readonly status: number,
     readonly code: string,
-    message: string
+    message: string,
   ) {
     super(message);
   }
@@ -22,7 +22,7 @@ export function toErrorResponse(error: unknown, fallback: ErrorFallback) {
           message: error.message,
         },
       },
-      { status: error.status }
+      { status: error.status },
     );
   }
 
@@ -35,6 +35,6 @@ export function toErrorResponse(error: unknown, fallback: ErrorFallback) {
         message,
       },
     },
-    { status: 500 }
+    { status: 500 },
   );
 }

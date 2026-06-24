@@ -46,7 +46,7 @@ export { extractFilterAnswers as calculateRiasecScores };
 
 export function getTopDimensions(scores: RiasecScores): [RiasecDimension, RiasecDimension] {
   const sorted = (Object.entries(scores) as [RiasecDimension, number][]).sort(
-    (a, b) => b[1] - a[1]
+    (a, b) => b[1] - a[1],
   );
   return [sorted[0][0], sorted[1][0]];
 }
@@ -55,10 +55,20 @@ export const DIMENSION_LABELS: Record<
   RiasecDimension,
   { name: string; nameF: string; trait: string; color: string }
 > = {
-  R: { name: 'מעשי',   nameF: 'מעשית',   trait: 'בונה ומהנדס',   color: 'bg-orange-100 text-orange-800' },
-  I: { name: 'חוקרי',  nameF: 'חוקרית',  trait: 'מנתח ומגלה',    color: 'bg-blue-100 text-blue-800'    },
-  A: { name: 'יצירתי', nameF: 'יצירתית', trait: 'אמן ויוצר',      color: 'bg-purple-100 text-purple-800'},
-  S: { name: 'חברתי',  nameF: 'חברתית',  trait: 'עוזר ומחבר',     color: 'bg-green-100 text-green-800'  },
-  E: { name: 'יזמי',   nameF: 'יזמית',   trait: 'מוביל ומשפיע',   color: 'bg-red-100 text-red-800'      },
-  C: { name: 'מסודר',  nameF: 'מסודרת',  trait: 'מארגן ומדויק',   color: 'bg-yellow-100 text-yellow-800'},
+  R: { name: 'מעשי', nameF: 'מעשית', trait: 'בונה ומהנדס', color: 'bg-orange-100 text-orange-800' },
+  I: { name: 'חוקרי', nameF: 'חוקרית', trait: 'מנתח ומגלה', color: 'bg-blue-100 text-blue-800' },
+  A: {
+    name: 'יצירתי',
+    nameF: 'יצירתית',
+    trait: 'אמן ויוצר',
+    color: 'bg-purple-100 text-purple-800',
+  },
+  S: { name: 'חברתי', nameF: 'חברתית', trait: 'עוזר ומחבר', color: 'bg-green-100 text-green-800' },
+  E: { name: 'יזמי', nameF: 'יזמית', trait: 'מוביל ומשפיע', color: 'bg-red-100 text-red-800' },
+  C: {
+    name: 'מסודר',
+    nameF: 'מסודרת',
+    trait: 'מארגן ומדויק',
+    color: 'bg-yellow-100 text-yellow-800',
+  },
 };
