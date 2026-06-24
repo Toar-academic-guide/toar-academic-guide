@@ -17,7 +17,7 @@ export async function GET() {
       'institutions',
       data,
       meta,
-      startedAtMs
+      startedAtMs,
     );
 
     logCatalogueResponse('institutions', envelope.meta, summary);
@@ -39,7 +39,7 @@ export async function GET() {
       },
       meta,
       startedAtMs,
-      status
+      status,
     );
 
     logCatalogueResponse('institutions', envelope.meta, summary);

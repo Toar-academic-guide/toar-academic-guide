@@ -49,11 +49,16 @@ describe('catalogue serializers', () => {
       specificAdmissionNotes: [],
       programDescription: null,
       admissionRequirements: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      reviewStatus: 'seeded' as const,
     } as AdmissionRequirementRow;
 
     const serialized = serializeProgramRow({
       program,
-      relations: [{ programId: 'test_program', institutionId: 'test_university' }] as ProgramInstitutionRow[],
+      relations: [
+        { programId: 'test_program', institutionId: 'test_university' },
+      ] as ProgramInstitutionRow[],
       requirements: [requirement],
       thresholds: [],
       sourceUrls: [],
@@ -65,7 +70,7 @@ describe('catalogue serializers', () => {
 
   it('restores full eight-dimension profile scores from the static catalogue bridge', () => {
     const staticProgram = allPrograms.find(
-      (program) => program.profileScore.DI > 0 || program.profileScore.ER > 0
+      (program) => program.profileScore.DI > 0 || program.profileScore.ER > 0,
     );
 
     expect(staticProgram).toBeDefined();

@@ -12,7 +12,7 @@ describe('user profile migration helpers', () => {
       hasMeaningfulProfileData({
         geographicPreference: 'any',
         savedProgramIds: ['tau_cs'],
-      })
+      }),
     ).toBe(true);
 
     expect(
@@ -23,14 +23,14 @@ describe('user profile migration helpers', () => {
             overall: 680,
           },
         },
-      })
+      }),
     ).toBe(true);
 
     expect(
       hasMeaningfulProfileData({
         firstName: 'Dana',
         geographicPreference: 'any',
-      })
+      }),
     ).toBe(true);
   });
 
@@ -61,7 +61,7 @@ describe('user profile migration helpers', () => {
           },
         },
         savedProgramIds: ['tau_cs', 'huji_law'],
-      }
+      },
     );
 
     expect(merged.firstName).toBe('Server');

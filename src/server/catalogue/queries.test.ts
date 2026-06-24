@@ -34,7 +34,7 @@ const hoistedMocks = vi.hoisted(() => ({
   ]),
 }));
 
-var mockEnv = {
+let mockEnv = {
   mode: 'static' as 'auto' | 'database' | 'static',
   hasDatabaseUrl: false,
   isProduction: false,
@@ -194,7 +194,7 @@ describe('catalogue queries', () => {
   it('fails closed in database mode when DATABASE_URL is missing', async () => {
     mockEnv.mode = 'database';
 
-    await expect(listCataloguePrograms()).rejects.toMatchObject<CatalogueQueryError>({
+    await expect(listCataloguePrograms()).rejects.toMatchObject({
       code: 'CATALOGUE_DATABASE_CONFIG_MISSING',
       meta: {
         catalogueSourceMode: 'database',
@@ -251,7 +251,7 @@ describe('catalogue queries', () => {
 
     expect(readiness.isReady).toBe(false);
     expect(readiness.issues).toContain(
-      `Institutions missing calculator configs: ${missingInstitutionIds.join(', ')}`
+      `Institutions missing calculator configs: ${missingInstitutionIds.join(', ')}`,
     );
   });
 

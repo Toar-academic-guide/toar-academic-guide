@@ -80,12 +80,8 @@ export default function CareerAssessment({ onComplete }: Props) {
   });
   const [slideDir, setSlideDir] = useState<1 | -1>(1);
 
-  const [multiSelectAnswers, setMultiSelectAnswers] = useState<
-    Record<string, string[]>
-  >({});
-  const [quickPickAnswers, setQuickPickAnswers] = useState<
-    Record<string, QuickPickAnswer>
-  >({});
+  const [multiSelectAnswers, setMultiSelectAnswers] = useState<Record<string, string[]>>({});
+  const [quickPickAnswers, setQuickPickAnswers] = useState<Record<string, QuickPickAnswer>>({});
   const [sliderAnswers, setSliderAnswers] = useState<Record<string, number>>({});
   const [skippedScreens, setSkippedScreens] = useState<Set<number>>(new Set());
 
@@ -101,11 +97,11 @@ export default function CareerAssessment({ onComplete }: Props) {
       .map(([questionId, selectedOptionIds]) => ({ questionId, selectedOptionIds }));
 
     const quickPicks: QuickPickAnswerEntry[] = Object.entries(quickPickAnswers).map(
-      ([itemId, answer]) => ({ itemId, answer })
+      ([itemId, answer]) => ({ itemId, answer }),
     );
 
     const valueSliders: ValueSliderAnswer[] = Object.entries(sliderAnswers).map(
-      ([sliderId, value]) => ({ sliderId, value })
+      ([sliderId, value]) => ({ sliderId, value }),
     );
 
     return { multiSelect, quickPicks, valueSliders };
@@ -212,16 +208,17 @@ export default function CareerAssessment({ onComplete }: Props) {
           <TransitionScreen title={screen.title} subtitle={screen.subtitle} />
         )}
 
-        {screen.kind === 'multi-select' && (() => {
-          const q = getMultiSelectQuestion(screen.questionId);
-          return q ? (
-            <MultiSelectScreen
-              question={q}
-              selected={multiSelectAnswers[q.id] ?? []}
-              onToggle={(optionId) => toggleOption(q.id, optionId, q.maxSelect)}
-            />
-          ) : null;
-        })()}
+        {screen.kind === 'multi-select' &&
+          (() => {
+            const q = getMultiSelectQuestion(screen.questionId);
+            return q ? (
+              <MultiSelectScreen
+                question={q}
+                selected={multiSelectAnswers[q.id] ?? []}
+                onToggle={(optionId) => toggleOption(q.id, optionId, q.maxSelect)}
+              />
+            ) : null;
+          })()}
 
         {screen.kind === 'quick-picks' && (
           <QuickPicksScreen
@@ -233,25 +230,24 @@ export default function CareerAssessment({ onComplete }: Props) {
           />
         )}
 
-        {screen.kind === 'value-slider' && (() => {
-          const slider = getValueSlider(screen.sliderId);
-          return slider ? (
-            <ValueSliderScreen
-              slider={slider}
-              value={sliderAnswers[slider.id] ?? 0}
-              onChange={(val) =>
-                setSliderAnswers((prev) => ({ ...prev, [slider.id]: val }))
-              }
-            />
-          ) : null;
-        })()}
+        {screen.kind === 'value-slider' &&
+          (() => {
+            const slider = getValueSlider(screen.sliderId);
+            return slider ? (
+              <ValueSliderScreen
+                slider={slider}
+                value={sliderAnswers[slider.id] ?? 0}
+                onChange={(val) => setSliderAnswers((prev) => ({ ...prev, [slider.id]: val }))}
+              />
+            ) : null;
+          })()}
       </motion.div>
 
       {/* Not enough answers warning (on last screen) */}
       {isLastScreen && !hasEnough && (
         <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-center text-sm text-amber-800">
-          ענית על {answeredCount} שאלות מתוך {MIN_ANSWERED_ITEMS} מינימום.
-          חזור/חזרי אחורה וענה/ענו על עוד שאלות כדי לקבל המלצות מדויקות.
+          ענית על {answeredCount} שאלות מתוך {MIN_ANSWERED_ITEMS} מינימום. חזור/חזרי אחורה וענה/ענו
+          על עוד שאלות כדי לקבל המלצות מדויקות.
         </div>
       )}
 
@@ -337,15 +333,15 @@ function MultiSelectScreen({
               <div className="flex items-start gap-3">
                 <div
                   className={`mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-md border-2 transition ${
-                    isSelected
-                      ? 'border-indigo-500 bg-indigo-500 text-white'
-                      : 'border-slate-300'
+                    isSelected ? 'border-indigo-500 bg-indigo-500 text-white' : 'border-slate-300'
                   }`}
                 >
                   {isSelected && <Check size={12} strokeWidth={3} />}
                 </div>
                 <div>
-                  <span className="font-semibold text-slate-800">{option.title.replace(/:$/, '')}</span>
+                  <span className="font-semibold text-slate-800">
+                    {option.title.replace(/:$/, '')}
+                  </span>
                   <span className="text-slate-500"> - {option.subtitle}</span>
                 </div>
               </div>
@@ -401,7 +397,8 @@ function QuickPicksScreen({
 const SLIDER_STOPS = [30, 130, 230, 330, 430] as const;
 const SLIDER_VALUES = [-2, -1, 0, 1, 2] as const;
 const SLIDER_LABELS = ['ממש', 'קצת', 'שווה', 'קצת', 'ממש'] as const;
-const TRACK_PATH = 'M 30,2 C 140,2 195,25 230,25 C 265,25 320,2 430,2 A 28,28 0 0 1 430,58 C 320,58 265,35 230,35 C 195,35 140,58 30,58 A 28,28 0 0 1 30,2 Z';
+const TRACK_PATH =
+  'M 30,2 C 140,2 195,25 230,25 C 265,25 320,2 430,2 A 28,28 0 0 1 430,58 C 320,58 265,35 230,35 C 195,35 140,58 30,58 A 28,28 0 0 1 30,2 Z';
 
 function thumbRadius(x: number) {
   const d = Math.abs(x - 230) / 200;
@@ -418,7 +415,10 @@ function nearestStop(x: number) {
   let bestD = Infinity;
   SLIDER_STOPS.forEach((s, i) => {
     const d = Math.abs(x - s);
-    if (d < bestD) { bestD = d; best = i; }
+    if (d < bestD) {
+      bestD = d;
+      best = i;
+    }
   });
   return best;
 }
@@ -465,21 +465,24 @@ function ValueSliderScreen({
     return Math.max(30, Math.min(430, (1 - ratio) * 460));
   }, []);
 
-  const snapTo = useCallback((targetIdx: number) => {
-    cancelAnimationFrame(animRef.current);
-    const tx = SLIDER_STOPS[targetIdx];
-    const sx = curXRef.current;
-    const start = performance.now();
-    const dur = 180;
-    const tick = (now: number) => {
-      let t = Math.min(1, (now - start) / dur);
-      t = t * (2 - t);
-      renderThumb(sx + (tx - sx) * t);
-      if (t < 1) animRef.current = requestAnimationFrame(tick);
-    };
-    animRef.current = requestAnimationFrame(tick);
-    onChange(SLIDER_VALUES[targetIdx]);
-  }, [onChange, renderThumb]);
+  const snapTo = useCallback(
+    (targetIdx: number) => {
+      cancelAnimationFrame(animRef.current);
+      const tx = SLIDER_STOPS[targetIdx];
+      const sx = curXRef.current;
+      const start = performance.now();
+      const dur = 180;
+      const tick = (now: number) => {
+        let t = Math.min(1, (now - start) / dur);
+        t = t * (2 - t);
+        renderThumb(sx + (tx - sx) * t);
+        if (t < 1) animRef.current = requestAnimationFrame(tick);
+      };
+      animRef.current = requestAnimationFrame(tick);
+      onChange(SLIDER_VALUES[targetIdx]);
+    },
+    [onChange, renderThumb],
+  );
 
   useEffect(() => {
     renderThumb(SLIDER_STOPS[value + 2] ?? 230);
@@ -514,11 +517,14 @@ function ValueSliderScreen({
     };
   }, [toSvgX, renderThumb, snapTo]);
 
-  const handlePointerDown = useCallback((clientX: number) => {
-    cancelAnimationFrame(animRef.current);
-    draggingRef.current = true;
-    renderThumb(toSvgX(clientX));
-  }, [toSvgX, renderThumb]);
+  const handlePointerDown = useCallback(
+    (clientX: number) => {
+      cancelAnimationFrame(animRef.current);
+      draggingRef.current = true;
+      renderThumb(toSvgX(clientX));
+    },
+    [toSvgX, renderThumb],
+  );
 
   const leftActive = value < 0;
   const rightActive = value > 0;
@@ -532,9 +538,7 @@ function ValueSliderScreen({
       <div className="flex items-stretch justify-between gap-4">
         <div
           className={`flex-1 rounded-xl border-2 p-4 text-center transition ${
-            leftActive
-              ? 'border-[#534AB7] bg-[#EEEDFE]'
-              : 'border-slate-200'
+            leftActive ? 'border-[#534AB7] bg-[#EEEDFE]' : 'border-slate-200'
           }`}
         >
           <p className="font-semibold text-slate-800">{slider.leftLabel}</p>
@@ -543,9 +547,7 @@ function ValueSliderScreen({
 
         <div
           className={`flex-1 rounded-xl border-2 p-4 text-center transition ${
-            rightActive
-              ? 'border-[#534AB7] bg-[#EEEDFE]'
-              : 'border-slate-200'
+            rightActive ? 'border-[#534AB7] bg-[#EEEDFE]' : 'border-slate-200'
           }`}
         >
           <p className="font-semibold text-slate-800">{slider.rightLabel}</p>
@@ -559,7 +561,10 @@ function ValueSliderScreen({
           viewBox="0 0 460 60"
           className="w-full block cursor-pointer select-none"
           style={{ transform: 'scaleX(-1)' }}
-          onMouseDown={(e) => { e.preventDefault(); handlePointerDown(e.clientX); }}
+          onMouseDown={(e) => {
+            e.preventDefault();
+            handlePointerDown(e.clientX);
+          }}
           onTouchStart={(e) => handlePointerDown(e.touches[0].clientX)}
         >
           <defs>
@@ -570,13 +575,19 @@ function ValueSliderScreen({
           <path d={TRACK_PATH} fill="#e8f7fa" stroke="#c8e8ee" strokeWidth="0.5" />
           <rect
             ref={fillLRef}
-            x="230" y="0" width="0" height="60"
+            x="230"
+            y="0"
+            width="0"
+            height="60"
             fill="#85B7EB"
             clipPath={`url(#track-clip-${slider.id})`}
           />
           <rect
             ref={fillRRef}
-            x="230" y="0" width="0" height="60"
+            x="230"
+            y="0"
+            width="0"
+            height="60"
             fill="#85B7EB"
             clipPath={`url(#track-clip-${slider.id})`}
           />

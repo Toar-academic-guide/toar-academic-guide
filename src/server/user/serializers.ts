@@ -14,13 +14,13 @@ export const DEFAULT_USER_PROFILE_SNAPSHOT: UserProfileSnapshot = {
 };
 
 function isPublicUploadedDocumentKind(
-  kind: UploadedDocumentRow['kind']
+  kind: UploadedDocumentRow['kind'],
 ): kind is PublicUploadedDocument['kind'] {
   return kind === 'psychometric' || kind === 'bagrut';
 }
 
 function isPublicUploadedDocumentRow(
-  row: UploadedDocumentRow
+  row: UploadedDocumentRow,
 ): row is UploadedDocumentRow & { kind: PublicUploadedDocument['kind'] } {
   return isPublicUploadedDocumentKind(row.kind);
 }
@@ -37,21 +37,19 @@ function buildUploadedDocumentDisplayName(kind: PublicUploadedDocument['kind']) 
 export function serializeUserProfileSnapshot(
   profileRow: UserProfileRow | undefined,
   savedProgramRows: Pick<SavedProgramRow, 'programId'>[],
-  uploadedDocumentRows?: UploadedDocumentRow[]
+  uploadedDocumentRows?: UploadedDocumentRow[],
 ): UserProfileSnapshot {
   if (!profileRow) {
     return {
       ...DEFAULT_USER_PROFILE_SNAPSHOT,
       savedProgramIds: savedProgramRows.map((row) => row.programId),
       uploadedDocuments:
-        uploadedDocumentRows
-          ?.filter(isPublicUploadedDocumentRow)
-          .map((row) => ({
-            id: row.id,
-            kind: row.kind,
-            displayName: buildUploadedDocumentDisplayName(row.kind),
-            sizeBytes: row.sizeBytes,
-          })) || [],
+        uploadedDocumentRows?.filter(isPublicUploadedDocumentRow).map((row) => ({
+          id: row.id,
+          kind: row.kind,
+          displayName: buildUploadedDocumentDisplayName(row.kind),
+          sizeBytes: row.sizeBytes,
+        })) || [],
     };
   }
 
@@ -74,7 +72,9 @@ export function serializeUserProfileSnapshot(
                   ...(profileRow.psychometricQuantitative !== null
                     ? { quantitative: profileRow.psychometricQuantitative }
                     : {}),
-                  ...(profileRow.psychometricVerbal !== null ? { verbal: profileRow.psychometricVerbal } : {}),
+                  ...(profileRow.psychometricVerbal !== null
+                    ? { verbal: profileRow.psychometricVerbal }
+                    : {}),
                   ...(profileRow.psychometricEnglish !== null
                     ? { english: profileRow.psychometricEnglish }
                     : {}),
@@ -98,14 +98,12 @@ export function serializeUserProfileSnapshot(
     ...(academicScores ? { academicScores } : {}),
     savedProgramIds: savedProgramRows.map((row) => row.programId),
     uploadedDocuments:
-      uploadedDocumentRows
-        ?.filter(isPublicUploadedDocumentRow)
-        .map((row) => ({
-          id: row.id,
-          kind: row.kind,
-          displayName: buildUploadedDocumentDisplayName(row.kind),
-          sizeBytes: row.sizeBytes,
-        })) || [],
+      uploadedDocumentRows?.filter(isPublicUploadedDocumentRow).map((row) => ({
+        id: row.id,
+        kind: row.kind,
+        displayName: buildUploadedDocumentDisplayName(row.kind),
+        sizeBytes: row.sizeBytes,
+      })) || [],
   };
 }
 

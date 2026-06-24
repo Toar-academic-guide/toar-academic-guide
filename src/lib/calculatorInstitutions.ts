@@ -7,18 +7,22 @@ export function toCatalogueCalculatorConfig(university: University): CatalogueCa
     formulaType: university.formulaType,
     scaleDescription: university.scaleDescription,
     ...(university.sekhemWeight ? { sekhemWeight: university.sekhemWeight } : {}),
-    ...(university.minPsychometric !== undefined ? { minPsychometric: university.minPsychometric } : {}),
+    ...(university.minPsychometric !== undefined
+      ? { minPsychometric: university.minPsychometric }
+      : {}),
     ...(university.minBagrut !== undefined ? { minBagrut: university.minBagrut } : {}),
   };
 }
 
-export function getStaticCalculatorConfig(institutionId: string): CatalogueCalculatorConfig | undefined {
+export function getStaticCalculatorConfig(
+  institutionId: string,
+): CatalogueCalculatorConfig | undefined {
   const university = UNIVERSITIES.find((entry) => entry.id === institutionId);
   return university ? toCatalogueCalculatorConfig(university) : undefined;
 }
 
 export function getCalculatorInstitutionsFromCatalogue(
-  institutions: CatalogueInstitution[]
+  institutions: CatalogueInstitution[],
 ): University[] {
   return institutions.flatMap((institution) => {
     if (!institution.calculatorConfig) {

@@ -50,7 +50,11 @@ export async function PUT(request: Request) {
 }
 
 async function parseProfileRequestBody(request: Request) {
-  const body = await readJsonBody(request, 'PROFILE_PAYLOAD_INVALID', 'Profile payload is invalid.');
+  const body = await readJsonBody(
+    request,
+    'PROFILE_PAYLOAD_INVALID',
+    'Profile payload is invalid.',
+  );
   const parsed = profileRequestBodySchema.safeParse(body);
 
   if (!parsed.success) {

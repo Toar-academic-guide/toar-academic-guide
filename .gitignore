@@ -48,3 +48,10 @@ next-env.d.ts
 # supabase
 supabase/.temp/
 .worktrees/
+
+# playwright
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/e2e/.cache/

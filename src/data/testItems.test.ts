@@ -8,10 +8,10 @@ import {
 describe('testItems screen metadata', () => {
   it('derives the correct section for the service-history screens without a transition', () => {
     const army1Screen = SCREEN_SEQUENCE.find(
-      (screen) => screen.kind === 'multi-select' && screen.questionId === 'ARMY-1'
+      (screen) => screen.kind === 'multi-select' && screen.questionId === 'ARMY-1',
     );
     const army2Screen = SCREEN_SEQUENCE.find(
-      (screen) => screen.kind === 'multi-select' && screen.questionId === 'ARMY-2'
+      (screen) => screen.kind === 'multi-select' && screen.questionId === 'ARMY-2',
     );
 
     expect(army1Screen).toBeDefined();
@@ -22,10 +22,10 @@ describe('testItems screen metadata', () => {
 
   it('stays aligned with the underlying question and slider metadata', () => {
     const styleScreen = SCREEN_SEQUENCE.find(
-      (screen) => screen.kind === 'multi-select' && screen.questionId === 'Q4'
+      (screen) => screen.kind === 'multi-select' && screen.questionId === 'Q4',
     );
     const valueScreen = SCREEN_SEQUENCE.find(
-      (screen) => screen.kind === 'value-slider' && screen.sliderId === 'V2'
+      (screen) => screen.kind === 'value-slider' && screen.sliderId === 'V2',
     );
 
     expect(styleScreen).toBeDefined();

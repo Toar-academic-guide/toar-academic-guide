@@ -83,7 +83,7 @@ describe('userProfileSchema', () => {
             sizeBytes: 12,
           },
         ],
-      })
+      }),
     ).toThrow();
   });
 
@@ -96,7 +96,7 @@ describe('userProfileSchema', () => {
             overall: 199,
           },
         },
-      })
+      }),
     ).toThrow();
 
     expect(() =>
@@ -107,7 +107,7 @@ describe('userProfileSchema', () => {
             quantitative: 151,
           },
         },
-      })
+      }),
     ).toThrow();
 
     expect(() =>
@@ -118,7 +118,7 @@ describe('userProfileSchema', () => {
             weightedAverage: 59,
           },
         },
-      })
+      }),
     ).toThrow();
   });
 
@@ -126,14 +126,14 @@ describe('userProfileSchema', () => {
     expect(() =>
       userProfileSchema.parse({
         geographicPreference: 'jerusalem',
-      })
+      }),
     ).toThrow();
 
     expect(() =>
       userProfileSchema.parse({
         geographicPreference: 'any',
         unknown: true,
-      })
+      }),
     ).toThrow();
   });
 });
@@ -167,13 +167,13 @@ describe('savedProgramRequestBodySchema', () => {
     expect(() =>
       savedProgramRequestBodySchema.parse({
         programId: '   ',
-      })
+      }),
     ).toThrow();
 
     expect(() =>
       savedProgramRequestBodySchema.parse({
         programId: 123,
-      })
+      }),
     ).toThrow();
   });
 });

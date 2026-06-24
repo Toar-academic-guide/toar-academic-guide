@@ -5,44 +5,44 @@ import type { Program, InstitutionDetail } from './types';
 // LE=Leadership  OR=Organizational  DI=Digital/Tech  ER=Erudition
 // One canonical profile per academic discipline, reused across institutions.
 const P: Record<string, Program['profileScore']> = {
-  cs:          { AN: 5, TE: 2, CR: 1, SO: 0, LE: 1, OR: 3, DI: 5, ER: 2 },
+  cs: { AN: 5, TE: 2, CR: 1, SO: 0, LE: 1, OR: 3, DI: 5, ER: 2 },
   softwareEng: { AN: 5, TE: 3, CR: 1, SO: 0, LE: 1, OR: 3, DI: 5, ER: 1 },
-  ee:          { AN: 4, TE: 4, CR: 0, SO: 0, LE: 1, OR: 2, DI: 3, ER: 2 },
-  me:          { AN: 3, TE: 5, CR: 1, SO: 0, LE: 1, OR: 2, DI: 1, ER: 2 },
-  civilEng:    { AN: 3, TE: 4, CR: 2, SO: 1, LE: 1, OR: 3, DI: 1, ER: 2 },
-  industrial:  { AN: 3, TE: 2, CR: 0, SO: 1, LE: 3, OR: 4, DI: 2, ER: 2 },
-  biomedical:  { AN: 5, TE: 3, CR: 0, SO: 2, LE: 0, OR: 2, DI: 2, ER: 3 },
+  ee: { AN: 4, TE: 4, CR: 0, SO: 0, LE: 1, OR: 2, DI: 3, ER: 2 },
+  me: { AN: 3, TE: 5, CR: 1, SO: 0, LE: 1, OR: 2, DI: 1, ER: 2 },
+  civilEng: { AN: 3, TE: 4, CR: 2, SO: 1, LE: 1, OR: 3, DI: 1, ER: 2 },
+  industrial: { AN: 3, TE: 2, CR: 0, SO: 1, LE: 3, OR: 4, DI: 2, ER: 2 },
+  biomedical: { AN: 5, TE: 3, CR: 0, SO: 2, LE: 0, OR: 2, DI: 2, ER: 3 },
   dataScience: { AN: 5, TE: 1, CR: 0, SO: 0, LE: 1, OR: 4, DI: 5, ER: 3 },
-  psychology:  { AN: 4, TE: 0, CR: 1, SO: 5, LE: 1, OR: 1, DI: 0, ER: 4 },
-  law:         { AN: 2, TE: 0, CR: 1, SO: 3, LE: 5, OR: 2, DI: 0, ER: 5 },
-  economics:   { AN: 5, TE: 0, CR: 0, SO: 1, LE: 3, OR: 4, DI: 2, ER: 4 },
-  business:    { AN: 2, TE: 0, CR: 0, SO: 2, LE: 5, OR: 4, DI: 1, ER: 2 },
-  accounting:  { AN: 3, TE: 0, CR: 0, SO: 1, LE: 3, OR: 5, DI: 2, ER: 2 },
+  psychology: { AN: 4, TE: 0, CR: 1, SO: 5, LE: 1, OR: 1, DI: 0, ER: 4 },
+  law: { AN: 2, TE: 0, CR: 1, SO: 3, LE: 5, OR: 2, DI: 0, ER: 5 },
+  economics: { AN: 5, TE: 0, CR: 0, SO: 1, LE: 3, OR: 4, DI: 2, ER: 4 },
+  business: { AN: 2, TE: 0, CR: 0, SO: 2, LE: 5, OR: 4, DI: 1, ER: 2 },
+  accounting: { AN: 3, TE: 0, CR: 0, SO: 1, LE: 3, OR: 5, DI: 2, ER: 2 },
   infoSystems: { AN: 4, TE: 1, CR: 0, SO: 1, LE: 3, OR: 4, DI: 4, ER: 2 },
-  biology:     { AN: 5, TE: 2, CR: 1, SO: 1, LE: 0, OR: 2, DI: 0, ER: 4 },
-  nursing:             { AN: 3, TE: 2, CR: 0, SO: 5, LE: 1, OR: 2, DI: 0, ER: 2 },
-  socialWork:          { AN: 2, TE: 0, CR: 1, SO: 5, LE: 2, OR: 2, DI: 0, ER: 3 },
-  medicine:            { AN: 5, TE: 2, CR: 0, SO: 4, LE: 1, OR: 2, DI: 0, ER: 5 },
+  biology: { AN: 5, TE: 2, CR: 1, SO: 1, LE: 0, OR: 2, DI: 0, ER: 4 },
+  nursing: { AN: 3, TE: 2, CR: 0, SO: 5, LE: 1, OR: 2, DI: 0, ER: 2 },
+  socialWork: { AN: 2, TE: 0, CR: 1, SO: 5, LE: 2, OR: 2, DI: 0, ER: 3 },
+  medicine: { AN: 5, TE: 2, CR: 0, SO: 4, LE: 1, OR: 2, DI: 0, ER: 5 },
   occupationalTherapy: { AN: 3, TE: 2, CR: 2, SO: 5, LE: 1, OR: 2, DI: 0, ER: 3 },
-  marineBiology:       { AN: 5, TE: 3, CR: 1, SO: 2, LE: 0, OR: 2, DI: 0, ER: 4 },
-  soundEngineering:    { AN: 3, TE: 3, CR: 4, SO: 1, LE: 1, OR: 2, DI: 3, ER: 1 },
-  communication:       { AN: 2, TE: 1, CR: 4, SO: 4, LE: 3, OR: 1, DI: 2, ER: 3 },
-  politicalScience:    { AN: 4, TE: 1, CR: 2, SO: 3, LE: 4, OR: 2, DI: 0, ER: 4 },
-  physiotherapy:       { AN: 3, TE: 4, CR: 2, SO: 4, LE: 2, OR: 2, DI: 0, ER: 2 },
-  statistics:          { AN: 5, TE: 1, CR: 0, SO: 0, LE: 1, OR: 3, DI: 3, ER: 3 },
-  math:                { AN: 5, TE: 1, CR: 1, SO: 0, LE: 0, OR: 2, DI: 2, ER: 4 },
-  sociology:           { AN: 3, TE: 0, CR: 2, SO: 5, LE: 2, OR: 2, DI: 0, ER: 4 },
-  criminology:         { AN: 4, TE: 2, CR: 2, SO: 3, LE: 2, OR: 3, DI: 0, ER: 3 },
-  biotech:             { AN: 5, TE: 3, CR: 1, SO: 1, LE: 0, OR: 2, DI: 1, ER: 3 },
-  computationalBio:    { AN: 5, TE: 2, CR: 0, SO: 1, LE: 0, OR: 2, DI: 4, ER: 3 },
-  optometry:           { AN: 4, TE: 3, CR: 0, SO: 3, LE: 1, OR: 2, DI: 0, ER: 2 },
-  chemicalEng:         { AN: 4, TE: 4, CR: 1, SO: 0, LE: 1, OR: 3, DI: 1, ER: 2 },
-  chemistry:           { AN: 5, TE: 3, CR: 1, SO: 0, LE: 0, OR: 2, DI: 0, ER: 4 },
-  physics:             { AN: 5, TE: 3, CR: 1, SO: 0, LE: 0, OR: 1, DI: 1, ER: 5 },
-  healthSystems:       { AN: 3, TE: 1, CR: 0, SO: 3, LE: 3, OR: 4, DI: 1, ER: 2 },
-  nutrition:           { AN: 4, TE: 2, CR: 1, SO: 3, LE: 2, OR: 3, DI: 0, ER: 3 },
-  molecularBio:        { AN: 5, TE: 3, CR: 1, SO: 1, LE: 0, OR: 2, DI: 1, ER: 4 },
-  lifesciences:        { AN: 5, TE: 2, CR: 1, SO: 1, LE: 0, OR: 2, DI: 0, ER: 4 },
+  marineBiology: { AN: 5, TE: 3, CR: 1, SO: 2, LE: 0, OR: 2, DI: 0, ER: 4 },
+  soundEngineering: { AN: 3, TE: 3, CR: 4, SO: 1, LE: 1, OR: 2, DI: 3, ER: 1 },
+  communication: { AN: 2, TE: 1, CR: 4, SO: 4, LE: 3, OR: 1, DI: 2, ER: 3 },
+  politicalScience: { AN: 4, TE: 1, CR: 2, SO: 3, LE: 4, OR: 2, DI: 0, ER: 4 },
+  physiotherapy: { AN: 3, TE: 4, CR: 2, SO: 4, LE: 2, OR: 2, DI: 0, ER: 2 },
+  statistics: { AN: 5, TE: 1, CR: 0, SO: 0, LE: 1, OR: 3, DI: 3, ER: 3 },
+  math: { AN: 5, TE: 1, CR: 1, SO: 0, LE: 0, OR: 2, DI: 2, ER: 4 },
+  sociology: { AN: 3, TE: 0, CR: 2, SO: 5, LE: 2, OR: 2, DI: 0, ER: 4 },
+  criminology: { AN: 4, TE: 2, CR: 2, SO: 3, LE: 2, OR: 3, DI: 0, ER: 3 },
+  biotech: { AN: 5, TE: 3, CR: 1, SO: 1, LE: 0, OR: 2, DI: 1, ER: 3 },
+  computationalBio: { AN: 5, TE: 2, CR: 0, SO: 1, LE: 0, OR: 2, DI: 4, ER: 3 },
+  optometry: { AN: 4, TE: 3, CR: 0, SO: 3, LE: 1, OR: 2, DI: 0, ER: 2 },
+  chemicalEng: { AN: 4, TE: 4, CR: 1, SO: 0, LE: 1, OR: 3, DI: 1, ER: 2 },
+  chemistry: { AN: 5, TE: 3, CR: 1, SO: 0, LE: 0, OR: 2, DI: 0, ER: 4 },
+  physics: { AN: 5, TE: 3, CR: 1, SO: 0, LE: 0, OR: 1, DI: 1, ER: 5 },
+  healthSystems: { AN: 3, TE: 1, CR: 0, SO: 3, LE: 3, OR: 4, DI: 1, ER: 2 },
+  nutrition: { AN: 4, TE: 2, CR: 1, SO: 3, LE: 2, OR: 3, DI: 0, ER: 3 },
+  molecularBio: { AN: 5, TE: 3, CR: 1, SO: 1, LE: 0, OR: 2, DI: 1, ER: 4 },
+  lifesciences: { AN: 5, TE: 2, CR: 1, SO: 1, LE: 0, OR: 2, DI: 0, ER: 4 },
 };
 
 // ── Official institution details for sekhem-track programs ───────────────────
@@ -50,134 +50,1286 @@ const P: Record<string, Program['profileScore']> = {
 // officialCalculatorUrl points to each university's admission portal.
 // Values are best-effort estimates — verify against the official site before publishing.
 const D: Record<string, InstitutionDetail[]> = {
-
   // ── האוניברסיטה העברית בירושלים ─────────────────────────────────────────
-  huji_cs:          [{ institutionName: 'האוניברסיטה העברית בירושלים', durationYears: 4, estimatedStudentsPerYear: 'כ-120 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה'], officialCalculatorUrl: 'https://info.huji.ac.il/chishuv' }],
-  huji_datascience: [{ institutionName: 'האוניברסיטה העברית בירושלים', durationYears: 4, estimatedStudentsPerYear: 'כ-50 סטודנטים',  quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה'], officialCalculatorUrl: 'https://info.huji.ac.il/bachelor/Data-Science', programDescription: 'תוכנית רב-תחומית ייחודית המשלבת מתמטיקה, סטטיסטיקה ומדעי המחשב. הדגש הוא על ניתוח נתונים, למידת מכונה ופרויקטים מחקריים עם פקולטות שונות.' }],
-  huji_psychology:  [{ institutionName: 'האוניברסיטה העברית בירושלים', durationYears: 4, estimatedStudentsPerYear: 'כ-150 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['קבלה ישירה בפסיכומטרי ≥ 660 (ללא תלות בסכ"ם)'], officialCalculatorUrl: 'https://info.huji.ac.il/chishuv' }],
-  huji_law:         [{ institutionName: 'האוניברסיטה העברית בירושלים', durationYears: 3, estimatedStudentsPerYear: 'כ-200 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: [], officialCalculatorUrl: 'https://info.huji.ac.il/chishuv' }],
-  huji_economics:   [{ institutionName: 'האוניברסיטה העברית בירושלים', durationYears: 3, estimatedStudentsPerYear: 'כ-150 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['4 יח"ל מתמטיקה ומעלה — יתרון'], officialCalculatorUrl: 'https://info.huji.ac.il/chishuv' }],
-  huji_business:    [{ institutionName: 'האוניברסיטה העברית בירושלים', durationYears: 3, estimatedStudentsPerYear: 'כ-180 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: [], officialCalculatorUrl: 'https://info.huji.ac.il/chishuv' }],
-  huji_biology:     [{ institutionName: 'האוניברסיטה העברית בירושלים', durationYears: 3, estimatedStudentsPerYear: 'כ-100 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['ביולוגיה ו/או כימיה 5 יח"ל — יתרון'], officialCalculatorUrl: 'https://info.huji.ac.il/chishuv' }],
-  huji_socialwork:  [{ institutionName: 'האוניברסיטה העברית בירושלים', durationYears: 4, estimatedStudentsPerYear: 'כ-120 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['ראיון קבלה מחייב'], officialCalculatorUrl: 'https://info.huji.ac.il/chishuv' }],
-  huji_medicine:    [{ institutionName: 'האוניברסיטה העברית בירושלים', durationYears: 6, estimatedStudentsPerYear: 'כ-100 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['ראיון אישי לאחר מיון ראשוני', 'ביולוגיה ו/או כימיה 5 יח"ל — יתרון גדול'], officialCalculatorUrl: 'https://info.huji.ac.il/chishuv' }],
-  huji_accounting:  [{ institutionName: 'האוניברסיטה העברית בירושלים', durationYears: 3, estimatedStudentsPerYear: 'כ-100 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: [], officialCalculatorUrl: 'https://info.huji.ac.il/chishuv' }],
+  huji_cs: [
+    {
+      institutionName: 'האוניברסיטה העברית בירושלים',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-120 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה'],
+      officialCalculatorUrl: 'https://info.huji.ac.il/chishuv',
+    },
+  ],
+  huji_datascience: [
+    {
+      institutionName: 'האוניברסיטה העברית בירושלים',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-50 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה'],
+      officialCalculatorUrl: 'https://info.huji.ac.il/bachelor/Data-Science',
+      programDescription:
+        'תוכנית רב-תחומית ייחודית המשלבת מתמטיקה, סטטיסטיקה ומדעי המחשב. הדגש הוא על ניתוח נתונים, למידת מכונה ופרויקטים מחקריים עם פקולטות שונות.',
+    },
+  ],
+  huji_psychology: [
+    {
+      institutionName: 'האוניברסיטה העברית בירושלים',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-150 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['קבלה ישירה בפסיכומטרי ≥ 660 (ללא תלות בסכ"ם)'],
+      officialCalculatorUrl: 'https://info.huji.ac.il/chishuv',
+    },
+  ],
+  huji_law: [
+    {
+      institutionName: 'האוניברסיטה העברית בירושלים',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-200 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [],
+      officialCalculatorUrl: 'https://info.huji.ac.il/chishuv',
+    },
+  ],
+  huji_economics: [
+    {
+      institutionName: 'האוניברסיטה העברית בירושלים',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-150 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['4 יח"ל מתמטיקה ומעלה — יתרון'],
+      officialCalculatorUrl: 'https://info.huji.ac.il/chishuv',
+    },
+  ],
+  huji_business: [
+    {
+      institutionName: 'האוניברסיטה העברית בירושלים',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-180 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [],
+      officialCalculatorUrl: 'https://info.huji.ac.il/chishuv',
+    },
+  ],
+  huji_biology: [
+    {
+      institutionName: 'האוניברסיטה העברית בירושלים',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-100 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['ביולוגיה ו/או כימיה 5 יח"ל — יתרון'],
+      officialCalculatorUrl: 'https://info.huji.ac.il/chishuv',
+    },
+  ],
+  huji_socialwork: [
+    {
+      institutionName: 'האוניברסיטה העברית בירושלים',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-120 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['ראיון קבלה מחייב'],
+      officialCalculatorUrl: 'https://info.huji.ac.il/chishuv',
+    },
+  ],
+  huji_medicine: [
+    {
+      institutionName: 'האוניברסיטה העברית בירושלים',
+      durationYears: 6,
+      estimatedStudentsPerYear: 'כ-100 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [
+        'ראיון אישי לאחר מיון ראשוני',
+        'ביולוגיה ו/או כימיה 5 יח"ל — יתרון גדול',
+      ],
+      officialCalculatorUrl: 'https://info.huji.ac.il/chishuv',
+    },
+  ],
+  huji_accounting: [
+    {
+      institutionName: 'האוניברסיטה העברית בירושלים',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-100 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [],
+      officialCalculatorUrl: 'https://info.huji.ac.il/chishuv',
+    },
+  ],
 
   // ── אוניברסיטת תל אביב ──────────────────────────────────────────────────
-  tau_cs:          [{ institutionName: 'אוניברסיטת תל אביב', durationYears: 4, estimatedStudentsPerYear: 'כ-200 סטודנטים', quantitativeMinRequirement: 143, englishMinRequirement: 121, specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה', 'בונוס +35 עבור 5 יח"ל מתמטיקה', 'בונוס +25 עבור 5 יח"ל פיזיקה'], officialCalculatorUrl: 'https://go.tau.ac.il/b.a/chishuv' }],
-  tau_datascience: [{ institutionName: 'אוניברסיטת תל אביב', durationYears: 4, estimatedStudentsPerYear: 'כ-70 סטודנטים', quantitativeMinRequirement: 140, englishMinRequirement: 121, specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה', 'בונוס +35 עבור 5 יח"ל מתמטיקה'], officialCalculatorUrl: 'https://go.tau.ac.il/b.a/data-science', programDescription: 'תוכנית יוקרתית המשלבת מתמטיקה, סטטיסטיקה ומדעי המחשב עם דגש על למידת מכונה ובינה מלאכותית. שיתופי פעולה עם תעשיית ההייטק מובנים לתוך הקורסים.' }],
-  tau_ee:          [{ institutionName: 'אוניברסיטת תל אביב', durationYears: 4, estimatedStudentsPerYear: 'כ-150 סטודנטים', quantitativeMinRequirement: 143, englishMinRequirement: null, specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה', '5 יח"ל פיזיקה — יתרון גדול', 'בונוס +35/+25 על מתמטיקה/פיזיקה 5 יח"ל'], officialCalculatorUrl: 'https://go.tau.ac.il/b.a/chishuv' }],
-  tau_me:          [{ institutionName: 'אוניברסיטת תל אביב', durationYears: 4, estimatedStudentsPerYear: 'כ-120 סטודנטים', quantitativeMinRequirement: 138, englishMinRequirement: null, specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה', '5 יח"ל פיזיקה — יתרון', 'בונוס +35/+25 על מתמטיקה/פיזיקה 5 יח"ל'], officialCalculatorUrl: 'https://go.tau.ac.il/b.a/chishuv' }],
-  tau_industrial:  [{ institutionName: 'אוניברסיטת תל אביב', durationYears: 4, estimatedStudentsPerYear: 'כ-150 סטודנטים', quantitativeMinRequirement: 130, englishMinRequirement: null, specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה'], officialCalculatorUrl: 'https://go.tau.ac.il/b.a/chishuv' }],
-  tau_psychology:  [{ institutionName: 'אוניברסיטת תל אביב', durationYears: 4, estimatedStudentsPerYear: 'כ-200 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['אחד הסכ"מים הגבוהים בישראל — תחרות גבוהה מאוד'], officialCalculatorUrl: 'https://go.tau.ac.il/b.a/chishuv' }],
-  tau_law:         [{ institutionName: 'אוניברסיטת תל אביב', durationYears: 3, estimatedStudentsPerYear: 'כ-250 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: [], officialCalculatorUrl: 'https://go.tau.ac.il/b.a/chishuv' }],
-  tau_economics:   [{ institutionName: 'אוניברסיטת תל אביב', durationYears: 3, estimatedStudentsPerYear: 'כ-200 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['4–5 יח"ל מתמטיקה — יתרון'], officialCalculatorUrl: 'https://go.tau.ac.il/b.a/chishuv' }],
-  tau_business:    [{ institutionName: 'אוניברסיטת תל אביב', durationYears: 3, estimatedStudentsPerYear: 'כ-250 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: [], officialCalculatorUrl: 'https://go.tau.ac.il/b.a/chishuv' }],
-  tau_biology:     [{ institutionName: 'אוניברסיטת תל אביב', durationYears: 3, estimatedStudentsPerYear: 'כ-120 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['ביולוגיה ו/או כימיה 5 יח"ל — יתרון'], officialCalculatorUrl: 'https://go.tau.ac.il/b.a/chishuv' }],
-  tau_socialwork:  [{ institutionName: 'אוניברסיטת תל אביב', durationYears: 4, estimatedStudentsPerYear: 'כ-120 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['ראיון קבלה מחייב'], officialCalculatorUrl: 'https://go.tau.ac.il/b.a/chishuv' }],
-  tau_medicine:    [{ institutionName: 'אוניברסיטת תל אביב', durationYears: 6, estimatedStudentsPerYear: 'כ-90 סטודנטים',  quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['ראיון אישי לאחר מיון ראשוני', 'ממוצע בגרות ≥ 100 — מומלץ'], officialCalculatorUrl: 'https://go.tau.ac.il/b.a/chishuv' }],
-  tau_accounting:  [{ institutionName: 'אוניברסיטת תל אביב', durationYears: 3, estimatedStudentsPerYear: 'כ-100 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: [], officialCalculatorUrl: 'https://go.tau.ac.il/b.a/chishuv' }],
-  tau_infosystems: [{ institutionName: 'אוניברסיטת תל אביב', durationYears: 3, estimatedStudentsPerYear: 'כ-120 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: [], officialCalculatorUrl: 'https://go.tau.ac.il/b.a/chishuv' }],
+  tau_cs: [
+    {
+      institutionName: 'אוניברסיטת תל אביב',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-200 סטודנטים',
+      quantitativeMinRequirement: 143,
+      englishMinRequirement: 121,
+      specificAdmissionNotes: [
+        '5 יח"ל מתמטיקה — חובה',
+        'בונוס +35 עבור 5 יח"ל מתמטיקה',
+        'בונוס +25 עבור 5 יח"ל פיזיקה',
+      ],
+      officialCalculatorUrl: 'https://go.tau.ac.il/b.a/chishuv',
+    },
+  ],
+  tau_datascience: [
+    {
+      institutionName: 'אוניברסיטת תל אביב',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-70 סטודנטים',
+      quantitativeMinRequirement: 140,
+      englishMinRequirement: 121,
+      specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה', 'בונוס +35 עבור 5 יח"ל מתמטיקה'],
+      officialCalculatorUrl: 'https://go.tau.ac.il/b.a/data-science',
+      programDescription:
+        'תוכנית יוקרתית המשלבת מתמטיקה, סטטיסטיקה ומדעי המחשב עם דגש על למידת מכונה ובינה מלאכותית. שיתופי פעולה עם תעשיית ההייטק מובנים לתוך הקורסים.',
+    },
+  ],
+  tau_ee: [
+    {
+      institutionName: 'אוניברסיטת תל אביב',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-150 סטודנטים',
+      quantitativeMinRequirement: 143,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [
+        '5 יח"ל מתמטיקה — חובה',
+        '5 יח"ל פיזיקה — יתרון גדול',
+        'בונוס +35/+25 על מתמטיקה/פיזיקה 5 יח"ל',
+      ],
+      officialCalculatorUrl: 'https://go.tau.ac.il/b.a/chishuv',
+    },
+  ],
+  tau_me: [
+    {
+      institutionName: 'אוניברסיטת תל אביב',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-120 סטודנטים',
+      quantitativeMinRequirement: 138,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [
+        '5 יח"ל מתמטיקה — חובה',
+        '5 יח"ל פיזיקה — יתרון',
+        'בונוס +35/+25 על מתמטיקה/פיזיקה 5 יח"ל',
+      ],
+      officialCalculatorUrl: 'https://go.tau.ac.il/b.a/chishuv',
+    },
+  ],
+  tau_industrial: [
+    {
+      institutionName: 'אוניברסיטת תל אביב',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-150 סטודנטים',
+      quantitativeMinRequirement: 130,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה'],
+      officialCalculatorUrl: 'https://go.tau.ac.il/b.a/chishuv',
+    },
+  ],
+  tau_psychology: [
+    {
+      institutionName: 'אוניברסיטת תל אביב',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-200 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['אחד הסכ"מים הגבוהים בישראל — תחרות גבוהה מאוד'],
+      officialCalculatorUrl: 'https://go.tau.ac.il/b.a/chishuv',
+    },
+  ],
+  tau_law: [
+    {
+      institutionName: 'אוניברסיטת תל אביב',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-250 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [],
+      officialCalculatorUrl: 'https://go.tau.ac.il/b.a/chishuv',
+    },
+  ],
+  tau_economics: [
+    {
+      institutionName: 'אוניברסיטת תל אביב',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-200 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['4–5 יח"ל מתמטיקה — יתרון'],
+      officialCalculatorUrl: 'https://go.tau.ac.il/b.a/chishuv',
+    },
+  ],
+  tau_business: [
+    {
+      institutionName: 'אוניברסיטת תל אביב',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-250 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [],
+      officialCalculatorUrl: 'https://go.tau.ac.il/b.a/chishuv',
+    },
+  ],
+  tau_biology: [
+    {
+      institutionName: 'אוניברסיטת תל אביב',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-120 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['ביולוגיה ו/או כימיה 5 יח"ל — יתרון'],
+      officialCalculatorUrl: 'https://go.tau.ac.il/b.a/chishuv',
+    },
+  ],
+  tau_socialwork: [
+    {
+      institutionName: 'אוניברסיטת תל אביב',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-120 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['ראיון קבלה מחייב'],
+      officialCalculatorUrl: 'https://go.tau.ac.il/b.a/chishuv',
+    },
+  ],
+  tau_medicine: [
+    {
+      institutionName: 'אוניברסיטת תל אביב',
+      durationYears: 6,
+      estimatedStudentsPerYear: 'כ-90 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['ראיון אישי לאחר מיון ראשוני', 'ממוצע בגרות ≥ 100 — מומלץ'],
+      officialCalculatorUrl: 'https://go.tau.ac.il/b.a/chishuv',
+    },
+  ],
+  tau_accounting: [
+    {
+      institutionName: 'אוניברסיטת תל אביב',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-100 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [],
+      officialCalculatorUrl: 'https://go.tau.ac.il/b.a/chishuv',
+    },
+  ],
+  tau_infosystems: [
+    {
+      institutionName: 'אוניברסיטת תל אביב',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-120 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [],
+      officialCalculatorUrl: 'https://go.tau.ac.il/b.a/chishuv',
+    },
+  ],
 
   // ── הטכניון – מכון טכנולוגי לישראל ─────────────────────────────────────
-  technion_cs:          [{ institutionName: 'הטכניון – מכון טכנולוגי לישראל', durationYears: 4, estimatedStudentsPerYear: 'כ-180 סטודנטים', quantitativeMinRequirement: 148, englishMinRequirement: null, specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה מוחלטת', '5 יח"ל פיזיקה — נדרש לחלק מהמסלולים'], officialCalculatorUrl: 'https://admissions.technion.ac.il/' }],
-  technion_datascience: [{ institutionName: 'הטכניון – מכון טכנולוגי לישראל', durationYears: 4, estimatedStudentsPerYear: 'כ-50 סטודנטים',  quantitativeMinRequirement: 145, englishMinRequirement: null, specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה מוחלטת'], officialCalculatorUrl: 'https://admissions.technion.ac.il/programs/data-science-and-statistics/', programDescription: 'תוכנית מחקרית-הנדסית עם בסיס מתמטי חזק. מיועדת לסטודנטים עם נטייה לפתרון בעיות כמותיות מורכבות; קשרים ענפים עם מעבדות המחקר של הטכניון.' }],
-  technion_ee:          [{ institutionName: 'הטכניון – מכון טכנולוגי לישראל', durationYears: 4, estimatedStudentsPerYear: 'כ-220 סטודנטים', quantitativeMinRequirement: 143, englishMinRequirement: null, specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה', '5 יח"ל פיזיקה — חובה'], officialCalculatorUrl: 'https://admissions.technion.ac.il/' }],
-  technion_me:          [{ institutionName: 'הטכניון – מכון טכנולוגי לישראל', durationYears: 4, estimatedStudentsPerYear: 'כ-200 סטודנטים', quantitativeMinRequirement: 140, englishMinRequirement: null, specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה', '5 יח"ל פיזיקה — חובה'], officialCalculatorUrl: 'https://admissions.technion.ac.il/' }],
-  technion_civil:       [{ institutionName: 'הטכניון – מכון טכנולוגי לישראל', durationYears: 4, estimatedStudentsPerYear: 'כ-120 סטודנטים', quantitativeMinRequirement: 135, englishMinRequirement: null, specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה'], officialCalculatorUrl: 'https://admissions.technion.ac.il/' }],
-  technion_industrial:  [{ institutionName: 'הטכניון – מכון טכנולוגי לישראל', durationYears: 4, estimatedStudentsPerYear: 'כ-120 סטודנטים', quantitativeMinRequirement: 133, englishMinRequirement: null, specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה'], officialCalculatorUrl: 'https://admissions.technion.ac.il/' }],
-  technion_biomedical:  [{ institutionName: 'הטכניון – מכון טכנולוגי לישראל', durationYears: 4, estimatedStudentsPerYear: 'כ-60 סטודנטים',  quantitativeMinRequirement: 140, englishMinRequirement: null, specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה', 'ביולוגיה ו/או כימיה 5 יח"ל — יתרון'], officialCalculatorUrl: 'https://admissions.technion.ac.il/' }],
-  technion_medicine:    [{ institutionName: 'הטכניון – מכון טכנולוגי לישראל', durationYears: 6, estimatedStudentsPerYear: 'כ-100 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['ראיון אישי — מחייב', 'ממוצע בגרות ≥ 100 — מומלץ מאוד'], officialCalculatorUrl: 'https://admissions.technion.ac.il/' }],
+  technion_cs: [
+    {
+      institutionName: 'הטכניון – מכון טכנולוגי לישראל',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-180 סטודנטים',
+      quantitativeMinRequirement: 148,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [
+        '5 יח"ל מתמטיקה — חובה מוחלטת',
+        '5 יח"ל פיזיקה — נדרש לחלק מהמסלולים',
+      ],
+      officialCalculatorUrl: 'https://admissions.technion.ac.il/',
+    },
+  ],
+  technion_datascience: [
+    {
+      institutionName: 'הטכניון – מכון טכנולוגי לישראל',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-50 סטודנטים',
+      quantitativeMinRequirement: 145,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה מוחלטת'],
+      officialCalculatorUrl:
+        'https://admissions.technion.ac.il/programs/data-science-and-statistics/',
+      programDescription:
+        'תוכנית מחקרית-הנדסית עם בסיס מתמטי חזק. מיועדת לסטודנטים עם נטייה לפתרון בעיות כמותיות מורכבות; קשרים ענפים עם מעבדות המחקר של הטכניון.',
+    },
+  ],
+  technion_ee: [
+    {
+      institutionName: 'הטכניון – מכון טכנולוגי לישראל',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-220 סטודנטים',
+      quantitativeMinRequirement: 143,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה', '5 יח"ל פיזיקה — חובה'],
+      officialCalculatorUrl: 'https://admissions.technion.ac.il/',
+    },
+  ],
+  technion_me: [
+    {
+      institutionName: 'הטכניון – מכון טכנולוגי לישראל',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-200 סטודנטים',
+      quantitativeMinRequirement: 140,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה', '5 יח"ל פיזיקה — חובה'],
+      officialCalculatorUrl: 'https://admissions.technion.ac.il/',
+    },
+  ],
+  technion_civil: [
+    {
+      institutionName: 'הטכניון – מכון טכנולוגי לישראל',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-120 סטודנטים',
+      quantitativeMinRequirement: 135,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה'],
+      officialCalculatorUrl: 'https://admissions.technion.ac.il/',
+    },
+  ],
+  technion_industrial: [
+    {
+      institutionName: 'הטכניון – מכון טכנולוגי לישראל',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-120 סטודנטים',
+      quantitativeMinRequirement: 133,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה'],
+      officialCalculatorUrl: 'https://admissions.technion.ac.il/',
+    },
+  ],
+  technion_biomedical: [
+    {
+      institutionName: 'הטכניון – מכון טכנולוגי לישראל',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-60 סטודנטים',
+      quantitativeMinRequirement: 140,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה', 'ביולוגיה ו/או כימיה 5 יח"ל — יתרון'],
+      officialCalculatorUrl: 'https://admissions.technion.ac.il/',
+    },
+  ],
+  technion_medicine: [
+    {
+      institutionName: 'הטכניון – מכון טכנולוגי לישראל',
+      durationYears: 6,
+      estimatedStudentsPerYear: 'כ-100 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['ראיון אישי — מחייב', 'ממוצע בגרות ≥ 100 — מומלץ מאוד'],
+      officialCalculatorUrl: 'https://admissions.technion.ac.il/',
+    },
+  ],
 
   // ── אוניברסיטת בן-גוריון בנגב ───────────────────────────────────────────
-  bgu_cs:         [{ institutionName: 'אוניברסיטת בן-גוריון בנגב', durationYears: 4, estimatedStudentsPerYear: 'כ-200 סטודנטים', quantitativeMinRequirement: 125, englishMinRequirement: null, specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה'], officialCalculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html', programUrl: 'https://in.bgu.ac.il/Pages/default.aspx', calculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html' }],
-  bgu_datascience:[{ institutionName: 'אוניברסיטת בן-גוריון בנגב', durationYears: 4, estimatedStudentsPerYear: 'כ-60 סטודנטים',  quantitativeMinRequirement: 120, englishMinRequirement: null, specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה'], officialCalculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html', programUrl: 'https://in.bgu.ac.il/Pages/default.aspx', calculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html', programDescription: 'תוכנית בין-מחלקתית בנגב עם קשרים חזקים לתעשייה המקומית ולסטארט-אפים. שכר לימוד נמוך יחסית ורמת לימודים גבוהה — אחת מהתוכניות המשתלמות ביותר בישראל.' }],
-  bgu_ee:         [{ institutionName: 'אוניברסיטת בן-גוריון בנגב', durationYears: 4, estimatedStudentsPerYear: 'כ-150 סטודנטים', quantitativeMinRequirement: 125, englishMinRequirement: null, specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה'], officialCalculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html', programUrl: 'https://in.bgu.ac.il/Pages/default.aspx', calculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html' }],
-  bgu_me:         [{ institutionName: 'אוניברסיטת בן-גוריון בנגב', durationYears: 4, estimatedStudentsPerYear: 'כ-120 סטודנטים', quantitativeMinRequirement: 120, englishMinRequirement: null, specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה'], officialCalculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html', programUrl: 'https://in.bgu.ac.il/Pages/default.aspx', calculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html' }],
-  bgu_industrial: [{ institutionName: 'אוניברסיטת בן-גוריון בנגב', durationYears: 4, estimatedStudentsPerYear: 'כ-120 סטודנטים', quantitativeMinRequirement: 115, englishMinRequirement: null, specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה'], officialCalculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html', programUrl: 'https://in.bgu.ac.il/Pages/default.aspx', calculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html' }],
-  bgu_psychology: [{ institutionName: 'אוניברסיטת בן-גוריון בנגב', durationYears: 4, estimatedStudentsPerYear: 'כ-180 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: [], officialCalculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html', programUrl: 'https://in.bgu.ac.il/Pages/default.aspx', calculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html' }],
-  bgu_law:        [{ institutionName: 'אוניברסיטת בן-גוריון בנגב', durationYears: 3, estimatedStudentsPerYear: 'כ-200 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: [], officialCalculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html', programUrl: 'https://in.bgu.ac.il/Pages/default.aspx', calculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html' }],
-  bgu_economics:  [{ institutionName: 'אוניברסיטת בן-גוריון בנגב', durationYears: 3, estimatedStudentsPerYear: 'כ-160 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['4 יח"ל מתמטיקה — מומלץ'], officialCalculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html', programUrl: 'https://in.bgu.ac.il/Pages/default.aspx', calculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html' }],
-  bgu_business:   [{ institutionName: 'אוניברסיטת בן-גוריון בנגב', durationYears: 3, estimatedStudentsPerYear: 'כ-220 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: [], officialCalculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html', programUrl: 'https://in.bgu.ac.il/Pages/default.aspx', calculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html' }],
-  bgu_biology:    [{ institutionName: 'אוניברסיטת בן-גוריון בנגב', durationYears: 3, estimatedStudentsPerYear: 'כ-100 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['ביולוגיה ו/או כימיה — יתרון'], officialCalculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html', programUrl: 'https://in.bgu.ac.il/Pages/default.aspx', calculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html' }],
-  bgu_nursing:    [{ institutionName: 'אוניברסיטת בן-גוריון בנגב', durationYears: 4, estimatedStudentsPerYear: 'כ-100 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['ראיון קבלה מחייב', 'ביולוגיה ברמה מקיפה — יתרון'], officialCalculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html', programUrl: 'https://in.bgu.ac.il/Pages/default.aspx', calculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html' }],
-  bgu_socialwork: [{ institutionName: 'אוניברסיטת בן-גוריון בנגב', durationYears: 4, estimatedStudentsPerYear: 'כ-120 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['ראיון קבלה מחייב'], officialCalculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html', programUrl: 'https://in.bgu.ac.il/Pages/default.aspx', calculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html' }],
-  bgu_medicine:   [{ institutionName: 'אוניברסיטת בן-גוריון בנגב', durationYears: 6, estimatedStudentsPerYear: 'כ-80 סטודנטים',  quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['ראיון אישי מחייב', 'הסטודנטים לרפואה מבצעים פרקטיקה בסורוקה'], officialCalculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html', programUrl: 'https://in.bgu.ac.il/Pages/default.aspx', calculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html' }],
-  bgu_accounting: [{ institutionName: 'אוניברסיטת בן-גוריון בנגב', durationYears: 3, estimatedStudentsPerYear: 'כ-100 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: [], officialCalculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html', programUrl: 'https://in.bgu.ac.il/Pages/default.aspx', calculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html' }],
+  bgu_cs: [
+    {
+      institutionName: 'אוניברסיטת בן-גוריון בנגב',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-200 סטודנטים',
+      quantitativeMinRequirement: 125,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה'],
+      officialCalculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html',
+      programUrl: 'https://in.bgu.ac.il/Pages/default.aspx',
+      calculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html',
+    },
+  ],
+  bgu_datascience: [
+    {
+      institutionName: 'אוניברסיטת בן-גוריון בנגב',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-60 סטודנטים',
+      quantitativeMinRequirement: 120,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה'],
+      officialCalculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html',
+      programUrl: 'https://in.bgu.ac.il/Pages/default.aspx',
+      calculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html',
+      programDescription:
+        'תוכנית בין-מחלקתית בנגב עם קשרים חזקים לתעשייה המקומית ולסטארט-אפים. שכר לימוד נמוך יחסית ורמת לימודים גבוהה — אחת מהתוכניות המשתלמות ביותר בישראל.',
+    },
+  ],
+  bgu_ee: [
+    {
+      institutionName: 'אוניברסיטת בן-גוריון בנגב',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-150 סטודנטים',
+      quantitativeMinRequirement: 125,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה'],
+      officialCalculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html',
+      programUrl: 'https://in.bgu.ac.il/Pages/default.aspx',
+      calculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html',
+    },
+  ],
+  bgu_me: [
+    {
+      institutionName: 'אוניברסיטת בן-גוריון בנגב',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-120 סטודנטים',
+      quantitativeMinRequirement: 120,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה'],
+      officialCalculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html',
+      programUrl: 'https://in.bgu.ac.il/Pages/default.aspx',
+      calculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html',
+    },
+  ],
+  bgu_industrial: [
+    {
+      institutionName: 'אוניברסיטת בן-גוריון בנגב',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-120 סטודנטים',
+      quantitativeMinRequirement: 115,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה'],
+      officialCalculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html',
+      programUrl: 'https://in.bgu.ac.il/Pages/default.aspx',
+      calculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html',
+    },
+  ],
+  bgu_psychology: [
+    {
+      institutionName: 'אוניברסיטת בן-גוריון בנגב',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-180 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [],
+      officialCalculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html',
+      programUrl: 'https://in.bgu.ac.il/Pages/default.aspx',
+      calculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html',
+    },
+  ],
+  bgu_law: [
+    {
+      institutionName: 'אוניברסיטת בן-גוריון בנגב',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-200 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [],
+      officialCalculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html',
+      programUrl: 'https://in.bgu.ac.il/Pages/default.aspx',
+      calculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html',
+    },
+  ],
+  bgu_economics: [
+    {
+      institutionName: 'אוניברסיטת בן-גוריון בנגב',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-160 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['4 יח"ל מתמטיקה — מומלץ'],
+      officialCalculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html',
+      programUrl: 'https://in.bgu.ac.il/Pages/default.aspx',
+      calculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html',
+    },
+  ],
+  bgu_business: [
+    {
+      institutionName: 'אוניברסיטת בן-גוריון בנגב',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-220 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [],
+      officialCalculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html',
+      programUrl: 'https://in.bgu.ac.il/Pages/default.aspx',
+      calculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html',
+    },
+  ],
+  bgu_biology: [
+    {
+      institutionName: 'אוניברסיטת בן-גוריון בנגב',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-100 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['ביולוגיה ו/או כימיה — יתרון'],
+      officialCalculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html',
+      programUrl: 'https://in.bgu.ac.il/Pages/default.aspx',
+      calculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html',
+    },
+  ],
+  bgu_nursing: [
+    {
+      institutionName: 'אוניברסיטת בן-גוריון בנגב',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-100 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['ראיון קבלה מחייב', 'ביולוגיה ברמה מקיפה — יתרון'],
+      officialCalculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html',
+      programUrl: 'https://in.bgu.ac.il/Pages/default.aspx',
+      calculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html',
+    },
+  ],
+  bgu_socialwork: [
+    {
+      institutionName: 'אוניברסיטת בן-גוריון בנגב',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-120 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['ראיון קבלה מחייב'],
+      officialCalculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html',
+      programUrl: 'https://in.bgu.ac.il/Pages/default.aspx',
+      calculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html',
+    },
+  ],
+  bgu_medicine: [
+    {
+      institutionName: 'אוניברסיטת בן-גוריון בנגב',
+      durationYears: 6,
+      estimatedStudentsPerYear: 'כ-80 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['ראיון אישי מחייב', 'הסטודנטים לרפואה מבצעים פרקטיקה בסורוקה'],
+      officialCalculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html',
+      programUrl: 'https://in.bgu.ac.il/Pages/default.aspx',
+      calculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html',
+    },
+  ],
+  bgu_accounting: [
+    {
+      institutionName: 'אוניברסיטת בן-גוריון בנגב',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-100 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [],
+      officialCalculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html',
+      programUrl: 'https://in.bgu.ac.il/Pages/default.aspx',
+      calculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html',
+    },
+  ],
 
   // ── אוניברסיטת רייכמן (IDC Herzliya) — requirements-track ───────────────
   // ממוצע בגרות 100 לקבלה ישירה; אין סכ"ם — מפנה לדף הקבלה הרשמי
-  reichman_cs:          [{ institutionName: 'אוניברסיטת רייכמן', durationYears: 3, estimatedStudentsPerYear: 'כ-150 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['חובה ממוצע בגרות 100 ומעלה לקבלה ישירה במסלול המבוקש', 'מותנה ברמת אנגלית \'מתקדמים א\' לפחות או ציון אמיר"ם/פסיכומטרי תואם'], officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/' }],
-  reichman_psychology:  [{ institutionName: 'אוניברסיטת רייכמן', durationYears: 4, estimatedStudentsPerYear: 'כ-120 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['חובה ממוצע בגרות 100 ומעלה לקבלה ישירה במסלול המבוקש', 'מותנה ברמת אנגלית \'מתקדמים א\' לפחות או ציון אמיר"ם/פסיכומטרי תואם'], officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/' }],
-  reichman_law:         [{ institutionName: 'אוניברסיטת רייכמן', durationYears: 3, estimatedStudentsPerYear: 'כ-180 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['חובה ממוצע בגרות 100 ומעלה לקבלה ישירה במסלול המבוקש', 'מותנה ברמת אנגלית \'מתקדמים א\' לפחות או ציון אמיר"ם/פסיכומטרי תואם'], officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/' }],
-  reichman_business:    [{ institutionName: 'אוניברסיטת רייכמן', durationYears: 3, estimatedStudentsPerYear: 'כ-200 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['חובה ממוצע בגרות 100 ומעלה לקבלה ישירה במסלול המבוקש', 'מותנה ברמת אנגלית \'מתקדמים א\' לפחות או ציון אמיר"ם/פסיכומטרי תואם'], officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/' }],
-  reichman_economics:   [{ institutionName: 'אוניברסיטת רייכמן', durationYears: 3, estimatedStudentsPerYear: 'כ-160 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['חובה ממוצע בגרות 100 ומעלה לקבלה ישירה במסלול המבוקש', 'מותנה ברמת אנגלית \'מתקדמים א\' לפחות או ציון אמיר"ם/פסיכומטרי תואם'], officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/' }],
-  reichman_infosystems: [{ institutionName: 'אוניברסיטת רייכמן', durationYears: 3, estimatedStudentsPerYear: 'כ-140 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['חובה ממוצע בגרות 100 ומעלה לקבלה ישירה במסלול המבוקש', 'מותנה ברמת אנגלית \'מתקדמים א\' לפחות או ציון אמיר"ם/פסיכומטרי תואם'], officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/' }],
+  reichman_cs: [
+    {
+      institutionName: 'אוניברסיטת רייכמן',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-150 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [
+        'חובה ממוצע בגרות 100 ומעלה לקבלה ישירה במסלול המבוקש',
+        "מותנה ברמת אנגלית 'מתקדמים א' לפחות או ציון אמיר\"ם/פסיכומטרי תואם",
+      ],
+      officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/',
+    },
+  ],
+  reichman_psychology: [
+    {
+      institutionName: 'אוניברסיטת רייכמן',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-120 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [
+        'חובה ממוצע בגרות 100 ומעלה לקבלה ישירה במסלול המבוקש',
+        "מותנה ברמת אנגלית 'מתקדמים א' לפחות או ציון אמיר\"ם/פסיכומטרי תואם",
+      ],
+      officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/',
+    },
+  ],
+  reichman_law: [
+    {
+      institutionName: 'אוניברסיטת רייכמן',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-180 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [
+        'חובה ממוצע בגרות 100 ומעלה לקבלה ישירה במסלול המבוקש',
+        "מותנה ברמת אנגלית 'מתקדמים א' לפחות או ציון אמיר\"ם/פסיכומטרי תואם",
+      ],
+      officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/',
+    },
+  ],
+  reichman_business: [
+    {
+      institutionName: 'אוניברסיטת רייכמן',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-200 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [
+        'חובה ממוצע בגרות 100 ומעלה לקבלה ישירה במסלול המבוקש',
+        "מותנה ברמת אנגלית 'מתקדמים א' לפחות או ציון אמיר\"ם/פסיכומטרי תואם",
+      ],
+      officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/',
+    },
+  ],
+  reichman_economics: [
+    {
+      institutionName: 'אוניברסיטת רייכמן',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-160 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [
+        'חובה ממוצע בגרות 100 ומעלה לקבלה ישירה במסלול המבוקש',
+        "מותנה ברמת אנגלית 'מתקדמים א' לפחות או ציון אמיר\"ם/פסיכומטרי תואם",
+      ],
+      officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/',
+    },
+  ],
+  reichman_infosystems: [
+    {
+      institutionName: 'אוניברסיטת רייכמן',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-140 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [
+        'חובה ממוצע בגרות 100 ומעלה לקבלה ישירה במסלול המבוקש',
+        "מותנה ברמת אנגלית 'מתקדמים א' לפחות או ציון אמיר\"ם/פסיכומטרי תואם",
+      ],
+      officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/',
+    },
+  ],
 
   // ── ריפוי בעיסוק ──────────────────────────────────────────────────────────
-  tau_occupational_therapy:  [{ institutionName: 'אוניברסיטת תל אביב',          durationYears: 3.5, estimatedStudentsPerYear: 'כ-60 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['ציון פסיכומטרי גבוה וסכ"ם משוקלל נדרשים', 'ראיון קבלה מוסדי — חובה מוחלטת', 'ממוצע בגרות ≥ 85 — מומלץ'],                                officialCalculatorUrl: 'https://go.tau.ac.il/b.a/chishuv' }],
-  huji_occupational_therapy: [{ institutionName: 'האוניברסיטה העברית בירושלים', durationYears: 3.5, estimatedStudentsPerYear: 'כ-50 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['ציון פסיכומטרי גבוה וסכ"ם משוקלל נדרשים', 'ועדת קבלה מחייבת — ראיון אישי', 'ממוצע בגרות ≥ 85 — מומלץ'],                                officialCalculatorUrl: 'https://info.huji.ac.il/chishuv' }],
+  tau_occupational_therapy: [
+    {
+      institutionName: 'אוניברסיטת תל אביב',
+      durationYears: 3.5,
+      estimatedStudentsPerYear: 'כ-60 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [
+        'ציון פסיכומטרי גבוה וסכ"ם משוקלל נדרשים',
+        'ראיון קבלה מוסדי — חובה מוחלטת',
+        'ממוצע בגרות ≥ 85 — מומלץ',
+      ],
+      officialCalculatorUrl: 'https://go.tau.ac.il/b.a/chishuv',
+    },
+  ],
+  huji_occupational_therapy: [
+    {
+      institutionName: 'האוניברסיטה העברית בירושלים',
+      durationYears: 3.5,
+      estimatedStudentsPerYear: 'כ-50 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [
+        'ציון פסיכומטרי גבוה וסכ"ם משוקלל נדרשים',
+        'ועדת קבלה מחייבת — ראיון אישי',
+        'ממוצע בגרות ≥ 85 — מומלץ',
+      ],
+      officialCalculatorUrl: 'https://info.huji.ac.il/chishuv',
+    },
+  ],
 
   // ── ביולוגיה ימית – רופין ─────────────────────────────────────────────────
-  ruppin_marine_bio: [{ institutionName: 'המרכז האקדמי רופין', durationYears: 3, estimatedStudentsPerYear: 'כ-40 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['ציון פסיכומטרי מינימלי: 500', 'ממוצע בגרות מינימלי: 75', '4–5 יח"ל מתמטיקה ומדעים — יתרון'], officialCalculatorUrl: 'https://www.ruppin.ac.il/departments/marine-science/' }],
+  ruppin_marine_bio: [
+    {
+      institutionName: 'המרכז האקדמי רופין',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-40 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [
+        'ציון פסיכומטרי מינימלי: 500',
+        'ממוצע בגרות מינימלי: 75',
+        '4–5 יח"ל מתמטיקה ומדעים — יתרון',
+      ],
+      officialCalculatorUrl: 'https://www.ruppin.ac.il/departments/marine-science/',
+    },
+  ],
 
   // ── הנדסת קול וסאונד – כנרת ──────────────────────────────────────────────
-  kinneret_sound_eng: [{ institutionName: 'המכללה האקדמית כנרת', durationYears: 3, estimatedStudentsPerYear: 'כ-30 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['ציון התאמה/בגרות בהתאם למסלול הנדסאי/תואר', 'מבחן שמיעה וראיון קבלה אישי — חובה'], officialCalculatorUrl: 'https://www.ktec.co.il/schools/%D7%94%D7%A0%D7%93%D7%A1%D7%AA-%D7%A7%D7%95%D7%9C/' }],
+  kinneret_sound_eng: [
+    {
+      institutionName: 'המכללה האקדמית כנרת',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-30 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [
+        'ציון התאמה/בגרות בהתאם למסלול הנדסאי/תואר',
+        'מבחן שמיעה וראיון קבלה אישי — חובה',
+      ],
+      officialCalculatorUrl:
+        'https://www.ktec.co.il/schools/%D7%94%D7%A0%D7%93%D7%A1%D7%AA-%D7%A7%D7%95%D7%9C/',
+    },
+  ],
 
   // ── אוניברסיטת חיפה ──────────────────────────────────────────────────────────
-  haifa_cs:         [{ institutionName: 'אוניברסיטת חיפה', durationYears: 4, estimatedStudentsPerYear: 'כ-100 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה', 'ציון פסיכומטרי מינימלי: 650', 'ממוצע בגרות מינימלי: 85'], officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif', programUrl: 'https://www.haifa.ac.il/index.php/he/departments/departments-science-a-technology/computer-science', calculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif' }],
-  haifa_psychology: [{ institutionName: 'אוניברסיטת חיפה', durationYears: 4, estimatedStudentsPerYear: 'כ-120 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['ציון פסיכומטרי מינימלי: 680', 'ממוצע בגרות מינימלי: 85'], officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif', programUrl: 'https://www.haifa.ac.il/index.php/he/departments/departments-social-sciences/psychology', calculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif' }],
-  haifa_law:        [{ institutionName: 'אוניברסיטת חיפה', durationYears: 3, estimatedStudentsPerYear: 'כ-150 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['ציון פסיכומטרי מינימלי: 640', 'ממוצע בגרות מינימלי: 82'], officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif', programUrl: 'https://www.haifa.ac.il/index.php/he/departments-fac/departments-law', calculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif' }],
-  haifa_economics:  [{ institutionName: 'אוניברסיטת חיפה', durationYears: 3, estimatedStudentsPerYear: 'כ-100 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['ציון פסיכומטרי מינימלי: 620', 'ממוצע בגרות מינימלי: 80'], officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif', programUrl: 'https://www.haifa.ac.il/index.php/he/departments/departments-social-sciences/economics', calculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif' }],
-  haifa_biology:    [{ institutionName: 'אוניברסיטת חיפה', durationYears: 3, estimatedStudentsPerYear: 'כ-80 סטודנטים',  quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['ביולוגיה ו/או כימיה — יתרון', 'ציון פסיכומטרי מינימלי: 620', 'ממוצע בגרות מינימלי: 80'], officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif', programUrl: 'https://www.haifa.ac.il/index.php/he/departments/departments-natural-science/biology', calculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif' }],
-  haifa_socialwork: [{ institutionName: 'אוניברסיטת חיפה', durationYears: 4, estimatedStudentsPerYear: 'כ-100 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['ציון פסיכומטרי מינימלי: 580', 'ממוצע בגרות מינימלי: 75'], officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif', programUrl: 'https://www.haifa.ac.il/index.php/he/departments/departments-social-welfare/social-work', calculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif' }],
-  haifa_nursing:    [{ institutionName: 'אוניברסיטת חיפה', durationYears: 4, estimatedStudentsPerYear: 'כ-90 סטודנטים',  quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['ביולוגיה — חובה', 'ציון פסיכומטרי מינימלי: 580', 'ממוצע בגרות מינימלי: 76'], officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif', programUrl: 'https://www.haifa.ac.il/index.php/he/departments/departments-social-welfare/nursing', calculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif' }],
-  haifa_communication:    [{ institutionName: 'אוניברסיטת חיפה', durationYears: 3, estimatedStudentsPerYear: 'כ-100 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: [], officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif' }],
-  haifa_politicalscience: [{ institutionName: 'אוניברסיטת חיפה', durationYears: 3, estimatedStudentsPerYear: 'כ-80 סטודנטים',  quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: [], officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif' }],
-  haifa_statistics:       [{ institutionName: 'אוניברסיטת חיפה', durationYears: 3, estimatedStudentsPerYear: 'כ-60 סטודנטים',  quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['4 יח"ל מתמטיקה ומעלה — חובה'], officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif' }],
-  haifa_math:             [{ institutionName: 'אוניברסיטת חיפה', durationYears: 3, estimatedStudentsPerYear: 'כ-50 סטודנטים',  quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה'], officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif' }],
-  haifa_infosystems:      [{ institutionName: 'אוניברסיטת חיפה', durationYears: 3, estimatedStudentsPerYear: 'כ-80 סטודנטים',  quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: [], officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif' }],
-  haifa_physiotherapy:    [{ institutionName: 'אוניברסיטת חיפה', durationYears: 4, estimatedStudentsPerYear: 'כ-50 סטודנטים',  quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['ביולוגיה 5 יח"ל — חובה', 'ראיון קבלה מחייב'], officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif' }],
-  haifa_sociology:        [{ institutionName: 'אוניברסיטת חיפה', durationYears: 3, estimatedStudentsPerYear: 'כ-100 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: [], officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif' }],
-  haifa_accounting:       [{ institutionName: 'אוניברסיטת חיפה', durationYears: 3, estimatedStudentsPerYear: 'כ-80 סטודנטים',  quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: [], officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif' }],
+  haifa_cs: [
+    {
+      institutionName: 'אוניברסיטת חיפה',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-100 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [
+        '5 יח"ל מתמטיקה — חובה',
+        'ציון פסיכומטרי מינימלי: 650',
+        'ממוצע בגרות מינימלי: 85',
+      ],
+      officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif',
+      programUrl:
+        'https://www.haifa.ac.il/index.php/he/departments/departments-science-a-technology/computer-science',
+      calculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif',
+    },
+  ],
+  haifa_psychology: [
+    {
+      institutionName: 'אוניברסיטת חיפה',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-120 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['ציון פסיכומטרי מינימלי: 680', 'ממוצע בגרות מינימלי: 85'],
+      officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif',
+      programUrl:
+        'https://www.haifa.ac.il/index.php/he/departments/departments-social-sciences/psychology',
+      calculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif',
+    },
+  ],
+  haifa_law: [
+    {
+      institutionName: 'אוניברסיטת חיפה',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-150 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['ציון פסיכומטרי מינימלי: 640', 'ממוצע בגרות מינימלי: 82'],
+      officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif',
+      programUrl: 'https://www.haifa.ac.il/index.php/he/departments-fac/departments-law',
+      calculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif',
+    },
+  ],
+  haifa_economics: [
+    {
+      institutionName: 'אוניברסיטת חיפה',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-100 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['ציון פסיכומטרי מינימלי: 620', 'ממוצע בגרות מינימלי: 80'],
+      officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif',
+      programUrl:
+        'https://www.haifa.ac.il/index.php/he/departments/departments-social-sciences/economics',
+      calculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif',
+    },
+  ],
+  haifa_biology: [
+    {
+      institutionName: 'אוניברסיטת חיפה',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-80 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [
+        'ביולוגיה ו/או כימיה — יתרון',
+        'ציון פסיכומטרי מינימלי: 620',
+        'ממוצע בגרות מינימלי: 80',
+      ],
+      officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif',
+      programUrl:
+        'https://www.haifa.ac.il/index.php/he/departments/departments-natural-science/biology',
+      calculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif',
+    },
+  ],
+  haifa_socialwork: [
+    {
+      institutionName: 'אוניברסיטת חיפה',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-100 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['ציון פסיכומטרי מינימלי: 580', 'ממוצע בגרות מינימלי: 75'],
+      officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif',
+      programUrl:
+        'https://www.haifa.ac.il/index.php/he/departments/departments-social-welfare/social-work',
+      calculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif',
+    },
+  ],
+  haifa_nursing: [
+    {
+      institutionName: 'אוניברסיטת חיפה',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-90 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [
+        'ביולוגיה — חובה',
+        'ציון פסיכומטרי מינימלי: 580',
+        'ממוצע בגרות מינימלי: 76',
+      ],
+      officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif',
+      programUrl:
+        'https://www.haifa.ac.il/index.php/he/departments/departments-social-welfare/nursing',
+      calculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif',
+    },
+  ],
+  haifa_communication: [
+    {
+      institutionName: 'אוניברסיטת חיפה',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-100 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [],
+      officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif',
+    },
+  ],
+  haifa_politicalscience: [
+    {
+      institutionName: 'אוניברסיטת חיפה',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-80 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [],
+      officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif',
+    },
+  ],
+  haifa_statistics: [
+    {
+      institutionName: 'אוניברסיטת חיפה',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-60 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['4 יח"ל מתמטיקה ומעלה — חובה'],
+      officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif',
+    },
+  ],
+  haifa_math: [
+    {
+      institutionName: 'אוניברסיטת חיפה',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-50 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה'],
+      officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif',
+    },
+  ],
+  haifa_infosystems: [
+    {
+      institutionName: 'אוניברסיטת חיפה',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-80 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [],
+      officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif',
+    },
+  ],
+  haifa_physiotherapy: [
+    {
+      institutionName: 'אוניברסיטת חיפה',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-50 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['ביולוגיה 5 יח"ל — חובה', 'ראיון קבלה מחייב'],
+      officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif',
+    },
+  ],
+  haifa_sociology: [
+    {
+      institutionName: 'אוניברסיטת חיפה',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-100 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [],
+      officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif',
+    },
+  ],
+  haifa_accounting: [
+    {
+      institutionName: 'אוניברסיטת חיפה',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-80 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [],
+      officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif',
+    },
+  ],
 
   // ── אוניברסיטת בר-אילן ──────────────────────────────────────────────────────
-  biu_cs:              [{ institutionName: 'אוניברסיטת בר-אילן', durationYears: 3, estimatedStudentsPerYear: 'כ-150 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה'], officialCalculatorUrl: 'https://shoham.biu.ac.il/kabala/' }],
-  biu_psychology:      [{ institutionName: 'אוניברסיטת בר-אילן', durationYears: 3, estimatedStudentsPerYear: 'כ-180 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: [], officialCalculatorUrl: 'https://shoham.biu.ac.il/kabala/' }],
-  biu_law:             [{ institutionName: 'אוניברסיטת בר-אילן', durationYears: 3, estimatedStudentsPerYear: 'כ-200 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: [], officialCalculatorUrl: 'https://shoham.biu.ac.il/kabala/' }],
-  biu_ee:              [{ institutionName: 'אוניברסיטת בר-אילן', durationYears: 4, estimatedStudentsPerYear: 'כ-100 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['5 יח"ל מתמטיקה ופיזיקה — חובה'], officialCalculatorUrl: 'https://shoham.biu.ac.il/kabala/' }],
-  biu_medicine:        [{ institutionName: 'אוניברסיטת בר-אילן', durationYears: 6, estimatedStudentsPerYear: 'כ-70 סטודנטים',  quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['קמפוס צפת — הפקולטה לרפואה בגליל', 'ראיון אישי לאחר מיון ראשוני', 'ביולוגיה ו/או כימיה 5 יח"ל — יתרון גדול'], officialCalculatorUrl: 'https://shoham.biu.ac.il/kabala/' }],
-  biu_lifesciences:    [{ institutionName: 'אוניברסיטת בר-אילן', durationYears: 3, estimatedStudentsPerYear: 'כ-120 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['ביולוגיה ו/או כימיה — יתרון'], officialCalculatorUrl: 'https://shoham.biu.ac.il/kabala/' }],
-  biu_biotech:         [{ institutionName: 'אוניברסיטת בר-אילן', durationYears: 3, estimatedStudentsPerYear: 'כ-60 סטודנטים',  quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['ביולוגיה ו/או כימיה 5 יח"ל — חובה'], officialCalculatorUrl: 'https://shoham.biu.ac.il/kabala/' }],
-  biu_computational_bio: [{ institutionName: 'אוניברסיטת בר-אילן', durationYears: 3, estimatedStudentsPerYear: 'כ-40 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה', 'ביולוגיה 5 יח"ל — יתרון גדול'], officialCalculatorUrl: 'https://shoham.biu.ac.il/kabala/' }],
-  biu_socialwork:      [{ institutionName: 'אוניברסיטת בר-אילן', durationYears: 4, estimatedStudentsPerYear: 'כ-120 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['ראיון קבלה מחייב'], officialCalculatorUrl: 'https://shoham.biu.ac.il/kabala/' }],
-  biu_criminology:     [{ institutionName: 'אוניברסיטת בר-אילן', durationYears: 3, estimatedStudentsPerYear: 'כ-100 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: [], officialCalculatorUrl: 'https://shoham.biu.ac.il/kabala/' }],
-  biu_optometry:       [{ institutionName: 'אוניברסיטת בר-אילן', durationYears: 4, estimatedStudentsPerYear: 'כ-40 סטודנטים',  quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['ביולוגיה ו/או כימיה — יתרון', 'ראיון קבלה מחייב'], officialCalculatorUrl: 'https://shoham.biu.ac.il/kabala/' }],
+  biu_cs: [
+    {
+      institutionName: 'אוניברסיטת בר-אילן',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-150 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה'],
+      officialCalculatorUrl: 'https://shoham.biu.ac.il/kabala/',
+    },
+  ],
+  biu_psychology: [
+    {
+      institutionName: 'אוניברסיטת בר-אילן',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-180 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [],
+      officialCalculatorUrl: 'https://shoham.biu.ac.il/kabala/',
+    },
+  ],
+  biu_law: [
+    {
+      institutionName: 'אוניברסיטת בר-אילן',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-200 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [],
+      officialCalculatorUrl: 'https://shoham.biu.ac.il/kabala/',
+    },
+  ],
+  biu_ee: [
+    {
+      institutionName: 'אוניברסיטת בר-אילן',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-100 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['5 יח"ל מתמטיקה ופיזיקה — חובה'],
+      officialCalculatorUrl: 'https://shoham.biu.ac.il/kabala/',
+    },
+  ],
+  biu_medicine: [
+    {
+      institutionName: 'אוניברסיטת בר-אילן',
+      durationYears: 6,
+      estimatedStudentsPerYear: 'כ-70 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [
+        'קמפוס צפת — הפקולטה לרפואה בגליל',
+        'ראיון אישי לאחר מיון ראשוני',
+        'ביולוגיה ו/או כימיה 5 יח"ל — יתרון גדול',
+      ],
+      officialCalculatorUrl: 'https://shoham.biu.ac.il/kabala/',
+    },
+  ],
+  biu_lifesciences: [
+    {
+      institutionName: 'אוניברסיטת בר-אילן',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-120 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['ביולוגיה ו/או כימיה — יתרון'],
+      officialCalculatorUrl: 'https://shoham.biu.ac.il/kabala/',
+    },
+  ],
+  biu_biotech: [
+    {
+      institutionName: 'אוניברסיטת בר-אילן',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-60 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['ביולוגיה ו/או כימיה 5 יח"ל — חובה'],
+      officialCalculatorUrl: 'https://shoham.biu.ac.il/kabala/',
+    },
+  ],
+  biu_computational_bio: [
+    {
+      institutionName: 'אוניברסיטת בר-אילן',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-40 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה', 'ביולוגיה 5 יח"ל — יתרון גדול'],
+      officialCalculatorUrl: 'https://shoham.biu.ac.il/kabala/',
+    },
+  ],
+  biu_socialwork: [
+    {
+      institutionName: 'אוניברסיטת בר-אילן',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-120 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['ראיון קבלה מחייב'],
+      officialCalculatorUrl: 'https://shoham.biu.ac.il/kabala/',
+    },
+  ],
+  biu_criminology: [
+    {
+      institutionName: 'אוניברסיטת בר-אילן',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-100 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [],
+      officialCalculatorUrl: 'https://shoham.biu.ac.il/kabala/',
+    },
+  ],
+  biu_optometry: [
+    {
+      institutionName: 'אוניברסיטת בר-אילן',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-40 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['ביולוגיה ו/או כימיה — יתרון', 'ראיון קבלה מחייב'],
+      officialCalculatorUrl: 'https://shoham.biu.ac.il/kabala/',
+    },
+  ],
 
   // ── אוניברסיטת אריאל ────────────────────────────────────────────────────────
-  ariel_cs:            [{ institutionName: 'אוניברסיטת אריאל', durationYears: 3, estimatedStudentsPerYear: 'כ-100 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה'], officialCalculatorUrl: 'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/' }],
-  ariel_ee:            [{ institutionName: 'אוניברסיטת אריאל', durationYears: 4, estimatedStudentsPerYear: 'כ-80 סטודנטים',  quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['5 יח"ל מתמטיקה ופיזיקה — חובה'], officialCalculatorUrl: 'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/' }],
-  ariel_civil_eng:     [{ institutionName: 'אוניברסיטת אריאל', durationYears: 4, estimatedStudentsPerYear: 'כ-60 סטודנטים',  quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['5 יח"ל מתמטיקה ופיזיקה — חובה'], officialCalculatorUrl: 'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/' }],
-  ariel_industrial_eng: [{ institutionName: 'אוניברסיטת אריאל', durationYears: 4, estimatedStudentsPerYear: 'כ-70 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה'], officialCalculatorUrl: 'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/' }],
-  ariel_me:            [{ institutionName: 'אוניברסיטת אריאל', durationYears: 4, estimatedStudentsPerYear: 'כ-60 סטודנטים',  quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['5 יח"ל מתמטיקה ופיזיקה — חובה'], officialCalculatorUrl: 'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/' }],
-  ariel_chemical_eng:  [{ institutionName: 'אוניברסיטת אריאל', durationYears: 4, estimatedStudentsPerYear: 'כ-40 סטודנטים',  quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['5 יח"ל מתמטיקה וכימיה — חובה'], officialCalculatorUrl: 'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/' }],
-  ariel_economics:     [{ institutionName: 'אוניברסיטת אריאל', durationYears: 3, estimatedStudentsPerYear: 'כ-80 סטודנטים',  quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: [], officialCalculatorUrl: 'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/' }],
-  ariel_socialwork:    [{ institutionName: 'אוניברסיטת אריאל', durationYears: 4, estimatedStudentsPerYear: 'כ-80 סטודנטים',  quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['ראיון קבלה מחייב'], officialCalculatorUrl: 'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/' }],
-  ariel_psychology:    [{ institutionName: 'אוניברסיטת אריאל', durationYears: 3, estimatedStudentsPerYear: 'כ-120 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: [], officialCalculatorUrl: 'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/' }],
-  ariel_architecture:  [{ institutionName: 'אוניברסיטת אריאל', durationYears: 5, estimatedStudentsPerYear: 'כ-50 סטודנטים',  quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['מבחן קבלה באדריכלות — חובה', 'תיק עבודות — חובה'], officialCalculatorUrl: 'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/' }],
-  ariel_communication: [{ institutionName: 'אוניברסיטת אריאל', durationYears: 3, estimatedStudentsPerYear: 'כ-80 סטודנטים',  quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: [], officialCalculatorUrl: 'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/' }],
-  ariel_criminology:   [{ institutionName: 'אוניברסיטת אריאל', durationYears: 3, estimatedStudentsPerYear: 'כ-70 סטודנטים',  quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: [], officialCalculatorUrl: 'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/' }],
-  ariel_molecular_bio: [{ institutionName: 'אוניברסיטת אריאל', durationYears: 3, estimatedStudentsPerYear: 'כ-50 סטודנטים',  quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['ביולוגיה ו/או כימיה — יתרון'], officialCalculatorUrl: 'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/' }],
-  ariel_chemistry:     [{ institutionName: 'אוניברסיטת אריאל', durationYears: 3, estimatedStudentsPerYear: 'כ-40 סטודנטים',  quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['כימיה 5 יח"ל — יתרון'], officialCalculatorUrl: 'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/' }],
-  ariel_math:          [{ institutionName: 'אוניברסיטת אריאל', durationYears: 3, estimatedStudentsPerYear: 'כ-40 סטודנטים',  quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה'], officialCalculatorUrl: 'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/' }],
-  ariel_physics:       [{ institutionName: 'אוניברסיטת אריאל', durationYears: 3, estimatedStudentsPerYear: 'כ-30 סטודנטים',  quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['5 יח"ל מתמטיקה ופיזיקה — חובה'], officialCalculatorUrl: 'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/' }],
-  ariel_health_systems: [{ institutionName: 'אוניברסיטת אריאל', durationYears: 3, estimatedStudentsPerYear: 'כ-60 סטודנטים', quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: [], officialCalculatorUrl: 'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/' }],
-  ariel_nutrition:     [{ institutionName: 'אוניברסיטת אריאל', durationYears: 3, estimatedStudentsPerYear: 'כ-50 סטודנטים',  quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['ביולוגיה ו/או כימיה — יתרון'], officialCalculatorUrl: 'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/' }],
-  ariel_nursing:       [{ institutionName: 'אוניברסיטת אריאל', durationYears: 4, estimatedStudentsPerYear: 'כ-60 סטודנטים',  quantitativeMinRequirement: null, englishMinRequirement: null, specificAdmissionNotes: ['ביולוגיה — חובה'], officialCalculatorUrl: 'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/' }],
+  ariel_cs: [
+    {
+      institutionName: 'אוניברסיטת אריאל',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-100 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה'],
+      officialCalculatorUrl:
+        'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/',
+    },
+  ],
+  ariel_ee: [
+    {
+      institutionName: 'אוניברסיטת אריאל',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-80 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['5 יח"ל מתמטיקה ופיזיקה — חובה'],
+      officialCalculatorUrl:
+        'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/',
+    },
+  ],
+  ariel_civil_eng: [
+    {
+      institutionName: 'אוניברסיטת אריאל',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-60 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['5 יח"ל מתמטיקה ופיזיקה — חובה'],
+      officialCalculatorUrl:
+        'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/',
+    },
+  ],
+  ariel_industrial_eng: [
+    {
+      institutionName: 'אוניברסיטת אריאל',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-70 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה'],
+      officialCalculatorUrl:
+        'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/',
+    },
+  ],
+  ariel_me: [
+    {
+      institutionName: 'אוניברסיטת אריאל',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-60 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['5 יח"ל מתמטיקה ופיזיקה — חובה'],
+      officialCalculatorUrl:
+        'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/',
+    },
+  ],
+  ariel_chemical_eng: [
+    {
+      institutionName: 'אוניברסיטת אריאל',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-40 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['5 יח"ל מתמטיקה וכימיה — חובה'],
+      officialCalculatorUrl:
+        'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/',
+    },
+  ],
+  ariel_economics: [
+    {
+      institutionName: 'אוניברסיטת אריאל',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-80 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [],
+      officialCalculatorUrl:
+        'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/',
+    },
+  ],
+  ariel_socialwork: [
+    {
+      institutionName: 'אוניברסיטת אריאל',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-80 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['ראיון קבלה מחייב'],
+      officialCalculatorUrl:
+        'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/',
+    },
+  ],
+  ariel_psychology: [
+    {
+      institutionName: 'אוניברסיטת אריאל',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-120 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [],
+      officialCalculatorUrl:
+        'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/',
+    },
+  ],
+  ariel_architecture: [
+    {
+      institutionName: 'אוניברסיטת אריאל',
+      durationYears: 5,
+      estimatedStudentsPerYear: 'כ-50 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['מבחן קבלה באדריכלות — חובה', 'תיק עבודות — חובה'],
+      officialCalculatorUrl:
+        'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/',
+    },
+  ],
+  ariel_communication: [
+    {
+      institutionName: 'אוניברסיטת אריאל',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-80 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [],
+      officialCalculatorUrl:
+        'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/',
+    },
+  ],
+  ariel_criminology: [
+    {
+      institutionName: 'אוניברסיטת אריאל',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-70 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [],
+      officialCalculatorUrl:
+        'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/',
+    },
+  ],
+  ariel_molecular_bio: [
+    {
+      institutionName: 'אוניברסיטת אריאל',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-50 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['ביולוגיה ו/או כימיה — יתרון'],
+      officialCalculatorUrl:
+        'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/',
+    },
+  ],
+  ariel_chemistry: [
+    {
+      institutionName: 'אוניברסיטת אריאל',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-40 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['כימיה 5 יח"ל — יתרון'],
+      officialCalculatorUrl:
+        'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/',
+    },
+  ],
+  ariel_math: [
+    {
+      institutionName: 'אוניברסיטת אריאל',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-40 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה'],
+      officialCalculatorUrl:
+        'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/',
+    },
+  ],
+  ariel_physics: [
+    {
+      institutionName: 'אוניברסיטת אריאל',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-30 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['5 יח"ל מתמטיקה ופיזיקה — חובה'],
+      officialCalculatorUrl:
+        'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/',
+    },
+  ],
+  ariel_health_systems: [
+    {
+      institutionName: 'אוניברסיטת אריאל',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-60 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: [],
+      officialCalculatorUrl:
+        'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/',
+    },
+  ],
+  ariel_nutrition: [
+    {
+      institutionName: 'אוניברסיטת אריאל',
+      durationYears: 3,
+      estimatedStudentsPerYear: 'כ-50 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['ביולוגיה ו/או כימיה — יתרון'],
+      officialCalculatorUrl:
+        'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/',
+    },
+  ],
+  ariel_nursing: [
+    {
+      institutionName: 'אוניברסיטת אריאל',
+      durationYears: 4,
+      estimatedStudentsPerYear: 'כ-60 סטודנטים',
+      quantitativeMinRequirement: null,
+      englishMinRequirement: null,
+      specificAdmissionNotes: ['ביולוגיה — חובה'],
+      officialCalculatorUrl:
+        'https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/',
+    },
+  ],
 };
 
 export const academicPrograms: Program[] = [
-
   // ══════════════════════════════════════════════════════════════════════════
   // האוניברסיטה העברית בירושלים (HUJI)
   // Thresholds on the 200–800 weighted scale.
@@ -1428,11 +2580,7 @@ export const academicPrograms: Program[] = [
     category: 'מדעי המחשב',
     profileScore: P.cs,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'בגרות מלאה',
-      'ממוצע בגרות מינימלי: 75',
-      'ציון פסיכומטרי מינימלי: 480',
-    ],
+    admissionRequirements: ['בגרות מלאה', 'ממוצע בגרות מינימלי: 75', 'ציון פסיכומטרי מינימלי: 480'],
   },
   {
     id: 'telhai_biology',
@@ -1558,11 +2706,7 @@ export const academicPrograms: Program[] = [
     category: 'מדעי המחשב',
     profileScore: P.cs,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'בגרות מלאה',
-      'ממוצע בגרות מינימלי: 75',
-      'ציון פסיכומטרי מינימלי: 500',
-    ],
+    admissionRequirements: ['בגרות מלאה', 'ממוצע בגרות מינימלי: 75', 'ציון פסיכומטרי מינימלי: 500'],
   },
   {
     id: 'tlvyaffo_business',
@@ -1573,11 +2717,7 @@ export const academicPrograms: Program[] = [
     category: 'כלכלה ועסקים',
     profileScore: P.business,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'בגרות מלאה',
-      'ממוצע בגרות מינימלי: 70',
-      'ציון פסיכומטרי מינימלי: 450',
-    ],
+    admissionRequirements: ['בגרות מלאה', 'ממוצע בגרות מינימלי: 70', 'ציון פסיכומטרי מינימלי: 450'],
   },
   {
     id: 'tlvyaffo_economics',
@@ -1588,11 +2728,7 @@ export const academicPrograms: Program[] = [
     category: 'כלכלה ועסקים',
     profileScore: P.economics,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'בגרות מלאה',
-      'ממוצע בגרות מינימלי: 72',
-      'ציון פסיכומטרי מינימלי: 460',
-    ],
+    admissionRequirements: ['בגרות מלאה', 'ממוצע בגרות מינימלי: 72', 'ציון פסיכומטרי מינימלי: 460'],
   },
   {
     id: 'tlvyaffo_nursing',
@@ -1639,11 +2775,7 @@ export const academicPrograms: Program[] = [
     category: 'מדעי המחשב',
     profileScore: P.cs,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'בגרות מלאה',
-      'ממוצע בגרות מינימלי: 72',
-      'ציון פסיכומטרי מינימלי: 480',
-    ],
+    admissionRequirements: ['בגרות מלאה', 'ממוצע בגרות מינימלי: 72', 'ציון פסיכומטרי מינימלי: 480'],
   },
   {
     id: 'colmgmt_business',
@@ -1654,11 +2786,7 @@ export const academicPrograms: Program[] = [
     category: 'כלכלה ועסקים',
     profileScore: P.business,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'בגרות מלאה',
-      'ממוצע בגרות מינימלי: 72',
-      'ציון פסיכומטרי מינימלי: 470',
-    ],
+    admissionRequirements: ['בגרות מלאה', 'ממוצע בגרות מינימלי: 72', 'ציון פסיכומטרי מינימלי: 470'],
   },
   {
     id: 'colmgmt_economics',
@@ -1669,11 +2797,7 @@ export const academicPrograms: Program[] = [
     category: 'כלכלה ועסקים',
     profileScore: P.economics,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'בגרות מלאה',
-      'ממוצע בגרות מינימלי: 72',
-      'ציון פסיכומטרי מינימלי: 470',
-    ],
+    admissionRequirements: ['בגרות מלאה', 'ממוצע בגרות מינימלי: 72', 'ציון פסיכומטרי מינימלי: 470'],
   },
   {
     id: 'colmgmt_law',
@@ -1684,11 +2808,7 @@ export const academicPrograms: Program[] = [
     category: 'משפטים',
     profileScore: P.law,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'בגרות מלאה',
-      'ממוצע בגרות מינימלי: 75',
-      'ציון פסיכומטרי מינימלי: 500',
-    ],
+    admissionRequirements: ['בגרות מלאה', 'ממוצע בגרות מינימלי: 75', 'ציון פסיכומטרי מינימלי: 500'],
   },
   {
     id: 'colmgmt_accounting',
@@ -1699,11 +2819,7 @@ export const academicPrograms: Program[] = [
     category: 'כלכלה ועסקים',
     profileScore: { AN: 3, TE: 0, CR: 0, SO: 1, LE: 3, OR: 5, DI: 2, ER: 2 },
     admissionType: 'requirements',
-    admissionRequirements: [
-      'בגרות מלאה',
-      'ממוצע בגרות מינימלי: 72',
-      'ציון פסיכומטרי מינימלי: 470',
-    ],
+    admissionRequirements: ['בגרות מלאה', 'ממוצע בגרות מינימלי: 72', 'ציון פסיכומטרי מינימלי: 470'],
   },
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -1718,11 +2834,7 @@ export const academicPrograms: Program[] = [
     category: 'משפטים',
     profileScore: P.law,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'בגרות מלאה',
-      'ממוצע בגרות מינימלי: 75',
-      'ציון פסיכומטרי מינימלי: 500',
-    ],
+    admissionRequirements: ['בגרות מלאה', 'ממוצע בגרות מינימלי: 75', 'ציון פסיכומטרי מינימלי: 500'],
   },
   {
     id: 'ono_business',
@@ -1733,11 +2845,7 @@ export const academicPrograms: Program[] = [
     category: 'כלכלה ועסקים',
     profileScore: P.business,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'בגרות מלאה',
-      'ממוצע בגרות מינימלי: 70',
-      'ציון פסיכומטרי מינימלי: 450',
-    ],
+    admissionRequirements: ['בגרות מלאה', 'ממוצע בגרות מינימלי: 70', 'ציון פסיכומטרי מינימלי: 450'],
   },
   {
     id: 'ono_cs',
@@ -1748,11 +2856,7 @@ export const academicPrograms: Program[] = [
     category: 'מדעי המחשב',
     profileScore: P.cs,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'בגרות מלאה',
-      'ממוצע בגרות מינימלי: 72',
-      'ציון פסיכומטרי מינימלי: 480',
-    ],
+    admissionRequirements: ['בגרות מלאה', 'ממוצע בגרות מינימלי: 72', 'ציון פסיכומטרי מינימלי: 480'],
   },
   {
     id: 'ono_socialwork',
@@ -1883,11 +2987,7 @@ export const academicPrograms: Program[] = [
     category: 'כלכלה ועסקים',
     profileScore: P.infoSystems,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'בגרות מלאה',
-      'ממוצע בגרות מינימלי: 72',
-      'ציון פסיכומטרי מינימלי: 470',
-    ],
+    admissionRequirements: ['בגרות מלאה', 'ממוצע בגרות מינימלי: 72', 'ציון פסיכומטרי מינימלי: 470'],
   },
 
   // ══════════════════════════════════════════════════════════════════════════

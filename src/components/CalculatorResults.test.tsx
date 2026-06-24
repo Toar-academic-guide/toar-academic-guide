@@ -14,7 +14,9 @@ vi.mock('posthog-js', () => ({
 }));
 
 const programs = getStaticCataloguePrograms();
-const calculatorInstitutions = getCalculatorInstitutionsFromCatalogue(getStaticCatalogueInstitutions());
+const calculatorInstitutions = getCalculatorInstitutionsFromCatalogue(
+  getStaticCatalogueInstitutions(),
+);
 
 describe('CalculatorResults', () => {
   it('derives admission badges from the submitted scores and selected degree', () => {
@@ -25,9 +27,7 @@ describe('CalculatorResults', () => {
       onBack: () => {},
     };
 
-    const { rerender } = render(
-      <CalculatorResults {...props} psychometric={800} bagrut={120} />
-    );
+    const { rerender } = render(<CalculatorResults {...props} psychometric={800} bagrut={120} />);
 
     expect(screen.getByLabelText('אוניברסיטת תל אביב: מתקבל/ת')).toBeTruthy();
 

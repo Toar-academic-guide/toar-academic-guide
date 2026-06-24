@@ -214,7 +214,9 @@ function readStoredProfile(): UserProfile | null {
   }
 }
 
-export function saveUserProfileIdentityDraft(identity: Pick<UserProfile, 'firstName' | 'lastName'>) {
+export function saveUserProfileIdentityDraft(
+  identity: Pick<UserProfile, 'firstName' | 'lastName'>,
+) {
   const nextProfile = {
     ...(readStoredProfile() ?? DEFAULT_PROFILE),
     ...(identity.firstName?.trim() ? { firstName: identity.firstName.trim() } : {}),
@@ -226,9 +228,11 @@ export function saveUserProfileIdentityDraft(identity: Pick<UserProfile, 'firstN
 
 export function deriveSocialIdentityDraft(
   profile: UserProfile,
-  metadata: Record<string, unknown> | undefined
+  metadata: Record<string, unknown> | undefined,
 ): Partial<UserProfile> | null {
-  const firstName = profile.firstName?.trim() ? undefined : readMetadataText(metadata, 'given_name');
+  const firstName = profile.firstName?.trim()
+    ? undefined
+    : readMetadataText(metadata, 'given_name');
   const lastName = profile.lastName?.trim() ? undefined : readMetadataText(metadata, 'family_name');
 
   if (!firstName && !lastName) {
@@ -244,7 +248,7 @@ export function deriveSocialIdentityDraft(
 
 export function mergeProfileDraftSources(
   storedProfile: UserProfile | null,
-  socialIdentityDraft: Partial<UserProfile> | null
+  socialIdentityDraft: Partial<UserProfile> | null,
 ): UserProfile | null {
   if (!storedProfile && !socialIdentityDraft) {
     return null;

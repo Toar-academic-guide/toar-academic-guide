@@ -74,7 +74,8 @@ const CATEGORY_META: Record<string, CategoryMeta> = {
     description: 'פיתוח מערכות, אלגוריתמים וארכיטקטורת תוכנה',
     marketDemand: 'גבוה מאוד',
     aiResilience: 'גבוהה',
-    aiResilienceNote: 'מפתח שמבין מה ה-AI עושה מתחת למנוע — ולא רק משתמש בו — יישאר בלתי ניתן להחלפה',
+    aiResilienceNote:
+      'מפתח שמבין מה ה-AI עושה מתחת למנוע — ולא רק משתמש בו — יישאר בלתי ניתן להחלפה',
     dailyWorkflow: 'כתיבת קוד, קוד ריביו, ספרינטים, דיבאגינג, תיכנון ארכיטקטורה',
     soloFriendly: true,
     requiresSoloInvestigative: true,
@@ -91,7 +92,7 @@ const CATEGORY_META: Record<string, CategoryMeta> = {
     requiresSoloInvestigative: true,
     valueSignals: { incomeVsImpact: -1, independenceVsTeam: -1, growthVsStability: -1 },
   },
-  'הנדסה': {
+  הנדסה: {
     name: 'הנדסה קלאסית',
     description: 'חשמל, מכניקה ואינפרסטרוקטורה פיזית',
     marketDemand: 'גבוה',
@@ -112,7 +113,7 @@ const CATEGORY_META: Record<string, CategoryMeta> = {
     soloFriendly: false,
     valueSignals: { incomeVsImpact: 1, independenceVsTeam: 1, prestigeVsMeaning: 1 },
   },
-  'משפטים': {
+  משפטים: {
     name: 'משפטים ומדיניות',
     description: 'ייעוץ משפטי, ייצוג ופרקטיקה עסקית',
     marketDemand: 'בינוני',
@@ -153,7 +154,7 @@ const CATEGORY_META: Record<string, CategoryMeta> = {
     soloFriendly: false,
     valueSignals: { incomeVsImpact: 1, independenceVsTeam: 1, prestigeVsMeaning: 1 },
   },
-  'רפואה': {
+  רפואה: {
     name: 'רפואה',
     description: 'לימודי רפואה, אבחון קליני וטיפול',
     marketDemand: 'גבוה מאוד',
@@ -198,7 +199,7 @@ const CATEGORY_META: Record<string, CategoryMeta> = {
     description: 'בוטקאמפים מעשיים: פולסטאק, סייבר, דאטה ו-DevOps',
     marketDemand: 'גבוה מאוד',
     aiResilience: 'גבוהה',
-    aiResilienceNote: "מפתחים שמדברים שפת AI — ולא רק משתמשים בו — יישארו מבוקשים",
+    aiResilienceNote: 'מפתחים שמדברים שפת AI — ולא רק משתמשים בו — יישארו מבוקשים',
     dailyWorkflow: "כתיבת קוד, בניית מוצרים, עבודה בצוות אג'ייל, דיפלוי לענן",
     soloFriendly: true,
     requiresSoloInvestigative: true,
@@ -209,13 +210,13 @@ const CATEGORY_META: Record<string, CategoryMeta> = {
 const CATEGORY_AVOIDANCE: Record<string, AvoidanceTag[]> = {
   'הנדסה וטכנולוגיה': ['heavy-math', 'solo-work'],
   'מדעי המחשב': ['heavy-math', 'solo-work'],
-  'הנדסה': ['heavy-math'],
+  הנדסה: ['heavy-math'],
   'מדעי החברה': ['heavy-reading'],
-  'משפטים': ['heavy-reading', 'bureaucracy'],
+  משפטים: ['heavy-reading', 'bureaucracy'],
   'כלכלה ועסקים': ['heavy-math'],
   'מדעי החיים': ['heavy-reading', 'solo-work'],
   'מדעי הבריאות': ['bureaucracy'],
-  'רפואה': ['heavy-reading', 'bureaucracy'],
+  רפואה: ['heavy-reading', 'bureaucracy'],
   'אמנות ועיצוב': [],
   'קולינריה וגסטרונומיה': [],
   'רפואה אינטגרטיבית': ['bureaucracy'],
@@ -236,7 +237,7 @@ function topUserDims(scores: ProfileScores): [ProfileDimension, ProfileDimension
 function buildWarning(
   meta: CategoryMeta,
   scores: ProfileScores,
-  env: EnvironmentPreference
+  env: EnvironmentPreference,
 ): { hasWarning: boolean; warningText?: string } {
   if (!meta.requiresSoloInvestigative) return { hasWarning: false };
 
@@ -260,13 +261,11 @@ function buildValueReason(values: ValuesProfile, meta: CategoryMeta): string | n
   const signals = meta.valueSignals;
   if (!signals) return null;
 
-  let best:
-    | {
-        key: keyof ValuesProfile;
-        direction: 1 | -1;
-        alignment: number;
-      }
-    | null = null;
+  let best: {
+    key: keyof ValuesProfile;
+    direction: 1 | -1;
+    alignment: number;
+  } | null = null;
 
   for (const key of VALUE_KEYS) {
     const direction = signals[key];
@@ -305,7 +304,7 @@ function scoreValueAlignment(values: ValuesProfile, meta: CategoryMeta): number 
 function buildMatchReason(
   matched: ProfileDimension[],
   values: ValuesProfile,
-  meta: CategoryMeta
+  meta: CategoryMeta,
 ): string {
   const baseReason =
     matched.length === 0
@@ -323,7 +322,7 @@ export function getRecommendations(
   values: ValuesProfile = NEUTRAL_VALUES,
   env: EnvironmentPreference = NEUTRAL_ENV,
   avoidances: AvoidanceTag[] = [],
-  programs: Program[] = allPrograms
+  programs: Program[] = allPrograms,
 ): RecommendedField[] {
   type Scored = { program: Program; score: number };
 
@@ -390,7 +389,7 @@ export function getRecommendations(
     const avgDimScore = (dim: ProfileDimension) =>
       topPrograms.reduce((sum, program) => sum + program.profileScore[dim], 0) / topPrograms.length;
     const matchedDimensions = ([primary, secondary] as ProfileDimension[]).filter(
-      (dim) => avgDimScore(dim) >= 3
+      (dim) => avgDimScore(dim) >= 3,
     );
 
     const { hasWarning, warningText } = buildWarning(meta, scores, env);

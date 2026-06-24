@@ -14,7 +14,7 @@ function buildMeasuredMeta(
   durationMs: number,
   responseBytes: number,
   kind?: CatalogueCollectionKind,
-  resultCount?: number
+  resultCount?: number,
 ): ApiMetaPayload {
   return {
     ...(baseMeta ?? {}),
@@ -25,9 +25,7 @@ function buildMeasuredMeta(
   };
 }
 
-function measureEnvelope<T>(
-  buildEnvelope: (responseBytes: number) => ApiEnvelope<T>
-): {
+function measureEnvelope<T>(buildEnvelope: (responseBytes: number) => ApiEnvelope<T>): {
   envelope: ApiEnvelope<T>;
   responseBytes: number;
 } {
@@ -52,7 +50,7 @@ export function buildCatalogueSuccessResponse<T>(
   kind: CatalogueCollectionKind,
   data: T,
   meta: ApiMetaPayload,
-  startedAtMs: number
+  startedAtMs: number,
 ): {
   envelope: ApiEnvelope<T>;
   summary: CatalogueResponseMetricSummary;
@@ -79,7 +77,7 @@ export function buildCatalogueErrorResponse(
   error: ApiErrorPayload,
   meta: ApiMetaPayload | undefined,
   startedAtMs: number,
-  status: number
+  status: number,
 ): {
   envelope: ApiEnvelope<never>;
   summary: CatalogueResponseMetricSummary;
@@ -107,7 +105,7 @@ export function buildCatalogueErrorResponse(
 export function logCatalogueResponse(
   kind: CatalogueCollectionKind,
   meta: ApiMetaPayload | undefined,
-  summary: CatalogueResponseMetricSummary
+  summary: CatalogueResponseMetricSummary,
 ) {
   console.info(
     '[catalogue-api]',
@@ -121,6 +119,6 @@ export function logCatalogueResponse(
       catalogueSource: meta?.catalogueSource,
       catalogueSnapshotCacheStatus: meta?.catalogueSnapshotCacheStatus,
       fallbackReason: meta?.fallbackReason,
-    })
+    }),
   );
 }

@@ -42,9 +42,7 @@ export default function AcademicProfileForm({
   const [psyQuantitative, setPsyQuantitative] = useState(
     initialScores?.psychometric?.quantitative?.toString() ?? '',
   );
-  const [psyVerbal, setPsyVerbal] = useState(
-    initialScores?.psychometric?.verbal?.toString() ?? '',
-  );
+  const [psyVerbal, setPsyVerbal] = useState(initialScores?.psychometric?.verbal?.toString() ?? '');
   const [psyEnglish, setPsyEnglish] = useState(
     initialScores?.psychometric?.english?.toString() ?? '',
   );
@@ -57,14 +55,10 @@ export default function AcademicProfileForm({
   const initialBagrut = initialDocuments?.find((document) => document.kind === 'bagrut');
 
   const [psyFile, setPsyFile] = useState<FileInfo | null>(
-    initialPsy
-      ? { name: initialPsy.displayName, size: initialPsy.sizeBytes ?? 0 }
-      : null,
+    initialPsy ? { name: initialPsy.displayName, size: initialPsy.sizeBytes ?? 0 } : null,
   );
   const [bagrutFile, setBagrutFile] = useState<FileInfo | null>(
-    initialBagrut
-      ? { name: initialBagrut.displayName, size: initialBagrut.sizeBytes ?? 0 }
-      : null,
+    initialBagrut ? { name: initialBagrut.displayName, size: initialBagrut.sizeBytes ?? 0 } : null,
   );
   const [psyFileObject, setPsyFileObject] = useState<File | null>(null);
   const [bagrutFileObject, setBagrutFileObject] = useState<File | null>(null);
@@ -101,7 +95,12 @@ export default function AcademicProfileForm({
     const verbal = psyVerbal ? Number(psyVerbal) : undefined;
     const english = psyEnglish ? Number(psyEnglish) : undefined;
 
-    if (overall !== undefined || quantitative !== undefined || verbal !== undefined || english !== undefined) {
+    if (
+      overall !== undefined ||
+      quantitative !== undefined ||
+      verbal !== undefined ||
+      english !== undefined
+    ) {
       scores.psychometric = { overall, quantitative, verbal, english };
     }
 
@@ -361,7 +360,9 @@ export default function AcademicProfileForm({
               </div>
               <div>
                 <h2 className="text-sm font-semibold text-slate-800">ציוני בגרות</h2>
-                <p className="text-xs text-slate-400">הזן את הממוצע הרשמי הכולל בונוסים. האשף למטה הוא כלי עזר בלבד.</p>
+                <p className="text-xs text-slate-400">
+                  הזן את הממוצע הרשמי הכולל בונוסים. האשף למטה הוא כלי עזר בלבד.
+                </p>
               </div>
             </div>
 
@@ -382,7 +383,8 @@ export default function AcademicProfileForm({
                 className={`${inputBase} sm:max-w-xs disabled:cursor-not-allowed disabled:opacity-50`}
               />
               <p className="text-xs text-slate-400">
-                יש להזין את הממוצע הרשמי שחושב עבורך כולל בונוסים גנריים. האשף למטה נותן אומדן לצורך בדיקה בלבד.
+                יש להזין את הממוצע הרשמי שחושב עבורך כולל בונוסים גנריים. האשף למטה נותן אומדן לצורך
+                בדיקה בלבד.
               </p>
             </div>
 

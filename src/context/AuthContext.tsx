@@ -1,13 +1,6 @@
 'use client';
 
-import {
-  createContext,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-  type ReactNode,
-} from 'react';
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { Session, SupabaseClient, User } from '@supabase/supabase-js';
 import posthog from 'posthog-js';
 
@@ -98,7 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { publicAppUrl } = getSupabaseEnv();
         const redirectTo = buildOAuthRedirectTo(
           publicAppUrl,
-          typeof window === 'undefined' ? null : window.location.origin
+          typeof window === 'undefined' ? null : window.location.origin,
         );
 
         const { error } = await supabase.auth.signInWithOAuth({
@@ -118,7 +111,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { publicAppUrl } = getSupabaseEnv();
         const emailRedirectTo = buildEmailRedirectTo(
           publicAppUrl,
-          typeof window === 'undefined' ? null : window.location.origin
+          typeof window === 'undefined' ? null : window.location.origin,
         );
 
         const { data, error } = await supabase.auth.signUp({
@@ -156,7 +149,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(null);
       },
     }),
-    [loading, session, supabase]
+    [loading, session, supabase],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -185,7 +178,10 @@ interface SignUpDataLike {
   session?: Session | null;
 }
 
-export function buildEmailRedirectTo(configuredAppUrl: string | null, browserOrigin: string | null) {
+export function buildEmailRedirectTo(
+  configuredAppUrl: string | null,
+  browserOrigin: string | null,
+) {
   const candidate = resolveRedirectOrigin(configuredAppUrl, browserOrigin);
   if (!candidate) {
     return undefined;
@@ -198,7 +194,10 @@ export function buildEmailRedirectTo(configuredAppUrl: string | null, browserOri
   }
 }
 
-export function buildOAuthRedirectTo(configuredAppUrl: string | null, browserOrigin: string | null) {
+export function buildOAuthRedirectTo(
+  configuredAppUrl: string | null,
+  browserOrigin: string | null,
+) {
   const candidate = resolveRedirectOrigin(configuredAppUrl, browserOrigin);
   if (!candidate) {
     return undefined;
@@ -247,8 +246,8 @@ export function resolvePendingSignupMessage(data: SignUpDataLike | undefined): s
 }
 
 export function translateAuthError(error: string | AuthErrorLike): string {
-  const message = typeof error === 'string' ? error : error.message ?? '';
-  const code = typeof error === 'string' ? '' : error.code?.toLowerCase() ?? '';
+  const message = typeof error === 'string' ? error : (error.message ?? '');
+  const code = typeof error === 'string' ? '' : (error.code?.toLowerCase() ?? '');
   const normalized = message.toLowerCase();
 
   if (normalized.includes('invalid login credentials')) {
