@@ -4,6 +4,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   buildEmailRedirectTo,
+  buildOAuthRedirectTo,
   resolvePendingSignupMessage,
   resolveSignupDuplicateMessage,
   translateAuthError,
@@ -18,6 +19,16 @@ describe('AuthContext helpers', () => {
 
   it('falls back to the browser origin when no app url is configured', () => {
     expect(buildEmailRedirectTo(null, 'http://localhost:3000')).toBe('http://localhost:3000/');
+  });
+
+  it('builds the oauth callback redirect from the configured app url', () => {
+    expect(buildOAuthRedirectTo('https://toar.example.com/some/path', 'http://localhost:3000')).toBe(
+      'https://toar.example.com/auth/callback'
+    );
+  });
+
+  it('falls back to the browser origin for the oauth callback redirect', () => {
+    expect(buildOAuthRedirectTo(null, 'http://localhost:3000')).toBe('http://localhost:3000/auth/callback');
   });
 
   it('recognizes the fake-user duplicate signup response', () => {

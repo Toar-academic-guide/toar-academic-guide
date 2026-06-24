@@ -7,7 +7,7 @@ import { profileRequestBodySchema } from '@/server/user/profileSchema';
 
 var mockAuthState = {
   loading: false,
-  user: null as null | { id: string; email?: string | null },
+  user: null as null | { id: string; email?: string | null; user_metadata?: Record<string, unknown> },
 };
 
 vi.mock('@/context/AuthContext', () => ({
@@ -217,6 +217,93 @@ describe('useUserProfile', () => {
       })
     );
     expect(profileRequestBodySchema.safeParse(secondCallBody).success).toBe(true);
+  });
+
+  it('hydrates Google identity names into the authenticated snapshot when the server profile is empty', async () => {
+    mockAuthState.user = {
+      id: '00000000-0000-0000-0000-000000000005',
+      email: 'google@example.com',
+      user_metadata: {
+        given_name: 'Dana',
+        family_name: 'Levi',
+      },
+    };
+
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: {
+            geographicPreference: 'any',
+            savedProgramIds: [],
+          },
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: {
+            geographicPreference: 'any',
+            firstName: 'Dana',
+            lastName: 'Levi',
+            savedProgramIds: [],
+          },
+        }),
+      });
+
+    vi.stubGlobal('fetch', fetchMock);
+
+    const { result } = renderHook(() => useUserProfile());
+
+    await waitFor(() => expect(result.current.profile.firstName).toBe('Dana'));
+    expect(result.current.profile.lastName).toBe('Levi');
+    expect(fetchMock).toHaveBeenNthCalledWith(
+      2,
+      '/api/profile',
+      expect.objectContaining({
+        method: 'PUT',
+        body: JSON.stringify({
+          profile: {
+            geographicPreference: 'any',
+            firstName: 'Dana',
+            lastName: 'Levi',
+          },
+          mode: 'merge_local_draft',
+        }),
+      })
+    );
+  });
+
+  it('does not overwrite existing server names with Google identity metadata', async () => {
+    mockAuthState.user = {
+      id: '00000000-0000-0000-0000-000000000006',
+      email: 'google-existing@example.com',
+      user_metadata: {
+        given_name: 'Dana',
+        family_name: 'Levi',
+      },
+    };
+
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        data: {
+          geographicPreference: 'any',
+          firstName: 'Server',
+          lastName: 'User',
+          savedProgramIds: [],
+        },
+      }),
+    });
+
+    vi.stubGlobal('fetch', fetchMock);
+
+    const { result } = renderHook(() => useUserProfile());
+
+    await waitFor(() => expect(result.current.profile.firstName).toBe('Server'));
+    expect(result.current.profile.lastName).toBe('User');
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   it('fails closed when local storage is malformed', async () => {

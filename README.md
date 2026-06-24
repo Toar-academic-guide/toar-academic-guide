@@ -37,9 +37,14 @@ Production should be configured with `CATALOGUE_SOURCE_MODE=database`. Preview c
 
 `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` enable sign-up, sign-in, session refresh, and authenticated user persistence. The runtime still accepts `NEXT_PUBLIC_SUPABASE_ANON_KEY` as a temporary fallback during migration. Without the public Supabase vars, the app still supports anonymous browsing and local draft persistence.
 
-`NEXT_PUBLIC_APP_URL` should point at the deployed app URL used in Supabase email confirmations. In local development, the signup flow falls back to the current browser origin if this env var is absent.
+`NEXT_PUBLIC_APP_URL` should point at the deployed app origin used in Supabase email confirmations and browser-side OAuth callback redirects. In local development, the auth flows fall back to the current browser origin if this env var is absent.
 
-Supabase Auth also needs the deployed app URL allow-listed under redirect URL configuration before email confirmation links will return to the app correctly.
+Supabase Auth also needs the app callback URLs allow-listed under redirect URL configuration:
+
+- `http://localhost:3000/auth/callback` for local Google OAuth verification
+- the deployed `https://<your-host>/auth/callback` URL for preview/production Google OAuth verification
+
+Keep this distinct from the hosted Supabase callback URI that is configured in Google Cloud. Google redirects back to Supabase first, and Supabase then redirects into the app callback route.
 
 ## Database workflow
 
@@ -85,6 +90,7 @@ See [docs/backend-data-model.md](/Users/amitmalichi/Desktop/toar-academic-guide/
 
 - `localStorage` acts as an anonymous draft store and first-sign-in migration source. Authenticated profile snapshots are fetched from the server at runtime rather than cached back into the browser draft key.
 - Signup stores first and last name in the app-owned `user_profiles` row, with Supabase signup metadata used only as a handoff during account creation.
+- Google sign-in uses the same Supabase-backed profile persistence path. Social metadata may fill empty first/last name fields on first sign-in, but `user_profiles` remains the durable source of truth.
 - Authenticated profile data and saved programs are persisted through Supabase-backed APIs.
 - The current "clear data" control is device-scoped only: it removes browser draft data on the current device, but it does not delete account-level profile rows, saved programs, or uploaded files.
 - Uploaded document snapshots exposed to the browser use generic display labels rather than raw filenames.
