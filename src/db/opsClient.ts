@@ -14,6 +14,8 @@ export function getOpsDb() {
       // Internal reporting should stay compatible with Supabase pooler URLs and avoid
       // building a second large app-side pool.
       max: 1,
+      connect_timeout: 5,
+      idle_timeout: 20,
       prepare: false,
     });
     globalThis.__toarAcademicGuideOpsDb__ = drizzle(sql, { schema });

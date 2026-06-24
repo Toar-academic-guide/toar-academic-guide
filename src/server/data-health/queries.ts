@@ -15,6 +15,10 @@ import {
 import { evaluateCatalogueReadiness } from '@/server/catalogue/queries';
 
 const ISSUE_LIMIT = 5;
+const DATA_HEALTH_QUERY_TIMEOUT_MS = 5000;
+const DATA_HEALTH_UNAVAILABLE_MESSAGE = 'Operational data health is not configured.';
+const DATA_HEALTH_TIMEOUT_MESSAGE =
+  'Operational data health did not respond in time. Check OPS_DATABASE_URL and Supabase pooler connectivity.';
 
 export type DataHealthReport =
   | DataHealthReadyReport
@@ -148,15 +152,51 @@ interface ReviewItemSummary {
   reviewedAt: string | null;
 }
 
-export async function getDataHealthReport(now = new Date()): Promise<DataHealthReport> {
+interface GetDataHealthReportOptions {
+  timeoutMs?: number;
+}
+
+class DataHealthTimeoutError extends Error {
+  constructor(timeoutMs: number) {
+    super(`Data health query timed out after ${timeoutMs}ms`);
+    this.name = 'DataHealthTimeoutError';
+  }
+}
+
+export async function getDataHealthReport(
+  now = new Date(),
+  options: GetDataHealthReportOptions = {},
+): Promise<DataHealthReport> {
   try {
-    const rows = await loadDataHealthRows();
+    const rows = await withTimeout(
+      loadDataHealthRows(),
+      options.timeoutMs ?? DATA_HEALTH_QUERY_TIMEOUT_MS,
+    );
     return summarizeDataHealthRows(rows, now);
-  } catch {
+  } catch (error) {
     return {
       status: 'unavailable',
-      message: 'Operational data health is not configured.',
+      message:
+        error instanceof DataHealthTimeoutError
+          ? DATA_HEALTH_TIMEOUT_MESSAGE
+          : DATA_HEALTH_UNAVAILABLE_MESSAGE,
     };
+  }
+}
+
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    timeout = setTimeout(() => reject(new DataHealthTimeoutError(timeoutMs)), timeoutMs);
+  });
+
+  try {
+    return await Promise.race([promise, timeoutPromise]);
+  } finally {
+    if (timeout) {
+      clearTimeout(timeout);
+    }
   }
 }
 
