@@ -47,6 +47,7 @@ next-env.d.ts
 
 # supabase
 supabase/.temp/
+.env.local
 .worktrees/
 
 # playwright
