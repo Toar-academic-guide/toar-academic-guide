@@ -41,6 +41,8 @@ Production should be configured with `CATALOGUE_SOURCE_MODE=database`. Preview c
 
 Supabase Auth also needs the deployed app URL allow-listed under redirect URL configuration before email confirmation links will return to the app correctly.
 
+`/internal/data-health` is an internal, read-only operator dashboard. It requires Supabase sign-in plus `INTERNAL_ADMIN_EMAILS`, and it reads private operational tables through `OPS_DATABASE_URL` instead of the normal app `DATABASE_URL`. Use a dedicated read-only operational role such as `ops_readonly`; do not use the Supabase `postgres` role for this dashboard in production. See [docs/internal-data-health-dashboard.md](docs/internal-data-health-dashboard.md).
+
 ## Database workflow
 
 ```bash
@@ -76,6 +78,7 @@ The current Next.js runtime still uses a direct `postgres.js` connection for ser
 
 - DB code lives under `src/db/`
 - server catalogue queries and serializers live under `src/server/catalogue/`
+- internal data-health reporting lives under `src/server/data-health/` and `src/app/internal/data-health/`
 - read-only catalogue routes live under `src/app/api/catalog/`
 - client access is isolated behind `src/lib/catalogueClient.ts`
 

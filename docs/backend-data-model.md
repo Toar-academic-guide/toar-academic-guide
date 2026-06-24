@@ -62,6 +62,8 @@ The intended Supabase posture is:
 
 This posture secures the exposed Supabase Data API surface. The current app runtime still reads and writes through a direct `postgres.js` connection, so least-privilege runtime DB access remains a separate hardening track.
 
+`/internal/data-health` reads across both public-read catalogue tables and private operational tables. That route must use `OPS_DATABASE_URL`, a separate read-only operational connection, rather than widening the normal `DATABASE_URL` app runtime role. The internal route is guarded by Supabase Auth plus `INTERNAL_ADMIN_EMAILS`; unauthorized requests fail before operational queries run.
+
 ## Seed strategy
 
 `src/db/seeds/catalogueSeed.ts` converts the current static catalogue into stable seed rows.
@@ -86,6 +88,7 @@ Use different connection shapes for different execution surfaces:
 
 - Local development: direct local Postgres URL (`localhost:5432` in the checked-in examples)
 - Vercel preview/production runtime: pooled connection string for request-driven app traffic
+- Internal data-health dashboard: pooled read-only operational URL via `OPS_DATABASE_URL`
 - CI test/build job: no DB connection required
 - CI verification job (`npm run db:seed:verify`): operational DB URL only when that job is intentionally enabled
 

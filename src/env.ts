@@ -1,6 +1,7 @@
 import type { CatalogueSourceMode } from '@/types/catalogue';
 
 const DATABASE_URL_KEY = 'DATABASE_URL';
+const OPS_DATABASE_URL_KEY = 'OPS_DATABASE_URL';
 const CATALOGUE_SOURCE_MODE_KEY = 'CATALOGUE_SOURCE_MODE';
 const CATALOGUE_SOURCE_MODES = ['auto', 'database', 'static'] as const;
 
@@ -14,15 +15,29 @@ export function hasDatabaseUrl(): boolean {
 }
 
 export function requireDatabaseUrl(): string {
-  const value = readEnv(DATABASE_URL_KEY);
-  if (!value) {
-    throw new Error(
-      'Missing DATABASE_URL. Set DATABASE_URL in your environment before using DB-backed catalogue features.'
-    );
-  }
-
+  const value = readRequiredDatabaseUrl(DATABASE_URL_KEY);
   if (isProductionRuntime()) {
     assertProductionDatabaseUrlLeastPrivilege(value);
+  }
+
+  return value;
+}
+
+export function requireOpsDatabaseUrl(): string {
+  const value = readRequiredDatabaseUrl(OPS_DATABASE_URL_KEY);
+  if (isProductionRuntime()) {
+    assertProductionDatabaseUrlLeastPrivilege(value);
+  }
+
+  return value;
+}
+
+function readRequiredDatabaseUrl(name: string): string {
+  const value = readEnv(name);
+  if (!value) {
+    throw new Error(
+      `Missing ${name}. Set ${name} in your environment before using DB-backed features that require it.`
+    );
   }
 
   return value;
