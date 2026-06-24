@@ -15,7 +15,7 @@ import {
 import { evaluateCatalogueReadiness } from '@/server/catalogue/queries';
 
 const ISSUE_LIMIT = 5;
-const DATA_HEALTH_QUERY_TIMEOUT_MS = 5000;
+const DATA_HEALTH_QUERY_TIMEOUT_MS = 15000;
 const DATA_HEALTH_UNAVAILABLE_MESSAGE = 'Operational data health is not configured.';
 const DATA_HEALTH_TIMEOUT_MESSAGE =
   'Operational data health did not respond in time. Check OPS_DATABASE_URL and Supabase pooler connectivity.';

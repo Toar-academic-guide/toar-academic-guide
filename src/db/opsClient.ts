@@ -11,9 +11,9 @@ declare global {
 export function getOpsDb() {
   if (!globalThis.__toarAcademicGuideOpsDb__) {
     const sql = postgres(requireOpsDatabaseUrl(), {
-      // Internal reporting should stay compatible with Supabase pooler URLs and avoid
-      // building a second large app-side pool.
-      max: 1,
+      // Dashboard reads are independent. Keep the pool small, but avoid serializing
+      // the whole report through a single Supabase pooler connection.
+      max: 4,
       connect_timeout: 5,
       idle_timeout: 20,
       prepare: false,
