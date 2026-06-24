@@ -35,7 +35,7 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.12.1",
     "@eslint/js": "^9.39.4",
-    "@next/env": "^16.2.7",
+    "@next/env": "^16.2.9",
     "@next/eslint-plugin-next": "^16.2.9",
     "@playwright/test": "^1.61.1",
     "@tailwindcss/postcss": "^4",
@@ -44,7 +44,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@vitejs/plugin-react": "^6.0.2",
+    "@vitejs/plugin-react": "^6.0.3",
     "@vitest/coverage-v8": "^4.1.9",
     "drizzle-kit": "^0.31.10",
     "drizzle-orm": "^0.45.2",
