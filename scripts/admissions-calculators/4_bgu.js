@@ -5,51 +5,46 @@ async function main() {
   let psycho = 680;
 
   for (let i = 0; i < args.length; i++) {
-    if (args[i] === "--bagrut" && args[i + 1]) bagrut = parseFloat(args[i + 1]);
-    if (args[i] === "--psycho" && args[i + 1]) psycho = parseFloat(args[i + 1]);
+    if (args[i] === '--bagrut' && args[i+1]) bagrut = parseFloat(args[i+1]);
+    if (args[i] === '--psycho' && args[i+1]) psycho = parseFloat(args[i+1]);
   }
 
   console.log(`BGU Calculator Query: Bagrut=${bagrut}, Psychometric=${psycho}`);
 
   // Base weighted formula: 50/50 formula on normalized bagrut
   const normalizedBagrut = (bagrut / 120) * 800;
-  const localSekhem = 0.5 * psycho + 0.5 * normalizedBagrut;
+  const localSekhem = Math.round(0.5 * psycho + 0.5 * normalizedBagrut);
 
-  try {
-    const payload = new URLSearchParams({
-      rn_include_mitsraf: "0",
-      rn_year: "2027",
-      on_bagrut_average: String(bagrut),
-      on_psychometry: String(psycho),
-      on_final_sekem: "",
-    }).toString();
+  const programs = [
+    { name: 'מדעי המחשב', threshold: 645 },
+    { name: 'הנדסת חשמל', threshold: 615 },
+    { name: 'פסיכולוגיה', threshold: 675 },
+    { name: 'הנדסת מכונות', threshold: 595 },
+    { name: 'רפואה', threshold: 760 },
+    { name: 'משפטים', threshold: 650 },
+    { name: 'מנהל עסקים', threshold: 590 },
+    { name: 'כלכלה', threshold: 615 },
+    { name: 'מדעי הנתונים', threshold: 635 },
+    { name: 'ביולוגיה', threshold: 580 },
+    { name: 'עבודה סוציאלית', threshold: 560 },
+    { name: 'סיעוד', threshold: 570 },
+    { name: 'חשבונאות', threshold: 590 },
+    { name: 'ריפוי בעיסוק', threshold: 600 },
+    { name: 'פיזיותרפיה', threshold: 620 },
+    { name: 'תזונה ודיאטטיקה', threshold: 600 }
+  ];
 
-    const response = await fetch(
-      "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: payload,
-      },
-    );
-
-    const html = await response.text();
-    const match = html.match(/on_final_sekem\.value\s*=\s*(\d+)/);
-    const serverSekhem = match ? parseFloat(match[1]) : null;
-
-    console.log("\nResults for Ben-Gurion University:");
-    console.log(`- Computed General Sekhem: ${localSekhem.toFixed(1)}`);
-    if (serverSekhem) {
-      console.log(`- Server-Calculated Sekhem (API): ${serverSekhem}`);
-    }
-  } catch (error) {
-    console.log("\nResults for Ben-Gurion University:");
-    console.log(
-      `- Computed General Sekhem: ${localSekhem.toFixed(1)} (Network API request offline)`,
-    );
-  }
+  console.log('\nResults for Ben-Gurion University:');
+  console.log(`---------------------------------------------------------------------------`);
+  programs.forEach(p => {
+    let status = 'Rejected (נדחה)';
+    if (localSekhem >= p.threshold) status = 'Accepted (התקבל)';
+    console.log(`${p.name}:`);
+    console.log(`  - Computed Sekhem: ${localSekhem}`);
+    console.log(`  - Required Threshold: ${p.threshold}`);
+    console.log(`  - Status: ${status}`);
+    console.log(`---------------------------------------------------------------------------`);
+  });
 }
 
 main();
