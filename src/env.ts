@@ -21,6 +21,10 @@ export function requireDatabaseUrl(): string {
     );
   }
 
+  if (isProductionRuntime()) {
+    assertProductionDatabaseUrlLeastPrivilege(value);
+  }
+
   return value;
 }
 
@@ -41,4 +45,32 @@ export function getCatalogueSourceMode(): CatalogueSourceMode {
 
 export function isProductionRuntime(): boolean {
   return process.env.NODE_ENV === 'production';
+}
+
+function isSupabaseDatabaseHost(hostname: string): boolean {
+  return hostname.endsWith('.supabase.co') || hostname.endsWith('.pooler.supabase.com');
+}
+
+function getDatabaseRoleFromUsername(username: string): string {
+  return decodeURIComponent(username).split('.')[0] ?? '';
+}
+
+export function assertProductionDatabaseUrlLeastPrivilege(databaseUrl: string): void {
+  let parsed: URL;
+
+  try {
+    parsed = new URL(databaseUrl);
+  } catch {
+    return;
+  }
+
+  if (!isSupabaseDatabaseHost(parsed.hostname)) {
+    return;
+  }
+
+  if (getDatabaseRoleFromUsername(parsed.username) === 'postgres') {
+    throw new Error(
+      'Unsafe DATABASE_URL for production runtime: Supabase app traffic must not authenticate as postgres. Use a dedicated runtime role such as app_runtime with a pooled connection string.'
+    );
+  }
 }
