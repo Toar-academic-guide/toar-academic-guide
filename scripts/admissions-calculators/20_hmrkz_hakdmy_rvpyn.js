@@ -1,28 +1,102 @@
-// 20. המרכז האקדמי רופין
+// המרכז האקדמי רופין
 // מזהה פריט בלוח Monday: 12220708946
 
-async function main() {
-  console.log(`--- 20. המרכז האקדמי רופין ---`);
-  console.log(`דוח תנאי קבלה והעשרת נתונים:`);
-  console.log(`\n### 📋 דוח העשרת נתונים: 20. המרכז האקדמי רופין
-
-**1. תנאי קבלה ראשוניים:**
-- תעודת בגרות מלאה.
+function getAdmissionsData() {
+  return {
+    institutionName: `המרכז האקדמי רופין`,
+    institutionType: `מכללה ציבורית`,
+    location: `מכמורת, ועמק חפר`,
+    programName: `המרכז האקדמי רופין`,
+    degreeType: `תואר אקדמי`,
+    officialUrl: `https://www.ruppin.ac.il`,
+    admissionRequirements: {
+      sekhemThreshold: `- תעודת בגרות מלאה.
 - שקלול ציון סכם המשלב ממוצע בגרות וציון פסיכומטרי.
 - סיווג רמת אנגלית (במסגרת הפסיכומטרי או מבחן אמי"ר/אמיר"ם).
-- דרישות סף ספציפיות במתמטיקה ואנגלית לפי מסלולי הלימוד השונים.
-
-**2. פרטי מכינה קדם-אקדמית:**
-- מכינה קדם-אקדמית שנתית: מציעה מסלולי הכנה והשלמת בגרויות מותאמים להנדסה/מדעים או לניהול/כלכלה/מדעי החברה.
-- תוכנית "בדרך לאקדמיה": תוכנית ממוקדת בת כ-14 שבועות המיועדת לבעלי תעודת בגרות שאינם עומדים בתנאי הקבלה ישירות לתואר. (מכינה קיימת: כן)
-
-**3. נתיבי קבלה חלופיים / חריגים:**
-- קבלה ללא פסיכומטרי בחלק מהחוגים (כגון כלכלה, ניהול, מדעי ההתנהגות) לבעלי ממוצע בגרות גבוה במיוחד.
+- דרישות סף ספציפיות במתמטיקה ואנגלית לפי מסלולי הלימוד השונים.`,
+      calculatorUrl: `https://www.ruppin.ac.il/faculties/ba/electric-engineering/application-requirements/`,
+      minPsychometric: "משתנה לפי מסלול",
+      minMatriculation: "משתנה לפי מסלול",
+      specificRequirements: `- תעודת בגרות מלאה.
+- שקלול ציון סכם המשלב ממוצע בגרות וציון פסיכומטרי.
+- סיווג רמת אנגלית (במסגרת הפסיכומטרי או מבחן אמי"ר/אמיר"ם).
+- דרישות סף ספציפיות במתמטיקה ואנגלית לפי מסלולי הלימוד השונים.`,
+      additionalFilters: "ראיון או ועדת קבלה בהתאם לדרישות החוג"
+    },
+    alternativePaths: {
+      preparatoryProgram: `- מכינה קדם-אקדמית שנתית: מציעה מסלולי הכנה והשלמת בגרויות מותאמים להנדסה/מדעים או לניהול/כלכלה/מדעי החברה.
+- תוכנית "בדרך לאקדמיה": תוכנית ממוקדת בת כ-14 שבועות המיועדת לבעלי תעודת בגרות שאינם עומדים בתנאי הקבלה ישירות לתואר.`,
+      transitionTrack: `- קבלה ללא פסיכומטרי בחלק מהחוגים (כגון כלכלה, ניהול, מדעי ההתנהגות) לבעלי ממוצע בגרות גבוה במיוחד.
 - קבלה על סמך סיום מוצלח של תוכנית "בדרך לאקדמיה" (על סמך הציונים בקורסים הפנימיים) המהווה תחליף לפסיכומטרי.
-- מסלולי קבלה ייחודיים לבני 30 ומעלה הכוללים מכינות ייעודיות או מבחני מיון פנימיים.
-
-**4. קישור מקור רשמי:**
-[מקור רשמי](https://www.ruppin.ac.il)`);
+- מסלולי קבלה ייחודיים לבני 30 ומעלה הכוללים מכינות ייעודיות או מבחני מיון פנימיים.`,
+      priorStudies: "קבלה על סמך לימודים אקדמיים קודמים או דיפלומת הנדסאי",
+      exceptionsCommittee: "קיימת ועדת חריגים למועמדים מתאימים",
+      specialPopulations: `- קבלה ללא פסיכומטרי בחלק מהחוגים (כגון כלכלה, ניהול, מדעי ההתנהגות) לבעלי ממוצע בגרות גבוה במיוחד.
+- קבלה על סמך סיום מוצלח של תוכנית "בדרך לאקדמיה" (על סמך הציונים בקורסים הפנימיים) המהווה תחליף לפסיכומטרי.
+- מסלולי קבלה ייחודיים לבני 30 ומעלה הכוללים מכינות ייעודיות או מבחני מיון פנימיים.`,
+      otherPaths: `- קבלה ללא פסיכומטרי בחלק מהחוגים (כגון כלכלה, ניהול, מדעי ההתנהגות) לבעלי ממוצע בגרות גבוה במיוחד.
+- קבלה על סמך סיום מוצלח של תוכנית "בדרך לאקדמיה" (על סמך הציונים בקורסים הפנימיים) המהווה תחליף לפסיכומטרי.
+- מסלולי קבלה ייחודיים לבני 30 ומעלה הכוללים מכינות ייעודיות או מבחני מיון פנימיים.`
+    },
+    alternatives: {
+      similarProgramsSameInstitution: [
+        "מסלולי בוגר משיקים בתחומי הלימוד של המוסד"
+      ],
+      sameProgramOtherInstitutions: [
+        "מוסדות אקדמיים מקבילים המציעים מסלול דומה"
+      ],
+      lowerThresholdInstitutions: [
+        "האוניברסיטה הפתוחה (קבלה פתוחה) או לימודי תעודה/הנדסאים"
+      ]
+    },
+    dataReliability: {
+      officialSource: `https://www.ruppin.ac.il`,
+      checkDate: `2026-06-24`,
+      confidenceLevel: "גבוהה (על בסיס בדיקה רשמית)",
+      barriersAndNotes: `מלגות סוציו-אקונומיות והצטיינות; חיילים משוחררים — מימון מהפיקדון; ראויים לקידום. תמיכה ייעודית ליוצאי אתיופיה וללקויי למידה. (פרטים — אתר רופין.)`
+    }
+  };
 }
 
-main();
+async function main() {
+  const data = getAdmissionsData();
+  console.log(`=== ${data.institutionName} ===`);
+  console.log(`\n[1. פרטי מוסד ומסלול]`);
+  console.log(`- סוג מוסד: ${data.institutionType}`);
+  console.log(`- מיקום/קמפוס: ${data.location}`);
+  console.log(`- סוג תואר: ${data.degreeType}`);
+  console.log(`- קישור רשמי: ${data.officialUrl}`);
+
+  console.log(`\n[2. תנאי קבלה]`);
+  console.log(`${data.admissionRequirements.sekhemThreshold}`);
+  if (data.admissionRequirements.calculatorUrl) {
+    console.log(`- קישור למחשבון סכם: ${data.admissionRequirements.calculatorUrl}`);
+  }
+
+  console.log(`\n[3. אם המשתמש לא עומד בתנאים (נתיבים חלופיים)]`);
+  if (data.alternativePaths.preparatoryProgram) {
+    console.log(`- מכינה רלוונטית: \n${data.alternativePaths.preparatoryProgram}`);
+  }
+  if (data.alternativePaths.transitionTrack) {
+    console.log(`- אפיקי מעבר וקבלה חלופית: \n${data.alternativePaths.transitionTrack}`);
+  }
+
+  console.log(`\n[4. חלופות]`);
+  console.log(`- מסלולים דומים באותו מוסד: ${data.alternatives.similarProgramsSameInstitution.join(', ')}`);
+  console.log(`- מוסדות אחרים עם מסלול דומה: ${data.alternatives.sameProgramOtherInstitutions.join(', ')}`);
+  console.log(`- מוסדות עם תנאי קבלה נמוכים יותר: ${data.alternatives.lowerThresholdInstitutions.join(', ')}`);
+
+  console.log(`\n[5. אמינות הדאטה]`);
+  console.log(`- מקור רשמי: ${data.dataReliability.officialSource}`);
+  console.log(`- תאריך בדיקה: ${data.dataReliability.checkDate}`);
+  console.log(`- רמת ביטחון: ${data.dataReliability.confidenceLevel}`);
+  if (data.dataReliability.barriersAndNotes) {
+    console.log(`- הערות וחסמים: ${data.dataReliability.barriersAndNotes}`);
+  }
+}
+
+if (require.main === module) {
+  main();
+}
+
+module.exports = { getAdmissionsData, main };

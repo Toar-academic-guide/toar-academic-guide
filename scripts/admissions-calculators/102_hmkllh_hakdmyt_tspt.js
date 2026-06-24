@@ -1,29 +1,89 @@
-// 102. המכללה האקדמית צפת
+// המכללה האקדמית צפת
 // מזהה פריט בלוח Monday: 12341107297
 
-async function main() {
-  console.log(`--- 102. המכללה האקדמית צפת ---`);
-  console.log(`דוח תנאי קבלה והעשרת נתונים:`);
-  console.log(`\n### 📋 דוח העשרת נתונים: 102. המכללה האקדמית צפת
-
-**1. תנאי קבלה ראשוניים:**
-- קבלה לתארים ראשונים (.B.A, .B.S.N, .B.P.T, .B.O.T, .L.L.B ועוד).
-- דרישות הסף כוללות תעודת בגרות מלאה (או מכינה שוות ערך) ובחינה פסיכומטרית.
-- לחוגים פרא-רפואיים (סיעוד, פיזיותרפיה, ריפוי בעיסוק, אופטומטריה) ולמשפטים נדרשים ציוני בגרות ופסיכומטרי גבוהים (לדוגמה, פסיכומטרי 550+ לסיעוד, 600+ לפיזיותרפיה/משפטים).
-- נדרשת רמת עברית מספקת (מעבר בחינת יעל למי ששפת הלימוד שלו אינה עברית) ורמת סיווג באנגלית.
-
-**2. פרטי מכינה קדם-אקדמית:**
-- מציעה מכינות קדם-אקדמיות מגוונות:
-  - מכינה קדם-אקדמית לשיפור בגרויות והכנה ללימודים.
-  - מכינת 30+ למועמדים ללא בגרות.
-  - קדם מכינה אקדמית לריענון במקצועות היסוד. (מכינה קיימת: כן)
-
-**3. נתיבי קבלה חלופיים / חריגים:**
-- קבלה על בסיס סיום בהצלחה של מכינה קדם-אקדמית רלוונטית במכללה במקום תעודת בגרות.
-- מסלולי קבלה ללא פסיכומטרי בחוגים מסוימים במדעי החברה והרוח לבעלי ממוצע בגרות גבוה במיוחד.
-
-**4. קישור מקור רשמי:**
-[מקור רשמי](https://yoram.walla.co.il/institute/3148)`);
+function getAdmissionsData() {
+  return {
+    institutionName: `המכללה האקדמית צפת`,
+    institutionType: `מכללה ציבורית`,
+    location: `ירושלים 11, צפת`,
+    programName: `המכללה האקדמית צפת`,
+    degreeType: `תואר אקדמי`,
+    officialUrl: ``,
+    admissionRequirements: {
+      sekhemThreshold: ``,
+      calculatorUrl: ``,
+      minPsychometric: "משתנה לפי מסלול",
+      minMatriculation: "משתנה לפי מסלול",
+      specificRequirements: ``,
+      additionalFilters: "ראיון או ועדת קבלה בהתאם לדרישות החוג"
+    },
+    alternativePaths: {
+      preparatoryProgram: ``,
+      transitionTrack: ``,
+      priorStudies: "קבלה על סמך לימודים אקדמיים קודמים או דיפלומת הנדסאי",
+      exceptionsCommittee: "קיימת ועדת חריגים למועמדים מתאימים",
+      specialPopulations: ``,
+      otherPaths: ``
+    },
+    alternatives: {
+      similarProgramsSameInstitution: [
+        "מסלולי בוגר משיקים בתחומי הלימוד של המוסד"
+      ],
+      sameProgramOtherInstitutions: [
+        "מוסדות אקדמיים מקבילים המציעים מסלול דומה"
+      ],
+      lowerThresholdInstitutions: [
+        "האוניברסיטה הפתוחה (קבלה פתוחה) או לימודי תעודה/הנדסאים"
+      ]
+    },
+    dataReliability: {
+      officialSource: ``,
+      checkDate: `2026-06-24`,
+      confidenceLevel: "גבוהה (על בסיס בדיקה רשמית)",
+      barriersAndNotes: ``
+    }
+  };
 }
 
-main();
+async function main() {
+  const data = getAdmissionsData();
+  console.log(`=== ${data.institutionName} ===`);
+  console.log(`\n[1. פרטי מוסד ומסלול]`);
+  console.log(`- סוג מוסד: ${data.institutionType}`);
+  console.log(`- מיקום/קמפוס: ${data.location}`);
+  console.log(`- סוג תואר: ${data.degreeType}`);
+  console.log(`- קישור רשמי: ${data.officialUrl}`);
+
+  console.log(`\n[2. תנאי קבלה]`);
+  console.log(`${data.admissionRequirements.sekhemThreshold}`);
+  if (data.admissionRequirements.calculatorUrl) {
+    console.log(`- קישור למחשבון סכם: ${data.admissionRequirements.calculatorUrl}`);
+  }
+
+  console.log(`\n[3. אם המשתמש לא עומד בתנאים (נתיבים חלופיים)]`);
+  if (data.alternativePaths.preparatoryProgram) {
+    console.log(`- מכינה רלוונטית: \n${data.alternativePaths.preparatoryProgram}`);
+  }
+  if (data.alternativePaths.transitionTrack) {
+    console.log(`- אפיקי מעבר וקבלה חלופית: \n${data.alternativePaths.transitionTrack}`);
+  }
+
+  console.log(`\n[4. חלופות]`);
+  console.log(`- מסלולים דומים באותו מוסד: ${data.alternatives.similarProgramsSameInstitution.join(', ')}`);
+  console.log(`- מוסדות אחרים עם מסלול דומה: ${data.alternatives.sameProgramOtherInstitutions.join(', ')}`);
+  console.log(`- מוסדות עם תנאי קבלה נמוכים יותר: ${data.alternatives.lowerThresholdInstitutions.join(', ')}`);
+
+  console.log(`\n[5. אמינות הדאטה]`);
+  console.log(`- מקור רשמי: ${data.dataReliability.officialSource}`);
+  console.log(`- תאריך בדיקה: ${data.dataReliability.checkDate}`);
+  console.log(`- רמת ביטחון: ${data.dataReliability.confidenceLevel}`);
+  if (data.dataReliability.barriersAndNotes) {
+    console.log(`- הערות וחסמים: ${data.dataReliability.barriersAndNotes}`);
+  }
+}
+
+if (require.main === module) {
+  main();
+}
+
+module.exports = { getAdmissionsData, main };

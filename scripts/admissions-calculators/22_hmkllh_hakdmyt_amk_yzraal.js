@@ -1,29 +1,105 @@
-// 22. המכללה האקדמית עמק יזרעאל
+// המכללה האקדמית עמק יזרעאל
 // מזהה פריט בלוח Monday: 12220697671
 
-async function main() {
-  console.log(`--- 22. המכללה האקדמית עמק יזרעאל ---`);
-  console.log(`דוח תנאי קבלה והעשרת נתונים:`);
-  console.log(`\n### 📋 דוח העשרת נתונים: 22. המכללה האקדמית עמק יזרעאל
-
-**1. תנאי קבלה ראשוניים:**
-- תעודת בגרות מלאה או תעודת מכינה.
+function getAdmissionsData() {
+  return {
+    institutionName: `המכללה האקדמית עמק יזרעאל`,
+    institutionType: `מכללה ציבורית`,
+    location: `עמק יזרעאל`,
+    programName: `המכללה האקדמית עמק יזרעאל`,
+    degreeType: `תואר אקדמי`,
+    officialUrl: `https://www.yvc.ac.il`,
+    admissionRequirements: {
+      sekhemThreshold: `- תעודת בגרות מלאה או תעודת מכינה.
 - סיווג רמת אנגלית במבחן פסיכומטרי או אמי"ר/אמיר"ם.
 - מבחן יע"ל לנבחנים בפסיכומטרי בשפה שאינה עברית או שלמדו בתיכון שבו שפת ההוראה אינה עברית.
-- עמידה ברף ציונים חוגי במקצועות נבחרים (כגון מתמטיקה).
-
-**2. פרטי מכינה קדם-אקדמית:**
-- מכינה קדם-אקדמית (במסגרת מדעי החברה והרוח): מיועדת לשיפור ציונים. תנאי קבלה למכינה: 12 שנות לימוד, בגרות חלקית, בחינת מימ"ד וראיון אישי. ציוני המכינה מחליפים את הבגרות.
-- מכינת 30+ לבני 30 ומעלה ללא תעודת בגרות. (מכינה קיימת: כן)
-
-**3. נתיבי קבלה חלופיים / חריגים:**
-- מסלול פסיכומטרי בלבד: קבלה על סמך ציון פסיכומטרי בלבד ללא התחשבות בממוצע בגרות (בכפוף לזכאות לבגרות/מכינה).
+- עמידה ברף ציונים חוגי במקצועות נבחרים (כגון מתמטיקה).`,
+      calculatorUrl: `https://www.yvc.ac.il`,
+      minPsychometric: "משתנה לפי מסלול",
+      minMatriculation: "משתנה לפי מסלול",
+      specificRequirements: `- תעודת בגרות מלאה או תעודת מכינה.
+- סיווג רמת אנגלית במבחן פסיכומטרי או אמי"ר/אמיר"ם.
+- מבחן יע"ל לנבחנים בפסיכומטרי בשפה שאינה עברית או שלמדו בתיכון שבו שפת ההוראה אינה עברית.
+- עמידה ברף ציונים חוגי במקצועות נבחרים (כגון מתמטיקה).`,
+      additionalFilters: "ראיון או ועדת קבלה בהתאם לדרישות החוג"
+    },
+    alternativePaths: {
+      preparatoryProgram: `- מכינה קדם-אקדמית (במסגרת מדעי החברה והרוח): מיועדת לשיפור ציונים. תנאי קבלה למכינה: 12 שנות לימוד, בגרות חלקית, בחינת מימ"ד וראיון אישי. ציוני המכינה מחליפים את הבגרות.
+- מכינת 30+ לבני 30 ומעלה ללא תעודת בגרות.`,
+      transitionTrack: `- מסלול פסיכומטרי בלבד: קבלה על סמך ציון פסיכומטרי בלבד ללא התחשבות בממוצע בגרות (בכפוף לזכאות לבגרות/מכינה).
 - מסלול בגרות בלבד: קבלה ללא פסיכומטרי על סמך ממוצע בגרות גולמי גבוה במיוחד או ציון גמר מכינה.
 - מסלול צמ"מ: קבלה על סמך שקלול ממוצע בגרות/מכינה וציון פסיכומטרי.
-- קבלה על סמך מכינת 30+ לרוב החוגים (למעט חריגים כגון סיעוד) ללא צורך בפסיכומטרי.
-
-**4. קישור מקור רשמי:**
-[מקור רשמי](https://www.yvc.ac.il)`);
+- קבלה על סמך מכינת 30+ לרוב החוגים (למעט חריגים כגון סיעוד) ללא צורך בפסיכומטרי.`,
+      priorStudies: "קבלה על סמך לימודים אקדמיים קודמים או דיפלומת הנדסאי",
+      exceptionsCommittee: "קיימת ועדת חריגים למועמדים מתאימים",
+      specialPopulations: `- מסלול פסיכומטרי בלבד: קבלה על סמך ציון פסיכומטרי בלבד ללא התחשבות בממוצע בגרות (בכפוף לזכאות לבגרות/מכינה).
+- מסלול בגרות בלבד: קבלה ללא פסיכומטרי על סמך ממוצע בגרות גולמי גבוה במיוחד או ציון גמר מכינה.
+- מסלול צמ"מ: קבלה על סמך שקלול ממוצע בגרות/מכינה וציון פסיכומטרי.
+- קבלה על סמך מכינת 30+ לרוב החוגים (למעט חריגים כגון סיעוד) ללא צורך בפסיכומטרי.`,
+      otherPaths: `- מסלול פסיכומטרי בלבד: קבלה על סמך ציון פסיכומטרי בלבד ללא התחשבות בממוצע בגרות (בכפוף לזכאות לבגרות/מכינה).
+- מסלול בגרות בלבד: קבלה ללא פסיכומטרי על סמך ממוצע בגרות גולמי גבוה במיוחד או ציון גמר מכינה.
+- מסלול צמ"מ: קבלה על סמך שקלול ממוצע בגרות/מכינה וציון פסיכומטרי.
+- קבלה על סמך מכינת 30+ לרוב החוגים (למעט חריגים כגון סיעוד) ללא צורך בפסיכומטרי.`
+    },
+    alternatives: {
+      similarProgramsSameInstitution: [
+        "מסלולי בוגר משיקים בתחומי הלימוד של המוסד"
+      ],
+      sameProgramOtherInstitutions: [
+        "מוסדות אקדמיים מקבילים המציעים מסלול דומה"
+      ],
+      lowerThresholdInstitutions: [
+        "האוניברסיטה הפתוחה (קבלה פתוחה) או לימודי תעודה/הנדסאים"
+      ]
+    },
+    dataReliability: {
+      officialSource: `https://www.yvc.ac.il`,
+      checkDate: `2026-06-24`,
+      confidenceLevel: "גבוהה (על בסיס בדיקה רשמית)",
+      barriersAndNotes: `מלגות סיוע והצטיינות; חיילים משוחררים — מימון מהפיקדון; ראויים לקידום. (פרטים — אתר עמק יזרעאל.)`
+    }
+  };
 }
 
-main();
+async function main() {
+  const data = getAdmissionsData();
+  console.log(`=== ${data.institutionName} ===`);
+  console.log(`\n[1. פרטי מוסד ומסלול]`);
+  console.log(`- סוג מוסד: ${data.institutionType}`);
+  console.log(`- מיקום/קמפוס: ${data.location}`);
+  console.log(`- סוג תואר: ${data.degreeType}`);
+  console.log(`- קישור רשמי: ${data.officialUrl}`);
+
+  console.log(`\n[2. תנאי קבלה]`);
+  console.log(`${data.admissionRequirements.sekhemThreshold}`);
+  if (data.admissionRequirements.calculatorUrl) {
+    console.log(`- קישור למחשבון סכם: ${data.admissionRequirements.calculatorUrl}`);
+  }
+
+  console.log(`\n[3. אם המשתמש לא עומד בתנאים (נתיבים חלופיים)]`);
+  if (data.alternativePaths.preparatoryProgram) {
+    console.log(`- מכינה רלוונטית: \n${data.alternativePaths.preparatoryProgram}`);
+  }
+  if (data.alternativePaths.transitionTrack) {
+    console.log(`- אפיקי מעבר וקבלה חלופית: \n${data.alternativePaths.transitionTrack}`);
+  }
+
+  console.log(`\n[4. חלופות]`);
+  console.log(`- מסלולים דומים באותו מוסד: ${data.alternatives.similarProgramsSameInstitution.join(', ')}`);
+  console.log(`- מוסדות אחרים עם מסלול דומה: ${data.alternatives.sameProgramOtherInstitutions.join(', ')}`);
+  console.log(`- מוסדות עם תנאי קבלה נמוכים יותר: ${data.alternatives.lowerThresholdInstitutions.join(', ')}`);
+
+  console.log(`\n[5. אמינות הדאטה]`);
+  console.log(`- מקור רשמי: ${data.dataReliability.officialSource}`);
+  console.log(`- תאריך בדיקה: ${data.dataReliability.checkDate}`);
+  console.log(`- רמת ביטחון: ${data.dataReliability.confidenceLevel}`);
+  if (data.dataReliability.barriersAndNotes) {
+    console.log(`- הערות וחסמים: ${data.dataReliability.barriersAndNotes}`);
+  }
+}
+
+if (require.main === module) {
+  main();
+}
+
+module.exports = { getAdmissionsData, main };

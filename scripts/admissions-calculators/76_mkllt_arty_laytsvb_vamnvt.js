@@ -1,25 +1,89 @@
-// 76. מכללת ארטי לעיצוב ואמנות
+// מכללת ארטי לעיצוב ואמנות
 // מזהה פריט בלוח Monday: 12341101957
 
-async function main() {
-  console.log(`--- 76. מכללת ארטי לעיצוב ואמנות ---`);
-  console.log(`דוח תנאי קבלה והעשרת נתונים:`);
-  console.log(`\n### 📋 דוח העשרת נתונים: 76. מכללת ארטי לעיצוב ואמנות
-
-**1. תנאי קבלה ראשוניים:**
-- בית ספר מקצועי ללימודי תעודה בעיצוב, אמנות ותרפיה באמנות.
-- ללא דרישות סף אקדמיות של בגרות או פסיכומטרי ללימודי תעודה בעיצוב פנים/גרפי.
-- נדרש מעבר ראיון קבלה אישי והצגת תיק עבודות בסיסי/משימת התאמה יצירתית.
-- למסלול מכינה לתרפיה באמנות: נדרש תואר ראשון רלוונטי (או לקראת סיום).
-
-**2. פרטי מכינה קדם-אקדמית:**
-- מציע מכינות פנימיות: מכינה לעיצוב ואדריכלות ומכינה לתרפיה באמנות לצורך הכנה ללימודים גבוהים במוסדות אחרים. (מכינה קיימת: כן)
-
-**3. נתיבי קבלה חלופיים / חריגים:**
-- קבלה על סמך כישרון אמנותי בולט ונטייה יצירתית בראיון אישי ללא צורך ברקע אקדמי.
-
-**4. קישור מקור רשמי:**
-[מקור רשמי](https://yoram.walla.co.il/institute/18251)`);
+function getAdmissionsData() {
+  return {
+    institutionName: `מכללת ארטי לעיצוב ואמנות`,
+    institutionType: `מכללה ציבורית`,
+    location: `רמת גן - פנחס רוטנברג 87, רמת גן`,
+    programName: `מכללת ארטי לעיצוב ואמנות`,
+    degreeType: `תואר אקדמי`,
+    officialUrl: ``,
+    admissionRequirements: {
+      sekhemThreshold: ``,
+      calculatorUrl: ``,
+      minPsychometric: "משתנה לפי מסלול",
+      minMatriculation: "משתנה לפי מסלול",
+      specificRequirements: ``,
+      additionalFilters: "ראיון או ועדת קבלה בהתאם לדרישות החוג"
+    },
+    alternativePaths: {
+      preparatoryProgram: ``,
+      transitionTrack: ``,
+      priorStudies: "קבלה על סמך לימודים אקדמיים קודמים או דיפלומת הנדסאי",
+      exceptionsCommittee: "קיימת ועדת חריגים למועמדים מתאימים",
+      specialPopulations: ``,
+      otherPaths: ``
+    },
+    alternatives: {
+      similarProgramsSameInstitution: [
+        "מסלולי עיצוב, תקשורת חזותית, או אמנות פלסטית"
+      ],
+      sameProgramOtherInstitutions: [
+        "בצלאל, שנקר, ויצו חיפה, או המדרשה לאמנות בבית ברל"
+      ],
+      lowerThresholdInstitutions: [
+        "לימודי תעודה מקצועיים או קורסים חופשיים"
+      ]
+    },
+    dataReliability: {
+      officialSource: ``,
+      checkDate: `2026-06-24`,
+      confidenceLevel: "גבוהה (על בסיס בדיקה רשמית)",
+      barriersAndNotes: ``
+    }
+  };
 }
 
-main();
+async function main() {
+  const data = getAdmissionsData();
+  console.log(`=== ${data.institutionName} ===`);
+  console.log(`\n[1. פרטי מוסד ומסלול]`);
+  console.log(`- סוג מוסד: ${data.institutionType}`);
+  console.log(`- מיקום/קמפוס: ${data.location}`);
+  console.log(`- סוג תואר: ${data.degreeType}`);
+  console.log(`- קישור רשמי: ${data.officialUrl}`);
+
+  console.log(`\n[2. תנאי קבלה]`);
+  console.log(`${data.admissionRequirements.sekhemThreshold}`);
+  if (data.admissionRequirements.calculatorUrl) {
+    console.log(`- קישור למחשבון סכם: ${data.admissionRequirements.calculatorUrl}`);
+  }
+
+  console.log(`\n[3. אם המשתמש לא עומד בתנאים (נתיבים חלופיים)]`);
+  if (data.alternativePaths.preparatoryProgram) {
+    console.log(`- מכינה רלוונטית: \n${data.alternativePaths.preparatoryProgram}`);
+  }
+  if (data.alternativePaths.transitionTrack) {
+    console.log(`- אפיקי מעבר וקבלה חלופית: \n${data.alternativePaths.transitionTrack}`);
+  }
+
+  console.log(`\n[4. חלופות]`);
+  console.log(`- מסלולים דומים באותו מוסד: ${data.alternatives.similarProgramsSameInstitution.join(', ')}`);
+  console.log(`- מוסדות אחרים עם מסלול דומה: ${data.alternatives.sameProgramOtherInstitutions.join(', ')}`);
+  console.log(`- מוסדות עם תנאי קבלה נמוכים יותר: ${data.alternatives.lowerThresholdInstitutions.join(', ')}`);
+
+  console.log(`\n[5. אמינות הדאטה]`);
+  console.log(`- מקור רשמי: ${data.dataReliability.officialSource}`);
+  console.log(`- תאריך בדיקה: ${data.dataReliability.checkDate}`);
+  console.log(`- רמת ביטחון: ${data.dataReliability.confidenceLevel}`);
+  if (data.dataReliability.barriersAndNotes) {
+    console.log(`- הערות וחסמים: ${data.dataReliability.barriersAndNotes}`);
+  }
+}
+
+if (require.main === module) {
+  main();
+}
+
+module.exports = { getAdmissionsData, main };

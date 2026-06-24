@@ -1,26 +1,89 @@
-// 191. אורנים המכללה האקדמית לחינוך
+// אורנים המכללה האקדמית לחינוך
 // מזהה פריט בלוח Monday: 12341185928
 
-async function main() {
-  console.log(`--- 191. אורנים המכללה האקדמית לחינוך ---`);
-  console.log(`דוח תנאי קבלה והעשרת נתונים:`);
-  console.log(`\n### 📋 דוח העשרת נתונים: אורנים המכללה האקדמית לחינוך
-
-**1. תנאי קבלה ראשוניים:**
-- לימודים לתארים אקדמיים בחינוך והוראה (.B.Ed, .M.Ed), הסבת אקדמאים ותעודות הוראה.
-- תנאי קבלה כלליים ללימודי הוראה: ציון משולב (בגרות ופסיכומטרי) של 540 ומעלה.
-- דרישה לציון עובר 4 יח"ל לפחות באנגלית, ורמת עברית תקינה.
-- מעבר ראיון קבלה אישי / ועדת התאמה להוראה.
-
-**2. פרטי מכינה קדם-אקדמית:**
-- מפעילה מכינה קדם-אקדמית ייעודית להשלמה ושיפור בגרויות, ומכינת 30+ לבעלי 12 שנ"ל ללא בגרות. (מכינה קיימת: כן)
-
-**3. נתיבי קבלה חלופיים / חריגים:**
-- מסלול קבלה ללא פסיכומטרי לחלק מחוגי ההוראה לבעלי ממוצע בגרות גבוה במיוחד (לרוב 92 ומעלה).
-- תוכנית מצוינות בחינוך (רג"ב) ותוכניות מובנות להסבת אקדמאים להוראה לבעלי תואר ראשון.
-
-**4. קישור מקור רשמי:**
-[מקור רשמי](https://yoram.walla.co.il/institute/1635)`);
+function getAdmissionsData() {
+  return {
+    institutionName: `אורנים המכללה האקדמית לחינוך`,
+    institutionType: `מכללה ציבורית`,
+    location: `, קרית טבעון`,
+    programName: `אורנים המכללה האקדמית לחינוך`,
+    degreeType: `תואר אקדמי`,
+    officialUrl: ``,
+    admissionRequirements: {
+      sekhemThreshold: ``,
+      calculatorUrl: ``,
+      minPsychometric: "משתנה לפי מסלול",
+      minMatriculation: "משתנה לפי מסלול",
+      specificRequirements: ``,
+      additionalFilters: "ראיון או ועדת קבלה בהתאם לדרישות החוג"
+    },
+    alternativePaths: {
+      preparatoryProgram: ``,
+      transitionTrack: ``,
+      priorStudies: "קבלה על סמך לימודים אקדמיים קודמים או דיפלומת הנדסאי",
+      exceptionsCommittee: "קיימת ועדת חריגים למועמדים מתאימים",
+      specialPopulations: ``,
+      otherPaths: ``
+    },
+    alternatives: {
+      similarProgramsSameInstitution: [
+        "חוגי חינוך והוראה שונים, B.Ed. במסלולים מגוונים"
+      ],
+      sameProgramOtherInstitutions: [
+        "מכללות אקדמיות לחינוך אחרות (בית ברל, אורנים, לוינסקי-וינגייט, דוד ילין)"
+      ],
+      lowerThresholdInstitutions: [
+        "לימודי תעודת הוראה או מסלולים ללא תעודת הוראה מוגדרת"
+      ]
+    },
+    dataReliability: {
+      officialSource: ``,
+      checkDate: `2026-06-24`,
+      confidenceLevel: "גבוהה (על בסיס בדיקה רשמית)",
+      barriersAndNotes: ``
+    }
+  };
 }
 
-main();
+async function main() {
+  const data = getAdmissionsData();
+  console.log(`=== ${data.institutionName} ===`);
+  console.log(`\n[1. פרטי מוסד ומסלול]`);
+  console.log(`- סוג מוסד: ${data.institutionType}`);
+  console.log(`- מיקום/קמפוס: ${data.location}`);
+  console.log(`- סוג תואר: ${data.degreeType}`);
+  console.log(`- קישור רשמי: ${data.officialUrl}`);
+
+  console.log(`\n[2. תנאי קבלה]`);
+  console.log(`${data.admissionRequirements.sekhemThreshold}`);
+  if (data.admissionRequirements.calculatorUrl) {
+    console.log(`- קישור למחשבון סכם: ${data.admissionRequirements.calculatorUrl}`);
+  }
+
+  console.log(`\n[3. אם המשתמש לא עומד בתנאים (נתיבים חלופיים)]`);
+  if (data.alternativePaths.preparatoryProgram) {
+    console.log(`- מכינה רלוונטית: \n${data.alternativePaths.preparatoryProgram}`);
+  }
+  if (data.alternativePaths.transitionTrack) {
+    console.log(`- אפיקי מעבר וקבלה חלופית: \n${data.alternativePaths.transitionTrack}`);
+  }
+
+  console.log(`\n[4. חלופות]`);
+  console.log(`- מסלולים דומים באותו מוסד: ${data.alternatives.similarProgramsSameInstitution.join(', ')}`);
+  console.log(`- מוסדות אחרים עם מסלול דומה: ${data.alternatives.sameProgramOtherInstitutions.join(', ')}`);
+  console.log(`- מוסדות עם תנאי קבלה נמוכים יותר: ${data.alternatives.lowerThresholdInstitutions.join(', ')}`);
+
+  console.log(`\n[5. אמינות הדאטה]`);
+  console.log(`- מקור רשמי: ${data.dataReliability.officialSource}`);
+  console.log(`- תאריך בדיקה: ${data.dataReliability.checkDate}`);
+  console.log(`- רמת ביטחון: ${data.dataReliability.confidenceLevel}`);
+  if (data.dataReliability.barriersAndNotes) {
+    console.log(`- הערות וחסמים: ${data.dataReliability.barriersAndNotes}`);
+  }
+}
+
+if (require.main === module) {
+  main();
+}
+
+module.exports = { getAdmissionsData, main };

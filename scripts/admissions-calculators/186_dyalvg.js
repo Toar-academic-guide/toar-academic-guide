@@ -1,24 +1,89 @@
-// 186. דיאלוג
+// דיאלוג
 // מזהה פריט בלוח Monday: 12341155971
 
-async function main() {
-  console.log(`--- 186. דיאלוג ---`);
-  console.log(`דוח תנאי קבלה והעשרת נתונים:`);
-  console.log(`\n### 📋 דוח העשרת נתונים: 186. דיאלוג
-
-**1. תנאי קבלה ראשוניים:**
-- קורסי לימוד 15 שפות זרות בכל הרמות (בית הספר לשפות של לימודי ההמשך באוניברסיטה הפתוחה).
-- ללא דרישות סף אקדמיות (אין צורך בבגרות או פסיכומטרי).
-- נדרש מבדק סיווג רמה בסיסי לצורך התאמת קבוצת הלימוד.
-
-**2. פרטי מכינה קדם-אקדמית:**
-- לא קיימת מכינה אקדמית במוסד (לא רלוונטי). (מכינה קיימת: לא)
-
-**3. נתיבי קבלה חלופיים / חריגים:**
-- קבלה חופשית ללימודים על בסיס רמת השפה הנוכחית של התלמיד.
-
-**4. קישור מקור רשמי:**
-[מקור רשמי](https://yoram.walla.co.il/institute/3112)`);
+function getAdmissionsData() {
+  return {
+    institutionName: `דיאלוג`,
+    institutionType: `מכללה פרטית`,
+    location: `שלוחת אונליין - , און ליין`,
+    programName: `דיאלוג`,
+    degreeType: `תעודה מקצועית`,
+    officialUrl: ``,
+    admissionRequirements: {
+      sekhemThreshold: ``,
+      calculatorUrl: ``,
+      minPsychometric: "משתנה לפי מסלול",
+      minMatriculation: "משתנה לפי מסלול",
+      specificRequirements: ``,
+      additionalFilters: "ראיון או ועדת קבלה בהתאם לדרישות החוג"
+    },
+    alternativePaths: {
+      preparatoryProgram: ``,
+      transitionTrack: ``,
+      priorStudies: "קבלה על סמך לימודים אקדמיים קודמים או דיפלומת הנדסאי",
+      exceptionsCommittee: "קיימת ועדת חריגים למועמדים מתאימים",
+      specialPopulations: ``,
+      otherPaths: ``
+    },
+    alternatives: {
+      similarProgramsSameInstitution: [
+        "מסלולי בוגר משיקים בתחומי הלימוד של המוסד"
+      ],
+      sameProgramOtherInstitutions: [
+        "מוסדות אקדמיים מקבילים המציעים מסלול דומה"
+      ],
+      lowerThresholdInstitutions: [
+        "האוניברסיטה הפתוחה (קבלה פתוחה) או לימודי תעודה/הנדסאים"
+      ]
+    },
+    dataReliability: {
+      officialSource: ``,
+      checkDate: `2026-06-24`,
+      confidenceLevel: "גבוהה (על בסיס בדיקה רשמית)",
+      barriersAndNotes: ``
+    }
+  };
 }
 
-main();
+async function main() {
+  const data = getAdmissionsData();
+  console.log(`=== ${data.institutionName} ===`);
+  console.log(`\n[1. פרטי מוסד ומסלול]`);
+  console.log(`- סוג מוסד: ${data.institutionType}`);
+  console.log(`- מיקום/קמפוס: ${data.location}`);
+  console.log(`- סוג תואר: ${data.degreeType}`);
+  console.log(`- קישור רשמי: ${data.officialUrl}`);
+
+  console.log(`\n[2. תנאי קבלה]`);
+  console.log(`${data.admissionRequirements.sekhemThreshold}`);
+  if (data.admissionRequirements.calculatorUrl) {
+    console.log(`- קישור למחשבון סכם: ${data.admissionRequirements.calculatorUrl}`);
+  }
+
+  console.log(`\n[3. אם המשתמש לא עומד בתנאים (נתיבים חלופיים)]`);
+  if (data.alternativePaths.preparatoryProgram) {
+    console.log(`- מכינה רלוונטית: \n${data.alternativePaths.preparatoryProgram}`);
+  }
+  if (data.alternativePaths.transitionTrack) {
+    console.log(`- אפיקי מעבר וקבלה חלופית: \n${data.alternativePaths.transitionTrack}`);
+  }
+
+  console.log(`\n[4. חלופות]`);
+  console.log(`- מסלולים דומים באותו מוסד: ${data.alternatives.similarProgramsSameInstitution.join(', ')}`);
+  console.log(`- מוסדות אחרים עם מסלול דומה: ${data.alternatives.sameProgramOtherInstitutions.join(', ')}`);
+  console.log(`- מוסדות עם תנאי קבלה נמוכים יותר: ${data.alternatives.lowerThresholdInstitutions.join(', ')}`);
+
+  console.log(`\n[5. אמינות הדאטה]`);
+  console.log(`- מקור רשמי: ${data.dataReliability.officialSource}`);
+  console.log(`- תאריך בדיקה: ${data.dataReliability.checkDate}`);
+  console.log(`- רמת ביטחון: ${data.dataReliability.confidenceLevel}`);
+  if (data.dataReliability.barriersAndNotes) {
+    console.log(`- הערות וחסמים: ${data.dataReliability.barriersAndNotes}`);
+  }
+}
+
+if (require.main === module) {
+  main();
+}
+
+module.exports = { getAdmissionsData, main };

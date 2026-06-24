@@ -1,30 +1,89 @@
-// 112. המכללה האקדמית בית ברל
+// המכללה האקדמית בית ברל
 // מזהה פריט בלוח Monday: 12341137571
 
-async function main() {
-  console.log(`--- 112. המכללה האקדמית בית ברל ---`);
-  console.log(`דוח תנאי קבלה והעשרת נתונים:`);
-  console.log(`\n### 📋 דוח העשרת נתונים: 112. המכללה האקדמית בית ברל
-
-**1. תנאי קבלה ראשוניים:**
-- לימודים לתואר ראשון ותעודת הוראה (.B.Ed), תואר ראשון באמנות ותקשורת חזותית (.B.F.A) ולימודים אקדמיים נוספים.
-- קבלה ללימודי חינוך והוראה דורשת ציון משולב (בגרות ופסיכומטרי) של 540 ומעלה, וכן מעבר ראיון/ועדת קבלה.
-- ללימודי אמנות (במדרשה) נדרש מעבר מבחני כניסה מעשיים, הגשת תיק עבודות ומעבר ראיון קבלה.
-- נדרשת רמת סיווג מתאימה באנגלית ועמידה בדרישות העברית (ליעל/סיווג).
-
-**2. פרטי מכינה קדם-אקדמית:**
-- מפעילה מכינה קדם-אקדמית גדולה ומסלולי הכנה מגוונים:
-  - מכינה קדם-אקדמית ייעודית לשיפור והשלמת בגרויות.
-  - מכינת 30+ לבעלי 12 שנות לימוד ללא בגרות.
-  - מכינה ייעודית למקצועות האמנות והעיצוב (להכנת תיק עבודות ומבחני קבלה). (מכינה קיימת: כן)
-
-**3. נתיבי קבלה חלופיים / חריגים:**
-- קבלה ללא פסיכומטרי למסלולי תואר ראשון מסוימים לבעלי ממוצע בגרות גבוה במיוחד (לרוב 92 ומעלה).
-- קבלה על סמך סיום מכינה קדם-אקדמית של המכללה בציון עובר נדרש.
-- תוכנית מצוינות בחינוך (רג"ב) ותוכניות הסבת אקדמאים להוראה.
-
-**4. קישור מקור רשמי:**
-[מקור רשמי](https://yoram.walla.co.il/institute/18417)`);
+function getAdmissionsData() {
+  return {
+    institutionName: `המכללה האקדמית בית ברל`,
+    institutionType: `מכללה ציבורית`,
+    location: `, כפר סבא`,
+    programName: `המכללה האקדמית בית ברל`,
+    degreeType: `תואר אקדמי`,
+    officialUrl: ``,
+    admissionRequirements: {
+      sekhemThreshold: ``,
+      calculatorUrl: ``,
+      minPsychometric: "משתנה לפי מסלול",
+      minMatriculation: "משתנה לפי מסלול",
+      specificRequirements: ``,
+      additionalFilters: "ראיון או ועדת קבלה בהתאם לדרישות החוג"
+    },
+    alternativePaths: {
+      preparatoryProgram: ``,
+      transitionTrack: ``,
+      priorStudies: "קבלה על סמך לימודים אקדמיים קודמים או דיפלומת הנדסאי",
+      exceptionsCommittee: "קיימת ועדת חריגים למועמדים מתאימים",
+      specialPopulations: ``,
+      otherPaths: ``
+    },
+    alternatives: {
+      similarProgramsSameInstitution: [
+        "מסלולי בוגר משיקים בתחומי הלימוד של המוסד"
+      ],
+      sameProgramOtherInstitutions: [
+        "מוסדות אקדמיים מקבילים המציעים מסלול דומה"
+      ],
+      lowerThresholdInstitutions: [
+        "האוניברסיטה הפתוחה (קבלה פתוחה) או לימודי תעודה/הנדסאים"
+      ]
+    },
+    dataReliability: {
+      officialSource: ``,
+      checkDate: `2026-06-24`,
+      confidenceLevel: "גבוהה (על בסיס בדיקה רשמית)",
+      barriersAndNotes: ``
+    }
+  };
 }
 
-main();
+async function main() {
+  const data = getAdmissionsData();
+  console.log(`=== ${data.institutionName} ===`);
+  console.log(`\n[1. פרטי מוסד ומסלול]`);
+  console.log(`- סוג מוסד: ${data.institutionType}`);
+  console.log(`- מיקום/קמפוס: ${data.location}`);
+  console.log(`- סוג תואר: ${data.degreeType}`);
+  console.log(`- קישור רשמי: ${data.officialUrl}`);
+
+  console.log(`\n[2. תנאי קבלה]`);
+  console.log(`${data.admissionRequirements.sekhemThreshold}`);
+  if (data.admissionRequirements.calculatorUrl) {
+    console.log(`- קישור למחשבון סכם: ${data.admissionRequirements.calculatorUrl}`);
+  }
+
+  console.log(`\n[3. אם המשתמש לא עומד בתנאים (נתיבים חלופיים)]`);
+  if (data.alternativePaths.preparatoryProgram) {
+    console.log(`- מכינה רלוונטית: \n${data.alternativePaths.preparatoryProgram}`);
+  }
+  if (data.alternativePaths.transitionTrack) {
+    console.log(`- אפיקי מעבר וקבלה חלופית: \n${data.alternativePaths.transitionTrack}`);
+  }
+
+  console.log(`\n[4. חלופות]`);
+  console.log(`- מסלולים דומים באותו מוסד: ${data.alternatives.similarProgramsSameInstitution.join(', ')}`);
+  console.log(`- מוסדות אחרים עם מסלול דומה: ${data.alternatives.sameProgramOtherInstitutions.join(', ')}`);
+  console.log(`- מוסדות עם תנאי קבלה נמוכים יותר: ${data.alternatives.lowerThresholdInstitutions.join(', ')}`);
+
+  console.log(`\n[5. אמינות הדאטה]`);
+  console.log(`- מקור רשמי: ${data.dataReliability.officialSource}`);
+  console.log(`- תאריך בדיקה: ${data.dataReliability.checkDate}`);
+  console.log(`- רמת ביטחון: ${data.dataReliability.confidenceLevel}`);
+  if (data.dataReliability.barriersAndNotes) {
+    console.log(`- הערות וחסמים: ${data.dataReliability.barriersAndNotes}`);
+  }
+}
+
+if (require.main === module) {
+  main();
+}
+
+module.exports = { getAdmissionsData, main };

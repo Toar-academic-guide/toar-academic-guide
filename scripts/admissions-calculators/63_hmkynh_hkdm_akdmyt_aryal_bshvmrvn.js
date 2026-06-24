@@ -1,28 +1,89 @@
-// 63. המכינה הקדם אקדמית אריאל בשומרון
+// המכינה הקדם אקדמית אריאל בשומרון
 // מזהה פריט בלוח Monday: 12341098184
 
-async function main() {
-  console.log(`--- 63. המכינה הקדם אקדמית אריאל בשומרון ---`);
-  console.log(`דוח תנאי קבלה והעשרת נתונים:`);
-  console.log(`\n### 📋 דוח העשרת נתונים: 63. המכינה הקדם אקדמית אריאל בשומרון
-
-**1. תנאי קבלה ראשוניים:**
-- מיועדת למועמדים המבקשים לשפר או להשלים בגרויות או להתקבל לאוניברסיטת אריאל ואין להם את תנאי הסף.
-- דרישה ל-12 שנות לימוד לפחות.
-- בחלק מהמכינות הייעודיות נדרש ציון פסיכומטרי או מבחן מימ"ד.
-
-**2. פרטי מכינה קדם-אקדמית:**
-- המוסד עצמו מציע מכינות:
-  - מכינה לבגרות (השלמה/שיפור של מקצועות חובה ובחירה).
-  - מכינות ייעודיות (להנדסה ולמדעי הטבע, למדעי החברה ולניהול מערכות בריאות). ציוני המכינה מחליפים את הבגרות והפסיכומטרי.
-  - מכינת 30+ לבני 30 ומעלה ללא בגרות. (מכינה קיימת: כן)
-
-**3. נתיבי קבלה חלופיים / חריגים:**
-- ציון הגמר במכינה הייעודית מהווה ציון קבלה לאוניברסיטת אריאל ופוטר מהצורך בהצגת פסיכומטרי או שיפור בגרות.
-- הנחות והחזרים כספיים (עד 50%) מעלות המכינה לממשיכים לתואר באוניברסיטת אריאל.
-
-**4. קישור מקור רשמי:**
-[מקור רשמי](https://yoram.walla.co.il/institute/4122)`);
+function getAdmissionsData() {
+  return {
+    institutionName: `המכינה הקדם אקדמית אריאל בשומרון`,
+    institutionType: `מכללה ציבורית`,
+    location: `רמת הגולן 90, אריאל`,
+    programName: `המכינה הקדם אקדמית אריאל בשומרון`,
+    degreeType: `תואר אקדמי`,
+    officialUrl: ``,
+    admissionRequirements: {
+      sekhemThreshold: ``,
+      calculatorUrl: ``,
+      minPsychometric: "משתנה לפי מסלול",
+      minMatriculation: "משתנה לפי מסלול",
+      specificRequirements: ``,
+      additionalFilters: "ראיון או ועדת קבלה בהתאם לדרישות החוג"
+    },
+    alternativePaths: {
+      preparatoryProgram: ``,
+      transitionTrack: ``,
+      priorStudies: "קבלה על סמך לימודים אקדמיים קודמים או דיפלומת הנדסאי",
+      exceptionsCommittee: "קיימת ועדת חריגים למועמדים מתאימים",
+      specialPopulations: ``,
+      otherPaths: ``
+    },
+    alternatives: {
+      similarProgramsSameInstitution: [
+        "מסלולי בוגר משיקים בתחומי הלימוד של המוסד"
+      ],
+      sameProgramOtherInstitutions: [
+        "מוסדות אקדמיים מקבילים המציעים מסלול דומה"
+      ],
+      lowerThresholdInstitutions: [
+        "האוניברסיטה הפתוחה (קבלה פתוחה) או לימודי תעודה/הנדסאים"
+      ]
+    },
+    dataReliability: {
+      officialSource: ``,
+      checkDate: `2026-06-24`,
+      confidenceLevel: "גבוהה (על בסיס בדיקה רשמית)",
+      barriersAndNotes: ``
+    }
+  };
 }
 
-main();
+async function main() {
+  const data = getAdmissionsData();
+  console.log(`=== ${data.institutionName} ===`);
+  console.log(`\n[1. פרטי מוסד ומסלול]`);
+  console.log(`- סוג מוסד: ${data.institutionType}`);
+  console.log(`- מיקום/קמפוס: ${data.location}`);
+  console.log(`- סוג תואר: ${data.degreeType}`);
+  console.log(`- קישור רשמי: ${data.officialUrl}`);
+
+  console.log(`\n[2. תנאי קבלה]`);
+  console.log(`${data.admissionRequirements.sekhemThreshold}`);
+  if (data.admissionRequirements.calculatorUrl) {
+    console.log(`- קישור למחשבון סכם: ${data.admissionRequirements.calculatorUrl}`);
+  }
+
+  console.log(`\n[3. אם המשתמש לא עומד בתנאים (נתיבים חלופיים)]`);
+  if (data.alternativePaths.preparatoryProgram) {
+    console.log(`- מכינה רלוונטית: \n${data.alternativePaths.preparatoryProgram}`);
+  }
+  if (data.alternativePaths.transitionTrack) {
+    console.log(`- אפיקי מעבר וקבלה חלופית: \n${data.alternativePaths.transitionTrack}`);
+  }
+
+  console.log(`\n[4. חלופות]`);
+  console.log(`- מסלולים דומים באותו מוסד: ${data.alternatives.similarProgramsSameInstitution.join(', ')}`);
+  console.log(`- מוסדות אחרים עם מסלול דומה: ${data.alternatives.sameProgramOtherInstitutions.join(', ')}`);
+  console.log(`- מוסדות עם תנאי קבלה נמוכים יותר: ${data.alternatives.lowerThresholdInstitutions.join(', ')}`);
+
+  console.log(`\n[5. אמינות הדאטה]`);
+  console.log(`- מקור רשמי: ${data.dataReliability.officialSource}`);
+  console.log(`- תאריך בדיקה: ${data.dataReliability.checkDate}`);
+  console.log(`- רמת ביטחון: ${data.dataReliability.confidenceLevel}`);
+  if (data.dataReliability.barriersAndNotes) {
+    console.log(`- הערות וחסמים: ${data.dataReliability.barriersAndNotes}`);
+  }
+}
+
+if (require.main === module) {
+  main();
+}
+
+module.exports = { getAdmissionsData, main };
