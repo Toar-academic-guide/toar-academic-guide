@@ -30,6 +30,7 @@ interface AuthContextValue {
   user: User | null;
   supabase: SupabaseClient | null;
   signInWithPassword: (email: string, password: string) => Promise<AuthResult>;
+  signInWithGoogle: () => Promise<AuthResult>;
   signUp: (email: string, password: string, identity: SignUpProfileIdentity) => Promise<AuthResult>;
   signOut: () => Promise<void>;
 }
@@ -88,6 +89,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         return { error: error ? translateAuthError(error) : null };
+      },
+      async signInWithGoogle() {
+        if (!supabase) {
+          return { error: 'ההתחברות עדיין לא זמינה.' };
+        }
+
+        const { publicAppUrl } = getSupabaseEnv();
+        const redirectTo = buildOAuthRedirectTo(
+          publicAppUrl,
+          typeof window === 'undefined' ? null : window.location.origin
+        );
+
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: redirectTo ? { redirectTo } : undefined,
+        });
+
+        return {
+          error: error ? 'לא הצלחנו להתחיל את ההתחברות עם Google. נסה שוב.' : null,
+        };
       },
       async signUp(email, password, identity) {
         if (!supabase) {
@@ -165,7 +186,7 @@ interface SignUpDataLike {
 }
 
 export function buildEmailRedirectTo(configuredAppUrl: string | null, browserOrigin: string | null) {
-  const candidate = configuredAppUrl?.trim() || browserOrigin?.trim();
+  const candidate = resolveRedirectOrigin(configuredAppUrl, browserOrigin);
   if (!candidate) {
     return undefined;
   }
@@ -175,6 +196,23 @@ export function buildEmailRedirectTo(configuredAppUrl: string | null, browserOri
   } catch {
     return undefined;
   }
+}
+
+export function buildOAuthRedirectTo(configuredAppUrl: string | null, browserOrigin: string | null) {
+  const candidate = resolveRedirectOrigin(configuredAppUrl, browserOrigin);
+  if (!candidate) {
+    return undefined;
+  }
+
+  try {
+    return new URL('/auth/callback', candidate).toString();
+  } catch {
+    return undefined;
+  }
+}
+
+function resolveRedirectOrigin(configuredAppUrl: string | null, browserOrigin: string | null) {
+  return configuredAppUrl?.trim() || browserOrigin?.trim() || undefined;
 }
 
 export function resolveSignupDuplicateMessage(data: SignUpDataLike | undefined): string | null {

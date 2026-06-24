@@ -69,14 +69,16 @@ export function useUserProfile(): UseUserProfileResult {
       try {
         let nextProfile = await fetchProfileSnapshot();
         const storedProfile = readStoredProfile();
+        const socialIdentityDraft = deriveSocialIdentityDraft(nextProfile, user.user_metadata);
+        const draftToMerge = mergeProfileDraftSources(storedProfile, socialIdentityDraft);
         const migrationKey = `${MIGRATION_KEY_PREFIX}${user.id}`;
 
         if (
-          storedProfile &&
-          hasMeaningfulDraft(storedProfile) &&
+          draftToMerge &&
+          hasMeaningfulDraft(draftToMerge) &&
           window.localStorage.getItem(migrationKey) !== '1'
         ) {
-          nextProfile = await putProfileSnapshot(storedProfile, 'merge_local_draft');
+          nextProfile = await putProfileSnapshot(draftToMerge, 'merge_local_draft');
           window.localStorage.setItem(migrationKey, '1');
         }
         clearStoredProfile();
@@ -222,6 +224,43 @@ export function saveUserProfileIdentityDraft(identity: Pick<UserProfile, 'firstN
   writeStoredProfile(nextProfile);
 }
 
+export function deriveSocialIdentityDraft(
+  profile: UserProfile,
+  metadata: Record<string, unknown> | undefined
+): Partial<UserProfile> | null {
+  const firstName = profile.firstName?.trim() ? undefined : readMetadataText(metadata, 'given_name');
+  const lastName = profile.lastName?.trim() ? undefined : readMetadataText(metadata, 'family_name');
+
+  if (!firstName && !lastName) {
+    return null;
+  }
+
+  return {
+    geographicPreference: profile.geographicPreference,
+    ...(firstName ? { firstName } : {}),
+    ...(lastName ? { lastName } : {}),
+  };
+}
+
+export function mergeProfileDraftSources(
+  storedProfile: UserProfile | null,
+  socialIdentityDraft: Partial<UserProfile> | null
+): UserProfile | null {
+  if (!storedProfile && !socialIdentityDraft) {
+    return null;
+  }
+
+  return {
+    ...(storedProfile ?? DEFAULT_PROFILE),
+    ...(socialIdentityDraft?.firstName && !storedProfile?.firstName?.trim()
+      ? { firstName: socialIdentityDraft.firstName }
+      : {}),
+    ...(socialIdentityDraft?.lastName && !storedProfile?.lastName?.trim()
+      ? { lastName: socialIdentityDraft.lastName }
+      : {}),
+  };
+}
+
 function writeStoredProfile(profile: UserProfile) {
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
@@ -269,6 +308,16 @@ function hasMeaningfulDraft(profile: UserProfile): boolean {
     Boolean(profile.academicScores?.bagrut?.weightedAverage) ||
     (profile.savedProgramIds?.length ?? 0) > 0
   );
+}
+
+function readMetadataText(metadata: Record<string, unknown> | undefined, key: string) {
+  const value = metadata?.[key];
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const trimmed = value.trim();
+  return trimmed ? trimmed : undefined;
 }
 
 async function fetchProfileSnapshot() {

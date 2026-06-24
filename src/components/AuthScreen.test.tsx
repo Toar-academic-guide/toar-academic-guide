@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 var mockAuth = {
   configured: true,
+  signInWithGoogle: vi.fn(),
   signInWithPassword: vi.fn(),
   signUp: vi.fn(),
 };
@@ -23,9 +24,18 @@ describe('AuthScreen', () => {
   beforeEach(() => {
     mockAuth = {
       configured: true,
+      signInWithGoogle: vi.fn().mockResolvedValue({ error: null }),
       signInWithPassword: vi.fn().mockResolvedValue({ error: null }),
       signUp: vi.fn().mockResolvedValue({ error: null }),
     };
+  });
+
+  it('starts Google sign-in from the secondary auth action', async () => {
+    render(<AuthScreen onBack={vi.fn()} onSuccess={vi.fn()} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'המשך עם Google' }));
+
+    await waitFor(() => expect(mockAuth.signInWithGoogle).toHaveBeenCalledTimes(1));
   });
 
   it('passes names to signup and shows the confirmation handoff without logging in', async () => {
@@ -85,5 +95,13 @@ describe('AuthScreen', () => {
     fireEvent.click(screen.getByRole('button', { name: 'כבר יש לך חשבון? התחבר' }));
 
     expect(screen.queryByText('כבר קיים חשבון עם האימייל הזה. נסה להתחבר במקום להירשם שוב.')).toBeNull();
+  });
+
+  it('disables the Google action when auth is not configured', () => {
+    mockAuth.configured = false;
+
+    render(<AuthScreen onBack={vi.fn()} onSuccess={vi.fn()} />);
+
+    expect(screen.getByRole('button', { name: 'המשך עם Google' })).toHaveProperty('disabled', true);
   });
 });
