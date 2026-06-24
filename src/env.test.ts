@@ -88,7 +88,10 @@ describe('requireOpsDatabaseUrl', () => {
 
   it('requires the dedicated operational database URL', () => {
     vi.stubEnv('NODE_ENV', 'production');
-    vi.stubEnv('DATABASE_URL', 'postgresql://app_runtime:secret@db.internal.example.com:5432/postgres');
+    vi.stubEnv(
+      'DATABASE_URL',
+      'postgresql://app_runtime:secret@db.internal.example.com:5432/postgres',
+    );
 
     expect(() => requireOpsDatabaseUrl()).toThrow(/Missing OPS_DATABASE_URL/i);
   });
@@ -115,7 +118,10 @@ describe('requireOpsDatabaseUrl', () => {
 
   it('allows non-Supabase local URLs outside production', () => {
     vi.stubEnv('NODE_ENV', 'development');
-    vi.stubEnv('OPS_DATABASE_URL', 'postgresql://postgres:secret@localhost:5432/toar_academic_guide');
+    vi.stubEnv(
+      'OPS_DATABASE_URL',
+      'postgresql://postgres:secret@localhost:5432/toar_academic_guide',
+    );
 
     expect(requireOpsDatabaseUrl()).toContain('localhost:5432');
   });

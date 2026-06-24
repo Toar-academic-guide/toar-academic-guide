@@ -10,20 +10,13 @@ vi.mock('@/db/opsClient', () => ({
 
 vi.mock('server-only', () => ({}));
 
-import {
-  getDataHealthReport,
-  summarizeDataHealthRows,
-  type DataHealthRows,
-} from './queries';
+import { getDataHealthReport, summarizeDataHealthRows, type DataHealthRows } from './queries';
 
 const now = new Date('2026-06-24T18:00:00.000Z');
 
 function baseRows(overrides: Partial<DataHealthRows> = {}): DataHealthRows {
   return {
-    institutions: [
-      { id: 'tau' },
-      { id: 'technion' },
-    ],
+    institutions: [{ id: 'tau' }, { id: 'technion' }],
     programs: [
       { id: 'tau_cs', name: 'Computer Science', admissionType: 'sekhem' },
       { id: 'tau_law', name: 'Law', admissionType: 'requirements' },
@@ -107,7 +100,7 @@ describe('summarizeDataHealthRows', () => {
           },
         ],
       }),
-      now
+      now,
     );
 
     expect(report.coverage.missingRequirementSources).toEqual([
@@ -156,7 +149,7 @@ describe('summarizeDataHealthRows', () => {
           },
         ],
       }),
-      now
+      now,
     );
 
     expect(report.ingestion.jobsByStatus).toMatchObject({
@@ -209,7 +202,7 @@ describe('summarizeDataHealthRows', () => {
           },
         ],
       }),
-      now
+      now,
     );
 
     expect(report.reviewQueue.pendingCount).toBe(2);
@@ -233,7 +226,7 @@ describe('summarizeDataHealthRows', () => {
         sourceUrls: [],
         universityCalculatorConfigs: [],
       }),
-      now
+      now,
     );
 
     expect(report.readiness.counts.programs).toBe(0);

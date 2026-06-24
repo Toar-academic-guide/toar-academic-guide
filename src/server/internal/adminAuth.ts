@@ -30,7 +30,7 @@ export function parseInternalAdminEmails(value: string | undefined): Set<string>
     (value ?? '')
       .split(',')
       .map((email) => normalizeEmail(email))
-      .filter((email): email is string => Boolean(email))
+      .filter((email): email is string => Boolean(email)),
   );
 }
 

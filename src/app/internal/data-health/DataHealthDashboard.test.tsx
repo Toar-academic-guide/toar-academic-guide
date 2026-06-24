@@ -100,7 +100,7 @@ describe('DataHealthDashboard', () => {
 
   it('prioritizes critical operational risks before lower-priority totals', () => {
     const { container } = render(
-      <DataHealthDashboard report={reportWithRisks()} adminEmail="operator@example.com" />
+      <DataHealthDashboard report={reportWithRisks()} adminEmail="operator@example.com" />,
     );
 
     const text = container.textContent ?? '';

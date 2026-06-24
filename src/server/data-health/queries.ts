@@ -162,7 +162,7 @@ export async function getDataHealthReport(now = new Date()): Promise<DataHealthR
 
 export function summarizeDataHealthRows(
   rows: DataHealthRows,
-  now = new Date()
+  now = new Date(),
 ): DataHealthReadyReport {
   const readiness = evaluateCatalogueReadiness({
     institutions: rows.institutions,
@@ -294,7 +294,7 @@ function buildCoverageSummary(rows: DataHealthRows): DataHealthReadyReport['cove
   const sourceRequirementIds = new Set(rows.sourceUrls.map((row) => row.admissionRequirementId));
   const sourceProgramIds = new Set(rows.sourceUrls.map((row) => row.programId));
   const relationByProgramId = new Map(
-    rows.programInstitutions.map((row) => [row.programId, row.institutionId])
+    rows.programInstitutions.map((row) => [row.programId, row.institutionId]),
   );
 
   const missingRequirementSources = rows.admissionRequirements
@@ -320,9 +320,7 @@ function buildCoverageSummary(rows: DataHealthRows): DataHealthReadyReport['cove
   };
 }
 
-function buildIngestionSummary(
-  rows: IngestionJobRow[]
-): DataHealthReadyReport['ingestion'] {
+function buildIngestionSummary(rows: IngestionJobRow[]): DataHealthReadyReport['ingestion'] {
   const activeStatuses = new Set<IngestionJobStatus>(['pending', 'running', 'needs_review']);
 
   return {
@@ -342,9 +340,7 @@ function buildIngestionSummary(
   };
 }
 
-function buildReviewQueueSummary(
-  rows: ReviewItemRow[]
-): DataHealthReadyReport['reviewQueue'] {
+function buildReviewQueueSummary(rows: ReviewItemRow[]): DataHealthReadyReport['reviewQueue'] {
   const pendingItems = rows.filter((row) => row.status === 'pending');
   const oldestPendingItem =
     pendingItems
@@ -364,11 +360,14 @@ function buildReviewQueueSummary(
 }
 
 function countBy<T, K extends string>(rows: T[], getKey: (row: T) => K): Record<K, number> {
-  return rows.reduce<Record<K, number>>((counts, row) => {
-    const key = getKey(row);
-    counts[key] = (counts[key] ?? 0) + 1;
-    return counts;
-  }, {} as Record<K, number>);
+  return rows.reduce<Record<K, number>>(
+    (counts, row) => {
+      const key = getKey(row);
+      counts[key] = (counts[key] ?? 0) + 1;
+      return counts;
+    },
+    {} as Record<K, number>,
+  );
 }
 
 function serializeIngestionJob(row: IngestionJobRow): IngestionJobSummary {

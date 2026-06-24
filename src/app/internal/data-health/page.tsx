@@ -36,9 +36,6 @@ export default async function DataHealthPage() {
   }
 
   return (
-    <DataHealthDashboard
-      adminEmail={authorization.user.email ?? 'unknown admin'}
-      report={report}
-    />
+    <DataHealthDashboard adminEmail={authorization.user.email ?? 'unknown admin'} report={report} />
   );
 }

@@ -9,10 +9,7 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
   const criticalItems = buildCriticalItems(report);
 
   return (
-    <main
-      dir="ltr"
-      className="min-h-screen bg-[#f5f0e8] px-5 py-6 text-slate-950 sm:px-8 lg:px-12"
-    >
+    <main dir="ltr" className="min-h-screen bg-[#f5f0e8] px-5 py-6 text-slate-950 sm:px-8 lg:px-12">
       <div className="mx-auto flex max-w-7xl flex-col gap-8">
         <header className="overflow-hidden rounded-[2rem] border border-slate-950/10 bg-[#101820] p-8 text-white shadow-[0_24px_80px_rgba(16,24,32,0.18)]">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
@@ -20,9 +17,7 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
               <p className="text-sm font-semibold uppercase tracking-[0.35em] text-amber-200">
                 Internal
               </p>
-              <h1 className="mt-3 text-4xl font-black tracking-tight sm:text-6xl">
-                Data Health
-              </h1>
+              <h1 className="mt-3 text-4xl font-black tracking-tight sm:text-6xl">Data Health</h1>
               <p className="mt-4 max-w-2xl text-base text-slate-200 sm:text-lg">
                 Read-only operating view for catalogue readiness, source coverage, ingestion
                 pipeline health, and review queue backlog.
@@ -176,7 +171,7 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
                   {
                     id: report.reviewQueue.oldestPendingItem.id,
                     detail: `${report.reviewQueue.oldestPendingItem.targetField} since ${formatDateTime(
-                      report.reviewQueue.oldestPendingItem.createdAt
+                      report.reviewQueue.oldestPendingItem.createdAt,
                     )}`,
                   },
                 ]}
@@ -284,7 +279,7 @@ function buildCriticalItems(report: DataHealthReadyReport): string[] {
   return [
     ...report.readiness.issues,
     ...report.coverage.missingRequirementSources.map(
-      (row) => `Missing source URL for ${row.admissionRequirementId}`
+      (row) => `Missing source URL for ${row.admissionRequirementId}`,
     ),
     ...report.ingestion.recentFailures.map((job) => `Failed ingestion job ${job.id}`),
     ...(report.reviewQueue.oldestPendingItem

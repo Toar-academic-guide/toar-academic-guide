@@ -15,7 +15,7 @@ import { getInternalAdminAuthorization, parseInternalAdminEmails } from './admin
 describe('parseInternalAdminEmails', () => {
   it('normalizes case and whitespace while ignoring blank entries', () => {
     expect(parseInternalAdminEmails(' Admin@Example.com, ,owner@example.com  ')).toEqual(
-      new Set(['admin@example.com', 'owner@example.com'])
+      new Set(['admin@example.com', 'owner@example.com']),
     );
   });
 
