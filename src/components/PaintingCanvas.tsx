@@ -26,7 +26,9 @@ export default function PaintingCanvas({ className }: Props) {
       const d = imageData.data;
 
       for (let i = 0; i < d.length; i += 4) {
-        const r = d[i], g = d[i + 1], b = d[i + 2];
+        const r = d[i],
+          g = d[i + 1],
+          b = d[i + 2];
         const max = Math.max(r, g, b);
         const min = Math.min(r, g, b);
         const chroma = max - min;
@@ -44,7 +46,10 @@ export default function PaintingCanvas({ className }: Props) {
 
       ctx.putImageData(imageData, 0, 0);
 
-      let minX = canvas.width, minY = canvas.height, maxX = 0, maxY = 0;
+      let minX = canvas.width,
+        minY = canvas.height,
+        maxX = 0,
+        maxY = 0;
       for (let y = 0; y < canvas.height; y++) {
         for (let x = 0; x < canvas.width; x++) {
           if (d[(y * canvas.width + x) * 4 + 3] > 12) {

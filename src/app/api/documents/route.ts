@@ -6,7 +6,13 @@ import { eq, and } from 'drizzle-orm';
 export const dynamic = 'force-dynamic';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-const ALLOWED_MIME_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+const ALLOWED_MIME_TYPES = [
+  'application/pdf',
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+  'image/gif',
+];
 
 export async function POST(request: Request) {
   try {
@@ -20,7 +26,11 @@ export async function POST(request: Request) {
     }
 
     if (kind !== 'psychometric' && kind !== 'bagrut') {
-      throw new ApiRouteError(400, 'INVALID_DOCUMENT_KIND', "Document kind must be 'psychometric' or 'bagrut'.");
+      throw new ApiRouteError(
+        400,
+        'INVALID_DOCUMENT_KIND',
+        "Document kind must be 'psychometric' or 'bagrut'.",
+      );
     }
 
     if (file.size > MAX_FILE_SIZE) {
@@ -36,7 +46,11 @@ export async function POST(request: Request) {
 
     const supabase = await createSupabaseServerClient();
     if (!supabase) {
-      throw new ApiRouteError(503, 'SUPABASE_STORAGE_UNAVAILABLE', 'Supabase storage is not configured.');
+      throw new ApiRouteError(
+        503,
+        'SUPABASE_STORAGE_UNAVAILABLE',
+        'Supabase storage is not configured.',
+      );
     }
 
     const uuid = crypto.randomUUID();
@@ -55,7 +69,11 @@ export async function POST(request: Request) {
       });
 
     if (uploadError) {
-      throw new ApiRouteError(500, 'STORAGE_UPLOAD_FAILED', `Failed to upload file to storage: ${uploadError.message}`);
+      throw new ApiRouteError(
+        500,
+        'STORAGE_UPLOAD_FAILED',
+        `Failed to upload file to storage: ${uploadError.message}`,
+      );
     }
 
     const db = getDb();
@@ -68,20 +86,13 @@ export async function POST(request: Request) {
       const [existingDoc] = await tx
         .select()
         .from(uploadedDocuments)
-        .where(
-          and(
-            eq(uploadedDocuments.userId, userId),
-            eq(uploadedDocuments.kind, kind)
-          )
-        )
+        .where(and(eq(uploadedDocuments.userId, userId), eq(uploadedDocuments.kind, kind)))
         .limit(1);
 
       if (existingDoc) {
         oldStoragePathToDelete = existingDoc.storagePath;
         // Delete the old record
-        await tx
-          .delete(uploadedDocuments)
-          .where(eq(uploadedDocuments.id, existingDoc.id));
+        await tx.delete(uploadedDocuments).where(eq(uploadedDocuments.id, existingDoc.id));
       }
 
       // Insert the new record
@@ -104,7 +115,10 @@ export async function POST(request: Request) {
         .remove([oldStoragePathToDelete]);
 
       if (deleteError) {
-        console.warn(`[documents API] Warning: failed to delete old storage file at ${oldStoragePathToDelete}:`, deleteError.message);
+        console.warn(
+          `[documents API] Warning: failed to delete old storage file at ${oldStoragePathToDelete}:`,
+          deleteError.message,
+        );
       }
     }
 
@@ -132,19 +146,18 @@ export async function DELETE(request: Request) {
     }
 
     if (kind !== 'psychometric' && kind !== 'bagrut') {
-      throw new ApiRouteError(400, 'INVALID_DOCUMENT_KIND', "Document kind must be 'psychometric' or 'bagrut'.");
+      throw new ApiRouteError(
+        400,
+        'INVALID_DOCUMENT_KIND',
+        "Document kind must be 'psychometric' or 'bagrut'.",
+      );
     }
 
     const db = getDb();
     const [existingDoc] = await db
       .select()
       .from(uploadedDocuments)
-      .where(
-        and(
-          eq(uploadedDocuments.userId, userId),
-          eq(uploadedDocuments.kind, kind)
-        )
-      )
+      .where(and(eq(uploadedDocuments.userId, userId), eq(uploadedDocuments.kind, kind)))
       .limit(1);
 
     if (!existingDoc) {
@@ -162,7 +175,10 @@ export async function DELETE(request: Request) {
         .remove([existingDoc.storagePath]);
 
       if (deleteError) {
-        console.warn(`[documents API] Warning: failed to delete storage file at ${existingDoc.storagePath}:`, deleteError.message);
+        console.warn(
+          `[documents API] Warning: failed to delete storage file at ${existingDoc.storagePath}:`,
+          deleteError.message,
+        );
       }
     }
 
@@ -194,7 +210,7 @@ class ApiRouteError extends Error {
   constructor(
     readonly status: number,
     readonly code: string,
-    message: string
+    message: string,
   ) {
     super(message);
   }
@@ -209,7 +225,7 @@ function toErrorResponse(error: unknown) {
           message: error.message,
         },
       },
-      { status: error.status }
+      { status: error.status },
     );
   }
 
@@ -222,7 +238,7 @@ function toErrorResponse(error: unknown) {
         message,
       },
     },
-    { status: 500 }
+    { status: 500 },
   );
 }
 

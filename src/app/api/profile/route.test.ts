@@ -131,7 +131,7 @@ describe('profile API route', () => {
             savedProgramIds: [' tau_cs '],
           },
         }),
-      })
+      }),
     );
 
     expect(response.status).toBe(200);
@@ -150,7 +150,7 @@ describe('profile API route', () => {
         distinctId: 'user-123',
         event: 'server_profile_updated',
         properties: { mode: 'replace' },
-      })
+      }),
     );
   });
 
@@ -176,7 +176,7 @@ describe('profile API route', () => {
           },
           mode: 'merge_local_draft',
         }),
-      })
+      }),
     );
 
     expect(response.status).toBe(200);
@@ -276,7 +276,7 @@ describe('profile API route', () => {
             geographicPreference: 'center',
           },
         }),
-      })
+      }),
     );
 
     expect(response.status).toBe(500);

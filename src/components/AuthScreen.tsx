@@ -17,7 +17,7 @@ interface AuthScreenProps {
 type AuthMode = 'login' | 'signup';
 
 export default function AuthScreen({ onBack, onSuccess }: AuthScreenProps) {
-  const { configured, signInWithPassword, signUp } = useAuth();
+  const { configured, signInWithGoogle, signInWithPassword, signUp } = useAuth();
   const [mode, setMode] = useState<AuthMode>('login');
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
@@ -75,6 +75,19 @@ export default function AuthScreen({ onBack, onSuccess }: AuthScreenProps) {
 
     posthog.capture('user_signed_in', { email: email.trim() });
     onSuccess();
+  }
+
+  async function handleGoogleSignIn() {
+    setError(null);
+    setInfo(null);
+    setSubmitting(true);
+
+    const result = await signInWithGoogle();
+    setSubmitting(false);
+
+    if (result.error) {
+      setError(result.error);
+    }
   }
 
   return (
@@ -164,11 +177,15 @@ export default function AuthScreen({ onBack, onSuccess }: AuthScreenProps) {
           </label>
 
           {error ? (
-            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">{error}</p>
+            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+              {error}
+            </p>
           ) : null}
 
           {info ? (
-            <p className="rounded-lg bg-green-50 px-3 py-2 text-sm font-medium text-green-700">{info}</p>
+            <p className="rounded-lg bg-green-50 px-3 py-2 text-sm font-medium text-green-700">
+              {info}
+            </p>
           ) : null}
 
           <NeoButton
@@ -178,7 +195,24 @@ export default function AuthScreen({ onBack, onSuccess }: AuthScreenProps) {
             className="mt-1 h-12 w-full text-base"
             ariaLabel={mode === 'login' ? 'התחבר' : 'צור חשבון'}
           >
-            {submitting ? <Loader2 size={18} className="animate-spin" /> : mode === 'login' ? 'התחבר' : 'צור חשבון'}
+            {submitting ? (
+              <Loader2 size={18} className="animate-spin" />
+            ) : mode === 'login' ? (
+              'התחבר'
+            ) : (
+              'צור חשבון'
+            )}
+          </NeoButton>
+
+          <NeoButton
+            type="button"
+            variant="ghost"
+            disabled={submitting || !configured}
+            onClick={() => void handleGoogleSignIn()}
+            className="h-12 w-full text-base"
+            ariaLabel="המשך עם Google"
+          >
+            {submitting ? <Loader2 size={18} className="animate-spin" /> : 'המשך עם Google'}
           </NeoButton>
         </form>
 

@@ -36,7 +36,7 @@ describe('user profile serializers', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       },
-      [{ programId: 'tau_cs' }]
+      [{ programId: 'tau_cs' }],
     );
 
     expect(snapshot).toEqual({
@@ -104,7 +104,7 @@ describe('user profile serializers', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       },
-      []
+      [],
     );
 
     expect(snapshot).toEqual({
@@ -149,7 +149,7 @@ describe('user profile serializers', () => {
           sizeBytes: 102400,
           uploadedAt: new Date(),
         },
-      ]
+      ],
     );
 
     expect(snapshot).toEqual({
@@ -203,7 +203,7 @@ describe('user profile serializers', () => {
           sizeBytes: 4096,
           uploadedAt: new Date(),
         },
-      ]
+      ],
     );
 
     expect(snapshot.uploadedDocuments).toEqual([]);
@@ -228,9 +228,7 @@ describe('getUserProfileSnapshot', () => {
       bagrutWeightedAverage: 105,
     };
 
-    const savedProgramRows = [
-      { programId: 'huji_cs' },
-    ];
+    const savedProgramRows = [{ programId: 'huji_cs' }];
 
     const documentRows = [
       {

@@ -51,15 +51,13 @@ export default function ScoreForm({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!validate()) return;
-    onSubmit(
-      { psychometric: Number(psychometric), bagrut: Number(bagrut) },
-      degreeId,
-      { hasMath5, hasPhysics5 }
-    );
+    onSubmit({ psychometric: Number(psychometric), bagrut: Number(bagrut) }, degreeId, {
+      hasMath5,
+      hasPhysics5,
+    });
   }
 
-  const inputBase =
-    'rounded-xl border px-4 py-2.5 text-sm outline-none transition focus:ring-2';
+  const inputBase = 'rounded-xl border px-4 py-2.5 text-sm outline-none transition focus:ring-2';
   const inputNormal = 'border-gray-200 bg-white focus:border-blue-400 focus:ring-blue-100';
   const inputError = 'border-red-400 bg-red-50 focus:ring-red-100';
 
@@ -81,9 +79,7 @@ export default function ScoreForm({
             onChange={(e) => setPsychometric(e.target.value)}
             className={`${inputBase} ${errors.psychometric ? inputError : inputNormal}`}
           />
-          {errors.psychometric && (
-            <p className="text-xs text-red-600">{errors.psychometric}</p>
-          )}
+          {errors.psychometric && <p className="text-xs text-red-600">{errors.psychometric}</p>}
         </div>
 
         {/* Bagrut */}
@@ -136,16 +132,18 @@ export default function ScoreForm({
               סכם הנדסה ומדעים מדויקים — אוניברסיטת תל אביב
             </p>
             <p className="mt-0.5 text-xs text-blue-700">
-              עבור תואר זה, אוניברסיטת תל אביב מעניקה בונוס ישיר לסכם על פי מקצועות הבגרות שלמדת ב-5 יחידות.
-              לחץ על המקצועות הרלוונטיים כדי לראות את השפעתם על הסיכויים.
+              עבור תואר זה, אוניברסיטת תל אביב מעניקה בונוס ישיר לסכם על פי מקצועות הבגרות שלמדת ב-5
+              יחידות. לחץ על המקצועות הרלוונטיים כדי לראות את השפעתם על הסיכויים.
             </p>
           </div>
 
           <div className="flex flex-wrap gap-3">
             {/* Math 5 */}
-            <label className="flex cursor-pointer items-center gap-2.5 rounded-xl border-2 bg-white px-4 py-2.5 text-sm font-medium transition select-none
+            <label
+              className="flex cursor-pointer items-center gap-2.5 rounded-xl border-2 bg-white px-4 py-2.5 text-sm font-medium transition select-none
               has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-600 has-[:checked]:text-white
-              border-gray-200 text-gray-700 hover:border-blue-300">
+              border-gray-200 text-gray-700 hover:border-blue-300"
+            >
               <input
                 type="checkbox"
                 className="sr-only"
@@ -159,9 +157,11 @@ export default function ScoreForm({
             </label>
 
             {/* Physics 5 */}
-            <label className="flex cursor-pointer items-center gap-2.5 rounded-xl border-2 bg-white px-4 py-2.5 text-sm font-medium transition select-none
+            <label
+              className="flex cursor-pointer items-center gap-2.5 rounded-xl border-2 bg-white px-4 py-2.5 text-sm font-medium transition select-none
               has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-600 has-[:checked]:text-white
-              border-gray-200 text-gray-700 hover:border-blue-300">
+              border-gray-200 text-gray-700 hover:border-blue-300"
+            >
               <input
                 type="checkbox"
                 className="sr-only"

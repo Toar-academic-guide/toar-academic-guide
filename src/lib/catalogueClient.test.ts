@@ -23,10 +23,10 @@ describe('catalogueClient', () => {
             catalogueSource: 'database',
           },
         }),
-      })
+      }),
     );
 
-    await expect(fetchCataloguePrograms()).rejects.toMatchObject<CatalogueApiError>({
+    await expect(fetchCataloguePrograms()).rejects.toMatchObject({
       code: 'CATALOGUE_DATABASE_NOT_READY',
       message: 'Catalogue database is not ready for runtime traffic.',
       details: ['Institutions missing calculator configs: tau'],
@@ -35,5 +35,29 @@ describe('catalogueClient', () => {
         catalogueSource: 'database',
       },
     });
+  });
+
+  it('ignores additive measurement metadata on successful responses', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          data: [{ id: 'computer_science', name: 'Computer Science' }],
+          meta: {
+            catalogueSourceMode: 'database',
+            catalogueSource: 'database',
+            catalogueSnapshotCacheStatus: 'hit',
+            durationMs: 12,
+            responseBytes: 256,
+            programCount: 1,
+          },
+        }),
+      }),
+    );
+
+    await expect(fetchCataloguePrograms()).resolves.toEqual([
+      { id: 'computer_science', name: 'Computer Science' },
+    ]);
   });
 });

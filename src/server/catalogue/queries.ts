@@ -29,6 +29,7 @@ import type {
   CatalogueInstitution,
   CatalogueProgram,
   CatalogueSource,
+  CatalogueSnapshotCacheStatus,
   CatalogueSourceMode,
 } from '@/types/catalogue';
 import { serializeInstitutionRow, serializeProgramRow } from './serializers';
@@ -42,7 +43,10 @@ export interface CatalogueReadinessSnapshot {
   institutions: Pick<InstitutionRow, 'id'>[];
   programs: Pick<ProgramRow, 'id' | 'admissionType'>[];
   programInstitutions: Pick<ProgramInstitutionRow, 'programId' | 'institutionId'>[];
-  admissionThresholds: Pick<AdmissionThresholdRow, 'programId' | 'universityId' | 'thresholdValue'>[];
+  admissionThresholds: Pick<
+    AdmissionThresholdRow,
+    'programId' | 'universityId' | 'thresholdValue'
+  >[];
   universityCalculatorConfigs: Pick<UniversityCalculatorConfigRow, 'institutionId'>[];
 }
 
@@ -61,22 +65,51 @@ interface DatabaseCatalogueSnapshot extends CatalogueReadinessSnapshot {
   universityCalculatorConfigs: UniversityCalculatorConfigRow[];
 }
 
+interface DatabaseSnapshotLoadResult {
+  cacheStatus: CatalogueSnapshotCacheStatus;
+  snapshot: DatabaseCatalogueSnapshot;
+}
+
 interface CatalogueSourceResolution {
   source: CatalogueSource;
   meta: ApiMetaPayload;
   snapshot?: DatabaseCatalogueSnapshot;
 }
 
+interface DatabaseCatalogueSnapshotCache {
+  expiresAt: number;
+  inFlight: Promise<DatabaseSnapshotLoadResult> | null;
+  snapshot: DatabaseCatalogueSnapshot | null;
+}
+
+const DATABASE_CATALOGUE_SNAPSHOT_TTL_MS = 60_000;
+
+// This cache is intentionally process-local. It reduces duplicate snapshot
+// rebuilds on one server instance, but it is not a distributed freshness layer.
+const databaseCatalogueSnapshotCache: DatabaseCatalogueSnapshotCache = {
+  expiresAt: 0,
+  inFlight: null,
+  snapshot: null,
+};
+
 function createMeta(
   catalogueSourceMode: CatalogueSourceMode,
   catalogueSource: CatalogueSource,
-  fallbackReason?: string
+  fallbackReason?: string,
+  cacheStatus?: CatalogueSnapshotCacheStatus,
 ): ApiMetaPayload {
   return {
     catalogueSourceMode,
     catalogueSource,
+    ...(cacheStatus ? { catalogueSnapshotCacheStatus: cacheStatus } : {}),
     ...(fallbackReason ? { fallbackReason } : {}),
   };
+}
+
+export function resetDatabaseCatalogueSnapshotCache() {
+  databaseCatalogueSnapshotCache.expiresAt = 0;
+  databaseCatalogueSnapshotCache.inFlight = null;
+  databaseCatalogueSnapshotCache.snapshot = null;
 }
 
 export class CatalogueQueryError extends Error {
@@ -93,7 +126,7 @@ export class CatalogueQueryError extends Error {
       details?: string[];
       meta?: ApiMetaPayload;
       status?: number;
-    }
+    },
   ) {
     super(message);
     this.name = 'CatalogueQueryError';
@@ -106,7 +139,7 @@ export class CatalogueQueryError extends Error {
 }
 
 export function evaluateCatalogueReadiness(
-  snapshot: CatalogueReadinessSnapshot
+  snapshot: CatalogueReadinessSnapshot,
 ): CatalogueReadinessResult {
   const issues: string[] = [];
 
@@ -127,7 +160,7 @@ export function evaluateCatalogueReadiness(
     issues.push(
       `Programs missing institution links: ${programsMissingLinks.slice(0, 5).join(', ')}${
         programsMissingLinks.length > 5 ? '…' : ''
-      }`
+      }`,
     );
   }
 
@@ -136,36 +169,36 @@ export function evaluateCatalogueReadiness(
     .map((program) => program.id);
   const thresholdProgramIds = new Set(snapshot.admissionThresholds.map((row) => row.programId));
   const sekhemProgramsMissingThresholds = sekhemProgramIds.filter(
-    (programId) => !thresholdProgramIds.has(programId)
+    (programId) => !thresholdProgramIds.has(programId),
   );
 
   if (sekhemProgramsMissingThresholds.length > 0) {
     issues.push(
       `Sekhem programs missing thresholds: ${sekhemProgramsMissingThresholds.slice(0, 5).join(', ')}${
         sekhemProgramsMissingThresholds.length > 5 ? '…' : ''
-      }`
+      }`,
     );
   }
 
   const requiredCalculatorInstitutionIds = new Set(
     snapshot.admissionThresholds
       .filter((row) => row.thresholdValue !== null)
-      .map((row) => row.universityId)
+      .map((row) => row.universityId),
   );
   for (const university of UNIVERSITIES) {
     requiredCalculatorInstitutionIds.add(university.id);
   }
 
   const availableCalculatorInstitutionIds = new Set(
-    snapshot.universityCalculatorConfigs.map((row) => row.institutionId)
+    snapshot.universityCalculatorConfigs.map((row) => row.institutionId),
   );
   const missingCalculatorInstitutionIds = [...requiredCalculatorInstitutionIds].filter(
-    (institutionId) => !availableCalculatorInstitutionIds.has(institutionId)
+    (institutionId) => !availableCalculatorInstitutionIds.has(institutionId),
   );
 
   if (missingCalculatorInstitutionIds.length > 0) {
     issues.push(
-      `Institutions missing calculator configs: ${missingCalculatorInstitutionIds.join(', ')}`
+      `Institutions missing calculator configs: ${missingCalculatorInstitutionIds.join(', ')}`,
     );
   }
 
@@ -187,8 +220,8 @@ async function loadDatabaseCatalogueSnapshot(): Promise<DatabaseCatalogueSnapsho
           .where(
             inArray(
               universityCalculatorConfigs.institutionId,
-              institutionRows.map((row) => row.id)
-            )
+              institutionRows.map((row) => row.id),
+            ),
           );
   const programRows = await db.select().from(programs);
 
@@ -233,11 +266,45 @@ async function loadDatabaseCatalogueSnapshot(): Promise<DatabaseCatalogueSnapsho
   };
 }
 
-async function loadDatabaseCatalogueOrThrow(
-  mode: CatalogueSourceMode
-): Promise<DatabaseCatalogueSnapshot> {
+async function loadDatabaseCatalogueSnapshotWithCache(): Promise<DatabaseSnapshotLoadResult> {
+  const now = Date.now();
+
+  if (databaseCatalogueSnapshotCache.snapshot && databaseCatalogueSnapshotCache.expiresAt > now) {
+    return {
+      cacheStatus: 'hit',
+      snapshot: databaseCatalogueSnapshotCache.snapshot,
+    };
+  }
+
+  if (databaseCatalogueSnapshotCache.inFlight) {
+    return databaseCatalogueSnapshotCache.inFlight;
+  }
+
+  const refreshPromise = (async () => {
+    const snapshot = await loadDatabaseCatalogueSnapshot();
+    databaseCatalogueSnapshotCache.snapshot = snapshot;
+    databaseCatalogueSnapshotCache.expiresAt = Date.now() + DATABASE_CATALOGUE_SNAPSHOT_TTL_MS;
+
+    return {
+      cacheStatus: 'miss' as const,
+      snapshot,
+    };
+  })();
+
+  databaseCatalogueSnapshotCache.inFlight = refreshPromise;
+
   try {
-    return await loadDatabaseCatalogueSnapshot();
+    return await refreshPromise;
+  } finally {
+    databaseCatalogueSnapshotCache.inFlight = null;
+  }
+}
+
+async function loadDatabaseCatalogueOrThrow(
+  mode: CatalogueSourceMode,
+): Promise<DatabaseSnapshotLoadResult> {
+  try {
+    return await loadDatabaseCatalogueSnapshotWithCache();
   } catch (error) {
     throw new CatalogueQueryError(
       'CATALOGUE_DATABASE_UNAVAILABLE',
@@ -245,7 +312,7 @@ async function loadDatabaseCatalogueOrThrow(
       {
         cause: error,
         meta: createMeta(mode, 'database'),
-      }
+      },
     );
   }
 }
@@ -256,7 +323,7 @@ function canUseStaticFallback(mode: CatalogueSourceMode): boolean {
 
 function buildReadinessError(
   mode: CatalogueSourceMode,
-  readiness: CatalogueReadinessResult
+  readiness: CatalogueReadinessResult,
 ): CatalogueQueryError {
   return new CatalogueQueryError(
     'CATALOGUE_DATABASE_NOT_READY',
@@ -264,7 +331,7 @@ function buildReadinessError(
     {
       details: readiness.issues,
       meta: createMeta(mode, 'database'),
-    }
+    },
   );
 }
 
@@ -292,12 +359,12 @@ async function resolveCatalogueSource(): Promise<CatalogueSourceResolution> {
       {
         details: ['Set DATABASE_URL or switch CATALOGUE_SOURCE_MODE to static for local fallback.'],
         meta: createMeta(mode, 'database'),
-      }
+      },
     );
   }
 
   try {
-    const snapshot = await loadDatabaseCatalogueOrThrow(mode);
+    const { cacheStatus, snapshot } = await loadDatabaseCatalogueOrThrow(mode);
     const readiness = evaluateCatalogueReadiness(snapshot);
 
     if (!readiness.isReady) {
@@ -313,7 +380,7 @@ async function resolveCatalogueSource(): Promise<CatalogueSourceResolution> {
 
     return {
       source: 'database',
-      meta: createMeta(mode, 'database'),
+      meta: createMeta(mode, 'database', undefined, cacheStatus),
       snapshot,
     };
   } catch (error) {
@@ -328,7 +395,9 @@ async function resolveCatalogueSource(): Promise<CatalogueSourceResolution> {
   }
 }
 
-export async function listCatalogueInstitutions(): Promise<CatalogueQueryResult<CatalogueInstitution[]>> {
+export async function listCatalogueInstitutions(): Promise<
+  CatalogueQueryResult<CatalogueInstitution[]>
+> {
   const resolution = await resolveCatalogueSource();
 
   if (resolution.source === 'static') {
@@ -339,12 +408,12 @@ export async function listCatalogueInstitutions(): Promise<CatalogueQueryResult<
   }
 
   const calculatorConfigsByInstitutionId = new Map(
-    resolution.snapshot!.universityCalculatorConfigs.map((row) => [row.institutionId, row])
+    resolution.snapshot!.universityCalculatorConfigs.map((row) => [row.institutionId, row]),
   );
 
   return {
     data: resolution.snapshot!.institutions.map((row) =>
-      serializeInstitutionRow(row, calculatorConfigsByInstitutionId.get(row.id))
+      serializeInstitutionRow(row, calculatorConfigsByInstitutionId.get(row.id)),
     ),
     meta: resolution.meta,
   };
@@ -374,17 +443,19 @@ export async function listCataloguePrograms(): Promise<CatalogueQueryResult<Cata
       serializeProgramRow({
         program: programRow,
         relations: resolution.snapshot!.programInstitutions.filter(
-          (row) => row.programId === programRow.id
+          (row) => row.programId === programRow.id,
         ),
         requirements: resolution.snapshot!.admissionRequirements.filter(
-          (row) => row.programId === programRow.id
+          (row) => row.programId === programRow.id,
         ),
         thresholds: resolution.snapshot!.admissionThresholds.filter(
-          (row) => row.programId === programRow.id
+          (row) => row.programId === programRow.id,
         ),
-        sourceUrls: resolution.snapshot!.sourceUrls.filter((row) => row.programId === programRow.id),
+        sourceUrls: resolution.snapshot!.sourceUrls.filter(
+          (row) => row.programId === programRow.id,
+        ),
         institutionsById,
-      })
+      }),
     ),
     meta: resolution.meta,
   };

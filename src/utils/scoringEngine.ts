@@ -45,9 +45,7 @@ export interface AssessmentAnswers {
 // ── Count answered items ────────────────────────────────────────────────────
 
 export function countAnsweredItems(answers: AssessmentAnswers): number {
-  const multiSelectCount = answers.multiSelect.filter(
-    (a) => a.selectedOptionIds.length > 0
-  ).length;
+  const multiSelectCount = answers.multiSelect.filter((a) => a.selectedOptionIds.length > 0).length;
   const quickPickCount = answers.quickPicks.length;
   const sliderCount = answers.valueSliders.length;
   return multiSelectCount + quickPickCount + sliderCount;
@@ -119,10 +117,7 @@ export function computeValuesProfile(answers: AssessmentAnswers): ValuesProfile 
 
 // ── Get top dimensions ──────────────────────────────────────────────────────
 
-export function getTopDimensions(
-  scores: ProfileScores,
-  count = 2
-): ProfileDimension[] {
+export function getTopDimensions(scores: ProfileScores, count = 2): ProfileDimension[] {
   return (Object.entries(scores) as [ProfileDimension, number][])
     .sort((a, b) => b[1] - a[1])
     .slice(0, count)

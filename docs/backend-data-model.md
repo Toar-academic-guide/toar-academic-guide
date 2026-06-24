@@ -9,6 +9,8 @@ The backend foundation separates reviewed catalogue data from raw ingestion outp
 
 Canonical requirement rows stay traceable through `source_urls`, and historical reviewed values stay in `requirement_versions`.
 
+See [docs/data-ingestion-workflow.md](/Users/amitmalichi/Desktop/toar-academic-guide/.worktrees/chore-catalogue-scale-ingestion-batch/docs/data-ingestion-workflow.md:1) for the end-to-end scrape, review, and publication workflow that sits on top of these tables.
+
 ## User persistence
 
 Authenticated user persistence now uses Supabase Auth identities as the ownership boundary:
@@ -118,3 +120,18 @@ Production rollout should stay migration-first:
 4. Switch production to `CATALOGUE_SOURCE_MODE=database`.
 
 Rollback should be a configuration change back to `static` or `auto`, not an emergency schema edit in the Supabase dashboard.
+
+## Catalogue response measurement and caching
+
+The catalogue routes are still request-driven and dynamic, but they now expose lightweight runtime measurement:
+
+- `durationMs` reports route execution time
+- `responseBytes` reports the final JSON envelope size
+- `programCount` or `institutionCount` reports the returned item count
+
+Database-backed catalogue reads also use a bounded in-process snapshot cache in `src/server/catalogue/queries.ts`.
+
+- The cache stores only successful DB snapshots.
+- The cache is scoped to one server instance and one process lifetime.
+- The cache reduces duplicate snapshot rebuilds for repeated catalogue reads inside the TTL window.
+- The cache does not replace readiness checks, cross-instance invalidation, or explicit rollout verification.

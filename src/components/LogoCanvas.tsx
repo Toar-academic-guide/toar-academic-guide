@@ -29,14 +29,16 @@ export default function LogoCanvas({ size = 70, brighten = false, className }: P
       const d = imageData.data;
 
       for (let i = 0; i < d.length; i += 4) {
-        const r = d[i], g = d[i + 1], b = d[i + 2];
+        const r = d[i],
+          g = d[i + 1],
+          b = d[i + 2];
         const lightness = (r + g + b) / 3;
         if (lightness > 170) {
           const fade = Math.min(1, (lightness - 170) / 50);
           d[i + 3] = Math.round((1 - fade) * d[i + 3]);
         }
         if (brighten && d[i + 3] > 20) {
-          d[i]     = Math.min(255, d[i]     + 160);
+          d[i] = Math.min(255, d[i] + 160);
           d[i + 1] = Math.min(255, d[i + 1] + 160);
           d[i + 2] = Math.min(255, d[i + 2] + 160);
         }
@@ -44,7 +46,10 @@ export default function LogoCanvas({ size = 70, brighten = false, className }: P
       ctx.putImageData(imageData, 0, 0);
 
       // Find tight bounding box of non-transparent pixels
-      let minX = canvas.width, minY = canvas.height, maxX = 0, maxY = 0;
+      let minX = canvas.width,
+        minY = canvas.height,
+        maxX = 0,
+        maxY = 0;
       for (let y = 0; y < canvas.height; y++) {
         for (let x = 0; x < canvas.width; x++) {
           if (d[(y * canvas.width + x) * 4 + 3] > 10) {
@@ -67,7 +72,7 @@ export default function LogoCanvas({ size = 70, brighten = false, className }: P
       // Scale to requested size
       const aspect = cw / ch;
       canvas.style.height = `${size}px`;
-      canvas.style.width  = `${size * aspect}px`;
+      canvas.style.width = `${size * aspect}px`;
     };
   }, [size, brighten]);
 

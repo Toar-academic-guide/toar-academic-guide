@@ -15,7 +15,11 @@ import {
 
 export async function getUserProfileSnapshot(userId: string): Promise<UserProfileSnapshot> {
   const db = getDb();
-  const [profileRow] = await db.select().from(userProfiles).where(eq(userProfiles.userId, userId)).limit(1);
+  const [profileRow] = await db
+    .select()
+    .from(userProfiles)
+    .where(eq(userProfiles.userId, userId))
+    .limit(1);
   const savedProgramRows = await db
     .select({ programId: savedPrograms.programId })
     .from(savedPrograms)
@@ -30,7 +34,7 @@ export async function getUserProfileSnapshot(userId: string): Promise<UserProfil
 
 export async function replaceUserProfileSnapshot(
   userId: string,
-  profile: UserProfile
+  profile: UserProfile,
 ): Promise<UserProfileSnapshot> {
   const db = getDb();
   const nextSavedProgramIds = Array.from(new Set(profile.savedProgramIds ?? []));
@@ -57,7 +61,12 @@ export async function replaceUserProfileSnapshot(
     if (nextSavedProgramIds.length > 0) {
       await tx
         .delete(savedPrograms)
-        .where(and(eq(savedPrograms.userId, userId), notInArray(savedPrograms.programId, nextSavedProgramIds)));
+        .where(
+          and(
+            eq(savedPrograms.userId, userId),
+            notInArray(savedPrograms.programId, nextSavedProgramIds),
+          ),
+        );
     } else {
       await tx.delete(savedPrograms).where(eq(savedPrograms.userId, userId));
     }
@@ -75,25 +84,28 @@ export async function replaceUserProfileSnapshot(
 
 export async function mergeUserProfileDraftIntoSnapshot(
   userId: string,
-  draft: UserProfile
+  draft: UserProfile,
 ): Promise<UserProfileSnapshot> {
   const existing = await getUserProfileSnapshot(userId);
   const merged = mergeUserProfileDraft(existing, draft);
   return replaceUserProfileSnapshot(userId, merged);
 }
 
-export async function addSavedProgram(userId: string, programId: string): Promise<UserProfileSnapshot> {
+export async function addSavedProgram(
+  userId: string,
+  programId: string,
+): Promise<UserProfileSnapshot> {
   const db = getDb();
 
-  await db
-    .insert(savedPrograms)
-    .values({ userId, programId })
-    .onConflictDoNothing();
+  await db.insert(savedPrograms).values({ userId, programId }).onConflictDoNothing();
 
   return getUserProfileSnapshot(userId);
 }
 
-export async function removeSavedProgram(userId: string, programId: string): Promise<UserProfileSnapshot> {
+export async function removeSavedProgram(
+  userId: string,
+  programId: string,
+): Promise<UserProfileSnapshot> {
   const db = getDb();
 
   await db

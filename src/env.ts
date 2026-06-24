@@ -36,7 +36,7 @@ function readRequiredDatabaseUrl(name: string): string {
   const value = readEnv(name);
   if (!value) {
     throw new Error(
-      `Missing ${name}. Set ${name} in your environment before using DB-backed features that require it.`
+      `Missing ${name}. Set ${name} in your environment before using DB-backed features that require it.`,
     );
   }
 
@@ -54,7 +54,7 @@ export function getCatalogueSourceMode(): CatalogueSourceMode {
   }
 
   throw new Error(
-    `Invalid CATALOGUE_SOURCE_MODE "${value}". Expected one of: ${CATALOGUE_SOURCE_MODES.join(', ')}.`
+    `Invalid CATALOGUE_SOURCE_MODE "${value}". Expected one of: ${CATALOGUE_SOURCE_MODES.join(', ')}.`,
   );
 }
 
@@ -85,7 +85,7 @@ export function assertProductionDatabaseUrlLeastPrivilege(databaseUrl: string): 
 
   if (getDatabaseRoleFromUsername(parsed.username) === 'postgres') {
     throw new Error(
-      'Unsafe DATABASE_URL for production runtime: Supabase app traffic must not authenticate as postgres. Use a dedicated runtime role such as app_runtime with a pooled connection string.'
+      'Unsafe DATABASE_URL for production runtime: Supabase app traffic must not authenticate as postgres. Use a dedicated runtime role such as app_runtime with a pooled connection string.',
     );
   }
 }

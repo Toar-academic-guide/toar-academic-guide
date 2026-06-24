@@ -28,22 +28,18 @@ const sekhemProgram: Program = {
 
 describe('bucketListEngine', () => {
   it('returns requirements for non-sekhem programs', () => {
-    const entries = analyzeBucketList(
-      ['req_program'],
-      { psychometric: 650, bagrut: 100 },
-      [requirementProgram]
-    );
+    const entries = analyzeBucketList(['req_program'], { psychometric: 650, bagrut: 100 }, [
+      requirementProgram,
+    ]);
 
     expect(entries[0]?.status).toBe('requirements');
   });
 
   it('returns no-data when scores are missing or the threshold is unavailable', () => {
     const noScores = analyzeBucketList(['sekhem_program'], null, [sekhemProgram]);
-    const noThreshold = analyzeBucketList(
-      ['sekhem_program'],
-      { psychometric: 650, bagrut: 100 },
-      [{ ...sekhemProgram, thresholds: { tau: null, huji: null, technion: null, bgu: null } }]
-    );
+    const noThreshold = analyzeBucketList(['sekhem_program'], { psychometric: 650, bagrut: 100 }, [
+      { ...sekhemProgram, thresholds: { tau: null, huji: null, technion: null, bgu: null } },
+    ]);
 
     expect(noScores[0]?.status).toBe('no-data');
     expect(noThreshold[0]?.status).toBe('no-data');

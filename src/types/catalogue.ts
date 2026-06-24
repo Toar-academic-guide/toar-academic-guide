@@ -4,6 +4,7 @@ import type { FormulaType } from '@/types';
 
 export type CatalogueSourceMode = 'auto' | 'database' | 'static';
 export type CatalogueSource = 'database' | 'static';
+export type CatalogueSnapshotCacheStatus = 'hit' | 'miss';
 
 export interface CatalogueCalculatorConfig {
   formulaType: FormulaType;
@@ -16,11 +17,10 @@ export interface CatalogueCalculatorConfig {
   minBagrut?: number;
 }
 
-export interface CatalogueInstitution
-  extends Pick<
-    InstitutionRecord,
-    'id' | 'name' | 'region' | 'domain' | 'logoUrl' | 'programUrl' | 'calculatorUrl' | 'universityId'
-  > {
+export interface CatalogueInstitution extends Pick<
+  InstitutionRecord,
+  'id' | 'name' | 'region' | 'domain' | 'logoUrl' | 'programUrl' | 'calculatorUrl' | 'universityId'
+> {
   calculatorConfig?: CatalogueCalculatorConfig;
 }
 
@@ -37,7 +37,12 @@ export interface ApiErrorPayload {
 export interface ApiMetaPayload {
   catalogueSourceMode?: CatalogueSourceMode;
   catalogueSource?: CatalogueSource;
+  catalogueSnapshotCacheStatus?: CatalogueSnapshotCacheStatus;
   fallbackReason?: string;
+  durationMs?: number;
+  responseBytes?: number;
+  programCount?: number;
+  institutionCount?: number;
 }
 
 export interface ApiEnvelope<T> {

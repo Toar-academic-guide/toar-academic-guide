@@ -11,8 +11,16 @@ import type { CatalogueProgram } from '@/types/catalogue';
 import type { GeographicRegion, University, UniversityResult } from '@/types';
 
 const UNIVERSITY_IDS = new Set([
-  'tau', 'huji', 'technion', 'bgu', 'haifa', 'biu', 'ariel',
-  'weizmann', 'reichman', 'open_university',
+  'tau',
+  'huji',
+  'technion',
+  'bgu',
+  'haifa',
+  'biu',
+  'ariel',
+  'weizmann',
+  'reichman',
+  'open_university',
 ]);
 
 type InstitutionType = 'university' | 'college';
@@ -93,7 +101,8 @@ export default function CalculatorResults({
 
   const allInstitutions = INSTITUTIONS.filter(
     (institution) =>
-      institution.region !== 'any' && resultsByUniversityId.has(institution.universityId ?? institution.id),
+      institution.region !== 'any' &&
+      resultsByUniversityId.has(institution.universityId ?? institution.id),
   );
 
   function toggleType(type: InstitutionType) {
@@ -188,7 +197,11 @@ export default function CalculatorResults({
         <div className="mb-6">
           <div className="mb-3 flex items-center justify-between">
             <p className="text-sm font-bold text-slate-900">סוג מוסד</p>
-            <button type="button" onClick={selectAllTypes} className="text-xs font-semibold text-[#4f46e5]">
+            <button
+              type="button"
+              onClick={selectAllTypes}
+              className="text-xs font-semibold text-[#4f46e5]"
+            >
               בחר/י הכל
             </button>
           </div>
@@ -209,7 +222,11 @@ export default function CalculatorResults({
         <div className="mb-4">
           <div className="mb-3 flex items-center justify-between">
             <p className="text-sm font-bold text-slate-900">אזור</p>
-            <button type="button" onClick={selectAllRegions} className="text-xs font-semibold text-[#4f46e5]">
+            <button
+              type="button"
+              onClick={selectAllRegions}
+              className="text-xs font-semibold text-[#4f46e5]"
+            >
               בחר/י הכל
             </button>
           </div>
@@ -262,14 +279,18 @@ export default function CalculatorResults({
                 <h2 className="text-base font-black text-slate-900">
                   {REGION_LABEL[region as GeographicRegion]}
                 </h2>
-                <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-bold ${REGION_COUNT_STYLE[region]}`}>
+                <span
+                  className={`rounded-full border px-2.5 py-0.5 text-[10px] font-bold ${REGION_COUNT_STYLE[region]}`}
+                >
                   {institutions.length} מוסדות
                 </span>
               </div>
 
               <div className="flex flex-col gap-2">
                 {visible.map((institution) => {
-                  const result = resultsByUniversityId.get(institution.universityId ?? institution.id);
+                  const result = resultsByUniversityId.get(
+                    institution.universityId ?? institution.id,
+                  );
                   if (!result) {
                     return null;
                   }
@@ -283,11 +304,18 @@ export default function CalculatorResults({
                       className="flex items-center justify-between rounded-[14px] border-2 border-black bg-white px-4 py-3"
                     >
                       <div className="flex items-center gap-3">
-                        <InstitutionLogo institution={institution.name} record={institution} size="sm" />
+                        <InstitutionLogo
+                          institution={institution.name}
+                          record={institution}
+                          size="sm"
+                        />
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-bold text-slate-900">{institution.name}</p>
+                          <p className="truncate text-sm font-bold text-slate-900">
+                            {institution.name}
+                          </p>
                           <p className="text-[10px] text-slate-500" dir="ltr">
-                            {institutionType === 'university' ? 'אוניברסיטה' : 'מכללה'} · {getResultSummary(result)}
+                            {institutionType === 'university' ? 'אוניברסיטה' : 'מכללה'} ·{' '}
+                            {getResultSummary(result)}
                           </p>
                         </div>
                       </div>
@@ -308,7 +336,8 @@ export default function CalculatorResults({
                   onClick={() => toggleExpanded(region)}
                   className="mt-2 flex w-full items-center justify-center gap-1 text-xs text-slate-500"
                 >
-                  + {hiddenCount} מוסדות נוספים <span className="font-semibold text-[#4f46e5]">הצג/י הכל</span>
+                  + {hiddenCount} מוסדות נוספים{' '}
+                  <span className="font-semibold text-[#4f46e5]">הצג/י הכל</span>
                   <ChevronDown size={12} className="text-[#4f46e5]" />
                 </button>
               ) : null}
@@ -337,7 +366,15 @@ export default function CalculatorResults({
   );
 }
 
-function FilterChip({ label, selected, onClick }: { label: string; selected: boolean; onClick: () => void }) {
+function FilterChip({
+  label,
+  selected,
+  onClick,
+}: {
+  label: string;
+  selected: boolean;
+  onClick: () => void;
+}) {
   return (
     <button
       type="button"

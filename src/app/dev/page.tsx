@@ -9,7 +9,11 @@ export default function DevShortcuts() {
     { label: 'דף הבית', url: '/', desc: 'Landing page' },
     { label: 'מבוא לשאלון', url: '/?step=intro', desc: 'Quiz intro screen' },
     { label: 'פרופיל אקדמי', url: '/?step=academic-profile', desc: 'Bagrut / psychometric form' },
-    { label: 'שאלון קריירה', url: '/?step=career-assessment', desc: 'Career assessment (screen 1)' },
+    {
+      label: 'שאלון קריירה',
+      url: '/?step=career-assessment',
+      desc: 'Career assessment (screen 1)',
+    },
     { label: 'שאלון קריירה — מסך 3', url: '/?screen=3', desc: 'Jump to specific screen' },
     { label: 'שאלון קריירה — מסך 5', url: '/?screen=5', desc: 'Jump to specific screen' },
     { label: 'פילטרים מהירים', url: '/?step=quick-filters', desc: 'Onboarding funnel' },

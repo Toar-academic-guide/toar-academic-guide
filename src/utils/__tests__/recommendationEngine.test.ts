@@ -47,14 +47,14 @@ describe('recommendationEngine', () => {
       undefined,
       { soloScore: 2, deskScore: 1 },
       [],
-      testPrograms
+      testPrograms,
     );
     const withAvoidances = getRecommendations(
       userScores,
       undefined,
       { soloScore: 2, deskScore: 1 },
       ['heavy-math', 'solo-work'],
-      testPrograms
+      testPrograms,
     );
 
     expect(withoutAvoidances[0]?.id).toBe('מדעי המחשב');
@@ -92,7 +92,7 @@ describe('recommendationEngine', () => {
       undefined,
       { soloScore: 2, deskScore: 1 },
       [],
-      digitalPrograms
+      digitalPrograms,
     );
 
     expect(recs[0]?.id).toBe('טכנולוגיה ופיתוח');
@@ -100,7 +100,16 @@ describe('recommendationEngine', () => {
   });
 
   it('threads value sliders into recommendation reasoning and ordering', () => {
-    const balancedScores: ProfileScores = { AN: 1, TE: 1, CR: 1, SO: 1, LE: 1, OR: 1, DI: 1, ER: 1 };
+    const balancedScores: ProfileScores = {
+      AN: 1,
+      TE: 1,
+      CR: 1,
+      SO: 1,
+      LE: 1,
+      OR: 1,
+      DI: 1,
+      ER: 1,
+    };
     const impactValues: ValuesProfile = {
       incomeVsImpact: 2,
       independenceVsTeam: 2,
@@ -143,14 +152,14 @@ describe('recommendationEngine', () => {
       impactValues,
       { soloScore: 1, deskScore: 1 },
       [],
-      valuesPrograms
+      valuesPrograms,
     );
     const financeFirst = getRecommendations(
       balancedScores,
       financeValues,
       { soloScore: 1, deskScore: 1 },
       [],
-      valuesPrograms
+      valuesPrograms,
     );
 
     expect(impactFirst[0]?.id).toBe('מדעי החברה');

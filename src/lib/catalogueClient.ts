@@ -21,7 +21,7 @@ export class CatalogueApiError extends Error {
       code?: string;
       details?: string[];
       meta?: ApiMetaPayload;
-    }
+    },
   ) {
     super(message);
     this.name = 'CatalogueApiError';

@@ -22,8 +22,8 @@ const mockedCatalogueModule = vi.hoisted(() => {
         new HoistedCatalogueApiError('Catalogue database is not ready for runtime traffic.', {
           code: 'CATALOGUE_DATABASE_NOT_READY',
           details: ['Institutions missing calculator configs: tau'],
-        })
-      )
+        }),
+      ),
     ),
     fetchCatalogueInstitutions: vi.fn(() => Promise.resolve([])),
   };
@@ -113,9 +113,7 @@ describe('Home catalogue cutover', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'open-degree-picker' }));
 
-    await waitFor(() =>
-      expect(screen.getByText('לא הצלחנו לטעון את קטלוג התארים')).toBeTruthy()
-    );
+    await waitFor(() => expect(screen.getByText('לא הצלחנו לטעון את קטלוג התארים')).toBeTruthy());
     expect(screen.getByText('Catalogue database is not ready for runtime traffic.')).toBeTruthy();
     expect(screen.queryByText('degree-picker')).toBeNull();
   });

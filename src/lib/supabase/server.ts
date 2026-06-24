@@ -14,24 +14,20 @@ export async function createSupabaseServerClient(): Promise<SupabaseClient | nul
   const cookieStore = await cookies();
   const { supabaseUrl, supabasePublishableKey } = getSupabaseEnv();
 
-  return createServerClient(
-    supabaseUrl!,
-    supabasePublishableKey!,
-    {
-      cookies: {
-        getAll() {
-          return cookieStore.getAll();
-        },
-        setAll(cookiesToSet) {
-          try {
-            for (const { name, value, options } of cookiesToSet) {
-              cookieStore.set(name, value, options);
-            }
-          } catch {
-            // Server Components cannot always mutate cookies directly.
-          }
-        },
+  return createServerClient(supabaseUrl!, supabasePublishableKey!, {
+    cookies: {
+      getAll() {
+        return cookieStore.getAll();
       },
-    }
-  );
+      setAll(cookiesToSet) {
+        try {
+          for (const { name, value, options } of cookiesToSet) {
+            cookieStore.set(name, value, options);
+          }
+        } catch {
+          // Server Components cannot always mutate cookies directly.
+        }
+      },
+    },
+  });
 }

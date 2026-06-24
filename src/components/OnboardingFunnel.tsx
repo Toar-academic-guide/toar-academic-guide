@@ -73,11 +73,12 @@ export default function OnboardingFunnel({ onComplete }: Props) {
     <div className="min-h-screen w-full bg-[#f5f4f0] px-2 py-8 sm:px-4">
       {/* ── Floating canvas card ────────────────────────────────────── */}
       <div className="mx-auto max-w-3xl rounded-3xl border border-[#e5e7eb] bg-white p-8 shadow-lg md:p-12">
-
         {/* Progress */}
         <div className="mb-8 flex flex-col gap-2">
           <div className="flex items-center justify-between text-xs font-medium text-slate-400">
-            <span>שאלה {currentStep + 1} מתוך {totalSteps}</span>
+            <span>
+              שאלה {currentStep + 1} מתוך {totalSteps}
+            </span>
             <span>{progressPercent}%</span>
           </div>
           <div className="h-0.5 w-full overflow-hidden rounded-full bg-slate-100">
@@ -97,83 +98,81 @@ export default function OnboardingFunnel({ onComplete }: Props) {
           transition={SLIDE}
           className="flex flex-col gap-7"
         >
-            {/* Question header */}
-            <div>
-              <h2 className="text-2xl font-bold tracking-tight text-slate-900">
-                {question.text}
-              </h2>
-              {question.sublabel && (
-                <p className="mt-1.5 text-sm text-slate-400">{question.sublabel}</p>
-              )}
-            </div>
+          {/* Question header */}
+          <div>
+            <h2 className="text-2xl font-bold tracking-tight text-slate-900">{question.text}</h2>
+            {question.sublabel && (
+              <p className="mt-1.5 text-sm text-slate-400">{question.sublabel}</p>
+            )}
+          </div>
 
-            {/* Answer grid — 2 columns */}
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              {question.answers.map((answer, idx) => {
-                const selected = currentAnswers.includes(answer.label);
-                const Icon = answer.icon;
-                const iconPalette = ICON_PALETTES[idx % ICON_PALETTES.length];
+          {/* Answer grid — 2 columns */}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            {question.answers.map((answer, idx) => {
+              const selected = currentAnswers.includes(answer.label);
+              const Icon = answer.icon;
+              const iconPalette = ICON_PALETTES[idx % ICON_PALETTES.length];
 
-                return (
-                  <button
-                    key={answer.label}
-                    onClick={() => toggleAnswer(answer.label)}
-                    className={[
-                      'relative flex w-full items-center gap-4 rounded-2xl p-5 text-right',
-                      'border-2 transition-all duration-200 select-none',
-                      selected
-                        ? 'scale-[1.02] border-purple-600 bg-purple-50/40 shadow-lg'
-                        : 'border-slate-200 bg-white shadow-sm hover:scale-[1.01] hover:border-indigo-300 hover:shadow-md',
-                    ].join(' ')}
-                  >
-                    {/* Checkmark badge (appears on select) */}
-                    {selected && (
-                      <motion.span
-                        initial={{ scale: 0, opacity: 0 }}
-                        animate={{ scale: 1, opacity: 1 }}
-                        transition={{ duration: 0.15, ease: 'backOut' }}
-                        className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-purple-600 text-white"
-                      >
-                        <Check size={11} strokeWidth={3} />
-                      </motion.span>
-                    )}
+              return (
+                <button
+                  key={answer.label}
+                  onClick={() => toggleAnswer(answer.label)}
+                  className={[
+                    'relative flex w-full items-center gap-4 rounded-2xl p-5 text-right',
+                    'border-2 transition-all duration-200 select-none',
+                    selected
+                      ? 'scale-[1.02] border-purple-600 bg-purple-50/40 shadow-lg'
+                      : 'border-slate-200 bg-white shadow-sm hover:scale-[1.01] hover:border-indigo-300 hover:shadow-md',
+                  ].join(' ')}
+                >
+                  {/* Checkmark badge (appears on select) */}
+                  {selected && (
+                    <motion.span
+                      initial={{ scale: 0, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ duration: 0.15, ease: 'backOut' }}
+                      className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-purple-600 text-white"
+                    >
+                      <Check size={11} strokeWidth={3} />
+                    </motion.span>
+                  )}
 
-                    {/* Text (RIGHT in RTL) */}
-                    <div className="min-w-0 flex-1">
+                  {/* Text (RIGHT in RTL) */}
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className={`text-sm font-semibold leading-snug ${
+                        selected ? 'text-purple-900' : 'text-slate-800'
+                      }`}
+                    >
+                      {answer.label}
+                    </p>
+                    {answer.sublabel && (
                       <p
-                        className={`text-sm font-semibold leading-snug ${
-                          selected ? 'text-purple-900' : 'text-slate-800'
+                        className={`mt-0.5 text-xs leading-relaxed ${
+                          selected ? 'text-purple-500' : 'text-slate-400'
                         }`}
                       >
-                        {answer.label}
+                        {answer.sublabel}
                       </p>
-                      {answer.sublabel && (
-                        <p
-                          className={`mt-0.5 text-xs leading-relaxed ${
-                            selected ? 'text-purple-500' : 'text-slate-400'
-                          }`}
-                        >
-                          {answer.sublabel}
-                        </p>
-                      )}
-                    </div>
+                    )}
+                  </div>
 
-                    {/* Icon container (LEFT in RTL) */}
-                    <div
-                      className={[
-                        'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl',
-                        'transition-all duration-200',
-                        selected
-                          ? 'bg-purple-600 text-white shadow-md shadow-purple-200/60'
-                          : iconPalette,
-                      ].join(' ')}
-                    >
-                      <Icon size={20} />
-                    </div>
-                  </button>
-                );
-              })}
-            </div>
+                  {/* Icon container (LEFT in RTL) */}
+                  <div
+                    className={[
+                      'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl',
+                      'transition-all duration-200',
+                      selected
+                        ? 'bg-purple-600 text-white shadow-md shadow-purple-200/60'
+                        : iconPalette,
+                    ].join(' ')}
+                  >
+                    <Icon size={20} />
+                  </div>
+                </button>
+              );
+            })}
+          </div>
         </motion.div>
 
         {/* ── Navigation ─────────────────────────────────────────── */}
@@ -207,7 +206,6 @@ export default function OnboardingFunnel({ onComplete }: Props) {
             <ChevronLeft size={16} />
           </motion.button>
         </div>
-
       </div>
     </div>
   );
