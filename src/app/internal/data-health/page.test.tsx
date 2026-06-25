@@ -82,6 +82,16 @@ describe('/internal/data-health page', () => {
         missingRequirementSources: [],
         missingProgramSources: [],
       },
+      decisionReadiness: {
+        decisionReadyRequirementCount: 0,
+        missingFactCount: 0,
+        weakSourceCount: 0,
+        manualGateCount: 0,
+        alternativePathCount: 0,
+        requirementsMissingFacts: [],
+        weakSources: [],
+        manualGateRequirements: [],
+      },
       ingestion: {
         totalJobs: 0,
         jobsByStatus: {},

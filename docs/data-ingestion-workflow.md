@@ -21,6 +21,7 @@ This document defines the intended scrape-to-publish workflow for Toar catalogue
 4. Normalize scraped output into review candidates.
    Transform raw payloads into proposed catalogue changes such as admission requirements, threshold values, calculator links, or program notes.
    Each proposed change should become one `review_items` row tied back to the source payload.
+   For admissions decisions, normalize into source candidates, concise admissions facts, and alternative paths. Do not publish broad page paragraphs as decision evidence.
 
 5. Hand off to human review.
    Reviewers decide whether each proposed change is approved, rejected, or left pending.
@@ -28,7 +29,7 @@ This document defines the intended scrape-to-publish workflow for Toar catalogue
 
 6. Publish approved changes into canonical tables.
    Approved review items update the canonical catalogue tables:
-   `institutions`, `programs`, `program_institutions`, `admission_requirements`, `admission_thresholds`, `source_urls`, and `requirement_versions`.
+   `institutions`, `programs`, `program_institutions`, `admission_requirements`, `admission_thresholds`, `source_urls`, `admissions_source_candidates`, `admission_facts`, `admission_alternative_paths`, and `requirement_versions`.
    Publication should preserve traceability back to the reviewed source where possible.
 
 7. Verify freshness and runtime readiness.
@@ -48,6 +49,19 @@ This document defines the intended scrape-to-publish workflow for Toar catalogue
 - Scrapers may not publish directly to canonical catalogue rows.
 - Human review is the boundary between machine-collected data and user-facing catalogue data.
 - Rejected review items should remain traceable so repeated scraper runs can be compared against prior review decisions.
+- Generated per-institution scripts are useful only when they emit reviewed structured facts. Long copied text, marketing descriptions, or unrelated page snippets should stay in raw payloads or review notes.
+
+## Admissions Fact Extraction Rules
+
+For non-calculator institutions, extract only values that can affect a user-facing decision:
+
+- numeric gates: sekhem, psychometric, bagrut average, section scores, math/English units
+- manual gates: interview, test, committee, portfolio, document check
+- explicit absence: no psychometric requirement, open admission, no bagrut minimum
+- unknowns: facts that the source does not establish reliably
+- alternatives: prep program, transfer path, prior-study admission, exceptions committee, special-population path, similar program, lower-threshold institution, manual check
+
+Every fact should keep source provenance. URLs from Monday columns and item updates are valid source candidates for the first slice, but the origin must remain visible for confidence and review.
 
 ## Publication Notes
 

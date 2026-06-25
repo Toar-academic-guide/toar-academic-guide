@@ -2,8 +2,11 @@ import type { InstitutionDetail } from '@/data/degrees/types';
 import { allPrograms } from '@/data/degrees';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type {
+  AdmissionAlternativePathRow,
+  AdmissionFactRow,
   AdmissionRequirementRow,
   AdmissionThresholdRow,
+  AdmissionsSourceCandidateRow,
   InstitutionRow,
   ProgramInstitutionRow,
   ProgramRow,
@@ -52,6 +55,9 @@ export function serializeInstitutionRow(
 function buildInstitutionDetails(
   requirements: AdmissionRequirementRow[],
   urlsByRequirementId: Map<string, SourceUrlRow[]>,
+  sourceCandidatesByRequirementId: Map<string, AdmissionsSourceCandidateRow[]>,
+  factsByRequirementId: Map<string, AdmissionFactRow[]>,
+  alternativePathsByRequirementId: Map<string, AdmissionAlternativePathRow[]>,
   institutionsById: Map<string, InstitutionRow>,
 ): InstitutionDetail[] | undefined {
   const details = requirements
@@ -62,6 +68,9 @@ function buildInstitutionDetails(
       }
 
       const urls = urlsByRequirementId.get(requirement.id) ?? [];
+      const sourceCandidates = sourceCandidatesByRequirementId.get(requirement.id) ?? [];
+      const facts = factsByRequirementId.get(requirement.id) ?? [];
+      const alternativePaths = alternativePathsByRequirementId.get(requirement.id) ?? [];
       const programUrl =
         urls.find((url) => url.kind === 'program')?.url ?? institution.programUrl ?? undefined;
       const calculatorUrl =
@@ -82,6 +91,51 @@ function buildInstitutionDetails(
         ...(requirement.programDescription
           ? { programDescription: requirement.programDescription }
           : {}),
+        ...(sourceCandidates.length > 0
+          ? {
+              admissionsSourceCandidates: sourceCandidates.map((source) => ({
+                id: source.id,
+                origin: source.origin,
+                specificity: source.specificity,
+                confidence: source.confidence,
+                url: source.url,
+                ...(source.title ? { title: source.title } : {}),
+                ...(source.notes ? { notes: source.notes } : {}),
+              })),
+            }
+          : {}),
+        ...(facts.length > 0
+          ? {
+              admissionFacts: facts.map((fact) => ({
+                id: fact.id,
+                ...(fact.sourceCandidateId ? { sourceCandidateId: fact.sourceCandidateId } : {}),
+                kind: fact.kind,
+                field: fact.field,
+                comparison: fact.comparison,
+                valueNumber: fact.valueNumber,
+                valueText: fact.valueText,
+                unit: fact.unit,
+                description: fact.description,
+                confidence: fact.confidence,
+                isRequired: fact.isRequired,
+              })),
+            }
+          : {}),
+        ...(alternativePaths.length > 0
+          ? {
+              admissionAlternativePaths: alternativePaths
+                .map((path) => ({
+                  id: path.id,
+                  ...(path.sourceCandidateId ? { sourceCandidateId: path.sourceCandidateId } : {}),
+                  kind: path.kind,
+                  title: path.title,
+                  description: path.description,
+                  ...(path.url ? { url: path.url } : {}),
+                  priority: path.priority,
+                }))
+                .sort((a, b) => a.priority - b.priority),
+            }
+          : {}),
       };
 
       return detail;
@@ -97,15 +151,50 @@ export function serializeProgramRow(args: {
   requirements: AdmissionRequirementRow[];
   thresholds: AdmissionThresholdRow[];
   sourceUrls: SourceUrlRow[];
+  admissionsSourceCandidates?: AdmissionsSourceCandidateRow[];
+  admissionFacts?: AdmissionFactRow[];
+  admissionAlternativePaths?: AdmissionAlternativePathRow[];
   institutionsById: Map<string, InstitutionRow>;
 }): CatalogueProgram {
-  const { program, relations, requirements, thresholds, sourceUrls, institutionsById } = args;
+  const {
+    program,
+    relations,
+    requirements,
+    thresholds,
+    sourceUrls,
+    admissionsSourceCandidates = [],
+    admissionFacts = [],
+    admissionAlternativePaths = [],
+    institutionsById,
+  } = args;
   const urlsByRequirementId = new Map<string, SourceUrlRow[]>();
+  const sourceCandidatesByRequirementId = new Map<string, AdmissionsSourceCandidateRow[]>();
+  const factsByRequirementId = new Map<string, AdmissionFactRow[]>();
+  const alternativePathsByRequirementId = new Map<string, AdmissionAlternativePathRow[]>();
 
   for (const sourceUrl of sourceUrls) {
     const existing = urlsByRequirementId.get(sourceUrl.admissionRequirementId) ?? [];
     existing.push(sourceUrl);
     urlsByRequirementId.set(sourceUrl.admissionRequirementId, existing);
+  }
+
+  for (const sourceCandidate of admissionsSourceCandidates) {
+    const existing =
+      sourceCandidatesByRequirementId.get(sourceCandidate.admissionRequirementId) ?? [];
+    existing.push(sourceCandidate);
+    sourceCandidatesByRequirementId.set(sourceCandidate.admissionRequirementId, existing);
+  }
+
+  for (const fact of admissionFacts) {
+    const existing = factsByRequirementId.get(fact.admissionRequirementId) ?? [];
+    existing.push(fact);
+    factsByRequirementId.set(fact.admissionRequirementId, existing);
+  }
+
+  for (const path of admissionAlternativePaths) {
+    const existing = alternativePathsByRequirementId.get(path.admissionRequirementId) ?? [];
+    existing.push(path);
+    alternativePathsByRequirementId.set(path.admissionRequirementId, existing);
   }
 
   const thresholdMap: Partial<Record<string, number | null>> = {};
@@ -150,6 +239,9 @@ export function serializeProgramRow(args: {
     institutionDetails: buildInstitutionDetails(
       requirements,
       urlsByRequirementId,
+      sourceCandidatesByRequirementId,
+      factsByRequirementId,
+      alternativePathsByRequirementId,
       institutionsById,
     ),
     linkedInstitutionIds: relations.map((relation) => relation.institutionId),

@@ -48,6 +48,63 @@ export interface UniversityResult {
   admissionTrack?: 'direct'; // present when accepted via psychometric-only direct track
 }
 
+export type AdmissionsDecisionStatus =
+  | 'accepted'
+  | 'likely_accepted_needs_verification'
+  | 'close_to_accepted'
+  | 'not_accepted_has_path'
+  | 'far_from_track'
+  | 'insufficient_data';
+
+export type AdmissionsDecisionConfidence = 'high' | 'medium' | 'low';
+
+export type AdmissionsNextActionKind =
+  | 'register'
+  | 'check_dates'
+  | 'save_target'
+  | 'improve_psychometric'
+  | 'improve_bagrut'
+  | 'prep_program'
+  | 'transfer_path'
+  | 'exceptions_committee'
+  | 'similar_program'
+  | 'other_institution'
+  | 'manual_check'
+  | 'official_source'
+  | 'online_or_abroad';
+
+export interface AdmissionsDecisionSource {
+  label: string;
+  url?: string;
+  confidence: AdmissionsDecisionConfidence;
+}
+
+export interface AdmissionsDecisionMissingItem {
+  label: string;
+  field?: string;
+  currentValue?: number;
+  requiredValue?: number;
+  delta?: number;
+}
+
+export interface AdmissionsDecisionNextAction {
+  kind: AdmissionsNextActionKind;
+  label: string;
+  url?: string;
+}
+
+export interface AdmissionsDecision {
+  status: AdmissionsDecisionStatus;
+  confidence: AdmissionsDecisionConfidence;
+  statusLabel: string;
+  explanation: string[];
+  metConditions: string[];
+  missing: AdmissionsDecisionMissingItem[];
+  manualGates: string[];
+  sources: AdmissionsDecisionSource[];
+  nextAction: AdmissionsDecisionNextAction;
+}
+
 // ── Career Profile Dimensions ─────────────────────────────────────────────────
 
 export type ProfileDimension =

@@ -2,8 +2,11 @@ import 'server-only';
 
 import { getOpsDb } from '@/db/opsClient';
 import {
+  admissionAlternativePaths,
+  admissionFacts,
   admissionRequirements,
   admissionThresholds,
+  admissionsSourceCandidates,
   ingestionJobs,
   institutions,
   programInstitutions,
@@ -40,6 +43,16 @@ export interface DataHealthReadyReport {
     missingProgramSourceCount: number;
     missingRequirementSources: MissingRequirementSource[];
     missingProgramSources: MissingProgramSource[];
+  };
+  decisionReadiness: {
+    decisionReadyRequirementCount: number;
+    missingFactCount: number;
+    weakSourceCount: number;
+    manualGateCount: number;
+    alternativePathCount: number;
+    requirementsMissingFacts: AdmissionRequirementIssue[];
+    weakSources: SourceCandidateIssue[];
+    manualGateRequirements: AdmissionRequirementIssue[];
   };
   ingestion: {
     totalJobs: number;
@@ -80,6 +93,31 @@ export interface DataHealthRows {
     url: string;
   }>;
   universityCalculatorConfigs: Array<{ institutionId: string }>;
+  admissionsSourceCandidates: Array<{
+    id: string;
+    admissionRequirementId: string;
+    programId: string;
+    institutionId: string;
+    origin: string;
+    specificity: string;
+    confidence: 'high' | 'medium' | 'low';
+  }>;
+  admissionFacts: Array<{
+    id: string;
+    admissionRequirementId: string;
+    programId: string;
+    institutionId: string;
+    kind: string;
+    field: string;
+    confidence: 'high' | 'medium' | 'low';
+  }>;
+  admissionAlternativePaths: Array<{
+    id: string;
+    admissionRequirementId: string;
+    programId: string;
+    institutionId: string;
+    kind: string;
+  }>;
   ingestionJobs: IngestionJobRow[];
   reviewItems: ReviewItemRow[];
 }
@@ -129,6 +167,19 @@ interface MissingProgramSource {
   institutionId: string | null;
   programId: string;
   programName: string;
+}
+
+interface AdmissionRequirementIssue {
+  admissionRequirementId: string;
+  institutionId: string;
+  programId: string;
+}
+
+interface SourceCandidateIssue extends AdmissionRequirementIssue {
+  sourceCandidateId: string;
+  confidence: 'high' | 'medium' | 'low';
+  origin: string;
+  specificity: string;
 }
 
 interface IngestionJobSummary {
@@ -229,6 +280,7 @@ export function summarizeDataHealthRows(
       },
     },
     coverage: buildCoverageSummary(rows),
+    decisionReadiness: buildDecisionReadinessSummary(rows),
     ingestion: buildIngestionSummary(rows.ingestionJobs),
     reviewQueue: buildReviewQueueSummary(rows.reviewItems),
   };
@@ -245,6 +297,9 @@ async function loadDataHealthRows(): Promise<DataHealthRows> {
     admissionThresholdRows,
     sourceUrlRows,
     calculatorConfigRows,
+    admissionsSourceCandidateRows,
+    admissionFactRows,
+    admissionAlternativePathRows,
     ingestionJobRows,
     reviewItemRows,
   ] = await Promise.all([
@@ -294,6 +349,37 @@ async function loadDataHealthRows(): Promise<DataHealthRows> {
       .from(universityCalculatorConfigs),
     db
       .select({
+        id: admissionsSourceCandidates.id,
+        admissionRequirementId: admissionsSourceCandidates.admissionRequirementId,
+        programId: admissionsSourceCandidates.programId,
+        institutionId: admissionsSourceCandidates.institutionId,
+        origin: admissionsSourceCandidates.origin,
+        specificity: admissionsSourceCandidates.specificity,
+        confidence: admissionsSourceCandidates.confidence,
+      })
+      .from(admissionsSourceCandidates),
+    db
+      .select({
+        id: admissionFacts.id,
+        admissionRequirementId: admissionFacts.admissionRequirementId,
+        programId: admissionFacts.programId,
+        institutionId: admissionFacts.institutionId,
+        kind: admissionFacts.kind,
+        field: admissionFacts.field,
+        confidence: admissionFacts.confidence,
+      })
+      .from(admissionFacts),
+    db
+      .select({
+        id: admissionAlternativePaths.id,
+        admissionRequirementId: admissionAlternativePaths.admissionRequirementId,
+        programId: admissionAlternativePaths.programId,
+        institutionId: admissionAlternativePaths.institutionId,
+        kind: admissionAlternativePaths.kind,
+      })
+      .from(admissionAlternativePaths),
+    db
+      .select({
         id: ingestionJobs.id,
         sourceId: ingestionJobs.sourceId,
         status: ingestionJobs.status,
@@ -325,6 +411,9 @@ async function loadDataHealthRows(): Promise<DataHealthRows> {
     admissionThresholds: admissionThresholdRows,
     sourceUrls: sourceUrlRows,
     universityCalculatorConfigs: calculatorConfigRows,
+    admissionsSourceCandidates: admissionsSourceCandidateRows,
+    admissionFacts: admissionFactRows,
+    admissionAlternativePaths: admissionAlternativePathRows,
     ingestionJobs: ingestionJobRows,
     reviewItems: reviewItemRows,
   };
@@ -357,6 +446,78 @@ function buildCoverageSummary(rows: DataHealthRows): DataHealthReadyReport['cove
     missingProgramSourceCount: missingProgramSources.length,
     missingRequirementSources: missingRequirementSources.slice(0, ISSUE_LIMIT),
     missingProgramSources: missingProgramSources.slice(0, ISSUE_LIMIT),
+  };
+}
+
+function buildDecisionReadinessSummary(
+  rows: DataHealthRows,
+): DataHealthReadyReport['decisionReadiness'] {
+  const factsByRequirementId = new Map<string, DataHealthRows['admissionFacts']>();
+  const sourceCandidatesByRequirementId = new Map<
+    string,
+    DataHealthRows['admissionsSourceCandidates']
+  >();
+
+  for (const fact of rows.admissionFacts) {
+    const existing = factsByRequirementId.get(fact.admissionRequirementId) ?? [];
+    existing.push(fact);
+    factsByRequirementId.set(fact.admissionRequirementId, existing);
+  }
+
+  for (const source of rows.admissionsSourceCandidates) {
+    const existing = sourceCandidatesByRequirementId.get(source.admissionRequirementId) ?? [];
+    existing.push(source);
+    sourceCandidatesByRequirementId.set(source.admissionRequirementId, existing);
+  }
+
+  const requirementsMissingFacts = rows.admissionRequirements
+    .filter((requirement) => (factsByRequirementId.get(requirement.id) ?? []).length === 0)
+    .map((requirement) => ({
+      admissionRequirementId: requirement.id,
+      institutionId: requirement.institutionId,
+      programId: requirement.programId,
+    }));
+
+  const weakSources = rows.admissionsSourceCandidates
+    .filter((source) => source.confidence === 'low' || source.specificity === 'generic')
+    .map((source) => ({
+      sourceCandidateId: source.id,
+      admissionRequirementId: source.admissionRequirementId,
+      institutionId: source.institutionId,
+      programId: source.programId,
+      confidence: source.confidence,
+      origin: source.origin,
+      specificity: source.specificity,
+    }));
+
+  const manualGateRequirementIds = new Set(
+    rows.admissionFacts
+      .filter((fact) => fact.kind === 'manual_gate')
+      .map((fact) => fact.admissionRequirementId),
+  );
+  const manualGateRequirements = rows.admissionRequirements
+    .filter((requirement) => manualGateRequirementIds.has(requirement.id))
+    .map((requirement) => ({
+      admissionRequirementId: requirement.id,
+      institutionId: requirement.institutionId,
+      programId: requirement.programId,
+    }));
+
+  const decisionReadyRequirementCount = rows.admissionRequirements.filter((requirement) => {
+    const facts = factsByRequirementId.get(requirement.id) ?? [];
+    const sources = sourceCandidatesByRequirementId.get(requirement.id) ?? [];
+    return facts.length > 0 && sources.length > 0 && facts.some((fact) => fact.kind !== 'unknown');
+  }).length;
+
+  return {
+    decisionReadyRequirementCount,
+    missingFactCount: requirementsMissingFacts.length,
+    weakSourceCount: weakSources.length,
+    manualGateCount: rows.admissionFacts.filter((fact) => fact.kind === 'manual_gate').length,
+    alternativePathCount: rows.admissionAlternativePaths.length,
+    requirementsMissingFacts: requirementsMissingFacts.slice(0, ISSUE_LIMIT),
+    weakSources: weakSources.slice(0, ISSUE_LIMIT),
+    manualGateRequirements: manualGateRequirements.slice(0, ISSUE_LIMIT),
   };
 }
 

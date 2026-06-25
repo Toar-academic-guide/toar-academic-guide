@@ -1,8 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { UNIVERSITIES } from '@/data/degreesData';
 import {
+  admissionAlternativePaths,
+  admissionFacts,
   admissionRequirements,
   admissionThresholds,
+  admissionsSourceCandidates,
   institutions,
   programInstitutions,
   programs,
@@ -65,8 +68,11 @@ import {
 } from '@/server/catalogue/queries';
 
 function createMockDb(dataset: {
+  admissionAlternativePaths?: unknown[];
+  admissionFacts?: unknown[];
   admissionRequirements?: unknown[];
   admissionThresholds?: unknown[];
+  admissionsSourceCandidates?: unknown[];
   institutions?: unknown[];
   programInstitutions?: unknown[];
   programs?: unknown[];
@@ -81,6 +87,9 @@ function createMockDb(dataset: {
     [admissionRequirements, dataset.admissionRequirements ?? []],
     [admissionThresholds, dataset.admissionThresholds ?? []],
     [sourceUrls, dataset.sourceUrls ?? []],
+    [admissionsSourceCandidates, dataset.admissionsSourceCandidates ?? []],
+    [admissionFacts, dataset.admissionFacts ?? []],
+    [admissionAlternativePaths, dataset.admissionAlternativePaths ?? []],
   ]);
 
   const from = vi.fn((table: object) => ({
@@ -147,6 +156,9 @@ function createDatabaseBackedDataset() {
     admissionRequirements: [],
     admissionThresholds: [],
     sourceUrls: [],
+    admissionsSourceCandidates: [],
+    admissionFacts: [],
+    admissionAlternativePaths: [],
   };
 }
 

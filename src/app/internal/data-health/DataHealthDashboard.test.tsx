@@ -41,6 +41,38 @@ function reportWithRisks(): DataHealthReadyReport {
         },
       ],
     },
+    decisionReadiness: {
+      decisionReadyRequirementCount: 2,
+      missingFactCount: 1,
+      weakSourceCount: 1,
+      manualGateCount: 1,
+      alternativePathCount: 1,
+      requirementsMissingFacts: [
+        {
+          admissionRequirementId: 'req-missing-facts',
+          institutionId: 'tau',
+          programId: 'tau_psychology',
+        },
+      ],
+      weakSources: [
+        {
+          sourceCandidateId: 'candidate-weak',
+          admissionRequirementId: 'req-tau-law',
+          institutionId: 'tau',
+          programId: 'tau_law',
+          confidence: 'low',
+          origin: 'board_column',
+          specificity: 'generic',
+        },
+      ],
+      manualGateRequirements: [
+        {
+          admissionRequirementId: 'req-tau-law',
+          institutionId: 'tau',
+          programId: 'tau_law',
+        },
+      ],
+    },
     ingestion: {
       totalJobs: 3,
       jobsByStatus: { failed: 1, pending: 1, running: 1 },
@@ -93,6 +125,7 @@ describe('DataHealthDashboard', () => {
 
     expect(screen.getByRole('heading', { name: /data health/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /catalogue readiness/i })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /admissions decision readiness/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /source coverage/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /ingestion pipeline/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /review queue/i })).toBeTruthy();
