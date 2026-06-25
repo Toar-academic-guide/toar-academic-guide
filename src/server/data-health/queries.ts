@@ -5,10 +5,12 @@ import {
   admissionRequirements,
   admissionThresholds,
   ingestionJobs,
+  ingestionSources,
   institutions,
   programInstitutions,
   programs,
   reviewItems,
+  sourceFreshnessStates,
   sourceUrls,
   universityCalculatorConfigs,
 } from '@/db/schema';
@@ -19,6 +21,7 @@ const DATA_HEALTH_QUERY_TIMEOUT_MS = 15000;
 const DATA_HEALTH_UNAVAILABLE_MESSAGE = 'Operational data health is not configured.';
 const DATA_HEALTH_TIMEOUT_MESSAGE =
   'Operational data health did not respond in time. Check OPS_DATABASE_URL and Supabase pooler connectivity.';
+const SOURCE_FRESHNESS_STALE_AFTER_MS = 8 * 24 * 60 * 60 * 1000;
 
 export type DataHealthReport =
   | DataHealthReadyReport
@@ -54,6 +57,11 @@ export interface DataHealthReadyReport {
     oldestPendingItem: ReviewItemSummary | null;
     recentReviewedItems: ReviewItemSummary[];
   };
+  freshness: {
+    staleAfterDays: number;
+    totalsByStatus: Partial<Record<DashboardSourceFreshnessStatus, number>>;
+    rows: SourceFreshnessSummary[];
+  };
 }
 
 export interface DataHealthRows {
@@ -80,13 +88,32 @@ export interface DataHealthRows {
     url: string;
   }>;
   universityCalculatorConfigs: Array<{ institutionId: string }>;
+  ingestionSources: IngestionSourceRow[];
   ingestionJobs: IngestionJobRow[];
   reviewItems: ReviewItemRow[];
+  sourceFreshnessStates: SourceFreshnessStateRow[];
 }
 
 type IngestionJobStatus = 'pending' | 'running' | 'succeeded' | 'failed' | 'needs_review';
 type SourceDifficulty = 'easy' | 'browser_required' | 'hard_manual';
 type ReviewItemStatus = 'pending' | 'approved' | 'rejected';
+type FreshnessSourceClass =
+  | 'api_static_json'
+  | 'browser_required'
+  | 'official_html'
+  | 'pdf_text'
+  | 'score_only_calculator';
+type FreshnessCapability = 'blocked' | 'decision_capable' | 'score_only';
+type SourceFreshnessStatus = 'blocked' | 'changed_needs_review' | 'failed' | 'fresh';
+type DashboardSourceFreshnessStatus = SourceFreshnessStatus | 'never_checked' | 'stale';
+
+interface IngestionSourceRow {
+  id: string;
+  institutionId: string | null;
+  programId: string | null;
+  difficulty: SourceDifficulty;
+  sourceUrl: string;
+}
 
 interface IngestionJobRow {
   id: string;
@@ -107,6 +134,20 @@ interface ReviewItemRow {
   status: ReviewItemStatus;
   createdAt: Date;
   reviewedAt: Date | null;
+}
+
+interface SourceFreshnessStateRow {
+  sourceId: string;
+  sourceClass: FreshnessSourceClass;
+  capability: FreshnessCapability;
+  status: SourceFreshnessStatus;
+  lastCheckedAt: Date | null;
+  lastSuccessfulCheckAt: Date | null;
+  lastChangedAt: Date | null;
+  latestFailureReason: string | null;
+  blockedReason: string | null;
+  latestReviewItemId: string | null;
+  nextAction: string | null;
 }
 
 interface DataHealthCounts {
@@ -161,6 +202,22 @@ class DataHealthTimeoutError extends Error {
     super(`Data health query timed out after ${timeoutMs}ms`);
     this.name = 'DataHealthTimeoutError';
   }
+}
+
+interface SourceFreshnessSummary {
+  sourceId: string;
+  institutionId: string | null;
+  programId: string | null;
+  sourceUrl: string;
+  status: DashboardSourceFreshnessStatus;
+  sourceClass: FreshnessSourceClass | null;
+  capability: FreshnessCapability | null;
+  lastCheckedAt: string | null;
+  lastSuccessfulCheckAt: string | null;
+  lastChangedAt: string | null;
+  reason: string | null;
+  latestReviewItemId: string | null;
+  nextAction: string | null;
 }
 
 export async function getDataHealthReport(
@@ -231,6 +288,7 @@ export function summarizeDataHealthRows(
     coverage: buildCoverageSummary(rows),
     ingestion: buildIngestionSummary(rows.ingestionJobs),
     reviewQueue: buildReviewQueueSummary(rows.reviewItems),
+    freshness: buildSourceFreshnessSummary(rows, now),
   };
 }
 
@@ -245,8 +303,10 @@ async function loadDataHealthRows(): Promise<DataHealthRows> {
     admissionThresholdRows,
     sourceUrlRows,
     calculatorConfigRows,
+    ingestionSourceRows,
     ingestionJobRows,
     reviewItemRows,
+    sourceFreshnessStateRows,
   ] = await Promise.all([
     db.select({ id: institutions.id }).from(institutions),
     db
@@ -294,6 +354,15 @@ async function loadDataHealthRows(): Promise<DataHealthRows> {
       .from(universityCalculatorConfigs),
     db
       .select({
+        id: ingestionSources.id,
+        institutionId: ingestionSources.institutionId,
+        programId: ingestionSources.programId,
+        difficulty: ingestionSources.difficulty,
+        sourceUrl: ingestionSources.sourceUrl,
+      })
+      .from(ingestionSources),
+    db
+      .select({
         id: ingestionJobs.id,
         sourceId: ingestionJobs.sourceId,
         status: ingestionJobs.status,
@@ -315,6 +384,21 @@ async function loadDataHealthRows(): Promise<DataHealthRows> {
         reviewedAt: reviewItems.reviewedAt,
       })
       .from(reviewItems),
+    db
+      .select({
+        sourceId: sourceFreshnessStates.sourceId,
+        sourceClass: sourceFreshnessStates.sourceClass,
+        capability: sourceFreshnessStates.capability,
+        status: sourceFreshnessStates.status,
+        lastCheckedAt: sourceFreshnessStates.lastCheckedAt,
+        lastSuccessfulCheckAt: sourceFreshnessStates.lastSuccessfulCheckAt,
+        lastChangedAt: sourceFreshnessStates.lastChangedAt,
+        latestFailureReason: sourceFreshnessStates.latestFailureReason,
+        blockedReason: sourceFreshnessStates.blockedReason,
+        latestReviewItemId: sourceFreshnessStates.latestReviewItemId,
+        nextAction: sourceFreshnessStates.nextAction,
+      })
+      .from(sourceFreshnessStates),
   ]);
 
   return {
@@ -325,8 +409,10 @@ async function loadDataHealthRows(): Promise<DataHealthRows> {
     admissionThresholds: admissionThresholdRows,
     sourceUrls: sourceUrlRows,
     universityCalculatorConfigs: calculatorConfigRows,
+    ingestionSources: ingestionSourceRows,
     ingestionJobs: ingestionJobRows,
     reviewItems: reviewItemRows,
+    sourceFreshnessStates: sourceFreshnessStateRows,
   };
 }
 
@@ -397,6 +483,110 @@ function buildReviewQueueSummary(rows: ReviewItemRow[]): DataHealthReadyReport['
       .slice(0, ISSUE_LIMIT)
       .map(serializeReviewItem),
   };
+}
+
+function buildSourceFreshnessSummary(
+  rows: DataHealthRows,
+  now: Date
+): DataHealthReadyReport['freshness'] {
+  const statesBySourceId = new Map(rows.sourceFreshnessStates.map((row) => [row.sourceId, row]));
+  const freshnessRows = rows.ingestionSources
+    .map((source) => serializeSourceFreshness(source, statesBySourceId.get(source.id), now))
+    .toSorted(compareSourceFreshnessRows);
+
+  return {
+    staleAfterDays: SOURCE_FRESHNESS_STALE_AFTER_MS / (24 * 60 * 60 * 1000),
+    totalsByStatus: countBy(freshnessRows, (row) => row.status),
+    rows: freshnessRows.slice(0, ISSUE_LIMIT),
+  };
+}
+
+function serializeSourceFreshness(
+  source: IngestionSourceRow,
+  state: SourceFreshnessStateRow | undefined,
+  now: Date
+): SourceFreshnessSummary {
+  if (!state) {
+    return {
+      sourceId: source.id,
+      institutionId: source.institutionId,
+      programId: source.programId,
+      sourceUrl: source.sourceUrl,
+      status: 'never_checked',
+      sourceClass: null,
+      capability: null,
+      lastCheckedAt: null,
+      lastSuccessfulCheckAt: null,
+      lastChangedAt: null,
+      reason: null,
+      latestReviewItemId: null,
+      nextAction: null,
+    };
+  }
+
+  const status = classifySourceFreshnessStatus(state, now);
+
+  return {
+    sourceId: source.id,
+    institutionId: source.institutionId,
+    programId: source.programId,
+    sourceUrl: source.sourceUrl,
+    status,
+    sourceClass: state.sourceClass,
+    capability: state.capability,
+    lastCheckedAt: state.lastCheckedAt?.toISOString() ?? null,
+    lastSuccessfulCheckAt: state.lastSuccessfulCheckAt?.toISOString() ?? null,
+    lastChangedAt: state.lastChangedAt?.toISOString() ?? null,
+    reason: state.latestFailureReason ?? state.blockedReason,
+    latestReviewItemId: state.latestReviewItemId,
+    nextAction: state.nextAction,
+  };
+}
+
+function classifySourceFreshnessStatus(
+  state: SourceFreshnessStateRow,
+  now: Date
+): DashboardSourceFreshnessStatus {
+  if (state.status !== 'fresh') {
+    return state.status;
+  }
+
+  if (
+    !state.lastSuccessfulCheckAt ||
+    now.getTime() - state.lastSuccessfulCheckAt.getTime() > SOURCE_FRESHNESS_STALE_AFTER_MS
+  ) {
+    return 'stale';
+  }
+
+  return 'fresh';
+}
+
+function compareSourceFreshnessRows(
+  left: SourceFreshnessSummary,
+  right: SourceFreshnessSummary
+): number {
+  const priority =
+    freshnessStatusPriority(left.status) - freshnessStatusPriority(right.status);
+  if (priority !== 0) {
+    return priority;
+  }
+
+  const leftChecked = left.lastCheckedAt ? Date.parse(left.lastCheckedAt) : 0;
+  const rightChecked = right.lastCheckedAt ? Date.parse(right.lastCheckedAt) : 0;
+  return leftChecked - rightChecked || left.sourceId.localeCompare(right.sourceId);
+}
+
+function freshnessStatusPriority(status: DashboardSourceFreshnessStatus): number {
+  const priorities: Record<DashboardSourceFreshnessStatus, number> = {
+    changed_needs_review: 0,
+    failed: 1,
+    stale: 2,
+    blocked: 3,
+    never_checked: 4,
+    fresh: 5,
+  };
+
+  return priorities[status];
 }
 
 function countBy<T, K extends string>(rows: T[], getKey: (row: T) => K): Record<K, number> {

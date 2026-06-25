@@ -50,6 +50,13 @@
       "when": 1782144444281,
       "tag": "0006_explicit_private_table_deny_policies",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1782427050672,
+      "tag": "0007_source_freshness",
+      "breakpoints": true
     }
   ]
 }

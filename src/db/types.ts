@@ -10,6 +10,8 @@ import type {
   requirementVersions,
   reviewItems,
   savedPrograms,
+  sourceFreshnessChecks,
+  sourceFreshnessStates,
   sourceUrls,
   uploadedDocuments,
   universityCalculatorConfigs,
@@ -31,3 +33,5 @@ export type IngestionSourceRow = typeof ingestionSources.$inferSelect;
 export type IngestionJobRow = typeof ingestionJobs.$inferSelect;
 export type IngestionPayloadRow = typeof ingestionPayloads.$inferSelect;
 export type ReviewItemRow = typeof reviewItems.$inferSelect;
+export type SourceFreshnessStateRow = typeof sourceFreshnessStates.$inferSelect;
+export type SourceFreshnessCheckRow = typeof sourceFreshnessChecks.$inferSelect;

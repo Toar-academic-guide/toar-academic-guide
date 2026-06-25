@@ -1,5 +1,6 @@
 import {
   boolean,
+  index,
   integer,
   jsonb,
   pgEnum,
@@ -50,11 +51,24 @@ export const reviewItemStatusEnum = pgEnum('review_item_status', [
   'rejected',
 ]);
 export const documentKindEnum = pgEnum('document_kind', ['psychometric', 'bagrut', 'other']);
-export const storageProviderEnum = pgEnum('storage_provider', [
-  'local',
-  'supabase_storage',
-  's3',
-  'other',
+export const storageProviderEnum = pgEnum('storage_provider', ['local', 'supabase_storage', 's3', 'other']);
+export const freshnessSourceClassEnum = pgEnum('freshness_source_class', [
+  'api_static_json',
+  'browser_required',
+  'official_html',
+  'pdf_text',
+  'score_only_calculator',
+]);
+export const freshnessCapabilityEnum = pgEnum('freshness_capability', [
+  'blocked',
+  'decision_capable',
+  'score_only',
+]);
+export const sourceFreshnessStatusEnum = pgEnum('source_freshness_status', [
+  'blocked',
+  'changed_needs_review',
+  'failed',
+  'fresh',
 ]);
 
 export const institutions = pgTable('institutions', {
@@ -295,3 +309,74 @@ export const reviewItems = pgTable('review_items', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   reviewedAt: timestamp('reviewed_at', { withTimezone: true }),
 });
+
+export const sourceFreshnessStates = pgTable(
+  'source_freshness_states',
+  {
+    sourceId: text('source_id')
+      .primaryKey()
+      .references(() => ingestionSources.id, { onDelete: 'cascade' }),
+    sourceClass: freshnessSourceClassEnum('source_class').notNull(),
+    capability: freshnessCapabilityEnum('capability').notNull(),
+    status: sourceFreshnessStatusEnum('status').notNull(),
+    lastCheckedAt: timestamp('last_checked_at', { withTimezone: true }),
+    lastSuccessfulCheckAt: timestamp('last_successful_check_at', { withTimezone: true }),
+    lastChangedAt: timestamp('last_changed_at', { withTimezone: true }),
+    latestFailureReason: text('latest_failure_reason'),
+    blockedReason: text('blocked_reason'),
+    rawFingerprint: text('raw_fingerprint'),
+    normalizedFingerprint: text('normalized_fingerprint'),
+    normalizedDecisionPayload: jsonb('normalized_decision_payload')
+      .$type<Record<string, unknown>>()
+      .default({})
+      .notNull(),
+    latestReviewItemId: text('latest_review_item_id').references(() => reviewItems.id, {
+      onDelete: 'set null',
+    }),
+    nextAction: text('next_action'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => ({
+    statusIdx: index('source_freshness_states_status_idx').on(table.status),
+    latestReviewItemIdx: index('source_freshness_states_latest_review_item_idx').on(
+      table.latestReviewItemId
+    ),
+  })
+);
+
+export const sourceFreshnessChecks = pgTable(
+  'source_freshness_checks',
+  {
+    id: text('id').primaryKey(),
+    sourceId: text('source_id')
+      .notNull()
+      .references(() => ingestionSources.id, { onDelete: 'cascade' }),
+    sourceClass: freshnessSourceClassEnum('source_class').notNull(),
+    capability: freshnessCapabilityEnum('capability').notNull(),
+    status: sourceFreshnessStatusEnum('status').notNull(),
+    checkedAt: timestamp('checked_at', { withTimezone: true }).defaultNow().notNull(),
+    successful: boolean('successful').notNull(),
+    failureReason: text('failure_reason'),
+    blockedReason: text('blocked_reason'),
+    rawFingerprint: text('raw_fingerprint'),
+    normalizedFingerprint: text('normalized_fingerprint'),
+    normalizedDecisionPayload: jsonb('normalized_decision_payload')
+      .$type<Record<string, unknown>>()
+      .default({})
+      .notNull(),
+    reviewWorthy: boolean('review_worthy').default(false).notNull(),
+    reviewItemId: text('review_item_id').references(() => reviewItems.id, {
+      onDelete: 'set null',
+    }),
+    nextAction: text('next_action'),
+  },
+  (table) => ({
+    sourceCheckedAtIdx: index('source_freshness_checks_source_checked_at_idx').on(
+      table.sourceId,
+      table.checkedAt
+    ),
+    statusIdx: index('source_freshness_checks_status_idx').on(table.status),
+    reviewItemIdx: index('source_freshness_checks_review_item_idx').on(table.reviewItemId),
+  })
+);

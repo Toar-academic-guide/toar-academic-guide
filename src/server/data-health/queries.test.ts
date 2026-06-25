@@ -63,8 +63,25 @@ function baseRows(overrides: Partial<DataHealthRows> = {}): DataHealthRows {
       { institutionId: 'biu' },
       { institutionId: 'ariel' },
     ],
+    ingestionSources: [
+      {
+        id: 'tau-live',
+        institutionId: 'tau',
+        programId: 'tau_cs',
+        difficulty: 'easy',
+        sourceUrl: 'https://go.tau.ac.il/graphql',
+      },
+      {
+        id: 'haifa-live',
+        institutionId: 'haifa',
+        programId: null,
+        difficulty: 'easy',
+        sourceUrl: 'https://applicants.haifa.ac.il/enrollmentChances/index.html',
+      },
+    ],
     ingestionJobs: [],
     reviewItems: [],
+    sourceFreshnessStates: [],
     ...overrides,
   };
 }
@@ -215,6 +232,62 @@ describe('summarizeDataHealthRows', () => {
     ]);
   });
 
+  it('aggregates source freshness totals across live, changed, failed, stale, blocked, and never checked rows', () => {
+    const report = summarizeDataHealthRows(
+      baseRows({
+        ingestionSources: [
+          sourceRow('fresh-source'),
+          sourceRow('changed-source'),
+          sourceRow('failed-source'),
+          sourceRow('stale-source'),
+          sourceRow('blocked-source'),
+          sourceRow('never-source'),
+        ],
+        sourceFreshnessStates: [
+          freshnessState('fresh-source', {
+            status: 'fresh',
+            lastSuccessfulCheckAt: new Date('2026-06-23T18:00:00.000Z'),
+          }),
+          freshnessState('changed-source', {
+            status: 'changed_needs_review',
+            latestReviewItemId: 'review-1',
+          }),
+          freshnessState('failed-source', {
+            status: 'failed',
+            latestFailureReason: 'Official endpoint timed out',
+          }),
+          freshnessState('stale-source', {
+            status: 'fresh',
+            lastSuccessfulCheckAt: new Date('2026-06-01T18:00:00.000Z'),
+          }),
+          freshnessState('blocked-source', {
+            status: 'blocked',
+            blockedReason: 'Radware/browser session required',
+          }),
+        ],
+      }),
+      now
+    );
+
+    expect(report.freshness.totalsByStatus).toEqual({
+      blocked: 1,
+      changed_needs_review: 1,
+      failed: 1,
+      fresh: 1,
+      never_checked: 1,
+      stale: 1,
+    });
+    expect(report.freshness.rows[0]).toMatchObject({
+      sourceId: 'changed-source',
+      status: 'changed_needs_review',
+      latestReviewItemId: 'review-1',
+    });
+    expect(report.freshness.rows).toHaveLength(5);
+    expect(report.freshness.rows.find((row) => row.sourceId === 'failed-source')).toMatchObject({
+      reason: 'Official endpoint timed out',
+    });
+  });
+
   it('returns zero-count sections for empty tables', () => {
     const report = summarizeDataHealthRows(
       baseRows({
@@ -235,6 +308,36 @@ describe('summarizeDataHealthRows', () => {
     expect(report.reviewQueue.pendingCount).toBe(0);
   });
 });
+
+function sourceRow(id: string): DataHealthRows['ingestionSources'][number] {
+  return {
+    id,
+    institutionId: 'tau',
+    programId: null,
+    difficulty: 'easy',
+    sourceUrl: `https://example.com/${id}`,
+  };
+}
+
+function freshnessState(
+  sourceId: string,
+  overrides: Partial<DataHealthRows['sourceFreshnessStates'][number]> = {}
+): DataHealthRows['sourceFreshnessStates'][number] {
+  return {
+    sourceId,
+    sourceClass: 'api_static_json',
+    capability: 'decision_capable',
+    status: 'fresh',
+    lastCheckedAt: new Date('2026-06-23T18:00:00.000Z'),
+    lastSuccessfulCheckAt: new Date('2026-06-23T18:00:00.000Z'),
+    lastChangedAt: null,
+    latestFailureReason: null,
+    blockedReason: null,
+    latestReviewItemId: null,
+    nextAction: null,
+    ...overrides,
+  };
+}
 
 describe('getDataHealthReport', () => {
   beforeEach(() => {
