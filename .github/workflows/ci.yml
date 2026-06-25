@@ -14,20 +14,22 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# ---------------------------------------------------------------------------
+# Job 1: Static analysis — lint, type check, format, security audit
+# ---------------------------------------------------------------------------
 jobs:
-  test-build-and-dry-run:
-    name: Test, build, and catalogue dry-run
+  quality:
+    name: Lint, typecheck & security
     runs-on: ubuntu-latest
     env:
       CI: true
-      CATALOGUE_SOURCE_MODE: static
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: npm
@@ -35,19 +37,132 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests
-        run: npm test
+      - name: TypeScript type check
+        run: npm run typecheck
 
-      - name: Validate catalogue seed without DB writes
+      - name: ESLint
+        run: npm run lint
+
+      - name: Prettier format check
+        run: npm run format:check
+
+      - name: Security audit (high + critical)
+        run: npm audit --audit-level=high
+        continue-on-error: true
+
+      - name: Drizzle migration consistency
+        run: npm run db:migrate:check
+        continue-on-error: true
+
+  # ---------------------------------------------------------------------------
+  # Job 2: Unit tests with coverage
+  # ---------------------------------------------------------------------------
+  test:
+    name: Unit tests & coverage
+    runs-on: ubuntu-latest
+    needs: quality
+    env:
+      CI: true
+      CATALOGUE_SOURCE_MODE: static
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests with coverage
+        run: npm run test:coverage
+
+      - name: Validate catalogue seed (dry-run)
         run: npm run db:seed:dry-run
+
+  # ---------------------------------------------------------------------------
+  # Job 3: Build
+  # ---------------------------------------------------------------------------
+  build:
+    name: Build application
+    runs-on: ubuntu-latest
+    needs: test
+    env:
+      CI: true
+      CATALOGUE_SOURCE_MODE: static
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+  # ---------------------------------------------------------------------------
+  # Job 4: E2E smoke tests (on main push or manual dispatch)
+  # ---------------------------------------------------------------------------
+  e2e:
+    name: E2E smoke tests
+    runs-on: ubuntu-latest
+    needs: build
+    if: ${{ github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' }}
+    env:
+      CI: true
+      CATALOGUE_SOURCE_MODE: static
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
 
       - name: Build application
         run: npm run build
 
+      - name: Run E2E tests
+        run: |
+          npm start &
+          npx wait-on http://localhost:3000 --timeout 30000
+          npm run test:e2e
+
+      - name: Upload test artifacts
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+  # ---------------------------------------------------------------------------
+  # Job 5: DB-backed catalogue verification (main + manual only)
+  # ---------------------------------------------------------------------------
   db-seed-verify:
     name: DB-backed catalogue verification
     runs-on: ubuntu-latest
-    needs: test-build-and-dry-run
+    needs: build
     if: ${{ github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' }}
     env:
       CI: true
@@ -56,10 +171,10 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: npm

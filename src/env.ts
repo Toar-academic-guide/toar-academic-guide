@@ -1,6 +1,7 @@
 import type { CatalogueSourceMode } from '@/types/catalogue';
 
 const DATABASE_URL_KEY = 'DATABASE_URL';
+const OPS_DATABASE_URL_KEY = 'OPS_DATABASE_URL';
 const CATALOGUE_SOURCE_MODE_KEY = 'CATALOGUE_SOURCE_MODE';
 const CATALOGUE_SOURCE_MODES = ['auto', 'database', 'static'] as const;
 
@@ -14,15 +15,29 @@ export function hasDatabaseUrl(): boolean {
 }
 
 export function requireDatabaseUrl(): string {
-  const value = readEnv(DATABASE_URL_KEY);
-  if (!value) {
-    throw new Error(
-      'Missing DATABASE_URL. Set DATABASE_URL in your environment before using DB-backed catalogue features.'
-    );
-  }
-
+  const value = readRequiredDatabaseUrl(DATABASE_URL_KEY);
   if (isProductionRuntime()) {
     assertProductionDatabaseUrlLeastPrivilege(value);
+  }
+
+  return value;
+}
+
+export function requireOpsDatabaseUrl(): string {
+  const value = readRequiredDatabaseUrl(OPS_DATABASE_URL_KEY);
+  if (isProductionRuntime()) {
+    assertProductionDatabaseUrlLeastPrivilege(value);
+  }
+
+  return value;
+}
+
+function readRequiredDatabaseUrl(name: string): string {
+  const value = readEnv(name);
+  if (!value) {
+    throw new Error(
+      `Missing ${name}. Set ${name} in your environment before using DB-backed features that require it.`,
+    );
   }
 
   return value;
@@ -39,7 +54,7 @@ export function getCatalogueSourceMode(): CatalogueSourceMode {
   }
 
   throw new Error(
-    `Invalid CATALOGUE_SOURCE_MODE "${value}". Expected one of: ${CATALOGUE_SOURCE_MODES.join(', ')}.`
+    `Invalid CATALOGUE_SOURCE_MODE "${value}". Expected one of: ${CATALOGUE_SOURCE_MODES.join(', ')}.`,
   );
 }
 
@@ -70,7 +85,7 @@ export function assertProductionDatabaseUrlLeastPrivilege(databaseUrl: string): 
 
   if (getDatabaseRoleFromUsername(parsed.username) === 'postgres') {
     throw new Error(
-      'Unsafe DATABASE_URL for production runtime: Supabase app traffic must not authenticate as postgres. Use a dedicated runtime role such as app_runtime with a pooled connection string.'
+      'Unsafe DATABASE_URL for production runtime: Supabase app traffic must not authenticate as postgres. Use a dedicated runtime role such as app_runtime with a pooled connection string.',
     );
   }
 }

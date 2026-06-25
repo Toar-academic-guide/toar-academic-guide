@@ -43,7 +43,10 @@ export interface CatalogueReadinessSnapshot {
   institutions: Pick<InstitutionRow, 'id'>[];
   programs: Pick<ProgramRow, 'id' | 'admissionType'>[];
   programInstitutions: Pick<ProgramInstitutionRow, 'programId' | 'institutionId'>[];
-  admissionThresholds: Pick<AdmissionThresholdRow, 'programId' | 'universityId' | 'thresholdValue'>[];
+  admissionThresholds: Pick<
+    AdmissionThresholdRow,
+    'programId' | 'universityId' | 'thresholdValue'
+  >[];
   universityCalculatorConfigs: Pick<UniversityCalculatorConfigRow, 'institutionId'>[];
 }
 
@@ -93,7 +96,7 @@ function createMeta(
   catalogueSourceMode: CatalogueSourceMode,
   catalogueSource: CatalogueSource,
   fallbackReason?: string,
-  cacheStatus?: CatalogueSnapshotCacheStatus
+  cacheStatus?: CatalogueSnapshotCacheStatus,
 ): ApiMetaPayload {
   return {
     catalogueSourceMode,
@@ -123,7 +126,7 @@ export class CatalogueQueryError extends Error {
       details?: string[];
       meta?: ApiMetaPayload;
       status?: number;
-    }
+    },
   ) {
     super(message);
     this.name = 'CatalogueQueryError';
@@ -136,7 +139,7 @@ export class CatalogueQueryError extends Error {
 }
 
 export function evaluateCatalogueReadiness(
-  snapshot: CatalogueReadinessSnapshot
+  snapshot: CatalogueReadinessSnapshot,
 ): CatalogueReadinessResult {
   const issues: string[] = [];
 
@@ -157,7 +160,7 @@ export function evaluateCatalogueReadiness(
     issues.push(
       `Programs missing institution links: ${programsMissingLinks.slice(0, 5).join(', ')}${
         programsMissingLinks.length > 5 ? '…' : ''
-      }`
+      }`,
     );
   }
 
@@ -166,36 +169,36 @@ export function evaluateCatalogueReadiness(
     .map((program) => program.id);
   const thresholdProgramIds = new Set(snapshot.admissionThresholds.map((row) => row.programId));
   const sekhemProgramsMissingThresholds = sekhemProgramIds.filter(
-    (programId) => !thresholdProgramIds.has(programId)
+    (programId) => !thresholdProgramIds.has(programId),
   );
 
   if (sekhemProgramsMissingThresholds.length > 0) {
     issues.push(
       `Sekhem programs missing thresholds: ${sekhemProgramsMissingThresholds.slice(0, 5).join(', ')}${
         sekhemProgramsMissingThresholds.length > 5 ? '…' : ''
-      }`
+      }`,
     );
   }
 
   const requiredCalculatorInstitutionIds = new Set(
     snapshot.admissionThresholds
       .filter((row) => row.thresholdValue !== null)
-      .map((row) => row.universityId)
+      .map((row) => row.universityId),
   );
   for (const university of UNIVERSITIES) {
     requiredCalculatorInstitutionIds.add(university.id);
   }
 
   const availableCalculatorInstitutionIds = new Set(
-    snapshot.universityCalculatorConfigs.map((row) => row.institutionId)
+    snapshot.universityCalculatorConfigs.map((row) => row.institutionId),
   );
   const missingCalculatorInstitutionIds = [...requiredCalculatorInstitutionIds].filter(
-    (institutionId) => !availableCalculatorInstitutionIds.has(institutionId)
+    (institutionId) => !availableCalculatorInstitutionIds.has(institutionId),
   );
 
   if (missingCalculatorInstitutionIds.length > 0) {
     issues.push(
-      `Institutions missing calculator configs: ${missingCalculatorInstitutionIds.join(', ')}`
+      `Institutions missing calculator configs: ${missingCalculatorInstitutionIds.join(', ')}`,
     );
   }
 
@@ -217,8 +220,8 @@ async function loadDatabaseCatalogueSnapshot(): Promise<DatabaseCatalogueSnapsho
           .where(
             inArray(
               universityCalculatorConfigs.institutionId,
-              institutionRows.map((row) => row.id)
-            )
+              institutionRows.map((row) => row.id),
+            ),
           );
   const programRows = await db.select().from(programs);
 
@@ -266,10 +269,7 @@ async function loadDatabaseCatalogueSnapshot(): Promise<DatabaseCatalogueSnapsho
 async function loadDatabaseCatalogueSnapshotWithCache(): Promise<DatabaseSnapshotLoadResult> {
   const now = Date.now();
 
-  if (
-    databaseCatalogueSnapshotCache.snapshot &&
-    databaseCatalogueSnapshotCache.expiresAt > now
-  ) {
+  if (databaseCatalogueSnapshotCache.snapshot && databaseCatalogueSnapshotCache.expiresAt > now) {
     return {
       cacheStatus: 'hit',
       snapshot: databaseCatalogueSnapshotCache.snapshot,
@@ -301,7 +301,7 @@ async function loadDatabaseCatalogueSnapshotWithCache(): Promise<DatabaseSnapsho
 }
 
 async function loadDatabaseCatalogueOrThrow(
-  mode: CatalogueSourceMode
+  mode: CatalogueSourceMode,
 ): Promise<DatabaseSnapshotLoadResult> {
   try {
     return await loadDatabaseCatalogueSnapshotWithCache();
@@ -312,7 +312,7 @@ async function loadDatabaseCatalogueOrThrow(
       {
         cause: error,
         meta: createMeta(mode, 'database'),
-      }
+      },
     );
   }
 }
@@ -323,7 +323,7 @@ function canUseStaticFallback(mode: CatalogueSourceMode): boolean {
 
 function buildReadinessError(
   mode: CatalogueSourceMode,
-  readiness: CatalogueReadinessResult
+  readiness: CatalogueReadinessResult,
 ): CatalogueQueryError {
   return new CatalogueQueryError(
     'CATALOGUE_DATABASE_NOT_READY',
@@ -331,7 +331,7 @@ function buildReadinessError(
     {
       details: readiness.issues,
       meta: createMeta(mode, 'database'),
-    }
+    },
   );
 }
 
@@ -359,7 +359,7 @@ async function resolveCatalogueSource(): Promise<CatalogueSourceResolution> {
       {
         details: ['Set DATABASE_URL or switch CATALOGUE_SOURCE_MODE to static for local fallback.'],
         meta: createMeta(mode, 'database'),
-      }
+      },
     );
   }
 
@@ -395,7 +395,9 @@ async function resolveCatalogueSource(): Promise<CatalogueSourceResolution> {
   }
 }
 
-export async function listCatalogueInstitutions(): Promise<CatalogueQueryResult<CatalogueInstitution[]>> {
+export async function listCatalogueInstitutions(): Promise<
+  CatalogueQueryResult<CatalogueInstitution[]>
+> {
   const resolution = await resolveCatalogueSource();
 
   if (resolution.source === 'static') {
@@ -406,12 +408,12 @@ export async function listCatalogueInstitutions(): Promise<CatalogueQueryResult<
   }
 
   const calculatorConfigsByInstitutionId = new Map(
-    resolution.snapshot!.universityCalculatorConfigs.map((row) => [row.institutionId, row])
+    resolution.snapshot!.universityCalculatorConfigs.map((row) => [row.institutionId, row]),
   );
 
   return {
     data: resolution.snapshot!.institutions.map((row) =>
-      serializeInstitutionRow(row, calculatorConfigsByInstitutionId.get(row.id))
+      serializeInstitutionRow(row, calculatorConfigsByInstitutionId.get(row.id)),
     ),
     meta: resolution.meta,
   };
@@ -441,17 +443,19 @@ export async function listCataloguePrograms(): Promise<CatalogueQueryResult<Cata
       serializeProgramRow({
         program: programRow,
         relations: resolution.snapshot!.programInstitutions.filter(
-          (row) => row.programId === programRow.id
+          (row) => row.programId === programRow.id,
         ),
         requirements: resolution.snapshot!.admissionRequirements.filter(
-          (row) => row.programId === programRow.id
+          (row) => row.programId === programRow.id,
         ),
         thresholds: resolution.snapshot!.admissionThresholds.filter(
-          (row) => row.programId === programRow.id
+          (row) => row.programId === programRow.id,
         ),
-        sourceUrls: resolution.snapshot!.sourceUrls.filter((row) => row.programId === programRow.id),
+        sourceUrls: resolution.snapshot!.sourceUrls.filter(
+          (row) => row.programId === programRow.id,
+        ),
         institutionsById,
-      })
+      }),
     ),
     meta: resolution.meta,
   };

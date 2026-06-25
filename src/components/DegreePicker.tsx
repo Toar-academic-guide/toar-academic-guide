@@ -17,12 +17,7 @@ function normalize(value: string) {
   return value.toLowerCase().replace(/[֑-ׇ]/g, '');
 }
 
-export default function DegreePicker({
-  programs,
-  savedProgramIds,
-  onToggleSave,
-  onDone,
-}: Props) {
+export default function DegreePicker({ programs, savedProgramIds, onToggleSave, onDone }: Props) {
   const [query, setQuery] = useState('');
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
@@ -41,8 +36,9 @@ export default function DegreePicker({
   }, [programs]);
 
   const categoryNames = useMemo(
-    () => Array.from(programsByCategory.keys()).sort((left, right) => left.localeCompare(right, 'he')),
-    [programsByCategory]
+    () =>
+      Array.from(programsByCategory.keys()).sort((left, right) => left.localeCompare(right, 'he')),
+    [programsByCategory],
   );
 
   const searchActive = query.trim().length > 0;
@@ -114,7 +110,9 @@ export default function DegreePicker({
             {categoryNames.map((category) => {
               const categoryPrograms = programsByCategory.get(category) ?? [];
               const isOpen = expandedCategory === category;
-              const savedInCategory = categoryPrograms.filter((program) => savedSet.has(program.id)).length;
+              const savedInCategory = categoryPrograms.filter((program) =>
+                savedSet.has(program.id),
+              ).length;
 
               return (
                 <div

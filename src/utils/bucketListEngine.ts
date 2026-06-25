@@ -1,5 +1,9 @@
 import { allPrograms } from '@/data/degrees';
-import { calculateSekhem, calculateDelta, evaluateMinimumFloorsAdmission } from '@/utils/sekhemCalculators';
+import {
+  calculateSekhem,
+  calculateDelta,
+  evaluateMinimumFloorsAdmission,
+} from '@/utils/sekhemCalculators';
 import { UNIVERSITIES } from '@/data/degreesData';
 import type { UserScores, DeltaNeeded, University } from '@/types';
 import type { Program } from '@/data/degrees/types';
@@ -7,10 +11,10 @@ import type { Program } from '@/data/degrees/types';
 // ── Result types ──────────────────────────────────────────────────────────────
 
 export type BucketStatus =
-  | 'qualified'     // user's scores meet or exceed the threshold
-  | 'gap'           // user's scores are below the threshold — delta calculated
-  | 'requirements'  // admissionType === 'requirements', no sekhem threshold
-  | 'no-data';      // scores missing or threshold not available for this program
+  | 'qualified' // user's scores meet or exceed the threshold
+  | 'gap' // user's scores are below the threshold — delta calculated
+  | 'requirements' // admissionType === 'requirements', no sekhem threshold
+  | 'no-data'; // scores missing or threshold not available for this program
 
 export interface BucketEntry {
   program: Program;
@@ -36,11 +40,11 @@ export function analyzeBucketList(
   savedProgramIds: string[],
   userScores: UserScores | null,
   programs: Program[] = allPrograms,
-  calculatorInstitutions: University[] = UNIVERSITIES
+  calculatorInstitutions: University[] = UNIVERSITIES,
 ): BucketEntry[] {
   const entries: BucketEntry[] = [];
   const calculatorInstitutionsById = new Map(
-    calculatorInstitutions.map((institution) => [institution.id, institution])
+    calculatorInstitutions.map((institution) => [institution.id, institution]),
   );
 
   for (const id of savedProgramIds) {
@@ -60,11 +64,14 @@ export function analyzeBucketList(
     const calculatorInstitutionId =
       (program.institutionId && calculatorInstitutionsById.has(program.institutionId)
         ? program.institutionId
-        : undefined) ?? thresholdIds.find((institutionId) => calculatorInstitutionsById.has(institutionId));
+        : undefined) ??
+      thresholdIds.find((institutionId) => calculatorInstitutionsById.has(institutionId));
     const university = calculatorInstitutionId
       ? calculatorInstitutionsById.get(calculatorInstitutionId)
       : undefined;
-    const threshold = calculatorInstitutionId ? (program.thresholds?.[calculatorInstitutionId] ?? null) : null;
+    const threshold = calculatorInstitutionId
+      ? (program.thresholds?.[calculatorInstitutionId] ?? null)
+      : null;
 
     if (!university || threshold === null) {
       entries.push({ program, status: 'no-data' });
@@ -79,7 +86,11 @@ export function analyzeBucketList(
 
     // ── Minimum-floors model (colleges) ────────────────────────────────────
     if (university.formulaType === 'minimum_floors') {
-      const { meetsAll, deltaNeeded } = evaluateMinimumFloorsAdmission(university, threshold, userScores);
+      const { meetsAll, deltaNeeded } = evaluateMinimumFloorsAdmission(
+        university,
+        threshold,
+        userScores,
+      );
 
       if (meetsAll) {
         entries.push({ program, status: 'qualified', sekhem: userScores.psychometric, threshold });
@@ -97,11 +108,12 @@ export function analyzeBucketList(
 
     // ── Calculate and compare ────────────────────────────────────────────────
     // Engineering bonuses are skipped for a conservative baseline estimate.
-    const raw    = calculateSekhem(university, userScores, program, { hasMath5: false, hasPhysics5: false });
+    const raw = calculateSekhem(university, userScores, program, {
+      hasMath5: false,
+      hasPhysics5: false,
+    });
     const sekhem =
-      university.formulaType === 'technion_linear'
-        ? Math.round(raw * 10) / 10
-        : Math.round(raw);
+      university.formulaType === 'technion_linear' ? Math.round(raw * 10) / 10 : Math.round(raw);
 
     const deficit = threshold - raw;
 
@@ -110,7 +122,7 @@ export function analyzeBucketList(
     } else {
       entries.push({
         program,
-        status:    'gap',
+        status: 'gap',
         sekhem,
         threshold,
         delta: calculateDelta(deficit, university),

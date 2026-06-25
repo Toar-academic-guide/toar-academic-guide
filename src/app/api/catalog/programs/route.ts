@@ -13,7 +13,12 @@ export async function GET() {
 
   try {
     const { data, meta } = await listCataloguePrograms();
-    const { envelope, summary } = buildCatalogueSuccessResponse('programs', data, meta, startedAtMs);
+    const { envelope, summary } = buildCatalogueSuccessResponse(
+      'programs',
+      data,
+      meta,
+      startedAtMs,
+    );
 
     logCatalogueResponse('programs', envelope.meta, summary);
 
@@ -21,8 +26,7 @@ export async function GET() {
   } catch (error) {
     const code =
       error instanceof CatalogueQueryError ? error.code : 'CATALOGUE_PROGRAMS_INTERNAL_ERROR';
-    const message =
-      error instanceof Error ? error.message : 'Unable to load catalogue programs.';
+    const message = error instanceof Error ? error.message : 'Unable to load catalogue programs.';
     const details = error instanceof CatalogueQueryError ? error.details : undefined;
     const meta = error instanceof CatalogueQueryError ? error.meta : undefined;
     const status = error instanceof CatalogueQueryError ? error.status : 503;
@@ -34,7 +38,7 @@ export async function GET() {
       },
       meta,
       startedAtMs,
-      status
+      status,
     );
 
     logCatalogueResponse('programs', envelope.meta, summary);

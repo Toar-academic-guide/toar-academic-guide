@@ -30,13 +30,7 @@ interface Props {
 
 // ── Individual saved-item card ────────────────────────────────────────────────
 
-function BucketCard({
-  entry,
-  onRemove,
-}: {
-  entry: BucketEntry;
-  onRemove: (id: string) => void;
-}) {
+function BucketCard({ entry, onRemove }: { entry: BucketEntry; onRemove: (id: string) => void }) {
   const { program, status, sekhem, threshold, delta } = entry;
 
   // ── Border / background per status ──────────────────────────────────────────
@@ -44,22 +38,18 @@ function BucketCard({
     status === 'qualified'
       ? 'border-green-100 bg-green-50/40'
       : status === 'gap'
-      ? 'border-amber-100 bg-white'
-      : 'border-slate-100 bg-white';
+        ? 'border-amber-100 bg-white'
+        : 'border-slate-100 bg-white';
 
   return (
     <div className={`flex flex-col gap-3 rounded-2xl border px-4 py-4 transition ${cardClass}`}>
-
       {/* ── Header row ─────────────────────────────────────────────────────── */}
       <div className="flex items-start justify-between gap-3">
-
         {/* Logo + names */}
         <div className="flex min-w-0 items-center gap-2.5">
           <InstitutionLogo institution={program.institution} />
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-slate-800">
-              {program.institution}
-            </p>
+            <p className="truncate text-sm font-semibold text-slate-800">{program.institution}</p>
             <p className="truncate text-xs text-slate-500">{program.name}</p>
           </div>
         </div>
@@ -71,9 +61,7 @@ function BucketCard({
             <span
               className={[
                 'rounded-full px-2.5 py-0.5 text-[11px] font-bold tabular-nums',
-                status === 'qualified'
-                  ? 'bg-green-100 text-green-800'
-                  : 'bg-red-50 text-red-700',
+                status === 'qualified' ? 'bg-green-100 text-green-800' : 'bg-red-50 text-red-700',
               ].join(' ')}
             >
               {sekhem} / ≥{threshold}
@@ -193,11 +181,9 @@ export default function BucketList({
 }: Props) {
   // Build UserScores only when both required fields are present
   const userScores = useMemo(() => {
-    const psy  = academicScores?.psychometric?.overall;
-    const bag  = academicScores?.bagrut?.weightedAverage;
-    return psy !== undefined && bag !== undefined
-      ? { psychometric: psy, bagrut: bag }
-      : null;
+    const psy = academicScores?.psychometric?.overall;
+    const bag = academicScores?.bagrut?.weightedAverage;
+    return psy !== undefined && bag !== undefined ? { psychometric: psy, bagrut: bag } : null;
   }, [academicScores]);
 
   const entries = useMemo(
@@ -205,11 +191,11 @@ export default function BucketList({
     [savedProgramIds, userScores, programs, calculatorInstitutions],
   );
 
-  const qualified    = entries.filter((e) => e.status === 'qualified');
-  const gap          = entries.filter((e) => e.status === 'gap');
+  const qualified = entries.filter((e) => e.status === 'qualified');
+  const gap = entries.filter((e) => e.status === 'gap');
   const requirements = entries.filter((e) => e.status === 'requirements');
-  const noData       = entries.filter((e) => e.status === 'no-data');
-  const hasScores    = userScores !== null;
+  const noData = entries.filter((e) => e.status === 'no-data');
+  const hasScores = userScores !== null;
 
   // ── Empty state ─────────────────────────────────────────────────────────────
   if (savedProgramIds.length === 0) {
@@ -231,7 +217,8 @@ export default function BucketList({
           <div>
             <h2 className="text-lg font-bold text-slate-800">רשימת הייעוד ריקה</h2>
             <p className="mt-1.5 max-w-sm text-sm text-slate-400">
-              עיין בהמלצות, פתח את פרטי תוכנית לימודים ולחץ על סמל הסימנייה כדי לשמור תארים שמעניינים אותך.
+              עיין בהמלצות, פתח את פרטי תוכנית לימודים ולחץ על סמל הסימנייה כדי לשמור תארים
+              שמעניינים אותך.
             </p>
           </div>
           <button
@@ -248,7 +235,6 @@ export default function BucketList({
   // ── Populated state ─────────────────────────────────────────────────────────
   return (
     <div className="flex flex-col gap-6">
-
       {/* ── Page header ──────────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between">
         <button
@@ -330,7 +316,6 @@ export default function BucketList({
           ))}
         </section>
       )}
-
     </div>
   );
 }

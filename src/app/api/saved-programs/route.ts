@@ -50,7 +50,7 @@ async function parseSavedProgramRequestBody(request: Request) {
   const body = await readJsonBody(
     request,
     'SAVED_PROGRAM_PAYLOAD_INVALID',
-    'Saved program payload is invalid.'
+    'Saved program payload is invalid.',
   );
   const parsed = savedProgramRequestBodySchema.safeParse(body);
 
@@ -58,7 +58,7 @@ async function parseSavedProgramRequestBody(request: Request) {
     throw new ApiRouteError(
       400,
       'SAVED_PROGRAM_PAYLOAD_INVALID',
-      'Saved program payload is invalid.'
+      'Saved program payload is invalid.',
     );
   }
 

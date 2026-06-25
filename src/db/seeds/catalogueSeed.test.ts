@@ -2,10 +2,7 @@ import { allPrograms } from '@/data/degrees';
 import { UNIVERSITIES } from '@/data/degreesData';
 import { INSTITUTIONS } from '@/data/institutions';
 import type { Program } from '@/data/degrees/types';
-import {
-  buildCatalogueSeed,
-  buildCatalogueSeedVerificationReport,
-} from '@/db/seeds/catalogueSeed';
+import { buildCatalogueSeed, buildCatalogueSeedVerificationReport } from '@/db/seeds/catalogueSeed';
 
 describe('catalogueSeed', () => {
   it('maps every institution and program into exactly one seed row', () => {
@@ -14,7 +11,7 @@ describe('catalogueSeed', () => {
     expect(payload.institutions).toHaveLength(INSTITUTIONS.length);
     expect(payload.universityCalculatorConfigs).toHaveLength(UNIVERSITIES.length);
     expect(payload.universityCalculatorConfigs.map((row) => row.institutionId).sort()).toEqual(
-      UNIVERSITIES.map((row) => row.id).sort()
+      UNIVERSITIES.map((row) => row.id).sort(),
     );
     expect(payload.programs).toHaveLength(allPrograms.length);
   });
@@ -41,14 +38,18 @@ describe('catalogueSeed', () => {
     expect(
       payload.programs
         .filter((program) => haifaProgramIds.includes(program.id))
-        .map((program) => ({ id: program.id, admissionType: program.admissionType }))
+        .map((program) => ({ id: program.id, admissionType: program.admissionType })),
     ).toEqual(
       haifaProgramIds.map((programId) => ({
         id: programId,
         admissionType: 'sekhem',
-      }))
+      })),
     );
-    expect(payload.admissionThresholds.some((threshold) => haifaProgramIds.includes(threshold.programId))).toBe(true);
+    expect(
+      payload.admissionThresholds.some((threshold) =>
+        haifaProgramIds.includes(threshold.programId),
+      ),
+    ).toBe(true);
   });
 
   it('is deterministic across repeated runs', () => {
@@ -57,10 +58,10 @@ describe('catalogueSeed', () => {
 
     expect(first.programs.map((row) => row.id)).toEqual(second.programs.map((row) => row.id));
     expect(first.admissionRequirements.map((row) => row.id)).toEqual(
-      second.admissionRequirements.map((row) => row.id)
+      second.admissionRequirements.map((row) => row.id),
     );
     expect(first.admissionThresholds.map((row) => row.id)).toEqual(
-      second.admissionThresholds.map((row) => row.id)
+      second.admissionThresholds.map((row) => row.id),
     );
   });
 
@@ -114,7 +115,7 @@ describe('catalogueSeed', () => {
       },
     ]);
     expect(verification.issues).toContain(
-      'Program admissionType mismatches: haifa_cs (requirements -> sekhem)'
+      'Program admissionType mismatches: haifa_cs (requirements -> sekhem)',
     );
   });
 });

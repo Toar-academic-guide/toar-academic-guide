@@ -5,9 +5,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { profileRequestBodySchema } from '@/server/user/profileSchema';
 
-var mockAuthState = {
+let mockAuthState = {
   loading: false,
-  user: null as null | { id: string; email?: string | null; user_metadata?: Record<string, unknown> },
+  user: null as null | {
+    id: string;
+    email?: string | null;
+    user_metadata?: Record<string, unknown>;
+  },
 };
 
 vi.mock('@/context/AuthContext', () => ({
@@ -35,7 +39,7 @@ describe('useUserProfile', () => {
       JSON.stringify({
         geographicPreference: 'north',
         savedProgramIds: ['tau_cs'],
-      })
+      }),
     );
 
     const { result } = renderHook(() => useUserProfile());
@@ -66,7 +70,7 @@ describe('useUserProfile', () => {
             savedProgramIds: ['huji_law'],
           },
         }),
-      })
+      }),
     );
 
     const { result } = renderHook(() => useUserProfile());
@@ -94,7 +98,7 @@ describe('useUserProfile', () => {
       JSON.stringify({
         geographicPreference: 'north',
         savedProgramIds: ['tau_cs'],
-      })
+      }),
     );
     window.localStorage.setItem('sag_user_profile_migrated_user-1', '1');
 
@@ -123,9 +127,12 @@ describe('useUserProfile', () => {
       JSON.stringify({
         geographicPreference: 'north',
         savedProgramIds: ['tau_cs'],
-      })
+      }),
     );
-    window.localStorage.setItem('sag_user_profile_migrated_00000000-0000-0000-0000-000000000011', '1');
+    window.localStorage.setItem(
+      'sag_user_profile_migrated_00000000-0000-0000-0000-000000000011',
+      '1',
+    );
 
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
@@ -149,7 +156,9 @@ describe('useUserProfile', () => {
 
     expect(result.current.profile.savedProgramIds).toEqual(['huji_law']);
     expect(window.localStorage.getItem('sag_user_profile_v1')).toBeNull();
-    expect(window.localStorage.getItem('sag_user_profile_migrated_00000000-0000-0000-0000-000000000011')).toBeNull();
+    expect(
+      window.localStorage.getItem('sag_user_profile_migrated_00000000-0000-0000-0000-000000000011'),
+    ).toBeNull();
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
@@ -165,7 +174,7 @@ describe('useUserProfile', () => {
         geographicPreference: 'any',
         firstName: 'מלי',
         lastName: 'כהן',
-      })
+      }),
     );
 
     const fetchMock = vi
@@ -214,7 +223,7 @@ describe('useUserProfile', () => {
           },
           mode: 'merge_local_draft',
         }),
-      })
+      }),
     );
     expect(profileRequestBodySchema.safeParse(secondCallBody).success).toBe(true);
   });
@@ -271,7 +280,7 @@ describe('useUserProfile', () => {
           },
           mode: 'merge_local_draft',
         }),
-      })
+      }),
     );
   });
 

@@ -23,10 +23,10 @@ describe('catalogueClient', () => {
             catalogueSource: 'database',
           },
         }),
-      })
+      }),
     );
 
-    await expect(fetchCataloguePrograms()).rejects.toMatchObject<CatalogueApiError>({
+    await expect(fetchCataloguePrograms()).rejects.toMatchObject({
       code: 'CATALOGUE_DATABASE_NOT_READY',
       message: 'Catalogue database is not ready for runtime traffic.',
       details: ['Institutions missing calculator configs: tau'],
@@ -53,7 +53,7 @@ describe('catalogueClient', () => {
             programCount: 1,
           },
         }),
-      })
+      }),
     );
 
     await expect(fetchCataloguePrograms()).resolves.toEqual([

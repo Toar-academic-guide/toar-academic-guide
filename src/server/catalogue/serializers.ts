@@ -11,12 +11,10 @@ import type {
   UniversityCalculatorConfigRow,
 } from '@/db/types';
 
-const STATIC_PROGRAMS_BY_ID = new Map(
-  allPrograms.map((program) => [program.id, program])
-);
+const STATIC_PROGRAMS_BY_ID = new Map(allPrograms.map((program) => [program.id, program]));
 
 function serializeCalculatorConfigRow(
-  row: UniversityCalculatorConfigRow
+  row: UniversityCalculatorConfigRow,
 ): NonNullable<CatalogueInstitution['calculatorConfig']> {
   return {
     formulaType: row.formulaType,
@@ -36,7 +34,7 @@ function serializeCalculatorConfigRow(
 
 export function serializeInstitutionRow(
   row: InstitutionRow,
-  calculatorConfig?: UniversityCalculatorConfigRow
+  calculatorConfig?: UniversityCalculatorConfigRow,
 ): CatalogueInstitution {
   return {
     id: row.id as CatalogueInstitution['id'],
@@ -54,7 +52,7 @@ export function serializeInstitutionRow(
 function buildInstitutionDetails(
   requirements: AdmissionRequirementRow[],
   urlsByRequirementId: Map<string, SourceUrlRow[]>,
-  institutionsById: Map<string, InstitutionRow>
+  institutionsById: Map<string, InstitutionRow>,
 ): InstitutionDetail[] | undefined {
   const details = requirements
     .map((requirement) => {
@@ -64,9 +62,12 @@ function buildInstitutionDetails(
       }
 
       const urls = urlsByRequirementId.get(requirement.id) ?? [];
-      const programUrl = urls.find((url) => url.kind === 'program')?.url ?? institution.programUrl ?? undefined;
+      const programUrl =
+        urls.find((url) => url.kind === 'program')?.url ?? institution.programUrl ?? undefined;
       const calculatorUrl =
-        urls.find((url) => url.kind === 'calculator')?.url ?? institution.calculatorUrl ?? undefined;
+        urls.find((url) => url.kind === 'calculator')?.url ??
+        institution.calculatorUrl ??
+        undefined;
 
       const detail: InstitutionDetail = {
         institutionName: institution.name,
@@ -78,7 +79,9 @@ function buildInstitutionDetails(
         officialCalculatorUrl: calculatorUrl ?? '',
         ...(programUrl ? { programUrl } : {}),
         ...(calculatorUrl ? { calculatorUrl } : {}),
-        ...(requirement.programDescription ? { programDescription: requirement.programDescription } : {}),
+        ...(requirement.programDescription
+          ? { programDescription: requirement.programDescription }
+          : {}),
       };
 
       return detail;
@@ -137,14 +140,18 @@ export function serializeProgramRow(args: {
     },
     admissionType: program.admissionType,
     admissionRequirements: requirements.flatMap((requirement) => requirement.admissionRequirements),
-    thresholds:
-      (Object.keys(thresholdMap).length > 0 ? thresholdMap : undefined) as CatalogueProgram['thresholds'],
+    thresholds: (Object.keys(thresholdMap).length > 0
+      ? thresholdMap
+      : undefined) as CatalogueProgram['thresholds'],
     isTauEngineering: program.isTauEngineering || undefined,
-    directPsychometric:
-      (Object.keys(directPsychometricMap).length > 0
-        ? directPsychometricMap
-        : undefined) as CatalogueProgram['directPsychometric'],
-    institutionDetails: buildInstitutionDetails(requirements, urlsByRequirementId, institutionsById),
+    directPsychometric: (Object.keys(directPsychometricMap).length > 0
+      ? directPsychometricMap
+      : undefined) as CatalogueProgram['directPsychometric'],
+    institutionDetails: buildInstitutionDetails(
+      requirements,
+      urlsByRequirementId,
+      institutionsById,
+    ),
     linkedInstitutionIds: relations.map((relation) => relation.institutionId),
   };
 }

@@ -6,48 +6,47 @@ import type { Program, InstitutionDetail } from './types';
 const P: Record<string, Program['profileScore']> = {
   // ── Arts & Design ──────────────────────────────────────────────────────────
   industrialDesign: { AN: 2, TE: 3, CR: 5, SO: 1, LE: 2, OR: 2, DI: 2, ER: 1 },
-  fineArts:         { AN: 1, TE: 1, CR: 5, SO: 1, LE: 2, OR: 1, DI: 0, ER: 2 },
-  photography:      { AN: 1, TE: 2, CR: 5, SO: 2, LE: 2, OR: 1, DI: 2, ER: 1 },
-  fashion:          { AN: 1, TE: 2, CR: 5, SO: 1, LE: 3, OR: 2, DI: 1, ER: 1 },
-  graphicDesign:    { AN: 2, TE: 1, CR: 5, SO: 1, LE: 2, OR: 2, DI: 3, ER: 1 },
-  animation:        { AN: 3, TE: 2, CR: 5, SO: 1, LE: 2, OR: 2, DI: 4, ER: 1 },
-  dance:            { AN: 0, TE: 3, CR: 5, SO: 3, LE: 2, OR: 1, DI: 0, ER: 1 },
-  cinema:           { AN: 2, TE: 2, CR: 5, SO: 2, LE: 3, OR: 1, DI: 2, ER: 2 },
-  screenwriting:    { AN: 2, TE: 0, CR: 5, SO: 2, LE: 3, OR: 1, DI: 0, ER: 4 },
-  documentary:      { AN: 3, TE: 1, CR: 5, SO: 3, LE: 2, OR: 1, DI: 1, ER: 3 },
+  fineArts: { AN: 1, TE: 1, CR: 5, SO: 1, LE: 2, OR: 1, DI: 0, ER: 2 },
+  photography: { AN: 1, TE: 2, CR: 5, SO: 2, LE: 2, OR: 1, DI: 2, ER: 1 },
+  fashion: { AN: 1, TE: 2, CR: 5, SO: 1, LE: 3, OR: 2, DI: 1, ER: 1 },
+  graphicDesign: { AN: 2, TE: 1, CR: 5, SO: 1, LE: 2, OR: 2, DI: 3, ER: 1 },
+  animation: { AN: 3, TE: 2, CR: 5, SO: 1, LE: 2, OR: 2, DI: 4, ER: 1 },
+  dance: { AN: 0, TE: 3, CR: 5, SO: 3, LE: 2, OR: 1, DI: 0, ER: 1 },
+  cinema: { AN: 2, TE: 2, CR: 5, SO: 2, LE: 3, OR: 1, DI: 2, ER: 2 },
+  screenwriting: { AN: 2, TE: 0, CR: 5, SO: 2, LE: 3, OR: 1, DI: 0, ER: 4 },
+  documentary: { AN: 3, TE: 1, CR: 5, SO: 3, LE: 2, OR: 1, DI: 1, ER: 3 },
   // ── Culinary ───────────────────────────────────────────────────────────────
-  chef:             { AN: 1, TE: 3, CR: 4, SO: 2, LE: 2, OR: 2, DI: 0, ER: 0 },
-  pastry:           { AN: 1, TE: 3, CR: 4, SO: 1, LE: 2, OR: 3, DI: 0, ER: 0 },
-  restaurantMgmt:   { AN: 2, TE: 1, CR: 2, SO: 3, LE: 4, OR: 3, DI: 1, ER: 1 },
-  culinaryArts:     { AN: 2, TE: 3, CR: 5, SO: 2, LE: 2, OR: 2, DI: 0, ER: 1 },
+  chef: { AN: 1, TE: 3, CR: 4, SO: 2, LE: 2, OR: 2, DI: 0, ER: 0 },
+  pastry: { AN: 1, TE: 3, CR: 4, SO: 1, LE: 2, OR: 3, DI: 0, ER: 0 },
+  restaurantMgmt: { AN: 2, TE: 1, CR: 2, SO: 3, LE: 4, OR: 3, DI: 1, ER: 1 },
+  culinaryArts: { AN: 2, TE: 3, CR: 5, SO: 2, LE: 2, OR: 2, DI: 0, ER: 1 },
   // ── Integrative Medicine ───────────────────────────────────────────────────
-  chineseMedicine:  { AN: 3, TE: 2, CR: 1, SO: 4, LE: 1, OR: 2, DI: 0, ER: 3 },
-  homeopathy:       { AN: 3, TE: 1, CR: 1, SO: 4, LE: 1, OR: 2, DI: 0, ER: 3 },
-  psychotherapy:    { AN: 3, TE: 0, CR: 2, SO: 5, LE: 1, OR: 1, DI: 0, ER: 4 },
-  naturopathy:      { AN: 3, TE: 2, CR: 1, SO: 4, LE: 1, OR: 2, DI: 0, ER: 3 },
-  reflexology:      { AN: 2, TE: 2, CR: 1, SO: 4, LE: 1, OR: 2, DI: 0, ER: 2 },
+  chineseMedicine: { AN: 3, TE: 2, CR: 1, SO: 4, LE: 1, OR: 2, DI: 0, ER: 3 },
+  homeopathy: { AN: 3, TE: 1, CR: 1, SO: 4, LE: 1, OR: 2, DI: 0, ER: 3 },
+  psychotherapy: { AN: 3, TE: 0, CR: 2, SO: 5, LE: 1, OR: 1, DI: 0, ER: 4 },
+  naturopathy: { AN: 3, TE: 2, CR: 1, SO: 4, LE: 1, OR: 2, DI: 0, ER: 3 },
+  reflexology: { AN: 2, TE: 2, CR: 1, SO: 4, LE: 1, OR: 2, DI: 0, ER: 2 },
   // ── Tech Bootcamps ─────────────────────────────────────────────────────────
-  fullstack:        { AN: 4, TE: 2, CR: 2, SO: 1, LE: 2, OR: 3, DI: 5, ER: 1 },
-  cyber:            { AN: 5, TE: 3, CR: 1, SO: 0, LE: 2, OR: 3, DI: 5, ER: 2 },
-  dataAnalysis:     { AN: 5, TE: 1, CR: 0, SO: 0, LE: 2, OR: 4, DI: 5, ER: 2 },
-  cloudDevOps:      { AN: 4, TE: 2, CR: 0, SO: 1, LE: 2, OR: 4, DI: 5, ER: 1 },
+  fullstack: { AN: 4, TE: 2, CR: 2, SO: 1, LE: 2, OR: 3, DI: 5, ER: 1 },
+  cyber: { AN: 5, TE: 3, CR: 1, SO: 0, LE: 2, OR: 3, DI: 5, ER: 2 },
+  dataAnalysis: { AN: 5, TE: 1, CR: 0, SO: 0, LE: 2, OR: 4, DI: 5, ER: 2 },
+  cloudDevOps: { AN: 4, TE: 2, CR: 0, SO: 1, LE: 2, OR: 4, DI: 5, ER: 1 },
   // ── Music ──────────────────────────────────────────────────────────────────
-  classicalMusic:   { AN: 2, TE: 2, CR: 5, SO: 3, LE: 2, OR: 3, DI: 0, ER: 3 },
-  jazzMusic:        { AN: 3, TE: 2, CR: 5, SO: 3, LE: 2, OR: 2, DI: 0, ER: 2 },
-  musicEducation:   { AN: 2, TE: 1, CR: 5, SO: 4, LE: 2, OR: 2, DI: 0, ER: 2 },
+  classicalMusic: { AN: 2, TE: 2, CR: 5, SO: 3, LE: 2, OR: 3, DI: 0, ER: 3 },
+  jazzMusic: { AN: 3, TE: 2, CR: 5, SO: 3, LE: 2, OR: 2, DI: 0, ER: 2 },
+  musicEducation: { AN: 2, TE: 1, CR: 5, SO: 4, LE: 2, OR: 2, DI: 0, ER: 2 },
   // ── Theater & Performing Arts ─────────────────────────────────────────────
-  acting:           { AN: 2, TE: 1, CR: 5, SO: 4, LE: 3, OR: 1, DI: 0, ER: 2 },
-  directing:        { AN: 3, TE: 1, CR: 5, SO: 3, LE: 4, OR: 2, DI: 0, ER: 2 },
-  artEducation:     { AN: 2, TE: 2, CR: 5, SO: 4, LE: 2, OR: 1, DI: 0, ER: 2 },
+  acting: { AN: 2, TE: 1, CR: 5, SO: 4, LE: 3, OR: 1, DI: 0, ER: 2 },
+  directing: { AN: 3, TE: 1, CR: 5, SO: 3, LE: 4, OR: 2, DI: 0, ER: 2 },
+  artEducation: { AN: 2, TE: 2, CR: 5, SO: 4, LE: 2, OR: 1, DI: 0, ER: 2 },
   // ── Sports & Physical Education ───────────────────────────────────────────
-  sportsCoaching:   { AN: 3, TE: 5, CR: 2, SO: 4, LE: 3, OR: 2, DI: 0, ER: 1 },
-  physicalEd:       { AN: 2, TE: 5, CR: 2, SO: 5, LE: 2, OR: 2, DI: 0, ER: 1 },
+  sportsCoaching: { AN: 3, TE: 5, CR: 2, SO: 4, LE: 3, OR: 2, DI: 0, ER: 1 },
+  physicalEd: { AN: 2, TE: 5, CR: 2, SO: 5, LE: 2, OR: 2, DI: 0, ER: 1 },
   // ── Tourism & Hospitality ─────────────────────────────────────────────────
-  tourismMgmt:      { AN: 2, TE: 2, CR: 3, SO: 4, LE: 4, OR: 3, DI: 1, ER: 1 },
+  tourismMgmt: { AN: 2, TE: 2, CR: 3, SO: 4, LE: 4, OR: 3, DI: 1, ER: 1 },
 };
 
 export const vocationalPrograms: Program[] = [
-
   // ════════════════════════════════════════════════════════════════════════════
   // ARTS & DESIGN
   // ════════════════════════════════════════════════════════════════════════════
@@ -78,11 +77,7 @@ export const vocationalPrograms: Program[] = [
     category: 'אמנות ועיצוב',
     profileScore: P.fineArts,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'תיק עבודות יצירתי',
-      'מבחן כניסה',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['תיק עבודות יצירתי', 'מבחן כניסה', 'ראיון קבלה'],
   },
   {
     id: 'bezalel_photography',
@@ -93,11 +88,7 @@ export const vocationalPrograms: Program[] = [
     category: 'אמנות ועיצוב',
     profileScore: P.photography,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'תיק עבודות – סדרת צילומים מקורית',
-      'מבחן כניסה',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['תיק עבודות – סדרת צילומים מקורית', 'מבחן כניסה', 'ראיון קבלה'],
   },
   {
     id: 'bezalel_fashion',
@@ -108,11 +99,7 @@ export const vocationalPrograms: Program[] = [
     category: 'אמנות ועיצוב',
     profileScore: P.fashion,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'תיק עבודות',
-      'מבחן תפירה ועיצוב בסיסי',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['תיק עבודות', 'מבחן תפירה ועיצוב בסיסי', 'ראיון קבלה'],
   },
 
   // ── שנקר – הנדסה. עיצוב. אמנות ─────────────────────────────────────────────
@@ -126,11 +113,7 @@ export const vocationalPrograms: Program[] = [
     category: 'אמנות ועיצוב',
     profileScore: P.industrialDesign,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'תיק עבודות',
-      'מבחן כניסה מקצועי',
-      'ראיון אישי',
-    ],
+    admissionRequirements: ['תיק עבודות', 'מבחן כניסה מקצועי', 'ראיון אישי'],
   },
   {
     id: 'shenkar_fashion',
@@ -141,11 +124,7 @@ export const vocationalPrograms: Program[] = [
     category: 'אמנות ועיצוב',
     profileScore: P.fashion,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'תיק עבודות',
-      'מבחן כניסה – יצירה וחשיבה עיצובית',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['תיק עבודות', 'מבחן כניסה – יצירה וחשיבה עיצובית', 'ראיון קבלה'],
   },
   {
     id: 'shenkar_graphic_design',
@@ -156,11 +135,7 @@ export const vocationalPrograms: Program[] = [
     category: 'אמנות ועיצוב',
     profileScore: P.graphicDesign,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'תיק עבודות',
-      'מבחן כניסה',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['תיק עבודות', 'מבחן כניסה', 'ראיון קבלה'],
   },
   {
     id: 'shenkar_animation',
@@ -171,11 +146,7 @@ export const vocationalPrograms: Program[] = [
     category: 'אמנות ועיצוב',
     profileScore: P.animation,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'תיק עבודות – כולל ניסיון ציור ידני',
-      'מבחן כניסה',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['תיק עבודות – כולל ניסיון ציור ידני', 'מבחן כניסה', 'ראיון קבלה'],
   },
 
   // ── HIT – המכון הטכנולוגי חולון ──────────────────────────────────────────────
@@ -193,20 +164,22 @@ export const vocationalPrograms: Program[] = [
     profileScore: P.graphicDesign,
     admissionType: 'requirements',
     admissionRequirements: [],
-    institutionDetails: [{
-      institutionName: 'המכון הטכנולוגי חולון (HIT)',
-      durationYears: 4,
-      estimatedStudentsPerYear: 'כ-80 סטודנטים',
-      quantitativeMinRequirement: null,
-      englishMinRequirement: null,
-      specificAdmissionNotes: [
-        'תיק עבודות יצירתי – חובה מוחלטת',
-        'מבחן כניסה אמנותי חד-יומי',
-        'ראיון קבלה עם ועדה מקצועית',
-        'ציון פסיכומטרי מינימלי: 450 (המלצה)',
-      ],
-      officialCalculatorUrl: 'https://www.hit.ac.il/department/visual-communication',
-    } as InstitutionDetail],
+    institutionDetails: [
+      {
+        institutionName: 'המכון הטכנולוגי חולון (HIT)',
+        durationYears: 4,
+        estimatedStudentsPerYear: 'כ-80 סטודנטים',
+        quantitativeMinRequirement: null,
+        englishMinRequirement: null,
+        specificAdmissionNotes: [
+          'תיק עבודות יצירתי – חובה מוחלטת',
+          'מבחן כניסה אמנותי חד-יומי',
+          'ראיון קבלה עם ועדה מקצועית',
+          'ציון פסיכומטרי מינימלי: 450 (המלצה)',
+        ],
+        officialCalculatorUrl: 'https://www.hit.ac.il/department/visual-communication',
+      } as InstitutionDetail,
+    ],
   },
   {
     id: 'hit_industrial_design',
@@ -218,19 +191,21 @@ export const vocationalPrograms: Program[] = [
     profileScore: P.industrialDesign,
     admissionType: 'requirements',
     admissionRequirements: [],
-    institutionDetails: [{
-      institutionName: 'המכון הטכנולוגי חולון (HIT)',
-      durationYears: 4,
-      estimatedStudentsPerYear: 'כ-60 סטודנטים',
-      quantitativeMinRequirement: null,
-      englishMinRequirement: null,
-      specificAdmissionNotes: [
-        'בגרות מלאה – חובה',
-        'מבחן כניסה חוגי – יצירה ותפיסה מרחבית',
-        'תיק עבודות וראיון עם ועדת קבלה',
-      ],
-      officialCalculatorUrl: 'https://www.hit.ac.il/department/industrial-design',
-    } as InstitutionDetail],
+    institutionDetails: [
+      {
+        institutionName: 'המכון הטכנולוגי חולון (HIT)',
+        durationYears: 4,
+        estimatedStudentsPerYear: 'כ-60 סטודנטים',
+        quantitativeMinRequirement: null,
+        englishMinRequirement: null,
+        specificAdmissionNotes: [
+          'בגרות מלאה – חובה',
+          'מבחן כניסה חוגי – יצירה ותפיסה מרחבית',
+          'תיק עבודות וראיון עם ועדת קבלה',
+        ],
+        officialCalculatorUrl: 'https://www.hit.ac.il/department/industrial-design',
+      } as InstitutionDetail,
+    ],
   },
 
   // ── מנשר לאמנות ─────────────────────────────────────────────────────────────
@@ -244,10 +219,7 @@ export const vocationalPrograms: Program[] = [
     category: 'אמנות ועיצוב',
     profileScore: P.fineArts,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'תיק עבודות',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['תיק עבודות', 'ראיון קבלה'],
   },
   {
     id: 'minshar_photography',
@@ -258,10 +230,7 @@ export const vocationalPrograms: Program[] = [
     category: 'אמנות ועיצוב',
     profileScore: P.photography,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'תיק עבודות – עבודות צילום מקוריות',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['תיק עבודות – עבודות צילום מקוריות', 'ראיון קבלה'],
   },
   {
     id: 'minshar_animation',
@@ -272,11 +241,7 @@ export const vocationalPrograms: Program[] = [
     category: 'אמנות ועיצוב',
     profileScore: P.animation,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'תיק עבודות',
-      'מבחן כניסה',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['תיק עבודות', 'מבחן כניסה', 'ראיון קבלה'],
   },
   {
     id: 'minshar_dance',
@@ -287,11 +252,7 @@ export const vocationalPrograms: Program[] = [
     category: 'אמנות ועיצוב',
     profileScore: P.dance,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'אודישן מעשי',
-      'מבחן התאמה גופנית',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['אודישן מעשי', 'מבחן התאמה גופנית', 'ראיון קבלה'],
   },
 
   // ── בית הספר לקולנוע ולטלוויזיה ע"ש סם שפיגל ──────────────────────────────
@@ -321,10 +282,7 @@ export const vocationalPrograms: Program[] = [
     category: 'אמנות ועיצוב',
     profileScore: P.screenwriting,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'תסריט קצר מקורי (עד 10 עמ׳)',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['תסריט קצר מקורי (עד 10 עמ׳)', 'ראיון קבלה'],
   },
   {
     id: 'samspiegel_documentary',
@@ -335,10 +293,7 @@ export const vocationalPrograms: Program[] = [
     category: 'אמנות ועיצוב',
     profileScore: P.documentary,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'פרויקט תיעודי קצר או מסמך פיתוח',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['פרויקט תיעודי קצר או מסמך פיתוח', 'ראיון קבלה'],
   },
 
   // ════════════════════════════════════════════════════════════════════════════
@@ -355,10 +310,7 @@ export const vocationalPrograms: Program[] = [
     category: 'קולינריה וגסטרונומיה',
     profileScore: P.chef,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'מבחן התאמה מעשי במטבח',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['מבחן התאמה מעשי במטבח', 'ראיון קבלה'],
   },
   {
     id: 'danon_pastry',
@@ -369,9 +321,7 @@ export const vocationalPrograms: Program[] = [
     category: 'קולינריה וגסטרונומיה',
     profileScore: P.pastry,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'מבחן התאמה מעשי',
-    ],
+    admissionRequirements: ['מבחן התאמה מעשי'],
   },
   {
     id: 'danon_culinary_arts',
@@ -382,10 +332,7 @@ export const vocationalPrograms: Program[] = [
     category: 'קולינריה וגסטרונומיה',
     profileScore: P.culinaryArts,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'מבחן התאמה מעשי במטבח',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['מבחן התאמה מעשי במטבח', 'ראיון קבלה'],
   },
 
   // ── בישולים – בית ספר ישראלי לאמנות הבישול ───────────────────────────────
@@ -398,10 +345,7 @@ export const vocationalPrograms: Program[] = [
     category: 'קולינריה וגסטרונומיה',
     profileScore: P.chef,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'מבחן טעימה וזיהוי חומרי גלם',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['מבחן טעימה וזיהוי חומרי גלם', 'ראיון קבלה'],
   },
   {
     id: 'bishulim_pastry',
@@ -412,9 +356,7 @@ export const vocationalPrograms: Program[] = [
     category: 'קולינריה וגסטרונומיה',
     profileScore: P.pastry,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'מבחן התאמה מעשי',
-    ],
+    admissionRequirements: ['מבחן התאמה מעשי'],
   },
   {
     id: 'bishulim_restaurant_mgmt',
@@ -425,10 +367,7 @@ export const vocationalPrograms: Program[] = [
     category: 'קולינריה וגסטרונומיה',
     profileScore: P.restaurantMgmt,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'ראיון קבלה',
-      'ניסיון עבודה בתחום הקולינרי (יתרון)',
-    ],
+    admissionRequirements: ['ראיון קבלה', 'ניסיון עבודה בתחום הקולינרי (יתרון)'],
   },
 
   // ════════════════════════════════════════════════════════════════════════════
@@ -447,10 +386,7 @@ export const vocationalPrograms: Program[] = [
     category: 'רפואה אינטגרטיבית',
     profileScore: P.chineseMedicine,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'בגרות מלאה',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['בגרות מלאה', 'ראיון קבלה'],
   },
   {
     id: 'reidman_naturopathy',
@@ -461,10 +397,7 @@ export const vocationalPrograms: Program[] = [
     category: 'רפואה אינטגרטיבית',
     profileScore: P.naturopathy,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'בגרות מלאה',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['בגרות מלאה', 'ראיון קבלה'],
   },
   {
     id: 'reidman_homeopathy',
@@ -475,10 +408,7 @@ export const vocationalPrograms: Program[] = [
     category: 'רפואה אינטגרטיבית',
     profileScore: P.homeopathy,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'בגרות מלאה',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['בגרות מלאה', 'ראיון קבלה'],
   },
   {
     id: 'reidman_reflexology',
@@ -489,10 +419,7 @@ export const vocationalPrograms: Program[] = [
     category: 'רפואה אינטגרטיבית',
     profileScore: P.reflexology,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'בגרות מלאה',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['בגרות מלאה', 'ראיון קבלה'],
   },
 
   // ── מכללת ברושים ─────────────────────────────────────────────────────────────
@@ -505,10 +432,7 @@ export const vocationalPrograms: Program[] = [
     category: 'רפואה אינטגרטיבית',
     profileScore: P.homeopathy,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'בגרות מלאה',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['בגרות מלאה', 'ראיון קבלה'],
   },
   {
     id: 'broshim_psychotherapy',
@@ -519,10 +443,7 @@ export const vocationalPrograms: Program[] = [
     category: 'רפואה אינטגרטיבית',
     profileScore: P.psychotherapy,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'תואר ראשון בכל תחום (יתרון לתחום טיפולי)',
-      'ראיון קבלה אישי',
-    ],
+    admissionRequirements: ['תואר ראשון בכל תחום (יתרון לתחום טיפולי)', 'ראיון קבלה אישי'],
   },
   {
     id: 'broshim_naturopathy',
@@ -533,10 +454,7 @@ export const vocationalPrograms: Program[] = [
     category: 'רפואה אינטגרטיבית',
     profileScore: P.naturopathy,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'בגרות מלאה',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['בגרות מלאה', 'ראיון קבלה'],
   },
 
   // ── המכללה האקדמית אונו – לימודי המשך ──────────────────────────────────────
@@ -549,11 +467,7 @@ export const vocationalPrograms: Program[] = [
     category: 'רפואה אינטגרטיבית',
     profileScore: P.chineseMedicine,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'בגרות מלאה',
-      'בדיקה רפואית',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['בגרות מלאה', 'בדיקה רפואית', 'ראיון קבלה'],
   },
   {
     id: 'ono_ce_psychotherapy',
@@ -564,10 +478,7 @@ export const vocationalPrograms: Program[] = [
     category: 'רפואה אינטגרטיבית',
     profileScore: P.psychotherapy,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'תואר ראשון בכל תחום',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['תואר ראשון בכל תחום', 'ראיון קבלה'],
   },
 
   // ── מכללת פרדס חנה ──────────────────────────────────────────────────────────
@@ -582,18 +493,20 @@ export const vocationalPrograms: Program[] = [
     profileScore: P.homeopathy,
     admissionType: 'requirements',
     admissionRequirements: [],
-    institutionDetails: [{
-      institutionName: 'מכללת פרדס חנה',
-      durationYears: 2,
-      estimatedStudentsPerYear: 'כ-25 סטודנטים',
-      quantitativeMinRequirement: null,
-      englishMinRequirement: null,
-      specificAdmissionNotes: [
-        'תעודת בגרות מלאה',
-        'ראיון התאמה אישי – מחויבות ללמידה מעשית וקלינית בשטח',
-      ],
-      officialCalculatorUrl: 'https://www.pardeshana.ac.il',
-    } as InstitutionDetail],
+    institutionDetails: [
+      {
+        institutionName: 'מכללת פרדס חנה',
+        durationYears: 2,
+        estimatedStudentsPerYear: 'כ-25 סטודנטים',
+        quantitativeMinRequirement: null,
+        englishMinRequirement: null,
+        specificAdmissionNotes: [
+          'תעודת בגרות מלאה',
+          'ראיון התאמה אישי – מחויבות ללמידה מעשית וקלינית בשטח',
+        ],
+        officialCalculatorUrl: 'https://www.pardeshana.ac.il',
+      } as InstitutionDetail,
+    ],
   },
 
   // ════════════════════════════════════════════════════════════════════════════
@@ -611,10 +524,7 @@ export const vocationalPrograms: Program[] = [
     category: 'טכנולוגיה ופיתוח',
     profileScore: P.fullstack,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'מבחן התאמה טכני מקוון',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['מבחן התאמה טכני מקוון', 'ראיון קבלה'],
   },
   {
     id: 'hackeru_cyber',
@@ -625,10 +535,7 @@ export const vocationalPrograms: Program[] = [
     category: 'טכנולוגיה ופיתוח',
     profileScore: P.cyber,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'מבחן התאמה טכני',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['מבחן התאמה טכני', 'ראיון קבלה'],
   },
   {
     id: 'hackeru_data',
@@ -639,10 +546,7 @@ export const vocationalPrograms: Program[] = [
     category: 'טכנולוגיה ופיתוח',
     profileScore: P.dataAnalysis,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'מבחן התאמה כמותי-לוגי',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['מבחן התאמה כמותי-לוגי', 'ראיון קבלה'],
   },
 
   // ── Elevation Academy ─────────────────────────────────────────────────────────
@@ -656,11 +560,7 @@ export const vocationalPrograms: Program[] = [
     category: 'טכנולוגיה ופיתוח',
     profileScore: P.cyber,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'מבחן כניסה טכני',
-      'ראיון טכני',
-      'רקע בסיסי ברשתות ו/או תכנות',
-    ],
+    admissionRequirements: ['מבחן כניסה טכני', 'ראיון טכני', 'רקע בסיסי ברשתות ו/או תכנות'],
   },
   {
     id: 'elevation_fullstack',
@@ -671,10 +571,7 @@ export const vocationalPrograms: Program[] = [
     category: 'טכנולוגיה ופיתוח',
     profileScore: P.fullstack,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'מבחן כניסה',
-      'ראיון טכני',
-    ],
+    admissionRequirements: ['מבחן כניסה', 'ראיון טכני'],
   },
 
   // ── Israel Tech Challenge (ITC) ──────────────────────────────────────────────
@@ -706,10 +603,7 @@ export const vocationalPrograms: Program[] = [
     category: 'טכנולוגיה ופיתוח',
     profileScore: P.cyber,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'מבחן כניסה',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['מבחן כניסה', 'ראיון קבלה'],
   },
   {
     id: 'johnbryce_cloud_devops',
@@ -720,10 +614,7 @@ export const vocationalPrograms: Program[] = [
     category: 'טכנולוגיה ופיתוח',
     profileScore: P.cloudDevOps,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'מבחן כניסה',
-      'ידע בסיסי בלינוקס ורשתות',
-    ],
+    admissionRequirements: ['מבחן כניסה', 'ידע בסיסי בלינוקס ורשתות'],
   },
 
   // ════════════════════════════════════════════════════════════════════════════
@@ -756,11 +647,7 @@ export const vocationalPrograms: Program[] = [
     category: 'מוזיקה ותיאטרון',
     profileScore: P.jazzMusic,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'אודישן ג׳אז ואלתור',
-      'מבחן תיאוריה מוזיקלית',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['אודישן ג׳אז ואלתור', 'מבחן תיאוריה מוזיקלית', 'ראיון קבלה'],
   },
 
   // ── בית הספר למוזיקה ע"ש בוכמן-מהטה – אוניברסיטת תל אביב ─────────────────
@@ -774,11 +661,7 @@ export const vocationalPrograms: Program[] = [
     category: 'מוזיקה ותיאטרון',
     profileScore: P.classicalMusic,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'אודישן מקצועי',
-      'מבחן תיאוריה ואוזן מוזיקלית',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['אודישן מקצועי', 'מבחן תיאוריה ואוזן מוזיקלית', 'ראיון קבלה'],
   },
 
   // ════════════════════════════════════════════════════════════════════════════
@@ -796,11 +679,7 @@ export const vocationalPrograms: Program[] = [
     category: 'מוזיקה ותיאטרון',
     profileScore: P.acting,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'אודישן בפני ועדת קבלה אמנותית',
-      'מונולוג מוכן + אלתור',
-      'ראיון אישי',
-    ],
+    admissionRequirements: ['אודישן בפני ועדת קבלה אמנותית', 'מונולוג מוכן + אלתור', 'ראיון אישי'],
   },
 
   // ── בית צבי – בית הספר הגבוה לאמנויות הבמה ─────────────────────────────────
@@ -814,11 +693,7 @@ export const vocationalPrograms: Program[] = [
     category: 'מוזיקה ותיאטרון',
     profileScore: P.acting,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'אודישן',
-      'מונולוג קלאסי + מודרני',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['אודישן', 'מונולוג קלאסי + מודרני', 'ראיון קבלה'],
   },
   {
     id: 'beit_zvi_directing',
@@ -851,11 +726,7 @@ export const vocationalPrograms: Program[] = [
     category: 'חינוך',
     profileScore: P.artEducation,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'תיק עבודות אמנותי',
-      'ראיון קבלה',
-      'בגרות מלאה',
-    ],
+    admissionRequirements: ['תיק עבודות אמנותי', 'ראיון קבלה', 'בגרות מלאה'],
   },
   {
     id: 'seminar_music_education',
@@ -866,11 +737,7 @@ export const vocationalPrograms: Program[] = [
     category: 'חינוך',
     profileScore: P.musicEducation,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'אודישן מוזיקלי',
-      'ראיון קבלה',
-      'בגרות מלאה',
-    ],
+    admissionRequirements: ['אודישן מוזיקלי', 'ראיון קבלה', 'בגרות מלאה'],
   },
   {
     id: 'seminar_dance',
@@ -881,11 +748,7 @@ export const vocationalPrograms: Program[] = [
     category: 'מוזיקה ותיאטרון',
     profileScore: P.acting,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'אודישן מחול',
-      'מבחן גמישות ומוטוריקה',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['אודישן מחול', 'מבחן גמישות ומוטוריקה', 'ראיון קבלה'],
   },
 
   // ════════════════════════════════════════════════════════════════════════════
@@ -903,11 +766,7 @@ export const vocationalPrograms: Program[] = [
     category: 'ספורט',
     profileScore: P.sportsCoaching,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'מבחן כושר גופני',
-      'תעודת בגרות',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['מבחן כושר גופני', 'תעודת בגרות', 'ראיון קבלה'],
   },
   {
     id: 'wingate_physical_ed',
@@ -918,11 +777,7 @@ export const vocationalPrograms: Program[] = [
     category: 'ספורט',
     profileScore: P.physicalEd,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'מבחן כושר גופני',
-      'תעודת בגרות',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['מבחן כושר גופני', 'תעודת בגרות', 'ראיון קבלה'],
   },
 
   // ════════════════════════════════════════════════════════════════════════════

@@ -40,7 +40,7 @@ describe('auth callback route', () => {
 
   it('redirects to a valid relative next path after a successful exchange', async () => {
     const response = await GET(
-      new Request('http://localhost:3000/auth/callback?code=test-code&next=%2Fbucket-list')
+      new Request('http://localhost:3000/auth/callback?code=test-code&next=%2Fbucket-list'),
     );
 
     expect(response.status).toBe(307);
@@ -68,7 +68,9 @@ describe('auth callback route', () => {
 
   it('falls back to the default path when next is not relative', async () => {
     const response = await GET(
-      new Request('http://localhost:3000/auth/callback?code=test-code&next=https%3A%2F%2Fevil.example')
+      new Request(
+        'http://localhost:3000/auth/callback?code=test-code&next=https%3A%2F%2Fevil.example',
+      ),
     );
 
     expect(response.status).toBe(307);
