@@ -22,6 +22,7 @@ import {
 } from '@/lib/catalogueClient';
 import { getCalculatorInstitutionsFromCatalogue } from '@/lib/calculatorInstitutions';
 import { getRecommendations } from '@/utils/recommendationEngine';
+import { getUserInitials } from '@/utils/userDisplay';
 import { evaluateUniversities } from '@/utils/sekhemCalculators';
 import { extractFilterAnswers } from '@/utils/riasecEngine';
 import { ArrowRight } from 'lucide-react';
@@ -115,6 +116,7 @@ function toCatalogueError(error: unknown): CatalogueApiError {
 
 export default function Home() {
   const { loading: authLoading, signOut, user } = useAuth();
+  const userInitials = getUserInitials(user);
   const [initialStep] = useState<AppStep>(getDevStep);
   const [catalogueStatus, setCatalogueStatus] = useState<CatalogueStatus>('loading');
   const [catalogueError, setCatalogueError] = useState<CatalogueApiError | null>(null);
@@ -455,7 +457,7 @@ export default function Home() {
         programs={cataloguePrograms}
         authLoading={authLoading}
         isAuthenticated={isAuthenticated}
-        userEmail={user?.email ?? undefined}
+        userInitials={userInitials}
         onSignOut={() => {
           void signOut();
         }}
@@ -604,7 +606,7 @@ export default function Home() {
         savedCount={savedCount}
         authLoading={authLoading}
         isAuthenticated={isAuthenticated}
-        userEmail={user?.email ?? undefined}
+        userInitials={userInitials}
         onGoHome={handleGoHome}
         onGoToExam={() => {
           setStep('career-assessment');
