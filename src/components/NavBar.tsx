@@ -20,7 +20,7 @@ interface Props {
   savedCount: number;
   authLoading: boolean;
   isAuthenticated: boolean;
-  userEmail?: string;
+  userInitials?: string;
   onGoHome: () => void;
   onGoToExam: () => void;
   onGoToRecommendations: () => void;
@@ -36,7 +36,7 @@ export default function NavBar({
   savedCount,
   authLoading,
   isAuthenticated,
-  userEmail,
+  userInitials,
   onGoHome,
   onGoToExam,
   onGoToRecommendations,
@@ -104,8 +104,8 @@ export default function NavBar({
             {authLoading
               ? 'טוען...'
               : isAuthenticated
-                ? userEmail
-                  ? `התנתק (${userEmail})`
+                ? userInitials
+                  ? `התנתק (${userInitials})`
                   : 'התנתק'
                 : 'התחברות'}
           </button>
