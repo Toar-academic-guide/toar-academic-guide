@@ -18,17 +18,8 @@ interface Props {
   programs: CatalogueProgram[];
   authLoading?: boolean;
   isAuthenticated?: boolean;
-  userEmail?: string;
+  userInitials?: string;
   onSignOut?: () => void;
-}
-
-function getInitials(email: string): string {
-  const prefix = email.split('@')[0];
-  const parts = prefix.split(/[._-]/);
-  if (parts.length >= 2) {
-    return (parts[0][0] + parts[1][0]).toUpperCase();
-  }
-  return prefix.slice(0, 2).toUpperCase();
 }
 
 export default function LandingPage({
@@ -40,7 +31,7 @@ export default function LandingPage({
   programs,
   authLoading = false,
   isAuthenticated = false,
-  userEmail,
+  userInitials,
   onSignOut,
 }: Props) {
   const startRef = useRef<HTMLElement>(null);
@@ -117,14 +108,14 @@ export default function LandingPage({
           <div className="flex items-center gap-3">
             {authLoading ? (
               <div className="h-9 w-9 animate-pulse rounded-full bg-slate-200" />
-            ) : isAuthenticated && userEmail ? (
+            ) : isAuthenticated && userInitials ? (
               <button
                 type="button"
                 onClick={onSignOut}
-                title={`מחובר כ-${userEmail} — לחץ להתנתקות`}
-                className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1e1b4b] text-xs font-bold text-white shadow transition hover:bg-[#2d2a6e]"
+                title="לחץ להתנתקות"
+                className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-[#1e1b4b] text-xs font-bold text-white shadow transition hover:bg-[#2d2a6e]"
               >
-                {getInitials(userEmail)}
+                {userInitials}
               </button>
             ) : (
               <button
@@ -307,10 +298,10 @@ export default function LandingPage({
           </div>
 
           {/* Calculator card — left side in RTL */}
-          <div className="mt-12 flex flex-col self-stretch rounded-2xl border border-[#e5e7eb] bg-white p-8 shadow-sm sm:p-10">
-            <h2 className="mb-6 text-xl font-black text-slate-900">בדיקת סיכויי קבלה</h2>
+          <div className="mt-12 flex flex-col self-start rounded-2xl border border-[#e5e7eb] bg-white p-6 shadow-sm sm:p-8">
+            <h2 className="mb-4 text-xl font-black text-slate-900">בדיקת סיכויי קבלה</h2>
 
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3">
               {/* Psychometric */}
               <div>
                 <label
@@ -392,14 +383,14 @@ export default function LandingPage({
               </div>
 
               {/* CTA */}
-              <NeoButton onClick={handleCalcSubmit} className="mt-2 w-full py-3.5 text-base">
+              <NeoButton onClick={handleCalcSubmit} className="mt-1 w-full py-3 text-base">
                 חשב סיכויים ←
               </NeoButton>
             </div>
 
             {/* Disclaimer */}
-            <div className="mt-5 border-t border-[#e5e7eb] pt-4">
-              <p className="text-xs leading-relaxed text-slate-400">
+            <div className="mt-4 border-t border-[#e5e7eb] pt-3">
+              <p className="text-base leading-relaxed text-slate-400">
                 מחשבון זה נועד לספק תמונה כללית. לצורך וודאות מלאה, יש להזין את ציוני הבגרות בכל
                 מקצוע{' '}
                 <button
