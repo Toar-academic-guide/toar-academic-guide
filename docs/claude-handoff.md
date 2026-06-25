@@ -297,4 +297,17 @@ gh pr list --state open
 
 ---
 
+## 14. Design Reference Images
+
+Two design mockup screenshots are committed to `docs/ui-ux/`:
+
+| File | What it shows |
+|------|---------------|
+| `cartoon-landing-after.png` | "That's way easier than I thought" — mockup for the after-cartoon section of the landing page |
+| `cartoon-landing-which-way.png` | "Which way to go" — mockup exploring cartoon placement options on the landing page |
+
+These were used during the landing page redesign discussions (PRs #25, #30).
+
+---
+
 *This document consolidates all context from Claude Code memory files and plan files. The codebase, CLAUDE.md, AGENTS.md, and git history speak for themselves — this file captures the rest.*
