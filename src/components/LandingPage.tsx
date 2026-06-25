@@ -405,7 +405,7 @@ export default function LandingPage({
                 <button
                   type="button"
                   onClick={onGoToProfile}
-                  className="font-semibold text-[#4f46e5] underline decoration-[#a5b4fc] underline-offset-2 transition hover:text-[#3730a3]"
+                  className="cursor-pointer font-semibold text-[#4f46e5] underline decoration-[#a5b4fc] underline-offset-2 transition hover:text-[#3730a3]"
                 >
                   באזור האישי
                 </button>
