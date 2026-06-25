@@ -39,6 +39,13 @@ Production should be configured with `CATALOGUE_SOURCE_MODE=database`. Preview c
 
 `NEXT_PUBLIC_APP_URL` should point at the deployed app origin used in Supabase email confirmations and browser-side OAuth callback redirects. In local development, the auth flows fall back to the current browser origin if this env var is absent.
 
+GitHub Actions can also post Slack notifications when a pull request first becomes ready to merge. That automation uses GitHub repository configuration only:
+
+- Secret: `SLACK_BOT_TOKEN`
+- Variable: `SLACK_READY_PR_CHANNEL_ID`
+
+Optional overrides such as `READY_PR_REQUIRED_WORKFLOWS` are documented in [docs/ready-pr-slack-notifications.md](docs/ready-pr-slack-notifications.md).
+
 Supabase Auth also needs the app callback URLs allow-listed under redirect URL configuration:
 
 - `http://localhost:3000/auth/callback` for local Google OAuth verification
