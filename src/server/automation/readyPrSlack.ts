@@ -302,9 +302,7 @@ export function getReadyPrSlackConfig(env: EnvMap = process.env): ReadyPrConfig 
     slackBotToken: env.SLACK_BOT_TOKEN?.trim(),
     slackChannelId: env.SLACK_READY_PR_CHANNEL_ID?.trim(),
     requiredWorkflowNames:
-      requiredWorkflowNames.length > 0
-        ? requiredWorkflowNames
-        : [...DEFAULT_REQUIRED_WORKFLOWS],
+      requiredWorkflowNames.length > 0 ? requiredWorkflowNames : [...DEFAULT_REQUIRED_WORKFLOWS],
     notificationLabel: env.READY_PR_NOTIFICATION_LABEL?.trim() || READY_PR_NOTIFICATION_LABEL,
   };
 }
@@ -671,7 +669,9 @@ async function postSlackMessage(
 
   if (!response.ok) {
     const bodyText = await response.text();
-    throw new Error(`Slack API request failed (${response.status}): ${bodyText || response.statusText}`);
+    throw new Error(
+      `Slack API request failed (${response.status}): ${bodyText || response.statusText}`,
+    );
   }
 
   const body = (await response.json()) as { ok?: boolean; error?: string; ts?: string };
