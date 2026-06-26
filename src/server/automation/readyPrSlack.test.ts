@@ -77,6 +77,7 @@ describe('evaluateReadyPrNotification', () => {
       },
       {
         notificationLabel: READY_PR_NOTIFICATION_LABEL,
+        requireApproval: true,
         requiredWorkflowNames: ['CI'],
       },
     );
@@ -97,6 +98,7 @@ describe('evaluateReadyPrNotification', () => {
       },
       {
         notificationLabel: READY_PR_NOTIFICATION_LABEL,
+        requireApproval: true,
         requiredWorkflowNames: ['CI'],
       },
     );
@@ -129,6 +131,7 @@ describe('evaluateReadyPrNotification', () => {
       },
       {
         notificationLabel: READY_PR_NOTIFICATION_LABEL,
+        requireApproval: true,
         requiredWorkflowNames: ['CI'],
       },
     );
@@ -148,6 +151,7 @@ describe('evaluateReadyPrNotification', () => {
       },
       {
         notificationLabel: READY_PR_NOTIFICATION_LABEL,
+        requireApproval: true,
         requiredWorkflowNames: ['CI'],
       },
     );
@@ -160,6 +164,7 @@ describe('evaluateReadyPrNotification', () => {
       },
       {
         notificationLabel: READY_PR_NOTIFICATION_LABEL,
+        requireApproval: true,
         requiredWorkflowNames: ['CI'],
       },
     );
@@ -172,6 +177,7 @@ describe('evaluateReadyPrNotification', () => {
       },
       {
         notificationLabel: READY_PR_NOTIFICATION_LABEL,
+        requireApproval: true,
         requiredWorkflowNames: ['CI'],
       },
     );
@@ -204,6 +210,7 @@ describe('evaluateReadyPrNotification', () => {
       },
       {
         notificationLabel: READY_PR_NOTIFICATION_LABEL,
+        requireApproval: true,
         requiredWorkflowNames: ['CI'],
       },
     );
@@ -219,6 +226,7 @@ describe('evaluateReadyPrNotification', () => {
       },
       {
         notificationLabel: READY_PR_NOTIFICATION_LABEL,
+        requireApproval: true,
         requiredWorkflowNames: ['CI'],
       },
     );
@@ -230,6 +238,51 @@ describe('evaluateReadyPrNotification', () => {
     expect(pendingMergeabilityEvaluation).toMatchObject({
       ready: false,
       reason: 'mergeability_pending',
+    });
+  });
+
+  it('treats review-gated blocked PRs as ready when approval enforcement is disabled', () => {
+    const evaluation = evaluateReadyPrNotification(
+      {
+        pullRequest: createPullRequest({
+          mergeable_state: 'blocked',
+        }),
+        reviews: [],
+        workflowRuns: [createWorkflowRun()],
+      },
+      {
+        notificationLabel: READY_PR_NOTIFICATION_LABEL,
+        requireApproval: false,
+        requiredWorkflowNames: ['CI'],
+      },
+    );
+
+    expect(evaluation).toMatchObject({
+      ready: true,
+      approvers: [],
+      ciSummary: 'CI: success',
+    });
+  });
+
+  it('still blocks missing approvals when approval enforcement is enabled', () => {
+    const evaluation = evaluateReadyPrNotification(
+      {
+        pullRequest: createPullRequest({
+          mergeable_state: 'blocked',
+        }),
+        reviews: [],
+        workflowRuns: [createWorkflowRun()],
+      },
+      {
+        notificationLabel: READY_PR_NOTIFICATION_LABEL,
+        requireApproval: true,
+        requiredWorkflowNames: ['CI'],
+      },
+    );
+
+    expect(evaluation).toMatchObject({
+      ready: false,
+      reason: 'pr_not_mergeable',
     });
   });
 });
@@ -312,18 +365,21 @@ describe('resolvePrNumberFromEvent', () => {
 describe('getReadyPrSlackConfig', () => {
   it('defaults to the CI workflow and default label', () => {
     expect(getReadyPrSlackConfig({})).toMatchObject({
+      requireApproval: false,
       requiredWorkflowNames: ['CI'],
       notificationLabel: READY_PR_NOTIFICATION_LABEL,
     });
   });
 
-  it('parses comma-separated workflow overrides', () => {
+  it('parses comma-separated workflow overrides and optional approval enforcement', () => {
     expect(
       getReadyPrSlackConfig({
+        READY_PR_REQUIRE_APPROVAL: 'true',
         READY_PR_REQUIRED_WORKFLOWS: 'CI, Preview',
         READY_PR_NOTIFICATION_LABEL: 'custom/ready',
       }),
     ).toMatchObject({
+      requireApproval: true,
       requiredWorkflowNames: ['CI', 'Preview'],
       notificationLabel: 'custom/ready',
     });
@@ -402,6 +458,50 @@ describe('runReadyPrSlackNotification', () => {
         method: 'POST',
       }),
     );
+  });
+
+  it('retries mergeability resolution before evaluating readiness', async () => {
+    const sleepMock = vi.fn().mockResolvedValue(undefined);
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        createJsonResponse(
+          createPullRequest({
+            mergeable: null,
+            mergeable_state: 'unknown',
+          }),
+        ),
+      )
+      .mockResolvedValueOnce(createJsonResponse(createPullRequest()))
+      .mockResolvedValueOnce(createJsonResponse([]))
+      .mockResolvedValueOnce(createJsonResponse({ workflow_runs: [createWorkflowRun()] }))
+      .mockResolvedValueOnce(createJsonResponse({ name: READY_PR_NOTIFICATION_LABEL }, 201))
+      .mockResolvedValueOnce(createJsonResponse(createPullRequest()))
+      .mockResolvedValueOnce(createJsonResponse({ ok: true, ts: '123.456' }))
+      .mockResolvedValueOnce(createJsonResponse([{ name: READY_PR_NOTIFICATION_LABEL }], 200));
+
+    await expect(
+      runReadyPrSlackNotification({
+        env: {
+          GITHUB_EVENT_NAME: 'workflow_dispatch',
+          GITHUB_EVENT_PATH: '/tmp/event.json',
+          GITHUB_REPOSITORY: 'Toar-academic-guide/toar-academic-guide',
+          GITHUB_TOKEN: 'github-token',
+          INPUT_PR_NUMBER: '123',
+          SLACK_BOT_TOKEN: 'slack-token',
+          SLACK_READY_PR_CHANNEL_ID: 'C123',
+        },
+        readFile: async () => JSON.stringify({}),
+        fetchImpl: fetchMock as unknown as typeof fetch,
+        sleep: sleepMock,
+      }),
+    ).resolves.toEqual({
+      status: 'sent',
+      prNumber: 123,
+      slackTimestamp: '123.456',
+    });
+
+    expect(sleepMock).toHaveBeenCalledTimes(1);
   });
 
   it('does not post if the label appears during the final pre-post refresh', async () => {

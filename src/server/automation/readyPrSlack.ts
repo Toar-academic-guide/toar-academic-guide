@@ -2,6 +2,8 @@ export const DEFAULT_REQUIRED_WORKFLOWS = ['CI'] as const;
 export const READY_PR_NOTIFICATION_LABEL = 'automation/slack-ready-notified';
 const DEFAULT_GITHUB_API_URL = 'https://api.github.com';
 const DEFAULT_LABEL_COLOR = '1f883d';
+const DEFAULT_MERGEABILITY_RETRY_COUNT = 4;
+const DEFAULT_MERGEABILITY_RETRY_DELAY_MS = 2_000;
 
 type EnvMap = Record<string, string | undefined>;
 
@@ -68,6 +70,7 @@ export type ReadyPrConfig = {
   githubToken?: string;
   slackBotToken?: string;
   slackChannelId?: string;
+  requireApproval: boolean;
   requiredWorkflowNames: string[];
   notificationLabel: string;
 };
@@ -148,6 +151,24 @@ function parseCsv(value: string | undefined): string[] {
     .split(',')
     .map((entry) => entry.trim())
     .filter(Boolean);
+}
+
+function parseBoolean(value: string | undefined, defaultValue: boolean): boolean {
+  const normalized = value?.trim().toLowerCase();
+
+  if (!normalized) {
+    return defaultValue;
+  }
+
+  if (['1', 'true', 'yes', 'y', 'on'].includes(normalized)) {
+    return true;
+  }
+
+  if (['0', 'false', 'no', 'n', 'off'].includes(normalized)) {
+    return false;
+  }
+
+  return defaultValue;
 }
 
 function sortWorkflowRunsDesc(a: GitHubWorkflowRun, b: GitHubWorkflowRun): number {
@@ -285,12 +306,19 @@ function buildCiSummary(workflowStatuses: WorkflowStatusSummary[]): string {
     .join(', ');
 }
 
-function isMergeabilityBlocked(mergeableState: string | null | undefined): boolean {
+function isMergeabilityBlocked(
+  mergeableState: string | null | undefined,
+  requireApproval: boolean,
+): boolean {
   if (!mergeableState) {
     return false;
   }
 
-  return ['blocked', 'dirty', 'behind', 'draft', 'unknown'].includes(mergeableState);
+  const blockedStates = requireApproval
+    ? ['blocked', 'dirty', 'behind', 'draft', 'unknown']
+    : ['dirty', 'behind', 'draft', 'unknown'];
+
+  return blockedStates.includes(mergeableState);
 }
 
 export function getReadyPrSlackConfig(env: EnvMap = process.env): ReadyPrConfig {
@@ -301,6 +329,7 @@ export function getReadyPrSlackConfig(env: EnvMap = process.env): ReadyPrConfig 
     githubToken: env.GITHUB_TOKEN?.trim(),
     slackBotToken: env.SLACK_BOT_TOKEN?.trim(),
     slackChannelId: env.SLACK_READY_PR_CHANNEL_ID?.trim(),
+    requireApproval: parseBoolean(env.READY_PR_REQUIRE_APPROVAL, false),
     requiredWorkflowNames:
       requiredWorkflowNames.length > 0 ? requiredWorkflowNames : [...DEFAULT_REQUIRED_WORKFLOWS],
     notificationLabel: env.READY_PR_NOTIFICATION_LABEL?.trim() || READY_PR_NOTIFICATION_LABEL,
@@ -309,9 +338,12 @@ export function getReadyPrSlackConfig(env: EnvMap = process.env): ReadyPrConfig 
 
 export function evaluateReadyPrNotification(
   snapshot: ReadyPrSnapshot,
-  config: Pick<ReadyPrConfig, 'notificationLabel' | 'requiredWorkflowNames'>,
+  config: Pick<ReadyPrConfig, 'notificationLabel' | 'requiredWorkflowNames'> & {
+    requireApproval?: boolean;
+  },
 ): ReadyPrEvaluation {
   const { pullRequest, reviews, workflowRuns } = snapshot;
+  const requireApproval = config.requireApproval ?? false;
   const { approvers, blockingReviewers } = summarizeReviews(reviews);
   const workflowStatuses = summarizeRequiredWorkflowStatuses(
     workflowRuns,
@@ -360,7 +392,10 @@ export function evaluateReadyPrNotification(
     };
   }
 
-  if (!pullRequest.mergeable || isMergeabilityBlocked(pullRequest.mergeable_state)) {
+  if (
+    !pullRequest.mergeable ||
+    isMergeabilityBlocked(pullRequest.mergeable_state, requireApproval)
+  ) {
     return {
       ready: false,
       reason: 'pr_not_mergeable',
@@ -380,7 +415,7 @@ export function evaluateReadyPrNotification(
     };
   }
 
-  if (approvers.length === 0) {
+  if (requireApproval && approvers.length === 0) {
     return {
       ready: false,
       reason: 'approval_missing',
@@ -560,6 +595,27 @@ async function fetchPullRequest(
   );
 }
 
+async function fetchPullRequestWithMergeabilityRetry(
+  fetchImpl: FetchLike,
+  config: Pick<ReadyPrConfig, 'githubApiUrl' | 'githubToken'>,
+  repositoryRef: GitHubRepositoryRef,
+  prNumber: number,
+  sleep: (ms: number) => Promise<void>,
+): Promise<GitHubPullRequest> {
+  let pullRequest = await fetchPullRequest(fetchImpl, config, repositoryRef, prNumber);
+
+  for (
+    let attempt = 0;
+    pullRequest.mergeable === null && attempt < DEFAULT_MERGEABILITY_RETRY_COUNT;
+    attempt += 1
+  ) {
+    await sleep(DEFAULT_MERGEABILITY_RETRY_DELAY_MS);
+    pullRequest = await fetchPullRequest(fetchImpl, config, repositoryRef, prNumber);
+  }
+
+  return pullRequest;
+}
+
 async function fetchPullRequestReviews(
   fetchImpl: FetchLike,
   config: Pick<ReadyPrConfig, 'githubApiUrl' | 'githubToken'>,
@@ -686,9 +742,12 @@ export async function runReadyPrSlackNotification(options: {
   env?: EnvMap;
   fetchImpl?: FetchLike;
   readFile?: (path: string) => Promise<string>;
+  sleep?: (ms: number) => Promise<void>;
 }): Promise<ReadyPrNotificationResult> {
   const env = options.env ?? process.env;
   const fetchImpl = options.fetchImpl ?? fetch;
+  const sleep =
+    options.sleep ?? ((ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms)));
   const readFile =
     options.readFile ??
     (async (path: string) => {
@@ -707,7 +766,13 @@ export async function runReadyPrSlackNotification(options: {
     };
   }
 
-  const pullRequest = await fetchPullRequest(fetchImpl, config, repositoryRef, prNumber);
+  const pullRequest = await fetchPullRequestWithMergeabilityRetry(
+    fetchImpl,
+    config,
+    repositoryRef,
+    prNumber,
+    sleep,
+  );
   const [reviews, workflowRuns] = await Promise.all([
     fetchPullRequestReviews(fetchImpl, config, repositoryRef, prNumber),
     fetchWorkflowRuns(fetchImpl, config, repositoryRef, pullRequest.head.sha),

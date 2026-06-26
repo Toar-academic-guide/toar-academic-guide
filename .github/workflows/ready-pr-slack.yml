@@ -57,6 +57,7 @@ jobs:
           CI: true
           GITHUB_TOKEN: ${{ github.token }}
           INPUT_PR_NUMBER: ${{ github.event.inputs.pr_number }}
+          READY_PR_REQUIRE_APPROVAL: ${{ vars.READY_PR_REQUIRE_APPROVAL }}
           READY_PR_REQUIRED_WORKFLOWS: ${{ vars.READY_PR_REQUIRED_WORKFLOWS }}
           READY_PR_NOTIFICATION_LABEL: ${{ vars.READY_PR_NOTIFICATION_LABEL }}
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
