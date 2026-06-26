@@ -26,7 +26,7 @@ permissions:
   actions: read
   contents: read
   issues: write
-  pull-requests: read
+  pull-requests: write
 
 concurrency:
   group: ready-pr-slack-${{ github.event.pull_request.head.sha || github.event.workflow_run.head_sha || github.event.inputs.pr_number || github.run_id }}

@@ -699,6 +699,36 @@ async function addLabelToPullRequest(
   );
 }
 
+async function removeLabelFromPullRequest(
+  fetchImpl: FetchLike,
+  config: Pick<ReadyPrConfig, 'githubApiUrl' | 'githubToken'>,
+  repositoryRef: GitHubRepositoryRef,
+  prNumber: number,
+  notificationLabel: string,
+): Promise<void> {
+  const encodedLabel = encodeURIComponent(notificationLabel);
+  const response = await fetchImpl(
+    `${config.githubApiUrl}/repos/${repositoryRef.owner}/${repositoryRef.repo}/issues/${prNumber}/labels/${encodedLabel}`,
+    {
+      method: 'DELETE',
+      headers: {
+        Accept: 'application/vnd.github+json',
+        Authorization: `Bearer ${config.githubToken}`,
+        'User-Agent': 'toar-ready-pr-slack-notifier',
+      },
+    },
+  );
+
+  if (response.ok || response.status === 404) {
+    return;
+  }
+
+  const bodyText = await response.text();
+  throw new Error(
+    `GitHub label removal failed (${response.status}) for ${notificationLabel}: ${bodyText || response.statusText}`,
+  );
+}
+
 async function postSlackMessage(
   fetchImpl: FetchLike,
   config: Pick<ReadyPrConfig, 'slackBotToken' | 'slackChannelId'>,
@@ -807,6 +837,8 @@ export async function runReadyPrSlackNotification(options: {
     };
   }
 
+  await addLabelToPullRequest(fetchImpl, config, repositoryRef, prNumber, config.notificationLabel);
+
   const slackMessagePayload = buildReadyPrSlackMessage(
     {
       ...snapshot,
@@ -814,8 +846,28 @@ export async function runReadyPrSlackNotification(options: {
     },
     evaluation,
   );
-  const slackTimestamp = await postSlackMessage(fetchImpl, config, slackMessagePayload);
-  await addLabelToPullRequest(fetchImpl, config, repositoryRef, prNumber, config.notificationLabel);
+  let slackTimestamp: string | undefined;
+
+  try {
+    slackTimestamp = await postSlackMessage(fetchImpl, config, slackMessagePayload);
+  } catch (error) {
+    try {
+      await removeLabelFromPullRequest(
+        fetchImpl,
+        config,
+        repositoryRef,
+        prNumber,
+        config.notificationLabel,
+      );
+    } catch (rollbackError) {
+      const rollbackMessage =
+        rollbackError instanceof Error ? rollbackError.message : String(rollbackError);
+      const originalMessage = error instanceof Error ? error.message : String(error);
+      throw new Error(`${originalMessage}; rollback failed: ${rollbackMessage}`);
+    }
+
+    throw error;
+  }
 
   return {
     status: 'sent',

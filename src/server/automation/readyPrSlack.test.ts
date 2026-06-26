@@ -425,8 +425,8 @@ describe('runReadyPrSlackNotification', () => {
       .mockResolvedValueOnce(createJsonResponse({ workflow_runs: [createWorkflowRun()] }))
       .mockResolvedValueOnce(createJsonResponse({ name: READY_PR_NOTIFICATION_LABEL }, 201))
       .mockResolvedValueOnce(createJsonResponse(createPullRequest()))
-      .mockResolvedValueOnce(createJsonResponse({ ok: true, ts: '123.456' }))
-      .mockResolvedValueOnce(createJsonResponse([{ name: READY_PR_NOTIFICATION_LABEL }], 200));
+      .mockResolvedValueOnce(createJsonResponse([{ name: READY_PR_NOTIFICATION_LABEL }], 200))
+      .mockResolvedValueOnce(createJsonResponse({ ok: true, ts: '123.456' }));
 
     const result = await runReadyPrSlackNotification({
       env: {
@@ -477,8 +477,8 @@ describe('runReadyPrSlackNotification', () => {
       .mockResolvedValueOnce(createJsonResponse({ workflow_runs: [createWorkflowRun()] }))
       .mockResolvedValueOnce(createJsonResponse({ name: READY_PR_NOTIFICATION_LABEL }, 201))
       .mockResolvedValueOnce(createJsonResponse(createPullRequest()))
-      .mockResolvedValueOnce(createJsonResponse({ ok: true, ts: '123.456' }))
-      .mockResolvedValueOnce(createJsonResponse([{ name: READY_PR_NOTIFICATION_LABEL }], 200));
+      .mockResolvedValueOnce(createJsonResponse([{ name: READY_PR_NOTIFICATION_LABEL }], 200))
+      .mockResolvedValueOnce(createJsonResponse({ ok: true, ts: '123.456' }));
 
     await expect(
       runReadyPrSlackNotification({
@@ -552,7 +552,9 @@ describe('runReadyPrSlackNotification', () => {
       .mockResolvedValueOnce(createJsonResponse({ workflow_runs: [createWorkflowRun()] }))
       .mockResolvedValueOnce(createJsonResponse({ name: READY_PR_NOTIFICATION_LABEL }, 201))
       .mockResolvedValueOnce(createJsonResponse(createPullRequest()))
-      .mockResolvedValueOnce(createJsonResponse({ ok: false, error: 'channel_not_found' }));
+      .mockResolvedValueOnce(createJsonResponse([{ name: READY_PR_NOTIFICATION_LABEL }], 200))
+      .mockResolvedValueOnce(createJsonResponse({ ok: false, error: 'channel_not_found' }))
+      .mockResolvedValueOnce(new Response(null, { status: 204 }));
 
     await expect(
       runReadyPrSlackNotification({
@@ -573,5 +575,49 @@ describe('runReadyPrSlackNotification', () => {
         fetchImpl: fetchMock as unknown as typeof fetch,
       }),
     ).rejects.toThrow(/channel_not_found/);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      expect.stringContaining('/issues/123/labels/automation%2Fslack-ready-notified'),
+      expect.objectContaining({
+        method: 'DELETE',
+      }),
+    );
+  });
+
+  it('fails before posting to Slack when adding the duplicate-guard label is forbidden', async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(createJsonResponse(createPullRequest()))
+      .mockResolvedValueOnce(createJsonResponse([createReview()]))
+      .mockResolvedValueOnce(createJsonResponse({ workflow_runs: [createWorkflowRun()] }))
+      .mockResolvedValueOnce(createJsonResponse({ name: READY_PR_NOTIFICATION_LABEL }, 201))
+      .mockResolvedValueOnce(createJsonResponse(createPullRequest()))
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ message: 'Resource not accessible by integration' }), {
+          status: 403,
+          headers: { 'content-type': 'application/json' },
+        }),
+      );
+
+    await expect(
+      runReadyPrSlackNotification({
+        env: {
+          GITHUB_EVENT_NAME: 'workflow_dispatch',
+          GITHUB_EVENT_PATH: '/tmp/event.json',
+          GITHUB_REPOSITORY: 'Toar-academic-guide/toar-academic-guide',
+          GITHUB_TOKEN: 'github-token',
+          INPUT_PR_NUMBER: '123',
+          SLACK_BOT_TOKEN: 'slack-token',
+          SLACK_READY_PR_CHANNEL_ID: 'C123',
+        },
+        readFile: async () => JSON.stringify({}),
+        fetchImpl: fetchMock as unknown as typeof fetch,
+      }),
+    ).rejects.toThrow(/Resource not accessible by integration/);
+
+    expect(fetchMock).not.toHaveBeenCalledWith(
+      'https://slack.com/api/chat.postMessage',
+      expect.anything(),
+    );
   });
 });

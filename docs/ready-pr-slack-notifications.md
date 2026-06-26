@@ -39,6 +39,6 @@ That is the full required setup. Without those two GitHub values, the workflow e
 
 - The workflow runs from the default branch in `pull_request_target` and `workflow_run` contexts. It does not execute code from the pull request head.
 - When GitHub temporarily returns `mergeable: null`, the script retries for a short window before giving up with `mergeability_pending`.
-- Duplicate suppression uses the pull request label `automation/slack-ready-notified` by default.
+- Duplicate suppression uses the pull request label `automation/slack-ready-notified` by default. The workflow claims that label before posting to Slack and removes it again if Slack rejects the message, so a partial success does not create duplicate notifications on rerun.
 - If you need to re-send a notification, remove that label from the pull request and re-run the `Ready PR Slack` workflow manually with the PR number.
 - This setup is GitHub Actions-only. It does not use Vercel environment variables and does not affect app runtime configuration.
