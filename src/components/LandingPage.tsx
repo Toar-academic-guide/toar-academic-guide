@@ -18,8 +18,17 @@ interface Props {
   programs: CatalogueProgram[];
   authLoading?: boolean;
   isAuthenticated?: boolean;
-  userInitials?: string;
+  userEmail?: string;
   onSignOut?: () => void;
+}
+
+function getInitials(email: string): string {
+  const prefix = email.split('@')[0];
+  const parts = prefix.split(/[._-]/);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return prefix.slice(0, 2).toUpperCase();
 }
 
 export default function LandingPage({
@@ -31,7 +40,7 @@ export default function LandingPage({
   programs,
   authLoading = false,
   isAuthenticated = false,
-  userInitials,
+  userEmail,
   onSignOut,
 }: Props) {
   const startRef = useRef<HTMLElement>(null);
@@ -108,14 +117,14 @@ export default function LandingPage({
           <div className="flex items-center gap-3">
             {authLoading ? (
               <div className="h-9 w-9 animate-pulse rounded-full bg-slate-200" />
-            ) : isAuthenticated && userInitials ? (
+            ) : isAuthenticated && userEmail ? (
               <button
                 type="button"
                 onClick={onSignOut}
-                title="לחץ להתנתקות"
-                className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-[#1e1b4b] text-xs font-bold text-white shadow transition hover:bg-[#2d2a6e]"
+                title={`מחובר כ-${userEmail} — לחץ להתנתקות`}
+                className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1e1b4b] text-xs font-bold text-white shadow transition hover:bg-[#2d2a6e]"
               >
-                {userInitials}
+                {getInitials(userEmail)}
               </button>
             ) : (
               <button
