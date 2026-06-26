@@ -53,7 +53,8 @@ export async function runAdmissionsLiveProof(
     summary: {
       total: results.length,
       exactReproduced: results.filter(
-        (result) => result.proof.proofLevel === 'exact_official' && result.proof.status === 'succeeded',
+        (result) =>
+          result.proof.proofLevel === 'exact_official' && result.proof.status === 'succeeded',
       ).length,
       partial: results.filter((result) => result.proof.status === 'partial').length,
       blocked: results.filter((result) => result.proof.status === 'blocked').length,

@@ -48,14 +48,7 @@ const DECISION_KEYWORDS = [
   'threshold',
 ];
 
-const BOILERPLATE_SELECTORS = [
-  'footer',
-  'header',
-  'nav',
-  'script',
-  'style',
-  'svg',
-];
+const BOILERPLATE_SELECTORS = ['footer', 'header', 'nav', 'script', 'style', 'svg'];
 
 export function evaluateFreshnessDiscovery(
   input: FreshnessDiscoveryInput,
@@ -81,7 +74,8 @@ export function evaluateFreshnessDiscovery(
   const normalizedFingerprint = fingerprint(stableSerialize(normalizedDecisionPayload));
   const previous = input.previousNormalizedFingerprint;
   const normalizedChanged = previous !== undefined && previous !== normalizedFingerprint;
-  const capability = input.sourceClass === 'score_only_calculator' ? 'score_only' : 'decision_capable';
+  const capability =
+    input.sourceClass === 'score_only_calculator' ? 'score_only' : 'decision_capable';
 
   return {
     id: input.id,
@@ -199,7 +193,11 @@ function isEmptyDecisionValue(value: unknown): boolean {
 }
 
 function normalizeWhitespace(value: string): string {
-  return value.replace(/\r/g, '').replace(/[ \t]+/g, ' ').replace(/\n{2,}/g, '\n').trim();
+  return value
+    .replace(/\r/g, '')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n{2,}/g, '\n')
+    .trim();
 }
 
 function serializeRaw(value: unknown): string {

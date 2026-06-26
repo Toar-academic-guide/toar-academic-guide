@@ -95,7 +95,8 @@ export function parseHaifaChancesResponse(value: unknown): Record<string, number
 }
 
 function buildHaifaParams(context: AdmissionsAdapterContext, programId = '52258372') {
-  const subscores = context.applicant.psychometricSubscores ?? defaultSubscores(context.applicant.psychometric);
+  const subscores =
+    context.applicant.psychometricSubscores ?? defaultSubscores(context.applicant.psychometric);
 
   return new URLSearchParams({
     operation: 'calculateChances',
