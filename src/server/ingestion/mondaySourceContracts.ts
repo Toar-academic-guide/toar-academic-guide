@@ -28,7 +28,7 @@ export type MondayAdmissionsSourceMappingResult =
   | { ok: false; error: { code: 'target_mismatch'; message: string } };
 
 export function parseMondayAdmissionsSourceContract(
-  input: MondayAdmissionsContractInput
+  input: MondayAdmissionsContractInput,
 ): MondayAdmissionsSourceContractParseResult {
   const normalizedBody = normalizeMondayUpdateBody(input.body);
 
@@ -44,21 +44,22 @@ export function parseMondayAdmissionsSourceContract(
     ok: false,
     error: {
       code: 'unsupported_report',
-      message: 'Only the TAU and Haifa exact reverse-engineering report formats are supported in v1.',
+      message:
+        'Only the TAU and Haifa exact reverse-engineering report formats are supported in v1.',
     },
   };
 }
 
 export function mapMondayAdmissionsSourceContract(
-  contract: MondayAdmissionsSourceContract
+  contract: MondayAdmissionsSourceContract,
 ): MondayAdmissionsSourceMappingResult {
   const matches = admissionsSourceTargets.filter(
     (target) =>
       target.institutionId === contract.institutionId &&
       target.expectedCapability === contract.capability &&
       target.reproducedFields.every((field) =>
-        contract.reproducedFields.includes(field as MondayAdmissionsReproducedField)
-      )
+        contract.reproducedFields.includes(field as MondayAdmissionsReproducedField),
+      ),
   );
 
   if (matches.length !== 1) {
@@ -109,7 +110,7 @@ export function mapMondayAdmissionsSourceContract(
 function buildTauContract(
   provenance: MondayAdmissionsContractProvenance,
   rawBody: string,
-  normalizedBody: string
+  normalizedBody: string,
 ): MondayAdmissionsSourceContractParseResult {
   const requestMethod = extractMethod(normalizedBody);
   if (!requestMethod) {
@@ -127,7 +128,7 @@ function buildTauContract(
   }
 
   const scoreFields = collectCodeFields(normalizedBody).filter((field) =>
-    field.startsWith('hatama')
+    field.startsWith('hatama'),
   );
   if (!scoreFields.includes('hatama_handasa')) {
     return {
@@ -177,7 +178,7 @@ function buildTauContract(
 function buildHaifaContract(
   provenance: MondayAdmissionsContractProvenance,
   rawBody: string,
-  normalizedBody: string
+  normalizedBody: string,
 ): MondayAdmissionsSourceContractParseResult {
   const requestMethod = extractMethod(normalizedBody);
   if (!requestMethod) {
@@ -236,7 +237,7 @@ function normalizeMondayUpdateBody(body: string): string {
       .replace(/<\/p>/gi, '\n')
       .replace(/<li>/gi, '- ')
       .replace(/<\/li>/gi, '\n')
-      .replace(/<[^>]+>/g, '')
+      .replace(/<[^>]+>/g, ''),
   )
     .replace(/\r/g, '')
     .replace(/\n{3,}/g, '\n\n')
@@ -274,15 +275,13 @@ function extractCalculatorPage(body: string): string | undefined {
 }
 
 function collectCodeFields(body: string): string[] {
-  return Array.from(
-    new Set(Array.from(body.matchAll(/`([a-z0-9_.-]+)`/gi), (match) => match[1]))
-  );
+  return Array.from(new Set(Array.from(body.matchAll(/`([a-z0-9_.-]+)`/gi), (match) => match[1])));
 }
 
 function extractHaifaSampleValue(body: string, label: string): number | undefined {
   const escapedLabel = escapeRegExp(label);
   const match = body.match(
-    new RegExp(`"label":\\s*"${escapedLabel}"[\\s\\S]*?"value":\\s*"([^"]+)"`, 'u')
+    new RegExp(`"label":\\s*"${escapedLabel}"[\\s\\S]*?"value":\\s*"([^"]+)"`, 'u'),
   );
   const value = match?.[1];
   if (!value) {
@@ -311,7 +310,7 @@ function difficultyForTarget(target: AdmissionsSourceTarget): IngestionSourceDif
 
 function buildDescriptorNotes(
   contract: MondayAdmissionsSourceContract,
-  target: AdmissionsSourceTarget
+  target: AdmissionsSourceTarget,
 ): string {
   return [
     contract.institutionName,
