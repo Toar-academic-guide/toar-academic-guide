@@ -51,7 +51,12 @@ export const reviewItemStatusEnum = pgEnum('review_item_status', [
   'rejected',
 ]);
 export const documentKindEnum = pgEnum('document_kind', ['psychometric', 'bagrut', 'other']);
-export const storageProviderEnum = pgEnum('storage_provider', ['local', 'supabase_storage', 's3', 'other']);
+export const storageProviderEnum = pgEnum('storage_provider', [
+  'local',
+  'supabase_storage',
+  's3',
+  'other',
+]);
 export const freshnessSourceClassEnum = pgEnum('freshness_source_class', [
   'api_static_json',
   'browser_required',
@@ -340,9 +345,9 @@ export const sourceFreshnessStates = pgTable(
   (table) => ({
     statusIdx: index('source_freshness_states_status_idx').on(table.status),
     latestReviewItemIdx: index('source_freshness_states_latest_review_item_idx').on(
-      table.latestReviewItemId
+      table.latestReviewItemId,
     ),
-  })
+  }),
 );
 
 export const sourceFreshnessChecks = pgTable(
@@ -374,9 +379,9 @@ export const sourceFreshnessChecks = pgTable(
   (table) => ({
     sourceCheckedAtIdx: index('source_freshness_checks_source_checked_at_idx').on(
       table.sourceId,
-      table.checkedAt
+      table.checkedAt,
     ),
     statusIdx: index('source_freshness_checks_status_idx').on(table.status),
     reviewItemIdx: index('source_freshness_checks_review_item_idx').on(table.reviewItemId),
-  })
+  }),
 );

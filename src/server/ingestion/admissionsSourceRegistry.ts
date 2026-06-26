@@ -79,7 +79,9 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     proofLevel: 'static_data_candidate',
     category: 'static_candidate',
     reproducedFields: ['programCutoffCandidate'],
-    limitations: ['Requires reproducing static JSON plus bundled client-side JS before exact proof'],
+    limitations: [
+      'Requires reproducing static JSON plus bundled client-side JS before exact proof',
+    ],
     nextAction: 'Run a separate HUJI static JSON and bundled-JS reproduction spike',
   },
   {
@@ -93,7 +95,9 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     proofLevel: 'partial_official',
     category: 'partial',
     reproducedFields: ['sekhemScore', 'optimalBagrutAverage'],
-    limitations: ['Calculator response can produce score fields, but proof has no official thresholds'],
+    limitations: [
+      'Calculator response can produce score fields, but proof has no official thresholds',
+    ],
     nextAction: 'Pair calculator output with a reviewed official threshold source',
   },
   {
@@ -106,7 +110,9 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     proofLevel: 'partial_official',
     category: 'partial',
     reproducedFields: ['sekhemScore'],
-    limitations: ['Known endpoints calculate scores, but status and cutoffs were not returned in the proof notes'],
+    limitations: [
+      'Known endpoints calculate scores, but status and cutoffs were not returned in the proof notes',
+    ],
     nextAction: 'Find or review an official cutoff/status source before product decisions',
   },
   {
@@ -119,7 +125,9 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     proofLevel: 'blocked',
     category: 'blocked',
     reproducedFields: [],
-    limitations: ['ASP.NET AJAX view state, Radware cookies, and browser session state are required'],
+    limitations: [
+      'ASP.NET AJAX view state, Radware cookies, and browser session state are required',
+    ],
     nextAction: 'Move to Hermes/VPS browser automation lane',
     blockedReason: 'Radware/browser session required',
   },
@@ -133,7 +141,9 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     proofLevel: 'blocked',
     category: 'blocked',
     reproducedFields: [],
-    limitations: ['Stateful two-step flow, Windows-1255 encoding, and Radware browser state are required'],
+    limitations: [
+      'Stateful two-step flow, Windows-1255 encoding, and Radware browser state are required',
+    ],
     nextAction: 'Move to Hermes/VPS browser automation lane',
     blockedReason: 'Stateful browser session required',
   },

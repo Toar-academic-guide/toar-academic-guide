@@ -73,7 +73,7 @@ export interface AdmissionsSourceProofEvaluation {
 
 export function evaluateAdmissionsSourceProof(
   proof: AdmissionsSourceProof,
-  previousNormalizedFingerprint?: string
+  previousNormalizedFingerprint?: string,
 ): AdmissionsSourceProofEvaluation {
   if (proof.status === 'failed') {
     return {

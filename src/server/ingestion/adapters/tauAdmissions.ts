@@ -9,7 +9,7 @@ import {
 const TAU_GRAPHQL_URL = 'https://go.tau.ac.il/graphql';
 
 export async function runTauAdmissionsProof(
-  context: AdmissionsAdapterContext
+  context: AdmissionsAdapterContext,
 ): Promise<AdmissionsSourceProof> {
   const fetcher = context.fetcher ?? fetch;
   const metadata: NonNullable<AdmissionsSourceProof['rawResponseMetadata']> = [];
@@ -21,7 +21,8 @@ export async function runTauAdmissionsProof(
         psychometric: context.applicant.psychometric,
         bagrut: context.applicant.bagrutAverage,
       },
-      query: 'query getLastScore($psychometric: Int, $bagrut: Float) { getLastScore(psychometric: $psychometric, bagrut: $bagrut) }',
+      query:
+        'query getLastScore($psychometric: Int, $bagrut: Float) { getLastScore(psychometric: $psychometric, bagrut: $bagrut) }',
     });
     metadata.push(readOfficialResponseMetadata(TAU_GRAPHQL_URL, scoreResponse));
 
@@ -36,7 +37,8 @@ export async function runTauAdmissionsProof(
         program: context.program?.externalId,
         search: context.program?.searchText,
       },
-      query: 'query getProgramAdmission($program: String, $search: String) { programAdmission(program: $program, search: $search) }',
+      query:
+        'query getProgramAdmission($program: String, $search: String) { programAdmission(program: $program, search: $search) }',
     });
     metadata.push(readOfficialResponseMetadata(TAU_GRAPHQL_URL, thresholdResponse));
 
@@ -45,7 +47,11 @@ export async function runTauAdmissionsProof(
     }
 
     const thresholdPayload = await thresholdResponse.json();
-    const normalizedPayload = normalizeTauPayload(scorePayload, thresholdPayload, context.program?.scoreField);
+    const normalizedPayload = normalizeTauPayload(
+      scorePayload,
+      thresholdPayload,
+      context.program?.scoreField,
+    );
     const decisionCapable = hasDecisionThresholds(normalizedPayload);
 
     return {
@@ -67,14 +73,17 @@ export async function runTauAdmissionsProof(
       rawResponseMetadata: metadata,
     };
   } catch (error) {
-    return failedTauProof(error instanceof Error ? error.message : 'Unknown TAU adapter error', metadata);
+    return failedTauProof(
+      error instanceof Error ? error.message : 'Unknown TAU adapter error',
+      metadata,
+    );
   }
 }
 
 export function normalizeTauPayload(
   scorePayload: unknown,
   thresholdPayload: unknown,
-  preferredScoreField?: string
+  preferredScoreField?: string,
 ): Record<string, unknown> {
   const scoreFields = flattenObject(asRecord(scorePayload));
   const thresholdFields = flattenObject(asRecord(thresholdPayload));
@@ -116,7 +125,7 @@ async function postTauGraphql(fetcher: typeof fetch, body: Record<string, unknow
 
 function failedTauProof(
   errorReason: string,
-  metadata: NonNullable<AdmissionsSourceProof['rawResponseMetadata']>
+  metadata: NonNullable<AdmissionsSourceProof['rawResponseMetadata']>,
 ): AdmissionsSourceProof {
   return {
     id: 'tau-digital-sciences-live',
@@ -139,10 +148,12 @@ function failedTauProof(
 
 function readSelectedScore(
   fields: Record<string, unknown>,
-  preferredScoreField?: string
+  preferredScoreField?: string,
 ): { field: string; value: number } | undefined {
   const preferred = preferredScoreField
-    ? Object.entries(fields).find(([key]) => key.toLowerCase().includes(preferredScoreField.toLowerCase()))
+    ? Object.entries(fields).find(([key]) =>
+        key.toLowerCase().includes(preferredScoreField.toLowerCase()),
+      )
     : undefined;
   const preferredValue = preferred ? parseOfficialNumeric(preferred[1]) : undefined;
 
@@ -184,7 +195,11 @@ function flattenObject(value: Record<string, unknown>, prefix = ''): Record<stri
 function readFirstNumeric(candidates: Record<string, unknown>, keys: string[]): number | undefined {
   for (const [key, value] of Object.entries(candidates)) {
     const normalizedKey = key.toLowerCase().replace(/[^a-z]/g, '');
-    if (keys.some((candidate) => normalizedKey.includes(candidate.toLowerCase().replace(/[^a-z]/g, '')))) {
+    if (
+      keys.some((candidate) =>
+        normalizedKey.includes(candidate.toLowerCase().replace(/[^a-z]/g, '')),
+      )
+    ) {
       const parsed = parseOfficialNumeric(value);
       if (parsed !== undefined) {
         return parsed;
@@ -197,6 +212,8 @@ function readFirstNumeric(candidates: Record<string, unknown>, keys: string[]): 
 
 function compactObject(value: Record<string, unknown>): Record<string, unknown> {
   return Object.fromEntries(
-    Object.entries(value).filter(([, entry]) => entry !== undefined && entry !== null && entry !== '')
+    Object.entries(value).filter(
+      ([, entry]) => entry !== undefined && entry !== null && entry !== '',
+    ),
   );
 }

@@ -266,7 +266,7 @@ describe('summarizeDataHealthRows', () => {
           }),
         ],
       }),
-      now
+      now,
     );
 
     expect(report.freshness.totalsByStatus).toEqual({
@@ -321,7 +321,7 @@ function sourceRow(id: string): DataHealthRows['ingestionSources'][number] {
 
 function freshnessState(
   sourceId: string,
-  overrides: Partial<DataHealthRows['sourceFreshnessStates'][number]> = {}
+  overrides: Partial<DataHealthRows['sourceFreshnessStates'][number]> = {},
 ): DataHealthRows['sourceFreshnessStates'][number] {
   return {
     sourceId,

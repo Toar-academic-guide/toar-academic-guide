@@ -16,8 +16,8 @@ describe('TAU admissions adapter', () => {
       normalizeTauPayload(
         { data: { getLastScore: { hatama_handasa: 715, otherScore: 500 } } },
         { data: { programAdmission: { acceptanceThreshold: 700, rejectionThreshold: 650 } } },
-        'hatama_handasa'
-      )
+        'hatama_handasa',
+      ),
     ).toEqual({
       selectedScore: 715,
       selectedScoreField: 'data.getLastScore.hatama_handasa',
@@ -34,7 +34,9 @@ describe('TAU admissions adapter', () => {
         return jsonResponse({ data: { getLastScore: { hatama_handasa: 715 } } });
       }
 
-      return jsonResponse({ data: { programAdmission: { acceptanceThreshold: 700, rejectionThreshold: 650 } } });
+      return jsonResponse({
+        data: { programAdmission: { acceptanceThreshold: 700, rejectionThreshold: 650 } },
+      });
     };
 
     const proof = await runTauAdmissionsProof({

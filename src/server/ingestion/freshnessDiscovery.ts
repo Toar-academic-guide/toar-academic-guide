@@ -51,7 +51,7 @@ const DECISION_KEYWORDS = [
 const BOILERPLATE_SELECTORS = ['footer', 'header', 'nav', 'script', 'style', 'svg'];
 
 export function evaluateFreshnessDiscovery(
-  input: FreshnessDiscoveryInput
+  input: FreshnessDiscoveryInput,
 ): FreshnessDiscoveryResult {
   if (input.sourceClass === 'browser_required') {
     const reason = input.blockedReason ?? 'browser session required';
@@ -75,7 +75,8 @@ export function evaluateFreshnessDiscovery(
   const normalizedChanged =
     input.previousNormalizedFingerprint !== undefined &&
     input.previousNormalizedFingerprint !== normalizedFingerprint;
-  const capability = input.sourceClass === 'score_only_calculator' ? 'score_only' : 'decision_capable';
+  const capability =
+    input.sourceClass === 'score_only_calculator' ? 'score_only' : 'decision_capable';
 
   return {
     id: input.id,
@@ -93,7 +94,7 @@ export function evaluateFreshnessDiscovery(
 
 export function normalizeDecisionPayload(
   sourceClass: FreshnessSourceClass,
-  body: unknown
+  body: unknown,
 ): Record<string, unknown> {
   switch (sourceClass) {
     case 'official_html':
@@ -193,7 +194,11 @@ function isEmptyDecisionValue(value: unknown): boolean {
 }
 
 function normalizeWhitespace(value: string): string {
-  return value.replace(/\r/g, '').replace(/[ \t]+/g, ' ').replace(/\n{2,}/g, '\n').trim();
+  return value
+    .replace(/\r/g, '')
+    .replace(/[ \t]+/g, ' ')
+    .replace(/\n{2,}/g, '\n')
+    .trim();
 }
 
 function serializeRaw(value: unknown): string {
@@ -219,7 +224,7 @@ function stripHtmlBoilerplate(html: string): string {
   return BOILERPLATE_SELECTORS.reduce(
     (current, selector) =>
       current.replace(new RegExp(`<${selector}[^>]*>[\\s\\S]*?<\\/${selector}>`, 'gi'), ' '),
-    html
+    html,
   )
     .replace(/<[^>]+>/g, ' ')
     .replace(/&nbsp;/g, ' ');

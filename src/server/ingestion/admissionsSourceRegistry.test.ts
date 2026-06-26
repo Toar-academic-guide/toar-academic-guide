@@ -15,9 +15,9 @@ describe('admissionsSourceRegistry', () => {
   });
 
   it('filters targets by stable id', () => {
-    expect(selectAdmissionsSourceTargets(['biu-browser-required']).map((target) => target.id)).toEqual([
-      'biu-browser-required',
-    ]);
+    expect(
+      selectAdmissionsSourceTargets(['biu-browser-required']).map((target) => target.id),
+    ).toEqual(['biu-browser-required']);
   });
 
   it('keeps blocked sources blocked without attempting a fetch', () => {

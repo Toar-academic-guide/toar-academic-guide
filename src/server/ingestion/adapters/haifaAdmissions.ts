@@ -7,11 +7,10 @@ import {
 } from '../admissionsSourceAdapters';
 
 const HAIFA_INDEX_URL = 'https://applicants.haifa.ac.il/enrollmentChances/index.html';
-const HAIFA_API_URL =
-  'https://applicants.haifa.ac.il/enrollmentChances/CandChancesServlet';
+const HAIFA_API_URL = 'https://applicants.haifa.ac.il/enrollmentChances/CandChancesServlet';
 
 export async function runHaifaAdmissionsProof(
-  context: AdmissionsAdapterContext
+  context: AdmissionsAdapterContext,
 ): Promise<AdmissionsSourceProof> {
   const fetcher = context.fetcher ?? fetch;
   const metadata: NonNullable<AdmissionsSourceProof['rawResponseMetadata']> = [];
@@ -23,7 +22,10 @@ export async function runHaifaAdmissionsProof(
     metadata.push(readOfficialResponseMetadata(HAIFA_API_URL, connectionResponse));
 
     if (!connectionResponse.ok) {
-      return failedHaifaProof(`Haifa checkConnection returned ${connectionResponse.status}`, metadata);
+      return failedHaifaProof(
+        `Haifa checkConnection returned ${connectionResponse.status}`,
+        metadata,
+      );
     }
 
     const url = new URL(HAIFA_API_URL);
@@ -43,7 +45,10 @@ export async function runHaifaAdmissionsProof(
     metadata.push(readOfficialResponseMetadata(HAIFA_API_URL, chancesResponse));
 
     if (!chancesResponse.ok) {
-      return failedHaifaProof(`Haifa calculateChances returned ${chancesResponse.status}`, metadata);
+      return failedHaifaProof(
+        `Haifa calculateChances returned ${chancesResponse.status}`,
+        metadata,
+      );
     }
 
     const payload = await chancesResponse.json();
@@ -69,7 +74,10 @@ export async function runHaifaAdmissionsProof(
       rawResponseMetadata: metadata,
     };
   } catch (error) {
-    return failedHaifaProof(error instanceof Error ? error.message : 'Unknown Haifa adapter error', metadata);
+    return failedHaifaProof(
+      error instanceof Error ? error.message : 'Unknown Haifa adapter error',
+      metadata,
+    );
   }
 }
 
@@ -113,7 +121,7 @@ export function normalizeHaifaPayload(payload: unknown): Record<string, unknown>
 
 function failedHaifaProof(
   errorReason: string,
-  metadata: NonNullable<AdmissionsSourceProof['rawResponseMetadata']>
+  metadata: NonNullable<AdmissionsSourceProof['rawResponseMetadata']>,
 ): AdmissionsSourceProof {
   return {
     id: 'haifa-cs-live',
@@ -155,7 +163,11 @@ function flattenObject(value: Record<string, unknown>, prefix = ''): Record<stri
 function readFirstNumeric(candidates: Record<string, unknown>, keys: string[]): number | undefined {
   for (const [key, value] of Object.entries(candidates)) {
     const normalizedKey = key.toLowerCase().replace(/[^a-z]/g, '');
-    if (keys.some((candidate) => normalizedKey.includes(candidate.toLowerCase().replace(/[^a-z]/g, '')))) {
+    if (
+      keys.some((candidate) =>
+        normalizedKey.includes(candidate.toLowerCase().replace(/[^a-z]/g, '')),
+      )
+    ) {
       const parsed = parseOfficialNumeric(value);
       if (parsed !== undefined) {
         return parsed;
@@ -171,7 +183,9 @@ function readFirstString(candidates: Record<string, unknown>, keys: string[]): s
     const normalizedKey = key.toLowerCase().replace(/[^a-z]/g, '');
     if (
       typeof value === 'string' &&
-      keys.some((candidate) => normalizedKey.includes(candidate.toLowerCase().replace(/[^a-z]/g, '')))
+      keys.some((candidate) =>
+        normalizedKey.includes(candidate.toLowerCase().replace(/[^a-z]/g, '')),
+      )
     ) {
       return value;
     }
@@ -182,6 +196,8 @@ function readFirstString(candidates: Record<string, unknown>, keys: string[]): s
 
 function compactObject(value: Record<string, unknown>): Record<string, unknown> {
   return Object.fromEntries(
-    Object.entries(value).filter(([, entry]) => entry !== undefined && entry !== null && entry !== '')
+    Object.entries(value).filter(
+      ([, entry]) => entry !== undefined && entry !== null && entry !== '',
+    ),
   );
 }

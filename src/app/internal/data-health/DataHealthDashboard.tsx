@@ -321,9 +321,7 @@ function buildCriticalItems(report: DataHealthReadyReport): string[] {
     ),
     ...report.ingestion.recentFailures.map((job) => `Failed ingestion job ${job.id}`),
     ...report.freshness.rows
-      .filter((row) =>
-        ['blocked', 'changed_needs_review', 'failed', 'stale'].includes(row.status)
-      )
+      .filter((row) => ['blocked', 'changed_needs_review', 'failed', 'stale'].includes(row.status))
       .map((row) => `Source freshness ${row.status}: ${row.sourceId}`),
     ...(report.reviewQueue.oldestPendingItem
       ? [`Oldest pending review ${report.reviewQueue.oldestPendingItem.id}`]

@@ -76,7 +76,7 @@ export interface SourceFreshnessRepository {
   recordCheck(record: SourceFreshnessCheckRecord): Promise<void>;
   upsertCurrentState(state: SourceFreshnessCurrentState): Promise<void>;
   createReviewHandoff(
-    input: SourceFreshnessReviewHandoff
+    input: SourceFreshnessReviewHandoff,
   ): Promise<{ payloadId: string; reviewItemId: string }>;
 }
 
@@ -121,7 +121,11 @@ export async function persistAdmissionsSourceProofs({
       previous.normalizedFingerprint === freshness?.normalizedFingerprint &&
       previous.latestReviewItemId !== undefined;
 
-    const status = sourceFreshnessStatusForProof(proof, freshness?.status, pendingSameDecisionChange);
+    const status = sourceFreshnessStatusForProof(
+      proof,
+      freshness?.status,
+      pendingSameDecisionChange,
+    );
     const successful = proof.status !== 'failed';
     const failureReason = proof.errorReason;
     let reviewItemId = pendingSameDecisionChange ? previous.latestReviewItemId : undefined;
@@ -140,9 +144,11 @@ export async function persistAdmissionsSourceProofs({
       summary.reviewsCreated += 1;
     }
 
-    const normalizedPayload = freshness?.normalizedDecisionPayload ?? previous?.normalizedDecisionPayload ?? {};
+    const normalizedPayload =
+      freshness?.normalizedDecisionPayload ?? previous?.normalizedDecisionPayload ?? {};
     const rawFingerprint = freshness?.rawFingerprint ?? previous?.rawFingerprint;
-    const normalizedFingerprint = freshness?.normalizedFingerprint ?? previous?.normalizedFingerprint;
+    const normalizedFingerprint =
+      freshness?.normalizedFingerprint ?? previous?.normalizedFingerprint;
     const lastSuccessfulCheckAt = successful ? checkedAt : previous?.lastSuccessfulCheckAt;
     const lastChangedAt =
       status === 'changed_needs_review' && previous?.normalizedFingerprint !== normalizedFingerprint
@@ -190,9 +196,7 @@ export async function persistAdmissionsSourceProofs({
   return summary;
 }
 
-export function createDrizzleSourceFreshnessRepository(
-  db = getDb()
-): SourceFreshnessRepository {
+export function createDrizzleSourceFreshnessRepository(db = getDb()): SourceFreshnessRepository {
   return {
     async ensureIngestionSource(descriptor) {
       const [institutionId, programId] = await Promise.all([
@@ -349,7 +353,7 @@ export function createDrizzleSourceFreshnessRepository(
 function sourceFreshnessStatusForProof(
   proof: AdmissionsSourceProof,
   freshnessStatus: 'blocked' | 'changed_needs_review' | 'fresh' | undefined,
-  pendingSameDecisionChange: boolean
+  pendingSameDecisionChange: boolean,
 ): SourceFreshnessStatus {
   if (proof.status === 'failed') {
     return 'failed';
@@ -419,7 +423,7 @@ function stateValues(state: SourceFreshnessCurrentState) {
 
 async function findExistingInstitutionId(
   db: ReturnType<typeof getDb>,
-  institutionId: string | undefined
+  institutionId: string | undefined,
 ): Promise<string | null> {
   if (!institutionId) {
     return null;
@@ -435,7 +439,7 @@ async function findExistingInstitutionId(
 
 async function findExistingProgramId(
   db: ReturnType<typeof getDb>,
-  programId: string | undefined
+  programId: string | undefined,
 ): Promise<string | null> {
   if (!programId) {
     return null;

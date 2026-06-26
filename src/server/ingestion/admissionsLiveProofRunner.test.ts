@@ -15,7 +15,9 @@ describe('runAdmissionsLiveProof', () => {
     const fetcher = async (input: RequestInfo | URL) => {
       const url = String(input);
       if (url.includes('CandChancesServlet') && url.includes('calculateChances')) {
-        return jsonResponse({ result: { weightedScore: 715, acceptanceCutoff: 700, rejectionCutoff: 650 } });
+        return jsonResponse({
+          result: { weightedScore: 715, acceptanceCutoff: 700, rejectionCutoff: 650 },
+        });
       }
 
       if (url.includes('CandChancesServlet')) {
@@ -58,8 +60,8 @@ describe('runAdmissionsLiveProof', () => {
       partial: 1,
       blocked: 1,
     });
-    expect(report.results.find((result) => result.proof.id === 'biu-browser-required')?.proof.status).toBe(
-      'blocked'
-    );
+    expect(
+      report.results.find((result) => result.proof.id === 'biu-browser-required')?.proof.status,
+    ).toBe('blocked');
   });
 });

@@ -26,7 +26,7 @@ class InMemorySourceFreshnessRepository implements SourceFreshnessRepository {
   }
 
   async upsertCurrentState(
-    state: NonNullable<Awaited<ReturnType<SourceFreshnessRepository['getCurrentState']>>>
+    state: NonNullable<Awaited<ReturnType<SourceFreshnessRepository['getCurrentState']>>>,
   ) {
     this.states.set(state.sourceId, state);
   }
@@ -69,7 +69,7 @@ describe('runAdmissionsSourceFreshness', () => {
     await expect(
       runAdmissionsSourceFreshness({
         proofRunner,
-      })
+      }),
     ).rejects.toThrow(/Missing DATABASE_URL/);
     expect(proofRunner).not.toHaveBeenCalled();
   });
@@ -79,7 +79,8 @@ describe('runAdmissionsSourceFreshness', () => {
 
     const result = await runAdmissionsSourceFreshness({
       checkedAt: new Date('2026-06-26T03:00:00.000Z'),
-      proofRunner: async () => reportForProofs([decisionProof('succeeded'), decisionProof('failed')]),
+      proofRunner: async () =>
+        reportForProofs([decisionProof('succeeded'), decisionProof('failed')]),
       repository,
     });
 
@@ -103,7 +104,7 @@ describe('runAdmissionsSourceFreshness', () => {
       expect.objectContaining({
         includeCapabilityMatrix: true,
         targetIds: ['tau-digital-sciences-live'],
-      })
+      }),
     );
   });
 });

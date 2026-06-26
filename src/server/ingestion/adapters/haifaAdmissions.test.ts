@@ -20,7 +20,7 @@ describe('Haifa admissions adapter', () => {
           rejectionCutoff: '650',
           marketingText: 'ignored',
         },
-      })
+      }),
     ).toEqual({
       weightedScore: 715.4,
       acceptanceCutoff: 700,
@@ -32,7 +32,9 @@ describe('Haifa admissions adapter', () => {
     const fetcher = async (input: RequestInfo | URL) => {
       const url = String(input);
       if (url.includes('calculateChances')) {
-        return jsonResponse({ result: { weightedScore: 715, acceptanceCutoff: 700, rejectionCutoff: 650 } });
+        return jsonResponse({
+          result: { weightedScore: 715, acceptanceCutoff: 700, rejectionCutoff: 650 },
+        });
       }
 
       return jsonResponse({ ok: true });

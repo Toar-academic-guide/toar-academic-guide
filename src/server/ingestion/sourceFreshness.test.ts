@@ -9,13 +9,10 @@ class InMemorySourceFreshnessRepository implements SourceFreshnessRepository {
   checks: Parameters<SourceFreshnessRepository['recordCheck']>[0][] = [];
   ensuredSources: Parameters<SourceFreshnessRepository['ensureIngestionSource']>[0][] = [];
   reviewHandoffs: Parameters<SourceFreshnessRepository['createReviewHandoff']>[0][] = [];
-  states = new Map<
-    string,
-    Awaited<ReturnType<SourceFreshnessRepository['getCurrentState']>>
-  >();
+  states = new Map<string, Awaited<ReturnType<SourceFreshnessRepository['getCurrentState']>>>();
 
   async ensureIngestionSource(
-    descriptor: Parameters<SourceFreshnessRepository['ensureIngestionSource']>[0]
+    descriptor: Parameters<SourceFreshnessRepository['ensureIngestionSource']>[0],
   ) {
     this.ensuredSources.push(descriptor);
   }
@@ -29,12 +26,14 @@ class InMemorySourceFreshnessRepository implements SourceFreshnessRepository {
   }
 
   async upsertCurrentState(
-    state: NonNullable<Awaited<ReturnType<SourceFreshnessRepository['getCurrentState']>>>
+    state: NonNullable<Awaited<ReturnType<SourceFreshnessRepository['getCurrentState']>>>,
   ) {
     this.states.set(state.sourceId, state);
   }
 
-  async createReviewHandoff(input: Parameters<SourceFreshnessRepository['createReviewHandoff']>[0]) {
+  async createReviewHandoff(
+    input: Parameters<SourceFreshnessRepository['createReviewHandoff']>[0],
+  ) {
     this.reviewHandoffs.push(input);
     return {
       payloadId: `payload-${this.reviewHandoffs.length}`,

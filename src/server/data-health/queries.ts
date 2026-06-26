@@ -487,7 +487,7 @@ function buildReviewQueueSummary(rows: ReviewItemRow[]): DataHealthReadyReport['
 
 function buildSourceFreshnessSummary(
   rows: DataHealthRows,
-  now: Date
+  now: Date,
 ): DataHealthReadyReport['freshness'] {
   const statesBySourceId = new Map(rows.sourceFreshnessStates.map((row) => [row.sourceId, row]));
   const freshnessRows = rows.ingestionSources
@@ -504,7 +504,7 @@ function buildSourceFreshnessSummary(
 function serializeSourceFreshness(
   source: IngestionSourceRow,
   state: SourceFreshnessStateRow | undefined,
-  now: Date
+  now: Date,
 ): SourceFreshnessSummary {
   if (!state) {
     return {
@@ -545,7 +545,7 @@ function serializeSourceFreshness(
 
 function classifySourceFreshnessStatus(
   state: SourceFreshnessStateRow,
-  now: Date
+  now: Date,
 ): DashboardSourceFreshnessStatus {
   if (state.status !== 'fresh') {
     return state.status;
@@ -563,10 +563,9 @@ function classifySourceFreshnessStatus(
 
 function compareSourceFreshnessRows(
   left: SourceFreshnessSummary,
-  right: SourceFreshnessSummary
+  right: SourceFreshnessSummary,
 ): number {
-  const priority =
-    freshnessStatusPriority(left.status) - freshnessStatusPriority(right.status);
+  const priority = freshnessStatusPriority(left.status) - freshnessStatusPriority(right.status);
   if (priority !== 0) {
     return priority;
   }

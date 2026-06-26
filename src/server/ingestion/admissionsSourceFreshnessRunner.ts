@@ -11,8 +11,10 @@ import {
   type SourceFreshnessRepository,
 } from './sourceFreshness';
 
-export interface AdmissionsSourceFreshnessRunnerOptions
-  extends Pick<AdmissionsLiveProofOptions, 'applicant' | 'fetcher' | 'targetIds'> {
+export interface AdmissionsSourceFreshnessRunnerOptions extends Pick<
+  AdmissionsLiveProofOptions,
+  'applicant' | 'fetcher' | 'targetIds'
+> {
   checkedAt?: Date;
   dryRun?: boolean;
   includeCapabilityMatrix?: boolean;
@@ -57,7 +59,7 @@ export function parseAdmissionsSourceFreshnessArgs(argv: string[]): {
 }
 
 export async function runAdmissionsSourceFreshness(
-  options: AdmissionsSourceFreshnessRunnerOptions = {}
+  options: AdmissionsSourceFreshnessRunnerOptions = {},
 ): Promise<AdmissionsSourceFreshnessRunResult> {
   assertAdmissionsSourceFreshnessConfig(options);
 
@@ -90,13 +92,13 @@ export async function runAdmissionsSourceFreshness(
 }
 
 function assertAdmissionsSourceFreshnessConfig(
-  options: AdmissionsSourceFreshnessRunnerOptions
+  options: AdmissionsSourceFreshnessRunnerOptions,
 ): void {
   if (options.dryRun || options.repository || hasDatabaseUrl()) {
     return;
   }
 
   throw new Error(
-    'Missing DATABASE_URL. Configure DATABASE_URL before running persisted admissions source freshness checks, or pass --dry-run.'
+    'Missing DATABASE_URL. Configure DATABASE_URL before running persisted admissions source freshness checks, or pass --dry-run.',
   );
 }

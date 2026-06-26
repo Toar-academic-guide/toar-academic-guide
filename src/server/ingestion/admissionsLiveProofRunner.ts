@@ -37,7 +37,7 @@ const DEFAULT_APPLICANT: AdmissionsApplicantInput = {
 };
 
 export async function runAdmissionsLiveProof(
-  options: AdmissionsLiveProofOptions = {}
+  options: AdmissionsLiveProofOptions = {},
 ): Promise<AdmissionsLiveProofReport> {
   const targets = options.includeCapabilityMatrix
     ? filterTargets(admissionsSourceTargets, options.targetIds)
@@ -53,7 +53,8 @@ export async function runAdmissionsLiveProof(
     summary: {
       total: results.length,
       exactReproduced: results.filter(
-        (result) => result.proof.proofLevel === 'exact_official' && result.proof.status === 'succeeded'
+        (result) =>
+          result.proof.proofLevel === 'exact_official' && result.proof.status === 'succeeded',
       ).length,
       partial: results.filter((result) => result.proof.status === 'partial').length,
       blocked: results.filter((result) => result.proof.status === 'blocked').length,
@@ -65,7 +66,7 @@ export async function runAdmissionsLiveProof(
 
 async function runTarget(
   target: AdmissionsSourceTarget,
-  options: AdmissionsLiveProofOptions
+  options: AdmissionsLiveProofOptions,
 ): Promise<AdmissionsSourceProof> {
   if (target.adapterId === 'haifa') {
     return runHaifaAdmissionsProof({
