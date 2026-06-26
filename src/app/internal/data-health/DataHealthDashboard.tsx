@@ -55,6 +55,32 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
           />
         </section>
 
+        <section className="rounded-[1.75rem] border border-slate-950/10 bg-white p-6 shadow-sm">
+          <h2 className="text-2xl font-black text-slate-950">Admissions decision readiness</h2>
+          <DefinitionGrid
+            items={[
+              [
+                'Decision-ready requirements',
+                report.decisionReadiness.decisionReadyRequirementCount,
+              ],
+              ['Missing structured facts', report.decisionReadiness.missingFactCount],
+              ['Weak source candidates', report.decisionReadiness.weakSourceCount],
+              ['Manual gates', report.decisionReadiness.manualGateCount],
+              ['Alternative paths', report.decisionReadiness.alternativePathCount],
+            ]}
+          />
+          <h3 className="mt-6 text-sm font-black uppercase tracking-[0.2em] text-slate-500">
+            Weak sources
+          </h3>
+          <CompactRows
+            emptyLabel="No weak admissions source candidates."
+            rows={report.decisionReadiness.weakSources.map((source) => ({
+              id: source.sourceCandidateId,
+              detail: `${source.programId} at ${source.institutionId} / ${source.origin} / ${source.specificity}`,
+            }))}
+          />
+        </section>
+
         <section className="rounded-[1.75rem] border border-red-900/15 bg-red-50 p-6 shadow-sm">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -280,6 +306,12 @@ function buildCriticalItems(report: DataHealthReadyReport): string[] {
     ...report.readiness.issues,
     ...report.coverage.missingRequirementSources.map(
       (row) => `Missing source URL for ${row.admissionRequirementId}`,
+    ),
+    ...report.decisionReadiness.requirementsMissingFacts.map(
+      (row) => `Missing admissions facts for ${row.admissionRequirementId}`,
+    ),
+    ...report.decisionReadiness.weakSources.map(
+      (source) => `Weak admissions source ${source.sourceCandidateId}`,
     ),
     ...report.ingestion.recentFailures.map((job) => `Failed ingestion job ${job.id}`),
     ...(report.reviewQueue.oldestPendingItem

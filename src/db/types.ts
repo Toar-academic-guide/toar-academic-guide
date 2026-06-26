@@ -1,6 +1,9 @@
 import type {
+  admissionAlternativePaths,
+  admissionFacts,
   admissionRequirements,
   admissionThresholds,
+  admissionsSourceCandidates,
   ingestionJobs,
   ingestionPayloads,
   ingestionSources,
@@ -24,6 +27,9 @@ export type AdmissionRequirementRow = typeof admissionRequirements.$inferSelect;
 export type AdmissionThresholdRow = typeof admissionThresholds.$inferSelect;
 export type SourceUrlRow = typeof sourceUrls.$inferSelect;
 export type RequirementVersionRow = typeof requirementVersions.$inferSelect;
+export type AdmissionsSourceCandidateRow = typeof admissionsSourceCandidates.$inferSelect;
+export type AdmissionFactRow = typeof admissionFacts.$inferSelect;
+export type AdmissionAlternativePathRow = typeof admissionAlternativePaths.$inferSelect;
 export type UserProfileRow = typeof userProfiles.$inferSelect;
 export type SavedProgramRow = typeof savedPrograms.$inferSelect;
 export type UploadedDocumentRow = typeof uploadedDocuments.$inferSelect;

@@ -3061,4 +3061,27 @@ export const academicPrograms: Program[] = [
     ],
     institutionDetails: D['kinneret_sound_eng'],
   },
+  {
+    id: 'open_university_cs',
+    name: 'מדעי המחשב',
+    institution: 'האוניברסיטה הפתוחה',
+    institutionId: 'open_university',
+    type: 'academic',
+    category: 'מדעי המחשב',
+    profileScore: P.cs,
+    admissionType: 'requirements',
+    admissionRequirements: ['קבלה פתוחה', 'אין סף פסיכומטרי או ממוצע בגרות כמנגנון סינון ראשי'],
+    institutionDetails: [
+      {
+        institutionName: 'האוניברסיטה הפתוחה',
+        durationYears: null,
+        estimatedStudentsPerYear: '',
+        quantitativeMinRequirement: null,
+        englishMinRequirement: null,
+        specificAdmissionNotes: ['קבלה פתוחה למסלולי לימוד באוניברסיטה הפתוחה'],
+        officialCalculatorUrl: 'https://www.openu.ac.il/',
+        programUrl: 'https://www.openu.ac.il/',
+      },
+    ],
+  },
 ];

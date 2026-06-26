@@ -63,6 +63,55 @@ function baseRows(overrides: Partial<DataHealthRows> = {}): DataHealthRows {
       { institutionId: 'biu' },
       { institutionId: 'ariel' },
     ],
+    admissionsSourceCandidates: [
+      {
+        id: 'candidate-tau-cs',
+        admissionRequirementId: 'req-tau-cs',
+        programId: 'tau_cs',
+        institutionId: 'tau',
+        origin: 'catalogue_url',
+        specificity: 'calculator',
+        confidence: 'high',
+      },
+      {
+        id: 'candidate-tau-law',
+        admissionRequirementId: 'req-tau-law',
+        programId: 'tau_law',
+        institutionId: 'tau',
+        origin: 'board_column',
+        specificity: 'generic',
+        confidence: 'low',
+      },
+    ],
+    admissionFacts: [
+      {
+        id: 'fact-tau-cs-sekhem',
+        admissionRequirementId: 'req-tau-cs',
+        programId: 'tau_cs',
+        institutionId: 'tau',
+        kind: 'numeric_gate',
+        field: 'sekhem',
+        confidence: 'high',
+      },
+      {
+        id: 'fact-tau-law-interview',
+        admissionRequirementId: 'req-tau-law',
+        programId: 'tau_law',
+        institutionId: 'tau',
+        kind: 'manual_gate',
+        field: 'interview',
+        confidence: 'low',
+      },
+    ],
+    admissionAlternativePaths: [
+      {
+        id: 'alt-tau-law-manual',
+        admissionRequirementId: 'req-tau-law',
+        programId: 'tau_law',
+        institutionId: 'tau',
+        kind: 'manual_check',
+      },
+    ],
     ingestionJobs: [],
     reviewItems: [],
     ...overrides,
@@ -111,6 +160,66 @@ describe('summarizeDataHealthRows', () => {
       },
     ]);
     expect(report.coverage.missingRequirementSourceCount).toBe(1);
+  });
+
+  it('reports decision readiness from structured admissions facts and source candidates', () => {
+    const report = summarizeDataHealthRows(
+      baseRows({
+        admissionFacts: [
+          {
+            id: 'fact-tau-cs-sekhem',
+            admissionRequirementId: 'req-tau-cs',
+            programId: 'tau_cs',
+            institutionId: 'tau',
+            kind: 'numeric_gate',
+            field: 'sekhem',
+            confidence: 'high',
+          },
+          {
+            id: 'fact-tau-law-interview',
+            admissionRequirementId: 'req-tau-law',
+            programId: 'tau_law',
+            institutionId: 'tau',
+            kind: 'manual_gate',
+            field: 'interview',
+            confidence: 'low',
+          },
+        ],
+      }),
+      now,
+    );
+
+    expect(report.decisionReadiness.decisionReadyRequirementCount).toBe(2);
+    expect(report.decisionReadiness.weakSourceCount).toBe(1);
+    expect(report.decisionReadiness.manualGateCount).toBe(1);
+    expect(report.decisionReadiness.alternativePathCount).toBe(1);
+    expect(report.decisionReadiness.weakSources[0]).toMatchObject({
+      sourceCandidateId: 'candidate-tau-law',
+      specificity: 'generic',
+    });
+  });
+
+  it('flags requirements that have source URLs but no structured admissions facts', () => {
+    const report = summarizeDataHealthRows(
+      baseRows({
+        admissionFacts: [],
+      }),
+      now,
+    );
+
+    expect(report.decisionReadiness.missingFactCount).toBe(2);
+    expect(report.decisionReadiness.requirementsMissingFacts).toEqual([
+      {
+        admissionRequirementId: 'req-tau-cs',
+        institutionId: 'tau',
+        programId: 'tau_cs',
+      },
+      {
+        admissionRequirementId: 'req-tau-law',
+        institutionId: 'tau',
+        programId: 'tau_law',
+      },
+    ]);
   });
 
   it('groups ingestion jobs by status and difficulty with oldest active work first', () => {
@@ -225,6 +334,9 @@ describe('summarizeDataHealthRows', () => {
         admissionThresholds: [],
         sourceUrls: [],
         universityCalculatorConfigs: [],
+        admissionsSourceCandidates: [],
+        admissionFacts: [],
+        admissionAlternativePaths: [],
       }),
       now,
     );

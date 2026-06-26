@@ -25,6 +25,61 @@ describe('catalogueSeed', () => {
     expect(payload.sourceUrls.some((row) => row.programId === 'tau_cs')).toBe(true);
   });
 
+  it('seeds representative admissions facts with source provenance', () => {
+    const payload = buildCatalogueSeed();
+
+    expect(payload.programs.some((row) => row.id === 'open_university_cs')).toBe(true);
+    expect(
+      payload.admissionsSourceCandidates.some(
+        (row) => row.id === 'ono_socialwork:ono:item-update-source' && row.origin === 'item_update',
+      ),
+    ).toBe(true);
+    expect(
+      payload.admissionsSourceCandidates.some(
+        (row) =>
+          row.id === 'kinneret_sound_eng:kinneret:board-source' &&
+          row.origin === 'board_column' &&
+          row.confidence === 'low',
+      ),
+    ).toBe(true);
+  });
+
+  it('distinguishes explicit absence, unknown facts, manual gates, and alternatives', () => {
+    const payload = buildCatalogueSeed();
+
+    expect(
+      payload.admissionFacts.find(
+        (row) => row.id === 'open_university_cs:open_university:fact:no-psychometric',
+      ),
+    ).toMatchObject({
+      kind: 'explicit_absence',
+      field: 'psychometric',
+      comparison: 'not_required',
+    });
+    expect(
+      payload.admissionFacts.find(
+        (row) => row.id === 'kinneret_sound_eng:kinneret:fact:unknown-score',
+      ),
+    ).toMatchObject({
+      kind: 'unknown',
+      confidence: 'low',
+    });
+    expect(
+      payload.admissionFacts.find((row) => row.id === 'ono_socialwork:ono:fact:interview'),
+    ).toMatchObject({
+      kind: 'manual_gate',
+      field: 'interview',
+    });
+    expect(
+      payload.admissionAlternativePaths.find(
+        (row) => row.id === 'ono_socialwork:ono:alt:exceptions',
+      ),
+    ).toMatchObject({
+      kind: 'exceptions_committee',
+      programId: 'ono_socialwork',
+    });
+  });
+
   it('keeps the Haifa programmes as sekhem seed records with thresholds', () => {
     const payload = buildCatalogueSeed();
     const haifaProgramIds = [

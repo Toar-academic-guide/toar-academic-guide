@@ -5,8 +5,11 @@ import { eq, inArray } from 'drizzle-orm';
 import { UNIVERSITIES } from '@/data/degreesData';
 import { getDb } from '@/db/client';
 import {
+  admissionAlternativePaths,
+  admissionFacts,
   admissionRequirements,
   admissionThresholds,
+  admissionsSourceCandidates,
   institutions,
   programInstitutions,
   programs,
@@ -14,8 +17,11 @@ import {
   universityCalculatorConfigs,
 } from '@/db/schema';
 import type {
+  AdmissionAlternativePathRow,
+  AdmissionFactRow,
   AdmissionRequirementRow,
   AdmissionThresholdRow,
+  AdmissionsSourceCandidateRow,
   InstitutionRow,
   ProgramInstitutionRow,
   ProgramRow,
@@ -62,6 +68,9 @@ interface DatabaseCatalogueSnapshot extends CatalogueReadinessSnapshot {
   admissionRequirements: AdmissionRequirementRow[];
   admissionThresholds: AdmissionThresholdRow[];
   sourceUrls: SourceUrlRow[];
+  admissionsSourceCandidates: AdmissionsSourceCandidateRow[];
+  admissionFacts: AdmissionFactRow[];
+  admissionAlternativePaths: AdmissionAlternativePathRow[];
   universityCalculatorConfigs: UniversityCalculatorConfigRow[];
 }
 
@@ -234,6 +243,9 @@ async function loadDatabaseCatalogueSnapshot(): Promise<DatabaseCatalogueSnapsho
       admissionRequirements: [],
       admissionThresholds: [],
       sourceUrls: [],
+      admissionsSourceCandidates: [],
+      admissionFacts: [],
+      admissionAlternativePaths: [],
     };
   }
 
@@ -254,6 +266,18 @@ async function loadDatabaseCatalogueSnapshot(): Promise<DatabaseCatalogueSnapsho
     .select()
     .from(sourceUrls)
     .where(inArray(sourceUrls.programId, programIds));
+  const sourceCandidateRows = await db
+    .select()
+    .from(admissionsSourceCandidates)
+    .where(inArray(admissionsSourceCandidates.programId, programIds));
+  const admissionFactRows = await db
+    .select()
+    .from(admissionFacts)
+    .where(inArray(admissionFacts.programId, programIds));
+  const alternativePathRows = await db
+    .select()
+    .from(admissionAlternativePaths)
+    .where(inArray(admissionAlternativePaths.programId, programIds));
 
   return {
     institutions: institutionRows,
@@ -263,6 +287,9 @@ async function loadDatabaseCatalogueSnapshot(): Promise<DatabaseCatalogueSnapsho
     admissionRequirements: requirementRows,
     admissionThresholds: thresholdRows,
     sourceUrls: sourceRows,
+    admissionsSourceCandidates: sourceCandidateRows,
+    admissionFacts: admissionFactRows,
+    admissionAlternativePaths: alternativePathRows,
   };
 }
 
@@ -452,6 +479,15 @@ export async function listCataloguePrograms(): Promise<CatalogueQueryResult<Cata
           (row) => row.programId === programRow.id,
         ),
         sourceUrls: resolution.snapshot!.sourceUrls.filter(
+          (row) => row.programId === programRow.id,
+        ),
+        admissionsSourceCandidates: resolution.snapshot!.admissionsSourceCandidates.filter(
+          (row) => row.programId === programRow.id,
+        ),
+        admissionFacts: resolution.snapshot!.admissionFacts.filter(
+          (row) => row.programId === programRow.id,
+        ),
+        admissionAlternativePaths: resolution.snapshot!.admissionAlternativePaths.filter(
           (row) => row.programId === programRow.id,
         ),
         institutionsById,
