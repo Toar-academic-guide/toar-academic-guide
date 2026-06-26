@@ -1,6 +1,6 @@
 {
-  "id": "e5d21b67-04f5-448d-b999-d2c0b4009cb4",
-  "prevId": "e24bf18e-6146-46a6-8fec-7f13c45f5c18",
+  "id": "f54d4db8-8828-453e-9a0a-a4783b550ae3",
+  "prevId": "e5d21b67-04f5-448d-b999-d2c0b4009cb4",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -1284,6 +1284,351 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.source_freshness_checks": {
+      "name": "source_freshness_checks",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "source_id": {
+          "name": "source_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "source_class": {
+          "name": "source_class",
+          "type": "freshness_source_class",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "capability": {
+          "name": "capability",
+          "type": "freshness_capability",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "source_freshness_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "checked_at": {
+          "name": "checked_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "successful": {
+          "name": "successful",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "failure_reason": {
+          "name": "failure_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "blocked_reason": {
+          "name": "blocked_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "raw_fingerprint": {
+          "name": "raw_fingerprint",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "normalized_fingerprint": {
+          "name": "normalized_fingerprint",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "normalized_decision_payload": {
+          "name": "normalized_decision_payload",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "review_worthy": {
+          "name": "review_worthy",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": false
+        },
+        "review_item_id": {
+          "name": "review_item_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "next_action": {
+          "name": "next_action",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "source_freshness_checks_source_checked_at_idx": {
+          "name": "source_freshness_checks_source_checked_at_idx",
+          "columns": [
+            {
+              "expression": "source_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            },
+            {
+              "expression": "checked_at",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "source_freshness_checks_status_idx": {
+          "name": "source_freshness_checks_status_idx",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "source_freshness_checks_review_item_idx": {
+          "name": "source_freshness_checks_review_item_idx",
+          "columns": [
+            {
+              "expression": "review_item_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "source_freshness_checks_source_id_ingestion_sources_id_fk": {
+          "name": "source_freshness_checks_source_id_ingestion_sources_id_fk",
+          "tableFrom": "source_freshness_checks",
+          "tableTo": "ingestion_sources",
+          "columnsFrom": ["source_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "source_freshness_checks_review_item_id_review_items_id_fk": {
+          "name": "source_freshness_checks_review_item_id_review_items_id_fk",
+          "tableFrom": "source_freshness_checks",
+          "tableTo": "review_items",
+          "columnsFrom": ["review_item_id"],
+          "columnsTo": ["id"],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.source_freshness_states": {
+      "name": "source_freshness_states",
+      "schema": "",
+      "columns": {
+        "source_id": {
+          "name": "source_id",
+          "type": "text",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "source_class": {
+          "name": "source_class",
+          "type": "freshness_source_class",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "capability": {
+          "name": "capability",
+          "type": "freshness_capability",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "source_freshness_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "last_checked_at": {
+          "name": "last_checked_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_successful_check_at": {
+          "name": "last_successful_check_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "last_changed_at": {
+          "name": "last_changed_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "latest_failure_reason": {
+          "name": "latest_failure_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "blocked_reason": {
+          "name": "blocked_reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "raw_fingerprint": {
+          "name": "raw_fingerprint",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "normalized_fingerprint": {
+          "name": "normalized_fingerprint",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "normalized_decision_payload": {
+          "name": "normalized_decision_payload",
+          "type": "jsonb",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'{}'::jsonb"
+        },
+        "latest_review_item_id": {
+          "name": "latest_review_item_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "next_action": {
+          "name": "next_action",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "source_freshness_states_status_idx": {
+          "name": "source_freshness_states_status_idx",
+          "columns": [
+            {
+              "expression": "status",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "source_freshness_states_latest_review_item_idx": {
+          "name": "source_freshness_states_latest_review_item_idx",
+          "columns": [
+            {
+              "expression": "latest_review_item_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "source_freshness_states_source_id_ingestion_sources_id_fk": {
+          "name": "source_freshness_states_source_id_ingestion_sources_id_fk",
+          "tableFrom": "source_freshness_states",
+          "tableTo": "ingestion_sources",
+          "columnsFrom": ["source_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "source_freshness_states_latest_review_item_id_review_items_id_fk": {
+          "name": "source_freshness_states_latest_review_item_id_review_items_id_fk",
+          "tableFrom": "source_freshness_states",
+          "tableTo": "review_items",
+          "columnsFrom": ["latest_review_item_id"],
+          "columnsTo": ["id"],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.source_urls": {
       "name": "source_urls",
       "schema": "",
@@ -1736,6 +2081,22 @@
       "schema": "public",
       "values": ["psychometric", "bagrut", "other"]
     },
+    "public.freshness_capability": {
+      "name": "freshness_capability",
+      "schema": "public",
+      "values": ["blocked", "decision_capable", "score_only"]
+    },
+    "public.freshness_source_class": {
+      "name": "freshness_source_class",
+      "schema": "public",
+      "values": [
+        "api_static_json",
+        "browser_required",
+        "official_html",
+        "pdf_text",
+        "score_only_calculator"
+      ]
+    },
     "public.geographic_region": {
       "name": "geographic_region",
       "schema": "public",
@@ -1765,6 +2126,11 @@
       "name": "source_difficulty",
       "schema": "public",
       "values": ["easy", "browser_required", "hard_manual"]
+    },
+    "public.source_freshness_status": {
+      "name": "source_freshness_status",
+      "schema": "public",
+      "values": ["blocked", "changed_needs_review", "failed", "fresh"]
     },
     "public.source_url_kind": {
       "name": "source_url_kind",

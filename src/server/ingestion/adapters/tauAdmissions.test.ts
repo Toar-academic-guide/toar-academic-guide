@@ -1,6 +1,16 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
-import { normalizeTauPayload, runTauAdmissionsProof } from './tauAdmissions';
+import { evaluateAdmissionsSourceProof } from '../admissionsSourceAdapters';
+import {
+  parseTauProgramThresholds,
+  parseTauScoresBody,
+  runTauAdmissionsProof,
+} from './tauAdmissions';
+
+const applicant = {
+  bagrutAverage: 105.5,
+  psychometric: 680,
+};
 
 function jsonResponse(body: unknown, init?: ResponseInit) {
   return new Response(JSON.stringify(body), {
@@ -10,64 +20,180 @@ function jsonResponse(body: unknown, init?: ResponseInit) {
   });
 }
 
-describe('TAU admissions adapter', () => {
-  it('normalizes selected score fields and official thresholds', () => {
-    expect(
-      normalizeTauPayload(
-        { data: { getLastScore: { hatama_handasa: 715, otherScore: 500 } } },
-        { data: { programAdmission: { acceptanceThreshold: 700, rejectionThreshold: 650 } } },
-        'hatama_handasa',
-      ),
-    ).toEqual({
-      selectedScore: 715,
-      selectedScoreField: 'data.getLastScore.hatama_handasa',
-      acceptanceThreshold: 700,
-      rejectionThreshold: 650,
+describe('TAU response parsers', () => {
+  it('parses GraphQL body strings into score fields', () => {
+    expect(parseTauScoresBody(JSON.stringify({ hatama: 681, hatama_meduyakim: 704 }))).toEqual({
+      hatama: 681,
+      hatama_meduyakim: 704,
     });
   });
 
-  it('returns decision-capable proof for mocked GraphQL score and threshold responses', async () => {
-    let requestCount = 0;
-    const fetcher = async () => {
-      requestCount += 1;
-      if (requestCount === 1) {
-        return jsonResponse({ data: { getLastScore: { hatama_handasa: 715 } } });
-      }
+  it('finds official threshold fields in nested GraphQL program responses', () => {
+    expect(
+      parseTauProgramThresholds({
+        data: {
+          getPrograms: {
+            results: [
+              {
+                title: 'Digital Sciences for High-Tech',
+                receipt_threshol: [700],
+                rejection_thresh: [680],
+              },
+            ],
+          },
+        },
+      }),
+    ).toEqual({
+      acceptanceThreshold: 700,
+      rejectionThreshold: 680,
+    });
+  });
+});
 
-      return jsonResponse({
-        data: { programAdmission: { acceptanceThreshold: 700, rejectionThreshold: 650 } },
-      });
-    };
+describe('runTauAdmissionsProof', () => {
+  it('returns decision-capable proof from mocked GraphQL score and program responses', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        jsonResponse({
+          data: {
+            getLastScore: {
+              body: JSON.stringify({
+                hatama: 681,
+                hatama_handasa: 704,
+              }),
+            },
+          },
+        }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({
+          data: {
+            getPrograms: {
+              results: [
+                {
+                  receipt_threshol: [700],
+                  rejection_thresh: [680],
+                  field_plain_id_programs: ['056011050000'],
+                },
+              ],
+            },
+          },
+        }),
+      );
+
+    const proof = await runTauAdmissionsProof({ applicant, fetcher });
+
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    expect(JSON.parse(String(fetcher.mock.calls[0][1]?.body))).toMatchObject({
+      operationName: 'getLastScore',
+    });
+    expect(proof).toMatchObject({
+      capability: 'decision_capable',
+      proofLevel: 'exact_official',
+      status: 'succeeded',
+      reproducedFields: ['selectedScore', 'acceptanceThreshold', 'rejectionThreshold'],
+      normalizedPayload: {
+        selectedScoreField: 'hatama_handasa',
+        selectedScore: 704,
+        acceptanceThreshold: 700,
+        rejectionThreshold: 680,
+      },
+    });
+  });
+
+  it('records which TAU score field was selected for the representative program', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        jsonResponse({
+          data: {
+            getLastScore: {
+              body: JSON.stringify({
+                hatama: 681,
+                hatama_handasa: 695,
+              }),
+            },
+          },
+        }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({
+          data: {
+            getPrograms: {
+              results: [{ receipt_threshol: [690] }],
+            },
+          },
+        }),
+      );
 
     const proof = await runTauAdmissionsProof({
-      applicant: { bagrutAverage: 105, psychometric: 680 },
+      applicant,
       fetcher,
       program: {
-        id: 'tau-digital-sciences',
-        name: 'Digital Sciences for High-Tech',
-        externalId: '056011050000',
+        id: 'tau-engineering',
+        name: 'Engineering',
         scoreField: 'hatama_handasa',
       },
     });
 
-    expect(proof.status).toBe('succeeded');
-    expect(proof.capability).toBe('decision_capable');
     expect(proof.normalizedPayload).toMatchObject({
-      selectedScore: 715,
-      acceptanceThreshold: 700,
-      rejectionThreshold: 650,
+      selectedScoreField: 'hatama_handasa',
+      selectedScore: 695,
+      acceptanceThreshold: 690,
     });
   });
 
-  it('returns a failed proof when GraphQL returns an error status', async () => {
-    const fetcher = async () => jsonResponse({ errors: [{ message: 'broken' }] }, { status: 500 });
+  it('returns a failed proof when GraphQL returns errors', async () => {
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValueOnce(
+      jsonResponse({
+        errors: [{ message: 'bad query' }],
+      }),
+    );
 
-    const proof = await runTauAdmissionsProof({
-      applicant: { bagrutAverage: 105, psychometric: 680 },
-      fetcher,
+    const proof = await runTauAdmissionsProof({ applicant, fetcher });
+
+    expect(proof).toMatchObject({
+      status: 'failed',
+      capability: 'blocked',
+      errorReason: 'TAU GraphQL returned errors',
     });
+  });
 
-    expect(proof.status).toBe('failed');
-    expect(proof.errorReason).toContain('500');
+  it('feeds official TAU threshold changes into freshness fingerprints', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        jsonResponse({
+          data: { getLastScore: { body: JSON.stringify({ hatama_handasa: 704 }) } },
+        }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({
+          data: {
+            getPrograms: {
+              results: [{ receipt_threshol: [700], field_plain_id_programs: ['056011050000'] }],
+            },
+          },
+        }),
+      );
+
+    const first = await runTauAdmissionsProof({ applicant, fetcher });
+    const firstEvaluation = evaluateAdmissionsSourceProof(first);
+    const secondEvaluation = evaluateAdmissionsSourceProof(
+      {
+        ...first,
+        normalizedPayload: {
+          ...first.normalizedPayload,
+          acceptanceThreshold: 712,
+        },
+      },
+      firstEvaluation.freshness?.normalizedFingerprint,
+    );
+
+    expect(secondEvaluation.freshness).toMatchObject({
+      status: 'changed_needs_review',
+      reviewWorthy: true,
+    });
   });
 });

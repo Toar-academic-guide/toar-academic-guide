@@ -3,12 +3,13 @@
 import { useEffect, useState } from 'react';
 import { ArrowRight, Check, ChevronDown } from 'lucide-react';
 import posthog from 'posthog-js';
-import { INSTITUTIONS, type InstitutionRecord } from '@/data/institutions';
+import { INSTITUTION_BY_NAME, type InstitutionRecord } from '@/data/institutions';
 import { REGION_LABEL } from '@/data/geography';
 import { evaluateUniversities } from '@/utils/sekhemCalculators';
+import { evaluateAdmissionsDecision } from '@/utils/admissionsDecisionEngine';
 import InstitutionLogo from '@/components/InstitutionLogo';
 import type { CatalogueProgram } from '@/types/catalogue';
-import type { GeographicRegion, University, UniversityResult } from '@/types';
+import type { AdmissionsDecision, GeographicRegion, University } from '@/types';
 
 const UNIVERSITY_IDS = new Set([
   'tau',
@@ -38,23 +39,23 @@ function getInstitutionType(inst: InstitutionRecord): InstitutionType {
   return UNIVERSITY_IDS.has(inst.id) ? 'university' : 'college';
 }
 
-function getResultSummary(result: UniversityResult): string {
-  if (result.status === 'accepted') {
-    return `סכם ${result.sekhem}${result.threshold !== null ? ` · סף ${result.threshold}` : ''}`;
+interface DecisionRow {
+  institution: InstitutionRecord;
+  decision: AdmissionsDecision;
+}
+
+function getMissingSummary(decision: AdmissionsDecision): string {
+  if (decision.missing.length > 0) {
+    return decision.missing
+      .map((item) => (item.delta !== undefined ? `${item.label}: חסר ${item.delta}` : item.label))
+      .join(' · ');
   }
 
-  if (result.status === 'below' && result.deltaNeeded) {
-    const parts: string[] = [];
-    if (result.deltaNeeded.psychometric > 0) {
-      parts.push(`+${result.deltaNeeded.psychometric} פסיכומטרי`);
-    }
-    if (result.deltaNeeded.bagrut > 0) {
-      parts.push(`+${result.deltaNeeded.bagrut} בגרות`);
-    }
-    return parts.length > 0 ? parts.join(' · ') : 'נדרשים נתונים נוספים';
+  if (decision.manualGates.length > 0) {
+    return decision.manualGates.join(' · ');
   }
 
-  return 'אין סף קבלה זמין למסלול זה';
+  return 'לא חסר תנאי מספרי ידוע';
 }
 
 interface Props {
@@ -99,11 +100,29 @@ export default function CalculatorResults({
     evaluatedResults.map((result) => [result.university.id, result]),
   );
 
-  const allInstitutions = INSTITUTIONS.filter(
-    (institution) =>
-      institution.region !== 'any' &&
-      resultsByUniversityId.has(institution.universityId ?? institution.id),
-  );
+  const decisionRows: DecisionRow[] =
+    selectedProgram?.institutionDetails
+      ?.map((detail) => {
+        const institution = INSTITUTION_BY_NAME[detail.institutionName];
+        if (!institution || institution.region === 'any') {
+          return null;
+        }
+
+        const calculatorResult = resultsByUniversityId.get(
+          institution.universityId ?? institution.id,
+        );
+
+        return {
+          institution,
+          decision: evaluateAdmissionsDecision({
+            program: selectedProgram,
+            institutionDetail: detail,
+            scores: { psychometric, bagrut },
+            calculatorResult,
+          }),
+        };
+      })
+      .filter((row): row is DecisionRow => row !== null) ?? [];
 
   function toggleType(type: InstitutionType) {
     setSelectedTypes((previous) => {
@@ -149,21 +168,24 @@ export default function CalculatorResults({
     });
   }
 
-  const filtered = allInstitutions.filter(
-    (institution) =>
+  const filtered = decisionRows.filter(
+    ({ institution }) =>
       selectedTypes.has(getInstitutionType(institution)) &&
       selectedRegions.has(institution.region as DisplayRegion),
   );
 
   const groupedByRegion = DISPLAY_REGIONS.map((region) => ({
     region,
-    institutions: filtered.filter((institution) => institution.region === region),
-  })).filter((group) => group.institutions.length > 0);
+    rows: filtered.filter(({ institution }) => institution.region === region),
+  })).filter((group) => group.rows.length > 0);
 
   const STATUS_CONFIG = {
-    accepted: { label: 'מתקבל/ת', bg: 'bg-[#34D399]' },
-    below: { label: 'נדרש שיפור', bg: 'bg-[#FCD34D]' },
-    unavailable: { label: 'חסר מידע', bg: 'bg-slate-300' },
+    accepted: { bg: 'bg-[#34D399]' },
+    likely_accepted_needs_verification: { bg: 'bg-[#93C5FD]' },
+    close_to_accepted: { bg: 'bg-[#FCD34D]' },
+    not_accepted_has_path: { bg: 'bg-[#FDBA74]' },
+    far_from_track: { bg: 'bg-[#FCA5A5]' },
+    insufficient_data: { bg: 'bg-slate-300' },
   } as const;
 
   return (
@@ -268,10 +290,10 @@ export default function CalculatorResults({
           </div>
         </div>
 
-        {groupedByRegion.map(({ region, institutions }) => {
+        {groupedByRegion.map(({ region, rows }) => {
           const isExpanded = expandedRegions.has(region);
-          const visible = isExpanded ? institutions : institutions.slice(0, 3);
-          const hiddenCount = institutions.length - 3;
+          const visible = isExpanded ? rows : rows.slice(0, 3);
+          const hiddenCount = rows.length - 3;
 
           return (
             <div key={region} className="mb-8">
@@ -282,49 +304,56 @@ export default function CalculatorResults({
                 <span
                   className={`rounded-full border px-2.5 py-0.5 text-[10px] font-bold ${REGION_COUNT_STYLE[region]}`}
                 >
-                  {institutions.length} מוסדות
+                  {rows.length} מוסדות
                 </span>
               </div>
 
               <div className="flex flex-col gap-2">
-                {visible.map((institution) => {
-                  const result = resultsByUniversityId.get(
-                    institution.universityId ?? institution.id,
-                  );
-                  if (!result) {
-                    return null;
-                  }
-
-                  const config = STATUS_CONFIG[result.status];
+                {visible.map(({ institution, decision }) => {
+                  const config = STATUS_CONFIG[decision.status];
                   const institutionType = getInstitutionType(institution);
+                  const primarySource = decision.sources[0];
 
                   return (
                     <div
                       key={institution.id}
-                      className="flex items-center justify-between rounded-[14px] border-2 border-black bg-white px-4 py-3"
+                      className="rounded-[14px] border-2 border-black bg-white px-4 py-4"
                     >
-                      <div className="flex items-center gap-3">
-                        <InstitutionLogo
-                          institution={institution.name}
-                          record={institution}
-                          size="sm"
-                        />
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-bold text-slate-900">
-                            {institution.name}
-                          </p>
-                          <p className="text-[10px] text-slate-500" dir="ltr">
-                            {institutionType === 'university' ? 'אוניברסיטה' : 'מכללה'} ·{' '}
-                            {getResultSummary(result)}
-                          </p>
+                      <div className="mb-3 flex items-start justify-between gap-3">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <InstitutionLogo
+                            institution={institution.name}
+                            record={institution}
+                            size="sm"
+                          />
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-bold text-slate-900">
+                              {institution.name}
+                            </p>
+                            <p className="text-[10px] text-slate-500">
+                              {institutionType === 'university' ? 'אוניברסיטה' : 'מכללה'} · ביטחון{' '}
+                              {decision.confidence}
+                              {primarySource ? ` · ${primarySource.label}` : ''}
+                            </p>
+                          </div>
                         </div>
+                        <span
+                          aria-label={`${institution.name}: ${decision.statusLabel}`}
+                          className={`${config.bg} flex-shrink-0 rounded-full border-2 border-black px-3 py-1 text-[10px] font-extrabold text-black`}
+                        >
+                          {decision.statusLabel}
+                        </span>
                       </div>
-                      <span
-                        aria-label={`${institution.name}: ${config.label}`}
-                        className={`${config.bg} flex-shrink-0 rounded-full border-2 border-black px-3 py-1 text-[10px] font-extrabold text-black`}
-                      >
-                        {config.label}
-                      </span>
+
+                      <div className="grid gap-2 text-xs text-slate-700 sm:grid-cols-2">
+                        <ResultSection title="הסטטוס שלך" text={decision.statusLabel} />
+                        <ResultSection
+                          title="למה קיבלת את התוצאה"
+                          text={decision.explanation[0] ?? 'אין הסבר זמין'}
+                        />
+                        <ResultSection title="מה חסר לך" text={getMissingSummary(decision)} />
+                        <ResultSection title="הצעד הכי טוב הבא" text={decision.nextAction.label} />
+                      </div>
                     </div>
                   );
                 })}
@@ -362,6 +391,15 @@ export default function CalculatorResults({
           </div>
         ) : null}
       </div>
+    </div>
+  );
+}
+
+function ResultSection({ title, text }: { title: string; text: string }) {
+  return (
+    <div className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
+      <p className="mb-0.5 text-[10px] font-bold text-slate-400">{title}</p>
+      <p className="text-xs font-semibold leading-relaxed text-slate-800">{text}</p>
     </div>
   );
 }

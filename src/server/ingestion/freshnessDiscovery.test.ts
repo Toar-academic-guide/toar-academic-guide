@@ -1,78 +1,142 @@
 import { describe, expect, it } from 'vitest';
 
-import { evaluateFreshnessDiscovery } from './freshnessDiscovery';
+import {
+  evaluateFreshnessDiscovery,
+  normalizeDecisionPayload,
+  type FreshnessDiscoveryInput,
+} from './freshnessDiscovery';
+
+const baseHtml = `
+  <html>
+    <header>Apply now</header>
+    <nav>Admissions homepage | Contact</nav>
+    <main>
+      <h1>Computer Science admissions</h1>
+      <p>Minimum psychometric score: 680.</p>
+      <p>Acceptance threshold: 720.</p>
+      <p>English requirement: advanced A.</p>
+    </main>
+    <footer>Updated site footer</footer>
+  </html>
+`;
+
+function evaluate(input: Omit<FreshnessDiscoveryInput, 'id'>) {
+  return evaluateFreshnessDiscovery({ id: 'source-1', ...input });
+}
 
 describe('evaluateFreshnessDiscovery', () => {
-  it('normalizes official HTML by ignoring boilerplate and tracking decision lines', () => {
-    const result = evaluateFreshnessDiscovery({
-      id: 'official-html',
+  it('keeps a stable HTML source on the same normalized fingerprint across two runs', () => {
+    const first = evaluate({ sourceClass: 'official_html', body: baseHtml });
+    const second = evaluate({
       sourceClass: 'official_html',
-      body: `
-        <header>Admissions news</header>
-        <main>
-          <p>Minimum psychometric score: 680.</p>
-          <p>Acceptance threshold: 720.</p>
-        </main>
-        <footer>Campaign 2026</footer>
-      `,
-    });
-
-    expect(result.status).toBe('fresh');
-    expect(result.capability).toBe('decision_capable');
-    expect(result.normalizedDecisionPayload).toEqual({
-      decisionLines: ['Acceptance threshold: 720.', 'Minimum psychometric score: 680.'],
-    });
-    expect(result.ignoredNoise).toContain('header/nav/footer markup');
-  });
-
-  it('marks changed decision-capable fingerprints as review-worthy', () => {
-    const first = evaluateFreshnessDiscovery({
-      id: 'api-json',
-      sourceClass: 'api_static_json',
-      body: { threshold: 720, generatedAt: 'ignored' },
-    });
-
-    const second = evaluateFreshnessDiscovery({
-      id: 'api-json',
-      sourceClass: 'api_static_json',
-      body: { threshold: 730, generatedAt: 'ignored' },
+      body: baseHtml,
       previousNormalizedFingerprint: first.normalizedFingerprint,
     });
 
-    expect(second.status).toBe('changed_needs_review');
-    expect(second.reviewWorthy).toBe(true);
-  });
-
-  it('tracks score-only changes without making them review-worthy for acceptance', () => {
-    const first = evaluateFreshnessDiscovery({
-      id: 'score-only',
-      sourceClass: 'score_only_calculator',
-      body: { score: 714 },
-    });
-
-    const second = evaluateFreshnessDiscovery({
-      id: 'score-only',
-      sourceClass: 'score_only_calculator',
-      body: { score: 720 },
-      previousNormalizedFingerprint: first.normalizedFingerprint,
-    });
-
-    expect(second.status).toBe('changed_needs_review');
-    expect(second.capability).toBe('score_only');
+    expect(second.status).toBe('fresh');
     expect(second.reviewWorthy).toBe(false);
+    expect(second.normalizedFingerprint).toBe(first.normalizedFingerprint);
   });
 
-  it('classifies browser-required sources as blocked without source fetching', () => {
-    const result = evaluateFreshnessDiscovery({
-      id: 'blocked',
+  it('marks mocked decision-bearing threshold changes as review-worthy', () => {
+    const previous = evaluate({ sourceClass: 'official_html', body: baseHtml });
+    const changed = evaluate({
+      sourceClass: 'official_html',
+      body: baseHtml.replace('Acceptance threshold: 720.', 'Acceptance threshold: 735.'),
+      previousNormalizedFingerprint: previous.normalizedFingerprint,
+    });
+
+    expect(changed.status).toBe('changed_needs_review');
+    expect(changed.reviewWorthy).toBe(true);
+    expect(changed.normalizedDecisionPayload).toMatchObject({
+      decisionLines: expect.arrayContaining(['Acceptance threshold: 735.']),
+    });
+  });
+
+  it('ignores navigation and footer changes for HTML normalized fingerprints', () => {
+    const previous = evaluate({ sourceClass: 'official_html', body: baseHtml });
+    const boilerplateOnlyChange = evaluate({
+      sourceClass: 'official_html',
+      body: baseHtml
+        .replace('Admissions homepage | Contact', 'Admissions homepage | Contact | Events')
+        .replace('Updated site footer', 'New marketing footer'),
+      previousNormalizedFingerprint: previous.normalizedFingerprint,
+    });
+
+    expect(boilerplateOnlyChange.status).toBe('fresh');
+    expect(boilerplateOnlyChange.normalizedFingerprint).toBe(previous.normalizedFingerprint);
+    expect(boilerplateOnlyChange.rawFingerprint).not.toBe(previous.rawFingerprint);
+    expect(boilerplateOnlyChange.ignoredNoise).toContain('header/nav/footer markup');
+  });
+
+  it('classifies browser-required sources as blocked without failing the run', () => {
+    const result = evaluate({
       sourceClass: 'browser_required',
       body: '',
-      blockedReason: 'Radware/browser session required',
+      blockedReason: 'Radware cookies require a persistent browser profile',
     });
 
     expect(result.status).toBe('blocked');
     expect(result.capability).toBe('blocked');
     expect(result.reviewWorthy).toBe(false);
-    expect(result.blockedReason).toBe('Radware/browser session required');
+    expect(result.blockedReason).toBe('Radware cookies require a persistent browser profile');
+  });
+
+  it('keeps score-only calculators separate from decision-capable calculators', () => {
+    const previous = evaluate({
+      sourceClass: 'score_only_calculator',
+      body: { score: 714 },
+    });
+    const changedScore = evaluate({
+      sourceClass: 'score_only_calculator',
+      body: { score: 718 },
+      previousNormalizedFingerprint: previous.normalizedFingerprint,
+    });
+
+    expect(changedScore.status).toBe('changed_needs_review');
+    expect(changedScore.capability).toBe('score_only');
+    expect(changedScore.reviewWorthy).toBe(false);
+    expect(changedScore.normalizedDecisionPayload).toMatchObject({
+      scoreOnly: true,
+      fields: { score: 718 },
+    });
+  });
+});
+
+describe('normalizeDecisionPayload', () => {
+  it('normalizes API/static JSON by keeping decision-bearing fields and sorting keys', () => {
+    const normalized = normalizeDecisionPayload('api_static_json', {
+      uiLabel: 'Homepage tab',
+      programs: [
+        {
+          name: 'Computer Science',
+          threshold: 720,
+          rejectionCutoff: 690,
+          marketingCopy: 'Join us',
+        },
+      ],
+    });
+
+    expect(normalized).toEqual({
+      fields: {
+        programs: [
+          {
+            rejectionCutoff: 690,
+            threshold: 720,
+          },
+        ],
+      },
+    });
+  });
+
+  it('normalizes PDF text into decision lines', () => {
+    const normalized = normalizeDecisionPayload(
+      'pdf_text',
+      'Page 1\nAdmissions guide\nMinimum bagrut average: 95.\nPage 2\nCampus map.\n',
+    );
+
+    expect(normalized).toEqual({
+      decisionLines: ['Minimum bagrut average: 95.'],
+    });
   });
 });

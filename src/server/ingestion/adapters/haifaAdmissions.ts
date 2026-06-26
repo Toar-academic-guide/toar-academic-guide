@@ -1,59 +1,42 @@
 import {
-  hasDecisionThresholds,
   parseOfficialNumeric,
   readOfficialResponseMetadata,
+  sourceClassForCapability,
   type AdmissionsAdapterContext,
   type AdmissionsSourceProof,
 } from '../admissionsSourceAdapters';
 
 const HAIFA_INDEX_URL = 'https://applicants.haifa.ac.il/enrollmentChances/index.html';
-const HAIFA_API_URL = 'https://applicants.haifa.ac.il/enrollmentChances/CandChancesServlet';
+const HAIFA_SERVLET_URL = 'https://applicants.haifa.ac.il/enrollmentChances/CandChancesServlet';
+const DEFAULT_YEAR = '2026';
+const DEFAULT_SEMESTER = '001';
+const DEFAULT_HUG = 'SC0001';
 
 export async function runHaifaAdmissionsProof(
   context: AdmissionsAdapterContext,
 ): Promise<AdmissionsSourceProof> {
   const fetcher = context.fetcher ?? fetch;
+  const program = context.program ?? {
+    id: 'haifa-cs',
+    name: 'Computer Science',
+    externalId: '52258372',
+  };
   const metadata: NonNullable<AdmissionsSourceProof['rawResponseMetadata']> = [];
 
   try {
-    const connectionResponse = await fetcher(`${HAIFA_API_URL}?action=checkConnection`, {
-      headers: { accept: 'application/json,text/plain,*/*' },
-    });
-    metadata.push(readOfficialResponseMetadata(HAIFA_API_URL, connectionResponse));
+    const connectionUrl = `${HAIFA_SERVLET_URL}?operation=checkConnection`;
+    const connectionResponse = await fetcher(connectionUrl, { headers: defaultHeaders() });
+    metadata.push(readOfficialResponseMetadata(connectionUrl, connectionResponse));
+    await readJson(connectionResponse);
 
-    if (!connectionResponse.ok) {
-      return failedHaifaProof(
-        `Haifa checkConnection returned ${connectionResponse.status}`,
-        metadata,
-      );
-    }
+    const chancesUrl = `${HAIFA_SERVLET_URL}?${buildHaifaParams(context, program.externalId).toString()}`;
+    const chancesResponse = await fetcher(chancesUrl, { headers: defaultHeaders() });
+    metadata.push(readOfficialResponseMetadata(chancesUrl, chancesResponse));
+    const chancesJson = await readJson(chancesResponse);
+    const parsed = parseHaifaChancesResponse(chancesJson);
 
-    const url = new URL(HAIFA_API_URL);
-    url.searchParams.set('action', 'calculateChances');
-    url.searchParams.set('psychometric', String(context.applicant.psychometric));
-    url.searchParams.set('bagrut', String(context.applicant.bagrutAverage));
-    if (context.program?.externalId) {
-      url.searchParams.set('programId', context.program.externalId);
-    }
-
-    const chancesResponse = await fetcher(url, {
-      headers: {
-        accept: 'application/json,text/plain,*/*',
-        referer: HAIFA_INDEX_URL,
-      },
-    });
-    metadata.push(readOfficialResponseMetadata(HAIFA_API_URL, chancesResponse));
-
-    if (!chancesResponse.ok) {
-      return failedHaifaProof(
-        `Haifa calculateChances returned ${chancesResponse.status}`,
-        metadata,
-      );
-    }
-
-    const payload = await chancesResponse.json();
-    const normalizedPayload = normalizeHaifaPayload(payload);
-    const decisionCapable = hasDecisionThresholds(normalizedPayload);
+    const hasDecision = parsed.weightedScore !== undefined && hasCutoff(parsed);
+    const capability = hasDecision ? 'decision_capable' : 'score_only';
 
     return {
       id: 'haifa-cs-live',
@@ -61,66 +44,134 @@ export async function runHaifaAdmissionsProof(
       institutionName: 'University of Haifa',
       officialUrl: HAIFA_INDEX_URL,
       adapterId: 'haifa',
-      capability: decisionCapable ? 'decision_capable' : 'score_only',
-      proofLevel: decisionCapable ? 'exact_official' : 'partial_official',
-      status: decisionCapable ? 'succeeded' : 'partial',
-      sourceClass: decisionCapable ? 'api_static_json' : 'score_only_calculator',
-      reproducedFields: Object.keys(normalizedPayload),
-      normalizedPayload,
-      limitations: ['Representative program only; broad Haifa program coverage is deferred'],
-      nextAction: decisionCapable
-        ? 'Use as a scheduled exact freshness adapter'
-        : 'Pair score output with an official threshold source before product decisions',
+      capability,
+      proofLevel: hasDecision ? 'exact_official' : 'partial_official',
+      status: hasDecision ? 'succeeded' : 'partial',
+      sourceClass: sourceClassForCapability(capability),
+      reproducedFields: reproducedFieldsFor(parsed),
+      normalizedPayload: {
+        programId: program.id,
+        programName: program.name,
+        source: 'haifa_calculateChances',
+        ...parsed,
+      },
+      limitations: hasDecision
+        ? ['Representative Haifa program only; broad program coverage is deferred']
+        : ['Official response produced a score but not enough cutoff/status fields for acceptance'],
+      nextAction: hasDecision
+        ? 'Promote Haifa to the first weekly GitHub Action adapter candidate'
+        : 'Find the official Haifa cutoff/status field for this program before product decisions',
       rawResponseMetadata: metadata,
     };
   } catch (error) {
-    return failedHaifaProof(
-      error instanceof Error ? error.message : 'Unknown Haifa adapter error',
-      metadata,
-    );
+    return failedHaifaProof(error, metadata);
   }
 }
 
-export function normalizeHaifaPayload(payload: unknown): Record<string, unknown> {
-  const root = asRecord(payload);
-  const candidates = flattenObject(root);
+export function parseHaifaChancesResponse(value: unknown): Record<string, number | string> {
+  const entries = collectLabelValueEntries(value);
+  const parsed: Record<string, number | string> = {};
 
-  const weightedScore = readFirstNumeric(candidates, [
-    'weightedScore',
-    'weighted_score',
-    'score',
-    'sekhem',
-    'sachem',
-    'mark',
-  ]);
-  const acceptanceCutoff = readFirstNumeric(candidates, [
-    'acceptanceCutoff',
-    'acceptance_cutoff',
-    'acceptanceThreshold',
-    'acceptance_threshold',
-    'minAccepted',
-    'min_accept',
-  ]);
-  const rejectionCutoff = readFirstNumeric(candidates, [
-    'rejectionCutoff',
-    'rejection_cutoff',
-    'rejectionThreshold',
-    'rejection_threshold',
-    'maxRejected',
-    'max_reject',
-  ]);
-  const status = readFirstString(candidates, ['status', 'decision', 'result']);
+  for (const entry of entries) {
+    const label = entry.label.toLowerCase();
+    const numeric = parseOfficialNumeric(entry.value);
 
-  return compactObject({
-    weightedScore,
-    acceptanceCutoff,
-    rejectionCutoff,
-    status,
+    if (numeric === undefined) {
+      continue;
+    }
+
+    if (matchesAny(label, ['משוקלל', 'סכם', 'התאמה', 'weighted'])) {
+      parsed.weightedScore = numeric;
+    } else if (matchesAny(label, ['סף קבלה', 'חתך קבלה', 'acceptance'])) {
+      parsed.acceptanceCutoff = numeric;
+    } else if (matchesAny(label, ['סף דח', 'דחייה', 'דחיה', 'rejection'])) {
+      parsed.rejectionCutoff = numeric;
+    } else if (matchesAny(label, ['פסיכומטר', 'psychometric'])) {
+      parsed.psychometricScore = numeric;
+    }
+  }
+
+  return parsed;
+}
+
+function buildHaifaParams(context: AdmissionsAdapterContext, programId = '52258372') {
+  const subscores =
+    context.applicant.psychometricSubscores ?? defaultSubscores(context.applicant.psychometric);
+
+  return new URLSearchParams({
+    operation: 'calculateChances',
+    year: DEFAULT_YEAR,
+    semester: DEFAULT_SEMESTER,
+    hug: DEFAULT_HUG,
+    program: programId,
+    bag_year: context.applicant.bagrutYear ?? '2020',
+    bag_type: '001',
+    bag_avg: context.applicant.bagrutAverage.toFixed(1),
+    psy_year: context.applicant.psychometricYear ?? '2021',
+    psy_math: String(subscores.math),
+    psy_english: String(subscores.english),
+    psy_verbal: String(subscores.verbal),
   });
 }
 
+function defaultSubscores(psychometric: number) {
+  const score = Math.round(psychometric / 5);
+  return {
+    english: score,
+    math: score,
+    verbal: score,
+  };
+}
+
+function defaultHeaders() {
+  return {
+    referer: HAIFA_INDEX_URL,
+    'x-requested-with': 'XMLHttpRequest',
+  };
+}
+
+async function readJson(response: Response): Promise<unknown> {
+  if (!response.ok) {
+    throw new Error(`Haifa endpoint returned HTTP ${response.status}`);
+  }
+
+  return response.json();
+}
+
+function collectLabelValueEntries(value: unknown): Array<{ label: string; value: unknown }> {
+  if (Array.isArray(value)) {
+    return value.flatMap(collectLabelValueEntries);
+  }
+
+  if (!value || typeof value !== 'object') {
+    return [];
+  }
+
+  const record = value as Record<string, unknown>;
+  const entries =
+    typeof record.label === 'string' && 'value' in record
+      ? [{ label: record.label, value: record.value }]
+      : [];
+
+  return entries.concat(Object.values(record).flatMap(collectLabelValueEntries));
+}
+
+function matchesAny(value: string, patterns: string[]) {
+  return patterns.some((pattern) => value.includes(pattern));
+}
+
+function hasCutoff(parsed: Record<string, number | string>) {
+  return parsed.acceptanceCutoff !== undefined || parsed.rejectionCutoff !== undefined;
+}
+
+function reproducedFieldsFor(parsed: Record<string, number | string>) {
+  return ['weightedScore', 'acceptanceCutoff', 'rejectionCutoff', 'psychometricScore'].filter(
+    (field) => parsed[field] !== undefined,
+  );
+}
+
 function failedHaifaProof(
-  errorReason: string,
+  error: unknown,
   metadata: NonNullable<AdmissionsSourceProof['rawResponseMetadata']>,
 ): AdmissionsSourceProof {
   return {
@@ -129,75 +180,15 @@ function failedHaifaProof(
     institutionName: 'University of Haifa',
     officialUrl: HAIFA_INDEX_URL,
     adapterId: 'haifa',
-    capability: 'decision_capable',
-    proofLevel: 'exact_official',
+    capability: 'blocked',
+    proofLevel: 'blocked',
     status: 'failed',
-    sourceClass: 'api_static_json',
+    sourceClass: 'browser_required',
     reproducedFields: [],
     normalizedPayload: {},
-    limitations: ['Representative program only; broad Haifa program coverage is deferred'],
-    nextAction: 'Inspect official Haifa response shape before the next scheduled run',
-    errorReason,
+    limitations: ['Live Haifa request failed during proof run'],
+    nextAction: 'Retry live proof and inspect response shape before promoting adapter',
+    errorReason: error instanceof Error ? error.message : String(error),
     rawResponseMetadata: metadata,
   };
-}
-
-function asRecord(value: unknown): Record<string, unknown> {
-  return value && typeof value === 'object' && !Array.isArray(value)
-    ? (value as Record<string, unknown>)
-    : {};
-}
-
-function flattenObject(value: Record<string, unknown>, prefix = ''): Record<string, unknown> {
-  return Object.entries(value).reduce<Record<string, unknown>>((flattened, [key, entry]) => {
-    const nextKey = prefix ? `${prefix}.${key}` : key;
-    if (entry && typeof entry === 'object' && !Array.isArray(entry)) {
-      return { ...flattened, ...flattenObject(entry as Record<string, unknown>, nextKey) };
-    }
-
-    flattened[nextKey] = entry;
-    return flattened;
-  }, {});
-}
-
-function readFirstNumeric(candidates: Record<string, unknown>, keys: string[]): number | undefined {
-  for (const [key, value] of Object.entries(candidates)) {
-    const normalizedKey = key.toLowerCase().replace(/[^a-z]/g, '');
-    if (
-      keys.some((candidate) =>
-        normalizedKey.includes(candidate.toLowerCase().replace(/[^a-z]/g, '')),
-      )
-    ) {
-      const parsed = parseOfficialNumeric(value);
-      if (parsed !== undefined) {
-        return parsed;
-      }
-    }
-  }
-
-  return undefined;
-}
-
-function readFirstString(candidates: Record<string, unknown>, keys: string[]): string | undefined {
-  for (const [key, value] of Object.entries(candidates)) {
-    const normalizedKey = key.toLowerCase().replace(/[^a-z]/g, '');
-    if (
-      typeof value === 'string' &&
-      keys.some((candidate) =>
-        normalizedKey.includes(candidate.toLowerCase().replace(/[^a-z]/g, '')),
-      )
-    ) {
-      return value;
-    }
-  }
-
-  return undefined;
-}
-
-function compactObject(value: Record<string, unknown>): Record<string, unknown> {
-  return Object.fromEntries(
-    Object.entries(value).filter(
-      ([, entry]) => entry !== undefined && entry !== null && entry !== '',
-    ),
-  );
 }

@@ -19,7 +19,7 @@ const calculatorInstitutions = getCalculatorInstitutionsFromCatalogue(
 );
 
 describe('CalculatorResults', () => {
-  it('derives admission badges from the submitted scores and selected degree', () => {
+  it('renders admissions decision cards from the submitted scores and selected degree', () => {
     const props = {
       degreeId: 'tau_cs',
       programs,
@@ -29,10 +29,14 @@ describe('CalculatorResults', () => {
 
     const { rerender } = render(<CalculatorResults {...props} psychometric={800} bagrut={120} />);
 
-    expect(screen.getByLabelText('אוניברסיטת תל אביב: מתקבל/ת')).toBeTruthy();
+    expect(screen.getByLabelText('אוניברסיטת תל אביב: התקבלת')).toBeTruthy();
+    expect(screen.getByText('הסטטוס שלך')).toBeTruthy();
+    expect(screen.getByText('למה קיבלת את התוצאה')).toBeTruthy();
+    expect(screen.getByText('מה חסר לך')).toBeTruthy();
+    expect(screen.getByText('הצעד הכי טוב הבא')).toBeTruthy();
 
     rerender(<CalculatorResults {...props} psychometric={300} bagrut={70} />);
 
-    expect(screen.getByLabelText('אוניברסיטת תל אביב: נדרש שיפור')).toBeTruthy();
+    expect(screen.getByLabelText('אוניברסיטת תל אביב: רחוק מהמסלול')).toBeTruthy();
   });
 });

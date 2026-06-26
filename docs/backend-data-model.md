@@ -4,12 +4,15 @@
 
 The backend foundation separates reviewed catalogue data from raw ingestion output.
 
-- `institutions`, `programs`, `program_institutions`, `admission_requirements`, `admission_thresholds`, `source_urls`, and `requirement_versions` are the canonical catalogue.
+- `institutions`, `programs`, `program_institutions`, `admission_requirements`, `admission_thresholds`, `source_urls`, `admissions_source_candidates`, `admission_facts`, `admission_alternative_paths`, and `requirement_versions` are the canonical catalogue.
 - `ingestion_sources`, `ingestion_jobs`, `ingestion_payloads`, `review_items`, `source_freshness_states`, and `source_freshness_checks` hold acquisition state, source freshness evidence, and proposed changes before publication.
 
 Canonical requirement rows stay traceable through `source_urls`, and historical reviewed values stay in `requirement_versions`.
 
-See [docs/data-ingestion-workflow.md](/Users/amitmalichi/Desktop/toar-academic-guide/.worktrees/chore-catalogue-scale-ingestion-batch/docs/data-ingestion-workflow.md:1) for the end-to-end scrape, review, and publication workflow that sits on top of these tables.
+Admissions decisions use structured source candidates, facts, and alternative paths. These records are the reviewed decision input; broad scraper prose should remain in raw ingestion payloads or review context.
+
+See [docs/data-ingestion-workflow.md](./data-ingestion-workflow.md) for the end-to-end scrape, review, and publication workflow that sits on top of these tables.
+See [docs/hybrid-admissions-decision-slice.md](./hybrid-admissions-decision-slice.md) for the first product decision slice and result contract.
 
 ## Source freshness
 
@@ -63,7 +66,7 @@ Uploaded academic documents are owned by the authenticated `/api/documents` rout
 
 The exposed `public` schema is partitioned into three access classes:
 
-- Public-read catalogue tables: `institutions`, `programs`, `program_institutions`, `admission_requirements`, `admission_thresholds`, `source_urls`, and `university_calculator_configs`
+- Public-read catalogue tables: `institutions`, `programs`, `program_institutions`, `admission_requirements`, `admission_thresholds`, `source_urls`, `admissions_source_candidates`, `admission_facts`, `admission_alternative_paths`, and `university_calculator_configs`
 - User-owned tables: `user_profiles`, `saved_programs`, and `uploaded_documents`
 - Private operational tables: `requirement_versions`, `ingestion_sources`, `ingestion_jobs`, `ingestion_payloads`, `review_items`, `source_freshness_states`, and `source_freshness_checks`
 

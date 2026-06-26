@@ -1,7 +1,10 @@
 import { inArray } from 'drizzle-orm';
 import {
+  admissionAlternativePaths,
+  admissionFacts,
   admissionRequirements,
   admissionThresholds,
+  admissionsSourceCandidates,
   institutions,
   programInstitutions,
   programs,
@@ -15,6 +18,7 @@ import type {
   ProgramRow,
   UniversityCalculatorConfigRow,
 } from '@/db/types';
+import { hybridAdmissionSlice } from '@/data/admissions/hybridSlice';
 import { allPrograms } from '@/data/degrees';
 import type { InstitutionDetail, Program } from '@/data/degrees/types';
 import { INSTITUTIONS, INSTITUTION_BY_NAME, type InstitutionId } from '@/data/institutions';
@@ -35,6 +39,9 @@ export interface CatalogueSeedPayload {
   admissionThresholds: (typeof admissionThresholds.$inferInsert)[];
   sourceUrls: (typeof sourceUrls.$inferInsert)[];
   requirementVersions: (typeof requirementVersions.$inferInsert)[];
+  admissionsSourceCandidates: (typeof admissionsSourceCandidates.$inferInsert)[];
+  admissionFacts: (typeof admissionFacts.$inferInsert)[];
+  admissionAlternativePaths: (typeof admissionAlternativePaths.$inferInsert)[];
   validationErrors: CatalogueSeedValidationError[];
 }
 
@@ -141,6 +148,9 @@ export function buildCatalogueSeed(seedPrograms: Program[] = allPrograms): Catal
   const thresholdRows: (typeof admissionThresholds.$inferInsert)[] = [];
   const sourceUrlRows: (typeof sourceUrls.$inferInsert)[] = [];
   const versionRows: (typeof requirementVersions.$inferInsert)[] = [];
+  const admissionsSourceCandidateRows: (typeof admissionsSourceCandidates.$inferInsert)[] = [];
+  const admissionFactRows: (typeof admissionFacts.$inferInsert)[] = [];
+  const admissionAlternativePathRows: (typeof admissionAlternativePaths.$inferInsert)[] = [];
 
   for (const program of seedPrograms) {
     const linkedInstitutionIds = unique(getProgramInstitutionIds(program));
@@ -285,6 +295,90 @@ export function buildCatalogueSeed(seedPrograms: Program[] = allPrograms): Catal
     }
   }
 
+  const requirementIds = new Set(requirementRows.map((row) => row.id));
+  const programIds = new Set(programRows.map((row) => row.id));
+
+  for (const entry of hybridAdmissionSlice) {
+    const requirementId = `${entry.programId}:${entry.institutionId}`;
+
+    if (!programIds.has(entry.programId)) {
+      continue;
+    }
+
+    if (!requirementIds.has(requirementId)) {
+      validationErrors.push({
+        programId: entry.programId,
+        message: `Hybrid admissions fixture is missing requirement "${requirementId}".`,
+      });
+      continue;
+    }
+
+    for (const source of entry.sourceCandidates) {
+      admissionsSourceCandidateRows.push({
+        id: source.id,
+        admissionRequirementId: requirementId,
+        institutionId: entry.institutionId,
+        programId: entry.programId,
+        origin: source.origin,
+        specificity: source.specificity,
+        confidence: source.confidence,
+        url: source.url,
+        title: source.title ?? null,
+        notes: source.notes ?? null,
+      });
+    }
+
+    const sourceCandidateIds = new Set(entry.sourceCandidates.map((source) => source.id));
+
+    for (const fact of entry.facts) {
+      if (fact.sourceCandidateId && !sourceCandidateIds.has(fact.sourceCandidateId)) {
+        validationErrors.push({
+          programId: entry.programId,
+          message: `Admission fact "${fact.id}" references missing source candidate "${fact.sourceCandidateId}".`,
+        });
+      }
+
+      admissionFactRows.push({
+        id: fact.id,
+        admissionRequirementId: requirementId,
+        institutionId: entry.institutionId,
+        programId: entry.programId,
+        sourceCandidateId: fact.sourceCandidateId ?? null,
+        kind: fact.kind,
+        field: fact.field,
+        comparison: fact.comparison,
+        valueNumber: fact.valueNumber,
+        valueText: fact.valueText,
+        unit: fact.unit,
+        description: fact.description,
+        confidence: fact.confidence,
+        isRequired: fact.isRequired,
+      });
+    }
+
+    for (const path of entry.alternativePaths) {
+      if (path.sourceCandidateId && !sourceCandidateIds.has(path.sourceCandidateId)) {
+        validationErrors.push({
+          programId: entry.programId,
+          message: `Alternative path "${path.id}" references missing source candidate "${path.sourceCandidateId}".`,
+        });
+      }
+
+      admissionAlternativePathRows.push({
+        id: path.id,
+        admissionRequirementId: requirementId,
+        institutionId: entry.institutionId,
+        programId: entry.programId,
+        sourceCandidateId: path.sourceCandidateId ?? null,
+        kind: path.kind,
+        title: path.title,
+        description: path.description,
+        url: path.url ?? null,
+        priority: path.priority,
+      });
+    }
+  }
+
   return {
     institutions: institutionRows,
     universityCalculatorConfigs: calculatorConfigRows,
@@ -294,6 +388,9 @@ export function buildCatalogueSeed(seedPrograms: Program[] = allPrograms): Catal
     admissionThresholds: thresholdRows,
     sourceUrls: sourceUrlRows,
     requirementVersions: versionRows,
+    admissionsSourceCandidates: admissionsSourceCandidateRows,
+    admissionFacts: admissionFactRows,
+    admissionAlternativePaths: admissionAlternativePathRows,
     validationErrors,
   };
 }
@@ -557,6 +654,13 @@ export async function upsertCatalogueSeed(payload: CatalogueSeedPayload) {
         .delete(admissionThresholds)
         .where(inArray(admissionThresholds.programId, managedProgramIds));
       await tx
+        .delete(admissionAlternativePaths)
+        .where(inArray(admissionAlternativePaths.programId, managedProgramIds));
+      await tx.delete(admissionFacts).where(inArray(admissionFacts.programId, managedProgramIds));
+      await tx
+        .delete(admissionsSourceCandidates)
+        .where(inArray(admissionsSourceCandidates.programId, managedProgramIds));
+      await tx
         .delete(programInstitutions)
         .where(inArray(programInstitutions.programId, managedProgramIds));
       await tx
@@ -601,6 +705,61 @@ export async function upsertCatalogueSeed(payload: CatalogueSeedPayload) {
           url: sourceUrls.url,
         },
       });
+
+    if (payload.admissionsSourceCandidates.length > 0) {
+      await tx
+        .insert(admissionsSourceCandidates)
+        .values(payload.admissionsSourceCandidates)
+        .onConflictDoUpdate({
+          target: admissionsSourceCandidates.id,
+          set: {
+            origin: admissionsSourceCandidates.origin,
+            specificity: admissionsSourceCandidates.specificity,
+            confidence: admissionsSourceCandidates.confidence,
+            url: admissionsSourceCandidates.url,
+            title: admissionsSourceCandidates.title,
+            notes: admissionsSourceCandidates.notes,
+          },
+        });
+    }
+
+    if (payload.admissionFacts.length > 0) {
+      await tx
+        .insert(admissionFacts)
+        .values(payload.admissionFacts)
+        .onConflictDoUpdate({
+          target: admissionFacts.id,
+          set: {
+            sourceCandidateId: admissionFacts.sourceCandidateId,
+            kind: admissionFacts.kind,
+            field: admissionFacts.field,
+            comparison: admissionFacts.comparison,
+            valueNumber: admissionFacts.valueNumber,
+            valueText: admissionFacts.valueText,
+            unit: admissionFacts.unit,
+            description: admissionFacts.description,
+            confidence: admissionFacts.confidence,
+            isRequired: admissionFacts.isRequired,
+          },
+        });
+    }
+
+    if (payload.admissionAlternativePaths.length > 0) {
+      await tx
+        .insert(admissionAlternativePaths)
+        .values(payload.admissionAlternativePaths)
+        .onConflictDoUpdate({
+          target: admissionAlternativePaths.id,
+          set: {
+            sourceCandidateId: admissionAlternativePaths.sourceCandidateId,
+            kind: admissionAlternativePaths.kind,
+            title: admissionAlternativePaths.title,
+            description: admissionAlternativePaths.description,
+            url: admissionAlternativePaths.url,
+            priority: admissionAlternativePaths.priority,
+          },
+        });
+    }
 
     await tx
       .insert(requirementVersions)

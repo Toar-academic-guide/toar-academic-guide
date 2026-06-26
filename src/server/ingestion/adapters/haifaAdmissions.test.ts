@@ -1,6 +1,17 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
-import { normalizeHaifaPayload, runHaifaAdmissionsProof } from './haifaAdmissions';
+import { evaluateAdmissionsSourceProof } from '../admissionsSourceAdapters';
+import { parseHaifaChancesResponse, runHaifaAdmissionsProof } from './haifaAdmissions';
+
+const applicant = {
+  bagrutAverage: 105,
+  psychometric: 680,
+  psychometricSubscores: {
+    english: 136,
+    math: 136,
+    verbal: 136,
+  },
+};
 
 function jsonResponse(body: unknown, init?: ResponseInit) {
   return new Response(JSON.stringify(body), {
@@ -10,60 +21,155 @@ function jsonResponse(body: unknown, init?: ResponseInit) {
   });
 }
 
-describe('Haifa admissions adapter', () => {
-  it('normalizes decision-capable official response fields', () => {
-    expect(
-      normalizeHaifaPayload({
-        data: {
-          weightedScore: '715.4',
-          acceptanceCutoff: 700,
-          rejectionCutoff: '650',
-          marketingText: 'ignored',
+describe('parseHaifaChancesResponse', () => {
+  it('keeps official score and cutoff fields from nested label/value content', () => {
+    const parsed = parseHaifaChancesResponse({
+      data: [
+        {
+          results: [
+            {
+              content: [
+                { label: 'הציון המשוקלל', value: '706' },
+                { label: 'סף קבלה', value: '705' },
+                { label: 'סף דחייה', value: '680' },
+                { label: 'ציון פסיכומטרי', value: '680' },
+                { label: 'טקסט מידע', value: 'נא לפנות למרכז ייעוץ' },
+              ],
+            },
+          ],
         },
-      }),
-    ).toEqual({
-      weightedScore: 715.4,
-      acceptanceCutoff: 700,
-      rejectionCutoff: 650,
+      ],
+    });
+
+    expect(parsed).toEqual({
+      weightedScore: 706,
+      acceptanceCutoff: 705,
+      rejectionCutoff: 680,
+      psychometricScore: 680,
+    });
+  });
+});
+
+describe('runHaifaAdmissionsProof', () => {
+  it('returns a decision-capable proof from mocked official responses', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(jsonResponse({ data: { guid: 'guid-1' } }))
+      .mockResolvedValueOnce(
+        jsonResponse({
+          data: [
+            {
+              results: [
+                {
+                  content: [
+                    { label: 'הציון המשוקלל', value: '706' },
+                    { label: 'סף קבלה', value: '705' },
+                    { label: 'סף דחייה', value: '680' },
+                  ],
+                },
+              ],
+            },
+          ],
+        }),
+      );
+
+    const proof = await runHaifaAdmissionsProof({ applicant, fetcher });
+
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    expect(String(fetcher.mock.calls[1][0])).toContain('operation=calculateChances');
+    expect(proof).toMatchObject({
+      capability: 'decision_capable',
+      proofLevel: 'exact_official',
+      status: 'succeeded',
+      reproducedFields: ['weightedScore', 'acceptanceCutoff', 'rejectionCutoff'],
+      normalizedPayload: {
+        weightedScore: 706,
+        acceptanceCutoff: 705,
+        rejectionCutoff: 680,
+      },
     });
   });
 
-  it('returns decision-capable proof for mocked official JSON with cutoffs', async () => {
-    const fetcher = async (input: RequestInfo | URL) => {
-      const url = String(input);
-      if (url.includes('calculateChances')) {
-        return jsonResponse({
-          result: { weightedScore: 715, acceptanceCutoff: 700, rejectionCutoff: 650 },
-        });
-      }
+  it('keeps score-only Haifa responses partial until official cutoffs are parsed', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(jsonResponse({ data: { guid: 'guid-1' } }))
+      .mockResolvedValueOnce(
+        jsonResponse({
+          data: [{ results: [{ content: [{ label: 'הציון המשוקלל', value: '706' }] }] }],
+        }),
+      );
 
-      return jsonResponse({ ok: true });
+    const proof = await runHaifaAdmissionsProof({ applicant, fetcher });
+
+    expect(proof).toMatchObject({
+      capability: 'score_only',
+      proofLevel: 'partial_official',
+      status: 'partial',
+      reproducedFields: ['weightedScore'],
+    });
+  });
+
+  it('returns a failed proof when an official endpoint returns invalid JSON', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(jsonResponse({ data: { guid: 'guid-1' } }))
+      .mockResolvedValueOnce(
+        new Response('not json', {
+          status: 200,
+          headers: { 'content-type': 'application/json' },
+        }),
+      );
+
+    const proof = await runHaifaAdmissionsProof({ applicant, fetcher });
+
+    expect(proof).toMatchObject({
+      status: 'failed',
+      capability: 'blocked',
+      errorReason: expect.stringContaining('Unexpected token'),
+    });
+  });
+
+  it('feeds Haifa cutoff changes into freshness fingerprints', async () => {
+    const first = await runHaifaAdmissionsProof({
+      applicant,
+      fetcher: vi
+        .fn<typeof fetch>()
+        .mockResolvedValueOnce(jsonResponse({ data: { guid: 'guid-1' } }))
+        .mockResolvedValueOnce(
+          jsonResponse({
+            data: [
+              {
+                results: [
+                  {
+                    content: [
+                      { label: 'הציון המשוקלל', value: '706' },
+                      { label: 'סף קבלה', value: '705' },
+                    ],
+                  },
+                ],
+              },
+            ],
+          }),
+        ),
+    });
+    const second = {
+      ...first,
+      normalizedPayload: {
+        ...first.normalizedPayload,
+        acceptanceCutoff: 712,
+      },
     };
 
-    const proof = await runHaifaAdmissionsProof({
-      applicant: { bagrutAverage: 105, psychometric: 680 },
-      fetcher,
-      program: { id: 'haifa-cs', name: 'Computer Science', externalId: '52258372' },
+    const firstEvaluation = evaluateAdmissionsSourceProof(first);
+    const secondEvaluation = evaluateAdmissionsSourceProof(
+      second,
+      firstEvaluation.freshness?.normalizedFingerprint,
+    );
+
+    expect(secondEvaluation.freshness).toMatchObject({
+      status: 'changed_needs_review',
+      reviewWorthy: true,
     });
-
-    expect(proof.status).toBe('succeeded');
-    expect(proof.capability).toBe('decision_capable');
-    expect(proof.normalizedPayload).toMatchObject({
-      weightedScore: 715,
-      acceptanceCutoff: 700,
-      rejectionCutoff: 650,
-    });
-  });
-
-  it('returns a failed proof when the official response is unavailable', async () => {
-    const fetcher = async () => jsonResponse({ error: true }, { status: 503 });
-
-    const proof = await runHaifaAdmissionsProof({
-      applicant: { bagrutAverage: 105, psychometric: 680 },
-      fetcher,
-    });
-
-    expect(proof.status).toBe('failed');
-    expect(proof.errorReason).toContain('503');
   });
 });

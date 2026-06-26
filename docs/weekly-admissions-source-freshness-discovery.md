@@ -9,7 +9,7 @@ The discovery slice now has two layers:
 
 The checker can produce raw fingerprints, normalized decision-bearing fingerprints, capability labels, review-worthy change flags, and blocked-source reasons without touching the production schema. The live proof layer separates exact official-source reproduction from score-only, static-candidate, open-admission, and browser-blocked sources.
 
-This discovery artifact does not schedule weekly checks, persist source freshness, update the internal dashboard, or drive public product admissions decisions by itself.
+This PR still does not schedule weekly checks, persist source freshness, update the internal dashboard, or drive public product admissions decisions.
 
 ## Representative Inputs
 
@@ -21,20 +21,23 @@ This discovery artifact does not schedule weekly checks, persist source freshnes
 | `score_only_calculator` | Calculator response with a calculated score but no threshold/status | Supported as score-only evidence |
 | `browser_required` | Source requiring persistent browser cookies or anti-bot clearance | Blocked for GitHub Action v1 |
 
-## Live Proof Capability Matrix
+## Observed Result
 
-| Institution | Target id | Official source | Current proof status | Reproduced fields | Limitation | Next action |
-| --- | --- | --- | --- | --- | --- | --- |
-| University of Haifa | `haifa-cs-live` | `https://applicants.haifa.ac.il/enrollmentChances/index.html` | Exact live adapter target | weighted score, acceptance cutoff, rejection cutoff when returned | Representative program only | Promote as first weekly GitHub Action adapter candidate |
-| Tel Aviv University | `tau-digital-sciences-live` | `https://go.tau.ac.il/graphql` | Exact live adapter target | selected calculated score, acceptance threshold, rejection threshold when returned | Representative Digital Sciences for High-Tech program and score-field mapping only | Promote as second weekly GitHub Action adapter candidate |
-| Hebrew University | `huji-static-json` | `https://go.huji.ac.il/jjson/huji.json.gz` | Static-data candidate | program cutoff candidate | Requires reproducing static JSON plus bundled client-side JS | Separate HUJI static JSON and JS reproduction spike |
-| Technion | `technion-score-only` | `https://admissions.technion.ac.il/wp-content/plugins/technion-calculators/technion-calculators-sum.php` | Partial / score-only | sekhem score, optimal Bagrut average candidate | No official threshold/status in this proof | Pair with reviewed official threshold source |
-| Ben-Gurion University | `bgu-score-only` | official BGU admissions endpoints from Monday notes | Partial / score-only | sekhem score candidate | Cutoff/status not returned in the proof notes | Find official cutoff/status source |
-| Bar-Ilan University | `biu-browser-required` | `https://in.biu.ac.il/Pages/Psychometric.aspx` | Blocked for GitHub Actions v1 | none | ASP.NET view state, Radware cookies, browser session required | Move to Hermes/VPS browser lane |
-| Ariel University | `ariel-browser-required` | official Ariel admissions flow from Monday notes | Blocked for GitHub Actions v1 | none | Stateful browser flow, Windows-1255, Radware session required | Move to Hermes/VPS browser lane |
-| Open University | `openu-open-admission` | `https://www.openu.ac.il/` | Open-admission policy | open admission baseline | No sekhem calculator required for baseline policy | Model as policy, not calculator reproduction |
+The fixture discovery script checks five representative source-class samples:
 
-## Running The Manual Proof
+```bash
+node scripts/admissions-freshness-discovery.mjs
+```
+
+Latest observed summary:
+
+```json
+{
+  "total": 5,
+  "supportedInGithubActions": 4,
+  "blockedForLaterHermesLane": 1
+}
+```
 
 The live proof script defaults to the two exact official-source candidates:
 
@@ -50,6 +53,19 @@ node scripts/admissions-live-source-proof.mjs --all
 ```
 
 The live script is intentionally not part of `npm test`; official endpoint availability is an external variable.
+
+## Live Proof Capability Matrix
+
+| Institution | Target id | Official source | Current proof status | Reproduced fields | Limitation | Next action |
+| --- | --- | --- | --- | --- | --- | --- |
+| University of Haifa | `haifa-cs-live` | `https://applicants.haifa.ac.il/enrollmentChances/index.html` | Exact live adapter target | weighted score, acceptance cutoff, rejection cutoff when returned | Representative program only | Promote as first weekly GitHub Action adapter candidate |
+| Tel Aviv University | `tau-digital-sciences-live` | `https://go.tau.ac.il/graphql` | Exact live adapter target | selected calculated score, acceptance threshold, rejection threshold when returned | Representative Digital Sciences for High-Tech program and score-field mapping only | Promote as second weekly GitHub Action adapter candidate |
+| Hebrew University | `huji-static-json` | `https://go.huji.ac.il/jjson/huji.json.gz` | Static-data candidate | program cutoff candidate | Requires reproducing static JSON plus bundled client-side JS | Separate HUJI static JSON and JS reproduction spike |
+| Technion | `technion-score-only` | `https://admissions.technion.ac.il/wp-content/plugins/technion-calculators/technion-calculators-sum.php` | Partial / score-only | sekhem score, optimal Bagrut average candidate | No official threshold/status in this proof | Pair with reviewed official threshold source |
+| Ben-Gurion University | `bgu-score-only` | official BGU admissions endpoints from Monday notes | Partial / score-only | sekhem score candidate | Cutoff/status not returned in the proof notes | Find official cutoff/status source |
+| Bar-Ilan University | `biu-browser-required` | `https://in.biu.ac.il/Pages/Psychometric.aspx` | Blocked for GitHub Actions v1 | none | ASP.NET view state, Radware cookies, browser session required | Move to Hermes/VPS browser lane |
+| Ariel University | `ariel-browser-required` | official Ariel admissions flow from Monday notes | Blocked for GitHub Actions v1 | none | Stateful browser flow, Windows-1255, Radware session required | Move to Hermes/VPS browser lane |
+| Open University | `openu-open-admission` | `https://www.openu.ac.il/` | Open-admission policy | open admission baseline | No sekhem calculator required for baseline policy | Model as policy, not calculator reproduction |
 
 ## What Counts As Exact Proof
 
@@ -72,9 +88,16 @@ Score-only proof is useful freshness evidence, but it cannot produce accepted/re
 | `score_only_calculator` | Score fields only, with capability marked `score_only` | The score payload changes, but it should not be treated as acceptance criteria by itself |
 | `browser_required` | Blocked reason | The source should move to Hermes/VPS discovery, not GitHub Action v1 |
 
-## Required Storage Fields Before Production
+## Noise To Ignore
 
-Production persistence should store at least:
+- HTML navigation, header, footer, script, style, and SVG changes.
+- Generic admissions headings without concrete values.
+- Non-decision text in HTML or PDF sources.
+- Generated timestamps and labels unless the source adapter marks them as decision-bearing.
+
+## Required Storage Fields Before U2
+
+U2 should persist at least:
 
 - source id
 - source class
@@ -92,8 +115,8 @@ Production persistence should store at least:
 
 ## Risks That Remain
 
-- The HTML normalizer is intentionally conservative and fixture-backed; real official pages need source-specific fixture coverage before broad launch.
-- PDF support currently assumes text extraction has already happened.
+- The HTML normalizer is intentionally conservative and fixture-backed; real official pages need source-specific fixture coverage before launch.
+- PDF support currently assumes text extraction has already happened. U2/U4 should decide where extraction runs and how extraction failures are represented.
 - Score-only calculators can detect changed output, but they cannot justify an accepted/rejected decision without a threshold source.
 - Browser-required sources should be explicitly blocked in the GitHub Action lane until Hermes/VPS execution is designed.
 - Haifa and TAU live adapters are representative-program proofs. Broad program coverage and full user-facing decisions are deferred.

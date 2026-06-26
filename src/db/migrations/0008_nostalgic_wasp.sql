@@ -46,34 +46,4 @@ CREATE INDEX "source_freshness_checks_source_checked_at_idx" ON "source_freshnes
 CREATE INDEX "source_freshness_checks_status_idx" ON "source_freshness_checks" USING btree ("status");--> statement-breakpoint
 CREATE INDEX "source_freshness_checks_review_item_idx" ON "source_freshness_checks" USING btree ("review_item_id");--> statement-breakpoint
 CREATE INDEX "source_freshness_states_status_idx" ON "source_freshness_states" USING btree ("status");--> statement-breakpoint
-CREATE INDEX "source_freshness_states_latest_review_item_idx" ON "source_freshness_states" USING btree ("latest_review_item_id");--> statement-breakpoint
-ALTER TABLE "source_freshness_checks" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
-ALTER TABLE "source_freshness_states" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
-DO $$
-BEGIN
-  IF EXISTS (SELECT 1 FROM pg_namespace WHERE nspname = 'auth') THEN
-    REVOKE ALL ON TABLE
-      "source_freshness_checks",
-      "source_freshness_states"
-    FROM anon, authenticated;
-
-    DROP POLICY IF EXISTS "source_freshness_checks_private_deny_all" ON "source_freshness_checks";
-    DROP POLICY IF EXISTS "source_freshness_states_private_deny_all" ON "source_freshness_states";
-
-    CREATE POLICY "source_freshness_checks_private_deny_all"
-      ON "source_freshness_checks"
-      AS RESTRICTIVE
-      FOR ALL
-      TO anon, authenticated
-      USING (false)
-      WITH CHECK (false);
-
-    CREATE POLICY "source_freshness_states_private_deny_all"
-      ON "source_freshness_states"
-      AS RESTRICTIVE
-      FOR ALL
-      TO anon, authenticated
-      USING (false)
-      WITH CHECK (false);
-  END IF;
-END $$;
+CREATE INDEX "source_freshness_states_latest_review_item_idx" ON "source_freshness_states" USING btree ("latest_review_item_id");

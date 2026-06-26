@@ -65,14 +65,11 @@ async function main() {
     resolve: {
       tsconfigPaths: true,
     },
-    optimizeDeps: {
-      noDiscovery: true,
-    },
   });
 
   try {
     const { runAdmissionsLiveProof } = await vite.ssrLoadModule(
-      '/src/server/ingestion/admissionsLiveProofRunner.ts'
+      '/src/server/ingestion/admissionsLiveProofRunner.ts',
     );
 
     const report = await runAdmissionsLiveProof(parseArgs(process.argv.slice(2)));

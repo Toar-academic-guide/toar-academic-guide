@@ -1,0 +1,65 @@
+name: Ready PR Slack
+
+on:
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
+  pull_request_review:
+    types:
+      - submitted
+      - dismissed
+  pull_request_target:
+    types:
+      - ready_for_review
+      - reopened
+      - synchronize
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: Pull request number to evaluate
+        required: false
+        type: number
+
+permissions:
+  actions: read
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: ready-pr-slack-${{ github.event.pull_request.head.sha || github.event.workflow_run.head_sha || github.event.inputs.pr_number || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  notify-ready-pr:
+    name: Notify Slack when PR becomes ready
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout default branch
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Notify Slack when PR is ready
+        env:
+          CI: true
+          GITHUB_TOKEN: ${{ github.token }}
+          INPUT_PR_NUMBER: ${{ github.event.inputs.pr_number }}
+          READY_PR_REQUIRE_APPROVAL: ${{ vars.READY_PR_REQUIRE_APPROVAL }}
+          READY_PR_REQUIRED_WORKFLOWS: ${{ vars.READY_PR_REQUIRED_WORKFLOWS }}
+          READY_PR_NOTIFICATION_LABEL: ${{ vars.READY_PR_NOTIFICATION_LABEL }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_READY_PR_CHANNEL_ID: ${{ vars.SLACK_READY_PR_CHANNEL_ID }}
+        run: npm run notify:ready-pr

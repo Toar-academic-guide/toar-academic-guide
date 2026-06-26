@@ -4,6 +4,7 @@ import {
   type AdmissionsProgramInput,
   type AdmissionsProofLevel,
   type AdmissionsSourceProof,
+  type AdmissionsProofStatus,
 } from './admissionsSourceAdapters';
 import type { FreshnessCapability } from './freshnessDiscovery';
 
@@ -190,7 +191,7 @@ export function buildCapabilityMatrixProof(target: AdmissionsSourceTarget): Admi
   });
 }
 
-function statusForTarget(target: AdmissionsSourceTarget): AdmissionsSourceProof['status'] {
+function statusForTarget(target: AdmissionsSourceTarget): AdmissionsProofStatus {
   if (target.category === 'blocked') {
     return 'blocked';
   }

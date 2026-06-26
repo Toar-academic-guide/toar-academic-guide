@@ -72,9 +72,8 @@ export function evaluateFreshnessDiscovery(
   const rawText = input.rawBody ?? serializeRaw(input.body);
   const normalizedDecisionPayload = normalizeDecisionPayload(input.sourceClass, input.body);
   const normalizedFingerprint = fingerprint(stableSerialize(normalizedDecisionPayload));
-  const normalizedChanged =
-    input.previousNormalizedFingerprint !== undefined &&
-    input.previousNormalizedFingerprint !== normalizedFingerprint;
+  const previous = input.previousNormalizedFingerprint;
+  const normalizedChanged = previous !== undefined && previous !== normalizedFingerprint;
   const capability =
     input.sourceClass === 'score_only_calculator' ? 'score_only' : 'decision_capable';
 

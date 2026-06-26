@@ -33,6 +33,72 @@ export const sourceUrlKindEnum = pgEnum('source_url_kind', [
   'institution',
 ]);
 export const reviewStatusEnum = pgEnum('review_status', ['seeded', 'reviewed', 'published']);
+export const admissionsSourceOriginEnum = pgEnum('admissions_source_origin', [
+  'board_column',
+  'item_update',
+  'catalogue_url',
+  'manual',
+]);
+export const admissionsSourceSpecificityEnum = pgEnum('admissions_source_specificity', [
+  'program_admissions',
+  'program',
+  'calculator',
+  'institution_admissions',
+  'institution',
+  'generic',
+]);
+export const admissionsConfidenceEnum = pgEnum('admissions_confidence', ['high', 'medium', 'low']);
+export const admissionFactKindEnum = pgEnum('admission_fact_kind', [
+  'numeric_gate',
+  'manual_gate',
+  'open_admission',
+  'explicit_absence',
+  'unknown',
+]);
+export const admissionFactFieldEnum = pgEnum('admission_fact_field', [
+  'sekhem',
+  'psychometric',
+  'bagrut_average',
+  'psychometric_quantitative',
+  'psychometric_english',
+  'math_units',
+  'english_units',
+  'required_subject',
+  'interview',
+  'exam',
+  'committee',
+  'portfolio',
+  'document_check',
+  'prior_studies',
+  'open_admission',
+  'other',
+]);
+export const admissionComparisonEnum = pgEnum('admission_comparison', [
+  'gte',
+  'lte',
+  'eq',
+  'present',
+  'not_required',
+  'unknown',
+]);
+export const admissionFactUnitEnum = pgEnum('admission_fact_unit', [
+  'points',
+  'average',
+  'units',
+  'boolean',
+  'text',
+]);
+export const alternativePathKindEnum = pgEnum('alternative_path_kind', [
+  'prep_program',
+  'transfer_path',
+  'prior_studies',
+  'exceptions_committee',
+  'special_population',
+  'similar_program',
+  'lower_threshold_institution',
+  'online_or_abroad',
+  'manual_check',
+]);
 export const sourceDifficultyEnum = pgEnum('source_difficulty', [
   'easy',
   'browser_required',
@@ -215,6 +281,74 @@ export const requirementVersions = pgTable('requirement_versions', {
     .$type<Record<string, string | null>>()
     .default({})
     .notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const admissionsSourceCandidates = pgTable('admissions_source_candidates', {
+  id: text('id').primaryKey(),
+  admissionRequirementId: text('admission_requirement_id')
+    .notNull()
+    .references(() => admissionRequirements.id, { onDelete: 'cascade' }),
+  institutionId: text('institution_id')
+    .notNull()
+    .references(() => institutions.id, { onDelete: 'cascade' }),
+  programId: text('program_id')
+    .notNull()
+    .references(() => programs.id, { onDelete: 'cascade' }),
+  origin: admissionsSourceOriginEnum('origin').notNull(),
+  specificity: admissionsSourceSpecificityEnum('specificity').notNull(),
+  confidence: admissionsConfidenceEnum('confidence').notNull(),
+  url: text('url').notNull(),
+  title: text('title'),
+  notes: text('notes'),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const admissionFacts = pgTable('admission_facts', {
+  id: text('id').primaryKey(),
+  admissionRequirementId: text('admission_requirement_id')
+    .notNull()
+    .references(() => admissionRequirements.id, { onDelete: 'cascade' }),
+  institutionId: text('institution_id')
+    .notNull()
+    .references(() => institutions.id, { onDelete: 'cascade' }),
+  programId: text('program_id')
+    .notNull()
+    .references(() => programs.id, { onDelete: 'cascade' }),
+  sourceCandidateId: text('source_candidate_id').references(() => admissionsSourceCandidates.id, {
+    onDelete: 'set null',
+  }),
+  kind: admissionFactKindEnum('kind').notNull(),
+  field: admissionFactFieldEnum('field').notNull(),
+  comparison: admissionComparisonEnum('comparison').notNull(),
+  valueNumber: real('value_number'),
+  valueText: text('value_text'),
+  unit: admissionFactUnitEnum('unit').notNull(),
+  description: text('description').notNull(),
+  confidence: admissionsConfidenceEnum('confidence').notNull(),
+  isRequired: boolean('is_required').default(true).notNull(),
+  createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const admissionAlternativePaths = pgTable('admission_alternative_paths', {
+  id: text('id').primaryKey(),
+  admissionRequirementId: text('admission_requirement_id')
+    .notNull()
+    .references(() => admissionRequirements.id, { onDelete: 'cascade' }),
+  institutionId: text('institution_id')
+    .notNull()
+    .references(() => institutions.id, { onDelete: 'cascade' }),
+  programId: text('program_id')
+    .notNull()
+    .references(() => programs.id, { onDelete: 'cascade' }),
+  sourceCandidateId: text('source_candidate_id').references(() => admissionsSourceCandidates.id, {
+    onDelete: 'set null',
+  }),
+  kind: alternativePathKindEnum('kind').notNull(),
+  title: text('title').notNull(),
+  description: text('description').notNull(),
+  url: text('url'),
+  priority: integer('priority').default(100).notNull(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
 });
 

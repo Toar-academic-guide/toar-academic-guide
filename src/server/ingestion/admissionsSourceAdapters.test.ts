@@ -4,58 +4,140 @@ import {
   createCapabilityOnlyProof,
   evaluateAdmissionsSourceProof,
   hasDecisionThresholds,
-  parseOfficialNumeric,
+  type AdmissionsSourceProof,
 } from './admissionsSourceAdapters';
 
-describe('admissions source adapter helpers', () => {
-  it('evaluates decision-capable proofs through the freshness layer', () => {
-    const proof = createCapabilityOnlyProof({
-      id: 'proof',
-      institutionId: 'tau',
-      institutionName: 'Tel Aviv University',
-      officialUrl: 'https://example.com',
+const decisionCapableProof: AdmissionsSourceProof = {
+  id: 'haifa-cs',
+  institutionId: 'haifa',
+  institutionName: 'University of Haifa',
+  officialUrl: 'https://applicants.haifa.ac.il/enrollmentChances/index.html',
+  adapterId: 'haifa',
+  capability: 'decision_capable',
+  proofLevel: 'exact_official',
+  status: 'succeeded',
+  sourceClass: 'api_static_json',
+  reproducedFields: ['weightedScore', 'acceptanceCutoff', 'rejectionCutoff'],
+  normalizedPayload: {
+    weightedScore: 706,
+    acceptanceCutoff: 705,
+    rejectionCutoff: 680,
+  },
+  limitations: [],
+  nextAction: 'Use as first weekly freshness adapter candidate',
+};
+
+describe('evaluateAdmissionsSourceProof', () => {
+  it('keeps decision-capable proof payloads compatible with freshness evaluation', () => {
+    const result = evaluateAdmissionsSourceProof(decisionCapableProof);
+
+    expect(result.freshness).toMatchObject({
+      id: 'haifa-cs',
       capability: 'decision_capable',
-      proofLevel: 'exact_official',
-      status: 'succeeded',
-      reproducedFields: ['acceptanceThreshold'],
-      normalizedPayload: { acceptanceThreshold: 720 },
-      limitations: [],
-      nextAction: 'schedule',
+      status: 'fresh',
+      reviewWorthy: false,
     });
-
-    const result = evaluateAdmissionsSourceProof(proof);
-
-    expect(result.proof.capability).toBe('decision_capable');
-    expect(result.freshness?.capability).toBe('decision_capable');
-    expect(result.freshness?.status).toBe('fresh');
+    expect(result.freshness?.normalizedDecisionPayload).toEqual({
+      fields: {
+        acceptanceCutoff: 705,
+        rejectionCutoff: 680,
+        weightedScore: 706,
+      },
+    });
   });
 
-  it('keeps failed proofs out of freshness evaluation', () => {
-    const proof = createCapabilityOnlyProof({
-      id: 'proof',
-      institutionId: 'tau',
-      institutionName: 'Tel Aviv University',
-      officialUrl: 'https://example.com',
+  it('marks changed official thresholds as review-worthy through the existing evaluator', () => {
+    const previous = evaluateAdmissionsSourceProof(decisionCapableProof);
+    const changed = evaluateAdmissionsSourceProof(
+      {
+        ...decisionCapableProof,
+        normalizedPayload: {
+          ...decisionCapableProof.normalizedPayload,
+          acceptanceCutoff: 712,
+        },
+      },
+      previous.freshness?.normalizedFingerprint,
+    );
+
+    expect(changed.freshness).toMatchObject({
       capability: 'decision_capable',
-      proofLevel: 'exact_official',
+      status: 'changed_needs_review',
+      reviewWorthy: true,
+    });
+  });
+
+  it('keeps score-only evidence from becoming decision-capable review evidence', () => {
+    const scoreOnly = evaluateAdmissionsSourceProof({
+      ...decisionCapableProof,
+      id: 'technion-score',
+      institutionId: 'technion',
+      institutionName: 'Technion',
+      adapterId: 'capability_matrix',
+      capability: 'score_only',
+      proofLevel: 'partial_official',
+      status: 'partial',
+      sourceClass: 'score_only_calculator',
+      reproducedFields: ['sekhemScore'],
+      normalizedPayload: { sekhemScore: 91.2 },
+      limitations: ['No official threshold or status returned by this proof'],
+      nextAction: 'Pair with official threshold source before product decisions',
+    });
+
+    const changed = evaluateAdmissionsSourceProof(
+      {
+        ...scoreOnly.proof,
+        normalizedPayload: { sekhemScore: 92.1 },
+      },
+      scoreOnly.freshness?.normalizedFingerprint,
+    );
+
+    expect(changed.freshness).toMatchObject({
+      capability: 'score_only',
+      status: 'changed_needs_review',
+      reviewWorthy: false,
+    });
+  });
+
+  it('returns blocked proof without throwing the whole report flow', () => {
+    const result = evaluateAdmissionsSourceProof(
+      createCapabilityOnlyProof({
+        id: 'biu',
+        institutionId: 'biu',
+        institutionName: 'Bar-Ilan University',
+        officialUrl: 'https://in.biu.ac.il/Pages/Psychometric.aspx',
+        capability: 'blocked',
+        proofLevel: 'blocked',
+        status: 'blocked',
+        reproducedFields: [],
+        normalizedPayload: { reason: 'Radware browser cookies required' },
+        limitations: ['ASP.NET view state and browser cookies are required'],
+        nextAction: 'Move to Hermes/VPS browser lane',
+        blockedReason: 'Radware browser cookies required',
+      }),
+    );
+
+    expect(result.freshness).toMatchObject({
+      capability: 'blocked',
+      status: 'blocked',
+      reviewWorthy: false,
+      blockedReason: 'Radware browser cookies required',
+    });
+  });
+
+  it('does not evaluate failed live attempts as freshness facts', () => {
+    const result = evaluateAdmissionsSourceProof({
+      ...decisionCapableProof,
       status: 'failed',
-      reproducedFields: [],
-      normalizedPayload: {},
-      limitations: [],
-      nextAction: 'inspect',
+      errorReason: 'GraphQL response was not JSON',
     });
 
-    expect(evaluateAdmissionsSourceProof(proof).freshness).toBeNull();
+    expect(result.freshness).toBeNull();
   });
+});
 
-  it('detects numeric thresholds in official payloads', () => {
-    expect(hasDecisionThresholds({ acceptanceThreshold: '720 points' })).toBe(true);
-    expect(hasDecisionThresholds({ selectedScore: 714 })).toBe(false);
-  });
-
-  it('parses official numeric values from strings and arrays', () => {
-    expect(parseOfficialNumeric('threshold: 712.5')).toBe(712.5);
-    expect(parseOfficialNumeric(['680'])).toBe(680);
-    expect(parseOfficialNumeric('no value')).toBeUndefined();
+describe('hasDecisionThresholds', () => {
+  it('requires an official threshold-shaped field for accepted/rejected support', () => {
+    expect(hasDecisionThresholds({ weightedScore: 706 })).toBe(false);
+    expect(hasDecisionThresholds({ weightedScore: 706, acceptanceCutoff: 705 })).toBe(true);
   });
 });
