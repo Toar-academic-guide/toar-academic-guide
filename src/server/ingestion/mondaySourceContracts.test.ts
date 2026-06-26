@@ -39,7 +39,7 @@ describe('monday admissions source contracts', () => {
           contractField: 'rejectionThreshold',
           sourceField: 'field_this_year_rejection_thresh',
         }),
-      ])
+      ]),
     );
   });
 
@@ -75,7 +75,7 @@ describe('monday admissions source contracts', () => {
           contractField: 'rejectionCutoff',
           sampleValue: 469,
         }),
-      ])
+      ]),
     );
   });
 
@@ -96,8 +96,7 @@ describe('monday admissions source contracts', () => {
 
   it('rejects unsupported report formats outside the TAU and Haifa v1 scope', () => {
     const result = parseMondayAdmissionsSourceContract({
-      body:
-        '### Reverse Engineering Attempt: אוניברסיטת בר-אילן<br>**Status**: Blocked by Anti-Bot Protection (Radware Captcha / hCaptcha)<br>**Details**:<br>The automated Playwright browser was blocked.',
+      body: '### Reverse Engineering Attempt: אוניברסיטת בר-אילן<br>**Status**: Blocked by Anti-Bot Protection (Radware Captcha / hCaptcha)<br>**Details**:<br>The automated Playwright browser was blocked.',
       provenance: {
         source: 'monday_update_export',
         itemId: '12220699711',
@@ -111,7 +110,8 @@ describe('monday admissions source contracts', () => {
       ok: false,
       error: {
         code: 'unsupported_report',
-        message: 'Only the TAU and Haifa exact reverse-engineering report formats are supported in v1.',
+        message:
+          'Only the TAU and Haifa exact reverse-engineering report formats are supported in v1.',
       },
     });
   });
