@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 import type { DataHealthReadyReport } from '@/server/data-health/queries';
 
 interface DataHealthDashboardProps {
@@ -237,6 +239,7 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
                     detail: `${report.reviewQueue.oldestPendingItem.targetField} since ${formatDateTime(
                       report.reviewQueue.oldestPendingItem.createdAt,
                     )}`,
+                    href: `/internal/reviews/${report.reviewQueue.oldestPendingItem.id}`,
                   },
                 ]}
               />
@@ -321,7 +324,7 @@ function CompactRows({
   rows,
 }: {
   emptyLabel?: string;
-  rows: Array<{ detail: string; id: string }>;
+  rows: Array<{ detail: string; href?: string; id: string }>;
 }) {
   if (rows.length === 0) {
     return emptyLabel ? <p className="text-sm text-slate-600">{emptyLabel}</p> : null;
@@ -331,7 +334,16 @@ function CompactRows({
     <ul className="grid gap-2">
       {rows.map((row) => (
         <li key={row.id} className="rounded-2xl bg-slate-100 px-4 py-3">
-          <p className="text-sm font-black text-slate-950">{row.id}</p>
+          {row.href ? (
+            <Link
+              className="text-sm font-black text-slate-950 underline-offset-4 hover:underline"
+              href={row.href}
+            >
+              {row.id}
+            </Link>
+          ) : (
+            <p className="text-sm font-black text-slate-950">{row.id}</p>
+          )}
           <p className="mt-1 text-sm text-slate-600">{row.detail}</p>
         </li>
       ))}

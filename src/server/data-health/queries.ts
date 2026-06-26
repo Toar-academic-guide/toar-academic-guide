@@ -1,5 +1,7 @@
 import 'server-only';
 
+import { eq } from 'drizzle-orm';
+
 import { getOpsDb } from '@/db/opsClient';
 import {
   admissionAlternativePaths,
@@ -8,6 +10,7 @@ import {
   admissionThresholds,
   admissionsSourceCandidates,
   ingestionJobs,
+  ingestionPayloads,
   ingestionSources,
   institutions,
   programInstitutions,
@@ -18,6 +21,10 @@ import {
   universityCalculatorConfigs,
 } from '@/db/schema';
 import { evaluateCatalogueReadiness } from '@/server/catalogue/queries';
+import {
+  parseSourceFreshnessProposedValue,
+  type SourceFreshnessProposedValue,
+} from '@/server/ingestion/reviewTypes';
 
 const ISSUE_LIMIT = 5;
 const DATA_HEALTH_QUERY_TIMEOUT_MS = 15000;
@@ -244,6 +251,82 @@ interface ReviewItemSummary {
   reviewedAt: string | null;
 }
 
+type ReviewItemDetailStatus = ReviewItemStatus;
+
+interface ReviewItemDetailRow {
+  id: string;
+  payloadId: string;
+  admissionRequirementId: string | null;
+  targetField: string;
+  proposedValue: unknown;
+  status: ReviewItemDetailStatus;
+  createdAt: Date;
+  reviewedAt: Date | null;
+}
+
+interface ReviewItemDetailPayloadRow {
+  createdAt: Date;
+}
+
+interface ReviewItemDetailSourceRow {
+  id: string;
+  institutionId: string | null;
+  programId: string | null;
+  sourceUrl: string;
+}
+
+interface ReviewItemDetailFreshnessRow {
+  sourceId: string;
+  sourceClass: FreshnessSourceClass;
+  capability: FreshnessCapability;
+  status: SourceFreshnessStatus;
+  lastCheckedAt: Date | null;
+  lastSuccessfulCheckAt: Date | null;
+  lastChangedAt: Date | null;
+  latestReviewItemId: string | null;
+  nextAction: string | null;
+}
+
+export interface ReviewItemDetail {
+  id: string;
+  payloadId: string;
+  payloadCreatedAt: string | null;
+  admissionRequirementId: string | null;
+  targetField: string;
+  status: ReviewItemDetailStatus;
+  createdAt: string;
+  reviewedAt: string | null;
+  actionEligibility: {
+    canApprove: boolean;
+    canReject: boolean;
+    approveBlockedReason: string | null;
+  };
+  evidence: {
+    sourceId: string | null;
+    institutionId: string | null;
+    programId: string | null;
+    sourceUrl: string | null;
+    sourceClass: FreshnessSourceClass | null;
+    capability: FreshnessCapability | null;
+    freshnessStatus: SourceFreshnessStatus | null;
+    latestReviewItemId: string | null;
+    normalizedFingerprint: string | null;
+    normalizedDecisionPayload: Array<{ key: string; value: string }>;
+    reproducedFields: string[];
+    limitations: string[];
+    nextAction: string | null;
+  };
+}
+
+export type ReviewItemDetailResult =
+  | {
+      status: 'found';
+      item: ReviewItemDetail;
+    }
+  | {
+      status: 'not_found';
+    };
+
 interface GetDataHealthReportOptions {
   timeoutMs?: number;
 }
@@ -290,6 +373,138 @@ export async function getDataHealthReport(
           : DATA_HEALTH_UNAVAILABLE_MESSAGE,
     };
   }
+}
+
+export async function getReviewItemDetail(reviewItemId: string): Promise<ReviewItemDetailResult> {
+  const db = getOpsDb();
+  const [reviewItem] = await db
+    .select({
+      id: reviewItems.id,
+      payloadId: reviewItems.payloadId,
+      admissionRequirementId: reviewItems.admissionRequirementId,
+      targetField: reviewItems.targetField,
+      proposedValue: reviewItems.proposedValue,
+      status: reviewItems.status,
+      createdAt: reviewItems.createdAt,
+      reviewedAt: reviewItems.reviewedAt,
+    })
+    .from(reviewItems)
+    .where(eq(reviewItems.id, reviewItemId))
+    .limit(1);
+
+  if (!reviewItem) {
+    return { status: 'not_found' };
+  }
+
+  const sourceId = sourceIdFromReviewItem(reviewItem);
+  const [payload, source, freshness] = await Promise.all([
+    db
+      .select({
+        createdAt: ingestionPayloads.createdAt,
+      })
+      .from(ingestionPayloads)
+      .where(eq(ingestionPayloads.id, reviewItem.payloadId))
+      .limit(1)
+      .then((rows) => rows[0] ?? null),
+    sourceId
+      ? db
+          .select({
+            id: ingestionSources.id,
+            institutionId: ingestionSources.institutionId,
+            programId: ingestionSources.programId,
+            sourceUrl: ingestionSources.sourceUrl,
+          })
+          .from(ingestionSources)
+          .where(eq(ingestionSources.id, sourceId))
+          .limit(1)
+          .then((rows) => rows[0] ?? null)
+      : Promise.resolve(null),
+    sourceId
+      ? db
+          .select({
+            sourceId: sourceFreshnessStates.sourceId,
+            sourceClass: sourceFreshnessStates.sourceClass,
+            capability: sourceFreshnessStates.capability,
+            status: sourceFreshnessStates.status,
+            lastCheckedAt: sourceFreshnessStates.lastCheckedAt,
+            lastSuccessfulCheckAt: sourceFreshnessStates.lastSuccessfulCheckAt,
+            lastChangedAt: sourceFreshnessStates.lastChangedAt,
+            latestReviewItemId: sourceFreshnessStates.latestReviewItemId,
+            nextAction: sourceFreshnessStates.nextAction,
+          })
+          .from(sourceFreshnessStates)
+          .where(eq(sourceFreshnessStates.sourceId, sourceId))
+          .limit(1)
+          .then((rows) => rows[0] ?? null)
+      : Promise.resolve(null),
+  ]);
+
+  return {
+    status: 'found',
+    item: buildReviewItemDetail({
+      reviewItem,
+      payload: payload ?? null,
+      source,
+      freshness,
+    }),
+  };
+}
+
+export function buildReviewItemDetail({
+  freshness,
+  payload,
+  reviewItem,
+  source,
+}: {
+  reviewItem: ReviewItemDetailRow;
+  payload: ReviewItemDetailPayloadRow | null;
+  source: ReviewItemDetailSourceRow | null;
+  freshness: ReviewItemDetailFreshnessRow | null;
+}): ReviewItemDetail {
+  const parsed =
+    reviewItem.targetField === 'sourceFreshness'
+      ? parseSourceFreshnessProposedValue(reviewItem.proposedValue)
+      : null;
+  const sourceFreshnessValue = parsed?.ok ? parsed.value : null;
+  const isPending = reviewItem.status === 'pending';
+  const canApprove =
+    isPending &&
+    reviewItem.targetField === 'sourceFreshness' &&
+    sourceFreshnessValue !== null &&
+    freshness?.latestReviewItemId === reviewItem.id;
+
+  return {
+    id: reviewItem.id,
+    payloadId: reviewItem.payloadId,
+    payloadCreatedAt: payload?.createdAt.toISOString() ?? null,
+    admissionRequirementId: reviewItem.admissionRequirementId,
+    targetField: reviewItem.targetField,
+    status: reviewItem.status,
+    createdAt: reviewItem.createdAt.toISOString(),
+    reviewedAt: reviewItem.reviewedAt?.toISOString() ?? null,
+    actionEligibility: {
+      canApprove,
+      canReject: isPending,
+      approveBlockedReason: approveBlockedReason(reviewItem, sourceFreshnessValue, freshness),
+    },
+    evidence: {
+      sourceId: sourceFreshnessValue?.sourceId ?? freshness?.sourceId ?? source?.id ?? null,
+      institutionId: source?.institutionId ?? null,
+      programId: source?.programId ?? null,
+      sourceUrl: source?.sourceUrl ?? null,
+      sourceClass: freshness?.sourceClass ?? null,
+      capability: freshness?.capability ?? null,
+      freshnessStatus: freshness?.status ?? null,
+      latestReviewItemId: freshness?.latestReviewItemId ?? null,
+      normalizedFingerprint: sourceFreshnessValue?.normalizedFingerprint ?? null,
+      normalizedDecisionPayload: previewRecord(
+        sourceFreshnessValue?.normalizedDecisionPayload ?? {},
+      ),
+      reproducedFields: sourceFreshnessValue?.reproducedFields ?? [],
+      limitations: sourceFreshnessValue?.limitations ?? [],
+      nextAction: sourceFreshnessValue?.nextAction ?? freshness?.nextAction ?? null,
+    },
+  };
 }
 
 async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
@@ -720,6 +935,64 @@ function classifySourceFreshnessStatus(
   }
 
   return 'fresh';
+}
+
+function sourceIdFromReviewItem(reviewItem: ReviewItemDetailRow): string | null {
+  if (reviewItem.targetField !== 'sourceFreshness') {
+    return null;
+  }
+
+  const parsed = parseSourceFreshnessProposedValue(reviewItem.proposedValue);
+  return parsed.ok ? parsed.value.sourceId : null;
+}
+
+function approveBlockedReason(
+  reviewItem: ReviewItemDetailRow,
+  sourceFreshnessValue: SourceFreshnessProposedValue | null,
+  freshness: ReviewItemDetailFreshnessRow | null,
+): string | null {
+  if (reviewItem.status !== 'pending') {
+    return 'Review item has already been resolved.';
+  }
+
+  if (reviewItem.targetField !== 'sourceFreshness') {
+    return `Approval is not supported for target field "${reviewItem.targetField}".`;
+  }
+
+  if (!sourceFreshnessValue) {
+    return 'Source freshness proposed value is invalid.';
+  }
+
+  if (freshness?.latestReviewItemId !== reviewItem.id) {
+    return 'Source freshness state no longer points at this review item.';
+  }
+
+  return null;
+}
+
+function previewRecord(record: Record<string, unknown>): Array<{ key: string; value: string }> {
+  return Object.entries(record)
+    .slice(0, 8)
+    .map(([key, value]) => ({
+      key,
+      value: previewValue(value),
+    }));
+}
+
+function previewValue(value: unknown): string {
+  if (typeof value === 'string') {
+    return value.slice(0, 140);
+  }
+
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+
+  if (value === null || value === undefined) {
+    return 'null';
+  }
+
+  return JSON.stringify(value).slice(0, 140);
 }
 
 function compareSourceFreshnessRows(

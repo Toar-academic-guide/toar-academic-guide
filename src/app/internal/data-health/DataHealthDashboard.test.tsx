@@ -192,4 +192,14 @@ describe('DataHealthDashboard', () => {
     expect(screen.queryByText(/payload json/i)).toBeNull();
     expect(screen.queryByText(/normalizedDecisionPayload/i)).toBeNull();
   });
+
+  it('links the oldest pending review item without rendering mutation controls', () => {
+    render(<DataHealthDashboard report={reportWithRisks()} adminEmail="operator@example.com" />);
+
+    expect(screen.getByRole('link', { name: 'review-old' }).getAttribute('href')).toBe(
+      '/internal/reviews/review-old',
+    );
+    expect(screen.queryByRole('button', { name: /approve/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /reject/i })).toBeNull();
+  });
 });

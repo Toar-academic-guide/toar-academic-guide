@@ -10,7 +10,12 @@ vi.mock('@/db/opsClient', () => ({
 
 vi.mock('server-only', () => ({}));
 
-import { getDataHealthReport, summarizeDataHealthRows, type DataHealthRows } from './queries';
+import {
+  buildReviewItemDetail,
+  getDataHealthReport,
+  summarizeDataHealthRows,
+  type DataHealthRows,
+} from './queries';
 
 const now = new Date('2026-06-24T18:00:00.000Z');
 
@@ -419,6 +424,178 @@ describe('summarizeDataHealthRows', () => {
     expect(report.ingestion.totalJobs).toBe(0);
     expect(report.reviewQueue.pendingCount).toBe(0);
   });
+});
+
+describe('buildReviewItemDetail', () => {
+  const reviewCreatedAt = new Date('2026-06-24T11:00:00.000Z');
+
+  it('returns bounded evidence and action eligibility for a pending source freshness item', () => {
+    const detail = buildReviewItemDetail({
+      reviewItem: reviewItemRow({
+        proposedValue: sourceFreshnessProposedValue({
+          normalizedDecisionPayload: Object.fromEntries(
+            Array.from({ length: 10 }, (_, index) => [`field-${index}`, `value-${index}`]),
+          ),
+        }),
+      }),
+      payload: {
+        createdAt: new Date('2026-06-24T10:59:00.000Z'),
+      },
+      source: sourceDetailRow(),
+      freshness: freshnessDetailRow(),
+    });
+
+    expect(detail).toMatchObject({
+      id: 'review-source-1',
+      payloadId: 'payload-source-1',
+      payloadCreatedAt: '2026-06-24T10:59:00.000Z',
+      targetField: 'sourceFreshness',
+      status: 'pending',
+      actionEligibility: {
+        canApprove: true,
+        canReject: true,
+        approveBlockedReason: null,
+      },
+      evidence: {
+        sourceId: 'tau-live',
+        institutionId: 'tau',
+        programId: 'tau_cs',
+        sourceUrl: 'https://go.tau.ac.il/graphql',
+        sourceClass: 'api_static_json',
+        capability: 'decision_capable',
+        freshnessStatus: 'changed_needs_review',
+        latestReviewItemId: 'review-source-1',
+        normalizedFingerprint: 'fingerprint-v2',
+        reproducedFields: ['sekhem'],
+        limitations: ['does not cover manual exceptions'],
+        nextAction: 'Review changed threshold before publication',
+      },
+    });
+    expect(detail.evidence.normalizedDecisionPayload).toHaveLength(8);
+    expect(JSON.stringify(detail)).not.toContain('rawHtml');
+  });
+
+  it('keeps historical resolved items visible but ineligible for action', () => {
+    const detail = buildReviewItemDetail({
+      reviewItem: reviewItemRow({
+        status: 'approved',
+        reviewedAt: new Date('2026-06-24T12:00:00.000Z'),
+      }),
+      payload: null,
+      source: sourceDetailRow(),
+      freshness: freshnessDetailRow({ latestReviewItemId: null, status: 'fresh' }),
+    });
+
+    expect(detail.status).toBe('approved');
+    expect(detail.reviewedAt).toBe('2026-06-24T12:00:00.000Z');
+    expect(detail.actionEligibility).toEqual({
+      canApprove: false,
+      canReject: false,
+      approveBlockedReason: 'Review item has already been resolved.',
+    });
+  });
+
+  it('blocks approval when the current source state no longer points at the review item', () => {
+    const detail = buildReviewItemDetail({
+      reviewItem: reviewItemRow(),
+      payload: null,
+      source: sourceDetailRow(),
+      freshness: freshnessDetailRow({ latestReviewItemId: 'newer-review-item' }),
+    });
+
+    expect(detail.actionEligibility).toEqual({
+      canApprove: false,
+      canReject: true,
+      approveBlockedReason: 'Source freshness state no longer points at this review item.',
+    });
+  });
+
+  it('allows rejection but not approval for unsupported target fields', () => {
+    const detail = buildReviewItemDetail({
+      reviewItem: reviewItemRow({
+        targetField: 'programDescription',
+        proposedValue: { programDescription: 'Updated description' },
+      }),
+      payload: null,
+      source: null,
+      freshness: null,
+    });
+
+    expect(detail.actionEligibility).toEqual({
+      canApprove: false,
+      canReject: true,
+      approveBlockedReason: 'Approval is not supported for target field "programDescription".',
+    });
+    expect(detail.evidence.normalizedDecisionPayload).toEqual([]);
+  });
+
+  function reviewItemRow(
+    overrides: Partial<Parameters<typeof buildReviewItemDetail>[0]['reviewItem']> = {},
+  ): Parameters<typeof buildReviewItemDetail>[0]['reviewItem'] {
+    return {
+      id: 'review-source-1',
+      payloadId: 'payload-source-1',
+      admissionRequirementId: null,
+      targetField: 'sourceFreshness',
+      proposedValue: sourceFreshnessProposedValue(),
+      status: 'pending',
+      createdAt: reviewCreatedAt,
+      reviewedAt: null,
+      ...overrides,
+    };
+  }
+
+  function sourceFreshnessProposedValue(
+    overrides: Partial<{
+      sourceId: string;
+      normalizedFingerprint: string;
+      normalizedDecisionPayload: Record<string, unknown>;
+      reproducedFields: string[];
+      limitations: string[];
+      nextAction: string;
+      rawHtml: string;
+    }> = {},
+  ): Record<string, unknown> {
+    return {
+      sourceId: 'tau-live',
+      normalizedFingerprint: 'fingerprint-v2',
+      normalizedDecisionPayload: { sekhem: 715 },
+      reproducedFields: ['sekhem'],
+      limitations: ['does not cover manual exceptions'],
+      nextAction: 'Review changed threshold before publication',
+      rawHtml: '<html>large scraped body must not leak</html>',
+      ...overrides,
+    };
+  }
+
+  function sourceDetailRow(
+    overrides: Partial<Parameters<typeof buildReviewItemDetail>[0]['source']> = {},
+  ): NonNullable<Parameters<typeof buildReviewItemDetail>[0]['source']> {
+    return {
+      id: 'tau-live',
+      institutionId: 'tau',
+      programId: 'tau_cs',
+      sourceUrl: 'https://go.tau.ac.il/graphql',
+      ...overrides,
+    };
+  }
+
+  function freshnessDetailRow(
+    overrides: Partial<Parameters<typeof buildReviewItemDetail>[0]['freshness']> = {},
+  ): NonNullable<Parameters<typeof buildReviewItemDetail>[0]['freshness']> {
+    return {
+      sourceId: 'tau-live',
+      sourceClass: 'api_static_json',
+      capability: 'decision_capable',
+      status: 'changed_needs_review',
+      lastCheckedAt: new Date('2026-06-24T10:58:00.000Z'),
+      lastSuccessfulCheckAt: new Date('2026-06-24T10:58:00.000Z'),
+      lastChangedAt: new Date('2026-06-24T10:58:00.000Z'),
+      latestReviewItemId: 'review-source-1',
+      nextAction: 'Review changed threshold before publication',
+      ...overrides,
+    };
+  }
 });
 
 function sourceRow(id: string): DataHealthRows['ingestionSources'][number] {

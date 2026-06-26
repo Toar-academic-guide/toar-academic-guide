@@ -54,7 +54,7 @@ Supabase Auth also needs the app callback URLs allow-listed under redirect URL c
 
 Keep this distinct from the hosted Supabase callback URI that is configured in Google Cloud. Google redirects back to Supabase first, and Supabase then redirects into the app callback route.
 
-`/internal/data-health` is an internal, read-only operator dashboard. It requires Supabase sign-in plus `INTERNAL_ADMIN_EMAILS`, and it reads private operational tables through `OPS_DATABASE_URL` instead of the normal app `DATABASE_URL`. Use a dedicated read-only operational role such as `ops_readonly`; do not use the Supabase `postgres` role for this dashboard in production. See [docs/internal-data-health-dashboard.md](docs/internal-data-health-dashboard.md).
+`/internal/data-health` is an internal, read-only operator dashboard. It requires Supabase sign-in plus `INTERNAL_ADMIN_EMAILS`, and it reads private operational tables through `OPS_DATABASE_URL` instead of the normal app `DATABASE_URL`. Use a dedicated read-only operational role such as `ops_readonly`; do not use the Supabase `postgres` role for this dashboard in production. The dashboard links pending review work to `/internal/reviews/[reviewItemId]`, where allowlisted admins can inspect bounded evidence and approve or reject supported review items. See [docs/internal-data-health-dashboard.md](docs/internal-data-health-dashboard.md).
 
 Admissions source freshness can be run manually with:
 
@@ -101,13 +101,14 @@ The current Next.js runtime still uses a direct `postgres.js` connection for ser
 - DB code lives under `src/db/`
 - server catalogue queries and serializers live under `src/server/catalogue/`
 - internal data-health reporting lives under `src/server/data-health/` and `src/app/internal/data-health/`
+- internal review decisions live under `src/app/internal/reviews/` and publish through `src/server/ingestion/reviewResolution.ts`
 - read-only catalogue routes live under `src/app/api/catalog/`
 - client access is isolated behind `src/lib/catalogueClient.ts`
 - catalogue responses include lightweight timing, size, and item-count measurement in `meta`
 - database-backed catalogue snapshot loads use a short per-instance TTL cache to avoid rebuilding the same multi-table snapshot on every request
 - the snapshot cache is best-effort and server-instance-local; it is not a distributed freshness guarantee
 
-See [docs/backend-data-model.md](/Users/amitmalichi/Desktop/toar-academic-guide/docs/backend-data-model.md:1) for the schema shape and review-flow model.
+See [docs/backend-data-model.md](docs/backend-data-model.md) for the schema shape and review-flow model.
 
 ## Notes
 

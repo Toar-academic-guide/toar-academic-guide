@@ -25,6 +25,11 @@ Admissions source freshness is operational evidence, not canonical admissions tr
 - Score-only calculator output can become freshness evidence, but it must not be treated as accepted/rejected admissions proof without a reviewed threshold source.
 - Browser-required sources are recorded as `blocked` with a reason and next action for a later browser automation lane.
 
+The first review publication path supports only `target_field = 'sourceFreshness'`.
+The operator page at `/internal/reviews/[reviewItemId]` can approve that target by clearing `source_freshness_states.latest_review_item_id` and moving the freshness state back to `fresh` when the row still points at the reviewed item.
+It can also reject pending review items without changing source freshness state or canonical catalogue data.
+Other target fields remain pending publication work: they may be inspected and rejected, but approval must fail closed until a dedicated canonical-table translator exists.
+
 ## User persistence
 
 Authenticated user persistence now uses Supabase Auth identities as the ownership boundary:
@@ -80,6 +85,8 @@ This posture secures the exposed Supabase Data API surface. The current app runt
 
 `/internal/data-health` reads across both public-read catalogue tables and private operational tables. That route must use `OPS_DATABASE_URL`, a separate read-only operational connection, rather than widening the normal `DATABASE_URL` app runtime role. The internal route is guarded by Supabase Auth plus `INTERNAL_ADMIN_EMAILS`; unauthorized requests fail before operational queries run.
 
+`/internal/reviews/[reviewItemId]` uses the same internal admin guard for detail reads and decision actions. Its mutation path is separate from the dashboard: review resolution uses the normal server database write path and keeps `OPS_DATABASE_URL` read-only.
+
 ## Seed strategy
 
 `src/db/seeds/catalogueSeed.ts` converts the current static catalogue into stable seed rows.
@@ -105,6 +112,7 @@ Use different connection shapes for different execution surfaces:
 - Local development: direct local Postgres URL (`localhost:5432` in the checked-in examples)
 - Vercel preview/production runtime: pooled connection string for request-driven app traffic
 - Internal data-health dashboard: pooled read-only operational URL via `OPS_DATABASE_URL`
+- Internal review resolution actions: guarded server write path via the normal runtime database credential
 - Admissions source freshness GitHub Action: write-capable operational URL via `DATABASE_URL`
 - CI test/build job: no DB connection required
 - CI verification job (`npm run db:seed:verify`): operational DB URL only when that job is intentionally enabled
