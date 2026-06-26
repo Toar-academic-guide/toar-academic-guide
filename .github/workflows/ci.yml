@@ -48,11 +48,9 @@ jobs:
 
       - name: Security audit (high + critical)
         run: npm audit --audit-level=high
-        continue-on-error: true
 
       - name: Drizzle migration consistency
         run: npm run db:migrate:check
-        continue-on-error: true
 
   # ---------------------------------------------------------------------------
   # Job 2: Unit tests with coverage
