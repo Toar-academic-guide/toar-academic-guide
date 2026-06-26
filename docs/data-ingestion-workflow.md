@@ -79,3 +79,49 @@ For the first scraping implementations, keep the workflow narrow:
 - one publish pass that only applies approved review items
 
 That keeps the first version inspectable before adding bulk automation or admin tooling.
+
+## Admissions Source Freshness
+
+Admissions source freshness is the weekly machine check for official admissions sources. It records whether known institution sources are fresh, changed, failed, stale, blocked, or never checked without publishing machine output directly into canonical catalogue tables.
+
+The scheduled workflow is `.github/workflows/admissions-freshness.yml`.
+
+- Schedule: Sunday at `03:00 UTC`, which lands on Sunday morning in Israel.
+- Manual run: GitHub Actions `Admissions Source Freshness` workflow dispatch.
+- Default target set: Haifa and TAU exact live adapters plus the capability matrix for static-candidate, score-only, browser-blocked, and open-admission targets.
+- Optional manual target: pass a source target id such as `haifa-cs-live`.
+- Dry run: pass `--dry-run` or use the workflow input to execute source checks without persistence.
+
+Local manual command:
+
+```bash
+npm run admissions:freshness -- --dry-run
+npm run admissions:freshness -- --target tau-digital-sciences-live
+```
+
+## Failure Boundary
+
+The workflow distinguishes job-level setup failure from source-level freshness outcomes.
+
+- Missing `DATABASE_URL` for a persisted run is a job-level configuration error and fails before source checks begin.
+- Official source fetch, parse, blocked, or changed outcomes are source-level results. They are persisted and the batch continues.
+- Browser-required sources are recorded as `blocked`; they should move to a separate browser automation lane rather than failing the GitHub Action lane.
+
+## Review Boundary
+
+Machine checks do not overwrite canonical admissions data.
+
+- Changed decision-capable normalized fingerprints create an ingestion payload and a pending review item.
+- Existing published catalogue rows remain active while review is pending.
+- Duplicate pending review work is suppressed when the same unresolved source fingerprint is seen again.
+- Score-only changes are tracked as source freshness evidence but do not create acceptance/rejection review work by themselves.
+
+## Adding More Institutions
+
+Adding another institution should follow the same path:
+
+1. Add a target to `src/server/ingestion/admissionsSourceRegistry.ts` with capability, source class, limitation, and next action.
+2. Add an exact adapter only when the official source can reproduce decision-bearing fields, not just a score.
+3. Add fixture-backed tests for the adapter and registry behavior.
+4. Let the scheduled runner persist current state and history through `source_freshness_states` and `source_freshness_checks`.
+5. Use the dashboard to monitor blocked or stale sources before expanding public decision logic.

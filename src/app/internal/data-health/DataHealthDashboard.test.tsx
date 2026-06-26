@@ -116,6 +116,48 @@ function reportWithRisks(): DataHealthReadyReport {
       },
       recentReviewedItems: [],
     },
+    freshness: {
+      staleAfterDays: 8,
+      totalsByStatus: {
+        blocked: 1,
+        changed_needs_review: 1,
+        failed: 1,
+        fresh: 2,
+        stale: 1,
+      },
+      rows: [
+        {
+          sourceId: 'tau-live',
+          institutionId: 'tau',
+          programId: 'tau_cs',
+          sourceUrl: 'https://go.tau.ac.il/graphql',
+          status: 'changed_needs_review',
+          sourceClass: 'api_static_json',
+          capability: 'decision_capable',
+          lastCheckedAt: '2026-06-24T17:00:00.000Z',
+          lastSuccessfulCheckAt: '2026-06-24T17:00:00.000Z',
+          lastChangedAt: '2026-06-24T17:00:00.000Z',
+          reason: null,
+          latestReviewItemId: 'review-source-1',
+          nextAction: 'Review changed threshold before publication',
+        },
+        {
+          sourceId: 'biu-browser-required',
+          institutionId: 'biu',
+          programId: null,
+          sourceUrl: 'https://in.biu.ac.il/Pages/Psychometric.aspx',
+          status: 'blocked',
+          sourceClass: 'browser_required',
+          capability: 'blocked',
+          lastCheckedAt: '2026-06-24T17:00:00.000Z',
+          lastSuccessfulCheckAt: null,
+          lastChangedAt: null,
+          reason: 'Radware/browser session required',
+          latestReviewItemId: null,
+          nextAction: 'Move to Hermes/VPS browser automation lane',
+        },
+      ],
+    },
   };
 }
 
@@ -127,6 +169,7 @@ describe('DataHealthDashboard', () => {
     expect(screen.getByRole('heading', { name: /catalogue readiness/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /admissions decision readiness/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /source coverage/i })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /source freshness/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /ingestion pipeline/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /review queue/i })).toBeTruthy();
   });
@@ -147,5 +190,6 @@ describe('DataHealthDashboard', () => {
 
     expect(screen.queryByText(/proposedValue/i)).toBeNull();
     expect(screen.queryByText(/payload json/i)).toBeNull();
+    expect(screen.queryByText(/normalizedDecisionPayload/i)).toBeNull();
   });
 });

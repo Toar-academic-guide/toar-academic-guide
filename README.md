@@ -24,6 +24,7 @@ Connection posture depends on where the code runs:
 - Local development uses a direct Postgres URL by default. The checked-in examples point at `localhost:5432`, and local Drizzle workflows are long-lived enough that they do not need a server-side pooler.
 - The Vercel app runtime should use a Supabase transaction-pooling connection string rather than a direct database host. The catalogue routes are `force-dynamic`, the authenticated user routes run per request, and the app uses `postgres(..., { max: 1, prepare: false })`, which is compatible with transaction pooling for transient serverless traffic.
 - The GitHub Actions `test-build-and-dry-run` job does not need a database at all. The optional `db-seed-verify` job is the only CI path that reads `DATABASE_URL`; treat that secret as an operational verification connection, not as app-runtime traffic.
+- The scheduled admissions source freshness workflow also reads `DATABASE_URL` because it writes operational freshness state and review evidence. Missing credentials fail that workflow before live checks begin.
 
 `prepare: false` is deliberate. Supabase documents transaction-mode poolers as the right fit for serverless or edge traffic and notes that transaction mode does not support prepared statements, while `postgres.js` documents `prepare: false` as the compatibility switch for transaction-pooled connections. The app keeps `max: 1` because the shared singleton client only needs a minimal app-side pool on top of a server-side pooler for request-scoped runtime traffic.
 
@@ -54,6 +55,15 @@ Supabase Auth also needs the app callback URLs allow-listed under redirect URL c
 Keep this distinct from the hosted Supabase callback URI that is configured in Google Cloud. Google redirects back to Supabase first, and Supabase then redirects into the app callback route.
 
 `/internal/data-health` is an internal, read-only operator dashboard. It requires Supabase sign-in plus `INTERNAL_ADMIN_EMAILS`, and it reads private operational tables through `OPS_DATABASE_URL` instead of the normal app `DATABASE_URL`. Use a dedicated read-only operational role such as `ops_readonly`; do not use the Supabase `postgres` role for this dashboard in production. See [docs/internal-data-health-dashboard.md](docs/internal-data-health-dashboard.md).
+
+Admissions source freshness can be run manually with:
+
+```bash
+npm run admissions:freshness -- --dry-run
+npm run admissions:freshness -- --target haifa-cs-live
+```
+
+The scheduled GitHub Action runs on Sunday morning Israel time and records freshness evidence without publishing changed machine output directly into canonical catalogue tables. See [docs/data-ingestion-workflow.md](docs/data-ingestion-workflow.md).
 
 ## Database workflow
 

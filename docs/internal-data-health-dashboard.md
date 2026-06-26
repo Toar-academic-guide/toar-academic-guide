@@ -1,6 +1,6 @@
 # Internal Data Health Dashboard
 
-`/internal/data-health` is a read-only operator dashboard for catalogue readiness, source coverage, ingestion pipeline health, and review queue backlog.
+`/internal/data-health` is a read-only operator dashboard for catalogue readiness, source coverage, source freshness, ingestion pipeline health, and review queue backlog.
 
 ## Access
 
@@ -40,7 +40,9 @@ grant select on table
   public.university_calculator_configs,
   public.ingestion_sources,
   public.ingestion_jobs,
-  public.review_items
+  public.review_items,
+  public.source_freshness_states,
+  public.source_freshness_checks
 to ops_readonly;
 ```
 
@@ -56,10 +58,23 @@ Adapt the exact role creation and password rotation workflow to the target Supab
 
 If `OPS_DATABASE_URL` is missing, allowlisted admins see a controlled setup state instead of raw database errors.
 
+## Source freshness statuses
+
+The source freshness section reads persisted machine-check state and derives time-based status at dashboard read time:
+
+- `fresh`: the latest successful check is inside the freshness SLA window.
+- `changed_needs_review`: normalized decision-bearing output changed and needs human review before canonical admissions data changes.
+- `failed`: the checker could not fetch or parse the source; this is source-level state, not a dashboard failure.
+- `stale`: no successful check has happened inside the SLA plus grace window.
+- `blocked`: the source is known to require a browser, cookies, anti-bot state, or another lane unavailable to the GitHub Action checker.
+- `never_checked`: an ingestion source exists but has no persisted freshness state yet.
+
+The dashboard intentionally displays capped source rows and review item ids, not raw normalized payloads or proposed review values.
+
 ## Current limitations
 
 - The dashboard is read-only.
 - It does not approve or reject review items.
 - It does not trigger scraper jobs.
 - It does not display raw ingestion payloads or full proposed review values.
-- It reports data health and coverage, not true freshness service-level objectives. Source-specific freshness timestamps should be added before the dashboard claims exact freshness.
+- Browser-required sources remain blocked until a separate Hermes/VPS browser lane exists.

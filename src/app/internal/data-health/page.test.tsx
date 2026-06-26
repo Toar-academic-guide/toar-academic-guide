@@ -105,6 +105,11 @@ describe('/internal/data-health page', () => {
         oldestPendingItem: null,
         recentReviewedItems: [],
       },
+      freshness: {
+        staleAfterDays: 8,
+        totalsByStatus: {},
+        rows: [],
+      },
     });
 
     render(await DataHealthPage());

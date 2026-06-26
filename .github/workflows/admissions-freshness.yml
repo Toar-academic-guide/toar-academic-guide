@@ -1,0 +1,57 @@
+name: Admissions Source Freshness
+
+on:
+  schedule:
+    - cron: '0 3 * * 0'
+  workflow_dispatch:
+    inputs:
+      target:
+        description: Optional source target id to check
+        required: false
+        type: string
+      dry_run:
+        description: Run checks without persisting database writes
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: admissions-source-freshness-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  admissions-source-freshness:
+    name: Check and persist admissions source freshness
+    runs-on: ubuntu-latest
+    env:
+      CI: true
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run admissions source freshness
+        shell: bash
+        run: |
+          args=()
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.target }}" ]; then
+            args+=(--target "${{ inputs.target }}")
+          fi
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then
+            args+=(--dry-run)
+          fi
+
+          npm run admissions:freshness -- "${args[@]}"

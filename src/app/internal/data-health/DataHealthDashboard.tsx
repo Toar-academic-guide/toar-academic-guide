@@ -7,6 +7,11 @@ interface DataHealthDashboardProps {
 
 export default function DataHealthDashboard({ adminEmail, report }: DataHealthDashboardProps) {
   const criticalItems = buildCriticalItems(report);
+  const freshnessIssueCount =
+    (report.freshness.totalsByStatus.changed_needs_review ?? 0) +
+    (report.freshness.totalsByStatus.failed ?? 0) +
+    (report.freshness.totalsByStatus.stale ?? 0) +
+    (report.freshness.totalsByStatus.blocked ?? 0);
 
   return (
     <main dir="ltr" className="min-h-screen bg-[#f5f0e8] px-5 py-6 text-slate-950 sm:px-8 lg:px-12">
@@ -32,7 +37,7 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
           </div>
         </header>
 
-        <section className="grid gap-4 md:grid-cols-4">
+        <section className="grid gap-4 md:grid-cols-5">
           <MetricCard
             label="Readiness"
             value={report.readiness.isReady ? 'Ready' : 'Needs work'}
@@ -47,6 +52,11 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
             label="Failed jobs"
             value={String(report.ingestion.jobsByStatus.failed ?? 0)}
             tone={(report.ingestion.jobsByStatus.failed ?? 0) === 0 ? 'good' : 'bad'}
+          />
+          <MetricCard
+            label="Freshness issues"
+            value={String(freshnessIssueCount)}
+            tone={freshnessIssueCount === 0 ? 'good' : 'warn'}
           />
           <MetricCard
             label="Pending reviews"
@@ -147,6 +157,34 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
                 detail: `${row.programId} at ${row.institutionId}`,
               }))}
             />
+          </Panel>
+        </section>
+
+        <section>
+          <Panel title="Source freshness">
+            <DefinitionGrid
+              items={[
+                ['Fresh', report.freshness.totalsByStatus.fresh ?? 0],
+                ['Changed', report.freshness.totalsByStatus.changed_needs_review ?? 0],
+                ['Failed', report.freshness.totalsByStatus.failed ?? 0],
+                ['Stale', report.freshness.totalsByStatus.stale ?? 0],
+                ['Blocked', report.freshness.totalsByStatus.blocked ?? 0],
+                ['Never checked', report.freshness.totalsByStatus.never_checked ?? 0],
+              ]}
+            />
+            <h3 className="mt-6 text-sm font-black uppercase tracking-[0.2em] text-slate-500">
+              Attention rows
+            </h3>
+            <CompactRows
+              emptyLabel="No source freshness rows have been registered yet."
+              rows={report.freshness.rows.map((row) => ({
+                id: row.sourceId,
+                detail: sourceFreshnessDetail(row),
+              }))}
+            />
+            <p className="mt-4 text-xs text-slate-500">
+              Stale means no successful check inside {report.freshness.staleAfterDays} days.
+            </p>
           </Panel>
         </section>
 
@@ -314,10 +352,28 @@ function buildCriticalItems(report: DataHealthReadyReport): string[] {
       (source) => `Weak admissions source ${source.sourceCandidateId}`,
     ),
     ...report.ingestion.recentFailures.map((job) => `Failed ingestion job ${job.id}`),
+    ...report.freshness.rows
+      .filter((row) => ['blocked', 'changed_needs_review', 'failed', 'stale'].includes(row.status))
+      .map((row) => `Source freshness ${row.status}: ${row.sourceId}`),
     ...(report.reviewQueue.oldestPendingItem
       ? [`Oldest pending review ${report.reviewQueue.oldestPendingItem.id}`]
       : []),
   ].slice(0, 8);
+}
+
+function sourceFreshnessDetail(row: DataHealthReadyReport['freshness']['rows'][number]): string {
+  const scope = [row.institutionId, row.programId].filter(Boolean).join(' / ') || 'global source';
+  const parts = [
+    `${scope} / ${row.status}`,
+    row.lastCheckedAt ? `checked ${formatDateTime(row.lastCheckedAt)}` : 'never checked',
+    row.lastSuccessfulCheckAt ? `last success ${formatDateTime(row.lastSuccessfulCheckAt)}` : null,
+    row.lastChangedAt ? `changed ${formatDateTime(row.lastChangedAt)}` : null,
+    row.latestReviewItemId ? `review ${row.latestReviewItemId}` : null,
+    row.reason,
+    row.nextAction ? `Next: ${row.nextAction}` : null,
+  ].filter(Boolean);
+
+  return parts.join(' | ');
 }
 
 function formatDateTime(value: string): string {

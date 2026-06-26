@@ -16,13 +16,15 @@
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate:check": "drizzle-kit check",
+    "admissions:freshness": "node scripts/admissions-source-freshness.mjs",
+    "db:migrate:check": "drizzle-kit check",
     "db:seed": "node scripts/seed-catalogue.mjs",
     "db:seed:dry-run": "node scripts/seed-catalogue.mjs --dry-run",
     "db:seed:verify": "node scripts/seed-catalogue.mjs --verify"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.0",
-    "@supabase/supabase-js": "^2.108.1",
+    "@supabase/supabase-js": "^2.108.2",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.21.0",
     "next": "16.2.6",
