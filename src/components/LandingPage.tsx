@@ -307,10 +307,10 @@ export default function LandingPage({
           </div>
 
           {/* Calculator card — left side in RTL */}
-          <div className="mt-12 flex flex-col self-stretch rounded-2xl border border-[#e5e7eb] bg-white p-8 shadow-sm sm:p-10">
-            <h2 className="mb-6 text-xl font-black text-slate-900">בדיקת סיכויי קבלה</h2>
+          <div className="mt-12 flex flex-col self-start rounded-2xl border border-[#e5e7eb] bg-white p-6 shadow-sm sm:p-8">
+            <h2 className="mb-4 text-xl font-black text-slate-900">בדיקת סיכויי קבלה</h2>
 
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-3">
               {/* Psychometric */}
               <div>
                 <label
@@ -392,20 +392,20 @@ export default function LandingPage({
               </div>
 
               {/* CTA */}
-              <NeoButton onClick={handleCalcSubmit} className="mt-2 w-full py-3.5 text-base">
+              <NeoButton onClick={handleCalcSubmit} className="mt-1 w-full py-3 text-base">
                 חשב סיכויים ←
               </NeoButton>
             </div>
 
             {/* Disclaimer */}
-            <div className="mt-5 border-t border-[#e5e7eb] pt-4">
-              <p className="text-xs leading-relaxed text-slate-400">
+            <div className="mt-4 border-t border-[#e5e7eb] pt-3">
+              <p className="text-base leading-relaxed text-slate-400">
                 מחשבון זה נועד לספק תמונה כללית. לצורך וודאות מלאה, יש להזין את ציוני הבגרות בכל
                 מקצוע{' '}
                 <button
                   type="button"
                   onClick={onGoToProfile}
-                  className="font-semibold text-[#4f46e5] underline decoration-[#a5b4fc] underline-offset-2 transition hover:text-[#3730a3]"
+                  className="cursor-pointer font-semibold text-[#4f46e5] underline decoration-[#a5b4fc] underline-offset-2 transition hover:text-[#3730a3]"
                 >
                   באזור האישי
                 </button>
