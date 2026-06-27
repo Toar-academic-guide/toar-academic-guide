@@ -1,11 +1,27 @@
 // @vitest-environment jsdom
 
-import { render, screen } from '@testing-library/react';
-import { vi } from 'vitest';
+import { render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import CalculatorResults from '@/components/CalculatorResults';
-import { getCalculatorInstitutionsFromCatalogue } from '@/lib/calculatorInstitutions';
-import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
+import type { AdmissionsEvaluationReport } from '@/types/admissionsEvaluation';
+import { getStaticCataloguePrograms } from '@/lib/catalogueStatic';
+
+const hoistedMocks = vi.hoisted(() => ({
+  fetchAdmissionsEvaluation: vi.fn(),
+}));
+
+vi.mock('@/lib/admissionsEvaluationClient', () => ({
+  AdmissionsEvaluationApiError: class AdmissionsEvaluationApiError extends Error {
+    code: string;
+
+    constructor(message: string, code = 'ADMISSIONS_EVALUATION_REQUEST_FAILED') {
+      super(message);
+      this.code = code;
+    }
+  },
+  fetchAdmissionsEvaluation: hoistedMocks.fetchAdmissionsEvaluation,
+}));
 
 vi.mock('posthog-js', () => ({
   default: {
@@ -14,72 +30,156 @@ vi.mock('posthog-js', () => ({
 }));
 
 const programs = getStaticCataloguePrograms();
-const calculatorInstitutions = getCalculatorInstitutionsFromCatalogue(
-  getStaticCatalogueInstitutions(),
-);
+
+function report(results: AdmissionsEvaluationReport['results']): AdmissionsEvaluationReport {
+  return {
+    generatedAt: '2026-06-27T00:00:00.000Z',
+    input: {
+      degreeId: 'tau_cs',
+      psychometric: 700,
+      bagrut: 110,
+    },
+    program: {
+      id: 'tau_cs',
+      name: 'מדעי המחשב',
+    },
+    results,
+  };
+}
 
 describe('CalculatorResults', () => {
-  it('renders admissions decision cards from the submitted scores and selected degree', () => {
-    const props = {
-      degreeId: 'tau_cs',
-      programs,
-      calculatorInstitutions,
-      onBack: () => {},
-    };
-
-    const { rerender } = render(<CalculatorResults {...props} psychometric={800} bagrut={120} />);
-
-    expect(screen.getByLabelText('אוניברסיטת תל אביב: התקבלת')).toBeTruthy();
-    expect(screen.getByText('הסטטוס שלך')).toBeTruthy();
-    expect(screen.getByText('למה קיבלת את התוצאה')).toBeTruthy();
-    expect(screen.getByText('מה חסר לך')).toBeTruthy();
-    expect(screen.getByText('הצעד הכי טוב הבא')).toBeTruthy();
-
-    rerender(<CalculatorResults {...props} psychometric={300} bagrut={70} />);
-
-    expect(screen.getByLabelText('אוניברסיטת תל אביב: רחוק מהמסלול')).toBeTruthy();
+  beforeEach(() => {
+    vi.restoreAllMocks();
+    hoistedMocks.fetchAdmissionsEvaluation.mockReset();
   });
 
-  it('renders Haifa and TAU matches for a database-backed computer science catalogue row', () => {
-    const csProgram = programs.find((program) => program.id === 'cs');
-    expect(csProgram).toBeTruthy();
+  it('renders an exact accepted result from the admissions evaluation route', async () => {
+    hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
+      report([
+        {
+          institution: {
+            id: 'tau',
+            name: 'אוניברסיטת תל אביב',
+            region: 'center',
+            domain: 'tau.ac.il',
+            universityId: 'tau',
+          },
+          linkedInstitutionId: 'tau',
+          capability: 'exact',
+          kind: 'exact',
+          decision: 'accepted',
+          confidence: 'high',
+          sourceLabel: 'אימות רשמי',
+          explanation: 'מקור רשמי של אוניברסיטת תל אביב סיפק ציון וסף קבלה מעודכנים למסלול זה.',
+          nextAction: 'בדקו את דף ההרשמה הרשמי והשלימו כל דרישה ידנית נוספת.',
+          score: 712,
+          scoreLabel: 'ציון התאמה',
+          threshold: 700,
+        },
+      ]),
+    );
 
     render(
       <CalculatorResults
-        degreeId="cs"
-        programs={[
-          {
-            ...csProgram!,
-            institutionDetails: [
-              {
-                institutionName: 'אוניברסיטת תל אביב',
-                durationYears: null,
-                estimatedStudentsPerYear: '',
-                quantitativeMinRequirement: null,
-                englishMinRequirement: null,
-                specificAdmissionNotes: [],
-                officialCalculatorUrl: '',
-              },
-              {
-                institutionName: 'אוניברסיטת חיפה',
-                durationYears: null,
-                estimatedStudentsPerYear: '',
-                quantitativeMinRequirement: null,
-                englishMinRequirement: null,
-                specificAdmissionNotes: [],
-                officialCalculatorUrl: '',
-              },
-            ],
-          },
-        ]}
-        calculatorInstitutions={calculatorInstitutions}
-        psychometric={750}
+        degreeId="tau_cs"
+        programs={programs}
+        psychometric={700}
         bagrut={110}
         onBack={() => {}}
       />,
     );
 
-    expect(screen.getByLabelText('אוניברסיטת תל אביב: התקבלת')).toBeTruthy();
-    expect(screen.getByLabelText('אוניברסיטת חיפה: התקבלת')).toBeTruthy();
+    expect(await screen.findByLabelText('אוניברסיטת תל אביב: מתקבל/ת')).toBeTruthy();
+    expect(screen.getByText('אימות רשמי')).toBeTruthy();
+    expect(screen.getByText(/ציון התאמה 712 · סף 700/)).toBeTruthy();
+  });
+
+  it('renders estimated and needs-input states without pretending they are official decisions', async () => {
+    hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
+      report([
+        {
+          institution: {
+            id: 'technion',
+            name: 'הטכניון – מכון טכנולוגי לישראל',
+            region: 'north',
+            domain: 'technion.ac.il',
+            universityId: 'technion',
+          },
+          linkedInstitutionId: 'technion',
+          capability: 'estimated',
+          kind: 'estimated',
+          decision: 'below',
+          confidence: 'medium',
+          sourceLabel: 'הערכה מבוססת סכם',
+          explanation:
+            'התוצאה מבוססת על נוסחת הסכם והסף שנבדקו בקטלוג, לא על תשובת מחשבון רשמי חיה.',
+          nextAction: 'שמרו את המסלול והשוו למוסדות אחרים או בדקו את המחשבון הרשמי.',
+          score: 88.2,
+          scoreLabel: 'סכם משוער',
+          threshold: 90,
+          deltaNeeded: {
+            psychometric: 12,
+            bagrut: 1,
+          },
+        },
+        {
+          institution: {
+            id: 'haifa',
+            name: 'אוניברסיטת חיפה',
+            region: 'north',
+            domain: 'haifa.ac.il',
+            universityId: 'haifa',
+          },
+          linkedInstitutionId: 'haifa',
+          capability: 'needs_input',
+          kind: 'needs_input',
+          decision: 'unknown',
+          confidence: 'low',
+          sourceLabel: 'נדרשים נתונים נוספים',
+          explanation: 'כדי לחשב מסלול זה דרך המקור הרשמי צריך גם תתי-ציונים בפסיכומטרי.',
+          nextAction: 'השלימו ציוני כמותי, מילולי ואנגלית כדי לקבל אימות רשמי.',
+          requiredInputs: ['psychometric_math', 'psychometric_verbal', 'psychometric_english'],
+        },
+      ]),
+    );
+
+    render(
+      <CalculatorResults
+        degreeId="tau_cs"
+        programs={programs}
+        psychometric={700}
+        bagrut={110}
+        onBack={() => {}}
+      />,
+    );
+
+    expect(
+      await screen.findByLabelText('הטכניון – מכון טכנולוגי לישראל: הערכה מתחת לסף'),
+    ).toBeTruthy();
+    expect(screen.getByLabelText('אוניברסיטת חיפה: נדרשים נתונים')).toBeTruthy();
+    expect(screen.getByText('נדרשים נתונים נוספים')).toBeTruthy();
+    expect(
+      screen.getByText('כדי לחשב מסלול זה דרך המקור הרשמי צריך גם תתי-ציונים בפסיכומטרי.'),
+    ).toBeTruthy();
+    expect(screen.queryByText('אימות רשמי')).toBeNull();
+  });
+
+  it('renders a recoverable error state when the route request fails', async () => {
+    hoistedMocks.fetchAdmissionsEvaluation.mockRejectedValue(
+      new Error('Unable to evaluate admissions right now.'),
+    );
+
+    render(
+      <CalculatorResults
+        degreeId="tau_cs"
+        programs={programs}
+        psychometric={700}
+        bagrut={110}
+        onBack={() => {}}
+      />,
+    );
+
+    await waitFor(() => expect(screen.getByText('לא הצלחנו לחשב את התוצאות כרגע')).toBeTruthy());
+    expect(screen.getByRole('button', { name: 'נסו שוב' })).toBeTruthy();
   });
 });

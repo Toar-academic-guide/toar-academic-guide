@@ -73,12 +73,12 @@ describe('LandingPage calculator', () => {
         onCalculate={vi.fn()}
         onSignOut={onSignOut}
         programs={[program('degree', 'מסלול')]}
-        userInitials="דכ"
+        userEmail="daniel.cohen@example.com"
       />,
     );
 
-    expect(screen.getByTitle('מחובר/ת').textContent).toBe('דכ');
-    expect(screen.queryByRole('button', { name: 'דכ' })).toBeNull();
+    fireEvent.click(screen.getByTitle('מחובר כ-daniel.cohen@example.com'));
+    expect(onSignOut).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole('button', { name: 'התנתק' }));
     expect(onSignOut).toHaveBeenCalledTimes(1);

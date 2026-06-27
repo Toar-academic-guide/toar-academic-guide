@@ -18,8 +18,17 @@ interface Props {
   programs: CatalogueProgram[];
   authLoading?: boolean;
   isAuthenticated?: boolean;
-  userInitials?: string;
+  userEmail?: string;
   onSignOut?: () => void;
+}
+
+function getInitials(email: string): string {
+  const prefix = email.split('@')[0];
+  const parts = prefix.split(/[._-]/);
+  if (parts.length >= 2) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return prefix.slice(0, 2).toUpperCase();
 }
 
 export default function LandingPage({
@@ -31,7 +40,7 @@ export default function LandingPage({
   programs,
   authLoading = false,
   isAuthenticated = false,
-  userInitials,
+  userEmail,
   onSignOut,
 }: Props) {
   const startRef = useRef<HTMLElement>(null);
@@ -90,7 +99,6 @@ export default function LandingPage({
           <div className="flex items-center gap-8">
             <button
               type="button"
-              aria-label="דף הבית"
               className="cursor-pointer rounded-lg outline-none transition-opacity hover:opacity-80"
             >
               <LogoCanvas size={44} brighten={false} />
@@ -100,20 +108,20 @@ export default function LandingPage({
               <button
                 type="button"
                 onClick={() => scrollToSection('how-it-works')}
-                className="text-base text-slate-900 transition hover:text-slate-600"
+                className="cursor-pointer text-base text-slate-900 transition hover:text-slate-600"
               >
                 איך זה עובד
               </button>
               <button
                 type="button"
                 onClick={scrollToStart}
-                className="text-base text-slate-900 transition hover:text-slate-600"
+                className="cursor-pointer text-base text-slate-900 transition hover:text-slate-600"
               >
                 תחומי לימוד
               </button>
               <button
                 type="button"
-                className="text-base text-slate-900 transition hover:text-slate-600"
+                className="cursor-pointer text-base text-slate-900 transition hover:text-slate-600"
               >
                 מי אנחנו
               </button>
@@ -123,18 +131,18 @@ export default function LandingPage({
           <div className="flex items-center gap-3">
             {authLoading ? (
               <div className="h-9 w-9 animate-pulse rounded-full bg-slate-200" />
-            ) : isAuthenticated && userInitials ? (
+            ) : isAuthenticated && userEmail ? (
               <div className="flex items-center gap-2">
                 <span
-                  title="מחובר/ת"
+                  title={`מחובר כ-${userEmail}`}
                   className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1e1b4b] text-xs font-bold text-white shadow"
                 >
-                  {userInitials}
+                  {getInitials(userEmail)}
                 </span>
                 <button
                   type="button"
                   onClick={onSignOut}
-                  className="text-sm font-semibold text-slate-600 transition hover:text-slate-900"
+                  className="cursor-pointer text-sm font-semibold text-slate-600 transition hover:text-slate-900"
                 >
                   התנתק
                 </button>
@@ -143,7 +151,7 @@ export default function LandingPage({
               <button
                 type="button"
                 onClick={onSignIn}
-                className="text-sm font-semibold text-slate-600 transition hover:text-slate-900"
+                className="cursor-pointer text-sm font-semibold text-slate-600 transition hover:text-slate-900"
               >
                 התחברות
               </button>
@@ -151,7 +159,7 @@ export default function LandingPage({
             <button
               type="button"
               onClick={scrollToStart}
-              className="rounded-full bg-[#1e1b4b] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#2d2a6e]"
+              className="cursor-pointer rounded-full bg-[#1e1b4b] px-5 py-2 text-sm font-semibold text-white transition hover:bg-[#2d2a6e]"
             >
               מתחילים ←
             </button>
@@ -320,10 +328,10 @@ export default function LandingPage({
           </div>
 
           {/* Calculator card — left side in RTL */}
-          <div className="mt-12 flex flex-col self-start rounded-2xl border border-[#e5e7eb] bg-white p-6 shadow-sm sm:p-8">
-            <h2 className="mb-4 text-xl font-black text-slate-900">בדיקת סיכויי קבלה</h2>
+          <div className="mt-12 flex flex-col self-stretch rounded-2xl border border-[#e5e7eb] bg-white p-8 shadow-sm sm:p-10">
+            <h2 className="mb-6 text-xl font-black text-slate-900">בדיקת סיכויי קבלה</h2>
 
-            <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-4">
               {/* Psychometric */}
               <div>
                 <label
@@ -406,20 +414,20 @@ export default function LandingPage({
               </div>
 
               {/* CTA */}
-              <NeoButton onClick={handleCalcSubmit} className="mt-1 w-full py-3 text-base">
+              <NeoButton onClick={handleCalcSubmit} className="mt-2 w-full py-3.5 text-base">
                 חשב סיכויים ←
               </NeoButton>
             </div>
 
             {/* Disclaimer */}
-            <div className="mt-4 border-t border-[#e5e7eb] pt-3">
-              <p className="text-base leading-relaxed text-slate-400">
+            <div className="mt-5 border-t border-[#e5e7eb] pt-4">
+              <p className="text-xs leading-relaxed text-slate-400">
                 מחשבון זה נועד לספק תמונה כללית. לצורך וודאות מלאה, יש להזין את ציוני הבגרות בכל
                 מקצוע{' '}
                 <button
                   type="button"
                   onClick={onGoToProfile}
-                  className="cursor-pointer font-semibold text-[#4f46e5] underline decoration-[#a5b4fc] underline-offset-2 transition hover:text-[#3730a3]"
+                  className="font-semibold text-[#4f46e5] underline decoration-[#a5b4fc] underline-offset-2 transition hover:text-[#3730a3]"
                 >
                   באזור האישי
                 </button>
@@ -499,7 +507,7 @@ export default function LandingPage({
       </section>
 
       {/* ── After cartoon ───────────────────────────────────────── */}
-      <section className="flex justify-end bg-white px-8 py-4 pr-0 md:px-16 md:pr-0" dir="ltr">
+      <section className="flex justify-end bg-white px-8 py-4 pr-0 md:px-16 md:pr-0">
         <img
           src="/way-cartoon-after.png"
           alt="That's way easier than I thought"

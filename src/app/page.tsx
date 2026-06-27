@@ -22,7 +22,6 @@ import {
 } from '@/lib/catalogueClient';
 import { getCalculatorInstitutionsFromCatalogue } from '@/lib/calculatorInstitutions';
 import { getRecommendations } from '@/utils/recommendationEngine';
-import { getUserInitials } from '@/utils/userDisplay';
 import { evaluateUniversities } from '@/utils/sekhemCalculators';
 import { extractFilterAnswers } from '@/utils/riasecEngine';
 import { ArrowRight } from 'lucide-react';
@@ -102,6 +101,17 @@ const DEV_AVOIDANCES: AvoidanceTag[] = [];
 const STATIC_CATALOGUE_PROGRAMS = getStaticCataloguePrograms();
 const STATIC_CATALOGUE_INSTITUTIONS = getStaticCatalogueInstitutions();
 
+function getUserInitials(email: string): string {
+  const prefix = email.split('@')[0] ?? '';
+  const parts = prefix.split(/[._-]/).filter(Boolean);
+
+  if (parts.length >= 2) {
+    return `${parts[0][0] ?? ''}${parts[1][0] ?? ''}`.toUpperCase();
+  }
+
+  return prefix.slice(0, 2).toUpperCase();
+}
+
 function toCatalogueError(error: unknown): CatalogueApiError {
   if (error instanceof CatalogueApiError) {
     return error;
@@ -116,7 +126,6 @@ function toCatalogueError(error: unknown): CatalogueApiError {
 
 export default function Home() {
   const { loading: authLoading, signOut, user } = useAuth();
-  const userInitials = getUserInitials(user);
   const [initialStep] = useState<AppStep>(getDevStep);
   const [catalogueStatus, setCatalogueStatus] = useState<CatalogueStatus>('loading');
   const [catalogueError, setCatalogueError] = useState<CatalogueApiError | null>(null);
@@ -410,8 +419,6 @@ export default function Home() {
     posthog.capture('degree_calculator_submitted', {
       degree_id: degreeId,
       degree_name: degree.name,
-      psychometric: scores.psychometric,
-      bagrut: scores.bagrut,
     });
 
     const evaluated = evaluateUniversities(calculatorInstitutions, degree, scores, engineering);
@@ -443,8 +450,6 @@ export default function Home() {
         onCalculate={(psychometric, bagrut, degreeId) => {
           posthog.capture('landing_calculator_submitted', {
             degree_id: degreeId,
-            psychometric,
-            bagrut,
           });
           setLandingCalcScores({ psychometric, bagrut, degreeId });
           setStep('calculator-results');
@@ -457,7 +462,7 @@ export default function Home() {
         programs={cataloguePrograms}
         authLoading={authLoading}
         isAuthenticated={isAuthenticated}
-        userInitials={userInitials}
+        userEmail={user?.email ?? undefined}
         onSignOut={() => {
           void signOut();
         }}
@@ -472,7 +477,6 @@ export default function Home() {
         bagrut={landingCalcScores.bagrut}
         degreeId={landingCalcScores.degreeId}
         programs={cataloguePrograms}
-        calculatorInstitutions={calculatorInstitutions}
         onBack={() => {
           setStep('landing');
           window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -606,7 +610,7 @@ export default function Home() {
         savedCount={savedCount}
         authLoading={authLoading}
         isAuthenticated={isAuthenticated}
-        userInitials={userInitials}
+        userInitials={user?.email ? getUserInitials(user.email) : undefined}
         onGoHome={handleGoHome}
         onGoToExam={() => {
           setStep('career-assessment');
