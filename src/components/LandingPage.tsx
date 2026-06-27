@@ -50,7 +50,7 @@ export default function LandingPage({
     }
 
     setSelectedDegreeId((current) =>
-      current && programs.some((program) => program.id === current) ? current : programs[0].id
+      current && programs.some((program) => program.id === current) ? current : programs[0].id,
     );
   }, [programs]);
 

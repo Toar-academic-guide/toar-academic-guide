@@ -20,6 +20,6 @@ body {
 }
 
 button:not(:disabled),
-[role="button"]:not([aria-disabled="true"]) {
+[role='button']:not([aria-disabled='true']) {
   cursor: pointer;
 }
