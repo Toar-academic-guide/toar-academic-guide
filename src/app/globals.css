@@ -18,3 +18,8 @@ body {
   background: var(--bg-page);
   color: var(--text-body);
 }
+
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]) {
+  cursor: pointer;
+}
