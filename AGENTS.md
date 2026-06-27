@@ -1,7 +1,9 @@
 <!-- BEGIN:nextjs-agent-rules -->
+
 # This is NOT the Next.js you know
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
+
 <!-- END:nextjs-agent-rules -->
 
 ## Compound Engineering
@@ -33,3 +35,21 @@ Treat that board as the source of truth for active tasks, and account for any su
 ## Vercel Environment
 
 `DATABASE_URL` and the Supabase keys (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) are already configured in Vercel for both preview and production deployments. Do not treat them as missing or ask the user to wire them.
+
+## Pre-PR / Pre-Push Guard
+
+Run `npm run guard:pre-pr` before pushing a branch or opening a PR that can affect production catalogue loading, admission calculations, Supabase schema/data, auth/session behavior, Vercel environment wiring, or `/internal/data-health`.
+
+The repository tracks `.githooks/pre-push`, and `npm install` configures `core.hooksPath` through the `prepare` script. Do not bypass the hook unless the user explicitly approves an emergency push. If bypassing is unavoidable, say that `SKIP_PRE_PR_GUARD=1` was used and list the verification still owed.
+
+The guard must stay fast enough for local use, but it should fail before a push when local migration checks, catalogue seed dry-runs, operational grants, or targeted regression tests fail. Keep it updated when new production-critical DB tables, dashboards, catalogue routes, or calculator paths are added.
+
+## Production Incident Verification
+
+For database-backed catalogue, Supabase, Vercel, authentication, and `/internal/data-health` work, confirm the deployed behavior instead of relying only on unit tests.
+
+- Use Supabase CLI or MCP to verify production schema, role grants, seed rows, and representative query results when the fix depends on Supabase state.
+- Use Vercel CLI or GitHub Actions logs/checks to confirm preview/production environment variables and deployment status when behavior depends on deployed configuration.
+- Use Playwright or an equivalent browser check for the affected user flow before marking the work complete. For this app, that includes the landing-page calculator flow and `/internal/data-health` when either path is touched.
+- Do not replace a failing database-backed flow with static fallbacks as the primary fix. Static data is acceptable only for explicit local/static modes; production database mode should fail loudly and the database/query/permissions issue should be fixed.
+- In the PR description, include the concrete Supabase, Vercel/GitHub Actions, and browser verification performed, or explain why a check was impossible.
