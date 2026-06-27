@@ -116,6 +116,17 @@ Machine checks do not overwrite canonical admissions data.
 - Duplicate pending review work is suppressed when the same unresolved source fingerprint is seen again.
 - Score-only changes are tracked as source freshness evidence but do not create acceptance/rejection review work by themselves.
 
+The first operator review workflow lives at `/internal/reviews/[reviewItemId]`.
+It is reachable from the read-only `/internal/data-health` review queue and uses the same internal admin allowlist.
+
+Current publication support is intentionally narrow:
+
+- `sourceFreshness` review items can be approved. Approval resolves the pending source freshness state only when the current `source_freshness_states.latest_review_item_id` still matches the review item.
+- `sourceFreshness` review items can be rejected. Rejection records the review decision without publishing canonical catalogue changes.
+- Other `target_field` values remain inspectable and rejectable, but approval returns an unsupported-target result until their canonical publish translators are explicitly implemented.
+
+This means approving a source-freshness review item is not the same as publishing admissions requirements or thresholds. It only records that the latest machine freshness evidence has been reviewed and no longer needs dashboard attention.
+
 ## Adding More Institutions
 
 Adding another institution should follow the same path:

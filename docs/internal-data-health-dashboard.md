@@ -71,10 +71,26 @@ The source freshness section reads persisted machine-check state and derives tim
 
 The dashboard intentionally displays capped source rows and review item ids, not raw normalized payloads or proposed review values.
 
+## Review item workspace
+
+The dashboard links the oldest pending review item to `/internal/reviews/[reviewItemId]`.
+That route is a separate operator workspace, not part of the read-only dashboard surface.
+
+The review workspace uses the same Supabase Auth plus `INTERNAL_ADMIN_EMAILS` allowlist. Unauthorized requests fail closed before the review item detail query runs, and unauthorized action calls return without invoking the review resolution service.
+
+For v1, the only publishable approval target is `sourceFreshness`:
+
+- Approve: validates that the item is still pending, confirms the proposed value is a supported source-freshness payload, confirms `source_freshness_states.latest_review_item_id` still points at the item, then clears that review pointer and marks the source freshness state `fresh` in the same server-owned transaction that marks the review item approved.
+- Reject: marks the review item rejected without mutating source freshness state or canonical catalogue tables.
+- Unsupported target fields: can be inspected and rejected, but approval fails closed with an unsupported-target result.
+- Stale review items: if the current source freshness state no longer points at the item, approval fails closed and leaves the item pending for operator re-check.
+
+The review detail page renders bounded normalized evidence, source provenance, status, payload id, reproduced fields, limitations, and next action. It does not render raw ingestion payload JSON or full proposed-value dumps.
+
 ## Current limitations
 
 - The dashboard is read-only.
-- It does not approve or reject review items.
+- It links to the separate review workspace for pending review items, but it does not approve or reject them inline.
 - It does not trigger scraper jobs.
 - It does not display raw ingestion payloads or full proposed review values.
 - Browser-required sources remain blocked until a separate Hermes/VPS browser lane exists.
