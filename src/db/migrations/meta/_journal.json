@@ -64,6 +64,13 @@
       "when": 1782461368434,
       "tag": "0008_nostalgic_wasp",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1782554917000,
+      "tag": "0009_grant_runtime_roles_for_operational_catalogue_tables",
+      "breakpoints": true
     }
   ]
 }

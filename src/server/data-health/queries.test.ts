@@ -634,6 +634,28 @@ describe('getDataHealthReport', () => {
     hoistedMocks.getOpsDb.mockReset();
   });
 
+  it('loads report tables sequentially to stay within the ops role connection limit', async () => {
+    let activeQueries = 0;
+    let maxActiveQueries = 0;
+    const from = vi.fn(async () => {
+      activeQueries += 1;
+      maxActiveQueries = Math.max(maxActiveQueries, activeQueries);
+      await Promise.resolve();
+      activeQueries -= 1;
+      return [];
+    });
+
+    hoistedMocks.getOpsDb.mockReturnValue({
+      select: vi.fn(() => ({ from })),
+    });
+
+    const report = await getDataHealthReport(now);
+
+    expect(report.status).toBe('ready');
+    expect(from).toHaveBeenCalledTimes(14);
+    expect(maxActiveQueries).toBe(1);
+  });
+
   it('returns an unavailable state when the ops database is not configured', async () => {
     hoistedMocks.getOpsDb.mockImplementation(() => {
       throw new Error('Missing OPS_DATABASE_URL');
