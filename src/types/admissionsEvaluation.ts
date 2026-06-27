@@ -43,7 +43,14 @@ export interface AdmissionsEvaluationInput {
 export interface AdmissionsEvaluationResult {
   institution: Pick<
     CatalogueInstitution,
-    'id' | 'name' | 'region' | 'domain' | 'logoUrl' | 'programUrl' | 'calculatorUrl' | 'universityId'
+    | 'id'
+    | 'name'
+    | 'region'
+    | 'domain'
+    | 'logoUrl'
+    | 'programUrl'
+    | 'calculatorUrl'
+    | 'universityId'
   >;
   linkedInstitutionId: string;
   capability: AdmissionsEvaluationCapability;

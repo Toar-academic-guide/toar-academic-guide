@@ -17,11 +17,22 @@ import {
 } from '@/lib/admissionsEvaluationClient';
 import type { CatalogueProgram } from '@/types/catalogue';
 import type { GeographicRegion } from '@/types';
-import type { AdmissionsEvaluationReport, AdmissionsEvaluationResult } from '@/types/admissionsEvaluation';
+import type {
+  AdmissionsEvaluationReport,
+  AdmissionsEvaluationResult,
+} from '@/types/admissionsEvaluation';
 
 const UNIVERSITY_IDS = new Set([
-  'tau', 'huji', 'technion', 'bgu', 'haifa', 'biu', 'ariel',
-  'weizmann', 'reichman', 'open_university',
+  'tau',
+  'huji',
+  'technion',
+  'bgu',
+  'haifa',
+  'biu',
+  'ariel',
+  'weizmann',
+  'reichman',
+  'open_university',
 ]);
 
 type InstitutionType = 'university' | 'college';
@@ -41,8 +52,9 @@ function getInstitutionType(inst: InstitutionRecord): InstitutionType {
 
 function formatResultSummary(result: AdmissionsEvaluationResult): string {
   if (typeof result.score === 'number') {
-    const formattedScore =
-      Number.isInteger(result.score) ? String(result.score) : result.score.toFixed(1);
+    const formattedScore = Number.isInteger(result.score)
+      ? String(result.score)
+      : result.score.toFixed(1);
     const formattedThreshold =
       typeof result.threshold === 'number'
         ? Number.isInteger(result.threshold)
@@ -127,10 +139,13 @@ export default function CalculatorResults({
           degree_id: degreeId,
           result_count: nextReport.results.length,
           exact_count: nextReport.results.filter((result) => result.kind === 'exact').length,
-          estimated_count: nextReport.results.filter((result) => result.kind === 'estimated').length,
-          unsupported_count: nextReport.results.filter((result) => result.kind === 'unsupported').length,
+          estimated_count: nextReport.results.filter((result) => result.kind === 'estimated')
+            .length,
+          unsupported_count: nextReport.results.filter((result) => result.kind === 'unsupported')
+            .length,
           degraded_count: nextReport.results.filter((result) => result.kind === 'degraded').length,
-          needs_input_count: nextReport.results.filter((result) => result.kind === 'needs_input').length,
+          needs_input_count: nextReport.results.filter((result) => result.kind === 'needs_input')
+            .length,
         });
       })
       .catch((requestError: unknown) => {
@@ -142,7 +157,7 @@ export default function CalculatorResults({
         setError(
           requestError instanceof AdmissionsEvaluationApiError
             ? requestError
-            : new AdmissionsEvaluationApiError('Unable to evaluate admissions right now.')
+            : new AdmissionsEvaluationApiError('Unable to evaluate admissions right now.'),
         );
       })
       .finally(() => {
@@ -173,8 +188,12 @@ export default function CalculatorResults({
           ...(result.institution.logoUrl ? { logoUrl: result.institution.logoUrl } : {}),
           ...(result.institution.domain ? { domain: result.institution.domain } : {}),
           ...(result.institution.programUrl ? { programUrl: result.institution.programUrl } : {}),
-          ...(result.institution.calculatorUrl ? { calculatorUrl: result.institution.calculatorUrl } : {}),
-          ...(result.institution.universityId ? { universityId: result.institution.universityId } : {}),
+          ...(result.institution.calculatorUrl
+            ? { calculatorUrl: result.institution.calculatorUrl }
+            : {}),
+          ...(result.institution.universityId
+            ? { universityId: result.institution.universityId }
+            : {}),
         };
 
         return {
@@ -281,7 +300,11 @@ export default function CalculatorResults({
         <div className="mb-6">
           <div className="mb-3 flex items-center justify-between">
             <p className="text-sm font-bold text-slate-900">סוג מוסד</p>
-            <button type="button" onClick={selectAllTypes} className="cursor-pointer text-xs font-semibold text-[#4f46e5]">
+            <button
+              type="button"
+              onClick={selectAllTypes}
+              className="cursor-pointer text-xs font-semibold text-[#4f46e5]"
+            >
               בחר/י הכל
             </button>
           </div>
@@ -302,7 +325,11 @@ export default function CalculatorResults({
         <div className="mb-4">
           <div className="mb-3 flex items-center justify-between">
             <p className="text-sm font-bold text-slate-900">אזור</p>
-            <button type="button" onClick={selectAllRegions} className="cursor-pointer text-xs font-semibold text-[#4f46e5]">
+            <button
+              type="button"
+              onClick={selectAllRegions}
+              className="cursor-pointer text-xs font-semibold text-[#4f46e5]"
+            >
               בחר/י הכל
             </button>
           </div>
@@ -354,7 +381,9 @@ export default function CalculatorResults({
         {!loading && error ? (
           <div className="rounded-2xl border-2 border-rose-200 bg-rose-50 p-8 text-center">
             <AlertCircle className="mx-auto h-6 w-6 text-rose-600" />
-            <p className="mt-3 text-base font-black text-slate-900">לא הצלחנו לחשב את התוצאות כרגע</p>
+            <p className="mt-3 text-base font-black text-slate-900">
+              לא הצלחנו לחשב את התוצאות כרגע
+            </p>
             <p className="mt-2 text-sm text-slate-600">{error.message}</p>
             <button
               type="button"
@@ -377,7 +406,9 @@ export default function CalculatorResults({
                 <h2 className="text-base font-black text-slate-900">
                   {REGION_LABEL[region as GeographicRegion]}
                 </h2>
-                <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-bold ${REGION_COUNT_STYLE[region]}`}>
+                <span
+                  className={`rounded-full border px-2.5 py-0.5 text-[10px] font-bold ${REGION_COUNT_STYLE[region]}`}
+                >
                   {institutions.length} מוסדות
                 </span>
               </div>
@@ -406,13 +437,22 @@ export default function CalculatorResults({
                       className="flex flex-col gap-3 rounded-[14px] border-2 border-black bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
                     >
                       <div className="flex min-w-0 items-start gap-3">
-                        <InstitutionLogo institution={institution.name} record={institution} size="sm" />
+                        <InstitutionLogo
+                          institution={institution.name}
+                          record={institution}
+                          size="sm"
+                        />
                         <div className="min-w-0">
-                          <p className="truncate text-sm font-bold text-slate-900">{institution.name}</p>
-                          <p className="text-[10px] text-slate-500" dir="ltr">
-                            {institutionType === 'university' ? 'אוניברסיטה' : 'מכללה'} · {formatResultSummary(result)}
+                          <p className="truncate text-sm font-bold text-slate-900">
+                            {institution.name}
                           </p>
-                          <p className="mt-1 text-xs font-semibold text-slate-700">{result.sourceLabel}</p>
+                          <p className="text-[10px] text-slate-500" dir="ltr">
+                            {institutionType === 'university' ? 'אוניברסיטה' : 'מכללה'} ·{' '}
+                            {formatResultSummary(result)}
+                          </p>
+                          <p className="mt-1 text-xs font-semibold text-slate-700">
+                            {result.sourceLabel}
+                          </p>
                           <p className="mt-1 text-xs leading-relaxed text-slate-500">
                             {result.explanation}
                           </p>
@@ -436,7 +476,8 @@ export default function CalculatorResults({
                   onClick={() => toggleExpanded(region)}
                   className="mt-2 flex w-full cursor-pointer items-center justify-center gap-1 text-xs text-slate-500"
                 >
-                  + {hiddenCount} מוסדות נוספים <span className="font-semibold text-[#4f46e5]">הצג/י הכל</span>
+                  + {hiddenCount} מוסדות נוספים{' '}
+                  <span className="font-semibold text-[#4f46e5]">הצג/י הכל</span>
                   <ChevronDown size={12} className="text-[#4f46e5]" />
                 </button>
               ) : null}
@@ -469,7 +510,15 @@ export default function CalculatorResults({
   );
 }
 
-function FilterChip({ label, selected, onClick }: { label: string; selected: boolean; onClick: () => void }) {
+function FilterChip({
+  label,
+  selected,
+  onClick,
+}: {
+  label: string;
+  selected: boolean;
+  onClick: () => void;
+}) {
   return (
     <button
       type="button"

@@ -14,7 +14,7 @@ export class AdmissionsEvaluationApiError extends Error {
 }
 
 export async function fetchAdmissionsEvaluation(
-  input: AdmissionsEvaluationInput
+  input: AdmissionsEvaluationInput,
 ): Promise<AdmissionsEvaluationReport> {
   const response = await fetch('/api/admissions/evaluate', {
     method: 'POST',
@@ -34,7 +34,7 @@ export async function fetchAdmissionsEvaluation(
   if (!response.ok || !payload.data) {
     throw new AdmissionsEvaluationApiError(
       payload.error?.message ?? 'Unable to evaluate admissions right now.',
-      payload.error?.code
+      payload.error?.code,
     );
   }
 

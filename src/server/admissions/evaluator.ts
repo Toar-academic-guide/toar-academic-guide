@@ -83,7 +83,11 @@ async function evaluateCapabilityEntries(args: {
       continue;
     }
 
-    if (entry.capability === 'exact' && entry.exactTarget && exactCallCount < MAX_EXACT_SOURCE_CALLS) {
+    if (
+      entry.capability === 'exact' &&
+      entry.exactTarget &&
+      exactCallCount < MAX_EXACT_SOURCE_CALLS
+    ) {
       exactCallCount += 1;
       results.push(
         await evaluateExactResult({
@@ -91,7 +95,7 @@ async function evaluateCapabilityEntries(args: {
           institution,
           exactTarget: entry.exactTarget,
           fetcher,
-        })
+        }),
       );
       continue;
     }
@@ -103,7 +107,7 @@ async function evaluateCapabilityEntries(args: {
         institution,
         entry,
         exactCallsBounded: exactCallCount >= MAX_EXACT_SOURCE_CALLS,
-      })
+      }),
     );
   }
 
@@ -185,12 +189,9 @@ function normalizeExactProofResult(args: {
 }): AdmissionsEvaluationResult {
   const { institution, proof, explanationPrefix } = args;
 
-  const score =
-    numberOrUndefined(proof.selectedScore) ??
-    numberOrUndefined(proof.weightedScore);
+  const score = numberOrUndefined(proof.selectedScore) ?? numberOrUndefined(proof.weightedScore);
   const threshold =
-    numberOrUndefined(proof.acceptanceThreshold) ??
-    numberOrUndefined(proof.acceptanceCutoff);
+    numberOrUndefined(proof.acceptanceThreshold) ?? numberOrUndefined(proof.acceptanceCutoff);
 
   if (score === undefined || threshold === undefined) {
     return {
@@ -208,8 +209,7 @@ function normalizeExactProofResult(args: {
   }
 
   const decision = score >= threshold ? 'accepted' : 'below';
-  const scoreLabel =
-    proof.selectedScore !== undefined ? 'ציון התאמה' : 'ציון משוקלל';
+  const scoreLabel = proof.selectedScore !== undefined ? 'ציון התאמה' : 'ציון משוקלל';
 
   return {
     institution: publicInstitutionShape(institution),
@@ -282,8 +282,7 @@ function evaluateNonExactResult(args: {
           ? 'מצב המקור הרשמי מיושן או נכשל לאחרונה, ולכן לא נציג החלטה רשמית.'
           : 'הוגבל מספר קריאות האימות הרשמיות לבקשה זו.',
       nextAction: 'נסו שוב מאוחר יותר או בדקו ישירות במקור הרשמי.',
-      degradationReason:
-        entry.capability === 'stale' ? 'source_stale' : 'exact_fanout_limited',
+      degradationReason: entry.capability === 'stale' ? 'source_stale' : 'exact_fanout_limited',
     };
   }
 
@@ -297,7 +296,7 @@ function evaluateNonExactResult(args: {
       [calculatorInstitution as University],
       program,
       { psychometric: input.psychometric, bagrut: input.bagrut },
-      { hasMath5: false, hasPhysics5: false }
+      { hasMath5: false, hasPhysics5: false },
     );
 
     if (!evaluation || evaluation.status === 'unavailable') {
@@ -332,7 +331,7 @@ function evaluateNonExactResult(args: {
 
 function unsupportedResult(
   institution: CatalogueInstitution,
-  entry: AdmissionsCapabilityEntry
+  entry: AdmissionsCapabilityEntry,
 ): AdmissionsEvaluationResult {
   return {
     institution: publicInstitutionShape(institution),
@@ -350,7 +349,7 @@ function unsupportedResult(
 }
 
 function publicInstitutionShape(
-  institution: CatalogueInstitution
+  institution: CatalogueInstitution,
 ): AdmissionsEvaluationResult['institution'] {
   return {
     id: institution.id,

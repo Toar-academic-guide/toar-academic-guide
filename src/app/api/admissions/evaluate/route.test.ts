@@ -38,7 +38,7 @@ describe('admissions evaluate route', () => {
     hoistedMocks.headers.mockResolvedValue(
       new Headers({
         'x-forwarded-for': '203.0.113.10',
-      })
+      }),
     );
     hoistedMocks.listCataloguePrograms.mockResolvedValue({
       data: [
@@ -85,7 +85,7 @@ describe('admissions evaluate route', () => {
           psychometric: 700,
           bagrut: 110,
         }),
-      })
+      }),
     );
 
     expect(response.status).toBe(200);
@@ -101,7 +101,7 @@ describe('admissions evaluate route', () => {
           psychometric: 700,
           bagrut: 110,
         },
-      })
+      }),
     );
   });
 
@@ -113,7 +113,7 @@ describe('admissions evaluate route', () => {
           'Content-Type': 'application/json',
         },
         body: '{',
-      })
+      }),
     );
 
     expect(response.status).toBe(400);
@@ -135,7 +135,7 @@ describe('admissions evaluate route', () => {
           psychometric: 900,
           bagrut: 110,
         }),
-      })
+      }),
     );
 
     expect(response.status).toBe(400);
@@ -156,7 +156,7 @@ describe('admissions evaluate route', () => {
           psychometric: 700,
           bagrut: 110,
         }),
-      })
+      }),
     );
 
     expect(response.status).toBe(404);
@@ -178,7 +178,7 @@ describe('admissions evaluate route', () => {
           psychometric: 700,
           bagrut: 110,
         }),
-      })
+      }),
     );
 
     expect(response.status).toBe(413);
@@ -200,7 +200,7 @@ describe('admissions evaluate route', () => {
             psychometric: 700,
             bagrut: 110,
           }),
-        })
+        }),
       );
 
       expect(response.status).toBe(200);
@@ -217,7 +217,7 @@ describe('admissions evaluate route', () => {
           psychometric: 700,
           bagrut: 110,
         }),
-      })
+      }),
     );
 
     expect(blocked.status).toBe(429);

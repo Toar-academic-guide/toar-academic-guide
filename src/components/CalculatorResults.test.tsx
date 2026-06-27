@@ -76,7 +76,7 @@ describe('CalculatorResults', () => {
           scoreLabel: 'ציון התאמה',
           threshold: 700,
         },
-      ])
+      ]),
     );
 
     render(
@@ -86,7 +86,7 @@ describe('CalculatorResults', () => {
         psychometric={700}
         bagrut={110}
         onBack={() => {}}
-      />
+      />,
     );
 
     expect(await screen.findByLabelText('אוניברסיטת תל אביב: מתקבל/ת')).toBeTruthy();
@@ -111,7 +111,8 @@ describe('CalculatorResults', () => {
           decision: 'below',
           confidence: 'medium',
           sourceLabel: 'הערכה מבוססת סכם',
-          explanation: 'התוצאה מבוססת על נוסחת הסכם והסף שנבדקו בקטלוג, לא על תשובת מחשבון רשמי חיה.',
+          explanation:
+            'התוצאה מבוססת על נוסחת הסכם והסף שנבדקו בקטלוג, לא על תשובת מחשבון רשמי חיה.',
           nextAction: 'שמרו את המסלול והשוו למוסדות אחרים או בדקו את המחשבון הרשמי.',
           score: 88.2,
           scoreLabel: 'סכם משוער',
@@ -137,13 +138,9 @@ describe('CalculatorResults', () => {
           sourceLabel: 'נדרשים נתונים נוספים',
           explanation: 'כדי לחשב מסלול זה דרך המקור הרשמי צריך גם תתי-ציונים בפסיכומטרי.',
           nextAction: 'השלימו ציוני כמותי, מילולי ואנגלית כדי לקבל אימות רשמי.',
-          requiredInputs: [
-            'psychometric_math',
-            'psychometric_verbal',
-            'psychometric_english',
-          ],
+          requiredInputs: ['psychometric_math', 'psychometric_verbal', 'psychometric_english'],
         },
-      ])
+      ]),
     );
 
     render(
@@ -153,19 +150,23 @@ describe('CalculatorResults', () => {
         psychometric={700}
         bagrut={110}
         onBack={() => {}}
-      />
+      />,
     );
 
-    expect(await screen.findByLabelText('הטכניון – מכון טכנולוגי לישראל: הערכה מתחת לסף')).toBeTruthy();
+    expect(
+      await screen.findByLabelText('הטכניון – מכון טכנולוגי לישראל: הערכה מתחת לסף'),
+    ).toBeTruthy();
     expect(screen.getByLabelText('אוניברסיטת חיפה: נדרשים נתונים')).toBeTruthy();
     expect(screen.getByText('נדרשים נתונים נוספים')).toBeTruthy();
-    expect(screen.getByText('כדי לחשב מסלול זה דרך המקור הרשמי צריך גם תתי-ציונים בפסיכומטרי.')).toBeTruthy();
+    expect(
+      screen.getByText('כדי לחשב מסלול זה דרך המקור הרשמי צריך גם תתי-ציונים בפסיכומטרי.'),
+    ).toBeTruthy();
     expect(screen.queryByText('אימות רשמי')).toBeNull();
   });
 
   it('renders a recoverable error state when the route request fails', async () => {
     hoistedMocks.fetchAdmissionsEvaluation.mockRejectedValue(
-      new Error('Unable to evaluate admissions right now.')
+      new Error('Unable to evaluate admissions right now.'),
     );
 
     render(
@@ -175,12 +176,10 @@ describe('CalculatorResults', () => {
         psychometric={700}
         bagrut={110}
         onBack={() => {}}
-      />
+      />,
     );
 
-    await waitFor(() =>
-      expect(screen.getByText('לא הצלחנו לחשב את התוצאות כרגע')).toBeTruthy()
-    );
+    await waitFor(() => expect(screen.getByText('לא הצלחנו לחשב את התוצאות כרגע')).toBeTruthy());
     expect(screen.getByRole('button', { name: 'נסו שוב' })).toBeTruthy();
   });
 });

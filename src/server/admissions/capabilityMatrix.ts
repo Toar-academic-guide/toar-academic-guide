@@ -43,15 +43,13 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
       name: 'Computer Science',
       externalId: '52258372',
     },
-    requiredInputs: [
-      'psychometric_math',
-      'psychometric_verbal',
-      'psychometric_english',
-    ],
+    requiredInputs: ['psychometric_math', 'psychometric_verbal', 'psychometric_english'],
   },
   tau_datascience__tau: {
     targetId: 'tau-digital-sciences-live',
-    sourceTarget: admissionsSourceTargets.find((entry) => entry.id === 'tau-digital-sciences-live')!,
+    sourceTarget: admissionsSourceTargets.find(
+      (entry) => entry.id === 'tau-digital-sciences-live',
+    )!,
     program: {
       id: 'tau-digital-sciences',
       name: 'Digital Sciences for High-Tech',
@@ -64,11 +62,11 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
 };
 
 const SOURCE_TARGETS_BY_INSTITUTION = new Map<string, AdmissionsSourceTarget>(
-  admissionsSourceTargets.map((target) => [target.institutionId, target])
+  admissionsSourceTargets.map((target) => [target.institutionId, target]),
 );
 
 export async function loadFreshnessStatesBySourceIds(
-  sourceIds: string[]
+  sourceIds: string[],
 ): Promise<Map<string, SourceFreshnessStateRow>> {
   if (sourceIds.length === 0) {
     return new Map();
@@ -193,10 +191,7 @@ export function buildAdmissionsCapabilityMatrix(args: {
   });
 }
 
-function isFreshnessStateStale(
-  state: SourceFreshnessStateRow | undefined,
-  now: Date
-): boolean {
+function isFreshnessStateStale(state: SourceFreshnessStateRow | undefined, now: Date): boolean {
   if (!state || state.status !== 'fresh') {
     return false;
   }

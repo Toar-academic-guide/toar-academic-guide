@@ -74,7 +74,7 @@ describe('LandingPage calculator', () => {
         onSignOut={onSignOut}
         programs={[program('degree', 'מסלול')]}
         userEmail="daniel.cohen@example.com"
-      />
+      />,
     );
 
     fireEvent.click(screen.getByTitle('מחובר כ-daniel.cohen@example.com'));
@@ -91,7 +91,7 @@ describe('LandingPage calculator', () => {
         {...defaultProps}
         onCalculate={onCalculate}
         programs={[program('old-degree', 'מסלול ישן')]}
-      />
+      />,
     );
 
     rerender(
@@ -99,13 +99,13 @@ describe('LandingPage calculator', () => {
         {...defaultProps}
         onCalculate={onCalculate}
         programs={[program('new-degree', 'מסלול חדש')]}
-      />
+      />,
     );
 
     await waitFor(() =>
       expect((screen.getByLabelText('מה תרצה/י ללמוד?') as HTMLSelectElement).value).toBe(
-        'new-degree'
-      )
+        'new-degree',
+      ),
     );
 
     fireEvent.change(screen.getByLabelText('ציון פסיכומטרי'), { target: { value: '700' } });

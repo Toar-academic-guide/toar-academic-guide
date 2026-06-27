@@ -34,7 +34,7 @@ export async function POST(request: Request) {
       throw new ApiRouteError(
         400,
         'ADMISSIONS_EVALUATION_PAYLOAD_INVALID',
-        'Admissions evaluation payload is invalid.'
+        'Admissions evaluation payload is invalid.',
       );
     }
 
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
       throw new ApiRouteError(
         404,
         'ADMISSIONS_PROGRAM_NOT_FOUND',
-        'The requested programme was not found in the catalogue.'
+        'The requested programme was not found in the catalogue.',
       );
     }
 
@@ -68,7 +68,7 @@ export async function POST(request: Request) {
             message: 'Too many admissions evaluation requests. Please try again shortly.',
           },
         },
-        { status: 429 }
+        { status: 429 },
       );
     }
 
@@ -100,7 +100,7 @@ function assertContentLength(request: Request) {
     throw new ApiRouteError(
       413,
       'ADMISSIONS_EVALUATION_PAYLOAD_TOO_LARGE',
-      'Admissions evaluation payload is too large.'
+      'Admissions evaluation payload is too large.',
     );
   }
 }
@@ -112,7 +112,7 @@ async function readJsonBody(request: Request) {
     throw new ApiRouteError(
       400,
       'ADMISSIONS_EVALUATION_PAYLOAD_INVALID',
-      'Admissions evaluation payload is invalid.'
+      'Admissions evaluation payload is invalid.',
     );
   }
 }

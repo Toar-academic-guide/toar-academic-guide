@@ -112,11 +112,7 @@ describe('evaluateAdmissionsForProgram', () => {
         linkedInstitutionId: 'haifa',
         kind: 'needs_input',
         capability: 'needs_input',
-        requiredInputs: [
-          'psychometric_math',
-          'psychometric_verbal',
-          'psychometric_english',
-        ],
+        requiredInputs: ['psychometric_math', 'psychometric_verbal', 'psychometric_english'],
       }),
     ]);
   });
@@ -157,8 +153,8 @@ describe('evaluateAdmissionsForProgram', () => {
               },
             },
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       )
       .mockResolvedValueOnce(
         new Response(
@@ -176,8 +172,8 @@ describe('evaluateAdmissionsForProgram', () => {
               },
             },
           }),
-          { status: 200 }
-        )
+          { status: 200 },
+        ),
       );
 
     const report = await evaluateAdmissionsForProgram({
