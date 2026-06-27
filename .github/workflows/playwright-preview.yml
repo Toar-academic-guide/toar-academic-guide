@@ -17,7 +17,8 @@ jobs:
     if: >
       github.event.deployment_status.state == 'success' &&
       github.event.deployment_status.environment == 'Preview' &&
-      github.event.deployment_status.target_url != ''
+      github.event.deployment_status.target_url != '' &&
+      contains(github.event.deployment_status.target_url, 'toar-academic-guide')
     env:
       CI: true
       BASE_URL: ${{ github.event.deployment_status.target_url }}
