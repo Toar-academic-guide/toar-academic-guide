@@ -1,6 +1,6 @@
 # Internal Data Health Dashboard
 
-`/internal/data-health` is a read-only operator dashboard for catalogue readiness, source coverage, source freshness, ingestion pipeline health, and review queue backlog.
+`/internal/data-health` is a read-only operator dashboard for catalogue readiness, source coverage, public admissions capability, source freshness, ingestion pipeline health, and review queue backlog.
 
 ## Access
 
@@ -71,26 +71,25 @@ The source freshness section reads persisted machine-check state and derives tim
 
 The dashboard intentionally displays capped source rows and review item ids, not raw normalized payloads or proposed review values.
 
-## Review item workspace
+## Public admissions capability
 
-The dashboard links the oldest pending review item to `/internal/reviews/[reviewItemId]`.
-That route is a separate operator workspace, not part of the read-only dashboard surface.
+The public admissions capability section summarizes every linked programme-institution pair the landing-page evaluator can return:
 
-The review workspace uses the same Supabase Auth plus `INTERNAL_ADMIN_EMAILS` allowlist. Unauthorized requests fail closed before the review item detail query runs, and unauthorized action calls return without invoking the review resolution service.
+- `exact`: verified exact official-source mapping is healthy enough for a firm public decision.
+- `estimated`: reviewed local formula plus threshold can guide the user, but not as an official decision.
+- `score_only`: an official source can produce only a score, so the public result stays estimate-only.
+- `needs_input`: the exact source is mapped, but the current public payload is missing required inputs.
+- `blocked`: the source is known to require a browser/manual lane that the public evaluator cannot use directly.
+- `stale`: the exact source exists but freshness state is failed or outside the SLA window.
+- `missing`: the linked pair has no reviewed source or formula coverage.
+- `unsupported`: the pair is linked but not mapped for supported public evaluation yet.
 
-For v1, the only publishable approval target is `sourceFreshness`:
-
-- Approve: validates that the item is still pending, confirms the proposed value is a supported source-freshness payload, confirms `source_freshness_states.latest_review_item_id` still points at the item, then clears that review pointer and marks the source freshness state `fresh` in the same server-owned transaction that marks the review item approved.
-- Reject: marks the review item rejected without mutating source freshness state or canonical catalogue tables.
-- Unsupported target fields: can be inspected and rejected, but approval fails closed with an unsupported-target result.
-- Stale review items: if the current source freshness state no longer points at the item, approval fails closed and leaves the item pending for operator re-check.
-
-The review detail page renders bounded normalized evidence, source provenance, status, payload id, reproduced fields, limitations, and next action. It does not render raw ingestion payload JSON or full proposed-value dumps.
+This section is intended to answer whether the landing calculator can make a trustworthy result for a given pair before users discover the gap themselves.
 
 ## Current limitations
 
 - The dashboard is read-only.
-- It links to the separate review workspace for pending review items, but it does not approve or reject them inline.
+- It does not approve or reject review items.
 - It does not trigger scraper jobs.
 - It does not display raw ingestion payloads or full proposed review values.
 - Browser-required sources remain blocked until a separate Hermes/VPS browser lane exists.

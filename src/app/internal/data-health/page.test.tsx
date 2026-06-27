@@ -82,16 +82,6 @@ describe('/internal/data-health page', () => {
         missingRequirementSources: [],
         missingProgramSources: [],
       },
-      decisionReadiness: {
-        decisionReadyRequirementCount: 0,
-        missingFactCount: 0,
-        weakSourceCount: 0,
-        manualGateCount: 0,
-        alternativePathCount: 0,
-        requirementsMissingFacts: [],
-        weakSources: [],
-        manualGateRequirements: [],
-      },
       ingestion: {
         totalJobs: 0,
         jobsByStatus: {},
@@ -108,6 +98,16 @@ describe('/internal/data-health page', () => {
       freshness: {
         staleAfterDays: 8,
         totalsByStatus: {},
+        rows: [],
+      },
+      publicAdmissions: {
+        totalPairs: 3,
+        unclassifiedCount: 0,
+        degradedRuntimeCount: 0,
+        totalsByCapability: {
+          exact: 1,
+          estimated: 2,
+        },
         rows: [],
       },
     });

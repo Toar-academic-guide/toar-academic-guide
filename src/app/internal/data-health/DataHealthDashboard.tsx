@@ -1,5 +1,3 @@
-import Link from 'next/link';
-
 import type { DataHealthReadyReport } from '@/server/data-health/queries';
 
 interface DataHealthDashboardProps {
@@ -16,7 +14,10 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
     (report.freshness.totalsByStatus.blocked ?? 0);
 
   return (
-    <main dir="ltr" className="min-h-screen bg-[#f5f0e8] px-5 py-6 text-slate-950 sm:px-8 lg:px-12">
+    <main
+      dir="ltr"
+      className="min-h-screen bg-[#f5f0e8] px-5 py-6 text-slate-950 sm:px-8 lg:px-12"
+    >
       <div className="mx-auto flex max-w-7xl flex-col gap-8">
         <header className="overflow-hidden rounded-[2rem] border border-slate-950/10 bg-[#101820] p-8 text-white shadow-[0_24px_80px_rgba(16,24,32,0.18)]">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
@@ -24,7 +25,9 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
               <p className="text-sm font-semibold uppercase tracking-[0.35em] text-amber-200">
                 Internal
               </p>
-              <h1 className="mt-3 text-4xl font-black tracking-tight sm:text-6xl">Data Health</h1>
+              <h1 className="mt-3 text-4xl font-black tracking-tight sm:text-6xl">
+                Data Health
+              </h1>
               <p className="mt-4 max-w-2xl text-base text-slate-200 sm:text-lg">
                 Read-only operating view for catalogue readiness, source coverage, ingestion
                 pipeline health, and review queue backlog.
@@ -51,6 +54,11 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
             tone={report.coverage.missingRequirementSourceCount === 0 ? 'good' : 'warn'}
           />
           <MetricCard
+            label="Exact-ready pairs"
+            value={String(report.publicAdmissions.totalsByCapability.exact ?? 0)}
+            tone={(report.publicAdmissions.totalsByCapability.exact ?? 0) > 0 ? 'good' : 'warn'}
+          />
+          <MetricCard
             label="Failed jobs"
             value={String(report.ingestion.jobsByStatus.failed ?? 0)}
             tone={(report.ingestion.jobsByStatus.failed ?? 0) === 0 ? 'good' : 'bad'}
@@ -64,32 +72,6 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
             label="Pending reviews"
             value={String(report.reviewQueue.pendingCount)}
             tone={report.reviewQueue.pendingCount === 0 ? 'good' : 'warn'}
-          />
-        </section>
-
-        <section className="rounded-[1.75rem] border border-slate-950/10 bg-white p-6 shadow-sm">
-          <h2 className="text-2xl font-black text-slate-950">Admissions decision readiness</h2>
-          <DefinitionGrid
-            items={[
-              [
-                'Decision-ready requirements',
-                report.decisionReadiness.decisionReadyRequirementCount,
-              ],
-              ['Missing structured facts', report.decisionReadiness.missingFactCount],
-              ['Weak source candidates', report.decisionReadiness.weakSourceCount],
-              ['Manual gates', report.decisionReadiness.manualGateCount],
-              ['Alternative paths', report.decisionReadiness.alternativePathCount],
-            ]}
-          />
-          <h3 className="mt-6 text-sm font-black uppercase tracking-[0.2em] text-slate-500">
-            Weak sources
-          </h3>
-          <CompactRows
-            emptyLabel="No weak admissions source candidates."
-            rows={report.decisionReadiness.weakSources.map((source) => ({
-              id: source.sourceCandidateId,
-              detail: `${source.programId} at ${source.institutionId} / ${source.origin} / ${source.specificity}`,
-            }))}
           />
         </section>
 
@@ -157,6 +139,38 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
               rows={report.coverage.missingRequirementSources.map((row) => ({
                 id: row.admissionRequirementId,
                 detail: `${row.programId} at ${row.institutionId}`,
+              }))}
+            />
+          </Panel>
+        </section>
+
+        <section>
+          <Panel title="Public admissions capability">
+            <DefinitionGrid
+              items={[
+                ['Linked pairs', report.publicAdmissions.totalPairs],
+                ['Exact', report.publicAdmissions.totalsByCapability.exact ?? 0],
+                ['Estimated', report.publicAdmissions.totalsByCapability.estimated ?? 0],
+                ['Score-only', report.publicAdmissions.totalsByCapability.score_only ?? 0],
+                ['Needs input', report.publicAdmissions.totalsByCapability.needs_input ?? 0],
+                ['Blocked', report.publicAdmissions.totalsByCapability.blocked ?? 0],
+                ['Stale', report.publicAdmissions.totalsByCapability.stale ?? 0],
+                ['Missing', report.publicAdmissions.totalsByCapability.missing ?? 0],
+                ['Unsupported', report.publicAdmissions.totalsByCapability.unsupported ?? 0],
+                ['Runtime degraded', report.publicAdmissions.degradedRuntimeCount],
+                ['Unclassified', report.publicAdmissions.unclassifiedCount],
+              ]}
+            />
+            <h3 className="mt-6 text-sm font-black uppercase tracking-[0.2em] text-slate-500">
+              Attention rows
+            </h3>
+            <CompactRows
+              emptyLabel="Every linked pair is classified and no public gaps are surfaced."
+              rows={report.publicAdmissions.rows.map((row) => ({
+                id: `${row.programId}:${row.institutionId}`,
+                detail: `${row.programName} @ ${row.institutionName} — ${row.capability}${
+                  row.reason ? `: ${row.reason}` : ''
+                }`,
               }))}
             />
           </Panel>
@@ -237,9 +251,8 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
                   {
                     id: report.reviewQueue.oldestPendingItem.id,
                     detail: `${report.reviewQueue.oldestPendingItem.targetField} since ${formatDateTime(
-                      report.reviewQueue.oldestPendingItem.createdAt,
+                      report.reviewQueue.oldestPendingItem.createdAt
                     )}`,
-                    href: `/internal/reviews/${report.reviewQueue.oldestPendingItem.id}`,
                   },
                 ]}
               />
@@ -324,7 +337,7 @@ function CompactRows({
   rows,
 }: {
   emptyLabel?: string;
-  rows: Array<{ detail: string; href?: string; id: string }>;
+  rows: Array<{ detail: string; id: string }>;
 }) {
   if (rows.length === 0) {
     return emptyLabel ? <p className="text-sm text-slate-600">{emptyLabel}</p> : null;
@@ -334,16 +347,7 @@ function CompactRows({
     <ul className="grid gap-2">
       {rows.map((row) => (
         <li key={row.id} className="rounded-2xl bg-slate-100 px-4 py-3">
-          {row.href ? (
-            <Link
-              className="text-sm font-black text-slate-950 underline-offset-4 hover:underline"
-              href={row.href}
-            >
-              {row.id}
-            </Link>
-          ) : (
-            <p className="text-sm font-black text-slate-950">{row.id}</p>
-          )}
+          <p className="text-sm font-black text-slate-950">{row.id}</p>
           <p className="mt-1 text-sm text-slate-600">{row.detail}</p>
         </li>
       ))}
@@ -355,17 +359,16 @@ function buildCriticalItems(report: DataHealthReadyReport): string[] {
   return [
     ...report.readiness.issues,
     ...report.coverage.missingRequirementSources.map(
-      (row) => `Missing source URL for ${row.admissionRequirementId}`,
+      (row) => `Missing source URL for ${row.admissionRequirementId}`
     ),
-    ...report.decisionReadiness.requirementsMissingFacts.map(
-      (row) => `Missing admissions facts for ${row.admissionRequirementId}`,
-    ),
-    ...report.decisionReadiness.weakSources.map(
-      (source) => `Weak admissions source ${source.sourceCandidateId}`,
-    ),
+    ...report.publicAdmissions.rows
+      .filter((row) => ['blocked', 'missing', 'stale', 'unsupported'].includes(row.capability))
+      .map((row) => `Public admissions ${row.capability}: ${row.programId} @ ${row.institutionId}`),
     ...report.ingestion.recentFailures.map((job) => `Failed ingestion job ${job.id}`),
     ...report.freshness.rows
-      .filter((row) => ['blocked', 'changed_needs_review', 'failed', 'stale'].includes(row.status))
+      .filter((row) =>
+        ['blocked', 'changed_needs_review', 'failed', 'stale'].includes(row.status)
+      )
       .map((row) => `Source freshness ${row.status}: ${row.sourceId}`),
     ...(report.reviewQueue.oldestPendingItem
       ? [`Oldest pending review ${report.reviewQueue.oldestPendingItem.id}`]

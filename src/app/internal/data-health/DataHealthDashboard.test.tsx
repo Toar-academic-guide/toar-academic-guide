@@ -41,38 +41,6 @@ function reportWithRisks(): DataHealthReadyReport {
         },
       ],
     },
-    decisionReadiness: {
-      decisionReadyRequirementCount: 2,
-      missingFactCount: 1,
-      weakSourceCount: 1,
-      manualGateCount: 1,
-      alternativePathCount: 1,
-      requirementsMissingFacts: [
-        {
-          admissionRequirementId: 'req-missing-facts',
-          institutionId: 'tau',
-          programId: 'tau_psychology',
-        },
-      ],
-      weakSources: [
-        {
-          sourceCandidateId: 'candidate-weak',
-          admissionRequirementId: 'req-tau-law',
-          institutionId: 'tau',
-          programId: 'tau_law',
-          confidence: 'low',
-          origin: 'board_column',
-          specificity: 'generic',
-        },
-      ],
-      manualGateRequirements: [
-        {
-          admissionRequirementId: 'req-tau-law',
-          institutionId: 'tau',
-          programId: 'tau_law',
-        },
-      ],
-    },
     ingestion: {
       totalJobs: 3,
       jobsByStatus: { failed: 1, pending: 1, running: 1 },
@@ -158,6 +126,37 @@ function reportWithRisks(): DataHealthReadyReport {
         },
       ],
     },
+    publicAdmissions: {
+      totalPairs: 4,
+      unclassifiedCount: 0,
+      degradedRuntimeCount: 1,
+      totalsByCapability: {
+        exact: 1,
+        estimated: 1,
+        needs_input: 1,
+        stale: 1,
+      },
+      rows: [
+        {
+          programId: 'tau_cs',
+          programName: 'Computer Science',
+          institutionId: 'tau',
+          institutionName: 'אוניברסיטת תל אביב',
+          capability: 'exact',
+          sourceId: 'tau-live',
+          reason: 'Verified exact official-source mapping is ready for public evaluation.',
+        },
+        {
+          programId: 'haifa_cs',
+          programName: 'Computer Science',
+          institutionId: 'haifa',
+          institutionName: 'אוניברסיטת חיפה',
+          capability: 'needs_input',
+          sourceId: 'haifa-live',
+          reason: 'Exact source requires extra psychometric subscores before public evaluation.',
+        },
+      ],
+    },
   };
 }
 
@@ -167,8 +166,8 @@ describe('DataHealthDashboard', () => {
 
     expect(screen.getByRole('heading', { name: /data health/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /catalogue readiness/i })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: /admissions decision readiness/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /source coverage/i })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /public admissions capability/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /source freshness/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /ingestion pipeline/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /review queue/i })).toBeTruthy();
@@ -176,7 +175,7 @@ describe('DataHealthDashboard', () => {
 
   it('prioritizes critical operational risks before lower-priority totals', () => {
     const { container } = render(
-      <DataHealthDashboard report={reportWithRisks()} adminEmail="operator@example.com" />,
+      <DataHealthDashboard report={reportWithRisks()} adminEmail="operator@example.com" />
     );
 
     const text = container.textContent ?? '';
@@ -191,15 +190,5 @@ describe('DataHealthDashboard', () => {
     expect(screen.queryByText(/proposedValue/i)).toBeNull();
     expect(screen.queryByText(/payload json/i)).toBeNull();
     expect(screen.queryByText(/normalizedDecisionPayload/i)).toBeNull();
-  });
-
-  it('links the oldest pending review item without rendering mutation controls', () => {
-    render(<DataHealthDashboard report={reportWithRisks()} adminEmail="operator@example.com" />);
-
-    expect(screen.getByRole('link', { name: 'review-old' }).getAttribute('href')).toBe(
-      '/internal/reviews/review-old',
-    );
-    expect(screen.queryByRole('button', { name: /approve/i })).toBeNull();
-    expect(screen.queryByRole('button', { name: /reject/i })).toBeNull();
   });
 });

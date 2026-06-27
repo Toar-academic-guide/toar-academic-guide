@@ -11,7 +11,6 @@ vi.mock('@/db/opsClient', () => ({
 vi.mock('server-only', () => ({}));
 
 import {
-  buildReviewItemDetail,
   getDataHealthReport,
   summarizeDataHealthRows,
   type DataHealthRows,
@@ -21,17 +20,51 @@ const now = new Date('2026-06-24T18:00:00.000Z');
 
 function baseRows(overrides: Partial<DataHealthRows> = {}): DataHealthRows {
   return {
-    institutions: [{ id: 'tau' }, { id: 'technion' }],
+    institutions: [
+      {
+        id: 'tau',
+        name: 'אוניברסיטת תל אביב',
+        region: 'center',
+        domain: 'tau.ac.il',
+        logoUrl: null,
+        programUrl: null,
+        calculatorUrl: null,
+        universityId: 'tau',
+      },
+      {
+        id: 'technion',
+        name: 'הטכניון – מכון טכנולוגי לישראל',
+        region: 'north',
+        domain: 'technion.ac.il',
+        logoUrl: null,
+        programUrl: null,
+        calculatorUrl: null,
+        universityId: 'technion',
+      },
+      {
+        id: 'haifa',
+        name: 'אוניברסיטת חיפה',
+        region: 'north',
+        domain: 'haifa.ac.il',
+        logoUrl: null,
+        programUrl: null,
+        calculatorUrl: 'https://applicants.haifa.ac.il/enrollmentChances/index.html',
+        universityId: 'haifa',
+      },
+    ],
     programs: [
       { id: 'tau_cs', name: 'Computer Science', admissionType: 'sekhem' },
+      { id: 'haifa_cs', name: 'Computer Science', admissionType: 'sekhem' },
       { id: 'tau_law', name: 'Law', admissionType: 'requirements' },
     ],
     programInstitutions: [
       { programId: 'tau_cs', institutionId: 'tau' },
+      { programId: 'haifa_cs', institutionId: 'haifa' },
       { programId: 'tau_law', institutionId: 'tau' },
     ],
     admissionRequirements: [
       { id: 'req-tau-cs', programId: 'tau_cs', institutionId: 'tau' },
+      { id: 'req-haifa-cs', programId: 'haifa_cs', institutionId: 'haifa' },
       { id: 'req-tau-law', programId: 'tau_law', institutionId: 'tau' },
     ],
     admissionThresholds: [
@@ -41,6 +74,15 @@ function baseRows(overrides: Partial<DataHealthRows> = {}): DataHealthRows {
         institutionId: 'tau',
         universityId: 'tau',
         thresholdValue: 710,
+        thresholdKind: 'sekhem',
+      },
+      {
+        id: 'threshold-haifa-cs',
+        programId: 'haifa_cs',
+        institutionId: 'haifa',
+        universityId: 'haifa',
+        thresholdValue: 700,
+        thresholdKind: 'sekhem',
       },
     ],
     sourceUrls: [
@@ -60,13 +102,69 @@ function baseRows(overrides: Partial<DataHealthRows> = {}): DataHealthRows {
       },
     ],
     universityCalculatorConfigs: [
-      { institutionId: 'tau' },
-      { institutionId: 'huji' },
-      { institutionId: 'technion' },
-      { institutionId: 'bgu' },
-      { institutionId: 'haifa' },
-      { institutionId: 'biu' },
-      { institutionId: 'ariel' },
+      {
+        institutionId: 'tau',
+        formulaType: 'weighted_scaled',
+        psyWeight: 0.6,
+        bagrutWeight: 0.4,
+        minPsychometric: null,
+        minBagrut: null,
+        scaleDescription: '200-800',
+      },
+      {
+        institutionId: 'huji',
+        formulaType: 'weighted_scaled',
+        psyWeight: 0.6,
+        bagrutWeight: 0.4,
+        minPsychometric: null,
+        minBagrut: null,
+        scaleDescription: '200-800',
+      },
+      {
+        institutionId: 'technion',
+        formulaType: 'technion_linear',
+        psyWeight: null,
+        bagrutWeight: null,
+        minPsychometric: null,
+        minBagrut: null,
+        scaleDescription: '0-100',
+      },
+      {
+        institutionId: 'bgu',
+        formulaType: 'weighted_scaled',
+        psyWeight: 0.7,
+        bagrutWeight: 0.3,
+        minPsychometric: null,
+        minBagrut: null,
+        scaleDescription: '200-800',
+      },
+      {
+        institutionId: 'haifa',
+        formulaType: 'weighted_scaled',
+        psyWeight: 0.75,
+        bagrutWeight: 0.25,
+        minPsychometric: null,
+        minBagrut: null,
+        scaleDescription: '200-800',
+      },
+      {
+        institutionId: 'biu',
+        formulaType: 'weighted_scaled',
+        psyWeight: 0.6,
+        bagrutWeight: 0.4,
+        minPsychometric: null,
+        minBagrut: null,
+        scaleDescription: '200-800',
+      },
+      {
+        institutionId: 'ariel',
+        formulaType: 'weighted_scaled',
+        psyWeight: 0.6,
+        bagrutWeight: 0.4,
+        minPsychometric: null,
+        minBagrut: null,
+        scaleDescription: '200-800',
+      },
     ],
     ingestionSources: [
       {
@@ -84,55 +182,6 @@ function baseRows(overrides: Partial<DataHealthRows> = {}): DataHealthRows {
         sourceUrl: 'https://applicants.haifa.ac.il/enrollmentChances/index.html',
       },
     ],
-    admissionsSourceCandidates: [
-      {
-        id: 'candidate-tau-cs',
-        admissionRequirementId: 'req-tau-cs',
-        programId: 'tau_cs',
-        institutionId: 'tau',
-        origin: 'catalogue_url',
-        specificity: 'calculator',
-        confidence: 'high',
-      },
-      {
-        id: 'candidate-tau-law',
-        admissionRequirementId: 'req-tau-law',
-        programId: 'tau_law',
-        institutionId: 'tau',
-        origin: 'board_column',
-        specificity: 'generic',
-        confidence: 'low',
-      },
-    ],
-    admissionFacts: [
-      {
-        id: 'fact-tau-cs-sekhem',
-        admissionRequirementId: 'req-tau-cs',
-        programId: 'tau_cs',
-        institutionId: 'tau',
-        kind: 'numeric_gate',
-        field: 'sekhem',
-        confidence: 'high',
-      },
-      {
-        id: 'fact-tau-law-interview',
-        admissionRequirementId: 'req-tau-law',
-        programId: 'tau_law',
-        institutionId: 'tau',
-        kind: 'manual_gate',
-        field: 'interview',
-        confidence: 'low',
-      },
-    ],
-    admissionAlternativePaths: [
-      {
-        id: 'alt-tau-law-manual',
-        admissionRequirementId: 'req-tau-law',
-        programId: 'tau_law',
-        institutionId: 'tau',
-        kind: 'manual_check',
-      },
-    ],
     ingestionJobs: [],
     reviewItems: [],
     sourceFreshnessStates: [],
@@ -146,11 +195,11 @@ describe('summarizeDataHealthRows', () => {
 
     expect(report.status).toBe('ready');
     expect(report.readiness.counts).toEqual({
-      institutions: 2,
-      programs: 2,
-      programInstitutions: 2,
-      admissionRequirements: 2,
-      admissionThresholds: 1,
+      institutions: 3,
+      programs: 3,
+      programInstitutions: 3,
+      admissionRequirements: 3,
+      admissionThresholds: 2,
       sourceUrls: 2,
       universityCalculatorConfigs: 7,
     });
@@ -171,70 +220,14 @@ describe('summarizeDataHealthRows', () => {
           },
         ],
       }),
-      now,
+      now
     );
 
     expect(report.coverage.missingRequirementSources).toEqual([
       {
-        admissionRequirementId: 'req-tau-law',
-        institutionId: 'tau',
-        programId: 'tau_law',
-      },
-    ]);
-    expect(report.coverage.missingRequirementSourceCount).toBe(1);
-  });
-
-  it('reports decision readiness from structured admissions facts and source candidates', () => {
-    const report = summarizeDataHealthRows(
-      baseRows({
-        admissionFacts: [
-          {
-            id: 'fact-tau-cs-sekhem',
-            admissionRequirementId: 'req-tau-cs',
-            programId: 'tau_cs',
-            institutionId: 'tau',
-            kind: 'numeric_gate',
-            field: 'sekhem',
-            confidence: 'high',
-          },
-          {
-            id: 'fact-tau-law-interview',
-            admissionRequirementId: 'req-tau-law',
-            programId: 'tau_law',
-            institutionId: 'tau',
-            kind: 'manual_gate',
-            field: 'interview',
-            confidence: 'low',
-          },
-        ],
-      }),
-      now,
-    );
-
-    expect(report.decisionReadiness.decisionReadyRequirementCount).toBe(2);
-    expect(report.decisionReadiness.weakSourceCount).toBe(1);
-    expect(report.decisionReadiness.manualGateCount).toBe(1);
-    expect(report.decisionReadiness.alternativePathCount).toBe(1);
-    expect(report.decisionReadiness.weakSources[0]).toMatchObject({
-      sourceCandidateId: 'candidate-tau-law',
-      specificity: 'generic',
-    });
-  });
-
-  it('flags requirements that have source URLs but no structured admissions facts', () => {
-    const report = summarizeDataHealthRows(
-      baseRows({
-        admissionFacts: [],
-      }),
-      now,
-    );
-
-    expect(report.decisionReadiness.missingFactCount).toBe(2);
-    expect(report.decisionReadiness.requirementsMissingFacts).toEqual([
-      {
-        admissionRequirementId: 'req-tau-cs',
-        institutionId: 'tau',
-        programId: 'tau_cs',
+        admissionRequirementId: 'req-haifa-cs',
+        institutionId: 'haifa',
+        programId: 'haifa_cs',
       },
       {
         admissionRequirementId: 'req-tau-law',
@@ -242,6 +235,7 @@ describe('summarizeDataHealthRows', () => {
         programId: 'tau_law',
       },
     ]);
+    expect(report.coverage.missingRequirementSourceCount).toBe(2);
   });
 
   it('groups ingestion jobs by status and difficulty with oldest active work first', () => {
@@ -280,7 +274,7 @@ describe('summarizeDataHealthRows', () => {
           },
         ],
       }),
-      now,
+      now
     );
 
     expect(report.ingestion.jobsByStatus).toMatchObject({
@@ -333,7 +327,7 @@ describe('summarizeDataHealthRows', () => {
           },
         ],
       }),
-      now,
+      now
     );
 
     expect(report.reviewQueue.pendingCount).toBe(2);
@@ -380,7 +374,7 @@ describe('summarizeDataHealthRows', () => {
           }),
         ],
       }),
-      now,
+      now
     );
 
     expect(report.freshness.totalsByStatus).toEqual({
@@ -412,11 +406,8 @@ describe('summarizeDataHealthRows', () => {
         admissionThresholds: [],
         sourceUrls: [],
         universityCalculatorConfigs: [],
-        admissionsSourceCandidates: [],
-        admissionFacts: [],
-        admissionAlternativePaths: [],
       }),
-      now,
+      now
     );
 
     expect(report.readiness.counts.programs).toBe(0);
@@ -424,193 +415,102 @@ describe('summarizeDataHealthRows', () => {
     expect(report.ingestion.totalJobs).toBe(0);
     expect(report.reviewQueue.pendingCount).toBe(0);
   });
-});
 
-describe('buildReviewItemDetail', () => {
-  const reviewCreatedAt = new Date('2026-06-24T11:00:00.000Z');
+  it('summarizes public admissions capability across exact, needs-input, and unsupported-ready states', () => {
+    const report = summarizeDataHealthRows(
+      baseRows({
+        programs: [
+          { id: 'tau_datascience', name: 'Digital Sciences', admissionType: 'sekhem' },
+          { id: 'haifa_cs', name: 'Computer Science', admissionType: 'sekhem' },
+          { id: 'tau_law', name: 'Law', admissionType: 'requirements' },
+        ],
+        programInstitutions: [
+          { programId: 'tau_datascience', institutionId: 'tau' },
+          { programId: 'haifa_cs', institutionId: 'haifa' },
+          { programId: 'tau_law', institutionId: 'tau' },
+        ],
+        admissionRequirements: [
+          { id: 'req-tau-ds', programId: 'tau_datascience', institutionId: 'tau' },
+          { id: 'req-haifa-cs', programId: 'haifa_cs', institutionId: 'haifa' },
+          { id: 'req-tau-law', programId: 'tau_law', institutionId: 'tau' },
+        ],
+        admissionThresholds: [
+          {
+            id: 'threshold-tau-ds',
+            programId: 'tau_datascience',
+            institutionId: 'tau',
+            universityId: 'tau',
+            thresholdValue: 700,
+            thresholdKind: 'sekhem',
+          },
+          {
+            id: 'threshold-haifa-cs',
+            programId: 'haifa_cs',
+            institutionId: 'haifa',
+            universityId: 'haifa',
+            thresholdValue: 700,
+            thresholdKind: 'sekhem',
+          },
+        ],
+        ingestionSources: [
+          sourceRow('tau-digital-sciences-live', { institutionId: 'tau', programId: 'tau_datascience' }),
+          sourceRow('haifa-cs-live', { institutionId: 'haifa', programId: 'haifa_cs' }),
+        ],
+        sourceFreshnessStates: [
+          freshnessState('tau-digital-sciences-live', {
+            status: 'fresh',
+            lastSuccessfulCheckAt: new Date('2026-06-24T17:00:00.000Z'),
+          }),
+          freshnessState('haifa-cs-live', {
+            status: 'fresh',
+            lastSuccessfulCheckAt: new Date('2026-06-24T17:00:00.000Z'),
+          }),
+        ],
+      }),
+      now
+    );
 
-  it('returns bounded evidence and action eligibility for a pending source freshness item', () => {
-    const detail = buildReviewItemDetail({
-      reviewItem: reviewItemRow({
-        proposedValue: sourceFreshnessProposedValue({
-          normalizedDecisionPayload: Object.fromEntries(
-            Array.from({ length: 10 }, (_, index) => [`field-${index}`, `value-${index}`]),
-          ),
+    expect(report.publicAdmissions.totalPairs).toBe(3);
+    expect(report.publicAdmissions.unclassifiedCount).toBe(0);
+    expect(report.publicAdmissions.totalsByCapability).toMatchObject({
+      exact: 1,
+      needs_input: 1,
+      unsupported: 1,
+    });
+    expect(report.publicAdmissions.rows).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          programId: 'tau_datascience',
+          institutionId: 'tau',
+          capability: 'exact',
         }),
-      }),
-      payload: {
-        createdAt: new Date('2026-06-24T10:59:00.000Z'),
-      },
-      source: sourceDetailRow(),
-      freshness: freshnessDetailRow(),
-    });
-
-    expect(detail).toMatchObject({
-      id: 'review-source-1',
-      payloadId: 'payload-source-1',
-      payloadCreatedAt: '2026-06-24T10:59:00.000Z',
-      targetField: 'sourceFreshness',
-      status: 'pending',
-      actionEligibility: {
-        canApprove: true,
-        canReject: true,
-        approveBlockedReason: null,
-      },
-      evidence: {
-        sourceId: 'tau-live',
-        institutionId: 'tau',
-        programId: 'tau_cs',
-        sourceUrl: 'https://go.tau.ac.il/graphql',
-        sourceClass: 'api_static_json',
-        capability: 'decision_capable',
-        freshnessStatus: 'changed_needs_review',
-        latestReviewItemId: 'review-source-1',
-        normalizedFingerprint: 'fingerprint-v2',
-        reproducedFields: ['sekhem'],
-        limitations: ['does not cover manual exceptions'],
-        nextAction: 'Review changed threshold before publication',
-      },
-    });
-    expect(detail.evidence.normalizedDecisionPayload).toHaveLength(8);
-    expect(JSON.stringify(detail)).not.toContain('rawHtml');
+        expect.objectContaining({
+          programId: 'haifa_cs',
+          institutionId: 'haifa',
+          capability: 'needs_input',
+        }),
+      ])
+    );
   });
-
-  it('keeps historical resolved items visible but ineligible for action', () => {
-    const detail = buildReviewItemDetail({
-      reviewItem: reviewItemRow({
-        status: 'approved',
-        reviewedAt: new Date('2026-06-24T12:00:00.000Z'),
-      }),
-      payload: null,
-      source: sourceDetailRow(),
-      freshness: freshnessDetailRow({ latestReviewItemId: null, status: 'fresh' }),
-    });
-
-    expect(detail.status).toBe('approved');
-    expect(detail.reviewedAt).toBe('2026-06-24T12:00:00.000Z');
-    expect(detail.actionEligibility).toEqual({
-      canApprove: false,
-      canReject: false,
-      approveBlockedReason: 'Review item has already been resolved.',
-    });
-  });
-
-  it('blocks approval when the current source state no longer points at the review item', () => {
-    const detail = buildReviewItemDetail({
-      reviewItem: reviewItemRow(),
-      payload: null,
-      source: sourceDetailRow(),
-      freshness: freshnessDetailRow({ latestReviewItemId: 'newer-review-item' }),
-    });
-
-    expect(detail.actionEligibility).toEqual({
-      canApprove: false,
-      canReject: true,
-      approveBlockedReason: 'Source freshness state no longer points at this review item.',
-    });
-  });
-
-  it('allows rejection but not approval for unsupported target fields', () => {
-    const detail = buildReviewItemDetail({
-      reviewItem: reviewItemRow({
-        targetField: 'programDescription',
-        proposedValue: { programDescription: 'Updated description' },
-      }),
-      payload: null,
-      source: null,
-      freshness: null,
-    });
-
-    expect(detail.actionEligibility).toEqual({
-      canApprove: false,
-      canReject: true,
-      approveBlockedReason: 'Approval is not supported for target field "programDescription".',
-    });
-    expect(detail.evidence.normalizedDecisionPayload).toEqual([]);
-  });
-
-  function reviewItemRow(
-    overrides: Partial<Parameters<typeof buildReviewItemDetail>[0]['reviewItem']> = {},
-  ): Parameters<typeof buildReviewItemDetail>[0]['reviewItem'] {
-    return {
-      id: 'review-source-1',
-      payloadId: 'payload-source-1',
-      admissionRequirementId: null,
-      targetField: 'sourceFreshness',
-      proposedValue: sourceFreshnessProposedValue(),
-      status: 'pending',
-      createdAt: reviewCreatedAt,
-      reviewedAt: null,
-      ...overrides,
-    };
-  }
-
-  function sourceFreshnessProposedValue(
-    overrides: Partial<{
-      sourceId: string;
-      normalizedFingerprint: string;
-      normalizedDecisionPayload: Record<string, unknown>;
-      reproducedFields: string[];
-      limitations: string[];
-      nextAction: string;
-      rawHtml: string;
-    }> = {},
-  ): Record<string, unknown> {
-    return {
-      sourceId: 'tau-live',
-      normalizedFingerprint: 'fingerprint-v2',
-      normalizedDecisionPayload: { sekhem: 715 },
-      reproducedFields: ['sekhem'],
-      limitations: ['does not cover manual exceptions'],
-      nextAction: 'Review changed threshold before publication',
-      rawHtml: '<html>large scraped body must not leak</html>',
-      ...overrides,
-    };
-  }
-
-  function sourceDetailRow(
-    overrides: Partial<Parameters<typeof buildReviewItemDetail>[0]['source']> = {},
-  ): NonNullable<Parameters<typeof buildReviewItemDetail>[0]['source']> {
-    return {
-      id: 'tau-live',
-      institutionId: 'tau',
-      programId: 'tau_cs',
-      sourceUrl: 'https://go.tau.ac.il/graphql',
-      ...overrides,
-    };
-  }
-
-  function freshnessDetailRow(
-    overrides: Partial<Parameters<typeof buildReviewItemDetail>[0]['freshness']> = {},
-  ): NonNullable<Parameters<typeof buildReviewItemDetail>[0]['freshness']> {
-    return {
-      sourceId: 'tau-live',
-      sourceClass: 'api_static_json',
-      capability: 'decision_capable',
-      status: 'changed_needs_review',
-      lastCheckedAt: new Date('2026-06-24T10:58:00.000Z'),
-      lastSuccessfulCheckAt: new Date('2026-06-24T10:58:00.000Z'),
-      lastChangedAt: new Date('2026-06-24T10:58:00.000Z'),
-      latestReviewItemId: 'review-source-1',
-      nextAction: 'Review changed threshold before publication',
-      ...overrides,
-    };
-  }
 });
 
-function sourceRow(id: string): DataHealthRows['ingestionSources'][number] {
+function sourceRow(
+  id: string,
+  overrides: Partial<DataHealthRows['ingestionSources'][number]> = {}
+): DataHealthRows['ingestionSources'][number] {
   return {
     id,
     institutionId: 'tau',
     programId: null,
     difficulty: 'easy',
     sourceUrl: `https://example.com/${id}`,
+    ...overrides,
   };
 }
 
 function freshnessState(
   sourceId: string,
-  overrides: Partial<DataHealthRows['sourceFreshnessStates'][number]> = {},
+  overrides: Partial<DataHealthRows['sourceFreshnessStates'][number]> = {}
 ): DataHealthRows['sourceFreshnessStates'][number] {
   return {
     sourceId,
@@ -634,28 +534,6 @@ describe('getDataHealthReport', () => {
     hoistedMocks.getOpsDb.mockReset();
   });
 
-  it('loads report tables sequentially to stay within the ops role connection limit', async () => {
-    let activeQueries = 0;
-    let maxActiveQueries = 0;
-    const from = vi.fn(async () => {
-      activeQueries += 1;
-      maxActiveQueries = Math.max(maxActiveQueries, activeQueries);
-      await Promise.resolve();
-      activeQueries -= 1;
-      return [];
-    });
-
-    hoistedMocks.getOpsDb.mockReturnValue({
-      select: vi.fn(() => ({ from })),
-    });
-
-    const report = await getDataHealthReport(now);
-
-    expect(report.status).toBe('ready');
-    expect(from).toHaveBeenCalledTimes(14);
-    expect(maxActiveQueries).toBe(1);
-  });
-
   it('returns an unavailable state when the ops database is not configured', async () => {
     hoistedMocks.getOpsDb.mockImplementation(() => {
       throw new Error('Missing OPS_DATABASE_URL');
@@ -665,28 +543,5 @@ describe('getDataHealthReport', () => {
       status: 'unavailable',
       message: 'Operational data health is not configured.',
     });
-  });
-
-  it('returns an unavailable state when the ops database query stalls', async () => {
-    vi.useFakeTimers();
-    hoistedMocks.getOpsDb.mockReturnValue({
-      select: vi.fn(() => ({
-        from: vi.fn(() => new Promise<never>(() => {})),
-      })),
-    });
-
-    try {
-      const reportPromise = getDataHealthReport(now, { timeoutMs: 10 });
-
-      await vi.advanceTimersByTimeAsync(10);
-
-      await expect(reportPromise).resolves.toEqual({
-        status: 'unavailable',
-        message:
-          'Operational data health did not respond in time. Check OPS_DATABASE_URL and Supabase pooler connectivity.',
-      });
-    } finally {
-      vi.useRealTimers();
-    }
   });
 });

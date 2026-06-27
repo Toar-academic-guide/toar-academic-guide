@@ -1,27 +1,27 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { ArrowRight, Check, ChevronDown } from 'lucide-react';
+import { useEffect, useMemo, useState } from 'react';
+import { AlertCircle, ArrowRight, Check, ChevronDown, LoaderCircle } from 'lucide-react';
 import posthog from 'posthog-js';
-import { INSTITUTION_BY_NAME, type InstitutionRecord } from '@/data/institutions';
+import {
+  INSTITUTION_BY_ID,
+  INSTITUTION_BY_NAME,
+  type InstitutionId,
+  type InstitutionRecord,
+} from '@/data/institutions';
 import { REGION_LABEL } from '@/data/geography';
-import { evaluateUniversities } from '@/utils/sekhemCalculators';
-import { evaluateAdmissionsDecision } from '@/utils/admissionsDecisionEngine';
 import InstitutionLogo from '@/components/InstitutionLogo';
+import {
+  AdmissionsEvaluationApiError,
+  fetchAdmissionsEvaluation,
+} from '@/lib/admissionsEvaluationClient';
 import type { CatalogueProgram } from '@/types/catalogue';
-import type { AdmissionsDecision, GeographicRegion, University } from '@/types';
+import type { GeographicRegion } from '@/types';
+import type { AdmissionsEvaluationReport, AdmissionsEvaluationResult } from '@/types/admissionsEvaluation';
 
 const UNIVERSITY_IDS = new Set([
-  'tau',
-  'huji',
-  'technion',
-  'bgu',
-  'haifa',
-  'biu',
-  'ariel',
-  'weizmann',
-  'reichman',
-  'open_university',
+  'tau', 'huji', 'technion', 'bgu', 'haifa', 'biu', 'ariel',
+  'weizmann', 'reichman', 'open_university',
 ]);
 
 type InstitutionType = 'university' | 'college';
@@ -36,26 +36,41 @@ const REGION_COUNT_STYLE: Record<DisplayRegion, string> = {
 };
 
 function getInstitutionType(inst: InstitutionRecord): InstitutionType {
-  return UNIVERSITY_IDS.has(inst.id) ? 'university' : 'college';
+  return UNIVERSITY_IDS.has(inst.universityId ?? inst.id) ? 'university' : 'college';
 }
 
-interface DecisionRow {
-  institution: InstitutionRecord;
-  decision: AdmissionsDecision;
-}
+function formatResultSummary(result: AdmissionsEvaluationResult): string {
+  if (typeof result.score === 'number') {
+    const formattedScore =
+      Number.isInteger(result.score) ? String(result.score) : result.score.toFixed(1);
+    const formattedThreshold =
+      typeof result.threshold === 'number'
+        ? Number.isInteger(result.threshold)
+          ? String(result.threshold)
+          : result.threshold.toFixed(1)
+        : null;
 
-function getMissingSummary(decision: AdmissionsDecision): string {
-  if (decision.missing.length > 0) {
-    return decision.missing
-      .map((item) => (item.delta !== undefined ? `${item.label}: חסר ${item.delta}` : item.label))
-      .join(' · ');
+    return `${result.scoreLabel ?? 'ציון'} ${formattedScore}${
+      formattedThreshold ? ` · סף ${formattedThreshold}` : ''
+    }`;
   }
 
-  if (decision.manualGates.length > 0) {
-    return decision.manualGates.join(' · ');
+  if (result.deltaNeeded) {
+    const parts: string[] = [];
+    if (result.deltaNeeded.psychometric > 0) {
+      parts.push(`+${result.deltaNeeded.psychometric} פסיכומטרי`);
+    }
+    if (result.deltaNeeded.bagrut > 0) {
+      parts.push(`+${result.deltaNeeded.bagrut} בגרות`);
+    }
+    return parts.length > 0 ? parts.join(' · ') : 'נדרשים נתונים נוספים';
   }
 
-  return 'לא חסר תנאי מספרי ידוע';
+  if (result.requiredInputs?.length) {
+    return 'נדרשים גם תתי-ציונים בפסיכומטרי';
+  }
+
+  return result.sourceLabel;
 }
 
 interface Props {
@@ -63,7 +78,6 @@ interface Props {
   bagrut: number;
   degreeId: string;
   programs: CatalogueProgram[];
-  calculatorInstitutions: University[];
   onBack: () => void;
 }
 
@@ -72,12 +86,11 @@ export default function CalculatorResults({
   bagrut,
   degreeId,
   programs,
-  calculatorInstitutions,
   onBack,
 }: Props) {
   useEffect(() => {
-    posthog.capture('calculator_results_viewed', { degree_id: degreeId, psychometric, bagrut });
-  }, [degreeId, psychometric, bagrut]);
+    posthog.capture('calculator_results_viewed', { degree_id: degreeId });
+  }, [degreeId]);
 
   const [selectedTypes, setSelectedTypes] = useState<Set<InstitutionType>>(
     new Set(['university', 'college']),
@@ -86,43 +99,91 @@ export default function CalculatorResults({
     new Set(DISPLAY_REGIONS),
   );
   const [expandedRegions, setExpandedRegions] = useState<Set<DisplayRegion>>(new Set());
+  const [report, setReport] = useState<AdmissionsEvaluationReport | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<AdmissionsEvaluationApiError | null>(null);
+  const [reloadToken, setReloadToken] = useState(0);
 
   const selectedProgram = programs.find((program) => program.id === degreeId);
-  const evaluatedResults = selectedProgram
-    ? evaluateUniversities(
-        calculatorInstitutions,
-        selectedProgram,
-        { psychometric, bagrut },
-        { hasMath5: false, hasPhysics5: false },
-      )
-    : [];
-  const resultsByUniversityId = new Map(
-    evaluatedResults.map((result) => [result.university.id, result]),
-  );
 
-  const decisionRows: DecisionRow[] =
-    selectedProgram?.institutionDetails
-      ?.map((detail) => {
-        const institution = INSTITUTION_BY_NAME[detail.institutionName];
-        if (!institution || institution.region === 'any') {
-          return null;
+  useEffect(() => {
+    let cancelled = false;
+
+    setLoading(true);
+    setError(null);
+
+    fetchAdmissionsEvaluation({
+      degreeId,
+      psychometric,
+      bagrut,
+    })
+      .then((nextReport) => {
+        if (cancelled) {
+          return;
         }
 
-        const calculatorResult = resultsByUniversityId.get(
-          institution.universityId ?? institution.id,
+        setReport(nextReport);
+        posthog.capture('calculator_results_loaded', {
+          degree_id: degreeId,
+          result_count: nextReport.results.length,
+          exact_count: nextReport.results.filter((result) => result.kind === 'exact').length,
+          estimated_count: nextReport.results.filter((result) => result.kind === 'estimated').length,
+          unsupported_count: nextReport.results.filter((result) => result.kind === 'unsupported').length,
+          degraded_count: nextReport.results.filter((result) => result.kind === 'degraded').length,
+          needs_input_count: nextReport.results.filter((result) => result.kind === 'needs_input').length,
+        });
+      })
+      .catch((requestError: unknown) => {
+        if (cancelled) {
+          return;
+        }
+
+        setReport(null);
+        setError(
+          requestError instanceof AdmissionsEvaluationApiError
+            ? requestError
+            : new AdmissionsEvaluationApiError('Unable to evaluate admissions right now.')
         );
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [bagrut, degreeId, psychometric, reloadToken]);
+
+  const displayRows = useMemo(() => {
+    return (report?.results ?? [])
+      .map((result) => {
+        const staticRecord =
+          INSTITUTION_BY_ID[result.linkedInstitutionId as InstitutionId] ??
+          INSTITUTION_BY_NAME[result.institution.name];
+        const institution: InstitutionRecord = {
+          ...(staticRecord ?? {
+            id: result.linkedInstitutionId as InstitutionId,
+            name: result.institution.name,
+            region: result.institution.region,
+          }),
+          name: result.institution.name,
+          region: result.institution.region,
+          ...(result.institution.logoUrl ? { logoUrl: result.institution.logoUrl } : {}),
+          ...(result.institution.domain ? { domain: result.institution.domain } : {}),
+          ...(result.institution.programUrl ? { programUrl: result.institution.programUrl } : {}),
+          ...(result.institution.calculatorUrl ? { calculatorUrl: result.institution.calculatorUrl } : {}),
+          ...(result.institution.universityId ? { universityId: result.institution.universityId } : {}),
+        };
 
         return {
           institution,
-          decision: evaluateAdmissionsDecision({
-            program: selectedProgram,
-            institutionDetail: detail,
-            scores: { psychometric, bagrut },
-            calculatorResult,
-          }),
+          result,
         };
       })
-      .filter((row): row is DecisionRow => row !== null) ?? [];
+      .filter((entry) => entry.institution.region !== 'any');
+  }, [report]);
 
   function toggleType(type: InstitutionType) {
     setSelectedTypes((previous) => {
@@ -168,24 +229,25 @@ export default function CalculatorResults({
     });
   }
 
-  const filtered = decisionRows.filter(
-    ({ institution }) =>
-      selectedTypes.has(getInstitutionType(institution)) &&
-      selectedRegions.has(institution.region as DisplayRegion),
+  const filtered = displayRows.filter(
+    (entry) =>
+      selectedTypes.has(getInstitutionType(entry.institution)) &&
+      selectedRegions.has(entry.institution.region as DisplayRegion),
   );
 
   const groupedByRegion = DISPLAY_REGIONS.map((region) => ({
     region,
-    rows: filtered.filter(({ institution }) => institution.region === region),
-  })).filter((group) => group.rows.length > 0);
+    institutions: filtered.filter((institution) => institution.institution.region === region),
+  })).filter((group) => group.institutions.length > 0);
 
   const STATUS_CONFIG = {
-    accepted: { bg: 'bg-[#34D399]' },
-    likely_accepted_needs_verification: { bg: 'bg-[#93C5FD]' },
-    close_to_accepted: { bg: 'bg-[#FCD34D]' },
-    not_accepted_has_path: { bg: 'bg-[#FDBA74]' },
-    far_from_track: { bg: 'bg-[#FCA5A5]' },
-    insufficient_data: { bg: 'bg-slate-300' },
+    exactAccepted: { label: 'מתקבל/ת', bg: 'bg-[#34D399]' },
+    exactBelow: { label: 'מתחת לסף', bg: 'bg-[#FCD34D]' },
+    estimatedAccepted: { label: 'הערכה חיובית', bg: 'bg-sky-200' },
+    estimatedBelow: { label: 'הערכה מתחת לסף', bg: 'bg-amber-200' },
+    needsInput: { label: 'נדרשים נתונים', bg: 'bg-violet-200' },
+    degraded: { label: 'אימות לא זמין', bg: 'bg-rose-200' },
+    unsupported: { label: 'אין מספיק מידע', bg: 'bg-slate-300' },
   } as const;
 
   return (
@@ -195,7 +257,7 @@ export default function CalculatorResults({
           <button
             type="button"
             onClick={onBack}
-            className="flex items-center gap-2 rounded-full border-2 border-black px-4 py-2 text-sm font-bold text-slate-900 transition hover:bg-slate-50 hover:shadow-[2px_2px_0px_rgba(0,0,0,1)]"
+            className="cursor-pointer flex items-center gap-2 rounded-full border-2 border-black px-4 py-2 text-sm font-bold text-slate-900 transition hover:bg-slate-50 hover:shadow-[2px_2px_0px_rgba(0,0,0,1)]"
           >
             <ArrowRight size={16} />
             חזרה
@@ -219,11 +281,7 @@ export default function CalculatorResults({
         <div className="mb-6">
           <div className="mb-3 flex items-center justify-between">
             <p className="text-sm font-bold text-slate-900">סוג מוסד</p>
-            <button
-              type="button"
-              onClick={selectAllTypes}
-              className="text-xs font-semibold text-[#4f46e5]"
-            >
+            <button type="button" onClick={selectAllTypes} className="cursor-pointer text-xs font-semibold text-[#4f46e5]">
               בחר/י הכל
             </button>
           </div>
@@ -244,11 +302,7 @@ export default function CalculatorResults({
         <div className="mb-4">
           <div className="mb-3 flex items-center justify-between">
             <p className="text-sm font-bold text-slate-900">אזור</p>
-            <button
-              type="button"
-              onClick={selectAllRegions}
-              className="text-xs font-semibold text-[#4f46e5]"
-            >
+            <button type="button" onClick={selectAllRegions} className="cursor-pointer text-xs font-semibold text-[#4f46e5]">
               בחר/י הכל
             </button>
           </div>
@@ -282,7 +336,7 @@ export default function CalculatorResults({
             </p>
             <button
               type="button"
-              className="inline-flex items-center gap-1 text-sm font-bold text-[#4f46e5] underline decoration-[#a5b4fc] underline-offset-2 transition hover:text-[#3730a3]"
+              className="cursor-pointer inline-flex items-center gap-1 text-sm font-bold text-[#4f46e5] underline decoration-[#a5b4fc] underline-offset-2 transition hover:text-[#3730a3]"
             >
               לפירוט על לימודים אקדמיים בחו&quot;ל
               <ArrowRight size={14} />
@@ -290,10 +344,32 @@ export default function CalculatorResults({
           </div>
         </div>
 
-        {groupedByRegion.map(({ region, rows }) => {
+        {loading ? (
+          <div className="rounded-2xl border-2 border-black bg-white p-12 text-center">
+            <LoaderCircle className="mx-auto h-6 w-6 animate-spin text-slate-500" />
+            <p className="mt-3 text-sm text-slate-500">טוענים את תוצאות הקבלה למסלול זה</p>
+          </div>
+        ) : null}
+
+        {!loading && error ? (
+          <div className="rounded-2xl border-2 border-rose-200 bg-rose-50 p-8 text-center">
+            <AlertCircle className="mx-auto h-6 w-6 text-rose-600" />
+            <p className="mt-3 text-base font-black text-slate-900">לא הצלחנו לחשב את התוצאות כרגע</p>
+            <p className="mt-2 text-sm text-slate-600">{error.message}</p>
+            <button
+              type="button"
+              onClick={() => setReloadToken((current) => current + 1)}
+              className="mt-5 cursor-pointer rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
+            >
+              נסו שוב
+            </button>
+          </div>
+        ) : null}
+
+        {groupedByRegion.map(({ region, institutions }) => {
           const isExpanded = expandedRegions.has(region);
-          const visible = isExpanded ? rows : rows.slice(0, 3);
-          const hiddenCount = rows.length - 3;
+          const visible = isExpanded ? institutions : institutions.slice(0, 3);
+          const hiddenCount = institutions.length - 3;
 
           return (
             <div key={region} className="mb-8">
@@ -301,59 +377,54 @@ export default function CalculatorResults({
                 <h2 className="text-base font-black text-slate-900">
                   {REGION_LABEL[region as GeographicRegion]}
                 </h2>
-                <span
-                  className={`rounded-full border px-2.5 py-0.5 text-[10px] font-bold ${REGION_COUNT_STYLE[region]}`}
-                >
-                  {rows.length} מוסדות
+                <span className={`rounded-full border px-2.5 py-0.5 text-[10px] font-bold ${REGION_COUNT_STYLE[region]}`}>
+                  {institutions.length} מוסדות
                 </span>
               </div>
 
               <div className="flex flex-col gap-2">
-                {visible.map(({ institution, decision }) => {
-                  const config = STATUS_CONFIG[decision.status];
+                {visible.map(({ institution, result }) => {
+                  const config =
+                    result.kind === 'exact'
+                      ? result.decision === 'accepted'
+                        ? STATUS_CONFIG.exactAccepted
+                        : STATUS_CONFIG.exactBelow
+                      : result.kind === 'estimated'
+                        ? result.decision === 'accepted'
+                          ? STATUS_CONFIG.estimatedAccepted
+                          : STATUS_CONFIG.estimatedBelow
+                        : result.kind === 'needs_input'
+                          ? STATUS_CONFIG.needsInput
+                          : result.kind === 'degraded'
+                            ? STATUS_CONFIG.degraded
+                            : STATUS_CONFIG.unsupported;
                   const institutionType = getInstitutionType(institution);
-                  const primarySource = decision.sources[0];
 
                   return (
                     <div
                       key={institution.id}
-                      className="rounded-[14px] border-2 border-black bg-white px-4 py-4"
+                      className="flex flex-col gap-3 rounded-[14px] border-2 border-black bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
                     >
-                      <div className="mb-3 flex items-start justify-between gap-3">
-                        <div className="flex min-w-0 items-center gap-3">
-                          <InstitutionLogo
-                            institution={institution.name}
-                            record={institution}
-                            size="sm"
-                          />
-                          <div className="min-w-0">
-                            <p className="truncate text-sm font-bold text-slate-900">
-                              {institution.name}
-                            </p>
-                            <p className="text-[10px] text-slate-500">
-                              {institutionType === 'university' ? 'אוניברסיטה' : 'מכללה'} · ביטחון{' '}
-                              {decision.confidence}
-                              {primarySource ? ` · ${primarySource.label}` : ''}
-                            </p>
-                          </div>
+                      <div className="flex min-w-0 items-start gap-3">
+                        <InstitutionLogo institution={institution.name} record={institution} size="sm" />
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-bold text-slate-900">{institution.name}</p>
+                          <p className="text-[10px] text-slate-500" dir="ltr">
+                            {institutionType === 'university' ? 'אוניברסיטה' : 'מכללה'} · {formatResultSummary(result)}
+                          </p>
+                          <p className="mt-1 text-xs font-semibold text-slate-700">{result.sourceLabel}</p>
+                          <p className="mt-1 text-xs leading-relaxed text-slate-500">
+                            {result.explanation}
+                          </p>
+                          <p className="mt-1 text-[11px] text-slate-500">{result.nextAction}</p>
                         </div>
-                        <span
-                          aria-label={`${institution.name}: ${decision.statusLabel}`}
-                          className={`${config.bg} flex-shrink-0 rounded-full border-2 border-black px-3 py-1 text-[10px] font-extrabold text-black`}
-                        >
-                          {decision.statusLabel}
-                        </span>
                       </div>
-
-                      <div className="grid gap-2 text-xs text-slate-700 sm:grid-cols-2">
-                        <ResultSection title="הסטטוס שלך" text={decision.statusLabel} />
-                        <ResultSection
-                          title="למה קיבלת את התוצאה"
-                          text={decision.explanation[0] ?? 'אין הסבר זמין'}
-                        />
-                        <ResultSection title="מה חסר לך" text={getMissingSummary(decision)} />
-                        <ResultSection title="הצעד הכי טוב הבא" text={decision.nextAction.label} />
-                      </div>
+                      <span
+                        aria-label={`${institution.name}: ${config.label}`}
+                        className={`${config.bg} self-start rounded-full border-2 border-black px-3 py-1 text-[10px] font-extrabold text-black sm:self-center`}
+                      >
+                        {config.label}
+                      </span>
                     </div>
                   );
                 })}
@@ -363,10 +434,9 @@ export default function CalculatorResults({
                 <button
                   type="button"
                   onClick={() => toggleExpanded(region)}
-                  className="mt-2 flex w-full items-center justify-center gap-1 text-xs text-slate-500"
+                  className="mt-2 flex w-full cursor-pointer items-center justify-center gap-1 text-xs text-slate-500"
                 >
-                  + {hiddenCount} מוסדות נוספים{' '}
-                  <span className="font-semibold text-[#4f46e5]">הצג/י הכל</span>
+                  + {hiddenCount} מוסדות נוספים <span className="font-semibold text-[#4f46e5]">הצג/י הכל</span>
                   <ChevronDown size={12} className="text-[#4f46e5]" />
                 </button>
               ) : null}
@@ -375,7 +445,7 @@ export default function CalculatorResults({
                 <button
                   type="button"
                   onClick={() => toggleExpanded(region)}
-                  className="mt-2 flex w-full items-center justify-center gap-1 text-xs text-slate-500"
+                  className="mt-2 flex w-full cursor-pointer items-center justify-center gap-1 text-xs text-slate-500"
                 >
                   <span className="font-semibold text-[#4f46e5]">הסתר/י</span>
                   <ChevronDown size={12} className="rotate-180 text-[#4f46e5]" />
@@ -385,9 +455,13 @@ export default function CalculatorResults({
           );
         })}
 
-        {groupedByRegion.length === 0 ? (
+        {!loading && !error && groupedByRegion.length === 0 ? (
           <div className="rounded-2xl border-2 border-dashed border-slate-300 bg-white p-12 text-center">
-            <p className="text-sm text-slate-500">לא נמצאו מוסדות עם הסינון הנוכחי</p>
+            <p className="text-sm text-slate-500">
+              {report?.results.length
+                ? 'לא נמצאו מוסדות עם הסינון הנוכחי'
+                : 'לא נמצאו תוצאות מוסדיות למסלול שנבחר'}
+            </p>
           </div>
         ) : null}
       </div>
@@ -395,29 +469,12 @@ export default function CalculatorResults({
   );
 }
 
-function ResultSection({ title, text }: { title: string; text: string }) {
-  return (
-    <div className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2">
-      <p className="mb-0.5 text-[10px] font-bold text-slate-400">{title}</p>
-      <p className="text-xs font-semibold leading-relaxed text-slate-800">{text}</p>
-    </div>
-  );
-}
-
-function FilterChip({
-  label,
-  selected,
-  onClick,
-}: {
-  label: string;
-  selected: boolean;
-  onClick: () => void;
-}) {
+function FilterChip({ label, selected, onClick }: { label: string; selected: boolean; onClick: () => void }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center gap-2 rounded-full border-2 border-black px-4 py-2 text-sm font-bold transition ${
+      className={`inline-flex cursor-pointer items-center gap-2 rounded-full border-2 border-black px-4 py-2 text-sm font-bold transition ${
         selected
           ? 'bg-[#A6FAFF] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)]'
           : 'bg-white hover:bg-slate-50 hover:shadow-[2px_2px_0px_rgba(0,0,0,1)]'
