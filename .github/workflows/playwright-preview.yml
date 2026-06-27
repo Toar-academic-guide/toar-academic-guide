@@ -1,0 +1,53 @@
+name: Playwright on Vercel Preview
+
+on:
+  deployment_status:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: playwright-preview-${{ github.event.deployment.id }}
+  cancel-in-progress: true
+
+jobs:
+  playwright-preview:
+    name: Playwright against Vercel Preview
+    runs-on: ubuntu-latest
+    if: >
+      github.event.deployment_status.state == 'success' &&
+      github.event.deployment_status.environment == 'Preview' &&
+      github.event.deployment_status.target_url != '' &&
+      contains(github.event.deployment_status.target_url, 'toar-academic-guide')
+    env:
+      CI: true
+      BASE_URL: ${{ github.event.deployment_status.target_url }}
+
+    steps:
+      - name: Checkout deployed commit
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.deployment.sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright against Vercel Preview
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-vercel-preview-report
+          path: playwright-report/
+          retention-days: 7
