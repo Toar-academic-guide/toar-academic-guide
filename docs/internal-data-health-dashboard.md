@@ -2,6 +2,8 @@
 
 `/internal/data-health` is a read-only operator dashboard for catalogue readiness, source coverage, source freshness, ingestion pipeline health, and review queue backlog.
 
+It also includes an admissions evidence section that shows, for every linked program/institution pair, what the public runtime currently uses: exact official coverage, official coverage that still needs applicant inputs, blocked or stale official paths, score-only coverage, formula estimates, unsupported mappings, or missing coverage.
+
 ## Access
 
 The route is not linked from public navigation. It still must be treated as reachable by URL, so access is enforced in the app:
@@ -70,6 +72,25 @@ The source freshness section reads persisted machine-check state and derives tim
 - `never_checked`: an ingestion source exists but has no persisted freshness state yet.
 
 The dashboard intentionally displays capped source rows and review item ids, not raw normalized payloads or proposed review values.
+
+## Admissions evidence semantics
+
+The admissions evidence section is pair-level. It is meant to answer one operator question quickly: what evidence mode is runtime actually using for this linked program and institution right now?
+
+Rows can appear as:
+
+- `Exact official`: runtime has an exact official target for the pair.
+- `Official needs input`: runtime has an exact official path, but the applicant still has to provide required sub-scores before it can run directly.
+- `Blocked official`: runtime knows the official path but the source is blocked by browser state, anti-bot posture, or similar constraints.
+- `Stale official`: runtime knows the official path, but the latest successful freshness check is outside the SLA window.
+- `Score only`: runtime can reproduce a score field from an official source, but not the official thresholds or decision state.
+- `Estimated`: runtime is using reviewed local calculator configuration plus thresholds, not an exact official source target.
+- `Unsupported`: runtime knows about an institution-level official source lane, but not a pair-specific supported path for this program.
+- `Missing`: no official-source lane is linked for the pair.
+
+Rows in `Unsupported` or `Missing` are intentionally informational. They should stay visible, but they are not by themselves production incidents or readiness failures. The product supports mixed evidence modes while exact official coverage expands over time.
+
+When a row is backed by an official-capable path, the section shows the source target id, adapter id, official source URL, external program id when applicable, and freshness or blocked context when available.
 
 ## Review item workspace
 

@@ -73,6 +73,59 @@ function reportWithRisks(): DataHealthReadyReport {
         },
       ],
     },
+    decisionEvidence: {
+      rows: [
+        {
+          programId: 'tau_datascience',
+          programName: 'Digital Sciences for High-Tech',
+          institutionId: 'tau',
+          institutionName: 'Tel Aviv University',
+          evidenceMode: 'exact',
+          severity: 'normal',
+          sourceTargetId: 'tau-digital-sciences-live',
+          officialSourceUrl: 'https://go.tau.ac.il/graphql',
+          adapterId: 'tau',
+          externalProgramId: '056011050000',
+          freshnessStatus: 'fresh',
+          blockedReason: null,
+          requiredInputs: [],
+        },
+        {
+          programId: 'haifa_cs',
+          programName: 'Computer Science',
+          institutionId: 'haifa',
+          institutionName: 'University of Haifa',
+          evidenceMode: 'needs_input',
+          severity: 'normal',
+          sourceTargetId: 'haifa-cs-live',
+          officialSourceUrl: 'https://applicants.haifa.ac.il/enrollmentChances/index.html',
+          adapterId: 'haifa',
+          externalProgramId: '52258372',
+          freshnessStatus: 'fresh',
+          blockedReason: null,
+          requiredInputs: [
+            'psychometric_math',
+            'psychometric_verbal',
+            'psychometric_english',
+          ],
+        },
+        {
+          programId: 'tau_law',
+          programName: 'Law',
+          institutionId: 'tau',
+          institutionName: 'Tel Aviv University',
+          evidenceMode: 'missing',
+          severity: 'informational',
+          sourceTargetId: null,
+          officialSourceUrl: null,
+          adapterId: null,
+          externalProgramId: null,
+          freshnessStatus: null,
+          blockedReason: null,
+          requiredInputs: [],
+        },
+      ],
+    },
     ingestion: {
       totalJobs: 3,
       jobsByStatus: { failed: 1, pending: 1, running: 1 },
@@ -168,10 +221,21 @@ describe('DataHealthDashboard', () => {
     expect(screen.getByRole('heading', { name: /data health/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /catalogue readiness/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /admissions decision readiness/i })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /admissions evidence/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /source coverage/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /source freshness/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /ingestion pipeline/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /review queue/i })).toBeTruthy();
+  });
+
+  it('renders exact, needs-input, and informational admissions evidence rows', () => {
+    render(<DataHealthDashboard report={reportWithRisks()} adminEmail="operator@example.com" />);
+
+    expect(screen.getByText('Digital Sciences for High-Tech')).toBeTruthy();
+    expect(screen.getByText('Exact official')).toBeTruthy();
+    expect(screen.getByText(/requires psychometric_math, psychometric_verbal, psychometric_english/i)).toBeTruthy();
+    expect(screen.getByText('Missing')).toBeTruthy();
+    expect(screen.getByText(/No official-source metadata is currently linked to this pair/i)).toBeTruthy();
   });
 
   it('prioritizes critical operational risks before lower-priority totals', () => {
@@ -183,6 +247,7 @@ describe('DataHealthDashboard', () => {
     expect(text.indexOf('Immediate attention')).toBeGreaterThanOrEqual(0);
     expect(text.indexOf('Immediate attention')).toBeLessThan(text.indexOf('Catalogue totals'));
     expect(text.indexOf('job-failed')).toBeLessThan(text.indexOf('Total ingestion jobs'));
+    expect(text).not.toContain('Missing official target');
   });
 
   it('does not render raw proposed review values or ingestion payloads', () => {

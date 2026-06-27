@@ -44,4 +44,13 @@ Use `/internal/data-health` to check whether a program is decision-ready:
 - manual gates are counted separately from missing numeric facts
 - alternatives are present when direct admission is not realistic
 
+Use the pair-level admissions evidence section on the same page to confirm what runtime is actually using for each linked program/institution pair:
+
+- exact official target
+- official target that still needs applicant inputs
+- blocked or stale official path
+- score-only official coverage
+- formula-backed estimate
+- unsupported or missing official coverage, kept informational rather than incident-level by default
+
 Scaling to all institutions should wait until the representative slice is reliable under those checks.

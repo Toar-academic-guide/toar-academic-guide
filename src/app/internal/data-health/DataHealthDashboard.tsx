@@ -93,6 +93,12 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
           />
         </section>
 
+        <section>
+          <Panel title="Admissions evidence">
+            <AdmissionsEvidenceRows rows={report.decisionEvidence.rows} />
+          </Panel>
+        </section>
+
         <section className="rounded-[1.75rem] border border-red-900/15 bg-red-50 p-6 shadow-sm">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
@@ -351,6 +357,42 @@ function CompactRows({
   );
 }
 
+function AdmissionsEvidenceRows({
+  rows,
+}: {
+  rows: DataHealthReadyReport['decisionEvidence']['rows'];
+}) {
+  if (rows.length === 0) {
+    return <p className="text-sm text-slate-600">No linked admissions pairs were found.</p>;
+  }
+
+  return (
+    <ul className="grid gap-3">
+      {rows.map((row) => (
+        <li
+          key={`${row.programId}-${row.institutionId}`}
+          className={`rounded-2xl border px-4 py-4 ${evidenceRowClasses(row.severity)}`}
+        >
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <p className="text-base font-black text-slate-950">{row.programName}</p>
+              <p className="text-sm text-slate-600">{row.institutionName}</p>
+            </div>
+            <span
+              className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-black uppercase tracking-[0.16em] ${evidenceBadgeClasses(
+                row.severity,
+              )}`}
+            >
+              {evidenceModeLabel(row.evidenceMode)}
+            </span>
+          </div>
+          <p className="mt-3 text-sm text-slate-700">{admissionsEvidenceDetail(row)}</p>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 function buildCriticalItems(report: DataHealthReadyReport): string[] {
   return [
     ...report.readiness.issues,
@@ -386,6 +428,71 @@ function sourceFreshnessDetail(row: DataHealthReadyReport['freshness']['rows'][n
   ].filter(Boolean);
 
   return parts.join(' | ');
+}
+
+function admissionsEvidenceDetail(
+  row: DataHealthReadyReport['decisionEvidence']['rows'][number],
+): string {
+  const parts = [
+    row.sourceTargetId ? `target ${row.sourceTargetId}` : null,
+    row.adapterId ? `adapter ${row.adapterId}` : null,
+    row.externalProgramId ? `external ${row.externalProgramId}` : null,
+    row.freshnessStatus ? `freshness ${row.freshnessStatus}` : null,
+    row.requiredInputs.length > 0 ? `requires ${row.requiredInputs.join(', ')}` : null,
+    row.blockedReason,
+    row.officialSourceUrl ? `source ${row.officialSourceUrl}` : null,
+  ].filter(Boolean);
+
+  return parts.join(' | ') || 'No official-source metadata is currently linked to this pair.';
+}
+
+function evidenceModeLabel(
+  evidenceMode: DataHealthReadyReport['decisionEvidence']['rows'][number]['evidenceMode'],
+): string {
+  switch (evidenceMode) {
+    case 'exact':
+      return 'Exact official';
+    case 'needs_input':
+      return 'Official needs input';
+    case 'blocked':
+      return 'Blocked official';
+    case 'stale':
+      return 'Stale official';
+    case 'score_only':
+      return 'Score only';
+    case 'estimated':
+      return 'Estimated';
+    case 'unsupported':
+      return 'Unsupported';
+    case 'missing':
+      return 'Missing';
+    default:
+      return evidenceMode;
+  }
+}
+
+function evidenceRowClasses(severity: DataHealthReadyReport['decisionEvidence']['rows'][number]['severity']) {
+  switch (severity) {
+    case 'attention':
+      return 'border-red-900/15 bg-red-50';
+    case 'informational':
+      return 'border-slate-950/10 bg-slate-50';
+    default:
+      return 'border-emerald-900/15 bg-emerald-50';
+  }
+}
+
+function evidenceBadgeClasses(
+  severity: DataHealthReadyReport['decisionEvidence']['rows'][number]['severity'],
+) {
+  switch (severity) {
+    case 'attention':
+      return 'bg-red-100 text-red-950';
+    case 'informational':
+      return 'bg-slate-200 text-slate-800';
+    default:
+      return 'bg-emerald-100 text-emerald-950';
+  }
 }
 
 function formatDateTime(value: string): string {
