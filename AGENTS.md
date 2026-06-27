@@ -42,6 +42,8 @@ Run `npm run guard:pre-pr` before pushing a branch or opening a PR that can affe
 
 The repository tracks `.githooks/pre-push`, and `npm install` configures `core.hooksPath` through the `prepare` script. Do not bypass the hook unless the user explicitly approves an emergency push. If bypassing is unavoidable, say that `SKIP_PRE_PR_GUARD=1` was used and list the verification still owed.
 
+The repository also tracks a project-local Codex hook in `.codex/hooks.json`. After the project hook is trusted with `/hooks`, Codex runs `npm run guard:pre-pr` before Bash commands that push code or create/mark-ready GitHub PRs. The Codex hook must deny bypass attempts such as `git push --no-verify` or `SKIP_PRE_PR_GUARD=1 git push`.
+
 The guard must stay fast enough for local use, but it should fail before a push when local migration checks, catalogue seed dry-runs, operational grants, or targeted regression tests fail. Keep it updated when new production-critical DB tables, dashboards, catalogue routes, or calculator paths are added.
 
 ## Production Incident Verification

@@ -9,6 +9,8 @@ const rootDir = dirname(fileURLToPath(new URL('../package.json', import.meta.url
 const highRiskPathPatterns = [
   /^AGENTS\.md$/,
   /^vercel\.json$/,
+  /^\.codex\//,
+  /^\.githooks\//,
   /^\.github\/workflows\//,
   /^scripts\/seed-catalogue\.mjs$/,
   /^src\/app\/api\/catalog\//,
@@ -99,8 +101,9 @@ function getChangedFiles() {
   const committed = baseRef ? splitLines(git(['diff', '--name-only', `${baseRef}...HEAD`])) : [];
   const staged = splitLines(git(['diff', '--cached', '--name-only']));
   const unstaged = splitLines(git(['diff', '--name-only']));
+  const untracked = splitLines(git(['ls-files', '--others', '--exclude-standard']));
 
-  return [...new Set([...committed, ...staged, ...unstaged])].sort();
+  return [...new Set([...committed, ...staged, ...unstaged, ...untracked])].sort();
 }
 
 function isHighRiskPath(filePath) {
