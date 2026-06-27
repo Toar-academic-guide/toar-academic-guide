@@ -2,6 +2,7 @@ import 'server-only';
 
 import { eq } from 'drizzle-orm';
 
+import type { InstitutionId } from '@/data/institutions';
 import { getOpsDb } from '@/db/opsClient';
 import {
   admissionAlternativePaths,
@@ -20,6 +21,7 @@ import {
   sourceUrls,
   universityCalculatorConfigs,
 } from '@/db/schema';
+import type { SourceFreshnessStateRow } from '@/db/types';
 import { buildAdmissionsCapabilityMatrix } from '@/server/admissions/capabilityMatrix';
 import { evaluateCatalogueReadiness } from '@/server/catalogue/queries';
 import {
@@ -31,6 +33,7 @@ import type {
   AdmissionsRequiredInput,
 } from '@/types/admissionsEvaluation';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
+import type { UniversityId } from '@/types';
 
 const ISSUE_LIMIT = 5;
 const DATA_HEALTH_QUERY_TIMEOUT_MS = 15000;
@@ -213,20 +216,6 @@ interface ReviewItemRow {
   status: ReviewItemStatus;
   createdAt: Date;
   reviewedAt: Date | null;
-}
-
-interface SourceFreshnessStateRow {
-  sourceId: string;
-  sourceClass: FreshnessSourceClass;
-  capability: FreshnessCapability;
-  status: SourceFreshnessStatus;
-  lastCheckedAt: Date | null;
-  lastSuccessfulCheckAt: Date | null;
-  lastChangedAt: Date | null;
-  latestFailureReason: string | null;
-  blockedReason: string | null;
-  latestReviewItemId: string | null;
-  nextAction: string | null;
 }
 
 interface DataHealthCounts {
@@ -894,7 +883,7 @@ function buildDecisionEvidenceSummary(
       freshnessStatesBySourceId,
       now,
     }).map((entry) => {
-      const institution = institutionById.get(entry.institutionId);
+      const institution = institutionById.get(entry.institutionId as InstitutionId);
       const showOfficialMetadata =
         entry.capability !== 'estimated' &&
         entry.capability !== 'unsupported' &&
@@ -1051,14 +1040,14 @@ function buildCapabilityInstitutions(rows: DataHealthRows): CatalogueInstitution
     const calculatorConfig = configByInstitutionId.get(institution.id);
 
     return {
-      id: institution.id,
+      id: institution.id as InstitutionId,
       name: institution.name,
       region: institution.region,
       domain: institution.domain ?? undefined,
       logoUrl: institution.logoUrl ?? undefined,
       programUrl: institution.programUrl ?? undefined,
       calculatorUrl: institution.calculatorUrl ?? undefined,
-      universityId: institution.universityId ?? undefined,
+      universityId: (institution.universityId as UniversityId | null) ?? undefined,
       calculatorConfig: calculatorConfig
         ? {
             formulaType: calculatorConfig.formulaType,
@@ -1098,8 +1087,8 @@ function buildCapabilityPrograms(rows: DataHealthRows): CatalogueProgram[] {
     id: program.id,
     name: program.name,
     institution: program.institutionName,
-    institutionId: program.institutionId ?? undefined,
-    type: program.type,
+    institutionId: (program.institutionId as InstitutionId | null) ?? undefined,
+    type: program.type as CatalogueProgram['type'],
     category: program.category,
     profileScore: {
       AN: 0,
@@ -1113,7 +1102,7 @@ function buildCapabilityPrograms(rows: DataHealthRows): CatalogueProgram[] {
     },
     admissionType: program.admissionType,
     admissionRequirements: [],
-    thresholds: thresholdsByProgramId.get(program.id),
+    thresholds: thresholdsByProgramId.get(program.id) as CatalogueProgram['thresholds'],
     linkedInstitutionIds: linkedInstitutionIdsByProgramId.get(program.id) ?? [],
   }));
 }
