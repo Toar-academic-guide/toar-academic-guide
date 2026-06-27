@@ -562,145 +562,128 @@ export function summarizeDataHealthRows(
 async function loadDataHealthRows(): Promise<DataHealthRows> {
   const db = getOpsDb();
 
-  const [
-    institutionRows,
-    programRows,
-    programInstitutionRows,
-    admissionRequirementRows,
-    admissionThresholdRows,
-    sourceUrlRows,
-    calculatorConfigRows,
-    ingestionSourceRows,
-    admissionsSourceCandidateRows,
-    admissionFactRows,
-    admissionAlternativePathRows,
-    ingestionJobRows,
-    reviewItemRows,
-    sourceFreshnessStateRows,
-  ] = await Promise.all([
-    db.select({ id: institutions.id }).from(institutions),
-    db
-      .select({
-        id: programs.id,
-        name: programs.name,
-        admissionType: programs.admissionType,
-      })
-      .from(programs),
-    db
-      .select({
-        programId: programInstitutions.programId,
-        institutionId: programInstitutions.institutionId,
-      })
-      .from(programInstitutions),
-    db
-      .select({
-        id: admissionRequirements.id,
-        programId: admissionRequirements.programId,
-        institutionId: admissionRequirements.institutionId,
-      })
-      .from(admissionRequirements),
-    db
-      .select({
-        id: admissionThresholds.id,
-        programId: admissionThresholds.programId,
-        institutionId: admissionThresholds.institutionId,
-        universityId: admissionThresholds.universityId,
-        thresholdValue: admissionThresholds.thresholdValue,
-      })
-      .from(admissionThresholds),
-    db
-      .select({
-        id: sourceUrls.id,
-        admissionRequirementId: sourceUrls.admissionRequirementId,
-        programId: sourceUrls.programId,
-        institutionId: sourceUrls.institutionId,
-        url: sourceUrls.url,
-      })
-      .from(sourceUrls),
-    db
-      .select({
-        institutionId: universityCalculatorConfigs.institutionId,
-      })
-      .from(universityCalculatorConfigs),
-    db
-      .select({
-        id: ingestionSources.id,
-        institutionId: ingestionSources.institutionId,
-        programId: ingestionSources.programId,
-        difficulty: ingestionSources.difficulty,
-        sourceUrl: ingestionSources.sourceUrl,
-      })
-      .from(ingestionSources),
-    db
-      .select({
-        id: admissionsSourceCandidates.id,
-        admissionRequirementId: admissionsSourceCandidates.admissionRequirementId,
-        programId: admissionsSourceCandidates.programId,
-        institutionId: admissionsSourceCandidates.institutionId,
-        origin: admissionsSourceCandidates.origin,
-        specificity: admissionsSourceCandidates.specificity,
-        confidence: admissionsSourceCandidates.confidence,
-      })
-      .from(admissionsSourceCandidates),
-    db
-      .select({
-        id: admissionFacts.id,
-        admissionRequirementId: admissionFacts.admissionRequirementId,
-        programId: admissionFacts.programId,
-        institutionId: admissionFacts.institutionId,
-        kind: admissionFacts.kind,
-        field: admissionFacts.field,
-        confidence: admissionFacts.confidence,
-      })
-      .from(admissionFacts),
-    db
-      .select({
-        id: admissionAlternativePaths.id,
-        admissionRequirementId: admissionAlternativePaths.admissionRequirementId,
-        programId: admissionAlternativePaths.programId,
-        institutionId: admissionAlternativePaths.institutionId,
-        kind: admissionAlternativePaths.kind,
-      })
-      .from(admissionAlternativePaths),
-    db
-      .select({
-        id: ingestionJobs.id,
-        sourceId: ingestionJobs.sourceId,
-        status: ingestionJobs.status,
-        difficulty: ingestionJobs.difficulty,
-        startedAt: ingestionJobs.startedAt,
-        completedAt: ingestionJobs.completedAt,
-        errorText: ingestionJobs.errorText,
-        createdAt: ingestionJobs.createdAt,
-      })
-      .from(ingestionJobs),
-    db
-      .select({
-        id: reviewItems.id,
-        payloadId: reviewItems.payloadId,
-        admissionRequirementId: reviewItems.admissionRequirementId,
-        targetField: reviewItems.targetField,
-        status: reviewItems.status,
-        createdAt: reviewItems.createdAt,
-        reviewedAt: reviewItems.reviewedAt,
-      })
-      .from(reviewItems),
-    db
-      .select({
-        sourceId: sourceFreshnessStates.sourceId,
-        sourceClass: sourceFreshnessStates.sourceClass,
-        capability: sourceFreshnessStates.capability,
-        status: sourceFreshnessStates.status,
-        lastCheckedAt: sourceFreshnessStates.lastCheckedAt,
-        lastSuccessfulCheckAt: sourceFreshnessStates.lastSuccessfulCheckAt,
-        lastChangedAt: sourceFreshnessStates.lastChangedAt,
-        latestFailureReason: sourceFreshnessStates.latestFailureReason,
-        blockedReason: sourceFreshnessStates.blockedReason,
-        latestReviewItemId: sourceFreshnessStates.latestReviewItemId,
-        nextAction: sourceFreshnessStates.nextAction,
-      })
-      .from(sourceFreshnessStates),
-  ]);
+  const institutionRows = await db.select({ id: institutions.id }).from(institutions);
+  const programRows = await db
+    .select({
+      id: programs.id,
+      name: programs.name,
+      admissionType: programs.admissionType,
+    })
+    .from(programs);
+  const programInstitutionRows = await db
+    .select({
+      programId: programInstitutions.programId,
+      institutionId: programInstitutions.institutionId,
+    })
+    .from(programInstitutions);
+  const admissionRequirementRows = await db
+    .select({
+      id: admissionRequirements.id,
+      programId: admissionRequirements.programId,
+      institutionId: admissionRequirements.institutionId,
+    })
+    .from(admissionRequirements);
+  const admissionThresholdRows = await db
+    .select({
+      id: admissionThresholds.id,
+      programId: admissionThresholds.programId,
+      institutionId: admissionThresholds.institutionId,
+      universityId: admissionThresholds.universityId,
+      thresholdValue: admissionThresholds.thresholdValue,
+    })
+    .from(admissionThresholds);
+  const sourceUrlRows = await db
+    .select({
+      id: sourceUrls.id,
+      admissionRequirementId: sourceUrls.admissionRequirementId,
+      programId: sourceUrls.programId,
+      institutionId: sourceUrls.institutionId,
+      url: sourceUrls.url,
+    })
+    .from(sourceUrls);
+  const calculatorConfigRows = await db
+    .select({
+      institutionId: universityCalculatorConfigs.institutionId,
+    })
+    .from(universityCalculatorConfigs);
+  const ingestionSourceRows = await db
+    .select({
+      id: ingestionSources.id,
+      institutionId: ingestionSources.institutionId,
+      programId: ingestionSources.programId,
+      difficulty: ingestionSources.difficulty,
+      sourceUrl: ingestionSources.sourceUrl,
+    })
+    .from(ingestionSources);
+  const admissionsSourceCandidateRows = await db
+    .select({
+      id: admissionsSourceCandidates.id,
+      admissionRequirementId: admissionsSourceCandidates.admissionRequirementId,
+      programId: admissionsSourceCandidates.programId,
+      institutionId: admissionsSourceCandidates.institutionId,
+      origin: admissionsSourceCandidates.origin,
+      specificity: admissionsSourceCandidates.specificity,
+      confidence: admissionsSourceCandidates.confidence,
+    })
+    .from(admissionsSourceCandidates);
+  const admissionFactRows = await db
+    .select({
+      id: admissionFacts.id,
+      admissionRequirementId: admissionFacts.admissionRequirementId,
+      programId: admissionFacts.programId,
+      institutionId: admissionFacts.institutionId,
+      kind: admissionFacts.kind,
+      field: admissionFacts.field,
+      confidence: admissionFacts.confidence,
+    })
+    .from(admissionFacts);
+  const admissionAlternativePathRows = await db
+    .select({
+      id: admissionAlternativePaths.id,
+      admissionRequirementId: admissionAlternativePaths.admissionRequirementId,
+      programId: admissionAlternativePaths.programId,
+      institutionId: admissionAlternativePaths.institutionId,
+      kind: admissionAlternativePaths.kind,
+    })
+    .from(admissionAlternativePaths);
+  const ingestionJobRows = await db
+    .select({
+      id: ingestionJobs.id,
+      sourceId: ingestionJobs.sourceId,
+      status: ingestionJobs.status,
+      difficulty: ingestionJobs.difficulty,
+      startedAt: ingestionJobs.startedAt,
+      completedAt: ingestionJobs.completedAt,
+      errorText: ingestionJobs.errorText,
+      createdAt: ingestionJobs.createdAt,
+    })
+    .from(ingestionJobs);
+  const reviewItemRows = await db
+    .select({
+      id: reviewItems.id,
+      payloadId: reviewItems.payloadId,
+      admissionRequirementId: reviewItems.admissionRequirementId,
+      targetField: reviewItems.targetField,
+      status: reviewItems.status,
+      createdAt: reviewItems.createdAt,
+      reviewedAt: reviewItems.reviewedAt,
+    })
+    .from(reviewItems);
+  const sourceFreshnessStateRows = await db
+    .select({
+      sourceId: sourceFreshnessStates.sourceId,
+      sourceClass: sourceFreshnessStates.sourceClass,
+      capability: sourceFreshnessStates.capability,
+      status: sourceFreshnessStates.status,
+      lastCheckedAt: sourceFreshnessStates.lastCheckedAt,
+      lastSuccessfulCheckAt: sourceFreshnessStates.lastSuccessfulCheckAt,
+      lastChangedAt: sourceFreshnessStates.lastChangedAt,
+      latestFailureReason: sourceFreshnessStates.latestFailureReason,
+      blockedReason: sourceFreshnessStates.blockedReason,
+      latestReviewItemId: sourceFreshnessStates.latestReviewItemId,
+      nextAction: sourceFreshnessStates.nextAction,
+    })
+    .from(sourceFreshnessStates);
 
   return {
     institutions: institutionRows,

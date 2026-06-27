@@ -39,4 +39,47 @@ describe('CalculatorResults', () => {
 
     expect(screen.getByLabelText('אוניברסיטת תל אביב: רחוק מהמסלול')).toBeTruthy();
   });
+
+  it('renders Haifa and TAU matches for a database-backed computer science catalogue row', () => {
+    const csProgram = programs.find((program) => program.id === 'cs');
+    expect(csProgram).toBeTruthy();
+
+    render(
+      <CalculatorResults
+        degreeId="cs"
+        programs={[
+          {
+            ...csProgram!,
+            institutionDetails: [
+              {
+                institutionName: 'אוניברסיטת תל אביב',
+                durationYears: null,
+                estimatedStudentsPerYear: '',
+                quantitativeMinRequirement: null,
+                englishMinRequirement: null,
+                specificAdmissionNotes: [],
+                officialCalculatorUrl: '',
+              },
+              {
+                institutionName: 'אוניברסיטת חיפה',
+                durationYears: null,
+                estimatedStudentsPerYear: '',
+                quantitativeMinRequirement: null,
+                englishMinRequirement: null,
+                specificAdmissionNotes: [],
+                officialCalculatorUrl: '',
+              },
+            ],
+          },
+        ]}
+        calculatorInstitutions={calculatorInstitutions}
+        psychometric={750}
+        bagrut={110}
+        onBack={() => {}}
+      />,
+    );
+
+    expect(screen.getByLabelText('אוניברסיטת תל אביב: התקבלת')).toBeTruthy();
+    expect(screen.getByLabelText('אוניברסיטת חיפה: התקבלת')).toBeTruthy();
+  });
 });
