@@ -59,7 +59,9 @@ describe('AuthScreen', () => {
       }),
     );
     expect(onSuccess).not.toHaveBeenCalled();
-    expect(screen.getByText('שלחנו מייל לאישור החשבון. אשר אותו ואז חזור להתחבר.')).toBeTruthy();
+    await waitFor(() =>
+      expect(screen.getByText('שלחנו מייל לאישור החשבון. אשר אותו ואז חזור להתחבר.')).toBeTruthy(),
+    );
   });
 
   it('blocks signup when first or last name is blank', async () => {
