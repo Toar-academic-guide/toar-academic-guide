@@ -21,35 +21,107 @@ const now = new Date('2026-06-24T18:00:00.000Z');
 
 function baseRows(overrides: Partial<DataHealthRows> = {}): DataHealthRows {
   return {
-    institutions: [{ id: 'tau' }, { id: 'technion' }],
+    institutions: [
+      {
+        id: 'tau',
+        name: 'Tel Aviv University',
+        region: 'center',
+        domain: 'tau.ac.il',
+        logoUrl: null,
+        programUrl: null,
+        calculatorUrl: 'https://go.tau.ac.il/graphql',
+        universityId: 'tau',
+      },
+      {
+        id: 'technion',
+        name: 'Technion',
+        region: 'north',
+        domain: 'technion.ac.il',
+        logoUrl: null,
+        programUrl: null,
+        calculatorUrl: null,
+        universityId: 'technion',
+      },
+      {
+        id: 'haifa',
+        name: 'University of Haifa',
+        region: 'north',
+        domain: 'haifa.ac.il',
+        logoUrl: null,
+        programUrl: null,
+        calculatorUrl: 'https://applicants.haifa.ac.il/enrollmentChances/index.html',
+        universityId: 'haifa',
+      },
+    ],
     programs: [
-      { id: 'tau_cs', name: 'Computer Science', admissionType: 'sekhem' },
-      { id: 'tau_law', name: 'Law', admissionType: 'requirements' },
+      {
+        id: 'tau_datascience',
+        name: 'Digital Sciences for High-Tech',
+        institutionName: 'Tel Aviv University',
+        institutionId: 'tau',
+        type: 'academic',
+        category: 'Computer Science',
+        admissionType: 'sekhem',
+      },
+      {
+        id: 'haifa_cs',
+        name: 'Computer Science',
+        institutionName: 'University of Haifa',
+        institutionId: 'haifa',
+        type: 'academic',
+        category: 'Computer Science',
+        admissionType: 'sekhem',
+      },
+      {
+        id: 'tau_law',
+        name: 'Law',
+        institutionName: 'Tel Aviv University',
+        institutionId: 'tau',
+        type: 'academic',
+        category: 'Law',
+        admissionType: 'requirements',
+      },
     ],
     programInstitutions: [
-      { programId: 'tau_cs', institutionId: 'tau' },
+      { programId: 'tau_datascience', institutionId: 'tau' },
+      { programId: 'haifa_cs', institutionId: 'haifa' },
       { programId: 'tau_law', institutionId: 'tau' },
     ],
     admissionRequirements: [
-      { id: 'req-tau-cs', programId: 'tau_cs', institutionId: 'tau' },
+      { id: 'req-tau-ds', programId: 'tau_datascience', institutionId: 'tau' },
+      { id: 'req-haifa-cs', programId: 'haifa_cs', institutionId: 'haifa' },
       { id: 'req-tau-law', programId: 'tau_law', institutionId: 'tau' },
     ],
     admissionThresholds: [
       {
-        id: 'threshold-tau-cs',
-        programId: 'tau_cs',
+        id: 'threshold-tau-ds',
+        programId: 'tau_datascience',
         institutionId: 'tau',
         universityId: 'tau',
         thresholdValue: 710,
       },
+      {
+        id: 'threshold-haifa-cs',
+        programId: 'haifa_cs',
+        institutionId: 'haifa',
+        universityId: 'haifa',
+        thresholdValue: 705,
+      },
     ],
     sourceUrls: [
       {
-        id: 'source-tau-cs',
-        admissionRequirementId: 'req-tau-cs',
-        programId: 'tau_cs',
+        id: 'source-tau-ds',
+        admissionRequirementId: 'req-tau-ds',
+        programId: 'tau_datascience',
         institutionId: 'tau',
-        url: 'https://example.com/cs',
+        url: 'https://example.com/tau-ds',
+      },
+      {
+        id: 'source-haifa-cs',
+        admissionRequirementId: 'req-haifa-cs',
+        programId: 'haifa_cs',
+        institutionId: 'haifa',
+        url: 'https://example.com/haifa-cs',
       },
       {
         id: 'source-tau-law',
@@ -60,13 +132,69 @@ function baseRows(overrides: Partial<DataHealthRows> = {}): DataHealthRows {
       },
     ],
     universityCalculatorConfigs: [
-      { institutionId: 'tau' },
-      { institutionId: 'huji' },
-      { institutionId: 'technion' },
-      { institutionId: 'bgu' },
-      { institutionId: 'haifa' },
-      { institutionId: 'biu' },
-      { institutionId: 'ariel' },
+      {
+        institutionId: 'tau',
+        formulaType: 'weighted_scaled',
+        psyWeight: 0.6,
+        bagrutWeight: 0.4,
+        minPsychometric: null,
+        minBagrut: null,
+        scaleDescription: '200-800',
+      },
+      {
+        institutionId: 'huji',
+        formulaType: 'weighted_scaled',
+        psyWeight: 0.6,
+        bagrutWeight: 0.4,
+        minPsychometric: null,
+        minBagrut: null,
+        scaleDescription: '200-800',
+      },
+      {
+        institutionId: 'technion',
+        formulaType: 'technion_linear',
+        psyWeight: null,
+        bagrutWeight: null,
+        minPsychometric: null,
+        minBagrut: null,
+        scaleDescription: '0-100',
+      },
+      {
+        institutionId: 'bgu',
+        formulaType: 'weighted_scaled',
+        psyWeight: 0.5,
+        bagrutWeight: 0.5,
+        minPsychometric: null,
+        minBagrut: null,
+        scaleDescription: '200-800',
+      },
+      {
+        institutionId: 'haifa',
+        formulaType: 'weighted_scaled',
+        psyWeight: 0.75,
+        bagrutWeight: 0.25,
+        minPsychometric: null,
+        minBagrut: null,
+        scaleDescription: '200-800',
+      },
+      {
+        institutionId: 'biu',
+        formulaType: 'minimum_floors',
+        psyWeight: null,
+        bagrutWeight: null,
+        minPsychometric: 550,
+        minBagrut: 85,
+        scaleDescription: 'minimum floors',
+      },
+      {
+        institutionId: 'ariel',
+        formulaType: 'minimum_floors',
+        psyWeight: null,
+        bagrutWeight: null,
+        minPsychometric: 500,
+        minBagrut: 80,
+        scaleDescription: 'minimum floors',
+      },
     ],
     ingestionSources: [
       {
@@ -86,10 +214,19 @@ function baseRows(overrides: Partial<DataHealthRows> = {}): DataHealthRows {
     ],
     admissionsSourceCandidates: [
       {
-        id: 'candidate-tau-cs',
-        admissionRequirementId: 'req-tau-cs',
-        programId: 'tau_cs',
+        id: 'candidate-tau-ds',
+        admissionRequirementId: 'req-tau-ds',
+        programId: 'tau_datascience',
         institutionId: 'tau',
+        origin: 'catalogue_url',
+        specificity: 'calculator',
+        confidence: 'high',
+      },
+      {
+        id: 'candidate-haifa-cs',
+        admissionRequirementId: 'req-haifa-cs',
+        programId: 'haifa_cs',
+        institutionId: 'haifa',
         origin: 'catalogue_url',
         specificity: 'calculator',
         confidence: 'high',
@@ -106,10 +243,19 @@ function baseRows(overrides: Partial<DataHealthRows> = {}): DataHealthRows {
     ],
     admissionFacts: [
       {
-        id: 'fact-tau-cs-sekhem',
-        admissionRequirementId: 'req-tau-cs',
-        programId: 'tau_cs',
+        id: 'fact-tau-ds-sekhem',
+        admissionRequirementId: 'req-tau-ds',
+        programId: 'tau_datascience',
         institutionId: 'tau',
+        kind: 'numeric_gate',
+        field: 'sekhem',
+        confidence: 'high',
+      },
+      {
+        id: 'fact-haifa-cs-sekhem',
+        admissionRequirementId: 'req-haifa-cs',
+        programId: 'haifa_cs',
+        institutionId: 'haifa',
         kind: 'numeric_gate',
         field: 'sekhem',
         confidence: 'high',
@@ -146,12 +292,12 @@ describe('summarizeDataHealthRows', () => {
 
     expect(report.status).toBe('ready');
     expect(report.readiness.counts).toEqual({
-      institutions: 2,
-      programs: 2,
-      programInstitutions: 2,
-      admissionRequirements: 2,
-      admissionThresholds: 1,
-      sourceUrls: 2,
+      institutions: 3,
+      programs: 3,
+      programInstitutions: 3,
+      admissionRequirements: 3,
+      admissionThresholds: 2,
+      sourceUrls: 3,
       universityCalculatorConfigs: 7,
     });
     expect(report.readiness.isReady).toBe(true);
@@ -164,10 +310,17 @@ describe('summarizeDataHealthRows', () => {
         sourceUrls: [
           {
             id: 'source-tau-cs',
-            admissionRequirementId: 'req-tau-cs',
-            programId: 'tau_cs',
+            admissionRequirementId: 'req-tau-ds',
+            programId: 'tau_datascience',
             institutionId: 'tau',
-            url: 'https://example.com/cs',
+            url: 'https://example.com/tau-ds',
+          },
+          {
+            id: 'source-haifa-cs',
+            admissionRequirementId: 'req-haifa-cs',
+            programId: 'haifa_cs',
+            institutionId: 'haifa',
+            url: 'https://example.com/haifa-cs',
           },
         ],
       }),
@@ -189,10 +342,19 @@ describe('summarizeDataHealthRows', () => {
       baseRows({
         admissionFacts: [
           {
-            id: 'fact-tau-cs-sekhem',
-            admissionRequirementId: 'req-tau-cs',
-            programId: 'tau_cs',
+            id: 'fact-tau-ds-sekhem',
+            admissionRequirementId: 'req-tau-ds',
+            programId: 'tau_datascience',
             institutionId: 'tau',
+            kind: 'numeric_gate',
+            field: 'sekhem',
+            confidence: 'high',
+          },
+          {
+            id: 'fact-haifa-cs-sekhem',
+            admissionRequirementId: 'req-haifa-cs',
+            programId: 'haifa_cs',
+            institutionId: 'haifa',
             kind: 'numeric_gate',
             field: 'sekhem',
             confidence: 'high',
@@ -211,7 +373,7 @@ describe('summarizeDataHealthRows', () => {
       now,
     );
 
-    expect(report.decisionReadiness.decisionReadyRequirementCount).toBe(2);
+    expect(report.decisionReadiness.decisionReadyRequirementCount).toBe(3);
     expect(report.decisionReadiness.weakSourceCount).toBe(1);
     expect(report.decisionReadiness.manualGateCount).toBe(1);
     expect(report.decisionReadiness.alternativePathCount).toBe(1);
@@ -219,6 +381,77 @@ describe('summarizeDataHealthRows', () => {
       sourceCandidateId: 'candidate-tau-law',
       specificity: 'generic',
     });
+  });
+
+  it('builds pair-level admissions evidence rows from runtime capability metadata', () => {
+    const report = summarizeDataHealthRows(
+      baseRows({
+        sourceFreshnessStates: [
+          freshnessState('tau-digital-sciences-live', {
+            sourceId: 'tau-digital-sciences-live',
+            sourceClass: 'api_static_json',
+            capability: 'decision_capable',
+            status: 'fresh',
+            lastCheckedAt: new Date('2026-06-24T17:00:00.000Z'),
+            lastSuccessfulCheckAt: new Date('2026-06-24T17:00:00.000Z'),
+            lastChangedAt: null,
+            latestFailureReason: null,
+            blockedReason: null,
+            latestReviewItemId: null,
+            nextAction: null,
+          }),
+          freshnessState('haifa-cs-live', {
+            sourceId: 'haifa-cs-live',
+            sourceClass: 'official_html',
+            capability: 'decision_capable',
+            status: 'fresh',
+            lastCheckedAt: new Date('2026-06-24T17:00:00.000Z'),
+            lastSuccessfulCheckAt: new Date('2026-06-24T01:00:00.000Z'),
+            lastChangedAt: null,
+            latestFailureReason: null,
+            blockedReason: null,
+            latestReviewItemId: null,
+            nextAction: null,
+          }),
+        ],
+      }),
+      now,
+    );
+
+    expect(report.decisionEvidence.rows).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          programId: 'tau_datascience',
+          institutionId: 'tau',
+          institutionName: 'Tel Aviv University',
+          evidenceMode: 'exact',
+          severity: 'normal',
+          sourceTargetId: 'tau-digital-sciences-live',
+          officialSourceUrl: 'https://go.tau.ac.il/graphql',
+          externalProgramId: '056011050000',
+          freshnessStatus: 'fresh',
+          requiredInputs: [],
+        }),
+        expect.objectContaining({
+          programId: 'haifa_cs',
+          institutionId: 'haifa',
+          institutionName: 'University of Haifa',
+          evidenceMode: 'needs_input',
+          severity: 'normal',
+          sourceTargetId: 'haifa-cs-live',
+          officialSourceUrl: 'https://applicants.haifa.ac.il/enrollmentChances/index.html',
+          externalProgramId: '52258372',
+          requiredInputs: ['psychometric_math', 'psychometric_verbal', 'psychometric_english'],
+        }),
+        expect.objectContaining({
+          programId: 'tau_law',
+          institutionId: 'tau',
+          evidenceMode: 'unsupported',
+          severity: 'informational',
+          sourceTargetId: null,
+        }),
+      ]),
+    );
   });
 
   it('flags requirements that have source URLs but no structured admissions facts', () => {
@@ -229,12 +462,17 @@ describe('summarizeDataHealthRows', () => {
       now,
     );
 
-    expect(report.decisionReadiness.missingFactCount).toBe(2);
+    expect(report.decisionReadiness.missingFactCount).toBe(3);
     expect(report.decisionReadiness.requirementsMissingFacts).toEqual([
       {
-        admissionRequirementId: 'req-tau-cs',
+        admissionRequirementId: 'req-tau-ds',
         institutionId: 'tau',
-        programId: 'tau_cs',
+        programId: 'tau_datascience',
+      },
+      {
+        admissionRequirementId: 'req-haifa-cs',
+        institutionId: 'haifa',
+        programId: 'haifa_cs',
       },
       {
         admissionRequirementId: 'req-tau-law',
@@ -622,8 +860,13 @@ function freshnessState(
     lastChangedAt: null,
     latestFailureReason: null,
     blockedReason: null,
+    rawFingerprint: null,
+    normalizedFingerprint: null,
+    normalizedDecisionPayload: {},
     latestReviewItemId: null,
     nextAction: null,
+    createdAt: new Date('2026-06-23T18:00:00.000Z'),
+    updatedAt: new Date('2026-06-23T18:00:00.000Z'),
     ...overrides,
   };
 }

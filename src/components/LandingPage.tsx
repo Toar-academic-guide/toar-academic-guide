@@ -99,6 +99,8 @@ export default function LandingPage({
           <div className="flex items-center gap-8">
             <button
               type="button"
+              onClick={scrollToStart}
+              aria-label="חזרה לתחילת העמוד"
               className="cursor-pointer rounded-lg outline-none transition-opacity hover:opacity-80"
             >
               <LogoCanvas size={44} brighten={false} />

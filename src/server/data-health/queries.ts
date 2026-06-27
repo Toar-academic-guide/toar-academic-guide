@@ -2,6 +2,7 @@ import 'server-only';
 
 import { eq } from 'drizzle-orm';
 
+import type { InstitutionId } from '@/data/institutions';
 import { getOpsDb } from '@/db/opsClient';
 import {
   admissionAlternativePaths,
@@ -20,11 +21,19 @@ import {
   sourceUrls,
   universityCalculatorConfigs,
 } from '@/db/schema';
+import type { SourceFreshnessStateRow } from '@/db/types';
+import { buildAdmissionsCapabilityMatrix } from '@/server/admissions/capabilityMatrix';
 import { evaluateCatalogueReadiness } from '@/server/catalogue/queries';
 import {
   parseSourceFreshnessProposedValue,
   type SourceFreshnessProposedValue,
 } from '@/server/ingestion/reviewTypes';
+import type {
+  AdmissionsEvaluationCapability,
+  AdmissionsRequiredInput,
+} from '@/types/admissionsEvaluation';
+import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
+import type { UniversityId } from '@/types';
 
 const ISSUE_LIMIT = 5;
 const DATA_HEALTH_QUERY_TIMEOUT_MS = 15000;
@@ -64,6 +73,9 @@ export interface DataHealthReadyReport {
     weakSources: SourceCandidateIssue[];
     manualGateRequirements: AdmissionRequirementIssue[];
   };
+  decisionEvidence: {
+    rows: AdmissionsEvidenceRow[];
+  };
   ingestion: {
     totalJobs: number;
     jobsByStatus: Partial<Record<IngestionJobStatus, number>>;
@@ -85,8 +97,25 @@ export interface DataHealthReadyReport {
 }
 
 export interface DataHealthRows {
-  institutions: Array<{ id: string }>;
-  programs: Array<{ id: string; name: string; admissionType: 'sekhem' | 'requirements' }>;
+  institutions: Array<{
+    id: string;
+    name: string;
+    region: 'center' | 'north' | 'south' | 'any';
+    domain: string | null;
+    logoUrl: string | null;
+    programUrl: string | null;
+    calculatorUrl: string | null;
+    universityId: string | null;
+  }>;
+  programs: Array<{
+    id: string;
+    name: string;
+    institutionName: string;
+    institutionId: string | null;
+    type: 'academic' | 'certificate' | 'vocational';
+    category: string;
+    admissionType: 'sekhem' | 'requirements';
+  }>;
   programInstitutions: Array<{ programId: string; institutionId: string }>;
   admissionRequirements: Array<{
     id: string;
@@ -107,7 +136,15 @@ export interface DataHealthRows {
     institutionId: string;
     url: string;
   }>;
-  universityCalculatorConfigs: Array<{ institutionId: string }>;
+  universityCalculatorConfigs: Array<{
+    institutionId: string;
+    formulaType: 'weighted_scaled' | 'technion_linear' | 'minimum_floors';
+    psyWeight: number | null;
+    bagrutWeight: number | null;
+    minPsychometric: number | null;
+    minBagrut: number | null;
+    scaleDescription: string;
+  }>;
   ingestionSources: IngestionSourceRow[];
   admissionsSourceCandidates: Array<{
     id: string;
@@ -179,20 +216,6 @@ interface ReviewItemRow {
   status: ReviewItemStatus;
   createdAt: Date;
   reviewedAt: Date | null;
-}
-
-interface SourceFreshnessStateRow {
-  sourceId: string;
-  sourceClass: FreshnessSourceClass;
-  capability: FreshnessCapability;
-  status: SourceFreshnessStatus;
-  lastCheckedAt: Date | null;
-  lastSuccessfulCheckAt: Date | null;
-  lastChangedAt: Date | null;
-  latestFailureReason: string | null;
-  blockedReason: string | null;
-  latestReviewItemId: string | null;
-  nextAction: string | null;
 }
 
 interface DataHealthCounts {
@@ -352,6 +375,22 @@ interface SourceFreshnessSummary {
   reason: string | null;
   latestReviewItemId: string | null;
   nextAction: string | null;
+}
+
+export interface AdmissionsEvidenceRow {
+  programId: string;
+  programName: string;
+  institutionId: string;
+  institutionName: string;
+  evidenceMode: AdmissionsEvaluationCapability;
+  severity: 'attention' | 'normal' | 'informational';
+  sourceTargetId: string | null;
+  officialSourceUrl: string | null;
+  adapterId: string | null;
+  externalProgramId: string | null;
+  freshnessStatus: DashboardSourceFreshnessStatus | null;
+  blockedReason: string | null;
+  requiredInputs: AdmissionsRequiredInput[];
 }
 
 export async function getDataHealthReport(
@@ -553,6 +592,7 @@ export function summarizeDataHealthRows(
     },
     coverage: buildCoverageSummary(rows),
     decisionReadiness: buildDecisionReadinessSummary(rows),
+    decisionEvidence: buildDecisionEvidenceSummary(rows, now),
     ingestion: buildIngestionSummary(rows.ingestionJobs),
     reviewQueue: buildReviewQueueSummary(rows.reviewItems),
     freshness: buildSourceFreshnessSummary(rows, now),
@@ -562,11 +602,26 @@ export function summarizeDataHealthRows(
 async function loadDataHealthRows(): Promise<DataHealthRows> {
   const db = getOpsDb();
 
-  const institutionRows = await db.select({ id: institutions.id }).from(institutions);
+  const institutionRows = await db
+    .select({
+      id: institutions.id,
+      name: institutions.name,
+      region: institutions.region,
+      domain: institutions.domain,
+      logoUrl: institutions.logoUrl,
+      programUrl: institutions.programUrl,
+      calculatorUrl: institutions.calculatorUrl,
+      universityId: institutions.universityId,
+    })
+    .from(institutions);
   const programRows = await db
     .select({
       id: programs.id,
       name: programs.name,
+      institutionName: programs.institutionName,
+      institutionId: programs.institutionId,
+      type: programs.type,
+      category: programs.category,
       admissionType: programs.admissionType,
     })
     .from(programs);
@@ -604,6 +659,12 @@ async function loadDataHealthRows(): Promise<DataHealthRows> {
   const calculatorConfigRows = await db
     .select({
       institutionId: universityCalculatorConfigs.institutionId,
+      formulaType: universityCalculatorConfigs.formulaType,
+      psyWeight: universityCalculatorConfigs.psyWeight,
+      bagrutWeight: universityCalculatorConfigs.bagrutWeight,
+      minPsychometric: universityCalculatorConfigs.minPsychometric,
+      minBagrut: universityCalculatorConfigs.minBagrut,
+      scaleDescription: universityCalculatorConfigs.scaleDescription,
     })
     .from(universityCalculatorConfigs);
   const ingestionSourceRows = await db
@@ -680,8 +741,13 @@ async function loadDataHealthRows(): Promise<DataHealthRows> {
       lastChangedAt: sourceFreshnessStates.lastChangedAt,
       latestFailureReason: sourceFreshnessStates.latestFailureReason,
       blockedReason: sourceFreshnessStates.blockedReason,
+      rawFingerprint: sourceFreshnessStates.rawFingerprint,
+      normalizedFingerprint: sourceFreshnessStates.normalizedFingerprint,
+      normalizedDecisionPayload: sourceFreshnessStates.normalizedDecisionPayload,
       latestReviewItemId: sourceFreshnessStates.latestReviewItemId,
       nextAction: sourceFreshnessStates.nextAction,
+      createdAt: sourceFreshnessStates.createdAt,
+      updatedAt: sourceFreshnessStates.updatedAt,
     })
     .from(sourceFreshnessStates);
 
@@ -805,6 +871,60 @@ function buildDecisionReadinessSummary(
   };
 }
 
+function buildDecisionEvidenceSummary(
+  rows: DataHealthRows,
+  now: Date,
+): DataHealthReadyReport['decisionEvidence'] {
+  const catalogueInstitutions = buildCapabilityInstitutions(rows);
+  const institutionById = new Map(
+    catalogueInstitutions.map((institution) => [institution.id, institution]),
+  );
+  const freshnessStatesBySourceId = new Map(
+    rows.sourceFreshnessStates.map((row) => [row.sourceId, row] as const),
+  );
+
+  const evidenceRows = buildCapabilityPrograms(rows).flatMap((program) =>
+    buildAdmissionsCapabilityMatrix({
+      program,
+      institutions: catalogueInstitutions,
+      freshnessStatesBySourceId,
+      now,
+    }).map((entry) => {
+      const institution = institutionById.get(entry.institutionId as InstitutionId);
+      const showOfficialMetadata =
+        entry.capability !== 'estimated' &&
+        entry.capability !== 'unsupported' &&
+        entry.capability !== 'missing';
+
+      return {
+        programId: program.id,
+        programName: program.name,
+        institutionId: entry.institutionId,
+        institutionName:
+          institution?.name ?? entry.sourceTarget?.institutionName ?? entry.institutionId,
+        evidenceMode: entry.capability,
+        severity: evidenceSeverity(entry.capability),
+        sourceTargetId: showOfficialMetadata ? (entry.sourceTarget?.id ?? null) : null,
+        officialSourceUrl: showOfficialMetadata ? (entry.sourceTarget?.officialUrl ?? null) : null,
+        adapterId: showOfficialMetadata ? (entry.sourceTarget?.adapterId ?? null) : null,
+        externalProgramId: entry.exactTarget?.program.externalId ?? null,
+        freshnessStatus:
+          showOfficialMetadata && entry.freshnessState
+            ? classifySourceFreshnessStatus(entry.freshnessState, now)
+            : null,
+        blockedReason: showOfficialMetadata
+          ? (entry.freshnessState?.blockedReason ?? entry.sourceTarget?.blockedReason ?? null)
+          : null,
+        requiredInputs: showOfficialMetadata ? (entry.requiredInputs ?? []) : [],
+      };
+    }),
+  );
+
+  return {
+    rows: evidenceRows.toSorted(compareAdmissionsEvidenceRows),
+  };
+}
+
 function buildIngestionSummary(rows: IngestionJobRow[]): DataHealthReadyReport['ingestion'] {
   const activeStatuses = new Set<IngestionJobStatus>(['pending', 'running', 'needs_review']);
 
@@ -918,6 +1038,127 @@ function classifySourceFreshnessStatus(
   }
 
   return 'fresh';
+}
+
+function buildCapabilityInstitutions(rows: DataHealthRows): CatalogueInstitution[] {
+  const configByInstitutionId = new Map(
+    rows.universityCalculatorConfigs.map((config) => [config.institutionId, config] as const),
+  );
+
+  return rows.institutions.map((institution) => {
+    const calculatorConfig = configByInstitutionId.get(institution.id);
+
+    return {
+      id: institution.id as InstitutionId,
+      name: institution.name,
+      region: institution.region,
+      domain: institution.domain ?? undefined,
+      logoUrl: institution.logoUrl ?? undefined,
+      programUrl: institution.programUrl ?? undefined,
+      calculatorUrl: institution.calculatorUrl ?? undefined,
+      universityId: (institution.universityId as UniversityId | null) ?? undefined,
+      calculatorConfig: calculatorConfig
+        ? {
+            formulaType: calculatorConfig.formulaType,
+            scaleDescription: calculatorConfig.scaleDescription,
+            sekhemWeight:
+              calculatorConfig.psyWeight !== null && calculatorConfig.bagrutWeight !== null
+                ? {
+                    psy: calculatorConfig.psyWeight,
+                    bag: calculatorConfig.bagrutWeight,
+                  }
+                : undefined,
+            minPsychometric: calculatorConfig.minPsychometric ?? undefined,
+            minBagrut: calculatorConfig.minBagrut ?? undefined,
+          }
+        : undefined,
+    };
+  });
+}
+
+function buildCapabilityPrograms(rows: DataHealthRows): CatalogueProgram[] {
+  const linkedInstitutionIdsByProgramId = new Map<string, string[]>();
+  const thresholdsByProgramId = new Map<string, Record<string, number | null>>();
+
+  for (const row of rows.programInstitutions) {
+    const existing = linkedInstitutionIdsByProgramId.get(row.programId) ?? [];
+    existing.push(row.institutionId);
+    linkedInstitutionIdsByProgramId.set(row.programId, existing);
+  }
+
+  for (const row of rows.admissionThresholds) {
+    const existing = thresholdsByProgramId.get(row.programId) ?? {};
+    existing[row.institutionId] = row.thresholdValue;
+    thresholdsByProgramId.set(row.programId, existing);
+  }
+
+  return rows.programs.map((program) => ({
+    id: program.id,
+    name: program.name,
+    institution: program.institutionName,
+    institutionId: (program.institutionId as InstitutionId | null) ?? undefined,
+    type: program.type as CatalogueProgram['type'],
+    category: program.category,
+    profileScore: {
+      AN: 0,
+      TE: 0,
+      CR: 0,
+      SO: 0,
+      LE: 0,
+      OR: 0,
+      DI: 0,
+      ER: 0,
+    },
+    admissionType: program.admissionType,
+    admissionRequirements: [],
+    thresholds: thresholdsByProgramId.get(program.id) as CatalogueProgram['thresholds'],
+    linkedInstitutionIds: linkedInstitutionIdsByProgramId.get(program.id) ?? [],
+  }));
+}
+
+function evidenceSeverity(
+  capability: AdmissionsEvaluationCapability,
+): AdmissionsEvidenceRow['severity'] {
+  if (capability === 'blocked' || capability === 'stale') {
+    return 'attention';
+  }
+
+  if (capability === 'missing' || capability === 'unsupported') {
+    return 'informational';
+  }
+
+  return 'normal';
+}
+
+function compareAdmissionsEvidenceRows(
+  left: AdmissionsEvidenceRow,
+  right: AdmissionsEvidenceRow,
+): number {
+  const severity =
+    evidenceSeverityPriority(left.severity) - evidenceSeverityPriority(right.severity);
+  if (severity !== 0) {
+    return severity;
+  }
+
+  const institution = left.institutionName.localeCompare(right.institutionName, 'en');
+  if (institution !== 0) {
+    return institution;
+  }
+
+  return left.programName.localeCompare(right.programName, 'en');
+}
+
+function evidenceSeverityPriority(severity: AdmissionsEvidenceRow['severity']): number {
+  switch (severity) {
+    case 'attention':
+      return 0;
+    case 'normal':
+      return 1;
+    case 'informational':
+      return 2;
+    default:
+      return 3;
+  }
 }
 
 function sourceIdFromReviewItem(reviewItem: ReviewItemDetailRow): string | null {

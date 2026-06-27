@@ -92,6 +92,9 @@ describe('/internal/data-health page', () => {
         weakSources: [],
         manualGateRequirements: [],
       },
+      decisionEvidence: {
+        rows: [],
+      },
       ingestion: {
         totalJobs: 0,
         jobsByStatus: {},
