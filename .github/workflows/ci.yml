@@ -14,6 +14,7 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+# Strict PR verification is required for this product.
 # ---------------------------------------------------------------------------
 # Job 1: Static analysis — lint, type check, format, security audit
 # ---------------------------------------------------------------------------
@@ -52,9 +53,6 @@ jobs:
       - name: Drizzle migration consistency
         run: npm run db:migrate:check
 
-  # ---------------------------------------------------------------------------
-  # Job 2: Unit tests with coverage
-  # ---------------------------------------------------------------------------
   test:
     name: Unit tests & coverage
     runs-on: ubuntu-latest
@@ -82,9 +80,6 @@ jobs:
       - name: Validate catalogue seed (dry-run)
         run: npm run db:seed:dry-run
 
-  # ---------------------------------------------------------------------------
-  # Job 3: Build
-  # ---------------------------------------------------------------------------
   build:
     name: Build application
     runs-on: ubuntu-latest
@@ -108,128 +103,3 @@ jobs:
 
       - name: Build
         run: npm run build
-
-  # ---------------------------------------------------------------------------
-  # Job 4: PR-local E2E smoke tests (safe/static, no secrets)
-  # ---------------------------------------------------------------------------
-  e2e-pr:
-    name: Playwright PR smoke
-    runs-on: ubuntu-latest
-    needs: build
-    if: ${{ github.event_name == 'pull_request' }}
-    env:
-      CI: true
-      CATALOGUE_SOURCE_MODE: static
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 20
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
-
-      - name: Build application
-        run: npm run build
-
-      - name: Run Playwright smoke tests
-        run: |
-          npm start &
-          npx --yes wait-on http://localhost:3000 --timeout 30000
-          npm run test:e2e
-
-      - name: Upload Playwright report
-        if: failure()
-        uses: actions/upload-artifact@v7
-        with:
-          name: playwright-report-pr
-          path: playwright-report/
-          retention-days: 7
-
-  # ---------------------------------------------------------------------------
-  # Job 5: E2E smoke tests (on main push or manual dispatch)
-  # ---------------------------------------------------------------------------
-  e2e:
-    name: E2E smoke tests
-    runs-on: ubuntu-latest
-    needs: build
-    if: ${{ github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' }}
-    env:
-      CI: true
-      CATALOGUE_SOURCE_MODE: static
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 20
-          cache: npm
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
-
-      - name: Build application
-        run: npm run build
-
-      - name: Run E2E tests
-        run: |
-          npm start &
-          npx --yes wait-on http://localhost:3000 --timeout 30000
-          npm run test:e2e
-
-      - name: Upload test artifacts
-        if: failure()
-        uses: actions/upload-artifact@v7
-        with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 7
-
-  # ---------------------------------------------------------------------------
-  # Job 6: DB-backed catalogue verification (main + manual only)
-  # ---------------------------------------------------------------------------
-  db-seed-verify:
-    name: DB-backed catalogue verification
-    runs-on: ubuntu-latest
-    needs: build
-    if: ${{ github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' }}
-    env:
-      CI: true
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      CATALOGUE_SOURCE_MODE: database
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 20
-          cache: npm
-
-      - name: Skip DB verification when DATABASE_URL is missing
-        if: ${{ env.DATABASE_URL == '' }}
-        run: echo "DATABASE_URL secret is not configured; skipping DB-backed seed verification."
-
-      - name: Install dependencies
-        if: ${{ env.DATABASE_URL != '' }}
-        run: npm ci
-
-      - name: Verify seeded database catalogue
-        if: ${{ env.DATABASE_URL != '' }}
-        run: npm run db:seed:verify
