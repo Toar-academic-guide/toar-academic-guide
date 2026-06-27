@@ -86,14 +86,32 @@ describe('requireOpsDatabaseUrl', () => {
     vi.unstubAllEnvs();
   });
 
-  it('requires the dedicated operational database URL', () => {
+  it('falls back to DATABASE_URL when the dedicated operational URL is absent', () => {
     vi.stubEnv('NODE_ENV', 'production');
     vi.stubEnv(
       'DATABASE_URL',
       'postgresql://app_runtime:secret@db.internal.example.com:5432/postgres',
     );
 
-    expect(() => requireOpsDatabaseUrl()).toThrow(/Missing OPS_DATABASE_URL/i);
+    expect(requireOpsDatabaseUrl()).toBe(
+      'postgresql://app_runtime:secret@db.internal.example.com:5432/postgres',
+    );
+  });
+
+  it('prefers the dedicated operational database URL when configured', () => {
+    vi.stubEnv('NODE_ENV', 'production');
+    vi.stubEnv(
+      'DATABASE_URL',
+      'postgresql://app_runtime:secret@db.internal.example.com:5432/postgres',
+    );
+    vi.stubEnv(
+      'OPS_DATABASE_URL',
+      'postgresql://ops_readonly:secret@db.internal.example.com:5432/postgres',
+    );
+
+    expect(requireOpsDatabaseUrl()).toBe(
+      'postgresql://ops_readonly:secret@db.internal.example.com:5432/postgres',
+    );
   });
 
   it('rejects postgres-authenticated Supabase URLs in production', () => {

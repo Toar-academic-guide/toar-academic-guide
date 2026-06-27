@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Target, Sparkles, BarChart3 } from 'lucide-react';
 import LogoCanvas from './LogoCanvas';
@@ -41,6 +41,18 @@ export default function LandingPage({
   const [calcErrors, setCalcErrors] = useState<{ psychometric?: string; bagrut?: string }>({});
 
   const uniqueCategories = [...new Set(programs.map((p) => p.category))].sort();
+  const selectedProgramExists = programs.some((program) => program.id === selectedDegreeId);
+
+  useEffect(() => {
+    if (programs.length === 0) {
+      setSelectedDegreeId('');
+      return;
+    }
+
+    setSelectedDegreeId((current) =>
+      current && programs.some((program) => program.id === current) ? current : programs[0].id,
+    );
+  }, [programs]);
 
   function handleCalcSubmit() {
     const errs: typeof calcErrors = {};
@@ -53,6 +65,9 @@ export default function LandingPage({
       errs.bagrut = 'ממוצע בין 60 ל-120';
     }
     setCalcErrors(errs);
+    if (!selectedDegreeId || !selectedProgramExists) {
+      return;
+    }
     if (Object.keys(errs).length === 0) {
       onCalculate(psy, bag, selectedDegreeId);
     }
@@ -109,14 +124,21 @@ export default function LandingPage({
             {authLoading ? (
               <div className="h-9 w-9 animate-pulse rounded-full bg-slate-200" />
             ) : isAuthenticated && userInitials ? (
-              <button
-                type="button"
-                onClick={onSignOut}
-                title="לחץ להתנתקות"
-                className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-[#1e1b4b] text-xs font-bold text-white shadow transition hover:bg-[#2d2a6e]"
-              >
-                {userInitials}
-              </button>
+              <div className="flex items-center gap-2">
+                <span
+                  title="מחובר/ת"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-[#1e1b4b] text-xs font-bold text-white shadow"
+                >
+                  {userInitials}
+                </span>
+                <button
+                  type="button"
+                  onClick={onSignOut}
+                  className="text-sm font-semibold text-slate-600 transition hover:text-slate-900"
+                >
+                  התנתק
+                </button>
+              </div>
             ) : (
               <button
                 type="button"
@@ -366,6 +388,7 @@ export default function LandingPage({
                   id="calc-degree"
                   value={selectedDegreeId}
                   onChange={(e) => setSelectedDegreeId(e.target.value)}
+                  disabled={programs.length === 0}
                   className="w-full appearance-none rounded-xl border-2 border-[#e5e7eb] bg-white px-4 py-3 text-base text-slate-900 outline-none transition focus:border-[#4f46e5]"
                 >
                   {uniqueCategories.map((cat) => (
