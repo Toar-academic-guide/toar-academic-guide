@@ -180,11 +180,7 @@ type IngestionJobStatus = 'pending' | 'running' | 'succeeded' | 'failed' | 'need
 type SourceDifficulty = 'easy' | 'browser_required' | 'hard_manual';
 type ReviewItemStatus = 'pending' | 'approved' | 'rejected';
 type FreshnessSourceClass =
-  | 'api_static_json'
-  | 'browser_required'
-  | 'official_html'
-  | 'pdf_text'
-  | 'score_only_calculator';
+  'api_static_json' | 'browser_required' | 'official_html' | 'pdf_text' | 'score_only_calculator';
 type FreshnessCapability = 'blocked' | 'decision_capable' | 'score_only';
 type SourceFreshnessStatus = 'blocked' | 'changed_needs_review' | 'failed' | 'fresh';
 type DashboardSourceFreshnessStatus = SourceFreshnessStatus | 'never_checked' | 'stale';
@@ -876,7 +872,9 @@ function buildDecisionEvidenceSummary(
   now: Date,
 ): DataHealthReadyReport['decisionEvidence'] {
   const catalogueInstitutions = buildCapabilityInstitutions(rows);
-  const institutionById = new Map(catalogueInstitutions.map((institution) => [institution.id, institution]));
+  const institutionById = new Map(
+    catalogueInstitutions.map((institution) => [institution.id, institution]),
+  );
   const freshnessStatesBySourceId = new Map(
     rows.sourceFreshnessStates.map((row) => [row.sourceId, row] as const),
   );
@@ -898,16 +896,18 @@ function buildDecisionEvidenceSummary(
         programId: program.id,
         programName: program.name,
         institutionId: entry.institutionId,
-        institutionName: institution?.name ?? entry.sourceTarget?.institutionName ?? entry.institutionId,
+        institutionName:
+          institution?.name ?? entry.sourceTarget?.institutionName ?? entry.institutionId,
         evidenceMode: entry.capability,
         severity: evidenceSeverity(entry.capability),
         sourceTargetId: showOfficialMetadata ? (entry.sourceTarget?.id ?? null) : null,
         officialSourceUrl: showOfficialMetadata ? (entry.sourceTarget?.officialUrl ?? null) : null,
         adapterId: showOfficialMetadata ? (entry.sourceTarget?.adapterId ?? null) : null,
         externalProgramId: entry.exactTarget?.program.externalId ?? null,
-        freshnessStatus: showOfficialMetadata && entry.freshnessState
-          ? classifySourceFreshnessStatus(entry.freshnessState, now)
-          : null,
+        freshnessStatus:
+          showOfficialMetadata && entry.freshnessState
+            ? classifySourceFreshnessStatus(entry.freshnessState, now)
+            : null,
         blockedReason: showOfficialMetadata
           ? (entry.freshnessState?.blockedReason ?? entry.sourceTarget?.blockedReason ?? null)
           : null,
@@ -1126,8 +1126,12 @@ function evidenceSeverity(
   return 'normal';
 }
 
-function compareAdmissionsEvidenceRows(left: AdmissionsEvidenceRow, right: AdmissionsEvidenceRow): number {
-  const severity = evidenceSeverityPriority(left.severity) - evidenceSeverityPriority(right.severity);
+function compareAdmissionsEvidenceRows(
+  left: AdmissionsEvidenceRow,
+  right: AdmissionsEvidenceRow,
+): number {
+  const severity =
+    evidenceSeverityPriority(left.severity) - evidenceSeverityPriority(right.severity);
   if (severity !== 0) {
     return severity;
   }

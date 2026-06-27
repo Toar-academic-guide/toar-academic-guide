@@ -103,11 +103,7 @@ function reportWithRisks(): DataHealthReadyReport {
           externalProgramId: '52258372',
           freshnessStatus: 'fresh',
           blockedReason: null,
-          requiredInputs: [
-            'psychometric_math',
-            'psychometric_verbal',
-            'psychometric_english',
-          ],
+          requiredInputs: ['psychometric_math', 'psychometric_verbal', 'psychometric_english'],
         },
         {
           programId: 'tau_law',
@@ -233,9 +229,13 @@ describe('DataHealthDashboard', () => {
 
     expect(screen.getByText('Digital Sciences for High-Tech')).toBeTruthy();
     expect(screen.getByText('Exact official')).toBeTruthy();
-    expect(screen.getByText(/requires psychometric_math, psychometric_verbal, psychometric_english/i)).toBeTruthy();
+    expect(
+      screen.getByText(/requires psychometric_math, psychometric_verbal, psychometric_english/i),
+    ).toBeTruthy();
     expect(screen.getByText('Missing')).toBeTruthy();
-    expect(screen.getByText(/No official-source metadata is currently linked to this pair/i)).toBeTruthy();
+    expect(
+      screen.getByText(/No official-source metadata is currently linked to this pair/i),
+    ).toBeTruthy();
   });
 
   it('prioritizes critical operational risks before lower-priority totals', () => {

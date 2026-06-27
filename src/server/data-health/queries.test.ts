@@ -441,11 +441,7 @@ describe('summarizeDataHealthRows', () => {
           sourceTargetId: 'haifa-cs-live',
           officialSourceUrl: 'https://applicants.haifa.ac.il/enrollmentChances/index.html',
           externalProgramId: '52258372',
-          requiredInputs: [
-            'psychometric_math',
-            'psychometric_verbal',
-            'psychometric_english',
-          ],
+          requiredInputs: ['psychometric_math', 'psychometric_verbal', 'psychometric_english'],
         }),
         expect.objectContaining({
           programId: 'tau_law',

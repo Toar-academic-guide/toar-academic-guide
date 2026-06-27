@@ -471,7 +471,9 @@ function evidenceModeLabel(
   }
 }
 
-function evidenceRowClasses(severity: DataHealthReadyReport['decisionEvidence']['rows'][number]['severity']) {
+function evidenceRowClasses(
+  severity: DataHealthReadyReport['decisionEvidence']['rows'][number]['severity'],
+) {
   switch (severity) {
     case 'attention':
       return 'border-red-900/15 bg-red-50';
