@@ -387,7 +387,7 @@ describe('summarizeDataHealthRows', () => {
     const report = summarizeDataHealthRows(
       baseRows({
         sourceFreshnessStates: [
-          {
+          freshnessState('tau-digital-sciences-live', {
             sourceId: 'tau-digital-sciences-live',
             sourceClass: 'api_static_json',
             capability: 'decision_capable',
@@ -399,8 +399,8 @@ describe('summarizeDataHealthRows', () => {
             blockedReason: null,
             latestReviewItemId: null,
             nextAction: null,
-          },
-          {
+          }),
+          freshnessState('haifa-cs-live', {
             sourceId: 'haifa-cs-live',
             sourceClass: 'official_html',
             capability: 'decision_capable',
@@ -412,7 +412,7 @@ describe('summarizeDataHealthRows', () => {
             blockedReason: null,
             latestReviewItemId: null,
             nextAction: null,
-          },
+          }),
         ],
       }),
       now,
@@ -864,8 +864,13 @@ function freshnessState(
     lastChangedAt: null,
     latestFailureReason: null,
     blockedReason: null,
+    rawFingerprint: null,
+    normalizedFingerprint: null,
+    normalizedDecisionPayload: {},
     latestReviewItemId: null,
     nextAction: null,
+    createdAt: new Date('2026-06-23T18:00:00.000Z'),
+    updatedAt: new Date('2026-06-23T18:00:00.000Z'),
     ...overrides,
   };
 }

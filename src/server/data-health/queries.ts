@@ -741,8 +741,13 @@ async function loadDataHealthRows(): Promise<DataHealthRows> {
       lastChangedAt: sourceFreshnessStates.lastChangedAt,
       latestFailureReason: sourceFreshnessStates.latestFailureReason,
       blockedReason: sourceFreshnessStates.blockedReason,
+      rawFingerprint: sourceFreshnessStates.rawFingerprint,
+      normalizedFingerprint: sourceFreshnessStates.normalizedFingerprint,
+      normalizedDecisionPayload: sourceFreshnessStates.normalizedDecisionPayload,
       latestReviewItemId: sourceFreshnessStates.latestReviewItemId,
       nextAction: sourceFreshnessStates.nextAction,
+      createdAt: sourceFreshnessStates.createdAt,
+      updatedAt: sourceFreshnessStates.updatedAt,
     })
     .from(sourceFreshnessStates);
 
