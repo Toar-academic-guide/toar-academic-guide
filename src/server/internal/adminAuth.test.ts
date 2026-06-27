@@ -2,10 +2,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const hoistedMocks = vi.hoisted(() => ({
   createSupabaseServerClient: vi.fn(),
+  headers: vi.fn(),
 }));
 
 vi.mock('@/lib/supabase/server', () => ({
   createSupabaseServerClient: hoistedMocks.createSupabaseServerClient,
+}));
+
+vi.mock('next/headers', () => ({
+  headers: hoistedMocks.headers,
 }));
 
 vi.mock('server-only', () => ({}));
@@ -47,6 +52,47 @@ describe('getInternalAdminAuthorization', () => {
 
     hoistedMocks.createSupabaseServerClient.mockReset();
     hoistedMocks.createSupabaseServerClient.mockResolvedValue(mockSupabase);
+    hoistedMocks.headers.mockReset();
+    hoistedMocks.headers.mockResolvedValue({
+      get: vi.fn().mockReturnValue(null),
+    });
+  });
+
+  it('allows the CI E2E internal admin bypass only with the matching header token', async () => {
+    vi.stubEnv('CI', 'true');
+    vi.stubEnv('INTERNAL_ADMIN_E2E_EMAIL', 'Operator@Example.com');
+    vi.stubEnv('INTERNAL_ADMIN_E2E_TOKEN', 'ci-secret-token');
+    hoistedMocks.headers.mockResolvedValueOnce({
+      get: vi.fn((name: string) =>
+        name === 'x-internal-admin-e2e-token' ? 'ci-secret-token' : null,
+      ),
+    });
+
+    await expect(getInternalAdminAuthorization()).resolves.toEqual({
+      status: 'admin',
+      isAdmin: true,
+      user: {
+        id: 'ci-e2e-internal-admin',
+        email: 'operator@example.com',
+      },
+    });
+    expect(hoistedMocks.createSupabaseServerClient).not.toHaveBeenCalled();
+  });
+
+  it('does not allow the CI E2E bypass on Vercel deployments', async () => {
+    vi.stubEnv('CI', 'true');
+    vi.stubEnv('VERCEL', '1');
+    vi.stubEnv('INTERNAL_ADMIN_E2E_EMAIL', 'operator@example.com');
+    vi.stubEnv('INTERNAL_ADMIN_E2E_TOKEN', 'ci-secret-token');
+
+    await expect(getInternalAdminAuthorization()).resolves.toEqual({
+      status: 'non_admin',
+      isAdmin: false,
+      user: {
+        id: 'user-123',
+        email: 'operator@example.com',
+      },
+    });
   });
 
   it('denies access when Supabase auth is unavailable', async () => {
