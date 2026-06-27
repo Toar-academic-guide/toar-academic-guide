@@ -28,7 +28,7 @@ import type {
   SourceUrlRow,
   UniversityCalculatorConfigRow,
 } from '@/db/types';
-import { getCatalogueSourceMode, hasDatabaseUrl, isProductionRuntime } from '@/env';
+import { getCatalogueSourceMode, hasDatabaseUrl } from '@/env';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import type {
   ApiMetaPayload,
@@ -345,7 +345,7 @@ async function loadDatabaseCatalogueOrThrow(
 }
 
 function canUseStaticFallback(mode: CatalogueSourceMode): boolean {
-  return mode === 'auto' && !isProductionRuntime();
+  return mode === 'auto';
 }
 
 function buildReadinessError(

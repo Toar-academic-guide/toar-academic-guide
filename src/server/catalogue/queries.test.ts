@@ -203,6 +203,24 @@ describe('catalogue queries', () => {
     });
   });
 
+  it('falls back to static data in auto mode when the production database is unavailable', async () => {
+    mockEnv.mode = 'auto';
+    mockEnv.hasDatabaseUrl = true;
+    mockEnv.isProduction = true;
+    hoistedMocks.getDb.mockImplementation(() => {
+      throw new Error('database offline');
+    });
+
+    const result = await listCataloguePrograms();
+
+    expect(result.data).toEqual(hoistedMocks.getStaticCataloguePrograms.mock.results[0]?.value);
+    expect(result.meta).toEqual({
+      catalogueSourceMode: 'auto',
+      catalogueSource: 'static',
+      fallbackReason: 'Unable to load catalogue from the database.',
+    });
+  });
+
   it('fails closed in database mode when DATABASE_URL is missing', async () => {
     mockEnv.mode = 'database';
 
