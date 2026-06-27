@@ -22,7 +22,6 @@ import {
 } from '@/lib/catalogueClient';
 import { getCalculatorInstitutionsFromCatalogue } from '@/lib/calculatorInstitutions';
 import { getRecommendations } from '@/utils/recommendationEngine';
-import { getUserInitials } from '@/utils/userDisplay';
 import { evaluateUniversities } from '@/utils/sekhemCalculators';
 import { extractFilterAnswers } from '@/utils/riasecEngine';
 import { ArrowRight } from 'lucide-react';
@@ -58,16 +57,8 @@ type AppStep =
   | 'calculator-results';
 
 const APP_STEPS: AppStep[] = [
-  'landing',
-  'auth',
-  'intro',
-  'academic-profile',
-  'career-assessment',
-  'quick-filters',
-  'recommendations',
-  'calculator',
-  'bucket-list',
-  'degree-picker',
+  'landing', 'auth', 'intro', 'academic-profile', 'career-assessment',
+  'quick-filters', 'recommendations', 'calculator', 'bucket-list', 'degree-picker',
   'calculator-results',
 ];
 const ENABLE_DEV_SHORTCUTS = process.env.NODE_ENV !== 'production';
@@ -102,6 +93,17 @@ const DEV_AVOIDANCES: AvoidanceTag[] = [];
 const STATIC_CATALOGUE_PROGRAMS = getStaticCataloguePrograms();
 const STATIC_CATALOGUE_INSTITUTIONS = getStaticCatalogueInstitutions();
 
+function getUserInitials(email: string): string {
+  const prefix = email.split('@')[0] ?? '';
+  const parts = prefix.split(/[._-]/).filter(Boolean);
+
+  if (parts.length >= 2) {
+    return `${parts[0][0] ?? ''}${parts[1][0] ?? ''}`.toUpperCase();
+  }
+
+  return prefix.slice(0, 2).toUpperCase();
+}
+
 function toCatalogueError(error: unknown): CatalogueApiError {
   if (error instanceof CatalogueApiError) {
     return error;
@@ -116,13 +118,11 @@ function toCatalogueError(error: unknown): CatalogueApiError {
 
 export default function Home() {
   const { loading: authLoading, signOut, user } = useAuth();
-  const userInitials = getUserInitials(user);
   const [initialStep] = useState<AppStep>(getDevStep);
   const [catalogueStatus, setCatalogueStatus] = useState<CatalogueStatus>('loading');
   const [catalogueError, setCatalogueError] = useState<CatalogueApiError | null>(null);
-  const [catalogueInstitutions, setCatalogueInstitutions] = useState<CatalogueInstitution[]>(
-    STATIC_CATALOGUE_INSTITUTIONS,
-  );
+  const [catalogueInstitutions, setCatalogueInstitutions] =
+    useState<CatalogueInstitution[]>(STATIC_CATALOGUE_INSTITUTIONS);
   const [step, setStep] = useState<AppStep>(initialStep);
   const [recommendations, setRecommendations] = useState<RecommendedField[]>(() =>
     initialStep === 'recommendations'
@@ -131,12 +131,11 @@ export default function Home() {
           DEV_VALUES,
           undefined,
           DEV_AVOIDANCES,
-          STATIC_CATALOGUE_PROGRAMS,
+          STATIC_CATALOGUE_PROGRAMS
         )
-      : [],
+      : []
   );
-  const [cataloguePrograms, setCataloguePrograms] =
-    useState<CatalogueProgram[]>(STATIC_CATALOGUE_PROGRAMS);
+  const [cataloguePrograms, setCataloguePrograms] = useState<CatalogueProgram[]>(STATIC_CATALOGUE_PROGRAMS);
   const {
     clearLocalProfileData,
     profile,
@@ -163,7 +162,7 @@ export default function Home() {
           values: DEV_VALUES,
           geographicPreference: DEV_GEO,
         }
-      : null,
+      : null
   );
   const [recommendationRequest, setRecommendationRequest] = useState<{
     scores: ProfileScores;
@@ -178,11 +177,11 @@ export default function Home() {
           geographicPreference: DEV_GEO,
           avoidances: DEV_AVOIDANCES,
         }
-      : null,
+      : null
   );
 
   const [selectedDegreeId, setSelectedDegreeId] = useState<string | null>(
-    STATIC_CATALOGUE_PROGRAMS[0]?.id ?? null,
+    STATIC_CATALOGUE_PROGRAMS[0]?.id ?? null
   );
   const [results, setResults] = useState<UniversityResult[] | null>(null);
   const [degreeName, setDegreeName] = useState('');
@@ -212,7 +211,7 @@ export default function Home() {
         setSelectedDegreeId((current) =>
           current && programs.some((program) => program.id === current)
             ? current
-            : (programs[0]?.id ?? null),
+            : (programs[0]?.id ?? null)
         );
         setCatalogueStatus('ready');
       })
@@ -241,8 +240,8 @@ export default function Home() {
         recommendationRequest.values,
         undefined,
         recommendationRequest.avoidances,
-        cataloguePrograms,
-      ),
+        cataloguePrograms
+      )
     );
   }, [cataloguePrograms, catalogueStatus, recommendationRequest]);
 
@@ -288,7 +287,7 @@ export default function Home() {
     setRecommendations(
       catalogueStatus === 'ready'
         ? getRecommendations(scores, values, undefined, avoidances, cataloguePrograms)
-        : [],
+        : []
     );
     setResults(null);
     setBucketReturnsTo('recommendations');
@@ -410,8 +409,6 @@ export default function Home() {
     posthog.capture('degree_calculator_submitted', {
       degree_id: degreeId,
       degree_name: degree.name,
-      psychometric: scores.psychometric,
-      bagrut: scores.bagrut,
     });
 
     const evaluated = evaluateUniversities(calculatorInstitutions, degree, scores, engineering);
@@ -443,8 +440,6 @@ export default function Home() {
         onCalculate={(psychometric, bagrut, degreeId) => {
           posthog.capture('landing_calculator_submitted', {
             degree_id: degreeId,
-            psychometric,
-            bagrut,
           });
           setLandingCalcScores({ psychometric, bagrut, degreeId });
           setStep('calculator-results');
@@ -457,10 +452,8 @@ export default function Home() {
         programs={cataloguePrograms}
         authLoading={authLoading}
         isAuthenticated={isAuthenticated}
-        userInitials={userInitials}
-        onSignOut={() => {
-          void signOut();
-        }}
+        userEmail={user?.email ?? undefined}
+        onSignOut={() => { void signOut(); }}
       />
     );
   }
@@ -472,7 +465,6 @@ export default function Home() {
         bagrut={landingCalcScores.bagrut}
         degreeId={landingCalcScores.degreeId}
         programs={cataloguePrograms}
-        calculatorInstitutions={calculatorInstitutions}
         onBack={() => {
           setStep('landing');
           window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -513,10 +505,7 @@ export default function Home() {
           />
         ) : (
           <div className="min-h-screen bg-[#f5f4f0] px-4 py-10 sm:px-6">
-            {renderCatalogueState(
-              'טוענים את קטלוג התארים',
-              'רק לאחר שהקטלוג ייטען אפשר לבחור תארים להשוואה.',
-            )}
+            {renderCatalogueState('טוענים את קטלוג התארים', 'רק לאחר שהקטלוג ייטען אפשר לבחור תארים להשוואה.')}
           </div>
         )}
       </>
@@ -606,14 +595,9 @@ export default function Home() {
         savedCount={savedCount}
         authLoading={authLoading}
         isAuthenticated={isAuthenticated}
-        userInitials={userInitials}
+        userInitials={user?.email ? getUserInitials(user.email) : undefined}
         onGoHome={handleGoHome}
-        onGoToExam={() => {
-          setStep('career-assessment');
-          setResults(null);
-          setPendingScores(null);
-          setPendingValues(null);
-        }}
+        onGoToExam={() => { setStep('career-assessment'); setResults(null); setPendingScores(null); setPendingValues(null); }}
         onGoToRecommendations={handleGoToRecommendations}
         onGoToBucket={() => setStep('bucket-list')}
         onGoToAuth={() => {
@@ -643,12 +627,12 @@ export default function Home() {
           </div>
         ) : null}
 
-        {shouldBlockCatalogueStep
-          ? renderCatalogueState(
-              'טוענים את הקטלוג',
-              'הקטלוג נטען דרך ה-API לפני שאפשר להציג המלצות, מחשבון או רשימת ייעוד.',
-            )
-          : null}
+        {shouldBlockCatalogueStep ? (
+          renderCatalogueState(
+            'טוענים את הקטלוג',
+            'הקטלוג נטען דרך ה-API לפני שאפשר להציג המלצות, מחשבון או רשימת ייעוד.'
+          )
+        ) : null}
 
         {/* ── Step: Recommendations ─────────────────────────────── */}
         {!shouldBlockCatalogueStep && step === 'recommendations' && assessmentProfile && (
@@ -672,14 +656,9 @@ export default function Home() {
             savedProgramIds={profile.savedProgramIds ?? []}
             academicScores={profile.academicScores}
             onRemove={handleRemoveFromBucket}
-            onBack={() => {
-              setStep(bucketReturnsTo);
-              setResults(null);
-            }}
+            onBack={() => { setStep(bucketReturnsTo); setResults(null); }}
             backLabel={bucketReturnsTo === 'degree-picker' ? 'חזרה לבחירת תארים' : 'חזרה להמלצות'}
-            emptyCtaLabel={
-              bucketReturnsTo === 'degree-picker' ? 'חזור לבחור תארים ←' : 'עבור להמלצות ←'
-            }
+            emptyCtaLabel={bucketReturnsTo === 'degree-picker' ? 'חזור לבחור תארים ←' : 'עבור להמלצות ←'}
           />
         )}
 
@@ -706,7 +685,9 @@ export default function Home() {
               )}
             </section>
 
-            {results && <ResultsDashboard results={results} degreeName={degreeName} />}
+            {results && (
+              <ResultsDashboard results={results} degreeName={degreeName} />
+            )}
           </>
         )}
       </main>
