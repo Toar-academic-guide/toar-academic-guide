@@ -462,6 +462,10 @@ function evidenceModeLabel(
       return 'Score only';
     case 'estimated':
       return 'Estimated';
+    case 'open_admission':
+      return 'Open admission';
+    case 'manual_gate':
+      return 'Manual gate';
     case 'unsupported':
       return 'Unsupported';
     case 'missing':
