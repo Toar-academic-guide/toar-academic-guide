@@ -170,7 +170,7 @@ describe('evaluateAdmissionsForProgram', () => {
     );
   });
 
-  it('returns an estimated result for a reviewed calculator-only institution', async () => {
+  it('returns a decisive mapped-rule result for a reviewed calculator-only institution', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'technion_cs',
@@ -187,7 +187,7 @@ describe('evaluateAdmissionsForProgram', () => {
         kind: 'estimated',
         capability: 'score_only',
         decision: 'below',
-        sourceLabel: 'הערכה עם מקור חלקי',
+        sourceLabel: 'כלל קבלה ממופה ממקור חלקי',
       }),
     );
   });
@@ -367,7 +367,7 @@ describe('evaluateAdmissionsForProgram', () => {
     );
   });
 
-  it('correctly returns manual_gate for design programs at non-calculator colleges', async () => {
+  it('returns eligible_to_apply for design programs with manual gates only', async () => {
     const designProgram: CatalogueProgram = {
       id: 'bezalel_design',
       name: 'עיצוב גרפי',
@@ -417,7 +417,8 @@ describe('evaluateAdmissionsForProgram', () => {
         linkedInstitutionId: 'bezalel',
         kind: 'manual_gate',
         capability: 'manual_gate',
-        decision: 'unknown',
+        decision: 'eligible_to_apply',
+        sourceLabel: 'אפשר להגיש מועמדות',
         explanation: expect.stringContaining('תיק עבודות יצירתי'),
       }),
     );

@@ -56,3 +56,6 @@ supabase/.temp/
 /blob-report/
 /playwright/.cache/
 /e2e/.cache/
+
+# local evidence exports
+/scratch/*.json

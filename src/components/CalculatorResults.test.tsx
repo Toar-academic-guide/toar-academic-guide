@@ -94,7 +94,7 @@ describe('CalculatorResults', () => {
     expect(screen.getByText(/ציון התאמה 712 · סף 700/)).toBeTruthy();
   });
 
-  it('renders estimated and needs-input states without pretending they are official decisions', async () => {
+  it('renders mapped formula and needs-input states with distinct labels', async () => {
     hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
       report([
         {
@@ -109,13 +109,12 @@ describe('CalculatorResults', () => {
           capability: 'estimated',
           kind: 'estimated',
           decision: 'below',
-          confidence: 'medium',
-          sourceLabel: 'הערכה מבוססת סכם',
-          explanation:
-            'התוצאה מבוססת על נוסחת הסכם והסף שנבדקו בקטלוג, לא על תשובת מחשבון רשמי חיה.',
-          nextAction: 'שמרו את המסלול והשוו למוסדות אחרים או בדקו את המחשבון הרשמי.',
+          confidence: 'high',
+          sourceLabel: 'כלל קבלה ממופה',
+          explanation: 'התוצאה מבוססת על נוסחת סכם וסף קבלה שמופו ממקור מוסדי ונבדקו בקטלוג.',
+          nextAction: 'שפרו את הנתונים שמופיעים בפער או השוו למסלולים אחרים שבהם אתם עומדים בסף.',
           score: 88.2,
-          scoreLabel: 'סכם משוער',
+          scoreLabel: 'סכם',
           threshold: 90,
           deltaNeeded: {
             psychometric: 12,
@@ -153,15 +152,51 @@ describe('CalculatorResults', () => {
       />,
     );
 
-    expect(
-      await screen.findByLabelText('הטכניון – מכון טכנולוגי לישראל: הערכה מתחת לסף'),
-    ).toBeTruthy();
+    expect(await screen.findByLabelText('הטכניון – מכון טכנולוגי לישראל: מתחת לסף')).toBeTruthy();
     expect(screen.getByLabelText('אוניברסיטת חיפה: נדרשים נתונים')).toBeTruthy();
     expect(screen.getByText('נדרשים נתונים נוספים')).toBeTruthy();
     expect(
       screen.getByText('כדי לחשב מסלול זה דרך המקור הרשמי צריך גם תתי-ציונים בפסיכומטרי.'),
     ).toBeTruthy();
     expect(screen.queryByText('אימות רשמי')).toBeNull();
+  });
+
+  it('renders manual-gate results as eligible to apply', async () => {
+    hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
+      report([
+        {
+          institution: {
+            id: 'bezalel',
+            name: 'בצלאל',
+            region: 'center',
+            domain: 'bezalel.ac.il',
+            universityId: 'bezalel',
+          },
+          linkedInstitutionId: 'bezalel',
+          capability: 'manual_gate',
+          kind: 'manual_gate',
+          decision: 'eligible_to_apply',
+          confidence: 'high',
+          sourceLabel: 'אפשר להגיש מועמדות',
+          explanation:
+            'לפי תנאי הקבלה שמופו, אין סף ציונים אוטומטי שמונע הגשה. עדיין צריך להשלים: תיק עבודות; ראיון קבלה',
+          nextAction: 'הגישו מועמדות ובדקו את מועדי תיק העבודות, המבחנים או הראיונות באתר המוסד.',
+        },
+      ]),
+    );
+
+    render(
+      <CalculatorResults
+        degreeId="tau_cs"
+        programs={programs}
+        psychometric={700}
+        bagrut={110}
+        onBack={() => {}}
+      />,
+    );
+
+    expect(await screen.findByLabelText('בצלאל: אפשר להגיש מועמדות')).toBeTruthy();
+    expect(screen.getByText(/אין סף ציונים אוטומטי שמונע הגשה/)).toBeTruthy();
   });
 
   it('renders a recoverable error state when the route request fails', async () => {
