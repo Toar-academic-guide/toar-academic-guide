@@ -2517,6 +2517,7 @@ export const academicPrograms: Program[] = [
     profileScore: P.cs,
     admissionType: 'requirements',
     admissionRequirements: [],
+    thresholds: { reichman: 0 },
     institutionDetails: D['reichman_cs'],
   },
   {
@@ -2529,6 +2530,7 @@ export const academicPrograms: Program[] = [
     profileScore: P.psychology,
     admissionType: 'requirements',
     admissionRequirements: [],
+    thresholds: { reichman: 0 },
     institutionDetails: D['reichman_psychology'],
   },
   {
@@ -2541,6 +2543,7 @@ export const academicPrograms: Program[] = [
     profileScore: P.law,
     admissionType: 'requirements',
     admissionRequirements: [],
+    thresholds: { reichman: 0 },
     institutionDetails: D['reichman_law'],
   },
   {
@@ -2553,6 +2556,7 @@ export const academicPrograms: Program[] = [
     profileScore: P.business,
     admissionType: 'requirements',
     admissionRequirements: [],
+    thresholds: { reichman: 0 },
     institutionDetails: D['reichman_business'],
   },
   {
@@ -2565,6 +2569,7 @@ export const academicPrograms: Program[] = [
     profileScore: P.economics,
     admissionType: 'requirements',
     admissionRequirements: [],
+    thresholds: { reichman: 0 },
     institutionDetails: D['reichman_economics'],
   },
 
@@ -2647,6 +2652,7 @@ export const academicPrograms: Program[] = [
       'ממוצע בגרות מינימלי: 80',
       'ציון פסיכומטרי מינימלי: 550',
     ],
+    thresholds: { afeka: 0 },
   },
   {
     id: 'afeka_softwareeng',
@@ -2662,6 +2668,7 @@ export const academicPrograms: Program[] = [
       'ממוצע בגרות מינימלי: 80',
       'ציון פסיכומטרי מינימלי: 550',
     ],
+    thresholds: { afeka: 0 },
   },
   {
     id: 'afeka_ee',
@@ -2677,6 +2684,7 @@ export const academicPrograms: Program[] = [
       'ממוצע בגרות מינימלי: 80',
       'ציון פסיכומטרי מינימלי: 550',
     ],
+    thresholds: { afeka: 0 },
   },
   {
     id: 'afeka_biomedical',
@@ -2692,6 +2700,7 @@ export const academicPrograms: Program[] = [
       'ממוצע בגרות מינימלי: 80',
       'ציון פסיכומטרי מינימלי: 530',
     ],
+    thresholds: { afeka: 0 },
   },
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -2976,6 +2985,7 @@ export const academicPrograms: Program[] = [
     profileScore: P.infoSystems,
     admissionType: 'requirements',
     admissionRequirements: [],
+    thresholds: { reichman: 0 },
     institutionDetails: D['reichman_infosystems'],
   },
   {
