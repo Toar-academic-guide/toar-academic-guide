@@ -22,7 +22,8 @@
     "admissions:freshness": "node scripts/admissions-source-freshness.mjs",
     "db:seed": "node scripts/seed-catalogue.mjs",
     "db:seed:dry-run": "node scripts/seed-catalogue.mjs --dry-run",
-    "db:seed:verify": "node scripts/seed-catalogue.mjs --verify"
+    "db:seed:verify": "node scripts/seed-catalogue.mjs --verify",
+    "monday:export-admissions": "node scripts/export-monday-admissions-updates.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.0",
