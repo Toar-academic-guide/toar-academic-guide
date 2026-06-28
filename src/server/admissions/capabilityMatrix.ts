@@ -230,15 +230,18 @@ export function buildAdmissionsCapabilityMatrix(args: {
       };
     }
 
-    // Check if it is a manual gate (non-calculator institution with manual requirements/notes/facts)
     const detail = program.institutionDetails?.find(
       (d) =>
-        d.institutionName === institution?.name || d.officialCalculatorUrl?.includes(institutionId),
+        d.institutionName === institution?.name ||
+        d.officialCalculatorUrl?.includes(institutionId) ||
+        d.programUrl?.includes(institutionId),
     );
     const hasManualRequirements =
-      Boolean(detail?.admissionFacts?.length) ||
-      Boolean(detail?.admissionAlternativePaths?.length) ||
-      Boolean(detail?.specificAdmissionNotes?.length);
+      program.admissionType === 'requirements' &&
+      (program.admissionRequirements.length > 0 ||
+        Boolean(detail?.admissionFacts?.length) ||
+        Boolean(detail?.admissionAlternativePaths?.length) ||
+        Boolean(detail?.specificAdmissionNotes?.length));
 
     if (!hasCalculatorConfig && hasManualRequirements) {
       return {

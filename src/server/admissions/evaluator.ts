@@ -345,21 +345,21 @@ function evaluateNonExactResult(args: {
     );
     const factsList = detail?.admissionFacts?.map((f) => f.description) ?? [];
     const notesList = detail?.specificAdmissionNotes ?? [];
-    const allRequirements = [...factsList, ...notesList];
+    const allRequirements = [...program.admissionRequirements, ...factsList, ...notesList];
 
     return {
       institution: publicInstitutionShape(institution),
       linkedInstitutionId: institution.id,
       capability: 'manual_gate',
       kind: 'manual_gate',
-      decision: 'unknown',
+      decision: 'eligible_to_apply',
       confidence: 'high',
-      sourceLabel: 'מיונים ידניים',
+      sourceLabel: 'אפשר להגיש מועמדות',
       explanation:
         allRequirements.length > 0
-          ? `דרישות קבלה למסלול זה: ${allRequirements.join('; ')}`
-          : 'הקבלה למסלול זה דורשת מעבר מיונים ידניים כגון הגשת תיק עבודות, מבחן מעשי או ראיון קבלה.',
-      nextAction: 'בדקו את תנאי המיון המלאים והירשמו מוקדם למחזורי הבחינות.',
+          ? `לפי תנאי הקבלה שמופו, אין סף ציונים אוטומטי שמונע הגשה. עדיין צריך להשלים: ${allRequirements.join('; ')}`
+          : 'לפי תנאי הקבלה שמופו, אין סף ציונים אוטומטי שמונע הגשה. הקבלה עדיין תלויה במיונים ידניים כגון תיק עבודות, מבחן מעשי או ראיון.',
+      nextAction: 'הגישו מועמדות ובדקו את מועדי תיק העבודות, המבחנים או הראיונות באתר המוסד.',
     };
   }
 
@@ -428,19 +428,20 @@ function evaluateNonExactResult(args: {
       capability: entry.capability,
       kind: 'estimated',
       decision: evaluation.status === 'accepted' ? 'accepted' : 'below',
-      confidence: entry.capability === 'estimated' ? 'medium' : 'low',
-      sourceLabel: entry.capability === 'estimated' ? 'הערכה מבוססת סכם' : 'הערכה עם מקור חלקי',
+      confidence: entry.capability === 'estimated' ? 'high' : 'medium',
+      sourceLabel:
+        entry.capability === 'estimated' ? 'כלל קבלה ממופה' : 'כלל קבלה ממופה ממקור חלקי',
       explanation:
         evaluation.explanation ??
         (entry.capability === 'estimated'
-          ? 'התוצאה מבוססת על נוסחת הסכם והסף שנבדקו בקטלוג, לא על תשובת מחשבון רשמי חיה.'
-          : 'התוצאה מבוססת על נוסחת הסכם מקומית, כשהמקור הרשמי מספק רק חלק מהמידע.'),
+          ? 'התוצאה מבוססת על נוסחת סכם וסף קבלה שמופו ממקור מוסדי ונבדקו בקטלוג.'
+          : 'התוצאה מבוססת על נוסחת סכם ממופה וסף קבלה שנבדק בקטלוג, כשהמקור הרשמי מספק חלק מהמידע.'),
       nextAction:
         evaluation.status === 'accepted'
-          ? 'בדקו את המקור הרשמי לפני קבלת החלטה סופית.'
-          : 'שמרו את המסלול והשוו למוסדות אחרים או בדקו את המחשבון הרשמי.',
+          ? 'המשיכו להרשמה ובדקו מועדים, מסמכים ודרישות משלימות באתר המוסד.'
+          : 'שפרו את הנתונים שמופיעים בפער או השוו למסלולים אחרים שבהם אתם עומדים בסף.',
       score: evaluation.sekhem,
-      scoreLabel: 'סכם משוער',
+      scoreLabel: 'סכם',
       threshold: evaluation.threshold,
       deltaNeeded: evaluation.deltaNeeded,
     };

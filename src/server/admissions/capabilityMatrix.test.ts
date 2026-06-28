@@ -271,6 +271,29 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     expect(entry?.capability).toBe('missing');
   });
 
+  it('returns manual_gate for a requirements program with curated manual requirements', () => {
+    const program = makeProgram({
+      linkedInstitutionIds: ['bezalel'],
+      admissionRequirements: ['תיק עבודות', 'ראיון קבלה'],
+    });
+
+    const bezalelInstitution: CatalogueInstitution = {
+      id: 'bezalel',
+      name: 'Bezalel',
+      region: 'center',
+      domain: 'bezalel.ac.il',
+      universityId: 'bezalel',
+    };
+
+    const entries = buildAdmissionsCapabilityMatrix({
+      program,
+      institutions: [...INSTITUTIONS, bezalelInstitution],
+    });
+
+    const entry = entries.find((e) => e.institutionId === 'bezalel');
+    expect(entry?.capability).toBe('manual_gate');
+  });
+
   it('degrades exact to blocked when freshness state is blocked', () => {
     const program = makeProgram({
       id: 'tau_datascience',

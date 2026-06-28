@@ -1,7 +1,7 @@
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type { DeltaNeeded } from '@/types';
 
-export type AdmissionsEvaluationDecision = 'accepted' | 'below' | 'unknown';
+export type AdmissionsEvaluationDecision = 'accepted' | 'below' | 'eligible_to_apply' | 'unknown';
 
 export type AdmissionsEvaluationKind =
   | 'exact'

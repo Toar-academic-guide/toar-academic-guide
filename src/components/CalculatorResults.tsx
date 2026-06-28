@@ -270,12 +270,12 @@ export default function CalculatorResults({
   const STATUS_CONFIG = {
     exactAccepted: { label: 'מתקבל/ת', bg: 'bg-[#34D399]' },
     exactBelow: { label: 'מתחת לסף', bg: 'bg-[#FCD34D]' },
-    estimatedAccepted: { label: 'הערכה חיובית', bg: 'bg-sky-200' },
-    estimatedBelow: { label: 'הערכה מתחת לסף', bg: 'bg-amber-200' },
+    estimatedAccepted: { label: 'מתקבל/ת', bg: 'bg-[#34D399]' },
+    estimatedBelow: { label: 'מתחת לסף', bg: 'bg-[#FCD34D]' },
     needsInput: { label: 'נדרשים נתונים', bg: 'bg-violet-200' },
     degraded: { label: 'אימות לא זמין', bg: 'bg-rose-200' },
     openAdmission: { label: 'קבלה פתוחה', bg: 'bg-emerald-200' },
-    manualGate: { label: 'מיונים ידניים', bg: 'bg-indigo-200' },
+    manualGate: { label: 'אפשר להגיש מועמדות', bg: 'bg-indigo-200' },
     requirementsOnly: { label: 'תנאי קבלה', bg: 'bg-teal-200' },
     unsupported: { label: 'אין מספיק מידע', bg: 'bg-slate-300' },
   } as const;
