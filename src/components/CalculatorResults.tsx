@@ -146,6 +146,14 @@ export default function CalculatorResults({
           degraded_count: nextReport.results.filter((result) => result.kind === 'degraded').length,
           needs_input_count: nextReport.results.filter((result) => result.kind === 'needs_input')
             .length,
+          open_admission_count: nextReport.results.filter(
+            (result) => result.kind === 'open_admission',
+          ).length,
+          manual_gate_count: nextReport.results.filter((result) => result.kind === 'manual_gate')
+            .length,
+          requirements_only_count: nextReport.results.filter(
+            (result) => result.kind === 'requirements_only',
+          ).length,
         });
       })
       .catch((requestError: unknown) => {
@@ -266,6 +274,9 @@ export default function CalculatorResults({
     estimatedBelow: { label: 'הערכה מתחת לסף', bg: 'bg-amber-200' },
     needsInput: { label: 'נדרשים נתונים', bg: 'bg-violet-200' },
     degraded: { label: 'אימות לא זמין', bg: 'bg-rose-200' },
+    openAdmission: { label: 'קבלה פתוחה', bg: 'bg-emerald-200' },
+    manualGate: { label: 'מיונים ידניים', bg: 'bg-indigo-200' },
+    requirementsOnly: { label: 'תנאי קבלה', bg: 'bg-teal-200' },
     unsupported: { label: 'אין מספיק מידע', bg: 'bg-slate-300' },
   } as const;
 
@@ -428,7 +439,13 @@ export default function CalculatorResults({
                           ? STATUS_CONFIG.needsInput
                           : result.kind === 'degraded'
                             ? STATUS_CONFIG.degraded
-                            : STATUS_CONFIG.unsupported;
+                            : result.kind === 'open_admission'
+                              ? STATUS_CONFIG.openAdmission
+                              : result.kind === 'manual_gate'
+                                ? STATUS_CONFIG.manualGate
+                                : result.kind === 'requirements_only'
+                                  ? STATUS_CONFIG.requirementsOnly
+                                  : STATUS_CONFIG.unsupported;
                   const institutionType = getInstitutionType(institution);
 
                   return (

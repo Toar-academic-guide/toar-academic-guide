@@ -51,6 +51,31 @@ const institutions: CatalogueInstitution[] = [
       scaleDescription: 'סקאלה 0-100',
     },
   },
+  {
+    id: 'afeka',
+    name: 'מכללת אפקה',
+    region: 'center',
+    domain: 'afeka.ac.il',
+    universityId: 'afeka',
+    calculatorConfig: {
+      formulaType: 'weighted_scaled',
+      scaleDescription: 'ציון התאמה אפקה',
+      sekhemWeight: { psy: 0.5, bag: 0.5 },
+    },
+  },
+  {
+    id: 'hit',
+    name: 'המכון הטכנולוגי חולון',
+    region: 'center',
+    domain: 'hit.ac.il',
+    universityId: 'hit',
+    calculatorConfig: {
+      formulaType: 'minimum_floors',
+      scaleDescription: 'תנאי סף',
+      minPsychometric: 550,
+      minBagrut: 85,
+    },
+  },
 ];
 
 const tauDataScience: CatalogueProgram = {
@@ -95,6 +120,34 @@ const technionCs: CatalogueProgram = {
   linkedInstitutionIds: ['technion'],
 };
 
+const afekaEngineering: CatalogueProgram = {
+  id: 'afeka_engineering',
+  name: 'הנדסת תוכנה',
+  institution: 'מכללת אפקה',
+  institutionId: 'afeka',
+  type: 'academic',
+  category: 'הנדסה וטכנולוגיה',
+  profileScore: { AN: 5, TE: 5, CR: 1, SO: 1, LE: 1, OR: 3, DI: 5, ER: 4 },
+  admissionType: 'sekhem',
+  admissionRequirements: [],
+  thresholds: { afeka: 250 },
+  linkedInstitutionIds: ['afeka'],
+};
+
+const hitEngineering: CatalogueProgram = {
+  id: 'hit_cs',
+  name: 'מדעי המחשב',
+  institution: 'המכון הטכנולוגי חולון',
+  institutionId: 'hit',
+  type: 'academic',
+  category: 'הנדסה וטכנולוגיה',
+  profileScore: { AN: 5, TE: 5, CR: 1, SO: 1, LE: 1, OR: 3, DI: 5, ER: 4 },
+  admissionType: 'sekhem',
+  admissionRequirements: [],
+  thresholds: { hit: 550 },
+  linkedInstitutionIds: ['hit'],
+};
+
 describe('evaluateAdmissionsForProgram', () => {
   it('returns needs-input for the Haifa exact path when subscores are missing', async () => {
     const report = await evaluateAdmissionsForProgram({
@@ -135,6 +188,75 @@ describe('evaluateAdmissionsForProgram', () => {
         capability: 'score_only',
         decision: 'below',
         sourceLabel: 'הערכה עם מקור חלקי',
+      }),
+    );
+  });
+
+  it('returns needs-input for Afeka when subject gates are missing', async () => {
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'afeka_engineering',
+        psychometric: 700,
+        bagrut: 110,
+      },
+      program: afekaEngineering,
+      institutions,
+    });
+
+    expect(report.results).toContainEqual(
+      expect.objectContaining({
+        linkedInstitutionId: 'afeka',
+        kind: 'needs_input',
+        capability: 'needs_input',
+        requiredInputs: ['math_units', 'math_grade', 'english_units', 'english_grade'],
+      }),
+    );
+  });
+
+  it('returns an Afeka estimate when required subject gates are present', async () => {
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'afeka_engineering',
+        psychometric: 700,
+        bagrut: 110,
+        extraInputs: {
+          mathUnits: 5,
+          mathGrade: 90,
+          englishUnits: 5,
+          englishGrade: 90,
+        },
+      },
+      program: afekaEngineering,
+      institutions,
+    });
+
+    expect(report.results).toContainEqual(
+      expect.objectContaining({
+        linkedInstitutionId: 'afeka',
+        kind: 'estimated',
+        capability: 'estimated',
+        decision: 'accepted',
+      }),
+    );
+  });
+
+  it('returns needs-input for technical HIT programs when math gates are missing', async () => {
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'hit_cs',
+        psychometric: 700,
+        bagrut: 110,
+      },
+      program: hitEngineering,
+      institutions,
+    });
+
+    expect(report.results).toContainEqual(
+      expect.objectContaining({
+        linkedInstitutionId: 'hit',
+        kind: 'needs_input',
+        capability: 'needs_input',
+        requiredInputs: ['math_units', 'math_grade'],
       }),
     );
   });

@@ -7,6 +7,7 @@ import type {
   AdmissionsEvaluationInput,
   AdmissionsEvaluationReport,
   AdmissionsEvaluationResult,
+  AdmissionsRequiredInput,
 } from '@/types/admissionsEvaluation';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import {
@@ -362,7 +363,38 @@ function evaluateNonExactResult(args: {
     };
   }
 
+  if (entry.capability === 'requirements_only') {
+    const detail = program.institutionDetails?.find(
+      (d) =>
+        d.institutionName === institution.name ||
+        d.officialCalculatorUrl?.includes(institution.id) ||
+        d.programUrl?.includes(institution.id),
+    );
+    const notesList = detail?.specificAdmissionNotes ?? [];
+    const allRequirements = [...(program.admissionRequirements ?? []), ...notesList];
+
+    return {
+      institution: publicInstitutionShape(institution),
+      linkedInstitutionId: institution.id,
+      capability: 'requirements_only',
+      kind: 'requirements_only',
+      decision: 'unknown',
+      confidence: 'medium',
+      sourceLabel: 'דרישות קבלה',
+      explanation:
+        allRequirements.length > 0
+          ? `תנאי קבלה למסלול זה: ${allRequirements.join('; ')}`
+          : 'מוסד זה דורש עמידה בתנאי קבלה שטרם מופו באופן מלא. בדקו את האתר הרשמי לפרטים נוספים.',
+      nextAction: 'בדקו את תנאי הקבלה המלאים באתר הרשמי של המוסד.',
+    };
+  }
+
   if (entry.capability === 'estimated' || entry.capability === 'score_only') {
+    const missingRequiredInputs = getMissingRequiredInputsForEstimate(input, program, institution);
+    if (missingRequiredInputs.length > 0) {
+      return requiredInputsResult(institution, missingRequiredInputs);
+    }
+
     const calculatorInstitution = getCalculatorInstitutionsFromCatalogue([institution])[0];
     if (!calculatorInstitution) {
       return unsupportedResult(institution, entry);
@@ -415,6 +447,87 @@ function evaluateNonExactResult(args: {
   }
 
   return unsupportedResult(institution, entry);
+}
+
+function getMissingRequiredInputsForEstimate(
+  input: AdmissionsEvaluationInput,
+  program: CatalogueProgram,
+  institution: CatalogueInstitution,
+): AdmissionsRequiredInput[] {
+  if (institution.id === 'afeka') {
+    return missingInputs(input, ['math_units', 'math_grade', 'english_units', 'english_grade']);
+  }
+
+  if (institution.id === 'hit' && isHitTechnicalProgram(program)) {
+    return missingInputs(input, ['math_units', 'math_grade']);
+  }
+
+  return [];
+}
+
+function missingInputs(
+  input: AdmissionsEvaluationInput,
+  requiredInputs: AdmissionsRequiredInput[],
+): AdmissionsRequiredInput[] {
+  return requiredInputs.filter(
+    (requiredInput) => extraInputValue(input, requiredInput) === undefined,
+  );
+}
+
+function extraInputValue(
+  input: AdmissionsEvaluationInput,
+  requiredInput: AdmissionsRequiredInput,
+): number | undefined {
+  switch (requiredInput) {
+    case 'psychometric_math':
+      return input.extraInputs?.psychometricMath;
+    case 'psychometric_verbal':
+      return input.extraInputs?.psychometricVerbal;
+    case 'psychometric_english':
+      return input.extraInputs?.psychometricEnglish;
+    case 'math_units':
+      return input.extraInputs?.mathUnits;
+    case 'math_grade':
+      return input.extraInputs?.mathGrade;
+    case 'english_units':
+      return input.extraInputs?.englishUnits;
+    case 'english_grade':
+      return input.extraInputs?.englishGrade;
+    case 'physics_units':
+      return input.extraInputs?.physicsUnits;
+    case 'physics_grade':
+      return input.extraInputs?.physicsGrade;
+    case 'cs_units':
+      return input.extraInputs?.csUnits;
+    case 'cs_grade':
+      return input.extraInputs?.csGrade;
+  }
+}
+
+function isHitTechnicalProgram(program: CatalogueProgram): boolean {
+  return (
+    program.id.includes('cs') ||
+    program.id.includes('ee') ||
+    program.category === 'הנדסה וטכנולוגיה'
+  );
+}
+
+function requiredInputsResult(
+  institution: CatalogueInstitution,
+  requiredInputs: AdmissionsRequiredInput[],
+): AdmissionsEvaluationResult {
+  return {
+    institution: publicInstitutionShape(institution),
+    linkedInstitutionId: institution.id,
+    capability: 'needs_input',
+    kind: 'needs_input',
+    decision: 'unknown',
+    confidence: 'low',
+    sourceLabel: 'נדרשים נתונים נוספים',
+    explanation: 'כדי לחשב את המסלול במוסד זה צריך נתוני מקצועות בגרות שהמחשבון הרשמי משתמש בהם.',
+    nextAction: 'השלימו את יחידות וציון המקצועות החסרים כדי לקבל הערכה למסלול.',
+    requiredInputs,
+  };
 }
 
 function unsupportedResult(

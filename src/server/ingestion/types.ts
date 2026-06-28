@@ -11,9 +11,17 @@ export type SourceFreshnessStatus = 'blocked' | 'changed_needs_review' | 'failed
 export type MondayAdmissionsReproducedField =
   | 'acceptanceCutoff'
   | 'acceptanceThreshold'
+  | 'adaptedScore'
+  | 'bagrutAverage'
+  | 'departmentGates'
+  | 'openAdmissionPolicy'
+  | 'optimalBagrutAverage'
+  | 'programCutoffCandidate'
   | 'rejectionCutoff'
   | 'rejectionThreshold'
   | 'selectedScore'
+  | 'sekhemScore'
+  | 'subjectGates'
   | 'weightedScore';
 
 export type MondayAdmissionsContractFieldEvidence = {

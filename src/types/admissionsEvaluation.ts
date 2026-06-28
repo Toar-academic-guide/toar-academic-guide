@@ -10,7 +10,8 @@ export type AdmissionsEvaluationKind =
   | 'unsupported'
   | 'degraded'
   | 'open_admission'
-  | 'manual_gate';
+  | 'manual_gate'
+  | 'requirements_only';
 
 export type AdmissionsEvaluationCapability =
   | 'exact'
@@ -22,7 +23,8 @@ export type AdmissionsEvaluationCapability =
   | 'needs_input'
   | 'unsupported'
   | 'open_admission'
-  | 'manual_gate';
+  | 'manual_gate'
+  | 'requirements_only';
 
 export type AdmissionsConfidence = 'high' | 'medium' | 'low';
 
