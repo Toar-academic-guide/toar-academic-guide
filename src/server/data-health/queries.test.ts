@@ -195,6 +195,33 @@ function baseRows(overrides: Partial<DataHealthRows> = {}): DataHealthRows {
         minBagrut: 80,
         scaleDescription: 'minimum floors',
       },
+      {
+        institutionId: 'reichman',
+        formulaType: 'weighted_scaled',
+        psyWeight: 0.5,
+        bagrutWeight: 0.5,
+        minPsychometric: null,
+        minBagrut: null,
+        scaleDescription: 'Weighted scale',
+      },
+      {
+        institutionId: 'afeka',
+        formulaType: 'weighted_scaled',
+        psyWeight: 0.5,
+        bagrutWeight: 0.5,
+        minPsychometric: null,
+        minBagrut: null,
+        scaleDescription: 'Weighted scale',
+      },
+      {
+        institutionId: 'hit',
+        formulaType: 'minimum_floors',
+        psyWeight: null,
+        bagrutWeight: null,
+        minPsychometric: null,
+        minBagrut: null,
+        scaleDescription: 'minimum floors',
+      },
     ],
     ingestionSources: [
       {
@@ -298,7 +325,7 @@ describe('summarizeDataHealthRows', () => {
       admissionRequirements: 3,
       admissionThresholds: 2,
       sourceUrls: 3,
-      universityCalculatorConfigs: 7,
+      universityCalculatorConfigs: 10,
     });
     expect(report.readiness.isReady).toBe(true);
     expect(report.readiness.issues).toEqual([]);

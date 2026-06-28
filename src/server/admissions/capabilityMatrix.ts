@@ -158,6 +158,15 @@ export function buildAdmissionsCapabilityMatrix(args: {
       };
     }
 
+    if (sourceTarget?.category === 'open_admission') {
+      return {
+        institutionId,
+        capability: 'open_admission',
+        sourceTarget,
+        freshnessState,
+      };
+    }
+
     if (sourceTarget?.category === 'partial') {
       return {
         institutionId,
@@ -177,6 +186,25 @@ export function buildAdmissionsCapabilityMatrix(args: {
       return {
         institutionId,
         capability: 'estimated',
+        sourceTarget,
+        freshnessState,
+      };
+    }
+
+    // Check if it is a manual gate (non-calculator institution with manual requirements/notes/facts)
+    const detail = program.institutionDetails?.find(
+      (d) =>
+        d.institutionName === institution?.name || d.officialCalculatorUrl?.includes(institutionId),
+    );
+    const hasManualRequirements =
+      Boolean(detail?.admissionFacts?.length) ||
+      Boolean(detail?.admissionAlternativePaths?.length) ||
+      Boolean(detail?.specificAdmissionNotes?.length);
+
+    if (!hasCalculatorConfig && hasManualRequirements) {
+      return {
+        institutionId,
+        capability: 'manual_gate',
         sourceTarget,
         freshnessState,
       };

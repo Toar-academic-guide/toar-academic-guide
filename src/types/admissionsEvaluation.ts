@@ -8,7 +8,9 @@ export type AdmissionsEvaluationKind =
   | 'estimated'
   | 'needs_input'
   | 'unsupported'
-  | 'degraded';
+  | 'degraded'
+  | 'open_admission'
+  | 'manual_gate';
 
 export type AdmissionsEvaluationCapability =
   | 'exact'
@@ -18,19 +20,37 @@ export type AdmissionsEvaluationCapability =
   | 'stale'
   | 'missing'
   | 'needs_input'
-  | 'unsupported';
+  | 'unsupported'
+  | 'open_admission'
+  | 'manual_gate';
 
 export type AdmissionsConfidence = 'high' | 'medium' | 'low';
 
 export type AdmissionsRequiredInput =
   | 'psychometric_math'
   | 'psychometric_verbal'
-  | 'psychometric_english';
+  | 'psychometric_english'
+  | 'math_units'
+  | 'math_grade'
+  | 'english_units'
+  | 'english_grade'
+  | 'physics_units'
+  | 'physics_grade'
+  | 'cs_units'
+  | 'cs_grade';
 
 export interface AdmissionsExtraInputs {
   psychometricMath?: number;
   psychometricVerbal?: number;
   psychometricEnglish?: number;
+  mathUnits?: number;
+  mathGrade?: number;
+  englishUnits?: number;
+  englishGrade?: number;
+  physicsUnits?: number;
+  physicsGrade?: number;
+  csUnits?: number;
+  csGrade?: number;
 }
 
 export interface AdmissionsEvaluationInput {

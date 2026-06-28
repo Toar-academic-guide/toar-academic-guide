@@ -91,7 +91,7 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     institutionName: 'Technion',
     officialUrl:
       'https://admissions.technion.ac.il/wp-content/plugins/technion-calculators/technion-calculators-sum.php',
-    adapterId: 'capability_matrix',
+    adapterId: 'technion',
     expectedCapability: 'score_only',
     proofLevel: 'partial_official',
     category: 'partial',
@@ -105,8 +105,8 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     id: 'bgu-score-only',
     institutionId: 'bgu',
     institutionName: 'Ben-Gurion University',
-    officialUrl: 'https://in.bgu.ac.il/Pages/default.aspx',
-    adapterId: 'capability_matrix',
+    officialUrl: 'https://bgu4u.bgu.ac.il/html/average_calc/index.php',
+    adapterId: 'bgu',
     expectedCapability: 'score_only',
     proofLevel: 'partial_official',
     category: 'partial',
@@ -150,7 +150,7 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
   },
   {
     id: 'openu-open-admission',
-    institutionId: 'openu',
+    institutionId: 'open_university',
     institutionName: 'Open University',
     officialUrl: 'https://www.openu.ac.il/',
     adapterId: 'capability_matrix',

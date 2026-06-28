@@ -252,7 +252,17 @@ describe('catalogue queries', () => {
   });
 
   it('blocks readiness when calculator configs are missing', () => {
-    const missingInstitutionIds = ['tau', 'technion', 'bgu', 'haifa', 'biu', 'ariel'];
+    const missingInstitutionIds = [
+      'tau',
+      'technion',
+      'bgu',
+      'haifa',
+      'biu',
+      'ariel',
+      'reichman',
+      'afeka',
+      'hit',
+    ];
     const readiness = evaluateCatalogueReadiness({
       institutions: universityInstitutionRows,
       programs: [{ id: 'program_1', admissionType: 'sekhem' }],

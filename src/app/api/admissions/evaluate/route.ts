@@ -19,6 +19,14 @@ const admissionsEvaluationSchema = z.object({
       psychometricMath: z.number().int().min(50).max(150).optional(),
       psychometricVerbal: z.number().int().min(50).max(150).optional(),
       psychometricEnglish: z.number().int().min(50).max(150).optional(),
+      mathUnits: z.number().int().min(3).max(5).optional(),
+      mathGrade: z.number().int().min(50).max(100).optional(),
+      englishUnits: z.number().int().min(3).max(5).optional(),
+      englishGrade: z.number().int().min(50).max(100).optional(),
+      physicsUnits: z.number().int().min(3).max(5).optional(),
+      physicsGrade: z.number().int().min(50).max(100).optional(),
+      csUnits: z.number().int().min(3).max(5).optional(),
+      csGrade: z.number().int().min(50).max(100).optional(),
     })
     .optional(),
 });

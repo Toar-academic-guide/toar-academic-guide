@@ -17,6 +17,14 @@ export type FormulaType = 'weighted_scaled' | 'technion_linear' | 'minimum_floor
 export interface UserScores {
   psychometric: number; // 200–800
   bagrut: number; // 60–120 (including bonuses)
+  mathUnits?: number;
+  mathGrade?: number;
+  englishUnits?: number;
+  englishGrade?: number;
+  physicsUnits?: number;
+  physicsGrade?: number;
+  csUnits?: number;
+  csGrade?: number;
 }
 
 export interface University {
@@ -46,6 +54,7 @@ export interface UniversityResult {
   status: 'accepted' | 'below' | 'unavailable';
   deltaNeeded?: DeltaNeeded;
   admissionTrack?: 'direct'; // present when accepted via psychometric-only direct track
+  explanation?: string;
 }
 
 export type AdmissionsDecisionStatus =

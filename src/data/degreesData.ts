@@ -51,4 +51,24 @@ export const UNIVERSITIES: University[] = [
     sekhemWeight: { psy: 0.5, bag: 0.5 },
     scaleDescription: 'סכם 200–800 (משקל שווה פסיכומטרי ובגרות)',
   },
+  {
+    id: 'reichman',
+    name: 'אוניברסיטת רייכמן',
+    formulaType: 'weighted_scaled',
+    sekhemWeight: { psy: 0.5, bag: 0.5 },
+    scaleDescription: 'מדד קבלה רייכמן',
+  },
+  {
+    id: 'afeka',
+    name: 'מכללת אפקה',
+    formulaType: 'weighted_scaled',
+    sekhemWeight: { psy: 0.5, bag: 0.5 },
+    scaleDescription: 'ציון התאמה אפקה',
+  },
+  {
+    id: 'hit',
+    name: 'המכון הטכנולוגי חולון (HIT)',
+    formulaType: 'minimum_floors',
+    scaleDescription: 'סף קבלה HIT',
+  },
 ];

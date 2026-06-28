@@ -7,7 +7,6 @@ import type {
   AdmissionsEvaluationInput,
   AdmissionsEvaluationReport,
   AdmissionsEvaluationResult,
-  AdmissionsExtraInputs,
 } from '@/types/admissionsEvaluation';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import {
@@ -17,6 +16,8 @@ import {
 } from './capabilityMatrix';
 import { runHaifaAdmissionsProof } from '@/server/ingestion/adapters/haifaAdmissions';
 import { runTauAdmissionsProof } from '@/server/ingestion/adapters/tauAdmissions';
+import { runTechnionAdmissionsProof } from '@/server/ingestion/adapters/technionAdmissions';
+import { runBguAdmissionsProof } from '@/server/ingestion/adapters/bguAdmissions';
 
 const MAX_EXACT_SOURCE_CALLS = 2;
 const OFFICIAL_SOURCE_TIMEOUT_MS = 5000;
@@ -144,6 +145,40 @@ async function evaluateExactResult(args: {
         institution,
         proof: proof.normalizedPayload,
         explanationPrefix: 'מקור רשמי של אוניברסיטת חיפה',
+      });
+    }
+
+    if (exactTarget.sourceTarget.adapterId === 'technion') {
+      const proof = await runTechnionAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: {
+          bagrutAverage: input.bagrut,
+          psychometric: input.psychometric,
+        },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של הטכניון',
+      });
+    }
+
+    if (exactTarget.sourceTarget.adapterId === 'bgu') {
+      const proof = await runBguAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: {
+          bagrutAverage: input.bagrut,
+          psychometric: input.psychometric,
+        },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של אוניברסיטת בן-גוריון',
       });
     }
 
@@ -286,6 +321,47 @@ function evaluateNonExactResult(args: {
     };
   }
 
+  if (entry.capability === 'open_admission') {
+    return {
+      institution: publicInstitutionShape(institution),
+      linkedInstitutionId: institution.id,
+      capability: 'open_admission',
+      kind: 'open_admission',
+      decision: 'accepted',
+      confidence: 'high',
+      sourceLabel: 'קבלה פתוחה',
+      explanation: 'מוסד זה מציע אפיק קבלה פתוחה ללא צורך בציון פסיכומטרי או ממוצע בגרות מינימלי.',
+      nextAction: 'הירשמו ישירות למסלול הלימודים באתר הרשמי של המוסד.',
+    };
+  }
+
+  if (entry.capability === 'manual_gate') {
+    const detail = program.institutionDetails?.find(
+      (d) =>
+        d.institutionName === institution.name ||
+        d.officialCalculatorUrl?.includes(institution.id) ||
+        d.programUrl?.includes(institution.id),
+    );
+    const factsList = detail?.admissionFacts?.map((f) => f.description) ?? [];
+    const notesList = detail?.specificAdmissionNotes ?? [];
+    const allRequirements = [...factsList, ...notesList];
+
+    return {
+      institution: publicInstitutionShape(institution),
+      linkedInstitutionId: institution.id,
+      capability: 'manual_gate',
+      kind: 'manual_gate',
+      decision: 'unknown',
+      confidence: 'high',
+      sourceLabel: 'מיונים ידניים',
+      explanation:
+        allRequirements.length > 0
+          ? `דרישות קבלה למסלול זה: ${allRequirements.join('; ')}`
+          : 'הקבלה למסלול זה דורשת מעבר מיונים ידניים כגון הגשת תיק עבודות, מבחן מעשי או ראיון קבלה.',
+      nextAction: 'בדקו את תנאי המיון המלאים והירשמו מוקדם למחזורי הבחינות.',
+    };
+  }
+
   if (entry.capability === 'estimated' || entry.capability === 'score_only') {
     const calculatorInstitution = getCalculatorInstitutionsFromCatalogue([institution])[0];
     if (!calculatorInstitution) {
@@ -295,7 +371,18 @@ function evaluateNonExactResult(args: {
     const [evaluation] = evaluateUniversities(
       [calculatorInstitution as University],
       program,
-      { psychometric: input.psychometric, bagrut: input.bagrut },
+      {
+        psychometric: input.psychometric,
+        bagrut: input.bagrut,
+        mathGrade: input.extraInputs?.mathGrade,
+        mathUnits: input.extraInputs?.mathUnits,
+        englishGrade: input.extraInputs?.englishGrade,
+        englishUnits: input.extraInputs?.englishUnits,
+        physicsGrade: input.extraInputs?.physicsGrade,
+        physicsUnits: input.extraInputs?.physicsUnits,
+        csGrade: input.extraInputs?.csGrade,
+        csUnits: input.extraInputs?.csUnits,
+      },
       { hasMath5: false, hasPhysics5: false },
     );
 
@@ -312,9 +399,10 @@ function evaluateNonExactResult(args: {
       confidence: entry.capability === 'estimated' ? 'medium' : 'low',
       sourceLabel: entry.capability === 'estimated' ? 'הערכה מבוססת סכם' : 'הערכה עם מקור חלקי',
       explanation:
-        entry.capability === 'estimated'
+        evaluation.explanation ??
+        (entry.capability === 'estimated'
           ? 'התוצאה מבוססת על נוסחת הסכם והסף שנבדקו בקטלוג, לא על תשובת מחשבון רשמי חיה.'
-          : 'התוצאה מבוססת על נוסחת הסכם מקומית, כשהמקור הרשמי מספק רק חלק מהמידע.',
+          : 'התוצאה מבוססת על נוסחת הסכם מקומית, כשהמקור הרשמי מספק רק חלק מהמידע.'),
       nextAction:
         evaluation.status === 'accepted'
           ? 'בדקו את המקור הרשמי לפני קבלת החלטה סופית.'

@@ -50,6 +50,30 @@ export function calculateSekhem(
   degree: Program,
   engineeringOptions: EngineeringOptions,
 ): number {
+  if (university.id === 'reichman') {
+    return 4.812 * scores.bagrut + 0.5131 * scores.psychometric - 163.19;
+  }
+
+  if (university.id === 'afeka') {
+    const mathUnits = scores.mathUnits ?? 5;
+    const mathGrade = scores.mathGrade ?? Math.round(scores.bagrut);
+    const engUnits = scores.englishUnits ?? 5;
+    const engGrade = scores.englishGrade ?? Math.round(scores.bagrut);
+    const physUnits = scores.physicsUnits ?? 0;
+    const physGrade = scores.physicsGrade ?? 0;
+    const csUnits = scores.csUnits ?? 0;
+    const csGrade = scores.csGrade ?? 0;
+    return Math.floor(
+      0.2 * scores.bagrut +
+        (3 * mathGrade * mathUnits +
+          engGrade * engUnits +
+          physGrade * physUnits +
+          csGrade * csUnits) /
+          24 +
+        160,
+    );
+  }
+
   if (university.formulaType === 'technion_linear') {
     return sekhemTechnion(scores);
   }
@@ -73,6 +97,20 @@ export function calculateSekhem(
 // points the user must add to either variable to close the remaining gap.
 // Engineering bonuses are fixed constants so derivatives are unchanged.
 export function calculateDelta(deficit: number, university: University): DeltaNeeded {
+  if (university.id === 'reichman') {
+    return {
+      psychometric: Math.ceil(deficit / 0.5131),
+      bagrut: Math.ceil(deficit / 4.812),
+    };
+  }
+
+  if (university.id === 'afeka') {
+    return {
+      psychometric: 0,
+      bagrut: Math.ceil(deficit / 0.2),
+    };
+  }
+
   if (university.formulaType === 'technion_linear') {
     // d(sekhem)/d(psy) = 0.075  →  delta_psy = deficit / 0.075
     // d(sekhem)/d(bag) = 0.5    →  delta_bag = deficit / 0.5
@@ -157,6 +195,68 @@ export function evaluateUniversities(
     // Technion: keep 1 decimal; others: round to integer
     const sekhem =
       university.formulaType === 'technion_linear' ? Math.round(raw * 10) / 10 : Math.round(raw);
+
+    // ── Afeka Gating Rules ───────────────────────────────────────────────────
+    if (university.id === 'afeka') {
+      const mathUnits = scores.mathUnits ?? 5;
+      const mathGrade = scores.mathGrade ?? Math.round(scores.bagrut);
+      const engUnits = scores.englishUnits ?? 5;
+      const engGrade = scores.englishGrade ?? Math.round(scores.bagrut);
+
+      const mathGate = (mathUnits === 5 && mathGrade >= 70) || (mathUnits === 4 && mathGrade >= 80);
+      const engGate = engUnits >= 4 && engGrade >= 60;
+      const psyGate = scores.psychometric >= 550;
+
+      if (!mathGate || !engGate || !psyGate) {
+        const reasons = [];
+        if (!mathGate) reasons.push('מתמטיקה (5 יח"ל בציון 70+ או 4 יח"ל בציון 80+)');
+        if (!engGate) reasons.push('אנגלית (לפחות 4 יח"ל בציון 60+)');
+        if (!psyGate) reasons.push('פסיכומטרי לפחות 550');
+
+        return {
+          university,
+          sekhem: 0,
+          threshold,
+          status: 'below',
+          explanation: `אינו עומד בתנאי הסף של אפקה: חסר ${reasons.join(', ')}`,
+          deltaNeeded: {
+            psychometric: !psyGate ? 550 - scores.psychometric : 0,
+            bagrut: 0,
+          },
+        };
+      }
+    }
+
+    // ── HIT Gating Rules ─────────────────────────────────────────────────────
+    if (university.id === 'hit') {
+      const isTech =
+        degree.id.includes('cs') ||
+        degree.id.includes('ee') ||
+        degree.category === 'הנדסה וטכנולוגיה';
+      const mathUnits = scores.mathUnits ?? 5;
+      const mathGrade = scores.mathGrade ?? Math.round(scores.bagrut);
+      const psyGate = scores.psychometric >= 550 || scores.bagrut >= 102;
+      const mathGate = (mathUnits === 5 && mathGrade >= 70) || (mathUnits >= 4 && mathGrade >= 80);
+
+      if (isTech && (!mathGate || !psyGate || scores.bagrut <= 56)) {
+        const reasons = [];
+        if (!mathGate) reasons.push('מתמטיקה (5 יח"ל בציון 70+ או 4 יח"ל בציון 80+)');
+        if (!psyGate) reasons.push('פסיכומטרי 550+ או ממוצע בגרות 102+');
+        if (scores.bagrut <= 56) reasons.push('ממוצע בגרות מעל 56');
+
+        return {
+          university,
+          sekhem: 0,
+          threshold,
+          status: 'below',
+          explanation: `אינו עומד בתנאי הסף של HIT: חסר ${reasons.join(', ')}`,
+          deltaNeeded: {
+            psychometric: !psyGate && scores.psychometric < 550 ? 550 - scores.psychometric : 0,
+            bagrut: scores.bagrut <= 56 ? 57 - scores.bagrut : 0,
+          },
+        };
+      }
+    }
 
     // ── Direct admission track (קבלה ישירה) ──────────────────────────────────
     // Some universities admit applicants whose raw psychometric score alone
