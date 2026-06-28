@@ -65,6 +65,8 @@ const SOURCE_TARGETS_BY_INSTITUTION = new Map<string, AdmissionsSourceTarget>(
   admissionsSourceTargets.map((target) => [target.institutionId, target]),
 );
 
+const REVIEWED_PARTIAL_ESTIMATE_INSTITUTIONS = new Set(['reichman', 'afeka', 'hit']);
+
 export async function loadFreshnessStatesBySourceIds(
   sourceIds: string[],
 ): Promise<Map<string, SourceFreshnessStateRow>> {
@@ -186,6 +188,25 @@ export function buildAdmissionsCapabilityMatrix(args: {
     }
 
     if (sourceTarget?.category === 'partial') {
+      const institution = institutions.find((entry) => entry.id === institutionId);
+      const hasCalculatorConfig = Boolean(institution?.calculatorConfig);
+      const hasThreshold =
+        Boolean(program.thresholds?.[institutionId] !== undefined) ||
+        Boolean(program.directPsychometric?.[institutionId] !== undefined);
+
+      if (
+        REVIEWED_PARTIAL_ESTIMATE_INSTITUTIONS.has(institutionId) &&
+        hasCalculatorConfig &&
+        hasThreshold
+      ) {
+        return {
+          institutionId,
+          capability: 'estimated',
+          sourceTarget,
+          freshnessState,
+        };
+      }
+
       return {
         institutionId,
         capability: 'score_only',

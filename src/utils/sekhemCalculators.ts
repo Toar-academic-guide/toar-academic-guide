@@ -55,10 +55,10 @@ export function calculateSekhem(
   }
 
   if (university.id === 'afeka') {
-    const mathUnits = scores.mathUnits ?? 5;
-    const mathGrade = scores.mathGrade ?? Math.round(scores.bagrut);
-    const engUnits = scores.englishUnits ?? 5;
-    const engGrade = scores.englishGrade ?? Math.round(scores.bagrut);
+    const mathUnits = scores.mathUnits ?? 0;
+    const mathGrade = scores.mathGrade ?? 0;
+    const engUnits = scores.englishUnits ?? 0;
+    const engGrade = scores.englishGrade ?? 0;
     const physUnits = scores.physicsUnits ?? 0;
     const physGrade = scores.physicsGrade ?? 0;
     const csUnits = scores.csUnits ?? 0;
@@ -198,10 +198,10 @@ export function evaluateUniversities(
 
     // ── Afeka Gating Rules ───────────────────────────────────────────────────
     if (university.id === 'afeka') {
-      const mathUnits = scores.mathUnits ?? 5;
-      const mathGrade = scores.mathGrade ?? Math.round(scores.bagrut);
-      const engUnits = scores.englishUnits ?? 5;
-      const engGrade = scores.englishGrade ?? Math.round(scores.bagrut);
+      const mathUnits = scores.mathUnits ?? 0;
+      const mathGrade = scores.mathGrade ?? 0;
+      const engUnits = scores.englishUnits ?? 0;
+      const engGrade = scores.englishGrade ?? 0;
 
       const mathGate = (mathUnits === 5 && mathGrade >= 70) || (mathUnits === 4 && mathGrade >= 80);
       const engGate = engUnits >= 4 && engGrade >= 60;
@@ -233,8 +233,8 @@ export function evaluateUniversities(
         degree.id.includes('cs') ||
         degree.id.includes('ee') ||
         degree.category === 'הנדסה וטכנולוגיה';
-      const mathUnits = scores.mathUnits ?? 5;
-      const mathGrade = scores.mathGrade ?? Math.round(scores.bagrut);
+      const mathUnits = scores.mathUnits ?? 0;
+      const mathGrade = scores.mathGrade ?? 0;
       const psyGate = scores.psychometric >= 550 || scores.bagrut >= 102;
       const mathGate = (mathUnits === 5 && mathGrade >= 70) || (mathUnits >= 4 && mathGrade >= 80);
 

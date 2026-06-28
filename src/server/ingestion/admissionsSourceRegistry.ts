@@ -217,8 +217,8 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     institutionName: 'Shenkar - Engineering. Design. Art',
     officialUrl: 'https://www.shenkar.ac.il/he/pages/calc/',
     adapterId: 'capability_matrix',
-    expectedCapability: 'blocked',
-    proofLevel: 'blocked',
+    expectedCapability: 'score_only',
+    proofLevel: 'partial_official',
     category: 'manual_gate',
     reproducedFields: ['bagrutAverage'],
     limitations: [
@@ -232,8 +232,8 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     institutionName: 'MTA - Academic College of Tel Aviv-Yaffo',
     officialUrl: 'https://www.mta.ac.il/conditions_for_applying',
     adapterId: 'capability_matrix',
-    expectedCapability: 'blocked',
-    proofLevel: 'blocked',
+    expectedCapability: 'score_only',
+    proofLevel: 'partial_official',
     category: 'requirements_only',
     reproducedFields: [],
     limitations: [
@@ -272,13 +272,14 @@ export function buildCapabilityMatrixProof(target: AdmissionsSourceTarget): Admi
 }
 
 function statusForTarget(target: AdmissionsSourceTarget): AdmissionsProofStatus {
-  if (target.category === 'blocked' || target.category === 'manual_gate') {
+  if (target.category === 'blocked') {
     return 'blocked';
   }
 
   if (
     target.category === 'partial' ||
     target.category === 'static_candidate' ||
+    target.category === 'manual_gate' ||
     target.category === 'requirements_only'
   ) {
     return 'partial';
@@ -295,14 +296,14 @@ function normalizedPayloadForTarget(target: AdmissionsSourceTarget): Record<stri
     };
   }
 
-  if (target.category === 'blocked' || target.category === 'manual_gate') {
+  if (target.category === 'blocked') {
     return {
       reason: target.blockedReason,
       limitations: target.limitations,
     };
   }
 
-  if (target.category === 'requirements_only') {
+  if (target.category === 'manual_gate' || target.category === 'requirements_only') {
     return {
       limitations: target.limitations,
       nextAction: target.nextAction,

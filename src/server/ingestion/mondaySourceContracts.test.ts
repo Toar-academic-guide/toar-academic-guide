@@ -110,11 +110,77 @@ describe('monday admissions source contracts', () => {
       ok: false,
       error: {
         code: 'unsupported_report',
-        message:
-          'Only the TAU and Haifa exact reverse-engineering report formats are supported in v1.',
+        message: 'Only the reviewed admissions reverse-engineering report formats are supported.',
       },
     });
   });
+
+  it.each([
+    {
+      input: reichmanReportInput(),
+      targetId: 'reichman-client-formula',
+      institutionId: 'reichman',
+      reproducedFields: ['adaptedScore'],
+    },
+    {
+      input: afekaReportInput(),
+      targetId: 'afeka-client-formula',
+      institutionId: 'afeka',
+      reproducedFields: ['sekhemScore', 'subjectGates'],
+    },
+    {
+      input: hitReportInput(),
+      targetId: 'hit-client-formula',
+      institutionId: 'hit',
+      reproducedFields: ['bagrutAverage', 'departmentGates'],
+    },
+    {
+      input: shenkarReportInput(),
+      targetId: 'shenkar-bagrut-helper',
+      institutionId: 'shenkar',
+      reproducedFields: ['bagrutAverage'],
+    },
+    {
+      input: mtaReportInput(),
+      targetId: 'mta-requirements-only',
+      institutionId: 'mta',
+      reproducedFields: [],
+    },
+  ])(
+    'maps reviewed non-exact $institutionId Monday evidence to its source target',
+    ({ input, targetId, institutionId, reproducedFields }) => {
+      const parsed = parseMondayAdmissionsSourceContract(input);
+      expect(parsed.ok).toBe(true);
+      if (!parsed.ok) {
+        return;
+      }
+
+      expect(parsed.contract).toMatchObject({
+        institutionId,
+        capability: 'score_only',
+        requestMethod: 'GET',
+        reproducedFields,
+      });
+
+      const mapped = mapMondayAdmissionsSourceContract(parsed.contract);
+      expect(mapped.ok).toBe(true);
+      if (!mapped.ok) {
+        return;
+      }
+
+      expect(mapped.mapping.target.id).toBe(targetId);
+      expect(mapped.mapping.sourceDescriptor).toMatchObject({
+        id: targetId,
+        institutionId,
+        difficulty: 'hard_manual',
+      });
+      expect(mapped.mapping.reviewableEvidence).toMatchObject({
+        publicationBoundary: 'reviewable_evidence_only',
+        targetId,
+        reproducedFields,
+      });
+    },
+  );
 
   it('maps the TAU contract to the existing exact source target and reviewable evidence', () => {
     const parsed = parseMondayAdmissionsSourceContract(tauReportInput());
@@ -220,6 +286,71 @@ function haifaReportInput(): MondayAdmissionsContractInput {
       updateId: '5314596642',
       createdAt: '2026-06-23T21:54:09.000Z',
       sourceCandidateUrl: 'https://applicants.haifa.ac.il/enrollmentChances/index.html',
+    },
+  };
+}
+
+function reichmanReportInput(): MondayAdmissionsContractInput {
+  return {
+    body: '### Reverse Engineering Summary: Reichman University<br>Calculator: https://www.runi.ac.il/admissions/undergraduate/calculator<br>Reviewed client-side formula: Adapted = 4.812 * bagrut + 0.5131 * psychometric - 163.19.',
+    provenance: {
+      source: 'monday_update_export',
+      itemId: '12220699751',
+      itemName: 'Reichman University',
+      updateId: '5314700001',
+      sourceCandidateUrl: 'https://www.runi.ac.il/admissions/undergraduate/calculator',
+    },
+  };
+}
+
+function afekaReportInput(): MondayAdmissionsContractInput {
+  return {
+    body: '### Reverse Engineering Summary: Afeka<br>Calculator: https://www.afeka.ac.il/candidate/candidate-information-bsc/calculator/<br>Subject-weighted formula with subject gates. Math Minimum and פסיכומטרי לפחות 550 are required.',
+    provenance: {
+      source: 'monday_update_export',
+      itemId: '12220699752',
+      itemName: 'Afeka College of Engineering',
+      updateId: '5314700002',
+      sourceCandidateUrl: 'https://www.afeka.ac.il/candidate/candidate-information-bsc/calculator/',
+    },
+  };
+}
+
+function hitReportInput(): MondayAdmissionsContractInput {
+  return {
+    body: '### Reverse Engineering Summary: HIT<br>Calculator: https://calc.hit.ac.il/<br>Department gates and minimum floors were reviewed. Math Deficit is shown for technical departments.',
+    provenance: {
+      source: 'monday_update_export',
+      itemId: '12220699753',
+      itemName: 'HIT',
+      updateId: '5314700003',
+      sourceCandidateUrl: 'https://calc.hit.ac.il/',
+    },
+  };
+}
+
+function shenkarReportInput(): MondayAdmissionsContractInput {
+  return {
+    body: '### Reverse Engineering Summary: Shenkar<br>Calculator: https://www.shenkar.ac.il/he/pages/calc/<br>Bagrut Average helper only; no combined psychometric formula exists for admissions decisions.',
+    provenance: {
+      source: 'monday_update_export',
+      itemId: '12220699754',
+      itemName: 'Shenkar',
+      updateId: '5314700004',
+      sourceCandidateUrl: 'https://www.shenkar.ac.il/he/pages/calc/',
+    },
+  };
+}
+
+function mtaReportInput(): MondayAdmissionsContractInput {
+  return {
+    body: '### Requirements Review: Academic College of Tel Aviv-Yaffo<br>Source: https://www.mta.ac.il/conditions_for_applying<br>No calculator formula was parsed; use requirements-only enrichment.',
+    provenance: {
+      source: 'monday_update_export',
+      itemId: '12220699755',
+      itemName: 'MTA',
+      updateId: '5314700005',
+      sourceCandidateUrl: 'https://www.mta.ac.il/conditions_for_applying',
     },
   };
 }

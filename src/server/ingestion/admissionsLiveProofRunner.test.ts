@@ -127,8 +127,8 @@ describe('runAdmissionsLiveProof', () => {
     expect(report.summary).toMatchObject({
       total: 13,
       exactReproduced: 2,
-      partial: 7,
-      blocked: 3,
+      partial: 8,
+      blocked: 2,
     });
     expect(report.results.map((result) => result.proof.institutionId)).toEqual([
       'haifa',

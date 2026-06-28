@@ -52,9 +52,37 @@ const INSTITUTIONS: CatalogueInstitution[] = [
     region: 'center',
     domain: 'runi.ac.il',
     universityId: 'reichman',
+    calculatorConfig: {
+      formulaType: 'weighted_scaled',
+      scaleDescription: 'סקאלה מקומית',
+      sekhemWeight: { psy: 0.6, bag: 0.4 },
+    },
   },
-  { id: 'afeka', name: 'Afeka', region: 'center', domain: 'afeka.ac.il', universityId: 'afeka' },
-  { id: 'hit', name: 'HIT', region: 'center', domain: 'hit.ac.il', universityId: 'hit' },
+  {
+    id: 'afeka',
+    name: 'Afeka',
+    region: 'center',
+    domain: 'afeka.ac.il',
+    universityId: 'afeka',
+    calculatorConfig: {
+      formulaType: 'weighted_scaled',
+      scaleDescription: 'ציון התאמה אפקה',
+      sekhemWeight: { psy: 0.5, bag: 0.5 },
+    },
+  },
+  {
+    id: 'hit',
+    name: 'HIT',
+    region: 'center',
+    domain: 'hit.ac.il',
+    universityId: 'hit',
+    calculatorConfig: {
+      formulaType: 'minimum_floors',
+      scaleDescription: 'תנאי סף',
+      minPsychometric: 550,
+      minBagrut: 85,
+    },
+  },
   {
     id: 'shenkar',
     name: 'Shenkar',
@@ -190,7 +218,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     expect(bguEntry?.capability).toBe('score_only');
   });
 
-  it('returns score_only for Reichman, Afeka, and HIT with partial source targets and thresholds', () => {
+  it('returns estimated for Reichman, Afeka, and HIT with partial source targets and thresholds', () => {
     const program = makeProgram({
       linkedInstitutionIds: ['reichman', 'afeka', 'hit'],
       thresholds: { reichman: 500, afeka: 500, hit: 550 },
@@ -203,7 +231,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
 
     for (const id of ['reichman', 'afeka', 'hit']) {
       const entry = entries.find((e) => e.institutionId === id);
-      expect(entry?.capability).toBe('score_only');
+      expect(entry?.capability).toBe('estimated');
     }
   });
 
