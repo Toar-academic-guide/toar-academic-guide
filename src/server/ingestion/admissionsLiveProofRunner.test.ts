@@ -138,7 +138,7 @@ describe('runAdmissionsLiveProof', () => {
       'bgu',
       'biu',
       'ariel',
-      'openu',
+      'open_university',
     ]);
   });
 });

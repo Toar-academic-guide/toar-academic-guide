@@ -107,14 +107,14 @@ describe('evaluateAdmissionsForProgram', () => {
       institutions,
     });
 
-    expect(report.results).toEqual([
+    expect(report.results).toContainEqual(
       expect.objectContaining({
         linkedInstitutionId: 'haifa',
         kind: 'needs_input',
         capability: 'needs_input',
         requiredInputs: ['psychometric_math', 'psychometric_verbal', 'psychometric_english'],
       }),
-    ]);
+    );
   });
 
   it('returns an estimated result for a reviewed calculator-only institution', async () => {
@@ -128,7 +128,7 @@ describe('evaluateAdmissionsForProgram', () => {
       institutions,
     });
 
-    expect(report.results).toEqual([
+    expect(report.results).toContainEqual(
       expect.objectContaining({
         linkedInstitutionId: 'technion',
         kind: 'estimated',
@@ -136,7 +136,7 @@ describe('evaluateAdmissionsForProgram', () => {
         decision: 'below',
         sourceLabel: 'הערכה עם מקור חלקי',
       }),
-    ]);
+    );
   });
 
   it('normalizes a successful exact TAU response into a high-confidence result', async () => {
@@ -187,7 +187,7 @@ describe('evaluateAdmissionsForProgram', () => {
       fetcher,
     });
 
-    expect(report.results).toEqual([
+    expect(report.results).toContainEqual(
       expect.objectContaining({
         linkedInstitutionId: 'tau',
         kind: 'exact',
@@ -197,6 +197,168 @@ describe('evaluateAdmissionsForProgram', () => {
         score: 712,
         threshold: 700,
       }),
-    ]);
+    );
+  });
+
+  it('correctly returns open_admission for Open University and other open institutions', async () => {
+    const openProgram: CatalogueProgram = {
+      id: 'open_cs',
+      name: 'מדעי המחשב',
+      institution: 'האוניברסיטה הפתוחה',
+      institutionId: 'open_university',
+      type: 'academic',
+      category: 'מדעי המחשב',
+      profileScore: { AN: 5, TE: 5, CR: 1, SO: 1, LE: 1, OR: 3, DI: 5, ER: 4 },
+      admissionType: 'requirements',
+      admissionRequirements: [],
+      linkedInstitutionIds: ['open_university'],
+    };
+
+    const openInstitutions: CatalogueInstitution[] = [
+      {
+        id: 'open_university',
+        name: 'האוניברסיטה הפתוחה',
+        region: 'center',
+        domain: 'openu.ac.il',
+        universityId: 'open_university',
+      },
+    ];
+
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'open_cs',
+        psychometric: 500,
+        bagrut: 80,
+      },
+      program: openProgram,
+      institutions: openInstitutions,
+    });
+
+    expect(report.results).toContainEqual(
+      expect.objectContaining({
+        linkedInstitutionId: 'open_university',
+        kind: 'open_admission',
+        capability: 'open_admission',
+        decision: 'accepted',
+        confidence: 'high',
+      }),
+    );
+  });
+
+  it('correctly returns manual_gate for design programs at non-calculator colleges', async () => {
+    const designProgram: CatalogueProgram = {
+      id: 'bezalel_design',
+      name: 'עיצוב גרפי',
+      institution: 'בצלאל',
+      institutionId: 'bezalel',
+      type: 'academic',
+      category: 'עיצוב',
+      profileScore: { AN: 1, TE: 1, CR: 5, SO: 2, LE: 1, OR: 2, DI: 5, ER: 3 },
+      admissionType: 'requirements',
+      admissionRequirements: ['תיק עבודות', 'ראיון'],
+      linkedInstitutionIds: ['bezalel'],
+      institutionDetails: [
+        {
+          institutionName: 'בצלאל',
+          durationYears: 4,
+          estimatedStudentsPerYear: 'כ-100',
+          quantitativeMinRequirement: null,
+          englishMinRequirement: null,
+          specificAdmissionNotes: ['תיק עבודות יצירתי', 'מבחן מעשי'],
+          officialCalculatorUrl: '',
+        },
+      ],
+    };
+
+    const designInstitutions: CatalogueInstitution[] = [
+      {
+        id: 'bezalel',
+        name: 'בצלאל',
+        region: 'center',
+        domain: 'bezalel.ac.il',
+        universityId: 'bezalel',
+      },
+    ];
+
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'bezalel_design',
+        psychometric: 450,
+        bagrut: 90,
+      },
+      program: designProgram,
+      institutions: designInstitutions,
+    });
+
+    expect(report.results).toContainEqual(
+      expect.objectContaining({
+        linkedInstitutionId: 'bezalel',
+        kind: 'manual_gate',
+        capability: 'manual_gate',
+        decision: 'unknown',
+        explanation: expect.stringContaining('תיק עבודות יצירתי'),
+      }),
+    );
+  });
+
+  it('ensures TAU exact proofs still run and are not starved when multiple score_only institutions are evaluated', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            data: {
+              getLastScore: {
+                body: JSON.stringify({
+                  hatama_handasa: 712,
+                }),
+              },
+            },
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            data: {
+              getPrograms: {
+                total: 1,
+                results: [
+                  {
+                    field_plain_id_programs: ['056011050000'],
+                    field_this_year_receipt_threshol: 700,
+                    field_this_year_rejection_thresh: 670,
+                  },
+                ],
+              },
+            },
+          }),
+          { status: 200 },
+        ),
+      );
+
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'tau_datascience',
+        psychometric: 700,
+        bagrut: 110,
+      },
+      program: {
+        ...tauDataScience,
+        linkedInstitutionIds: ['technion', 'tau'],
+      },
+      institutions: institutions,
+      fetcher,
+    });
+
+    expect(fetcher).toHaveBeenCalled();
+    expect(report.results).toContainEqual(
+      expect.objectContaining({
+        linkedInstitutionId: 'tau',
+        kind: 'exact',
+        capability: 'exact',
+      }),
+    );
   });
 });

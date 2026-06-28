@@ -27,7 +27,7 @@ describe('admissionsSourceRegistry', () => {
       'biu',
       'haifa',
       'huji',
-      'openu',
+      'open_university',
       'tau',
       'technion',
     ]);
