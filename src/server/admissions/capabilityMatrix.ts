@@ -167,6 +167,24 @@ export function buildAdmissionsCapabilityMatrix(args: {
       };
     }
 
+    if (sourceTarget?.category === 'manual_gate') {
+      return {
+        institutionId,
+        capability: 'manual_gate',
+        sourceTarget,
+        freshnessState,
+      };
+    }
+
+    if (sourceTarget?.category === 'requirements_only') {
+      return {
+        institutionId,
+        capability: 'requirements_only',
+        sourceTarget,
+        freshnessState,
+      };
+    }
+
     if (sourceTarget?.category === 'partial') {
       return {
         institutionId,

@@ -125,10 +125,10 @@ describe('runAdmissionsLiveProof', () => {
     });
 
     expect(report.summary).toMatchObject({
-      total: 8,
+      total: 13,
       exactReproduced: 2,
-      partial: 3,
-      blocked: 2,
+      partial: 7,
+      blocked: 3,
     });
     expect(report.results.map((result) => result.proof.institutionId)).toEqual([
       'haifa',
@@ -139,6 +139,11 @@ describe('runAdmissionsLiveProof', () => {
       'biu',
       'ariel',
       'open_university',
+      'reichman',
+      'afeka',
+      'hit',
+      'shenkar',
+      'mta',
     ]);
   });
 });

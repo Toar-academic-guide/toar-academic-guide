@@ -13,7 +13,9 @@ export type AdmissionsSourceCategory =
   | 'exact'
   | 'open_admission'
   | 'partial'
-  | 'static_candidate';
+  | 'static_candidate'
+  | 'manual_gate'
+  | 'requirements_only';
 
 export interface AdmissionsSourceTarget {
   id: string;
@@ -161,6 +163,81 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     limitations: ['No sekhem calculator is required for the open-admission baseline'],
     nextAction: 'Represent as open-admission policy rather than calculator reproduction',
   },
+  {
+    id: 'reichman-client-formula',
+    institutionId: 'reichman',
+    institutionName: 'Reichman University',
+    officialUrl: 'https://www.runi.ac.il/admissions/undergraduate/calculator',
+    adapterId: 'capability_matrix',
+    expectedCapability: 'score_only',
+    proofLevel: 'partial_official',
+    category: 'partial',
+    reproducedFields: ['adaptedScore'],
+    limitations: [
+      'Client-side ASP.NET WebForms calculator; adapted score formula reverse-engineered but no live threshold endpoint',
+    ],
+    nextAction: 'Pair reviewed adapted-score formula with reviewed program thresholds for estimated results',
+  },
+  {
+    id: 'afeka-client-formula',
+    institutionId: 'afeka',
+    institutionName: 'Afeka College of Engineering',
+    officialUrl: 'https://www.afeka.ac.il/candidate/candidate-information-bsc/calculator/',
+    adapterId: 'capability_matrix',
+    expectedCapability: 'score_only',
+    proofLevel: 'partial_official',
+    category: 'partial',
+    reproducedFields: ['sekhemScore', 'subjectGates'],
+    limitations: [
+      'Client-side multi-step wizard; subject gates require math/English/physics/CS inputs that the landing page may not collect',
+    ],
+    nextAction: 'Collect missing subject inputs or emit needs-input when required fields are absent',
+  },
+  {
+    id: 'hit-client-formula',
+    institutionId: 'hit',
+    institutionName: 'HIT - Holon Institute of Technology',
+    officialUrl: 'https://calc.hit.ac.il/',
+    adapterId: 'capability_matrix',
+    expectedCapability: 'score_only',
+    proofLevel: 'partial_official',
+    category: 'partial',
+    reproducedFields: ['bagrutAverage', 'departmentGates'],
+    limitations: [
+      'Client-side Bagrut optimizer with department-specific numeric gates for engineering programs; design programs are manual-gate',
+    ],
+    nextAction: 'Use minimum-floor estimation for engineering programs; manual-gate for design programs',
+  },
+  {
+    id: 'shenkar-bagrut-helper',
+    institutionId: 'shenkar',
+    institutionName: 'Shenkar - Engineering. Design. Art',
+    officialUrl: 'https://www.shenkar.ac.il/he/pages/calc/',
+    adapterId: 'capability_matrix',
+    expectedCapability: 'blocked',
+    proofLevel: 'blocked',
+    category: 'manual_gate',
+    reproducedFields: ['bagrutAverage'],
+    limitations: [
+      'Calculator is a Bagrut-average helper only; no combined psychometric formula exists; design/art departments require portfolio, exam, and interview gates',
+    ],
+    nextAction: 'Represent as manual-gate evidence; do not model as a normal sekhem calculator',
+  },
+  {
+    id: 'mta-requirements-only',
+    institutionId: 'mta',
+    institutionName: 'MTA - Academic College of Tel Aviv-Yaffo',
+    officialUrl: 'https://www.mta.ac.il/conditions_for_applying',
+    adapterId: 'capability_matrix',
+    expectedCapability: 'blocked',
+    proofLevel: 'blocked',
+    category: 'requirements_only',
+    reproducedFields: [],
+    limitations: [
+      'No reverse-engineered calculator formula; only requirements enrichment data is available; a secondary calculator link exists but has not been parsed',
+    ],
+    nextAction: 'Reverse-engineer the secondary calculator link or represent as requirements-only',
+  },
 ];
 
 export function selectAdmissionsSourceTargets(targetIds?: string[]): AdmissionsSourceTarget[] {
@@ -192,11 +269,15 @@ export function buildCapabilityMatrixProof(target: AdmissionsSourceTarget): Admi
 }
 
 function statusForTarget(target: AdmissionsSourceTarget): AdmissionsProofStatus {
-  if (target.category === 'blocked') {
+  if (target.category === 'blocked' || target.category === 'manual_gate') {
     return 'blocked';
   }
 
-  if (target.category === 'partial' || target.category === 'static_candidate') {
+  if (
+    target.category === 'partial' ||
+    target.category === 'static_candidate' ||
+    target.category === 'requirements_only'
+  ) {
     return 'partial';
   }
 
@@ -211,9 +292,17 @@ function normalizedPayloadForTarget(target: AdmissionsSourceTarget): Record<stri
     };
   }
 
-  if (target.category === 'blocked') {
+  if (target.category === 'blocked' || target.category === 'manual_gate') {
     return {
       reason: target.blockedReason,
+      limitations: target.limitations,
+    };
+  }
+
+  if (target.category === 'requirements_only') {
+    return {
+      limitations: target.limitations,
+      nextAction: target.nextAction,
     };
   }
 

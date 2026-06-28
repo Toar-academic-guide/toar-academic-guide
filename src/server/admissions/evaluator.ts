@@ -362,6 +362,32 @@ function evaluateNonExactResult(args: {
     };
   }
 
+  if (entry.capability === 'requirements_only') {
+    const detail = program.institutionDetails?.find(
+      (d) =>
+        d.institutionName === institution.name ||
+        d.officialCalculatorUrl?.includes(institution.id) ||
+        d.programUrl?.includes(institution.id),
+    );
+    const notesList = detail?.specificAdmissionNotes ?? [];
+    const allRequirements = [...(program.admissionRequirements ?? []), ...notesList];
+
+    return {
+      institution: publicInstitutionShape(institution),
+      linkedInstitutionId: institution.id,
+      capability: 'requirements_only',
+      kind: 'requirements_only',
+      decision: 'unknown',
+      confidence: 'medium',
+      sourceLabel: 'דרישות קבלה',
+      explanation:
+        allRequirements.length > 0
+          ? `תנאי קבלה למסלול זה: ${allRequirements.join('; ')}`
+          : 'מוסד זה דורש עמידה בתנאי קבלה שטרם מופו באופן מלא. בדקו את האתר הרשמי לפרטים נוספים.',
+      nextAction: 'בדקו את תנאי הקבלה המלאים באתר הרשמי של המוסד.',
+    };
+  }
+
   if (entry.capability === 'estimated' || entry.capability === 'score_only') {
     const calculatorInstitution = getCalculatorInstitutionsFromCatalogue([institution])[0];
     if (!calculatorInstitution) {

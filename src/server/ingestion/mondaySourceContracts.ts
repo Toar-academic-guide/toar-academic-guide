@@ -297,11 +297,15 @@ function escapeRegExp(value: string): string {
 }
 
 function difficultyForTarget(target: AdmissionsSourceTarget): IngestionSourceDifficulty {
-  if (target.category === 'blocked') {
+  if (target.category === 'blocked' || target.category === 'manual_gate') {
     return 'browser_required';
   }
 
-  if (target.category === 'partial' || target.category === 'static_candidate') {
+  if (
+    target.category === 'partial' ||
+    target.category === 'static_candidate' ||
+    target.category === 'requirements_only'
+  ) {
     return 'hard_manual';
   }
 

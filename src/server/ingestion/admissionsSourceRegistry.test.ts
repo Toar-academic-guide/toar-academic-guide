@@ -22,12 +22,17 @@ describe('admissionsSourceRegistry', () => {
 
   it('keeps every discussed institution in the capability matrix', () => {
     expect(admissionsSourceTargets.map((target) => target.institutionId).sort()).toEqual([
+      'afeka',
       'ariel',
       'bgu',
       'biu',
       'haifa',
+      'hit',
       'huji',
+      'mta',
       'open_university',
+      'reichman',
+      'shenkar',
       'tau',
       'technion',
     ]);
@@ -73,9 +78,17 @@ describe('admissionsSourceRegistry', () => {
     );
   });
 
-  it('separates exact, partial, static-candidate, open-admission, and blocked categories', () => {
+  it('separates exact, partial, static-candidate, open-admission, blocked, manual-gate, and requirements-only categories', () => {
     expect(new Set(admissionsSourceTargets.map((target) => target.category))).toEqual(
-      new Set(['blocked', 'exact', 'open_admission', 'partial', 'static_candidate']),
+      new Set([
+        'blocked',
+        'exact',
+        'manual_gate',
+        'open_admission',
+        'partial',
+        'requirements_only',
+        'static_candidate',
+      ]),
     );
   });
 });
