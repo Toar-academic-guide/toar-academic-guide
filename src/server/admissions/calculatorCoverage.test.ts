@@ -1,9 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  calculatorCoverageInventory,
-  reconcileCalculatorCoverage,
-} from './calculatorCoverage';
+import { calculatorCoverageInventory, reconcileCalculatorCoverage } from './calculatorCoverage';
 import { admissionsSourceTargets } from '@/server/ingestion/admissionsSourceRegistry';
 import { UNIVERSITIES } from '@/data/degreesData';
 

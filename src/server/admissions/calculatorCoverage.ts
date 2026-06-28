@@ -156,7 +156,8 @@ export const calculatorCoverageInventory: CalculatorCoverageEntry[] = [
     supportLevel: 'estimated',
     hasCalculatorConfig: true,
     hasSourceTarget: true,
-    nextAction: 'Collect missing subject inputs or emit needs-input when required fields are absent',
+    nextAction:
+      'Collect missing subject inputs or emit needs-input when required fields are absent',
   },
   {
     institutionId: 'hit',

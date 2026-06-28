@@ -6,9 +6,7 @@ import { buildAdmissionsCapabilityMatrix } from './capabilityMatrix';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type { SourceFreshnessStateRow } from '@/db/types';
 
-function makeFreshnessState(
-  overrides: Partial<SourceFreshnessStateRow>,
-): SourceFreshnessStateRow {
+function makeFreshnessState(overrides: Partial<SourceFreshnessStateRow>): SourceFreshnessStateRow {
   return {
     sourceId: 'test',
     sourceUrl: 'https://example.com',
@@ -255,7 +253,10 @@ describe('buildAdmissionsCapabilityMatrix', () => {
       program,
       institutions: INSTITUTIONS,
       freshnessStatesBySourceId: new Map([
-        ['tau-digital-sciences-live', makeFreshnessState({ sourceId: 'tau-digital-sciences-live', status: 'blocked' })],
+        [
+          'tau-digital-sciences-live',
+          makeFreshnessState({ sourceId: 'tau-digital-sciences-live', status: 'blocked' }),
+        ],
       ]),
     });
 
@@ -273,7 +274,10 @@ describe('buildAdmissionsCapabilityMatrix', () => {
       program,
       institutions: INSTITUTIONS,
       freshnessStatesBySourceId: new Map([
-        ['tau-digital-sciences-live', makeFreshnessState({ sourceId: 'tau-digital-sciences-live', status: 'failed' })],
+        [
+          'tau-digital-sciences-live',
+          makeFreshnessState({ sourceId: 'tau-digital-sciences-live', status: 'failed' }),
+        ],
       ]),
     });
 

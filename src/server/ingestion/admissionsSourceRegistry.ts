@@ -176,7 +176,8 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     limitations: [
       'Client-side ASP.NET WebForms calculator; adapted score formula reverse-engineered but no live threshold endpoint',
     ],
-    nextAction: 'Pair reviewed adapted-score formula with reviewed program thresholds for estimated results',
+    nextAction:
+      'Pair reviewed adapted-score formula with reviewed program thresholds for estimated results',
   },
   {
     id: 'afeka-client-formula',
@@ -191,7 +192,8 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     limitations: [
       'Client-side multi-step wizard; subject gates require math/English/physics/CS inputs that the landing page may not collect',
     ],
-    nextAction: 'Collect missing subject inputs or emit needs-input when required fields are absent',
+    nextAction:
+      'Collect missing subject inputs or emit needs-input when required fields are absent',
   },
   {
     id: 'hit-client-formula',
@@ -206,7 +208,8 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     limitations: [
       'Client-side Bagrut optimizer with department-specific numeric gates for engineering programs; design programs are manual-gate',
     ],
-    nextAction: 'Use minimum-floor estimation for engineering programs; manual-gate for design programs',
+    nextAction:
+      'Use minimum-floor estimation for engineering programs; manual-gate for design programs',
   },
   {
     id: 'shenkar-bagrut-helper',
