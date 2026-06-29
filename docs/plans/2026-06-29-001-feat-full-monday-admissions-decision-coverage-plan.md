@@ -18,9 +18,78 @@ origin:
 - **Objective:** Turn all 212 Monday institution items into structured admissions evidence, verify the official URLs behind that evidence, and drive the public admissions evaluator toward real user-facing answers for every catalogue program: yes, no, eligible/apply/register with manual steps, or a named extraction gap that is actively tracked until closed.
 - **Primary authority:** Official institution URLs and official source material win. Monday item updates are the retrieval map: they contain URLs, formulas, schemas, screenshots, PDFs, blockers, and prior reverse-engineering notes that make official verification faster.
 - **Current baseline:** PR #71 added decisive labels for mapped rules and a repeatable local Monday export at `scratch/monday-admissions-updates.json`. That export covers board `18416803950`, 212 items, 212 items with updates, 229 updates, and no update-thread truncation.
+- **Current implementation checkpoint:** PR #71 now also contains the first evidence-coverage implementation slice in commit `9d4ff1c` (`feat(admissions): derive monday evidence coverage`). U1 through U4 are implemented and verified; resume new work at U5 unless the raw Monday export changes.
 - **Execution profile:** Deep, multi-session implementation. This is data extraction, evidence normalization, official-source verification, evaluator behavior, UI copy, and regression coverage.
 - **Stop condition:** Do not call this complete while current catalogue programs can silently fall through to generic missing/unknown states, or while any Monday item lacks a structured evidence record with official URL status and next extraction action.
 - **Tail ownership:** The implementing agent owns plan execution, scripts, derived evidence files, evaluator/test changes, verification, commits, and PR updates. Raw Monday exports remain local and ignored.
+
+---
+
+## Current Implementation Status
+
+### Completed in PR #71 / commit `9d4ff1c`
+
+- **U1 complete:** `scripts/derive-monday-admissions-evidence.mjs` was added with package script `npm run monday:derive-admissions-evidence`. It reads the ignored raw export, emits deterministic generated TypeScript and markdown reports, omits raw update bodies, handles item-number normalization including `HIT .15`, and formats its generated output with Prettier when available.
+- **U2 complete:** `src/data/admissions/mondayEvidence.ts`, `src/data/admissions/mondayEvidence.generated.ts`, and `src/data/admissions/mondayEvidence.test.ts` were added. Runtime code now has typed accessors by Monday item id, catalogue institution id, tracked missing rules, and official verification queue.
+- **U3 complete:** The generated evidence now includes `catalogueVisibility` and `officialVerificationStatus`, and `docs/admissions-coverage/missing-official-rules.md` is a concrete extraction queue rather than a generic bucket report.
+- **U4 complete:** `src/server/admissions/catalogueEvidenceCoverage.ts` and `src/server/admissions/catalogueEvidenceCoverage.test.ts` were added. The real static catalogue is reconciled against Monday evidence and fails future untracked catalogue gaps.
+- **PR handoff complete:** PR #71 was updated with the plan path, evidence counts, missing-rule counts, verification commands, and known follow-up extraction batches.
+
+### Generated Evidence Snapshot
+
+- Raw export source: `scratch/monday-admissions-updates.json` (ignored, not committed).
+- Clean generated dataset: `src/data/admissions/mondayEvidence.generated.ts`.
+- Human reports:
+  - `docs/admissions-coverage/monday-evidence-summary.md`
+  - `docs/admissions-coverage/missing-official-rules.md`
+- Coverage counts:
+  - 212 Monday items represented.
+  - 229 Monday updates represented through derived fields.
+  - 34 evidence records mapped to current catalogue institution ids.
+  - 178 evidence-only records preserved for later catalogue ingestion.
+  - 0 items hit the current Monday update limit.
+- Public evidence buckets:
+  - `decision_capable`: 5
+  - `tracked_missing_rule`: 5
+  - `open_admission`: 1
+  - `requirements_review`: 23
+  - `manual_gate`: 43
+  - `eligible_with_manual_gate`: 63
+  - `eligible_no_formal_grade_gate`: 72
+- Official verification queue:
+  - `needs_official_threshold`: 4
+  - `blocked_needs_alternate_official_source`: 1
+  - `needs_structured_requirements`: 22
+  - `needs_official_url`: 1
+  - Monday-evidence-backed decision/manual/open records: 184
+
+### Current Catalogue Reconciliation State
+
+- The current static catalogue has no untracked admissions evidence gaps under the new reconciliation test.
+- Formula-only catalogue-visible institutions are tracked as extraction work instead of final decisions: Technion, BGU, Ariel, and Reichman need official threshold/status evidence.
+- Bar-Ilan is tracked as blocked and needs an alternate official source or browser-capable verification path.
+- Catalogue-visible structured-requirements institutions include Tel-Hai, Ruppin, Colman, and Ono; these need conversion from requirements prose into structured grade/manual/open rules.
+- Current visible catalogue institution ids with no connected Monday item yet are explicitly tracked in the reconciliation inventory: `broshim`, `elevation`, `itc`, `kinneret`, `ono_ce`, and `pardeshana`.
+- Do not treat that inventory as product-complete. It exists to prevent hiding gaps while the official evidence is fetched.
+
+### Verification Already Run
+
+- `npm run monday:derive-admissions-evidence`
+- `node --check scripts/derive-monday-admissions-evidence.mjs`
+- `npm run monday:derive-admissions-evidence -- --help`
+- `npm exec vitest -- src/data/admissions/mondayEvidence.test.ts src/server/admissions/catalogueEvidenceCoverage.test.ts src/server/admissions/capabilityMatrix.test.ts --run`
+- `npm run typecheck`
+- `npm run guard:pre-pr`
+- Pre-push hook reran `npm run guard:pre-pr`.
+- GitHub checks on PR #71 were green after the push, with the expected skipped jobs remaining skipped.
+
+### Resume Guidance
+
+- Resume at **U5. Public Result Bucket Contract** if continuing product/runtime work.
+- Start **U6. Official Rule Extraction Batches** in parallel only when the next task is source extraction, not evaluator behavior. Prioritize catalogue-visible missing rules first.
+- Do not redo U1 through U4 unless `scratch/monday-admissions-updates.json` changes. If it changes, rerun `npm run monday:derive-admissions-evidence`, inspect the generated diffs, and rerun the evidence and reconciliation tests before touching evaluator behavior.
+- Keep raw Monday exports and local scrape artifacts out of git. Commit only clean derived evidence, reports, runtime rules, and tests.
+- The workspace had unrelated dirty/untracked local files during the first slice, including duplicate `* 2.*` files and `scratch/` artifacts. Future commits should continue staging only intentional files.
 
 ---
 
