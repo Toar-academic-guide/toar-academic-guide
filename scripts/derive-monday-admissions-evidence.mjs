@@ -505,10 +505,11 @@ async function writeText(path, text) {
   await writeFile(outputPath, text, 'utf8');
 }
 
-async function formatText(text, parser) {
+async function formatText(text, parser, outputPath) {
   try {
     const prettier = await import('prettier');
-    return await prettier.format(text, { parser });
+    const config = (await prettier.resolveConfig(outputPath)) ?? {};
+    return await prettier.format(text, { ...config, parser });
   } catch {
     return text;
   }
@@ -524,11 +525,14 @@ async function main() {
   const raw = await readRawExport(args.input);
   const records = sortRecords(raw.items.map(deriveRecord));
 
-  await writeText(args.tsOut, await formatText(generatedTs(records, raw), 'typescript'));
-  await writeText(args.summaryOut, await formatText(markdownSummary(records, raw), 'markdown'));
+  await writeText(args.tsOut, await formatText(generatedTs(records, raw), 'typescript', args.tsOut));
+  await writeText(
+    args.summaryOut,
+    await formatText(markdownSummary(records, raw), 'markdown', args.summaryOut),
+  );
   await writeText(
     args.missingRulesOut,
-    await formatText(missingRulesMarkdown(records, raw), 'markdown'),
+    await formatText(missingRulesMarkdown(records, raw), 'markdown', args.missingRulesOut),
   );
 
   console.log(
