@@ -727,6 +727,12 @@ export const INSTITUTIONS: InstitutionRecord[] = [
 import { mondayAdmissionEvidenceRecords } from './admissions/mondayEvidence.generated';
 
 const OFFICIAL_URL_OVERRIDES: Array<{ keywords: RegExp[]; url: string }> = [
+  { keywords: [/שערי.*משפט/], url: 'https://www.mishpat.ac.il' },
+  { keywords: [/למשפט.*לעסקים/], url: 'https://clb.ac.il' },
+  { keywords: [/רמת גן/], url: 'https://www.iac.ac.il' },
+  { keywords: [/שכטר/], url: 'https://schechter.ac.il' },
+  { keywords: [/הרצוג/], url: 'https://www.herzog.ac.il' },
+  { keywords: [/אורנים/], url: 'https://www.oranim.ac.il' },
   { keywords: [/אחוה/], url: 'https://www.achva.ac.il' },
   { keywords: [/צפת/], url: 'https://www.zefat.ac.il' },
   { keywords: [/בית ברל/], url: 'https://www.beitberl.ac.il' },
