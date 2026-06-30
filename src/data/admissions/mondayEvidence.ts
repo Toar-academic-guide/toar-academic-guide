@@ -80,9 +80,14 @@ export interface MondayAdmissionEvidenceRecord {
   decisionReason: string;
   nextAction: string;
   verifiedProgramThresholds?: readonly MondayAdmissionVerifiedProgramThreshold[];
+  interviewNeeded?: boolean;
+  portfolioNeeded?: boolean;
+  noBagrutNeeded?: boolean;
+  noPsychometricNeeded?: boolean;
 }
 
-export const mondayAdmissionsEvidence = mondayAdmissionEvidenceRecords;
+export const mondayAdmissionsEvidence: readonly MondayAdmissionEvidenceRecord[] =
+  mondayAdmissionEvidenceRecords;
 
 export function getMondayAdmissionEvidenceByItemId(
   itemId: string,
@@ -94,7 +99,8 @@ export function getMondayAdmissionEvidenceByCatalogueInstitutionId(
   institutionId: string,
 ): MondayAdmissionEvidenceRecord[] {
   return mondayAdmissionsEvidence.filter(
-    (record) => record.catalogueInstitutionId === institutionId,
+    (record) =>
+      record.catalogueInstitutionId === institutionId || `mon_${record.itemId}` === institutionId,
   );
 }
 

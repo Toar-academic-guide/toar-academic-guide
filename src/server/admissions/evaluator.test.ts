@@ -570,4 +570,43 @@ describe('evaluateAdmissionsForProgram', () => {
       }),
     );
   });
+
+  it('includes dynamic admissions criteria (interview, portfolio, no bagrut, no psychometric) from Monday evidence in evaluator Hebrew explanation', async () => {
+    const mondayProgram: CatalogueProgram = {
+      id: 'mon_12341185928_cs',
+      name: 'מדעי המחשב',
+      institution: 'אורנים המכללה האקדמית לחינוך',
+      institutionId: 'mon_12341185928' as any,
+      type: 'academic',
+      category: 'מדעי המחשב',
+      profileScore: { AN: 3, TE: 3, CR: 3, SO: 3, LE: 3, OR: 3, DI: 3, ER: 3 },
+      admissionType: 'requirements',
+      admissionRequirements: [],
+      linkedInstitutionIds: ['mon_12341185928' as any],
+    };
+
+    const mondayInstitutions: CatalogueInstitution[] = [
+      {
+        id: 'mon_12341185928' as any,
+        name: 'אורנים המכללה האקדמית לחינוך',
+        region: 'north',
+        domain: 'oranim.ac.il',
+      },
+    ];
+
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'mon_12341185928_cs',
+        psychometric: 500,
+        bagrut: 80,
+      },
+      program: mondayProgram,
+      institutions: mondayInstitutions,
+    });
+
+    const result = report.results.find((r) => r.linkedInstitutionId === 'mon_12341185928')!;
+    expect(result.capability).toBe('manual_gate');
+    expect(result.explanation).toContain('ראיון קבלה חובה');
+    expect(result.explanation).toContain('אין צורך בפסיכומטרי');
+  });
 });

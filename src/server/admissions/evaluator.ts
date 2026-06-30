@@ -19,6 +19,7 @@ import { runHaifaAdmissionsProof } from '@/server/ingestion/adapters/haifaAdmiss
 import { runTauAdmissionsProof } from '@/server/ingestion/adapters/tauAdmissions';
 import { runTechnionAdmissionsProof } from '@/server/ingestion/adapters/technionAdmissions';
 import { runBguAdmissionsProof } from '@/server/ingestion/adapters/bguAdmissions';
+import { getMondayAdmissionEvidenceByCatalogueInstitutionId } from '@/data/admissions/mondayEvidence';
 
 const MAX_EXACT_SOURCE_CALLS = 2;
 const OFFICIAL_SOURCE_TIMEOUT_MS = 5000;
@@ -275,6 +276,21 @@ function evaluateNonExactResult(args: {
 }): AdmissionsEvaluationResult {
   const { input, program, institution, entry, exactCallsBounded } = args;
 
+  const evidenceRecord = getMondayAdmissionEvidenceByCatalogueInstitutionId(institution.id)[0];
+  const dynamicRequirements: string[] = [];
+  if (evidenceRecord?.noBagrutNeeded) {
+    dynamicRequirements.push('אין צורך בבגרות');
+  }
+  if (evidenceRecord?.noPsychometricNeeded) {
+    dynamicRequirements.push('אין צורך בפסיכומטרי');
+  }
+  if (evidenceRecord?.interviewNeeded) {
+    dynamicRequirements.push('ראיון קבלה חובה');
+  }
+  if (evidenceRecord?.portfolioNeeded) {
+    dynamicRequirements.push('הגשת תיק עבודות חובה');
+  }
+
   if (entry.capability === 'needs_input') {
     return {
       institution: publicInstitutionShape(institution),
@@ -327,6 +343,9 @@ function evaluateNonExactResult(args: {
   }
 
   if (entry.capability === 'open_admission') {
+    const defaultText =
+      'מוסד זה מציע אפיק קבלה פתוחה ללא צורך בציון פסיכומטרי או ממוצע בגרות מינימלי.';
+    const explanation = evidenceRecord?.decisionReason || defaultText;
     return {
       institution: publicInstitutionShape(institution),
       linkedInstitutionId: institution.id,
@@ -335,7 +354,7 @@ function evaluateNonExactResult(args: {
       decision: 'accepted',
       confidence: 'high',
       sourceLabel: 'קבלה פתוחה',
-      explanation: 'מוסד זה מציע אפיק קבלה פתוחה ללא צורך בציון פסיכומטרי או ממוצע בגרות מינימלי.',
+      explanation,
       nextAction: 'הירשמו ישירות למסלול הלימודים באתר הרשמי של המוסד.',
     };
   }
@@ -349,7 +368,12 @@ function evaluateNonExactResult(args: {
     );
     const factsList = detail?.admissionFacts?.map((f) => f.description) ?? [];
     const notesList = detail?.specificAdmissionNotes ?? [];
-    const allRequirements = [...program.admissionRequirements, ...factsList, ...notesList];
+    const allRequirements = [
+      ...program.admissionRequirements,
+      ...factsList,
+      ...notesList,
+      ...dynamicRequirements,
+    ];
 
     return {
       institution: publicInstitutionShape(institution),
@@ -375,7 +399,11 @@ function evaluateNonExactResult(args: {
         d.programUrl?.includes(institution.id),
     );
     const notesList = detail?.specificAdmissionNotes ?? [];
-    const allRequirements = [...(program.admissionRequirements ?? []), ...notesList];
+    const allRequirements = [
+      ...(program.admissionRequirements ?? []),
+      ...notesList,
+      ...dynamicRequirements,
+    ];
 
     return {
       institution: publicInstitutionShape(institution),

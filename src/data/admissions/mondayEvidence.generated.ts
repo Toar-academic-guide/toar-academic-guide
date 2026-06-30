@@ -276,6 +276,7 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence appears decision-bearing but automation is blocked by browser/cookie/anti-bot requirements.',
     nextAction:
       'Resolve blocker or find alternate official admissions evidence from https://shoham.biu.ac.il/kabala/Psychometric.aspx.',
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12220699689',
@@ -315,6 +316,7 @@ export const mondayAdmissionEvidenceRecords = [
       'Update evidence contains a decision-bearing status or both score formula and cutoff/threshold evidence.',
     nextAction:
       'Wire or verify the server-side decision rule for catalogue programs that map to this item.',
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12220699690',
@@ -346,6 +348,8 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Update or board evidence says there are no academic admission requirements.',
     nextAction:
       'Represent as open/no-grade admission in the public evaluator where this item maps to catalogue programs.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12220680983',
@@ -411,6 +415,7 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'No decisive admissions evidence was derived automatically.',
     nextAction:
       'Convert requirements from https://www.telhai.ac.il/%D7%AA%D7%94%D7%9C%D7%99%D7%9A_%D7%94%D7%A7%D7%91%D7%9C%D7%94 into structured grade/manual/open rules.',
+    noBagrutNeeded: true,
   },
   {
     itemId: '12220685577',
@@ -441,6 +446,7 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
   },
   {
     itemId: '12220699692',
@@ -504,6 +510,7 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
   },
   {
     itemId: '12220699693',
@@ -580,6 +587,9 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    portfolioNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12220699695',
@@ -616,6 +626,7 @@ export const mondayAdmissionEvidenceRecords = [
       'Update evidence contains a decision-bearing status or both score formula and cutoff/threshold evidence.',
     nextAction:
       'Wire or verify the server-side decision rule for catalogue programs that map to this item.',
+    interviewNeeded: true,
   },
   {
     itemId: '12220708940',
@@ -670,6 +681,7 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
   },
   {
     itemId: '12220708942',
@@ -695,6 +707,7 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'No decisive admissions evidence was derived automatically.',
     nextAction:
       'Convert requirements from https://w3.braude.ac.il/intrested/ into structured grade/manual/open rules.',
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12220708944',
@@ -725,6 +738,7 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
   },
   {
     itemId: '12220708946',
@@ -753,6 +767,7 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'No decisive admissions evidence was derived automatically.',
     nextAction:
       'Convert requirements from https://www.ruppin.ac.il into structured grade/manual/open rules.',
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12220697668',
@@ -778,6 +793,8 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'No decisive admissions evidence was derived automatically.',
     nextAction:
       'Convert requirements from https://www.sapir.ac.il/ba/law#collapse-accordion-798-3 into structured grade/manual/open rules.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12220697671',
@@ -805,6 +822,9 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12220680984',
@@ -832,6 +852,8 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    portfolioNeeded: true,
   },
   {
     itemId: '12220685569',
@@ -859,6 +881,8 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12220687656',
@@ -886,6 +910,9 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    portfolioNeeded: true,
+    noBagrutNeeded: true,
   },
   {
     itemId: '12220685576',
@@ -913,6 +940,7 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
   },
   {
     itemId: '12220696298',
@@ -940,6 +968,9 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    portfolioNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12230979966',
@@ -965,6 +996,7 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'No decisive admissions evidence was derived automatically.',
     nextAction:
       'Convert requirements from https://www.colman.ac.il/academics/ba/business-administration/ into structured grade/manual/open rules.',
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12220680982',
@@ -1023,6 +1055,9 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12220685572',
@@ -1057,6 +1092,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12220685573',
@@ -1088,6 +1126,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12220685575',
@@ -1115,6 +1155,7 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
   },
   {
     itemId: '12220697934',
@@ -1142,6 +1183,8 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    portfolioNeeded: true,
   },
   {
     itemId: '12220697936',
@@ -1175,6 +1218,9 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    portfolioNeeded: true,
+    noBagrutNeeded: true,
   },
   {
     itemId: '12220697937',
@@ -1202,6 +1248,9 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    portfolioNeeded: true,
+    noBagrutNeeded: true,
   },
   {
     itemId: '12220697938',
@@ -1229,6 +1278,9 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    portfolioNeeded: true,
+    noBagrutNeeded: true,
   },
   {
     itemId: '12220697939',
@@ -1256,6 +1308,7 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
   },
   {
     itemId: '12220697940',
@@ -1289,6 +1342,7 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
   },
   {
     itemId: '12220697941',
@@ -1323,6 +1377,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12220697942',
@@ -1356,6 +1413,8 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    portfolioNeeded: true,
   },
   {
     itemId: '12220696299',
@@ -1383,6 +1442,9 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    portfolioNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12220699120',
@@ -1410,6 +1472,7 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
   },
   {
     itemId: '12341108218',
@@ -1441,6 +1504,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341126387',
@@ -1474,6 +1539,9 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341128292',
@@ -1508,6 +1576,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341102997',
@@ -1533,6 +1604,7 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'No decisive admissions evidence was derived automatically.',
     nextAction:
       'Convert requirements from https://yoram.walla.co.il/institute/946 into structured grade/manual/open rules.',
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341126565',
@@ -1560,6 +1632,9 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341063909',
@@ -1587,6 +1662,9 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    portfolioNeeded: true,
+    noBagrutNeeded: true,
   },
   {
     itemId: '12341102212',
@@ -1614,6 +1692,7 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
   },
   {
     itemId: '12341064237',
@@ -1645,6 +1724,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341126300',
@@ -1672,6 +1753,8 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
   },
   {
     itemId: '12341128726',
@@ -1699,6 +1782,9 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341091743',
@@ -1774,6 +1860,8 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'No decisive admissions evidence was derived automatically.',
     nextAction:
       'Convert requirements from https://yoram.walla.co.il/institute/2054 into structured grade/manual/open rules.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341119002',
@@ -1801,6 +1889,8 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341125350',
@@ -1834,6 +1924,10 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    portfolioNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341107895',
@@ -1868,6 +1962,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341143342',
@@ -1893,6 +1990,8 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'No decisive admissions evidence was derived automatically.',
     nextAction:
       'Convert requirements from https://yoram.walla.co.il/institute/2986 into structured grade/manual/open rules.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341108864',
@@ -1920,6 +2019,8 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
   },
   {
     itemId: '12341114234',
@@ -1970,6 +2071,7 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'No decisive admissions evidence was derived automatically.',
     nextAction:
       'Convert requirements from https://yoram.walla.co.il/institute/4122 into structured grade/manual/open rules.',
+    noBagrutNeeded: true,
   },
   {
     itemId: '12341128848',
@@ -2126,6 +2228,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341076875',
@@ -2158,6 +2262,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341098712',
@@ -2191,6 +2297,7 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
   },
   {
     itemId: '12341126575',
@@ -2225,6 +2332,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341088622',
@@ -2250,6 +2360,7 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'No decisive admissions evidence was derived automatically.',
     nextAction:
       'Convert requirements from https://yoram.walla.co.il/institute/18004 into structured grade/manual/open rules.',
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341122479',
@@ -2281,6 +2392,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341118768',
@@ -2308,6 +2421,8 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
   },
   {
     itemId: '12341101957',
@@ -2342,6 +2457,10 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    portfolioNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341064485',
@@ -2376,6 +2495,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341092879',
@@ -2403,6 +2525,8 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    portfolioNeeded: true,
   },
   {
     itemId: '12341091518',
@@ -2438,6 +2562,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341092889',
@@ -2472,6 +2599,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341114237',
@@ -2498,6 +2628,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341113399',
@@ -2532,6 +2664,10 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    portfolioNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341088658',
@@ -2566,6 +2702,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341081785',
@@ -2593,6 +2732,9 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341113400',
@@ -2620,6 +2762,7 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
   },
   {
     itemId: '12341102793',
@@ -2655,6 +2798,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341141954',
@@ -2689,6 +2835,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341107292',
@@ -2717,6 +2866,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341128142',
@@ -2748,6 +2900,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341143672',
@@ -2780,6 +2934,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341098736',
@@ -2814,6 +2970,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341098628',
@@ -2845,6 +3004,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341114530',
@@ -2876,6 +3037,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341126780',
@@ -2907,6 +3070,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341098630',
@@ -2941,6 +3106,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341126233',
@@ -2972,6 +3140,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341108755',
@@ -3003,6 +3173,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341091471',
@@ -3034,6 +3206,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341128804',
@@ -3068,6 +3242,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341142058',
@@ -3102,6 +3279,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341092393',
@@ -3137,6 +3317,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341107297',
@@ -3162,6 +3345,8 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'No decisive admissions evidence was derived automatically.',
     nextAction:
       'Convert requirements from https://yoram.walla.co.il/institute/3148 into structured grade/manual/open rules.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341114281',
@@ -3197,6 +3382,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341091651',
@@ -3228,6 +3416,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341102883',
@@ -3259,6 +3449,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341113217',
@@ -3293,6 +3485,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341117410',
@@ -3320,6 +3515,9 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341114949',
@@ -3354,6 +3552,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341144078',
@@ -3388,6 +3589,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341101353',
@@ -3422,6 +3626,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341091770',
@@ -3457,6 +3664,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341137571',
@@ -3484,6 +3694,10 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    portfolioNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341137918',
@@ -3518,6 +3732,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341134516',
@@ -3549,6 +3766,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341133521',
@@ -3584,6 +3803,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341108662',
@@ -3609,6 +3831,8 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'No decisive admissions evidence was derived automatically.',
     nextAction:
       'Convert requirements from https://yoram.walla.co.il/institute/18577 into structured grade/manual/open rules.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341144345',
@@ -3640,6 +3864,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341147363',
@@ -3674,6 +3900,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341122838',
@@ -3709,6 +3937,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341122522',
@@ -3736,6 +3967,7 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
   },
   {
     itemId: '12341092241',
@@ -3767,6 +3999,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341133625',
@@ -3801,6 +4035,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341167578',
@@ -3835,6 +4072,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341138527',
@@ -3869,6 +4109,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341142616',
@@ -3895,6 +4138,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341142920',
@@ -3926,6 +4171,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341167854',
@@ -3957,6 +4204,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341122528',
@@ -3983,6 +4232,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341134798',
@@ -4009,6 +4260,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341149187',
@@ -4040,6 +4293,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341165209',
@@ -4071,6 +4326,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341113458',
@@ -4102,6 +4359,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341134763',
@@ -4135,6 +4394,7 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
   },
   {
     itemId: '12341144849',
@@ -4166,6 +4426,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341129101',
@@ -4197,6 +4459,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341148145',
@@ -4228,6 +4492,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341148006',
@@ -4262,6 +4528,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341138357',
@@ -4293,6 +4562,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341165356',
@@ -4327,6 +4598,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341150395',
@@ -4361,6 +4635,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341134000',
@@ -4396,6 +4673,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341144937',
@@ -4427,6 +4707,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341147475',
@@ -4461,6 +4743,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341144341',
@@ -4492,6 +4777,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341137886',
@@ -4519,6 +4806,7 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
   },
   {
     itemId: '12341108613',
@@ -4553,6 +4841,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    portfolioNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341189515',
@@ -4587,6 +4878,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341138594',
@@ -4618,6 +4912,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341144650',
@@ -4644,6 +4940,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341122982',
@@ -4678,6 +4976,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341150917',
@@ -4709,6 +5010,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341167899',
@@ -4740,6 +5043,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341141808',
@@ -4771,6 +5076,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341168193',
@@ -4805,6 +5112,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341108962',
@@ -4839,6 +5149,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341134431',
@@ -4870,6 +5183,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341166173',
@@ -4904,6 +5219,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341134448',
@@ -4935,6 +5253,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341138641',
@@ -4966,6 +5286,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341149221',
@@ -4993,6 +5315,8 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    portfolioNeeded: true,
   },
   {
     itemId: '12341142727',
@@ -5024,6 +5348,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341161868',
@@ -5058,6 +5384,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341137305',
@@ -5084,6 +5413,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341173466',
@@ -5115,6 +5446,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341147227',
@@ -5146,6 +5479,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341137650',
@@ -5177,6 +5512,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341165867',
@@ -5211,6 +5548,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341148361',
@@ -5245,6 +5585,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341165912',
@@ -5279,6 +5622,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341148232',
@@ -5305,6 +5651,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341134405',
@@ -5339,6 +5687,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341189317',
@@ -5374,6 +5725,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341162526',
@@ -5402,6 +5756,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341166462',
@@ -5436,6 +5793,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341167257',
@@ -5470,6 +5830,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341139122',
@@ -5501,6 +5864,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341173326',
@@ -5532,6 +5897,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341189285',
@@ -5566,6 +5933,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341162554',
@@ -5597,6 +5967,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341167263',
@@ -5631,6 +6003,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341138289',
@@ -5662,6 +6037,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341155830',
@@ -5696,6 +6073,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341175059',
@@ -5727,6 +6107,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341148655',
@@ -5758,6 +6140,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341168601',
@@ -5789,6 +6173,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341155971',
@@ -5820,6 +6206,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341203461',
@@ -5851,6 +6239,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341167376',
@@ -5882,6 +6272,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341189545',
@@ -5916,6 +6308,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341189547',
@@ -5950,6 +6345,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341185928',
@@ -5977,6 +6375,9 @@ export const mondayAdmissionEvidenceRecords = [
     decisionReason: 'Evidence points to manual admissions gates rather than a numeric formula.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341168658',
@@ -6003,6 +6404,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341166504',
@@ -6034,6 +6437,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341168659',
@@ -6062,6 +6467,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341155561',
@@ -6093,6 +6501,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341203750',
@@ -6119,6 +6529,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341144956',
@@ -6150,6 +6562,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341185806',
@@ -6184,6 +6598,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341166735',
@@ -6218,6 +6635,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341138306',
@@ -6249,6 +6669,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341161220',
@@ -6283,6 +6705,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341187468',
@@ -6317,6 +6742,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341167283',
@@ -6351,6 +6779,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341179463',
@@ -6385,6 +6816,9 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    interviewNeeded: true,
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341165560',
@@ -6411,6 +6845,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341187728',
@@ -6442,6 +6878,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341203959',
@@ -6473,6 +6911,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341179578',
@@ -6504,6 +6944,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341161996',
@@ -6535,6 +6977,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341203595',
@@ -6566,6 +7010,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12341189852',
@@ -6597,6 +7043,8 @@ export const mondayAdmissionEvidenceRecords = [
       'Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.',
     nextAction:
       'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+    noBagrutNeeded: true,
+    noPsychometricNeeded: true,
   },
   {
     itemId: '12242591498',
