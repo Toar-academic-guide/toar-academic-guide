@@ -725,6 +725,7 @@ export const INSTITUTIONS: InstitutionRecord[] = [
 ];
 
 import { mondayAdmissionEvidenceRecords } from './admissions/mondayEvidence.generated';
+import resolvedUrlsFinal from './admissions/resolvedUrlsFinal.json';
 
 const OFFICIAL_URL_OVERRIDES: Array<{ keywords: RegExp[]; url: string }> = [
   { keywords: [/שערי.*משפט/], url: 'https://www.mishpat.ac.il' },
@@ -816,6 +817,14 @@ export function resolveUrl(name: string, urls: readonly string[]): string | unde
       return entry.url;
     }
   }
+  
+  const cleanedName = name.replace(/\\/g, '');
+  const compiledUrl = (resolvedUrlsFinal as Record<string, string | null>)[name] || 
+                      (resolvedUrlsFinal as Record<string, string | null>)[cleanedName];
+  if (compiledUrl) {
+    return compiledUrl;
+  }
+
   const firstUrl = urls[0];
   if (firstUrl && !firstUrl.includes('yoram.walla.co.il')) {
     return firstUrl;
@@ -857,6 +866,14 @@ for (const record of mondayAdmissionEvidenceRecords) {
   existingIds.add(instId);
   existingNames.add(record.displayName);
 }
+
+// Ensure every institution has a programUrl
+for (const inst of INSTITUTIONS) {
+  if (!inst.programUrl && inst.domain) {
+    inst.programUrl = inst.domain.startsWith('http') ? inst.domain : `https://www.${inst.domain}`;
+  }
+}
+
 
 // ── Lookup tables ─────────────────────────────────────────────────────────────
 
