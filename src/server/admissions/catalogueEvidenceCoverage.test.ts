@@ -69,7 +69,7 @@ describe('catalogue admissions evidence coverage', () => {
         expect.objectContaining({
           programId: 'technion_cs',
           institutionId: 'technion',
-          capability: 'score_only',
+          capability: 'tracked_missing_rule',
           status: 'tracked_missing_rule',
           trackingSource: 'monday_evidence',
           missingData: ['threshold_or_status'],

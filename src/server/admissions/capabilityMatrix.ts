@@ -5,6 +5,10 @@ import { inArray } from 'drizzle-orm';
 import { getDb } from '@/db/client';
 import { sourceFreshnessStates } from '@/db/schema';
 import type { SourceFreshnessStateRow } from '@/db/types';
+import {
+  getMondayAdmissionEvidenceByCatalogueInstitutionId,
+  type MondayAdmissionEvidenceRecord,
+} from '@/data/admissions/mondayEvidence';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type {
   AdmissionsEvaluationCapability,
@@ -31,6 +35,7 @@ export interface AdmissionsCapabilityEntry {
   sourceTarget?: AdmissionsSourceTarget;
   exactTarget?: ExactCapabilityTarget;
   requiredInputs?: AdmissionsRequiredInput[];
+  evidence?: MondayAdmissionEvidenceRecord;
   freshnessState?: SourceFreshnessStateRow;
 }
 
@@ -104,6 +109,7 @@ export function buildAdmissionsCapabilityMatrix(args: {
     const exactTarget = EXACT_PROGRAM_TARGETS[`${program.id}__${institutionId}`];
     const sourceTarget =
       exactTarget?.sourceTarget ?? SOURCE_TARGETS_BY_INSTITUTION.get(institutionId);
+    const evidence = selectBestEvidence(institutionId);
     const freshnessState = exactTarget
       ? freshnessStatesBySourceId.get(exactTarget.targetId)
       : sourceTarget
@@ -117,6 +123,7 @@ export function buildAdmissionsCapabilityMatrix(args: {
           capability: 'blocked',
           sourceTarget,
           exactTarget,
+          evidence,
           freshnessState,
         };
       }
@@ -127,6 +134,7 @@ export function buildAdmissionsCapabilityMatrix(args: {
           capability: 'stale',
           sourceTarget,
           exactTarget,
+          evidence,
           freshnessState,
         };
       }
@@ -138,6 +146,7 @@ export function buildAdmissionsCapabilityMatrix(args: {
           sourceTarget,
           exactTarget,
           requiredInputs: exactTarget.requiredInputs,
+          evidence,
           freshnessState,
         };
       }
@@ -147,6 +156,18 @@ export function buildAdmissionsCapabilityMatrix(args: {
         capability: 'exact',
         sourceTarget,
         exactTarget,
+        evidence,
+        freshnessState,
+      };
+    }
+
+    const evidenceCapability = capabilityFromEvidence(evidence);
+    if (evidenceCapability) {
+      return {
+        institutionId,
+        capability: evidenceCapability,
+        sourceTarget,
+        evidence,
         freshnessState,
       };
     }
@@ -156,6 +177,7 @@ export function buildAdmissionsCapabilityMatrix(args: {
         institutionId,
         capability: 'blocked',
         sourceTarget,
+        evidence,
         freshnessState,
       };
     }
@@ -165,6 +187,7 @@ export function buildAdmissionsCapabilityMatrix(args: {
         institutionId,
         capability: 'open_admission',
         sourceTarget,
+        evidence,
         freshnessState,
       };
     }
@@ -174,6 +197,7 @@ export function buildAdmissionsCapabilityMatrix(args: {
         institutionId,
         capability: 'manual_gate',
         sourceTarget,
+        evidence,
         freshnessState,
       };
     }
@@ -183,6 +207,7 @@ export function buildAdmissionsCapabilityMatrix(args: {
         institutionId,
         capability: 'requirements_only',
         sourceTarget,
+        evidence,
         freshnessState,
       };
     }
@@ -190,9 +215,7 @@ export function buildAdmissionsCapabilityMatrix(args: {
     if (sourceTarget?.category === 'partial') {
       const institution = institutions.find((entry) => entry.id === institutionId);
       const hasCalculatorConfig = Boolean(institution?.calculatorConfig);
-      const hasThreshold =
-        Boolean(program.thresholds?.[institutionId] !== undefined) ||
-        Boolean(program.directPsychometric?.[institutionId] !== undefined);
+      const hasThreshold = hasDecisionThreshold(program, institutionId);
 
       if (
         REVIEWED_PARTIAL_ESTIMATE_INSTITUTIONS.has(institutionId) &&
@@ -203,6 +226,7 @@ export function buildAdmissionsCapabilityMatrix(args: {
           institutionId,
           capability: 'estimated',
           sourceTarget,
+          evidence,
           freshnessState,
         };
       }
@@ -211,21 +235,21 @@ export function buildAdmissionsCapabilityMatrix(args: {
         institutionId,
         capability: 'score_only',
         sourceTarget,
+        evidence,
         freshnessState,
       };
     }
 
     const institution = institutions.find((entry) => entry.id === institutionId);
     const hasCalculatorConfig = Boolean(institution?.calculatorConfig);
-    const hasThreshold =
-      Boolean(program.thresholds?.[institutionId] !== undefined) ||
-      Boolean(program.directPsychometric?.[institutionId] !== undefined);
+    const hasThreshold = hasDecisionThreshold(program, institutionId);
 
     if (hasCalculatorConfig && hasThreshold) {
       return {
         institutionId,
         capability: 'estimated',
         sourceTarget,
+        evidence,
         freshnessState,
       };
     }
@@ -248,6 +272,7 @@ export function buildAdmissionsCapabilityMatrix(args: {
         institutionId,
         capability: 'manual_gate',
         sourceTarget,
+        evidence,
         freshnessState,
       };
     }
@@ -256,9 +281,71 @@ export function buildAdmissionsCapabilityMatrix(args: {
       institutionId,
       capability: sourceTarget ? 'unsupported' : 'missing',
       sourceTarget,
+      evidence,
       freshnessState,
     };
   });
+}
+
+function selectBestEvidence(institutionId: string): MondayAdmissionEvidenceRecord | undefined {
+  return getMondayAdmissionEvidenceByCatalogueInstitutionId(institutionId).sort(
+    (a, b) => evidencePriority(b) - evidencePriority(a),
+  )[0];
+}
+
+function evidencePriority(record: MondayAdmissionEvidenceRecord): number {
+  switch (record.publicBucket) {
+    case 'decision_capable':
+      return 70;
+    case 'open_admission':
+      return 60;
+    case 'eligible_no_formal_grade_gate':
+      return 50;
+    case 'eligible_with_manual_gate':
+      return 45;
+    case 'manual_gate':
+      return 40;
+    case 'tracked_missing_rule':
+      return 30;
+    case 'requirements_review':
+      return 20;
+  }
+}
+
+function capabilityFromEvidence(
+  evidence: MondayAdmissionEvidenceRecord | undefined,
+): AdmissionsEvaluationCapability | undefined {
+  if (!evidence) {
+    return undefined;
+  }
+
+  if (evidence.publicBucket === 'tracked_missing_rule') {
+    return 'tracked_missing_rule';
+  }
+
+  if (evidence.publicBucket === 'open_admission') {
+    return 'open_admission';
+  }
+
+  if (
+    evidence.publicBucket === 'manual_gate' ||
+    evidence.publicBucket === 'eligible_with_manual_gate' ||
+    evidence.publicBucket === 'eligible_no_formal_grade_gate'
+  ) {
+    return 'manual_gate';
+  }
+
+  return undefined;
+}
+
+function hasDecisionThreshold(program: CatalogueProgram, institutionId: string): boolean {
+  const sekhemThreshold = program.thresholds?.[institutionId];
+  const directPsychometric = program.directPsychometric?.[institutionId];
+
+  return (
+    (sekhemThreshold !== undefined && sekhemThreshold !== null) ||
+    (directPsychometric !== undefined && directPsychometric !== null)
+  );
 }
 
 function isFreshnessStateStale(state: SourceFreshnessStateRow | undefined, now: Date): boolean {

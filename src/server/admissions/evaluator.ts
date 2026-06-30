@@ -290,6 +290,10 @@ function evaluateNonExactResult(args: {
     };
   }
 
+  if (entry.capability === 'tracked_missing_rule') {
+    return trackedMissingRuleResult(institution, entry);
+  }
+
   if (entry.capability === 'blocked') {
     return {
       institution: publicInstitutionShape(institution),
@@ -535,6 +539,10 @@ function unsupportedResult(
   institution: CatalogueInstitution,
   entry: AdmissionsCapabilityEntry,
 ): AdmissionsEvaluationResult {
+  if (entry.evidence?.publicBucket === 'tracked_missing_rule') {
+    return trackedMissingRuleResult(institution, entry);
+  }
+
   return {
     institution: publicInstitutionShape(institution),
     linkedInstitutionId: institution.id,
@@ -547,6 +555,37 @@ function unsupportedResult(
       entry.sourceTarget?.limitations[0] ??
       'אין כרגע מספיק מידע מאומת כדי לחשב תוצאה אמינה למסלול זה.',
     nextAction: entry.sourceTarget?.nextAction ?? 'בדקו ישירות באתר המוסד.',
+  };
+}
+
+function trackedMissingRuleResult(
+  institution: CatalogueInstitution,
+  entry: AdmissionsCapabilityEntry,
+): AdmissionsEvaluationResult {
+  const evidence = entry.evidence;
+  const missingData = evidence?.missingData.length ? [...evidence.missingData] : ['official_rule'];
+  const officialUrls = evidence?.officialUrls.length ? [...evidence.officialUrls] : [];
+  const readableMissing = missingData.join(', ');
+
+  return {
+    institution: publicInstitutionShape(institution),
+    linkedInstitutionId: institution.id,
+    capability: 'tracked_missing_rule',
+    kind: 'tracked_missing_rule',
+    decision: 'unknown',
+    confidence: evidence?.confidence ?? 'medium',
+    sourceLabel: 'חסר כלל רשמי ממופה',
+    explanation: evidence
+      ? `עדיין חסר כלל רשמי כדי לתת החלטת קבלה: ${readableMissing}. מקור העבודה: ${evidence.itemName}.`
+      : `עדיין חסר כלל רשמי כדי לתת החלטת קבלה: ${readableMissing}.`,
+    nextAction:
+      evidence?.nextAction ??
+      entry.sourceTarget?.nextAction ??
+      'צריך להשלים אימות רשמי לפני שנציג קבלה או דחייה.',
+    evidenceItemId: evidence?.itemId,
+    evidenceItemName: evidence?.itemName,
+    missingData,
+    officialUrls,
   };
 }
 
