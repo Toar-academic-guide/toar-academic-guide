@@ -853,7 +853,9 @@ for (const record of mondayAdmissionEvidenceRecords) {
   if (programUrl) {
     try {
       domain = new URL(programUrl).hostname;
-    } catch {}
+    } catch {
+      // malformed URL — domain stays undefined
+    }
   }
 
   INSTITUTIONS.push({
