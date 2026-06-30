@@ -52,6 +52,18 @@ const institutions: CatalogueInstitution[] = [
     },
   },
   {
+    id: 'bgu',
+    name: 'אוניברסיטת בן-גוריון בנגב',
+    region: 'south',
+    domain: 'bgu.ac.il',
+    universityId: 'bgu',
+    calculatorConfig: {
+      formulaType: 'weighted_scaled',
+      scaleDescription: 'סקאלה מוסדית',
+      sekhemWeight: { psy: 0.5, bag: 0.5 },
+    },
+  },
+  {
     id: 'afeka',
     name: 'מכללת אפקה',
     region: 'center',
@@ -120,6 +132,20 @@ const technionCs: CatalogueProgram = {
   linkedInstitutionIds: ['technion'],
 };
 
+const bguCs: CatalogueProgram = {
+  id: 'bgu_cs',
+  name: 'מדעי המחשב',
+  institution: 'אוניברסיטת בן-גוריון בנגב',
+  institutionId: 'bgu',
+  type: 'academic',
+  category: 'מדעי המחשב',
+  profileScore: { AN: 5, TE: 5, CR: 1, SO: 1, LE: 1, OR: 3, DI: 5, ER: 4 },
+  admissionType: 'sekhem',
+  admissionRequirements: [],
+  thresholds: { bgu: 645 },
+  linkedInstitutionIds: ['bgu'],
+};
+
 const afekaEngineering: CatalogueProgram = {
   id: 'afeka_engineering',
   name: 'הנדסת תוכנה',
@@ -170,7 +196,7 @@ describe('evaluateAdmissionsForProgram', () => {
     );
   });
 
-  it('returns a decisive mapped-rule result for a reviewed calculator-only institution', async () => {
+  it('returns tracked missing-rule work for a formula-only institution without verified official threshold', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'technion_cs',
@@ -184,10 +210,35 @@ describe('evaluateAdmissionsForProgram', () => {
     expect(report.results).toContainEqual(
       expect.objectContaining({
         linkedInstitutionId: 'technion',
-        kind: 'estimated',
-        capability: 'score_only',
-        decision: 'below',
-        sourceLabel: 'כלל קבלה ממופה ממקור חלקי',
+        kind: 'tracked_missing_rule',
+        capability: 'tracked_missing_rule',
+        decision: 'unknown',
+        sourceLabel: 'חסר כלל רשמי ממופה',
+        missingData: ['threshold_or_status'],
+        officialUrls: expect.arrayContaining(['https://admissions.technion.ac.il/calculator/']),
+        nextAction: expect.stringContaining('official admission threshold/status'),
+      }),
+    );
+  });
+
+  it('does not turn BGU score-only evidence into accepted or below before the official threshold is verified', async () => {
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'bgu_cs',
+        psychometric: 760,
+        bagrut: 115,
+      },
+      program: bguCs,
+      institutions,
+    });
+
+    expect(report.results).toContainEqual(
+      expect.objectContaining({
+        linkedInstitutionId: 'bgu',
+        kind: 'tracked_missing_rule',
+        capability: 'tracked_missing_rule',
+        decision: 'unknown',
+        missingData: ['threshold_or_status'],
       }),
     );
   });
