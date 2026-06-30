@@ -7,7 +7,7 @@ import { ACADEMIC_PROGRAMS } from './academic';
 import { academicPrograms } from './academicPrograms';
 import { vocationalPrograms } from './vocationalPrograms';
 import { mondayAdmissionsEvidence } from '../admissions/mondayEvidence';
-import type { InstitutionId } from '../institutions';
+import { type InstitutionId, resolveUrl } from '../institutions';
 import type { Program, AdmissionFact } from './types';
 
 const DYNAMIC_PROGRAM_MAP = [
@@ -153,9 +153,9 @@ for (const record of mondayAdmissionsEvidence) {
           quantitativeMinRequirement: null,
           englishMinRequirement: null,
           specificAdmissionNotes: record.limitations ? [...record.limitations] : [],
-          officialCalculatorUrl: record.officialUrls[0] || '',
-          programUrl: record.officialUrls[0] || undefined,
-          calculatorUrl: record.officialUrls.find((url) => url.includes('calculator')) || undefined,
+          officialCalculatorUrl: resolveUrl(record.displayName, record.officialUrls) || '',
+          programUrl: resolveUrl(record.displayName, record.officialUrls),
+          calculatorUrl: record.officialUrls.find((url) => url.includes('calculator') && !url.includes('yoram.walla.co.il')),
           programDescription: record.decisionReason || undefined,
           admissionFacts,
         },

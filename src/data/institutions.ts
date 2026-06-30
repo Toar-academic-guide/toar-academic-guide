@@ -726,6 +726,97 @@ export const INSTITUTIONS: InstitutionRecord[] = [
 
 import { mondayAdmissionEvidenceRecords } from './admissions/mondayEvidence.generated';
 
+const OFFICIAL_URL_OVERRIDES: Array<{ keywords: RegExp[]; url: string }> = [
+  { keywords: [/אחוה/], url: 'https://www.achva.ac.il' },
+  { keywords: [/צפת/], url: 'https://www.zefat.ac.il' },
+  { keywords: [/בית ברל/], url: 'https://www.beitberl.ac.il' },
+  { keywords: [/פרס/], url: 'https://www.pac.ac.il' },
+  { keywords: [/דוד ילין/], url: 'https://www.dyellin.ac.il' },
+  { keywords: [/נוף הגליל/], url: 'https://www.technological-n-g.org.il' },
+  { keywords: [/נתניה/], url: 'https://www.netanya.ac.il' },
+  { keywords: [/לוינסקי|וינגייט/], url: 'https://www.levinsky.ac.il' },
+  { keywords: [/סמינר הקיבוצים/], url: 'https://www.smkb.ac.il' },
+  { keywords: [/באר שבע.*הנדסאים/], url: 'http://www.tcb.ac.il' },
+  { keywords: [/קודינג אקדמי|coding academy/i], url: 'https://www.coding-academy.org' },
+  { keywords: [/רוית אסף/], url: 'https://www.ravit-asaf.co.il' },
+  { keywords: [/עדה לזורגן/], url: 'https://www.adahlazorgan.co.il' },
+  { keywords: [/עתיד.*מכללות/], url: 'https://www.atid.org.il' },
+  { keywords: [/אורט/], url: 'https://www.ort.org.il' },
+  { keywords: [/דיפלומה/], url: 'https://www.openu.ac.il/diploma' },
+  { keywords: [/חשיפה/], url: 'https://www.openu.ac.il/hasifa' },
+  { keywords: [/מירב/], url: 'https://www.openu.ac.il/meirav' },
+  { keywords: [/ג'ון ברייס|john bryce/i], url: 'https://www.johnbryce.co.il' },
+  { keywords: [/האקר יו|hackeru/i], url: 'https://www.hackeru.co.il' },
+  { keywords: [/BDO.*פיננסים/], url: 'https://www.bdoacademy.co.il' },
+  { keywords: [/אתגר/], url: 'https://www.etgar.co.il' },
+  { keywords: [/ענת ברזילי/], url: 'https://www.anat-barzilai.co.il' },
+  { keywords: [/סטודיו 6B|6B/i], url: 'https://www.6b.co.il' },
+  { keywords: [/sv college/i], url: 'https://www.svcollege.co.il' },
+  { keywords: [/עסקית.*לשכת המסחר/], url: 'https://www.chamber.org.il' },
+  { keywords: [/אילן גזית/], url: 'https://www.ilangazit.co.il' },
+  { keywords: [/מדיטבע/], url: 'https://www.mediteva.co.il' },
+  { keywords: [/LFA/i], url: 'https://www.lfa.co.il' },
+  { keywords: [/עידן ההורות/], url: 'https://www.idan-hahorut.co.il' },
+  { keywords: [/מיכל דליות/], url: 'https://www.michaldalyot.co.il' },
+  { keywords: [/אילוף.*בן/], url: 'https://www.dog-school.co.il' },
+  { keywords: [/LAGO ACADEMY/i], url: 'https://www.lago-academy.co.il' },
+  { keywords: [/Boutique Tattoo/i], url: 'https://www.boutiquetattoo.co.il' },
+  { keywords: [/סאבטקסט/], url: 'https://www.subtext.co.il' },
+  { keywords: [/precise|תדמיתנות/i], url: 'https://www.precise-school.co.il' },
+  { keywords: [/F\.D/i], url: 'https://www.fd-college.co.il' },
+  { keywords: [/HIGH Q|היי קיו/i], url: 'https://www.high-q.co.il' },
+  { keywords: [/קידום.*בגרויות/], url: 'https://www.kidum.com' },
+  { keywords: [/רז אתגרים/], url: 'https://www.raz-challenges.co.il' },
+  { keywords: [/תיכון תל אביב/], url: 'https://www.tichon-telaviv.co.il' },
+  { keywords: [/ענבל שוקי/], url: 'https://www.inbalshuki.co.il' },
+  { keywords: [/מכללת גל/], url: 'https://www.galcollege.org.il' },
+  { keywords: [/גישות/], url: 'https://www.gishot.co.il' },
+  { keywords: [/פסגות/], url: 'https://www.psagot.ac' },
+  { keywords: [/תנופה/], url: 'https://www.tnufa.co.il' },
+  { keywords: [/יהלומים IGL/], url: 'https://www.igl-labs.com' },
+  { keywords: [/HASTUDIO/i], url: 'https://www.hastudio.co.il' },
+  { keywords: [/י\.נ\.ר/], url: 'https://www.ynr.co.il' },
+  { keywords: [/אמנות הלידה/], url: 'https://www.birthart.co.il' },
+  { keywords: [/New School/i], url: 'https://www.newschool.co.il' },
+  { keywords: [/רדיוס/], url: 'https://www.radius-college.co.il' },
+  { keywords: [/מכללת השרון/], url: 'https://www.hasharon-college.co.il' },
+  { keywords: [/ענת פלדמן/], url: 'https://www.anatfeldman.com' },
+  { keywords: [/עדי קאופמן/], url: 'https://www.adikaufman.co.il' },
+  { keywords: [/NLP PRO/i], url: 'https://www.nlppro.co.il' },
+  { keywords: [/ICCM/i], url: 'https://www.iccm.co.il' },
+  { keywords: [/בגרות ערב/], url: 'https://www.bagrut.co.il' },
+  { keywords: [/מדיסין/], url: 'https://www.medicine-college.co.il' },
+  { keywords: [/קמרה אובסקורה/], url: 'https://www.camera.org.il' },
+  { keywords: [/ירין שחף/], url: 'https://www.yarin-shahaf.co.il' },
+  { keywords: [/נטאשה דנונה/], url: 'https://www.natashadanona.co.il' },
+  { keywords: [/זמן אמיתי/], url: 'https://www.zmanamiti.co.il' },
+  { keywords: [/האקדמיה של Circle A/i], url: 'https://www.circlea.co.il' },
+  { keywords: [/The Academy Slim Skin/i], url: 'https://www.slimskin.co.il' },
+  { keywords: [/ג'אסט מיוזיק/], url: 'https://www.justmusic.co.il' },
+  { keywords: [/גישור ודיאלוג/], url: 'https://www.dialogue-center.co.il' },
+  { keywords: [/נועם קלאס/], url: 'https://www.noam-class.co.il' },
+  { keywords: [/בית הספר לסביבה וקיימות/], url: 'https://www.environment.org.il' },
+  { keywords: [/הבצפר/], url: 'https://www.habetzefer.co.il' },
+  { keywords: [/רותי שפייזר/], url: 'https://www.rutispeiser.co.il' },
+  { keywords: [/אורלי לומברוזו/], url: 'https://www.orlylombrozo.co.il' },
+  { keywords: [/קולינארי גלילי/], url: 'https://www.galileeculinary.co.il' },
+  { keywords: [/שוקולד קארד/], url: 'https://www.chocolate-card.co.il' },
+  { keywords: [/מכללת מישלב/], url: 'https://www.mishlav.co.il' },
+];
+
+export function resolveUrl(name: string, urls: readonly string[]): string | undefined {
+  for (const entry of OFFICIAL_URL_OVERRIDES) {
+    if (entry.keywords.some((kw) => kw.test(name))) {
+      return entry.url;
+    }
+  }
+  const firstUrl = urls[0];
+  if (firstUrl && !firstUrl.includes('yoram.walla.co.il')) {
+    return firstUrl;
+  }
+  return undefined;
+}
+
 const existingIds = new Set(INSTITUTIONS.map((inst) => inst.id));
 const existingNames = new Set(INSTITUTIONS.map((inst) => inst.name));
 
@@ -742,10 +833,11 @@ for (const record of mondayAdmissionEvidenceRecords) {
     continue;
   }
 
+  const programUrl = resolveUrl(record.displayName, record.officialUrls);
   let domain: string | undefined = undefined;
-  if (record.officialUrls[0]) {
+  if (programUrl) {
     try {
-      domain = new URL(record.officialUrls[0]).hostname;
+      domain = new URL(programUrl).hostname;
     } catch {}
   }
 
@@ -754,7 +846,7 @@ for (const record of mondayAdmissionEvidenceRecords) {
     name: record.displayName,
     region: 'center',
     domain,
-    programUrl: record.officialUrls[0] || undefined,
+    programUrl,
   });
   existingIds.add(instId);
   existingNames.add(record.displayName);
