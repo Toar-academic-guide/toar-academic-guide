@@ -113,6 +113,15 @@ describe('/internal/data-health page', () => {
         totalsByStatus: {},
         rows: [],
       },
+      mondayEvidence: {
+        totalItems: 212,
+        catalogueMatched: 34,
+        decisionCapable: 5,
+        trackedMissingRule: 4,
+        blocked: 2,
+        openAdmission: 1,
+        manualOrEligible: 178,
+      },
     });
 
     render(await DataHealthPage());
