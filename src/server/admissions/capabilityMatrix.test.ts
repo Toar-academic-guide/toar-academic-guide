@@ -172,7 +172,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     expect(shenkarEntry?.capability).toBe('manual_gate');
   });
 
-  it('returns requirements_only for MTA', () => {
+  it('promotes Monday manual evidence for MTA to manual_gate', () => {
     const program = makeProgram({
       linkedInstitutionIds: ['mta'],
     });
@@ -183,10 +183,10 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
 
     const mtaEntry = entries.find((e) => e.institutionId === 'mta');
-    expect(mtaEntry?.capability).toBe('requirements_only');
+    expect(mtaEntry?.capability).toBe('manual_gate');
   });
 
-  it('returns blocked for BIU and Ariel', () => {
+  it('returns tracked missing-rule work for BIU and Ariel when Monday evidence names the blocker', () => {
     const program = makeProgram({
       linkedInstitutionIds: ['biu', 'ariel'],
     });
@@ -198,11 +198,11 @@ describe('buildAdmissionsCapabilityMatrix', () => {
 
     const biuEntry = entries.find((e) => e.institutionId === 'biu');
     const arielEntry = entries.find((e) => e.institutionId === 'ariel');
-    expect(biuEntry?.capability).toBe('blocked');
-    expect(arielEntry?.capability).toBe('blocked');
+    expect(biuEntry?.capability).toBe('tracked_missing_rule');
+    expect(arielEntry?.capability).toBe('tracked_missing_rule');
   });
 
-  it('returns score_only for Technion and BGU partial sources', () => {
+  it('returns tracked missing-rule work for Technion and BGU partial sources', () => {
     const program = makeProgram({
       linkedInstitutionIds: ['technion', 'bgu'],
     });
@@ -214,14 +214,16 @@ describe('buildAdmissionsCapabilityMatrix', () => {
 
     const technionEntry = entries.find((e) => e.institutionId === 'technion');
     const bguEntry = entries.find((e) => e.institutionId === 'bgu');
-    expect(technionEntry?.capability).toBe('score_only');
-    expect(bguEntry?.capability).toBe('score_only');
+    expect(technionEntry?.capability).toBe('tracked_missing_rule');
+    expect(technionEntry?.evidence?.missingData).toContain('threshold_or_status');
+    expect(bguEntry?.capability).toBe('tracked_missing_rule');
+    expect(bguEntry?.evidence?.missingData).toContain('threshold_or_status');
   });
 
-  it('returns estimated for Reichman, Afeka, and HIT with partial source targets and thresholds', () => {
+  it('returns estimated for Afeka and HIT with partial source targets and thresholds', () => {
     const program = makeProgram({
-      linkedInstitutionIds: ['reichman', 'afeka', 'hit'],
-      thresholds: { reichman: 500, afeka: 500, hit: 550 },
+      linkedInstitutionIds: ['afeka', 'hit'],
+      thresholds: { afeka: 500, hit: 550 },
     });
 
     const entries = buildAdmissionsCapabilityMatrix({
@@ -229,15 +231,16 @@ describe('buildAdmissionsCapabilityMatrix', () => {
       institutions: INSTITUTIONS,
     });
 
-    for (const id of ['reichman', 'afeka', 'hit']) {
+    for (const id of ['afeka', 'hit']) {
       const entry = entries.find((e) => e.institutionId === id);
       expect(entry?.capability).toBe('estimated');
     }
   });
 
-  it('returns score_only when a partial source target exists but no threshold is set', () => {
+  it('returns tracked missing-rule work when Reichman partial evidence has no verified official threshold', () => {
     const program = makeProgram({
       linkedInstitutionIds: ['reichman'],
+      thresholds: { reichman: 500 },
     });
 
     const entries = buildAdmissionsCapabilityMatrix({
@@ -246,28 +249,30 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
 
     const entry = entries.find((e) => e.institutionId === 'reichman');
-    expect(entry?.capability).toBe('score_only');
+    expect(entry?.capability).toBe('tracked_missing_rule');
+    expect(entry?.evidence?.missingData).toContain('threshold_or_status');
   });
 
   it('returns missing for an institution with no source target and no calculator config', () => {
+    const unmappedInstitutionId = 'unmapped_institution' as CatalogueInstitution['id'];
     const program = makeProgram({
-      linkedInstitutionIds: ['bezalel'],
+      linkedInstitutionIds: [unmappedInstitutionId],
     });
 
-    const bezalelInstitution: CatalogueInstitution = {
-      id: 'bezalel',
-      name: 'Bezalel',
+    const unmappedInstitution: CatalogueInstitution = {
+      id: unmappedInstitutionId,
+      name: 'Unmapped Institution',
       region: 'center',
-      domain: 'bezalel.ac.il',
-      universityId: 'bezalel',
+      domain: 'unmapped.example',
+      universityId: unmappedInstitutionId,
     };
 
     const entries = buildAdmissionsCapabilityMatrix({
       program,
-      institutions: [...INSTITUTIONS, bezalelInstitution],
+      institutions: [...INSTITUTIONS, unmappedInstitution],
     });
 
-    const entry = entries.find((e) => e.institutionId === 'bezalel');
+    const entry = entries.find((e) => e.institutionId === unmappedInstitutionId);
     expect(entry?.capability).toBe('missing');
   });
 

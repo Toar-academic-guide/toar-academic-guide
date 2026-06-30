@@ -7,6 +7,7 @@ export type AdmissionsEvaluationKind =
   | 'exact'
   | 'estimated'
   | 'needs_input'
+  | 'tracked_missing_rule'
   | 'unsupported'
   | 'degraded'
   | 'open_admission'
@@ -21,6 +22,7 @@ export type AdmissionsEvaluationCapability =
   | 'stale'
   | 'missing'
   | 'needs_input'
+  | 'tracked_missing_rule'
   | 'unsupported'
   | 'open_admission'
   | 'manual_gate'
@@ -87,6 +89,10 @@ export interface AdmissionsEvaluationResult {
   threshold?: number | null;
   deltaNeeded?: DeltaNeeded;
   requiredInputs?: AdmissionsRequiredInput[];
+  evidenceItemId?: string;
+  evidenceItemName?: string;
+  missingData?: string[];
+  officialUrls?: string[];
   degradationReason?: string;
 }
 
