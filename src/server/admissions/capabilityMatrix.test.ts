@@ -281,7 +281,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     }
   });
 
-  it('returns tracked missing-rule work when Reichman partial evidence has no verified official threshold', () => {
+  it('promotes Reichman to manual_gate once the official bagrut-average rule is verified', () => {
     const program = makeProgram({
       linkedInstitutionIds: ['reichman'],
       thresholds: { reichman: 500 },
@@ -293,8 +293,9 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
 
     const entry = entries.find((e) => e.institutionId === 'reichman');
-    expect(entry?.capability).toBe('tracked_missing_rule');
-    expect(entry?.evidence?.missingData).toContain('threshold_or_status');
+    expect(entry?.capability).toBe('manual_gate');
+    expect(entry?.evidence?.publicBucket).toBe('eligible_with_manual_gate');
+    expect(entry?.evidence?.officialVerificationStatus).toBe('partial_official_rule_verified');
   });
 
   it('returns missing for an institution with no source target and no calculator config', () => {

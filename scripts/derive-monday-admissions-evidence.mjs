@@ -332,7 +332,8 @@ function cleanUrls(urls) {
             .replace(/[.]+$/g, '')
             .trim(),
         )
-        .filter((value) => /^https?:\/\//.test(value)),
+        .filter((value) => /^https?:\/\//.test(value))
+        .filter((value) => !/yoram\.walla\.co\.il/i.test(value)),
     ),
   ].sort();
 }

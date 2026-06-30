@@ -69,6 +69,82 @@
           "notes": "הנדסה ביו-רפואית"
         }
       ]
+    },
+    {
+      "itemId": "12220699692",
+      "capabilityCandidate": "eligible_with_manual_gate",
+      "publicBucket": "eligible_with_manual_gate",
+      "ruleStatus": "manual_or_eligibility_rule_available",
+      "officialVerificationStatus": "partial_official_rule_verified",
+      "confidence": "high",
+      "tags": ["official_source_verified", "bagrut_average_gate"],
+      "missingData": [],
+      "limitations": [
+        "Reichman uses a bagrut-average gate (ממוצע בגרות 100 ומעלה לקבלה ישירה) plus an adapted-score formula for ranking, not a published per-program sekhem threshold.",
+        "The official calculator is a client-side ASP.NET WebForms bagrut-average helper; per-program adapted-score cutoffs are not published as a static table and remain behind the calculator."
+      ],
+      "decisionReason": "Official Reichman admissions pages verify the rule: ממוצע בגרות 100 ומעלה לקבלה ישירה במסלול המבוקש, plus דרישת אנגלית. The reverse-engineered adapted-score formula is Adapted = 4.812 × BagrutAverage + 0.5131 × Psychometric − 163.19, but no per-program adapted-score cutoff is published statically, so the product bucket is eligible-to-apply rather than accepted/below.",
+      "nextAction": "הגישו מועמדות דרך המרכז האישי; ודאו עמידה בממוצע בגרות 100+ וברמת האנגלית הנדרשת למסלול.",
+      "officialUrls": [
+        "https://www.runi.ac.il/admissions/undergraduate/",
+        "https://www.runi.ac.il/admissions/undergraduate/calculator",
+        "https://www.runi.ac.il/admissions/undergraduate/categories"
+      ]
+    },
+    {
+      "itemId": "12220699687",
+      "ruleStatus": "needs_threshold_or_status",
+      "officialVerificationStatus": "needs_official_threshold",
+      "confidence": "medium",
+      "tags": ["official_source_verified", "score_only_no_cutoff"],
+      "missingData": ["threshold_or_status"],
+      "limitations": [
+        "Verified: the official BGU calculator endpoints (!rg.acc_SubmitSekem and variants) return a weighted score only; admission cutoff, rejection cutoff, and explicit pass/fail fields are all N/A.",
+        "BGU columns confirm סף הקבלה משתנה לפי המחלקה והתוכנית, so per-program thresholds are not published by the calculator and must come from an alternate official source."
+      ],
+      "decisionReason": "Official BGU calculator verified to compute a weighted score but returns no threshold or admission status. Without an official per-program cutoff, a yes/no decision cannot be reproduced server-side.",
+      "nextAction": "Find an alternate official BGU source that publishes per-program admission thresholds/status (e.g. department pages or a ספי קבלה PDF) before promoting BGU to decision-capable.",
+      "officialUrls": [
+        "https://bgu4u.bgu.ac.il/html/average_calc/index.php",
+        "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem",
+        "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem"
+      ]
+    },
+    {
+      "itemId": "12220680983",
+      "ruleStatus": "blocked_official_source",
+      "officialVerificationStatus": "blocked_needs_alternate_official_source",
+      "confidence": "medium",
+      "tags": ["official_source_verified", "radware_blocked"],
+      "missingData": ["automation_or_alternate_official_source"],
+      "limitations": [
+        "Verified: Ariel's calculator (pniot.ariel.ac.il) is protected by Radware WAF and requires a stateful two-step browser session with valid tracking cookies; plain HTTP reproduction returns a 247 challenge.",
+        "Browser automation (Playwright/Puppeteer) is required to obtain cookies and reproduce the calculation; no alternate static official threshold page was found."
+      ],
+      "decisionReason": "Official Ariel calculator verified to be Radware-protected and stateful; programmatic reproduction without a browser engine is not possible.",
+      "nextAction": "Move Ariel to a browser-automation lane (Hermes/VPS) or find an alternate official Ariel admissions page that publishes thresholds statically.",
+      "officialUrls": [
+        "https://pniot.ariel.ac.il/projects/tzmm/NewCalcMark/",
+        "https://pniot.ariel.ac.il/projects/tzmm/NewCalcMark/CalcMark.asp"
+      ]
+    },
+    {
+      "itemId": "12220699688",
+      "ruleStatus": "blocked_official_source",
+      "officialVerificationStatus": "blocked_needs_alternate_official_source",
+      "confidence": "medium",
+      "tags": ["official_source_verified", "radware_blocked"],
+      "missingData": ["automation_or_alternate_official_source"],
+      "limitations": [
+        "Verified: Bar-Ilan's calculator (shoham.biu.ac.il) is protected by Radware Bot Manager with hCaptcha; both /registration and /registration-and-admission/information/general-admission-req return a Radware Captcha page for non-browser clients.",
+        "The calculator is an ASP.NET AJAX UpdatePanel postback requiring __VIEWSTATE/__EVENTVALIDATION plus valid Radware tracking cookies; CAPTCHA solving or a browser engine is mandatory."
+      ],
+      "decisionReason": "Official Bar-Ilan admissions pages verified to be Radware/hCaptcha-protected; programmatic reproduction without CAPTCHA solving is not possible.",
+      "nextAction": "Move Bar-Ilan to a browser-automation lane with CAPTCHA handling, or find an alternate official BIU page that publishes thresholds statically.",
+      "officialUrls": [
+        "https://shoham.biu.ac.il/kabala/Psychometric.aspx",
+        "https://www.biu.ac.il/registration-and-admission/information/general-admission-req"
+      ]
     }
   ]
 }
