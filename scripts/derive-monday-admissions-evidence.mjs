@@ -169,6 +169,34 @@ async function readOverrides(inputPath) {
   return new Map(parsed.overrides.map((override) => [override.itemId, override]));
 }
 
+function extractAdmissionsCriteria(item) {
+  const columnText = (item.columns ?? [])
+    .map((c) => c.text)
+    .filter(Boolean)
+    .join('\n');
+  const updateText = (item.updates ?? [])
+    .flatMap((u) => [u.textBody, ...(u.replies ?? []).map((r) => r.textBody)])
+    .filter(Boolean)
+    .join('\n');
+  const searchable = `${item.name}\n${columnText}\n${updateText}`;
+  const text = searchable.toLowerCase();
+
+  const tags = item.evidence?.tags ?? [];
+  const has = (tag) => tags.includes(tag);
+
+  const interviewNeeded = has('manual_gate') && /ראיון|ועדת קבלה|מיונים|interview|committee/i.test(text);
+  const portfolioNeeded = has('manual_gate') && /תיק עבודות|portfolio/i.test(text);
+  const noBagrutNeeded = has('open_admission') || has('no_formal_grade_gate') || /אין צורך בבגרות|ללא בגרות|ללא תעודת בגרות|no bagrut/i.test(text);
+  const noPsychometricNeeded = has('open_admission') || has('no_formal_grade_gate') || /אין צורך בפסיכומטרי|ללא פסיכומטרי|no psychometric/i.test(text);
+
+  return {
+    interviewNeeded,
+    portfolioNeeded,
+    noBagrutNeeded,
+    noPsychometricNeeded,
+  };
+}
+
 function deriveRecord(item) {
   const evidence = item.evidence ?? {};
   const capabilityCandidate = evidence.capabilityCandidate ?? 'unknown';
@@ -185,6 +213,7 @@ function deriveRecord(item) {
   const itemNumber = extractItemNumber(item.name);
   const displayName = stripItemNumber(item.name);
   const catalogueInstitutionId = KNOWN_CATALOGUE_INSTITUTION_IDS.get(item.name) ?? null;
+  const criteria = extractAdmissionsCriteria(item);
 
   return {
     itemId: item.id,
@@ -209,6 +238,10 @@ function deriveRecord(item) {
     limitations: [...(evidence.limitations ?? [])],
     decisionReason: evidence.decisionReason ?? 'No derived decision reason.',
     nextAction: nextActionFor({ capabilityCandidate, publicBucket, ruleStatus, missingData, urls }),
+    interviewNeeded: criteria.interviewNeeded ? true : undefined,
+    portfolioNeeded: criteria.portfolioNeeded ? true : undefined,
+    noBagrutNeeded: criteria.noBagrutNeeded ? true : undefined,
+    noPsychometricNeeded: criteria.noPsychometricNeeded ? true : undefined,
   };
 }
 
@@ -224,6 +257,10 @@ function applyOverride(record, override) {
     'confidence',
     'decisionReason',
     'nextAction',
+    'interviewNeeded',
+    'portfolioNeeded',
+    'noBagrutNeeded',
+    'noPsychometricNeeded',
   ]) {
     if (override[key] !== undefined) {
       merged[key] = override[key];

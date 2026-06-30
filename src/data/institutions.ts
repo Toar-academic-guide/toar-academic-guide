@@ -724,6 +724,42 @@ export const INSTITUTIONS: InstitutionRecord[] = [
   },
 ];
 
+import { mondayAdmissionEvidenceRecords } from './admissions/mondayEvidence.generated';
+
+const existingIds = new Set(INSTITUTIONS.map((inst) => inst.id));
+const existingNames = new Set(INSTITUTIONS.map((inst) => inst.name));
+
+for (const record of mondayAdmissionEvidenceRecords) {
+  if (record.catalogueInstitutionId && existingIds.has(record.catalogueInstitutionId as InstitutionId)) {
+    continue;
+  }
+  if (existingNames.has(record.displayName)) {
+    continue;
+  }
+
+  const instId = (record.catalogueInstitutionId || `mon_${record.itemId}`) as InstitutionId;
+  if (existingIds.has(instId)) {
+    continue;
+  }
+
+  let domain: string | undefined = undefined;
+  if (record.officialUrls[0]) {
+    try {
+      domain = new URL(record.officialUrls[0]).hostname;
+    } catch {}
+  }
+
+  INSTITUTIONS.push({
+    id: instId,
+    name: record.displayName,
+    region: 'center',
+    domain,
+    programUrl: record.officialUrls[0] || undefined,
+  });
+  existingIds.add(instId);
+  existingNames.add(record.displayName);
+}
+
 // ── Lookup tables ─────────────────────────────────────────────────────────────
 
 /** O(1) lookup by InstitutionId slug */
