@@ -343,7 +343,8 @@ function evaluateNonExactResult(args: {
   }
 
   if (entry.capability === 'open_admission') {
-    const defaultText = 'מוסד זה מציע אפיק קבלה פתוחה ללא צורך בציון פסיכומטרי או ממוצע בגרות מינימלי.';
+    const defaultText =
+      'מוסד זה מציע אפיק קבלה פתוחה ללא צורך בציון פסיכומטרי או ממוצע בגרות מינימלי.';
     const explanation = evidenceRecord?.decisionReason || defaultText;
     return {
       institution: publicInstitutionShape(institution),
@@ -367,7 +368,12 @@ function evaluateNonExactResult(args: {
     );
     const factsList = detail?.admissionFacts?.map((f) => f.description) ?? [];
     const notesList = detail?.specificAdmissionNotes ?? [];
-    const allRequirements = [...program.admissionRequirements, ...factsList, ...notesList, ...dynamicRequirements];
+    const allRequirements = [
+      ...program.admissionRequirements,
+      ...factsList,
+      ...notesList,
+      ...dynamicRequirements,
+    ];
 
     return {
       institution: publicInstitutionShape(institution),
@@ -393,7 +399,11 @@ function evaluateNonExactResult(args: {
         d.programUrl?.includes(institution.id),
     );
     const notesList = detail?.specificAdmissionNotes ?? [];
-    const allRequirements = [...(program.admissionRequirements ?? []), ...notesList, ...dynamicRequirements];
+    const allRequirements = [
+      ...(program.admissionRequirements ?? []),
+      ...notesList,
+      ...dynamicRequirements,
+    ];
 
     return {
       institution: publicInstitutionShape(institution),

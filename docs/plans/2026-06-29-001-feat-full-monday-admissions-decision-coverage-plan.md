@@ -375,11 +375,13 @@ The work should land in batches. The first batch creates the durable evidence/re
 - **Verification:** Component tests prove the labels and source copy for all public buckets.
 
 ### U10. Extract Admissions Criteria and Flags
+
 - **Goal:** Go over all 212 Monday items, scan updates/columns, and extract criteria (`interviewNeeded`, `portfolioNeeded`, `noBagrutNeeded`, `noPsychometricNeeded`, `openAdmission`) into the derived evidence.
 - **Files:** `scripts/derive-monday-admissions-evidence.mjs`, `src/data/admissions/mondayEvidence.ts`, `src/data/admissions/mondayEvidence.generated.ts`
 - **Approach:** Parse item text using regular expressions for gates (e.g. interview, portfolio) and eligibility (no bagrut/psychometric needed). Add these fields to the TypeScript interfaces and output them.
 
 ### U11. Dynamically Seed and Wire all 212 Institutions
+
 - **Goal:** Ingest all 212 institutions and link them to their offered programs (CS, EE, Psychology, etc.) dynamically during seed run.
 - **Files:** `src/db/seeds/catalogueSeed.ts`, `src/server/admissions/evaluator.ts`, `src/server/admissions/capabilityMatrix.ts`
 - **Approach:** Update seeding to insert all 212 records as institutions. Parse their names/updates to automatically map and link them to academic/vocational programs. Generate respective admissions facts dynamically using the extracted boolean flags. Make sure the evaluator renders precise Hebrew copy for these dynamic rules.
