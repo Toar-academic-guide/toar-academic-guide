@@ -99,6 +99,27 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
           </Panel>
         </section>
 
+        <section className="rounded-[1.75rem] border border-slate-950/10 bg-white p-6 shadow-sm">
+          <h2 className="text-2xl font-black text-slate-950">
+            Monday admissions evidence coverage
+          </h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Coverage of all {report.mondayEvidence.totalItems} Monday institution items across
+            decision-capable, manual/eligible, open, and tracked missing-rule buckets.
+          </p>
+          <DefinitionGrid
+            items={[
+              ['Total Monday items', report.mondayEvidence.totalItems],
+              ['Catalogue-matched', report.mondayEvidence.catalogueMatched],
+              ['Decision-capable', report.mondayEvidence.decisionCapable],
+              ['Manual / eligible', report.mondayEvidence.manualOrEligible],
+              ['Open admission', report.mondayEvidence.openAdmission],
+              ['Tracked missing-rule', report.mondayEvidence.trackedMissingRule],
+              ['Blocked official source', report.mondayEvidence.blocked],
+            ]}
+          />
+        </section>
+
         <section className="rounded-[1.75rem] border border-red-900/15 bg-red-50 p-6 shadow-sm">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>

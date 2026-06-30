@@ -24,6 +24,7 @@ import {
 import type { SourceFreshnessStateRow } from '@/db/types';
 import { buildAdmissionsCapabilityMatrix } from '@/server/admissions/capabilityMatrix';
 import { evaluateCatalogueReadiness } from '@/server/catalogue/queries';
+import { mondayAdmissionsEvidence } from '@/data/admissions/mondayEvidence';
 import {
   parseSourceFreshnessProposedValue,
   type SourceFreshnessProposedValue,
@@ -94,6 +95,17 @@ export interface DataHealthReadyReport {
     totalsByStatus: Partial<Record<DashboardSourceFreshnessStatus, number>>;
     rows: SourceFreshnessSummary[];
   };
+  mondayEvidence: MondayEvidenceCoverage;
+}
+
+export interface MondayEvidenceCoverage {
+  totalItems: number;
+  catalogueMatched: number;
+  decisionCapable: number;
+  trackedMissingRule: number;
+  blocked: number;
+  openAdmission: number;
+  manualOrEligible: number;
 }
 
 export interface DataHealthRows {
@@ -596,6 +608,40 @@ export function summarizeDataHealthRows(
     ingestion: buildIngestionSummary(rows.ingestionJobs),
     reviewQueue: buildReviewQueueSummary(rows.reviewItems),
     freshness: buildSourceFreshnessSummary(rows, now),
+    mondayEvidence: buildMondayEvidenceCoverage(),
+  };
+}
+
+function buildMondayEvidenceCoverage(): MondayEvidenceCoverage {
+  const records = mondayAdmissionsEvidence;
+  const catalogueMatched = records.filter(
+    (record) => record.catalogueVisibility === 'catalogue_mapped',
+  ).length;
+  const decisionCapable = records.filter(
+    (record) => record.publicBucket === 'decision_capable',
+  ).length;
+  const trackedMissingRule = records.filter(
+    (record) => record.publicBucket === 'tracked_missing_rule',
+  ).length;
+  const blocked = records.filter(
+    (record) => record.ruleStatus === 'blocked_official_source',
+  ).length;
+  const openAdmission = records.filter((record) => record.publicBucket === 'open_admission').length;
+  const manualOrEligible = records.filter(
+    (record) =>
+      record.publicBucket === 'manual_gate' ||
+      record.publicBucket === 'eligible_with_manual_gate' ||
+      record.publicBucket === 'eligible_no_formal_grade_gate',
+  ).length;
+
+  return {
+    totalItems: records.length,
+    catalogueMatched,
+    decisionCapable,
+    trackedMissingRule,
+    blocked,
+    openAdmission,
+    manualOrEligible,
   };
 }
 

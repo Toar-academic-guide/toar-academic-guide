@@ -278,6 +278,55 @@ describe('evaluateAdmissionsForProgram', () => {
     );
   });
 
+  it('promotes Reichman to eligible_to_apply once the official bagrut-average rule is verified', async () => {
+    const reichmanCs: CatalogueProgram = {
+      id: 'reichman_cs',
+      name: 'מדעי המחשב',
+      institution: 'אוניברסיטת רייכמן',
+      institutionId: 'reichman',
+      type: 'academic',
+      category: 'מדעי המחשב',
+      profileScore: { AN: 5, TE: 5, CR: 1, SO: 1, LE: 1, OR: 3, DI: 5, ER: 4 },
+      admissionType: 'sekhem',
+      admissionRequirements: [],
+      thresholds: { reichman: 0 },
+      linkedInstitutionIds: ['reichman'],
+    };
+
+    const reichmanInstitution: CatalogueInstitution = {
+      id: 'reichman',
+      name: 'אוניברסיטת רייכמן',
+      region: 'center',
+      domain: 'runi.ac.il',
+      universityId: 'reichman',
+      calculatorConfig: {
+        formulaType: 'weighted_scaled',
+        scaleDescription: 'סקאלה מקומית',
+        sekhemWeight: { psy: 0.6, bag: 0.4 },
+      },
+    };
+
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'reichman_cs',
+        psychometric: 600,
+        bagrut: 95,
+      },
+      program: reichmanCs,
+      institutions: [...institutions, reichmanInstitution],
+    });
+
+    expect(report.results).toContainEqual(
+      expect.objectContaining({
+        linkedInstitutionId: 'reichman',
+        kind: 'manual_gate',
+        capability: 'manual_gate',
+        decision: 'eligible_to_apply',
+        confidence: 'high',
+      }),
+    );
+  });
+
   it('returns needs-input for Afeka when subject gates are missing', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {

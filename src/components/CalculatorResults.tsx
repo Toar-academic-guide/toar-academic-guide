@@ -154,6 +154,9 @@ export default function CalculatorResults({
           requirements_only_count: nextReport.results.filter(
             (result) => result.kind === 'requirements_only',
           ).length,
+          tracked_missing_rule_count: nextReport.results.filter(
+            (result) => result.kind === 'tracked_missing_rule',
+          ).length,
         });
       })
       .catch((requestError: unknown) => {
@@ -277,8 +280,16 @@ export default function CalculatorResults({
     openAdmission: { label: 'קבלה פתוחה', bg: 'bg-emerald-200' },
     manualGate: { label: 'אפשר להגיש מועמדות', bg: 'bg-indigo-200' },
     requirementsOnly: { label: 'תנאי קבלה', bg: 'bg-teal-200' },
+    trackedMissingRule: { label: 'חסר אימות רשמי', bg: 'bg-amber-200' },
     unsupported: { label: 'אין מספיק מידע', bg: 'bg-slate-300' },
   } as const;
+
+  const isCertificateProgram =
+    selectedProgram?.type === 'certificate' || selectedProgram?.type === 'vocational';
+
+  function acceptedLabel(): string {
+    return isCertificateProgram ? 'זכאי/ת להירשם' : 'מתקבל/ת';
+  }
 
   return (
     <div dir="rtl" className="min-h-screen bg-[#f5f4f0]">
@@ -429,23 +440,27 @@ export default function CalculatorResults({
                   const config =
                     result.kind === 'exact'
                       ? result.decision === 'accepted'
-                        ? STATUS_CONFIG.exactAccepted
+                        ? { ...STATUS_CONFIG.exactAccepted, label: acceptedLabel() }
                         : STATUS_CONFIG.exactBelow
                       : result.kind === 'estimated'
                         ? result.decision === 'accepted'
-                          ? STATUS_CONFIG.estimatedAccepted
+                          ? { ...STATUS_CONFIG.estimatedAccepted, label: acceptedLabel() }
                           : STATUS_CONFIG.estimatedBelow
                         : result.kind === 'needs_input'
                           ? STATUS_CONFIG.needsInput
                           : result.kind === 'degraded'
                             ? STATUS_CONFIG.degraded
                             : result.kind === 'open_admission'
-                              ? STATUS_CONFIG.openAdmission
+                              ? isCertificateProgram
+                                ? { ...STATUS_CONFIG.openAdmission, label: 'זכאי/ת להירשם' }
+                                : STATUS_CONFIG.openAdmission
                               : result.kind === 'manual_gate'
                                 ? STATUS_CONFIG.manualGate
                                 : result.kind === 'requirements_only'
                                   ? STATUS_CONFIG.requirementsOnly
-                                  : STATUS_CONFIG.unsupported;
+                                  : result.kind === 'tracked_missing_rule'
+                                    ? STATUS_CONFIG.trackedMissingRule
+                                    : STATUS_CONFIG.unsupported;
                   const institutionType = getInstitutionType(institution);
 
                   return (
@@ -474,6 +489,19 @@ export default function CalculatorResults({
                             {result.explanation}
                           </p>
                           <p className="mt-1 text-[11px] text-slate-500">{result.nextAction}</p>
+                          {result.kind === 'tracked_missing_rule' &&
+                          result.officialUrls &&
+                          result.officialUrls.length > 0 ? (
+                            <a
+                              href={result.officialUrls[0]}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              dir="ltr"
+                              className="mt-1 inline-block max-w-full truncate text-[11px] font-semibold text-[#4f46e5] underline decoration-[#a5b4fc] underline-offset-2 hover:text-[#3730a3]"
+                            >
+                              {result.officialUrls[0]}
+                            </a>
+                          ) : null}
                         </div>
                       </div>
                       <span
