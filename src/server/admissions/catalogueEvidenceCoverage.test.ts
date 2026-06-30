@@ -58,7 +58,7 @@ describe('catalogue admissions evidence coverage', () => {
     );
   });
 
-  it('turns formula-only calculator evidence into tracked missing-rule work', () => {
+  it('promotes officially verified Technion programme thresholds to decision coverage', () => {
     const entries = reconcileCatalogueAdmissionsEvidence({
       programs: staticPrograms,
       institutions: staticInstitutions,
@@ -69,6 +69,26 @@ describe('catalogue admissions evidence coverage', () => {
         expect.objectContaining({
           programId: 'technion_cs',
           institutionId: 'technion',
+          capability: 'estimated',
+          status: 'decision_rule_available',
+          trackingSource: 'monday_evidence',
+          missingData: ['manual_gate_for_medicine', 'unverified_data_science_program_match'],
+        }),
+      ]),
+    );
+  });
+
+  it('keeps formula-only calculator evidence tracked when the specific programme is not verified', () => {
+    const entries = reconcileCatalogueAdmissionsEvidence({
+      programs: staticPrograms,
+      institutions: staticInstitutions,
+    });
+
+    expect(entries).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          programId: 'bgu_cs',
+          institutionId: 'bgu',
           capability: 'tracked_missing_rule',
           status: 'tracked_missing_rule',
           trackingSource: 'monday_evidence',

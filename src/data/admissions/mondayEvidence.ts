@@ -26,6 +26,7 @@ export type MondayEvidenceRuleStatus =
   | 'open_or_no_grade_rule_available'
   | 'manual_or_eligibility_rule_available'
   | 'needs_threshold_or_status'
+  | 'needs_manual_gate_confirmation'
   | 'blocked_official_source'
   | 'needs_structured_requirements'
   | 'needs_official_url'
@@ -40,10 +41,20 @@ export type MondayEvidenceOfficialVerificationStatus =
   | 'monday_evidence_open_or_no_grade_rule_available'
   | 'monday_evidence_manual_or_eligibility_rule_available'
   | 'needs_official_threshold'
+  | 'partial_official_rule_verified'
   | 'blocked_needs_alternate_official_source'
   | 'needs_structured_requirements'
   | 'needs_official_url'
   | 'needs_official_rule_classification';
+
+export interface MondayAdmissionVerifiedProgramThreshold {
+  programId: string;
+  threshold: number;
+  sourceUrl: string;
+  sourceLabel: string;
+  verifiedAt: string;
+  notes?: string;
+}
 
 export interface MondayAdmissionEvidenceRecord {
   itemId: string;
@@ -68,6 +79,7 @@ export interface MondayAdmissionEvidenceRecord {
   limitations: readonly string[];
   decisionReason: string;
   nextAction: string;
+  verifiedProgramThresholds?: readonly MondayAdmissionVerifiedProgramThreshold[];
 }
 
 export const mondayAdmissionsEvidence = mondayAdmissionEvidenceRecords;

@@ -3,11 +3,13 @@ import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 
 const DEFAULT_INPUT = 'scratch/monday-admissions-updates.json';
+const DEFAULT_OVERRIDES_INPUT = 'src/data/admissions/mondayEvidenceOverrides.json';
 const DEFAULT_TS_OUTPUT = 'src/data/admissions/mondayEvidence.generated.ts';
 const DEFAULT_SUMMARY_OUTPUT = 'docs/admissions-coverage/monday-evidence-summary.md';
 const DEFAULT_MISSING_RULES_OUTPUT = 'docs/admissions-coverage/missing-official-rules.md';
 
 const EXPECTED_SCHEMA = 'toar/monday-admissions-updates-export.v1';
+const EXPECTED_OVERRIDES_SCHEMA = 'toar/monday-admissions-evidence-overrides.v1';
 
 const KNOWN_CATALOGUE_INSTITUTION_IDS = new Map([
   ['1. האוניברסיטה העברית בירושלים', 'huji'],
@@ -54,6 +56,7 @@ const KNOWN_CATALOGUE_INSTITUTION_IDS = new Map([
 function parseArgs(argv) {
   const args = {
     input: DEFAULT_INPUT,
+    overrides: DEFAULT_OVERRIDES_INPUT,
     tsOut: DEFAULT_TS_OUTPUT,
     summaryOut: DEFAULT_SUMMARY_OUTPUT,
     missingRulesOut: DEFAULT_MISSING_RULES_OUTPUT,
@@ -65,6 +68,12 @@ function parseArgs(argv) {
 
     if ((arg === '--input' || arg === '-i') && next) {
       args.input = next;
+      index += 1;
+      continue;
+    }
+
+    if (arg === '--overrides' && next) {
+      args.overrides = next;
       index += 1;
       continue;
     }
@@ -105,6 +114,7 @@ function usage() {
     '',
     'Options:',
     `  --input <path>              Raw Monday export. Default: ${DEFAULT_INPUT}`,
+    `  --overrides <path>          Verified evidence overrides. Default: ${DEFAULT_OVERRIDES_INPUT}`,
     `  --ts-out <path>             Generated TS evidence file. Default: ${DEFAULT_TS_OUTPUT}`,
     `  --summary-out <path>        Markdown summary. Default: ${DEFAULT_SUMMARY_OUTPUT}`,
     `  --missing-rules-out <path>  Markdown missing-rule report. Default: ${DEFAULT_MISSING_RULES_OUTPUT}`,
@@ -130,6 +140,33 @@ async function readRawExport(inputPath) {
   }
 
   return parsed;
+}
+
+async function readOverrides(inputPath) {
+  let parsed;
+  try {
+    parsed = JSON.parse(await readFile(inputPath, 'utf8'));
+  } catch (error) {
+    if (error && error.code === 'ENOENT') {
+      return new Map();
+    }
+
+    throw new Error(
+      `Unable to read Monday evidence overrides at ${inputPath}. ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+  }
+
+  if (parsed.$schema !== EXPECTED_OVERRIDES_SCHEMA || !Array.isArray(parsed.overrides)) {
+    throw new Error(
+      `Unexpected Monday evidence override schema. Expected ${EXPECTED_OVERRIDES_SCHEMA}, got ${
+        parsed.$schema ?? 'unknown'
+      }.`,
+    );
+  }
+
+  return new Map(parsed.overrides.map((override) => [override.itemId, override]));
 }
 
 function deriveRecord(item) {
@@ -173,6 +210,49 @@ function deriveRecord(item) {
     decisionReason: evidence.decisionReason ?? 'No derived decision reason.',
     nextAction: nextActionFor({ capabilityCandidate, publicBucket, ruleStatus, missingData, urls }),
   };
+}
+
+function applyOverride(record, override) {
+  if (!override) return record;
+
+  const merged = { ...record };
+  for (const key of [
+    'capabilityCandidate',
+    'publicBucket',
+    'ruleStatus',
+    'officialVerificationStatus',
+    'confidence',
+    'decisionReason',
+    'nextAction',
+  ]) {
+    if (override[key] !== undefined) {
+      merged[key] = override[key];
+    }
+  }
+
+  if (override.officialUrls) {
+    merged.officialUrls = cleanUrls([...record.officialUrls, ...override.officialUrls]);
+  }
+
+  if (override.tags) {
+    merged.tags = [...new Set([...record.tags, ...override.tags])].sort();
+  }
+
+  if (override.missingData) {
+    merged.missingData = [...new Set(override.missingData)].sort();
+  }
+
+  if (override.limitations) {
+    merged.limitations = [...new Set([...record.limitations, ...override.limitations])];
+  }
+
+  if (override.verifiedProgramThresholds) {
+    merged.verifiedProgramThresholds = [...override.verifiedProgramThresholds].sort((a, b) =>
+      a.programId.localeCompare(b.programId),
+    );
+  }
+
+  return merged;
 }
 
 function columnReader(columns) {
@@ -523,7 +603,10 @@ async function main() {
   }
 
   const raw = await readRawExport(args.input);
-  const records = sortRecords(raw.items.map(deriveRecord));
+  const overrides = await readOverrides(args.overrides);
+  const records = sortRecords(
+    raw.items.map((item) => applyOverride(deriveRecord(item), overrides.get(item.id))),
+  );
 
   await writeText(args.tsOut, await formatText(generatedTs(records, raw), 'typescript', args.tsOut));
   await writeText(

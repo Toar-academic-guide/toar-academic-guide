@@ -161,15 +161,17 @@ export function buildAdmissionsCapabilityMatrix(args: {
       };
     }
 
-    const evidenceCapability = capabilityFromEvidence(evidence);
-    if (evidenceCapability) {
-      return {
-        institutionId,
-        capability: evidenceCapability,
-        sourceTarget,
-        evidence,
-        freshnessState,
-      };
+    if (sourceTarget?.category !== 'partial') {
+      const evidenceCapability = capabilityFromEvidence(evidence);
+      if (evidenceCapability) {
+        return {
+          institutionId,
+          capability: evidenceCapability,
+          sourceTarget,
+          evidence,
+          freshnessState,
+        };
+      }
     }
 
     if (sourceTarget?.category === 'blocked') {
@@ -216,6 +218,32 @@ export function buildAdmissionsCapabilityMatrix(args: {
       const institution = institutions.find((entry) => entry.id === institutionId);
       const hasCalculatorConfig = Boolean(institution?.calculatorConfig);
       const hasThreshold = hasDecisionThreshold(program, institutionId);
+      const hasVerifiedProgramThreshold = hasVerifiedDecisionThreshold({
+        evidence,
+        program,
+        institutionId,
+      });
+
+      if (hasCalculatorConfig && hasThreshold && hasVerifiedProgramThreshold) {
+        return {
+          institutionId,
+          capability: 'estimated',
+          sourceTarget,
+          evidence,
+          freshnessState,
+        };
+      }
+
+      const evidenceCapability = capabilityFromEvidence(evidence);
+      if (evidenceCapability) {
+        return {
+          institutionId,
+          capability: evidenceCapability,
+          sourceTarget,
+          evidence,
+          freshnessState,
+        };
+      }
 
       if (
         REVIEWED_PARTIAL_ESTIMATE_INSTITUTIONS.has(institutionId) &&
@@ -285,6 +313,23 @@ export function buildAdmissionsCapabilityMatrix(args: {
       freshnessState,
     };
   });
+}
+
+function hasVerifiedDecisionThreshold(args: {
+  evidence: MondayAdmissionEvidenceRecord | undefined;
+  program: CatalogueProgram;
+  institutionId: string;
+}): boolean {
+  const { evidence, program, institutionId } = args;
+  const verifiedThreshold = evidence?.verifiedProgramThresholds?.find(
+    (entry) => entry.programId === program.id,
+  );
+
+  if (!verifiedThreshold) {
+    return false;
+  }
+
+  return program.thresholds?.[institutionId] === verifiedThreshold.threshold;
 }
 
 function selectBestEvidence(institutionId: string): MondayAdmissionEvidenceRecord | undefined {

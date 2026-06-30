@@ -40,23 +40,32 @@ describe('monday admissions evidence', () => {
     ]);
   });
 
-  it('keeps formula-only institutions in the tracked missing-rule queue', () => {
+  it('keeps partially verified institutions in the tracked missing-rule queue until all programs are closed', () => {
     const technion = getMondayAdmissionEvidenceByItemId('12220699650');
 
     expect(technion).toMatchObject({
       catalogueInstitutionId: 'technion',
       catalogueVisibility: 'catalogue_mapped',
       publicBucket: 'tracked_missing_rule',
-      ruleStatus: 'needs_threshold_or_status',
-      officialVerificationStatus: 'needs_official_threshold',
-      missingData: ['threshold_or_status'],
+      ruleStatus: 'needs_manual_gate_confirmation',
+      officialVerificationStatus: 'partial_official_rule_verified',
+      missingData: ['manual_gate_for_medicine', 'unverified_data_science_program_match'],
     });
+    expect(technion?.verifiedProgramThresholds).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          programId: 'technion_cs',
+          threshold: 91,
+          sourceUrl: expect.stringContaining('admissions.technion.ac.il'),
+        }),
+      ]),
+    );
 
     expect(getTrackedMissingAdmissionRules()).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
           itemId: '12220699650',
-          missingData: ['threshold_or_status'],
+          missingData: ['manual_gate_for_medicine', 'unverified_data_science_program_match'],
         }),
       ]),
     );
@@ -80,7 +89,7 @@ describe('monday admissions evidence', () => {
     expect(getMondayOfficialVerificationQueue()).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
-          itemName: '3. הטכניון - מכון טכנולוגי לישראל',
+          itemName: '4. אוניברסיטת בן-גוריון בנגב',
           officialVerificationStatus: 'needs_official_threshold',
         }),
         expect.objectContaining({
