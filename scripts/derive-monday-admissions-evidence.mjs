@@ -184,10 +184,17 @@ function extractAdmissionsCriteria(item) {
   const tags = item.evidence?.tags ?? [];
   const has = (tag) => tags.includes(tag);
 
-  const interviewNeeded = has('manual_gate') && /ראיון|ועדת קבלה|מיונים|interview|committee/i.test(text);
+  const interviewNeeded =
+    has('manual_gate') && /ראיון|ועדת קבלה|מיונים|interview|committee/i.test(text);
   const portfolioNeeded = has('manual_gate') && /תיק עבודות|portfolio/i.test(text);
-  const noBagrutNeeded = has('open_admission') || has('no_formal_grade_gate') || /אין צורך בבגרות|ללא בגרות|ללא תעודת בגרות|no bagrut/i.test(text);
-  const noPsychometricNeeded = has('open_admission') || has('no_formal_grade_gate') || /אין צורך בפסיכומטרי|ללא פסיכומטרי|no psychometric/i.test(text);
+  const noBagrutNeeded =
+    has('open_admission') ||
+    has('no_formal_grade_gate') ||
+    /אין צורך בבגרות|ללא בגרות|ללא תעודת בגרות|no bagrut/i.test(text);
+  const noPsychometricNeeded =
+    has('open_admission') ||
+    has('no_formal_grade_gate') ||
+    /אין צורך בפסיכומטרי|ללא פסיכומטרי|no psychometric/i.test(text);
 
   return {
     interviewNeeded,
@@ -645,7 +652,10 @@ async function main() {
     raw.items.map((item) => applyOverride(deriveRecord(item), overrides.get(item.id))),
   );
 
-  await writeText(args.tsOut, await formatText(generatedTs(records, raw), 'typescript', args.tsOut));
+  await writeText(
+    args.tsOut,
+    await formatText(generatedTs(records, raw), 'typescript', args.tsOut),
+  );
   await writeText(
     args.summaryOut,
     await formatText(markdownSummary(records, raw), 'markdown', args.summaryOut),

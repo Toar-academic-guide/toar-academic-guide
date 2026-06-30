@@ -817,10 +817,11 @@ export function resolveUrl(name: string, urls: readonly string[]): string | unde
       return entry.url;
     }
   }
-  
+
   const cleanedName = name.replace(/\\/g, '');
-  const compiledUrl = (resolvedUrlsFinal as Record<string, string | null>)[name] || 
-                      (resolvedUrlsFinal as Record<string, string | null>)[cleanedName];
+  const compiledUrl =
+    (resolvedUrlsFinal as Record<string, string | null>)[name] ||
+    (resolvedUrlsFinal as Record<string, string | null>)[cleanedName];
   if (compiledUrl) {
     return compiledUrl;
   }
@@ -836,7 +837,10 @@ const existingIds = new Set(INSTITUTIONS.map((inst) => inst.id));
 const existingNames = new Set(INSTITUTIONS.map((inst) => inst.name));
 
 for (const record of mondayAdmissionEvidenceRecords) {
-  if (record.catalogueInstitutionId && existingIds.has(record.catalogueInstitutionId as InstitutionId)) {
+  if (
+    record.catalogueInstitutionId &&
+    existingIds.has(record.catalogueInstitutionId as InstitutionId)
+  ) {
     continue;
   }
   if (existingNames.has(record.displayName)) {
@@ -875,7 +879,6 @@ for (const inst of INSTITUTIONS) {
     inst.programUrl = inst.domain.startsWith('http') ? inst.domain : `https://www.${inst.domain}`;
   }
 }
-
 
 // ── Lookup tables ─────────────────────────────────────────────────────────────
 

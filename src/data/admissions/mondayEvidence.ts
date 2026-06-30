@@ -86,7 +86,8 @@ export interface MondayAdmissionEvidenceRecord {
   noPsychometricNeeded?: boolean;
 }
 
-export const mondayAdmissionsEvidence: readonly MondayAdmissionEvidenceRecord[] = mondayAdmissionEvidenceRecords;
+export const mondayAdmissionsEvidence: readonly MondayAdmissionEvidenceRecord[] =
+  mondayAdmissionEvidenceRecords;
 
 export function getMondayAdmissionEvidenceByItemId(
   itemId: string,
@@ -99,8 +100,7 @@ export function getMondayAdmissionEvidenceByCatalogueInstitutionId(
 ): MondayAdmissionEvidenceRecord[] {
   return mondayAdmissionsEvidence.filter(
     (record) =>
-      record.catalogueInstitutionId === institutionId ||
-      `mon_${record.itemId}` === institutionId,
+      record.catalogueInstitutionId === institutionId || `mon_${record.itemId}` === institutionId,
   );
 }
 
