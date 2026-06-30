@@ -35,6 +35,10 @@ const INSTITUTIONS: CatalogueInstitution[] = [
     region: 'north',
     domain: 'technion.ac.il',
     universityId: 'technion',
+    calculatorConfig: {
+      formulaType: 'technion_linear',
+      scaleDescription: 'סקאלה 60-100',
+    },
   },
   { id: 'bgu', name: 'BGU', region: 'south', domain: 'bgu.ac.il', universityId: 'bgu' },
   { id: 'biu', name: 'BIU', region: 'center', domain: 'biu.ac.il', universityId: 'biu' },
@@ -215,9 +219,49 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     const technionEntry = entries.find((e) => e.institutionId === 'technion');
     const bguEntry = entries.find((e) => e.institutionId === 'bgu');
     expect(technionEntry?.capability).toBe('tracked_missing_rule');
-    expect(technionEntry?.evidence?.missingData).toContain('threshold_or_status');
+    expect(technionEntry?.evidence?.missingData).toContain('unverified_data_science_program_match');
     expect(bguEntry?.capability).toBe('tracked_missing_rule');
     expect(bguEntry?.evidence?.missingData).toContain('threshold_or_status');
+  });
+
+  it('promotes a Technion program only when its official threshold was verified', () => {
+    const program = makeProgram({
+      id: 'technion_cs',
+      linkedInstitutionIds: ['technion'],
+      thresholds: { technion: 91 },
+    });
+
+    const entries = buildAdmissionsCapabilityMatrix({
+      program,
+      institutions: INSTITUTIONS,
+    });
+
+    const technionEntry = entries.find((e) => e.institutionId === 'technion');
+    expect(technionEntry?.capability).toBe('estimated');
+    expect(technionEntry?.evidence?.verifiedProgramThresholds).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          programId: 'technion_cs',
+          threshold: 91,
+        }),
+      ]),
+    );
+  });
+
+  it('does not promote a Technion program when the catalogue threshold diverges from the verified source', () => {
+    const program = makeProgram({
+      id: 'technion_cs',
+      linkedInstitutionIds: ['technion'],
+      thresholds: { technion: 92 },
+    });
+
+    const entries = buildAdmissionsCapabilityMatrix({
+      program,
+      institutions: INSTITUTIONS,
+    });
+
+    const technionEntry = entries.find((e) => e.institutionId === 'technion');
+    expect(technionEntry?.capability).toBe('tracked_missing_rule');
   });
 
   it('returns estimated for Afeka and HIT with partial source targets and thresholds', () => {

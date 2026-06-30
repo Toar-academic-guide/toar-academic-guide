@@ -107,15 +107,17 @@ export const mondayAdmissionEvidenceRecords = [
     updateCount: 2,
     capabilityCandidate: 'score_only_or_formula_without_verified_cutoff',
     publicBucket: 'tracked_missing_rule',
-    ruleStatus: 'needs_threshold_or_status',
-    officialVerificationStatus: 'needs_official_threshold',
-    confidence: 'medium',
+    ruleStatus: 'needs_manual_gate_confirmation',
+    officialVerificationStatus: 'partial_official_rule_verified',
+    confidence: 'high',
     tags: [
       'client_side_formula',
       'official_api_or_endpoint',
+      'official_source_verified',
       'requirements_only',
       'reverse_engineering_report',
       'score_formula',
+      'threshold_or_cutoff',
       'update_evidence',
     ],
     officialUrls: [
@@ -123,12 +125,71 @@ export const mondayAdmissionEvidenceRecords = [
       'https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/',
       'https://admissions.technion.ac.il/wp-content/plugins/technion-calculators/technion-calculators-sum.php',
     ],
-    missingData: ['threshold_or_status'],
-    limitations: [],
+    missingData: ['manual_gate_for_medicine', 'unverified_data_science_program_match'],
+    limitations: [
+      'Official Technion table verifies several catalogue program thresholds, but medicine is only an invitation threshold for MoR/continued screening and must not be presented as final acceptance.',
+      'The catalogue data-science program name does not yet exactly match the official Technion table label and remains unpromoted until verified.',
+    ],
     decisionReason:
-      'Evidence contains a calculator/formula but no verified cutoff/status for an admission decision.',
+      'Official Technion admissions table, updated 2026-06-08, publishes admission-path score thresholds for mapped non-medicine catalogue programs.',
     nextAction:
-      'Extract the official admission threshold/status from https://admissions.technion.ac.il/calculator/ or another official source.',
+      'Keep using verified Technion thresholds for mapped non-medicine programs; separately model medicine as threshold plus MoR/manual gate and verify the data-science programme mapping.',
+    verifiedProgramThresholds: [
+      {
+        programId: 'technion_biomedical',
+        threshold: 87,
+        sourceUrl:
+          'https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/',
+        sourceLabel: 'טכניון: מסלולי הלימוד לפי אפיקי הקבלה',
+        verifiedAt: '2026-06-30',
+        notes: 'הנדסה ביו-רפואית',
+      },
+      {
+        programId: 'technion_civil',
+        threshold: 87,
+        sourceUrl:
+          'https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/',
+        sourceLabel: 'טכניון: מסלולי הלימוד לפי אפיקי הקבלה',
+        verifiedAt: '2026-06-30',
+        notes: 'הנדסה אזרחית',
+      },
+      {
+        programId: 'technion_cs',
+        threshold: 91,
+        sourceUrl:
+          'https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/',
+        sourceLabel: 'טכניון: מסלולי הלימוד לפי אפיקי הקבלה',
+        verifiedAt: '2026-06-30',
+        notes: 'מדעי המחשב',
+      },
+      {
+        programId: 'technion_ee',
+        threshold: 94,
+        sourceUrl:
+          'https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/',
+        sourceLabel: 'טכניון: מסלולי הלימוד לפי אפיקי הקבלה',
+        verifiedAt: '2026-06-30',
+        notes: 'הנדסת חשמל ומחשבים',
+      },
+      {
+        programId: 'technion_industrial',
+        threshold: 89,
+        sourceUrl:
+          'https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/',
+        sourceLabel: 'טכניון: מסלולי הלימוד לפי אפיקי הקבלה',
+        verifiedAt: '2026-06-30',
+        notes: 'הנדסת תעשייה וניהול',
+      },
+      {
+        programId: 'technion_me',
+        threshold: 92,
+        sourceUrl:
+          'https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/',
+        sourceLabel: 'טכניון: מסלולי הלימוד לפי אפיקי הקבלה',
+        verifiedAt: '2026-06-30',
+        notes: 'הנדסת מכונות',
+      },
+    ],
   },
   {
     itemId: '12220699687',
