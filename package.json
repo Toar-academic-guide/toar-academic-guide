@@ -60,13 +60,13 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "jsdom": "^29.1.1",
     "postgres": "^3.4.9",
-    "prettier": "^3.8.4",
+    "prettier": "^3.9.4",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "tsx": "^4.22.4",
     "typescript": "^6",
-    "typescript-eslint": "^8.62.0",
+    "typescript-eslint": "^8.62.1",
     "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^4.1.8"
   }
