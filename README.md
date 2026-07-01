@@ -11,6 +11,17 @@ npm run dev
 
 The test suite covers the current recommendation, bucket-list, and admission-calculation behavior before the catalogue moves behind the backend boundary.
 
+## URL model
+
+The app uses durable URLs for places that can be reopened, refreshed, or shared:
+
+- Public discovery pages: `/programs/[programId]` and `/institutions/[institutionId]`
+- Auth pages: `/login` and `/signup`, with safe local return destinations via `?next=/app/...`
+- Personal app areas: `/app/profile`, `/app/assessment`, `/app/recommendations`, `/app/calculator`, and `/app/saved-programs`
+- Internal operator tools remain under `/internal/*` and outside public navigation
+
+Unsaved transient state is intentionally not encoded in permanent URLs. In-progress assessment answers, one-off recommendation runs, calculator result snapshots, and account-owned saved-program data should not become shareable links until the app has explicit persistence and privacy rules for those resources.
+
 ## Environment
 
 ```bash

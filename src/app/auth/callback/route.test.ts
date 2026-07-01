@@ -40,11 +40,13 @@ describe('auth callback route', () => {
 
   it('redirects to a valid relative next path after a successful exchange', async () => {
     const response = await GET(
-      new Request('http://localhost:3000/auth/callback?code=test-code&next=%2Fbucket-list'),
+      new Request(
+        'http://localhost:3000/auth/callback?code=test-code&next=%2Fapp%2Fsaved-programs',
+      ),
     );
 
     expect(response.status).toBe(307);
-    expect(response.headers.get('location')).toBe('http://localhost:3000/bucket-list');
+    expect(response.headers.get('location')).toBe('http://localhost:3000/app/saved-programs');
   });
 
   it('redirects to an error fallback when the callback code is missing', async () => {
@@ -70,6 +72,17 @@ describe('auth callback route', () => {
     const response = await GET(
       new Request(
         'http://localhost:3000/auth/callback?code=test-code&next=https%3A%2F%2Fevil.example',
+      ),
+    );
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get('location')).toBe('http://localhost:3000/');
+  });
+
+  it('falls back to the default path when next targets internal operator pages', async () => {
+    const response = await GET(
+      new Request(
+        'http://localhost:3000/auth/callback?code=test-code&next=%2Finternal%2Fdata-health',
       ),
     );
 

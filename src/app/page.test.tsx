@@ -37,6 +37,12 @@ vi.mock('@/context/AuthContext', () => ({
   }),
 }));
 
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({
+    push: vi.fn(),
+  }),
+}));
+
 vi.mock('@/hooks/useUserProfile', () => ({
   useUserProfile: () => ({
     clearLocalProfileData: vi.fn(),
