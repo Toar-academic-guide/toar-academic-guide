@@ -31,11 +31,33 @@ describe('AuthScreen', () => {
   });
 
   it('starts Google sign-in from the secondary auth action', async () => {
-    render(<AuthScreen onBack={vi.fn()} onSuccess={vi.fn()} />);
+    render(<AuthScreen onBack={vi.fn()} onSuccess={vi.fn()} nextPath="/app/saved-programs" />);
 
     fireEvent.click(screen.getByRole('button', { name: 'המשך עם Google' }));
 
-    await waitFor(() => expect(mockAuth.signInWithGoogle).toHaveBeenCalledTimes(1));
+    await waitFor(() =>
+      expect(mockAuth.signInWithGoogle).toHaveBeenCalledWith('/app/saved-programs'),
+    );
+  });
+
+  it('passes the safe next path to the success callback after password login', async () => {
+    const onSuccess = vi.fn();
+
+    render(<AuthScreen onBack={vi.fn()} onSuccess={onSuccess} nextPath="/app/saved-programs" />);
+
+    fireEvent.change(screen.getByPlaceholderText('you@example.com'), {
+      target: { value: 'user@example.com' },
+    });
+    fireEvent.change(screen.getByPlaceholderText('••••••••'), { target: { value: 'secret123' } });
+    fireEvent.click(screen.getByRole('button', { name: 'התחבר' }));
+
+    await waitFor(() => expect(onSuccess).toHaveBeenCalledWith('/app/saved-programs'));
+  });
+
+  it('can open directly in signup mode', () => {
+    render(<AuthScreen initialMode="signup" onBack={vi.fn()} onSuccess={vi.fn()} />);
+
+    expect(screen.getByRole('heading', { name: 'יצירת חשבון' })).toBeTruthy();
   });
 
   it('passes names to signup and shows the confirmation handoff without logging in', async () => {

@@ -47,6 +47,11 @@ function AuthHarness({ children }: { children?: ReactNode }) {
       { type: 'button', onClick: () => void auth.signInWithGoogle() },
       'Google',
     ),
+    createElement(
+      'button',
+      { type: 'button', onClick: () => void auth.signInWithGoogle('/app/saved-programs') },
+      'Google saved',
+    ),
     children,
   );
 }
@@ -82,6 +87,16 @@ describe('AuthContext helpers', () => {
     expect(buildOAuthRedirectTo(null, 'http://localhost:3000')).toBe(
       'http://localhost:3000/auth/callback',
     );
+  });
+
+  it('adds a safe next path to the oauth callback redirect', () => {
+    expect(
+      buildOAuthRedirectTo(
+        'https://toar.example.com',
+        'http://localhost:3000',
+        '/app/saved-programs',
+      ),
+    ).toBe('https://toar.example.com/auth/callback?next=%2Fapp%2Fsaved-programs');
   });
 
   it('recognizes the fake-user duplicate signup response', () => {
@@ -143,6 +158,38 @@ describe('AuthContext helpers', () => {
         provider: 'google',
         options: {
           redirectTo: 'https://toar.example.com/auth/callback',
+          queryParams: {
+            prompt: 'select_account consent',
+          },
+        },
+      }),
+    );
+  });
+
+  it('starts Google OAuth with a safe return destination', async () => {
+    const mockSupabase = {
+      auth: {
+        getSession: vi.fn().mockResolvedValue({ data: { session: null } }),
+        onAuthStateChange: vi.fn().mockReturnValue({
+          data: { subscription: { unsubscribe: vi.fn() } },
+        }),
+        signInWithOAuth: vi.fn().mockResolvedValue({ error: null }),
+      },
+    };
+
+    hoistedMocks.createSupabaseBrowserClient.mockReturnValue(mockSupabase);
+
+    render(createElement(AuthProvider, null, createElement(AuthHarness)));
+
+    await waitFor(() => expect(mockSupabase.auth.getSession).toHaveBeenCalledTimes(1));
+
+    fireEvent.click(screen.getByRole('button', { name: 'Google saved' }));
+
+    await waitFor(() =>
+      expect(mockSupabase.auth.signInWithOAuth).toHaveBeenCalledWith({
+        provider: 'google',
+        options: {
+          redirectTo: 'https://toar.example.com/auth/callback?next=%2Fapp%2Fsaved-programs',
           queryParams: {
             prompt: 'select_account consent',
           },
