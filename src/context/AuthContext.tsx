@@ -5,6 +5,7 @@ import type { Session, SupabaseClient, User } from '@supabase/supabase-js';
 import posthog from 'posthog-js';
 
 import { createSupabaseBrowserClient, isSupabaseConfigured } from '@/lib/supabase/client';
+import { normalizeSafeNextPath, ROUTES } from '@/lib/routes';
 import { getSupabaseEnv } from '@/lib/supabase/env';
 
 interface AuthResult {
@@ -23,7 +24,7 @@ interface AuthContextValue {
   user: User | null;
   supabase: SupabaseClient | null;
   signInWithPassword: (email: string, password: string) => Promise<AuthResult>;
-  signInWithGoogle: () => Promise<AuthResult>;
+  signInWithGoogle: (nextPath?: string | null) => Promise<AuthResult>;
   signUp: (email: string, password: string, identity: SignUpProfileIdentity) => Promise<AuthResult>;
   signOut: () => Promise<void>;
 }
@@ -83,7 +84,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         return { error: error ? translateAuthError(error) : null };
       },
-      async signInWithGoogle() {
+      async signInWithGoogle(nextPath) {
         if (!supabase) {
           return { error: 'ההתחברות עדיין לא זמינה.' };
         }
@@ -92,6 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const redirectTo = buildOAuthRedirectTo(
           publicAppUrl,
           typeof window === 'undefined' ? null : window.location.origin,
+          nextPath,
         );
         const { error } = await supabase.auth.signInWithOAuth({
           provider: 'google',
@@ -201,6 +203,7 @@ export function buildEmailRedirectTo(
 export function buildOAuthRedirectTo(
   configuredAppUrl: string | null,
   browserOrigin: string | null,
+  nextPath?: string | null,
 ) {
   const candidate = resolveRedirectOrigin(configuredAppUrl, browserOrigin);
   if (!candidate) {
@@ -208,7 +211,14 @@ export function buildOAuthRedirectTo(
   }
 
   try {
-    return new URL('/auth/callback', candidate).toString();
+    const url = new URL('/auth/callback', candidate);
+    const safeNextPath = normalizeSafeNextPath(nextPath, { defaultPath: ROUTES.home });
+
+    if (safeNextPath !== ROUTES.home) {
+      url.searchParams.set('next', safeNextPath);
+    }
+
+    return url.toString();
   } catch {
     return undefined;
   }

@@ -13,6 +13,8 @@ export default tseslint.config(
       'coverage/**',
       'dist/**',
       'build/**',
+      '.agents/**',
+      '.worktrees/**',
       '*.config.{js,mjs,cjs}',
       'scripts/**',
       'scratch/**',
