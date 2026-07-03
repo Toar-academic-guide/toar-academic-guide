@@ -11,14 +11,21 @@ import NeoButton from './NeoButton';
 
 interface AuthScreenProps {
   onBack: () => void;
-  onSuccess: () => void;
+  onSuccess: (nextPath?: string) => void;
+  initialMode?: AuthMode;
+  nextPath?: string;
 }
 
 type AuthMode = 'login' | 'signup';
 
-export default function AuthScreen({ onBack, onSuccess }: AuthScreenProps) {
+export default function AuthScreen({
+  onBack,
+  onSuccess,
+  initialMode = 'login',
+  nextPath,
+}: AuthScreenProps) {
   const { configured, signInWithGoogle, signInWithPassword, signUp } = useAuth();
-  const [mode, setMode] = useState<AuthMode>('login');
+  const [mode, setMode] = useState<AuthMode>(initialMode);
   const [firstName, setFirstName] = useState('');
   const [lastName, setLastName] = useState('');
   const [email, setEmail] = useState('');
@@ -74,7 +81,7 @@ export default function AuthScreen({ onBack, onSuccess }: AuthScreenProps) {
     }
 
     posthog.capture('user_signed_in', { email: email.trim() });
-    onSuccess();
+    onSuccess(nextPath);
   }
 
   async function handleGoogleSignIn() {
@@ -82,7 +89,7 @@ export default function AuthScreen({ onBack, onSuccess }: AuthScreenProps) {
     setInfo(null);
     setSubmitting(true);
 
-    const result = await signInWithGoogle();
+    const result = await signInWithGoogle(nextPath);
     setSubmitting(false);
 
     if (result.error) {
