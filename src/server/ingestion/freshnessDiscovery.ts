@@ -1,11 +1,7 @@
 import { createHash } from 'node:crypto';
 
 export type FreshnessSourceClass =
-  | 'api_static_json'
-  | 'browser_required'
-  | 'official_html'
-  | 'pdf_text'
-  | 'score_only_calculator';
+  'api_static_json' | 'browser_required' | 'official_html' | 'pdf_text' | 'score_only_calculator';
 
 export type FreshnessCapability = 'blocked' | 'decision_capable' | 'score_only';
 

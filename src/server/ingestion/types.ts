@@ -1,11 +1,7 @@
 export type IngestionSourceDifficulty = 'easy' | 'browser_required' | 'hard_manual';
 export type IngestionJobStatus = 'pending' | 'running' | 'succeeded' | 'failed' | 'needs_review';
 export type FreshnessSourceClass =
-  | 'api_static_json'
-  | 'browser_required'
-  | 'official_html'
-  | 'pdf_text'
-  | 'score_only_calculator';
+  'api_static_json' | 'browser_required' | 'official_html' | 'pdf_text' | 'score_only_calculator';
 export type FreshnessCapability = 'blocked' | 'decision_capable' | 'score_only';
 export type SourceFreshnessStatus = 'blocked' | 'changed_needs_review' | 'failed' | 'fresh';
 export type MondayAdmissionsReproducedField =
