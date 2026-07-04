@@ -10,7 +10,7 @@ export const ACADEMIC_PROGRAMS: Program[] = [
     profileScore: { AN: 5, TE: 2, CR: 1, SO: 0, LE: 1, OR: 3, DI: 5, ER: 2 },
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: 700, huji: 690, technion: 92, bgu: 645, haifa: 705, biu: 675, ariel: 600 },
+    thresholds: { tau: 700, huji: 690, technion: 92, bgu: 720, haifa: 705, biu: 675, ariel: 600 },
     isTauEngineering: true,
   },
   {
@@ -107,7 +107,7 @@ export const ACADEMIC_PROGRAMS: Program[] = [
     profileScore: { AN: 5, TE: 1, CR: 0, SO: 0, LE: 1, OR: 4, DI: 5, ER: 3 },
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: 688, huji: 678, technion: 90, bgu: 635 },
+    thresholds: { tau: 688, huji: 678, technion: 90, bgu: 720 },
     isTauEngineering: true,
   },
 

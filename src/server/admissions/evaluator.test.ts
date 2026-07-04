@@ -170,7 +170,7 @@ const bguCs: CatalogueProgram = {
   profileScore: { AN: 5, TE: 5, CR: 1, SO: 1, LE: 1, OR: 3, DI: 5, ER: 4 },
   admissionType: 'sekhem',
   admissionRequirements: [],
-  thresholds: { bgu: 645 },
+  thresholds: { bgu: 720 },
   linkedInstitutionIds: ['bgu'],
 };
 
@@ -346,7 +346,7 @@ describe('evaluateAdmissionsForProgram', () => {
     );
   });
 
-  it('does not turn BGU score-only evidence into accepted or below before the official threshold is verified', async () => {
+  it('turns BGU computer science into an accepted estimate once the official threshold is verified', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'bgu_cs',
@@ -360,10 +360,11 @@ describe('evaluateAdmissionsForProgram', () => {
     expect(report.results).toContainEqual(
       expect.objectContaining({
         linkedInstitutionId: 'bgu',
-        kind: 'tracked_missing_rule',
-        capability: 'tracked_missing_rule',
-        decision: 'unknown',
-        missingData: ['threshold_or_status'],
+        kind: 'estimated',
+        capability: 'estimated',
+        decision: 'accepted',
+        threshold: 720,
+        sourceLabel: 'כלל קבלה ממופה',
       }),
     );
   });

@@ -98,7 +98,7 @@ describe('catalogue admissions evidence coverage', () => {
     );
   });
 
-  it('keeps formula-only calculator evidence tracked when the specific programme is not verified', () => {
+  it('treats a BGU programme as decision-capable once its official threshold is verified', () => {
     const entries = reconcileCatalogueAdmissionsEvidence({
       programs: staticPrograms,
       institutions: staticInstitutions,
@@ -109,10 +109,10 @@ describe('catalogue admissions evidence coverage', () => {
         expect.objectContaining({
           programId: 'bgu_cs',
           institutionId: 'bgu',
-          capability: 'tracked_missing_rule',
-          status: 'tracked_missing_rule',
+          capability: 'estimated',
+          status: 'decision_rule_available',
           trackingSource: 'monday_evidence',
-          missingData: ['threshold_or_status'],
+          missingData: ['remaining_program_thresholds'],
         }),
       ]),
     );

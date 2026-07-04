@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 test.describe('app admissions calculator', () => {
-  test('shows exact, needs-input, and manual-gate results without leaving /app/calculator', async ({
+  test('shows exact, estimated, needs-input, and manual-gate results without leaving /app/calculator', async ({
     page,
   }) => {
     await page.goto('/app/calculator');
@@ -16,6 +16,18 @@ test.describe('app admissions calculator', () => {
     await expect(page.getByLabel('אוניברסיטת תל אביב: מתקבל/ת')).toBeVisible();
     await expect(page.getByText('אימות רשמי')).toBeVisible();
     await expect(page.getByText(/ציון התאמה \d+ · סף \d+/)).toBeVisible();
+
+    await page.getByRole('button', { name: 'חזרה', exact: true }).click();
+
+    await page.locator('#psychometric').fill('760');
+    await page.locator('#bagrut').fill('115');
+    await page.locator('#degree').selectOption('bgu_cs');
+    await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
+
+    await expect(page).toHaveURL(/\/app\/calculator$/);
+    await expect(page.getByLabel('אוניברסיטת בן-גוריון בנגב: מתקבל/ת')).toBeVisible();
+    await expect(page.getByText('כלל קבלה ממופה')).toBeVisible();
+    await expect(page.getByText(/סכם .* · סף 720/)).toBeVisible();
 
     await page.getByRole('button', { name: 'חזרה', exact: true }).click();
 

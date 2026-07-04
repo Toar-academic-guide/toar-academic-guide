@@ -40,7 +40,18 @@ const INSTITUTIONS: CatalogueInstitution[] = [
       scaleDescription: 'סקאלה 60-100',
     },
   },
-  { id: 'bgu', name: 'BGU', region: 'south', domain: 'bgu.ac.il', universityId: 'bgu' },
+  {
+    id: 'bgu',
+    name: 'BGU',
+    region: 'south',
+    domain: 'bgu.ac.il',
+    universityId: 'bgu',
+    calculatorConfig: {
+      formulaType: 'weighted_scaled',
+      scaleDescription: 'סקאלה מוסדית',
+      sekhemWeight: { psy: 0.5, bag: 0.5 },
+    },
+  },
   { id: 'biu', name: 'BIU', region: 'center', domain: 'biu.ac.il', universityId: 'biu' },
   { id: 'ariel', name: 'Ariel', region: 'center', domain: 'ariel.ac.il', universityId: 'ariel' },
   {
@@ -221,7 +232,31 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     expect(technionEntry?.capability).toBe('tracked_missing_rule');
     expect(technionEntry?.evidence?.missingData).toContain('unverified_data_science_program_match');
     expect(bguEntry?.capability).toBe('tracked_missing_rule');
-    expect(bguEntry?.evidence?.missingData).toContain('threshold_or_status');
+    expect(bguEntry?.evidence?.missingData).toContain('remaining_program_thresholds');
+  });
+
+  it('promotes a BGU program only when its official threshold was verified', () => {
+    const program = makeProgram({
+      id: 'bgu_cs',
+      linkedInstitutionIds: ['bgu'],
+      thresholds: { bgu: 720 },
+    });
+
+    const entries = buildAdmissionsCapabilityMatrix({
+      program,
+      institutions: INSTITUTIONS,
+    });
+
+    const bguEntry = entries.find((e) => e.institutionId === 'bgu');
+    expect(bguEntry?.capability).toBe('estimated');
+    expect(bguEntry?.evidence?.verifiedProgramThresholds).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          programId: 'bgu_cs',
+          threshold: 720,
+        }),
+      ]),
+    );
   });
 
   it('promotes Technion medicine to manual_gate once the official MoR invitation threshold is verified', () => {

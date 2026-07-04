@@ -215,9 +215,9 @@ export const mondayAdmissionEvidenceRecords = [
     updateCount: 3,
     capabilityCandidate: 'score_only_or_formula_without_verified_cutoff',
     publicBucket: 'tracked_missing_rule',
-    ruleStatus: 'needs_threshold_or_status',
-    officialVerificationStatus: 'needs_official_threshold',
-    confidence: 'medium',
+    ruleStatus: 'needs_official_rule',
+    officialVerificationStatus: 'partial_official_rule_verified',
+    confidence: 'high',
     tags: [
       'accepted_rejected_status',
       'browser_blocked',
@@ -228,7 +228,6 @@ export const mondayAdmissionEvidenceRecords = [
       'reverse_engineering_report',
       'score_formula',
       'score_only_limitation',
-      'score_only_no_cutoff',
       'threshold_or_cutoff',
       'update_evidence',
     ],
@@ -239,19 +238,44 @@ export const mondayAdmissionEvidenceRecords = [
       'https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitMechSekem',
       'https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem',
       'https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_calcMain',
+      'https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_institution=0&p_year=2027&p_semester=1&p_dep1=232&p_pat1=1&p_spe1=13&p_degree_level=1',
+      'https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_institution=0&p_year=2027&p_semester=1&p_dep1=232&p_pat1=1&p_spe1=3&p_degree_level=1',
+      'https://www.bgu.ac.il/welcome/ba/catalog/categories/computer-science/acceptance-conditions/',
       'https://www.bgu.ac.il/welcome/ba/reception-section-lobby/?semesters=012027',
     ],
-    missingData: ['threshold_or_status'],
+    missingData: ['remaining_program_thresholds'],
     limitations: [
       'Official source requires browser/cookie/anti-bot handling before automation.',
       'Update evidence reports score calculation without verified admission cutoff/status.',
-      'Verified: the official BGU calculator endpoints (!rg.acc_SubmitSekem and variants) return a weighted score only; admission cutoff, rejection cutoff, and explicit pass/fail fields are all N/A.',
-      'BGU columns confirm סף הקבלה משתנה לפי המחלקה והתוכנית, so per-program thresholds are not published by the calculator and must come from an alternate official source.',
+      "Verified: BGU's official calculator endpoints (!rg.acc_SubmitSekem and variants) still return a weighted score only; the decision-capable thresholds now come from the official programme admission-conditions API instead.",
+      'Only the computer-science department programmes were verified in this slice. The remaining BGU catalogue programmes still need their own official admission-conditions pages or API responses checked.',
     ],
     decisionReason:
-      'Official BGU calculator verified to compute a weighted score but returns no threshold or admission status. Without an official per-program cutoff, a yes/no decision cannot be reproduced server-side.',
+      'Official BGU admission-conditions responses now verify per-program thresholds and registration status for mapped computer-science department programmes. Remaining departments still need program-level official verification before the whole institution can be treated as decision-complete.',
     nextAction:
-      'Find an alternate official BGU source that publishes per-program admission thresholds/status (e.g. department pages or a ספי קבלה PDF) before promoting BGU to decision-capable.',
+      'Keep using the verified BGU thresholds for computer science and data science. Continue program-page/API verification for the remaining BGU catalogue programmes before removing this item from the missing-rule queue.',
+    verifiedProgramThresholds: [
+      {
+        programId: 'bgu_cs',
+        threshold: 720,
+        sourceUrl:
+          'https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_institution=0&p_year=2027&p_semester=1&p_dep1=232&p_pat1=1&p_spe1=3&p_degree_level=1',
+        sourceLabel: 'בן-גוריון: תנאי קבלה למדעי המחשב',
+        verifiedAt: '2026-07-04',
+        notes:
+          'מדעי המחשב חד מחלקתי - מדעי המחשב. psycho_sekem=720, psycho_value=600, reg_status=פתוחה.',
+      },
+      {
+        programId: 'bgu_datascience',
+        threshold: 720,
+        sourceUrl:
+          'https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_institution=0&p_year=2027&p_semester=1&p_dep1=232&p_pat1=1&p_spe1=13&p_degree_level=1',
+        sourceLabel: 'בן-גוריון: תנאי קבלה למדעי הנתונים',
+        verifiedAt: '2026-07-04',
+        notes:
+          'מדעי המחשב חד מחלקתי - מדעי הנתונים. psycho_sekem=720, psycho_value=600, reg_status=פתוחה.',
+      },
+    ],
   },
   {
     itemId: '12220699688',

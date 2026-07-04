@@ -50,6 +50,7 @@ describe('monday admissions evidence', () => {
 
   it('keeps partially verified institutions in the tracked missing-rule queue until all programs are closed', () => {
     const technion = getMondayAdmissionEvidenceByItemId('12220699650');
+    const bgu = getMondayAdmissionEvidenceByItemId('12220699687');
 
     expect(technion).toMatchObject({
       catalogueInstitutionId: 'technion',
@@ -80,6 +81,33 @@ describe('monday admissions evidence', () => {
           itemId: '12220699650',
           missingData: ['unverified_data_science_program_match'],
         }),
+        expect.objectContaining({
+          itemId: '12220699687',
+          missingData: ['remaining_program_thresholds'],
+        }),
+      ]),
+    );
+
+    expect(bgu).toMatchObject({
+      catalogueInstitutionId: 'bgu',
+      catalogueVisibility: 'catalogue_mapped',
+      publicBucket: 'tracked_missing_rule',
+      ruleStatus: 'needs_official_rule',
+      officialVerificationStatus: 'partial_official_rule_verified',
+      missingData: ['remaining_program_thresholds'],
+    });
+    expect(bgu?.verifiedProgramThresholds).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          programId: 'bgu_cs',
+          threshold: 720,
+          sourceUrl: expect.stringContaining('p_spe1=3'),
+        }),
+        expect.objectContaining({
+          programId: 'bgu_datascience',
+          threshold: 720,
+          sourceUrl: expect.stringContaining('p_spe1=13'),
+        }),
       ]),
     );
   });
@@ -101,10 +129,6 @@ describe('monday admissions evidence', () => {
   it('exposes an official verification queue for extraction work', () => {
     expect(getMondayOfficialVerificationQueue()).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({
-          itemName: '4. אוניברסיטת בן-גוריון בנגב',
-          officialVerificationStatus: 'needs_official_threshold',
-        }),
         expect.objectContaining({
           itemName: '5. אוניברסיטת בר-אילן',
           officialVerificationStatus: 'blocked_needs_alternate_official_source',

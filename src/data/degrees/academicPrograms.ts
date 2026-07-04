@@ -1743,7 +1743,7 @@ export const academicPrograms: Program[] = [
     profileScore: P.cs,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: null, huji: null, technion: null, bgu: 645 },
+    thresholds: { tau: null, huji: null, technion: null, bgu: 720 },
     institutionDetails: D['bgu_cs'],
   },
   {
@@ -1756,7 +1756,7 @@ export const academicPrograms: Program[] = [
     profileScore: P.dataScience,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: null, huji: null, technion: null, bgu: 635 },
+    thresholds: { tau: null, huji: null, technion: null, bgu: 720 },
     institutionDetails: D['bgu_datascience'],
   },
   {
