@@ -22,7 +22,7 @@ export const ACADEMIC_PROGRAMS: Program[] = [
     profileScore: { AN: 4, TE: 4, CR: 0, SO: 0, LE: 1, OR: 2, DI: 3, ER: 2 },
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: 655, huji: null, technion: 88, bgu: 615, biu: 655, ariel: 640 },
+    thresholds: { tau: 655, huji: null, technion: 88, bgu: 547, biu: 655, ariel: 640 },
     isTauEngineering: true,
   },
   {
@@ -34,7 +34,7 @@ export const ACADEMIC_PROGRAMS: Program[] = [
     profileScore: { AN: 4, TE: 0, CR: 1, SO: 5, LE: 1, OR: 1, DI: 0, ER: 4 },
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: 720, huji: 725, technion: null, bgu: 675, haifa: 650, biu: 665, ariel: 580 },
+    thresholds: { tau: 720, huji: 725, technion: null, bgu: 650, haifa: 650, biu: 665, ariel: 580 },
     isTauEngineering: false,
     directPsychometric: { huji: 660 },
   },
@@ -47,7 +47,7 @@ export const ACADEMIC_PROGRAMS: Program[] = [
     profileScore: { AN: 3, TE: 5, CR: 1, SO: 0, LE: 1, OR: 2, DI: 1, ER: 2 },
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: 640, huji: null, technion: 86, bgu: 595, ariel: 615 },
+    thresholds: { tau: 640, huji: null, technion: 86, bgu: 520, ariel: 615 },
     isTauEngineering: true,
   },
   {
@@ -95,7 +95,7 @@ export const ACADEMIC_PROGRAMS: Program[] = [
     profileScore: { AN: 5, TE: 0, CR: 0, SO: 1, LE: 3, OR: 4, DI: 2, ER: 4 },
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: 670, huji: 660, technion: null, bgu: 615, haifa: 660, ariel: 580 },
+    thresholds: { tau: 670, huji: 660, technion: null, bgu: 547, haifa: 660, ariel: 580 },
     isTauEngineering: false,
   },
   {
@@ -145,7 +145,7 @@ export const ACADEMIC_PROGRAMS: Program[] = [
     profileScore: { AN: 3, TE: 3, CR: 1, SO: 5, LE: 2, OR: 2, DI: 0, ER: 2 },
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: 610, huji: 600, technion: null, bgu: 570, haifa: 580, ariel: 570 },
+    thresholds: { tau: 610, huji: 600, technion: null, bgu: 505, haifa: 580, ariel: 570 },
     isTauEngineering: false,
   },
   {

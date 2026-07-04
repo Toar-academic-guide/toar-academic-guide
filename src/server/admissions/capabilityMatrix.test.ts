@@ -259,6 +259,30 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     );
   });
 
+  it('promotes additional BGU programs when their official thresholds were verified', () => {
+    const program = makeProgram({
+      id: 'bgu_ee',
+      linkedInstitutionIds: ['bgu'],
+      thresholds: { bgu: 547 },
+    });
+
+    const entries = buildAdmissionsCapabilityMatrix({
+      program,
+      institutions: INSTITUTIONS,
+    });
+
+    const bguEntry = entries.find((e) => e.institutionId === 'bgu');
+    expect(bguEntry?.capability).toBe('estimated');
+    expect(bguEntry?.evidence?.verifiedProgramThresholds).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          programId: 'bgu_ee',
+          threshold: 547,
+        }),
+      ]),
+    );
+  });
+
   it('promotes Technion medicine to manual_gate once the official MoR invitation threshold is verified', () => {
     const program = makeProgram({
       id: 'technion_medicine',

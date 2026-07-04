@@ -1769,7 +1769,7 @@ export const academicPrograms: Program[] = [
     profileScore: P.ee,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: null, huji: null, technion: null, bgu: 615 },
+    thresholds: { tau: null, huji: null, technion: null, bgu: 547 },
     institutionDetails: D['bgu_ee'],
   },
   {
@@ -1782,7 +1782,7 @@ export const academicPrograms: Program[] = [
     profileScore: P.me,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: null, huji: null, technion: null, bgu: 595 },
+    thresholds: { tau: null, huji: null, technion: null, bgu: 520 },
     institutionDetails: D['bgu_me'],
   },
   {
@@ -1795,7 +1795,7 @@ export const academicPrograms: Program[] = [
     profileScore: P.industrial,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: null, huji: null, technion: null, bgu: 570 },
+    thresholds: { tau: null, huji: null, technion: null, bgu: 505 },
     institutionDetails: D['bgu_industrial'],
   },
   {
@@ -1808,7 +1808,7 @@ export const academicPrograms: Program[] = [
     profileScore: P.psychology,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: null, huji: null, technion: null, bgu: 675 },
+    thresholds: { tau: null, huji: null, technion: null, bgu: 650 },
     institutionDetails: D['bgu_psychology'],
   },
   {

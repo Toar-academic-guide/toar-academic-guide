@@ -248,12 +248,12 @@ export const mondayAdmissionEvidenceRecords = [
       'Official source requires browser/cookie/anti-bot handling before automation.',
       'Update evidence reports score calculation without verified admission cutoff/status.',
       "Verified: BGU's official calculator endpoints (!rg.acc_SubmitSekem and variants) still return a weighted score only; the decision-capable thresholds now come from the official programme admission-conditions API instead.",
-      'Only the computer-science department programmes were verified in this slice. The remaining BGU catalogue programmes still need their own official admission-conditions pages or API responses checked.',
+      'Only part of the BGU catalogue is verified in this slice. The remaining BGU catalogue programmes still need their own official admission-conditions pages or API responses checked.',
     ],
     decisionReason:
-      'Official BGU admission-conditions responses now verify per-program thresholds and registration status for mapped computer-science department programmes. Remaining departments still need program-level official verification before the whole institution can be treated as decision-complete.',
+      'Official BGU admission-conditions responses now verify per-program thresholds and registration status for part of the mapped BGU catalogue, including computer science, electrical engineering, mechanical engineering, industrial engineering, and psychology. Remaining departments still need program-level official verification before the whole institution can be treated as decision-complete.',
     nextAction:
-      'Keep using the verified BGU thresholds for computer science and data science. Continue program-page/API verification for the remaining BGU catalogue programmes before removing this item from the missing-rule queue.',
+      'Keep using the verified BGU thresholds for the programmes already mapped from the official admission-conditions API. Continue programme-page/API verification for the remaining BGU catalogue programmes before removing this item from the missing-rule queue.',
     verifiedProgramThresholds: [
       {
         programId: 'bgu_cs',
@@ -274,6 +274,45 @@ export const mondayAdmissionEvidenceRecords = [
         verifiedAt: '2026-07-04',
         notes:
           'מדעי המחשב חד מחלקתי - מדעי הנתונים. psycho_sekem=720, psycho_value=600, reg_status=פתוחה.',
+      },
+      {
+        programId: 'bgu_ee',
+        threshold: 547,
+        sourceUrl:
+          'https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_institution=0&p_year=2027&p_semester=1&p_dep1=361&p_pat1=1&p_degree_level=1',
+        sourceLabel: 'בן-גוריון: תנאי קבלה להנדסת חשמל ומחשבים',
+        verifiedAt: '2026-07-04',
+        notes:
+          'הנדסת חשמל ומחשבים חד מחלקתי. psycho_sekem=547, psycho_value=600, reg_status=פתוחה.',
+      },
+      {
+        programId: 'bgu_industrial',
+        threshold: 505,
+        sourceUrl:
+          'https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_institution=0&p_year=2027&p_semester=1&p_dep1=364&p_pat1=1&p_degree_level=1',
+        sourceLabel: 'בן-גוריון: תנאי קבלה להנדסת תעשייה וניהול',
+        verifiedAt: '2026-07-04',
+        notes:
+          'הנדסת תעשיה וניהול חד מחלקתי. psycho_sekem=505, psycho_value=550, bagrut_average=109, reg_status=פתוחה.',
+      },
+      {
+        programId: 'bgu_me',
+        threshold: 520,
+        sourceUrl:
+          'https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_institution=0&p_year=2027&p_semester=1&p_dep1=362&p_pat1=1&p_degree_level=1',
+        sourceLabel: 'בן-גוריון: תנאי קבלה להנדסת מכונות',
+        verifiedAt: '2026-07-04',
+        notes: 'הנדסת מכונות חד מחלקתי. psycho_sekem=520, psycho_value=550, reg_status=פתוחה.',
+      },
+      {
+        programId: 'bgu_psychology',
+        threshold: 650,
+        sourceUrl:
+          'https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_institution=0&p_year=2027&p_semester=1&p_dep1=101&p_pat1=2&p_degree_level=1',
+        sourceLabel: 'בן-גוריון: תנאי קבלה לפסיכולוגיה',
+        verifiedAt: '2026-07-04',
+        notes:
+          'פסיכולוגיה דו מחלקתי. psycho_sekem=650, psycho_value=650, bagrut_average=113, reg_status=פתוחה.',
       },
     ],
   },

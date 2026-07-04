@@ -108,6 +108,26 @@ describe('monday admissions evidence', () => {
           threshold: 720,
           sourceUrl: expect.stringContaining('p_spe1=13'),
         }),
+        expect.objectContaining({
+          programId: 'bgu_ee',
+          threshold: 547,
+          sourceUrl: expect.stringContaining('p_dep1=361'),
+        }),
+        expect.objectContaining({
+          programId: 'bgu_me',
+          threshold: 520,
+          sourceUrl: expect.stringContaining('p_dep1=362'),
+        }),
+        expect.objectContaining({
+          programId: 'bgu_industrial',
+          threshold: 505,
+          sourceUrl: expect.stringContaining('p_dep1=364'),
+        }),
+        expect.objectContaining({
+          programId: 'bgu_psychology',
+          threshold: 650,
+          sourceUrl: expect.stringContaining('p_dep1=101'),
+        }),
       ]),
     );
   });

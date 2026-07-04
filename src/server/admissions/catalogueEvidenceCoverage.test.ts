@@ -114,6 +114,14 @@ describe('catalogue admissions evidence coverage', () => {
           trackingSource: 'monday_evidence',
           missingData: ['remaining_program_thresholds'],
         }),
+        expect.objectContaining({
+          programId: 'bgu_ee',
+          institutionId: 'bgu',
+          capability: 'estimated',
+          status: 'decision_rule_available',
+          trackingSource: 'monday_evidence',
+          missingData: ['remaining_program_thresholds'],
+        }),
       ]),
     );
   });
