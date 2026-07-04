@@ -38,6 +38,14 @@ describe('monday admissions evidence', () => {
         publicBucket: 'decision_capable',
       }),
     ]);
+
+    expect(getMondayAdmissionEvidenceByCatalogueInstitutionId('sapir')).toEqual([
+      expect.objectContaining({
+        itemId: '12220697668',
+        catalogueInstitutionId: null,
+        displayName: 'המכללה האקדמית ספיר',
+      }),
+    ]);
   });
 
   it('keeps partially verified institutions in the tracked missing-rule queue until all programs are closed', () => {

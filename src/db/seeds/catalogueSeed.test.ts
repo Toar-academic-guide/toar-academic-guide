@@ -4,6 +4,20 @@ import { INSTITUTIONS } from '@/data/institutions';
 import type { Program } from '@/data/degrees/types';
 import { buildCatalogueSeed, buildCatalogueSeedVerificationReport } from '@/db/seeds/catalogueSeed';
 
+function duplicatedValues(values: string[]): string[] {
+  const seen = new Set<string>();
+  const duplicates = new Set<string>();
+
+  for (const value of values) {
+    if (seen.has(value)) {
+      duplicates.add(value);
+    }
+    seen.add(value);
+  }
+
+  return [...duplicates].sort();
+}
+
 describe('catalogueSeed', () => {
   it('maps every institution and program into exactly one seed row', () => {
     const payload = buildCatalogueSeed();
@@ -14,6 +28,52 @@ describe('catalogueSeed', () => {
       UNIVERSITIES.map((row) => row.id).sort(),
     );
     expect(payload.programs).toHaveLength(allPrograms.length);
+  });
+
+  it('emits conflict-safe seed rows for repeatable remote upserts', () => {
+    const payload = buildCatalogueSeed();
+
+    expect(duplicatedValues(payload.institutions.map((row) => row.id))).toEqual([]);
+    expect(duplicatedValues(payload.programs.map((row) => row.id))).toEqual([]);
+    expect(
+      duplicatedValues(
+        payload.programInstitutions.map((row) => `${row.programId}:${row.institutionId}`),
+      ),
+    ).toEqual([]);
+    expect(duplicatedValues(payload.admissionRequirements.map((row) => row.id))).toEqual([]);
+    expect(duplicatedValues(payload.admissionThresholds.map((row) => row.id))).toEqual([]);
+    expect(duplicatedValues(payload.sourceUrls.map((row) => row.id))).toEqual([]);
+    expect(duplicatedValues(payload.requirementVersions.map((row) => row.id))).toEqual([]);
+    expect(duplicatedValues(payload.admissionsSourceCandidates.map((row) => row.id))).toEqual([]);
+    expect(duplicatedValues(payload.admissionFacts.map((row) => row.id))).toEqual([]);
+    expect(duplicatedValues(payload.admissionAlternativePaths.map((row) => row.id))).toEqual([]);
+  });
+
+  it('canonicalizes Monday-only institution ids before creating database rows', () => {
+    const payload = buildCatalogueSeed();
+    const institutionIds = new Set(payload.institutions.map((row) => row.id));
+    const referencedInstitutionIds = [
+      ...payload.programs.map((row) => row.institutionId),
+      ...payload.programInstitutions.map((row) => row.institutionId),
+      ...payload.admissionRequirements.map((row) => row.institutionId),
+      ...payload.admissionThresholds.map((row) => row.institutionId),
+      ...payload.sourceUrls.map((row) => row.institutionId),
+      ...payload.admissionsSourceCandidates.map((row) => row.institutionId),
+      ...payload.admissionFacts.map((row) => row.institutionId),
+      ...payload.admissionAlternativePaths.map((row) => row.institutionId),
+    ].filter((value): value is string => Boolean(value));
+
+    expect(
+      referencedInstitutionIds.filter((institutionId) => !institutionIds.has(institutionId)),
+    ).toEqual([]);
+    expect(payload.programs.find((row) => row.id === 'mon_12220697668_cs')?.institutionId).toBe(
+      'sapir',
+    );
+    expect(
+      payload.programInstitutions.some(
+        (row) => row.programId === 'mon_12220697668_cs' && row.institutionId === 'sapir',
+      ),
+    ).toBe(true);
   });
 
   it('creates requirement and source candidates for programs with institution details', () => {

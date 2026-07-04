@@ -7,7 +7,7 @@ import { ACADEMIC_PROGRAMS } from './academic';
 import { academicPrograms } from './academicPrograms';
 import { vocationalPrograms } from './vocationalPrograms';
 import { mondayAdmissionsEvidence } from '../admissions/mondayEvidence';
-import { type InstitutionId, resolveUrl } from '../institutions';
+import { INSTITUTION_BY_NAME, type InstitutionId, resolveUrl } from '../institutions';
 import type { Program, AdmissionFact } from './types';
 
 const DYNAMIC_PROGRAM_MAP = [
@@ -47,7 +47,11 @@ const DYNAMIC_PROGRAM_MAP = [
 const dynamicPrograms: Program[] = [];
 
 for (const record of mondayAdmissionsEvidence) {
-  const instId = (record.catalogueInstitutionId || `mon_${record.itemId}`) as InstitutionId;
+  const programInstitutionKey = (record.catalogueInstitutionId ||
+    `mon_${record.itemId}`) as InstitutionId;
+  const instId = (record.catalogueInstitutionId ??
+    INSTITUTION_BY_NAME[record.displayName]?.id ??
+    `mon_${record.itemId}`) as InstitutionId;
 
   let matches = DYNAMIC_PROGRAM_MAP.filter((prog) => {
     const searchable =
@@ -60,7 +64,7 @@ for (const record of mondayAdmissionsEvidence) {
   }
 
   for (const prog of matches) {
-    const progId = `${instId}_${prog.id}`;
+    const progId = `${programInstitutionKey}_${prog.id}`;
 
     const existsInStatic =
       ACADEMIC_PROGRAMS.some((p) => p.id === progId) ||
@@ -154,7 +158,7 @@ for (const record of mondayAdmissionsEvidence) {
       });
     }
 
-    dynamicPrograms.push({
+    const dynamicProgram: Program = {
       id: progId,
       name: `${prog.name} - ${record.displayName}`,
       institution: record.displayName,
@@ -183,7 +187,16 @@ for (const record of mondayAdmissionsEvidence) {
           admissionFacts,
         },
       ],
-    });
+    };
+
+    const existingDynamicProgramIndex = dynamicPrograms.findIndex(
+      (program) => program.id === progId,
+    );
+    if (existingDynamicProgramIndex >= 0) {
+      dynamicPrograms[existingDynamicProgramIndex] = dynamicProgram;
+    } else {
+      dynamicPrograms.push(dynamicProgram);
+    }
   }
 }
 

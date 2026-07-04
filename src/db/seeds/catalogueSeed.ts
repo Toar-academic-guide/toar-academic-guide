@@ -21,7 +21,12 @@ import type {
 import { hybridAdmissionSlice } from '@/data/admissions/hybridSlice';
 import { allPrograms } from '@/data/degrees';
 import type { InstitutionDetail, Program } from '@/data/degrees/types';
-import { INSTITUTIONS, INSTITUTION_BY_NAME, type InstitutionId } from '@/data/institutions';
+import {
+  INSTITUTIONS,
+  INSTITUTION_BY_ID,
+  INSTITUTION_BY_NAME,
+  type InstitutionId,
+} from '@/data/institutions';
 import { UNIVERSITIES } from '@/data/degreesData';
 import type { UniversityId } from '@/types';
 
@@ -69,9 +74,22 @@ export interface CatalogueSeedVerificationReport {
   missingCalculatorConfigInstitutionIds: string[];
 }
 
+function resolveInstitutionId(
+  institutionId: InstitutionId | undefined,
+  institutionName: string,
+): InstitutionId | undefined {
+  if (institutionId && INSTITUTION_BY_ID[institutionId]) {
+    return institutionId;
+  }
+
+  return INSTITUTION_BY_NAME[institutionName]?.id ?? institutionId;
+}
+
 function getProgramInstitutionIds(program: Program): InstitutionId[] {
+  const resolvedInstitutionId = resolveInstitutionId(program.institutionId, program.institution);
+
   if (program.institutionId) {
-    return [program.institutionId];
+    return resolvedInstitutionId ? [resolvedInstitutionId] : [];
   }
 
   const byName = INSTITUTION_BY_NAME[program.institution];
@@ -119,6 +137,10 @@ function unique<T>(values: T[]): T[] {
   return [...new Set(values)];
 }
 
+function uniqueByLast<T>(values: T[], keyFor: (value: T) => string): T[] {
+  return [...new Map(values.map((value) => [keyFor(value), value])).values()];
+}
+
 export function buildCatalogueSeed(seedPrograms: Program[] = allPrograms): CatalogueSeedPayload {
   const validationErrors: CatalogueSeedValidationError[] = [];
   const institutionRows = INSTITUTIONS.map((institution) => ({
@@ -162,11 +184,13 @@ export function buildCatalogueSeed(seedPrograms: Program[] = allPrograms): Catal
       });
     }
 
+    const primaryInstitutionId = resolveInstitutionId(program.institutionId, program.institution);
+
     programRows.push({
       id: program.id,
       name: program.name,
       institutionName: program.institution,
-      institutionId: program.institutionId ?? null,
+      institutionId: primaryInstitutionId ?? null,
       type: program.type as 'academic' | 'certificate' | 'vocational',
       category: program.category,
       admissionType: program.admissionType,
@@ -379,20 +403,45 @@ export function buildCatalogueSeed(seedPrograms: Program[] = allPrograms): Catal
     }
   }
 
-  return {
-    institutions: institutionRows,
-    universityCalculatorConfigs: calculatorConfigRows,
-    programs: programRows,
-    programInstitutions: relationRows,
-    admissionRequirements: requirementRows,
-    admissionThresholds: thresholdRows,
-    sourceUrls: sourceUrlRows,
-    requirementVersions: versionRows,
-    admissionsSourceCandidates: admissionsSourceCandidateRows,
-    admissionFacts: admissionFactRows,
-    admissionAlternativePaths: admissionAlternativePathRows,
+  const payload = {
+    institutions: uniqueByLast(institutionRows, (row) => row.id),
+    universityCalculatorConfigs: uniqueByLast(calculatorConfigRows, (row) => row.institutionId),
+    programs: uniqueByLast(programRows, (row) => row.id),
+    programInstitutions: uniqueByLast(
+      relationRows,
+      (row) => `${row.programId}:${row.institutionId}`,
+    ),
+    admissionRequirements: uniqueByLast(requirementRows, (row) => row.id),
+    admissionThresholds: uniqueByLast(thresholdRows, (row) => row.id),
+    sourceUrls: uniqueByLast(sourceUrlRows, (row) => row.id),
+    requirementVersions: uniqueByLast(versionRows, (row) => row.id),
+    admissionsSourceCandidates: uniqueByLast(admissionsSourceCandidateRows, (row) => row.id),
+    admissionFacts: uniqueByLast(admissionFactRows, (row) => row.id),
+    admissionAlternativePaths: uniqueByLast(admissionAlternativePathRows, (row) => row.id),
     validationErrors,
   };
+  const seededInstitutionIds = new Set<string>(payload.institutions.map((row) => row.id));
+  const referencedInstitutionIds = [
+    ...payload.programs.map((row) => ({ programId: row.id, institutionId: row.institutionId })),
+    ...payload.programInstitutions,
+    ...payload.admissionRequirements,
+    ...payload.admissionThresholds,
+    ...payload.sourceUrls,
+    ...payload.admissionsSourceCandidates,
+    ...payload.admissionFacts,
+    ...payload.admissionAlternativePaths,
+  ];
+
+  for (const row of referencedInstitutionIds) {
+    if (row.institutionId && !seededInstitutionIds.has(row.institutionId)) {
+      validationErrors.push({
+        programId: row.programId,
+        message: `Seed row references unknown institution "${row.institutionId}".`,
+      });
+    }
+  }
+
+  return payload;
 }
 
 function buildRelationKey(programId: string, institutionId: string): string {
