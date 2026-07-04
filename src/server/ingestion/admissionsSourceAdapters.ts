@@ -6,11 +6,7 @@ import {
 } from './freshnessDiscovery';
 
 export type AdmissionsProofLevel =
-  | 'blocked'
-  | 'exact_official'
-  | 'open_admission'
-  | 'partial_official'
-  | 'static_data_candidate';
+  'blocked' | 'exact_official' | 'open_admission' | 'partial_official' | 'static_data_candidate';
 
 export type AdmissionsProofStatus = 'blocked' | 'failed' | 'partial' | 'succeeded';
 
