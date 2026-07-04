@@ -189,6 +189,34 @@ const hitEngineering: CatalogueProgram = {
 };
 
 describe('evaluateAdmissionsForProgram', () => {
+  it('does not mutate canonical program definitions during evaluation', async () => {
+    const originalTauProgram = structuredClone(tauDataScience);
+    const originalHaifaProgram = structuredClone(haifaCs);
+
+    await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'tau_datascience',
+        psychometric: 700,
+        bagrut: 110,
+      },
+      program: tauDataScience,
+      institutions,
+    });
+
+    await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'haifa_cs',
+        psychometric: 680,
+        bagrut: 105,
+      },
+      program: haifaCs,
+      institutions,
+    });
+
+    expect(tauDataScience).toEqual(originalTauProgram);
+    expect(haifaCs).toEqual(originalHaifaProgram);
+  });
+
   it('returns needs-input for the Haifa exact path when subscores are missing', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
