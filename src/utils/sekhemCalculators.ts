@@ -266,10 +266,23 @@ export function evaluateUniversities(
       return { university, sekhem, threshold, status: 'accepted', admissionTrack: 'direct' };
     }
 
+    const minimumPsychometric = degree.minimumPsychometric?.[university.id];
+    const minimumBagrut = degree.minimumBagrut?.[university.id];
     const deficit = threshold - raw;
+    const psychometricFloorGap = Math.max(0, (minimumPsychometric ?? 0) - scores.psychometric);
+    const bagrutFloorGap = Math.max(0, (minimumBagrut ?? 0) - scores.bagrut);
 
-    if (deficit <= 0) {
+    if (deficit <= 0 && psychometricFloorGap <= 0 && bagrutFloorGap <= 0) {
       return { university, sekhem, threshold, status: 'accepted' };
+    }
+
+    const deltaNeeded = calculateDelta(Math.max(0, deficit), university);
+    const unmetFloors: string[] = [];
+    if (psychometricFloorGap > 0 && minimumPsychometric !== undefined) {
+      unmetFloors.push(`פסיכומטרי לפחות ${minimumPsychometric}`);
+    }
+    if (bagrutFloorGap > 0 && minimumBagrut !== undefined) {
+      unmetFloors.push(`ממוצע בגרות לפחות ${minimumBagrut}`);
     }
 
     return {
@@ -277,7 +290,14 @@ export function evaluateUniversities(
       sekhem,
       threshold,
       status: 'below',
-      deltaNeeded: calculateDelta(deficit, university),
+      deltaNeeded: {
+        psychometric: Math.max(deltaNeeded.psychometric, psychometricFloorGap),
+        bagrut: Math.max(deltaNeeded.bagrut, bagrutFloorGap),
+      },
+      explanation:
+        unmetFloors.length > 0
+          ? `אינו עומד בתנאי הסף של ${university.name}: חסר ${unmetFloors.join(', ')}`
+          : undefined,
     };
   });
 }

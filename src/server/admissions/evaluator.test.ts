@@ -60,7 +60,7 @@ const institutions: CatalogueInstitution[] = [
     calculatorConfig: {
       formulaType: 'weighted_scaled',
       scaleDescription: 'סקאלה מוסדית',
-      sekhemWeight: { psy: 0.5, bag: 0.5 },
+      sekhemWeight: { psy: 0.45, bag: 0.55 },
     },
   },
   {
@@ -171,6 +171,22 @@ const bguCs: CatalogueProgram = {
   admissionType: 'sekhem',
   admissionRequirements: [],
   thresholds: { bgu: 720 },
+  minimumPsychometric: { bgu: 600 },
+  linkedInstitutionIds: ['bgu'],
+};
+
+const bguEe: CatalogueProgram = {
+  id: 'bgu_ee',
+  name: 'הנדסת חשמל',
+  institution: 'אוניברסיטת בן-גוריון בנגב',
+  institutionId: 'bgu',
+  type: 'academic',
+  category: 'הנדסה',
+  profileScore: { AN: 4, TE: 4, CR: 0, SO: 0, LE: 1, OR: 2, DI: 3, ER: 2 },
+  admissionType: 'sekhem',
+  admissionRequirements: [],
+  thresholds: { bgu: 547 },
+  minimumPsychometric: { bgu: 600 },
   linkedInstitutionIds: ['bgu'],
 };
 
@@ -365,6 +381,31 @@ describe('evaluateAdmissionsForProgram', () => {
         decision: 'accepted',
         threshold: 720,
         sourceLabel: 'כלל קבלה ממופה',
+      }),
+    );
+  });
+
+  it('keeps BGU engineering below when the official psychometric floor is not met even if the sekhem is high enough', async () => {
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'bgu_ee',
+        psychometric: 590,
+        bagrut: 120,
+      },
+      program: bguEe,
+      institutions,
+    });
+
+    expect(report.results).toContainEqual(
+      expect.objectContaining({
+        linkedInstitutionId: 'bgu',
+        kind: 'estimated',
+        capability: 'estimated',
+        decision: 'below',
+        score: 706,
+        threshold: 547,
+        sourceLabel: 'כלל קבלה ממופה',
+        explanation: expect.stringContaining('פסיכומטרי לפחות 600'),
       }),
     );
   });

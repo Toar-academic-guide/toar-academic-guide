@@ -1744,6 +1744,7 @@ export const academicPrograms: Program[] = [
     admissionType: 'sekhem',
     admissionRequirements: [],
     thresholds: { tau: null, huji: null, technion: null, bgu: 720 },
+    minimumPsychometric: { bgu: 600 },
     institutionDetails: D['bgu_cs'],
   },
   {
@@ -1757,6 +1758,7 @@ export const academicPrograms: Program[] = [
     admissionType: 'sekhem',
     admissionRequirements: [],
     thresholds: { tau: null, huji: null, technion: null, bgu: 720 },
+    minimumPsychometric: { bgu: 600 },
     institutionDetails: D['bgu_datascience'],
   },
   {
@@ -1770,6 +1772,7 @@ export const academicPrograms: Program[] = [
     admissionType: 'sekhem',
     admissionRequirements: [],
     thresholds: { tau: null, huji: null, technion: null, bgu: 547 },
+    minimumPsychometric: { bgu: 600 },
     institutionDetails: D['bgu_ee'],
   },
   {
@@ -1783,6 +1786,7 @@ export const academicPrograms: Program[] = [
     admissionType: 'sekhem',
     admissionRequirements: [],
     thresholds: { tau: null, huji: null, technion: null, bgu: 520 },
+    minimumPsychometric: { bgu: 550 },
     institutionDetails: D['bgu_me'],
   },
   {
@@ -1796,6 +1800,7 @@ export const academicPrograms: Program[] = [
     admissionType: 'sekhem',
     admissionRequirements: [],
     thresholds: { tau: null, huji: null, technion: null, bgu: 505 },
+    minimumPsychometric: { bgu: 550 },
     institutionDetails: D['bgu_industrial'],
   },
   {
@@ -1809,6 +1814,7 @@ export const academicPrograms: Program[] = [
     admissionType: 'sekhem',
     admissionRequirements: [],
     thresholds: { tau: null, huji: null, technion: null, bgu: 650 },
+    minimumPsychometric: { bgu: 650 },
     institutionDetails: D['bgu_psychology'],
   },
   {

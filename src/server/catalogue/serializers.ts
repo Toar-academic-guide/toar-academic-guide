@@ -236,6 +236,8 @@ export function serializeProgramRow(args: {
     directPsychometric: (Object.keys(directPsychometricMap).length > 0
       ? directPsychometricMap
       : undefined) as CatalogueProgram['directPsychometric'],
+    minimumPsychometric: staticProgram?.minimumPsychometric,
+    minimumBagrut: staticProgram?.minimumBagrut,
     institutionDetails: buildInstitutionDetails(
       requirements,
       urlsByRequirementId,

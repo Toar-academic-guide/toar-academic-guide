@@ -131,5 +131,7 @@ export interface Program {
   thresholds?: Record<UniversityId, number | null>;
   isTauEngineering?: boolean;
   directPsychometric?: Partial<Record<UniversityId, number>>;
+  minimumPsychometric?: Partial<Record<UniversityId, number>>;
+  minimumBagrut?: Partial<Record<UniversityId, number>>;
   institutionDetails?: InstitutionDetail[];
 }
