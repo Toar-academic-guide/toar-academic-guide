@@ -14,11 +14,7 @@ export type AdmissionsSourceSpecificity =
 export type AdmissionsConfidence = 'high' | 'medium' | 'low';
 
 export type AdmissionFactKind =
-  | 'numeric_gate'
-  | 'manual_gate'
-  | 'open_admission'
-  | 'explicit_absence'
-  | 'unknown';
+  'numeric_gate' | 'manual_gate' | 'open_admission' | 'explicit_absence' | 'unknown';
 
 export type AdmissionFactField =
   | 'sekhem'

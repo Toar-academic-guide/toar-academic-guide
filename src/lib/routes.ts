@@ -11,12 +11,7 @@ export const ROUTES = {
 } as const;
 
 export type AppAreaRoute =
-  | 'app'
-  | 'profile'
-  | 'assessment'
-  | 'recommendations'
-  | 'calculator'
-  | 'savedPrograms';
+  'app' | 'profile' | 'assessment' | 'recommendations' | 'calculator' | 'savedPrograms';
 
 export const APP_AREA_ROUTES: Record<AppAreaRoute, string> = {
   app: ROUTES.app,
