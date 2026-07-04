@@ -55,9 +55,9 @@ describe('monday admissions evidence', () => {
       catalogueInstitutionId: 'technion',
       catalogueVisibility: 'catalogue_mapped',
       publicBucket: 'tracked_missing_rule',
-      ruleStatus: 'needs_manual_gate_confirmation',
+      ruleStatus: 'needs_official_rule',
       officialVerificationStatus: 'partial_official_rule_verified',
-      missingData: ['manual_gate_for_medicine', 'unverified_data_science_program_match'],
+      missingData: ['unverified_data_science_program_match'],
     });
     expect(technion?.verifiedProgramThresholds).toEqual(
       expect.arrayContaining([
@@ -66,6 +66,11 @@ describe('monday admissions evidence', () => {
           threshold: 91,
           sourceUrl: expect.stringContaining('admissions.technion.ac.il'),
         }),
+        expect.objectContaining({
+          programId: 'technion_medicine',
+          threshold: 92,
+          thresholdKind: 'invitation_to_manual_gate',
+        }),
       ]),
     );
 
@@ -73,7 +78,7 @@ describe('monday admissions evidence', () => {
       expect.arrayContaining([
         expect.objectContaining({
           itemId: '12220699650',
-          missingData: ['manual_gate_for_medicine', 'unverified_data_science_program_match'],
+          missingData: ['unverified_data_science_program_match'],
         }),
       ]),
     );

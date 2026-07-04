@@ -173,6 +173,10 @@ function resolveCoverageStatus(args: {
     return 'open_admission';
   }
 
+  if (capability === 'manual_gate' && evidence) {
+    return 'manual_or_eligible';
+  }
+
   if (evidence) {
     if (evidence.publicBucket === 'decision_capable') {
       return 'decision_rule_available';

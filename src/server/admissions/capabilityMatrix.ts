@@ -218,11 +218,25 @@ export function buildAdmissionsCapabilityMatrix(args: {
       const institution = institutions.find((entry) => entry.id === institutionId);
       const hasCalculatorConfig = Boolean(institution?.calculatorConfig);
       const hasThreshold = hasDecisionThreshold(program, institutionId);
+      const verifiedThreshold = getVerifiedProgramThreshold(evidence, program.id);
       const hasVerifiedProgramThreshold = hasVerifiedDecisionThreshold({
         evidence,
         program,
         institutionId,
       });
+
+      if (
+        hasCalculatorConfig &&
+        verifiedThreshold?.thresholdKind === 'invitation_to_manual_gate'
+      ) {
+        return {
+          institutionId,
+          capability: 'manual_gate',
+          sourceTarget,
+          evidence,
+          freshnessState,
+        };
+      }
 
       if (hasCalculatorConfig && hasThreshold && hasVerifiedProgramThreshold) {
         return {
@@ -321,15 +335,24 @@ function hasVerifiedDecisionThreshold(args: {
   institutionId: string;
 }): boolean {
   const { evidence, program, institutionId } = args;
-  const verifiedThreshold = evidence?.verifiedProgramThresholds?.find(
-    (entry) => entry.programId === program.id,
-  );
+  const verifiedThreshold = getVerifiedProgramThreshold(evidence, program.id);
 
   if (!verifiedThreshold) {
     return false;
   }
 
+  if (verifiedThreshold.thresholdKind === 'invitation_to_manual_gate') {
+    return false;
+  }
+
   return program.thresholds?.[institutionId] === verifiedThreshold.threshold;
+}
+
+function getVerifiedProgramThreshold(
+  evidence: MondayAdmissionEvidenceRecord | undefined,
+  programId: string,
+) {
+  return evidence?.verifiedProgramThresholds?.find((entry) => entry.programId === programId);
 }
 
 function selectBestEvidence(institutionId: string): MondayAdmissionEvidenceRecord | undefined {

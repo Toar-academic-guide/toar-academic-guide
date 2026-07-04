@@ -224,6 +224,30 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     expect(bguEntry?.evidence?.missingData).toContain('threshold_or_status');
   });
 
+  it('promotes Technion medicine to manual_gate once the official MoR invitation threshold is verified', () => {
+    const program = makeProgram({
+      id: 'technion_medicine',
+      linkedInstitutionIds: ['technion'],
+    });
+
+    const entries = buildAdmissionsCapabilityMatrix({
+      program,
+      institutions: INSTITUTIONS,
+    });
+
+    const technionEntry = entries.find((e) => e.institutionId === 'technion');
+    expect(technionEntry?.capability).toBe('manual_gate');
+    expect(technionEntry?.evidence?.verifiedProgramThresholds).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          programId: 'technion_medicine',
+          threshold: 92,
+          thresholdKind: 'invitation_to_manual_gate',
+        }),
+      ]),
+    );
+  });
+
   it('promotes a Technion program only when its official threshold was verified', () => {
     const program = makeProgram({
       id: 'technion_cs',

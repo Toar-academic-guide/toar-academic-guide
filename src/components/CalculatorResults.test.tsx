@@ -199,6 +199,55 @@ describe('CalculatorResults', () => {
     expect(screen.getByText(/אין סף ציונים אוטומטי שמונע הגשה/)).toBeTruthy();
   });
 
+  it('renders manual-gate threshold failures as below the official invitation score', async () => {
+    hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
+      report([
+        {
+          institution: {
+            id: 'technion',
+            name: 'הטכניון – מכון טכנולוגי לישראל',
+            region: 'north',
+            domain: 'technion.ac.il',
+            universityId: 'technion',
+          },
+          linkedInstitutionId: 'technion',
+          capability: 'manual_gate',
+          kind: 'manual_gate',
+          decision: 'below',
+          confidence: 'high',
+          sourceLabel: 'סף זימון נדרש',
+          explanation:
+            'לפי המקור הרשמי, צריך להגיע לפחות לסכם 92 כדי לעבור לשלב המיון הידני.',
+          nextAction:
+            'שפרו את הנתונים שמופיעים בפער לפני הרשמה. גם מעבר סף הזימון לא מבטיח קבלה סופית.',
+          score: 84.5,
+          scoreLabel: 'סכם',
+          threshold: 92,
+          deltaNeeded: {
+            psychometric: 100,
+            bagrut: 15,
+          },
+        },
+      ]),
+    );
+
+    render(
+      <CalculatorResults
+        degreeId="technion_medicine"
+        programs={programs}
+        psychometric={700}
+        bagrut={100}
+        onBack={() => {}}
+      />,
+    );
+
+    expect(
+      await screen.findByLabelText('הטכניון – מכון טכנולוגי לישראל: מתחת לסף'),
+    ).toBeTruthy();
+    expect(screen.getByText(/סכם 84\.5 · סף 92/)).toBeTruthy();
+    expect(screen.getByText(/צריך להגיע לפחות לסכם 92/)).toBeTruthy();
+  });
+
   it('renders a recoverable error state when the route request fails', async () => {
     hoistedMocks.fetchAdmissionsEvaluation.mockRejectedValue(
       new Error('Unable to evaluate admissions right now.'),

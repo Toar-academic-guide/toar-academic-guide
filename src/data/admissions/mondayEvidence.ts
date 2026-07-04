@@ -55,6 +55,7 @@ export interface MondayAdmissionVerifiedProgramThreshold {
   sourceLabel: string;
   verifiedAt: string;
   notes?: string;
+  thresholdKind?: 'acceptance' | 'invitation_to_manual_gate';
 }
 
 export interface MondayAdmissionEvidenceRecord {

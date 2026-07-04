@@ -146,6 +146,20 @@ const technionDataScience: CatalogueProgram = {
   linkedInstitutionIds: ['technion'],
 };
 
+const technionMedicine: CatalogueProgram = {
+  id: 'technion_medicine',
+  name: 'רפואה',
+  institution: 'הטכניון – מכון טכנולוגי לישראל',
+  institutionId: 'technion',
+  type: 'academic',
+  category: 'רפואה',
+  profileScore: { AN: 5, TE: 5, CR: 1, SO: 1, LE: 1, OR: 3, DI: 5, ER: 4 },
+  admissionType: 'sekhem',
+  admissionRequirements: [],
+  thresholds: { technion: null },
+  linkedInstitutionIds: ['technion'],
+};
+
 const bguCs: CatalogueProgram = {
   id: 'bgu_cs',
   name: 'מדעי המחשב',
@@ -279,7 +293,55 @@ describe('evaluateAdmissionsForProgram', () => {
         kind: 'tracked_missing_rule',
         capability: 'tracked_missing_rule',
         decision: 'unknown',
-        missingData: ['manual_gate_for_medicine', 'unverified_data_science_program_match'],
+        missingData: ['unverified_data_science_program_match'],
+      }),
+    );
+  });
+
+  it('treats Technion medicine as a manual-gate flow once the MoR invitation threshold is verified', async () => {
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'technion_medicine',
+        psychometric: 760,
+        bagrut: 115,
+      },
+      program: technionMedicine,
+      institutions,
+    });
+
+    expect(report.results).toContainEqual(
+      expect.objectContaining({
+        linkedInstitutionId: 'technion',
+        kind: 'manual_gate',
+        capability: 'manual_gate',
+        decision: 'eligible_to_apply',
+        score: 96.5,
+        threshold: 92,
+        sourceLabel: 'נדרש מיון נוסף',
+      }),
+    );
+  });
+
+  it('blocks Technion medicine below the official MoR invitation threshold', async () => {
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'technion_medicine',
+        psychometric: 700,
+        bagrut: 100,
+      },
+      program: technionMedicine,
+      institutions,
+    });
+
+    expect(report.results).toContainEqual(
+      expect.objectContaining({
+        linkedInstitutionId: 'technion',
+        kind: 'manual_gate',
+        capability: 'manual_gate',
+        decision: 'below',
+        score: 84.5,
+        threshold: 92,
+        sourceLabel: 'סף זימון נדרש',
       }),
     );
   });

@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 test.describe('app admissions calculator', () => {
-  test('shows an exact TAU result and a Haifa needs-input result without leaving /app/calculator', async ({
+  test('shows exact, needs-input, and manual-gate results without leaving /app/calculator', async ({
     page,
   }) => {
     await page.goto('/app/calculator');
@@ -27,5 +27,17 @@ test.describe('app admissions calculator', () => {
     await expect(page).toHaveURL(/\/app\/calculator$/);
     await expect(page.getByLabel('אוניברסיטת חיפה: נדרשים נתונים')).toBeVisible();
     await expect(page.getByText('נדרשים נתונים נוספים')).toBeVisible();
+
+    await page.getByRole('button', { name: 'חזרה', exact: true }).click();
+
+    await page.locator('#psychometric').fill('760');
+    await page.locator('#bagrut').fill('115');
+    await page.locator('#degree').selectOption('technion_medicine');
+    await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
+
+    await expect(page).toHaveURL(/\/app\/calculator$/);
+    await expect(page.getByLabel('הטכניון – מכון טכנולוגי לישראל: אפשר להגיש מועמדות')).toBeVisible();
+    await expect(page.getByText('נדרש מיון נוסף')).toBeVisible();
+    await expect(page.getByText(/סכם 96\.5 · סף 92/)).toBeVisible();
   });
 });

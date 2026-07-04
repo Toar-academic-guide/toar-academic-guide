@@ -30,7 +30,7 @@ Generated from the local Monday export. This file intentionally summarizes clean
 | blocked_official_source              |     2 |
 | decision_rule_available              |     5 |
 | manual_or_eligibility_rule_available |    26 |
-| needs_manual_gate_confirmation       |     1 |
+| needs_official_rule                  |     1 |
 | needs_official_url                   |   169 |
 | needs_structured_requirements        |     7 |
 | needs_threshold_or_status            |     1 |
@@ -58,9 +58,9 @@ Generated from the local Monday export. This file intentionally summarizes clean
 
 ## Tracked Missing Rules
 
-| Item                              | Missing data                                                    | First official URL candidate                         | Next action                                                                                                                                                                          |
-| --------------------------------- | --------------------------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 3. הטכניון - מכון טכנולוגי לישראל | manual_gate_for_medicine, unverified_data_science_program_match | https://admissions.technion.ac.il/calculator/        | Keep using verified Technion thresholds for mapped non-medicine programs; separately model medicine as threshold plus MoR/manual gate and verify the data-science programme mapping. |
-| 4. אוניברסיטת בן-גוריון בנגב      | threshold_or_status                                             | https://bgu4u.bgu.ac.il/html/average_calc/index.php  | Find an alternate official BGU source that publishes per-program admission thresholds/status (e.g. department pages or a ספי קבלה PDF) before promoting BGU to decision-capable.     |
-| 5. אוניברסיטת בר-אילן             | automation_or_alternate_official_source                         | https://shoham.biu.ac.il/kabala/Psychometric.aspx    | Move Bar-Ilan to a browser-automation lane with CAPTCHA handling, or find an alternate official BIU page that publishes thresholds statically.                                       |
-| 8. אוניברסיטת אריאל בשומרון       | automation_or_alternate_official_source                         | https://pniot.ariel.ac.il/projects/tzmm/NewCalcMark/ | Move Ariel to a browser-automation lane (Hermes/VPS) or find an alternate official Ariel admissions page that publishes thresholds statically.                                       |
+| Item                              | Missing data                            | First official URL candidate                         | Next action                                                                                                                                                                                                                      |
+| --------------------------------- | --------------------------------------- | ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 3. הטכניון - מכון טכנולוגי לישראל | unverified_data_science_program_match   | https://admissions.technion.ac.il/calculator/        | Keep using verified Technion thresholds for mapped programmes. Medicine is now modeled as a score invitation threshold plus MoR/manual screening; the remaining follow-up is to verify the exact data-science programme mapping. |
+| 4. אוניברסיטת בן-גוריון בנגב      | threshold_or_status                     | https://bgu4u.bgu.ac.il/html/average_calc/index.php  | Find an alternate official BGU source that publishes per-program admission thresholds/status (e.g. department pages or a ספי קבלה PDF) before promoting BGU to decision-capable.                                                 |
+| 5. אוניברסיטת בר-אילן             | automation_or_alternate_official_source | https://shoham.biu.ac.il/kabala/Psychometric.aspx    | Move Bar-Ilan to a browser-automation lane with CAPTCHA handling, or find an alternate official BIU page that publishes thresholds statically.                                                                                   |
+| 8. אוניברסיטת אריאל בשומרון       | automation_or_alternate_official_source | https://pniot.ariel.ac.il/projects/tzmm/NewCalcMark/ | Move Ariel to a browser-automation lane (Hermes/VPS) or find an alternate official Ariel admissions page that publishes thresholds statically.                                                                                   |

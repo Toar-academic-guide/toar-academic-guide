@@ -19,7 +19,10 @@ import { runHaifaAdmissionsProof } from '@/server/ingestion/adapters/haifaAdmiss
 import { runTauAdmissionsProof } from '@/server/ingestion/adapters/tauAdmissions';
 import { runTechnionAdmissionsProof } from '@/server/ingestion/adapters/technionAdmissions';
 import { runBguAdmissionsProof } from '@/server/ingestion/adapters/bguAdmissions';
-import { getMondayAdmissionEvidenceByCatalogueInstitutionId } from '@/data/admissions/mondayEvidence';
+import {
+  getMondayAdmissionEvidenceByCatalogueInstitutionId,
+  type MondayAdmissionEvidenceRecord,
+} from '@/data/admissions/mondayEvidence';
 
 const MAX_EXACT_SOURCE_CALLS = 2;
 const OFFICIAL_SOURCE_TIMEOUT_MS = 5000;
@@ -360,6 +363,81 @@ function evaluateNonExactResult(args: {
   }
 
   if (entry.capability === 'manual_gate') {
+    const verifiedThreshold = getVerifiedProgramThreshold(entry.evidence, program.id);
+    if (verifiedThreshold?.thresholdKind === 'invitation_to_manual_gate') {
+      const missingRequiredInputs = getMissingRequiredInputsForEstimate(input, program, institution);
+      if (missingRequiredInputs.length > 0) {
+        return requiredInputsResult(institution, missingRequiredInputs);
+      }
+
+      const calculatorInstitution = getCalculatorInstitutionsFromCatalogue([institution])[0];
+      if (calculatorInstitution) {
+        const [evaluation] = evaluateUniversities(
+          [calculatorInstitution as University],
+          {
+            ...program,
+            thresholds: {
+              ...(program.thresholds ?? {}),
+              [institution.id]: verifiedThreshold.threshold,
+            },
+          },
+          {
+            psychometric: input.psychometric,
+            bagrut: input.bagrut,
+            mathGrade: input.extraInputs?.mathGrade,
+            mathUnits: input.extraInputs?.mathUnits,
+            englishGrade: input.extraInputs?.englishGrade,
+            englishUnits: input.extraInputs?.englishUnits,
+            physicsGrade: input.extraInputs?.physicsGrade,
+            physicsUnits: input.extraInputs?.physicsUnits,
+            csGrade: input.extraInputs?.csGrade,
+            csUnits: input.extraInputs?.csUnits,
+          },
+          { hasMath5: false, hasPhysics5: false },
+        );
+
+        if (evaluation && evaluation.status !== 'unavailable') {
+          const thresholdExplanation =
+            verifiedThreshold.notes ??
+            'הסכם הרשמי כאן הוא סף זימון להמשך מיון ידני, ולא קבלה סופית למסלול.';
+
+          if (evaluation.status === 'below') {
+            return {
+              institution: publicInstitutionShape(institution),
+              linkedInstitutionId: institution.id,
+              capability: 'manual_gate',
+              kind: 'manual_gate',
+              decision: 'below',
+              confidence: 'high',
+              sourceLabel: 'סף זימון נדרש',
+              explanation: `לפי המקור הרשמי, צריך להגיע לפחות לסכם ${verifiedThreshold.threshold} כדי לעבור לשלב המיון הידני. ${thresholdExplanation}`,
+              nextAction:
+                'שפרו את הנתונים שמופיעים בפער לפני הרשמה. גם מעבר סף הזימון לא מבטיח קבלה סופית.',
+              score: evaluation.sekhem,
+              scoreLabel: 'סכם',
+              threshold: verifiedThreshold.threshold,
+              deltaNeeded: evaluation.deltaNeeded,
+            };
+          }
+
+          return {
+            institution: publicInstitutionShape(institution),
+            linkedInstitutionId: institution.id,
+            capability: 'manual_gate',
+            kind: 'manual_gate',
+            decision: 'eligible_to_apply',
+            confidence: 'high',
+            sourceLabel: 'נדרש מיון נוסף',
+            explanation: `לפי המקור הרשמי, הגעתם לסף הזימון ${verifiedThreshold.threshold}. ${thresholdExplanation}`,
+            nextAction: 'הגישו מועמדות והשלימו את שלבי המיון הידניים או הראיונות שנדרשים למסלול.',
+            score: evaluation.sekhem,
+            scoreLabel: 'סכם',
+            threshold: verifiedThreshold.threshold,
+          };
+        }
+      }
+    }
+
     const detail = program.institutionDetails?.find(
       (d) =>
         d.institutionName === institution.name ||
@@ -630,6 +708,13 @@ function publicInstitutionShape(
     calculatorUrl: institution.calculatorUrl,
     universityId: institution.universityId,
   };
+}
+
+function getVerifiedProgramThreshold(
+  evidence: MondayAdmissionEvidenceRecord | undefined,
+  programId: string,
+) {
+  return evidence?.verifiedProgramThresholds?.find((entry) => entry.programId === programId);
 }
 
 function numberOrUndefined(value: unknown): number | undefined {

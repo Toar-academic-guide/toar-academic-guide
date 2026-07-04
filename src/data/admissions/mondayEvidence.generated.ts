@@ -107,7 +107,7 @@ export const mondayAdmissionEvidenceRecords = [
     updateCount: 2,
     capabilityCandidate: 'score_only_or_formula_without_verified_cutoff',
     publicBucket: 'tracked_missing_rule',
-    ruleStatus: 'needs_manual_gate_confirmation',
+    ruleStatus: 'needs_official_rule',
     officialVerificationStatus: 'partial_official_rule_verified',
     confidence: 'high',
     tags: [
@@ -125,15 +125,14 @@ export const mondayAdmissionEvidenceRecords = [
       'https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/',
       'https://admissions.technion.ac.il/wp-content/plugins/technion-calculators/technion-calculators-sum.php',
     ],
-    missingData: ['manual_gate_for_medicine', 'unverified_data_science_program_match'],
+    missingData: ['unverified_data_science_program_match'],
     limitations: [
-      'Official Technion table verifies several catalogue program thresholds, but medicine is only an invitation threshold for MoR/continued screening and must not be presented as final acceptance.',
       'The catalogue data-science program name does not yet exactly match the official Technion table label and remains unpromoted until verified.',
     ],
     decisionReason:
       'Official Technion admissions table, updated 2026-06-08, publishes admission-path score thresholds for mapped non-medicine catalogue programs.',
     nextAction:
-      'Keep using verified Technion thresholds for mapped non-medicine programs; separately model medicine as threshold plus MoR/manual gate and verify the data-science programme mapping.',
+      'Keep using verified Technion thresholds for mapped programmes. Medicine is now modeled as a score invitation threshold plus MoR/manual screening; the remaining follow-up is to verify the exact data-science programme mapping.',
     verifiedProgramThresholds: [
       {
         programId: 'technion_biomedical',
@@ -188,6 +187,17 @@ export const mondayAdmissionEvidenceRecords = [
         sourceLabel: 'טכניון: מסלולי הלימוד לפי אפיקי הקבלה',
         verifiedAt: '2026-06-30',
         notes: 'הנדסת מכונות',
+      },
+      {
+        programId: 'technion_medicine',
+        threshold: 92,
+        thresholdKind: 'invitation_to_manual_gate',
+        sourceUrl:
+          'https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/',
+        sourceLabel: 'טכניון: מסלולי הלימוד לפי אפיקי הקבלה',
+        verifiedAt: '2026-07-04',
+        notes:
+          'מדעי הרפואה - מגמת רפואה. ההערה הרשמית בדף מציינת שזהו סף הזימון למבחן מו"ר, לא קבלה סופית.',
       },
     ],
   },

@@ -72,7 +72,27 @@ describe('catalogue admissions evidence coverage', () => {
           capability: 'estimated',
           status: 'decision_rule_available',
           trackingSource: 'monday_evidence',
-          missingData: ['manual_gate_for_medicine', 'unverified_data_science_program_match'],
+          missingData: ['unverified_data_science_program_match'],
+        }),
+      ]),
+    );
+  });
+
+  it('treats Technion medicine as covered manual-gate work once the invitation threshold is verified', () => {
+    const entries = reconcileCatalogueAdmissionsEvidence({
+      programs: staticPrograms,
+      institutions: staticInstitutions,
+    });
+
+    expect(entries).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          programId: 'technion_medicine',
+          institutionId: 'technion',
+          capability: 'manual_gate',
+          status: 'manual_or_eligible',
+          trackingSource: 'monday_evidence',
+          missingData: ['unverified_data_science_program_match'],
         }),
       ]),
     );
