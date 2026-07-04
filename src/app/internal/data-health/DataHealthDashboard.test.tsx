@@ -207,6 +207,15 @@ function reportWithRisks(): DataHealthReadyReport {
         },
       ],
     },
+    mondayEvidence: {
+      totalItems: 212,
+      catalogueMatched: 34,
+      decisionCapable: 5,
+      trackedMissingRule: 4,
+      blocked: 2,
+      openAdmission: 1,
+      manualOrEligible: 178,
+    },
   };
 }
 
@@ -217,7 +226,10 @@ describe('DataHealthDashboard', () => {
     expect(screen.getByRole('heading', { name: /data health/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /catalogue readiness/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /admissions decision readiness/i })).toBeTruthy();
-    expect(screen.getByRole('heading', { name: /admissions evidence/i })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /^admissions evidence$/i })).toBeTruthy();
+    expect(
+      screen.getByRole('heading', { name: /monday admissions evidence coverage/i }),
+    ).toBeTruthy();
     expect(screen.getByRole('heading', { name: /source coverage/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /source freshness/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /ingestion pipeline/i })).toBeTruthy();
