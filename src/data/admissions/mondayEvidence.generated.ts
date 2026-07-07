@@ -698,6 +698,30 @@ export const mondayAdmissionEvidenceRecords = [
       'Official Reichman admissions pages verify the rule: ממוצע בגרות 100 ומעלה לקבלה ישירה במסלול המבוקש, plus דרישת אנגלית. The reverse-engineered adapted-score formula is Adapted = 4.812 × BagrutAverage + 0.5131 × Psychometric − 163.19, but no per-program adapted-score cutoff is published statically, so the product bucket is eligible-to-apply rather than accepted/below.',
     nextAction:
       'הגישו מועמדות דרך המרכז האישי; ודאו עמידה בממוצע בגרות 100+ וברמת האנגלית הנדרשת למסלול.',
+    structuredAdmissionFacts: [
+      {
+        kind: 'numeric_gate',
+        field: 'bagrut_average',
+        comparison: 'gte',
+        valueNumber: 100,
+        valueText: null,
+        unit: 'average',
+        description: 'ממוצע בגרות 100 ומעלה לקבלה ישירה',
+        confidence: 'high',
+        isRequired: true,
+      },
+      {
+        kind: 'manual_gate',
+        field: 'other',
+        comparison: 'present',
+        valueNumber: null,
+        valueText: 'דרישת אנגלית',
+        unit: 'text',
+        description: 'נדרשת רמת אנגלית מתקדמים א\' לפחות או ציון אמיר"ם/פסיכומטרי תואם.',
+        confidence: 'high',
+        isRequired: true,
+      },
+    ],
   },
   {
     itemId: '12220699121',

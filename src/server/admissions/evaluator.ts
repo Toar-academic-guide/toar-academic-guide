@@ -146,10 +146,15 @@ async function evaluateExactResult(args: {
         },
       });
 
-      return normalizeExactProofResult({
+      return applyStructuredRequirementsToAcceptedScoreResult({
+        input,
+        program: exactTarget.program,
         institution,
-        proof: proof.normalizedPayload,
-        explanationPrefix: 'מקור רשמי של אוניברסיטת חיפה',
+        baseResult: normalizeExactProofResult({
+          institution,
+          proof: proof.normalizedPayload,
+          explanationPrefix: 'מקור רשמי של אוניברסיטת חיפה',
+        }),
       });
     }
 
@@ -163,10 +168,15 @@ async function evaluateExactResult(args: {
         },
       });
 
-      return normalizeExactProofResult({
+      return applyStructuredRequirementsToAcceptedScoreResult({
+        input,
+        program: exactTarget.program,
         institution,
-        proof: proof.normalizedPayload,
-        explanationPrefix: 'מקור רשמי של הטכניון',
+        baseResult: normalizeExactProofResult({
+          institution,
+          proof: proof.normalizedPayload,
+          explanationPrefix: 'מקור רשמי של הטכניון',
+        }),
       });
     }
 
@@ -180,10 +190,15 @@ async function evaluateExactResult(args: {
         },
       });
 
-      return normalizeExactProofResult({
+      return applyStructuredRequirementsToAcceptedScoreResult({
+        input,
+        program: exactTarget.program,
         institution,
-        proof: proof.normalizedPayload,
-        explanationPrefix: 'מקור רשמי של אוניברסיטת בן-גוריון',
+        baseResult: normalizeExactProofResult({
+          institution,
+          proof: proof.normalizedPayload,
+          explanationPrefix: 'מקור רשמי של אוניברסיטת בן-גוריון',
+        }),
       });
     }
 
@@ -196,10 +211,15 @@ async function evaluateExactResult(args: {
       },
     });
 
-    return normalizeExactProofResult({
+    return applyStructuredRequirementsToAcceptedScoreResult({
+      input,
+      program: exactTarget.program,
       institution,
-      proof: proof.normalizedPayload,
-      explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+      baseResult: normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+      }),
     });
   } catch (error) {
     return {
@@ -609,28 +629,33 @@ function evaluateNonExactResult(args: {
         ? 'המשיכו להרשמה ובדקו מועדים, מסמכים ודרישות משלימות באתר המוסד.'
         : 'שפרו את הנתונים שמופיעים בפער או השוו למסלולים אחרים שבהם אתם עומדים בסף.';
 
-    return {
-      institution: publicInstitutionShape(institution),
-      linkedInstitutionId: institution.id,
-      capability: entry.capability,
-      kind: 'estimated',
-      decision: evaluation.status === 'accepted' ? 'accepted' : 'below',
-      confidence: sourceBlocked ? 'medium' : entry.capability === 'estimated' ? 'high' : 'medium',
-      sourceLabel: sourceBlocked
-        ? 'כלל קבלה ממופה, מקור רשמי חסום'
-        : entry.capability === 'estimated'
-          ? 'כלל קבלה ממופה'
-          : 'כלל קבלה ממופה ממקור חלקי',
-      explanation: evaluation.explanation ?? defaultExplanation,
-      nextAction: defaultNextAction,
-      score: evaluation.sekhem,
-      scoreLabel: 'סכם',
-      threshold: evaluation.threshold,
-      deltaNeeded: evaluation.deltaNeeded,
-      evidenceItemId: entry.evidence?.itemId,
-      evidenceItemName: entry.evidence?.itemName,
-      officialUrls,
-    };
+    return applyStructuredRequirementsToAcceptedScoreResult({
+      input,
+      program,
+      institution,
+      baseResult: {
+        institution: publicInstitutionShape(institution),
+        linkedInstitutionId: institution.id,
+        capability: entry.capability,
+        kind: 'estimated',
+        decision: evaluation.status === 'accepted' ? 'accepted' : 'below',
+        confidence: sourceBlocked ? 'medium' : entry.capability === 'estimated' ? 'high' : 'medium',
+        sourceLabel: sourceBlocked
+          ? 'כלל קבלה ממופה, מקור רשמי חסום'
+          : entry.capability === 'estimated'
+            ? 'כלל קבלה ממופה'
+            : 'כלל קבלה ממופה ממקור חלקי',
+        explanation: evaluation.explanation ?? defaultExplanation,
+        nextAction: defaultNextAction,
+        score: evaluation.sekhem,
+        scoreLabel: 'סכם',
+        threshold: evaluation.threshold,
+        deltaNeeded: evaluation.deltaNeeded,
+        evidenceItemId: entry.evidence?.itemId,
+        evidenceItemName: entry.evidence?.itemName,
+        officialUrls,
+      },
+    });
   }
 
   return unsupportedResult(institution, entry);
@@ -947,6 +972,57 @@ function evaluateStructuredRequirementsResult(
   }
 
   return undefined;
+}
+
+function applyStructuredRequirementsToAcceptedScoreResult(args: {
+  input: AdmissionsEvaluationInput;
+  program: CatalogueProgram;
+  institution: CatalogueInstitution;
+  baseResult: AdmissionsEvaluationResult;
+}): AdmissionsEvaluationResult {
+  const { input, program, institution, baseResult } = args;
+
+  if (baseResult.decision !== 'accepted') {
+    return baseResult;
+  }
+
+  const detail = findInstitutionDetail(program, institution);
+  if (!detail?.admissionFacts?.length) {
+    return baseResult;
+  }
+
+  const hasManualStage =
+    detail.admissionFacts.some((fact) => fact.kind === 'manual_gate') ||
+    Boolean(detail.admissionAlternativePaths?.length);
+  const structuredResult = evaluateStructuredRequirementsResult({
+    input,
+    institution,
+    capability: hasManualStage ? 'manual_gate' : 'requirements_only',
+    detail,
+    dynamicRequirements: [],
+    eligibleWithManualGate: false,
+    programType: program.type,
+  });
+
+  if (!structuredResult) {
+    return baseResult;
+  }
+
+  return {
+    ...structuredResult,
+    ...(baseResult.score !== undefined && structuredResult.score === undefined
+      ? { score: baseResult.score }
+      : {}),
+    ...(baseResult.scoreLabel !== undefined && structuredResult.scoreLabel === undefined
+      ? { scoreLabel: baseResult.scoreLabel }
+      : {}),
+    ...(baseResult.threshold !== undefined && structuredResult.threshold === undefined
+      ? { threshold: baseResult.threshold }
+      : {}),
+    ...(baseResult.deltaNeeded !== undefined && structuredResult.deltaNeeded === undefined
+      ? { deltaNeeded: baseResult.deltaNeeded }
+      : {}),
+  };
 }
 
 function readNumericAdmissionFactValue(

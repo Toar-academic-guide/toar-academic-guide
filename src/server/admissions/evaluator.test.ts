@@ -1126,6 +1126,129 @@ describe('evaluateAdmissionsForProgram', () => {
     expect(result.explanation).toContain('אין צורך בפסיכומטרי');
   });
 
+  it('asks for structured subject inputs before returning an accepted score-based result', async () => {
+    const scoreProgram: CatalogueProgram = {
+      id: 'structured_score_program',
+      name: 'הנדסת נתונים',
+      institution: 'אוניברסיטת בן-גוריון בנגב',
+      institutionId: 'bgu',
+      type: 'academic',
+      category: 'הנדסה',
+      profileScore: { AN: 5, TE: 4, CR: 1, SO: 1, LE: 1, OR: 3, DI: 5, ER: 3 },
+      admissionType: 'sekhem',
+      admissionRequirements: [],
+      thresholds: { bgu: 600 },
+      linkedInstitutionIds: ['bgu'],
+      institutionDetails: [
+        {
+          institutionName: 'אוניברסיטת בן-גוריון בנגב',
+          durationYears: 4,
+          estimatedStudentsPerYear: 'לא ידוע',
+          quantitativeMinRequirement: null,
+          englishMinRequirement: null,
+          specificAdmissionNotes: [],
+          officialCalculatorUrl: '',
+          admissionFacts: [
+            {
+              id: 'structured_score_program:bgu:math-units',
+              kind: 'numeric_gate',
+              field: 'math_units',
+              comparison: 'gte',
+              valueNumber: 5,
+              valueText: null,
+              unit: 'units',
+              description: 'מתמטיקה ברמת 5 יח"ל',
+              confidence: 'high',
+              isRequired: true,
+            },
+          ],
+        },
+      ],
+    };
+
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'structured_score_program',
+        psychometric: 760,
+        bagrut: 115,
+      },
+      program: scoreProgram,
+      institutions,
+    });
+
+    expect(report.results).toContainEqual(
+      expect.objectContaining({
+        linkedInstitutionId: 'bgu',
+        capability: 'needs_input',
+        kind: 'needs_input',
+        requiredInputs: ['math_units'],
+      }),
+    );
+  });
+
+  it('turns an accepted score-based result into manual_gate when structured interview stages remain', async () => {
+    const scoreProgram: CatalogueProgram = {
+      id: 'structured_score_manual_program',
+      name: 'פסיכולוגיה יישומית',
+      institution: 'אוניברסיטת בן-גוריון בנגב',
+      institutionId: 'bgu',
+      type: 'academic',
+      category: 'פסיכולוגיה',
+      profileScore: { AN: 4, TE: 2, CR: 1, SO: 5, LE: 2, OR: 2, DI: 1, ER: 4 },
+      admissionType: 'sekhem',
+      admissionRequirements: [],
+      thresholds: { bgu: 600 },
+      linkedInstitutionIds: ['bgu'],
+      institutionDetails: [
+        {
+          institutionName: 'אוניברסיטת בן-גוריון בנגב',
+          durationYears: 3,
+          estimatedStudentsPerYear: 'לא ידוע',
+          quantitativeMinRequirement: null,
+          englishMinRequirement: null,
+          specificAdmissionNotes: [],
+          officialCalculatorUrl: '',
+          admissionFacts: [
+            {
+              id: 'structured_score_manual_program:bgu:interview',
+              kind: 'manual_gate',
+              field: 'interview',
+              comparison: 'present',
+              valueNumber: null,
+              valueText: 'ראיון קבלה',
+              unit: 'text',
+              description: 'ראיון קבלה מחייב',
+              confidence: 'high',
+              isRequired: true,
+            },
+          ],
+        },
+      ],
+    };
+
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'structured_score_manual_program',
+        psychometric: 760,
+        bagrut: 115,
+      },
+      program: scoreProgram,
+      institutions,
+    });
+
+    expect(report.results).toContainEqual(
+      expect.objectContaining({
+        linkedInstitutionId: 'bgu',
+        capability: 'manual_gate',
+        kind: 'manual_gate',
+        decision: 'eligible_to_apply',
+        score: expect.any(Number),
+        threshold: 600,
+        explanation: expect.stringContaining('ראיון קבלה מחייב'),
+      }),
+    );
+  });
+
   it('returns below when structured numeric admission facts are not met before a manual gate stage', async () => {
     const structuredProgram: CatalogueProgram = {
       id: 'structured_psych_program',

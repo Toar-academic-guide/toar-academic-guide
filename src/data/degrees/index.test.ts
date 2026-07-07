@@ -4,6 +4,139 @@ import { mondayAdmissionsEvidence } from '../admissions/mondayEvidence';
 import { INSTITUTIONS } from '../institutions';
 import { allPrograms } from './index';
 
+type CatalogueProgramLike = (typeof allPrograms)[number];
+type InstitutionDetailLike = NonNullable<CatalogueProgramLike['institutionDetails']>[number];
+
+function isSoftAdmissionsText(text: string) {
+  return (
+    /יתרון|מומלץ|המלצה|בונוס|תחרות גבוהה/u.test(text) ||
+    /מופיע בקטלוג|קמפוס צפת/u.test(text) ||
+    /The official |client-side|not published|remain behind|adapted-score formula/i.test(text)
+  );
+}
+
+function hasNumericFact(detail: InstitutionDetailLike, field: string, minimum?: number) {
+  return (detail.admissionFacts ?? []).some(
+    (fact) =>
+      fact.kind === 'numeric_gate' &&
+      fact.field === field &&
+      (minimum === undefined || (fact.valueNumber ?? -Infinity) >= minimum),
+  );
+}
+
+function hasManualFact(detail: InstitutionDetailLike, fields: string[]) {
+  return (detail.admissionFacts ?? []).some(
+    (fact) => fact.kind === 'manual_gate' && fields.includes(fact.field),
+  );
+}
+
+function isStructuredCoverageForText(
+  program: CatalogueProgramLike,
+  detail: InstitutionDetailLike,
+  text: string,
+) {
+  if (isSoftAdmissionsText(text)) {
+    return true;
+  }
+
+  const facts = detail.admissionFacts ?? [];
+  const paths = detail.admissionAlternativePaths ?? [];
+
+  if (/קבלה פתוחה/u.test(text)) {
+    return facts.some((fact) => fact.kind === 'open_admission');
+  }
+
+  if (/אין סף פסיכומטרי/u.test(text)) {
+    return facts.some((fact) => fact.kind === 'explicit_absence' && fact.field === 'psychometric');
+  }
+
+  if (/אין סף .*בגרות/u.test(text)) {
+    return facts.some(
+      (fact) => fact.kind === 'explicit_absence' && fact.field === 'bagrut_average',
+    );
+  }
+
+  if (/רמת אנגלית|אמיר"ם|אמירם|מתקדמים א/u.test(text)) {
+    return (
+      hasManualFact(detail, ['other']) ||
+      hasNumericFact(detail, 'english_units') ||
+      hasNumericFact(detail, 'english_grade')
+    );
+  }
+
+  if (/קבלה אוטומטית/u.test(text)) {
+    return (
+      hasNumericFact(detail, 'bagrut_average') ||
+      hasNumericFact(detail, 'psychometric') ||
+      hasNumericFact(detail, 'math_units')
+    );
+  }
+
+  if (/ציון התאמה|ממוצע בגרות בהתאם למסלול/u.test(text)) {
+    return hasManualFact(detail, ['other']);
+  }
+
+  if (/פסיכומטרי/u.test(text) && /כמותי/u.test(text)) {
+    return (
+      hasNumericFact(detail, 'psychometric') && hasNumericFact(detail, 'psychometric_quantitative')
+    );
+  }
+
+  if (/פסיכומטרי/u.test(text) && /≥|\+/.test(text)) {
+    return hasNumericFact(detail, 'psychometric') || Boolean(program.minimumPsychometric);
+  }
+
+  if (/ממוצע בגרות(?: משוקלל)?/u.test(text)) {
+    return hasNumericFact(detail, 'bagrut_average') || Boolean(program.minimumBagrut);
+  }
+
+  if (/5 יח"ל מתמטיקה/u.test(text) && /4 יח"ל/u.test(text) && /\d+\+/u.test(text)) {
+    return hasNumericFact(detail, 'math_units', 5) && hasNumericFact(detail, 'math_grade');
+  }
+
+  if (/5 יח"ל מתמטיקה/u.test(text) && /חובה/u.test(text)) {
+    return hasNumericFact(detail, 'math_units', 5);
+  }
+
+  if (/4 יח"ל מתמטיקה/u.test(text) && /חובה/u.test(text)) {
+    return hasNumericFact(detail, 'math_units', 4);
+  }
+
+  if (/5 יח"ל פיזיקה/u.test(text) && /חובה/u.test(text)) {
+    return hasNumericFact(detail, 'physics_units', 5);
+  }
+
+  if (/בגרות מלאה/u.test(text)) {
+    return hasManualFact(detail, ['document_check']);
+  }
+
+  if (/ביולוגיה|כימיה/u.test(text) && /חובה/u.test(text)) {
+    return hasManualFact(detail, ['required_subject']);
+  }
+
+  if (/תיק עבודות/u.test(text)) {
+    return hasManualFact(detail, ['portfolio']);
+  }
+
+  if (/ראיון/u.test(text)) {
+    return hasManualFact(detail, ['interview', 'committee']);
+  }
+
+  if (/ועדת קבלה|ועדה/u.test(text)) {
+    return hasManualFact(detail, ['committee', 'interview']);
+  }
+
+  if (/מבחן|אודישן|מבדק/u.test(text)) {
+    return hasManualFact(detail, ['exam']);
+  }
+
+  if (/חלופ|מכינה|אפיק מעבר|מסלולי הכנה/u.test(text)) {
+    return paths.length > 0;
+  }
+
+  return true;
+}
+
 describe('dynamic Monday-derived programme inference', () => {
   it('does not fall back broad culinary and education institutions to synthetic computer-science programmes', () => {
     expect(allPrograms).toEqual(
@@ -352,5 +485,49 @@ describe('dynamic Monday-derived programme inference', () => {
       return record && record.ruleStatus === 'not_applicable';
     });
     expect(hasAnyNotApplicable).toBe(false);
+  });
+
+  it('synthesizes institution details for non-Ariel requirements programs that only had admissionRequirements text', () => {
+    const missingDetails = allPrograms
+      .filter(
+        (program) =>
+          program.institutionId !== 'ariel' &&
+          program.admissionType === 'requirements' &&
+          program.admissionRequirements.length > 0 &&
+          !program.institutionDetails?.length,
+      )
+      .map((program) => program.id);
+
+    expect(missingDetails).toEqual([]);
+  });
+
+  it('does not leave non-Ariel hard admissions requirements as unstructured text only', () => {
+    const uncovered = allPrograms.flatMap((program) => {
+      if (program.institutionId === 'ariel') {
+        return [];
+      }
+
+      return (program.institutionDetails ?? []).flatMap((detail) => {
+        const texts = [...(detail.specificAdmissionNotes ?? []), ...program.admissionRequirements];
+        const missing = texts.filter(
+          (text) =>
+            /חובה|מחייב|נדרש|תנאי|מינימלי|פסיכומטרי|בגרות|מתמטיקה|אנגלית|פיזיקה|תיק עבודות|ראיון|מבחן|מכינה|קבלה פתוחה/u.test(
+              text,
+            ) && !isStructuredCoverageForText(program, detail, text),
+        );
+
+        return missing.length > 0
+          ? [
+              {
+                programId: program.id,
+                institutionName: detail.institutionName,
+                missing,
+              },
+            ]
+          : [];
+      });
+    });
+
+    expect(uncovered).toEqual([]);
   });
 });

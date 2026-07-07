@@ -109,6 +109,30 @@
         "https://www.runi.ac.il/admissions/undergraduate/",
         "https://www.runi.ac.il/admissions/undergraduate/calculator",
         "https://www.runi.ac.il/admissions/undergraduate/categories"
+      ],
+      "structuredAdmissionFacts": [
+        {
+          "kind": "numeric_gate",
+          "field": "bagrut_average",
+          "comparison": "gte",
+          "valueNumber": 100,
+          "valueText": null,
+          "unit": "average",
+          "description": "ממוצע בגרות 100 ומעלה לקבלה ישירה",
+          "confidence": "high",
+          "isRequired": true
+        },
+        {
+          "kind": "manual_gate",
+          "field": "other",
+          "comparison": "present",
+          "valueNumber": null,
+          "valueText": "דרישת אנגלית",
+          "unit": "text",
+          "description": "נדרשת רמת אנגלית מתקדמים א' לפחות או ציון אמיר\"ם/פסיכומטרי תואם.",
+          "confidence": "high",
+          "isRequired": true
+        }
       ]
     },
     {

@@ -19,6 +19,8 @@ import type {
   AdmissionsSourceCandidate,
 } from './types';
 
+type ProgramInstitutionDetail = NonNullable<Program['institutionDetails']>[number];
+
 const DYNAMIC_PROGRAM_MAP = [
   {
     keywords: [
@@ -225,6 +227,562 @@ function buildStructuredAlternativePaths(args: {
     ...(path.url ? { url: path.url } : {}),
     priority: path.priority,
   }));
+}
+
+function createLegacyFact(args: {
+  programId: string;
+  detailIndex: number;
+  factIndex: number;
+  kind: AdmissionFact['kind'];
+  field: AdmissionFact['field'];
+  comparison: AdmissionFact['comparison'];
+  valueNumber: number | null;
+  valueText: string | null;
+  unit: AdmissionFact['unit'];
+  description: string;
+  isRequired: boolean;
+  groupKey?: string;
+}): AdmissionFact {
+  const {
+    programId,
+    detailIndex,
+    factIndex,
+    kind,
+    field,
+    comparison,
+    valueNumber,
+    valueText,
+    unit,
+    description,
+    isRequired,
+    groupKey,
+  } = args;
+
+  return {
+    id: `${programId}:detail-${detailIndex}:legacy-fact-${factIndex}`,
+    kind,
+    field,
+    comparison,
+    valueNumber,
+    valueText,
+    unit,
+    description,
+    confidence: 'high',
+    isRequired,
+    ...(groupKey ? { groupKey } : {}),
+  };
+}
+
+function createLegacyAlternativePath(args: {
+  programId: string;
+  detailIndex: number;
+  pathIndex: number;
+  kind: AdmissionAlternativePath['kind'];
+  title: string;
+  description: string;
+}): AdmissionAlternativePath {
+  const { programId, detailIndex, pathIndex, kind, title, description } = args;
+
+  return {
+    id: `${programId}:detail-${detailIndex}:legacy-path-${pathIndex}`,
+    kind,
+    title,
+    description,
+    priority: pathIndex + 1,
+  };
+}
+
+function uniqueBy<T>(items: readonly T[], getKey: (item: T) => string): T[] {
+  const seen = new Set<string>();
+  const result: T[] = [];
+
+  for (const item of items) {
+    const key = getKey(item);
+    if (seen.has(key)) {
+      continue;
+    }
+
+    seen.add(key);
+    result.push(item);
+  }
+
+  return result;
+}
+
+function buildLegacyStructuredFacts(args: {
+  program: Program;
+  detail: ProgramInstitutionDetail;
+  detailIndex: number;
+}) {
+  const { program, detail, detailIndex } = args;
+  const texts = uniqueBy(
+    [...(detail.specificAdmissionNotes ?? []), ...(program.admissionRequirements ?? [])]
+      .map((value) => value.trim())
+      .filter(Boolean),
+    (value) => value,
+  );
+
+  const facts: AdmissionFact[] = [];
+  let factIndex = 0;
+  const pushFact = (fact: Omit<AdmissionFact, 'id' | 'confidence'>) => {
+    facts.push(
+      createLegacyFact({
+        programId: program.id,
+        detailIndex,
+        factIndex,
+        kind: fact.kind,
+        field: fact.field,
+        comparison: fact.comparison,
+        valueNumber: fact.valueNumber,
+        valueText: fact.valueText,
+        unit: fact.unit,
+        description: fact.description,
+        isRequired: fact.isRequired,
+        ...(fact.groupKey ? { groupKey: fact.groupKey } : {}),
+      }),
+    );
+    factIndex += 1;
+  };
+
+  for (const text of texts) {
+    const normalizedText = text.replace(/\s+/gu, ' ').trim();
+
+    if (/קבלה פתוחה/u.test(normalizedText)) {
+      pushFact({
+        kind: 'open_admission',
+        field: 'open_admission',
+        comparison: 'eq',
+        valueNumber: null,
+        valueText: 'קבלה פתוחה',
+        unit: 'boolean',
+        description: normalizedText,
+        isRequired: false,
+      });
+    }
+
+    if (/אין סף פסיכומטרי/u.test(normalizedText)) {
+      pushFact({
+        kind: 'explicit_absence',
+        field: 'psychometric',
+        comparison: 'not_required',
+        valueNumber: null,
+        valueText: 'אין סף פסיכומטרי',
+        unit: 'boolean',
+        description: normalizedText,
+        isRequired: false,
+      });
+    }
+
+    if (/אין סף .*בגרות/u.test(normalizedText)) {
+      pushFact({
+        kind: 'explicit_absence',
+        field: 'bagrut_average',
+        comparison: 'not_required',
+        valueNumber: null,
+        valueText: 'אין סף בגרות',
+        unit: 'boolean',
+        description: normalizedText,
+        isRequired: false,
+      });
+    }
+
+    if (
+      /5 יח"ל מתמטיקה(?: ו|-)?5 יח"ל פיזיקה/iu.test(normalizedText) ||
+      /5 יח"ל מתמטיקה ופיזיקה/iu.test(normalizedText)
+    ) {
+      pushFact({
+        kind: 'numeric_gate',
+        field: 'math_units',
+        comparison: 'gte',
+        valueNumber: 5,
+        valueText: null,
+        unit: 'units',
+        description: 'מתמטיקה ברמת 5 יח"ל',
+        isRequired: true,
+      });
+      pushFact({
+        kind: 'numeric_gate',
+        field: 'physics_units',
+        comparison: 'gte',
+        valueNumber: 5,
+        valueText: null,
+        unit: 'units',
+        description: 'פיזיקה ברמת 5 יח"ל',
+        isRequired: true,
+      });
+    } else if (/5 יח"ל מתמטיקה/iu.test(normalizedText) && /חובה/u.test(normalizedText)) {
+      pushFact({
+        kind: 'numeric_gate',
+        field: 'math_units',
+        comparison: 'gte',
+        valueNumber: 5,
+        valueText: null,
+        unit: 'units',
+        description: 'מתמטיקה ברמת 5 יח"ל',
+        isRequired: true,
+      });
+    } else if (/4 יח"ל מתמטיקה/iu.test(normalizedText) && /חובה/u.test(normalizedText)) {
+      pushFact({
+        kind: 'numeric_gate',
+        field: 'math_units',
+        comparison: 'gte',
+        valueNumber: 4,
+        valueText: null,
+        unit: 'units',
+        description: 'מתמטיקה ברמת 4 יח"ל לפחות',
+        isRequired: true,
+      });
+    }
+
+    if (/5 יח"ל פיזיקה/iu.test(normalizedText) && /חובה/u.test(normalizedText)) {
+      pushFact({
+        kind: 'numeric_gate',
+        field: 'physics_units',
+        comparison: 'gte',
+        valueNumber: 5,
+        valueText: null,
+        unit: 'units',
+        description: 'פיזיקה ברמת 5 יח"ל',
+        isRequired: true,
+      });
+    }
+
+    const minPsychometric = normalizedText.match(/ציון פסיכומטרי מינימלי:\s*(\d+)/u);
+    if (minPsychometric) {
+      pushFact({
+        kind: 'numeric_gate',
+        field: 'psychometric',
+        comparison: 'gte',
+        valueNumber: Number(minPsychometric[1]),
+        valueText: null,
+        unit: 'points',
+        description: `פסיכומטרי ${minPsychometric[1]} ומעלה`,
+        isRequired: true,
+      });
+    }
+
+    const minBagrut = normalizedText.match(/ממוצע בגרות מינימלי:\s*(\d+)/u);
+    if (minBagrut) {
+      pushFact({
+        kind: 'numeric_gate',
+        field: 'bagrut_average',
+        comparison: 'gte',
+        valueNumber: Number(minBagrut[1]),
+        valueText: null,
+        unit: 'average',
+        description: `ממוצע בגרות ${minBagrut[1]} ומעלה`,
+        isRequired: true,
+      });
+    }
+
+    const directPsychometric = normalizedText.match(
+      /(?:קבלה ישירה\s*)?(?:ב)?פסיכומטרי\s*(?:≥)?\s*(\d+)(?:\+)?/u,
+    );
+    if (directPsychometric) {
+      pushFact({
+        kind: 'numeric_gate',
+        field: 'psychometric',
+        comparison: 'gte',
+        valueNumber: Number(directPsychometric[1]),
+        valueText: null,
+        unit: 'points',
+        description: `פסיכומטרי ${directPsychometric[1]} ומעלה`,
+        isRequired: true,
+      });
+    }
+
+    const bagrutAverage = normalizedText.match(/ממוצע בגרות(?: משוקלל)?\s*(\d+)(?:\+| ומעלה)/u);
+    if (bagrutAverage) {
+      pushFact({
+        kind: 'numeric_gate',
+        field: 'bagrut_average',
+        comparison: 'gte',
+        valueNumber: Number(bagrutAverage[1]),
+        valueText: null,
+        unit: 'average',
+        description: `ממוצע בגרות ${bagrutAverage[1]} ומעלה`,
+        isRequired: true,
+      });
+    }
+
+    const quantitativePsychometric = normalizedText.match(/כמותי\s*(\d+)(?:\+| ומעלה)/u);
+    if (quantitativePsychometric) {
+      pushFact({
+        kind: 'numeric_gate',
+        field: 'psychometric_quantitative',
+        comparison: 'gte',
+        valueNumber: Number(quantitativePsychometric[1]),
+        valueText: null,
+        unit: 'points',
+        description: `כמותי ${quantitativePsychometric[1]} ומעלה`,
+        isRequired: true,
+      });
+    }
+
+    const fiveUnitMathRoute = normalizedText.match(/5 יח"ל\s*(\d+)\+/u);
+    const fourUnitMathRoute = normalizedText.match(/4 יח"ל\s*(\d+)\+/u);
+    if (fiveUnitMathRoute && fourUnitMathRoute && /מתמטיקה/u.test(normalizedText)) {
+      pushFact({
+        kind: 'numeric_gate',
+        field: 'math_units',
+        comparison: 'gte',
+        valueNumber: 5,
+        valueText: null,
+        unit: 'units',
+        description: 'מתמטיקה ברמת 5 יח"ל',
+        isRequired: true,
+        groupKey: 'math_route/5_units',
+      });
+      pushFact({
+        kind: 'numeric_gate',
+        field: 'math_grade',
+        comparison: 'gte',
+        valueNumber: Number(fiveUnitMathRoute[1]),
+        valueText: null,
+        unit: 'points',
+        description: `ציון ${fiveUnitMathRoute[1]} ומעלה במתמטיקה 5 יח"ל`,
+        isRequired: true,
+        groupKey: 'math_route/5_units',
+      });
+      pushFact({
+        kind: 'numeric_gate',
+        field: 'math_units',
+        comparison: 'gte',
+        valueNumber: 4,
+        valueText: null,
+        unit: 'units',
+        description: 'מתמטיקה ברמת 4 יח"ל',
+        isRequired: true,
+        groupKey: 'math_route/4_units',
+      });
+      pushFact({
+        kind: 'numeric_gate',
+        field: 'math_grade',
+        comparison: 'gte',
+        valueNumber: Number(fourUnitMathRoute[1]),
+        valueText: null,
+        unit: 'points',
+        description: `ציון ${fourUnitMathRoute[1]} ומעלה במתמטיקה 4 יח"ל`,
+        isRequired: true,
+        groupKey: 'math_route/4_units',
+      });
+    }
+
+    if (/בגרות מלאה/u.test(normalizedText)) {
+      pushFact({
+        kind: 'manual_gate',
+        field: 'document_check',
+        comparison: 'present',
+        valueNumber: null,
+        valueText: 'בדיקת מסמכי בגרות',
+        unit: 'text',
+        description: 'נדרשת בדיקת זכאות לתעודת בגרות מלאה או למסמכים חלופיים שהמוסד דורש.',
+        isRequired: true,
+      });
+    }
+
+    if (
+      /ביולוגיה .*חובה/u.test(normalizedText) ||
+      /כימיה .*חובה/u.test(normalizedText) ||
+      /ביולוגיה ו\/או כימיה 5 יח"ל .*חובה/u.test(normalizedText) ||
+      /בגרות מלאה עם 5 יח"ל ביולוגיה ו\/או כימיה/u.test(normalizedText) ||
+      /בגרות מלאה עם ביולוגיה/u.test(normalizedText)
+    ) {
+      pushFact({
+        kind: 'manual_gate',
+        field: 'required_subject',
+        comparison: 'present',
+        valueNumber: null,
+        valueText: normalizedText,
+        unit: 'text',
+        description: normalizedText,
+        isRequired: true,
+      });
+    }
+
+    if (/תיק עבודות/u.test(normalizedText)) {
+      pushFact({
+        kind: 'manual_gate',
+        field: 'portfolio',
+        comparison: 'present',
+        valueNumber: null,
+        valueText: 'תיק עבודות',
+        unit: 'text',
+        description: normalizedText,
+        isRequired: true,
+      });
+    }
+
+    if (/ראיון/u.test(normalizedText)) {
+      pushFact({
+        kind: 'manual_gate',
+        field: 'interview',
+        comparison: 'present',
+        valueNumber: null,
+        valueText: 'ראיון קבלה',
+        unit: 'text',
+        description: normalizedText,
+        isRequired: true,
+      });
+    }
+
+    if (/ועדת קבלה|ועדה מקצועית|ועדה אמנותית/u.test(normalizedText)) {
+      pushFact({
+        kind: 'manual_gate',
+        field: 'committee',
+        comparison: 'present',
+        valueNumber: null,
+        valueText: 'ועדת קבלה',
+        unit: 'text',
+        description: normalizedText,
+        isRequired: true,
+      });
+    }
+
+    if (/מבחן|אודישן|מבדק/u.test(normalizedText)) {
+      pushFact({
+        kind: 'manual_gate',
+        field: 'exam',
+        comparison: 'present',
+        valueNumber: null,
+        valueText: 'מבחן קבלה',
+        unit: 'text',
+        description: normalizedText,
+        isRequired: true,
+      });
+    }
+
+    if (/רמת אנגלית|אמיר"ם|אמירם|מתקדמים א/u.test(normalizedText)) {
+      pushFact({
+        kind: 'manual_gate',
+        field: 'other',
+        comparison: 'present',
+        valueNumber: null,
+        valueText: normalizedText,
+        unit: 'text',
+        description: normalizedText,
+        isRequired: true,
+      });
+    }
+
+    if (/ציון התאמה|ממוצע בגרות בהתאם למסלול/u.test(normalizedText)) {
+      pushFact({
+        kind: 'manual_gate',
+        field: 'other',
+        comparison: 'present',
+        valueNumber: null,
+        valueText: normalizedText,
+        unit: 'text',
+        description: normalizedText,
+        isRequired: true,
+      });
+    }
+  }
+
+  const existingFacts = detail.admissionFacts ?? [];
+  return uniqueBy([...existingFacts, ...facts], (fact) =>
+    [
+      fact.kind,
+      fact.field,
+      fact.comparison,
+      String(fact.valueNumber),
+      fact.valueText ?? '',
+      fact.description,
+      fact.groupKey ?? '',
+    ].join('|'),
+  );
+}
+
+function buildLegacyAlternativePaths(args: {
+  program: Program;
+  detail: ProgramInstitutionDetail;
+  detailIndex: number;
+}) {
+  const { program, detail, detailIndex } = args;
+  const texts = uniqueBy(
+    [...(detail.specificAdmissionNotes ?? []), ...(program.admissionRequirements ?? [])]
+      .map((value) => value.trim())
+      .filter(Boolean),
+    (value) => value,
+  );
+
+  const paths: AdmissionAlternativePath[] = [];
+  let pathIndex = 0;
+
+  for (const text of texts) {
+    if (!/חלופ|מכינה/u.test(text)) {
+      continue;
+    }
+
+    const kind = /מכינה/u.test(text) ? 'prep_program' : 'manual_check';
+    const title = /מכינה/u.test(text) ? 'אפיק מכינה' : 'אפיק קבלה חלופי';
+    paths.push(
+      createLegacyAlternativePath({
+        programId: program.id,
+        detailIndex,
+        pathIndex,
+        kind,
+        title,
+        description: text,
+      }),
+    );
+    pathIndex += 1;
+  }
+
+  return uniqueBy([...(detail.admissionAlternativePaths ?? []), ...paths], (path) =>
+    [path.kind, path.title, path.description].join('|'),
+  );
+}
+
+function buildSyntheticInstitutionDetail(program: Program): ProgramInstitutionDetail | undefined {
+  if (
+    program.admissionType !== 'requirements' ||
+    program.admissionRequirements.length === 0 ||
+    program.institutionDetails?.length
+  ) {
+    return undefined;
+  }
+
+  return {
+    institutionName: program.institution,
+    durationYears: null,
+    estimatedStudentsPerYear: 'לא ידוע',
+    quantitativeMinRequirement: null,
+    englishMinRequirement: null,
+    specificAdmissionNotes: [],
+    officialCalculatorUrl: '',
+  };
+}
+
+function enrichLegacyProgram(program: Program): Program {
+  const existingDetails = program.institutionDetails?.length ? [...program.institutionDetails] : [];
+  const syntheticDetail = buildSyntheticInstitutionDetail(program);
+  const details = syntheticDetail ? [...existingDetails, syntheticDetail] : existingDetails;
+
+  if (details.length === 0) {
+    return program;
+  }
+
+  return {
+    ...program,
+    institutionDetails: details.map((detail, detailIndex) => ({
+      ...detail,
+      admissionFacts: buildLegacyStructuredFacts({
+        program,
+        detail,
+        detailIndex,
+      }),
+      admissionAlternativePaths: buildLegacyAlternativePaths({
+        program,
+        detail,
+        detailIndex,
+      }),
+    })),
+  };
+}
+
+function normalizeLegacyPrograms(programs: readonly Program[]) {
+  return programs.map((program) => enrichLegacyProgram(program));
 }
 
 for (const record of mondayAdmissionsEvidence) {
@@ -448,8 +1006,8 @@ for (const record of mondayAdmissionsEvidence) {
 // Single combined catalogue.
 // Add future sub-modules by spreading their arrays here.
 export const allPrograms = [
-  ...ACADEMIC_PROGRAMS,
-  ...academicPrograms,
-  ...vocationalPrograms,
+  ...normalizeLegacyPrograms(ACADEMIC_PROGRAMS),
+  ...normalizeLegacyPrograms(academicPrograms),
+  ...normalizeLegacyPrograms(vocationalPrograms),
   ...dynamicPrograms,
 ];
