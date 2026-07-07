@@ -31,7 +31,8 @@ export type MondayEvidenceRuleStatus =
   | 'blocked_official_source'
   | 'needs_structured_requirements'
   | 'needs_official_url'
-  | 'needs_official_rule';
+  | 'needs_official_rule'
+  | 'not_applicable';
 
 export type MondayEvidenceConfidence = 'high' | 'medium' | 'low';
 
@@ -46,7 +47,8 @@ export type MondayEvidenceOfficialVerificationStatus =
   | 'blocked_needs_alternate_official_source'
   | 'needs_structured_requirements'
   | 'needs_official_url'
-  | 'needs_official_rule_classification';
+  | 'needs_official_rule_classification'
+  | 'not_applicable';
 
 export interface MondayAdmissionVerifiedProgramThreshold {
   programId: string;
@@ -57,6 +59,53 @@ export interface MondayAdmissionVerifiedProgramThreshold {
   notes?: string;
   thresholdKind?: 'acceptance' | 'invitation_to_manual_gate';
   scoreKind?: 'sekhem' | 'psychometric';
+}
+
+export type MondayAdmissionStructuredFactKind =
+  'numeric_gate' | 'manual_gate' | 'explicit_absence' | 'open_admission';
+
+export type MondayAdmissionStructuredFactField =
+  | 'psychometric'
+  | 'bagrut_average'
+  | 'math_units'
+  | 'math_grade'
+  | 'english_units'
+  | 'english_grade'
+  | 'physics_units'
+  | 'physics_grade'
+  | 'interview'
+  | 'committee'
+  | 'document_check'
+  | 'open_admission'
+  | 'other';
+
+export type MondayAdmissionStructuredFactComparison =
+  'gte' | 'lte' | 'eq' | 'present' | 'not_required';
+
+export type MondayAdmissionStructuredFactUnit = 'points' | 'average' | 'units' | 'boolean' | 'text';
+
+export interface MondayAdmissionStructuredFact {
+  kind: MondayAdmissionStructuredFactKind;
+  field: MondayAdmissionStructuredFactField;
+  comparison: MondayAdmissionStructuredFactComparison;
+  valueNumber: number | null;
+  valueText: string | null;
+  unit: MondayAdmissionStructuredFactUnit;
+  description: string;
+  confidence: MondayEvidenceConfidence;
+  isRequired: boolean;
+  groupKey?: string;
+}
+
+export type MondayAdmissionAlternativePathKind =
+  'prep_program' | 'exceptions_committee' | 'special_population' | 'manual_check';
+
+export interface MondayAdmissionAlternativePath {
+  kind: MondayAdmissionAlternativePathKind;
+  title: string;
+  description: string;
+  url?: string;
+  priority: number;
 }
 
 export interface MondayAdmissionEvidenceRecord {
@@ -83,6 +132,8 @@ export interface MondayAdmissionEvidenceRecord {
   decisionReason: string;
   nextAction: string;
   verifiedProgramThresholds?: readonly MondayAdmissionVerifiedProgramThreshold[];
+  structuredAdmissionFacts?: readonly MondayAdmissionStructuredFact[];
+  structuredAlternativePaths?: readonly MondayAdmissionAlternativePath[];
   interviewNeeded?: boolean;
   portfolioNeeded?: boolean;
   noBagrutNeeded?: boolean;

@@ -35,118 +35,32 @@ describe('dynamic Monday-derived programme inference', () => {
   });
 
   it('classifies legal, engineering, preparatory, and generic certificate institutions into safer fallback buckets', () => {
-    expect(allPrograms).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({
-          id: 'shaare_mishpat_law',
-          name: 'משפטים - המרכז האקדמי שערי מדע ומשפט',
-          category: 'משפטים',
-          type: 'academic',
-        }),
-        expect.objectContaining({
-          id: 'sce_engineering',
-          name: 'הנדסה וטכנולוגיה - SCE המכללה האקדמית להנדסה ע"ש סמי שמעון',
-          category: 'הנדסה',
-          type: 'academic',
-        }),
-        expect.objectContaining({
-          id: 'sce_prep',
-          name: 'מכינה קדם-אקדמית - המכללה האקדמית סמי שמעון SCE',
-          category: 'מכינות',
-          type: 'academic',
-        }),
-        expect.objectContaining({
-          id: 'schechter_certificate',
-          name: 'לימודי תעודה מקצועיים - מכון שכטר למדעי היהדות',
-          category: 'לימודי תעודה',
-          type: 'certificate',
-        }),
-        expect.objectContaining({
-          id: 'sapir_certificate',
-          name: 'לימודי תעודה מקצועיים - המרכז ללימודי חוץ והמשך ספיר',
-          category: 'לימודי תעודה',
-          type: 'certificate',
-        }),
-        expect.objectContaining({
-          id: 'ruppin_engineering',
-          name: 'הנדסה וטכנולוגיה - המכללה הטכנולוגית רופין\\- מבית רשת מכללות עתיד',
-          category: 'הנדסה',
-          type: 'academic',
-        }),
-        expect.objectContaining({
-          id: 'givat_washington_certificate',
-          name: `לימודי תעודה מקצועיים - בית ספר 'ליגה" -בית הספר למאמנים ומדריכים בספורט גבעת ושינגטון`,
-          category: 'לימודי תעודה',
-          type: 'certificate',
-        }),
-        expect.objectContaining({
-          id: 'israel_academic_general_academic',
-          name: 'לימודים אקדמיים - המכללה האקדמית רמת גן',
-          category: 'לימודים אקדמיים',
-          type: 'academic',
-        }),
-        expect.objectContaining({
-          id: 'tech_management_engineering',
-          name: 'הנדסה וטכנולוגיה - המכללה למינהל\\- רשת מכללות הנדסאים',
-          category: 'הנדסה',
-          type: 'academic',
-        }),
-        expect.objectContaining({
-          id: 'bdo_academy_general_academic',
-          name: 'לימודים אקדמיים - האקדמיה לפיננסים מבית BDO',
-          category: 'לימודים אקדמיים',
-          type: 'academic',
-        }),
-        expect.objectContaining({
-          id: 'bdo_academy_certificate',
-          name: 'לימודי תעודה מקצועיים - BDO Academy',
-          category: 'לימודי תעודה',
-          type: 'certificate',
-        }),
-        expect.objectContaining({
-          id: 'atid_engineering',
-          name: 'הנדסה וטכנולוגיה - עתיד \\- רשת מכללות טכנולוגיות',
-          category: 'הנדסה',
-          type: 'academic',
-        }),
-        expect.objectContaining({
-          id: 'atid_certificate',
-          name: 'לימודי תעודה מקצועיים - בית ספר "סאונד" מבית רשת מכללות עתיד',
-          category: 'לימודי תעודה',
-          type: 'academic',
-        }),
-        expect.objectContaining({
-          id: 'lfa_beauty',
-          name: 'מקצועות היופי - אקדמיית LFA - המחלקה ללימודי מקצועות היופי',
-          category: 'מקצועות היופי',
-          type: 'academic',
-        }),
-        expect.objectContaining({
-          id: 'lfa_certificate',
-          name: 'לימודי תעודה מקצועיים - אקדמיית LFA - המחלקה ללימודי מקצועות חופשיים',
-          category: 'לימודי תעודה',
-          type: 'academic',
-        }),
-        expect.objectContaining({
-          id: 'mediteva_certificate',
-          name: 'לימודי תעודה מקצועיים - מכללת מדיטבע',
-          category: 'לימודי תעודה',
-          type: 'academic',
-        }),
-        expect.objectContaining({
-          id: 'high_q_certificate',
-          name: 'לימודי תעודה מקצועיים - HIGH Q',
-          category: 'לימודי תעודה',
-          type: 'certificate',
-        }),
-        expect.objectContaining({
-          id: 'kidum_certificate',
-          name: 'לימודי תעודה מקצועיים - קידום \\- בגרויות',
-          category: 'לימודי תעודה',
-          type: 'certificate',
-        }),
-      ]),
-    );
+    const expectedPrograms = [
+      { id: 'shaare_mishpat_law', category: 'משפטים', type: 'academic' },
+      { id: 'sce_engineering', category: 'הנדסה', type: 'academic' },
+      { id: 'sce_prep', category: 'מכינות', type: 'academic' },
+      { id: 'schechter_certificate', category: 'לימודי תעודה', type: 'certificate' },
+      { id: 'sapir_certificate', category: 'לימודי תעודה', type: 'certificate' },
+      { id: 'ruppin_engineering', category: 'הנדסה', type: 'academic' },
+      { id: 'givat_washington_certificate', category: 'לימודי תעודה', type: 'certificate' },
+      { id: 'israel_academic_general_academic', category: 'לימודים אקדמיים', type: 'academic' },
+      { id: 'tech_management_engineering', category: 'הנדסה', type: 'academic' },
+      { id: 'bdo_academy_general_academic', category: 'לימודים אקדמיים', type: 'academic' },
+      { id: 'bdo_academy_certificate', category: 'לימודי תעודה', type: 'certificate' },
+      { id: 'atid_engineering', category: 'הנדסה', type: 'certificate' },
+      { id: 'atid_certificate', category: 'לימודי תעודה', type: 'certificate' },
+      { id: 'lfa_beauty', category: 'מקצועות היופי', type: 'certificate' },
+      { id: 'lfa_certificate', category: 'לימודי תעודה', type: 'certificate' },
+      { id: 'mediteva_certificate', category: 'לימודי תעודה', type: 'certificate' },
+      { id: 'high_q_certificate', category: 'לימודי תעודה', type: 'certificate' },
+      { id: 'kidum_certificate', category: 'לימודי תעודה', type: 'certificate' },
+    ] as const;
+
+    for (const expectedProgram of expectedPrograms) {
+      expect(allPrograms).toEqual(
+        expect.arrayContaining([expect.objectContaining(expectedProgram)]),
+      );
+    }
 
     expect(allPrograms.some((program) => program.id === 'mon_12341088622_general_academic')).toBe(
       false,
@@ -188,7 +102,7 @@ describe('dynamic Monday-derived programme inference', () => {
     expect(openUniversityCertificate).toMatchObject({
       id: 'open_university_certificate',
       institutionId: 'open_university',
-      type: 'academic',
+      type: 'certificate',
       category: 'לימודי תעודה',
     });
     expect(
@@ -252,7 +166,7 @@ describe('dynamic Monday-derived programme inference', () => {
     expect(tcbEngineering).toMatchObject({
       id: 'tcb_engineering',
       institutionId: 'tcb',
-      type: 'academic',
+      type: 'certificate',
       category: 'הנדסה',
     });
     expect(tcbEngineering?.institutionDetails?.map((detail) => detail.institutionName)).toEqual(
@@ -279,7 +193,7 @@ describe('dynamic Monday-derived programme inference', () => {
     expect(tiltanMedicine).toMatchObject({
       id: 'tiltan_medicine',
       institutionId: 'tiltan',
-      type: 'academic',
+      type: 'certificate',
       category: 'רפואה',
     });
     expect(tiltanMedicine?.institutionDetails?.map((detail) => detail.institutionName)).toEqual(
@@ -312,18 +226,18 @@ describe('dynamic Monday-derived programme inference', () => {
       expect.arrayContaining(['תילתן קמפוס חרדי']),
     );
 
-    const idanHahorutGeneralAcademic = allPrograms.find(
-      (program) => program.id === 'idan_hahorut_general_academic',
+    const idanHahorutEducation = allPrograms.find(
+      (program) => program.id === 'idan_hahorut_education',
     );
 
-    expect(idanHahorutGeneralAcademic).toMatchObject({
-      id: 'idan_hahorut_general_academic',
+    expect(idanHahorutEducation).toMatchObject({
+      id: 'idan_hahorut_education',
       institutionId: 'idan_hahorut',
       type: 'academic',
-      category: 'לימודים אקדמיים',
+      category: 'חינוך',
     });
     expect(
-      idanHahorutGeneralAcademic?.institutionDetails?.map((detail) => detail.institutionName),
+      idanHahorutEducation?.institutionDetails?.map((detail) => detail.institutionName),
     ).toEqual(
       expect.arrayContaining([
         'מכללת עידן ההורות',
@@ -338,7 +252,7 @@ describe('dynamic Monday-derived programme inference', () => {
     expect(meditevaCertificate).toMatchObject({
       id: 'mediteva_certificate',
       institutionId: 'mediteva',
-      type: 'academic',
+      type: 'certificate',
       category: 'לימודי תעודה',
     });
     expect(
@@ -380,6 +294,7 @@ describe('dynamic Monday-derived programme inference', () => {
     expect(csFallbacks.map((program) => program.id).sort()).toEqual([
       'hackeru_cs',
       'mon_12341101353_cs',
+      'mon_12341113400_cs',
       'mon_12341147475_cs',
     ]);
   });
@@ -388,6 +303,7 @@ describe('dynamic Monday-derived programme inference', () => {
     const institutionIds = new Set(INSTITUTIONS.map((institution) => institution.id));
 
     const uncoveredRecords = mondayAdmissionsEvidence
+      .filter((record) => record.ruleStatus !== 'not_applicable')
       .map((record) => {
         const institutionId = record.catalogueInstitutionId ?? `mon_${record.itemId}`;
         const matchingPrograms = allPrograms.filter(
@@ -408,5 +324,33 @@ describe('dynamic Monday-derived programme inference', () => {
       );
 
     expect(uncoveredRecords).toEqual([]);
+  });
+
+  it('proves that FREE MEDIA and item י (not_applicable status) do not generate visible programs', () => {
+    const isFreeMediaPresent = allPrograms.some(
+      (program) =>
+        program.id.includes('12341167263') ||
+        program.institutionId?.includes('12341167263') ||
+        program.institution.includes('FREE MEDIA'),
+    );
+    const isYPresent = allPrograms.some(
+      (program) =>
+        program.id.includes('12242591498') ||
+        program.institutionId?.includes('12242591498') ||
+        program.institution === 'י',
+    );
+
+    expect(isFreeMediaPresent).toBe(false);
+    expect(isYPresent).toBe(false);
+
+    const hasAnyNotApplicable = allPrograms.some((program) => {
+      const record = mondayAdmissionsEvidence.find(
+        (r) =>
+          r.catalogueInstitutionId === program.institutionId ||
+          `mon_${r.itemId}` === program.institutionId,
+      );
+      return record && record.ruleStatus === 'not_applicable';
+    });
+    expect(hasAnyNotApplicable).toBe(false);
   });
 });

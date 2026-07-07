@@ -17,10 +17,10 @@ Generated from the local Monday export. This file intentionally summarizes clean
 | ----------------------------- | ----: |
 | decision_capable              |     7 |
 | eligible_no_formal_grade_gate |    72 |
-| eligible_with_manual_gate     |    75 |
+| eligible_with_manual_gate     |    85 |
 | manual_gate                   |    43 |
 | open_admission                |     1 |
-| requirements_review           |    13 |
+| requirements_review           |     3 |
 | tracked_missing_rule          |     1 |
 
 ## Rule Status
@@ -29,9 +29,9 @@ Generated from the local Monday export. This file intentionally summarizes clean
 | ------------------------------------ | ----: |
 | blocked_official_source              |     1 |
 | decision_rule_available              |     7 |
-| manual_or_eligibility_rule_available |    82 |
-| needs_official_url                   |   113 |
-| needs_structured_requirements        |     8 |
+| manual_or_eligibility_rule_available |   199 |
+| needs_structured_requirements        |     2 |
+| not_applicable                       |     2 |
 | open_or_no_grade_rule_available      |     1 |
 
 ## Official Verification Status
@@ -40,11 +40,11 @@ Generated from the local Monday export. This file intentionally summarizes clean
 | ---------------------------------------------------- | ----: |
 | blocked_needs_alternate_official_source              |     1 |
 | monday_evidence_decision_rule_available              |     5 |
-| monday_evidence_manual_or_eligibility_rule_available |    70 |
+| monday_evidence_manual_or_eligibility_rule_available |   177 |
 | monday_evidence_open_or_no_grade_rule_available      |     1 |
-| needs_official_url                                   |   113 |
-| needs_structured_requirements                        |     8 |
-| partial_official_rule_verified                       |    14 |
+| needs_structured_requirements                        |     2 |
+| not_applicable                                       |     2 |
+| partial_official_rule_verified                       |    24 |
 
 ## Catalogue Visibility
 

@@ -110,6 +110,11 @@ const KNOWN_CATALOGUE_INSTITUTION_ALIASES = new Map([
   ['קידום \\- בגרויות', 'kidum'],
 ]);
 
+const INVALID_OR_NON_INSTITUTION_ITEM_IDS = new Set([
+  '12242591498', // י (טיוטה/פריט לא תקין)
+  '12341167263', // FREE MEDIA (defunct / old school)
+]);
+
 function parseArgs(argv) {
   const args = {
     input: DEFAULT_INPUT,
@@ -258,8 +263,7 @@ async function readCatalogueInstitutionMetadata(inputPath = DEFAULT_INSTITUTIONS
 
     const programUrlMatch = body.match(/\n\s*programUrl:\s*'([^']+)'/);
     const domainMatch = body.match(/\n\s*domain:\s*'([^']+)'/);
-    const fallbackUrl =
-      programUrlMatch?.[1] ?? fallbackUrlFromDomain(domainMatch?.[1] ?? null);
+    const fallbackUrl = programUrlMatch?.[1] ?? fallbackUrlFromDomain(domainMatch?.[1] ?? null);
 
     if (fallbackUrl) {
       fallbackUrlById.set(id, fallbackUrl);
@@ -322,7 +326,44 @@ function inferCatalogueInstitutionId(itemName, displayName, catalogueInstitution
   );
 }
 
-function deriveRecord(item, catalogueInstitutionNameIndex, catalogueInstitutionFallbackUrlById) {
+function findResolvedUrl(itemName, displayName, resolvedUrlsFinal) {
+  const cleanDisplayName = displayName.replace(/\\/g, '');
+  const normalizedDisplayName = normalizeInstitutionName(displayName);
+  const normalizedCleanDisplayName = normalizeInstitutionName(cleanDisplayName);
+  const normalizedItemName = normalizeInstitutionName(itemName);
+
+  const candidates = [
+    itemName,
+    displayName,
+    cleanDisplayName,
+    normalizedDisplayName,
+    normalizedCleanDisplayName,
+    normalizedItemName,
+  ];
+
+  for (const c of candidates) {
+    if (resolvedUrlsFinal[c]) {
+      return resolvedUrlsFinal[c];
+    }
+  }
+
+  // Also check if any key in resolvedUrlsFinal matches after normalization
+  for (const key of Object.keys(resolvedUrlsFinal)) {
+    const normKey = normalizeInstitutionName(key.replace(/\\/g, ''));
+    if (normKey === normalizedCleanDisplayName || normKey === normalizedItemName) {
+      return resolvedUrlsFinal[key];
+    }
+  }
+
+  return null;
+}
+
+function deriveRecord(
+  item,
+  catalogueInstitutionNameIndex,
+  catalogueInstitutionFallbackUrlById,
+  resolvedUrlsFinal,
+) {
   const evidence = item.evidence ?? {};
   const capabilityCandidate = evidence.capabilityCandidate ?? 'unknown';
   const columnValue = columnReader(item.columns ?? []);
@@ -340,13 +381,20 @@ function deriveRecord(item, catalogueInstitutionNameIndex, catalogueInstitutionF
     columnValue('Official Source'),
   ]);
   const fallbackUrl = catalogueInstitutionId
-    ? catalogueInstitutionFallbackUrlById.get(catalogueInstitutionId) ?? null
+    ? (catalogueInstitutionFallbackUrlById.get(catalogueInstitutionId) ?? null)
     : null;
-  const urls =
-    derivedUrls.length > 0 ? derivedUrls : cleanUrls([fallbackUrl]);
-  const missingData = missingDataFor(capabilityCandidate, urls);
+  const resolvedFallbackUrl =
+    derivedUrls.length === 0 && !fallbackUrl
+      ? findResolvedUrl(item.name, displayName, resolvedUrlsFinal)
+      : null;
+  const urls = INVALID_OR_NON_INSTITUTION_ITEM_IDS.has(item.id)
+    ? []
+    : derivedUrls.length > 0
+      ? derivedUrls
+      : cleanUrls([fallbackUrl, resolvedFallbackUrl]);
+  const missingData = missingDataFor(capabilityCandidate, urls, item.id);
   const publicBucket = publicBucketFor(capabilityCandidate);
-  const ruleStatus = ruleStatusFor(capabilityCandidate, urls);
+  const ruleStatus = ruleStatusFor(capabilityCandidate, urls, item.id);
   const criteria = extractAdmissionsCriteria(item);
 
   return {
@@ -364,14 +412,21 @@ function deriveRecord(item, catalogueInstitutionNameIndex, catalogueInstitutionF
     capabilityCandidate,
     publicBucket,
     ruleStatus,
-    officialVerificationStatus: officialVerificationStatusFor(capabilityCandidate, urls),
-    confidence: confidenceFor(capabilityCandidate),
+    officialVerificationStatus: officialVerificationStatusFor(capabilityCandidate, urls, item.id),
+    confidence: confidenceFor(capabilityCandidate, item.id),
     tags: [...(evidence.tags ?? [])].sort(),
     officialUrls: urls,
     missingData,
     limitations: [...(evidence.limitations ?? [])],
     decisionReason: evidence.decisionReason ?? 'No derived decision reason.',
-    nextAction: nextActionFor({ capabilityCandidate, publicBucket, ruleStatus, missingData, urls }),
+    nextAction: nextActionFor({
+      capabilityCandidate,
+      publicBucket,
+      ruleStatus,
+      missingData,
+      urls,
+      itemId: item.id,
+    }),
     interviewNeeded: criteria.interviewNeeded ? true : undefined,
     portfolioNeeded: criteria.portfolioNeeded ? true : undefined,
     noBagrutNeeded: criteria.noBagrutNeeded ? true : undefined,
@@ -402,7 +457,11 @@ function applyOverride(record, override) {
   }
 
   if (override.officialUrls) {
-    merged.officialUrls = cleanUrls([...record.officialUrls, ...override.officialUrls]);
+    merged.officialUrls = cleanUrls(
+      override.replaceOfficialUrls
+        ? override.officialUrls
+        : [...record.officialUrls, ...override.officialUrls],
+    );
   }
 
   if (override.tags) {
@@ -420,6 +479,16 @@ function applyOverride(record, override) {
   if (override.verifiedProgramThresholds) {
     merged.verifiedProgramThresholds = [...override.verifiedProgramThresholds].sort((a, b) =>
       a.programId.localeCompare(b.programId),
+    );
+  }
+
+  if (override.structuredAdmissionFacts) {
+    merged.structuredAdmissionFacts = [...override.structuredAdmissionFacts];
+  }
+
+  if (override.structuredAlternativePaths) {
+    merged.structuredAlternativePaths = [...override.structuredAlternativePaths].sort(
+      (a, b) => a.priority - b.priority || a.title.localeCompare(b.title),
     );
   }
 
@@ -446,6 +515,57 @@ function stripItemNumber(name) {
     .trim();
 }
 
+function isValidOfficialUrl(url) {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url);
+    const hostname = parsed.hostname.toLowerCase();
+
+    // Check if google
+    if (hostname === 'google.com' || hostname.endsWith('.google.com')) {
+      return false;
+    }
+
+    // Check if yoram.walla.co.il
+    if (hostname.includes('yoram.walla.co.il')) {
+      return false;
+    }
+
+    // Check if aggregator, social media, news, directories, or guide fallback
+    const blacklist = [
+      'course.co.il',
+      'study.co.il',
+      'limudim.co.il',
+      'tiron.co.il',
+      'postool.co.il',
+      'postool.com',
+      'wobi.co.il',
+      'tostudy.co.il',
+      'universities-colleges.org.il',
+      'facebook.com',
+      'instagram.com',
+      'twitter.com',
+      'linkedin.com',
+      'youtube.com',
+      'toar.org.il',
+      'jpost.com',
+      'wikipedia.org',
+      'easy.co.il',
+      'd.co.il',
+      'b144.co.il',
+      'telegram.org',
+    ];
+
+    if (blacklist.some((domain) => hostname === domain || hostname.endsWith('.' + domain))) {
+      return false;
+    }
+
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 function cleanUrls(urls) {
   return [
     ...new Set(
@@ -460,7 +580,7 @@ function cleanUrls(urls) {
             .trim(),
         )
         .filter((value) => /^https?:\/\//.test(value))
-        .filter((value) => !/yoram\.walla\.co\.il/i.test(value)),
+        .filter(isValidOfficialUrl),
     ),
   ].sort();
 }
@@ -476,7 +596,8 @@ function publicBucketFor(capabilityCandidate) {
   return 'tracked_missing_rule';
 }
 
-function ruleStatusFor(capabilityCandidate, urls) {
+function ruleStatusFor(capabilityCandidate, urls, itemId) {
+  if (INVALID_OR_NON_INSTITUTION_ITEM_IDS.has(itemId)) return 'not_applicable';
   if (urls.length === 0) return 'needs_official_url';
   if (capabilityCandidate === 'decision_capable') return 'decision_rule_available';
   if (capabilityCandidate === 'open_admission') return 'open_or_no_grade_rule_available';
@@ -495,7 +616,8 @@ function ruleStatusFor(capabilityCandidate, urls) {
   return 'needs_official_rule';
 }
 
-function officialVerificationStatusFor(capabilityCandidate, urls) {
+function officialVerificationStatusFor(capabilityCandidate, urls, itemId) {
+  if (INVALID_OR_NON_INSTITUTION_ITEM_IDS.has(itemId)) return 'not_applicable';
   if (urls.length === 0) return 'needs_official_url';
   if (capabilityCandidate === 'decision_capable') {
     return 'monday_evidence_decision_rule_available';
@@ -522,7 +644,8 @@ function officialVerificationStatusFor(capabilityCandidate, urls) {
   return 'needs_official_rule_classification';
 }
 
-function missingDataFor(capabilityCandidate, urls) {
+function missingDataFor(capabilityCandidate, urls, itemId) {
+  if (INVALID_OR_NON_INSTITUTION_ITEM_IDS.has(itemId)) return [];
   const missing = [];
   if (urls.length === 0) missing.push('official_url');
   if (capabilityCandidate === 'score_only_or_formula_without_verified_cutoff') {
@@ -553,7 +676,10 @@ function isKnownCandidate(candidate) {
   ].includes(candidate);
 }
 
-function confidenceFor(capabilityCandidate) {
+function confidenceFor(capabilityCandidate, itemId) {
+  if (INVALID_OR_NON_INSTITUTION_ITEM_IDS.has(itemId)) {
+    return 'low';
+  }
   if (
     capabilityCandidate === 'decision_capable' ||
     capabilityCandidate === 'open_admission' ||
@@ -573,7 +699,17 @@ function confidenceFor(capabilityCandidate) {
   return 'low';
 }
 
-function nextActionFor({ capabilityCandidate, publicBucket, ruleStatus, missingData, urls }) {
+function nextActionFor({
+  capabilityCandidate,
+  publicBucket,
+  ruleStatus,
+  missingData,
+  urls,
+  itemId,
+}) {
+  if (INVALID_OR_NON_INSTITUTION_ITEM_IDS.has(itemId)) {
+    return 'No action needed: this is a draft, invalid, or defunct non-institution record.';
+  }
   if (ruleStatus === 'needs_official_url') {
     return 'Find the official admissions URL before this item can be treated as product-complete.';
   }
@@ -776,12 +912,22 @@ async function main() {
 
   const raw = await readRawExport(args.input);
   const overrides = await readOverrides(args.overrides);
-  const { nameIndex: catalogueInstitutionNameIndex, fallbackUrlById: catalogueInstitutionFallbackUrlById } =
-    await readCatalogueInstitutionMetadata();
+  const resolvedUrlsPath = resolve('src/data/admissions/resolvedUrlsFinal.json');
+  const resolvedUrlsFinal = JSON.parse(await readFile(resolvedUrlsPath, 'utf8'));
+
+  const {
+    nameIndex: catalogueInstitutionNameIndex,
+    fallbackUrlById: catalogueInstitutionFallbackUrlById,
+  } = await readCatalogueInstitutionMetadata();
   const records = sortRecords(
     raw.items.map((item) =>
       applyOverride(
-        deriveRecord(item, catalogueInstitutionNameIndex, catalogueInstitutionFallbackUrlById),
+        deriveRecord(
+          item,
+          catalogueInstitutionNameIndex,
+          catalogueInstitutionFallbackUrlById,
+          resolvedUrlsFinal,
+        ),
         overrides.get(item.id),
       ),
     ),

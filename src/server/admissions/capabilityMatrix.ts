@@ -317,10 +317,15 @@ export function buildAdmissionsCapabilityMatrix(args: {
     const hasStructuredOpenAdmission =
       program.admissionType === 'requirements' &&
       Boolean(detail?.admissionFacts?.some((fact) => fact.kind === 'open_admission'));
-    const hasManualRequirements =
+    const hasStructuredManualRequirements =
       program.admissionType === 'requirements' &&
       (program.admissionRequirements.length > 0 ||
-        Boolean(detail?.admissionFacts?.length) ||
+        Boolean(detail?.admissionFacts?.some((fact) => fact.kind === 'manual_gate')) ||
+        Boolean(detail?.admissionAlternativePaths?.length) ||
+        Boolean(detail?.specificAdmissionNotes?.length));
+    const hasStructuredRequirements =
+      program.admissionType === 'requirements' &&
+      (Boolean(detail?.admissionFacts?.length) ||
         Boolean(detail?.admissionAlternativePaths?.length) ||
         Boolean(detail?.specificAdmissionNotes?.length));
 
@@ -334,10 +339,20 @@ export function buildAdmissionsCapabilityMatrix(args: {
       };
     }
 
-    if (!hasCalculatorConfig && hasManualRequirements) {
+    if (!hasCalculatorConfig && hasStructuredManualRequirements) {
       return {
         institutionId,
         capability: 'manual_gate',
+        sourceTarget,
+        evidence,
+        freshnessState,
+      };
+    }
+
+    if (!hasCalculatorConfig && hasStructuredRequirements) {
+      return {
+        institutionId,
+        capability: 'requirements_only',
         sourceTarget,
         evidence,
         freshnessState,

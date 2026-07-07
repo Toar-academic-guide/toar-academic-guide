@@ -23,7 +23,13 @@ export type AdmissionFactField =
   | 'psychometric_quantitative'
   | 'psychometric_english'
   | 'math_units'
+  | 'math_grade'
   | 'english_units'
+  | 'english_grade'
+  | 'physics_units'
+  | 'physics_grade'
+  | 'cs_units'
+  | 'cs_grade'
   | 'required_subject'
   | 'interview'
   | 'exam'
@@ -70,6 +76,7 @@ export interface AdmissionFact {
   description: string;
   confidence: AdmissionsConfidence;
   isRequired: boolean;
+  groupKey?: string;
 }
 
 export interface AdmissionAlternativePath {

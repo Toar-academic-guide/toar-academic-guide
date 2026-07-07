@@ -6,14 +6,23 @@ export { vocationalPrograms } from './vocationalPrograms';
 import { ACADEMIC_PROGRAMS } from './academic';
 import { academicPrograms } from './academicPrograms';
 import { vocationalPrograms } from './vocationalPrograms';
-import { mondayAdmissionsEvidence } from '../admissions/mondayEvidence';
+import {
+  mondayAdmissionsEvidence,
+  type MondayAdmissionAlternativePath,
+  type MondayAdmissionStructuredFact,
+} from '../admissions/mondayEvidence';
 import { INSTITUTION_BY_NAME, type InstitutionId, resolveUrl } from '../institutions';
-import type { Program, AdmissionFact, AdmissionsSourceCandidate } from './types';
+import type {
+  Program,
+  AdmissionAlternativePath,
+  AdmissionFact,
+  AdmissionsSourceCandidate,
+} from './types';
 
 const DYNAMIC_PROGRAM_MAP = [
   {
     keywords: [
-      /מדעי המחשב|computer science|תוכנה|סייבר|coding|code|web|תוכניתן|פיתוח|דאטה|חומרה|הייטק|סיסטם|cyber/i,
+      /מדעי המחשב|computer science|תוכנה|סייבר|coding|code|web|תוכניתן|פיתוח|דאטה|חומרה|הייטק|סיסטם|cyber|קודינג|bootcamp|בוטקאמפ/i,
     ],
     id: 'cs',
     name: 'מדעי המחשב',
@@ -39,7 +48,7 @@ const DYNAMIC_PROGRAM_MAP = [
   },
   { keywords: [/כלכלה|economics/i], id: 'economics', name: 'כלכלה', category: 'כלכלה' },
   {
-    keywords: [/חינוך|הוראה|education|teaching|teachers|pedagog/i],
+    keywords: [/חינוך|הוראה|education|teaching|teachers|pedagog|הורות|parent/i],
     id: 'education',
     name: 'חינוך והוראה',
     category: 'חינוך',
@@ -69,7 +78,9 @@ const DYNAMIC_PROGRAM_MAP = [
     category: 'מכינות',
   },
   {
-    keywords: [/עיצוב|אמנות|תקשורת חזותית|משחק|קולנוע|מוסיקה|מוזיקה|מחול|תיאטרון|צילום/i],
+    keywords: [
+      /עיצוב|אמנות|תקשורת חזותית|משחק|קולנוע|מוסיקה|מוזיקה|מחול|תיאטרון|צילום|מיוזיק|music/i,
+    ],
     id: 'graphic_design',
     name: 'עיצוב ואומנויות',
     category: 'עיצוב',
@@ -113,9 +124,12 @@ function mergeDynamicProgramDetails(existingProgram: Program, nextProgram: Progr
   };
 }
 
+function getMondayBaseSearchableText(record: (typeof mondayAdmissionsEvidence)[number]) {
+  return `${record.itemName} ${record.displayName} ${record.tags.join(' ')} ${record.officialUrls.join(' ')}`.toLowerCase();
+}
+
 function getMondaySearchableText(record: (typeof mondayAdmissionsEvidence)[number]) {
-  const baseText =
-    `${record.itemName} ${record.displayName} ${record.tags.join(' ')}`.toLowerCase();
+  const baseText = getMondayBaseSearchableText(record);
 
   if (record.publicBucket === 'decision_capable') {
     return baseText;
@@ -125,7 +139,7 @@ function getMondaySearchableText(record: (typeof mondayAdmissionsEvidence)[numbe
 }
 
 function fallbackDynamicProgram(record: (typeof mondayAdmissionsEvidence)[number]) {
-  const searchable = getMondaySearchableText(record);
+  const searchable = getMondayBaseSearchableText(record);
   const isCertificate =
     record.diplomaType === 'תעודה מקצועית' ||
     record.diplomaType === 'לימודי תעודה' ||
@@ -170,16 +184,63 @@ function fallbackDynamicProgram(record: (typeof mondayAdmissionsEvidence)[number
   return { id: 'general_academic', name: 'לימודים אקדמיים', category: 'לימודים אקדמיים' };
 }
 
+function buildStructuredAdmissionFacts(args: {
+  detailId: string;
+  sourceCandidateId: string | undefined;
+  facts: readonly MondayAdmissionStructuredFact[] | undefined;
+}) {
+  const { detailId, sourceCandidateId, facts } = args;
+
+  return (facts ?? []).map<AdmissionFact>((fact, index) => ({
+    id: fact.groupKey
+      ? `${detailId}:fact:group:${encodeURIComponent(fact.groupKey)}:structured-${index}`
+      : `${detailId}:fact:structured-${index}`,
+    ...(sourceCandidateId ? { sourceCandidateId } : {}),
+    kind: fact.kind,
+    field: fact.field,
+    comparison: fact.comparison,
+    valueNumber: fact.valueNumber,
+    valueText: fact.valueText,
+    unit: fact.unit,
+    description: fact.description,
+    confidence: fact.confidence,
+    isRequired: fact.isRequired,
+    ...(fact.groupKey ? { groupKey: fact.groupKey } : {}),
+  }));
+}
+
+function buildStructuredAlternativePaths(args: {
+  detailId: string;
+  sourceCandidateId: string | undefined;
+  paths: readonly MondayAdmissionAlternativePath[] | undefined;
+}) {
+  const { detailId, sourceCandidateId, paths } = args;
+
+  return (paths ?? []).map<AdmissionAlternativePath>((path, index) => ({
+    id: `${detailId}:path:structured-${index}`,
+    ...(sourceCandidateId ? { sourceCandidateId } : {}),
+    kind: path.kind,
+    title: path.title,
+    description: path.description,
+    ...(path.url ? { url: path.url } : {}),
+    priority: path.priority,
+  }));
+}
+
 for (const record of mondayAdmissionsEvidence) {
+  if (record.ruleStatus === 'not_applicable') {
+    continue;
+  }
+
   const programInstitutionKey = (record.catalogueInstitutionId ||
     `mon_${record.itemId}`) as InstitutionId;
   const instId = (record.catalogueInstitutionId ??
     INSTITUTION_BY_NAME[record.displayName]?.id ??
     `mon_${record.itemId}`) as InstitutionId;
+  const baseSearchable = getMondayBaseSearchableText(record);
 
   let matches = DYNAMIC_PROGRAM_MAP.filter((prog) => {
-    const searchable = getMondaySearchableText(record);
-    return prog.keywords.some((keyword) => keyword.test(searchable));
+    return prog.keywords.some((keyword) => keyword.test(baseSearchable));
   });
 
   if (matches.length === 0) {
@@ -199,10 +260,18 @@ for (const record of mondayAdmissionsEvidence) {
       continue;
     }
 
-    const type =
-      record.diplomaType === 'תעודה מקצועית' || (record.diplomaType as string) === 'לימודי תעודה'
-        ? 'certificate'
-        : 'academic';
+    const isCertificateType =
+      record.diplomaType === 'תעודה מקצועית' ||
+      record.diplomaType === 'לימודי תעודה' ||
+      (record.diplomaType &&
+        (record.diplomaType.includes('תעודה') || record.diplomaType.includes('הנדסאי'))) ||
+      record.tags.includes('professional_certificate') ||
+      (record.institutionType === 'מכללה פרטית' &&
+        !record.displayName.includes('אקדמית') &&
+        !record.displayName.includes('אקדמי') &&
+        !record.displayName.includes('למינהל'));
+
+    const type = isCertificateType ? 'certificate' : 'academic';
 
     const detailId = `${progId}:${instId}`;
     const primarySourceUrl = resolveUrl(record.displayName, record.officialUrls);
@@ -307,6 +376,20 @@ for (const record of mondayAdmissionsEvidence) {
       });
     }
 
+    admissionFacts.push(
+      ...buildStructuredAdmissionFacts({
+        detailId,
+        sourceCandidateId,
+        facts: record.structuredAdmissionFacts,
+      }),
+    );
+
+    const admissionAlternativePaths = buildStructuredAlternativePaths({
+      detailId,
+      sourceCandidateId,
+      paths: record.structuredAlternativePaths,
+    });
+
     const dynamicProgram: Program = {
       id: progId,
       name: `${prog.name} - ${record.displayName}`,
@@ -339,6 +422,11 @@ for (const record of mondayAdmissionsEvidence) {
               }
             : {}),
           admissionFacts,
+          ...(admissionAlternativePaths.length > 0
+            ? {
+                admissionAlternativePaths,
+              }
+            : {}),
         },
       ],
     };
