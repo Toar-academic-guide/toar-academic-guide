@@ -398,7 +398,11 @@ function evaluateNonExactResult(args: {
         };
       }
 
-      const missingRequiredInputs = getMissingRequiredInputsForEstimate(input, program, institution);
+      const missingRequiredInputs = getMissingRequiredInputsForEstimate(
+        input,
+        program,
+        institution,
+      );
       if (missingRequiredInputs.length > 0) {
         return requiredInputsResult(institution, missingRequiredInputs);
       }
@@ -588,16 +592,19 @@ function evaluateNonExactResult(args: {
       return unsupportedResult(institution, entry);
     }
 
-    const officialUrls = entry.evidence?.officialUrls.length ? [...entry.evidence.officialUrls] : [];
-    const sourceBlocked = entry.evidence?.officialVerificationStatus.startsWith('blocked_') ?? false;
+    const officialUrls = entry.evidence?.officialUrls.length
+      ? [...entry.evidence.officialUrls]
+      : [];
+    const sourceBlocked =
+      entry.evidence?.officialVerificationStatus.startsWith('blocked_') ?? false;
     const defaultExplanation = sourceBlocked
       ? 'המקור הרשמי חסום כרגע, לכן התוצאה מבוססת על נוסחת סכם ממופה ועל סף קבלה שנשמר בקטלוג, בלי אימות חי של אתר המוסד.'
       : entry.capability === 'estimated'
         ? 'התוצאה מבוססת על נוסחת סכם וסף קבלה שמופו ממקור מוסדי ונבדקו בקטלוג.'
         : 'התוצאה מבוססת על נוסחת סכם ממופה וסף קבלה שנבדק בקטלוג, כשהמקור הרשמי מספק חלק מהמידע.';
     const defaultNextAction = sourceBlocked
-      ? entry.evidence?.nextAction ??
-        'בדקו ישירות באתר המוסד או במחשבון הרשמי כשהוא זמין, לפני קבלת החלטה סופית.'
+      ? (entry.evidence?.nextAction ??
+        'בדקו ישירות באתר המוסד או במחשבון הרשמי כשהוא זמין, לפני קבלת החלטה סופית.')
       : evaluation.status === 'accepted'
         ? 'המשיכו להרשמה ובדקו מועדים, מסמכים ודרישות משלימות באתר המוסד.'
         : 'שפרו את הנתונים שמופיעים בפער או השוו למסלולים אחרים שבהם אתם עומדים בסף.';
@@ -609,14 +616,12 @@ function evaluateNonExactResult(args: {
       kind: 'estimated',
       decision: evaluation.status === 'accepted' ? 'accepted' : 'below',
       confidence: sourceBlocked ? 'medium' : entry.capability === 'estimated' ? 'high' : 'medium',
-      sourceLabel:
-        sourceBlocked
-          ? 'כלל קבלה ממופה, מקור רשמי חסום'
-          : entry.capability === 'estimated'
-            ? 'כלל קבלה ממופה'
-            : 'כלל קבלה ממופה ממקור חלקי',
-      explanation:
-        evaluation.explanation ?? defaultExplanation,
+      sourceLabel: sourceBlocked
+        ? 'כלל קבלה ממופה, מקור רשמי חסום'
+        : entry.capability === 'estimated'
+          ? 'כלל קבלה ממופה'
+          : 'כלל קבלה ממופה ממקור חלקי',
+      explanation: evaluation.explanation ?? defaultExplanation,
       nextAction: defaultNextAction,
       score: evaluation.sekhem,
       scoreLabel: 'סכם',
@@ -647,7 +652,9 @@ function getMissingRequiredInputsForEstimate(
   return [];
 }
 
-function getDynamicRequirementsFromEvidence(evidenceRecord: MondayAdmissionEvidenceRecord | undefined) {
+function getDynamicRequirementsFromEvidence(
+  evidenceRecord: MondayAdmissionEvidenceRecord | undefined,
+) {
   const dynamicRequirements: string[] = [];
 
   if (evidenceRecord?.noBagrutNeeded) {
@@ -689,8 +696,15 @@ interface StructuredNumericFactResult {
 function evaluateStructuredRequirementsResult(
   args: StructuredRequirementsResultArgs,
 ): AdmissionsEvaluationResult | undefined {
-  const { input, institution, capability, detail, dynamicRequirements, eligibleWithManualGate, programType } =
-    args;
+  const {
+    input,
+    institution,
+    capability,
+    detail,
+    dynamicRequirements,
+    eligibleWithManualGate,
+    programType,
+  } = args;
 
   if (!detail?.admissionFacts?.length) {
     return undefined;
@@ -745,11 +759,7 @@ function evaluateStructuredRequirementsResult(
     return requiredInputsResult(institution, [...missingRequiredInputs]);
   }
 
-  if (
-    hasOpenAdmissionFact &&
-    numericFacts.length === 0 &&
-    manualGateDescriptions.length === 0
-  ) {
+  if (hasOpenAdmissionFact && numericFacts.length === 0 && manualGateDescriptions.length === 0) {
     return {
       institution: publicInstitutionShape(institution),
       linkedInstitutionId: institution.id,
@@ -819,7 +829,9 @@ function evaluateStructuredRequirementsResult(
 
   if (hasNoFormalGradeGate) {
     const registerLabel =
-      programType === 'certificate' || programType === 'vocational' || programType === 'short-course'
+      programType === 'certificate' ||
+      programType === 'vocational' ||
+      programType === 'short-course'
         ? 'אפשר להירשם'
         : 'אפשר להגיש מועמדות';
 
@@ -836,7 +848,9 @@ function evaluateStructuredRequirementsResult(
           ? `לפי התנאים שמופו, אין למסלול סף ציונים פורמלי שחוסם הגשה. מידע רלוונטי: ${allRequirements.join('; ')}`
           : 'לפי התנאים שמופו, אין למסלול סף ציונים פורמלי שחוסם הגשה.',
       nextAction:
-        programType === 'certificate' || programType === 'vocational' || programType === 'short-course'
+        programType === 'certificate' ||
+        programType === 'vocational' ||
+        programType === 'short-course'
           ? 'המשיכו לרישום ובדקו באתר המוסד מסמכי הרשמה, מועדים ודרישות אדמיניסטרטיביות.'
           : 'הגישו מועמדות ובדקו באתר המוסד מסמכי הרשמה, מועדים ודרישות משלימות.',
     };
@@ -857,7 +871,10 @@ function readNumericAdmissionFactValue(
     case 'psychometric_quantitative':
       return { actual: input.extraInputs?.psychometricMath, requiredInput: 'psychometric_math' };
     case 'psychometric_english':
-      return { actual: input.extraInputs?.psychometricEnglish, requiredInput: 'psychometric_english' };
+      return {
+        actual: input.extraInputs?.psychometricEnglish,
+        requiredInput: 'psychometric_english',
+      };
     case 'math_units':
       return { actual: input.extraInputs?.mathUnits, requiredInput: 'math_units' };
     case 'math_grade':

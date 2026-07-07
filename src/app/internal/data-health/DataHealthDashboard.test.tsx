@@ -316,7 +316,9 @@ describe('DataHealthDashboard', () => {
     expect(screen.getAllByText('Manual gate').length).toBeGreaterThan(0);
     expect(screen.getByText('28. מעלה - לקולנוע ואמנויות')).toBeTruthy();
     expect(
-      screen.getByRole('link', { name: /eligible with no formal grade gate/i }).getAttribute('href'),
+      screen
+        .getByRole('link', { name: /eligible with no formal grade gate/i })
+        .getAttribute('href'),
     ).toBe('#non-catalogue-eligible-no-formal-grade-gate');
     expect(screen.getByRole('link', { name: /manual gate/i }).getAttribute('href')).toBe(
       '#non-catalogue-manual-gate',

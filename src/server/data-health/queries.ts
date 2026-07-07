@@ -209,7 +209,11 @@ type IngestionJobStatus = 'pending' | 'running' | 'succeeded' | 'failed' | 'need
 type SourceDifficulty = 'easy' | 'browser_required' | 'hard_manual';
 type ReviewItemStatus = 'pending' | 'approved' | 'rejected';
 type FreshnessSourceClass =
-  'api_static_json' | 'browser_required' | 'official_html' | 'pdf_text' | 'score_only_calculator';
+  | 'api_static_json'
+  | 'browser_required'
+  | 'official_html'
+  | 'pdf_text'
+  | 'score_only_calculator';
 type FreshnessCapability = 'blocked' | 'decision_capable' | 'score_only';
 type SourceFreshnessStatus = 'blocked' | 'changed_needs_review' | 'failed' | 'fresh';
 type DashboardSourceFreshnessStatus = SourceFreshnessStatus | 'never_checked' | 'stale';
@@ -630,7 +634,9 @@ function buildMondayEvidenceCoverage(): MondayEvidenceCoverage {
   const catalogueMatched = records.filter(
     (record) => record.catalogueVisibility === 'catalogue_mapped',
   ).length;
-  const nonCatalogueRecords = records.filter((record) => record.catalogueVisibility === 'evidence_only');
+  const nonCatalogueRecords = records.filter(
+    (record) => record.catalogueVisibility === 'evidence_only',
+  );
   const nonCatalogueEvidence = nonCatalogueRecords.length;
   const decisionCapable = records.filter(
     (record) => record.publicBucket === 'decision_capable',
@@ -662,8 +668,7 @@ function buildMondayEvidenceCoverage(): MondayEvidenceCoverage {
       rows: nonCatalogueRecords
         .filter((record) => record.publicBucket === bucket)
         .sort(
-          (a, b) =>
-            backlogPriority(b) - backlogPriority(a) || a.itemName.localeCompare(b.itemName),
+          (a, b) => backlogPriority(b) - backlogPriority(a) || a.itemName.localeCompare(b.itemName),
         )
         .slice(0, 3)
         .map((record) => ({

@@ -264,8 +264,7 @@ describe('CalculatorResults', () => {
           decision: 'below',
           confidence: 'high',
           sourceLabel: 'סף זימון נדרש',
-          explanation:
-            'לפי המקור הרשמי, צריך להגיע לפחות לסכם 92 כדי לעבור לשלב המיון הידני.',
+          explanation: 'לפי המקור הרשמי, צריך להגיע לפחות לסכם 92 כדי לעבור לשלב המיון הידני.',
           nextAction:
             'שפרו את הנתונים שמופיעים בפער לפני הרשמה. גם מעבר סף הזימון לא מבטיח קבלה סופית.',
           score: 84.5,
@@ -289,9 +288,7 @@ describe('CalculatorResults', () => {
       />,
     );
 
-    expect(
-      await screen.findByLabelText('הטכניון – מכון טכנולוגי לישראל: מתחת לסף'),
-    ).toBeTruthy();
+    expect(await screen.findByLabelText('הטכניון – מכון טכנולוגי לישראל: מתחת לסף')).toBeTruthy();
     expect(screen.getByText(/סכם 84\.5 · סף 92/)).toBeTruthy();
     expect(screen.getByText(/צריך להגיע לפחות לסכם 92/)).toBeTruthy();
   });

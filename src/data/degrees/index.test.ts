@@ -148,9 +148,13 @@ describe('dynamic Monday-derived programme inference', () => {
       ]),
     );
 
-    expect(allPrograms.some((program) => program.id === 'mon_12341088622_general_academic')).toBe(false);
+    expect(allPrograms.some((program) => program.id === 'mon_12341088622_general_academic')).toBe(
+      false,
+    );
     expect(allPrograms.some((program) => program.id === 'mon_12341091743_engineering')).toBe(false);
-    expect(allPrograms.some((program) => program.id === 'mon_12341122528_general_academic')).toBe(false);
+    expect(allPrograms.some((program) => program.id === 'mon_12341122528_general_academic')).toBe(
+      false,
+    );
     expect(allPrograms.some((program) => program.id === 'mon_12341173326_certificate')).toBe(false);
     expect(allPrograms.some((program) => program.id === 'mon_12341098712_engineering')).toBe(false);
     expect(allPrograms.some((program) => program.id === 'mon_12341148006_certificate')).toBe(false);
@@ -170,9 +174,7 @@ describe('dynamic Monday-derived programme inference', () => {
       type: 'academic',
       category: 'הנדסה',
     });
-    expect(
-      ruppinEngineering?.institutionDetails?.map((detail) => detail.institutionName),
-    ).toEqual(
+    expect(ruppinEngineering?.institutionDetails?.map((detail) => detail.institutionName)).toEqual(
       expect.arrayContaining([
         'המכללה הטכנולוגית רופין\\- מבית רשת מכללות עתיד',
         'המכללה הטכנולוגית רופין\\- לימודי חוץ והכשרה טכנולוגית',
@@ -214,9 +216,7 @@ describe('dynamic Monday-derived programme inference', () => {
     expect(
       givatWashingtonCertificate?.institutionDetails?.map((detail) => detail.institutionName),
     ).toEqual(
-      expect.arrayContaining([
-        `בית ספר 'ליגה" -בית הספר למאמנים ומדריכים בספורט גבעת ושינגטון`,
-      ]),
+      expect.arrayContaining([`בית ספר 'ליגה" -בית הספר למאמנים ומדריכים בספורט גבעת ושינגטון`]),
     );
 
     const givatWashingtonMedicine = allPrograms.find(
@@ -231,9 +231,7 @@ describe('dynamic Monday-derived programme inference', () => {
     });
     expect(
       givatWashingtonMedicine?.institutionDetails?.map((detail) => detail.institutionName),
-    ).toEqual(
-      expect.arrayContaining(["'אדמה'\\- בית הספר לרפואה משלימה ותרפיות בגבעת ושינגטון"]),
-    );
+    ).toEqual(expect.arrayContaining(["'אדמה'\\- בית הספר לרפואה משלימה ותרפיות בגבעת ושינגטון"]));
 
     const orinShpalterCertificate = allPrograms.find(
       (program) => program.id === 'orin_shpalter_certificate',
@@ -247,9 +245,7 @@ describe('dynamic Monday-derived programme inference', () => {
     });
     expect(
       orinShpalterCertificate?.institutionDetails?.map((detail) => detail.institutionName),
-    ).toEqual(
-      expect.arrayContaining(['אורין-שפלטר השכלה פיננסית', 'אורין-שפלטר השכלה פיננסית.']),
-    );
+    ).toEqual(expect.arrayContaining(['אורין-שפלטר השכלה פיננסית', 'אורין-שפלטר השכלה פיננסית.']));
 
     const tcbEngineering = allPrograms.find((program) => program.id === 'tcb_engineering');
 
@@ -290,7 +286,9 @@ describe('dynamic Monday-derived programme inference', () => {
       expect.arrayContaining(['מכללת תילתן המכללה לרפואה משלימה']),
     );
 
-    const tiltanGraphicDesign = allPrograms.find((program) => program.id === 'tiltan_graphic_design');
+    const tiltanGraphicDesign = allPrograms.find(
+      (program) => program.id === 'tiltan_graphic_design',
+    );
 
     expect(tiltanGraphicDesign).toMatchObject({
       id: 'tiltan_graphic_design',
@@ -310,9 +308,9 @@ describe('dynamic Monday-derived programme inference', () => {
       type: 'certificate',
       category: 'לימודי תעודה',
     });
-    expect(
-      tiltanCertificate?.institutionDetails?.map((detail) => detail.institutionName),
-    ).toEqual(expect.arrayContaining(['תילתן קמפוס חרדי']));
+    expect(tiltanCertificate?.institutionDetails?.map((detail) => detail.institutionName)).toEqual(
+      expect.arrayContaining(['תילתן קמפוס חרדי']),
+    );
 
     const idanHahorutGeneralAcademic = allPrograms.find(
       (program) => program.id === 'idan_hahorut_general_academic',
@@ -333,7 +331,9 @@ describe('dynamic Monday-derived programme inference', () => {
       ]),
     );
 
-    const meditevaCertificate = allPrograms.find((program) => program.id === 'mediteva_certificate');
+    const meditevaCertificate = allPrograms.find(
+      (program) => program.id === 'mediteva_certificate',
+    );
 
     expect(meditevaCertificate).toMatchObject({
       id: 'mediteva_certificate',
@@ -341,9 +341,9 @@ describe('dynamic Monday-derived programme inference', () => {
       type: 'academic',
       category: 'לימודי תעודה',
     });
-    expect(meditevaCertificate?.institutionDetails?.map((detail) => detail.institutionName)).toEqual(
-      expect.arrayContaining(['מכללת מדיטבע']),
-    );
+    expect(
+      meditevaCertificate?.institutionDetails?.map((detail) => detail.institutionName),
+    ).toEqual(expect.arrayContaining(['מכללת מדיטבע']));
 
     const highQCertificate = allPrograms.find((program) => program.id === 'high_q_certificate');
 
@@ -390,7 +390,9 @@ describe('dynamic Monday-derived programme inference', () => {
     const uncoveredRecords = mondayAdmissionsEvidence
       .map((record) => {
         const institutionId = record.catalogueInstitutionId ?? `mon_${record.itemId}`;
-        const matchingPrograms = allPrograms.filter((program) => program.institutionId === institutionId);
+        const matchingPrograms = allPrograms.filter(
+          (program) => program.institutionId === institutionId,
+        );
 
         return {
           itemId: record.itemId,

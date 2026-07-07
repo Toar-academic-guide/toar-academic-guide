@@ -239,10 +239,7 @@ export function buildAdmissionsCapabilityMatrix(args: {
         institutionId,
       });
 
-      if (
-        hasCalculatorConfig &&
-        verifiedThreshold?.thresholdKind === 'invitation_to_manual_gate'
-      ) {
+      if (hasCalculatorConfig && verifiedThreshold?.thresholdKind === 'invitation_to_manual_gate') {
         return {
           institutionId,
           capability: 'manual_gate',

@@ -78,10 +78,7 @@ const DYNAMIC_PROGRAM_MAP = [
 
 const dynamicPrograms: Program[] = [];
 
-function mergeDynamicProgramDetails(
-  existingProgram: Program,
-  nextProgram: Program,
-): Program {
+function mergeDynamicProgramDetails(existingProgram: Program, nextProgram: Program): Program {
   const existingDetails = existingProgram.institutionDetails ?? [];
   const nextDetails = nextProgram.institutionDetails ?? [];
   const mergedDetails = [...existingDetails];

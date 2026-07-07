@@ -140,17 +140,13 @@ describe('catalogueSeed', () => {
       field: 'interview',
     });
     expect(
-      payload.admissionAlternativePaths.find(
-        (row) => row.id === 'ono_nursing:ono:alt:bridge',
-      ),
+      payload.admissionAlternativePaths.find((row) => row.id === 'ono_nursing:ono:alt:bridge'),
     ).toMatchObject({
       kind: 'transfer_path',
       programId: 'ono_nursing',
     });
     expect(
-      payload.admissionFacts.find(
-        (row) => row.id === 'sapir_law:sapir:fact:no-psychometric',
-      ),
+      payload.admissionFacts.find((row) => row.id === 'sapir_law:sapir:fact:no-psychometric'),
     ).toMatchObject({
       kind: 'explicit_absence',
       field: 'psychometric',
