@@ -14,10 +14,7 @@ export type CatalogueEvidenceCoverageStatus =
   | 'untracked_gap';
 
 export type CatalogueEvidenceTrackingSource =
-  | 'monday_evidence'
-  | 'catalogue_gap_inventory'
-  | 'runtime_capability'
-  | 'none';
+  'monday_evidence' | 'catalogue_gap_inventory' | 'runtime_capability' | 'none';
 
 export interface CatalogueEvidenceGapTracking {
   missingData: readonly string[];
