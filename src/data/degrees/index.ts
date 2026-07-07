@@ -113,9 +113,19 @@ function mergeDynamicProgramDetails(existingProgram: Program, nextProgram: Progr
   };
 }
 
+function getMondaySearchableText(record: (typeof mondayAdmissionsEvidence)[number]) {
+  const baseText =
+    `${record.itemName} ${record.displayName} ${record.tags.join(' ')}`.toLowerCase();
+
+  if (record.publicBucket === 'decision_capable') {
+    return baseText;
+  }
+
+  return `${baseText} ${record.decisionReason}`.toLowerCase();
+}
+
 function fallbackDynamicProgram(record: (typeof mondayAdmissionsEvidence)[number]) {
-  const searchable =
-    `${record.itemName} ${record.displayName} ${record.tags.join(' ')} ${record.decisionReason}`.toLowerCase();
+  const searchable = getMondaySearchableText(record);
   const isCertificate =
     record.diplomaType === 'תעודה מקצועית' ||
     record.diplomaType === 'לימודי תעודה' ||
@@ -168,8 +178,7 @@ for (const record of mondayAdmissionsEvidence) {
     `mon_${record.itemId}`) as InstitutionId;
 
   let matches = DYNAMIC_PROGRAM_MAP.filter((prog) => {
-    const searchable =
-      `${record.itemName} ${record.displayName} ${record.tags.join(' ')} ${record.decisionReason}`.toLowerCase();
+    const searchable = getMondaySearchableText(record);
     return prog.keywords.some((keyword) => keyword.test(searchable));
   });
 
