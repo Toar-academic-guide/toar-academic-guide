@@ -44,11 +44,14 @@ describe('calculatorCoverage', () => {
     }
   });
 
-  it('marks BIU and Ariel as blocked', () => {
-    for (const id of ['biu', 'ariel']) {
-      const entry = calculatorCoverageInventory.find((e) => e.institutionId === id);
-      expect(entry?.intendedCapability).toBe('blocked');
-    }
+  it('keeps BIU blocked while Ariel is now represented as score_only with a blocked-source follow-up lane', () => {
+    const biu = calculatorCoverageInventory.find((e) => e.institutionId === 'biu');
+    expect(biu?.intendedCapability).toBe('blocked');
+
+    const ariel = calculatorCoverageInventory.find((e) => e.institutionId === 'ariel');
+    expect(ariel?.intendedCapability).toBe('score_only');
+    expect(ariel?.supportLevel).toBe('score_only');
+    expect(ariel?.evidenceKind).toBe('browser_blocked');
   });
 
   it('marks Open University as open admission', () => {

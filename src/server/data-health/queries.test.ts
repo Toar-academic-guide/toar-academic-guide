@@ -16,6 +16,7 @@ import {
   summarizeDataHealthRows,
   type DataHealthRows,
 } from './queries';
+import { mondayAdmissionsEvidence } from '@/data/admissions/mondayEvidence';
 
 const now = new Date('2026-06-24T18:00:00.000Z');
 
@@ -476,6 +477,38 @@ describe('summarizeDataHealthRows', () => {
           evidenceMode: 'unsupported',
           severity: 'informational',
           sourceTargetId: null,
+        }),
+      ]),
+    );
+  });
+
+  it('surfaces a deterministic non-catalogue Monday evidence backlog slice for operators', () => {
+    const report = summarizeDataHealthRows(baseRows(), now);
+    const expectedNonCatalogueCount = mondayAdmissionsEvidence.filter(
+      (record) => record.catalogueVisibility === 'evidence_only',
+    ).length;
+
+    expect(report.mondayEvidence.nonCatalogueEvidence).toBe(expectedNonCatalogueCount);
+    expect(report.mondayEvidence.nonCatalogueGroups.length).toBeGreaterThan(0);
+    expect(report.mondayEvidence.nonCatalogueBucketCounts).toMatchObject({
+      eligible_no_formal_grade_gate: expect.any(Number),
+      eligible_with_manual_gate: expect.any(Number),
+      manual_gate: expect.any(Number),
+      requirements_review: expect.any(Number),
+    });
+    expect(report.mondayEvidence.nonCatalogueGroups).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          bucket: expect.any(String),
+          count: expect.any(Number),
+          rows: expect.arrayContaining([
+            expect.objectContaining({
+              publicBucket: expect.any(String),
+              itemId: expect.any(String),
+              itemName: expect.stringMatching(/^\d+\./),
+              nextAction: expect.any(String),
+            }),
+          ]),
         }),
       ]),
     );

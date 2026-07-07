@@ -63,7 +63,6 @@ export const PROGRAM_FIELD_MAP: Record<string, string> = {
   bgu_me: 'me',
   bgu_industrial: 'industrialEng',
   bgu_psychology: 'psychology',
-  bgu_law: 'law',
   bgu_economics: 'economics',
   bgu_business: 'business',
   bgu_biology: 'biology',
@@ -209,9 +208,7 @@ export const PROGRAM_FIELD_MAP: Record<string, string> = {
   ono_law: 'law',
   ono_business: 'business',
   ono_cs: 'cs',
-  ono_socialwork: 'socialWork',
   ono_nursing: 'nursing',
-  ono_psychology: 'psychology',
 
   // ── New accounting & info-systems programs ────────────────────────────────
   tau_accounting: 'accounting',
@@ -437,7 +434,7 @@ export const FIELD_ENRICHMENT: Record<string, FieldEnrichment> = {
     ],
     advancedDegreesSteps:
       'לאחר הסמכה, עורכי דין מתמחים ב-IP, M&A, פלילים, נדל"ן. LL.M. בחו"ל (US/UK) פותח דלתות בינלאומיות.',
-    programIds: ['law', 'tau_law', 'huji_law', 'bgu_law', 'haifa_law', 'biu_law'],
+    programIds: ['law', 'tau_law', 'huji_law', 'haifa_law', 'biu_law'],
   },
 
   economics: {

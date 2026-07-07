@@ -44,6 +44,17 @@ export type InstitutionId =
   | 'elevation'
   | 'itc'
   | 'johnbryce'
+  | 'bdo_academy'
+  | 'orin_shpalter'
+  | 'tcb'
+  | 'atid'
+  | 'aliya'
+  | 'tiltan'
+  | 'lfa'
+  | 'idan_hahorut'
+  | 'mediteva'
+  | 'high_q'
+  | 'kidum'
   // ── Music academies ───────────────────────────────────────────────────────
   | 'jerusalem_academy'
   | 'rubin'
@@ -420,6 +431,83 @@ export const INSTITUTIONS: InstitutionRecord[] = [
     name: 'ג׳ון ברייס',
     domain: 'johnbryce.co.il',
     region: 'center',
+  },
+  {
+    id: 'bdo_academy',
+    name: 'BDO Academy',
+    domain: 'bdo-academy.co.il',
+    region: 'center',
+    programUrl: 'https://www.bdo-academy.co.il',
+  },
+  {
+    id: 'orin_shpalter',
+    name: 'אורין-שפלטר השכלה פיננסית',
+    domain: 'orin-shpalter.co.il',
+    region: 'center',
+    programUrl: 'https://www.orin-shpalter.co.il',
+  },
+  {
+    id: 'tcb',
+    name: 'המכללה הטכנולוגית באר שבע',
+    domain: 'tcb.ac.il',
+    region: 'south',
+    programUrl: 'https://www.tcb.ac.il',
+  },
+  {
+    id: 'atid',
+    name: 'עתיד - רשת מכללות טכנולוגיות',
+    domain: 'atid.org.il',
+    region: 'center',
+    programUrl: 'https://www.atid.org.il',
+  },
+  {
+    id: 'aliya',
+    name: 'מכון עליה',
+    domain: 'aliya.org.il',
+    region: 'south',
+    programUrl: 'https://www.aliya.org.il',
+  },
+  {
+    id: 'tiltan',
+    name: 'מכללת תילתן',
+    domain: 'tiltan.co.il',
+    region: 'north',
+    programUrl: 'https://www.tiltan.co.il',
+  },
+  {
+    id: 'lfa',
+    name: 'אקדמיית LFA',
+    domain: 'lfa.co.il',
+    region: 'center',
+    programUrl: 'https://www.lfa.co.il',
+  },
+  {
+    id: 'idan_hahorut',
+    name: 'מכללת עידן ההורות',
+    domain: 'idan-hahorut.co.il',
+    region: 'center',
+    programUrl: 'https://www.idan-hahorut.co.il',
+  },
+  {
+    id: 'mediteva',
+    name: 'מכללת מדיטבע',
+    domain: 'mediteva.co.il',
+    region: 'center',
+    programUrl: 'https://www.mediteva.co.il',
+  },
+  {
+    id: 'high_q',
+    name: 'HIGH Q',
+    domain: 'high-q.co.il',
+    region: 'center',
+    programUrl: 'https://www.high-q.co.il',
+  },
+  {
+    id: 'kidum',
+    name: 'קידום',
+    domain: 'kidum.com',
+    region: 'center',
+    programUrl: 'https://www.kidum.com',
   },
 
   // ══════════════════════════════════════════════════════════════════════════

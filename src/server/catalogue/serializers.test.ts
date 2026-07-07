@@ -109,12 +109,12 @@ describe('catalogue serializers', () => {
 
   it('serializes structured admissions facts, source context, and alternatives', () => {
     const program = {
-      id: 'ono_socialwork',
-      name: 'עבודה סוציאלית',
+      id: 'ono_nursing',
+      name: 'סיעוד',
       institutionName: 'המכללה האקדמית אונו',
       institutionId: 'ono',
       type: 'academic',
-      category: 'מדעי החברה',
+      category: 'מדעי הבריאות',
       riasecR: 1,
       riasecI: 1,
       riasecA: 1,
@@ -137,8 +137,8 @@ describe('catalogue serializers', () => {
     } as InstitutionRow;
 
     const requirement = {
-      id: 'ono_socialwork:ono',
-      programId: 'ono_socialwork',
+      id: 'ono_nursing:ono',
+      programId: 'ono_nursing',
       institutionId: 'ono',
       durationYears: 3,
       estimatedStudentsPerYear: null,
@@ -153,24 +153,24 @@ describe('catalogue serializers', () => {
     } as AdmissionRequirementRow;
 
     const sourceCandidate = {
-      id: 'ono_socialwork:ono:item-update-source',
+      id: 'ono_nursing:ono:program-source',
       admissionRequirementId: requirement.id,
       institutionId: 'ono',
-      programId: 'ono_socialwork',
-      origin: 'item_update',
+      programId: 'ono_nursing',
+      origin: 'catalogue_url',
       specificity: 'program_admissions',
-      confidence: 'medium',
-      url: 'https://www.ono.ac.il/',
-      title: 'תנאי קבלה מתוך עדכון פריט',
+      confidence: 'high',
+      url: 'https://www.ono.ac.il/curriculum/nursing/',
+      title: 'תנאי קבלה - תואר ראשון באֲחָיוּת (סיעוד) - הקריה האקדמית אונו',
       notes: null,
       createdAt: new Date(),
     } as AdmissionsSourceCandidateRow;
 
     const interviewFact = {
-      id: 'ono_socialwork:ono:fact:interview',
+      id: 'ono_nursing:ono:fact:interview',
       admissionRequirementId: requirement.id,
       institutionId: 'ono',
-      programId: 'ono_socialwork',
+      programId: 'ono_nursing',
       sourceCandidateId: sourceCandidate.id,
       kind: 'manual_gate',
       field: 'interview',
@@ -178,29 +178,29 @@ describe('catalogue serializers', () => {
       valueNumber: null,
       valueText: 'ראיון קבלה',
       unit: 'text',
-      description: 'ראיון קבלה נדרש לאחר עמידה בתנאים המספריים.',
-      confidence: 'medium',
+      description: 'ראיון קבלה אישי נדרש גם במסלולים ללא פסיכומטרי.',
+      confidence: 'high',
       isRequired: true,
       createdAt: new Date(),
     } as AdmissionFactRow;
 
     const alternative = {
-      id: 'ono_socialwork:ono:alt:exceptions',
+      id: 'ono_nursing:ono:alt:bridge',
       admissionRequirementId: requirement.id,
       institutionId: 'ono',
-      programId: 'ono_socialwork',
+      programId: 'ono_nursing',
       sourceCandidateId: sourceCandidate.id,
-      kind: 'exceptions_committee',
-      title: 'ועדת קבלה או חריגים',
-      description: 'אם חסר ציון אחד אבל הרקע מתאים, כדאי לבדוק ועדת קבלה או חריגים.',
-      url: 'https://www.ono.ac.il/',
-      priority: 30,
+      kind: 'transfer_path',
+      title: 'אפיק מעבר ללא פסיכומטרי',
+      description: 'לבעלי בגרות 85 ומעלה יש אפיק מעבר וראיון קבלה גם ללא פסיכומטרי.',
+      url: 'https://www.ono.ac.il/curriculum/nursing/',
+      priority: 20,
       createdAt: new Date(),
     } as AdmissionAlternativePathRow;
 
     const serialized = serializeProgramRow({
       program,
-      relations: [{ programId: 'ono_socialwork', institutionId: 'ono' }] as ProgramInstitutionRow[],
+      relations: [{ programId: 'ono_nursing', institutionId: 'ono' }] as ProgramInstitutionRow[],
       requirements: [requirement],
       thresholds: [],
       sourceUrls: [],
@@ -214,8 +214,8 @@ describe('catalogue serializers', () => {
       admissionsSourceCandidates: [
         {
           id: sourceCandidate.id,
-          origin: 'item_update',
-          confidence: 'medium',
+          origin: 'catalogue_url',
+          confidence: 'high',
         },
       ],
       admissionFacts: [
@@ -228,7 +228,7 @@ describe('catalogue serializers', () => {
       admissionAlternativePaths: [
         {
           id: alternative.id,
-          kind: 'exceptions_committee',
+          kind: 'transfer_path',
         },
       ],
     });

@@ -4,6 +4,7 @@ import { dirname, resolve } from 'node:path';
 
 const DEFAULT_INPUT = 'scratch/monday-admissions-updates.json';
 const DEFAULT_OVERRIDES_INPUT = 'src/data/admissions/mondayEvidenceOverrides.json';
+const DEFAULT_INSTITUTIONS_SOURCE = 'src/data/institutions.ts';
 const DEFAULT_TS_OUTPUT = 'src/data/admissions/mondayEvidence.generated.ts';
 const DEFAULT_SUMMARY_OUTPUT = 'docs/admissions-coverage/monday-evidence-summary.md';
 const DEFAULT_MISSING_RULES_OUTPUT = 'docs/admissions-coverage/missing-official-rules.md';
@@ -42,15 +43,71 @@ const KNOWN_CATALOGUE_INSTITUTION_IDS = new Map([
   ['36. מנשר לאמנות', 'minshar'],
   ['38. הסטודיו למשחק ניסן נתיב', 'nativ'],
   ['40. בית צבי בית ספר גבוה לאמנויות הבמה', 'beit_zvi'],
+  ['56. המכללה האקדמית נתניה', 'netanya'],
   ['57. המרכז האקדמי לוינסקי-וינגייט', 'wingate'],
   ['58. סמינר הקיבוצים', 'seminar'],
   ['82. חשיפה - האוניברסיטה הפתוחה', 'open_university'],
+  ['102. המכללה האקדמית צפת', 'zefat'],
   ['95. היחידה ללימודי חוץ במכללת אפקה להנדסה', 'afeka'],
+  ['116. המרכז האקדמי פרס', 'peres'],
   ['117. HackerU - מזניקים אותך לקריירה בהייטק', 'hackeru'],
   ['178. מכללת רידמן לרפואה משלימה ואינטגרטיבית', 'reidman'],
   ["182. ג'ון ברייס הדרכה", 'johnbryce'],
   ['190. בישולים בית הספר הגבוה לקולינריה', 'bishulim'],
   ['HIT .15', 'hit'],
+]);
+
+const KNOWN_CATALOGUE_INSTITUTION_ALIASES = new Map([
+  ['המכללה האקדמית סמי שמעון SCE', 'sce'],
+  ['SCE המכללה האקדמית להנדסה ע"ש סמי שמעון', 'sce'],
+  ['אורנים המכללה האקדמית לחינוך', 'oranim'],
+  ['עזריאלי - מכללה אקדמית להנדסה', 'azrieli'],
+  ['המכללה האקדמית להנדסה בראודה', 'braude'],
+  ['המכללה האקדמית הדסה ירושלים', 'hadassah'],
+  ['המרכז האקדמי ויצו חיפה', 'wizo'],
+  ['המכללה האקדמית לחינוך ע"ש דוד ילין', 'david_yellin'],
+  ['המרכז האקדמי למשפט ולעסקים', 'ramat_gan'],
+  ['המכללה האקדמית הרצוג', 'herzog'],
+  ["המכללה האקדמית לחינוך ע''ש קיי בבאר שבע", 'kaye'],
+  ['המכללה האקדמית בית ברל', 'beit_berl'],
+  ['המדרשה לאמנות (בית ברל)', 'beit_berl'],
+  ['חשיפה \\- האוניברסיטה הפתוחה', 'open_university'],
+  ['המרכז האקדמי שערי מדע ומשפט', 'shaare_mishpat'],
+  ['המכינה הקדם אקדמית בתל חי', 'telhai'],
+  ['המכינה הקדם אקדמית סמי שמעון', 'sce'],
+  ['המכללה הטכנולוגית כנרת', 'kinneret'],
+  ['המכללה הטכנולוגית להנדסאים תל חי', 'telhai'],
+  ['המרכז ללימודי חוץ והמשך ספיר', 'sapir'],
+  ['המכללה הטכנולוגית רופין\\- מבית רשת מכללות עתיד', 'ruppin'],
+  ['המכללה הטכנולוגית רופין\\- לימודי חוץ והכשרה טכנולוגית', 'ruppin'],
+  ['תפנית', 'open_university'],
+  ['דיאלוג', 'open_university'],
+  ['בית ספר \'ליגה" -בית הספר למאמנים ומדריכים בספורט גבעת ושינגטון', 'givat_washington'],
+  ['מירב', 'open_university'],
+  ['דיפלומה \\- ביה"ס ללימודי תעודה והסמכה', 'open_university'],
+  ["'אדמה'\\- בית הספר לרפואה משלימה ותרפיות בגבעת ושינגטון", 'givat_washington'],
+  ['המכללה האקדמית רמת גן', 'israel_academic'],
+  ['המכללה למינהל\\- רשת מכללות הנדסאים', 'tech_management'],
+  ['האקדמיה לפיננסים מבית BDO', 'bdo_academy'],
+  ['BDO Academy', 'bdo_academy'],
+  ['אורין-שפלטר השכלה פיננסית', 'orin_shpalter'],
+  ['אורין-שפלטר השכלה פיננסית.', 'orin_shpalter'],
+  ['המכללה הטכנולוגית באר שבע המרכז להשתלמויות', 'tcb'],
+  ['המכללה הטכנולוגית באר שבע \\- הנדסאים', 'tcb'],
+  ['עתיד \\- רשת מכללות טכנולוגיות', 'atid'],
+  ['בית ספר "סאונד" מבית רשת מכללות עתיד', 'atid'],
+  ['מכון עליה', 'aliya'],
+  ['מכון עליה למגזר הערבי', 'aliya'],
+  ['מכללת תילתן המכללה לרפואה משלימה', 'tiltan'],
+  ['תילתן המכללה לעיצוב ולתקשורת חזותית', 'tiltan'],
+  ['תילתן קמפוס חרדי', 'tiltan'],
+  ['אקדמיית LFA - המחלקה ללימודי מקצועות היופי', 'lfa'],
+  ['אקדמיית LFA - המחלקה ללימודי מקצועות חופשיים', 'lfa'],
+  ['מכללת עידן ההורות', 'idan_hahorut'],
+  ['סאבטקסט\\- המכללה ללימודי שפת גוף מבית מכללת עידן ההורות', 'idan_hahorut'],
+  ['מכללת מדיטבע', 'mediteva'],
+  ['HIGH Q', 'high_q'],
+  ['קידום \\- בגרויות', 'kidum'],
 ]);
 
 function parseArgs(argv) {
@@ -169,6 +226,58 @@ async function readOverrides(inputPath) {
   return new Map(parsed.overrides.map((override) => [override.itemId, override]));
 }
 
+function fallbackUrlFromDomain(domain) {
+  if (!domain || domain === 'ac.il') {
+    return null;
+  }
+
+  return `https://${domain}`;
+}
+
+async function readCatalogueInstitutionMetadata(inputPath = DEFAULT_INSTITUTIONS_SOURCE) {
+  let text;
+  try {
+    text = await readFile(inputPath, 'utf8');
+  } catch (error) {
+    throw new Error(
+      `Unable to read institutions source at ${inputPath}. ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+  }
+
+  const nameIndex = new Map();
+  const fallbackUrlById = new Map();
+  const matches = text.matchAll(/\{\s*id:\s*'([^']+)'([\s\S]*?)\n\s*\}/g);
+
+  for (const [, id, body] of matches) {
+    const nameMatch = body.match(/\n\s*name:\s*'([^']+)'/);
+    if (nameMatch) {
+      nameIndex.set(normalizeInstitutionName(nameMatch[1]), id);
+    }
+
+    const programUrlMatch = body.match(/\n\s*programUrl:\s*'([^']+)'/);
+    const domainMatch = body.match(/\n\s*domain:\s*'([^']+)'/);
+    const fallbackUrl =
+      programUrlMatch?.[1] ?? fallbackUrlFromDomain(domainMatch?.[1] ?? null);
+
+    if (fallbackUrl) {
+      fallbackUrlById.set(id, fallbackUrl);
+    }
+  }
+
+  return { nameIndex, fallbackUrlById };
+}
+
+function normalizeInstitutionName(value) {
+  return value
+    .replace(/[׳״"'`]/g, '')
+    .replace(/[().]/g, ' ')
+    .replace(/[–—-]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function extractAdmissionsCriteria(item) {
   const columnText = (item.columns ?? [])
     .map((c) => c.text)
@@ -204,22 +313,40 @@ function extractAdmissionsCriteria(item) {
   };
 }
 
-function deriveRecord(item) {
+function inferCatalogueInstitutionId(itemName, displayName, catalogueInstitutionNameIndex) {
+  return (
+    KNOWN_CATALOGUE_INSTITUTION_IDS.get(itemName) ??
+    KNOWN_CATALOGUE_INSTITUTION_ALIASES.get(displayName) ??
+    catalogueInstitutionNameIndex.get(normalizeInstitutionName(displayName)) ??
+    null
+  );
+}
+
+function deriveRecord(item, catalogueInstitutionNameIndex, catalogueInstitutionFallbackUrlById) {
   const evidence = item.evidence ?? {};
   const capabilityCandidate = evidence.capabilityCandidate ?? 'unknown';
   const columnValue = columnReader(item.columns ?? []);
-  const urls = cleanUrls([
+  const itemNumber = extractItemNumber(item.name);
+  const displayName = stripItemNumber(item.name);
+  const catalogueInstitutionId = inferCatalogueInstitutionId(
+    item.name,
+    displayName,
+    catalogueInstitutionNameIndex,
+  );
+  const derivedUrls = cleanUrls([
     ...(evidence.urls ?? []),
     columnValue('לינק למחשבון סכם'),
     columnValue('לינקים נוספים'),
     columnValue('Official Source'),
   ]);
+  const fallbackUrl = catalogueInstitutionId
+    ? catalogueInstitutionFallbackUrlById.get(catalogueInstitutionId) ?? null
+    : null;
+  const urls =
+    derivedUrls.length > 0 ? derivedUrls : cleanUrls([fallbackUrl]);
   const missingData = missingDataFor(capabilityCandidate, urls);
   const publicBucket = publicBucketFor(capabilityCandidate);
   const ruleStatus = ruleStatusFor(capabilityCandidate, urls);
-  const itemNumber = extractItemNumber(item.name);
-  const displayName = stripItemNumber(item.name);
-  const catalogueInstitutionId = KNOWN_CATALOGUE_INSTITUTION_IDS.get(item.name) ?? null;
   const criteria = extractAdmissionsCriteria(item);
 
   return {
@@ -649,8 +776,15 @@ async function main() {
 
   const raw = await readRawExport(args.input);
   const overrides = await readOverrides(args.overrides);
+  const { nameIndex: catalogueInstitutionNameIndex, fallbackUrlById: catalogueInstitutionFallbackUrlById } =
+    await readCatalogueInstitutionMetadata();
   const records = sortRecords(
-    raw.items.map((item) => applyOverride(deriveRecord(item), overrides.get(item.id))),
+    raw.items.map((item) =>
+      applyOverride(
+        deriveRecord(item, catalogueInstitutionNameIndex, catalogueInstitutionFallbackUrlById),
+        overrides.get(item.id),
+      ),
+    ),
   );
 
   await writeText(

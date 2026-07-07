@@ -278,7 +278,8 @@ export default function CalculatorResults({
     needsInput: { label: 'נדרשים נתונים', bg: 'bg-violet-200' },
     degraded: { label: 'אימות לא זמין', bg: 'bg-rose-200' },
     openAdmission: { label: 'קבלה פתוחה', bg: 'bg-emerald-200' },
-    manualGate: { label: 'אפשר להגיש מועמדות', bg: 'bg-indigo-200' },
+    manualGateEligible: { label: 'אפשר להגיש מועמדות', bg: 'bg-indigo-200' },
+    manualGateBelow: { label: 'מתחת לסף', bg: 'bg-[#FCD34D]' },
     requirementsOnly: { label: 'תנאי קבלה', bg: 'bg-teal-200' },
     trackedMissingRule: { label: 'חסר אימות רשמי', bg: 'bg-amber-200' },
     unsupported: { label: 'אין מספיק מידע', bg: 'bg-slate-300' },
@@ -455,7 +456,9 @@ export default function CalculatorResults({
                                 ? { ...STATUS_CONFIG.openAdmission, label: 'זכאי/ת להירשם' }
                                 : STATUS_CONFIG.openAdmission
                               : result.kind === 'manual_gate'
-                                ? STATUS_CONFIG.manualGate
+                                ? result.decision === 'below'
+                                  ? STATUS_CONFIG.manualGateBelow
+                                  : STATUS_CONFIG.manualGateEligible
                                 : result.kind === 'requirements_only'
                                   ? STATUS_CONFIG.requirementsOnly
                                   : result.kind === 'tracked_missing_rule'
@@ -489,9 +492,7 @@ export default function CalculatorResults({
                             {result.explanation}
                           </p>
                           <p className="mt-1 text-[11px] text-slate-500">{result.nextAction}</p>
-                          {result.kind === 'tracked_missing_rule' &&
-                          result.officialUrls &&
-                          result.officialUrls.length > 0 ? (
+                          {result.officialUrls && result.officialUrls.length > 0 ? (
                             <a
                               href={result.officialUrls[0]}
                               target="_blank"

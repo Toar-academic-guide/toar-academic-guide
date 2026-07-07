@@ -3,21 +3,24 @@
   "overrides": [
     {
       "itemId": "12220699650",
-      "ruleStatus": "needs_manual_gate_confirmation",
+      "capabilityCandidate": "decision_capable",
+      "publicBucket": "decision_capable",
+      "ruleStatus": "decision_rule_available",
       "officialVerificationStatus": "partial_official_rule_verified",
       "confidence": "high",
       "tags": ["official_source_verified", "threshold_or_cutoff"],
-      "missingData": ["manual_gate_for_medicine", "unverified_data_science_program_match"],
+      "missingData": [],
       "limitations": [
-        "Official Technion table verifies several catalogue program thresholds, but medicine is only an invitation threshold for MoR/continued screening and must not be presented as final acceptance.",
-        "The catalogue data-science program name does not yet exactly match the official Technion table label and remains unpromoted until verified."
+        "The current official Technion admissions table, rechecked on 2026-07-05, lists הנדסת נתונים ומידע with threshold 91.",
+        "The current Technion undergraduate catalogue now presents this area under the faculty label מדעי הנתונים וההחלטות, and the official faculty PDF explicitly lists הנדסת נתונים ומידע as one of the three training tracks."
       ],
-      "decisionReason": "Official Technion admissions table, updated 2026-06-08, publishes admission-path score thresholds for mapped non-medicine catalogue programs.",
-      "nextAction": "Keep using verified Technion thresholds for mapped non-medicine programs; separately model medicine as threshold plus MoR/manual gate and verify the data-science programme mapping.",
+      "decisionReason": "Official Technion sources now align for the current data-science track: the admissions threshold table publishes הנדסת נתונים ומידע with threshold 91, and the current undergraduate catalogue groups that track under מדעי הנתונים וההחלטות. That is sufficient to promote the mapped technion_datascience catalogue entry to decision-capable coverage.",
+      "nextAction": "Use the verified Technion threshold 91 for technion_datascience and recheck the faculty catalogue/admissions table when the next admissions cycle is published.",
       "officialUrls": [
         "https://admissions.technion.ac.il/calculator/",
         "https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/",
-        "https://admissions.technion.ac.il/wp-content/plugins/technion-calculators/technion-calculators-sum.php"
+        "https://admissions.technion.ac.il/wp-content/plugins/technion-calculators/technion-calculators-sum.php",
+        "https://ugportal.technion.ac.il/wp-content/uploads/2025/09/09-%D7%9E%D7%93%D7%A2%D7%99-%D7%94%D7%A0%D7%AA%D7%95%D7%A0%D7%99%D7%9D-%D7%95%D7%94%D7%94%D7%97%D7%9C%D7%98%D7%95%D7%AA-%D7%AA%D7%A9%D7%A4%D7%B4%D7%95.pdf"
       ],
       "verifiedProgramThresholds": [
         {
@@ -27,6 +30,14 @@
           "sourceLabel": "טכניון: מסלולי הלימוד לפי אפיקי הקבלה",
           "verifiedAt": "2026-06-30",
           "notes": "מדעי המחשב"
+        },
+        {
+          "programId": "technion_datascience",
+          "threshold": 91,
+          "sourceUrl": "https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/",
+          "sourceLabel": "טכניון: מסלולי הלימוד לפי אפיקי הקבלה",
+          "verifiedAt": "2026-07-05",
+          "notes": "הנדסת נתונים ומידע. הקטלוג העדכני של מדעי הנתונים וההחלטות מציג את המסלול תחת הפקולטה החדשה."
         },
         {
           "programId": "technion_ee",
@@ -67,6 +78,15 @@
           "sourceLabel": "טכניון: מסלולי הלימוד לפי אפיקי הקבלה",
           "verifiedAt": "2026-06-30",
           "notes": "הנדסה ביו-רפואית"
+        },
+        {
+          "programId": "technion_medicine",
+          "threshold": 92,
+          "thresholdKind": "invitation_to_manual_gate",
+          "sourceUrl": "https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/",
+          "sourceLabel": "טכניון: מסלולי הלימוד לפי אפיקי הקבלה",
+          "verifiedAt": "2026-07-04",
+          "notes": "מדעי הרפואה - מגמת רפואה. ההערה הרשמית בדף מציינת שזהו סף הזימון למבחן מו\"ר, לא קבלה סופית."
         }
       ]
     },
@@ -93,21 +113,373 @@
     },
     {
       "itemId": "12220699687",
-      "ruleStatus": "needs_threshold_or_status",
-      "officialVerificationStatus": "needs_official_threshold",
-      "confidence": "medium",
-      "tags": ["official_source_verified", "score_only_no_cutoff"],
-      "missingData": ["threshold_or_status"],
+      "capabilityCandidate": "decision_capable",
+      "publicBucket": "decision_capable",
+      "ruleStatus": "decision_rule_available",
+      "officialVerificationStatus": "partial_official_rule_verified",
+      "confidence": "high",
+      "tags": ["official_source_verified", "threshold_or_cutoff"],
+      "missingData": [],
       "limitations": [
-        "Verified: the official BGU calculator endpoints (!rg.acc_SubmitSekem and variants) return a weighted score only; admission cutoff, rejection cutoff, and explicit pass/fail fields are all N/A.",
-        "BGU columns confirm סף הקבלה משתנה לפי המחלקה והתוכנית, so per-program thresholds are not published by the calculator and must come from an alternate official source."
+        "Verified: BGU's official calculator endpoints (!rg.acc_SubmitSekem and variants) still return a weighted score only; the decision-capable thresholds now come from the official programme admission-conditions API instead.",
+        "Re-checked on 2026-07-05: the official BGU medicine acceptance-conditions API for page node 2944 returns a structured medicine rule with psycho_sekem=735, psycho_value=680, and the current registration state.",
+        "BGU medicine remains a manual-gate flow even after verification: the published rule is a year-specific invitation threshold for continued screening, not a final automatic admission decision.",
+        "Re-checked on 2026-07-05: the public BGU sciences calculator (type=4) still does not expose medicine as a public department code, so the medicine rule must come from the official acceptance-conditions API rather than the legacy calculator.",
+        "The live BGU autocomplete search no longer returns any undergraduate degree page for law (queries: משפט and משפטים), so the stale BGU law catalogue mapping was removed instead of carrying an unverified cutoff."
       ],
-      "decisionReason": "Official BGU calculator verified to compute a weighted score but returns no threshold or admission status. Without an official per-program cutoff, a yes/no decision cannot be reproduced server-side.",
-      "nextAction": "Find an alternate official BGU source that publishes per-program admission thresholds/status (e.g. department pages or a ספי קבלה PDF) before promoting BGU to decision-capable.",
+      "decisionReason": "Official BGU admission-conditions responses now verify per-program thresholds and registration status for the current mapped BGU catalogue slice, including computer science, data science, electrical engineering, mechanical engineering, industrial engineering, psychology, biology, social work, economics, business, accounting, the nursing invitation rule, and the medicine invitation rule. The medicine page's current official API response publishes psycho_sekem=735 together with a psychometric floor of 680 for continued screening, which is enough to promote BGU out of tracked missing-rule coverage while still treating medicine as a manual-gate admissions path. Law no longer appears in the live undergraduate degree catalogue.",
+      "nextAction": "Use the verified BGU programme thresholds from the official admission-conditions API, including the medicine invitation rule as a manual-gate flow, and recheck the current admissions-cycle page whenever the university publishes a new year.",
       "officialUrls": [
+        "https://www.bgu.ac.il/welcome/ba/catalog/categories/medical-school/?tab=2944",
+        "https://www.bgu.ac.il/welcome/ba/catalog/categories/computer-science/acceptance-conditions/",
         "https://bgu4u.bgu.ac.il/html/average_calc/index.php",
         "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem",
-        "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem"
+        "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+        "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_institution=0&p_year=2027&p_semester=1&p_dep1=232&p_pat1=1&p_spe1=3&p_degree_level=1",
+        "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_institution=0&p_year=2027&p_semester=1&p_dep1=232&p_pat1=1&p_spe1=13&p_degree_level=1",
+        "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_institution=0&p_year=2027&p_semester=1&p_dep1=471&p_pat1=1&p_degree_level=8"
+      ],
+      "verifiedProgramThresholds": [
+        {
+          "programId": "bgu_cs",
+          "threshold": 720,
+          "sourceUrl": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_institution=0&p_year=2027&p_semester=1&p_dep1=232&p_pat1=1&p_spe1=3&p_degree_level=1",
+          "sourceLabel": "בן-גוריון: תנאי קבלה למדעי המחשב",
+          "verifiedAt": "2026-07-04",
+          "notes": "מדעי המחשב חד מחלקתי - מדעי המחשב. psycho_sekem=720, psycho_value=600, reg_status=פתוחה."
+        },
+        {
+          "programId": "bgu_datascience",
+          "threshold": 720,
+          "sourceUrl": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_institution=0&p_year=2027&p_semester=1&p_dep1=232&p_pat1=1&p_spe1=13&p_degree_level=1",
+          "sourceLabel": "בן-גוריון: תנאי קבלה למדעי הנתונים",
+          "verifiedAt": "2026-07-04",
+          "notes": "מדעי המחשב חד מחלקתי - מדעי הנתונים. psycho_sekem=720, psycho_value=600, reg_status=פתוחה."
+        },
+        {
+          "programId": "bgu_ee",
+          "threshold": 547,
+          "sourceUrl": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_institution=0&p_year=2027&p_semester=1&p_dep1=361&p_pat1=1&p_degree_level=1",
+          "sourceLabel": "בן-גוריון: תנאי קבלה להנדסת חשמל ומחשבים",
+          "verifiedAt": "2026-07-04",
+          "notes": "הנדסת חשמל ומחשבים חד מחלקתי. psycho_sekem=547, psycho_value=600, reg_status=פתוחה."
+        },
+        {
+          "programId": "bgu_me",
+          "threshold": 520,
+          "sourceUrl": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_institution=0&p_year=2027&p_semester=1&p_dep1=362&p_pat1=1&p_degree_level=1",
+          "sourceLabel": "בן-גוריון: תנאי קבלה להנדסת מכונות",
+          "verifiedAt": "2026-07-04",
+          "notes": "הנדסת מכונות חד מחלקתי. psycho_sekem=520, psycho_value=550, reg_status=פתוחה."
+        },
+        {
+          "programId": "bgu_industrial",
+          "threshold": 505,
+          "sourceUrl": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_institution=0&p_year=2027&p_semester=1&p_dep1=364&p_pat1=1&p_degree_level=1",
+          "sourceLabel": "בן-גוריון: תנאי קבלה להנדסת תעשייה וניהול",
+          "verifiedAt": "2026-07-04",
+          "notes": "הנדסת תעשיה וניהול חד מחלקתי. psycho_sekem=505, psycho_value=550, bagrut_average=109, reg_status=פתוחה."
+        },
+        {
+          "programId": "bgu_psychology",
+          "threshold": 650,
+          "sourceUrl": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_institution=0&p_year=2027&p_semester=1&p_dep1=101&p_pat1=2&p_degree_level=1",
+          "sourceLabel": "בן-גוריון: תנאי קבלה לפסיכולוגיה",
+          "verifiedAt": "2026-07-04",
+          "notes": "פסיכולוגיה דו מחלקתי. psycho_sekem=650, psycho_value=650, bagrut_average=113, reg_status=פתוחה."
+        },
+        {
+          "programId": "bgu_nursing",
+          "threshold": 520,
+          "thresholdKind": "invitation_to_manual_gate",
+          "scoreKind": "psychometric",
+          "sourceUrl": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=472&p_pat1=1",
+          "sourceLabel": "בן-גוריון: תנאי קבלה לסיעוד",
+          "verifiedAt": "2026-07-04",
+          "notes": "מדעי האחיות (סיעוד) חד-מחלקתי. psycho_sekem=null, psycho_value=520, reg_status=פתוחה. הדף הרשמי מגדיר זאת כתנאי זימון למבחן אישיותי ממוחשב, לא קבלה סופית. בטקסט ההערות מופיעה גם הפניה למועמדים עם פסיכומטרי 500 ומעלה; המערכת שומרת את ערך השדה המובנה 520 ולכן מתייחסת למסלול כזימון/מיון ידני בלבד."
+        },
+        {
+          "programId": "bgu_biology",
+          "threshold": 585,
+          "sourceUrl": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=205&p_pat1=15",
+          "sourceLabel": "בן-גוריון: תנאי קבלה למדעי החיים",
+          "verifiedAt": "2026-07-04",
+          "notes": "מדעי החיים ראשי. psycho_sekem=585, psycho_value=585, bagrut_average=106, reg_status=פתוחה."
+        },
+        {
+          "programId": "bgu_socialwork",
+          "threshold": 580,
+          "sourceUrl": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=144&p_pat1=1&p_spe1=12",
+          "sourceLabel": "בן-גוריון: תנאי קבלה לעבודה סוציאלית",
+          "verifiedAt": "2026-07-04",
+          "notes": "עבודה סוציאלית חד מחלקתי - מסלול רגיל. psycho_sekem=580, psycho_value=550, bagrut_average=108, reg_status=פתוחה. דף הרשמי מציין גם אפשרות נוספת: פסיכומטרי 630."
+        },
+        {
+          "programId": "bgu_economics",
+          "threshold": 620,
+          "sourceUrl": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=142&p_pat1=3",
+          "sourceLabel": "בן-גוריון: תנאי קבלה לכלכלה",
+          "verifiedAt": "2026-07-04",
+          "notes": "כלכלה ראשי. psycho_sekem בשדה ה-API ריק, אבל ההערה הרשמית בדף מציינת במפורש: חתך הקבלה עלה ל-620 סכם כמותי + 600 פסיכומטרי; bagrut_average=107; reg_status=פתוחה."
+        },
+        {
+          "programId": "bgu_business",
+          "threshold": 620,
+          "sourceUrl": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=142&p_pat1=1&p_spe1=1",
+          "sourceLabel": "בן-גוריון: תנאי קבלה למנהל עסקים",
+          "verifiedAt": "2026-07-04",
+          "notes": "כלכלה חד מחלקתי - מנהל עסקים. psycho_sekem בשדה ה-API ריק, אבל ההערה הרשמית בדף מציינת במפורש: חתך הקבלה עלה ל-620 סכם כמותי + 600 פסיכומטרי; bagrut_average=107; reg_status=פתוחה."
+        },
+        {
+          "programId": "bgu_accounting",
+          "threshold": 620,
+          "sourceUrl": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=142&p_pat1=1&p_spe1=6",
+          "sourceLabel": "בן-גוריון: תנאי קבלה לחשבונאות",
+          "verifiedAt": "2026-07-04",
+          "notes": "כלכלה חד מחלקתי - חשבונאות. psycho_sekem בשדה ה-API ריק, אבל הדף הרשמי מציג דרישת סכם כמותי 620 ו-psycho_value=620; reg_status=פתוחה."
+        },
+        {
+          "programId": "bgu_medicine",
+          "threshold": 735,
+          "thresholdKind": "invitation_to_manual_gate",
+          "scoreKind": "sekhem",
+          "sourceUrl": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_institution=0&p_year=2027&p_semester=1&p_dep1=471&p_pat1=1&p_degree_level=8",
+          "sourceLabel": "בן-גוריון: תנאי קבלה לרפואה",
+          "verifiedAt": "2026-07-05",
+          "notes": "רפואה על שם ג'ויס וארוינג גולדמן חד-מחלקתי. psycho_sekem=735, psycho_value=680, reg_status=סגורה. זהו סף זימון להמשך מבחני מיון וראיונות, לא קבלה סופית."
+        }
+      ]
+    },
+    {
+      "itemId": "12230979966",
+      "capabilityCandidate": "eligible_with_manual_gate",
+      "publicBucket": "eligible_with_manual_gate",
+      "ruleStatus": "manual_or_eligibility_rule_available",
+      "officialVerificationStatus": "partial_official_rule_verified",
+      "confidence": "high",
+      "tags": ["official_source_verified", "bagrut_average_gate", "manual_gate", "update_evidence"],
+      "missingData": [],
+      "limitations": [
+        "Official Colman programme pages publish different automatic-admission thresholds by programme, so the institution cannot be collapsed into one reusable numeric rule.",
+        "Computer science and management-information-systems pages add programme-specific math gates and internal-test/preparatory routes, so the product should stay at eligible-to-apply/manual-gate rather than accepted/below."
+      ],
+      "decisionReason": "Official Colman undergraduate programme pages rechecked on 2026-07-05 consistently show a formal automatic-admission path plus fallback admission through preparatory/manual routes. That is enough to promote the institution out of requirements_review, but not enough to derive one decision-capable threshold for every mapped programme.",
+      "nextAction": "Show Colman as eligible to apply, surface the programme-specific requirements from the catalogue, and send applicants to the official programme page or registration center for the exact automatic-admission route.",
+      "officialUrls": [
+        "https://www.colman.ac.il/registration-and-information/admission-terms/first-degree/",
+        "https://www.colman.ac.il/academics/ba/business-administration/",
+        "https://www.colman.ac.il/academics/ba/economy/",
+        "https://www.colman.ac.il/academics/ba/accounting/",
+        "https://www.colman.ac.il/academics/ba/law/",
+        "https://www.colman.ac.il/academics/ba/computer-science/",
+        "https://www.colman.ac.il/academics/ba/management-information-systems/"
+      ],
+      "noPsychometricNeeded": true
+    },
+    {
+      "itemId": "12220680982",
+      "capabilityCandidate": "eligible_with_manual_gate",
+      "publicBucket": "eligible_with_manual_gate",
+      "ruleStatus": "manual_or_eligibility_rule_available",
+      "officialVerificationStatus": "partial_official_rule_verified",
+      "confidence": "high",
+      "tags": ["official_source_verified", "bagrut_average_gate", "manual_gate", "update_evidence"],
+      "missingData": [],
+      "limitations": [
+        "Official Ono undergraduate curriculum pages publish programme-specific automatic and weighted/manual admission routes rather than one institution-wide numeric threshold.",
+        "The current official Ono curriculum catalogue exposes law, computer science, nursing, and business-specialization pages, but it no longer exposes exact current undergraduate pages for the stale catalogue entries עבודה סוציאלית and פסיכולוגיה."
+      ],
+      "decisionReason": "Official Ono curriculum pages rechecked on 2026-07-05 confirm formal admission rules for the current mapped Ono slice: law, computer science, nursing, and business-specialization routes all publish automatic or direct admission criteria plus alternate committee, interview, bridge, or preparatory paths. That is enough to promote Ono out of requirements_review as eligible-to-apply/manual-gate coverage once the stale catalogue mismatches are removed.",
+      "nextAction": "Show Ono as eligible to apply, surface the programme-specific requirements from the official curriculum pages, and route applicants to the relevant Ono programme page or admissions team for the exact path.",
+      "officialUrls": [
+        "https://www.ono.ac.il/curriculum/",
+        "https://www.ono.ac.il/curriculum/llb/",
+        "https://www.ono.ac.il/curriculum/computer-science-bsc/",
+        "https://www.ono.ac.il/curriculum/nursing/",
+        "https://www.ono.ac.il/curriculum/finance-and-capital-markets-ba/",
+        "https://www.ono.ac.il/curriculum/human-resource-management-ba/",
+        "https://www.ono.ac.il/curriculum/information-systems-ba/"
+      ]
+    },
+    {
+      "itemId": "12220708942",
+      "capabilityCandidate": "eligible_with_manual_gate",
+      "publicBucket": "eligible_with_manual_gate",
+      "ruleStatus": "manual_or_eligibility_rule_available",
+      "officialVerificationStatus": "partial_official_rule_verified",
+      "confidence": "high",
+      "tags": ["official_source_verified", "threshold_or_cutoff", "manual_gate", "update_evidence"],
+      "missingData": [],
+      "limitations": [
+        "Braude's official admissions page publishes different psychometric-component and bagrut subject gates by department, so the institution cannot be collapsed into one reusable decision threshold.",
+        "The no-psychometric math-classification lane is limited to engineering tracks and explicitly excludes civil engineering and computer science, so the product should stay at eligible-to-apply/manual-gate rather than accepted/below."
+      ],
+      "decisionReason": "Braude's official admissions page, rechecked on 2026-07-05, now provides structured department-level psychometric and bagrut requirements together with alternate admission routes through the dedicated engineering preparatory programme and the official math-classification exam lane. That is enough to promote the institution out of requirements_review, but not enough to derive one institution-wide decision rule.",
+      "nextAction": "Show Braude as eligible to apply, surface the department-specific thresholds from the official admissions page, and send applicants to the official Braude admissions/preparatory pages for the exact route that fits their programme.",
+      "officialUrls": [
+        "https://w3.braude.ac.il/intrested/",
+        "https://w3.braude.ac.il/intrested/#section-id-10",
+        "https://w3.braude.ac.il/department/mechina/?yeudit#section-id-2"
+      ],
+      "noPsychometricNeeded": true
+    },
+    {
+      "itemId": "12220697668",
+      "capabilityCandidate": "eligible_with_manual_gate",
+      "publicBucket": "eligible_with_manual_gate",
+      "ruleStatus": "manual_or_eligibility_rule_available",
+      "officialVerificationStatus": "partial_official_rule_verified",
+      "confidence": "high",
+      "tags": ["official_source_verified", "threshold_or_cutoff", "manual_gate", "update_evidence"],
+      "missingData": [],
+      "limitations": [
+        "The current official verification for Sapir is limited to the law department page cited on the Monday item; it does not prove one institution-wide admissions rule across all Sapir programmes.",
+        "The law page mixes direct admission thresholds with assessment-task, exceptional, and prior-degree routes, so the product should stay at eligible-to-apply/manual-gate rather than accepted/below."
+      ],
+      "decisionReason": "Sapir's official law admissions page, rechecked on 2026-07-05, publishes a formal direct-admission route (psychometric over 650 or sekhem 87.5+) together with official assessment-based, preparatory, prior-degree, and exceptional manual routes. That is enough to promote the cited Sapir evidence slice out of requirements_review, but not enough to claim a single college-wide decision threshold.",
+      "nextAction": "Show Sapir as eligible to apply, surface the current law-page requirements, and send applicants to the official Sapir law or pre-academic pages for the exact direct, assessment, or preparatory path.",
+      "officialUrls": [
+        "https://www.sapir.ac.il/ba/law#collapse-accordion-798-3",
+        "https://www.sapir.ac.il/pre-academic"
+      ],
+      "noPsychometricNeeded": true
+    },
+    {
+      "itemId": "12341101519",
+      "capabilityCandidate": "eligible_with_manual_gate",
+      "publicBucket": "eligible_with_manual_gate",
+      "ruleStatus": "manual_or_eligibility_rule_available",
+      "officialVerificationStatus": "partial_official_rule_verified",
+      "confidence": "high",
+      "tags": ["official_source_verified", "bagrut_average_gate", "manual_gate", "update_evidence"],
+      "missingData": [],
+      "limitations": [
+        "The current official verification for Netanya is limited to the current undergraduate pages cited here; it does not prove one institution-wide admission threshold across every programme.",
+        "The verified programme pages mix direct bagrut-based admission thresholds with interview, preparatory, prior-degree, and exceptional-admission lanes, so the product should stay at eligible-to-apply/manual-gate rather than accepted/below."
+      ],
+      "decisionReason": "Netanya's official programme pages, rechecked on 2026-07-05, now publish formal direct-admission requirements together with manual or exceptional fallback routes for the currently verified slice: business administration and business+communication require bagrut 78+ with math and English placement conditions, while law requires bagrut 80+ and reviews 75-79 candidates by interview. That is enough to promote the institution out of requirements_review, but not enough to claim one decision-capable threshold across all Netanya programmes.",
+      "nextAction": "Show Netanya as eligible to apply, surface the current programme-specific requirements from the verified official pages, and send applicants to the official programme page or registration center for the exact direct, interview, preparatory, or exceptional route.",
+      "officialUrls": [
+        "https://www.netanya.ac.il/",
+        "https://www.netanya.ac.il/%D7%94%D7%A8%D7%A9%D7%9E%D7%94-%D7%9C%D7%9C%D7%99%D7%9E%D7%95%D7%93%D7%99%D7%9D-%D7%90%D7%A7%D7%93%D7%9E%D7%99%D7%99%D7%9D/",
+        "https://www.netanya.ac.il/degree/ba-in-business-administration/",
+        "https://www.netanya.ac.il/degree/ba-in-business-administration-and-communication/",
+        "https://www.netanya.ac.il/degree/llb-in-law-studies/"
+      ],
+      "noPsychometricNeeded": true
+    },
+    {
+      "itemId": "12341107297",
+      "capabilityCandidate": "eligible_with_manual_gate",
+      "publicBucket": "eligible_with_manual_gate",
+      "ruleStatus": "manual_or_eligibility_rule_available",
+      "officialVerificationStatus": "partial_official_rule_verified",
+      "confidence": "high",
+      "tags": ["official_source_verified", "bagrut_average_gate", "manual_gate", "update_evidence"],
+      "missingData": [],
+      "limitations": [
+        "The current official verification for Zefat is limited to the current undergraduate admission pages cited here; it does not prove one institution-wide admission threshold across every programme.",
+        "The verified programme pages mix bagrut-only routes, bagrut+psychometric alternatives, interview requirements, preparatory routes, and language gates, so the product should stay at eligible-to-apply/manual-gate rather than accepted/below."
+      ],
+      "decisionReason": "Zefat's official admissions pages, rechecked on 2026-07-05, now publish formal programme-level requirements for the current verified slice: law requires bagrut 92 with personal interview and no psychometric, management information systems requires bagrut 92 with interview plus preparatory and technician routes, social work requires bagrut 92 with personal interview and no psychometric, and behavioral sciences publishes either bagrut 85+ without psychometric or bagrut 80+ with psychometric 450+ plus interview. That is enough to promote the cited Zefat evidence slice out of requirements_review, but not enough to claim one decision-capable threshold across all Zefat programmes.",
+      "nextAction": "Show Zefat as eligible to apply, surface the current programme-specific requirements from the verified official pages, and send applicants to the official programme page or registration center for the exact direct, interview, preparatory, or score-combination route.",
+      "officialUrls": [
+        "https://www.zefat.ac.il/",
+        "https://calc.zefat.ac.il/",
+        "https://www.zefat.ac.il/%D7%93%D7%A4%D7%99-%D7%AA%D7%95%D7%9B%D7%9F-%D7%9B%D7%9C%D7%9C%D7%99%D7%99%D7%9D/%D7%AA%D7%A0%D7%90%D7%99-%D7%A7%D7%91%D7%9C%D7%94/%D7%AA%D7%A0%D7%90%D7%99-%D7%A1%D7%A3-%D7%9C%D7%94%D7%92%D7%A9%D7%AA-%D7%9E%D7%95%D7%A2%D7%9E%D7%93%D7%95%D7%AA-%D7%9C%D7%AA%D7%95%D7%90%D7%A8-%D7%A8%D7%90%D7%A9%D7%95%D7%9F-%D7%91%D7%91%D7%99%D7%AA-%D7%94%D7%A1%D7%A4%D7%A8-%D7%9C%D7%9E%D7%A9%D7%A4%D7%98%D7%99%D7%9D/",
+        "https://www.zefat.ac.il/%D7%93%D7%A4%D7%99-%D7%AA%D7%95%D7%9B%D7%9F-%D7%9B%D7%9C%D7%9C%D7%99%D7%99%D7%9D/%D7%AA%D7%A0%D7%90%D7%99-%D7%A7%D7%91%D7%9C%D7%94/%D7%AA%D7%A0%D7%90%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94-%D7%9C%D7%AA%D7%95%D7%90%D7%A8-%D7%A8%D7%90%D7%A9%D7%95%D7%9F-%D7%91%D7%97%D7%95%D7%92-%D7%9C%D7%9E%D7%A2%D7%A8%D7%9B%D7%95%D7%AA-%D7%9E%D7%99%D7%93%D7%A2-%D7%A0%D7%99%D7%94%D7%95%D7%9C%D7%99%D7%95%D7%AA/",
+        "https://www.zefat.ac.il/%D7%93%D7%A4%D7%99-%D7%AA%D7%95%D7%9B%D7%9F-%D7%9B%D7%9C%D7%9C%D7%99%D7%99%D7%9D/%D7%AA%D7%A0%D7%90%D7%99-%D7%A7%D7%91%D7%9C%D7%94/%D7%AA%D7%A0%D7%90%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94-%D7%9C%D7%AA%D7%95%D7%90%D7%A8-%D7%A8%D7%90%D7%A9%D7%95%D7%9F-%D7%91%D7%91%D7%99%D7%AA-%D7%94%D7%A1%D7%A4%D7%A8-%D7%9C%D7%A2%D7%91%D7%95%D7%93%D7%94-%D7%A1%D7%95%D7%A6%D7%99%D7%90%D7%9C%D7%99%D7%AA/",
+        "https://www.zefat.ac.il/%D7%93%D7%A4%D7%99-%D7%AA%D7%95%D7%9B%D7%9F-%D7%9B%D7%9C%D7%9C%D7%99%D7%99%D7%9D/%D7%AA%D7%A0%D7%90%D7%99-%D7%A7%D7%91%D7%9C%D7%94/%D7%AA%D7%A0%D7%90%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94-%D7%9C%D7%AA%D7%95%D7%90%D7%A8-%D7%A8%D7%90%D7%A9%D7%95%D7%9F-%D7%91%D7%97%D7%95%D7%92-%D7%9C%D7%9E%D7%93%D7%A2%D7%99-%D7%94%D7%94%D7%AA%D7%A0%D7%94%D7%92%D7%95%D7%AA/"
+      ]
+    },
+    {
+      "itemId": "12341108662",
+      "capabilityCandidate": "eligible_with_manual_gate",
+      "publicBucket": "eligible_with_manual_gate",
+      "ruleStatus": "manual_or_eligibility_rule_available",
+      "officialVerificationStatus": "partial_official_rule_verified",
+      "confidence": "high",
+      "tags": ["official_source_verified", "bagrut_average_gate", "manual_gate", "update_evidence"],
+      "missingData": [],
+      "limitations": [
+        "The current official verification for Peres is limited to the current undergraduate pages cited here; it does not prove one institution-wide admission threshold across every programme.",
+        "The dedicated admissions landing page may still sit behind a verification gate, but the current business and law programme pages publish usable official admission rules directly.",
+        "The verified programme pages mix direct admission thresholds, competitive or conditional lanes, and exceptional-admission routes, so the product should stay at eligible-to-apply/manual-gate rather than accepted/below."
+      ],
+      "decisionReason": "Peres's official programme pages, rechecked on 2026-07-05, now publish formal admissions rules for the currently verified slice: business administration offers direct bagrut-based admission bands plus 30+ and preparatory routes, while law publishes minimum bagrut and composite-score gates together with competitive and exceptional-admission handling. That is enough to promote the cited Peres evidence slice out of requirements_review, but not enough to claim one decision-capable threshold across all Peres programmes.",
+      "nextAction": "Show Peres as eligible to apply, surface the current programme-specific requirements from the verified official pages, and send applicants to the official programme page or registration center for the exact direct, competitive, preparatory, or exceptional route.",
+      "officialUrls": [
+        "https://www.pac.ac.il/",
+        "https://www.pac.ac.il/degree/ba-business/",
+        "https://www.pac.ac.il/degree/l-l-b-law/"
+      ]
+    },
+    {
+      "itemId": "12220697669",
+      "capabilityCandidate": "eligible_with_manual_gate",
+      "publicBucket": "eligible_with_manual_gate",
+      "ruleStatus": "manual_or_eligibility_rule_available",
+      "officialVerificationStatus": "partial_official_rule_verified",
+      "confidence": "high",
+      "tags": ["official_source_verified", "threshold_or_cutoff", "manual_gate", "update_evidence"],
+      "missingData": [],
+      "limitations": [
+        "Tel-Hai's main admissions and registration routes can still return Cloudflare challenge pages in direct browser sessions from this IP, so they should not be treated as the only verification surface for current admissions logic.",
+        "The current official verification is limited to accessible programme and preparatory pages that publish concrete thresholds and alternate admissions routes, not a single institution-wide threshold across every Tel-Hai programme.",
+        "The verified sources mix direct programme thresholds, committee ranges, score-replacement routes, and preparatory admission paths, so the product should stay at eligible-to-apply/manual-gate rather than accepted/below."
+      ],
+      "decisionReason": "Tel-Hai's current official programme and preparatory pages, rechecked on 2026-07-05, now publish enough admissions evidence to clear the blocker even though some direct browser routes still trigger Cloudflare challenges: the official computer-science page lists bagrut eligibility plus psychometric 610 with mathematics gates and committee ranges, the official social-work page lists a weighted-score route of 605 or raw psychometric 615 with committee ranges, the official no-psychometry article lists alternate routes such as a psychometric-replacement score from core bagrut subjects, age-30+ preparatory admission, transfer-credit admission, and engineer-diploma admission, and the official Hamma preparatory page publishes concrete acceptance and completion conditions for science/computer-science and social-sciences candidates with missing requirements. That is enough to promote the cited Tel-Hai evidence slice out of the blocker queue, but not enough to claim a single decision-capable threshold across the whole college.",
+      "nextAction": "Show Tel-Hai as eligible to apply, surface the current programme-specific thresholds and alternate admissions routes from the verified official pages, and send applicants to the official programme, no-psychometry, or preparatory page for the exact direct, committee, or preparatory path.",
+      "officialUrls": [
+        "https://www.telhai.ac.il/BSc_%D7%9E%D7%93%D7%A2%D7%99_%D7%94%D7%9E%D7%97%D7%A9%D7%91",
+        "https://www.telhai.ac.il/BA_%D7%A2%D7%91%D7%95%D7%93%D7%94_%D7%A1%D7%95%D7%A6%D7%99%D7%90%D7%9C%D7%99%D7%AA",
+        "https://www.telhai.ac.il/%D7%9E%D7%90%D7%9E%D7%A8%D7%99%D7%9D/%D7%9C%D7%99%D7%9E%D7%95%D7%93%D7%99%D7%9D-%D7%9C%D7%9C%D7%90-%D7%A4%D7%A1%D7%99%D7%9B%D7%95%D7%9E%D7%98%D7%A8%D7%99",
+        "https://www.telhai.ac.il/%D7%9E%D7%9B%D7%99%D7%A0%D7%95%D7%AA_%D7%94%D7%A7%D7%99%D7%A5_%D7%94%D7%99%D7%97%D7%95%D7%93%D7%99%D7%95%D7%AA_%D7%A9%D7%9C_%D7%97%D7%9E%D7%9E%D7%94"
+      ]
+    },
+    {
+      "itemId": "12220708940",
+      "capabilityCandidate": "eligible_with_manual_gate",
+      "publicBucket": "eligible_with_manual_gate",
+      "ruleStatus": "manual_or_eligibility_rule_available",
+      "officialVerificationStatus": "partial_official_rule_verified",
+      "confidence": "high",
+      "tags": ["official_source_verified", "threshold_or_cutoff", "manual_gate", "update_evidence"],
+      "missingData": [],
+      "limitations": [
+        "The original SCE admissions URL cited on the Monday item is still Cloudflare-protected for plain HTTP clients, so it should not be treated as the sole verification surface.",
+        "The current official verification is limited to the accessible SCE applicant guide PDF and the live computer-science programme page cited here; it does not prove one college-wide admissions threshold across every SCE programme.",
+        "The verified sources publish a direct route (bagrut eligibility, psychometric or psychotechnic 580+, and mathematics gates) together with an official preparatory fallback for candidates who do not meet the direct route, so the product should stay at eligible-to-apply/manual-gate rather than accepted/below."
+      ],
+      "decisionReason": "SCE's current official applicant guide and computer-science programme page, rechecked on 2026-07-05, now publish enough official admissions evidence to clear the blocker: the CS page lists bagrut eligibility, psychometric or psychotechnic 580+, and mathematics thresholds, while directing candidates who do not meet the route to the official preparatory programme. That is enough to promote the cited SCE evidence slice out of the blocker queue, but not enough to claim a single decision-capable threshold across the whole college.",
+      "nextAction": "Show SCE as eligible to apply, surface the current programme-specific requirements from the verified official pages, and send applicants to the official SCE programme page or preparatory centre for the exact direct or preparatory path.",
+      "officialUrls": [
+        "https://www.sce.ac.il/candidates/branch/admission_conditions_and_tuition_fees",
+        "https://www.sce.ac.il/filestock/file/1752993606151-0.pdf",
+        "https://www.sce.ac.il/academic-units1/beersheva/basic-sciences/computer-science/"
+      ]
+    },
+    {
+      "itemId": "12220708946",
+      "capabilityCandidate": "eligible_with_manual_gate",
+      "publicBucket": "eligible_with_manual_gate",
+      "ruleStatus": "manual_or_eligibility_rule_available",
+      "officialVerificationStatus": "partial_official_rule_verified",
+      "confidence": "high",
+      "tags": ["official_source_verified", "manual_gate", "update_evidence"],
+      "missingData": [],
+      "limitations": [
+        "Ruppin's main admissions and some programme pages can still return anti-bot shells from this IP, so they should not be treated as the only verification surface for current admissions logic.",
+        "The current official verification is limited to accessible Ruppin preparatory-programme pages that publish alternate admissions and prep routes, not a direct programme-by-programme threshold capture for every degree.",
+        "The verified Ruppin sources publish preparation and no-psychometry routes together with entry requirements for the preparatory tracks, but they do not prove one decision-capable threshold across every Ruppin programme."
+      ],
+      "decisionReason": "Ruppin's current official preparatory-programme pages, rechecked on 2026-07-05, now publish enough official admissions evidence to clear the blocker even though some direct admissions routes remain anti-bot protected from this IP: the main preparatory-programmes page explicitly offers preparation tracks and admission without psychometric, while the semesterly preparatory page publishes concrete entry rules such as bagrut eligibility with weighted average 75+ or psychometric 530+, mathematics gates, English classification handling, and programme-specific interview handling. That is enough to promote the cited Ruppin evidence slice out of the blocker queue, but not enough to claim a single decision-capable threshold across the whole institution.",
+      "nextAction": "Show Ruppin as eligible to apply, surface the current preparatory and alternate-route requirements from the verified official pages, and send applicants to the official Ruppin preparatory-programmes or registration pages for the exact direct or preparatory path.",
+      "officialUrls": [
+        "https://www.ruppin.ac.il/faculties/preparatory-programs/",
+        "https://www.ruppin.ac.il/faculties/preparatory-programs/semesterly-academy-preparation/",
+        "https://www.ruppin.ac.il/faculties/preparatory-programs/academy-preparation/",
+        "https://www.ruppin.ac.il/registration/"
       ]
     },
     {
@@ -118,32 +490,46 @@
       "tags": ["official_source_verified", "radware_blocked"],
       "missingData": ["automation_or_alternate_official_source"],
       "limitations": [
-        "Verified: Ariel's calculator (pniot.ariel.ac.il) is protected by Radware WAF and requires a stateful two-step browser session with valid tracking cookies; plain HTTP reproduction returns a 247 challenge.",
-        "Browser automation (Playwright/Puppeteer) is required to obtain cookies and reproduce the calculation; no alternate static official threshold page was found."
+        "Verified on 2026-07-05: Ariel's calculator entrypoint on pniot.ariel.ac.il still requires a protected browser session; current plain HTTP GET and POST checks return HTTP/2 247 with the Radware bootstrap shell, and repeated browser probes still expose an empty body, no cookies, and no interactive admissions form even when retried from a persistent session and the local Chrome Default profile.",
+        "Verified on 2026-07-05: Ariel's newer official calculator routes on www.ariel.ac.il/wp/ also return HTTP/2 247 with only the anti-bot bootstrap script kramericaindustries.ac_v2.lib.js, and repeated browser snapshots still expose an empty body, no cookies, and no interactive elements on /מחשבון-נתוני-קבלה/ even when retried from a persistent session and the local Chrome Default profile.",
+        "Verified on 2026-07-05: a fresh headed agent-browser session (`ariel-final`) against /מחשבון-נתוני-קבלה/ stayed completely blank after a 12-second wait; the screenshot is an all-white page and the session network log shows only three requests: the 247 document, kramericaindustries.ac_v2.lib.js, and favicon.ico.",
+        "Verified on 2026-07-05: a newly discovered official computer-science admissions URL on www.ariel.ac.il/wp/cs/ is indexed with admissions snippets by search engines, but the current route also returns HTTP/2 247 and both curl and real-browser checks still render it as an empty shell rather than accessible admissions content from this environment.",
+        "Verified on 2026-07-05: even the current sitemap route https://www.ariel.ac.il/wp/sitemapindex.xml and WordPress REST routes such as /wp/wp-json/ return the same anti-bot bootstrap shell instead of navigable site structure or structured content.",
+        "Browser automation with a solvable real-browser challenge path, or a newly discovered static official source, is still required before Ariel can be promoted."
       ],
-      "decisionReason": "Official Ariel calculator verified to be Radware-protected and stateful; programmatic reproduction without a browser engine is not possible.",
-      "nextAction": "Move Ariel to a browser-automation lane (Hermes/VPS) or find an alternate official Ariel admissions page that publishes thresholds statically.",
+      "decisionReason": "Official Ariel admissions routes on both pniot.ariel.ac.il and www.ariel.ac.il/wp/ remain anti-bot protected in this environment: current plain HTTP checks reproduce HTTP/2 247 plus the Radware bootstrap shell, repeated real-browser probes still expose no cookies, no interactive elements, and no readable admissions content even when retried from a persistent session and the local Chrome Default profile, and a fresh headed session against the current calculator route still renders as a blank white page whose network trace never progresses beyond the 247 document, the Radware script, and favicon.ico. The newer WordPress REST endpoints are blocked the same way, and the newly discovered computer-science admissions URL is still not readable here.",
+      "nextAction": "Move Ariel to a browser-automation lane that can actually clear the current Radware challenge, such as a solvable Hermes/VPS session, or find a newly published static Ariel admissions source; the current calculator, sitemap, WordPress REST, and computer-science routes are not usable as verifiable admissions evidence from this environment.",
       "officialUrls": [
+        "https://www.ariel.ac.il/wp/%D7%9E%D7%97%D7%A9%D7%91%D7%95%D7%9F-%D7%A0%D7%AA%D7%95%D7%A0%D7%99-%D7%A7%D7%91%D7%9C%D7%94/",
+        "https://www.ariel.ac.il/wp/cs/%D7%AA%D7%A0%D7%90%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94-%D7%91%D7%9E%D7%93%D7%A2%D7%99-%D7%94%D7%9E%D7%97%D7%A9%D7%91/",
+        "https://www.ariel.ac.il/wp/online-registration2/university-calculate/",
         "https://pniot.ariel.ac.il/projects/tzmm/NewCalcMark/",
         "https://pniot.ariel.ac.il/projects/tzmm/NewCalcMark/CalcMark.asp"
       ]
     },
     {
       "itemId": "12220699688",
-      "ruleStatus": "blocked_official_source",
-      "officialVerificationStatus": "blocked_needs_alternate_official_source",
-      "confidence": "medium",
-      "tags": ["official_source_verified", "radware_blocked"],
-      "missingData": ["automation_or_alternate_official_source"],
+      "capabilityCandidate": "eligible_with_manual_gate",
+      "publicBucket": "eligible_with_manual_gate",
+      "ruleStatus": "manual_or_eligibility_rule_available",
+      "officialVerificationStatus": "partial_official_rule_verified",
+      "confidence": "high",
+      "tags": ["official_source_verified", "threshold_or_cutoff", "manual_gate", "update_evidence"],
+      "missingData": [],
       "limitations": [
-        "Verified: Bar-Ilan's calculator (shoham.biu.ac.il) is protected by Radware Bot Manager with hCaptcha; both /registration and /registration-and-admission/information/general-admission-req return a Radware Captcha page for non-browser clients.",
-        "The calculator is an ASP.NET AJAX UpdatePanel postback requiring __VIEWSTATE/__EVENTVALIDATION plus valid Radware tracking cookies; CAPTCHA solving or a browser engine is mandatory."
+        "Bar-Ilan's calculator on shoham.biu.ac.il is still protected by Radware Bot Manager with hCaptcha, so it should not be treated as the only verification surface for current admissions logic.",
+        "The current official verification is limited to accessible BIU admissions content pages and the official pre-academic site, not a full reverse-engineered calculator run for every BIU programme.",
+        "The verified sources publish general bagrut, psychometric, English, Hebrew, no-psychometry, and pre-academic routes, but they do not prove one decision-capable threshold across every Bar-Ilan programme."
       ],
-      "decisionReason": "Official Bar-Ilan admissions pages verified to be Radware/hCaptcha-protected; programmatic reproduction without CAPTCHA solving is not possible.",
-      "nextAction": "Move Bar-Ilan to a browser-automation lane with CAPTCHA handling, or find an alternate official BIU page that publishes thresholds statically.",
+      "decisionReason": "Bar-Ilan's current official admissions pages, rechecked on 2026-07-05, now publish enough official admissions evidence to clear the blocker even without a solved calculator session: the general admissions page lists core bagrut and psychometric requirements together with English 85+ and YAEL 105+ baselines, the no-psychometry page lists direct bagrut-only routes and programme-specific minima, and the official pre-academic 30+ pages publish an alternate route that replaces the bagrut certificate for eligible candidates. That is enough to promote the cited BIU evidence slice out of the blocker queue, but not enough to claim a single decision-capable threshold across the whole university.",
+      "nextAction": "Show Bar-Ilan as eligible to apply, surface the current programme-specific routes from the verified official pages, and send applicants to the official BIU programme, no-psychometry, or pre-academic page for the exact direct, psychometric, or preparatory path.",
       "officialUrls": [
         "https://shoham.biu.ac.il/kabala/Psychometric.aspx",
-        "https://www.biu.ac.il/registration-and-admission/information/general-admission-req"
+        "https://www.biu.ac.il/registration-and-admission/information/general-admission-req",
+        "https://www.biu.ac.il/registration-and-admission/information/ba-admission",
+        "https://www.biu.ac.il/registration-and-admission/information/acceptance-no-psychometry",
+        "https://mechina-kda.biu.ac.il/prepares-30",
+        "https://mechina-kda.biu.ac.il/node/851"
       ]
     }
   ]

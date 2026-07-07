@@ -19,7 +19,10 @@ import { runHaifaAdmissionsProof } from '@/server/ingestion/adapters/haifaAdmiss
 import { runTauAdmissionsProof } from '@/server/ingestion/adapters/tauAdmissions';
 import { runTechnionAdmissionsProof } from '@/server/ingestion/adapters/technionAdmissions';
 import { runBguAdmissionsProof } from '@/server/ingestion/adapters/bguAdmissions';
-import { getMondayAdmissionEvidenceByCatalogueInstitutionId } from '@/data/admissions/mondayEvidence';
+import {
+  getMondayAdmissionEvidenceByCatalogueInstitutionId,
+  type MondayAdmissionEvidenceRecord,
+} from '@/data/admissions/mondayEvidence';
 
 const MAX_EXACT_SOURCE_CALLS = 2;
 const OFFICIAL_SOURCE_TIMEOUT_MS = 5000;
@@ -276,20 +279,9 @@ function evaluateNonExactResult(args: {
 }): AdmissionsEvaluationResult {
   const { input, program, institution, entry, exactCallsBounded } = args;
 
-  const evidenceRecord = getMondayAdmissionEvidenceByCatalogueInstitutionId(institution.id)[0];
-  const dynamicRequirements: string[] = [];
-  if (evidenceRecord?.noBagrutNeeded) {
-    dynamicRequirements.push('אין צורך בבגרות');
-  }
-  if (evidenceRecord?.noPsychometricNeeded) {
-    dynamicRequirements.push('אין צורך בפסיכומטרי');
-  }
-  if (evidenceRecord?.interviewNeeded) {
-    dynamicRequirements.push('ראיון קבלה חובה');
-  }
-  if (evidenceRecord?.portfolioNeeded) {
-    dynamicRequirements.push('הגשת תיק עבודות חובה');
-  }
+  const evidenceRecord =
+    entry.evidence ?? getMondayAdmissionEvidenceByCatalogueInstitutionId(institution.id)[0];
+  const dynamicRequirements = getDynamicRequirementsFromEvidence(evidenceRecord);
 
   if (entry.capability === 'needs_input') {
     return {
@@ -360,13 +352,144 @@ function evaluateNonExactResult(args: {
   }
 
   if (entry.capability === 'manual_gate') {
-    const detail = program.institutionDetails?.find(
-      (d) =>
-        d.institutionName === institution.name ||
-        d.officialCalculatorUrl?.includes(institution.id) ||
-        d.programUrl?.includes(institution.id),
-    );
-    const factsList = detail?.admissionFacts?.map((f) => f.description) ?? [];
+    const verifiedThreshold = getVerifiedProgramThreshold(entry.evidence, program.id);
+    if (verifiedThreshold?.thresholdKind === 'invitation_to_manual_gate') {
+      if (verifiedThreshold.scoreKind === 'psychometric') {
+        const thresholdExplanation =
+          verifiedThreshold.notes ??
+          'הציון הרשמי כאן הוא סף זימון להמשך מיון ידני, ולא קבלה סופית למסלול.';
+        const psychometricGap = Math.max(0, verifiedThreshold.threshold - input.psychometric);
+
+        if (psychometricGap > 0) {
+          return {
+            institution: publicInstitutionShape(institution),
+            linkedInstitutionId: institution.id,
+            capability: 'manual_gate',
+            kind: 'manual_gate',
+            decision: 'below',
+            confidence: 'high',
+            sourceLabel: 'סף זימון נדרש',
+            explanation: `לפי המקור הרשמי, צריך להגיע לפחות לפסיכומטרי ${verifiedThreshold.threshold} כדי לעבור לשלב המיון הידני. ${thresholdExplanation}`,
+            nextAction:
+              'שפרו את ציון הפסיכומטרי או בדקו מול המוסד אם קיים אפיק חריגים. גם מעבר סף הזימון לא מבטיח קבלה סופית.',
+            score: input.psychometric,
+            scoreLabel: 'פסיכומטרי',
+            threshold: verifiedThreshold.threshold,
+            deltaNeeded: {
+              psychometric: psychometricGap,
+              bagrut: 0,
+            },
+          };
+        }
+
+        return {
+          institution: publicInstitutionShape(institution),
+          linkedInstitutionId: institution.id,
+          capability: 'manual_gate',
+          kind: 'manual_gate',
+          decision: 'eligible_to_apply',
+          confidence: 'high',
+          sourceLabel: 'נדרש מיון נוסף',
+          explanation: `לפי המקור הרשמי, הגעתם לסף הזימון בפסיכומטרי ${verifiedThreshold.threshold}. ${thresholdExplanation}`,
+          nextAction: 'הגישו מועמדות והשלימו את שלבי המיון הידניים או המבחנים הנדרשים למסלול.',
+          score: input.psychometric,
+          scoreLabel: 'פסיכומטרי',
+          threshold: verifiedThreshold.threshold,
+        };
+      }
+
+      const missingRequiredInputs = getMissingRequiredInputsForEstimate(
+        input,
+        program,
+        institution,
+      );
+      if (missingRequiredInputs.length > 0) {
+        return requiredInputsResult(institution, missingRequiredInputs);
+      }
+
+      const calculatorInstitution = getCalculatorInstitutionsFromCatalogue([institution])[0];
+      if (calculatorInstitution) {
+        const [evaluation] = evaluateUniversities(
+          [calculatorInstitution as University],
+          {
+            ...program,
+            thresholds: {
+              ...(program.thresholds ?? {}),
+              [institution.id]: verifiedThreshold.threshold,
+            },
+          },
+          {
+            psychometric: input.psychometric,
+            bagrut: input.bagrut,
+            mathGrade: input.extraInputs?.mathGrade,
+            mathUnits: input.extraInputs?.mathUnits,
+            englishGrade: input.extraInputs?.englishGrade,
+            englishUnits: input.extraInputs?.englishUnits,
+            physicsGrade: input.extraInputs?.physicsGrade,
+            physicsUnits: input.extraInputs?.physicsUnits,
+            csGrade: input.extraInputs?.csGrade,
+            csUnits: input.extraInputs?.csUnits,
+          },
+          { hasMath5: false, hasPhysics5: false },
+        );
+
+        if (evaluation && evaluation.status !== 'unavailable') {
+          const thresholdExplanation =
+            verifiedThreshold.notes ??
+            'הסכם הרשמי כאן הוא סף זימון להמשך מיון ידני, ולא קבלה סופית למסלול.';
+
+          if (evaluation.status === 'below') {
+            return {
+              institution: publicInstitutionShape(institution),
+              linkedInstitutionId: institution.id,
+              capability: 'manual_gate',
+              kind: 'manual_gate',
+              decision: 'below',
+              confidence: 'high',
+              sourceLabel: 'סף זימון נדרש',
+              explanation: `לפי המקור הרשמי, צריך להגיע לפחות לסכם ${verifiedThreshold.threshold} כדי לעבור לשלב המיון הידני. ${thresholdExplanation}`,
+              nextAction:
+                'שפרו את הנתונים שמופיעים בפער לפני הרשמה. גם מעבר סף הזימון לא מבטיח קבלה סופית.',
+              score: evaluation.sekhem,
+              scoreLabel: 'סכם',
+              threshold: verifiedThreshold.threshold,
+              deltaNeeded: evaluation.deltaNeeded,
+            };
+          }
+
+          return {
+            institution: publicInstitutionShape(institution),
+            linkedInstitutionId: institution.id,
+            capability: 'manual_gate',
+            kind: 'manual_gate',
+            decision: 'eligible_to_apply',
+            confidence: 'high',
+            sourceLabel: 'נדרש מיון נוסף',
+            explanation: `לפי המקור הרשמי, הגעתם לסף הזימון ${verifiedThreshold.threshold}. ${thresholdExplanation}`,
+            nextAction: 'הגישו מועמדות והשלימו את שלבי המיון הידניים או הראיונות שנדרשים למסלול.',
+            score: evaluation.sekhem,
+            scoreLabel: 'סכם',
+            threshold: verifiedThreshold.threshold,
+          };
+        }
+      }
+    }
+
+    const detail = findInstitutionDetail(program, institution);
+    const structuredResult = evaluateStructuredRequirementsResult({
+      input,
+      institution,
+      capability: 'manual_gate',
+      detail,
+      dynamicRequirements,
+      eligibleWithManualGate: entry.evidence?.publicBucket === 'eligible_with_manual_gate',
+      programType: program.type,
+    });
+    if (structuredResult) {
+      return structuredResult;
+    }
+
+    const factsList = detail?.admissionFacts?.map((fact) => fact.description) ?? [];
     const notesList = detail?.specificAdmissionNotes ?? [];
     const allRequirements = [
       ...program.admissionRequirements,
@@ -374,6 +497,7 @@ function evaluateNonExactResult(args: {
       ...notesList,
       ...dynamicRequirements,
     ];
+    const eligibleWithManualGate = entry.evidence?.publicBucket === 'eligible_with_manual_gate';
 
     return {
       institution: publicInstitutionShape(institution),
@@ -385,19 +509,33 @@ function evaluateNonExactResult(args: {
       sourceLabel: 'אפשר להגיש מועמדות',
       explanation:
         allRequirements.length > 0
-          ? `לפי תנאי הקבלה שמופו, אין סף ציונים אוטומטי שמונע הגשה. עדיין צריך להשלים: ${allRequirements.join('; ')}`
-          : 'לפי תנאי הקבלה שמופו, אין סף ציונים אוטומטי שמונע הגשה. הקבלה עדיין תלויה במיונים ידניים כגון תיק עבודות, מבחן מעשי או ראיון.',
-      nextAction: 'הגישו מועמדות ובדקו את מועדי תיק העבודות, המבחנים או הראיונות באתר המוסד.',
+          ? eligibleWithManualGate
+            ? `לפי המקור הרשמי יש למסלול מסלול קבלה אוטומטי וגם אפיק קבלה חלופי דרך מכינה, מרכז הרישום או מיון ידני. בדקו את התנאים הבאים: ${allRequirements.join('; ')}`
+            : `לפי תנאי הקבלה שמופו, אין סף ציונים אוטומטי שמונע הגשה. עדיין צריך להשלים: ${allRequirements.join('; ')}`
+          : eligibleWithManualGate
+            ? 'לפי המקור הרשמי יש למסלול מסלול קבלה אוטומטי וגם אפיק קבלה חלופי דרך מכינה, מרכז הרישום או מיון ידני.'
+            : 'לפי תנאי הקבלה שמופו, אין סף ציונים אוטומטי שמונע הגשה. הקבלה עדיין תלויה במיונים ידניים כגון תיק עבודות, מבחן מעשי או ראיון.',
+      nextAction: eligibleWithManualGate
+        ? 'בדקו אם אתם עומדים במסלול הקבלה האוטומטי; אם לא, פנו למרכז הרישום או למכינה המתאימה באתר המוסד.'
+        : 'הגישו מועמדות ובדקו את מועדי תיק העבודות, המבחנים או הראיונות באתר המוסד.',
     };
   }
 
   if (entry.capability === 'requirements_only') {
-    const detail = program.institutionDetails?.find(
-      (d) =>
-        d.institutionName === institution.name ||
-        d.officialCalculatorUrl?.includes(institution.id) ||
-        d.programUrl?.includes(institution.id),
-    );
+    const detail = findInstitutionDetail(program, institution);
+    const structuredResult = evaluateStructuredRequirementsResult({
+      input,
+      institution,
+      capability: 'requirements_only',
+      detail,
+      dynamicRequirements,
+      eligibleWithManualGate: entry.evidence?.publicBucket === 'eligible_with_manual_gate',
+      programType: program.type,
+    });
+    if (structuredResult) {
+      return structuredResult;
+    }
+
     const notesList = detail?.specificAdmissionNotes ?? [];
     const allRequirements = [
       ...(program.admissionRequirements ?? []),
@@ -454,28 +592,44 @@ function evaluateNonExactResult(args: {
       return unsupportedResult(institution, entry);
     }
 
+    const officialUrls = entry.evidence?.officialUrls.length
+      ? [...entry.evidence.officialUrls]
+      : [];
+    const sourceBlocked =
+      entry.evidence?.officialVerificationStatus.startsWith('blocked_') ?? false;
+    const defaultExplanation = sourceBlocked
+      ? 'המקור הרשמי חסום כרגע, לכן התוצאה מבוססת על נוסחת סכם ממופה ועל סף קבלה שנשמר בקטלוג, בלי אימות חי של אתר המוסד.'
+      : entry.capability === 'estimated'
+        ? 'התוצאה מבוססת על נוסחת סכם וסף קבלה שמופו ממקור מוסדי ונבדקו בקטלוג.'
+        : 'התוצאה מבוססת על נוסחת סכם ממופה וסף קבלה שנבדק בקטלוג, כשהמקור הרשמי מספק חלק מהמידע.';
+    const defaultNextAction = sourceBlocked
+      ? (entry.evidence?.nextAction ??
+        'בדקו ישירות באתר המוסד או במחשבון הרשמי כשהוא זמין, לפני קבלת החלטה סופית.')
+      : evaluation.status === 'accepted'
+        ? 'המשיכו להרשמה ובדקו מועדים, מסמכים ודרישות משלימות באתר המוסד.'
+        : 'שפרו את הנתונים שמופיעים בפער או השוו למסלולים אחרים שבהם אתם עומדים בסף.';
+
     return {
       institution: publicInstitutionShape(institution),
       linkedInstitutionId: institution.id,
       capability: entry.capability,
       kind: 'estimated',
       decision: evaluation.status === 'accepted' ? 'accepted' : 'below',
-      confidence: entry.capability === 'estimated' ? 'high' : 'medium',
-      sourceLabel:
-        entry.capability === 'estimated' ? 'כלל קבלה ממופה' : 'כלל קבלה ממופה ממקור חלקי',
-      explanation:
-        evaluation.explanation ??
-        (entry.capability === 'estimated'
-          ? 'התוצאה מבוססת על נוסחת סכם וסף קבלה שמופו ממקור מוסדי ונבדקו בקטלוג.'
-          : 'התוצאה מבוססת על נוסחת סכם ממופה וסף קבלה שנבדק בקטלוג, כשהמקור הרשמי מספק חלק מהמידע.'),
-      nextAction:
-        evaluation.status === 'accepted'
-          ? 'המשיכו להרשמה ובדקו מועדים, מסמכים ודרישות משלימות באתר המוסד.'
-          : 'שפרו את הנתונים שמופיעים בפער או השוו למסלולים אחרים שבהם אתם עומדים בסף.',
+      confidence: sourceBlocked ? 'medium' : entry.capability === 'estimated' ? 'high' : 'medium',
+      sourceLabel: sourceBlocked
+        ? 'כלל קבלה ממופה, מקור רשמי חסום'
+        : entry.capability === 'estimated'
+          ? 'כלל קבלה ממופה'
+          : 'כלל קבלה ממופה ממקור חלקי',
+      explanation: evaluation.explanation ?? defaultExplanation,
+      nextAction: defaultNextAction,
       score: evaluation.sekhem,
       scoreLabel: 'סכם',
       threshold: evaluation.threshold,
       deltaNeeded: evaluation.deltaNeeded,
+      evidenceItemId: entry.evidence?.itemId,
+      evidenceItemName: entry.evidence?.itemName,
+      officialUrls,
     };
   }
 
@@ -496,6 +650,293 @@ function getMissingRequiredInputsForEstimate(
   }
 
   return [];
+}
+
+function getDynamicRequirementsFromEvidence(
+  evidenceRecord: MondayAdmissionEvidenceRecord | undefined,
+) {
+  const dynamicRequirements: string[] = [];
+
+  if (evidenceRecord?.noBagrutNeeded) {
+    dynamicRequirements.push('אין צורך בבגרות');
+  }
+  if (evidenceRecord?.noPsychometricNeeded) {
+    dynamicRequirements.push('אין צורך בפסיכומטרי');
+  }
+  if (evidenceRecord?.interviewNeeded) {
+    dynamicRequirements.push('ראיון קבלה חובה');
+  }
+  if (evidenceRecord?.portfolioNeeded) {
+    dynamicRequirements.push('הגשת תיק עבודות חובה');
+  }
+
+  return dynamicRequirements;
+}
+
+type ProgramInstitutionDetail = NonNullable<CatalogueProgram['institutionDetails']>[number];
+
+interface StructuredRequirementsResultArgs {
+  input: AdmissionsEvaluationInput;
+  institution: CatalogueInstitution;
+  capability: 'manual_gate' | 'requirements_only';
+  detail: ProgramInstitutionDetail | undefined;
+  dynamicRequirements: string[];
+  eligibleWithManualGate: boolean;
+  programType: CatalogueProgram['type'];
+}
+
+interface StructuredNumericFactResult {
+  description: string;
+  field: string;
+  comparison: string;
+  expected: number;
+  actual: number;
+}
+
+function evaluateStructuredRequirementsResult(
+  args: StructuredRequirementsResultArgs,
+): AdmissionsEvaluationResult | undefined {
+  const {
+    input,
+    institution,
+    capability,
+    detail,
+    dynamicRequirements,
+    eligibleWithManualGate,
+    programType,
+  } = args;
+
+  if (!detail?.admissionFacts?.length) {
+    return undefined;
+  }
+
+  const facts = detail.admissionFacts;
+  const alternativePathDescriptions =
+    detail.admissionAlternativePaths?.map((path) => path.title) ?? [];
+  const notesList = detail.specificAdmissionNotes ?? [];
+  const manualGateDescriptions = facts
+    .filter((fact) => fact.kind === 'manual_gate')
+    .map((fact) => fact.description);
+  const numericFacts = facts.filter((fact) => fact.kind === 'numeric_gate');
+  const hasOpenAdmissionFact = facts.some((fact) => fact.kind === 'open_admission');
+  const hasNoFormalGradeGate = facts.some(
+    (fact) =>
+      fact.kind === 'explicit_absence' &&
+      (fact.field === 'psychometric' || fact.field === 'bagrut_average'),
+  );
+
+  const missingRequiredInputs = new Set<AdmissionsRequiredInput>();
+  const unmetNumericFacts: StructuredNumericFactResult[] = [];
+  const metNumericDescriptions: string[] = [];
+
+  for (const fact of numericFacts) {
+    const value = readNumericAdmissionFactValue(input, fact.field);
+    if (value.requiredInput && value.actual === undefined) {
+      missingRequiredInputs.add(value.requiredInput);
+      continue;
+    }
+
+    if (value.actual === undefined || fact.valueNumber === null) {
+      continue;
+    }
+
+    const passed = compareAdmissionFactValue(value.actual, fact.comparison, fact.valueNumber);
+    if (passed) {
+      metNumericDescriptions.push(fact.description);
+      continue;
+    }
+
+    unmetNumericFacts.push({
+      description: fact.description,
+      field: fact.field,
+      comparison: fact.comparison,
+      expected: fact.valueNumber,
+      actual: value.actual,
+    });
+  }
+
+  if (missingRequiredInputs.size > 0) {
+    return requiredInputsResult(institution, [...missingRequiredInputs]);
+  }
+
+  if (hasOpenAdmissionFact && numericFacts.length === 0 && manualGateDescriptions.length === 0) {
+    return {
+      institution: publicInstitutionShape(institution),
+      linkedInstitutionId: institution.id,
+      capability: 'open_admission',
+      kind: 'open_admission',
+      decision: 'accepted',
+      confidence: 'high',
+      sourceLabel: 'קבלה פתוחה',
+      explanation:
+        facts.find((fact) => fact.kind === 'open_admission')?.description ??
+        'לפי התנאים שמופו, המסלול פתוח להרשמה ללא סף ציונים פורמלי.',
+      nextAction: 'המשיכו לרישום ובדקו באתר המוסד את המסמכים או המועדים הרלוונטיים.',
+    };
+  }
+
+  if (unmetNumericFacts.length > 0) {
+    const firstUnmet = unmetNumericFacts[0];
+
+    return {
+      institution: publicInstitutionShape(institution),
+      linkedInstitutionId: institution.id,
+      capability,
+      kind: capability === 'requirements_only' ? 'requirements_only' : 'manual_gate',
+      decision: 'below',
+      confidence: 'high',
+      sourceLabel: 'לא עומדים בסף',
+      explanation: `לפי התנאים שמופו, עדיין חסר לעמוד בדרישות הבאות: ${unmetNumericFacts
+        .map((fact) => fact.description)
+        .join('; ')}.`,
+      nextAction:
+        manualGateDescriptions.length > 0
+          ? 'שפרו את תנאי הסף המספריים לפני ההגשה. לאחר מכן עדיין תצטרכו להשלים את שלבי המיון הידניים של המוסד.'
+          : 'שפרו את תנאי הסף המספריים או בדקו אפיק חלופי באתר המוסד.',
+      ...(singleNumericGateMetrics(firstUnmet) ?? {}),
+    };
+  }
+
+  const allRequirements = [
+    ...metNumericDescriptions,
+    ...manualGateDescriptions,
+    ...alternativePathDescriptions,
+    ...notesList,
+    ...dynamicRequirements,
+  ];
+
+  if (manualGateDescriptions.length > 0 || alternativePathDescriptions.length > 0) {
+    return {
+      institution: publicInstitutionShape(institution),
+      linkedInstitutionId: institution.id,
+      capability: 'manual_gate',
+      kind: 'manual_gate',
+      decision: 'eligible_to_apply',
+      confidence: 'high',
+      sourceLabel: manualGateDescriptions.length > 0 ? 'נדרש מיון נוסף' : 'אפשר להגיש מועמדות',
+      explanation:
+        allRequirements.length > 0
+          ? eligibleWithManualGate || metNumericDescriptions.length > 0
+            ? `עמדתם בתנאים המספריים שמופו, אבל עדיין צריך להשלים את השלבים הבאים: ${allRequirements.join('; ')}`
+            : `אפשר להתקדם עם המועמדות, אבל צריך להשלים את השלבים הבאים: ${allRequirements.join('; ')}`
+          : 'אפשר להתקדם עם המועמדות, אך יש שלבים ידניים שהמוסד משלים אחרי ההגשה.',
+      nextAction:
+        alternativePathDescriptions.length > 0
+          ? 'בדקו איזה אפיק הגשה או מכינה רלוונטיים לכם באתר המוסד, והשלימו את שלבי המיון הידניים.'
+          : 'הגישו מועמדות והשלימו את הראיון, הוועדה, תיק העבודות או שאר שלבי המיון באתר המוסד.',
+    };
+  }
+
+  if (hasNoFormalGradeGate) {
+    const registerLabel =
+      programType === 'certificate' ||
+      programType === 'vocational' ||
+      programType === 'short-course'
+        ? 'אפשר להירשם'
+        : 'אפשר להגיש מועמדות';
+
+    return {
+      institution: publicInstitutionShape(institution),
+      linkedInstitutionId: institution.id,
+      capability,
+      kind: capability === 'requirements_only' ? 'requirements_only' : 'manual_gate',
+      decision: 'eligible_to_apply',
+      confidence: 'high',
+      sourceLabel: registerLabel,
+      explanation:
+        allRequirements.length > 0
+          ? `לפי התנאים שמופו, אין למסלול סף ציונים פורמלי שחוסם הגשה. מידע רלוונטי: ${allRequirements.join('; ')}`
+          : 'לפי התנאים שמופו, אין למסלול סף ציונים פורמלי שחוסם הגשה.',
+      nextAction:
+        programType === 'certificate' ||
+        programType === 'vocational' ||
+        programType === 'short-course'
+          ? 'המשיכו לרישום ובדקו באתר המוסד מסמכי הרשמה, מועדים ודרישות אדמיניסטרטיביות.'
+          : 'הגישו מועמדות ובדקו באתר המוסד מסמכי הרשמה, מועדים ודרישות משלימות.',
+    };
+  }
+
+  return undefined;
+}
+
+function readNumericAdmissionFactValue(
+  input: AdmissionsEvaluationInput,
+  field: string,
+): { actual: number | undefined; requiredInput?: AdmissionsRequiredInput } {
+  switch (field) {
+    case 'psychometric':
+      return { actual: input.psychometric };
+    case 'bagrut_average':
+      return { actual: input.bagrut };
+    case 'psychometric_quantitative':
+      return { actual: input.extraInputs?.psychometricMath, requiredInput: 'psychometric_math' };
+    case 'psychometric_english':
+      return {
+        actual: input.extraInputs?.psychometricEnglish,
+        requiredInput: 'psychometric_english',
+      };
+    case 'math_units':
+      return { actual: input.extraInputs?.mathUnits, requiredInput: 'math_units' };
+    case 'math_grade':
+      return { actual: input.extraInputs?.mathGrade, requiredInput: 'math_grade' };
+    case 'english_units':
+      return { actual: input.extraInputs?.englishUnits, requiredInput: 'english_units' };
+    case 'english_grade':
+      return { actual: input.extraInputs?.englishGrade, requiredInput: 'english_grade' };
+    case 'physics_units':
+      return { actual: input.extraInputs?.physicsUnits, requiredInput: 'physics_units' };
+    case 'physics_grade':
+      return { actual: input.extraInputs?.physicsGrade, requiredInput: 'physics_grade' };
+    case 'cs_units':
+      return { actual: input.extraInputs?.csUnits, requiredInput: 'cs_units' };
+    case 'cs_grade':
+      return { actual: input.extraInputs?.csGrade, requiredInput: 'cs_grade' };
+    default:
+      return { actual: undefined };
+  }
+}
+
+function compareAdmissionFactValue(actual: number, comparison: string, expected: number) {
+  switch (comparison) {
+    case 'gte':
+      return actual >= expected;
+    case 'lte':
+      return actual <= expected;
+    case 'eq':
+      return actual === expected;
+    default:
+      return false;
+  }
+}
+
+function singleNumericGateMetrics(fact: StructuredNumericFactResult) {
+  const common = { threshold: fact.expected };
+
+  if (fact.field === 'psychometric') {
+    return {
+      ...common,
+      score: fact.actual,
+      scoreLabel: 'פסיכומטרי',
+      deltaNeeded: {
+        psychometric: Math.max(0, fact.expected - fact.actual),
+        bagrut: 0,
+      },
+    };
+  }
+
+  if (fact.field === 'bagrut_average') {
+    return {
+      ...common,
+      score: fact.actual,
+      scoreLabel: 'ממוצע בגרות',
+      deltaNeeded: {
+        psychometric: 0,
+        bagrut: Math.max(0, fact.expected - fact.actual),
+      },
+    };
+  }
+
+  return common;
 }
 
 function missingInputs(
@@ -535,6 +976,18 @@ function extraInputValue(
     case 'cs_grade':
       return input.extraInputs?.csGrade;
   }
+}
+
+function findInstitutionDetail(
+  program: CatalogueProgram,
+  institution: CatalogueInstitution,
+): ProgramInstitutionDetail | undefined {
+  return program.institutionDetails?.find(
+    (detail) =>
+      detail.institutionName === institution.name ||
+      detail.officialCalculatorUrl?.includes(institution.id) ||
+      detail.programUrl?.includes(institution.id),
+  );
 }
 
 function isHitTechnicalProgram(program: CatalogueProgram): boolean {
@@ -630,6 +1083,13 @@ function publicInstitutionShape(
     calculatorUrl: institution.calculatorUrl,
     universityId: institution.universityId,
   };
+}
+
+function getVerifiedProgramThreshold(
+  evidence: MondayAdmissionEvidenceRecord | undefined,
+  programId: string,
+) {
+  return evidence?.verifiedProgramThresholds?.find((entry) => entry.programId === programId);
 }
 
 function numberOrUndefined(value: unknown): number | undefined {

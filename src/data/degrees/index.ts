@@ -7,13 +7,13 @@ import { ACADEMIC_PROGRAMS } from './academic';
 import { academicPrograms } from './academicPrograms';
 import { vocationalPrograms } from './vocationalPrograms';
 import { mondayAdmissionsEvidence } from '../admissions/mondayEvidence';
-import { type InstitutionId, resolveUrl } from '../institutions';
-import type { Program, AdmissionFact } from './types';
+import { INSTITUTION_BY_NAME, type InstitutionId, resolveUrl } from '../institutions';
+import type { Program, AdmissionFact, AdmissionsSourceCandidate } from './types';
 
 const DYNAMIC_PROGRAM_MAP = [
   {
     keywords: [
-      /מדעי המחשב|תוכנה|סייבר|coding|code|web|תוכניתן|פיתוח|דאטה|חומרה|הייטק|סיסטם|cyber/i,
+      /מדעי המחשב|computer science|תוכנה|סייבר|coding|code|web|תוכניתן|פיתוח|דאטה|חומרה|הייטק|סיסטם|cyber/i,
     ],
     id: 'cs',
     name: 'מדעי המחשב',
@@ -23,19 +23,51 @@ const DYNAMIC_PROGRAM_MAP = [
   { keywords: [/פסיכולוגיה/i], id: 'psychology', name: 'פסיכולוגיה', category: 'פסיכולוגיה' },
   { keywords: [/הנדסת מכונות/i], id: 'me', name: 'הנדסת מכונות', category: 'הנדסה' },
   {
-    keywords: [/רפואה|סיעוד|קלינאות|ריפוי|פיזיותרפיה/i],
+    keywords: [
+      /רפואה|medicine|סיעוד|nursing|קלינאות|ריפוי|פיזיותרפיה|רפואה משלימה|נטורופתיה|רפלקסולוגיה|עיסוי|טיפולי גוף/i,
+    ],
     id: 'medicine',
     name: 'רפואה ומקצועות הבריאות',
     category: 'רפואה',
   },
-  { keywords: [/משפטים|חוק/i], id: 'law', name: 'משפטים', category: 'משפטים' },
+  { keywords: [/משפטים|משפט|law|llb/i], id: 'law', name: 'משפטים', category: 'משפטים' },
   {
-    keywords: [/מנהל עסקים|עסקים|ניהול|חשבונאות|רואה חשבון/i],
+    keywords: [/מנהל עסקים|עסקים|ניהול|חשבונאות|רואה חשבון|business|finance|account/i],
     id: 'business',
     name: 'מנהל עסקים',
     category: 'מנהל עסקים',
   },
-  { keywords: [/כלכלה/i], id: 'economics', name: 'כלכלה', category: 'כלכלה' },
+  { keywords: [/כלכלה|economics/i], id: 'economics', name: 'כלכלה', category: 'כלכלה' },
+  {
+    keywords: [/חינוך|הוראה|education|teaching|teachers|pedagog/i],
+    id: 'education',
+    name: 'חינוך והוראה',
+    category: 'חינוך',
+  },
+  {
+    keywords: [/קולינריה|קונדיטוריה|culinary|pastry|chef|בישול|שוקולד/i],
+    id: 'culinary',
+    name: 'קולינריה',
+    category: 'קולינריה',
+  },
+  {
+    keywords: [/איפור|יופי|beauty|makeup|cosmetic/i],
+    id: 'beauty',
+    name: 'מקצועות היופי',
+    category: 'מקצועות היופי',
+  },
+  {
+    keywords: [/הנדסה|engineering|הנדסאים|technological|טכנולוגי|טכנולוגית/i],
+    id: 'engineering',
+    name: 'הנדסה וטכנולוגיה',
+    category: 'הנדסה',
+  },
+  {
+    keywords: [/מכינה|pre-academic|preparatory|mechina/i],
+    id: 'prep',
+    name: 'מכינה קדם-אקדמית',
+    category: 'מכינות',
+  },
   {
     keywords: [/עיצוב|אמנות|תקשורת חזותית|משחק|קולנוע|מוסיקה|מוזיקה|מחול|תיאטרון|צילום/i],
     id: 'graphic_design',
@@ -46,21 +78,117 @@ const DYNAMIC_PROGRAM_MAP = [
 
 const dynamicPrograms: Program[] = [];
 
+function mergeDynamicProgramDetails(existingProgram: Program, nextProgram: Program): Program {
+  const existingDetails = existingProgram.institutionDetails ?? [];
+  const nextDetails = nextProgram.institutionDetails ?? [];
+  const mergedDetails = [...existingDetails];
+
+  for (const detail of nextDetails) {
+    const alreadyPresent = mergedDetails.some(
+      (existingDetail) =>
+        existingDetail.institutionName === detail.institutionName &&
+        existingDetail.programUrl === detail.programUrl &&
+        existingDetail.officialCalculatorUrl === detail.officialCalculatorUrl &&
+        existingDetail.programDescription === detail.programDescription,
+    );
+
+    if (!alreadyPresent) {
+      mergedDetails.push(detail);
+    }
+  }
+
+  return {
+    ...existingProgram,
+    admissionRequirements: [
+      ...new Set([
+        ...(existingProgram.admissionRequirements ?? []),
+        ...(nextProgram.admissionRequirements ?? []),
+      ]),
+    ],
+    institutionDetails: mergedDetails,
+    thresholds: {
+      ...(existingProgram.thresholds ?? {}),
+      ...(nextProgram.thresholds ?? {}),
+    },
+  };
+}
+
+function getMondaySearchableText(record: (typeof mondayAdmissionsEvidence)[number]) {
+  const baseText =
+    `${record.itemName} ${record.displayName} ${record.tags.join(' ')}`.toLowerCase();
+
+  if (record.publicBucket === 'decision_capable') {
+    return baseText;
+  }
+
+  return `${baseText} ${record.decisionReason}`.toLowerCase();
+}
+
+function fallbackDynamicProgram(record: (typeof mondayAdmissionsEvidence)[number]) {
+  const searchable = getMondaySearchableText(record);
+  const isCertificate =
+    record.diplomaType === 'תעודה מקצועית' ||
+    record.diplomaType === 'לימודי תעודה' ||
+    record.tags.includes('professional_certificate');
+
+  if (/מכינה|pre-academic|preparatory|mechina/i.test(searchable)) {
+    return { id: 'prep', name: 'מכינה קדם-אקדמית', category: 'מכינות' };
+  }
+
+  if (/חינוך|הוראה|education|teaching|teachers|pedagog/i.test(searchable)) {
+    return { id: 'education', name: 'חינוך והוראה', category: 'חינוך' };
+  }
+
+  if (/קולינריה|קונדיטוריה|culinary|pastry|chef|בישול|שוקולד/i.test(searchable)) {
+    return { id: 'culinary', name: 'קולינריה', category: 'קולינריה' };
+  }
+
+  if (
+    /רפואה|medicine|סיעוד|nursing|קלינאות|ריפוי|פיזיותרפיה|רפואה משלימה|נטורופתיה|רפלקסולוגיה|עיסוי|טיפולי גוף/i.test(
+      searchable,
+    )
+  ) {
+    return { id: 'medicine', name: 'רפואה ומקצועות הבריאות', category: 'רפואה' };
+  }
+
+  if (/איפור|יופי|beauty|makeup|cosmetic/i.test(searchable)) {
+    return { id: 'beauty', name: 'מקצועות היופי', category: 'מקצועות היופי' };
+  }
+
+  if (/עיצוב|אמנות|משחק|קולנוע|מוסיקה|מוזיקה|מחול|תיאטרון|צילום|arts|design/i.test(searchable)) {
+    return { id: 'graphic_design', name: 'עיצוב ואומנויות', category: 'עיצוב' };
+  }
+
+  if (/הנדסה|engineering|הנדסאים|technological|טכנולוגי|טכנולוגית/i.test(searchable)) {
+    return { id: 'engineering', name: 'הנדסה וטכנולוגיה', category: 'הנדסה' };
+  }
+
+  if (isCertificate) {
+    return { id: 'certificate', name: 'לימודי תעודה מקצועיים', category: 'לימודי תעודה' };
+  }
+
+  return { id: 'general_academic', name: 'לימודים אקדמיים', category: 'לימודים אקדמיים' };
+}
+
 for (const record of mondayAdmissionsEvidence) {
-  const instId = (record.catalogueInstitutionId || `mon_${record.itemId}`) as InstitutionId;
+  const programInstitutionKey = (record.catalogueInstitutionId ||
+    `mon_${record.itemId}`) as InstitutionId;
+  const instId = (record.catalogueInstitutionId ??
+    INSTITUTION_BY_NAME[record.displayName]?.id ??
+    `mon_${record.itemId}`) as InstitutionId;
 
   let matches = DYNAMIC_PROGRAM_MAP.filter((prog) => {
-    const searchable =
-      `${record.itemName} ${record.displayName} ${record.tags.join(' ')} ${record.decisionReason}`.toLowerCase();
+    const searchable = getMondaySearchableText(record);
     return prog.keywords.some((keyword) => keyword.test(searchable));
   });
 
   if (matches.length === 0) {
-    matches = [{ keywords: [], id: 'cs', name: 'מדעי המחשב', category: 'מדעי המחשב' }];
+    const fallback = fallbackDynamicProgram(record);
+    matches = [{ keywords: [], ...fallback }];
   }
 
   for (const prog of matches) {
-    const progId = `${instId}_${prog.id}`;
+    const progId = `${programInstitutionKey}_${prog.id}`;
 
     const existsInStatic =
       ACADEMIC_PROGRAMS.some((p) => p.id === progId) ||
@@ -76,12 +204,33 @@ for (const record of mondayAdmissionsEvidence) {
         ? 'certificate'
         : 'academic';
 
-    const admissionFacts: AdmissionFact[] = [];
     const detailId = `${progId}:${instId}`;
+    const primarySourceUrl = resolveUrl(record.displayName, record.officialUrls);
+    const sourceCandidateId = primarySourceUrl ? `${detailId}:source:monday-evidence` : undefined;
+    const sourceCandidates: AdmissionsSourceCandidate[] =
+      sourceCandidateId && primarySourceUrl
+        ? [
+            {
+              id: sourceCandidateId,
+              origin: 'board_column' as const,
+              specificity:
+                record.catalogueVisibility === 'catalogue_mapped'
+                  ? ('institution_admissions' as const)
+                  : ('generic' as const),
+              confidence: record.confidence,
+              url: primarySourceUrl,
+              title: `מקור מוסדי שנגזר מ-Monday עבור ${record.displayName}`,
+              notes: `Derived from Monday admissions evidence item ${record.itemId}. ${record.nextAction}`,
+            },
+          ]
+        : [];
+
+    const admissionFacts: AdmissionFact[] = [];
 
     if (record.publicBucket === 'open_admission') {
       admissionFacts.push({
         id: `${detailId}:fact:open-admission`,
+        ...(sourceCandidateId ? { sourceCandidateId } : {}),
         kind: 'open_admission',
         field: 'open_admission',
         comparison: 'eq',
@@ -97,6 +246,7 @@ for (const record of mondayAdmissionsEvidence) {
     if (record.noBagrutNeeded) {
       admissionFacts.push({
         id: `${detailId}:fact:no-bagrut`,
+        ...(sourceCandidateId ? { sourceCandidateId } : {}),
         kind: 'explicit_absence',
         field: 'bagrut_average',
         comparison: 'not_required',
@@ -112,6 +262,7 @@ for (const record of mondayAdmissionsEvidence) {
     if (record.noPsychometricNeeded) {
       admissionFacts.push({
         id: `${detailId}:fact:no-psychometric`,
+        ...(sourceCandidateId ? { sourceCandidateId } : {}),
         kind: 'explicit_absence',
         field: 'psychometric',
         comparison: 'not_required',
@@ -127,6 +278,7 @@ for (const record of mondayAdmissionsEvidence) {
     if (record.interviewNeeded) {
       admissionFacts.push({
         id: `${detailId}:fact:interview`,
+        ...(sourceCandidateId ? { sourceCandidateId } : {}),
         kind: 'manual_gate',
         field: 'interview',
         comparison: 'eq',
@@ -142,6 +294,7 @@ for (const record of mondayAdmissionsEvidence) {
     if (record.portfolioNeeded) {
       admissionFacts.push({
         id: `${detailId}:fact:portfolio`,
+        ...(sourceCandidateId ? { sourceCandidateId } : {}),
         kind: 'manual_gate',
         field: 'portfolio',
         comparison: 'eq',
@@ -154,7 +307,7 @@ for (const record of mondayAdmissionsEvidence) {
       });
     }
 
-    dynamicPrograms.push({
+    const dynamicProgram: Program = {
       id: progId,
       name: `${prog.name} - ${record.displayName}`,
       institution: record.displayName,
@@ -180,10 +333,27 @@ for (const record of mondayAdmissionsEvidence) {
             (url) => url.includes('calculator') && !url.includes('yoram.walla.co.il'),
           ),
           programDescription: record.decisionReason || undefined,
+          ...(sourceCandidates.length > 0
+            ? {
+                admissionsSourceCandidates: sourceCandidates,
+              }
+            : {}),
           admissionFacts,
         },
       ],
-    });
+    };
+
+    const existingDynamicProgramIndex = dynamicPrograms.findIndex(
+      (program) => program.id === progId,
+    );
+    if (existingDynamicProgramIndex >= 0) {
+      dynamicPrograms[existingDynamicProgramIndex] = mergeDynamicProgramDetails(
+        dynamicPrograms[existingDynamicProgramIndex],
+        dynamicProgram,
+      );
+    } else {
+      dynamicPrograms.push(dynamicProgram);
+    }
   }
 }
 

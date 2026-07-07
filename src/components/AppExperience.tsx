@@ -24,7 +24,6 @@ import {
 } from '@/lib/catalogueClient';
 import { getCalculatorInstitutionsFromCatalogue } from '@/lib/calculatorInstitutions';
 import { getRecommendations } from '@/utils/recommendationEngine';
-import { evaluateUniversities } from '@/utils/sekhemCalculators';
 import { extractFilterAnswers } from '@/utils/riasecEngine';
 import { ArrowRight } from 'lucide-react';
 import NavBar from '@/components/NavBar';
@@ -38,7 +37,6 @@ import RecommendationResults from '@/components/RecommendationResults';
 import BucketList from '@/components/BucketList';
 import DegreePicker from '@/components/DegreePicker';
 import ScoreForm from '@/components/ScoreForm';
-import ResultsDashboard from '@/components/ResultsDashboard';
 import CalculatorResults from '@/components/CalculatorResults';
 import type { AcademicScores, RiasecAnswers } from '@/types';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
@@ -217,12 +215,15 @@ export default function AppExperience({
   const [selectedDegreeId, setSelectedDegreeId] = useState<string | null>(
     STATIC_CATALOGUE_PROGRAMS[0]?.id ?? null,
   );
-  const [results, setResults] = useState<UniversityResult[] | null>(null);
-  const [degreeName, setDegreeName] = useState('');
   const calculatorInstitutions = getCalculatorInstitutionsFromCatalogue(catalogueInstitutions);
   const [bucketReturnsTo, setBucketReturnsTo] = useState<AppStep>('recommendations');
   const [authReturnTo] = useState<Exclude<AppStep, 'auth'>>('landing');
   const [landingCalcScores, setLandingCalcScores] = useState<{
+    psychometric: number;
+    bagrut: number;
+    degreeId: string;
+  } | null>(null);
+  const [appCalcScores, setAppCalcScores] = useState<{
     psychometric: number;
     bagrut: number;
     degreeId: string;
@@ -331,7 +332,7 @@ export default function AppExperience({
         ? getRecommendations(scores, values, undefined, avoidances, cataloguePrograms)
         : [],
     );
-    setResults(null);
+    setAppCalcScores(null);
     setBucketReturnsTo('recommendations');
     navigateToStep('recommendations');
   }
@@ -352,12 +353,12 @@ export default function AppExperience({
   function handleSelectDegree(degreeId: string) {
     posthog.capture('degree_selected_for_calculator', { degree_id: degreeId });
     setSelectedDegreeId(degreeId);
-    setResults(null);
+    setAppCalcScores(null);
     navigateToStep('calculator');
   }
 
   function handleGoHome() {
-    setResults(null);
+    setAppCalcScores(null);
     navigateToStep('landing');
   }
 
@@ -378,7 +379,7 @@ export default function AppExperience({
   function handleGoBack() {
     const prev = previousStep[step];
     if (!prev) return;
-    if (prev === 'recommendations' || prev === 'quick-filters') setResults(null);
+    if (prev === 'recommendations' || prev === 'quick-filters') setAppCalcScores(null);
     navigateToStep(prev);
   }
 
@@ -438,23 +439,16 @@ export default function AppExperience({
     return null;
   }
 
-  function handleCalculate(scores: UserScores, degreeId: string, engineering: EngineeringOptions) {
-    const degree = cataloguePrograms.find((program) => program.id === degreeId);
-    if (!degree) {
-      return;
-    }
-
+  function handleCalculate(scores: UserScores, degreeId: string, _engineering: EngineeringOptions) {
     posthog.capture('degree_calculator_submitted', {
       degree_id: degreeId,
-      degree_name: degree.name,
     });
-
-    const evaluated = evaluateUniversities(calculatorInstitutions, degree, scores, engineering);
-    setResults(evaluated);
-    setDegreeName(degree.name);
-    setTimeout(() => {
-      document.getElementById('results')?.scrollIntoView({ behavior: 'smooth' });
-    }, 50);
+    setAppCalcScores({
+      psychometric: scores.psychometric,
+      bagrut: scores.bagrut,
+      degreeId,
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   /* ── Full-screen steps (no header) ───────────────────────────────────────── */
@@ -615,7 +609,7 @@ export default function AppExperience({
       navigateToStep(bucketReturnsTo === 'degree-picker' ? 'degree-picker' : 'landing');
       return;
     }
-    setResults(null);
+    setAppCalcScores(null);
     navigateToStep('recommendations');
   }
 
@@ -635,7 +629,7 @@ export default function AppExperience({
         userInitials={user?.email ? getUserInitials(user.email) : undefined}
         onGoHome={handleGoHome}
         onGoToExam={() => {
-          setResults(null);
+          setAppCalcScores(null);
           setPendingScores(null);
           setPendingValues(null);
           navigateToStep('career-assessment');
@@ -651,7 +645,7 @@ export default function AppExperience({
         }}
         bucketSourceLabel={bucketReturnsTo === 'degree-picker' ? 'בחירת תארים' : 'המלצות'}
         onGoToBucketSource={() => {
-          setResults(null);
+          setAppCalcScores(null);
           navigateToStep(bucketReturnsTo);
         }}
       />
@@ -715,7 +709,7 @@ export default function AppExperience({
             academicScores={profile.academicScores}
             onRemove={handleRemoveFromBucket}
             onBack={() => {
-              setResults(null);
+              setAppCalcScores(null);
               navigateToStep(bucketReturnsTo);
             }}
             backLabel={bucketReturnsTo === 'degree-picker' ? 'חזרה לבחירת תארים' : 'חזרה להמלצות'}
@@ -728,27 +722,35 @@ export default function AppExperience({
         {/* ── Step: Calculator ──────────────────────────────────── */}
         {!shouldBlockCatalogueStep && step === 'calculator' && (
           <>
-            <section className="rounded-2xl border border-[#e5e7eb] bg-white p-6 shadow-sm sm:p-8">
-              <h2 className="mb-1 text-lg font-semibold text-gray-800">הזן את הנתונים שלך</h2>
-              <p className="mb-6 text-sm text-gray-400">
-                הממוצע בגרות כולל בונוסים (למשל מתמטיקה 5 יח׳ מוסיפה עד 35 נקודות).
-              </p>
-              {sekhemPrograms.length > 0 ? (
-                <ScoreForm
-                  programs={cataloguePrograms}
-                  onSubmit={handleCalculate}
-                  defaultDegreeId={selectedDegreeId ?? undefined}
-                  defaultPsychometric={profile.academicScores?.psychometric?.overall}
-                  defaultBagrut={profile.academicScores?.bagrut?.weightedAverage}
-                />
-              ) : (
-                <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
-                  אין כרגע תוכניות עם מחשבון קבלה זמין בקטלוג.
-                </div>
-              )}
-            </section>
-
-            {results && <ResultsDashboard results={results} degreeName={degreeName} />}
+            {appCalcScores ? (
+              <CalculatorResults
+                psychometric={appCalcScores.psychometric}
+                bagrut={appCalcScores.bagrut}
+                degreeId={appCalcScores.degreeId}
+                programs={cataloguePrograms}
+                onBack={() => setAppCalcScores(null)}
+              />
+            ) : (
+              <section className="rounded-2xl border border-[#e5e7eb] bg-white p-6 shadow-sm sm:p-8">
+                <h2 className="mb-1 text-lg font-semibold text-gray-800">הזן את הנתונים שלך</h2>
+                <p className="mb-6 text-sm text-gray-400">
+                  הממוצע בגרות כולל בונוסים (למשל מתמטיקה 5 יח׳ מוסיפה עד 35 נקודות).
+                </p>
+                {cataloguePrograms.length > 0 ? (
+                  <ScoreForm
+                    programs={cataloguePrograms}
+                    onSubmit={handleCalculate}
+                    defaultDegreeId={selectedDegreeId ?? undefined}
+                    defaultPsychometric={profile.academicScores?.psychometric?.overall}
+                    defaultBagrut={profile.academicScores?.bagrut?.weightedAverage}
+                  />
+                ) : (
+                  <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                    אין כרגע תוכניות עם מחשבון קבלה זמין בקטלוג.
+                  </div>
+                )}
+              </section>
+            )}
           </>
         )}
       </main>

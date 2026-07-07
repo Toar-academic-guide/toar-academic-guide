@@ -359,11 +359,18 @@ const D: Record<string, InstitutionDetail[]> = {
       estimatedStudentsPerYear: 'כ-50 סטודנטים',
       quantitativeMinRequirement: 145,
       englishMinRequirement: null,
-      specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה מוחלטת'],
+      specificAdmissionNotes: [
+        '5 יח"ל מתמטיקה — חובה מוחלטת',
+        'המסלול מופיע בקטלוג תואר ראשון תחת הפקולטה למדעי הנתונים וההחלטות.',
+      ],
       officialCalculatorUrl:
-        'https://admissions.technion.ac.il/programs/data-science-and-statistics/',
+        'https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/',
+      programUrl:
+        'https://ugportal.technion.ac.il/wp-content/uploads/2025/09/09-%D7%9E%D7%93%D7%A2%D7%99-%D7%94%D7%A0%D7%AA%D7%95%D7%A0%D7%99%D7%9D-%D7%95%D7%94%D7%94%D7%97%D7%9C%D7%98%D7%95%D7%AA-%D7%AA%D7%A9%D7%A4%D7%B4%D7%95.pdf',
+      calculatorUrl:
+        'https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/',
       programDescription:
-        'תוכנית מחקרית-הנדסית עם בסיס מתמטי חזק. מיועדת לסטודנטים עם נטייה לפתרון בעיות כמותיות מורכבות; קשרים ענפים עם מעבדות המחקר של הטכניון.',
+        'מסלול הנדסת נתונים ומידע בפקולטה למדעי הנתונים וההחלטות. משלב בסיס מתמטי והנדסי חזק עם הכשרה בניתוח נתונים, אופטימיזציה ומערכות מידע.',
     },
   ],
   technion_ee: [
@@ -514,19 +521,6 @@ const D: Record<string, InstitutionDetail[]> = {
       calculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html',
     },
   ],
-  bgu_law: [
-    {
-      institutionName: 'אוניברסיטת בן-גוריון בנגב',
-      durationYears: 3,
-      estimatedStudentsPerYear: 'כ-200 סטודנטים',
-      quantitativeMinRequirement: null,
-      englishMinRequirement: null,
-      specificAdmissionNotes: [],
-      officialCalculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html',
-      programUrl: 'https://in.bgu.ac.il/Pages/default.aspx',
-      calculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html',
-    },
-  ],
   bgu_economics: [
     {
       institutionName: 'אוניברסיטת בן-גוריון בנגב',
@@ -595,14 +589,18 @@ const D: Record<string, InstitutionDetail[]> = {
   bgu_medicine: [
     {
       institutionName: 'אוניברסיטת בן-גוריון בנגב',
-      durationYears: 6,
+      durationYears: 7,
       estimatedStudentsPerYear: 'כ-80 סטודנטים',
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
-      specificAdmissionNotes: ['ראיון אישי מחייב', 'הסטודנטים לרפואה מבצעים פרקטיקה בסורוקה'],
-      officialCalculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html',
-      programUrl: 'https://in.bgu.ac.il/Pages/default.aspx',
-      calculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html',
+      specificAdmissionNotes: [
+        'לאחר עמידה בתנאי הסף הרשמיים מתקיים הליך מיון הכולל מבחן ממוחשב ושני ראיונות קבלה.',
+        'הסף המינימלי לזימון נקבע בכל שנת קבלה ולא מפורסם כיום כחתך קבוע בדף הרשמי.',
+        'הסטודנטים לרפואה מבצעים פרקטיקה בסורוקה.',
+      ],
+      officialCalculatorUrl: 'https://www.bgu.ac.il/welcome/ba/calculator/',
+      programUrl: 'https://www.bgu.ac.il/welcome/ba/catalog/categories/medical-school/?tab=2944',
+      calculatorUrl: 'https://www.bgu.ac.il/welcome/ba/calculator/',
     },
   ],
   bgu_accounting: [
@@ -1639,7 +1637,7 @@ export const academicPrograms: Program[] = [
   },
   {
     id: 'technion_datascience',
-    name: 'מדעי הנתונים וסטטיסטיקה',
+    name: 'הנדסת נתונים ומידע',
     institution: 'הטכניון – מכון טכנולוגי לישראל',
     institutionId: 'technion',
     type: 'academic',
@@ -1647,7 +1645,7 @@ export const academicPrograms: Program[] = [
     profileScore: P.dataScience,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: null, huji: null, technion: null, bgu: null },
+    thresholds: { tau: null, huji: null, technion: 91, bgu: null },
     institutionDetails: D['technion_datascience'],
   },
   {
@@ -1743,7 +1741,8 @@ export const academicPrograms: Program[] = [
     profileScore: P.cs,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: null, huji: null, technion: null, bgu: 645 },
+    thresholds: { tau: null, huji: null, technion: null, bgu: 720 },
+    minimumPsychometric: { bgu: 600 },
     institutionDetails: D['bgu_cs'],
   },
   {
@@ -1756,7 +1755,8 @@ export const academicPrograms: Program[] = [
     profileScore: P.dataScience,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: null, huji: null, technion: null, bgu: 635 },
+    thresholds: { tau: null, huji: null, technion: null, bgu: 720 },
+    minimumPsychometric: { bgu: 600 },
     institutionDetails: D['bgu_datascience'],
   },
   {
@@ -1769,7 +1769,8 @@ export const academicPrograms: Program[] = [
     profileScore: P.ee,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: null, huji: null, technion: null, bgu: 615 },
+    thresholds: { tau: null, huji: null, technion: null, bgu: 547 },
+    minimumPsychometric: { bgu: 600 },
     institutionDetails: D['bgu_ee'],
   },
   {
@@ -1782,7 +1783,8 @@ export const academicPrograms: Program[] = [
     profileScore: P.me,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: null, huji: null, technion: null, bgu: 595 },
+    thresholds: { tau: null, huji: null, technion: null, bgu: 520 },
+    minimumPsychometric: { bgu: 550 },
     institutionDetails: D['bgu_me'],
   },
   {
@@ -1795,7 +1797,8 @@ export const academicPrograms: Program[] = [
     profileScore: P.industrial,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: null, huji: null, technion: null, bgu: 570 },
+    thresholds: { tau: null, huji: null, technion: null, bgu: 505 },
+    minimumPsychometric: { bgu: 550 },
     institutionDetails: D['bgu_industrial'],
   },
   {
@@ -1808,21 +1811,9 @@ export const academicPrograms: Program[] = [
     profileScore: P.psychology,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: null, huji: null, technion: null, bgu: 675 },
-    institutionDetails: D['bgu_psychology'],
-  },
-  {
-    id: 'bgu_law',
-    name: 'משפטים',
-    institution: 'אוניברסיטת בן-גוריון בנגב',
-    institutionId: 'bgu',
-    type: 'academic',
-    category: 'משפטים',
-    profileScore: P.law,
-    admissionType: 'sekhem',
-    admissionRequirements: [],
     thresholds: { tau: null, huji: null, technion: null, bgu: 650 },
-    institutionDetails: D['bgu_law'],
+    minimumPsychometric: { bgu: 650 },
+    institutionDetails: D['bgu_psychology'],
   },
   {
     id: 'bgu_economics',
@@ -1834,7 +1825,9 @@ export const academicPrograms: Program[] = [
     profileScore: P.economics,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: null, huji: null, technion: null, bgu: 615 },
+    thresholds: { tau: null, huji: null, technion: null, bgu: 620 },
+    minimumPsychometric: { bgu: 600 },
+    minimumBagrut: { bgu: 107 },
     institutionDetails: D['bgu_economics'],
   },
   {
@@ -1847,7 +1840,9 @@ export const academicPrograms: Program[] = [
     profileScore: P.business,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: null, huji: null, technion: null, bgu: 590 },
+    thresholds: { tau: null, huji: null, technion: null, bgu: 620 },
+    minimumPsychometric: { bgu: 600 },
+    minimumBagrut: { bgu: 107 },
     institutionDetails: D['bgu_business'],
   },
   {
@@ -1860,7 +1855,9 @@ export const academicPrograms: Program[] = [
     profileScore: P.biology,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: null, huji: null, technion: null, bgu: 610 },
+    thresholds: { tau: null, huji: null, technion: null, bgu: 585 },
+    minimumPsychometric: { bgu: 585 },
+    minimumBagrut: { bgu: 106 },
     institutionDetails: D['bgu_biology'],
   },
   {
@@ -1873,7 +1870,7 @@ export const academicPrograms: Program[] = [
     profileScore: P.nursing,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: null, huji: null, technion: null, bgu: 610 },
+    thresholds: { tau: null, huji: null, technion: null, bgu: null },
     institutionDetails: D['bgu_nursing'],
   },
   {
@@ -1886,7 +1883,9 @@ export const academicPrograms: Program[] = [
     profileScore: P.socialWork,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: null, huji: null, technion: null, bgu: 600 },
+    thresholds: { tau: null, huji: null, technion: null, bgu: 580 },
+    minimumPsychometric: { bgu: 550 },
+    minimumBagrut: { bgu: 108 },
     institutionDetails: D['bgu_socialwork'],
   },
   {
@@ -1899,7 +1898,8 @@ export const academicPrograms: Program[] = [
     profileScore: P.medicine,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: null, huji: null, technion: null, bgu: 760 },
+    thresholds: { tau: null, huji: null, technion: null, bgu: null },
+    minimumPsychometric: { bgu: 680 },
     institutionDetails: D['bgu_medicine'],
   },
 
@@ -2784,7 +2784,12 @@ export const academicPrograms: Program[] = [
     category: 'מדעי המחשב',
     profileScore: P.cs,
     admissionType: 'requirements',
-    admissionRequirements: ['בגרות מלאה', 'ממוצע בגרות מינימלי: 72', 'ציון פסיכומטרי מינימלי: 480'],
+    admissionRequirements: [
+      'מסלול בגרות: ממוצע בגרות משוקלל 85+',
+      'מתמטיקה: 5 יח"ל 70+ או 4 יח"ל 80+',
+      'מסלול בגרות ופסיכומטרי: עמידה בציון המשוקלל; פטור ממבדק פנימי בפסיכומטרי 600+ וכמותי 120+',
+      'חלופות קבלה: מבדק פנימי ומכינות שחקים/ריענון במתמטיקה לפי הצורך',
+    ],
   },
   {
     id: 'colmgmt_business',
@@ -2795,7 +2800,11 @@ export const academicPrograms: Program[] = [
     category: 'כלכלה ועסקים',
     profileScore: P.business,
     admissionType: 'requirements',
-    admissionRequirements: ['בגרות מלאה', 'ממוצע בגרות מינימלי: 72', 'ציון פסיכומטרי מינימלי: 470'],
+    admissionRequirements: [
+      'מסלול בגרות: ממוצע בגרות משוקלל 85+',
+      'מסלול בגרות ופסיכומטרי: פסיכומטרי 555+ וכמותי 100+ ועמידה בציון המשוקלל',
+      'חלופת קבלה: מכינת שחקים למי שלא עומדים בסף',
+    ],
   },
   {
     id: 'colmgmt_economics',
@@ -2806,7 +2815,11 @@ export const academicPrograms: Program[] = [
     category: 'כלכלה ועסקים',
     profileScore: P.economics,
     admissionType: 'requirements',
-    admissionRequirements: ['בגרות מלאה', 'ממוצע בגרות מינימלי: 72', 'ציון פסיכומטרי מינימלי: 470'],
+    admissionRequirements: [
+      'מסלול בגרות: ממוצע בגרות משוקלל 85+',
+      'מסלול בגרות ופסיכומטרי: זכאות לבגרות, פסיכומטרי 540+ וכמותי 110+',
+      'חלופת קבלה: מכינת שחקים למי שלא עומדים בסף',
+    ],
   },
   {
     id: 'colmgmt_law',
@@ -2817,7 +2830,12 @@ export const academicPrograms: Program[] = [
     category: 'משפטים',
     profileScore: P.law,
     admissionType: 'requirements',
-    admissionRequirements: ['בגרות מלאה', 'ממוצע בגרות מינימלי: 75', 'ציון פסיכומטרי מינימלי: 500'],
+    admissionRequirements: [
+      'מסלול בגרות: ממוצע בגרות משוקלל 100+',
+      'מסלול בגרות ופסיכומטרי: פסיכומטרי 540+ ועמידה בציון המשוקלל',
+      'מסלול לאקדמאים: ממוצע תואר 80+ וראיון קבלה',
+      'חלופות קבלה: מכינת שחקים או בדיקת קבלה על תנאי דרך מרכז הרישום',
+    ],
   },
   {
     id: 'colmgmt_accounting',
@@ -2828,7 +2846,11 @@ export const academicPrograms: Program[] = [
     category: 'כלכלה ועסקים',
     profileScore: { AN: 3, TE: 0, CR: 0, SO: 1, LE: 3, OR: 5, DI: 2, ER: 2 },
     admissionType: 'requirements',
-    admissionRequirements: ['בגרות מלאה', 'ממוצע בגרות מינימלי: 72', 'ציון פסיכומטרי מינימלי: 470'],
+    admissionRequirements: [
+      'מסלול בגרות: ממוצע בגרות משוקלל 100+',
+      'מסלול בגרות ופסיכומטרי: פסיכומטרי 555+ וכמותי 100+ ועמידה בציון המשוקלל',
+      'חלופת קבלה: מכינת שחקים למי שלא עומדים בסף',
+    ],
   },
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -2843,18 +2865,28 @@ export const academicPrograms: Program[] = [
     category: 'משפטים',
     profileScore: P.law,
     admissionType: 'requirements',
-    admissionRequirements: ['בגרות מלאה', 'ממוצע בגרות מינימלי: 75', 'ציון פסיכומטרי מינימלי: 500'],
+    admissionRequirements: [
+      'קבלה ישירה: ממוצע בגרות 95+ או פסיכומטרי 600 + בגרות מלאה',
+      'קבלה ישירה גם לבעלי תואר קודם, 24 נ"ז מהאוניברסיטה הפתוחה, או תעודת הנדסאי/ת',
+      'קבלה משוקללת: ראיון קבלה עם ממוצע בגרות 80-94 או פסיכומטרי 550 + בגרות מלאה',
+      'חלופות קבלה: אפיק מעבר לאקדמיה או מכינה קדם-אקדמית',
+    ],
   },
   {
     id: 'ono_business',
-    name: 'מנהל עסקים',
+    name: 'מנהל עסקים (התמחויות שונות)',
     institution: 'המכללה האקדמית אונו',
     institutionId: 'ono',
     type: 'academic',
     category: 'כלכלה ועסקים',
     profileScore: P.business,
     admissionType: 'requirements',
-    admissionRequirements: ['בגרות מלאה', 'ממוצע בגרות מינימלי: 70', 'ציון פסיכומטרי מינימלי: 450'],
+    admissionRequirements: [
+      'קבלה ישירה: ממוצע בגרות 95+ או פסיכומטרי 600 + בגרות מלאה',
+      'דרישת מתמטיקה: 3 יח"ל 75+ או 4 יח"ל 65+ או 5 יח"ל בציון עובר',
+      'קבלה משוקללת: ראיון קבלה עם ממוצע בגרות 80-94 או פסיכומטרי 550 + בגרות מלאה',
+      'חלופות קבלה: אפיק מעבר לאקדמיה או מכינה קדם-אקדמית',
+    ],
   },
   {
     id: 'ono_cs',
@@ -2865,22 +2897,11 @@ export const academicPrograms: Program[] = [
     category: 'מדעי המחשב',
     profileScore: P.cs,
     admissionType: 'requirements',
-    admissionRequirements: ['בגרות מלאה', 'ממוצע בגרות מינימלי: 72', 'ציון פסיכומטרי מינימלי: 480'],
-  },
-  {
-    id: 'ono_socialwork',
-    name: 'עבודה סוציאלית',
-    institution: 'המכללה האקדמית אונו',
-    institutionId: 'ono',
-    type: 'academic',
-    category: 'מדעי החברה',
-    profileScore: P.socialWork,
-    admissionType: 'requirements',
     admissionRequirements: [
-      'בגרות מלאה',
-      'ממוצע בגרות מינימלי: 70',
-      'ציון פסיכומטרי מינימלי: 440',
-      'ראיון קבלה',
+      'קבלה ישירה: ממוצע בגרות 100+',
+      'חלופת קבלה ישירה: פסיכומטרי 650 או שקלול בגרות ופסיכומטרי',
+      'דרישת מתמטיקה: 5 יח"ל 75+ או 4 יח"ל 95+',
+      'מסלולי הכנה: מכינה במדעי המחשב או מכינה במתמטיקה לפי ועדת הקבלה',
     ],
   },
   {
@@ -2893,26 +2914,10 @@ export const academicPrograms: Program[] = [
     profileScore: P.nursing,
     admissionType: 'requirements',
     admissionRequirements: [
-      'בגרות מלאה עם ביולוגיה',
-      'ממוצע בגרות מינימלי: 72',
-      'ציון פסיכומטרי מינימלי: 450',
-      'ראיון קבלה',
-    ],
-  },
-  {
-    id: 'ono_psychology',
-    name: 'פסיכולוגיה',
-    institution: 'המכללה האקדמית אונו',
-    institutionId: 'ono',
-    type: 'academic',
-    category: 'מדעי החברה',
-    profileScore: P.psychology,
-    admissionType: 'requirements',
-    admissionRequirements: [
-      'בגרות מלאה',
-      'ממוצע בגרות מינימלי: 75',
-      'ציון פסיכומטרי מינימלי: 490',
-      'ראיון קבלה',
+      'מסלול בסיסי: ממוצע בגרות 85+ ופסיכומטרי 520+',
+      'דרישות נוספות: ראיון קבלה, אנגלית ברמת מתקדמים א׳ לפחות, ועברית ברמת מתקדמים',
+      'מסלולי קבלה ייחודיים: לוחמים/מילואים ואפיק מעבר עם בגרות 85+ וראיון גם ללא פסיכומטרי',
+      'מסלול הישגים לימודיים: קבלה ללא פסיכומטרי לבעלי בגרות 100+/103+ בכפוף לראיון ודרישות שפה',
     ],
   },
 
@@ -2955,7 +2960,8 @@ export const academicPrograms: Program[] = [
     profileScore: P.accounting,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: null, huji: null, technion: null, bgu: 610 },
+    thresholds: { tau: null, huji: null, technion: null, bgu: 620 },
+    minimumPsychometric: { bgu: 620 },
     institutionDetails: D['bgu_accounting'],
   },
 
@@ -2997,7 +3003,12 @@ export const academicPrograms: Program[] = [
     category: 'כלכלה ועסקים',
     profileScore: P.infoSystems,
     admissionType: 'requirements',
-    admissionRequirements: ['בגרות מלאה', 'ממוצע בגרות מינימלי: 72', 'ציון פסיכומטרי מינימלי: 470'],
+    admissionRequirements: [
+      'קבלה אוטומטית: מסלולי בגרות ובגרות+פסיכומטרי עם דרישות מתמטיקה מוגברות',
+      'מתמטיקה: 5 יח"ל 70+ או 4 יח"ל 80+; חלופה נוספת עם כמותי 128+ ומתמטיקה 65/70+',
+      'קבלה על תנאי: ממוצע בגרות 90+ או מסלול בגרות 85-94.4 עם דרישות המתמטיקה',
+      'חלופת קבלה: מכינת שחקים למי שלא עומדים בסף',
+    ],
   },
 
   // ══════════════════════════════════════════════════════════════════════════

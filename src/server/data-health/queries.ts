@@ -101,11 +101,28 @@ export interface DataHealthReadyReport {
 export interface MondayEvidenceCoverage {
   totalItems: number;
   catalogueMatched: number;
+  nonCatalogueEvidence: number;
   decisionCapable: number;
   trackedMissingRule: number;
   blocked: number;
   openAdmission: number;
   manualOrEligible: number;
+  nonCatalogueBucketCounts: Record<string, number>;
+  nonCatalogueGroups: MondayEvidenceBacklogGroup[];
+}
+
+export interface MondayEvidenceBacklogRow {
+  itemId: string;
+  itemName: string;
+  publicBucket: string;
+  nextAction: string;
+  officialUrl: string | null;
+}
+
+export interface MondayEvidenceBacklogGroup {
+  bucket: string;
+  count: number;
+  rows: MondayEvidenceBacklogRow[];
 }
 
 export interface DataHealthRows {
@@ -613,6 +630,10 @@ function buildMondayEvidenceCoverage(): MondayEvidenceCoverage {
   const catalogueMatched = records.filter(
     (record) => record.catalogueVisibility === 'catalogue_mapped',
   ).length;
+  const nonCatalogueRecords = records.filter(
+    (record) => record.catalogueVisibility === 'evidence_only',
+  );
+  const nonCatalogueEvidence = nonCatalogueRecords.length;
   const decisionCapable = records.filter(
     (record) => record.publicBucket === 'decision_capable',
   ).length;
@@ -629,16 +650,86 @@ function buildMondayEvidenceCoverage(): MondayEvidenceCoverage {
       record.publicBucket === 'eligible_with_manual_gate' ||
       record.publicBucket === 'eligible_no_formal_grade_gate',
   ).length;
+  const nonCatalogueBucketCounts = countBy(nonCatalogueRecords, (record) => record.publicBucket);
+  const nonCatalogueGroups = Object.entries(nonCatalogueBucketCounts)
+    .sort(
+      ([bucketA, countA], [bucketB, countB]) =>
+        backlogBucketPriority(bucketB) - backlogBucketPriority(bucketA) ||
+        countB - countA ||
+        bucketA.localeCompare(bucketB),
+    )
+    .map(([bucket, count]) => ({
+      bucket,
+      count,
+      rows: nonCatalogueRecords
+        .filter((record) => record.publicBucket === bucket)
+        .sort(
+          (a, b) => backlogPriority(b) - backlogPriority(a) || a.itemName.localeCompare(b.itemName),
+        )
+        .slice(0, 3)
+        .map((record) => ({
+          itemId: record.itemId,
+          itemName: record.itemName,
+          publicBucket: record.publicBucket,
+          nextAction: record.nextAction,
+          officialUrl: record.officialUrls[0] ?? null,
+        })),
+    }));
 
   return {
     totalItems: records.length,
     catalogueMatched,
+    nonCatalogueEvidence,
     decisionCapable,
     trackedMissingRule,
     blocked,
     openAdmission,
     manualOrEligible,
+    nonCatalogueBucketCounts,
+    nonCatalogueGroups,
   };
+}
+
+function backlogPriority(record: (typeof mondayAdmissionsEvidence)[number]): number {
+  switch (record.publicBucket) {
+    case 'decision_capable':
+      return 70;
+    case 'open_admission':
+      return 60;
+    case 'eligible_no_formal_grade_gate':
+      return 50;
+    case 'eligible_with_manual_gate':
+      return 45;
+    case 'manual_gate':
+      return 40;
+    case 'tracked_missing_rule':
+      return 30;
+    case 'requirements_review':
+      return 20;
+    default:
+      return 0;
+  }
+}
+
+function backlogBucketPriority(bucket: string): number {
+  switch (bucket) {
+    case 'manual_gate':
+      return 60;
+    case 'eligible_with_manual_gate':
+      return 50;
+    case 'eligible_no_formal_grade_gate':
+      return 40;
+    case 'requirements_review':
+      return 30;
+    case 'tracked_missing_rule':
+      return 20;
+    case 'open_admission':
+      return 10;
+    case 'decision_capable':
+      return 5;
+    default:
+      return 0;
+  }
 }
 
 async function loadDataHealthRows(): Promise<DataHealthRows> {

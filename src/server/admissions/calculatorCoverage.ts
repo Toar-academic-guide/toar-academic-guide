@@ -128,11 +128,12 @@ export const calculatorCoverageInventory: CalculatorCoverageEntry[] = [
     mondayItemId: '12220680983',
     officialUrl: 'https://www.ariel.ac.il/wp/',
     evidenceKind: 'browser_blocked',
-    intendedCapability: 'blocked',
-    supportLevel: 'blocked',
+    intendedCapability: 'score_only',
+    supportLevel: 'score_only',
     hasCalculatorConfig: true,
     hasSourceTarget: true,
-    nextAction: 'Move to Hermes/VPS browser automation lane',
+    nextAction:
+      'Use the mapped sekhem estimate with blocked-source disclosure for thresholded programs, and keep the Hermes/VPS browser lane as the path to re-verify official thresholds.',
   },
   {
     institutionId: 'reichman',

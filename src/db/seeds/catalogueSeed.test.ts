@@ -4,6 +4,20 @@ import { INSTITUTIONS } from '@/data/institutions';
 import type { Program } from '@/data/degrees/types';
 import { buildCatalogueSeed, buildCatalogueSeedVerificationReport } from '@/db/seeds/catalogueSeed';
 
+function duplicatedValues(values: string[]): string[] {
+  const seen = new Set<string>();
+  const duplicates = new Set<string>();
+
+  for (const value of values) {
+    if (seen.has(value)) {
+      duplicates.add(value);
+    }
+    seen.add(value);
+  }
+
+  return [...duplicates].sort();
+}
+
 describe('catalogueSeed', () => {
   it('maps every institution and program into exactly one seed row', () => {
     const payload = buildCatalogueSeed();
@@ -14,6 +28,50 @@ describe('catalogueSeed', () => {
       UNIVERSITIES.map((row) => row.id).sort(),
     );
     expect(payload.programs).toHaveLength(allPrograms.length);
+  });
+
+  it('emits conflict-safe seed rows for repeatable remote upserts', () => {
+    const payload = buildCatalogueSeed();
+
+    expect(duplicatedValues(payload.institutions.map((row) => row.id))).toEqual([]);
+    expect(duplicatedValues(payload.programs.map((row) => row.id))).toEqual([]);
+    expect(
+      duplicatedValues(
+        payload.programInstitutions.map((row) => `${row.programId}:${row.institutionId}`),
+      ),
+    ).toEqual([]);
+    expect(duplicatedValues(payload.admissionRequirements.map((row) => row.id))).toEqual([]);
+    expect(duplicatedValues(payload.admissionThresholds.map((row) => row.id))).toEqual([]);
+    expect(duplicatedValues(payload.sourceUrls.map((row) => row.id))).toEqual([]);
+    expect(duplicatedValues(payload.requirementVersions.map((row) => row.id))).toEqual([]);
+    expect(duplicatedValues(payload.admissionsSourceCandidates.map((row) => row.id))).toEqual([]);
+    expect(duplicatedValues(payload.admissionFacts.map((row) => row.id))).toEqual([]);
+    expect(duplicatedValues(payload.admissionAlternativePaths.map((row) => row.id))).toEqual([]);
+  });
+
+  it('canonicalizes Monday-only institution ids before creating database rows', () => {
+    const payload = buildCatalogueSeed();
+    const institutionIds = new Set(payload.institutions.map((row) => row.id));
+    const referencedInstitutionIds = [
+      ...payload.programs.map((row) => row.institutionId),
+      ...payload.programInstitutions.map((row) => row.institutionId),
+      ...payload.admissionRequirements.map((row) => row.institutionId),
+      ...payload.admissionThresholds.map((row) => row.institutionId),
+      ...payload.sourceUrls.map((row) => row.institutionId),
+      ...payload.admissionsSourceCandidates.map((row) => row.institutionId),
+      ...payload.admissionFacts.map((row) => row.institutionId),
+      ...payload.admissionAlternativePaths.map((row) => row.institutionId),
+    ].filter((value): value is string => Boolean(value));
+
+    expect(
+      referencedInstitutionIds.filter((institutionId) => !institutionIds.has(institutionId)),
+    ).toEqual([]);
+    expect(payload.programs.find((row) => row.id === 'sapir_law')?.institutionId).toBe('sapir');
+    expect(
+      payload.programInstitutions.some(
+        (row) => row.programId === 'sapir_law' && row.institutionId === 'sapir',
+      ),
+    ).toBe(true);
   });
 
   it('creates requirement and source candidates for programs with institution details', () => {
@@ -31,7 +89,7 @@ describe('catalogueSeed', () => {
     expect(payload.programs.some((row) => row.id === 'open_university_cs')).toBe(true);
     expect(
       payload.admissionsSourceCandidates.some(
-        (row) => row.id === 'ono_socialwork:ono:item-update-source' && row.origin === 'item_update',
+        (row) => row.id === 'ono_nursing:ono:program-source' && row.origin === 'catalogue_url',
       ),
     ).toBe(true);
     expect(
@@ -42,6 +100,17 @@ describe('catalogueSeed', () => {
           row.confidence === 'low',
       ),
     ).toBe(true);
+    expect(
+      payload.admissionsSourceCandidates.find(
+        (row) => row.id === 'sapir_law:sapir:source:monday-evidence',
+      ),
+    ).toMatchObject({
+      origin: 'board_column',
+      confidence: 'high',
+      programId: 'sapir_law',
+      institutionId: 'sapir',
+      url: 'https://www.sapir.ac.il/ba/law#collapse-accordion-798-3',
+    });
   });
 
   it('distinguishes explicit absence, unknown facts, manual gates, and alternatives', () => {
@@ -65,18 +134,24 @@ describe('catalogueSeed', () => {
       confidence: 'low',
     });
     expect(
-      payload.admissionFacts.find((row) => row.id === 'ono_socialwork:ono:fact:interview'),
+      payload.admissionFacts.find((row) => row.id === 'ono_nursing:ono:fact:interview'),
     ).toMatchObject({
       kind: 'manual_gate',
       field: 'interview',
     });
     expect(
-      payload.admissionAlternativePaths.find(
-        (row) => row.id === 'ono_socialwork:ono:alt:exceptions',
-      ),
+      payload.admissionAlternativePaths.find((row) => row.id === 'ono_nursing:ono:alt:bridge'),
     ).toMatchObject({
-      kind: 'exceptions_committee',
-      programId: 'ono_socialwork',
+      kind: 'transfer_path',
+      programId: 'ono_nursing',
+    });
+    expect(
+      payload.admissionFacts.find((row) => row.id === 'sapir_law:sapir:fact:no-psychometric'),
+    ).toMatchObject({
+      kind: 'explicit_absence',
+      field: 'psychometric',
+      comparison: 'not_required',
+      sourceCandidateId: 'sapir_law:sapir:source:monday-evidence',
     });
   });
 

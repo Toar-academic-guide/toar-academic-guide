@@ -1,4 +1,5 @@
 import { mondayAdmissionEvidenceRecords } from './mondayEvidence.generated';
+import { INSTITUTION_BY_NAME } from '@/data/institutions';
 
 export type MondayEvidenceCapabilityCandidate =
   | 'decision_capable'
@@ -54,6 +55,8 @@ export interface MondayAdmissionVerifiedProgramThreshold {
   sourceLabel: string;
   verifiedAt: string;
   notes?: string;
+  thresholdKind?: 'acceptance' | 'invitation_to_manual_gate';
+  scoreKind?: 'sekhem' | 'psychometric';
 }
 
 export interface MondayAdmissionEvidenceRecord {
@@ -100,7 +103,9 @@ export function getMondayAdmissionEvidenceByCatalogueInstitutionId(
 ): MondayAdmissionEvidenceRecord[] {
   return mondayAdmissionsEvidence.filter(
     (record) =>
-      record.catalogueInstitutionId === institutionId || `mon_${record.itemId}` === institutionId,
+      record.catalogueInstitutionId === institutionId ||
+      INSTITUTION_BY_NAME[record.displayName]?.id === institutionId ||
+      `mon_${record.itemId}` === institutionId,
   );
 }
 

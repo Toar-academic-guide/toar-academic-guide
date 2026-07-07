@@ -21,16 +21,15 @@ export default function ScoreForm({
   defaultPsychometric,
   defaultBagrut,
 }: Props) {
-  const sekhemPrograms = programs.filter((program) => program.admissionType === 'sekhem');
   const [psychometric, setPsychometric] = useState(defaultPsychometric?.toString() ?? '');
   const [bagrut, setBagrut] = useState(defaultBagrut?.toString() ?? '');
-  const [degreeId, setDegreeId] = useState(defaultDegreeId ?? sekhemPrograms[0].id);
+  const [degreeId, setDegreeId] = useState(defaultDegreeId ?? programs[0]?.id ?? '');
   const [hasMath5, setHasMath5] = useState(false);
   const [hasPhysics5, setHasPhysics5] = useState(false);
   const [errors, setErrors] = useState<{ psychometric?: string; bagrut?: string }>({});
 
-  const selectedDegree = sekhemPrograms.find((d) => d.id === degreeId)!;
-  const showEngineeringSection = selectedDegree.isTauEngineering ?? false;
+  const selectedDegree = programs.find((program) => program.id === degreeId);
+  const showEngineeringSection = selectedDegree?.isTauEngineering ?? false;
 
   function validate(): boolean {
     const errs: typeof errors = {};
@@ -116,7 +115,7 @@ export default function ScoreForm({
           onChange={(e) => setDegreeId(e.target.value)}
           className={`${inputBase} ${inputNormal}`}
         >
-          {sekhemPrograms.map((degree) => (
+          {programs.map((degree) => (
             <option key={degree.id} value={degree.id}>
               {degree.name}
             </option>

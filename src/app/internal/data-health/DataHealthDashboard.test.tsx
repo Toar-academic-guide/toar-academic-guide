@@ -210,11 +210,46 @@ function reportWithRisks(): DataHealthReadyReport {
     mondayEvidence: {
       totalItems: 212,
       catalogueMatched: 34,
+      nonCatalogueEvidence: 178,
       decisionCapable: 5,
       trackedMissingRule: 4,
       blocked: 2,
       openAdmission: 1,
       manualOrEligible: 178,
+      nonCatalogueBucketCounts: {
+        eligible_no_formal_grade_gate: 120,
+        manual_gate: 58,
+      },
+      nonCatalogueGroups: [
+        {
+          bucket: 'eligible_no_formal_grade_gate',
+          count: 120,
+          rows: [
+            {
+              itemId: '12341102997',
+              itemName: '57. המרכז האקדמי שערי מדע ומשפט',
+              publicBucket: 'eligible_no_formal_grade_gate',
+              nextAction:
+                'Find the official admissions URL before this item can be treated as product-complete.',
+              officialUrl: 'https://mishpat.ac.il',
+            },
+          ],
+        },
+        {
+          bucket: 'manual_gate',
+          count: 58,
+          rows: [
+            {
+              itemId: '12220697938',
+              itemName: '28. מעלה - לקולנוע ואמנויות',
+              publicBucket: 'manual_gate',
+              nextAction:
+                'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+              officialUrl: 'https://www.maale.co.il',
+            },
+          ],
+        },
+      ],
     },
   };
 }
@@ -234,6 +269,8 @@ describe('DataHealthDashboard', () => {
     expect(screen.getByRole('heading', { name: /source freshness/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /ingestion pipeline/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /review queue/i })).toBeTruthy();
+    expect(screen.getByText('Non-catalogue evidence')).toBeTruthy();
+    expect(screen.getByText('Non-catalogue evidence queue')).toBeTruthy();
   });
 
   it('renders exact, needs-input, and informational admissions evidence rows', () => {
@@ -268,6 +305,24 @@ describe('DataHealthDashboard', () => {
     expect(screen.queryByText(/proposedValue/i)).toBeNull();
     expect(screen.queryByText(/payload json/i)).toBeNull();
     expect(screen.queryByText(/normalizedDecisionPayload/i)).toBeNull();
+  });
+
+  it('renders a compact non-catalogue Monday evidence backlog for operators', () => {
+    render(<DataHealthDashboard report={reportWithRisks()} adminEmail="operator@example.com" />);
+
+    expect(screen.getByText('57. המרכז האקדמי שערי מדע ומשפט')).toBeTruthy();
+    expect(screen.getAllByText('Eligible with no formal grade gate').length).toBeGreaterThan(0);
+    expect(screen.getByText(/https:\/\/mishpat\.ac\.il/i)).toBeTruthy();
+    expect(screen.getAllByText('Manual gate').length).toBeGreaterThan(0);
+    expect(screen.getByText('28. מעלה - לקולנוע ואמנויות')).toBeTruthy();
+    expect(
+      screen
+        .getByRole('link', { name: /eligible with no formal grade gate/i })
+        .getAttribute('href'),
+    ).toBe('#non-catalogue-eligible-no-formal-grade-gate');
+    expect(screen.getByRole('link', { name: /manual gate/i }).getAttribute('href')).toBe(
+      '#non-catalogue-manual-gate',
+    );
   });
 
   it('links the oldest pending review item without rendering mutation controls', () => {
