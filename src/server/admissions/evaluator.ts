@@ -98,6 +98,7 @@ async function evaluateCapabilityEntries(args: {
       results.push(
         await evaluateExactResult({
           input,
+          program,
           institution,
           exactTarget: entry.exactTarget,
           fetcher,
@@ -122,11 +123,12 @@ async function evaluateCapabilityEntries(args: {
 
 async function evaluateExactResult(args: {
   input: AdmissionsEvaluationInput;
+  program: CatalogueProgram;
   institution: CatalogueInstitution;
   exactTarget: NonNullable<AdmissionsCapabilityEntry['exactTarget']>;
   fetcher?: typeof fetch;
 }): Promise<AdmissionsEvaluationResult> {
-  const { input, institution, exactTarget, fetcher } = args;
+  const { input, program, institution, exactTarget, fetcher } = args;
 
   const timedFetcher = withTimeout(fetcher ?? fetch, OFFICIAL_SOURCE_TIMEOUT_MS);
 
@@ -148,7 +150,7 @@ async function evaluateExactResult(args: {
 
       return applyStructuredRequirementsToAcceptedScoreResult({
         input,
-        program: exactTarget.program,
+        program,
         institution,
         baseResult: normalizeExactProofResult({
           institution,
@@ -170,7 +172,7 @@ async function evaluateExactResult(args: {
 
       return applyStructuredRequirementsToAcceptedScoreResult({
         input,
-        program: exactTarget.program,
+        program,
         institution,
         baseResult: normalizeExactProofResult({
           institution,
@@ -192,7 +194,7 @@ async function evaluateExactResult(args: {
 
       return applyStructuredRequirementsToAcceptedScoreResult({
         input,
-        program: exactTarget.program,
+        program,
         institution,
         baseResult: normalizeExactProofResult({
           institution,
@@ -213,7 +215,7 @@ async function evaluateExactResult(args: {
 
     return applyStructuredRequirementsToAcceptedScoreResult({
       input,
-      program: exactTarget.program,
+      program,
       institution,
       baseResult: normalizeExactProofResult({
         institution,
