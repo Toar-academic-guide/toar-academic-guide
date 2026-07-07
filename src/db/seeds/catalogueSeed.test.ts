@@ -66,12 +66,10 @@ describe('catalogueSeed', () => {
     expect(
       referencedInstitutionIds.filter((institutionId) => !institutionIds.has(institutionId)),
     ).toEqual([]);
-    expect(payload.programs.find((row) => row.id === 'mon_12220697668_cs')?.institutionId).toBe(
-      'sapir',
-    );
+    expect(payload.programs.find((row) => row.id === 'sapir_law')?.institutionId).toBe('sapir');
     expect(
       payload.programInstitutions.some(
-        (row) => row.programId === 'mon_12220697668_cs' && row.institutionId === 'sapir',
+        (row) => row.programId === 'sapir_law' && row.institutionId === 'sapir',
       ),
     ).toBe(true);
   });
@@ -91,7 +89,7 @@ describe('catalogueSeed', () => {
     expect(payload.programs.some((row) => row.id === 'open_university_cs')).toBe(true);
     expect(
       payload.admissionsSourceCandidates.some(
-        (row) => row.id === 'ono_socialwork:ono:item-update-source' && row.origin === 'item_update',
+        (row) => row.id === 'ono_nursing:ono:program-source' && row.origin === 'catalogue_url',
       ),
     ).toBe(true);
     expect(
@@ -102,6 +100,17 @@ describe('catalogueSeed', () => {
           row.confidence === 'low',
       ),
     ).toBe(true);
+    expect(
+      payload.admissionsSourceCandidates.find(
+        (row) => row.id === 'sapir_law:sapir:source:monday-evidence',
+      ),
+    ).toMatchObject({
+      origin: 'board_column',
+      confidence: 'high',
+      programId: 'sapir_law',
+      institutionId: 'sapir',
+      url: 'https://www.sapir.ac.il/ba/law#collapse-accordion-798-3',
+    });
   });
 
   it('distinguishes explicit absence, unknown facts, manual gates, and alternatives', () => {
@@ -125,18 +134,28 @@ describe('catalogueSeed', () => {
       confidence: 'low',
     });
     expect(
-      payload.admissionFacts.find((row) => row.id === 'ono_socialwork:ono:fact:interview'),
+      payload.admissionFacts.find((row) => row.id === 'ono_nursing:ono:fact:interview'),
     ).toMatchObject({
       kind: 'manual_gate',
       field: 'interview',
     });
     expect(
       payload.admissionAlternativePaths.find(
-        (row) => row.id === 'ono_socialwork:ono:alt:exceptions',
+        (row) => row.id === 'ono_nursing:ono:alt:bridge',
       ),
     ).toMatchObject({
-      kind: 'exceptions_committee',
-      programId: 'ono_socialwork',
+      kind: 'transfer_path',
+      programId: 'ono_nursing',
+    });
+    expect(
+      payload.admissionFacts.find(
+        (row) => row.id === 'sapir_law:sapir:fact:no-psychometric',
+      ),
+    ).toMatchObject({
+      kind: 'explicit_absence',
+      field: 'psychometric',
+      comparison: 'not_required',
+      sourceCandidateId: 'sapir_law:sapir:source:monday-evidence',
     });
   });
 

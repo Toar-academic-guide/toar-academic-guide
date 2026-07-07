@@ -290,6 +290,73 @@ export function buildCatalogueSeed(seedPrograms: Program[] = allPrograms): Catal
         });
       }
 
+      for (const sourceCandidate of detail?.admissionsSourceCandidates ?? []) {
+        admissionsSourceCandidateRows.push({
+          id: sourceCandidate.id,
+          admissionRequirementId: requirementId,
+          institutionId,
+          programId: program.id,
+          origin: sourceCandidate.origin,
+          specificity: sourceCandidate.specificity,
+          confidence: sourceCandidate.confidence,
+          url: sourceCandidate.url,
+          title: sourceCandidate.title ?? null,
+          notes: sourceCandidate.notes ?? null,
+        });
+      }
+
+      const detailSourceCandidateIds = new Set(
+        (detail?.admissionsSourceCandidates ?? []).map((sourceCandidate) => sourceCandidate.id),
+      );
+
+      for (const fact of detail?.admissionFacts ?? []) {
+        if (fact.sourceCandidateId && !detailSourceCandidateIds.has(fact.sourceCandidateId)) {
+          validationErrors.push({
+            programId: program.id,
+            message: `Institution-detail admission fact "${fact.id}" references missing source candidate "${fact.sourceCandidateId}".`,
+          });
+        }
+
+        admissionFactRows.push({
+          id: fact.id,
+          admissionRequirementId: requirementId,
+          institutionId,
+          programId: program.id,
+          sourceCandidateId: fact.sourceCandidateId ?? null,
+          kind: fact.kind,
+          field: fact.field,
+          comparison: fact.comparison,
+          valueNumber: fact.valueNumber,
+          valueText: fact.valueText,
+          unit: fact.unit,
+          description: fact.description,
+          confidence: fact.confidence,
+          isRequired: fact.isRequired,
+        });
+      }
+
+      for (const path of detail?.admissionAlternativePaths ?? []) {
+        if (path.sourceCandidateId && !detailSourceCandidateIds.has(path.sourceCandidateId)) {
+          validationErrors.push({
+            programId: program.id,
+            message: `Institution-detail alternative path "${path.id}" references missing source candidate "${path.sourceCandidateId}".`,
+          });
+        }
+
+        admissionAlternativePathRows.push({
+          id: path.id,
+          admissionRequirementId: requirementId,
+          institutionId,
+          programId: program.id,
+          sourceCandidateId: path.sourceCandidateId ?? null,
+          kind: path.kind,
+          title: path.title,
+          description: path.description,
+          url: path.url ?? null,
+          priority: path.priority,
+        });
+      }
+
       for (const [universityId, thresholdValue] of Object.entries(program.thresholds ?? {}) as [
         UniversityId,
         number | null,

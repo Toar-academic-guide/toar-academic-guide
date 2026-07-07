@@ -96,6 +96,24 @@ describe('sekhemCalculators', () => {
     expect(result?.explanation).toContain('פסיכומטרי לפחות 600');
   });
 
+  it('does not accept a weighted-scale programme when the official bagrut floor is unmet', () => {
+    const result = evaluateUniversities(
+      [getUniversity('bgu')],
+      getProgram('bgu_biology'),
+      { psychometric: 700, bagrut: 100 },
+      { hasMath5: false, hasPhysics5: false },
+    )[0];
+
+    expect(result?.status).toBe('below');
+    expect(result?.threshold).toBe(585);
+    expect(result?.sekhem).toBe(682);
+    expect(result?.deltaNeeded).toEqual({
+      psychometric: 0,
+      bagrut: 6,
+    });
+    expect(result?.explanation).toContain('ממוצע בגרות לפחות 106');
+  });
+
   it('evaluates minimum-floors admission with separate psychometric and bagrut gaps', () => {
     const result = evaluateMinimumFloorsAdmission(
       {

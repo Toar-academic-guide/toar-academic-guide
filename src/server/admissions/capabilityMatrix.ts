@@ -115,6 +115,13 @@ export function buildAdmissionsCapabilityMatrix(args: {
       : sourceTarget
         ? freshnessStatesBySourceId.get(sourceTarget.id)
         : undefined;
+    const institution = institutions.find((entry) => entry.id === institutionId);
+    const hasCalculatorConfig = Boolean(institution?.calculatorConfig);
+    const hasThreshold = hasDecisionThreshold(program, institutionId);
+    const hasMappedFormulaWithoutVerifiedCutoff =
+      hasCalculatorConfig &&
+      hasThreshold &&
+      evidence?.capabilityCandidate === 'score_only_or_formula_without_verified_cutoff';
 
     if (exactTarget) {
       if (freshnessState?.status === 'blocked') {
@@ -162,6 +169,16 @@ export function buildAdmissionsCapabilityMatrix(args: {
     }
 
     if (sourceTarget?.category !== 'partial') {
+      if (hasMappedFormulaWithoutVerifiedCutoff) {
+        return {
+          institutionId,
+          capability: 'score_only',
+          sourceTarget,
+          evidence,
+          freshnessState,
+        };
+      }
+
       const evidenceCapability = capabilityFromEvidence(evidence);
       if (evidenceCapability) {
         return {
@@ -215,9 +232,6 @@ export function buildAdmissionsCapabilityMatrix(args: {
     }
 
     if (sourceTarget?.category === 'partial') {
-      const institution = institutions.find((entry) => entry.id === institutionId);
-      const hasCalculatorConfig = Boolean(institution?.calculatorConfig);
-      const hasThreshold = hasDecisionThreshold(program, institutionId);
       const verifiedThreshold = getVerifiedProgramThreshold(evidence, program.id);
       const hasVerifiedProgramThreshold = hasVerifiedDecisionThreshold({
         evidence,
@@ -242,6 +256,16 @@ export function buildAdmissionsCapabilityMatrix(args: {
         return {
           institutionId,
           capability: 'estimated',
+          sourceTarget,
+          evidence,
+          freshnessState,
+        };
+      }
+
+      if (hasMappedFormulaWithoutVerifiedCutoff) {
+        return {
+          institutionId,
+          capability: 'score_only',
           sourceTarget,
           evidence,
           freshnessState,
@@ -282,10 +306,6 @@ export function buildAdmissionsCapabilityMatrix(args: {
       };
     }
 
-    const institution = institutions.find((entry) => entry.id === institutionId);
-    const hasCalculatorConfig = Boolean(institution?.calculatorConfig);
-    const hasThreshold = hasDecisionThreshold(program, institutionId);
-
     if (hasCalculatorConfig && hasThreshold) {
       return {
         institutionId,
@@ -296,18 +316,26 @@ export function buildAdmissionsCapabilityMatrix(args: {
       };
     }
 
-    const detail = program.institutionDetails?.find(
-      (d) =>
-        d.institutionName === institution?.name ||
-        d.officialCalculatorUrl?.includes(institutionId) ||
-        d.programUrl?.includes(institutionId),
-    );
+    const detail = findInstitutionDetail(program, institution);
+    const hasStructuredOpenAdmission =
+      program.admissionType === 'requirements' &&
+      Boolean(detail?.admissionFacts?.some((fact) => fact.kind === 'open_admission'));
     const hasManualRequirements =
       program.admissionType === 'requirements' &&
       (program.admissionRequirements.length > 0 ||
         Boolean(detail?.admissionFacts?.length) ||
         Boolean(detail?.admissionAlternativePaths?.length) ||
         Boolean(detail?.specificAdmissionNotes?.length));
+
+    if (!hasCalculatorConfig && hasStructuredOpenAdmission) {
+      return {
+        institutionId,
+        capability: 'open_admission',
+        sourceTarget,
+        evidence,
+        freshnessState,
+      };
+    }
 
     if (!hasCalculatorConfig && hasManualRequirements) {
       return {
@@ -404,6 +432,22 @@ function capabilityFromEvidence(
   }
 
   return undefined;
+}
+
+function findInstitutionDetail(
+  program: CatalogueProgram,
+  institution: CatalogueInstitution | undefined,
+) {
+  if (!institution) {
+    return undefined;
+  }
+
+  return program.institutionDetails?.find(
+    (detail) =>
+      detail.institutionName === institution.name ||
+      detail.officialCalculatorUrl?.includes(institution.id) ||
+      detail.programUrl?.includes(institution.id),
+  );
 }
 
 function hasDecisionThreshold(program: CatalogueProgram, institutionId: string): boolean {

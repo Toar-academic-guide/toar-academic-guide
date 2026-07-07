@@ -72,7 +72,15 @@ describe('catalogue admissions evidence coverage', () => {
           capability: 'estimated',
           status: 'decision_rule_available',
           trackingSource: 'monday_evidence',
-          missingData: ['unverified_data_science_program_match'],
+          missingData: [],
+        }),
+        expect.objectContaining({
+          programId: 'technion_datascience',
+          institutionId: 'technion',
+          capability: 'estimated',
+          status: 'decision_rule_available',
+          trackingSource: 'monday_evidence',
+          missingData: [],
         }),
       ]),
     );
@@ -92,10 +100,109 @@ describe('catalogue admissions evidence coverage', () => {
           capability: 'manual_gate',
           status: 'manual_or_eligible',
           trackingSource: 'monday_evidence',
-          missingData: ['unverified_data_science_program_match'],
+          missingData: [],
         }),
       ]),
     );
+  });
+
+  it('treats Colman catalogue programs as covered manual-or-eligible work once official programme pages are verified', () => {
+    const entries = reconcileCatalogueAdmissionsEvidence({
+      programs: staticPrograms,
+      institutions: staticInstitutions,
+    });
+
+    expect(entries).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          programId: 'colmgmt_cs',
+          institutionId: 'colman',
+          capability: 'manual_gate',
+          status: 'manual_or_eligible',
+          trackingSource: 'monday_evidence',
+        }),
+        expect.objectContaining({
+          programId: 'colmgmt_business',
+          institutionId: 'colman',
+          capability: 'manual_gate',
+          status: 'manual_or_eligible',
+          trackingSource: 'monday_evidence',
+        }),
+        expect.objectContaining({
+          programId: 'colmgmt_economics',
+          institutionId: 'colman',
+          capability: 'manual_gate',
+          status: 'manual_or_eligible',
+          trackingSource: 'monday_evidence',
+        }),
+        expect.objectContaining({
+          programId: 'colmgmt_law',
+          institutionId: 'colman',
+          capability: 'manual_gate',
+          status: 'manual_or_eligible',
+          trackingSource: 'monday_evidence',
+        }),
+        expect.objectContaining({
+          programId: 'colmgmt_accounting',
+          institutionId: 'colman',
+          capability: 'manual_gate',
+          status: 'manual_or_eligible',
+          trackingSource: 'monday_evidence',
+        }),
+        expect.objectContaining({
+          programId: 'colmgmt_infosystems',
+          institutionId: 'colman',
+          capability: 'manual_gate',
+          status: 'manual_or_eligible',
+          trackingSource: 'monday_evidence',
+        }),
+      ]),
+    );
+  });
+
+  it('treats current Ono catalogue programs as covered manual-or-eligible work once official programme pages are verified', () => {
+    const entries = reconcileCatalogueAdmissionsEvidence({
+      programs: staticPrograms,
+      institutions: staticInstitutions,
+    });
+
+    expect(entries).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          programId: 'ono_law',
+          institutionId: 'ono',
+          capability: 'manual_gate',
+          status: 'manual_or_eligible',
+          trackingSource: 'monday_evidence',
+        }),
+        expect.objectContaining({
+          programId: 'ono_business',
+          institutionId: 'ono',
+          capability: 'manual_gate',
+          status: 'manual_or_eligible',
+          trackingSource: 'monday_evidence',
+        }),
+        expect.objectContaining({
+          programId: 'ono_cs',
+          institutionId: 'ono',
+          capability: 'manual_gate',
+          status: 'manual_or_eligible',
+          trackingSource: 'monday_evidence',
+        }),
+        expect.objectContaining({
+          programId: 'ono_nursing',
+          institutionId: 'ono',
+          capability: 'manual_gate',
+          status: 'manual_or_eligible',
+          trackingSource: 'monday_evidence',
+        }),
+      ]),
+    );
+  });
+
+  it('drops stale Ono psychology and social-work mappings when the current official curriculum no longer exposes exact undergraduate pages for them', () => {
+    expect(staticPrograms.some((program) => program.id === 'ono_socialwork')).toBe(false);
+    expect(staticPrograms.some((program) => program.id === 'ono_psychology')).toBe(false);
   });
 
   it('treats a BGU programme as decision-capable once its official threshold is verified', () => {
@@ -112,7 +219,7 @@ describe('catalogue admissions evidence coverage', () => {
           capability: 'estimated',
           status: 'decision_rule_available',
           trackingSource: 'monday_evidence',
-          missingData: ['remaining_program_thresholds'],
+          missingData: [],
         }),
         expect.objectContaining({
           programId: 'bgu_ee',
@@ -120,10 +227,46 @@ describe('catalogue admissions evidence coverage', () => {
           capability: 'estimated',
           status: 'decision_rule_available',
           trackingSource: 'monday_evidence',
-          missingData: ['remaining_program_thresholds'],
+          missingData: [],
+        }),
+        expect.objectContaining({
+          programId: 'bgu_biology',
+          institutionId: 'bgu',
+          capability: 'estimated',
+          status: 'decision_rule_available',
+          trackingSource: 'monday_evidence',
+          missingData: [],
+        }),
+        expect.objectContaining({
+          programId: 'bgu_socialwork',
+          institutionId: 'bgu',
+          capability: 'estimated',
+          status: 'decision_rule_available',
+          trackingSource: 'monday_evidence',
+          missingData: [],
+        }),
+        expect.objectContaining({
+          programId: 'bgu_nursing',
+          institutionId: 'bgu',
+          capability: 'manual_gate',
+          status: 'manual_or_eligible',
+          trackingSource: 'monday_evidence',
+          missingData: [],
+        }),
+        expect.objectContaining({
+          programId: 'bgu_medicine',
+          institutionId: 'bgu',
+          capability: 'manual_gate',
+          status: 'manual_or_eligible',
+          trackingSource: 'monday_evidence',
+          missingData: [],
         }),
       ]),
     );
+  });
+
+  it('drops stale BGU law from the visible static catalogue when the current official degree catalogue no longer exposes it', () => {
+    expect(staticPrograms.some((program) => program.id === 'bgu_law')).toBe(false);
   });
 
   it('names current catalogue institutions whose official evidence still must be fetched', () => {

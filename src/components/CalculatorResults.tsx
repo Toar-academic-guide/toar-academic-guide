@@ -492,9 +492,7 @@ export default function CalculatorResults({
                             {result.explanation}
                           </p>
                           <p className="mt-1 text-[11px] text-slate-500">{result.nextAction}</p>
-                          {result.kind === 'tracked_missing_rule' &&
-                          result.officialUrls &&
-                          result.officialUrls.length > 0 ? (
+                          {result.officialUrls && result.officialUrls.length > 0 ? (
                             <a
                               href={result.officialUrls[0]}
                               target="_blank"

@@ -53,7 +53,18 @@ const INSTITUTIONS: CatalogueInstitution[] = [
     },
   },
   { id: 'biu', name: 'BIU', region: 'center', domain: 'biu.ac.il', universityId: 'biu' },
-  { id: 'ariel', name: 'Ariel', region: 'center', domain: 'ariel.ac.il', universityId: 'ariel' },
+  {
+    id: 'ariel',
+    name: 'Ariel',
+    region: 'center',
+    domain: 'ariel.ac.il',
+    universityId: 'ariel',
+    calculatorConfig: {
+      formulaType: 'weighted_scaled',
+      scaleDescription: 'סקאלה 200-800',
+      sekhemWeight: { psy: 0.5, bag: 0.5 },
+    },
+  },
   {
     id: 'open_university',
     name: 'OpenU',
@@ -201,7 +212,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     expect(mtaEntry?.capability).toBe('manual_gate');
   });
 
-  it('returns tracked missing-rule work for BIU and Ariel when Monday evidence names the blocker', () => {
+  it('keeps Ariel blocked while promoting BIU to a manual-gate application path once current official BIU pages publish admissions routes', () => {
     const program = makeProgram({
       linkedInstitutionIds: ['biu', 'ariel'],
     });
@@ -213,13 +224,37 @@ describe('buildAdmissionsCapabilityMatrix', () => {
 
     const biuEntry = entries.find((e) => e.institutionId === 'biu');
     const arielEntry = entries.find((e) => e.institutionId === 'ariel');
-    expect(biuEntry?.capability).toBe('tracked_missing_rule');
+    expect(biuEntry?.capability).toBe('manual_gate');
     expect(arielEntry?.capability).toBe('tracked_missing_rule');
   });
 
-  it('returns tracked missing-rule work for Technion and BGU partial sources', () => {
+  it('treats Ariel as score_only when a mapped threshold exists but the official source is still blocked', () => {
     const program = makeProgram({
+      id: 'ariel_cs',
+      linkedInstitutionIds: ['ariel'],
+      thresholds: { ariel: 600 },
+    });
+
+    const entries = buildAdmissionsCapabilityMatrix({
+      program,
+      institutions: INSTITUTIONS,
+    });
+
+    const arielEntry = entries.find((e) => e.institutionId === 'ariel');
+    expect(arielEntry?.capability).toBe('score_only');
+    expect(arielEntry?.evidence?.capabilityCandidate).toBe(
+      'score_only_or_formula_without_verified_cutoff',
+    );
+    expect(arielEntry?.evidence?.officialVerificationStatus).toBe(
+      'blocked_needs_alternate_official_source',
+    );
+  });
+
+  it('keeps partial institutions score-only when no verified program match exists and no official gap remains', () => {
+    const program = makeProgram({
+      id: 'technion_datascience',
       linkedInstitutionIds: ['technion', 'bgu'],
+      thresholds: { technion: 91, bgu: null },
     });
 
     const entries = buildAdmissionsCapabilityMatrix({
@@ -229,10 +264,10 @@ describe('buildAdmissionsCapabilityMatrix', () => {
 
     const technionEntry = entries.find((e) => e.institutionId === 'technion');
     const bguEntry = entries.find((e) => e.institutionId === 'bgu');
-    expect(technionEntry?.capability).toBe('tracked_missing_rule');
-    expect(technionEntry?.evidence?.missingData).toContain('unverified_data_science_program_match');
-    expect(bguEntry?.capability).toBe('tracked_missing_rule');
-    expect(bguEntry?.evidence?.missingData).toContain('remaining_program_thresholds');
+    expect(technionEntry?.capability).toBe('estimated');
+    expect(technionEntry?.evidence?.missingData ?? []).toHaveLength(0);
+    expect(bguEntry?.capability).toBe('score_only');
+    expect(bguEntry?.evidence?.missingData ?? []).toHaveLength(0);
   });
 
   it('promotes a BGU program only when its official threshold was verified', () => {
@@ -307,6 +342,60 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     );
   });
 
+  it('promotes BGU nursing to manual_gate once the official psychometric invitation rule is verified', () => {
+    const program = makeProgram({
+      id: 'bgu_nursing',
+      linkedInstitutionIds: ['bgu'],
+    });
+
+    const entries = buildAdmissionsCapabilityMatrix({
+      program,
+      institutions: INSTITUTIONS,
+    });
+
+    const bguEntry = entries.find((e) => e.institutionId === 'bgu');
+    expect(bguEntry?.capability).toBe('manual_gate');
+    expect(bguEntry?.evidence?.verifiedProgramThresholds).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          programId: 'bgu_nursing',
+          threshold: 520,
+          thresholdKind: 'invitation_to_manual_gate',
+          scoreKind: 'psychometric',
+        }),
+      ]),
+    );
+  });
+
+  it('promotes BGU medicine to manual_gate once the official invitation threshold is verified', () => {
+    const program = makeProgram({
+      id: 'bgu_medicine',
+      linkedInstitutionIds: ['bgu'],
+      thresholds: { bgu: null },
+    });
+
+    const entries = buildAdmissionsCapabilityMatrix({
+      program,
+      institutions: INSTITUTIONS,
+    });
+
+    const bguEntry = entries.find((e) => e.institutionId === 'bgu');
+    expect(bguEntry?.capability).toBe('manual_gate');
+    expect(bguEntry?.evidence?.officialUrls).toContain(
+      'https://www.bgu.ac.il/welcome/ba/catalog/categories/medical-school/?tab=2944',
+    );
+    expect(bguEntry?.evidence?.verifiedProgramThresholds).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          programId: 'bgu_medicine',
+          threshold: 735,
+          thresholdKind: 'invitation_to_manual_gate',
+          scoreKind: 'sekhem',
+        }),
+      ]),
+    );
+  });
+
   it('promotes a Technion program only when its official threshold was verified', () => {
     const program = makeProgram({
       id: 'technion_cs',
@@ -331,7 +420,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     );
   });
 
-  it('does not promote a Technion program when the catalogue threshold diverges from the verified source', () => {
+  it('falls back to score_only when a Technion catalogue threshold diverges from the verified source', () => {
     const program = makeProgram({
       id: 'technion_cs',
       linkedInstitutionIds: ['technion'],
@@ -344,7 +433,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
 
     const technionEntry = entries.find((e) => e.institutionId === 'technion');
-    expect(technionEntry?.capability).toBe('tracked_missing_rule');
+    expect(technionEntry?.capability).toBe('score_only');
   });
 
   it('returns estimated for Afeka and HIT with partial source targets and thresholds', () => {
@@ -376,6 +465,38 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
 
     const entry = entries.find((e) => e.institutionId === 'reichman');
+    expect(entry?.capability).toBe('manual_gate');
+    expect(entry?.evidence?.publicBucket).toBe('eligible_with_manual_gate');
+    expect(entry?.evidence?.officialVerificationStatus).toBe('partial_official_rule_verified');
+  });
+
+  it('promotes Colman to manual_gate once official programme pages confirm automatic and fallback routes', () => {
+    const program = makeProgram({
+      linkedInstitutionIds: ['colman'],
+    });
+
+    const entries = buildAdmissionsCapabilityMatrix({
+      program,
+      institutions: INSTITUTIONS,
+    });
+
+    const entry = entries.find((e) => e.institutionId === 'colman');
+    expect(entry?.capability).toBe('manual_gate');
+    expect(entry?.evidence?.publicBucket).toBe('eligible_with_manual_gate');
+    expect(entry?.evidence?.officialVerificationStatus).toBe('partial_official_rule_verified');
+  });
+
+  it('promotes Ono to manual_gate once current official programme pages confirm automatic and alternate routes', () => {
+    const program = makeProgram({
+      linkedInstitutionIds: ['ono'],
+    });
+
+    const entries = buildAdmissionsCapabilityMatrix({
+      program,
+      institutions: INSTITUTIONS,
+    });
+
+    const entry = entries.find((e) => e.institutionId === 'ono');
     expect(entry?.capability).toBe('manual_gate');
     expect(entry?.evidence?.publicBucket).toBe('eligible_with_manual_gate');
     expect(entry?.evidence?.officialVerificationStatus).toBe('partial_official_rule_verified');
@@ -425,6 +546,53 @@ describe('buildAdmissionsCapabilityMatrix', () => {
 
     const entry = entries.find((e) => e.institutionId === 'bezalel');
     expect(entry?.capability).toBe('manual_gate');
+  });
+
+  it('returns open_admission for a requirements program with a structured open-admission fact', () => {
+    const program = makeProgram({
+      linkedInstitutionIds: ['open_fact' as any],
+      institutionDetails: [
+        {
+          institutionName: 'Open Fact College',
+          durationYears: 3,
+          estimatedStudentsPerYear: 'לא ידוע',
+          quantitativeMinRequirement: null,
+          englishMinRequirement: null,
+          specificAdmissionNotes: [],
+          officialCalculatorUrl: '',
+          admissionFacts: [
+            {
+              id: 'open_fact_program:open_fact:fact:open',
+              kind: 'open_admission',
+              field: 'open_admission',
+              comparison: 'eq',
+              valueNumber: null,
+              valueText: 'קבלה פתוחה',
+              unit: 'boolean',
+              description: 'קבלה פתוחה ללא תנאי סף',
+              confidence: 'high',
+              isRequired: false,
+            },
+          ],
+        },
+      ],
+    });
+
+    const openFactInstitution: CatalogueInstitution = {
+      id: 'open_fact' as any,
+      name: 'Open Fact College',
+      region: 'center',
+      domain: 'openfact.example',
+      universityId: 'open_fact' as any,
+    };
+
+    const entries = buildAdmissionsCapabilityMatrix({
+      program,
+      institutions: [...INSTITUTIONS, openFactInstitution],
+    });
+
+    const entry = entries.find((e) => e.institutionId === ('open_fact' as any));
+    expect(entry?.capability).toBe('open_admission');
   });
 
   it('degrades exact to blocked when freshness state is blocked', () => {

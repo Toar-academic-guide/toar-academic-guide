@@ -116,11 +116,14 @@ describe('/internal/data-health page', () => {
       mondayEvidence: {
         totalItems: 212,
         catalogueMatched: 34,
+        nonCatalogueEvidence: 178,
         decisionCapable: 5,
         trackedMissingRule: 4,
         blocked: 2,
         openAdmission: 1,
         manualOrEligible: 178,
+        nonCatalogueBucketCounts: {},
+        nonCatalogueGroups: [],
       },
     });
 

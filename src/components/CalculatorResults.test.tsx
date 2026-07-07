@@ -161,6 +161,54 @@ describe('CalculatorResults', () => {
     expect(screen.queryByText('אימות רשמי')).toBeNull();
   });
 
+  it('renders the official link for mapped estimated results when the official source is currently blocked', async () => {
+    hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
+      report([
+        {
+          institution: {
+            id: 'ariel',
+            name: 'אוניברסיטת אריאל',
+            region: 'center',
+            domain: 'ariel.ac.il',
+            universityId: 'ariel',
+          },
+          linkedInstitutionId: 'ariel',
+          capability: 'score_only',
+          kind: 'estimated',
+          decision: 'accepted',
+          confidence: 'medium',
+          sourceLabel: 'כלל קבלה ממופה, מקור רשמי חסום',
+          explanation:
+            'המקור הרשמי חסום כרגע, לכן התוצאה מבוססת על נוסחת סכם ממופה ועל סף קבלה שנשמר בקטלוג, בלי אימות חי של אתר המוסד.',
+          nextAction:
+            'Move Ariel to a browser-automation lane that can actually clear the current Radware challenge.',
+          score: 707,
+          scoreLabel: 'סכם',
+          threshold: 600,
+          officialUrls: ['https://pniot.ariel.ac.il/projects/tzmm/NewCalcMark/'],
+        },
+      ]),
+    );
+
+    render(
+      <CalculatorResults
+        degreeId="ariel_cs"
+        programs={programs}
+        psychometric={680}
+        bagrut={110}
+        onBack={() => {}}
+      />,
+    );
+
+    expect(await screen.findByLabelText('אוניברסיטת אריאל: מתקבל/ת')).toBeTruthy();
+    expect(screen.getByText('כלל קבלה ממופה, מקור רשמי חסום')).toBeTruthy();
+    expect(
+      screen.getByRole('link', {
+        name: 'https://pniot.ariel.ac.il/projects/tzmm/NewCalcMark/',
+      }),
+    ).toBeTruthy();
+  });
+
   it('renders manual-gate results as eligible to apply', async () => {
     hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
       report([
