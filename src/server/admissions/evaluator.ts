@@ -986,7 +986,9 @@ function readNumericAdmissionFactValue(
   }
 }
 
-function getAdmissionFactGroupKey(fact: ProgramInstitutionDetail['admissionFacts'][number]) {
+function getAdmissionFactGroupKey(
+  fact: NonNullable<ProgramInstitutionDetail['admissionFacts']>[number],
+) {
   if (fact.groupKey) {
     return fact.groupKey;
   }
