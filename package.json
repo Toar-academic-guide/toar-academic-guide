@@ -24,7 +24,9 @@
     "db:seed:dry-run": "node scripts/seed-catalogue.mjs --dry-run",
     "db:seed:verify": "node scripts/seed-catalogue.mjs --verify",
     "monday:export-admissions": "node scripts/export-monday-admissions-updates.mjs",
-    "monday:derive-admissions-evidence": "node scripts/derive-monday-admissions-evidence.mjs"
+    "monday:derive-admissions-evidence": "node scripts/derive-monday-admissions-evidence.mjs",
+    "monday:verify-admissions-evidence": "node scripts/verify-monday-admissions-evidence.mjs",
+    "db:operational:verify": "node scripts/verify-operational-db.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.0",

@@ -13,16 +13,22 @@ const highRiskPathPatterns = [
   /^\.githooks\//,
   /^\.github\/workflows\//,
   /^scripts\/seed-catalogue\.mjs$/,
+  /^scripts\/derive-monday-admissions-evidence\.mjs$/,
+  /^docs\/admissions-coverage\//,
   /^src\/app\/api\/catalog\//,
   /^src\/app\/internal\//,
   /^src\/components\/CalculatorResults\./,
   /^src\/components\/LandingPage\./,
+  /^src\/data\/admissions\//,
+  /^src\/data\/degrees\//,
   /^src\/db\//,
   /^src\/env(\.test)?\.ts$/,
   /^src\/lib\/calculatorInstitutions\./,
   /^src\/lib\/catalogueStatic\./,
+  /^src\/server\/admissions\//,
   /^src\/server\/catalogue\//,
   /^src\/server\/data-health\//,
+  /^src\/types\/admissionsEvaluation\.ts$/,
 ];
 
 const operationalReadGrants = {
@@ -43,6 +49,11 @@ const operationalReadGrants = {
 };
 
 const targetedTests = [
+  'src/data/admissions/mondayEvidence.test.ts',
+  'src/server/admissions/catalogueEvidenceCoverage.test.ts',
+  'src/server/admissions/calculatorCoverage.test.ts',
+  'src/server/admissions/capabilityMatrix.test.ts',
+  'src/server/admissions/evaluator.test.ts',
   'src/server/catalogue/queries.test.ts',
   'src/server/data-health/queries.test.ts',
   'src/db/seeds/catalogueSeed.test.ts',
@@ -53,6 +64,13 @@ const targetedTests = [
   'src/app/api/catalog/programs/route.test.ts',
   'src/app/api/catalog/institutions/route.test.ts',
 ];
+
+const admissionsGeneratedFiles = [
+  'docs/admissions-coverage/missing-official-rules.md',
+  'docs/admissions-coverage/monday-evidence-summary.md',
+  'src/data/admissions/mondayEvidence.generated.ts',
+];
+const mondayAdmissionsRawExportPath = join(rootDir, 'scratch/monday-admissions-updates.json');
 
 function run(command, args, options = {}) {
   const result = spawnSync(command, args, {
@@ -160,6 +178,23 @@ function assertOperationalGrants() {
   }
 }
 
+function assertAdmissionsEvidenceFresh() {
+  console.log('Pre-PR guard: verifying committed Monday admissions evidence.');
+  run('npm', ['run', 'monday:verify-admissions-evidence']);
+
+  if (existsSync(mondayAdmissionsRawExportPath)) {
+    console.log('Pre-PR guard: regenerating Monday admissions evidence.');
+    run('npm', ['run', 'monday:derive-admissions-evidence']);
+
+    console.log('Pre-PR guard: checking generated admissions evidence drift.');
+    run('git', ['diff', '--exit-code', '--', ...admissionsGeneratedFiles]);
+  } else {
+    console.log(
+      'Pre-PR guard: raw Monday export not found; skipping local regeneration drift check.',
+    );
+  }
+}
+
 const changedFiles = getChangedFiles();
 const highRiskChanges = changedFiles.filter(isHighRiskPath);
 
@@ -177,6 +212,8 @@ if (highRiskChanges.length > 0) {
   for (const filePath of highRiskChanges) {
     console.log(`  - ${filePath}`);
   }
+
+  assertAdmissionsEvidenceFresh();
 
   console.log('Pre-PR guard: running targeted catalogue/data-health/calculator tests.');
   run('npm', ['test', '--', ...targetedTests]);

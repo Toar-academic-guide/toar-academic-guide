@@ -2,10 +2,15 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const hoistedMocks = vi.hoisted(() => ({
   createSupabaseServerClient: vi.fn(),
+  headers: vi.fn(),
 }));
 
 vi.mock('@/lib/supabase/server', () => ({
   createSupabaseServerClient: hoistedMocks.createSupabaseServerClient,
+}));
+
+vi.mock('next/headers', () => ({
+  headers: hoistedMocks.headers,
 }));
 
 vi.mock('server-only', () => ({}));
@@ -47,6 +52,10 @@ describe('getInternalAdminAuthorization', () => {
 
     hoistedMocks.createSupabaseServerClient.mockReset();
     hoistedMocks.createSupabaseServerClient.mockResolvedValue(mockSupabase);
+    hoistedMocks.headers.mockReset();
+    hoistedMocks.headers.mockResolvedValue({
+      get: vi.fn().mockReturnValue(null),
+    });
   });
 
   it('denies access when Supabase auth is unavailable', async () => {
