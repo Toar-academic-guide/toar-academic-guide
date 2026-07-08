@@ -109,6 +109,30 @@
         "https://www.runi.ac.il/admissions/undergraduate/",
         "https://www.runi.ac.il/admissions/undergraduate/calculator",
         "https://www.runi.ac.il/admissions/undergraduate/categories"
+      ],
+      "structuredAdmissionFacts": [
+        {
+          "kind": "numeric_gate",
+          "field": "bagrut_average",
+          "comparison": "gte",
+          "valueNumber": 100,
+          "valueText": null,
+          "unit": "average",
+          "description": "ממוצע בגרות 100 ומעלה לקבלה ישירה",
+          "confidence": "high",
+          "isRequired": true
+        },
+        {
+          "kind": "manual_gate",
+          "field": "other",
+          "comparison": "present",
+          "valueNumber": null,
+          "valueText": "דרישת אנגלית",
+          "unit": "text",
+          "description": "נדרשת רמת אנגלית מתקדמים א' לפחות או ציון אמיר\"ם/פסיכומטרי תואם.",
+          "confidence": "high",
+          "isRequired": true
+        }
       ]
     },
     {
@@ -531,6 +555,644 @@
         "https://mechina-kda.biu.ac.il/prepares-30",
         "https://mechina-kda.biu.ac.il/node/851"
       ]
+    },
+    {
+      "itemId": "12341102997",
+      "capabilityCandidate": "eligible_with_manual_gate",
+      "publicBucket": "eligible_with_manual_gate",
+      "ruleStatus": "manual_or_eligibility_rule_available",
+      "officialVerificationStatus": "partial_official_rule_verified",
+      "confidence": "high",
+      "tags": ["official_source_verified", "bagrut_average_gate", "manual_gate", "update_evidence"],
+      "missingData": [],
+      "limitations": [
+        "The official page publishes a direct bagrut-average route together with alternate exceptions-committee and preparatory routes, so the current product can only classify this as eligible-to-apply rather than a final acceptance decision."
+      ],
+      "decisionReason": "The current official admissions page for שערי מדע ומשפט publishes a direct route with weighted bagrut average 85+ and also documents fallback routes through an exceptions committee or an approved preparatory programme. That is enough to promote this row out of structured-requirements backlog into structured eligibility coverage.",
+      "nextAction": "Use the direct bagrut-average route when it is met, and otherwise surface the official exceptions-committee or preparatory path from the institution page.",
+      "replaceOfficialUrls": true,
+      "officialUrls": ["https://mishpat.ac.il/"],
+      "structuredAdmissionFacts": [
+        {
+          "kind": "numeric_gate",
+          "field": "bagrut_average",
+          "comparison": "gte",
+          "valueNumber": 85,
+          "valueText": null,
+          "unit": "average",
+          "description": "ממוצע בגרות 85 ומעלה לקבלה ישירה",
+          "confidence": "high",
+          "isRequired": true
+        }
+      ],
+      "structuredAlternativePaths": [
+        {
+          "kind": "exceptions_committee",
+          "title": "ועדת חריגים לממוצע בגרות נמוך מ-85",
+          "description": "מועמדים עם ממוצע בגרות נמוך מ-85 נדרשים לראיון או לוועדת חריגים לפי הדף הרשמי.",
+          "url": "https://mishpat.ac.il/",
+          "priority": 1
+        },
+        {
+          "kind": "prep_program",
+          "title": "מכינה קדם-אקדמית או מכינת 30+",
+          "description": "מועמדים ללא תעודת בגרות יכולים להתקבל דרך מכינה קדם-אקדמית או מכינת 30+.",
+          "url": "https://mishpat.ac.il/",
+          "priority": 2
+        }
+      ],
+      "noPsychometricNeeded": true
+    },
+    {
+      "itemId": "12341091743",
+      "capabilityCandidate": "eligible_with_manual_gate",
+      "publicBucket": "eligible_with_manual_gate",
+      "ruleStatus": "manual_or_eligibility_rule_available",
+      "officialVerificationStatus": "partial_official_rule_verified",
+      "confidence": "high",
+      "tags": ["official_source_verified", "manual_gate", "update_evidence"],
+      "missingData": [],
+      "limitations": [
+        "The official handesaim page publishes document-level מה\"ט requirements rather than a single final threshold, so the current product treats this as structured manual eligibility rather than a final automated decision."
+      ],
+      "decisionReason": "The official handesaim admissions page for the College of Management network publishes the מה\"ט entry rule: full Israeli bagrut, or partial bagrut with passing grades in mathematics, English, and Hebrew. That is sufficient to move this row into structured manual-eligibility coverage.",
+      "nextAction": "Collect the applicant's mathematics and English units, then send them to the official college page to confirm the full or partial bagrut document requirements.",
+      "replaceOfficialUrls": true,
+      "officialUrls": ["https://college.org.il/"],
+      "structuredAdmissionFacts": [
+        {
+          "kind": "numeric_gate",
+          "field": "math_units",
+          "comparison": "gte",
+          "valueNumber": 3,
+          "valueText": null,
+          "unit": "units",
+          "description": "מתמטיקה ברמת 3 יח\"ל לפחות",
+          "confidence": "high",
+          "isRequired": true
+        },
+        {
+          "kind": "numeric_gate",
+          "field": "english_units",
+          "comparison": "gte",
+          "valueNumber": 3,
+          "valueText": null,
+          "unit": "units",
+          "description": "אנגלית ברמת 3 יח\"ל לפחות",
+          "confidence": "high",
+          "isRequired": true
+        },
+        {
+          "kind": "manual_gate",
+          "field": "document_check",
+          "comparison": "present",
+          "valueNumber": null,
+          "valueText": "בדיקת מסמכי בגרות",
+          "unit": "text",
+          "description": "נדרשת תעודת בגרות מלאה, או בגרות חלקית עם ציון עובר 55+ במתמטיקה 3 יח\"ל, אנגלית 3 יח\"ל, ועברית 2 יח\"ל.",
+          "confidence": "high",
+          "isRequired": true
+        }
+      ],
+      "noPsychometricNeeded": true
+    },
+    {
+      "itemId": "12341107541",
+      "capabilityCandidate": "eligible_with_manual_gate",
+      "publicBucket": "eligible_with_manual_gate",
+      "ruleStatus": "manual_or_eligibility_rule_available",
+      "officialVerificationStatus": "partial_official_rule_verified",
+      "confidence": "high",
+      "tags": ["official_source_verified", "manual_gate", "update_evidence"],
+      "missingData": [],
+      "limitations": [
+        "The official ORT handesaim page publishes document-level entry requirements together with a preparatory alternative route, so this row remains an eligibility/manual-gate flow rather than a final automated acceptance decision."
+      ],
+      "decisionReason": "The current official ORT handesaim page publishes the מה\"ט bagrut requirements and also lists a technological preparatory programme as an alternate route. That is enough to close the structured-requirements gap for this evidence-only row.",
+      "nextAction": "Collect the applicant's mathematics and English units, then direct them to the official ORT page to confirm either the bagrut-documents route or the technological preparatory route.",
+      "replaceOfficialUrls": true,
+      "officialUrls": ["https://handasaim.ort.org.il/"],
+      "structuredAdmissionFacts": [
+        {
+          "kind": "numeric_gate",
+          "field": "math_units",
+          "comparison": "gte",
+          "valueNumber": 3,
+          "valueText": null,
+          "unit": "units",
+          "description": "מתמטיקה ברמת 3 יח\"ל לפחות",
+          "confidence": "high",
+          "isRequired": true
+        },
+        {
+          "kind": "numeric_gate",
+          "field": "english_units",
+          "comparison": "gte",
+          "valueNumber": 3,
+          "valueText": null,
+          "unit": "units",
+          "description": "אנגלית ברמת 3 יח\"ל לפחות",
+          "confidence": "high",
+          "isRequired": true
+        },
+        {
+          "kind": "manual_gate",
+          "field": "document_check",
+          "comparison": "present",
+          "valueNumber": null,
+          "valueText": "בדיקת מסמכי בגרות",
+          "unit": "text",
+          "description": "נדרשת תעודת בגרות מלאה, או בגרות חלקית עם ציון עובר 55+ במתמטיקה 3 יח\"ל, אנגלית 3 יח\"ל, ועברית 2 יח\"ל.",
+          "confidence": "high",
+          "isRequired": true
+        }
+      ],
+      "structuredAlternativePaths": [
+        {
+          "kind": "prep_program",
+          "title": "מכינה טכנולוגית להנדסאים",
+          "description": "לחלופין אפשר להתקבל לאחר סיום בהצלחה של מכינה טכנולוגית להנדסאים.",
+          "url": "https://handasaim.ort.org.il/",
+          "priority": 1
+        }
+      ],
+      "noPsychometricNeeded": true
+    },
+    {
+      "itemId": "12341143342",
+      "capabilityCandidate": "eligible_with_manual_gate",
+      "publicBucket": "eligible_with_manual_gate",
+      "ruleStatus": "manual_or_eligibility_rule_available",
+      "officialVerificationStatus": "partial_official_rule_verified",
+      "confidence": "high",
+      "tags": ["official_source_verified", "threshold_or_cutoff", "manual_gate", "update_evidence"],
+      "missingData": [],
+      "limitations": [
+        "The official SCE sources publish a direct academic route with multiple numeric subject gates plus alternate psychotechnic and preparatory routes, so the current product should stay at eligible-to-apply/manual-gate rather than a final accepted decision."
+      ],
+      "decisionReason": "The current official SCE admissions sources publish a structured direct route: psychometric 580+ or equivalent psychotechnic handling, mathematics through one of two official routes, physics 5 יח\"ל 70+, and English 4 יח\"ל 60+. They also direct candidates who do not meet the direct route toward institutional alternate routes such as a preparatory track. That is enough to close this row as structured official eligibility coverage.",
+      "nextAction": "Check whether the applicant meets one of the official mathematics routes together with the shared physics, English, and psychometric requirements, and otherwise surface the institutional alternate route from the official SCE admissions sources.",
+      "replaceOfficialUrls": true,
+      "officialUrls": [
+        "https://www.sce.ac.il/candidates/branch/admission_conditions_and_tuition_fees",
+        "https://www.sce.ac.il/filestock/file/1752993606151-0.pdf",
+        "https://www.sce.ac.il/academic-units1/beersheva/basic-sciences/computer-science/"
+      ],
+      "structuredAdmissionFacts": [
+        {
+          "kind": "numeric_gate",
+          "field": "math_units",
+          "comparison": "gte",
+          "valueNumber": 5,
+          "valueText": null,
+          "unit": "units",
+          "description": "מתמטיקה ברמת 5 יח\"ל",
+          "confidence": "high",
+          "isRequired": true,
+          "groupKey": "math_route/5_units"
+        },
+        {
+          "kind": "numeric_gate",
+          "field": "math_grade",
+          "comparison": "gte",
+          "valueNumber": 70,
+          "valueText": null,
+          "unit": "points",
+          "description": "ציון 70 ומעלה במתמטיקה 5 יח\"ל",
+          "confidence": "high",
+          "isRequired": true,
+          "groupKey": "math_route/5_units"
+        },
+        {
+          "kind": "numeric_gate",
+          "field": "math_units",
+          "comparison": "gte",
+          "valueNumber": 4,
+          "valueText": null,
+          "unit": "units",
+          "description": "מתמטיקה ברמת 4 יח\"ל",
+          "confidence": "high",
+          "isRequired": true,
+          "groupKey": "math_route/4_units"
+        },
+        {
+          "kind": "numeric_gate",
+          "field": "math_grade",
+          "comparison": "gte",
+          "valueNumber": 85,
+          "valueText": null,
+          "unit": "points",
+          "description": "ציון 85 ומעלה במתמטיקה 4 יח\"ל",
+          "confidence": "high",
+          "isRequired": true,
+          "groupKey": "math_route/4_units"
+        },
+        {
+          "kind": "numeric_gate",
+          "field": "physics_units",
+          "comparison": "gte",
+          "valueNumber": 5,
+          "valueText": null,
+          "unit": "units",
+          "description": "פיזיקה ברמת 5 יח\"ל",
+          "confidence": "high",
+          "isRequired": true
+        },
+        {
+          "kind": "numeric_gate",
+          "field": "physics_grade",
+          "comparison": "gte",
+          "valueNumber": 70,
+          "valueText": null,
+          "unit": "points",
+          "description": "ציון 70 ומעלה בפיזיקה 5 יח\"ל",
+          "confidence": "high",
+          "isRequired": true
+        },
+        {
+          "kind": "numeric_gate",
+          "field": "english_units",
+          "comparison": "gte",
+          "valueNumber": 4,
+          "valueText": null,
+          "unit": "units",
+          "description": "אנגלית ברמת 4 יח\"ל לפחות",
+          "confidence": "high",
+          "isRequired": true
+        },
+        {
+          "kind": "numeric_gate",
+          "field": "english_grade",
+          "comparison": "gte",
+          "valueNumber": 60,
+          "valueText": null,
+          "unit": "points",
+          "description": "ציון 60 ומעלה באנגלית",
+          "confidence": "high",
+          "isRequired": true
+        },
+        {
+          "kind": "numeric_gate",
+          "field": "psychometric",
+          "comparison": "gte",
+          "valueNumber": 580,
+          "valueText": null,
+          "unit": "points",
+          "description": "פסיכומטרי 580 ומעלה",
+          "confidence": "high",
+          "isRequired": true
+        }
+      ],
+      "structuredAlternativePaths": [
+        {
+          "kind": "manual_check",
+          "title": "מבחן פסיכוטכני מוסדי 580+",
+          "description": "הדף הרשמי מציין שאפשר לעמוד בדרישת הבחינה גם במסלול פסיכוטכני מוסדי מקביל.",
+          "url": "https://www.sce.ac.il/candidates/branch/admission_conditions_and_tuition_fees",
+          "priority": 1
+        },
+        {
+          "kind": "prep_program",
+          "title": "מסלול מכינה/קדם אקדמי של SCE",
+          "description": "מועמדים שאינם עומדים במסלול הישיר מופנים למסלול המכינה או הקדם-אקדמי של SCE.",
+          "url": "https://www.sce.ac.il/admissions/pre_academic/",
+          "priority": 2
+        }
+      ],
+      "noBagrutNeeded": false,
+      "noPsychometricNeeded": false
+    },
+    {
+      "itemId": "12341114234",
+      "capabilityCandidate": "eligible_with_manual_gate",
+      "publicBucket": "eligible_with_manual_gate",
+      "ruleStatus": "manual_or_eligibility_rule_available",
+      "officialVerificationStatus": "partial_official_rule_verified",
+      "confidence": "high",
+      "tags": ["official_source_verified", "threshold_or_cutoff", "manual_gate", "update_evidence"],
+      "missingData": [],
+      "limitations": [
+        "The official pre-academic page describes a numeric entrance-exam route together with refresh-course and classification handling, so the current product can surface eligibility but not a final acceptance decision."
+      ],
+      "decisionReason": "The current official SCE pre-academic page publishes a 500+ psychometric or psychotechnic entrance-score route and explains the refresh-course and classification fallback for candidates without a sufficient score. That is enough to move this row into structured eligibility coverage.",
+      "nextAction": "Use the official 500+ entrance-score route when it is met, and otherwise surface the refresh-course and classification path from the SCE pre-academic page.",
+      "replaceOfficialUrls": true,
+      "officialUrls": ["https://www.sce.ac.il/admissions/pre_academic/"],
+      "structuredAdmissionFacts": [
+        {
+          "kind": "numeric_gate",
+          "field": "psychometric",
+          "comparison": "gte",
+          "valueNumber": 500,
+          "valueText": null,
+          "unit": "points",
+          "description": "פסיכומטרי או פסיכוטכני/מימד 500 ומעלה",
+          "confidence": "high",
+          "isRequired": true
+        }
+      ],
+      "structuredAlternativePaths": [
+        {
+          "kind": "manual_check",
+          "title": "קורסי רענון ומבחני סיווג",
+          "description": "מועמדים ללא ציון מתאים יכולים להמשיך דרך קורסי רענון ומבחני סיווג לפי הדף הרשמי.",
+          "url": "https://www.sce.ac.il/admissions/pre_academic/",
+          "priority": 1
+        }
+      ]
+    },
+    {
+      "itemId": "12341128848",
+      "capabilityCandidate": "eligible_with_manual_gate",
+      "publicBucket": "eligible_with_manual_gate",
+      "ruleStatus": "manual_or_eligibility_rule_available",
+      "officialVerificationStatus": "partial_official_rule_verified",
+      "confidence": "high",
+      "tags": ["official_source_verified", "manual_gate", "update_evidence"],
+      "missingData": [],
+      "limitations": [
+        "The official handesaim page publishes document-level מה\"ט requirements and a technological preparatory fallback, so the current product treats this as an eligibility/manual-gate flow rather than a final automated decision."
+      ],
+      "decisionReason": "The current official Handesaim Tel-Aviv page publishes the standard מה\"ט bagrut requirements and an approved technological preparatory alternative route. That is enough to close the structured-requirements gap for this row.",
+      "nextAction": "Collect the applicant's mathematics and English units, then route them to the official page to confirm either the bagrut-documents route or the approved technological preparatory route.",
+      "replaceOfficialUrls": true,
+      "officialUrls": ["https://www.handesaim.org.il/"],
+      "structuredAdmissionFacts": [
+        {
+          "kind": "numeric_gate",
+          "field": "math_units",
+          "comparison": "gte",
+          "valueNumber": 3,
+          "valueText": null,
+          "unit": "units",
+          "description": "מתמטיקה ברמת 3 יח\"ל לפחות",
+          "confidence": "high",
+          "isRequired": true
+        },
+        {
+          "kind": "numeric_gate",
+          "field": "english_units",
+          "comparison": "gte",
+          "valueNumber": 3,
+          "valueText": null,
+          "unit": "units",
+          "description": "אנגלית ברמת 3 יח\"ל לפחות",
+          "confidence": "high",
+          "isRequired": true
+        },
+        {
+          "kind": "manual_gate",
+          "field": "document_check",
+          "comparison": "present",
+          "valueNumber": null,
+          "valueText": "בדיקת מסמכי בגרות",
+          "unit": "text",
+          "description": "נדרשת תעודת בגרות מלאה, או בגרות חלקית עם ציון עובר 55+ במתמטיקה 3 יח\"ל, אנגלית 3 יח\"ל, ועברית 2 יח\"ל.",
+          "confidence": "high",
+          "isRequired": true
+        }
+      ],
+      "structuredAlternativePaths": [
+        {
+          "kind": "prep_program",
+          "title": "מכינה טכנולוגית מאושרת",
+          "description": "מועמדים שאינם עומדים בתנאי הבגרות יכולים להמשיך דרך מכינה טכנולוגית מאושרת.",
+          "url": "https://www.handesaim.org.il/",
+          "priority": 1
+        }
+      ],
+      "noPsychometricNeeded": true
+    },
+    {
+      "itemId": "12341118864",
+      "capabilityCandidate": "eligible_with_manual_gate",
+      "publicBucket": "eligible_with_manual_gate",
+      "ruleStatus": "manual_or_eligibility_rule_available",
+      "officialVerificationStatus": "partial_official_rule_verified",
+      "confidence": "high",
+      "tags": ["official_source_verified", "manual_gate", "update_evidence"],
+      "missingData": [],
+      "limitations": [
+        "The official technological-college page publishes document-level bagrut requirements together with preparatory and age-based alternate routes, so the current product treats this as structured manual eligibility rather than a final automated decision."
+      ],
+      "decisionReason": "The current official Ruppin Technological College page publishes the standard מה\"ט bagrut requirements and also lists alternate routes through a technological preparatory programme or the age-35-plus track with 12 years of study. That is enough to move this row into structured eligibility coverage.",
+      "nextAction": "Collect the applicant's mathematics and English units, then route them to the official Ruppin Technological page to confirm either the direct bagrut route or one of the official alternate routes.",
+      "replaceOfficialUrls": true,
+      "officialUrls": ["https://ruppin-tech.co.il/"],
+      "structuredAdmissionFacts": [
+        {
+          "kind": "numeric_gate",
+          "field": "math_units",
+          "comparison": "gte",
+          "valueNumber": 3,
+          "valueText": null,
+          "unit": "units",
+          "description": "מתמטיקה ברמת 3 יח\"ל לפחות",
+          "confidence": "high",
+          "isRequired": true
+        },
+        {
+          "kind": "numeric_gate",
+          "field": "english_units",
+          "comparison": "gte",
+          "valueNumber": 3,
+          "valueText": null,
+          "unit": "units",
+          "description": "אנגלית ברמת 3 יח\"ל לפחות",
+          "confidence": "high",
+          "isRequired": true
+        },
+        {
+          "kind": "manual_gate",
+          "field": "document_check",
+          "comparison": "present",
+          "valueNumber": null,
+          "valueText": "בדיקת מסמכי בגרות",
+          "unit": "text",
+          "description": "נדרשת תעודת בגרות מלאה, או בגרות חלקית עם ציון עובר 55+ במתמטיקה 3 יח\"ל, אנגלית 3 יח\"ל, ועברית 2 יח\"ל.",
+          "confidence": "high",
+          "isRequired": true
+        }
+      ],
+      "structuredAlternativePaths": [
+        {
+          "kind": "prep_program",
+          "title": "מכינה טכנולוגית",
+          "description": "אפשר להתקבל גם דרך מכינה טכנולוגית מאושרת.",
+          "url": "https://ruppin-tech.co.il/",
+          "priority": 1
+        },
+        {
+          "kind": "special_population",
+          "title": "בני 35+ עם 12 שנות לימוד",
+          "description": "קיים מסלול חלופי למועמדים בני 35 ומעלה בעלי 12 שנות לימוד.",
+          "url": "https://ruppin-tech.co.il/",
+          "priority": 2
+        }
+      ],
+      "noPsychometricNeeded": true
+    },
+    {
+      "itemId": "12341101391",
+      "capabilityCandidate": "eligible_with_manual_gate",
+      "publicBucket": "eligible_with_manual_gate",
+      "ruleStatus": "manual_or_eligibility_rule_available",
+      "officialVerificationStatus": "partial_official_rule_verified",
+      "confidence": "high",
+      "tags": ["official_source_verified", "manual_gate", "update_evidence"],
+      "missingData": [],
+      "limitations": [
+        "The official Kinneret Technological College page publishes document-level מה\"ט requirements together with preparatory alternatives, so the current product treats this as structured manual eligibility rather than a final automated decision."
+      ],
+      "decisionReason": "The current official Kinneret Technological College page publishes the standard מה\"ט bagrut requirements and the alternate preparatory routes through a technological or approved pre-academic preparatory programme. That is enough to close the structured-requirements gap for this row.",
+      "nextAction": "Collect the applicant's mathematics and English units, then route them to the official Kinneret Technological page to confirm either the direct bagrut route or the published preparatory alternatives.",
+      "replaceOfficialUrls": true,
+      "officialUrls": ["http://ktec.co.il/"],
+      "structuredAdmissionFacts": [
+        {
+          "kind": "numeric_gate",
+          "field": "math_units",
+          "comparison": "gte",
+          "valueNumber": 3,
+          "valueText": null,
+          "unit": "units",
+          "description": "מתמטיקה ברמת 3 יח\"ל לפחות",
+          "confidence": "high",
+          "isRequired": true
+        },
+        {
+          "kind": "numeric_gate",
+          "field": "english_units",
+          "comparison": "gte",
+          "valueNumber": 3,
+          "valueText": null,
+          "unit": "units",
+          "description": "אנגלית ברמת 3 יח\"ל לפחות",
+          "confidence": "high",
+          "isRequired": true
+        },
+        {
+          "kind": "manual_gate",
+          "field": "document_check",
+          "comparison": "present",
+          "valueNumber": null,
+          "valueText": "בדיקת מסמכי בגרות",
+          "unit": "text",
+          "description": "נדרשת תעודת בגרות מלאה, או בגרות חלקית עם ציון עובר 55+ במתמטיקה 3 יח\"ל, אנגלית 3 יח\"ל, ועברית 2 יח\"ל.",
+          "confidence": "high",
+          "isRequired": true
+        }
+      ],
+      "structuredAlternativePaths": [
+        {
+          "kind": "prep_program",
+          "title": "מכינה טכנולוגית או מכינה קדם-אקדמית מאושרת",
+          "description": "מועמדים שאינם עומדים בתנאי הבגרות יכולים להמשיך דרך מכינה טכנולוגית של מה\"ט או מכינה קדם-אקדמית מאושרת.",
+          "url": "http://ktec.co.il/",
+          "priority": 1
+        }
+      ],
+      "noPsychometricNeeded": true
+    },
+    {
+      "itemId": "12341098142",
+      "capabilityCandidate": "eligible_with_manual_gate",
+      "publicBucket": "eligible_with_manual_gate",
+      "ruleStatus": "manual_or_eligibility_rule_available",
+      "officialVerificationStatus": "partial_official_rule_verified",
+      "confidence": "high",
+      "tags": ["official_source_verified", "manual_gate", "update_evidence"],
+      "missingData": [],
+      "limitations": [
+        "The official Tel-Hai handesaim page publishes document-level bagrut requirements rather than a single final threshold, so the current product treats this as structured manual eligibility rather than a final automated decision."
+      ],
+      "decisionReason": "The current official Tel-Hai handesaim page publishes the standard full-or-partial bagrut route together with the explicit no-psychometric statement. That is enough to move this row into structured manual-eligibility coverage.",
+      "nextAction": "Collect the applicant's mathematics and English units, then send them to the official Tel-Hai handesaim page to confirm the full or partial bagrut document requirements.",
+      "replaceOfficialUrls": true,
+      "officialUrls": ["https://www.telhai-handesaim.org.il/"],
+      "structuredAdmissionFacts": [
+        {
+          "kind": "numeric_gate",
+          "field": "math_units",
+          "comparison": "gte",
+          "valueNumber": 3,
+          "valueText": null,
+          "unit": "units",
+          "description": "מתמטיקה ברמת 3 יח\"ל לפחות",
+          "confidence": "high",
+          "isRequired": true
+        },
+        {
+          "kind": "numeric_gate",
+          "field": "english_units",
+          "comparison": "gte",
+          "valueNumber": 3,
+          "valueText": null,
+          "unit": "units",
+          "description": "אנגלית ברמת 3 יח\"ל לפחות",
+          "confidence": "high",
+          "isRequired": true
+        },
+        {
+          "kind": "manual_gate",
+          "field": "document_check",
+          "comparison": "present",
+          "valueNumber": null,
+          "valueText": "בדיקת מסמכי בגרות",
+          "unit": "text",
+          "description": "נדרשת תעודת בגרות מלאה, או בגרות חלקית עם ציון עובר 55+ במתמטיקה 3 יח\"ל, אנגלית 3 יח\"ל, ועברית 2 יח\"ל.",
+          "confidence": "high",
+          "isRequired": true
+        }
+      ],
+      "noPsychometricNeeded": true
+    },
+    {
+      "itemId": "12341088622",
+      "capabilityCandidate": "eligible_with_manual_gate",
+      "publicBucket": "eligible_with_manual_gate",
+      "ruleStatus": "manual_or_eligibility_rule_available",
+      "officialVerificationStatus": "partial_official_rule_verified",
+      "confidence": "high",
+      "tags": ["official_source_verified", "bagrut_average_gate", "manual_gate", "update_evidence"],
+      "missingData": [],
+      "limitations": [
+        "The official page publishes a direct bagrut-average route together with alternate psychometric and preparatory routes for applicants below the direct threshold, so the current product treats this as structured eligibility rather than a final automated decision."
+      ],
+      "decisionReason": "The current official Ramat Gan Academic College page publishes a direct route with weighted bagrut average 80+ and also documents alternate routes through psychometric-based admission or a dedicated preparatory programme for applicants below that threshold. That is enough to promote this row out of the structured-requirements backlog into structured eligibility coverage.",
+      "nextAction": "Use the direct bagrut-average route when it is met, and otherwise surface the official psychometric or preparatory alternatives from the institution page.",
+      "replaceOfficialUrls": true,
+      "officialUrls": ["https://www.iac.ac.il/"],
+      "structuredAdmissionFacts": [
+        {
+          "kind": "numeric_gate",
+          "field": "bagrut_average",
+          "comparison": "gte",
+          "valueNumber": 80,
+          "valueText": null,
+          "unit": "average",
+          "description": "ממוצע בגרות 80 ומעלה לקבלה ישירה",
+          "confidence": "high",
+          "isRequired": true
+        }
+      ],
+      "structuredAlternativePaths": [
+        {
+          "kind": "manual_check",
+          "title": "מסלול קבלה עם פסיכומטרי",
+          "description": "מועמדים עם ממוצע בגרות נמוך מ-80 יכולים להתקבל גם על סמך פסיכומטרי.",
+          "url": "https://www.iac.ac.il/",
+          "priority": 1
+        },
+        {
+          "kind": "prep_program",
+          "title": "מכינה קדם-אקדמית ייעודית",
+          "description": "מועמדים שאינם עומדים בסף הישיר יכולים להתקדם גם דרך מכינה קדם-אקדמית ייעודית במכללה.",
+          "url": "https://www.iac.ac.il/",
+          "priority": 2
+        }
+      ],
+      "noPsychometricNeeded": false
     }
   ]
 }

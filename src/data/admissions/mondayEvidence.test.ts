@@ -730,6 +730,81 @@ describe('monday admissions evidence', () => {
     );
   });
 
+  it('promotes the non-Ariel U6 cohort into structured official eligibility coverage and leaves only Ariel in the structured queue', () => {
+    const promotedItemIds = [
+      '12341102997',
+      '12341091743',
+      '12341107541',
+      '12341143342',
+      '12341114234',
+      '12341128848',
+      '12341118864',
+      '12341101391',
+      '12341098142',
+      '12341088622',
+    ];
+
+    for (const itemId of promotedItemIds) {
+      const record = getMondayAdmissionEvidenceByItemId(itemId);
+
+      expect(record).toMatchObject({
+        publicBucket: 'eligible_with_manual_gate',
+        ruleStatus: 'manual_or_eligibility_rule_available',
+        officialVerificationStatus: 'partial_official_rule_verified',
+        missingData: [],
+      });
+      expect(
+        (record?.structuredAdmissionFacts?.length ?? 0) +
+          (record?.structuredAlternativePaths?.length ?? 0),
+      ).toBeGreaterThan(0);
+    }
+
+    expect(getMondayAdmissionEvidenceByItemId('12341102997')?.officialUrls).toEqual([
+      'https://mishpat.ac.il/',
+    ]);
+    expect(getMondayAdmissionEvidenceByItemId('12341091743')?.officialUrls).toEqual([
+      'https://college.org.il/',
+    ]);
+    expect(getMondayAdmissionEvidenceByItemId('12341107541')?.officialUrls).toEqual([
+      'https://handasaim.ort.org.il/',
+    ]);
+    expect(getMondayAdmissionEvidenceByItemId('12341143342')?.officialUrls).toEqual(
+      expect.arrayContaining([
+        'https://www.sce.ac.il/candidates/branch/admission_conditions_and_tuition_fees',
+        'https://www.sce.ac.il/filestock/file/1752993606151-0.pdf',
+        'https://www.sce.ac.il/academic-units1/beersheva/basic-sciences/computer-science/',
+      ]),
+    );
+    expect(getMondayAdmissionEvidenceByItemId('12341114234')?.officialUrls).toEqual([
+      'https://www.sce.ac.il/admissions/pre_academic/',
+    ]);
+    expect(getMondayAdmissionEvidenceByItemId('12341118864')?.officialUrls).toEqual([
+      'https://ruppin-tech.co.il/',
+    ]);
+    expect(getMondayAdmissionEvidenceByItemId('12341101391')?.officialUrls).toEqual([
+      'http://ktec.co.il/',
+    ]);
+    expect(getMondayAdmissionEvidenceByItemId('12341098142')?.officialUrls).toEqual([
+      'https://www.telhai-handesaim.org.il/',
+    ]);
+    expect(getMondayAdmissionEvidenceByItemId('12341088622')?.officialUrls).toEqual([
+      'https://www.iac.ac.il/',
+    ]);
+
+    expect(getTrackedMissingAdmissionRules()).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ itemId: '12220680983' }),
+        expect.objectContaining({ itemId: '12341114114' }),
+      ]),
+    );
+
+    for (const itemId of promotedItemIds) {
+      expect(getTrackedMissingAdmissionRules()).not.toEqual(
+        expect.arrayContaining([expect.objectContaining({ itemId })]),
+      );
+    }
+  });
+
   it('keeps only the official sources that remain genuinely challenge-blocked in the blocker queue', () => {
     const ariel = getMondayAdmissionEvidenceByItemId('12220680983');
     const sce = getMondayAdmissionEvidenceByItemId('12220708940');

@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 test.describe('app admissions calculator', () => {
-  test('shows exact, estimated, needs-input, and manual-gate results without leaving /app/calculator', async ({
+  test('shows structured needs-input, score, and manual-gate results without leaving /app/calculator', async ({
     page,
   }) => {
     await page.goto('/app/calculator');
@@ -13,9 +13,11 @@ test.describe('app admissions calculator', () => {
     await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
 
     await expect(page).toHaveURL(/\/app\/calculator$/);
-    await expect(page.getByLabel('אוניברסיטת תל אביב: מתקבל/ת')).toBeVisible();
-    await expect(page.getByText('אימות רשמי')).toBeVisible();
-    await expect(page.getByText(/ציון התאמה \d+ · סף \d+/)).toBeVisible();
+    await expect(page.getByLabel('אוניברסיטת תל אביב: נדרשים נתונים')).toBeVisible();
+    await expect(page.getByText('נדרשים נתונים נוספים')).toBeVisible();
+    await expect(
+      page.getByText('השלימו את יחידות וציון המקצועות החסרים כדי לקבל הערכה למסלול.'),
+    ).toBeVisible();
 
     await page.getByRole('button', { name: 'חזרה', exact: true }).click();
 
@@ -25,8 +27,8 @@ test.describe('app admissions calculator', () => {
     await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
 
     await expect(page).toHaveURL(/\/app\/calculator$/);
-    await expect(page.getByLabel('אוניברסיטת בן-גוריון בנגב: מתקבל/ת')).toBeVisible();
-    await expect(page.getByText('כלל קבלה ממופה')).toBeVisible();
+    await expect(page.getByLabel('אוניברסיטת בן-גוריון בנגב: נדרשים נתונים')).toBeVisible();
+    await expect(page.getByText('נדרשים נתונים נוספים')).toBeVisible();
     await expect(page.getByText(/סכם .* · סף 720/)).toBeVisible();
 
     await page.getByRole('button', { name: 'חזרה', exact: true }).click();

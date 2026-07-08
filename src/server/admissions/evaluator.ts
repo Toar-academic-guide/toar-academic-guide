@@ -98,6 +98,7 @@ async function evaluateCapabilityEntries(args: {
       results.push(
         await evaluateExactResult({
           input,
+          program,
           institution,
           exactTarget: entry.exactTarget,
           fetcher,
@@ -122,11 +123,12 @@ async function evaluateCapabilityEntries(args: {
 
 async function evaluateExactResult(args: {
   input: AdmissionsEvaluationInput;
+  program: CatalogueProgram;
   institution: CatalogueInstitution;
   exactTarget: NonNullable<AdmissionsCapabilityEntry['exactTarget']>;
   fetcher?: typeof fetch;
 }): Promise<AdmissionsEvaluationResult> {
-  const { input, institution, exactTarget, fetcher } = args;
+  const { input, program, institution, exactTarget, fetcher } = args;
 
   const timedFetcher = withTimeout(fetcher ?? fetch, OFFICIAL_SOURCE_TIMEOUT_MS);
 
@@ -146,10 +148,15 @@ async function evaluateExactResult(args: {
         },
       });
 
-      return normalizeExactProofResult({
+      return applyStructuredRequirementsToAcceptedScoreResult({
+        input,
+        program,
         institution,
-        proof: proof.normalizedPayload,
-        explanationPrefix: 'מקור רשמי של אוניברסיטת חיפה',
+        baseResult: normalizeExactProofResult({
+          institution,
+          proof: proof.normalizedPayload,
+          explanationPrefix: 'מקור רשמי של אוניברסיטת חיפה',
+        }),
       });
     }
 
@@ -163,10 +170,15 @@ async function evaluateExactResult(args: {
         },
       });
 
-      return normalizeExactProofResult({
+      return applyStructuredRequirementsToAcceptedScoreResult({
+        input,
+        program,
         institution,
-        proof: proof.normalizedPayload,
-        explanationPrefix: 'מקור רשמי של הטכניון',
+        baseResult: normalizeExactProofResult({
+          institution,
+          proof: proof.normalizedPayload,
+          explanationPrefix: 'מקור רשמי של הטכניון',
+        }),
       });
     }
 
@@ -180,10 +192,15 @@ async function evaluateExactResult(args: {
         },
       });
 
-      return normalizeExactProofResult({
+      return applyStructuredRequirementsToAcceptedScoreResult({
+        input,
+        program,
         institution,
-        proof: proof.normalizedPayload,
-        explanationPrefix: 'מקור רשמי של אוניברסיטת בן-גוריון',
+        baseResult: normalizeExactProofResult({
+          institution,
+          proof: proof.normalizedPayload,
+          explanationPrefix: 'מקור רשמי של אוניברסיטת בן-גוריון',
+        }),
       });
     }
 
@@ -196,10 +213,15 @@ async function evaluateExactResult(args: {
       },
     });
 
-    return normalizeExactProofResult({
+    return applyStructuredRequirementsToAcceptedScoreResult({
+      input,
+      program,
       institution,
-      proof: proof.normalizedPayload,
-      explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+      baseResult: normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+      }),
     });
   } catch (error) {
     return {
@@ -609,28 +631,33 @@ function evaluateNonExactResult(args: {
         ? 'המשיכו להרשמה ובדקו מועדים, מסמכים ודרישות משלימות באתר המוסד.'
         : 'שפרו את הנתונים שמופיעים בפער או השוו למסלולים אחרים שבהם אתם עומדים בסף.';
 
-    return {
-      institution: publicInstitutionShape(institution),
-      linkedInstitutionId: institution.id,
-      capability: entry.capability,
-      kind: 'estimated',
-      decision: evaluation.status === 'accepted' ? 'accepted' : 'below',
-      confidence: sourceBlocked ? 'medium' : entry.capability === 'estimated' ? 'high' : 'medium',
-      sourceLabel: sourceBlocked
-        ? 'כלל קבלה ממופה, מקור רשמי חסום'
-        : entry.capability === 'estimated'
-          ? 'כלל קבלה ממופה'
-          : 'כלל קבלה ממופה ממקור חלקי',
-      explanation: evaluation.explanation ?? defaultExplanation,
-      nextAction: defaultNextAction,
-      score: evaluation.sekhem,
-      scoreLabel: 'סכם',
-      threshold: evaluation.threshold,
-      deltaNeeded: evaluation.deltaNeeded,
-      evidenceItemId: entry.evidence?.itemId,
-      evidenceItemName: entry.evidence?.itemName,
-      officialUrls,
-    };
+    return applyStructuredRequirementsToAcceptedScoreResult({
+      input,
+      program,
+      institution,
+      baseResult: {
+        institution: publicInstitutionShape(institution),
+        linkedInstitutionId: institution.id,
+        capability: entry.capability,
+        kind: 'estimated',
+        decision: evaluation.status === 'accepted' ? 'accepted' : 'below',
+        confidence: sourceBlocked ? 'medium' : entry.capability === 'estimated' ? 'high' : 'medium',
+        sourceLabel: sourceBlocked
+          ? 'כלל קבלה ממופה, מקור רשמי חסום'
+          : entry.capability === 'estimated'
+            ? 'כלל קבלה ממופה'
+            : 'כלל קבלה ממופה ממקור חלקי',
+        explanation: evaluation.explanation ?? defaultExplanation,
+        nextAction: defaultNextAction,
+        score: evaluation.sekhem,
+        scoreLabel: 'סכם',
+        threshold: evaluation.threshold,
+        deltaNeeded: evaluation.deltaNeeded,
+        evidenceItemId: entry.evidence?.itemId,
+        evidenceItemName: entry.evidence?.itemName,
+        officialUrls,
+      },
+    });
   }
 
   return unsupportedResult(institution, entry);
@@ -693,6 +720,13 @@ interface StructuredNumericFactResult {
   actual: number;
 }
 
+interface GroupedNumericFactOptionResult {
+  descriptions: string[];
+  metDescriptions: string[];
+  missingRequiredInputs: Set<AdmissionsRequiredInput>;
+  unmetFacts: StructuredNumericFactResult[];
+}
+
 function evaluateStructuredRequirementsResult(
   args: StructuredRequirementsResultArgs,
 ): AdmissionsEvaluationResult | undefined {
@@ -728,31 +762,72 @@ function evaluateStructuredRequirementsResult(
   const missingRequiredInputs = new Set<AdmissionsRequiredInput>();
   const unmetNumericFacts: StructuredNumericFactResult[] = [];
   const metNumericDescriptions: string[] = [];
+  const commonNumericFacts: typeof numericFacts = [];
+  const groupedNumericFacts = new Map<string, Map<string, typeof numericFacts>>();
 
   for (const fact of numericFacts) {
-    const value = readNumericAdmissionFactValue(input, fact.field);
-    if (value.requiredInput && value.actual === undefined) {
-      missingRequiredInputs.add(value.requiredInput);
+    const groupKey = getAdmissionFactGroupKey(fact);
+    if (!groupKey) {
+      commonNumericFacts.push(fact);
       continue;
     }
 
-    if (value.actual === undefined || fact.valueNumber === null) {
+    const [groupCategory, groupOption = groupKey] = groupKey.split('/', 2);
+    const options =
+      groupedNumericFacts.get(groupCategory) ?? new Map<string, typeof numericFacts>();
+    const factsForOption = options.get(groupOption) ?? [];
+    factsForOption.push(fact);
+    options.set(groupOption, factsForOption);
+    groupedNumericFacts.set(groupCategory, options);
+  }
+
+  for (const fact of commonNumericFacts) {
+    const evaluation = evaluateStructuredNumericFact(input, fact);
+    if (evaluation.kind === 'missing_input') {
+      missingRequiredInputs.add(evaluation.requiredInput);
       continue;
     }
 
-    const passed = compareAdmissionFactValue(value.actual, fact.comparison, fact.valueNumber);
-    if (passed) {
+    if (evaluation.kind === 'pass') {
       metNumericDescriptions.push(fact.description);
       continue;
     }
 
-    unmetNumericFacts.push({
-      description: fact.description,
-      field: fact.field,
-      comparison: fact.comparison,
-      expected: fact.valueNumber,
-      actual: value.actual,
-    });
+    if (evaluation.kind === 'fail') {
+      unmetNumericFacts.push(evaluation.result);
+    }
+  }
+
+  for (const [, optionFactsByKey] of groupedNumericFacts) {
+    const optionResults = [...optionFactsByKey.values()].map((optionFacts) =>
+      evaluateGroupedNumericFactOption(input, optionFacts),
+    );
+    const passedOption = optionResults.find(
+      (option) => option.unmetFacts.length === 0 && option.missingRequiredInputs.size === 0,
+    );
+
+    if (passedOption) {
+      metNumericDescriptions.push(...passedOption.metDescriptions);
+      continue;
+    }
+
+    const optionsNeedingInputs = optionResults.filter(
+      (option) => option.unmetFacts.length === 0 && option.missingRequiredInputs.size > 0,
+    );
+
+    if (optionsNeedingInputs.length > 0) {
+      for (const option of optionsNeedingInputs) {
+        for (const requiredInput of option.missingRequiredInputs) {
+          missingRequiredInputs.add(requiredInput);
+        }
+      }
+      continue;
+    }
+
+    const firstOptionWithUnmetFacts = optionResults.find((option) => option.unmetFacts.length > 0);
+    if (firstOptionWithUnmetFacts) {
+      unmetNumericFacts.push(...firstOptionWithUnmetFacts.unmetFacts);
+    }
   }
 
   if (missingRequiredInputs.size > 0) {
@@ -775,8 +850,38 @@ function evaluateStructuredRequirementsResult(
     };
   }
 
+  const allRequirements = [
+    ...metNumericDescriptions,
+    ...manualGateDescriptions,
+    ...alternativePathDescriptions,
+    ...notesList,
+    ...dynamicRequirements,
+  ];
+
   if (unmetNumericFacts.length > 0) {
     const firstUnmet = unmetNumericFacts[0];
+
+    if (alternativePathDescriptions.length > 0) {
+      return {
+        institution: publicInstitutionShape(institution),
+        linkedInstitutionId: institution.id,
+        capability: 'manual_gate',
+        kind: 'manual_gate',
+        decision: 'eligible_to_apply',
+        confidence: 'high',
+        sourceLabel: 'קיימים אפיקים חלופיים',
+        explanation: `לפי המסלול הישיר שמופה, עדיין חסר לעמוד בדרישות הבאות: ${unmetNumericFacts
+          .map((fact) => fact.description)
+          .join(
+            '; ',
+          )}. עדיין קיימים אפיקים חלופיים שאפשר לבדוק מול המוסד: ${alternativePathDescriptions.join('; ')}.`,
+        nextAction:
+          manualGateDescriptions.length > 0
+            ? 'בדקו מול המוסד איזה אפיק חלופי רלוונטי לכם, והשלימו גם את שלבי הבדיקה או המיון הידניים שנדרשים במסלול הזה.'
+            : 'בדקו מול המוסד איזה אפיק חלופי רלוונטי לכם והאם הוא מחייב מכינה, מסמכים משלימים או שלב מיון נוסף.',
+        ...(singleNumericGateMetrics(firstUnmet) ?? {}),
+      };
+    }
 
     return {
       institution: publicInstitutionShape(institution),
@@ -797,15 +902,26 @@ function evaluateStructuredRequirementsResult(
     };
   }
 
-  const allRequirements = [
-    ...metNumericDescriptions,
-    ...manualGateDescriptions,
-    ...alternativePathDescriptions,
-    ...notesList,
-    ...dynamicRequirements,
-  ];
-
   if (manualGateDescriptions.length > 0 || alternativePathDescriptions.length > 0) {
+    const directEligibilityPrefix =
+      metNumericDescriptions.length > 0
+        ? 'עמדתם בתנאים המספריים שמופו.'
+        : eligibleWithManualGate
+          ? 'לפי הכללים שמופו, אפשר להתקדם עם המועמדות.'
+          : 'אפשר להתקדם עם המועמדות.';
+    const remainingManualSteps =
+      manualGateDescriptions.length > 0
+        ? ` עדיין צריך להשלים את השלבים הבאים: ${manualGateDescriptions.join('; ')}.`
+        : '';
+    const alternativeRoutesNote =
+      alternativePathDescriptions.length > 0
+        ? ` קיימים גם אפיקים חלופיים שהמוסד מפרסם: ${alternativePathDescriptions.join('; ')}.`
+        : '';
+    const notesExplanation =
+      notesList.length > 0 || dynamicRequirements.length > 0
+        ? ` מידע רלוונטי נוסף: ${[...notesList, ...dynamicRequirements].join('; ')}.`
+        : '';
+
     return {
       institution: publicInstitutionShape(institution),
       linkedInstitutionId: institution.id,
@@ -815,10 +931,11 @@ function evaluateStructuredRequirementsResult(
       confidence: 'high',
       sourceLabel: manualGateDescriptions.length > 0 ? 'נדרש מיון נוסף' : 'אפשר להגיש מועמדות',
       explanation:
-        allRequirements.length > 0
-          ? eligibleWithManualGate || metNumericDescriptions.length > 0
-            ? `עמדתם בתנאים המספריים שמופו, אבל עדיין צריך להשלים את השלבים הבאים: ${allRequirements.join('; ')}`
-            : `אפשר להתקדם עם המועמדות, אבל צריך להשלים את השלבים הבאים: ${allRequirements.join('; ')}`
+        manualGateDescriptions.length > 0 ||
+        alternativePathDescriptions.length > 0 ||
+        notesList.length > 0 ||
+        dynamicRequirements.length > 0
+          ? `${directEligibilityPrefix}${remainingManualSteps}${alternativeRoutesNote}${notesExplanation}`.trim()
           : 'אפשר להתקדם עם המועמדות, אך יש שלבים ידניים שהמוסד משלים אחרי ההגשה.',
       nextAction:
         alternativePathDescriptions.length > 0
@@ -859,6 +976,57 @@ function evaluateStructuredRequirementsResult(
   return undefined;
 }
 
+function applyStructuredRequirementsToAcceptedScoreResult(args: {
+  input: AdmissionsEvaluationInput;
+  program: CatalogueProgram;
+  institution: CatalogueInstitution;
+  baseResult: AdmissionsEvaluationResult;
+}): AdmissionsEvaluationResult {
+  const { input, program, institution, baseResult } = args;
+
+  if (baseResult.decision !== 'accepted') {
+    return baseResult;
+  }
+
+  const detail = findInstitutionDetail(program, institution);
+  if (!detail?.admissionFacts?.length) {
+    return baseResult;
+  }
+
+  const hasManualStage =
+    detail.admissionFacts.some((fact) => fact.kind === 'manual_gate') ||
+    Boolean(detail.admissionAlternativePaths?.length);
+  const structuredResult = evaluateStructuredRequirementsResult({
+    input,
+    institution,
+    capability: hasManualStage ? 'manual_gate' : 'requirements_only',
+    detail,
+    dynamicRequirements: [],
+    eligibleWithManualGate: false,
+    programType: program.type,
+  });
+
+  if (!structuredResult) {
+    return baseResult;
+  }
+
+  return {
+    ...structuredResult,
+    ...(baseResult.score !== undefined && structuredResult.score === undefined
+      ? { score: baseResult.score }
+      : {}),
+    ...(baseResult.scoreLabel !== undefined && structuredResult.scoreLabel === undefined
+      ? { scoreLabel: baseResult.scoreLabel }
+      : {}),
+    ...(baseResult.threshold !== undefined && structuredResult.threshold === undefined
+      ? { threshold: baseResult.threshold }
+      : {}),
+    ...(baseResult.deltaNeeded !== undefined && structuredResult.deltaNeeded === undefined
+      ? { deltaNeeded: baseResult.deltaNeeded }
+      : {}),
+  };
+}
+
 function readNumericAdmissionFactValue(
   input: AdmissionsEvaluationInput,
   field: string,
@@ -894,6 +1062,91 @@ function readNumericAdmissionFactValue(
     default:
       return { actual: undefined };
   }
+}
+
+function getAdmissionFactGroupKey(
+  fact: NonNullable<ProgramInstitutionDetail['admissionFacts']>[number],
+) {
+  if (fact.groupKey) {
+    return fact.groupKey;
+  }
+
+  const encodedGroupKey = fact.id.match(/:fact:group:([^:]+):/u)?.[1];
+  return encodedGroupKey ? decodeURIComponent(encodedGroupKey) : undefined;
+}
+
+function evaluateStructuredNumericFact(
+  input: AdmissionsEvaluationInput,
+  fact: NonNullable<ProgramInstitutionDetail['admissionFacts']>[number],
+):
+  | { kind: 'pass' }
+  | { kind: 'missing_input'; requiredInput: AdmissionsRequiredInput }
+  | { kind: 'skip' }
+  | { kind: 'fail'; result: StructuredNumericFactResult } {
+  const value = readNumericAdmissionFactValue(input, fact.field);
+
+  if (value.requiredInput && value.actual === undefined) {
+    return {
+      kind: 'missing_input',
+      requiredInput: value.requiredInput,
+    };
+  }
+
+  if (value.actual === undefined || fact.valueNumber === null) {
+    return { kind: 'skip' };
+  }
+
+  if (compareAdmissionFactValue(value.actual, fact.comparison, fact.valueNumber)) {
+    return { kind: 'pass' };
+  }
+
+  return {
+    kind: 'fail',
+    result: {
+      description: fact.description,
+      field: fact.field,
+      comparison: fact.comparison,
+      expected: fact.valueNumber,
+      actual: value.actual,
+    },
+  };
+}
+
+function evaluateGroupedNumericFactOption(
+  input: AdmissionsEvaluationInput,
+  facts: NonNullable<ProgramInstitutionDetail['admissionFacts']>,
+): GroupedNumericFactOptionResult {
+  const descriptions: string[] = [];
+  const metDescriptions: string[] = [];
+  const missingRequiredInputs = new Set<AdmissionsRequiredInput>();
+  const unmetFacts: StructuredNumericFactResult[] = [];
+
+  for (const fact of facts) {
+    descriptions.push(fact.description);
+
+    const evaluation = evaluateStructuredNumericFact(input, fact);
+    if (evaluation.kind === 'pass') {
+      metDescriptions.push(fact.description);
+      continue;
+    }
+
+    if (evaluation.kind === 'missing_input') {
+      missingRequiredInputs.add(evaluation.requiredInput);
+      continue;
+    }
+
+    if (evaluation.kind === 'fail') {
+      unmetFacts.push(evaluation.result);
+    }
+  }
+
+  return {
+    descriptions,
+    metDescriptions,
+    missingRequiredInputs:
+      unmetFacts.length > 0 ? new Set<AdmissionsRequiredInput>() : missingRequiredInputs,
+    unmetFacts,
+  };
 }
 
 function compareAdmissionFactValue(actual: number, comparison: string, expected: number) {

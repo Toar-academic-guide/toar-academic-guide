@@ -1126,6 +1126,129 @@ describe('evaluateAdmissionsForProgram', () => {
     expect(result.explanation).toContain('אין צורך בפסיכומטרי');
   });
 
+  it('asks for structured subject inputs before returning an accepted score-based result', async () => {
+    const scoreProgram: CatalogueProgram = {
+      id: 'structured_score_program',
+      name: 'הנדסת נתונים',
+      institution: 'אוניברסיטת בן-גוריון בנגב',
+      institutionId: 'bgu',
+      type: 'academic',
+      category: 'הנדסה',
+      profileScore: { AN: 5, TE: 4, CR: 1, SO: 1, LE: 1, OR: 3, DI: 5, ER: 3 },
+      admissionType: 'sekhem',
+      admissionRequirements: [],
+      thresholds: { bgu: 600 },
+      linkedInstitutionIds: ['bgu'],
+      institutionDetails: [
+        {
+          institutionName: 'אוניברסיטת בן-גוריון בנגב',
+          durationYears: 4,
+          estimatedStudentsPerYear: 'לא ידוע',
+          quantitativeMinRequirement: null,
+          englishMinRequirement: null,
+          specificAdmissionNotes: [],
+          officialCalculatorUrl: '',
+          admissionFacts: [
+            {
+              id: 'structured_score_program:bgu:math-units',
+              kind: 'numeric_gate',
+              field: 'math_units',
+              comparison: 'gte',
+              valueNumber: 5,
+              valueText: null,
+              unit: 'units',
+              description: 'מתמטיקה ברמת 5 יח"ל',
+              confidence: 'high',
+              isRequired: true,
+            },
+          ],
+        },
+      ],
+    };
+
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'structured_score_program',
+        psychometric: 760,
+        bagrut: 115,
+      },
+      program: scoreProgram,
+      institutions,
+    });
+
+    expect(report.results).toContainEqual(
+      expect.objectContaining({
+        linkedInstitutionId: 'bgu',
+        capability: 'needs_input',
+        kind: 'needs_input',
+        requiredInputs: ['math_units'],
+      }),
+    );
+  });
+
+  it('turns an accepted score-based result into manual_gate when structured interview stages remain', async () => {
+    const scoreProgram: CatalogueProgram = {
+      id: 'structured_score_manual_program',
+      name: 'פסיכולוגיה יישומית',
+      institution: 'אוניברסיטת בן-גוריון בנגב',
+      institutionId: 'bgu',
+      type: 'academic',
+      category: 'פסיכולוגיה',
+      profileScore: { AN: 4, TE: 2, CR: 1, SO: 5, LE: 2, OR: 2, DI: 1, ER: 4 },
+      admissionType: 'sekhem',
+      admissionRequirements: [],
+      thresholds: { bgu: 600 },
+      linkedInstitutionIds: ['bgu'],
+      institutionDetails: [
+        {
+          institutionName: 'אוניברסיטת בן-גוריון בנגב',
+          durationYears: 3,
+          estimatedStudentsPerYear: 'לא ידוע',
+          quantitativeMinRequirement: null,
+          englishMinRequirement: null,
+          specificAdmissionNotes: [],
+          officialCalculatorUrl: '',
+          admissionFacts: [
+            {
+              id: 'structured_score_manual_program:bgu:interview',
+              kind: 'manual_gate',
+              field: 'interview',
+              comparison: 'present',
+              valueNumber: null,
+              valueText: 'ראיון קבלה',
+              unit: 'text',
+              description: 'ראיון קבלה מחייב',
+              confidence: 'high',
+              isRequired: true,
+            },
+          ],
+        },
+      ],
+    };
+
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'structured_score_manual_program',
+        psychometric: 760,
+        bagrut: 115,
+      },
+      program: scoreProgram,
+      institutions,
+    });
+
+    expect(report.results).toContainEqual(
+      expect.objectContaining({
+        linkedInstitutionId: 'bgu',
+        capability: 'manual_gate',
+        kind: 'manual_gate',
+        decision: 'eligible_to_apply',
+        score: expect.any(Number),
+        threshold: 600,
+        explanation: expect.stringContaining('ראיון קבלה מחייב'),
+      }),
+    );
+  });
+
   it('returns below when structured numeric admission facts are not met before a manual gate stage', async () => {
     const structuredProgram: CatalogueProgram = {
       id: 'structured_psych_program',
@@ -1287,6 +1410,328 @@ describe('evaluateAdmissionsForProgram', () => {
         sourceLabel: 'נדרש מיון נוסף',
       }),
     );
+  });
+
+  it('treats grouped structured numeric facts as alternative official routes instead of requiring every route at once', async () => {
+    const structuredProgram: CatalogueProgram = {
+      id: 'structured_grouped_route_program',
+      name: 'הנדסת תוכנה',
+      institution: 'Structured Engineering College',
+      institutionId: 'structured_grouped' as any,
+      type: 'academic',
+      category: 'הנדסה',
+      profileScore: { AN: 4, TE: 4, CR: 2, SO: 2, LE: 2, OR: 2, DI: 4, ER: 3 },
+      admissionType: 'requirements',
+      admissionRequirements: [],
+      linkedInstitutionIds: ['structured_grouped' as any],
+      institutionDetails: [
+        {
+          institutionName: 'Structured Engineering College',
+          durationYears: 4,
+          estimatedStudentsPerYear: 'לא ידוע',
+          quantitativeMinRequirement: null,
+          englishMinRequirement: null,
+          specificAdmissionNotes: [],
+          officialCalculatorUrl: '',
+          admissionFacts: [
+            {
+              id: 'structured_grouped_route_program:structured_grouped:fact:group:math_route%2F5_units:structured-0',
+              kind: 'numeric_gate',
+              field: 'math_units',
+              comparison: 'gte',
+              valueNumber: 5,
+              valueText: null,
+              unit: 'units',
+              description: 'מתמטיקה ברמת 5 יח"ל',
+              confidence: 'high',
+              isRequired: true,
+            },
+            {
+              id: 'structured_grouped_route_program:structured_grouped:fact:group:math_route%2F5_units:structured-1',
+              kind: 'numeric_gate',
+              field: 'math_grade',
+              comparison: 'gte',
+              valueNumber: 70,
+              valueText: null,
+              unit: 'points',
+              description: 'ציון 70 ומעלה במתמטיקה 5 יח"ל',
+              confidence: 'high',
+              isRequired: true,
+            },
+            {
+              id: 'structured_grouped_route_program:structured_grouped:fact:group:math_route%2F4_units:structured-2',
+              kind: 'numeric_gate',
+              field: 'math_units',
+              comparison: 'gte',
+              valueNumber: 4,
+              valueText: null,
+              unit: 'units',
+              description: 'מתמטיקה ברמת 4 יח"ל',
+              confidence: 'high',
+              isRequired: true,
+            },
+            {
+              id: 'structured_grouped_route_program:structured_grouped:fact:group:math_route%2F4_units:structured-3',
+              kind: 'numeric_gate',
+              field: 'math_grade',
+              comparison: 'gte',
+              valueNumber: 85,
+              valueText: null,
+              unit: 'points',
+              description: 'ציון 85 ומעלה במתמטיקה 4 יח"ל',
+              confidence: 'high',
+              isRequired: true,
+            },
+            {
+              id: 'structured_grouped_route_program:structured_grouped:fact:physics_units',
+              kind: 'numeric_gate',
+              field: 'physics_units',
+              comparison: 'gte',
+              valueNumber: 5,
+              valueText: null,
+              unit: 'units',
+              description: 'פיזיקה ברמת 5 יח"ל',
+              confidence: 'high',
+              isRequired: true,
+            },
+            {
+              id: 'structured_grouped_route_program:structured_grouped:fact:physics_grade',
+              kind: 'numeric_gate',
+              field: 'physics_grade',
+              comparison: 'gte',
+              valueNumber: 70,
+              valueText: null,
+              unit: 'points',
+              description: 'ציון 70 ומעלה בפיזיקה 5 יח"ל',
+              confidence: 'high',
+              isRequired: true,
+            },
+            {
+              id: 'structured_grouped_route_program:structured_grouped:fact:psychometric',
+              kind: 'numeric_gate',
+              field: 'psychometric',
+              comparison: 'gte',
+              valueNumber: 580,
+              valueText: null,
+              unit: 'points',
+              description: 'פסיכומטרי 580 ומעלה',
+              confidence: 'high',
+              isRequired: true,
+            },
+            {
+              id: 'structured_grouped_route_program:structured_grouped:fact:committee',
+              kind: 'manual_gate',
+              field: 'committee',
+              comparison: 'present',
+              valueNumber: null,
+              valueText: 'ועדת קבלה',
+              unit: 'text',
+              description: 'בדיקת התאמה סופית מול המוסד',
+              confidence: 'high',
+              isRequired: true,
+            },
+          ],
+        },
+      ],
+    };
+
+    const structuredInstitutions: CatalogueInstitution[] = [
+      {
+        id: 'structured_grouped' as any,
+        name: 'Structured Engineering College',
+        region: 'south',
+        domain: 'structured-grouped.example',
+      },
+    ];
+
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'structured_grouped_route_program',
+        psychometric: 610,
+        bagrut: 110,
+        extraInputs: {
+          mathUnits: 4,
+          mathGrade: 88,
+          physicsUnits: 5,
+          physicsGrade: 75,
+        },
+      },
+      program: structuredProgram,
+      institutions: structuredInstitutions,
+    });
+
+    expect(report.results).toContainEqual(
+      expect.objectContaining({
+        linkedInstitutionId: 'structured_grouped',
+        capability: 'manual_gate',
+        kind: 'manual_gate',
+        decision: 'eligible_to_apply',
+        sourceLabel: 'נדרש מיון נוסף',
+      }),
+    );
+  });
+
+  it('returns eligible_to_apply when the direct structured numeric gate is missed but an official alternative path exists', async () => {
+    const structuredProgram: CatalogueProgram = {
+      id: 'structured_alt_route_program',
+      name: 'משפטים',
+      institution: 'Structured Alt College',
+      institutionId: 'structured_alt' as any,
+      type: 'academic',
+      category: 'משפטים',
+      profileScore: { AN: 2, TE: 2, CR: 4, SO: 3, LE: 4, OR: 3, DI: 2, ER: 3 },
+      admissionType: 'requirements',
+      admissionRequirements: [],
+      linkedInstitutionIds: ['structured_alt' as any],
+      institutionDetails: [
+        {
+          institutionName: 'Structured Alt College',
+          durationYears: 3,
+          estimatedStudentsPerYear: 'לא ידוע',
+          quantitativeMinRequirement: null,
+          englishMinRequirement: null,
+          specificAdmissionNotes: [],
+          officialCalculatorUrl: '',
+          admissionFacts: [
+            {
+              id: 'structured_alt_route_program:structured_alt:fact:bagrut',
+              kind: 'numeric_gate',
+              field: 'bagrut_average',
+              comparison: 'gte',
+              valueNumber: 85,
+              valueText: null,
+              unit: 'average',
+              description: 'ממוצע בגרות 85 ומעלה לקבלה ישירה',
+              confidence: 'high',
+              isRequired: true,
+            },
+          ],
+          admissionAlternativePaths: [
+            {
+              id: 'structured_alt_route_program:structured_alt:path:prep',
+              kind: 'prep_program',
+              title: 'מכינה קדם-אקדמית',
+              description: 'אפשר להתקבל גם דרך מכינה קדם-אקדמית מאושרת.',
+              priority: 1,
+            },
+          ],
+        },
+      ],
+    };
+
+    const structuredInstitutions: CatalogueInstitution[] = [
+      {
+        id: 'structured_alt' as any,
+        name: 'Structured Alt College',
+        region: 'center',
+        domain: 'structured-alt.example',
+      },
+    ];
+
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'structured_alt_route_program',
+        psychometric: 550,
+        bagrut: 78,
+      },
+      program: structuredProgram,
+      institutions: structuredInstitutions,
+    });
+
+    expect(report.results).toContainEqual(
+      expect.objectContaining({
+        linkedInstitutionId: 'structured_alt',
+        capability: 'manual_gate',
+        kind: 'manual_gate',
+        decision: 'eligible_to_apply',
+        sourceLabel: 'קיימים אפיקים חלופיים',
+        threshold: 85,
+        score: 78,
+      }),
+    );
+  });
+
+  it('does not describe alternative routes as mandatory remaining steps when the direct structured gate is already met', async () => {
+    const structuredProgram: CatalogueProgram = {
+      id: 'structured_direct_route_program',
+      name: 'מנהל עסקים',
+      institution: 'Structured Direct College',
+      institutionId: 'structured_direct' as any,
+      type: 'academic',
+      category: 'מנהל עסקים',
+      profileScore: { AN: 2, TE: 2, CR: 3, SO: 3, LE: 4, OR: 3, DI: 2, ER: 3 },
+      admissionType: 'requirements',
+      admissionRequirements: [],
+      linkedInstitutionIds: ['structured_direct' as any],
+      institutionDetails: [
+        {
+          institutionName: 'Structured Direct College',
+          durationYears: 3,
+          estimatedStudentsPerYear: 'לא ידוע',
+          quantitativeMinRequirement: null,
+          englishMinRequirement: null,
+          specificAdmissionNotes: [],
+          officialCalculatorUrl: '',
+          admissionFacts: [
+            {
+              id: 'structured_direct_route_program:structured_direct:fact:bagrut',
+              kind: 'numeric_gate',
+              field: 'bagrut_average',
+              comparison: 'gte',
+              valueNumber: 80,
+              valueText: null,
+              unit: 'average',
+              description: 'ממוצע בגרות 80 ומעלה לקבלה ישירה',
+              confidence: 'high',
+              isRequired: true,
+            },
+          ],
+          admissionAlternativePaths: [
+            {
+              id: 'structured_direct_route_program:structured_direct:path:psychometric',
+              kind: 'manual_check',
+              title: 'מסלול חלופי עם פסיכומטרי',
+              description: 'אפשר להתקבל גם במסלול חלופי המבוסס על פסיכומטרי.',
+              priority: 1,
+            },
+          ],
+        },
+      ],
+    };
+
+    const structuredInstitutions: CatalogueInstitution[] = [
+      {
+        id: 'structured_direct' as any,
+        name: 'Structured Direct College',
+        region: 'center',
+        domain: 'structured-direct.example',
+      },
+    ];
+
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'structured_direct_route_program',
+        psychometric: 620,
+        bagrut: 88,
+      },
+      program: structuredProgram,
+      institutions: structuredInstitutions,
+    });
+
+    const result = report.results.find(
+      (entry) => entry.linkedInstitutionId === 'structured_direct',
+    );
+
+    expect(result).toMatchObject({
+      linkedInstitutionId: 'structured_direct',
+      capability: 'manual_gate',
+      kind: 'manual_gate',
+      decision: 'eligible_to_apply',
+      sourceLabel: 'אפשר להגיש מועמדות',
+    });
+    expect(result?.explanation).toContain('עמדתם בתנאים המספריים שמופו.');
+    expect(result?.explanation).not.toContain('עדיין צריך להשלים את השלבים הבאים');
+    expect(result?.explanation).toContain('קיימים גם אפיקים חלופיים');
   });
 
   it('returns open_admission from structured detail facts even without monday evidence or a calculator source', async () => {
