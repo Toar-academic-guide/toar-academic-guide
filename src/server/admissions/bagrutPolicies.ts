@@ -18,15 +18,15 @@ export const TAU_ENGINEERING_EXACT_SCIENCES_POLICY: ReviewedBagrutPolicy = {
   enabled: true,
 };
 
-// The existing BGU source adapter can reproduce a score, but it does not yet
-// provide the program-specific gates and changing cutoff required to verify a
-// route. Keeping this policy explicit and disabled prevents the old generic
-// weighted-score shortcut from being promoted into route advice.
+// BGU publishes the CS cutoff and minimum gates, but its official quantitative
+// calculator has not yet been reproduced as a local, fixture-backed score
+// model. Keep the generic calculator shortcut out of route advice.
 export const BGU_COMPUTER_SCIENCE_ROUTE_POLICY: ReviewedBagrutPolicy = {
   id: 'bgu-computer-science-quantitative',
-  version: 'bgu-computer-science-quantitative-pending-evidence',
-  authority: 'evidence-incomplete',
-  sourceUrl: 'https://bgu4u.bgu.ac.il/html/average_calc/index.php',
+  version: 'bgu-computer-science-quantitative-2027-2026-07-20',
+  authority: 'official-published-requirement',
+  sourceUrl:
+    'https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_institution=0&p_year=2027&p_semester=1&p_dep1=232&p_pat1=1&p_spe1=3&p_degree_level=1',
   effectiveFrom: '2026-07-20',
   enabled: false,
 };

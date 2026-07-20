@@ -41,7 +41,7 @@ describe('TAU engineering and exact-sciences Bagrut policy', () => {
     });
     expect(BGU_COMPUTER_SCIENCE_ROUTE_POLICY).toMatchObject({
       enabled: false,
-      authority: 'evidence-incomplete',
+      authority: 'official-published-requirement',
     });
   });
 });
