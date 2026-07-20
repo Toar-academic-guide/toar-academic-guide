@@ -800,9 +800,7 @@ describe('buildReviewItemDetail', () => {
       targetField: 'sourceFreshness',
       status: 'pending',
       actionEligibility: {
-        canApprove: true,
         canReject: true,
-        approveBlockedReason: null,
       },
       evidence: {
         sourceId: 'tau-live',
@@ -837,13 +835,11 @@ describe('buildReviewItemDetail', () => {
     expect(detail.status).toBe('approved');
     expect(detail.reviewedAt).toBe('2026-06-24T12:00:00.000Z');
     expect(detail.actionEligibility).toEqual({
-      canApprove: false,
       canReject: false,
-      approveBlockedReason: 'Review item has already been resolved.',
     });
   });
 
-  it('blocks approval when the current source state no longer points at the review item', () => {
+  it('keeps a pending investigation resolvable even when a newer source check exists', () => {
     const detail = buildReviewItemDetail({
       reviewItem: reviewItemRow(),
       payload: null,
@@ -852,13 +848,11 @@ describe('buildReviewItemDetail', () => {
     });
 
     expect(detail.actionEligibility).toEqual({
-      canApprove: false,
       canReject: true,
-      approveBlockedReason: 'Source freshness state no longer points at this review item.',
     });
   });
 
-  it('allows rejection but not approval for unsupported target fields', () => {
+  it('allows no-change resolution for unsupported target fields', () => {
     const detail = buildReviewItemDetail({
       reviewItem: reviewItemRow({
         targetField: 'programDescription',
@@ -870,9 +864,7 @@ describe('buildReviewItemDetail', () => {
     });
 
     expect(detail.actionEligibility).toEqual({
-      canApprove: false,
       canReject: true,
-      approveBlockedReason: 'Approval is not supported for target field "programDescription".',
     });
     expect(detail.evidence.normalizedDecisionPayload).toEqual([]);
   });
