@@ -11,10 +11,26 @@ import {
 } from './lifecycle';
 
 export interface AdmissionAlertAccountRepository {
+  listSubscriptions(userId: string): Promise<
+    Array<{
+      id: string;
+      institutionId: string;
+      programId: string;
+      cycle: string;
+      status: AdmissionAlertSubscriptionStatus;
+    }>
+  >;
   cancelSubscription(input: {
     userId: string;
     subscriptionId: string;
   }): Promise<{ mayStillArrive: boolean } | null>;
+}
+
+export function listAdmissionAlertSubscriptions(input: {
+  userId: string;
+  repository: AdmissionAlertAccountRepository;
+}) {
+  return input.repository.listSubscriptions(input.userId);
 }
 
 export async function cancelAdmissionAlertSubscription(input: {
@@ -32,6 +48,19 @@ export function createDrizzleAdmissionAlertAccountRepository(
   db = getDb(),
 ): AdmissionAlertAccountRepository {
   return {
+    async listSubscriptions(userId) {
+      return db
+        .select({
+          id: admissionAlertSubscriptions.id,
+          institutionId: admissionAlertSubscriptions.institutionId,
+          programId: admissionAlertSubscriptions.programId,
+          cycle: admissionAlertSubscriptions.cycle,
+          status: admissionAlertSubscriptions.status,
+        })
+        .from(admissionAlertSubscriptions)
+        .where(eq(admissionAlertSubscriptions.userId, userId))
+        .orderBy(desc(admissionAlertSubscriptions.createdAt));
+    },
     async cancelSubscription(input) {
       return db.transaction(async (tx) => {
         const [subscription] = await tx
