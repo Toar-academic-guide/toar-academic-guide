@@ -365,9 +365,7 @@ export interface ReviewItemDetail {
   createdAt: string;
   reviewedAt: string | null;
   actionEligibility: {
-    canApprove: boolean;
     canReject: boolean;
-    approveBlockedReason: string | null;
   };
   evidence: {
     sourceId: string | null;
@@ -551,12 +549,6 @@ export function buildReviewItemDetail({
       : null;
   const sourceFreshnessValue = parsed?.ok ? parsed.value : null;
   const isPending = reviewItem.status === 'pending';
-  const canApprove =
-    isPending &&
-    reviewItem.targetField === 'sourceFreshness' &&
-    sourceFreshnessValue !== null &&
-    freshness?.latestReviewItemId === reviewItem.id;
-
   return {
     id: reviewItem.id,
     payloadId: reviewItem.payloadId,
@@ -567,9 +559,7 @@ export function buildReviewItemDetail({
     createdAt: reviewItem.createdAt.toISOString(),
     reviewedAt: reviewItem.reviewedAt?.toISOString() ?? null,
     actionEligibility: {
-      canApprove,
       canReject: isPending,
-      approveBlockedReason: approveBlockedReason(reviewItem, sourceFreshnessValue, freshness),
     },
     evidence: {
       sourceId: sourceFreshnessValue?.sourceId ?? freshness?.sourceId ?? source?.id ?? null,
@@ -1357,30 +1347,6 @@ function sourceIdFromReviewItem(reviewItem: ReviewItemDetailRow): string | null 
 
   const parsed = parseSourceFreshnessProposedValue(reviewItem.proposedValue);
   return parsed.ok ? parsed.value.sourceId : null;
-}
-
-function approveBlockedReason(
-  reviewItem: ReviewItemDetailRow,
-  sourceFreshnessValue: SourceFreshnessProposedValue | null,
-  freshness: ReviewItemDetailFreshnessRow | null,
-): string | null {
-  if (reviewItem.status !== 'pending') {
-    return 'Review item has already been resolved.';
-  }
-
-  if (reviewItem.targetField !== 'sourceFreshness') {
-    return `Approval is not supported for target field "${reviewItem.targetField}".`;
-  }
-
-  if (!sourceFreshnessValue) {
-    return 'Source freshness proposed value is invalid.';
-  }
-
-  if (freshness?.latestReviewItemId !== reviewItem.id) {
-    return 'Source freshness state no longer points at this review item.';
-  }
-
-  return null;
 }
 
 function previewRecord(record: Record<string, unknown>): Array<{ key: string; value: string }> {
