@@ -11,10 +11,7 @@ export interface PublishedAdmissionRule {
 }
 
 export type AdmissionsReviewExclusionReason =
-  | 'proof_not_decision_capable'
-  | 'missing_program_or_cutoff'
-  | 'no_reviewed_baseline'
-  | 'unchanged';
+  'proof_not_decision_capable' | 'missing_program_or_cutoff' | 'no_reviewed_baseline' | 'unchanged';
 
 export interface AdmissionsReviewExclusion {
   sourceProofId: string;
@@ -184,9 +181,7 @@ export function buildAdmissionsReviewSlackMessage(
   };
 }
 
-function buildAdmissionsReviewMarkdown(
-  run: Omit<AdmissionsReviewRun, 'markdown'>,
-): string {
+function buildAdmissionsReviewMarkdown(run: Omit<AdmissionsReviewRun, 'markdown'>): string {
   const lines = [
     `# Admissions review run ${run.runKey}`,
     '',
@@ -230,8 +225,11 @@ function exclusion(
 ): AdmissionsReviewExclusion {
   const details: Record<AdmissionsReviewExclusionReason, string> = {
     proof_not_decision_capable:
-      proof.errorReason ?? proof.blockedReason ?? 'The official proof is not safe for a canonical rule change.',
-    missing_program_or_cutoff: 'The official proof did not contain a verified program identifier and cutoff.',
+      proof.errorReason ??
+      proof.blockedReason ??
+      'The official proof is not safe for a canonical rule change.',
+    missing_program_or_cutoff:
+      'The official proof did not contain a verified program identifier and cutoff.',
     no_reviewed_baseline: 'No reviewed published baseline exists for this target.',
     unchanged: 'The official cutoff matches the current reviewed baseline.',
   };
@@ -285,7 +283,11 @@ function safeExcerpt(proof: AdmissionsSourceProof, cutoff: number): string {
 }
 
 function safeText(value: string): string {
-  return value.replace(/[<>{}]/g, '').replace(/\s+/g, ' ').trim().slice(0, 600);
+  return value
+    .replace(/[<>{}]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 600);
 }
 
 function escapeSlack(value: string): string {
