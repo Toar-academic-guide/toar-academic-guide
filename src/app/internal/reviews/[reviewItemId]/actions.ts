@@ -2,10 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 
-import {
-  rejectReviewItem,
-  type RejectReviewItemResult,
-} from '@/server/ingestion/reviewResolution';
+import { rejectReviewItem, type RejectReviewItemResult } from '@/server/ingestion/reviewResolution';
 import { getInternalAdminAuthorization } from '@/server/internal/adminAuth';
 
 export interface ReviewActionState {
@@ -48,7 +45,8 @@ function messageForRejectResult(result: RejectReviewItemResult): ReviewActionSta
     case 'rejected':
       return {
         status: result.status,
-        message: 'Investigation resolved with no canonical catalogue change. GitHub merge is required to publish admissions data.',
+        message:
+          'Investigation resolved with no canonical catalogue change. GitHub merge is required to publish admissions data.',
       };
     case 'already_resolved':
       return {

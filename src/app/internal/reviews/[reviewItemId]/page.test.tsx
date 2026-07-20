@@ -24,13 +24,7 @@ vi.mock('next/navigation', () => ({
 }));
 
 vi.mock('./ReviewActionPanel', () => ({
-  default: ({
-    canReject,
-    reviewItemId,
-  }: {
-    canReject: boolean;
-    reviewItemId: string;
-  }) => (
+  default: ({ canReject, reviewItemId }: { canReject: boolean; reviewItemId: string }) => (
     <div data-testid="review-actions">
       {reviewItemId}:{String(canReject)}
     </div>

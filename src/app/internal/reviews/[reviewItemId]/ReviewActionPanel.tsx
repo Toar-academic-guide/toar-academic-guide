@@ -2,20 +2,14 @@
 
 import { useActionState } from 'react';
 
-import {
-  resolveReviewItemNoChangeFormAction,
-  type ReviewActionState,
-} from './actions';
+import { resolveReviewItemNoChangeFormAction, type ReviewActionState } from './actions';
 
 interface ReviewActionPanelProps {
   canReject: boolean;
   reviewItemId: string;
 }
 
-export default function ReviewActionPanel({
-  canReject,
-  reviewItemId,
-}: ReviewActionPanelProps) {
+export default function ReviewActionPanel({ canReject, reviewItemId }: ReviewActionPanelProps) {
   const [resolveState, resolveAction, resolvePending] = useActionState<
     ReviewActionState | null,
     FormData
@@ -27,8 +21,8 @@ export default function ReviewActionPanel({
         Investigation controls
       </p>
       <p className="mt-3 text-sm text-slate-600">
-        This screen cannot approve or publish admissions data. Reviewable changes are approved only by
-        merging the combined GitHub PR.
+        This screen cannot approve or publish admissions data. Reviewable changes are approved only
+        by merging the combined GitHub PR.
       </p>
       <div className="mt-4 flex flex-col gap-3 sm:flex-row">
         <form action={resolveAction}>
