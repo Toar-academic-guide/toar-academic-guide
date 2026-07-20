@@ -4,9 +4,10 @@ import { and, asc, eq, inArray } from 'drizzle-orm';
 
 import { getDb } from '@/db/client';
 import { admissionAlertOutbox, admissionAlertSubscriptions } from '@/db/schema';
+import { admissionCycleFor } from './cycle';
 
 export interface AdmissionAlertDeliveryRepository {
-  claimNextDelivery(): Promise<{
+  claimNextDelivery(input: { currentCycle: string }): Promise<{
     id: string;
     idempotencyKey: string;
     subscriptionStatus:
@@ -18,6 +19,7 @@ export interface AdmissionAlertDeliveryRepository {
       | 'expired'
       | 'delivery_failed';
   } | null>;
+  canAttemptDelivery(input: { outboxId: string; currentCycle: string }): Promise<boolean>;
   acceptDelivery(input: { outboxId: string; providerMessageId: string }): Promise<void>;
   retryDelivery(outboxId: string): Promise<void>;
 }
@@ -30,7 +32,7 @@ export interface AdmissionAlertMailProvider {
 
 export function createDrizzleAdmissionAlertDeliveryRepository(db = getDb()) {
   return {
-    async claimNextDelivery() {
+    async claimNextDelivery({ currentCycle }) {
       return db.transaction(async (tx) => {
         const [candidate] = await tx
           .select({
@@ -47,6 +49,7 @@ export function createDrizzleAdmissionAlertDeliveryRepository(db = getDb()) {
             and(
               inArray(admissionAlertOutbox.status, ['pending', 'retryable']),
               eq(admissionAlertSubscriptions.status, 'pending_delivery'),
+              eq(admissionAlertSubscriptions.cycle, currentCycle),
             ),
           )
           .orderBy(asc(admissionAlertOutbox.createdAt))
@@ -99,6 +102,25 @@ export function createDrizzleAdmissionAlertDeliveryRepository(db = getDb()) {
           );
       });
     },
+    async canAttemptDelivery({ outboxId, currentCycle }) {
+      const [outbox] = await db
+        .select({ id: admissionAlertOutbox.id })
+        .from(admissionAlertOutbox)
+        .innerJoin(
+          admissionAlertSubscriptions,
+          eq(admissionAlertOutbox.subscriptionId, admissionAlertSubscriptions.id),
+        )
+        .where(
+          and(
+            eq(admissionAlertOutbox.id, outboxId),
+            eq(admissionAlertOutbox.status, 'processing'),
+            eq(admissionAlertSubscriptions.status, 'pending_delivery'),
+            eq(admissionAlertSubscriptions.cycle, currentCycle),
+          ),
+        )
+        .limit(1);
+      return Boolean(outbox);
+    },
     async retryDelivery(outboxId: string) {
       await db
         .update(admissionAlertOutbox)
@@ -113,14 +135,19 @@ export function createDrizzleAdmissionAlertDeliveryRepository(db = getDb()) {
 export async function processAdmissionAlertDelivery(input: {
   repository: AdmissionAlertDeliveryRepository;
   provider: AdmissionAlertMailProvider;
+  now?: Date;
 }): Promise<
   | { status: 'idle' }
   | { status: 'accepted'; outboxId: string }
   | { status: 'retry'; outboxId: string }
 > {
-  const delivery = await input.repository.claimNextDelivery();
+  const currentCycle = admissionCycleFor(input.now);
+  const delivery = await input.repository.claimNextDelivery({ currentCycle });
   if (!delivery) return { status: 'idle' };
   if (delivery.subscriptionStatus !== 'pending_delivery') return { status: 'idle' };
+  if (!(await input.repository.canAttemptDelivery({ outboxId: delivery.id, currentCycle }))) {
+    return { status: 'idle' };
+  }
 
   const sent = await input.provider.send({ idempotencyKey: delivery.idempotencyKey });
   if (sent.status === 'accepted') {

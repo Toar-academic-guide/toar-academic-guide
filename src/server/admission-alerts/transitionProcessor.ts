@@ -13,10 +13,11 @@ import {
   admissionReleases,
   admissionTargetTransitions,
 } from '@/db/schema';
+import { admissionCycleFor } from './cycle';
 import { decideAdmissionAlertTransition, type AlertTransitionDecision } from './transitionDecision';
 
 export interface AdmissionAlertTransitionProcessorRepository {
-  claimNextWork(): Promise<{
+  claimNextWork(input: { currentCycle: string }): Promise<{
     id: string;
     transitionId: string;
     subscriptions: Array<{
@@ -51,12 +52,15 @@ export async function processAdmissionAlertTransitionWork(input: {
     isMathematicallyVerified: boolean;
     ruleVersion: string;
   }>;
+  now?: Date;
 }): Promise<
   | { status: 'idle' }
   | { status: 'retry_later' }
   | { status: 'completed'; processedSubscriptionCount: number }
 > {
-  const work = await input.repository.claimNextWork();
+  const work = await input.repository.claimNextWork({
+    currentCycle: admissionCycleFor(input.now),
+  });
   if (!work) return { status: 'idle' };
 
   const decisions: Array<{ subscriptionId: string; decision: AlertTransitionDecision }> = [];
@@ -93,7 +97,7 @@ export async function processAdmissionAlertTransitionWork(input: {
 
 export function createDrizzleAdmissionAlertTransitionProcessorRepository(db = getDb()) {
   return {
-    async claimNextWork() {
+    async claimNextWork({ currentCycle }) {
       return db.transaction(async (tx) => {
         const [candidate] = await tx
           .select({
@@ -116,6 +120,7 @@ export function createDrizzleAdmissionAlertTransitionProcessorRepository(db = ge
             and(
               eq(admissionAlertTransitionWork.status, 'pending'),
               eq(admissionReleases.status, 'published'),
+              eq(admissionTargetTransitions.cycle, currentCycle),
             ),
           )
           .orderBy(asc(admissionAlertTransitionWork.createdAt))

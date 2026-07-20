@@ -49,6 +49,22 @@ describe('admission alert transition processor', () => {
     expect(result).toEqual({ status: 'retry_later' });
     expect(repository.decisions).toEqual([]);
   });
+
+  it('claims work only for the current admissions cycle', async () => {
+    const repository = new MemoryRepository();
+
+    await processAdmissionAlertTransitionWork({
+      repository,
+      now: new Date('2026-10-01T08:00:00.000Z'),
+      evaluate: async () => ({
+        decision: 'below',
+        isMathematicallyVerified: true,
+        ruleVersion: 'v2',
+      }),
+    });
+
+    expect(repository.claimedCycles).toEqual(['2027']);
+  });
 });
 
 class MemoryRepository implements AdmissionAlertTransitionProcessorRepository {
@@ -58,8 +74,10 @@ class MemoryRepository implements AdmissionAlertTransitionProcessorRepository {
     action: string;
     ruleVersion?: string;
   }> = [];
+  claimedCycles: string[] = [];
 
-  async claimNextWork() {
+  async claimNextWork({ currentCycle }: { currentCycle: string }) {
+    this.claimedCycles.push(currentCycle);
     return {
       id: 'work-1',
       transitionId: 'transition-1',

@@ -16,6 +16,7 @@ describe('admission alert delivery worker', () => {
           idempotencyKey: 'admission-alert:stable',
           subscriptionStatus: 'pending_delivery',
         }),
+        canAttemptDelivery: async () => true,
         acceptDelivery: async () => {
           calls.push('accepted');
         },
@@ -30,5 +31,48 @@ describe('admission alert delivery worker', () => {
 
     expect(result).toEqual({ status: 'accepted', outboxId: 'outbox-1' });
     expect(calls).toEqual(['accepted']);
+  });
+
+  it('claims deliveries only for the current admissions cycle', async () => {
+    const claimedCycles: string[] = [];
+
+    await processAdmissionAlertDelivery({
+      now: new Date('2026-10-01T08:00:00.000Z'),
+      repository: {
+        claimNextDelivery: async ({ currentCycle }) => {
+          claimedCycles.push(currentCycle);
+          return null;
+        },
+        canAttemptDelivery: async () => true,
+        acceptDelivery: async () => {},
+        retryDelivery: async () => {},
+      },
+      provider: { send: async () => ({ status: 'retryable' }) },
+    });
+
+    expect(claimedCycles).toEqual(['2027']);
+  });
+
+  it('does not submit a delivery that became expired after it was claimed', async () => {
+    const provider = {
+      send: vi.fn(async () => ({ status: 'accepted' as const, providerMessageId: 'id' })),
+    };
+
+    const result = await processAdmissionAlertDelivery({
+      repository: {
+        claimNextDelivery: async () => ({
+          id: 'outbox-1',
+          idempotencyKey: 'admission-alert:stable',
+          subscriptionStatus: 'pending_delivery',
+        }),
+        canAttemptDelivery: async () => false,
+        acceptDelivery: async () => {},
+        retryDelivery: async () => {},
+      },
+      provider,
+    });
+
+    expect(result).toEqual({ status: 'idle' });
+    expect(provider.send).not.toHaveBeenCalled();
   });
 });

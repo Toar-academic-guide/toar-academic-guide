@@ -1,0 +1,40 @@
+name: Expire Prior Admission Alert Cycles
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: admission-alert-cycle-reset
+  cancel-in-progress: false
+
+jobs:
+  expire-prior-cycles:
+    name: Expire prior admission alert cycles
+    runs-on: ubuntu-latest
+    environment: admissions-publication
+    env:
+      CI: true
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v7
+        with:
+          ref: main
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Expire prior admissions cycles
+        run: npm run admissions:expire

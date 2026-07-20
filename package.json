@@ -21,6 +21,7 @@
     "db:migrate:check": "drizzle-kit check",
     "admissions:freshness": "node scripts/admissions-source-freshness.mjs",
     "admissions:publish": "node scripts/publish-admissions-release.mjs",
+    "admissions:expire": "node scripts/expire-admission-alerts.mjs",
     "db:seed": "node scripts/seed-catalogue.mjs",
     "db:seed:dry-run": "node scripts/seed-catalogue.mjs --dry-run",
     "db:seed:verify": "node scripts/seed-catalogue.mjs --verify",
