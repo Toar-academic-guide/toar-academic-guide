@@ -497,6 +497,8 @@ export default function AppExperience({
         bagrut={landingCalcScores.bagrut}
         degreeId={landingCalcScores.degreeId}
         programs={cataloguePrograms}
+        academicScores={profile.academicScores}
+        onCompleteAcademicProfile={() => navigateToStep('academic-profile')}
         onBack={() => {
           navigateToStep('landing');
         }}

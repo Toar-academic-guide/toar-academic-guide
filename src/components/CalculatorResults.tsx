@@ -15,8 +15,14 @@ import {
   AdmissionsEvaluationApiError,
   fetchAdmissionsEvaluation,
 } from '@/lib/admissionsEvaluationClient';
+import {
+  AdmissionsRouteApiError,
+  fetchTauComputerScienceRoutes,
+  type AdmissionsRouteResult,
+  type AdmissionsRouteSearchResult,
+} from '@/lib/admissionsRouteClient';
 import type { CatalogueProgram } from '@/types/catalogue';
-import type { GeographicRegion } from '@/types';
+import type { AcademicScores, GeographicRegion } from '@/types';
 import type {
   AdmissionsEvaluationReport,
   AdmissionsEvaluationResult,
@@ -91,6 +97,8 @@ interface Props {
   degreeId: string;
   programs: CatalogueProgram[];
   onBack: () => void;
+  academicScores?: AcademicScores;
+  onCompleteAcademicProfile?: () => void;
 }
 
 export default function CalculatorResults({
@@ -99,6 +107,8 @@ export default function CalculatorResults({
   degreeId,
   programs,
   onBack,
+  academicScores,
+  onCompleteAcademicProfile,
 }: Props) {
   useEffect(() => {
     posthog.capture('calculator_results_viewed', { degree_id: degreeId });
@@ -115,6 +125,9 @@ export default function CalculatorResults({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<AdmissionsEvaluationApiError | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
+  const [routeResult, setRouteResult] = useState<AdmissionsRouteSearchResult | null>(null);
+  const [routeLoading, setRouteLoading] = useState(false);
+  const [routeError, setRouteError] = useState<AdmissionsRouteApiError | null>(null);
 
   const selectedProgram = programs.find((program) => program.id === degreeId);
 
@@ -181,6 +194,48 @@ export default function CalculatorResults({
       cancelled = true;
     };
   }, [bagrut, degreeId, psychometric, reloadToken]);
+
+  const tauBelowThreshold = report?.results.some(
+    (result) => result.linkedInstitutionId === 'tau' && result.decision === 'below',
+  );
+  const hasCompleteRouteProfile = Boolean(
+    academicScores?.psychometric?.overall !== undefined &&
+    academicScores.bagrut?.weightedAverage !== undefined &&
+    academicScores.bagrut?.subjectRecord,
+  );
+
+  useEffect(() => {
+    let cancelled = false;
+    setRouteResult(null);
+    setRouteError(null);
+    if (
+      degreeId !== 'tau_cs' ||
+      !tauBelowThreshold ||
+      !hasCompleteRouteProfile ||
+      !academicScores
+    ) {
+      setRouteLoading(false);
+      return;
+    }
+
+    setRouteLoading(true);
+    fetchTauComputerScienceRoutes(academicScores)
+      .then((result) => !cancelled && setRouteResult(result))
+      .catch((error: unknown) => {
+        if (!cancelled) {
+          setRouteError(
+            error instanceof AdmissionsRouteApiError
+              ? error
+              : new AdmissionsRouteApiError('לא הצלחנו לאמת מסלול קבלה כרגע.'),
+          );
+        }
+      })
+      .finally(() => !cancelled && setRouteLoading(false));
+
+    return () => {
+      cancelled = true;
+    };
+  }, [academicScores, degreeId, hasCompleteRouteProfile, tauBelowThreshold]);
 
   const displayRows = useMemo(() => {
     return (report?.results ?? [])
@@ -394,6 +449,16 @@ export default function CalculatorResults({
           </div>
         </div>
 
+        {degreeId === 'tau_cs' && tauBelowThreshold ? (
+          <VerifiedRoutePanel
+            completeProfile={hasCompleteRouteProfile}
+            loading={routeLoading}
+            result={routeResult}
+            error={routeError}
+            onCompleteAcademicProfile={onCompleteAcademicProfile}
+          />
+        ) : null}
+
         {loading ? (
           <div className="rounded-2xl border-2 border-black bg-white p-12 text-center">
             <LoaderCircle className="mx-auto h-6 w-6 animate-spin text-slate-500" />
@@ -554,6 +619,105 @@ export default function CalculatorResults({
       </div>
     </div>
   );
+}
+
+function VerifiedRoutePanel({
+  completeProfile,
+  loading,
+  result,
+  error,
+  onCompleteAcademicProfile,
+}: {
+  completeProfile: boolean;
+  loading: boolean;
+  result: AdmissionsRouteSearchResult | null;
+  error: AdmissionsRouteApiError | null;
+  onCompleteAcademicProfile?: () => void;
+}) {
+  return (
+    <section className="mb-8 rounded-2xl border-2 border-black bg-[#e8f9ff] p-5" aria-live="polite">
+      <p className="text-base font-black text-slate-900">
+        הדרך המהירה ביותר להתקבל למדעי המחשב בתל אביב
+      </p>
+      <p className="mt-1 text-sm text-slate-600">
+        ההמלצות מוצגות רק אחרי אימות מול מחשבון הקבלה הרשמי של אוניברסיטת תל אביב.
+      </p>
+      {!completeProfile ? (
+        <>
+          <p className="mt-3 text-sm font-semibold text-slate-800">
+            כדי לחשב מסלול מאומת, יש להשלים את מקצועות הבגרות והיחידות שלך בפרופיל.
+          </p>
+          {onCompleteAcademicProfile ? (
+            <button
+              type="button"
+              onClick={onCompleteAcademicProfile}
+              className="mt-3 rounded-full bg-slate-900 px-4 py-2 text-sm font-bold text-white"
+            >
+              השלמת פרופיל אקדמי
+            </button>
+          ) : null}
+        </>
+      ) : null}
+      {loading ? (
+        <p className="mt-3 text-sm font-semibold text-slate-700">
+          מאמתים מסלולים אפשריים מול המקור הרשמי…
+        </p>
+      ) : null}
+      {error ? (
+        <p className="mt-3 text-sm font-semibold text-rose-800">
+          האימות הרשמי אינו זמין כרגע — לא הוצגה המלצה לא מאומתת.
+        </p>
+      ) : null}
+      {!loading && !error && result?.status === 'no_route' ? (
+        <p className="mt-3 text-sm font-semibold text-slate-700">
+          לא נמצא כרגע מסלול מתמטי מאומת במסגרת האפשרויות שנבדקו.
+        </p>
+      ) : null}
+      {!loading && !error && result?.status === 'search_incomplete' ? (
+        <p className="mt-3 text-sm font-semibold text-slate-700">
+          לא הצלחנו להשלים את החיפוש בבטחה, לכן לא הוצגה המלצה.
+        </p>
+      ) : null}
+      {!loading && !error && result?.status === 'complete' && result.fastest ? (
+        <div className="mt-4 grid gap-3 sm:grid-cols-2">
+          <RouteCard title="המהיר ביותר" route={result.fastest} />
+          {result.lowestEffort && result.lowestEffort.id !== result.fastest.id ? (
+            <RouteCard title="הכי מעט מאמץ" route={result.lowestEffort} />
+          ) : null}
+        </div>
+      ) : null}
+    </section>
+  );
+}
+
+function RouteCard({ title, route }: { title: string; route: AdmissionsRouteResult }) {
+  return (
+    <article className="rounded-xl border-2 border-black bg-white p-4">
+      <h2 className="text-sm font-black text-slate-900">{title}</h2>
+      <ul className="mt-2 list-inside list-disc text-sm text-slate-700">
+        {route.actions.map((action) => (
+          <li key={action.id}>{routeActionLabel(action)}</li>
+        ))}
+      </ul>
+      <p className="mt-3 text-xs font-semibold text-slate-600">
+        הערכה סטנדרטית ושקופה: כ-{route.estimate.durationWeeks} שבועות · מאמץ{' '}
+        {route.estimate.effortPoints}/5
+      </p>
+      <p className="mt-2 text-xs text-slate-500">
+        אומת מול ציון {route.verification.score} וסף {route.verification.cutoff}. זהו חישוב קבלה, לא
+        הבטחת קבלה סופית.
+      </p>
+    </article>
+  );
+}
+
+function routeActionLabel(action: AdmissionsRouteResult['actions'][number]) {
+  if (action.kind === 'psychometric') return `לשפר פסיכומטרי מ-${action.from} ל-${action.to}`;
+  if (action.kind === 'improve_grade')
+    return `לשפר ציון ${action.subjectId} מ-${action.fromGrade} ל-${action.toGrade}`;
+  if (action.kind === 'expand_units')
+    return `להרחיב ${action.subjectId} מ-${action.fromUnits} ל-${action.toUnits} יחידות`;
+  return `להוסיף ${action.subjectId}: ${action.units} יחידות בציון ${action.grade}`;
 }
 
 function FilterChip({
