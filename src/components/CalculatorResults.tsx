@@ -203,6 +203,11 @@ export default function CalculatorResults({
     academicScores.bagrut?.weightedAverage !== undefined &&
     academicScores.bagrut?.subjectRecord,
   );
+  const routeProfileMatchesCalculation = Boolean(
+    hasCompleteRouteProfile &&
+    academicScores?.psychometric?.overall === psychometric &&
+    academicScores.bagrut?.weightedAverage === bagrut,
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -212,6 +217,7 @@ export default function CalculatorResults({
       degreeId !== 'tau_cs' ||
       !tauBelowThreshold ||
       !hasCompleteRouteProfile ||
+      !routeProfileMatchesCalculation ||
       !academicScores
     ) {
       setRouteLoading(false);
@@ -235,7 +241,13 @@ export default function CalculatorResults({
     return () => {
       cancelled = true;
     };
-  }, [academicScores, degreeId, hasCompleteRouteProfile, tauBelowThreshold]);
+  }, [
+    academicScores,
+    degreeId,
+    hasCompleteRouteProfile,
+    routeProfileMatchesCalculation,
+    tauBelowThreshold,
+  ]);
 
   const displayRows = useMemo(() => {
     return (report?.results ?? [])
@@ -452,6 +464,7 @@ export default function CalculatorResults({
         {degreeId === 'tau_cs' && tauBelowThreshold ? (
           <VerifiedRoutePanel
             completeProfile={hasCompleteRouteProfile}
+            profileMatchesCalculation={routeProfileMatchesCalculation}
             loading={routeLoading}
             result={routeResult}
             error={routeError}
@@ -623,12 +636,14 @@ export default function CalculatorResults({
 
 function VerifiedRoutePanel({
   completeProfile,
+  profileMatchesCalculation,
   loading,
   result,
   error,
   onCompleteAcademicProfile,
 }: {
   completeProfile: boolean;
+  profileMatchesCalculation: boolean;
   loading: boolean;
   result: AdmissionsRouteSearchResult | null;
   error: AdmissionsRouteApiError | null;
@@ -654,6 +669,22 @@ function VerifiedRoutePanel({
               className="mt-3 rounded-full bg-slate-900 px-4 py-2 text-sm font-bold text-white"
             >
               השלמת פרופיל אקדמי
+            </button>
+          ) : null}
+        </>
+      ) : null}
+      {completeProfile && !profileMatchesCalculation ? (
+        <>
+          <p className="mt-3 text-sm font-semibold text-slate-800">
+            יש לעדכן את הפרופיל כך שיתאים לציונים שחושבו כאן לפני שנוכל לאמת מסלול קבלה.
+          </p>
+          {onCompleteAcademicProfile ? (
+            <button
+              type="button"
+              onClick={onCompleteAcademicProfile}
+              className="mt-3 rounded-full bg-slate-900 px-4 py-2 text-sm font-bold text-white"
+            >
+              עדכון פרופיל אקדמי
             </button>
           ) : null}
         </>

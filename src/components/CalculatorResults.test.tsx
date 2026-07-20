@@ -123,6 +123,53 @@ describe('CalculatorResults', () => {
     expect(hoistedMocks.fetchTauComputerScienceRoutes).not.toHaveBeenCalled();
   });
 
+  it('requires the saved profile scores to match the calculation before requesting a route', async () => {
+    hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
+      report([
+        {
+          institution: { id: 'tau', name: 'אוניברסיטת תל אביב', region: 'center' },
+          linkedInstitutionId: 'tau',
+          capability: 'exact',
+          kind: 'exact',
+          decision: 'below',
+          confidence: 'high',
+          sourceLabel: 'אימות רשמי',
+          explanation: 'מתחת לסף',
+          nextAction: 'השלימו נתונים',
+          score: 690,
+          threshold: 706,
+        },
+      ]),
+    );
+
+    render(
+      <CalculatorResults
+        degreeId="tau_cs"
+        programs={programs}
+        psychometric={680}
+        bagrut={108}
+        onBack={() => {}}
+        onCompleteAcademicProfile={() => {}}
+        academicScores={{
+          psychometric: { overall: 690 },
+          bagrut: {
+            weightedAverage: 108,
+            subjectRecord: {
+              schemaVersion: 1,
+              sector: 'jewish',
+              subjects: [{ subjectId: 'mathematics', units: 5, grade: 80 }],
+            },
+          },
+        }}
+      />,
+    );
+
+    expect(
+      await screen.findByText(/יש לעדכן את הפרופיל כך שיתאים לציונים שחושבו כאן/),
+    ).toBeTruthy();
+    expect(hoistedMocks.fetchTauComputerScienceRoutes).not.toHaveBeenCalled();
+  });
+
   it('renders separate official fastest and lowest-effort route cards', async () => {
     hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
       report([
