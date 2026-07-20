@@ -27,7 +27,7 @@ describe('reviewed admissions manifest', () => {
   it('canonicalizes source-backed changes byte-stably', () => {
     const manifest = parseReviewedAdmissionsManifest({ version: 1, changes: [change] });
     expect(canonicalizeReviewedAdmissionsManifest(manifest)).toMatchInlineSnapshot(`
-      "{\"version\":1,\"changes\":[{\"target\":{\"institutionId\":\"tau\",\"programId\":\"tau_cs\",\"cycle\":\"2027\"},\"ruleKind\":\"admission_cutoff\",\"before\":706,\"after\":700,\"effectiveFrom\":\"2026-08-01\",\"sourceProofs\":[{\"sourceId\":\"tau-computer-science\",\"digest\":\"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"excerpt\":\"Current published admission cutoff: 700.\",\"url\":\"https://go.tau.ac.il/he/exact/ba/computer\"}]}]}"
+      "{"version":1,"changes":[{"target":{"institutionId":"tau","programId":"tau_cs","cycle":"2027"},"ruleKind":"admission_cutoff","before":706,"after":700,"effectiveFrom":"2026-08-01","sourceProofs":[{"sourceId":"tau-computer-science","digest":"sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","excerpt":"Current published admission cutoff: 700.","url":"https://go.tau.ac.il/he/exact/ba/computer"}]}]}"
     `);
   });
 

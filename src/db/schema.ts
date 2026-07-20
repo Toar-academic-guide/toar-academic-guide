@@ -148,6 +148,15 @@ export const sourceFreshnessStatusEnum = pgEnum('source_freshness_status', [
   'failed',
   'fresh',
 ]);
+export const admissionReleaseStatusEnum = pgEnum('admission_release_status', [
+  'pending',
+  'published',
+  'failed',
+]);
+export const admissionPublicationAttemptStatusEnum = pgEnum(
+  'admission_publication_attempt_status',
+  ['started', 'succeeded', 'failed'],
+);
 
 export const institutions = pgTable('institutions', {
   id: text('id').primaryKey(),
@@ -551,5 +560,107 @@ export const sourceFreshnessChecks = pgTable(
     ),
     statusIdx: index('source_freshness_checks_status_idx').on(table.status),
     reviewItemIdx: index('source_freshness_checks_review_item_idx').on(table.reviewItemId),
+  }),
+);
+
+export const admissionReleases = pgTable(
+  'admission_releases',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    manifestDigest: text('manifest_digest').notNull(),
+    repositoryCommit: text('repository_commit').notNull(),
+    status: admissionReleaseStatusEnum('status').default('pending').notNull(),
+    publishedAt: timestamp('published_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => ({
+    manifestDigestUnique: uniqueIndex('admission_releases_manifest_digest_unique').on(
+      table.manifestDigest,
+    ),
+    publishedAtIndex: index('admission_releases_published_at_idx').on(table.publishedAt),
+  }),
+);
+
+export const admissionTargetTransitions = pgTable(
+  'admission_target_transitions',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    releaseId: uuid('release_id')
+      .notNull()
+      .references(() => admissionReleases.id, { onDelete: 'cascade' }),
+    institutionId: text('institution_id')
+      .notNull()
+      .references(() => institutions.id, { onDelete: 'restrict' }),
+    programId: text('program_id')
+      .notNull()
+      .references(() => programs.id, { onDelete: 'restrict' }),
+    cycle: text('cycle').notNull(),
+    beforeVersion: text('before_version').notNull(),
+    afterVersion: text('after_version').notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => ({
+    releaseTargetUnique: uniqueIndex('admission_target_transitions_release_target_unique').on(
+      table.releaseId,
+      table.institutionId,
+      table.programId,
+      table.cycle,
+    ),
+    targetLookup: index('admission_target_transitions_target_lookup_idx').on(
+      table.institutionId,
+      table.programId,
+      table.cycle,
+    ),
+  }),
+);
+
+export const admissionReleaseItems = pgTable(
+  'admission_release_items',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    transitionId: uuid('transition_id')
+      .notNull()
+      .references(() => admissionTargetTransitions.id, { onDelete: 'cascade' }),
+    ruleKind: text('rule_kind').notNull(),
+    beforeValue: jsonb('before_value').$type<{ value: number | string }>().notNull(),
+    afterValue: jsonb('after_value').$type<{ value: number | string }>().notNull(),
+    effectiveFrom: text('effective_from').notNull(),
+    sourceProofs: jsonb('source_proofs')
+      .$type<
+        Array<{
+          sourceId: string;
+          digest: string;
+          excerpt: string;
+          url: string;
+        }>
+      >()
+      .notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => ({
+    transitionRuleKindUnique: uniqueIndex('admission_release_items_transition_rule_kind_unique').on(
+      table.transitionId,
+      table.ruleKind,
+    ),
+  }),
+);
+
+export const admissionPublicationAttempts = pgTable(
+  'admission_publication_attempts',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    releaseId: uuid('release_id')
+      .notNull()
+      .references(() => admissionReleases.id, { onDelete: 'cascade' }),
+    status: admissionPublicationAttemptStatusEnum('status').default('started').notNull(),
+    errorMessage: text('error_message'),
+    startedAt: timestamp('started_at', { withTimezone: true }).defaultNow().notNull(),
+    completedAt: timestamp('completed_at', { withTimezone: true }),
+  },
+  (table) => ({
+    releaseStartedAtIndex: index('admission_publication_attempts_release_started_at_idx').on(
+      table.releaseId,
+      table.startedAt,
+    ),
   }),
 );
