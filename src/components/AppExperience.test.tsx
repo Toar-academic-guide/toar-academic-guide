@@ -7,6 +7,7 @@ const hoisted = vi.hoisted(() => ({
   push: vi.fn(),
   fetchCataloguePrograms: vi.fn(),
   fetchCatalogueInstitutions: vi.fn(),
+  updateProfile: vi.fn(),
 }));
 
 vi.mock('next/navigation', () => ({
@@ -39,7 +40,7 @@ vi.mock('@/hooks/useUserProfile', () => ({
     syncError: null,
     syncing: false,
     toggleSavedProgram: vi.fn(),
-    updateProfile: vi.fn(),
+    updateProfile: hoisted.updateProfile,
   }),
 }));
 
@@ -116,7 +117,26 @@ vi.mock('@/components/QuizIntro', () => ({
 }));
 
 vi.mock('@/components/AcademicProfileForm', () => ({
-  default: () => <div>academic-profile</div>,
+  default: ({ onComplete }: { onComplete: (scores: unknown) => void }) => (
+    <button
+      type="button"
+      onClick={() =>
+        onComplete({
+          psychometric: { overall: 650 },
+          bagrut: {
+            weightedAverage: 102,
+            subjectRecord: {
+              schemaVersion: 1,
+              sector: 'jewish',
+              subjects: [{ subjectId: 'mathematics', units: 5, grade: 90 }],
+            },
+          },
+        })
+      }
+    >
+      academic-profile
+    </button>
+  ),
 }));
 
 vi.mock('@/components/CareerAssessment', () => ({
@@ -148,7 +168,15 @@ vi.mock('@/components/ResultsDashboard', () => ({
 }));
 
 vi.mock('@/components/CalculatorResults', () => ({
-  default: () => <div>calculator-results</div>,
+  default: ({
+    degreeId,
+    psychometric,
+    bagrut,
+  }: {
+    degreeId: string;
+    psychometric: number;
+    bagrut: number;
+  }) => <div>{`calculator-results:${degreeId}:${psychometric}:${bagrut}`}</div>,
 }));
 
 vi.mock('@/utils/recommendationEngine', () => ({
@@ -160,6 +188,8 @@ import AppExperience from './AppExperience';
 describe('AppExperience route entry', () => {
   beforeEach(() => {
     hoisted.push.mockReset();
+    hoisted.updateProfile.mockReset();
+    hoisted.updateProfile.mockResolvedValue(true);
     hoisted.fetchCataloguePrograms.mockResolvedValue([
       {
         id: 'technion-computer-science',
@@ -209,5 +239,56 @@ describe('AppExperience route entry', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'go-profile' }));
     expect(hoisted.push).toHaveBeenCalledWith('/app/profile');
+  });
+
+  it('returns a validated alert continuation to the TAU result after the profile is saved', async () => {
+    render(
+      <AppExperience
+        initialStep="academic-profile"
+        admissionAlertTarget={{ institutionId: 'tau', programId: 'tau_cs' }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'academic-profile' }));
+
+    await waitFor(() => expect(screen.getByText('calculator-results:tau_cs:650:102')).toBeTruthy());
+  });
+
+  it('does not show the TAU alert confirmation until the profile save succeeds', async () => {
+    let resolveProfileSave: ((value: boolean) => void) | undefined;
+    hoisted.updateProfile.mockImplementation(
+      () => new Promise<boolean>((resolve) => (resolveProfileSave = resolve)),
+    );
+
+    render(
+      <AppExperience
+        initialStep="academic-profile"
+        admissionAlertTarget={{ institutionId: 'tau', programId: 'tau_cs' }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'academic-profile' }));
+    expect(screen.queryByText('calculator-results:tau_cs:650:102')).toBeNull();
+
+    resolveProfileSave?.(true);
+
+    await waitFor(() => expect(screen.getByText('calculator-results:tau_cs:650:102')).toBeTruthy());
+  });
+
+  it('keeps the user on the profile when saving it fails', async () => {
+    hoisted.updateProfile.mockResolvedValue(false);
+
+    render(
+      <AppExperience
+        initialStep="academic-profile"
+        admissionAlertTarget={{ institutionId: 'tau', programId: 'tau_cs' }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'academic-profile' }));
+
+    await waitFor(() => expect(hoisted.updateProfile).toHaveBeenCalled());
+    expect(screen.getByRole('button', { name: 'academic-profile' })).toBeTruthy();
+    expect(screen.queryByText('calculator-results:tau_cs:650:102')).toBeNull();
   });
 });

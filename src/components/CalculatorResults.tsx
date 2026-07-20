@@ -520,6 +520,7 @@ export default function CalculatorResults({
             onCompleteAcademicProfile={onCompleteAcademicProfile}
             subscriptionStatus={subscriptionStatus}
             onAdmissionAlert={handleAdmissionAlert}
+            email={user?.email ?? null}
           />
         ) : null}
 
@@ -694,6 +695,7 @@ function VerifiedRoutePanel({
   onCompleteAcademicProfile,
   subscriptionStatus,
   onAdmissionAlert,
+  email,
 }: {
   completeProfile: boolean;
   profileMatchesCalculation: boolean;
@@ -710,6 +712,7 @@ function VerifiedRoutePanel({
     | 'already_eligible'
     | 'error';
   onAdmissionAlert: () => void;
+  email: string | null;
 }) {
   return (
     <section className="mb-8 rounded-2xl border-2 border-black bg-[#e8f9ff] p-5" aria-live="polite">
@@ -724,6 +727,11 @@ function VerifiedRoutePanel({
         <p className="mt-1 text-xs leading-relaxed text-slate-600">
           נבדוק רק שינויים שפורסמו ונבדקו, ונשלח עדכון אם החישוב המתמטי שלך יהפוך לזכאות.
         </p>
+        {email ? (
+          <p className="mt-2 text-xs font-medium text-slate-700">
+            אם תפעיל/י מעקב, העדכון החד-פעמי יישלח אל {email}.
+          </p>
+        ) : null}
         {subscriptionStatus === 'created' || subscriptionStatus === 'existing' ? (
           <p className="mt-3 text-sm font-semibold text-emerald-800">
             המעקב פעיל. נעדכן אותך אם התנאים ישתנו.
@@ -735,7 +743,7 @@ function VerifiedRoutePanel({
             disabled={subscriptionStatus === 'submitting'}
             className="mt-3 min-h-11 rounded-full bg-slate-900 px-4 py-2 text-sm font-bold text-white disabled:cursor-wait disabled:opacity-60"
           >
-            {subscriptionStatus === 'submitting' ? 'מפעילים מעקב…' : 'עדכנו אותי כשאהיה זכאי/ת'}
+            {subscriptionStatus === 'submitting' ? 'מפעילים מעקב…' : 'אשרו והפעילו מעקב'}
           </button>
         )}
         {subscriptionStatus === 'profile_incomplete' ? (

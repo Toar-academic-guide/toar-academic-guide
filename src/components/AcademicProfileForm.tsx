@@ -20,12 +20,17 @@ interface FileInfo {
 }
 
 interface Props {
-  onComplete: (scores: AcademicScores) => void;
+  onComplete: (scores: AcademicScores) => void | Promise<boolean | void>;
   onSkip: () => void;
   onClearLocalProfileData: () => Promise<void>;
   initialScores?: AcademicScores;
   initialDocuments?: UserProfile['uploadedDocuments'];
   isAuthenticated?: boolean;
+  alertContinuation?: {
+    title: string;
+    submitLabel: string;
+    requiresStructuredBagrut: boolean;
+  };
 }
 
 export default function AcademicProfileForm({
@@ -35,6 +40,7 @@ export default function AcademicProfileForm({
   initialScores,
   initialDocuments = [],
   isAuthenticated = false,
+  alertContinuation,
 }: Props) {
   const [psyOverall, setPsyOverall] = useState(
     initialScores?.psychometric?.overall?.toString() ?? '',
@@ -116,6 +122,17 @@ export default function AcademicProfileForm({
       };
     }
 
+    if (
+      alertContinuation?.requiresStructuredBagrut &&
+      (!scores.psychometric?.overall ||
+        !scores.bagrut?.weightedAverage ||
+        !scores.bagrut.subjectRecord?.subjects.length)
+    ) {
+      setError('כדי להפעיל מעקב צריך להשלים את מקצועות הבגרות והיחידות שלך.');
+      setIsSaving(false);
+      return;
+    }
+
     try {
       const promises: Promise<void>[] = [];
 
@@ -176,7 +193,11 @@ export default function AcademicProfileForm({
       }
 
       await Promise.all(promises);
-      onComplete(scores);
+      const completed = await onComplete(scores);
+      if (completed === false) {
+        setError('לא הצלחנו לשמור את הפרופיל שלך. אפשר לנסות שוב.');
+        setIsSaving(false);
+      }
     } catch (caughtError: any) {
       console.error('[AcademicProfileForm] Error saving documents:', caughtError);
       setError(caughtError.message || 'התרחשה שגיאה בשמירת המסמכים. אנא נסה שנית.');
@@ -214,6 +235,11 @@ export default function AcademicProfileForm({
             <p className="mt-1.5 text-sm text-slate-400">
               המידע יאפשר חישוב מדויק של סיכויי הקבלה שלך. כל השדות אופציונליים — מלא את מה שיש לך.
             </p>
+            {alertContinuation ? (
+              <p className="mt-3 rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-xs font-semibold leading-5 text-sky-900">
+                {alertContinuation.title}
+              </p>
+            ) : null}
           </div>
 
           <section className="mb-8">
@@ -530,7 +556,7 @@ export default function AcademicProfileForm({
               ].join(' ')}
             >
               {isSaving ? <Loader2 size={16} className="animate-spin" /> : null}
-              <span>שמור והמשך לשאלון ←</span>
+              <span>{alertContinuation?.submitLabel ?? 'שמור והמשך לשאלון ←'}</span>
             </button>
             <button
               type="button"
