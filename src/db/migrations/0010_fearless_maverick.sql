@@ -35,5 +35,17 @@ DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'app_runtime') THEN
     GRANT SELECT, INSERT ON TABLE "bagrut_profile_versions" TO app_runtime;
+
+    CREATE POLICY "bagrut_profile_versions_app_runtime_read"
+      ON "bagrut_profile_versions"
+      FOR SELECT
+      TO app_runtime
+      USING (true);
+
+    CREATE POLICY "bagrut_profile_versions_app_runtime_insert"
+      ON "bagrut_profile_versions"
+      FOR INSERT
+      TO app_runtime
+      WITH CHECK (true);
   END IF;
 END $$;
