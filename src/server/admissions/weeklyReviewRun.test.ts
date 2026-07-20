@@ -65,6 +65,7 @@ describe('weekly admissions review run', () => {
     });
     expect(run.markdown).toContain('Tel Aviv University');
     expect(run.markdown).toContain('700 → 695');
+    expect(run.markdown).toContain('tau-digital-sciences-live:admission_cutoff');
     expect(run.markdown).not.toContain('selectedScore');
   });
 
@@ -93,6 +94,37 @@ describe('weekly admissions review run', () => {
       'no_reviewed_baseline',
     ]);
     expect(run.markdown).toContain('endpoint timeout');
+  });
+
+  it('keeps an explicitly reviewer-excluded safe candidate out of the generated manifest', () => {
+    const run = buildAdmissionsReviewRun({
+      runKey: '2026-W30',
+      checkedAt: new Date('2026-07-19T03:00:00.000Z'),
+      cycle: '2027',
+      baseline,
+      proofs: [decisionProof()],
+      excludedCandidateIds: ['tau-digital-sciences-live:admission_cutoff'],
+    });
+
+    expect(run.manifest.changes).toEqual([]);
+    expect(run.summary).toMatchObject({
+      candidateCount: 0,
+      excludedCount: 1,
+      status: 'no_changes',
+    });
+    expect(run.excluded).toMatchObject([
+      {
+        sourceProofId: 'tau-digital-sciences-live',
+        reason: 'reviewer_excluded',
+      },
+    ]);
+    expect(run.reviewMetadata).toEqual({
+      version: 1,
+      runKey: '2026-W30',
+      excludedCandidateIds: ['tau-digital-sciences-live:admission_cutoff'],
+    });
+    expect(run.markdown).toContain('reviewer_excluded');
+    expect(run.markdown).toContain('tau-digital-sciences-live:admission_cutoff');
   });
 
   it('uses one stable Slack summary for a reviewable run and one no-change summary without a PR', () => {

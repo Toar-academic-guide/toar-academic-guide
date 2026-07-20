@@ -11,7 +11,11 @@ export interface PublishedAdmissionRule {
 }
 
 export type AdmissionsReviewExclusionReason =
-  'proof_not_decision_capable' | 'missing_program_or_cutoff' | 'no_reviewed_baseline' | 'unchanged';
+  | 'proof_not_decision_capable'
+  | 'missing_program_or_cutoff'
+  | 'no_reviewed_baseline'
+  | 'unchanged'
+  | 'reviewer_excluded';
 
 export interface AdmissionsReviewExclusion {
   sourceProofId: string;
@@ -44,8 +48,15 @@ export interface AdmissionsReviewRun {
   };
   candidates: AdmissionsReviewCandidate[];
   excluded: AdmissionsReviewExclusion[];
+  reviewMetadata: AdmissionsReviewRunMetadata;
   manifest: ReviewedAdmissionsManifest;
   markdown: string;
+}
+
+export interface AdmissionsReviewRunMetadata {
+  version: 1;
+  runKey: string;
+  excludedCandidateIds: string[];
 }
 
 export interface AdmissionsReviewSlackMessage {
@@ -59,11 +70,13 @@ export function buildAdmissionsReviewRun(input: {
   cycle: string;
   baseline: PublishedAdmissionRule[];
   proofs: AdmissionsSourceProof[];
+  excludedCandidateIds?: string[];
 }): AdmissionsReviewRun {
   const baselineByTarget = new Map(
     input.baseline.map((rule) => [ruleKey(rule.target, rule.ruleKind), rule]),
   );
-  const candidates: AdmissionsReviewCandidate[] = [];
+  const candidates: Array<{ candidate: AdmissionsReviewCandidate; proof: AdmissionsSourceProof }> =
+    [];
   const excluded: AdmissionsReviewExclusion[] = [];
 
   for (const proof of input.proofs) {
@@ -97,27 +110,49 @@ export function buildAdmissionsReviewRun(input: {
     }
 
     candidates.push({
-      id: `${proof.id}:admission_cutoff`,
-      target,
-      ruleKind: 'admission_cutoff',
-      before: current.value,
-      after: cutoff,
-      sourceProof: {
-        sourceId: proof.id,
-        digest: digest(stableJson(proof.normalizedPayload)),
-        excerpt: safeExcerpt(proof, cutoff),
-        url: proof.officialUrl,
+      candidate: {
+        id: `${proof.id}:admission_cutoff`,
+        target,
+        ruleKind: 'admission_cutoff',
+        before: current.value,
+        after: cutoff,
+        sourceProof: {
+          sourceId: proof.id,
+          digest: digest(stableJson(proof.normalizedPayload)),
+          excerpt: safeExcerpt(proof, cutoff),
+          url: proof.officialUrl,
+        },
+        institutionName: proof.institutionName,
       },
-      institutionName: proof.institutionName,
+      proof,
     });
   }
 
-  candidates.sort((left, right) => candidateKey(left).localeCompare(candidateKey(right)));
+  candidates.sort((left, right) =>
+    candidateKey(left.candidate).localeCompare(candidateKey(right.candidate)),
+  );
+  const requestedExclusions = new Set(input.excludedCandidateIds ?? []);
+  const includedCandidates: AdmissionsReviewCandidate[] = [];
+  const acceptedExcludedCandidateIds: string[] = [];
+  for (const { candidate, proof } of candidates) {
+    if (requestedExclusions.has(candidate.id)) {
+      acceptedExcludedCandidateIds.push(candidate.id);
+      excluded.push({
+        sourceProofId: proof.id,
+        institutionName: proof.institutionName,
+        reason: 'reviewer_excluded',
+        detail: `A reviewer excluded candidate ${candidate.id} from the generated admissions update.`,
+        sourceUrl: proof.officialUrl,
+      });
+      continue;
+    }
+    includedCandidates.push(candidate);
+  }
   excluded.sort((left, right) => left.sourceProofId.localeCompare(right.sourceProofId));
 
   const manifest: ReviewedAdmissionsManifest = {
     version: 1,
-    changes: candidates.map((candidate) => ({
+    changes: includedCandidates.map((candidate) => ({
       target: candidate.target,
       ruleKind: candidate.ruleKind,
       before: candidate.before,
@@ -127,19 +162,25 @@ export function buildAdmissionsReviewRun(input: {
     })),
   };
   const summary = {
-    status: candidates.length > 0 ? ('reviewable' as const) : ('no_changes' as const),
-    candidateCount: candidates.length,
+    status: includedCandidates.length > 0 ? ('reviewable' as const) : ('no_changes' as const),
+    candidateCount: includedCandidates.length,
     excludedCount: excluded.length,
     freshCount: excluded.filter((item) => item.reason === 'unchanged').length,
     blockedCount: input.proofs.filter((proof) => proof.status === 'blocked').length,
     failedCount: input.proofs.filter((proof) => proof.status === 'failed').length,
   };
+  const reviewMetadata: AdmissionsReviewRunMetadata = {
+    version: 1,
+    runKey: input.runKey,
+    excludedCandidateIds: acceptedExcludedCandidateIds,
+  };
   const run = {
     runKey: input.runKey,
     checkedAt: input.checkedAt.toISOString(),
     summary,
-    candidates,
+    candidates: includedCandidates,
     excluded,
+    reviewMetadata,
     manifest,
     markdown: '',
   } satisfies Omit<AdmissionsReviewRun, 'markdown'> & { markdown: string };
@@ -199,6 +240,7 @@ function buildAdmissionsReviewMarkdown(run: Omit<AdmissionsReviewRun, 'markdown'
       lines.push(
         `- **${safeText(candidate.institutionName)} / ${candidate.target.programId}** — ${candidate.before} → ${candidate.after}`,
       );
+      lines.push(`  - Candidate id: ${candidate.id}`);
       lines.push(`  - Source: ${candidate.sourceProof.url}`);
       lines.push(`  - Evidence: ${candidate.sourceProof.excerpt}`);
     }
@@ -232,6 +274,7 @@ function exclusion(
       'The official proof did not contain a verified program identifier and cutoff.',
     no_reviewed_baseline: 'No reviewed published baseline exists for this target.',
     unchanged: 'The official cutoff matches the current reviewed baseline.',
+    reviewer_excluded: 'A reviewer excluded this candidate from the generated admissions update.',
   };
   return {
     sourceProofId: proof.id,
