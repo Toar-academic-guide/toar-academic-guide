@@ -50,6 +50,9 @@ export default function AcademicProfileForm({
     initialScores?.bagrut?.weightedAverage?.toString() ?? '',
   );
   const [bagrutEstimate, setBagrutEstimate] = useState<number | null>(null);
+  const [bagrutSubjectRecord, setBagrutSubjectRecord] = useState(
+    initialScores?.bagrut?.subjectRecord,
+  );
 
   const initialPsy = initialDocuments?.find((document) => document.kind === 'psychometric');
   const initialBagrut = initialDocuments?.find((document) => document.kind === 'bagrut');
@@ -74,6 +77,7 @@ export default function AcademicProfileForm({
     setPsyVerbal('');
     setPsyEnglish('');
     setBagrutAverage('');
+    setBagrutSubjectRecord(undefined);
     setPsyFile(null);
     setBagrutFile(null);
     setPsyFileObject(null);
@@ -105,8 +109,11 @@ export default function AcademicProfileForm({
     }
 
     const weightedAverage = bagrutAverage ? Number(bagrutAverage) : undefined;
-    if (weightedAverage !== undefined) {
-      scores.bagrut = { weightedAverage };
+    if (weightedAverage !== undefined || bagrutSubjectRecord) {
+      scores.bagrut = {
+        ...(weightedAverage !== undefined ? { weightedAverage } : {}),
+        ...(bagrutSubjectRecord ? { subjectRecord: bagrutSubjectRecord } : {}),
+      };
     }
 
     try {
@@ -468,7 +475,10 @@ export default function AcademicProfileForm({
             </div>
 
             <div className="mt-4">
-              <BagrutCalculatorWizard onComplete={(average) => setBagrutEstimate(average)} />
+              <BagrutCalculatorWizard
+                onComplete={(average) => setBagrutEstimate(average)}
+                onStructuredComplete={setBagrutSubjectRecord}
+              />
             </div>
           </section>
 

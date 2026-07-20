@@ -25,7 +25,7 @@ function getProgram(id: string) {
 }
 
 describe('sekhemCalculators', () => {
-  it('applies TAU engineering bonuses only to TAU engineering or exact-sciences programs and caps the result at 800', () => {
+  it('applies the published TAU qualifying Math-and-Physics bonus only to engineering or exact-sciences programs and caps the result at 800', () => {
     const tau = getUniversity('tau');
     const tauEngineeringProgram = getProgram('tau_cs');
     const tauNonEngineeringProgram = getProgram('tau_industrial');
@@ -36,7 +36,7 @@ describe('sekhemCalculators', () => {
         hasMath5: true,
         hasPhysics5: true,
       }),
-    ).toBeCloseTo(746.6667, 3);
+    ).toBeCloseTo(696.6667, 3);
 
     expect(
       calculateSekhem(tau, strongScores, tauNonEngineeringProgram, {
