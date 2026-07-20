@@ -1,9 +1,16 @@
 import 'server-only';
 
-import { and, eq, notInArray } from 'drizzle-orm';
+import { and, eq, inArray, notInArray } from 'drizzle-orm';
 
 import { getDb } from '@/db/client';
-import { bagrutProfileVersions, savedPrograms, uploadedDocuments, userProfiles } from '@/db/schema';
+import {
+  admissionAlertOutbox,
+  admissionAlertSubscriptions,
+  bagrutProfileVersions,
+  savedPrograms,
+  uploadedDocuments,
+  userProfiles,
+} from '@/db/schema';
 import type { UserProfile } from '@/types';
 
 import { mergeUserProfileDraft } from './migration';
@@ -13,6 +20,7 @@ import {
   type UserProfileSnapshot,
 } from './serializers';
 import { normalizeStructuredBagrutRecord } from './structuredBagrut';
+import { shouldRefreshAdmissionAlerts } from '../admission-alerts/profileRefresh';
 
 type DatabaseTransaction = Parameters<Parameters<ReturnType<typeof getDb>['transaction']>[0]>[0];
 
@@ -58,6 +66,18 @@ export async function replaceUserProfileSnapshot(
     : undefined;
 
   await db.transaction(async (tx) => {
+    const [previousProfile] = await tx
+      .select({
+        psychometricOverall: userProfiles.psychometricOverall,
+        psychometricQuantitative: userProfiles.psychometricQuantitative,
+        psychometricVerbal: userProfiles.psychometricVerbal,
+        psychometricEnglish: userProfiles.psychometricEnglish,
+        bagrutWeightedAverage: userProfiles.bagrutWeightedAverage,
+        bagrutProfileVersionId: userProfiles.bagrutProfileVersionId,
+      })
+      .from(userProfiles)
+      .where(eq(userProfiles.userId, userId))
+      .limit(1);
     const bagrutProfileVersionId = normalizedSubjectRecord
       ? await getOrCreateBagrutProfileVersion(tx, userId, normalizedSubjectRecord)
       : null;
@@ -83,6 +103,44 @@ export async function replaceUserProfileSnapshot(
           updatedAt: new Date(),
         },
       });
+
+    const nextAlertProfile = {
+      psychometricOverall: profile.academicScores?.psychometric?.overall ?? null,
+      psychometricQuantitative: profile.academicScores?.psychometric?.quantitative ?? null,
+      psychometricVerbal: profile.academicScores?.psychometric?.verbal ?? null,
+      psychometricEnglish: profile.academicScores?.psychometric?.english ?? null,
+      bagrutWeightedAverage: profile.academicScores?.bagrut?.weightedAverage ?? null,
+      bagrutProfileVersionId,
+    };
+
+    if (shouldRefreshAdmissionAlerts(previousProfile, nextAlertProfile)) {
+      const affectedSubscriptions = await tx
+        .select({ id: admissionAlertSubscriptions.id })
+        .from(admissionAlertSubscriptions)
+        .where(
+          and(
+            eq(admissionAlertSubscriptions.userId, userId),
+            inArray(admissionAlertSubscriptions.status, ['active', 'pending_delivery']),
+          ),
+        );
+      const subscriptionIds = affectedSubscriptions.map((subscription) => subscription.id);
+
+      if (subscriptionIds.length > 0) {
+        await tx
+          .update(admissionAlertSubscriptions)
+          .set({ status: 'needs_profile_refresh', updatedAt: new Date() })
+          .where(inArray(admissionAlertSubscriptions.id, subscriptionIds));
+        await tx
+          .update(admissionAlertOutbox)
+          .set({ status: 'suppressed', updatedAt: new Date() })
+          .where(
+            and(
+              inArray(admissionAlertOutbox.subscriptionId, subscriptionIds),
+              inArray(admissionAlertOutbox.status, ['pending', 'retryable']),
+            ),
+          );
+      }
+    }
 
     if (nextSavedProgramIds.length > 0) {
       await tx
