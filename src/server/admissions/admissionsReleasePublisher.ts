@@ -94,67 +94,81 @@ export function createAdmissionsReleasePublisher(
       const publishedAt = input.publishedAt ?? new Date();
       const transitions = buildTargetTransitions(manifest);
 
-      return repository.transaction(async (writer) => {
-        const existing = await writer.findReleaseByManifestDigest(manifestDigest);
-        if (existing?.status === 'published') {
-          return { status: 'already_published', releaseId: existing.id };
-        }
+      try {
+        return await repository.transaction(async (writer) => {
+          const existing = await writer.findReleaseByManifestDigest(manifestDigest);
+          if (existing?.status === 'published') {
+            return { status: 'already_published', releaseId: existing.id };
+          }
 
-        if (existing) {
-          throw new Error(
-            `Release ${existing.id} is not publishable from status ${existing.status}.`,
-          );
-        }
+          if (existing) {
+            throw new Error(
+              `Release ${existing.id} is not publishable from status ${existing.status}.`,
+            );
+          }
 
-        const releaseId = randomUUID();
-        const attemptId = randomUUID();
-        await writer.createRelease({
-          id: releaseId,
-          manifestDigest,
-          repositoryCommit: input.repositoryCommit,
-          status: 'pending',
-          publishedAt: null,
-          createdAt: publishedAt,
-        });
-        await writer.createPublicationAttempt({
-          id: attemptId,
-          releaseId,
-          status: 'started',
-          errorMessage: null,
-          startedAt: publishedAt,
-          completedAt: null,
-        });
-
-        for (const transition of transitions) {
-          const transitionId = randomUUID();
-          await writer.createTargetTransition({
-            id: transitionId,
-            releaseId,
-            institutionId: transition.target.institutionId,
-            programId: transition.target.programId,
-            cycle: transition.target.cycle,
-            beforeVersion: transition.beforeVersion,
-            afterVersion: transition.afterVersion,
+          const releaseId = randomUUID();
+          const attemptId = randomUUID();
+          await writer.createRelease({
+            id: releaseId,
+            manifestDigest,
+            repositoryCommit: input.repositoryCommit,
+            status: 'pending',
+            publishedAt: null,
             createdAt: publishedAt,
           });
-          await writer.createReleaseItems(
-            transition.changes.map((change) => ({
-              id: randomUUID(),
-              transitionId,
-              ruleKind: change.ruleKind,
-              beforeValue: { value: change.before },
-              afterValue: { value: change.after },
-              effectiveFrom: change.effectiveFrom,
-              sourceProofs: change.sourceProofs,
+          await writer.createPublicationAttempt({
+            id: attemptId,
+            releaseId,
+            status: 'started',
+            errorMessage: null,
+            startedAt: publishedAt,
+            completedAt: null,
+          });
+
+          for (const transition of transitions) {
+            const transitionId = randomUUID();
+            await writer.createTargetTransition({
+              id: transitionId,
+              releaseId,
+              institutionId: transition.target.institutionId,
+              programId: transition.target.programId,
+              cycle: transition.target.cycle,
+              beforeVersion: transition.beforeVersion,
+              afterVersion: transition.afterVersion,
               createdAt: publishedAt,
-            })),
-          );
+            });
+            await writer.createReleaseItems(
+              transition.changes.map((change) => ({
+                id: randomUUID(),
+                transitionId,
+                ruleKind: change.ruleKind,
+                beforeValue: { value: change.before },
+                afterValue: { value: change.after },
+                effectiveFrom: change.effectiveFrom,
+                sourceProofs: change.sourceProofs,
+                createdAt: publishedAt,
+              })),
+            );
+          }
+
+          await writer.markReleasePublished(releaseId, publishedAt);
+          await writer.markPublicationAttemptSucceeded(attemptId, publishedAt);
+          return { status: 'published', releaseId, manifestDigest };
+        });
+      } catch (error) {
+        if (!isUniqueViolation(error)) {
+          throw error;
         }
 
-        await writer.markReleasePublished(releaseId, publishedAt);
-        await writer.markPublicationAttemptSucceeded(attemptId, publishedAt);
-        return { status: 'published', releaseId, manifestDigest };
-      });
+        return repository.transaction(async (writer) => {
+          const existing = await writer.findReleaseByManifestDigest(manifestDigest);
+          if (existing?.status === 'published') {
+            return { status: 'already_published', releaseId: existing.id };
+          }
+          throw error;
+        });
+      }
     },
   };
 }
@@ -244,4 +258,8 @@ function buildTargetTransitions(manifest: ReviewedAdmissionsManifest) {
 
 function digest(value: string): string {
   return `sha256:${createHash('sha256').update(value).digest('hex')}`;
+}
+
+function isUniqueViolation(error: unknown): boolean {
+  return typeof error === 'object' && error !== null && 'code' in error && error.code === '23505';
 }

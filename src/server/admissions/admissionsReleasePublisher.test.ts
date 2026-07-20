@@ -115,6 +115,21 @@ describe('admissions release publisher', () => {
     expect(repository.transitions).toHaveLength(1);
   });
 
+  it('resolves a concurrent manifest insert to the release committed by the other publisher', async () => {
+    const repository = new MemoryAdmissionsReleaseRepository({
+      hideExistingLookups: 1,
+      rejectDuplicateReleaseInsert: true,
+    });
+    const publisher = createAdmissionsReleasePublisher(repository);
+
+    const first = await publisher.publish({ manifest, repositoryCommit: 'abc123' });
+    const concurrentRetry = await publisher.publish({ manifest, repositoryCommit: 'abc123' });
+
+    expect(first.status).toBe('published');
+    expect(concurrentRetry).toEqual({ status: 'already_published', releaseId: first.releaseId });
+    expect(repository.releases).toHaveLength(1);
+  });
+
   it('rolls back the entire release when one target transition cannot be written', async () => {
     const repository = new MemoryAdmissionsReleaseRepository({ failProgramId: 'bgu_cs' });
     const publisher = createAdmissionsReleasePublisher(repository);
@@ -149,7 +164,13 @@ class MemoryAdmissionsReleaseRepository
   items: AdmissionReleaseItemRecord[] = [];
   attempts: AdmissionPublicationAttemptRecord[] = [];
 
-  constructor(private readonly options: { failProgramId?: string } = {}) {}
+  constructor(
+    private readonly options: {
+      failProgramId?: string;
+      hideExistingLookups?: number;
+      rejectDuplicateReleaseInsert?: boolean;
+    } = {},
+  ) {}
 
   async transaction<T>(callback: (writer: AdmissionsReleaseWriter) => Promise<T>): Promise<T> {
     const snapshot = {
@@ -171,10 +192,21 @@ class MemoryAdmissionsReleaseRepository
   }
 
   async findReleaseByManifestDigest(manifestDigest: string) {
+    const remainingHiddenLookups = this.options.hideExistingLookups ?? 0;
+    if (this.releases.length > 0 && remainingHiddenLookups > 0) {
+      this.options.hideExistingLookups = remainingHiddenLookups - 1;
+      return null;
+    }
     return this.releases.find((release) => release.manifestDigest === manifestDigest) ?? null;
   }
 
   async createRelease(release: AdmissionReleaseRecord) {
+    if (
+      this.options.rejectDuplicateReleaseInsert &&
+      this.releases.some((candidate) => candidate.manifestDigest === release.manifestDigest)
+    ) {
+      throw Object.assign(new Error('duplicate manifest digest'), { code: '23505' });
+    }
     this.releases.push(release);
   }
 
