@@ -3,6 +3,7 @@ import type {
   admissionFacts,
   admissionRequirements,
   admissionThresholds,
+  bagrutProfileVersions,
   admissionsSourceCandidates,
   ingestionJobs,
   ingestionPayloads,
@@ -33,6 +34,7 @@ export type AdmissionsSourceCandidateRow = typeof admissionsSourceCandidates.$in
 export type AdmissionFactRow = typeof admissionFacts.$inferSelect;
 export type AdmissionAlternativePathRow = typeof admissionAlternativePaths.$inferSelect;
 export type UserProfileRow = typeof userProfiles.$inferSelect;
+export type BagrutProfileVersionRow = typeof bagrutProfileVersions.$inferSelect;
 export type SavedProgramRow = typeof savedPrograms.$inferSelect;
 export type UploadedDocumentRow = typeof uploadedDocuments.$inferSelect;
 export type IngestionSourceRow = typeof ingestionSources.$inferSelect;

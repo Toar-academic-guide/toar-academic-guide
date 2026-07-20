@@ -12,6 +12,7 @@ import {
   uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
+import type { BagrutSubject } from '@/types';
 
 export const geographicRegionEnum = pgEnum('geographic_region', [
   'center',
@@ -368,6 +369,10 @@ export const userProfiles = pgTable('user_profiles', {
   psychometricVerbal: integer('psychometric_verbal'),
   psychometricEnglish: integer('psychometric_english'),
   bagrutWeightedAverage: integer('bagrut_weighted_average'),
+  bagrutProfileVersionId: uuid('bagrut_profile_version_id').references(
+    () => bagrutProfileVersions.id,
+    { onDelete: 'set null' },
+  ),
   riasecR: integer('riasec_r'),
   riasecI: integer('riasec_i'),
   riasecA: integer('riasec_a'),
@@ -378,6 +383,29 @@ export const userProfiles = pgTable('user_profiles', {
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 });
+
+export const bagrutProfileVersions = pgTable(
+  'bagrut_profile_versions',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id').notNull(),
+    schemaVersion: integer('schema_version').notNull(),
+    contentHash: text('content_hash').notNull(),
+    sector: text('sector').notNull(),
+    subjects: jsonb('subjects').$type<BagrutSubject[]>().notNull(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => ({
+    userContentHashUnique: uniqueIndex('bagrut_profile_versions_user_hash_unique').on(
+      table.userId,
+      table.contentHash,
+    ),
+    userCreatedAtIndex: index('bagrut_profile_versions_user_created_at_idx').on(
+      table.userId,
+      table.createdAt,
+    ),
+  }),
+);
 
 export const savedPrograms = pgTable(
   'saved_programs',

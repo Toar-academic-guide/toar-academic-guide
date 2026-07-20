@@ -71,6 +71,13 @@
       "when": 1782554917000,
       "tag": "0009_grant_runtime_roles_for_operational_catalogue_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1784572605349,
+      "tag": "0010_fearless_maverick",
+      "breakpoints": true
     }
   ]
 }

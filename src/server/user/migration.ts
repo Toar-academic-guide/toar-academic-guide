@@ -93,6 +93,11 @@ function mergeAcademicScores(
       : draft?.bagrut?.weightedAverage !== undefined
         ? { weightedAverage: draft.bagrut.weightedAverage }
         : {}),
+    ...(existing?.bagrut?.subjectRecord
+      ? { subjectRecord: existing.bagrut.subjectRecord }
+      : draft?.bagrut?.subjectRecord
+        ? { subjectRecord: draft.bagrut.subjectRecord }
+        : {}),
   };
 
   if (Object.keys(psychometric).length > 0) {

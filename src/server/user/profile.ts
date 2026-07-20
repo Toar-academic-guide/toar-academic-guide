@@ -3,7 +3,7 @@ import 'server-only';
 import { and, eq, notInArray } from 'drizzle-orm';
 
 import { getDb } from '@/db/client';
-import { savedPrograms, uploadedDocuments, userProfiles } from '@/db/schema';
+import { bagrutProfileVersions, savedPrograms, uploadedDocuments, userProfiles } from '@/db/schema';
 import type { UserProfile } from '@/types';
 
 import { mergeUserProfileDraft } from './migration';
@@ -12,6 +12,9 @@ import {
   serializeUserProfileSnapshot,
   type UserProfileSnapshot,
 } from './serializers';
+import { normalizeStructuredBagrutRecord } from './structuredBagrut';
+
+type DatabaseTransaction = Parameters<Parameters<ReturnType<typeof getDb>['transaction']>[0]>[0];
 
 export async function getUserProfileSnapshot(userId: string): Promise<UserProfileSnapshot> {
   const db = getDb();
@@ -28,8 +31,20 @@ export async function getUserProfileSnapshot(userId: string): Promise<UserProfil
     .select()
     .from(uploadedDocuments)
     .where(eq(uploadedDocuments.userId, userId));
+  const [bagrutProfileVersion] = profileRow?.bagrutProfileVersionId
+    ? await db
+        .select()
+        .from(bagrutProfileVersions)
+        .where(eq(bagrutProfileVersions.id, profileRow.bagrutProfileVersionId))
+        .limit(1)
+    : [];
 
-  return serializeUserProfileSnapshot(profileRow, savedProgramRows, uploadedDocumentRows);
+  return serializeUserProfileSnapshot(
+    profileRow,
+    savedProgramRows,
+    uploadedDocumentRows,
+    bagrutProfileVersion,
+  );
 }
 
 export async function replaceUserProfileSnapshot(
@@ -38,11 +53,21 @@ export async function replaceUserProfileSnapshot(
 ): Promise<UserProfileSnapshot> {
   const db = getDb();
   const nextSavedProgramIds = Array.from(new Set(profile.savedProgramIds ?? []));
+  const normalizedSubjectRecord = profile.academicScores?.bagrut?.subjectRecord
+    ? normalizeStructuredBagrutRecord(profile.academicScores.bagrut.subjectRecord)
+    : undefined;
 
   await db.transaction(async (tx) => {
+    const bagrutProfileVersionId = normalizedSubjectRecord
+      ? await getOrCreateBagrutProfileVersion(tx, userId, normalizedSubjectRecord)
+      : null;
+
     await tx
       .insert(userProfiles)
-      .values(buildUserProfileRow(userId, profile))
+      .values({
+        ...buildUserProfileRow(userId, profile),
+        bagrutProfileVersionId,
+      })
       .onConflictDoUpdate({
         target: userProfiles.userId,
         set: {
@@ -54,6 +79,7 @@ export async function replaceUserProfileSnapshot(
           psychometricVerbal: profile.academicScores?.psychometric?.verbal ?? null,
           psychometricEnglish: profile.academicScores?.psychometric?.english ?? null,
           bagrutWeightedAverage: profile.academicScores?.bagrut?.weightedAverage ?? null,
+          bagrutProfileVersionId,
           updatedAt: new Date(),
         },
       });
@@ -80,6 +106,60 @@ export async function replaceUserProfileSnapshot(
   });
 
   return getUserProfileSnapshot(userId);
+}
+
+async function getOrCreateBagrutProfileVersion(
+  tx: DatabaseTransaction,
+  userId: string,
+  record: ReturnType<typeof normalizeStructuredBagrutRecord>,
+): Promise<string> {
+  const [existing] = await tx
+    .select({ id: bagrutProfileVersions.id })
+    .from(bagrutProfileVersions)
+    .where(
+      and(
+        eq(bagrutProfileVersions.userId, userId),
+        eq(bagrutProfileVersions.contentHash, record.profileHash),
+      ),
+    )
+    .limit(1);
+
+  if (existing) {
+    return existing.id;
+  }
+
+  const [created] = await tx
+    .insert(bagrutProfileVersions)
+    .values({
+      userId,
+      schemaVersion: record.schemaVersion,
+      contentHash: record.profileHash,
+      sector: record.sector,
+      subjects: record.subjects,
+    })
+    .onConflictDoNothing()
+    .returning({ id: bagrutProfileVersions.id });
+
+  if (created) {
+    return created.id;
+  }
+
+  const [concurrentVersion] = await tx
+    .select({ id: bagrutProfileVersions.id })
+    .from(bagrutProfileVersions)
+    .where(
+      and(
+        eq(bagrutProfileVersions.userId, userId),
+        eq(bagrutProfileVersions.contentHash, record.profileHash),
+      ),
+    )
+    .limit(1);
+
+  if (!concurrentVersion) {
+    throw new Error('Unable to persist the structured Bagrut profile version.');
+  }
+
+  return concurrentVersion.id;
 }
 
 export async function mergeUserProfileDraftIntoSnapshot(
