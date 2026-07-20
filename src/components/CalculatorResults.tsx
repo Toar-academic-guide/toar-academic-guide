@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { AlertCircle, ArrowRight, Check, ChevronDown, LoaderCircle } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import posthog from 'posthog-js';
 import {
   INSTITUTION_BY_ID,
@@ -11,6 +12,8 @@ import {
 } from '@/data/institutions';
 import { REGION_LABEL } from '@/data/geography';
 import InstitutionLogo from '@/components/InstitutionLogo';
+import { useAuth } from '@/context/AuthContext';
+import { buildAdmissionAlertIntentPath, buildAdmissionAlertSignupPath } from '@/lib/routes';
 import {
   AdmissionsEvaluationApiError,
   fetchAdmissionsEvaluation,
@@ -110,6 +113,8 @@ export default function CalculatorResults({
   academicScores,
   onCompleteAcademicProfile,
 }: Props) {
+  const router = useRouter();
+  const { user } = useAuth();
   useEffect(() => {
     posthog.capture('calculator_results_viewed', { degree_id: degreeId });
   }, [degreeId]);
@@ -128,6 +133,15 @@ export default function CalculatorResults({
   const [routeResult, setRouteResult] = useState<AdmissionsRouteSearchResult | null>(null);
   const [routeLoading, setRouteLoading] = useState(false);
   const [routeError, setRouteError] = useState<AdmissionsRouteApiError | null>(null);
+  const [subscriptionStatus, setSubscriptionStatus] = useState<
+    | 'idle'
+    | 'submitting'
+    | 'created'
+    | 'existing'
+    | 'profile_incomplete'
+    | 'already_eligible'
+    | 'error'
+  >('idle');
 
   const selectedProgram = programs.find((program) => program.id === degreeId);
 
@@ -208,6 +222,41 @@ export default function CalculatorResults({
     academicScores?.psychometric?.overall === psychometric &&
     academicScores.bagrut?.weightedAverage === bagrut,
   );
+
+  async function handleAdmissionAlert() {
+    const target = { institutionId: 'tau' as const, programId: 'tau_cs' as const };
+    if (!user) {
+      router.push(buildAdmissionAlertSignupPath(target));
+      return;
+    }
+    if (!hasCompleteRouteProfile || !routeProfileMatchesCalculation) {
+      router.push(buildAdmissionAlertIntentPath(target));
+      return;
+    }
+
+    setSubscriptionStatus('submitting');
+    try {
+      const response = await fetch('/api/admission-alerts', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(target),
+      });
+      const body = (await response.json()) as { data?: { status?: string } };
+      if (!response.ok || !body.data?.status) throw new Error('subscription failed');
+      if (body.data.status === 'created' || body.data.status === 'existing') {
+        setSubscriptionStatus(body.data.status);
+      } else if (
+        body.data.status === 'profile_incomplete' ||
+        body.data.status === 'already_eligible'
+      ) {
+        setSubscriptionStatus(body.data.status);
+      } else {
+        setSubscriptionStatus('error');
+      }
+    } catch {
+      setSubscriptionStatus('error');
+    }
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -469,6 +518,8 @@ export default function CalculatorResults({
             result={routeResult}
             error={routeError}
             onCompleteAcademicProfile={onCompleteAcademicProfile}
+            subscriptionStatus={subscriptionStatus}
+            onAdmissionAlert={handleAdmissionAlert}
           />
         ) : null}
 
@@ -641,6 +692,8 @@ function VerifiedRoutePanel({
   result,
   error,
   onCompleteAcademicProfile,
+  subscriptionStatus,
+  onAdmissionAlert,
 }: {
   completeProfile: boolean;
   profileMatchesCalculation: boolean;
@@ -648,6 +701,15 @@ function VerifiedRoutePanel({
   result: AdmissionsRouteSearchResult | null;
   error: AdmissionsRouteApiError | null;
   onCompleteAcademicProfile?: () => void;
+  subscriptionStatus:
+    | 'idle'
+    | 'submitting'
+    | 'created'
+    | 'existing'
+    | 'profile_incomplete'
+    | 'already_eligible'
+    | 'error';
+  onAdmissionAlert: () => void;
 }) {
   return (
     <section className="mb-8 rounded-2xl border-2 border-black bg-[#e8f9ff] p-5" aria-live="polite">
@@ -657,6 +719,41 @@ function VerifiedRoutePanel({
       <p className="mt-1 text-sm text-slate-600">
         ההמלצות מוצגות רק אחרי אימות מול מחשבון הקבלה הרשמי של אוניברסיטת תל אביב.
       </p>
+      <div className="mt-4 rounded-xl border border-sky-200 bg-white p-4">
+        <p className="text-sm font-bold text-slate-900">רוצה שנעדכן כשנפתח לך סיכוי קבלה?</p>
+        <p className="mt-1 text-xs leading-relaxed text-slate-600">
+          נבדוק רק שינויים שפורסמו ונבדקו, ונשלח עדכון אם החישוב המתמטי שלך יהפוך לזכאות.
+        </p>
+        {subscriptionStatus === 'created' || subscriptionStatus === 'existing' ? (
+          <p className="mt-3 text-sm font-semibold text-emerald-800">
+            המעקב פעיל. נעדכן אותך אם התנאים ישתנו.
+          </p>
+        ) : (
+          <button
+            type="button"
+            onClick={onAdmissionAlert}
+            disabled={subscriptionStatus === 'submitting'}
+            className="mt-3 min-h-11 rounded-full bg-slate-900 px-4 py-2 text-sm font-bold text-white disabled:cursor-wait disabled:opacity-60"
+          >
+            {subscriptionStatus === 'submitting' ? 'מפעילים מעקב…' : 'עדכנו אותי כשאהיה זכאי/ת'}
+          </button>
+        )}
+        {subscriptionStatus === 'profile_incomplete' ? (
+          <p className="mt-2 text-xs font-semibold text-amber-800">
+            יש להשלים ולשמור את הפרופיל האקדמי לפני הפעלת המעקב.
+          </p>
+        ) : null}
+        {subscriptionStatus === 'already_eligible' ? (
+          <p className="mt-2 text-xs font-semibold text-slate-700">
+            לפי החישוב העדכני כבר אפשר להגיש מועמדות, ולכן לא הופעל מעקב.
+          </p>
+        ) : null}
+        {subscriptionStatus === 'error' ? (
+          <p className="mt-2 text-xs font-semibold text-rose-800">
+            לא הצלחנו להפעיל מעקב כרגע. אפשר לנסות שוב.
+          </p>
+        ) : null}
+      </div>
       {!completeProfile ? (
         <>
           <p className="mt-3 text-sm font-semibold text-slate-800">

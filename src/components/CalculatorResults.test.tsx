@@ -10,7 +10,12 @@ import { getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 const hoistedMocks = vi.hoisted(() => ({
   fetchAdmissionsEvaluation: vi.fn(),
   fetchTauComputerScienceRoutes: vi.fn(),
+  push: vi.fn(),
+  user: null as { id: string } | null,
 }));
+
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: hoistedMocks.push }) }));
+vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ user: hoistedMocks.user }) }));
 
 vi.mock('@/lib/admissionsEvaluationClient', () => ({
   AdmissionsEvaluationApiError: class AdmissionsEvaluationApiError extends Error {
