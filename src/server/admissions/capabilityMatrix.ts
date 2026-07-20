@@ -11,6 +11,7 @@ import {
 } from '@/data/admissions/mondayEvidence';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type {
+  AdmissionsExtraInputs,
   AdmissionsEvaluationCapability,
   AdmissionsRequiredInput,
 } from '@/types/admissionsEvaluation';
@@ -95,12 +96,14 @@ export async function loadFreshnessStatesBySourceIds(
 export function buildAdmissionsCapabilityMatrix(args: {
   program: CatalogueProgram;
   institutions: CatalogueInstitution[];
+  input?: AdmissionsExtraInputs;
   freshnessStatesBySourceId?: Map<string, SourceFreshnessStateRow>;
   now?: Date;
 }): AdmissionsCapabilityEntry[] {
   const {
     program,
     institutions,
+    input,
     freshnessStatesBySourceId = new Map<string, SourceFreshnessStateRow>(),
     now = new Date(),
   } = args;
@@ -146,13 +149,14 @@ export function buildAdmissionsCapabilityMatrix(args: {
         };
       }
 
-      if (exactTarget.requiredInputs.length > 0) {
+      const missingRequiredInputs = requiredInputsMissingFrom(input, exactTarget.requiredInputs);
+      if (missingRequiredInputs.length > 0) {
         return {
           institutionId,
           capability: 'needs_input',
           sourceTarget,
           exactTarget,
-          requiredInputs: exactTarget.requiredInputs,
+          requiredInputs: missingRequiredInputs,
           evidence,
           freshnessState,
         };
@@ -367,6 +371,45 @@ export function buildAdmissionsCapabilityMatrix(args: {
       freshnessState,
     };
   });
+}
+
+function requiredInputsMissingFrom(
+  input: AdmissionsExtraInputs | undefined,
+  requiredInputs: AdmissionsRequiredInput[],
+): AdmissionsRequiredInput[] {
+  return requiredInputs.filter(
+    (requiredInput) => extraInputValue(input, requiredInput) === undefined,
+  );
+}
+
+function extraInputValue(
+  input: AdmissionsExtraInputs | undefined,
+  requiredInput: AdmissionsRequiredInput,
+): number | undefined {
+  switch (requiredInput) {
+    case 'psychometric_math':
+      return input?.psychometricMath;
+    case 'psychometric_verbal':
+      return input?.psychometricVerbal;
+    case 'psychometric_english':
+      return input?.psychometricEnglish;
+    case 'math_units':
+      return input?.mathUnits;
+    case 'math_grade':
+      return input?.mathGrade;
+    case 'english_units':
+      return input?.englishUnits;
+    case 'english_grade':
+      return input?.englishGrade;
+    case 'physics_units':
+      return input?.physicsUnits;
+    case 'physics_grade':
+      return input?.physicsGrade;
+    case 'cs_units':
+      return input?.csUnits;
+    case 'cs_grade':
+      return input?.csGrade;
+  }
 }
 
 function hasVerifiedDecisionThreshold(args: {

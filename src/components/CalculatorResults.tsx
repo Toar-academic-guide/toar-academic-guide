@@ -24,6 +24,7 @@ import {
   type AdmissionsRouteResult,
   type AdmissionsRouteSearchResult,
 } from '@/lib/admissionsRouteClient';
+import { admissionsExtraInputsFromAcademicScores } from '@/lib/admissionsEvaluationProfile';
 import type { CatalogueProgram } from '@/types/catalogue';
 import type { AcademicScores, GeographicRegion } from '@/types';
 import type {
@@ -144,6 +145,16 @@ export default function CalculatorResults({
   >('idle');
 
   const selectedProgram = programs.find((program) => program.id === degreeId);
+  const savedAcademicScoresMatchCalculation =
+    academicScores?.psychometric?.overall === psychometric &&
+    academicScores?.bagrut?.weightedAverage === bagrut;
+  const extraInputs = useMemo(
+    () =>
+      savedAcademicScoresMatchCalculation
+        ? admissionsExtraInputsFromAcademicScores(academicScores)
+        : undefined,
+    [academicScores, savedAcademicScoresMatchCalculation],
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -155,6 +166,7 @@ export default function CalculatorResults({
       degreeId,
       psychometric,
       bagrut,
+      ...(extraInputs ? { extraInputs } : {}),
     })
       .then((nextReport) => {
         if (cancelled) {
@@ -207,7 +219,7 @@ export default function CalculatorResults({
     return () => {
       cancelled = true;
     };
-  }, [bagrut, degreeId, psychometric, reloadToken]);
+  }, [bagrut, degreeId, extraInputs, psychometric, reloadToken]);
 
   const tauBelowThreshold = report?.results.some(
     (result) => result.linkedInstitutionId === 'tau' && result.decision === 'below',

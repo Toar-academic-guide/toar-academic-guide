@@ -53,6 +53,7 @@ export async function evaluateAdmissionsForProgram(args: {
   const capabilityEntries = buildAdmissionsCapabilityMatrix({
     program,
     institutions,
+    input: input.extraInputs,
     freshnessStatesBySourceId,
     now,
   });
