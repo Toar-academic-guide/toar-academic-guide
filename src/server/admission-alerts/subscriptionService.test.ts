@@ -13,6 +13,10 @@ const completeProfile = {
   psychometric: 680,
   bagrutAverage: 108,
   hasStructuredBagrut: true,
+  subjects: [
+    { subjectId: 'mathematics', units: 5, grade: 90 },
+    { subjectId: 'physics', units: 5, grade: 80 },
+  ],
 };
 
 describe('admission alert subscriptions', () => {
@@ -84,6 +88,22 @@ describe('admission alert subscriptions', () => {
       ),
     ).resolves.toEqual({ status: 'existing', subscriptionId: 'sub-1' });
   });
+
+  it('returns the database-conflicting active subscription after a concurrent activation', async () => {
+    const repository = new MemoryRepository({ concurrentDuplicate: true });
+
+    await expect(
+      createAdmissionAlertSubscription(
+        { institutionId: 'tau', programId: 'tau_cs' },
+        {
+          userId: 'user-1',
+          repository,
+          evaluate: async () => ({ decision: 'below', ruleVersion: 'v1' }),
+          now: new Date('2026-10-01T08:00:00.000Z'),
+        },
+      ),
+    ).resolves.toEqual({ status: 'existing', subscriptionId: 'sub-concurrent' });
+  });
 });
 
 class MemoryRepository implements AdmissionAlertSubscriptionRepository {
@@ -95,7 +115,12 @@ class MemoryRepository implements AdmissionAlertSubscriptionRepository {
     cycle: string;
   }> = [];
 
-  constructor(private readonly options: { profile?: typeof completeProfile } = {}) {}
+  constructor(
+    private readonly options: {
+      profile?: typeof completeProfile;
+      concurrentDuplicate?: boolean;
+    } = {},
+  ) {}
 
   async getProfile() {
     return this.options.profile ?? completeProfile;
@@ -122,8 +147,11 @@ class MemoryRepository implements AdmissionAlertSubscriptionRepository {
     programId: string;
     cycle: string;
   }) {
+    if (this.options.concurrentDuplicate) {
+      return { id: 'sub-concurrent', created: false };
+    }
     const subscription = { id: `sub-${this.subscriptions.length + 1}`, ...input };
     this.subscriptions.push(subscription);
-    return subscription;
+    return { id: subscription.id, created: true };
   }
 }

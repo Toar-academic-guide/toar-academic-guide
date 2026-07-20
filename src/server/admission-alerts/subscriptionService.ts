@@ -9,16 +9,20 @@ import {
   bagrutProfileVersions,
   userProfiles,
 } from '@/db/schema';
+import type { BagrutSubject } from '@/types';
 import { admissionCycleFor } from './cycle';
 
+export interface AdmissionAlertBaselineProfile {
+  profileVersionId: string;
+  profileHash: string;
+  psychometric: number;
+  bagrutAverage: number;
+  hasStructuredBagrut: boolean;
+  subjects: BagrutSubject[];
+}
+
 export interface AdmissionAlertSubscriptionRepository {
-  getProfile(userId: string): Promise<{
-    profileVersionId: string;
-    profileHash: string;
-    psychometric: number;
-    bagrutAverage: number;
-    hasStructuredBagrut: boolean;
-  } | null>;
+  getProfile(userId: string): Promise<AdmissionAlertBaselineProfile | null>;
   findActiveSubscription(input: {
     userId: string;
     institutionId: string;
@@ -34,13 +38,13 @@ export interface AdmissionAlertSubscriptionRepository {
     profileHash: string;
     baselineRuleVersion: string;
     baselineVerdict: Record<string, unknown>;
-  }): Promise<{ id: string }>;
+  }): Promise<{ id: string; created: boolean }>;
 }
 
 export type AdmissionAlertBaselineEvaluator = (input: {
   institutionId: string;
   programId: string;
-  profile: NonNullable<Awaited<ReturnType<AdmissionAlertSubscriptionRepository['getProfile']>>>;
+  profile: AdmissionAlertBaselineProfile;
 }) => Promise<{ decision: 'below' | 'eligible' | 'unavailable'; ruleVersion: string }>;
 
 export async function createAdmissionAlertSubscription(
@@ -94,7 +98,9 @@ export async function createAdmissionAlertSubscription(
     baselineRuleVersion: evaluation.ruleVersion,
     baselineVerdict: { decision: 'below' },
   });
-  return { status: 'created', subscriptionId: created.id };
+  return created.created
+    ? { status: 'created', subscriptionId: created.id }
+    : { status: 'existing', subscriptionId: created.id };
 }
 
 export function createDrizzleAdmissionAlertSubscriptionRepository(
@@ -121,7 +127,11 @@ export function createDrizzleAdmissionAlertSubscriptionRepository(
       }
 
       const [profileVersion] = await db
-        .select({ id: bagrutProfileVersions.id, profileHash: bagrutProfileVersions.contentHash })
+        .select({
+          id: bagrutProfileVersions.id,
+          profileHash: bagrutProfileVersions.contentHash,
+          subjects: bagrutProfileVersions.subjects,
+        })
         .from(bagrutProfileVersions)
         .where(eq(bagrutProfileVersions.id, profile.profileVersionId))
         .limit(1);
@@ -135,6 +145,7 @@ export function createDrizzleAdmissionAlertSubscriptionRepository(
         psychometric: profile.psychometric,
         bagrutAverage: profile.bagrutAverage,
         hasStructuredBagrut: true,
+        subjects: profileVersion.subjects,
       };
     },
     async findActiveSubscription(input) {
@@ -171,9 +182,30 @@ export function createDrizzleAdmissionAlertSubscriptionRepository(
             baselineRuleVersion: input.baselineRuleVersion,
             baselineVerdict: input.baselineVerdict,
           })
+          .onConflictDoNothing()
           .returning({ id: admissionAlertSubscriptions.id });
         if (!subscription) {
-          throw new Error('Unable to create admission alert subscription.');
+          const [existing] = await tx
+            .select({ id: admissionAlertSubscriptions.id })
+            .from(admissionAlertSubscriptions)
+            .where(
+              and(
+                eq(admissionAlertSubscriptions.userId, input.userId),
+                eq(admissionAlertSubscriptions.institutionId, input.institutionId),
+                eq(admissionAlertSubscriptions.programId, input.programId),
+                eq(admissionAlertSubscriptions.cycle, input.cycle),
+                inArray(admissionAlertSubscriptions.status, [
+                  'active',
+                  'needs_profile_refresh',
+                  'pending_delivery',
+                ]),
+              ),
+            )
+            .limit(1);
+          if (!existing) {
+            throw new Error('Unable to create admission alert subscription.');
+          }
+          return { ...existing, created: false };
         }
         await tx.insert(admissionAlertBaselineHistory).values({
           subscriptionId: subscription.id,
@@ -182,7 +214,7 @@ export function createDrizzleAdmissionAlertSubscriptionRepository(
           ruleVersion: input.baselineRuleVersion,
           verdict: input.baselineVerdict,
         });
-        return subscription;
+        return { ...subscription, created: true };
       });
     },
   };
