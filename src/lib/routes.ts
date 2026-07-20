@@ -22,9 +22,16 @@ export const APP_AREA_ROUTES: Record<AppAreaRoute, string> = {
   savedPrograms: ROUTES.savedPrograms,
 };
 
+export interface AdmissionAlertTarget {
+  institutionId: 'tau';
+  programId: 'tau_cs';
+}
+
 const SAFE_APP_PATHS = new Set(Object.values(APP_AREA_ROUTES));
 const SAFE_PUBLIC_PREFIXES = ['/programs/', '/institutions/'];
 const INTERNAL_PREFIX = '/internal';
+const ADMISSION_ALERT_INSTITUTION_PARAM = 'admissionAlertInstitution';
+const ADMISSION_ALERT_PROGRAM_PARAM = 'admissionAlertProgram';
 
 interface SafeNextPathOptions {
   defaultPath?: string;
@@ -133,9 +140,43 @@ function isAllowedReturnPath(path: string) {
     return true;
   }
 
-  if (SAFE_APP_PATHS.has(path)) {
+  if (SAFE_APP_PATHS.has(path) || parseAdmissionAlertIntent(path)) {
     return true;
   }
 
   return SAFE_PUBLIC_PREFIXES.some((prefix) => path.startsWith(prefix));
+}
+
+export function buildAdmissionAlertIntentPath(target: AdmissionAlertTarget) {
+  const searchParams = new URLSearchParams({
+    [ADMISSION_ALERT_INSTITUTION_PARAM]: target.institutionId,
+    [ADMISSION_ALERT_PROGRAM_PARAM]: target.programId,
+  });
+  return `${ROUTES.profile}?${searchParams.toString()}`;
+}
+
+export function buildAdmissionAlertSignupPath(target: AdmissionAlertTarget) {
+  return `${ROUTES.signup}?next=${encodeURIComponent(buildAdmissionAlertIntentPath(target))}`;
+}
+
+export function parseAdmissionAlertIntent(
+  candidate: string | null | undefined,
+): AdmissionAlertTarget | null {
+  const normalized = normalizeCandidate(candidate);
+  if (!normalized) {
+    return null;
+  }
+
+  const url = new URL(normalized, 'https://toar.local');
+  if (url.pathname !== ROUTES.profile || url.searchParams.size !== 2) {
+    return null;
+  }
+  if (
+    url.searchParams.get(ADMISSION_ALERT_INSTITUTION_PARAM) !== 'tau' ||
+    url.searchParams.get(ADMISSION_ALERT_PROGRAM_PARAM) !== 'tau_cs'
+  ) {
+    return null;
+  }
+
+  return { institutionId: 'tau', programId: 'tau_cs' };
 }

@@ -57,10 +57,15 @@ export default function AuthScreen({
     const result =
       mode === 'login'
         ? await signInWithPassword(email.trim(), password)
-        : await signUp(email.trim(), password, {
-            firstName: trimmedFirstName,
-            lastName: trimmedLastName,
-          });
+        : await signUp(
+            email.trim(),
+            password,
+            {
+              firstName: trimmedFirstName,
+              lastName: trimmedLastName,
+            },
+            ...(nextPath ? [nextPath] : []),
+          );
     setSubmitting(false);
 
     if (result.error) {

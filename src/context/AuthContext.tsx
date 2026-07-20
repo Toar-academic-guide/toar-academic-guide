@@ -25,7 +25,12 @@ interface AuthContextValue {
   supabase: SupabaseClient | null;
   signInWithPassword: (email: string, password: string) => Promise<AuthResult>;
   signInWithGoogle: (nextPath?: string | null) => Promise<AuthResult>;
-  signUp: (email: string, password: string, identity: SignUpProfileIdentity) => Promise<AuthResult>;
+  signUp: (
+    email: string,
+    password: string,
+    identity: SignUpProfileIdentity,
+    nextPath?: string | null,
+  ) => Promise<AuthResult>;
   signOut: () => Promise<void>;
 }
 
@@ -109,7 +114,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           error: error ? 'לא הצלחנו להתחיל את ההתחברות עם Google. נסה שוב.' : null,
         };
       },
-      async signUp(email, password, identity) {
+      async signUp(email, password, identity, nextPath) {
         if (!supabase) {
           return { error: 'ההרשמה עדיין לא זמינה.' };
         }
@@ -118,6 +123,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const emailRedirectTo = buildEmailRedirectTo(
           publicAppUrl,
           typeof window === 'undefined' ? null : window.location.origin,
+          nextPath,
         );
 
         const { data, error } = await supabase.auth.signUp({
@@ -187,6 +193,7 @@ interface SignUpDataLike {
 export function buildEmailRedirectTo(
   configuredAppUrl: string | null,
   browserOrigin: string | null,
+  nextPath?: string | null,
 ) {
   const candidate = resolveRedirectOrigin(configuredAppUrl, browserOrigin);
   if (!candidate) {
@@ -194,7 +201,12 @@ export function buildEmailRedirectTo(
   }
 
   try {
-    return new URL(candidate).toString();
+    const url = new URL('/auth/callback', candidate);
+    const safeNextPath = normalizeSafeNextPath(nextPath, { defaultPath: ROUTES.home });
+    if (safeNextPath !== ROUTES.home) {
+      url.searchParams.set('next', safeNextPath);
+    }
+    return url.toString();
   } catch {
     return undefined;
   }

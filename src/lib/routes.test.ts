@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { APP_AREA_ROUTES, ROUTES, normalizeSafeNextPath } from './routes';
+import {
+  APP_AREA_ROUTES,
+  ROUTES,
+  buildAdmissionAlertIntentPath,
+  buildAdmissionAlertSignupPath,
+  normalizeSafeNextPath,
+  parseAdmissionAlertIntent,
+} from './routes';
 
 describe('route contract', () => {
   it('maps durable app areas to stable paths', () => {
@@ -52,5 +59,39 @@ describe('route contract', () => {
   it('rejects traversal-shaped paths before URL normalization', () => {
     expect(normalizeSafeNextPath('/app/../programs/cs')).toBe(ROUTES.home);
     expect(normalizeSafeNextPath('/app/%2e%2e/programs/cs')).toBe(ROUTES.home);
+  });
+
+  it('preserves only the supported admission-alert target through signup', () => {
+    const intentPath = buildAdmissionAlertIntentPath({ institutionId: 'tau', programId: 'tau_cs' });
+
+    expect(intentPath).toBe(
+      '/app/profile?admissionAlertInstitution=tau&admissionAlertProgram=tau_cs',
+    );
+    expect(normalizeSafeNextPath(intentPath)).toBe(intentPath);
+    expect(buildAdmissionAlertSignupPath({ institutionId: 'tau', programId: 'tau_cs' })).toBe(
+      '/signup?next=%2Fapp%2Fprofile%3FadmissionAlertInstitution%3Dtau%26admissionAlertProgram%3Dtau_cs',
+    );
+    expect(parseAdmissionAlertIntent(intentPath)).toEqual({
+      institutionId: 'tau',
+      programId: 'tau_cs',
+    });
+  });
+
+  it('rejects unknown or expanded admission-alert intents', () => {
+    expect(
+      normalizeSafeNextPath(
+        '/app/profile?admissionAlertInstitution=tau&admissionAlertProgram=nope',
+      ),
+    ).toBe(ROUTES.home);
+    expect(
+      normalizeSafeNextPath(
+        '/app/profile?admissionAlertInstitution=tau&admissionAlertProgram=tau_cs&next=https://evil.example',
+      ),
+    ).toBe(ROUTES.home);
+    expect(
+      parseAdmissionAlertIntent(
+        '/app/profile?admissionAlertInstitution=tau&admissionAlertProgram=nope',
+      ),
+    ).toBeNull();
   });
 });
