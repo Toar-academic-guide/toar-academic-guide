@@ -22,6 +22,7 @@
     "admissions:freshness": "node scripts/admissions-source-freshness.mjs",
     "admissions:prepare-review": "node scripts/prepare-admissions-review.mjs",
     "admissions:notify-review": "node scripts/notify-admissions-review.mjs",
+    "admissions:validate-review-pr": "node scripts/validate-admissions-review-pr.mjs",
     "admissions:publish": "node scripts/publish-admissions-release.mjs",
     "admissions:expire": "node scripts/expire-admission-alerts.mjs",
     "db:seed": "node scripts/seed-catalogue.mjs",

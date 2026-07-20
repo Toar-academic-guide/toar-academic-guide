@@ -66,11 +66,11 @@ describe('review item server actions', () => {
 
     await expect(resolveReviewItemNoChangeAction('review-source-1')).resolves.toEqual({
       status: 'rejected',
-      message: 'Investigation resolved with no canonical catalogue change. GitHub merge is required to publish admissions data.',
+      message:
+        'Investigation resolved with no canonical catalogue change. GitHub merge is required to publish admissions data.',
     });
     expect(hoistedMocks.rejectReviewItem).toHaveBeenCalledWith('review-source-1');
     expect(hoistedMocks.revalidatePath).toHaveBeenCalledWith('/internal/reviews/review-source-1');
     expect(hoistedMocks.revalidatePath).toHaveBeenCalledWith('/internal/data-health');
   });
-
 });

@@ -120,6 +120,8 @@ jobs:
           npm run guard:pre-pr
 
           git add src/data/admissions/reviewedManifest.json "docs/admissions-review-runs/$RUN_KEY.md"
+          npm run admissions:validate-review-pr -- --run-key "$RUN_KEY"
+          npm test -- src/server/admissions/reviewedManifest.test.ts src/server/admissions/weeklyReviewRun.test.ts src/server/admissions/weeklyReviewPreparation.test.ts
           if ! git diff --cached --quiet; then
             git commit -m "chore(admissions): prepare weekly review $RUN_KEY"
             git push origin "$REVIEW_BRANCH"
