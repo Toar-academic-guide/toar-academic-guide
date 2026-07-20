@@ -1,0 +1,67 @@
+name: Publish Reviewed Admissions Release
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - src/data/admissions/reviewedManifest.json
+      - src/server/admissions/admissionsReleasePublisher.ts
+      - scripts/publish-admissions-release.mjs
+      - src/db/migrations/**
+      - src/db/schema.ts
+  workflow_dispatch:
+    inputs:
+      repository_commit:
+        description: Optional already-merged main commit to publish
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: admissions-publication
+  cancel-in-progress: false
+
+jobs:
+  publish-reviewed-release:
+    name: Publish reviewed admissions release
+    runs-on: ubuntu-latest
+    environment: admissions-publication
+    env:
+      CI: true
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      REQUESTED_COMMIT: ${{ inputs.repository_commit || github.sha }}
+
+    steps:
+      - name: Checkout requested main commit
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ env.REQUESTED_COMMIT }}
+          fetch-depth: 0
+
+      - name: Verify commit is merged into main
+        shell: bash
+        run: |
+          commit="$(git rev-parse HEAD)"
+          git merge-base --is-ancestor "$commit" origin/main
+          echo "PUBLISHED_COMMIT=$commit" >> "$GITHUB_ENV"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Validate database migrations
+        run: npm run db:migrate:check
+
+      - name: Publish the reviewed manifest atomically
+        run: >-
+          npm run admissions:publish --
+          --manifest src/data/admissions/reviewedManifest.json
+          --repository-commit "$PUBLISHED_COMMIT"

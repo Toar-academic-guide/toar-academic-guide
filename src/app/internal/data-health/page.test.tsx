@@ -113,6 +113,11 @@ describe('/internal/data-health page', () => {
         totalsByStatus: {},
         rows: [],
       },
+      publication: {
+        activeRelease: null,
+        pendingReleaseCount: 0,
+        failedReleaseCount: 0,
+      },
       mondayEvidence: {
         totalItems: 212,
         catalogueMatched: 34,

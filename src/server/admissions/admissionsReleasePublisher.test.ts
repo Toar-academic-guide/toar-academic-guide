@@ -49,6 +49,30 @@ const manifest = {
 };
 
 describe('admissions release publisher', () => {
+  it('does not create a release for an empty reviewed manifest', async () => {
+    const repository = new MemoryAdmissionsReleaseRepository();
+    const publisher = createAdmissionsReleasePublisher(repository);
+
+    await expect(
+      publisher.publish({
+        manifest: { version: 1, changes: [] },
+        repositoryCommit: 'abc123',
+      }),
+    ).resolves.toEqual({ status: 'no_changes' });
+
+    expect(repository.releases).toEqual([]);
+    expect(repository.transitions).toEqual([]);
+  });
+
+  it('does not initialize the database repository for an empty reviewed manifest', async () => {
+    await expect(
+      createAdmissionsReleasePublisher().publish({
+        manifest: { version: 1, changes: [] },
+        repositoryCommit: 'abc123',
+      }),
+    ).resolves.toEqual({ status: 'no_changes' });
+  });
+
   it('publishes every field for one target as one transition', async () => {
     const repository = new MemoryAdmissionsReleaseRepository();
     const publisher = createAdmissionsReleasePublisher(repository);
@@ -110,6 +134,7 @@ describe('admissions release publisher', () => {
     const retry = await publisher.publish(input);
 
     expect(first.status).toBe('published');
+    if (first.status !== 'published') throw new Error('Expected a published release.');
     expect(retry).toEqual({ status: 'already_published', releaseId: first.releaseId });
     expect(repository.releases).toHaveLength(1);
     expect(repository.transitions).toHaveLength(1);
@@ -126,6 +151,7 @@ describe('admissions release publisher', () => {
     const concurrentRetry = await publisher.publish({ manifest, repositoryCommit: 'abc123' });
 
     expect(first.status).toBe('published');
+    if (first.status !== 'published') throw new Error('Expected a published release.');
     expect(concurrentRetry).toEqual({ status: 'already_published', releaseId: first.releaseId });
     expect(repository.releases).toHaveLength(1);
   });

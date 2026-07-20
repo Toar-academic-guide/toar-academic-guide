@@ -207,6 +207,16 @@ function reportWithRisks(): DataHealthReadyReport {
         },
       ],
     },
+    publication: {
+      activeRelease: {
+        id: 'release-1',
+        manifestDigest: 'sha256:release-manifest',
+        repositoryCommit: '0123456789abcdef',
+        publishedAt: '2026-06-24T17:00:00.000Z',
+      },
+      pendingReleaseCount: 1,
+      failedReleaseCount: 2,
+    },
     mondayEvidence: {
       totalItems: 212,
       catalogueMatched: 34,
@@ -267,6 +277,7 @@ describe('DataHealthDashboard', () => {
     ).toBeTruthy();
     expect(screen.getByRole('heading', { name: /source coverage/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /source freshness/i })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /admissions publication/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /ingestion pipeline/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /review queue/i })).toBeTruthy();
     expect(screen.getByText('Non-catalogue evidence')).toBeTruthy();

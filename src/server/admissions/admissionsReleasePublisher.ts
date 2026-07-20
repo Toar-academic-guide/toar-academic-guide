@@ -81,21 +81,24 @@ export interface PublishAdmissionsReleaseInput {
 }
 
 export type PublishAdmissionsReleaseResult =
+  | { status: 'no_changes' }
   | { status: 'published'; releaseId: string; manifestDigest: string }
   | { status: 'already_published'; releaseId: string };
 
-export function createAdmissionsReleasePublisher(
-  repository = createDrizzleAdmissionsReleaseRepository(),
-) {
+export function createAdmissionsReleasePublisher(repository?: AdmissionsReleaseRepository) {
   return {
     async publish(input: PublishAdmissionsReleaseInput): Promise<PublishAdmissionsReleaseResult> {
       const manifest = parseReviewedAdmissionsManifest(input.manifest);
+      if (manifest.changes.length === 0) {
+        return { status: 'no_changes' };
+      }
+      const releaseRepository = repository ?? createDrizzleAdmissionsReleaseRepository();
       const manifestDigest = digest(canonicalizeReviewedAdmissionsManifest(manifest));
       const publishedAt = input.publishedAt ?? new Date();
       const transitions = buildTargetTransitions(manifest);
 
       try {
-        return await repository.transaction(async (writer) => {
+        return await releaseRepository.transaction(async (writer) => {
           const existing = await writer.findReleaseByManifestDigest(manifestDigest);
           if (existing?.status === 'published') {
             return { status: 'already_published', releaseId: existing.id };
@@ -161,7 +164,7 @@ export function createAdmissionsReleasePublisher(
           throw error;
         }
 
-        return repository.transaction(async (writer) => {
+        return releaseRepository.transaction(async (writer) => {
           const existing = await writer.findReleaseByManifestDigest(manifestDigest);
           if (existing?.status === 'published') {
             return { status: 'already_published', releaseId: existing.id };

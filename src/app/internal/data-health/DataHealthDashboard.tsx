@@ -278,6 +278,34 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
           </Panel>
         </section>
 
+        <section>
+          <Panel title="Admissions publication">
+            <DefinitionGrid
+              items={[
+                ['Pending releases', report.publication.pendingReleaseCount],
+                ['Failed releases', report.publication.failedReleaseCount],
+              ]}
+            />
+            {report.publication.activeRelease ? (
+              <div className="mt-6 rounded-2xl bg-slate-100 px-4 py-3 text-sm text-slate-700">
+                <p className="font-black text-slate-950">Active reviewed release</p>
+                <p className="mt-1">{report.publication.activeRelease.id}</p>
+                <p className="mt-1 break-all text-xs">
+                  {report.publication.activeRelease.manifestDigest}
+                </p>
+                <p className="mt-1 text-xs text-slate-500">
+                  Commit {report.publication.activeRelease.repositoryCommit.slice(0, 12)} ·
+                  published {formatDateTime(report.publication.activeRelease.publishedAt)}
+                </p>
+              </div>
+            ) : (
+              <p className="mt-6 text-sm text-slate-600">
+                No reviewed admissions release is active.
+              </p>
+            )}
+          </Panel>
+        </section>
+
         <section className="grid gap-5 lg:grid-cols-2">
           <Panel title="Ingestion pipeline">
             <CompactRows
@@ -491,6 +519,9 @@ function buildCriticalItems(report: DataHealthReadyReport): string[] {
     ...report.freshness.rows
       .filter((row) => ['blocked', 'changed_needs_review', 'failed', 'stale'].includes(row.status))
       .map((row) => `Source freshness ${row.status}: ${row.sourceId}`),
+    ...(report.publication.failedReleaseCount > 0
+      ? [`Failed admissions publications: ${report.publication.failedReleaseCount}`]
+      : []),
     ...(report.reviewQueue.oldestPendingItem
       ? [`Oldest pending review ${report.reviewQueue.oldestPendingItem.id}`]
       : []),

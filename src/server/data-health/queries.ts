@@ -7,6 +7,7 @@ import { getOpsDb } from '@/db/opsClient';
 import {
   admissionAlternativePaths,
   admissionFacts,
+  admissionReleases,
   admissionRequirements,
   admissionThresholds,
   admissionsSourceCandidates,
@@ -95,7 +96,19 @@ export interface DataHealthReadyReport {
     totalsByStatus: Partial<Record<DashboardSourceFreshnessStatus, number>>;
     rows: SourceFreshnessSummary[];
   };
+  publication: AdmissionsPublicationHealth;
   mondayEvidence: MondayEvidenceCoverage;
+}
+
+export interface AdmissionsPublicationHealth {
+  activeRelease: {
+    id: string;
+    manifestDigest: string;
+    repositoryCommit: string;
+    publishedAt: string;
+  } | null;
+  pendingReleaseCount: number;
+  failedReleaseCount: number;
 }
 
 export interface MondayEvidenceCoverage {
@@ -203,6 +216,13 @@ export interface DataHealthRows {
   ingestionJobs: IngestionJobRow[];
   reviewItems: ReviewItemRow[];
   sourceFreshnessStates: SourceFreshnessStateRow[];
+  admissionReleases: Array<{
+    id: string;
+    manifestDigest: string;
+    repositoryCommit: string;
+    status: 'pending' | 'published' | 'failed';
+    publishedAt: Date | null;
+  }>;
 }
 
 type IngestionJobStatus = 'pending' | 'running' | 'succeeded' | 'failed' | 'needs_review';
@@ -621,7 +641,33 @@ export function summarizeDataHealthRows(
     ingestion: buildIngestionSummary(rows.ingestionJobs),
     reviewQueue: buildReviewQueueSummary(rows.reviewItems),
     freshness: buildSourceFreshnessSummary(rows, now),
+    publication: buildAdmissionsPublicationHealth(rows.admissionReleases),
     mondayEvidence: buildMondayEvidenceCoverage(),
+  };
+}
+
+function buildAdmissionsPublicationHealth(
+  releases: DataHealthRows['admissionReleases'],
+): AdmissionsPublicationHealth {
+  const activeRelease = releases
+    .filter((release) => release.status === 'published' && release.publishedAt !== null)
+    .sort(
+      (left, right) =>
+        right.publishedAt!.getTime() - left.publishedAt!.getTime() ||
+        left.id.localeCompare(right.id),
+    )[0];
+
+  return {
+    activeRelease: activeRelease
+      ? {
+          id: activeRelease.id,
+          manifestDigest: activeRelease.manifestDigest,
+          repositoryCommit: activeRelease.repositoryCommit,
+          publishedAt: activeRelease.publishedAt!.toISOString(),
+        }
+      : null,
+    pendingReleaseCount: releases.filter((release) => release.status === 'pending').length,
+    failedReleaseCount: releases.filter((release) => release.status === 'failed').length,
   };
 }
 
@@ -883,6 +929,15 @@ async function loadDataHealthRows(): Promise<DataHealthRows> {
       updatedAt: sourceFreshnessStates.updatedAt,
     })
     .from(sourceFreshnessStates);
+  const admissionReleaseRows = await db
+    .select({
+      id: admissionReleases.id,
+      manifestDigest: admissionReleases.manifestDigest,
+      repositoryCommit: admissionReleases.repositoryCommit,
+      status: admissionReleases.status,
+      publishedAt: admissionReleases.publishedAt,
+    })
+    .from(admissionReleases);
 
   return {
     institutions: institutionRows,
@@ -899,6 +954,7 @@ async function loadDataHealthRows(): Promise<DataHealthRows> {
     ingestionJobs: ingestionJobRows,
     reviewItems: reviewItemRows,
     sourceFreshnessStates: sourceFreshnessStateRows,
+    admissionReleases: admissionReleaseRows,
   };
 }
 
