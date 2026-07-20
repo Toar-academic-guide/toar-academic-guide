@@ -5,6 +5,7 @@ import { requireAuthenticatedUserId } from '@/app/api/_lib/auth';
 import { ApiRouteError, toErrorResponse } from '@/app/api/_lib/errors';
 import { runTauComputerScienceRouteSimulation } from '@/server/admissions/routes/tauRouteSimulation';
 import { acquireAdmissionsRouteRequest } from '@/server/admissions/routes/rateLimit';
+import { getAdmissionRouteCapability } from '@/server/admissions/routes/capabilityRegistry';
 import { getUserProfileSnapshot } from '@/server/user/profile';
 
 export const dynamic = 'force-dynamic';
@@ -51,6 +52,14 @@ export async function POST(request: Request) {
     const parsed = requestSchema.safeParse(await readJsonBody(request));
     if (!parsed.success) {
       throw new ApiRouteError(400, 'ADMISSIONS_ROUTE_PAYLOAD_INVALID', 'Route request is invalid.');
+    }
+    const capability = getAdmissionRouteCapability(parsed.data.degreeId);
+    if (capability.status !== 'enabled') {
+      throw new ApiRouteError(
+        422,
+        'ADMISSIONS_ROUTE_UNSUPPORTED',
+        'Verified route simulation is not available for this programme.',
+      );
     }
 
     const profile =
