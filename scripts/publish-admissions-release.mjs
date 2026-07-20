@@ -34,12 +34,15 @@ async function main() {
   });
 
   try {
-    const [{ createAdmissionsReleasePublisher }, { parsePublicationArguments }] = await Promise.all(
-      [
-        vite.ssrLoadModule('/src/server/admissions/admissionsReleasePublisher.ts'),
-        vite.ssrLoadModule('/src/server/admissions/publicationArgs.ts'),
-      ],
-    );
+    const [
+      { createAdmissionsReleasePublisher },
+      { parsePublicationArguments },
+      { enqueueAdmissionAlertTransitionWork },
+    ] = await Promise.all([
+      vite.ssrLoadModule('/src/server/admissions/admissionsReleasePublisher.ts'),
+      vite.ssrLoadModule('/src/server/admissions/publicationArgs.ts'),
+      vite.ssrLoadModule('/src/server/admission-alerts/transitionWork.ts'),
+    ]);
     const args = parsePublicationArguments(process.argv.slice(2));
     const manifestPath = resolveInsideRepository(args.manifestPath);
     const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
@@ -48,7 +51,12 @@ async function main() {
       repositoryCommit: args.repositoryCommit,
     });
 
-    console.log(JSON.stringify(result));
+    const transitionWork =
+      result.status === 'no_changes'
+        ? null
+        : await enqueueAdmissionAlertTransitionWork({ releaseId: result.releaseId });
+
+    console.log(JSON.stringify({ ...result, transitionWork }));
   } finally {
     await vite.close();
   }

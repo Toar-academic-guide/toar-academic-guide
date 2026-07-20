@@ -42,7 +42,11 @@ describe('admission alert transition decisions', () => {
       decideAdmissionAlertTransition({
         subscription,
         evaluatedProfileHash: 'sha256:profile-v1',
-        evaluation: { decision: 'eligible', isMathematicallyVerified: false, ruleVersion: 'tau-v2' },
+        evaluation: {
+          decision: 'eligible',
+          isMathematicallyVerified: false,
+          ruleVersion: 'tau-v2',
+        },
       }),
     ).toEqual({ action: 'retry_later', reason: 'evaluation_unavailable' });
 
