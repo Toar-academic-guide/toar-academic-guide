@@ -73,6 +73,20 @@ export function findVerifiedAdmissionRoutes(args: {
     return { status: 'no_route', pareto: [], evaluatedCandidateCount };
   }
 
+  return rankVerifiedAdmissionRoutes({ verified, evaluatedCandidateCount, maxParetoFinalists });
+}
+
+export function rankVerifiedAdmissionRoutes(args: {
+  verified: VerifiedAdmissionRoute[];
+  evaluatedCandidateCount: number;
+  maxParetoFinalists?: number;
+}): RouteSearchResult {
+  const { verified, evaluatedCandidateCount, maxParetoFinalists = 12 } = args;
+
+  if (verified.length === 0) {
+    return { status: 'no_route', pareto: [], evaluatedCandidateCount };
+  }
+
   const pareto = verified
     .filter((candidate) => !verified.some((other) => dominates(other, candidate)))
     .sort(compareFastest)
