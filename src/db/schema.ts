@@ -12,6 +12,7 @@ import {
   uniqueIndex,
   uuid,
 } from 'drizzle-orm/pg-core';
+import { sql } from 'drizzle-orm';
 import type { BagrutSubject } from '@/types';
 
 export const geographicRegionEnum = pgEnum('geographic_region', [
@@ -156,6 +157,28 @@ export const admissionReleaseStatusEnum = pgEnum('admission_release_status', [
 export const admissionPublicationAttemptStatusEnum = pgEnum(
   'admission_publication_attempt_status',
   ['started', 'succeeded', 'failed'],
+);
+export const admissionAlertSubscriptionStatusEnum = pgEnum('admission_alert_subscription_status', [
+  'active',
+  'needs_profile_refresh',
+  'pending_delivery',
+  'notified',
+  'cancelled',
+  'expired',
+  'delivery_failed',
+]);
+export const admissionAlertOutboxStatusEnum = pgEnum('admission_alert_outbox_status', [
+  'pending',
+  'processing',
+  'accepted',
+  'acceptance_unknown',
+  'retryable',
+  'failed',
+  'suppressed',
+]);
+export const admissionAlertTransitionWorkStatusEnum = pgEnum(
+  'admission_alert_transition_work_status',
+  ['pending', 'processing', 'completed', 'failed'],
 );
 
 export const institutions = pgTable('institutions', {
@@ -664,3 +687,145 @@ export const admissionPublicationAttempts = pgTable(
     ),
   }),
 );
+
+export const admissionAlertEmailPreferences = pgTable('admission_alert_email_preferences', {
+  userId: uuid('user_id').primaryKey().notNull(),
+  optedIn: boolean('opted_in').default(true).notNull(),
+  unsubscribedAt: timestamp('unsubscribed_at', { withTimezone: true }),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+});
+
+export const admissionAlertSubscriptions = pgTable(
+  'admission_alert_subscriptions',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    userId: uuid('user_id').notNull(),
+    institutionId: text('institution_id')
+      .notNull()
+      .references(() => institutions.id, { onDelete: 'restrict' }),
+    programId: text('program_id')
+      .notNull()
+      .references(() => programs.id, { onDelete: 'restrict' }),
+    cycle: text('cycle').notNull(),
+    status: admissionAlertSubscriptionStatusEnum('status').default('active').notNull(),
+    profileVersionId: uuid('profile_version_id')
+      .notNull()
+      .references(() => bagrutProfileVersions.id, { onDelete: 'restrict' }),
+    profileHash: text('profile_hash').notNull(),
+    baselineRuleVersion: text('baseline_rule_version').notNull(),
+    baselineVerdict: jsonb('baseline_verdict').$type<Record<string, unknown>>().notNull(),
+    activatedAt: timestamp('activated_at', { withTimezone: true }).defaultNow().notNull(),
+    cancelledAt: timestamp('cancelled_at', { withTimezone: true }),
+    expiredAt: timestamp('expired_at', { withTimezone: true }),
+    notifiedAt: timestamp('notified_at', { withTimezone: true }),
+    refreshedAt: timestamp('refreshed_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => ({
+    activeTargetUnique: uniqueIndex('admission_alert_subscriptions_active_target_unique')
+      .on(table.userId, table.institutionId, table.programId, table.cycle)
+      .where(sql`${table.status} in ('active', 'needs_profile_refresh', 'pending_delivery')`),
+    userLifecycleIndex: index('admission_alert_subscriptions_user_lifecycle_idx').on(
+      table.userId,
+      table.status,
+      table.cycle,
+    ),
+    targetLifecycleIndex: index('admission_alert_subscriptions_target_lifecycle_idx').on(
+      table.institutionId,
+      table.programId,
+      table.cycle,
+      table.status,
+    ),
+  }),
+);
+
+export const admissionAlertBaselineHistory = pgTable(
+  'admission_alert_baseline_history',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    subscriptionId: uuid('subscription_id')
+      .notNull()
+      .references(() => admissionAlertSubscriptions.id, { onDelete: 'cascade' }),
+    profileVersionId: uuid('profile_version_id')
+      .notNull()
+      .references(() => bagrutProfileVersions.id, { onDelete: 'restrict' }),
+    profileHash: text('profile_hash').notNull(),
+    ruleVersion: text('rule_version').notNull(),
+    verdict: jsonb('verdict').$type<Record<string, unknown>>().notNull(),
+    recordedAt: timestamp('recorded_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => ({
+    subscriptionRecordedIndex: index(
+      'admission_alert_baseline_history_subscription_recorded_idx',
+    ).on(table.subscriptionId, table.recordedAt),
+  }),
+);
+
+export const admissionAlertTransitionWork = pgTable(
+  'admission_alert_transition_work',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    transitionId: uuid('transition_id')
+      .notNull()
+      .references(() => admissionTargetTransitions.id, { onDelete: 'cascade' }),
+    status: admissionAlertTransitionWorkStatusEnum('status').default('pending').notNull(),
+    cursor: text('cursor'),
+    claimedAt: timestamp('claimed_at', { withTimezone: true }),
+    completedAt: timestamp('completed_at', { withTimezone: true }),
+    failureReason: text('failure_reason'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => ({
+    transitionUnique: uniqueIndex('admission_alert_transition_work_transition_unique').on(
+      table.transitionId,
+    ),
+    statusIndex: index('admission_alert_transition_work_status_idx').on(table.status),
+  }),
+);
+
+export const admissionAlertOutbox = pgTable(
+  'admission_alert_outbox',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    subscriptionId: uuid('subscription_id')
+      .notNull()
+      .references(() => admissionAlertSubscriptions.id, { onDelete: 'cascade' }),
+    transitionId: uuid('transition_id')
+      .notNull()
+      .references(() => admissionTargetTransitions.id, { onDelete: 'restrict' }),
+    idempotencyKey: text('idempotency_key').notNull(),
+    status: admissionAlertOutboxStatusEnum('status').default('pending').notNull(),
+    providerMessageId: text('provider_message_id'),
+    providerAcceptedAt: timestamp('provider_accepted_at', { withTimezone: true }),
+    lastAttemptAt: timestamp('last_attempt_at', { withTimezone: true }),
+    nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }),
+    acceptanceUnknownAt: timestamp('acceptance_unknown_at', { withTimezone: true }),
+    failureReason: text('failure_reason'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => ({
+    logicalDeliveryUnique: uniqueIndex('admission_alert_outbox_logical_delivery_unique').on(
+      table.subscriptionId,
+      table.transitionId,
+    ),
+    idempotencyKeyUnique: uniqueIndex('admission_alert_outbox_idempotency_key_unique').on(
+      table.idempotencyKey,
+    ),
+    subscriptionUnique: uniqueIndex('admission_alert_outbox_subscription_unique').on(
+      table.subscriptionId,
+    ),
+    queueIndex: index('admission_alert_outbox_queue_idx').on(table.status, table.nextAttemptAt),
+  }),
+);
+
+export const admissionAlertWebhookEvents = pgTable('admission_alert_webhook_events', {
+  id: text('id').primaryKey(),
+  outboxId: uuid('outbox_id').references(() => admissionAlertOutbox.id, { onDelete: 'set null' }),
+  providerEventType: text('provider_event_type').notNull(),
+  providerMessageId: text('provider_message_id'),
+  receivedAt: timestamp('received_at', { withTimezone: true }).defaultNow().notNull(),
+  payloadMetadata: jsonb('payload_metadata').$type<Record<string, unknown>>().default({}).notNull(),
+});
