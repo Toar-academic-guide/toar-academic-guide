@@ -34,6 +34,8 @@ const programs = getStaticCataloguePrograms();
 function report(results: AdmissionsEvaluationReport['results']): AdmissionsEvaluationReport {
   return {
     generatedAt: '2026-06-27T00:00:00.000Z',
+    evaluatorVersion: 'admissions-evaluator-v1',
+    inputDigest: 'sha256:test',
     input: {
       degreeId: 'tau_cs',
       psychometric: 700,
