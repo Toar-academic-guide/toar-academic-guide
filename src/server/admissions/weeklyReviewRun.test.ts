@@ -58,7 +58,11 @@ describe('weekly admissions review run', () => {
         },
       ],
     });
-    expect(run.summary).toMatchObject({ candidateCount: 1, excludedCount: 0, status: 'reviewable' });
+    expect(run.summary).toMatchObject({
+      candidateCount: 1,
+      excludedCount: 0,
+      status: 'reviewable',
+    });
     expect(run.markdown).toContain('Tel Aviv University');
     expect(run.markdown).toContain('700 → 695');
     expect(run.markdown).not.toContain('selectedScore');
@@ -78,7 +82,11 @@ describe('weekly admissions review run', () => {
     });
 
     expect(run.manifest.changes).toEqual([]);
-    expect(run.summary).toMatchObject({ candidateCount: 0, excludedCount: 3, status: 'no_changes' });
+    expect(run.summary).toMatchObject({
+      candidateCount: 0,
+      excludedCount: 3,
+      status: 'no_changes',
+    });
     expect(run.excluded.map((item) => item.reason)).toEqual([
       'proof_not_decision_capable',
       'proof_not_decision_capable',
@@ -100,7 +108,11 @@ describe('weekly admissions review run', () => {
       checkedAt: new Date('2026-07-26T03:00:00.000Z'),
       cycle: '2027',
       baseline,
-      proofs: [decisionProof({ normalizedPayload: { programId: 'tau_digital_sciences', acceptanceThreshold: 700 } })],
+      proofs: [
+        decisionProof({
+          normalizedPayload: { programId: 'tau_digital_sciences', acceptanceThreshold: 700 },
+        }),
+      ],
     });
 
     expect(

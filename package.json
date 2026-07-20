@@ -21,6 +21,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:migrate:check": "drizzle-kit check",
     "admissions:freshness": "node scripts/admissions-source-freshness.mjs",
+    "admissions:prepare-review": "node scripts/prepare-admissions-review.mjs",
+    "admissions:notify-review": "node scripts/notify-admissions-review.mjs",
     "admissions:publish": "node scripts/publish-admissions-release.mjs",
     "admissions:expire": "node scripts/expire-admission-alerts.mjs",
     "db:seed": "node scripts/seed-catalogue.mjs",

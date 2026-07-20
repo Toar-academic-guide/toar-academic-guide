@@ -14,6 +14,11 @@ on:
         required: false
         default: false
         type: boolean
+      cycle:
+        description: Admissions cycle to compare against published reviewed rules
+        required: true
+        default: '2027'
+        type: string
 
 permissions:
   contents: read
@@ -24,11 +29,14 @@ concurrency:
 
 jobs:
   admissions-source-freshness:
-    name: Check and persist admissions source freshness
+    name: Prepare one reviewed admissions update
     runs-on: ubuntu-latest
     env:
       CI: true
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      ADMISSIONS_GITHUB_APP_ID: ${{ secrets.ADMISSIONS_GITHUB_APP_ID }}
+      ADMISSIONS_GITHUB_APP_PRIVATE_KEY: ${{ secrets.ADMISSIONS_GITHUB_APP_PRIVATE_KEY }}
+      ADMISSIONS_CYCLE: ${{ inputs.cycle || vars.ADMISSIONS_CYCLE }}
 
     steps:
       - name: Checkout repository
@@ -43,9 +51,24 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run admissions source freshness
+      - name: Resolve stable weekly run identity
+        id: run
         shell: bash
         run: |
+          set -euo pipefail
+          test -n "$ADMISSIONS_CYCLE" || { echo 'Configure ADMISSIONS_CYCLE before running the weekly admissions review.'; exit 1; }
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            run_key="$(date -u '+%G-W%V')"
+          else
+            run_key="$(date -u '+%G-W%V')"
+          fi
+          echo "run_key=$run_key" >> "$GITHUB_OUTPUT"
+          echo "branch=automation/admissions-review-$run_key" >> "$GITHUB_OUTPUT"
+
+      - name: Prepare admissions review run
+        shell: bash
+        run: |
+          set -euo pipefail
           args=()
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.target }}" ]; then
             args+=(--target "${{ inputs.target }}")
@@ -54,4 +77,78 @@ jobs:
             args+=(--dry-run)
           fi
 
-          npm run admissions:freshness -- "${args[@]}"
+          npm run admissions:prepare-review -- \
+            --run-key "${{ steps.run.outputs.run_key }}" \
+            --cycle "$ADMISSIONS_CYCLE" \
+            --output scratch/admissions-review/run.json \
+            "${args[@]}"
+
+      - name: Create GitHub App token
+        id: admissions_app
+        if: ${{ !inputs.dry_run }}
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ env.ADMISSIONS_GITHUB_APP_ID }}
+          private-key: ${{ env.ADMISSIONS_GITHUB_APP_PRIVATE_KEY }}
+
+      - name: Create or update the one combined admissions review PR
+        id: review_pr
+        if: ${{ !inputs.dry_run }}
+        env:
+          GH_TOKEN: ${{ steps.admissions_app.outputs.token }}
+          REVIEW_BRANCH: ${{ steps.run.outputs.branch }}
+          RUN_KEY: ${{ steps.run.outputs.run_key }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          candidate_count="$(jq -r '.run.summary.candidateCount' scratch/admissions-review/run.json)"
+          if [ "$candidate_count" = "0" ]; then
+            echo 'has_pr=false' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          git fetch origin "$REVIEW_BRANCH" || true
+          if git show-ref --verify --quiet "refs/remotes/origin/$REVIEW_BRANCH"; then
+            git switch --force-create "$REVIEW_BRANCH" "origin/$REVIEW_BRANCH"
+          else
+            git switch --create "$REVIEW_BRANCH"
+          fi
+
+          jq '.run.manifest' scratch/admissions-review/run.json > src/data/admissions/reviewedManifest.json
+          mkdir -p docs/admissions-review-runs
+          jq -r '.run.markdown' scratch/admissions-review/run.json > "docs/admissions-review-runs/$RUN_KEY.md"
+          npm run guard:pre-pr
+
+          git add src/data/admissions/reviewedManifest.json "docs/admissions-review-runs/$RUN_KEY.md"
+          if ! git diff --cached --quiet; then
+            git commit -m "chore(admissions): prepare weekly review $RUN_KEY"
+            git push origin "$REVIEW_BRANCH"
+          fi
+
+          pr_number="$(gh pr list --head "$REVIEW_BRANCH" --base main --state open --json number --jq '.[0].number // empty')"
+          if [ -z "$pr_number" ]; then
+            pr_number="$(gh pr create \
+              --base main \
+              --head "$REVIEW_BRANCH" \
+              --title "chore(admissions): weekly reviewed update $RUN_KEY" \
+              --body-file "docs/admissions-review-runs/$RUN_KEY.md")"
+            pr_number="${pr_number##*/}"
+          fi
+          pr_url="$(gh pr view "$pr_number" --json url --jq '.url')"
+          echo 'has_pr=true' >> "$GITHUB_OUTPUT"
+          echo "number=$pr_number" >> "$GITHUB_OUTPUT"
+          echo "url=$pr_url" >> "$GITHUB_OUTPUT"
+
+      - name: Send one admissions review Slack handoff
+        if: ${{ !inputs.dry_run }}
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_ADMISSIONS_REVIEW_CHANNEL_ID: ${{ vars.SLACK_ADMISSIONS_REVIEW_CHANNEL_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=(--run-file scratch/admissions-review/run.json)
+          if [ "${{ steps.review_pr.outputs.has_pr }}" = "true" ]; then
+            args+=(--pr-number "${{ steps.review_pr.outputs.number }}" --pr-url "${{ steps.review_pr.outputs.url }}")
+          fi
+          npm run admissions:notify-review -- "${args[@]}"

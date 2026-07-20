@@ -3,11 +3,7 @@ import 'server-only';
 import { and, desc, eq } from 'drizzle-orm';
 
 import { getDb } from '@/db/client';
-import {
-  admissionReleaseItems,
-  admissionReleases,
-  admissionTargetTransitions,
-} from '@/db/schema';
+import { admissionReleaseItems, admissionReleases, admissionTargetTransitions } from '@/db/schema';
 import {
   runAdmissionsSourceFreshness,
   type AdmissionsSourceFreshnessRunResult,
@@ -31,8 +27,10 @@ export interface AdmissionsWeeklyReviewPreparerDependencies {
   baselineRepository?: PublishedAdmissionRuleRepository;
 }
 
-export interface AdmissionsWeeklyReviewPreparationInput
-  extends Omit<AdmissionsSourceFreshnessRunnerOptions, 'checkedAt'> {
+export interface AdmissionsWeeklyReviewPreparationInput extends Omit<
+  AdmissionsSourceFreshnessRunnerOptions,
+  'checkedAt'
+> {
   runKey: string;
   cycle: string;
   checkedAt?: Date;
@@ -100,8 +98,16 @@ export function createDrizzlePublishedAdmissionRuleRepository(
           admissionTargetTransitions,
           eq(admissionReleaseItems.transitionId, admissionTargetTransitions.id),
         )
-        .innerJoin(admissionReleases, eq(admissionTargetTransitions.releaseId, admissionReleases.id))
-        .where(and(eq(admissionReleases.status, 'published'), eq(admissionTargetTransitions.cycle, cycle)))
+        .innerJoin(
+          admissionReleases,
+          eq(admissionTargetTransitions.releaseId, admissionReleases.id),
+        )
+        .where(
+          and(
+            eq(admissionReleases.status, 'published'),
+            eq(admissionTargetTransitions.cycle, cycle),
+          ),
+        )
         .orderBy(desc(admissionReleases.publishedAt));
 
       const latestByRule = new Map<string, PublishedAdmissionRule>();

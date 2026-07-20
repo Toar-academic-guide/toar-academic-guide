@@ -39,16 +39,21 @@ function report(): AdmissionsLiveProofReport {
 describe('admissions weekly review preparation', () => {
   it('persists source freshness first, then compares only against published reviewed rules', async () => {
     const sourceRunner = vi.fn<
-      (options: AdmissionsSourceFreshnessRunnerOptions) => Promise<AdmissionsSourceFreshnessRunResult>
+      (
+        options: AdmissionsSourceFreshnessRunnerOptions,
+      ) => Promise<AdmissionsSourceFreshnessRunResult>
     >(async () => ({ report: report(), persistence: null }));
     const baselineRepository: PublishedAdmissionRuleRepository = {
-      listPublishedRules: vi.fn(async () => [
-        {
-          target: { institutionId: 'tau', programId: 'tau_digital_sciences', cycle: '2027' },
-          ruleKind: 'admission_cutoff' as const,
-          value: 700,
-        },
-      ] satisfies PublishedAdmissionRule[]),
+      listPublishedRules: vi.fn(
+        async () =>
+          [
+            {
+              target: { institutionId: 'tau', programId: 'tau_digital_sciences', cycle: '2027' },
+              ruleKind: 'admission_cutoff' as const,
+              value: 700,
+            },
+          ] satisfies PublishedAdmissionRule[],
+      ),
     };
     const preparer = createAdmissionsWeeklyReviewPreparer({ sourceRunner, baselineRepository });
 
