@@ -34,6 +34,7 @@ export interface AdmissionsWeeklyReviewPreparationInput extends Omit<
   runKey: string;
   cycle: string;
   checkedAt?: Date;
+  excludedCandidateIds?: string[];
 }
 
 export interface AdmissionsWeeklyReviewPreparationResult {
@@ -72,6 +73,7 @@ export function createAdmissionsWeeklyReviewPreparer(
           cycle: input.cycle,
           baseline,
           proofs: freshness.report.results.map((result) => result.proof),
+          excludedCandidateIds: input.excludedCandidateIds,
         }),
         persistence: freshness.persistence,
       };
