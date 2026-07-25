@@ -215,4 +215,24 @@ describe('formula-backed verification ledger', () => {
     expect(inventory.excludedPairs.length).toBeGreaterThan(0);
     expect(inventory.excludedPairs.some((pair) => ledgerPairIds.has(pair.id))).toBe(false);
   });
+
+  it('records an authority-specific reason for every withheld pair', () => {
+    const withheld = FORMULA_BACKED_VERIFICATION_LEDGER.filter(
+      (entry) => entry.state === 'withheld',
+    );
+
+    expect(withheld.map((entry) => entry.pairId)).toEqual([
+      'medicine__tau',
+      'nutrition__tau',
+      'physiotherapy__tau',
+      'tau_infosystems__tau',
+      'tau_medicine__tau',
+      'physiotherapy__huji',
+      'nutrition__bgu',
+      'architecture__technion',
+      'colmgmt_cs__colman',
+    ]);
+    expect(withheld.every((entry) => entry.reason.length > 80)).toBe(true);
+    expect(withheld.every((entry) => entry.sourceUrl.startsWith('https://'))).toBe(true);
+  });
 });

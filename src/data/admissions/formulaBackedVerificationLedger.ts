@@ -251,6 +251,60 @@ const SOURCE_BY_INSTITUTION: Record<FormulaBackedInstitutionId, { url: string; r
   },
 };
 
+/**
+ * Pair-specific authority gaps are deliberately kept separate from the
+ * institution defaults above.  A withheld pair must explain what is missing
+ * from the current official source; otherwise a stale catalogue row can look
+ * like an implementation omission.
+ */
+const WITHHELD_PAIR_EVIDENCE: Record<string, { url: string; reason: string }> = {
+  medicine__tau: {
+    url: 'https://go.tau.ac.il/he/med/ba/med-doc?v=important-info',
+    reason:
+      'Current TAU medicine uses a 30% cognitive plus 70% non-cognitive selection process and does not publish a numeric programme acceptance/rejection cutoff that can support an exact two-verdict replay.',
+  },
+  nutrition__tau: {
+    url: 'https://go.tau.ac.il/he/med',
+    reason:
+      'The current TAU health-programme catalogue does not expose a standalone nutrition programme target or numeric verdict route for this legacy formula-backed row.',
+  },
+  physiotherapy__tau: {
+    url: 'https://go.tau.ac.il/he/med/ba/phys?v=important-info',
+    reason:
+      'TAU publishes a physiotherapy score and interview route, but final admission is determined after the personal interview; the calculator contract cannot prove the final verdict from the current structured applicant inputs alone.',
+  },
+  tau_infosystems__tau: {
+    url: 'https://go.tau.ac.il/he/management/ba/management?v=requirements',
+    reason:
+      'The current TAU source exposes a general Management degree that includes information-systems coursework, not the legacy standalone management-and-information-systems programme target represented by this pair.',
+  },
+  tau_medicine__tau: {
+    url: 'https://go.tau.ac.il/he/med/ba/med-doc?v=important-info',
+    reason:
+      'Current TAU medicine uses a 30% cognitive plus 70% non-cognitive selection process and does not publish a numeric programme acceptance/rejection cutoff that can support an exact two-verdict replay.',
+  },
+  physiotherapy__huji: {
+    url: 'https://go.huji.ac.il/jjson/huji.json.gz',
+    reason:
+      'The current HUJI programme dataset has no physiotherapy track or numeric programme verdict for this legacy catalogue row.',
+  },
+  nutrition__bgu: {
+    url: 'https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/',
+    reason:
+      'The current BGU 2027 admission dataset has no nutrition programme row from which a current programme mapping and two verdict fixtures can be proven.',
+  },
+  architecture__technion: {
+    url: 'https://admissions.technion.ac.il/acceptance-to-architecturentownplanning/',
+    reason:
+      'Technion architecture admission is governed by architecture-specific examination, portfolio, and interview requirements rather than a numeric calculator verdict.',
+  },
+  colmgmt_cs__colman: {
+    url: 'https://www.colman.ac.il/academics/ba/computer-science/',
+    reason:
+      'The College of Management publishes requirements, internal tests, and preparatory routes for this programme, but no official calculator replay with a pair-specific numeric acceptance/rejection verdict.',
+  },
+};
+
 export const FORMULA_BACKED_VERIFICATION_LEDGER: FormulaPairVerificationLedgerEntry[] =
   FORMULA_BACKED_INSTITUTION_IDS.flatMap((institutionId) => {
     const source = SOURCE_BY_INSTITUTION[institutionId];
@@ -276,7 +330,7 @@ export const FORMULA_BACKED_VERIFICATION_LEDGER: FormulaPairVerificationLedgerEn
             admissionCycle: '2026-2027' as const,
             state: 'withheld' as const,
             officialProgramId: null,
-            sourceUrl: source.url,
+            sourceUrl: WITHHELD_PAIR_EVIDENCE[pairId]?.url ?? source.url,
             formulaFamily: null,
             fixtureEvidence: {
               eligible: false,
@@ -289,7 +343,7 @@ export const FORMULA_BACKED_VERIFICATION_LEDGER: FormulaPairVerificationLedgerEn
               comparedAt: null,
               sourceFingerprint: null,
             },
-            reason: source.reason,
+            reason: WITHHELD_PAIR_EVIDENCE[pairId]?.reason ?? source.reason,
           };
     });
   });
