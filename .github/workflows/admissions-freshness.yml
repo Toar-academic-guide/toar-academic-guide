@@ -35,14 +35,33 @@ jobs:
   admissions-source-freshness:
     name: Prepare one reviewed admissions update
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.ADMISSIONS_WEEKLY_ENABLED == 'true' }}
     env:
       CI: true
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DATABASE_URL: ${{ inputs.dry_run && secrets.OPS_DATABASE_URL || secrets.DATABASE_URL }}
       ADMISSIONS_GITHUB_APP_ID: ${{ secrets.ADMISSIONS_GITHUB_APP_ID }}
       ADMISSIONS_GITHUB_APP_PRIVATE_KEY: ${{ secrets.ADMISSIONS_GITHUB_APP_PRIVATE_KEY }}
       ADMISSIONS_CYCLE: ${{ inputs.cycle || vars.ADMISSIONS_CYCLE }}
 
     steps:
+      - name: Validate weekly admissions configuration
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          DRY_RUN_INPUT: ${{ inputs.dry_run }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_ADMISSIONS_REVIEW_CHANNEL_ID: ${{ vars.SLACK_ADMISSIONS_REVIEW_CHANNEL_ID }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$ADMISSIONS_CYCLE" || { echo 'Configure ADMISSIONS_CYCLE before running the weekly admissions review.'; exit 1; }
+          test -n "$DATABASE_URL" || { echo 'Configure OPS_DATABASE_URL for dry runs and DATABASE_URL for write-capable weekly runs.'; exit 1; }
+          if [[ "$EVENT_NAME" != "workflow_dispatch" || "$DRY_RUN_INPUT" != "true" ]]; then
+            test -n "$ADMISSIONS_GITHUB_APP_ID" || { echo 'Configure ADMISSIONS_GITHUB_APP_ID before a write-capable weekly run.'; exit 1; }
+            test -n "$ADMISSIONS_GITHUB_APP_PRIVATE_KEY" || { echo 'Configure ADMISSIONS_GITHUB_APP_PRIVATE_KEY before a write-capable weekly run.'; exit 1; }
+            test -n "$SLACK_BOT_TOKEN" || { echo 'Configure SLACK_BOT_TOKEN before a write-capable weekly run.'; exit 1; }
+            test -n "$SLACK_ADMISSIONS_REVIEW_CHANNEL_ID" || { echo 'Configure SLACK_ADMISSIONS_REVIEW_CHANNEL_ID before a write-capable weekly run.'; exit 1; }
+          fi
+
       - name: Checkout repository
         uses: actions/checkout@v7
         with:

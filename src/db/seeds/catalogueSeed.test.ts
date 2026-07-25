@@ -196,6 +196,18 @@ describe('catalogueSeed', () => {
     ).toBe(true);
   });
 
+  it('keeps College of Management tourism requirements-based without threshold rows', () => {
+    const payload = buildCatalogueSeed();
+
+    expect(payload.programs.find((program) => program.id === 'colman_tourism')).toMatchObject({
+      admissionType: 'requirements',
+      institutionId: 'colman',
+    });
+    expect(
+      payload.admissionThresholds.some((threshold) => threshold.programId === 'colman_tourism'),
+    ).toBe(false);
+  });
+
   it('is deterministic across repeated runs', () => {
     const first = buildCatalogueSeed();
     const second = buildCatalogueSeed();

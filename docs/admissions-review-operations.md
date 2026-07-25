@@ -6,12 +6,93 @@ The `Admissions Source Freshness` workflow is the only automation path that prop
 
 Before enabling the scheduled workflow, configure these repository settings:
 
-- `DATABASE_URL` secret: database access for source freshness persistence and published-rule baselines.
+- `OPS_DATABASE_URL` secret: read-only database access for manual dry runs.
+- `DATABASE_URL` secret: write-capable database access for scheduled source
+  freshness persistence, review-run state, and published-rule baselines.
 - `ADMISSIONS_GITHUB_APP_ID` and `ADMISSIONS_GITHUB_APP_PRIVATE_KEY` secrets: a least-privileged GitHub App that can create and update the generated review branch and PR.
 - `ADMISSIONS_CYCLE` repository variable: the four-digit admission cycle to evaluate.
 - `SLACK_BOT_TOKEN` secret and `SLACK_ADMISSIONS_REVIEW_CHANNEL_ID` repository variable: the dedicated reviewer handoff channel.
+- `ADMISSIONS_WEEKLY_ENABLED` repository variable: keep this exactly `false`
+  until schema verification, manual dry runs, configuration, and the
+  change-bearing proof are complete; set it to `true` only to activate the
+  Sunday schedule.
 
 The GitHub App must have only the repository permissions required to write contents and pull requests. Slack delivery is retryable and cannot publish, approve, or alter an admissions rule.
+
+Manual `workflow_dispatch` runs remain available while the schedule is
+disabled. A dry run uses `OPS_DATABASE_URL` and does not require the GitHub App
+or Slack settings. A write-capable manual or scheduled run validates all
+configuration names above before source evaluation and fails without printing
+their values.
+
+## Production schema preflight
+
+Run the read-only preflight before any production migration:
+
+```bash
+npm run db:operational:preflight
+```
+
+The command reads `OPS_DATABASE_URL` first and falls back to `DATABASE_URL`. It
+prints a machine-readable report and succeeds only when the audited production
+migration baseline is intact and the remaining forward migrations form a safe,
+unapplied suffix. It verifies migration statement fingerprints, effective
+roles, required relations, columns, enums, constraints, indexes, triggers, RLS,
+policies, and effective table privileges.
+
+The protected production sequence begins with migration `0010`, not `0011`.
+Production currently predates `bagrut_profile_versions`, and the release and
+alert migrations depend on that table. Apply `0010` through `0016` in order,
+then apply forward repair `0017`, which adds the missing `ops_readonly` profile
+history read policy without broadening write access, and `0018`, which pins the
+threshold-invariant trigger function to a trusted PostgreSQL search path.
+Migration `0019` repairs the legacy `colman_tourism` row from calculator-backed
+`sekhem` to requirements-based admission, matching the repository seed and
+preventing database-mode catalogue readiness from demanding an impossible
+College of Management university-threshold row.
+Never edit a migration that has already been recorded remotely. If the
+preflight reports `drift`, an unexpected migration, a partially present object,
+or a role that can bypass RLS, stop and prepare a new forward repair migration.
+
+After the protected apply, run:
+
+```bash
+npm run db:operational:verify
+```
+
+The verification form requires the complete schema and also checks
+representative catalogue rows. Keep the preflight and verification JSON with
+the protected-environment run evidence; neither output contains database
+credentials.
+
+The protected publication workflow uses the stricter
+`npm run db:operational:publication` gate. In addition to the complete schema
+and catalogue checks, it refuses to write while a pending release, started
+publication attempt, or published release with incomplete digest/commit
+identity is present.
+
+### 2026-07-25 production recovery evidence
+
+- Supabase project `toar-academic-guide` (`kfxcdbjeidczltkrjazk`) had a completed
+  physical backup at `2026-07-25T08:31:59.127Z` before mutation.
+- The protected operator applied forward migrations `0010` through `0019`.
+  Remote statement fingerprints match the verifier contract.
+- All required operational tables and constraints are present, all 16 private
+  admissions/operations tables have RLS enabled, and `anon` and
+  `authenticated` have no effective table privileges on them.
+- An anonymous PostgREST read of `admission_facts` returns HTTP 401 with
+  PostgreSQL permission denial. The threshold repair left zero contradictory
+  rows.
+- Supabase Security Advisor reports no admissions-schema or RLS finding. The
+  remaining leaked-password-protection warning is an unrelated Auth setting.
+- The threshold rows removed by migration `0014` were captured before mutation
+  as recovery SQL with SHA-256
+  `0ece6f536485709f339ea02c2f7b8b9acd587780b9be57689719ea175414252f`.
+  Keep that operator artifact with the incident record; do not commit production
+  row data to the repository.
+- Migration `0019` changed only `colman_tourism` from `sekhem` to
+  `requirements`; post-migration verification reports no pending migration or
+  schema issue, and both database-backed catalogue endpoints return HTTP 200.
 
 ## How a weekly run behaves
 
@@ -43,4 +124,30 @@ Use `/internal/data-health` to inspect the full admissions evidence inventory an
 
 - To retry a Slack failure, rerun the workflow for the same weekly run; the run ledger keeps PR state and retries delivery without creating a duplicate PR.
 - To retry a failed generated PR, fix the source contract or exclusion metadata, then rerun the same week so the same branch and PR are updated.
+- A failed publication keeps one `admission_releases` row with status `failed`
+  and one completed `admission_publication_attempts` row with the error message.
+  Target transitions and release items remain atomic and are rolled back. After
+  correcting the failure, rerun the publication workflow with the same merged
+  repository commit: the publisher reuses the failed release id and appends a
+  new attempt instead of creating a second release identity.
+- Before retrying, confirm there is no pending release or started attempt with
+  `npm run db:operational:publication`. Inspect the durable failure without
+  exposing credentials:
+
+  ```sql
+  select
+    release.id,
+    release.manifest_digest,
+    release.repository_commit,
+    attempt.status,
+    attempt.error_message,
+    attempt.started_at,
+    attempt.completed_at
+  from public.admission_releases release
+  join public.admission_publication_attempts attempt
+    on attempt.release_id = release.id
+  where release.status = 'failed'
+  order by attempt.started_at desc;
+  ```
+
 - To reverse a merged reviewed change, use a normal reviewed corrective PR with official evidence. Do not change release tables or canonical data through the internal review UI.

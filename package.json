@@ -12,6 +12,7 @@
     "notify:ready-pr": "tsx scripts/notify-ready-pr.ts",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "test:publication:db": "vitest run src/server/admissions/admissionsReleasePublisher.integration.test.ts",
     "test:e2e": "playwright test",
     "lint": "eslint .",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css,json}\"",
@@ -32,7 +33,9 @@
     "monday:export-admissions": "node scripts/export-monday-admissions-updates.mjs",
     "monday:derive-admissions-evidence": "node scripts/derive-monday-admissions-evidence.mjs",
     "monday:verify-admissions-evidence": "node scripts/verify-monday-admissions-evidence.mjs",
-    "db:operational:verify": "node scripts/verify-operational-db.mjs"
+    "db:operational:preflight": "node scripts/verify-operational-db.mjs --preflight",
+    "db:operational:verify": "node scripts/verify-operational-db.mjs",
+    "db:operational:publication": "node scripts/verify-operational-db.mjs --publication"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.0",

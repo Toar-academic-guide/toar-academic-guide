@@ -4,6 +4,8 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { findProductionSensitivePaths } from './production-sensitive-paths.mjs';
+
 const rootDir = dirname(fileURLToPath(new URL('../package.json', import.meta.url)));
 
 const highRiskPathPatterns = [
@@ -38,6 +40,18 @@ const operationalReadGrants = {
     'admissions_source_candidates',
     'source_freshness_checks',
     'source_freshness_states',
+    'bagrut_profile_versions',
+    'admission_publication_attempts',
+    'admission_release_items',
+    'admission_releases',
+    'admission_target_transitions',
+    'admission_alert_baseline_history',
+    'admission_alert_email_preferences',
+    'admission_alert_outbox',
+    'admission_alert_subscriptions',
+    'admission_alert_transition_work',
+    'admission_alert_webhook_events',
+    'admission_review_runs',
   ],
   ops_readonly: [
     'admission_alternative_paths',
@@ -45,6 +59,18 @@ const operationalReadGrants = {
     'admissions_source_candidates',
     'source_freshness_checks',
     'source_freshness_states',
+    'bagrut_profile_versions',
+    'admission_publication_attempts',
+    'admission_release_items',
+    'admission_releases',
+    'admission_target_transitions',
+    'admission_alert_baseline_history',
+    'admission_alert_email_preferences',
+    'admission_alert_outbox',
+    'admission_alert_subscriptions',
+    'admission_alert_transition_work',
+    'admission_alert_webhook_events',
+    'admission_review_runs',
   ],
 };
 
@@ -54,6 +80,9 @@ const targetedTests = [
   'src/server/admissions/calculatorCoverage.test.ts',
   'src/server/admissions/capabilityMatrix.test.ts',
   'src/server/admissions/evaluator.test.ts',
+  'src/server/admissions/admissionsReleasePublisher.test.ts',
+  'src/server/admissions/productionSchemaPreflight.test.ts',
+  'src/server/admissions/productionSensitivePaths.test.ts',
   'src/server/catalogue/queries.test.ts',
   'src/server/data-health/queries.test.ts',
   'src/db/seeds/catalogueSeed.test.ts',
@@ -140,7 +169,7 @@ function readMigrationStatements() {
     .flatMap((fileName) => {
       const sql = readFileSync(join(migrationsDir, fileName), 'utf8');
       return sql
-        .split(/;|-->\s*statement-breakpoint/)
+        .split(/-->\s*statement-breakpoint/)
         .map((statement) => statement.trim())
         .filter(Boolean);
     });
@@ -148,7 +177,7 @@ function readMigrationStatements() {
 
 function assertOperationalGrants() {
   const grantStatements = readMigrationStatements().filter((statement) =>
-    /\bGRANT\s+SELECT\s+ON\s+TABLE\b/i.test(statement),
+    /\bGRANT\s+[\s\S]*?\bSELECT\b[\s\S]*?\bON\s+TABLE\b/i.test(statement),
   );
   const missing = [];
 
@@ -196,7 +225,12 @@ function assertAdmissionsEvidenceFresh() {
 }
 
 const changedFiles = getChangedFiles();
-const highRiskChanges = changedFiles.filter(isHighRiskPath);
+const highRiskChanges = [
+  ...new Set([
+    ...changedFiles.filter(isHighRiskPath),
+    ...findProductionSensitivePaths(changedFiles),
+  ]),
+].sort();
 
 console.log('Pre-PR guard: checking migration grants.');
 assertOperationalGrants();
