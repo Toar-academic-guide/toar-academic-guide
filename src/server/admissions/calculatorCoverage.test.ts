@@ -61,8 +61,8 @@ describe('calculatorCoverage', () => {
   it('reports pair-level formula coverage without institution-wide exact claims', () => {
     expect(formulaBackedPairCoverage).toMatchObject({
       total: 135,
-      exact: 24,
-      withheld: 111,
+      exact: 26,
+      withheld: 109,
       isComplete: false,
     });
 

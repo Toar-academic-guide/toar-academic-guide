@@ -411,6 +411,36 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
     },
     requiredInputs: ['psychometric_english', 'bagrut_subject_record'],
   },
+  occupational_therapy__tau: {
+    targetId: 'tau-occupational-live',
+    sourceTarget: admissionsSourceTargets.find((entry) => entry.id === 'tau-occupational-live')!,
+    program: {
+      targetId: 'tau-occupational-live',
+      pairId: 'occupational_therapy__tau',
+      id: 'tau-occupational-therapy',
+      name: 'Occupational Therapy',
+      nodeId: 8212,
+      externalId: '016511010000',
+      scoreField: 'hatama',
+    },
+    requiredInputs: ['psychometric_english'],
+  },
+  tau_occupational_therapy__tau: {
+    targetId: 'tau-occupational-legacy-live',
+    sourceTarget: admissionsSourceTargets.find(
+      (entry) => entry.id === 'tau-occupational-legacy-live',
+    )!,
+    program: {
+      targetId: 'tau-occupational-legacy-live',
+      pairId: 'tau_occupational_therapy__tau',
+      id: 'tau-occupational-therapy',
+      name: 'Occupational Therapy',
+      nodeId: 8212,
+      externalId: '016511010000',
+      scoreField: 'hatama',
+    },
+    requiredInputs: ['psychometric_english'],
+  },
 };
 
 const SOURCE_TARGETS_BY_INSTITUTION = new Map<string, AdmissionsSourceTarget>(

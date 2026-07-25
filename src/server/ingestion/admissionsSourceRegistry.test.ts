@@ -34,6 +34,8 @@ describe('admissionsSourceRegistry', () => {
       'tau-ee-legacy-live',
       'tau-me-live',
       'tau-me-legacy-live',
+      'tau-occupational-live',
+      'tau-occupational-legacy-live',
     ]);
   });
 

@@ -1313,6 +1313,64 @@ export const TAU_LEGACY_ME_CONTRACT: AdmissionsProgramVerificationContract = {
   fixtureSetFingerprint: 'sha256:ce0c30c4256743907ec1bf33198badf8b9fa89c965a883e6471ab317e9f1d63a',
 };
 
+const TAU_OCCUPATIONAL_SOURCE_FINGERPRINT =
+  'sha256:4b48b5fdaf9f988cab905a25a68cb7a2f2873d9c4c99c4e9722fb4c3a674d0eb';
+export const TAU_OCCUPATIONAL_FIXTURES: AdmissionsVerificationFixture[] = TAU_ME_FIXTURES.map(
+  (fixture) => ({
+    ...fixture,
+    id: fixture.id.replace('me__tau', 'occupational_therapy__tau'),
+    pairId: 'occupational_therapy__tau',
+    sourceFingerprint: TAU_OCCUPATIONAL_SOURCE_FINGERPRINT,
+  }),
+);
+export const TAU_OCCUPATIONAL_CONTRACT: AdmissionsProgramVerificationContract = {
+  ...TAU_ME_CONTRACT,
+  pairId: 'occupational_therapy__tau',
+  programId: 'occupational_therapy',
+  officialProgramId: '016511010000',
+  source: { targetId: 'tau-occupational-live', url: 'https://go.tau.ac.il/graphql' },
+  calculation: {
+    ...TAU_ME_CONTRACT.calculation,
+    formulaFamily: 'tau_hatama',
+    requiredInputs: ['psychometric_english'],
+    cutoff: { acceptance: 607, rejection: 606 },
+    gates: [
+      {
+        id: 'tau-occupational:english-minimum',
+        kind: 'language',
+        field: 'psychometricEnglish',
+        minimum: 100,
+        description: 'TAU requires at least English level Advanced A.',
+      },
+      {
+        id: 'tau-occupational:health-science-route',
+        kind: 'manual',
+        field: 'bagrutSubjectRecord',
+        description:
+          'Occupational Therapy chemistry/physics and interview conditions remain manual.',
+      },
+    ],
+  },
+  fixtureIds: TAU_OCCUPATIONAL_FIXTURES.map((fixture) => fixture.id),
+  fixtureSetFingerprint: 'sha256:1f7bd700051fd142c77b2e6dcdd9dc0fc9fdbaf47c0b1a9299f5f4dc5b2492de',
+  sourceFingerprint: TAU_OCCUPATIONAL_SOURCE_FINGERPRINT,
+  proof: { ...TAU_ME_CONTRACT.proof, sourceFingerprint: TAU_OCCUPATIONAL_SOURCE_FINGERPRINT },
+};
+export const TAU_LEGACY_OCCUPATIONAL_FIXTURES: AdmissionsVerificationFixture[] =
+  TAU_OCCUPATIONAL_FIXTURES.map((fixture) => ({
+    ...fixture,
+    id: fixture.id.replace('occupational_therapy__tau', 'tau_occupational_therapy__tau'),
+    pairId: 'tau_occupational_therapy__tau',
+  }));
+export const TAU_LEGACY_OCCUPATIONAL_CONTRACT: AdmissionsProgramVerificationContract = {
+  ...TAU_OCCUPATIONAL_CONTRACT,
+  pairId: 'tau_occupational_therapy__tau',
+  programId: 'tau_occupational_therapy',
+  source: { ...TAU_OCCUPATIONAL_CONTRACT.source, targetId: 'tau-occupational-legacy-live' },
+  fixtureIds: TAU_LEGACY_OCCUPATIONAL_FIXTURES.map((fixture) => fixture.id),
+  fixtureSetFingerprint: 'sha256:ddad83f7dd7b66dbf14009cb1bec6450104ad82e68e73da104debdb29772c1e8',
+};
+
 export interface ProgramVerificationArtifact {
   contract: AdmissionsProgramVerificationContract;
   fixtures: AdmissionsVerificationFixture[];
@@ -1500,6 +1558,20 @@ export const TAU_PROGRAM_VERIFICATION_METADATA: Record<string, TauProgramVerific
       'https://go.tau.ac.il/he/engineering/ba/mechanical-engineering?v=admission-requirements',
     ledgerReason:
       'Verified the legacy TAU Mechanical Engineering alias against the same current node, score field, subject gates, fixtures, and live replay.',
+  },
+  [TAU_OCCUPATIONAL_CONTRACT.pairId]: {
+    contract: TAU_OCCUPATIONAL_CONTRACT,
+    fixtures: TAU_OCCUPATIONAL_FIXTURES,
+    requirementsUrl: 'https://go.tau.ac.il/he/med/ba/occupational-therapy?v=admission-requirements',
+    ledgerReason:
+      'Verified against the current TAU Occupational Therapy programme node, score route, English/health-science gates, accepted/below fixtures, and live score-and-verdict replay.',
+  },
+  [TAU_LEGACY_OCCUPATIONAL_CONTRACT.pairId]: {
+    contract: TAU_LEGACY_OCCUPATIONAL_CONTRACT,
+    fixtures: TAU_LEGACY_OCCUPATIONAL_FIXTURES,
+    requirementsUrl: 'https://go.tau.ac.il/he/med/ba/occupational-therapy?v=admission-requirements',
+    ledgerReason:
+      'Verified the legacy TAU Occupational Therapy alias against the same current node, score route, gates, fixtures, and live replay.',
   },
 };
 
