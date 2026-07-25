@@ -1,15 +1,15 @@
 import postgres from 'postgres';
-import 'tsx';
+import { require as tsxRequire } from 'tsx/cjs/api';
 
-const [
-  { PRODUCTION_SCHEMA_CONTRACT, assessProductionSchema },
-  { assessPublicationDatabaseState },
-  { requireOpsDatabaseUrl },
-] = await Promise.all([
-  import('../src/server/admissions/productionSchemaPreflight.ts'),
-  import('../src/server/admissions/operationalDatabaseGate.ts'),
-  import('../src/env.ts'),
-]);
+const { PRODUCTION_SCHEMA_CONTRACT, assessProductionSchema } = tsxRequire(
+  '../src/server/admissions/productionSchemaPreflight.ts',
+  import.meta.url,
+);
+const { assessPublicationDatabaseState } = tsxRequire(
+  '../src/server/admissions/operationalDatabaseGate.ts',
+  import.meta.url,
+);
+const { requireOpsDatabaseUrl } = tsxRequire('../src/env.ts', import.meta.url);
 
 const mode = resolveMode(process.argv);
 const representativeTables = [
