@@ -154,8 +154,12 @@ export function buildCatalogueSeed(seedPrograms: Program[] = allPrograms): Catal
   const formulaInstitutionIdsByProgramId = new Map<string, InstitutionId[]>();
 
   for (const pair of allResolvedFormulaBackedPairs(formulaBackedInventory)) {
-    const institutionIds = formulaInstitutionIdsByProgramId.get(pair.programId) ?? [];
-    formulaInstitutionIdsByProgramId.set(pair.programId, [...institutionIds, pair.institutionId]);
+    const institutionIds = formulaInstitutionIdsByProgramId.get(pair.programId);
+    if (institutionIds) {
+      institutionIds.push(pair.institutionId);
+    } else {
+      formulaInstitutionIdsByProgramId.set(pair.programId, [pair.institutionId]);
+    }
   }
 
   const validationErrors: CatalogueSeedValidationError[] = formulaBackedInventory.errors.map(

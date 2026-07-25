@@ -209,11 +209,12 @@ export function buildFormulaBackedPairInventory(
     left.id.localeCompare(right.id),
   );
   const totalsByInstitution = Object.fromEntries(
-    FORMULA_BACKED_INSTITUTION_IDS.map((institutionId) => [
-      institutionId,
-      pairs.filter((pair) => pair.institutionId === institutionId).length,
-    ]),
+    FORMULA_BACKED_INSTITUTION_IDS.map((institutionId) => [institutionId, 0]),
   ) as Record<FormulaBackedInstitutionId, number>;
+
+  for (const pair of pairs) {
+    totalsByInstitution[pair.institutionId as FormulaBackedInstitutionId] += 1;
+  }
 
   return {
     pairs,

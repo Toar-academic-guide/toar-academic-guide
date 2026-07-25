@@ -266,7 +266,7 @@ export function evaluateProgramVerification(args: {
   }
 
   validateFixtureBindings(contract, fixtures, issues);
-  validateProofState(contract, fixtures, args, issues);
+  validateProofState(contract, args, issues);
 
   if (issues.some((issue) => BLOCKING_ISSUES.has(issue.code))) {
     return blocked(issues);
@@ -396,7 +396,6 @@ function validateFixtureBindings(
 
 function validateProofState(
   contract: AdmissionsProgramVerificationContract,
-  fixtures: AdmissionsVerificationFixture[],
   args: {
     currentAdmissionCycle: string;
     currentSourceFingerprint: string | null;
@@ -460,10 +459,6 @@ function validateProofState(
       pairId: contract.pairId,
       message: `Contract "${contract.pairId}" live proof fingerprint does not match its source.`,
     });
-  }
-
-  if (fixtures.length === 0) {
-    return;
   }
 }
 
