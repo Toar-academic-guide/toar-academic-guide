@@ -799,7 +799,10 @@ function normalizeExactProofResult(args: {
   explanationPrefix: string;
   positiveDecision?: 'accepted' | 'eligible_to_apply';
 }): AdmissionsEvaluationResult {
-  const { institution, proof, explanationPrefix, positiveDecision = 'accepted' } = args;
+  const { institution, proof, explanationPrefix } = args;
+  const positiveDecision =
+    args.positiveDecision ??
+    (proof.officialVerdict === 'eligible_to_apply' ? 'eligible_to_apply' : 'accepted');
 
   const score = numberOrUndefined(proof.selectedScore) ?? numberOrUndefined(proof.weightedScore);
   const threshold =
@@ -823,11 +826,12 @@ function normalizeExactProofResult(args: {
   const officialVerdict =
     proof.officialVerdict === 'accepted' ||
     proof.officialVerdict === 'below' ||
+    proof.officialVerdict === 'eligible_to_apply' ||
     proof.officialVerdict === 'pending'
       ? proof.officialVerdict
       : undefined;
   const decision =
-    officialVerdict === 'accepted'
+    officialVerdict === 'accepted' || officialVerdict === 'eligible_to_apply'
       ? positiveDecision
       : officialVerdict === 'below'
         ? 'below'

@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { runAdmissionsLiveProof } from './admissionsLiveProofRunner';
 import { HUJI_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/hujiProgramVerification';
+import { BGU_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/bguProgramVerification';
 
 function jsonResponse(body: unknown) {
   return new Response(JSON.stringify(body), {
@@ -42,6 +43,23 @@ function exactAdapterFetcher() {
     });
   for (let index = 0; index < Object.keys(HUJI_PROGRAM_VERIFICATION_ARTIFACTS).length; index += 1) {
     fetcher.mockResolvedValueOnce(hujiResponse());
+  }
+  for (const artifact of Object.values(BGU_PROGRAM_VERIFICATION_ARTIFACTS)) {
+    fetcher.mockResolvedValueOnce(
+      jsonResponse({
+        items: [{
+          psycho_sekem: artifact.contract.calculation.cutoff.acceptance,
+          psycho_value: artifact.contract.calculation.cutoff.acceptance,
+          comments: `סכם כמותי ${artifact.contract.calculation.cutoff.acceptance}`,
+        }],
+      }),
+    );
+    fetcher.mockResolvedValueOnce(
+      new Response('<script>parent.main.document.mainForm.on_final_sekem.value = 875;</script>', {
+        status: 200,
+        headers: { 'content-type': 'text/html' },
+      }),
+    );
   }
 
   return fetcher
@@ -514,8 +532,8 @@ describe('runAdmissionsLiveProof', () => {
     const report = await runAdmissionsLiveProof({ fetcher });
 
     expect(report.summary).toMatchObject({
-      total: 57,
-      exactReproduced: 57,
+      total: 80,
+      exactReproduced: 80,
       partial: 0,
       blocked: 0,
       failed: 0,
@@ -549,6 +567,29 @@ describe('runAdmissionsLiveProof', () => {
       'huji-political_science-live',
       'huji-psychology-live',
       'huji-social_work-live',
+      'bgu-accounting-live',
+      'bgu-bgu_accounting-live',
+      'bgu-biology-live',
+      'bgu-bgu_biology-live',
+      'bgu-business-live',
+      'bgu-bgu_business-live',
+      'bgu-cs-live',
+      'bgu-bgu_cs-live',
+      'bgu-datascience-live',
+      'bgu-bgu_datascience-live',
+      'bgu-economics-live',
+      'bgu-bgu_economics-live',
+      'bgu-ee-live',
+      'bgu-bgu_ee-live',
+      'bgu-me-live',
+      'bgu-bgu_me-live',
+      'bgu-bgu_industrial-live',
+      'bgu-bgu_medicine-live',
+      'bgu-bgu_nursing-live',
+      'bgu-psychology-live',
+      'bgu-bgu_psychology-live',
+      'bgu-social_work-live',
+      'bgu-bgu_socialwork-live',
       'haifa-cs-live',
       'tau-digital-sciences-live',
       'tau-nursing-live',
@@ -579,10 +620,10 @@ describe('runAdmissionsLiveProof', () => {
       'tau-industrial-live',
       'tau-biology-legacy-live',
     ]);
-    expect(JSON.parse(String(fetcher.mock.calls[32][1]?.body))).toMatchObject({
+    expect(JSON.parse(String(fetcher.mock.calls[78][1]?.body))).toMatchObject({
       variables: { scoresData: { bagrut: '100', psicho: '520' } },
     });
-    expect(JSON.parse(String(fetcher.mock.calls[34][1]?.body))).toMatchObject({
+    expect(JSON.parse(String(fetcher.mock.calls[80][1]?.body))).toMatchObject({
       variables: { scoresData: { bagrut: '110', psicho: '680' } },
     });
   });
@@ -1143,13 +1184,14 @@ describe('runAdmissionsLiveProof', () => {
     });
 
     expect(report.summary).toMatchObject({
-      total: 68,
-      exactReproduced: 57,
+      total: 91,
+      exactReproduced: 80,
       partial: 8,
       blocked: 2,
     });
     expect(report.results.map((result) => result.proof.institutionId)).toEqual([
       ...Array(28).fill('huji'),
+      ...Array(23).fill('bgu'),
       'haifa',
       'tau',
       'tau',

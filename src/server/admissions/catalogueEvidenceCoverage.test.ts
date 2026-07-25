@@ -205,7 +205,7 @@ describe('catalogue admissions evidence coverage', () => {
     expect(staticPrograms.some((program) => program.id === 'ono_psychology')).toBe(false);
   });
 
-  it('withholds BGU formula pairs until score-and-verdict proof is complete', () => {
+  it('publishes BGU formula pairs after score-and-verdict proof is complete', () => {
     const entries = reconcileCatalogueAdmissionsEvidence({
       programs: staticPrograms,
       institutions: staticInstitutions,
@@ -216,48 +216,48 @@ describe('catalogue admissions evidence coverage', () => {
         expect.objectContaining({
           programId: 'bgu_cs',
           institutionId: 'bgu',
-          capability: 'authority_unavailable',
-          status: 'verification_incomplete',
+          capability: 'exact',
+          status: 'decision_rule_available',
           trackingSource: 'monday_evidence',
           missingData: [],
         }),
         expect.objectContaining({
           programId: 'bgu_ee',
           institutionId: 'bgu',
-          capability: 'authority_unavailable',
-          status: 'verification_incomplete',
+          capability: 'exact',
+          status: 'decision_rule_available',
           trackingSource: 'monday_evidence',
           missingData: [],
         }),
         expect.objectContaining({
           programId: 'bgu_biology',
           institutionId: 'bgu',
-          capability: 'authority_unavailable',
-          status: 'verification_incomplete',
+          capability: 'exact',
+          status: 'decision_rule_available',
           trackingSource: 'monday_evidence',
           missingData: [],
         }),
         expect.objectContaining({
           programId: 'bgu_socialwork',
           institutionId: 'bgu',
-          capability: 'authority_unavailable',
-          status: 'verification_incomplete',
+          capability: 'exact',
+          status: 'decision_rule_available',
           trackingSource: 'monday_evidence',
           missingData: [],
         }),
         expect.objectContaining({
           programId: 'bgu_nursing',
           institutionId: 'bgu',
-          capability: 'authority_unavailable',
-          status: 'verification_incomplete',
+          capability: 'exact',
+          status: 'decision_rule_available',
           trackingSource: 'monday_evidence',
           missingData: [],
         }),
         expect.objectContaining({
           programId: 'bgu_medicine',
           institutionId: 'bgu',
-          capability: 'authority_unavailable',
-          status: 'verification_incomplete',
+          capability: 'exact',
+          status: 'decision_rule_available',
           trackingSource: 'monday_evidence',
           missingData: [],
         }),

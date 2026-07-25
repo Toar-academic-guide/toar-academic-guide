@@ -17,6 +17,16 @@ vi.mock('@/db/client', () => ({
   })),
 }));
 
+function expectBguExact(report: AdmissionsEvaluationReport, decision: 'accepted' | 'below' | 'eligible_to_apply'): void {
+  expect(report.results).toContainEqual(
+    expect.objectContaining({
+      linkedInstitutionId: 'bgu',
+      capability: 'exact',
+      decision,
+    }),
+  );
+}
+
 function expectFormulaVerificationUnavailable(
   report: AdmissionsEvaluationReport,
   institutionId: string,
@@ -30,6 +40,23 @@ function expectFormulaVerificationUnavailable(
       degradationReason: 'pair_verification_incomplete',
     }),
   );
+}
+
+function bguMockFetcher(threshold: number, score: number): typeof fetch {
+  return vi
+    .fn<typeof fetch>()
+    .mockResolvedValueOnce(
+      new Response(
+        JSON.stringify({ items: [{ psycho_sekem: threshold, psycho_value: threshold, comments: `סכם כמותי ${threshold}` }] }),
+        { status: 200, headers: { 'content-type': 'application/json' } },
+      ),
+    )
+    .mockResolvedValueOnce(
+      new Response(`<script>parent.main.document.mainForm.on_final_sekem.value = ${score};</script>`, {
+        status: 200,
+        headers: { 'content-type': 'text/html' },
+      }),
+    );
 }
 
 function tauFreshnessStates(): Map<string, SourceFreshnessStateRow> {
@@ -462,7 +489,7 @@ describe('evaluateAdmissionsForProgram', () => {
     expectFormulaVerificationUnavailable(report, 'technion');
   });
 
-  it('does not turn a BGU threshold into an accepted estimate', async () => {
+  it('returns an exact BGU Computer Science verdict', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'bgu_cs',
@@ -471,12 +498,13 @@ describe('evaluateAdmissionsForProgram', () => {
       },
       program: bguCs,
       institutions,
+      fetcher: bguMockFetcher(720, 875),
     });
 
-    expectFormulaVerificationUnavailable(report, 'bgu');
+    expectBguExact(report, 'accepted');
   });
 
-  it('does not issue a BGU engineering verdict before its pair contract is proven', async () => {
+  it('returns an exact BGU engineering verdict', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'bgu_ee',
@@ -485,12 +513,13 @@ describe('evaluateAdmissionsForProgram', () => {
       },
       program: bguEe,
       institutions,
+      fetcher: bguMockFetcher(547, 875),
     });
 
-    expectFormulaVerificationUnavailable(report, 'bgu');
+    expectBguExact(report, 'accepted');
   });
 
-  it('does not issue a BGU biology verdict before its pair contract is proven', async () => {
+  it('returns an exact BGU biology verdict', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'bgu_biology',
@@ -499,12 +528,13 @@ describe('evaluateAdmissionsForProgram', () => {
       },
       program: bguBiology,
       institutions,
+      fetcher: bguMockFetcher(585, 875),
     });
 
-    expectFormulaVerificationUnavailable(report, 'bgu');
+    expectBguExact(report, 'accepted');
   });
 
-  it('withholds BGU nursing until its invitation fixtures are proven', async () => {
+  it('returns an exact BGU nursing invitation verdict', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'bgu_nursing',
@@ -513,9 +543,10 @@ describe('evaluateAdmissionsForProgram', () => {
       },
       program: bguNursing,
       institutions,
+      fetcher: bguMockFetcher(520, 875),
     });
 
-    expectFormulaVerificationUnavailable(report, 'bgu');
+    expectBguExact(report, 'eligible_to_apply');
   });
 
   it('does not estimate an explicitly excluded Ariel formula pair', async () => {
@@ -540,7 +571,7 @@ describe('evaluateAdmissionsForProgram', () => {
     );
   });
 
-  it('does not issue a below verdict for unproved BGU nursing', async () => {
+  it('returns a below BGU nursing invitation verdict', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'bgu_nursing',
@@ -549,12 +580,13 @@ describe('evaluateAdmissionsForProgram', () => {
       },
       program: bguNursing,
       institutions,
+      fetcher: bguMockFetcher(520, 451),
     });
 
-    expectFormulaVerificationUnavailable(report, 'bgu');
+    expectBguExact(report, 'below');
   });
 
-  it('does not promote unproved BGU medicine to an invitation result', async () => {
+  it('returns an exact BGU medicine invitation verdict', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'bgu_medicine',
@@ -563,12 +595,13 @@ describe('evaluateAdmissionsForProgram', () => {
       },
       program: bguMedicine,
       institutions,
+      fetcher: bguMockFetcher(735, 875),
     });
 
-    expectFormulaVerificationUnavailable(report, 'bgu');
+    expectBguExact(report, 'eligible_to_apply');
   });
 
-  it('does not issue a below verdict for unproved BGU medicine', async () => {
+  it('returns a below BGU medicine invitation verdict', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'bgu_medicine',
@@ -577,9 +610,10 @@ describe('evaluateAdmissionsForProgram', () => {
       },
       program: bguMedicine,
       institutions,
+      fetcher: bguMockFetcher(735, 451),
     });
 
-    expectFormulaVerificationUnavailable(report, 'bgu');
+    expectBguExact(report, 'below');
   });
 
   it('promotes Reichman to eligible_to_apply once the official bagrut-average rule is verified', async () => {

@@ -487,7 +487,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     expect(bguEntry?.evidence?.missingData ?? []).toHaveLength(0);
   });
 
-  it('does not promote a BGU threshold without score-and-verdict proof', () => {
+  it('promotes BGU Computer Science after score-and-verdict proof', () => {
     const program = makeProgram({
       id: 'bgu_cs',
       linkedInstitutionIds: ['bgu'],
@@ -500,7 +500,8 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
 
     const bguEntry = entries.find((e) => e.institutionId === 'bgu');
-    expect(bguEntry?.capability).toBe('authority_unavailable');
+    expect(bguEntry?.capability).toBe('exact');
+    expect(bguEntry?.exactTarget?.targetId).toBe('bgu-bgu_cs-live');
     expect(bguEntry?.evidence?.verifiedProgramThresholds).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -511,7 +512,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     );
   });
 
-  it('keeps additional BGU threshold-only pairs withheld', () => {
+  it('promotes the additional BGU Electrical Engineering pair after proof', () => {
     const program = makeProgram({
       id: 'bgu_ee',
       linkedInstitutionIds: ['bgu'],
@@ -524,7 +525,8 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
 
     const bguEntry = entries.find((e) => e.institutionId === 'bgu');
-    expect(bguEntry?.capability).toBe('authority_unavailable');
+    expect(bguEntry?.capability).toBe('exact');
+    expect(bguEntry?.exactTarget?.targetId).toBe('bgu-bgu_ee-live');
     expect(bguEntry?.evidence?.verifiedProgramThresholds).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -559,7 +561,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     );
   });
 
-  it('withholds BGU nursing until its invitation flow has pair fixtures', () => {
+  it('promotes BGU nursing after its invitation flow has pair fixtures', () => {
     const program = makeProgram({
       id: 'bgu_nursing',
       linkedInstitutionIds: ['bgu'],
@@ -571,7 +573,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
 
     const bguEntry = entries.find((e) => e.institutionId === 'bgu');
-    expect(bguEntry?.capability).toBe('authority_unavailable');
+    expect(bguEntry?.capability).toBe('exact');
     expect(bguEntry?.evidence?.verifiedProgramThresholds).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -584,7 +586,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     );
   });
 
-  it('withholds BGU medicine until the score and invitation verdict are replayed', () => {
+  it('promotes BGU medicine after the score and invitation verdict are replayed', () => {
     const program = makeProgram({
       id: 'bgu_medicine',
       linkedInstitutionIds: ['bgu'],
@@ -597,7 +599,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
 
     const bguEntry = entries.find((e) => e.institutionId === 'bgu');
-    expect(bguEntry?.capability).toBe('authority_unavailable');
+    expect(bguEntry?.capability).toBe('exact');
     expect(bguEntry?.evidence?.officialUrls).toContain(
       'https://www.bgu.ac.il/welcome/ba/catalog/categories/medical-school/?tab=2944',
     );

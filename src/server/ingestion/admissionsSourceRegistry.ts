@@ -12,6 +12,7 @@ import {
   HUJI_PROGRAM_VERIFICATION_METADATA,
   HUJI_SOURCE_URL,
 } from '@/data/admissions/hujiProgramVerification';
+import { BGU_PROGRAM_VERIFICATION_METADATA } from '@/data/admissions/bguProgramVerification';
 
 export type AdmissionsSourceCategory =
   | 'blocked'
@@ -60,6 +61,28 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     reproducedFields: ['selectedScore', 'acceptanceThreshold', 'rejectionThreshold', 'officialVerdict'],
     limitations: ['Exact replay is scoped to the explicitly matched HUJI track number and current cycle thresholds.'],
     nextAction: 'Keep the track mapping, formula coefficients, thresholds, fixtures, and source fingerprint under review.',
+  } satisfies AdmissionsSourceTarget)),
+  ...Object.values(BGU_PROGRAM_VERIFICATION_METADATA).map((artifact) => ({
+    id: artifact.contract.source.targetId,
+    institutionId: 'bgu',
+    institutionName: 'Ben-Gurion University of the Negev',
+    officialUrl: artifact.contract.source.url,
+    adapterId: 'bgu' as const,
+    expectedCapability: 'decision_capable' as const,
+    proofLevel: 'exact_official' as const,
+    category: 'exact' as const,
+    defaultApplicant: { bagrutAverage: 120, psychometric: 800 },
+    defaultProgram: {
+      targetId: artifact.contract.source.targetId,
+      pairId: artifact.contract.pairId,
+      id: artifact.contract.programId,
+      name: artifact.contract.programId,
+      externalId: artifact.contract.officialProgramId,
+      searchText: artifact.contract.source.url,
+    },
+    reproducedFields: ['selectedScore', 'acceptanceThreshold', 'rejectionThreshold', 'officialVerdict'],
+    limitations: ['Exact replay is scoped to the explicitly matched BGU acceptance-conditions rule and current score endpoint.'],
+    nextAction: 'Keep the programme endpoint, score replay, threshold, fixtures, and source fingerprint under review.',
   } satisfies AdmissionsSourceTarget)),
   {
     id: 'haifa-cs-live',

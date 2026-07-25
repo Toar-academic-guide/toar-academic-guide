@@ -34,14 +34,14 @@ describe('formula-backed verification ledger', () => {
 
     expect(completion).toMatchObject({
       total: 135,
-      exact: 56,
-      withheld: 79,
+      exact: 79,
+      withheld: 56,
       isComplete: false,
     });
     expect(completion.totalsByInstitution).toEqual({
       tau: { total: 35, exact: 28, withheld: 7, stale: 0, blocked: 0 },
       huji: { total: 29, exact: 28, withheld: 1, stale: 0, blocked: 0 },
-      bgu: { total: 29, exact: 0, withheld: 29, stale: 0, blocked: 0 },
+      bgu: { total: 29, exact: 23, withheld: 6, stale: 0, blocked: 0 },
       haifa: { total: 27, exact: 0, withheld: 27, stale: 0, blocked: 0 },
       technion: { total: 14, exact: 0, withheld: 14, stale: 0, blocked: 0 },
       colman: { total: 1, exact: 0, withheld: 1, stale: 0, blocked: 0 },
@@ -107,6 +107,29 @@ describe('formula-backed verification ledger', () => {
       'political_science__huji',
       'psychology__huji',
       'social_work__huji',
+      'accounting__bgu',
+      'bgu_accounting__bgu',
+      'bgu_biology__bgu',
+      'bgu_business__bgu',
+      'bgu_cs__bgu',
+      'bgu_datascience__bgu',
+      'bgu_economics__bgu',
+      'bgu_ee__bgu',
+      'bgu_industrial__bgu',
+      'bgu_me__bgu',
+      'bgu_medicine__bgu',
+      'bgu_nursing__bgu',
+      'bgu_psychology__bgu',
+      'bgu_socialwork__bgu',
+      'biology__bgu',
+      'business__bgu',
+      'cs__bgu',
+      'datascience__bgu',
+      'economics__bgu',
+      'ee__bgu',
+      'me__bgu',
+      'psychology__bgu',
+      'social_work__bgu',
     ]);
   });
 
