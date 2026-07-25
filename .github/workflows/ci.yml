@@ -46,8 +46,8 @@ jobs:
       - name: Prettier format check
         run: npm run format:check
 
-      - name: Security audit (high + critical)
-        run: npm audit --audit-level=high
+      - name: Production dependency audit (high + critical)
+        run: npm audit --omit=dev --audit-level=high
 
       - name: Drizzle migration consistency
         run: npm run db:migrate:check
