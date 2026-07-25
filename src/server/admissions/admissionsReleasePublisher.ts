@@ -70,8 +70,15 @@ export interface AdmissionsReleaseWriter {
   createPublicationAttempt(attempt: AdmissionPublicationAttemptRecord): Promise<void>;
   createTargetTransition(transition: AdmissionTargetTransitionRecord): Promise<void>;
   createReleaseItems(items: AdmissionReleaseItemRecord[]): Promise<void>;
+  markReleasePending(releaseId: string): Promise<void>;
   markReleasePublished(releaseId: string, publishedAt: Date): Promise<void>;
+  markReleaseFailed(releaseId: string): Promise<void>;
   markPublicationAttemptSucceeded(attemptId: string, completedAt: Date): Promise<void>;
+  markPublicationAttemptFailed(
+    attemptId: string,
+    errorMessage: string,
+    completedAt: Date,
+  ): Promise<void>;
 }
 
 export interface PublishAdmissionsReleaseInput {
@@ -96,44 +103,24 @@ export function createAdmissionsReleasePublisher(repository?: AdmissionsReleaseR
       const manifestDigest = digest(canonicalizeReviewedAdmissionsManifest(manifest));
       const publishedAt = input.publishedAt ?? new Date();
       const transitions = buildTargetTransitions(manifest);
+      const preparation = await preparePublicationAttempt({
+        repository: releaseRepository,
+        manifestDigest,
+        repositoryCommit: input.repositoryCommit,
+        startedAt: publishedAt,
+      });
+
+      if (preparation.status === 'already_published') {
+        return preparation;
+      }
 
       try {
-        return await releaseRepository.transaction(async (writer) => {
-          const existing = await writer.findReleaseByManifestDigest(manifestDigest);
-          if (existing?.status === 'published') {
-            return { status: 'already_published', releaseId: existing.id };
-          }
-
-          if (existing) {
-            throw new Error(
-              `Release ${existing.id} is not publishable from status ${existing.status}.`,
-            );
-          }
-
-          const releaseId = randomUUID();
-          const attemptId = randomUUID();
-          await writer.createRelease({
-            id: releaseId,
-            manifestDigest,
-            repositoryCommit: input.repositoryCommit,
-            status: 'pending',
-            publishedAt: null,
-            createdAt: publishedAt,
-          });
-          await writer.createPublicationAttempt({
-            id: attemptId,
-            releaseId,
-            status: 'started',
-            errorMessage: null,
-            startedAt: publishedAt,
-            completedAt: null,
-          });
-
+        await releaseRepository.transaction(async (writer) => {
           for (const transition of transitions) {
             const transitionId = randomUUID();
             await writer.createTargetTransition({
               id: transitionId,
-              releaseId,
+              releaseId: preparation.releaseId,
               institutionId: transition.target.institutionId,
               programId: transition.target.programId,
               cycle: transition.target.cycle,
@@ -155,25 +142,133 @@ export function createAdmissionsReleasePublisher(repository?: AdmissionsReleaseR
             );
           }
 
-          await writer.markReleasePublished(releaseId, publishedAt);
-          await writer.markPublicationAttemptSucceeded(attemptId, publishedAt);
-          return { status: 'published', releaseId, manifestDigest };
+          await writer.markReleasePublished(preparation.releaseId, publishedAt);
+          await writer.markPublicationAttemptSucceeded(preparation.attemptId, publishedAt);
         });
+
+        return {
+          status: 'published',
+          releaseId: preparation.releaseId,
+          manifestDigest,
+        };
       } catch (error) {
-        if (!isUniqueViolation(error)) {
-          throw error;
+        try {
+          await releaseRepository.transaction(async (writer) => {
+            await writer.markReleaseFailed(preparation.releaseId);
+            await writer.markPublicationAttemptFailed(
+              preparation.attemptId,
+              getErrorMessage(error),
+              new Date(),
+            );
+          });
+        } catch (recordingError) {
+          throw new AggregateError(
+            [error, recordingError],
+            `Publication ${preparation.releaseId} failed and its failure record could not be persisted.`,
+          );
         }
 
-        return releaseRepository.transaction(async (writer) => {
-          const existing = await writer.findReleaseByManifestDigest(manifestDigest);
-          if (existing?.status === 'published') {
-            return { status: 'already_published', releaseId: existing.id };
-          }
-          throw error;
-        });
+        throw error;
       }
     },
   };
+}
+
+interface PreparePublicationAttemptInput {
+  repository: AdmissionsReleaseRepository;
+  manifestDigest: string;
+  repositoryCommit: string;
+  startedAt: Date;
+}
+
+type PreparedPublication =
+  | {
+      status: 'ready';
+      releaseId: string;
+      attemptId: string;
+    }
+  | {
+      status: 'already_published';
+      releaseId: string;
+    };
+
+async function preparePublicationAttempt(
+  input: PreparePublicationAttemptInput,
+): Promise<PreparedPublication> {
+  try {
+    return await input.repository.transaction((writer) =>
+      preparePublicationAttemptWithWriter(writer, input),
+    );
+  } catch (error) {
+    if (!isUniqueViolation(error)) throw error;
+
+    return input.repository.transaction(async (writer) => {
+      const existing = await writer.findReleaseByManifestDigest(input.manifestDigest);
+      if (!existing) throw error;
+      return prepareExistingPublicationAttempt(writer, existing, input);
+    });
+  }
+}
+
+async function preparePublicationAttemptWithWriter(
+  writer: AdmissionsReleaseWriter,
+  input: PreparePublicationAttemptInput,
+): Promise<PreparedPublication> {
+  const existing = await writer.findReleaseByManifestDigest(input.manifestDigest);
+  if (existing) {
+    return prepareExistingPublicationAttempt(writer, existing, input);
+  }
+
+  const releaseId = randomUUID();
+  await writer.createRelease({
+    id: releaseId,
+    manifestDigest: input.manifestDigest,
+    repositoryCommit: input.repositoryCommit,
+    status: 'pending',
+    publishedAt: null,
+    createdAt: input.startedAt,
+  });
+  const attemptId = await createStartedPublicationAttempt(writer, releaseId, input.startedAt);
+  return { status: 'ready', releaseId, attemptId };
+}
+
+async function prepareExistingPublicationAttempt(
+  writer: AdmissionsReleaseWriter,
+  existing: AdmissionReleaseRecord,
+  input: PreparePublicationAttemptInput,
+): Promise<PreparedPublication> {
+  if (existing.status === 'published') {
+    return { status: 'already_published', releaseId: existing.id };
+  }
+  if (existing.status === 'pending') {
+    throw new Error(`Release ${existing.id} already has a publication attempt in progress.`);
+  }
+  if (existing.repositoryCommit !== input.repositoryCommit) {
+    throw new Error(
+      `Failed release ${existing.id} belongs to repository commit ${existing.repositoryCommit}; retry it with the same commit.`,
+    );
+  }
+
+  await writer.markReleasePending(existing.id);
+  const attemptId = await createStartedPublicationAttempt(writer, existing.id, input.startedAt);
+  return { status: 'ready', releaseId: existing.id, attemptId };
+}
+
+async function createStartedPublicationAttempt(
+  writer: AdmissionsReleaseWriter,
+  releaseId: string,
+  startedAt: Date,
+): Promise<string> {
+  const attemptId = randomUUID();
+  await writer.createPublicationAttempt({
+    id: attemptId,
+    releaseId,
+    status: 'started',
+    errorMessage: null,
+    startedAt,
+    completedAt: null,
+  });
+  return attemptId;
 }
 
 export function createDrizzleAdmissionsReleaseRepository(
@@ -188,6 +283,7 @@ export function createDrizzleAdmissionsReleaseRepository(
               .select()
               .from(admissionReleases)
               .where(eq(admissionReleases.manifestDigest, manifestDigest))
+              .for('update')
               .limit(1);
             return release ?? null;
           },
@@ -203,16 +299,34 @@ export function createDrizzleAdmissionsReleaseRepository(
           async createReleaseItems(items) {
             await tx.insert(admissionReleaseItems).values(items);
           },
+          async markReleasePending(releaseId) {
+            await tx
+              .update(admissionReleases)
+              .set({ status: 'pending', publishedAt: null })
+              .where(eq(admissionReleases.id, releaseId));
+          },
           async markReleasePublished(releaseId, publishedAt) {
             await tx
               .update(admissionReleases)
               .set({ status: 'published', publishedAt })
               .where(eq(admissionReleases.id, releaseId));
           },
+          async markReleaseFailed(releaseId) {
+            await tx
+              .update(admissionReleases)
+              .set({ status: 'failed', publishedAt: null })
+              .where(eq(admissionReleases.id, releaseId));
+          },
           async markPublicationAttemptSucceeded(attemptId, completedAt) {
             await tx
               .update(admissionPublicationAttempts)
               .set({ status: 'succeeded', completedAt })
+              .where(eq(admissionPublicationAttempts.id, attemptId));
+          },
+          async markPublicationAttemptFailed(attemptId, errorMessage, completedAt) {
+            await tx
+              .update(admissionPublicationAttempts)
+              .set({ status: 'failed', errorMessage, completedAt })
               .where(eq(admissionPublicationAttempts.id, attemptId));
           },
         };
@@ -265,4 +379,8 @@ function digest(value: string): string {
 
 function isUniqueViolation(error: unknown): boolean {
   return typeof error === 'object' && error !== null && 'code' in error && error.code === '23505';
+}
+
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error);
 }

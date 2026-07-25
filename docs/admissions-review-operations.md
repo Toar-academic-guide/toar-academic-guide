@@ -117,4 +117,30 @@ Use `/internal/data-health` to inspect the full admissions evidence inventory an
 
 - To retry a Slack failure, rerun the workflow for the same weekly run; the run ledger keeps PR state and retries delivery without creating a duplicate PR.
 - To retry a failed generated PR, fix the source contract or exclusion metadata, then rerun the same week so the same branch and PR are updated.
+- A failed publication keeps one `admission_releases` row with status `failed`
+  and one completed `admission_publication_attempts` row with the error message.
+  Target transitions and release items remain atomic and are rolled back. After
+  correcting the failure, rerun the publication workflow with the same merged
+  repository commit: the publisher reuses the failed release id and appends a
+  new attempt instead of creating a second release identity.
+- Before retrying, confirm there is no pending release or started attempt with
+  `npm run db:operational:publication`. Inspect the durable failure without
+  exposing credentials:
+
+  ```sql
+  select
+    release.id,
+    release.manifest_digest,
+    release.repository_commit,
+    attempt.status,
+    attempt.error_message,
+    attempt.started_at,
+    attempt.completed_at
+  from public.admission_releases release
+  join public.admission_publication_attempts attempt
+    on attempt.release_id = release.id
+  where release.status = 'failed'
+  order by attempt.started_at desc;
+  ```
+
 - To reverse a merged reviewed change, use a normal reviewed corrective PR with official evidence. Do not change release tables or canonical data through the internal review UI.

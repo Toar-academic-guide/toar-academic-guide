@@ -12,6 +12,7 @@
     "notify:ready-pr": "tsx scripts/notify-ready-pr.ts",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
+    "test:publication:db": "vitest run src/server/admissions/admissionsReleasePublisher.integration.test.ts",
     "test:e2e": "playwright test",
     "lint": "eslint .",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css,json}\"",

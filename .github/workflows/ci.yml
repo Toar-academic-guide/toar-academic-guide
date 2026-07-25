@@ -249,6 +249,11 @@ jobs:
           npm run db:seed
           npm run db:seed:verify
 
+      - name: Verify durable publication failure and retry lifecycle
+        env:
+          PUBLICATION_DB_INTEGRATION: '1'
+        run: npm run test:publication:db
+
   # ---------------------------------------------------------------------------
   # Job 4: Admissions evidence and calculator verification
   # ---------------------------------------------------------------------------
