@@ -1110,6 +1110,87 @@ export const TAU_LEGACY_ECONOMICS_CONTRACT: AdmissionsProgramVerificationContrac
   fixtureSetFingerprint: 'sha256:d43bb35b6ac0071fd07f5e8b012fe6184a01aebeb3fb2358deac3e48f63a9529',
 };
 
+const TAU_CS_SOURCE_FINGERPRINT =
+  'sha256:4df15136e5d73cd89389c1d63e90e47a3f79aa9d3764b6481b54d48f5abde09c';
+export const TAU_CS_FIXTURES: AdmissionsVerificationFixture[] = TAU_ECONOMICS_FIXTURES.map(
+  (fixture) => ({
+    ...fixture,
+    id: fixture.id.replace('economics__tau', 'cs__tau'),
+    pairId: 'cs__tau',
+    input:
+      fixture.verdict === 'accepted'
+        ? { ...fixture.input, psychometric: 730, bagrut: 115 }
+        : fixture.input,
+    expected:
+      fixture.verdict === 'accepted'
+        ? { score: 730, verdict: 'accepted' }
+        : { score: 548, verdict: 'below' },
+    sourceFingerprint: TAU_CS_SOURCE_FINGERPRINT,
+  }),
+);
+export const TAU_CS_CONTRACT: AdmissionsProgramVerificationContract = {
+  ...TAU_ECONOMICS_CONTRACT,
+  pairId: 'cs__tau',
+  programId: 'cs',
+  officialProgramId: '036811010000',
+  source: { targetId: 'tau-cs-live', url: 'https://go.tau.ac.il/graphql' },
+  calculation: {
+    ...TAU_ECONOMICS_CONTRACT.calculation,
+    formulaFamily: 'tau_hatama_meduyakim',
+    requiredInputs: ['psychometric_english', 'bagrut_subject_record'],
+    cutoff: { acceptance: 706, rejection: 695 },
+    gates: [
+      {
+        id: 'tau-cs:english-minimum',
+        kind: 'language',
+        field: 'psychometricEnglish',
+        minimum: 100,
+        description: 'TAU requires at least English level Advanced A.',
+      },
+      {
+        id: 'tau-cs:mathematics-route',
+        kind: 'subject',
+        field: 'bagrutSubjectRecord',
+        description:
+          'Computer Science requires a qualifying mathematics route (5-unit or 4-unit route with the stated grades and classification).',
+      },
+      {
+        id: 'tau-cs:exact-sciences-bonus',
+        kind: 'subject',
+        field: 'bagrutSubjectRecord',
+        minimum: 55,
+        description:
+          'The exact-sciences bonus applies only when the official mathematics and physics conditions are met.',
+      },
+      {
+        id: 'tau-cs:alternative-routes',
+        kind: 'manual',
+        field: 'alternativeAdmissionRoute',
+        description: 'Academic and alternative CS admission routes remain manual.',
+      },
+    ],
+  },
+  fixtureIds: TAU_CS_FIXTURES.map((fixture) => fixture.id),
+  fixtureSetFingerprint: 'sha256:fdf34a5ff608244646f39fe20d7e501265f06b6590b17f4b1543ce7e35f17bf4',
+  sourceFingerprint: TAU_CS_SOURCE_FINGERPRINT,
+  proof: { ...TAU_ECONOMICS_CONTRACT.proof, sourceFingerprint: TAU_CS_SOURCE_FINGERPRINT },
+};
+export const TAU_LEGACY_CS_FIXTURES: AdmissionsVerificationFixture[] = TAU_CS_FIXTURES.map(
+  (fixture) => ({
+    ...fixture,
+    id: fixture.id.replace('cs__tau', 'tau_cs__tau'),
+    pairId: 'tau_cs__tau',
+  }),
+);
+export const TAU_LEGACY_CS_CONTRACT: AdmissionsProgramVerificationContract = {
+  ...TAU_CS_CONTRACT,
+  pairId: 'tau_cs__tau',
+  programId: 'tau_cs',
+  source: { ...TAU_CS_CONTRACT.source, targetId: 'tau-cs-legacy-live' },
+  fixtureIds: TAU_LEGACY_CS_FIXTURES.map((fixture) => fixture.id),
+  fixtureSetFingerprint: 'sha256:c957bc5e6109faeba483df1e7a517d13b789deb8d8c30568e0780ab97a2e559a',
+};
+
 export interface ProgramVerificationArtifact {
   contract: AdmissionsProgramVerificationContract;
   fixtures: AdmissionsVerificationFixture[];
@@ -1249,6 +1330,22 @@ export const TAU_PROGRAM_VERIFICATION_METADATA: Record<string, TauProgramVerific
     requirementsUrl: 'https://go.tau.ac.il/he/management/ba/economics?v=admission-requirements',
     ledgerReason:
       'Verified the legacy TAU Economics catalogue alias against the same current programme node, score route, fixtures, and live replay.',
+  },
+  [TAU_CS_CONTRACT.pairId]: {
+    contract: TAU_CS_CONTRACT,
+    fixtures: TAU_CS_FIXTURES,
+    requirementsUrl:
+      'https://go.tau.ac.il/he/engineering/ba/computer-science?v=admission-requirements',
+    ledgerReason:
+      'Verified against the current TAU Computer Science programme node, meduyakim score field, subject-record gates, accepted/below fixtures, and live score-and-verdict replay.',
+  },
+  [TAU_LEGACY_CS_CONTRACT.pairId]: {
+    contract: TAU_LEGACY_CS_CONTRACT,
+    fixtures: TAU_LEGACY_CS_FIXTURES,
+    requirementsUrl:
+      'https://go.tau.ac.il/he/engineering/ba/computer-science?v=admission-requirements',
+    ledgerReason:
+      'Verified the legacy TAU Computer Science catalogue alias against the same current node, score field, subject gates, fixtures, and live replay.',
   },
 };
 

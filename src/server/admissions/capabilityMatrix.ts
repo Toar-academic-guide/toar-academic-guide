@@ -327,6 +327,34 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
     },
     requiredInputs: ['psychometric_english'],
   },
+  cs__tau: {
+    targetId: 'tau-cs-live',
+    sourceTarget: admissionsSourceTargets.find((entry) => entry.id === 'tau-cs-live')!,
+    program: {
+      targetId: 'tau-cs-live',
+      pairId: 'cs__tau',
+      id: 'tau-cs',
+      name: 'Computer Science',
+      nodeId: 8220,
+      externalId: '036811010000',
+      scoreField: 'hatama_meduyakim',
+    },
+    requiredInputs: ['psychometric_english', 'bagrut_subject_record'],
+  },
+  tau_cs__tau: {
+    targetId: 'tau-cs-legacy-live',
+    sourceTarget: admissionsSourceTargets.find((entry) => entry.id === 'tau-cs-legacy-live')!,
+    program: {
+      targetId: 'tau-cs-legacy-live',
+      pairId: 'tau_cs__tau',
+      id: 'tau-cs',
+      name: 'Computer Science',
+      nodeId: 8220,
+      externalId: '036811010000',
+      scoreField: 'hatama_meduyakim',
+    },
+    requiredInputs: ['psychometric_english', 'bagrut_subject_record'],
+  },
 };
 
 const SOURCE_TARGETS_BY_INSTITUTION = new Map<string, AdmissionsSourceTarget>(

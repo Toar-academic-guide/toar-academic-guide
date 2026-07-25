@@ -73,6 +73,8 @@ export async function evaluateAdmissionsForProgram(args: {
       if (key === 'education__tau') return ['tau-education-live'];
       if (key === 'economics__tau') return ['tau-economics-live'];
       if (key === 'tau_economics__tau') return ['tau-economics-legacy-live'];
+      if (key === 'cs__tau') return ['tau-cs-live'];
+      if (key === 'tau_cs__tau') return ['tau-cs-legacy-live'];
       return [];
     });
 
@@ -538,6 +540,37 @@ async function evaluateExactResult(args: {
           unmetRequirements: ['אנגלית בפסיכומטרי ברמת 100 ומעלה'],
           requirementsUrl:
             'https://go.tau.ac.il/he/management/ba/economics?v=admission-requirements',
+        });
+      }
+
+      const proof = await runTauAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: { bagrutAverage: input.bagrut, psychometric: input.psychometric },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+      });
+    }
+
+    if (exactTarget.targetId === 'tau-cs-live' || exactTarget.targetId === 'tau-cs-legacy-live') {
+      const psychometricEnglish = input.extraInputs?.psychometricEnglish;
+      const bagrutSubjectRecord = input.extraInputs?.bagrutSubjectRecord;
+      if (typeof psychometricEnglish !== 'number' || !bagrutSubjectRecord) {
+        return requiredInputsResult(institution, [
+          ...(typeof psychometricEnglish !== 'number' ? ['psychometric_english' as const] : []),
+          ...(!bagrutSubjectRecord ? ['bagrut_subject_record' as const] : []),
+        ]);
+      }
+      if (psychometricEnglish < 100) {
+        return exactGateFailureResult({
+          institution,
+          unmetRequirements: ['אנגלית בפסיכומטרי ברמת 100 ומעלה'],
+          requirementsUrl:
+            'https://go.tau.ac.il/he/engineering/ba/computer-science?v=admission-requirements',
         });
       }
 

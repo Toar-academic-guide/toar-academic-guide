@@ -312,6 +312,38 @@ function exactAdapterFetcher() {
           },
         },
       }),
+    )
+    .mockResolvedValueOnce(
+      jsonResponse({
+        data: { getLastScore: { body: JSON.stringify({ hatama_meduyakim: 730 }) } },
+      }),
+    )
+    .mockResolvedValueOnce(
+      jsonResponse({
+        data: {
+          getProgramByIdAndLang: {
+            receipt_threshol: [706],
+            rejection_thresh: [695],
+            field_plain_id_programs: ['036811010000'],
+          },
+        },
+      }),
+    )
+    .mockResolvedValueOnce(
+      jsonResponse({
+        data: { getLastScore: { body: JSON.stringify({ hatama_meduyakim: 730 }) } },
+      }),
+    )
+    .mockResolvedValueOnce(
+      jsonResponse({
+        data: {
+          getProgramByIdAndLang: {
+            receipt_threshol: [706],
+            rejection_thresh: [695],
+            field_plain_id_programs: ['036811010000'],
+          },
+        },
+      }),
     );
 }
 
@@ -321,8 +353,8 @@ describe('runAdmissionsLiveProof', () => {
     const report = await runAdmissionsLiveProof({ fetcher });
 
     expect(report.summary).toMatchObject({
-      total: 19,
-      exactReproduced: 19,
+      total: 21,
+      exactReproduced: 21,
       partial: 0,
       blocked: 0,
       failed: 0,
@@ -347,6 +379,8 @@ describe('runAdmissionsLiveProof', () => {
       'tau-education-live',
       'tau-economics-live',
       'tau-economics-legacy-live',
+      'tau-cs-live',
+      'tau-cs-legacy-live',
     ]);
     expect(JSON.parse(String(fetcher.mock.calls[4][1]?.body))).toMatchObject({
       variables: { scoresData: { bagrut: '100', psicho: '520' } },
@@ -670,17 +704,51 @@ describe('runAdmissionsLiveProof', () => {
             },
           },
         }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({
+          data: { getLastScore: { body: JSON.stringify({ hatama_meduyakim: 730 }) } },
+        }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({
+          data: {
+            getProgramByIdAndLang: {
+              receipt_threshol: [706],
+              rejection_thresh: [695],
+              field_plain_id_programs: ['036811010000'],
+            },
+          },
+        }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({
+          data: { getLastScore: { body: JSON.stringify({ hatama_meduyakim: 730 }) } },
+        }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({
+          data: {
+            getProgramByIdAndLang: {
+              receipt_threshol: [706],
+              rejection_thresh: [695],
+              field_plain_id_programs: ['036811010000'],
+            },
+          },
+        }),
       );
 
     const report = await runAdmissionsLiveProof({ fetcher });
 
     expect(report.summary).toMatchObject({
-      total: 19,
-      exactReproduced: 18,
+      total: 21,
+      exactReproduced: 20,
       failed: 1,
     });
     expect(report.results.map((result) => result.proof.status)).toEqual([
       'failed',
+      'succeeded',
+      'succeeded',
       'succeeded',
       'succeeded',
       'succeeded',
@@ -709,13 +777,15 @@ describe('runAdmissionsLiveProof', () => {
     });
 
     expect(report.summary).toMatchObject({
-      total: 30,
-      exactReproduced: 19,
+      total: 32,
+      exactReproduced: 21,
       partial: 8,
       blocked: 2,
     });
     expect(report.results.map((result) => result.proof.institutionId)).toEqual([
       'haifa',
+      'tau',
+      'tau',
       'tau',
       'tau',
       'tau',
