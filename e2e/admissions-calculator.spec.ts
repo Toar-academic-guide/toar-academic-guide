@@ -24,9 +24,9 @@ test.describe('app admissions calculator', () => {
     await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
 
     await expect(page).toHaveURL(/\/app\/calculator$/);
-    await expect(page.getByLabel('אוניברסיטת בן-גוריון בנגב: נדרשים נתונים')).toBeVisible();
-    await expect(page.getByText('נדרשים נתונים נוספים')).toBeVisible();
-    await expect(page.getByText(/סכם .* · סף 720/)).toBeVisible();
+    await expect(page.getByLabel('אוניברסיטת בן-גוריון בנגב: מתקבל/ת')).toBeVisible();
+    await expect(page.getByText('כלל קבלה ממופה ממקור חלקי')).toBeVisible();
+    await expect(page.getByText(/סכם .* · סף 645/)).toBeVisible();
 
     await page.getByRole('button', { name: 'חזרה', exact: true }).click();
 
