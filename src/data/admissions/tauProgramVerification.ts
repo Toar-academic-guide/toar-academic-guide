@@ -1054,6 +1054,62 @@ export const TAU_EDUCATION_CONTRACT: AdmissionsProgramVerificationContract = {
   },
 };
 
+const TAU_ECONOMICS_SOURCE_FINGERPRINT =
+  'sha256:2a58c0c1c679941ed9843e311deee3cfa1ce11c743ea875de3b56bc9d47c1a50';
+export const TAU_ECONOMICS_FIXTURES: AdmissionsVerificationFixture[] = TAU_EDUCATION_FIXTURES.map(
+  (fixture) => ({
+    ...fixture,
+    id: fixture.id.replace('education__tau', 'economics__tau'),
+    pairId: 'economics__tau',
+    sourceFingerprint: TAU_ECONOMICS_SOURCE_FINGERPRINT,
+  }),
+);
+export const TAU_ECONOMICS_CONTRACT: AdmissionsProgramVerificationContract = {
+  ...TAU_EDUCATION_CONTRACT,
+  pairId: 'economics__tau',
+  programId: 'economics',
+  officialProgramId: '101111050000',
+  source: { targetId: 'tau-economics-live', url: 'https://go.tau.ac.il/graphql' },
+  calculation: {
+    ...TAU_EDUCATION_CONTRACT.calculation,
+    cutoff: { acceptance: 610, rejection: 600 },
+    gates: [
+      {
+        id: 'tau-economics:english-minimum',
+        kind: 'language',
+        field: 'psychometricEnglish',
+        minimum: 100,
+        description: 'TAU requires at least English level Advanced A.',
+      },
+      {
+        id: 'tau-economics:quantitative-route',
+        kind: 'manual',
+        field: 'bagrutSubjectRecord',
+        description:
+          'Economics quantitative and alternate routes remain subject to official review.',
+      },
+    ],
+  },
+  fixtureIds: TAU_ECONOMICS_FIXTURES.map((fixture) => fixture.id),
+  fixtureSetFingerprint: 'sha256:3e6427637380c6035eb61b0587aa326ba0872efcb7870f59b33193e944a456f1',
+  sourceFingerprint: TAU_ECONOMICS_SOURCE_FINGERPRINT,
+  proof: { ...TAU_EDUCATION_CONTRACT.proof, sourceFingerprint: TAU_ECONOMICS_SOURCE_FINGERPRINT },
+};
+export const TAU_LEGACY_ECONOMICS_FIXTURES: AdmissionsVerificationFixture[] =
+  TAU_ECONOMICS_FIXTURES.map((fixture) => ({
+    ...fixture,
+    id: fixture.id.replace('economics__tau', 'tau_economics__tau'),
+    pairId: 'tau_economics__tau',
+  }));
+export const TAU_LEGACY_ECONOMICS_CONTRACT: AdmissionsProgramVerificationContract = {
+  ...TAU_ECONOMICS_CONTRACT,
+  pairId: 'tau_economics__tau',
+  programId: 'tau_economics',
+  source: { ...TAU_ECONOMICS_CONTRACT.source, targetId: 'tau-economics-legacy-live' },
+  fixtureIds: TAU_LEGACY_ECONOMICS_FIXTURES.map((fixture) => fixture.id),
+  fixtureSetFingerprint: 'sha256:d43bb35b6ac0071fd07f5e8b012fe6184a01aebeb3fb2358deac3e48f63a9529',
+};
+
 export interface ProgramVerificationArtifact {
   contract: AdmissionsProgramVerificationContract;
   fixtures: AdmissionsVerificationFixture[];
@@ -1179,6 +1235,20 @@ export const TAU_PROGRAM_VERIFICATION_METADATA: Record<string, TauProgramVerific
       'https://go.tau.ac.il/he/social-sciences/ba/education?v=admission-requirements',
     ledgerReason:
       'Verified against the current TAU Education programme node, score route, English gate, accepted/below fixtures, and live score-and-verdict replay.',
+  },
+  [TAU_ECONOMICS_CONTRACT.pairId]: {
+    contract: TAU_ECONOMICS_CONTRACT,
+    fixtures: TAU_ECONOMICS_FIXTURES,
+    requirementsUrl: 'https://go.tau.ac.il/he/management/ba/economics?v=admission-requirements',
+    ledgerReason:
+      'Verified against the current TAU Economics programme node, score route, English/quantitative gates, accepted/below fixtures, and live score-and-verdict replay.',
+  },
+  [TAU_LEGACY_ECONOMICS_CONTRACT.pairId]: {
+    contract: TAU_LEGACY_ECONOMICS_CONTRACT,
+    fixtures: TAU_LEGACY_ECONOMICS_FIXTURES,
+    requirementsUrl: 'https://go.tau.ac.il/he/management/ba/economics?v=admission-requirements',
+    ledgerReason:
+      'Verified the legacy TAU Economics catalogue alias against the same current programme node, score route, fixtures, and live replay.',
   },
 };
 

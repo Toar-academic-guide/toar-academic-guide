@@ -297,6 +297,36 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
     },
     requiredInputs: ['psychometric_english'],
   },
+  economics__tau: {
+    targetId: 'tau-economics-live',
+    sourceTarget: admissionsSourceTargets.find((entry) => entry.id === 'tau-economics-live')!,
+    program: {
+      targetId: 'tau-economics-live',
+      pairId: 'economics__tau',
+      id: 'tau-economics',
+      name: 'Economics',
+      nodeId: 11821,
+      externalId: '101111050000',
+      scoreField: 'hatama',
+    },
+    requiredInputs: ['psychometric_english'],
+  },
+  tau_economics__tau: {
+    targetId: 'tau-economics-legacy-live',
+    sourceTarget: admissionsSourceTargets.find(
+      (entry) => entry.id === 'tau-economics-legacy-live',
+    )!,
+    program: {
+      targetId: 'tau-economics-legacy-live',
+      pairId: 'tau_economics__tau',
+      id: 'tau-economics',
+      name: 'Economics',
+      nodeId: 11821,
+      externalId: '101111050000',
+      scoreField: 'hatama',
+    },
+    requiredInputs: ['psychometric_english'],
+  },
 };
 
 const SOURCE_TARGETS_BY_INSTITUTION = new Map<string, AdmissionsSourceTarget>(

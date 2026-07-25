@@ -71,6 +71,8 @@ export async function evaluateAdmissionsForProgram(args: {
       if (key === 'communication__tau') return ['tau-communication-live'];
       if (key === 'political_science__tau') return ['tau-political-science-live'];
       if (key === 'education__tau') return ['tau-education-live'];
+      if (key === 'economics__tau') return ['tau-economics-live'];
+      if (key === 'tau_economics__tau') return ['tau-economics-legacy-live'];
       return [];
     });
 
@@ -506,6 +508,36 @@ async function evaluateExactResult(args: {
           unmetRequirements: ['אנגלית בפסיכומטרי ברמת 100 ומעלה'],
           requirementsUrl:
             'https://go.tau.ac.il/he/social-sciences/ba/education?v=admission-requirements',
+        });
+      }
+
+      const proof = await runTauAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: { bagrutAverage: input.bagrut, psychometric: input.psychometric },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+      });
+    }
+
+    if (
+      exactTarget.targetId === 'tau-economics-live' ||
+      exactTarget.targetId === 'tau-economics-legacy-live'
+    ) {
+      const psychometricEnglish = input.extraInputs?.psychometricEnglish;
+      if (typeof psychometricEnglish !== 'number') {
+        return requiredInputsResult(institution, ['psychometric_english']);
+      }
+      if (psychometricEnglish < 100) {
+        return exactGateFailureResult({
+          institution,
+          unmetRequirements: ['אנגלית בפסיכומטרי ברמת 100 ומעלה'],
+          requirementsUrl:
+            'https://go.tau.ac.il/he/management/ba/economics?v=admission-requirements',
         });
       }
 

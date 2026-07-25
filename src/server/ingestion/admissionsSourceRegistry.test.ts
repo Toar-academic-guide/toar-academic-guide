@@ -26,6 +26,8 @@ describe('admissionsSourceRegistry', () => {
       'tau-communication-live',
       'tau-political-science-live',
       'tau-education-live',
+      'tau-economics-live',
+      'tau-economics-legacy-live',
     ]);
   });
 
