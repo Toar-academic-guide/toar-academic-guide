@@ -46,6 +46,10 @@ alert migrations depend on that table. Apply `0010` through `0016` in order,
 then apply forward repair `0017`, which adds the missing `ops_readonly` profile
 history read policy without broadening write access, and `0018`, which pins the
 threshold-invariant trigger function to a trusted PostgreSQL search path.
+Migration `0019` repairs the legacy `colman_tourism` row from calculator-backed
+`sekhem` to requirements-based admission, matching the repository seed and
+preventing database-mode catalogue readiness from demanding an impossible
+College of Management university-threshold row.
 Never edit a migration that has already been recorded remotely. If the
 preflight reports `drift`, an unexpected migration, a partially present object,
 or a role that can bypass RLS, stop and prepare a new forward repair migration.

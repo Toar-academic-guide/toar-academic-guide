@@ -1,5 +1,5 @@
 export type MigrationId =
-  '0010' | '0011' | '0012' | '0013' | '0014' | '0015' | '0016' | '0017' | '0018';
+  '0010' | '0011' | '0012' | '0013' | '0014' | '0015' | '0016' | '0017' | '0018' | '0019';
 
 export type MigrationHistoryEntry = {
   version: string;
@@ -99,5 +99,11 @@ export const FORWARD_PRODUCTION_MIGRATIONS: Array<{
     remoteName: 'secure_admission_threshold_scope_function',
     repositoryPath: 'src/db/migrations/0018_secure_admission_threshold_scope_function.sql',
     statementFingerprint: '3a81bb66de49ff59004174c4d8d2c9c6',
+  },
+  {
+    id: '0019',
+    remoteName: 'repair_colman_tourism_admission_type',
+    repositoryPath: 'src/db/migrations/0019_repair_colman_tourism_admission_type.sql',
+    statementFingerprint: '41ab9ae6c549074f9cd0eceecd35d503',
   },
 ];

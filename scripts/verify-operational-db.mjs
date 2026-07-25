@@ -248,7 +248,23 @@ async function loadCatalogueEvidence(sql) {
   if (representativePairs.length === 0) {
     throw new Error('Expected at least one representative admissions pair to exist.');
   }
-  return { counts, representativePairs };
+
+  const [colmanTourism] = await sql`
+    select admission_type
+    from public.programs
+    where id = 'colman_tourism'
+  `;
+  if (!colmanTourism || colmanTourism.admission_type !== 'requirements') {
+    throw new Error(
+      'Expected public.programs.colman_tourism to use requirements-based admission.',
+    );
+  }
+
+  return {
+    counts,
+    representativePairs,
+    colmanTourismAdmissionType: colmanTourism.admission_type,
+  };
 }
 
 async function loadPublicationDatabaseState(sql) {

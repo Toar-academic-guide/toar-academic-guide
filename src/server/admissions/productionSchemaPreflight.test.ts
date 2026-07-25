@@ -15,7 +15,7 @@ describe('production admissions schema preflight', () => {
     expect(report).toMatchObject({
       status: 'current',
       safeToMigrate: false,
-      appliedThrough: '0018',
+      appliedThrough: '0019',
       pendingMigrations: [],
       issues: [],
     });
@@ -49,6 +49,7 @@ describe('production admissions schema preflight', () => {
       '0016',
       '0017',
       '0018',
+      '0019',
     ]);
   });
 
@@ -58,7 +59,15 @@ describe('production admissions schema preflight', () => {
     expect(report.status).toBe('migration_required');
     expect(report.safeToMigrate).toBe(true);
     expect(report.appliedThrough).toBe('0012');
-    expect(report.pendingMigrations).toEqual(['0013', '0014', '0015', '0016', '0017', '0018']);
+    expect(report.pendingMigrations).toEqual([
+      '0013',
+      '0014',
+      '0015',
+      '0016',
+      '0017',
+      '0018',
+      '0019',
+    ]);
   });
 
   it('stops when a pending migration is partially present', () => {
