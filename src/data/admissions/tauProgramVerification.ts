@@ -475,24 +475,58 @@ export interface ProgramVerificationArtifact {
   fixtures: AdmissionsVerificationFixture[];
 }
 
-export const PROGRAM_VERIFICATION_ARTIFACTS: Record<string, ProgramVerificationArtifact> = {
+export interface TauProgramVerificationMetadata extends ProgramVerificationArtifact {
+  requirementsUrl: string;
+  ledgerReason: string;
+}
+
+export const TAU_PROGRAM_VERIFICATION_METADATA: Record<string, TauProgramVerificationMetadata> = {
   [TAU_DIGITAL_SCIENCES_CONTRACT.pairId]: {
     contract: TAU_DIGITAL_SCIENCES_CONTRACT,
     fixtures: TAU_DIGITAL_SCIENCES_FIXTURES,
+    requirementsUrl: TAU_DIGITAL_SCIENCES_REQUIREMENTS_URL,
+    ledgerReason:
+      'Verified against the current TAU programme mapping, cumulative score gates, accepted/below fixtures, and live score-and-verdict replay.',
   },
   [TAU_NURSING_CONTRACT.pairId]: {
     contract: TAU_NURSING_CONTRACT,
     fixtures: TAU_NURSING_FIXTURES,
+    requirementsUrl: TAU_NURSING_REQUIREMENTS_URL,
+    ledgerReason:
+      'Verified as eligibility for the mandatory suitability assessment; passing the numeric threshold is not final admission.',
   },
   [TAU_PSYCHOLOGY_CONTRACT.pairId]: {
     contract: TAU_PSYCHOLOGY_CONTRACT,
     fixtures: TAU_PSYCHOLOGY_FIXTURES,
+    requirementsUrl: TAU_PSYCHOLOGY_REQUIREMENTS_URL,
+    ledgerReason:
+      'Verified against the current TAU programme mapping, cumulative score gates, accepted/below fixtures, and live score-and-verdict replay.',
   },
   [TAU_SOCIAL_WORK_CONTRACT.pairId]: {
     contract: TAU_SOCIAL_WORK_CONTRACT,
     fixtures: TAU_SOCIAL_WORK_FIXTURES,
+    requirementsUrl: TAU_SOCIAL_WORK_REQUIREMENTS_URL,
+    ledgerReason:
+      'Verified against the current TAU social-work programme node, score route, score thresholds, accepted/below fixtures, and live replay. The online-course, registration-priority, and possible-interview conditions remain explicit programme gates.',
   },
 };
+
+export const PROGRAM_VERIFICATION_ARTIFACTS: Record<string, ProgramVerificationArtifact> =
+  Object.fromEntries(
+    Object.entries(TAU_PROGRAM_VERIFICATION_METADATA).map(([pairId, artifact]) => [
+      pairId,
+      {
+        contract: artifact.contract,
+        fixtures: artifact.fixtures,
+      },
+    ]),
+  );
+
+export function getTauProgramVerificationMetadata(
+  pairId: string,
+): TauProgramVerificationMetadata | undefined {
+  return TAU_PROGRAM_VERIFICATION_METADATA[pairId];
+}
 
 export function getProgramVerificationArtifact(
   pairId: string,

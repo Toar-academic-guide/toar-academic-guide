@@ -6,18 +6,8 @@ import {
   type FormulaBackedPairInventory,
 } from './formulaBackedPairInventory';
 import {
-  TAU_DIGITAL_SCIENCES_CONTRACT,
-  TAU_DIGITAL_SCIENCES_FIXTURES,
-  TAU_DIGITAL_SCIENCES_REQUIREMENTS_URL,
-  TAU_NURSING_CONTRACT,
-  TAU_NURSING_FIXTURES,
-  TAU_NURSING_REQUIREMENTS_URL,
-  TAU_PSYCHOLOGY_CONTRACT,
-  TAU_PSYCHOLOGY_FIXTURES,
-  TAU_PSYCHOLOGY_REQUIREMENTS_URL,
-  TAU_SOCIAL_WORK_CONTRACT,
-  TAU_SOCIAL_WORK_FIXTURES,
-  TAU_SOCIAL_WORK_REQUIREMENTS_URL,
+  getTauProgramVerificationMetadata,
+  type TauProgramVerificationMetadata,
 } from './tauProgramVerification';
 
 export type FormulaPairLedgerState = 'exact' | 'withheld' | 'stale' | 'blocked';
@@ -248,12 +238,12 @@ const SOURCE_BY_INSTITUTION: Record<FormulaBackedInstitutionId, { url: string; r
 export const FORMULA_BACKED_VERIFICATION_LEDGER: FormulaPairVerificationLedgerEntry[] =
   FORMULA_BACKED_INSTITUTION_IDS.flatMap((institutionId) => {
     const source = SOURCE_BY_INSTITUTION[institutionId];
-    return REVIEWED_PAIR_IDS_BY_INSTITUTION[institutionId].map((pairId) =>
-      pairId === 'tau_datascience__tau' ||
-      pairId === 'nursing__tau' ||
-      pairId === 'tau_psychology__tau' ||
-      pairId === 'social_work__tau'
-        ? verifiedTauProgramEntry(pairId)
+    return REVIEWED_PAIR_IDS_BY_INSTITUTION[institutionId].map((pairId) => {
+      const verifiedTauProgram =
+        institutionId === 'tau' ? getTauProgramVerificationMetadata(pairId) : undefined;
+
+      return verifiedTauProgram
+        ? verifiedTauProgramEntry(verifiedTauProgram)
         : {
             pairId,
             institutionId,
@@ -274,43 +264,21 @@ export const FORMULA_BACKED_VERIFICATION_LEDGER: FormulaPairVerificationLedgerEn
               sourceFingerprint: null,
             },
             reason: source.reason,
-          },
-    );
+          };
+    });
   });
 
 function verifiedTauProgramEntry(
-  pairId: 'tau_datascience__tau' | 'nursing__tau' | 'tau_psychology__tau' | 'social_work__tau',
+  artifact: TauProgramVerificationMetadata,
 ): FormulaPairVerificationLedgerEntry {
-  const isNursing = pairId === 'nursing__tau';
-  const isPsychology = pairId === 'tau_psychology__tau';
-  const isSocialWork = pairId === 'social_work__tau';
-  const contract = isNursing
-    ? TAU_NURSING_CONTRACT
-    : isPsychology
-      ? TAU_PSYCHOLOGY_CONTRACT
-      : isSocialWork
-        ? TAU_SOCIAL_WORK_CONTRACT
-        : TAU_DIGITAL_SCIENCES_CONTRACT;
-  const fixtures = isNursing
-    ? TAU_NURSING_FIXTURES
-    : isPsychology
-      ? TAU_PSYCHOLOGY_FIXTURES
-      : isSocialWork
-        ? TAU_SOCIAL_WORK_FIXTURES
-        : TAU_DIGITAL_SCIENCES_FIXTURES;
+  const { contract, fixtures } = artifact;
   return {
     pairId: contract.pairId,
     institutionId: 'tau',
     admissionCycle: contract.admissionCycle as '2026-2027',
     state: 'exact',
     officialProgramId: contract.officialProgramId,
-    sourceUrl: isNursing
-      ? TAU_NURSING_REQUIREMENTS_URL
-      : isPsychology
-        ? TAU_PSYCHOLOGY_REQUIREMENTS_URL
-        : isSocialWork
-          ? TAU_SOCIAL_WORK_REQUIREMENTS_URL
-          : TAU_DIGITAL_SCIENCES_REQUIREMENTS_URL,
+    sourceUrl: artifact.requirementsUrl,
     formulaFamily: contract.calculation.formulaFamily,
     fixtureEvidence: {
       eligible: fixtures.some(
@@ -325,11 +293,7 @@ function verifiedTauProgramEntry(
       comparedAt: contract.proof.liveComparedAt,
       sourceFingerprint: contract.proof.sourceFingerprint,
     },
-    reason: isNursing
-      ? 'Verified as eligibility for the mandatory suitability assessment; passing the numeric threshold is not final admission.'
-      : isSocialWork
-        ? 'Verified against the current TAU social-work programme node, score route, score thresholds, accepted/below fixtures, and live replay. The online-course, registration-priority, and possible-interview conditions remain explicit programme gates.'
-        : 'Verified against the current TAU programme mapping, cumulative score gates, accepted/below fixtures, and live score-and-verdict replay.',
+    reason: artifact.ledgerReason,
   };
 }
 
