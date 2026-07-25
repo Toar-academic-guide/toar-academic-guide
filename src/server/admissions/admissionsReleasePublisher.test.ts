@@ -285,6 +285,84 @@ describe('admissions release publisher', () => {
     expect(repository.transitions).toHaveLength(2);
   });
 
+  it('does not overlap a retry with an existing pending publication attempt', async () => {
+    const repository = new MemoryAdmissionsReleaseRepository({ failProgramId: 'bgu_cs' });
+    const publisher = createAdmissionsReleasePublisher(repository);
+    const input = {
+      manifest: {
+        ...manifest,
+        changes: [
+          manifest.changes[0],
+          {
+            ...manifest.changes[1],
+            target: { institutionId: 'bgu', programId: 'bgu_cs', cycle: '2027' },
+          },
+        ],
+      },
+      repositoryCommit: 'pending123',
+    };
+
+    await expect(publisher.publish(input)).rejects.toThrow('simulated transition failure');
+    repository.releases[0]!.status = 'pending';
+
+    await expect(publisher.publish(input)).rejects.toThrow(
+      'already has a publication attempt in progress',
+    );
+    expect(repository.attempts).toHaveLength(1);
+  });
+
+  it('requires a failed release retry to use the original repository commit', async () => {
+    const repository = new MemoryAdmissionsReleaseRepository({ failProgramId: 'bgu_cs' });
+    const publisher = createAdmissionsReleasePublisher(repository);
+    const failedManifest = {
+      ...manifest,
+      changes: [
+        manifest.changes[0],
+        {
+          ...manifest.changes[1],
+          target: { institutionId: 'bgu', programId: 'bgu_cs', cycle: '2027' },
+        },
+      ],
+    };
+
+    await expect(
+      publisher.publish({ manifest: failedManifest, repositoryCommit: 'original123' }),
+    ).rejects.toThrow('simulated transition failure');
+
+    await expect(
+      publisher.publish({ manifest: failedManifest, repositoryCommit: 'different456' }),
+    ).rejects.toThrow('retry it with the same commit');
+    expect(repository.releases).toHaveLength(1);
+    expect(repository.attempts).toHaveLength(1);
+  });
+
+  it('preserves both errors when durable failure recording also fails', async () => {
+    const repository = new MemoryAdmissionsReleaseRepository({
+      failProgramId: 'bgu_cs',
+      failFailureRecording: true,
+    });
+    const publisher = createAdmissionsReleasePublisher(repository);
+
+    await expect(
+      publisher.publish({
+        manifest: {
+          ...manifest,
+          changes: [
+            manifest.changes[0],
+            {
+              ...manifest.changes[1],
+              target: { institutionId: 'bgu', programId: 'bgu_cs', cycle: '2027' },
+            },
+          ],
+        },
+        repositoryCommit: 'recording123',
+      }),
+    ).rejects.toThrow('failed and its failure record could not be persisted');
+
+    expect(repository.releases[0]).toMatchObject({ status: 'pending' });
+    expect(repository.attempts[0]).toMatchObject({ status: 'started' });
+  });
+
   it('records a corrective rollback as a new reviewed release', async () => {
     const repository = new MemoryAdmissionsReleaseRepository();
     const publisher = createAdmissionsReleasePublisher(repository);
@@ -330,6 +408,7 @@ class MemoryAdmissionsReleaseRepository
     private readonly options: {
       failProgramId?: string;
       failTransition?: (programId: string) => boolean;
+      failFailureRecording?: boolean;
       hideExistingLookups?: number;
       rejectDuplicateReleaseInsert?: boolean;
     } = {},
@@ -408,6 +487,9 @@ class MemoryAdmissionsReleaseRepository
   }
 
   async markReleaseFailed(releaseId: string) {
+    if (this.options.failFailureRecording) {
+      throw new Error('simulated failure-recording error');
+    }
     const release = this.releases.find((candidate) => candidate.id === releaseId);
     if (release) {
       release.status = 'failed';
