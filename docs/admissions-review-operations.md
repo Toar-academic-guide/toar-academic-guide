@@ -49,6 +49,12 @@ representative catalogue rows. Keep the preflight and verification JSON with
 the protected-environment run evidence; neither output contains database
 credentials.
 
+The protected publication workflow uses the stricter
+`npm run db:operational:publication` gate. In addition to the complete schema
+and catalogue checks, it refuses to write while a pending release, started
+publication attempt, or published release with incomplete digest/commit
+identity is present.
+
 ### 2026-07-25 production recovery evidence
 
 - Supabase project `toar-academic-guide` (`kfxcdbjeidczltkrjazk`) had a completed

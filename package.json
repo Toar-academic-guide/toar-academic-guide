@@ -33,7 +33,8 @@
     "monday:derive-admissions-evidence": "node scripts/derive-monday-admissions-evidence.mjs",
     "monday:verify-admissions-evidence": "node scripts/verify-monday-admissions-evidence.mjs",
     "db:operational:preflight": "node scripts/verify-operational-db.mjs --preflight",
-    "db:operational:verify": "node scripts/verify-operational-db.mjs"
+    "db:operational:verify": "node scripts/verify-operational-db.mjs",
+    "db:operational:publication": "node scripts/verify-operational-db.mjs --publication"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.0",

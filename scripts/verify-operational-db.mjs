@@ -1,15 +1,20 @@
 import { tsImport } from 'tsx/esm/api';
 import postgres from 'postgres';
 
-const {
-  PRODUCTION_SCHEMA_CONTRACT,
-  assessProductionSchema,
-} = await tsImport(
+const { PRODUCTION_SCHEMA_CONTRACT, assessProductionSchema } = await tsImport(
   '../src/server/admissions/productionSchemaPreflight.ts',
   import.meta.url,
 );
+const { assessPublicationDatabaseState, resolveOperationalDatabaseUrl } = await tsImport(
+  '../src/server/admissions/operationalDatabaseGate.ts',
+  import.meta.url,
+);
 
-const mode = process.argv.includes('--preflight') ? 'preflight' : 'verify';
+const mode = process.argv.includes('--preflight')
+  ? 'preflight'
+  : process.argv.includes('--publication')
+    ? 'publication'
+    : 'verify';
 const representativeTables = [
   'institutions',
   'programs',
@@ -19,17 +24,6 @@ const representativeTables = [
   'source_urls',
   'university_calculator_configs',
 ];
-
-function requireConnectionUrl() {
-  const value =
-    process.env.OPS_DATABASE_URL?.trim() || process.env.DATABASE_URL?.trim();
-  if (!value) {
-    throw new Error(
-      'A database connection URL is required for operational DB verification.',
-    );
-  }
-  return value;
-}
 
 async function loadSnapshot(sql) {
   const [
@@ -59,12 +53,7 @@ async function loadSnapshot(sql) {
         rolcanlogin as can_login,
         rolbypassrls as bypass_rls
       from pg_roles
-      where rolname = any(${[
-        'anon',
-        'authenticated',
-        'app_runtime',
-        'ops_readonly',
-      ]})
+      where rolname = any(${['anon', 'authenticated', 'app_runtime', 'ops_readonly']})
       order by rolname
     `,
     sql`
@@ -222,15 +211,11 @@ async function loadSnapshot(sql) {
 async function loadCatalogueEvidence(sql) {
   const counts = [];
   for (const tableName of representativeTables) {
-    const [row] = await sql.unsafe(
-      `select count(*)::int as row_count from public.${tableName}`,
-    );
+    const [row] = await sql.unsafe(`select count(*)::int as row_count from public.${tableName}`);
     const rowCount = Number(row.row_count);
     counts.push({ tableName, rowCount });
     if (rowCount <= 0) {
-      throw new Error(
-        `Expected public.${tableName} to contain rows, found ${rowCount}.`,
-      );
+      throw new Error(`Expected public.${tableName} to contain rows, found ${rowCount}.`);
     }
   }
 
@@ -244,15 +229,39 @@ async function loadCatalogueEvidence(sql) {
     order by pi.program_id, pi.institution_id
   `;
   if (representativePairs.length === 0) {
-    throw new Error(
-      'Expected at least one representative admissions pair to exist.',
-    );
+    throw new Error('Expected at least one representative admissions pair to exist.');
   }
   return { counts, representativePairs };
 }
 
+async function loadPublicationDatabaseState(sql) {
+  const [state] = await sql`
+    select
+      count(*) filter (where status = 'pending')::int as pending_release_count,
+      (
+        select count(*)::int
+        from public.admission_publication_attempts
+        where status = 'started'
+      ) as started_attempt_count,
+      count(*) filter (
+        where status = 'published'
+          and (
+            published_at is null
+            or repository_commit = ''
+            or manifest_digest not like 'sha256:%'
+          )
+      )::int as malformed_published_release_count
+    from public.admission_releases
+  `;
+  return assessPublicationDatabaseState({
+    pendingReleaseCount: Number(state.pending_release_count),
+    startedAttemptCount: Number(state.started_attempt_count),
+    malformedPublishedReleaseCount: Number(state.malformed_published_release_count),
+  });
+}
+
 async function main() {
-  const sql = postgres(requireConnectionUrl(), {
+  const sql = postgres(resolveOperationalDatabaseUrl(process.env), {
     max: 1,
     connect_timeout: 10,
     idle_timeout: 5,
@@ -262,23 +271,25 @@ async function main() {
   try {
     const snapshot = await loadSnapshot(sql);
     const report = assessProductionSchema(snapshot);
-    const catalogue =
-      report.status === 'current' ? await loadCatalogueEvidence(sql) : null;
+    const catalogue = report.status === 'current' ? await loadCatalogueEvidence(sql) : null;
+    const publication =
+      mode === 'publication' && report.status === 'current'
+        ? await loadPublicationDatabaseState(sql)
+        : null;
     const output = {
-      verified: report.status === 'current',
+      verified: report.status === 'current' && (publication === null || publication.ready),
       mode,
       ...report,
       requiredTables: Object.keys(PRODUCTION_SCHEMA_CONTRACT.tables).sort(),
       catalogue,
+      publication,
     };
 
     console.log(JSON.stringify(output, null, 2));
 
     const accepted =
-      report.status === 'current' ||
-      (mode === 'preflight' &&
-        report.status === 'migration_required' &&
-        report.safeToMigrate);
+      (report.status === 'current' && (publication === null || publication.ready)) ||
+      (mode === 'preflight' && report.status === 'migration_required' && report.safeToMigrate);
     if (!accepted) process.exitCode = 1;
   } finally {
     await sql.end({ timeout: 5 });

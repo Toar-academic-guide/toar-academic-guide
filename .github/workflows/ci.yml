@@ -18,6 +18,42 @@ concurrency:
 # Job 1: Static analysis — lint, type check, format, security audit
 # ---------------------------------------------------------------------------
 jobs:
+  production-sensitive-paths:
+    name: Classify production-sensitive changes
+    runs-on: ubuntu-latest
+    outputs:
+      applicable: ${{ steps.classify.outputs.applicable }}
+
+    steps:
+      - name: Checkout repository history
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Classify changed paths
+        id: classify
+        shell: bash
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          BEFORE_SHA: ${{ github.event.before }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            node scripts/production-sensitive-paths.mjs --all >> "$GITHUB_OUTPUT"
+          elif [[ "$EVENT_NAME" == "pull_request" ]]; then
+            git diff --name-only "origin/$BASE_REF...HEAD" |
+              node scripts/production-sensitive-paths.mjs >> "$GITHUB_OUTPUT"
+          elif [[ -n "$BEFORE_SHA" ]] &&
+            [[ "$BEFORE_SHA" != "0000000000000000000000000000000000000000" ]] &&
+            git cat-file -e "$BEFORE_SHA^{commit}"; then
+            git diff --name-only "$BEFORE_SHA...HEAD" |
+              node scripts/production-sensitive-paths.mjs >> "$GITHUB_OUTPUT"
+          else
+            git diff --name-only HEAD^...HEAD |
+              node scripts/production-sensitive-paths.mjs >> "$GITHUB_OUTPUT"
+          fi
+
   quality:
     name: Lint, typecheck & security
     runs-on: ubuntu-latest
@@ -51,6 +87,55 @@ jobs:
 
       - name: Drizzle migration consistency
         run: npm run db:migrate:check
+
+  operational-schema:
+    name: Production operational schema preflight
+    runs-on: ubuntu-latest
+    needs:
+      - production-sensitive-paths
+      - quality
+    if: ${{ needs.production-sensitive-paths.outputs.applicable == 'true' }}
+    environment: admissions-publication
+    env:
+      CI: true
+      OPS_DATABASE_URL: ${{ secrets.OPS_DATABASE_URL }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify operational database is current or safely migratable
+        run: npm run db:operational:preflight
+
+  operational-schema-gate:
+    name: Production operational schema gate
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs:
+      - production-sensitive-paths
+      - operational-schema
+
+    steps:
+      - name: Require successful applicable preflight
+        env:
+          APPLICABLE: ${{ needs.production-sensitive-paths.outputs.applicable }}
+          PREFLIGHT_RESULT: ${{ needs.operational-schema.result }}
+        run: |
+          if [[ "$APPLICABLE" == "true" && "$PREFLIGHT_RESULT" != "success" ]]; then
+            echo "Production-sensitive changes require a successful operational schema preflight."
+            exit 1
+          fi
+          echo "Operational schema gate passed (applicable=$APPLICABLE, result=$PREFLIGHT_RESULT)."
 
   # ---------------------------------------------------------------------------
   # Job 2: Unit tests with coverage
@@ -203,6 +288,7 @@ jobs:
       - test
       - db-migrations-and-seed
       - admissions-verify
+      - operational-schema-gate
     env:
       CI: true
       CATALOGUE_SOURCE_MODE: static
