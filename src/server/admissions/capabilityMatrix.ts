@@ -253,6 +253,20 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
     },
     requiredInputs: ['psychometric_english'],
   },
+  communication__tau: {
+    targetId: 'tau-communication-live',
+    sourceTarget: admissionsSourceTargets.find((entry) => entry.id === 'tau-communication-live')!,
+    program: {
+      targetId: 'tau-communication-live',
+      pairId: 'communication__tau',
+      id: 'tau-communication',
+      name: 'Communication',
+      nodeId: 8277,
+      externalId: '108511050000',
+      scoreField: 'hatama',
+    },
+    requiredInputs: ['psychometric_english'],
+  },
 };
 
 const SOURCE_TARGETS_BY_INSTITUTION = new Map<string, AdmissionsSourceTarget>(

@@ -915,6 +915,53 @@ export const TAU_BIOLOGY_CONTRACT: AdmissionsProgramVerificationContract = {
   proof: { ...TAU_ARCHITECTURE_CONTRACT.proof, sourceFingerprint: TAU_BIOLOGY_SOURCE_FINGERPRINT },
 };
 
+const TAU_COMMUNICATION_SOURCE_FINGERPRINT =
+  'sha256:7f9160db9c455cf662f56d033203a2046e97f1d1c50f8dd2ab9b9a3b9ea6a69';
+export const TAU_COMMUNICATION_FIXTURES: AdmissionsVerificationFixture[] = TAU_BIOLOGY_FIXTURES.map(
+  (fixture) => ({
+    ...fixture,
+    id: fixture.id.replace('biology__tau', 'communication__tau'),
+    pairId: 'communication__tau',
+    expected:
+      fixture.verdict === 'accepted'
+        ? { score: 679, verdict: 'accepted' }
+        : { score: 496, verdict: 'below' },
+    input: fixture.verdict === 'accepted' ? fixture.input : { ...fixture.input, psychometric: 520 },
+    sourceFingerprint: TAU_COMMUNICATION_SOURCE_FINGERPRINT,
+  }),
+);
+
+export const TAU_COMMUNICATION_CONTRACT: AdmissionsProgramVerificationContract = {
+  ...TAU_BIOLOGY_CONTRACT,
+  pairId: 'communication__tau',
+  programId: 'communication',
+  officialProgramId: '108511050000',
+  source: { targetId: 'tau-communication-live', url: 'https://go.tau.ac.il/graphql' },
+  calculation: {
+    ...TAU_BIOLOGY_CONTRACT.calculation,
+    cutoff: { acceptance: 530, rejection: 529 },
+    gates: [
+      {
+        id: 'tau-communication:english-minimum',
+        kind: 'language',
+        field: 'psychometricEnglish',
+        minimum: 100,
+        description: 'TAU requires at least English level Advanced A.',
+      },
+      {
+        id: 'tau-communication:alternative-routes',
+        kind: 'manual',
+        field: 'alternativeAdmissionRoute',
+        description: 'Communication alternative routes and programme conditions remain manual.',
+      },
+    ],
+  },
+  fixtureIds: TAU_COMMUNICATION_FIXTURES.map((fixture) => fixture.id),
+  fixtureSetFingerprint: 'sha256:563151fe6f1115be7fe2144b7b1cb60a82bafff05095ed5fe80b759c9c37df4c',
+  sourceFingerprint: TAU_COMMUNICATION_SOURCE_FINGERPRINT,
+  proof: { ...TAU_BIOLOGY_CONTRACT.proof, sourceFingerprint: TAU_COMMUNICATION_SOURCE_FINGERPRINT },
+};
+
 export interface ProgramVerificationArtifact {
   contract: AdmissionsProgramVerificationContract;
   fixtures: AdmissionsVerificationFixture[];
@@ -1016,6 +1063,14 @@ export const TAU_PROGRAM_VERIFICATION_METADATA: Record<string, TauProgramVerific
     requirementsUrl: 'https://go.tau.ac.il/he/life-sciences/ba/biology?v=admission-requirements',
     ledgerReason:
       'Verified against the current TAU Biology programme node, score route, English and science gates, accepted/below fixtures, and live score-and-verdict replay.',
+  },
+  [TAU_COMMUNICATION_CONTRACT.pairId]: {
+    contract: TAU_COMMUNICATION_CONTRACT,
+    fixtures: TAU_COMMUNICATION_FIXTURES,
+    requirementsUrl:
+      'https://go.tau.ac.il/he/social-sciences/ba/communication?v=admission-requirements',
+    ledgerReason:
+      'Verified against the current TAU Communication programme node, score route, English gate, accepted/below fixtures, and live score-and-verdict replay.',
   },
 };
 

@@ -34,12 +34,12 @@ describe('formula-backed verification ledger', () => {
 
     expect(completion).toMatchObject({
       total: 135,
-      exact: 13,
-      withheld: 122,
+      exact: 14,
+      withheld: 121,
       isComplete: false,
     });
     expect(completion.totalsByInstitution).toEqual({
-      tau: { total: 35, exact: 13, withheld: 22, stale: 0, blocked: 0 },
+      tau: { total: 35, exact: 14, withheld: 21, stale: 0, blocked: 0 },
       huji: { total: 29, exact: 0, withheld: 29, stale: 0, blocked: 0 },
       bgu: { total: 29, exact: 0, withheld: 29, stale: 0, blocked: 0 },
       haifa: { total: 27, exact: 0, withheld: 27, stale: 0, blocked: 0 },
@@ -54,6 +54,7 @@ describe('formula-backed verification ledger', () => {
       'accounting__tau',
       'architecture__tau',
       'biology__tau',
+      'communication__tau',
       'datascience__tau',
       'law__tau',
       'nursing__tau',
