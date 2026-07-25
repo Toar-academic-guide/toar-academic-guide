@@ -8,6 +8,10 @@ import {
   type AdmissionsProofStatus,
 } from './admissionsSourceAdapters';
 import type { FreshnessCapability } from './freshnessDiscovery';
+import {
+  HUJI_PROGRAM_VERIFICATION_METADATA,
+  HUJI_SOURCE_URL,
+} from '@/data/admissions/hujiProgramVerification';
 
 export type AdmissionsSourceCategory =
   | 'blocked'
@@ -36,6 +40,27 @@ export interface AdmissionsSourceTarget {
 }
 
 export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
+  ...Object.values(HUJI_PROGRAM_VERIFICATION_METADATA).map((artifact) => ({
+    id: artifact.contract.source.targetId,
+    institutionId: 'huji',
+    institutionName: 'Hebrew University of Jerusalem',
+    officialUrl: HUJI_SOURCE_URL,
+    adapterId: 'huji' as const,
+    expectedCapability: 'decision_capable' as const,
+    proofLevel: 'exact_official' as const,
+    category: 'exact' as const,
+    defaultApplicant: { bagrutAverage: 120, psychometric: 800 },
+    defaultProgram: {
+      targetId: artifact.contract.source.targetId,
+      pairId: artifact.contract.pairId,
+      id: artifact.contract.programId,
+      name: artifact.contract.programId,
+      externalId: artifact.contract.officialProgramId,
+    },
+    reproducedFields: ['selectedScore', 'acceptanceThreshold', 'rejectionThreshold', 'officialVerdict'],
+    limitations: ['Exact replay is scoped to the explicitly matched HUJI track number and current cycle thresholds.'],
+    nextAction: 'Keep the track mapping, formula coefficients, thresholds, fixtures, and source fingerprint under review.',
+  } satisfies AdmissionsSourceTarget)),
   {
     id: 'haifa-cs-live',
     institutionId: 'haifa',

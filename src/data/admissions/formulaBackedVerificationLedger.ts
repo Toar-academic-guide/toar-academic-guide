@@ -9,6 +9,10 @@ import {
   getTauProgramVerificationMetadata,
   type TauProgramVerificationMetadata,
 } from './tauProgramVerification';
+import {
+  getHujiProgramVerificationMetadata,
+  type HujiProgramVerificationMetadata,
+} from './hujiProgramVerification';
 
 export type FormulaPairLedgerState = 'exact' | 'withheld' | 'stale' | 'blocked';
 
@@ -239,11 +243,15 @@ export const FORMULA_BACKED_VERIFICATION_LEDGER: FormulaPairVerificationLedgerEn
   FORMULA_BACKED_INSTITUTION_IDS.flatMap((institutionId) => {
     const source = SOURCE_BY_INSTITUTION[institutionId];
     return REVIEWED_PAIR_IDS_BY_INSTITUTION[institutionId].map((pairId) => {
-      const verifiedTauProgram =
-        institutionId === 'tau' ? getTauProgramVerificationMetadata(pairId) : undefined;
+      const verifiedProgram =
+        institutionId === 'tau'
+          ? getTauProgramVerificationMetadata(pairId)
+          : institutionId === 'huji'
+            ? getHujiProgramVerificationMetadata(pairId)
+            : undefined;
 
-      return verifiedTauProgram
-        ? verifiedTauProgramEntry(verifiedTauProgram)
+      return verifiedProgram
+        ? verifiedProgramEntry(verifiedProgram)
         : {
             pairId,
             institutionId,
@@ -268,17 +276,17 @@ export const FORMULA_BACKED_VERIFICATION_LEDGER: FormulaPairVerificationLedgerEn
     });
   });
 
-function verifiedTauProgramEntry(
-  artifact: TauProgramVerificationMetadata,
+function verifiedProgramEntry(
+  artifact: TauProgramVerificationMetadata | HujiProgramVerificationMetadata,
 ): FormulaPairVerificationLedgerEntry {
   const { contract, fixtures } = artifact;
   return {
     pairId: contract.pairId,
-    institutionId: 'tau',
+    institutionId: contract.institutionId as FormulaBackedInstitutionId,
     admissionCycle: contract.admissionCycle as '2026-2027',
     state: 'exact',
     officialProgramId: contract.officialProgramId,
-    sourceUrl: artifact.requirementsUrl,
+    sourceUrl: 'requirementsUrl' in artifact ? artifact.requirementsUrl : contract.source.url,
     formulaFamily: contract.calculation.formulaFamily,
     fixtureEvidence: {
       eligible: fixtures.some(

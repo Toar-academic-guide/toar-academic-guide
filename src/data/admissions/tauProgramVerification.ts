@@ -2,6 +2,7 @@ import type {
   AdmissionsProgramVerificationContract,
   AdmissionsVerificationFixture,
 } from '@/types/admissionsEvaluation';
+import { HUJI_PROGRAM_VERIFICATION_ARTIFACTS } from './hujiProgramVerification';
 
 const SOURCE_FINGERPRINT =
   'sha256:62a6a2f398b737b2139671f32c48a921083a4966ea43e8135c081870d42e9971';
@@ -1649,13 +1650,13 @@ export const TAU_PROGRAM_VERIFICATION_METADATA: Record<string, TauProgramVerific
 
 export const PROGRAM_VERIFICATION_ARTIFACTS: Record<string, ProgramVerificationArtifact> =
   Object.fromEntries(
-    Object.entries(TAU_PROGRAM_VERIFICATION_METADATA).map(([pairId, artifact]) => [
-      pairId,
-      {
-        contract: artifact.contract,
-        fixtures: artifact.fixtures,
-      },
-    ]),
+    [
+      ...Object.entries(TAU_PROGRAM_VERIFICATION_METADATA).map(([pairId, artifact]) => [
+        pairId,
+        { contract: artifact.contract, fixtures: artifact.fixtures },
+      ]),
+      ...Object.entries(HUJI_PROGRAM_VERIFICATION_ARTIFACTS),
+    ],
   );
 
 export function getTauProgramVerificationMetadata(

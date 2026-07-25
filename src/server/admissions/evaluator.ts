@@ -19,6 +19,7 @@ import {
 } from './capabilityMatrix';
 import { runHaifaAdmissionsProof } from '@/server/ingestion/adapters/haifaAdmissions';
 import { runTauAdmissionsProof } from '@/server/ingestion/adapters/tauAdmissions';
+import { runHujiAdmissionsProof } from '@/server/ingestion/adapters/hujiAdmissions';
 import { runTechnionAdmissionsProof } from '@/server/ingestion/adapters/technionAdmissions';
 import { runBguAdmissionsProof } from '@/server/ingestion/adapters/bguAdmissions';
 import {
@@ -252,6 +253,23 @@ async function evaluateExactResult(args: {
           proof: proof.normalizedPayload,
           explanationPrefix: 'מקור רשמי של אוניברסיטת בן-גוריון',
         }),
+      });
+    }
+
+    if (exactTarget.sourceTarget.adapterId === 'huji') {
+      const proof = await runHujiAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: {
+          bagrutAverage: input.bagrut,
+          psychometric: input.psychometric,
+        },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של האוניברסיטה העברית',
       });
     }
 

@@ -10,7 +10,13 @@ export type AdmissionsProofLevel =
 
 export type AdmissionsProofStatus = 'blocked' | 'failed' | 'partial' | 'succeeded';
 
-export type AdmissionsAdapterId = 'capability_matrix' | 'haifa' | 'tau' | 'technion' | 'bgu';
+export type AdmissionsAdapterId =
+  | 'capability_matrix'
+  | 'haifa'
+  | 'tau'
+  | 'huji'
+  | 'technion'
+  | 'bgu';
 
 export interface AdmissionsApplicantInput {
   bagrutAverage: number;

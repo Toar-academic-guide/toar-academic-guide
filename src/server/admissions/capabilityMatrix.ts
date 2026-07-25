@@ -27,6 +27,7 @@ import {
 } from '@/server/ingestion/admissionsSourceRegistry';
 import type { AdmissionsProgramInput } from '@/server/ingestion/admissionsSourceAdapters';
 import { getProgramVerificationArtifact } from '@/data/admissions/tauProgramVerification';
+import { HUJI_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/hujiProgramVerification';
 import { evaluateProgramVerification } from './verification/programVerification';
 
 const SOURCE_FRESHNESS_STALE_AFTER_MS = 8 * 24 * 60 * 60 * 1000;
@@ -50,7 +51,28 @@ export interface AdmissionsCapabilityEntry {
   freshnessState?: SourceFreshnessStateRow;
 }
 
+const HUJI_EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = Object.fromEntries(
+  Object.values(HUJI_PROGRAM_VERIFICATION_ARTIFACTS).map((artifact) => [
+    artifact.contract.pairId,
+    {
+      targetId: artifact.contract.source.targetId,
+      sourceTarget: admissionsSourceTargets.find(
+        (entry) => entry.id === artifact.contract.source.targetId,
+      )!,
+      program: {
+        targetId: artifact.contract.source.targetId,
+        pairId: artifact.contract.pairId,
+        id: artifact.contract.programId,
+        name: artifact.contract.programId,
+        externalId: artifact.contract.officialProgramId,
+      },
+      requiredInputs: [],
+    } satisfies ExactCapabilityTarget,
+  ]),
+);
+
 const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
+  ...HUJI_EXACT_PROGRAM_TARGETS,
   haifa_cs__haifa: {
     targetId: 'haifa-cs-live',
     sourceTarget: admissionsSourceTargets.find((entry) => entry.id === 'haifa-cs-live')!,

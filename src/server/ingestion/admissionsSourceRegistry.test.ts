@@ -7,8 +7,36 @@ import {
 } from './admissionsSourceRegistry';
 
 describe('admissionsSourceRegistry', () => {
-  it('selects the verified Haifa and TAU programs as the default exact live proof targets', () => {
+  it('selects the verified HUJI, Haifa, and TAU programs as default exact live proof targets', () => {
     expect(selectAdmissionsSourceTargets().map((target) => target.id)).toEqual([
+      'huji-accounting-live',
+      'huji-biology-live',
+      'huji-business-live',
+      'huji-communication-live',
+      'huji-cs-live',
+      'huji-datascience-live',
+      'huji-economics-live',
+      'huji-education-live',
+      'huji-huji_accounting-live',
+      'huji-huji_biology-live',
+      'huji-huji_business-live',
+      'huji-huji_cs-live',
+      'huji-huji_datascience-live',
+      'huji-huji_economics-live',
+      'huji-huji_law-live',
+      'huji-huji_medicine-live',
+      'huji-huji_occupational_therapy-live',
+      'huji-huji_psychology-live',
+      'huji-huji_socialwork-live',
+      'huji-law-live',
+      'huji-medicine-live',
+      'huji-nursing-live',
+      'huji-nutrition-live',
+      'huji-occupational_therapy-live',
+      'huji-pharmacy-live',
+      'huji-political_science-live',
+      'huji-psychology-live',
+      'huji-social_work-live',
       'haifa-cs-live',
       'tau-digital-sciences-live',
       'tau-nursing-live',

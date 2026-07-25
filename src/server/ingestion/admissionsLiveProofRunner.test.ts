@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { runAdmissionsLiveProof } from './admissionsLiveProofRunner';
+import { HUJI_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/hujiProgramVerification';
 
 function jsonResponse(body: unknown) {
   return new Response(JSON.stringify(body), {
@@ -10,8 +11,40 @@ function jsonResponse(body: unknown) {
 }
 
 function exactAdapterFetcher() {
-  return vi
-    .fn<typeof fetch>()
+  const fetcher = vi.fn<typeof fetch>();
+  const hujiTracks = Object.values(HUJI_PROGRAM_VERIFICATION_ARTIFACTS).reduce<
+    Record<string, { acceptance: number; rejection: number; formulaType: number }>
+  >((tracks, artifact) => {
+    const contract = artifact.contract;
+    tracks[contract.officialProgramId] ??= {
+      acceptance: contract.calculation.cutoff.acceptance,
+      rejection: contract.calculation.cutoff.rejection ?? 0,
+      formulaType: Number(contract.calculation.formulaFamily.split('_').pop()),
+    };
+    return tracks;
+  }, {});
+  const hujiResponse = () =>
+    jsonResponse({
+      timestamp: '2026-07-26T00:00:00.000Z',
+      hogimInfoObj: Object.entries(hujiTracks).map(([track_number, value]) => ({
+        track_number,
+        hog_regType: value.formulaType,
+      })),
+      currentYearObj: Object.entries(hujiTracks).map(([track_number, value]) => ({
+        track_number,
+        safAccept: String(value.acceptance),
+        safReject: String(value.rejection),
+      })),
+      formulasObj: [
+        { formula_type: 1, formula_pet: '0.01992054', formula_avg: '0.24614193', formula_minus: '16.993402399' },
+        { formula_type: 2, formula_pet: '0.027468921', formula_avg: '0.145461915', formula_minus: '11.50910537' },
+      ],
+    });
+  for (let index = 0; index < Object.keys(HUJI_PROGRAM_VERIFICATION_ARTIFACTS).length; index += 1) {
+    fetcher.mockResolvedValueOnce(hujiResponse());
+  }
+
+  return fetcher
     .mockResolvedValueOnce(jsonResponse({ data: { guid: 'guid-1' } }))
     .mockResolvedValueOnce(
       jsonResponse({
@@ -476,18 +509,46 @@ function exactAdapterFetcher() {
 }
 
 describe('runAdmissionsLiveProof', () => {
-  it('runs the verified Haifa and TAU programs by default as exact live proof targets', async () => {
+  it('runs the verified HUJI, Haifa, and TAU programs by default as exact live proof targets', async () => {
     const fetcher = exactAdapterFetcher();
     const report = await runAdmissionsLiveProof({ fetcher });
 
     expect(report.summary).toMatchObject({
-      total: 29,
-      exactReproduced: 29,
+      total: 57,
+      exactReproduced: 57,
       partial: 0,
       blocked: 0,
       failed: 0,
     });
     expect(report.results.map((result) => result.proof.id)).toEqual([
+      'huji-accounting-live',
+      'huji-biology-live',
+      'huji-business-live',
+      'huji-communication-live',
+      'huji-cs-live',
+      'huji-datascience-live',
+      'huji-economics-live',
+      'huji-education-live',
+      'huji-huji_accounting-live',
+      'huji-huji_biology-live',
+      'huji-huji_business-live',
+      'huji-huji_cs-live',
+      'huji-huji_datascience-live',
+      'huji-huji_economics-live',
+      'huji-huji_law-live',
+      'huji-huji_medicine-live',
+      'huji-huji_occupational_therapy-live',
+      'huji-huji_psychology-live',
+      'huji-huji_socialwork-live',
+      'huji-law-live',
+      'huji-medicine-live',
+      'huji-nursing-live',
+      'huji-nutrition-live',
+      'huji-occupational_therapy-live',
+      'huji-pharmacy-live',
+      'huji-political_science-live',
+      'huji-psychology-live',
+      'huji-social_work-live',
       'haifa-cs-live',
       'tau-digital-sciences-live',
       'tau-nursing-live',
@@ -518,10 +579,10 @@ describe('runAdmissionsLiveProof', () => {
       'tau-industrial-live',
       'tau-biology-legacy-live',
     ]);
-    expect(JSON.parse(String(fetcher.mock.calls[4][1]?.body))).toMatchObject({
+    expect(JSON.parse(String(fetcher.mock.calls[32][1]?.body))).toMatchObject({
       variables: { scoresData: { bagrut: '100', psicho: '520' } },
     });
-    expect(JSON.parse(String(fetcher.mock.calls[6][1]?.body))).toMatchObject({
+    expect(JSON.parse(String(fetcher.mock.calls[34][1]?.body))).toMatchObject({
       variables: { scoresData: { bagrut: '110', psicho: '680' } },
     });
   });
@@ -1002,7 +1063,40 @@ describe('runAdmissionsLiveProof', () => {
         }),
       );
 
-    const report = await runAdmissionsLiveProof({ fetcher });
+    const report = await runAdmissionsLiveProof({
+      fetcher,
+      targetIds: [
+        'haifa-cs-live',
+        'tau-digital-sciences-live',
+        'tau-nursing-live',
+        'tau-psychology-live',
+        'tau-social-work-live',
+        'tau-social-work-legacy-live',
+        'tau-psychology-legacy-live',
+        'tau-digital-sciences-legacy-live',
+        'tau-law-live',
+        'tau-law-legacy-live',
+        'tau-accounting-live',
+        'tau-accounting-legacy-live',
+        'tau-architecture-live',
+        'tau-biology-live',
+        'tau-communication-live',
+        'tau-political-science-live',
+        'tau-education-live',
+        'tau-economics-live',
+        'tau-economics-legacy-live',
+        'tau-cs-live',
+        'tau-cs-legacy-live',
+        'tau-ee-live',
+        'tau-ee-legacy-live',
+        'tau-me-live',
+        'tau-me-legacy-live',
+        'tau-occupational-live',
+        'tau-occupational-legacy-live',
+        'tau-industrial-live',
+        'tau-biology-legacy-live',
+      ],
+    });
 
     expect(report.summary).toMatchObject({
       total: 29,
@@ -1049,12 +1143,13 @@ describe('runAdmissionsLiveProof', () => {
     });
 
     expect(report.summary).toMatchObject({
-      total: 40,
-      exactReproduced: 29,
+      total: 68,
+      exactReproduced: 57,
       partial: 8,
       blocked: 2,
     });
     expect(report.results.map((result) => result.proof.institutionId)).toEqual([
+      ...Array(28).fill('huji'),
       'haifa',
       'tau',
       'tau',

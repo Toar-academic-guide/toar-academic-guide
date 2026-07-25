@@ -12,6 +12,7 @@ import {
 } from './admissionsSourceRegistry';
 import { runHaifaAdmissionsProof } from './adapters/haifaAdmissions';
 import { runTauAdmissionsProof } from './adapters/tauAdmissions';
+import { runHujiAdmissionsProof } from './adapters/hujiAdmissions';
 
 export interface AdmissionsLiveProofOptions {
   applicant?: AdmissionsApplicantInput;
@@ -78,6 +79,14 @@ async function runTarget(
 
   if (target.adapterId === 'tau') {
     return runTauAdmissionsProof({
+      applicant: options.applicant ?? target.defaultApplicant ?? DEFAULT_APPLICANT,
+      fetcher: options.fetcher,
+      program: target.defaultProgram,
+    });
+  }
+
+  if (target.adapterId === 'huji') {
+    return runHujiAdmissionsProof({
       applicant: options.applicant ?? target.defaultApplicant ?? DEFAULT_APPLICANT,
       fetcher: options.fetcher,
       program: target.defaultProgram,
