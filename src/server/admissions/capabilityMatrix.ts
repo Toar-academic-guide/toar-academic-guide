@@ -151,6 +151,22 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
     },
     requiredInputs: ['psychometric_english'],
   },
+  datascience__tau: {
+    targetId: 'tau-digital-sciences-legacy-live',
+    sourceTarget: admissionsSourceTargets.find(
+      (entry) => entry.id === 'tau-digital-sciences-legacy-live',
+    )!,
+    program: {
+      targetId: 'tau-digital-sciences-legacy-live',
+      pairId: 'datascience__tau',
+      id: 'tau-digital-sciences',
+      name: 'Digital Sciences for High-Tech',
+      nodeId: 8286,
+      externalId: '056011050000',
+      scoreField: 'hatama_handasa',
+    },
+    requiredInputs: ['psychometric_english', 'bagrut_subject_record'],
+  },
 };
 
 const SOURCE_TARGETS_BY_INSTITUTION = new Map<string, AdmissionsSourceTarget>(

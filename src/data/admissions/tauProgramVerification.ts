@@ -508,6 +508,25 @@ export const TAU_LEGACY_PSYCHOLOGY_CONTRACT: AdmissionsProgramVerificationContra
   fixtureSetFingerprint: 'sha256:fd2fe2e1356c75bc6487b46d7d4a2b6ea69d159dc8de95705049351655dde708',
 };
 
+export const TAU_GENERIC_DATASCIENCE_FIXTURES: AdmissionsVerificationFixture[] =
+  TAU_DIGITAL_SCIENCES_FIXTURES.map((fixture) => ({
+    ...fixture,
+    id: fixture.id.replace('tau_datascience__tau', 'datascience__tau'),
+    pairId: 'datascience__tau',
+  }));
+
+export const TAU_GENERIC_DATASCIENCE_CONTRACT: AdmissionsProgramVerificationContract = {
+  ...TAU_DIGITAL_SCIENCES_CONTRACT,
+  pairId: 'datascience__tau',
+  programId: 'datascience',
+  source: {
+    ...TAU_DIGITAL_SCIENCES_CONTRACT.source,
+    targetId: 'tau-digital-sciences-legacy-live',
+  },
+  fixtureIds: TAU_GENERIC_DATASCIENCE_FIXTURES.map((fixture) => fixture.id),
+  fixtureSetFingerprint: 'sha256:ddf53eeab6f0dcdd073a3fe12db6a6fb370421594b38391149741aa9097274fd',
+};
+
 export interface ProgramVerificationArtifact {
   contract: AdmissionsProgramVerificationContract;
   fixtures: AdmissionsVerificationFixture[];
@@ -560,6 +579,13 @@ export const TAU_PROGRAM_VERIFICATION_METADATA: Record<string, TauProgramVerific
     requirementsUrl: TAU_PSYCHOLOGY_REQUIREMENTS_URL,
     ledgerReason:
       'Verified against the current TAU Psychology programme node as the legacy catalogue alias, replacing its stale local threshold.',
+  },
+  [TAU_GENERIC_DATASCIENCE_CONTRACT.pairId]: {
+    contract: TAU_GENERIC_DATASCIENCE_CONTRACT,
+    fixtures: TAU_GENERIC_DATASCIENCE_FIXTURES,
+    requirementsUrl: TAU_DIGITAL_SCIENCES_REQUIREMENTS_URL,
+    ledgerReason:
+      'Verified against the current TAU Digital Sciences programme node as the generic data-science catalogue alias, replacing its stale local threshold.',
   },
 };
 

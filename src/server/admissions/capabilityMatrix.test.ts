@@ -284,6 +284,35 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
   });
 
+  it('replaces the generic TAU data-science threshold with the reviewed Digital Sciences target', () => {
+    const [entry] = buildAdmissionsCapabilityMatrix({
+      program: makeProgram({
+        id: 'datascience',
+        linkedInstitutionIds: ['tau'],
+      }),
+      institutions: INSTITUTIONS,
+      input: {
+        psychometricEnglish: 110,
+        bagrutSubjectRecord: {
+          schemaVersion: 1,
+          sector: 'jewish',
+          subjects: [
+            { subjectId: 'mathematics', units: 5, grade: 80 },
+            { subjectId: 'physics', units: 5, grade: 70 },
+          ],
+        },
+      },
+      now: new Date('2026-07-26T08:00:00Z'),
+    });
+
+    expect(entry).toMatchObject({
+      institutionId: 'tau',
+      capability: 'exact',
+      pairVerification: { pairId: 'datascience__tau', state: 'exact' },
+      exactTarget: { targetId: 'tau-digital-sciences-legacy-live' },
+    });
+  });
+
   it('activates the reviewed TAU Social Work score route with its pair-specific target', () => {
     const [entry] = buildAdmissionsCapabilityMatrix({
       program: makeProgram({
