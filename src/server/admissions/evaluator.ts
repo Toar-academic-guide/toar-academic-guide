@@ -338,6 +338,43 @@ function evaluateNonExactResult(args: {
     return trackedMissingRuleResult(institution, entry);
   }
 
+  if (entry.capability === 'authority_unavailable') {
+    return {
+      institution: publicInstitutionShape(institution),
+      linkedInstitutionId: institution.id,
+      capability: 'authority_unavailable',
+      kind: 'authority_unavailable',
+      decision: 'unknown',
+      confidence: 'low',
+      sourceLabel: 'האימות הרשמי טרם הושלם',
+      explanation:
+        entry.pairVerification?.reason ??
+        'עדיין אין למסלול זה שתי דוגמאות גבול והשוואה חיה של הציון והחלטת הקבלה מול המקור הרשמי.',
+      nextAction: entry.pairVerification?.sourceUrl
+        ? 'בדקו בינתיים ישירות במחשבון הרשמי של המוסד.'
+        : 'בדקו בינתיים ישירות באתר המוסד.',
+      officialUrls: entry.pairVerification?.sourceUrl
+        ? [entry.pairVerification.sourceUrl]
+        : undefined,
+      degradationReason: 'pair_verification_incomplete',
+    };
+  }
+
+  if (entry.formulaPairScope === 'excluded') {
+    return {
+      institution: publicInstitutionShape(institution),
+      linkedInstitutionId: institution.id,
+      capability: 'unsupported',
+      kind: 'unsupported',
+      decision: 'unknown',
+      confidence: 'low',
+      sourceLabel: 'מחוץ להיקף האימות',
+      explanation:
+        'מסלולי אריאל ובר־אילן מוחרגים במפורש מפרויקט אימות המחשבונים הנוכחי, ולכן לא נציג עבורם תוצאת קבלה משוערת.',
+      nextAction: 'בדקו את תנאי הקבלה והמחשבון ישירות באתר המוסד.',
+    };
+  }
+
   if (entry.capability === 'blocked') {
     return {
       institution: publicInstitutionShape(institution),

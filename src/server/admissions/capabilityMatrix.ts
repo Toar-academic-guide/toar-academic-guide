@@ -9,6 +9,11 @@ import {
   getMondayAdmissionEvidenceByCatalogueInstitutionId,
   type MondayAdmissionEvidenceRecord,
 } from '@/data/admissions/mondayEvidence';
+import {
+  formulaBackedPairScope,
+  getFormulaPairVerificationEntry,
+  type FormulaPairVerificationLedgerEntry,
+} from '@/data/admissions/formulaBackedVerificationLedger';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type {
   AdmissionsExtraInputs,
@@ -34,6 +39,8 @@ export interface ExactCapabilityTarget {
 export interface AdmissionsCapabilityEntry {
   institutionId: string;
   capability: AdmissionsEvaluationCapability;
+  formulaPairScope?: 'in_scope' | 'excluded';
+  pairVerification?: FormulaPairVerificationLedgerEntry;
   sourceTarget?: AdmissionsSourceTarget;
   exactTarget?: ExactCapabilityTarget;
   requiredInputs?: AdmissionsRequiredInput[];
@@ -110,7 +117,10 @@ export function buildAdmissionsCapabilityMatrix(args: {
   } = args;
 
   return program.linkedInstitutionIds.map((institutionId) => {
-    const exactTarget = EXACT_PROGRAM_TARGETS[`${program.id}__${institutionId}`];
+    const pairId = `${program.id}__${institutionId}`;
+    const formulaPairScope = formulaBackedPairScope(pairId);
+    const pairVerification = getFormulaPairVerificationEntry(pairId);
+    const exactTarget = EXACT_PROGRAM_TARGETS[pairId];
     const sourceTarget =
       exactTarget?.sourceTarget ?? SOURCE_TARGETS_BY_INSTITUTION.get(institutionId);
     const evidence = selectBestEvidence(institutionId);
@@ -126,6 +136,34 @@ export function buildAdmissionsCapabilityMatrix(args: {
       hasCalculatorConfig &&
       hasThreshold &&
       evidence?.capabilityCandidate === 'score_only_or_formula_without_verified_cutoff';
+
+    if (formulaPairScope === 'excluded') {
+      return {
+        institutionId,
+        capability: 'unsupported',
+        formulaPairScope,
+        sourceTarget,
+        evidence,
+        freshnessState,
+      };
+    }
+
+    if (formulaPairScope === 'in_scope' && pairVerification?.state !== 'exact') {
+      return {
+        institutionId,
+        capability:
+          pairVerification?.state === 'blocked'
+            ? 'blocked'
+            : pairVerification?.state === 'stale'
+              ? 'stale'
+              : 'authority_unavailable',
+        formulaPairScope,
+        pairVerification,
+        sourceTarget,
+        evidence,
+        freshnessState,
+      };
+    }
 
     if (exactTarget) {
       if (freshnessState?.status === 'blocked') {

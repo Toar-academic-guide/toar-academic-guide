@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
+import type { AdmissionsEvaluationReport } from '@/types/admissionsEvaluation';
 import { evaluateAdmissionsForProgram } from './evaluator';
 
 vi.mock('server-only', () => ({}));
@@ -14,6 +15,21 @@ vi.mock('@/db/client', () => ({
     }),
   })),
 }));
+
+function expectFormulaVerificationUnavailable(
+  report: AdmissionsEvaluationReport,
+  institutionId: string,
+): void {
+  expect(report.results).toContainEqual(
+    expect.objectContaining({
+      linkedInstitutionId: institutionId,
+      kind: 'authority_unavailable',
+      capability: 'authority_unavailable',
+      decision: 'unknown',
+      degradationReason: 'pair_verification_incomplete',
+    }),
+  );
+}
 
 const institutions: CatalogueInstitution[] = [
   {
@@ -321,7 +337,7 @@ describe('evaluateAdmissionsForProgram', () => {
     expect(haifaCs).toEqual(originalHaifaProgram);
   });
 
-  it('returns needs-input for the Haifa exact path when subscores are missing', async () => {
+  it('withholds the Haifa path before requesting inputs when pair proof is incomplete', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'haifa_cs',
@@ -332,17 +348,10 @@ describe('evaluateAdmissionsForProgram', () => {
       institutions,
     });
 
-    expect(report.results).toContainEqual(
-      expect.objectContaining({
-        linkedInstitutionId: 'haifa',
-        kind: 'needs_input',
-        capability: 'needs_input',
-        requiredInputs: ['psychometric_math', 'psychometric_verbal', 'psychometric_english'],
-      }),
-    );
+    expectFormulaVerificationUnavailable(report, 'haifa');
   });
 
-  it('returns a decisive Technion result when the official program threshold is verified', async () => {
+  it('withholds a Technion threshold without pair-level score and verdict proof', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'technion_cs',
@@ -353,20 +362,10 @@ describe('evaluateAdmissionsForProgram', () => {
       institutions,
     });
 
-    expect(report.results).toContainEqual(
-      expect.objectContaining({
-        linkedInstitutionId: 'technion',
-        kind: 'estimated',
-        capability: 'estimated',
-        decision: 'accepted',
-        confidence: 'high',
-        score: 96.5,
-        threshold: 91,
-      }),
-    );
+    expectFormulaVerificationUnavailable(report, 'technion');
   });
 
-  it('treats the current Technion data-and-information-engineering mapping as estimated once the official catalogue and admissions table align', async () => {
+  it('withholds Technion data science until its calculator replay is proven', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'technion_datascience',
@@ -377,18 +376,10 @@ describe('evaluateAdmissionsForProgram', () => {
       institutions,
     });
 
-    expect(report.results).toContainEqual(
-      expect.objectContaining({
-        linkedInstitutionId: 'technion',
-        kind: 'estimated',
-        capability: 'estimated',
-        decision: 'accepted',
-        threshold: 91,
-      }),
-    );
+    expectFormulaVerificationUnavailable(report, 'technion');
   });
 
-  it('treats Technion medicine as a manual-gate flow once the MoR invitation threshold is verified', async () => {
+  it('withholds Technion medicine until the complete invitation flow is proven', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'technion_medicine',
@@ -399,20 +390,10 @@ describe('evaluateAdmissionsForProgram', () => {
       institutions,
     });
 
-    expect(report.results).toContainEqual(
-      expect.objectContaining({
-        linkedInstitutionId: 'technion',
-        kind: 'manual_gate',
-        capability: 'manual_gate',
-        decision: 'eligible_to_apply',
-        score: 96.5,
-        threshold: 92,
-        sourceLabel: 'נדרש מיון נוסף',
-      }),
-    );
+    expectFormulaVerificationUnavailable(report, 'technion');
   });
 
-  it('blocks Technion medicine below the official MoR invitation threshold', async () => {
+  it('does not issue a below verdict for an unproved Technion medicine pair', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'technion_medicine',
@@ -423,20 +404,10 @@ describe('evaluateAdmissionsForProgram', () => {
       institutions,
     });
 
-    expect(report.results).toContainEqual(
-      expect.objectContaining({
-        linkedInstitutionId: 'technion',
-        kind: 'manual_gate',
-        capability: 'manual_gate',
-        decision: 'below',
-        score: 84.5,
-        threshold: 92,
-        sourceLabel: 'סף זימון נדרש',
-      }),
-    );
+    expectFormulaVerificationUnavailable(report, 'technion');
   });
 
-  it('turns BGU computer science into an accepted estimate once the official threshold is verified', async () => {
+  it('does not turn a BGU threshold into an accepted estimate', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'bgu_cs',
@@ -447,19 +418,10 @@ describe('evaluateAdmissionsForProgram', () => {
       institutions,
     });
 
-    expect(report.results).toContainEqual(
-      expect.objectContaining({
-        linkedInstitutionId: 'bgu',
-        kind: 'estimated',
-        capability: 'estimated',
-        decision: 'accepted',
-        threshold: 720,
-        sourceLabel: 'כלל קבלה ממופה',
-      }),
-    );
+    expectFormulaVerificationUnavailable(report, 'bgu');
   });
 
-  it('keeps BGU engineering below when the official psychometric floor is not met even if the sekhem is high enough', async () => {
+  it('does not issue a BGU engineering verdict before its pair contract is proven', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'bgu_ee',
@@ -470,21 +432,10 @@ describe('evaluateAdmissionsForProgram', () => {
       institutions,
     });
 
-    expect(report.results).toContainEqual(
-      expect.objectContaining({
-        linkedInstitutionId: 'bgu',
-        kind: 'estimated',
-        capability: 'estimated',
-        decision: 'below',
-        score: 706,
-        threshold: 547,
-        sourceLabel: 'כלל קבלה ממופה',
-        explanation: expect.stringContaining('פסיכומטרי לפחות 600'),
-      }),
-    );
+    expectFormulaVerificationUnavailable(report, 'bgu');
   });
 
-  it('keeps BGU biology below when the official bagrut floor is not met even if the weighted score clears the threshold', async () => {
+  it('does not issue a BGU biology verdict before its pair contract is proven', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'bgu_biology',
@@ -495,21 +446,10 @@ describe('evaluateAdmissionsForProgram', () => {
       institutions,
     });
 
-    expect(report.results).toContainEqual(
-      expect.objectContaining({
-        linkedInstitutionId: 'bgu',
-        kind: 'estimated',
-        capability: 'estimated',
-        decision: 'below',
-        score: 682,
-        threshold: 585,
-        sourceLabel: 'כלל קבלה ממופה',
-        explanation: expect.stringContaining('ממוצע בגרות לפחות 106'),
-      }),
-    );
+    expectFormulaVerificationUnavailable(report, 'bgu');
   });
 
-  it('treats BGU nursing as a psychometric invitation manual-gate flow instead of a sekhem decision', async () => {
+  it('withholds BGU nursing until its invitation fixtures are proven', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'bgu_nursing',
@@ -520,21 +460,10 @@ describe('evaluateAdmissionsForProgram', () => {
       institutions,
     });
 
-    expect(report.results).toContainEqual(
-      expect.objectContaining({
-        linkedInstitutionId: 'bgu',
-        kind: 'manual_gate',
-        capability: 'manual_gate',
-        decision: 'eligible_to_apply',
-        score: 530,
-        scoreLabel: 'פסיכומטרי',
-        threshold: 520,
-        sourceLabel: 'נדרש מיון נוסף',
-      }),
-    );
+    expectFormulaVerificationUnavailable(report, 'bgu');
   });
 
-  it('returns an Ariel mapped estimate when the calculator formula exists but the official source is still browser-blocked', async () => {
+  it('does not estimate an explicitly excluded Ariel formula pair', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'ariel_cs',
@@ -548,27 +477,15 @@ describe('evaluateAdmissionsForProgram', () => {
     expect(report.results).toContainEqual(
       expect.objectContaining({
         linkedInstitutionId: 'ariel',
-        capability: 'score_only',
-        kind: 'estimated',
-        decision: 'accepted',
-        confidence: 'medium',
-        sourceLabel: 'כלל קבלה ממופה, מקור רשמי חסום',
-        threshold: 600,
-        score: 707,
-        evidenceItemId: '12220680983',
-        evidenceItemName: '8. אוניברסיטת אריאל בשומרון',
-        officialUrls: expect.arrayContaining([
-          'https://pniot.ariel.ac.il/projects/tzmm/NewCalcMark/',
-        ]),
+        capability: 'unsupported',
+        kind: 'unsupported',
+        decision: 'unknown',
+        sourceLabel: 'מחוץ להיקף האימות',
       }),
     );
-
-    const arielResult = report.results.find((result) => result.linkedInstitutionId === 'ariel');
-    expect(arielResult?.explanation).toContain('המקור הרשמי חסום כרגע');
-    expect(arielResult?.nextAction).toContain('Move Ariel to a browser-automation lane');
   });
 
-  it('blocks BGU nursing below the official psychometric invitation threshold', async () => {
+  it('does not issue a below verdict for unproved BGU nursing', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'bgu_nursing',
@@ -579,25 +496,10 @@ describe('evaluateAdmissionsForProgram', () => {
       institutions,
     });
 
-    expect(report.results).toContainEqual(
-      expect.objectContaining({
-        linkedInstitutionId: 'bgu',
-        kind: 'manual_gate',
-        capability: 'manual_gate',
-        decision: 'below',
-        score: 510,
-        scoreLabel: 'פסיכומטרי',
-        threshold: 520,
-        sourceLabel: 'סף זימון נדרש',
-        deltaNeeded: {
-          psychometric: 10,
-          bagrut: 0,
-        },
-      }),
-    );
+    expectFormulaVerificationUnavailable(report, 'bgu');
   });
 
-  it('treats BGU medicine as a sekhem-based manual-gate flow once the official invitation threshold is verified', async () => {
+  it('does not promote unproved BGU medicine to an invitation result', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'bgu_medicine',
@@ -608,20 +510,10 @@ describe('evaluateAdmissionsForProgram', () => {
       institutions,
     });
 
-    expect(report.results).toContainEqual(
-      expect.objectContaining({
-        linkedInstitutionId: 'bgu',
-        kind: 'manual_gate',
-        capability: 'manual_gate',
-        decision: 'eligible_to_apply',
-        threshold: 735,
-        scoreLabel: 'סכם',
-        sourceLabel: 'נדרש מיון נוסף',
-      }),
-    );
+    expectFormulaVerificationUnavailable(report, 'bgu');
   });
 
-  it('blocks BGU medicine below the official invitation sekhem threshold', async () => {
+  it('does not issue a below verdict for unproved BGU medicine', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'bgu_medicine',
@@ -632,21 +524,7 @@ describe('evaluateAdmissionsForProgram', () => {
       institutions,
     });
 
-    expect(report.results).toContainEqual(
-      expect.objectContaining({
-        linkedInstitutionId: 'bgu',
-        kind: 'manual_gate',
-        capability: 'manual_gate',
-        decision: 'below',
-        threshold: 735,
-        scoreLabel: 'סכם',
-        sourceLabel: 'סף זימון נדרש',
-        deltaNeeded: expect.objectContaining({
-          psychometric: expect.any(Number),
-          bagrut: expect.any(Number),
-        }),
-      }),
-    );
+    expectFormulaVerificationUnavailable(report, 'bgu');
   });
 
   it('promotes Reichman to eligible_to_apply once the official bagrut-average rule is verified', async () => {
@@ -698,7 +576,7 @@ describe('evaluateAdmissionsForProgram', () => {
     );
   });
 
-  it('surfaces Colman as eligible_to_apply with official programme-level requirements after verification', async () => {
+  it('withholds Colman until its automatic-admission paths have pair proof', async () => {
     const colmanCs: CatalogueProgram = {
       id: 'colmgmt_cs',
       name: 'מדעי המחשב',
@@ -733,17 +611,7 @@ describe('evaluateAdmissionsForProgram', () => {
       institutions: [...institutions, colmanInstitution],
     });
 
-    expect(report.results).toContainEqual(
-      expect.objectContaining({
-        linkedInstitutionId: 'colman',
-        kind: 'manual_gate',
-        capability: 'manual_gate',
-        decision: 'eligible_to_apply',
-        confidence: 'high',
-        nextAction: expect.stringContaining('מרכז הרישום'),
-        explanation: expect.stringContaining('מסלול קבלה אוטומטי'),
-      }),
-    );
+    expectFormulaVerificationUnavailable(report, 'colman');
   });
 
   it('surfaces Ono law as eligible_to_apply with current official requirements after verification', async () => {
@@ -863,7 +731,7 @@ describe('evaluateAdmissionsForProgram', () => {
     );
   });
 
-  it('normalizes a successful exact TAU response into a high-confidence result', async () => {
+  it('does not call the TAU adapter while pair proof remains withheld', async () => {
     const fetcher = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(
@@ -911,17 +779,8 @@ describe('evaluateAdmissionsForProgram', () => {
       fetcher,
     });
 
-    expect(report.results).toContainEqual(
-      expect.objectContaining({
-        linkedInstitutionId: 'tau',
-        kind: 'exact',
-        capability: 'exact',
-        decision: 'accepted',
-        confidence: 'high',
-        score: 712,
-        threshold: 700,
-      }),
-    );
+    expect(fetcher).not.toHaveBeenCalled();
+    expectFormulaVerificationUnavailable(report, 'tau');
   });
 
   it('correctly returns open_admission for Open University and other open institutions', async () => {
@@ -1026,7 +885,7 @@ describe('evaluateAdmissionsForProgram', () => {
     );
   });
 
-  it('ensures TAU exact proofs still run and are not starved when multiple score_only institutions are evaluated', async () => {
+  it('does not spend live-call budget on a withheld TAU pair', async () => {
     const fetcher = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(
@@ -1077,14 +936,8 @@ describe('evaluateAdmissionsForProgram', () => {
       fetcher,
     });
 
-    expect(fetcher).toHaveBeenCalled();
-    expect(report.results).toContainEqual(
-      expect.objectContaining({
-        linkedInstitutionId: 'tau',
-        kind: 'exact',
-        capability: 'exact',
-      }),
-    );
+    expect(fetcher).not.toHaveBeenCalled();
+    expectFormulaVerificationUnavailable(report, 'tau');
   });
 
   it('includes dynamic admissions criteria (interview, portfolio, no bagrut, no psychometric) from Monday evidence in evaluator Hebrew explanation', async () => {

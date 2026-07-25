@@ -23,6 +23,9 @@ const requiredInputSchema = z.enum([
   'physics_grade',
   'cs_units',
   'cs_grade',
+  'bagrut_subject_record',
+  'bagrut_profile_version',
+  'bagrut_sector',
 ]);
 const verificationVerdictSchema = z.enum(['accepted', 'below']);
 const fixtureInputValueSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);

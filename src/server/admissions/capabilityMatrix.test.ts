@@ -135,7 +135,26 @@ function makeProgram(overrides: Partial<CatalogueProgram> = {}): CatalogueProgra
 }
 
 describe('buildAdmissionsCapabilityMatrix', () => {
-  it('returns exact for a verified TAU exact target with fresh source and no required inputs', () => {
+  it('withholds formula-backed pairs that do not have pair-level fixtures and live proof', () => {
+    const [entry] = buildAdmissionsCapabilityMatrix({
+      program: makeProgram({
+        id: 'tau_datascience',
+        linkedInstitutionIds: ['tau'],
+      }),
+      institutions: INSTITUTIONS,
+    });
+
+    expect(entry).toMatchObject({
+      institutionId: 'tau',
+      capability: 'authority_unavailable',
+      pairVerification: {
+        pairId: 'tau_datascience__tau',
+        state: 'withheld',
+      },
+    });
+  });
+
+  it('does not treat the legacy TAU pilot target as exact without pair fixtures', () => {
     const program = makeProgram({
       id: 'tau_datascience',
       linkedInstitutionIds: ['tau'],
@@ -147,10 +166,10 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
 
     const tauEntry = entries.find((e) => e.institutionId === 'tau');
-    expect(tauEntry?.capability).toBe('exact');
+    expect(tauEntry?.capability).toBe('authority_unavailable');
   });
 
-  it('returns needs_input for the Haifa exact target when psychometric subscores are missing', () => {
+  it('checks Haifa pair proof before asking for calculator inputs', () => {
     const program = makeProgram({
       id: 'haifa_cs',
       linkedInstitutionIds: ['haifa'],
@@ -162,15 +181,11 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
 
     const haifaEntry = entries.find((e) => e.institutionId === 'haifa');
-    expect(haifaEntry?.capability).toBe('needs_input');
-    expect(haifaEntry?.requiredInputs).toEqual([
-      'psychometric_math',
-      'psychometric_verbal',
-      'psychometric_english',
-    ]);
+    expect(haifaEntry?.capability).toBe('authority_unavailable');
+    expect(haifaEntry?.requiredInputs).toBeUndefined();
   });
 
-  it('returns exact for the Haifa exact target when the supplied profile includes every subscore', () => {
+  it('does not promote Haifa from supplied inputs alone', () => {
     const program = makeProgram({
       id: 'haifa_cs',
       linkedInstitutionIds: ['haifa'],
@@ -187,7 +202,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
 
     const haifaEntry = entries.find((entry) => entry.institutionId === 'haifa');
-    expect(haifaEntry?.capability).toBe('exact');
+    expect(haifaEntry?.capability).toBe('authority_unavailable');
     expect(haifaEntry?.requiredInputs).toBeUndefined();
   });
 
@@ -249,7 +264,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     expect(arielEntry?.capability).toBe('tracked_missing_rule');
   });
 
-  it('treats Ariel as score_only when a mapped threshold exists but the official source is still blocked', () => {
+  it('marks an explicitly excluded Ariel formula pair as unsupported', () => {
     const program = makeProgram({
       id: 'ariel_cs',
       linkedInstitutionIds: ['ariel'],
@@ -262,7 +277,8 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
 
     const arielEntry = entries.find((e) => e.institutionId === 'ariel');
-    expect(arielEntry?.capability).toBe('score_only');
+    expect(arielEntry?.capability).toBe('unsupported');
+    expect(arielEntry?.formulaPairScope).toBe('excluded');
     expect(arielEntry?.evidence?.capabilityCandidate).toBe(
       'score_only_or_formula_without_verified_cutoff',
     );
@@ -285,13 +301,13 @@ describe('buildAdmissionsCapabilityMatrix', () => {
 
     const technionEntry = entries.find((e) => e.institutionId === 'technion');
     const bguEntry = entries.find((e) => e.institutionId === 'bgu');
-    expect(technionEntry?.capability).toBe('estimated');
+    expect(technionEntry?.capability).toBe('authority_unavailable');
     expect(technionEntry?.evidence?.missingData ?? []).toHaveLength(0);
     expect(bguEntry?.capability).toBe('score_only');
     expect(bguEntry?.evidence?.missingData ?? []).toHaveLength(0);
   });
 
-  it('promotes a BGU program only when its official threshold was verified', () => {
+  it('does not promote a BGU threshold without score-and-verdict proof', () => {
     const program = makeProgram({
       id: 'bgu_cs',
       linkedInstitutionIds: ['bgu'],
@@ -304,7 +320,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
 
     const bguEntry = entries.find((e) => e.institutionId === 'bgu');
-    expect(bguEntry?.capability).toBe('estimated');
+    expect(bguEntry?.capability).toBe('authority_unavailable');
     expect(bguEntry?.evidence?.verifiedProgramThresholds).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -315,7 +331,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     );
   });
 
-  it('promotes additional BGU programs when their official thresholds were verified', () => {
+  it('keeps additional BGU threshold-only pairs withheld', () => {
     const program = makeProgram({
       id: 'bgu_ee',
       linkedInstitutionIds: ['bgu'],
@@ -328,7 +344,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
 
     const bguEntry = entries.find((e) => e.institutionId === 'bgu');
-    expect(bguEntry?.capability).toBe('estimated');
+    expect(bguEntry?.capability).toBe('authority_unavailable');
     expect(bguEntry?.evidence?.verifiedProgramThresholds).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -339,7 +355,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     );
   });
 
-  it('promotes Technion medicine to manual_gate once the official MoR invitation threshold is verified', () => {
+  it('withholds Technion medicine until the pair contract proves its complete gate flow', () => {
     const program = makeProgram({
       id: 'technion_medicine',
       linkedInstitutionIds: ['technion'],
@@ -351,7 +367,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
 
     const technionEntry = entries.find((e) => e.institutionId === 'technion');
-    expect(technionEntry?.capability).toBe('manual_gate');
+    expect(technionEntry?.capability).toBe('authority_unavailable');
     expect(technionEntry?.evidence?.verifiedProgramThresholds).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -363,7 +379,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     );
   });
 
-  it('promotes BGU nursing to manual_gate once the official psychometric invitation rule is verified', () => {
+  it('withholds BGU nursing until its invitation flow has pair fixtures', () => {
     const program = makeProgram({
       id: 'bgu_nursing',
       linkedInstitutionIds: ['bgu'],
@@ -375,7 +391,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
 
     const bguEntry = entries.find((e) => e.institutionId === 'bgu');
-    expect(bguEntry?.capability).toBe('manual_gate');
+    expect(bguEntry?.capability).toBe('authority_unavailable');
     expect(bguEntry?.evidence?.verifiedProgramThresholds).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -388,7 +404,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     );
   });
 
-  it('promotes BGU medicine to manual_gate once the official invitation threshold is verified', () => {
+  it('withholds BGU medicine until the score and invitation verdict are replayed', () => {
     const program = makeProgram({
       id: 'bgu_medicine',
       linkedInstitutionIds: ['bgu'],
@@ -401,7 +417,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
 
     const bguEntry = entries.find((e) => e.institutionId === 'bgu');
-    expect(bguEntry?.capability).toBe('manual_gate');
+    expect(bguEntry?.capability).toBe('authority_unavailable');
     expect(bguEntry?.evidence?.officialUrls).toContain(
       'https://www.bgu.ac.il/welcome/ba/catalog/categories/medical-school/?tab=2944',
     );
@@ -417,7 +433,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     );
   });
 
-  it('promotes a Technion program only when its official threshold was verified', () => {
+  it('does not promote a Technion threshold without a verified score replay', () => {
     const program = makeProgram({
       id: 'technion_cs',
       linkedInstitutionIds: ['technion'],
@@ -430,7 +446,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
 
     const technionEntry = entries.find((e) => e.institutionId === 'technion');
-    expect(technionEntry?.capability).toBe('estimated');
+    expect(technionEntry?.capability).toBe('authority_unavailable');
     expect(technionEntry?.evidence?.verifiedProgramThresholds).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -441,7 +457,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     );
   });
 
-  it('falls back to score_only when a Technion catalogue threshold diverges from the verified source', () => {
+  it('keeps a drifted Technion catalogue threshold unavailable', () => {
     const program = makeProgram({
       id: 'technion_cs',
       linkedInstitutionIds: ['technion'],
@@ -454,7 +470,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
 
     const technionEntry = entries.find((e) => e.institutionId === 'technion');
-    expect(technionEntry?.capability).toBe('score_only');
+    expect(technionEntry?.capability).toBe('authority_unavailable');
   });
 
   it('returns estimated for Afeka and HIT with partial source targets and thresholds', () => {
@@ -616,7 +632,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     expect(entry?.capability).toBe('open_admission');
   });
 
-  it('degrades exact to blocked when freshness state is blocked', () => {
+  it('does not let blocked source freshness bypass a withheld pair gate', () => {
     const program = makeProgram({
       id: 'tau_datascience',
       linkedInstitutionIds: ['tau'],
@@ -634,10 +650,10 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
 
     const entry = entries.find((e) => e.institutionId === 'tau');
-    expect(entry?.capability).toBe('blocked');
+    expect(entry?.capability).toBe('authority_unavailable');
   });
 
-  it('degrades exact to stale when freshness state is failed', () => {
+  it('does not let failed source freshness bypass a withheld pair gate', () => {
     const program = makeProgram({
       id: 'tau_datascience',
       linkedInstitutionIds: ['tau'],
@@ -655,6 +671,6 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
 
     const entry = entries.find((e) => e.institutionId === 'tau');
-    expect(entry?.capability).toBe('stale');
+    expect(entry?.capability).toBe('authority_unavailable');
   });
 });
