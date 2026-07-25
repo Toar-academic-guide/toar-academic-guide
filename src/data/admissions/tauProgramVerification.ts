@@ -633,6 +633,23 @@ export const TAU_LAW_CONTRACT: AdmissionsProgramVerificationContract = {
   },
 };
 
+export const TAU_LEGACY_LAW_FIXTURES: AdmissionsVerificationFixture[] = TAU_LAW_FIXTURES.map(
+  (fixture) => ({
+    ...fixture,
+    id: fixture.id.replace('law__tau', 'tau_law__tau'),
+    pairId: 'tau_law__tau',
+  }),
+);
+
+export const TAU_LEGACY_LAW_CONTRACT: AdmissionsProgramVerificationContract = {
+  ...TAU_LAW_CONTRACT,
+  pairId: 'tau_law__tau',
+  programId: 'tau_law',
+  source: { ...TAU_LAW_CONTRACT.source, targetId: 'tau-law-legacy-live' },
+  fixtureIds: TAU_LEGACY_LAW_FIXTURES.map((fixture) => fixture.id),
+  fixtureSetFingerprint: 'sha256:274948e725079938d57785726f8fdc4a37d037f0dc303696e0aa3eff2b9e0b36',
+};
+
 export interface ProgramVerificationArtifact {
   contract: AdmissionsProgramVerificationContract;
   fixtures: AdmissionsVerificationFixture[];
@@ -699,6 +716,13 @@ export const TAU_PROGRAM_VERIFICATION_METADATA: Record<string, TauProgramVerific
     requirementsUrl: TAU_LAW_REQUIREMENTS_URL,
     ledgerReason:
       'Verified against the current TAU Law programme node, standard score route, English and psychometric gates, accepted/below fixtures, and live score-and-verdict replay.',
+  },
+  [TAU_LEGACY_LAW_CONTRACT.pairId]: {
+    contract: TAU_LEGACY_LAW_CONTRACT,
+    fixtures: TAU_LEGACY_LAW_FIXTURES,
+    requirementsUrl: TAU_LAW_REQUIREMENTS_URL,
+    ledgerReason:
+      'Verified the legacy TAU Law catalogue alias against the same current programme node, gates, fixtures, and live score-and-verdict replay.',
   },
 };
 

@@ -63,6 +63,7 @@ export async function evaluateAdmissionsForProgram(args: {
       if (key === 'nursing__tau') return ['tau-nursing-live'];
       if (key === 'tau_psychology__tau') return ['tau-psychology-live'];
       if (key === 'law__tau') return ['tau-law-live'];
+      if (key === 'tau_law__tau') return ['tau-law-legacy-live'];
       return [];
     });
 
@@ -317,7 +318,7 @@ async function evaluateExactResult(args: {
       });
     }
 
-    if (exactTarget.targetId === 'tau-law-live') {
+    if (exactTarget.targetId === 'tau-law-live' || exactTarget.targetId === 'tau-law-legacy-live') {
       const gateResult = evaluateTauLawGates(input);
       if (gateResult.state === 'needs_input') {
         return requiredInputsResult(institution, gateResult.requiredInputs);

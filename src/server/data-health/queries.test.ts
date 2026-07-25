@@ -333,8 +333,8 @@ describe('summarizeDataHealthRows', () => {
     expect(report.readiness.issues).toEqual([]);
     expect(report.formulaVerification).toMatchObject({
       total: 135,
-      exact: 8,
-      withheld: 127,
+      exact: 9,
+      withheld: 126,
       isComplete: false,
     });
   });
@@ -532,8 +532,12 @@ describe('summarizeDataHealthRows', () => {
         expect.objectContaining({
           programId: 'tau_law',
           institutionId: 'tau',
-          evidenceMode: 'authority_unavailable',
-          severity: 'attention',
+          evidenceMode: 'needs_input',
+          severity: 'normal',
+          sourceTargetId: 'tau-law-legacy-live',
+          externalProgramId: '141111010000',
+          freshnessStatus: null,
+          requiredInputs: ['psychometric_english'],
         }),
       ]),
     );

@@ -18,6 +18,7 @@ describe('admissionsSourceRegistry', () => {
       'tau-psychology-legacy-live',
       'tau-digital-sciences-legacy-live',
       'tau-law-live',
+      'tau-law-legacy-live',
     ]);
   });
 
