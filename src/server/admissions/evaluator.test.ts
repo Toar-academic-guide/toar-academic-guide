@@ -429,7 +429,7 @@ describe('evaluateAdmissionsForProgram', () => {
     expect(haifaCs).toEqual(originalHaifaProgram);
   });
 
-  it('withholds the Haifa path before requesting inputs when pair proof is incomplete', async () => {
+  it('requests Haifa psychometric subscores after pair proof is verified', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'haifa_cs',
@@ -440,7 +440,15 @@ describe('evaluateAdmissionsForProgram', () => {
       institutions,
     });
 
-    expectFormulaVerificationUnavailable(report, 'haifa');
+    expect(report.results).toContainEqual(
+      expect.objectContaining({
+        linkedInstitutionId: 'haifa',
+        kind: 'needs_input',
+        capability: 'needs_input',
+        decision: 'unknown',
+        requiredInputs: ['psychometric_math', 'psychometric_verbal', 'psychometric_english'],
+      }),
+    );
   });
 
   it('returns an exact Technion threshold after pair-level score and verdict proof', async () => {

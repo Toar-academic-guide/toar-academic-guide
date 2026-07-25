@@ -4,6 +4,7 @@ import { runAdmissionsLiveProof } from './admissionsLiveProofRunner';
 import { HUJI_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/hujiProgramVerification';
 import { BGU_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/bguProgramVerification';
 import { TECHNION_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/technionProgramVerification';
+import { HAIFA_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/haifaProgramVerification';
 
 function jsonResponse(body: unknown) {
   return new Response(JSON.stringify(body), {
@@ -70,25 +71,19 @@ function exactAdapterFetcher() {
       }),
     );
   }
+  for (const artifact of Object.values(HAIFA_PROGRAM_VERIFICATION_ARTIFACTS)) {
+    fetcher.mockResolvedValueOnce(jsonResponse({ data: { guid: 'haifa-guid' } }));
+    const acceptedFixture = artifact.fixtures.find((fixture) => fixture.verdict === 'accepted')!;
+    fetcher.mockResolvedValueOnce(jsonResponse({
+      data: [{ results: [{ content: [
+        { label: 'הציון המשוקלל שלך', value: String(acceptedFixture.expected.score) },
+        { label: 'חתך קבלה', value: String(artifact.contract.calculation.cutoff.acceptance) },
+        { label: 'חתך דחייה', value: String(artifact.contract.calculation.cutoff.rejection) },
+      ] }] }],
+    }));
+  }
 
   return fetcher
-    .mockResolvedValueOnce(jsonResponse({ data: { guid: 'guid-1' } }))
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: [
-          {
-            results: [
-              {
-                content: [
-                  { label: 'הציון המשוקלל', value: '706' },
-                  { label: 'סף קבלה', value: '705' },
-                ],
-              },
-            ],
-          },
-        ],
-      }),
-    )
     .mockResolvedValueOnce(
       jsonResponse({
         data: { getLastScore: { body: JSON.stringify({ hatama_handasa: 704 }) } },
@@ -573,8 +568,8 @@ describe('runAdmissionsLiveProof', () => {
     const report = await runAdmissionsLiveProof({ fetcher });
 
     expect(report.summary).toMatchObject({
-      total: 95,
-      exactReproduced: 95,
+      total: 126,
+      exactReproduced: 126,
       partial: 0,
       blocked: 0,
       failed: 0,
@@ -631,6 +626,11 @@ describe('runAdmissionsLiveProof', () => {
       'bgu-bgu_psychology-live',
       'bgu-social_work-live',
       'bgu-bgu_socialwork-live',
+      'bgu-communication-live',
+      'bgu-education-live',
+      'bgu-occupational_therapy-live',
+      'bgu-physiotherapy-live',
+      'bgu-political_science-live',
       'technion-cs-live',
       'technion-technion_cs-live',
       'technion-datascience-live',
@@ -644,7 +644,33 @@ describe('runAdmissionsLiveProof', () => {
       'technion-technion_biomedical-live',
       'technion-technion_civil-live',
       'technion-technion_industrial-live',
+      'haifa-accounting-live',
+      'haifa-haifa_accounting-live',
+      'haifa-biology-live',
+      'haifa-haifa_biology-live',
+      'haifa-communication-live',
+      'haifa-haifa_communication-live',
       'haifa-cs-live',
+      'haifa-haifa_cs-live',
+      'haifa-economics-live',
+      'haifa-haifa_economics-live',
+      'haifa-haifa_infosystems-live',
+      'haifa-law-live',
+      'haifa-haifa_law-live',
+      'haifa-haifa_math-live',
+      'haifa-nursing-live',
+      'haifa-haifa_nursing-live',
+      'haifa-occupational_therapy-live',
+      'haifa-physiotherapy-live',
+      'haifa-haifa_physiotherapy-live',
+      'haifa-political_science-live',
+      'haifa-haifa_politicalscience-live',
+      'haifa-psychology-live',
+      'haifa-haifa_psychology-live',
+      'haifa-social_work-live',
+      'haifa-haifa_socialwork-live',
+      'haifa-haifa_sociology-live',
+      'haifa-haifa_statistics-live',
       'tau-digital-sciences-live',
       'tau-nursing-live',
       'tau-psychology-live',
@@ -676,10 +702,10 @@ describe('runAdmissionsLiveProof', () => {
       'tau-industrial-live',
       'tau-biology-legacy-live',
     ]);
-    expect(JSON.parse(String(fetcher.mock.calls[91][1]?.body))).toMatchObject({
+    expect(JSON.parse(String(fetcher.mock.calls[153][1]?.body))).toMatchObject({
       variables: { scoresData: { bagrut: '100', psicho: '520' } },
     });
-    expect(JSON.parse(String(fetcher.mock.calls[93][1]?.body))).toMatchObject({
+    expect(JSON.parse(String(fetcher.mock.calls[155][1]?.body))).toMatchObject({
       variables: { scoresData: { bagrut: '110', psicho: '680' } },
     });
   });
@@ -1240,16 +1266,16 @@ describe('runAdmissionsLiveProof', () => {
     });
 
     expect(report.summary).toMatchObject({
-      total: 106,
-      exactReproduced: 95,
+      total: 137,
+      exactReproduced: 126,
       partial: 8,
       blocked: 2,
     });
     expect(report.results.map((result) => result.proof.institutionId)).toEqual([
       ...Array(28).fill('huji'),
-      ...Array(23).fill('bgu'),
+      ...Array(28).fill('bgu'),
       ...Array(13).fill('technion'),
-      'haifa',
+      ...Array(27).fill('haifa'),
       'tau',
       'tau',
       'tau',

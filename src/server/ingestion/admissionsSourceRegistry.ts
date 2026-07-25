@@ -14,6 +14,10 @@ import {
 } from '@/data/admissions/hujiProgramVerification';
 import { BGU_PROGRAM_VERIFICATION_METADATA } from '@/data/admissions/bguProgramVerification';
 import { TECHNION_PROGRAM_VERIFICATION_METADATA } from '@/data/admissions/technionProgramVerification';
+import {
+  getHaifaProgramConfig,
+  HAIFA_PROGRAM_VERIFICATION_METADATA,
+} from '@/data/admissions/haifaProgramVerification';
 
 export type AdmissionsSourceCategory =
   | 'blocked'
@@ -107,25 +111,35 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     limitations: ['Exact replay is scoped to the official Technion Sekhem calculator and current cutoff table.'],
     nextAction: 'Keep the calculator input mapping, cutoff table, fixtures, and source fingerprint under review.',
   } satisfies AdmissionsSourceTarget)),
-  {
-    id: 'haifa-cs-live',
+  ...Object.values(HAIFA_PROGRAM_VERIFICATION_METADATA).map((artifact) => ({
+    id: artifact.contract.source.targetId,
     institutionId: 'haifa',
     institutionName: 'University of Haifa',
     officialUrl: 'https://applicants.haifa.ac.il/enrollmentChances/index.html',
-    adapterId: 'haifa',
-    expectedCapability: 'decision_capable',
-    proofLevel: 'exact_official',
-    category: 'exact',
-    defaultProgram: {
-      targetId: 'haifa-cs-live',
-      id: 'haifa-cs',
-      name: 'Computer Science',
-      externalId: '52258372',
+    adapterId: 'haifa' as const,
+    expectedCapability: 'decision_capable' as const,
+    proofLevel: 'exact_official' as const,
+    category: 'exact' as const,
+    defaultApplicant: {
+      bagrutAverage: 120,
+      psychometric: 800,
+      psychometricSubscores: { math: 160, verbal: 160, english: 160 },
     },
-    reproducedFields: ['weightedScore', 'acceptanceCutoff', 'rejectionCutoff'],
-    limitations: ['Representative program only; broad Haifa program coverage is deferred'],
-    nextAction: 'Promote to first weekly GitHub Action adapter candidate',
-  },
+    defaultProgram: {
+      targetId: artifact.contract.source.targetId,
+      pairId: artifact.contract.pairId,
+      id: artifact.contract.programId === 'cs' ? 'haifa-cs' : artifact.contract.programId,
+      name: artifact.contract.programId === 'cs' ? 'Computer Science' : artifact.contract.programId,
+      externalId: artifact.contract.officialProgramId,
+      hug: getHaifaProgramConfig(artifact.contract.programId).hug,
+    },
+    reproducedFields:
+      artifact.contract.programId === 'cs'
+        ? ['weightedScore', 'acceptanceCutoff', 'rejectionCutoff']
+        : ['weightedScore', 'acceptanceCutoff', 'rejectionCutoff', 'officialVerdict'],
+    limitations: ['Exact replay is scoped to the explicitly matched Haifa programme ID, hug, and current cycle cutoffs.'],
+    nextAction: 'Keep the programme mapping, calculator score, cutoffs, fixtures, and source fingerprint under review.',
+  } satisfies AdmissionsSourceTarget)),
   {
     id: 'tau-digital-sciences-live',
     institutionId: 'tau',

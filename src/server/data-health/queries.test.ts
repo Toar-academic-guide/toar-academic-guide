@@ -333,8 +333,8 @@ describe('summarizeDataHealthRows', () => {
     expect(report.readiness.issues).toEqual([]);
     expect(report.formulaVerification).toMatchObject({
       total: 135,
-      exact: 94,
-      withheld: 41,
+      exact: 126,
+      withheld: 9,
       isComplete: false,
     });
   });
@@ -486,8 +486,8 @@ describe('summarizeDataHealthRows', () => {
             latestReviewItemId: null,
             nextAction: null,
           }),
-          freshnessState('haifa-cs-live', {
-            sourceId: 'haifa-cs-live',
+          freshnessState('haifa-haifa_cs-live', {
+            sourceId: 'haifa-haifa_cs-live',
             sourceClass: 'official_html',
             capability: 'decision_capable',
             status: 'fresh',
@@ -522,11 +522,11 @@ describe('summarizeDataHealthRows', () => {
           programId: 'haifa_cs',
           institutionId: 'haifa',
           institutionName: 'University of Haifa',
-          evidenceMode: 'authority_unavailable',
+          evidenceMode: 'stale',
           severity: 'attention',
-          sourceTargetId: 'haifa-cs-live',
+          sourceTargetId: 'haifa-haifa_cs-live',
           officialSourceUrl: 'https://applicants.haifa.ac.il/enrollmentChances/index.html',
-          externalProgramId: '52258372',
+          externalProgramId: '52256544',
           requiredInputs: [],
         }),
         expect.objectContaining({

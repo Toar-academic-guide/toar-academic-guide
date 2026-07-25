@@ -21,6 +21,10 @@ import {
   getTechnionProgramVerificationMetadata,
   type TechnionProgramVerificationMetadata,
 } from './technionProgramVerification';
+import {
+  getHaifaProgramVerificationMetadata,
+  type HaifaProgramVerificationMetadata,
+} from './haifaProgramVerification';
 
 export type FormulaPairLedgerState = 'exact' | 'withheld' | 'stale' | 'blocked';
 
@@ -260,6 +264,8 @@ export const FORMULA_BACKED_VERIFICATION_LEDGER: FormulaPairVerificationLedgerEn
               ? getBguProgramVerificationMetadata(pairId)
               : institutionId === 'technion'
                 ? getTechnionProgramVerificationMetadata(pairId)
+                : institutionId === 'haifa'
+                  ? getHaifaProgramVerificationMetadata(pairId)
                 : undefined;
 
       return verifiedProgram
@@ -293,7 +299,8 @@ function verifiedProgramEntry(
     | TauProgramVerificationMetadata
     | HujiProgramVerificationMetadata
     | BguProgramVerificationMetadata
-    | TechnionProgramVerificationMetadata,
+    | TechnionProgramVerificationMetadata
+    | HaifaProgramVerificationMetadata,
 ): FormulaPairVerificationLedgerEntry {
   const { contract, fixtures } = artifact;
   return {

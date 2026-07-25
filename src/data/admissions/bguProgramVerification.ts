@@ -36,6 +36,11 @@ const CONFIGS: BguConfig[] = [
   { programId: 'nursing', sourceUrl: baseUrl('p_dep1=472&p_pat1=1'), officialProgramId: 'dep472-pat1', acceptance: 520, rejection: 520, verdict: 'eligible_to_apply' },
   { programId: 'psychology', sourceUrl: baseUrl('p_dep1=101&p_pat1=2&p_degree_level=1'), officialProgramId: 'dep101-pat2', acceptance: 550, rejection: 550, verdict: 'accepted' },
   { programId: 'social_work', sourceUrl: baseUrl('p_dep1=144&p_pat1=1&p_spe1=12'), officialProgramId: 'dep144-pat1-spe12', acceptance: 580, rejection: 580, verdict: 'accepted' },
+  { programId: 'communication', sourceUrl: baseUrl('p_institution=0&p_dep1=183&p_pat1=2'), officialProgramId: 'dep183-pat2', acceptance: 520, rejection: 520, verdict: 'accepted' },
+  { programId: 'education', sourceUrl: baseUrl('p_institution=0&p_dep1=129&p_pat1=2'), officialProgramId: 'dep129-pat2', acceptance: 520, rejection: 520, verdict: 'accepted' },
+  { programId: 'occupational_therapy', sourceUrl: baseUrl('p_dep1=486&p_pat1=1'), officialProgramId: 'dep486-pat1', acceptance: 620, rejection: 620, verdict: 'eligible_to_apply' },
+  { programId: 'physiotherapy', sourceUrl: baseUrl('p_dep1=473&p_pat1=1'), officialProgramId: 'dep473-pat1', acceptance: 667, rejection: 667, verdict: 'eligible_to_apply' },
+  { programId: 'political_science', sourceUrl: baseUrl('p_dep1=138&p_pat1=2'), officialProgramId: 'dep138-pat2', acceptance: 500, rejection: 500, verdict: 'accepted' },
 ];
 
 const ALIASES = [
@@ -52,6 +57,11 @@ const ALIASES = [
   ['bgu_nursing'],
   ['psychology', 'bgu_psychology'],
   ['social_work', 'bgu_socialwork'],
+  ['communication'],
+  ['education'],
+  ['occupational_therapy'],
+  ['physiotherapy'],
+  ['political_science'],
 ] as const;
 
 function configFor(programId: string): BguConfig {

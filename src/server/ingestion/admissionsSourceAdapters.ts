@@ -38,6 +38,7 @@ export interface AdmissionsProgramInput {
   name: string;
   nodeId?: number;
   externalId?: string;
+  hug?: string;
   facultyCode?: string;
   searchText?: string;
   scoreField?: string;

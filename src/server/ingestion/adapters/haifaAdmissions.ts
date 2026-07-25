@@ -29,7 +29,7 @@ export async function runHaifaAdmissionsProof(
     metadata.push(readOfficialResponseMetadata(connectionUrl, connectionResponse));
     await readJson(connectionResponse);
 
-    const chancesUrl = `${HAIFA_SERVLET_URL}?${buildHaifaParams(context, program.externalId).toString()}`;
+    const chancesUrl = `${HAIFA_SERVLET_URL}?${buildHaifaParams(context, program.externalId, program.hug).toString()}`;
     const chancesResponse = await fetcher(chancesUrl, { headers: defaultHeaders() });
     metadata.push(readOfficialResponseMetadata(chancesUrl, chancesResponse));
     const chancesJson = await readJson(chancesResponse);
@@ -39,7 +39,7 @@ export async function runHaifaAdmissionsProof(
     const capability = hasDecision ? 'decision_capable' : 'score_only';
 
     return {
-      id: 'haifa-cs-live',
+      id: program.targetId ?? `haifa-${program.id}-live`,
       institutionId: 'haifa',
       institutionName: 'University of Haifa',
       officialUrl: HAIFA_INDEX_URL,
@@ -54,6 +54,12 @@ export async function runHaifaAdmissionsProof(
         programName: program.name,
         source: 'haifa_calculateChances',
         ...parsed,
+        officialVerdict:
+          parsed.weightedScore !== undefined && parsed.acceptanceCutoff !== undefined
+            ? parsed.weightedScore >= parsed.acceptanceCutoff
+              ? 'accepted'
+              : 'below'
+            : undefined,
       },
       limitations: hasDecision
         ? ['Representative Haifa program only; broad program coverage is deferred']
@@ -64,7 +70,7 @@ export async function runHaifaAdmissionsProof(
       rawResponseMetadata: metadata,
     };
   } catch (error) {
-    return failedHaifaProof(error, metadata);
+    return failedHaifaProof(error, metadata, program.targetId ?? `haifa-${program.id}-live`);
   }
 }
 
@@ -94,7 +100,11 @@ export function parseHaifaChancesResponse(value: unknown): Record<string, number
   return parsed;
 }
 
-function buildHaifaParams(context: AdmissionsAdapterContext, programId = '52258372') {
+function buildHaifaParams(
+  context: AdmissionsAdapterContext,
+  programId = '52258372',
+  hug = DEFAULT_HUG,
+) {
   const subscores =
     context.applicant.psychometricSubscores ?? defaultSubscores(context.applicant.psychometric);
 
@@ -102,7 +112,7 @@ function buildHaifaParams(context: AdmissionsAdapterContext, programId = '522583
     operation: 'calculateChances',
     year: DEFAULT_YEAR,
     semester: DEFAULT_SEMESTER,
-    hug: DEFAULT_HUG,
+    hug,
     program: programId,
     bag_year: context.applicant.bagrutYear ?? '2020',
     bag_type: '001',
@@ -173,9 +183,10 @@ function reproducedFieldsFor(parsed: Record<string, number | string>) {
 function failedHaifaProof(
   error: unknown,
   metadata: NonNullable<AdmissionsSourceProof['rawResponseMetadata']>,
+  targetId = 'haifa-cs-live',
 ): AdmissionsSourceProof {
   return {
-    id: 'haifa-cs-live',
+    id: targetId,
     institutionId: 'haifa',
     institutionName: 'University of Haifa',
     officialUrl: HAIFA_INDEX_URL,

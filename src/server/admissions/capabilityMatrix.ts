@@ -30,6 +30,10 @@ import { getProgramVerificationArtifact } from '@/data/admissions/tauProgramVeri
 import { HUJI_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/hujiProgramVerification';
 import { BGU_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/bguProgramVerification';
 import { TECHNION_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/technionProgramVerification';
+import {
+  getHaifaProgramConfig,
+  HAIFA_PROGRAM_VERIFICATION_ARTIFACTS,
+} from '@/data/admissions/haifaProgramVerification';
 import { evaluateProgramVerification } from './verification/programVerification';
 
 const SOURCE_FRESHNESS_STALE_AFTER_MS = 8 * 24 * 60 * 60 * 1000;
@@ -119,20 +123,32 @@ const TECHNION_EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = Ob
   ]),
 );
 
+const HAIFA_EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = Object.fromEntries(
+  Object.values(HAIFA_PROGRAM_VERIFICATION_ARTIFACTS).map((artifact) => [
+    artifact.contract.pairId,
+    {
+      targetId: artifact.contract.source.targetId,
+      sourceTarget: admissionsSourceTargets.find(
+        (entry) => entry.id === artifact.contract.source.targetId,
+      )!,
+      program: {
+        targetId: artifact.contract.source.targetId,
+        pairId: artifact.contract.pairId,
+        id: artifact.contract.programId,
+        name: artifact.contract.programId,
+        externalId: artifact.contract.officialProgramId,
+        hug: getHaifaProgramConfig(artifact.contract.programId).hug,
+      },
+      requiredInputs: artifact.contract.calculation.requiredInputs,
+    } satisfies ExactCapabilityTarget,
+  ]),
+);
+
 const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
   ...HUJI_EXACT_PROGRAM_TARGETS,
   ...BGU_EXACT_PROGRAM_TARGETS,
   ...TECHNION_EXACT_PROGRAM_TARGETS,
-  haifa_cs__haifa: {
-    targetId: 'haifa-cs-live',
-    sourceTarget: admissionsSourceTargets.find((entry) => entry.id === 'haifa-cs-live')!,
-    program: {
-      id: 'haifa-cs',
-      name: 'Computer Science',
-      externalId: '52258372',
-    },
-    requiredInputs: ['psychometric_math', 'psychometric_verbal', 'psychometric_english'],
-  },
+  ...HAIFA_EXACT_PROGRAM_TARGETS,
   tau_datascience__tau: {
     targetId: 'tau-digital-sciences-live',
     sourceTarget: admissionsSourceTargets.find(

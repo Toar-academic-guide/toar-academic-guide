@@ -361,8 +361,13 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
 
     const haifaEntry = entries.find((e) => e.institutionId === 'haifa');
-    expect(haifaEntry?.capability).toBe('authority_unavailable');
-    expect(haifaEntry?.requiredInputs).toBeUndefined();
+    expect(haifaEntry?.capability).toBe('needs_input');
+    expect(haifaEntry?.exactTarget?.targetId).toBe('haifa-haifa_cs-live');
+    expect(haifaEntry?.requiredInputs).toEqual([
+      'psychometric_math',
+      'psychometric_verbal',
+      'psychometric_english',
+    ]);
   });
 
   it('does not promote Haifa from supplied inputs alone', () => {
@@ -382,8 +387,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
 
     const haifaEntry = entries.find((entry) => entry.institutionId === 'haifa');
-    expect(haifaEntry?.capability).toBe('authority_unavailable');
-    expect(haifaEntry?.requiredInputs).toBeUndefined();
+    expect(haifaEntry?.capability).toBe('exact');
   });
 
   it('returns open_admission for Open University', () => {
