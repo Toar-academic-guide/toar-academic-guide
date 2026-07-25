@@ -6,6 +6,7 @@ import * as schema from './schema';
 
 declare global {
   var __toarAcademicGuideDb__: ReturnType<typeof drizzle<typeof schema>> | undefined;
+  var __toarAcademicGuideSql__: postgres.Sql | undefined;
 }
 
 export function getDb() {
@@ -16,8 +17,21 @@ export function getDb() {
       max: 1,
       prepare: false,
     });
+    globalThis.__toarAcademicGuideSql__ = sql;
     globalThis.__toarAcademicGuideDb__ = drizzle(sql, { schema });
   }
 
   return globalThis.__toarAcademicGuideDb__;
+}
+
+/** Close the process-local pool used by one-off scripts and test runners. */
+export async function closeDb() {
+  const sql = globalThis.__toarAcademicGuideSql__;
+  if (!sql) {
+    return;
+  }
+
+  await sql.end({ timeout: 5 });
+  globalThis.__toarAcademicGuideSql__ = undefined;
+  globalThis.__toarAcademicGuideDb__ = undefined;
 }
