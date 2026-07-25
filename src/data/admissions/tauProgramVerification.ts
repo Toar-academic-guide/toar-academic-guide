@@ -865,6 +865,56 @@ export const TAU_ARCHITECTURE_CONTRACT: AdmissionsProgramVerificationContract = 
   },
 };
 
+const TAU_BIOLOGY_SOURCE_FINGERPRINT =
+  'sha256:15b31e2df3be2f353470453fe3e83eec36d7a0f25ccdc03aaf4d11f65c8a8a29';
+export const TAU_BIOLOGY_FIXTURES: AdmissionsVerificationFixture[] = TAU_ARCHITECTURE_FIXTURES.map(
+  (fixture) => ({
+    ...fixture,
+    id: fixture.id.replace('architecture__tau', 'biology__tau'),
+    pairId: 'biology__tau',
+  }),
+);
+for (const fixture of TAU_BIOLOGY_FIXTURES) {
+  fixture.expected =
+    fixture.verdict === 'accepted'
+      ? { score: 679, verdict: 'accepted' }
+      : { score: 548, verdict: 'below' };
+  fixture.sourceFingerprint = TAU_BIOLOGY_SOURCE_FINGERPRINT;
+}
+
+export const TAU_BIOLOGY_CONTRACT: AdmissionsProgramVerificationContract = {
+  ...TAU_ARCHITECTURE_CONTRACT,
+  pairId: 'biology__tau',
+  programId: 'biology',
+  officialProgramId: '045511050000',
+  source: { targetId: 'tau-biology-live', url: 'https://go.tau.ac.il/graphql' },
+  calculation: {
+    ...TAU_ARCHITECTURE_CONTRACT.calculation,
+    formulaFamily: 'tau_hatama',
+    cutoff: { acceptance: 576, rejection: 570 },
+    gates: [
+      {
+        id: 'tau-biology:english-minimum',
+        kind: 'language',
+        field: 'psychometricEnglish',
+        minimum: 100,
+        description: 'TAU requires at least English level Advanced A.',
+      },
+      {
+        id: 'tau-biology:science-requirements',
+        kind: 'manual',
+        field: 'bagrutSubjectRecord',
+        description:
+          'Biology, chemistry, and other science-route requirements remain subject to official review.',
+      },
+    ],
+  },
+  fixtureIds: TAU_BIOLOGY_FIXTURES.map((fixture) => fixture.id),
+  fixtureSetFingerprint: 'sha256:3ab20003e8a217f447a0244827613ee626d46af1e0e1bc4c57f94824741a3eaa',
+  sourceFingerprint: TAU_BIOLOGY_SOURCE_FINGERPRINT,
+  proof: { ...TAU_ARCHITECTURE_CONTRACT.proof, sourceFingerprint: TAU_BIOLOGY_SOURCE_FINGERPRINT },
+};
+
 export interface ProgramVerificationArtifact {
   contract: AdmissionsProgramVerificationContract;
   fixtures: AdmissionsVerificationFixture[];
@@ -959,6 +1009,13 @@ export const TAU_PROGRAM_VERIFICATION_METADATA: Record<string, TauProgramVerific
     requirementsUrl: TAU_ARCHITECTURE_REQUIREMENTS_URL,
     ledgerReason:
       'Verified against the current TAU Architecture programme node, score route, English gate, manual portfolio/interview condition, accepted/below fixtures, and live score-and-verdict replay.',
+  },
+  [TAU_BIOLOGY_CONTRACT.pairId]: {
+    contract: TAU_BIOLOGY_CONTRACT,
+    fixtures: TAU_BIOLOGY_FIXTURES,
+    requirementsUrl: 'https://go.tau.ac.il/he/life-sciences/ba/biology?v=admission-requirements',
+    ledgerReason:
+      'Verified against the current TAU Biology programme node, score route, English and science gates, accepted/below fixtures, and live score-and-verdict replay.',
   },
 };
 

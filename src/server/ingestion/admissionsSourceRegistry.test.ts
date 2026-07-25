@@ -22,6 +22,7 @@ describe('admissionsSourceRegistry', () => {
       'tau-accounting-live',
       'tau-accounting-legacy-live',
       'tau-architecture-live',
+      'tau-biology-live',
     ]);
   });
 
