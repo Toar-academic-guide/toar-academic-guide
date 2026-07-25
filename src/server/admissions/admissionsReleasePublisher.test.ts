@@ -180,6 +180,75 @@ describe('admissions release publisher', () => {
     expect(repository.transitions).toEqual([]);
     expect(repository.items).toEqual([]);
   });
+
+  it('preserves the prior published release when a later multi-target release fails', async () => {
+    const repository = new MemoryAdmissionsReleaseRepository({ failProgramId: 'bgu_cs' });
+    const publisher = createAdmissionsReleasePublisher(repository);
+    const prior = await publisher.publish({
+      manifest,
+      repositoryCommit: 'prior123',
+      publishedAt: new Date('2026-08-02T10:00:00.000Z'),
+    });
+    if (prior.status !== 'published') throw new Error('Expected a published prior release.');
+
+    await expect(
+      publisher.publish({
+        manifest: {
+          ...manifest,
+          changes: [
+            {
+              ...manifest.changes[0],
+              after: 690,
+            },
+            {
+              ...manifest.changes[1],
+              target: { institutionId: 'bgu', programId: 'bgu_cs', cycle: '2027' },
+            },
+          ],
+        },
+        repositoryCommit: 'failed456',
+      }),
+    ).rejects.toThrow('simulated transition failure');
+
+    expect(repository.releases).toHaveLength(1);
+    expect(repository.releases[0]).toMatchObject({
+      id: prior.releaseId,
+      status: 'published',
+      repositoryCommit: 'prior123',
+    });
+  });
+
+  it('records a corrective rollback as a new reviewed release', async () => {
+    const repository = new MemoryAdmissionsReleaseRepository();
+    const publisher = createAdmissionsReleasePublisher(repository);
+
+    await publisher.publish({
+      manifest,
+      repositoryCommit: 'change123',
+      publishedAt: new Date('2026-08-02T10:00:00.000Z'),
+    });
+    const correction = await publisher.publish({
+      manifest: {
+        ...manifest,
+        changes: manifest.changes.map((change) => ({
+          ...change,
+          before: change.after,
+          after: change.before,
+          effectiveFrom: '2026-08-03',
+        })),
+      },
+      repositoryCommit: 'revert456',
+      publishedAt: new Date('2026-08-03T10:00:00.000Z'),
+    });
+
+    expect(correction.status).toBe('published');
+    expect(repository.releases).toHaveLength(2);
+    expect(repository.releases.map((release) => release.repositoryCommit)).toEqual([
+      'change123',
+      'revert456',
+    ]);
+    expect(repository.releases.every((release) => release.status === 'published')).toBe(true);
+  });
 });
 
 class MemoryAdmissionsReleaseRepository
