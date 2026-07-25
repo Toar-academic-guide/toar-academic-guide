@@ -17,6 +17,7 @@ export interface AdmissionsApplicantInput {
   psychometric: number;
   psychometricYear?: string;
   bagrutYear?: string;
+  exactSciencesBonusEligible?: boolean;
   psychometricSubscores?: {
     english: number;
     math: number;

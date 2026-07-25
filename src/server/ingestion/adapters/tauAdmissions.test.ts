@@ -92,14 +92,131 @@ describe('runTauAdmissionsProof', () => {
       capability: 'decision_capable',
       proofLevel: 'exact_official',
       status: 'succeeded',
-      reproducedFields: ['selectedScore', 'acceptanceThreshold', 'rejectionThreshold'],
+      reproducedFields: [
+        'selectedScore',
+        'acceptanceThreshold',
+        'rejectionThreshold',
+        'officialVerdict',
+      ],
       normalizedPayload: {
         selectedScoreField: 'hatama_handasa',
         selectedScore: 704,
         acceptanceThreshold: 700,
         rejectionThreshold: 680,
+        matchedProgramIds: ['056011050000'],
+        officialVerdict: 'accepted',
       },
     });
+  });
+
+  it('sends the official exact-sciences bonus only for an eligible applicant', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        jsonResponse({
+          data: { getLastScore: { body: JSON.stringify({ hatama_handasa: 714 }) } },
+        }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({
+          data: {
+            getPrograms: {
+              results: [
+                {
+                  receipt_threshol: [700],
+                  rejection_thresh: [680],
+                  field_plain_id_programs: ['056011050000'],
+                },
+              ],
+            },
+          },
+        }),
+      );
+
+    const proof = await runTauAdmissionsProof({
+      applicant: { ...applicant, exactSciencesBonusEligible: true },
+      fetcher,
+    });
+
+    expect(JSON.parse(String(fetcher.mock.calls[0][1]?.body))).toMatchObject({
+      variables: { scoresData: { reali10: 10 } },
+    });
+    expect(proof.normalizedPayload).toMatchObject({
+      exactSciencesBonus: 10,
+      officialVerdict: 'accepted',
+    });
+  });
+
+  it('keeps the published band between rejection and acceptance as pending', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        jsonResponse({
+          data: { getLastScore: { body: JSON.stringify({ hatama_handasa: 640 }) } },
+        }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({
+          data: {
+            getPrograms: {
+              results: [
+                {
+                  receipt_threshol: [652],
+                  rejection_thresh: [632],
+                  field_plain_id_programs: ['056011050000'],
+                },
+              ],
+            },
+          },
+        }),
+      );
+
+    const proof = await runTauAdmissionsProof({ applicant, fetcher });
+
+    expect(proof.normalizedPayload).toMatchObject({
+      selectedScore: 640,
+      acceptanceThreshold: 652,
+      rejectionThreshold: 632,
+      officialVerdict: 'pending',
+    });
+  });
+
+  it('does not borrow thresholds from a different TAU program', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        jsonResponse({
+          data: { getLastScore: { body: JSON.stringify({ hatama_handasa: 704 }) } },
+        }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({
+          data: {
+            getPrograms: {
+              results: [
+                {
+                  receipt_threshol: [600],
+                  rejection_thresh: [580],
+                  field_plain_id_programs: ['different-program'],
+                },
+              ],
+            },
+          },
+        }),
+      );
+
+    const proof = await runTauAdmissionsProof({ applicant, fetcher });
+
+    expect(proof).toMatchObject({
+      capability: 'score_only',
+      proofLevel: 'partial_official',
+      status: 'partial',
+      normalizedPayload: {
+        selectedScore: 704,
+        matchedProgramIds: [],
+      },
+    });
+    expect(proof.normalizedPayload.acceptanceThreshold).toBeUndefined();
   });
 
   it('records which TAU score field was selected for the representative program', async () => {

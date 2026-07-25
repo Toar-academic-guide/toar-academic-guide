@@ -33,11 +33,12 @@ export async function runTauAdmissionsProof(
     const programResponse = await postTauGraphql(fetcher, buildProgramThresholdRequest(program));
     metadata.push(readOfficialResponseMetadata(TAU_GRAPHQL_URL, programResponse));
     const programJson = await readJson(programResponse);
-    const thresholds = parseTauProgramThresholds(programJson, program.externalId);
+    const thresholdRecord = findThresholdObject(programJson, program.externalId);
+    const thresholds = thresholdsFromRecord(thresholdRecord);
+    const officialVerdict = tauOfficialVerdict(selectedScore, thresholds);
+    const matchedProgramIds = readStringArray(thresholdRecord.field_plain_id_programs);
 
-    const hasDecision =
-      selectedScore !== undefined &&
-      (thresholds.acceptanceThreshold !== undefined || thresholds.rejectionThreshold !== undefined);
+    const hasDecision = officialVerdict !== undefined;
     const capability = hasDecision ? 'decision_capable' : 'score_only';
 
     return {
@@ -57,13 +58,18 @@ export async function runTauAdmissionsProof(
         source: 'tau_graphql',
         selectedScoreField: scoreField,
         selectedScore,
+        exactSciencesBonus: context.applicant.exactSciencesBonusEligible ? 10 : 0,
+        matchedProgramIds,
+        matchedProgramTitle:
+          typeof thresholdRecord.title === 'string' ? thresholdRecord.title : undefined,
+        officialVerdict,
         ...thresholds,
       },
       limitations: hasDecision
-        ? ['Representative TAU program only; broad faculty score-field mapping is deferred']
+        ? ['Proof applies only to the explicitly matched TAU program identifier and score field']
         : ['Official response produced score evidence but not enough official threshold data'],
       nextAction: hasDecision
-        ? 'Promote TAU to the second weekly GitHub Action adapter candidate'
+        ? 'Keep the program-specific mapping, gates, fixtures, and source fingerprint under review'
         : 'Complete TAU program threshold lookup before product decisions',
       rawResponseMetadata: metadata,
     };
@@ -85,6 +91,13 @@ export function parseTauProgramThresholds(
 } {
   const thresholdObject = findThresholdObject(parseGraphqlBody(value), programExternalId);
 
+  return thresholdsFromRecord(thresholdObject);
+}
+
+function thresholdsFromRecord(thresholdObject: Record<string, unknown>): {
+  acceptanceThreshold?: number;
+  rejectionThreshold?: number;
+} {
   return {
     acceptanceThreshold: parseOfficialNumeric(
       thresholdObject.field_this_year_receipt_threshol ??
@@ -108,7 +121,7 @@ function buildLastScoreRequest(context: AdmissionsAdapterContext) {
       scoresData: {
         prog: 'calctziun',
         out: 'json',
-        reali10: 0,
+        reali10: context.applicant.exactSciencesBonusEligible ? 10 : 0,
         psicho: String(context.applicant.psychometric),
         bagrut: String(context.applicant.bagrutAverage),
       },
@@ -174,50 +187,40 @@ function chooseScoreField(scores: unknown, program: AdmissionsProgramInput): str
 }
 
 function findThresholdObject(value: unknown, programExternalId?: string): Record<string, unknown> {
+  const candidates = collectThresholdObjects(parseGraphqlBody(value));
+  return programExternalId
+    ? (candidates.find((candidate) => matchesProgram(candidate, programExternalId)) ?? {})
+    : (candidates[0] ?? {});
+}
+
+function collectThresholdObjects(value: unknown): Record<string, unknown>[] {
   if (Array.isArray(value)) {
-    if (programExternalId) {
-      const exact = value
-        .map((entry) => findThresholdObject(entry, programExternalId))
-        .find((entry) => Object.keys(entry).length > 0 && matchesProgram(entry, programExternalId));
-
-      if (exact) {
-        return exact;
-      }
-    }
-
-    for (const entry of value) {
-      const found = findThresholdObject(entry, programExternalId);
-      if (Object.keys(found).length > 0) {
-        return found;
-      }
-    }
-    return {};
+    return value.flatMap((entry) => collectThresholdObjects(entry));
   }
 
   if (!value || typeof value !== 'object') {
-    return {};
+    return [];
   }
 
   const record = value as Record<string, unknown>;
-  if (
+  if (hasThresholdField(record)) {
+    return [record];
+  }
+
+  return Object.values(record).flatMap((entry) =>
+    collectThresholdObjects(parseGraphqlBody(entry)),
+  );
+}
+
+function hasThresholdField(record: Record<string, unknown>): boolean {
+  return (
     'field_this_year_receipt_threshol' in record ||
     'field_this_year_rejection_thresh' in record ||
     'receipt_threshol' in record ||
     'rejection_thresh' in record ||
     'acceptanceThreshold' in record ||
     'rejectionThreshold' in record
-  ) {
-    return record;
-  }
-
-  for (const entry of Object.values(record)) {
-    const found = findThresholdObject(parseGraphqlBody(entry), programExternalId);
-    if (Object.keys(found).length > 0) {
-      return found;
-    }
-  }
-
-  return {};
+  );
 }
 
 function readPath(value: unknown, path: string[]): unknown {
@@ -237,8 +240,7 @@ function readUnknownRecord(value: unknown): Record<string, unknown> {
 }
 
 function matchesProgram(record: Record<string, unknown>, programExternalId: string): boolean {
-  const ids = record.field_plain_id_programs;
-  return Array.isArray(ids) && ids.includes(programExternalId);
+  return readStringArray(record.field_plain_id_programs).includes(programExternalId);
 }
 
 function reproducedFieldsFor(
@@ -249,7 +251,34 @@ function reproducedFieldsFor(
     selectedScore !== undefined ? 'selectedScore' : undefined,
     thresholds.acceptanceThreshold !== undefined ? 'acceptanceThreshold' : undefined,
     thresholds.rejectionThreshold !== undefined ? 'rejectionThreshold' : undefined,
+    tauOfficialVerdict(selectedScore, thresholds) !== undefined ? 'officialVerdict' : undefined,
   ].filter(Boolean) as string[];
+}
+
+function tauOfficialVerdict(
+  selectedScore: number | undefined,
+  thresholds: ReturnType<typeof parseTauProgramThresholds>,
+): 'accepted' | 'below' | 'pending' | undefined {
+  if (selectedScore === undefined || thresholds.acceptanceThreshold === undefined) {
+    return undefined;
+  }
+  if (selectedScore >= thresholds.acceptanceThreshold) {
+    return 'accepted';
+  }
+  if (
+    thresholds.rejectionThreshold !== undefined &&
+    selectedScore <= thresholds.rejectionThreshold
+  ) {
+    return 'below';
+  }
+  return thresholds.rejectionThreshold === undefined ? undefined : 'pending';
+}
+
+function readStringArray(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.filter((entry): entry is string => typeof entry === 'string');
+  }
+  return typeof value === 'string' ? [value] : [];
 }
 
 function failedTauProof(
