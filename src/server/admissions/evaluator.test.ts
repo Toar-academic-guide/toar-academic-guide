@@ -42,6 +42,16 @@ function expectFormulaVerificationUnavailable(
   );
 }
 
+function expectTechnionExact(report: AdmissionsEvaluationReport): void {
+  expect(report.results).toContainEqual(
+    expect.objectContaining({
+      linkedInstitutionId: 'technion',
+      kind: 'exact',
+      capability: 'exact',
+    }),
+  );
+}
+
 function bguMockFetcher(threshold: number, score: number): typeof fetch {
   return vi
     .fn<typeof fetch>()
@@ -433,7 +443,7 @@ describe('evaluateAdmissionsForProgram', () => {
     expectFormulaVerificationUnavailable(report, 'haifa');
   });
 
-  it('withholds a Technion threshold without pair-level score and verdict proof', async () => {
+  it('returns an exact Technion threshold after pair-level score and verdict proof', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'technion_cs',
@@ -444,10 +454,10 @@ describe('evaluateAdmissionsForProgram', () => {
       institutions,
     });
 
-    expectFormulaVerificationUnavailable(report, 'technion');
+    expectTechnionExact(report);
   });
 
-  it('withholds Technion data science until its calculator replay is proven', async () => {
+  it('returns exact Technion data science after its calculator replay is proven', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'technion_datascience',
@@ -458,10 +468,10 @@ describe('evaluateAdmissionsForProgram', () => {
       institutions,
     });
 
-    expectFormulaVerificationUnavailable(report, 'technion');
+    expectTechnionExact(report);
   });
 
-  it('withholds Technion medicine until the complete invitation flow is proven', async () => {
+  it('returns exact Technion medicine after the complete invitation flow is proven', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'technion_medicine',
@@ -472,10 +482,10 @@ describe('evaluateAdmissionsForProgram', () => {
       institutions,
     });
 
-    expectFormulaVerificationUnavailable(report, 'technion');
+    expectTechnionExact(report);
   });
 
-  it('does not issue a below verdict for an unproved Technion medicine pair', async () => {
+  it('issues the verified below verdict for a Technion medicine pair', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'technion_medicine',
@@ -486,7 +496,14 @@ describe('evaluateAdmissionsForProgram', () => {
       institutions,
     });
 
-    expectFormulaVerificationUnavailable(report, 'technion');
+    expect(report.results).toContainEqual(
+      expect.objectContaining({
+        linkedInstitutionId: 'technion',
+        kind: 'exact',
+        capability: 'exact',
+        decision: 'below',
+      }),
+    );
   });
 
   it('returns an exact BGU Computer Science verdict', async () => {

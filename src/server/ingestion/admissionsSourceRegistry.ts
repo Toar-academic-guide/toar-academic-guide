@@ -13,6 +13,7 @@ import {
   HUJI_SOURCE_URL,
 } from '@/data/admissions/hujiProgramVerification';
 import { BGU_PROGRAM_VERIFICATION_METADATA } from '@/data/admissions/bguProgramVerification';
+import { TECHNION_PROGRAM_VERIFICATION_METADATA } from '@/data/admissions/technionProgramVerification';
 
 export type AdmissionsSourceCategory =
   | 'blocked'
@@ -83,6 +84,28 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     reproducedFields: ['selectedScore', 'acceptanceThreshold', 'rejectionThreshold', 'officialVerdict'],
     limitations: ['Exact replay is scoped to the explicitly matched BGU acceptance-conditions rule and current score endpoint.'],
     nextAction: 'Keep the programme endpoint, score replay, threshold, fixtures, and source fingerprint under review.',
+  } satisfies AdmissionsSourceTarget)),
+  ...Object.values(TECHNION_PROGRAM_VERIFICATION_METADATA).map((artifact) => ({
+    id: artifact.contract.source.targetId,
+    institutionId: 'technion',
+    institutionName: 'Technion',
+    officialUrl: artifact.contract.source.url,
+    adapterId: 'technion' as const,
+    expectedCapability: 'decision_capable' as const,
+    proofLevel: 'exact_official' as const,
+    category: 'exact' as const,
+    defaultApplicant: { bagrutAverage: 100, psychometric: 800 },
+    defaultProgram: {
+      targetId: artifact.contract.source.targetId,
+      pairId: artifact.contract.pairId,
+      id: artifact.contract.programId,
+      name: artifact.contract.programId,
+      externalId: artifact.contract.officialProgramId,
+      scoreField: artifact.contract.calculation.cutoff.acceptance === 92 && artifact.contract.programId.includes('medicine') ? 'invitation' : undefined,
+    },
+    reproducedFields: ['selectedScore', 'acceptanceThreshold', 'rejectionThreshold', 'officialVerdict'],
+    limitations: ['Exact replay is scoped to the official Technion Sekhem calculator and current cutoff table.'],
+    nextAction: 'Keep the calculator input mapping, cutoff table, fixtures, and source fingerprint under review.',
   } satisfies AdmissionsSourceTarget)),
   {
     id: 'haifa-cs-live',

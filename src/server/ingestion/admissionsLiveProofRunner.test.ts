@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { runAdmissionsLiveProof } from './admissionsLiveProofRunner';
 import { HUJI_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/hujiProgramVerification';
 import { BGU_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/bguProgramVerification';
+import { TECHNION_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/technionProgramVerification';
 
 function jsonResponse(body: unknown) {
   return new Response(JSON.stringify(body), {
@@ -56,6 +57,14 @@ function exactAdapterFetcher() {
     );
     fetcher.mockResolvedValueOnce(
       new Response('<script>parent.main.document.mainForm.on_final_sekem.value = 875;</script>', {
+        status: 200,
+        headers: { 'content-type': 'text/html' },
+      }),
+    );
+  }
+  for (const artifact of Object.values(TECHNION_PROGRAM_VERIFICATION_ARTIFACTS)) {
+    fetcher.mockResolvedValueOnce(
+      new Response('הסכם לדיוני הקבלה הוא:98.9', {
         status: 200,
         headers: { 'content-type': 'text/html' },
       }),
@@ -527,13 +536,13 @@ function exactAdapterFetcher() {
 }
 
 describe('runAdmissionsLiveProof', () => {
-  it('runs the verified HUJI, Haifa, and TAU programs by default as exact live proof targets', async () => {
+  it('runs the verified HUJI, BGU, Technion, Haifa, and TAU programs by default as exact live proof targets', async () => {
     const fetcher = exactAdapterFetcher();
     const report = await runAdmissionsLiveProof({ fetcher });
 
     expect(report.summary).toMatchObject({
-      total: 80,
-      exactReproduced: 80,
+      total: 93,
+      exactReproduced: 93,
       partial: 0,
       blocked: 0,
       failed: 0,
@@ -590,6 +599,19 @@ describe('runAdmissionsLiveProof', () => {
       'bgu-bgu_psychology-live',
       'bgu-social_work-live',
       'bgu-bgu_socialwork-live',
+      'technion-cs-live',
+      'technion-technion_cs-live',
+      'technion-datascience-live',
+      'technion-technion_datascience-live',
+      'technion-ee-live',
+      'technion-technion_ee-live',
+      'technion-me-live',
+      'technion-technion_me-live',
+      'technion-medicine-live',
+      'technion-technion_medicine-live',
+      'technion-technion_biomedical-live',
+      'technion-technion_civil-live',
+      'technion-technion_industrial-live',
       'haifa-cs-live',
       'tau-digital-sciences-live',
       'tau-nursing-live',
@@ -620,10 +642,10 @@ describe('runAdmissionsLiveProof', () => {
       'tau-industrial-live',
       'tau-biology-legacy-live',
     ]);
-    expect(JSON.parse(String(fetcher.mock.calls[78][1]?.body))).toMatchObject({
+    expect(JSON.parse(String(fetcher.mock.calls[91][1]?.body))).toMatchObject({
       variables: { scoresData: { bagrut: '100', psicho: '520' } },
     });
-    expect(JSON.parse(String(fetcher.mock.calls[80][1]?.body))).toMatchObject({
+    expect(JSON.parse(String(fetcher.mock.calls[93][1]?.body))).toMatchObject({
       variables: { scoresData: { bagrut: '110', psicho: '680' } },
     });
   });
@@ -1184,14 +1206,15 @@ describe('runAdmissionsLiveProof', () => {
     });
 
     expect(report.summary).toMatchObject({
-      total: 91,
-      exactReproduced: 80,
+      total: 104,
+      exactReproduced: 93,
       partial: 8,
       blocked: 2,
     });
     expect(report.results.map((result) => result.proof.institutionId)).toEqual([
       ...Array(28).fill('huji'),
       ...Array(23).fill('bgu'),
+      ...Array(13).fill('technion'),
       'haifa',
       'tau',
       'tau',

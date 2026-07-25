@@ -29,6 +29,7 @@ import type { AdmissionsProgramInput } from '@/server/ingestion/admissionsSource
 import { getProgramVerificationArtifact } from '@/data/admissions/tauProgramVerification';
 import { HUJI_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/hujiProgramVerification';
 import { BGU_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/bguProgramVerification';
+import { TECHNION_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/technionProgramVerification';
 import { evaluateProgramVerification } from './verification/programVerification';
 
 const SOURCE_FRESHNESS_STALE_AFTER_MS = 8 * 24 * 60 * 60 * 1000;
@@ -93,9 +94,35 @@ const BGU_EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = Object.
   ]),
 );
 
+const TECHNION_EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = Object.fromEntries(
+  Object.values(TECHNION_PROGRAM_VERIFICATION_ARTIFACTS).map((artifact) => [
+    artifact.contract.pairId,
+    {
+      targetId: artifact.contract.source.targetId,
+      sourceTarget: admissionsSourceTargets.find(
+        (entry) => entry.id === artifact.contract.source.targetId,
+      )!,
+      program: {
+        targetId: artifact.contract.source.targetId,
+        pairId: artifact.contract.pairId,
+        id: artifact.contract.programId,
+        name: artifact.contract.programId,
+        externalId: artifact.contract.officialProgramId,
+        scoreField:
+          artifact.contract.calculation.cutoff.acceptance === 92 &&
+          artifact.contract.programId.includes('medicine')
+            ? 'invitation'
+            : undefined,
+      },
+      requiredInputs: [],
+    } satisfies ExactCapabilityTarget,
+  ]),
+);
+
 const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
   ...HUJI_EXACT_PROGRAM_TARGETS,
   ...BGU_EXACT_PROGRAM_TARGETS,
+  ...TECHNION_EXACT_PROGRAM_TARGETS,
   haifa_cs__haifa: {
     targetId: 'haifa-cs-live',
     sourceTarget: admissionsSourceTargets.find((entry) => entry.id === 'haifa-cs-live')!,
@@ -650,6 +677,25 @@ export function buildAdmissionsCapabilityMatrix(args: {
         return {
           institutionId,
           capability: verification?.capability ?? 'authority_unavailable',
+          formulaPairScope,
+          pairVerification,
+          sourceTarget,
+          exactTarget,
+          evidence,
+          freshnessState,
+        };
+      }
+
+      const verifiedCutoff = verificationArtifact?.contract.calculation.cutoff.acceptance;
+      if (
+        institutionId === 'technion' &&
+        hasThreshold &&
+        verifiedCutoff !== null &&
+        program.thresholds?.[institutionId] !== verifiedCutoff
+      ) {
+        return {
+          institutionId,
+          capability: 'authority_unavailable',
           formulaPairScope,
           pairVerification,
           sourceTarget,

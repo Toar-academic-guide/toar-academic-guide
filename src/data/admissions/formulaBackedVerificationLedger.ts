@@ -17,6 +17,10 @@ import {
   getBguProgramVerificationMetadata,
   type BguProgramVerificationMetadata,
 } from './bguProgramVerification';
+import {
+  getTechnionProgramVerificationMetadata,
+  type TechnionProgramVerificationMetadata,
+} from './technionProgramVerification';
 
 export type FormulaPairLedgerState = 'exact' | 'withheld' | 'stale' | 'blocked';
 
@@ -254,7 +258,9 @@ export const FORMULA_BACKED_VERIFICATION_LEDGER: FormulaPairVerificationLedgerEn
             ? getHujiProgramVerificationMetadata(pairId)
             : institutionId === 'bgu'
               ? getBguProgramVerificationMetadata(pairId)
-              : undefined;
+              : institutionId === 'technion'
+                ? getTechnionProgramVerificationMetadata(pairId)
+                : undefined;
 
       return verifiedProgram
         ? verifiedProgramEntry(verifiedProgram)
@@ -286,7 +292,8 @@ function verifiedProgramEntry(
   artifact:
     | TauProgramVerificationMetadata
     | HujiProgramVerificationMetadata
-    | BguProgramVerificationMetadata,
+    | BguProgramVerificationMetadata
+    | TechnionProgramVerificationMetadata,
 ): FormulaPairVerificationLedgerEntry {
   const { contract, fixtures } = artifact;
   return {

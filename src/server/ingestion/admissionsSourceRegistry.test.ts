@@ -7,7 +7,7 @@ import {
 } from './admissionsSourceRegistry';
 
 describe('admissionsSourceRegistry', () => {
-  it('selects the verified HUJI, Haifa, and TAU programs as default exact live proof targets', () => {
+  it('selects the verified HUJI, BGU, Technion, Haifa, and TAU programs as default exact live proof targets', () => {
     expect(selectAdmissionsSourceTargets().map((target) => target.id)).toEqual([
       'huji-accounting-live',
       'huji-biology-live',
@@ -60,6 +60,19 @@ describe('admissionsSourceRegistry', () => {
       'bgu-bgu_psychology-live',
       'bgu-social_work-live',
       'bgu-bgu_socialwork-live',
+      'technion-cs-live',
+      'technion-technion_cs-live',
+      'technion-datascience-live',
+      'technion-technion_datascience-live',
+      'technion-ee-live',
+      'technion-technion_ee-live',
+      'technion-me-live',
+      'technion-technion_me-live',
+      'technion-medicine-live',
+      'technion-technion_medicine-live',
+      'technion-technion_biomedical-live',
+      'technion-technion_civil-live',
+      'technion-technion_industrial-live',
       'haifa-cs-live',
       'tau-digital-sciences-live',
       'tau-nursing-live',

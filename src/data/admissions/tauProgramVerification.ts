@@ -4,6 +4,7 @@ import type {
 } from '@/types/admissionsEvaluation';
 import { HUJI_PROGRAM_VERIFICATION_ARTIFACTS } from './hujiProgramVerification';
 import { BGU_PROGRAM_VERIFICATION_ARTIFACTS } from './bguProgramVerification';
+import { TECHNION_PROGRAM_VERIFICATION_ARTIFACTS } from './technionProgramVerification';
 
 const SOURCE_FINGERPRINT =
   'sha256:62a6a2f398b737b2139671f32c48a921083a4966ea43e8135c081870d42e9971';
@@ -1658,6 +1659,7 @@ export const PROGRAM_VERIFICATION_ARTIFACTS: Record<string, ProgramVerificationA
       ]),
       ...Object.entries(HUJI_PROGRAM_VERIFICATION_ARTIFACTS),
       ...Object.entries(BGU_PROGRAM_VERIFICATION_ARTIFACTS),
+      ...Object.entries(TECHNION_PROGRAM_VERIFICATION_ARTIFACTS),
     ],
   );
 

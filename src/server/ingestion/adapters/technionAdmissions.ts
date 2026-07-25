@@ -80,27 +80,45 @@ export async function runTechnionAdmissionsProof(
       throw new Error('Failed to parse Sekhem score from Technion response HTML');
     }
 
+    const acceptanceThreshold = parseOfficialNumeric(program.externalId);
+    const exact = acceptanceThreshold !== undefined;
+    const officialVerdict = exact
+      ? parsedSekhem >= acceptanceThreshold
+        ? program.scoreField === 'invitation'
+          ? 'eligible_to_apply'
+          : 'accepted'
+        : 'below'
+      : undefined;
+
     return {
-      id: 'technion-score-only',
+      id: program.targetId ?? 'technion-score-only',
       institutionId: 'technion',
       institutionName: 'Technion',
       officialUrl: TECHNION_INDEX_URL,
       adapterId: 'technion',
-      capability: 'score_only',
-      proofLevel: 'partial_official',
+      capability: exact ? 'decision_capable' : 'score_only',
+      proofLevel: exact ? 'exact_official' : 'partial_official',
       status: 'succeeded',
-      sourceClass: sourceClassForCapability('score_only'),
-      reproducedFields: ['sekhemScore'],
+      sourceClass: sourceClassForCapability(exact ? 'decision_capable' : 'score_only'),
+      reproducedFields: exact
+        ? ['selectedScore', 'acceptanceThreshold', 'rejectionThreshold', 'officialVerdict']
+        : ['sekhemScore'],
       normalizedPayload: {
         programId: program.id,
         programName: program.name,
-        source: 'technion_calculators_sum',
+        source: 'technion_calculators_sum_and_cutoff_table',
+        selectedScore: parsedSekhem,
         sekhemScore: parsedSekhem,
+        acceptanceThreshold,
+        rejectionThreshold: acceptanceThreshold,
+        officialVerdict,
       },
-      limitations: [
-        'Calculator response can produce score fields, but proof has no official thresholds',
-      ],
-      nextAction: 'Pair calculator output with a reviewed official threshold source',
+      limitations: exact
+        ? ['The cutoff-table proof covers the numeric Sekhem threshold; programme-specific manual gates remain outside this replay.']
+        : ['Calculator response can produce score fields, but proof has no official thresholds'],
+      nextAction: exact
+        ? 'Keep the calculator input mapping, current cutoff table, fixtures, and source fingerprint under review'
+        : 'Pair calculator output with a reviewed official threshold source',
       rawResponseMetadata: metadata,
     };
   } catch (error) {

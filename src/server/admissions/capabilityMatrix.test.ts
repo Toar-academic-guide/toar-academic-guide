@@ -467,7 +467,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     );
   });
 
-  it('keeps partial institutions score-only when no verified program match exists and no official gap remains', () => {
+  it('promotes a verified Technion pair while keeping an unmatched BGU pair score-only', () => {
     const program = makeProgram({
       id: 'technion_datascience',
       linkedInstitutionIds: ['technion', 'bgu'],
@@ -481,7 +481,8 @@ describe('buildAdmissionsCapabilityMatrix', () => {
 
     const technionEntry = entries.find((e) => e.institutionId === 'technion');
     const bguEntry = entries.find((e) => e.institutionId === 'bgu');
-    expect(technionEntry?.capability).toBe('authority_unavailable');
+    expect(technionEntry?.capability).toBe('exact');
+    expect(technionEntry?.exactTarget?.targetId).toBe('technion-technion_datascience-live');
     expect(technionEntry?.evidence?.missingData ?? []).toHaveLength(0);
     expect(bguEntry?.capability).toBe('score_only');
     expect(bguEntry?.evidence?.missingData ?? []).toHaveLength(0);
@@ -537,7 +538,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     );
   });
 
-  it('withholds Technion medicine until the pair contract proves its complete gate flow', () => {
+  it('promotes Technion medicine after its invitation gate is replayed', () => {
     const program = makeProgram({
       id: 'technion_medicine',
       linkedInstitutionIds: ['technion'],
@@ -549,7 +550,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
 
     const technionEntry = entries.find((e) => e.institutionId === 'technion');
-    expect(technionEntry?.capability).toBe('authority_unavailable');
+    expect(technionEntry?.capability).toBe('exact');
     expect(technionEntry?.evidence?.verifiedProgramThresholds).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -615,7 +616,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     );
   });
 
-  it('does not promote a Technion threshold without a verified score replay', () => {
+  it('promotes the Technion threshold after verified score replay', () => {
     const program = makeProgram({
       id: 'technion_cs',
       linkedInstitutionIds: ['technion'],
@@ -628,7 +629,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
 
     const technionEntry = entries.find((e) => e.institutionId === 'technion');
-    expect(technionEntry?.capability).toBe('authority_unavailable');
+    expect(technionEntry?.capability).toBe('exact');
     expect(technionEntry?.evidence?.verifiedProgramThresholds).toEqual(
       expect.arrayContaining([
         expect.objectContaining({

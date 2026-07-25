@@ -58,7 +58,7 @@ describe('catalogue admissions evidence coverage', () => {
     );
   });
 
-  it('withholds Technion thresholds until pair verification is complete', () => {
+  it('publishes exact Technion threshold coverage after pair verification', () => {
     const entries = reconcileCatalogueAdmissionsEvidence({
       programs: staticPrograms,
       institutions: staticInstitutions,
@@ -69,16 +69,16 @@ describe('catalogue admissions evidence coverage', () => {
         expect.objectContaining({
           programId: 'technion_cs',
           institutionId: 'technion',
-          capability: 'authority_unavailable',
-          status: 'verification_incomplete',
+          capability: 'exact',
+          status: 'decision_rule_available',
           trackingSource: 'monday_evidence',
           missingData: [],
         }),
         expect.objectContaining({
           programId: 'technion_datascience',
           institutionId: 'technion',
-          capability: 'authority_unavailable',
-          status: 'verification_incomplete',
+          capability: 'exact',
+          status: 'decision_rule_available',
           trackingSource: 'monday_evidence',
           missingData: [],
         }),
@@ -86,7 +86,7 @@ describe('catalogue admissions evidence coverage', () => {
     );
   });
 
-  it('withholds Technion medicine until its invitation pair proof is complete', () => {
+  it('publishes exact Technion medicine invitation coverage after pair verification', () => {
     const entries = reconcileCatalogueAdmissionsEvidence({
       programs: staticPrograms,
       institutions: staticInstitutions,
@@ -97,8 +97,8 @@ describe('catalogue admissions evidence coverage', () => {
         expect.objectContaining({
           programId: 'technion_medicine',
           institutionId: 'technion',
-          capability: 'authority_unavailable',
-          status: 'verification_incomplete',
+          capability: 'exact',
+          status: 'decision_rule_available',
           trackingSource: 'monday_evidence',
           missingData: [],
         }),

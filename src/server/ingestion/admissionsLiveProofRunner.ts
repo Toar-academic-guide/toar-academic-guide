@@ -14,6 +14,7 @@ import { runHaifaAdmissionsProof } from './adapters/haifaAdmissions';
 import { runTauAdmissionsProof } from './adapters/tauAdmissions';
 import { runHujiAdmissionsProof } from './adapters/hujiAdmissions';
 import { runBguAdmissionsProof } from './adapters/bguAdmissions';
+import { runTechnionAdmissionsProof } from './adapters/technionAdmissions';
 
 export interface AdmissionsLiveProofOptions {
   applicant?: AdmissionsApplicantInput;
@@ -96,6 +97,14 @@ async function runTarget(
 
   if (target.adapterId === 'bgu' && target.category === 'exact') {
     return runBguAdmissionsProof({
+      applicant: options.applicant ?? target.defaultApplicant ?? DEFAULT_APPLICANT,
+      fetcher: options.fetcher,
+      program: target.defaultProgram,
+    });
+  }
+
+  if (target.adapterId === 'technion' && target.category === 'exact') {
+    return runTechnionAdmissionsProof({
       applicant: options.applicant ?? target.defaultApplicant ?? DEFAULT_APPLICANT,
       fetcher: options.fetcher,
       program: target.defaultProgram,

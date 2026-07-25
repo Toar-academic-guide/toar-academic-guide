@@ -34,8 +34,8 @@ describe('formula-backed verification ledger', () => {
 
     expect(completion).toMatchObject({
       total: 135,
-      exact: 79,
-      withheld: 56,
+      exact: 92,
+      withheld: 43,
       isComplete: false,
     });
     expect(completion.totalsByInstitution).toEqual({
@@ -43,7 +43,7 @@ describe('formula-backed verification ledger', () => {
       huji: { total: 29, exact: 28, withheld: 1, stale: 0, blocked: 0 },
       bgu: { total: 29, exact: 23, withheld: 6, stale: 0, blocked: 0 },
       haifa: { total: 27, exact: 0, withheld: 27, stale: 0, blocked: 0 },
-      technion: { total: 14, exact: 0, withheld: 14, stale: 0, blocked: 0 },
+      technion: { total: 14, exact: 13, withheld: 1, stale: 0, blocked: 0 },
       colman: { total: 1, exact: 0, withheld: 1, stale: 0, blocked: 0 },
     });
     expect(
@@ -130,6 +130,19 @@ describe('formula-backed verification ledger', () => {
       'me__bgu',
       'psychology__bgu',
       'social_work__bgu',
+      'cs__technion',
+      'datascience__technion',
+      'ee__technion',
+      'me__technion',
+      'medicine__technion',
+      'technion_biomedical__technion',
+      'technion_civil__technion',
+      'technion_cs__technion',
+      'technion_datascience__technion',
+      'technion_ee__technion',
+      'technion_industrial__technion',
+      'technion_me__technion',
+      'technion_medicine__technion',
     ]);
   });
 
