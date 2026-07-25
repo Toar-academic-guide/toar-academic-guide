@@ -30,7 +30,10 @@ policies, and effective table privileges.
 
 The protected production sequence begins with migration `0010`, not `0011`.
 Production currently predates `bagrut_profile_versions`, and the release and
-alert migrations depend on that table. Apply `0010` through `0016` in order.
+alert migrations depend on that table. Apply `0010` through `0016` in order,
+then apply forward repair `0017`, which adds the missing `ops_readonly` profile
+history read policy without broadening write access, and `0018`, which pins the
+threshold-invariant trigger function to a trusted PostgreSQL search path.
 Never edit a migration that has already been recorded remotely. If the
 preflight reports `drift`, an unexpected migration, a partially present object,
 or a role that can bypass RLS, stop and prepare a new forward repair migration.
@@ -45,6 +48,26 @@ The verification form requires the complete schema and also checks
 representative catalogue rows. Keep the preflight and verification JSON with
 the protected-environment run evidence; neither output contains database
 credentials.
+
+### 2026-07-25 production recovery evidence
+
+- Supabase project `toar-academic-guide` (`kfxcdbjeidczltkrjazk`) had a completed
+  physical backup at `2026-07-25T08:31:59.127Z` before mutation.
+- The protected operator applied forward migrations `0010` through `0018`.
+  Remote statement fingerprints match the verifier contract.
+- All required operational tables and constraints are present, all 16 private
+  admissions/operations tables have RLS enabled, and `anon` and
+  `authenticated` have no effective table privileges on them.
+- An anonymous PostgREST read of `admission_facts` returns HTTP 401 with
+  PostgreSQL permission denial. The threshold repair left zero contradictory
+  rows.
+- Supabase Security Advisor reports no admissions-schema or RLS finding. The
+  remaining leaked-password-protection warning is an unrelated Auth setting.
+- The threshold rows removed by migration `0014` were captured before mutation
+  as recovery SQL with SHA-256
+  `0ece6f536485709f339ea02c2f7b8b9acd587780b9be57689719ea175414252f`.
+  Keep that operator artifact with the incident record; do not commit production
+  row data to the repository.
 
 ## How a weekly run behaves
 

@@ -15,8 +15,21 @@ describe('production admissions schema preflight', () => {
     expect(report).toMatchObject({
       status: 'current',
       safeToMigrate: false,
-      appliedThrough: '0016',
+      appliedThrough: '0018',
       pendingMigrations: [],
+      issues: [],
+    });
+  });
+
+  it('accepts PostgreSQL-truncated constraint identifiers', () => {
+    const snapshot = makeSnapshot();
+    snapshot.tables.admission_alert_baseline_history.constraints =
+      snapshot.tables.admission_alert_baseline_history.constraints.map((constraint) =>
+        constraint.slice(0, 63),
+      );
+
+    expect(assessProductionSchema(snapshot)).toMatchObject({
+      status: 'current',
       issues: [],
     });
   });
@@ -34,6 +47,8 @@ describe('production admissions schema preflight', () => {
       '0014',
       '0015',
       '0016',
+      '0017',
+      '0018',
     ]);
   });
 
@@ -43,7 +58,7 @@ describe('production admissions schema preflight', () => {
     expect(report.status).toBe('migration_required');
     expect(report.safeToMigrate).toBe(true);
     expect(report.appliedThrough).toBe('0012');
-    expect(report.pendingMigrations).toEqual(['0013', '0014', '0015', '0016']);
+    expect(report.pendingMigrations).toEqual(['0013', '0014', '0015', '0016', '0017', '0018']);
   });
 
   it('stops when a pending migration is partially present', () => {
@@ -230,6 +245,12 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
     if (tables.requirement_versions) {
       tables.requirement_versions.columnTypes.duration_years = 'real';
     }
+  }
+  if (!appliedIds.has('0017') && tables.bagrut_profile_versions) {
+    tables.bagrut_profile_versions.policies = tables.bagrut_profile_versions.policies.filter(
+      (policy) => policy !== 'bagrut_profile_versions_ops_readonly_read',
+    );
+    tables.bagrut_profile_versions.grants.ops_readonly = [];
   }
 
   return {

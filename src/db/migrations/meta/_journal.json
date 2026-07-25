@@ -120,6 +120,20 @@
       "when": 1784985515893,
       "tag": "0016_admission_review_runs",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1784994218176,
+      "tag": "0017_grant_ops_readonly_bagrut_profile_versions",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1784994627234,
+      "tag": "0018_secure_admission_threshold_scope_function",
+      "breakpoints": true
     }
   ]
 }

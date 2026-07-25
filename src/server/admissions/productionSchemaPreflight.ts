@@ -1,4 +1,5 @@
-export type MigrationId = '0010' | '0011' | '0012' | '0013' | '0014' | '0015' | '0016';
+export type MigrationId =
+  '0010' | '0011' | '0012' | '0013' | '0014' | '0015' | '0016' | '0017' | '0018';
 
 export type MigrationHistoryEntry = {
   version: string;
@@ -160,6 +161,18 @@ export const FORWARD_PRODUCTION_MIGRATIONS: Array<{
     remoteName: 'admission_review_runs',
     repositoryPath: 'src/db/migrations/0016_admission_review_runs.sql',
     statementFingerprint: '29936695ecbcd9a8905c3187615cc2f7',
+  },
+  {
+    id: '0017',
+    remoteName: 'grant_ops_readonly_bagrut_profile_versions',
+    repositoryPath: 'src/db/migrations/0017_grant_ops_readonly_bagrut_profile_versions.sql',
+    statementFingerprint: '085a341c3c58772cb0263c246a135a5b',
+  },
+  {
+    id: '0018',
+    remoteName: 'secure_admission_threshold_scope_function',
+    repositoryPath: 'src/db/migrations/0018_secure_admission_threshold_scope_function.sql',
+    statementFingerprint: '3a81bb66de49ff59004174c4d8d2c9c6',
   },
 ];
 
@@ -686,7 +699,7 @@ function assessTables(
       }
     }
     for (const constraint of contract.constraints) {
-      if (!table.constraints.includes(constraint)) {
+      if (!includesPostgresIdentifier(table.constraints, constraint)) {
         issues.push({
           code: 'missing_constraint',
           object: `constraint:${constraint}`,
@@ -706,7 +719,9 @@ function assessTables(
 
     const securityApplies =
       contract.private && (!contract.securedBy || applied.has(contract.securedBy));
-    if (securityApplies) assessTableSecurity(tableName, table, contract, issues);
+    if (securityApplies) {
+      assessTableSecurity(tableName, table, contract, applied, issues);
+    }
   }
 }
 
@@ -714,6 +729,7 @@ function assessTableSecurity(
   tableName: string,
   table: TableSnapshot,
   contract: TableContract,
+  applied: Set<MigrationId>,
   issues: ProductionSchemaIssue[],
 ) {
   if (!table.rowLevelSecurity) {
@@ -723,7 +739,11 @@ function assessTableSecurity(
       detail: 'Row-level security must be enabled.',
     });
   }
-  for (const policy of contract.policies) {
+  const requiredPolicies =
+    tableName === 'bagrut_profile_versions' && !applied.has('0017')
+      ? contract.policies.filter((policy) => policy !== 'bagrut_profile_versions_ops_readonly_read')
+      : contract.policies;
+  for (const policy of requiredPolicies) {
     if (!table.policies.includes(policy)) {
       issues.push({
         code: 'missing_policy',
@@ -744,7 +764,11 @@ function assessTableSecurity(
   }
   for (const role of runtimeRoles) {
     const actual = normalizedPrivileges(table.grants[role] ?? []);
-    const expected = normalizedPrivileges(contract.grants[role] ?? []);
+    const expected = normalizedPrivileges(
+      tableName === 'bagrut_profile_versions' && role === 'ops_readonly' && !applied.has('0017')
+        ? []
+        : (contract.grants[role] ?? []),
+    );
     if (actual.join(',') !== expected.join(',')) {
       issues.push({
         code: 'grant_mismatch',
@@ -908,7 +932,10 @@ function assessAddedConstraint(
   constraint: string,
   issues: ProductionSchemaIssue[],
 ) {
-  const present = snapshot.tables[tableName]?.constraints.includes(constraint) ?? false;
+  const present = includesPostgresIdentifier(
+    snapshot.tables[tableName]?.constraints ?? [],
+    constraint,
+  );
   if (applied.has(migration) && !present) {
     issues.push({
       code: 'missing_constraint',
@@ -922,6 +949,11 @@ function assessAddedConstraint(
       detail: `Constraint belongs to pending migration ${migration}.`,
     });
   }
+}
+
+function includesPostgresIdentifier(identifiers: string[], expected: string): boolean {
+  const postgresIdentifier = expected.slice(0, 63);
+  return identifiers.includes(expected) || identifiers.includes(postgresIdentifier);
 }
 
 function assessColumnType(
