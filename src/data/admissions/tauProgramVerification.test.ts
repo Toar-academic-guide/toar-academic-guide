@@ -8,7 +8,10 @@ import {
   evaluateProgramVerification,
   fingerprintVerificationFixtures,
 } from '@/server/admissions/verification/programVerification';
-import { evaluateTauDigitalSciencesGates } from '@/server/admissions/tauDigitalSciencesPolicy';
+import {
+  evaluateTauDigitalSciencesGates,
+  TAU_DIGITAL_SCIENCES_POLICY,
+} from '@/server/admissions/tauDigitalSciencesPolicy';
 import { runTauAdmissionsProof } from '@/server/ingestion/adapters/tauAdmissions';
 
 describe('TAU Digital Sciences verification artifact', () => {
@@ -28,6 +31,15 @@ describe('TAU Digital Sciences verification artifact', () => {
       state: 'exact',
       capability: 'exact',
       issues: [],
+    });
+  });
+
+  it('keeps the runtime policy aligned with the reviewed programme contract', () => {
+    expect(TAU_DIGITAL_SCIENCES_POLICY).toMatchObject({
+      admissionCycle: TAU_DIGITAL_SCIENCES_CONTRACT.admissionCycle,
+      officialProgramId: TAU_DIGITAL_SCIENCES_CONTRACT.officialProgramId,
+      acceptanceCutoff: TAU_DIGITAL_SCIENCES_CONTRACT.calculation.cutoff.acceptance,
+      rejectionCutoff: TAU_DIGITAL_SCIENCES_CONTRACT.calculation.cutoff.rejection,
     });
   });
 

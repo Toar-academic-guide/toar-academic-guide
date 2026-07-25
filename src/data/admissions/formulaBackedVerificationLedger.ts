@@ -5,6 +5,11 @@ import {
   type FormulaBackedInstitutionId,
   type FormulaBackedPairInventory,
 } from './formulaBackedPairInventory';
+import {
+  TAU_DIGITAL_SCIENCES_CONTRACT,
+  TAU_DIGITAL_SCIENCES_FIXTURES,
+  TAU_DIGITAL_SCIENCES_REQUIREMENTS_URL,
+} from './tauProgramVerification';
 
 export type FormulaPairLedgerState = 'exact' | 'withheld' | 'stale' | 'blocked';
 
@@ -262,24 +267,25 @@ export const FORMULA_BACKED_VERIFICATION_LEDGER: FormulaPairVerificationLedgerEn
   });
 
 function verifiedTauDigitalSciencesEntry(): FormulaPairVerificationLedgerEntry {
+  const contract = TAU_DIGITAL_SCIENCES_CONTRACT;
   return {
-    pairId: 'tau_datascience__tau',
+    pairId: contract.pairId,
     institutionId: 'tau',
-    admissionCycle: '2026-2027',
+    admissionCycle: contract.admissionCycle as '2026-2027',
     state: 'exact',
-    officialProgramId: '056011050000',
-    sourceUrl: 'https://go.tau.ac.il/he/engineering/ba/high-tech-plus?v=admission-requirements',
-    formulaFamily: 'tau_hatama_handasa_with_reali10',
+    officialProgramId: contract.officialProgramId,
+    sourceUrl: TAU_DIGITAL_SCIENCES_REQUIREMENTS_URL,
+    formulaFamily: contract.calculation.formulaFamily,
     fixtureEvidence: {
-      eligible: true,
-      below: true,
-      fingerprint: 'sha256:ea353e9bd5f5185be870124a3e7c0372679fff3ec2d23fd6b330e9ef32a74687',
+      eligible: TAU_DIGITAL_SCIENCES_FIXTURES.some((fixture) => fixture.verdict === 'accepted'),
+      below: TAU_DIGITAL_SCIENCES_FIXTURES.some((fixture) => fixture.verdict === 'below'),
+      fingerprint: contract.fixtureSetFingerprint,
     },
     liveProof: {
-      comparedScore: true,
-      comparedVerdict: true,
-      comparedAt: '2026-07-25T20:12:07.000Z',
-      sourceFingerprint: 'sha256:62a6a2f398b737b2139671f32c48a921083a4966ea43e8135c081870d42e9971',
+      comparedScore: contract.proof.comparedScore,
+      comparedVerdict: contract.proof.comparedVerdict,
+      comparedAt: contract.proof.liveComparedAt,
+      sourceFingerprint: contract.proof.sourceFingerprint,
     },
     reason:
       'Verified against the current TAU programme mapping, cumulative score gates, accepted/below fixtures, and live score-and-verdict replay.',

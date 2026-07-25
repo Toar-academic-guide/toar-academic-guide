@@ -2,9 +2,9 @@ import type {
   AdmissionsEvaluationInput,
   AdmissionsRequiredInput,
 } from '@/types/admissionsEvaluation';
+import { TAU_DIGITAL_SCIENCES_REQUIREMENTS_URL } from '@/data/admissions/tauProgramVerification';
 
-export const TAU_DIGITAL_SCIENCES_PROGRAM_URL =
-  'https://go.tau.ac.il/he/engineering/ba/high-tech-plus?v=admission-requirements';
+export const TAU_DIGITAL_SCIENCES_PROGRAM_URL = TAU_DIGITAL_SCIENCES_REQUIREMENTS_URL;
 
 export const TAU_DIGITAL_SCIENCES_POLICY = {
   admissionCycle: '2026-2027',
@@ -77,17 +77,14 @@ export function evaluateTauDigitalSciencesGates(
     );
   }
 
-  if (
-    extraInputs.psychometricEnglish < TAU_DIGITAL_SCIENCES_POLICY.minimumEnglish
-  ) {
+  if (extraInputs.psychometricEnglish < TAU_DIGITAL_SCIENCES_POLICY.minimumEnglish) {
     unmetRequirements.push(
       `רמת מתקדמים א׳ באנגלית (${TAU_DIGITAL_SCIENCES_POLICY.minimumEnglish} ומעלה)`,
     );
   }
 
   const passesMathRoute = TAU_DIGITAL_SCIENCES_POLICY.mathRoutes.some(
-    (route) =>
-      mathematics?.units === route.units && mathematics.grade >= route.minimumGrade,
+    (route) => mathematics?.units === route.units && mathematics.grade >= route.minimumGrade,
   );
   if (!passesMathRoute) {
     unmetRequirements.push('מתמטיקה: 5 יח״ל בציון 75 ומעלה או 4 יח״ל בציון 85 ומעלה');

@@ -5,7 +5,10 @@ import type {
 
 const SOURCE_FINGERPRINT =
   'sha256:62a6a2f398b737b2139671f32c48a921083a4966ea43e8135c081870d42e9971';
-const CAPTURED_AT = '2026-07-25T20:12:07.000Z';
+const FIXTURE_CAPTURED_AT = '2026-07-25T20:12:07.000Z';
+const LIVE_COMPARED_AT = '2026-07-25T20:22:40.576Z';
+export const TAU_DIGITAL_SCIENCES_REQUIREMENTS_URL =
+  'https://go.tau.ac.il/he/engineering/ba/high-tech-plus?v=admission-requirements';
 
 export const TAU_DIGITAL_SCIENCES_FIXTURES: AdmissionsVerificationFixture[] = [
   {
@@ -34,7 +37,7 @@ export const TAU_DIGITAL_SCIENCES_FIXTURES: AdmissionsVerificationFixture[] = [
       verdict: 'accepted',
     },
     sourceFingerprint: SOURCE_FINGERPRINT,
-    capturedAt: CAPTURED_AT,
+    capturedAt: FIXTURE_CAPTURED_AT,
   },
   {
     id: 'tau_datascience__tau:below:2026-2027',
@@ -61,7 +64,7 @@ export const TAU_DIGITAL_SCIENCES_FIXTURES: AdmissionsVerificationFixture[] = [
       verdict: 'below',
     },
     sourceFingerprint: SOURCE_FINGERPRINT,
-    capturedAt: CAPTURED_AT,
+    capturedAt: FIXTURE_CAPTURED_AT,
   },
 ];
 
@@ -129,7 +132,7 @@ export const TAU_DIGITAL_SCIENCES_CONTRACT: AdmissionsProgramVerificationContrac
     state: 'verified',
     comparedScore: true,
     comparedVerdict: true,
-    liveComparedAt: CAPTURED_AT,
+    liveComparedAt: LIVE_COMPARED_AT,
     sourceFingerprint: SOURCE_FINGERPRINT,
   },
 };
