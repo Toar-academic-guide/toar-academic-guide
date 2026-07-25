@@ -169,7 +169,7 @@ function readMigrationStatements() {
     .flatMap((fileName) => {
       const sql = readFileSync(join(migrationsDir, fileName), 'utf8');
       return sql
-        .split(/;|-->\s*statement-breakpoint/)
+        .split(/-->\s*statement-breakpoint/)
         .map((statement) => statement.trim())
         .filter(Boolean);
     });
@@ -177,7 +177,7 @@ function readMigrationStatements() {
 
 function assertOperationalGrants() {
   const grantStatements = readMigrationStatements().filter((statement) =>
-    /\bGRANT\s+SELECT\s+ON\s+TABLE\b/i.test(statement),
+    /\bGRANT\s+[\s\S]*?\bSELECT\b[\s\S]*?\bON\s+TABLE\b/i.test(statement),
   );
   const missing = [];
 

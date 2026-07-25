@@ -1,24 +1,25 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import {
-  assessPublicationDatabaseState,
-  resolveOperationalDatabaseUrl,
-} from './operationalDatabaseGate';
+import { requireOpsDatabaseUrl } from '@/env';
+import { assessPublicationDatabaseState } from './operationalDatabaseGate';
 
 describe('operational database gate', () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
   it('fails closed when no protected database URL is configured', () => {
-    expect(() => resolveOperationalDatabaseUrl({})).toThrow(
-      'A database connection URL is required',
-    );
+    vi.stubEnv('OPS_DATABASE_URL', '');
+    vi.stubEnv('DATABASE_URL', '');
+
+    expect(() => requireOpsDatabaseUrl()).toThrow('Missing DATABASE_URL');
   });
 
   it('prefers the readonly operations URL', () => {
-    expect(
-      resolveOperationalDatabaseUrl({
-        OPS_DATABASE_URL: 'postgresql://ops',
-        DATABASE_URL: 'postgresql://runtime',
-      }),
-    ).toBe('postgresql://ops');
+    vi.stubEnv('OPS_DATABASE_URL', 'postgresql://ops');
+    vi.stubEnv('DATABASE_URL', 'postgresql://runtime');
+
+    expect(requireOpsDatabaseUrl()).toBe('postgresql://ops');
   });
 
   it('accepts a clean publication ledger, including the first release', () => {

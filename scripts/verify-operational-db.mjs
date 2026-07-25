@@ -5,16 +5,13 @@ const { PRODUCTION_SCHEMA_CONTRACT, assessProductionSchema } = await tsImport(
   '../src/server/admissions/productionSchemaPreflight.ts',
   import.meta.url,
 );
-const { assessPublicationDatabaseState, resolveOperationalDatabaseUrl } = await tsImport(
+const { assessPublicationDatabaseState } = await tsImport(
   '../src/server/admissions/operationalDatabaseGate.ts',
   import.meta.url,
 );
+const { requireOpsDatabaseUrl } = await tsImport('../src/env.ts', import.meta.url);
 
-const mode = process.argv.includes('--preflight')
-  ? 'preflight'
-  : process.argv.includes('--publication')
-    ? 'publication'
-    : 'verify';
+const mode = resolveMode(process.argv);
 const representativeTables = [
   'institutions',
   'programs',
@@ -24,6 +21,12 @@ const representativeTables = [
   'source_urls',
   'university_calculator_configs',
 ];
+
+function resolveMode(argv) {
+  if (argv.includes('--preflight')) return 'preflight';
+  if (argv.includes('--publication')) return 'publication';
+  return 'verify';
+}
 
 async function loadSnapshot(sql) {
   const [
@@ -99,10 +102,10 @@ async function loadSnapshot(sql) {
     sql`
       select
         c.relname as table_name,
-        role_name,
+        database_role.rolname as role_name,
         privilege,
         has_table_privilege(
-          role_name,
+          database_role.oid,
           format('%I.%I', n.nspname, c.relname),
           privilege
         ) as allowed
@@ -113,7 +116,8 @@ async function loadSnapshot(sql) {
         'authenticated',
         'app_runtime',
         'ops_readonly',
-      ]}::text[]) as role_name
+      ]}::text[]) as expected_role(role_name)
+      join pg_roles database_role on database_role.rolname = expected_role.role_name
       cross join unnest(${[
         'SELECT',
         'INSERT',
@@ -144,11 +148,13 @@ async function loadSnapshot(sql) {
       order by trigger_name
     `,
     sql`
-      select distinct p.proname as function_name
+      select
+        p.proname as function_name,
+        coalesce(p.proconfig, array[]::text[]) as function_config
       from pg_proc p
       join pg_namespace n on n.oid = p.pronamespace
       where n.nspname = 'public'
-      order by p.proname
+      order by p.proname, p.oid
     `,
   ]);
 
@@ -204,19 +210,30 @@ async function loadSnapshot(sql) {
     tables,
     enums,
     triggers: triggerRows.map((row) => row.trigger_name),
-    functions: functionRows.map((row) => row.function_name),
+    functions: Object.fromEntries(
+      functionRows.map((row) => [row.function_name, row.function_config]),
+    ),
   };
 }
 
 async function loadCatalogueEvidence(sql) {
-  const counts = [];
-  for (const tableName of representativeTables) {
-    const [row] = await sql.unsafe(`select count(*)::int as row_count from public.${tableName}`);
-    const rowCount = Number(row.row_count);
-    counts.push({ tableName, rowCount });
-    if (rowCount <= 0) {
-      throw new Error(`Expected public.${tableName} to contain rows, found ${rowCount}.`);
-    }
+  const countRows = await sql.unsafe(
+    representativeTables
+      .map(
+        (tableName, ordinal) =>
+          `select ${ordinal} as ordinal, '${tableName}' as table_name, count(*)::int as row_count from public.${tableName}`,
+      )
+      .join(' union all ') + ' order by ordinal',
+  );
+  const counts = countRows.map((row) => ({
+    tableName: row.table_name,
+    rowCount: Number(row.row_count),
+  }));
+  const emptyTable = counts.find((item) => item.rowCount <= 0);
+  if (emptyTable) {
+    throw new Error(
+      `Expected public.${emptyTable.tableName} to contain rows, found ${emptyTable.rowCount}.`,
+    );
   }
 
   const representativePairs = await sql`
@@ -247,8 +264,8 @@ async function loadPublicationDatabaseState(sql) {
         where status = 'published'
           and (
             published_at is null
-            or repository_commit = ''
-            or manifest_digest not like 'sha256:%'
+            or repository_commit !~ '^[0-9a-f]{7,64}$'
+            or manifest_digest !~ '^sha256:[0-9a-f]{64}$'
           )
       )::int as malformed_published_release_count
     from public.admission_releases
@@ -261,7 +278,7 @@ async function loadPublicationDatabaseState(sql) {
 }
 
 async function main() {
-  const sql = postgres(resolveOperationalDatabaseUrl(process.env), {
+  const sql = postgres(requireOpsDatabaseUrl(), {
     max: 1,
     connect_timeout: 10,
     idle_timeout: 5,

@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 export const productionSensitivePathPatterns = [
   /^\.github\/workflows\/(?:admissions-publication|admissions-freshness|ci)\.yml$/,
-  /^scripts\/(?:admissions-source-freshness|prepare-admissions-review|publish-admissions-release|verify-operational-db)\.mjs$/,
+  /^scripts\/(?:admissions-source-freshness|pre-pr-guard|prepare-admissions-review|production-sensitive-paths|publish-admissions-release|verify-operational-db)\.mjs$/,
   /^src\/data\/admissions\//,
   /^src\/db\//,
   /^src\/server\/admission-alerts\//,

@@ -1,20 +1,7 @@
-export interface OperationalDatabaseEnvironment {
-  OPS_DATABASE_URL?: string;
-  DATABASE_URL?: string;
-}
-
 export interface PublicationDatabaseState {
   pendingReleaseCount: number;
   startedAttemptCount: number;
   malformedPublishedReleaseCount: number;
-}
-
-export function resolveOperationalDatabaseUrl(environment: OperationalDatabaseEnvironment): string {
-  const value = environment.OPS_DATABASE_URL?.trim() || environment.DATABASE_URL?.trim();
-  if (!value) {
-    throw new Error('A database connection URL is required for operational DB verification.');
-  }
-  return value;
 }
 
 export function assessPublicationDatabaseState(state: PublicationDatabaseState): {

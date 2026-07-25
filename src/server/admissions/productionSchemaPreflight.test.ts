@@ -176,6 +176,31 @@ describe('production admissions schema preflight', () => {
     );
   });
 
+  it('stops when a runtime role cannot authenticate', () => {
+    const snapshot = makeSnapshot();
+    const operationsRole = snapshot.roles.find((role) => role.name === 'ops_readonly');
+    if (operationsRole) operationsRole.canLogin = false;
+
+    expect(assessProductionSchema(snapshot).issues).toContainEqual(
+      expect.objectContaining({
+        code: 'role_cannot_login',
+        object: 'role:ops_readonly',
+      }),
+    );
+  });
+
+  it('stops when the threshold trigger function loses its trusted search path', () => {
+    const snapshot = makeSnapshot();
+    snapshot.functions.enforce_admission_threshold_scope = [];
+
+    expect(assessProductionSchema(snapshot).issues).toContainEqual(
+      expect.objectContaining({
+        code: 'function_config_mismatch',
+        object: 'function:enforce_admission_threshold_scope.config:search_path',
+      }),
+    );
+  });
+
   it('stops on a divergent baseline fingerprint or unexpected history entry', () => {
     const divergent = makeSnapshot();
     divergent.migrationHistory[2] = {
@@ -275,6 +300,12 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
         .map(([name, contract]) => [name, [...contract.values]]),
     ),
     triggers: appliedIds.has('0014') ? ['admission_threshold_scope_invariant'] : [],
-    functions: appliedIds.has('0014') ? ['enforce_admission_threshold_scope'] : [],
+    functions: appliedIds.has('0014')
+      ? {
+          enforce_admission_threshold_scope: appliedIds.has('0018')
+            ? ['search_path=pg_catalog, public']
+            : [],
+        }
+      : {},
   };
 }

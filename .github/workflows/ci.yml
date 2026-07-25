@@ -39,19 +39,27 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
         run: |
           set -euo pipefail
+          classifier="scripts/production-sensitive-paths.mjs"
+          if [[ "$EVENT_NAME" == "pull_request" ]] &&
+            git cat-file -e "origin/$BASE_REF:$classifier"; then
+            base_classifier="$RUNNER_TEMP/production-sensitive-paths.mjs"
+            git show "origin/$BASE_REF:$classifier" > "$base_classifier"
+            classifier="$base_classifier"
+          fi
+
           if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
-            node scripts/production-sensitive-paths.mjs --all >> "$GITHUB_OUTPUT"
+            node "$classifier" --all >> "$GITHUB_OUTPUT"
           elif [[ "$EVENT_NAME" == "pull_request" ]]; then
             git diff --name-only "origin/$BASE_REF...HEAD" |
-              node scripts/production-sensitive-paths.mjs >> "$GITHUB_OUTPUT"
+              node "$classifier" >> "$GITHUB_OUTPUT"
           elif [[ -n "$BEFORE_SHA" ]] &&
             [[ "$BEFORE_SHA" != "0000000000000000000000000000000000000000" ]] &&
             git cat-file -e "$BEFORE_SHA^{commit}"; then
             git diff --name-only "$BEFORE_SHA...HEAD" |
-              node scripts/production-sensitive-paths.mjs >> "$GITHUB_OUTPUT"
+              node "$classifier" >> "$GITHUB_OUTPUT"
           else
             git diff --name-only HEAD^...HEAD |
-              node scripts/production-sensitive-paths.mjs >> "$GITHUB_OUTPUT"
+              node "$classifier" >> "$GITHUB_OUTPUT"
           fi
 
   quality:
