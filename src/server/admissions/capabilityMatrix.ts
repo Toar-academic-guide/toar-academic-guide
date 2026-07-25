@@ -267,6 +267,22 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
     },
     requiredInputs: ['psychometric_english'],
   },
+  political_science__tau: {
+    targetId: 'tau-political-science-live',
+    sourceTarget: admissionsSourceTargets.find(
+      (entry) => entry.id === 'tau-political-science-live',
+    )!,
+    program: {
+      targetId: 'tau-political-science-live',
+      pairId: 'political_science__tau',
+      id: 'tau-political-science',
+      name: 'Political Science',
+      nodeId: 8276,
+      externalId: '103111030000',
+      scoreField: 'hatama',
+    },
+    requiredInputs: ['psychometric_english'],
+  },
 };
 
 const SOURCE_TARGETS_BY_INSTITUTION = new Map<string, AdmissionsSourceTarget>(

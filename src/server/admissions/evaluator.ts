@@ -69,6 +69,7 @@ export async function evaluateAdmissionsForProgram(args: {
       if (key === 'architecture__tau') return ['tau-architecture-live'];
       if (key === 'biology__tau') return ['tau-biology-live'];
       if (key === 'communication__tau') return ['tau-communication-live'];
+      if (key === 'political_science__tau') return ['tau-political-science-live'];
       return [];
     });
 
@@ -450,6 +451,33 @@ async function evaluateExactResult(args: {
           unmetRequirements: ['אנגלית בפסיכומטרי ברמת 100 ומעלה'],
           requirementsUrl:
             'https://go.tau.ac.il/he/social-sciences/ba/communication?v=admission-requirements',
+        });
+      }
+
+      const proof = await runTauAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: { bagrutAverage: input.bagrut, psychometric: input.psychometric },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+      });
+    }
+
+    if (exactTarget.targetId === 'tau-political-science-live') {
+      const psychometricEnglish = input.extraInputs?.psychometricEnglish;
+      if (typeof psychometricEnglish !== 'number') {
+        return requiredInputsResult(institution, ['psychometric_english']);
+      }
+      if (psychometricEnglish < 100) {
+        return exactGateFailureResult({
+          institution,
+          unmetRequirements: ['אנגלית בפסיכומטרי ברמת 100 ומעלה'],
+          requirementsUrl:
+            'https://go.tau.ac.il/he/social-sciences/ba/political-science?v=admission-requirements',
         });
       }
 

@@ -962,6 +962,54 @@ export const TAU_COMMUNICATION_CONTRACT: AdmissionsProgramVerificationContract =
   proof: { ...TAU_BIOLOGY_CONTRACT.proof, sourceFingerprint: TAU_COMMUNICATION_SOURCE_FINGERPRINT },
 };
 
+const TAU_POLITICAL_SCIENCE_SOURCE_FINGERPRINT =
+  'sha256:5f6bdb4fd9c9b2714446db7ddce9dbb15ebc7df42a76ea544b1c3de9d5193b2d';
+export const TAU_POLITICAL_SCIENCE_FIXTURES: AdmissionsVerificationFixture[] =
+  TAU_COMMUNICATION_FIXTURES.map((fixture) => ({
+    ...fixture,
+    id: fixture.id.replace('communication__tau', 'political_science__tau'),
+    pairId: 'political_science__tau',
+    expected:
+      fixture.verdict === 'accepted'
+        ? { score: 679, verdict: 'accepted' }
+        : { score: 496, verdict: 'below' },
+    sourceFingerprint: TAU_POLITICAL_SCIENCE_SOURCE_FINGERPRINT,
+  }));
+
+export const TAU_POLITICAL_SCIENCE_CONTRACT: AdmissionsProgramVerificationContract = {
+  ...TAU_COMMUNICATION_CONTRACT,
+  pairId: 'political_science__tau',
+  programId: 'political_science',
+  officialProgramId: '103111030000',
+  source: { targetId: 'tau-political-science-live', url: 'https://go.tau.ac.il/graphql' },
+  calculation: {
+    ...TAU_COMMUNICATION_CONTRACT.calculation,
+    cutoff: { acceptance: 535, rejection: 534 },
+    gates: [
+      {
+        id: 'tau-political-science:english-minimum',
+        kind: 'language',
+        field: 'psychometricEnglish',
+        minimum: 100,
+        description: 'TAU requires at least English level Advanced A.',
+      },
+      {
+        id: 'tau-political-science:alternative-routes',
+        kind: 'manual',
+        field: 'alternativeAdmissionRoute',
+        description: 'Political-science alternative routes remain manual.',
+      },
+    ],
+  },
+  fixtureIds: TAU_POLITICAL_SCIENCE_FIXTURES.map((fixture) => fixture.id),
+  fixtureSetFingerprint: 'sha256:04da09168b669a7c50592128e25ee35314d72c9defa83e47b02c140e4f60544e',
+  sourceFingerprint: TAU_POLITICAL_SCIENCE_SOURCE_FINGERPRINT,
+  proof: {
+    ...TAU_COMMUNICATION_CONTRACT.proof,
+    sourceFingerprint: TAU_POLITICAL_SCIENCE_SOURCE_FINGERPRINT,
+  },
+};
+
 export interface ProgramVerificationArtifact {
   contract: AdmissionsProgramVerificationContract;
   fixtures: AdmissionsVerificationFixture[];
@@ -1071,6 +1119,14 @@ export const TAU_PROGRAM_VERIFICATION_METADATA: Record<string, TauProgramVerific
       'https://go.tau.ac.il/he/social-sciences/ba/communication?v=admission-requirements',
     ledgerReason:
       'Verified against the current TAU Communication programme node, score route, English gate, accepted/below fixtures, and live score-and-verdict replay.',
+  },
+  [TAU_POLITICAL_SCIENCE_CONTRACT.pairId]: {
+    contract: TAU_POLITICAL_SCIENCE_CONTRACT,
+    fixtures: TAU_POLITICAL_SCIENCE_FIXTURES,
+    requirementsUrl:
+      'https://go.tau.ac.il/he/social-sciences/ba/political-science?v=admission-requirements',
+    ledgerReason:
+      'Verified against the current TAU Political Science programme node, score route, English gate, accepted/below fixtures, and live score-and-verdict replay.',
   },
 };
 

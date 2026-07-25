@@ -24,6 +24,7 @@ describe('admissionsSourceRegistry', () => {
       'tau-architecture-live',
       'tau-biology-live',
       'tau-communication-live',
+      'tau-political-science-live',
     ]);
   });
 
