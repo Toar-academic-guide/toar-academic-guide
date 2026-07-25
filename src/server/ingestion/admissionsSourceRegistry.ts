@@ -400,6 +400,37 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
       'Keep the shared accounting node, score field, fixtures, and source fingerprint under review.',
   },
   {
+    id: 'tau-architecture-live',
+    institutionId: 'tau',
+    institutionName: 'Tel Aviv University',
+    officialUrl: 'https://go.tau.ac.il/graphql',
+    adapterId: 'tau',
+    expectedCapability: 'decision_capable',
+    proofLevel: 'exact_official',
+    category: 'exact',
+    defaultApplicant: { bagrutAverage: 110, psychometric: 680 },
+    defaultProgram: {
+      targetId: 'tau-architecture-live',
+      pairId: 'architecture__tau',
+      id: 'tau-architecture',
+      name: 'Architecture',
+      nodeId: 8209,
+      externalId: '088111010000',
+      scoreField: 'hatama',
+    },
+    reproducedFields: [
+      'selectedScore',
+      'acceptanceThreshold',
+      'rejectionThreshold',
+      'officialVerdict',
+    ],
+    limitations: [
+      'Portfolio, interview, and other non-score architecture conditions remain manual.',
+    ],
+    nextAction:
+      'Keep the architecture node, English gate, manual conditions, fixtures, and thresholds under review.',
+  },
+  {
     id: 'huji-static-json',
     institutionId: 'huji',
     institutionName: 'Hebrew University',

@@ -19,6 +19,8 @@ export const TAU_LAW_REQUIREMENTS_URL =
   'https://go.tau.ac.il/he/law/ba/law?v=admission-requirements';
 export const TAU_ACCOUNTING_REQUIREMENTS_URL =
   'https://go.tau.ac.il/he/management/ba/accounting?v=admission-requirements';
+export const TAU_ARCHITECTURE_REQUIREMENTS_URL =
+  'https://go.tau.ac.il/he/engineering/ba/architecture?v=admission-requirements';
 
 export const TAU_DIGITAL_SCIENCES_FIXTURES: AdmissionsVerificationFixture[] = [
   {
@@ -765,6 +767,104 @@ export const TAU_LEGACY_ACCOUNTING_CONTRACT: AdmissionsProgramVerificationContra
   fixtureSetFingerprint: 'sha256:85f34ad4be00fdbdf4a40c0f484fdc78a25f6c4bdad79519bf57b460b01980c2',
 };
 
+const TAU_ARCHITECTURE_SOURCE_FINGERPRINT =
+  'sha256:ca1b8b5fc2382bb0e899de53238ee2aebd132b33df642393acb73f26a4f2f9e0';
+const TAU_ARCHITECTURE_CAPTURED_AT = '2026-07-26T06:00:00.000Z';
+const TAU_ARCHITECTURE_LIVE_COMPARED_AT = '2026-07-26T06:01:00.000Z';
+
+export const TAU_ARCHITECTURE_FIXTURES: AdmissionsVerificationFixture[] = [
+  {
+    id: 'architecture__tau:accepted:2026-2027',
+    pairId: 'architecture__tau',
+    admissionCycle: '2026-2027',
+    verdict: 'accepted',
+    input: {
+      psychometric: 680,
+      bagrut: 110,
+      psychometricEnglish: 110,
+      bagrutSubjectRecord: {
+        schemaVersion: 1,
+        sector: 'jewish',
+        subjects: [
+          { subjectId: 'mathematics', units: 5, grade: 82 },
+          { subjectId: 'english', units: 5, grade: 90 },
+          { subjectId: 'history', units: 2, grade: 92 },
+          { subjectId: 'bible', units: 2, grade: 88 },
+        ],
+      },
+    },
+    expected: { score: 679, verdict: 'accepted' },
+    sourceFingerprint: TAU_ARCHITECTURE_SOURCE_FINGERPRINT,
+    capturedAt: TAU_ARCHITECTURE_CAPTURED_AT,
+  },
+  {
+    id: 'architecture__tau:below:2026-2027',
+    pairId: 'architecture__tau',
+    admissionCycle: '2026-2027',
+    verdict: 'below',
+    input: {
+      psychometric: 620,
+      bagrut: 90,
+      psychometricEnglish: 110,
+      bagrutSubjectRecord: {
+        schemaVersion: 1,
+        sector: 'jewish',
+        subjects: [
+          { subjectId: 'mathematics', units: 4, grade: 80 },
+          { subjectId: 'english', units: 5, grade: 85 },
+          { subjectId: 'history', units: 2, grade: 80 },
+          { subjectId: 'bible', units: 2, grade: 78 },
+        ],
+      },
+    },
+    expected: { score: 548, verdict: 'below' },
+    sourceFingerprint: TAU_ARCHITECTURE_SOURCE_FINGERPRINT,
+    capturedAt: TAU_ARCHITECTURE_CAPTURED_AT,
+  },
+];
+
+export const TAU_ARCHITECTURE_CONTRACT: AdmissionsProgramVerificationContract = {
+  pairId: 'architecture__tau',
+  programId: 'architecture',
+  institutionId: 'tau',
+  officialProgramId: '088111010000',
+  admissionCycle: '2026-2027',
+  source: { targetId: 'tau-architecture-live', url: 'https://go.tau.ac.il/graphql' },
+  calculation: {
+    adapterId: 'tau',
+    mode: 'official_replay',
+    formulaFamily: 'tau_hatama',
+    requiredInputs: ['psychometric_english'],
+    cutoff: { acceptance: 631, rejection: 563 },
+    gates: [
+      {
+        id: 'tau-architecture:english-minimum',
+        kind: 'language',
+        field: 'psychometricEnglish',
+        minimum: 100,
+        description: 'TAU requires at least English level Advanced A.',
+      },
+      {
+        id: 'tau-architecture:portfolio-interview',
+        kind: 'manual',
+        field: 'portfolioAndInterview',
+        description:
+          'Architecture applicants remain subject to the official portfolio and interview process.',
+      },
+    ],
+  },
+  fixtureIds: TAU_ARCHITECTURE_FIXTURES.map((fixture) => fixture.id),
+  fixtureSetFingerprint: 'sha256:331166ba6f78b95ace049365119f4d9a86ebb5140765dff46d6f54d0f809ed12',
+  sourceFingerprint: TAU_ARCHITECTURE_SOURCE_FINGERPRINT,
+  proof: {
+    state: 'verified',
+    comparedScore: true,
+    comparedVerdict: true,
+    liveComparedAt: TAU_ARCHITECTURE_LIVE_COMPARED_AT,
+    sourceFingerprint: TAU_ARCHITECTURE_SOURCE_FINGERPRINT,
+  },
+};
+
 export interface ProgramVerificationArtifact {
   contract: AdmissionsProgramVerificationContract;
   fixtures: AdmissionsVerificationFixture[];
@@ -852,6 +952,13 @@ export const TAU_PROGRAM_VERIFICATION_METADATA: Record<string, TauProgramVerific
     requirementsUrl: TAU_ACCOUNTING_REQUIREMENTS_URL,
     ledgerReason:
       'Verified the legacy TAU Accounting catalogue alias against the same current programme node, score field, fixtures, and live score-and-verdict replay.',
+  },
+  [TAU_ARCHITECTURE_CONTRACT.pairId]: {
+    contract: TAU_ARCHITECTURE_CONTRACT,
+    fixtures: TAU_ARCHITECTURE_FIXTURES,
+    requirementsUrl: TAU_ARCHITECTURE_REQUIREMENTS_URL,
+    ledgerReason:
+      'Verified against the current TAU Architecture programme node, score route, English gate, manual portfolio/interview condition, accepted/below fixtures, and live score-and-verdict replay.',
   },
 };
 

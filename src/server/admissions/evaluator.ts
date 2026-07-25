@@ -66,6 +66,7 @@ export async function evaluateAdmissionsForProgram(args: {
       if (key === 'tau_law__tau') return ['tau-law-legacy-live'];
       if (key === 'accounting__tau') return ['tau-accounting-live'];
       if (key === 'tau_accounting__tau') return ['tau-accounting-legacy-live'];
+      if (key === 'architecture__tau') return ['tau-architecture-live'];
       return [];
     });
 
@@ -373,6 +374,33 @@ async function evaluateExactResult(args: {
           bagrutAverage: input.bagrut,
           psychometric: input.psychometric,
         },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+      });
+    }
+
+    if (exactTarget.targetId === 'tau-architecture-live') {
+      const psychometricEnglish = input.extraInputs?.psychometricEnglish;
+      if (typeof psychometricEnglish !== 'number') {
+        return requiredInputsResult(institution, ['psychometric_english']);
+      }
+      if (psychometricEnglish < 100) {
+        return exactGateFailureResult({
+          institution,
+          unmetRequirements: ['אנגלית בפסיכומטרי ברמת 100 ומעלה'],
+          requirementsUrl:
+            'https://go.tau.ac.il/he/engineering/ba/architecture?v=admission-requirements',
+        });
+      }
+
+      const proof = await runTauAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: { bagrutAverage: input.bagrut, psychometric: input.psychometric },
       });
 
       return normalizeExactProofResult({
