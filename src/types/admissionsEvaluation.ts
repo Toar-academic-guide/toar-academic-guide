@@ -65,7 +65,7 @@ export interface AdmissionsExtraInputs {
   csGrade?: number;
 }
 
-export type AdmissionsVerificationVerdict = 'accepted' | 'below';
+export type AdmissionsVerificationVerdict = 'accepted' | 'below' | 'eligible_to_apply';
 
 export interface AdmissionsVerificationFixtureInput {
   psychometric: number;

@@ -277,7 +277,9 @@ function verifiedTauDigitalSciencesEntry(): FormulaPairVerificationLedgerEntry {
     sourceUrl: TAU_DIGITAL_SCIENCES_REQUIREMENTS_URL,
     formulaFamily: contract.calculation.formulaFamily,
     fixtureEvidence: {
-      eligible: TAU_DIGITAL_SCIENCES_FIXTURES.some((fixture) => fixture.verdict === 'accepted'),
+      eligible: TAU_DIGITAL_SCIENCES_FIXTURES.some(
+        (fixture) => fixture.verdict === 'accepted' || fixture.verdict === 'eligible_to_apply',
+      ),
       below: TAU_DIGITAL_SCIENCES_FIXTURES.some((fixture) => fixture.verdict === 'below'),
       fingerprint: contract.fixtureSetFingerprint,
     },

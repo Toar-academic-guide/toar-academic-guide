@@ -123,6 +123,30 @@ describe('program verification contracts', () => {
     expect(result.state).toBe('exact');
   });
 
+  it('treats an officially eligible-to-apply fixture as the positive boundary', () => {
+    const [eligible, below] = makeFixtures();
+    const eligibleToApply = {
+      ...eligible,
+      verdict: 'eligible_to_apply' as const,
+      expected: {
+        ...eligible.expected,
+        verdict: 'eligible_to_apply' as const,
+      },
+    };
+
+    const result = evaluateProgramVerification({
+      contract: makeContract({
+        fixtureIds: [eligibleToApply.id, below.id],
+        fixtureSetFingerprint: fingerprintVerificationFixtures([eligibleToApply, below]),
+      }),
+      fixtures: [eligibleToApply, below],
+      currentAdmissionCycle: '2026-2027',
+      currentSourceFingerprint: SOURCE_FINGERPRINT,
+    });
+
+    expect(result.state).toBe('exact');
+  });
+
   it('activates a complete contract with eligible and below fixtures', () => {
     const fixtures = makeFixtures();
     const result = evaluateProgramVerification({

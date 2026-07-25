@@ -2,6 +2,7 @@ import {
   TAU_DIGITAL_SCIENCES_CONTRACT,
   TAU_DIGITAL_SCIENCES_FIXTURES,
 } from '@/data/admissions/tauProgramVerification';
+import type { AdmissionsVerificationVerdict } from '@/types/admissionsEvaluation';
 import { evaluateTauDigitalSciencesGates } from '../tauDigitalSciencesPolicy';
 import { runTauAdmissionsProof } from '@/server/ingestion/adapters/tauAdmissions';
 
@@ -9,8 +10,8 @@ export interface TauProgramFixtureComparison {
   fixtureId: string;
   expectedScore: number;
   actualScore: number | null;
-  expectedVerdict: 'accepted' | 'below';
-  actualVerdict: 'accepted' | 'below' | 'pending' | null;
+  expectedVerdict: AdmissionsVerificationVerdict;
+  actualVerdict: AdmissionsVerificationVerdict | 'pending' | null;
   scoreMatches: boolean;
   verdictMatches: boolean;
 }
@@ -96,5 +97,10 @@ function numberValue(value: unknown): number | null {
 }
 
 function verdictValue(value: unknown): TauProgramFixtureComparison['actualVerdict'] {
-  return value === 'accepted' || value === 'below' || value === 'pending' ? value : null;
+  return value === 'accepted' ||
+    value === 'below' ||
+    value === 'eligible_to_apply' ||
+    value === 'pending'
+    ? value
+    : null;
 }

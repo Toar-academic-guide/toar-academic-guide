@@ -27,7 +27,7 @@ const requiredInputSchema = z.enum([
   'bagrut_profile_version',
   'bagrut_sector',
 ]);
-const verificationVerdictSchema = z.enum(['accepted', 'below']);
+const verificationVerdictSchema = z.enum(['accepted', 'below', 'eligible_to_apply']);
 const fixtureInputValueSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
 const fixtureBagrutSubjectRecordSchema = z
   .object({
@@ -388,7 +388,11 @@ function validateFixtureBindings(
     }
   }
 
-  if (!fixtures.some((fixture) => fixture.verdict === 'accepted')) {
+  if (
+    !fixtures.some(
+      (fixture) => fixture.verdict === 'accepted' || fixture.verdict === 'eligible_to_apply',
+    )
+  ) {
     issues.push({
       code: 'missing_eligible_fixture',
       pairId: contract.pairId,
