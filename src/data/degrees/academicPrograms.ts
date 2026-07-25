@@ -277,18 +277,6 @@ const D: Record<string, InstitutionDetail[]> = {
           isRequired: true,
           groupKey: 'math_route/4_units',
         },
-        {
-          id: 'tau_datascience:tau:fact:prior-studies',
-          kind: 'manual_gate',
-          field: 'prior_studies',
-          comparison: 'present',
-          valueNumber: null,
-          valueText: 'בדיקת עבר אקדמי',
-          unit: 'text',
-          description: 'נדרשת בדיקה שאין עבר אקדמי המונע קבלה',
-          confidence: 'high',
-          isRequired: true,
-        },
       ],
       programDescription:
         'תוכנית דו־חוגית במדעים דיגיטליים להיי־טק, המשלבת בינה מלאכותית, תוכנה, סטטיסטיקה ומערכות מידע.',

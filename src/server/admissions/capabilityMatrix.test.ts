@@ -135,7 +135,7 @@ function makeProgram(overrides: Partial<CatalogueProgram> = {}): CatalogueProgra
 }
 
 describe('buildAdmissionsCapabilityMatrix', () => {
-  it('withholds formula-backed pairs that do not have pair-level fixtures and live proof', () => {
+  it('uses the recent reviewed proof while asking for required TAU inputs', () => {
     const [entry] = buildAdmissionsCapabilityMatrix({
       program: makeProgram({
         id: 'tau_datascience',
@@ -146,15 +146,15 @@ describe('buildAdmissionsCapabilityMatrix', () => {
 
     expect(entry).toMatchObject({
       institutionId: 'tau',
-      capability: 'authority_unavailable',
+      capability: 'needs_input',
       pairVerification: {
         pairId: 'tau_datascience__tau',
-        state: 'withheld',
+        state: 'exact',
       },
     });
   });
 
-  it('does not treat the legacy TAU pilot target as exact without pair fixtures', () => {
+  it('withdraws the TAU pair after the checked-in proof freshness window expires', () => {
     const program = makeProgram({
       id: 'tau_datascience',
       linkedInstitutionIds: ['tau'],
@@ -163,10 +163,50 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     const entries = buildAdmissionsCapabilityMatrix({
       program,
       institutions: INSTITUTIONS,
+      now: new Date('2026-08-04T00:00:00Z'),
     });
 
     const tauEntry = entries.find((e) => e.institutionId === 'tau');
-    expect(tauEntry?.capability).toBe('authority_unavailable');
+    expect(tauEntry?.capability).toBe('stale');
+  });
+
+  it('activates the TAU pair only with matching source proof and required inputs', () => {
+    const [entry] = buildAdmissionsCapabilityMatrix({
+      program: makeProgram({
+        id: 'tau_datascience',
+        linkedInstitutionIds: ['tau'],
+      }),
+      institutions: INSTITUTIONS,
+      input: {
+        psychometricEnglish: 110,
+        bagrutSubjectRecord: {
+          schemaVersion: 1,
+          sector: 'jewish',
+          subjects: [{ subjectId: 'mathematics', units: 5, grade: 80 }],
+        },
+      },
+      freshnessStatesBySourceId: new Map([
+        [
+          'tau-digital-sciences-live',
+          makeFreshnessState({
+            sourceId: 'tau-digital-sciences-live',
+            normalizedFingerprint:
+              '62a6a2f398b737b2139671f32c48a921083a4966ea43e8135c081870d42e9971',
+            lastCheckedAt: new Date('2026-07-25T20:12:07Z'),
+            lastSuccessfulCheckAt: new Date('2026-07-25T20:12:07Z'),
+          }),
+        ],
+      ]),
+      now: new Date('2026-07-25T21:00:00Z'),
+    });
+
+    expect(entry).toMatchObject({
+      institutionId: 'tau',
+      capability: 'exact',
+      exactTarget: {
+        requiredInputs: ['psychometric_english', 'bagrut_subject_record'],
+      },
+    });
   });
 
   it('checks Haifa pair proof before asking for calculator inputs', () => {
@@ -632,7 +672,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     expect(entry?.capability).toBe('open_admission');
   });
 
-  it('does not let blocked source freshness bypass a withheld pair gate', () => {
+  it('withdraws the verified TAU pair when source freshness is blocked', () => {
     const program = makeProgram({
       id: 'tau_datascience',
       linkedInstitutionIds: ['tau'],
@@ -650,10 +690,10 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
 
     const entry = entries.find((e) => e.institutionId === 'tau');
-    expect(entry?.capability).toBe('authority_unavailable');
+    expect(entry?.capability).toBe('blocked');
   });
 
-  it('does not let failed source freshness bypass a withheld pair gate', () => {
+  it('withdraws the verified TAU pair when source freshness failed', () => {
     const program = makeProgram({
       id: 'tau_datascience',
       linkedInstitutionIds: ['tau'],
@@ -671,6 +711,6 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
 
     const entry = entries.find((e) => e.institutionId === 'tau');
-    expect(entry?.capability).toBe('authority_unavailable');
+    expect(entry?.capability).toBe('stale');
   });
 });

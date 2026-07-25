@@ -70,7 +70,8 @@ export type AdmissionsVerificationVerdict = 'accepted' | 'below';
 export interface AdmissionsVerificationFixtureInput {
   psychometric: number;
   bagrut: number;
-  [field: string]: string | number | boolean | null;
+  bagrutSubjectRecord?: BagrutSubjectRecord;
+  [field: string]: string | number | boolean | null | BagrutSubjectRecord | undefined;
 }
 
 export interface AdmissionsVerificationFixture {

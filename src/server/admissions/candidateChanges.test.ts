@@ -27,6 +27,9 @@ const baseline = {
 };
 
 describe('admissions proof candidate classification', () => {
+  const withheldTauLedger = FORMULA_BACKED_VERIFICATION_LEDGER.map((entry) =>
+    entry.pairId === 'tau_datascience__tau' ? { ...entry, state: 'withheld' as const } : entry,
+  );
   const exactTauLedger = FORMULA_BACKED_VERIFICATION_LEDGER.map((entry) =>
     entry.pairId === 'tau_datascience__tau' ? { ...entry, state: 'exact' as const } : entry,
   );
@@ -35,6 +38,7 @@ describe('admissions proof candidate classification', () => {
     const result = classifyAdmissionsProofCandidates({
       baseline,
       cycle: '2027',
+      verificationLedger: withheldTauLedger,
       proofs: [
         {
           id: 'tau-digital-sciences-live',

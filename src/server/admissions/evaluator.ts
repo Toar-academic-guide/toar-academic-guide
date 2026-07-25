@@ -9,6 +9,7 @@ import type {
   AdmissionsEvaluationResult,
   AdmissionsRequiredInput,
 } from '@/types/admissionsEvaluation';
+import type { SourceFreshnessStateRow } from '@/db/types';
 import { admissionsInputValue } from './admissionsInputValue';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import {
@@ -29,6 +30,7 @@ import {
   createAdmissionsInputDigest,
   createAdmissionsEvaluationSnapshot,
 } from './evaluationSnapshot';
+import { evaluateTauDigitalSciencesGates } from './tauDigitalSciencesPolicy';
 
 const MAX_EXACT_SOURCE_CALLS = 2;
 const OFFICIAL_SOURCE_TIMEOUT_MS = 5000;
@@ -39,8 +41,16 @@ export async function evaluateAdmissionsForProgram(args: {
   institutions: CatalogueInstitution[];
   fetcher?: typeof fetch;
   now?: Date;
+  freshnessStatesBySourceId?: Map<string, SourceFreshnessStateRow>;
 }): Promise<AdmissionsEvaluationReport> {
-  const { input, program, institutions, fetcher, now = new Date() } = args;
+  const {
+    input,
+    program,
+    institutions,
+    fetcher,
+    now = new Date(),
+    freshnessStatesBySourceId: suppliedFreshnessStates,
+  } = args;
 
   const exactSourceIds = program.linkedInstitutionIds
     .map((institutionId) => `${program.id}__${institutionId}`)
@@ -50,7 +60,8 @@ export async function evaluateAdmissionsForProgram(args: {
       return [];
     });
 
-  const freshnessStatesBySourceId = await loadFreshnessStatesBySourceIds(exactSourceIds);
+  const freshnessStatesBySourceId =
+    suppliedFreshnessStates ?? (await loadFreshnessStatesBySourceIds(exactSourceIds));
   const capabilityEntries = buildAdmissionsCapabilityMatrix({
     program,
     institutions,
@@ -218,12 +229,34 @@ async function evaluateExactResult(args: {
       });
     }
 
+    const gateResult = evaluateTauDigitalSciencesGates(input);
+    if (gateResult.state === 'needs_input') {
+      return requiredInputsResult(institution, gateResult.requiredInputs);
+    }
+    if (gateResult.state === 'below') {
+      return {
+        institution: publicInstitutionShape(institution),
+        linkedInstitutionId: institution.id,
+        capability: 'exact',
+        kind: 'exact',
+        decision: 'below',
+        confidence: 'high',
+        sourceLabel: 'תנאי קבלה רשמיים',
+        explanation: `לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: ${gateResult.unmetRequirements.join('; ')}.`,
+        nextAction: 'שפרו את תנאי הסף או בדקו אפיק קבלה חלופי באתר התוכנית.',
+        officialUrls: [
+          'https://go.tau.ac.il/he/engineering/ba/high-tech-plus?v=admission-requirements',
+        ],
+      };
+    }
+
     const proof = await runTauAdmissionsProof({
       fetcher: timedFetcher,
       program: exactTarget.program,
       applicant: {
         bagrutAverage: input.bagrut,
         psychometric: input.psychometric,
+        exactSciencesBonusEligible: gateResult.exactSciencesBonusEligible,
       },
     });
 
@@ -284,7 +317,22 @@ function normalizeExactProofResult(args: {
     };
   }
 
-  const decision = score >= threshold ? 'accepted' : 'below';
+  const officialVerdict =
+    proof.officialVerdict === 'accepted' ||
+    proof.officialVerdict === 'below' ||
+    proof.officialVerdict === 'pending'
+      ? proof.officialVerdict
+      : undefined;
+  const decision =
+    officialVerdict === 'accepted'
+      ? 'accepted'
+      : officialVerdict === 'below'
+        ? 'below'
+        : officialVerdict === 'pending'
+          ? 'unknown'
+          : score >= threshold
+            ? 'accepted'
+            : 'below';
   const scoreLabel = proof.selectedScore !== undefined ? 'ציון התאמה' : 'ציון משוקלל';
 
   return {
@@ -294,12 +342,17 @@ function normalizeExactProofResult(args: {
     kind: 'exact',
     decision,
     confidence: 'high',
-    sourceLabel: 'אימות רשמי',
-    explanation: `${explanationPrefix} סיפק ציון וסף קבלה מעודכנים למסלול זה.`,
+    sourceLabel: officialVerdict === 'pending' ? 'טווח המתנה רשמי' : 'אימות רשמי',
+    explanation:
+      officialVerdict === 'pending'
+        ? `${explanationPrefix} הציב את הציון בין סף הדחייה לסף הקבלה, ולכן עדיין אין החלטה סופית.`
+        : `${explanationPrefix} סיפק ציון וסף קבלה מעודכנים למסלול זה.`,
     nextAction:
       decision === 'accepted'
-        ? 'בדקו את דף ההרשמה הרשמי והשלימו כל דרישה ידנית נוספת.'
-        : 'שמרו את המסלול והשוו מול מוסדות אחרים או שפרו את הנתונים לפני הרשמה.',
+        ? 'בדקו את דף ההרשמה הרשמי והשלימו את בדיקת העבר האקדמי, העברית ושאר דרישות המסמכים.'
+        : decision === 'below'
+          ? 'שמרו את המסלול והשוו מול מוסדות אחרים או שפרו את הנתונים לפני הרשמה.'
+          : 'עקבו אחר עדכון הספים באתר הרשמי או פנו למרכז הרישום.',
     score,
     scoreLabel,
     threshold,

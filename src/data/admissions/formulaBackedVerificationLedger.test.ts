@@ -26,7 +26,7 @@ describe('formula-backed verification ledger', () => {
     expect(FORMULA_BACKED_VERIFICATION_LEDGER).toHaveLength(135);
   });
 
-  it('keeps unproved pairs withheld rather than counting them as complete', () => {
+  it('counts only the first fully proved pair as exact', () => {
     const completion = formulaPairVerificationCompletion(
       inventory,
       FORMULA_BACKED_VERIFICATION_LEDGER,
@@ -34,12 +34,12 @@ describe('formula-backed verification ledger', () => {
 
     expect(completion).toMatchObject({
       total: 135,
-      exact: 0,
-      withheld: 135,
+      exact: 1,
+      withheld: 134,
       isComplete: false,
     });
     expect(completion.totalsByInstitution).toEqual({
-      tau: { total: 35, exact: 0, withheld: 35, stale: 0, blocked: 0 },
+      tau: { total: 35, exact: 1, withheld: 34, stale: 0, blocked: 0 },
       huji: { total: 29, exact: 0, withheld: 29, stale: 0, blocked: 0 },
       bgu: { total: 29, exact: 0, withheld: 29, stale: 0, blocked: 0 },
       haifa: { total: 27, exact: 0, withheld: 27, stale: 0, blocked: 0 },

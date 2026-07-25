@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type { AdmissionsEvaluationReport } from '@/types/admissionsEvaluation';
+import type { SourceFreshnessStateRow } from '@/db/types';
 import { evaluateAdmissionsForProgram } from './evaluator';
 
 vi.mock('server-only', () => ({}));
@@ -29,6 +30,32 @@ function expectFormulaVerificationUnavailable(
       degradationReason: 'pair_verification_incomplete',
     }),
   );
+}
+
+function tauFreshnessStates(): Map<string, SourceFreshnessStateRow> {
+  return new Map([
+    [
+      'tau-digital-sciences-live',
+      {
+        sourceId: 'tau-digital-sciences-live',
+        sourceClass: 'api_static_json',
+        capability: 'decision_capable',
+        status: 'fresh',
+        lastCheckedAt: new Date('2026-07-25T20:12:07Z'),
+        lastSuccessfulCheckAt: new Date('2026-07-25T20:12:07Z'),
+        lastChangedAt: null,
+        latestFailureReason: null,
+        blockedReason: null,
+        rawFingerprint: null,
+        normalizedFingerprint: '62a6a2f398b737b2139671f32c48a921083a4966ea43e8135c081870d42e9971',
+        normalizedDecisionPayload: {},
+        latestReviewItemId: null,
+        nextAction: null,
+        createdAt: new Date('2026-07-25T20:12:07Z'),
+        updatedAt: new Date('2026-07-25T20:12:07Z'),
+      },
+    ],
+  ]);
 }
 
 const institutions: CatalogueInstitution[] = [
@@ -731,7 +758,7 @@ describe('evaluateAdmissionsForProgram', () => {
     );
   });
 
-  it('does not call the TAU adapter while pair proof remains withheld', async () => {
+  it('does not call the TAU adapter while required exact inputs are missing', async () => {
     const fetcher = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(
@@ -780,7 +807,126 @@ describe('evaluateAdmissionsForProgram', () => {
     });
 
     expect(fetcher).not.toHaveBeenCalled();
-    expectFormulaVerificationUnavailable(report, 'tau');
+    expect(report.results).toContainEqual(
+      expect.objectContaining({
+        linkedInstitutionId: 'tau',
+        capability: 'needs_input',
+        decision: 'unknown',
+        requiredInputs: ['psychometric_english', 'bagrut_subject_record'],
+      }),
+    );
+  });
+
+  it('returns the reviewed TAU score and verdict with current proof and complete inputs', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            data: {
+              getLastScore: {
+                body: JSON.stringify({ hatama_handasa: 664 }),
+              },
+            },
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            data: {
+              getPrograms: {
+                results: [
+                  {
+                    title: 'תואר ראשון במדעים דיגיטליים להיי-טק',
+                    field_plain_id_programs: ['056011050000'],
+                    field_this_year_receipt_threshol: 652,
+                    field_this_year_rejection_thresh: 632,
+                  },
+                ],
+              },
+            },
+          }),
+          { status: 200 },
+        ),
+      );
+
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'tau_datascience',
+        psychometric: 680,
+        bagrut: 105,
+        extraInputs: {
+          psychometricEnglish: 110,
+          bagrutSubjectRecord: {
+            schemaVersion: 1,
+            sector: 'jewish',
+            subjects: [
+              { subjectId: 'mathematics', units: 5, grade: 80 },
+              { subjectId: 'physics', units: 5, grade: 70 },
+              { subjectId: 'history', units: 2, grade: 90 },
+              { subjectId: 'bible', units: 2, grade: 88 },
+            ],
+          },
+        },
+      },
+      program: tauDataScience,
+      institutions,
+      fetcher,
+      freshnessStatesBySourceId: tauFreshnessStates(),
+      now: new Date('2026-07-25T21:00:00Z'),
+    });
+
+    expect(fetcher).toHaveBeenCalledTimes(2);
+    expect(JSON.parse(String(fetcher.mock.calls[0][1]?.body))).toMatchObject({
+      variables: { scoresData: { reali10: 1 } },
+    });
+    expect(report.results).toContainEqual(
+      expect.objectContaining({
+        linkedInstitutionId: 'tau',
+        kind: 'exact',
+        capability: 'exact',
+        decision: 'accepted',
+        score: 664,
+        threshold: 652,
+      }),
+    );
+  });
+
+  it('returns an exact below verdict for a failed TAU minimum gate without a live call', async () => {
+    const fetcher = vi.fn<typeof fetch>();
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'tau_datascience',
+        psychometric: 619,
+        bagrut: 105,
+        extraInputs: {
+          psychometricEnglish: 110,
+          bagrutSubjectRecord: {
+            schemaVersion: 1,
+            sector: 'jewish',
+            subjects: [{ subjectId: 'mathematics', units: 5, grade: 80 }],
+          },
+        },
+      },
+      program: tauDataScience,
+      institutions,
+      fetcher,
+      freshnessStatesBySourceId: tauFreshnessStates(),
+      now: new Date('2026-07-25T21:00:00Z'),
+    });
+
+    expect(fetcher).not.toHaveBeenCalled();
+    expect(report.results).toContainEqual(
+      expect.objectContaining({
+        linkedInstitutionId: 'tau',
+        kind: 'exact',
+        capability: 'exact',
+        decision: 'below',
+        explanation: expect.stringContaining('פסיכומטרי כללי 620'),
+      }),
+    );
   });
 
   it('correctly returns open_admission for Open University and other open institutions', async () => {
@@ -885,7 +1031,7 @@ describe('evaluateAdmissionsForProgram', () => {
     );
   });
 
-  it('does not spend live-call budget on a withheld TAU pair', async () => {
+  it('does not spend live-call budget on a TAU pair with missing exact inputs', async () => {
     const fetcher = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(
@@ -937,7 +1083,14 @@ describe('evaluateAdmissionsForProgram', () => {
     });
 
     expect(fetcher).not.toHaveBeenCalled();
-    expectFormulaVerificationUnavailable(report, 'tau');
+    expect(report.results).toContainEqual(
+      expect.objectContaining({
+        linkedInstitutionId: 'tau',
+        capability: 'needs_input',
+        decision: 'unknown',
+        requiredInputs: ['psychometric_english', 'bagrut_subject_record'],
+      }),
+    );
   });
 
   it('includes dynamic admissions criteria (interview, portfolio, no bagrut, no psychometric) from Monday evidence in evaluator Hebrew explanation', async () => {

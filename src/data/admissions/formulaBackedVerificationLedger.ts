@@ -234,28 +234,57 @@ const SOURCE_BY_INSTITUTION: Record<FormulaBackedInstitutionId, { url: string; r
 export const FORMULA_BACKED_VERIFICATION_LEDGER: FormulaPairVerificationLedgerEntry[] =
   FORMULA_BACKED_INSTITUTION_IDS.flatMap((institutionId) => {
     const source = SOURCE_BY_INSTITUTION[institutionId];
-    return REVIEWED_PAIR_IDS_BY_INSTITUTION[institutionId].map((pairId) => ({
-      pairId,
-      institutionId,
-      admissionCycle: '2026-2027' as const,
-      state: 'withheld' as const,
-      officialProgramId: null,
-      sourceUrl: source.url,
-      formulaFamily: null,
-      fixtureEvidence: {
-        eligible: false,
-        below: false,
-        fingerprint: null,
-      },
-      liveProof: {
-        comparedScore: false,
-        comparedVerdict: false,
-        comparedAt: null,
-        sourceFingerprint: null,
-      },
-      reason: source.reason,
-    }));
+    return REVIEWED_PAIR_IDS_BY_INSTITUTION[institutionId].map((pairId) =>
+      pairId === 'tau_datascience__tau'
+        ? verifiedTauDigitalSciencesEntry()
+        : {
+            pairId,
+            institutionId,
+            admissionCycle: '2026-2027' as const,
+            state: 'withheld' as const,
+            officialProgramId: null,
+            sourceUrl: source.url,
+            formulaFamily: null,
+            fixtureEvidence: {
+              eligible: false,
+              below: false,
+              fingerprint: null,
+            },
+            liveProof: {
+              comparedScore: false,
+              comparedVerdict: false,
+              comparedAt: null,
+              sourceFingerprint: null,
+            },
+            reason: source.reason,
+          },
+    );
   });
+
+function verifiedTauDigitalSciencesEntry(): FormulaPairVerificationLedgerEntry {
+  return {
+    pairId: 'tau_datascience__tau',
+    institutionId: 'tau',
+    admissionCycle: '2026-2027',
+    state: 'exact',
+    officialProgramId: '056011050000',
+    sourceUrl: 'https://go.tau.ac.il/he/engineering/ba/high-tech-plus?v=admission-requirements',
+    formulaFamily: 'tau_hatama_handasa_with_reali10',
+    fixtureEvidence: {
+      eligible: true,
+      below: true,
+      fingerprint: 'sha256:ea353e9bd5f5185be870124a3e7c0372679fff3ec2d23fd6b330e9ef32a74687',
+    },
+    liveProof: {
+      comparedScore: true,
+      comparedVerdict: true,
+      comparedAt: '2026-07-25T20:12:07.000Z',
+      sourceFingerprint: 'sha256:62a6a2f398b737b2139671f32c48a921083a4966ea43e8135c081870d42e9971',
+    },
+    reason:
+      'Verified against the current TAU programme mapping, cumulative score gates, accepted/below fixtures, and live score-and-verdict replay.',
+  };
+}
 
 const CURRENT_INVENTORY = buildFormulaBackedPairInventory(allPrograms);
 const LEDGER_BY_PAIR_ID = new Map(

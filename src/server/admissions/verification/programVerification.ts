@@ -29,10 +29,26 @@ const requiredInputSchema = z.enum([
 ]);
 const verificationVerdictSchema = z.enum(['accepted', 'below']);
 const fixtureInputValueSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);
+const fixtureBagrutSubjectRecordSchema = z
+  .object({
+    schemaVersion: z.literal(1),
+    sector: z.enum(['jewish', 'arab', 'druze', 'circassian', 'bedouin', 'samaritan']),
+    subjects: z.array(
+      z
+        .object({
+          subjectId: z.string().min(1),
+          units: z.number().int().min(1).max(5),
+          grade: z.number().int().min(0).max(100),
+        })
+        .strict(),
+    ),
+  })
+  .strict();
 const fixtureInputSchema = z
   .object({
     psychometric: z.number().finite(),
     bagrut: z.number().finite(),
+    bagrutSubjectRecord: fixtureBagrutSubjectRecordSchema.optional(),
   })
   .catchall(fixtureInputValueSchema);
 

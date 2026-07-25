@@ -26,6 +26,8 @@ import {
   type AdmissionsSourceTarget,
 } from '@/server/ingestion/admissionsSourceRegistry';
 import type { AdmissionsProgramInput } from '@/server/ingestion/admissionsSourceAdapters';
+import { getProgramVerificationArtifact } from '@/data/admissions/tauProgramVerification';
+import { evaluateProgramVerification } from './verification/programVerification';
 
 const SOURCE_FRESHNESS_STALE_AFTER_MS = 8 * 24 * 60 * 60 * 1000;
 
@@ -71,7 +73,7 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
       searchText: 'מדעים דיגיטליים',
       scoreField: 'hatama_handasa',
     },
-    requiredInputs: [],
+    requiredInputs: ['psychometric_english', 'bagrut_subject_record'],
   },
 };
 
@@ -120,6 +122,7 @@ export function buildAdmissionsCapabilityMatrix(args: {
     const pairId = `${program.id}__${institutionId}`;
     const formulaPairScope = formulaBackedPairScope(pairId);
     const pairVerification = getFormulaPairVerificationEntry(pairId);
+    const verificationArtifact = getProgramVerificationArtifact(pairId);
     const exactTarget = EXACT_PROGRAM_TARGETS[pairId];
     const sourceTarget =
       exactTarget?.sourceTarget ?? SOURCE_TARGETS_BY_INSTITUTION.get(institutionId);
@@ -166,11 +169,65 @@ export function buildAdmissionsCapabilityMatrix(args: {
       };
     }
 
+    if (formulaPairScope === 'in_scope' && pairVerification?.state === 'exact') {
+      if (freshnessState?.status === 'blocked') {
+        return {
+          institutionId,
+          capability: 'blocked',
+          formulaPairScope,
+          pairVerification,
+          sourceTarget,
+          exactTarget,
+          evidence,
+          freshnessState,
+        };
+      }
+
+      if (freshnessState?.status === 'failed') {
+        return {
+          institutionId,
+          capability: 'stale',
+          formulaPairScope,
+          pairVerification,
+          sourceTarget,
+          exactTarget,
+          evidence,
+          freshnessState,
+        };
+      }
+
+      const verification = verificationArtifact
+        ? evaluateProgramVerification({
+            contract: verificationArtifact.contract,
+            fixtures: verificationArtifact.fixtures,
+            currentAdmissionCycle: pairVerification.admissionCycle,
+            currentSourceFingerprint: freshnessState
+              ? sha256Fingerprint(freshnessState.normalizedFingerprint)
+              : currentReviewedProofFingerprint(verificationArtifact.contract, now),
+          })
+        : undefined;
+
+      if (!verification || verification.capability !== 'exact') {
+        return {
+          institutionId,
+          capability: verification?.capability ?? 'authority_unavailable',
+          formulaPairScope,
+          pairVerification,
+          sourceTarget,
+          exactTarget,
+          evidence,
+          freshnessState,
+        };
+      }
+    }
+
     if (exactTarget) {
       if (freshnessState?.status === 'blocked') {
         return {
           institutionId,
           capability: 'blocked',
+          formulaPairScope,
+          pairVerification,
           sourceTarget,
           exactTarget,
           evidence,
@@ -182,6 +239,8 @@ export function buildAdmissionsCapabilityMatrix(args: {
         return {
           institutionId,
           capability: 'stale',
+          formulaPairScope,
+          pairVerification,
           sourceTarget,
           exactTarget,
           evidence,
@@ -194,6 +253,8 @@ export function buildAdmissionsCapabilityMatrix(args: {
         return {
           institutionId,
           capability: 'needs_input',
+          formulaPairScope,
+          pairVerification,
           sourceTarget,
           exactTarget,
           requiredInputs: missingRequiredInputs,
@@ -205,6 +266,8 @@ export function buildAdmissionsCapabilityMatrix(args: {
       return {
         institutionId,
         capability: 'exact',
+        formulaPairScope,
+        pairVerification,
         sourceTarget,
         exactTarget,
         evidence,
@@ -411,6 +474,32 @@ export function buildAdmissionsCapabilityMatrix(args: {
       freshnessState,
     };
   });
+}
+
+function sha256Fingerprint(value: string | null | undefined): string | null {
+  if (!value) {
+    return null;
+  }
+  return value.startsWith('sha256:') ? value : `sha256:${value}`;
+}
+
+function currentReviewedProofFingerprint(
+  contract: { proof: { liveComparedAt: string | null; sourceFingerprint: string | null } },
+  now: Date,
+): string | null {
+  if (!contract.proof.liveComparedAt || !contract.proof.sourceFingerprint) {
+    return null;
+  }
+
+  const comparedAt = new Date(contract.proof.liveComparedAt);
+  if (
+    Number.isNaN(comparedAt.getTime()) ||
+    now.getTime() - comparedAt.getTime() > SOURCE_FRESHNESS_STALE_AFTER_MS
+  ) {
+    return null;
+  }
+
+  return contract.proof.sourceFingerprint;
 }
 
 function requiredInputsMissingFrom(

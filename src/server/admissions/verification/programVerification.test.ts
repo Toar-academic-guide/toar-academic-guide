@@ -92,6 +92,37 @@ function makeContract(
 }
 
 describe('program verification contracts', () => {
+  it('accepts sanitized structured Bagrut records in replay fixtures', () => {
+    const [eligible, below] = makeFixtures();
+    const fixture = {
+      ...eligible,
+      input: {
+        ...eligible.input,
+        bagrutSubjectRecord: {
+          schemaVersion: 1 as const,
+          sector: 'jewish' as const,
+          subjects: [
+            { subjectId: 'mathematics', units: 5, grade: 80 },
+            { subjectId: 'history', units: 2, grade: 90 },
+            { subjectId: 'bible', units: 2, grade: 88 },
+          ],
+        },
+      },
+    };
+
+    const result = evaluateProgramVerification({
+      contract: makeContract({
+        fixtureIds: [fixture.id, below.id],
+        fixtureSetFingerprint: fingerprintVerificationFixtures([fixture, below]),
+      }),
+      fixtures: [fixture, below],
+      currentAdmissionCycle: '2026-2027',
+      currentSourceFingerprint: SOURCE_FINGERPRINT,
+    });
+
+    expect(result.state).toBe('exact');
+  });
+
   it('activates a complete contract with eligible and below fixtures', () => {
     const fixtures = makeFixtures();
     const result = evaluateProgramVerification({

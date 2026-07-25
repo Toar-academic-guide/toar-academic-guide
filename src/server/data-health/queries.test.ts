@@ -333,8 +333,8 @@ describe('summarizeDataHealthRows', () => {
     expect(report.readiness.issues).toEqual([]);
     expect(report.formulaVerification).toMatchObject({
       total: 135,
-      exact: 0,
-      withheld: 135,
+      exact: 1,
+      withheld: 134,
       isComplete: false,
     });
   });
@@ -481,6 +481,8 @@ describe('summarizeDataHealthRows', () => {
             lastChangedAt: null,
             latestFailureReason: null,
             blockedReason: null,
+            normalizedFingerprint:
+              '62a6a2f398b737b2139671f32c48a921083a4966ea43e8135c081870d42e9971',
             latestReviewItemId: null,
             nextAction: null,
           }),
@@ -508,13 +510,13 @@ describe('summarizeDataHealthRows', () => {
           programId: 'tau_datascience',
           institutionId: 'tau',
           institutionName: 'Tel Aviv University',
-          evidenceMode: 'authority_unavailable',
-          severity: 'attention',
+          evidenceMode: 'needs_input',
+          severity: 'normal',
           sourceTargetId: 'tau-digital-sciences-live',
           officialSourceUrl: 'https://go.tau.ac.il/graphql',
           externalProgramId: '056011050000',
           freshnessStatus: 'fresh',
-          requiredInputs: [],
+          requiredInputs: ['psychometric_english', 'bagrut_subject_record'],
         }),
         expect.objectContaining({
           programId: 'haifa_cs',
