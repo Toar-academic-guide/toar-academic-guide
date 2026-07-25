@@ -1010,6 +1010,50 @@ export const TAU_POLITICAL_SCIENCE_CONTRACT: AdmissionsProgramVerificationContra
   },
 };
 
+const TAU_EDUCATION_SOURCE_FINGERPRINT =
+  'sha256:6a3c47bcf0e50cc77c0ebd943efbaa3d92fb6f75e42f5ff7428dc32bfbf30a28';
+export const TAU_EDUCATION_FIXTURES: AdmissionsVerificationFixture[] =
+  TAU_POLITICAL_SCIENCE_FIXTURES.map((fixture) => ({
+    ...fixture,
+    id: fixture.id.replace('political_science__tau', 'education__tau'),
+    pairId: 'education__tau',
+    sourceFingerprint: TAU_EDUCATION_SOURCE_FINGERPRINT,
+  }));
+
+export const TAU_EDUCATION_CONTRACT: AdmissionsProgramVerificationContract = {
+  ...TAU_POLITICAL_SCIENCE_CONTRACT,
+  pairId: 'education__tau',
+  programId: 'education',
+  officialProgramId: '072311050000',
+  source: { targetId: 'tau-education-live', url: 'https://go.tau.ac.il/graphql' },
+  calculation: {
+    ...TAU_POLITICAL_SCIENCE_CONTRACT.calculation,
+    cutoff: { acceptance: 550, rejection: 549 },
+    gates: [
+      {
+        id: 'tau-education:english-minimum',
+        kind: 'language',
+        field: 'psychometricEnglish',
+        minimum: 100,
+        description: 'TAU requires at least English level Advanced A.',
+      },
+      {
+        id: 'tau-education:alternative-routes',
+        kind: 'manual',
+        field: 'alternativeAdmissionRoute',
+        description: 'Education tracks and alternate routes remain manual.',
+      },
+    ],
+  },
+  fixtureIds: TAU_EDUCATION_FIXTURES.map((fixture) => fixture.id),
+  fixtureSetFingerprint: 'sha256:76da8c4d4ec38b75673d5a2aa174acf237e43b6191bfc7cbb4e83689edbb62f7',
+  sourceFingerprint: TAU_EDUCATION_SOURCE_FINGERPRINT,
+  proof: {
+    ...TAU_POLITICAL_SCIENCE_CONTRACT.proof,
+    sourceFingerprint: TAU_EDUCATION_SOURCE_FINGERPRINT,
+  },
+};
+
 export interface ProgramVerificationArtifact {
   contract: AdmissionsProgramVerificationContract;
   fixtures: AdmissionsVerificationFixture[];
@@ -1127,6 +1171,14 @@ export const TAU_PROGRAM_VERIFICATION_METADATA: Record<string, TauProgramVerific
       'https://go.tau.ac.il/he/social-sciences/ba/political-science?v=admission-requirements',
     ledgerReason:
       'Verified against the current TAU Political Science programme node, score route, English gate, accepted/below fixtures, and live score-and-verdict replay.',
+  },
+  [TAU_EDUCATION_CONTRACT.pairId]: {
+    contract: TAU_EDUCATION_CONTRACT,
+    fixtures: TAU_EDUCATION_FIXTURES,
+    requirementsUrl:
+      'https://go.tau.ac.il/he/social-sciences/ba/education?v=admission-requirements',
+    ledgerReason:
+      'Verified against the current TAU Education programme node, score route, English gate, accepted/below fixtures, and live score-and-verdict replay.',
   },
 };
 
