@@ -3,6 +3,8 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   TAU_DIGITAL_SCIENCES_CONTRACT,
   TAU_DIGITAL_SCIENCES_FIXTURES,
+  TAU_NURSING_CONTRACT,
+  TAU_NURSING_FIXTURES,
 } from './tauProgramVerification';
 import {
   evaluateProgramVerification,
@@ -12,6 +14,7 @@ import {
   evaluateTauDigitalSciencesGates,
   TAU_DIGITAL_SCIENCES_POLICY,
 } from '@/server/admissions/tauDigitalSciencesPolicy';
+import { TAU_NURSING_POLICY } from '@/server/admissions/tauNursingPolicy';
 import { runTauAdmissionsProof } from '@/server/ingestion/adapters/tauAdmissions';
 
 describe('TAU Digital Sciences verification artifact', () => {
@@ -118,6 +121,31 @@ describe('TAU Digital Sciences verification artifact', () => {
       });
     },
   );
+
+  it('activates Nursing as exact eligibility-to-apply rather than acceptance', () => {
+    expect(fingerprintVerificationFixtures(TAU_NURSING_FIXTURES)).toBe(
+      TAU_NURSING_CONTRACT.fixtureSetFingerprint,
+    );
+    expect(TAU_NURSING_POLICY).toMatchObject({
+      admissionCycle: TAU_NURSING_CONTRACT.admissionCycle,
+      officialProgramId: TAU_NURSING_CONTRACT.officialProgramId,
+      acceptanceCutoff: TAU_NURSING_CONTRACT.calculation.cutoff.acceptance,
+      rejectionCutoff: TAU_NURSING_CONTRACT.calculation.cutoff.rejection,
+    });
+    expect(
+      evaluateProgramVerification({
+        contract: TAU_NURSING_CONTRACT,
+        fixtures: TAU_NURSING_FIXTURES,
+        currentAdmissionCycle: '2026-2027',
+        currentSourceFingerprint: TAU_NURSING_CONTRACT.sourceFingerprint,
+      }),
+    ).toEqual({
+      state: 'exact',
+      capability: 'exact',
+      issues: [],
+    });
+    expect(TAU_NURSING_FIXTURES[0].expected.verdict).toBe('eligible_to_apply');
+  });
 });
 
 function jsonResponse(body: unknown): Response {

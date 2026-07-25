@@ -75,6 +75,19 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
     },
     requiredInputs: ['psychometric_english', 'bagrut_subject_record'],
   },
+  nursing__tau: {
+    targetId: 'tau-nursing-live',
+    sourceTarget: admissionsSourceTargets.find((entry) => entry.id === 'tau-nursing-live')!,
+    program: {
+      targetId: 'tau-nursing-live',
+      id: 'tau-nursing',
+      name: 'Nursing',
+      externalId: '016211010000',
+      searchText: 'nursing',
+      scoreField: 'hatama',
+    },
+    requiredInputs: ['psychometric_english'],
+  },
 };
 
 const SOURCE_TARGETS_BY_INSTITUTION = new Map<string, AdmissionsSourceTarget>(

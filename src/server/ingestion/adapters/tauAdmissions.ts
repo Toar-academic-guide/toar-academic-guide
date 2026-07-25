@@ -14,6 +14,8 @@ export async function runTauAdmissionsProof(
 ): Promise<AdmissionsSourceProof> {
   const fetcher = context.fetcher ?? fetch;
   const program = context.program ?? {
+    targetId: 'tau-digital-sciences-live',
+    pairId: 'tau_datascience__tau',
     id: 'tau-digital-sciences',
     name: 'Digital Sciences for High-Tech',
     externalId: '056011050000',
@@ -21,6 +23,7 @@ export async function runTauAdmissionsProof(
     scoreField: 'hatama_handasa',
   };
   const metadata: NonNullable<AdmissionsSourceProof['rawResponseMetadata']> = [];
+  const targetId = program.targetId ?? 'tau-digital-sciences-live';
 
   try {
     const scoreResponse = await postTauGraphql(fetcher, buildLastScoreRequest(context));
@@ -42,7 +45,7 @@ export async function runTauAdmissionsProof(
     const capability = hasDecision ? 'decision_capable' : 'score_only';
 
     return {
-      id: 'tau-digital-sciences-live',
+      id: targetId,
       institutionId: 'tau',
       institutionName: 'Tel Aviv University',
       officialUrl: TAU_GRAPHQL_URL,
@@ -53,6 +56,7 @@ export async function runTauAdmissionsProof(
       sourceClass: sourceClassForCapability(capability),
       reproducedFields: reproducedFieldsFor(selectedScore, thresholds),
       normalizedPayload: {
+        pairId: program.pairId,
         programId: program.id,
         programName: program.name,
         source: 'tau_graphql',
@@ -74,7 +78,7 @@ export async function runTauAdmissionsProof(
       rawResponseMetadata: metadata,
     };
   } catch (error) {
-    return failedTauProof(error, metadata);
+    return failedTauProof(error, metadata, targetId);
   }
 }
 
@@ -207,9 +211,7 @@ function collectThresholdObjects(value: unknown): Record<string, unknown>[] {
     return [record];
   }
 
-  return Object.values(record).flatMap((entry) =>
-    collectThresholdObjects(parseGraphqlBody(entry)),
-  );
+  return Object.values(record).flatMap((entry) => collectThresholdObjects(parseGraphqlBody(entry)));
 }
 
 function hasThresholdField(record: Record<string, unknown>): boolean {
@@ -284,9 +286,10 @@ function readStringArray(value: unknown): string[] {
 function failedTauProof(
   error: unknown,
   metadata: NonNullable<AdmissionsSourceProof['rawResponseMetadata']>,
+  targetId = 'tau-digital-sciences-live',
 ): AdmissionsSourceProof {
   return {
-    id: 'tau-digital-sciences-live',
+    id: targetId,
     institutionId: 'tau',
     institutionName: 'Tel Aviv University',
     officialUrl: TAU_GRAPHQL_URL,

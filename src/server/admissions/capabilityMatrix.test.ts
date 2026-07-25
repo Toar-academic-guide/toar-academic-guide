@@ -209,6 +209,34 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
   });
 
+  it('treats verified TAU Nursing as exact only after the English input is supplied', () => {
+    const program = makeProgram({
+      id: 'nursing',
+      linkedInstitutionIds: ['tau'],
+    });
+    const [missingInput] = buildAdmissionsCapabilityMatrix({
+      program,
+      institutions: INSTITUTIONS,
+      now: new Date('2026-07-25T21:00:00Z'),
+    });
+    const [exact] = buildAdmissionsCapabilityMatrix({
+      program,
+      institutions: INSTITUTIONS,
+      input: { psychometricEnglish: 110 },
+      now: new Date('2026-07-25T21:00:00Z'),
+    });
+
+    expect(missingInput).toMatchObject({
+      capability: 'needs_input',
+      requiredInputs: ['psychometric_english'],
+      pairVerification: { pairId: 'nursing__tau', state: 'exact' },
+    });
+    expect(exact).toMatchObject({
+      capability: 'exact',
+      exactTarget: { targetId: 'tau-nursing-live' },
+    });
+  });
+
   it('checks Haifa pair proof before asking for calculator inputs', () => {
     const program = makeProgram({
       id: 'haifa_cs',

@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { runTauDigitalSciencesLiveVerification } from './tauProgramLiveVerification';
+import {
+  runTauDigitalSciencesLiveVerification,
+  runTauNursingLiveVerification,
+} from './tauProgramLiveVerification';
 
 describe('TAU programme live verification', () => {
   it('compares both reviewed fixtures without returning their academic inputs', async () => {
@@ -61,13 +64,63 @@ describe('TAU programme live verification', () => {
       { scoreMatches: false, verdictMatches: false, actualVerdict: 'pending' },
     ]);
   });
+
+  it('preserves Nursing eligibility as a manual-gate verdict', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(scoreResponse(546, 'hatama'))
+      .mockResolvedValueOnce(nursingThresholdResponse())
+      .mockResolvedValueOnce(scoreResponse(496, 'hatama'))
+      .mockResolvedValueOnce(nursingThresholdResponse());
+
+    const report = await runTauNursingLiveVerification({
+      fetcher,
+      checkedAt: new Date('2026-07-25T20:30:39Z'),
+    });
+
+    expect(report).toMatchObject({
+      pairId: 'nursing__tau',
+      passed: true,
+      comparisons: [
+        {
+          expectedVerdict: 'eligible_to_apply',
+          actualVerdict: 'eligible_to_apply',
+          scoreMatches: true,
+          verdictMatches: true,
+        },
+        {
+          expectedVerdict: 'below',
+          actualVerdict: 'below',
+          scoreMatches: true,
+          verdictMatches: true,
+        },
+      ],
+    });
+  });
 });
 
-function scoreResponse(score: number): Response {
+function scoreResponse(score: number, field = 'hatama_handasa'): Response {
   return jsonResponse({
     data: {
       getLastScore: {
-        body: JSON.stringify({ hatama_handasa: score }),
+        body: JSON.stringify({ [field]: score }),
+      },
+    },
+  });
+}
+
+function nursingThresholdResponse(): Response {
+  return jsonResponse({
+    data: {
+      getPrograms: {
+        results: [
+          {
+            title: 'לימודי תואר ראשון בחוג למדעי האחיוּת (Nursing)',
+            field_plain_id_programs: ['016211010000', '016211010208'],
+            field_this_year_receipt_threshol: 530,
+            field_this_year_rejection_thresh: 520,
+          },
+        ],
       },
     },
   });

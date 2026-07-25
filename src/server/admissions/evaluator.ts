@@ -31,6 +31,7 @@ import {
   createAdmissionsEvaluationSnapshot,
 } from './evaluationSnapshot';
 import { evaluateTauDigitalSciencesGates } from './tauDigitalSciencesPolicy';
+import { evaluateTauNursingGates } from './tauNursingPolicy';
 
 const MAX_EXACT_SOURCE_CALLS = 2;
 const OFFICIAL_SOURCE_TIMEOUT_MS = 5000;
@@ -57,6 +58,7 @@ export async function evaluateAdmissionsForProgram(args: {
     .flatMap((key) => {
       if (key === 'haifa_cs__haifa') return ['haifa-cs-live'];
       if (key === 'tau_datascience__tau') return ['tau-digital-sciences-live'];
+      if (key === 'nursing__tau') return ['tau-nursing-live'];
       return [];
     });
 
@@ -229,25 +231,47 @@ async function evaluateExactResult(args: {
       });
     }
 
+    if (exactTarget.targetId === 'tau-nursing-live') {
+      const gateResult = evaluateTauNursingGates(input);
+      if (gateResult.state === 'needs_input') {
+        return requiredInputsResult(institution, gateResult.requiredInputs);
+      }
+      if (gateResult.state === 'below') {
+        return exactGateFailureResult({
+          institution,
+          unmetRequirements: gateResult.unmetRequirements,
+          requirementsUrl: 'https://go.tau.ac.il/he/med/ba/nursing?v=admission-requirements',
+        });
+      }
+
+      const proof = await runTauAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: {
+          bagrutAverage: input.bagrut,
+          psychometric: input.psychometric,
+        },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+        positiveDecision: 'eligible_to_apply',
+      });
+    }
+
     const gateResult = evaluateTauDigitalSciencesGates(input);
     if (gateResult.state === 'needs_input') {
       return requiredInputsResult(institution, gateResult.requiredInputs);
     }
     if (gateResult.state === 'below') {
-      return {
-        institution: publicInstitutionShape(institution),
-        linkedInstitutionId: institution.id,
-        capability: 'exact',
-        kind: 'exact',
-        decision: 'below',
-        confidence: 'high',
-        sourceLabel: 'תנאי קבלה רשמיים',
-        explanation: `לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: ${gateResult.unmetRequirements.join('; ')}.`,
-        nextAction: 'שפרו את תנאי הסף או בדקו אפיק קבלה חלופי באתר התוכנית.',
-        officialUrls: [
+      return exactGateFailureResult({
+        institution,
+        unmetRequirements: gateResult.unmetRequirements,
+        requirementsUrl:
           'https://go.tau.ac.il/he/engineering/ba/high-tech-plus?v=admission-requirements',
-        ],
-      };
+      });
     }
 
     const proof = await runTauAdmissionsProof({
@@ -295,8 +319,9 @@ function normalizeExactProofResult(args: {
   institution: CatalogueInstitution;
   proof: Record<string, unknown>;
   explanationPrefix: string;
+  positiveDecision?: 'accepted' | 'eligible_to_apply';
 }): AdmissionsEvaluationResult {
-  const { institution, proof, explanationPrefix } = args;
+  const { institution, proof, explanationPrefix, positiveDecision = 'accepted' } = args;
 
   const score = numberOrUndefined(proof.selectedScore) ?? numberOrUndefined(proof.weightedScore);
   const threshold =
@@ -325,7 +350,7 @@ function normalizeExactProofResult(args: {
       : undefined;
   const decision =
     officialVerdict === 'accepted'
-      ? 'accepted'
+      ? positiveDecision
       : officialVerdict === 'below'
         ? 'below'
         : officialVerdict === 'pending'
@@ -339,23 +364,51 @@ function normalizeExactProofResult(args: {
     institution: publicInstitutionShape(institution),
     linkedInstitutionId: institution.id,
     capability: 'exact',
-    kind: 'exact',
+    kind: decision === 'eligible_to_apply' ? 'manual_gate' : 'exact',
     decision,
     confidence: 'high',
-    sourceLabel: officialVerdict === 'pending' ? 'טווח המתנה רשמי' : 'אימות רשמי',
+    sourceLabel:
+      decision === 'eligible_to_apply'
+        ? 'כשירות להמשך מיון'
+        : officialVerdict === 'pending'
+          ? 'טווח המתנה רשמי'
+          : 'אימות רשמי',
     explanation:
-      officialVerdict === 'pending'
-        ? `${explanationPrefix} הציב את הציון בין סף הדחייה לסף הקבלה, ולכן עדיין אין החלטה סופית.`
-        : `${explanationPrefix} סיפק ציון וסף קבלה מעודכנים למסלול זה.`,
+      decision === 'eligible_to_apply'
+        ? `${explanationPrefix} אישר עמידה בסף המספרי. עדיין נדרשים מבדק התאמה, ולעיתים גם ראיון אישי; זו אינה קבלה סופית.`
+        : officialVerdict === 'pending'
+          ? `${explanationPrefix} הציב את הציון בין סף הדחייה לסף הקבלה, ולכן עדיין אין החלטה סופית.`
+          : `${explanationPrefix} סיפק ציון וסף קבלה מעודכנים למסלול זה.`,
     nextAction:
       decision === 'accepted'
         ? 'בדקו את דף ההרשמה הרשמי והשלימו את בדיקת העבר האקדמי, העברית ושאר דרישות המסמכים.'
-        : decision === 'below'
-          ? 'שמרו את המסלול והשוו מול מוסדות אחרים או שפרו את הנתונים לפני הרשמה.'
-          : 'עקבו אחר עדכון הספים באתר הרשמי או פנו למרכז הרישום.',
+        : decision === 'eligible_to_apply'
+          ? 'השלימו את מבדק ההתאמה ועקבו אחר זימון אפשרי לראיון מטעם החוג.'
+          : decision === 'below'
+            ? 'שמרו את המסלול והשוו מול מוסדות אחרים או שפרו את הנתונים לפני הרשמה.'
+            : 'עקבו אחר עדכון הספים באתר הרשמי או פנו למרכז הרישום.',
     score,
     scoreLabel,
     threshold,
+  };
+}
+
+function exactGateFailureResult(args: {
+  institution: CatalogueInstitution;
+  unmetRequirements: string[];
+  requirementsUrl: string;
+}): AdmissionsEvaluationResult {
+  return {
+    institution: publicInstitutionShape(args.institution),
+    linkedInstitutionId: args.institution.id,
+    capability: 'exact',
+    kind: 'exact',
+    decision: 'below',
+    confidence: 'high',
+    sourceLabel: 'תנאי קבלה רשמיים',
+    explanation: `לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: ${args.unmetRequirements.join('; ')}.`,
+    nextAction: 'שפרו את תנאי הסף או בדקו אפיק קבלה חלופי באתר התוכנית.',
+    officialUrls: [args.requirementsUrl],
   };
 }
 

@@ -9,6 +9,9 @@ import {
   TAU_DIGITAL_SCIENCES_CONTRACT,
   TAU_DIGITAL_SCIENCES_FIXTURES,
   TAU_DIGITAL_SCIENCES_REQUIREMENTS_URL,
+  TAU_NURSING_CONTRACT,
+  TAU_NURSING_FIXTURES,
+  TAU_NURSING_REQUIREMENTS_URL,
 } from './tauProgramVerification';
 
 export type FormulaPairLedgerState = 'exact' | 'withheld' | 'stale' | 'blocked';
@@ -240,8 +243,8 @@ export const FORMULA_BACKED_VERIFICATION_LEDGER: FormulaPairVerificationLedgerEn
   FORMULA_BACKED_INSTITUTION_IDS.flatMap((institutionId) => {
     const source = SOURCE_BY_INSTITUTION[institutionId];
     return REVIEWED_PAIR_IDS_BY_INSTITUTION[institutionId].map((pairId) =>
-      pairId === 'tau_datascience__tau'
-        ? verifiedTauDigitalSciencesEntry()
+      pairId === 'tau_datascience__tau' || pairId === 'nursing__tau'
+        ? verifiedTauProgramEntry(pairId)
         : {
             pairId,
             institutionId,
@@ -266,21 +269,25 @@ export const FORMULA_BACKED_VERIFICATION_LEDGER: FormulaPairVerificationLedgerEn
     );
   });
 
-function verifiedTauDigitalSciencesEntry(): FormulaPairVerificationLedgerEntry {
-  const contract = TAU_DIGITAL_SCIENCES_CONTRACT;
+function verifiedTauProgramEntry(
+  pairId: 'tau_datascience__tau' | 'nursing__tau',
+): FormulaPairVerificationLedgerEntry {
+  const isNursing = pairId === 'nursing__tau';
+  const contract = isNursing ? TAU_NURSING_CONTRACT : TAU_DIGITAL_SCIENCES_CONTRACT;
+  const fixtures = isNursing ? TAU_NURSING_FIXTURES : TAU_DIGITAL_SCIENCES_FIXTURES;
   return {
     pairId: contract.pairId,
     institutionId: 'tau',
     admissionCycle: contract.admissionCycle as '2026-2027',
     state: 'exact',
     officialProgramId: contract.officialProgramId,
-    sourceUrl: TAU_DIGITAL_SCIENCES_REQUIREMENTS_URL,
+    sourceUrl: isNursing ? TAU_NURSING_REQUIREMENTS_URL : TAU_DIGITAL_SCIENCES_REQUIREMENTS_URL,
     formulaFamily: contract.calculation.formulaFamily,
     fixtureEvidence: {
-      eligible: TAU_DIGITAL_SCIENCES_FIXTURES.some(
+      eligible: fixtures.some(
         (fixture) => fixture.verdict === 'accepted' || fixture.verdict === 'eligible_to_apply',
       ),
-      below: TAU_DIGITAL_SCIENCES_FIXTURES.some((fixture) => fixture.verdict === 'below'),
+      below: fixtures.some((fixture) => fixture.verdict === 'below'),
       fingerprint: contract.fixtureSetFingerprint,
     },
     liveProof: {
@@ -289,8 +296,9 @@ function verifiedTauDigitalSciencesEntry(): FormulaPairVerificationLedgerEntry {
       comparedAt: contract.proof.liveComparedAt,
       sourceFingerprint: contract.proof.sourceFingerprint,
     },
-    reason:
-      'Verified against the current TAU programme mapping, cumulative score gates, accepted/below fixtures, and live score-and-verdict replay.',
+    reason: isNursing
+      ? 'Verified as eligibility for the mandatory suitability assessment; passing the numeric threshold is not final admission.'
+      : 'Verified against the current TAU programme mapping, cumulative score gates, accepted/below fixtures, and live score-and-verdict replay.',
   };
 }
 

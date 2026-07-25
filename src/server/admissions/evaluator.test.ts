@@ -159,6 +159,20 @@ const tauDataScience: CatalogueProgram = {
   linkedInstitutionIds: ['tau'],
 };
 
+const tauNursing: CatalogueProgram = {
+  id: 'nursing',
+  name: 'סיעוד',
+  institution: 'אוניברסיטת תל אביב',
+  institutionId: 'tau',
+  type: 'academic',
+  category: 'בריאות',
+  profileScore: { AN: 3, TE: 2, CR: 1, SO: 5, LE: 1, OR: 3, DI: 1, ER: 3 },
+  admissionType: 'sekhem',
+  admissionRequirements: [],
+  thresholds: { tau: 530 },
+  linkedInstitutionIds: ['tau'],
+};
+
 const haifaCs: CatalogueProgram = {
   id: 'haifa_cs',
   name: 'מדעי המחשב',
@@ -925,6 +939,63 @@ describe('evaluateAdmissionsForProgram', () => {
         capability: 'exact',
         decision: 'below',
         explanation: expect.stringContaining('פסיכומטרי כללי 620'),
+      }),
+    );
+  });
+
+  it('returns TAU Nursing eligibility for manual assessment, never final acceptance', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            data: { getLastScore: { body: JSON.stringify({ hatama: 546 }) } },
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            data: {
+              getPrograms: {
+                results: [
+                  {
+                    title: 'לימודי תואר ראשון בחוג למדעי האחיוּת (Nursing)',
+                    field_plain_id_programs: ['016211010000', '016211010208'],
+                    field_this_year_receipt_threshol: 530,
+                    field_this_year_rejection_thresh: 520,
+                  },
+                ],
+              },
+            },
+          }),
+          { status: 200 },
+        ),
+      );
+
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'nursing',
+        psychometric: 520,
+        bagrut: 100,
+        extraInputs: { psychometricEnglish: 110 },
+      },
+      program: tauNursing,
+      institutions,
+      fetcher,
+      now: new Date('2026-07-25T21:00:00Z'),
+    });
+
+    expect(report.results).toContainEqual(
+      expect.objectContaining({
+        linkedInstitutionId: 'tau',
+        capability: 'exact',
+        kind: 'manual_gate',
+        decision: 'eligible_to_apply',
+        score: 546,
+        threshold: 530,
+        explanation: expect.stringContaining('אינה קבלה סופית'),
       }),
     );
   });

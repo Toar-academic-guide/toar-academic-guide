@@ -7,10 +7,11 @@ import {
 } from './admissionsSourceRegistry';
 
 describe('admissionsSourceRegistry', () => {
-  it('selects Haifa and TAU as the default exact live proof targets', () => {
+  it('selects the verified Haifa and TAU programs as the default exact live proof targets', () => {
     expect(selectAdmissionsSourceTargets().map((target) => target.id)).toEqual([
       'haifa-cs-live',
       'tau-digital-sciences-live',
+      'tau-nursing-live',
     ]);
   });
 
@@ -21,7 +22,9 @@ describe('admissionsSourceRegistry', () => {
   });
 
   it('keeps every discussed institution in the capability matrix', () => {
-    expect(admissionsSourceTargets.map((target) => target.institutionId).sort()).toEqual([
+    expect(
+      [...new Set(admissionsSourceTargets.map((target) => target.institutionId))].sort(),
+    ).toEqual([
       'afeka',
       'ariel',
       'bgu',

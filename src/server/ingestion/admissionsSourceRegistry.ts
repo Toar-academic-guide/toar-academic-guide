@@ -44,6 +44,7 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     proofLevel: 'exact_official',
     category: 'exact',
     defaultProgram: {
+      targetId: 'haifa-cs-live',
       id: 'haifa-cs',
       name: 'Computer Science',
       externalId: '52258372',
@@ -62,6 +63,8 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     proofLevel: 'exact_official',
     category: 'exact',
     defaultProgram: {
+      targetId: 'tau-digital-sciences-live',
+      pairId: 'tau_datascience__tau',
       id: 'tau-digital-sciences',
       name: 'Digital Sciences for High-Tech',
       externalId: '056011050000',
@@ -71,6 +74,35 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     reproducedFields: ['selectedScore', 'acceptanceThreshold', 'rejectionThreshold'],
     limitations: ['Representative program only; faculty score-field mapping needs expansion'],
     nextAction: 'Promote to second weekly GitHub Action adapter candidate',
+  },
+  {
+    id: 'tau-nursing-live',
+    institutionId: 'tau',
+    institutionName: 'Tel Aviv University',
+    officialUrl: 'https://go.tau.ac.il/graphql',
+    adapterId: 'tau',
+    expectedCapability: 'decision_capable',
+    proofLevel: 'exact_official',
+    category: 'exact',
+    defaultProgram: {
+      targetId: 'tau-nursing-live',
+      pairId: 'nursing__tau',
+      id: 'tau-nursing',
+      name: 'Nursing',
+      externalId: '016211010000',
+      searchText: 'nursing',
+      scoreField: 'hatama',
+    },
+    reproducedFields: [
+      'selectedScore',
+      'acceptanceThreshold',
+      'rejectionThreshold',
+      'officialVerdict',
+    ],
+    limitations: [
+      'The numeric result is eligibility for the mandatory suitability assessment, not final admission.',
+    ],
+    nextAction: 'Keep the suitability assessment and possible interview visible as manual gates.',
   },
   {
     id: 'huji-static-json',

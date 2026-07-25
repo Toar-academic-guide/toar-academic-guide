@@ -42,16 +42,30 @@ function exactAdapterFetcher() {
           },
         },
       }),
+    )
+    .mockResolvedValueOnce(
+      jsonResponse({
+        data: { getLastScore: { body: JSON.stringify({ hatama: 546 }) } },
+      }),
+    )
+    .mockResolvedValueOnce(
+      jsonResponse({
+        data: {
+          getPrograms: {
+            results: [{ receipt_threshol: [530], field_plain_id_programs: ['016211010000'] }],
+          },
+        },
+      }),
     );
 }
 
 describe('runAdmissionsLiveProof', () => {
-  it('runs Haifa and TAU by default as exact live proof targets', async () => {
+  it('runs the verified Haifa and TAU programs by default as exact live proof targets', async () => {
     const report = await runAdmissionsLiveProof({ fetcher: exactAdapterFetcher() });
 
     expect(report.summary).toMatchObject({
-      total: 2,
-      exactReproduced: 2,
+      total: 3,
+      exactReproduced: 3,
       partial: 0,
       blocked: 0,
       failed: 0,
@@ -59,6 +73,7 @@ describe('runAdmissionsLiveProof', () => {
     expect(report.results.map((result) => result.proof.id)).toEqual([
       'haifa-cs-live',
       'tau-digital-sciences-live',
+      'tau-nursing-live',
     ]);
   });
 
@@ -106,16 +121,34 @@ describe('runAdmissionsLiveProof', () => {
             },
           },
         }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({
+          data: { getLastScore: { body: JSON.stringify({ hatama: 546 }) } },
+        }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({
+          data: {
+            getPrograms: {
+              results: [{ receipt_threshol: [530], field_plain_id_programs: ['016211010000'] }],
+            },
+          },
+        }),
       );
 
     const report = await runAdmissionsLiveProof({ fetcher });
 
     expect(report.summary).toMatchObject({
-      total: 2,
-      exactReproduced: 1,
+      total: 3,
+      exactReproduced: 2,
       failed: 1,
     });
-    expect(report.results.map((result) => result.proof.status)).toEqual(['failed', 'succeeded']);
+    expect(report.results.map((result) => result.proof.status)).toEqual([
+      'failed',
+      'succeeded',
+      'succeeded',
+    ]);
   });
 
   it('can include the full capability matrix without attempting blocked sources live', async () => {
@@ -125,13 +158,14 @@ describe('runAdmissionsLiveProof', () => {
     });
 
     expect(report.summary).toMatchObject({
-      total: 13,
-      exactReproduced: 2,
+      total: 14,
+      exactReproduced: 3,
       partial: 8,
       blocked: 2,
     });
     expect(report.results.map((result) => result.proof.institutionId)).toEqual([
       'haifa',
+      'tau',
       'tau',
       'huji',
       'technion',

@@ -26,6 +26,8 @@ export interface AdmissionsApplicantInput {
 }
 
 export interface AdmissionsProgramInput {
+  targetId?: string;
+  pairId?: string;
   id: string;
   name: string;
   externalId?: string;
