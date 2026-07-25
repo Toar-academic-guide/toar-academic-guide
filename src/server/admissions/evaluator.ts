@@ -64,6 +64,8 @@ export async function evaluateAdmissionsForProgram(args: {
       if (key === 'tau_psychology__tau') return ['tau-psychology-live'];
       if (key === 'law__tau') return ['tau-law-live'];
       if (key === 'tau_law__tau') return ['tau-law-legacy-live'];
+      if (key === 'accounting__tau') return ['tau-accounting-live'];
+      if (key === 'tau_accounting__tau') return ['tau-accounting-legacy-live'];
       return [];
     });
 
@@ -328,6 +330,39 @@ async function evaluateExactResult(args: {
           institution,
           unmetRequirements: gateResult.unmetRequirements,
           requirementsUrl: TAU_LAW_REQUIREMENTS_URL,
+        });
+      }
+
+      const proof = await runTauAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: {
+          bagrutAverage: input.bagrut,
+          psychometric: input.psychometric,
+        },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+      });
+    }
+
+    if (
+      exactTarget.targetId === 'tau-accounting-live' ||
+      exactTarget.targetId === 'tau-accounting-legacy-live'
+    ) {
+      const psychometricEnglish = input.extraInputs?.psychometricEnglish;
+      if (typeof psychometricEnglish !== 'number') {
+        return requiredInputsResult(institution, ['psychometric_english']);
+      }
+      if (psychometricEnglish < 100) {
+        return exactGateFailureResult({
+          institution,
+          unmetRequirements: ['אנגלית בפסיכומטרי ברמת 100 ומעלה'],
+          requirementsUrl:
+            'https://go.tau.ac.il/he/management/ba/accounting?v=admission-requirements',
         });
       }
 

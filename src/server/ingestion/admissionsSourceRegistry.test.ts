@@ -19,6 +19,8 @@ describe('admissionsSourceRegistry', () => {
       'tau-digital-sciences-legacy-live',
       'tau-law-live',
       'tau-law-legacy-live',
+      'tau-accounting-live',
+      'tau-accounting-legacy-live',
     ]);
   });
 

@@ -195,6 +195,36 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
     },
     requiredInputs: ['psychometric_english'],
   },
+  accounting__tau: {
+    targetId: 'tau-accounting-live',
+    sourceTarget: admissionsSourceTargets.find((entry) => entry.id === 'tau-accounting-live')!,
+    program: {
+      targetId: 'tau-accounting-live',
+      pairId: 'accounting__tau',
+      id: 'tau-accounting',
+      name: 'Accounting',
+      nodeId: 11815,
+      externalId: '121111050000',
+      scoreField: 'hatama_nihul',
+    },
+    requiredInputs: ['psychometric_english'],
+  },
+  tau_accounting__tau: {
+    targetId: 'tau-accounting-legacy-live',
+    sourceTarget: admissionsSourceTargets.find(
+      (entry) => entry.id === 'tau-accounting-legacy-live',
+    )!,
+    program: {
+      targetId: 'tau-accounting-legacy-live',
+      pairId: 'tau_accounting__tau',
+      id: 'tau-accounting',
+      name: 'Accounting',
+      nodeId: 11815,
+      externalId: '121111050000',
+      scoreField: 'hatama_nihul',
+    },
+    requiredInputs: ['psychometric_english'],
+  },
 };
 
 const SOURCE_TARGETS_BY_INSTITUTION = new Map<string, AdmissionsSourceTarget>(

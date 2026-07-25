@@ -17,6 +17,8 @@ export const TAU_SOCIAL_WORK_REQUIREMENTS_URL =
   'https://go.tau.ac.il/he/social-sciences/ba/social-work?v=admission-requirements';
 export const TAU_LAW_REQUIREMENTS_URL =
   'https://go.tau.ac.il/he/law/ba/law?v=admission-requirements';
+export const TAU_ACCOUNTING_REQUIREMENTS_URL =
+  'https://go.tau.ac.il/he/management/ba/accounting?v=admission-requirements';
 
 export const TAU_DIGITAL_SCIENCES_FIXTURES: AdmissionsVerificationFixture[] = [
   {
@@ -650,6 +652,119 @@ export const TAU_LEGACY_LAW_CONTRACT: AdmissionsProgramVerificationContract = {
   fixtureSetFingerprint: 'sha256:274948e725079938d57785726f8fdc4a37d037f0dc303696e0aa3eff2b9e0b36',
 };
 
+const TAU_ACCOUNTING_SOURCE_FINGERPRINT =
+  'sha256:aa58d9b0b2bc5a820ef2725f4344a3e88629dbed6d694d4c3c0c9ccf8757af74';
+const TAU_ACCOUNTING_CAPTURED_AT = '2026-07-26T05:45:00.000Z';
+const TAU_ACCOUNTING_LIVE_COMPARED_AT = '2026-07-26T05:46:00.000Z';
+
+export const TAU_ACCOUNTING_FIXTURES: AdmissionsVerificationFixture[] = [
+  {
+    id: 'accounting__tau:accepted:2026-2027',
+    pairId: 'accounting__tau',
+    admissionCycle: '2026-2027',
+    verdict: 'accepted',
+    input: {
+      psychometric: 680,
+      bagrut: 110,
+      psychometricEnglish: 110,
+      bagrutSubjectRecord: {
+        schemaVersion: 1,
+        sector: 'jewish',
+        subjects: [
+          { subjectId: 'mathematics', units: 5, grade: 82 },
+          { subjectId: 'english', units: 5, grade: 90 },
+          { subjectId: 'history', units: 2, grade: 92 },
+          { subjectId: 'bible', units: 2, grade: 88 },
+        ],
+      },
+    },
+    expected: { score: 677, verdict: 'accepted' },
+    sourceFingerprint: TAU_ACCOUNTING_SOURCE_FINGERPRINT,
+    capturedAt: TAU_ACCOUNTING_CAPTURED_AT,
+  },
+  {
+    id: 'accounting__tau:below:2026-2027',
+    pairId: 'accounting__tau',
+    admissionCycle: '2026-2027',
+    verdict: 'below',
+    input: {
+      psychometric: 620,
+      bagrut: 90,
+      psychometricEnglish: 110,
+      bagrutSubjectRecord: {
+        schemaVersion: 1,
+        sector: 'jewish',
+        subjects: [
+          { subjectId: 'mathematics', units: 4, grade: 80 },
+          { subjectId: 'english', units: 5, grade: 85 },
+          { subjectId: 'history', units: 2, grade: 80 },
+          { subjectId: 'bible', units: 2, grade: 78 },
+        ],
+      },
+    },
+    expected: { score: 577, verdict: 'below' },
+    sourceFingerprint: TAU_ACCOUNTING_SOURCE_FINGERPRINT,
+    capturedAt: TAU_ACCOUNTING_CAPTURED_AT,
+  },
+];
+
+export const TAU_ACCOUNTING_CONTRACT: AdmissionsProgramVerificationContract = {
+  pairId: 'accounting__tau',
+  programId: 'accounting',
+  institutionId: 'tau',
+  officialProgramId: '121111050000',
+  admissionCycle: '2026-2027',
+  source: { targetId: 'tau-accounting-live', url: 'https://go.tau.ac.il/graphql' },
+  calculation: {
+    adapterId: 'tau',
+    mode: 'official_replay',
+    formulaFamily: 'tau_hatama_nihul',
+    requiredInputs: ['psychometric_english'],
+    cutoff: { acceptance: 610, rejection: 609 },
+    gates: [
+      {
+        id: 'tau-accounting:english-minimum',
+        kind: 'language',
+        field: 'psychometricEnglish',
+        minimum: 100,
+        description: 'TAU requires at least English level Advanced A.',
+      },
+      {
+        id: 'tau-accounting:alternative-routes',
+        kind: 'manual',
+        field: 'alternativeAdmissionRoute',
+        description: 'Alternative accounting admission routes require separate official review.',
+      },
+    ],
+  },
+  fixtureIds: TAU_ACCOUNTING_FIXTURES.map((fixture) => fixture.id),
+  fixtureSetFingerprint: 'sha256:5aa1f306152d0508fabcf6bfe7a41abedf053151ef2f81ca89eb248033cd935e',
+  sourceFingerprint: TAU_ACCOUNTING_SOURCE_FINGERPRINT,
+  proof: {
+    state: 'verified',
+    comparedScore: true,
+    comparedVerdict: true,
+    liveComparedAt: TAU_ACCOUNTING_LIVE_COMPARED_AT,
+    sourceFingerprint: TAU_ACCOUNTING_SOURCE_FINGERPRINT,
+  },
+};
+
+export const TAU_LEGACY_ACCOUNTING_FIXTURES: AdmissionsVerificationFixture[] =
+  TAU_ACCOUNTING_FIXTURES.map((fixture) => ({
+    ...fixture,
+    id: fixture.id.replace('accounting__tau', 'tau_accounting__tau'),
+    pairId: 'tau_accounting__tau',
+  }));
+
+export const TAU_LEGACY_ACCOUNTING_CONTRACT: AdmissionsProgramVerificationContract = {
+  ...TAU_ACCOUNTING_CONTRACT,
+  pairId: 'tau_accounting__tau',
+  programId: 'tau_accounting',
+  source: { ...TAU_ACCOUNTING_CONTRACT.source, targetId: 'tau-accounting-legacy-live' },
+  fixtureIds: TAU_LEGACY_ACCOUNTING_FIXTURES.map((fixture) => fixture.id),
+  fixtureSetFingerprint: 'sha256:85f34ad4be00fdbdf4a40c0f484fdc78a25f6c4bdad79519bf57b460b01980c2',
+};
+
 export interface ProgramVerificationArtifact {
   contract: AdmissionsProgramVerificationContract;
   fixtures: AdmissionsVerificationFixture[];
@@ -723,6 +838,20 @@ export const TAU_PROGRAM_VERIFICATION_METADATA: Record<string, TauProgramVerific
     requirementsUrl: TAU_LAW_REQUIREMENTS_URL,
     ledgerReason:
       'Verified the legacy TAU Law catalogue alias against the same current programme node, gates, fixtures, and live score-and-verdict replay.',
+  },
+  [TAU_ACCOUNTING_CONTRACT.pairId]: {
+    contract: TAU_ACCOUNTING_CONTRACT,
+    fixtures: TAU_ACCOUNTING_FIXTURES,
+    requirementsUrl: TAU_ACCOUNTING_REQUIREMENTS_URL,
+    ledgerReason:
+      'Verified against the current TAU Accounting programme node, accounting score field, English gate, accepted/below fixtures, and live score-and-verdict replay.',
+  },
+  [TAU_LEGACY_ACCOUNTING_CONTRACT.pairId]: {
+    contract: TAU_LEGACY_ACCOUNTING_CONTRACT,
+    fixtures: TAU_LEGACY_ACCOUNTING_FIXTURES,
+    requirementsUrl: TAU_ACCOUNTING_REQUIREMENTS_URL,
+    ledgerReason:
+      'Verified the legacy TAU Accounting catalogue alias against the same current programme node, score field, fixtures, and live score-and-verdict replay.',
   },
 };
 
