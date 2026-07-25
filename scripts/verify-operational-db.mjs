@@ -1,15 +1,15 @@
-import { tsImport } from 'tsx/esm/api';
 import postgres from 'postgres';
+import 'tsx';
 
-const { PRODUCTION_SCHEMA_CONTRACT, assessProductionSchema } = await tsImport(
-  '../src/server/admissions/productionSchemaPreflight.ts',
-  import.meta.url,
-);
-const { assessPublicationDatabaseState } = await tsImport(
-  '../src/server/admissions/operationalDatabaseGate.ts',
-  import.meta.url,
-);
-const { requireOpsDatabaseUrl } = await tsImport('../src/env.ts', import.meta.url);
+const [
+  { PRODUCTION_SCHEMA_CONTRACT, assessProductionSchema },
+  { assessPublicationDatabaseState },
+  { requireOpsDatabaseUrl },
+] = await Promise.all([
+  import('../src/server/admissions/productionSchemaPreflight.ts'),
+  import('../src/server/admissions/operationalDatabaseGate.ts'),
+  import('../src/env.ts'),
+]);
 
 const mode = resolveMode(process.argv);
 const representativeTables = [
