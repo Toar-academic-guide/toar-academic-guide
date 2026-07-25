@@ -154,6 +154,17 @@ export const admissionReleaseStatusEnum = pgEnum('admission_release_status', [
   'published',
   'failed',
 ]);
+export const admissionReviewRunStatusEnum = pgEnum('admission_review_run_status', [
+  'prepared',
+  'reviewable',
+  'no_changes',
+  'validation_failed',
+]);
+export const admissionReviewSlackStatusEnum = pgEnum('admission_review_slack_status', [
+  'pending',
+  'sent',
+  'failed',
+]);
 export const admissionPublicationAttemptStatusEnum = pgEnum(
   'admission_publication_attempt_status',
   ['started', 'succeeded', 'failed'],
@@ -634,6 +645,27 @@ export const admissionTargetTransitions = pgTable(
       table.programId,
       table.cycle,
     ),
+  }),
+);
+
+export const admissionReviewRuns = pgTable(
+  'admission_review_runs',
+  {
+    runKey: text('run_key').primaryKey(),
+    sourceDigest: text('source_digest').notNull(),
+    status: admissionReviewRunStatusEnum('status').default('prepared').notNull(),
+    candidateCount: integer('candidate_count').default(0).notNull(),
+    exclusionCount: integer('exclusion_count').default(0).notNull(),
+    pullRequestNumber: integer('pull_request_number'),
+    pullRequestUrl: text('pull_request_url'),
+    slackStatus: admissionReviewSlackStatusEnum('slack_status').default('pending').notNull(),
+    slackError: text('slack_error'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => ({
+    statusIdx: index('admission_review_runs_status_idx').on(table.status),
+    slackStatusIdx: index('admission_review_runs_slack_status_idx').on(table.slackStatus),
   }),
 );
 
