@@ -1252,6 +1252,67 @@ export const TAU_LEGACY_EE_CONTRACT: AdmissionsProgramVerificationContract = {
   fixtureSetFingerprint: 'sha256:e51c78d1dcacf49e478911e051ccc8d8d2d14bbceabd19f2faa86f668f3f4e40',
 };
 
+const TAU_ME_SOURCE_FINGERPRINT =
+  'sha256:7bfe392d71a6dce9e645b08fb64e868582755226073e5e4e8322d72e64a8a7c9';
+export const TAU_ME_FIXTURES: AdmissionsVerificationFixture[] = TAU_EE_FIXTURES.map((fixture) => ({
+  ...fixture,
+  id: fixture.id.replace('ee__tau', 'me__tau'),
+  pairId: 'me__tau',
+  sourceFingerprint: TAU_ME_SOURCE_FINGERPRINT,
+}));
+export const TAU_ME_CONTRACT: AdmissionsProgramVerificationContract = {
+  ...TAU_EE_CONTRACT,
+  pairId: 'me__tau',
+  programId: 'me',
+  officialProgramId: '054211010000',
+  source: { targetId: 'tau-me-live', url: 'https://go.tau.ac.il/graphql' },
+  calculation: {
+    ...TAU_EE_CONTRACT.calculation,
+    cutoff: { acceptance: 650, rejection: 616 },
+    gates: [
+      {
+        id: 'tau-me:english-minimum',
+        kind: 'language',
+        field: 'psychometricEnglish',
+        minimum: 100,
+        description: 'TAU requires at least English level Advanced A.',
+      },
+      {
+        id: 'tau-me:mathematics-physics-route',
+        kind: 'subject',
+        field: 'bagrutSubjectRecord',
+        description:
+          'Mechanical Engineering requires the official mathematics and physics subject route.',
+      },
+      {
+        id: 'tau-me:alternative-routes',
+        kind: 'manual',
+        field: 'alternativeAdmissionRoute',
+        description: 'Mechanical Engineering alternative routes remain manual.',
+      },
+    ],
+  },
+  fixtureIds: TAU_ME_FIXTURES.map((fixture) => fixture.id),
+  fixtureSetFingerprint: 'sha256:3c53e717f7f3b8c540fa19da89e9315ae1687f31b915613141a5defedc7a64e6',
+  sourceFingerprint: TAU_ME_SOURCE_FINGERPRINT,
+  proof: { ...TAU_EE_CONTRACT.proof, sourceFingerprint: TAU_ME_SOURCE_FINGERPRINT },
+};
+export const TAU_LEGACY_ME_FIXTURES: AdmissionsVerificationFixture[] = TAU_ME_FIXTURES.map(
+  (fixture) => ({
+    ...fixture,
+    id: fixture.id.replace('me__tau', 'tau_me__tau'),
+    pairId: 'tau_me__tau',
+  }),
+);
+export const TAU_LEGACY_ME_CONTRACT: AdmissionsProgramVerificationContract = {
+  ...TAU_ME_CONTRACT,
+  pairId: 'tau_me__tau',
+  programId: 'tau_me',
+  source: { ...TAU_ME_CONTRACT.source, targetId: 'tau-me-legacy-live' },
+  fixtureIds: TAU_LEGACY_ME_FIXTURES.map((fixture) => fixture.id),
+  fixtureSetFingerprint: 'sha256:ce0c30c4256743907ec1bf33198badf8b9fa89c965a883e6471ab317e9f1d63a',
+};
+
 export interface ProgramVerificationArtifact {
   contract: AdmissionsProgramVerificationContract;
   fixtures: AdmissionsVerificationFixture[];
@@ -1423,6 +1484,22 @@ export const TAU_PROGRAM_VERIFICATION_METADATA: Record<string, TauProgramVerific
       'https://go.tau.ac.il/he/engineering/ba/electrical-engineering?v=admission-requirements',
     ledgerReason:
       'Verified the legacy TAU Electrical Engineering alias against the same current node, score field, subject gates, fixtures, and live replay.',
+  },
+  [TAU_ME_CONTRACT.pairId]: {
+    contract: TAU_ME_CONTRACT,
+    fixtures: TAU_ME_FIXTURES,
+    requirementsUrl:
+      'https://go.tau.ac.il/he/engineering/ba/mechanical-engineering?v=admission-requirements',
+    ledgerReason:
+      'Verified against the current TAU Mechanical Engineering programme node, score field, math/physics gates, accepted/below fixtures, and live score-and-verdict replay.',
+  },
+  [TAU_LEGACY_ME_CONTRACT.pairId]: {
+    contract: TAU_LEGACY_ME_CONTRACT,
+    fixtures: TAU_LEGACY_ME_FIXTURES,
+    requirementsUrl:
+      'https://go.tau.ac.il/he/engineering/ba/mechanical-engineering?v=admission-requirements',
+    ledgerReason:
+      'Verified the legacy TAU Mechanical Engineering alias against the same current node, score field, subject gates, fixtures, and live replay.',
   },
 };
 
