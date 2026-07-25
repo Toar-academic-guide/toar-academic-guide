@@ -7,6 +7,7 @@ export type AdmissionsEvaluationKind =
   | 'exact'
   | 'estimated'
   | 'needs_input'
+  | 'authority_unavailable'
   | 'tracked_missing_rule'
   | 'unsupported'
   | 'degraded'
@@ -22,6 +23,7 @@ export type AdmissionsEvaluationCapability =
   | 'stale'
   | 'missing'
   | 'needs_input'
+  | 'authority_unavailable'
   | 'tracked_missing_rule'
   | 'unsupported'
   | 'open_admission'
@@ -56,6 +58,72 @@ export interface AdmissionsExtraInputs {
   csUnits?: number;
   csGrade?: number;
 }
+
+export type AdmissionsVerificationVerdict = 'accepted' | 'below';
+
+export interface AdmissionsVerificationFixtureInput {
+  psychometric: number;
+  bagrut: number;
+  [field: string]: string | number | boolean | null;
+}
+
+export interface AdmissionsVerificationFixture {
+  id: string;
+  pairId: string;
+  admissionCycle: string;
+  verdict: AdmissionsVerificationVerdict;
+  input: AdmissionsVerificationFixtureInput;
+  expected: {
+    score: number;
+    verdict: AdmissionsVerificationVerdict;
+  };
+  sourceFingerprint: string;
+  capturedAt: string;
+}
+
+export interface AdmissionsVerificationGate {
+  id: string;
+  kind: 'minimum' | 'language' | 'subject' | 'direct_track' | 'manual';
+  field: string;
+  minimum?: number;
+  description: string;
+}
+
+export interface AdmissionsProgramVerificationContract {
+  pairId: string;
+  programId: string;
+  institutionId: string;
+  officialProgramId: string;
+  admissionCycle: string;
+  source: {
+    targetId: string;
+    url: string;
+  };
+  calculation: {
+    adapterId: string;
+    mode: 'formula' | 'official_replay';
+    formulaFamily: string;
+    requiredInputs: AdmissionsRequiredInput[];
+    cutoff: {
+      acceptance: number;
+      rejection: number | null;
+    };
+    gates: AdmissionsVerificationGate[];
+  };
+  fixtureIds: string[];
+  fixtureSetFingerprint: string;
+  sourceFingerprint: string;
+  proof: {
+    state: 'verified' | 'unverified' | 'blocked';
+    comparedScore: boolean;
+    comparedVerdict: boolean;
+    liveComparedAt: string | null;
+    sourceFingerprint: string | null;
+  };
+}
+
+export type AdmissionsPairVerificationState =
+  'exact' | 'withheld' | 'stale' | 'blocked' | 'authority_unavailable';
 
 export interface AdmissionsEvaluationInput {
   degreeId: string;
