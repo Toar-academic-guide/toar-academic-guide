@@ -85,6 +85,8 @@ describe('admissionsSourceRegistry', () => {
       'tau-law-legacy-live',
       'tau-accounting-live',
       'tau-accounting-legacy-live',
+      'tau-business-live',
+      'tau-business-legacy-live',
       'tau-architecture-live',
       'tau-biology-live',
       'tau-communication-live',

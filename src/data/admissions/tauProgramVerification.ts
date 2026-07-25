@@ -2,6 +2,7 @@ import type {
   AdmissionsProgramVerificationContract,
   AdmissionsVerificationFixture,
 } from '@/types/admissionsEvaluation';
+import { fingerprintVerificationFixtures } from '@/server/admissions/verification/programVerification';
 import { HUJI_PROGRAM_VERIFICATION_ARTIFACTS } from './hujiProgramVerification';
 import { BGU_PROGRAM_VERIFICATION_ARTIFACTS } from './bguProgramVerification';
 import { TECHNION_PROGRAM_VERIFICATION_ARTIFACTS } from './technionProgramVerification';
@@ -1431,6 +1432,83 @@ export const TAU_LEGACY_BIOLOGY_CONTRACT: AdmissionsProgramVerificationContract 
   fixtureSetFingerprint: 'sha256:35151ec6565b0442ed674498d93f602b619f966f5fced64528a71ccb656ae3db',
 };
 
+const TAU_BUSINESS_SOURCE_FINGERPRINT =
+  'sha256:7e0d6b4b37d5676c1d92d5b06c91dd2b0df38e14e2a55d8fda1fd0b2ac3988c1';
+const TAU_BUSINESS_CAPTURED_AT = '2026-07-26T06:00:00.000Z';
+
+export const TAU_BUSINESS_FIXTURES: AdmissionsVerificationFixture[] = [
+  {
+    id: 'business__tau:accepted:2026-2027',
+    pairId: 'business__tau',
+    admissionCycle: '2026-2027',
+    verdict: 'accepted',
+    input: { psychometric: 680, bagrut: 110 },
+    expected: { score: 677, verdict: 'accepted' },
+    sourceFingerprint: TAU_BUSINESS_SOURCE_FINGERPRINT,
+    capturedAt: TAU_BUSINESS_CAPTURED_AT,
+  },
+  {
+    id: 'business__tau:below:2026-2027',
+    pairId: 'business__tau',
+    admissionCycle: '2026-2027',
+    verdict: 'below',
+    input: { psychometric: 620, bagrut: 90 },
+    expected: { score: 577, verdict: 'below' },
+    sourceFingerprint: TAU_BUSINESS_SOURCE_FINGERPRINT,
+    capturedAt: TAU_BUSINESS_CAPTURED_AT,
+  },
+];
+
+export const TAU_BUSINESS_CONTRACT: AdmissionsProgramVerificationContract = {
+  pairId: 'business__tau',
+  programId: 'business',
+  institutionId: 'tau',
+  officialProgramId: '122111050000',
+  admissionCycle: '2026-2027',
+  source: { targetId: 'tau-business-live', url: 'https://go.tau.ac.il/graphql' },
+  calculation: {
+    adapterId: 'tau',
+    mode: 'official_replay',
+    formulaFamily: 'tau_hatama_nihul',
+    requiredInputs: [],
+    cutoff: { acceptance: 610, rejection: 609 },
+    gates: [
+      {
+        id: 'tau-business:alternative-routes',
+        kind: 'manual',
+        field: 'alternativeAdmissionRoute',
+        description: 'Alternative business admission routes require separate official review.',
+      },
+    ],
+  },
+  fixtureIds: TAU_BUSINESS_FIXTURES.map((fixture) => fixture.id),
+  fixtureSetFingerprint: fingerprintVerificationFixtures(TAU_BUSINESS_FIXTURES),
+  sourceFingerprint: TAU_BUSINESS_SOURCE_FINGERPRINT,
+  proof: {
+    state: 'verified',
+    comparedScore: true,
+    comparedVerdict: true,
+    liveComparedAt: TAU_BUSINESS_CAPTURED_AT,
+    sourceFingerprint: TAU_BUSINESS_SOURCE_FINGERPRINT,
+  },
+};
+
+export const TAU_LEGACY_BUSINESS_FIXTURES: AdmissionsVerificationFixture[] =
+  TAU_BUSINESS_FIXTURES.map((fixture) => ({
+    ...fixture,
+    id: fixture.id.replace('business__tau', 'tau_business__tau'),
+    pairId: 'tau_business__tau',
+  }));
+
+export const TAU_LEGACY_BUSINESS_CONTRACT: AdmissionsProgramVerificationContract = {
+  ...TAU_BUSINESS_CONTRACT,
+  pairId: 'tau_business__tau',
+  programId: 'tau_business',
+  source: { ...TAU_BUSINESS_CONTRACT.source, targetId: 'tau-business-legacy-live' },
+  fixtureIds: TAU_LEGACY_BUSINESS_FIXTURES.map((fixture) => fixture.id),
+  fixtureSetFingerprint: fingerprintVerificationFixtures(TAU_LEGACY_BUSINESS_FIXTURES),
+};
+
 export interface ProgramVerificationArtifact {
   contract: AdmissionsProgramVerificationContract;
   fixtures: AdmissionsVerificationFixture[];
@@ -1647,6 +1725,20 @@ export const TAU_PROGRAM_VERIFICATION_METADATA: Record<string, TauProgramVerific
     requirementsUrl: 'https://go.tau.ac.il/he/life-sciences/ba/biology?v=admission-requirements',
     ledgerReason:
       'Verified the legacy TAU Biology catalogue alias against the same current node, score route, gates, fixtures, and live replay.',
+  },
+  [TAU_BUSINESS_CONTRACT.pairId]: {
+    contract: TAU_BUSINESS_CONTRACT,
+    fixtures: TAU_BUSINESS_FIXTURES,
+    requirementsUrl: 'https://go.tau.ac.il/he/management/ba/management?v=admission-requirements',
+    ledgerReason:
+      'Verified against the current TAU Management programme node, management score field, accepted/below fixtures, and live score-and-verdict replay.',
+  },
+  [TAU_LEGACY_BUSINESS_CONTRACT.pairId]: {
+    contract: TAU_LEGACY_BUSINESS_CONTRACT,
+    fixtures: TAU_LEGACY_BUSINESS_FIXTURES,
+    requirementsUrl: 'https://go.tau.ac.il/he/management/ba/management?v=admission-requirements',
+    ledgerReason:
+      'Verified the legacy TAU Business catalogue alias against the current Management programme node, score field, fixtures, and live score-and-verdict replay.',
   },
 };
 

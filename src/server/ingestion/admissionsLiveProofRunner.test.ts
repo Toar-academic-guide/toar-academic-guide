@@ -263,6 +263,38 @@ function exactAdapterFetcher() {
     )
     .mockResolvedValueOnce(
       jsonResponse({
+        data: { getLastScore: { body: JSON.stringify({ hatama_nihul: 677 }) } },
+      }),
+    )
+    .mockResolvedValueOnce(
+      jsonResponse({
+        data: {
+          getProgramByIdAndLang: {
+            receipt_threshol: [610],
+            rejection_thresh: [609],
+            field_plain_id_programs: ['122111050000'],
+          },
+        },
+      }),
+    )
+    .mockResolvedValueOnce(
+      jsonResponse({
+        data: { getLastScore: { body: JSON.stringify({ hatama_nihul: 677 }) } },
+      }),
+    )
+    .mockResolvedValueOnce(
+      jsonResponse({
+        data: {
+          getProgramByIdAndLang: {
+            receipt_threshol: [610],
+            rejection_thresh: [609],
+            field_plain_id_programs: ['122111050000'],
+          },
+        },
+      }),
+    )
+    .mockResolvedValueOnce(
+      jsonResponse({
         data: { getLastScore: { body: JSON.stringify({ hatama: 679 }) } },
       }),
     )
@@ -541,8 +573,8 @@ describe('runAdmissionsLiveProof', () => {
     const report = await runAdmissionsLiveProof({ fetcher });
 
     expect(report.summary).toMatchObject({
-      total: 93,
-      exactReproduced: 93,
+      total: 95,
+      exactReproduced: 95,
       partial: 0,
       blocked: 0,
       failed: 0,
@@ -624,6 +656,8 @@ describe('runAdmissionsLiveProof', () => {
       'tau-law-legacy-live',
       'tau-accounting-live',
       'tau-accounting-legacy-live',
+      'tau-business-live',
+      'tau-business-legacy-live',
       'tau-architecture-live',
       'tau-biology-live',
       'tau-communication-live',
@@ -1206,8 +1240,8 @@ describe('runAdmissionsLiveProof', () => {
     });
 
     expect(report.summary).toMatchObject({
-      total: 104,
-      exactReproduced: 93,
+      total: 106,
+      exactReproduced: 95,
       partial: 8,
       blocked: 2,
     });
@@ -1216,6 +1250,8 @@ describe('runAdmissionsLiveProof', () => {
       ...Array(23).fill('bgu'),
       ...Array(13).fill('technion'),
       'haifa',
+      'tau',
+      'tau',
       'tau',
       'tau',
       'tau',

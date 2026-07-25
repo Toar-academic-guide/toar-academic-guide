@@ -297,6 +297,36 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
     },
     requiredInputs: ['psychometric_english'],
   },
+  business__tau: {
+    targetId: 'tau-business-live',
+    sourceTarget: admissionsSourceTargets.find((entry) => entry.id === 'tau-business-live')!,
+    program: {
+      targetId: 'tau-business-live',
+      pairId: 'business__tau',
+      id: 'tau-business',
+      name: 'Business Administration',
+      nodeId: 8267,
+      externalId: '122111050000',
+      scoreField: 'hatama_nihul',
+    },
+    requiredInputs: [],
+  },
+  tau_business__tau: {
+    targetId: 'tau-business-legacy-live',
+    sourceTarget: admissionsSourceTargets.find(
+      (entry) => entry.id === 'tau-business-legacy-live',
+    )!,
+    program: {
+      targetId: 'tau-business-legacy-live',
+      pairId: 'tau_business__tau',
+      id: 'tau-business',
+      name: 'Business Administration',
+      nodeId: 8267,
+      externalId: '122111050000',
+      scoreField: 'hatama_nihul',
+    },
+    requiredInputs: [],
+  },
   architecture__tau: {
     targetId: 'tau-architecture-live',
     sourceTarget: admissionsSourceTargets.find((entry) => entry.id === 'tau-architecture-live')!,
