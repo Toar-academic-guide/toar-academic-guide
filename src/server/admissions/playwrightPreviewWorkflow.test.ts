@@ -18,7 +18,10 @@ describe('Vercel preview Playwright workflow', () => {
     const workflow = readFileSync('.github/workflows/playwright-preview.yml', 'utf8');
     const playwrightConfig = readFileSync('playwright.config.ts', 'utf8');
 
-    expect(workflow).toContain('environment: Preview – toar-academic-guide');
+    expect(workflow).toContain('environment: preview-e2e');
+    expect(workflow).toContain(
+      "contains(github.event.deployment_status.target_url, '.vercel.app')",
+    );
     expect(workflow).toContain(
       'VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}',
     );

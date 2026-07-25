@@ -14,12 +14,13 @@ jobs:
   playwright-preview:
     name: Playwright against Vercel Preview
     runs-on: ubuntu-latest
-    environment: Preview – toar-academic-guide
+    environment: preview-e2e
     if: >
       github.event.deployment_status.state == 'success' &&
       github.event.deployment_status.environment == 'Preview – toar-academic-guide' &&
       github.event.deployment_status.target_url != '' &&
-      contains(github.event.deployment_status.target_url, 'toar-academic-guide')
+      contains(github.event.deployment_status.target_url, 'toar-academic-guide') &&
+      contains(github.event.deployment_status.target_url, '.vercel.app')
     env:
       CI: true
       BASE_URL: ${{ github.event.deployment_status.target_url }}
