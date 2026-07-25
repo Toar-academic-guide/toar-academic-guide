@@ -30,6 +30,8 @@ describe('admissionsSourceRegistry', () => {
       'tau-economics-legacy-live',
       'tau-cs-live',
       'tau-cs-legacy-live',
+      'tau-ee-live',
+      'tau-ee-legacy-live',
     ]);
   });
 

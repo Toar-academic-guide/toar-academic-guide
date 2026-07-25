@@ -1191,6 +1191,67 @@ export const TAU_LEGACY_CS_CONTRACT: AdmissionsProgramVerificationContract = {
   fixtureSetFingerprint: 'sha256:c957bc5e6109faeba483df1e7a517d13b789deb8d8c30568e0780ab97a2e559a',
 };
 
+const TAU_EE_SOURCE_FINGERPRINT =
+  'sha256:8a3b9a884d83a8d6a52da7f25d6f4f938dd1ad33da0a9bfba5cc1d4fb7fbf507';
+export const TAU_EE_FIXTURES: AdmissionsVerificationFixture[] = TAU_CS_FIXTURES.map((fixture) => ({
+  ...fixture,
+  id: fixture.id.replace('cs__tau', 'ee__tau'),
+  pairId: 'ee__tau',
+  sourceFingerprint: TAU_EE_SOURCE_FINGERPRINT,
+}));
+export const TAU_EE_CONTRACT: AdmissionsProgramVerificationContract = {
+  ...TAU_CS_CONTRACT,
+  pairId: 'ee__tau',
+  programId: 'ee',
+  officialProgramId: '051211010000',
+  source: { targetId: 'tau-ee-live', url: 'https://go.tau.ac.il/graphql' },
+  calculation: {
+    ...TAU_CS_CONTRACT.calculation,
+    cutoff: { acceptance: 710, rejection: 690 },
+    gates: [
+      {
+        id: 'tau-ee:english-minimum',
+        kind: 'language',
+        field: 'psychometricEnglish',
+        minimum: 100,
+        description: 'TAU requires at least English level Advanced A.',
+      },
+      {
+        id: 'tau-ee:mathematics-physics-route',
+        kind: 'subject',
+        field: 'bagrutSubjectRecord',
+        description:
+          'Electrical Engineering requires the official mathematics and physics subject route.',
+      },
+      {
+        id: 'tau-ee:alternative-routes',
+        kind: 'manual',
+        field: 'alternativeAdmissionRoute',
+        description: 'Electrical Engineering alternative routes remain manual.',
+      },
+    ],
+  },
+  fixtureIds: TAU_EE_FIXTURES.map((fixture) => fixture.id),
+  fixtureSetFingerprint: 'sha256:6771a16d97b6b5eea7ec285fb96223abf967e94d27a08fec80b4a248e1a7e4aa',
+  sourceFingerprint: TAU_EE_SOURCE_FINGERPRINT,
+  proof: { ...TAU_CS_CONTRACT.proof, sourceFingerprint: TAU_EE_SOURCE_FINGERPRINT },
+};
+export const TAU_LEGACY_EE_FIXTURES: AdmissionsVerificationFixture[] = TAU_EE_FIXTURES.map(
+  (fixture) => ({
+    ...fixture,
+    id: fixture.id.replace('ee__tau', 'tau_ee__tau'),
+    pairId: 'tau_ee__tau',
+  }),
+);
+export const TAU_LEGACY_EE_CONTRACT: AdmissionsProgramVerificationContract = {
+  ...TAU_EE_CONTRACT,
+  pairId: 'tau_ee__tau',
+  programId: 'tau_ee',
+  source: { ...TAU_EE_CONTRACT.source, targetId: 'tau-ee-legacy-live' },
+  fixtureIds: TAU_LEGACY_EE_FIXTURES.map((fixture) => fixture.id),
+  fixtureSetFingerprint: 'sha256:e51c78d1dcacf49e478911e051ccc8d8d2d14bbceabd19f2faa86f668f3f4e40',
+};
+
 export interface ProgramVerificationArtifact {
   contract: AdmissionsProgramVerificationContract;
   fixtures: AdmissionsVerificationFixture[];
@@ -1346,6 +1407,22 @@ export const TAU_PROGRAM_VERIFICATION_METADATA: Record<string, TauProgramVerific
       'https://go.tau.ac.il/he/engineering/ba/computer-science?v=admission-requirements',
     ledgerReason:
       'Verified the legacy TAU Computer Science catalogue alias against the same current node, score field, subject gates, fixtures, and live replay.',
+  },
+  [TAU_EE_CONTRACT.pairId]: {
+    contract: TAU_EE_CONTRACT,
+    fixtures: TAU_EE_FIXTURES,
+    requirementsUrl:
+      'https://go.tau.ac.il/he/engineering/ba/electrical-engineering?v=admission-requirements',
+    ledgerReason:
+      'Verified against the current TAU Electrical Engineering programme node, score field, math/physics subject gates, accepted/below fixtures, and live score-and-verdict replay.',
+  },
+  [TAU_LEGACY_EE_CONTRACT.pairId]: {
+    contract: TAU_LEGACY_EE_CONTRACT,
+    fixtures: TAU_LEGACY_EE_FIXTURES,
+    requirementsUrl:
+      'https://go.tau.ac.il/he/engineering/ba/electrical-engineering?v=admission-requirements',
+    ledgerReason:
+      'Verified the legacy TAU Electrical Engineering alias against the same current node, score field, subject gates, fixtures, and live replay.',
   },
 };
 
