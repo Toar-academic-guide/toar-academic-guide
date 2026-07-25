@@ -250,7 +250,7 @@ export const admissionRequirements = pgTable('admission_requirements', {
   institutionId: text('institution_id')
     .notNull()
     .references(() => institutions.id, { onDelete: 'cascade' }),
-  durationYears: integer('duration_years'),
+  durationYears: real('duration_years'),
   estimatedStudentsPerYear: text('estimated_students_per_year'),
   quantitativeMinRequirement: integer('quantitative_min_requirement'),
   englishMinRequirement: integer('english_min_requirement'),
@@ -309,7 +309,7 @@ export const requirementVersions = pgTable('requirement_versions', {
     .notNull()
     .references(() => admissionRequirements.id, { onDelete: 'cascade' }),
   versionNumber: integer('version_number').notNull(),
-  durationYears: integer('duration_years'),
+  durationYears: real('duration_years'),
   estimatedStudentsPerYear: text('estimated_students_per_year'),
   quantitativeMinRequirement: integer('quantitative_min_requirement'),
   englishMinRequirement: integer('english_min_requirement'),
