@@ -15,6 +15,7 @@ describe('admissionsSourceRegistry', () => {
       'tau-psychology-live',
       'tau-social-work-live',
       'tau-social-work-legacy-live',
+      'tau-psychology-legacy-live',
     ]);
   });
 

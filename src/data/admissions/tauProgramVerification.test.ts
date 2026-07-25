@@ -7,6 +7,8 @@ import {
   TAU_NURSING_FIXTURES,
   TAU_PSYCHOLOGY_CONTRACT,
   TAU_PSYCHOLOGY_FIXTURES,
+  TAU_LEGACY_PSYCHOLOGY_CONTRACT,
+  TAU_LEGACY_PSYCHOLOGY_FIXTURES,
   TAU_SOCIAL_WORK_CONTRACT,
   TAU_SOCIAL_WORK_FIXTURES,
 } from './tauProgramVerification';
@@ -168,6 +170,24 @@ describe('TAU Digital Sciences verification artifact', () => {
         fixtures: TAU_PSYCHOLOGY_FIXTURES,
         currentAdmissionCycle: '2026-2027',
         currentSourceFingerprint: TAU_PSYCHOLOGY_CONTRACT.sourceFingerprint,
+      }),
+    ).toEqual({
+      state: 'exact',
+      capability: 'exact',
+      issues: [],
+    });
+  });
+
+  it('keeps the legacy Psychology alias on the current node-specific proof', () => {
+    expect(fingerprintVerificationFixtures(TAU_LEGACY_PSYCHOLOGY_FIXTURES)).toBe(
+      TAU_LEGACY_PSYCHOLOGY_CONTRACT.fixtureSetFingerprint,
+    );
+    expect(
+      evaluateProgramVerification({
+        contract: TAU_LEGACY_PSYCHOLOGY_CONTRACT,
+        fixtures: TAU_LEGACY_PSYCHOLOGY_FIXTURES,
+        currentAdmissionCycle: '2026-2027',
+        currentSourceFingerprint: TAU_LEGACY_PSYCHOLOGY_CONTRACT.sourceFingerprint,
       }),
     ).toEqual({
       state: 'exact',

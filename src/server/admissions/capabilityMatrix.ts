@@ -135,6 +135,22 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
     },
     requiredInputs: [],
   },
+  psychology__tau: {
+    targetId: 'tau-psychology-legacy-live',
+    sourceTarget: admissionsSourceTargets.find(
+      (entry) => entry.id === 'tau-psychology-legacy-live',
+    )!,
+    program: {
+      targetId: 'tau-psychology-legacy-live',
+      pairId: 'psychology__tau',
+      id: 'tau-psychology',
+      name: 'Psychology',
+      nodeId: 8275,
+      externalId: '107111050000',
+      scoreField: 'hatama',
+    },
+    requiredInputs: ['psychometric_english'],
+  },
 };
 
 const SOURCE_TARGETS_BY_INSTITUTION = new Map<string, AdmissionsSourceTarget>(

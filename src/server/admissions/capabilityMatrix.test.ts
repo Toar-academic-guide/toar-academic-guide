@@ -265,6 +265,25 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
   });
 
+  it('replaces the legacy TAU Psychology threshold with the reviewed programme target', () => {
+    const [entry] = buildAdmissionsCapabilityMatrix({
+      program: makeProgram({
+        id: 'psychology',
+        linkedInstitutionIds: ['tau'],
+      }),
+      institutions: INSTITUTIONS,
+      input: { psychometricEnglish: 110 },
+      now: new Date('2026-07-26T08:00:00Z'),
+    });
+
+    expect(entry).toMatchObject({
+      institutionId: 'tau',
+      capability: 'exact',
+      pairVerification: { pairId: 'psychology__tau', state: 'exact' },
+      exactTarget: { targetId: 'tau-psychology-legacy-live' },
+    });
+  });
+
   it('activates the reviewed TAU Social Work score route with its pair-specific target', () => {
     const [entry] = buildAdmissionsCapabilityMatrix({
       program: makeProgram({

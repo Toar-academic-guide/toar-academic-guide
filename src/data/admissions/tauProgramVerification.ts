@@ -489,6 +489,25 @@ export const TAU_LEGACY_SOCIAL_WORK_CONTRACT: AdmissionsProgramVerificationContr
   fixtureSetFingerprint: 'sha256:e7511029cf4da3346b5e9dba1c9c0d59c24871148a5ba169f17483a80860b732',
 };
 
+export const TAU_LEGACY_PSYCHOLOGY_FIXTURES: AdmissionsVerificationFixture[] =
+  TAU_PSYCHOLOGY_FIXTURES.map((fixture) => ({
+    ...fixture,
+    id: fixture.id.replace('tau_psychology__tau', 'psychology__tau'),
+    pairId: 'psychology__tau',
+  }));
+
+export const TAU_LEGACY_PSYCHOLOGY_CONTRACT: AdmissionsProgramVerificationContract = {
+  ...TAU_PSYCHOLOGY_CONTRACT,
+  pairId: 'psychology__tau',
+  programId: 'psychology',
+  source: {
+    ...TAU_PSYCHOLOGY_CONTRACT.source,
+    targetId: 'tau-psychology-legacy-live',
+  },
+  fixtureIds: TAU_LEGACY_PSYCHOLOGY_FIXTURES.map((fixture) => fixture.id),
+  fixtureSetFingerprint: 'sha256:fd2fe2e1356c75bc6487b46d7d4a2b6ea69d159dc8de95705049351655dde708',
+};
+
 export interface ProgramVerificationArtifact {
   contract: AdmissionsProgramVerificationContract;
   fixtures: AdmissionsVerificationFixture[];
@@ -534,6 +553,13 @@ export const TAU_PROGRAM_VERIFICATION_METADATA: Record<string, TauProgramVerific
     requirementsUrl: TAU_SOCIAL_WORK_REQUIREMENTS_URL,
     ledgerReason:
       'Verified against the same current TAU social-work programme node as the legacy catalogue alias, replacing its stale local threshold. The online-course, registration-priority, and possible-interview conditions remain explicit programme gates.',
+  },
+  [TAU_LEGACY_PSYCHOLOGY_CONTRACT.pairId]: {
+    contract: TAU_LEGACY_PSYCHOLOGY_CONTRACT,
+    fixtures: TAU_LEGACY_PSYCHOLOGY_FIXTURES,
+    requirementsUrl: TAU_PSYCHOLOGY_REQUIREMENTS_URL,
+    ledgerReason:
+      'Verified against the current TAU Psychology programme node as the legacy catalogue alias, replacing its stale local threshold.',
   },
 };
 

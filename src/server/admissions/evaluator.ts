@@ -263,7 +263,10 @@ async function evaluateExactResult(args: {
       });
     }
 
-    if (exactTarget.targetId === 'tau-psychology-live') {
+    if (
+      exactTarget.targetId === 'tau-psychology-live' ||
+      exactTarget.targetId === 'tau-psychology-legacy-live'
+    ) {
       const gateResult = evaluateTauPsychologyGates(input);
       if (gateResult.state === 'needs_input') {
         return requiredInputsResult(institution, gateResult.requiredInputs);
