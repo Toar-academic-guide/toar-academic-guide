@@ -185,6 +185,9 @@ export default function CalculatorResults({
           degraded_count: nextReport.results.filter((result) => result.kind === 'degraded').length,
           needs_input_count: nextReport.results.filter((result) => result.kind === 'needs_input')
             .length,
+          authority_unavailable_count: nextReport.results.filter(
+            (result) => result.kind === 'authority_unavailable',
+          ).length,
           open_admission_count: nextReport.results.filter(
             (result) => result.kind === 'open_admission',
           ).length,
@@ -404,6 +407,7 @@ export default function CalculatorResults({
     estimatedAccepted: { label: 'מתקבל/ת', bg: 'bg-[#34D399]' },
     estimatedBelow: { label: 'מתחת לסף', bg: 'bg-[#FCD34D]' },
     needsInput: { label: 'נדרשים נתונים', bg: 'bg-violet-200' },
+    authorityUnavailable: { label: 'האימות טרם הושלם', bg: 'bg-amber-200' },
     degraded: { label: 'אימות לא זמין', bg: 'bg-rose-200' },
     openAdmission: { label: 'קבלה פתוחה', bg: 'bg-emerald-200' },
     manualGateEligible: { label: 'אפשר להגיש מועמדות', bg: 'bg-indigo-200' },
@@ -591,21 +595,23 @@ export default function CalculatorResults({
                           : STATUS_CONFIG.estimatedBelow
                         : result.kind === 'needs_input'
                           ? STATUS_CONFIG.needsInput
-                          : result.kind === 'degraded'
-                            ? STATUS_CONFIG.degraded
-                            : result.kind === 'open_admission'
-                              ? isCertificateProgram
-                                ? { ...STATUS_CONFIG.openAdmission, label: 'זכאי/ת להירשם' }
-                                : STATUS_CONFIG.openAdmission
-                              : result.kind === 'manual_gate'
-                                ? result.decision === 'below'
-                                  ? STATUS_CONFIG.manualGateBelow
-                                  : STATUS_CONFIG.manualGateEligible
-                                : result.kind === 'requirements_only'
-                                  ? STATUS_CONFIG.requirementsOnly
-                                  : result.kind === 'tracked_missing_rule'
-                                    ? STATUS_CONFIG.trackedMissingRule
-                                    : STATUS_CONFIG.unsupported;
+                          : result.kind === 'authority_unavailable'
+                            ? STATUS_CONFIG.authorityUnavailable
+                            : result.kind === 'degraded'
+                              ? STATUS_CONFIG.degraded
+                              : result.kind === 'open_admission'
+                                ? isCertificateProgram
+                                  ? { ...STATUS_CONFIG.openAdmission, label: 'זכאי/ת להירשם' }
+                                  : STATUS_CONFIG.openAdmission
+                                : result.kind === 'manual_gate'
+                                  ? result.decision === 'below'
+                                    ? STATUS_CONFIG.manualGateBelow
+                                    : STATUS_CONFIG.manualGateEligible
+                                  : result.kind === 'requirements_only'
+                                    ? STATUS_CONFIG.requirementsOnly
+                                    : result.kind === 'tracked_missing_rule'
+                                      ? STATUS_CONFIG.trackedMissingRule
+                                      : STATUS_CONFIG.unsupported;
                   const institutionType = getInstitutionType(institution);
 
                   return (

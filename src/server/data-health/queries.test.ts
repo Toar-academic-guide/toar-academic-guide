@@ -331,6 +331,12 @@ describe('summarizeDataHealthRows', () => {
     });
     expect(report.readiness.isReady).toBe(true);
     expect(report.readiness.issues).toEqual([]);
+    expect(report.formulaVerification).toMatchObject({
+      total: 135,
+      exact: 0,
+      withheld: 135,
+      isComplete: false,
+    });
   });
 
   it('reports the latest published admissions release separately from failed publication attempts', () => {
@@ -502,8 +508,8 @@ describe('summarizeDataHealthRows', () => {
           programId: 'tau_datascience',
           institutionId: 'tau',
           institutionName: 'Tel Aviv University',
-          evidenceMode: 'exact',
-          severity: 'normal',
+          evidenceMode: 'authority_unavailable',
+          severity: 'attention',
           sourceTargetId: 'tau-digital-sciences-live',
           officialSourceUrl: 'https://go.tau.ac.il/graphql',
           externalProgramId: '056011050000',
@@ -514,19 +520,18 @@ describe('summarizeDataHealthRows', () => {
           programId: 'haifa_cs',
           institutionId: 'haifa',
           institutionName: 'University of Haifa',
-          evidenceMode: 'needs_input',
-          severity: 'normal',
+          evidenceMode: 'authority_unavailable',
+          severity: 'attention',
           sourceTargetId: 'haifa-cs-live',
           officialSourceUrl: 'https://applicants.haifa.ac.il/enrollmentChances/index.html',
           externalProgramId: '52258372',
-          requiredInputs: ['psychometric_math', 'psychometric_verbal', 'psychometric_english'],
+          requiredInputs: [],
         }),
         expect.objectContaining({
           programId: 'tau_law',
           institutionId: 'tau',
-          evidenceMode: 'unsupported',
-          severity: 'informational',
-          sourceTargetId: null,
+          evidenceMode: 'authority_unavailable',
+          severity: 'attention',
         }),
       ]),
     );

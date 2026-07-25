@@ -76,10 +76,13 @@ const operationalReadGrants = {
 
 const targetedTests = [
   'src/data/admissions/mondayEvidence.test.ts',
+  'src/data/admissions/formulaBackedPairInventory.test.ts',
+  'src/data/admissions/formulaBackedVerificationLedger.test.ts',
   'src/server/admissions/catalogueEvidenceCoverage.test.ts',
   'src/server/admissions/calculatorCoverage.test.ts',
   'src/server/admissions/capabilityMatrix.test.ts',
   'src/server/admissions/evaluator.test.ts',
+  'src/server/admissions/verification/programVerification.test.ts',
   'src/server/admissions/admissionsReleasePublisher.test.ts',
   'src/server/admissions/productionSchemaPreflight.test.ts',
   'src/server/admissions/productionSensitivePaths.test.ts',
@@ -92,6 +95,7 @@ const targetedTests = [
   'src/app/internal/data-health/DataHealthDashboard.test.tsx',
   'src/app/api/catalog/programs/route.test.ts',
   'src/app/api/catalog/institutions/route.test.ts',
+  'src/app/api/admissions/evaluate/route.test.ts',
 ];
 
 const admissionsGeneratedFiles = [

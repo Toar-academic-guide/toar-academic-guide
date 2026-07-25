@@ -23,6 +23,22 @@ function reportWithRisks(): DataHealthReadyReport {
         universityCalculatorConfigs: 7,
       },
     },
+    formulaVerification: {
+      total: 135,
+      exact: 0,
+      withheld: 135,
+      stale: 0,
+      blocked: 0,
+      isComplete: false,
+      totalsByInstitution: {
+        tau: { total: 35, exact: 0, withheld: 35, stale: 0, blocked: 0 },
+        huji: { total: 29, exact: 0, withheld: 29, stale: 0, blocked: 0 },
+        bgu: { total: 29, exact: 0, withheld: 29, stale: 0, blocked: 0 },
+        haifa: { total: 27, exact: 0, withheld: 27, stale: 0, blocked: 0 },
+        technion: { total: 14, exact: 0, withheld: 14, stale: 0, blocked: 0 },
+        colman: { total: 1, exact: 0, withheld: 1, stale: 0, blocked: 0 },
+      },
+    },
     coverage: {
       missingRequirementSourceCount: 1,
       missingProgramSourceCount: 1,
@@ -270,6 +286,7 @@ describe('DataHealthDashboard', () => {
 
     expect(screen.getByRole('heading', { name: /data health/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /catalogue readiness/i })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /formula-backed pair verification/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /admissions decision readiness/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /^admissions evidence$/i })).toBeTruthy();
     expect(

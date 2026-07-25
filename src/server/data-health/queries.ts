@@ -26,6 +26,13 @@ import type { SourceFreshnessStateRow } from '@/db/types';
 import { buildAdmissionsCapabilityMatrix } from '@/server/admissions/capabilityMatrix';
 import { evaluateCatalogueReadiness } from '@/server/catalogue/queries';
 import { mondayAdmissionsEvidence } from '@/data/admissions/mondayEvidence';
+import { allPrograms } from '@/data/degrees';
+import { buildFormulaBackedPairInventory } from '@/data/admissions/formulaBackedPairInventory';
+import {
+  FORMULA_BACKED_VERIFICATION_LEDGER,
+  formulaPairVerificationCompletion,
+  type FormulaPairVerificationCompletion,
+} from '@/data/admissions/formulaBackedVerificationLedger';
 import {
   parseSourceFreshnessProposedValue,
   type SourceFreshnessProposedValue,
@@ -59,6 +66,7 @@ export interface DataHealthReadyReport {
     issues: string[];
     counts: DataHealthCounts;
   };
+  formulaVerification: FormulaPairVerificationCompletion;
   coverage: {
     missingRequirementSourceCount: number;
     missingProgramSourceCount: number;
@@ -625,6 +633,10 @@ export function summarizeDataHealthRows(
         universityCalculatorConfigs: rows.universityCalculatorConfigs.length,
       },
     },
+    formulaVerification: formulaPairVerificationCompletion(
+      buildFormulaBackedPairInventory(allPrograms),
+      FORMULA_BACKED_VERIFICATION_LEDGER,
+    ),
     coverage: buildCoverageSummary(rows),
     decisionReadiness: buildDecisionReadinessSummary(rows),
     decisionEvidence: buildDecisionEvidenceSummary(rows, now),
@@ -1298,7 +1310,11 @@ function buildCapabilityPrograms(rows: DataHealthRows): CatalogueProgram[] {
 function evidenceSeverity(
   capability: AdmissionsEvaluationCapability,
 ): AdmissionsEvidenceRow['severity'] {
-  if (capability === 'blocked' || capability === 'stale') {
+  if (
+    capability === 'blocked' ||
+    capability === 'stale' ||
+    capability === 'authority_unavailable'
+  ) {
     return 'attention';
   }
 

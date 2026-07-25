@@ -8,6 +8,11 @@ import {
   type AdmissionsReviewRunRecord,
 } from './admissionsReviewRunLedger';
 import { buildAdmissionsReviewRun } from './weeklyReviewRun';
+import { FORMULA_BACKED_VERIFICATION_LEDGER } from '@/data/admissions/formulaBackedVerificationLedger';
+
+const exactTauLedger = FORMULA_BACKED_VERIFICATION_LEDGER.map((entry) =>
+  entry.pairId === 'tau_datascience__tau' ? { ...entry, state: 'exact' as const } : entry,
+);
 
 function run() {
   return buildAdmissionsReviewRun({
@@ -16,7 +21,7 @@ function run() {
     cycle: '2027',
     baseline: [
       {
-        target: { institutionId: 'tau', programId: 'tau_digital_sciences', cycle: '2027' },
+        target: { institutionId: 'tau', programId: 'tau_datascience', cycle: '2027' },
         ruleKind: 'admission_cutoff' as const,
         value: 700,
       },
@@ -33,11 +38,12 @@ function run() {
         status: 'succeeded' as const,
         sourceClass: 'api_static_json' as const,
         reproducedFields: ['acceptanceThreshold'],
-        normalizedPayload: { programId: 'tau_digital_sciences', acceptanceThreshold: 695 },
+        normalizedPayload: { programId: 'tau_datascience', acceptanceThreshold: 695 },
         limitations: [],
         nextAction: 'Review changed threshold before publication',
       },
     ],
+    verificationLedger: exactTauLedger,
   });
 }
 

@@ -160,6 +160,7 @@ export function buildAdmissionsCapabilityMatrix(args: {
         formulaPairScope,
         pairVerification,
         sourceTarget,
+        exactTarget,
         evidence,
         freshnessState,
       };

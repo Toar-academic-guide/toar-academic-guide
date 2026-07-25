@@ -12,6 +12,7 @@ import type {
   AdmissionsSourceFreshnessRunResult,
   AdmissionsSourceFreshnessRunnerOptions,
 } from '@/server/ingestion/admissionsSourceFreshnessRunner';
+import { FORMULA_BACKED_VERIFICATION_LEDGER } from '@/data/admissions/formulaBackedVerificationLedger';
 
 const proof = {
   id: 'tau-digital-sciences-live',
@@ -24,7 +25,7 @@ const proof = {
   status: 'succeeded' as const,
   sourceClass: 'api_static_json' as const,
   reproducedFields: ['acceptanceThreshold'],
-  normalizedPayload: { programId: 'tau_digital_sciences', acceptanceThreshold: 695 },
+  normalizedPayload: { programId: 'tau_datascience', acceptanceThreshold: 695 },
   limitations: [],
   nextAction: 'Review changed threshold before publication',
 };
@@ -37,6 +38,10 @@ function report(): AdmissionsLiveProofReport {
 }
 
 describe('admissions weekly review preparation', () => {
+  const exactTauLedger = FORMULA_BACKED_VERIFICATION_LEDGER.map((entry) =>
+    entry.pairId === 'tau_datascience__tau' ? { ...entry, state: 'exact' as const } : entry,
+  );
+
   it('persists source freshness first, then compares only against published reviewed rules', async () => {
     const sourceRunner = vi.fn<
       (
@@ -48,14 +53,18 @@ describe('admissions weekly review preparation', () => {
         async () =>
           [
             {
-              target: { institutionId: 'tau', programId: 'tau_digital_sciences', cycle: '2027' },
+              target: { institutionId: 'tau', programId: 'tau_datascience', cycle: '2027' },
               ruleKind: 'admission_cutoff' as const,
               value: 700,
             },
           ] satisfies PublishedAdmissionRule[],
       ),
     };
-    const preparer = createAdmissionsWeeklyReviewPreparer({ sourceRunner, baselineRepository });
+    const preparer = createAdmissionsWeeklyReviewPreparer({
+      sourceRunner,
+      baselineRepository,
+      verificationLedger: exactTauLedger,
+    });
 
     const result = await preparer.prepare({
       runKey: '2026-W30',

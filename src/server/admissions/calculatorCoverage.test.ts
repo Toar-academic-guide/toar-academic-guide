@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { calculatorCoverageInventory, reconcileCalculatorCoverage } from './calculatorCoverage';
+import {
+  calculatorCoverageInventory,
+  formulaBackedPairCoverage,
+  reconcileCalculatorCoverage,
+} from './calculatorCoverage';
 import { admissionsSourceTargets } from '@/server/ingestion/admissionsSourceRegistry';
 import { UNIVERSITIES } from '@/data/degreesData';
 
@@ -44,14 +48,31 @@ describe('calculatorCoverage', () => {
     }
   });
 
-  it('keeps BIU blocked while Ariel is now represented as score_only with a blocked-source follow-up lane', () => {
+  it('marks BIU and Ariel as explicitly unsupported exclusions', () => {
     const biu = calculatorCoverageInventory.find((e) => e.institutionId === 'biu');
-    expect(biu?.intendedCapability).toBe('blocked');
+    expect(biu?.intendedCapability).toBe('unsupported');
 
     const ariel = calculatorCoverageInventory.find((e) => e.institutionId === 'ariel');
-    expect(ariel?.intendedCapability).toBe('score_only');
-    expect(ariel?.supportLevel).toBe('score_only');
+    expect(ariel?.intendedCapability).toBe('unsupported');
+    expect(ariel?.supportLevel).toBe('unsupported');
     expect(ariel?.evidenceKind).toBe('browser_blocked');
+  });
+
+  it('reports pair-level formula coverage without institution-wide exact claims', () => {
+    expect(formulaBackedPairCoverage).toMatchObject({
+      total: 135,
+      exact: 0,
+      withheld: 135,
+      isComplete: false,
+    });
+
+    for (const institutionId of ['tau', 'huji', 'bgu', 'haifa', 'technion']) {
+      const entry = calculatorCoverageInventory.find(
+        (candidate) => candidate.institutionId === institutionId,
+      );
+      expect(entry?.intendedCapability).toBe('authority_unavailable');
+      expect(entry?.supportLevel).toBe('authority_unavailable');
+    }
   });
 
   it('marks Open University as open admission', () => {

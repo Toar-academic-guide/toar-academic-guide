@@ -3,12 +3,13 @@ import { describe, expect, it, vi } from 'vitest';
 vi.mock('server-only', () => ({}));
 
 import { classifyAdmissionsProofCandidates } from './candidateChanges';
+import { FORMULA_BACKED_VERIFICATION_LEDGER } from '@/data/admissions/formulaBackedVerificationLedger';
 
 const baseline = {
   version: 1 as const,
   changes: [
     {
-      target: { institutionId: 'tau', programId: 'tau_digital_sciences', cycle: '2027' },
+      target: { institutionId: 'tau', programId: 'tau_datascience', cycle: '2027' },
       ruleKind: 'admission_cutoff' as const,
       before: 700,
       after: 700,
@@ -26,7 +27,11 @@ const baseline = {
 };
 
 describe('admissions proof candidate classification', () => {
-  it('proposes a cutoff change only from a decision-capable official proof', () => {
+  const exactTauLedger = FORMULA_BACKED_VERIFICATION_LEDGER.map((entry) =>
+    entry.pairId === 'tau_datascience__tau' ? { ...entry, state: 'exact' as const } : entry,
+  );
+
+  it('withholds a decision-capable proof while pair verification is incomplete', () => {
     const result = classifyAdmissionsProofCandidates({
       baseline,
       cycle: '2027',
@@ -42,12 +47,40 @@ describe('admissions proof candidate classification', () => {
           status: 'succeeded',
           sourceClass: 'api_static_json',
           reproducedFields: ['acceptanceThreshold'],
-          normalizedPayload: { programId: 'tau_digital_sciences', acceptanceThreshold: 695 },
+          normalizedPayload: { programId: 'tau_datascience', acceptanceThreshold: 695 },
           limitations: [],
           nextAction: 'review',
         },
       ],
     });
+    expect(result.candidates).toEqual([]);
+    expect(result.excluded).toMatchObject([{ reason: 'pair_verification_incomplete' }]);
+  });
+
+  it('proposes a cutoff change only after the pair ledger is exact', () => {
+    const result = classifyAdmissionsProofCandidates({
+      baseline,
+      cycle: '2027',
+      verificationLedger: exactTauLedger,
+      proofs: [
+        {
+          id: 'tau-digital-sciences-live',
+          institutionId: 'tau',
+          institutionName: 'TAU',
+          officialUrl: 'https://go.tau.ac.il/graphql',
+          adapterId: 'tau',
+          capability: 'decision_capable',
+          proofLevel: 'exact_official',
+          status: 'succeeded',
+          sourceClass: 'api_static_json',
+          reproducedFields: ['acceptanceThreshold'],
+          normalizedPayload: { programId: 'tau_datascience', acceptanceThreshold: 695 },
+          limitations: [],
+          nextAction: 'review',
+        },
+      ],
+    });
+
     expect(result.candidates).toMatchObject([
       { before: 700, after: 695, ruleKind: 'admission_cutoff' },
     ]);

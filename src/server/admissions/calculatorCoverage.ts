@@ -1,4 +1,10 @@
 import { UNIVERSITIES } from '@/data/degreesData';
+import { allPrograms } from '@/data/degrees';
+import {
+  FORMULA_BACKED_VERIFICATION_LEDGER,
+  formulaPairVerificationCompletion,
+} from '@/data/admissions/formulaBackedVerificationLedger';
+import { buildFormulaBackedPairInventory } from '@/data/admissions/formulaBackedPairInventory';
 import { admissionsSourceTargets } from '@/server/ingestion/admissionsSourceRegistry';
 import type { AdmissionsEvaluationCapability } from '@/types/admissionsEvaluation';
 
@@ -11,6 +17,7 @@ export type CalculatorSupportLevel =
   | 'open_admission'
   | 'manual_gate'
   | 'requirements_only'
+  | 'authority_unavailable'
   | 'unsupported'
   | 'missing';
 
@@ -43,8 +50,8 @@ export const calculatorCoverageInventory: CalculatorCoverageEntry[] = [
     mondayItemId: '12220699647',
     officialUrl: 'https://go.huji.ac.il/jjson/huji.json.gz',
     evidenceKind: 'static_json',
-    intendedCapability: 'estimated',
-    supportLevel: 'static_candidate',
+    intendedCapability: 'authority_unavailable',
+    supportLevel: 'authority_unavailable',
     hasCalculatorConfig: true,
     hasSourceTarget: true,
     nextAction: 'Run a separate HUJI static JSON and bundled-JS reproduction spike',
@@ -55,8 +62,8 @@ export const calculatorCoverageInventory: CalculatorCoverageEntry[] = [
     mondayItemId: '12220699649',
     officialUrl: 'https://go.tau.ac.il/graphql',
     evidenceKind: 'exact_official',
-    intendedCapability: 'exact',
-    supportLevel: 'exact',
+    intendedCapability: 'authority_unavailable',
+    supportLevel: 'authority_unavailable',
     hasCalculatorConfig: true,
     hasSourceTarget: true,
     nextAction: 'Expand program-level exact target mappings beyond Digital Sciences',
@@ -68,8 +75,8 @@ export const calculatorCoverageInventory: CalculatorCoverageEntry[] = [
     officialUrl:
       'https://admissions.technion.ac.il/wp-content/plugins/technion-calculators/technion-calculators-sum.php',
     evidenceKind: 'score_only',
-    intendedCapability: 'score_only',
-    supportLevel: 'score_only',
+    intendedCapability: 'authority_unavailable',
+    supportLevel: 'authority_unavailable',
     hasCalculatorConfig: true,
     hasSourceTarget: true,
     nextAction: 'Pair calculator output with a reviewed official threshold source',
@@ -80,8 +87,8 @@ export const calculatorCoverageInventory: CalculatorCoverageEntry[] = [
     mondayItemId: '12220699687',
     officialUrl: 'https://bgu4u.bgu.ac.il/html/average_calc/index.php',
     evidenceKind: 'score_only',
-    intendedCapability: 'score_only',
-    supportLevel: 'score_only',
+    intendedCapability: 'authority_unavailable',
+    supportLevel: 'authority_unavailable',
     hasCalculatorConfig: true,
     hasSourceTarget: true,
     nextAction: 'Find or review an official cutoff/status source before product decisions',
@@ -92,8 +99,8 @@ export const calculatorCoverageInventory: CalculatorCoverageEntry[] = [
     mondayItemId: '12220699688',
     officialUrl: 'https://in.biu.ac.il/Pages/Psychometric.aspx',
     evidenceKind: 'browser_blocked',
-    intendedCapability: 'blocked',
-    supportLevel: 'blocked',
+    intendedCapability: 'unsupported',
+    supportLevel: 'unsupported',
     hasCalculatorConfig: true,
     hasSourceTarget: true,
     nextAction: 'Move to Hermes/VPS browser automation lane',
@@ -104,8 +111,8 @@ export const calculatorCoverageInventory: CalculatorCoverageEntry[] = [
     mondayItemId: '12220699689',
     officialUrl: 'https://applicants.haifa.ac.il/enrollmentChances/index.html',
     evidenceKind: 'exact_official',
-    intendedCapability: 'exact',
-    supportLevel: 'exact',
+    intendedCapability: 'authority_unavailable',
+    supportLevel: 'authority_unavailable',
     hasCalculatorConfig: true,
     hasSourceTarget: true,
     nextAction: 'Expand program-level exact target mappings beyond CS',
@@ -128,8 +135,8 @@ export const calculatorCoverageInventory: CalculatorCoverageEntry[] = [
     mondayItemId: '12220680983',
     officialUrl: 'https://www.ariel.ac.il/wp/',
     evidenceKind: 'browser_blocked',
-    intendedCapability: 'score_only',
-    supportLevel: 'score_only',
+    intendedCapability: 'unsupported',
+    supportLevel: 'unsupported',
     hasCalculatorConfig: true,
     hasSourceTarget: true,
     nextAction:
@@ -197,6 +204,13 @@ export const calculatorCoverageInventory: CalculatorCoverageEntry[] = [
     nextAction: 'Reverse-engineer the secondary calculator link or represent as requirements-only',
   },
 ];
+
+const FORMULA_BACKED_PAIR_INVENTORY = buildFormulaBackedPairInventory(allPrograms);
+
+export const formulaBackedPairCoverage = formulaPairVerificationCompletion(
+  FORMULA_BACKED_PAIR_INVENTORY,
+  FORMULA_BACKED_VERIFICATION_LEDGER,
+);
 
 export interface CoverageReconciliationResult {
   coverageEntries: CalculatorCoverageEntry[];
