@@ -60,7 +60,7 @@ describeWithPostgres('admissions release publisher with PostgreSQL', () => {
     await expect(publisher.publish(input)).rejects.toThrow();
 
     const [failedRelease] = await sql<
-      Array<{ id: string; status: string; published_at: Date | null }>
+      Array<{ id: string; status: string; published_at: string | null }>
     >`
       select id, status, published_at
       from public.admission_releases
@@ -123,7 +123,7 @@ describeWithPostgres('admissions release publisher with PostgreSQL', () => {
     });
 
     const [publishedRelease] = await sql<
-      Array<{ id: string; status: string; published_at: Date | null }>
+      Array<{ id: string; status: string; published_at: string | null }>
     >`
       select id, status, published_at
       from public.admission_releases
@@ -132,7 +132,7 @@ describeWithPostgres('admissions release publisher with PostgreSQL', () => {
     expect(publishedRelease).toMatchObject({
       id: failedRelease!.id,
       status: 'published',
-      published_at: expect.any(Date),
+      published_at: expect.any(String),
     });
 
     const attempts = await sql<Array<{ status: string }>>`
