@@ -33,6 +33,7 @@ import {
 import { evaluateTauDigitalSciencesGates } from './tauDigitalSciencesPolicy';
 import { evaluateTauNursingGates } from './tauNursingPolicy';
 import { evaluateTauPsychologyGates, TAU_PSYCHOLOGY_REQUIREMENTS_URL } from './tauPsychologyPolicy';
+import { evaluateTauLawGates, TAU_LAW_REQUIREMENTS_URL } from './tauLawPolicy';
 
 const MAX_EXACT_SOURCE_CALLS = 2;
 const OFFICIAL_SOURCE_TIMEOUT_MS = 5000;
@@ -61,6 +62,7 @@ export async function evaluateAdmissionsForProgram(args: {
       if (key === 'tau_datascience__tau') return ['tau-digital-sciences-live'];
       if (key === 'nursing__tau') return ['tau-nursing-live'];
       if (key === 'tau_psychology__tau') return ['tau-psychology-live'];
+      if (key === 'law__tau') return ['tau-law-live'];
       return [];
     });
 
@@ -299,6 +301,35 @@ async function evaluateExactResult(args: {
       exactTarget.targetId === 'tau-social-work-live' ||
       exactTarget.targetId === 'tau-social-work-legacy-live'
     ) {
+      const proof = await runTauAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: {
+          bagrutAverage: input.bagrut,
+          psychometric: input.psychometric,
+        },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+      });
+    }
+
+    if (exactTarget.targetId === 'tau-law-live') {
+      const gateResult = evaluateTauLawGates(input);
+      if (gateResult.state === 'needs_input') {
+        return requiredInputsResult(institution, gateResult.requiredInputs);
+      }
+      if (gateResult.state === 'below') {
+        return exactGateFailureResult({
+          institution,
+          unmetRequirements: gateResult.unmetRequirements,
+          requirementsUrl: TAU_LAW_REQUIREMENTS_URL,
+        });
+      }
+
       const proof = await runTauAdmissionsProof({
         fetcher: timedFetcher,
         program: exactTarget.program,

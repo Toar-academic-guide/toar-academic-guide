@@ -276,6 +276,40 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     nextAction: 'Keep the node mapping, subject gates, bonus, and score field under review.',
   },
   {
+    id: 'tau-law-live',
+    institutionId: 'tau',
+    institutionName: 'Tel Aviv University',
+    officialUrl: 'https://go.tau.ac.il/graphql',
+    adapterId: 'tau',
+    expectedCapability: 'decision_capable',
+    proofLevel: 'exact_official',
+    category: 'exact',
+    defaultApplicant: {
+      bagrutAverage: 110,
+      psychometric: 680,
+    },
+    defaultProgram: {
+      targetId: 'tau-law-live',
+      pairId: 'law__tau',
+      id: 'tau-law',
+      name: 'Law',
+      nodeId: 11820,
+      externalId: '141111010000',
+      scoreField: 'hatama',
+    },
+    reproducedFields: [
+      'selectedScore',
+      'acceptanceThreshold',
+      'rejectionThreshold',
+      'officialVerdict',
+    ],
+    limitations: [
+      'The proof covers the standard combined Bagrut and psychometric score route; programme-specific alternative routes remain manual.',
+    ],
+    nextAction:
+      'Keep the law node, English and psychometric gates, fixtures, and thresholds under review.',
+  },
+  {
     id: 'huji-static-json',
     institutionId: 'huji',
     institutionName: 'Hebrew University',

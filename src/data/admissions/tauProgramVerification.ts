@@ -15,6 +15,8 @@ export const TAU_PSYCHOLOGY_REQUIREMENTS_URL =
   'https://go.tau.ac.il/he/social-sciences/ba/psychology?v=admission-requirements';
 export const TAU_SOCIAL_WORK_REQUIREMENTS_URL =
   'https://go.tau.ac.il/he/social-sciences/ba/social-work?v=admission-requirements';
+export const TAU_LAW_REQUIREMENTS_URL =
+  'https://go.tau.ac.il/he/law/ba/law?v=admission-requirements';
 
 export const TAU_DIGITAL_SCIENCES_FIXTURES: AdmissionsVerificationFixture[] = [
   {
@@ -527,6 +529,110 @@ export const TAU_GENERIC_DATASCIENCE_CONTRACT: AdmissionsProgramVerificationCont
   fixtureSetFingerprint: 'sha256:ddf53eeab6f0dcdd073a3fe12db6a6fb370421594b38391149741aa9097274fd',
 };
 
+const TAU_LAW_SOURCE_FINGERPRINT =
+  'sha256:9d849f74bf67cce1171bef0eaf5f5cb8c47b2f5beaa7d217ee7e90c6b8519513';
+const TAU_LAW_CAPTURED_AT = '2026-07-26T05:30:00.000Z';
+const TAU_LAW_LIVE_COMPARED_AT = '2026-07-26T05:31:00.000Z';
+
+export const TAU_LAW_FIXTURES: AdmissionsVerificationFixture[] = [
+  {
+    id: 'law__tau:accepted:2026-2027',
+    pairId: 'law__tau',
+    admissionCycle: '2026-2027',
+    verdict: 'accepted',
+    input: {
+      psychometric: 680,
+      bagrut: 110,
+      psychometricEnglish: 110,
+      bagrutSubjectRecord: {
+        schemaVersion: 1,
+        sector: 'jewish',
+        subjects: [
+          { subjectId: 'mathematics', units: 5, grade: 82 },
+          { subjectId: 'english', units: 5, grade: 90 },
+          { subjectId: 'history', units: 2, grade: 92 },
+          { subjectId: 'bible', units: 2, grade: 88 },
+        ],
+      },
+    },
+    expected: { score: 679, verdict: 'accepted' },
+    sourceFingerprint: TAU_LAW_SOURCE_FINGERPRINT,
+    capturedAt: TAU_LAW_CAPTURED_AT,
+  },
+  {
+    id: 'law__tau:below:2026-2027',
+    pairId: 'law__tau',
+    admissionCycle: '2026-2027',
+    verdict: 'below',
+    input: {
+      psychometric: 620,
+      bagrut: 90,
+      psychometricEnglish: 110,
+      bagrutSubjectRecord: {
+        schemaVersion: 1,
+        sector: 'jewish',
+        subjects: [
+          { subjectId: 'mathematics', units: 4, grade: 80 },
+          { subjectId: 'english', units: 5, grade: 85 },
+          { subjectId: 'history', units: 2, grade: 80 },
+          { subjectId: 'bible', units: 2, grade: 78 },
+        ],
+      },
+    },
+    expected: { score: 548, verdict: 'below' },
+    sourceFingerprint: TAU_LAW_SOURCE_FINGERPRINT,
+    capturedAt: TAU_LAW_CAPTURED_AT,
+  },
+];
+
+export const TAU_LAW_CONTRACT: AdmissionsProgramVerificationContract = {
+  pairId: 'law__tau',
+  programId: 'law',
+  institutionId: 'tau',
+  officialProgramId: '141111010000',
+  admissionCycle: '2026-2027',
+  source: { targetId: 'tau-law-live', url: 'https://go.tau.ac.il/graphql' },
+  calculation: {
+    adapterId: 'tau',
+    mode: 'official_replay',
+    formulaFamily: 'tau_hatama',
+    requiredInputs: ['psychometric_english'],
+    cutoff: { acceptance: 647, rejection: 646 },
+    gates: [
+      {
+        id: 'tau-law:psychometric-minimum',
+        kind: 'minimum',
+        field: 'psychometric',
+        minimum: 600,
+        description: 'The standard law score route requires a psychometric score of at least 600.',
+      },
+      {
+        id: 'tau-law:english-minimum',
+        kind: 'language',
+        field: 'psychometricEnglish',
+        minimum: 100,
+        description: 'TAU requires at least English level Advanced A.',
+      },
+      {
+        id: 'tau-law:alternative-routes',
+        kind: 'manual',
+        field: 'alternativeAdmissionRoute',
+        description: 'Alternative law admission routes require separate official review.',
+      },
+    ],
+  },
+  fixtureIds: TAU_LAW_FIXTURES.map((fixture) => fixture.id),
+  fixtureSetFingerprint: 'sha256:b99df74198cb096ce8f8d84428d240138c418d674da6adf739eccd4416cfd8cb',
+  sourceFingerprint: TAU_LAW_SOURCE_FINGERPRINT,
+  proof: {
+    state: 'verified',
+    comparedScore: true,
+    comparedVerdict: true,
+    liveComparedAt: TAU_LAW_LIVE_COMPARED_AT,
+    sourceFingerprint: TAU_LAW_SOURCE_FINGERPRINT,
+  },
+};
+
 export interface ProgramVerificationArtifact {
   contract: AdmissionsProgramVerificationContract;
   fixtures: AdmissionsVerificationFixture[];
@@ -586,6 +692,13 @@ export const TAU_PROGRAM_VERIFICATION_METADATA: Record<string, TauProgramVerific
     requirementsUrl: TAU_DIGITAL_SCIENCES_REQUIREMENTS_URL,
     ledgerReason:
       'Verified against the current TAU Digital Sciences programme node as the generic data-science catalogue alias, replacing its stale local threshold.',
+  },
+  [TAU_LAW_CONTRACT.pairId]: {
+    contract: TAU_LAW_CONTRACT,
+    fixtures: TAU_LAW_FIXTURES,
+    requirementsUrl: TAU_LAW_REQUIREMENTS_URL,
+    ledgerReason:
+      'Verified against the current TAU Law programme node, standard score route, English and psychometric gates, accepted/below fixtures, and live score-and-verdict replay.',
   },
 };
 

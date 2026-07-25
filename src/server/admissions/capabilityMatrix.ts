@@ -167,6 +167,20 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
     },
     requiredInputs: ['psychometric_english', 'bagrut_subject_record'],
   },
+  law__tau: {
+    targetId: 'tau-law-live',
+    sourceTarget: admissionsSourceTargets.find((entry) => entry.id === 'tau-law-live')!,
+    program: {
+      targetId: 'tau-law-live',
+      pairId: 'law__tau',
+      id: 'tau-law',
+      name: 'Law',
+      nodeId: 11820,
+      externalId: '141111010000',
+      scoreField: 'hatama',
+    },
+    requiredInputs: ['psychometric_english'],
+  },
 };
 
 const SOURCE_TARGETS_BY_INSTITUTION = new Map<string, AdmissionsSourceTarget>(
