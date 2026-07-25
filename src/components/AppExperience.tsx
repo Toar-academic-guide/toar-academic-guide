@@ -762,6 +762,8 @@ export default function AppExperience({
                 bagrut={appCalcScores.bagrut}
                 degreeId={appCalcScores.degreeId}
                 programs={cataloguePrograms}
+                academicScores={profile.academicScores}
+                onCompleteAcademicProfile={() => navigateToStep('academic-profile')}
                 onBack={() => setAppCalcScores(null)}
               />
             ) : (

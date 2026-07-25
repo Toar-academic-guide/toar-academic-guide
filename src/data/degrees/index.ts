@@ -956,8 +956,7 @@ for (const record of mondayAdmissionsEvidence) {
       type,
       category: prog.category,
       profileScore: { AN: 3, TE: 3, CR: 3, SO: 3, LE: 3, OR: 3, DI: 3, ER: 3 },
-      admissionType:
-        record.publicBucket === 'open_admission' ? ('open_admission' as any) : 'requirements',
+      admissionType: 'requirements',
       admissionRequirements: [],
       thresholds: {},
       institutionDetails: [

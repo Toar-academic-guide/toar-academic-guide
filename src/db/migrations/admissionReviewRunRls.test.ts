@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 describe('admission review run ledger migration', () => {
   it('keeps weekly review and Slack retry state private while allowing only server operations', async () => {
     const migration = await readFile(
-      path.join(process.cwd(), 'src/db/migrations/0014_damp_ezekiel_stane.sql'),
+      path.join(process.cwd(), 'src/db/migrations/0016_admission_review_runs.sql'),
       'utf8',
     );
 

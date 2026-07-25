@@ -1,6 +1,6 @@
 import { allPrograms } from '@/data/degrees';
 import { UNIVERSITIES } from '@/data/degreesData';
-import { INSTITUTIONS } from '@/data/institutions';
+import { INSTITUTION_BY_ID, INSTITUTIONS, type InstitutionId } from '@/data/institutions';
 import type { Program } from '@/data/degrees/types';
 import { buildCatalogueSeed, buildCatalogueSeedVerificationReport } from '@/db/seeds/catalogueSeed';
 
@@ -47,6 +47,20 @@ describe('catalogueSeed', () => {
     expect(duplicatedValues(payload.admissionsSourceCandidates.map((row) => row.id))).toEqual([]);
     expect(duplicatedValues(payload.admissionFacts.map((row) => row.id))).toEqual([]);
     expect(duplicatedValues(payload.admissionAlternativePaths.map((row) => row.id))).toEqual([]);
+  });
+
+  it('keeps every threshold scoped to the programme institution that owns its university id', () => {
+    const payload = buildCatalogueSeed();
+
+    expect(
+      payload.admissionThresholds.filter((threshold) => {
+        const expectedUniversityId =
+          INSTITUTION_BY_ID[threshold.institutionId as InstitutionId]?.universityId ??
+          threshold.institutionId;
+
+        return expectedUniversityId !== threshold.universityId;
+      }),
+    ).toEqual([]);
   });
 
   it('canonicalizes Monday-only institution ids before creating database rows', () => {

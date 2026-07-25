@@ -269,6 +269,77 @@ describe('CalculatorResults', () => {
     expect(screen.getByText(/ציון התאמה 712 · סף 700/)).toBeTruthy();
   });
 
+  it('sends saved psychometric subscores and structured Bagrut subjects to the evaluator', async () => {
+    hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(report([]));
+
+    render(
+      <CalculatorResults
+        degreeId="haifa_cs"
+        programs={programs}
+        psychometric={700}
+        bagrut={110}
+        onBack={() => {}}
+        academicScores={{
+          psychometric: { overall: 700, quantitative: 125, verbal: 120, english: 118 },
+          bagrut: {
+            weightedAverage: 110,
+            subjectRecord: {
+              schemaVersion: 1,
+              sector: 'jewish',
+              subjects: [
+                { subjectId: 'mathematics', units: 5, grade: 93 },
+                { subjectId: 'english', units: 5, grade: 90 },
+              ],
+            },
+          },
+        }}
+      />,
+    );
+
+    await waitFor(() =>
+      expect(hoistedMocks.fetchAdmissionsEvaluation).toHaveBeenCalledWith({
+        degreeId: 'haifa_cs',
+        psychometric: 700,
+        bagrut: 110,
+        extraInputs: {
+          psychometricMath: 125,
+          psychometricVerbal: 120,
+          psychometricEnglish: 118,
+          mathUnits: 5,
+          mathGrade: 93,
+          englishUnits: 5,
+          englishGrade: 90,
+        },
+      }),
+    );
+  });
+
+  it('does not combine structured profile details with a different manual calculation', async () => {
+    hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(report([]));
+
+    render(
+      <CalculatorResults
+        degreeId="haifa_cs"
+        programs={programs}
+        psychometric={680}
+        bagrut={108}
+        onBack={() => {}}
+        academicScores={{
+          psychometric: { overall: 700, quantitative: 125, verbal: 120, english: 118 },
+          bagrut: { weightedAverage: 110 },
+        }}
+      />,
+    );
+
+    await waitFor(() =>
+      expect(hoistedMocks.fetchAdmissionsEvaluation).toHaveBeenCalledWith({
+        degreeId: 'haifa_cs',
+        psychometric: 680,
+        bagrut: 108,
+      }),
+    );
+  });
+
   it('renders mapped formula and needs-input states with distinct labels', async () => {
     hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
       report([

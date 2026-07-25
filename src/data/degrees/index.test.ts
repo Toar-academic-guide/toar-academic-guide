@@ -138,6 +138,12 @@ function isStructuredCoverageForText(
 }
 
 describe('dynamic Monday-derived programme inference', () => {
+  it('keeps programme admission types compatible with the persisted catalogue enum', () => {
+    expect(new Set(allPrograms.map((program) => program.admissionType))).toEqual(
+      new Set(['sekhem', 'requirements']),
+    );
+  });
+
   it('does not fall back broad culinary and education institutions to synthetic computer-science programmes', () => {
     expect(allPrograms).toEqual(
       expect.arrayContaining([

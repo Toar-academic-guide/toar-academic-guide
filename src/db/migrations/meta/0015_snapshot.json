@@ -1,5 +1,5 @@
 {
-  "id": "71fb8833-996b-402d-a9d1-c04c3737d871",
+  "id": "8365646e-dd90-4e7e-80ed-293665665e01",
   "prevId": "21e740b1-4688-49f4-975d-75cfce1e9701",
   "version": "7",
   "dialect": "postgresql",
@@ -1301,7 +1301,7 @@
         },
         "duration_years": {
           "name": "duration_years",
-          "type": "integer",
+          "type": "real",
           "primaryKey": false,
           "notNull": false
         },
@@ -1387,124 +1387,6 @@
           "onUpdate": "no action"
         }
       },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.admission_review_runs": {
-      "name": "admission_review_runs",
-      "schema": "",
-      "columns": {
-        "run_key": {
-          "name": "run_key",
-          "type": "text",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "source_digest": {
-          "name": "source_digest",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "status": {
-          "name": "status",
-          "type": "admission_review_run_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'prepared'"
-        },
-        "candidate_count": {
-          "name": "candidate_count",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "exclusion_count": {
-          "name": "exclusion_count",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": true,
-          "default": 0
-        },
-        "pull_request_number": {
-          "name": "pull_request_number",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "pull_request_url": {
-          "name": "pull_request_url",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "slack_status": {
-          "name": "slack_status",
-          "type": "admission_review_slack_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'pending'"
-        },
-        "slack_error": {
-          "name": "slack_error",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "updated_at": {
-          "name": "updated_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "admission_review_runs_status_idx": {
-          "name": "admission_review_runs_status_idx",
-          "columns": [
-            {
-              "expression": "status",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "admission_review_runs_slack_status_idx": {
-          "name": "admission_review_runs_slack_status_idx",
-          "columns": [
-            {
-              "expression": "slack_status",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -2456,7 +2338,7 @@
         },
         "duration_years": {
           "name": "duration_years",
-          "type": "integer",
+          "type": "real",
           "primaryKey": false,
           "notNull": false
         },
@@ -3468,16 +3350,6 @@
       "name": "admission_release_status",
       "schema": "public",
       "values": ["pending", "published", "failed"]
-    },
-    "public.admission_review_run_status": {
-      "name": "admission_review_run_status",
-      "schema": "public",
-      "values": ["prepared", "reviewable", "no_changes", "validation_failed"]
-    },
-    "public.admission_review_slack_status": {
-      "name": "admission_review_slack_status",
-      "schema": "public",
-      "values": ["pending", "sent", "failed"]
     },
     "public.admission_type": {
       "name": "admission_type",

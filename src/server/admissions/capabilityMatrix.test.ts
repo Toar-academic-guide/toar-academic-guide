@@ -150,7 +150,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     expect(tauEntry?.capability).toBe('exact');
   });
 
-  it('returns needs_input for Haifa exact target when required inputs are present', () => {
+  it('returns needs_input for the Haifa exact target when psychometric subscores are missing', () => {
     const program = makeProgram({
       id: 'haifa_cs',
       linkedInstitutionIds: ['haifa'],
@@ -168,6 +168,27 @@ describe('buildAdmissionsCapabilityMatrix', () => {
       'psychometric_verbal',
       'psychometric_english',
     ]);
+  });
+
+  it('returns exact for the Haifa exact target when the supplied profile includes every subscore', () => {
+    const program = makeProgram({
+      id: 'haifa_cs',
+      linkedInstitutionIds: ['haifa'],
+    });
+
+    const entries = buildAdmissionsCapabilityMatrix({
+      program,
+      institutions: INSTITUTIONS,
+      input: {
+        psychometricMath: 120,
+        psychometricVerbal: 120,
+        psychometricEnglish: 120,
+      },
+    });
+
+    const haifaEntry = entries.find((entry) => entry.institutionId === 'haifa');
+    expect(haifaEntry?.capability).toBe('exact');
+    expect(haifaEntry?.requiredInputs).toBeUndefined();
   });
 
   it('returns open_admission for Open University', () => {
