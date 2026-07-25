@@ -25,6 +25,7 @@ describe('Vercel preview Playwright workflow', () => {
     expect(workflow).toContain(
       'VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}',
     );
+    expect(workflow).toContain('path: test-results/');
     expect(playwrightConfig).toContain("'x-vercel-protection-bypass'");
     expect(playwrightConfig).toContain("'x-vercel-set-bypass-cookie': 'true'");
   });

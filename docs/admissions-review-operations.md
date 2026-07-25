@@ -75,7 +75,7 @@ identity is present.
 
 - Supabase project `toar-academic-guide` (`kfxcdbjeidczltkrjazk`) had a completed
   physical backup at `2026-07-25T08:31:59.127Z` before mutation.
-- The protected operator applied forward migrations `0010` through `0018`.
+- The protected operator applied forward migrations `0010` through `0019`.
   Remote statement fingerprints match the verifier contract.
 - All required operational tables and constraints are present, all 16 private
   admissions/operations tables have RLS enabled, and `anon` and
@@ -90,6 +90,9 @@ identity is present.
   `0ece6f536485709f339ea02c2f7b8b9acd587780b9be57689719ea175414252f`.
   Keep that operator artifact with the incident record; do not commit production
   row data to the repository.
+- Migration `0019` changed only `colman_tourism` from `sekhem` to
+  `requirements`; post-migration verification reports no pending migration or
+  schema issue, and both database-backed catalogue endpoints return HTTP 200.
 
 ## How a weekly run behaves
 

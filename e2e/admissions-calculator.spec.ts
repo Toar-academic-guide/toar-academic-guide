@@ -13,11 +13,8 @@ test.describe('app admissions calculator', () => {
     await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
 
     await expect(page).toHaveURL(/\/app\/calculator$/);
-    await expect(page.getByLabel('אוניברסיטת תל אביב: נדרשים נתונים')).toBeVisible();
-    await expect(page.getByText('נדרשים נתונים נוספים')).toBeVisible();
-    await expect(
-      page.getByText('השלימו את יחידות וציון המקצועות החסרים כדי לקבל הערכה למסלול.'),
-    ).toBeVisible();
+    await expect(page.getByLabel('אוניברסיטת תל אביב: מתקבל/ת')).toBeVisible();
+    await expect(page.getByText('אימות רשמי')).toBeVisible();
 
     await page.getByRole('button', { name: 'חזרה', exact: true }).click();
 
