@@ -7,6 +7,8 @@ import {
   TAU_NURSING_FIXTURES,
   TAU_PSYCHOLOGY_CONTRACT,
   TAU_PSYCHOLOGY_FIXTURES,
+  TAU_SOCIAL_WORK_CONTRACT,
+  TAU_SOCIAL_WORK_FIXTURES,
 } from './tauProgramVerification';
 import {
   evaluateProgramVerification,
@@ -173,6 +175,75 @@ describe('TAU Digital Sciences verification artifact', () => {
       issues: [],
     });
   });
+
+  it.each(TAU_SOCIAL_WORK_FIXTURES)(
+    'replays the reviewed TAU Social Work score route for $id',
+    async (fixture) => {
+      expect(fingerprintVerificationFixtures(TAU_SOCIAL_WORK_FIXTURES)).toBe(
+        TAU_SOCIAL_WORK_CONTRACT.fixtureSetFingerprint,
+      );
+      expect(
+        evaluateProgramVerification({
+          contract: TAU_SOCIAL_WORK_CONTRACT,
+          fixtures: TAU_SOCIAL_WORK_FIXTURES,
+          currentAdmissionCycle: '2026-2027',
+          currentSourceFingerprint: TAU_SOCIAL_WORK_CONTRACT.sourceFingerprint,
+        }),
+      ).toEqual({
+        state: 'exact',
+        capability: 'exact',
+        issues: [],
+      });
+
+      const fetcher = vi
+        .fn<typeof fetch>()
+        .mockResolvedValueOnce(
+          jsonResponse({
+            data: {
+              getLastScore: {
+                body: JSON.stringify({ hatama: fixture.expected.score }),
+              },
+            },
+          }),
+        )
+        .mockResolvedValueOnce(
+          jsonResponse({
+            data: {
+              getProgramByIdAndLang: {
+                nid: '8299',
+                title: 'תואר ראשון בעבודה סוציאלית',
+                field_plain_id_programs: [TAU_SOCIAL_WORK_CONTRACT.officialProgramId],
+                receipt_threshol: [TAU_SOCIAL_WORK_CONTRACT.calculation.cutoff.acceptance],
+                rejection_thresh: [TAU_SOCIAL_WORK_CONTRACT.calculation.cutoff.rejection],
+              },
+            },
+          }),
+        );
+
+      const proof = await runTauAdmissionsProof({
+        fetcher,
+        program: {
+          targetId: 'tau-social-work-live',
+          pairId: TAU_SOCIAL_WORK_CONTRACT.pairId,
+          id: 'tau-social-work',
+          name: 'Social Work',
+          nodeId: 8299,
+          externalId: TAU_SOCIAL_WORK_CONTRACT.officialProgramId,
+          scoreField: 'hatama',
+        },
+        applicant: {
+          psychometric: fixture.input.psychometric,
+          bagrutAverage: fixture.input.bagrut,
+        },
+      });
+
+      expect(proof.normalizedPayload).toMatchObject({
+        selectedScore: fixture.expected.score,
+        officialVerdict: fixture.expected.verdict,
+        matchedProgramIds: [TAU_SOCIAL_WORK_CONTRACT.officialProgramId],
+      });
+    },
+  );
 });
 
 function jsonResponse(body: unknown): Response {

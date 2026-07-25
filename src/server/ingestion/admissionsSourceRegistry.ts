@@ -142,6 +142,40 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     nextAction: 'Keep the programme node, score field, cycle gates, and fixtures under review.',
   },
   {
+    id: 'tau-social-work-live',
+    institutionId: 'tau',
+    institutionName: 'Tel Aviv University',
+    officialUrl: 'https://go.tau.ac.il/graphql',
+    adapterId: 'tau',
+    expectedCapability: 'decision_capable',
+    proofLevel: 'exact_official',
+    category: 'exact',
+    defaultApplicant: {
+      bagrutAverage: 110,
+      psychometric: 680,
+    },
+    defaultProgram: {
+      targetId: 'tau-social-work-live',
+      pairId: 'social_work__tau',
+      id: 'tau-social-work',
+      name: 'Social Work',
+      nodeId: 8299,
+      externalId: '111011010000',
+      scoreField: 'hatama',
+    },
+    reproducedFields: [
+      'selectedScore',
+      'acceptanceThreshold',
+      'rejectionThreshold',
+      'officialVerdict',
+    ],
+    limitations: [
+      'The official page retains the registration-priority, online-course, and possible-interview conditions outside the standard score replay.',
+    ],
+    nextAction:
+      'Keep the node mapping, score route, and non-score admissions conditions under review.',
+  },
+  {
     id: 'huji-static-json',
     institutionId: 'huji',
     institutionName: 'Hebrew University',

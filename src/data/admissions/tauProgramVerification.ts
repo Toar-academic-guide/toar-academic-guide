@@ -13,6 +13,8 @@ export const TAU_NURSING_REQUIREMENTS_URL =
   'https://go.tau.ac.il/he/med/ba/nursing?v=admission-requirements';
 export const TAU_PSYCHOLOGY_REQUIREMENTS_URL =
   'https://go.tau.ac.il/he/social-sciences/ba/psychology?v=admission-requirements';
+export const TAU_SOCIAL_WORK_REQUIREMENTS_URL =
+  'https://go.tau.ac.il/he/social-sciences/ba/social-work?v=admission-requirements';
 
 export const TAU_DIGITAL_SCIENCES_FIXTURES: AdmissionsVerificationFixture[] = [
   {
@@ -354,6 +356,120 @@ export const TAU_PSYCHOLOGY_CONTRACT: AdmissionsProgramVerificationContract = {
   },
 };
 
+const TAU_SOCIAL_WORK_SOURCE_FINGERPRINT =
+  'sha256:b6009b7b44e677b42fd1e23a8bdd2c6ba690c80f82c0ec7831f44550ec02db14';
+const TAU_SOCIAL_WORK_CAPTURED_AT = '2026-07-25T21:41:00.000Z';
+const TAU_SOCIAL_WORK_LIVE_COMPARED_AT = '2026-07-25T21:42:10.000Z';
+
+export const TAU_SOCIAL_WORK_FIXTURES: AdmissionsVerificationFixture[] = [
+  {
+    id: 'social_work__tau:accepted:2026-2027',
+    pairId: 'social_work__tau',
+    admissionCycle: '2026-2027',
+    verdict: 'accepted',
+    input: {
+      psychometric: 680,
+      bagrut: 110,
+      bagrutSubjectRecord: {
+        schemaVersion: 1,
+        sector: 'jewish',
+        subjects: [
+          { subjectId: 'mathematics', units: 5, grade: 80 },
+          { subjectId: 'english', units: 5, grade: 88 },
+          { subjectId: 'history', units: 2, grade: 90 },
+          { subjectId: 'bible', units: 2, grade: 86 },
+        ],
+      },
+    },
+    expected: {
+      score: 679,
+      verdict: 'accepted',
+    },
+    sourceFingerprint: TAU_SOCIAL_WORK_SOURCE_FINGERPRINT,
+    capturedAt: TAU_SOCIAL_WORK_CAPTURED_AT,
+  },
+  {
+    id: 'social_work__tau:below:2026-2027',
+    pairId: 'social_work__tau',
+    admissionCycle: '2026-2027',
+    verdict: 'below',
+    input: {
+      psychometric: 520,
+      bagrut: 90,
+      bagrutSubjectRecord: {
+        schemaVersion: 1,
+        sector: 'jewish',
+        subjects: [
+          { subjectId: 'mathematics', units: 4, grade: 80 },
+          { subjectId: 'english', units: 5, grade: 88 },
+          { subjectId: 'history', units: 2, grade: 90 },
+          { subjectId: 'bible', units: 2, grade: 86 },
+        ],
+      },
+    },
+    expected: {
+      score: 496,
+      verdict: 'below',
+    },
+    sourceFingerprint: TAU_SOCIAL_WORK_SOURCE_FINGERPRINT,
+    capturedAt: TAU_SOCIAL_WORK_CAPTURED_AT,
+  },
+];
+
+export const TAU_SOCIAL_WORK_CONTRACT: AdmissionsProgramVerificationContract = {
+  pairId: 'social_work__tau',
+  programId: 'social_work',
+  institutionId: 'tau',
+  officialProgramId: '111011010000',
+  admissionCycle: '2026-2027',
+  source: {
+    targetId: 'tau-social-work-live',
+    url: 'https://go.tau.ac.il/graphql',
+  },
+  calculation: {
+    adapterId: 'tau',
+    mode: 'official_replay',
+    formulaFamily: 'tau_hatama',
+    requiredInputs: [],
+    cutoff: {
+      acceptance: 580,
+      rejection: 569,
+    },
+    gates: [
+      {
+        id: 'tau-social-work:priority',
+        kind: 'manual',
+        field: 'registrationPriority',
+        description: 'Registration is permitted as a first or second preference.',
+      },
+      {
+        id: 'tau-social-work:online-course-bonus',
+        kind: 'direct_track',
+        field: 'onlineCourseGrades',
+        minimum: 82,
+        description:
+          'Each qualifying TAU online course adds five score points, to a maximum of ten points for two courses.',
+      },
+      {
+        id: 'tau-social-work:interview',
+        kind: 'manual',
+        field: 'interview',
+        description: 'The school may invite candidates to a personal or group interview.',
+      },
+    ],
+  },
+  fixtureIds: TAU_SOCIAL_WORK_FIXTURES.map((fixture) => fixture.id),
+  fixtureSetFingerprint: 'sha256:e3a32901bf3f17adf065e5f606a08a9f5e5bc6c66f78f8dee69861f263596d61',
+  sourceFingerprint: TAU_SOCIAL_WORK_SOURCE_FINGERPRINT,
+  proof: {
+    state: 'verified',
+    comparedScore: true,
+    comparedVerdict: true,
+    liveComparedAt: TAU_SOCIAL_WORK_LIVE_COMPARED_AT,
+    sourceFingerprint: TAU_SOCIAL_WORK_SOURCE_FINGERPRINT,
+  },
+};
+
 export interface ProgramVerificationArtifact {
   contract: AdmissionsProgramVerificationContract;
   fixtures: AdmissionsVerificationFixture[];
@@ -371,6 +487,10 @@ export const PROGRAM_VERIFICATION_ARTIFACTS: Record<string, ProgramVerificationA
   [TAU_PSYCHOLOGY_CONTRACT.pairId]: {
     contract: TAU_PSYCHOLOGY_CONTRACT,
     fixtures: TAU_PSYCHOLOGY_FIXTURES,
+  },
+  [TAU_SOCIAL_WORK_CONTRACT.pairId]: {
+    contract: TAU_SOCIAL_WORK_CONTRACT,
+    fixtures: TAU_SOCIAL_WORK_FIXTURES,
   },
 };
 

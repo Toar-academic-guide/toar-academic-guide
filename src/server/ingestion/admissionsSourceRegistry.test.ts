@@ -13,6 +13,7 @@ describe('admissionsSourceRegistry', () => {
       'tau-digital-sciences-live',
       'tau-nursing-live',
       'tau-psychology-live',
+      'tau-social-work-live',
     ]);
   });
 

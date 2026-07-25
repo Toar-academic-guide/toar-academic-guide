@@ -292,6 +292,23 @@ async function evaluateExactResult(args: {
       });
     }
 
+    if (exactTarget.targetId === 'tau-social-work-live') {
+      const proof = await runTauAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: {
+          bagrutAverage: input.bagrut,
+          psychometric: input.psychometric,
+        },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+      });
+    }
+
     const gateResult = evaluateTauDigitalSciencesGates(input);
     if (gateResult.state === 'needs_input') {
       return requiredInputsResult(institution, gateResult.requiredInputs);

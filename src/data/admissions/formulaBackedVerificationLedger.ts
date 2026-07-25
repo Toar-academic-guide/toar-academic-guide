@@ -15,6 +15,9 @@ import {
   TAU_PSYCHOLOGY_CONTRACT,
   TAU_PSYCHOLOGY_FIXTURES,
   TAU_PSYCHOLOGY_REQUIREMENTS_URL,
+  TAU_SOCIAL_WORK_CONTRACT,
+  TAU_SOCIAL_WORK_FIXTURES,
+  TAU_SOCIAL_WORK_REQUIREMENTS_URL,
 } from './tauProgramVerification';
 
 export type FormulaPairLedgerState = 'exact' | 'withheld' | 'stale' | 'blocked';
@@ -248,7 +251,8 @@ export const FORMULA_BACKED_VERIFICATION_LEDGER: FormulaPairVerificationLedgerEn
     return REVIEWED_PAIR_IDS_BY_INSTITUTION[institutionId].map((pairId) =>
       pairId === 'tau_datascience__tau' ||
       pairId === 'nursing__tau' ||
-      pairId === 'tau_psychology__tau'
+      pairId === 'tau_psychology__tau' ||
+      pairId === 'social_work__tau'
         ? verifiedTauProgramEntry(pairId)
         : {
             pairId,
@@ -275,20 +279,25 @@ export const FORMULA_BACKED_VERIFICATION_LEDGER: FormulaPairVerificationLedgerEn
   });
 
 function verifiedTauProgramEntry(
-  pairId: 'tau_datascience__tau' | 'nursing__tau' | 'tau_psychology__tau',
+  pairId: 'tau_datascience__tau' | 'nursing__tau' | 'tau_psychology__tau' | 'social_work__tau',
 ): FormulaPairVerificationLedgerEntry {
   const isNursing = pairId === 'nursing__tau';
   const isPsychology = pairId === 'tau_psychology__tau';
+  const isSocialWork = pairId === 'social_work__tau';
   const contract = isNursing
     ? TAU_NURSING_CONTRACT
     : isPsychology
       ? TAU_PSYCHOLOGY_CONTRACT
-      : TAU_DIGITAL_SCIENCES_CONTRACT;
+      : isSocialWork
+        ? TAU_SOCIAL_WORK_CONTRACT
+        : TAU_DIGITAL_SCIENCES_CONTRACT;
   const fixtures = isNursing
     ? TAU_NURSING_FIXTURES
     : isPsychology
       ? TAU_PSYCHOLOGY_FIXTURES
-      : TAU_DIGITAL_SCIENCES_FIXTURES;
+      : isSocialWork
+        ? TAU_SOCIAL_WORK_FIXTURES
+        : TAU_DIGITAL_SCIENCES_FIXTURES;
   return {
     pairId: contract.pairId,
     institutionId: 'tau',
@@ -299,7 +308,9 @@ function verifiedTauProgramEntry(
       ? TAU_NURSING_REQUIREMENTS_URL
       : isPsychology
         ? TAU_PSYCHOLOGY_REQUIREMENTS_URL
-        : TAU_DIGITAL_SCIENCES_REQUIREMENTS_URL,
+        : isSocialWork
+          ? TAU_SOCIAL_WORK_REQUIREMENTS_URL
+          : TAU_DIGITAL_SCIENCES_REQUIREMENTS_URL,
     formulaFamily: contract.calculation.formulaFamily,
     fixtureEvidence: {
       eligible: fixtures.some(
@@ -316,7 +327,9 @@ function verifiedTauProgramEntry(
     },
     reason: isNursing
       ? 'Verified as eligibility for the mandatory suitability assessment; passing the numeric threshold is not final admission.'
-      : 'Verified against the current TAU programme mapping, cumulative score gates, accepted/below fixtures, and live score-and-verdict replay.',
+      : isSocialWork
+        ? 'Verified against the current TAU social-work programme node, score route, score thresholds, accepted/below fixtures, and live replay. The online-course, registration-priority, and possible-interview conditions remain explicit programme gates.'
+        : 'Verified against the current TAU programme mapping, cumulative score gates, accepted/below fixtures, and live score-and-verdict replay.',
   };
 }
 

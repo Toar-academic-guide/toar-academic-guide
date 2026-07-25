@@ -265,6 +265,24 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
   });
 
+  it('activates the reviewed TAU Social Work score route with its pair-specific target', () => {
+    const [entry] = buildAdmissionsCapabilityMatrix({
+      program: makeProgram({
+        id: 'social_work',
+        linkedInstitutionIds: ['tau'],
+      }),
+      institutions: INSTITUTIONS,
+      now: new Date('2026-07-26T08:00:00Z'),
+    });
+
+    expect(entry).toMatchObject({
+      institutionId: 'tau',
+      capability: 'exact',
+      pairVerification: { pairId: 'social_work__tau', state: 'exact' },
+      exactTarget: { targetId: 'tau-social-work-live', requiredInputs: [] },
+    });
+  });
+
   it('checks Haifa pair proof before asking for calculator inputs', () => {
     const program = makeProgram({
       id: 'haifa_cs',

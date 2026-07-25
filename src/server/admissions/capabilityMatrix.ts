@@ -105,6 +105,20 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
     },
     requiredInputs: ['psychometric_english'],
   },
+  social_work__tau: {
+    targetId: 'tau-social-work-live',
+    sourceTarget: admissionsSourceTargets.find((entry) => entry.id === 'tau-social-work-live')!,
+    program: {
+      targetId: 'tau-social-work-live',
+      pairId: 'social_work__tau',
+      id: 'tau-social-work',
+      name: 'Social Work',
+      nodeId: 8299,
+      externalId: '111011010000',
+      scoreField: 'hatama',
+    },
+    requiredInputs: [],
+  },
 };
 
 const SOURCE_TARGETS_BY_INSTITUTION = new Map<string, AdmissionsSourceTarget>(
