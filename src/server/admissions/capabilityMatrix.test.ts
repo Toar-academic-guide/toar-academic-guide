@@ -283,6 +283,24 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
   });
 
+  it('replaces the legacy TAU Social Work threshold with the reviewed programme target', () => {
+    const [entry] = buildAdmissionsCapabilityMatrix({
+      program: makeProgram({
+        id: 'tau_socialwork',
+        linkedInstitutionIds: ['tau'],
+      }),
+      institutions: INSTITUTIONS,
+      now: new Date('2026-07-26T08:00:00Z'),
+    });
+
+    expect(entry).toMatchObject({
+      institutionId: 'tau',
+      capability: 'exact',
+      pairVerification: { pairId: 'tau_socialwork__tau', state: 'exact' },
+      exactTarget: { targetId: 'tau-social-work-legacy-live', requiredInputs: [] },
+    });
+  });
+
   it('checks Haifa pair proof before asking for calculator inputs', () => {
     const program = makeProgram({
       id: 'haifa_cs',

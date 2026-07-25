@@ -14,6 +14,7 @@ describe('admissionsSourceRegistry', () => {
       'tau-nursing-live',
       'tau-psychology-live',
       'tau-social-work-live',
+      'tau-social-work-legacy-live',
     ]);
   });
 

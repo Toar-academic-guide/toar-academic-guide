@@ -34,12 +34,12 @@ describe('formula-backed verification ledger', () => {
 
     expect(completion).toMatchObject({
       total: 135,
-      exact: 4,
-      withheld: 131,
+      exact: 5,
+      withheld: 130,
       isComplete: false,
     });
     expect(completion.totalsByInstitution).toEqual({
-      tau: { total: 35, exact: 4, withheld: 31, stale: 0, blocked: 0 },
+      tau: { total: 35, exact: 5, withheld: 30, stale: 0, blocked: 0 },
       huji: { total: 29, exact: 0, withheld: 29, stale: 0, blocked: 0 },
       bgu: { total: 29, exact: 0, withheld: 29, stale: 0, blocked: 0 },
       haifa: { total: 27, exact: 0, withheld: 27, stale: 0, blocked: 0 },
@@ -50,7 +50,13 @@ describe('formula-backed verification ledger', () => {
       FORMULA_BACKED_VERIFICATION_LEDGER.filter((entry) => entry.state === 'exact').map(
         (entry) => entry.pairId,
       ),
-    ).toEqual(['nursing__tau', 'social_work__tau', 'tau_datascience__tau', 'tau_psychology__tau']);
+    ).toEqual([
+      'nursing__tau',
+      'social_work__tau',
+      'tau_datascience__tau',
+      'tau_psychology__tau',
+      'tau_socialwork__tau',
+    ]);
   });
 
   it('names a newly discovered pair that lacks a reviewed ledger record', () => {

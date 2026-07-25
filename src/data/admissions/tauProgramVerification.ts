@@ -470,6 +470,25 @@ export const TAU_SOCIAL_WORK_CONTRACT: AdmissionsProgramVerificationContract = {
   },
 };
 
+export const TAU_LEGACY_SOCIAL_WORK_FIXTURES: AdmissionsVerificationFixture[] =
+  TAU_SOCIAL_WORK_FIXTURES.map((fixture) => ({
+    ...fixture,
+    id: fixture.id.replace('social_work__tau', 'tau_socialwork__tau'),
+    pairId: 'tau_socialwork__tau',
+  }));
+
+export const TAU_LEGACY_SOCIAL_WORK_CONTRACT: AdmissionsProgramVerificationContract = {
+  ...TAU_SOCIAL_WORK_CONTRACT,
+  pairId: 'tau_socialwork__tau',
+  programId: 'tau_socialwork',
+  source: {
+    ...TAU_SOCIAL_WORK_CONTRACT.source,
+    targetId: 'tau-social-work-legacy-live',
+  },
+  fixtureIds: TAU_LEGACY_SOCIAL_WORK_FIXTURES.map((fixture) => fixture.id),
+  fixtureSetFingerprint: 'sha256:e7511029cf4da3346b5e9dba1c9c0d59c24871148a5ba169f17483a80860b732',
+};
+
 export interface ProgramVerificationArtifact {
   contract: AdmissionsProgramVerificationContract;
   fixtures: AdmissionsVerificationFixture[];
@@ -508,6 +527,13 @@ export const TAU_PROGRAM_VERIFICATION_METADATA: Record<string, TauProgramVerific
     requirementsUrl: TAU_SOCIAL_WORK_REQUIREMENTS_URL,
     ledgerReason:
       'Verified against the current TAU social-work programme node, score route, score thresholds, accepted/below fixtures, and live replay. The online-course, registration-priority, and possible-interview conditions remain explicit programme gates.',
+  },
+  [TAU_LEGACY_SOCIAL_WORK_CONTRACT.pairId]: {
+    contract: TAU_LEGACY_SOCIAL_WORK_CONTRACT,
+    fixtures: TAU_LEGACY_SOCIAL_WORK_FIXTURES,
+    requirementsUrl: TAU_SOCIAL_WORK_REQUIREMENTS_URL,
+    ledgerReason:
+      'Verified against the same current TAU social-work programme node as the legacy catalogue alias, replacing its stale local threshold. The online-course, registration-priority, and possible-interview conditions remain explicit programme gates.',
   },
 };
 

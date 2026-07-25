@@ -292,7 +292,10 @@ async function evaluateExactResult(args: {
       });
     }
 
-    if (exactTarget.targetId === 'tau-social-work-live') {
+    if (
+      exactTarget.targetId === 'tau-social-work-live' ||
+      exactTarget.targetId === 'tau-social-work-legacy-live'
+    ) {
       const proof = await runTauAdmissionsProof({
         fetcher: timedFetcher,
         program: exactTarget.program,

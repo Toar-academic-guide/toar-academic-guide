@@ -119,6 +119,22 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
     },
     requiredInputs: [],
   },
+  tau_socialwork__tau: {
+    targetId: 'tau-social-work-legacy-live',
+    sourceTarget: admissionsSourceTargets.find(
+      (entry) => entry.id === 'tau-social-work-legacy-live',
+    )!,
+    program: {
+      targetId: 'tau-social-work-legacy-live',
+      pairId: 'tau_socialwork__tau',
+      id: 'tau-social-work',
+      name: 'Social Work',
+      nodeId: 8299,
+      externalId: '111011010000',
+      scoreField: 'hatama',
+    },
+    requiredInputs: [],
+  },
 };
 
 const SOURCE_TARGETS_BY_INSTITUTION = new Map<string, AdmissionsSourceTarget>(
