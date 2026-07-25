@@ -9,6 +9,7 @@ import type {
   AdmissionsEvaluationResult,
   AdmissionsRequiredInput,
 } from '@/types/admissionsEvaluation';
+import { admissionsInputValue } from './admissionsInputValue';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import {
   buildAdmissionsCapabilityMatrix,
@@ -1210,38 +1211,8 @@ function missingInputs(
   requiredInputs: AdmissionsRequiredInput[],
 ): AdmissionsRequiredInput[] {
   return requiredInputs.filter(
-    (requiredInput) => extraInputValue(input, requiredInput) === undefined,
+    (requiredInput) => admissionsInputValue(input.extraInputs, requiredInput) === undefined,
   );
-}
-
-function extraInputValue(
-  input: AdmissionsEvaluationInput,
-  requiredInput: AdmissionsRequiredInput,
-): number | undefined {
-  switch (requiredInput) {
-    case 'psychometric_math':
-      return input.extraInputs?.psychometricMath;
-    case 'psychometric_verbal':
-      return input.extraInputs?.psychometricVerbal;
-    case 'psychometric_english':
-      return input.extraInputs?.psychometricEnglish;
-    case 'math_units':
-      return input.extraInputs?.mathUnits;
-    case 'math_grade':
-      return input.extraInputs?.mathGrade;
-    case 'english_units':
-      return input.extraInputs?.englishUnits;
-    case 'english_grade':
-      return input.extraInputs?.englishGrade;
-    case 'physics_units':
-      return input.extraInputs?.physicsUnits;
-    case 'physics_grade':
-      return input.extraInputs?.physicsGrade;
-    case 'cs_units':
-      return input.extraInputs?.csUnits;
-    case 'cs_grade':
-      return input.extraInputs?.csGrade;
-  }
 }
 
 function findInstitutionDetail(

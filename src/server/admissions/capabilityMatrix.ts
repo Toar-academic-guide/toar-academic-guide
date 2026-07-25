@@ -15,6 +15,7 @@ import type {
   AdmissionsEvaluationCapability,
   AdmissionsRequiredInput,
 } from '@/types/admissionsEvaluation';
+import { admissionsInputValue } from './admissionsInputValue';
 import {
   admissionsSourceTargets,
   type AdmissionsSourceTarget,
@@ -378,38 +379,8 @@ function requiredInputsMissingFrom(
   requiredInputs: AdmissionsRequiredInput[],
 ): AdmissionsRequiredInput[] {
   return requiredInputs.filter(
-    (requiredInput) => extraInputValue(input, requiredInput) === undefined,
+    (requiredInput) => admissionsInputValue(input, requiredInput) === undefined,
   );
-}
-
-function extraInputValue(
-  input: AdmissionsExtraInputs | undefined,
-  requiredInput: AdmissionsRequiredInput,
-): number | undefined {
-  switch (requiredInput) {
-    case 'psychometric_math':
-      return input?.psychometricMath;
-    case 'psychometric_verbal':
-      return input?.psychometricVerbal;
-    case 'psychometric_english':
-      return input?.psychometricEnglish;
-    case 'math_units':
-      return input?.mathUnits;
-    case 'math_grade':
-      return input?.mathGrade;
-    case 'english_units':
-      return input?.englishUnits;
-    case 'english_grade':
-      return input?.englishGrade;
-    case 'physics_units':
-      return input?.physicsUnits;
-    case 'physics_grade':
-      return input?.physicsGrade;
-    case 'cs_units':
-      return input?.csUnits;
-    case 'cs_grade':
-      return input?.csGrade;
-  }
 }
 
 function hasVerifiedDecisionThreshold(args: {

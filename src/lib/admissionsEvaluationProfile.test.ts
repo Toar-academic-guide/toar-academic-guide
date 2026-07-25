@@ -25,6 +25,18 @@ describe('admissionsExtraInputsFromAcademicScores', () => {
       psychometricMath: 125,
       psychometricVerbal: 120,
       psychometricEnglish: 118,
+      bagrutProfileSchemaVersion: 1,
+      bagrutSector: 'jewish',
+      bagrutSubjectRecord: {
+        schemaVersion: 1,
+        sector: 'jewish',
+        subjects: [
+          { subjectId: 'mathematics', units: 5, grade: 93 },
+          { subjectId: 'english', units: 5, grade: 90 },
+          { subjectId: 'physics', units: 5, grade: 88 },
+          { subjectId: 'computer_science', units: 5, grade: 95 },
+        ],
+      },
       mathUnits: 5,
       mathGrade: 93,
       englishUnits: 5,

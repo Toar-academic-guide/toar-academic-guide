@@ -9,8 +9,9 @@ import type { AdmissionsExtraInputs } from '@/types/admissionsEvaluation';
 export function admissionsExtraInputsFromAcademicScores(
   academicScores: AcademicScores | undefined,
 ): AdmissionsExtraInputs | undefined {
+  const bagrutSubjectRecord = academicScores?.bagrut?.subjectRecord;
   const subjectsById = new Map(
-    academicScores?.bagrut?.subjectRecord?.subjects.map((subject) => [subject.subjectId, subject]),
+    bagrutSubjectRecord?.subjects.map((subject) => [subject.subjectId, subject]),
   );
   const mathematics = subjectsById.get('mathematics');
   const english = subjectsById.get('english');
@@ -21,6 +22,9 @@ export function admissionsExtraInputsFromAcademicScores(
     psychometricMath: academicScores?.psychometric?.quantitative,
     psychometricVerbal: academicScores?.psychometric?.verbal,
     psychometricEnglish: academicScores?.psychometric?.english,
+    bagrutSubjectRecord,
+    bagrutProfileSchemaVersion: bagrutSubjectRecord?.schemaVersion,
+    bagrutSector: bagrutSubjectRecord?.sector,
     mathUnits: mathematics?.units,
     mathGrade: mathematics?.grade,
     englishUnits: english?.units,

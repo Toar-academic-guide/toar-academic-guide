@@ -1,5 +1,5 @@
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
-import type { DeltaNeeded } from '@/types';
+import type { BagrutSector, BagrutSubjectRecord, DeltaNeeded } from '@/types';
 
 export type AdmissionsEvaluationDecision = 'accepted' | 'below' | 'eligible_to_apply' | 'unknown';
 
@@ -43,12 +43,18 @@ export type AdmissionsRequiredInput =
   | 'physics_units'
   | 'physics_grade'
   | 'cs_units'
-  | 'cs_grade';
+  | 'cs_grade'
+  | 'bagrut_subject_record'
+  | 'bagrut_profile_version'
+  | 'bagrut_sector';
 
 export interface AdmissionsExtraInputs {
   psychometricMath?: number;
   psychometricVerbal?: number;
   psychometricEnglish?: number;
+  bagrutSubjectRecord?: BagrutSubjectRecord;
+  bagrutProfileSchemaVersion?: BagrutSubjectRecord['schemaVersion'];
+  bagrutSector?: BagrutSector;
   mathUnits?: number;
   mathGrade?: number;
   englishUnits?: number;
