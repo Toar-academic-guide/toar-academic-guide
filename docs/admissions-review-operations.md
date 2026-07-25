@@ -13,6 +13,39 @@ Before enabling the scheduled workflow, configure these repository settings:
 
 The GitHub App must have only the repository permissions required to write contents and pull requests. Slack delivery is retryable and cannot publish, approve, or alter an admissions rule.
 
+## Production schema preflight
+
+Run the read-only preflight before any production migration:
+
+```bash
+npm run db:operational:preflight
+```
+
+The command reads `OPS_DATABASE_URL` first and falls back to `DATABASE_URL`. It
+prints a machine-readable report and succeeds only when the audited production
+migration baseline is intact and the remaining forward migrations form a safe,
+unapplied suffix. It verifies migration statement fingerprints, effective
+roles, required relations, columns, enums, constraints, indexes, triggers, RLS,
+policies, and effective table privileges.
+
+The protected production sequence begins with migration `0010`, not `0011`.
+Production currently predates `bagrut_profile_versions`, and the release and
+alert migrations depend on that table. Apply `0010` through `0016` in order.
+Never edit a migration that has already been recorded remotely. If the
+preflight reports `drift`, an unexpected migration, a partially present object,
+or a role that can bypass RLS, stop and prepare a new forward repair migration.
+
+After the protected apply, run:
+
+```bash
+npm run db:operational:verify
+```
+
+The verification form requires the complete schema and also checks
+representative catalogue rows. Keep the preflight and verification JSON with
+the protected-environment run evidence; neither output contains database
+credentials.
+
 ## How a weekly run behaves
 
 1. The workflow creates a stable weekly identity such as `2026-W30` and reuses `automation/admissions-review-2026-W30`.
