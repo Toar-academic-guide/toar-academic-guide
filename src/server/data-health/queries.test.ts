@@ -310,6 +310,7 @@ function baseRows(overrides: Partial<DataHealthRows> = {}): DataHealthRows {
     ingestionJobs: [],
     reviewItems: [],
     sourceFreshnessStates: [],
+    admissionReleases: [],
     ...overrides,
   };
 }
@@ -330,6 +331,55 @@ describe('summarizeDataHealthRows', () => {
     });
     expect(report.readiness.isReady).toBe(true);
     expect(report.readiness.issues).toEqual([]);
+  });
+
+  it('reports the latest published admissions release separately from failed publication attempts', () => {
+    const report = summarizeDataHealthRows(
+      baseRows({
+        admissionReleases: [
+          {
+            id: 'release-old',
+            manifestDigest: 'sha256:old',
+            repositoryCommit: 'oldcommit',
+            status: 'published',
+            publishedAt: new Date('2026-06-23T17:00:00.000Z'),
+          },
+          {
+            id: 'release-new',
+            manifestDigest: 'sha256:new',
+            repositoryCommit: 'newcommit',
+            status: 'published',
+            publishedAt: new Date('2026-06-24T17:00:00.000Z'),
+          },
+          {
+            id: 'release-pending',
+            manifestDigest: 'sha256:pending',
+            repositoryCommit: 'pendingcommit',
+            status: 'pending',
+            publishedAt: null,
+          },
+          {
+            id: 'release-failed',
+            manifestDigest: 'sha256:failed',
+            repositoryCommit: 'failedcommit',
+            status: 'failed',
+            publishedAt: null,
+          },
+        ],
+      }),
+      now,
+    );
+
+    expect(report.publication).toEqual({
+      activeRelease: {
+        id: 'release-new',
+        manifestDigest: 'sha256:new',
+        repositoryCommit: 'newcommit',
+        publishedAt: '2026-06-24T17:00:00.000Z',
+      },
+      failedReleaseCount: 1,
+      pendingReleaseCount: 1,
+    });
   });
 
   it('includes admission requirements with no source URL in missing coverage', () => {
@@ -955,7 +1005,7 @@ describe('getDataHealthReport', () => {
     const report = await getDataHealthReport(now);
 
     expect(report.status).toBe('ready');
-    expect(from).toHaveBeenCalledTimes(14);
+    expect(from).toHaveBeenCalledTimes(15);
     expect(maxActiveQueries).toBe(1);
   });
 

@@ -71,6 +71,48 @@
       "when": 1782554917000,
       "tag": "0009_grant_runtime_roles_for_operational_catalogue_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1784572605349,
+      "tag": "0010_fearless_maverick",
+      "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1784573093031,
+      "tag": "0011_private_admission_operations_rls",
+      "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1784576076775,
+      "tag": "0012_greedy_meteorite",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1784576743136,
+      "tag": "0013_funny_multiple_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1784577000000,
+      "tag": "0014_admission_threshold_scope_invariant",
+      "breakpoints": true
+    },
+    {
+      "idx": 15,
+      "version": "7",
+      "when": 1784975158112,
+      "tag": "0015_support_fractional_program_durations",
+      "breakpoints": true
     }
   ]
 }

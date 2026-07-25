@@ -133,6 +133,10 @@ function getInstitutionDetailFor(
   );
 }
 
+function universityIdForInstitution(institutionId: InstitutionId): UniversityId {
+  return INSTITUTION_BY_ID[institutionId]?.universityId ?? institutionId;
+}
+
 function unique<T>(values: T[]): T[] {
   return [...new Set(values)];
 }
@@ -361,6 +365,10 @@ export function buildCatalogueSeed(seedPrograms: Program[] = allPrograms): Catal
         UniversityId,
         number | null,
       ][]) {
+        if (universityId !== universityIdForInstitution(institutionId)) {
+          continue;
+        }
+
         thresholdRows.push({
           id: `${program.id}:${institutionId}:${universityId}:sekhem`,
           programId: program.id,
@@ -374,6 +382,10 @@ export function buildCatalogueSeed(seedPrograms: Program[] = allPrograms): Catal
       for (const [universityId, thresholdValue] of Object.entries(
         program.directPsychometric ?? {},
       ) as [UniversityId, number][]) {
+        if (universityId !== universityIdForInstitution(institutionId)) {
+          continue;
+        }
+
         thresholdRows.push({
           id: `${program.id}:${institutionId}:${universityId}:direct`,
           programId: program.id,

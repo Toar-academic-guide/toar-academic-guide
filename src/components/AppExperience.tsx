@@ -16,7 +16,7 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
-import { ROUTES } from '@/lib/routes';
+import { ROUTES, type AdmissionAlertTarget } from '@/lib/routes';
 import {
   CatalogueApiError,
   fetchCatalogueInstitutions,
@@ -127,6 +127,7 @@ function toCatalogueError(error: unknown): CatalogueApiError {
 interface AppExperienceProps {
   initialStep?: AppStep;
   enableDevShortcuts?: boolean;
+  admissionAlertTarget?: AdmissionAlertTarget | null;
 }
 
 const DURABLE_STEP_ROUTES: Partial<Record<AppStep, string>> = {
@@ -142,6 +143,7 @@ const DURABLE_STEP_ROUTES: Partial<Record<AppStep, string>> = {
 export default function AppExperience({
   initialStep: routeInitialStep = 'landing',
   enableDevShortcuts = false,
+  admissionAlertTarget = null,
 }: AppExperienceProps) {
   const router = useRouter();
   const { loading: authLoading, signOut, user } = useAuth();
@@ -223,6 +225,9 @@ export default function AppExperience({
     bagrut: number;
     degreeId: string;
   } | null>(null);
+
+  const isTauComputerScienceAlertContinuation =
+    admissionAlertTarget?.institutionId === 'tau' && admissionAlertTarget.programId === 'tau_cs';
   const [appCalcScores, setAppCalcScores] = useState<{
     psychometric: number;
     bagrut: number;
@@ -497,6 +502,8 @@ export default function AppExperience({
         bagrut={landingCalcScores.bagrut}
         degreeId={landingCalcScores.degreeId}
         programs={cataloguePrograms}
+        academicScores={profile.academicScores}
+        onCompleteAcademicProfile={() => navigateToStep('academic-profile')}
         onBack={() => {
           navigateToStep('landing');
         }}
@@ -563,13 +570,40 @@ export default function AppExperience({
           initialDocuments={profile.uploadedDocuments}
           isAuthenticated={isAuthenticated}
           onClearLocalProfileData={clearLocalProfileData}
-          onComplete={(scores: AcademicScores) => {
+          alertContinuation={
+            isTauComputerScienceAlertContinuation
+              ? {
+                  title: 'נשמור את הפרופיל ואז נחזור לבדיקת הקבלה למדעי המחשב באוניברסיטת תל אביב',
+                  submitLabel: 'שמור והמשך לבדיקת המעקב ←',
+                  requiresStructuredBagrut: true,
+                }
+              : undefined
+          }
+          onComplete={async (scores: AcademicScores) => {
             posthog.capture('academic_profile_completed', {
               has_psychometric: !!scores.psychometric?.overall,
               has_bagrut: !!scores.bagrut?.weightedAverage,
             });
-            updateProfile({ academicScores: scores });
+            const profileSaved = await updateProfile({ academicScores: scores });
+            if (!profileSaved) {
+              return false;
+            }
+            if (
+              isTauComputerScienceAlertContinuation &&
+              scores.psychometric?.overall !== undefined &&
+              scores.bagrut?.weightedAverage !== undefined
+            ) {
+              setLandingCalcScores({
+                psychometric: scores.psychometric.overall,
+                bagrut: scores.bagrut.weightedAverage,
+                degreeId: 'tau_cs',
+              });
+              setStep('calculator-results');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+              return true;
+            }
             navigateToStep('career-assessment');
+            return true;
           }}
           onSkip={() => {
             posthog.capture('academic_profile_skipped');
@@ -728,6 +762,8 @@ export default function AppExperience({
                 bagrut={appCalcScores.bagrut}
                 degreeId={appCalcScores.degreeId}
                 programs={cataloguePrograms}
+                academicScores={profile.academicScores}
+                onCompleteAcademicProfile={() => navigateToStep('academic-profile')}
                 onBack={() => setAppCalcScores(null)}
               />
             ) : (

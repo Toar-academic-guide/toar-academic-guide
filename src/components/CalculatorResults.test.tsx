@@ -9,7 +9,13 @@ import { getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 
 const hoistedMocks = vi.hoisted(() => ({
   fetchAdmissionsEvaluation: vi.fn(),
+  fetchTauComputerScienceRoutes: vi.fn(),
+  push: vi.fn(),
+  user: null as { id: string } | null,
 }));
+
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push: hoistedMocks.push }) }));
+vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ user: hoistedMocks.user }) }));
 
 vi.mock('@/lib/admissionsEvaluationClient', () => ({
   AdmissionsEvaluationApiError: class AdmissionsEvaluationApiError extends Error {
@@ -23,6 +29,17 @@ vi.mock('@/lib/admissionsEvaluationClient', () => ({
   fetchAdmissionsEvaluation: hoistedMocks.fetchAdmissionsEvaluation,
 }));
 
+vi.mock('@/lib/admissionsRouteClient', () => ({
+  AdmissionsRouteApiError: class AdmissionsRouteApiError extends Error {
+    code: string;
+    constructor(message: string, code = 'ADMISSIONS_ROUTE_REQUEST_FAILED') {
+      super(message);
+      this.code = code;
+    }
+  },
+  fetchTauComputerScienceRoutes: hoistedMocks.fetchTauComputerScienceRoutes,
+}));
+
 vi.mock('posthog-js', () => ({
   default: {
     capture: vi.fn(),
@@ -34,6 +51,8 @@ const programs = getStaticCataloguePrograms();
 function report(results: AdmissionsEvaluationReport['results']): AdmissionsEvaluationReport {
   return {
     generatedAt: '2026-06-27T00:00:00.000Z',
+    evaluatorVersion: 'admissions-evaluator-v1',
+    inputDigest: 'sha256:test',
     input: {
       degreeId: 'tau_cs',
       psychometric: 700,
@@ -47,10 +66,166 @@ function report(results: AdmissionsEvaluationReport['results']): AdmissionsEvalu
   };
 }
 
+function route(id: string, durationWeeks: number, effortPoints: number) {
+  return {
+    id,
+    actions: [
+      {
+        id,
+        kind: id.startsWith('psychometric')
+          ? ('psychometric' as const)
+          : ('improve_grade' as const),
+        ...(id.startsWith('psychometric')
+          ? { from: 680, to: 700 }
+          : { subjectId: 'history', fromGrade: 80, toGrade: 95 }),
+      },
+    ],
+    afterProfile: { psychometric: 700, subjects: [] },
+    estimate: { durationWeeks, effortPoints, version: 'standard-estimates-test' },
+    verification: { eligible: true, margin: 1, score: 707, cutoff: 706 },
+  };
+}
+
 describe('CalculatorResults', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
     hoistedMocks.fetchAdmissionsEvaluation.mockReset();
+    hoistedMocks.fetchTauComputerScienceRoutes.mockReset();
+  });
+
+  it('withholds route cards until the structured Bagrut profile is complete', async () => {
+    hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
+      report([
+        {
+          institution: { id: 'tau', name: 'אוניברסיטת תל אביב', region: 'center' },
+          linkedInstitutionId: 'tau',
+          capability: 'exact',
+          kind: 'exact',
+          decision: 'below',
+          confidence: 'high',
+          sourceLabel: 'אימות רשמי',
+          explanation: 'מתחת לסף',
+          nextAction: 'השלימו נתונים',
+          score: 690,
+          threshold: 706,
+        },
+      ]),
+    );
+
+    render(
+      <CalculatorResults
+        degreeId="tau_cs"
+        programs={programs}
+        psychometric={680}
+        bagrut={108}
+        onBack={() => {}}
+        onCompleteAcademicProfile={() => {}}
+        academicScores={{ psychometric: { overall: 680 }, bagrut: { weightedAverage: 108 } }}
+      />,
+    );
+
+    expect(await screen.findByText('השלמת פרופיל אקדמי')).toBeTruthy();
+    expect(hoistedMocks.fetchTauComputerScienceRoutes).not.toHaveBeenCalled();
+  });
+
+  it('requires the saved profile scores to match the calculation before requesting a route', async () => {
+    hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
+      report([
+        {
+          institution: { id: 'tau', name: 'אוניברסיטת תל אביב', region: 'center' },
+          linkedInstitutionId: 'tau',
+          capability: 'exact',
+          kind: 'exact',
+          decision: 'below',
+          confidence: 'high',
+          sourceLabel: 'אימות רשמי',
+          explanation: 'מתחת לסף',
+          nextAction: 'השלימו נתונים',
+          score: 690,
+          threshold: 706,
+        },
+      ]),
+    );
+
+    render(
+      <CalculatorResults
+        degreeId="tau_cs"
+        programs={programs}
+        psychometric={680}
+        bagrut={108}
+        onBack={() => {}}
+        onCompleteAcademicProfile={() => {}}
+        academicScores={{
+          psychometric: { overall: 690 },
+          bagrut: {
+            weightedAverage: 108,
+            subjectRecord: {
+              schemaVersion: 1,
+              sector: 'jewish',
+              subjects: [{ subjectId: 'mathematics', units: 5, grade: 80 }],
+            },
+          },
+        }}
+      />,
+    );
+
+    expect(
+      await screen.findByText(/יש לעדכן את הפרופיל כך שיתאים לציונים שחושבו כאן/),
+    ).toBeTruthy();
+    expect(hoistedMocks.fetchTauComputerScienceRoutes).not.toHaveBeenCalled();
+  });
+
+  it('renders separate official fastest and lowest-effort route cards', async () => {
+    hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
+      report([
+        {
+          institution: { id: 'tau', name: 'אוניברסיטת תל אביב', region: 'center' },
+          linkedInstitutionId: 'tau',
+          capability: 'exact',
+          kind: 'exact',
+          decision: 'below',
+          confidence: 'high',
+          sourceLabel: 'אימות רשמי',
+          explanation: 'מתחת לסף',
+          nextAction: 'השלימו נתונים',
+          score: 690,
+          threshold: 706,
+        },
+      ]),
+    );
+    hoistedMocks.fetchTauComputerScienceRoutes.mockResolvedValue({
+      status: 'complete',
+      fastest: route('psychometric_680_700', 10, 5),
+      lowestEffort: route('grade_history_80_95', 12, 3),
+    });
+
+    render(
+      <CalculatorResults
+        degreeId="tau_cs"
+        programs={programs}
+        psychometric={680}
+        bagrut={108}
+        onBack={() => {}}
+        academicScores={{
+          psychometric: { overall: 680 },
+          bagrut: {
+            weightedAverage: 108,
+            subjectRecord: {
+              schemaVersion: 1,
+              sector: 'jewish',
+              subjects: [
+                { subjectId: 'mathematics', units: 5, grade: 80 },
+                { subjectId: 'physics', units: 5, grade: 80 },
+              ],
+            },
+          },
+        }}
+      />,
+    );
+
+    expect(await screen.findByText('המהיר ביותר')).toBeTruthy();
+    expect(screen.getByText('הכי מעט מאמץ')).toBeTruthy();
+    expect(screen.getByText(/לשפר פסיכומטרי מ-680 ל-700/)).toBeTruthy();
   });
 
   it('renders an exact accepted result from the admissions evaluation route', async () => {
@@ -92,6 +267,77 @@ describe('CalculatorResults', () => {
     expect(await screen.findByLabelText('אוניברסיטת תל אביב: מתקבל/ת')).toBeTruthy();
     expect(screen.getByText('אימות רשמי')).toBeTruthy();
     expect(screen.getByText(/ציון התאמה 712 · סף 700/)).toBeTruthy();
+  });
+
+  it('sends saved psychometric subscores and structured Bagrut subjects to the evaluator', async () => {
+    hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(report([]));
+
+    render(
+      <CalculatorResults
+        degreeId="haifa_cs"
+        programs={programs}
+        psychometric={700}
+        bagrut={110}
+        onBack={() => {}}
+        academicScores={{
+          psychometric: { overall: 700, quantitative: 125, verbal: 120, english: 118 },
+          bagrut: {
+            weightedAverage: 110,
+            subjectRecord: {
+              schemaVersion: 1,
+              sector: 'jewish',
+              subjects: [
+                { subjectId: 'mathematics', units: 5, grade: 93 },
+                { subjectId: 'english', units: 5, grade: 90 },
+              ],
+            },
+          },
+        }}
+      />,
+    );
+
+    await waitFor(() =>
+      expect(hoistedMocks.fetchAdmissionsEvaluation).toHaveBeenCalledWith({
+        degreeId: 'haifa_cs',
+        psychometric: 700,
+        bagrut: 110,
+        extraInputs: {
+          psychometricMath: 125,
+          psychometricVerbal: 120,
+          psychometricEnglish: 118,
+          mathUnits: 5,
+          mathGrade: 93,
+          englishUnits: 5,
+          englishGrade: 90,
+        },
+      }),
+    );
+  });
+
+  it('does not combine structured profile details with a different manual calculation', async () => {
+    hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(report([]));
+
+    render(
+      <CalculatorResults
+        degreeId="haifa_cs"
+        programs={programs}
+        psychometric={680}
+        bagrut={108}
+        onBack={() => {}}
+        academicScores={{
+          psychometric: { overall: 700, quantitative: 125, verbal: 120, english: 118 },
+          bagrut: { weightedAverage: 110 },
+        }}
+      />,
+    );
+
+    await waitFor(() =>
+      expect(hoistedMocks.fetchAdmissionsEvaluation).toHaveBeenCalledWith({
+        degreeId: 'haifa_cs',
+        psychometric: 680,
+        bagrut: 108,
+      }),
+    );
   });
 
   it('renders mapped formula and needs-input states with distinct labels', async () => {

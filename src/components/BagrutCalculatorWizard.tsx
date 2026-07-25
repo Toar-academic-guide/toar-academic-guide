@@ -2,6 +2,8 @@
 
 import { Fragment, useState, useRef, useEffect } from 'react';
 import { Check, ChevronDown, X } from 'lucide-react';
+import type { BagrutSubjectRecord } from '@/types';
+import { buildBagrutSubjectRecord } from '@/utils/bagrutSubjectRecord';
 
 // ── Sector → mandatory subjects ───────────────────────────────────────────────
 
@@ -384,6 +386,7 @@ interface ElectiveRow {
 
 interface Props {
   onComplete: (weightedAverage: number) => void;
+  onStructuredComplete?: (record: BagrutSubjectRecord) => void;
 }
 
 // ── Step labels ───────────────────────────────────────────────────────────────
@@ -429,7 +432,7 @@ function WizBtn({
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export default function BagrutCalculatorWizard({ onComplete }: Props) {
+export default function BagrutCalculatorWizard({ onComplete, onStructuredComplete }: Props) {
   const [step, setStep] = useState(1);
   const [sector, setSector] = useState('יהודי');
   const [mandGrades, setMandGrades] = useState<MandGrade[]>(
@@ -439,6 +442,7 @@ export default function BagrutCalculatorWizard({ onComplete }: Props) {
   const [searchQuery, setSearchQuery] = useState('');
   const [dropOpen, setDropOpen] = useState(false);
   const [computedAvg, setComputedAvg] = useState<number | null>(null);
+  const [structuredRecord, setStructuredRecord] = useState<BagrutSubjectRecord | null>(null);
 
   const searchRef = useRef<HTMLInputElement>(null);
   const searchWrapRef = useRef<HTMLDivElement>(null);
@@ -486,7 +490,9 @@ export default function BagrutCalculatorWizard({ onComplete }: Props) {
   }
 
   function updateElectiveUnits(idx: number, v: number) {
-    setElectives((prev) => prev.map((e, i) => (i === idx ? { ...e, units: Math.max(1, v) } : e)));
+    setElectives((prev) =>
+      prev.map((e, i) => (i === idx ? { ...e, units: Math.min(Math.max(1, v), 5) } : e)),
+    );
   }
 
   function updateElectiveGrade(idx: number, v: number | '') {
@@ -494,26 +500,29 @@ export default function BagrutCalculatorWizard({ onComplete }: Props) {
   }
 
   function calculateAndAdvance() {
-    let totalWeighted = 0;
-    let totalUnits = 0;
-
-    mandGrades.forEach((mg) => {
-      if (mg.units > 0 && mg.grade !== '' && (mg.grade as number) > 0) {
-        totalWeighted += mg.units * (mg.grade as number);
-        totalUnits += mg.units;
-      }
+    const record = buildBagrutSubjectRecord({
+      sectorLabel: sector,
+      subjects: [
+        ...sectorSubs.map((subject, index) => ({
+          label: subject.n,
+          units: mandGrades[index]?.units ?? subject.min,
+          grade: mandGrades[index]?.grade ?? '',
+        })),
+        ...electives.map((subject) => ({
+          label: subject.name,
+          units: subject.units,
+          grade: subject.grade,
+        })),
+      ],
     });
-
-    const validElectives = [...electives]
-      .filter((e) => e.units > 0 && e.grade !== '' && (e.grade as number) > 0)
-      .sort((a, b) => (b.grade as number) - (a.grade as number));
-
-    validElectives.forEach((e) => {
-      totalWeighted += e.units * (e.grade as number);
-      totalUnits += e.units;
-    });
+    const totalWeighted = record.subjects.reduce(
+      (total, subject) => total + subject.units * subject.grade,
+      0,
+    );
+    const totalUnits = record.subjects.reduce((total, subject) => total + subject.units, 0);
 
     setComputedAvg(totalUnits > 0 ? totalWeighted / totalUnits : 0);
+    setStructuredRecord(record.subjects.length > 0 ? record : null);
     setStep(4);
   }
 
@@ -521,6 +530,7 @@ export default function BagrutCalculatorWizard({ onComplete }: Props) {
     setElectives([]);
     setMandGrades(SECTORS[sector].map((s) => ({ units: s.min, grade: '' })));
     setComputedAvg(null);
+    setStructuredRecord(null);
     setStep(1);
   }
 
@@ -827,7 +837,12 @@ export default function BagrutCalculatorWizard({ onComplete }: Props) {
           <div className="flex gap-3">
             {computedAvg !== null && computedAvg > 0 && (
               <WizBtn
-                onClick={() => onComplete(Math.round(computedAvg * 10) / 10)}
+                onClick={() => {
+                  onComplete(Math.round(computedAvg * 10) / 10);
+                  if (structuredRecord) {
+                    onStructuredComplete?.(structuredRecord);
+                  }
+                }}
                 className="flex-1"
               >
                 השתמש/י באומדן זה ←

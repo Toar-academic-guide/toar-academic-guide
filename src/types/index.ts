@@ -186,9 +186,33 @@ export interface PsychometricScores {
 }
 
 /** Matriculation (Bagrut) academic record. */
+export type BagrutSector = 'jewish' | 'arab' | 'druze' | 'circassian' | 'bedouin' | 'samaritan';
+
+export interface BagrutSubject {
+  /** Stable Toar-owned subject identifier, for example `mathematics`. */
+  subjectId: string;
+  /** The study-unit count recorded for this subject. */
+  units: number;
+  /** Final subject grade on the Bagrut 0–100 scale. */
+  grade: number;
+}
+
+export interface BagrutSubjectRecord {
+  /** Version of the normalized subject-record contract. */
+  schemaVersion: 1;
+  /** Education-sector context required to interpret mandatory subjects. */
+  sector: BagrutSector;
+  /** Immutable, normalized subject records used for admissions replay. */
+  subjects: BagrutSubject[];
+  /** Server-derived digest identifying this exact immutable record. */
+  profileHash?: string;
+}
+
 export interface BagrutRecord {
   /** Weighted average including all generic bonuses, 60–120 */
   weightedAverage?: number;
+  /** Subject-level record required for verified Bagrut calculations. */
+  subjectRecord?: BagrutSubjectRecord;
 }
 
 /** Combined academic-scores object stored in the user profile. */

@@ -58,6 +58,33 @@ _Avoid:_ Backup note
 The normalized product result for a user and program/institution pair. It always contains status, explanation, missing gap, and best next action, with confidence and source context attached.
 _Avoid:_ Eligibility note
 
+### Admission Improvement Route
+
+A sequence of academically valid profile changes that Toar can replay through a reviewed Institution evaluator to produce an eligible Admissions Decision. Routes may be ranked by standard duration or standard effort only after verification.
+_Avoid:_ Admission guarantee, recommendation when the route is not replayable
+
+### Fastest Verified Route
+
+The verified Admission Improvement Route with the shortest transparent standard duration estimate.
+
+### Lowest-Effort Verified Route
+
+The verified Admission Improvement Route with the lowest transparent standard effort estimate.
+
+### Approved Admissions Change
+
+A human-reviewed admission threshold, formula, gate, or requirement change that has been merged, atomically published, production-verified, and assigned an idempotent version for downstream processing.
+_Avoid:_ Raw scrape, open-PR change
+
+### Admission Change Subscription
+
+A user-owned, admissions-cycle-scoped request to re-evaluate one saved Institution and Academic Program target after Approved Admissions Changes and send one email if the saved Academic Profile becomes newly eligible.
+_Avoid:_ Threshold-change alert
+
+### Admissions Cycle
+
+The annual monitoring period used to scope admission rules and subscriptions. For alerting, active subscriptions expire when the new cycle begins on October 1.
+
 ## Admission Metrics
 
 ### Sekhem (סכם)

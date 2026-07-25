@@ -64,6 +64,14 @@ export interface AdmissionsEvaluationInput {
   extraInputs?: AdmissionsExtraInputs;
 }
 
+export interface AdmissionsEvaluationSnapshot {
+  evaluatorVersion: string;
+  ruleVersion: string;
+  ruleFingerprint: string;
+  inputDigest: string;
+  evaluationDigest: string;
+}
+
 export interface AdmissionsEvaluationResult {
   institution: Pick<
     CatalogueInstitution,
@@ -94,10 +102,13 @@ export interface AdmissionsEvaluationResult {
   missingData?: string[];
   officialUrls?: string[];
   degradationReason?: string;
+  snapshot?: AdmissionsEvaluationSnapshot;
 }
 
 export interface AdmissionsEvaluationReport {
   generatedAt: string;
+  evaluatorVersion: string;
+  inputDigest: string;
   input: AdmissionsEvaluationInput;
   program: Pick<CatalogueProgram, 'id' | 'name'>;
   results: AdmissionsEvaluationResult[];

@@ -23,6 +23,11 @@ import {
   getMondayAdmissionEvidenceByCatalogueInstitutionId,
   type MondayAdmissionEvidenceRecord,
 } from '@/data/admissions/mondayEvidence';
+import {
+  ADMISSIONS_EVALUATOR_VERSION,
+  createAdmissionsInputDigest,
+  createAdmissionsEvaluationSnapshot,
+} from './evaluationSnapshot';
 
 const MAX_EXACT_SOURCE_CALLS = 2;
 const OFFICIAL_SOURCE_TIMEOUT_MS = 5000;
@@ -48,6 +53,7 @@ export async function evaluateAdmissionsForProgram(args: {
   const capabilityEntries = buildAdmissionsCapabilityMatrix({
     program,
     institutions,
+    input: input.extraInputs,
     freshnessStatesBySourceId,
     now,
   });
@@ -60,14 +66,21 @@ export async function evaluateAdmissionsForProgram(args: {
     fetcher,
   });
 
+  const versionedResults = results.map((result) => ({
+    ...result,
+    snapshot: createAdmissionsEvaluationSnapshot({ input, result }),
+  }));
+
   return {
     generatedAt: now.toISOString(),
+    evaluatorVersion: ADMISSIONS_EVALUATOR_VERSION,
+    inputDigest: createAdmissionsInputDigest(input),
     input,
     program: {
       id: program.id,
       name: program.name,
     },
-    results,
+    results: versionedResults,
   };
 }
 

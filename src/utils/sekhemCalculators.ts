@@ -2,12 +2,12 @@ import { University, UserScores, UniversityResult, DeltaNeeded, EngineeringOptio
 import type { Program } from '@/data/degrees/types';
 
 // ── TAU Engineering & Exact Sciences bonuses ─────────────────────────────────
-// TAU's Faculty of Exact Sciences and Engineering applies direct additive
-// bonuses to the admission index for students with 5-unit Bagrut subjects.
-// These are applied on top of the base weighted formula and are specific to
-// programs flagged as isTauEngineering (CS, EE, ME, Data Science).
-const TAU_MATH5_BONUS = 35; // 5 units of Mathematics
-const TAU_PHYSICS5_BONUS = 25; // 5 units of Physics
+// TAU's published engineering/exact-sciences condition is a single ten-point
+// addition when both Mathematics and Physics are five-unit Bagrut subjects and
+// meet the published grade floor. The legacy calculator asks the applicant to
+// confirm that qualifying condition; verified route simulations use the
+// structured subject policy instead.
+const TAU_QUALIFYING_MATH_AND_PHYSICS_BONUS = 10;
 
 // ── Bagrut normalization ──────────────────────────────────────────────────────
 // Converts raw bagrut average (60–120 with bonuses) to the 200–800 psychometric
@@ -36,7 +36,7 @@ function sekhemWeighted(university: University, scores: UserScores): number {
 // ── TAU engineering bonus calculation ────────────────────────────────────────
 // Returns the total additive bonus for TAU engineering/exact-sciences programs.
 function tauEngineeringBonus(opts: EngineeringOptions): number {
-  return (opts.hasMath5 ? TAU_MATH5_BONUS : 0) + (opts.hasPhysics5 ? TAU_PHYSICS5_BONUS : 0);
+  return opts.hasMath5 && opts.hasPhysics5 ? TAU_QUALIFYING_MATH_AND_PHYSICS_BONUS : 0;
 }
 
 // ── Core sekhem dispatcher ────────────────────────────────────────────────────

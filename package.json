@@ -18,8 +18,11 @@
     "format": "prettier --write \"src/**/*.{ts,tsx,css,json}\"",
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
     "db:migrate:check": "drizzle-kit check",
     "admissions:freshness": "node scripts/admissions-source-freshness.mjs",
+    "admissions:publish": "node scripts/publish-admissions-release.mjs",
+    "admissions:expire": "node scripts/expire-admission-alerts.mjs",
     "db:seed": "node scripts/seed-catalogue.mjs",
     "db:seed:dry-run": "node scripts/seed-catalogue.mjs --dry-run",
     "db:seed:verify": "node scripts/seed-catalogue.mjs --verify",
@@ -33,7 +36,7 @@
     "@supabase/supabase-js": "^2.108.2",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.21.0",
-    "next": "16.2.6",
+    "next": "16.2.11",
     "posthog-js": "^1.396.3",
     "posthog-node": "^5.39.1",
     "react": "19.2.7",
@@ -71,5 +74,17 @@
     "typescript-eslint": "^8.62.1",
     "vite-tsconfig-paths": "^6.1.1",
     "vitest": "^4.1.8"
+  },
+  "overrides": {
+    "@eslint/eslintrc": {
+      "js-yaml": "4.3.0"
+    },
+    "minimatch@3.1.5": {
+      "brace-expansion": "1.1.16"
+    },
+    "next": {
+      "postcss": "8.5.23",
+      "sharp": "0.35.3"
+    }
   }
 }

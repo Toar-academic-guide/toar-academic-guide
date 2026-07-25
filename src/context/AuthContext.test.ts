@@ -67,14 +67,28 @@ describe('AuthContext helpers', () => {
     hoistedMocks.createSupabaseBrowserClient.mockReset();
   });
 
-  it('builds the signup redirect from the configured app url', () => {
+  it('builds the email-confirmation callback from the configured app url', () => {
     expect(buildEmailRedirectTo('https://toar.example.com/', 'http://localhost:3000')).toBe(
-      'https://toar.example.com/',
+      'https://toar.example.com/auth/callback',
     );
   });
 
   it('falls back to the browser origin when no app url is configured', () => {
-    expect(buildEmailRedirectTo(null, 'http://localhost:3000')).toBe('http://localhost:3000/');
+    expect(buildEmailRedirectTo(null, 'http://localhost:3000')).toBe(
+      'http://localhost:3000/auth/callback',
+    );
+  });
+
+  it('preserves a safe admission-alert intent through email confirmation', () => {
+    expect(
+      buildEmailRedirectTo(
+        'https://toar.example.com',
+        'http://localhost:3000',
+        '/app/profile?admissionAlertInstitution=tau&admissionAlertProgram=tau_cs',
+      ),
+    ).toBe(
+      'https://toar.example.com/auth/callback?next=%2Fapp%2Fprofile%3FadmissionAlertInstitution%3Dtau%26admissionAlertProgram%3Dtau_cs',
+    );
   });
 
   it('builds the oauth callback redirect from the configured app url', () => {

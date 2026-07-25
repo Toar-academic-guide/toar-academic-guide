@@ -7,6 +7,68 @@ import {
 } from '@/server/user/profileSchema';
 
 describe('userProfileSchema', () => {
+  it('accepts a normalized subject-level Bagrut record without trusting a client hash', () => {
+    const parsed = userProfileSchema.parse({
+      geographicPreference: 'center',
+      academicScores: {
+        bagrut: {
+          weightedAverage: 106,
+          subjectRecord: {
+            schemaVersion: 1,
+            sector: 'jewish',
+            subjects: [
+              { subjectId: 'mathematics', units: 5, grade: 92 },
+              { subjectId: 'history', units: 2, grade: 88 },
+            ],
+          },
+        },
+      },
+    });
+
+    expect(parsed.academicScores?.bagrut?.subjectRecord).toEqual({
+      schemaVersion: 1,
+      sector: 'jewish',
+      subjects: [
+        { subjectId: 'mathematics', units: 5, grade: 92 },
+        { subjectId: 'history', units: 2, grade: 88 },
+      ],
+    });
+  });
+
+  it('rejects duplicate Bagrut subjects and invalid subject-level ranges', () => {
+    const profile = {
+      geographicPreference: 'any',
+      academicScores: {
+        bagrut: {
+          subjectRecord: {
+            schemaVersion: 1,
+            sector: 'jewish',
+            subjects: [
+              { subjectId: 'mathematics', units: 5, grade: 92 },
+              { subjectId: 'mathematics', units: 2, grade: 88 },
+            ],
+          },
+        },
+      },
+    };
+
+    expect(() => userProfileSchema.parse(profile)).toThrow();
+    expect(() =>
+      userProfileSchema.parse({
+        ...profile,
+        academicScores: {
+          bagrut: {
+            subjectRecord: {
+              schemaVersion: 1,
+              sector: 'jewish',
+              subjects: [{ subjectId: 'mathematics', units: 6, grade: 101 }],
+            },
+          },
+        },
+      }),
+    ).toThrow();
+  });
+
   it('accepts a sparse profile snapshot', () => {
     const parsed = userProfileSchema.parse({
       geographicPreference: 'any',
