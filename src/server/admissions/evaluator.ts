@@ -81,6 +81,7 @@ export async function evaluateAdmissionsForProgram(args: {
       if (key === 'tau_me__tau') return ['tau-me-legacy-live'];
       if (key === 'occupational_therapy__tau') return ['tau-occupational-live'];
       if (key === 'tau_occupational_therapy__tau') return ['tau-occupational-legacy-live'];
+      if (key === 'tau_industrial__tau') return ['tau-industrial-live'];
       return [];
     });
 
@@ -669,6 +670,37 @@ async function evaluateExactResult(args: {
           unmetRequirements: ['אנגלית בפסיכומטרי ברמת 100 ומעלה'],
           requirementsUrl:
             'https://go.tau.ac.il/he/med/ba/occupational-therapy?v=admission-requirements',
+        });
+      }
+
+      const proof = await runTauAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: { bagrutAverage: input.bagrut, psychometric: input.psychometric },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+      });
+    }
+
+    if (exactTarget.targetId === 'tau-industrial-live') {
+      const psychometricEnglish = input.extraInputs?.psychometricEnglish;
+      const bagrutSubjectRecord = input.extraInputs?.bagrutSubjectRecord;
+      if (typeof psychometricEnglish !== 'number' || !bagrutSubjectRecord) {
+        return requiredInputsResult(institution, [
+          ...(typeof psychometricEnglish !== 'number' ? ['psychometric_english' as const] : []),
+          ...(!bagrutSubjectRecord ? ['bagrut_subject_record' as const] : []),
+        ]);
+      }
+      if (psychometricEnglish < 100) {
+        return exactGateFailureResult({
+          institution,
+          unmetRequirements: ['אנגלית בפסיכומטרי ברמת 100 ומעלה'],
+          requirementsUrl:
+            'https://go.tau.ac.il/he/engineering/ba/industrial-engineering?v=admission-requirements',
         });
       }
 

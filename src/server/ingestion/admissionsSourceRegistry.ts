@@ -845,6 +845,37 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
       'Keep the shared Occupational Therapy node, score route, gates, fixtures, and source fingerprint under review.',
   },
   {
+    id: 'tau-industrial-live',
+    institutionId: 'tau',
+    institutionName: 'Tel Aviv University',
+    officialUrl: 'https://go.tau.ac.il/graphql',
+    adapterId: 'tau',
+    expectedCapability: 'decision_capable',
+    proofLevel: 'exact_official',
+    category: 'exact',
+    defaultApplicant: { bagrutAverage: 115, psychometric: 730 },
+    defaultProgram: {
+      targetId: 'tau-industrial-live',
+      pairId: 'tau_industrial__tau',
+      id: 'tau-industrial',
+      name: 'Industrial Engineering and Management',
+      nodeId: 8291,
+      externalId: '057311010000',
+      scoreField: 'hatama_meduyakim',
+    },
+    reproducedFields: [
+      'selectedScore',
+      'acceptanceThreshold',
+      'rejectionThreshold',
+      'officialVerdict',
+    ],
+    limitations: [
+      'Engineering subject-route conditions remain manual beyond the required subject record.',
+    ],
+    nextAction:
+      'Keep the Industrial Engineering node, score field, subject gates, fixtures, and thresholds under review.',
+  },
+  {
     id: 'huji-static-json',
     institutionId: 'huji',
     institutionName: 'Hebrew University',

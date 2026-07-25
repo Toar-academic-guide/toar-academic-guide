@@ -1371,6 +1371,48 @@ export const TAU_LEGACY_OCCUPATIONAL_CONTRACT: AdmissionsProgramVerificationCont
   fixtureSetFingerprint: 'sha256:ddad83f7dd7b66dbf14009cb1bec6450104ad82e68e73da104debdb29772c1e8',
 };
 
+const TAU_INDUSTRIAL_SOURCE_FINGERPRINT =
+  'sha256:fd28470bf2cb573244b46e2b0ee55b6756f074b92cf94d7eaeb0ea4bda1a8f72';
+export const TAU_INDUSTRIAL_FIXTURES: AdmissionsVerificationFixture[] = TAU_ME_FIXTURES.map(
+  (fixture) => ({
+    ...fixture,
+    id: fixture.id.replace('me__tau', 'tau_industrial__tau'),
+    pairId: 'tau_industrial__tau',
+    sourceFingerprint: TAU_INDUSTRIAL_SOURCE_FINGERPRINT,
+  }),
+);
+export const TAU_INDUSTRIAL_CONTRACT: AdmissionsProgramVerificationContract = {
+  ...TAU_ME_CONTRACT,
+  pairId: 'tau_industrial__tau',
+  programId: 'tau_industrial',
+  officialProgramId: '057311010000',
+  source: { targetId: 'tau-industrial-live', url: 'https://go.tau.ac.il/graphql' },
+  calculation: {
+    ...TAU_ME_CONTRACT.calculation,
+    cutoff: { acceptance: 667, rejection: 647 },
+    gates: [
+      {
+        id: 'tau-industrial:english-minimum',
+        kind: 'language',
+        field: 'psychometricEnglish',
+        minimum: 100,
+        description: 'TAU requires at least English level Advanced A.',
+      },
+      {
+        id: 'tau-industrial:engineering-subject-route',
+        kind: 'subject',
+        field: 'bagrutSubjectRecord',
+        description:
+          'Industrial Engineering requires the official mathematics/physics engineering route.',
+      },
+    ],
+  },
+  fixtureIds: TAU_INDUSTRIAL_FIXTURES.map((fixture) => fixture.id),
+  fixtureSetFingerprint: 'sha256:688325b1ee3964b0bc4c5e2d89e91723d1e2424a0ef46b5ef24846729b3c0a8d',
+  sourceFingerprint: TAU_INDUSTRIAL_SOURCE_FINGERPRINT,
+  proof: { ...TAU_ME_CONTRACT.proof, sourceFingerprint: TAU_INDUSTRIAL_SOURCE_FINGERPRINT },
+};
+
 export interface ProgramVerificationArtifact {
   contract: AdmissionsProgramVerificationContract;
   fixtures: AdmissionsVerificationFixture[];
@@ -1572,6 +1614,14 @@ export const TAU_PROGRAM_VERIFICATION_METADATA: Record<string, TauProgramVerific
     requirementsUrl: 'https://go.tau.ac.il/he/med/ba/occupational-therapy?v=admission-requirements',
     ledgerReason:
       'Verified the legacy TAU Occupational Therapy alias against the same current node, score route, gates, fixtures, and live replay.',
+  },
+  [TAU_INDUSTRIAL_CONTRACT.pairId]: {
+    contract: TAU_INDUSTRIAL_CONTRACT,
+    fixtures: TAU_INDUSTRIAL_FIXTURES,
+    requirementsUrl:
+      'https://go.tau.ac.il/he/engineering/ba/industrial-engineering?v=admission-requirements',
+    ledgerReason:
+      'Verified the legacy TAU Industrial Engineering and Management pair against the current node, meduyakim score field, engineering gates, accepted/below fixtures, and live replay.',
   },
 };
 

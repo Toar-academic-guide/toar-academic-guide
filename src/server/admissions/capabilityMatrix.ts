@@ -441,6 +441,20 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
     },
     requiredInputs: ['psychometric_english'],
   },
+  tau_industrial__tau: {
+    targetId: 'tau-industrial-live',
+    sourceTarget: admissionsSourceTargets.find((entry) => entry.id === 'tau-industrial-live')!,
+    program: {
+      targetId: 'tau-industrial-live',
+      pairId: 'tau_industrial__tau',
+      id: 'tau-industrial',
+      name: 'Industrial Engineering and Management',
+      nodeId: 8291,
+      externalId: '057311010000',
+      scoreField: 'hatama_meduyakim',
+    },
+    requiredInputs: ['psychometric_english', 'bagrut_subject_record'],
+  },
 };
 
 const SOURCE_TARGETS_BY_INSTITUTION = new Map<string, AdmissionsSourceTarget>(
