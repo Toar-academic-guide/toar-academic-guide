@@ -25,6 +25,27 @@ function evaluate(input: Omit<FreshnessDiscoveryInput, 'id'>) {
 }
 
 describe('evaluateFreshnessDiscovery', () => {
+  it('fingerprints program mapping, bonuses, and official verdicts for decision APIs', () => {
+    const result = evaluateFreshnessDiscovery({
+      id: 'tau-program',
+      sourceClass: 'api_static_json',
+      body: {
+        matchedProgramIds: ['056011050000'],
+        exactSciencesBonus: 10,
+        officialVerdict: 'accepted',
+        unrelatedMarketingCopy: 'ignored',
+      },
+    });
+
+    expect(result.normalizedDecisionPayload).toEqual({
+      fields: {
+        exactSciencesBonus: 10,
+        matchedProgramIds: ['056011050000'],
+        officialVerdict: 'accepted',
+      },
+    });
+  });
+
   it('keeps a stable HTML source on the same normalized fingerprint across two runs', () => {
     const first = evaluate({ sourceClass: 'official_html', body: baseHtml });
     const second = evaluate({

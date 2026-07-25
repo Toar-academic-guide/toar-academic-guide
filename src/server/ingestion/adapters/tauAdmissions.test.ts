@@ -139,7 +139,7 @@ describe('runTauAdmissionsProof', () => {
     });
 
     expect(JSON.parse(String(fetcher.mock.calls[0][1]?.body))).toMatchObject({
-      variables: { scoresData: { reali10: 10 } },
+      variables: { scoresData: { reali10: 1 } },
     });
     expect(proof.normalizedPayload).toMatchObject({
       exactSciencesBonus: 10,

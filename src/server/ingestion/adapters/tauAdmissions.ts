@@ -121,7 +121,7 @@ function buildLastScoreRequest(context: AdmissionsAdapterContext) {
       scoresData: {
         prog: 'calctziun',
         out: 'json',
-        reali10: context.applicant.exactSciencesBonusEligible ? 10 : 0,
+        reali10: context.applicant.exactSciencesBonusEligible ? 1 : 0,
         psicho: String(context.applicant.psychometric),
         bagrut: String(context.applicant.bagrutAverage),
       },
