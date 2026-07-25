@@ -6,12 +6,24 @@ The `Admissions Source Freshness` workflow is the only automation path that prop
 
 Before enabling the scheduled workflow, configure these repository settings:
 
-- `DATABASE_URL` secret: database access for source freshness persistence and published-rule baselines.
+- `OPS_DATABASE_URL` secret: read-only database access for manual dry runs.
+- `DATABASE_URL` secret: write-capable database access for scheduled source
+  freshness persistence, review-run state, and published-rule baselines.
 - `ADMISSIONS_GITHUB_APP_ID` and `ADMISSIONS_GITHUB_APP_PRIVATE_KEY` secrets: a least-privileged GitHub App that can create and update the generated review branch and PR.
 - `ADMISSIONS_CYCLE` repository variable: the four-digit admission cycle to evaluate.
 - `SLACK_BOT_TOKEN` secret and `SLACK_ADMISSIONS_REVIEW_CHANNEL_ID` repository variable: the dedicated reviewer handoff channel.
+- `ADMISSIONS_WEEKLY_ENABLED` repository variable: keep this exactly `false`
+  until schema verification, manual dry runs, configuration, and the
+  change-bearing proof are complete; set it to `true` only to activate the
+  Sunday schedule.
 
 The GitHub App must have only the repository permissions required to write contents and pull requests. Slack delivery is retryable and cannot publish, approve, or alter an admissions rule.
+
+Manual `workflow_dispatch` runs remain available while the schedule is
+disabled. A dry run uses `OPS_DATABASE_URL` and does not require the GitHub App
+or Slack settings. A write-capable manual or scheduled run validates all
+configuration names above before source evaluation and fails without printing
+their values.
 
 ## Production schema preflight
 
