@@ -1,6 +1,7 @@
 import {
   createCapabilityOnlyProof,
   type AdmissionsAdapterId,
+  type AdmissionsApplicantInput,
   type AdmissionsProgramInput,
   type AdmissionsProofLevel,
   type AdmissionsSourceProof,
@@ -26,6 +27,7 @@ export interface AdmissionsSourceTarget {
   expectedCapability: FreshnessCapability;
   proofLevel: AdmissionsProofLevel;
   category: AdmissionsSourceCategory;
+  defaultApplicant?: AdmissionsApplicantInput;
   defaultProgram?: AdmissionsProgramInput;
   reproducedFields: string[];
   limitations: string[];
@@ -84,6 +86,10 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     expectedCapability: 'decision_capable',
     proofLevel: 'exact_official',
     category: 'exact',
+    defaultApplicant: {
+      bagrutAverage: 100,
+      psychometric: 520,
+    },
     defaultProgram: {
       targetId: 'tau-nursing-live',
       pairId: 'nursing__tau',
@@ -103,6 +109,37 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
       'The numeric result is eligibility for the mandatory suitability assessment, not final admission.',
     ],
     nextAction: 'Keep the suitability assessment and possible interview visible as manual gates.',
+  },
+  {
+    id: 'tau-psychology-live',
+    institutionId: 'tau',
+    institutionName: 'Tel Aviv University',
+    officialUrl: 'https://go.tau.ac.il/graphql',
+    adapterId: 'tau',
+    expectedCapability: 'decision_capable',
+    proofLevel: 'exact_official',
+    category: 'exact',
+    defaultApplicant: {
+      bagrutAverage: 110,
+      psychometric: 680,
+    },
+    defaultProgram: {
+      targetId: 'tau-psychology-live',
+      pairId: 'tau_psychology__tau',
+      id: 'tau-psychology',
+      name: 'Psychology',
+      nodeId: 8275,
+      externalId: '107111050000',
+      scoreField: 'hatama',
+    },
+    reproducedFields: [
+      'selectedScore',
+      'acceptanceThreshold',
+      'rejectionThreshold',
+      'officialVerdict',
+    ],
+    limitations: ['The proof covers the standard combined Bagrut and psychometric score route.'],
+    nextAction: 'Keep the programme node, score field, cycle gates, and fixtures under review.',
   },
   {
     id: 'huji-static-json',

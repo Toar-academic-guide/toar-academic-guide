@@ -32,6 +32,7 @@ import {
 } from './evaluationSnapshot';
 import { evaluateTauDigitalSciencesGates } from './tauDigitalSciencesPolicy';
 import { evaluateTauNursingGates } from './tauNursingPolicy';
+import { evaluateTauPsychologyGates, TAU_PSYCHOLOGY_REQUIREMENTS_URL } from './tauPsychologyPolicy';
 
 const MAX_EXACT_SOURCE_CALLS = 2;
 const OFFICIAL_SOURCE_TIMEOUT_MS = 5000;
@@ -59,6 +60,7 @@ export async function evaluateAdmissionsForProgram(args: {
       if (key === 'haifa_cs__haifa') return ['haifa-cs-live'];
       if (key === 'tau_datascience__tau') return ['tau-digital-sciences-live'];
       if (key === 'nursing__tau') return ['tau-nursing-live'];
+      if (key === 'tau_psychology__tau') return ['tau-psychology-live'];
       return [];
     });
 
@@ -258,6 +260,35 @@ async function evaluateExactResult(args: {
         proof: proof.normalizedPayload,
         explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
         positiveDecision: 'eligible_to_apply',
+      });
+    }
+
+    if (exactTarget.targetId === 'tau-psychology-live') {
+      const gateResult = evaluateTauPsychologyGates(input);
+      if (gateResult.state === 'needs_input') {
+        return requiredInputsResult(institution, gateResult.requiredInputs);
+      }
+      if (gateResult.state === 'below') {
+        return exactGateFailureResult({
+          institution,
+          unmetRequirements: gateResult.unmetRequirements,
+          requirementsUrl: TAU_PSYCHOLOGY_REQUIREMENTS_URL,
+        });
+      }
+
+      const proof = await runTauAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: {
+          bagrutAverage: input.bagrut,
+          psychometric: input.psychometric,
+        },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
       });
     }
 

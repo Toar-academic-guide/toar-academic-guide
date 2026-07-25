@@ -173,6 +173,20 @@ const tauNursing: CatalogueProgram = {
   linkedInstitutionIds: ['tau'],
 };
 
+const tauPsychology: CatalogueProgram = {
+  id: 'tau_psychology',
+  name: 'פסיכולוגיה',
+  institution: 'אוניברסיטת תל אביב',
+  institutionId: 'tau',
+  type: 'academic',
+  category: 'מדעי החברה',
+  profileScore: { AN: 3, TE: 1, CR: 3, SO: 5, LE: 4, OR: 3, DI: 1, ER: 4 },
+  admissionType: 'sekhem',
+  admissionRequirements: [],
+  thresholds: { tau: 660 },
+  linkedInstitutionIds: ['tau'],
+};
+
 const haifaCs: CatalogueProgram = {
   id: 'haifa_cs',
   name: 'מדעי המחשב',
@@ -996,6 +1010,62 @@ describe('evaluateAdmissionsForProgram', () => {
         score: 546,
         threshold: 530,
         explanation: expect.stringContaining('אינה קבלה סופית'),
+      }),
+    );
+  });
+
+  it('returns the node-specific TAU Psychology score and verdict', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            data: { getLastScore: { body: { hatama: 679 } } },
+          }),
+          { status: 200 },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            data: {
+              getProgramByIdAndLang: {
+                nid: '8275',
+                title: 'תואר ראשון בלימודי פסיכולוגיה',
+                field_plain_id_programs: ['107111050000', '107111030000'],
+                receipt_threshol: [660],
+                rejection_thresh: [659],
+              },
+            },
+          }),
+          { status: 200 },
+        ),
+      );
+
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'tau_psychology',
+        psychometric: 680,
+        bagrut: 110,
+        extraInputs: { psychometricEnglish: 110 },
+      },
+      program: tauPsychology,
+      institutions,
+      fetcher,
+      now: new Date('2026-07-25T21:00:00Z'),
+    });
+
+    expect(JSON.parse(String(fetcher.mock.calls[1][1]?.body))).toMatchObject({
+      variables: { nid: 8275, langcode: 'he' },
+    });
+    expect(report.results).toContainEqual(
+      expect.objectContaining({
+        linkedInstitutionId: 'tau',
+        capability: 'exact',
+        kind: 'exact',
+        decision: 'accepted',
+        score: 679,
+        threshold: 660,
       }),
     );
   });

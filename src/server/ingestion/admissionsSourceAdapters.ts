@@ -30,6 +30,7 @@ export interface AdmissionsProgramInput {
   pairId?: string;
   id: string;
   name: string;
+  nodeId?: number;
   externalId?: string;
   facultyCode?: string;
   searchText?: string;

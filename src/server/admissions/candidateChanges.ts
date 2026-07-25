@@ -45,7 +45,9 @@ export function classifyAdmissionsProofCandidates(args: {
       excluded.push({ sourceProofId: proof.id, reason: 'proof_not_decision_capable' });
       continue;
     }
-    const programId = stringValue(proof.normalizedPayload.programId);
+    const adapterProgramId = stringValue(proof.normalizedPayload.programId);
+    const explicitPairId = stringValue(proof.normalizedPayload.pairId);
+    const programId = explicitPairId?.split('__')[0] ?? adapterProgramId;
     const cutoff = numberValue(
       proof.normalizedPayload.acceptanceThreshold ?? proof.normalizedPayload.acceptanceCutoff,
     );
@@ -53,8 +55,7 @@ export function classifyAdmissionsProofCandidates(args: {
       excluded.push({ sourceProofId: proof.id, reason: 'missing_program_or_cutoff' });
       continue;
     }
-    const pairId =
-      stringValue(proof.normalizedPayload.pairId) ?? `${programId}__${proof.institutionId}`;
+    const pairId = explicitPairId ?? `${programId}__${proof.institutionId}`;
     const pairVerification = (args.verificationLedger ?? FORMULA_BACKED_VERIFICATION_LEDGER).find(
       (entry) => entry.pairId === pairId,
     );

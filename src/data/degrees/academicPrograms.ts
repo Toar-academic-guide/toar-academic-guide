@@ -326,12 +326,16 @@ const D: Record<string, InstitutionDetail[]> = {
   tau_psychology: [
     {
       institutionName: 'אוניברסיטת תל אביב',
-      durationYears: 4,
+      durationYears: 3,
       estimatedStudentsPerYear: 'כ-200 סטודנטים',
       quantitativeMinRequirement: null,
-      englishMinRequirement: null,
-      specificAdmissionNotes: ['אחד הסכ"מים הגבוהים בישראל — תחרות גבוהה מאוד'],
-      officialCalculatorUrl: 'https://go.tau.ac.il/b.a/chishuv',
+      englishMinRequirement: 100,
+      specificAdmissionNotes: [
+        'סף קבלה 660 וסף דחייה 659 לשנת תשפ"ז',
+        'הרישום לחוג מתקיים בסמסטר א׳ בלבד',
+      ],
+      officialCalculatorUrl:
+        'https://go.tau.ac.il/he/social-sciences/ba/psychology?v=admission-requirements',
     },
   ],
   tau_law: [
@@ -1622,7 +1626,7 @@ export const academicPrograms: Program[] = [
     profileScore: P.psychology,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: 720, huji: null, technion: null, bgu: null },
+    thresholds: { tau: 660, huji: null, technion: null, bgu: null },
     institutionDetails: D['tau_psychology'],
   },
   {

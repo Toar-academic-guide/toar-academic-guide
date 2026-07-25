@@ -25,13 +25,13 @@ function reportWithRisks(): DataHealthReadyReport {
     },
     formulaVerification: {
       total: 135,
-      exact: 2,
-      withheld: 133,
+      exact: 3,
+      withheld: 132,
       stale: 0,
       blocked: 0,
       isComplete: false,
       totalsByInstitution: {
-        tau: { total: 35, exact: 2, withheld: 33, stale: 0, blocked: 0 },
+        tau: { total: 35, exact: 3, withheld: 32, stale: 0, blocked: 0 },
         huji: { total: 29, exact: 0, withheld: 29, stale: 0, blocked: 0 },
         bgu: { total: 29, exact: 0, withheld: 29, stale: 0, blocked: 0 },
         haifa: { total: 27, exact: 0, withheld: 27, stale: 0, blocked: 0 },

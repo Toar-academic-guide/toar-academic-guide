@@ -333,8 +333,8 @@ describe('summarizeDataHealthRows', () => {
     expect(report.readiness.issues).toEqual([]);
     expect(report.formulaVerification).toMatchObject({
       total: 135,
-      exact: 2,
-      withheld: 133,
+      exact: 3,
+      withheld: 132,
       isComplete: false,
     });
   });

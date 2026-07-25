@@ -12,6 +12,7 @@ describe('admissionsSourceRegistry', () => {
       'haifa-cs-live',
       'tau-digital-sciences-live',
       'tau-nursing-live',
+      'tau-psychology-live',
     ]);
   });
 

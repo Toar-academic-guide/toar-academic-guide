@@ -136,6 +136,18 @@ function buildLastScoreRequest(context: AdmissionsAdapterContext) {
 }
 
 function buildProgramThresholdRequest(program: AdmissionsProgramInput) {
+  if (program.nodeId !== undefined) {
+    return {
+      operationName: 'getProgramByIdAndLang',
+      variables: {
+        nid: program.nodeId,
+        langcode: 'he',
+      },
+      query:
+        'query getProgramByIdAndLang($nid: Int!, $langcode: String!) { getProgramByIdAndLang(nid: $nid, langcode: $langcode) { nid title receipt_threshol rejection_thresh field_plain_id_programs field_faculty_mamta } }',
+    };
+  }
+
   return {
     operationName: 'getPrograms',
     variables: {

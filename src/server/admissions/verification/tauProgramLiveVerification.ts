@@ -3,10 +3,13 @@ import {
   TAU_DIGITAL_SCIENCES_FIXTURES,
   TAU_NURSING_CONTRACT,
   TAU_NURSING_FIXTURES,
+  TAU_PSYCHOLOGY_CONTRACT,
+  TAU_PSYCHOLOGY_FIXTURES,
 } from '@/data/admissions/tauProgramVerification';
 import type { AdmissionsVerificationVerdict } from '@/types/admissionsEvaluation';
 import { evaluateTauDigitalSciencesGates } from '../tauDigitalSciencesPolicy';
 import { evaluateTauNursingGates } from '../tauNursingPolicy';
+import { evaluateTauPsychologyGates } from '../tauPsychologyPolicy';
 import { runTauAdmissionsProof } from '@/server/ingestion/adapters/tauAdmissions';
 
 export interface TauProgramFixtureComparison {
@@ -159,8 +162,69 @@ export async function runTauNursingLiveVerification(
   };
 }
 
+export async function runTauPsychologyLiveVerification(
+  args: {
+    fetcher?: typeof fetch;
+    checkedAt?: Date;
+  } = {},
+): Promise<TauProgramLiveVerificationReport> {
+  const comparisons: TauProgramFixtureComparison[] = [];
+
+  for (const fixture of TAU_PSYCHOLOGY_FIXTURES) {
+    const gateResult = evaluateTauPsychologyGates({
+      degreeId: TAU_PSYCHOLOGY_CONTRACT.programId,
+      psychometric: fixture.input.psychometric,
+      bagrut: fixture.input.bagrut,
+      extraInputs: {
+        psychometricEnglish: Number(fixture.input.psychometricEnglish),
+      },
+    });
+
+    if (gateResult.state !== 'pass') {
+      comparisons.push(failedComparison(fixture));
+      continue;
+    }
+
+    const proof = await runTauAdmissionsProof({
+      fetcher: args.fetcher,
+      program: {
+        targetId: 'tau-psychology-live',
+        pairId: TAU_PSYCHOLOGY_CONTRACT.pairId,
+        id: 'tau-psychology',
+        name: 'Psychology',
+        nodeId: 8275,
+        externalId: TAU_PSYCHOLOGY_CONTRACT.officialProgramId,
+        scoreField: 'hatama',
+      },
+      applicant: {
+        psychometric: fixture.input.psychometric,
+        bagrutAverage: fixture.input.bagrut,
+      },
+    });
+    const actualScore = numberValue(proof.normalizedPayload.selectedScore);
+    const actualVerdict = verdictValue(proof.normalizedPayload.officialVerdict);
+
+    comparisons.push({
+      fixtureId: fixture.id,
+      expectedScore: fixture.expected.score,
+      actualScore,
+      expectedVerdict: fixture.expected.verdict,
+      actualVerdict,
+      scoreMatches: actualScore === fixture.expected.score,
+      verdictMatches: actualVerdict === fixture.expected.verdict,
+    });
+  }
+
+  return {
+    pairId: TAU_PSYCHOLOGY_CONTRACT.pairId,
+    checkedAt: (args.checkedAt ?? new Date()).toISOString(),
+    passed: comparisons.every((comparison) => comparison.scoreMatches && comparison.verdictMatches),
+    comparisons,
+  };
+}
+
 function failedComparison(
-  fixture: (typeof TAU_NURSING_FIXTURES)[number],
+  fixture: (typeof TAU_NURSING_FIXTURES)[number] | (typeof TAU_PSYCHOLOGY_FIXTURES)[number],
 ): TauProgramFixtureComparison {
   return {
     fixtureId: fixture.id,

@@ -261,6 +261,59 @@ describe('runTauAdmissionsProof', () => {
     });
   });
 
+  it('loads a program-specific cutoff by official TAU node id', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        jsonResponse({
+          data: { getLastScore: { body: { hatama: 679 } } },
+        }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({
+          data: {
+            getProgramByIdAndLang: {
+              nid: '8275',
+              title: 'תואר ראשון בלימודי פסיכולוגיה',
+              receipt_threshol: [660],
+              rejection_thresh: [659],
+              field_plain_id_programs: ['107111050000', '107111030000'],
+            },
+          },
+        }),
+      );
+
+    const proof = await runTauAdmissionsProof({
+      applicant,
+      fetcher,
+      program: {
+        targetId: 'tau-psychology-live',
+        pairId: 'tau_psychology__tau',
+        id: 'tau-psychology',
+        name: 'Psychology',
+        nodeId: 8275,
+        externalId: '107111050000',
+        scoreField: 'hatama',
+      },
+    });
+
+    expect(JSON.parse(String(fetcher.mock.calls[1][1]?.body))).toMatchObject({
+      operationName: 'getProgramByIdAndLang',
+      variables: { nid: 8275, langcode: 'he' },
+    });
+    expect(proof).toMatchObject({
+      id: 'tau-psychology-live',
+      status: 'succeeded',
+      normalizedPayload: {
+        pairId: 'tau_psychology__tau',
+        selectedScore: 679,
+        acceptanceThreshold: 660,
+        rejectionThreshold: 659,
+        officialVerdict: 'accepted',
+      },
+    });
+  });
+
   it('returns a failed proof when GraphQL returns errors', async () => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValueOnce(
       jsonResponse({

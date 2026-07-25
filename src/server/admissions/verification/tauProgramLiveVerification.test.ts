@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   runTauDigitalSciencesLiveVerification,
   runTauNursingLiveVerification,
+  runTauPsychologyLiveVerification,
 } from './tauProgramLiveVerification';
 
 describe('TAU programme live verification', () => {
@@ -97,6 +98,42 @@ describe('TAU programme live verification', () => {
       ],
     });
   });
+
+  it('replays accepted and below Psychology fixtures through its official node', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(scoreResponse(679, 'hatama'))
+      .mockResolvedValueOnce(psychologyThresholdResponse())
+      .mockResolvedValueOnce(scoreResponse(654, 'hatama'))
+      .mockResolvedValueOnce(psychologyThresholdResponse());
+
+    const report = await runTauPsychologyLiveVerification({
+      fetcher,
+      checkedAt: new Date('2026-07-25T20:47:06.248Z'),
+    });
+
+    expect(report).toMatchObject({
+      pairId: 'tau_psychology__tau',
+      passed: true,
+      comparisons: [
+        {
+          expectedScore: 679,
+          actualScore: 679,
+          expectedVerdict: 'accepted',
+          actualVerdict: 'accepted',
+        },
+        {
+          expectedScore: 654,
+          actualScore: 654,
+          expectedVerdict: 'below',
+          actualVerdict: 'below',
+        },
+      ],
+    });
+    expect(JSON.parse(String(fetcher.mock.calls[1][1]?.body))).toMatchObject({
+      variables: { nid: 8275, langcode: 'he' },
+    });
+  });
 });
 
 function scoreResponse(score: number, field = 'hatama_handasa'): Response {
@@ -121,6 +158,20 @@ function nursingThresholdResponse(): Response {
             field_this_year_rejection_thresh: 520,
           },
         ],
+      },
+    },
+  });
+}
+
+function psychologyThresholdResponse(): Response {
+  return jsonResponse({
+    data: {
+      getProgramByIdAndLang: {
+        nid: '8275',
+        title: 'תואר ראשון בלימודי פסיכולוגיה',
+        field_plain_id_programs: ['107111050000', '107111030000'],
+        receipt_threshol: [660],
+        rejection_thresh: [659],
       },
     },
   });

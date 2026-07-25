@@ -70,7 +70,7 @@ async function runTarget(
 ): Promise<AdmissionsSourceProof> {
   if (target.adapterId === 'haifa') {
     return runHaifaAdmissionsProof({
-      applicant: options.applicant ?? DEFAULT_APPLICANT,
+      applicant: options.applicant ?? target.defaultApplicant ?? DEFAULT_APPLICANT,
       fetcher: options.fetcher,
       program: target.defaultProgram,
     });
@@ -78,7 +78,7 @@ async function runTarget(
 
   if (target.adapterId === 'tau') {
     return runTauAdmissionsProof({
-      applicant: options.applicant ?? DEFAULT_APPLICANT,
+      applicant: options.applicant ?? target.defaultApplicant ?? DEFAULT_APPLICANT,
       fetcher: options.fetcher,
       program: target.defaultProgram,
     });

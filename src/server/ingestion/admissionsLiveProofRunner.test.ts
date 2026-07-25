@@ -56,16 +56,33 @@ function exactAdapterFetcher() {
           },
         },
       }),
+    )
+    .mockResolvedValueOnce(
+      jsonResponse({
+        data: { getLastScore: { body: { hatama: 679 } } },
+      }),
+    )
+    .mockResolvedValueOnce(
+      jsonResponse({
+        data: {
+          getProgramByIdAndLang: {
+            receipt_threshol: [660],
+            rejection_thresh: [659],
+            field_plain_id_programs: ['107111050000', '107111030000'],
+          },
+        },
+      }),
     );
 }
 
 describe('runAdmissionsLiveProof', () => {
   it('runs the verified Haifa and TAU programs by default as exact live proof targets', async () => {
-    const report = await runAdmissionsLiveProof({ fetcher: exactAdapterFetcher() });
+    const fetcher = exactAdapterFetcher();
+    const report = await runAdmissionsLiveProof({ fetcher });
 
     expect(report.summary).toMatchObject({
-      total: 3,
-      exactReproduced: 3,
+      total: 4,
+      exactReproduced: 4,
       partial: 0,
       blocked: 0,
       failed: 0,
@@ -74,7 +91,14 @@ describe('runAdmissionsLiveProof', () => {
       'haifa-cs-live',
       'tau-digital-sciences-live',
       'tau-nursing-live',
+      'tau-psychology-live',
     ]);
+    expect(JSON.parse(String(fetcher.mock.calls[4][1]?.body))).toMatchObject({
+      variables: { scoresData: { bagrut: '100', psicho: '520' } },
+    });
+    expect(JSON.parse(String(fetcher.mock.calls[6][1]?.body))).toMatchObject({
+      variables: { scoresData: { bagrut: '110', psicho: '680' } },
+    });
   });
 
   it('supports target filtering for one official source', async () => {
@@ -135,17 +159,34 @@ describe('runAdmissionsLiveProof', () => {
             },
           },
         }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({
+          data: { getLastScore: { body: { hatama: 679 } } },
+        }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({
+          data: {
+            getProgramByIdAndLang: {
+              receipt_threshol: [660],
+              rejection_thresh: [659],
+              field_plain_id_programs: ['107111050000', '107111030000'],
+            },
+          },
+        }),
       );
 
     const report = await runAdmissionsLiveProof({ fetcher });
 
     expect(report.summary).toMatchObject({
-      total: 3,
-      exactReproduced: 2,
+      total: 4,
+      exactReproduced: 3,
       failed: 1,
     });
     expect(report.results.map((result) => result.proof.status)).toEqual([
       'failed',
+      'succeeded',
       'succeeded',
       'succeeded',
     ]);
@@ -158,13 +199,14 @@ describe('runAdmissionsLiveProof', () => {
     });
 
     expect(report.summary).toMatchObject({
-      total: 14,
-      exactReproduced: 3,
+      total: 15,
+      exactReproduced: 4,
       partial: 8,
       blocked: 2,
     });
     expect(report.results.map((result) => result.proof.institutionId)).toEqual([
       'haifa',
+      'tau',
       'tau',
       'tau',
       'huji',

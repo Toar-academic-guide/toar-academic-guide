@@ -11,6 +11,8 @@ export const TAU_DIGITAL_SCIENCES_REQUIREMENTS_URL =
   'https://go.tau.ac.il/he/engineering/ba/high-tech-plus?v=admission-requirements';
 export const TAU_NURSING_REQUIREMENTS_URL =
   'https://go.tau.ac.il/he/med/ba/nursing?v=admission-requirements';
+export const TAU_PSYCHOLOGY_REQUIREMENTS_URL =
+  'https://go.tau.ac.il/he/social-sciences/ba/psychology?v=admission-requirements';
 
 export const TAU_DIGITAL_SCIENCES_FIXTURES: AdmissionsVerificationFixture[] = [
   {
@@ -249,6 +251,109 @@ export const TAU_NURSING_CONTRACT: AdmissionsProgramVerificationContract = {
   },
 };
 
+const TAU_PSYCHOLOGY_SOURCE_FINGERPRINT =
+  'sha256:22e53cbeca846bffb02a0993384180ca8c47a4b5035a3d82304c7a449a7779ca';
+const TAU_PSYCHOLOGY_CAPTURED_AT = '2026-07-25T20:47:06.248Z';
+const TAU_PSYCHOLOGY_LIVE_COMPARED_AT = '2026-07-25T20:52:12.799Z';
+
+export const TAU_PSYCHOLOGY_FIXTURES: AdmissionsVerificationFixture[] = [
+  {
+    id: 'tau_psychology__tau:accepted:2026-2027',
+    pairId: 'tau_psychology__tau',
+    admissionCycle: '2026-2027',
+    verdict: 'accepted',
+    input: {
+      psychometric: 680,
+      bagrut: 110,
+      psychometricEnglish: 110,
+      bagrutSubjectRecord: {
+        schemaVersion: 1,
+        sector: 'jewish',
+        subjects: [
+          { subjectId: 'mathematics', units: 5, grade: 82 },
+          { subjectId: 'english', units: 5, grade: 90 },
+          { subjectId: 'history', units: 2, grade: 92 },
+          { subjectId: 'bible', units: 2, grade: 88 },
+        ],
+      },
+    },
+    expected: {
+      score: 679,
+      verdict: 'accepted',
+    },
+    sourceFingerprint: TAU_PSYCHOLOGY_SOURCE_FINGERPRINT,
+    capturedAt: TAU_PSYCHOLOGY_CAPTURED_AT,
+  },
+  {
+    id: 'tau_psychology__tau:below:2026-2027',
+    pairId: 'tau_psychology__tau',
+    admissionCycle: '2026-2027',
+    verdict: 'below',
+    input: {
+      psychometric: 680,
+      bagrut: 105,
+      psychometricEnglish: 110,
+      bagrutSubjectRecord: {
+        schemaVersion: 1,
+        sector: 'jewish',
+        subjects: [
+          { subjectId: 'mathematics', units: 4, grade: 80 },
+          { subjectId: 'english', units: 5, grade: 88 },
+          { subjectId: 'history', units: 2, grade: 90 },
+          { subjectId: 'bible', units: 2, grade: 86 },
+        ],
+      },
+    },
+    expected: {
+      score: 654,
+      verdict: 'below',
+    },
+    sourceFingerprint: TAU_PSYCHOLOGY_SOURCE_FINGERPRINT,
+    capturedAt: TAU_PSYCHOLOGY_CAPTURED_AT,
+  },
+];
+
+export const TAU_PSYCHOLOGY_CONTRACT: AdmissionsProgramVerificationContract = {
+  pairId: 'tau_psychology__tau',
+  programId: 'tau_psychology',
+  institutionId: 'tau',
+  officialProgramId: '107111050000',
+  admissionCycle: '2026-2027',
+  source: {
+    targetId: 'tau-psychology-live',
+    url: 'https://go.tau.ac.il/graphql',
+  },
+  calculation: {
+    adapterId: 'tau',
+    mode: 'official_replay',
+    formulaFamily: 'tau_hatama',
+    requiredInputs: ['psychometric_english'],
+    cutoff: {
+      acceptance: 660,
+      rejection: 659,
+    },
+    gates: [
+      {
+        id: 'tau-psychology:english-minimum',
+        kind: 'language',
+        field: 'psychometricEnglish',
+        minimum: 100,
+        description: 'TAU requires at least English level Advanced A.',
+      },
+    ],
+  },
+  fixtureIds: TAU_PSYCHOLOGY_FIXTURES.map((fixture) => fixture.id),
+  fixtureSetFingerprint: 'sha256:3861406b343786992b2fb3e922254a266cda96b1351bfce86db80121fe87a8f7',
+  sourceFingerprint: TAU_PSYCHOLOGY_SOURCE_FINGERPRINT,
+  proof: {
+    state: 'verified',
+    comparedScore: true,
+    comparedVerdict: true,
+    liveComparedAt: TAU_PSYCHOLOGY_LIVE_COMPARED_AT,
+    sourceFingerprint: TAU_PSYCHOLOGY_SOURCE_FINGERPRINT,
+  },
+};
+
 export interface ProgramVerificationArtifact {
   contract: AdmissionsProgramVerificationContract;
   fixtures: AdmissionsVerificationFixture[];
@@ -262,6 +367,10 @@ export const PROGRAM_VERIFICATION_ARTIFACTS: Record<string, ProgramVerificationA
   [TAU_NURSING_CONTRACT.pairId]: {
     contract: TAU_NURSING_CONTRACT,
     fixtures: TAU_NURSING_FIXTURES,
+  },
+  [TAU_PSYCHOLOGY_CONTRACT.pairId]: {
+    contract: TAU_PSYCHOLOGY_CONTRACT,
+    fixtures: TAU_PSYCHOLOGY_FIXTURES,
   },
 };
 

@@ -5,6 +5,8 @@ import {
   TAU_DIGITAL_SCIENCES_FIXTURES,
   TAU_NURSING_CONTRACT,
   TAU_NURSING_FIXTURES,
+  TAU_PSYCHOLOGY_CONTRACT,
+  TAU_PSYCHOLOGY_FIXTURES,
 } from './tauProgramVerification';
 import {
   evaluateProgramVerification,
@@ -15,6 +17,7 @@ import {
   TAU_DIGITAL_SCIENCES_POLICY,
 } from '@/server/admissions/tauDigitalSciencesPolicy';
 import { TAU_NURSING_POLICY } from '@/server/admissions/tauNursingPolicy';
+import { TAU_PSYCHOLOGY_POLICY } from '@/server/admissions/tauPsychologyPolicy';
 import { runTauAdmissionsProof } from '@/server/ingestion/adapters/tauAdmissions';
 
 describe('TAU Digital Sciences verification artifact', () => {
@@ -145,6 +148,30 @@ describe('TAU Digital Sciences verification artifact', () => {
       issues: [],
     });
     expect(TAU_NURSING_FIXTURES[0].expected.verdict).toBe('eligible_to_apply');
+  });
+
+  it('activates Psychology only when the node-specific contract and fixtures agree', () => {
+    expect(fingerprintVerificationFixtures(TAU_PSYCHOLOGY_FIXTURES)).toBe(
+      TAU_PSYCHOLOGY_CONTRACT.fixtureSetFingerprint,
+    );
+    expect(TAU_PSYCHOLOGY_POLICY).toMatchObject({
+      admissionCycle: TAU_PSYCHOLOGY_CONTRACT.admissionCycle,
+      officialProgramId: TAU_PSYCHOLOGY_CONTRACT.officialProgramId,
+      acceptanceCutoff: TAU_PSYCHOLOGY_CONTRACT.calculation.cutoff.acceptance,
+      rejectionCutoff: TAU_PSYCHOLOGY_CONTRACT.calculation.cutoff.rejection,
+    });
+    expect(
+      evaluateProgramVerification({
+        contract: TAU_PSYCHOLOGY_CONTRACT,
+        fixtures: TAU_PSYCHOLOGY_FIXTURES,
+        currentAdmissionCycle: '2026-2027',
+        currentSourceFingerprint: TAU_PSYCHOLOGY_CONTRACT.sourceFingerprint,
+      }),
+    ).toEqual({
+      state: 'exact',
+      capability: 'exact',
+      issues: [],
+    });
   });
 });
 
