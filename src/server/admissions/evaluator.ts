@@ -82,6 +82,7 @@ export async function evaluateAdmissionsForProgram(args: {
       if (key === 'occupational_therapy__tau') return ['tau-occupational-live'];
       if (key === 'tau_occupational_therapy__tau') return ['tau-occupational-legacy-live'];
       if (key === 'tau_industrial__tau') return ['tau-industrial-live'];
+      if (key === 'tau_biology__tau') return ['tau-biology-legacy-live'];
       return [];
     });
 
@@ -425,7 +426,10 @@ async function evaluateExactResult(args: {
       });
     }
 
-    if (exactTarget.targetId === 'tau-biology-live') {
+    if (
+      exactTarget.targetId === 'tau-biology-live' ||
+      exactTarget.targetId === 'tau-biology-legacy-live'
+    ) {
       const psychometricEnglish = input.extraInputs?.psychometricEnglish;
       if (typeof psychometricEnglish !== 'number') {
         return requiredInputsResult(institution, ['psychometric_english']);

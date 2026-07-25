@@ -455,6 +455,20 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
     },
     requiredInputs: ['psychometric_english', 'bagrut_subject_record'],
   },
+  tau_biology__tau: {
+    targetId: 'tau-biology-legacy-live',
+    sourceTarget: admissionsSourceTargets.find((entry) => entry.id === 'tau-biology-legacy-live')!,
+    program: {
+      targetId: 'tau-biology-legacy-live',
+      pairId: 'tau_biology__tau',
+      id: 'tau-biology',
+      name: 'Biology',
+      nodeId: 8219,
+      externalId: '045511050000',
+      scoreField: 'hatama',
+    },
+    requiredInputs: ['psychometric_english'],
+  },
 };
 
 const SOURCE_TARGETS_BY_INSTITUTION = new Map<string, AdmissionsSourceTarget>(

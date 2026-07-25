@@ -1413,6 +1413,21 @@ export const TAU_INDUSTRIAL_CONTRACT: AdmissionsProgramVerificationContract = {
   proof: { ...TAU_ME_CONTRACT.proof, sourceFingerprint: TAU_INDUSTRIAL_SOURCE_FINGERPRINT },
 };
 
+export const TAU_LEGACY_BIOLOGY_FIXTURES: AdmissionsVerificationFixture[] =
+  TAU_BIOLOGY_FIXTURES.map((fixture) => ({
+    ...fixture,
+    id: fixture.id.replace('biology__tau', 'tau_biology__tau'),
+    pairId: 'tau_biology__tau',
+  }));
+export const TAU_LEGACY_BIOLOGY_CONTRACT: AdmissionsProgramVerificationContract = {
+  ...TAU_BIOLOGY_CONTRACT,
+  pairId: 'tau_biology__tau',
+  programId: 'tau_biology',
+  source: { ...TAU_BIOLOGY_CONTRACT.source, targetId: 'tau-biology-legacy-live' },
+  fixtureIds: TAU_LEGACY_BIOLOGY_FIXTURES.map((fixture) => fixture.id),
+  fixtureSetFingerprint: 'sha256:35151ec6565b0442ed674498d93f602b619f966f5fced64528a71ccb656ae3db',
+};
+
 export interface ProgramVerificationArtifact {
   contract: AdmissionsProgramVerificationContract;
   fixtures: AdmissionsVerificationFixture[];
@@ -1622,6 +1637,13 @@ export const TAU_PROGRAM_VERIFICATION_METADATA: Record<string, TauProgramVerific
       'https://go.tau.ac.il/he/engineering/ba/industrial-engineering?v=admission-requirements',
     ledgerReason:
       'Verified the legacy TAU Industrial Engineering and Management pair against the current node, meduyakim score field, engineering gates, accepted/below fixtures, and live replay.',
+  },
+  [TAU_LEGACY_BIOLOGY_CONTRACT.pairId]: {
+    contract: TAU_LEGACY_BIOLOGY_CONTRACT,
+    fixtures: TAU_LEGACY_BIOLOGY_FIXTURES,
+    requirementsUrl: 'https://go.tau.ac.il/he/life-sciences/ba/biology?v=admission-requirements',
+    ledgerReason:
+      'Verified the legacy TAU Biology catalogue alias against the same current node, score route, gates, fixtures, and live replay.',
   },
 };
 
