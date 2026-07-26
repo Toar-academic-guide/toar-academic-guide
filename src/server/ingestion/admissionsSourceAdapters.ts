@@ -42,6 +42,11 @@ export interface AdmissionsProgramInput {
   facultyCode?: string;
   searchText?: string;
   scoreField?: string;
+  decisionMode?: 'accepted' | 'eligible_to_apply';
+  staticThresholds?: {
+    acceptance: number;
+    rejection: number | null;
+  };
 }
 
 export interface AdmissionsAdapterContext {

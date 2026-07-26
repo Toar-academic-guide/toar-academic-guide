@@ -114,6 +114,54 @@ function exactAdapterFetcher() {
     )
     .mockResolvedValueOnce(
       jsonResponse({
+        data: { getLastScore: { body: JSON.stringify({ hatama_refua: 745.43 }) } },
+      }),
+    )
+    .mockResolvedValueOnce(
+      jsonResponse({
+        data: {
+          getProgramByIdAndLang: {
+            receipt_threshol: null,
+            rejection_thresh: null,
+            field_registration_comments: '<p>ציון התאמה רפואה ראשוני - 726.44</p>',
+            field_plain_id_programs: ['011167010000'],
+          },
+        },
+      }),
+    )
+    .mockResolvedValueOnce(
+      jsonResponse({
+        data: { getLastScore: { body: JSON.stringify({ hatama_refua: 745.43 }) } },
+      }),
+    )
+    .mockResolvedValueOnce(
+      jsonResponse({
+        data: {
+          getProgramByIdAndLang: {
+            receipt_threshol: null,
+            rejection_thresh: null,
+            field_registration_comments: '<p>ציון התאמה רפואה ראשוני - 726.44</p>',
+            field_plain_id_programs: ['011167010000'],
+          },
+        },
+      }),
+    )
+    .mockResolvedValueOnce(
+      jsonResponse({
+        data: { getLastScore: { body: JSON.stringify({ hatama_refua: 689.22 }) } },
+      }),
+    )
+    .mockResolvedValueOnce(
+      jsonResponse({
+        data: {
+          getProgramByIdAndLang: {
+            field_plain_id_programs: ['016411010000'],
+          },
+        },
+      }),
+    )
+    .mockResolvedValueOnce(
+      jsonResponse({
         data: { getLastScore: { body: { hatama: 679 } } },
       }),
     )
@@ -568,8 +616,8 @@ describe('runAdmissionsLiveProof', () => {
     const report = await runAdmissionsLiveProof({ fetcher });
 
     expect(report.summary).toMatchObject({
-      total: 126,
-      exactReproduced: 126,
+      total: 129,
+      exactReproduced: 129,
       partial: 0,
       blocked: 0,
       failed: 0,
@@ -673,6 +721,9 @@ describe('runAdmissionsLiveProof', () => {
       'haifa-haifa_statistics-live',
       'tau-digital-sciences-live',
       'tau-nursing-live',
+      'tau-medicine-live',
+      'tau-medicine-legacy-live',
+      'tau-physiotherapy-live',
       'tau-psychology-live',
       'tau-social-work-live',
       'tau-social-work-legacy-live',
@@ -702,12 +753,21 @@ describe('runAdmissionsLiveProof', () => {
       'tau-industrial-live',
       'tau-biology-legacy-live',
     ]);
-    expect(JSON.parse(String(fetcher.mock.calls[153][1]?.body))).toMatchObject({
-      variables: { scoresData: { bagrut: '100', psicho: '520' } },
-    });
-    expect(JSON.parse(String(fetcher.mock.calls[155][1]?.body))).toMatchObject({
-      variables: { scoresData: { bagrut: '110', psicho: '680' } },
-    });
+    const tauScoreBodies = fetcher.mock.calls
+      .map(([, init]) => {
+        if (typeof init?.body !== 'string') return null;
+        try {
+          return JSON.parse(init.body) as { variables?: { scoresData?: Record<string, string> } };
+        } catch {
+          return null;
+        }
+      })
+      .filter((body): body is { variables: { scoresData: Record<string, string> } } =>
+        Boolean(body?.variables?.scoresData),
+      )
+      .map((body) => body.variables.scoresData);
+    expect(tauScoreBodies).toContainEqual(expect.objectContaining({ bagrut: '100', psicho: '520' }));
+    expect(tauScoreBodies).toContainEqual(expect.objectContaining({ bagrut: '110', psicho: '680' }));
   });
 
   it('supports target filtering for one official source', async () => {
@@ -1266,8 +1326,8 @@ describe('runAdmissionsLiveProof', () => {
     });
 
     expect(report.summary).toMatchObject({
-      total: 137,
-      exactReproduced: 126,
+      total: 140,
+      exactReproduced: 129,
       partial: 8,
       blocked: 2,
     });
@@ -1276,36 +1336,7 @@ describe('runAdmissionsLiveProof', () => {
       ...Array(28).fill('bgu'),
       ...Array(13).fill('technion'),
       ...Array(27).fill('haifa'),
-      'tau',
-      'tau',
-      'tau',
-      'tau',
-      'tau',
-      'tau',
-      'tau',
-      'tau',
-      'tau',
-      'tau',
-      'tau',
-      'tau',
-      'tau',
-      'tau',
-      'tau',
-      'tau',
-      'tau',
-      'tau',
-      'tau',
-      'tau',
-      'tau',
-      'tau',
-      'tau',
-      'tau',
-      'tau',
-      'tau',
-      'tau',
-      'tau',
-      'tau',
-      'tau',
+      ...Array(33).fill('tau'),
       'huji',
       'technion',
       'bgu',

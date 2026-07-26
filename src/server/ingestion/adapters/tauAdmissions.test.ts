@@ -109,6 +109,57 @@ describe('runTauAdmissionsProof', () => {
     });
   });
 
+  it('replays the current medicine preliminary threshold as eligibility for non-cognitive review', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        jsonResponse({
+          data: { getLastScore: { body: { hatama_refua: '745.43' } } },
+        }),
+      )
+      .mockResolvedValueOnce(
+        jsonResponse({
+          data: {
+            getProgramByIdAndLang: {
+              nid: '8215',
+              title: 'לימודי תואר "דוקטור ברפואה"',
+              receipt_threshol: null,
+              rejection_thresh: null,
+              field_registration_comments: '<p>ציון התאמה רפואה ראשוני - 726.44</p>',
+              field_plain_id_programs: ['011167010000'],
+            },
+          },
+        }),
+      );
+
+    const proof = await runTauAdmissionsProof({
+      applicant: { bagrutAverage: 115, psychometric: 760, psychometricSubscores: { english: 130, math: 130, verbal: 130 } },
+      fetcher,
+      program: {
+        targetId: 'tau-medicine-live',
+        pairId: 'medicine__tau',
+        id: 'tau-medicine',
+        name: 'Medicine',
+        nodeId: 8215,
+        externalId: '011167010000',
+        scoreField: 'hatama_refua',
+        decisionMode: 'eligible_to_apply',
+      },
+    });
+
+    expect(proof).toMatchObject({
+      capability: 'decision_capable',
+      proofLevel: 'exact_official',
+      status: 'succeeded',
+      normalizedPayload: {
+        selectedScore: 745.43,
+        acceptanceThreshold: 726.44,
+        officialVerdict: 'eligible_to_apply',
+        matchedProgramIds: ['011167010000'],
+      },
+    });
+  });
+
   it('sends the official exact-sciences bonus only for an eligible applicant', async () => {
     const fetcher = vi
       .fn<typeof fetch>()

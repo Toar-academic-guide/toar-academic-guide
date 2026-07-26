@@ -37,8 +37,8 @@ export async function runTauAdmissionsProof(
     metadata.push(readOfficialResponseMetadata(TAU_GRAPHQL_URL, programResponse));
     const programJson = await readJson(programResponse);
     const thresholdRecord = findThresholdObject(programJson, program.externalId);
-    const thresholds = thresholdsFromRecord(thresholdRecord);
-    const officialVerdict = tauOfficialVerdict(selectedScore, thresholds);
+    const thresholds = thresholdsFromRecord(thresholdRecord, program);
+    const officialVerdict = tauOfficialVerdict(selectedScore, thresholds, program);
     const matchedProgramIds = readStringArray(thresholdRecord.field_plain_id_programs);
 
     const hasDecision = officialVerdict !== undefined;
@@ -54,7 +54,7 @@ export async function runTauAdmissionsProof(
       proofLevel: hasDecision ? 'exact_official' : 'partial_official',
       status: hasDecision ? 'succeeded' : 'partial',
       sourceClass: sourceClassForCapability(capability),
-      reproducedFields: reproducedFieldsFor(selectedScore, thresholds),
+      reproducedFields: reproducedFieldsFor(selectedScore, thresholds, program),
       normalizedPayload: {
         pairId: program.pairId,
         programId: program.id,
@@ -91,31 +91,49 @@ export function parseTauProgramThresholds(
   programExternalId?: string,
 ): {
   acceptanceThreshold?: number;
-  rejectionThreshold?: number;
+  rejectionThreshold?: number | null;
 } {
   const thresholdObject = findThresholdObject(parseGraphqlBody(value), programExternalId);
 
-  return thresholdsFromRecord(thresholdObject);
+  return thresholdsFromRecord(thresholdObject, { externalId: programExternalId });
 }
 
-function thresholdsFromRecord(thresholdObject: Record<string, unknown>): {
+function thresholdsFromRecord(
+  thresholdObject: Record<string, unknown>,
+  program?: Pick<AdmissionsProgramInput, 'externalId' | 'staticThresholds'>,
+): {
   acceptanceThreshold?: number;
-  rejectionThreshold?: number;
+  rejectionThreshold?: number | null;
 } {
-  return {
-    acceptanceThreshold: parseOfficialNumeric(
+  const acceptanceThreshold =
+    parseOfficialNumeric(
       thresholdObject.field_this_year_receipt_threshol ??
         thresholdObject.receipt_threshol ??
         thresholdObject.acceptanceThreshold ??
         thresholdObject.acceptance_cutoff,
-    ),
-    rejectionThreshold: parseOfficialNumeric(
+    ) ??
+    program?.staticThresholds?.acceptance ??
+    (program?.externalId === '011167010000'
+      ? parsePreliminaryMedicineThreshold(thresholdObject.field_registration_comments)
+      : undefined);
+  const rejectionThreshold =
+    parseOfficialNumeric(
       thresholdObject.field_this_year_rejection_thresh ??
         thresholdObject.rejection_thresh ??
         thresholdObject.rejectionThreshold ??
         thresholdObject.rejection_cutoff,
-    ),
-  };
+    ) ?? program?.staticThresholds?.rejection;
+
+  return { acceptanceThreshold, rejectionThreshold };
+}
+
+function parsePreliminaryMedicineThreshold(value: unknown): number | undefined {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const match = value.match(/ציון\s+התאמה\s+רפואה\s+ראשוני\s*-\s*(\d+(?:\.\d+)?)/);
+  return match ? parseOfficialNumeric(match[1]) : undefined;
 }
 
 function buildLastScoreRequest(context: AdmissionsAdapterContext) {
@@ -144,7 +162,7 @@ function buildProgramThresholdRequest(program: AdmissionsProgramInput) {
         langcode: 'he',
       },
       query:
-        'query getProgramByIdAndLang($nid: Int!, $langcode: String!) { getProgramByIdAndLang(nid: $nid, langcode: $langcode) { nid title receipt_threshol rejection_thresh field_plain_id_programs field_faculty_mamta } }',
+        'query getProgramByIdAndLang($nid: Int!, $langcode: String!) { getProgramByIdAndLang(nid: $nid, langcode: $langcode) { nid title receipt_threshol rejection_thresh field_registration_comments field_plain_id_programs field_faculty_mamta } }',
     };
   }
 
@@ -157,7 +175,7 @@ function buildProgramThresholdRequest(program: AdmissionsProgramInput) {
       },
     },
     query:
-      'query getPrograms($search: JSON) { getPrograms(search: $search) { total results { nid title receipt_threshol rejection_thresh field_plain_id_programs field_faculty_mamta } } }',
+      'query getPrograms($search: JSON) { getPrograms(search: $search) { total results { nid title receipt_threshol rejection_thresh field_registration_comments field_plain_id_programs field_faculty_mamta } } }',
   };
 }
 
@@ -260,32 +278,42 @@ function matchesProgram(record: Record<string, unknown>, programExternalId: stri
 function reproducedFieldsFor(
   selectedScore: number | undefined,
   thresholds: ReturnType<typeof parseTauProgramThresholds>,
+  program?: Pick<AdmissionsProgramInput, 'decisionMode'>,
 ) {
   return [
     selectedScore !== undefined ? 'selectedScore' : undefined,
     thresholds.acceptanceThreshold !== undefined ? 'acceptanceThreshold' : undefined,
-    thresholds.rejectionThreshold !== undefined ? 'rejectionThreshold' : undefined,
-    tauOfficialVerdict(selectedScore, thresholds) !== undefined ? 'officialVerdict' : undefined,
+    typeof thresholds.rejectionThreshold === 'number' ? 'rejectionThreshold' : undefined,
+    tauOfficialVerdict(selectedScore, thresholds, program) !== undefined
+      ? 'officialVerdict'
+      : undefined,
   ].filter(Boolean) as string[];
 }
 
 function tauOfficialVerdict(
   selectedScore: number | undefined,
   thresholds: ReturnType<typeof parseTauProgramThresholds>,
-): 'accepted' | 'below' | 'pending' | undefined {
+  program?: Pick<AdmissionsProgramInput, 'decisionMode'>,
+): 'accepted' | 'below' | 'eligible_to_apply' | 'pending' | undefined {
   if (selectedScore === undefined || thresholds.acceptanceThreshold === undefined) {
     return undefined;
   }
   if (selectedScore >= thresholds.acceptanceThreshold) {
-    return 'accepted';
+    return program?.decisionMode === 'eligible_to_apply' ? 'eligible_to_apply' : 'accepted';
   }
   if (
-    thresholds.rejectionThreshold !== undefined &&
+    typeof thresholds.rejectionThreshold === 'number' &&
     selectedScore <= thresholds.rejectionThreshold
   ) {
     return 'below';
   }
-  return thresholds.rejectionThreshold === undefined ? undefined : 'pending';
+  if (
+    program?.decisionMode === 'eligible_to_apply' &&
+    typeof thresholds.rejectionThreshold !== 'number'
+  ) {
+    return 'below';
+  }
+  return typeof thresholds.rejectionThreshold === 'number' ? 'pending' : undefined;
 }
 
 function readStringArray(value: unknown): string[] {

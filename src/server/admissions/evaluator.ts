@@ -273,6 +273,83 @@ async function evaluateExactResult(args: {
       });
     }
 
+    if (
+      exactTarget.targetId === 'tau-medicine-live' ||
+      exactTarget.targetId === 'tau-medicine-legacy-live'
+    ) {
+      const psychometricEnglish = input.extraInputs?.psychometricEnglish;
+      const mathUnits = input.extraInputs?.mathUnits;
+      const mathGrade = input.extraInputs?.mathGrade;
+      if (
+        typeof psychometricEnglish !== 'number' ||
+        typeof mathUnits !== 'number' ||
+        typeof mathGrade !== 'number'
+      ) {
+        return requiredInputsResult(institution, [
+          ...(typeof psychometricEnglish !== 'number' ? ['psychometric_english' as const] : []),
+          ...(typeof mathUnits !== 'number' ? ['math_units' as const] : []),
+          ...(typeof mathGrade !== 'number' ? ['math_grade' as const] : []),
+        ]);
+      }
+      if (input.psychometric < 700 || psychometricEnglish < 120 || mathUnits < 4) {
+        return exactGateFailureResult({
+          institution,
+          unmetRequirements: [
+            ...(input.psychometric < 700 ? ['פסיכומטרי 700 ומעלה'] : []),
+            ...(psychometricEnglish < 120 ? ['אנגלית בפסיכומטרי ברמת 120 ומעלה'] : []),
+            ...(mathUnits < 4 ? ['מתמטיקה ברמת 4 יחידות ומעלה'] : []),
+          ],
+          requirementsUrl: 'https://go.tau.ac.il/he/med/ba/med-doc?v=important-info',
+        });
+      }
+
+      const proof = await runTauAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: {
+          bagrutAverage: input.bagrut,
+          psychometric: input.psychometric,
+        },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+        positiveDecision: 'eligible_to_apply',
+      });
+    }
+
+    if (exactTarget.targetId === 'tau-physiotherapy-live') {
+      const psychometricEnglish = input.extraInputs?.psychometricEnglish;
+      if (typeof psychometricEnglish !== 'number') {
+        return requiredInputsResult(institution, ['psychometric_english']);
+      }
+      if (psychometricEnglish < 100) {
+        return exactGateFailureResult({
+          institution,
+          unmetRequirements: ['אנגלית בפסיכומטרי ברמת 100 ומעלה'],
+          requirementsUrl: 'https://go.tau.ac.il/he/med/ba/phys?v=important-info',
+        });
+      }
+
+      const proof = await runTauAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: {
+          bagrutAverage: input.bagrut,
+          psychometric: input.psychometric,
+        },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+        positiveDecision: 'eligible_to_apply',
+      });
+    }
+
     if (exactTarget.targetId === 'tau-nursing-live') {
       const gateResult = evaluateTauNursingGates(input);
       if (gateResult.state === 'needs_input') {

@@ -34,12 +34,12 @@ describe('formula-backed verification ledger', () => {
 
     expect(completion).toMatchObject({
       total: 135,
-      exact: 126,
-      withheld: 9,
+      exact: 129,
+      withheld: 6,
       isComplete: false,
     });
     expect(completion.totalsByInstitution).toEqual({
-      tau: { total: 35, exact: 30, withheld: 5, stale: 0, blocked: 0 },
+      tau: { total: 35, exact: 33, withheld: 2, stale: 0, blocked: 0 },
       huji: { total: 29, exact: 28, withheld: 1, stale: 0, blocked: 0 },
       bgu: { total: 29, exact: 28, withheld: 1, stale: 0, blocked: 0 },
       haifa: { total: 27, exact: 27, withheld: 0, stale: 0, blocked: 0 },
@@ -63,8 +63,10 @@ describe('formula-backed verification ledger', () => {
       'ee__tau',
       'law__tau',
       'me__tau',
+      'medicine__tau',
       'nursing__tau',
       'occupational_therapy__tau',
+      'physiotherapy__tau',
       'political_science__tau',
       'psychology__tau',
       'social_work__tau',
@@ -78,6 +80,7 @@ describe('formula-backed verification ledger', () => {
       'tau_industrial__tau',
       'tau_law__tau',
       'tau_me__tau',
+      'tau_medicine__tau',
       'tau_occupational_therapy__tau',
       'tau_psychology__tau',
       'tau_socialwork__tau',
@@ -222,11 +225,8 @@ describe('formula-backed verification ledger', () => {
     );
 
     expect(withheld.map((entry) => entry.pairId)).toEqual([
-      'medicine__tau',
       'nutrition__tau',
-      'physiotherapy__tau',
       'tau_infosystems__tau',
-      'tau_medicine__tau',
       'physiotherapy__huji',
       'nutrition__bgu',
       'architecture__technion',

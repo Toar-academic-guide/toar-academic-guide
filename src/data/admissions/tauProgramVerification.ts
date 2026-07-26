@@ -264,6 +264,208 @@ export const TAU_NURSING_CONTRACT: AdmissionsProgramVerificationContract = {
   },
 };
 
+const TAU_MEDICINE_SOURCE_FINGERPRINT =
+  'sha256:e7fd95005004c24802c77d50a8c5d422d4dcd65fdfadf055178181025a548cbd';
+const TAU_MEDICINE_CAPTURED_AT = '2026-07-26T07:20:00.000Z';
+
+export const TAU_MEDICINE_FIXTURES: AdmissionsVerificationFixture[] = [
+  {
+    id: 'medicine__tau:eligible-to-apply:2026-2027',
+    pairId: 'medicine__tau',
+    admissionCycle: '2026-2027',
+    verdict: 'eligible_to_apply',
+    input: {
+      psychometric: 760,
+      bagrut: 115,
+      psychometricEnglish: 130,
+      mathUnits: 4,
+      mathGrade: 70,
+    },
+    expected: {
+      score: 745.43,
+      verdict: 'eligible_to_apply',
+    },
+    sourceFingerprint: TAU_MEDICINE_SOURCE_FINGERPRINT,
+    capturedAt: TAU_MEDICINE_CAPTURED_AT,
+  },
+  {
+    id: 'medicine__tau:below:2026-2027',
+    pairId: 'medicine__tau',
+    admissionCycle: '2026-2027',
+    verdict: 'below',
+    input: {
+      psychometric: 680,
+      bagrut: 100,
+      psychometricEnglish: 130,
+      mathUnits: 4,
+      mathGrade: 70,
+    },
+    expected: {
+      score: 628.79,
+      verdict: 'below',
+    },
+    sourceFingerprint: TAU_MEDICINE_SOURCE_FINGERPRINT,
+    capturedAt: TAU_MEDICINE_CAPTURED_AT,
+  },
+];
+
+export const TAU_MEDICINE_CONTRACT: AdmissionsProgramVerificationContract = {
+  pairId: 'medicine__tau',
+  programId: 'medicine',
+  institutionId: 'tau',
+  officialProgramId: '011167010000',
+  admissionCycle: '2026-2027',
+  source: {
+    targetId: 'tau-medicine-live',
+    url: 'https://go.tau.ac.il/graphql',
+  },
+  calculation: {
+    adapterId: 'tau',
+    mode: 'official_replay',
+    formulaFamily: 'tau_hatama_medical_preliminary',
+    requiredInputs: ['psychometric_english', 'math_units', 'math_grade'],
+    cutoff: {
+      acceptance: 726.44,
+      rejection: null,
+    },
+    gates: [
+      {
+        id: 'tau-medicine:psychometric-minimum',
+        kind: 'minimum',
+        field: 'psychometric',
+        minimum: 700,
+        description: 'Psychometric score must be at least 700 to apply to TAU medicine.',
+      },
+      {
+        id: 'tau-medicine:english-minimum',
+        kind: 'language',
+        field: 'psychometricEnglish',
+        minimum: 120,
+        description: 'TAU medicine requires English level 120 or higher.',
+      },
+      {
+        id: 'tau-medicine:mathematics-minimum',
+        kind: 'subject',
+        field: 'mathUnits',
+        minimum: 4,
+        description: 'TAU medicine requires passing mathematics at four units or higher.',
+      },
+      {
+        id: 'tau-medicine:non-cognitive-stage',
+        kind: 'manual',
+        field: 'nonCognitiveAssessment',
+        description:
+          'The numeric threshold only qualifies an applicant for the non-cognitive selection stage; it is not final admission.',
+      },
+    ],
+  },
+  fixtureIds: TAU_MEDICINE_FIXTURES.map((fixture) => fixture.id),
+  fixtureSetFingerprint: fingerprintVerificationFixtures(TAU_MEDICINE_FIXTURES),
+  sourceFingerprint: TAU_MEDICINE_SOURCE_FINGERPRINT,
+  proof: {
+    state: 'verified',
+    comparedScore: true,
+    comparedVerdict: true,
+    liveComparedAt: TAU_MEDICINE_CAPTURED_AT,
+    sourceFingerprint: TAU_MEDICINE_SOURCE_FINGERPRINT,
+  },
+};
+
+export const TAU_LEGACY_MEDICINE_FIXTURES: AdmissionsVerificationFixture[] =
+  TAU_MEDICINE_FIXTURES.map((fixture) => ({
+    ...fixture,
+    id: fixture.id.replace('medicine__tau', 'tau_medicine__tau'),
+    pairId: 'tau_medicine__tau',
+  }));
+
+export const TAU_LEGACY_MEDICINE_CONTRACT: AdmissionsProgramVerificationContract = {
+  ...TAU_MEDICINE_CONTRACT,
+  pairId: 'tau_medicine__tau',
+  programId: 'tau_medicine',
+  source: { ...TAU_MEDICINE_CONTRACT.source, targetId: 'tau-medicine-legacy-live' },
+  fixtureIds: TAU_LEGACY_MEDICINE_FIXTURES.map((fixture) => fixture.id),
+  fixtureSetFingerprint: fingerprintVerificationFixtures(TAU_LEGACY_MEDICINE_FIXTURES),
+};
+
+const TAU_PHYSIOTHERAPY_SOURCE_FINGERPRINT =
+  'sha256:5f289a01703300c51a4d38eb8267186b72571895f8d4584933154a2adda4bb83';
+const TAU_PHYSIOTHERAPY_CAPTURED_AT = '2026-07-26T07:35:00.000Z';
+export const TAU_PHYSIOTHERAPY_REQUIREMENTS_URL =
+  'https://go.tau.ac.il/he/med/ba/phys?v=important-info';
+
+export const TAU_PHYSIOTHERAPY_FIXTURES: AdmissionsVerificationFixture[] = [
+  {
+    id: 'physiotherapy__tau:eligible-to-apply:2026-2027',
+    pairId: 'physiotherapy__tau',
+    admissionCycle: '2026-2027',
+    verdict: 'eligible_to_apply',
+    input: {
+      psychometric: 700,
+      bagrut: 110,
+      psychometricEnglish: 130,
+    },
+    expected: { score: 689.22, verdict: 'eligible_to_apply' },
+    sourceFingerprint: TAU_PHYSIOTHERAPY_SOURCE_FINGERPRINT,
+    capturedAt: TAU_PHYSIOTHERAPY_CAPTURED_AT,
+  },
+  {
+    id: 'physiotherapy__tau:below:2026-2027',
+    pairId: 'physiotherapy__tau',
+    admissionCycle: '2026-2027',
+    verdict: 'below',
+    input: {
+      psychometric: 700,
+      bagrut: 100,
+      psychometricEnglish: 130,
+    },
+    expected: { score: 639.19, verdict: 'below' },
+    sourceFingerprint: TAU_PHYSIOTHERAPY_SOURCE_FINGERPRINT,
+    capturedAt: TAU_PHYSIOTHERAPY_CAPTURED_AT,
+  },
+];
+
+export const TAU_PHYSIOTHERAPY_CONTRACT: AdmissionsProgramVerificationContract = {
+  pairId: 'physiotherapy__tau',
+  programId: 'physiotherapy',
+  institutionId: 'tau',
+  officialProgramId: '016411010000',
+  admissionCycle: '2026-2027',
+  source: { targetId: 'tau-physiotherapy-live', url: 'https://go.tau.ac.il/graphql' },
+  calculation: {
+    adapterId: 'tau',
+    mode: 'official_replay',
+    formulaFamily: 'tau_hatama_with_manual_interview',
+    requiredInputs: ['psychometric_english'],
+    cutoff: { acceptance: 664.92, rejection: 640 },
+    gates: [
+      {
+        id: 'tau-physiotherapy:english-minimum',
+        kind: 'language',
+        field: 'psychometricEnglish',
+        minimum: 100,
+        description: 'TAU requires at least English level Advanced A.',
+      },
+      {
+        id: 'tau-physiotherapy:personal-interview',
+        kind: 'manual',
+        field: 'interview',
+        description:
+          'The published score is a route to the personal interview; final admission remains based on the interview and suitability ranking.',
+      },
+    ],
+  },
+  fixtureIds: TAU_PHYSIOTHERAPY_FIXTURES.map((fixture) => fixture.id),
+  fixtureSetFingerprint: fingerprintVerificationFixtures(TAU_PHYSIOTHERAPY_FIXTURES),
+  sourceFingerprint: TAU_PHYSIOTHERAPY_SOURCE_FINGERPRINT,
+  proof: {
+    state: 'verified',
+    comparedScore: true,
+    comparedVerdict: true,
+    liveComparedAt: TAU_PHYSIOTHERAPY_CAPTURED_AT,
+    sourceFingerprint: TAU_PHYSIOTHERAPY_SOURCE_FINGERPRINT,
+  },
+};
+
 const TAU_PSYCHOLOGY_SOURCE_FINGERPRINT =
   'sha256:22e53cbeca846bffb02a0993384180ca8c47a4b5035a3d82304c7a449a7779ca';
 const TAU_PSYCHOLOGY_CAPTURED_AT = '2026-07-25T20:47:06.248Z';
@@ -1534,6 +1736,27 @@ export const TAU_PROGRAM_VERIFICATION_METADATA: Record<string, TauProgramVerific
     requirementsUrl: TAU_NURSING_REQUIREMENTS_URL,
     ledgerReason:
       'Verified as eligibility for the mandatory suitability assessment; passing the numeric threshold is not final admission.',
+  },
+  [TAU_MEDICINE_CONTRACT.pairId]: {
+    contract: TAU_MEDICINE_CONTRACT,
+    fixtures: TAU_MEDICINE_FIXTURES,
+    requirementsUrl: 'https://go.tau.ac.il/he/med/ba/med-doc?v=important-info',
+    ledgerReason:
+      'Verified against the current TAU medicine programme mapping, preliminary medical suitability score, psychometric/English/mathematics gates, eligible/below fixtures, and live score-and-verdict replay. The non-cognitive selection stage remains a manual gate and this is not final admission.',
+  },
+  [TAU_LEGACY_MEDICINE_CONTRACT.pairId]: {
+    contract: TAU_LEGACY_MEDICINE_CONTRACT,
+    fixtures: TAU_LEGACY_MEDICINE_FIXTURES,
+    requirementsUrl: 'https://go.tau.ac.il/he/med/ba/med-doc?v=important-info',
+    ledgerReason:
+      'Verified the legacy TAU medicine alias against the same current programme node, preliminary suitability score, gates, fixtures, and live replay; final non-cognitive selection remains manual.',
+  },
+  [TAU_PHYSIOTHERAPY_CONTRACT.pairId]: {
+    contract: TAU_PHYSIOTHERAPY_CONTRACT,
+    fixtures: TAU_PHYSIOTHERAPY_FIXTURES,
+    requirementsUrl: TAU_PHYSIOTHERAPY_REQUIREMENTS_URL,
+    ledgerReason:
+      'Verified against the current TAU physiotherapy programme mapping, published score thresholds, English gate, eligible/below fixtures, and live score replay. The personal interview remains a manual gate and the numeric result is eligibility for that stage, not final admission.',
   },
   [TAU_PSYCHOLOGY_CONTRACT.pairId]: {
     contract: TAU_PSYCHOLOGY_CONTRACT,
