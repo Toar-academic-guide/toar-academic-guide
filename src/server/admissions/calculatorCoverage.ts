@@ -203,6 +203,18 @@ export const calculatorCoverageInventory: CalculatorCoverageEntry[] = [
     hasSourceTarget: true,
     nextAction: 'Reverse-engineer the secondary calculator link or represent as requirements-only',
   },
+  {
+    institutionId: 'colman',
+    institutionName: 'College of Management Academic Studies',
+    mondayItemId: '12230979966',
+    officialUrl: 'https://www.colman.ac.il/academics/ba/computer-science/',
+    evidenceKind: 'exact_official',
+    intendedCapability: 'exact',
+    supportLevel: 'exact',
+    hasCalculatorConfig: false,
+    hasSourceTarget: true,
+    nextAction: 'Keep the automatic Bagrut route and internal assessment gate under review.',
+  },
 ];
 
 const FORMULA_BACKED_PAIR_INVENTORY = buildFormulaBackedPairInventory(allPrograms);
@@ -242,6 +254,7 @@ export function reconcileCalculatorCoverage(): CoverageReconciliationResult {
     .filter(
       (entry) =>
         !entry.hasCalculatorConfig &&
+        entry.supportLevel !== 'exact' &&
         entry.intendedCapability !== 'manual_gate' &&
         entry.intendedCapability !== 'requirements_only' &&
         entry.intendedCapability !== 'open_admission' &&

@@ -22,6 +22,7 @@ import { runTauAdmissionsProof } from '@/server/ingestion/adapters/tauAdmissions
 import { runHujiAdmissionsProof } from '@/server/ingestion/adapters/hujiAdmissions';
 import { runTechnionAdmissionsProof } from '@/server/ingestion/adapters/technionAdmissions';
 import { runBguAdmissionsProof } from '@/server/ingestion/adapters/bguAdmissions';
+import { runManualRequirementsAdmissionsProof } from '@/server/ingestion/adapters/manualRequirementsAdmissions';
 import {
   getMondayAdmissionEvidenceByCatalogueInstitutionId,
   type MondayAdmissionEvidenceRecord,
@@ -62,6 +63,9 @@ export async function evaluateAdmissionsForProgram(args: {
       if (key === 'haifa_cs__haifa') return ['haifa-cs-live'];
       if (key === 'tau_datascience__tau') return ['tau-digital-sciences-live'];
       if (key === 'nursing__tau') return ['tau-nursing-live'];
+      if (key === 'tau_infosystems__tau') return ['tau-information-systems-live'];
+      if (key === 'architecture__technion') return ['technion-architecture-live'];
+      if (key === 'colmgmt_cs__colman') return ['colman-computer-science-live'];
       if (key === 'tau_psychology__tau') return ['tau-psychology-live'];
       if (key === 'law__tau') return ['tau-law-live'];
       if (key === 'tau_law__tau') return ['tau-law-legacy-live'];
@@ -185,6 +189,29 @@ async function evaluateExactResult(args: {
   const timedFetcher = withTimeout(fetcher ?? fetch, OFFICIAL_SOURCE_TIMEOUT_MS);
 
   try {
+    if (exactTarget.sourceTarget.adapterId === 'manual_requirements') {
+      const proof = await runManualRequirementsAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: {
+          bagrutAverage: input.bagrut,
+          psychometric: input.psychometric,
+          mathUnits: input.extraInputs?.mathUnits,
+          mathGrade: input.extraInputs?.mathGrade,
+          englishUnits: input.extraInputs?.englishUnits,
+          englishGrade: input.extraInputs?.englishGrade,
+          bagrutSubjectRecord: input.extraInputs?.bagrutSubjectRecord,
+        },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של מוסד הלימודים',
+        positiveDecision: 'eligible_to_apply',
+      });
+    }
+
     if (exactTarget.sourceTarget.adapterId === 'haifa') {
       const proof = await runHaifaAdmissionsProof({
         fetcher: timedFetcher,

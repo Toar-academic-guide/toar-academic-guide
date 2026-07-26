@@ -16,8 +16,8 @@ describe('calculatorCoverage', () => {
     }
   });
 
-  it('covers all 13 Monday calculator-related institutions', () => {
-    expect(calculatorCoverageInventory).toHaveLength(13);
+  it('covers all 14 Monday calculator-related institutions', () => {
+    expect(calculatorCoverageInventory).toHaveLength(14);
   });
 
   it('reconciles UNIVERSITIES entries against the coverage registry', () => {
@@ -61,8 +61,8 @@ describe('calculatorCoverage', () => {
   it('reports pair-level formula coverage without institution-wide exact claims', () => {
     expect(formulaBackedPairCoverage).toMatchObject({
       total: 135,
-      exact: 129,
-      withheld: 6,
+      exact: 132,
+      withheld: 3,
       isComplete: false,
     });
 

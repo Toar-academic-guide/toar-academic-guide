@@ -690,7 +690,7 @@ describe('evaluateAdmissionsForProgram', () => {
     );
   });
 
-  it('withholds Colman until its automatic-admission paths have pair proof', async () => {
+  it('returns Colman automatic-route eligibility from its reviewed requirements proof', async () => {
     const colmanCs: CatalogueProgram = {
       id: 'colmgmt_cs',
       name: 'מדעי המחשב',
@@ -720,12 +720,20 @@ describe('evaluateAdmissionsForProgram', () => {
         degreeId: 'colmgmt_cs',
         psychometric: 580,
         bagrut: 92,
+        extraInputs: { mathUnits: 5, mathGrade: 75 },
       },
       program: colmanCs,
       institutions: [...institutions, colmanInstitution],
     });
 
-    expectFormulaVerificationUnavailable(report, 'colman');
+    expect(report.results).toContainEqual(
+      expect.objectContaining({
+        linkedInstitutionId: 'colman',
+        capability: 'exact',
+        kind: 'manual_gate',
+        decision: 'eligible_to_apply',
+      }),
+    );
   });
 
   it('surfaces Ono law as eligible_to_apply with current official requirements after verification', async () => {

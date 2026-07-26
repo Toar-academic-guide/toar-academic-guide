@@ -30,6 +30,7 @@ import { getProgramVerificationArtifact } from '@/data/admissions/tauProgramVeri
 import { HUJI_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/hujiProgramVerification';
 import { BGU_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/bguProgramVerification';
 import { TECHNION_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/technionProgramVerification';
+import { MANUAL_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/manualProgramVerification';
 import {
   getHaifaProgramConfig,
   HAIFA_PROGRAM_VERIFICATION_ARTIFACTS,
@@ -123,6 +124,29 @@ const TECHNION_EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = Ob
   ]),
 );
 
+const MANUAL_EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = Object.fromEntries(
+  Object.values(MANUAL_PROGRAM_VERIFICATION_ARTIFACTS).map((artifact) => [
+    artifact.contract.pairId,
+    {
+      targetId: artifact.contract.source.targetId,
+      sourceTarget: admissionsSourceTargets.find(
+        (entry) => entry.id === artifact.contract.source.targetId,
+      )!,
+      program: {
+        targetId: artifact.contract.source.targetId,
+        pairId: artifact.contract.pairId,
+        id: artifact.contract.programId,
+        name: artifact.contract.programId,
+        manualGateProfile:
+          artifact.contract.pairId === 'architecture__technion'
+            ? 'technion_architecture'
+            : 'colman_computer_science',
+      },
+      requiredInputs: artifact.contract.calculation.requiredInputs,
+    } satisfies ExactCapabilityTarget,
+  ]),
+);
+
 const HAIFA_EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = Object.fromEntries(
   Object.values(HAIFA_PROGRAM_VERIFICATION_ARTIFACTS).map((artifact) => [
     artifact.contract.pairId,
@@ -148,6 +172,7 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
   ...HUJI_EXACT_PROGRAM_TARGETS,
   ...BGU_EXACT_PROGRAM_TARGETS,
   ...TECHNION_EXACT_PROGRAM_TARGETS,
+  ...MANUAL_EXACT_PROGRAM_TARGETS,
   ...HAIFA_EXACT_PROGRAM_TARGETS,
   tau_datascience__tau: {
     targetId: 'tau-digital-sciences-live',
@@ -228,6 +253,22 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
       staticThresholds: { acceptance: 664.92, rejection: 640 },
     },
     requiredInputs: ['psychometric_english'],
+  },
+  tau_infosystems__tau: {
+    targetId: 'tau-information-systems-live',
+    sourceTarget: admissionsSourceTargets.find(
+      (entry) => entry.id === 'tau-information-systems-live',
+    )!,
+    program: {
+      targetId: 'tau-information-systems-live',
+      pairId: 'tau_infosystems__tau',
+      id: 'tau_infosystems',
+      name: 'Management and Information Systems',
+      nodeId: 8267,
+      externalId: '122111050000',
+      scoreField: 'hatama_nihul',
+    },
+    requiredInputs: [],
   },
   tau_psychology__tau: {
     targetId: 'tau-psychology-live',

@@ -14,6 +14,7 @@ import {
 } from '@/data/admissions/hujiProgramVerification';
 import { BGU_PROGRAM_VERIFICATION_METADATA } from '@/data/admissions/bguProgramVerification';
 import { TECHNION_PROGRAM_VERIFICATION_METADATA } from '@/data/admissions/technionProgramVerification';
+import { MANUAL_PROGRAM_VERIFICATION_METADATA } from '@/data/admissions/manualProgramVerification';
 import {
   getHaifaProgramConfig,
   HAIFA_PROGRAM_VERIFICATION_METADATA,
@@ -111,6 +112,52 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     limitations: ['Exact replay is scoped to the official Technion Sekhem calculator and current cutoff table.'],
     nextAction: 'Keep the calculator input mapping, cutoff table, fixtures, and source fingerprint under review.',
   } satisfies AdmissionsSourceTarget)),
+  ...Object.values(MANUAL_PROGRAM_VERIFICATION_METADATA).map((artifact) => {
+    const architecture = artifact.contract.pairId === 'architecture__technion';
+    return {
+      id: artifact.contract.source.targetId,
+      institutionId: architecture ? 'technion' : 'colman',
+      institutionName: architecture ? 'Technion' : 'College of Management Academic Studies',
+      officialUrl: artifact.requirementsUrl,
+      adapterId: 'manual_requirements' as const,
+      expectedCapability: 'decision_capable' as const,
+      proofLevel: 'exact_official' as const,
+      category: 'exact' as const,
+      defaultApplicant: architecture
+        ? {
+            bagrutAverage: 105,
+            psychometric: 700,
+            mathUnits: 5,
+            mathGrade: 80,
+            englishUnits: 5,
+            bagrutSubjectRecord: {
+              schemaVersion: 1,
+              sector: 'jewish',
+              subjects: [
+                { subjectId: 'mathematics', units: 5, grade: 80 },
+                { subjectId: 'english', units: 5, grade: 90 },
+                { subjectId: 'history', units: 2, grade: 88 },
+                { subjectId: 'bible', units: 2, grade: 86 },
+              ],
+            },
+          }
+        : { bagrutAverage: 90, psychometric: 600, mathUnits: 5, mathGrade: 75 },
+      defaultProgram: {
+        targetId: artifact.contract.source.targetId,
+        pairId: artifact.contract.pairId,
+        id: artifact.contract.programId,
+        name: artifact.contract.programId,
+        manualGateProfile: architecture
+          ? ('technion_architecture' as const)
+          : ('colman_computer_science' as const),
+      },
+      reproducedFields: ['applicationEligibility', 'officialVerdict'],
+      limitations: artifact.contract.calculation.gates
+        .filter((gate) => gate.kind === 'manual')
+        .map((gate) => gate.description),
+      nextAction: 'Keep the institution-specific manual gate and requirements page under review.',
+    } satisfies AdmissionsSourceTarget;
+  }),
   ...Object.values(HAIFA_PROGRAM_VERIFICATION_METADATA).map((artifact) => ({
     id: artifact.contract.source.targetId,
     institutionId: 'haifa',
@@ -290,6 +337,31 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
       'The numeric result is eligibility for the personal interview; final admission remains a manual suitability decision.',
     ],
     nextAction: 'Keep the interview and suitability ranking visible as manual gates.',
+  },
+  {
+    id: 'tau-information-systems-live',
+    institutionId: 'tau',
+    institutionName: 'Tel Aviv University',
+    officialUrl: 'https://go.tau.ac.il/graphql',
+    adapterId: 'tau',
+    expectedCapability: 'decision_capable',
+    proofLevel: 'exact_official',
+    category: 'exact',
+    defaultApplicant: { bagrutAverage: 110, psychometric: 700 },
+    defaultProgram: {
+      targetId: 'tau-information-systems-live',
+      pairId: 'tau_infosystems__tau',
+      id: 'tau_infosystems',
+      name: 'Management and Information Systems',
+      nodeId: 8267,
+      externalId: '122111050000',
+      scoreField: 'hatama_nihul',
+    },
+    reproducedFields: ['selectedScore', 'acceptanceThreshold', 'rejectionThreshold', 'officialVerdict'],
+    limitations: [
+      'The current official route is the Management degree and the legacy information-systems label is retained as an explicit alias.',
+    ],
+    nextAction: 'Keep the current Management mapping and alias decision under review.',
   },
   {
     id: 'tau-psychology-live',

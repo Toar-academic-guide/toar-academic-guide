@@ -7,6 +7,7 @@ import { HUJI_PROGRAM_VERIFICATION_ARTIFACTS } from './hujiProgramVerification';
 import { BGU_PROGRAM_VERIFICATION_ARTIFACTS } from './bguProgramVerification';
 import { TECHNION_PROGRAM_VERIFICATION_ARTIFACTS } from './technionProgramVerification';
 import { HAIFA_PROGRAM_VERIFICATION_ARTIFACTS } from './haifaProgramVerification';
+import { MANUAL_PROGRAM_VERIFICATION_ARTIFACTS } from './manualProgramVerification';
 
 const SOURCE_FINGERPRINT =
   'sha256:62a6a2f398b737b2139671f32c48a921083a4966ea43e8135c081870d42e9971';
@@ -463,6 +464,70 @@ export const TAU_PHYSIOTHERAPY_CONTRACT: AdmissionsProgramVerificationContract =
     comparedVerdict: true,
     liveComparedAt: TAU_PHYSIOTHERAPY_CAPTURED_AT,
     sourceFingerprint: TAU_PHYSIOTHERAPY_SOURCE_FINGERPRINT,
+  },
+};
+
+const TAU_INFORMATION_SYSTEMS_SOURCE_FINGERPRINT =
+  'sha256:7d9abc718b0ec303e17e802278649728a7eec5faa3569e3bd4a9510aa6e6c8a3';
+const TAU_INFORMATION_SYSTEMS_CAPTURED_AT = '2026-07-26T08:10:00.000Z';
+export const TAU_INFORMATION_SYSTEMS_REQUIREMENTS_URL =
+  'https://go.tau.ac.il/he/management/ba/management?v=requirements';
+
+export const TAU_INFORMATION_SYSTEMS_FIXTURES: AdmissionsVerificationFixture[] = [
+  {
+    id: 'tau_infosystems__tau:accepted:2026-2027',
+    pairId: 'tau_infosystems__tau',
+    admissionCycle: '2026-2027',
+    verdict: 'accepted',
+    input: { psychometric: 700, bagrut: 110 },
+    expected: { score: 691, verdict: 'accepted' },
+    sourceFingerprint: TAU_INFORMATION_SYSTEMS_SOURCE_FINGERPRINT,
+    capturedAt: TAU_INFORMATION_SYSTEMS_CAPTURED_AT,
+  },
+  {
+    id: 'tau_infosystems__tau:below:2026-2027',
+    pairId: 'tau_infosystems__tau',
+    admissionCycle: '2026-2027',
+    verdict: 'below',
+    input: { psychometric: 600, bagrut: 100 },
+    expected: { score: 592, verdict: 'below' },
+    sourceFingerprint: TAU_INFORMATION_SYSTEMS_SOURCE_FINGERPRINT,
+    capturedAt: TAU_INFORMATION_SYSTEMS_CAPTURED_AT,
+  },
+];
+
+export const TAU_INFORMATION_SYSTEMS_CONTRACT: AdmissionsProgramVerificationContract = {
+  pairId: 'tau_infosystems__tau',
+  programId: 'tau_infosystems',
+  institutionId: 'tau',
+  officialProgramId: '122111050000',
+  admissionCycle: '2026-2027',
+  source: { targetId: 'tau-information-systems-live', url: 'https://go.tau.ac.il/graphql' },
+  calculation: {
+    adapterId: 'tau',
+    mode: 'official_replay',
+    formulaFamily: 'tau_hatama_management_current_information_systems_route',
+    requiredInputs: [],
+    cutoff: { acceptance: 610, rejection: 609 },
+    gates: [
+      {
+        id: 'tau-information-systems:current-route-alias',
+        kind: 'manual',
+        field: 'currentManagementRoute',
+        description:
+          'The current TAU catalogue publishes this route as the Management degree, which includes information-systems coursework; the legacy catalogue label is retained as an alias.',
+      },
+    ],
+  },
+  fixtureIds: TAU_INFORMATION_SYSTEMS_FIXTURES.map((fixture) => fixture.id),
+  fixtureSetFingerprint: fingerprintVerificationFixtures(TAU_INFORMATION_SYSTEMS_FIXTURES),
+  sourceFingerprint: TAU_INFORMATION_SYSTEMS_SOURCE_FINGERPRINT,
+  proof: {
+    state: 'verified',
+    comparedScore: true,
+    comparedVerdict: true,
+    liveComparedAt: TAU_INFORMATION_SYSTEMS_CAPTURED_AT,
+    sourceFingerprint: TAU_INFORMATION_SYSTEMS_SOURCE_FINGERPRINT,
   },
 };
 
@@ -1758,6 +1823,13 @@ export const TAU_PROGRAM_VERIFICATION_METADATA: Record<string, TauProgramVerific
     ledgerReason:
       'Verified against the current TAU physiotherapy programme mapping, published score thresholds, English gate, eligible/below fixtures, and live score replay. The personal interview remains a manual gate and the numeric result is eligibility for that stage, not final admission.',
   },
+  [TAU_INFORMATION_SYSTEMS_CONTRACT.pairId]: {
+    contract: TAU_INFORMATION_SYSTEMS_CONTRACT,
+    fixtures: TAU_INFORMATION_SYSTEMS_FIXTURES,
+    requirementsUrl: TAU_INFORMATION_SYSTEMS_REQUIREMENTS_URL,
+    ledgerReason:
+      'Verified the legacy TAU information-systems catalogue alias against the current Management programme node, current management score field and thresholds, accepted/below fixtures, and live score-and-verdict replay. The current page describes information-systems coursework within Management rather than a separate degree title.',
+  },
   [TAU_PSYCHOLOGY_CONTRACT.pairId]: {
     contract: TAU_PSYCHOLOGY_CONTRACT,
     fixtures: TAU_PSYCHOLOGY_FIXTURES,
@@ -1977,6 +2049,7 @@ export const PROGRAM_VERIFICATION_ARTIFACTS: Record<string, ProgramVerificationA
       ...Object.entries(BGU_PROGRAM_VERIFICATION_ARTIFACTS),
       ...Object.entries(TECHNION_PROGRAM_VERIFICATION_ARTIFACTS),
       ...Object.entries(HAIFA_PROGRAM_VERIFICATION_ARTIFACTS),
+      ...Object.entries(MANUAL_PROGRAM_VERIFICATION_ARTIFACTS),
     ],
   );
 

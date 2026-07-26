@@ -106,7 +106,7 @@ describe('catalogue admissions evidence coverage', () => {
     );
   });
 
-  it('withholds the formula-backed Colman pair while preserving other requirements-only programs', () => {
+  it('covers the formula-backed Colman pair while preserving other requirements-only programs', () => {
     const entries = reconcileCatalogueAdmissionsEvidence({
       programs: staticPrograms,
       institutions: staticInstitutions,
@@ -117,8 +117,8 @@ describe('catalogue admissions evidence coverage', () => {
         expect.objectContaining({
           programId: 'colmgmt_cs',
           institutionId: 'colman',
-          capability: 'authority_unavailable',
-          status: 'verification_incomplete',
+          capability: 'needs_input',
+          status: 'needs_input',
           trackingSource: 'monday_evidence',
         }),
         expect.objectContaining({

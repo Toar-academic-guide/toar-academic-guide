@@ -162,6 +162,22 @@ function exactAdapterFetcher() {
     )
     .mockResolvedValueOnce(
       jsonResponse({
+        data: { getLastScore: { body: JSON.stringify({ hatama_nihul: 691 }) } },
+      }),
+    )
+    .mockResolvedValueOnce(
+      jsonResponse({
+        data: {
+          getProgramByIdAndLang: {
+            receipt_threshol: [610],
+            rejection_thresh: [609],
+            field_plain_id_programs: ['122111050000'],
+          },
+        },
+      }),
+    )
+    .mockResolvedValueOnce(
+      jsonResponse({
         data: { getLastScore: { body: { hatama: 679 } } },
       }),
     )
@@ -616,8 +632,8 @@ describe('runAdmissionsLiveProof', () => {
     const report = await runAdmissionsLiveProof({ fetcher });
 
     expect(report.summary).toMatchObject({
-      total: 129,
-      exactReproduced: 129,
+      total: 132,
+      exactReproduced: 132,
       partial: 0,
       blocked: 0,
       failed: 0,
@@ -692,6 +708,8 @@ describe('runAdmissionsLiveProof', () => {
       'technion-technion_biomedical-live',
       'technion-technion_civil-live',
       'technion-technion_industrial-live',
+      'technion-architecture-live',
+      'colman-computer-science-live',
       'haifa-accounting-live',
       'haifa-haifa_accounting-live',
       'haifa-biology-live',
@@ -724,6 +742,7 @@ describe('runAdmissionsLiveProof', () => {
       'tau-medicine-live',
       'tau-medicine-legacy-live',
       'tau-physiotherapy-live',
+      'tau-information-systems-live',
       'tau-psychology-live',
       'tau-social-work-live',
       'tau-social-work-legacy-live',
@@ -1326,8 +1345,8 @@ describe('runAdmissionsLiveProof', () => {
     });
 
     expect(report.summary).toMatchObject({
-      total: 140,
-      exactReproduced: 129,
+      total: 143,
+      exactReproduced: 132,
       partial: 8,
       blocked: 2,
     });
@@ -1335,8 +1354,10 @@ describe('runAdmissionsLiveProof', () => {
       ...Array(28).fill('huji'),
       ...Array(28).fill('bgu'),
       ...Array(13).fill('technion'),
+      'technion',
+      'colman',
       ...Array(27).fill('haifa'),
-      ...Array(33).fill('tau'),
+      ...Array(34).fill('tau'),
       'huji',
       'technion',
       'bgu',

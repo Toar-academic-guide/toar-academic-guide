@@ -16,7 +16,8 @@ export type AdmissionsAdapterId =
   | 'tau'
   | 'huji'
   | 'technion'
-  | 'bgu';
+  | 'bgu'
+  | 'manual_requirements';
 
 export interface AdmissionsApplicantInput {
   bagrutAverage: number;
@@ -29,6 +30,11 @@ export interface AdmissionsApplicantInput {
     math: number;
     verbal: number;
   };
+  mathUnits?: number;
+  mathGrade?: number;
+  englishUnits?: number;
+  englishGrade?: number;
+  bagrutSubjectRecord?: import('@/types').BagrutSubjectRecord;
 }
 
 export interface AdmissionsProgramInput {
@@ -47,6 +53,7 @@ export interface AdmissionsProgramInput {
     acceptance: number;
     rejection: number | null;
   };
+  manualGateProfile?: 'technion_architecture' | 'colman_computer_science';
 }
 
 export interface AdmissionsAdapterContext {

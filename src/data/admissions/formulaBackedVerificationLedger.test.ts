@@ -34,17 +34,17 @@ describe('formula-backed verification ledger', () => {
 
     expect(completion).toMatchObject({
       total: 135,
-      exact: 129,
-      withheld: 6,
+      exact: 132,
+      withheld: 3,
       isComplete: false,
     });
     expect(completion.totalsByInstitution).toEqual({
-      tau: { total: 35, exact: 33, withheld: 2, stale: 0, blocked: 0 },
+      tau: { total: 35, exact: 34, withheld: 1, stale: 0, blocked: 0 },
       huji: { total: 29, exact: 28, withheld: 1, stale: 0, blocked: 0 },
       bgu: { total: 29, exact: 28, withheld: 1, stale: 0, blocked: 0 },
       haifa: { total: 27, exact: 27, withheld: 0, stale: 0, blocked: 0 },
-      technion: { total: 14, exact: 13, withheld: 1, stale: 0, blocked: 0 },
-      colman: { total: 1, exact: 0, withheld: 1, stale: 0, blocked: 0 },
+      technion: { total: 14, exact: 14, withheld: 0, stale: 0, blocked: 0 },
+      colman: { total: 1, exact: 1, withheld: 0, stale: 0, blocked: 0 },
     });
     expect(
       FORMULA_BACKED_VERIFICATION_LEDGER.filter((entry) => entry.state === 'exact').map(
@@ -78,6 +78,7 @@ describe('formula-backed verification ledger', () => {
       'tau_economics__tau',
       'tau_ee__tau',
       'tau_industrial__tau',
+      'tau_infosystems__tau',
       'tau_law__tau',
       'tau_me__tau',
       'tau_medicine__tau',
@@ -167,6 +168,7 @@ describe('formula-backed verification ledger', () => {
       'political_science__haifa',
       'psychology__haifa',
       'social_work__haifa',
+      'architecture__technion',
       'cs__technion',
       'datascience__technion',
       'ee__technion',
@@ -180,6 +182,7 @@ describe('formula-backed verification ledger', () => {
       'technion_industrial__technion',
       'technion_me__technion',
       'technion_medicine__technion',
+      'colmgmt_cs__colman',
     ]);
   });
 
@@ -226,11 +229,8 @@ describe('formula-backed verification ledger', () => {
 
     expect(withheld.map((entry) => entry.pairId)).toEqual([
       'nutrition__tau',
-      'tau_infosystems__tau',
       'physiotherapy__huji',
       'nutrition__bgu',
-      'architecture__technion',
-      'colmgmt_cs__colman',
     ]);
     expect(withheld.every((entry) => entry.reason.length > 80)).toBe(true);
     expect(withheld.every((entry) => entry.sourceUrl.startsWith('https://'))).toBe(true);
