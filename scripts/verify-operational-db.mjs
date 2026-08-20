@@ -32,6 +32,7 @@ async function loadSnapshot(sql) {
   const [
     migrationRows,
     roleRows,
+    ownershipRows,
     tableRows,
     columnRows,
     constraintRows,
@@ -52,18 +53,70 @@ async function loadSnapshot(sql) {
     `,
     sql`
       select
-        rolname as name,
-        rolcanlogin as can_login,
-        rolbypassrls as bypass_rls
-      from pg_roles
-      where rolname = any(${[
+        database_role.rolname as name,
+        database_role.rolcanlogin as can_login,
+        database_role.rolbypassrls as bypass_rls,
+        database_role.rolsuper as is_superuser,
+        database_role.rolcreatedb as can_create_databases,
+        database_role.rolcreaterole as can_create_roles,
+        database_role.rolinherit as inherits_privileges,
+        database_role.rolreplication as can_replicate,
+        coalesce(
+          jsonb_agg(parent_role.rolname) filter (where parent_role.rolname is not null),
+          '[]'::jsonb
+        ) as member_of
+      from pg_roles database_role
+      left join pg_auth_members membership on membership.member = database_role.oid
+      left join pg_roles parent_role on parent_role.oid = membership.roleid
+      where database_role.rolname = any(${[
         'anon',
         'authenticated',
         'app_runtime',
         'ops_readonly',
         'admissions_automation',
       ]})
-      order by rolname
+      group by
+        database_role.rolname,
+        database_role.rolcanlogin,
+        database_role.rolbypassrls,
+        database_role.rolsuper,
+        database_role.rolcreatedb,
+        database_role.rolcreaterole,
+        database_role.rolinherit,
+        database_role.rolreplication
+      order by database_role.rolname
+    `,
+    sql`
+      select object_name
+      from (
+        select format('relation:%I.%I', namespace.nspname, relation.relname) as object_name
+        from pg_class relation
+        join pg_namespace namespace on namespace.oid = relation.relnamespace
+        join pg_roles owner_role on owner_role.oid = relation.relowner
+        where namespace.nspname = 'public'
+          and owner_role.rolname = 'admissions_automation'
+        union all
+        select format('routine:%I.%I', namespace.nspname, routine.proname) as object_name
+        from pg_proc routine
+        join pg_namespace namespace on namespace.oid = routine.pronamespace
+        join pg_roles owner_role on owner_role.oid = routine.proowner
+        where namespace.nspname = 'public'
+          and owner_role.rolname = 'admissions_automation'
+        union all
+        select format('type:%I.%I', namespace.nspname, type.typname) as object_name
+        from pg_type type
+        join pg_namespace namespace on namespace.oid = type.typnamespace
+        join pg_roles owner_role on owner_role.oid = type.typowner
+        where namespace.nspname = 'public'
+          and owner_role.rolname = 'admissions_automation'
+        union all
+        select format('schema:%I', namespace.nspname) as object_name
+        from pg_namespace namespace
+        join pg_roles owner_role on owner_role.oid = namespace.nspowner
+        where namespace.nspname = 'public'
+          and owner_role.rolname = 'admissions_automation'
+      ) owned
+      order by object_name
     `,
     sql`
       select c.relname as table_name, c.relrowsecurity as row_level_security
@@ -213,6 +266,13 @@ async function loadSnapshot(sql) {
       name: row.name,
       canLogin: row.can_login,
       bypassRls: row.bypass_rls,
+      isSuperuser: row.is_superuser,
+      canCreateDatabases: row.can_create_databases,
+      canCreateRoles: row.can_create_roles,
+      inheritsPrivileges: row.inherits_privileges,
+      canReplicate: row.can_replicate,
+      memberOf: row.member_of,
+      ownedPublicObjects: ownershipRows.map((ownership) => ownership.object_name),
     })),
     tables,
     enums,

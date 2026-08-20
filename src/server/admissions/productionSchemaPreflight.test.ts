@@ -1,3 +1,6 @@
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -19,6 +22,18 @@ describe('production admissions schema preflight', () => {
       pendingMigrations: [],
       issues: [],
     });
+  });
+
+  it('records the fingerprint of the deployable 0021 migration source', () => {
+    const migration = FORWARD_PRODUCTION_MIGRATIONS.find(({ id }) => id === '0021');
+    const statements = readFileSync(migration?.repositoryPath ?? '', 'utf8')
+      .split(/-->\s*statement-breakpoint/)
+      .map((statement) => statement.trim())
+      .filter(Boolean);
+
+    expect(migration?.statementFingerprint).toBe(
+      createHash('md5').update(statements.join('\n')).digest('hex'),
+    );
   });
 
   it('accepts PostgreSQL-truncated constraint identifiers', () => {
@@ -209,6 +224,46 @@ describe('production admissions schema preflight', () => {
         code: 'role_cannot_login',
         object: 'role:ops_readonly',
       }),
+    );
+  });
+
+  it('accepts the original 0021 fingerprint as a reviewed legacy equivalent', () => {
+    const snapshot = makeSnapshot();
+    const latestMigration = snapshot.migrationHistory.at(-1);
+    if (latestMigration) {
+      latestMigration.statementFingerprint = 'ba89e5847ef10fa529545c0120fb0f1f';
+    }
+
+    expect(assessProductionSchema(snapshot)).toMatchObject({
+      status: 'current',
+      issues: [],
+    });
+  });
+
+  it('stops when admissions automation gains elevated attributes or memberships', () => {
+    const snapshot = makeSnapshot();
+    const automation = snapshot.roles.find((role) => role.name === 'admissions_automation');
+    if (automation) {
+      automation.isSuperuser = true;
+      automation.memberOf = ['postgres'];
+      automation.ownedPublicObjects = ['routine:public.unsafe_helper'];
+    }
+
+    expect(assessProductionSchema(snapshot).issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'role_not_least_privileged',
+          object: 'role:admissions_automation',
+        }),
+        expect.objectContaining({
+          code: 'role_has_memberships',
+          object: 'role:admissions_automation',
+        }),
+        expect.objectContaining({
+          code: 'role_owns_public_objects',
+          object: 'role:admissions_automation',
+        }),
+      ]),
     );
   });
 
@@ -429,12 +484,69 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
       })),
     ],
     roles: [
-      { name: 'anon', canLogin: false, bypassRls: false },
-      { name: 'authenticated', canLogin: false, bypassRls: false },
-      { name: 'app_runtime', canLogin: true, bypassRls: false },
-      { name: 'ops_readonly', canLogin: true, bypassRls: false },
+      {
+        name: 'anon',
+        canLogin: false,
+        bypassRls: false,
+        isSuperuser: false,
+        canCreateDatabases: false,
+        canCreateRoles: false,
+        inheritsPrivileges: false,
+        canReplicate: false,
+        memberOf: [],
+        ownedPublicObjects: [],
+      },
+      {
+        name: 'authenticated',
+        canLogin: false,
+        bypassRls: false,
+        isSuperuser: false,
+        canCreateDatabases: false,
+        canCreateRoles: false,
+        inheritsPrivileges: false,
+        canReplicate: false,
+        memberOf: [],
+        ownedPublicObjects: [],
+      },
+      {
+        name: 'app_runtime',
+        canLogin: true,
+        bypassRls: false,
+        isSuperuser: false,
+        canCreateDatabases: false,
+        canCreateRoles: false,
+        inheritsPrivileges: false,
+        canReplicate: false,
+        memberOf: [],
+        ownedPublicObjects: [],
+      },
+      {
+        name: 'ops_readonly',
+        canLogin: true,
+        bypassRls: false,
+        isSuperuser: false,
+        canCreateDatabases: false,
+        canCreateRoles: false,
+        inheritsPrivileges: false,
+        canReplicate: false,
+        memberOf: [],
+        ownedPublicObjects: [],
+      },
       ...(appliedIds.has('0021')
-        ? [{ name: 'admissions_automation', canLogin: true, bypassRls: false }]
+        ? [
+            {
+              name: 'admissions_automation',
+              canLogin: true,
+              bypassRls: false,
+              isSuperuser: false,
+              canCreateDatabases: false,
+              canCreateRoles: false,
+              inheritsPrivileges: false,
+              canReplicate: false,
+              memberOf: [],
+              ownedPublicObjects: [],
+            },
+          ]
         : []),
     ],
     tables,
