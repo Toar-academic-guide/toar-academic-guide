@@ -135,7 +135,7 @@ jobs:
       - name: Create GitHub App token
         id: admissions_app
         if: ${{ !inputs.dry_run }}
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ env.ADMISSIONS_GITHUB_APP_ID }}
           private-key: ${{ env.ADMISSIONS_GITHUB_APP_PRIVATE_KEY }}
