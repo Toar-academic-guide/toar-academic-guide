@@ -6,7 +6,8 @@ import { classifyAdmissionsProofCandidates } from './candidateChanges';
 import { FORMULA_BACKED_VERIFICATION_LEDGER } from '@/data/admissions/formulaBackedVerificationLedger';
 
 const baseline = {
-  version: 1 as const,
+  version: 2 as const,
+  releaseKind: 'canonical_bootstrap' as const,
   changes: [
     {
       target: { institutionId: 'tau', programId: 'tau_datascience', cycle: '2027' },
@@ -20,6 +21,7 @@ const baseline = {
           digest: 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
           excerpt: 'Baseline cutoff 700.',
           url: 'https://go.tau.ac.il/graphql',
+          proofType: 'exact_official' as const,
         },
       ],
     },

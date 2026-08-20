@@ -7,6 +7,7 @@ on:
     paths:
       - src/data/admissions/reviewedManifest.json
       - src/server/admissions/admissionsReleasePublisher.ts
+      - src/server/admissions/publicationArgs.ts
       - scripts/publish-admissions-release.mjs
       - src/db/migrations/**
       - src/db/schema.ts
@@ -14,6 +15,14 @@ on:
     inputs:
       repository_commit:
         description: Optional already-merged main commit to publish
+        required: false
+        type: string
+      proof_failure_stage:
+        description: Operational-proof-only controlled failure stage
+        required: false
+        type: string
+      proof_confirmation_id:
+        description: Required matching operational proof scenario for fault injection
         required: false
         type: string
 
@@ -25,16 +34,14 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  publish-reviewed-release:
-    name: Publish reviewed admissions release
+  release_intent:
+    name: release-intent
     runs-on: ubuntu-latest
-    environment: admissions-publication
+    outputs:
+      repository_commit: ${{ steps.intent.outputs.repository_commit }}
+      release_kind: ${{ steps.intent.outputs.release_kind }}
     env:
-      CI: true
-      OPS_DATABASE_URL: ${{ secrets.OPS_DATABASE_URL }}
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
       REQUESTED_COMMIT: ${{ inputs.repository_commit || github.sha }}
-
     steps:
       - name: Checkout requested main commit
         uses: actions/checkout@v7
@@ -42,12 +49,43 @@ jobs:
           ref: ${{ env.REQUESTED_COMMIT }}
           fetch-depth: 0
 
-      - name: Verify commit is merged into main
+      - name: Classify the reviewed manifest
+        id: intent
         shell: bash
         run: |
+          set -euo pipefail
           commit="$(git rev-parse HEAD)"
           git merge-base --is-ancestor "$commit" origin/main
-          echo "PUBLISHED_COMMIT=$commit" >> "$GITHUB_ENV"
+          release_kind="$(jq -r '.releaseKind // empty' src/data/admissions/reviewedManifest.json)"
+          case "$release_kind" in
+            canonical_bootstrap|canonical_change|operational_proof) ;;
+            *) echo 'Reviewed manifest must declare a supported release kind.'; exit 1 ;;
+          esac
+          echo "repository_commit=$commit" >> "$GITHUB_OUTPUT"
+          echo "release_kind=$release_kind" >> "$GITHUB_OUTPUT"
+
+  publish-reviewed-release:
+    name: Publish reviewed admissions release
+    needs: release_intent
+    if: ${{ github.event_name == 'workflow_dispatch' || needs.release_intent.outputs.release_kind != 'operational_proof' }}
+    runs-on: ubuntu-latest
+    environment: admissions-publication
+    env:
+      CI: true
+      OPS_DATABASE_URL: ${{ secrets.OPS_DATABASE_URL }}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      PUBLISHED_COMMIT: ${{ needs.release_intent.outputs.repository_commit }}
+
+    steps:
+      - name: Checkout classified main commit
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ env.PUBLISHED_COMMIT }}
+          fetch-depth: 0
+
+      - name: Verify commit is merged into main
+        shell: bash
+        run: git merge-base --is-ancestor "$PUBLISHED_COMMIT" origin/main
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -65,7 +103,14 @@ jobs:
         run: npm run db:operational:publication
 
       - name: Publish the reviewed manifest atomically
-        run: >-
-          npm run admissions:publish --
-          --manifest src/data/admissions/reviewedManifest.json
-          --repository-commit "$PUBLISHED_COMMIT"
+        env:
+          PROOF_FAILURE_STAGE: ${{ inputs.proof_failure_stage }}
+          PROOF_CONFIRMATION_ID: ${{ inputs.proof_confirmation_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          args=(--manifest src/data/admissions/reviewedManifest.json --repository-commit "$PUBLISHED_COMMIT")
+          if [ -n "$PROOF_FAILURE_STAGE" ] || [ -n "$PROOF_CONFIRMATION_ID" ]; then
+            args+=(--proof-failure-stage "$PROOF_FAILURE_STAGE" --proof-confirmation-id "$PROOF_CONFIRMATION_ID")
+          fi
+          npm run admissions:publish -- "${args[@]}"

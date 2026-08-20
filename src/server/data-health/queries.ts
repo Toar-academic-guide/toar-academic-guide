@@ -24,6 +24,10 @@ import {
 } from '@/db/schema';
 import type { SourceFreshnessStateRow } from '@/db/types';
 import { buildAdmissionsCapabilityMatrix } from '@/server/admissions/capabilityMatrix';
+import {
+  OPERATIONAL_PROOF_SCENARIOS,
+  type OperationalProofScenario,
+} from '@/server/admissions/operationalProofRun';
 import { evaluateCatalogueReadiness } from '@/server/catalogue/queries';
 import { mondayAdmissionsEvidence } from '@/data/admissions/mondayEvidence';
 import { allPrograms } from '@/data/degrees';
@@ -33,10 +37,7 @@ import {
   formulaPairVerificationCompletion,
   type FormulaPairVerificationCompletion,
 } from '@/data/admissions/formulaBackedVerificationLedger';
-import {
-  parseSourceFreshnessProposedValue,
-  type SourceFreshnessProposedValue,
-} from '@/server/ingestion/reviewTypes';
+import { parseSourceFreshnessProposedValue } from '@/server/ingestion/reviewTypes';
 import type {
   AdmissionsEvaluationCapability,
   AdmissionsRequiredInput,
@@ -124,6 +125,16 @@ export interface AdmissionsPublicationHealth {
   } | null;
   pendingReleaseCount: number;
   failedReleaseCount: number;
+  operationalProof: {
+    publishedReleaseCount: number;
+    pendingReleaseCount: number;
+    failedReleaseCount: number;
+    matrixComplete: boolean;
+    scenarios: Array<{
+      scenario: OperationalProofScenario;
+      status: 'not_started' | 'pending' | 'failed' | 'published';
+    }>;
+  };
 }
 
 export interface MondayEvidenceCoverage {
@@ -235,6 +246,8 @@ export interface DataHealthRows {
     id: string;
     manifestDigest: string;
     repositoryCommit: string;
+    releaseKind: 'canonical_bootstrap' | 'canonical_change' | 'operational_proof';
+    proofScenario: string | null;
     status: 'pending' | 'published' | 'failed';
     publishedAt: Date | null;
   }>;
@@ -662,13 +675,31 @@ function buildAdmissionsPublicationHealth(
   releases: DataHealthRows['admissionReleases'],
 ): AdmissionsPublicationHealth {
   const activeRelease = releases
-    .filter((release) => release.status === 'published' && release.publishedAt !== null)
+    .filter(
+      (release) =>
+        release.status === 'published' &&
+        release.publishedAt !== null &&
+        release.releaseKind !== 'operational_proof',
+    )
     .sort(
       (left, right) =>
         right.publishedAt!.getTime() - left.publishedAt!.getTime() ||
         left.id.localeCompare(right.id),
     )[0];
 
+  const operationalProofReleases = releases.filter(
+    (release) => release.releaseKind === 'operational_proof',
+  );
+  const scenarioStatus = OPERATIONAL_PROOF_SCENARIOS.map((scenario) => {
+    const matching = operationalProofReleases
+      .filter((release) => release.proofScenario === scenario)
+      .sort(
+        (left, right) =>
+          (right.publishedAt?.getTime() ?? 0) - (left.publishedAt?.getTime() ?? 0) ||
+          left.id.localeCompare(right.id),
+      )[0];
+    return { scenario, status: matching?.status ?? 'not_started' };
+  });
   return {
     activeRelease: activeRelease
       ? {
@@ -680,6 +711,18 @@ function buildAdmissionsPublicationHealth(
       : null,
     pendingReleaseCount: releases.filter((release) => release.status === 'pending').length,
     failedReleaseCount: releases.filter((release) => release.status === 'failed').length,
+    operationalProof: {
+      publishedReleaseCount: operationalProofReleases.filter(
+        (release) => release.status === 'published',
+      ).length,
+      pendingReleaseCount: operationalProofReleases.filter(
+        (release) => release.status === 'pending',
+      ).length,
+      failedReleaseCount: operationalProofReleases.filter((release) => release.status === 'failed')
+        .length,
+      matrixComplete: scenarioStatus.every((scenario) => scenario.status === 'published'),
+      scenarios: scenarioStatus,
+    },
   };
 }
 
@@ -950,6 +993,8 @@ async function loadDataHealthRows(): Promise<DataHealthRows> {
       id: admissionReleases.id,
       manifestDigest: admissionReleases.manifestDigest,
       repositoryCommit: admissionReleases.repositoryCommit,
+      releaseKind: admissionReleases.releaseKind,
+      proofScenario: admissionReleases.proofScenario,
       status: admissionReleases.status,
       publishedAt: admissionReleases.publishedAt,
     })

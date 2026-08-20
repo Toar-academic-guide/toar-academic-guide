@@ -43,6 +43,8 @@ export interface AdmissionsReviewCandidate {
 export interface AdmissionsReviewRun {
   runKey: string;
   checkedAt: string;
+  releaseKind: ReviewedAdmissionsManifest['releaseKind'];
+  proofScenario: string | null;
   summary: {
     status: 'no_changes' | 'reviewable';
     candidateCount: number;
@@ -75,9 +77,12 @@ export function buildAdmissionsReviewRun(input: {
   cycle: string;
   baseline: PublishedAdmissionRule[];
   proofs: AdmissionsSourceProof[];
+  releaseKind?: ReviewedAdmissionsManifest['releaseKind'];
+  proofScenario?: string;
   excludedCandidateIds?: string[];
   verificationLedger?: readonly FormulaPairVerificationLedgerEntry[];
 }): AdmissionsReviewRun {
+  const releaseKind = input.releaseKind ?? 'canonical_change';
   const baselineByTarget = new Map(
     input.baseline.map((rule) => [ruleKey(rule.target, rule.ruleKind), rule]),
   );
@@ -119,7 +124,7 @@ export function buildAdmissionsReviewRun(input: {
       excluded.push(exclusion(proof, 'no_reviewed_baseline'));
       continue;
     }
-    if (current.value === cutoff) {
+    if (current.value === cutoff && releaseKind !== 'canonical_bootstrap') {
       excluded.push(exclusion(proof, 'unchanged'));
       continue;
     }
@@ -136,6 +141,7 @@ export function buildAdmissionsReviewRun(input: {
           digest: digest(stableJson(proof.normalizedPayload)),
           excerpt: safeExcerpt(proof, cutoff),
           url: proof.officialUrl,
+          proofType: 'exact_official',
         },
         institutionName: proof.institutionName,
       },
@@ -166,7 +172,9 @@ export function buildAdmissionsReviewRun(input: {
   excluded.sort((left, right) => left.sourceProofId.localeCompare(right.sourceProofId));
 
   const manifest: ReviewedAdmissionsManifest = {
-    version: 1,
+    version: 2,
+    releaseKind,
+    ...(input.proofScenario ? { proofScenario: input.proofScenario } : {}),
     changes: includedCandidates.map((candidate) => ({
       target: candidate.target,
       ruleKind: candidate.ruleKind,
@@ -192,6 +200,8 @@ export function buildAdmissionsReviewRun(input: {
   const run = {
     runKey: input.runKey,
     checkedAt: input.checkedAt.toISOString(),
+    releaseKind,
+    proofScenario: input.proofScenario ?? null,
     summary,
     candidates: includedCandidates,
     excluded,
@@ -237,7 +247,7 @@ export function buildAdmissionsReviewSlackMessage(
   };
 }
 
-function buildAdmissionsReviewMarkdown(run: Omit<AdmissionsReviewRun, 'markdown'>): string {
+export function buildAdmissionsReviewMarkdown(run: Omit<AdmissionsReviewRun, 'markdown'>): string {
   const lines = [
     `# Admissions review run ${run.runKey}`,
     '',

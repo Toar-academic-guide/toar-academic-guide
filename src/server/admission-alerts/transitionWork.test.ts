@@ -23,10 +23,18 @@ describe('admission alert transition work', () => {
     ).resolves.toEqual({ status: 'enqueued', createdWorkCount: 0 });
   });
 
-  it('refuses unpublished and unknown releases', async () => {
+  it('refuses unpublished, proof, and unknown releases', async () => {
     const repository = new MemoryTransitionWorkRepository({
       releases: new Map([
         ['release-pending', { status: 'pending', transitionIds: ['transition-a'] }],
+        [
+          'release-proof',
+          {
+            status: 'published',
+            releaseKind: 'operational_proof',
+            transitionIds: ['transition-b'],
+          },
+        ],
       ]),
     });
 
@@ -35,6 +43,9 @@ describe('admission alert transition work', () => {
     ).resolves.toEqual({ status: 'not_processable' });
     await expect(
       enqueueAdmissionAlertTransitionWork({ releaseId: 'missing-release', repository }),
+    ).resolves.toEqual({ status: 'not_processable' });
+    await expect(
+      enqueueAdmissionAlertTransitionWork({ releaseId: 'release-proof', repository }),
     ).resolves.toEqual({ status: 'not_processable' });
   });
 });
@@ -46,14 +57,21 @@ class MemoryTransitionWorkRepository implements AdmissionAlertTransitionWorkRepo
     private readonly options: {
       releases: Map<
         string,
-        { status: 'pending' | 'published' | 'failed'; transitionIds: string[] }
+        {
+          status: 'pending' | 'published' | 'failed';
+          releaseKind?: 'canonical_bootstrap' | 'canonical_change' | 'operational_proof';
+          transitionIds: string[];
+        }
       >;
     },
   ) {}
 
-  async getPublishedRelease(releaseId: string) {
+  async getPublishedCanonicalRelease(releaseId: string) {
     const release = this.options.releases.get(releaseId);
-    return release?.status === 'published' ? { id: releaseId } : null;
+    return release?.status === 'published' &&
+      (release.releaseKind ?? 'canonical_change') === 'canonical_change'
+      ? { id: releaseId }
+      : null;
   }
 
   async listTransitionIds(releaseId: string) {

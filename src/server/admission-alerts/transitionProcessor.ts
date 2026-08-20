@@ -120,6 +120,7 @@ export function createDrizzleAdmissionAlertTransitionProcessorRepository(db = ge
             and(
               eq(admissionAlertTransitionWork.status, 'pending'),
               eq(admissionReleases.status, 'published'),
+              eq(admissionReleases.releaseKind, 'canonical_change'),
               eq(admissionTargetTransitions.cycle, currentCycle),
             ),
           )

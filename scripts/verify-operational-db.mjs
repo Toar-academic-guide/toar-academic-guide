@@ -56,7 +56,13 @@ async function loadSnapshot(sql) {
         rolcanlogin as can_login,
         rolbypassrls as bypass_rls
       from pg_roles
-      where rolname = any(${['anon', 'authenticated', 'app_runtime', 'ops_readonly']})
+      where rolname = any(${[
+        'anon',
+        'authenticated',
+        'app_runtime',
+        'ops_readonly',
+        'admissions_automation',
+      ]})
       order by rolname
     `,
     sql`
@@ -116,6 +122,7 @@ async function loadSnapshot(sql) {
         'authenticated',
         'app_runtime',
         'ops_readonly',
+        'admissions_automation',
       ]}::text[]) as expected_role(role_name)
       join pg_roles database_role on database_role.rolname = expected_role.role_name
       cross join unnest(${[

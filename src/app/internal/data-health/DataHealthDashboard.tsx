@@ -303,6 +303,22 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
               items={[
                 ['Pending releases', report.publication.pendingReleaseCount],
                 ['Failed releases', report.publication.failedReleaseCount],
+                [
+                  'Proof releases published',
+                  report.publication.operationalProof.publishedReleaseCount,
+                ],
+                ['Proof releases pending', report.publication.operationalProof.pendingReleaseCount],
+                ['Proof releases failed', report.publication.operationalProof.failedReleaseCount],
+                [
+                  'Operational proof matrix',
+                  report.publication.operationalProof.matrixComplete
+                    ? 'Complete'
+                    : `${
+                        report.publication.operationalProof.scenarios.filter(
+                          (scenario) => scenario.status === 'published',
+                        ).length
+                      } / ${report.publication.operationalProof.scenarios.length} complete`,
+                ],
               ]}
             />
             {report.publication.activeRelease ? (
@@ -441,7 +457,7 @@ function IssueList({ items }: { items: string[] }) {
   );
 }
 
-function DefinitionGrid({ items }: { items: Array<[string, number]> }) {
+function DefinitionGrid({ items }: { items: Array<[string, number | string]> }) {
   return (
     <dl className="mt-3 grid grid-cols-2 gap-3">
       {items.map(([label, value]) => (

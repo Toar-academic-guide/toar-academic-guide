@@ -4,13 +4,16 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 describe('weekly admissions freshness workflow', () => {
-  it('runs on its weekly schedule and still supports manual dry runs', async () => {
+  it('gates scheduled writes while preserving manual dry runs and explicit modes', async () => {
     const workflow = await readWorkflow();
 
     expect(workflow).toContain("cron: '0 3 * * 0'");
-    expect(workflow).not.toContain('ADMISSIONS_WEEKLY_ENABLED');
+    expect(workflow).toContain("vars.ADMISSIONS_WEEKLY_ENABLED == 'true'");
     expect(workflow).toContain('workflow_dispatch:');
     expect(workflow).toContain('dry_run:');
+    expect(workflow).toContain('operational_proof');
+    expect(workflow).toContain('--mode "$ADMISSIONS_MODE"');
+    expect(workflow).toContain('environment: admissions-publication');
     expect(workflow).toContain(
       'DATABASE_URL: ${{ inputs.dry_run && secrets.OPS_DATABASE_URL || secrets.DATABASE_URL }}',
     );
@@ -26,10 +29,11 @@ describe('weekly admissions freshness workflow', () => {
       'ADMISSIONS_GITHUB_APP_PRIVATE_KEY',
       'ADMISSIONS_CYCLE',
       'SLACK_BOT_TOKEN',
-      'SLACK_ADMISSIONS_REVIEW_CHANNEL_ID',
+      'SLACK_READY_PR_CHANNEL_ID',
     ]) {
       expect(workflow).toContain(`test -n "$${configurationName}"`);
     }
+    expect(workflow).toContain('npm run admissions:slack-preflight');
   });
 });
 

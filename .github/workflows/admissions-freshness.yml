@@ -14,6 +14,28 @@ on:
         required: false
         default: false
         type: boolean
+      mode:
+        description: Live comparison, canonical bootstrap, or isolated operational proof
+        required: false
+        default: live
+        type: choice
+        options:
+          - live
+          - bootstrap
+          - operational_proof
+      proof_scenario:
+        description: Required stable identifier for operational proof mode
+        required: false
+        type: string
+      slack_failure_before_send:
+        description: Record a controlled Slack pre-send failure for an operational proof
+        required: false
+        default: false
+        type: boolean
+      proof_confirmation_id:
+        description: Required matching proof scenario when injecting a proof failure
+        required: false
+        type: string
       cycle:
         description: Admissions cycle to compare against published reviewed rules
         required: true
@@ -35,12 +57,15 @@ jobs:
   admissions-source-freshness:
     name: Prepare one reviewed admissions update
     runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'workflow_dispatch' || vars.ADMISSIONS_WEEKLY_ENABLED == 'true' }}
+    environment: admissions-publication
     env:
       CI: true
       DATABASE_URL: ${{ inputs.dry_run && secrets.OPS_DATABASE_URL || secrets.DATABASE_URL }}
       ADMISSIONS_GITHUB_APP_ID: ${{ secrets.ADMISSIONS_GITHUB_APP_ID }}
       ADMISSIONS_GITHUB_APP_PRIVATE_KEY: ${{ secrets.ADMISSIONS_GITHUB_APP_PRIVATE_KEY }}
       ADMISSIONS_CYCLE: ${{ inputs.cycle || vars.ADMISSIONS_CYCLE }}
+      ADMISSIONS_MODE: ${{ inputs.mode || 'live' }}
 
     steps:
       - name: Validate weekly admissions configuration
@@ -48,7 +73,7 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           DRY_RUN_INPUT: ${{ inputs.dry_run }}
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-          SLACK_ADMISSIONS_REVIEW_CHANNEL_ID: ${{ vars.SLACK_ADMISSIONS_REVIEW_CHANNEL_ID }}
+          SLACK_READY_PR_CHANNEL_ID: ${{ vars.SLACK_READY_PR_CHANNEL_ID }}
         shell: bash
         run: |
           set -euo pipefail
@@ -58,7 +83,7 @@ jobs:
             test -n "$ADMISSIONS_GITHUB_APP_ID" || { echo 'Configure ADMISSIONS_GITHUB_APP_ID before a write-capable weekly run.'; exit 1; }
             test -n "$ADMISSIONS_GITHUB_APP_PRIVATE_KEY" || { echo 'Configure ADMISSIONS_GITHUB_APP_PRIVATE_KEY before a write-capable weekly run.'; exit 1; }
             test -n "$SLACK_BOT_TOKEN" || { echo 'Configure SLACK_BOT_TOKEN before a write-capable weekly run.'; exit 1; }
-            test -n "$SLACK_ADMISSIONS_REVIEW_CHANNEL_ID" || { echo 'Configure SLACK_ADMISSIONS_REVIEW_CHANNEL_ID before a write-capable weekly run.'; exit 1; }
+            test -n "$SLACK_READY_PR_CHANNEL_ID" || { echo 'Configure SLACK_READY_PR_CHANNEL_ID before a write-capable weekly run.'; exit 1; }
           fi
 
       - name: Checkout repository
@@ -79,18 +104,31 @@ jobs:
         id: run
         env:
           RUN_KEY_INPUT: ${{ inputs.run_key }}
+          PROOF_SCENARIO: ${{ inputs.proof_scenario }}
         shell: bash
         run: |
           set -euo pipefail
           test -n "$ADMISSIONS_CYCLE" || { echo 'Configure ADMISSIONS_CYCLE before running the weekly admissions review.'; exit 1; }
-          if [ -n "$RUN_KEY_INPUT" ]; then
+          if [ "$ADMISSIONS_MODE" = 'operational_proof' ]; then
+            test -n "$PROOF_SCENARIO" || { echo 'proof_scenario is required for operational proof mode.'; exit 1; }
+            [[ "$PROOF_SCENARIO" =~ ^[a-z0-9]+([_-][a-z0-9]+)*$ ]] || { echo 'proof_scenario must be a stable safe identifier.'; exit 1; }
+            if [ -n "$RUN_KEY_INPUT" ] && [ "$RUN_KEY_INPUT" != "$PROOF_SCENARIO" ]; then
+              echo 'run_key must match proof_scenario for operational proof mode.'
+              exit 1
+            fi
+            run_key="$PROOF_SCENARIO"
+            cycle='2099'
+          elif [ -n "$RUN_KEY_INPUT" ]; then
             [[ "$RUN_KEY_INPUT" =~ ^20[0-9]{2}-W[0-9]{2}$ ]] || { echo 'run_key must use YYYY-Www.'; exit 1; }
             run_key="$RUN_KEY_INPUT"
+            cycle="$ADMISSIONS_CYCLE"
           else
             run_key="$(date -u '+%G-W%V')"
+            cycle="$ADMISSIONS_CYCLE"
           fi
           echo "run_key=$run_key" >> "$GITHUB_OUTPUT"
           echo "branch=automation/admissions-review-$run_key" >> "$GITHUB_OUTPUT"
+          echo "cycle=$cycle" >> "$GITHUB_OUTPUT"
 
       - name: Load existing review metadata without executing the generated branch
         env:
@@ -125,10 +163,14 @@ jobs:
           if [ -f "$metadata_file" ]; then
             args+=(--exclusions-file "$metadata_file")
           fi
+          if [ "$ADMISSIONS_MODE" = 'operational_proof' ]; then
+            args+=(--proof-scenario "${{ steps.run.outputs.run_key }}")
+          fi
 
           npm run admissions:prepare-review -- \
             --run-key "${{ steps.run.outputs.run_key }}" \
-            --cycle "$ADMISSIONS_CYCLE" \
+            --cycle "${{ steps.run.outputs.cycle }}" \
+            --mode "$ADMISSIONS_MODE" \
             --output scratch/admissions-review/run.json \
             "${args[@]}"
 
@@ -199,12 +241,18 @@ jobs:
         if: ${{ !inputs.dry_run }}
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-          SLACK_ADMISSIONS_REVIEW_CHANNEL_ID: ${{ vars.SLACK_ADMISSIONS_REVIEW_CHANNEL_ID }}
+          SLACK_READY_PR_CHANNEL_ID: ${{ vars.SLACK_READY_PR_CHANNEL_ID }}
         shell: bash
         run: |
           set -euo pipefail
+          npm run admissions:slack-preflight
           args=(--run-file scratch/admissions-review/run.json)
           if [ "${{ steps.review_pr.outputs.has_pr }}" = "true" ]; then
             args+=(--pr-number "${{ steps.review_pr.outputs.number }}" --pr-url "${{ steps.review_pr.outputs.url }}")
+          fi
+          if [ "${{ inputs.slack_failure_before_send }}" = 'true' ]; then
+            [ "$ADMISSIONS_MODE" = 'operational_proof' ] || { echo 'Controlled Slack failure is only available for operational proof mode.'; exit 1; }
+            [ "${{ inputs.proof_confirmation_id }}" = "${{ steps.run.outputs.run_key }}" ] || { echo 'proof_confirmation_id must match proof_scenario.'; exit 1; }
+            args+=(--controlled-failure-before-send "${{ inputs.proof_confirmation_id }}")
           fi
           npm run admissions:notify-review -- "${args[@]}"

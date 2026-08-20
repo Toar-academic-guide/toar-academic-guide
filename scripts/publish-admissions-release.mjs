@@ -49,10 +49,12 @@ async function main() {
     const result = await createAdmissionsReleasePublisher().publish({
       manifest,
       repositoryCommit: args.repositoryCommit,
+      proofFailureStage: args.proofFailureStage,
+      proofConfirmationId: args.proofConfirmationId,
     });
 
     const transitionWork =
-      result.status === 'no_changes'
+      result.status === 'no_changes' || manifest.releaseKind !== 'canonical_change'
         ? null
         : await enqueueAdmissionAlertTransitionWork({ releaseId: result.releaseId });
 

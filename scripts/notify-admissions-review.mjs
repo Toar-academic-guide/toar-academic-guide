@@ -12,7 +12,7 @@ function parseArguments(argv) {
   for (let index = 0; index < argv.length; index += 2) {
     const flag = argv[index];
     const value = argv[index + 1];
-    if (!['--run-file', '--pr-number', '--pr-url'].includes(flag)) {
+    if (!['--run-file', '--pr-number', '--pr-url', '--controlled-failure-before-send'].includes(flag)) {
       throw new Error(`Unknown admissions review notification argument: ${flag ?? '(missing)'}.`);
     }
     if (!value || value.startsWith('--') || values.has(flag)) throw new Error(`${flag} requires one value.`);
@@ -22,10 +22,11 @@ function parseArguments(argv) {
   if (!runFile) throw new Error('--run-file is required.');
   const prNumber = values.has('--pr-number') ? Number(values.get('--pr-number')) : undefined;
   const prUrl = values.get('--pr-url');
+  const controlledFailureConfirmationId = values.get('--controlled-failure-before-send');
   if ((prNumber === undefined) !== (prUrl === undefined) || (prNumber !== undefined && !Number.isInteger(prNumber))) {
     throw new Error('--pr-number and --pr-url must be supplied together.');
   }
-  return { runFile, prNumber, prUrl };
+  return { runFile, prNumber, prUrl, controlledFailureConfirmationId };
 }
 
 function resolveRunFile(path) {
@@ -49,7 +50,11 @@ async function main() {
   });
   try {
     const { run } = JSON.parse(await readFile(resolveRunFile(args.runFile), 'utf8'));
-    const [{ createAdmissionsReviewRunLedger }, { buildAdmissionsReviewSlackMessage }, { postAdmissionsReviewSlackMessage }] =
+    const [
+      { createAdmissionsReviewRunLedger },
+      { buildAdmissionsReviewSlackMessage },
+      { canInjectAdmissionsReviewSlackFailure, postAdmissionsReviewSlackMessage },
+    ] =
       await Promise.all([
         vite.ssrLoadModule('/src/server/admissions/admissionsReviewRunLedger.ts'),
         vite.ssrLoadModule('/src/server/admissions/weeklyReviewRun.ts'),
@@ -66,6 +71,26 @@ async function main() {
     const existing = await ledger.getRun(run.runKey);
     if (existing?.slackStatus === 'sent') {
       console.info(JSON.stringify({ status: 'already_sent', runKey: run.runKey }));
+      return;
+    }
+    if (args.controlledFailureConfirmationId) {
+      if (
+        !existing ||
+        !canInjectAdmissionsReviewSlackFailure({
+          releaseKind: existing.releaseKind,
+          proofScenario: existing.proofScenario,
+          confirmationId: args.controlledFailureConfirmationId,
+        })
+      ) {
+        throw new Error(
+          'Controlled Slack failure requires the matching operational proof confirmation ID.',
+        );
+      }
+      await ledger.recordSlackFailure({
+        runKey: run.runKey,
+        error: 'Controlled operational-proof Slack failure before send.',
+      });
+      console.info(JSON.stringify({ status: 'controlled_failure', runKey: run.runKey }));
       return;
     }
     const result = await postAdmissionsReviewSlackMessage(

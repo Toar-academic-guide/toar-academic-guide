@@ -1,5 +1,16 @@
 export type MigrationId =
-  '0010' | '0011' | '0012' | '0013' | '0014' | '0015' | '0016' | '0017' | '0018' | '0019';
+  | '0010'
+  | '0011'
+  | '0012'
+  | '0013'
+  | '0014'
+  | '0015'
+  | '0016'
+  | '0017'
+  | '0018'
+  | '0019'
+  | '0020'
+  | '0021';
 
 export type MigrationHistoryEntry = {
   version: string;
@@ -105,5 +116,17 @@ export const FORWARD_PRODUCTION_MIGRATIONS: Array<{
     remoteName: 'repair_colman_tourism_admission_type',
     repositoryPath: 'src/db/migrations/0019_repair_colman_tourism_admission_type.sql',
     statementFingerprint: '41ab9ae6c549074f9cd0eceecd35d503',
+  },
+  {
+    id: '0020',
+    remoteName: 'source_freshness_exact_authority',
+    repositoryPath: 'src/db/migrations/0020_flowery_norman_osborn.sql',
+    statementFingerprint: '8c78081e1d3f5b124f4dc39d35220f2a',
+  },
+  {
+    id: '0021',
+    remoteName: 'operational_proof_release_lane',
+    repositoryPath: 'src/db/migrations/0021_simple_sugar_man.sql',
+    statementFingerprint: 'ba89e5847ef10fa529545c0120fb0f1f',
   },
 ];

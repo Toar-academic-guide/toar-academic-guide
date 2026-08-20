@@ -242,6 +242,17 @@ function reportWithRisks(): DataHealthReadyReport {
       },
       pendingReleaseCount: 1,
       failedReleaseCount: 2,
+      operationalProof: {
+        publishedReleaseCount: 0,
+        pendingReleaseCount: 0,
+        failedReleaseCount: 0,
+        matrixComplete: false,
+        scenarios: [
+          { scenario: 'proof-plan001-20260820', status: 'not_started' },
+          { scenario: 'proof-plan001-failure-20260820', status: 'not_started' },
+          { scenario: 'proof-plan001-corrective-20260820', status: 'not_started' },
+        ],
+      },
     },
     mondayEvidence: {
       totalItems: 212,

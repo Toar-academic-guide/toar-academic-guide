@@ -54,7 +54,8 @@ describe('weekly admissions review run', () => {
     });
 
     expect(run.manifest).toMatchObject({
-      version: 1,
+      version: 2,
+      releaseKind: 'canonical_change',
       changes: [
         {
           target: { institutionId: 'tau', programId: 'tau_datascience', cycle: '2027' },
@@ -163,5 +164,28 @@ describe('weekly admissions review run', () => {
       }).text,
     ).toContain('pull/95');
     expect(buildAdmissionsReviewSlackMessage(noChange).text).toContain('No review PR was created');
+  });
+
+  it('creates a bootstrap manifest for unchanged current official values', () => {
+    const run = buildAdmissionsReviewRun({
+      runKey: 'bootstrap-2027',
+      checkedAt: new Date('2026-07-19T03:00:00.000Z'),
+      cycle: '2027',
+      releaseKind: 'canonical_bootstrap',
+      baseline,
+      proofs: [
+        decisionProof({
+          normalizedPayload: { programId: 'tau_datascience', acceptanceThreshold: 700 },
+        }),
+      ],
+      verificationLedger: exactTauLedger,
+    });
+
+    expect(run.manifest).toMatchObject({
+      version: 2,
+      releaseKind: 'canonical_bootstrap',
+      changes: [{ before: 700, after: 700 }],
+    });
+    expect(run.summary.status).toBe('reviewable');
   });
 });

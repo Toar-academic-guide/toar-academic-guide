@@ -15,7 +15,7 @@ describe('production admissions schema preflight', () => {
     expect(report).toMatchObject({
       status: 'current',
       safeToMigrate: false,
-      appliedThrough: '0019',
+      appliedThrough: '0021',
       pendingMigrations: [],
       issues: [],
     });
@@ -50,6 +50,8 @@ describe('production admissions schema preflight', () => {
       '0017',
       '0018',
       '0019',
+      '0020',
+      '0021',
     ]);
   });
 
@@ -67,6 +69,8 @@ describe('production admissions schema preflight', () => {
       '0017',
       '0018',
       '0019',
+      '0020',
+      '0021',
     ]);
   });
 
@@ -144,6 +148,12 @@ describe('production admissions schema preflight', () => {
     const snapshot = makeSnapshot();
     snapshot.tables.admission_releases.grants.app_runtime = ['SELECT'];
     snapshot.tables.admission_facts.grants.anon = ['SELECT'];
+    snapshot.tables.admission_operational_proof_values.grants.admissions_automation = [
+      'SELECT',
+      'INSERT',
+      'UPDATE',
+      'DELETE',
+    ];
 
     const report = assessProductionSchema(snapshot);
 
@@ -157,6 +167,10 @@ describe('production admissions schema preflight', () => {
         expect.objectContaining({
           code: 'public_role_grant',
           object: 'grant:anon:admission_facts',
+        }),
+        expect.objectContaining({
+          code: 'grant_mismatch',
+          object: 'grant:admissions_automation:admission_operational_proof_values',
         }),
       ]),
     );
@@ -286,6 +300,124 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
     );
     tables.bagrut_profile_versions.grants.ops_readonly = [];
   }
+  if (appliedIds.has('0020')) {
+    for (const column of [
+      'proof_level',
+      'decision_provenance',
+      'reviewed_source_fingerprint',
+      'exact_qualified',
+    ]) {
+      tables.source_freshness_checks?.columns.push(column);
+    }
+    for (const column of [
+      'proof_level',
+      'decision_provenance',
+      'reviewed_source_fingerprint',
+      'last_exact_check_at',
+    ]) {
+      tables.source_freshness_states?.columns.push(column);
+    }
+  }
+  if (appliedIds.has('0021')) {
+    for (const tableName of ['admission_releases', 'admission_review_runs'] as const) {
+      tables[tableName]?.columns.push('release_kind', 'proof_scenario');
+    }
+    tables.admission_releases?.constraints.push('admission_releases_proof_scenario_kind_check');
+    tables.admission_review_runs?.constraints.push(
+      'admission_review_runs_proof_scenario_kind_check',
+    );
+    tables.admission_releases?.indexes.push('admission_releases_kind_published_at_idx');
+    tables.admission_review_runs?.indexes.push('admission_review_runs_kind_status_idx');
+
+    const automationAccess: Record<string, { grants: string[]; policies?: string[] }> = {
+      institutions: { grants: ['SELECT'], policies: ['institutions_admissions_automation_read'] },
+      programs: { grants: ['SELECT'], policies: ['programs_admissions_automation_read'] },
+      program_institutions: {
+        grants: ['SELECT'],
+        policies: ['program_institutions_admissions_automation_read'],
+      },
+      ingestion_sources: {
+        grants: ['SELECT'],
+        policies: ['ingestion_sources_admissions_automation_read'],
+      },
+      admission_thresholds: {
+        grants: ['SELECT', 'UPDATE'],
+        policies: [
+          'admission_thresholds_admissions_automation_read',
+          'admission_thresholds_admissions_automation_update',
+        ],
+      },
+      source_freshness_checks: {
+        grants: ['SELECT', 'INSERT', 'UPDATE'],
+        policies: [
+          'source_freshness_checks_admissions_automation_read',
+          'source_freshness_checks_admissions_automation_insert',
+          'source_freshness_checks_admissions_automation_update',
+        ],
+      },
+      source_freshness_states: {
+        grants: ['SELECT', 'INSERT', 'UPDATE'],
+        policies: [
+          'source_freshness_states_admissions_automation_read',
+          'source_freshness_states_admissions_automation_insert',
+          'source_freshness_states_admissions_automation_update',
+        ],
+      },
+      admission_review_runs: {
+        grants: ['SELECT', 'INSERT', 'UPDATE'],
+        policies: [
+          'admission_review_runs_admissions_automation_read',
+          'admission_review_runs_admissions_automation_insert',
+          'admission_review_runs_admissions_automation_update',
+        ],
+      },
+      admission_releases: {
+        grants: ['SELECT', 'INSERT', 'UPDATE'],
+        policies: [
+          'admission_releases_admissions_automation_read',
+          'admission_releases_admissions_automation_insert',
+          'admission_releases_admissions_automation_update',
+        ],
+      },
+      admission_target_transitions: {
+        grants: ['SELECT', 'INSERT', 'UPDATE'],
+        policies: [
+          'admission_target_transitions_admissions_automation_read',
+          'admission_target_transitions_admissions_automation_insert',
+          'admission_target_transitions_admissions_automation_update',
+        ],
+      },
+      admission_release_items: {
+        grants: ['SELECT', 'INSERT', 'UPDATE'],
+        policies: [
+          'admission_release_items_admissions_automation_read',
+          'admission_release_items_admissions_automation_insert',
+          'admission_release_items_admissions_automation_update',
+        ],
+      },
+      admission_publication_attempts: {
+        grants: ['SELECT', 'INSERT', 'UPDATE'],
+        policies: [
+          'admission_publication_attempts_admissions_automation_read',
+          'admission_publication_attempts_admissions_automation_insert',
+          'admission_publication_attempts_admissions_automation_update',
+        ],
+      },
+      admission_operational_proof_values: {
+        grants: ['SELECT', 'INSERT', 'UPDATE'],
+      },
+      user_profiles: { grants: [] },
+      saved_programs: { grants: [] },
+      uploaded_documents: { grants: [] },
+      bagrut_profile_versions: { grants: [] },
+    };
+    for (const [tableName, access] of Object.entries(automationAccess)) {
+      const table = tables[tableName];
+      if (!table) continue;
+      table.grants.admissions_automation = access.grants;
+      table.policies.push(...(access.policies ?? []));
+    }
+  }
 
   return {
     migrationHistory: [
@@ -301,6 +433,9 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
       { name: 'authenticated', canLogin: false, bypassRls: false },
       { name: 'app_runtime', canLogin: true, bypassRls: false },
       { name: 'ops_readonly', canLogin: true, bypassRls: false },
+      ...(appliedIds.has('0021')
+        ? [{ name: 'admissions_automation', canLogin: true, bypassRls: false }]
+        : []),
     ],
     tables,
     enums: Object.fromEntries(

@@ -89,6 +89,7 @@ export type ProductionSchemaReport = {
 
 const browserRoles = ['anon', 'authenticated'];
 const runtimeRoles = ['app_runtime', 'ops_readonly'];
+const admissionsAutomationRole = 'admissions_automation';
 
 function privateTable(
   options: Omit<TableContract, 'private' | 'policies' | 'grants' | 'columnTypes'> & {
@@ -375,6 +376,44 @@ tables.admission_review_runs = createdPrivateTable(
   ['SELECT', 'INSERT', 'UPDATE'],
 );
 
+tables.admission_operational_proof_values = {
+  createdBy: '0021',
+  securedBy: '0021',
+  private: true,
+  columns: [
+    'id',
+    'release_id',
+    'institution_id',
+    'program_id',
+    'cycle',
+    'rule_kind',
+    'current_value',
+    'updated_at',
+  ],
+  columnTypes: {},
+  constraints: [
+    'admission_operational_proof_values_release_id_admission_releases_id_fk',
+    'admission_operational_proof_values_institution_id_institutions_id_fk',
+    'admission_operational_proof_values_program_id_programs_id_fk',
+  ],
+  indexes: [
+    'admission_operational_proof_values_target_rule_unique',
+    'admission_operational_proof_values_release_idx',
+  ],
+  policies: [
+    'admission_operational_proof_values_admissions_automation_read',
+    'admission_operational_proof_values_admissions_automation_insert',
+    'admission_operational_proof_values_admissions_automation_update',
+  ],
+  grants: {
+    anon: [],
+    authenticated: [],
+    app_runtime: [],
+    ops_readonly: [],
+    admissions_automation: ['SELECT', 'INSERT', 'UPDATE'],
+  },
+};
+
 export const PRODUCTION_SCHEMA_CONTRACT: {
   tables: Record<string, TableContract>;
   enums: Record<string, EnumContract>;
@@ -452,6 +491,10 @@ export const PRODUCTION_SCHEMA_CONTRACT: {
       createdBy: '0016',
       values: ['pending', 'sent', 'failed'],
     },
+    admission_release_kind: {
+      createdBy: '0021',
+      values: ['canonical_bootstrap', 'canonical_change', 'operational_proof'],
+    },
   },
 };
 
@@ -462,10 +505,11 @@ export function assessProductionSchema(snapshot: ProductionSchemaSnapshot): Prod
     FORWARD_PRODUCTION_MIGRATIONS.slice(0, appliedCount).map((migration) => migration.id),
   );
 
-  assessRoles(snapshot.roles, issues);
+  assessRoles(snapshot.roles, applied, issues);
   assessTables(snapshot, applied, issues);
   assessEnums(snapshot, applied, issues);
   assessChangedObjects(snapshot, applied, issues);
+  assessAdmissionsAutomationAccess(snapshot, applied, issues);
 
   const appliedThrough =
     appliedCount > 0 ? (FORWARD_PRODUCTION_MIGRATIONS[appliedCount - 1]?.id ?? null) : null;
@@ -543,8 +587,17 @@ function assessMigrationHistory(
   return appliedCount;
 }
 
-function assessRoles(roles: DatabaseRoleSnapshot[], issues: ProductionSchemaIssue[]) {
-  for (const roleName of [...browserRoles, ...runtimeRoles]) {
+function assessRoles(
+  roles: DatabaseRoleSnapshot[],
+  applied: Set<MigrationId>,
+  issues: ProductionSchemaIssue[],
+) {
+  const requiredRoles = [
+    ...browserRoles,
+    ...runtimeRoles,
+    ...(applied.has('0021') ? [admissionsAutomationRole] : []),
+  ];
+  for (const roleName of requiredRoles) {
     const role = roles.find((candidate) => candidate.name === roleName);
     if (!role) {
       issues.push({
@@ -561,7 +614,10 @@ function assessRoles(roles: DatabaseRoleSnapshot[], issues: ProductionSchemaIssu
         detail: `Role ${roleName} must not bypass row-level security.`,
       });
     }
-    if (runtimeRoles.includes(roleName) && !role.canLogin) {
+    if (
+      (runtimeRoles.includes(roleName) || roleName === admissionsAutomationRole) &&
+      !role.canLogin
+    ) {
       issues.push({
         code: 'role_cannot_login',
         object: `role:${roleName}`,
@@ -775,6 +831,38 @@ function assessChangedObjects(
     'real',
     issues,
   );
+  for (const [tableName, column] of [
+    ['source_freshness_checks', 'proof_level'],
+    ['source_freshness_checks', 'decision_provenance'],
+    ['source_freshness_checks', 'reviewed_source_fingerprint'],
+    ['source_freshness_checks', 'exact_qualified'],
+    ['source_freshness_states', 'proof_level'],
+    ['source_freshness_states', 'decision_provenance'],
+    ['source_freshness_states', 'reviewed_source_fingerprint'],
+    ['source_freshness_states', 'last_exact_check_at'],
+  ] as const) {
+    assessAddedColumn(snapshot, applied, '0020', tableName, column, issues);
+  }
+  for (const [tableName, column] of [
+    ['admission_releases', 'release_kind'],
+    ['admission_releases', 'proof_scenario'],
+    ['admission_review_runs', 'release_kind'],
+    ['admission_review_runs', 'proof_scenario'],
+  ] as const) {
+    assessAddedColumn(snapshot, applied, '0021', tableName, column, issues);
+  }
+  for (const [tableName, constraint] of [
+    ['admission_releases', 'admission_releases_proof_scenario_kind_check'],
+    ['admission_review_runs', 'admission_review_runs_proof_scenario_kind_check'],
+  ] as const) {
+    assessAddedConstraint(snapshot, applied, '0021', tableName, constraint, issues);
+  }
+  for (const [tableName, index] of [
+    ['admission_releases', 'admission_releases_kind_published_at_idx'],
+    ['admission_review_runs', 'admission_review_runs_kind_status_idx'],
+  ] as const) {
+    assessAddedIndex(snapshot, applied, '0021', tableName, index, issues);
+  }
   assessColumnType(
     snapshot,
     applied,
@@ -881,6 +969,147 @@ function assessAddedConstraint(
       object: `constraint:${constraint}`,
       detail: `Constraint belongs to pending migration ${migration}.`,
     });
+  }
+}
+
+function assessAddedIndex(
+  snapshot: ProductionSchemaSnapshot,
+  applied: Set<MigrationId>,
+  migration: MigrationId,
+  tableName: string,
+  index: string,
+  issues: ProductionSchemaIssue[],
+) {
+  const present = snapshot.tables[tableName]?.indexes.includes(index) ?? false;
+  if (applied.has(migration) && !present) {
+    issues.push({
+      code: 'missing_index',
+      object: `index:${index}`,
+      detail: `Index required by migration ${migration} is absent.`,
+    });
+  } else if (!applied.has(migration) && present) {
+    issues.push({
+      code: 'unexpected_pending_object',
+      object: `index:${index}`,
+      detail: `Index belongs to pending migration ${migration}.`,
+    });
+  }
+}
+
+function assessAdmissionsAutomationAccess(
+  snapshot: ProductionSchemaSnapshot,
+  applied: Set<MigrationId>,
+  issues: ProductionSchemaIssue[],
+) {
+  if (!applied.has('0021')) return;
+  const access: Record<string, { grants: string[]; policies?: string[] }> = {
+    institutions: { grants: ['SELECT'], policies: ['institutions_admissions_automation_read'] },
+    programs: { grants: ['SELECT'], policies: ['programs_admissions_automation_read'] },
+    program_institutions: {
+      grants: ['SELECT'],
+      policies: ['program_institutions_admissions_automation_read'],
+    },
+    ingestion_sources: {
+      grants: ['SELECT'],
+      policies: ['ingestion_sources_admissions_automation_read'],
+    },
+    admission_thresholds: {
+      grants: ['SELECT', 'UPDATE'],
+      policies: [
+        'admission_thresholds_admissions_automation_read',
+        'admission_thresholds_admissions_automation_update',
+      ],
+    },
+    source_freshness_checks: {
+      grants: ['SELECT', 'INSERT', 'UPDATE'],
+      policies: [
+        'source_freshness_checks_admissions_automation_read',
+        'source_freshness_checks_admissions_automation_insert',
+        'source_freshness_checks_admissions_automation_update',
+      ],
+    },
+    source_freshness_states: {
+      grants: ['SELECT', 'INSERT', 'UPDATE'],
+      policies: [
+        'source_freshness_states_admissions_automation_read',
+        'source_freshness_states_admissions_automation_insert',
+        'source_freshness_states_admissions_automation_update',
+      ],
+    },
+    admission_review_runs: {
+      grants: ['SELECT', 'INSERT', 'UPDATE'],
+      policies: [
+        'admission_review_runs_admissions_automation_read',
+        'admission_review_runs_admissions_automation_insert',
+        'admission_review_runs_admissions_automation_update',
+      ],
+    },
+    admission_releases: {
+      grants: ['SELECT', 'INSERT', 'UPDATE'],
+      policies: [
+        'admission_releases_admissions_automation_read',
+        'admission_releases_admissions_automation_insert',
+        'admission_releases_admissions_automation_update',
+      ],
+    },
+    admission_target_transitions: {
+      grants: ['SELECT', 'INSERT', 'UPDATE'],
+      policies: [
+        'admission_target_transitions_admissions_automation_read',
+        'admission_target_transitions_admissions_automation_insert',
+        'admission_target_transitions_admissions_automation_update',
+      ],
+    },
+    admission_release_items: {
+      grants: ['SELECT', 'INSERT', 'UPDATE'],
+      policies: [
+        'admission_release_items_admissions_automation_read',
+        'admission_release_items_admissions_automation_insert',
+        'admission_release_items_admissions_automation_update',
+      ],
+    },
+    admission_publication_attempts: {
+      grants: ['SELECT', 'INSERT', 'UPDATE'],
+      policies: [
+        'admission_publication_attempts_admissions_automation_read',
+        'admission_publication_attempts_admissions_automation_insert',
+        'admission_publication_attempts_admissions_automation_update',
+      ],
+    },
+    admission_operational_proof_values: {
+      grants: ['SELECT', 'INSERT', 'UPDATE'],
+      policies: [
+        'admission_operational_proof_values_admissions_automation_read',
+        'admission_operational_proof_values_admissions_automation_insert',
+        'admission_operational_proof_values_admissions_automation_update',
+      ],
+    },
+    user_profiles: { grants: [] },
+    saved_programs: { grants: [] },
+    uploaded_documents: { grants: [] },
+    bagrut_profile_versions: { grants: [] },
+  };
+  for (const [tableName, expected] of Object.entries(access)) {
+    const table = snapshot.tables[tableName];
+    if (!table) continue;
+    const actualGrants = normalizedPrivileges(table.grants[admissionsAutomationRole] ?? []);
+    const expectedGrants = normalizedPrivileges(expected.grants);
+    if (actualGrants.join(',') !== expectedGrants.join(',')) {
+      issues.push({
+        code: 'grant_mismatch',
+        object: `grant:${admissionsAutomationRole}:${tableName}`,
+        detail: `Expected [${expectedGrants.join(', ')}], found [${actualGrants.join(', ')}].`,
+      });
+    }
+    for (const policy of expected.policies ?? []) {
+      if (!table.policies.includes(policy)) {
+        issues.push({
+          code: 'missing_policy',
+          object: `policy:${policy}`,
+          detail: `Required admissions automation policy on public.${tableName} is absent.`,
+        });
+      }
+    }
   }
 }
 
