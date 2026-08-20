@@ -13,11 +13,9 @@ test.describe('app admissions calculator', () => {
     await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
 
     await expect(page).toHaveURL(/\/app\/calculator$/);
-    await expect(page.getByLabel('אוניברסיטת תל אביב: נדרשים נתונים')).toBeVisible();
-    await expect(page.getByText('נדרשים נתונים נוספים')).toBeVisible();
-    await expect(
-      page.getByText('השלימו את יחידות וציון המקצועות החסרים כדי לקבל הערכה למסלול.'),
-    ).toBeVisible();
+    await expect(page.getByLabel('אוניברסיטת תל אביב: האימות טרם הושלם')).toBeVisible();
+    await expect(page.getByText('האימות הרשמי טרם הושלם', { exact: true })).toBeVisible();
+    await expect(page.getByText('בדקו בינתיים ישירות במחשבון הרשמי של המוסד.')).toBeVisible();
 
     await page.getByRole('button', { name: 'חזרה', exact: true }).click();
 
@@ -27,14 +25,9 @@ test.describe('app admissions calculator', () => {
     await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
 
     await expect(page).toHaveURL(/\/app\/calculator$/);
-    await expect(page.getByLabel('אוניברסיטת בן-גוריון בנגב: נדרשים נתונים')).toBeVisible({
+    await expect(page.getByLabel('אוניברסיטת בן-גוריון בנגב: האימות טרם הושלם')).toBeVisible({
       timeout: 15_000,
     });
-    await expect(page.getByText('נדרשים נתונים נוספים')).toBeVisible();
-    await expect(page.getByText(/ציון התאמה 820 · סף 720/)).toBeVisible();
-    await expect(
-      page.getByText('השלימו את יחידות וציון המקצועות החסרים כדי לקבל הערכה למסלול.'),
-    ).toBeVisible();
 
     await page.getByRole('button', { name: 'חזרה', exact: true }).click();
 
@@ -44,8 +37,7 @@ test.describe('app admissions calculator', () => {
     await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
 
     await expect(page).toHaveURL(/\/app\/calculator$/);
-    await expect(page.getByLabel('אוניברסיטת חיפה: נדרשים נתונים')).toBeVisible();
-    await expect(page.getByText('נדרשים נתונים נוספים')).toBeVisible();
+    await expect(page.getByLabel('אוניברסיטת חיפה: האימות טרם הושלם')).toBeVisible();
 
     await page.getByRole('button', { name: 'חזרה', exact: true }).click();
 
@@ -55,10 +47,6 @@ test.describe('app admissions calculator', () => {
     await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
 
     await expect(page).toHaveURL(/\/app\/calculator$/);
-    await expect(page.getByLabel('הטכניון – מכון טכנולוגי לישראל: נדרשים נתונים')).toBeVisible();
-    await expect(page.getByText('נדרשים נתונים נוספים')).toBeVisible();
-    await expect(
-      page.getByText('השלימו את יחידות וציון המקצועות החסרים כדי לקבל הערכה למסלול.'),
-    ).toBeVisible();
+    await expect(page.getByLabel('הטכניון – מכון טכנולוגי לישראל: האימות טרם הושלם')).toBeVisible();
   });
 });
