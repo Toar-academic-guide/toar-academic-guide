@@ -44,7 +44,7 @@
     "lucide-react": "^1.21.0",
     "next": "16.2.11",
     "posthog-js": "^1.396.3",
-    "posthog-node": "^5.39.1",
+    "posthog-node": "^5.46.1",
     "react": "19.2.7",
     "react-dom": "19.2.7",
     "server-only": "^0.0.1",
