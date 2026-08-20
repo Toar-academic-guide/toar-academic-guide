@@ -1,12 +1,14 @@
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
-import type { DeltaNeeded } from '@/types';
+import type { BagrutSector, BagrutSubjectRecord, DeltaNeeded } from '@/types';
 
-export type AdmissionsEvaluationDecision = 'accepted' | 'below' | 'eligible_to_apply' | 'unknown';
+export type AdmissionsEvaluationDecision =
+  'accepted' | 'below' | 'eligible_to_apply' | 'pending' | 'unknown';
 
 export type AdmissionsEvaluationKind =
   | 'exact'
   | 'estimated'
   | 'needs_input'
+  | 'authority_unavailable'
   | 'tracked_missing_rule'
   | 'unsupported'
   | 'degraded'
@@ -22,6 +24,7 @@ export type AdmissionsEvaluationCapability =
   | 'stale'
   | 'missing'
   | 'needs_input'
+  | 'authority_unavailable'
   | 'tracked_missing_rule'
   | 'unsupported'
   | 'open_admission'
@@ -41,12 +44,18 @@ export type AdmissionsRequiredInput =
   | 'physics_units'
   | 'physics_grade'
   | 'cs_units'
-  | 'cs_grade';
+  | 'cs_grade'
+  | 'bagrut_subject_record'
+  | 'bagrut_profile_version'
+  | 'bagrut_sector';
 
 export interface AdmissionsExtraInputs {
   psychometricMath?: number;
   psychometricVerbal?: number;
   psychometricEnglish?: number;
+  bagrutSubjectRecord?: BagrutSubjectRecord;
+  bagrutProfileSchemaVersion?: BagrutSubjectRecord['schemaVersion'];
+  bagrutSector?: BagrutSector;
   mathUnits?: number;
   mathGrade?: number;
   englishUnits?: number;
@@ -56,6 +65,73 @@ export interface AdmissionsExtraInputs {
   csUnits?: number;
   csGrade?: number;
 }
+
+export type AdmissionsVerificationVerdict = 'accepted' | 'below' | 'eligible_to_apply';
+
+export interface AdmissionsVerificationFixtureInput {
+  psychometric: number;
+  bagrut: number;
+  bagrutSubjectRecord?: BagrutSubjectRecord;
+  [field: string]: string | number | boolean | null | BagrutSubjectRecord | undefined;
+}
+
+export interface AdmissionsVerificationFixture {
+  id: string;
+  pairId: string;
+  admissionCycle: string;
+  verdict: AdmissionsVerificationVerdict;
+  input: AdmissionsVerificationFixtureInput;
+  expected: {
+    score: number;
+    verdict: AdmissionsVerificationVerdict;
+  };
+  sourceFingerprint: string;
+  capturedAt: string;
+}
+
+export interface AdmissionsVerificationGate {
+  id: string;
+  kind: 'minimum' | 'language' | 'subject' | 'direct_track' | 'manual';
+  field: string;
+  minimum?: number;
+  description: string;
+}
+
+export interface AdmissionsProgramVerificationContract {
+  pairId: string;
+  programId: string;
+  institutionId: string;
+  officialProgramId: string;
+  admissionCycle: string;
+  source: {
+    targetId: string;
+    url: string;
+  };
+  calculation: {
+    adapterId: string;
+    mode: 'formula' | 'official_replay';
+    formulaFamily: string;
+    requiredInputs: AdmissionsRequiredInput[];
+    cutoff: {
+      acceptance: number;
+      rejection: number | null;
+    };
+    gates: AdmissionsVerificationGate[];
+  };
+  fixtureIds: string[];
+  fixtureSetFingerprint: string;
+  sourceFingerprint: string;
+  proof: {
+    state: 'verified' | 'unverified' | 'blocked';
+    comparedScore: boolean;
+    comparedVerdict: boolean;
+    liveComparedAt: string | null;
+    sourceFingerprint: string | null;
+  };
+}
+
+export type AdmissionsPairVerificationState =
+  'exact' | 'withheld' | 'stale' | 'blocked' | 'authority_unavailable';
 
 export interface AdmissionsEvaluationInput {
   degreeId: string;

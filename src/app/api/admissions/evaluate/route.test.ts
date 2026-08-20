@@ -144,6 +144,73 @@ describe('admissions evaluate route', () => {
     });
   });
 
+  it('accepts a replayable structured Bagrut subject record', async () => {
+    const extraInputs = {
+      psychometricMath: 130,
+      psychometricVerbal: 125,
+      psychometricEnglish: 120,
+      bagrutProfileSchemaVersion: 1,
+      bagrutSector: 'jewish',
+      bagrutSubjectRecord: {
+        schemaVersion: 1,
+        sector: 'jewish',
+        subjects: [
+          { subjectId: 'mathematics', units: 5, grade: 95 },
+          { subjectId: 'history', units: 2, grade: 88 },
+          { subjectId: 'bible', units: 2, grade: 90 },
+        ],
+      },
+    };
+    const response = await POST(
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          degreeId: 'tau_datascience',
+          psychometric: 700,
+          bagrut: 110,
+          extraInputs,
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.objectContaining({ extraInputs }),
+      }),
+    );
+  });
+
+  it('accepts 64 Bagrut subjects and rejects 65', async () => {
+    const requestForSubjectCount = (count: number) =>
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          degreeId: 'tau_datascience',
+          psychometric: 700,
+          bagrut: 110,
+          extraInputs: {
+            bagrutSubjectRecord: {
+              schemaVersion: 1,
+              sector: 'jewish',
+              subjects: Array.from({ length: count }, (_, index) => ({
+                subjectId: `subject_${index}`,
+                units: 5,
+                grade: 90,
+              })),
+            },
+          },
+        }),
+      });
+
+    expect((await POST(requestForSubjectCount(64))).status).toBe(200);
+    expect((await POST(requestForSubjectCount(65))).status).toBe(400);
+  });
+
   it('returns 404 when the programme does not exist in the catalogue', async () => {
     const response = await POST(
       new Request('http://localhost/api/admissions/evaluate', {
@@ -171,7 +238,7 @@ describe('admissions evaluate route', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'content-length': '4096',
+          'content-length': '32768',
         },
         body: JSON.stringify({
           degreeId: 'tau_datascience',

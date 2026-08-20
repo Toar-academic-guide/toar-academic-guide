@@ -33,15 +33,18 @@ const DECISION_KEYWORDS = [
   'acceptance',
   'average',
   'bagrut',
+  'bonus',
   'cutoff',
   'english',
   'minimum',
   'psychometric',
+  'program',
   'rejection',
   'requirement',
   'score',
   'sekhem',
   'threshold',
+  'verdict',
 ];
 
 const BOILERPLATE_SELECTORS = ['footer', 'header', 'nav', 'script', 'style', 'svg'];

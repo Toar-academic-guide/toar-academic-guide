@@ -93,6 +93,39 @@ describe('CalculatorResults', () => {
     hoistedMocks.fetchTauComputerScienceRoutes.mockReset();
   });
 
+  it('renders a pending official verdict as waiting, not missing input', async () => {
+    hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
+      report([
+        {
+          institution: { id: 'tau', name: 'אוניברסיטת תל אביב', region: 'center' },
+          linkedInstitutionId: 'tau',
+          capability: 'exact',
+          kind: 'exact',
+          decision: 'pending',
+          confidence: 'high',
+          sourceLabel: 'טווח המתנה רשמי',
+          explanation: 'הציון נמצא בטווח המתנה.',
+          nextAction: 'המתינו לעדכון.',
+          score: 700,
+          threshold: 705,
+        },
+      ]),
+    );
+
+    render(
+      <CalculatorResults
+        degreeId="tau_cs"
+        programs={programs}
+        psychometric={700}
+        bagrut={110}
+        onBack={() => {}}
+      />,
+    );
+
+    expect(await screen.findByText('בהמתנה לעדכון')).toBeTruthy();
+    expect(screen.queryByText('נדרשים נתונים')).toBeNull();
+  });
+
   it('withholds route cards until the structured Bagrut profile is complete', async () => {
     hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
       report([
@@ -269,6 +302,44 @@ describe('CalculatorResults', () => {
     expect(screen.getByText(/ציון התאמה 712 · סף 700/)).toBeTruthy();
   });
 
+  it('renders an unproved formula pair as unavailable without an admission verdict', async () => {
+    hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
+      report([
+        {
+          institution: {
+            id: 'tau',
+            name: 'אוניברסיטת תל אביב',
+            region: 'center',
+            domain: 'tau.ac.il',
+            universityId: 'tau',
+          },
+          linkedInstitutionId: 'tau',
+          capability: 'authority_unavailable',
+          kind: 'authority_unavailable',
+          decision: 'unknown',
+          confidence: 'low',
+          sourceLabel: 'האימות הרשמי טרם הושלם',
+          explanation: 'עדיין אין למסלול זה שתי דוגמאות גבול והשוואה חיה מול המקור הרשמי.',
+          nextAction: 'בדקו בינתיים ישירות במחשבון הרשמי של המוסד.',
+        },
+      ]),
+    );
+
+    render(
+      <CalculatorResults
+        degreeId="tau_cs"
+        programs={programs}
+        psychometric={700}
+        bagrut={110}
+        onBack={() => {}}
+      />,
+    );
+
+    expect(await screen.findByLabelText('אוניברסיטת תל אביב: האימות טרם הושלם')).toBeTruthy();
+    expect(screen.queryByText('מתקבל/ת')).toBeNull();
+    expect(screen.queryByText('מתחת לסף')).toBeNull();
+  });
+
   it('sends saved psychometric subscores and structured Bagrut subjects to the evaluator', async () => {
     hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(report([]));
 
@@ -305,6 +376,16 @@ describe('CalculatorResults', () => {
           psychometricMath: 125,
           psychometricVerbal: 120,
           psychometricEnglish: 118,
+          bagrutProfileSchemaVersion: 1,
+          bagrutSector: 'jewish',
+          bagrutSubjectRecord: {
+            schemaVersion: 1,
+            sector: 'jewish',
+            subjects: [
+              { subjectId: 'mathematics', units: 5, grade: 93 },
+              { subjectId: 'english', units: 5, grade: 90 },
+            ],
+          },
           mathUnits: 5,
           mathGrade: 93,
           englishUnits: 5,

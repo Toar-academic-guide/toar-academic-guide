@@ -62,6 +62,9 @@ describe('persistAdmissionsSourceProofs', () => {
       status: 'fresh',
       lastCheckedAt: checkedAt,
       lastSuccessfulCheckAt: checkedAt,
+      lastExactCheckAt: checkedAt,
+      proofLevel: 'exact_official',
+      decisionProvenance: 'verified_derivation',
       latestReviewItemId: undefined,
     });
     expect(repository.reviewHandoffs).toHaveLength(0);
@@ -164,6 +167,57 @@ describe('persistAdmissionsSourceProofs', () => {
     });
     expect(repository.reviewHandoffs).toHaveLength(0);
   });
+
+  it('does not renew exact authority for a partial proof', async () => {
+    const repository = new InMemorySourceFreshnessRepository();
+    await persistAdmissionsSourceProofs({
+      checkedAt,
+      proofs: [decisionProof({ threshold: 700 })],
+      repository,
+    });
+
+    await persistAdmissionsSourceProofs({
+      checkedAt: new Date('2026-07-03T03:00:00.000Z'),
+      proofs: [
+        {
+          ...decisionProof({ threshold: 700 }),
+          capability: 'score_only',
+          proofLevel: 'partial_official',
+          status: 'partial',
+          decisionProvenance: 'none',
+        },
+      ],
+      repository,
+    });
+
+    expect(repository.states.get('tau-source')?.lastExactCheckAt).toEqual(checkedAt);
+    expect(repository.checks.at(-1)).toMatchObject({ exactQualified: false });
+  });
+
+  it('revokes changed authority before a review handoff can fail', async () => {
+    const repository = new InMemorySourceFreshnessRepository();
+    await persistAdmissionsSourceProofs({
+      checkedAt,
+      proofs: [decisionProof({ threshold: 700 })],
+      repository,
+    });
+    repository.createReviewHandoff = async () => {
+      throw new Error('Review queue unavailable');
+    };
+
+    await expect(
+      persistAdmissionsSourceProofs({
+        checkedAt: new Date('2026-07-03T03:00:00.000Z'),
+        proofs: [decisionProof({ threshold: 710 })],
+        repository,
+      }),
+    ).rejects.toThrow('Review queue unavailable');
+
+    expect(repository.states.get('tau-source')).toMatchObject({
+      status: 'changed_needs_review',
+      lastExactCheckAt: checkedAt,
+    });
+  });
 });
 
 function decisionProof(overrides: {
@@ -180,6 +234,9 @@ function decisionProof(overrides: {
     capability: 'decision_capable',
     proofLevel: 'exact_official',
     status: overrides.status ?? 'succeeded',
+    decisionProvenance: 'verified_derivation',
+    reviewedSourceFingerprint:
+      'sha256:7c91772f918b0bc07901b299351f45c6d6aef8bfd15e752df5de6588cd1c507c',
     sourceClass: 'api_static_json',
     reproducedFields: ['selectedScore', 'acceptanceThreshold'],
     normalizedPayload: {
@@ -202,6 +259,7 @@ function scoreOnlyProof({ score }: { score: number }): AdmissionsSourceProof {
     capability: 'score_only',
     proofLevel: 'partial_official',
     status: 'partial',
+    decisionProvenance: 'none',
     sourceClass: 'score_only_calculator',
     reproducedFields: ['sekhemScore'],
     normalizedPayload: {

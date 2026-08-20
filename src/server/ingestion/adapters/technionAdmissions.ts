@@ -5,10 +5,46 @@ import {
   type AdmissionsAdapterContext,
   type AdmissionsSourceProof,
 } from '../admissionsSourceAdapters';
+import type { BagrutSubjectRecord } from '@/types';
 
 const TECHNION_INDEX_URL = 'https://admissions.technion.ac.il/calculator/';
+const TECHNION_THRESHOLD_URL =
+  'https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/';
 const TECHNION_SUBMIT_URL =
   'https://admissions.technion.ac.il/wp-content/plugins/technion-calculators/technion-calculators-sum.php';
+
+const TECHNION_SUBJECT_FIELDS = [
+  ['english', 'yEnglish', 'english'],
+  ['literature', 'yHebrew_lit', 'hebrew_lit'],
+  ['mathematics', 'yMathematic', 'mathematic'],
+  ['bible', 'yBible', 'bible'],
+  ['civics', 'yEzrahut', 'ezrahut'],
+  ['hebrew_expression', 'yHabaa', 'habaa'],
+  ['history', 'yHistory', 'history'],
+  ['hebrew', 'yHebrew', 'hebrew'],
+] as const;
+
+const TECHNION_OFFICIAL_TITLE_BY_PROGRAM_ID: Record<string, string> = {
+  biomedical: 'הנדסה ביו רפואית',
+  civil: 'הנדסה אזרחית',
+  cs: 'מדעי המחשב',
+  datascience: 'הנדסת נתונים ומידע',
+  ee: 'הנדסת חשמל',
+  industrial: 'הנדסת תעשיה וניהול',
+  medicine: 'מדעי הרפואה - מגמת רפואה',
+  me: 'הנדסת מכונות',
+};
+
+export function hasTechnionRequiredSubjectRecord(
+  record: BagrutSubjectRecord | undefined,
+): record is BagrutSubjectRecord {
+  if (!record) return false;
+  const byId = new Map(record.subjects.map((subject) => [subject.subjectId, subject]));
+  return TECHNION_SUBJECT_FIELDS.every(([subjectId]) => {
+    const subject = byId.get(subjectId);
+    return subject && Number.isFinite(subject.units) && Number.isFinite(subject.grade);
+  });
+}
 
 export async function runTechnionAdmissionsProof(
   context: AdmissionsAdapterContext,
@@ -21,32 +57,14 @@ export async function runTechnionAdmissionsProof(
   const metadata: NonNullable<AdmissionsSourceProof['rawResponseMetadata']> = [];
 
   try {
-    const bagrut = context.applicant.bagrutAverage;
     const psy = context.applicant.psychometric;
-
-    const mathUnits = 5;
-    const mathGrade = Math.round(bagrut);
-    const engUnits = 5;
-    const engGrade = Math.round(bagrut);
+    const subjectRecord = context.applicant.bagrutSubjectRecord;
+    if (!hasTechnionRequiredSubjectRecord(subjectRecord)) {
+      throw new Error('Technion calculator requires a complete structured Bagrut subject record');
+    }
 
     const params = new URLSearchParams({
       bagrot: 'true',
-      yEnglish: String(engUnits),
-      english: String(engGrade),
-      yHebrew_lit: '2',
-      hebrew_lit: String(Math.round(bagrut)),
-      yMathematic: String(mathUnits),
-      mathematic: String(mathGrade),
-      yBible: '2',
-      bible: String(Math.round(bagrut)),
-      yEzrahut: '2',
-      ezrahut: String(Math.round(bagrut)),
-      yHabaa: '2',
-      habaa: String(Math.round(bagrut)),
-      yHistory: '2',
-      history: String(Math.round(bagrut)),
-      yHebrew: '2',
-      hebrew: String(Math.round(bagrut)),
       handesae: 'false',
       academic: 'false',
       mehinaAve: 'false',
@@ -54,6 +72,14 @@ export async function runTechnionAdmissionsProof(
       psychometry: String(psy),
       memuca: 'sehem',
     });
+    const subjectsById = new Map(
+      subjectRecord.subjects.map((subject) => [subject.subjectId, subject]),
+    );
+    for (const [subjectId, unitsField, gradeField] of TECHNION_SUBJECT_FIELDS) {
+      const subject = subjectsById.get(subjectId)!;
+      params.set(unitsField, String(subject.units));
+      params.set(gradeField, String(subject.grade));
+    }
 
     const response = await fetcher(TECHNION_SUBMIT_URL, {
       method: 'POST',
@@ -80,40 +106,93 @@ export async function runTechnionAdmissionsProof(
       throw new Error('Failed to parse Sekhem score from Technion response HTML');
     }
 
+    const thresholdResponse = await fetcher(TECHNION_THRESHOLD_URL, {
+      headers: { Referer: TECHNION_INDEX_URL },
+    });
+    metadata.push(readOfficialResponseMetadata(TECHNION_THRESHOLD_URL, thresholdResponse));
+    if (!thresholdResponse.ok) {
+      throw new Error(`Technion threshold table returned HTTP ${thresholdResponse.status}`);
+    }
+    const acceptanceThreshold = parseTechnionOfficialThreshold(
+      await thresholdResponse.text(),
+      program.id,
+    );
+    const exact = acceptanceThreshold !== undefined;
+    const derivedVerdict = exact
+      ? parsedSekhem >= acceptanceThreshold
+        ? program.scoreField === 'invitation'
+          ? 'eligible_to_apply'
+          : 'accepted'
+        : 'below'
+      : undefined;
+
     return {
-      id: 'technion-score-only',
+      id: program.targetId ?? 'technion-score-only',
       institutionId: 'technion',
       institutionName: 'Technion',
       officialUrl: TECHNION_INDEX_URL,
       adapterId: 'technion',
-      capability: 'score_only',
-      proofLevel: 'partial_official',
+      capability: exact ? 'decision_capable' : 'score_only',
+      proofLevel: exact ? 'exact_official' : 'partial_official',
       status: 'succeeded',
-      sourceClass: sourceClassForCapability('score_only'),
-      reproducedFields: ['sekhemScore'],
+      sourceClass: sourceClassForCapability(exact ? 'decision_capable' : 'score_only'),
+      reproducedFields: exact
+        ? ['selectedScore', 'acceptanceThreshold', 'rejectionThreshold', 'derivedVerdict']
+        : ['sekhemScore'],
       normalizedPayload: {
         programId: program.id,
         programName: program.name,
-        source: 'technion_calculators_sum',
+        source: 'technion_calculators_sum_and_cutoff_table',
+        selectedScore: parsedSekhem,
         sekhemScore: parsedSekhem,
+        acceptanceThreshold,
+        rejectionThreshold: acceptanceThreshold,
+        derivedVerdict,
+        proofStatus: 'succeeded',
+        proofLevel: exact ? 'exact_official' : 'partial_official',
+        decisionProvenance: exact ? 'verified_derivation' : 'none',
       },
-      limitations: [
-        'Calculator response can produce score fields, but proof has no official thresholds',
-      ],
-      nextAction: 'Pair calculator output with a reviewed official threshold source',
+      limitations: exact
+        ? [
+            'The cutoff-table proof covers the numeric Sekhem threshold; programme-specific manual gates remain outside this replay.',
+          ]
+        : ['Calculator response can produce score fields, but proof has no official thresholds'],
+      nextAction: exact
+        ? 'Keep the calculator input mapping, current cutoff table, fixtures, and source fingerprint under review'
+        : 'Pair calculator output with a reviewed official threshold source',
       rawResponseMetadata: metadata,
     };
   } catch (error) {
-    return failedTechnionProof(error, metadata);
+    return failedTechnionProof(error, metadata, program);
   }
+}
+
+export function parseTechnionOfficialThreshold(
+  html: string,
+  programId: string,
+): number | undefined {
+  const normalizedProgramId = programId.startsWith('technion_')
+    ? programId.slice('technion_'.length)
+    : programId;
+  const officialTitle = TECHNION_OFFICIAL_TITLE_BY_PROGRAM_ID[normalizedProgramId];
+  if (!officialTitle) return undefined;
+
+  const escapedTitle = officialTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const row = html.match(
+    new RegExp(
+      `<tr[^>]*>\\s*<td[^>]*column-1[^>]*>\\s*${escapedTitle}[\\s\\S]*?<td[^>]*column-2[^>]*>\\s*([\\d.]+)`,
+    ),
+  );
+  return row ? parseOfficialNumeric(row[1]) : undefined;
 }
 
 function failedTechnionProof(
   error: unknown,
   metadata: NonNullable<AdmissionsSourceProof['rawResponseMetadata']>,
+  program?: AdmissionsAdapterContext['program'],
 ): AdmissionsSourceProof {
   return {
-    id: 'technion-score-only',
+    id: program?.targetId ?? 'technion-score-only',
     institutionId: 'technion',
     institutionName: 'Technion',
     officialUrl: TECHNION_INDEX_URL,

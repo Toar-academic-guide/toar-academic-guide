@@ -14,6 +14,8 @@ export async function runTauAdmissionsProof(
 ): Promise<AdmissionsSourceProof> {
   const fetcher = context.fetcher ?? fetch;
   const program = context.program ?? {
+    targetId: 'tau-digital-sciences-live',
+    pairId: 'tau_datascience__tau',
     id: 'tau-digital-sciences',
     name: 'Digital Sciences for High-Tech',
     externalId: '056011050000',
@@ -21,6 +23,7 @@ export async function runTauAdmissionsProof(
     scoreField: 'hatama_handasa',
   };
   const metadata: NonNullable<AdmissionsSourceProof['rawResponseMetadata']> = [];
+  const targetId = program.targetId ?? 'tau-digital-sciences-live';
 
   try {
     const scoreResponse = await postTauGraphql(fetcher, buildLastScoreRequest(context));
@@ -33,15 +36,16 @@ export async function runTauAdmissionsProof(
     const programResponse = await postTauGraphql(fetcher, buildProgramThresholdRequest(program));
     metadata.push(readOfficialResponseMetadata(TAU_GRAPHQL_URL, programResponse));
     const programJson = await readJson(programResponse);
-    const thresholds = parseTauProgramThresholds(programJson, program.externalId);
+    const thresholdRecord = findThresholdObject(programJson, program.externalId);
+    const thresholds = thresholdsFromRecord(thresholdRecord, program);
+    const derivedVerdict = tauOfficialVerdict(selectedScore, thresholds, program);
+    const matchedProgramIds = readStringArray(thresholdRecord.field_plain_id_programs);
 
-    const hasDecision =
-      selectedScore !== undefined &&
-      (thresholds.acceptanceThreshold !== undefined || thresholds.rejectionThreshold !== undefined);
+    const hasDecision = derivedVerdict !== undefined;
     const capability = hasDecision ? 'decision_capable' : 'score_only';
 
     return {
-      id: 'tau-digital-sciences-live',
+      id: targetId,
       institutionId: 'tau',
       institutionName: 'Tel Aviv University',
       officialUrl: TAU_GRAPHQL_URL,
@@ -50,25 +54,34 @@ export async function runTauAdmissionsProof(
       proofLevel: hasDecision ? 'exact_official' : 'partial_official',
       status: hasDecision ? 'succeeded' : 'partial',
       sourceClass: sourceClassForCapability(capability),
-      reproducedFields: reproducedFieldsFor(selectedScore, thresholds),
+      reproducedFields: reproducedFieldsFor(selectedScore, thresholds, program),
       normalizedPayload: {
+        pairId: program.pairId,
         programId: program.id,
         programName: program.name,
         source: 'tau_graphql',
         selectedScoreField: scoreField,
         selectedScore,
+        exactSciencesBonus: context.applicant.exactSciencesBonusEligible ? 10 : 0,
+        matchedProgramIds,
+        matchedProgramTitle:
+          typeof thresholdRecord.title === 'string' ? thresholdRecord.title : undefined,
+        derivedVerdict,
+        proofStatus: hasDecision ? 'succeeded' : 'partial',
+        proofLevel: hasDecision ? 'exact_official' : 'partial_official',
+        decisionProvenance: hasDecision ? 'verified_derivation' : 'none',
         ...thresholds,
       },
       limitations: hasDecision
-        ? ['Representative TAU program only; broad faculty score-field mapping is deferred']
+        ? ['Proof applies only to the explicitly matched TAU program identifier and score field']
         : ['Official response produced score evidence but not enough official threshold data'],
       nextAction: hasDecision
-        ? 'Promote TAU to the second weekly GitHub Action adapter candidate'
+        ? 'Keep the program-specific mapping, gates, fixtures, and source fingerprint under review'
         : 'Complete TAU program threshold lookup before product decisions',
       rawResponseMetadata: metadata,
     };
   } catch (error) {
-    return failedTauProof(error, metadata);
+    return failedTauProof(error, metadata, targetId);
   }
 }
 
@@ -81,24 +94,49 @@ export function parseTauProgramThresholds(
   programExternalId?: string,
 ): {
   acceptanceThreshold?: number;
-  rejectionThreshold?: number;
+  rejectionThreshold?: number | null;
 } {
   const thresholdObject = findThresholdObject(parseGraphqlBody(value), programExternalId);
 
-  return {
-    acceptanceThreshold: parseOfficialNumeric(
+  return thresholdsFromRecord(thresholdObject, { externalId: programExternalId });
+}
+
+function thresholdsFromRecord(
+  thresholdObject: Record<string, unknown>,
+  program?: Pick<AdmissionsProgramInput, 'externalId' | 'staticThresholds'>,
+): {
+  acceptanceThreshold?: number;
+  rejectionThreshold?: number | null;
+} {
+  const acceptanceThreshold =
+    parseOfficialNumeric(
       thresholdObject.field_this_year_receipt_threshol ??
         thresholdObject.receipt_threshol ??
         thresholdObject.acceptanceThreshold ??
         thresholdObject.acceptance_cutoff,
-    ),
-    rejectionThreshold: parseOfficialNumeric(
+    ) ??
+    program?.staticThresholds?.acceptance ??
+    (program?.externalId === '011167010000'
+      ? parsePreliminaryMedicineThreshold(thresholdObject.field_registration_comments)
+      : undefined);
+  const rejectionThreshold =
+    parseOfficialNumeric(
       thresholdObject.field_this_year_rejection_thresh ??
         thresholdObject.rejection_thresh ??
         thresholdObject.rejectionThreshold ??
         thresholdObject.rejection_cutoff,
-    ),
-  };
+    ) ?? program?.staticThresholds?.rejection;
+
+  return { acceptanceThreshold, rejectionThreshold };
+}
+
+function parsePreliminaryMedicineThreshold(value: unknown): number | undefined {
+  if (typeof value !== 'string') {
+    return undefined;
+  }
+
+  const match = value.match(/ציון\s+התאמה\s+רפואה\s+ראשוני\s*-\s*(\d+(?:\.\d+)?)/);
+  return match ? parseOfficialNumeric(match[1]) : undefined;
 }
 
 function buildLastScoreRequest(context: AdmissionsAdapterContext) {
@@ -108,7 +146,7 @@ function buildLastScoreRequest(context: AdmissionsAdapterContext) {
       scoresData: {
         prog: 'calctziun',
         out: 'json',
-        reali10: 0,
+        reali10: context.applicant.exactSciencesBonusEligible ? 1 : 0,
         psicho: String(context.applicant.psychometric),
         bagrut: String(context.applicant.bagrutAverage),
       },
@@ -119,6 +157,18 @@ function buildLastScoreRequest(context: AdmissionsAdapterContext) {
 }
 
 function buildProgramThresholdRequest(program: AdmissionsProgramInput) {
+  if (program.nodeId !== undefined) {
+    return {
+      operationName: 'getProgramByIdAndLang',
+      variables: {
+        nid: program.nodeId,
+        langcode: 'he',
+      },
+      query:
+        'query getProgramByIdAndLang($nid: Int!, $langcode: String!) { getProgramByIdAndLang(nid: $nid, langcode: $langcode) { nid title receipt_threshol rejection_thresh field_registration_comments field_plain_id_programs field_faculty_mamta } }',
+    };
+  }
+
   return {
     operationName: 'getPrograms',
     variables: {
@@ -128,7 +178,7 @@ function buildProgramThresholdRequest(program: AdmissionsProgramInput) {
       },
     },
     query:
-      'query getPrograms($search: JSON) { getPrograms(search: $search) { total results { nid title receipt_threshol rejection_thresh field_plain_id_programs field_faculty_mamta } } }',
+      'query getPrograms($search: JSON) { getPrograms(search: $search) { total results { nid title receipt_threshol rejection_thresh field_registration_comments field_plain_id_programs field_faculty_mamta } } }',
   };
 }
 
@@ -174,50 +224,38 @@ function chooseScoreField(scores: unknown, program: AdmissionsProgramInput): str
 }
 
 function findThresholdObject(value: unknown, programExternalId?: string): Record<string, unknown> {
+  const candidates = collectThresholdObjects(parseGraphqlBody(value));
+  return programExternalId
+    ? (candidates.find((candidate) => matchesProgram(candidate, programExternalId)) ?? {})
+    : (candidates[0] ?? {});
+}
+
+function collectThresholdObjects(value: unknown): Record<string, unknown>[] {
   if (Array.isArray(value)) {
-    if (programExternalId) {
-      const exact = value
-        .map((entry) => findThresholdObject(entry, programExternalId))
-        .find((entry) => Object.keys(entry).length > 0 && matchesProgram(entry, programExternalId));
-
-      if (exact) {
-        return exact;
-      }
-    }
-
-    for (const entry of value) {
-      const found = findThresholdObject(entry, programExternalId);
-      if (Object.keys(found).length > 0) {
-        return found;
-      }
-    }
-    return {};
+    return value.flatMap((entry) => collectThresholdObjects(entry));
   }
 
   if (!value || typeof value !== 'object') {
-    return {};
+    return [];
   }
 
   const record = value as Record<string, unknown>;
-  if (
+  if (hasThresholdField(record)) {
+    return [record];
+  }
+
+  return Object.values(record).flatMap((entry) => collectThresholdObjects(parseGraphqlBody(entry)));
+}
+
+function hasThresholdField(record: Record<string, unknown>): boolean {
+  return (
     'field_this_year_receipt_threshol' in record ||
     'field_this_year_rejection_thresh' in record ||
     'receipt_threshol' in record ||
     'rejection_thresh' in record ||
     'acceptanceThreshold' in record ||
     'rejectionThreshold' in record
-  ) {
-    return record;
-  }
-
-  for (const entry of Object.values(record)) {
-    const found = findThresholdObject(parseGraphqlBody(entry), programExternalId);
-    if (Object.keys(found).length > 0) {
-      return found;
-    }
-  }
-
-  return {};
+  );
 }
 
 function readPath(value: unknown, path: string[]): unknown {
@@ -237,27 +275,64 @@ function readUnknownRecord(value: unknown): Record<string, unknown> {
 }
 
 function matchesProgram(record: Record<string, unknown>, programExternalId: string): boolean {
-  const ids = record.field_plain_id_programs;
-  return Array.isArray(ids) && ids.includes(programExternalId);
+  return readStringArray(record.field_plain_id_programs).includes(programExternalId);
 }
 
 function reproducedFieldsFor(
   selectedScore: number | undefined,
   thresholds: ReturnType<typeof parseTauProgramThresholds>,
+  program?: Pick<AdmissionsProgramInput, 'decisionMode'>,
 ) {
   return [
     selectedScore !== undefined ? 'selectedScore' : undefined,
     thresholds.acceptanceThreshold !== undefined ? 'acceptanceThreshold' : undefined,
-    thresholds.rejectionThreshold !== undefined ? 'rejectionThreshold' : undefined,
+    typeof thresholds.rejectionThreshold === 'number' ? 'rejectionThreshold' : undefined,
+    tauOfficialVerdict(selectedScore, thresholds, program) !== undefined
+      ? 'derivedVerdict'
+      : undefined,
   ].filter(Boolean) as string[];
+}
+
+function tauOfficialVerdict(
+  selectedScore: number | undefined,
+  thresholds: ReturnType<typeof parseTauProgramThresholds>,
+  program?: Pick<AdmissionsProgramInput, 'decisionMode'>,
+): 'accepted' | 'below' | 'eligible_to_apply' | 'pending' | undefined {
+  if (selectedScore === undefined || thresholds.acceptanceThreshold === undefined) {
+    return undefined;
+  }
+  if (selectedScore >= thresholds.acceptanceThreshold) {
+    return program?.decisionMode === 'eligible_to_apply' ? 'eligible_to_apply' : 'accepted';
+  }
+  if (
+    typeof thresholds.rejectionThreshold === 'number' &&
+    selectedScore <= thresholds.rejectionThreshold
+  ) {
+    return 'below';
+  }
+  if (
+    program?.decisionMode === 'eligible_to_apply' &&
+    typeof thresholds.rejectionThreshold !== 'number'
+  ) {
+    return 'below';
+  }
+  return typeof thresholds.rejectionThreshold === 'number' ? 'pending' : undefined;
+}
+
+function readStringArray(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.filter((entry): entry is string => typeof entry === 'string');
+  }
+  return typeof value === 'string' ? [value] : [];
 }
 
 function failedTauProof(
   error: unknown,
   metadata: NonNullable<AdmissionsSourceProof['rawResponseMetadata']>,
+  targetId = 'tau-digital-sciences-live',
 ): AdmissionsSourceProof {
   return {
-    id: 'tau-digital-sciences-live',
+    id: targetId,
     institutionId: 'tau',
     institutionName: 'Tel Aviv University',
     officialUrl: TAU_GRAPHQL_URL,

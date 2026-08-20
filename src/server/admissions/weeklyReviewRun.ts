@@ -1,6 +1,10 @@
 import { createHash } from 'node:crypto';
 
 import type { AdmissionsSourceProof } from '@/server/ingestion/admissionsSourceAdapters';
+import {
+  FORMULA_BACKED_VERIFICATION_LEDGER,
+  type FormulaPairVerificationLedgerEntry,
+} from '@/data/admissions/formulaBackedVerificationLedger';
 
 import type { ReviewedAdmissionsManifest } from './reviewedManifest';
 
@@ -13,6 +17,7 @@ export interface PublishedAdmissionRule {
 export type AdmissionsReviewExclusionReason =
   | 'proof_not_decision_capable'
   | 'missing_program_or_cutoff'
+  | 'pair_verification_incomplete'
   | 'no_reviewed_baseline'
   | 'unchanged'
   | 'reviewer_excluded';
@@ -71,6 +76,7 @@ export function buildAdmissionsReviewRun(input: {
   baseline: PublishedAdmissionRule[];
   proofs: AdmissionsSourceProof[];
   excludedCandidateIds?: string[];
+  verificationLedger?: readonly FormulaPairVerificationLedgerEntry[];
 }): AdmissionsReviewRun {
   const baselineByTarget = new Map(
     input.baseline.map((rule) => [ruleKey(rule.target, rule.ruleKind), rule]),
@@ -95,6 +101,15 @@ export function buildAdmissionsReviewRun(input: {
     }
     if (!programId || cutoff === undefined) {
       excluded.push(exclusion(proof, 'missing_program_or_cutoff'));
+      continue;
+    }
+    const pairId =
+      stringValue(proof.normalizedPayload.pairId) ?? `${programId}__${proof.institutionId}`;
+    const pairVerification = (input.verificationLedger ?? FORMULA_BACKED_VERIFICATION_LEDGER).find(
+      (entry) => entry.pairId === pairId,
+    );
+    if (pairVerification?.state !== 'exact') {
+      excluded.push(exclusion(proof, 'pair_verification_incomplete'));
       continue;
     }
 
@@ -272,6 +287,8 @@ function exclusion(
       'The official proof is not safe for a canonical rule change.',
     missing_program_or_cutoff:
       'The official proof did not contain a verified program identifier and cutoff.',
+    pair_verification_incomplete:
+      'The pair has not passed its reviewed mapping, fixture, fingerprint, and live-proof gate.',
     no_reviewed_baseline: 'No reviewed published baseline exists for this target.',
     unchanged: 'The official cutoff matches the current reviewed baseline.',
     reviewer_excluded: 'A reviewer excluded this candidate from the generated admissions update.',

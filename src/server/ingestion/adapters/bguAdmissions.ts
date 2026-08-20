@@ -5,6 +5,7 @@ import {
   type AdmissionsAdapterContext,
   type AdmissionsSourceProof,
 } from '../admissionsSourceAdapters';
+import { BGU_SCORE_URL, getBguProgramConfig } from '@/data/admissions/bguProgramVerification';
 
 const BGU_INDEX_URL = 'https://bgu4u.bgu.ac.il/html/average_calc/index.php';
 const BGU_SUBMIT_URL = 'https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem';
@@ -20,6 +21,28 @@ export async function runBguAdmissionsProof(
   const metadata: NonNullable<AdmissionsSourceProof['rawResponseMetadata']> = [];
 
   try {
+    const sourceUrl = program.searchText;
+    if (!sourceUrl) throw new Error('BGU target is missing its official acceptance-conditions URL');
+
+    const sourceResponse = await fetcher(sourceUrl);
+    metadata.push(readOfficialResponseMetadata(sourceUrl, sourceResponse));
+    if (!sourceResponse.ok)
+      throw new Error(`BGU conditions endpoint returned HTTP ${sourceResponse.status}`);
+    const sourcePayload = (await sourceResponse.json()) as {
+      items?: Array<Record<string, unknown>>;
+    };
+    const sourceItem = sourcePayload.items?.[0];
+    if (!sourceItem) throw new Error('BGU conditions endpoint returned no programme rule');
+
+    const config = getBguProgramConfig(program.id);
+    const acceptanceThreshold =
+      parseOfficialNumeric(sourceItem.psycho_sekem) ??
+      parseOfficialNumeric(sourceItem.psycho_value) ??
+      thresholdFromComments(sourceItem.comments);
+    if (acceptanceThreshold === undefined) {
+      throw new Error('BGU conditions endpoint returned no numeric threshold');
+    }
+
     const params = new URLSearchParams({
       rn_include_mitsraf: '0',
       rn_year: '2027',
@@ -28,7 +51,7 @@ export async function runBguAdmissionsProof(
       on_final_sekem: '',
     });
 
-    const response = await fetcher(BGU_SUBMIT_URL, {
+    const response = await fetcher(BGU_SCORE_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
@@ -37,7 +60,7 @@ export async function runBguAdmissionsProof(
       body: params.toString(),
     });
 
-    metadata.push(readOfficialResponseMetadata(BGU_SUBMIT_URL, response));
+    metadata.push(readOfficialResponseMetadata(BGU_SCORE_URL, response));
 
     if (!response.ok) {
       throw new Error(`BGU endpoint returned HTTP ${response.status}`);
@@ -47,7 +70,8 @@ export async function runBguAdmissionsProof(
 
     // Parse BGU weighted score. Check the specific ID script pattern first to avoid false matches.
     const valueMatch =
-      html.match(/'on_final_sekem'\)\.value\s*=\s*'([^']+)'/i) ||
+      html.match(/(?:on_final_sekem|on_final_sekem\)\.value)\.value\s*=\s*['"]?([^'";\s<]+)/i) ||
+      html.match(/on_final_sekem\.value\s*=\s*['"]([^'"]+)['"]/i) ||
       html.match(/value\s*=\s*'([^']+)'/i) ||
       html.match(/value\s*=\s*"([^"]+)"/i);
 
@@ -58,40 +82,56 @@ export async function runBguAdmissionsProof(
       throw new Error('Failed to parse weighted score from BGU response HTML');
     }
 
+    const derivedVerdict = weightedScore >= acceptanceThreshold ? config.verdict : 'below';
+
     return {
-      id: 'bgu-score-only',
+      id: program.targetId ?? `bgu-${program.id}-live`,
       institutionId: 'bgu',
       institutionName: 'Ben-Gurion University',
-      officialUrl: BGU_INDEX_URL,
+      officialUrl: sourceUrl,
       adapterId: 'bgu',
-      capability: 'score_only',
-      proofLevel: 'partial_official',
+      capability: 'decision_capable',
+      proofLevel: 'exact_official',
       status: 'succeeded',
-      sourceClass: sourceClassForCapability('score_only'),
-      reproducedFields: ['sekhemScore'],
+      sourceClass: sourceClassForCapability('decision_capable'),
+      reproducedFields: [
+        'selectedScore',
+        'acceptanceThreshold',
+        'rejectionThreshold',
+        'derivedVerdict',
+      ],
       normalizedPayload: {
+        pairId: program.pairId,
         programId: program.id,
         programName: program.name,
-        source: 'bgu_SubmitSekem',
-        sekhemScore: weightedScore,
+        source: 'bgu_rdp_and_SubmitSekem',
+        selectedScore: weightedScore,
+        acceptanceThreshold,
+        rejectionThreshold: acceptanceThreshold,
+        derivedVerdict,
+        proofStatus: 'succeeded',
+        proofLevel: 'exact_official',
+        decisionProvenance: 'verified_derivation',
       },
       limitations: [
-        'Known endpoints calculate scores, but status and cutoffs were not returned in the proof notes',
+        'The official threshold is an eligibility or invitation threshold; programme-specific manual gates remain outside this numeric replay.',
       ],
-      nextAction: 'Find or review an official cutoff/status source before product decisions',
+      nextAction:
+        'Keep the official programme endpoint, score replay, threshold, fixtures, and source fingerprint under review',
       rawResponseMetadata: metadata,
     };
   } catch (error) {
-    return failedBguProof(error, metadata);
+    return failedBguProof(error, metadata, program);
   }
 }
 
 function failedBguProof(
   error: unknown,
   metadata: NonNullable<AdmissionsSourceProof['rawResponseMetadata']>,
+  program?: AdmissionsAdapterContext['program'],
 ): AdmissionsSourceProof {
   return {
-    id: 'bgu-score-only',
+    id: program?.targetId ?? 'bgu-score-only',
     institutionId: 'bgu',
     institutionName: 'Ben-Gurion University',
     officialUrl: BGU_INDEX_URL,
@@ -107,4 +147,10 @@ function failedBguProof(
     errorReason: error instanceof Error ? error.message : String(error),
     rawResponseMetadata: metadata,
   };
+}
+
+function thresholdFromComments(value: unknown): number | undefined {
+  if (typeof value !== 'string') return undefined;
+  const match = value.match(/(?:סכם כמותי\s*(\d+)|(\d+)\s*סכם כמותי)/);
+  return match ? Number(match[1] ?? match[2]) : undefined;
 }

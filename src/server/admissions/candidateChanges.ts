@@ -1,6 +1,10 @@
 import 'server-only';
 
 import type { AdmissionsSourceProof } from '@/server/ingestion/admissionsSourceAdapters';
+import {
+  FORMULA_BACKED_VERIFICATION_LEDGER,
+  type FormulaPairVerificationLedgerEntry,
+} from '@/data/admissions/formulaBackedVerificationLedger';
 
 import type { ReviewedAdmissionsManifest } from './reviewedManifest';
 
@@ -18,6 +22,7 @@ export interface ExcludedAdmissionsCandidate {
   reason:
     | 'proof_not_decision_capable'
     | 'missing_program_or_cutoff'
+    | 'pair_verification_incomplete'
     | 'no_reviewed_baseline'
     | 'unchanged';
 }
@@ -26,6 +31,7 @@ export function classifyAdmissionsProofCandidates(args: {
   baseline: ReviewedAdmissionsManifest;
   cycle: string;
   proofs: AdmissionsSourceProof[];
+  verificationLedger?: readonly FormulaPairVerificationLedgerEntry[];
 }): { candidates: AdmissionsCandidateChange[]; excluded: ExcludedAdmissionsCandidate[] } {
   const candidates: AdmissionsCandidateChange[] = [];
   const excluded: ExcludedAdmissionsCandidate[] = [];
@@ -39,12 +45,22 @@ export function classifyAdmissionsProofCandidates(args: {
       excluded.push({ sourceProofId: proof.id, reason: 'proof_not_decision_capable' });
       continue;
     }
-    const programId = stringValue(proof.normalizedPayload.programId);
+    const adapterProgramId = stringValue(proof.normalizedPayload.programId);
+    const explicitPairId = stringValue(proof.normalizedPayload.pairId);
+    const programId = explicitPairId?.split('__')[0] ?? adapterProgramId;
     const cutoff = numberValue(
       proof.normalizedPayload.acceptanceThreshold ?? proof.normalizedPayload.acceptanceCutoff,
     );
     if (!programId || cutoff === undefined) {
       excluded.push({ sourceProofId: proof.id, reason: 'missing_program_or_cutoff' });
+      continue;
+    }
+    const pairId = explicitPairId ?? `${programId}__${proof.institutionId}`;
+    const pairVerification = (args.verificationLedger ?? FORMULA_BACKED_VERIFICATION_LEDGER).find(
+      (entry) => entry.pairId === pairId,
+    );
+    if (pairVerification?.state !== 'exact') {
+      excluded.push({ sourceProofId: proof.id, reason: 'pair_verification_incomplete' });
       continue;
     }
     const baselineChange = args.baseline.changes.find(

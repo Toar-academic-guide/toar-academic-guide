@@ -9,15 +9,22 @@ import type {
   AdmissionsEvaluationResult,
   AdmissionsRequiredInput,
 } from '@/types/admissionsEvaluation';
+import type { SourceFreshnessStateRow } from '@/db/types';
+import { admissionsInputValue } from './admissionsInputValue';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import {
   buildAdmissionsCapabilityMatrix,
+  exactSourceIdsForProgram,
   loadFreshnessStatesBySourceIds,
   type AdmissionsCapabilityEntry,
 } from './capabilityMatrix';
 import { runHaifaAdmissionsProof } from '@/server/ingestion/adapters/haifaAdmissions';
 import { runTauAdmissionsProof } from '@/server/ingestion/adapters/tauAdmissions';
-import { runTechnionAdmissionsProof } from '@/server/ingestion/adapters/technionAdmissions';
+import { runHujiAdmissionsProof } from '@/server/ingestion/adapters/hujiAdmissions';
+import {
+  hasTechnionRequiredSubjectRecord,
+  runTechnionAdmissionsProof,
+} from '@/server/ingestion/adapters/technionAdmissions';
 import { runBguAdmissionsProof } from '@/server/ingestion/adapters/bguAdmissions';
 import {
   getMondayAdmissionEvidenceByCatalogueInstitutionId,
@@ -28,8 +35,14 @@ import {
   createAdmissionsInputDigest,
   createAdmissionsEvaluationSnapshot,
 } from './evaluationSnapshot';
+import { evaluateTauDigitalSciencesGates } from './tauDigitalSciencesPolicy';
+import { evaluateTauNursingGates } from './tauNursingPolicy';
+import { evaluateTauPsychologyGates, TAU_PSYCHOLOGY_REQUIREMENTS_URL } from './tauPsychologyPolicy';
+import { evaluateTauLawGates, TAU_LAW_REQUIREMENTS_URL } from './tauLawPolicy';
+import { evaluateTauEngineeringExactSciencesBonus } from './bagrutPolicies';
+import { withBoundedOfficialResponse } from '@/server/ingestion/boundedOfficialFetch';
 
-const MAX_EXACT_SOURCE_CALLS = 2;
+const MAX_CONCURRENT_EXACT_SOURCE_CALLS = 2;
 const OFFICIAL_SOURCE_TIMEOUT_MS = 5000;
 
 export async function evaluateAdmissionsForProgram(args: {
@@ -38,23 +51,28 @@ export async function evaluateAdmissionsForProgram(args: {
   institutions: CatalogueInstitution[];
   fetcher?: typeof fetch;
   now?: Date;
+  freshnessStatesBySourceId?: Map<string, SourceFreshnessStateRow>;
 }): Promise<AdmissionsEvaluationReport> {
-  const { input, program, institutions, fetcher, now = new Date() } = args;
+  const {
+    input,
+    program,
+    institutions,
+    fetcher,
+    now = new Date(),
+    freshnessStatesBySourceId: suppliedFreshnessStates,
+  } = args;
 
-  const exactSourceIds = program.linkedInstitutionIds
-    .map((institutionId) => `${program.id}__${institutionId}`)
-    .flatMap((key) => {
-      if (key === 'haifa_cs__haifa') return ['haifa-cs-live'];
-      if (key === 'tau_datascience__tau') return ['tau-digital-sciences-live'];
-      return [];
-    });
+  const exactSourceIds = exactSourceIdsForProgram(program);
 
-  const freshnessStatesBySourceId = await loadFreshnessStatesBySourceIds(exactSourceIds);
+  const freshnessLoad = suppliedFreshnessStates
+    ? { status: 'loaded' as const, states: suppliedFreshnessStates }
+    : await loadFreshnessStatesBySourceIds(exactSourceIds);
   const capabilityEntries = buildAdmissionsCapabilityMatrix({
     program,
     institutions,
     input: input.extraInputs,
-    freshnessStatesBySourceId,
+    freshnessStatesBySourceId: freshnessLoad.states,
+    freshnessAuthorityUnavailable: freshnessLoad.status === 'unavailable',
     now,
   });
 
@@ -92,46 +110,51 @@ async function evaluateCapabilityEntries(args: {
   fetcher?: typeof fetch;
 }): Promise<AdmissionsEvaluationResult[]> {
   const { input, program, institutions, capabilityEntries, fetcher } = args;
-  let exactCallCount = 0;
+  const results = new Array<AdmissionsEvaluationResult | undefined>(capabilityEntries.length);
+  const exactTasks: Array<() => Promise<void>> = [];
 
-  const results: AdmissionsEvaluationResult[] = [];
-
-  for (const entry of capabilityEntries) {
+  for (const [index, entry] of capabilityEntries.entries()) {
     const institution = institutions.find((item) => item.id === entry.institutionId);
     if (!institution) {
       continue;
     }
 
-    if (
-      entry.capability === 'exact' &&
-      entry.exactTarget &&
-      exactCallCount < MAX_EXACT_SOURCE_CALLS
-    ) {
-      exactCallCount += 1;
-      results.push(
-        await evaluateExactResult({
+    if (entry.capability === 'exact' && entry.exactTarget) {
+      const exactTarget = entry.exactTarget;
+      exactTasks.push(async () => {
+        results[index] = await evaluateExactResult({
           input,
           program,
           institution,
-          exactTarget: entry.exactTarget,
+          exactTarget,
           fetcher,
-        }),
-      );
+        });
+      });
       continue;
     }
 
-    results.push(
-      evaluateNonExactResult({
-        input,
-        program,
-        institution,
-        entry,
-        exactCallsBounded: exactCallCount >= MAX_EXACT_SOURCE_CALLS,
-      }),
-    );
+    results[index] = evaluateNonExactResult({
+      input,
+      program,
+      institution,
+      entry,
+    });
   }
 
-  return results;
+  await runWithConcurrency(exactTasks, MAX_CONCURRENT_EXACT_SOURCE_CALLS);
+  return results.filter((result): result is AdmissionsEvaluationResult => result !== undefined);
+}
+
+async function runWithConcurrency(tasks: Array<() => Promise<void>>, limit: number): Promise<void> {
+  let nextTask = 0;
+  const worker = async () => {
+    while (nextTask < tasks.length) {
+      const task = tasks[nextTask];
+      nextTask += 1;
+      await task();
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(limit, tasks.length) }, worker));
 }
 
 async function evaluateExactResult(args: {
@@ -143,7 +166,9 @@ async function evaluateExactResult(args: {
 }): Promise<AdmissionsEvaluationResult> {
   const { input, program, institution, exactTarget, fetcher } = args;
 
-  const timedFetcher = withTimeout(fetcher ?? fetch, OFFICIAL_SOURCE_TIMEOUT_MS);
+  const timedFetcher = withBoundedOfficialResponse(fetcher ?? fetch, {
+    timeoutMs: OFFICIAL_SOURCE_TIMEOUT_MS,
+  });
 
   try {
     if (exactTarget.sourceTarget.adapterId === 'haifa') {
@@ -174,11 +199,16 @@ async function evaluateExactResult(args: {
     }
 
     if (exactTarget.sourceTarget.adapterId === 'technion') {
+      const bagrutSubjectRecord = input.extraInputs?.bagrutSubjectRecord;
+      if (!hasTechnionRequiredSubjectRecord(bagrutSubjectRecord)) {
+        return requiredInputsResult(institution, ['bagrut_subject_record']);
+      }
       const proof = await runTechnionAdmissionsProof({
         fetcher: timedFetcher,
         program: exactTarget.program,
         applicant: {
           bagrutAverage: input.bagrut,
+          bagrutSubjectRecord,
           psychometric: input.psychometric,
         },
       });
@@ -217,12 +247,614 @@ async function evaluateExactResult(args: {
       });
     }
 
+    if (exactTarget.sourceTarget.adapterId === 'huji') {
+      const proof = await runHujiAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: {
+          bagrutAverage: input.bagrut,
+          psychometric: input.psychometric,
+        },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של האוניברסיטה העברית',
+      });
+    }
+
+    if (
+      exactTarget.targetId === 'tau-medicine-live' ||
+      exactTarget.targetId === 'tau-medicine-legacy-live'
+    ) {
+      const psychometricEnglish = input.extraInputs?.psychometricEnglish;
+      const mathUnits = input.extraInputs?.mathUnits;
+      const mathGrade = input.extraInputs?.mathGrade;
+      if (
+        typeof psychometricEnglish !== 'number' ||
+        typeof mathUnits !== 'number' ||
+        typeof mathGrade !== 'number'
+      ) {
+        return requiredInputsResult(institution, [
+          ...(typeof psychometricEnglish !== 'number' ? ['psychometric_english' as const] : []),
+          ...(typeof mathUnits !== 'number' ? ['math_units' as const] : []),
+          ...(typeof mathGrade !== 'number' ? ['math_grade' as const] : []),
+        ]);
+      }
+      if (input.psychometric < 700 || psychometricEnglish < 120 || mathUnits < 4) {
+        return exactGateFailureResult({
+          institution,
+          unmetRequirements: [
+            ...(input.psychometric < 700 ? ['פסיכומטרי 700 ומעלה'] : []),
+            ...(psychometricEnglish < 120 ? ['אנגלית בפסיכומטרי ברמת 120 ומעלה'] : []),
+            ...(mathUnits < 4 ? ['מתמטיקה ברמת 4 יחידות ומעלה'] : []),
+          ],
+          requirementsUrl: 'https://go.tau.ac.il/he/med/ba/med-doc?v=important-info',
+        });
+      }
+
+      const proof = await runTauAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: {
+          bagrutAverage: input.bagrut,
+          psychometric: input.psychometric,
+        },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+        positiveDecision: 'eligible_to_apply',
+      });
+    }
+
+    if (exactTarget.targetId === 'tau-physiotherapy-live') {
+      const psychometricEnglish = input.extraInputs?.psychometricEnglish;
+      if (typeof psychometricEnglish !== 'number') {
+        return requiredInputsResult(institution, ['psychometric_english']);
+      }
+      if (psychometricEnglish < 100) {
+        return exactGateFailureResult({
+          institution,
+          unmetRequirements: ['אנגלית בפסיכומטרי ברמת 100 ומעלה'],
+          requirementsUrl: 'https://go.tau.ac.il/he/med/ba/phys?v=important-info',
+        });
+      }
+
+      const proof = await runTauAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: {
+          bagrutAverage: input.bagrut,
+          psychometric: input.psychometric,
+        },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+        positiveDecision: 'eligible_to_apply',
+      });
+    }
+
+    if (exactTarget.targetId === 'tau-nursing-live') {
+      const gateResult = evaluateTauNursingGates(input);
+      if (gateResult.state === 'needs_input') {
+        return requiredInputsResult(institution, gateResult.requiredInputs);
+      }
+      if (gateResult.state === 'below') {
+        return exactGateFailureResult({
+          institution,
+          unmetRequirements: gateResult.unmetRequirements,
+          requirementsUrl: 'https://go.tau.ac.il/he/med/ba/nursing?v=admission-requirements',
+        });
+      }
+
+      const proof = await runTauAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: {
+          bagrutAverage: input.bagrut,
+          psychometric: input.psychometric,
+        },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+        positiveDecision: 'eligible_to_apply',
+      });
+    }
+
+    if (
+      exactTarget.targetId === 'tau-psychology-live' ||
+      exactTarget.targetId === 'tau-psychology-legacy-live'
+    ) {
+      const gateResult = evaluateTauPsychologyGates(input);
+      if (gateResult.state === 'needs_input') {
+        return requiredInputsResult(institution, gateResult.requiredInputs);
+      }
+      if (gateResult.state === 'below') {
+        return exactGateFailureResult({
+          institution,
+          unmetRequirements: gateResult.unmetRequirements,
+          requirementsUrl: TAU_PSYCHOLOGY_REQUIREMENTS_URL,
+        });
+      }
+
+      const proof = await runTauAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: {
+          bagrutAverage: input.bagrut,
+          psychometric: input.psychometric,
+        },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+      });
+    }
+
+    if (
+      exactTarget.targetId === 'tau-social-work-live' ||
+      exactTarget.targetId === 'tau-social-work-legacy-live'
+    ) {
+      const proof = await runTauAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: {
+          bagrutAverage: input.bagrut,
+          psychometric: input.psychometric,
+        },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+      });
+    }
+
+    if (exactTarget.targetId === 'tau-law-live' || exactTarget.targetId === 'tau-law-legacy-live') {
+      const gateResult = evaluateTauLawGates(input);
+      if (gateResult.state === 'needs_input') {
+        return requiredInputsResult(institution, gateResult.requiredInputs);
+      }
+      if (gateResult.state === 'below') {
+        return exactGateFailureResult({
+          institution,
+          unmetRequirements: gateResult.unmetRequirements,
+          requirementsUrl: TAU_LAW_REQUIREMENTS_URL,
+        });
+      }
+
+      const proof = await runTauAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: {
+          bagrutAverage: input.bagrut,
+          psychometric: input.psychometric,
+        },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+      });
+    }
+
+    if (
+      exactTarget.targetId === 'tau-accounting-live' ||
+      exactTarget.targetId === 'tau-accounting-legacy-live'
+    ) {
+      const psychometricEnglish = input.extraInputs?.psychometricEnglish;
+      if (typeof psychometricEnglish !== 'number') {
+        return requiredInputsResult(institution, ['psychometric_english']);
+      }
+      if (psychometricEnglish < 100) {
+        return exactGateFailureResult({
+          institution,
+          unmetRequirements: ['אנגלית בפסיכומטרי ברמת 100 ומעלה'],
+          requirementsUrl:
+            'https://go.tau.ac.il/he/management/ba/accounting?v=admission-requirements',
+        });
+      }
+
+      const proof = await runTauAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: {
+          bagrutAverage: input.bagrut,
+          psychometric: input.psychometric,
+        },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+      });
+    }
+
+    if (exactTarget.targetId === 'tau-architecture-live') {
+      const psychometricEnglish = input.extraInputs?.psychometricEnglish;
+      if (typeof psychometricEnglish !== 'number') {
+        return requiredInputsResult(institution, ['psychometric_english']);
+      }
+      if (psychometricEnglish < 100) {
+        return exactGateFailureResult({
+          institution,
+          unmetRequirements: ['אנגלית בפסיכומטרי ברמת 100 ומעלה'],
+          requirementsUrl:
+            'https://go.tau.ac.il/he/engineering/ba/architecture?v=admission-requirements',
+        });
+      }
+      const proof = await runTauAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: { bagrutAverage: input.bagrut, psychometric: input.psychometric },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+      });
+    }
+
+    if (
+      exactTarget.targetId === 'tau-biology-live' ||
+      exactTarget.targetId === 'tau-biology-legacy-live'
+    ) {
+      const psychometricEnglish = input.extraInputs?.psychometricEnglish;
+      if (typeof psychometricEnglish !== 'number') {
+        return requiredInputsResult(institution, ['psychometric_english']);
+      }
+      if (psychometricEnglish < 100) {
+        return exactGateFailureResult({
+          institution,
+          unmetRequirements: ['אנגלית בפסיכומטרי ברמת 100 ומעלה'],
+          requirementsUrl:
+            'https://go.tau.ac.il/he/life-sciences/ba/biology?v=admission-requirements',
+        });
+      }
+      const proof = await runTauAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: { bagrutAverage: input.bagrut, psychometric: input.psychometric },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+      });
+    }
+
+    if (exactTarget.targetId === 'tau-communication-live') {
+      const psychometricEnglish = input.extraInputs?.psychometricEnglish;
+      if (typeof psychometricEnglish !== 'number') {
+        return requiredInputsResult(institution, ['psychometric_english']);
+      }
+      if (psychometricEnglish < 100) {
+        return exactGateFailureResult({
+          institution,
+          unmetRequirements: ['אנגלית בפסיכומטרי ברמת 100 ומעלה'],
+          requirementsUrl:
+            'https://go.tau.ac.il/he/social-sciences/ba/communication?v=admission-requirements',
+        });
+      }
+      const proof = await runTauAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: { bagrutAverage: input.bagrut, psychometric: input.psychometric },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+      });
+    }
+
+    if (exactTarget.targetId === 'tau-political-science-live') {
+      const psychometricEnglish = input.extraInputs?.psychometricEnglish;
+      if (typeof psychometricEnglish !== 'number') {
+        return requiredInputsResult(institution, ['psychometric_english']);
+      }
+      if (psychometricEnglish < 100) {
+        return exactGateFailureResult({
+          institution,
+          unmetRequirements: ['אנגלית בפסיכומטרי ברמת 100 ומעלה'],
+          requirementsUrl:
+            'https://go.tau.ac.il/he/social-sciences/ba/political-science?v=admission-requirements',
+        });
+      }
+      const proof = await runTauAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: { bagrutAverage: input.bagrut, psychometric: input.psychometric },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+      });
+    }
+
+    if (exactTarget.targetId === 'tau-education-live') {
+      const psychometricEnglish = input.extraInputs?.psychometricEnglish;
+      if (typeof psychometricEnglish !== 'number') {
+        return requiredInputsResult(institution, ['psychometric_english']);
+      }
+      if (psychometricEnglish < 100) {
+        return exactGateFailureResult({
+          institution,
+          unmetRequirements: ['אנגלית בפסיכומטרי ברמת 100 ומעלה'],
+          requirementsUrl:
+            'https://go.tau.ac.il/he/social-sciences/ba/education?v=admission-requirements',
+        });
+      }
+
+      const proof = await runTauAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: { bagrutAverage: input.bagrut, psychometric: input.psychometric },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+      });
+    }
+
+    if (
+      exactTarget.targetId === 'tau-economics-live' ||
+      exactTarget.targetId === 'tau-economics-legacy-live'
+    ) {
+      const psychometricEnglish = input.extraInputs?.psychometricEnglish;
+      if (typeof psychometricEnglish !== 'number') {
+        return requiredInputsResult(institution, ['psychometric_english']);
+      }
+      if (psychometricEnglish < 100) {
+        return exactGateFailureResult({
+          institution,
+          unmetRequirements: ['אנגלית בפסיכומטרי ברמת 100 ומעלה'],
+          requirementsUrl:
+            'https://go.tau.ac.il/he/management/ba/economics?v=admission-requirements',
+        });
+      }
+
+      const proof = await runTauAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: { bagrutAverage: input.bagrut, psychometric: input.psychometric },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+      });
+    }
+
+    if (exactTarget.targetId === 'tau-cs-live' || exactTarget.targetId === 'tau-cs-legacy-live') {
+      const psychometricEnglish = input.extraInputs?.psychometricEnglish;
+      const bagrutSubjectRecord = input.extraInputs?.bagrutSubjectRecord;
+      if (typeof psychometricEnglish !== 'number' || !bagrutSubjectRecord) {
+        return requiredInputsResult(institution, [
+          ...(typeof psychometricEnglish !== 'number' ? ['psychometric_english' as const] : []),
+          ...(!bagrutSubjectRecord ? ['bagrut_subject_record' as const] : []),
+        ]);
+      }
+      if (psychometricEnglish < 100) {
+        return exactGateFailureResult({
+          institution,
+          unmetRequirements: ['אנגלית בפסיכומטרי ברמת 100 ומעלה'],
+          requirementsUrl:
+            'https://go.tau.ac.il/he/engineering/ba/computer-science?v=admission-requirements',
+        });
+      }
+      const exactSciencesBonusEligible = tauEngineeringBonusEligibility(bagrutSubjectRecord);
+      if (exactSciencesBonusEligible === undefined) {
+        return requiredInputsResult(institution, ['bagrut_subject_record']);
+      }
+
+      const proof = await runTauAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: {
+          bagrutAverage: input.bagrut,
+          exactSciencesBonusEligible,
+          psychometric: input.psychometric,
+        },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+      });
+    }
+
+    if (exactTarget.targetId === 'tau-ee-live' || exactTarget.targetId === 'tau-ee-legacy-live') {
+      const psychometricEnglish = input.extraInputs?.psychometricEnglish;
+      const bagrutSubjectRecord = input.extraInputs?.bagrutSubjectRecord;
+      if (typeof psychometricEnglish !== 'number' || !bagrutSubjectRecord) {
+        return requiredInputsResult(institution, [
+          ...(typeof psychometricEnglish !== 'number' ? ['psychometric_english' as const] : []),
+          ...(!bagrutSubjectRecord ? ['bagrut_subject_record' as const] : []),
+        ]);
+      }
+      if (psychometricEnglish < 100) {
+        return exactGateFailureResult({
+          institution,
+          unmetRequirements: ['אנגלית בפסיכומטרי ברמת 100 ומעלה'],
+          requirementsUrl:
+            'https://go.tau.ac.il/he/engineering/ba/electrical-engineering?v=admission-requirements',
+        });
+      }
+      const exactSciencesBonusEligible = tauEngineeringBonusEligibility(bagrutSubjectRecord);
+      if (exactSciencesBonusEligible === undefined) {
+        return requiredInputsResult(institution, ['bagrut_subject_record']);
+      }
+
+      const proof = await runTauAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: {
+          bagrutAverage: input.bagrut,
+          exactSciencesBonusEligible,
+          psychometric: input.psychometric,
+        },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+      });
+    }
+
+    if (exactTarget.targetId === 'tau-me-live' || exactTarget.targetId === 'tau-me-legacy-live') {
+      const psychometricEnglish = input.extraInputs?.psychometricEnglish;
+      const bagrutSubjectRecord = input.extraInputs?.bagrutSubjectRecord;
+      if (typeof psychometricEnglish !== 'number' || !bagrutSubjectRecord) {
+        return requiredInputsResult(institution, [
+          ...(typeof psychometricEnglish !== 'number' ? ['psychometric_english' as const] : []),
+          ...(!bagrutSubjectRecord ? ['bagrut_subject_record' as const] : []),
+        ]);
+      }
+      if (psychometricEnglish < 100) {
+        return exactGateFailureResult({
+          institution,
+          unmetRequirements: ['אנגלית בפסיכומטרי ברמת 100 ומעלה'],
+          requirementsUrl:
+            'https://go.tau.ac.il/he/engineering/ba/mechanical-engineering?v=admission-requirements',
+        });
+      }
+      const exactSciencesBonusEligible = tauEngineeringBonusEligibility(bagrutSubjectRecord);
+      if (exactSciencesBonusEligible === undefined) {
+        return requiredInputsResult(institution, ['bagrut_subject_record']);
+      }
+
+      const proof = await runTauAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: {
+          bagrutAverage: input.bagrut,
+          exactSciencesBonusEligible,
+          psychometric: input.psychometric,
+        },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+      });
+    }
+
+    if (
+      exactTarget.targetId === 'tau-occupational-live' ||
+      exactTarget.targetId === 'tau-occupational-legacy-live'
+    ) {
+      const psychometricEnglish = input.extraInputs?.psychometricEnglish;
+      if (typeof psychometricEnglish !== 'number') {
+        return requiredInputsResult(institution, ['psychometric_english']);
+      }
+      if (psychometricEnglish < 100) {
+        return exactGateFailureResult({
+          institution,
+          unmetRequirements: ['אנגלית בפסיכומטרי ברמת 100 ומעלה'],
+          requirementsUrl:
+            'https://go.tau.ac.il/he/med/ba/occupational-therapy?v=admission-requirements',
+        });
+      }
+
+      const proof = await runTauAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: { bagrutAverage: input.bagrut, psychometric: input.psychometric },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+      });
+    }
+
+    if (exactTarget.targetId === 'tau-industrial-live') {
+      const psychometricEnglish = input.extraInputs?.psychometricEnglish;
+      const bagrutSubjectRecord = input.extraInputs?.bagrutSubjectRecord;
+      if (typeof psychometricEnglish !== 'number' || !bagrutSubjectRecord) {
+        return requiredInputsResult(institution, [
+          ...(typeof psychometricEnglish !== 'number' ? ['psychometric_english' as const] : []),
+          ...(!bagrutSubjectRecord ? ['bagrut_subject_record' as const] : []),
+        ]);
+      }
+      if (psychometricEnglish < 100) {
+        return exactGateFailureResult({
+          institution,
+          unmetRequirements: ['אנגלית בפסיכומטרי ברמת 100 ומעלה'],
+          requirementsUrl:
+            'https://go.tau.ac.il/he/engineering/ba/industrial-engineering?v=admission-requirements',
+        });
+      }
+      const exactSciencesBonusEligible = tauEngineeringBonusEligibility(bagrutSubjectRecord);
+      if (exactSciencesBonusEligible === undefined) {
+        return requiredInputsResult(institution, ['bagrut_subject_record']);
+      }
+
+      const proof = await runTauAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: {
+          bagrutAverage: input.bagrut,
+          exactSciencesBonusEligible,
+          psychometric: input.psychometric,
+        },
+      });
+
+      return normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+      });
+    }
+
+    const gateResult = evaluateTauDigitalSciencesGates(input);
+    if (gateResult.state === 'needs_input') {
+      return requiredInputsResult(institution, gateResult.requiredInputs);
+    }
+    if (gateResult.state === 'below') {
+      return exactGateFailureResult({
+        institution,
+        unmetRequirements: gateResult.unmetRequirements,
+        requirementsUrl:
+          'https://go.tau.ac.il/he/engineering/ba/high-tech-plus?v=admission-requirements',
+      });
+    }
+
     const proof = await runTauAdmissionsProof({
       fetcher: timedFetcher,
       program: exactTarget.program,
       applicant: {
         bagrutAverage: input.bagrut,
         psychometric: input.psychometric,
+        exactSciencesBonusEligible: gateResult.exactSciencesBonusEligible,
       },
     });
 
@@ -261,8 +893,31 @@ function normalizeExactProofResult(args: {
   institution: CatalogueInstitution;
   proof: Record<string, unknown>;
   explanationPrefix: string;
+  positiveDecision?: 'accepted' | 'eligible_to_apply';
 }): AdmissionsEvaluationResult {
   const { institution, proof, explanationPrefix } = args;
+  const decisionProvenance = proof.decisionProvenance;
+  if (
+    proof.proofStatus !== 'succeeded' ||
+    proof.proofLevel !== 'exact_official' ||
+    (decisionProvenance !== 'official_response' && decisionProvenance !== 'verified_derivation')
+  ) {
+    return {
+      institution: publicInstitutionShape(institution),
+      linkedInstitutionId: institution.id,
+      capability: 'unsupported',
+      kind: 'degraded',
+      decision: 'unknown',
+      confidence: 'low',
+      sourceLabel: 'אימות רשמי חלקי',
+      explanation: `${explanationPrefix} לא החזיר הוכחת החלטה מלאה ומאומתת.`,
+      nextAction: 'בדקו ישירות במקור הרשמי או נסו שוב מאוחר יותר.',
+      degradationReason: 'official_source_partial',
+    };
+  }
+  const positiveDecision =
+    args.positiveDecision ??
+    (proof.derivedVerdict === 'eligible_to_apply' ? 'eligible_to_apply' : 'accepted');
 
   const score = numberOrUndefined(proof.selectedScore) ?? numberOrUndefined(proof.weightedScore);
   const threshold =
@@ -283,25 +938,74 @@ function normalizeExactProofResult(args: {
     };
   }
 
-  const decision = score >= threshold ? 'accepted' : 'below';
+  const derivedVerdict =
+    proof.derivedVerdict === 'accepted' ||
+    proof.derivedVerdict === 'below' ||
+    proof.derivedVerdict === 'eligible_to_apply' ||
+    proof.derivedVerdict === 'pending'
+      ? proof.derivedVerdict
+      : undefined;
+  const decision =
+    derivedVerdict === 'accepted' || derivedVerdict === 'eligible_to_apply'
+      ? positiveDecision
+      : derivedVerdict === 'below'
+        ? 'below'
+        : derivedVerdict === 'pending'
+          ? 'pending'
+          : score >= threshold
+            ? 'accepted'
+            : 'below';
   const scoreLabel = proof.selectedScore !== undefined ? 'ציון התאמה' : 'ציון משוקלל';
 
   return {
     institution: publicInstitutionShape(institution),
     linkedInstitutionId: institution.id,
     capability: 'exact',
-    kind: 'exact',
+    kind: decision === 'eligible_to_apply' ? 'manual_gate' : 'exact',
     decision,
     confidence: 'high',
-    sourceLabel: 'אימות רשמי',
-    explanation: `${explanationPrefix} סיפק ציון וסף קבלה מעודכנים למסלול זה.`,
+    sourceLabel:
+      decision === 'eligible_to_apply'
+        ? 'כשירות להמשך מיון'
+        : derivedVerdict === 'pending'
+          ? 'טווח המתנה רשמי'
+          : 'אימות רשמי',
+    explanation:
+      decision === 'eligible_to_apply'
+        ? `${explanationPrefix} אישר עמידה בסף המספרי. עדיין נדרשים מבדק התאמה, ולעיתים גם ראיון אישי; זו אינה קבלה סופית.`
+        : derivedVerdict === 'pending'
+          ? `${explanationPrefix} הציב את הציון בין סף הדחייה לסף הקבלה, ולכן עדיין אין החלטה סופית.`
+          : `${explanationPrefix} סיפק ציון וסף קבלה מעודכנים למסלול זה.`,
     nextAction:
       decision === 'accepted'
-        ? 'בדקו את דף ההרשמה הרשמי והשלימו כל דרישה ידנית נוספת.'
-        : 'שמרו את המסלול והשוו מול מוסדות אחרים או שפרו את הנתונים לפני הרשמה.',
+        ? 'בדקו את דף ההרשמה הרשמי והשלימו את בדיקת העבר האקדמי, העברית ושאר דרישות המסמכים.'
+        : decision === 'eligible_to_apply'
+          ? 'השלימו את מבדק ההתאמה ועקבו אחר זימון אפשרי לראיון מטעם החוג.'
+          : decision === 'below'
+            ? 'שמרו את המסלול והשוו מול מוסדות אחרים או שפרו את הנתונים לפני הרשמה.'
+            : 'עקבו אחר עדכון הספים באתר הרשמי או פנו למרכז הרישום.',
     score,
     scoreLabel,
     threshold,
+  };
+}
+
+function exactGateFailureResult(args: {
+  institution: CatalogueInstitution;
+  unmetRequirements: string[];
+  requirementsUrl: string;
+}): AdmissionsEvaluationResult {
+  return {
+    institution: publicInstitutionShape(args.institution),
+    linkedInstitutionId: args.institution.id,
+    capability: 'exact',
+    kind: 'exact',
+    decision: 'below',
+    confidence: 'high',
+    sourceLabel: 'תנאי קבלה רשמיים',
+    explanation: `לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: ${args.unmetRequirements.join('; ')}.`,
+    nextAction: 'שפרו את תנאי הסף או בדקו אפיק קבלה חלופי באתר התוכנית.',
+    officialUrls: [args.requirementsUrl],
   };
 }
 
@@ -310,15 +1014,15 @@ function evaluateNonExactResult(args: {
   program: CatalogueProgram;
   institution: CatalogueInstitution;
   entry: AdmissionsCapabilityEntry;
-  exactCallsBounded: boolean;
 }): AdmissionsEvaluationResult {
-  const { input, program, institution, entry, exactCallsBounded } = args;
+  const { input, program, institution, entry } = args;
 
   const evidenceRecord =
     entry.evidence ?? getMondayAdmissionEvidenceByCatalogueInstitutionId(institution.id)[0];
   const dynamicRequirements = getDynamicRequirementsFromEvidence(evidenceRecord);
 
   if (entry.capability === 'needs_input') {
+    const copy = missingInputsCopy(entry.requiredInputs ?? []);
     return {
       institution: publicInstitutionShape(institution),
       linkedInstitutionId: institution.id,
@@ -327,14 +1031,51 @@ function evaluateNonExactResult(args: {
       decision: 'unknown',
       confidence: 'low',
       sourceLabel: 'נדרשים נתונים נוספים',
-      explanation: 'כדי לחשב מסלול זה דרך המקור הרשמי צריך גם תתי-ציונים בפסיכומטרי.',
-      nextAction: 'השלימו ציוני כמותי, מילולי ואנגלית כדי לקבל אימות רשמי.',
+      explanation: copy.explanation,
+      nextAction: copy.nextAction,
       requiredInputs: entry.requiredInputs,
     };
   }
 
   if (entry.capability === 'tracked_missing_rule') {
     return trackedMissingRuleResult(institution, entry);
+  }
+
+  if (entry.capability === 'authority_unavailable') {
+    return {
+      institution: publicInstitutionShape(institution),
+      linkedInstitutionId: institution.id,
+      capability: 'authority_unavailable',
+      kind: 'authority_unavailable',
+      decision: 'unknown',
+      confidence: 'low',
+      sourceLabel: 'האימות הרשמי טרם הושלם',
+      explanation:
+        entry.pairVerification?.reason ??
+        'עדיין אין למסלול זה שתי דוגמאות גבול והשוואה חיה של הציון והחלטת הקבלה מול המקור הרשמי.',
+      nextAction: entry.pairVerification?.sourceUrl
+        ? 'בדקו בינתיים ישירות במחשבון הרשמי של המוסד.'
+        : 'בדקו בינתיים ישירות באתר המוסד.',
+      officialUrls: entry.pairVerification?.sourceUrl
+        ? [entry.pairVerification.sourceUrl]
+        : undefined,
+      degradationReason: 'pair_verification_incomplete',
+    };
+  }
+
+  if (entry.formulaPairScope === 'excluded') {
+    return {
+      institution: publicInstitutionShape(institution),
+      linkedInstitutionId: institution.id,
+      capability: 'unsupported',
+      kind: 'unsupported',
+      decision: 'unknown',
+      confidence: 'low',
+      sourceLabel: 'מחוץ להיקף האימות',
+      explanation:
+        'מסלולי אריאל ובר־אילן מוחרגים במפורש מפרויקט אימות המחשבונים הנוכחי, ולכן לא נציג עבורם תוצאת קבלה משוערת.',
+      nextAction: 'בדקו את תנאי הקבלה והמחשבון ישירות באתר המוסד.',
+    };
   }
 
   if (entry.capability === 'blocked') {
@@ -351,21 +1092,18 @@ function evaluateNonExactResult(args: {
     };
   }
 
-  if (entry.capability === 'stale' || exactCallsBounded) {
+  if (entry.capability === 'stale') {
     return {
       institution: publicInstitutionShape(institution),
       linkedInstitutionId: institution.id,
-      capability: entry.capability === 'stale' ? 'stale' : 'unsupported',
+      capability: 'stale',
       kind: 'degraded',
       decision: 'unknown',
       confidence: 'low',
       sourceLabel: 'אימות רשמי לא זמין',
-      explanation:
-        entry.capability === 'stale'
-          ? 'מצב המקור הרשמי מיושן או נכשל לאחרונה, ולכן לא נציג החלטה רשמית.'
-          : 'הוגבל מספר קריאות האימות הרשמיות לבקשה זו.',
+      explanation: 'מצב המקור הרשמי מיושן או נכשל לאחרונה, ולכן לא נציג החלטה רשמית.',
       nextAction: 'נסו שוב מאוחר יותר או בדקו ישירות במקור הרשמי.',
-      degradationReason: entry.capability === 'stale' ? 'source_stale' : 'exact_fanout_limited',
+      degradationReason: 'source_stale',
     };
   }
 
@@ -1210,38 +1948,8 @@ function missingInputs(
   requiredInputs: AdmissionsRequiredInput[],
 ): AdmissionsRequiredInput[] {
   return requiredInputs.filter(
-    (requiredInput) => extraInputValue(input, requiredInput) === undefined,
+    (requiredInput) => admissionsInputValue(input.extraInputs, requiredInput) === undefined,
   );
-}
-
-function extraInputValue(
-  input: AdmissionsEvaluationInput,
-  requiredInput: AdmissionsRequiredInput,
-): number | undefined {
-  switch (requiredInput) {
-    case 'psychometric_math':
-      return input.extraInputs?.psychometricMath;
-    case 'psychometric_verbal':
-      return input.extraInputs?.psychometricVerbal;
-    case 'psychometric_english':
-      return input.extraInputs?.psychometricEnglish;
-    case 'math_units':
-      return input.extraInputs?.mathUnits;
-    case 'math_grade':
-      return input.extraInputs?.mathGrade;
-    case 'english_units':
-      return input.extraInputs?.englishUnits;
-    case 'english_grade':
-      return input.extraInputs?.englishGrade;
-    case 'physics_units':
-      return input.extraInputs?.physicsUnits;
-    case 'physics_grade':
-      return input.extraInputs?.physicsGrade;
-    case 'cs_units':
-      return input.extraInputs?.csUnits;
-    case 'cs_grade':
-      return input.extraInputs?.csGrade;
-  }
 }
 
 function findInstitutionDetail(
@@ -1268,6 +1976,7 @@ function requiredInputsResult(
   institution: CatalogueInstitution,
   requiredInputs: AdmissionsRequiredInput[],
 ): AdmissionsEvaluationResult {
+  const copy = missingInputsCopy(requiredInputs);
   return {
     institution: publicInstitutionShape(institution),
     linkedInstitutionId: institution.id,
@@ -1276,10 +1985,41 @@ function requiredInputsResult(
     decision: 'unknown',
     confidence: 'low',
     sourceLabel: 'נדרשים נתונים נוספים',
-    explanation: 'כדי לחשב את המסלול במוסד זה צריך נתוני מקצועות בגרות שהמחשבון הרשמי משתמש בהם.',
-    nextAction: 'השלימו את יחידות וציון המקצועות החסרים כדי לקבל הערכה למסלול.',
+    explanation: copy.explanation,
+    nextAction: copy.nextAction,
     requiredInputs,
   };
+}
+
+function missingInputsCopy(requiredInputs: AdmissionsRequiredInput[]) {
+  const needsOnlyPsychometricSubscores =
+    requiredInputs.length > 0 &&
+    requiredInputs.every((input) =>
+      ['psychometric_math', 'psychometric_verbal', 'psychometric_english'].includes(input),
+    );
+
+  return needsOnlyPsychometricSubscores
+    ? {
+        explanation: 'כדי לחשב מסלול זה דרך המקור הרשמי צריך גם תתי-ציונים בפסיכומטרי.',
+        nextAction: 'השלימו ציוני כמותי, מילולי ואנגלית כדי לקבל אימות רשמי.',
+      }
+    : {
+        explanation:
+          'כדי לחשב את המסלול במוסד זה צריך נתוני מקצועות בגרות שהמחשבון הרשמי משתמש בהם.',
+        nextAction: 'השלימו את יחידות וציון המקצועות החסרים כדי לקבל הערכה למסלול.',
+      };
+}
+
+function tauEngineeringBonusEligibility(
+  record: NonNullable<AdmissionsEvaluationInput['extraInputs']>['bagrutSubjectRecord'],
+): boolean | undefined {
+  if (!record) return undefined;
+  const subjectIds = new Set(record.subjects.map((subject) => subject.subjectId));
+  if (!subjectIds.has('mathematics') || !subjectIds.has('physics')) {
+    return undefined;
+  }
+
+  return evaluateTauEngineeringExactSciencesBonus(record).qualifies;
 }
 
 function unsupportedResult(
@@ -1360,20 +2100,4 @@ function getVerifiedProgramThreshold(
 
 function numberOrUndefined(value: unknown): number | undefined {
   return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
-}
-
-function withTimeout(fetcher: typeof fetch, timeoutMs: number): typeof fetch {
-  return async (input, init) => {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
-
-    try {
-      return await fetcher(input, {
-        ...init,
-        signal: controller.signal,
-      });
-    } finally {
-      clearTimeout(timer);
-    }
-  };
 }

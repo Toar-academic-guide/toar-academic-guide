@@ -19,6 +19,10 @@ import type {
   UniversityCalculatorConfigRow,
 } from '@/db/types';
 import { hybridAdmissionSlice } from '@/data/admissions/hybridSlice';
+import {
+  allResolvedFormulaBackedPairs,
+  buildFormulaBackedPairInventory,
+} from '@/data/admissions/formulaBackedPairInventory';
 import { allPrograms } from '@/data/degrees';
 import type { InstitutionDetail, Program } from '@/data/degrees/types';
 import {
@@ -146,7 +150,24 @@ function uniqueByLast<T>(values: T[], keyFor: (value: T) => string): T[] {
 }
 
 export function buildCatalogueSeed(seedPrograms: Program[] = allPrograms): CatalogueSeedPayload {
-  const validationErrors: CatalogueSeedValidationError[] = [];
+  const formulaBackedInventory = buildFormulaBackedPairInventory(seedPrograms);
+  const formulaInstitutionIdsByProgramId = new Map<string, InstitutionId[]>();
+
+  for (const pair of allResolvedFormulaBackedPairs(formulaBackedInventory)) {
+    const institutionIds = formulaInstitutionIdsByProgramId.get(pair.programId);
+    if (institutionIds) {
+      institutionIds.push(pair.institutionId);
+    } else {
+      formulaInstitutionIdsByProgramId.set(pair.programId, [pair.institutionId]);
+    }
+  }
+
+  const validationErrors: CatalogueSeedValidationError[] = formulaBackedInventory.errors.map(
+    (error) => ({
+      programId: error.programId,
+      message: error.message,
+    }),
+  );
   const institutionRows = INSTITUTIONS.map((institution) => ({
     id: institution.id,
     name: institution.name,
@@ -179,7 +200,11 @@ export function buildCatalogueSeed(seedPrograms: Program[] = allPrograms): Catal
   const admissionAlternativePathRows: (typeof admissionAlternativePaths.$inferInsert)[] = [];
 
   for (const program of seedPrograms) {
-    const linkedInstitutionIds = unique(getProgramInstitutionIds(program));
+    const formulaInstitutionIds = formulaInstitutionIdsByProgramId.get(program.id);
+    const linkedInstitutionIds = unique(
+      formulaInstitutionIds ??
+        (program.admissionType === 'sekhem' ? [] : getProgramInstitutionIds(program)),
+    );
 
     if (linkedInstitutionIds.length === 0) {
       validationErrors.push({

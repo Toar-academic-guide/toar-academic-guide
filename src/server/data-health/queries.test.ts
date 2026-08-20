@@ -331,6 +331,12 @@ describe('summarizeDataHealthRows', () => {
     });
     expect(report.readiness.isReady).toBe(true);
     expect(report.readiness.issues).toEqual([]);
+    expect(report.formulaVerification).toMatchObject({
+      total: 135,
+      exact: 126,
+      withheld: 9,
+      isComplete: false,
+    });
   });
 
   it('reports the latest published admissions release separately from failed publication attempts', () => {
@@ -475,17 +481,19 @@ describe('summarizeDataHealthRows', () => {
             lastChangedAt: null,
             latestFailureReason: null,
             blockedReason: null,
+            normalizedFingerprint:
+              '62a6a2f398b737b2139671f32c48a921083a4966ea43e8135c081870d42e9971',
             latestReviewItemId: null,
             nextAction: null,
           }),
-          freshnessState('haifa-cs-live', {
-            sourceId: 'haifa-cs-live',
+          freshnessState('haifa-haifa_cs-live', {
+            sourceId: 'haifa-haifa_cs-live',
             sourceClass: 'official_html',
             capability: 'decision_capable',
-            status: 'fresh',
+            status: 'changed_needs_review',
             lastCheckedAt: new Date('2026-06-24T17:00:00.000Z'),
             lastSuccessfulCheckAt: new Date('2026-06-24T01:00:00.000Z'),
-            lastChangedAt: null,
+            lastChangedAt: new Date('2026-06-24T17:00:00.000Z'),
             latestFailureReason: null,
             blockedReason: null,
             latestReviewItemId: null,
@@ -502,8 +510,8 @@ describe('summarizeDataHealthRows', () => {
           programId: 'tau_datascience',
           institutionId: 'tau',
           institutionName: 'Tel Aviv University',
-          evidenceMode: 'exact',
-          severity: 'normal',
+          evidenceMode: 'stale',
+          severity: 'attention',
           sourceTargetId: 'tau-digital-sciences-live',
           officialSourceUrl: 'https://go.tau.ac.il/graphql',
           externalProgramId: '056011050000',
@@ -514,19 +522,22 @@ describe('summarizeDataHealthRows', () => {
           programId: 'haifa_cs',
           institutionId: 'haifa',
           institutionName: 'University of Haifa',
-          evidenceMode: 'needs_input',
-          severity: 'normal',
-          sourceTargetId: 'haifa-cs-live',
+          evidenceMode: 'stale',
+          severity: 'attention',
+          sourceTargetId: 'haifa-haifa_cs-live',
           officialSourceUrl: 'https://applicants.haifa.ac.il/enrollmentChances/index.html',
-          externalProgramId: '52258372',
-          requiredInputs: ['psychometric_math', 'psychometric_verbal', 'psychometric_english'],
+          externalProgramId: '52256544',
+          requiredInputs: [],
         }),
         expect.objectContaining({
           programId: 'tau_law',
           institutionId: 'tau',
-          evidenceMode: 'unsupported',
-          severity: 'informational',
-          sourceTargetId: null,
+          evidenceMode: 'authority_unavailable',
+          severity: 'attention',
+          sourceTargetId: 'tau-law-legacy-live',
+          externalProgramId: '141111010000',
+          freshnessStatus: null,
+          requiredInputs: [],
         }),
       ]),
     );
@@ -957,8 +968,12 @@ function freshnessState(
     sourceClass: 'api_static_json',
     capability: 'decision_capable',
     status: 'fresh',
+    proofLevel: null,
+    decisionProvenance: null,
+    reviewedSourceFingerprint: null,
     lastCheckedAt: new Date('2026-06-23T18:00:00.000Z'),
     lastSuccessfulCheckAt: new Date('2026-06-23T18:00:00.000Z'),
+    lastExactCheckAt: null,
     lastChangedAt: null,
     latestFailureReason: null,
     blockedReason: null,

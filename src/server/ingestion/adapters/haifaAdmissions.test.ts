@@ -86,6 +86,8 @@ describe('runHaifaAdmissionsProof', () => {
         weightedScore: 706,
         acceptanceCutoff: 705,
         rejectionCutoff: 680,
+        derivedVerdict: 'accepted',
+        decisionProvenance: 'verified_derivation',
       },
     });
   });
@@ -107,6 +109,36 @@ describe('runHaifaAdmissionsProof', () => {
       proofLevel: 'partial_official',
       status: 'partial',
       reproducedFields: ['weightedScore'],
+    });
+  });
+
+  it('preserves an official waiting band between rejection and acceptance cutoffs', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(jsonResponse({ data: { guid: 'guid-1' } }))
+      .mockResolvedValueOnce(
+        jsonResponse({
+          data: [
+            {
+              results: [
+                {
+                  content: [
+                    { label: 'הציון המשוקלל', value: '690' },
+                    { label: 'סף קבלה', value: '705' },
+                    { label: 'סף דחייה', value: '680' },
+                  ],
+                },
+              ],
+            },
+          ],
+        }),
+      );
+
+    const proof = await runHaifaAdmissionsProof({ applicant, fetcher });
+
+    expect(proof.normalizedPayload).toMatchObject({
+      derivedVerdict: 'pending',
+      decisionProvenance: 'verified_derivation',
     });
   });
 

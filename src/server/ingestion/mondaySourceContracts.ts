@@ -170,7 +170,11 @@ export function parseMondayAdmissionsSourceContract(
 export function mapMondayAdmissionsSourceContract(
   contract: MondayAdmissionsSourceContract,
 ): MondayAdmissionsSourceMappingResult {
-  const matches = admissionsSourceTargets.filter(
+  const targets =
+    contract.institutionId === 'haifa'
+      ? admissionsSourceTargets.filter((target) => target.id === 'haifa-cs-live')
+      : admissionsSourceTargets;
+  const matches = targets.filter(
     (target) =>
       target.institutionId === contract.institutionId &&
       target.expectedCapability === contract.capability &&

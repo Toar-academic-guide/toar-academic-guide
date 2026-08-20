@@ -1,4 +1,8 @@
 import { allPrograms } from '@/data/degrees';
+import {
+  buildFormulaBackedPairInventory,
+  reconcileFormulaBackedSeedPairs,
+} from '@/data/admissions/formulaBackedPairInventory';
 import { UNIVERSITIES } from '@/data/degreesData';
 import { INSTITUTION_BY_ID, INSTITUTIONS, type InstitutionId } from '@/data/institutions';
 import type { Program } from '@/data/degrees/types';
@@ -19,6 +23,21 @@ function duplicatedValues(values: string[]): string[] {
 }
 
 describe('catalogueSeed', () => {
+  it('reconciles the DB seed payload with the canonical formula-backed pair inventory', () => {
+    const inventory = buildFormulaBackedPairInventory(allPrograms);
+    const payload = buildCatalogueSeed();
+    const reconciliation = reconcileFormulaBackedSeedPairs(inventory, {
+      programs: payload.programs,
+      programInstitutions: payload.programInstitutions,
+    });
+
+    expect(reconciliation).toEqual({
+      isMatching: true,
+      missingPairIds: [],
+      unexpectedPairIds: [],
+    });
+  });
+
   it('maps every institution and program into exactly one seed row', () => {
     const payload = buildCatalogueSeed();
 

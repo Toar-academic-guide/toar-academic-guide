@@ -89,6 +89,24 @@ describe('runAdmissionsSourceFreshness', () => {
     expect(repository.checks).toHaveLength(2);
   });
 
+  it('persists a completed target before the full report is returned', async () => {
+    const repository = new InMemorySourceFreshnessRepository();
+    const proof = decisionProof('succeeded');
+
+    const result = await runAdmissionsSourceFreshness({
+      checkedAt: new Date('2026-06-26T03:00:00.000Z'),
+      proofRunner: async (options) => {
+        await options.onResult?.({ proof, freshness: null });
+        expect(repository.checks).toHaveLength(1);
+        return reportForProofs([proof]);
+      },
+      repository,
+    });
+
+    expect(result.persistence).toMatchObject({ total: 1, fresh: 1 });
+    expect(repository.checks).toHaveLength(1);
+  });
+
   it('can dry-run a manual target without requiring database credentials', async () => {
     vi.stubEnv('DATABASE_URL', '');
     const proofRunner = vi.fn(async () => reportForProofs([decisionProof('succeeded')]));

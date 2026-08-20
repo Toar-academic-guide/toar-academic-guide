@@ -35,7 +35,6 @@ jobs:
   admissions-source-freshness:
     name: Prepare one reviewed admissions update
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' || vars.ADMISSIONS_WEEKLY_ENABLED == 'true' }}
     env:
       CI: true
       DATABASE_URL: ${{ inputs.dry_run && secrets.OPS_DATABASE_URL || secrets.DATABASE_URL }}

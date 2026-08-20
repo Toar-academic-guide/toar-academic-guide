@@ -73,6 +73,25 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
         </section>
 
         <section className="rounded-[1.75rem] border border-slate-950/10 bg-white p-6 shadow-sm">
+          <h2 className="text-2xl font-black text-slate-950">Formula-backed pair verification</h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Reviewed baseline coverage is immutable. Runtime coverage is activated separately by the
+            persisted weekly authority check.
+          </p>
+          <DefinitionGrid
+            items={[
+              ['In-scope pairs', report.formulaVerification.total],
+              ['Exact', report.formulaVerification.exact],
+              ['Withheld', report.formulaVerification.withheld],
+              ['Stale', report.formulaVerification.stale],
+              ['Blocked', report.formulaVerification.blocked],
+              ['Runtime exact', report.runtimeFormulaVerification.exact],
+              ['Runtime unavailable', report.runtimeFormulaVerification.authorityUnavailable],
+            ]}
+          />
+        </section>
+
+        <section className="rounded-[1.75rem] border border-slate-950/10 bg-white p-6 shadow-sm">
           <h2 className="text-2xl font-black text-slate-950">Admissions decision readiness</h2>
           <DefinitionGrid
             items={[
@@ -522,6 +541,11 @@ function buildCriticalItems(report: DataHealthReadyReport): string[] {
     ...(report.publication.failedReleaseCount > 0
       ? [`Failed admissions publications: ${report.publication.failedReleaseCount}`]
       : []),
+    ...(!report.formulaVerification.isComplete
+      ? [
+          `Formula verification incomplete: ${report.formulaVerification.exact}/${report.formulaVerification.total} exact`,
+        ]
+      : []),
     ...(report.reviewQueue.oldestPendingItem
       ? [`Oldest pending review ${report.reviewQueue.oldestPendingItem.id}`]
       : []),
@@ -571,6 +595,8 @@ function evidenceModeLabel(
       return 'Blocked official';
     case 'stale':
       return 'Stale official';
+    case 'authority_unavailable':
+      return 'Official proof incomplete';
     case 'score_only':
       return 'Score only';
     case 'estimated':
