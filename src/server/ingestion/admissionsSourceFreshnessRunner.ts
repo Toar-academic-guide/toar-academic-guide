@@ -68,7 +68,7 @@ export async function runAdmissionsSourceFreshness(
   const repository = options.dryRun
     ? undefined
     : (options.repository ?? createDrizzleSourceFreshnessRepository());
-  let persistence = repository ? emptyPersistenceSummary() : null;
+  const persistence = repository ? emptyPersistenceSummary() : null;
   const persistedSourceIds = new Set<string>();
   const persistResult = async (proof: AdmissionsSourceProof) => {
     if (!repository || !persistence || persistedSourceIds.has(proof.id)) return;
