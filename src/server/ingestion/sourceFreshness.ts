@@ -17,7 +17,10 @@ import {
   evaluateAdmissionsSourceProof,
   type AdmissionsSourceProof,
 } from './admissionsSourceAdapters';
-import type { AdmissionsDecisionProvenance, AdmissionsProofLevel } from './admissionsSourceAdapters';
+import type {
+  AdmissionsDecisionProvenance,
+  AdmissionsProofLevel,
+} from './admissionsSourceAdapters';
 import type {
   FreshnessCapability,
   FreshnessSourceClass,
@@ -264,7 +267,7 @@ export function createDrizzleSourceFreshnessRepository(db = getDb()): SourceFres
         sourceClass: row.sourceClass,
         capability: row.capability,
         status: row.status,
-        proofLevel: row.proofLevel as AdmissionsProofLevel | null ?? undefined,
+        proofLevel: (row.proofLevel as AdmissionsProofLevel | null) ?? undefined,
         decisionProvenance:
           (row.decisionProvenance as AdmissionsDecisionProvenance | null) ?? undefined,
         reviewedSourceFingerprint: row.reviewedSourceFingerprint ?? undefined,

@@ -170,7 +170,11 @@ describe('persistAdmissionsSourceProofs', () => {
 
   it('does not renew exact authority for a partial proof', async () => {
     const repository = new InMemorySourceFreshnessRepository();
-    await persistAdmissionsSourceProofs({ checkedAt, proofs: [decisionProof({ threshold: 700 })], repository });
+    await persistAdmissionsSourceProofs({
+      checkedAt,
+      proofs: [decisionProof({ threshold: 700 })],
+      repository,
+    });
 
     await persistAdmissionsSourceProofs({
       checkedAt: new Date('2026-07-03T03:00:00.000Z'),
@@ -192,7 +196,11 @@ describe('persistAdmissionsSourceProofs', () => {
 
   it('revokes changed authority before a review handoff can fail', async () => {
     const repository = new InMemorySourceFreshnessRepository();
-    await persistAdmissionsSourceProofs({ checkedAt, proofs: [decisionProof({ threshold: 700 })], repository });
+    await persistAdmissionsSourceProofs({
+      checkedAt,
+      proofs: [decisionProof({ threshold: 700 })],
+      repository,
+    });
     repository.createReviewHandoff = async () => {
       throw new Error('Review queue unavailable');
     };

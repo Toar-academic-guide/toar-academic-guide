@@ -119,9 +119,7 @@ async function evaluateCapabilityEntries(args: {
       continue;
     }
 
-    if (
-      entry.capability === 'exact' && entry.exactTarget
-    ) {
+    if (entry.capability === 'exact' && entry.exactTarget) {
       const exactTarget = entry.exactTarget;
       exactTasks.push(async () => {
         results[index] = await evaluateExactResult({
@@ -136,11 +134,11 @@ async function evaluateCapabilityEntries(args: {
     }
 
     results[index] = evaluateNonExactResult({
-        input,
-        program,
-        institution,
-        entry,
-      });
+      input,
+      program,
+      institution,
+      entry,
+    });
   }
 
   await runWithConcurrency(exactTasks, MAX_CONCURRENT_EXACT_SOURCE_CALLS);
@@ -951,7 +949,7 @@ function normalizeExactProofResult(args: {
     derivedVerdict === 'accepted' || derivedVerdict === 'eligible_to_apply'
       ? positiveDecision
       : derivedVerdict === 'below'
-          ? 'below'
+        ? 'below'
         : derivedVerdict === 'pending'
           ? 'pending'
           : score >= threshold
@@ -1103,8 +1101,7 @@ function evaluateNonExactResult(args: {
       decision: 'unknown',
       confidence: 'low',
       sourceLabel: 'אימות רשמי לא זמין',
-      explanation:
-        'מצב המקור הרשמי מיושן או נכשל לאחרונה, ולכן לא נציג החלטה רשמית.',
+      explanation: 'מצב המקור הרשמי מיושן או נכשל לאחרונה, ולכן לא נציג החלטה רשמית.',
       nextAction: 'נסו שוב מאוחר יותר או בדקו ישירות במקור הרשמי.',
       degradationReason: 'source_stale',
     };

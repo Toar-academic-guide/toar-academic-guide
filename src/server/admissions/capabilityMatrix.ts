@@ -822,10 +822,14 @@ export function buildAdmissionsCapabilityMatrix(args: {
         };
       }
 
-      if (!isExactFreshnessState(freshnessState, verificationArtifact.contract.sourceFingerprint, now)) {
+      if (
+        !isExactFreshnessState(freshnessState, verificationArtifact.contract.sourceFingerprint, now)
+      ) {
         return {
           institutionId,
-          capability: isFreshnessStateStale(freshnessState, now) ? 'stale' : 'authority_unavailable',
+          capability: isFreshnessStateStale(freshnessState, now)
+            ? 'stale'
+            : 'authority_unavailable',
           formulaPairScope,
           pairVerification,
           sourceTarget,

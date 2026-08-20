@@ -10,10 +10,7 @@ export type AdmissionsProofLevel =
   'blocked' | 'exact_official' | 'open_admission' | 'partial_official' | 'static_data_candidate';
 
 export type AdmissionsProofStatus = 'blocked' | 'failed' | 'partial' | 'succeeded';
-export type AdmissionsDecisionProvenance =
-  | 'official_response'
-  | 'verified_derivation'
-  | 'none';
+export type AdmissionsDecisionProvenance = 'official_response' | 'verified_derivation' | 'none';
 
 export type AdmissionsAdapterId =
   'capability_matrix' | 'haifa' | 'tau' | 'huji' | 'technion' | 'bgu';

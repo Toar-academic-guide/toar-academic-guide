@@ -119,7 +119,8 @@ function evaluateAdmissionsForProgram(
 ) {
   return evaluateAdmissionsForProgramInternal({
     ...args,
-    freshnessStatesBySourceId: args.freshnessStatesBySourceId ?? qualifiedFreshnessStates(args.program),
+    freshnessStatesBySourceId:
+      args.freshnessStatesBySourceId ?? qualifiedFreshnessStates(args.program),
   });
 }
 

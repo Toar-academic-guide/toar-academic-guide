@@ -511,7 +511,8 @@ function fixtureContainsPii(fixture: AdmissionsVerificationFixture): boolean {
     if (!value || typeof value !== 'object') return false;
     if (visited.has(value)) return false;
     visited.add(value);
-    if (Array.isArray(value)) return value.some((entry) => containsPii(entry, undefined, depth + 1));
+    if (Array.isArray(value))
+      return value.some((entry) => containsPii(entry, undefined, depth + 1));
     return Object.entries(value as Record<string, unknown>).some(([nestedKey, nestedValue]) =>
       containsPii(nestedValue, nestedKey, depth + 1),
     );

@@ -243,7 +243,6 @@ function withholdUncapturedProof(
   };
 }
 
-
 function cacheStaticOfficialSourceFetches(fetcher: typeof fetch): typeof fetch {
   const cachedResponses = new Map<string, Promise<Response>>();
 

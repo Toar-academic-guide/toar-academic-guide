@@ -4,14 +4,14 @@ import { withBoundedOfficialResponse } from './boundedOfficialFetch';
 
 describe('withBoundedOfficialResponse', () => {
   it('rejects an oversized response before reading its body', async () => {
-    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(
-      new Response('ignored', { headers: { 'content-length': String(2 * 1024 * 1024 + 1) } }),
-    );
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(
+        new Response('ignored', { headers: { 'content-length': String(2 * 1024 * 1024 + 1) } }),
+      );
 
     await expect(
-      withBoundedOfficialResponse(fetcher, { timeoutMs: 100 })(
-        'https://official.example/large',
-      ),
+      withBoundedOfficialResponse(fetcher, { timeoutMs: 100 })('https://official.example/large'),
     ).rejects.toThrow('exceeded');
   });
 

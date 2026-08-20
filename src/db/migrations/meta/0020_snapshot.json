@@ -81,12 +81,8 @@
           "name": "admission_alert_baseline_history_subscription_id_admission_alert_subscriptions_id_fk",
           "tableFrom": "admission_alert_baseline_history",
           "tableTo": "admission_alert_subscriptions",
-          "columnsFrom": [
-            "subscription_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["subscription_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -94,12 +90,8 @@
           "name": "admission_alert_baseline_history_profile_version_id_bagrut_profile_versions_id_fk",
           "tableFrom": "admission_alert_baseline_history",
           "tableTo": "bagrut_profile_versions",
-          "columnsFrom": [
-            "profile_version_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["profile_version_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -316,12 +308,8 @@
           "name": "admission_alert_outbox_subscription_id_admission_alert_subscriptions_id_fk",
           "tableFrom": "admission_alert_outbox",
           "tableTo": "admission_alert_subscriptions",
-          "columnsFrom": [
-            "subscription_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["subscription_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -329,12 +317,8 @@
           "name": "admission_alert_outbox_transition_id_admission_target_transitions_id_fk",
           "tableFrom": "admission_alert_outbox",
           "tableTo": "admission_target_transitions",
-          "columnsFrom": [
-            "transition_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["transition_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -559,12 +543,8 @@
           "name": "admission_alert_subscriptions_institution_id_institutions_id_fk",
           "tableFrom": "admission_alert_subscriptions",
           "tableTo": "institutions",
-          "columnsFrom": [
-            "institution_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["institution_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -572,12 +552,8 @@
           "name": "admission_alert_subscriptions_program_id_programs_id_fk",
           "tableFrom": "admission_alert_subscriptions",
           "tableTo": "programs",
-          "columnsFrom": [
-            "program_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["program_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -585,12 +561,8 @@
           "name": "admission_alert_subscriptions_profile_version_id_bagrut_profile_versions_id_fk",
           "tableFrom": "admission_alert_subscriptions",
           "tableTo": "bagrut_profile_versions",
-          "columnsFrom": [
-            "profile_version_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["profile_version_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -702,12 +674,8 @@
           "name": "admission_alert_transition_work_transition_id_admission_target_transitions_id_fk",
           "tableFrom": "admission_alert_transition_work",
           "tableTo": "admission_target_transitions",
-          "columnsFrom": [
-            "transition_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["transition_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -767,12 +735,8 @@
           "name": "admission_alert_webhook_events_outbox_id_admission_alert_outbox_id_fk",
           "tableFrom": "admission_alert_webhook_events",
           "tableTo": "admission_alert_outbox",
-          "columnsFrom": [
-            "outbox_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["outbox_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -863,12 +827,8 @@
           "name": "admission_alternative_paths_admission_requirement_id_admission_requirements_id_fk",
           "tableFrom": "admission_alternative_paths",
           "tableTo": "admission_requirements",
-          "columnsFrom": [
-            "admission_requirement_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["admission_requirement_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -876,12 +836,8 @@
           "name": "admission_alternative_paths_institution_id_institutions_id_fk",
           "tableFrom": "admission_alternative_paths",
           "tableTo": "institutions",
-          "columnsFrom": [
-            "institution_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["institution_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -889,12 +845,8 @@
           "name": "admission_alternative_paths_program_id_programs_id_fk",
           "tableFrom": "admission_alternative_paths",
           "tableTo": "programs",
-          "columnsFrom": [
-            "program_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["program_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -902,12 +854,8 @@
           "name": "admission_alternative_paths_source_candidate_id_admissions_source_candidates_id_fk",
           "tableFrom": "admission_alternative_paths",
           "tableTo": "admissions_source_candidates",
-          "columnsFrom": [
-            "source_candidate_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["source_candidate_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -1026,12 +974,8 @@
           "name": "admission_facts_admission_requirement_id_admission_requirements_id_fk",
           "tableFrom": "admission_facts",
           "tableTo": "admission_requirements",
-          "columnsFrom": [
-            "admission_requirement_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["admission_requirement_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1039,12 +983,8 @@
           "name": "admission_facts_institution_id_institutions_id_fk",
           "tableFrom": "admission_facts",
           "tableTo": "institutions",
-          "columnsFrom": [
-            "institution_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["institution_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1052,12 +992,8 @@
           "name": "admission_facts_program_id_programs_id_fk",
           "tableFrom": "admission_facts",
           "tableTo": "programs",
-          "columnsFrom": [
-            "program_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["program_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1065,12 +1001,8 @@
           "name": "admission_facts_source_candidate_id_admissions_source_candidates_id_fk",
           "tableFrom": "admission_facts",
           "tableTo": "admissions_source_candidates",
-          "columnsFrom": [
-            "source_candidate_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["source_candidate_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -1154,12 +1086,8 @@
           "name": "admission_publication_attempts_release_id_admission_releases_id_fk",
           "tableFrom": "admission_publication_attempts",
           "tableTo": "admission_releases",
-          "columnsFrom": [
-            "release_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["release_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1253,12 +1181,8 @@
           "name": "admission_release_items_transition_id_admission_target_transitions_id_fk",
           "tableFrom": "admission_release_items",
           "tableTo": "admission_target_transitions",
-          "columnsFrom": [
-            "transition_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["transition_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1448,12 +1372,8 @@
           "name": "admission_requirements_program_id_programs_id_fk",
           "tableFrom": "admission_requirements",
           "tableTo": "programs",
-          "columnsFrom": [
-            "program_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["program_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1461,12 +1381,8 @@
           "name": "admission_requirements_institution_id_institutions_id_fk",
           "tableFrom": "admission_requirements",
           "tableTo": "institutions",
-          "columnsFrom": [
-            "institution_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["institution_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1717,12 +1633,8 @@
           "name": "admission_target_transitions_release_id_admission_releases_id_fk",
           "tableFrom": "admission_target_transitions",
           "tableTo": "admission_releases",
-          "columnsFrom": [
-            "release_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["release_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1730,12 +1642,8 @@
           "name": "admission_target_transitions_institution_id_institutions_id_fk",
           "tableFrom": "admission_target_transitions",
           "tableTo": "institutions",
-          "columnsFrom": [
-            "institution_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["institution_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -1743,12 +1651,8 @@
           "name": "admission_target_transitions_program_id_programs_id_fk",
           "tableFrom": "admission_target_transitions",
           "tableTo": "programs",
-          "columnsFrom": [
-            "program_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["program_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -1848,12 +1752,8 @@
           "name": "admission_thresholds_program_id_programs_id_fk",
           "tableFrom": "admission_thresholds",
           "tableTo": "programs",
-          "columnsFrom": [
-            "program_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["program_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1861,12 +1761,8 @@
           "name": "admission_thresholds_institution_id_institutions_id_fk",
           "tableFrom": "admission_thresholds",
           "tableTo": "institutions",
-          "columnsFrom": [
-            "institution_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["institution_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -1958,12 +1854,8 @@
           "name": "admissions_source_candidates_admission_requirement_id_admission_requirements_id_fk",
           "tableFrom": "admissions_source_candidates",
           "tableTo": "admission_requirements",
-          "columnsFrom": [
-            "admission_requirement_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["admission_requirement_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1971,12 +1863,8 @@
           "name": "admissions_source_candidates_institution_id_institutions_id_fk",
           "tableFrom": "admissions_source_candidates",
           "tableTo": "institutions",
-          "columnsFrom": [
-            "institution_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["institution_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -1984,12 +1872,8 @@
           "name": "admissions_source_candidates_program_id_programs_id_fk",
           "tableFrom": "admissions_source_candidates",
           "tableTo": "programs",
-          "columnsFrom": [
-            "program_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["program_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2163,12 +2047,8 @@
           "name": "ingestion_jobs_source_id_ingestion_sources_id_fk",
           "tableFrom": "ingestion_jobs",
           "tableTo": "ingestion_sources",
-          "columnsFrom": [
-            "source_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["source_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2215,12 +2095,8 @@
           "name": "ingestion_payloads_job_id_ingestion_jobs_id_fk",
           "tableFrom": "ingestion_payloads",
           "tableTo": "ingestion_jobs",
-          "columnsFrom": [
-            "job_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["job_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2286,12 +2162,8 @@
           "name": "ingestion_sources_institution_id_institutions_id_fk",
           "tableFrom": "ingestion_sources",
           "tableTo": "institutions",
-          "columnsFrom": [
-            "institution_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["institution_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         },
@@ -2299,12 +2171,8 @@
           "name": "ingestion_sources_program_id_programs_id_fk",
           "tableFrom": "ingestion_sources",
           "tableTo": "programs",
-          "columnsFrom": [
-            "program_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["program_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -2414,12 +2282,8 @@
           "name": "program_institutions_program_id_programs_id_fk",
           "tableFrom": "program_institutions",
           "tableTo": "programs",
-          "columnsFrom": [
-            "program_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["program_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2427,12 +2291,8 @@
           "name": "program_institutions_institution_id_institutions_id_fk",
           "tableFrom": "program_institutions",
           "tableTo": "institutions",
-          "columnsFrom": [
-            "institution_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["institution_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2440,10 +2300,7 @@
       "compositePrimaryKeys": {
         "program_institutions_program_id_institution_id_pk": {
           "name": "program_institutions_program_id_institution_id_pk",
-          "columns": [
-            "program_id",
-            "institution_id"
-          ]
+          "columns": ["program_id", "institution_id"]
         }
       },
       "uniqueConstraints": {},
@@ -2563,12 +2420,8 @@
           "name": "programs_institution_id_institutions_id_fk",
           "tableFrom": "programs",
           "tableTo": "institutions",
-          "columnsFrom": [
-            "institution_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["institution_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -2666,12 +2519,8 @@
           "name": "requirement_versions_admission_requirement_id_admission_requirements_id_fk",
           "tableFrom": "requirement_versions",
           "tableTo": "admission_requirements",
-          "columnsFrom": [
-            "admission_requirement_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["admission_requirement_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2744,12 +2593,8 @@
           "name": "review_items_payload_id_ingestion_payloads_id_fk",
           "tableFrom": "review_items",
           "tableTo": "ingestion_payloads",
-          "columnsFrom": [
-            "payload_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["payload_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -2757,12 +2602,8 @@
           "name": "review_items_admission_requirement_id_admission_requirements_id_fk",
           "tableFrom": "review_items",
           "tableTo": "admission_requirements",
-          "columnsFrom": [
-            "admission_requirement_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["admission_requirement_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -2803,12 +2644,8 @@
           "name": "saved_programs_program_id_programs_id_fk",
           "tableFrom": "saved_programs",
           "tableTo": "programs",
-          "columnsFrom": [
-            "program_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["program_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -2816,10 +2653,7 @@
       "compositePrimaryKeys": {
         "saved_programs_user_id_program_id_pk": {
           "name": "saved_programs_user_id_program_id_pk",
-          "columns": [
-            "user_id",
-            "program_id"
-          ]
+          "columns": ["user_id", "program_id"]
         }
       },
       "uniqueConstraints": {},
@@ -3011,12 +2845,8 @@
           "name": "source_freshness_checks_source_id_ingestion_sources_id_fk",
           "tableFrom": "source_freshness_checks",
           "tableTo": "ingestion_sources",
-          "columnsFrom": [
-            "source_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["source_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3024,12 +2854,8 @@
           "name": "source_freshness_checks_review_item_id_review_items_id_fk",
           "tableFrom": "source_freshness_checks",
           "tableTo": "review_items",
-          "columnsFrom": [
-            "review_item_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["review_item_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -3208,12 +3034,8 @@
           "name": "source_freshness_states_source_id_ingestion_sources_id_fk",
           "tableFrom": "source_freshness_states",
           "tableTo": "ingestion_sources",
-          "columnsFrom": [
-            "source_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["source_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3221,12 +3043,8 @@
           "name": "source_freshness_states_latest_review_item_id_review_items_id_fk",
           "tableFrom": "source_freshness_states",
           "tableTo": "review_items",
-          "columnsFrom": [
-            "latest_review_item_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["latest_review_item_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -3292,12 +3110,8 @@
           "name": "source_urls_admission_requirement_id_admission_requirements_id_fk",
           "tableFrom": "source_urls",
           "tableTo": "admission_requirements",
-          "columnsFrom": [
-            "admission_requirement_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["admission_requirement_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3305,12 +3119,8 @@
           "name": "source_urls_institution_id_institutions_id_fk",
           "tableFrom": "source_urls",
           "tableTo": "institutions",
-          "columnsFrom": [
-            "institution_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["institution_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -3318,12 +3128,8 @@
           "name": "source_urls_program_id_programs_id_fk",
           "tableFrom": "source_urls",
           "tableTo": "programs",
-          "columnsFrom": [
-            "program_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["program_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3402,12 +3208,8 @@
           "name": "university_calculator_configs_institution_id_institutions_id_fk",
           "tableFrom": "university_calculator_configs",
           "tableTo": "institutions",
-          "columnsFrom": [
-            "institution_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["institution_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -3618,12 +3420,8 @@
           "name": "user_profiles_bagrut_profile_version_id_bagrut_profile_versions_id_fk",
           "tableFrom": "user_profiles",
           "tableTo": "bagrut_profile_versions",
-          "columnsFrom": [
-            "bagrut_profile_version_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["bagrut_profile_version_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }
@@ -3665,24 +3463,12 @@
     "public.admission_alert_transition_work_status": {
       "name": "admission_alert_transition_work_status",
       "schema": "public",
-      "values": [
-        "pending",
-        "processing",
-        "completed",
-        "failed"
-      ]
+      "values": ["pending", "processing", "completed", "failed"]
     },
     "public.admission_comparison": {
       "name": "admission_comparison",
       "schema": "public",
-      "values": [
-        "gte",
-        "lte",
-        "eq",
-        "present",
-        "not_required",
-        "unknown"
-      ]
+      "values": ["gte", "lte", "eq", "present", "not_required", "unknown"]
     },
     "public.admission_fact_field": {
       "name": "admission_fact_field",
@@ -3715,88 +3501,47 @@
     "public.admission_fact_kind": {
       "name": "admission_fact_kind",
       "schema": "public",
-      "values": [
-        "numeric_gate",
-        "manual_gate",
-        "open_admission",
-        "explicit_absence",
-        "unknown"
-      ]
+      "values": ["numeric_gate", "manual_gate", "open_admission", "explicit_absence", "unknown"]
     },
     "public.admission_fact_unit": {
       "name": "admission_fact_unit",
       "schema": "public",
-      "values": [
-        "points",
-        "average",
-        "units",
-        "boolean",
-        "text"
-      ]
+      "values": ["points", "average", "units", "boolean", "text"]
     },
     "public.admission_publication_attempt_status": {
       "name": "admission_publication_attempt_status",
       "schema": "public",
-      "values": [
-        "started",
-        "succeeded",
-        "failed"
-      ]
+      "values": ["started", "succeeded", "failed"]
     },
     "public.admission_release_status": {
       "name": "admission_release_status",
       "schema": "public",
-      "values": [
-        "pending",
-        "published",
-        "failed"
-      ]
+      "values": ["pending", "published", "failed"]
     },
     "public.admission_review_run_status": {
       "name": "admission_review_run_status",
       "schema": "public",
-      "values": [
-        "prepared",
-        "reviewable",
-        "no_changes",
-        "validation_failed"
-      ]
+      "values": ["prepared", "reviewable", "no_changes", "validation_failed"]
     },
     "public.admission_review_slack_status": {
       "name": "admission_review_slack_status",
       "schema": "public",
-      "values": [
-        "pending",
-        "sent",
-        "failed"
-      ]
+      "values": ["pending", "sent", "failed"]
     },
     "public.admission_type": {
       "name": "admission_type",
       "schema": "public",
-      "values": [
-        "sekhem",
-        "requirements"
-      ]
+      "values": ["sekhem", "requirements"]
     },
     "public.admissions_confidence": {
       "name": "admissions_confidence",
       "schema": "public",
-      "values": [
-        "high",
-        "medium",
-        "low"
-      ]
+      "values": ["high", "medium", "low"]
     },
     "public.admissions_source_origin": {
       "name": "admissions_source_origin",
       "schema": "public",
-      "values": [
-        "board_column",
-        "item_update",
-        "catalogue_url",
-        "manual"
-      ]
+      "values": ["board_column", "item_update", "catalogue_url", "manual"]
     },
     "public.admissions_source_specificity": {
       "name": "admissions_source_specificity",
@@ -3828,29 +3573,17 @@
     "public.calculator_formula_type": {
       "name": "calculator_formula_type",
       "schema": "public",
-      "values": [
-        "weighted_scaled",
-        "technion_linear",
-        "minimum_floors"
-      ]
+      "values": ["weighted_scaled", "technion_linear", "minimum_floors"]
     },
     "public.document_kind": {
       "name": "document_kind",
       "schema": "public",
-      "values": [
-        "psychometric",
-        "bagrut",
-        "other"
-      ]
+      "values": ["psychometric", "bagrut", "other"]
     },
     "public.freshness_capability": {
       "name": "freshness_capability",
       "schema": "public",
-      "values": [
-        "blocked",
-        "decision_capable",
-        "score_only"
-      ]
+      "values": ["blocked", "decision_capable", "score_only"]
     },
     "public.freshness_source_class": {
       "name": "freshness_source_class",
@@ -3866,96 +3599,52 @@
     "public.geographic_region": {
       "name": "geographic_region",
       "schema": "public",
-      "values": [
-        "center",
-        "north",
-        "south",
-        "any"
-      ]
+      "values": ["center", "north", "south", "any"]
     },
     "public.ingestion_job_status": {
       "name": "ingestion_job_status",
       "schema": "public",
-      "values": [
-        "pending",
-        "running",
-        "succeeded",
-        "failed",
-        "needs_review"
-      ]
+      "values": ["pending", "running", "succeeded", "failed", "needs_review"]
     },
     "public.program_type": {
       "name": "program_type",
       "schema": "public",
-      "values": [
-        "academic",
-        "certificate",
-        "vocational"
-      ]
+      "values": ["academic", "certificate", "vocational"]
     },
     "public.review_item_status": {
       "name": "review_item_status",
       "schema": "public",
-      "values": [
-        "pending",
-        "approved",
-        "rejected"
-      ]
+      "values": ["pending", "approved", "rejected"]
     },
     "public.review_status": {
       "name": "review_status",
       "schema": "public",
-      "values": [
-        "seeded",
-        "reviewed",
-        "published"
-      ]
+      "values": ["seeded", "reviewed", "published"]
     },
     "public.source_difficulty": {
       "name": "source_difficulty",
       "schema": "public",
-      "values": [
-        "easy",
-        "browser_required",
-        "hard_manual"
-      ]
+      "values": ["easy", "browser_required", "hard_manual"]
     },
     "public.source_freshness_status": {
       "name": "source_freshness_status",
       "schema": "public",
-      "values": [
-        "blocked",
-        "changed_needs_review",
-        "failed",
-        "fresh"
-      ]
+      "values": ["blocked", "changed_needs_review", "failed", "fresh"]
     },
     "public.source_url_kind": {
       "name": "source_url_kind",
       "schema": "public",
-      "values": [
-        "program",
-        "calculator",
-        "institution"
-      ]
+      "values": ["program", "calculator", "institution"]
     },
     "public.storage_provider": {
       "name": "storage_provider",
       "schema": "public",
-      "values": [
-        "local",
-        "supabase_storage",
-        "s3",
-        "other"
-      ]
+      "values": ["local", "supabase_storage", "s3", "other"]
     },
     "public.threshold_kind": {
       "name": "threshold_kind",
       "schema": "public",
-      "values": [
-        "sekhem",
-        "direct_psychometric"
-      ]
+      "values": ["sekhem", "direct_psychometric"]
     }
   },
   "schemas": {},

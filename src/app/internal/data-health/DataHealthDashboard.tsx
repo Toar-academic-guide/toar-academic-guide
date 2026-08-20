@@ -75,8 +75,8 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
         <section className="rounded-[1.75rem] border border-slate-950/10 bg-white p-6 shadow-sm">
           <h2 className="text-2xl font-black text-slate-950">Formula-backed pair verification</h2>
           <p className="mt-1 text-sm text-slate-500">
-            Reviewed baseline coverage is immutable. Runtime coverage is activated separately by
-            the persisted weekly authority check.
+            Reviewed baseline coverage is immutable. Runtime coverage is activated separately by the
+            persisted weekly authority check.
           </p>
           <DefinitionGrid
             items={[
