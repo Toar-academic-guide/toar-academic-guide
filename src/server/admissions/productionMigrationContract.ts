@@ -18,6 +18,14 @@ export type MigrationHistoryEntry = {
   statementFingerprint: string;
 };
 
+export type ForwardProductionMigration = {
+  id: MigrationId;
+  remoteName: string;
+  repositoryPath: string;
+  statementFingerprint: string;
+  legacyStatementFingerprints?: string[];
+};
+
 export const BASELINE_PRODUCTION_MIGRATIONS: MigrationHistoryEntry[] = [
   {
     version: '20260621214319',
@@ -51,12 +59,7 @@ export const BASELINE_PRODUCTION_MIGRATIONS: MigrationHistoryEntry[] = [
   },
 ];
 
-export const FORWARD_PRODUCTION_MIGRATIONS: Array<{
-  id: MigrationId;
-  remoteName: string;
-  repositoryPath: string;
-  statementFingerprint: string;
-}> = [
+export const FORWARD_PRODUCTION_MIGRATIONS: ForwardProductionMigration[] = [
   {
     id: '0010',
     remoteName: 'bagrut_profile_versions',
@@ -127,6 +130,7 @@ export const FORWARD_PRODUCTION_MIGRATIONS: Array<{
     id: '0021',
     remoteName: 'operational_proof_release_lane',
     repositoryPath: 'src/db/migrations/0021_simple_sugar_man.sql',
-    statementFingerprint: 'ba89e5847ef10fa529545c0120fb0f1f',
+    statementFingerprint: '86f3daf91908c87fb305292dea29707b',
+    legacyStatementFingerprints: ['ba89e5847ef10fa529545c0120fb0f1f'],
   },
 ];

@@ -41,8 +41,61 @@ BEGIN
       NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOREPLICATION NOBYPASSRLS;
   END IF;
 
-  ALTER ROLE admissions_automation
-    NOLOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOREPLICATION NOBYPASSRLS;
+  IF EXISTS (
+    SELECT 1
+    FROM pg_roles
+    WHERE rolname = 'admissions_automation'
+      AND (
+        rolsuper
+        OR rolcreatedb
+        OR rolcreaterole
+        OR rolinherit
+        OR rolreplication
+        OR rolbypassrls
+        OR rolcanlogin
+      )
+  ) THEN
+    RAISE EXCEPTION
+      'admissions_automation must be a non-login, non-privileged role before grants are applied';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1
+    FROM pg_auth_members membership
+    JOIN pg_roles member_role ON member_role.oid = membership.member
+    WHERE member_role.rolname = 'admissions_automation'
+  ) THEN
+    RAISE EXCEPTION
+      'admissions_automation must not inherit or assume privileges through role membership';
+  END IF;
+
+  IF EXISTS (
+    SELECT 1 FROM pg_class relation
+    JOIN pg_namespace namespace ON namespace.oid = relation.relnamespace
+    JOIN pg_roles owner_role ON owner_role.oid = relation.relowner
+    WHERE namespace.nspname = 'public'
+      AND owner_role.rolname = 'admissions_automation'
+    UNION ALL
+    SELECT 1 FROM pg_proc routine
+    JOIN pg_namespace namespace ON namespace.oid = routine.pronamespace
+    JOIN pg_roles owner_role ON owner_role.oid = routine.proowner
+    WHERE namespace.nspname = 'public'
+      AND owner_role.rolname = 'admissions_automation'
+    UNION ALL
+    SELECT 1 FROM pg_type type
+    JOIN pg_namespace namespace ON namespace.oid = type.typnamespace
+    JOIN pg_roles owner_role ON owner_role.oid = type.typowner
+    WHERE namespace.nspname = 'public'
+      AND owner_role.rolname = 'admissions_automation'
+    UNION ALL
+    SELECT 1 FROM pg_namespace namespace
+    JOIN pg_roles owner_role ON owner_role.oid = namespace.nspowner
+    WHERE namespace.nspname = 'public'
+      AND owner_role.rolname = 'admissions_automation'
+  ) THEN
+    RAISE EXCEPTION
+      'admissions_automation must not own public database objects';
+  END IF;
 
   REVOKE ALL PRIVILEGES ON SCHEMA public FROM admissions_automation;
   REVOKE ALL PRIVILEGES ON ALL TABLES IN SCHEMA public FROM admissions_automation;

@@ -15,6 +15,13 @@ export type DatabaseRoleSnapshot = {
   name: string;
   canLogin: boolean;
   bypassRls: boolean;
+  isSuperuser: boolean;
+  canCreateDatabases: boolean;
+  canCreateRoles: boolean;
+  inheritsPrivileges: boolean;
+  canReplicate: boolean;
+  memberOf: string[];
+  ownedPublicObjects: string[];
 };
 
 export type TableSnapshot = {
@@ -59,6 +66,9 @@ export type ProductionSchemaIssue = {
     | 'unexpected_migration'
     | 'missing_role'
     | 'role_bypasses_rls'
+    | 'role_not_least_privileged'
+    | 'role_has_memberships'
+    | 'role_owns_public_objects'
     | 'role_cannot_login'
     | 'missing_table'
     | 'unexpected_pending_object'
@@ -573,7 +583,9 @@ function assessMigrationHistory(
     if (
       !expected ||
       actual.name !== expected.remoteName ||
-      actual.statementFingerprint !== expected.statementFingerprint
+      ![expected.statementFingerprint, ...(expected.legacyStatementFingerprints ?? [])].includes(
+        actual.statementFingerprint,
+      )
     ) {
       issues.push({
         code: 'unexpected_migration',
@@ -612,6 +624,34 @@ function assessRoles(
         code: 'role_bypasses_rls',
         object: `role:${roleName}`,
         detail: `Role ${roleName} must not bypass row-level security.`,
+      });
+    }
+    if (
+      roleName === admissionsAutomationRole &&
+      (role.isSuperuser ||
+        role.canCreateDatabases ||
+        role.canCreateRoles ||
+        role.inheritsPrivileges ||
+        role.canReplicate)
+    ) {
+      issues.push({
+        code: 'role_not_least_privileged',
+        object: `role:${roleName}`,
+        detail: `Role ${roleName} must not hold elevated database attributes.`,
+      });
+    }
+    if (roleName === admissionsAutomationRole && role.memberOf.length > 0) {
+      issues.push({
+        code: 'role_has_memberships',
+        object: `role:${roleName}`,
+        detail: `Role ${roleName} must not inherit or assume privileges through memberships.`,
+      });
+    }
+    if (roleName === admissionsAutomationRole && role.ownedPublicObjects.length > 0) {
+      issues.push({
+        code: 'role_owns_public_objects',
+        object: `role:${roleName}`,
+        detail: `Role ${roleName} must not own public database objects.`,
       });
     }
     if (

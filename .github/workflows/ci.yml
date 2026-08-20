@@ -102,12 +102,11 @@ jobs:
     needs:
       - production-sensitive-paths
       - quality
-    if: ${{ needs.production-sensitive-paths.outputs.applicable == 'true' }}
+    if: ${{ github.ref == 'refs/heads/main' && needs.production-sensitive-paths.outputs.applicable == 'true' }}
     environment: admissions-publication
     env:
       CI: true
       OPS_DATABASE_URL: ${{ secrets.OPS_DATABASE_URL }}
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
     steps:
       - name: Checkout repository
@@ -136,14 +135,14 @@ jobs:
     steps:
       - name: Require successful applicable preflight
         env:
-          APPLICABLE: ${{ needs.production-sensitive-paths.outputs.applicable }}
+          PREFLIGHT_REQUIRED: ${{ github.ref == 'refs/heads/main' && needs.production-sensitive-paths.outputs.applicable == 'true' }}
           PREFLIGHT_RESULT: ${{ needs.operational-schema.result }}
         run: |
-          if [[ "$APPLICABLE" == "true" && "$PREFLIGHT_RESULT" != "success" ]]; then
+          if [[ "$PREFLIGHT_REQUIRED" == "true" && "$PREFLIGHT_RESULT" != "success" ]]; then
             echo "Production-sensitive changes require a successful operational schema preflight."
             exit 1
           fi
-          echo "Operational schema gate passed (applicable=$APPLICABLE, result=$PREFLIGHT_RESULT)."
+          echo "Operational schema gate passed (required=$PREFLIGHT_REQUIRED, result=$PREFLIGHT_RESULT)."
 
   # ---------------------------------------------------------------------------
   # Job 2: Unit tests with coverage
