@@ -494,17 +494,30 @@ function blocked(issues: ProgramVerificationIssue[]): ProgramVerificationResult 
 }
 
 function fixtureContainsPii(fixture: AdmissionsVerificationFixture): boolean {
-  const forbiddenKey = /(user|name|email|phone|address|birth|passport|identity|teudat|tz)/i;
+  const forbiddenKey =
+    /^(?:user|name|first_?name|last_?name|full_?name|applicant_?name|email|phone|address|birth(?:date)?|passport|identity|teudat|tz)$/i;
   const email = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const phone = /^(?:\+972|0)(?:[23489]|5\d)-?\d{7}$/;
   const israeliId = /^\d{9}$/;
+  const visited = new Set<unknown>();
+  let nodes = 0;
 
-  return Object.entries(fixture.input).some(
-    ([key, value]) =>
-      forbiddenKey.test(key) ||
-      (typeof value === 'string' &&
-        (email.test(value.trim()) || phone.test(value.trim()) || israeliId.test(value.trim()))),
-  );
+  const containsPii = (value: unknown, key?: string, depth = 0): boolean => {
+    if (depth > 12 || nodes++ > 2_000 || (key && forbiddenKey.test(key))) return true;
+    if (typeof value === 'string') {
+      const candidate = value.trim();
+      return email.test(candidate) || phone.test(candidate) || israeliId.test(candidate);
+    }
+    if (!value || typeof value !== 'object') return false;
+    if (visited.has(value)) return false;
+    visited.add(value);
+    if (Array.isArray(value)) return value.some((entry) => containsPii(entry, undefined, depth + 1));
+    return Object.entries(value as Record<string, unknown>).some(([nestedKey, nestedValue]) =>
+      containsPii(nestedValue, nestedKey, depth + 1),
+    );
+  };
+
+  return containsPii(fixture.input);
 }
 
 function stableValue(value: unknown): unknown {

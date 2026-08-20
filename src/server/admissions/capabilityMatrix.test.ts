@@ -2,7 +2,11 @@ import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('server-only', () => ({}));
 
-import { buildAdmissionsCapabilityMatrix } from './capabilityMatrix';
+import {
+  buildAdmissionsCapabilityMatrix as buildCapabilityMatrixRaw,
+  type AdmissionsCapabilityEntry,
+} from './capabilityMatrix';
+import { getProgramVerificationArtifact } from '@/data/admissions/tauProgramVerification';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type { SourceFreshnessStateRow } from '@/db/types';
 
@@ -117,6 +121,13 @@ const INSTITUTIONS: CatalogueInstitution[] = [
     universityId: 'shenkar',
   },
   { id: 'mta', name: 'MTA', region: 'center', domain: 'mta.ac.il', universityId: 'mta' },
+  {
+    id: 'colman',
+    name: 'College of Management Academic Studies',
+    region: 'center',
+    domain: 'colman.ac.il',
+    universityId: 'colman',
+  },
 ];
 
 function makeProgram(overrides: Partial<CatalogueProgram> = {}): CatalogueProgram {
@@ -134,14 +145,95 @@ function makeProgram(overrides: Partial<CatalogueProgram> = {}): CatalogueProgra
   };
 }
 
+function qualifiedFreshnessStatesFor(
+  program: CatalogueProgram,
+  now: Date,
+): Map<string, SourceFreshnessStateRow> {
+  return new Map(
+    program.linkedInstitutionIds.flatMap((institutionId) => {
+      const artifact = getProgramVerificationArtifact(`${program.id}__${institutionId}`);
+      if (!artifact) {
+        return [];
+      }
+
+      return [
+        [
+          artifact.contract.source.targetId,
+          makeFreshnessState({
+            sourceId: artifact.contract.source.targetId,
+            proofLevel: 'exact_official',
+            decisionProvenance: 'verified_derivation',
+            reviewedSourceFingerprint: artifact.contract.sourceFingerprint,
+            lastExactCheckAt: new Date(now.getTime() - 60_000),
+          }),
+        ],
+      ];
+    }),
+  );
+}
+
+function buildCapabilityMatrix(
+  args: Parameters<typeof buildCapabilityMatrixRaw>[0],
+): AdmissionsCapabilityEntry[] {
+  const now = args.now ?? new Date('2026-07-25T21:00:00Z');
+
+  return buildCapabilityMatrixRaw({
+    ...args,
+    now,
+    freshnessStatesBySourceId:
+      args.freshnessStatesBySourceId ?? qualifiedFreshnessStatesFor(args.program, now),
+  });
+}
+
+const buildAdmissionsCapabilityMatrix = buildCapabilityMatrix;
+
 describe('buildAdmissionsCapabilityMatrix', () => {
-  it('uses the recent reviewed proof while asking for required TAU inputs', () => {
+  it.each([
+    ['medicine', 'tau', 'manual_gate'],
+    ['tau_medicine', 'tau', 'manual_gate'],
+    ['physiotherapy', 'tau', 'manual_gate'],
+    ['nutrition', 'tau', 'requirements_only'],
+    ['tau_infosystems', 'tau', 'requirements_only'],
+    ['physiotherapy', 'huji', 'requirements_only'],
+    ['nutrition', 'bgu', 'requirements_only'],
+    ['architecture', 'technion', 'manual_gate'],
+    ['colmgmt_cs', 'colman', 'manual_gate'],
+  ] as const)(
+    'routes %s to its official non-numeric admissions path when a final-verdict proof is unavailable',
+    (programId, institutionId, capability) => {
+      const [entry] = buildAdmissionsCapabilityMatrix({
+        program: makeProgram({
+          id: programId,
+          linkedInstitutionIds: [institutionId],
+        }),
+        institutions: INSTITUTIONS,
+      });
+
+      expect(entry).toMatchObject({
+        institutionId,
+        capability,
+        pairVerification: {
+          pairId: `${programId}__${institutionId}`,
+          state: 'withheld',
+          liveProof: { comparedScore: false, comparedVerdict: false },
+        },
+      });
+    },
+  );
+
+  it('requires a fresh exact-qualified weekly state before asking for required TAU inputs', () => {
+    const program = makeProgram({
+      id: 'tau_datascience',
+      linkedInstitutionIds: ['tau'],
+    });
     const [entry] = buildAdmissionsCapabilityMatrix({
-      program: makeProgram({
-        id: 'tau_datascience',
-        linkedInstitutionIds: ['tau'],
-      }),
+      program,
       institutions: INSTITUTIONS,
+      freshnessStatesBySourceId: qualifiedFreshnessStatesFor(
+        program,
+        new Date('2026-08-04T00:00:00Z'),
+      ),
+      now: new Date('2026-08-04T00:00:00Z'),
     });
 
     expect(entry).toMatchObject({
@@ -154,7 +246,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
   });
 
-  it('withdraws the TAU pair after the checked-in proof freshness window expires', () => {
+  it('keeps an old checked-in proof valid when the weekly state is exact-qualified and current', () => {
     const program = makeProgram({
       id: 'tau_datascience',
       linkedInstitutionIds: ['tau'],
@@ -167,7 +259,68 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
 
     const tauEntry = entries.find((e) => e.institutionId === 'tau');
-    expect(tauEntry?.capability).toBe('stale');
+    expect(tauEntry?.capability).toBe('needs_input');
+  });
+
+  it('fails closed as authority_unavailable when an exact pair has no persisted weekly state', () => {
+    const [entry] = buildAdmissionsCapabilityMatrix({
+      program: makeProgram({
+        id: 'tau_datascience',
+        linkedInstitutionIds: ['tau'],
+      }),
+      institutions: INSTITUTIONS,
+      freshnessStatesBySourceId: new Map(),
+      now: new Date('2026-08-04T00:00:00Z'),
+    });
+
+    expect(entry?.capability).toBe('authority_unavailable');
+  });
+
+  it('withdraws an exact pair when its last exact-qualified weekly check is stale', () => {
+    const program = makeProgram({
+      id: 'tau_datascience',
+      linkedInstitutionIds: ['tau'],
+    });
+    const states = qualifiedFreshnessStatesFor(program, new Date('2026-07-25T00:00:00Z'));
+
+    const [entry] = buildAdmissionsCapabilityMatrix({
+      program,
+      institutions: INSTITUTIONS,
+      freshnessStatesBySourceId: states,
+      now: new Date('2026-08-04T00:00:01Z'),
+    });
+
+    expect(entry?.capability).toBe('stale');
+  });
+
+  it('does not let a partial weekly result activate an exact pair', () => {
+    const program = makeProgram({
+      id: 'tau_datascience',
+      linkedInstitutionIds: ['tau'],
+    });
+    const states = qualifiedFreshnessStatesFor(program, new Date('2026-08-04T00:00:00Z'));
+    const state = states.get('tau-digital-sciences-live')!;
+    states.set('tau-digital-sciences-live', {
+      ...state,
+      proofLevel: 'partial_official',
+    });
+
+    const [entry] = buildAdmissionsCapabilityMatrix({
+      program,
+      institutions: INSTITUTIONS,
+      input: {
+        psychometricEnglish: 110,
+        bagrutSubjectRecord: {
+          schemaVersion: 1,
+          sector: 'jewish',
+          subjects: [{ subjectId: 'mathematics', units: 5, grade: 80 }],
+        },
+      },
+      freshnessStatesBySourceId: states,
+      now: new Date('2026-08-04T00:00:00Z'),
+    });
+
+    expect(entry?.capability).toBe('authority_unavailable');
   });
 
   it('activates the TAU pair only with matching source proof and required inputs', () => {
@@ -190,10 +343,13 @@ describe('buildAdmissionsCapabilityMatrix', () => {
           'tau-digital-sciences-live',
           makeFreshnessState({
             sourceId: 'tau-digital-sciences-live',
-            normalizedFingerprint:
-              '62a6a2f398b737b2139671f32c48a921083a4966ea43e8135c081870d42e9971',
+            proofLevel: 'exact_official',
+            decisionProvenance: 'verified_derivation',
+            reviewedSourceFingerprint:
+              'sha256:62a6a2f398b737b2139671f32c48a921083a4966ea43e8135c081870d42e9971',
             lastCheckedAt: new Date('2026-07-25T20:12:07Z'),
             lastSuccessfulCheckAt: new Date('2026-07-25T20:12:07Z'),
+            lastExactCheckAt: new Date('2026-07-25T20:12:07Z'),
           }),
         ],
       ]),
@@ -471,7 +627,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     );
   });
 
-  it('promotes a verified Technion pair while keeping an unmatched BGU pair score-only', () => {
+  it('asks for a Technion subject record while keeping an unmatched BGU pair score-only', () => {
     const program = makeProgram({
       id: 'technion_datascience',
       linkedInstitutionIds: ['technion', 'bgu'],
@@ -485,7 +641,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
 
     const technionEntry = entries.find((e) => e.institutionId === 'technion');
     const bguEntry = entries.find((e) => e.institutionId === 'bgu');
-    expect(technionEntry?.capability).toBe('exact');
+    expect(technionEntry?.capability).toBe('needs_input');
     expect(technionEntry?.exactTarget?.targetId).toBe('technion-technion_datascience-live');
     expect(technionEntry?.evidence?.missingData ?? []).toHaveLength(0);
     expect(bguEntry?.capability).toBe('score_only');
@@ -542,7 +698,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     );
   });
 
-  it('promotes Technion medicine after its invitation gate is replayed', () => {
+  it('asks for a Technion medicine subject record before replaying its invitation gate', () => {
     const program = makeProgram({
       id: 'technion_medicine',
       linkedInstitutionIds: ['technion'],
@@ -554,7 +710,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
 
     const technionEntry = entries.find((e) => e.institutionId === 'technion');
-    expect(technionEntry?.capability).toBe('exact');
+    expect(technionEntry?.capability).toBe('needs_input');
     expect(technionEntry?.evidence?.verifiedProgramThresholds).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -620,7 +776,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     );
   });
 
-  it('promotes the Technion threshold after verified score replay', () => {
+  it('asks for a Technion subject record before verified score replay', () => {
     const program = makeProgram({
       id: 'technion_cs',
       linkedInstitutionIds: ['technion'],
@@ -633,7 +789,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
 
     const technionEntry = entries.find((e) => e.institutionId === 'technion');
-    expect(technionEntry?.capability).toBe('exact');
+    expect(technionEntry?.capability).toBe('needs_input');
     expect(technionEntry?.evidence?.verifiedProgramThresholds).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -858,6 +1014,30 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
 
     const entry = entries.find((e) => e.institutionId === 'tau');
+    expect(entry?.capability).toBe('stale');
+  });
+
+  it('withdraws the verified TAU pair when a live source change awaits review', () => {
+    const program = makeProgram({
+      id: 'tau_datascience',
+      linkedInstitutionIds: ['tau'],
+    });
+
+    const entries = buildAdmissionsCapabilityMatrix({
+      program,
+      institutions: INSTITUTIONS,
+      freshnessStatesBySourceId: new Map([
+        [
+          'tau-digital-sciences-live',
+          makeFreshnessState({
+            sourceId: 'tau-digital-sciences-live',
+            status: 'changed_needs_review',
+          }),
+        ],
+      ]),
+    });
+
+    const entry = entries.find((item) => item.institutionId === 'tau');
     expect(entry?.capability).toBe('stale');
   });
 });

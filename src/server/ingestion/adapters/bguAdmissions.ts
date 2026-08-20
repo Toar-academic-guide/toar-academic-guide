@@ -5,10 +5,7 @@ import {
   type AdmissionsAdapterContext,
   type AdmissionsSourceProof,
 } from '../admissionsSourceAdapters';
-import {
-  BGU_SCORE_URL,
-  getBguProgramConfig,
-} from '@/data/admissions/bguProgramVerification';
+import { BGU_SCORE_URL, getBguProgramConfig } from '@/data/admissions/bguProgramVerification';
 
 const BGU_INDEX_URL = 'https://bgu4u.bgu.ac.il/html/average_calc/index.php';
 const BGU_SUBMIT_URL = 'https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem';
@@ -29,7 +26,8 @@ export async function runBguAdmissionsProof(
 
     const sourceResponse = await fetcher(sourceUrl);
     metadata.push(readOfficialResponseMetadata(sourceUrl, sourceResponse));
-    if (!sourceResponse.ok) throw new Error(`BGU conditions endpoint returned HTTP ${sourceResponse.status}`);
+    if (!sourceResponse.ok)
+      throw new Error(`BGU conditions endpoint returned HTTP ${sourceResponse.status}`);
     const sourcePayload = (await sourceResponse.json()) as {
       items?: Array<Record<string, unknown>>;
     };
@@ -84,10 +82,7 @@ export async function runBguAdmissionsProof(
       throw new Error('Failed to parse weighted score from BGU response HTML');
     }
 
-    const officialVerdict =
-      weightedScore >= acceptanceThreshold
-        ? config.verdict
-        : 'below';
+    const derivedVerdict = weightedScore >= acceptanceThreshold ? config.verdict : 'below';
 
     return {
       id: program.targetId ?? `bgu-${program.id}-live`,
@@ -103,7 +98,7 @@ export async function runBguAdmissionsProof(
         'selectedScore',
         'acceptanceThreshold',
         'rejectionThreshold',
-        'officialVerdict',
+        'derivedVerdict',
       ],
       normalizedPayload: {
         pairId: program.pairId,
@@ -113,23 +108,30 @@ export async function runBguAdmissionsProof(
         selectedScore: weightedScore,
         acceptanceThreshold,
         rejectionThreshold: acceptanceThreshold,
-        officialVerdict,
+        derivedVerdict,
+        proofStatus: 'succeeded',
+        proofLevel: 'exact_official',
+        decisionProvenance: 'verified_derivation',
       },
-      limitations: ['The official threshold is an eligibility or invitation threshold; programme-specific manual gates remain outside this numeric replay.'],
-      nextAction: 'Keep the official programme endpoint, score replay, threshold, fixtures, and source fingerprint under review',
+      limitations: [
+        'The official threshold is an eligibility or invitation threshold; programme-specific manual gates remain outside this numeric replay.',
+      ],
+      nextAction:
+        'Keep the official programme endpoint, score replay, threshold, fixtures, and source fingerprint under review',
       rawResponseMetadata: metadata,
     };
   } catch (error) {
-    return failedBguProof(error, metadata);
+    return failedBguProof(error, metadata, program);
   }
 }
 
 function failedBguProof(
   error: unknown,
   metadata: NonNullable<AdmissionsSourceProof['rawResponseMetadata']>,
+  program?: AdmissionsAdapterContext['program'],
 ): AdmissionsSourceProof {
   return {
-    id: 'bgu-score-only',
+    id: program?.targetId ?? 'bgu-score-only',
     institutionId: 'bgu',
     institutionName: 'Ben-Gurion University',
     officialUrl: BGU_INDEX_URL,

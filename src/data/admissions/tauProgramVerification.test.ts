@@ -118,7 +118,7 @@ describe('TAU Digital Sciences verification artifact', () => {
 
       expect(proof.normalizedPayload).toMatchObject({
         selectedScore: fixture.expected.score,
-        officialVerdict: fixture.expected.verdict,
+        derivedVerdict: fixture.expected.verdict,
         matchedProgramIds: [TAU_DIGITAL_SCIENCES_CONTRACT.officialProgramId],
       });
       expect(JSON.parse(String(fetcher.mock.calls[0][1]?.body))).toMatchObject({
@@ -279,7 +279,7 @@ describe('TAU Digital Sciences verification artifact', () => {
 
       expect(proof.normalizedPayload).toMatchObject({
         selectedScore: fixture.expected.score,
-        officialVerdict: fixture.expected.verdict,
+        derivedVerdict: fixture.expected.verdict,
         matchedProgramIds: [TAU_SOCIAL_WORK_CONTRACT.officialProgramId],
       });
     },

@@ -1,1374 +1,247 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { runAdmissionsLiveProof } from './admissionsLiveProofRunner';
-import { HUJI_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/hujiProgramVerification';
-import { BGU_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/bguProgramVerification';
-import { TECHNION_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/technionProgramVerification';
-import { HAIFA_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/haifaProgramVerification';
 
-function jsonResponse(body: unknown) {
-  return new Response(JSON.stringify(body), {
-    status: 200,
-    headers: { 'content-type': 'application/json' },
-  });
+function tauResponse(score: number, threshold: number) {
+  return new Response(
+    JSON.stringify({
+      data: { getLastScore: { body: JSON.stringify({ hatama_handasa: score }) } },
+    }),
+    { status: 200, headers: { 'content-type': 'application/json' } },
+  );
 }
 
-function exactAdapterFetcher() {
-  const fetcher = vi.fn<typeof fetch>();
-  const hujiTracks = Object.values(HUJI_PROGRAM_VERIFICATION_ARTIFACTS).reduce<
-    Record<string, { acceptance: number; rejection: number; formulaType: number }>
-  >((tracks, artifact) => {
-    const contract = artifact.contract;
-    tracks[contract.officialProgramId] ??= {
-      acceptance: contract.calculation.cutoff.acceptance,
-      rejection: contract.calculation.cutoff.rejection ?? 0,
-      formulaType: Number(contract.calculation.formulaFamily.split('_').pop()),
-    };
-    return tracks;
-  }, {});
-  const hujiResponse = () =>
-    jsonResponse({
-      timestamp: '2026-07-26T00:00:00.000Z',
-      hogimInfoObj: Object.entries(hujiTracks).map(([track_number, value]) => ({
-        track_number,
-        hog_regType: value.formulaType,
-      })),
-      currentYearObj: Object.entries(hujiTracks).map(([track_number, value]) => ({
-        track_number,
-        safAccept: String(value.acceptance),
-        safReject: String(value.rejection),
-      })),
-      formulasObj: [
-        { formula_type: 1, formula_pet: '0.01992054', formula_avg: '0.24614193', formula_minus: '16.993402399' },
-        { formula_type: 2, formula_pet: '0.027468921', formula_avg: '0.145461915', formula_minus: '11.50910537' },
-      ],
-    });
-  for (let index = 0; index < Object.keys(HUJI_PROGRAM_VERIFICATION_ARTIFACTS).length; index += 1) {
-    fetcher.mockResolvedValueOnce(hujiResponse());
-  }
-  for (const artifact of Object.values(BGU_PROGRAM_VERIFICATION_ARTIFACTS)) {
-    fetcher.mockResolvedValueOnce(
-      jsonResponse({
-        items: [{
-          psycho_sekem: artifact.contract.calculation.cutoff.acceptance,
-          psycho_value: artifact.contract.calculation.cutoff.acceptance,
-          comments: `סכם כמותי ${artifact.contract.calculation.cutoff.acceptance}`,
-        }],
-      }),
-    );
-    fetcher.mockResolvedValueOnce(
-      new Response('<script>parent.main.document.mainForm.on_final_sekem.value = 875;</script>', {
-        status: 200,
-        headers: { 'content-type': 'text/html' },
-      }),
-    );
-  }
-  for (const artifact of Object.values(TECHNION_PROGRAM_VERIFICATION_ARTIFACTS)) {
-    fetcher.mockResolvedValueOnce(
-      new Response('הסכם לדיוני הקבלה הוא:98.9', {
-        status: 200,
-        headers: { 'content-type': 'text/html' },
-      }),
-    );
-  }
-  for (const artifact of Object.values(HAIFA_PROGRAM_VERIFICATION_ARTIFACTS)) {
-    fetcher.mockResolvedValueOnce(jsonResponse({ data: { guid: 'haifa-guid' } }));
-    const acceptedFixture = artifact.fixtures.find((fixture) => fixture.verdict === 'accepted')!;
-    fetcher.mockResolvedValueOnce(jsonResponse({
-      data: [{ results: [{ content: [
-        { label: 'הציון המשוקלל שלך', value: String(acceptedFixture.expected.score) },
-        { label: 'חתך קבלה', value: String(artifact.contract.calculation.cutoff.acceptance) },
-        { label: 'חתך דחייה', value: String(artifact.contract.calculation.cutoff.rejection) },
-      ] }] }],
-    }));
-  }
-
-  return fetcher
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: { getLastScore: { body: JSON.stringify({ hatama_handasa: 704 }) } },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: {
-          getPrograms: {
-            results: [{ receipt_threshol: [700], field_plain_id_programs: ['056011050000'] }],
-          },
+function tauThresholdResponse(threshold: number) {
+  return new Response(
+    JSON.stringify({
+      data: {
+        getPrograms: {
+          results: [
+            {
+              receipt_threshol: [threshold],
+              rejection_thresh: [threshold - 1],
+              field_plain_id_programs: ['056011050000'],
+            },
+          ],
         },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: { getLastScore: { body: JSON.stringify({ hatama: 546 }) } },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: {
-          getPrograms: {
-            results: [{ receipt_threshol: [530], field_plain_id_programs: ['016211010000'] }],
-          },
-        },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: { getLastScore: { body: JSON.stringify({ hatama_refua: 745.43 }) } },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: {
-          getProgramByIdAndLang: {
-            receipt_threshol: null,
-            rejection_thresh: null,
-            field_registration_comments: '<p>ציון התאמה רפואה ראשוני - 726.44</p>',
-            field_plain_id_programs: ['011167010000'],
-          },
-        },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: { getLastScore: { body: JSON.stringify({ hatama_refua: 745.43 }) } },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: {
-          getProgramByIdAndLang: {
-            receipt_threshol: null,
-            rejection_thresh: null,
-            field_registration_comments: '<p>ציון התאמה רפואה ראשוני - 726.44</p>',
-            field_plain_id_programs: ['011167010000'],
-          },
-        },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: { getLastScore: { body: JSON.stringify({ hatama_refua: 689.22 }) } },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: {
-          getProgramByIdAndLang: {
-            field_plain_id_programs: ['016411010000'],
-          },
-        },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: { getLastScore: { body: JSON.stringify({ hatama_nihul: 691 }) } },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: {
-          getProgramByIdAndLang: {
-            receipt_threshol: [610],
-            rejection_thresh: [609],
-            field_plain_id_programs: ['122111050000'],
-          },
-        },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: { getLastScore: { body: { hatama: 679 } } },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: {
-          getProgramByIdAndLang: {
-            receipt_threshol: [660],
-            rejection_thresh: [659],
-            field_plain_id_programs: ['107111050000', '107111030000'],
-          },
-        },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: { getLastScore: { body: JSON.stringify({ hatama: 679 }) } },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: {
-          getProgramByIdAndLang: {
-            receipt_threshol: [580],
-            rejection_thresh: [569],
-            field_plain_id_programs: ['111011010000'],
-          },
-        },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: { getLastScore: { body: JSON.stringify({ hatama: 679 }) } },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: {
-          getProgramByIdAndLang: {
-            receipt_threshol: [580],
-            rejection_thresh: [569],
-            field_plain_id_programs: ['111011010000'],
-          },
-        },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: { getLastScore: { body: { hatama: 679 } } },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: {
-          getProgramByIdAndLang: {
-            receipt_threshol: [660],
-            rejection_thresh: [659],
-            field_plain_id_programs: ['107111050000', '107111030000'],
-          },
-        },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: { getLastScore: { body: JSON.stringify({ hatama_handasa: 664 }) } },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: {
-          getProgramByIdAndLang: {
-            receipt_threshol: [652],
-            rejection_thresh: [632],
-            field_plain_id_programs: ['056011050000'],
-          },
-        },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: { getLastScore: { body: JSON.stringify({ hatama: 679 }) } },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: {
-          getProgramByIdAndLang: {
-            receipt_threshol: [647],
-            rejection_thresh: [646],
-            field_plain_id_programs: ['141111010000'],
-          },
-        },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: { getLastScore: { body: JSON.stringify({ hatama: 679 }) } },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: {
-          getProgramByIdAndLang: {
-            receipt_threshol: [647],
-            rejection_thresh: [646],
-            field_plain_id_programs: ['141111010000'],
-          },
-        },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: { getLastScore: { body: JSON.stringify({ hatama_nihul: 677 }) } },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: {
-          getProgramByIdAndLang: {
-            receipt_threshol: [610],
-            rejection_thresh: [609],
-            field_plain_id_programs: ['121111050000'],
-          },
-        },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: { getLastScore: { body: JSON.stringify({ hatama_nihul: 677 }) } },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: {
-          getProgramByIdAndLang: {
-            receipt_threshol: [610],
-            rejection_thresh: [609],
-            field_plain_id_programs: ['121111050000'],
-          },
-        },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: { getLastScore: { body: JSON.stringify({ hatama_nihul: 677 }) } },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: {
-          getProgramByIdAndLang: {
-            receipt_threshol: [610],
-            rejection_thresh: [609],
-            field_plain_id_programs: ['122111050000'],
-          },
-        },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: { getLastScore: { body: JSON.stringify({ hatama_nihul: 677 }) } },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: {
-          getProgramByIdAndLang: {
-            receipt_threshol: [610],
-            rejection_thresh: [609],
-            field_plain_id_programs: ['122111050000'],
-          },
-        },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: { getLastScore: { body: JSON.stringify({ hatama: 679 }) } },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: {
-          getProgramByIdAndLang: {
-            receipt_threshol: [631],
-            rejection_thresh: [563],
-            field_plain_id_programs: ['088111010000'],
-          },
-        },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: { getLastScore: { body: JSON.stringify({ hatama: 679 }) } },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: {
-          getProgramByIdAndLang: {
-            receipt_threshol: [576],
-            rejection_thresh: [570],
-            field_plain_id_programs: ['045511050000'],
-          },
-        },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: { getLastScore: { body: JSON.stringify({ hatama: 679 }) } },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: {
-          getProgramByIdAndLang: {
-            receipt_threshol: [530],
-            rejection_thresh: [529],
-            field_plain_id_programs: ['108511050000'],
-          },
-        },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: { getLastScore: { body: JSON.stringify({ hatama: 679 }) } },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: {
-          getProgramByIdAndLang: {
-            receipt_threshol: [535],
-            rejection_thresh: [534],
-            field_plain_id_programs: ['103111030000'],
-          },
-        },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: { getLastScore: { body: JSON.stringify({ hatama: 679 }) } },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: {
-          getProgramByIdAndLang: {
-            receipt_threshol: [550],
-            rejection_thresh: [549],
-            field_plain_id_programs: ['072311050000'],
-          },
-        },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: { getLastScore: { body: JSON.stringify({ hatama: 679 }) } },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: {
-          getProgramByIdAndLang: {
-            receipt_threshol: [610],
-            rejection_thresh: [600],
-            field_plain_id_programs: ['101111050000'],
-          },
-        },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: { getLastScore: { body: JSON.stringify({ hatama: 679 }) } },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: {
-          getProgramByIdAndLang: {
-            receipt_threshol: [610],
-            rejection_thresh: [600],
-            field_plain_id_programs: ['101111050000'],
-          },
-        },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: { getLastScore: { body: JSON.stringify({ hatama_meduyakim: 730 }) } },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: {
-          getProgramByIdAndLang: {
-            receipt_threshol: [706],
-            rejection_thresh: [695],
-            field_plain_id_programs: ['036811010000'],
-          },
-        },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: { getLastScore: { body: JSON.stringify({ hatama_meduyakim: 730 }) } },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: {
-          getProgramByIdAndLang: {
-            receipt_threshol: [706],
-            rejection_thresh: [695],
-            field_plain_id_programs: ['036811010000'],
-          },
-        },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: { getLastScore: { body: JSON.stringify({ hatama_meduyakim: 730 }) } },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: {
-          getProgramByIdAndLang: {
-            receipt_threshol: [710],
-            rejection_thresh: [690],
-            field_plain_id_programs: ['051211010000'],
-          },
-        },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: { getLastScore: { body: JSON.stringify({ hatama_meduyakim: 730 }) } },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: {
-          getProgramByIdAndLang: {
-            receipt_threshol: [710],
-            rejection_thresh: [690],
-            field_plain_id_programs: ['051211010000'],
-          },
-        },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: { getLastScore: { body: JSON.stringify({ hatama_meduyakim: 730 }) } },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: {
-          getProgramByIdAndLang: {
-            receipt_threshol: [650],
-            rejection_thresh: [616],
-            field_plain_id_programs: ['054211010000'],
-          },
-        },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: { getLastScore: { body: JSON.stringify({ hatama_meduyakim: 730 }) } },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: {
-          getProgramByIdAndLang: {
-            receipt_threshol: [650],
-            rejection_thresh: [616],
-            field_plain_id_programs: ['054211010000'],
-          },
-        },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: { getLastScore: { body: JSON.stringify({ hatama: 679 }) } },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: {
-          getProgramByIdAndLang: {
-            receipt_threshol: [607],
-            rejection_thresh: [606],
-            field_plain_id_programs: ['016511010000'],
-          },
-        },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: { getLastScore: { body: JSON.stringify({ hatama: 679 }) } },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: {
-          getProgramByIdAndLang: {
-            receipt_threshol: [607],
-            rejection_thresh: [606],
-            field_plain_id_programs: ['016511010000'],
-          },
-        },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: { getLastScore: { body: JSON.stringify({ hatama_meduyakim: 730 }) } },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: {
-          getProgramByIdAndLang: {
-            receipt_threshol: [667],
-            rejection_thresh: [647],
-            field_plain_id_programs: ['057311010000'],
-          },
-        },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: { getLastScore: { body: JSON.stringify({ hatama: 679 }) } },
-      }),
-    )
-    .mockResolvedValueOnce(
-      jsonResponse({
-        data: {
-          getProgramByIdAndLang: {
-            receipt_threshol: [576],
-            rejection_thresh: [570],
-            field_plain_id_programs: ['045511050000'],
-          },
-        },
-      }),
-    );
+      },
+    }),
+    { status: 200, headers: { 'content-type': 'application/json' } },
+  );
 }
 
 describe('runAdmissionsLiveProof', () => {
-  it('runs the verified HUJI, BGU, Technion, Haifa, and TAU programs by default as exact live proof targets', async () => {
-    const fetcher = exactAdapterFetcher();
-    const report = await runAdmissionsLiveProof({ fetcher });
-
-    expect(report.summary).toMatchObject({
-      total: 132,
-      exactReproduced: 132,
-      partial: 0,
-      blocked: 0,
-      failed: 0,
-    });
-    expect(report.results.map((result) => result.proof.id)).toEqual([
-      'huji-accounting-live',
-      'huji-biology-live',
-      'huji-business-live',
-      'huji-communication-live',
-      'huji-cs-live',
-      'huji-datascience-live',
-      'huji-economics-live',
-      'huji-education-live',
-      'huji-huji_accounting-live',
-      'huji-huji_biology-live',
-      'huji-huji_business-live',
-      'huji-huji_cs-live',
-      'huji-huji_datascience-live',
-      'huji-huji_economics-live',
-      'huji-huji_law-live',
-      'huji-huji_medicine-live',
-      'huji-huji_occupational_therapy-live',
-      'huji-huji_psychology-live',
-      'huji-huji_socialwork-live',
-      'huji-law-live',
-      'huji-medicine-live',
-      'huji-nursing-live',
-      'huji-nutrition-live',
-      'huji-occupational_therapy-live',
-      'huji-pharmacy-live',
-      'huji-political_science-live',
-      'huji-psychology-live',
-      'huji-social_work-live',
-      'bgu-accounting-live',
-      'bgu-bgu_accounting-live',
-      'bgu-biology-live',
-      'bgu-bgu_biology-live',
-      'bgu-business-live',
-      'bgu-bgu_business-live',
-      'bgu-cs-live',
-      'bgu-bgu_cs-live',
-      'bgu-datascience-live',
-      'bgu-bgu_datascience-live',
-      'bgu-economics-live',
-      'bgu-bgu_economics-live',
-      'bgu-ee-live',
-      'bgu-bgu_ee-live',
-      'bgu-me-live',
-      'bgu-bgu_me-live',
-      'bgu-bgu_industrial-live',
-      'bgu-bgu_medicine-live',
-      'bgu-bgu_nursing-live',
-      'bgu-psychology-live',
-      'bgu-bgu_psychology-live',
-      'bgu-social_work-live',
-      'bgu-bgu_socialwork-live',
-      'bgu-communication-live',
-      'bgu-education-live',
-      'bgu-occupational_therapy-live',
-      'bgu-physiotherapy-live',
-      'bgu-political_science-live',
-      'technion-cs-live',
-      'technion-technion_cs-live',
-      'technion-datascience-live',
-      'technion-technion_datascience-live',
-      'technion-ee-live',
-      'technion-technion_ee-live',
-      'technion-me-live',
-      'technion-technion_me-live',
-      'technion-medicine-live',
-      'technion-technion_medicine-live',
-      'technion-technion_biomedical-live',
-      'technion-technion_civil-live',
-      'technion-technion_industrial-live',
-      'technion-architecture-live',
-      'colman-computer-science-live',
-      'haifa-accounting-live',
-      'haifa-haifa_accounting-live',
-      'haifa-biology-live',
-      'haifa-haifa_biology-live',
-      'haifa-communication-live',
-      'haifa-haifa_communication-live',
-      'haifa-cs-live',
-      'haifa-haifa_cs-live',
-      'haifa-economics-live',
-      'haifa-haifa_economics-live',
-      'haifa-haifa_infosystems-live',
-      'haifa-law-live',
-      'haifa-haifa_law-live',
-      'haifa-haifa_math-live',
-      'haifa-nursing-live',
-      'haifa-haifa_nursing-live',
-      'haifa-occupational_therapy-live',
-      'haifa-physiotherapy-live',
-      'haifa-haifa_physiotherapy-live',
-      'haifa-political_science-live',
-      'haifa-haifa_politicalscience-live',
-      'haifa-psychology-live',
-      'haifa-haifa_psychology-live',
-      'haifa-social_work-live',
-      'haifa-haifa_socialwork-live',
-      'haifa-haifa_sociology-live',
-      'haifa-haifa_statistics-live',
-      'tau-digital-sciences-live',
-      'tau-nursing-live',
-      'tau-medicine-live',
-      'tau-medicine-legacy-live',
-      'tau-physiotherapy-live',
-      'tau-information-systems-live',
-      'tau-psychology-live',
-      'tau-social-work-live',
-      'tau-social-work-legacy-live',
-      'tau-psychology-legacy-live',
-      'tau-digital-sciences-legacy-live',
-      'tau-law-live',
-      'tau-law-legacy-live',
-      'tau-accounting-live',
-      'tau-accounting-legacy-live',
-      'tau-business-live',
-      'tau-business-legacy-live',
-      'tau-architecture-live',
-      'tau-biology-live',
-      'tau-communication-live',
-      'tau-political-science-live',
-      'tau-education-live',
-      'tau-economics-live',
-      'tau-economics-legacy-live',
-      'tau-cs-live',
-      'tau-cs-legacy-live',
-      'tau-ee-live',
-      'tau-ee-legacy-live',
-      'tau-me-live',
-      'tau-me-legacy-live',
-      'tau-occupational-live',
-      'tau-occupational-legacy-live',
-      'tau-industrial-live',
-      'tau-biology-legacy-live',
-    ]);
-    const tauScoreBodies = fetcher.mock.calls
-      .map(([, init]) => {
-        if (typeof init?.body !== 'string') return null;
-        try {
-          return JSON.parse(init.body) as { variables?: { scoresData?: Record<string, string> } };
-        } catch {
-          return null;
-        }
-      })
-      .filter((body): body is { variables: { scoresData: Record<string, string> } } =>
-        Boolean(body?.variables?.scoresData),
-      )
-      .map((body) => body.variables.scoresData);
-    expect(tauScoreBodies).toContainEqual(expect.objectContaining({ bagrut: '100', psicho: '520' }));
-    expect(tauScoreBodies).toContainEqual(expect.objectContaining({ bagrut: '110', psicho: '680' }));
-  });
-
-  it('supports target filtering for one official source', async () => {
+  it('withholds a live response until independent eligible and below captures are supplied', async () => {
     const fetcher = vi
       .fn<typeof fetch>()
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: { getLastScore: { body: JSON.stringify({ hatama_handasa: 704 }) } },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: {
-            getPrograms: {
-              results: [{ receipt_threshol: [700], field_plain_id_programs: ['056011050000'] }],
-            },
-          },
-        }),
-      );
+      .mockResolvedValueOnce(tauResponse(704, 700))
+      .mockResolvedValueOnce(tauThresholdResponse(700));
 
     const report = await runAdmissionsLiveProof({
       fetcher,
       targetIds: ['tau-digital-sciences-live'],
+      controlledFixturesByTargetId: { 'tau-digital-sciences-live': [] },
     });
 
-    expect(report.summary.total).toBe(1);
-    expect(report.results[0].proof.id).toBe('tau-digital-sciences-live');
+    expect(report.summary).toEqual({
+      total: 1,
+      exactReproduced: 0,
+      partial: 1,
+      blocked: 0,
+      failed: 0,
+    });
+    expect(report.results[0]?.proof).toMatchObject({
+      proofLevel: 'partial_official',
+      status: 'partial',
+    });
   });
 
-  it('keeps failed targets isolated from successful targets', async () => {
+  it('requires both independently captured fixture boundaries to match', async () => {
     const fetcher = vi
       .fn<typeof fetch>()
-      .mockRejectedValueOnce(new Error('network down'))
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: { getLastScore: { body: JSON.stringify({ hatama_handasa: 704 }) } },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: {
-            getPrograms: {
-              results: [{ receipt_threshol: [700], field_plain_id_programs: ['056011050000'] }],
-            },
+      .mockResolvedValueOnce(tauResponse(704, 700))
+      .mockResolvedValueOnce(tauThresholdResponse(700))
+      .mockResolvedValueOnce(tauResponse(600, 700))
+      .mockResolvedValueOnce(tauThresholdResponse(700));
+
+    const report = await runAdmissionsLiveProof({
+      fetcher,
+      targetIds: ['tau-digital-sciences-live'],
+      controlledFixturesByTargetId: {
+        'tau-digital-sciences-live': [
+          {
+            captureId: 'tau-digital-eligible-capture',
+            applicant: { bagrutAverage: 105, psychometric: 680 },
+            expected: { score: 704, verdict: 'accepted' },
           },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: { getLastScore: { body: JSON.stringify({ hatama: 546 }) } },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: {
-            getPrograms: {
-              results: [{ receipt_threshol: [530], field_plain_id_programs: ['016211010000'] }],
-            },
+          {
+            captureId: 'tau-digital-below-capture',
+            applicant: { bagrutAverage: 80, psychometric: 500 },
+            expected: { score: 600, verdict: 'below' },
           },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: { getLastScore: { body: { hatama: 679 } } },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: {
-            getProgramByIdAndLang: {
-              receipt_threshol: [660],
-              rejection_thresh: [659],
-              field_plain_id_programs: ['107111050000', '107111030000'],
-            },
+        ],
+      },
+    });
+
+    expect(report.summary.exactReproduced).toBe(1);
+    expect(report.results[0]?.proof).toMatchObject({
+      proofLevel: 'exact_official',
+      status: 'succeeded',
+      normalizedPayload: {
+        controlledFixtureCaptureIds: ['tau-digital-eligible-capture', 'tau-digital-below-capture'],
+      },
+    });
+  });
+
+  it('withholds a proof when its supplied captures do not cover both verdict boundaries', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(tauResponse(704, 700))
+      .mockResolvedValueOnce(tauThresholdResponse(700));
+
+    const report = await runAdmissionsLiveProof({
+      fetcher,
+      targetIds: ['tau-digital-sciences-live'],
+      controlledFixturesByTargetId: {
+        'tau-digital-sciences-live': [
+          {
+            captureId: 'first-eligible-capture',
+            applicant: { bagrutAverage: 105, psychometric: 680 },
+            expected: { score: 704, verdict: 'accepted' },
           },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: { getLastScore: { body: JSON.stringify({ hatama: 679 }) } },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: {
-            getProgramByIdAndLang: {
-              receipt_threshol: [580],
-              rejection_thresh: [569],
-              field_plain_id_programs: ['111011010000'],
-            },
+          {
+            captureId: 'second-eligible-capture',
+            applicant: { bagrutAverage: 106, psychometric: 681 },
+            expected: { score: 704, verdict: 'accepted' },
           },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: { getLastScore: { body: JSON.stringify({ hatama: 679 }) } },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: {
-            getProgramByIdAndLang: {
-              receipt_threshol: [580],
-              rejection_thresh: [569],
-              field_plain_id_programs: ['111011010000'],
-            },
+        ],
+      },
+    });
+
+    expect(report.summary.exactReproduced).toBe(0);
+    expect(report.results[0]?.proof.limitations).toContain(
+      'A controlled proof requires independently captured eligible and below-threshold fixtures.',
+    );
+  });
+
+  it('withholds the pair when either fixture drifts', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(tauResponse(704, 700))
+      .mockResolvedValueOnce(tauThresholdResponse(700))
+      .mockResolvedValueOnce(tauResponse(601, 700))
+      .mockResolvedValueOnce(tauThresholdResponse(700));
+
+    const report = await runAdmissionsLiveProof({
+      fetcher,
+      targetIds: ['tau-digital-sciences-live'],
+      controlledFixturesByTargetId: {
+        'tau-digital-sciences-live': [
+          {
+            captureId: 'eligible',
+            applicant: { bagrutAverage: 105, psychometric: 680 },
+            expected: { score: 704, verdict: 'accepted' },
           },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: { getLastScore: { body: JSON.stringify({ hatama: 679 }) } },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: {
-            getProgramByIdAndLang: {
-              receipt_threshol: [660],
-              rejection_thresh: [659],
-              field_plain_id_programs: ['107111050000', '107111030000'],
-            },
+          {
+            captureId: 'below',
+            applicant: { bagrutAverage: 80, psychometric: 500 },
+            expected: { score: 600, verdict: 'below' },
           },
-        }),
+        ],
+      },
+    });
+
+    expect(report.summary.exactReproduced).toBe(0);
+    expect(report.results[0]?.proof).toMatchObject({
+      proofLevel: 'partial_official',
+      status: 'partial',
+      limitations: expect.arrayContaining([expect.stringContaining('below score mismatch')]),
+    });
+  });
+
+  it('times out one official source and continues with later targets', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockImplementationOnce(
+        (_input, init) =>
+          new Promise((_resolve, reject) => {
+            init?.signal?.addEventListener('abort', () => reject(new Error('aborted')));
+          }),
       )
       .mockResolvedValueOnce(
-        jsonResponse({
-          data: { getLastScore: { body: JSON.stringify({ hatama_handasa: 664 }) } },
-        }),
+        new Response(
+          JSON.stringify({ data: { getLastScore: { body: JSON.stringify({ hatama: 546 }) } } }),
+          { status: 200, headers: { 'content-type': 'application/json' } },
+        ),
       )
       .mockResolvedValueOnce(
-        jsonResponse({
-          data: {
-            getProgramByIdAndLang: {
-              receipt_threshol: [652],
-              rejection_thresh: [632],
-              field_plain_id_programs: ['056011050000'],
+        new Response(
+          JSON.stringify({
+            data: {
+              getPrograms: {
+                results: [{ receipt_threshol: [530], field_plain_id_programs: ['016211010000'] }],
+              },
             },
-          },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: { getLastScore: { body: JSON.stringify({ hatama: 679 }) } },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: {
-            getProgramByIdAndLang: {
-              receipt_threshol: [647],
-              rejection_thresh: [646],
-              field_plain_id_programs: ['141111010000'],
-            },
-          },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: { getLastScore: { body: JSON.stringify({ hatama: 679 }) } },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: {
-            getProgramByIdAndLang: {
-              receipt_threshol: [647],
-              rejection_thresh: [646],
-              field_plain_id_programs: ['141111010000'],
-            },
-          },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: { getLastScore: { body: JSON.stringify({ hatama_nihul: 677 }) } },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: {
-            getProgramByIdAndLang: {
-              receipt_threshol: [610],
-              rejection_thresh: [609],
-              field_plain_id_programs: ['121111050000'],
-            },
-          },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: { getLastScore: { body: JSON.stringify({ hatama_nihul: 677 }) } },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: {
-            getProgramByIdAndLang: {
-              receipt_threshol: [610],
-              rejection_thresh: [609],
-              field_plain_id_programs: ['121111050000'],
-            },
-          },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: { getLastScore: { body: JSON.stringify({ hatama: 679 }) } },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: {
-            getProgramByIdAndLang: {
-              receipt_threshol: [631],
-              rejection_thresh: [563],
-              field_plain_id_programs: ['088111010000'],
-            },
-          },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: { getLastScore: { body: JSON.stringify({ hatama: 679 }) } },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: {
-            getProgramByIdAndLang: {
-              receipt_threshol: [576],
-              rejection_thresh: [570],
-              field_plain_id_programs: ['045511050000'],
-            },
-          },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: { getLastScore: { body: JSON.stringify({ hatama: 679 }) } },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: {
-            getProgramByIdAndLang: {
-              receipt_threshol: [530],
-              rejection_thresh: [529],
-              field_plain_id_programs: ['108511050000'],
-            },
-          },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: { getLastScore: { body: JSON.stringify({ hatama: 679 }) } },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: {
-            getProgramByIdAndLang: {
-              receipt_threshol: [535],
-              rejection_thresh: [534],
-              field_plain_id_programs: ['103111030000'],
-            },
-          },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: { getLastScore: { body: JSON.stringify({ hatama: 679 }) } },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: {
-            getProgramByIdAndLang: {
-              receipt_threshol: [550],
-              rejection_thresh: [549],
-              field_plain_id_programs: ['072311050000'],
-            },
-          },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: { getLastScore: { body: JSON.stringify({ hatama: 679 }) } },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: {
-            getProgramByIdAndLang: {
-              receipt_threshol: [610],
-              rejection_thresh: [600],
-              field_plain_id_programs: ['101111050000'],
-            },
-          },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: { getLastScore: { body: JSON.stringify({ hatama: 679 }) } },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: {
-            getProgramByIdAndLang: {
-              receipt_threshol: [610],
-              rejection_thresh: [600],
-              field_plain_id_programs: ['101111050000'],
-            },
-          },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: { getLastScore: { body: JSON.stringify({ hatama_meduyakim: 730 }) } },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: {
-            getProgramByIdAndLang: {
-              receipt_threshol: [706],
-              rejection_thresh: [695],
-              field_plain_id_programs: ['036811010000'],
-            },
-          },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: { getLastScore: { body: JSON.stringify({ hatama_meduyakim: 730 }) } },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: {
-            getProgramByIdAndLang: {
-              receipt_threshol: [706],
-              rejection_thresh: [695],
-              field_plain_id_programs: ['036811010000'],
-            },
-          },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: { getLastScore: { body: JSON.stringify({ hatama_meduyakim: 730 }) } },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: {
-            getProgramByIdAndLang: {
-              receipt_threshol: [710],
-              rejection_thresh: [690],
-              field_plain_id_programs: ['051211010000'],
-            },
-          },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: { getLastScore: { body: JSON.stringify({ hatama_meduyakim: 730 }) } },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: {
-            getProgramByIdAndLang: {
-              receipt_threshol: [710],
-              rejection_thresh: [690],
-              field_plain_id_programs: ['051211010000'],
-            },
-          },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: { getLastScore: { body: JSON.stringify({ hatama_meduyakim: 730 }) } },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: {
-            getProgramByIdAndLang: {
-              receipt_threshol: [650],
-              rejection_thresh: [616],
-              field_plain_id_programs: ['054211010000'],
-            },
-          },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: { getLastScore: { body: JSON.stringify({ hatama_meduyakim: 730 }) } },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: {
-            getProgramByIdAndLang: {
-              receipt_threshol: [650],
-              rejection_thresh: [616],
-              field_plain_id_programs: ['054211010000'],
-            },
-          },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: { getLastScore: { body: JSON.stringify({ hatama: 679 }) } },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: {
-            getProgramByIdAndLang: {
-              receipt_threshol: [607],
-              rejection_thresh: [606],
-              field_plain_id_programs: ['016511010000'],
-            },
-          },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: { getLastScore: { body: JSON.stringify({ hatama: 679 }) } },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: {
-            getProgramByIdAndLang: {
-              receipt_threshol: [607],
-              rejection_thresh: [606],
-              field_plain_id_programs: ['016511010000'],
-            },
-          },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: { getLastScore: { body: JSON.stringify({ hatama_meduyakim: 730 }) } },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: {
-            getProgramByIdAndLang: {
-              receipt_threshol: [667],
-              rejection_thresh: [647],
-              field_plain_id_programs: ['057311010000'],
-            },
-          },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: { getLastScore: { body: JSON.stringify({ hatama: 679 }) } },
-        }),
-      )
-      .mockResolvedValueOnce(
-        jsonResponse({
-          data: {
-            getProgramByIdAndLang: {
-              receipt_threshol: [576],
-              rejection_thresh: [570],
-              field_plain_id_programs: ['045511050000'],
-            },
-          },
-        }),
+          }),
+          { status: 200, headers: { 'content-type': 'application/json' } },
+        ),
       );
 
     const report = await runAdmissionsLiveProof({
       fetcher,
-      targetIds: [
-        'haifa-cs-live',
-        'tau-digital-sciences-live',
-        'tau-nursing-live',
-        'tau-psychology-live',
-        'tau-social-work-live',
-        'tau-social-work-legacy-live',
-        'tau-psychology-legacy-live',
-        'tau-digital-sciences-legacy-live',
-        'tau-law-live',
-        'tau-law-legacy-live',
-        'tau-accounting-live',
-        'tau-accounting-legacy-live',
-        'tau-architecture-live',
-        'tau-biology-live',
-        'tau-communication-live',
-        'tau-political-science-live',
-        'tau-education-live',
-        'tau-economics-live',
-        'tau-economics-legacy-live',
-        'tau-cs-live',
-        'tau-cs-legacy-live',
-        'tau-ee-live',
-        'tau-ee-legacy-live',
-        'tau-me-live',
-        'tau-me-legacy-live',
-        'tau-occupational-live',
-        'tau-occupational-legacy-live',
-        'tau-industrial-live',
-        'tau-biology-legacy-live',
-      ],
+      requestTimeoutMs: 1,
+      targetIds: ['tau-digital-sciences-live', 'tau-nursing-live'],
+      controlledFixturesByTargetId: {
+        'tau-digital-sciences-live': [],
+        'tau-nursing-live': [],
+      },
     });
 
-    expect(report.summary).toMatchObject({
-      total: 29,
-      exactReproduced: 28,
-      failed: 1,
-    });
-    expect(report.results.map((result) => result.proof.status)).toEqual([
-      'failed',
-      'succeeded',
-      'succeeded',
-      'succeeded',
-      'succeeded',
-      'succeeded',
-      'succeeded',
-      'succeeded',
-      'succeeded',
-      'succeeded',
-      'succeeded',
-      'succeeded',
-      'succeeded',
-      'succeeded',
-      'succeeded',
-      'succeeded',
-      'succeeded',
-      'succeeded',
-      'succeeded',
-      'succeeded',
-      'succeeded',
-      'succeeded',
-      'succeeded',
-      'succeeded',
-      'succeeded',
-      'succeeded',
-      'succeeded',
-      'succeeded',
-      'succeeded',
-    ]);
+    expect(report.summary).toMatchObject({ total: 2, failed: 1, partial: 1 });
+    expect(fetcher).toHaveBeenCalledTimes(3);
   });
 
-  it('can include the full capability matrix without attempting blocked sources live', async () => {
+  it('times out a stalled official response body and continues with later targets', async () => {
+    const stalledResponse = new Response('partial response', {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    });
+    vi.spyOn(stalledResponse, 'arrayBuffer').mockImplementation(
+      () => new Promise<ArrayBuffer>(() => undefined),
+    );
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(stalledResponse)
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({ data: { getLastScore: { body: JSON.stringify({ hatama: 546 }) } } }),
+          { status: 200, headers: { 'content-type': 'application/json' } },
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            data: {
+              getPrograms: {
+                results: [{ receipt_threshol: [530], field_plain_id_programs: ['016211010000'] }],
+              },
+            },
+          }),
+          { status: 200, headers: { 'content-type': 'application/json' } },
+        ),
+      );
+
     const report = await runAdmissionsLiveProof({
-      includeCapabilityMatrix: true,
-      fetcher: exactAdapterFetcher(),
+      fetcher,
+      requestTimeoutMs: 1,
+      targetIds: ['tau-digital-sciences-live', 'tau-nursing-live'],
+      controlledFixturesByTargetId: {
+        'tau-digital-sciences-live': [],
+        'tau-nursing-live': [],
+      },
     });
 
-    expect(report.summary).toMatchObject({
-      total: 143,
-      exactReproduced: 132,
-      partial: 8,
-      blocked: 2,
-    });
-    expect(report.results.map((result) => result.proof.institutionId)).toEqual([
-      ...Array(28).fill('huji'),
-      ...Array(28).fill('bgu'),
-      ...Array(13).fill('technion'),
-      'technion',
-      'colman',
-      ...Array(27).fill('haifa'),
-      ...Array(34).fill('tau'),
-      'huji',
-      'technion',
-      'bgu',
-      'biu',
-      'ariel',
-      'open_university',
-      'reichman',
-      'afeka',
-      'hit',
-      'shenkar',
-      'mta',
-    ]);
+    expect(report.summary).toMatchObject({ total: 2, failed: 1, partial: 1 });
+    expect(fetcher).toHaveBeenCalledTimes(3);
   });
 });

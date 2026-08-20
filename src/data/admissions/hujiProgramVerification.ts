@@ -23,23 +23,101 @@ interface HujiProgramConfig {
 // These track numbers are the current undergraduate tracks returned by HUJI's
 // official JSON. Catalogue aliases intentionally share the same current track.
 const HUJI_PROGRAM_CONFIGS: HujiProgramConfig[] = [
-  { programId: 'accounting', trackNumber: '325-3251', formulaType: 2, acceptance: 20.75, rejection: 20.75 },
+  {
+    programId: 'accounting',
+    trackNumber: '325-3251',
+    formulaType: 2,
+    acceptance: 20.75,
+    rejection: 20.75,
+  },
   { programId: 'biology', trackNumber: '570-4010', formulaType: 1, acceptance: 19, rejection: 19 },
-  { programId: 'business', trackNumber: '322-3221', formulaType: 2, acceptance: 20.75, rejection: 20.75 },
-  { programId: 'communication', trackNumber: '323-7600', formulaType: 2, acceptance: 17.5, rejection: 17.5 },
+  {
+    programId: 'business',
+    trackNumber: '322-3221',
+    formulaType: 2,
+    acceptance: 20.75,
+    rejection: 20.75,
+  },
+  {
+    programId: 'communication',
+    trackNumber: '323-7600',
+    formulaType: 2,
+    acceptance: 17.5,
+    rejection: 17.5,
+  },
   { programId: 'cs', trackNumber: '521-3010', formulaType: 1, acceptance: 23.75, rejection: 23.5 },
-  { programId: 'datascience', trackNumber: '824-7410', formulaType: 2, acceptance: 20.75, rejection: 20.75 },
-  { programId: 'economics', trackNumber: '321-7500', formulaType: 2, acceptance: 20.75, rejection: 20.75 },
-  { programId: 'education', trackNumber: '200-1200', formulaType: 2, acceptance: 17.5, rejection: 17.5 },
+  {
+    programId: 'datascience',
+    trackNumber: '824-7410',
+    formulaType: 2,
+    acceptance: 20.75,
+    rejection: 20.75,
+  },
+  {
+    programId: 'economics',
+    trackNumber: '321-7500',
+    formulaType: 2,
+    acceptance: 20.75,
+    rejection: 20.75,
+  },
+  {
+    programId: 'education',
+    trackNumber: '200-1200',
+    formulaType: 2,
+    acceptance: 17.5,
+    rejection: 17.5,
+  },
   { programId: 'law', trackNumber: '401-4100', formulaType: 1, acceptance: 22.7, rejection: 22.7 },
-  { programId: 'medicine', trackNumber: '601-4601', formulaType: 1, acceptance: 25.6, rejection: 24.85 },
+  {
+    programId: 'medicine',
+    trackNumber: '601-4601',
+    formulaType: 1,
+    acceptance: 25.6,
+    rejection: 24.85,
+  },
   { programId: 'nursing', trackNumber: '606-5606', formulaType: 1, acceptance: 19, rejection: 19 },
-  { programId: 'nutrition', trackNumber: '712-1212', formulaType: 1, acceptance: 19.75, rejection: 19.75 },
-  { programId: 'occupational_therapy', trackNumber: '607-4607', formulaType: 1, acceptance: 20.5, rejection: 20.5 },
-  { programId: 'pharmacy', trackNumber: '621-3621', formulaType: 1, acceptance: 22.5, rejection: 22.5 },
-  { programId: 'political_science', trackNumber: '311-7200', formulaType: 2, acceptance: 17.5, rejection: 17.5 },
-  { programId: 'psychology', trackNumber: '300-7000', formulaType: 2, acceptance: 22.5, rejection: 22.5 },
-  { programId: 'social_work', trackNumber: '431-9321', formulaType: 1, acceptance: 20.25, rejection: 20.25 },
+  {
+    programId: 'nutrition',
+    trackNumber: '712-1212',
+    formulaType: 1,
+    acceptance: 19.75,
+    rejection: 19.75,
+  },
+  {
+    programId: 'occupational_therapy',
+    trackNumber: '607-4607',
+    formulaType: 1,
+    acceptance: 20.5,
+    rejection: 20.5,
+  },
+  {
+    programId: 'pharmacy',
+    trackNumber: '621-3621',
+    formulaType: 1,
+    acceptance: 22.5,
+    rejection: 22.5,
+  },
+  {
+    programId: 'political_science',
+    trackNumber: '311-7200',
+    formulaType: 2,
+    acceptance: 17.5,
+    rejection: 17.5,
+  },
+  {
+    programId: 'psychology',
+    trackNumber: '300-7000',
+    formulaType: 2,
+    acceptance: 22.5,
+    rejection: 22.5,
+  },
+  {
+    programId: 'social_work',
+    trackNumber: '431-9321',
+    formulaType: 1,
+    acceptance: 20.25,
+    rejection: 20.25,
+  },
 ];
 
 const HUJI_ALIAS_PROGRAM_IDS = [
@@ -125,7 +203,11 @@ function fixturesFor(pairId: string, config: HujiProgramConfig): AdmissionsVerif
       verdict: 'accepted',
       input: acceptedInput,
       expected: {
-        score: hujiFormulaScore(config.formulaType, acceptedInput.psychometric, acceptedInput.bagrut),
+        score: hujiFormulaScore(
+          config.formulaType,
+          acceptedInput.psychometric,
+          acceptedInput.bagrut,
+        ),
         verdict: 'accepted',
       },
       sourceFingerprint,
@@ -198,13 +280,15 @@ export const HUJI_PROGRAM_VERIFICATION_METADATA: Record<string, HujiProgramVerif
     }),
   );
 
-export const HUJI_PROGRAM_VERIFICATION_ARTIFACTS: Record<string, { contract: AdmissionsProgramVerificationContract; fixtures: AdmissionsVerificationFixture[] }> =
-  Object.fromEntries(
-    Object.entries(HUJI_PROGRAM_VERIFICATION_METADATA).map(([pairId, artifact]) => [
-      pairId,
-      { contract: artifact.contract, fixtures: artifact.fixtures },
-    ]),
-  );
+export const HUJI_PROGRAM_VERIFICATION_ARTIFACTS: Record<
+  string,
+  { contract: AdmissionsProgramVerificationContract; fixtures: AdmissionsVerificationFixture[] }
+> = Object.fromEntries(
+  Object.entries(HUJI_PROGRAM_VERIFICATION_METADATA).map(([pairId, artifact]) => [
+    pairId,
+    { contract: artifact.contract, fixtures: artifact.fixtures },
+  ]),
+);
 
 export function getHujiProgramVerificationMetadata(
   pairId: string,

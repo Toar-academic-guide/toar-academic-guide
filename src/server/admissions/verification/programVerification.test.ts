@@ -150,7 +150,9 @@ describe('program verification contracts', () => {
   it('activates a complete contract with eligible and below fixtures', () => {
     const fixtures = makeFixtures();
     const result = evaluateProgramVerification({
-      contract: makeContract(),
+      contract: makeContract({
+        fixtureSetFingerprint: fingerprintVerificationFixtures(fixtures),
+      }),
       fixtures,
       currentAdmissionCycle: '2026-2027',
       currentSourceFingerprint: SOURCE_FINGERPRINT,
@@ -306,6 +308,51 @@ describe('program verification contracts', () => {
     });
 
     expect(result.capability).toBe('blocked');
+    expect(result.issues).toContainEqual(expect.objectContaining({ code: 'fixture_contains_pii' }));
+  });
+
+  it('blocks PII-like values nested inside a Bagrut subject record', () => {
+    const fixtures = makeFixtures();
+    fixtures[0] = {
+      ...fixtures[0],
+      input: {
+        ...fixtures[0].input,
+        bagrutSubjectRecord: {
+          schemaVersion: 1,
+          sector: 'jewish',
+          subjects: [{ subjectId: 'applicant@example.com', units: 5, grade: 90 }],
+        },
+      },
+    };
+    const result = evaluateProgramVerification({
+      contract: makeContract({ fixtureSetFingerprint: fingerprintVerificationFixtures(fixtures) }),
+      fixtures,
+      currentAdmissionCycle: '2026-2027',
+      currentSourceFingerprint: SOURCE_FINGERPRINT,
+    });
+
+    expect(result.issues).toContainEqual(expect.objectContaining({ code: 'fixture_contains_pii' }));
+  });
+
+  it('blocks applicant name fields in fixture input', () => {
+    const fixtures = makeFixtures();
+    fixtures[0] = {
+      ...fixtures[0],
+      input: {
+        ...fixtures[0].input,
+        applicantName: 'Dana Levi',
+      },
+    };
+
+    const result = evaluateProgramVerification({
+      contract: makeContract({
+        fixtureSetFingerprint: fingerprintVerificationFixtures(fixtures),
+      }),
+      fixtures,
+      currentAdmissionCycle: '2026-2027',
+      currentSourceFingerprint: SOURCE_FINGERPRINT,
+    });
+
     expect(result.issues).toContainEqual(expect.objectContaining({ code: 'fixture_contains_pii' }));
   });
 });

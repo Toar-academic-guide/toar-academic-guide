@@ -25,10 +25,6 @@ import {
   getHaifaProgramVerificationMetadata,
   type HaifaProgramVerificationMetadata,
 } from './haifaProgramVerification';
-import {
-  getManualProgramVerificationMetadata,
-  type ManualProgramVerificationMetadata,
-} from './manualProgramVerification';
 
 export type FormulaPairLedgerState = 'exact' | 'withheld' | 'stale' | 'blocked';
 
@@ -280,7 +276,7 @@ const WITHHELD_PAIR_EVIDENCE: Record<string, { url: string; reason: string }> = 
   tau_infosystems__tau: {
     url: 'https://go.tau.ac.il/he/management/ba/management?v=requirements',
     reason:
-      'The current TAU source exposes a general Management degree that includes information-systems coursework, not the legacy standalone management-and-information-systems programme target represented by this pair.',
+      'The current TAU source identifies the official programme as the Management degree, not the legacy standalone Management and Information Systems programme represented by this pair. Reusing the Management identifier requires an explicit catalogue rename or merge decision before any pair-specific proof can activate.',
   },
   tau_medicine__tau: {
     url: 'https://go.tau.ac.il/he/med/ba/med-doc?v=important-info',
@@ -298,14 +294,14 @@ const WITHHELD_PAIR_EVIDENCE: Record<string, { url: string; reason: string }> = 
       'The current BGU 2027 admission dataset has no nutrition programme row from which a current programme mapping and two verdict fixtures can be proven.',
   },
   architecture__technion: {
-    url: 'https://admissions.technion.ac.il/acceptance-to-architecturentownplanning/',
+    url: 'https://admissions.technion.ac.il/architecture-info/',
     reason:
-      'Technion architecture admission is governed by architecture-specific examination, portfolio, and interview requirements rather than a numeric calculator verdict.',
+      'Technion publishes a special Architecture Sekhem formula and states that the architecture entrance-exam score participates in the admission decision. The current proof does not reproduce that formula, exam-score contribution, or final verdict.',
   },
   colmgmt_cs__colman: {
     url: 'https://www.colman.ac.il/academics/ba/computer-science/',
     reason:
-      'The College of Management publishes requirements, internal tests, and preparatory routes for this programme, but no official calculator replay with a pair-specific numeric acceptance/rejection verdict.',
+      'The College of Management publishes Bagrut and mathematics thresholds, but the routes also depend on an internal test or an unpublished required weighted score. No controlled comparison currently reproduces both the official score and final programme verdict.',
   },
 };
 
@@ -321,15 +317,12 @@ export const FORMULA_BACKED_VERIFICATION_LEDGER: FormulaPairVerificationLedgerEn
             : institutionId === 'bgu'
               ? getBguProgramVerificationMetadata(pairId)
               : institutionId === 'technion'
-                ? getManualProgramVerificationMetadata(pairId) ??
-                  getTechnionProgramVerificationMetadata(pairId)
+                ? getTechnionProgramVerificationMetadata(pairId)
                 : institutionId === 'haifa'
                   ? getHaifaProgramVerificationMetadata(pairId)
-                  : institutionId === 'colman'
-                    ? getManualProgramVerificationMetadata(pairId)
-                    : undefined;
+                  : undefined;
 
-      return verifiedProgram
+      return verifiedProgram && !WITHHELD_PAIR_EVIDENCE[pairId]
         ? verifiedProgramEntry(verifiedProgram)
         : {
             pairId,
@@ -361,8 +354,7 @@ function verifiedProgramEntry(
     | HujiProgramVerificationMetadata
     | BguProgramVerificationMetadata
     | TechnionProgramVerificationMetadata
-    | HaifaProgramVerificationMetadata
-    | ManualProgramVerificationMetadata,
+    | HaifaProgramVerificationMetadata,
 ): FormulaPairVerificationLedgerEntry {
   const { contract, fixtures } = artifact;
   return {

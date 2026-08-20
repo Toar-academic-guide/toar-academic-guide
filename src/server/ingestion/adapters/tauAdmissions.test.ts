@@ -96,7 +96,7 @@ describe('runTauAdmissionsProof', () => {
         'selectedScore',
         'acceptanceThreshold',
         'rejectionThreshold',
-        'officialVerdict',
+        'derivedVerdict',
       ],
       normalizedPayload: {
         selectedScoreField: 'hatama_handasa',
@@ -104,7 +104,8 @@ describe('runTauAdmissionsProof', () => {
         acceptanceThreshold: 700,
         rejectionThreshold: 680,
         matchedProgramIds: ['056011050000'],
-        officialVerdict: 'accepted',
+        derivedVerdict: 'accepted',
+        decisionProvenance: 'verified_derivation',
       },
     });
   });
@@ -133,7 +134,11 @@ describe('runTauAdmissionsProof', () => {
       );
 
     const proof = await runTauAdmissionsProof({
-      applicant: { bagrutAverage: 115, psychometric: 760, psychometricSubscores: { english: 130, math: 130, verbal: 130 } },
+      applicant: {
+        bagrutAverage: 115,
+        psychometric: 760,
+        psychometricSubscores: { english: 130, math: 130, verbal: 130 },
+      },
       fetcher,
       program: {
         targetId: 'tau-medicine-live',
@@ -154,7 +159,8 @@ describe('runTauAdmissionsProof', () => {
       normalizedPayload: {
         selectedScore: 745.43,
         acceptanceThreshold: 726.44,
-        officialVerdict: 'eligible_to_apply',
+        derivedVerdict: 'eligible_to_apply',
+        decisionProvenance: 'verified_derivation',
         matchedProgramIds: ['011167010000'],
       },
     });
@@ -194,7 +200,8 @@ describe('runTauAdmissionsProof', () => {
     });
     expect(proof.normalizedPayload).toMatchObject({
       exactSciencesBonus: 10,
-      officialVerdict: 'accepted',
+      derivedVerdict: 'accepted',
+      decisionProvenance: 'verified_derivation',
     });
   });
 
@@ -228,7 +235,8 @@ describe('runTauAdmissionsProof', () => {
       selectedScore: 640,
       acceptanceThreshold: 652,
       rejectionThreshold: 632,
-      officialVerdict: 'pending',
+      derivedVerdict: 'pending',
+      decisionProvenance: 'verified_derivation',
     });
   });
 
@@ -360,7 +368,8 @@ describe('runTauAdmissionsProof', () => {
         selectedScore: 679,
         acceptanceThreshold: 660,
         rejectionThreshold: 659,
-        officialVerdict: 'accepted',
+        derivedVerdict: 'accepted',
+        decisionProvenance: 'verified_derivation',
       },
     });
   });

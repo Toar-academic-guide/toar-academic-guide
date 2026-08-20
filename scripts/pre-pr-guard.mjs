@@ -83,6 +83,7 @@ const targetedTests = [
   'src/server/admissions/capabilityMatrix.test.ts',
   'src/server/admissions/evaluator.test.ts',
   'src/server/admissions/verification/programVerification.test.ts',
+  'src/server/ingestion/admissionsLiveProofRunner.test.ts',
   'src/server/admissions/admissionsReleasePublisher.test.ts',
   'src/server/admissions/productionSchemaPreflight.test.ts',
   'src/server/admissions/productionSensitivePaths.test.ts',

@@ -54,12 +54,10 @@ export async function runHaifaAdmissionsProof(
         programName: program.name,
         source: 'haifa_calculateChances',
         ...parsed,
-        officialVerdict:
-          parsed.weightedScore !== undefined && parsed.acceptanceCutoff !== undefined
-            ? parsed.weightedScore >= parsed.acceptanceCutoff
-              ? 'accepted'
-              : 'below'
-            : undefined,
+        derivedVerdict: derivedVerdictFrom(parsed),
+        proofStatus: hasDecision ? 'succeeded' : 'partial',
+        proofLevel: hasDecision ? 'exact_official' : 'partial_official',
+        decisionProvenance: hasDecision ? 'verified_derivation' : 'none',
       },
       limitations: hasDecision
         ? ['Representative Haifa program only; broad program coverage is deferred']
@@ -172,6 +170,25 @@ function matchesAny(value: string, patterns: string[]) {
 
 function hasCutoff(parsed: Record<string, number | string>) {
   return parsed.acceptanceCutoff !== undefined || parsed.rejectionCutoff !== undefined;
+}
+
+function derivedVerdictFrom(parsed: Record<string, number | string>) {
+  if (typeof parsed.weightedScore !== 'number' || typeof parsed.acceptanceCutoff !== 'number') {
+    return undefined;
+  }
+
+  if (parsed.weightedScore >= parsed.acceptanceCutoff) {
+    return 'accepted';
+  }
+
+  if (
+    typeof parsed.rejectionCutoff === 'number' &&
+    parsed.weightedScore >= parsed.rejectionCutoff
+  ) {
+    return 'pending';
+  }
+
+  return 'below';
 }
 
 function reproducedFieldsFor(parsed: Record<string, number | string>) {

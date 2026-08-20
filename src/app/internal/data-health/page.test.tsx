@@ -92,6 +92,13 @@ describe('/internal/data-health page', () => {
           colman: { total: 1, exact: 0, withheld: 1, stale: 0, blocked: 0 },
         },
       },
+      runtimeFormulaVerification: {
+        total: 135,
+        exact: 0,
+        stale: 0,
+        blocked: 0,
+        authorityUnavailable: 135,
+      },
       coverage: {
         missingRequirementSourceCount: 0,
         missingProgramSourceCount: 0,

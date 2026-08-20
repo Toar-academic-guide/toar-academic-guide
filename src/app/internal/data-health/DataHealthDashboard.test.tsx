@@ -39,6 +39,13 @@ function reportWithRisks(): DataHealthReadyReport {
         colman: { total: 1, exact: 0, withheld: 1, stale: 0, blocked: 0 },
       },
     },
+    runtimeFormulaVerification: {
+      total: 135,
+      exact: 3,
+      stale: 0,
+      blocked: 0,
+      authorityUnavailable: 132,
+    },
     coverage: {
       missingRequirementSourceCount: 1,
       missingProgramSourceCount: 1,
@@ -105,6 +112,7 @@ function reportWithRisks(): DataHealthReadyReport {
           freshnessStatus: 'fresh',
           blockedReason: null,
           requiredInputs: [],
+          formulaPairScope: 'in_scope',
         },
         {
           programId: 'haifa_cs',
@@ -120,6 +128,7 @@ function reportWithRisks(): DataHealthReadyReport {
           freshnessStatus: 'fresh',
           blockedReason: null,
           requiredInputs: ['psychometric_math', 'psychometric_verbal', 'psychometric_english'],
+          formulaPairScope: 'in_scope',
         },
         {
           programId: 'tau_law',
@@ -135,6 +144,7 @@ function reportWithRisks(): DataHealthReadyReport {
           freshnessStatus: null,
           blockedReason: null,
           requiredInputs: [],
+          formulaPairScope: null,
         },
       ],
     },

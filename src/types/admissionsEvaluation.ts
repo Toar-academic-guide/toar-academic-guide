@@ -1,7 +1,12 @@
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type { BagrutSector, BagrutSubjectRecord, DeltaNeeded } from '@/types';
 
-export type AdmissionsEvaluationDecision = 'accepted' | 'below' | 'eligible_to_apply' | 'unknown';
+export type AdmissionsEvaluationDecision =
+  | 'accepted'
+  | 'below'
+  | 'eligible_to_apply'
+  | 'pending'
+  | 'unknown';
 
 export type AdmissionsEvaluationKind =
   | 'exact'

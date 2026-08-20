@@ -10,6 +10,7 @@ import {
   type PersistAdmissionsSourceProofsResult,
   type SourceFreshnessRepository,
 } from './sourceFreshness';
+import type { AdmissionsSourceProof } from './admissionsSourceAdapters';
 
 export interface AdmissionsSourceFreshnessRunnerOptions extends Pick<
   AdmissionsLiveProofOptions,
@@ -64,11 +65,27 @@ export async function runAdmissionsSourceFreshness(
   assertAdmissionsSourceFreshnessConfig(options);
 
   const proofRunner = options.proofRunner ?? runAdmissionsLiveProof;
+  const repository = options.dryRun
+    ? undefined
+    : (options.repository ?? createDrizzleSourceFreshnessRepository());
+  let persistence = repository ? emptyPersistenceSummary() : null;
+  const persistedSourceIds = new Set<string>();
+  const persistResult = async (proof: AdmissionsSourceProof) => {
+    if (!repository || !persistence || persistedSourceIds.has(proof.id)) return;
+    const result = await persistAdmissionsSourceProofs({
+      checkedAt: options.checkedAt,
+      proofs: [proof],
+      repository,
+    });
+    persistedSourceIds.add(proof.id);
+    addPersistenceSummary(persistence, result);
+  };
   const report = await proofRunner({
     applicant: options.applicant,
     fetcher: options.fetcher,
     includeCapabilityMatrix: options.includeCapabilityMatrix ?? true,
     targetIds: options.targetIds,
+    onResult: async (result) => persistResult(result.proof),
   });
 
   if (options.dryRun) {
@@ -78,17 +95,37 @@ export async function runAdmissionsSourceFreshness(
     };
   }
 
-  const repository = options.repository ?? createDrizzleSourceFreshnessRepository();
-  const persistence = await persistAdmissionsSourceProofs({
-    checkedAt: options.checkedAt,
-    proofs: report.results.map((result) => result.proof),
-    repository,
-  });
+  for (const result of report.results) {
+    await persistResult(result.proof);
+  }
 
   return {
     report,
     persistence,
   };
+}
+
+function emptyPersistenceSummary(): PersistAdmissionsSourceProofsResult {
+  return {
+    total: 0,
+    blocked: 0,
+    changed_needs_review: 0,
+    failed: 0,
+    fresh: 0,
+    reviewsCreated: 0,
+  };
+}
+
+function addPersistenceSummary(
+  target: PersistAdmissionsSourceProofsResult,
+  source: PersistAdmissionsSourceProofsResult,
+): void {
+  target.total += source.total;
+  target.blocked += source.blocked;
+  target.changed_needs_review += source.changed_needs_review;
+  target.failed += source.failed;
+  target.fresh += source.fresh;
+  target.reviewsCreated += source.reviewsCreated;
 }
 
 function assertAdmissionsSourceFreshnessConfig(

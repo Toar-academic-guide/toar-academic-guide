@@ -67,6 +67,13 @@ export interface DataHealthReadyReport {
     counts: DataHealthCounts;
   };
   formulaVerification: FormulaPairVerificationCompletion;
+  runtimeFormulaVerification: {
+    total: number;
+    exact: number;
+    stale: number;
+    blocked: number;
+    authorityUnavailable: number;
+  };
   coverage: {
     missingRequirementSourceCount: number;
     missingProgramSourceCount: number;
@@ -442,6 +449,7 @@ export interface AdmissionsEvidenceRow {
   freshnessStatus: DashboardSourceFreshnessStatus | null;
   blockedReason: string | null;
   requiredInputs: AdmissionsRequiredInput[];
+  formulaPairScope: 'in_scope' | 'excluded' | null;
 }
 
 export async function getDataHealthReport(
@@ -616,6 +624,7 @@ export function summarizeDataHealthRows(
     admissionThresholds: rows.admissionThresholds,
     universityCalculatorConfigs: rows.universityCalculatorConfigs,
   });
+  const decisionEvidence = buildDecisionEvidenceSummary(rows, now);
 
   return {
     status: 'ready',
@@ -637,9 +646,10 @@ export function summarizeDataHealthRows(
       buildFormulaBackedPairInventory(allPrograms),
       FORMULA_BACKED_VERIFICATION_LEDGER,
     ),
+    runtimeFormulaVerification: summarizeRuntimeFormulaVerification(decisionEvidence.rows),
     coverage: buildCoverageSummary(rows),
     decisionReadiness: buildDecisionReadinessSummary(rows),
-    decisionEvidence: buildDecisionEvidenceSummary(rows, now),
+    decisionEvidence,
     ingestion: buildIngestionSummary(rows.ingestionJobs),
     reviewQueue: buildReviewQueueSummary(rows.reviewItems),
     freshness: buildSourceFreshnessSummary(rows, now),
@@ -917,8 +927,12 @@ async function loadDataHealthRows(): Promise<DataHealthRows> {
       sourceClass: sourceFreshnessStates.sourceClass,
       capability: sourceFreshnessStates.capability,
       status: sourceFreshnessStates.status,
+      proofLevel: sourceFreshnessStates.proofLevel,
+      decisionProvenance: sourceFreshnessStates.decisionProvenance,
+      reviewedSourceFingerprint: sourceFreshnessStates.reviewedSourceFingerprint,
       lastCheckedAt: sourceFreshnessStates.lastCheckedAt,
       lastSuccessfulCheckAt: sourceFreshnessStates.lastSuccessfulCheckAt,
+      lastExactCheckAt: sourceFreshnessStates.lastExactCheckAt,
       lastChangedAt: sourceFreshnessStates.lastChangedAt,
       latestFailureReason: sourceFreshnessStates.latestFailureReason,
       blockedReason: sourceFreshnessStates.blockedReason,
@@ -1107,12 +1121,27 @@ function buildDecisionEvidenceSummary(
           ? (entry.freshnessState?.blockedReason ?? entry.sourceTarget?.blockedReason ?? null)
           : null,
         requiredInputs: showOfficialMetadata ? (entry.requiredInputs ?? []) : [],
+        formulaPairScope: entry.formulaPairScope ?? null,
       };
     }),
   );
 
   return {
     rows: evidenceRows.toSorted(compareAdmissionsEvidenceRows),
+  };
+}
+
+function summarizeRuntimeFormulaVerification(
+  rows: AdmissionsEvidenceRow[],
+): DataHealthReadyReport['runtimeFormulaVerification'] {
+  const inScope = rows.filter((row) => row.formulaPairScope === 'in_scope');
+  const counts = countBy(inScope, (row) => row.evidenceMode);
+  return {
+    total: inScope.length,
+    exact: counts.exact ?? 0,
+    stale: counts.stale ?? 0,
+    blocked: counts.blocked ?? 0,
+    authorityUnavailable: counts.authority_unavailable ?? 0,
   };
 }
 

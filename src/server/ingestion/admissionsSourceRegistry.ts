@@ -14,7 +14,6 @@ import {
 } from '@/data/admissions/hujiProgramVerification';
 import { BGU_PROGRAM_VERIFICATION_METADATA } from '@/data/admissions/bguProgramVerification';
 import { TECHNION_PROGRAM_VERIFICATION_METADATA } from '@/data/admissions/technionProgramVerification';
-import { MANUAL_PROGRAM_VERIFICATION_METADATA } from '@/data/admissions/manualProgramVerification';
 import {
   getHaifaProgramConfig,
   HAIFA_PROGRAM_VERIFICATION_METADATA,
@@ -47,146 +46,178 @@ export interface AdmissionsSourceTarget {
 }
 
 export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
-  ...Object.values(HUJI_PROGRAM_VERIFICATION_METADATA).map((artifact) => ({
-    id: artifact.contract.source.targetId,
-    institutionId: 'huji',
-    institutionName: 'Hebrew University of Jerusalem',
-    officialUrl: HUJI_SOURCE_URL,
-    adapterId: 'huji' as const,
-    expectedCapability: 'decision_capable' as const,
-    proofLevel: 'exact_official' as const,
-    category: 'exact' as const,
-    defaultApplicant: { bagrutAverage: 120, psychometric: 800 },
-    defaultProgram: {
-      targetId: artifact.contract.source.targetId,
-      pairId: artifact.contract.pairId,
-      id: artifact.contract.programId,
-      name: artifact.contract.programId,
-      externalId: artifact.contract.officialProgramId,
-    },
-    reproducedFields: ['selectedScore', 'acceptanceThreshold', 'rejectionThreshold', 'officialVerdict'],
-    limitations: ['Exact replay is scoped to the explicitly matched HUJI track number and current cycle thresholds.'],
-    nextAction: 'Keep the track mapping, formula coefficients, thresholds, fixtures, and source fingerprint under review.',
-  } satisfies AdmissionsSourceTarget)),
-  ...Object.values(BGU_PROGRAM_VERIFICATION_METADATA).map((artifact) => ({
-    id: artifact.contract.source.targetId,
-    institutionId: 'bgu',
-    institutionName: 'Ben-Gurion University of the Negev',
-    officialUrl: artifact.contract.source.url,
-    adapterId: 'bgu' as const,
-    expectedCapability: 'decision_capable' as const,
-    proofLevel: 'exact_official' as const,
-    category: 'exact' as const,
-    defaultApplicant: { bagrutAverage: 120, psychometric: 800 },
-    defaultProgram: {
-      targetId: artifact.contract.source.targetId,
-      pairId: artifact.contract.pairId,
-      id: artifact.contract.programId,
-      name: artifact.contract.programId,
-      externalId: artifact.contract.officialProgramId,
-      searchText: artifact.contract.source.url,
-    },
-    reproducedFields: ['selectedScore', 'acceptanceThreshold', 'rejectionThreshold', 'officialVerdict'],
-    limitations: ['Exact replay is scoped to the explicitly matched BGU acceptance-conditions rule and current score endpoint.'],
-    nextAction: 'Keep the programme endpoint, score replay, threshold, fixtures, and source fingerprint under review.',
-  } satisfies AdmissionsSourceTarget)),
-  ...Object.values(TECHNION_PROGRAM_VERIFICATION_METADATA).map((artifact) => ({
-    id: artifact.contract.source.targetId,
+  ...Object.values(HUJI_PROGRAM_VERIFICATION_METADATA).map(
+    (artifact) =>
+      ({
+        id: artifact.contract.source.targetId,
+        institutionId: 'huji',
+        institutionName: 'Hebrew University of Jerusalem',
+        officialUrl: HUJI_SOURCE_URL,
+        adapterId: 'huji' as const,
+        expectedCapability: 'decision_capable' as const,
+        proofLevel: 'exact_official' as const,
+        category: 'exact' as const,
+        defaultApplicant: { bagrutAverage: 120, psychometric: 800 },
+        defaultProgram: {
+          targetId: artifact.contract.source.targetId,
+          pairId: artifact.contract.pairId,
+          id: artifact.contract.programId,
+          name: artifact.contract.programId,
+          externalId: artifact.contract.officialProgramId,
+        },
+        reproducedFields: [
+          'selectedScore',
+          'acceptanceThreshold',
+          'rejectionThreshold',
+          'officialVerdict',
+        ],
+        limitations: [
+          'Exact replay is scoped to the explicitly matched HUJI track number and current cycle thresholds.',
+        ],
+        nextAction:
+          'Keep the track mapping, formula coefficients, thresholds, fixtures, and source fingerprint under review.',
+      }) satisfies AdmissionsSourceTarget,
+  ),
+  ...Object.values(BGU_PROGRAM_VERIFICATION_METADATA).map(
+    (artifact) =>
+      ({
+        id: artifact.contract.source.targetId,
+        institutionId: 'bgu',
+        institutionName: 'Ben-Gurion University of the Negev',
+        officialUrl: artifact.contract.source.url,
+        adapterId: 'bgu' as const,
+        expectedCapability: 'decision_capable' as const,
+        proofLevel: 'exact_official' as const,
+        category: 'exact' as const,
+        defaultApplicant: { bagrutAverage: 120, psychometric: 800 },
+        defaultProgram: {
+          targetId: artifact.contract.source.targetId,
+          pairId: artifact.contract.pairId,
+          id: artifact.contract.programId,
+          name: artifact.contract.programId,
+          externalId: artifact.contract.officialProgramId,
+          searchText: artifact.contract.source.url,
+        },
+        reproducedFields: [
+          'selectedScore',
+          'acceptanceThreshold',
+          'rejectionThreshold',
+          'officialVerdict',
+        ],
+        limitations: [
+          'Exact replay is scoped to the explicitly matched BGU acceptance-conditions rule and current score endpoint.',
+        ],
+        nextAction:
+          'Keep the programme endpoint, score replay, threshold, fixtures, and source fingerprint under review.',
+      }) satisfies AdmissionsSourceTarget,
+  ),
+  ...Object.values(TECHNION_PROGRAM_VERIFICATION_METADATA).map(
+    (artifact) =>
+      ({
+        id: artifact.contract.source.targetId,
+        institutionId: 'technion',
+        institutionName: 'Technion',
+        officialUrl: artifact.contract.source.url,
+        adapterId: 'technion' as const,
+        expectedCapability: 'decision_capable' as const,
+        proofLevel: 'exact_official' as const,
+        category: 'exact' as const,
+        defaultApplicant: { bagrutAverage: 100, psychometric: 800 },
+        defaultProgram: {
+          targetId: artifact.contract.source.targetId,
+          pairId: artifact.contract.pairId,
+          id: artifact.contract.programId,
+          name: artifact.contract.programId,
+          externalId: artifact.contract.officialProgramId,
+          scoreField:
+            artifact.contract.calculation.cutoff.acceptance === 92 &&
+            artifact.contract.programId.includes('medicine')
+              ? 'invitation'
+              : undefined,
+        },
+        reproducedFields: [
+          'selectedScore',
+          'acceptanceThreshold',
+          'rejectionThreshold',
+          'officialVerdict',
+        ],
+        limitations: [
+          'Exact replay is scoped to the official Technion Sekhem calculator and current cutoff table.',
+        ],
+        nextAction:
+          'Keep the calculator input mapping, cutoff table, fixtures, and source fingerprint under review.',
+      }) satisfies AdmissionsSourceTarget,
+  ),
+  {
+    id: 'technion-architecture-live',
     institutionId: 'technion',
     institutionName: 'Technion',
-    officialUrl: artifact.contract.source.url,
-    adapterId: 'technion' as const,
-    expectedCapability: 'decision_capable' as const,
-    proofLevel: 'exact_official' as const,
-    category: 'exact' as const,
-    defaultApplicant: { bagrutAverage: 100, psychometric: 800 },
-    defaultProgram: {
-      targetId: artifact.contract.source.targetId,
-      pairId: artifact.contract.pairId,
-      id: artifact.contract.programId,
-      name: artifact.contract.programId,
-      externalId: artifact.contract.officialProgramId,
-      scoreField: artifact.contract.calculation.cutoff.acceptance === 92 && artifact.contract.programId.includes('medicine') ? 'invitation' : undefined,
-    },
-    reproducedFields: ['selectedScore', 'acceptanceThreshold', 'rejectionThreshold', 'officialVerdict'],
-    limitations: ['Exact replay is scoped to the official Technion Sekhem calculator and current cutoff table.'],
-    nextAction: 'Keep the calculator input mapping, cutoff table, fixtures, and source fingerprint under review.',
-  } satisfies AdmissionsSourceTarget)),
-  ...Object.values(MANUAL_PROGRAM_VERIFICATION_METADATA).map((artifact) => {
-    const architecture = artifact.contract.pairId === 'architecture__technion';
-    return {
-      id: artifact.contract.source.targetId,
-      institutionId: architecture ? 'technion' : 'colman',
-      institutionName: architecture ? 'Technion' : 'College of Management Academic Studies',
-      officialUrl: artifact.requirementsUrl,
-      adapterId: 'manual_requirements' as const,
-      expectedCapability: 'decision_capable' as const,
-      proofLevel: 'exact_official' as const,
-      category: 'exact' as const,
-      defaultApplicant: architecture
-        ? {
-            bagrutAverage: 105,
-            psychometric: 700,
-            mathUnits: 5,
-            mathGrade: 80,
-            englishUnits: 5,
-            bagrutSubjectRecord: {
-              schemaVersion: 1,
-              sector: 'jewish',
-              subjects: [
-                { subjectId: 'mathematics', units: 5, grade: 80 },
-                { subjectId: 'english', units: 5, grade: 90 },
-                { subjectId: 'history', units: 2, grade: 88 },
-                { subjectId: 'bible', units: 2, grade: 86 },
-              ],
-            },
-          }
-        : { bagrutAverage: 90, psychometric: 600, mathUnits: 5, mathGrade: 75 },
-      defaultProgram: {
-        targetId: artifact.contract.source.targetId,
-        pairId: artifact.contract.pairId,
-        id: artifact.contract.programId,
-        name: artifact.contract.programId,
-        manualGateProfile: architecture
-          ? ('technion_architecture' as const)
-          : ('colman_computer_science' as const),
-      },
-      reproducedFields: ['applicationEligibility', 'officialVerdict'],
-      limitations: artifact.contract.calculation.gates
-        .filter((gate) => gate.kind === 'manual')
-        .map((gate) => gate.description),
-      nextAction: 'Keep the institution-specific manual gate and requirements page under review.',
-    } satisfies AdmissionsSourceTarget;
-  }),
-  ...Object.values(HAIFA_PROGRAM_VERIFICATION_METADATA).map((artifact) => ({
-    id: artifact.contract.source.targetId,
-    institutionId: 'haifa',
-    institutionName: 'University of Haifa',
-    officialUrl: 'https://applicants.haifa.ac.il/enrollmentChances/index.html',
-    adapterId: 'haifa' as const,
-    expectedCapability: 'decision_capable' as const,
-    proofLevel: 'exact_official' as const,
-    category: 'exact' as const,
-    defaultApplicant: {
-      bagrutAverage: 120,
-      psychometric: 800,
-      psychometricSubscores: { math: 160, verbal: 160, english: 160 },
-    },
-    defaultProgram: {
-      targetId: artifact.contract.source.targetId,
-      pairId: artifact.contract.pairId,
-      id: artifact.contract.programId === 'cs' ? 'haifa-cs' : artifact.contract.programId,
-      name: artifact.contract.programId === 'cs' ? 'Computer Science' : artifact.contract.programId,
-      externalId: artifact.contract.officialProgramId,
-      hug: getHaifaProgramConfig(artifact.contract.programId).hug,
-    },
-    reproducedFields:
-      artifact.contract.programId === 'cs'
-        ? ['weightedScore', 'acceptanceCutoff', 'rejectionCutoff']
-        : ['weightedScore', 'acceptanceCutoff', 'rejectionCutoff', 'officialVerdict'],
-    limitations: ['Exact replay is scoped to the explicitly matched Haifa programme ID, hug, and current cycle cutoffs.'],
-    nextAction: 'Keep the programme mapping, calculator score, cutoffs, fixtures, and source fingerprint under review.',
-  } satisfies AdmissionsSourceTarget)),
+    officialUrl: 'https://admissions.technion.ac.il/architecture-info/',
+    adapterId: 'capability_matrix',
+    expectedCapability: 'score_only',
+    proofLevel: 'partial_official',
+    category: 'manual_gate',
+    reproducedFields: ['publishedPrerequisites', 'specialSekhemDisclosure'],
+    limitations: [
+      'Architecture uses a special Sekhem formula that has not been reproduced.',
+      'The architecture entrance-exam score participates in the admission decision and is not available to the evaluator.',
+    ],
+    nextAction:
+      'Keep the pair authority-unavailable until the special Sekhem, entrance-exam contribution, cutoff, and final verdict are reproduced against the official calculator.',
+  },
+  {
+    id: 'colman-computer-science-live',
+    institutionId: 'colman',
+    institutionName: 'College of Management Academic Studies',
+    officialUrl: 'https://www.colman.ac.il/academics/ba/computer-science/',
+    adapterId: 'capability_matrix',
+    expectedCapability: 'score_only',
+    proofLevel: 'partial_official',
+    category: 'requirements_only',
+    reproducedFields: ['publishedBagrutThreshold', 'publishedMathematicsThreshold'],
+    limitations: [
+      'The Bagrut route also requires an internal test.',
+      'The combined route refers to an institution-required weighted score whose current formula and cutoff are not reproduced.',
+    ],
+    nextAction:
+      'Keep the pair authority-unavailable until a controlled comparison reproduces the official score, internal-test route, and final verdict.',
+  },
+  ...Object.values(HAIFA_PROGRAM_VERIFICATION_METADATA).map(
+    (artifact) =>
+      ({
+        id: artifact.contract.source.targetId,
+        institutionId: 'haifa',
+        institutionName: 'University of Haifa',
+        officialUrl: 'https://applicants.haifa.ac.il/enrollmentChances/index.html',
+        adapterId: 'haifa' as const,
+        expectedCapability: 'decision_capable' as const,
+        proofLevel: 'exact_official' as const,
+        category: 'exact' as const,
+        defaultApplicant: {
+          bagrutAverage: 120,
+          psychometric: 800,
+          psychometricSubscores: { math: 160, verbal: 160, english: 160 },
+        },
+        defaultProgram: {
+          targetId: artifact.contract.source.targetId,
+          pairId: artifact.contract.pairId,
+          id: artifact.contract.programId === 'cs' ? 'haifa-cs' : artifact.contract.programId,
+          name:
+            artifact.contract.programId === 'cs' ? 'Computer Science' : artifact.contract.programId,
+          externalId: artifact.contract.officialProgramId,
+          hug: getHaifaProgramConfig(artifact.contract.programId).hug,
+        },
+        reproducedFields:
+          artifact.contract.programId === 'cs'
+            ? ['weightedScore', 'acceptanceCutoff', 'rejectionCutoff']
+            : ['weightedScore', 'acceptanceCutoff', 'rejectionCutoff', 'officialVerdict'],
+        limitations: [
+          'Exact replay is scoped to the explicitly matched Haifa programme ID, hug, and current cycle cutoffs.',
+        ],
+        nextAction:
+          'Keep the programme mapping, calculator score, cutoffs, fixtures, and source fingerprint under review.',
+      }) satisfies AdmissionsSourceTarget,
+  ),
   {
     id: 'tau-digital-sciences-live',
     institutionId: 'tau',
@@ -230,6 +261,7 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
       externalId: '016211010000',
       searchText: 'nursing',
       scoreField: 'hatama',
+      decisionMode: 'eligible_to_apply',
     },
     reproducedFields: [
       'selectedScore',
@@ -248,9 +280,9 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     institutionName: 'Tel Aviv University',
     officialUrl: 'https://go.tau.ac.il/graphql',
     adapterId: 'tau',
-    expectedCapability: 'decision_capable',
-    proofLevel: 'exact_official',
-    category: 'exact',
+    expectedCapability: 'score_only',
+    proofLevel: 'partial_official',
+    category: 'manual_gate',
     defaultApplicant: {
       bagrutAverage: 115,
       psychometric: 760,
@@ -278,9 +310,9 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     institutionName: 'Tel Aviv University',
     officialUrl: 'https://go.tau.ac.il/graphql',
     adapterId: 'tau',
-    expectedCapability: 'decision_capable',
-    proofLevel: 'exact_official',
-    category: 'exact',
+    expectedCapability: 'score_only',
+    proofLevel: 'partial_official',
+    category: 'manual_gate',
     defaultApplicant: {
       bagrutAverage: 115,
       psychometric: 760,
@@ -308,9 +340,9 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     institutionName: 'Tel Aviv University',
     officialUrl: 'https://go.tau.ac.il/graphql',
     adapterId: 'tau',
-    expectedCapability: 'decision_capable',
-    proofLevel: 'exact_official',
-    category: 'exact',
+    expectedCapability: 'score_only',
+    proofLevel: 'partial_official',
+    category: 'manual_gate',
     defaultApplicant: {
       bagrutAverage: 110,
       psychometric: 700,
@@ -342,26 +374,18 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     id: 'tau-information-systems-live',
     institutionId: 'tau',
     institutionName: 'Tel Aviv University',
-    officialUrl: 'https://go.tau.ac.il/graphql',
-    adapterId: 'tau',
-    expectedCapability: 'decision_capable',
-    proofLevel: 'exact_official',
-    category: 'exact',
-    defaultApplicant: { bagrutAverage: 110, psychometric: 700 },
-    defaultProgram: {
-      targetId: 'tau-information-systems-live',
-      pairId: 'tau_infosystems__tau',
-      id: 'tau_infosystems',
-      name: 'Management and Information Systems',
-      nodeId: 8267,
-      externalId: '122111050000',
-      scoreField: 'hatama_nihul',
-    },
-    reproducedFields: ['selectedScore', 'acceptanceThreshold', 'rejectionThreshold', 'officialVerdict'],
+    officialUrl: 'https://go.tau.ac.il/he/management/ba/management?v=requirements',
+    adapterId: 'capability_matrix',
+    expectedCapability: 'score_only',
+    proofLevel: 'partial_official',
+    category: 'requirements_only',
+    reproducedFields: ['currentProgrammeIdentity', 'managementAdmissionRequirements'],
     limitations: [
-      'The current official route is the Management degree and the legacy information-systems label is retained as an explicit alias.',
+      'The current official source is the Management degree, not a standalone Management and Information Systems programme.',
+      'Reusing the Management programme identifier would silently merge two catalogue identities without product approval.',
     ],
-    nextAction: 'Keep the current Management mapping and alias decision under review.',
+    nextAction:
+      'Obtain an explicit catalogue rename or merge decision, or locate a current standalone official programme mapping before activating exact capability.',
   },
   {
     id: 'tau-psychology-live',
@@ -671,8 +695,15 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
       externalId: '122111050000',
       scoreField: 'hatama_nihul',
     },
-    reproducedFields: ['selectedScore', 'acceptanceThreshold', 'rejectionThreshold', 'officialVerdict'],
-    limitations: ['The proof covers the standard Management score route; alternate routes remain manual.'],
+    reproducedFields: [
+      'selectedScore',
+      'acceptanceThreshold',
+      'rejectionThreshold',
+      'officialVerdict',
+    ],
+    limitations: [
+      'The proof covers the standard Management score route; alternate routes remain manual.',
+    ],
     nextAction: 'Keep the Management node, score field, fixtures, and thresholds under review.',
   },
   {
@@ -694,9 +725,15 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
       externalId: '122111050000',
       scoreField: 'hatama_nihul',
     },
-    reproducedFields: ['selectedScore', 'acceptanceThreshold', 'rejectionThreshold', 'officialVerdict'],
+    reproducedFields: [
+      'selectedScore',
+      'acceptanceThreshold',
+      'rejectionThreshold',
+      'officialVerdict',
+    ],
     limitations: ['This legacy alias uses the same current Management programme source.'],
-    nextAction: 'Keep the shared Management node, score field, fixtures, and source fingerprint under review.',
+    nextAction:
+      'Keep the shared Management node, score field, fixtures, and source fingerprint under review.',
   },
   {
     id: 'tau-architecture-live',

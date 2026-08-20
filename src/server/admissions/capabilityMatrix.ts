@@ -30,7 +30,6 @@ import { getProgramVerificationArtifact } from '@/data/admissions/tauProgramVeri
 import { HUJI_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/hujiProgramVerification';
 import { BGU_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/bguProgramVerification';
 import { TECHNION_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/technionProgramVerification';
-import { MANUAL_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/manualProgramVerification';
 import {
   getHaifaProgramConfig,
   HAIFA_PROGRAM_VERIFICATION_ARTIFACTS,
@@ -38,6 +37,21 @@ import {
 import { evaluateProgramVerification } from './verification/programVerification';
 
 const SOURCE_FRESHNESS_STALE_AFTER_MS = 8 * 24 * 60 * 60 * 1000;
+
+const WITHHELD_FORMULA_PAIR_CAPABILITIES: Record<
+  string,
+  Extract<AdmissionsEvaluationCapability, 'manual_gate' | 'requirements_only'>
+> = {
+  architecture__technion: 'manual_gate',
+  colmgmt_cs__colman: 'manual_gate',
+  medicine__tau: 'manual_gate',
+  nutrition__tau: 'requirements_only',
+  physiotherapy__tau: 'manual_gate',
+  tau_medicine__tau: 'manual_gate',
+  tau_infosystems__tau: 'requirements_only',
+  physiotherapy__huji: 'requirements_only',
+  nutrition__bgu: 'requirements_only',
+};
 
 export interface ExactCapabilityTarget {
   targetId: string;
@@ -57,6 +71,10 @@ export interface AdmissionsCapabilityEntry {
   evidence?: MondayAdmissionEvidenceRecord;
   freshnessState?: SourceFreshnessStateRow;
 }
+
+export type FreshnessStatesLoadResult =
+  | { status: 'loaded'; states: Map<string, SourceFreshnessStateRow> }
+  | { status: 'unavailable'; states: Map<string, SourceFreshnessStateRow> };
 
 const HUJI_EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = Object.fromEntries(
   Object.values(HUJI_PROGRAM_VERIFICATION_ARTIFACTS).map((artifact) => [
@@ -119,30 +137,7 @@ const TECHNION_EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = Ob
             ? 'invitation'
             : undefined,
       },
-      requiredInputs: [],
-    } satisfies ExactCapabilityTarget,
-  ]),
-);
-
-const MANUAL_EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = Object.fromEntries(
-  Object.values(MANUAL_PROGRAM_VERIFICATION_ARTIFACTS).map((artifact) => [
-    artifact.contract.pairId,
-    {
-      targetId: artifact.contract.source.targetId,
-      sourceTarget: admissionsSourceTargets.find(
-        (entry) => entry.id === artifact.contract.source.targetId,
-      )!,
-      program: {
-        targetId: artifact.contract.source.targetId,
-        pairId: artifact.contract.pairId,
-        id: artifact.contract.programId,
-        name: artifact.contract.programId,
-        manualGateProfile:
-          artifact.contract.pairId === 'architecture__technion'
-            ? 'technion_architecture'
-            : 'colman_computer_science',
-      },
-      requiredInputs: artifact.contract.calculation.requiredInputs,
+      requiredInputs: ['bagrut_subject_record'],
     } satisfies ExactCapabilityTarget,
   ]),
 );
@@ -172,7 +167,6 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
   ...HUJI_EXACT_PROGRAM_TARGETS,
   ...BGU_EXACT_PROGRAM_TARGETS,
   ...TECHNION_EXACT_PROGRAM_TARGETS,
-  ...MANUAL_EXACT_PROGRAM_TARGETS,
   ...HAIFA_EXACT_PROGRAM_TARGETS,
   tau_datascience__tau: {
     targetId: 'tau-digital-sciences-live',
@@ -201,6 +195,7 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
       externalId: '016211010000',
       searchText: 'nursing',
       scoreField: 'hatama',
+      decisionMode: 'eligible_to_apply',
     },
     requiredInputs: ['psychometric_english'],
   },
@@ -221,9 +216,7 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
   },
   tau_medicine__tau: {
     targetId: 'tau-medicine-legacy-live',
-    sourceTarget: admissionsSourceTargets.find(
-      (entry) => entry.id === 'tau-medicine-legacy-live',
-    )!,
+    sourceTarget: admissionsSourceTargets.find((entry) => entry.id === 'tau-medicine-legacy-live')!,
     program: {
       targetId: 'tau-medicine-legacy-live',
       pairId: 'tau_medicine__tau',
@@ -238,9 +231,7 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
   },
   physiotherapy__tau: {
     targetId: 'tau-physiotherapy-live',
-    sourceTarget: admissionsSourceTargets.find(
-      (entry) => entry.id === 'tau-physiotherapy-live',
-    )!,
+    sourceTarget: admissionsSourceTargets.find((entry) => entry.id === 'tau-physiotherapy-live')!,
     program: {
       targetId: 'tau-physiotherapy-live',
       pairId: 'physiotherapy__tau',
@@ -253,22 +244,6 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
       staticThresholds: { acceptance: 664.92, rejection: 640 },
     },
     requiredInputs: ['psychometric_english'],
-  },
-  tau_infosystems__tau: {
-    targetId: 'tau-information-systems-live',
-    sourceTarget: admissionsSourceTargets.find(
-      (entry) => entry.id === 'tau-information-systems-live',
-    )!,
-    program: {
-      targetId: 'tau-information-systems-live',
-      pairId: 'tau_infosystems__tau',
-      id: 'tau_infosystems',
-      name: 'Management and Information Systems',
-      nodeId: 8267,
-      externalId: '122111050000',
-      scoreField: 'hatama_nihul',
-    },
-    requiredInputs: [],
   },
   tau_psychology__tau: {
     targetId: 'tau-psychology-live',
@@ -420,9 +395,7 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
   },
   tau_business__tau: {
     targetId: 'tau-business-legacy-live',
-    sourceTarget: admissionsSourceTargets.find(
-      (entry) => entry.id === 'tau-business-legacy-live',
-    )!,
+    sourceTarget: admissionsSourceTargets.find((entry) => entry.id === 'tau-business-legacy-live')!,
     program: {
       targetId: 'tau-business-legacy-live',
       pairId: 'tau_business__tau',
@@ -680,6 +653,15 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
   },
 };
 
+export function exactSourceIdsForProgram(
+  program: Pick<CatalogueProgram, 'id' | 'linkedInstitutionIds'>,
+) {
+  return program.linkedInstitutionIds.flatMap((institutionId) => {
+    const target = EXACT_PROGRAM_TARGETS[`${program.id}__${institutionId}`];
+    return target ? [target.targetId] : [];
+  });
+}
+
 const SOURCE_TARGETS_BY_INSTITUTION = new Map<string, AdmissionsSourceTarget>(
   admissionsSourceTargets.map((target) => [target.institutionId, target]),
 );
@@ -688,9 +670,9 @@ const REVIEWED_PARTIAL_ESTIMATE_INSTITUTIONS = new Set(['reichman', 'afeka', 'hi
 
 export async function loadFreshnessStatesBySourceIds(
   sourceIds: string[],
-): Promise<Map<string, SourceFreshnessStateRow>> {
+): Promise<FreshnessStatesLoadResult> {
   if (sourceIds.length === 0) {
-    return new Map();
+    return { status: 'loaded', states: new Map() };
   }
 
   try {
@@ -700,9 +682,9 @@ export async function loadFreshnessStatesBySourceIds(
       .from(sourceFreshnessStates)
       .where(inArray(sourceFreshnessStates.sourceId, sourceIds));
 
-    return new Map(rows.map((row) => [row.sourceId, row]));
+    return { status: 'loaded', states: new Map(rows.map((row) => [row.sourceId, row])) };
   } catch {
-    return new Map();
+    return { status: 'unavailable', states: new Map() };
   }
 }
 
@@ -711,6 +693,7 @@ export function buildAdmissionsCapabilityMatrix(args: {
   institutions: CatalogueInstitution[];
   input?: AdmissionsExtraInputs;
   freshnessStatesBySourceId?: Map<string, SourceFreshnessStateRow>;
+  freshnessAuthorityUnavailable?: boolean;
   now?: Date;
 }): AdmissionsCapabilityEntry[] {
   const {
@@ -718,6 +701,7 @@ export function buildAdmissionsCapabilityMatrix(args: {
     institutions,
     input,
     freshnessStatesBySourceId = new Map<string, SourceFreshnessStateRow>(),
+    freshnessAuthorityUnavailable = false,
     now = new Date(),
   } = args;
 
@@ -758,11 +742,12 @@ export function buildAdmissionsCapabilityMatrix(args: {
       return {
         institutionId,
         capability:
-          pairVerification?.state === 'blocked'
+          WITHHELD_FORMULA_PAIR_CAPABILITIES[pairId] ??
+          (pairVerification?.state === 'blocked'
             ? 'blocked'
             : pairVerification?.state === 'stale'
               ? 'stale'
-              : 'authority_unavailable',
+              : 'authority_unavailable'),
         formulaPairScope,
         pairVerification,
         sourceTarget,
@@ -773,6 +758,19 @@ export function buildAdmissionsCapabilityMatrix(args: {
     }
 
     if (formulaPairScope === 'in_scope' && pairVerification?.state === 'exact') {
+      if (freshnessAuthorityUnavailable || !freshnessState) {
+        return {
+          institutionId,
+          capability: 'authority_unavailable',
+          formulaPairScope,
+          pairVerification,
+          sourceTarget,
+          exactTarget,
+          evidence,
+          freshnessState,
+        };
+      }
+
       if (freshnessState?.status === 'blocked') {
         return {
           institutionId,
@@ -786,7 +784,10 @@ export function buildAdmissionsCapabilityMatrix(args: {
         };
       }
 
-      if (freshnessState?.status === 'failed') {
+      if (
+        freshnessState?.status === 'failed' ||
+        freshnessState?.status === 'changed_needs_review'
+      ) {
         return {
           institutionId,
           capability: 'stale',
@@ -804,16 +805,27 @@ export function buildAdmissionsCapabilityMatrix(args: {
             contract: verificationArtifact.contract,
             fixtures: verificationArtifact.fixtures,
             currentAdmissionCycle: pairVerification.admissionCycle,
-            currentSourceFingerprint: freshnessState
-              ? sha256Fingerprint(freshnessState.normalizedFingerprint)
-              : currentReviewedProofFingerprint(verificationArtifact.contract, now),
+            currentSourceFingerprint: verificationArtifact.contract.sourceFingerprint,
           })
         : undefined;
 
-      if (!verification || verification.capability !== 'exact') {
+      if (!verificationArtifact || !verification || verification.capability !== 'exact') {
         return {
           institutionId,
           capability: verification?.capability ?? 'authority_unavailable',
+          formulaPairScope,
+          pairVerification,
+          sourceTarget,
+          exactTarget,
+          evidence,
+          freshnessState,
+        };
+      }
+
+      if (!isExactFreshnessState(freshnessState, verificationArtifact.contract.sourceFingerprint, now)) {
+        return {
+          institutionId,
+          capability: isFreshnessStateStale(freshnessState, now) ? 'stale' : 'authority_unavailable',
           formulaPairScope,
           pairVerification,
           sourceTarget,
@@ -844,6 +856,19 @@ export function buildAdmissionsCapabilityMatrix(args: {
     }
 
     if (exactTarget) {
+      if (freshnessAuthorityUnavailable || !freshnessState) {
+        return {
+          institutionId,
+          capability: 'authority_unavailable',
+          formulaPairScope,
+          pairVerification,
+          sourceTarget,
+          exactTarget,
+          evidence,
+          freshnessState,
+        };
+      }
+
       if (freshnessState?.status === 'blocked') {
         return {
           institutionId,
@@ -1098,30 +1123,20 @@ export function buildAdmissionsCapabilityMatrix(args: {
   });
 }
 
-function sha256Fingerprint(value: string | null | undefined): string | null {
-  if (!value) {
-    return null;
-  }
-  return value.startsWith('sha256:') ? value : `sha256:${value}`;
-}
-
-function currentReviewedProofFingerprint(
-  contract: { proof: { liveComparedAt: string | null; sourceFingerprint: string | null } },
+function isExactFreshnessState(
+  state: SourceFreshnessStateRow,
+  reviewedSourceFingerprint: string,
   now: Date,
-): string | null {
-  if (!contract.proof.liveComparedAt || !contract.proof.sourceFingerprint) {
-    return null;
-  }
-
-  const comparedAt = new Date(contract.proof.liveComparedAt);
-  if (
-    Number.isNaN(comparedAt.getTime()) ||
-    now.getTime() - comparedAt.getTime() > SOURCE_FRESHNESS_STALE_AFTER_MS
-  ) {
-    return null;
-  }
-
-  return contract.proof.sourceFingerprint;
+): boolean {
+  return (
+    state.status === 'fresh' &&
+    state.capability === 'decision_capable' &&
+    state.proofLevel === 'exact_official' &&
+    (state.decisionProvenance === 'official_response' ||
+      state.decisionProvenance === 'verified_derivation') &&
+    state.reviewedSourceFingerprint === reviewedSourceFingerprint &&
+    !isFreshnessStateStale(state, now)
+  );
 }
 
 function requiredInputsMissingFrom(
@@ -1241,9 +1256,9 @@ function isFreshnessStateStale(state: SourceFreshnessStateRow | undefined, now: 
     return false;
   }
 
-  if (!state.lastSuccessfulCheckAt) {
+  if (!state.lastExactCheckAt) {
     return true;
   }
 
-  return now.getTime() - state.lastSuccessfulCheckAt.getTime() > SOURCE_FRESHNESS_STALE_AFTER_MS;
+  return now.getTime() - state.lastExactCheckAt.getTime() > SOURCE_FRESHNESS_STALE_AFTER_MS;
 }

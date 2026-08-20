@@ -46,7 +46,9 @@ function configFor(programId: string): TechnionConfig {
 }
 
 function sourceFingerprint(config: TechnionConfig): string {
-  return `sha256:${createHash('sha256').update(JSON.stringify({ source: TECHNION_THRESHOLD_URL, ...config })).digest('hex')}`;
+  return `sha256:${createHash('sha256')
+    .update(JSON.stringify({ source: TECHNION_THRESHOLD_URL, ...config }))
+    .digest('hex')}`;
 }
 
 function fixturesFor(pairId: string, config: TechnionConfig): AdmissionsVerificationFixture[] {
@@ -57,7 +59,7 @@ function fixturesFor(pairId: string, config: TechnionConfig): AdmissionsVerifica
       pairId,
       admissionCycle: '2026-2027',
       verdict: config.verdict,
-      input: { psychometric: 800, bagrut: 100 },
+      input: { psychometric: 800, bagrut: 100, bagrutSubjectRecord: technionRecord(100) },
       expected: { score: 98.9, verdict: config.verdict },
       sourceFingerprint: fingerprint,
       capturedAt: CAPTURED_AT,
@@ -67,12 +69,29 @@ function fixturesFor(pairId: string, config: TechnionConfig): AdmissionsVerifica
       pairId,
       admissionCycle: '2026-2027',
       verdict: 'below',
-      input: { psychometric: 500, bagrut: 95 },
+      input: { psychometric: 500, bagrut: 95, bagrutSubjectRecord: technionRecord(95) },
       expected: { score: 73.9, verdict: 'below' },
       sourceFingerprint: fingerprint,
       capturedAt: CAPTURED_AT,
     },
   ];
+}
+
+function technionRecord(grade: number) {
+  return {
+    schemaVersion: 1 as const,
+    sector: 'jewish' as const,
+    subjects: [
+      { subjectId: 'english', units: 5, grade },
+      { subjectId: 'literature', units: 2, grade },
+      { subjectId: 'mathematics', units: 5, grade },
+      { subjectId: 'bible', units: 2, grade },
+      { subjectId: 'civics', units: 2, grade },
+      { subjectId: 'hebrew_expression', units: 2, grade },
+      { subjectId: 'history', units: 2, grade },
+      { subjectId: 'hebrew', units: 2, grade },
+    ],
+  };
 }
 
 export interface TechnionProgramVerificationMetadata {
@@ -81,51 +100,62 @@ export interface TechnionProgramVerificationMetadata {
   ledgerReason: string;
 }
 
-export const TECHNION_PROGRAM_VERIFICATION_METADATA: Record<string, TechnionProgramVerificationMetadata> =
-  Object.fromEntries(
-    ALIASES.flatMap((programIds) => programIds.map((programId) => {
+export const TECHNION_PROGRAM_VERIFICATION_METADATA: Record<
+  string,
+  TechnionProgramVerificationMetadata
+> = Object.fromEntries(
+  ALIASES.flatMap((programIds) =>
+    programIds.map((programId) => {
       const config = configFor(programId);
       const pairId = `${programId}__technion`;
       const fixtures = fixturesFor(pairId, config);
       const fingerprint = sourceFingerprint(config);
-      return [pairId, {
-        contract: {
-          pairId,
-          programId,
-          institutionId: 'technion',
-          officialProgramId: String(config.threshold),
-          admissionCycle: '2026-2027',
-          source: { targetId: `technion-${programId}-live`, url: TECHNION_THRESHOLD_URL },
-          calculation: {
-            adapterId: 'technion',
-            mode: 'official_replay',
-            formulaFamily: 'technion_official_sekhem_calculator_and_cutoff_table',
-            requiredInputs: [],
-            cutoff: { acceptance: config.threshold, rejection: config.threshold },
-            gates: [],
-          },
-          fixtureIds: fixtures.map((fixture) => fixture.id),
-          fixtureSetFingerprint: fingerprintVerificationFixtures(fixtures),
-          sourceFingerprint: fingerprint,
-          proof: {
-            state: 'verified',
-            comparedScore: true,
-            comparedVerdict: true,
-            liveComparedAt: CAPTURED_AT,
+      return [
+        pairId,
+        {
+          contract: {
+            pairId,
+            programId,
+            institutionId: 'technion',
+            officialProgramId: String(config.threshold),
+            admissionCycle: '2026-2027',
+            source: { targetId: `technion-${programId}-live`, url: TECHNION_THRESHOLD_URL },
+            calculation: {
+              adapterId: 'technion',
+              mode: 'official_replay',
+              formulaFamily: 'technion_official_sekhem_calculator_and_cutoff_table',
+              requiredInputs: [],
+              cutoff: { acceptance: config.threshold, rejection: config.threshold },
+              gates: [],
+            },
+            fixtureIds: fixtures.map((fixture) => fixture.id),
+            fixtureSetFingerprint: fingerprintVerificationFixtures(fixtures),
             sourceFingerprint: fingerprint,
+            proof: {
+              state: 'verified',
+              comparedScore: true,
+              comparedVerdict: true,
+              liveComparedAt: CAPTURED_AT,
+              sourceFingerprint: fingerprint,
+            },
           },
-        },
-        fixtures,
-        ledgerReason: 'Verified against the official Technion Sekhem calculator, current official cutoff table, accepted/below fixtures, and live score-and-verdict replay.',
-      } satisfies TechnionProgramVerificationMetadata];
-    })),
-  );
+          fixtures,
+          ledgerReason:
+            'Verified against the official Technion Sekhem calculator, current official cutoff table, accepted/below fixtures, and live score-and-verdict replay.',
+        } satisfies TechnionProgramVerificationMetadata,
+      ];
+    }),
+  ),
+);
 
 export const TECHNION_PROGRAM_VERIFICATION_ARTIFACTS = Object.fromEntries(
-  Object.entries(TECHNION_PROGRAM_VERIFICATION_METADATA).map(([pairId, artifact]) => [pairId, {
-    contract: artifact.contract,
-    fixtures: artifact.fixtures,
-  }]),
+  Object.entries(TECHNION_PROGRAM_VERIFICATION_METADATA).map(([pairId, artifact]) => [
+    pairId,
+    {
+      contract: artifact.contract,
+      fixtures: artifact.fixtures,
+    },
+  ]),
 );
 
 export function getTechnionProgramVerificationMetadata(pairId: string) {

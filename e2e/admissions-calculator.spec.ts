@@ -1,7 +1,5 @@
 import { expect, test } from '@playwright/test';
 
-const usesStaticCatalogue = process.env.CATALOGUE_SOURCE_MODE === 'static';
-
 test.describe('app admissions calculator', () => {
   test('shows the expected catalogue-backed results without leaving /app/calculator', async ({
     page,
@@ -15,16 +13,11 @@ test.describe('app admissions calculator', () => {
     await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
 
     await expect(page).toHaveURL(/\/app\/calculator$/);
-    if (usesStaticCatalogue) {
-      await expect(page.getByLabel('אוניברסיטת תל אביב: נדרשים נתונים')).toBeVisible();
-      await expect(page.getByText('נדרשים נתונים נוספים')).toBeVisible();
-      await expect(
-        page.getByText('השלימו את יחידות וציון המקצועות החסרים כדי לקבל הערכה למסלול.'),
-      ).toBeVisible();
-    } else {
-      await expect(page.getByLabel('אוניברסיטת תל אביב: מתקבל/ת')).toBeVisible();
-      await expect(page.getByText('אימות רשמי')).toBeVisible();
-    }
+    await expect(page.getByLabel('אוניברסיטת תל אביב: נדרשים נתונים')).toBeVisible();
+    await expect(page.getByText('נדרשים נתונים נוספים')).toBeVisible();
+    await expect(
+      page.getByText('השלימו את יחידות וציון המקצועות החסרים כדי לקבל הערכה למסלול.'),
+    ).toBeVisible();
 
     await page.getByRole('button', { name: 'חזרה', exact: true }).click();
 
@@ -34,15 +27,14 @@ test.describe('app admissions calculator', () => {
     await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
 
     await expect(page).toHaveURL(/\/app\/calculator$/);
-    if (usesStaticCatalogue) {
-      await expect(page.getByLabel('אוניברסיטת בן-גוריון בנגב: נדרשים נתונים')).toBeVisible();
-      await expect(page.getByText('נדרשים נתונים נוספים')).toBeVisible();
-      await expect(page.getByText(/סכם .* · סף 720/)).toBeVisible();
-    } else {
-      await expect(page.getByLabel('אוניברסיטת בן-גוריון בנגב: מתקבל/ת')).toBeVisible();
-      await expect(page.getByText('כלל קבלה ממופה ממקור חלקי')).toBeVisible();
-      await expect(page.getByText(/סכם .* · סף 645/)).toBeVisible();
-    }
+    await expect(page.getByLabel('אוניברסיטת בן-גוריון בנגב: נדרשים נתונים')).toBeVisible({
+      timeout: 15_000,
+    });
+    await expect(page.getByText('נדרשים נתונים נוספים')).toBeVisible();
+    await expect(page.getByText(/ציון התאמה 820 · סף 720/)).toBeVisible();
+    await expect(
+      page.getByText('השלימו את יחידות וציון המקצועות החסרים כדי לקבל הערכה למסלול.'),
+    ).toBeVisible();
 
     await page.getByRole('button', { name: 'חזרה', exact: true }).click();
 
@@ -63,8 +55,10 @@ test.describe('app admissions calculator', () => {
     await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
 
     await expect(page).toHaveURL(/\/app\/calculator$/);
-    await expect(page.getByLabel('הטכניון – מכון טכנולוגי לישראל: אפשר להגיש מועמדות')).toBeVisible();
-    await expect(page.getByText('נדרש מיון נוסף')).toBeVisible();
-    await expect(page.getByText(/סכם 96\.5 · סף 92/)).toBeVisible();
+    await expect(page.getByLabel('הטכניון – מכון טכנולוגי לישראל: נדרשים נתונים')).toBeVisible();
+    await expect(page.getByText('נדרשים נתונים נוספים')).toBeVisible();
+    await expect(
+      page.getByText('השלימו את יחידות וציון המקצועות החסרים כדי לקבל הערכה למסלול.'),
+    ).toBeVisible();
   });
 });

@@ -58,7 +58,7 @@ describe('catalogue admissions evidence coverage', () => {
     );
   });
 
-  it('publishes exact Technion threshold coverage after pair verification', () => {
+  it('keeps Technion threshold coverage unavailable until the qualified weekly check runs', () => {
     const entries = reconcileCatalogueAdmissionsEvidence({
       programs: staticPrograms,
       institutions: staticInstitutions,
@@ -69,16 +69,16 @@ describe('catalogue admissions evidence coverage', () => {
         expect.objectContaining({
           programId: 'technion_cs',
           institutionId: 'technion',
-          capability: 'exact',
-          status: 'decision_rule_available',
+          capability: 'authority_unavailable',
+          status: 'verification_incomplete',
           trackingSource: 'monday_evidence',
           missingData: [],
         }),
         expect.objectContaining({
           programId: 'technion_datascience',
           institutionId: 'technion',
-          capability: 'exact',
-          status: 'decision_rule_available',
+          capability: 'authority_unavailable',
+          status: 'verification_incomplete',
           trackingSource: 'monday_evidence',
           missingData: [],
         }),
@@ -86,7 +86,7 @@ describe('catalogue admissions evidence coverage', () => {
     );
   });
 
-  it('publishes exact Technion medicine invitation coverage after pair verification', () => {
+  it('keeps Technion medicine coverage unavailable until the qualified weekly check runs', () => {
     const entries = reconcileCatalogueAdmissionsEvidence({
       programs: staticPrograms,
       institutions: staticInstitutions,
@@ -97,8 +97,8 @@ describe('catalogue admissions evidence coverage', () => {
         expect.objectContaining({
           programId: 'technion_medicine',
           institutionId: 'technion',
-          capability: 'exact',
-          status: 'decision_rule_available',
+          capability: 'authority_unavailable',
+          status: 'verification_incomplete',
           trackingSource: 'monday_evidence',
           missingData: [],
         }),
@@ -117,8 +117,8 @@ describe('catalogue admissions evidence coverage', () => {
         expect.objectContaining({
           programId: 'colmgmt_cs',
           institutionId: 'colman',
-          capability: 'needs_input',
-          status: 'needs_input',
+          capability: 'manual_gate',
+          status: 'manual_or_eligible',
           trackingSource: 'monday_evidence',
         }),
         expect.objectContaining({
@@ -205,7 +205,7 @@ describe('catalogue admissions evidence coverage', () => {
     expect(staticPrograms.some((program) => program.id === 'ono_psychology')).toBe(false);
   });
 
-  it('publishes BGU formula pairs after score-and-verdict proof is complete', () => {
+  it('keeps BGU formula pairs unavailable until the qualified weekly check runs', () => {
     const entries = reconcileCatalogueAdmissionsEvidence({
       programs: staticPrograms,
       institutions: staticInstitutions,
@@ -216,48 +216,48 @@ describe('catalogue admissions evidence coverage', () => {
         expect.objectContaining({
           programId: 'bgu_cs',
           institutionId: 'bgu',
-          capability: 'exact',
-          status: 'decision_rule_available',
+          capability: 'authority_unavailable',
+          status: 'verification_incomplete',
           trackingSource: 'monday_evidence',
           missingData: [],
         }),
         expect.objectContaining({
           programId: 'bgu_ee',
           institutionId: 'bgu',
-          capability: 'exact',
-          status: 'decision_rule_available',
+          capability: 'authority_unavailable',
+          status: 'verification_incomplete',
           trackingSource: 'monday_evidence',
           missingData: [],
         }),
         expect.objectContaining({
           programId: 'bgu_biology',
           institutionId: 'bgu',
-          capability: 'exact',
-          status: 'decision_rule_available',
+          capability: 'authority_unavailable',
+          status: 'verification_incomplete',
           trackingSource: 'monday_evidence',
           missingData: [],
         }),
         expect.objectContaining({
           programId: 'bgu_socialwork',
           institutionId: 'bgu',
-          capability: 'exact',
-          status: 'decision_rule_available',
+          capability: 'authority_unavailable',
+          status: 'verification_incomplete',
           trackingSource: 'monday_evidence',
           missingData: [],
         }),
         expect.objectContaining({
           programId: 'bgu_nursing',
           institutionId: 'bgu',
-          capability: 'exact',
-          status: 'decision_rule_available',
+          capability: 'authority_unavailable',
+          status: 'verification_incomplete',
           trackingSource: 'monday_evidence',
           missingData: [],
         }),
         expect.objectContaining({
           programId: 'bgu_medicine',
           institutionId: 'bgu',
-          capability: 'exact',
-          status: 'decision_rule_available',
+          capability: 'authority_unavailable',
+          status: 'verification_incomplete',
           trackingSource: 'monday_evidence',
           missingData: [],
         }),

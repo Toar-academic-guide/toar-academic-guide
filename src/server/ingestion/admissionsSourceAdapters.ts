@@ -4,23 +4,23 @@ import {
   type FreshnessDiscoveryResult,
   type FreshnessSourceClass,
 } from './freshnessDiscovery';
+import type { BagrutSubjectRecord } from '@/types';
 
 export type AdmissionsProofLevel =
   'blocked' | 'exact_official' | 'open_admission' | 'partial_official' | 'static_data_candidate';
 
 export type AdmissionsProofStatus = 'blocked' | 'failed' | 'partial' | 'succeeded';
+export type AdmissionsDecisionProvenance =
+  | 'official_response'
+  | 'verified_derivation'
+  | 'none';
 
 export type AdmissionsAdapterId =
-  | 'capability_matrix'
-  | 'haifa'
-  | 'tau'
-  | 'huji'
-  | 'technion'
-  | 'bgu'
-  | 'manual_requirements';
+  'capability_matrix' | 'haifa' | 'tau' | 'huji' | 'technion' | 'bgu';
 
 export interface AdmissionsApplicantInput {
   bagrutAverage: number;
+  bagrutSubjectRecord?: BagrutSubjectRecord;
   psychometric: number;
   psychometricYear?: string;
   bagrutYear?: string;
@@ -30,11 +30,6 @@ export interface AdmissionsApplicantInput {
     math: number;
     verbal: number;
   };
-  mathUnits?: number;
-  mathGrade?: number;
-  englishUnits?: number;
-  englishGrade?: number;
-  bagrutSubjectRecord?: import('@/types').BagrutSubjectRecord;
 }
 
 export interface AdmissionsProgramInput {
@@ -53,7 +48,6 @@ export interface AdmissionsProgramInput {
     acceptance: number;
     rejection: number | null;
   };
-  manualGateProfile?: 'technion_architecture' | 'colman_computer_science';
 }
 
 export interface AdmissionsAdapterContext {
@@ -71,6 +65,10 @@ export interface AdmissionsSourceProof {
   capability: FreshnessCapability;
   proofLevel: AdmissionsProofLevel;
   status: AdmissionsProofStatus;
+  /** How the final applicant decision was obtained; never imply a local derivation was returned by a university. */
+  decisionProvenance?: AdmissionsDecisionProvenance;
+  /** Canonical reviewed rule fingerprint this proof reproduced, when it is an exact proof. */
+  reviewedSourceFingerprint?: string;
   sourceClass: FreshnessSourceClass;
   reproducedFields: string[];
   normalizedPayload: Record<string, unknown>;

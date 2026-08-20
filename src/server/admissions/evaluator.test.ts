@@ -3,7 +3,9 @@ import { describe, expect, it, vi } from 'vitest';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type { AdmissionsEvaluationReport } from '@/types/admissionsEvaluation';
 import type { SourceFreshnessStateRow } from '@/db/types';
-import { evaluateAdmissionsForProgram } from './evaluator';
+import { getProgramVerificationArtifact } from '@/data/admissions/tauProgramVerification';
+import { exactSourceIdsForProgram } from './capabilityMatrix';
+import { evaluateAdmissionsForProgram as evaluateAdmissionsForProgramInternal } from './evaluator';
 
 vi.mock('server-only', () => ({}));
 
@@ -17,7 +19,10 @@ vi.mock('@/db/client', () => ({
   })),
 }));
 
-function expectBguExact(report: AdmissionsEvaluationReport, decision: 'accepted' | 'below' | 'eligible_to_apply'): void {
+function expectBguExact(
+  report: AdmissionsEvaluationReport,
+  decision: 'accepted' | 'below' | 'eligible_to_apply',
+): void {
   expect(report.results).toContainEqual(
     expect.objectContaining({
       linkedInstitutionId: 'bgu',
@@ -27,27 +32,13 @@ function expectBguExact(report: AdmissionsEvaluationReport, decision: 'accepted'
   );
 }
 
-function expectFormulaVerificationUnavailable(
-  report: AdmissionsEvaluationReport,
-  institutionId: string,
-): void {
-  expect(report.results).toContainEqual(
-    expect.objectContaining({
-      linkedInstitutionId: institutionId,
-      kind: 'authority_unavailable',
-      capability: 'authority_unavailable',
-      decision: 'unknown',
-      degradationReason: 'pair_verification_incomplete',
-    }),
-  );
-}
-
-function expectTechnionExact(report: AdmissionsEvaluationReport): void {
+function expectTechnionSubjectRecord(report: AdmissionsEvaluationReport): void {
   expect(report.results).toContainEqual(
     expect.objectContaining({
       linkedInstitutionId: 'technion',
-      kind: 'exact',
-      capability: 'exact',
+      kind: 'needs_input',
+      capability: 'needs_input',
+      requiredInputs: ['bagrut_subject_record'],
     }),
   );
 }
@@ -57,42 +48,79 @@ function bguMockFetcher(threshold: number, score: number): typeof fetch {
     .fn<typeof fetch>()
     .mockResolvedValueOnce(
       new Response(
-        JSON.stringify({ items: [{ psycho_sekem: threshold, psycho_value: threshold, comments: `סכם כמותי ${threshold}` }] }),
+        JSON.stringify({
+          items: [
+            {
+              psycho_sekem: threshold,
+              psycho_value: threshold,
+              comments: `סכם כמותי ${threshold}`,
+            },
+          ],
+        }),
         { status: 200, headers: { 'content-type': 'application/json' } },
       ),
     )
     .mockResolvedValueOnce(
-      new Response(`<script>parent.main.document.mainForm.on_final_sekem.value = ${score};</script>`, {
-        status: 200,
-        headers: { 'content-type': 'text/html' },
-      }),
+      new Response(
+        `<script>parent.main.document.mainForm.on_final_sekem.value = ${score};</script>`,
+        {
+          status: 200,
+          headers: { 'content-type': 'text/html' },
+        },
+      ),
     );
 }
 
-function tauFreshnessStates(): Map<string, SourceFreshnessStateRow> {
-  return new Map([
-    [
-      'tau-digital-sciences-live',
-      {
-        sourceId: 'tau-digital-sciences-live',
-        sourceClass: 'api_static_json',
-        capability: 'decision_capable',
-        status: 'fresh',
-        lastCheckedAt: new Date('2026-07-25T20:12:07Z'),
-        lastSuccessfulCheckAt: new Date('2026-07-25T20:12:07Z'),
-        lastChangedAt: null,
-        latestFailureReason: null,
-        blockedReason: null,
-        rawFingerprint: null,
-        normalizedFingerprint: '62a6a2f398b737b2139671f32c48a921083a4966ea43e8135c081870d42e9971',
-        normalizedDecisionPayload: {},
-        latestReviewItemId: null,
-        nextAction: null,
-        createdAt: new Date('2026-07-25T20:12:07Z'),
-        updatedAt: new Date('2026-07-25T20:12:07Z'),
-      },
-    ],
-  ]);
+function qualifiedFreshnessStates(program: CatalogueProgram): Map<string, SourceFreshnessStateRow> {
+  const checkedAt = new Date();
+  const exactSourceIds = new Set(exactSourceIdsForProgram(program));
+
+  return new Map(
+    program.linkedInstitutionIds.flatMap((institutionId) => {
+      const artifact = getProgramVerificationArtifact(`${program.id}__${institutionId}`);
+      const sourceId = artifact?.contract.source.targetId;
+      if (!artifact || !sourceId || !exactSourceIds.has(sourceId)) {
+        return [];
+      }
+
+      return [
+        [
+          sourceId,
+          {
+            sourceId,
+            sourceClass: 'api_static_json',
+            capability: 'decision_capable',
+            status: 'fresh',
+            proofLevel: 'exact_official',
+            decisionProvenance: 'verified_derivation',
+            reviewedSourceFingerprint: artifact.contract.sourceFingerprint,
+            lastCheckedAt: checkedAt,
+            lastSuccessfulCheckAt: checkedAt,
+            lastExactCheckAt: checkedAt,
+            lastChangedAt: null,
+            latestFailureReason: null,
+            blockedReason: null,
+            rawFingerprint: null,
+            normalizedFingerprint: artifact.contract.sourceFingerprint,
+            normalizedDecisionPayload: {},
+            latestReviewItemId: null,
+            nextAction: null,
+            createdAt: checkedAt,
+            updatedAt: checkedAt,
+          } satisfies SourceFreshnessStateRow,
+        ],
+      ];
+    }),
+  );
+}
+
+function evaluateAdmissionsForProgram(
+  args: Parameters<typeof evaluateAdmissionsForProgramInternal>[0],
+) {
+  return evaluateAdmissionsForProgramInternal({
+    ...args,
+    freshnessStatesBySourceId: args.freshnessStatesBySourceId ?? qualifiedFreshnessStates(args.program),
+  });
 }
 
 const institutions: CatalogueInstitution[] = [
@@ -179,6 +207,13 @@ const institutions: CatalogueInstitution[] = [
       minPsychometric: 550,
       minBagrut: 85,
     },
+  },
+  {
+    id: 'colman',
+    name: 'מכללת ניהול – לימודים אקדמיים',
+    region: 'center',
+    domain: 'colman.ac.il',
+    universityId: 'colman',
   },
 ];
 
@@ -398,6 +433,45 @@ const hitEngineering: CatalogueProgram = {
 };
 
 describe('evaluateAdmissionsForProgram', () => {
+  it.each([
+    ['tau_infosystems', 'tau', 'requirements_only'],
+    ['architecture', 'technion', 'manual_gate'],
+    ['colmgmt_cs', 'colman', 'manual_gate'],
+  ] as const)(
+    'uses the official non-numeric admissions path for %s without calling an exact source',
+    async (programId, institutionId, capability) => {
+      const fetcher = vi.fn<typeof fetch>();
+      const program: CatalogueProgram = {
+        id: programId,
+        name: programId,
+        institution: institutionId,
+        institutionId,
+        type: 'academic',
+        category: 'test',
+        profileScore: { AN: 0, TE: 0, CR: 0, SO: 0, LE: 0, OR: 0, DI: 0, ER: 0 },
+        admissionType: 'requirements',
+        admissionRequirements: [],
+        linkedInstitutionIds: [institutionId],
+      };
+
+      const report = await evaluateAdmissionsForProgram({
+        input: { degreeId: programId, psychometric: 700, bagrut: 110 },
+        program,
+        institutions,
+        fetcher,
+      });
+
+      expect(report.results).toContainEqual(
+        expect.objectContaining({
+          linkedInstitutionId: institutionId,
+          capability,
+          kind: capability,
+        }),
+      );
+      expect(fetcher).not.toHaveBeenCalled();
+    },
+  );
+
   it('does not mutate canonical program definitions during evaluation', async () => {
     const originalTauProgram = structuredClone(tauDataScience);
     const originalHaifaProgram = structuredClone(haifaCs);
@@ -429,6 +503,32 @@ describe('evaluateAdmissionsForProgram', () => {
     expect(haifaCs).toEqual(originalHaifaProgram);
   });
 
+  it('fails closed when an exact pair has no persisted weekly authority', async () => {
+    const fetcher = vi.fn<typeof fetch>();
+
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'bgu_cs',
+        psychometric: 760,
+        bagrut: 115,
+      },
+      program: bguCs,
+      institutions,
+      fetcher,
+      freshnessStatesBySourceId: new Map(),
+    });
+
+    expect(fetcher).not.toHaveBeenCalled();
+    expect(report.results).toContainEqual(
+      expect.objectContaining({
+        linkedInstitutionId: 'bgu',
+        capability: 'authority_unavailable',
+        kind: 'authority_unavailable',
+        decision: 'unknown',
+      }),
+    );
+  });
+
   it('requests Haifa psychometric subscores after pair proof is verified', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
@@ -451,7 +551,7 @@ describe('evaluateAdmissionsForProgram', () => {
     );
   });
 
-  it('returns an exact Technion threshold after pair-level score and verdict proof', async () => {
+  it('asks for a Technion subject record before pair-level score and verdict replay', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'technion_cs',
@@ -462,10 +562,10 @@ describe('evaluateAdmissionsForProgram', () => {
       institutions,
     });
 
-    expectTechnionExact(report);
+    expectTechnionSubjectRecord(report);
   });
 
-  it('returns exact Technion data science after its calculator replay is proven', async () => {
+  it('asks for a Technion data-science subject record before calculator replay', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'technion_datascience',
@@ -476,10 +576,10 @@ describe('evaluateAdmissionsForProgram', () => {
       institutions,
     });
 
-    expectTechnionExact(report);
+    expectTechnionSubjectRecord(report);
   });
 
-  it('returns exact Technion medicine after the complete invitation flow is proven', async () => {
+  it('asks for a Technion medicine subject record before the invitation flow', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'technion_medicine',
@@ -490,10 +590,10 @@ describe('evaluateAdmissionsForProgram', () => {
       institutions,
     });
 
-    expectTechnionExact(report);
+    expectTechnionSubjectRecord(report);
   });
 
-  it('issues the verified below verdict for a Technion medicine pair', async () => {
+  it('does not issue a Technion medicine verdict without the subject record', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'technion_medicine',
@@ -507,9 +607,10 @@ describe('evaluateAdmissionsForProgram', () => {
     expect(report.results).toContainEqual(
       expect.objectContaining({
         linkedInstitutionId: 'technion',
-        kind: 'exact',
-        capability: 'exact',
-        decision: 'below',
+        kind: 'needs_input',
+        capability: 'needs_input',
+        decision: 'unknown',
+        requiredInputs: ['bagrut_subject_record'],
       }),
     );
   });
@@ -690,7 +791,7 @@ describe('evaluateAdmissionsForProgram', () => {
     );
   });
 
-  it('returns Colman automatic-route eligibility from its reviewed requirements proof', async () => {
+  it('keeps Colman automatic-route results as a manual admissions path', async () => {
     const colmanCs: CatalogueProgram = {
       id: 'colmgmt_cs',
       name: 'מדעי המחשב',
@@ -729,9 +830,8 @@ describe('evaluateAdmissionsForProgram', () => {
     expect(report.results).toContainEqual(
       expect.objectContaining({
         linkedInstitutionId: 'colman',
-        capability: 'exact',
+        capability: 'manual_gate',
         kind: 'manual_gate',
-        decision: 'eligible_to_apply',
       }),
     );
   });
@@ -969,7 +1069,7 @@ describe('evaluateAdmissionsForProgram', () => {
       program: tauDataScience,
       institutions,
       fetcher,
-      freshnessStatesBySourceId: tauFreshnessStates(),
+      freshnessStatesBySourceId: qualifiedFreshnessStates(tauDataScience),
       now: new Date('2026-07-25T21:00:00Z'),
     });
 
@@ -1008,7 +1108,7 @@ describe('evaluateAdmissionsForProgram', () => {
       program: tauDataScience,
       institutions,
       fetcher,
-      freshnessStatesBySourceId: tauFreshnessStates(),
+      freshnessStatesBySourceId: qualifiedFreshnessStates(tauDataScience),
       now: new Date('2026-07-25T21:00:00Z'),
     });
 

@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { MAX_BAGRUT_SUBJECTS } from '@/lib/bagrutSubjectLimits';
 
 const geographicRegionSchema = z.enum(['center', 'north', 'south', 'any']);
 
@@ -34,7 +35,7 @@ const bagrutSubjectRecordSchema = z
   .strictObject({
     schemaVersion: z.literal(1),
     sector: bagrutSectorSchema,
-    subjects: z.array(bagrutSubjectSchema).min(1).max(64),
+    subjects: z.array(bagrutSubjectSchema).min(1).max(MAX_BAGRUT_SUBJECTS),
     profileHash: z
       .string()
       .regex(/^sha256:[a-f0-9]{64}$/)

@@ -4,12 +4,11 @@ import path from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 describe('weekly admissions freshness workflow', () => {
-  it('keeps schedules disabled unless explicitly enabled while preserving manual runs', async () => {
+  it('runs on its weekly schedule and still supports manual dry runs', async () => {
     const workflow = await readWorkflow();
 
-    expect(workflow).toContain(
-      "if: ${{ github.event_name == 'workflow_dispatch' || vars.ADMISSIONS_WEEKLY_ENABLED == 'true' }}",
-    );
+    expect(workflow).toContain("cron: '0 3 * * 0'");
+    expect(workflow).not.toContain('ADMISSIONS_WEEKLY_ENABLED');
     expect(workflow).toContain('workflow_dispatch:');
     expect(workflow).toContain('dry_run:');
     expect(workflow).toContain(

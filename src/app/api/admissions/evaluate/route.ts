@@ -5,6 +5,7 @@ import { ApiRouteError, toErrorResponse } from '@/app/api/_lib/errors';
 import { listCatalogueInstitutions, listCataloguePrograms } from '@/server/catalogue/queries';
 import { evaluateAdmissionsForProgram } from '@/server/admissions/evaluator';
 import { assertAdmissionsEvaluationRateLimit } from '@/server/admissions/rateLimit';
+import { MAX_BAGRUT_SUBJECTS } from '@/lib/bagrutSubjectLimits';
 
 export const dynamic = 'force-dynamic';
 
@@ -33,7 +34,7 @@ const bagrutSubjectRecordSchema = z
           })
           .strict(),
       )
-      .max(50),
+      .max(MAX_BAGRUT_SUBJECTS),
     profileHash: z.string().max(100).optional(),
   })
   .strict();

@@ -79,7 +79,7 @@ export async function runTauDigitalSciencesLiveVerification(
       },
     });
     const actualScore = numberValue(proof.normalizedPayload.selectedScore);
-    const actualVerdict = verdictValue(proof.normalizedPayload.officialVerdict);
+    const actualVerdict = verdictValue(proof.normalizedPayload.derivedVerdict);
 
     comparisons.push({
       fixtureId: fixture.id,
@@ -140,8 +140,8 @@ export async function runTauNursingLiveVerification(
       },
     });
     const actualScore = numberValue(proof.normalizedPayload.selectedScore);
-    const officialVerdict = verdictValue(proof.normalizedPayload.officialVerdict);
-    const actualVerdict = officialVerdict === 'accepted' ? 'eligible_to_apply' : officialVerdict;
+    const derivedVerdict = verdictValue(proof.normalizedPayload.derivedVerdict);
+    const actualVerdict = derivedVerdict === 'accepted' ? 'eligible_to_apply' : derivedVerdict;
 
     comparisons.push({
       fixtureId: fixture.id,
@@ -202,7 +202,7 @@ export async function runTauPsychologyLiveVerification(
       },
     });
     const actualScore = numberValue(proof.normalizedPayload.selectedScore);
-    const actualVerdict = verdictValue(proof.normalizedPayload.officialVerdict);
+    const actualVerdict = verdictValue(proof.normalizedPayload.derivedVerdict);
 
     comparisons.push({
       fixtureId: fixture.id,

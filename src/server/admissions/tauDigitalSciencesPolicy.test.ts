@@ -3,9 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { AdmissionsEvaluationInput } from '@/types/admissionsEvaluation';
 import { evaluateTauDigitalSciencesGates } from './tauDigitalSciencesPolicy';
 
-function input(
-  overrides: Partial<AdmissionsEvaluationInput> = {},
-): AdmissionsEvaluationInput {
+function input(overrides: Partial<AdmissionsEvaluationInput> = {}): AdmissionsEvaluationInput {
   return {
     degreeId: 'tau_datascience',
     psychometric: 680,

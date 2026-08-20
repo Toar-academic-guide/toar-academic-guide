@@ -38,10 +38,10 @@ export async function runTauAdmissionsProof(
     const programJson = await readJson(programResponse);
     const thresholdRecord = findThresholdObject(programJson, program.externalId);
     const thresholds = thresholdsFromRecord(thresholdRecord, program);
-    const officialVerdict = tauOfficialVerdict(selectedScore, thresholds, program);
+    const derivedVerdict = tauOfficialVerdict(selectedScore, thresholds, program);
     const matchedProgramIds = readStringArray(thresholdRecord.field_plain_id_programs);
 
-    const hasDecision = officialVerdict !== undefined;
+    const hasDecision = derivedVerdict !== undefined;
     const capability = hasDecision ? 'decision_capable' : 'score_only';
 
     return {
@@ -66,7 +66,10 @@ export async function runTauAdmissionsProof(
         matchedProgramIds,
         matchedProgramTitle:
           typeof thresholdRecord.title === 'string' ? thresholdRecord.title : undefined,
-        officialVerdict,
+        derivedVerdict,
+        proofStatus: hasDecision ? 'succeeded' : 'partial',
+        proofLevel: hasDecision ? 'exact_official' : 'partial_official',
+        decisionProvenance: hasDecision ? 'verified_derivation' : 'none',
         ...thresholds,
       },
       limitations: hasDecision
@@ -285,7 +288,7 @@ function reproducedFieldsFor(
     thresholds.acceptanceThreshold !== undefined ? 'acceptanceThreshold' : undefined,
     typeof thresholds.rejectionThreshold === 'number' ? 'rejectionThreshold' : undefined,
     tauOfficialVerdict(selectedScore, thresholds, program) !== undefined
-      ? 'officialVerdict'
+      ? 'derivedVerdict'
       : undefined,
   ].filter(Boolean) as string[];
 }

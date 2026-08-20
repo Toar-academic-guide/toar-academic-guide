@@ -75,8 +75,8 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
         <section className="rounded-[1.75rem] border border-slate-950/10 bg-white p-6 shadow-sm">
           <h2 className="text-2xl font-black text-slate-950">Formula-backed pair verification</h2>
           <p className="mt-1 text-sm text-slate-500">
-            Pair-level completion requires eligible and below fixtures plus a current official
-            score-and-verdict comparison. Withheld and blocked pairs are not counted as complete.
+            Reviewed baseline coverage is immutable. Runtime coverage is activated separately by
+            the persisted weekly authority check.
           </p>
           <DefinitionGrid
             items={[
@@ -85,6 +85,8 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
               ['Withheld', report.formulaVerification.withheld],
               ['Stale', report.formulaVerification.stale],
               ['Blocked', report.formulaVerification.blocked],
+              ['Runtime exact', report.runtimeFormulaVerification.exact],
+              ['Runtime unavailable', report.runtimeFormulaVerification.authorityUnavailable],
             ]}
           />
         </section>

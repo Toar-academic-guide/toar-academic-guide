@@ -208,12 +208,13 @@ export const calculatorCoverageInventory: CalculatorCoverageEntry[] = [
     institutionName: 'College of Management Academic Studies',
     mondayItemId: '12230979966',
     officialUrl: 'https://www.colman.ac.il/academics/ba/computer-science/',
-    evidenceKind: 'exact_official',
-    intendedCapability: 'exact',
-    supportLevel: 'exact',
+    evidenceKind: 'requirements_enrichment',
+    intendedCapability: 'requirements_only',
+    supportLevel: 'requirements_only',
     hasCalculatorConfig: false,
     hasSourceTarget: true,
-    nextAction: 'Keep the automatic Bagrut route and internal assessment gate under review.',
+    nextAction:
+      'Reproduce the institution-required weighted score, internal-test route, and final verdict before activating exact capability.',
   },
 ];
 

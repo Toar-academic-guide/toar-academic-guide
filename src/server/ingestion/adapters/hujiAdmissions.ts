@@ -12,6 +12,9 @@ import {
   HUJI_SOURCE_URL,
 } from '@/data/admissions/hujiProgramVerification';
 
+const MAX_HUJI_COMPRESSED_BYTES = 2 * 1024 * 1024;
+const MAX_HUJI_DECOMPRESSED_BYTES = 8 * 1024 * 1024;
+
 export async function runHujiAdmissionsProof(
   context: AdmissionsAdapterContext,
 ): Promise<AdmissionsSourceProof> {
@@ -33,7 +36,8 @@ export async function runHujiAdmissionsProof(
 
     const track = source.hogimInfoObj.find((entry) => entry.track_number === trackNumber);
     const year = source.currentYearObj.find((entry) => entry.track_number === trackNumber);
-    if (!track || !year) throw new Error(`HUJI track ${trackNumber} was not found in the official JSON`);
+    if (!track || !year)
+      throw new Error(`HUJI track ${trackNumber} was not found in the official JSON`);
 
     const formulaType = Number(track.hog_regType) as 1 | 2;
     const formula = source.formulasObj.find((entry) => Number(entry.formula_type) === formulaType);
@@ -55,12 +59,12 @@ export async function runHujiAdmissionsProof(
       formulaPet * context.applicant.psychometric +
       formulaAverage * context.applicant.bagrutAverage -
       formulaMinus;
-    const officialVerdict =
+    const derivedVerdict =
       selectedScore >= acceptanceThreshold
         ? 'accepted'
         : selectedScore < rejectionThreshold
           ? 'below'
-          : 'waiting';
+          : 'pending';
     const config = getHujiProgramConfig(program.id);
     const sourceFingerprint = hujiSourceFingerprint(config);
 
@@ -78,7 +82,7 @@ export async function runHujiAdmissionsProof(
         'selectedScore',
         'acceptanceThreshold',
         'rejectionThreshold',
-        'officialVerdict',
+        'derivedVerdict',
       ],
       normalizedPayload: {
         pairId: program.pairId,
@@ -90,11 +94,17 @@ export async function runHujiAdmissionsProof(
         selectedScore,
         acceptanceThreshold,
         rejectionThreshold,
-        officialVerdict,
+        derivedVerdict,
+        proofStatus: 'succeeded',
+        proofLevel: 'exact_official',
+        decisionProvenance: 'verified_derivation',
         sourceFingerprint,
       },
-      limitations: ['Proof applies to the explicitly matched HUJI track number and current cycle thresholds.'],
-      nextAction: 'Keep the track mapping, formula coefficients, thresholds, fixtures, and source fingerprint under review.',
+      limitations: [
+        'Proof applies to the explicitly matched HUJI track number and current cycle thresholds.',
+      ],
+      nextAction:
+        'Keep the track mapping, formula coefficients, thresholds, fixtures, and source fingerprint under review.',
       rawResponseMetadata: metadata,
     };
   } catch (error) {
@@ -111,7 +121,8 @@ export async function runHujiAdmissionsProof(
       reproducedFields: [],
       normalizedPayload: {},
       limitations: ['HUJI official JSON could not be parsed during the proof run.'],
-      nextAction: 'Retry the official HUJI JSON proof and inspect the source shape before publishing.',
+      nextAction:
+        'Retry the official HUJI JSON proof and inspect the source shape before publishing.',
       errorReason: error instanceof Error ? error.message : String(error),
       rawResponseMetadata: metadata,
     };
@@ -119,8 +130,16 @@ export async function runHujiAdmissionsProof(
 }
 
 interface HujiSource {
-  hogimInfoObj: Array<{ track_number?: string; hog_regType?: number | string; track_name?: string }>;
-  currentYearObj: Array<{ track_number?: string; safAccept?: number | string; safReject?: number | string }>;
+  hogimInfoObj: Array<{
+    track_number?: string;
+    hog_regType?: number | string;
+    track_name?: string;
+  }>;
+  currentYearObj: Array<{
+    track_number?: string;
+    safAccept?: number | string;
+    safReject?: number | string;
+  }>;
   formulasObj: Array<{
     formula_type?: number | string;
     formula_pet?: number | string;
@@ -130,15 +149,46 @@ interface HujiSource {
 }
 
 async function parseHujiJson(response: Response): Promise<HujiSource> {
-  const bytes = Buffer.from(await response.arrayBuffer());
-  const text = bytes[0] === 0x1f && bytes[1] === 0x8b
-    ? gunzipSync(bytes).toString('utf8')
-    : bytes.toString('utf8');
+  const bytes = await readBoundedBody(response, MAX_HUJI_COMPRESSED_BYTES);
+  const text =
+    bytes[0] === 0x1f && bytes[1] === 0x8b
+      ? gunzipSync(bytes, { maxOutputLength: MAX_HUJI_DECOMPRESSED_BYTES }).toString('utf8')
+      : bytes.toString('utf8');
   const parsed = JSON.parse(text) as Partial<HujiSource>;
-  if (!Array.isArray(parsed.hogimInfoObj) || !Array.isArray(parsed.currentYearObj) || !Array.isArray(parsed.formulasObj)) {
+  if (
+    !Array.isArray(parsed.hogimInfoObj) ||
+    !Array.isArray(parsed.currentYearObj) ||
+    !Array.isArray(parsed.formulasObj)
+  ) {
     throw new Error('HUJI response is missing hogimInfoObj, currentYearObj, or formulasObj');
   }
   return parsed as HujiSource;
+}
+
+async function readBoundedBody(response: Response, maxBytes: number): Promise<Buffer> {
+  if (!response.body) {
+    throw new Error('HUJI response has no readable body');
+  }
+
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  let length = 0;
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    length += value.byteLength;
+    if (length > maxBytes) {
+      await reader.cancel();
+      throw new Error(`HUJI response exceeded ${maxBytes} byte compressed limit`);
+    }
+    chunks.push(value);
+  }
+
+  return Buffer.concat(
+    chunks.map((chunk) => Buffer.from(chunk)),
+    length,
+  );
 }
 
 function parseNumber(value: unknown): number | undefined {

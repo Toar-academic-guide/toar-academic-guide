@@ -93,6 +93,39 @@ describe('CalculatorResults', () => {
     hoistedMocks.fetchTauComputerScienceRoutes.mockReset();
   });
 
+  it('renders a pending official verdict as waiting, not missing input', async () => {
+    hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
+      report([
+        {
+          institution: { id: 'tau', name: 'אוניברסיטת תל אביב', region: 'center' },
+          linkedInstitutionId: 'tau',
+          capability: 'exact',
+          kind: 'exact',
+          decision: 'pending',
+          confidence: 'high',
+          sourceLabel: 'טווח המתנה רשמי',
+          explanation: 'הציון נמצא בטווח המתנה.',
+          nextAction: 'המתינו לעדכון.',
+          score: 700,
+          threshold: 705,
+        },
+      ]),
+    );
+
+    render(
+      <CalculatorResults
+        degreeId="tau_cs"
+        programs={programs}
+        psychometric={700}
+        bagrut={110}
+        onBack={() => {}}
+      />,
+    );
+
+    expect(await screen.findByText('בהמתנה לעדכון')).toBeTruthy();
+    expect(screen.queryByText('נדרשים נתונים')).toBeNull();
+  });
+
   it('withholds route cards until the structured Bagrut profile is complete', async () => {
     hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
       report([

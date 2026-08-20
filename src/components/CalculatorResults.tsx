@@ -89,7 +89,12 @@ function formatResultSummary(result: AdmissionsEvaluationResult): string {
   }
 
   if (result.requiredInputs?.length) {
-    return 'נדרשים גם תתי-ציונים בפסיכומטרי';
+    const onlyPsychometricSubscores = result.requiredInputs.every((input) =>
+      ['psychometric_math', 'psychometric_verbal', 'psychometric_english'].includes(input),
+    );
+    return onlyPsychometricSubscores
+      ? 'נדרשים גם תתי-ציונים בפסיכומטרי'
+      : 'נדרשים פרטי מקצועות בגרות';
   }
 
   return result.sourceLabel;
@@ -404,6 +409,7 @@ export default function CalculatorResults({
   const STATUS_CONFIG = {
     exactAccepted: { label: 'מתקבל/ת', bg: 'bg-[#34D399]' },
     exactBelow: { label: 'מתחת לסף', bg: 'bg-[#FCD34D]' },
+    exactPending: { label: 'בהמתנה לעדכון', bg: 'bg-sky-200' },
     estimatedAccepted: { label: 'מתקבל/ת', bg: 'bg-[#34D399]' },
     estimatedBelow: { label: 'מתחת לסף', bg: 'bg-[#FCD34D]' },
     needsInput: { label: 'נדרשים נתונים', bg: 'bg-violet-200' },
@@ -588,7 +594,11 @@ export default function CalculatorResults({
                     result.kind === 'exact'
                       ? result.decision === 'accepted'
                         ? { ...STATUS_CONFIG.exactAccepted, label: acceptedLabel() }
-                        : STATUS_CONFIG.exactBelow
+                        : result.decision === 'below'
+                          ? STATUS_CONFIG.exactBelow
+                          : result.decision === 'pending'
+                            ? STATUS_CONFIG.exactPending
+                            : STATUS_CONFIG.needsInput
                       : result.kind === 'estimated'
                         ? result.decision === 'accepted'
                           ? { ...STATUS_CONFIG.estimatedAccepted, label: acceptedLabel() }

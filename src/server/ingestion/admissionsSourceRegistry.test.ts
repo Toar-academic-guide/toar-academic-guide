@@ -7,6 +7,26 @@ import {
 } from './admissionsSourceRegistry';
 
 describe('admissionsSourceRegistry', () => {
+  it.each([
+    ['technion-architecture-live', 'manual_gate'],
+    ['colman-computer-science-live', 'requirements_only'],
+    ['tau-medicine-live', 'manual_gate'],
+    ['tau-medicine-legacy-live', 'manual_gate'],
+    ['tau-physiotherapy-live', 'manual_gate'],
+    ['tau-information-systems-live', 'requirements_only'],
+  ] as const)('keeps %s out of exact live proof', (targetId, category) => {
+    const target = admissionsSourceTargets.find((entry) => entry.id === targetId);
+
+    expect(target).toMatchObject({
+      category,
+      proofLevel: 'partial_official',
+    });
+    expect(buildCapabilityMatrixProof(target!)).toMatchObject({
+      status: 'partial',
+      proofLevel: 'partial_official',
+    });
+  });
+
   it('selects the verified HUJI, BGU, Technion, Haifa, and TAU programs as default exact live proof targets', () => {
     expect(selectAdmissionsSourceTargets().map((target) => target.id)).toEqual([
       'huji-accounting-live',
@@ -78,8 +98,6 @@ describe('admissionsSourceRegistry', () => {
       'technion-technion_biomedical-live',
       'technion-technion_civil-live',
       'technion-technion_industrial-live',
-      'technion-architecture-live',
-      'colman-computer-science-live',
       'haifa-accounting-live',
       'haifa-haifa_accounting-live',
       'haifa-biology-live',
@@ -109,10 +127,6 @@ describe('admissionsSourceRegistry', () => {
       'haifa-haifa_statistics-live',
       'tau-digital-sciences-live',
       'tau-nursing-live',
-      'tau-medicine-live',
-      'tau-medicine-legacy-live',
-      'tau-physiotherapy-live',
-      'tau-information-systems-live',
       'tau-psychology-live',
       'tau-social-work-live',
       'tau-social-work-legacy-live',
