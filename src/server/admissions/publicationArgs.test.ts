@@ -32,4 +32,32 @@ describe('publication command arguments', () => {
       ]),
     ).toThrow(/unknown/i);
   });
+
+  it('allows only the explicit controlled proof fault option', () => {
+    expect(
+      parsePublicationArguments([
+        '--manifest',
+        'src/data/admissions/reviewedManifest.json',
+        '--repository-commit',
+        '0123456789abcdef',
+        '--proof-failure-stage',
+        'after_attempt_started',
+        '--proof-confirmation-id',
+        'proof-plan001-20260820',
+      ]),
+    ).toMatchObject({
+      proofFailureStage: 'after_attempt_started',
+      proofConfirmationId: 'proof-plan001-20260820',
+    });
+    expect(() =>
+      parsePublicationArguments([
+        '--manifest',
+        'src/data/admissions/reviewedManifest.json',
+        '--repository-commit',
+        '0123456789abcdef',
+        '--proof-failure-stage',
+        'after_attempt_started',
+      ]),
+    ).toThrow(/confirmation/i);
+  });
 });

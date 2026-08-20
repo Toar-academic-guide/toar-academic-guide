@@ -2,14 +2,16 @@ import 'server-only';
 
 import { createHash, randomUUID } from 'node:crypto';
 
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 
 import { getDb } from '@/db/client';
 import {
+  admissionOperationalProofValues,
   admissionPublicationAttempts,
   admissionReleaseItems,
   admissionReleases,
   admissionTargetTransitions,
+  admissionThresholds,
 } from '@/db/schema';
 import {
   canonicalizeReviewedAdmissionsManifest,
@@ -19,11 +21,20 @@ import {
 
 type ReleaseStatus = 'pending' | 'published' | 'failed';
 type AttemptStatus = 'started' | 'succeeded' | 'failed';
+export type AdmissionReleaseKind = 'canonical_bootstrap' | 'canonical_change' | 'operational_proof';
+
+export type PublishedAdmissionCutoffChange = ReviewedAdmissionsManifest['changes'][number] & {
+  ruleKind: 'admission_cutoff';
+  before: number;
+  after: number;
+};
 
 export interface AdmissionReleaseRecord {
   id: string;
   manifestDigest: string;
   repositoryCommit: string;
+  releaseKind: AdmissionReleaseKind;
+  proofScenario: string | null;
   status: ReleaseStatus;
   publishedAt: Date | null;
   createdAt: Date;
@@ -70,6 +81,12 @@ export interface AdmissionsReleaseWriter {
   createPublicationAttempt(attempt: AdmissionPublicationAttemptRecord): Promise<void>;
   createTargetTransition(transition: AdmissionTargetTransitionRecord): Promise<void>;
   createReleaseItems(items: AdmissionReleaseItemRecord[]): Promise<void>;
+  applyCanonicalAdmissionCutoff(input: { change: PublishedAdmissionCutoffChange }): Promise<void>;
+  applyOperationalProofAdmissionCutoff(input: {
+    releaseId: string;
+    change: PublishedAdmissionCutoffChange;
+    updatedAt: Date;
+  }): Promise<void>;
   markReleasePending(releaseId: string): Promise<void>;
   markReleasePublished(releaseId: string, publishedAt: Date): Promise<void>;
   markReleaseFailed(releaseId: string): Promise<void>;
@@ -85,6 +102,8 @@ export interface PublishAdmissionsReleaseInput {
   manifest: unknown;
   repositoryCommit: string;
   publishedAt?: Date;
+  proofFailureStage?: 'after_attempt_started';
+  proofConfirmationId?: string;
 }
 
 export type PublishAdmissionsReleaseResult =
@@ -99,14 +118,18 @@ export function createAdmissionsReleasePublisher(repository?: AdmissionsReleaseR
       if (manifest.changes.length === 0) {
         return { status: 'no_changes' };
       }
+      const changes = manifest.changes.map(assertSupportedAdmissionCutoffChange);
+      assertProofFailureInjectionIsSafe(input, manifest);
       const releaseRepository = repository ?? createDrizzleAdmissionsReleaseRepository();
       const manifestDigest = digest(canonicalizeReviewedAdmissionsManifest(manifest));
       const publishedAt = input.publishedAt ?? new Date();
-      const transitions = buildTargetTransitions(manifest);
+      const transitions = buildTargetTransitions(changes);
       const preparation = await preparePublicationAttempt({
         repository: releaseRepository,
         manifestDigest,
         repositoryCommit: input.repositoryCommit,
+        releaseKind: manifest.releaseKind,
+        proofScenario: manifest.proofScenario ?? null,
         startedAt: publishedAt,
       });
 
@@ -117,6 +140,17 @@ export function createAdmissionsReleasePublisher(repository?: AdmissionsReleaseR
       try {
         await releaseRepository.transaction(async (writer) => {
           for (const transition of transitions) {
+            for (const change of transition.changes) {
+              if (manifest.releaseKind === 'operational_proof') {
+                await writer.applyOperationalProofAdmissionCutoff({
+                  releaseId: preparation.releaseId,
+                  change,
+                  updatedAt: publishedAt,
+                });
+              } else {
+                await writer.applyCanonicalAdmissionCutoff({ change });
+              }
+            }
             const transitionId = randomUUID();
             await writer.createTargetTransition({
               id: transitionId,
@@ -139,6 +173,12 @@ export function createAdmissionsReleasePublisher(repository?: AdmissionsReleaseR
                 sourceProofs: change.sourceProofs,
                 createdAt: publishedAt,
               })),
+            );
+          }
+
+          if (input.proofFailureStage === 'after_attempt_started') {
+            throw new Error(
+              'Controlled operational-proof failure after publication attempt started.',
             );
           }
 
@@ -178,6 +218,8 @@ interface PreparePublicationAttemptInput {
   repository: AdmissionsReleaseRepository;
   manifestDigest: string;
   repositoryCommit: string;
+  releaseKind: AdmissionReleaseKind;
+  proofScenario: string | null;
   startedAt: Date;
 }
 
@@ -224,6 +266,8 @@ async function preparePublicationAttemptWithWriter(
     id: releaseId,
     manifestDigest: input.manifestDigest,
     repositoryCommit: input.repositoryCommit,
+    releaseKind: input.releaseKind,
+    proofScenario: input.proofScenario,
     status: 'pending',
     publishedAt: null,
     createdAt: input.startedAt,
@@ -299,6 +343,87 @@ export function createDrizzleAdmissionsReleaseRepository(
           async createReleaseItems(items) {
             await tx.insert(admissionReleaseItems).values(items);
           },
+          async applyCanonicalAdmissionCutoff({ change }) {
+            const updated = await tx
+              .update(admissionThresholds)
+              .set({ thresholdValue: change.after })
+              .where(
+                and(
+                  eq(admissionThresholds.institutionId, change.target.institutionId),
+                  eq(admissionThresholds.programId, change.target.programId),
+                  eq(admissionThresholds.thresholdKind, 'sekhem'),
+                  eq(admissionThresholds.thresholdValue, change.before),
+                ),
+              )
+              .returning({ id: admissionThresholds.id });
+            if (updated.length !== 1) {
+              throw new Error(
+                `Canonical cutoff for ${change.target.institutionId}/${change.target.programId} did not match its expected before value.`,
+              );
+            }
+          },
+          async applyOperationalProofAdmissionCutoff({ releaseId, change, updatedAt }) {
+            const [canonicalValue] = await tx
+              .select({
+                id: admissionThresholds.id,
+                thresholdValue: admissionThresholds.thresholdValue,
+              })
+              .from(admissionThresholds)
+              .where(
+                and(
+                  eq(admissionThresholds.institutionId, change.target.institutionId),
+                  eq(admissionThresholds.programId, change.target.programId),
+                  eq(admissionThresholds.thresholdKind, 'sekhem'),
+                ),
+              )
+              .for('update')
+              .limit(1);
+            if (!canonicalValue) {
+              throw new Error(
+                `Operational proof target ${change.target.institutionId}/${change.target.programId} has no canonical cutoff.`,
+              );
+            }
+            const [existing] = await tx
+              .select()
+              .from(admissionOperationalProofValues)
+              .where(
+                and(
+                  eq(admissionOperationalProofValues.institutionId, change.target.institutionId),
+                  eq(admissionOperationalProofValues.programId, change.target.programId),
+                  eq(admissionOperationalProofValues.cycle, change.target.cycle),
+                  eq(admissionOperationalProofValues.ruleKind, change.ruleKind),
+                ),
+              )
+              .for('update')
+              .limit(1);
+            if (existing) {
+              if (existing.currentValue.value !== change.before) {
+                throw new Error(
+                  `Operational proof cutoff for ${change.target.institutionId}/${change.target.programId} did not match its expected before value.`,
+                );
+              }
+              await tx
+                .update(admissionOperationalProofValues)
+                .set({ releaseId, currentValue: { value: change.after }, updatedAt })
+                .where(eq(admissionOperationalProofValues.id, existing.id));
+              return;
+            }
+            if (canonicalValue.thresholdValue !== change.before) {
+              throw new Error(
+                `Operational proof target ${change.target.institutionId}/${change.target.programId} must start from the canonical before value.`,
+              );
+            }
+            await tx.insert(admissionOperationalProofValues).values({
+              id: randomUUID(),
+              releaseId,
+              institutionId: change.target.institutionId,
+              programId: change.target.programId,
+              cycle: change.target.cycle,
+              ruleKind: change.ruleKind,
+              currentValue: { value: change.after },
+              updatedAt,
+            });
+          },
           async markReleasePending(releaseId) {
             await tx
               .update(admissionReleases)
@@ -335,10 +460,10 @@ export function createDrizzleAdmissionsReleaseRepository(
   };
 }
 
-function buildTargetTransitions(manifest: ReviewedAdmissionsManifest) {
-  const byTarget = new Map<string, ReviewedAdmissionsManifest['changes']>();
+function buildTargetTransitions(changes: PublishedAdmissionCutoffChange[]) {
+  const byTarget = new Map<string, PublishedAdmissionCutoffChange[]>();
 
-  for (const change of manifest.changes) {
+  for (const change of changes) {
     const key = `${change.target.institutionId}:${change.target.programId}:${change.target.cycle}`;
     const changes = byTarget.get(key) ?? [];
     changes.push(change);
@@ -371,6 +496,42 @@ function buildTargetTransitions(manifest: ReviewedAdmissionsManifest) {
         `${right.target.institutionId}:${right.target.programId}:${right.target.cycle}`,
       ),
     );
+}
+
+function assertSupportedAdmissionCutoffChange(
+  change: ReviewedAdmissionsManifest['changes'][number],
+): PublishedAdmissionCutoffChange {
+  if (
+    change.ruleKind !== 'admission_cutoff' ||
+    typeof change.before !== 'number' ||
+    typeof change.after !== 'number'
+  ) {
+    throw new Error(
+      `Unsupported admissions release rule ${change.ruleKind}; only numeric admission_cutoff rules can be published.`,
+    );
+  }
+  return {
+    ...change,
+    ruleKind: 'admission_cutoff',
+    before: change.before,
+    after: change.after,
+  };
+}
+
+function assertProofFailureInjectionIsSafe(
+  input: PublishAdmissionsReleaseInput,
+  manifest: ReviewedAdmissionsManifest,
+): void {
+  if (!input.proofFailureStage) return;
+  if (
+    manifest.releaseKind !== 'operational_proof' ||
+    input.proofFailureStage !== 'after_attempt_started' ||
+    input.proofConfirmationId !== manifest.proofScenario
+  ) {
+    throw new Error(
+      'Controlled publication failure is allowed only for an operational proof with its matching confirmation ID.',
+    );
+  }
 }
 
 function digest(value: string): string {

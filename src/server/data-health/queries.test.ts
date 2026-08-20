@@ -347,6 +347,8 @@ describe('summarizeDataHealthRows', () => {
             id: 'release-old',
             manifestDigest: 'sha256:old',
             repositoryCommit: 'oldcommit',
+            releaseKind: 'canonical_change',
+            proofScenario: null,
             status: 'published',
             publishedAt: new Date('2026-06-23T17:00:00.000Z'),
           },
@@ -354,6 +356,8 @@ describe('summarizeDataHealthRows', () => {
             id: 'release-new',
             manifestDigest: 'sha256:new',
             repositoryCommit: 'newcommit',
+            releaseKind: 'canonical_change',
+            proofScenario: null,
             status: 'published',
             publishedAt: new Date('2026-06-24T17:00:00.000Z'),
           },
@@ -361,6 +365,8 @@ describe('summarizeDataHealthRows', () => {
             id: 'release-pending',
             manifestDigest: 'sha256:pending',
             repositoryCommit: 'pendingcommit',
+            releaseKind: 'canonical_change',
+            proofScenario: null,
             status: 'pending',
             publishedAt: null,
           },
@@ -368,6 +374,8 @@ describe('summarizeDataHealthRows', () => {
             id: 'release-failed',
             manifestDigest: 'sha256:failed',
             repositoryCommit: 'failedcommit',
+            releaseKind: 'canonical_change',
+            proofScenario: null,
             status: 'failed',
             publishedAt: null,
           },
@@ -385,7 +393,82 @@ describe('summarizeDataHealthRows', () => {
       },
       failedReleaseCount: 1,
       pendingReleaseCount: 1,
+      operationalProof: {
+        publishedReleaseCount: 0,
+        pendingReleaseCount: 0,
+        failedReleaseCount: 0,
+        matrixComplete: false,
+        scenarios: [
+          { scenario: 'proof-plan001-20260820', status: 'not_started' },
+          { scenario: 'proof-plan001-failure-20260820', status: 'not_started' },
+          { scenario: 'proof-plan001-corrective-20260820', status: 'not_started' },
+        ],
+      },
     });
+  });
+
+  it('never selects an operational proof release as the active applicant-facing release', () => {
+    const report = summarizeDataHealthRows(
+      baseRows({
+        admissionReleases: [
+          {
+            id: 'canonical-release',
+            manifestDigest: 'sha256:canonical',
+            repositoryCommit: 'canonicalcommit',
+            releaseKind: 'canonical_change',
+            proofScenario: null,
+            status: 'published',
+            publishedAt: new Date('2026-06-24T17:00:00.000Z'),
+          },
+          {
+            id: 'proof-release',
+            manifestDigest: 'sha256:proof',
+            repositoryCommit: 'proofcommit',
+            releaseKind: 'operational_proof',
+            proofScenario: 'proof-plan001-20260820',
+            status: 'published',
+            publishedAt: new Date('2026-06-25T17:00:00.000Z'),
+          },
+        ],
+      }),
+      now,
+    );
+
+    expect(report.publication.activeRelease?.id).toBe('canonical-release');
+    expect(report.publication.operationalProof).toEqual({
+      publishedReleaseCount: 1,
+      pendingReleaseCount: 0,
+      failedReleaseCount: 0,
+      matrixComplete: false,
+      scenarios: [
+        { scenario: 'proof-plan001-20260820', status: 'published' },
+        { scenario: 'proof-plan001-failure-20260820', status: 'not_started' },
+        { scenario: 'proof-plan001-corrective-20260820', status: 'not_started' },
+      ],
+    });
+  });
+
+  it('marks the operational proof matrix complete only after every prescribed scenario publishes', () => {
+    const report = summarizeDataHealthRows(
+      baseRows({
+        admissionReleases: [
+          'proof-plan001-20260820',
+          'proof-plan001-failure-20260820',
+          'proof-plan001-corrective-20260820',
+        ].map((proofScenario, index) => ({
+          id: `proof-${index}`,
+          manifestDigest: `sha256:proof-${index}`,
+          repositoryCommit: `proofcommit${index}`,
+          releaseKind: 'operational_proof' as const,
+          proofScenario,
+          status: 'published' as const,
+          publishedAt: new Date(`2026-06-${25 + index}T17:00:00.000Z`),
+        })),
+      }),
+      now,
+    );
+
+    expect(report.publication.operationalProof.matrixComplete).toBe(true);
   });
 
   it('includes admission requirements with no source URL in missing coverage', () => {

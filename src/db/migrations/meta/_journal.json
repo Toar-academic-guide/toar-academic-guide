@@ -148,6 +148,13 @@
       "when": 1787247313024,
       "tag": "0020_flowery_norman_osborn",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1787254053674,
+      "tag": "0021_simple_sugar_man",
+      "breakpoints": true
     }
   ]
 }

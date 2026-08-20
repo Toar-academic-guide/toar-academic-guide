@@ -20,7 +20,9 @@ if (publicationDbIntegrationEnabled && !databaseUrl) {
 const programId = 'ci_publication_retry_program';
 const repositoryCommit = 'abcdef1234567';
 const manifest = {
-  version: 1,
+  version: 2,
+  releaseKind: 'operational_proof' as const,
+  proofScenario: 'ci-publication-retry',
   changes: [
     {
       target: { institutionId: 'tau', programId, cycle: '2099' },
@@ -34,6 +36,7 @@ const manifest = {
           digest: 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
           excerpt: 'Disposable PostgreSQL publication retry proof.',
           url: 'https://example.com/ci-publication-retry',
+          proofType: 'controlled_fixture' as const,
         },
       ],
     },
@@ -116,6 +119,24 @@ describeWithPostgres('admissions release publisher with PostgreSQL', () => {
         0
       )
     `;
+    await sql`
+      insert into public.admission_thresholds (
+        id,
+        program_id,
+        institution_id,
+        university_id,
+        threshold_kind,
+        threshold_value
+      )
+      values (
+        ${`${programId}:threshold`},
+        ${programId},
+        'tau',
+        'tau',
+        'sekhem',
+        700
+      )
+    `;
 
     await expect(publisher.publish(input)).resolves.toMatchObject({
       status: 'published',
@@ -142,12 +163,35 @@ describeWithPostgres('admissions release publisher with PostgreSQL', () => {
       order by started_at
     `;
     expect(attempts.map((attempt) => attempt.status)).toEqual(['failed', 'succeeded']);
+
+    const [proofValue] = await sql<Array<{ current_value: { value: number }; release_id: string }>>`
+      select current_value, release_id
+      from public.admission_operational_proof_values
+      where program_id = ${programId}
+        and institution_id = 'tau'
+        and cycle = '2099'
+    `;
+    expect(proofValue).toEqual({ current_value: { value: 690 }, release_id: failedRelease!.id });
+    const [canonicalValue] = await sql<Array<{ threshold_value: number | null }>>`
+      select threshold_value
+      from public.admission_thresholds
+      where id = ${`${programId}:threshold`}
+    `;
+    expect(canonicalValue?.threshold_value).toBe(700);
   });
 
   async function cleanup() {
     await sql`
+      delete from public.admission_operational_proof_values
+      where program_id = ${programId}
+    `;
+    await sql`
       delete from public.admission_releases
       where repository_commit = ${repositoryCommit}
+    `;
+    await sql`
+      delete from public.admission_thresholds
+      where id = ${`${programId}:threshold`}
     `;
     await sql`
       delete from public.programs

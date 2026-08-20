@@ -10,12 +10,25 @@ export interface AdmissionsReviewSlackConfig {
 export type AdmissionsReviewSlackDeliveryResult =
   { status: 'sent'; timestamp?: string } | { status: 'failed'; error: string };
 
+export function canInjectAdmissionsReviewSlackFailure(input: {
+  releaseKind: 'canonical_bootstrap' | 'canonical_change' | 'operational_proof';
+  proofScenario: string | null;
+  confirmationId: string;
+}): boolean {
+  return (
+    input.releaseKind === 'operational_proof' &&
+    input.proofScenario !== null &&
+    input.proofScenario === input.confirmationId
+  );
+}
+
 export function readAdmissionsReviewSlackConfig(
   env: Record<string, string | undefined> = process.env,
 ): AdmissionsReviewSlackConfig {
   return {
     slackBotToken: env.SLACK_BOT_TOKEN?.trim(),
-    slackChannelId: env.SLACK_ADMISSIONS_REVIEW_CHANNEL_ID?.trim(),
+    slackChannelId:
+      env.SLACK_READY_PR_CHANNEL_ID?.trim() ?? env.SLACK_ADMISSIONS_REVIEW_CHANNEL_ID?.trim(),
   };
 }
 

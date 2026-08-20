@@ -154,6 +154,11 @@ export const admissionReleaseStatusEnum = pgEnum('admission_release_status', [
   'published',
   'failed',
 ]);
+export const admissionReleaseKindEnum = pgEnum('admission_release_kind', [
+  'canonical_bootstrap',
+  'canonical_change',
+  'operational_proof',
+]);
 export const admissionReviewRunStatusEnum = pgEnum('admission_review_run_status', [
   'prepared',
   'reviewable',
@@ -611,6 +616,8 @@ export const admissionReleases = pgTable(
     id: uuid('id').defaultRandom().primaryKey(),
     manifestDigest: text('manifest_digest').notNull(),
     repositoryCommit: text('repository_commit').notNull(),
+    releaseKind: admissionReleaseKindEnum('release_kind').default('canonical_change').notNull(),
+    proofScenario: text('proof_scenario'),
     status: admissionReleaseStatusEnum('status').default('pending').notNull(),
     publishedAt: timestamp('published_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
@@ -620,6 +627,39 @@ export const admissionReleases = pgTable(
       table.manifestDigest,
     ),
     publishedAtIndex: index('admission_releases_published_at_idx').on(table.publishedAt),
+    kindPublishedAtIndex: index('admission_releases_kind_published_at_idx').on(
+      table.releaseKind,
+      table.publishedAt,
+    ),
+  }),
+);
+
+export const admissionOperationalProofValues = pgTable(
+  'admission_operational_proof_values',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    releaseId: uuid('release_id')
+      .notNull()
+      .references(() => admissionReleases.id, { onDelete: 'restrict' }),
+    institutionId: text('institution_id')
+      .notNull()
+      .references(() => institutions.id, { onDelete: 'restrict' }),
+    programId: text('program_id')
+      .notNull()
+      .references(() => programs.id, { onDelete: 'restrict' }),
+    cycle: text('cycle').notNull(),
+    ruleKind: text('rule_kind').notNull(),
+    currentValue: jsonb('current_value').$type<{ value: number | string }>().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => ({
+    targetRuleUnique: uniqueIndex('admission_operational_proof_values_target_rule_unique').on(
+      table.institutionId,
+      table.programId,
+      table.cycle,
+      table.ruleKind,
+    ),
+    releaseIndex: index('admission_operational_proof_values_release_idx').on(table.releaseId),
   }),
 );
 
@@ -661,6 +701,8 @@ export const admissionReviewRuns = pgTable(
   {
     runKey: text('run_key').primaryKey(),
     sourceDigest: text('source_digest').notNull(),
+    releaseKind: admissionReleaseKindEnum('release_kind').default('canonical_change').notNull(),
+    proofScenario: text('proof_scenario'),
     status: admissionReviewRunStatusEnum('status').default('prepared').notNull(),
     candidateCount: integer('candidate_count').default(0).notNull(),
     exclusionCount: integer('exclusion_count').default(0).notNull(),
@@ -674,6 +716,10 @@ export const admissionReviewRuns = pgTable(
   (table) => ({
     statusIdx: index('admission_review_runs_status_idx').on(table.status),
     slackStatusIdx: index('admission_review_runs_slack_status_idx').on(table.slackStatus),
+    kindStatusIdx: index('admission_review_runs_kind_status_idx').on(
+      table.releaseKind,
+      table.status,
+    ),
   }),
 );
 
@@ -695,6 +741,7 @@ export const admissionReleaseItems = pgTable(
           digest: string;
           excerpt: string;
           url: string;
+          proofType: 'exact_official' | 'controlled_fixture';
         }>
       >()
       .notNull(),

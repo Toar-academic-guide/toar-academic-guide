@@ -12,6 +12,8 @@ import type { AdmissionsReviewRun } from './weeklyReviewRun';
 export interface AdmissionsReviewRunRecord {
   runKey: string;
   sourceDigest: string;
+  releaseKind: AdmissionsReviewRun['releaseKind'];
+  proofScenario: string | null;
   status: 'reviewable' | 'no_changes';
   candidateCount: number;
   exclusionCount: number;
@@ -44,10 +46,19 @@ export function createAdmissionsReviewRunLedger(
   return {
     getRun: repository.find.bind(repository),
     async recordPreparedRun(run: AdmissionsReviewRun): Promise<void> {
+      const existing = await repository.find(run.runKey);
+      if (
+        existing &&
+        (existing.releaseKind !== run.releaseKind || existing.proofScenario !== run.proofScenario)
+      ) {
+        throw new Error(`Review run ${run.runKey} cannot change its release identity.`);
+      }
       const now = new Date();
       await repository.upsertPrepared({
         runKey: run.runKey,
         sourceDigest: reviewRunDigest(run),
+        releaseKind: run.releaseKind,
+        proofScenario: run.proofScenario,
         status: run.summary.status,
         candidateCount: run.summary.candidateCount,
         exclusionCount: run.summary.excludedCount,
@@ -97,6 +108,8 @@ export function createDrizzleAdmissionsReviewRunLedgerRepository(
           target: admissionReviewRuns.runKey,
           set: {
             sourceDigest: record.sourceDigest,
+            releaseKind: record.releaseKind,
+            proofScenario: record.proofScenario,
             status: record.status,
             candidateCount: record.candidateCount,
             exclusionCount: record.exclusionCount,

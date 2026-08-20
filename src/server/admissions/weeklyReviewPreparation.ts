@@ -1,9 +1,14 @@
 import 'server-only';
 
-import { and, desc, eq } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNotNull } from 'drizzle-orm';
 
 import { getDb } from '@/db/client';
-import { admissionReleaseItems, admissionReleases, admissionTargetTransitions } from '@/db/schema';
+import {
+  admissionReleaseItems,
+  admissionReleases,
+  admissionTargetTransitions,
+  admissionThresholds,
+} from '@/db/schema';
 import {
   runAdmissionsSourceFreshness,
   type AdmissionsSourceFreshnessRunResult,
@@ -16,9 +21,11 @@ import {
   type PublishedAdmissionRule,
 } from './weeklyReviewRun';
 import type { FormulaPairVerificationLedgerEntry } from '@/data/admissions/formulaBackedVerificationLedger';
+import type { ReviewedAdmissionsManifest } from './reviewedManifest';
 
 export interface PublishedAdmissionRuleRepository {
   listPublishedRules(input: { cycle: string }): Promise<PublishedAdmissionRule[]>;
+  listCurrentCanonicalRules?(input: { cycle: string }): Promise<PublishedAdmissionRule[]>;
 }
 
 export interface AdmissionsWeeklyReviewPreparerDependencies {
@@ -37,6 +44,7 @@ export interface AdmissionsWeeklyReviewPreparationInput extends Omit<
   cycle: string;
   checkedAt?: Date;
   excludedCandidateIds?: string[];
+  releaseKind?: Exclude<ReviewedAdmissionsManifest['releaseKind'], 'operational_proof'>;
 }
 
 export interface AdmissionsWeeklyReviewPreparationResult {
@@ -66,7 +74,11 @@ export function createAdmissionsWeeklyReviewPreparer(
         dryRun: input.dryRun,
         checkedAt,
       });
-      const baseline = await baselineRepository.listPublishedRules({ cycle: input.cycle });
+      const releaseKind = input.releaseKind ?? 'canonical_change';
+      const baseline =
+        releaseKind === 'canonical_bootstrap'
+          ? ((await baselineRepository.listCurrentCanonicalRules?.({ cycle: input.cycle })) ?? [])
+          : await baselineRepository.listPublishedRules({ cycle: input.cycle });
 
       return {
         run: buildAdmissionsReviewRun({
@@ -77,6 +89,7 @@ export function createAdmissionsWeeklyReviewPreparer(
           proofs: freshness.report.results.map((result) => result.proof),
           excludedCandidateIds: input.excludedCandidateIds,
           verificationLedger: dependencies.verificationLedger,
+          releaseKind,
         }),
         persistence: freshness.persistence,
       };
@@ -110,6 +123,7 @@ export function createDrizzlePublishedAdmissionRuleRepository(
         .where(
           and(
             eq(admissionReleases.status, 'published'),
+            inArray(admissionReleases.releaseKind, ['canonical_bootstrap', 'canonical_change']),
             eq(admissionTargetTransitions.cycle, cycle),
           ),
         )
@@ -143,6 +157,42 @@ export function createDrizzlePublishedAdmissionRuleRepository(
           `${right.target.institutionId}:${right.target.programId}`,
         ),
       );
+    },
+    async listCurrentCanonicalRules({ cycle }) {
+      const rows = await db
+        .select({
+          institutionId: admissionThresholds.institutionId,
+          programId: admissionThresholds.programId,
+          thresholdValue: admissionThresholds.thresholdValue,
+        })
+        .from(admissionThresholds)
+        .where(
+          and(
+            eq(admissionThresholds.thresholdKind, 'sekhem'),
+            isNotNull(admissionThresholds.thresholdValue),
+          ),
+        );
+      return rows
+        .flatMap((row) =>
+          row.thresholdValue === null
+            ? []
+            : [
+                {
+                  target: {
+                    institutionId: row.institutionId,
+                    programId: row.programId,
+                    cycle,
+                  },
+                  ruleKind: 'admission_cutoff' as const,
+                  value: row.thresholdValue,
+                },
+              ],
+        )
+        .sort((left, right) =>
+          `${left.target.institutionId}:${left.target.programId}`.localeCompare(
+            `${right.target.institutionId}:${right.target.programId}`,
+          ),
+        );
     },
   };
 }

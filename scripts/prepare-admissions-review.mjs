@@ -38,7 +38,7 @@ function parseArguments(argv) {
       index += 1;
       continue;
     }
-    if (!['--run-key', '--cycle', '--output', '--exclusions-file'].includes(flag)) {
+    if (!['--run-key', '--cycle', '--output', '--exclusions-file', '--mode', '--proof-scenario'].includes(flag)) {
       throw new Error(`Unknown admissions review argument: ${flag ?? '(missing)'}.`);
     }
     const value = argv[index + 1];
@@ -52,14 +52,36 @@ function parseArguments(argv) {
   const runKey = values.get('--run-key');
   const cycle = values.get('--cycle');
   const output = values.get('--output');
-  if (!/^20\d{2}-W\d{2}$/.test(runKey ?? '')) throw new Error('--run-key must use YYYY-Www.');
-  if (!/^20\d{2}$/.test(cycle ?? '')) throw new Error('--cycle must use YYYY.');
+  const mode = values.get('--mode') ?? 'live';
+  if (!['live', 'bootstrap', 'operational_proof'].includes(mode)) {
+    throw new Error('--mode must be live, bootstrap, or operational_proof.');
+  }
+  if (mode === 'operational_proof') {
+    if (!/^[a-z0-9]+(?:[_-][a-z0-9]+)*$/.test(runKey ?? '')) {
+      throw new Error('Operational proof --run-key must be a stable safe identifier.');
+    }
+    if (values.get('--proof-scenario') !== runKey) {
+      throw new Error('Operational proof --proof-scenario must match --run-key.');
+    }
+  } else if (!/^20\d{2}-W\d{2}$/.test(runKey ?? '')) {
+    throw new Error('--run-key must use YYYY-Www for live and bootstrap modes.');
+  }
+  if (mode === 'operational_proof') {
+    if (cycle !== '2099') throw new Error('Operational proof mode requires cycle 2099.');
+  } else if (!/^20\d{2}$/.test(cycle ?? '')) {
+    throw new Error('--cycle must use YYYY.');
+  }
+  if (mode !== 'operational_proof' && values.has('--proof-scenario')) {
+    throw new Error('--proof-scenario is only valid for operational_proof mode.');
+  }
   if (!output) throw new Error('--output is required.');
   return {
     runKey,
     cycle,
     output,
     exclusionsFile: values.get('--exclusions-file'),
+    mode,
+    proofScenario: values.get('--proof-scenario'),
     dryRun,
     targetIds: targets.length > 0 ? targets : undefined,
   };
@@ -112,18 +134,34 @@ async function main() {
   });
 
   try {
-    const [{ createAdmissionsWeeklyReviewPreparer }, { createAdmissionsReviewRunLedger }] =
+    const [
+      { createAdmissionsWeeklyReviewPreparer },
+      { createAdmissionsReviewRunLedger },
+      { buildOperationalProofReviewRun },
+    ] =
       await Promise.all([
         vite.ssrLoadModule('/src/server/admissions/weeklyReviewPreparation.ts'),
         vite.ssrLoadModule('/src/server/admissions/admissionsReviewRunLedger.ts'),
+        vite.ssrLoadModule('/src/server/admissions/operationalProofRun.ts'),
       ]);
-    const result = await createAdmissionsWeeklyReviewPreparer().prepare({
-      runKey: args.runKey,
-      cycle: args.cycle,
-      targetIds: args.targetIds,
-      excludedCandidateIds,
-      dryRun: args.dryRun,
-    });
+    const result =
+      args.mode === 'operational_proof'
+        ? {
+            run: buildOperationalProofReviewRun({
+              runKey: args.runKey,
+              proofScenario: args.proofScenario,
+              checkedAt: new Date(),
+            }),
+            persistence: null,
+          }
+        : await createAdmissionsWeeklyReviewPreparer().prepare({
+            runKey: args.runKey,
+            cycle: args.cycle,
+            targetIds: args.targetIds,
+            excludedCandidateIds,
+            dryRun: args.dryRun,
+            releaseKind: args.mode === 'bootstrap' ? 'canonical_bootstrap' : 'canonical_change',
+          });
     if (!args.dryRun) await createAdmissionsReviewRunLedger().recordPreparedRun(result.run);
 
     const output = resolveOutput(args.output);
@@ -135,6 +173,7 @@ async function main() {
         status: result.run.summary.status,
         candidateCount: result.run.summary.candidateCount,
         excludedCount: result.run.summary.excludedCount,
+        mode: args.mode,
         output: relative(root, output),
       }),
     );
