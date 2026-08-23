@@ -1,6 +1,7 @@
 @import 'tailwindcss';
 
 :root {
+  --font-sans: 'Segoe UI', Arial, sans-serif;
   --bg-page: #f8fbff;
   --bg-card: rgba(255, 255, 255, 0.78);
   --nav-from: #7784e8;
@@ -20,6 +21,10 @@
 
 body {
   min-height: 100vh;
+  font-family:
+    'Segoe UI',
+    Arial,
+    sans-serif;
   background:
     radial-gradient(circle at 18% 24%, rgba(174, 227, 255, 0.62), transparent 30%),
     radial-gradient(circle at 80% 20%, rgba(199, 214, 255, 0.58), transparent 26%),
@@ -27,8 +32,16 @@ body {
   color: var(--text-body);
 }
 
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
 .way-app {
   isolation: isolate;
+  font-family: var(--font-sans);
 }
 
 .way-app::before,

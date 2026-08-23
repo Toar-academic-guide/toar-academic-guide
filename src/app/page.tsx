@@ -325,6 +325,21 @@ export default function Home() {
     void toggleSavedProgram(programId);
   }
 
+  function handleToggleProgramGroup(programIds: string[]) {
+    const currentIds = profile.savedProgramIds ?? [];
+    const currentSet = new Set(currentIds);
+    const allSaved = programIds.every((programId) => currentSet.has(programId));
+    const nextSavedProgramIds = allSaved
+      ? currentIds.filter((programId) => !programIds.includes(programId))
+      : Array.from(new Set([...currentIds, ...programIds]));
+
+    posthog.capture(allSaved ? 'degree_group_removed_from_bucket' : 'degree_group_saved', {
+      program_count: programIds.length,
+    });
+
+    void updateProfile({ savedProgramIds: nextSavedProgramIds });
+  }
+
   function handleRemoveFromBucket(programId: string) {
     posthog.capture('program_removed_from_bucket', { program_id: programId });
     void removeSavedProgram(programId);
@@ -541,7 +556,7 @@ export default function Home() {
           <DegreePicker
             programs={cataloguePrograms}
             savedProgramIds={profile.savedProgramIds ?? []}
-            onToggleSave={handleToggleSave}
+            onToggleProgramGroup={handleToggleProgramGroup}
             onDone={() => setStep('bucket-list')}
           />
         ) : (
