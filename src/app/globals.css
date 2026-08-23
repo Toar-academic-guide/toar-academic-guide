@@ -1,20 +1,169 @@
 @import 'tailwindcss';
 
 :root {
-  --bg-page: #f5f4f0;
-  --bg-card: #ffffff;
-  --nav-from: #1e1b4b;
-  --nav-to: #3730a3;
-  --primary: #4f46e5;
-  --primary-dark: #3730a3;
-  --secondary: #7c3aed;
-  --text-heading: #1a1a2e;
-  --text-body: #374151;
-  --text-muted: #6b7280;
-  --border: #e5e7eb;
+  --bg-page: #f8fbff;
+  --bg-card: rgba(255, 255, 255, 0.78);
+  --nav-from: #7784e8;
+  --nav-to: #8fd8ff;
+  --primary: #7784e8;
+  --primary-dark: #6574dc;
+  --secondary: #ef83bb;
+  --text-heading: #0c1d45;
+  --text-body: #435072;
+  --text-muted: #6f7a99;
+  --border: #d9e3f3;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
-  background: var(--bg-page);
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 18% 24%, rgba(174, 227, 255, 0.62), transparent 30%),
+    radial-gradient(circle at 80% 20%, rgba(199, 214, 255, 0.58), transparent 26%),
+    linear-gradient(180deg, #ffffff 0%, #f8fbff 48%, #eef6ff 100%);
   color: var(--text-body);
+}
+
+.way-app {
+  isolation: isolate;
+}
+
+.way-app::before,
+.way-app::after {
+  pointer-events: none;
+  content: '';
+  position: fixed;
+  z-index: 0;
+  border-radius: 999px;
+  filter: blur(8px);
+}
+
+.way-app::before {
+  right: -5rem;
+  top: 6rem;
+  width: 18rem;
+  height: 18rem;
+  background: radial-gradient(circle, rgba(143, 216, 255, 0.36), transparent 68%);
+}
+
+.way-app::after {
+  left: -4rem;
+  bottom: 2rem;
+  width: 16rem;
+  height: 16rem;
+  background: radial-gradient(circle, rgba(239, 131, 187, 0.28), transparent 68%);
+}
+
+.way-app > * {
+  position: relative;
+  z-index: 1;
+}
+
+.way-app :where(h1, h2, h3, h4, h5, h6) {
+  color: var(--text-heading);
+  letter-spacing: 0;
+}
+
+.way-app :where(p, li, label, dt, dd, span) {
+  letter-spacing: 0;
+}
+
+.way-app :where(input, select, textarea) {
+  border-color: #d9e3f3 !important;
+  border-radius: 1rem !important;
+  background: rgba(248, 251, 255, 0.92) !important;
+  color: #445274 !important;
+  box-shadow: none !important;
+}
+
+.way-app :where(input, select, textarea)::placeholder {
+  color: #9aa8c2 !important;
+}
+
+.way-app :where(input, select, textarea):focus {
+  border-color: #7784e8 !important;
+  background: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(143, 216, 255, 0.35) !important;
+}
+
+.way-app :where(button, a) {
+  letter-spacing: 0;
+}
+
+.way-app .bg-white {
+  background-color: rgba(255, 255, 255, 0.82);
+}
+
+.way-app :where(section, article, form, aside, [class*='rounded-2xl'], [class*='rounded-3xl'])[class*='bg-white'] {
+  border-color: rgba(255, 255, 255, 0.9) !important;
+  box-shadow: 0 20px 64px rgba(105, 133, 190, 0.12);
+  backdrop-filter: blur(18px);
+}
+
+.way-app [class*='bg-[#f5f4f0]'],
+.way-app .bg-slate-50,
+.way-app .bg-gray-50 {
+  background-color: rgba(255, 255, 255, 0.58) !important;
+}
+
+.way-app .bg-slate-100,
+.way-app .bg-gray-100,
+.way-app .bg-indigo-50,
+.way-app .bg-purple-50 {
+  background-color: rgba(238, 244, 255, 0.82) !important;
+}
+
+.way-app .bg-indigo-600,
+.way-app .bg-purple-600,
+.way-app .bg-violet-600,
+.way-app [class*='bg-[#4f46e5]'],
+.way-app [class*='bg-[#4338ca]'],
+.way-app [class*='bg-[#6366f1]'],
+.way-app [class*='bg-[#1e1b4b]'] {
+  background-color: #7784e8 !important;
+}
+
+.way-app .border-black,
+.way-app .border-slate-100,
+.way-app .border-slate-200,
+.way-app .border-gray-200,
+.way-app [class*='border-[#e5e7eb]'] {
+  border-color: rgba(217, 227, 243, 0.95) !important;
+}
+
+.way-app .text-slate-950,
+.way-app .text-slate-900,
+.way-app .text-gray-900,
+.way-app .text-gray-800,
+.way-app [class*='text-[#1e1b4b]'] {
+  color: #445274 !important;
+}
+
+.way-app .text-slate-800,
+.way-app .text-slate-700,
+.way-app .text-gray-700,
+.way-app .text-gray-600,
+.way-app .text-slate-600 {
+  color: #647091 !important;
+}
+
+.way-app .text-slate-500,
+.way-app .text-slate-400,
+.way-app .text-gray-500,
+.way-app .text-gray-400 {
+  color: #7c86a2 !important;
+}
+
+.way-app .text-indigo-600,
+.way-app .text-purple-600,
+.way-app [class*='text-[#4f46e5]'],
+.way-app [class*='text-[#6366f1]'] {
+  color: #6574dc !important;
+}
+
+.way-app .shadow-sm {
+  box-shadow: 0 14px 40px rgba(105, 133, 190, 0.1);
 }

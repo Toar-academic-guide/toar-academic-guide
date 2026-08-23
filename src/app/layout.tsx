@@ -14,7 +14,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="he" dir="rtl" className="h-full">
-      <body className="min-h-full bg-white text-gray-900 antialiased">
+      <body className="min-h-full antialiased">
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

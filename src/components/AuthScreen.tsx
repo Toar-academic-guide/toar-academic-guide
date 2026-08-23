@@ -91,11 +91,8 @@ export default function AuthScreen({ onBack, onSuccess }: AuthScreenProps) {
   }
 
   return (
-    <div
-      className="min-h-screen flex flex-col items-center justify-center px-4"
-      style={{ background: '#f5f4f0' }}
-    >
-      <div className="w-full max-w-sm">
+    <div className="flex min-h-[calc(100vh-88px)] flex-col items-center justify-center px-4 py-12">
+      <div className="w-full max-w-sm rounded-[1.7rem] border border-white bg-white/78 p-6 shadow-[0_24px_80px_rgba(105,133,190,0.16)] backdrop-blur-xl">
         <div className="mb-6 flex justify-center">
           <LogoCanvas size={84} brighten={false} />
         </div>
@@ -106,7 +103,7 @@ export default function AuthScreen({ onBack, onSuccess }: AuthScreenProps) {
         <p className="mb-6 text-center text-sm text-slate-500">
           {mode === 'login'
             ? 'התחבר כדי לשמור את הנתונים שלך ולסנכרן בין מכשירים.'
-            : 'צור חשבון כדי לשמור את הפרופיל ואת רשימת הייעוד שלך.'}
+            : 'צור חשבון כדי לשמור את הפרופיל ואת הרשימה שלי.'}
         </p>
 
         {!configured && (

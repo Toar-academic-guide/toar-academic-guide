@@ -1,4 +1,5 @@
 import type { DataHealthReadyReport } from '@/server/data-health/queries';
+import WayPageShell from '@/components/WayPageShell';
 
 interface DataHealthDashboardProps {
   adminEmail: string;
@@ -9,30 +10,33 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
   const criticalItems = buildCriticalItems(report);
 
   return (
-    <main dir="ltr" className="min-h-screen bg-[#f5f0e8] px-5 py-6 text-slate-950 sm:px-8 lg:px-12">
-      <div className="mx-auto flex max-w-7xl flex-col gap-8">
-        <header className="overflow-hidden rounded-[2rem] border border-slate-950/10 bg-[#101820] p-8 text-white shadow-[0_24px_80px_rgba(16,24,32,0.18)]">
+    <WayPageShell dir="ltr" showLogo>
+      <main className="px-5 py-8 text-[#445274] sm:px-8 lg:px-12">
+        <div className="mx-auto flex max-w-7xl flex-col gap-8">
+          <header className="overflow-hidden rounded-[1.7rem] border border-white bg-white/82 p-8 text-[#445274] shadow-[0_24px_80px_rgba(105,133,190,0.16)] backdrop-blur-xl">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.35em] text-amber-200">
+              <p className="text-sm font-semibold uppercase tracking-[0.35em] text-[#7784e8]">
                 Internal
               </p>
-              <h1 className="mt-3 text-4xl font-black tracking-tight sm:text-6xl">Data Health</h1>
-              <p className="mt-4 max-w-2xl text-base text-slate-200 sm:text-lg">
+              <h1 className="mt-3 text-4xl font-black tracking-tight text-[#0c1d45] sm:text-6xl">
+                Data Health
+              </h1>
+              <p className="mt-4 max-w-2xl text-base text-[#6f7a99] sm:text-lg">
                 Read-only operating view for catalogue readiness, source coverage, ingestion
                 pipeline health, and review queue backlog.
               </p>
             </div>
-            <div className="rounded-2xl border border-white/15 bg-white/10 px-5 py-4 text-sm text-slate-100">
-              <p className="text-slate-300">Signed in as</p>
+            <div className="rounded-2xl border border-[#d9e3f3] bg-[#f8fbff]/82 px-5 py-4 text-sm text-[#647091]">
+              <p className="text-[#7c86a2]">Signed in as</p>
               <p className="font-semibold">{adminEmail}</p>
-              <p className="mt-3 text-slate-300">Generated</p>
+              <p className="mt-3 text-[#7c86a2]">Generated</p>
               <p className="font-semibold">{formatDateTime(report.generatedAt)}</p>
             </div>
           </div>
-        </header>
+          </header>
 
-        <section className="grid gap-4 md:grid-cols-4">
+          <section className="grid gap-4 md:grid-cols-4">
           <MetricCard
             label="Readiness"
             value={report.readiness.isReady ? 'Ready' : 'Needs work'}
@@ -53,34 +57,34 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
             value={String(report.reviewQueue.pendingCount)}
             tone={report.reviewQueue.pendingCount === 0 ? 'good' : 'warn'}
           />
-        </section>
+          </section>
 
-        <section className="rounded-[1.75rem] border border-red-900/15 bg-red-50 p-6 shadow-sm">
+          <section className="rounded-[1.7rem] border border-white bg-white/82 p-6 shadow-[0_20px_64px_rgba(105,133,190,0.12)] backdrop-blur-xl">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <p className="text-sm font-bold uppercase tracking-[0.25em] text-red-700">
+              <p className="text-sm font-bold uppercase tracking-[0.25em] text-[#ef6ea9]">
                 Immediate attention
               </p>
-              <h2 className="mt-1 text-2xl font-black text-red-950">Operational risks</h2>
+              <h2 className="mt-1 text-2xl font-black text-[#0c1d45]">Operational risks</h2>
             </div>
-            <p className="text-sm text-red-900">{criticalItems.length} active attention items</p>
+            <p className="text-sm text-[#6f7a99]">{criticalItems.length} active attention items</p>
           </div>
           {criticalItems.length > 0 ? (
             <ul className="mt-5 grid gap-3 lg:grid-cols-2">
               {criticalItems.map((item) => (
-                <li key={item} className="rounded-2xl bg-white px-4 py-3 text-sm text-red-950">
+                <li key={item} className="rounded-2xl bg-[#fff0f6] px-4 py-3 text-sm text-[#8f3a62]">
                   {item}
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="mt-5 rounded-2xl bg-white px-4 py-3 text-sm text-red-950">
+            <p className="mt-5 rounded-2xl bg-[#ecfdf5] px-4 py-3 text-sm text-emerald-700">
               No immediate operational risks found in the current summary.
             </p>
           )}
-        </section>
+          </section>
 
-        <section className="grid gap-5 lg:grid-cols-2">
+          <section className="grid gap-5 lg:grid-cols-2">
           <Panel title="Catalogue readiness">
             <StatusLine
               label="Status"
@@ -122,9 +126,9 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
               }))}
             />
           </Panel>
-        </section>
+          </section>
 
-        <section className="grid gap-5 lg:grid-cols-2">
+          <section className="grid gap-5 lg:grid-cols-2">
           <Panel title="Ingestion pipeline">
             <CompactRows
               emptyLabel="No failed ingestion jobs."
@@ -180,9 +184,10 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
               <p className="text-sm text-slate-600">No pending review items.</p>
             )}
           </Panel>
-        </section>
-      </div>
-    </main>
+          </section>
+        </div>
+      </main>
+    </WayPageShell>
   );
 }
 
@@ -202,7 +207,7 @@ function MetricCard({
   };
 
   return (
-    <article className={`rounded-3xl border p-5 shadow-sm ${toneClasses[tone]}`}>
+    <article className={`rounded-3xl border p-5 shadow-sm backdrop-blur ${toneClasses[tone]}`}>
       <p className="text-sm font-bold uppercase tracking-[0.2em] opacity-70">{label}</p>
       <p className="mt-3 text-3xl font-black">{value}</p>
     </article>
@@ -211,8 +216,8 @@ function MetricCard({
 
 function Panel({ children, title }: { children: React.ReactNode; title: string }) {
   return (
-    <section className="rounded-[1.75rem] border border-slate-950/10 bg-white p-6 shadow-sm">
-      <h2 className="text-2xl font-black text-slate-950">{title}</h2>
+    <section className="rounded-[1.7rem] border border-white bg-white/82 p-6 shadow-[0_20px_64px_rgba(105,133,190,0.12)] backdrop-blur-xl">
+      <h2 className="text-2xl font-black text-[#0c1d45]">{title}</h2>
       <div className="mt-5">{children}</div>
     </section>
   );
@@ -220,9 +225,9 @@ function Panel({ children, title }: { children: React.ReactNode; title: string }
 
 function StatusLine({ label, value }: { label: string; value: string }) {
   return (
-    <div className="mb-4 flex items-center justify-between rounded-2xl bg-slate-100 px-4 py-3">
-      <span className="text-sm font-semibold text-slate-600">{label}</span>
-      <span className="text-sm font-black text-slate-950">{value}</span>
+    <div className="mb-4 flex items-center justify-between rounded-2xl bg-[#eef4ff]/82 px-4 py-3">
+      <span className="text-sm font-semibold text-[#647091]">{label}</span>
+      <span className="text-sm font-black text-[#445274]">{value}</span>
     </div>
   );
 }
@@ -231,7 +236,7 @@ function IssueList({ items }: { items: string[] }) {
   return (
     <ul className="grid gap-2">
       {items.map((item) => (
-        <li key={item} className="rounded-2xl bg-amber-50 px-4 py-3 text-sm text-amber-950">
+        <li key={item} className="rounded-2xl bg-[#fff8e8] px-4 py-3 text-sm text-[#947329]">
           {item}
         </li>
       ))}
@@ -243,9 +248,9 @@ function DefinitionGrid({ items }: { items: Array<[string, number]> }) {
   return (
     <dl className="mt-3 grid grid-cols-2 gap-3">
       {items.map(([label, value]) => (
-        <div key={label} className="rounded-2xl bg-slate-100 px-4 py-3">
-          <dt className="text-xs font-bold uppercase tracking-[0.18em] text-slate-500">{label}</dt>
-          <dd className="mt-1 text-xl font-black text-slate-950">{value}</dd>
+        <div key={label} className="rounded-2xl bg-[#eef4ff]/82 px-4 py-3">
+          <dt className="text-xs font-bold uppercase tracking-[0.18em] text-[#7c86a2]">{label}</dt>
+          <dd className="mt-1 text-xl font-black text-[#445274]">{value}</dd>
         </div>
       ))}
     </dl>
@@ -266,9 +271,9 @@ function CompactRows({
   return (
     <ul className="grid gap-2">
       {rows.map((row) => (
-        <li key={row.id} className="rounded-2xl bg-slate-100 px-4 py-3">
-          <p className="text-sm font-black text-slate-950">{row.id}</p>
-          <p className="mt-1 text-sm text-slate-600">{row.detail}</p>
+        <li key={row.id} className="rounded-2xl bg-[#eef4ff]/82 px-4 py-3">
+          <p className="text-sm font-black text-[#445274]">{row.id}</p>
+          <p className="mt-1 text-sm text-[#647091]">{row.detail}</p>
         </li>
       ))}
     </ul>

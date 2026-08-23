@@ -2,10 +2,10 @@
 
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import Image from 'next/image';
 import { Upload, FileText, X, Brain, GraduationCap, Loader2 } from 'lucide-react';
 import type { AcademicScores, UserProfile } from '@/types';
 import BagrutCalculatorWizard from './BagrutCalculatorWizard';
+import LogoCanvas from './LogoCanvas';
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 const fadeUp = (delay: number) => ({
@@ -186,14 +186,7 @@ export default function AcademicProfileForm({
     <div className="min-h-screen bg-[#f5f4f0] px-4 py-10">
       <div className="mx-auto flex max-w-2xl flex-col items-center gap-8">
         <motion.div {...fadeUp(0)}>
-          <Image
-            src="/way-logo.png"
-            alt="לוגו"
-            width={440}
-            height={150}
-            className="h-24 w-auto object-contain md:h-32"
-            priority
-          />
+          <LogoCanvas size={96} brighten={false} className="md:h-32" />
         </motion.div>
 
         <motion.div
@@ -478,7 +471,7 @@ export default function AcademicProfileForm({
                 <h2 className="text-sm font-semibold text-slate-800">פרטיות ושליטה בנתונים</h2>
                 <p className="mt-1 text-xs leading-6 text-slate-500">
                   {isAuthenticated
-                    ? 'הפעולה הזאת מוחקת רק נתונים שנשמרו בדפדפן במכשיר הזה. נתוני החשבון, רשימת הייעוד והמסמכים שנשמרו בחשבון לא יימחקו כאן.'
+                    ? 'הפעולה הזאת מוחקת רק נתונים שנשמרו בדפדפן במכשיר הזה. נתוני החשבון, הרשימה שלי והמסמכים שנשמרו בחשבון לא יימחקו כאן.'
                     : 'הפעולה הזאת מוחקת את טיוטת הפרופיל שנשמרה בדפדפן במכשיר הזה, כולל ציונים ומסמכים שהוצגו מקומית.'}
                 </p>
               </div>

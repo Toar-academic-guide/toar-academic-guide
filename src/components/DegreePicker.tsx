@@ -61,7 +61,7 @@ export default function DegreePicker({ programs, savedProgramIds, onToggleSave, 
   const savedCount = savedProgramIds.length;
 
   return (
-    <div className="min-h-screen" dir="rtl" style={{ background: '#f5f4f0' }}>
+    <div className="min-h-screen" dir="rtl">
       <div className="mx-auto max-w-3xl px-4 py-10 pb-32 sm:px-6">
         <div className="mb-6 text-center">
           <h1 className="mb-2 text-2xl font-black text-slate-900 md:text-3xl">

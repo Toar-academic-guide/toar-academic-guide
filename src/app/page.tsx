@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import posthog from 'posthog-js';
 import {
   ProfileScores,
@@ -39,6 +39,7 @@ import DegreePicker from '@/components/DegreePicker';
 import ScoreForm from '@/components/ScoreForm';
 import ResultsDashboard from '@/components/ResultsDashboard';
 import CalculatorResults from '@/components/CalculatorResults';
+import WayPageShell from '@/components/WayPageShell';
 import type { AcademicScores, RiasecAnswers } from '@/types';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 
@@ -114,27 +115,32 @@ function toCatalogueError(error: unknown): CatalogueApiError {
   return new CatalogueApiError('Unable to load the catalogue.');
 }
 
+function AppSurface({
+  children,
+  className = '',
+  showLogo = false,
+}: {
+  children: ReactNode;
+  className?: string;
+  showLogo?: boolean;
+}) {
+  return (
+    <WayPageShell className={className} showLogo={showLogo}>
+      {children}
+    </WayPageShell>
+  );
+}
+
 export default function Home() {
   const { loading: authLoading, signOut, user } = useAuth();
   const userInitials = getUserInitials(user);
-  const [initialStep] = useState<AppStep>(getDevStep);
   const [catalogueStatus, setCatalogueStatus] = useState<CatalogueStatus>('loading');
   const [catalogueError, setCatalogueError] = useState<CatalogueApiError | null>(null);
   const [catalogueInstitutions, setCatalogueInstitutions] = useState<CatalogueInstitution[]>(
     STATIC_CATALOGUE_INSTITUTIONS,
   );
-  const [step, setStep] = useState<AppStep>(initialStep);
-  const [recommendations, setRecommendations] = useState<RecommendedField[]>(() =>
-    initialStep === 'recommendations'
-      ? getRecommendations(
-          DEV_PROFILE_SCORES,
-          DEV_VALUES,
-          undefined,
-          DEV_AVOIDANCES,
-          STATIC_CATALOGUE_PROGRAMS,
-        )
-      : [],
-  );
+  const [step, setStep] = useState<AppStep>('landing');
+  const [recommendations, setRecommendations] = useState<RecommendedField[]>([]);
   const [cataloguePrograms, setCataloguePrograms] =
     useState<CatalogueProgram[]>(STATIC_CATALOGUE_PROGRAMS);
   const {
@@ -156,30 +162,13 @@ export default function Home() {
     scores: ProfileScores;
     values: ValuesProfile;
     geographicPreference: GeographicRegion;
-  } | null>(() =>
-    initialStep === 'recommendations'
-      ? {
-          scores: DEV_PROFILE_SCORES,
-          values: DEV_VALUES,
-          geographicPreference: DEV_GEO,
-        }
-      : null,
-  );
+  } | null>(null);
   const [recommendationRequest, setRecommendationRequest] = useState<{
     scores: ProfileScores;
     values: ValuesProfile;
     geographicPreference: GeographicRegion;
     avoidances: AvoidanceTag[];
-  } | null>(() =>
-    initialStep === 'recommendations'
-      ? {
-          scores: DEV_PROFILE_SCORES,
-          values: DEV_VALUES,
-          geographicPreference: DEV_GEO,
-          avoidances: DEV_AVOIDANCES,
-        }
-      : null,
-  );
+  } | null>(null);
 
   const [selectedDegreeId, setSelectedDegreeId] = useState<string | null>(
     STATIC_CATALOGUE_PROGRAMS[0]?.id ?? null,
@@ -194,6 +183,38 @@ export default function Home() {
     bagrut: number;
     degreeId: string;
   } | null>(null);
+
+  useEffect(() => {
+    const devStep = getDevStep();
+    if (devStep === 'landing') {
+      return;
+    }
+
+    setStep(devStep);
+
+    if (devStep === 'recommendations') {
+      setAssessmentProfile({
+        scores: DEV_PROFILE_SCORES,
+        values: DEV_VALUES,
+        geographicPreference: DEV_GEO,
+      });
+      setRecommendationRequest({
+        scores: DEV_PROFILE_SCORES,
+        values: DEV_VALUES,
+        geographicPreference: DEV_GEO,
+        avoidances: DEV_AVOIDANCES,
+      });
+      setRecommendations(
+        getRecommendations(
+          DEV_PROFILE_SCORES,
+          DEV_VALUES,
+          undefined,
+          DEV_AVOIDANCES,
+          STATIC_CATALOGUE_PROGRAMS,
+        ),
+      );
+    }
+  }, []);
 
   useEffect(() => {
     let isMounted = true;
@@ -354,7 +375,7 @@ export default function Home() {
         onClick={handleGoBack}
         aria-label="חזרה לעמוד הקודם"
         title="חזרה לעמוד הקודם"
-        className="fixed top-6 right-4 z-50 flex items-center gap-2 rounded-full border border-white/20 bg-[#1e1b4b]/80 px-5 py-2.5 text-base font-medium text-white/80 shadow-lg backdrop-blur transition hover:bg-[#1e1b4b] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+        className="fixed right-4 top-6 z-[60] flex h-11 items-center gap-2 rounded-2xl border border-white bg-white/82 px-4 text-sm font-bold text-[#647091] shadow-[0_16px_42px_rgba(105,133,190,0.18)] backdrop-blur-xl transition hover:bg-white hover:text-[#5262d9] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fd8ff]"
       >
         <ArrowRight size={18} />
         <span>חזרה</span>
@@ -364,11 +385,11 @@ export default function Home() {
   function renderCatalogueState(title: string, description: string) {
     if (catalogueStatus === 'loading') {
       return (
-        <section className="mx-auto flex max-w-2xl flex-col items-center gap-3 rounded-3xl border border-slate-200 bg-white px-8 py-16 text-center shadow-sm">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-indigo-600" />
+        <section className="mx-auto flex max-w-2xl flex-col items-center gap-3 rounded-[1.7rem] border border-white bg-white/78 px-8 py-16 text-center shadow-[0_24px_80px_rgba(105,133,190,0.16)] backdrop-blur-xl">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#dfe8f7] border-t-[#7784e8]" />
           <div>
-            <h2 className="text-lg font-bold text-slate-900">{title}</h2>
-            <p className="mt-1.5 text-sm text-slate-500">{description}</p>
+            <h2 className="text-lg font-bold text-[#445274]">{title}</h2>
+            <p className="mt-1.5 text-sm text-[#6f7a99]">{description}</p>
           </div>
         </section>
       );
@@ -376,21 +397,21 @@ export default function Home() {
 
     if (catalogueStatus === 'error') {
       return (
-        <section className="mx-auto flex max-w-2xl flex-col items-center gap-4 rounded-3xl border border-rose-200 bg-rose-50 px-8 py-16 text-center shadow-sm">
-          <div className="rounded-full bg-white px-4 py-1 text-xs font-semibold text-rose-700">
+        <section className="mx-auto flex max-w-2xl flex-col items-center gap-4 rounded-[1.7rem] border border-white bg-white/82 px-8 py-16 text-center shadow-[0_24px_80px_rgba(105,133,190,0.16)] backdrop-blur-xl">
+          <div className="rounded-2xl bg-[#fff0f6] px-4 py-1 text-xs font-semibold text-[#ef6ea9]">
             קטלוג לא זמין
           </div>
           <div>
-            <h2 className="text-lg font-bold text-slate-900">לא הצלחנו לטעון את קטלוג התארים</h2>
-            <p className="mt-1.5 text-sm text-slate-600">{catalogueError?.message}</p>
+            <h2 className="text-lg font-bold text-[#445274]">לא הצלחנו לטעון את קטלוג התארים</h2>
+            <p className="mt-1.5 text-sm text-[#6f7a99]">{catalogueError?.message}</p>
             {catalogueError?.details[0] ? (
-              <p className="mt-2 text-sm text-slate-500">{catalogueError.details[0]}</p>
+              <p className="mt-2 text-sm text-[#7c86a2]">{catalogueError.details[0]}</p>
             ) : null}
           </div>
           <button
             type="button"
             onClick={handleGoHome}
-            className="rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700"
+            className="rounded-2xl bg-[#7784e8] px-5 py-2.5 text-sm font-bold text-white shadow-[0_14px_34px_rgba(119,132,232,0.24)] transition hover:bg-[#6574dc]"
           >
             חזרה לעמוד הבית
           </button>
@@ -422,6 +443,8 @@ export default function Home() {
     }, 50);
   }
 
+  const savedCount = profile.savedProgramIds?.length ?? 0;
+
   /* ── Full-screen steps (no header) ───────────────────────────────────────── */
   if (step === 'landing') {
     return (
@@ -440,6 +463,11 @@ export default function Home() {
           setAuthReturnTo('landing');
           setStep('auth');
         }}
+        onGoToBucket={() => {
+          setBucketReturnsTo('landing');
+          setStep('bucket-list');
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
         onCalculate={(psychometric, bagrut, degreeId) => {
           posthog.capture('landing_calculator_submitted', {
             degree_id: degreeId,
@@ -457,6 +485,7 @@ export default function Home() {
         programs={cataloguePrograms}
         authLoading={authLoading}
         isAuthenticated={isAuthenticated}
+        savedCount={savedCount}
         userInitials={userInitials}
         onSignOut={() => {
           void signOut();
@@ -467,39 +496,43 @@ export default function Home() {
 
   if (step === 'calculator-results' && landingCalcScores) {
     return (
-      <CalculatorResults
-        psychometric={landingCalcScores.psychometric}
-        bagrut={landingCalcScores.bagrut}
-        degreeId={landingCalcScores.degreeId}
-        programs={cataloguePrograms}
-        calculatorInstitutions={calculatorInstitutions}
-        onBack={() => {
-          setStep('landing');
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }}
-      />
+      <AppSurface>
+        <CalculatorResults
+          psychometric={landingCalcScores.psychometric}
+          bagrut={landingCalcScores.bagrut}
+          degreeId={landingCalcScores.degreeId}
+          programs={cataloguePrograms}
+          calculatorInstitutions={calculatorInstitutions}
+          onBack={() => {
+            setStep('landing');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+        />
+      </AppSurface>
     );
   }
 
   if (step === 'auth') {
     return (
-      <AuthScreen
-        onBack={() => setStep(authReturnTo)}
-        onSuccess={() => {
-          setStep(authReturnTo);
-          window.scrollTo({ top: 0, behavior: 'smooth' });
-        }}
-      />
+      <AppSurface showLogo>
+        <AuthScreen
+          onBack={() => setStep(authReturnTo)}
+          onSuccess={() => {
+            setStep(authReturnTo);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+        />
+      </AppSurface>
     );
   }
 
   if (step === 'degree-picker') {
     return (
-      <>
+      <AppSurface>
         <BackButton />
         {syncError && (
           <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-xl px-4">
-            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 shadow-md">
+            <div className="rounded-2xl border border-white bg-white/84 px-4 py-3 text-sm font-semibold text-[#947329] shadow-[0_16px_42px_rgba(105,133,190,0.16)] backdrop-blur-xl">
               {syncError}
             </div>
           </div>
@@ -512,29 +545,29 @@ export default function Home() {
             onDone={() => setStep('bucket-list')}
           />
         ) : (
-          <div className="min-h-screen bg-[#f5f4f0] px-4 py-10 sm:px-6">
+          <div className="px-4 py-24 sm:px-6">
             {renderCatalogueState(
               'טוענים את קטלוג התארים',
               'רק לאחר שהקטלוג ייטען אפשר לבחור תארים להשוואה.',
             )}
           </div>
         )}
-      </>
+      </AppSurface>
     );
   }
 
   if (step === 'intro') {
     return (
-      <>
+      <AppSurface>
         <BackButton />
         <QuizIntro onStart={() => setStep('academic-profile')} />
-      </>
+      </AppSurface>
     );
   }
 
   if (step === 'academic-profile') {
     return (
-      <>
+      <AppSurface>
         <BackButton />
         <AcademicProfileForm
           initialScores={profile.academicScores}
@@ -556,31 +589,29 @@ export default function Home() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }}
         />
-      </>
+      </AppSurface>
     );
   }
 
   if (step === 'career-assessment') {
     return (
-      <>
+      <AppSurface>
         <BackButton />
         <CareerAssessment onComplete={handleAssessmentComplete} />
-      </>
+      </AppSurface>
     );
   }
 
   if (step === 'quick-filters') {
     return (
-      <>
+      <AppSurface>
         <BackButton />
         <OnboardingFunnel onComplete={handleFiltersComplete} />
-      </>
+      </AppSurface>
     );
   }
 
   /* ── Steps with persistent header ───────────────────────────────────────── */
-  const savedCount = profile.savedProgramIds?.length ?? 0;
-
   // Source-aware: only navigate to recommendations when the user has a
   // saved assessment profile (i.e. came through the questionnaire). Degree-picker users
   // have no assessmentProfile — route them back to degree-picker instead.
@@ -597,9 +628,27 @@ export default function Home() {
     catalogueStatus !== 'ready' &&
     (step === 'recommendations' || step === 'bucket-list' || step === 'calculator');
   const sekhemPrograms = cataloguePrograms.filter((program) => program.admissionType === 'sekhem');
+  const bucketSourceLabel =
+    bucketReturnsTo === 'degree-picker'
+      ? 'בחירת תארים'
+      : bucketReturnsTo === 'landing'
+        ? 'דף הבית'
+        : 'המלצות';
+  const bucketBackLabel =
+    bucketReturnsTo === 'degree-picker'
+      ? 'חזרה לבחירת תארים'
+      : bucketReturnsTo === 'landing'
+        ? 'חזרה לדף הבית'
+        : 'חזרה להמלצות';
+  const bucketEmptyCtaLabel =
+    bucketReturnsTo === 'degree-picker'
+      ? 'חזור לבחור תארים ←'
+      : bucketReturnsTo === 'landing'
+        ? 'חזרה לדף הבית ←'
+        : 'עבור להמלצות ←';
 
   return (
-    <>
+    <AppSurface>
       <BackButton />
       <NavBar
         step={step}
@@ -623,22 +672,22 @@ export default function Home() {
         onSignOut={() => {
           void signOut();
         }}
-        bucketSourceLabel={bucketReturnsTo === 'degree-picker' ? 'בחירת תארים' : 'המלצות'}
+        bucketSourceLabel={bucketSourceLabel}
         onGoToBucketSource={() => {
           setStep(bucketReturnsTo);
           setResults(null);
         }}
       />
 
-      <main className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-4 py-12 sm:px-6">
+      <main className="relative z-10 mx-auto flex w-full max-w-5xl flex-col gap-10 px-4 py-12 sm:px-6">
         {!hydrated || syncing ? (
-          <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+          <div className="rounded-2xl border border-white bg-white/78 px-4 py-3 text-sm font-semibold text-[#647091] shadow-sm backdrop-blur-xl">
             מסנכרנים את הפרופיל שלך...
           </div>
         ) : null}
 
         {syncError ? (
-          <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          <div className="rounded-2xl border border-white bg-white/84 px-4 py-3 text-sm font-semibold text-[#947329] shadow-sm backdrop-blur-xl">
             {syncError}
           </div>
         ) : null}
@@ -646,7 +695,7 @@ export default function Home() {
         {shouldBlockCatalogueStep
           ? renderCatalogueState(
               'טוענים את הקטלוג',
-              'הקטלוג נטען דרך ה-API לפני שאפשר להציג המלצות, מחשבון או רשימת ייעוד.',
+              'הקטלוג נטען דרך ה-API לפני שאפשר להציג המלצות, מחשבון או הרשימה שלי.',
             )
           : null}
 
@@ -669,6 +718,7 @@ export default function Home() {
           <BucketList
             programs={cataloguePrograms}
             calculatorInstitutions={calculatorInstitutions}
+            catalogueInstitutions={catalogueInstitutions}
             savedProgramIds={profile.savedProgramIds ?? []}
             academicScores={profile.academicScores}
             onRemove={handleRemoveFromBucket}
@@ -676,19 +726,28 @@ export default function Home() {
               setStep(bucketReturnsTo);
               setResults(null);
             }}
-            backLabel={bucketReturnsTo === 'degree-picker' ? 'חזרה לבחירת תארים' : 'חזרה להמלצות'}
-            emptyCtaLabel={
-              bucketReturnsTo === 'degree-picker' ? 'חזור לבחור תארים ←' : 'עבור להמלצות ←'
-            }
+            backLabel={bucketBackLabel}
+            emptyCtaLabel={bucketEmptyCtaLabel}
+            isAuthenticated={isAuthenticated}
+            onSignIn={() => {
+              setAuthReturnTo('bucket-list');
+              setStep('auth');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            onContinueAsGuest={() => {
+              setBucketReturnsTo('degree-picker');
+              setStep('degree-picker');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
           />
         )}
 
         {/* ── Step: Calculator ──────────────────────────────────── */}
         {!shouldBlockCatalogueStep && step === 'calculator' && (
           <>
-            <section className="rounded-2xl border border-[#e5e7eb] bg-white p-6 shadow-sm sm:p-8">
-              <h2 className="mb-1 text-lg font-semibold text-gray-800">הזן את הנתונים שלך</h2>
-              <p className="mb-6 text-sm text-gray-400">
+            <section className="rounded-[1.7rem] border border-white bg-white/78 p-6 shadow-[0_24px_80px_rgba(105,133,190,0.14)] backdrop-blur-xl sm:p-8">
+              <h2 className="mb-1 text-lg font-bold text-[#445274]">הזן את הנתונים שלך</h2>
+              <p className="mb-6 text-sm text-[#7c86a2]">
                 הממוצע בגרות כולל בונוסים (למשל מתמטיקה 5 יח׳ מוסיפה עד 35 נקודות).
               </p>
               {sekhemPrograms.length > 0 ? (
@@ -700,7 +759,7 @@ export default function Home() {
                   defaultBagrut={profile.academicScores?.bagrut?.weightedAverage}
                 />
               ) : (
-                <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                <div className="rounded-2xl border border-white bg-white/72 px-4 py-3 text-sm text-[#647091]">
                   אין כרגע תוכניות עם מחשבון קבלה זמין בקטלוג.
                 </div>
               )}
@@ -710,6 +769,6 @@ export default function Home() {
           </>
         )}
       </main>
-    </>
+    </AppSurface>
   );
 }
