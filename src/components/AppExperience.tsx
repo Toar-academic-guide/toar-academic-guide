@@ -36,8 +36,10 @@ import AcademicProfileForm from '@/components/AcademicProfileForm';
 import RecommendationResults from '@/components/RecommendationResults';
 import BucketList from '@/components/BucketList';
 import DegreePicker from '@/components/DegreePicker';
+import StudyLocationStep from '@/components/StudyLocationStep';
 import ScoreForm from '@/components/ScoreForm';
 import CalculatorResults from '@/components/CalculatorResults';
+import WayPageShell from '@/components/WayPageShell';
 import type { AcademicScores, RiasecAnswers } from '@/types';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 
@@ -54,6 +56,7 @@ export type AppStep =
   | 'calculator'
   | 'bucket-list'
   | 'degree-picker'
+  | 'study-location'
   | 'calculator-results';
 
 const APP_STEPS: AppStep[] = [
@@ -67,6 +70,7 @@ const APP_STEPS: AppStep[] = [
   'calculator',
   'bucket-list',
   'degree-picker',
+  'study-location',
   'calculator-results',
 ];
 const ENABLE_DEV_SHORTCUTS = process.env.NODE_ENV !== 'production';
@@ -147,9 +151,7 @@ export default function AppExperience({
 }: AppExperienceProps) {
   const router = useRouter();
   const { loading: authLoading, signOut, user } = useAuth();
-  const [initialStep] = useState<AppStep>(() =>
-    enableDevShortcuts ? getDevStep(routeInitialStep) : routeInitialStep,
-  );
+  const [initialStep] = useState<AppStep>(routeInitialStep);
   const seedDevRecommendations = enableDevShortcuts && initialStep === 'recommendations';
   const [catalogueStatus, setCatalogueStatus] = useState<CatalogueStatus>('loading');
   const [catalogueError, setCatalogueError] = useState<CatalogueApiError | null>(null);
@@ -233,6 +235,17 @@ export default function AppExperience({
     bagrut: number;
     degreeId: string;
   } | null>(null);
+
+  useEffect(() => {
+    if (!enableDevShortcuts) {
+      return;
+    }
+
+    const devStep = getDevStep(routeInitialStep);
+    if (devStep !== routeInitialStep) {
+      setStep(devStep);
+    }
+  }, [enableDevShortcuts, routeInitialStep]);
 
   function navigateToStep(nextStep: AppStep, path = DURABLE_STEP_ROUTES[nextStep]) {
     setStep(nextStep);
@@ -350,6 +363,21 @@ export default function AppExperience({
     void toggleSavedProgram(programId);
   }
 
+  function handleToggleProgramGroup(programIds: string[]) {
+    const currentIds = profile.savedProgramIds ?? [];
+    const currentSet = new Set(currentIds);
+    const allSaved = programIds.every((programId) => currentSet.has(programId));
+    const nextSavedProgramIds = allSaved
+      ? currentIds.filter((programId) => !programIds.includes(programId))
+      : Array.from(new Set([...currentIds, ...programIds]));
+
+    posthog.capture(allSaved ? 'degree_group_removed_from_bucket' : 'degree_group_saved', {
+      program_count: programIds.length,
+    });
+
+    void updateProfile({ savedProgramIds: nextSavedProgramIds });
+  }
+
   function handleRemoveFromBucket(programId: string) {
     posthog.capture('program_removed_from_bucket', { program_id: programId });
     void removeSavedProgram(programId);
@@ -378,6 +406,7 @@ export default function AppExperience({
     calculator: 'recommendations',
     'bucket-list': bucketReturnsTo,
     'degree-picker': 'landing',
+    'study-location': 'degree-picker',
     'calculator-results': 'landing',
   };
 
@@ -456,6 +485,8 @@ export default function AppExperience({
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
+  const savedCount = profile.savedProgramIds?.length ?? 0;
+
   /* ── Full-screen steps (no header) ───────────────────────────────────────── */
   if (step === 'landing') {
     return (
@@ -463,7 +494,7 @@ export default function AppExperience({
         onAlreadyKnow={() => {
           posthog.capture('landing_cta_clicked', { cta: 'already_know' });
           setBucketReturnsTo('degree-picker');
-          setStep('degree-picker');
+          navigateToStep('degree-picker');
         }}
         onNeedHelp={() => {
           posthog.capture('landing_cta_clicked', { cta: 'need_help' });
@@ -472,6 +503,10 @@ export default function AppExperience({
         }}
         onSignIn={() => {
           router.push(ROUTES.login);
+        }}
+        onGoToBucket={() => {
+          setBucketReturnsTo('landing');
+          navigateToStep('bucket-list');
         }}
         onCalculate={(psychometric, bagrut, degreeId) => {
           posthog.capture('landing_calculator_submitted', {
@@ -487,6 +522,8 @@ export default function AppExperience({
         programs={cataloguePrograms}
         authLoading={authLoading}
         isAuthenticated={isAuthenticated}
+        savedCount={savedCount}
+        userInitials={user?.email ? getUserInitials(user.email) : undefined}
         userEmail={user?.email ?? undefined}
         onSignOut={() => {
           void signOut();
@@ -537,14 +574,54 @@ export default function AppExperience({
           <DegreePicker
             programs={cataloguePrograms}
             savedProgramIds={profile.savedProgramIds ?? []}
-            onToggleSave={handleToggleSave}
-            onDone={() => navigateToStep('bucket-list')}
+            onToggleProgramGroup={handleToggleProgramGroup}
+            onDone={() => navigateToStep('study-location')}
           />
         ) : (
           <div className="min-h-screen bg-[#f5f4f0] px-4 py-10 sm:px-6">
             {renderCatalogueState(
               'טוענים את קטלוג התארים',
               'רק לאחר שהקטלוג ייטען אפשר לבחור תארים להשוואה.',
+            )}
+          </div>
+        )}
+      </>
+    );
+  }
+
+  if (step === 'study-location') {
+    return (
+      <>
+        {syncError && (
+          <div className="fixed top-20 left-1/2 z-50 w-full max-w-xl -translate-x-1/2 px-4">
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 shadow-md">
+              {syncError}
+            </div>
+          </div>
+        )}
+        {catalogueStatus === 'ready' ? (
+          <WayPageShell>
+            <StudyLocationStep
+              programs={cataloguePrograms}
+              savedProgramIds={profile.savedProgramIds ?? []}
+              catalogueInstitutions={catalogueInstitutions}
+              onBack={() => navigateToStep('degree-picker')}
+              onDone={(selection) => {
+                posthog.capture('study_location_selected', {
+                  all_regions: selection.allRegions,
+                  region_count: selection.allRegions ? 'all' : selection.regionIds.length,
+                  regions: selection.regionIds,
+                });
+                setBucketReturnsTo('study-location');
+                navigateToStep('bucket-list');
+              }}
+            />
+          </WayPageShell>
+        ) : (
+          <div className="min-h-screen bg-[#f5f4f0] px-4 py-10 sm:px-6">
+            {renderCatalogueState(
+              'טוענים את אזורי הלימוד',
+              'רק לאחר שהקטלוג ייטען אפשר להציג את מפת האפשרויות לפי התארים שבחרת.',
             )}
           </div>
         )}
@@ -633,8 +710,6 @@ export default function AppExperience({
   }
 
   /* ── Steps with persistent header ───────────────────────────────────────── */
-  const savedCount = profile.savedProgramIds?.length ?? 0;
-
   // Source-aware: only navigate to recommendations when the user has a
   // saved assessment profile (i.e. came through the questionnaire). Degree-picker users
   // have no assessmentProfile — route them back to degree-picker instead.
@@ -653,7 +728,7 @@ export default function AppExperience({
   const sekhemPrograms = cataloguePrograms.filter((program) => program.admissionType === 'sekhem');
 
   return (
-    <>
+    <WayPageShell>
       <BackButton />
       <NavBar
         step={step}
@@ -739,6 +814,7 @@ export default function AppExperience({
           <BucketList
             programs={cataloguePrograms}
             calculatorInstitutions={calculatorInstitutions}
+            catalogueInstitutions={catalogueInstitutions}
             savedProgramIds={profile.savedProgramIds ?? []}
             academicScores={profile.academicScores}
             onRemove={handleRemoveFromBucket}
@@ -750,6 +826,14 @@ export default function AppExperience({
             emptyCtaLabel={
               bucketReturnsTo === 'degree-picker' ? 'חזור לבחור תארים ←' : 'עבור להמלצות ←'
             }
+            isAuthenticated={isAuthenticated}
+            onSignIn={() => {
+              router.push(`${ROUTES.login}?next=${encodeURIComponent(ROUTES.savedPrograms)}`);
+            }}
+            onContinueAsGuest={() => {
+              setBucketReturnsTo('degree-picker');
+              navigateToStep('degree-picker');
+            }}
           />
         )}
 
@@ -790,6 +874,6 @@ export default function AppExperience({
           </>
         )}
       </main>
-    </>
+    </WayPageShell>
   );
 }
