@@ -44,6 +44,17 @@ export type InstitutionId =
   | 'elevation'
   | 'itc'
   | 'johnbryce'
+  | 'bdo_academy'
+  | 'orin_shpalter'
+  | 'tcb'
+  | 'atid'
+  | 'aliya'
+  | 'tiltan'
+  | 'lfa'
+  | 'idan_hahorut'
+  | 'mediteva'
+  | 'high_q'
+  | 'kidum'
   // ── Music academies ───────────────────────────────────────────────────────
   | 'jerusalem_academy'
   | 'rubin'
@@ -421,6 +432,83 @@ export const INSTITUTIONS: InstitutionRecord[] = [
     domain: 'johnbryce.co.il',
     region: 'center',
   },
+  {
+    id: 'bdo_academy',
+    name: 'BDO Academy',
+    domain: 'bdo-academy.co.il',
+    region: 'center',
+    programUrl: 'https://www.bdo-academy.co.il',
+  },
+  {
+    id: 'orin_shpalter',
+    name: 'אורין-שפלטר השכלה פיננסית',
+    domain: 'orin-shpalter.co.il',
+    region: 'center',
+    programUrl: 'https://www.orin-shpalter.co.il',
+  },
+  {
+    id: 'tcb',
+    name: 'המכללה הטכנולוגית באר שבע',
+    domain: 'tcb.ac.il',
+    region: 'south',
+    programUrl: 'https://www.tcb.ac.il',
+  },
+  {
+    id: 'atid',
+    name: 'עתיד - רשת מכללות טכנולוגיות',
+    domain: 'atid.org.il',
+    region: 'center',
+    programUrl: 'https://www.atid.org.il',
+  },
+  {
+    id: 'aliya',
+    name: 'מכון עליה',
+    domain: 'aliya.org.il',
+    region: 'south',
+    programUrl: 'https://www.aliya.org.il',
+  },
+  {
+    id: 'tiltan',
+    name: 'מכללת תילתן',
+    domain: 'tiltan.co.il',
+    region: 'north',
+    programUrl: 'https://www.tiltan.co.il',
+  },
+  {
+    id: 'lfa',
+    name: 'אקדמיית LFA',
+    domain: 'lfa.co.il',
+    region: 'center',
+    programUrl: 'https://www.lfa.co.il',
+  },
+  {
+    id: 'idan_hahorut',
+    name: 'מכללת עידן ההורות',
+    domain: 'idan-hahorut.co.il',
+    region: 'center',
+    programUrl: 'https://www.idan-hahorut.co.il',
+  },
+  {
+    id: 'mediteva',
+    name: 'מכללת מדיטבע',
+    domain: 'mediteva.co.il',
+    region: 'center',
+    programUrl: 'https://www.mediteva.co.il',
+  },
+  {
+    id: 'high_q',
+    name: 'HIGH Q',
+    domain: 'high-q.co.il',
+    region: 'center',
+    programUrl: 'https://www.high-q.co.il',
+  },
+  {
+    id: 'kidum',
+    name: 'קידום',
+    domain: 'kidum.com',
+    region: 'center',
+    programUrl: 'https://www.kidum.com',
+  },
 
   // ══════════════════════════════════════════════════════════════════════════
   // Open / distance university & upgraded colleges
@@ -723,6 +811,162 @@ export const INSTITUTIONS: InstitutionRecord[] = [
     region: 'center',
   },
 ];
+
+import { mondayAdmissionEvidenceRecords } from './admissions/mondayEvidence.generated';
+import resolvedUrlsFinal from './admissions/resolvedUrlsFinal.json';
+
+const OFFICIAL_URL_OVERRIDES: Array<{ keywords: RegExp[]; url: string }> = [
+  { keywords: [/שערי.*משפט/], url: 'https://www.mishpat.ac.il' },
+  { keywords: [/למשפט.*לעסקים/], url: 'https://clb.ac.il' },
+  { keywords: [/רמת גן/], url: 'https://www.iac.ac.il' },
+  { keywords: [/שכטר/], url: 'https://schechter.ac.il' },
+  { keywords: [/הרצוג/], url: 'https://www.herzog.ac.il' },
+  { keywords: [/אורנים/], url: 'https://www.oranim.ac.il' },
+  { keywords: [/אחוה/], url: 'https://www.achva.ac.il' },
+  { keywords: [/צפת/], url: 'https://www.zefat.ac.il' },
+  { keywords: [/בית ברל/], url: 'https://www.beitberl.ac.il' },
+  { keywords: [/פרס/], url: 'https://www.pac.ac.il' },
+  { keywords: [/דוד ילין/], url: 'https://www.dyellin.ac.il' },
+  { keywords: [/נוף הגליל/], url: 'https://www.technological-n-g.org.il' },
+  { keywords: [/נתניה/], url: 'https://www.netanya.ac.il' },
+  { keywords: [/לוינסקי|וינגייט/], url: 'https://www.levinsky.ac.il' },
+  { keywords: [/סמינר הקיבוצים/], url: 'https://www.smkb.ac.il' },
+  { keywords: [/באר שבע.*הנדסאים/], url: 'http://www.tcb.ac.il' },
+  { keywords: [/קודינג אקדמי|coding academy/i], url: 'https://www.coding-academy.org' },
+  { keywords: [/רוית אסף/], url: 'https://www.ravit-asaf.co.il' },
+  { keywords: [/עדה לזורגן/], url: 'https://www.adahlazorgan.co.il' },
+  { keywords: [/עתיד.*מכללות/], url: 'https://www.atid.org.il' },
+  { keywords: [/אורט/], url: 'https://www.ort.org.il' },
+  { keywords: [/דיפלומה/], url: 'https://www.openu.ac.il/diploma' },
+  { keywords: [/חשיפה/], url: 'https://www.openu.ac.il/hasifa' },
+  { keywords: [/מירב/], url: 'https://www.openu.ac.il/meirav' },
+  { keywords: [/ג'ון ברייס|john bryce/i], url: 'https://www.johnbryce.co.il' },
+  { keywords: [/האקר יו|hackeru/i], url: 'https://www.hackeru.co.il' },
+  { keywords: [/BDO.*פיננסים/], url: 'https://www.bdoacademy.co.il' },
+  { keywords: [/אתגר/], url: 'https://www.etgar.co.il' },
+  { keywords: [/ענת ברזילי/], url: 'https://www.anat-barzilai.co.il' },
+  { keywords: [/סטודיו 6B|6B/i], url: 'https://www.6b.co.il' },
+  { keywords: [/sv college/i], url: 'https://www.svcollege.co.il' },
+  { keywords: [/עסקית.*לשכת המסחר/], url: 'https://www.chamber.org.il' },
+  { keywords: [/אילן גזית/], url: 'https://www.ilangazit.co.il' },
+  { keywords: [/מדיטבע/], url: 'https://www.mediteva.co.il' },
+  { keywords: [/LFA/i], url: 'https://www.lfa.co.il' },
+  { keywords: [/עידן ההורות/], url: 'https://www.idan-hahorut.co.il' },
+  { keywords: [/מיכל דליות/], url: 'https://www.michaldalyot.co.il' },
+  { keywords: [/אילוף.*בן/], url: 'https://www.dog-school.co.il' },
+  { keywords: [/LAGO ACADEMY/i], url: 'https://www.lago-academy.co.il' },
+  { keywords: [/Boutique Tattoo/i], url: 'https://www.boutiquetattoo.co.il' },
+  { keywords: [/סאבטקסט/], url: 'https://www.subtext.co.il' },
+  { keywords: [/precise|תדמיתנות/i], url: 'https://www.precise-school.co.il' },
+  { keywords: [/F\.D/i], url: 'https://www.fd-college.co.il' },
+  { keywords: [/HIGH Q|היי קיו/i], url: 'https://www.high-q.co.il' },
+  { keywords: [/קידום.*בגרויות/], url: 'https://www.kidum.com' },
+  { keywords: [/רז אתגרים/], url: 'https://www.raz-challenges.co.il' },
+  { keywords: [/תיכון תל אביב/], url: 'https://www.tichon-telaviv.co.il' },
+  { keywords: [/ענבל שוקי/], url: 'https://www.inbalshuki.co.il' },
+  { keywords: [/מכללת גל/], url: 'https://www.galcollege.org.il' },
+  { keywords: [/גישות/], url: 'https://www.gishot.co.il' },
+  { keywords: [/פסגות/], url: 'https://www.psagot.ac' },
+  { keywords: [/תנופה/], url: 'https://www.tnufa.co.il' },
+  { keywords: [/יהלומים IGL/], url: 'https://www.igl-labs.com' },
+  { keywords: [/HASTUDIO/i], url: 'https://www.hastudio.co.il' },
+  { keywords: [/י\.נ\.ר/], url: 'https://www.ynr.co.il' },
+  { keywords: [/אמנות הלידה/], url: 'https://www.birthart.co.il' },
+  { keywords: [/New School/i], url: 'https://www.newschool.co.il' },
+  { keywords: [/רדיוס/], url: 'https://www.radius-college.co.il' },
+  { keywords: [/מכללת השרון/], url: 'https://www.hasharon-college.co.il' },
+  { keywords: [/ענת פלדמן/], url: 'https://www.anatfeldman.com' },
+  { keywords: [/עדי קאופמן/], url: 'https://www.adikaufman.co.il' },
+  { keywords: [/NLP PRO/i], url: 'https://www.nlppro.co.il' },
+  { keywords: [/ICCM/i], url: 'https://www.iccm.co.il' },
+  { keywords: [/בגרות ערב/], url: 'https://www.bagrut.co.il' },
+  { keywords: [/מדיסין/], url: 'https://www.medicine-college.co.il' },
+  { keywords: [/קמרה אובסקורה/], url: 'https://www.camera.org.il' },
+  { keywords: [/ירין שחף/], url: 'https://www.yarin-shahaf.co.il' },
+  { keywords: [/נטאשה דנונה/], url: 'https://www.natashadanona.co.il' },
+  { keywords: [/זמן אמיתי/], url: 'https://www.zmanamiti.co.il' },
+  { keywords: [/האקדמיה של Circle A/i], url: 'https://www.circlea.co.il' },
+  { keywords: [/The Academy Slim Skin/i], url: 'https://www.slimskin.co.il' },
+  { keywords: [/ג'אסט מיוזיק/], url: 'https://www.justmusic.co.il' },
+  { keywords: [/גישור ודיאלוג/], url: 'https://www.dialogue-center.co.il' },
+  { keywords: [/נועם קלאס/], url: 'https://www.noam-class.co.il' },
+  { keywords: [/בית הספר לסביבה וקיימות/], url: 'https://www.environment.org.il' },
+  { keywords: [/הבצפר/], url: 'https://www.habetzefer.co.il' },
+  { keywords: [/רותי שפייזר/], url: 'https://www.rutispeiser.co.il' },
+  { keywords: [/אורלי לומברוזו/], url: 'https://www.orlylombrozo.co.il' },
+  { keywords: [/קולינארי גלילי/], url: 'https://www.galileeculinary.co.il' },
+  { keywords: [/שוקולד קארד/], url: 'https://www.chocolate-card.co.il' },
+  { keywords: [/מכללת מישלב/], url: 'https://www.mishlav.co.il' },
+];
+
+export function resolveUrl(name: string, urls: readonly string[]): string | undefined {
+  for (const entry of OFFICIAL_URL_OVERRIDES) {
+    if (entry.keywords.some((kw) => kw.test(name))) {
+      return entry.url;
+    }
+  }
+
+  const cleanedName = name.replace(/\\/g, '');
+  const compiledUrl =
+    (resolvedUrlsFinal as Record<string, string | null>)[name] ||
+    (resolvedUrlsFinal as Record<string, string | null>)[cleanedName];
+  if (compiledUrl) {
+    return compiledUrl;
+  }
+
+  const firstUrl = urls[0];
+  if (firstUrl && !firstUrl.includes('yoram.walla.co.il')) {
+    return firstUrl;
+  }
+  return undefined;
+}
+
+const existingIds = new Set(INSTITUTIONS.map((inst) => inst.id));
+const existingNames = new Set(INSTITUTIONS.map((inst) => inst.name));
+
+for (const record of mondayAdmissionEvidenceRecords) {
+  if (
+    record.catalogueInstitutionId &&
+    existingIds.has(record.catalogueInstitutionId as InstitutionId)
+  ) {
+    continue;
+  }
+  if (existingNames.has(record.displayName)) {
+    continue;
+  }
+
+  const instId = (record.catalogueInstitutionId || `mon_${record.itemId}`) as InstitutionId;
+  if (existingIds.has(instId)) {
+    continue;
+  }
+
+  const programUrl = resolveUrl(record.displayName, record.officialUrls);
+  let domain: string | undefined = undefined;
+  if (programUrl) {
+    try {
+      domain = new URL(programUrl).hostname;
+    } catch {
+      // malformed URL — domain stays undefined
+    }
+  }
+
+  INSTITUTIONS.push({
+    id: instId,
+    name: record.displayName,
+    region: 'center',
+    domain,
+    programUrl,
+  });
+  existingIds.add(instId);
+  existingNames.add(record.displayName);
+}
+
+// Ensure every institution has a programUrl
+for (const inst of INSTITUTIONS) {
+  if (!inst.programUrl && inst.domain) {
+    inst.programUrl = inst.domain.startsWith('http') ? inst.domain : `https://www.${inst.domain}`;
+  }
+}
 
 // ── Lookup tables ─────────────────────────────────────────────────────────────
 

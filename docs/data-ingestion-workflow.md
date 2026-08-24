@@ -21,6 +21,7 @@ This document defines the intended scrape-to-publish workflow for Toar catalogue
 4. Normalize scraped output into review candidates.
    Transform raw payloads into proposed catalogue changes such as admission requirements, threshold values, calculator links, or program notes.
    Each proposed change should become one `review_items` row tied back to the source payload.
+   For admissions decisions, normalize into source candidates, concise admissions facts, and alternative paths. Do not publish broad page paragraphs as decision evidence.
 
 5. Hand off to human review.
    Reviewers decide whether each proposed change is approved, rejected, or left pending.
@@ -28,7 +29,7 @@ This document defines the intended scrape-to-publish workflow for Toar catalogue
 
 6. Publish approved changes into canonical tables.
    Approved review items update the canonical catalogue tables:
-   `institutions`, `programs`, `program_institutions`, `admission_requirements`, `admission_thresholds`, `source_urls`, and `requirement_versions`.
+   `institutions`, `programs`, `program_institutions`, `admission_requirements`, `admission_thresholds`, `source_urls`, `admissions_source_candidates`, `admission_facts`, `admission_alternative_paths`, and `requirement_versions`.
    Publication should preserve traceability back to the reviewed source where possible.
 
 7. Verify freshness and runtime readiness.
@@ -48,6 +49,19 @@ This document defines the intended scrape-to-publish workflow for Toar catalogue
 - Scrapers may not publish directly to canonical catalogue rows.
 - Human review is the boundary between machine-collected data and user-facing catalogue data.
 - Rejected review items should remain traceable so repeated scraper runs can be compared against prior review decisions.
+- Generated per-institution scripts are useful only when they emit reviewed structured facts. Long copied text, marketing descriptions, or unrelated page snippets should stay in raw payloads or review notes.
+
+## Admissions Fact Extraction Rules
+
+For non-calculator institutions, extract only values that can affect a user-facing decision:
+
+- numeric gates: sekhem, psychometric, bagrut average, section scores, math/English units
+- manual gates: interview, test, committee, portfolio, document check
+- explicit absence: no psychometric requirement, open admission, no bagrut minimum
+- unknowns: facts that the source does not establish reliably
+- alternatives: prep program, transfer path, prior-study admission, exceptions committee, special-population path, similar program, lower-threshold institution, manual check
+
+Every fact should keep source provenance. URLs from Monday columns and item updates are valid source candidates for the first slice, but the origin must remain visible for confidence and review.
 
 ## Publication Notes
 
@@ -65,3 +79,60 @@ For the first scraping implementations, keep the workflow narrow:
 - one publish pass that only applies approved review items
 
 That keeps the first version inspectable before adding bulk automation or admin tooling.
+
+## Admissions Source Freshness
+
+Admissions source freshness is the weekly machine check for official admissions sources. It records whether known institution sources are fresh, changed, failed, stale, blocked, or never checked without publishing machine output directly into canonical catalogue tables.
+
+The scheduled workflow is `.github/workflows/admissions-freshness.yml`.
+
+- Schedule: Sunday at `03:00 UTC`, which lands on Sunday morning in Israel.
+- Manual run: GitHub Actions `Admissions Source Freshness` workflow dispatch.
+- Default target set: Haifa and TAU exact live adapters plus the capability matrix for static-candidate, score-only, browser-blocked, and open-admission targets.
+- Optional manual target: pass a source target id such as `haifa-cs-live`.
+- Dry run: pass `--dry-run` or use the workflow input to execute source checks without persistence.
+
+Local manual command:
+
+```bash
+npm run admissions:freshness -- --dry-run
+npm run admissions:freshness -- --target tau-digital-sciences-live
+```
+
+## Failure Boundary
+
+The workflow distinguishes job-level setup failure from source-level freshness outcomes.
+
+- Missing `DATABASE_URL` for a persisted run is a job-level configuration error and fails before source checks begin.
+- Official source fetch, parse, blocked, or changed outcomes are source-level results. They are persisted and the batch continues.
+- Browser-required sources are recorded as `blocked`; they should move to a separate browser automation lane rather than failing the GitHub Action lane.
+
+## Review Boundary
+
+Machine checks do not overwrite canonical admissions data.
+
+- Changed decision-capable normalized fingerprints create an ingestion payload and a pending review item.
+- Existing published catalogue rows remain active while review is pending.
+- Duplicate pending review work is suppressed when the same unresolved source fingerprint is seen again.
+- Score-only changes are tracked as source freshness evidence but do not create acceptance/rejection review work by themselves.
+
+The first operator review workflow lives at `/internal/reviews/[reviewItemId]`.
+It is reachable from the read-only `/internal/data-health` review queue and uses the same internal admin allowlist.
+
+Current publication support is intentionally narrow:
+
+- `sourceFreshness` review items can be approved. Approval resolves the pending source freshness state only when the current `source_freshness_states.latest_review_item_id` still matches the review item.
+- `sourceFreshness` review items can be rejected. Rejection records the review decision without publishing canonical catalogue changes.
+- Other `target_field` values remain inspectable and rejectable, but approval returns an unsupported-target result until their canonical publish translators are explicitly implemented.
+
+This means approving a source-freshness review item is not the same as publishing admissions requirements or thresholds. It only records that the latest machine freshness evidence has been reviewed and no longer needs dashboard attention.
+
+## Adding More Institutions
+
+Adding another institution should follow the same path:
+
+1. Add a target to `src/server/ingestion/admissionsSourceRegistry.ts` with capability, source class, limitation, and next action.
+2. Add an exact adapter only when the official source can reproduce decision-bearing fields, not just a score.
+3. Add fixture-backed tests for the adapter and registry behavior.
+4. Let the scheduled runner persist current state and history through `source_freshness_states` and `source_freshness_checks`.
+5. Use the dashboard to monitor blocked or stale sources before expanding public decision logic.

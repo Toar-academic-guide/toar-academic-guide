@@ -11,6 +11,17 @@ npm run dev
 
 The test suite covers the current recommendation, bucket-list, and admission-calculation behavior before the catalogue moves behind the backend boundary.
 
+## URL model
+
+The app uses durable URLs for places that can be reopened, refreshed, or shared:
+
+- Public discovery pages: `/programs/[programId]` and `/institutions/[institutionId]`
+- Auth pages: `/login` and `/signup`, with safe local return destinations via `?next=/app/...`
+- Personal app areas: `/app/profile`, `/app/assessment`, `/app/recommendations`, `/app/calculator`, and `/app/saved-programs`
+- Internal operator tools remain under `/internal/*` and outside public navigation
+
+Unsaved transient state is intentionally not encoded in permanent URLs. In-progress assessment answers, one-off recommendation runs, calculator result snapshots, and account-owned saved-program data should not become shareable links until the app has explicit persistence and privacy rules for those resources.
+
 ## Environment
 
 ```bash
@@ -24,6 +35,7 @@ Connection posture depends on where the code runs:
 - Local development uses a direct Postgres URL by default. The checked-in examples point at `localhost:5432`, and local Drizzle workflows are long-lived enough that they do not need a server-side pooler.
 - The Vercel app runtime should use a Supabase transaction-pooling connection string rather than a direct database host. The catalogue routes are `force-dynamic`, the authenticated user routes run per request, and the app uses `postgres(..., { max: 1, prepare: false })`, which is compatible with transaction pooling for transient serverless traffic.
 - The GitHub Actions `test-build-and-dry-run` job does not need a database at all. The optional `db-seed-verify` job is the only CI path that reads `DATABASE_URL`; treat that secret as an operational verification connection, not as app-runtime traffic.
+- The scheduled admissions source freshness workflow also reads `DATABASE_URL` because it writes operational freshness state and review evidence. Missing credentials fail that workflow before live checks begin.
 
 `prepare: false` is deliberate. Supabase documents transaction-mode poolers as the right fit for serverless or edge traffic and notes that transaction mode does not support prepared statements, while `postgres.js` documents `prepare: false` as the compatibility switch for transaction-pooled connections. The app keeps `max: 1` because the shared singleton client only needs a minimal app-side pool on top of a server-side pooler for request-scoped runtime traffic.
 
@@ -39,6 +51,13 @@ Production should be configured with `CATALOGUE_SOURCE_MODE=database`. Preview c
 
 `NEXT_PUBLIC_APP_URL` should point at the deployed app origin used in Supabase email confirmations and browser-side OAuth callback redirects. In local development, the auth flows fall back to the current browser origin if this env var is absent.
 
+GitHub Actions can also post Slack notifications when a pull request first becomes ready to merge. That automation uses GitHub repository configuration only:
+
+- Secret: `SLACK_BOT_TOKEN`
+- Variable: `SLACK_READY_PR_CHANNEL_ID`
+
+Optional overrides such as `READY_PR_REQUIRED_WORKFLOWS` are documented in [docs/ready-pr-slack-notifications.md](docs/ready-pr-slack-notifications.md).
+
 Supabase Auth also needs the app callback URLs allow-listed under redirect URL configuration:
 
 - `http://localhost:3000/auth/callback` for local Google OAuth verification
@@ -46,7 +65,16 @@ Supabase Auth also needs the app callback URLs allow-listed under redirect URL c
 
 Keep this distinct from the hosted Supabase callback URI that is configured in Google Cloud. Google redirects back to Supabase first, and Supabase then redirects into the app callback route.
 
-`/internal/data-health` is an internal, read-only operator dashboard. It requires Supabase sign-in plus `INTERNAL_ADMIN_EMAILS`, and it reads private operational tables through `OPS_DATABASE_URL` instead of the normal app `DATABASE_URL`. Use a dedicated read-only operational role such as `ops_readonly`; do not use the Supabase `postgres` role for this dashboard in production. See [docs/internal-data-health-dashboard.md](docs/internal-data-health-dashboard.md).
+`/internal/data-health` is an internal, read-only operator dashboard. It requires Supabase sign-in plus `INTERNAL_ADMIN_EMAILS`, and it reads private operational tables through `OPS_DATABASE_URL` instead of the normal app `DATABASE_URL`. Use a dedicated read-only operational role such as `ops_readonly`; do not use the Supabase `postgres` role for this dashboard in production. The dashboard links pending review work to `/internal/reviews/[reviewItemId]`, where allowlisted admins can inspect bounded evidence and approve or reject supported review items. See [docs/internal-data-health-dashboard.md](docs/internal-data-health-dashboard.md).
+
+Admissions source freshness can be run manually with:
+
+```bash
+npm run admissions:freshness -- --dry-run
+npm run admissions:freshness -- --target haifa-cs-live
+```
+
+The scheduled GitHub Action runs on Sunday morning Israel time and records freshness evidence without publishing changed machine output directly into canonical catalogue tables. See [docs/data-ingestion-workflow.md](docs/data-ingestion-workflow.md).
 
 ## Database workflow
 
@@ -84,13 +112,14 @@ The current Next.js runtime still uses a direct `postgres.js` connection for ser
 - DB code lives under `src/db/`
 - server catalogue queries and serializers live under `src/server/catalogue/`
 - internal data-health reporting lives under `src/server/data-health/` and `src/app/internal/data-health/`
+- internal review decisions live under `src/app/internal/reviews/` and publish through `src/server/ingestion/reviewResolution.ts`
 - read-only catalogue routes live under `src/app/api/catalog/`
 - client access is isolated behind `src/lib/catalogueClient.ts`
 - catalogue responses include lightweight timing, size, and item-count measurement in `meta`
 - database-backed catalogue snapshot loads use a short per-instance TTL cache to avoid rebuilding the same multi-table snapshot on every request
 - the snapshot cache is best-effort and server-instance-local; it is not a distributed freshness guarantee
 
-See [docs/backend-data-model.md](/Users/amitmalichi/Desktop/toar-academic-guide/docs/backend-data-model.md:1) for the schema shape and review-flow model.
+See [docs/backend-data-model.md](docs/backend-data-model.md) for the schema shape and review-flow model.
 
 ## Notes
 

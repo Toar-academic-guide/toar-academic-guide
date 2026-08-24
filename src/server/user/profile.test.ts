@@ -57,6 +57,58 @@ describe('user profile serializers', () => {
     });
   });
 
+  it('serializes a structured Bagrut version separately from legacy average-only data', () => {
+    const snapshot = serializeUserProfileSnapshot(
+      {
+        userId: '00000000-0000-0000-0000-000000000001',
+        firstName: null,
+        lastName: null,
+        geographicPreference: 'any',
+        psychometricOverall: null,
+        psychometricQuantitative: null,
+        psychometricVerbal: null,
+        psychometricEnglish: null,
+        bagrutWeightedAverage: 106,
+        riasecR: null,
+        riasecI: null,
+        riasecA: null,
+        riasecS: null,
+        riasecE: null,
+        riasecC: null,
+        avoidanceTags: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      [],
+      [],
+      {
+        id: '00000000-0000-0000-0000-000000000010',
+        userId: '00000000-0000-0000-0000-000000000001',
+        schemaVersion: 1,
+        contentHash: 'sha256:profile-hash',
+        sector: 'jewish',
+        subjects: [
+          { subjectId: 'history', units: 2, grade: 88 },
+          { subjectId: 'mathematics', units: 5, grade: 92 },
+        ],
+        createdAt: new Date(),
+      },
+    );
+
+    expect(snapshot.academicScores?.bagrut).toEqual({
+      weightedAverage: 106,
+      subjectRecord: {
+        schemaVersion: 1,
+        profileHash: 'sha256:profile-hash',
+        sector: 'jewish',
+        subjects: [
+          { subjectId: 'history', units: 2, grade: 88 },
+          { subjectId: 'mathematics', units: 5, grade: 92 },
+        ],
+      },
+    });
+  });
+
   it('builds a DB row with nulls for missing score fields', () => {
     const row = buildUserProfileRow('00000000-0000-0000-0000-000000000002', {
       firstName: 'Dana',
@@ -211,6 +263,75 @@ describe('user profile serializers', () => {
 });
 
 describe('getUserProfileSnapshot', () => {
+  it('loads the immutable structured Bagrut version referenced by the profile', async () => {
+    const mockSelect = vi.fn();
+    hoistedMocks.getDb.mockReturnValue({ select: mockSelect });
+
+    const profileRow = {
+      userId: 'user-structured',
+      firstName: null,
+      lastName: null,
+      geographicPreference: 'any',
+      psychometricOverall: null,
+      psychometricQuantitative: null,
+      psychometricVerbal: null,
+      psychometricEnglish: null,
+      bagrutWeightedAverage: 106,
+      bagrutProfileVersionId: '00000000-0000-0000-0000-000000000010',
+      riasecR: null,
+      riasecI: null,
+      riasecA: null,
+      riasecS: null,
+      riasecE: null,
+      riasecC: null,
+      avoidanceTags: [],
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+
+    const versionRow = {
+      id: '00000000-0000-0000-0000-000000000010',
+      userId: 'user-structured',
+      schemaVersion: 1,
+      contentHash: 'sha256:profile-hash',
+      sector: 'jewish',
+      subjects: [{ subjectId: 'mathematics', units: 5, grade: 92 }],
+      createdAt: new Date(),
+    };
+
+    mockSelect
+      .mockReturnValueOnce({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([profileRow]) }),
+        }),
+      })
+      .mockReturnValueOnce({
+        from: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([]) }),
+      })
+      .mockReturnValueOnce({
+        from: vi.fn().mockReturnValue({ where: vi.fn().mockResolvedValue([]) }),
+      })
+      .mockReturnValueOnce({
+        from: vi.fn().mockReturnValue({
+          where: vi.fn().mockReturnValue({ limit: vi.fn().mockResolvedValue([versionRow]) }),
+        }),
+      });
+
+    await expect(getUserProfileSnapshot('user-structured')).resolves.toMatchObject({
+      academicScores: {
+        bagrut: {
+          weightedAverage: 106,
+          subjectRecord: {
+            schemaVersion: 1,
+            profileHash: 'sha256:profile-hash',
+            sector: 'jewish',
+            subjects: [{ subjectId: 'mathematics', units: 5, grade: 92 }],
+          },
+        },
+      },
+    });
+  });
+
   it('correctly queries database for user profile, saved programs, and uploaded documents', async () => {
     const mockSelect = vi.fn();
     const mockDb = { select: mockSelect };

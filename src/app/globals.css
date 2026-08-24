@@ -180,3 +180,8 @@ textarea {
 .way-app .shadow-sm {
   box-shadow: 0 14px 40px rgba(105, 133, 190, 0.1);
 }
+
+button:not(:disabled),
+[role='button']:not([aria-disabled='true']) {
+  cursor: pointer;
+}

@@ -1,9 +1,38 @@
-import type { UserProfile } from '@/types';
-import type { SavedProgramRow, UserProfileRow, UploadedDocumentRow } from '@/db/types';
+import type { BagrutSector, UserProfile } from '@/types';
+import type {
+  BagrutProfileVersionRow,
+  SavedProgramRow,
+  UserProfileRow,
+  UploadedDocumentRow,
+} from '@/db/types';
 
 export interface UserProfileSnapshot extends UserProfile {
   savedProgramIds: string[];
 }
+
+type SerializedProfileRow = Pick<
+  UserProfileRow,
+  | 'userId'
+  | 'firstName'
+  | 'lastName'
+  | 'geographicPreference'
+  | 'psychometricOverall'
+  | 'psychometricQuantitative'
+  | 'psychometricVerbal'
+  | 'psychometricEnglish'
+  | 'bagrutWeightedAverage'
+  | 'riasecR'
+  | 'riasecI'
+  | 'riasecA'
+  | 'riasecS'
+  | 'riasecE'
+  | 'riasecC'
+  | 'avoidanceTags'
+  | 'createdAt'
+  | 'updatedAt'
+> & {
+  bagrutProfileVersionId?: string | null;
+};
 
 type PublicUploadedDocument = NonNullable<UserProfileSnapshot['uploadedDocuments']>[number];
 
@@ -35,9 +64,10 @@ function buildUploadedDocumentDisplayName(kind: PublicUploadedDocument['kind']) 
 }
 
 export function serializeUserProfileSnapshot(
-  profileRow: UserProfileRow | undefined,
+  profileRow: SerializedProfileRow | undefined,
   savedProgramRows: Pick<SavedProgramRow, 'programId'>[],
   uploadedDocumentRows?: UploadedDocumentRow[],
+  bagrutProfileVersion?: BagrutProfileVersionRow,
 ): UserProfileSnapshot {
   if (!profileRow) {
     return {
@@ -85,9 +115,30 @@ export function serializeUserProfileSnapshot(
             ? {
                 bagrut: {
                   weightedAverage: profileRow.bagrutWeightedAverage,
+                  ...(bagrutProfileVersion
+                    ? {
+                        subjectRecord: {
+                          schemaVersion: 1 as const,
+                          profileHash: bagrutProfileVersion.contentHash,
+                          sector: bagrutProfileVersion.sector as BagrutSector,
+                          subjects: bagrutProfileVersion.subjects,
+                        },
+                      }
+                    : {}),
                 },
               }
-            : {}),
+            : bagrutProfileVersion
+              ? {
+                  bagrut: {
+                    subjectRecord: {
+                      schemaVersion: 1 as const,
+                      profileHash: bagrutProfileVersion.contentHash,
+                      sector: bagrutProfileVersion.sector as BagrutSector,
+                      subjects: bagrutProfileVersion.subjects,
+                    },
+                  },
+                }
+              : {}),
         }
       : undefined;
 

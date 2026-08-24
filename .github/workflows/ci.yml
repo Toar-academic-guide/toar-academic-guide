@@ -18,6 +18,50 @@ concurrency:
 # Job 1: Static analysis — lint, type check, format, security audit
 # ---------------------------------------------------------------------------
 jobs:
+  production-sensitive-paths:
+    name: Classify production-sensitive changes
+    runs-on: ubuntu-latest
+    outputs:
+      applicable: ${{ steps.classify.outputs.applicable }}
+
+    steps:
+      - name: Checkout repository history
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Classify changed paths
+        id: classify
+        shell: bash
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          BEFORE_SHA: ${{ github.event.before }}
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          classifier="scripts/production-sensitive-paths.mjs"
+          if [[ "$EVENT_NAME" == "pull_request" ]] &&
+            git cat-file -e "origin/$BASE_REF:$classifier"; then
+            base_classifier="$RUNNER_TEMP/production-sensitive-paths.mjs"
+            git show "origin/$BASE_REF:$classifier" > "$base_classifier"
+            classifier="$base_classifier"
+          fi
+
+          if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
+            node "$classifier" --all >> "$GITHUB_OUTPUT"
+          elif [[ "$EVENT_NAME" == "pull_request" ]]; then
+            git diff --name-only "origin/$BASE_REF...HEAD" |
+              node "$classifier" >> "$GITHUB_OUTPUT"
+          elif [[ -n "$BEFORE_SHA" ]] &&
+            [[ "$BEFORE_SHA" != "0000000000000000000000000000000000000000" ]] &&
+            git cat-file -e "$BEFORE_SHA^{commit}"; then
+            git diff --name-only "$BEFORE_SHA...HEAD" |
+              node "$classifier" >> "$GITHUB_OUTPUT"
+          else
+            git diff --name-only HEAD^...HEAD |
+              node "$classifier" >> "$GITHUB_OUTPUT"
+          fi
+
   quality:
     name: Lint, typecheck & security
     runs-on: ubuntu-latest
@@ -46,13 +90,59 @@ jobs:
       - name: Prettier format check
         run: npm run format:check
 
-      - name: Security audit (high + critical)
-        run: npm audit --audit-level=high
-        continue-on-error: true
+      - name: Production dependency audit (high + critical)
+        run: npm audit --omit=dev --audit-level=high
 
       - name: Drizzle migration consistency
         run: npm run db:migrate:check
-        continue-on-error: true
+
+  operational-schema:
+    name: Production operational schema preflight
+    runs-on: ubuntu-latest
+    needs:
+      - production-sensitive-paths
+      - quality
+    if: ${{ github.ref == 'refs/heads/main' && needs.production-sensitive-paths.outputs.applicable == 'true' }}
+    environment: admissions-publication
+    env:
+      CI: true
+      OPS_DATABASE_URL: ${{ secrets.OPS_DATABASE_URL }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify operational database is current or safely migratable
+        run: npm run db:operational:preflight
+
+  operational-schema-gate:
+    name: Production operational schema gate
+    runs-on: ubuntu-latest
+    if: ${{ always() }}
+    needs:
+      - production-sensitive-paths
+      - operational-schema
+
+    steps:
+      - name: Require successful applicable preflight
+        env:
+          PREFLIGHT_REQUIRED: ${{ github.ref == 'refs/heads/main' && needs.production-sensitive-paths.outputs.applicable == 'true' }}
+          PREFLIGHT_RESULT: ${{ needs.operational-schema.result }}
+        run: |
+          if [[ "$PREFLIGHT_REQUIRED" == "true" && "$PREFLIGHT_RESULT" != "success" ]]; then
+            echo "Production-sensitive changes require a successful operational schema preflight."
+            exit 1
+          fi
+          echo "Operational schema gate passed (required=$PREFLIGHT_REQUIRED, result=$PREFLIGHT_RESULT)."
 
   # ---------------------------------------------------------------------------
   # Job 2: Unit tests with coverage
@@ -85,12 +175,132 @@ jobs:
         run: npm run db:seed:dry-run
 
   # ---------------------------------------------------------------------------
-  # Job 3: Build
+  # Job 3: Apply every migration and seed a clean PostgreSQL database
+  # ---------------------------------------------------------------------------
+  db-migrations-and-seed:
+    name: Disposable Postgres migration and seed
+    runs-on: ubuntu-latest
+    needs: quality
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: toar_academic_guide_ci
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d toar_academic_guide_ci"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      CI: true
+      CATALOGUE_SOURCE_MODE: database
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/toar_academic_guide_ci
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Create disposable runtime roles
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql --host localhost --username postgres --dbname toar_academic_guide_ci \
+            --set ON_ERROR_STOP=1 <<'SQL'
+          DO $$
+          BEGIN
+            IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'anon') THEN
+              CREATE ROLE anon NOLOGIN;
+            END IF;
+
+            IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'authenticated') THEN
+              CREATE ROLE authenticated NOLOGIN;
+            END IF;
+
+            IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'app_runtime') THEN
+              CREATE ROLE app_runtime NOLOGIN;
+            END IF;
+
+            IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'ops_readonly') THEN
+              CREATE ROLE ops_readonly NOLOGIN;
+            END IF;
+          END
+          $$;
+          SQL
+
+      - name: Apply migrations to disposable PostgreSQL
+        run: npm run db:migrate
+
+      - name: Seed and verify the disposable catalogue
+        run: |
+          npm run db:seed
+          npm run db:seed:verify
+
+      - name: Verify durable publication failure and retry lifecycle
+        env:
+          PUBLICATION_DB_INTEGRATION: '1'
+        run: npm run test:publication:db
+
+  # ---------------------------------------------------------------------------
+  # Job 4: Admissions evidence and calculator verification
+  # ---------------------------------------------------------------------------
+  admissions-verify:
+    name: Admissions evidence gates
+    runs-on: ubuntu-latest
+    needs: quality
+    env:
+      CI: true
+      CATALOGUE_SOURCE_MODE: static
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify committed Monday admissions evidence
+        run: npm run monday:verify-admissions-evidence
+
+      - name: Run admissions regression tests
+        run: |
+          npm exec vitest -- \
+            src/data/admissions/mondayEvidence.test.ts \
+            src/server/admissions/catalogueEvidenceCoverage.test.ts \
+            src/server/admissions/calculatorCoverage.test.ts \
+            src/server/admissions/capabilityMatrix.test.ts \
+            src/server/admissions/evaluator.test.ts \
+            --run
+
+  # ---------------------------------------------------------------------------
+  # Job 5: Build
   # ---------------------------------------------------------------------------
   build:
     name: Build application
     runs-on: ubuntu-latest
-    needs: test
+    needs:
+      - test
+      - db-migrations-and-seed
+      - admissions-verify
+      - operational-schema-gate
     env:
       CI: true
       CATALOGUE_SOURCE_MODE: static
@@ -112,7 +322,99 @@ jobs:
         run: npm run build
 
   # ---------------------------------------------------------------------------
-  # Job 4: E2E smoke tests (on main push or manual dispatch)
+  # Job 6: PR-local E2E smoke tests (safe/static, no secrets)
+  # ---------------------------------------------------------------------------
+  e2e-pr:
+    name: Playwright PR smoke
+    runs-on: ubuntu-latest
+    needs: build
+    if: ${{ github.event_name == 'pull_request' }}
+    env:
+      CI: true
+      CATALOGUE_SOURCE_MODE: static
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Build application
+        run: npm run build
+
+      - name: Run Playwright smoke tests
+        run: |
+          npm start &
+          npx --yes wait-on http://localhost:3000 --timeout 30000
+          npm run test:e2e
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report-pr
+          path: playwright-report/
+          retention-days: 7
+
+  # ---------------------------------------------------------------------------
+  # Job 7: Internal data-health smoke test (safe/static, no secrets)
+  # ---------------------------------------------------------------------------
+  internal-data-health-smoke:
+    name: Internal data-health smoke
+    runs-on: ubuntu-latest
+    needs: build
+    env:
+      CI: true
+      CATALOGUE_SOURCE_MODE: static
+      INTERNAL_DATA_HEALTH_SMOKE: '1'
+      INTERNAL_ADMIN_E2E_EMAIL: ci-internal-admin@example.com
+      INTERNAL_ADMIN_E2E_TOKEN: ci-internal-data-health-smoke
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Build application
+        run: npm run build
+
+      - name: Run internal data-health smoke
+        run: |
+          npm start &
+          npx --yes wait-on http://localhost:3000 --timeout 30000
+          npx playwright test e2e/internal-data-health.spec.ts
+
+      - name: Upload internal data-health smoke report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report-internal-data-health
+          path: playwright-report/
+          retention-days: 7
+
+  # ---------------------------------------------------------------------------
+  # Job 8: E2E smoke tests (on main push or manual dispatch)
   # ---------------------------------------------------------------------------
   e2e:
     name: E2E smoke tests
@@ -145,7 +447,7 @@ jobs:
       - name: Run E2E tests
         run: |
           npm start &
-          npx wait-on http://localhost:3000 --timeout 30000
+          npx --yes wait-on http://localhost:3000 --timeout 30000
           npm run test:e2e
 
       - name: Upload test artifacts
@@ -157,7 +459,7 @@ jobs:
           retention-days: 7
 
   # ---------------------------------------------------------------------------
-  # Job 5: DB-backed catalogue verification (main + manual only)
+  # Job 9: DB-backed catalogue verification (main + manual only)
   # ---------------------------------------------------------------------------
   db-seed-verify:
     name: DB-backed catalogue verification
@@ -190,3 +492,38 @@ jobs:
       - name: Verify seeded database catalogue
         if: ${{ env.DATABASE_URL != '' }}
         run: npm run db:seed:verify
+
+  # ---------------------------------------------------------------------------
+  # Job 10: Operational DB verification (main + manual only)
+  # ---------------------------------------------------------------------------
+  db-operational-verify:
+    name: Operational DB verification
+    runs-on: ubuntu-latest
+    needs: build
+    if: ${{ github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' }}
+    env:
+      CI: true
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      OPS_DATABASE_URL: ${{ secrets.OPS_DATABASE_URL }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Skip operational DB verification when no DB URL is configured
+        if: ${{ env.DATABASE_URL == '' && env.OPS_DATABASE_URL == '' }}
+        run: echo "No DATABASE_URL or OPS_DATABASE_URL secret is configured; skipping operational DB verification."
+
+      - name: Install dependencies
+        if: ${{ env.DATABASE_URL != '' || env.OPS_DATABASE_URL != '' }}
+        run: npm ci
+
+      - name: Verify operational database
+        if: ${{ env.DATABASE_URL != '' || env.OPS_DATABASE_URL != '' }}
+        run: npm run db:operational:verify

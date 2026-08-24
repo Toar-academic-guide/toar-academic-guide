@@ -2,12 +2,12 @@ import { University, UserScores, UniversityResult, DeltaNeeded, EngineeringOptio
 import type { Program } from '@/data/degrees/types';
 
 // ── TAU Engineering & Exact Sciences bonuses ─────────────────────────────────
-// TAU's Faculty of Exact Sciences and Engineering applies direct additive
-// bonuses to the admission index for students with 5-unit Bagrut subjects.
-// These are applied on top of the base weighted formula and are specific to
-// programs flagged as isTauEngineering (CS, EE, ME, Data Science).
-const TAU_MATH5_BONUS = 35; // 5 units of Mathematics
-const TAU_PHYSICS5_BONUS = 25; // 5 units of Physics
+// TAU's published engineering/exact-sciences condition is a single ten-point
+// addition when both Mathematics and Physics are five-unit Bagrut subjects and
+// meet the published grade floor. The legacy calculator asks the applicant to
+// confirm that qualifying condition; verified route simulations use the
+// structured subject policy instead.
+const TAU_QUALIFYING_MATH_AND_PHYSICS_BONUS = 10;
 
 // ── Bagrut normalization ──────────────────────────────────────────────────────
 // Converts raw bagrut average (60–120 with bonuses) to the 200–800 psychometric
@@ -36,7 +36,7 @@ function sekhemWeighted(university: University, scores: UserScores): number {
 // ── TAU engineering bonus calculation ────────────────────────────────────────
 // Returns the total additive bonus for TAU engineering/exact-sciences programs.
 function tauEngineeringBonus(opts: EngineeringOptions): number {
-  return (opts.hasMath5 ? TAU_MATH5_BONUS : 0) + (opts.hasPhysics5 ? TAU_PHYSICS5_BONUS : 0);
+  return opts.hasMath5 && opts.hasPhysics5 ? TAU_QUALIFYING_MATH_AND_PHYSICS_BONUS : 0;
 }
 
 // ── Core sekhem dispatcher ────────────────────────────────────────────────────
@@ -50,6 +50,30 @@ export function calculateSekhem(
   degree: Program,
   engineeringOptions: EngineeringOptions,
 ): number {
+  if (university.id === 'reichman') {
+    return 4.812 * scores.bagrut + 0.5131 * scores.psychometric - 163.19;
+  }
+
+  if (university.id === 'afeka') {
+    const mathUnits = scores.mathUnits ?? 0;
+    const mathGrade = scores.mathGrade ?? 0;
+    const engUnits = scores.englishUnits ?? 0;
+    const engGrade = scores.englishGrade ?? 0;
+    const physUnits = scores.physicsUnits ?? 0;
+    const physGrade = scores.physicsGrade ?? 0;
+    const csUnits = scores.csUnits ?? 0;
+    const csGrade = scores.csGrade ?? 0;
+    return Math.floor(
+      0.2 * scores.bagrut +
+        (3 * mathGrade * mathUnits +
+          engGrade * engUnits +
+          physGrade * physUnits +
+          csGrade * csUnits) /
+          24 +
+        160,
+    );
+  }
+
   if (university.formulaType === 'technion_linear') {
     return sekhemTechnion(scores);
   }
@@ -73,6 +97,20 @@ export function calculateSekhem(
 // points the user must add to either variable to close the remaining gap.
 // Engineering bonuses are fixed constants so derivatives are unchanged.
 export function calculateDelta(deficit: number, university: University): DeltaNeeded {
+  if (university.id === 'reichman') {
+    return {
+      psychometric: Math.ceil(deficit / 0.5131),
+      bagrut: Math.ceil(deficit / 4.812),
+    };
+  }
+
+  if (university.id === 'afeka') {
+    return {
+      psychometric: 0,
+      bagrut: Math.ceil(deficit / 0.2),
+    };
+  }
+
   if (university.formulaType === 'technion_linear') {
     // d(sekhem)/d(psy) = 0.075  →  delta_psy = deficit / 0.075
     // d(sekhem)/d(bag) = 0.5    →  delta_bag = deficit / 0.5
@@ -158,6 +196,68 @@ export function evaluateUniversities(
     const sekhem =
       university.formulaType === 'technion_linear' ? Math.round(raw * 10) / 10 : Math.round(raw);
 
+    // ── Afeka Gating Rules ───────────────────────────────────────────────────
+    if (university.id === 'afeka') {
+      const mathUnits = scores.mathUnits ?? 0;
+      const mathGrade = scores.mathGrade ?? 0;
+      const engUnits = scores.englishUnits ?? 0;
+      const engGrade = scores.englishGrade ?? 0;
+
+      const mathGate = (mathUnits === 5 && mathGrade >= 70) || (mathUnits === 4 && mathGrade >= 80);
+      const engGate = engUnits >= 4 && engGrade >= 60;
+      const psyGate = scores.psychometric >= 550;
+
+      if (!mathGate || !engGate || !psyGate) {
+        const reasons = [];
+        if (!mathGate) reasons.push('מתמטיקה (5 יח"ל בציון 70+ או 4 יח"ל בציון 80+)');
+        if (!engGate) reasons.push('אנגלית (לפחות 4 יח"ל בציון 60+)');
+        if (!psyGate) reasons.push('פסיכומטרי לפחות 550');
+
+        return {
+          university,
+          sekhem: 0,
+          threshold,
+          status: 'below',
+          explanation: `אינו עומד בתנאי הסף של אפקה: חסר ${reasons.join(', ')}`,
+          deltaNeeded: {
+            psychometric: !psyGate ? 550 - scores.psychometric : 0,
+            bagrut: 0,
+          },
+        };
+      }
+    }
+
+    // ── HIT Gating Rules ─────────────────────────────────────────────────────
+    if (university.id === 'hit') {
+      const isTech =
+        degree.id.includes('cs') ||
+        degree.id.includes('ee') ||
+        degree.category === 'הנדסה וטכנולוגיה';
+      const mathUnits = scores.mathUnits ?? 0;
+      const mathGrade = scores.mathGrade ?? 0;
+      const psyGate = scores.psychometric >= 550 || scores.bagrut >= 102;
+      const mathGate = (mathUnits === 5 && mathGrade >= 70) || (mathUnits >= 4 && mathGrade >= 80);
+
+      if (isTech && (!mathGate || !psyGate || scores.bagrut <= 56)) {
+        const reasons = [];
+        if (!mathGate) reasons.push('מתמטיקה (5 יח"ל בציון 70+ או 4 יח"ל בציון 80+)');
+        if (!psyGate) reasons.push('פסיכומטרי 550+ או ממוצע בגרות 102+');
+        if (scores.bagrut <= 56) reasons.push('ממוצע בגרות מעל 56');
+
+        return {
+          university,
+          sekhem: 0,
+          threshold,
+          status: 'below',
+          explanation: `אינו עומד בתנאי הסף של HIT: חסר ${reasons.join(', ')}`,
+          deltaNeeded: {
+            psychometric: !psyGate && scores.psychometric < 550 ? 550 - scores.psychometric : 0,
+            bagrut: scores.bagrut <= 56 ? 57 - scores.bagrut : 0,
+          },
+        };
+      }
+    }
+
     // ── Direct admission track (קבלה ישירה) ──────────────────────────────────
     // Some universities admit applicants whose raw psychometric score alone
     // exceeds a published cutoff, bypassing the combined-index threshold.
@@ -166,10 +266,23 @@ export function evaluateUniversities(
       return { university, sekhem, threshold, status: 'accepted', admissionTrack: 'direct' };
     }
 
+    const minimumPsychometric = degree.minimumPsychometric?.[university.id];
+    const minimumBagrut = degree.minimumBagrut?.[university.id];
     const deficit = threshold - raw;
+    const psychometricFloorGap = Math.max(0, (minimumPsychometric ?? 0) - scores.psychometric);
+    const bagrutFloorGap = Math.max(0, (minimumBagrut ?? 0) - scores.bagrut);
 
-    if (deficit <= 0) {
+    if (deficit <= 0 && psychometricFloorGap <= 0 && bagrutFloorGap <= 0) {
       return { university, sekhem, threshold, status: 'accepted' };
+    }
+
+    const deltaNeeded = calculateDelta(Math.max(0, deficit), university);
+    const unmetFloors: string[] = [];
+    if (psychometricFloorGap > 0 && minimumPsychometric !== undefined) {
+      unmetFloors.push(`פסיכומטרי לפחות ${minimumPsychometric}`);
+    }
+    if (bagrutFloorGap > 0 && minimumBagrut !== undefined) {
+      unmetFloors.push(`ממוצע בגרות לפחות ${minimumBagrut}`);
     }
 
     return {
@@ -177,7 +290,14 @@ export function evaluateUniversities(
       sekhem,
       threshold,
       status: 'below',
-      deltaNeeded: calculateDelta(deficit, university),
+      deltaNeeded: {
+        psychometric: Math.max(deltaNeeded.psychometric, psychometricFloorGap),
+        bagrut: Math.max(deltaNeeded.bagrut, bagrutFloorGap),
+      },
+      explanation:
+        unmetFloors.length > 0
+          ? `אינו עומד בתנאי הסף של ${university.name}: חסר ${unmetFloors.join(', ')}`
+          : undefined,
     };
   });
 }

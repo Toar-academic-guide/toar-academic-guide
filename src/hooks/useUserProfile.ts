@@ -22,7 +22,7 @@ interface ApiEnvelope<T> {
 
 interface UseUserProfileResult {
   profile: UserProfile;
-  updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
+  updateProfile: (updates: Partial<UserProfile>) => Promise<boolean>;
   clearLocalProfileData: () => Promise<void>;
   toggleSavedProgram: (programId: string) => Promise<void>;
   removeSavedProgram: (programId: string) => Promise<void>;
@@ -111,16 +111,18 @@ export function useUserProfile(): UseUserProfileResult {
 
     if (!user) {
       writeStoredProfile(nextProfile);
-      return;
+      return true;
     }
 
     setSyncing(true);
     try {
       const savedProfile = await putProfileSnapshot(nextProfile, 'replace');
       setProfile(savedProfile);
+      return true;
     } catch (error) {
       setSyncError(toErrorMessage(error, 'שמירת הפרופיל נכשלה.'));
       setProfile(previousProfile);
+      return false;
     } finally {
       setSyncing(false);
     }

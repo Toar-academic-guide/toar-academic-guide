@@ -10,7 +10,8 @@ export const ACADEMIC_PROGRAMS: Program[] = [
     profileScore: { AN: 5, TE: 2, CR: 1, SO: 0, LE: 1, OR: 3, DI: 5, ER: 2 },
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: 700, huji: 690, technion: 92, bgu: 645, haifa: 705, biu: 675, ariel: 600 },
+    thresholds: { tau: 700, huji: 690, technion: 92, bgu: 720, haifa: 705, biu: 675, ariel: 600 },
+    minimumPsychometric: { bgu: 600 },
     isTauEngineering: true,
   },
   {
@@ -22,7 +23,8 @@ export const ACADEMIC_PROGRAMS: Program[] = [
     profileScore: { AN: 4, TE: 4, CR: 0, SO: 0, LE: 1, OR: 2, DI: 3, ER: 2 },
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: 655, huji: null, technion: 88, bgu: 615, biu: 655, ariel: 640 },
+    thresholds: { tau: 655, huji: null, technion: 88, bgu: 547, biu: 655, ariel: 640 },
+    minimumPsychometric: { bgu: 600 },
     isTauEngineering: true,
   },
   {
@@ -34,9 +36,10 @@ export const ACADEMIC_PROGRAMS: Program[] = [
     profileScore: { AN: 4, TE: 0, CR: 1, SO: 5, LE: 1, OR: 1, DI: 0, ER: 4 },
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: 720, huji: 725, technion: null, bgu: 675, haifa: 650, biu: 665, ariel: 580 },
+    thresholds: { tau: 720, huji: 725, technion: null, bgu: 650, haifa: 650, biu: 665, ariel: 580 },
     isTauEngineering: false,
     directPsychometric: { huji: 660 },
+    minimumPsychometric: { bgu: 650 },
   },
   {
     id: 'me',
@@ -47,7 +50,8 @@ export const ACADEMIC_PROGRAMS: Program[] = [
     profileScore: { AN: 3, TE: 5, CR: 1, SO: 0, LE: 1, OR: 2, DI: 1, ER: 2 },
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: 640, huji: null, technion: 86, bgu: 595, ariel: 615 },
+    thresholds: { tau: 640, huji: null, technion: 86, bgu: 520, ariel: 615 },
+    minimumPsychometric: { bgu: 550 },
     isTauEngineering: true,
   },
   {
@@ -59,7 +63,7 @@ export const ACADEMIC_PROGRAMS: Program[] = [
     profileScore: { AN: 5, TE: 2, CR: 0, SO: 4, LE: 1, OR: 2, DI: 0, ER: 5 },
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: 770, huji: 775, technion: 94, bgu: 760, biu: 740 },
+    thresholds: { tau: 770, huji: 775, technion: 94, bgu: null, biu: 740 },
     isTauEngineering: false,
   },
   {
@@ -71,7 +75,7 @@ export const ACADEMIC_PROGRAMS: Program[] = [
     profileScore: { AN: 2, TE: 0, CR: 1, SO: 3, LE: 5, OR: 2, DI: 0, ER: 5 },
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: 695, huji: 705, technion: null, bgu: 650, haifa: 680, biu: 685 },
+    thresholds: { tau: 695, huji: 705, technion: null, bgu: null, haifa: 680, biu: 685 },
     isTauEngineering: false,
   },
   {
@@ -83,7 +87,9 @@ export const ACADEMIC_PROGRAMS: Program[] = [
     profileScore: { AN: 2, TE: 0, CR: 0, SO: 2, LE: 5, OR: 4, DI: 1, ER: 2 },
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: 640, huji: 630, technion: null, bgu: 590 },
+    thresholds: { tau: 640, huji: 630, technion: null, bgu: 620 },
+    minimumPsychometric: { bgu: 600 },
+    minimumBagrut: { bgu: 107 },
     isTauEngineering: false,
   },
   {
@@ -95,7 +101,9 @@ export const ACADEMIC_PROGRAMS: Program[] = [
     profileScore: { AN: 5, TE: 0, CR: 0, SO: 1, LE: 3, OR: 4, DI: 2, ER: 4 },
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: 670, huji: 660, technion: null, bgu: 615, haifa: 660, ariel: 580 },
+    thresholds: { tau: 670, huji: 660, technion: null, bgu: 620, haifa: 660, ariel: 580 },
+    minimumPsychometric: { bgu: 600 },
+    minimumBagrut: { bgu: 107 },
     isTauEngineering: false,
   },
   {
@@ -107,7 +115,8 @@ export const ACADEMIC_PROGRAMS: Program[] = [
     profileScore: { AN: 5, TE: 1, CR: 0, SO: 0, LE: 1, OR: 4, DI: 5, ER: 3 },
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: 688, huji: 678, technion: 90, bgu: 635 },
+    thresholds: { tau: 688, huji: 678, technion: 90, bgu: 720 },
+    minimumPsychometric: { bgu: 600 },
     isTauEngineering: true,
   },
 
@@ -121,7 +130,9 @@ export const ACADEMIC_PROGRAMS: Program[] = [
     profileScore: { AN: 5, TE: 3, CR: 1, SO: 2, LE: 1, OR: 3, DI: 0, ER: 4 },
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: 630, huji: 620, technion: null, bgu: 580, haifa: 640, biu: 570 },
+    thresholds: { tau: 630, huji: 620, technion: null, bgu: 585, haifa: 640, biu: 570 },
+    minimumPsychometric: { bgu: 585 },
+    minimumBagrut: { bgu: 106 },
     isTauEngineering: false,
   },
   {
@@ -133,7 +144,9 @@ export const ACADEMIC_PROGRAMS: Program[] = [
     profileScore: { AN: 2, TE: 1, CR: 2, SO: 5, LE: 3, OR: 2, DI: 0, ER: 3 },
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: 600, huji: 590, technion: null, bgu: 560, haifa: 615, biu: 600, ariel: 600 },
+    thresholds: { tau: 600, huji: 590, technion: null, bgu: 580, haifa: 615, biu: 600, ariel: 600 },
+    minimumPsychometric: { bgu: 550 },
+    minimumBagrut: { bgu: 108 },
     isTauEngineering: false,
   },
   {
@@ -145,7 +158,7 @@ export const ACADEMIC_PROGRAMS: Program[] = [
     profileScore: { AN: 3, TE: 3, CR: 1, SO: 5, LE: 2, OR: 2, DI: 0, ER: 2 },
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: 610, huji: 600, technion: null, bgu: 570, haifa: 580, ariel: 570 },
+    thresholds: { tau: 530, huji: 600, technion: null, bgu: null, haifa: 580, ariel: 570 },
     isTauEngineering: false,
   },
   {
@@ -157,7 +170,8 @@ export const ACADEMIC_PROGRAMS: Program[] = [
     profileScore: { AN: 3, TE: 1, CR: 1, SO: 1, LE: 3, OR: 5, DI: 2, ER: 2 },
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: 640, huji: 630, technion: null, bgu: 590, haifa: 680 },
+    thresholds: { tau: 640, huji: 630, technion: null, bgu: 620, haifa: 680 },
+    minimumPsychometric: { bgu: 620 },
     isTauEngineering: false,
   },
   {

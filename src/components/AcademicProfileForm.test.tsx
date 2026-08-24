@@ -103,6 +103,34 @@ describe('AcademicProfileForm', () => {
     );
   });
 
+  it('requires a structured Bagrut record before continuing an admission-alert setup', async () => {
+    const onComplete = vi.fn();
+
+    render(
+      <AcademicProfileForm
+        onComplete={onComplete}
+        onClearLocalProfileData={vi.fn().mockResolvedValue(undefined)}
+        onSkip={vi.fn()}
+        initialScores={{
+          psychometric: { overall: 650 },
+          bagrut: { weightedAverage: 102 },
+        }}
+        alertContinuation={{
+          title: 'המשך למעקב',
+          submitLabel: 'שמור והמשך לבדיקת המעקב ←',
+          requiresStructuredBagrut: true,
+        }}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לבדיקת המעקב ←' }));
+
+    expect(
+      await screen.findByText('כדי להפעיל מעקב צריך להשלים את מקצועות הבגרות והיחידות שלך.'),
+    ).toBeTruthy();
+    expect(onComplete).not.toHaveBeenCalled();
+  });
+
   it('triggers POST requests for newly selected files on save', async () => {
     const onComplete = vi.fn();
     const fetchMock = vi.fn().mockResolvedValue({

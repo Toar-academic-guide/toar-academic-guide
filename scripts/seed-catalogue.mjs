@@ -19,9 +19,8 @@ async function main() {
   });
 
   try {
-    const { buildCatalogueSeed, upsertCatalogueSeed, verifyCatalogueSeed } = await vite.ssrLoadModule(
-      '/src/db/seeds/catalogueSeed.ts'
-    );
+    const { buildCatalogueSeed, upsertCatalogueSeed, verifyCatalogueSeed } =
+      await vite.ssrLoadModule('/src/db/seeds/catalogueSeed.ts');
     const { hasDatabaseUrl } = await vite.ssrLoadModule('/src/env.ts');
     const payload = buildCatalogueSeed();
 
@@ -41,15 +40,15 @@ async function main() {
             validationErrors: payload.validationErrors,
           },
           null,
-          2
-        )
+          2,
+        ),
       );
       return;
     }
 
     if (!hasDatabaseUrl()) {
       throw new Error(
-        'DATABASE_URL is required for db:seed. Use npm run db:seed:dry-run to inspect seed output.'
+        'DATABASE_URL is required for db:seed. Use npm run db:seed:dry-run to inspect seed output.',
       );
     }
 
@@ -61,8 +60,8 @@ async function main() {
             verification,
           },
           null,
-          2
-        )
+          2,
+        ),
       );
       if (!verification.isMatching) {
         process.exitCode = 1;
@@ -87,13 +86,15 @@ async function main() {
           verification,
         },
         null,
-        2
-      )
+        2,
+      ),
     );
     if (!verification.isMatching) {
       process.exitCode = 1;
     }
   } finally {
+    const { closeDb } = await vite.ssrLoadModule('/src/db/client.ts');
+    await closeDb();
     await vite.close();
   }
 }

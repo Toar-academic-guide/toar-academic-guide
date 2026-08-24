@@ -21,16 +21,15 @@ export default function ScoreForm({
   defaultPsychometric,
   defaultBagrut,
 }: Props) {
-  const sekhemPrograms = programs.filter((program) => program.admissionType === 'sekhem');
   const [psychometric, setPsychometric] = useState(defaultPsychometric?.toString() ?? '');
   const [bagrut, setBagrut] = useState(defaultBagrut?.toString() ?? '');
-  const [degreeId, setDegreeId] = useState(defaultDegreeId ?? sekhemPrograms[0].id);
+  const [degreeId, setDegreeId] = useState(defaultDegreeId ?? programs[0]?.id ?? '');
   const [hasMath5, setHasMath5] = useState(false);
   const [hasPhysics5, setHasPhysics5] = useState(false);
   const [errors, setErrors] = useState<{ psychometric?: string; bagrut?: string }>({});
 
-  const selectedDegree = sekhemPrograms.find((d) => d.id === degreeId)!;
-  const showEngineeringSection = selectedDegree.isTauEngineering ?? false;
+  const selectedDegree = programs.find((program) => program.id === degreeId);
+  const showEngineeringSection = selectedDegree?.isTauEngineering ?? false;
 
   function validate(): boolean {
     const errs: typeof errors = {};
@@ -116,7 +115,7 @@ export default function ScoreForm({
           onChange={(e) => setDegreeId(e.target.value)}
           className={`${inputBase} ${inputNormal}`}
         >
-          {sekhemPrograms.map((degree) => (
+          {programs.map((degree) => (
             <option key={degree.id} value={degree.id}>
               {degree.name}
             </option>
@@ -132,13 +131,12 @@ export default function ScoreForm({
               סכם הנדסה ומדעים מדויקים — אוניברסיטת תל אביב
             </p>
             <p className="mt-0.5 text-xs text-blue-700">
-              עבור תואר זה, אוניברסיטת תל אביב מעניקה בונוס ישיר לסכם על פי מקצועות הבגרות שלמדת ב-5
-              יחידות. לחץ על המקצועות הרלוונטיים כדי לראות את השפעתם על הסיכויים.
+              עבור תואר זה, אוניברסיטת תל אביב מוסיפה 10 נקודות לציון ההתאמה רק אם למדת מתמטיקה
+              ופיזיקה בהיקף 5 יחידות וקיבלת לפחות 55 בכל אחד מהם.
             </p>
           </div>
 
           <div className="flex flex-wrap gap-3">
-            {/* Math 5 */}
             <label
               className="flex cursor-pointer items-center gap-2.5 rounded-xl border-2 bg-white px-4 py-2.5 text-sm font-medium transition select-none
               has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-600 has-[:checked]:text-white
@@ -150,13 +148,9 @@ export default function ScoreForm({
                 checked={hasMath5}
                 onChange={(e) => setHasMath5(e.target.checked)}
               />
-              <span>📐 מתמטיקה 5 יח׳</span>
-              <span className="rounded-full bg-indigo-100 px-1.5 py-0.5 text-xs font-bold text-indigo-700 has-[:checked]:bg-blue-500 has-[:checked]:text-white">
-                +35
-              </span>
+              <span>📐 מתמטיקה 5 יח׳, ציון 55+</span>
             </label>
 
-            {/* Physics 5 */}
             <label
               className="flex cursor-pointer items-center gap-2.5 rounded-xl border-2 bg-white px-4 py-2.5 text-sm font-medium transition select-none
               has-[:checked]:border-indigo-600 has-[:checked]:bg-indigo-600 has-[:checked]:text-white
@@ -168,19 +162,13 @@ export default function ScoreForm({
                 checked={hasPhysics5}
                 onChange={(e) => setHasPhysics5(e.target.checked)}
               />
-              <span>⚛️ פיזיקה 5 יח׳</span>
-              <span className="rounded-full bg-indigo-100 px-1.5 py-0.5 text-xs font-bold text-indigo-700">
-                +25
-              </span>
+              <span>⚛️ פיזיקה 5 יח׳, ציון 55+</span>
             </label>
           </div>
 
-          {(hasMath5 || hasPhysics5) && (
+          {hasMath5 && hasPhysics5 && (
             <p className="text-xs font-medium text-blue-800">
-              סה"כ בונוס לסכם תל אביב:{' '}
-              <span className="font-bold">
-                +{(hasMath5 ? 35 : 0) + (hasPhysics5 ? 25 : 0)} נקודות
-              </span>
+              סה"כ בונוס לסכם תל אביב: <span className="font-bold">+10 נקודות</span>
             </p>
           )}
         </div>

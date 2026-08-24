@@ -164,6 +164,7 @@ export const vocationalPrograms: Program[] = [
     profileScore: P.graphicDesign,
     admissionType: 'requirements',
     admissionRequirements: [],
+    thresholds: { hit: 0 },
     institutionDetails: [
       {
         institutionName: 'המכון הטכנולוגי חולון (HIT)',
@@ -191,6 +192,7 @@ export const vocationalPrograms: Program[] = [
     profileScore: P.industrialDesign,
     admissionType: 'requirements',
     admissionRequirements: [],
+    thresholds: { hit: 0 },
     institutionDetails: [
       {
         institutionName: 'המכון הטכנולוגי חולון (HIT)',
@@ -794,9 +796,7 @@ export const vocationalPrograms: Program[] = [
     type: 'academic',
     category: 'תיירות ואירוח',
     profileScore: P.tourismMgmt,
-    admissionType: 'sekhem',
+    admissionType: 'requirements',
     admissionRequirements: [],
-    thresholds: { tau: null, huji: null, technion: null, bgu: null },
-    isTauEngineering: false,
   },
 ];

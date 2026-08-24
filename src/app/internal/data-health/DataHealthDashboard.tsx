@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 import type { DataHealthReadyReport } from '@/server/data-health/queries';
 import WayPageShell from '@/components/WayPageShell';
 
@@ -8,6 +10,16 @@ interface DataHealthDashboardProps {
 
 export default function DataHealthDashboard({ adminEmail, report }: DataHealthDashboardProps) {
   const criticalItems = buildCriticalItems(report);
+  const freshnessIssueCount =
+    (report.freshness.totalsByStatus.changed_needs_review ?? 0) +
+    (report.freshness.totalsByStatus.failed ?? 0) +
+    (report.freshness.totalsByStatus.stale ?? 0) +
+    (report.freshness.totalsByStatus.blocked ?? 0);
+  const nonCatalogueGroups = report.mondayEvidence.nonCatalogueGroups.map((group) => ({
+    ...group,
+    anchorId: nonCatalogueBucketAnchorId(group.bucket),
+    label: nonCatalogueBucketLabel(group.bucket),
+  }));
 
   return (
     <WayPageShell dir="ltr" showLogo>
@@ -36,7 +48,7 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
           </div>
           </header>
 
-          <section className="grid gap-4 md:grid-cols-4">
+          <section className="grid gap-4 md:grid-cols-5">
           <MetricCard
             label="Readiness"
             value={report.readiness.isReady ? 'Ready' : 'Needs work'}
@@ -53,11 +65,144 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
             tone={(report.ingestion.jobsByStatus.failed ?? 0) === 0 ? 'good' : 'bad'}
           />
           <MetricCard
+            label="Freshness issues"
+            value={String(freshnessIssueCount)}
+            tone={freshnessIssueCount === 0 ? 'good' : 'warn'}
+          />
+          <MetricCard
             label="Pending reviews"
             value={String(report.reviewQueue.pendingCount)}
             tone={report.reviewQueue.pendingCount === 0 ? 'good' : 'warn'}
           />
           </section>
+
+          <section className="rounded-[1.7rem] border border-white bg-white/82 p-6 shadow-[0_20px_64px_rgba(105,133,190,0.12)] backdrop-blur-xl">
+          <h2 className="text-2xl font-black text-slate-950">Formula-backed pair verification</h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Reviewed baseline coverage is immutable. Runtime coverage is activated separately by the
+            persisted weekly authority check.
+          </p>
+          <DefinitionGrid
+            items={[
+              ['In-scope pairs', report.formulaVerification.total],
+              ['Exact', report.formulaVerification.exact],
+              ['Withheld', report.formulaVerification.withheld],
+              ['Stale', report.formulaVerification.stale],
+              ['Blocked', report.formulaVerification.blocked],
+              ['Runtime exact', report.runtimeFormulaVerification.exact],
+              ['Runtime unavailable', report.runtimeFormulaVerification.authorityUnavailable],
+            ]}
+          />
+        </section>
+
+          <section className="rounded-[1.7rem] border border-white bg-white/82 p-6 shadow-[0_20px_64px_rgba(105,133,190,0.12)] backdrop-blur-xl">
+          <h2 className="text-2xl font-black text-slate-950">Admissions decision readiness</h2>
+          <DefinitionGrid
+            items={[
+              [
+                'Decision-ready requirements',
+                report.decisionReadiness.decisionReadyRequirementCount,
+              ],
+              ['Missing structured facts', report.decisionReadiness.missingFactCount],
+              ['Weak source candidates', report.decisionReadiness.weakSourceCount],
+              ['Manual gates', report.decisionReadiness.manualGateCount],
+              ['Alternative paths', report.decisionReadiness.alternativePathCount],
+            ]}
+          />
+          <h3 className="mt-6 text-sm font-black uppercase tracking-[0.2em] text-slate-500">
+            Weak sources
+          </h3>
+          <CompactRows
+            emptyLabel="No weak admissions source candidates."
+            rows={report.decisionReadiness.weakSources.map((source) => ({
+              id: source.sourceCandidateId,
+              detail: `${source.programId} at ${source.institutionId} / ${source.origin} / ${source.specificity}`,
+            }))}
+          />
+        </section>
+
+          <section>
+          <Panel title="Admissions evidence">
+            <AdmissionsEvidenceRows rows={report.decisionEvidence.rows} />
+          </Panel>
+        </section>
+
+          <section className="rounded-[1.7rem] border border-white bg-white/82 p-6 shadow-[0_20px_64px_rgba(105,133,190,0.12)] backdrop-blur-xl">
+          <h2 className="text-2xl font-black text-slate-950">
+            Monday admissions evidence coverage
+          </h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Coverage of all {report.mondayEvidence.totalItems} Monday institution items across
+            decision-capable, manual/eligible, open, tracked missing-rule, and non-catalogue
+            evidence buckets.
+          </p>
+          <DefinitionGrid
+            items={[
+              ['Total Monday items', report.mondayEvidence.totalItems],
+              ['Catalogue-matched', report.mondayEvidence.catalogueMatched],
+              ['Non-catalogue evidence', report.mondayEvidence.nonCatalogueEvidence],
+              ['Decision-capable', report.mondayEvidence.decisionCapable],
+              ['Manual / eligible', report.mondayEvidence.manualOrEligible],
+              ['Open admission', report.mondayEvidence.openAdmission],
+              ['Tracked missing-rule', report.mondayEvidence.trackedMissingRule],
+              ['Blocked official source', report.mondayEvidence.blocked],
+            ]}
+          />
+          <h3 className="mt-6 text-sm font-black uppercase tracking-[0.2em] text-slate-500">
+            Non-catalogue evidence queue
+          </h3>
+          {nonCatalogueGroups.length === 0 ? (
+            <p className="mt-3 text-sm text-slate-600">
+              No non-catalogue Monday evidence items remain.
+            </p>
+          ) : (
+            <div className="mt-6">
+              <ul className="flex flex-wrap gap-3">
+                {nonCatalogueGroups.map((group) => (
+                  <li key={`jump-${group.bucket}`}>
+                    <a
+                      className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-slate-50 px-4 py-2 text-sm font-black text-slate-900 transition hover:border-slate-500 hover:bg-white"
+                      href={`#${group.anchorId}`}
+                    >
+                      <span>{group.label}</span>
+                      <span className="rounded-full bg-white px-2 py-0.5 text-xs">
+                        {group.count}
+                      </span>
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {nonCatalogueGroups.length > 0 ? (
+            <div className="mt-6 grid gap-5 lg:grid-cols-2">
+              {nonCatalogueGroups.map((group) => (
+                <section
+                  id={group.anchorId}
+                  key={group.bucket}
+                  className="scroll-mt-6 rounded-2xl bg-slate-50 px-4 py-4"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <h4 className="text-sm font-black uppercase tracking-[0.16em] text-slate-700">
+                      {group.label}
+                    </h4>
+                    <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-slate-900">
+                      {group.count}
+                    </span>
+                  </div>
+                  <div className="mt-3">
+                    <CompactRows
+                      rows={group.rows.map((row) => ({
+                        id: row.itemName,
+                        detail: `${row.officialUrl ? `${row.officialUrl} / ` : ''}${row.nextAction}`,
+                      }))}
+                    />
+                  </div>
+                </section>
+              ))}
+            </div>
+          ) : null}
+        </section>
 
           <section className="rounded-[1.7rem] border border-white bg-white/82 p-6 shadow-[0_20px_64px_rgba(105,133,190,0.12)] backdrop-blur-xl">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -128,6 +273,78 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
           </Panel>
           </section>
 
+          <section>
+          <Panel title="Source freshness">
+            <DefinitionGrid
+              items={[
+                ['Fresh', report.freshness.totalsByStatus.fresh ?? 0],
+                ['Changed', report.freshness.totalsByStatus.changed_needs_review ?? 0],
+                ['Failed', report.freshness.totalsByStatus.failed ?? 0],
+                ['Stale', report.freshness.totalsByStatus.stale ?? 0],
+                ['Blocked', report.freshness.totalsByStatus.blocked ?? 0],
+                ['Never checked', report.freshness.totalsByStatus.never_checked ?? 0],
+              ]}
+            />
+            <h3 className="mt-6 text-sm font-black uppercase tracking-[0.2em] text-slate-500">
+              Attention rows
+            </h3>
+            <CompactRows
+              emptyLabel="No source freshness rows have been registered yet."
+              rows={report.freshness.rows.map((row) => ({
+                id: row.sourceId,
+                detail: sourceFreshnessDetail(row),
+              }))}
+            />
+            <p className="mt-4 text-xs text-slate-500">
+              Stale means no successful check inside {report.freshness.staleAfterDays} days.
+            </p>
+          </Panel>
+        </section>
+
+          <section>
+          <Panel title="Admissions publication">
+            <DefinitionGrid
+              items={[
+                ['Pending releases', report.publication.pendingReleaseCount],
+                ['Failed releases', report.publication.failedReleaseCount],
+                [
+                  'Proof releases published',
+                  report.publication.operationalProof.publishedReleaseCount,
+                ],
+                ['Proof releases pending', report.publication.operationalProof.pendingReleaseCount],
+                ['Proof releases failed', report.publication.operationalProof.failedReleaseCount],
+                [
+                  'Operational proof matrix',
+                  report.publication.operationalProof.matrixComplete
+                    ? 'Complete'
+                    : `${
+                        report.publication.operationalProof.scenarios.filter(
+                          (scenario) => scenario.status === 'published',
+                        ).length
+                      } / ${report.publication.operationalProof.scenarios.length} complete`,
+                ],
+              ]}
+            />
+            {report.publication.activeRelease ? (
+              <div className="mt-6 rounded-2xl bg-slate-100 px-4 py-3 text-sm text-slate-700">
+                <p className="font-black text-slate-950">Active reviewed release</p>
+                <p className="mt-1">{report.publication.activeRelease.id}</p>
+                <p className="mt-1 break-all text-xs">
+                  {report.publication.activeRelease.manifestDigest}
+                </p>
+                <p className="mt-1 text-xs text-slate-500">
+                  Commit {report.publication.activeRelease.repositoryCommit.slice(0, 12)} ·
+                  published {formatDateTime(report.publication.activeRelease.publishedAt)}
+                </p>
+              </div>
+            ) : (
+              <p className="mt-6 text-sm text-slate-600">
+                No reviewed admissions release is active.
+              </p>
+            )}
+          </Panel>
+        </section>
+
           <section className="grid gap-5 lg:grid-cols-2">
           <Panel title="Ingestion pipeline">
             <CompactRows
@@ -177,6 +394,7 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
                     detail: `${report.reviewQueue.oldestPendingItem.targetField} since ${formatDateTime(
                       report.reviewQueue.oldestPendingItem.createdAt,
                     )}`,
+                    href: `/internal/reviews/${report.reviewQueue.oldestPendingItem.id}`,
                   },
                 ]}
               />
@@ -244,7 +462,7 @@ function IssueList({ items }: { items: string[] }) {
   );
 }
 
-function DefinitionGrid({ items }: { items: Array<[string, number]> }) {
+function DefinitionGrid({ items }: { items: Array<[string, number | string]> }) {
   return (
     <dl className="mt-3 grid grid-cols-2 gap-3">
       {items.map(([label, value]) => (
@@ -262,7 +480,7 @@ function CompactRows({
   rows,
 }: {
   emptyLabel?: string;
-  rows: Array<{ detail: string; id: string }>;
+  rows: Array<{ detail: string; href?: string; id: string }>;
 }) {
   if (rows.length === 0) {
     return emptyLabel ? <p className="text-sm text-slate-600">{emptyLabel}</p> : null;
@@ -272,8 +490,53 @@ function CompactRows({
     <ul className="grid gap-2">
       {rows.map((row) => (
         <li key={row.id} className="rounded-2xl bg-[#eef4ff]/82 px-4 py-3">
-          <p className="text-sm font-black text-[#445274]">{row.id}</p>
+          {row.href ? (
+            <Link
+              className="text-sm font-black text-[#445274] underline-offset-4 hover:underline"
+              href={row.href}
+            >
+              {row.id}
+            </Link>
+          ) : (
+            <p className="text-sm font-black text-[#445274]">{row.id}</p>
+          )}
           <p className="mt-1 text-sm text-[#647091]">{row.detail}</p>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function AdmissionsEvidenceRows({
+  rows,
+}: {
+  rows: DataHealthReadyReport['decisionEvidence']['rows'];
+}) {
+  if (rows.length === 0) {
+    return <p className="text-sm text-slate-600">No linked admissions pairs were found.</p>;
+  }
+
+  return (
+    <ul className="grid gap-3">
+      {rows.map((row) => (
+        <li
+          key={`${row.programId}-${row.institutionId}`}
+          className={`rounded-2xl border px-4 py-4 ${evidenceRowClasses(row.severity)}`}
+        >
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+            <div>
+              <p className="text-base font-black text-slate-950">{row.programName}</p>
+              <p className="text-sm text-slate-600">{row.institutionName}</p>
+            </div>
+            <span
+              className={`inline-flex w-fit rounded-full px-3 py-1 text-xs font-black uppercase tracking-[0.16em] ${evidenceBadgeClasses(
+                row.severity,
+              )}`}
+            >
+              {evidenceModeLabel(row.evidenceMode)}
+            </span>
+          </div>
+          <p className="mt-3 text-sm text-slate-700">{admissionsEvidenceDetail(row)}</p>
         </li>
       ))}
     </ul>
@@ -286,11 +549,143 @@ function buildCriticalItems(report: DataHealthReadyReport): string[] {
     ...report.coverage.missingRequirementSources.map(
       (row) => `Missing source URL for ${row.admissionRequirementId}`,
     ),
+    ...report.decisionReadiness.requirementsMissingFacts.map(
+      (row) => `Missing admissions facts for ${row.admissionRequirementId}`,
+    ),
+    ...report.decisionReadiness.weakSources.map(
+      (source) => `Weak admissions source ${source.sourceCandidateId}`,
+    ),
     ...report.ingestion.recentFailures.map((job) => `Failed ingestion job ${job.id}`),
+    ...report.freshness.rows
+      .filter((row) => ['blocked', 'changed_needs_review', 'failed', 'stale'].includes(row.status))
+      .map((row) => `Source freshness ${row.status}: ${row.sourceId}`),
+    ...(report.publication.failedReleaseCount > 0
+      ? [`Failed admissions publications: ${report.publication.failedReleaseCount}`]
+      : []),
+    ...(!report.formulaVerification.isComplete
+      ? [
+          `Formula verification incomplete: ${report.formulaVerification.exact}/${report.formulaVerification.total} exact`,
+        ]
+      : []),
     ...(report.reviewQueue.oldestPendingItem
       ? [`Oldest pending review ${report.reviewQueue.oldestPendingItem.id}`]
       : []),
   ].slice(0, 8);
+}
+
+function sourceFreshnessDetail(row: DataHealthReadyReport['freshness']['rows'][number]): string {
+  const scope = [row.institutionId, row.programId].filter(Boolean).join(' / ') || 'global source';
+  const parts = [
+    `${scope} / ${row.status}`,
+    row.lastCheckedAt ? `checked ${formatDateTime(row.lastCheckedAt)}` : 'never checked',
+    row.lastSuccessfulCheckAt ? `last success ${formatDateTime(row.lastSuccessfulCheckAt)}` : null,
+    row.lastChangedAt ? `changed ${formatDateTime(row.lastChangedAt)}` : null,
+    row.latestReviewItemId ? `review ${row.latestReviewItemId}` : null,
+    row.reason,
+    row.nextAction ? `Next: ${row.nextAction}` : null,
+  ].filter(Boolean);
+
+  return parts.join(' | ');
+}
+
+function admissionsEvidenceDetail(
+  row: DataHealthReadyReport['decisionEvidence']['rows'][number],
+): string {
+  const parts = [
+    row.sourceTargetId ? `target ${row.sourceTargetId}` : null,
+    row.adapterId ? `adapter ${row.adapterId}` : null,
+    row.externalProgramId ? `external ${row.externalProgramId}` : null,
+    row.freshnessStatus ? `freshness ${row.freshnessStatus}` : null,
+    row.requiredInputs.length > 0 ? `requires ${row.requiredInputs.join(', ')}` : null,
+    row.blockedReason,
+    row.officialSourceUrl ? `source ${row.officialSourceUrl}` : null,
+  ].filter(Boolean);
+
+  return parts.join(' | ') || 'No official-source metadata is currently linked to this pair.';
+}
+
+function evidenceModeLabel(
+  evidenceMode: DataHealthReadyReport['decisionEvidence']['rows'][number]['evidenceMode'],
+): string {
+  switch (evidenceMode) {
+    case 'exact':
+      return 'Exact official';
+    case 'needs_input':
+      return 'Official needs input';
+    case 'blocked':
+      return 'Blocked official';
+    case 'stale':
+      return 'Stale official';
+    case 'authority_unavailable':
+      return 'Official proof incomplete';
+    case 'score_only':
+      return 'Score only';
+    case 'estimated':
+      return 'Estimated';
+    case 'open_admission':
+      return 'Open admission';
+    case 'manual_gate':
+      return 'Manual gate';
+    case 'requirements_only':
+      return 'Requirements only';
+    case 'unsupported':
+      return 'Unsupported';
+    case 'missing':
+      return 'Missing';
+    default:
+      return evidenceMode;
+  }
+}
+
+function nonCatalogueBucketLabel(bucket: string): string {
+  switch (bucket) {
+    case 'manual_gate':
+      return 'Manual gate';
+    case 'eligible_with_manual_gate':
+      return 'Eligible with manual gate';
+    case 'eligible_no_formal_grade_gate':
+      return 'Eligible with no formal grade gate';
+    case 'requirements_review':
+      return 'Needs structured requirements';
+    case 'tracked_missing_rule':
+      return 'Tracked missing rule';
+    case 'open_admission':
+      return 'Open admission';
+    case 'decision_capable':
+      return 'Decision capable';
+    default:
+      return bucket.replaceAll('_', ' ');
+  }
+}
+
+function nonCatalogueBucketAnchorId(bucket: string): string {
+  return `non-catalogue-${bucket.replaceAll('_', '-')}`;
+}
+
+function evidenceRowClasses(
+  severity: DataHealthReadyReport['decisionEvidence']['rows'][number]['severity'],
+) {
+  switch (severity) {
+    case 'attention':
+      return 'border-red-900/15 bg-red-50';
+    case 'informational':
+      return 'border-slate-950/10 bg-slate-50';
+    default:
+      return 'border-emerald-900/15 bg-emerald-50';
+  }
+}
+
+function evidenceBadgeClasses(
+  severity: DataHealthReadyReport['decisionEvidence']['rows'][number]['severity'],
+) {
+  switch (severity) {
+    case 'attention':
+      return 'bg-red-100 text-red-950';
+    case 'informational':
+      return 'bg-slate-200 text-slate-800';
+    default:
+      return 'bg-emerald-100 text-emerald-950';
+  }
 }
 
 function formatDateTime(value: string): string {

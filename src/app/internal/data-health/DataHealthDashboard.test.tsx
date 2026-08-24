@@ -23,6 +23,29 @@ function reportWithRisks(): DataHealthReadyReport {
         universityCalculatorConfigs: 7,
       },
     },
+    formulaVerification: {
+      total: 135,
+      exact: 3,
+      withheld: 132,
+      stale: 0,
+      blocked: 0,
+      isComplete: false,
+      totalsByInstitution: {
+        tau: { total: 35, exact: 3, withheld: 32, stale: 0, blocked: 0 },
+        huji: { total: 29, exact: 0, withheld: 29, stale: 0, blocked: 0 },
+        bgu: { total: 29, exact: 0, withheld: 29, stale: 0, blocked: 0 },
+        haifa: { total: 27, exact: 0, withheld: 27, stale: 0, blocked: 0 },
+        technion: { total: 14, exact: 0, withheld: 14, stale: 0, blocked: 0 },
+        colman: { total: 1, exact: 0, withheld: 1, stale: 0, blocked: 0 },
+      },
+    },
+    runtimeFormulaVerification: {
+      total: 135,
+      exact: 3,
+      stale: 0,
+      blocked: 0,
+      authorityUnavailable: 132,
+    },
     coverage: {
       missingRequirementSourceCount: 1,
       missingProgramSourceCount: 1,
@@ -38,6 +61,90 @@ function reportWithRisks(): DataHealthReadyReport {
           institutionId: 'tau',
           programId: 'tau_law',
           programName: 'Law',
+        },
+      ],
+    },
+    decisionReadiness: {
+      decisionReadyRequirementCount: 2,
+      missingFactCount: 1,
+      weakSourceCount: 1,
+      manualGateCount: 1,
+      alternativePathCount: 1,
+      requirementsMissingFacts: [
+        {
+          admissionRequirementId: 'req-missing-facts',
+          institutionId: 'tau',
+          programId: 'tau_psychology',
+        },
+      ],
+      weakSources: [
+        {
+          sourceCandidateId: 'candidate-weak',
+          admissionRequirementId: 'req-tau-law',
+          institutionId: 'tau',
+          programId: 'tau_law',
+          confidence: 'low',
+          origin: 'board_column',
+          specificity: 'generic',
+        },
+      ],
+      manualGateRequirements: [
+        {
+          admissionRequirementId: 'req-tau-law',
+          institutionId: 'tau',
+          programId: 'tau_law',
+        },
+      ],
+    },
+    decisionEvidence: {
+      rows: [
+        {
+          programId: 'tau_datascience',
+          programName: 'Digital Sciences for High-Tech',
+          institutionId: 'tau',
+          institutionName: 'Tel Aviv University',
+          evidenceMode: 'exact',
+          severity: 'normal',
+          sourceTargetId: 'tau-digital-sciences-live',
+          officialSourceUrl: 'https://go.tau.ac.il/graphql',
+          adapterId: 'tau',
+          externalProgramId: '056011050000',
+          freshnessStatus: 'fresh',
+          blockedReason: null,
+          requiredInputs: [],
+          formulaPairScope: 'in_scope',
+        },
+        {
+          programId: 'haifa_cs',
+          programName: 'Computer Science',
+          institutionId: 'haifa',
+          institutionName: 'University of Haifa',
+          evidenceMode: 'needs_input',
+          severity: 'normal',
+          sourceTargetId: 'haifa-cs-live',
+          officialSourceUrl: 'https://applicants.haifa.ac.il/enrollmentChances/index.html',
+          adapterId: 'haifa',
+          externalProgramId: '52258372',
+          freshnessStatus: 'fresh',
+          blockedReason: null,
+          requiredInputs: ['psychometric_math', 'psychometric_verbal', 'psychometric_english'],
+          formulaPairScope: 'in_scope',
+        },
+        {
+          programId: 'tau_law',
+          programName: 'Law',
+          institutionId: 'tau',
+          institutionName: 'Tel Aviv University',
+          evidenceMode: 'missing',
+          severity: 'informational',
+          sourceTargetId: null,
+          officialSourceUrl: null,
+          adapterId: null,
+          externalProgramId: null,
+          freshnessStatus: null,
+          blockedReason: null,
+          requiredInputs: [],
+          formulaPairScope: null,
         },
       ],
     },
@@ -84,6 +191,113 @@ function reportWithRisks(): DataHealthReadyReport {
       },
       recentReviewedItems: [],
     },
+    freshness: {
+      staleAfterDays: 8,
+      totalsByStatus: {
+        blocked: 1,
+        changed_needs_review: 1,
+        failed: 1,
+        fresh: 2,
+        stale: 1,
+      },
+      rows: [
+        {
+          sourceId: 'tau-live',
+          institutionId: 'tau',
+          programId: 'tau_cs',
+          sourceUrl: 'https://go.tau.ac.il/graphql',
+          status: 'changed_needs_review',
+          sourceClass: 'api_static_json',
+          capability: 'decision_capable',
+          lastCheckedAt: '2026-06-24T17:00:00.000Z',
+          lastSuccessfulCheckAt: '2026-06-24T17:00:00.000Z',
+          lastChangedAt: '2026-06-24T17:00:00.000Z',
+          reason: null,
+          latestReviewItemId: 'review-source-1',
+          nextAction: 'Review changed threshold before publication',
+        },
+        {
+          sourceId: 'biu-browser-required',
+          institutionId: 'biu',
+          programId: null,
+          sourceUrl: 'https://in.biu.ac.il/Pages/Psychometric.aspx',
+          status: 'blocked',
+          sourceClass: 'browser_required',
+          capability: 'blocked',
+          lastCheckedAt: '2026-06-24T17:00:00.000Z',
+          lastSuccessfulCheckAt: null,
+          lastChangedAt: null,
+          reason: 'Radware/browser session required',
+          latestReviewItemId: null,
+          nextAction: 'Move to Hermes/VPS browser automation lane',
+        },
+      ],
+    },
+    publication: {
+      activeRelease: {
+        id: 'release-1',
+        manifestDigest: 'sha256:release-manifest',
+        repositoryCommit: '0123456789abcdef',
+        publishedAt: '2026-06-24T17:00:00.000Z',
+      },
+      pendingReleaseCount: 1,
+      failedReleaseCount: 2,
+      operationalProof: {
+        publishedReleaseCount: 0,
+        pendingReleaseCount: 0,
+        failedReleaseCount: 0,
+        matrixComplete: false,
+        scenarios: [
+          { scenario: 'proof-plan001-20260820', status: 'not_started' },
+          { scenario: 'proof-plan001-failure-20260820', status: 'not_started' },
+          { scenario: 'proof-plan001-corrective-20260820', status: 'not_started' },
+        ],
+      },
+    },
+    mondayEvidence: {
+      totalItems: 212,
+      catalogueMatched: 34,
+      nonCatalogueEvidence: 178,
+      decisionCapable: 5,
+      trackedMissingRule: 4,
+      blocked: 2,
+      openAdmission: 1,
+      manualOrEligible: 178,
+      nonCatalogueBucketCounts: {
+        eligible_no_formal_grade_gate: 120,
+        manual_gate: 58,
+      },
+      nonCatalogueGroups: [
+        {
+          bucket: 'eligible_no_formal_grade_gate',
+          count: 120,
+          rows: [
+            {
+              itemId: '12341102997',
+              itemName: '57. המרכז האקדמי שערי מדע ומשפט',
+              publicBucket: 'eligible_no_formal_grade_gate',
+              nextAction:
+                'Find the official admissions URL before this item can be treated as product-complete.',
+              officialUrl: 'https://mishpat.ac.il',
+            },
+          ],
+        },
+        {
+          bucket: 'manual_gate',
+          count: 58,
+          rows: [
+            {
+              itemId: '12220697938',
+              itemName: '28. מעלה - לקולנוע ואמנויות',
+              publicBucket: 'manual_gate',
+              nextAction:
+                'Represent as eligible/apply/register unless the official source names a formal grade gate.',
+              officialUrl: 'https://www.maale.co.il',
+            },
+          ],
+        },
+      ],
+    },
   };
 }
 
@@ -93,9 +307,33 @@ describe('DataHealthDashboard', () => {
 
     expect(screen.getByRole('heading', { name: /data health/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /catalogue readiness/i })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /formula-backed pair verification/i })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /admissions decision readiness/i })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /^admissions evidence$/i })).toBeTruthy();
+    expect(
+      screen.getByRole('heading', { name: /monday admissions evidence coverage/i }),
+    ).toBeTruthy();
     expect(screen.getByRole('heading', { name: /source coverage/i })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /source freshness/i })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /admissions publication/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /ingestion pipeline/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /review queue/i })).toBeTruthy();
+    expect(screen.getByText('Non-catalogue evidence')).toBeTruthy();
+    expect(screen.getByText('Non-catalogue evidence queue')).toBeTruthy();
+  });
+
+  it('renders exact, needs-input, and informational admissions evidence rows', () => {
+    render(<DataHealthDashboard report={reportWithRisks()} adminEmail="operator@example.com" />);
+
+    expect(screen.getByText('Digital Sciences for High-Tech')).toBeTruthy();
+    expect(screen.getByText('Exact official')).toBeTruthy();
+    expect(
+      screen.getByText(/requires psychometric_math, psychometric_verbal, psychometric_english/i),
+    ).toBeTruthy();
+    expect(screen.getByText('Missing')).toBeTruthy();
+    expect(
+      screen.getByText(/No official-source metadata is currently linked to this pair/i),
+    ).toBeTruthy();
   });
 
   it('prioritizes critical operational risks before lower-priority totals', () => {
@@ -107,6 +345,7 @@ describe('DataHealthDashboard', () => {
     expect(text.indexOf('Immediate attention')).toBeGreaterThanOrEqual(0);
     expect(text.indexOf('Immediate attention')).toBeLessThan(text.indexOf('Catalogue totals'));
     expect(text.indexOf('job-failed')).toBeLessThan(text.indexOf('Total ingestion jobs'));
+    expect(text).not.toContain('Missing official target');
   });
 
   it('does not render raw proposed review values or ingestion payloads', () => {
@@ -114,5 +353,34 @@ describe('DataHealthDashboard', () => {
 
     expect(screen.queryByText(/proposedValue/i)).toBeNull();
     expect(screen.queryByText(/payload json/i)).toBeNull();
+    expect(screen.queryByText(/normalizedDecisionPayload/i)).toBeNull();
+  });
+
+  it('renders a compact non-catalogue Monday evidence backlog for operators', () => {
+    render(<DataHealthDashboard report={reportWithRisks()} adminEmail="operator@example.com" />);
+
+    expect(screen.getByText('57. המרכז האקדמי שערי מדע ומשפט')).toBeTruthy();
+    expect(screen.getAllByText('Eligible with no formal grade gate').length).toBeGreaterThan(0);
+    expect(screen.getByText(/https:\/\/mishpat\.ac\.il/i)).toBeTruthy();
+    expect(screen.getAllByText('Manual gate').length).toBeGreaterThan(0);
+    expect(screen.getByText('28. מעלה - לקולנוע ואמנויות')).toBeTruthy();
+    expect(
+      screen
+        .getByRole('link', { name: /eligible with no formal grade gate/i })
+        .getAttribute('href'),
+    ).toBe('#non-catalogue-eligible-no-formal-grade-gate');
+    expect(screen.getByRole('link', { name: /manual gate/i }).getAttribute('href')).toBe(
+      '#non-catalogue-manual-gate',
+    );
+  });
+
+  it('links the oldest pending review item without rendering mutation controls', () => {
+    render(<DataHealthDashboard report={reportWithRisks()} adminEmail="operator@example.com" />);
+
+    expect(screen.getByRole('link', { name: 'review-old' }).getAttribute('href')).toBe(
+      '/internal/reviews/review-old',
+    );
+    expect(screen.queryByRole('button', { name: /approve/i })).toBeNull();
+    expect(screen.queryByRole('button', { name: /reject/i })).toBeNull();
   });
 });

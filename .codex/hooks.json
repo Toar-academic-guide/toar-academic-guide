@@ -1,0 +1,17 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "^Bash$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "repo_root=$(git rev-parse --show-toplevel 2>/dev/null) && node \"$repo_root/.codex/hooks/pre_pr_push_guard.mjs\"",
+            "timeout": 600,
+            "statusMessage": "Checking pre-PR/pre-push guard"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+set -eu
+
+if [ "${SKIP_PRE_PR_GUARD:-}" = "1" ]; then
+  echo "Skipping pre-PR guard because SKIP_PRE_PR_GUARD=1 is set."
+  exit 0
+fi
+
+npm run guard:pre-pr

@@ -17,6 +17,14 @@ export type FormulaType = 'weighted_scaled' | 'technion_linear' | 'minimum_floor
 export interface UserScores {
   psychometric: number; // 200–800
   bagrut: number; // 60–120 (including bonuses)
+  mathUnits?: number;
+  mathGrade?: number;
+  englishUnits?: number;
+  englishGrade?: number;
+  physicsUnits?: number;
+  physicsGrade?: number;
+  csUnits?: number;
+  csGrade?: number;
 }
 
 export interface University {
@@ -46,6 +54,64 @@ export interface UniversityResult {
   status: 'accepted' | 'below' | 'unavailable';
   deltaNeeded?: DeltaNeeded;
   admissionTrack?: 'direct'; // present when accepted via psychometric-only direct track
+  explanation?: string;
+}
+
+export type AdmissionsDecisionStatus =
+  | 'accepted'
+  | 'likely_accepted_needs_verification'
+  | 'close_to_accepted'
+  | 'not_accepted_has_path'
+  | 'far_from_track'
+  | 'insufficient_data';
+
+export type AdmissionsDecisionConfidence = 'high' | 'medium' | 'low';
+
+export type AdmissionsNextActionKind =
+  | 'register'
+  | 'check_dates'
+  | 'save_target'
+  | 'improve_psychometric'
+  | 'improve_bagrut'
+  | 'prep_program'
+  | 'transfer_path'
+  | 'exceptions_committee'
+  | 'similar_program'
+  | 'other_institution'
+  | 'manual_check'
+  | 'official_source'
+  | 'online_or_abroad';
+
+export interface AdmissionsDecisionSource {
+  label: string;
+  url?: string;
+  confidence: AdmissionsDecisionConfidence;
+}
+
+export interface AdmissionsDecisionMissingItem {
+  label: string;
+  field?: string;
+  currentValue?: number;
+  requiredValue?: number;
+  delta?: number;
+}
+
+export interface AdmissionsDecisionNextAction {
+  kind: AdmissionsNextActionKind;
+  label: string;
+  url?: string;
+}
+
+export interface AdmissionsDecision {
+  status: AdmissionsDecisionStatus;
+  confidence: AdmissionsDecisionConfidence;
+  statusLabel: string;
+  explanation: string[];
+  metConditions: string[];
+  missing: AdmissionsDecisionMissingItem[];
+  manualGates: string[];
+  sources: AdmissionsDecisionSource[];
+  nextAction: AdmissionsDecisionNextAction;
 }
 
 // ── Career Profile Dimensions ─────────────────────────────────────────────────
@@ -120,9 +186,33 @@ export interface PsychometricScores {
 }
 
 /** Matriculation (Bagrut) academic record. */
+export type BagrutSector = 'jewish' | 'arab' | 'druze' | 'circassian' | 'bedouin' | 'samaritan';
+
+export interface BagrutSubject {
+  /** Stable Toar-owned subject identifier, for example `mathematics`. */
+  subjectId: string;
+  /** The study-unit count recorded for this subject. */
+  units: number;
+  /** Final subject grade on the Bagrut 0–100 scale. */
+  grade: number;
+}
+
+export interface BagrutSubjectRecord {
+  /** Version of the normalized subject-record contract. */
+  schemaVersion: 1;
+  /** Education-sector context required to interpret mandatory subjects. */
+  sector: BagrutSector;
+  /** Immutable, normalized subject records used for admissions replay. */
+  subjects: BagrutSubject[];
+  /** Server-derived digest identifying this exact immutable record. */
+  profileHash?: string;
+}
+
 export interface BagrutRecord {
   /** Weighted average including all generic bonuses, 60–120 */
   weightedAverage?: number;
+  /** Subject-level record required for verified Bagrut calculations. */
+  subjectRecord?: BagrutSubjectRecord;
 }
 
 /** Combined academic-scores object stored in the user profile. */

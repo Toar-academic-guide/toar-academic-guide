@@ -1,24 +1,56 @@
 import 'server-only';
 
+import { eq } from 'drizzle-orm';
+
+import type { InstitutionId } from '@/data/institutions';
 import { getOpsDb } from '@/db/opsClient';
 import {
+  admissionAlternativePaths,
+  admissionFacts,
+  admissionReleases,
   admissionRequirements,
   admissionThresholds,
+  admissionsSourceCandidates,
   ingestionJobs,
+  ingestionPayloads,
+  ingestionSources,
   institutions,
   programInstitutions,
   programs,
   reviewItems,
+  sourceFreshnessStates,
   sourceUrls,
   universityCalculatorConfigs,
 } from '@/db/schema';
+import type { SourceFreshnessStateRow } from '@/db/types';
+import { buildAdmissionsCapabilityMatrix } from '@/server/admissions/capabilityMatrix';
+import {
+  OPERATIONAL_PROOF_SCENARIOS,
+  type OperationalProofScenario,
+} from '@/server/admissions/operationalProofRun';
 import { evaluateCatalogueReadiness } from '@/server/catalogue/queries';
+import { mondayAdmissionsEvidence } from '@/data/admissions/mondayEvidence';
+import { allPrograms } from '@/data/degrees';
+import { buildFormulaBackedPairInventory } from '@/data/admissions/formulaBackedPairInventory';
+import {
+  FORMULA_BACKED_VERIFICATION_LEDGER,
+  formulaPairVerificationCompletion,
+  type FormulaPairVerificationCompletion,
+} from '@/data/admissions/formulaBackedVerificationLedger';
+import { parseSourceFreshnessProposedValue } from '@/server/ingestion/reviewTypes';
+import type {
+  AdmissionsEvaluationCapability,
+  AdmissionsRequiredInput,
+} from '@/types/admissionsEvaluation';
+import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
+import type { UniversityId } from '@/types';
 
 const ISSUE_LIMIT = 5;
 const DATA_HEALTH_QUERY_TIMEOUT_MS = 15000;
 const DATA_HEALTH_UNAVAILABLE_MESSAGE = 'Operational data health is not configured.';
 const DATA_HEALTH_TIMEOUT_MESSAGE =
   'Operational data health did not respond in time. Check OPS_DATABASE_URL and Supabase pooler connectivity.';
+const SOURCE_FRESHNESS_STALE_AFTER_MS = 8 * 24 * 60 * 60 * 1000;
 
 export type DataHealthReport =
   | DataHealthReadyReport
@@ -35,11 +67,32 @@ export interface DataHealthReadyReport {
     issues: string[];
     counts: DataHealthCounts;
   };
+  formulaVerification: FormulaPairVerificationCompletion;
+  runtimeFormulaVerification: {
+    total: number;
+    exact: number;
+    stale: number;
+    blocked: number;
+    authorityUnavailable: number;
+  };
   coverage: {
     missingRequirementSourceCount: number;
     missingProgramSourceCount: number;
     missingRequirementSources: MissingRequirementSource[];
     missingProgramSources: MissingProgramSource[];
+  };
+  decisionReadiness: {
+    decisionReadyRequirementCount: number;
+    missingFactCount: number;
+    weakSourceCount: number;
+    manualGateCount: number;
+    alternativePathCount: number;
+    requirementsMissingFacts: AdmissionRequirementIssue[];
+    weakSources: SourceCandidateIssue[];
+    manualGateRequirements: AdmissionRequirementIssue[];
+  };
+  decisionEvidence: {
+    rows: AdmissionsEvidenceRow[];
   };
   ingestion: {
     totalJobs: number;
@@ -54,11 +107,83 @@ export interface DataHealthReadyReport {
     oldestPendingItem: ReviewItemSummary | null;
     recentReviewedItems: ReviewItemSummary[];
   };
+  freshness: {
+    staleAfterDays: number;
+    totalsByStatus: Partial<Record<DashboardSourceFreshnessStatus, number>>;
+    rows: SourceFreshnessSummary[];
+  };
+  publication: AdmissionsPublicationHealth;
+  mondayEvidence: MondayEvidenceCoverage;
+}
+
+export interface AdmissionsPublicationHealth {
+  activeRelease: {
+    id: string;
+    manifestDigest: string;
+    repositoryCommit: string;
+    publishedAt: string;
+  } | null;
+  pendingReleaseCount: number;
+  failedReleaseCount: number;
+  operationalProof: {
+    publishedReleaseCount: number;
+    pendingReleaseCount: number;
+    failedReleaseCount: number;
+    matrixComplete: boolean;
+    scenarios: Array<{
+      scenario: OperationalProofScenario;
+      status: 'not_started' | 'pending' | 'failed' | 'published';
+    }>;
+  };
+}
+
+export interface MondayEvidenceCoverage {
+  totalItems: number;
+  catalogueMatched: number;
+  nonCatalogueEvidence: number;
+  decisionCapable: number;
+  trackedMissingRule: number;
+  blocked: number;
+  openAdmission: number;
+  manualOrEligible: number;
+  nonCatalogueBucketCounts: Record<string, number>;
+  nonCatalogueGroups: MondayEvidenceBacklogGroup[];
+}
+
+export interface MondayEvidenceBacklogRow {
+  itemId: string;
+  itemName: string;
+  publicBucket: string;
+  nextAction: string;
+  officialUrl: string | null;
+}
+
+export interface MondayEvidenceBacklogGroup {
+  bucket: string;
+  count: number;
+  rows: MondayEvidenceBacklogRow[];
 }
 
 export interface DataHealthRows {
-  institutions: Array<{ id: string }>;
-  programs: Array<{ id: string; name: string; admissionType: 'sekhem' | 'requirements' }>;
+  institutions: Array<{
+    id: string;
+    name: string;
+    region: 'center' | 'north' | 'south' | 'any';
+    domain: string | null;
+    logoUrl: string | null;
+    programUrl: string | null;
+    calculatorUrl: string | null;
+    universityId: string | null;
+  }>;
+  programs: Array<{
+    id: string;
+    name: string;
+    institutionName: string;
+    institutionId: string | null;
+    type: 'academic' | 'certificate' | 'vocational';
+    category: string;
+    admissionType: 'sekhem' | 'requirements';
+  }>;
   programInstitutions: Array<{ programId: string; institutionId: string }>;
   admissionRequirements: Array<{
     id: string;
@@ -79,14 +204,71 @@ export interface DataHealthRows {
     institutionId: string;
     url: string;
   }>;
-  universityCalculatorConfigs: Array<{ institutionId: string }>;
+  universityCalculatorConfigs: Array<{
+    institutionId: string;
+    formulaType: 'weighted_scaled' | 'technion_linear' | 'minimum_floors';
+    psyWeight: number | null;
+    bagrutWeight: number | null;
+    minPsychometric: number | null;
+    minBagrut: number | null;
+    scaleDescription: string;
+  }>;
+  ingestionSources: IngestionSourceRow[];
+  admissionsSourceCandidates: Array<{
+    id: string;
+    admissionRequirementId: string;
+    programId: string;
+    institutionId: string;
+    origin: string;
+    specificity: string;
+    confidence: 'high' | 'medium' | 'low';
+  }>;
+  admissionFacts: Array<{
+    id: string;
+    admissionRequirementId: string;
+    programId: string;
+    institutionId: string;
+    kind: string;
+    field: string;
+    confidence: 'high' | 'medium' | 'low';
+  }>;
+  admissionAlternativePaths: Array<{
+    id: string;
+    admissionRequirementId: string;
+    programId: string;
+    institutionId: string;
+    kind: string;
+  }>;
   ingestionJobs: IngestionJobRow[];
   reviewItems: ReviewItemRow[];
+  sourceFreshnessStates: SourceFreshnessStateRow[];
+  admissionReleases: Array<{
+    id: string;
+    manifestDigest: string;
+    repositoryCommit: string;
+    releaseKind: 'canonical_bootstrap' | 'canonical_change' | 'operational_proof';
+    proofScenario: string | null;
+    status: 'pending' | 'published' | 'failed';
+    publishedAt: Date | null;
+  }>;
 }
 
 type IngestionJobStatus = 'pending' | 'running' | 'succeeded' | 'failed' | 'needs_review';
 type SourceDifficulty = 'easy' | 'browser_required' | 'hard_manual';
 type ReviewItemStatus = 'pending' | 'approved' | 'rejected';
+type FreshnessSourceClass =
+  'api_static_json' | 'browser_required' | 'official_html' | 'pdf_text' | 'score_only_calculator';
+type FreshnessCapability = 'blocked' | 'decision_capable' | 'score_only';
+type SourceFreshnessStatus = 'blocked' | 'changed_needs_review' | 'failed' | 'fresh';
+type DashboardSourceFreshnessStatus = SourceFreshnessStatus | 'never_checked' | 'stale';
+
+interface IngestionSourceRow {
+  id: string;
+  institutionId: string | null;
+  programId: string | null;
+  difficulty: SourceDifficulty;
+  sourceUrl: string;
+}
 
 interface IngestionJobRow {
   id: string;
@@ -131,6 +313,19 @@ interface MissingProgramSource {
   programName: string;
 }
 
+interface AdmissionRequirementIssue {
+  admissionRequirementId: string;
+  institutionId: string;
+  programId: string;
+}
+
+interface SourceCandidateIssue extends AdmissionRequirementIssue {
+  sourceCandidateId: string;
+  confidence: 'high' | 'medium' | 'low';
+  origin: string;
+  specificity: string;
+}
+
 interface IngestionJobSummary {
   id: string;
   sourceId: string;
@@ -152,6 +347,80 @@ interface ReviewItemSummary {
   reviewedAt: string | null;
 }
 
+type ReviewItemDetailStatus = ReviewItemStatus;
+
+interface ReviewItemDetailRow {
+  id: string;
+  payloadId: string;
+  admissionRequirementId: string | null;
+  targetField: string;
+  proposedValue: unknown;
+  status: ReviewItemDetailStatus;
+  createdAt: Date;
+  reviewedAt: Date | null;
+}
+
+interface ReviewItemDetailPayloadRow {
+  createdAt: Date;
+}
+
+interface ReviewItemDetailSourceRow {
+  id: string;
+  institutionId: string | null;
+  programId: string | null;
+  sourceUrl: string;
+}
+
+interface ReviewItemDetailFreshnessRow {
+  sourceId: string;
+  sourceClass: FreshnessSourceClass;
+  capability: FreshnessCapability;
+  status: SourceFreshnessStatus;
+  lastCheckedAt: Date | null;
+  lastSuccessfulCheckAt: Date | null;
+  lastChangedAt: Date | null;
+  latestReviewItemId: string | null;
+  nextAction: string | null;
+}
+
+export interface ReviewItemDetail {
+  id: string;
+  payloadId: string;
+  payloadCreatedAt: string | null;
+  admissionRequirementId: string | null;
+  targetField: string;
+  status: ReviewItemDetailStatus;
+  createdAt: string;
+  reviewedAt: string | null;
+  actionEligibility: {
+    canReject: boolean;
+  };
+  evidence: {
+    sourceId: string | null;
+    institutionId: string | null;
+    programId: string | null;
+    sourceUrl: string | null;
+    sourceClass: FreshnessSourceClass | null;
+    capability: FreshnessCapability | null;
+    freshnessStatus: SourceFreshnessStatus | null;
+    latestReviewItemId: string | null;
+    normalizedFingerprint: string | null;
+    normalizedDecisionPayload: Array<{ key: string; value: string }>;
+    reproducedFields: string[];
+    limitations: string[];
+    nextAction: string | null;
+  };
+}
+
+export type ReviewItemDetailResult =
+  | {
+      status: 'found';
+      item: ReviewItemDetail;
+    }
+  | {
+      status: 'not_found';
+    };
+
 interface GetDataHealthReportOptions {
   timeoutMs?: number;
 }
@@ -161,6 +430,39 @@ class DataHealthTimeoutError extends Error {
     super(`Data health query timed out after ${timeoutMs}ms`);
     this.name = 'DataHealthTimeoutError';
   }
+}
+
+interface SourceFreshnessSummary {
+  sourceId: string;
+  institutionId: string | null;
+  programId: string | null;
+  sourceUrl: string;
+  status: DashboardSourceFreshnessStatus;
+  sourceClass: FreshnessSourceClass | null;
+  capability: FreshnessCapability | null;
+  lastCheckedAt: string | null;
+  lastSuccessfulCheckAt: string | null;
+  lastChangedAt: string | null;
+  reason: string | null;
+  latestReviewItemId: string | null;
+  nextAction: string | null;
+}
+
+export interface AdmissionsEvidenceRow {
+  programId: string;
+  programName: string;
+  institutionId: string;
+  institutionName: string;
+  evidenceMode: AdmissionsEvaluationCapability;
+  severity: 'attention' | 'normal' | 'informational';
+  sourceTargetId: string | null;
+  officialSourceUrl: string | null;
+  adapterId: string | null;
+  externalProgramId: string | null;
+  freshnessStatus: DashboardSourceFreshnessStatus | null;
+  blockedReason: string | null;
+  requiredInputs: AdmissionsRequiredInput[];
+  formulaPairScope: 'in_scope' | 'excluded' | null;
 }
 
 export async function getDataHealthReport(
@@ -182,6 +484,130 @@ export async function getDataHealthReport(
           : DATA_HEALTH_UNAVAILABLE_MESSAGE,
     };
   }
+}
+
+export async function getReviewItemDetail(reviewItemId: string): Promise<ReviewItemDetailResult> {
+  const db = getOpsDb();
+  const [reviewItem] = await db
+    .select({
+      id: reviewItems.id,
+      payloadId: reviewItems.payloadId,
+      admissionRequirementId: reviewItems.admissionRequirementId,
+      targetField: reviewItems.targetField,
+      proposedValue: reviewItems.proposedValue,
+      status: reviewItems.status,
+      createdAt: reviewItems.createdAt,
+      reviewedAt: reviewItems.reviewedAt,
+    })
+    .from(reviewItems)
+    .where(eq(reviewItems.id, reviewItemId))
+    .limit(1);
+
+  if (!reviewItem) {
+    return { status: 'not_found' };
+  }
+
+  const sourceId = sourceIdFromReviewItem(reviewItem);
+  const [payload, source, freshness] = await Promise.all([
+    db
+      .select({
+        createdAt: ingestionPayloads.createdAt,
+      })
+      .from(ingestionPayloads)
+      .where(eq(ingestionPayloads.id, reviewItem.payloadId))
+      .limit(1)
+      .then((rows) => rows[0] ?? null),
+    sourceId
+      ? db
+          .select({
+            id: ingestionSources.id,
+            institutionId: ingestionSources.institutionId,
+            programId: ingestionSources.programId,
+            sourceUrl: ingestionSources.sourceUrl,
+          })
+          .from(ingestionSources)
+          .where(eq(ingestionSources.id, sourceId))
+          .limit(1)
+          .then((rows) => rows[0] ?? null)
+      : Promise.resolve(null),
+    sourceId
+      ? db
+          .select({
+            sourceId: sourceFreshnessStates.sourceId,
+            sourceClass: sourceFreshnessStates.sourceClass,
+            capability: sourceFreshnessStates.capability,
+            status: sourceFreshnessStates.status,
+            lastCheckedAt: sourceFreshnessStates.lastCheckedAt,
+            lastSuccessfulCheckAt: sourceFreshnessStates.lastSuccessfulCheckAt,
+            lastChangedAt: sourceFreshnessStates.lastChangedAt,
+            latestReviewItemId: sourceFreshnessStates.latestReviewItemId,
+            nextAction: sourceFreshnessStates.nextAction,
+          })
+          .from(sourceFreshnessStates)
+          .where(eq(sourceFreshnessStates.sourceId, sourceId))
+          .limit(1)
+          .then((rows) => rows[0] ?? null)
+      : Promise.resolve(null),
+  ]);
+
+  return {
+    status: 'found',
+    item: buildReviewItemDetail({
+      reviewItem,
+      payload: payload ?? null,
+      source,
+      freshness,
+    }),
+  };
+}
+
+export function buildReviewItemDetail({
+  freshness,
+  payload,
+  reviewItem,
+  source,
+}: {
+  reviewItem: ReviewItemDetailRow;
+  payload: ReviewItemDetailPayloadRow | null;
+  source: ReviewItemDetailSourceRow | null;
+  freshness: ReviewItemDetailFreshnessRow | null;
+}): ReviewItemDetail {
+  const parsed =
+    reviewItem.targetField === 'sourceFreshness'
+      ? parseSourceFreshnessProposedValue(reviewItem.proposedValue)
+      : null;
+  const sourceFreshnessValue = parsed?.ok ? parsed.value : null;
+  const isPending = reviewItem.status === 'pending';
+  return {
+    id: reviewItem.id,
+    payloadId: reviewItem.payloadId,
+    payloadCreatedAt: payload?.createdAt.toISOString() ?? null,
+    admissionRequirementId: reviewItem.admissionRequirementId,
+    targetField: reviewItem.targetField,
+    status: reviewItem.status,
+    createdAt: reviewItem.createdAt.toISOString(),
+    reviewedAt: reviewItem.reviewedAt?.toISOString() ?? null,
+    actionEligibility: {
+      canReject: isPending,
+    },
+    evidence: {
+      sourceId: sourceFreshnessValue?.sourceId ?? freshness?.sourceId ?? source?.id ?? null,
+      institutionId: source?.institutionId ?? null,
+      programId: source?.programId ?? null,
+      sourceUrl: source?.sourceUrl ?? null,
+      sourceClass: freshness?.sourceClass ?? null,
+      capability: freshness?.capability ?? null,
+      freshnessStatus: freshness?.status ?? null,
+      latestReviewItemId: freshness?.latestReviewItemId ?? null,
+      normalizedFingerprint: sourceFreshnessValue?.normalizedFingerprint ?? null,
+      normalizedDecisionPayload: previewRecord(
+        sourceFreshnessValue?.normalizedDecisionPayload ?? {},
+      ),
+      reproducedFields: sourceFreshnessValue?.reproducedFields ?? [],
+      limitations: sourceFreshnessValue?.limitations ?? [],
+      nextAction: sourceFreshnessValue?.nextAction ?? freshness?.nextAction ?? null,
+    },
+  };
 }
 
 async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
@@ -211,6 +637,7 @@ export function summarizeDataHealthRows(
     admissionThresholds: rows.admissionThresholds,
     universityCalculatorConfigs: rows.universityCalculatorConfigs,
   });
+  const decisionEvidence = buildDecisionEvidenceSummary(rows, now);
 
   return {
     status: 'ready',
@@ -228,94 +655,350 @@ export function summarizeDataHealthRows(
         universityCalculatorConfigs: rows.universityCalculatorConfigs.length,
       },
     },
+    formulaVerification: formulaPairVerificationCompletion(
+      buildFormulaBackedPairInventory(allPrograms),
+      FORMULA_BACKED_VERIFICATION_LEDGER,
+    ),
+    runtimeFormulaVerification: summarizeRuntimeFormulaVerification(decisionEvidence.rows),
     coverage: buildCoverageSummary(rows),
+    decisionReadiness: buildDecisionReadinessSummary(rows),
+    decisionEvidence,
     ingestion: buildIngestionSummary(rows.ingestionJobs),
     reviewQueue: buildReviewQueueSummary(rows.reviewItems),
+    freshness: buildSourceFreshnessSummary(rows, now),
+    publication: buildAdmissionsPublicationHealth(rows.admissionReleases),
+    mondayEvidence: buildMondayEvidenceCoverage(),
   };
+}
+
+function buildAdmissionsPublicationHealth(
+  releases: DataHealthRows['admissionReleases'],
+): AdmissionsPublicationHealth {
+  const activeRelease = releases
+    .filter(
+      (release) =>
+        release.status === 'published' &&
+        release.publishedAt !== null &&
+        release.releaseKind !== 'operational_proof',
+    )
+    .sort(
+      (left, right) =>
+        right.publishedAt!.getTime() - left.publishedAt!.getTime() ||
+        left.id.localeCompare(right.id),
+    )[0];
+
+  const operationalProofReleases = releases.filter(
+    (release) => release.releaseKind === 'operational_proof',
+  );
+  const scenarioStatus = OPERATIONAL_PROOF_SCENARIOS.map((scenario) => {
+    const matching = operationalProofReleases
+      .filter((release) => release.proofScenario === scenario)
+      .sort(
+        (left, right) =>
+          (right.publishedAt?.getTime() ?? 0) - (left.publishedAt?.getTime() ?? 0) ||
+          left.id.localeCompare(right.id),
+      )[0];
+    return { scenario, status: matching?.status ?? 'not_started' };
+  });
+  return {
+    activeRelease: activeRelease
+      ? {
+          id: activeRelease.id,
+          manifestDigest: activeRelease.manifestDigest,
+          repositoryCommit: activeRelease.repositoryCommit,
+          publishedAt: activeRelease.publishedAt!.toISOString(),
+        }
+      : null,
+    pendingReleaseCount: releases.filter((release) => release.status === 'pending').length,
+    failedReleaseCount: releases.filter((release) => release.status === 'failed').length,
+    operationalProof: {
+      publishedReleaseCount: operationalProofReleases.filter(
+        (release) => release.status === 'published',
+      ).length,
+      pendingReleaseCount: operationalProofReleases.filter(
+        (release) => release.status === 'pending',
+      ).length,
+      failedReleaseCount: operationalProofReleases.filter((release) => release.status === 'failed')
+        .length,
+      matrixComplete: scenarioStatus.every((scenario) => scenario.status === 'published'),
+      scenarios: scenarioStatus,
+    },
+  };
+}
+
+function buildMondayEvidenceCoverage(): MondayEvidenceCoverage {
+  const records = mondayAdmissionsEvidence;
+  const catalogueMatched = records.filter(
+    (record) => record.catalogueVisibility === 'catalogue_mapped',
+  ).length;
+  const nonCatalogueRecords = records.filter(
+    (record) => record.catalogueVisibility === 'evidence_only',
+  );
+  const nonCatalogueEvidence = nonCatalogueRecords.length;
+  const decisionCapable = records.filter(
+    (record) => record.publicBucket === 'decision_capable',
+  ).length;
+  const trackedMissingRule = records.filter(
+    (record) => record.publicBucket === 'tracked_missing_rule',
+  ).length;
+  const blocked = records.filter(
+    (record) => record.ruleStatus === 'blocked_official_source',
+  ).length;
+  const openAdmission = records.filter((record) => record.publicBucket === 'open_admission').length;
+  const manualOrEligible = records.filter(
+    (record) =>
+      record.publicBucket === 'manual_gate' ||
+      record.publicBucket === 'eligible_with_manual_gate' ||
+      record.publicBucket === 'eligible_no_formal_grade_gate',
+  ).length;
+  const nonCatalogueBucketCounts = countBy(nonCatalogueRecords, (record) => record.publicBucket);
+  const nonCatalogueGroups = Object.entries(nonCatalogueBucketCounts)
+    .sort(
+      ([bucketA, countA], [bucketB, countB]) =>
+        backlogBucketPriority(bucketB) - backlogBucketPriority(bucketA) ||
+        countB - countA ||
+        bucketA.localeCompare(bucketB),
+    )
+    .map(([bucket, count]) => ({
+      bucket,
+      count,
+      rows: nonCatalogueRecords
+        .filter((record) => record.publicBucket === bucket)
+        .sort(
+          (a, b) => backlogPriority(b) - backlogPriority(a) || a.itemName.localeCompare(b.itemName),
+        )
+        .slice(0, 3)
+        .map((record) => ({
+          itemId: record.itemId,
+          itemName: record.itemName,
+          publicBucket: record.publicBucket,
+          nextAction: record.nextAction,
+          officialUrl: record.officialUrls[0] ?? null,
+        })),
+    }));
+
+  return {
+    totalItems: records.length,
+    catalogueMatched,
+    nonCatalogueEvidence,
+    decisionCapable,
+    trackedMissingRule,
+    blocked,
+    openAdmission,
+    manualOrEligible,
+    nonCatalogueBucketCounts,
+    nonCatalogueGroups,
+  };
+}
+
+function backlogPriority(record: (typeof mondayAdmissionsEvidence)[number]): number {
+  switch (record.publicBucket) {
+    case 'decision_capable':
+      return 70;
+    case 'open_admission':
+      return 60;
+    case 'eligible_no_formal_grade_gate':
+      return 50;
+    case 'eligible_with_manual_gate':
+      return 45;
+    case 'manual_gate':
+      return 40;
+    case 'tracked_missing_rule':
+      return 30;
+    case 'requirements_review':
+      return 20;
+    default:
+      return 0;
+  }
+}
+
+function backlogBucketPriority(bucket: string): number {
+  switch (bucket) {
+    case 'manual_gate':
+      return 60;
+    case 'eligible_with_manual_gate':
+      return 50;
+    case 'eligible_no_formal_grade_gate':
+      return 40;
+    case 'requirements_review':
+      return 30;
+    case 'tracked_missing_rule':
+      return 20;
+    case 'open_admission':
+      return 10;
+    case 'decision_capable':
+      return 5;
+    default:
+      return 0;
+  }
 }
 
 async function loadDataHealthRows(): Promise<DataHealthRows> {
   const db = getOpsDb();
 
-  const [
-    institutionRows,
-    programRows,
-    programInstitutionRows,
-    admissionRequirementRows,
-    admissionThresholdRows,
-    sourceUrlRows,
-    calculatorConfigRows,
-    ingestionJobRows,
-    reviewItemRows,
-  ] = await Promise.all([
-    db.select({ id: institutions.id }).from(institutions),
-    db
-      .select({
-        id: programs.id,
-        name: programs.name,
-        admissionType: programs.admissionType,
-      })
-      .from(programs),
-    db
-      .select({
-        programId: programInstitutions.programId,
-        institutionId: programInstitutions.institutionId,
-      })
-      .from(programInstitutions),
-    db
-      .select({
-        id: admissionRequirements.id,
-        programId: admissionRequirements.programId,
-        institutionId: admissionRequirements.institutionId,
-      })
-      .from(admissionRequirements),
-    db
-      .select({
-        id: admissionThresholds.id,
-        programId: admissionThresholds.programId,
-        institutionId: admissionThresholds.institutionId,
-        universityId: admissionThresholds.universityId,
-        thresholdValue: admissionThresholds.thresholdValue,
-      })
-      .from(admissionThresholds),
-    db
-      .select({
-        id: sourceUrls.id,
-        admissionRequirementId: sourceUrls.admissionRequirementId,
-        programId: sourceUrls.programId,
-        institutionId: sourceUrls.institutionId,
-        url: sourceUrls.url,
-      })
-      .from(sourceUrls),
-    db
-      .select({
-        institutionId: universityCalculatorConfigs.institutionId,
-      })
-      .from(universityCalculatorConfigs),
-    db
-      .select({
-        id: ingestionJobs.id,
-        sourceId: ingestionJobs.sourceId,
-        status: ingestionJobs.status,
-        difficulty: ingestionJobs.difficulty,
-        startedAt: ingestionJobs.startedAt,
-        completedAt: ingestionJobs.completedAt,
-        errorText: ingestionJobs.errorText,
-        createdAt: ingestionJobs.createdAt,
-      })
-      .from(ingestionJobs),
-    db
-      .select({
-        id: reviewItems.id,
-        payloadId: reviewItems.payloadId,
-        admissionRequirementId: reviewItems.admissionRequirementId,
-        targetField: reviewItems.targetField,
-        status: reviewItems.status,
-        createdAt: reviewItems.createdAt,
-        reviewedAt: reviewItems.reviewedAt,
-      })
-      .from(reviewItems),
-  ]);
+  const institutionRows = await db
+    .select({
+      id: institutions.id,
+      name: institutions.name,
+      region: institutions.region,
+      domain: institutions.domain,
+      logoUrl: institutions.logoUrl,
+      programUrl: institutions.programUrl,
+      calculatorUrl: institutions.calculatorUrl,
+      universityId: institutions.universityId,
+    })
+    .from(institutions);
+  const programRows = await db
+    .select({
+      id: programs.id,
+      name: programs.name,
+      institutionName: programs.institutionName,
+      institutionId: programs.institutionId,
+      type: programs.type,
+      category: programs.category,
+      admissionType: programs.admissionType,
+    })
+    .from(programs);
+  const programInstitutionRows = await db
+    .select({
+      programId: programInstitutions.programId,
+      institutionId: programInstitutions.institutionId,
+    })
+    .from(programInstitutions);
+  const admissionRequirementRows = await db
+    .select({
+      id: admissionRequirements.id,
+      programId: admissionRequirements.programId,
+      institutionId: admissionRequirements.institutionId,
+    })
+    .from(admissionRequirements);
+  const admissionThresholdRows = await db
+    .select({
+      id: admissionThresholds.id,
+      programId: admissionThresholds.programId,
+      institutionId: admissionThresholds.institutionId,
+      universityId: admissionThresholds.universityId,
+      thresholdValue: admissionThresholds.thresholdValue,
+    })
+    .from(admissionThresholds);
+  const sourceUrlRows = await db
+    .select({
+      id: sourceUrls.id,
+      admissionRequirementId: sourceUrls.admissionRequirementId,
+      programId: sourceUrls.programId,
+      institutionId: sourceUrls.institutionId,
+      url: sourceUrls.url,
+    })
+    .from(sourceUrls);
+  const calculatorConfigRows = await db
+    .select({
+      institutionId: universityCalculatorConfigs.institutionId,
+      formulaType: universityCalculatorConfigs.formulaType,
+      psyWeight: universityCalculatorConfigs.psyWeight,
+      bagrutWeight: universityCalculatorConfigs.bagrutWeight,
+      minPsychometric: universityCalculatorConfigs.minPsychometric,
+      minBagrut: universityCalculatorConfigs.minBagrut,
+      scaleDescription: universityCalculatorConfigs.scaleDescription,
+    })
+    .from(universityCalculatorConfigs);
+  const ingestionSourceRows = await db
+    .select({
+      id: ingestionSources.id,
+      institutionId: ingestionSources.institutionId,
+      programId: ingestionSources.programId,
+      difficulty: ingestionSources.difficulty,
+      sourceUrl: ingestionSources.sourceUrl,
+    })
+    .from(ingestionSources);
+  const admissionsSourceCandidateRows = await db
+    .select({
+      id: admissionsSourceCandidates.id,
+      admissionRequirementId: admissionsSourceCandidates.admissionRequirementId,
+      programId: admissionsSourceCandidates.programId,
+      institutionId: admissionsSourceCandidates.institutionId,
+      origin: admissionsSourceCandidates.origin,
+      specificity: admissionsSourceCandidates.specificity,
+      confidence: admissionsSourceCandidates.confidence,
+    })
+    .from(admissionsSourceCandidates);
+  const admissionFactRows = await db
+    .select({
+      id: admissionFacts.id,
+      admissionRequirementId: admissionFacts.admissionRequirementId,
+      programId: admissionFacts.programId,
+      institutionId: admissionFacts.institutionId,
+      kind: admissionFacts.kind,
+      field: admissionFacts.field,
+      confidence: admissionFacts.confidence,
+    })
+    .from(admissionFacts);
+  const admissionAlternativePathRows = await db
+    .select({
+      id: admissionAlternativePaths.id,
+      admissionRequirementId: admissionAlternativePaths.admissionRequirementId,
+      programId: admissionAlternativePaths.programId,
+      institutionId: admissionAlternativePaths.institutionId,
+      kind: admissionAlternativePaths.kind,
+    })
+    .from(admissionAlternativePaths);
+  const ingestionJobRows = await db
+    .select({
+      id: ingestionJobs.id,
+      sourceId: ingestionJobs.sourceId,
+      status: ingestionJobs.status,
+      difficulty: ingestionJobs.difficulty,
+      startedAt: ingestionJobs.startedAt,
+      completedAt: ingestionJobs.completedAt,
+      errorText: ingestionJobs.errorText,
+      createdAt: ingestionJobs.createdAt,
+    })
+    .from(ingestionJobs);
+  const reviewItemRows = await db
+    .select({
+      id: reviewItems.id,
+      payloadId: reviewItems.payloadId,
+      admissionRequirementId: reviewItems.admissionRequirementId,
+      targetField: reviewItems.targetField,
+      status: reviewItems.status,
+      createdAt: reviewItems.createdAt,
+      reviewedAt: reviewItems.reviewedAt,
+    })
+    .from(reviewItems);
+  const sourceFreshnessStateRows = await db
+    .select({
+      sourceId: sourceFreshnessStates.sourceId,
+      sourceClass: sourceFreshnessStates.sourceClass,
+      capability: sourceFreshnessStates.capability,
+      status: sourceFreshnessStates.status,
+      proofLevel: sourceFreshnessStates.proofLevel,
+      decisionProvenance: sourceFreshnessStates.decisionProvenance,
+      reviewedSourceFingerprint: sourceFreshnessStates.reviewedSourceFingerprint,
+      lastCheckedAt: sourceFreshnessStates.lastCheckedAt,
+      lastSuccessfulCheckAt: sourceFreshnessStates.lastSuccessfulCheckAt,
+      lastExactCheckAt: sourceFreshnessStates.lastExactCheckAt,
+      lastChangedAt: sourceFreshnessStates.lastChangedAt,
+      latestFailureReason: sourceFreshnessStates.latestFailureReason,
+      blockedReason: sourceFreshnessStates.blockedReason,
+      rawFingerprint: sourceFreshnessStates.rawFingerprint,
+      normalizedFingerprint: sourceFreshnessStates.normalizedFingerprint,
+      normalizedDecisionPayload: sourceFreshnessStates.normalizedDecisionPayload,
+      latestReviewItemId: sourceFreshnessStates.latestReviewItemId,
+      nextAction: sourceFreshnessStates.nextAction,
+      createdAt: sourceFreshnessStates.createdAt,
+      updatedAt: sourceFreshnessStates.updatedAt,
+    })
+    .from(sourceFreshnessStates);
+  const admissionReleaseRows = await db
+    .select({
+      id: admissionReleases.id,
+      manifestDigest: admissionReleases.manifestDigest,
+      repositoryCommit: admissionReleases.repositoryCommit,
+      releaseKind: admissionReleases.releaseKind,
+      proofScenario: admissionReleases.proofScenario,
+      status: admissionReleases.status,
+      publishedAt: admissionReleases.publishedAt,
+    })
+    .from(admissionReleases);
 
   return {
     institutions: institutionRows,
@@ -325,8 +1008,14 @@ async function loadDataHealthRows(): Promise<DataHealthRows> {
     admissionThresholds: admissionThresholdRows,
     sourceUrls: sourceUrlRows,
     universityCalculatorConfigs: calculatorConfigRows,
+    ingestionSources: ingestionSourceRows,
+    admissionsSourceCandidates: admissionsSourceCandidateRows,
+    admissionFacts: admissionFactRows,
+    admissionAlternativePaths: admissionAlternativePathRows,
     ingestionJobs: ingestionJobRows,
     reviewItems: reviewItemRows,
+    sourceFreshnessStates: sourceFreshnessStateRows,
+    admissionReleases: admissionReleaseRows,
   };
 }
 
@@ -357,6 +1046,147 @@ function buildCoverageSummary(rows: DataHealthRows): DataHealthReadyReport['cove
     missingProgramSourceCount: missingProgramSources.length,
     missingRequirementSources: missingRequirementSources.slice(0, ISSUE_LIMIT),
     missingProgramSources: missingProgramSources.slice(0, ISSUE_LIMIT),
+  };
+}
+
+function buildDecisionReadinessSummary(
+  rows: DataHealthRows,
+): DataHealthReadyReport['decisionReadiness'] {
+  const factsByRequirementId = new Map<string, DataHealthRows['admissionFacts']>();
+  const sourceCandidatesByRequirementId = new Map<
+    string,
+    DataHealthRows['admissionsSourceCandidates']
+  >();
+
+  for (const fact of rows.admissionFacts) {
+    const existing = factsByRequirementId.get(fact.admissionRequirementId) ?? [];
+    existing.push(fact);
+    factsByRequirementId.set(fact.admissionRequirementId, existing);
+  }
+
+  for (const source of rows.admissionsSourceCandidates) {
+    const existing = sourceCandidatesByRequirementId.get(source.admissionRequirementId) ?? [];
+    existing.push(source);
+    sourceCandidatesByRequirementId.set(source.admissionRequirementId, existing);
+  }
+
+  const requirementsMissingFacts = rows.admissionRequirements
+    .filter((requirement) => (factsByRequirementId.get(requirement.id) ?? []).length === 0)
+    .map((requirement) => ({
+      admissionRequirementId: requirement.id,
+      institutionId: requirement.institutionId,
+      programId: requirement.programId,
+    }));
+
+  const weakSources = rows.admissionsSourceCandidates
+    .filter((source) => source.confidence === 'low' || source.specificity === 'generic')
+    .map((source) => ({
+      sourceCandidateId: source.id,
+      admissionRequirementId: source.admissionRequirementId,
+      institutionId: source.institutionId,
+      programId: source.programId,
+      confidence: source.confidence,
+      origin: source.origin,
+      specificity: source.specificity,
+    }));
+
+  const manualGateRequirementIds = new Set(
+    rows.admissionFacts
+      .filter((fact) => fact.kind === 'manual_gate')
+      .map((fact) => fact.admissionRequirementId),
+  );
+  const manualGateRequirements = rows.admissionRequirements
+    .filter((requirement) => manualGateRequirementIds.has(requirement.id))
+    .map((requirement) => ({
+      admissionRequirementId: requirement.id,
+      institutionId: requirement.institutionId,
+      programId: requirement.programId,
+    }));
+
+  const decisionReadyRequirementCount = rows.admissionRequirements.filter((requirement) => {
+    const facts = factsByRequirementId.get(requirement.id) ?? [];
+    const sources = sourceCandidatesByRequirementId.get(requirement.id) ?? [];
+    return facts.length > 0 && sources.length > 0 && facts.some((fact) => fact.kind !== 'unknown');
+  }).length;
+
+  return {
+    decisionReadyRequirementCount,
+    missingFactCount: requirementsMissingFacts.length,
+    weakSourceCount: weakSources.length,
+    manualGateCount: rows.admissionFacts.filter((fact) => fact.kind === 'manual_gate').length,
+    alternativePathCount: rows.admissionAlternativePaths.length,
+    requirementsMissingFacts: requirementsMissingFacts.slice(0, ISSUE_LIMIT),
+    weakSources: weakSources.slice(0, ISSUE_LIMIT),
+    manualGateRequirements: manualGateRequirements.slice(0, ISSUE_LIMIT),
+  };
+}
+
+function buildDecisionEvidenceSummary(
+  rows: DataHealthRows,
+  now: Date,
+): DataHealthReadyReport['decisionEvidence'] {
+  const catalogueInstitutions = buildCapabilityInstitutions(rows);
+  const institutionById = new Map(
+    catalogueInstitutions.map((institution) => [institution.id, institution]),
+  );
+  const freshnessStatesBySourceId = new Map(
+    rows.sourceFreshnessStates.map((row) => [row.sourceId, row] as const),
+  );
+
+  const evidenceRows = buildCapabilityPrograms(rows).flatMap((program) =>
+    buildAdmissionsCapabilityMatrix({
+      program,
+      institutions: catalogueInstitutions,
+      freshnessStatesBySourceId,
+      now,
+    }).map((entry) => {
+      const institution = institutionById.get(entry.institutionId as InstitutionId);
+      const showOfficialMetadata =
+        entry.capability !== 'estimated' &&
+        entry.capability !== 'unsupported' &&
+        entry.capability !== 'missing';
+
+      return {
+        programId: program.id,
+        programName: program.name,
+        institutionId: entry.institutionId,
+        institutionName:
+          institution?.name ?? entry.sourceTarget?.institutionName ?? entry.institutionId,
+        evidenceMode: entry.capability,
+        severity: evidenceSeverity(entry.capability),
+        sourceTargetId: showOfficialMetadata ? (entry.sourceTarget?.id ?? null) : null,
+        officialSourceUrl: showOfficialMetadata ? (entry.sourceTarget?.officialUrl ?? null) : null,
+        adapterId: showOfficialMetadata ? (entry.sourceTarget?.adapterId ?? null) : null,
+        externalProgramId: entry.exactTarget?.program.externalId ?? null,
+        freshnessStatus:
+          showOfficialMetadata && entry.freshnessState
+            ? classifySourceFreshnessStatus(entry.freshnessState, now)
+            : null,
+        blockedReason: showOfficialMetadata
+          ? (entry.freshnessState?.blockedReason ?? entry.sourceTarget?.blockedReason ?? null)
+          : null,
+        requiredInputs: showOfficialMetadata ? (entry.requiredInputs ?? []) : [],
+        formulaPairScope: entry.formulaPairScope ?? null,
+      };
+    }),
+  );
+
+  return {
+    rows: evidenceRows.toSorted(compareAdmissionsEvidenceRows),
+  };
+}
+
+function summarizeRuntimeFormulaVerification(
+  rows: AdmissionsEvidenceRow[],
+): DataHealthReadyReport['runtimeFormulaVerification'] {
+  const inScope = rows.filter((row) => row.formulaPairScope === 'in_scope');
+  const counts = countBy(inScope, (row) => row.evidenceMode);
+  return {
+    total: inScope.length,
+    exact: counts.exact ?? 0,
+    stale: counts.stale ?? 0,
+    blocked: counts.blocked ?? 0,
+    authorityUnavailable: counts.authority_unavailable ?? 0,
   };
 }
 
@@ -397,6 +1227,268 @@ function buildReviewQueueSummary(rows: ReviewItemRow[]): DataHealthReadyReport['
       .slice(0, ISSUE_LIMIT)
       .map(serializeReviewItem),
   };
+}
+
+function buildSourceFreshnessSummary(
+  rows: DataHealthRows,
+  now: Date,
+): DataHealthReadyReport['freshness'] {
+  const statesBySourceId = new Map(rows.sourceFreshnessStates.map((row) => [row.sourceId, row]));
+  const freshnessRows = rows.ingestionSources
+    .map((source) => serializeSourceFreshness(source, statesBySourceId.get(source.id), now))
+    .toSorted(compareSourceFreshnessRows);
+
+  return {
+    staleAfterDays: SOURCE_FRESHNESS_STALE_AFTER_MS / (24 * 60 * 60 * 1000),
+    totalsByStatus: countBy(freshnessRows, (row) => row.status),
+    rows: freshnessRows.slice(0, ISSUE_LIMIT),
+  };
+}
+
+function serializeSourceFreshness(
+  source: IngestionSourceRow,
+  state: SourceFreshnessStateRow | undefined,
+  now: Date,
+): SourceFreshnessSummary {
+  if (!state) {
+    return {
+      sourceId: source.id,
+      institutionId: source.institutionId,
+      programId: source.programId,
+      sourceUrl: source.sourceUrl,
+      status: 'never_checked',
+      sourceClass: null,
+      capability: null,
+      lastCheckedAt: null,
+      lastSuccessfulCheckAt: null,
+      lastChangedAt: null,
+      reason: null,
+      latestReviewItemId: null,
+      nextAction: null,
+    };
+  }
+
+  const status = classifySourceFreshnessStatus(state, now);
+
+  return {
+    sourceId: source.id,
+    institutionId: source.institutionId,
+    programId: source.programId,
+    sourceUrl: source.sourceUrl,
+    status,
+    sourceClass: state.sourceClass,
+    capability: state.capability,
+    lastCheckedAt: state.lastCheckedAt?.toISOString() ?? null,
+    lastSuccessfulCheckAt: state.lastSuccessfulCheckAt?.toISOString() ?? null,
+    lastChangedAt: state.lastChangedAt?.toISOString() ?? null,
+    reason: state.latestFailureReason ?? state.blockedReason,
+    latestReviewItemId: state.latestReviewItemId,
+    nextAction: state.nextAction,
+  };
+}
+
+function classifySourceFreshnessStatus(
+  state: SourceFreshnessStateRow,
+  now: Date,
+): DashboardSourceFreshnessStatus {
+  if (state.status !== 'fresh') {
+    return state.status;
+  }
+
+  if (
+    !state.lastSuccessfulCheckAt ||
+    now.getTime() - state.lastSuccessfulCheckAt.getTime() > SOURCE_FRESHNESS_STALE_AFTER_MS
+  ) {
+    return 'stale';
+  }
+
+  return 'fresh';
+}
+
+function buildCapabilityInstitutions(rows: DataHealthRows): CatalogueInstitution[] {
+  const configByInstitutionId = new Map(
+    rows.universityCalculatorConfigs.map((config) => [config.institutionId, config] as const),
+  );
+
+  return rows.institutions.map((institution) => {
+    const calculatorConfig = configByInstitutionId.get(institution.id);
+
+    return {
+      id: institution.id as InstitutionId,
+      name: institution.name,
+      region: institution.region,
+      domain: institution.domain ?? undefined,
+      logoUrl: institution.logoUrl ?? undefined,
+      programUrl: institution.programUrl ?? undefined,
+      calculatorUrl: institution.calculatorUrl ?? undefined,
+      universityId: (institution.universityId as UniversityId | null) ?? undefined,
+      calculatorConfig: calculatorConfig
+        ? {
+            formulaType: calculatorConfig.formulaType,
+            scaleDescription: calculatorConfig.scaleDescription,
+            sekhemWeight:
+              calculatorConfig.psyWeight !== null && calculatorConfig.bagrutWeight !== null
+                ? {
+                    psy: calculatorConfig.psyWeight,
+                    bag: calculatorConfig.bagrutWeight,
+                  }
+                : undefined,
+            minPsychometric: calculatorConfig.minPsychometric ?? undefined,
+            minBagrut: calculatorConfig.minBagrut ?? undefined,
+          }
+        : undefined,
+    };
+  });
+}
+
+function buildCapabilityPrograms(rows: DataHealthRows): CatalogueProgram[] {
+  const linkedInstitutionIdsByProgramId = new Map<string, string[]>();
+  const thresholdsByProgramId = new Map<string, Record<string, number | null>>();
+
+  for (const row of rows.programInstitutions) {
+    const existing = linkedInstitutionIdsByProgramId.get(row.programId) ?? [];
+    existing.push(row.institutionId);
+    linkedInstitutionIdsByProgramId.set(row.programId, existing);
+  }
+
+  for (const row of rows.admissionThresholds) {
+    const existing = thresholdsByProgramId.get(row.programId) ?? {};
+    existing[row.institutionId] = row.thresholdValue;
+    thresholdsByProgramId.set(row.programId, existing);
+  }
+
+  return rows.programs.map((program) => ({
+    id: program.id,
+    name: program.name,
+    institution: program.institutionName,
+    institutionId: (program.institutionId as InstitutionId | null) ?? undefined,
+    type: program.type as CatalogueProgram['type'],
+    category: program.category,
+    profileScore: {
+      AN: 0,
+      TE: 0,
+      CR: 0,
+      SO: 0,
+      LE: 0,
+      OR: 0,
+      DI: 0,
+      ER: 0,
+    },
+    admissionType: program.admissionType,
+    admissionRequirements: [],
+    thresholds: thresholdsByProgramId.get(program.id) as CatalogueProgram['thresholds'],
+    linkedInstitutionIds: linkedInstitutionIdsByProgramId.get(program.id) ?? [],
+  }));
+}
+
+function evidenceSeverity(
+  capability: AdmissionsEvaluationCapability,
+): AdmissionsEvidenceRow['severity'] {
+  if (
+    capability === 'blocked' ||
+    capability === 'stale' ||
+    capability === 'authority_unavailable'
+  ) {
+    return 'attention';
+  }
+
+  if (capability === 'missing' || capability === 'unsupported') {
+    return 'informational';
+  }
+
+  return 'normal';
+}
+
+function compareAdmissionsEvidenceRows(
+  left: AdmissionsEvidenceRow,
+  right: AdmissionsEvidenceRow,
+): number {
+  const severity =
+    evidenceSeverityPriority(left.severity) - evidenceSeverityPriority(right.severity);
+  if (severity !== 0) {
+    return severity;
+  }
+
+  const institution = left.institutionName.localeCompare(right.institutionName, 'en');
+  if (institution !== 0) {
+    return institution;
+  }
+
+  return left.programName.localeCompare(right.programName, 'en');
+}
+
+function evidenceSeverityPriority(severity: AdmissionsEvidenceRow['severity']): number {
+  switch (severity) {
+    case 'attention':
+      return 0;
+    case 'normal':
+      return 1;
+    case 'informational':
+      return 2;
+    default:
+      return 3;
+  }
+}
+
+function sourceIdFromReviewItem(reviewItem: ReviewItemDetailRow): string | null {
+  if (reviewItem.targetField !== 'sourceFreshness') {
+    return null;
+  }
+
+  const parsed = parseSourceFreshnessProposedValue(reviewItem.proposedValue);
+  return parsed.ok ? parsed.value.sourceId : null;
+}
+
+function previewRecord(record: Record<string, unknown>): Array<{ key: string; value: string }> {
+  return Object.entries(record)
+    .slice(0, 8)
+    .map(([key, value]) => ({
+      key,
+      value: previewValue(value),
+    }));
+}
+
+function previewValue(value: unknown): string {
+  if (typeof value === 'string') {
+    return value.slice(0, 140);
+  }
+
+  if (typeof value === 'number' || typeof value === 'boolean') {
+    return String(value);
+  }
+
+  if (value === null || value === undefined) {
+    return 'null';
+  }
+
+  return JSON.stringify(value).slice(0, 140);
+}
+
+function compareSourceFreshnessRows(
+  left: SourceFreshnessSummary,
+  right: SourceFreshnessSummary,
+): number {
+  const priority = freshnessStatusPriority(left.status) - freshnessStatusPriority(right.status);
+  if (priority !== 0) {
+    return priority;
+  }
+
+  const leftChecked = left.lastCheckedAt ? Date.parse(left.lastCheckedAt) : 0;
+  const rightChecked = right.lastCheckedAt ? Date.parse(right.lastCheckedAt) : 0;
+  return leftChecked - rightChecked || left.sourceId.localeCompare(right.sourceId);
+}
+
+function freshnessStatusPriority(status: DashboardSourceFreshnessStatus): number {
+  const priorities: Record<DashboardSourceFreshnessStatus, number> = {
+    changed_needs_review: 0,
+    failed: 1,
+    stale: 2,
+    blocked: 3,
+    never_checked: 4,
+    fresh: 5,
+  };
+
+  return priorities[status];
 }
 
 function countBy<T, K extends string>(rows: T[], getKey: (row: T) => K): Record<K, number> {

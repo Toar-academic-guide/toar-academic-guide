@@ -4,12 +4,31 @@
 
 The backend foundation separates reviewed catalogue data from raw ingestion output.
 
-- `institutions`, `programs`, `program_institutions`, `admission_requirements`, `admission_thresholds`, `source_urls`, and `requirement_versions` are the canonical catalogue.
-- `ingestion_sources`, `ingestion_jobs`, `ingestion_payloads`, and `review_items` hold acquisition state and proposed changes before publication.
+- `institutions`, `programs`, `program_institutions`, `admission_requirements`, `admission_thresholds`, `source_urls`, `admissions_source_candidates`, `admission_facts`, `admission_alternative_paths`, and `requirement_versions` are the canonical catalogue.
+- `ingestion_sources`, `ingestion_jobs`, `ingestion_payloads`, `review_items`, `source_freshness_states`, and `source_freshness_checks` hold acquisition state, source freshness evidence, and proposed changes before publication.
 
 Canonical requirement rows stay traceable through `source_urls`, and historical reviewed values stay in `requirement_versions`.
 
-See [docs/data-ingestion-workflow.md](/Users/amitmalichi/Desktop/toar-academic-guide/.worktrees/chore-catalogue-scale-ingestion-batch/docs/data-ingestion-workflow.md:1) for the end-to-end scrape, review, and publication workflow that sits on top of these tables.
+Admissions decisions use structured source candidates, facts, and alternative paths. These records are the reviewed decision input; broad scraper prose should remain in raw ingestion payloads or review context.
+
+See [docs/data-ingestion-workflow.md](./data-ingestion-workflow.md) for the end-to-end scrape, review, and publication workflow that sits on top of these tables.
+See [docs/hybrid-admissions-decision-slice.md](./hybrid-admissions-decision-slice.md) for the first product decision slice and result contract.
+
+## Source freshness
+
+Admissions source freshness is operational evidence, not canonical admissions truth.
+
+- `source_freshness_states` stores the latest status for each `ingestion_sources.id`.
+- `source_freshness_checks` stores immutable history for every check attempt.
+- Changed decision-capable output creates an `ingestion_payloads` row plus a pending `review_items` row with `target_field = 'sourceFreshness'`.
+- Canonical `admission_requirements` and `admission_thresholds` remain unchanged until a human review/publish flow accepts new values.
+- Score-only calculator output can become freshness evidence, but it must not be treated as accepted/rejected admissions proof without a reviewed threshold source.
+- Browser-required sources are recorded as `blocked` with a reason and next action for a later browser automation lane.
+
+The first review publication path supports only `target_field = 'sourceFreshness'`.
+The operator page at `/internal/reviews/[reviewItemId]` can approve that target by clearing `source_freshness_states.latest_review_item_id` and moving the freshness state back to `fresh` when the row still points at the reviewed item.
+It can also reject pending review items without changing source freshness state or canonical catalogue data.
+Other target fields remain pending publication work: they may be inspected and rejected, but approval must fail closed until a dedicated canonical-table translator exists.
 
 ## User persistence
 
@@ -52,9 +71,9 @@ Uploaded academic documents are owned by the authenticated `/api/documents` rout
 
 The exposed `public` schema is partitioned into three access classes:
 
-- Public-read catalogue tables: `institutions`, `programs`, `program_institutions`, `admission_requirements`, `admission_thresholds`, `source_urls`, and `university_calculator_configs`
+- Public-read catalogue tables: `institutions`, `programs`, `program_institutions`, `admission_requirements`, `admission_thresholds`, `source_urls`, `admissions_source_candidates`, `admission_facts`, `admission_alternative_paths`, and `university_calculator_configs`
 - User-owned tables: `user_profiles`, `saved_programs`, and `uploaded_documents`
-- Private operational tables: `requirement_versions`, `ingestion_sources`, `ingestion_jobs`, `ingestion_payloads`, and `review_items`
+- Private operational tables: `requirement_versions`, `ingestion_sources`, `ingestion_jobs`, `ingestion_payloads`, `review_items`, `source_freshness_states`, and `source_freshness_checks`
 
 The intended Supabase posture is:
 
@@ -65,6 +84,8 @@ The intended Supabase posture is:
 This posture secures the exposed Supabase Data API surface. The current app runtime still reads and writes through a direct `postgres.js` connection, so least-privilege runtime DB access remains a separate hardening track.
 
 `/internal/data-health` reads across both public-read catalogue tables and private operational tables. That route must use `OPS_DATABASE_URL`, a separate read-only operational connection, rather than widening the normal `DATABASE_URL` app runtime role. The internal route is guarded by Supabase Auth plus `INTERNAL_ADMIN_EMAILS`; unauthorized requests fail before operational queries run.
+
+`/internal/reviews/[reviewItemId]` uses the same internal admin guard for detail reads and decision actions. Its mutation path is separate from the dashboard: review resolution uses the normal server database write path and keeps `OPS_DATABASE_URL` read-only.
 
 ## Seed strategy
 
@@ -91,6 +112,8 @@ Use different connection shapes for different execution surfaces:
 - Local development: direct local Postgres URL (`localhost:5432` in the checked-in examples)
 - Vercel preview/production runtime: pooled connection string for request-driven app traffic
 - Internal data-health dashboard: pooled read-only operational URL via `OPS_DATABASE_URL`
+- Internal review resolution actions: guarded server write path via the normal runtime database credential
+- Admissions source freshness GitHub Action: write-capable operational URL via `DATABASE_URL`
 - CI test/build job: no DB connection required
 - CI verification job (`npm run db:seed:verify`): operational DB URL only when that job is intentionally enabled
 

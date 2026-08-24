@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import Link from 'next/link';
 import {
   ArrowLeft,
   CheckCircle2,
@@ -14,6 +15,7 @@ import {
   Target,
 } from 'lucide-react';
 import LogoCanvas from './LogoCanvas';
+import { ROUTES } from '@/lib/routes';
 import type { CatalogueProgram } from '@/types/catalogue';
 
 interface Props {
@@ -28,7 +30,19 @@ interface Props {
   isAuthenticated?: boolean;
   savedCount?: number;
   userInitials?: string;
+  userEmail?: string;
   onSignOut?: () => void;
+}
+
+function getInitials(email: string): string {
+  const prefix = email.split('@')[0] ?? '';
+  const parts = prefix.split(/[._-]/).filter(Boolean);
+
+  if (parts.length >= 2) {
+    return `${parts[0][0] ?? ''}${parts[1][0] ?? ''}`.toUpperCase();
+  }
+
+  return prefix.slice(0, 2).toUpperCase();
 }
 
 const processSteps = [
@@ -614,6 +628,7 @@ export default function LandingPage({
   isAuthenticated = false,
   savedCount = 0,
   userInitials,
+  userEmail,
   onSignOut,
 }: Props) {
   const startRef = useRef<HTMLElement>(null);
@@ -630,9 +645,11 @@ export default function LandingPage({
     () => [...new Set(programs.map((program) => program.category))].sort(),
     [programs],
   );
+  const selectedProgramExists = programs.some((program) => program.id === selectedDegreeId);
 
   useEffect(() => {
     if (programs.length === 0) {
+      setSelectedDegreeId('');
       return;
     }
 
@@ -659,7 +676,9 @@ export default function LandingPage({
     }
 
     setCalcErrors(errs);
-
+    if (!selectedDegreeId || !selectedProgramExists) {
+      return;
+    }
     if (Object.keys(errs).length === 0) {
       onCalculate(psy, bag, selectedDegreeId);
     }
@@ -682,8 +701,8 @@ export default function LandingPage({
           'linear-gradient(180deg, #fbfdff 0%, #eef7ff 38%, #fbfdff 72%), radial-gradient(circle at 18% 18%, rgba(142,222,255,0.34), transparent 28%), radial-gradient(circle at 86% 24%, rgba(177,164,255,0.30), transparent 30%)',
       }}
     >
-      <header className="fixed inset-x-0 top-0 z-50 px-4 pt-5 sm:px-6">
-        <div className="mx-auto flex h-[68px] max-w-6xl items-center justify-between rounded-[1.4rem] border border-white bg-white/78 px-4 shadow-[0_20px_70px_rgba(117,139,190,0.18)] backdrop-blur-xl sm:px-5">
+      <header className="fixed inset-x-0 top-0 z-50 px-3 pt-5 sm:px-6 lg:px-8">
+        <div className="mx-auto flex h-[68px] w-full max-w-[92rem] items-center justify-between rounded-[1.4rem] border border-white bg-white/78 px-4 shadow-[0_20px_70px_rgba(117,139,190,0.18)] backdrop-blur-xl sm:px-5 lg:px-6">
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -709,6 +728,12 @@ export default function LandingPage({
             >
               מחשבון קבלה
             </button>
+            <Link
+              href={ROUTES.institutions}
+              className="rounded-2xl px-4 py-2 transition hover:bg-[#eef4ff] hover:text-[#5262d9]"
+            >
+              מוסדות
+            </Link>
             <button
               type="button"
               onClick={() => scrollToSection('path')}
@@ -733,15 +758,22 @@ export default function LandingPage({
           <div className="flex items-center gap-2">
             {authLoading ? (
               <div className="h-10 w-10 animate-pulse rounded-2xl bg-[#edf3ff]" />
-            ) : isAuthenticated && userInitials ? (
-              <button
-                type="button"
-                onClick={onSignOut}
-                title="לחץ להתנתקות"
-                className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#7784e8] text-xs font-bold text-white shadow-sm transition hover:bg-[#6574dc]"
-              >
-                {userInitials}
-              </button>
+            ) : isAuthenticated && (userInitials || userEmail) ? (
+              <div className="flex items-center gap-2">
+                <span
+                  title={userEmail ? `מחובר כ-${userEmail}` : 'מחובר'}
+                  className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#7784e8] text-xs font-bold text-white shadow-sm"
+                >
+                  {userInitials ?? (userEmail ? getInitials(userEmail) : '')}
+                </span>
+                <button
+                  type="button"
+                  onClick={onSignOut}
+                  className="hidden rounded-2xl px-3 py-2 text-sm font-bold text-[#647091] transition hover:bg-[#eef4ff] hover:text-[#5262d9] sm:inline-flex"
+                >
+                  התנתק
+                </button>
+              </div>
             ) : (
               <button
                 type="button"
@@ -900,18 +932,18 @@ export default function LandingPage({
                   לא צריך לנחש אם את/ה בכיוון.
                 </h2>
                 <p className="mt-5 text-base leading-7 text-[#6f7a99]">
-                  הזן פסיכומטרי, ממוצע בגרות ותואר שמעניין אותך. המערכת תמשיך למסך תוצאות עם
-                  מוסדות ותנאי קבלה מתוך הקטלוג הקיים.
+                  אפשר להתחיל מבדיקה מהירה עם פסיכומטרי וממוצע בגרות, או לעבור למחשבון המפורט
+                  ששומר את הציונים ומחשב בגרות לפי מגזר, מקצועות חובה ומקצועות בחירה.
                 </p>
               </div>
 
               <button
                 type="button"
                 onClick={onGoToProfile}
-                className="mt-8 inline-flex w-fit items-center gap-2 rounded-2xl border border-[#d9e3f3] bg-white px-4 py-3 text-sm font-bold text-[#445274] transition hover:border-[#8fd8ff] hover:bg-[#f2fbff]"
+                className="mt-8 inline-flex w-fit items-center gap-2 rounded-2xl border border-[#d9e3f3] bg-white px-4 py-3 text-sm font-bold text-[#445274] transition hover:border-[#8fd8ff] hover:bg-[#f2fbff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fd8ff]"
               >
                 <LockKeyhole size={16} />
-                יש לי ציונים מפורטים באזור האישי
+                למחשבון המפורט ששומר ציונים
               </button>
             </div>
 
@@ -989,6 +1021,7 @@ export default function LandingPage({
                     setSelectedDegreeId(event.target.value);
                     setCalcErrors((previous) => ({ ...previous, degree: undefined }));
                   }}
+                  disabled={programs.length === 0}
                   className={`h-12 w-full rounded-2xl border bg-[#f8fbff] px-4 text-base outline-none transition focus:border-[#7784e8] focus:bg-white ${
                     calcErrors.degree ? 'border-rose-400' : 'border-[#e2e9f4]'
                   }`}
@@ -1013,11 +1046,28 @@ export default function LandingPage({
               <button
                 type="button"
                 onClick={handleCalcSubmit}
+                aria-label="חשב סיכויים ←"
                 className="mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-2xl bg-[#7784e8] px-5 text-base font-bold text-white shadow-[0_14px_30px_rgba(119,132,232,0.25)] transition hover:bg-[#6574dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fd8ff]"
               >
                 חשב סיכויים
                 <ArrowLeft size={18} />
               </button>
+
+              <div className="mt-4 rounded-2xl border border-[#d9e3f3] bg-[#f8fbff] p-4">
+                <p className="text-sm font-bold text-[#445274]">רוצה חישוב מדויק יותר?</p>
+                <p className="mt-1 text-xs leading-5 text-[#79849e]">
+                  הזינו בצורה מסודרת מגזר, מקצועות חובה, הרחבות וציוני פסיכומטרי. הנתונים נשמרים
+                  לאזור האישי ומשמשים את בדיקות הקבלה הבאות.
+                </p>
+                <button
+                  type="button"
+                  onClick={onGoToProfile}
+                  className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-[#b8c4ff] bg-white px-4 py-3 text-sm font-bold text-[#5262d9] transition hover:border-[#7784e8] hover:bg-[#eef4ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fd8ff]"
+                >
+                  פתחו את המחשבון המפורט
+                  <ArrowLeft size={16} />
+                </button>
+              </div>
             </div>
           </div>
         </section>

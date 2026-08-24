@@ -24,7 +24,7 @@ export function requireDatabaseUrl(): string {
 }
 
 export function requireOpsDatabaseUrl(): string {
-  const value = readRequiredDatabaseUrl(OPS_DATABASE_URL_KEY);
+  const value = readEnv(OPS_DATABASE_URL_KEY) ?? readRequiredDatabaseUrl(DATABASE_URL_KEY);
   if (isProductionRuntime()) {
     assertProductionDatabaseUrlLeastPrivilege(value);
   }

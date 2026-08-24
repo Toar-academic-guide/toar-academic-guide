@@ -25,7 +25,7 @@ function getProgram(id: string) {
 }
 
 describe('sekhemCalculators', () => {
-  it('applies TAU engineering bonuses only to TAU engineering or exact-sciences programs and caps the result at 800', () => {
+  it('applies the published TAU qualifying Math-and-Physics bonus only to engineering or exact-sciences programs and caps the result at 800', () => {
     const tau = getUniversity('tau');
     const tauEngineeringProgram = getProgram('tau_cs');
     const tauNonEngineeringProgram = getProgram('tau_industrial');
@@ -36,7 +36,7 @@ describe('sekhemCalculators', () => {
         hasMath5: true,
         hasPhysics5: true,
       }),
-    ).toBeCloseTo(746.6667, 3);
+    ).toBeCloseTo(696.6667, 3);
 
     expect(
       calculateSekhem(tau, strongScores, tauNonEngineeringProgram, {
@@ -76,6 +76,42 @@ describe('sekhemCalculators', () => {
 
     expect(result?.status).toBe('accepted');
     expect(result?.admissionTrack).toBe('direct');
+  });
+
+  it('does not accept a weighted-scale programme when the official psychometric floor is unmet', () => {
+    const result = evaluateUniversities(
+      [getUniversity('bgu')],
+      getProgram('bgu_ee'),
+      { psychometric: 590, bagrut: 120 },
+      { hasMath5: false, hasPhysics5: false },
+    )[0];
+
+    expect(result?.status).toBe('below');
+    expect(result?.threshold).toBe(547);
+    expect(result?.sekhem).toBe(706);
+    expect(result?.deltaNeeded).toEqual({
+      psychometric: 10,
+      bagrut: 0,
+    });
+    expect(result?.explanation).toContain('פסיכומטרי לפחות 600');
+  });
+
+  it('does not accept a weighted-scale programme when the official bagrut floor is unmet', () => {
+    const result = evaluateUniversities(
+      [getUniversity('bgu')],
+      getProgram('bgu_biology'),
+      { psychometric: 700, bagrut: 100 },
+      { hasMath5: false, hasPhysics5: false },
+    )[0];
+
+    expect(result?.status).toBe('below');
+    expect(result?.threshold).toBe(585);
+    expect(result?.sekhem).toBe(682);
+    expect(result?.deltaNeeded).toEqual({
+      psychometric: 0,
+      bagrut: 6,
+    });
+    expect(result?.explanation).toContain('ממוצע בגרות לפחות 106');
   });
 
   it('evaluates minimum-floors admission with separate psychometric and bagrut gaps', () => {
