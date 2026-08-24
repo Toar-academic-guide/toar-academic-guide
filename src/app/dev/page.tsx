@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation';
+import WayPageShell from '@/components/WayPageShell';
 
 export default function DevShortcuts() {
   if (process.env.NODE_ENV === 'production') {
@@ -19,39 +20,46 @@ export default function DevShortcuts() {
     { label: 'פילטרים מהירים', url: '/?step=quick-filters', desc: 'Onboarding funnel' },
     { label: 'המלצות', url: '/?step=recommendations', desc: 'Recommendations (mock RIASEC data)' },
     { label: 'מחשבון', url: '/?step=calculator', desc: 'Score calculator' },
-    { label: 'רשימת היעוד', url: '/?step=bucket-list', desc: 'Saved programs list' },
+    { label: 'הרשימה שלי', url: '/?step=bucket-list', desc: 'Saved programs list' },
     { label: 'בחירת תואר', url: '/?step=degree-picker', desc: 'Degree picker' },
   ];
 
   return (
-    <main className="dev-shortcuts">
+    <WayPageShell showLogo>
+      <main className="dev-shortcuts">
       <style>{`
         .dev-shortcuts {
-          font-family: sans-serif;
           max-width: 640px;
-          margin: 60px auto;
-          padding: 0 24px;
+          margin: 0 auto;
+          padding: 60px 24px 96px;
           direction: rtl;
         }
-        .dev-shortcuts h1 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
-        .dev-shortcuts p { color: #666; font-size: 14px; margin-bottom: 32px; }
+        .dev-shortcuts h1 { color: #0c1d45; font-size: 32px; font-weight: 800; margin-bottom: 8px; }
+        .dev-shortcuts p { color: #6f7a99; font-size: 14px; margin-bottom: 32px; }
         .dev-shortcuts .links { display: flex; flex-direction: column; gap: 10px; }
         .dev-shortcuts a {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 12px 16px;
-          border: 1px solid #e2e8f0;
-          border-radius: 10px;
+          gap: 16px;
+          padding: 14px 16px;
+          border: 1px solid rgba(255,255,255,0.9);
+          border-radius: 18px;
           text-decoration: none;
-          color: inherit;
-          background: #fff;
-          transition: box-shadow 0.15s;
+          color: #445274;
+          background: rgba(255,255,255,0.82);
+          box-shadow: 0 16px 44px rgba(105,133,190,0.10);
+          backdrop-filter: blur(18px);
+          transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
         }
-        .dev-shortcuts a:hover { box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .dev-shortcuts a:hover {
+          border-color: #8fd8ff;
+          box-shadow: 0 20px 58px rgba(105,133,190,0.16);
+          transform: translateY(-1px);
+        }
         .dev-shortcuts .name { font-weight: 600; font-size: 15px; }
-        .dev-shortcuts .hint { color: #888; font-size: 12px; }
-        .dev-shortcuts .footer { margin-top: 32px; font-size: 12px; color: #aaa; }
+        .dev-shortcuts .hint { color: #7c86a2; font-size: 12px; }
+        .dev-shortcuts .footer { margin-top: 32px; font-size: 12px; color: #9aa8c2; }
       `}</style>
 
       <h1>קיצורי דרך לפיתוח</h1>
@@ -69,6 +77,7 @@ export default function DevShortcuts() {
       <p className="footer">
         הוסף מסכים נוספים לפי הצורך ב-<code>src/app/dev/page.tsx</code>
       </p>
-    </main>
+      </main>
+    </WayPageShell>
   );
 }

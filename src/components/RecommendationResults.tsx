@@ -516,8 +516,8 @@ function ProgramDetailView({
                         <button
                           type="button"
                           onClick={() => onToggleSave?.(p.id)}
-                          aria-label={isSaved ? 'הסר מרשימת הייעוד' : 'שמור לרשימת הייעוד'}
-                          title={isSaved ? 'הסר מרשימת הייעוד' : 'שמור לרשימת הייעוד'}
+                          aria-label={isSaved ? 'הסר מהרשימה שלי' : 'שמור לרשימה שלי'}
+                          title={isSaved ? 'הסר מהרשימה שלי' : 'שמור לרשימה שלי'}
                           className={[
                             'flex h-8 w-8 items-center justify-center rounded-lg transition',
                             isSaved
@@ -663,8 +663,8 @@ function ProgramDetailView({
                         <button
                           type="button"
                           onClick={() => onToggleSave?.(p.id)}
-                          aria-label={isSaved ? 'הסר מרשימת הייעוד' : 'שמור לרשימת הייעוד'}
-                          title={isSaved ? 'הסר מרשימת הייעוד' : 'שמור לרשימת הייעוד'}
+                          aria-label={isSaved ? 'הסר מהרשימה שלי' : 'שמור לרשימה שלי'}
+                          title={isSaved ? 'הסר מהרשימה שלי' : 'שמור לרשימה שלי'}
                           className={[
                             'flex h-8 w-8 items-center justify-center rounded-lg transition',
                             isSaved

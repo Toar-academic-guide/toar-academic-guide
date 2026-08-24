@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import {
   CheckCircle2,
   TrendingUp,
@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import type { AcademicScores, University } from '@/types';
 import type { Program } from '@/data/degrees/types';
+import type { CatalogueInstitution } from '@/types/catalogue';
 import { analyzeBucketList, type BucketEntry } from '@/utils/bucketListEngine';
 import InstitutionLogo from '@/components/InstitutionLogo';
 
@@ -20,15 +21,125 @@ import InstitutionLogo from '@/components/InstitutionLogo';
 interface Props {
   programs: Program[];
   calculatorInstitutions: University[];
+  catalogueInstitutions: CatalogueInstitution[];
   savedProgramIds: string[];
   academicScores?: AcademicScores;
   onRemove: (programId: string) => void;
   onBack: () => void;
   backLabel?: string;
   emptyCtaLabel?: string;
+  isAuthenticated?: boolean;
+  onSignIn?: () => void;
+  onContinueAsGuest?: () => void;
 }
 
 // ── Individual saved-item card ────────────────────────────────────────────────
+
+const REGION_LABEL = {
+  center: 'מרכז',
+  north: 'צפון',
+  south: 'דרום',
+} as const;
+const GENERIC_INSTITUTION_NAME = 'אוניברסיטה';
+
+type FilterKind = 'institution' | 'region' | 'degree';
+
+interface FilterOption {
+  id: string;
+  label: string;
+  count: number;
+}
+
+interface BucketFilters {
+  degreeKeys: string[];
+  institutionKeys: string[];
+  regions: Array<keyof typeof REGION_LABEL>;
+}
+
+function toggleValue<T extends string>(values: T[], value: T): T[] {
+  return values.includes(value) ? values.filter((item) => item !== value) : [...values, value];
+}
+
+function getProgramInstitutionKey(
+  program: Program,
+  institutionByKey?: Map<string, CatalogueInstitution>,
+) {
+  if (program.institutionId && institutionByKey?.has(program.institutionId)) {
+    return program.institutionId;
+  }
+
+  return institutionByKey?.get(program.institution)?.id ?? program.institutionId ?? program.institution;
+}
+
+function getProgramDegreeKeys(program: Program) {
+  return Array.from(new Set([program.name, program.category]));
+}
+
+function buildCountedOptions(entries: BucketEntry[], getKeys: (entry: BucketEntry) => string[]) {
+  const counts = new Map<string, number>();
+
+  entries.forEach((entry) => {
+    getKeys(entry).forEach((key) => {
+      counts.set(key, (counts.get(key) ?? 0) + 1);
+    });
+  });
+
+  return counts;
+}
+
+function FilterGroup({
+  activeIds,
+  kind,
+  options,
+  title,
+  onToggle,
+}: {
+  activeIds: string[];
+  kind: FilterKind;
+  options: FilterOption[];
+  title: string;
+  onToggle: (id: string) => void;
+}) {
+  if (options.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="flex flex-col gap-2">
+      <p className="text-xs font-bold text-[#7784e8]">{title}</p>
+      <div className="flex flex-wrap gap-2" data-filter-kind={kind}>
+        {options.map((option) => {
+          const selected = activeIds.includes(option.id);
+
+          return (
+            <button
+              key={option.id}
+              type="button"
+              onClick={() => onToggle(option.id)}
+              aria-pressed={selected}
+              className={[
+                'inline-flex h-9 items-center gap-1.5 rounded-2xl border px-3 text-xs font-bold transition',
+                selected
+                  ? 'border-[#7784e8] bg-[#7784e8] text-white shadow-[0_12px_28px_rgba(119,132,232,0.24)]'
+                  : 'border-[#d9e3f3] bg-white/78 text-[#647091] hover:border-[#8fd8ff] hover:bg-white',
+              ].join(' ')}
+            >
+              <span>{option.label}</span>
+              <span
+                className={[
+                  'rounded-full px-1.5 py-0.5 text-[10px] tabular-nums',
+                  selected ? 'bg-white/20 text-white' : 'bg-[#eef4ff] text-[#7c86a2]',
+                ].join(' ')}
+              >
+                {option.count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 function BucketCard({ entry, onRemove }: { entry: BucketEntry; onRemove: (id: string) => void }) {
   const { program, status, sekhem, threshold, delta } = entry;
@@ -172,13 +283,23 @@ function SectionHeader({
 export default function BucketList({
   programs,
   calculatorInstitutions,
+  catalogueInstitutions,
   savedProgramIds,
   academicScores,
   onRemove,
   onBack,
   backLabel = 'חזרה להמלצות',
   emptyCtaLabel = 'עבור להמלצות ←',
+  isAuthenticated = false,
+  onSignIn,
+  onContinueAsGuest,
 }: Props) {
+  const [filters, setFilters] = useState<BucketFilters>({
+    degreeKeys: [],
+    institutionKeys: [],
+    regions: [],
+  });
+
   // Build UserScores only when both required fields are present
   const userScores = useMemo(() => {
     const psy = academicScores?.psychometric?.overall;
@@ -191,43 +312,166 @@ export default function BucketList({
     [savedProgramIds, userScores, programs, calculatorInstitutions],
   );
 
-  const qualified = entries.filter((e) => e.status === 'qualified');
-  const gap = entries.filter((e) => e.status === 'gap');
-  const requirements = entries.filter((e) => e.status === 'requirements');
-  const noData = entries.filter((e) => e.status === 'no-data');
+  const institutionByKey = useMemo(() => {
+    const byKey = new Map<string, CatalogueInstitution>();
+    catalogueInstitutions.forEach((institution) => {
+      byKey.set(institution.id, institution);
+      byKey.set(institution.name, institution);
+    });
+    return byKey;
+  }, [catalogueInstitutions]);
+
+  const filterOptions = useMemo(() => {
+    const institutionCounts = buildCountedOptions(entries, (entry) =>
+      entry.program.institution === GENERIC_INSTITUTION_NAME
+        ? []
+        : [getProgramInstitutionKey(entry.program, institutionByKey)],
+    );
+    const regionCounts = buildCountedOptions(entries, (entry) => {
+      if (entry.program.institution === GENERIC_INSTITUTION_NAME) {
+        return [];
+      }
+
+      const region = institutionByKey.get(
+        getProgramInstitutionKey(entry.program, institutionByKey),
+      )?.region;
+      return region && region !== 'any' ? [region] : [];
+    });
+    const degreeCounts = buildCountedOptions(entries, (entry) => getProgramDegreeKeys(entry.program));
+
+    const institutionOptions = Array.from(institutionCounts, ([id, count]) => {
+      const program = entries.find(
+        (entry) => getProgramInstitutionKey(entry.program, institutionByKey) === id,
+      )?.program;
+      return {
+        id,
+        count,
+        label: institutionByKey.get(id)?.name ?? program?.institution ?? id,
+      };
+    }).sort((left, right) => left.label.localeCompare(right.label, 'he'));
+
+    const regionOptions = Array.from(regionCounts, ([id, count]) => ({
+      id,
+      count,
+      label: REGION_LABEL[id as keyof typeof REGION_LABEL] ?? id,
+    })).sort((left, right) => left.label.localeCompare(right.label, 'he'));
+
+    const degreeOptions = Array.from(degreeCounts, ([id, count]) => ({
+      id,
+      count,
+      label: id,
+    })).sort((left, right) => left.label.localeCompare(right.label, 'he'));
+
+    return { degreeOptions, institutionOptions, regionOptions };
+  }, [entries, institutionByKey]);
+
+  const visibleEntries = useMemo(
+    () =>
+      entries.filter((entry) => {
+        const institutionKey = getProgramInstitutionKey(entry.program, institutionByKey);
+        const region = institutionByKey.get(institutionKey)?.region;
+        const degreeKeys = getProgramDegreeKeys(entry.program);
+
+        const institutionMatch =
+          filters.institutionKeys.length === 0 || filters.institutionKeys.includes(institutionKey);
+        const regionMatch =
+          filters.regions.length === 0 ||
+          (region !== undefined && filters.regions.includes(region as keyof typeof REGION_LABEL));
+        const degreeMatch =
+          filters.degreeKeys.length === 0 ||
+          filters.degreeKeys.some((degreeKey) => degreeKeys.includes(degreeKey));
+
+        return institutionMatch && regionMatch && degreeMatch;
+      }),
+    [entries, filters, institutionByKey],
+  );
+
+  const activeFilterCount =
+    filters.institutionKeys.length + filters.regions.length + filters.degreeKeys.length;
+  const qualified = visibleEntries.filter((e) => e.status === 'qualified');
+  const gap = visibleEntries.filter((e) => e.status === 'gap');
+  const requirements = visibleEntries.filter((e) => e.status === 'requirements');
+  const noData = visibleEntries.filter((e) => e.status === 'no-data');
   const hasScores = userScores !== null;
 
   // ── Empty state ─────────────────────────────────────────────────────────────
   if (savedProgramIds.length === 0) {
+    const handleGuestContinue = onContinueAsGuest ?? onBack;
+
     return (
       <div className="flex flex-col gap-6">
         {/* Back nav */}
         <button
           onClick={onBack}
-          className="flex items-center gap-2 self-start rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 shadow-sm transition hover:border-slate-400 hover:text-slate-900"
+          className="flex items-center gap-2 self-start rounded-2xl border border-white bg-white/82 px-4 py-2 text-sm font-bold text-[#647091] shadow-[0_14px_34px_rgba(105,133,190,0.14)] backdrop-blur-xl transition hover:bg-white hover:text-[#5262d9]"
         >
           <ArrowRight size={14} />
           {backLabel}
         </button>
 
-        <section className="flex flex-col items-center gap-4 rounded-3xl border border-slate-100 bg-white px-8 py-16 text-center shadow-sm">
-          <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-50">
-            <Bookmark size={28} className="text-slate-300" />
-          </div>
-          <div>
-            <h2 className="text-lg font-bold text-slate-800">רשימת הייעוד ריקה</h2>
-            <p className="mt-1.5 max-w-sm text-sm text-slate-400">
-              עיין בהמלצות, פתח את פרטי תוכנית לימודים ולחץ על סמל הסימנייה כדי לשמור תארים
-              שמעניינים אותך.
-            </p>
-          </div>
-          <button
-            onClick={onBack}
-            className="mt-2 rounded-full bg-gradient-to-l from-indigo-600 to-violet-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:brightness-110"
-          >
-            {emptyCtaLabel}
-          </button>
-        </section>
+        {!isAuthenticated ? (
+          <section className="relative overflow-hidden rounded-[1.7rem] border border-white bg-white/78 px-6 py-10 text-center shadow-[0_24px_80px_rgba(105,133,190,0.16)] backdrop-blur-xl sm:px-10 sm:py-14">
+            <div className="pointer-events-none absolute -left-16 top-8 h-32 w-32 rounded-full bg-[#ffd4ec]/40 blur-3xl" />
+            <div className="pointer-events-none absolute -right-12 bottom-8 h-36 w-36 rounded-full bg-[#bfeeff]/45 blur-3xl" />
+
+            <div className="relative mx-auto flex max-w-xl flex-col items-center">
+              <div className="flex h-16 w-16 items-center justify-center rounded-[1.35rem] border border-white bg-white/82 shadow-[0_16px_42px_rgba(105,133,190,0.16)]">
+                <Bookmark size={28} className="text-[#7784e8]" />
+              </div>
+
+              <p className="mt-5 text-sm font-bold text-[#7784e8]">הרשימה שלי</p>
+              <h2 className="mt-2 text-2xl font-bold text-[#445274] sm:text-3xl">
+                רוצה לשמור אפשרויות להשוואה?
+              </h2>
+              <p className="mt-3 max-w-lg text-sm leading-7 text-[#6f7a99] sm:text-base">
+                כדי לשמור תארים מועדפים ולהשוות ביניהם לאורך זמן, כדאי להתחבר או ליצור
+                חשבון לפני שמתחילים.
+              </p>
+
+              <div className="mt-6 rounded-[1.25rem] border border-[#fff1bd] bg-[#fff8e8]/82 px-4 py-3 text-sm font-semibold leading-7 text-[#8a6b23]">
+                אפשר להמשיך כאורח/ת ולבחור תארים עכשיו, אבל הרשימה תישמר רק בדפדפן
+                הזה ועלולה להימחק. כדי לשמור אותה בחשבון ובמכשירים נוספים צריך להירשם.
+              </div>
+
+              <div className="mt-7 flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:justify-center">
+                <button
+                  type="button"
+                  onClick={onSignIn}
+                  disabled={!onSignIn}
+                  className="rounded-2xl bg-[#7784e8] px-6 py-3 text-sm font-bold text-white shadow-[0_16px_38px_rgba(119,132,232,0.26)] transition hover:bg-[#6574dc] disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  התחברות / יצירת חשבון
+                </button>
+                <button
+                  type="button"
+                  onClick={handleGuestContinue}
+                  className="rounded-2xl border border-[#d9e3f3] bg-white/82 px-6 py-3 text-sm font-bold text-[#647091] shadow-[0_12px_30px_rgba(105,133,190,0.1)] transition hover:border-[#8fd8ff] hover:bg-white hover:text-[#5262d9]"
+                >
+                  להמשיך כאורח/ת
+                </button>
+              </div>
+            </div>
+          </section>
+        ) : (
+          <section className="flex flex-col items-center gap-4 rounded-[1.7rem] border border-white bg-white/78 px-8 py-16 text-center shadow-[0_24px_80px_rgba(105,133,190,0.16)] backdrop-blur-xl">
+            <div className="flex h-16 w-16 items-center justify-center rounded-[1.35rem] border border-white bg-white/82 shadow-[0_16px_42px_rgba(105,133,190,0.16)]">
+              <Bookmark size={28} className="text-[#7784e8]" />
+            </div>
+            <div>
+              <h2 className="text-lg font-bold text-[#445274]">הרשימה שלי ריקה</h2>
+              <p className="mt-1.5 max-w-sm text-sm leading-6 text-[#6f7a99]">
+                עיין בהמלצות, פתח את פרטי תוכנית לימודים ולחץ על סמל הסימנייה כדי לשמור
+                תארים שמעניינים אותך.
+              </p>
+            </div>
+            <button
+              onClick={onBack}
+              className="mt-2 rounded-2xl bg-[#7784e8] px-6 py-2.5 text-sm font-bold text-white shadow-[0_14px_34px_rgba(119,132,232,0.24)] transition hover:bg-[#6574dc]"
+            >
+              {emptyCtaLabel}
+            </button>
+          </section>
+        )}
       </div>
     );
   }
@@ -246,10 +490,77 @@ export default function BucketList({
         </button>
 
         <div className="text-left">
-          <h1 className="text-lg font-bold text-slate-900">רשימת הייעוד שלך</h1>
+          <h1 className="text-lg font-bold text-slate-900">הרשימה שלי</h1>
           <p className="text-xs text-slate-400">{savedProgramIds.length} תארים שמורים</p>
         </div>
       </div>
+
+      <section className="rounded-[1.7rem] border border-white bg-white/78 p-4 shadow-[0_20px_64px_rgba(105,133,190,0.12)] backdrop-blur-xl sm:p-5">
+        <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-sm font-bold text-[#7784e8]">איך להשוות?</p>
+            <h2 className="mt-1 text-xl font-bold text-[#445274]">בחר מוסדות, אזורים או תארים</h2>
+            <p className="mt-1 text-sm text-[#6f7a99]">
+              אפשר לסנן למשל לפי אוניברסיטת תל אביב, אזור המרכז, או תחומים כמו הנדסה ומדעי המחשב.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="rounded-2xl bg-[#eef4ff] px-3 py-1 text-xs font-bold text-[#647091]">
+              מציג {visibleEntries.length} מתוך {entries.length}
+            </span>
+            {activeFilterCount > 0 ? (
+              <button
+                type="button"
+                onClick={() =>
+                  setFilters({ degreeKeys: [], institutionKeys: [], regions: [] })
+                }
+                className="rounded-2xl border border-[#d9e3f3] bg-white/80 px-3 py-1 text-xs font-bold text-[#647091] transition hover:border-[#8fd8ff] hover:bg-white"
+              >
+                נקה סינון
+              </button>
+            ) : null}
+          </div>
+        </div>
+
+        <div className="grid gap-4">
+          <FilterGroup
+            kind="institution"
+            title="לפי מוסד"
+            options={filterOptions.institutionOptions}
+            activeIds={filters.institutionKeys}
+            onToggle={(id) =>
+              setFilters((current) => ({
+                ...current,
+                institutionKeys: toggleValue(current.institutionKeys, id),
+              }))
+            }
+          />
+          <FilterGroup
+            kind="region"
+            title="לפי אזור גיאוגרפי"
+            options={filterOptions.regionOptions}
+            activeIds={filters.regions}
+            onToggle={(id) =>
+              setFilters((current) => ({
+                ...current,
+                regions: toggleValue(current.regions, id as keyof typeof REGION_LABEL),
+              }))
+            }
+          />
+          <FilterGroup
+            kind="degree"
+            title="לפי תואר או תחום"
+            options={filterOptions.degreeOptions}
+            activeIds={filters.degreeKeys}
+            onToggle={(id) =>
+              setFilters((current) => ({
+                ...current,
+                degreeKeys: toggleValue(current.degreeKeys, id),
+              }))
+            }
+          />
+        </div>
+      </section>
 
       {/* ── Missing scores banner ─────────────────────────────────────────────── */}
       {!hasScores && (
@@ -264,6 +575,22 @@ export default function BucketList({
             </p>
           </div>
         </div>
+      )}
+
+      {visibleEntries.length === 0 && (
+        <section className="rounded-[1.7rem] border border-white bg-white/78 px-6 py-10 text-center shadow-[0_20px_64px_rgba(105,133,190,0.12)] backdrop-blur-xl">
+          <h2 className="text-lg font-bold text-[#445274]">אין התאמות לסינון הנוכחי</h2>
+          <p className="mt-2 text-sm text-[#6f7a99]">
+            נסה להסיר מוסד, אזור או תואר כדי להחזיר אפשרויות להשוואה.
+          </p>
+          <button
+            type="button"
+            onClick={() => setFilters({ degreeKeys: [], institutionKeys: [], regions: [] })}
+            className="mt-5 rounded-2xl bg-[#7784e8] px-5 py-2.5 text-sm font-bold text-white shadow-[0_14px_34px_rgba(119,132,232,0.24)] transition hover:bg-[#6574dc]"
+          >
+            נקה סינון
+          </button>
+        </section>
       )}
 
       {/* ════════════════════════════════════════════════════════════════════════ */}

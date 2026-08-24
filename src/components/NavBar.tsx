@@ -1,7 +1,9 @@
 'use client';
 
 import { Bookmark, BookmarkCheck } from 'lucide-react';
+import Link from 'next/link';
 import LogoCanvas from './LogoCanvas';
+import { ROUTES } from '@/lib/routes';
 
 type AppStep =
   | 'landing'
@@ -13,6 +15,7 @@ type AppStep =
   | 'calculator'
   | 'bucket-list'
   | 'degree-picker'
+  | 'study-location'
   | 'calculator-results';
 
 interface Props {
@@ -50,56 +53,80 @@ export default function NavBar({
   const goToBucketSource = onGoToBucketSource ?? onGoToRecommendations;
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[#e5e7eb] bg-white">
-      <div className="flex items-center justify-between py-4 pl-8 pr-4 sm:pl-12 sm:pr-6">
+    <header className="sticky top-0 z-50 px-3 pt-5 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-[68px] w-full max-w-[92rem] items-center justify-between rounded-[1.4rem] border border-white bg-white/78 px-4 shadow-[0_20px_70px_rgba(117,139,190,0.18)] backdrop-blur-xl sm:px-5 lg:px-6">
         <button
           type="button"
           onClick={onGoHome}
           aria-label="חזרה לדף הבית"
-          className="cursor-pointer rounded-lg outline-none transition-opacity hover:opacity-80 focus-visible:ring-2 focus-visible:ring-[#1e1b4b]/30"
+          className="flex h-11 items-center gap-2 rounded-2xl border border-[#e3e9f6] bg-white px-3 shadow-sm transition hover:bg-[#f6f9ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fd8ff]"
         >
-          <LogoCanvas size={44} brighten={false} />
+          <LogoCanvas size={30} brighten={false} />
         </button>
 
-        <nav className="flex items-center gap-1.5 text-sm text-slate-600" aria-label="ניווט">
-          <button onClick={onGoToExam} className="transition hover:text-slate-900">
+        <nav
+          className="hidden items-center gap-1 text-sm font-semibold text-[#647091] md:flex"
+          aria-label="ניווט"
+        >
+          <button
+            onClick={onGoToExam}
+            className="rounded-2xl px-4 py-2 transition hover:bg-[#eef4ff] hover:text-[#5262d9]"
+          >
             שאלון
           </button>
+          <Link
+            href={ROUTES.institutions}
+            className="rounded-2xl px-4 py-2 transition hover:bg-[#eef4ff] hover:text-[#5262d9]"
+          >
+            מוסדות
+          </Link>
 
           {step === 'recommendations' && (
             <>
-              <span className="text-slate-300">/</span>
-              <span className="font-semibold text-slate-900">המלצות</span>
+              <span className="text-[#c4cce0]">/</span>
+              <span className="rounded-2xl bg-[#eef4ff] px-4 py-2 font-bold text-[#5262d9]">
+                המלצות
+              </span>
             </>
           )}
           {step === 'calculator' && (
             <>
-              <span className="text-slate-300">/</span>
-              <button onClick={onGoToRecommendations} className="transition hover:text-slate-900">
+              <span className="text-[#c4cce0]">/</span>
+              <button
+                onClick={onGoToRecommendations}
+                className="rounded-2xl px-4 py-2 transition hover:bg-[#eef4ff] hover:text-[#5262d9]"
+              >
                 המלצות
               </button>
-              <span className="text-slate-300">/</span>
-              <span className="font-semibold text-slate-900">חישוב</span>
+              <span className="text-[#c4cce0]">/</span>
+              <span className="rounded-2xl bg-[#eef4ff] px-4 py-2 font-bold text-[#5262d9]">
+                חישוב
+              </span>
             </>
           )}
           {step === 'bucket-list' && (
             <>
-              <span className="text-slate-300">/</span>
-              <button onClick={goToBucketSource} className="transition hover:text-slate-900">
+              <span className="text-[#c4cce0]">/</span>
+              <button
+                onClick={goToBucketSource}
+                className="rounded-2xl px-4 py-2 transition hover:bg-[#eef4ff] hover:text-[#5262d9]"
+              >
                 {bucketSourceLabel}
               </button>
-              <span className="text-slate-300">/</span>
-              <span className="font-semibold text-slate-900">רשימת הייעוד</span>
+              <span className="text-[#c4cce0]">/</span>
+              <span className="rounded-2xl bg-[#eef4ff] px-4 py-2 font-bold text-[#5262d9]">
+                הרשימה שלי
+              </span>
             </>
           )}
         </nav>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <button
             type="button"
             onClick={isAuthenticated ? onSignOut : onGoToAuth}
             disabled={authLoading}
-            className="text-sm font-semibold text-slate-600 transition hover:text-slate-900 disabled:opacity-50"
+            className="hidden rounded-2xl px-3 py-2 text-sm font-bold text-[#647091] transition hover:bg-[#eef4ff] hover:text-[#5262d9] disabled:opacity-50 sm:inline-flex"
           >
             {authLoading
               ? 'טוען...'
@@ -112,16 +139,16 @@ export default function NavBar({
 
           <button
             onClick={onGoToBucket}
-            aria-label={`רשימת הייעוד — ${savedCount} פריטים`}
+            aria-label={`הרשימה שלי — ${savedCount} פריטים`}
             className={[
-              'flex items-center gap-1.5 rounded-full px-4 py-2 text-sm font-semibold transition',
+              'flex h-11 items-center gap-1.5 rounded-2xl px-4 text-sm font-bold shadow-[0_16px_34px_rgba(119,132,232,0.24)] transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fd8ff]',
               isBucketActive
-                ? 'bg-[#1e1b4b] text-white'
-                : 'bg-[#1e1b4b] text-white hover:bg-[#2d2a6e]',
+                ? 'bg-[#6574dc] text-white'
+                : 'bg-[#7784e8] text-white hover:bg-[#6574dc]',
             ].join(' ')}
           >
             {savedCount > 0 ? <BookmarkCheck size={14} /> : <Bookmark size={14} />}
-            <span>רשימת הייעוד</span>
+            <span>הרשימה שלי</span>
             {savedCount > 0 && (
               <span className="rounded-full bg-white/20 px-1.5 py-0.5 text-[10px] font-bold">
                 {savedCount}

@@ -2,7 +2,7 @@
 
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 
 import LandingPage from '@/components/LandingPage';
 import type { CatalogueProgram } from '@/types/catalogue';
@@ -59,10 +59,22 @@ const defaultProps = {
   onAlreadyKnow: vi.fn(),
   onNeedHelp: vi.fn(),
   onSignIn: vi.fn(),
+  onGoToBucket: vi.fn(),
   onGoToProfile: vi.fn(),
 };
 
 describe('LandingPage calculator', () => {
+  beforeAll(() => {
+    class MockIntersectionObserver {
+      disconnect = vi.fn();
+      observe = vi.fn();
+      takeRecords = vi.fn(() => []);
+      unobserve = vi.fn();
+    }
+
+    vi.stubGlobal('IntersectionObserver', MockIntersectionObserver);
+  });
+
   it('keeps initials separate from the logout action', () => {
     const onSignOut = vi.fn();
     render(
@@ -113,5 +125,22 @@ describe('LandingPage calculator', () => {
     fireEvent.click(screen.getByRole('button', { name: 'חשב סיכויים ←' }));
 
     expect(onCalculate).toHaveBeenCalledWith(700, 100, 'new-degree');
+  });
+
+  it('opens the detailed saved-grade calculator from the quick calculator card', () => {
+    const onGoToProfile = vi.fn();
+
+    render(
+      <LandingPage
+        {...defaultProps}
+        onCalculate={vi.fn()}
+        onGoToProfile={onGoToProfile}
+        programs={[program('degree', 'מסלול')]}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole('button', { name: 'פתחו את המחשבון המפורט' }));
+
+    expect(onGoToProfile).toHaveBeenCalledTimes(1);
   });
 });

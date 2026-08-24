@@ -130,7 +130,10 @@ export const FORWARD_PRODUCTION_MIGRATIONS: ForwardProductionMigration[] = [
     id: '0021',
     remoteName: 'operational_proof_release_lane',
     repositoryPath: 'src/db/migrations/0021_simple_sugar_man.sql',
-    statementFingerprint: '86f3daf91908c87fb305292dea29707b',
-    legacyStatementFingerprints: ['ba89e5847ef10fa529545c0120fb0f1f'],
+    statementFingerprint: '467ccd207bd68708a512c2969ab9b4fd',
+    legacyStatementFingerprints: [
+      '86f3daf91908c87fb305292dea29707b',
+      'ba89e5847ef10fa529545c0120fb0f1f',
+    ],
   },
 ];

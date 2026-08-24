@@ -2,6 +2,7 @@ export const ROUTES = {
   home: '/',
   login: '/login',
   signup: '/signup',
+  institutions: '/institutions',
   app: '/app',
   profile: '/app/profile',
   assessment: '/app/assessment',
@@ -137,6 +138,10 @@ function isInternalPath(path: string) {
 
 function isAllowedReturnPath(path: string) {
   if (path === ROUTES.home) {
+    return true;
+  }
+
+  if (path === ROUTES.institutions) {
     return true;
   }
 
