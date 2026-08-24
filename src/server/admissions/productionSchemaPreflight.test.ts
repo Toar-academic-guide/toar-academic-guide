@@ -18,22 +18,28 @@ describe('production admissions schema preflight', () => {
     expect(report).toMatchObject({
       status: 'current',
       safeToMigrate: false,
-      appliedThrough: '0021',
+      appliedThrough: '0022',
       pendingMigrations: [],
       issues: [],
     });
   });
 
-  it('records the fingerprint of the deployable 0021 migration source', () => {
-    const migration = FORWARD_PRODUCTION_MIGRATIONS.find(({ id }) => id === '0021');
-    const statements = readFileSync(migration?.repositoryPath ?? '', 'utf8')
-      .split(/-->\s*statement-breakpoint/)
-      .map((statement) => statement.trim())
-      .filter(Boolean);
+  it('records both Drizzle and Supabase payload fingerprints for applied migrations', () => {
+    for (const migrationId of ['0020', '0021', '0022'] as const) {
+      const migration = FORWARD_PRODUCTION_MIGRATIONS.find(({ id }) => id === migrationId);
+      const source = readFileSync(migration?.repositoryPath ?? '', 'utf8');
+      const statements = source
+        .split(/-->\s*statement-breakpoint/)
+        .map((statement) => statement.trim())
+        .filter(Boolean);
 
-    expect(migration?.statementFingerprint).toBe(
-      createHash('md5').update(statements.join('\n')).digest('hex'),
-    );
+      expect(migration?.statementFingerprint).toBe(
+        createHash('md5').update(statements.join('\n')).digest('hex'),
+      );
+      expect(migration?.legacyStatementFingerprints).toContain(
+        createHash('md5').update(source).digest('hex'),
+      );
+    }
   });
 
   it('accepts PostgreSQL-truncated constraint identifiers', () => {
@@ -67,6 +73,7 @@ describe('production admissions schema preflight', () => {
       '0019',
       '0020',
       '0021',
+      '0022',
     ]);
   });
 
@@ -86,6 +93,7 @@ describe('production admissions schema preflight', () => {
       '0019',
       '0020',
       '0021',
+      '0022',
     ]);
   });
 
@@ -229,9 +237,11 @@ describe('production admissions schema preflight', () => {
 
   it('accepts the original 0021 fingerprint as a reviewed legacy equivalent', () => {
     const snapshot = makeSnapshot();
-    const latestMigration = snapshot.migrationHistory.at(-1);
-    if (latestMigration) {
-      latestMigration.statementFingerprint = 'ba89e5847ef10fa529545c0120fb0f1f';
+    const migration = snapshot.migrationHistory.find(
+      ({ name }) => name === 'operational_proof_release_lane',
+    );
+    if (migration) {
+      migration.statementFingerprint = 'ba89e5847ef10fa529545c0120fb0f1f';
     }
 
     expect(assessProductionSchema(snapshot)).toMatchObject({

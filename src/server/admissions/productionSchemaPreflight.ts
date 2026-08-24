@@ -52,6 +52,7 @@ type TableContract = {
   constraints: string[];
   indexes: string[];
   policies: string[];
+  policyMigrations?: Record<string, MigrationId>;
   grants: Record<string, string[]>;
 };
 
@@ -411,10 +412,14 @@ tables.admission_operational_proof_values = {
     'admission_operational_proof_values_release_idx',
   ],
   policies: [
+    'admission_operational_proof_values_private_deny_all',
     'admission_operational_proof_values_admissions_automation_read',
     'admission_operational_proof_values_admissions_automation_insert',
     'admission_operational_proof_values_admissions_automation_update',
   ],
+  policyMigrations: {
+    admission_operational_proof_values_private_deny_all: '0022',
+  },
   grants: {
     anon: [],
     authenticated: [],
@@ -758,11 +763,22 @@ function assessTableSecurity(
       ? contract.policies.filter((policy) => policy !== 'bagrut_profile_versions_ops_readonly_read')
       : contract.policies;
   for (const policy of requiredPolicies) {
+    const policyMigration = contract.policyMigrations?.[policy];
+    if (policyMigration && !applied.has(policyMigration)) continue;
     if (!table.policies.includes(policy)) {
       issues.push({
         code: 'missing_policy',
         object: `policy:${policy}`,
         detail: `Required policy on public.${tableName} is absent.`,
+      });
+    }
+  }
+  for (const [policy, policyMigration] of Object.entries(contract.policyMigrations ?? {})) {
+    if (!applied.has(policyMigration) && table.policies.includes(policy)) {
+      issues.push({
+        code: 'unexpected_pending_object',
+        object: `policy:${policy}`,
+        detail: `Policy belongs to pending migration ${policyMigration}.`,
       });
     }
   }
