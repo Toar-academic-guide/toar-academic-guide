@@ -10,7 +10,8 @@ export type MigrationId =
   | '0018'
   | '0019'
   | '0020'
-  | '0021';
+  | '0021'
+  | '0022';
 
 export type MigrationHistoryEntry = {
   version: string;
@@ -125,12 +126,23 @@ export const FORWARD_PRODUCTION_MIGRATIONS: ForwardProductionMigration[] = [
     remoteName: 'source_freshness_exact_authority',
     repositoryPath: 'src/db/migrations/0020_flowery_norman_osborn.sql',
     statementFingerprint: '8c78081e1d3f5b124f4dc39d35220f2a',
+    legacyStatementFingerprints: ['d1183bfea0cb69faeaf8c8bada8eab5c'],
   },
   {
     id: '0021',
     remoteName: 'operational_proof_release_lane',
     repositoryPath: 'src/db/migrations/0021_simple_sugar_man.sql',
     statementFingerprint: '86f3daf91908c87fb305292dea29707b',
-    legacyStatementFingerprints: ['ba89e5847ef10fa529545c0120fb0f1f'],
+    legacyStatementFingerprints: [
+      'ba89e5847ef10fa529545c0120fb0f1f',
+      '7ebd08540af717e6cd9a698c4eb2e453',
+    ],
+  },
+  {
+    id: '0022',
+    remoteName: 'secure_operational_proof_access',
+    repositoryPath: 'src/db/migrations/0022_secure_operational_proof_access.sql',
+    statementFingerprint: '8715154ce11095ad8a944eaad84f9185',
+    legacyStatementFingerprints: ['a24a67bfd63139cb447637960babe21d'],
   },
 ];
