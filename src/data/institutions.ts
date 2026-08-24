@@ -159,7 +159,7 @@ export const INSTITUTIONS: InstitutionRecord[] = [
   {
     id: 'tau',
     name: 'אוניברסיטת תל אביב',
-    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/e/e5/Tel_Aviv_University_logo.svg',
+    logoUrl: '/institution-logos/tau.png',
     domain: 'tau.ac.il',
     region: 'center',
     universityId: 'tau',
@@ -167,7 +167,8 @@ export const INSTITUTIONS: InstitutionRecord[] = [
   {
     id: 'huji',
     name: 'האוניברסיטה העברית בירושלים',
-    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/9/91/Hebrew_University_logo.svg',
+    logoUrl:
+      'https://commons.wikimedia.org/wiki/Special:Redirect/file/Hebrew%20University%20Logo.svg',
     domain: 'huji.ac.il',
     region: 'center',
     universityId: 'huji',
@@ -175,7 +176,8 @@ export const INSTITUTIONS: InstitutionRecord[] = [
   {
     id: 'technion',
     name: 'הטכניון – מכון טכנולוגי לישראל',
-    logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/4/47/Technion_logo.svg',
+    logoUrl:
+      'https://designtech.net.technion.ac.il/files/2022/11/TechnionLogo.svg_.png',
     domain: 'technion.ac.il',
     region: 'north',
     universityId: 'technion',
@@ -250,6 +252,7 @@ export const INSTITUTIONS: InstitutionRecord[] = [
   {
     id: 'telhai',
     name: 'מכללת תל-חי',
+    logoUrl: '/institution-logos/telhai.png',
     domain: 'telhai.ac.il',
     region: 'north',
   },
@@ -280,6 +283,8 @@ export const INSTITUTIONS: InstitutionRecord[] = [
   {
     id: 'ono',
     name: 'המכללה האקדמית אונו',
+    logoUrl:
+      'https://commons.wikimedia.org/wiki/Special:Redirect/file/Ono%20Academic%20College.png',
     domain: 'ono.ac.il',
     region: 'center',
   },
@@ -287,6 +292,8 @@ export const INSTITUTIONS: InstitutionRecord[] = [
     // Continuing-education division; shares domain with ono
     id: 'ono_ce',
     name: 'המכללה האקדמית אונו – לימודי המשך',
+    logoUrl:
+      'https://commons.wikimedia.org/wiki/Special:Redirect/file/Ono%20Academic%20College.png',
     domain: 'ono.ac.il',
     region: 'center',
   },
@@ -309,18 +316,22 @@ export const INSTITUTIONS: InstitutionRecord[] = [
   {
     id: 'hit',
     name: 'המכון הטכנולוגי חולון (HIT)',
+    logoUrl:
+      'https://commons.wikimedia.org/wiki/Special:Redirect/file/Holon%20Institute%20of%20Technology%20logo.svg',
     domain: 'hit.ac.il',
     region: 'center',
   },
   {
     id: 'minshar',
     name: 'מנשר לאמנות',
+    logoUrl: '/institution-logos/minshar.png',
     domain: 'minshar.ac.il',
     region: 'center',
   },
   {
     id: 'spieldocs',
     name: 'בית הספר לקולנוע ולטלוויזיה ע"ש סם שפיגל',
+    logoUrl: 'https://commons.wikimedia.org/wiki/Special:Redirect/file/SamSpigelSchool.svg',
     domain: 'spieldocs.ac.il',
     region: 'center',
   },
@@ -347,12 +358,14 @@ export const INSTITUTIONS: InstitutionRecord[] = [
   {
     id: 'nativ',
     name: 'בית הספר למשחק ניסן נתיב',
+    logoUrl: '/institution-logos/nativ.png',
     domain: 'nisan-nativ.co.il',
     region: 'center',
   },
   {
     id: 'beit_zvi',
     name: 'בית צבי – בית הספר הגבוה לאמנויות הבמה',
+    logoUrl: '/institution-logos/beit-zvi.png',
     domain: 'beit-zvi.ac.il',
     region: 'center',
   },
@@ -395,8 +408,10 @@ export const INSTITUTIONS: InstitutionRecord[] = [
   {
     id: 'danon',
     name: 'מכון דנון לבישול',
-    domain: 'danon.co.il',
+    logoUrl: 'https://www.meirdanon.com/wp-content/uploads/2015/09/nl2-danon.png',
+    domain: 'danon.org.il',
     region: 'center',
+    programUrl: 'https://www.danon.org.il',
   },
   {
     id: 'bishulim',
@@ -411,6 +426,7 @@ export const INSTITUTIONS: InstitutionRecord[] = [
   {
     id: 'hackeru',
     name: 'HackerU',
+    logoUrl: '/institution-logos/hackeru.png',
     domain: 'hackeru.com',
     region: 'center',
   },
@@ -463,6 +479,7 @@ export const INSTITUTIONS: InstitutionRecord[] = [
   {
     id: 'aliya',
     name: 'מכון עליה',
+    logoUrl: '/institution-logos/aliya.png',
     domain: 'aliya.org.il',
     region: 'south',
     programUrl: 'https://www.aliya.org.il',
@@ -532,7 +549,7 @@ export const INSTITUTIONS: InstitutionRecord[] = [
   {
     id: 'wizo',
     name: 'ויצו-חיפה – אקדמיה לעיצוב ולחינוך',
-    domain: 'wizo.ac.il',
+    domain: 'wizo.org.il',
     region: 'north',
   },
   {
@@ -649,12 +666,14 @@ export const INSTITUTIONS: InstitutionRecord[] = [
   {
     id: 'ramat_gan',
     name: 'המרכז האקדמי למשפט ולעסקים – רמת גן',
+    logoUrl: '/institution-logos/clb-ramat-gan.png',
     domain: 'rg.ac.il',
     region: 'center',
   },
   {
     id: 'shaare_mishpat',
     name: 'מכללה אקדמית שערי משפט',
+    logoUrl: '/institution-logos/shaarei-mada-mishpat.png',
     domain: 'sha.ac.il',
     region: 'center',
   },
@@ -679,6 +698,7 @@ export const INSTITUTIONS: InstitutionRecord[] = [
   {
     id: 'israel_academic',
     name: 'המכללה האקדמית ישראל ברמת גן',
+    logoUrl: '/institution-logos/academic-ramat-gan.png',
     domain: 'israc.ac.il',
     region: 'center',
   },
@@ -723,6 +743,7 @@ export const INSTITUTIONS: InstitutionRecord[] = [
   {
     id: 'david_yellin',
     name: 'מכללת דוד ילין לחינוך',
+    logoUrl: '/institution-logos/david-yellin.png',
     domain: 'dyellin.ac.il',
     region: 'center',
   },
@@ -783,6 +804,7 @@ export const INSTITUTIONS: InstitutionRecord[] = [
   {
     id: 'givat_washington',
     name: 'מכללת גבעת ושינגטון',
+    logoUrl: '/institution-logos/givat-washington.png',
     domain: 'gwa.ac.il',
     region: 'center',
   },

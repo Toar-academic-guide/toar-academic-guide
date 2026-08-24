@@ -1,7 +1,9 @@
 'use client';
 
 import { Bookmark, BookmarkCheck } from 'lucide-react';
+import Link from 'next/link';
 import LogoCanvas from './LogoCanvas';
+import { ROUTES } from '@/lib/routes';
 
 type AppStep =
   | 'landing'
@@ -13,6 +15,7 @@ type AppStep =
   | 'calculator'
   | 'bucket-list'
   | 'degree-picker'
+  | 'study-location'
   | 'calculator-results';
 
 interface Props {
@@ -50,8 +53,8 @@ export default function NavBar({
   const goToBucketSource = onGoToBucketSource ?? onGoToRecommendations;
 
   return (
-    <header className="sticky top-0 z-50 px-4 pt-5 sm:px-6">
-      <div className="mx-auto flex h-[68px] max-w-6xl items-center justify-between rounded-[1.4rem] border border-white bg-white/78 px-4 shadow-[0_20px_70px_rgba(117,139,190,0.18)] backdrop-blur-xl sm:px-5">
+    <header className="sticky top-0 z-50 px-3 pt-5 sm:px-6 lg:px-8">
+      <div className="mx-auto flex h-[68px] w-full max-w-[92rem] items-center justify-between rounded-[1.4rem] border border-white bg-white/78 px-4 shadow-[0_20px_70px_rgba(117,139,190,0.18)] backdrop-blur-xl sm:px-5 lg:px-6">
         <button
           type="button"
           onClick={onGoHome}
@@ -71,6 +74,12 @@ export default function NavBar({
           >
             שאלון
           </button>
+          <Link
+            href={ROUTES.institutions}
+            className="rounded-2xl px-4 py-2 transition hover:bg-[#eef4ff] hover:text-[#5262d9]"
+          >
+            מוסדות
+          </Link>
 
           {step === 'recommendations' && (
             <>
