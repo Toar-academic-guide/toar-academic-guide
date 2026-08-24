@@ -43,7 +43,7 @@ function extractGeneratedString(block, fieldName, itemId) {
 
 const source = readFileSync(generatedEvidencePath, 'utf8');
 const recordMatches = [
-  ...source.matchAll(/\n  \{\n    itemId: '([^']+)',([\s\S]*?)\n  \},/g),
+  ...source.matchAll(/\r?\n  \{\r?\n    itemId: '([^']+)',([\s\S]*?)\r?\n  \},/g),
 ];
 
 const records = recordMatches.map((match) => {
@@ -59,7 +59,7 @@ const records = recordMatches.map((match) => {
   );
   const officialUrlsBlock = extractRequired(
     block,
-    /officialUrls: \[([\s\S]*?)\],\n    missingData:/,
+    /officialUrls: \[([\s\S]*?)\],\r?\n    missingData:/,
     'officialUrls',
     itemId,
   );
