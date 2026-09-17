@@ -272,19 +272,19 @@ function HeroFunnelPreview() {
       title: 'מה',
       text: 'סינון ראשוני במטרה להבין מה הכיוון הכללי',
       icon: Compass,
-      accent: 'text-[#5f75f1]',
+      accent: 'text-[#365bc8]',
       glow: 'from-[#f5f2ff] to-white',
       width: '100%',
-      badge: 'bg-[#5f75f1]',
+      badge: 'bg-[#365bc8]',
     },
     {
       title: 'איפה',
       text: '200+ מוסדות',
       icon: MapPinned,
-      accent: 'text-[#7784e8]',
+      accent: 'text-[#8357d8]',
       glow: 'from-[#edf8ff] to-white',
       width: '88%',
-      badge: 'bg-[#7784e8]',
+      badge: 'bg-[#8357d8]',
     },
     {
       title: 'איך',
@@ -544,10 +544,10 @@ export default function LandingPage({
               <h1 className="max-w-4xl text-4xl font-semibold leading-tight text-[#0c1d45] sm:text-5xl lg:text-6xl">
                 <span className="block">בוחרים</span>
                 <span className="block">
-                  <span className="text-[#5f75f1]">מה</span> ללמוד,
+                  <span className="text-[#365bc8]">מה</span> ללמוד,
                 </span>
                 <span className="block">
-                  <span className="text-[#7784e8]">איפה</span> ללמוד,
+                  <span className="text-[#8357d8]">איפה</span> ללמוד,
                 </span>
                 <span className="block">
                   <span className="text-[#ef83bb]">ואיך</span> להתקבל.
