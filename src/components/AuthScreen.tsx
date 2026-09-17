@@ -149,7 +149,10 @@ export default function AuthScreen({
             ) : null}
 
             <label className="relative block">
-              <Mail size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Mail
+                size={18}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"
+              />
               <input
                 type="email"
                 dir="ltr"
@@ -162,7 +165,10 @@ export default function AuthScreen({
             </label>
 
             <label className="relative block">
-              <Lock size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" />
+              <Lock
+                size={18}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"
+              />
               <input
                 type={showPassword ? 'text' : 'password'}
                 dir="ltr"

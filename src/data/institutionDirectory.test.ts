@@ -69,19 +69,13 @@ describe('institution directory data', () => {
     expect(byId.get('nativ')?.logoUrl).toBe('/institution-logos/nativ.png');
     expect(byId.get('beit_zvi')?.logoUrl).toBe('/institution-logos/beit-zvi.png');
     expect(byId.get('david_yellin')?.logoUrl).toBe('/institution-logos/david-yellin.png');
-    expect(byId.get('shaare_mishpat')?.logoUrl).toBe(
-      '/institution-logos/shaarei-mada-mishpat.png',
-    );
+    expect(byId.get('shaare_mishpat')?.logoUrl).toBe('/institution-logos/shaarei-mada-mishpat.png');
     expect(byId.get('ramat_gan')?.logoUrl).toBe('/institution-logos/clb-ramat-gan.png');
     expect(byId.get('telhai')?.logoUrl).toBe('/institution-logos/telhai.png');
-    expect(byId.get('israel_academic')?.logoUrl).toBe(
-      '/institution-logos/academic-ramat-gan.png',
-    );
+    expect(byId.get('israel_academic')?.logoUrl).toBe('/institution-logos/academic-ramat-gan.png');
     expect(byId.get('hackeru')?.logoUrl).toBe('/institution-logos/hackeru.png');
     expect(byId.get('aliya')?.logoUrl).toBe('/institution-logos/aliya.png');
-    expect(byId.get('givat_washington')?.logoUrl).toBe(
-      '/institution-logos/givat-washington.png',
-    );
+    expect(byId.get('givat_washington')?.logoUrl).toBe('/institution-logos/givat-washington.png');
     expect(byId.get('danon')).toMatchObject({
       domain: 'danon.org.il',
       sourceUrl: 'https://www.danon.org.il',
@@ -92,15 +86,11 @@ describe('institution directory data', () => {
       domain: 'bpm-music.com',
       logoUrl: 'https://i1.sndcdn.com/avatars-000030802522-35lsuk-t500x500.jpg',
     });
-    expect(byId.get('mon_12220697940')?.logoUrl).toBe(
-      '/institution-logos/yoram-levinstein.png',
-    );
+    expect(byId.get('mon_12220697940')?.logoUrl).toBe('/institution-logos/yoram-levinstein.png');
     expect(byId.get('mon_12341118768')?.logoUrl).toBe('/institution-logos/hbs-college.png');
     expect(byId.get('mon_12341122479')?.logoUrl).toBe('/institution-logos/inline-college.png');
     expect(byId.get('mon_12341127690')?.logoUrl).toBe('/institution-logos/erez-college.png');
-    expect(byId.get('mon_12341128292')?.logoUrl).toBe(
-      '/institution-logos/medicine-college.png',
-    );
+    expect(byId.get('mon_12341128292')?.logoUrl).toBe('/institution-logos/medicine-college.png');
     expect(byId.get('mon_12341064485')?.logoUrl).toBe('/institution-logos/anat-barzilai.png');
     expect(byId.get('mon_12341092879')?.logoUrl).toBe('/institution-logos/studio-6b.png');
     expect(byId.get('mon_12341098736')?.logoUrl).toBe('/institution-logos/laledet.png');

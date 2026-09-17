@@ -309,7 +309,9 @@ export default function DegreePicker({
       return categoryNames;
     }
 
-    return categoryNames.filter((category) => getCategoryMeta(category).tags.includes(activeFilter));
+    return categoryNames.filter((category) =>
+      getCategoryMeta(category).tags.includes(activeFilter),
+    );
   }, [activeFilter, categoryNames]);
 
   const selectedCategory =
@@ -510,7 +512,9 @@ export default function DegreePicker({
                           <SelectedIcon size={27} strokeWidth={2.25} className="text-white" />
                         </div>
                         <div>
-                          <h2 className="text-2xl font-semibold text-[#445274]">{selectedCategory}</h2>
+                          <h2 className="text-2xl font-semibold text-[#445274]">
+                            {selectedCategory}
+                          </h2>
                           <p className="mt-1 text-sm font-bold text-[#765cf0]">
                             {degreeCountLabel(selectedChoices.length)}
                           </p>
@@ -559,11 +563,7 @@ export default function DegreePicker({
             </div>
 
             <div className="mt-8 grid overflow-hidden rounded-[1.25rem] border border-white/82 bg-white/72 shadow-[0_18px_54px_rgba(105,133,190,0.11)] backdrop-blur-xl md:grid-cols-3">
-              <InsightTile
-                icon={Scale}
-                title="השווה בין תארים"
-                text="בחר עד 3 תארים להשוואה"
-              />
+              <InsightTile icon={Scale} title="השווה בין תארים" text="בחר עד 3 תארים להשוואה" />
               <InsightTile
                 icon={Bookmark}
                 title="שמור תארים שאהבת"

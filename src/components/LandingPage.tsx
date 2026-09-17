@@ -167,10 +167,12 @@ function DecisionFunnel({
                 className={`relative grid min-h-[120px] w-full grid-cols-[auto_1fr] items-center gap-4 overflow-hidden border bg-gradient-to-br px-8 py-5 text-right shadow-[0_20px_56px_rgba(105,133,190,0.13)] backdrop-blur transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fd8ff] sm:max-w-[var(--stage-width)] ${stage.tone} ${
                   isActive ? 'border-[#c9d4ff] opacity-100' : 'border-white/80 opacity-85'
                 }`}
-                style={{
-                  '--stage-width': stage.width,
-                  clipPath: 'polygon(4% 0, 96% 0, 88% 100%, 12% 100%)',
-                } as CSSProperties}
+                style={
+                  {
+                    '--stage-width': stage.width,
+                    clipPath: 'polygon(4% 0, 96% 0, 88% 100%, 12% 100%)',
+                  } as CSSProperties
+                }
                 animate={{ y: isActive ? -4 : 0, scale: isActive ? 1.015 : 1 }}
                 transition={{ duration: 0.25 }}
               >
@@ -179,7 +181,9 @@ function DecisionFunnel({
                 </span>
                 <span>
                   <span className={`block text-4xl font-bold ${stage.accent}`}>{stage.title}</span>
-                  <span className="mt-1 block text-2xl font-bold text-[#445274]">{stage.question}</span>
+                  <span className="mt-1 block text-2xl font-bold text-[#445274]">
+                    {stage.question}
+                  </span>
                   <span className="mt-2 block text-sm leading-6 text-[#6f7a99]">{stage.text}</span>
                 </span>
               </motion.button>
@@ -316,8 +320,7 @@ function HeroFunnelPreview() {
         className="absolute left-1/2 top-3 h-[430px] w-[99%] -translate-x-1/2 bg-[linear-gradient(180deg,rgba(235,232,255,0.46),rgba(222,246,255,0.34)_54%,rgba(255,240,248,0.26))] blur-xl"
         style={{
           clipPath: 'polygon(0 0, 100% 0, 66% 100%, 34% 100%)',
-          maskImage:
-            'radial-gradient(ellipse at 50% 16%, black 0%, black 42%, transparent 82%)',
+          maskImage: 'radial-gradient(ellipse at 50% 16%, black 0%, black 42%, transparent 82%)',
           WebkitMaskImage:
             'radial-gradient(ellipse at 50% 16%, black 0%, black 42%, transparent 82%)',
         }}
@@ -327,7 +330,8 @@ function HeroFunnelPreview() {
         className="absolute left-1/2 top-[150px] h-[280px] w-[70%] -translate-x-1/2 bg-[linear-gradient(180deg,rgba(255,255,255,0.24),rgba(137,220,255,0.16),rgba(255,194,226,0.14))] blur-lg"
         style={{
           clipPath: 'polygon(5% 0, 95% 0, 66% 100%, 34% 100%)',
-          maskImage: 'linear-gradient(180deg, transparent 0%, black 12%, black 62%, transparent 100%)',
+          maskImage:
+            'linear-gradient(180deg, transparent 0%, black 12%, black 62%, transparent 100%)',
           WebkitMaskImage:
             'linear-gradient(180deg, transparent 0%, black 12%, black 62%, transparent 100%)',
         }}
@@ -337,8 +341,7 @@ function HeroFunnelPreview() {
         className="absolute left-1/2 top-4 h-[420px] w-[96%] -translate-x-1/2 bg-[linear-gradient(90deg,transparent,rgba(255,255,255,0.26),transparent)] blur-2xl"
         style={{
           clipPath: 'polygon(0 0, 100% 0, 66% 100%, 34% 100%)',
-          maskImage:
-            'radial-gradient(ellipse at 50% 18%, black 0%, black 36%, transparent 78%)',
+          maskImage: 'radial-gradient(ellipse at 50% 18%, black 0%, black 36%, transparent 78%)',
           WebkitMaskImage:
             'radial-gradient(ellipse at 50% 18%, black 0%, black 36%, transparent 78%)',
         }}
@@ -406,7 +409,9 @@ function HeroFunnelPreview() {
                 {index + 1}
               </span>
               <div className="min-w-0">
-                <div className={`text-4xl font-bold leading-none ${stage.accent}`}>{stage.title}</div>
+                <div className={`text-4xl font-bold leading-none ${stage.accent}`}>
+                  {stage.title}
+                </div>
                 <div className="mt-2 text-sm font-bold leading-5 text-[#445274] sm:text-base">
                   {stage.text}
                 </div>
@@ -514,26 +519,27 @@ export default function LandingPage({
   }
 
   return (
-    <WayPageShell contentClassName="" navigation={
-      <PublicNavBar
-        authLoading={authLoading}
-        isAuthenticated={isAuthenticated}
-        onCalculatorClick={() => scrollToSection('calculator')}
-        onGoToBucket={onGoToBucket}
-        onMethodClick={() => scrollToSection('method')}
-        onPathClick={() => scrollToSection('path')}
-        onSignIn={onSignIn}
-        onSignOut={onSignOut}
-        onStartClick={scrollToStart}
-        savedCount={savedCount}
-        userEmail={userEmail}
-        userInitials={userInitials}
-      />
-
-    }>
+    <WayPageShell
+      contentClassName=""
+      navigation={
+        <PublicNavBar
+          authLoading={authLoading}
+          isAuthenticated={isAuthenticated}
+          onCalculatorClick={() => scrollToSection('calculator')}
+          onGoToBucket={onGoToBucket}
+          onMethodClick={() => scrollToSection('method')}
+          onPathClick={() => scrollToSection('path')}
+          onSignIn={onSignIn}
+          onSignOut={onSignOut}
+          onStartClick={scrollToStart}
+          savedCount={savedCount}
+          userEmail={userEmail}
+          userInitials={userInitials}
+        />
+      }
+    >
       <main className="relative overflow-hidden">
         <section className="relative px-4 pb-16 pt-28 sm:px-6 lg:pb-24 lg:pt-28">
-
           <div className="mx-auto grid max-w-6xl items-start gap-10 lg:grid-cols-[0.95fr_1.05fr]">
             <motion.div
               initial={{ opacity: 0, y: 18 }}
@@ -555,8 +561,8 @@ export default function LandingPage({
               </h1>
 
               <p className="mt-7 max-w-2xl text-lg leading-8 text-[#6d7896] sm:text-xl" dir="rtl">
-                בתוך ריבוי האפשרויות, <span dir="ltr">Way</span> עוזרת לעשות סדר ולבנות דרך
-                שמתאימה <strong className="font-bold text-[#445274]">לך.</strong>
+                בתוך ריבוי האפשרויות, <span dir="ltr">Way</span> עוזרת לעשות סדר ולבנות דרך שמתאימה{' '}
+                <strong className="font-bold text-[#445274]">לך.</strong>
                 <br />
                 שנתחיל?
               </p>
@@ -606,7 +612,11 @@ export default function LandingPage({
           <DecisionFunnel onNeedHelp={onNeedHelp} onAlreadyKnow={onAlreadyKnow} />
         </section>
 
-        <section id="calculator" ref={startRef} className="relative scroll-mt-28 px-4 py-16 sm:px-6 lg:py-24">
+        <section
+          id="calculator"
+          ref={startRef}
+          className="relative scroll-mt-28 px-4 py-16 sm:px-6 lg:py-24"
+        >
           <div className="mx-auto grid max-w-6xl gap-6 lg:grid-cols-[0.9fr_1.1fr]">
             <div className="flex flex-col justify-between rounded-[1.7rem] border border-white bg-white/72 p-6 text-[#445274] shadow-[0_20px_70px_rgba(105,133,190,0.14)] backdrop-blur lg:p-8">
               <div>
@@ -615,8 +625,8 @@ export default function LandingPage({
                   לא צריך לנחש אם את/ה בכיוון.
                 </h2>
                 <p className="mt-5 text-base leading-7 text-[#6f7a99]">
-                  אפשר להתחיל מבדיקה מהירה עם פסיכומטרי וממוצע בגרות, או לעבור למחשבון המפורט
-                  ששומר את הציונים ומחשב בגרות לפי מגזר, מקצועות חובה ומקצועות בחירה.
+                  אפשר להתחיל מבדיקה מהירה עם פסיכומטרי וממוצע בגרות, או לעבור למחשבון המפורט ששומר
+                  את הציונים ומחשב בגרות לפי מגזר, מקצועות חובה ומקצועות בחירה.
                 </p>
               </div>
 

@@ -68,7 +68,9 @@ function getProgramInstitutionKey(
     return program.institutionId;
   }
 
-  return institutionByKey?.get(program.institution)?.id ?? program.institutionId ?? program.institution;
+  return (
+    institutionByKey?.get(program.institution)?.id ?? program.institutionId ?? program.institution
+  );
 }
 
 function getProgramDegreeKeys(program: Program) {
@@ -337,7 +339,9 @@ export default function BucketList({
       )?.region;
       return region && region !== 'any' ? [region] : [];
     });
-    const degreeCounts = buildCountedOptions(entries, (entry) => getProgramDegreeKeys(entry.program));
+    const degreeCounts = buildCountedOptions(entries, (entry) =>
+      getProgramDegreeKeys(entry.program),
+    );
 
     const institutionOptions = Array.from(institutionCounts, ([id, count]) => {
       const program = entries.find(
@@ -424,13 +428,13 @@ export default function BucketList({
                 רוצה לשמור אפשרויות להשוואה?
               </h2>
               <p className="mt-3 max-w-lg text-sm leading-7 text-[#6f7a99] sm:text-base">
-                כדי לשמור תארים מועדפים ולהשוות ביניהם לאורך זמן, כדאי להתחבר או ליצור
-                חשבון לפני שמתחילים.
+                כדי לשמור תארים מועדפים ולהשוות ביניהם לאורך זמן, כדאי להתחבר או ליצור חשבון לפני
+                שמתחילים.
               </p>
 
               <div className="mt-6 rounded-[1.25rem] border border-[#fff1bd] bg-[#fff8e8]/82 px-4 py-3 text-sm font-semibold leading-7 text-[#8a6b23]">
-                אפשר להמשיך כאורח/ת ולבחור תארים עכשיו, אבל הרשימה תישמר רק בדפדפן
-                הזה ועלולה להימחק. כדי לשמור אותה בחשבון ובמכשירים נוספים צריך להירשם.
+                אפשר להמשיך כאורח/ת ולבחור תארים עכשיו, אבל הרשימה תישמר רק בדפדפן הזה ועלולה
+                להימחק. כדי לשמור אותה בחשבון ובמכשירים נוספים צריך להירשם.
               </div>
 
               <div className="mt-7 flex w-full flex-col gap-3 sm:w-auto sm:flex-row sm:justify-center">
@@ -460,8 +464,8 @@ export default function BucketList({
             <div>
               <h2 className="text-lg font-bold text-[#445274]">הרשימה שלי ריקה</h2>
               <p className="mt-1.5 max-w-sm text-sm leading-6 text-[#6f7a99]">
-                עיין בהמלצות, פתח את פרטי תוכנית לימודים ולחץ על סמל הסימנייה כדי לשמור
-                תארים שמעניינים אותך.
+                עיין בהמלצות, פתח את פרטי תוכנית לימודים ולחץ על סמל הסימנייה כדי לשמור תארים
+                שמעניינים אותך.
               </p>
             </div>
             <button
@@ -511,9 +515,7 @@ export default function BucketList({
             {activeFilterCount > 0 ? (
               <button
                 type="button"
-                onClick={() =>
-                  setFilters({ degreeKeys: [], institutionKeys: [], regions: [] })
-                }
+                onClick={() => setFilters({ degreeKeys: [], institutionKeys: [], regions: [] })}
                 className="rounded-2xl border border-[#d9e3f3] bg-white/80 px-3 py-1 text-xs font-bold text-[#647091] transition hover:border-[#8fd8ff] hover:bg-white"
               >
                 נקה סינון

@@ -303,7 +303,9 @@ export default function StudyLocationStep({
   const [selectedRegions, setSelectedRegions] = useState<StudyRegionId[]>([]);
   const [allRegionsSelected, setAllRegionsSelected] = useState(false);
   const [expandedRegions, setExpandedRegions] = useState<StudyRegionId[]>(['south']);
-  const [institutionFilters, setInstitutionFilters] = useState<Record<StudyRegionId, InstitutionFilter>>({
+  const [institutionFilters, setInstitutionFilters] = useState<
+    Record<StudyRegionId, InstitutionFilter>
+  >({
     center: 'all',
     haifa: 'all',
     jerusalem: 'all',
@@ -426,7 +428,10 @@ export default function StudyLocationStep({
                       onToggle={() => toggleRegion(region.id)}
                     />
                   ))}
-                  <AllRegionsRow selected={allRegionsSelected} onToggle={() => toggleRegion('any')} />
+                  <AllRegionsRow
+                    selected={allRegionsSelected}
+                    onToggle={() => toggleRegion('any')}
+                  />
                 </div>
               </div>
 
@@ -561,7 +566,9 @@ function RegionRow({
     <div
       className={[
         'transition',
-        selected ? 'bg-[linear-gradient(90deg,rgba(255,255,255,0.88),rgba(240,246,255,0.94))]' : 'bg-white/44',
+        selected
+          ? 'bg-[linear-gradient(90deg,rgba(255,255,255,0.88),rgba(240,246,255,0.94))]'
+          : 'bg-white/44',
         disabledByAll ? 'opacity-55' : '',
       ].join(' ')}
     >
@@ -623,22 +630,26 @@ function RegionRow({
           >
             <div className="border-t border-[#e3ebf6] px-5 pb-5 pt-4">
               <div className="flex flex-wrap gap-2">
-                {(['all', 'university', 'college', 'artDesign'] as InstitutionFilter[]).map((filter) => (
-                  <button
-                    key={filter}
-                    type="button"
-                    onClick={() => onFilterChange(filter)}
-                    className={[
-                      'inline-flex h-8 items-center rounded-full px-3 text-xs font-bold transition',
-                      institutionFilter === filter
-                        ? 'bg-[#071638] text-white shadow-[0_10px_22px_rgba(7,22,56,0.18)]'
-                        : 'border border-[#e2e9f5] bg-white/70 text-[#6f7a99] hover:bg-white',
-                    ].join(' ')}
-                  >
-                    {filter === 'all' ? 'הכל' : INSTITUTION_KIND_LABELS[filter]}
-                    <span className="mr-1 opacity-70">({countInstitutions(region.id, filter)})</span>
-                  </button>
-                ))}
+                {(['all', 'university', 'college', 'artDesign'] as InstitutionFilter[]).map(
+                  (filter) => (
+                    <button
+                      key={filter}
+                      type="button"
+                      onClick={() => onFilterChange(filter)}
+                      className={[
+                        'inline-flex h-8 items-center rounded-full px-3 text-xs font-bold transition',
+                        institutionFilter === filter
+                          ? 'bg-[#071638] text-white shadow-[0_10px_22px_rgba(7,22,56,0.18)]'
+                          : 'border border-[#e2e9f5] bg-white/70 text-[#6f7a99] hover:bg-white',
+                      ].join(' ')}
+                    >
+                      {filter === 'all' ? 'הכל' : INSTITUTION_KIND_LABELS[filter]}
+                      <span className="mr-1 opacity-70">
+                        ({countInstitutions(region.id, filter)})
+                      </span>
+                    </button>
+                  ),
+                )}
               </div>
 
               <div className="mt-3 grid gap-2">
@@ -738,7 +749,9 @@ function SelectedSummary({
                 {name}
                 <button
                   type="button"
-                  onClick={() => (allRegionsSelected ? onClearAll() : region && onRemoveRegion(region.id))}
+                  onClick={() =>
+                    allRegionsSelected ? onClearAll() : region && onRemoveRegion(region.id)
+                  }
                   aria-label={`הסר ${name}`}
                   className="rounded-full p-0.5 text-[#7d88a4] transition hover:bg-[#eef4ff] hover:text-[#071638]"
                 >
@@ -815,27 +828,66 @@ function IsraelRegionMap({
               className="absolute inset-x-0 top-[46%] mx-auto h-[520px] w-full max-w-[430px] -translate-y-1/2 overflow-visible drop-shadow-[0_28px_46px_rgba(73,94,145,0.14)] lg:top-1/2 lg:h-[580px] lg:max-w-[470px]"
             >
               <defs>
-                <linearGradient id="mapBaseGradient" x1="355" x2="650" y1="84" y2="858" gradientUnits="userSpaceOnUse">
+                <linearGradient
+                  id="mapBaseGradient"
+                  x1="355"
+                  x2="650"
+                  y1="84"
+                  y2="858"
+                  gradientUnits="userSpaceOnUse"
+                >
                   <stop offset="0" stopColor="#8a72ff" />
                   <stop offset="0.52" stopColor="#7168f6" />
                   <stop offset="1" stopColor="#5f7cff" />
                 </linearGradient>
-                <linearGradient id="mapInactiveGradient" x1="355" x2="650" y1="84" y2="858" gradientUnits="userSpaceOnUse">
+                <linearGradient
+                  id="mapInactiveGradient"
+                  x1="355"
+                  x2="650"
+                  y1="84"
+                  y2="858"
+                  gradientUnits="userSpaceOnUse"
+                >
                   <stop offset="0" stopColor="#d9e4ff" />
                   <stop offset="0.56" stopColor="#cdd9ff" />
                   <stop offset="1" stopColor="#dce8ff" />
                 </linearGradient>
-                <linearGradient id="mapSelectedGradient" x1="360" x2="640" y1="86" y2="844" gradientUnits="userSpaceOnUse">
+                <linearGradient
+                  id="mapSelectedGradient"
+                  x1="360"
+                  x2="640"
+                  y1="86"
+                  y2="844"
+                  gradientUnits="userSpaceOnUse"
+                >
                   <stop offset="0" stopColor="#9b6cff" />
                   <stop offset="0.5" stopColor="#7067f4" />
                   <stop offset="1" stopColor="#2f7fff" />
                 </linearGradient>
                 <filter id="mapShadow" x="-20%" y="-20%" width="140%" height="140%">
-                  <feDropShadow dx="0" dy="16" stdDeviation="14" floodColor="#405885" floodOpacity="0.12" />
+                  <feDropShadow
+                    dx="0"
+                    dy="16"
+                    stdDeviation="14"
+                    floodColor="#405885"
+                    floodOpacity="0.12"
+                  />
                 </filter>
                 <filter id="selectedGlow" x="-20%" y="-20%" width="140%" height="140%">
-                  <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor="#e970cf" floodOpacity="0.34" />
-                  <feDropShadow dx="0" dy="10" stdDeviation="12" floodColor="#287cff" floodOpacity="0.16" />
+                  <feDropShadow
+                    dx="0"
+                    dy="0"
+                    stdDeviation="5"
+                    floodColor="#e970cf"
+                    floodOpacity="0.34"
+                  />
+                  <feDropShadow
+                    dx="0"
+                    dy="10"
+                    stdDeviation="12"
+                    floodColor="#287cff"
+                    floodOpacity="0.16"
+                  />
                 </filter>
               </defs>
 

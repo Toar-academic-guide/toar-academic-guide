@@ -10,8 +10,11 @@
 .object {
   position: absolute;
   --travel: 1;
-  transform:
-    translate3d(calc(var(--drift-x, 0px) * var(--travel)), calc(var(--drift-y, 0px) * var(--travel)), 0)
+  transform: translate3d(
+      calc(var(--drift-x, 0px) * var(--travel)),
+      calc(var(--drift-y, 0px) * var(--travel)),
+      0
+    )
     rotate(var(--turn, 0deg));
 }
 
@@ -65,25 +68,69 @@
 }
 
 @media (min-width: 1600px) {
-  .sculpture { width: 8.5rem; }
-  .ribbon { width: 5rem; right: 2.5rem; }
-  .facet { width: 3.5rem; left: 2rem; }
-  .twist { width: 5rem; left: 2.5rem; }
-  .prism { width: 5.5rem; right: 2.5rem; }
+  .sculpture {
+    width: 8.5rem;
+  }
+  .ribbon {
+    width: 5rem;
+    right: 2.5rem;
+  }
+  .facet {
+    width: 3.5rem;
+    left: 2rem;
+  }
+  .twist {
+    width: 5rem;
+    left: 2.5rem;
+  }
+  .prism {
+    width: 5.5rem;
+    right: 2.5rem;
+  }
 }
 
 /* Narrow screens keep the artwork in clear bands, away from reading and input. */
 @media (max-width: 1439px) {
-  .backdrop { position: absolute; }
-  .object { --travel: 0.35; }
-  .sculpture { top: 7.25rem; left: 1.5rem; width: 4rem; }
-  .crystal { top: 7.5rem; right: 1.5rem; width: 3rem; }
-  .ribbon { top: 8.25rem; right: calc(36% - 1.125rem); width: 2.25rem; }
-  .facet { top: 7.75rem; left: calc(42% - 1rem); width: 2rem; }
-  .twist { bottom: 2rem; left: 2rem; width: 4rem; }
-  .prism { bottom: 2.5rem; right: 2rem; width: 3rem; }
+  .backdrop {
+    position: absolute;
+  }
+  .object {
+    --travel: 0.35;
+  }
+  .sculpture {
+    top: 7.25rem;
+    left: 1.5rem;
+    width: 4rem;
+  }
+  .crystal {
+    top: 7.5rem;
+    right: 1.5rem;
+    width: 3rem;
+  }
+  .ribbon {
+    top: 8.25rem;
+    right: calc(36% - 1.125rem);
+    width: 2.25rem;
+  }
+  .facet {
+    top: 7.75rem;
+    left: calc(42% - 1rem);
+    width: 2rem;
+  }
+  .twist {
+    bottom: 2rem;
+    left: 2rem;
+    width: 4rem;
+  }
+  .prism {
+    bottom: 2.5rem;
+    right: 2rem;
+    width: 3rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .object { transform: none; }
+  .object {
+    transform: none;
+  }
 }

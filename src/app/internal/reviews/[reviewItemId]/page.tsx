@@ -41,16 +41,14 @@ export default async function ReviewItemPage({ params }: ReviewItemPageProps) {
             >
               Back to data health
             </Link>
-            <p className="mt-6 text-sm font-semibold uppercase text-[#6574dc]">
-              Internal review
-            </p>
+            <p className="mt-6 text-sm font-semibold uppercase text-[#6574dc]">Internal review</p>
             <h1 className="mt-3 break-words text-3xl font-black tracking-tight sm:text-5xl">
               {item.id}
             </h1>
             <p className="mt-4 max-w-3xl text-base text-[#647091]">
               Inspect bounded evidence here. GitHub pull-request merge is the only approval surface
-              for admissions changes; this screen can only resolve an investigation with no canonical
-              change.
+              for admissions changes; this screen can only resolve an investigation with no
+              canonical change.
             </p>
           </header>
 
@@ -108,7 +106,9 @@ export default async function ReviewItemPage({ params }: ReviewItemPageProps) {
                   ))}
                 </dl>
               ) : (
-                <p className="text-sm text-slate-600">No normalized decision payload is available.</p>
+                <p className="text-sm text-slate-600">
+                  No normalized decision payload is available.
+                </p>
               )}
             </Panel>
 

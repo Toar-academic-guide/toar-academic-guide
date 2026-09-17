@@ -176,8 +176,7 @@ export const INSTITUTIONS: InstitutionRecord[] = [
   {
     id: 'technion',
     name: 'הטכניון – מכון טכנולוגי לישראל',
-    logoUrl:
-      'https://designtech.net.technion.ac.il/files/2022/11/TechnionLogo.svg_.png',
+    logoUrl: 'https://designtech.net.technion.ac.il/files/2022/11/TechnionLogo.svg_.png',
     domain: 'technion.ac.il',
     region: 'north',
     universityId: 'technion',

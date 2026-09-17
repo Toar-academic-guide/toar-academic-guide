@@ -615,7 +615,7 @@ export default function AppExperience({
             )}
           </div>
         )}
-      </>
+      </>,
     );
   }
 
@@ -630,21 +630,21 @@ export default function AppExperience({
           </div>
         )}
         {catalogueStatus === 'ready' ? (
-            <StudyLocationStep
-              programs={cataloguePrograms}
-              savedProgramIds={profile.savedProgramIds ?? []}
-              catalogueInstitutions={catalogueInstitutions}
-              onBack={() => navigateToStep('degree-picker')}
-              onDone={(selection) => {
-                posthog.capture('study_location_selected', {
-                  all_regions: selection.allRegions,
-                  region_count: selection.allRegions ? 'all' : selection.regionIds.length,
-                  regions: selection.regionIds,
-                });
-                setBucketReturnsTo('study-location');
-                navigateToStep('bucket-list');
-              }}
-            />
+          <StudyLocationStep
+            programs={cataloguePrograms}
+            savedProgramIds={profile.savedProgramIds ?? []}
+            catalogueInstitutions={catalogueInstitutions}
+            onBack={() => navigateToStep('degree-picker')}
+            onDone={(selection) => {
+              posthog.capture('study_location_selected', {
+                all_regions: selection.allRegions,
+                region_count: selection.allRegions ? 'all' : selection.regionIds.length,
+                regions: selection.regionIds,
+              });
+              setBucketReturnsTo('study-location');
+              navigateToStep('bucket-list');
+            }}
+          />
         ) : (
           <div className="px-4 py-10 sm:px-6">
             {renderCatalogueState(
@@ -730,7 +730,7 @@ export default function AppExperience({
             navigateToStep('career-assessment');
           }}
         />
-      </>
+      </>,
     );
   }
 
@@ -738,7 +738,7 @@ export default function AppExperience({
     return renderStep(
       <>
         <CareerAssessment onComplete={handleAssessmentComplete} />
-      </>
+      </>,
     );
   }
 
@@ -746,7 +746,7 @@ export default function AppExperience({
     return renderStep(
       <>
         <OnboardingFunnel onComplete={handleFiltersComplete} />
-      </>
+      </>,
     );
   }
 
@@ -769,36 +769,38 @@ export default function AppExperience({
   const sekhemPrograms = cataloguePrograms.filter((program) => program.admissionType === 'sekhem');
 
   return (
-    <WayPageShell navigation={
-      <NavBar
-        step={step}
-        savedCount={savedCount}
-        authLoading={authLoading}
-        isAuthenticated={isAuthenticated}
-        userInitials={user?.email ? getUserInitials(user.email) : undefined}
-        onGoHome={handleGoHome}
-        onGoToExam={() => {
-          setAppCalcScores(null);
-          setPendingScores(null);
-          setPendingValues(null);
-          navigateToStep('career-assessment');
-        }}
-        onGoToRecommendations={handleGoToRecommendations}
-        onGoToBucket={() => navigateToStep('bucket-list')}
-        onGoToAuth={() => {
-          const nextPath = DURABLE_STEP_ROUTES[step] ?? ROUTES.home;
-          router.push(`${ROUTES.login}?next=${encodeURIComponent(nextPath)}`);
-        }}
-        onSignOut={() => {
-          void signOut();
-        }}
-        bucketSourceLabel={bucketReturnsTo === 'degree-picker' ? 'בחירת תארים' : 'המלצות'}
-        onGoToBucketSource={() => {
-          setAppCalcScores(null);
-          navigateToStep(bucketReturnsTo);
-        }}
-      />
-    }>
+    <WayPageShell
+      navigation={
+        <NavBar
+          step={step}
+          savedCount={savedCount}
+          authLoading={authLoading}
+          isAuthenticated={isAuthenticated}
+          userInitials={user?.email ? getUserInitials(user.email) : undefined}
+          onGoHome={handleGoHome}
+          onGoToExam={() => {
+            setAppCalcScores(null);
+            setPendingScores(null);
+            setPendingValues(null);
+            navigateToStep('career-assessment');
+          }}
+          onGoToRecommendations={handleGoToRecommendations}
+          onGoToBucket={() => navigateToStep('bucket-list')}
+          onGoToAuth={() => {
+            const nextPath = DURABLE_STEP_ROUTES[step] ?? ROUTES.home;
+            router.push(`${ROUTES.login}?next=${encodeURIComponent(nextPath)}`);
+          }}
+          onSignOut={() => {
+            void signOut();
+          }}
+          bucketSourceLabel={bucketReturnsTo === 'degree-picker' ? 'בחירת תארים' : 'המלצות'}
+          onGoToBucketSource={() => {
+            setAppCalcScores(null);
+            navigateToStep(bucketReturnsTo);
+          }}
+        />
+      }
+    >
       {step !== 'bucket-list' && !(step === 'calculator' && appCalcScores) ? (
         <div className="mx-auto max-w-5xl px-4 pt-4 sm:px-6">
           <BackButton />

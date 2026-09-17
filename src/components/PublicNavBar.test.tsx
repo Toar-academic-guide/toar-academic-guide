@@ -13,8 +13,12 @@ describe('PublicNavBar mobile navigation', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'פתיחת תפריט' }));
     const menu = screen.getByRole('navigation', { name: 'ניווט בנייד' });
-    expect(within(menu).getByRole('link', { name: 'מי אנחנו' }).getAttribute('href')).toBe('/about');
-    expect(within(menu).getByRole('link', { name: 'מוסדות' }).getAttribute('href')).toBe('/institutions');
+    expect(within(menu).getByRole('link', { name: 'מי אנחנו' }).getAttribute('href')).toBe(
+      '/about',
+    );
+    expect(within(menu).getByRole('link', { name: 'מוסדות' }).getAttribute('href')).toBe(
+      '/institutions',
+    );
     expect(within(menu).getByRole('link', { name: 'התחברות' }).getAttribute('href')).toBe('/login');
     fireEvent.click(within(menu).getByRole('button', { name: /הרשימה שלי/ }));
     expect(onGoToBucket).toHaveBeenCalledTimes(1);
@@ -36,7 +40,11 @@ describe('PublicNavBar mobile navigation', () => {
     expect(document.activeElement).toBe(toggle);
 
     fireEvent.click(screen.getByRole('button', { name: 'פתיחת תפריט' }));
-    fireEvent.click(within(screen.getByRole('navigation', { name: 'ניווט בנייד' })).getByRole('button', { name: 'התנתק' }));
+    fireEvent.click(
+      within(screen.getByRole('navigation', { name: 'ניווט בנייד' })).getByRole('button', {
+        name: 'התנתק',
+      }),
+    );
     expect(onSignOut).toHaveBeenCalledTimes(1);
   });
 });

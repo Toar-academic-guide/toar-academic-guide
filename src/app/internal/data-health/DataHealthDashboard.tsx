@@ -26,382 +26,390 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
       <main className="px-5 py-8 text-[#445274] sm:px-8 lg:px-12">
         <div className="mx-auto flex max-w-7xl flex-col gap-8">
           <header className="overflow-hidden rounded-[1.7rem] border border-white bg-white/82 p-8 text-[#445274] shadow-[0_24px_80px_rgba(105,133,190,0.16)] backdrop-blur-xl">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.35em] text-[#7784e8]">
-                Internal
-              </p>
-              <h1 className="mt-3 text-4xl font-black tracking-tight text-[#0c1d45] sm:text-6xl">
-                Data Health
-              </h1>
-              <p className="mt-4 max-w-2xl text-base text-[#6f7a99] sm:text-lg">
-                Read-only operating view for catalogue readiness, source coverage, ingestion
-                pipeline health, and review queue backlog.
-              </p>
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <p className="text-sm font-semibold uppercase tracking-[0.35em] text-[#7784e8]">
+                  Internal
+                </p>
+                <h1 className="mt-3 text-4xl font-black tracking-tight text-[#0c1d45] sm:text-6xl">
+                  Data Health
+                </h1>
+                <p className="mt-4 max-w-2xl text-base text-[#6f7a99] sm:text-lg">
+                  Read-only operating view for catalogue readiness, source coverage, ingestion
+                  pipeline health, and review queue backlog.
+                </p>
+              </div>
+              <div className="rounded-2xl border border-[#d9e3f3] bg-[#f8fbff]/82 px-5 py-4 text-sm text-[#647091]">
+                <p className="text-[#7c86a2]">Signed in as</p>
+                <p className="font-semibold">{adminEmail}</p>
+                <p className="mt-3 text-[#7c86a2]">Generated</p>
+                <p className="font-semibold">{formatDateTime(report.generatedAt)}</p>
+              </div>
             </div>
-            <div className="rounded-2xl border border-[#d9e3f3] bg-[#f8fbff]/82 px-5 py-4 text-sm text-[#647091]">
-              <p className="text-[#7c86a2]">Signed in as</p>
-              <p className="font-semibold">{adminEmail}</p>
-              <p className="mt-3 text-[#7c86a2]">Generated</p>
-              <p className="font-semibold">{formatDateTime(report.generatedAt)}</p>
-            </div>
-          </div>
           </header>
 
           <section className="grid gap-4 md:grid-cols-5">
-          <MetricCard
-            label="Readiness"
-            value={report.readiness.isReady ? 'Ready' : 'Needs work'}
-            tone={report.readiness.isReady ? 'good' : 'bad'}
-          />
-          <MetricCard
-            label="Missing source links"
-            value={String(report.coverage.missingRequirementSourceCount)}
-            tone={report.coverage.missingRequirementSourceCount === 0 ? 'good' : 'warn'}
-          />
-          <MetricCard
-            label="Failed jobs"
-            value={String(report.ingestion.jobsByStatus.failed ?? 0)}
-            tone={(report.ingestion.jobsByStatus.failed ?? 0) === 0 ? 'good' : 'bad'}
-          />
-          <MetricCard
-            label="Freshness issues"
-            value={String(freshnessIssueCount)}
-            tone={freshnessIssueCount === 0 ? 'good' : 'warn'}
-          />
-          <MetricCard
-            label="Pending reviews"
-            value={String(report.reviewQueue.pendingCount)}
-            tone={report.reviewQueue.pendingCount === 0 ? 'good' : 'warn'}
-          />
+            <MetricCard
+              label="Readiness"
+              value={report.readiness.isReady ? 'Ready' : 'Needs work'}
+              tone={report.readiness.isReady ? 'good' : 'bad'}
+            />
+            <MetricCard
+              label="Missing source links"
+              value={String(report.coverage.missingRequirementSourceCount)}
+              tone={report.coverage.missingRequirementSourceCount === 0 ? 'good' : 'warn'}
+            />
+            <MetricCard
+              label="Failed jobs"
+              value={String(report.ingestion.jobsByStatus.failed ?? 0)}
+              tone={(report.ingestion.jobsByStatus.failed ?? 0) === 0 ? 'good' : 'bad'}
+            />
+            <MetricCard
+              label="Freshness issues"
+              value={String(freshnessIssueCount)}
+              tone={freshnessIssueCount === 0 ? 'good' : 'warn'}
+            />
+            <MetricCard
+              label="Pending reviews"
+              value={String(report.reviewQueue.pendingCount)}
+              tone={report.reviewQueue.pendingCount === 0 ? 'good' : 'warn'}
+            />
           </section>
 
           <section className="rounded-[1.7rem] border border-white bg-white/82 p-6 shadow-[0_20px_64px_rgba(105,133,190,0.12)] backdrop-blur-xl">
-          <h2 className="text-2xl font-black text-slate-950">Formula-backed pair verification</h2>
-          <p className="mt-1 text-sm text-slate-500">
-            Reviewed baseline coverage is immutable. Runtime coverage is activated separately by the
-            persisted weekly authority check.
-          </p>
-          <DefinitionGrid
-            items={[
-              ['In-scope pairs', report.formulaVerification.total],
-              ['Exact', report.formulaVerification.exact],
-              ['Withheld', report.formulaVerification.withheld],
-              ['Stale', report.formulaVerification.stale],
-              ['Blocked', report.formulaVerification.blocked],
-              ['Runtime exact', report.runtimeFormulaVerification.exact],
-              ['Runtime unavailable', report.runtimeFormulaVerification.authorityUnavailable],
-            ]}
-          />
-        </section>
+            <h2 className="text-2xl font-black text-slate-950">Formula-backed pair verification</h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Reviewed baseline coverage is immutable. Runtime coverage is activated separately by
+              the persisted weekly authority check.
+            </p>
+            <DefinitionGrid
+              items={[
+                ['In-scope pairs', report.formulaVerification.total],
+                ['Exact', report.formulaVerification.exact],
+                ['Withheld', report.formulaVerification.withheld],
+                ['Stale', report.formulaVerification.stale],
+                ['Blocked', report.formulaVerification.blocked],
+                ['Runtime exact', report.runtimeFormulaVerification.exact],
+                ['Runtime unavailable', report.runtimeFormulaVerification.authorityUnavailable],
+              ]}
+            />
+          </section>
 
           <section className="rounded-[1.7rem] border border-white bg-white/82 p-6 shadow-[0_20px_64px_rgba(105,133,190,0.12)] backdrop-blur-xl">
-          <h2 className="text-2xl font-black text-slate-950">Admissions decision readiness</h2>
-          <DefinitionGrid
-            items={[
-              [
-                'Decision-ready requirements',
-                report.decisionReadiness.decisionReadyRequirementCount,
-              ],
-              ['Missing structured facts', report.decisionReadiness.missingFactCount],
-              ['Weak source candidates', report.decisionReadiness.weakSourceCount],
-              ['Manual gates', report.decisionReadiness.manualGateCount],
-              ['Alternative paths', report.decisionReadiness.alternativePathCount],
-            ]}
-          />
-          <h3 className="mt-6 text-sm font-black uppercase tracking-[0.2em] text-slate-500">
-            Weak sources
-          </h3>
-          <CompactRows
-            emptyLabel="No weak admissions source candidates."
-            rows={report.decisionReadiness.weakSources.map((source) => ({
-              id: source.sourceCandidateId,
-              detail: `${source.programId} at ${source.institutionId} / ${source.origin} / ${source.specificity}`,
-            }))}
-          />
-        </section>
+            <h2 className="text-2xl font-black text-slate-950">Admissions decision readiness</h2>
+            <DefinitionGrid
+              items={[
+                [
+                  'Decision-ready requirements',
+                  report.decisionReadiness.decisionReadyRequirementCount,
+                ],
+                ['Missing structured facts', report.decisionReadiness.missingFactCount],
+                ['Weak source candidates', report.decisionReadiness.weakSourceCount],
+                ['Manual gates', report.decisionReadiness.manualGateCount],
+                ['Alternative paths', report.decisionReadiness.alternativePathCount],
+              ]}
+            />
+            <h3 className="mt-6 text-sm font-black uppercase tracking-[0.2em] text-slate-500">
+              Weak sources
+            </h3>
+            <CompactRows
+              emptyLabel="No weak admissions source candidates."
+              rows={report.decisionReadiness.weakSources.map((source) => ({
+                id: source.sourceCandidateId,
+                detail: `${source.programId} at ${source.institutionId} / ${source.origin} / ${source.specificity}`,
+              }))}
+            />
+          </section>
 
           <section>
-          <Panel title="Admissions evidence">
-            <AdmissionsEvidenceRows rows={report.decisionEvidence.rows} />
-          </Panel>
-        </section>
+            <Panel title="Admissions evidence">
+              <AdmissionsEvidenceRows rows={report.decisionEvidence.rows} />
+            </Panel>
+          </section>
 
           <section className="rounded-[1.7rem] border border-white bg-white/82 p-6 shadow-[0_20px_64px_rgba(105,133,190,0.12)] backdrop-blur-xl">
-          <h2 className="text-2xl font-black text-slate-950">
-            Monday admissions evidence coverage
-          </h2>
-          <p className="mt-1 text-sm text-slate-500">
-            Coverage of all {report.mondayEvidence.totalItems} Monday institution items across
-            decision-capable, manual/eligible, open, tracked missing-rule, and non-catalogue
-            evidence buckets.
-          </p>
-          <DefinitionGrid
-            items={[
-              ['Total Monday items', report.mondayEvidence.totalItems],
-              ['Catalogue-matched', report.mondayEvidence.catalogueMatched],
-              ['Non-catalogue evidence', report.mondayEvidence.nonCatalogueEvidence],
-              ['Decision-capable', report.mondayEvidence.decisionCapable],
-              ['Manual / eligible', report.mondayEvidence.manualOrEligible],
-              ['Open admission', report.mondayEvidence.openAdmission],
-              ['Tracked missing-rule', report.mondayEvidence.trackedMissingRule],
-              ['Blocked official source', report.mondayEvidence.blocked],
-            ]}
-          />
-          <h3 className="mt-6 text-sm font-black uppercase tracking-[0.2em] text-slate-500">
-            Non-catalogue evidence queue
-          </h3>
-          {nonCatalogueGroups.length === 0 ? (
-            <p className="mt-3 text-sm text-slate-600">
-              No non-catalogue Monday evidence items remain.
+            <h2 className="text-2xl font-black text-slate-950">
+              Monday admissions evidence coverage
+            </h2>
+            <p className="mt-1 text-sm text-slate-500">
+              Coverage of all {report.mondayEvidence.totalItems} Monday institution items across
+              decision-capable, manual/eligible, open, tracked missing-rule, and non-catalogue
+              evidence buckets.
             </p>
-          ) : (
-            <div className="mt-6">
-              <ul className="flex flex-wrap gap-3">
+            <DefinitionGrid
+              items={[
+                ['Total Monday items', report.mondayEvidence.totalItems],
+                ['Catalogue-matched', report.mondayEvidence.catalogueMatched],
+                ['Non-catalogue evidence', report.mondayEvidence.nonCatalogueEvidence],
+                ['Decision-capable', report.mondayEvidence.decisionCapable],
+                ['Manual / eligible', report.mondayEvidence.manualOrEligible],
+                ['Open admission', report.mondayEvidence.openAdmission],
+                ['Tracked missing-rule', report.mondayEvidence.trackedMissingRule],
+                ['Blocked official source', report.mondayEvidence.blocked],
+              ]}
+            />
+            <h3 className="mt-6 text-sm font-black uppercase tracking-[0.2em] text-slate-500">
+              Non-catalogue evidence queue
+            </h3>
+            {nonCatalogueGroups.length === 0 ? (
+              <p className="mt-3 text-sm text-slate-600">
+                No non-catalogue Monday evidence items remain.
+              </p>
+            ) : (
+              <div className="mt-6">
+                <ul className="flex flex-wrap gap-3">
+                  {nonCatalogueGroups.map((group) => (
+                    <li key={`jump-${group.bucket}`}>
+                      <a
+                        className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-slate-50 px-4 py-2 text-sm font-black text-slate-900 transition hover:border-slate-500 hover:bg-white"
+                        href={`#${group.anchorId}`}
+                      >
+                        <span>{group.label}</span>
+                        <span className="rounded-full bg-white px-2 py-0.5 text-xs">
+                          {group.count}
+                        </span>
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {nonCatalogueGroups.length > 0 ? (
+              <div className="mt-6 grid gap-5 lg:grid-cols-2">
                 {nonCatalogueGroups.map((group) => (
-                  <li key={`jump-${group.bucket}`}>
-                    <a
-                      className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-slate-50 px-4 py-2 text-sm font-black text-slate-900 transition hover:border-slate-500 hover:bg-white"
-                      href={`#${group.anchorId}`}
-                    >
-                      <span>{group.label}</span>
-                      <span className="rounded-full bg-white px-2 py-0.5 text-xs">
+                  <section
+                    id={group.anchorId}
+                    key={group.bucket}
+                    className="scroll-mt-6 rounded-2xl bg-slate-50 px-4 py-4"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <h4 className="text-sm font-black uppercase tracking-[0.16em] text-slate-700">
+                        {group.label}
+                      </h4>
+                      <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-slate-900">
                         {group.count}
                       </span>
-                    </a>
+                    </div>
+                    <div className="mt-3">
+                      <CompactRows
+                        rows={group.rows.map((row) => ({
+                          id: row.itemName,
+                          detail: `${row.officialUrl ? `${row.officialUrl} / ` : ''}${row.nextAction}`,
+                        }))}
+                      />
+                    </div>
+                  </section>
+                ))}
+              </div>
+            ) : null}
+          </section>
+
+          <section className="rounded-[1.7rem] border border-white bg-white/82 p-6 shadow-[0_20px_64px_rgba(105,133,190,0.12)] backdrop-blur-xl">
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-bold uppercase tracking-[0.25em] text-[#ef6ea9]">
+                  Immediate attention
+                </p>
+                <h2 className="mt-1 text-2xl font-black text-[#0c1d45]">Operational risks</h2>
+              </div>
+              <p className="text-sm text-[#6f7a99]">
+                {criticalItems.length} active attention items
+              </p>
+            </div>
+            {criticalItems.length > 0 ? (
+              <ul className="mt-5 grid gap-3 lg:grid-cols-2">
+                {criticalItems.map((item) => (
+                  <li
+                    key={item}
+                    className="rounded-2xl bg-[#fff0f6] px-4 py-3 text-sm text-[#8f3a62]"
+                  >
+                    {item}
                   </li>
                 ))}
               </ul>
-            </div>
-          )}
-          {nonCatalogueGroups.length > 0 ? (
-            <div className="mt-6 grid gap-5 lg:grid-cols-2">
-              {nonCatalogueGroups.map((group) => (
-                <section
-                  id={group.anchorId}
-                  key={group.bucket}
-                  className="scroll-mt-6 rounded-2xl bg-slate-50 px-4 py-4"
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <h4 className="text-sm font-black uppercase tracking-[0.16em] text-slate-700">
-                      {group.label}
-                    </h4>
-                    <span className="rounded-full bg-white px-3 py-1 text-xs font-black text-slate-900">
-                      {group.count}
-                    </span>
-                  </div>
-                  <div className="mt-3">
-                    <CompactRows
-                      rows={group.rows.map((row) => ({
-                        id: row.itemName,
-                        detail: `${row.officialUrl ? `${row.officialUrl} / ` : ''}${row.nextAction}`,
-                      }))}
-                    />
-                  </div>
-                </section>
-              ))}
-            </div>
-          ) : null}
-        </section>
-
-          <section className="rounded-[1.7rem] border border-white bg-white/82 p-6 shadow-[0_20px_64px_rgba(105,133,190,0.12)] backdrop-blur-xl">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <p className="text-sm font-bold uppercase tracking-[0.25em] text-[#ef6ea9]">
-                Immediate attention
+            ) : (
+              <p className="mt-5 rounded-2xl bg-[#ecfdf5] px-4 py-3 text-sm text-emerald-700">
+                No immediate operational risks found in the current summary.
               </p>
-              <h2 className="mt-1 text-2xl font-black text-[#0c1d45]">Operational risks</h2>
-            </div>
-            <p className="text-sm text-[#6f7a99]">{criticalItems.length} active attention items</p>
-          </div>
-          {criticalItems.length > 0 ? (
-            <ul className="mt-5 grid gap-3 lg:grid-cols-2">
-              {criticalItems.map((item) => (
-                <li key={item} className="rounded-2xl bg-[#fff0f6] px-4 py-3 text-sm text-[#8f3a62]">
-                  {item}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="mt-5 rounded-2xl bg-[#ecfdf5] px-4 py-3 text-sm text-emerald-700">
-              No immediate operational risks found in the current summary.
-            </p>
-          )}
+            )}
           </section>
 
           <section className="grid gap-5 lg:grid-cols-2">
-          <Panel title="Catalogue readiness">
-            <StatusLine
-              label="Status"
-              value={report.readiness.isReady ? 'Complete enough for runtime' : 'Gaps detected'}
-            />
-            {report.readiness.issues.length > 0 ? (
-              <IssueList items={report.readiness.issues} />
-            ) : (
-              <p className="text-sm text-slate-600">No readiness issues detected.</p>
-            )}
-            <h3 className="mt-6 text-sm font-black uppercase tracking-[0.2em] text-slate-500">
-              Catalogue totals
-            </h3>
-            <DefinitionGrid
-              items={[
-                ['Institutions', report.readiness.counts.institutions],
-                ['Programs', report.readiness.counts.programs],
-                ['Program links', report.readiness.counts.programInstitutions],
-                ['Requirements', report.readiness.counts.admissionRequirements],
-                ['Thresholds', report.readiness.counts.admissionThresholds],
-                ['Source URLs', report.readiness.counts.sourceUrls],
-                ['Calculator configs', report.readiness.counts.universityCalculatorConfigs],
-              ]}
-            />
-          </Panel>
-
-          <Panel title="Source coverage">
-            <DefinitionGrid
-              items={[
-                ['Requirements missing source', report.coverage.missingRequirementSourceCount],
-                ['Programs missing source', report.coverage.missingProgramSourceCount],
-              ]}
-            />
-            <CompactRows
-              emptyLabel="Every requirement has a source URL."
-              rows={report.coverage.missingRequirementSources.map((row) => ({
-                id: row.admissionRequirementId,
-                detail: `${row.programId} at ${row.institutionId}`,
-              }))}
-            />
-          </Panel>
-          </section>
-
-          <section>
-          <Panel title="Source freshness">
-            <DefinitionGrid
-              items={[
-                ['Fresh', report.freshness.totalsByStatus.fresh ?? 0],
-                ['Changed', report.freshness.totalsByStatus.changed_needs_review ?? 0],
-                ['Failed', report.freshness.totalsByStatus.failed ?? 0],
-                ['Stale', report.freshness.totalsByStatus.stale ?? 0],
-                ['Blocked', report.freshness.totalsByStatus.blocked ?? 0],
-                ['Never checked', report.freshness.totalsByStatus.never_checked ?? 0],
-              ]}
-            />
-            <h3 className="mt-6 text-sm font-black uppercase tracking-[0.2em] text-slate-500">
-              Attention rows
-            </h3>
-            <CompactRows
-              emptyLabel="No source freshness rows have been registered yet."
-              rows={report.freshness.rows.map((row) => ({
-                id: row.sourceId,
-                detail: sourceFreshnessDetail(row),
-              }))}
-            />
-            <p className="mt-4 text-xs text-slate-500">
-              Stale means no successful check inside {report.freshness.staleAfterDays} days.
-            </p>
-          </Panel>
-        </section>
-
-          <section>
-          <Panel title="Admissions publication">
-            <DefinitionGrid
-              items={[
-                ['Pending releases', report.publication.pendingReleaseCount],
-                ['Failed releases', report.publication.failedReleaseCount],
-                [
-                  'Proof releases published',
-                  report.publication.operationalProof.publishedReleaseCount,
-                ],
-                ['Proof releases pending', report.publication.operationalProof.pendingReleaseCount],
-                ['Proof releases failed', report.publication.operationalProof.failedReleaseCount],
-                [
-                  'Operational proof matrix',
-                  report.publication.operationalProof.matrixComplete
-                    ? 'Complete'
-                    : `${
-                        report.publication.operationalProof.scenarios.filter(
-                          (scenario) => scenario.status === 'published',
-                        ).length
-                      } / ${report.publication.operationalProof.scenarios.length} complete`,
-                ],
-              ]}
-            />
-            {report.publication.activeRelease ? (
-              <div className="mt-6 rounded-2xl bg-slate-100 px-4 py-3 text-sm text-slate-700">
-                <p className="font-black text-slate-950">Active reviewed release</p>
-                <p className="mt-1">{report.publication.activeRelease.id}</p>
-                <p className="mt-1 break-all text-xs">
-                  {report.publication.activeRelease.manifestDigest}
-                </p>
-                <p className="mt-1 text-xs text-slate-500">
-                  Commit {report.publication.activeRelease.repositoryCommit.slice(0, 12)} ·
-                  published {formatDateTime(report.publication.activeRelease.publishedAt)}
-                </p>
-              </div>
-            ) : (
-              <p className="mt-6 text-sm text-slate-600">
-                No reviewed admissions release is active.
-              </p>
-            )}
-          </Panel>
-        </section>
-
-          <section className="grid gap-5 lg:grid-cols-2">
-          <Panel title="Ingestion pipeline">
-            <CompactRows
-              emptyLabel="No failed ingestion jobs."
-              rows={report.ingestion.recentFailures.map((job) => ({
-                id: job.id,
-                detail: `${job.status} / ${job.difficulty}${job.errorText ? `: ${job.errorText}` : ''}`,
-              }))}
-            />
-            <h3 className="mt-6 text-sm font-black uppercase tracking-[0.2em] text-slate-500">
-              Oldest active jobs
-            </h3>
-            <CompactRows
-              emptyLabel="No active ingestion jobs."
-              rows={report.ingestion.oldestActiveJobs.map((job) => ({
-                id: job.id,
-                detail: `${job.status} since ${formatDateTime(job.createdAt)}`,
-              }))}
-            />
-            <h3 className="mt-6 text-sm font-black uppercase tracking-[0.2em] text-slate-500">
-              Total ingestion jobs
-            </h3>
-            <DefinitionGrid
-              items={[
-                ['Total', report.ingestion.totalJobs],
-                ...Object.entries(report.ingestion.jobsByStatus),
-                ...Object.entries(report.ingestion.jobsByDifficulty),
-              ]}
-            />
-          </Panel>
-
-          <Panel title="Review queue">
-            <DefinitionGrid
-              items={[
-                ['Pending items', report.reviewQueue.pendingCount],
-                ...Object.entries(report.reviewQueue.pendingByTargetField),
-              ]}
-            />
-            <h3 className="mt-6 text-sm font-black uppercase tracking-[0.2em] text-slate-500">
-              Oldest pending item
-            </h3>
-            {report.reviewQueue.oldestPendingItem ? (
-              <CompactRows
-                rows={[
-                  {
-                    id: report.reviewQueue.oldestPendingItem.id,
-                    detail: `${report.reviewQueue.oldestPendingItem.targetField} since ${formatDateTime(
-                      report.reviewQueue.oldestPendingItem.createdAt,
-                    )}`,
-                    href: `/internal/reviews/${report.reviewQueue.oldestPendingItem.id}`,
-                  },
+            <Panel title="Catalogue readiness">
+              <StatusLine
+                label="Status"
+                value={report.readiness.isReady ? 'Complete enough for runtime' : 'Gaps detected'}
+              />
+              {report.readiness.issues.length > 0 ? (
+                <IssueList items={report.readiness.issues} />
+              ) : (
+                <p className="text-sm text-slate-600">No readiness issues detected.</p>
+              )}
+              <h3 className="mt-6 text-sm font-black uppercase tracking-[0.2em] text-slate-500">
+                Catalogue totals
+              </h3>
+              <DefinitionGrid
+                items={[
+                  ['Institutions', report.readiness.counts.institutions],
+                  ['Programs', report.readiness.counts.programs],
+                  ['Program links', report.readiness.counts.programInstitutions],
+                  ['Requirements', report.readiness.counts.admissionRequirements],
+                  ['Thresholds', report.readiness.counts.admissionThresholds],
+                  ['Source URLs', report.readiness.counts.sourceUrls],
+                  ['Calculator configs', report.readiness.counts.universityCalculatorConfigs],
                 ]}
               />
-            ) : (
-              <p className="text-sm text-slate-600">No pending review items.</p>
-            )}
-          </Panel>
+            </Panel>
+
+            <Panel title="Source coverage">
+              <DefinitionGrid
+                items={[
+                  ['Requirements missing source', report.coverage.missingRequirementSourceCount],
+                  ['Programs missing source', report.coverage.missingProgramSourceCount],
+                ]}
+              />
+              <CompactRows
+                emptyLabel="Every requirement has a source URL."
+                rows={report.coverage.missingRequirementSources.map((row) => ({
+                  id: row.admissionRequirementId,
+                  detail: `${row.programId} at ${row.institutionId}`,
+                }))}
+              />
+            </Panel>
+          </section>
+
+          <section>
+            <Panel title="Source freshness">
+              <DefinitionGrid
+                items={[
+                  ['Fresh', report.freshness.totalsByStatus.fresh ?? 0],
+                  ['Changed', report.freshness.totalsByStatus.changed_needs_review ?? 0],
+                  ['Failed', report.freshness.totalsByStatus.failed ?? 0],
+                  ['Stale', report.freshness.totalsByStatus.stale ?? 0],
+                  ['Blocked', report.freshness.totalsByStatus.blocked ?? 0],
+                  ['Never checked', report.freshness.totalsByStatus.never_checked ?? 0],
+                ]}
+              />
+              <h3 className="mt-6 text-sm font-black uppercase tracking-[0.2em] text-slate-500">
+                Attention rows
+              </h3>
+              <CompactRows
+                emptyLabel="No source freshness rows have been registered yet."
+                rows={report.freshness.rows.map((row) => ({
+                  id: row.sourceId,
+                  detail: sourceFreshnessDetail(row),
+                }))}
+              />
+              <p className="mt-4 text-xs text-slate-500">
+                Stale means no successful check inside {report.freshness.staleAfterDays} days.
+              </p>
+            </Panel>
+          </section>
+
+          <section>
+            <Panel title="Admissions publication">
+              <DefinitionGrid
+                items={[
+                  ['Pending releases', report.publication.pendingReleaseCount],
+                  ['Failed releases', report.publication.failedReleaseCount],
+                  [
+                    'Proof releases published',
+                    report.publication.operationalProof.publishedReleaseCount,
+                  ],
+                  [
+                    'Proof releases pending',
+                    report.publication.operationalProof.pendingReleaseCount,
+                  ],
+                  ['Proof releases failed', report.publication.operationalProof.failedReleaseCount],
+                  [
+                    'Operational proof matrix',
+                    report.publication.operationalProof.matrixComplete
+                      ? 'Complete'
+                      : `${
+                          report.publication.operationalProof.scenarios.filter(
+                            (scenario) => scenario.status === 'published',
+                          ).length
+                        } / ${report.publication.operationalProof.scenarios.length} complete`,
+                  ],
+                ]}
+              />
+              {report.publication.activeRelease ? (
+                <div className="mt-6 rounded-2xl bg-slate-100 px-4 py-3 text-sm text-slate-700">
+                  <p className="font-black text-slate-950">Active reviewed release</p>
+                  <p className="mt-1">{report.publication.activeRelease.id}</p>
+                  <p className="mt-1 break-all text-xs">
+                    {report.publication.activeRelease.manifestDigest}
+                  </p>
+                  <p className="mt-1 text-xs text-slate-500">
+                    Commit {report.publication.activeRelease.repositoryCommit.slice(0, 12)} ·
+                    published {formatDateTime(report.publication.activeRelease.publishedAt)}
+                  </p>
+                </div>
+              ) : (
+                <p className="mt-6 text-sm text-slate-600">
+                  No reviewed admissions release is active.
+                </p>
+              )}
+            </Panel>
+          </section>
+
+          <section className="grid gap-5 lg:grid-cols-2">
+            <Panel title="Ingestion pipeline">
+              <CompactRows
+                emptyLabel="No failed ingestion jobs."
+                rows={report.ingestion.recentFailures.map((job) => ({
+                  id: job.id,
+                  detail: `${job.status} / ${job.difficulty}${job.errorText ? `: ${job.errorText}` : ''}`,
+                }))}
+              />
+              <h3 className="mt-6 text-sm font-black uppercase tracking-[0.2em] text-slate-500">
+                Oldest active jobs
+              </h3>
+              <CompactRows
+                emptyLabel="No active ingestion jobs."
+                rows={report.ingestion.oldestActiveJobs.map((job) => ({
+                  id: job.id,
+                  detail: `${job.status} since ${formatDateTime(job.createdAt)}`,
+                }))}
+              />
+              <h3 className="mt-6 text-sm font-black uppercase tracking-[0.2em] text-slate-500">
+                Total ingestion jobs
+              </h3>
+              <DefinitionGrid
+                items={[
+                  ['Total', report.ingestion.totalJobs],
+                  ...Object.entries(report.ingestion.jobsByStatus),
+                  ...Object.entries(report.ingestion.jobsByDifficulty),
+                ]}
+              />
+            </Panel>
+
+            <Panel title="Review queue">
+              <DefinitionGrid
+                items={[
+                  ['Pending items', report.reviewQueue.pendingCount],
+                  ...Object.entries(report.reviewQueue.pendingByTargetField),
+                ]}
+              />
+              <h3 className="mt-6 text-sm font-black uppercase tracking-[0.2em] text-slate-500">
+                Oldest pending item
+              </h3>
+              {report.reviewQueue.oldestPendingItem ? (
+                <CompactRows
+                  rows={[
+                    {
+                      id: report.reviewQueue.oldestPendingItem.id,
+                      detail: `${report.reviewQueue.oldestPendingItem.targetField} since ${formatDateTime(
+                        report.reviewQueue.oldestPendingItem.createdAt,
+                      )}`,
+                      href: `/internal/reviews/${report.reviewQueue.oldestPendingItem.id}`,
+                    },
+                  ]}
+                />
+              ) : (
+                <p className="text-sm text-slate-600">No pending review items.</p>
+              )}
+            </Panel>
           </section>
         </div>
       </main>

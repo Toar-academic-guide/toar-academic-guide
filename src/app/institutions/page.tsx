@@ -9,4 +9,3 @@ export const metadata = {
 export default function InstitutionsPage() {
   return <InstitutionsDirectory institutions={getInstitutionDirectoryItems()} />;
 }
-

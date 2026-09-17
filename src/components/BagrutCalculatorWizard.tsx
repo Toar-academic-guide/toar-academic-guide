@@ -419,9 +419,7 @@ function WizBtn({
       onClick={onClick}
       className={[
         'py-3 text-base font-bold transition',
-        ghost
-          ? 'way-button-secondary px-6'
-          : 'way-button-primary',
+        ghost ? 'way-button-secondary px-6' : 'way-button-primary',
         className,
       ].join(' ')}
     >

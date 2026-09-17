@@ -4,14 +4,7 @@ import mondayInstitutionsExport from '@/data/mondayInstitutions.generated.json';
 import yoramInstitutionLogos from '@/data/yoramInstitutionLogos.generated.json';
 
 export type InstitutionAreaFilter =
-  | 'all'
-  | 'center'
-  | 'north'
-  | 'south'
-  | 'jerusalem'
-  | 'tel_aviv'
-  | 'haifa'
-  | 'online';
+  'all' | 'center' | 'north' | 'south' | 'jerusalem' | 'tel_aviv' | 'haifa' | 'online';
 
 export type InstitutionCategoryFilter =
   | 'all'
@@ -22,11 +15,7 @@ export type InstitutionCategoryFilter =
   | 'professional_schools';
 
 export type InstitutionCredentialFilter =
-  | 'all'
-  | 'academic_degree'
-  | 'professional_certificate'
-  | 'subsidized'
-  | 'unsubsidized';
+  'all' | 'academic_degree' | 'professional_certificate' | 'subsidized' | 'unsubsidized';
 
 export interface InstitutionDirectoryItem {
   id: string;
@@ -205,7 +194,9 @@ function inferAreas(location: string | null, fallbackRegion: InstitutionRecord['
     addArea(areas, 'haifa');
   }
 
-  if (/גליל|גולן|חיפה|כרמיאל|צפת|כנרת|קרית\s*שמונה|קרית טבעון|עכו|עמק יזרעאל|נצרת|טבריה/.test(value)) {
+  if (
+    /גליל|גולן|חיפה|כרמיאל|צפת|כנרת|קרית\s*שמונה|קרית טבעון|עכו|עמק יזרעאל|נצרת|טבריה/.test(value)
+  ) {
     addArea(areas, 'north');
   }
   if (/באר\s*שבע|אילת|שדה\s*בוקר|נגב|שדרות|אשדוד|אשקלון|באר טוביה|קבוצת יבנה/.test(value)) {
@@ -257,10 +248,7 @@ function inferCategories(args: {
   return [...categories];
 }
 
-function inferCredentials(args: {
-  diplomaType: string | null;
-  funding: string | null;
-}) {
+function inferCredentials(args: { diplomaType: string | null; funding: string | null }) {
   const credentials = new Set<InstitutionCredentialFilter>();
   const { diplomaType, funding } = args;
 
@@ -284,52 +272,51 @@ export function getInstitutionDirectoryItems(): InstitutionDirectoryItem[] {
   return mondayInstitutionsExport.rows
     .filter((row: MondayInstitutionExportRow) => !EXCLUDED_MONDAY_ITEM_IDS.has(row.itemId))
     .map((row: MondayInstitutionExportRow) => {
-    const evidence = evidenceByItemId.get(row.itemId);
-    const id = evidence?.catalogueInstitutionId ?? `mon_${row.itemId}`;
-    const institution = INSTITUTION_BY_ID[id as keyof typeof INSTITUTION_BY_ID];
-    const override = DIRECTORY_LOGO_OVERRIDES[id];
-    const name =
-      institution?.name ?? evidence?.displayName ?? cleanMondayItemName(row.itemName);
-    const sourceUrl =
-      override?.sourceUrl ??
-      extractUrl(row.officialSource) ??
-      extractUrl(row.calculatorLink) ??
-      extractUrl(row.additionalLink) ??
-      evidence?.officialUrls[0] ??
-      institution?.programUrl ??
-      institution?.calculatorUrl ??
-      null;
-    const domain = override?.domain ?? institution?.domain ?? hostnameFromUrl(sourceUrl);
-    const yoramLogoUrl = yoramLogoFromSourceUrl(sourceUrl);
+      const evidence = evidenceByItemId.get(row.itemId);
+      const id = evidence?.catalogueInstitutionId ?? `mon_${row.itemId}`;
+      const institution = INSTITUTION_BY_ID[id as keyof typeof INSTITUTION_BY_ID];
+      const override = DIRECTORY_LOGO_OVERRIDES[id];
+      const name = institution?.name ?? evidence?.displayName ?? cleanMondayItemName(row.itemName);
+      const sourceUrl =
+        override?.sourceUrl ??
+        extractUrl(row.officialSource) ??
+        extractUrl(row.calculatorLink) ??
+        extractUrl(row.additionalLink) ??
+        evidence?.officialUrls[0] ??
+        institution?.programUrl ??
+        institution?.calculatorUrl ??
+        null;
+      const domain = override?.domain ?? institution?.domain ?? hostnameFromUrl(sourceUrl);
+      const yoramLogoUrl = yoramLogoFromSourceUrl(sourceUrl);
 
-    return {
-      id,
-      itemId: row.itemId,
-      name,
-      mondayUrl: row.mondayUrl,
-      type: row.institutionType,
-      funding: row.funding,
-      location: row.location,
-      diplomaType: row.diplomaType,
-      sourceUrl,
-      domain,
-      logoUrl: override?.logoUrl ?? institution?.logoUrl ?? yoramLogoUrl,
-      areas: inferAreas(row.location, institution?.region ?? null),
-      categories: inferCategories({
+      return {
         id,
+        itemId: row.itemId,
         name,
+        mondayUrl: row.mondayUrl,
         type: row.institutionType,
-        diplomaType: row.diplomaType,
-      }),
-      credentials: inferCredentials({
-        diplomaType: row.diplomaType,
         funding: row.funding,
-      }),
-      coverageLevel: row.coverageLevel ?? evidence?.publicBucket ?? null,
-      confidence: row.confidenceLevel ?? evidence?.confidence ?? null,
-      launchPriority:
-        row.launchPriority ??
-        (evidence?.catalogueVisibility === 'catalogue_mapped' ? 'Product Ready' : null),
-    };
-  });
+        location: row.location,
+        diplomaType: row.diplomaType,
+        sourceUrl,
+        domain,
+        logoUrl: override?.logoUrl ?? institution?.logoUrl ?? yoramLogoUrl,
+        areas: inferAreas(row.location, institution?.region ?? null),
+        categories: inferCategories({
+          id,
+          name,
+          type: row.institutionType,
+          diplomaType: row.diplomaType,
+        }),
+        credentials: inferCredentials({
+          diplomaType: row.diplomaType,
+          funding: row.funding,
+        }),
+        coverageLevel: row.coverageLevel ?? evidence?.publicBucket ?? null,
+        confidence: row.confidenceLevel ?? evidence?.confidence ?? null,
+        launchPriority:
+          row.launchPriority ??
+          (evidence?.catalogueVisibility === 'catalogue_mapped' ? 'Product Ready' : null),
+      };
+    });
 }

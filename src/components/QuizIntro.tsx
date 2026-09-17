@@ -71,17 +71,17 @@ export default function QuizIntro({
     <WayPageShell
       contentClassName="px-4 pb-14 pt-28 sm:px-6 lg:pt-32"
       navigation={
-      <PublicNavBar
-        authLoading={authLoading}
-        isAuthenticated={isAuthenticated}
-        savedCount={savedCount}
-        userInitials={userInitials}
-        userEmail={userEmail}
-        onGoHome={onGoHome}
-        onGoToBucket={onGoToBucket}
-        onSignIn={onSignIn}
-        onSignOut={onSignOut}
-      />
+        <PublicNavBar
+          authLoading={authLoading}
+          isAuthenticated={isAuthenticated}
+          savedCount={savedCount}
+          userInitials={userInitials}
+          userEmail={userEmail}
+          onGoHome={onGoHome}
+          onGoToBucket={onGoToBucket}
+          onSignIn={onSignIn}
+          onSignOut={onSignOut}
+        />
       }
     >
       <main className="relative z-10 mx-auto flex min-h-[calc(100vh-9rem)] max-w-[91rem] items-center justify-center">
@@ -145,7 +145,10 @@ export default function QuizIntro({
           >
             <div className="mx-auto w-fit max-w-full">
               <div className="relative mb-5 flex items-center justify-start text-xl font-bold text-[#7784e8]">
-                <span aria-hidden="true" className="absolute -right-6 top-1/2 h-px w-4 bg-[#9c7dff] sm:-right-11 sm:w-8" />
+                <span
+                  aria-hidden="true"
+                  className="absolute -right-6 top-1/2 h-px w-4 bg-[#9c7dff] sm:-right-11 sm:w-8"
+                />
                 <span className="whitespace-nowrap">בוא נתחיל</span>
               </div>
 
@@ -156,8 +159,8 @@ export default function QuizIntro({
 
             <div className="mx-auto mt-8 grid max-w-[46rem] gap-6 text-lg leading-9 text-[#33405f] sm:text-xl sm:leading-10 lg:text-[1.28rem]">
               <p>
-                כשאנחנו מתחילים לחשוב איזה מין לימודים יכולים להתאים לנו, שווה לנו קודם כל לשאול את עצמנו
-                שאלות כמו: מה החוזקות שלנו, אילו תחומים מסקרנים אותנו, ומה המטרות האקדמיות
+                כשאנחנו מתחילים לחשוב איזה מין לימודים יכולים להתאים לנו, שווה לנו קודם כל לשאול את
+                עצמנו שאלות כמו: מה החוזקות שלנו, אילו תחומים מסקרנים אותנו, ומה המטרות האקדמיות
                 והתעסוקתיות שלנו, במידה שכבר יש לנו כאלה.
               </p>
 

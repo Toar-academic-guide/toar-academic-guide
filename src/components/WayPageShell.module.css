@@ -8,5 +8,8 @@
 }
 
 @media (max-width: 1439px) {
-  .page { padding-top: 7rem; padding-bottom: 8rem; }
+  .page {
+    padding-top: 7rem;
+    padding-bottom: 8rem;
+  }
 }

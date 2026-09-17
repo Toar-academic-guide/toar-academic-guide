@@ -9,7 +9,10 @@ export default function NotFound() {
         <p className="text-sm font-semibold text-[#7784e8]">404</p>
         <h1 className="text-3xl font-semibold">העמוד לא נמצא</h1>
         <p>אפשר לחזור לדף הבית ולהמשיך משם.</p>
-        <Link href="/" className="way-button-primary inline-flex items-center gap-2 px-6 py-3 font-semibold">
+        <Link
+          href="/"
+          className="way-button-primary inline-flex items-center gap-2 px-6 py-3 font-semibold"
+        >
           <ArrowRight size={18} />
           חזרה לדף הבית
         </Link>

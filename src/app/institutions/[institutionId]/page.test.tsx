@@ -27,9 +27,11 @@ describe('InstitutionPage', () => {
     expect(screen.getByRole('link', { name: 'שאלון התאמה' }).getAttribute('href')).toBe(
       '/app/assessment',
     );
-    expect(within(screen.getByRole('main')).getByRole('link', { name: 'מחשבון קבלה' }).getAttribute('href')).toBe(
-      '/app/calculator',
-    );
+    expect(
+      within(screen.getByRole('main'))
+        .getByRole('link', { name: 'מחשבון קבלה' })
+        .getAttribute('href'),
+    ).toBe('/app/calculator');
     expect(screen.queryByText('academicScores')).toBeNull();
   });
 

@@ -25,11 +25,16 @@ beforeEach(() => {
   listeners = new Set();
   scroll = motionValue(0);
   mocks.useScroll.mockReset().mockReturnValue({ scrollY: scroll });
-  vi.stubGlobal('matchMedia', vi.fn(() => ({
-    get matches() { return reduced; },
-    addEventListener: (_event: string, listener: () => void) => listeners.add(listener),
-    removeEventListener: (_event: string, listener: () => void) => listeners.delete(listener),
-  })));
+  vi.stubGlobal(
+    'matchMedia',
+    vi.fn(() => ({
+      get matches() {
+        return reduced;
+      },
+      addEventListener: (_event: string, listener: () => void) => listeners.add(listener),
+      removeEventListener: (_event: string, listener: () => void) => listeners.delete(listener),
+    })),
+  );
 });
 
 afterEach(() => {
@@ -85,7 +90,9 @@ describe('WayBackdrop', () => {
 
     act(() => scroll.set(900));
     await waitFor(() => expect(sculpture.style.getPropertyValue('--drift-y')).not.toBe(initial));
-    expect(Math.abs(parseFloat(sculpture.style.getPropertyValue('--drift-y')))).toBeLessThanOrEqual(22);
+    expect(Math.abs(parseFloat(sculpture.style.getPropertyValue('--drift-y')))).toBeLessThanOrEqual(
+      22,
+    );
 
     act(() => scroll.set(0));
     await waitFor(() => expect(sculpture.style.getPropertyValue('--drift-y')).toBe(initial));

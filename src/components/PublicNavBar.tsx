@@ -136,7 +136,10 @@ export default function PublicNavBar({
           </Link>
         )}
 
-        <nav className="hidden items-center gap-1 text-sm font-semibold text-[#647091] xl:flex" aria-label="ניווט">
+        <nav
+          className="hidden items-center gap-1 text-sm font-semibold text-[#647091] xl:flex"
+          aria-label="ניווט"
+        >
           {navItems}
         </nav>
 
@@ -218,7 +221,9 @@ export default function PublicNavBar({
         >
           {navItems}
           {!isAuthenticated ? (
-            <NavItem href={ROUTES.login} onClick={onSignIn}>התחברות</NavItem>
+            <NavItem href={ROUTES.login} onClick={onSignIn}>
+              התחברות
+            </NavItem>
           ) : onSignOut ? (
             <NavItem onClick={onSignOut}>התנתק</NavItem>
           ) : null}

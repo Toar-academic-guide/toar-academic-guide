@@ -25,10 +25,7 @@
 
 body {
   min-height: 100vh;
-  font-family:
-    'Segoe UI',
-    Arial,
-    sans-serif;
+  font-family: 'Segoe UI', Arial, sans-serif;
   background: var(--way-page-background);
   color: var(--text-body);
 }
@@ -54,7 +51,8 @@ textarea {
   letter-spacing: 0;
 }
 
-.way-app :where(input:not([type='checkbox']):not([type='radio']):not([type='range']), select, textarea) {
+.way-app
+  :where(input:not([type='checkbox']):not([type='radio']):not([type='range']), select, textarea) {
   border-color: #d9e3f3 !important;
   border-radius: 1rem !important;
   background: rgba(248, 251, 255, 0.92) !important;
@@ -80,7 +78,15 @@ textarea {
   background-color: var(--way-surface);
 }
 
-.way-app :where(section, article, form, aside, [class*='rounded-2xl'], [class*='rounded-3xl'])[class*='bg-white'] {
+.way-app
+  :where(
+    section,
+    article,
+    form,
+    aside,
+    [class*='rounded-2xl'],
+    [class*='rounded-3xl']
+  )[class*='bg-white'] {
   border-color: rgba(255, 255, 255, 0.9) !important;
   box-shadow: var(--way-shadow);
   backdrop-filter: blur(18px);
@@ -171,7 +177,9 @@ button:not(:disabled),
   box-shadow: 0 12px 28px rgba(112, 114, 208, 0.22);
 }
 
-.way-button-primary:hover:not(:disabled) { filter: brightness(1.05); }
+.way-button-primary:hover:not(:disabled) {
+  filter: brightness(1.05);
+}
 
 .way-button-secondary {
   border: 1px solid var(--border);
@@ -191,10 +199,14 @@ button:not(:disabled),
   outline-offset: 3px;
 }
 
-.way-app :where(section[id]) { scroll-margin-top: 7rem; }
+.way-app :where(section[id]) {
+  scroll-margin-top: 7rem;
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .way-app *, .way-app *::before, .way-app *::after {
+  .way-app *,
+  .way-app *::before,
+  .way-app *::after {
     scroll-behavior: auto !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;

@@ -21,10 +21,7 @@ function subscribeToMotionPreference(onChange: () => void) {
 }
 
 function prefersReducedMotion() {
-  return (
-    typeof window.matchMedia !== 'function' ||
-    window.matchMedia(REDUCED_MOTION_QUERY).matches
-  );
+  return typeof window.matchMedia !== 'function' || window.matchMedia(REDUCED_MOTION_QUERY).matches;
 }
 
 const objects = [
@@ -56,7 +53,10 @@ function ArtworkImage({ artwork }: { artwork: Artwork }) {
 function ScrollObject({ artwork, scroll }: { artwork: Artwork; scroll: MotionValue<number> }) {
   // Bounded travel keeps the full silhouettes on screen, even on very long pages.
   const x = useTransform(scroll, (value) => `${Math.sin(value / 920 + artwork.phase) * 6}px`);
-  const y = useTransform(scroll, (value) => `${Math.sin(value / 680 + artwork.phase) * artwork.travel}px`);
+  const y = useTransform(
+    scroll,
+    (value) => `${Math.sin(value / 680 + artwork.phase) * artwork.travel}px`,
+  );
   const turn = useTransform(
     scroll,
     (value) => `${artwork.angle + Math.sin(value / 1100 + artwork.phase) * 12}deg`,

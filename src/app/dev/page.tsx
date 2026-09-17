@@ -27,7 +27,7 @@ export default function DevShortcuts() {
   return (
     <WayPageShell>
       <main className="dev-shortcuts">
-      <style>{`
+        <style>{`
         .dev-shortcuts {
           max-width: 640px;
           margin: 0 auto;
@@ -62,21 +62,21 @@ export default function DevShortcuts() {
         .dev-shortcuts .footer { margin-top: 32px; font-size: 12px; color: #9aa8c2; }
       `}</style>
 
-      <h1>קיצורי דרך לפיתוח</h1>
-      <p>לחץ על כל כפתור כדי לקפוץ ישירות לאותו מסך. הקישורים יחסיים — עובדים בכל פורט.</p>
+        <h1>קיצורי דרך לפיתוח</h1>
+        <p>לחץ על כל כפתור כדי לקפוץ ישירות לאותו מסך. הקישורים יחסיים — עובדים בכל פורט.</p>
 
-      <div className="links">
-        {steps.map(({ label, url, desc }) => (
-          <a key={url} href={url}>
-            <span className="name">{label}</span>
-            <span className="hint">{desc}</span>
-          </a>
-        ))}
-      </div>
+        <div className="links">
+          {steps.map(({ label, url, desc }) => (
+            <a key={url} href={url}>
+              <span className="name">{label}</span>
+              <span className="hint">{desc}</span>
+            </a>
+          ))}
+        </div>
 
-      <p className="footer">
-        הוסף מסכים נוספים לפי הצורך ב-<code>src/app/dev/page.tsx</code>
-      </p>
+        <p className="footer">
+          הוסף מסכים נוספים לפי הצורך ב-<code>src/app/dev/page.tsx</code>
+        </p>
       </main>
     </WayPageShell>
   );
