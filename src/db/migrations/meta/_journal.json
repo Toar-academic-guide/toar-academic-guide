@@ -155,6 +155,13 @@
       "when": 1787254053674,
       "tag": "0021_simple_sugar_man",
       "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1787591040000,
+      "tag": "0022_secure_operational_proof_access",
+      "breakpoints": true
     }
   ]
 }
