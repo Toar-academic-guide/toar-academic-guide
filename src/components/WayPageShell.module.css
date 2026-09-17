@@ -1,0 +1,15 @@
+.page {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  overflow-x: clip;
+  background: var(--way-page-background);
+  color: var(--text-body);
+}
+
+@media (max-width: 1439px) {
+  .page {
+    padding-top: 7rem;
+    padding-bottom: 8rem;
+  }
+}

@@ -44,6 +44,11 @@ next-env.d.ts
 # tooling
 .claude/
 .superpowers/
+.codex/*.log
+
+# local design scratch
+/UI UX/
+/public/way-logo-examples.svg
 
 # supabase
 supabase/.temp/

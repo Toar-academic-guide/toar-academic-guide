@@ -418,10 +418,8 @@ function WizBtn({
       type="button"
       onClick={onClick}
       className={[
-        'rounded-full border-2 border-black py-3 text-base font-bold text-slate-900 transition',
-        ghost
-          ? 'bg-white px-6 hover:bg-slate-50 hover:shadow-[2px_2px_0_#000]'
-          : 'bg-[#00E5FF] hover:bg-[#79F7FF] hover:shadow-[2px_2px_0_#000]',
+        'py-3 text-base font-bold transition',
+        ghost ? 'way-button-secondary px-6' : 'way-button-primary',
         className,
       ].join(' ')}
     >
@@ -552,9 +550,9 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
     electives.reduce((s, e) => s + (e.grade !== '' && (e.grade as number) > 0 ? e.units : 0), 0);
 
   return (
-    <div dir="rtl" className="overflow-hidden rounded-2xl border border-[#bae6fd]">
+    <div dir="rtl" className="overflow-hidden rounded-2xl border border-[#d9e3f3]">
       {/* ── Progress bar ─────────────────────────────────────────────── */}
-      <div className="flex items-start justify-center border-b border-[#bae6fd] bg-[#e8f9ff] px-6 py-4">
+      <div className="flex items-start justify-center border-b border-[#d9e3f3] bg-[#eef4ff] px-6 py-4">
         {STEP_LABELS.map((label, i) => {
           const n = i + 1;
           const isDone = n < step;
@@ -571,7 +569,7 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
                     isDone
                       ? 'border-[#0891b2] bg-[#e0f9ff] text-[#0891b2] hover:bg-[#bae6fd]'
                       : isActive
-                        ? 'border-[#00E5FF] bg-[#00E5FF] text-slate-900 shadow-[0_0_0_4px_rgba(0,229,255,0.2)] hover:bg-[#79F7FF]'
+                        ? 'border-[#7784e8] bg-[#7784e8] text-white shadow-[0_0_0_4px_rgba(119,132,232,0.15)] hover:bg-[#6574dc]'
                         : 'border-[#bae6fd] bg-white text-slate-400 hover:border-[#38bdf8]',
                   ].join(' ')}
                 >
@@ -610,7 +608,7 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
                 className={[
                   'rounded-xl border-2 py-3 text-sm font-bold transition',
                   sector === sec
-                    ? 'border-[#1e1b4b] bg-[#1e1b4b] text-[#00E5FF]'
+                    ? 'border-[#7784e8] bg-[#eef4ff] text-[#4357ad]'
                     : 'border-[#bae6fd] bg-white text-slate-600 hover:border-[#38bdf8] hover:bg-[#f0fbff]',
                 ].join(' ')}
               >
@@ -805,7 +803,7 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
         <div className="p-7">
           <h3 className="mb-4 text-xl font-black text-slate-900">אומדן ממוצע הציונים שלך</h3>
 
-          <div className="mb-4 rounded-2xl border-2 border-[#00E5FF] bg-[#e8f9ff] py-6 text-center">
+          <div className="mb-4 rounded-2xl border border-[#b8c4ff] bg-[#eef4ff] py-6 text-center">
             <div className="text-5xl font-black tracking-tight text-slate-900">
               {computedAvg !== null && computedAvg > 0 ? computedAvg.toFixed(1) : '—'}
             </div>

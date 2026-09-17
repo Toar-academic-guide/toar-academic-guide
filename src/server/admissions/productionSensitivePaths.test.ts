@@ -1,9 +1,26 @@
+import { execFileSync } from 'node:child_process';
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 import { describe, expect, it } from 'vitest';
 
-import { findProductionSensitivePaths } from '../../../scripts/production-sensitive-paths.mjs';
+const classifierModuleUrl = pathToFileURL(
+  path.join(process.cwd(), 'scripts/production-sensitive-paths.mjs'),
+).href;
+
+function findProductionSensitivePaths(filePaths: string[]): string[] {
+  const script = `
+    import { findProductionSensitivePaths } from ${JSON.stringify(classifierModuleUrl)};
+    process.stdout.write(JSON.stringify(findProductionSensitivePaths(${JSON.stringify(filePaths)})));
+  `;
+
+  return JSON.parse(
+    execFileSync(process.execPath, ['--input-type=module', '--eval', script], {
+      encoding: 'utf8',
+    }),
+  ) as string[];
+}
 
 describe('production-sensitive path classification', () => {
   it.each([

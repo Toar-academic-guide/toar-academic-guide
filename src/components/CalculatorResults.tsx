@@ -431,13 +431,13 @@ export default function CalculatorResults({
   }
 
   return (
-    <div dir="rtl" className="min-h-screen bg-[#f5f4f0]">
-      <div className="border-b border-[#e5e7eb] bg-white px-6 py-4">
+    <div dir="rtl" className="pb-12">
+      <div className="px-6 py-6">
         <div className="mx-auto flex max-w-4xl items-center gap-4">
           <button
             type="button"
             onClick={onBack}
-            className="cursor-pointer flex items-center gap-2 rounded-full border-2 border-black px-4 py-2 text-sm font-bold text-slate-900 transition hover:bg-slate-50 hover:shadow-[2px_2px_0px_rgba(0,0,0,1)]"
+            className="way-button-secondary flex items-center gap-2 px-4 py-2 text-sm font-semibold transition"
           >
             <ArrowRight size={16} />
             חזרה
@@ -563,7 +563,7 @@ export default function CalculatorResults({
             <button
               type="button"
               onClick={() => setReloadToken((current) => current + 1)}
-              className="mt-5 cursor-pointer rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
+              className="way-button-primary mt-5 px-5 py-2 text-sm font-semibold transition"
             >
               נסו שוב
             </button>
@@ -769,7 +769,7 @@ function VerifiedRoutePanel({
             type="button"
             onClick={onAdmissionAlert}
             disabled={subscriptionStatus === 'submitting'}
-            className="mt-3 min-h-11 rounded-full bg-slate-900 px-4 py-2 text-sm font-bold text-white disabled:cursor-wait disabled:opacity-60"
+            className="way-button-primary mt-3 min-h-11 px-4 py-2 text-sm font-bold disabled:cursor-wait disabled:opacity-60"
           >
             {subscriptionStatus === 'submitting' ? 'מפעילים מעקב…' : 'אשרו והפעילו מעקב'}
           </button>
@@ -799,7 +799,7 @@ function VerifiedRoutePanel({
             <button
               type="button"
               onClick={onCompleteAcademicProfile}
-              className="mt-3 rounded-full bg-slate-900 px-4 py-2 text-sm font-bold text-white"
+              className="way-button-primary mt-3 px-4 py-2 text-sm font-bold"
             >
               השלמת פרופיל אקדמי
             </button>
@@ -815,7 +815,7 @@ function VerifiedRoutePanel({
             <button
               type="button"
               onClick={onCompleteAcademicProfile}
-              className="mt-3 rounded-full bg-slate-900 px-4 py-2 text-sm font-bold text-white"
+              className="way-button-primary mt-3 px-4 py-2 text-sm font-bold"
             >
               עדכון פרופיל אקדמי
             </button>
@@ -897,14 +897,15 @@ function FilterChip({
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex cursor-pointer items-center gap-2 rounded-full border-2 border-black px-4 py-2 text-sm font-bold transition ${
+      aria-pressed={selected}
+      className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-bold transition ${
         selected
-          ? 'bg-[#A6FAFF] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)]'
-          : 'bg-white hover:bg-slate-50 hover:shadow-[2px_2px_0px_rgba(0,0,0,1)]'
+          ? 'border-[#b8c4ff] bg-[#eef4ff] text-[#4357ad] hover:bg-[#e3ebff]'
+          : 'border-[#d9e3f3] bg-white hover:border-[#b8c4ff] hover:bg-[#f6f9ff]'
       }`}
     >
       {selected ? (
-        <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 border-black bg-[#00E1EF]">
+        <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#7784e8] text-white">
           <Check size={8} strokeWidth={3} />
         </span>
       ) : (

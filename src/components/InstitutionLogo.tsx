@@ -12,9 +12,9 @@ import { INSTITUTION_BY_NAME, type InstitutionRecord } from '@/data/institutions
  *   3. First-letter avatar — stable HSL hue derived from institution name
  *
  * Rendering strategy:
- *   - The component is EITHER an <img> OR a letter avatar — never both stacked.
- *   - `imgFailed` state tracks load errors so React re-renders to the avatar
- *     cleanly without any DOM mutation tricks.
+ *   - The avatar fallback is always present.
+ *   - External images are hidden until loaded, so users never see a broken-img glyph.
+ *   - If an explicit logo fails, the component tries the favicon source next.
  *   - Explicit `width`/`height` HTML attributes are set on every <img> so that
  *     SVGs without intrinsic dimensions (viewBox-only) always render at the
  *     correct pixel size instead of collapsing to 0×0.
@@ -30,26 +30,38 @@ function nameToHue(name: string): number {
 }
 
 export default function InstitutionLogo({
+  domain,
   institution,
+  logoUrl,
   record: recordProp,
   size = 'md',
 }: {
+  /** Root domain used for favicon fallback when no explicit record is available */
+  domain?: string | null;
   /** Hebrew institution name — used for the fallback lookup and as alt text */
   institution: string;
+  /** Explicit logo URL; highest priority when provided by a directory/data caller */
+  logoUrl?: string | null;
   /** Pre-resolved InstitutionRecord; when provided the internal lookup is skipped */
   record?: InstitutionRecord;
   /** 'sm' = 32 px  |  'md' = 40 px (default) */
   size?: 'sm' | 'md';
 }) {
-  const [imgFailed, setImgFailed] = useState(false);
+  const [loadedSrc, setLoadedSrc] = useState<string | null>(null);
+  const [failedSources, setFailedSources] = useState<string[]>([]);
 
   // Prefer the caller-supplied record; fall back to INSTITUTION_BY_NAME lookup.
   const record = recordProp ?? INSTITUTION_BY_NAME[institution];
 
-  // Resolve image source: logoUrl (SVG) → favicon proxy → null (avatar fallback)
-  const src =
-    record?.logoUrl ??
-    (record?.domain ? `https://www.google.com/s2/favicons?domain=${record.domain}&sz=64` : null);
+  const resolvedDomain = domain ?? record?.domain ?? null;
+  const faviconUrl = resolvedDomain
+    ? `https://www.google.com/s2/favicons?domain=${encodeURIComponent(resolvedDomain)}&sz=64`
+    : null;
+  const srcCandidates = [logoUrl, record?.logoUrl, faviconUrl].filter(
+    (value): value is string =>
+      typeof value === 'string' && value.length > 0 && !failedSources.includes(value),
+  );
+  const src = srcCandidates[0] ?? null;
 
   // Explicit pixel dimensions — used on both the container and the <img> tag.
   const dimPx = size === 'sm' ? 32 : 40;
@@ -61,23 +73,25 @@ export default function InstitutionLogo({
   const firstLetter = [...displayName][0] ?? '?';
   const hue = nameToHue(displayName);
 
-  // Only show the <img> if we have a src and it hasn't errored.
-  const showImg = !!src && !imgFailed;
+  const showImg = !!src && loadedSrc === src;
 
   return (
     <div
-      className={`flex ${dimClass} shrink-0 items-center justify-center rounded-lg border border-slate-100`}
-      style={
-        showImg
-          ? { background: '#ffffff' }
-          : {
-              backgroundColor: `hsl(${hue} 55% 88%)`,
-              color: `hsl(${hue} 45% 32%)`,
-            }
-      }
+      className={`relative flex ${dimClass} shrink-0 items-center justify-center overflow-hidden rounded-lg border border-slate-100`}
+      style={{
+        backgroundColor: showImg ? '#ffffff' : `hsl(${hue} 55% 88%)`,
+        color: `hsl(${hue} 45% 32%)`,
+      }}
     >
-      {showImg ? (
+      <span
+        className={`select-none font-semibold leading-none transition-opacity ${textSize}`}
+        style={{ opacity: showImg ? 0 : 1 }}
+      >
+        {firstLetter}
+      </span>
+      {src ? (
         <img
+          key={src}
           src={src}
           alt={displayName}
           /* Explicit HTML attributes force SVG viewBox-only files to render at
@@ -90,12 +104,16 @@ export default function InstitutionLogo({
             height: imgPx,
             objectFit: 'contain',
             display: 'block',
+            opacity: showImg ? 1 : 0,
+            position: 'absolute',
           }}
-          onError={() => setImgFailed(true)}
+          onLoad={() => setLoadedSrc(src)}
+          onError={() => {
+            setLoadedSrc((current) => (current === src ? null : current));
+            setFailedSources((current) => (current.includes(src) ? current : [...current, src]));
+          }}
         />
-      ) : (
-        <span className={`select-none font-semibold leading-none ${textSize}`}>{firstLetter}</span>
-      )}
+      ) : null}
     </div>
   );
 }

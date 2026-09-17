@@ -6,7 +6,7 @@ import posthog from 'posthog-js';
 
 import { useAuth } from '@/context/AuthContext';
 import { saveUserProfileIdentityDraft } from '@/hooks/useUserProfile';
-import LogoCanvas from './LogoCanvas';
+import WayPageShell from './WayPageShell';
 import NeoButton from './NeoButton';
 
 interface AuthScreenProps {
@@ -103,176 +103,177 @@ export default function AuthScreen({
   }
 
   return (
-    <div
-      className="min-h-screen flex flex-col items-center justify-center px-4"
-      style={{ background: '#f5f4f0' }}
-    >
-      <div className="w-full max-w-sm">
-        <div className="mb-6 flex justify-center">
-          <LogoCanvas size={84} brighten={false} />
-        </div>
+    <WayPageShell>
+      <main className="flex min-h-[calc(100vh-112px)] flex-col items-center justify-center px-4 py-12">
+        <div className="w-full max-w-sm rounded-[1.7rem] border border-white bg-white/78 p-6 shadow-[0_24px_80px_rgba(105,133,190,0.16)] backdrop-blur-xl">
+          <h1 className="mb-1 text-center text-2xl font-black text-slate-900">
+            {mode === 'login' ? 'התחברות' : 'יצירת חשבון'}
+          </h1>
+          <p className="mb-6 text-center text-sm text-slate-500">
+            {mode === 'login'
+              ? 'התחבר כדי לשמור את הנתונים שלך ולסנכרן בין מכשירים.'
+              : 'צור חשבון כדי לשמור את הפרופיל ואת הרשימה שלי.'}
+          </p>
 
-        <h1 className="mb-1 text-center text-2xl font-black text-slate-900">
-          {mode === 'login' ? 'התחברות' : 'יצירת חשבון'}
-        </h1>
-        <p className="mb-6 text-center text-sm text-slate-500">
-          {mode === 'login'
-            ? 'התחבר כדי לשמור את הנתונים שלך ולסנכרן בין מכשירים.'
-            : 'צור חשבון כדי לשמור את הפרופיל ואת רשימת הייעוד שלך.'}
-        </p>
+          {!configured && (
+            <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              ההתחברות עדיין לא הוגדרה בסביבה הזו. אפשר להמשיך להשתמש באפליקציה כאורחת.
+            </div>
+          )}
 
-        {!configured && (
-          <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-            ההתחברות עדיין לא הוגדרה בסביבה הזו. אפשר להמשיך להשתמש באפליקציה כאורחת.
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-          {mode === 'signup' ? (
-            <>
-              <label className="relative block">
-                <input
-                  type="text"
-                  autoComplete="given-name"
-                  value={firstName}
-                  onChange={(event) => setFirstName(event.target.value)}
-                  placeholder="שם פרטי"
-                  className="h-12 w-full rounded-full border-2 border-black bg-white px-4 text-base text-slate-900 placeholder-slate-400 outline-none transition focus:shadow-[2px_2px_0px_rgba(0,0,0,1)]"
-                />
-              </label>
-
-              <label className="relative block">
-                <input
-                  type="text"
-                  autoComplete="family-name"
-                  value={lastName}
-                  onChange={(event) => setLastName(event.target.value)}
-                  placeholder="שם משפחה"
-                  className="h-12 w-full rounded-full border-2 border-black bg-white px-4 text-base text-slate-900 placeholder-slate-400 outline-none transition focus:shadow-[2px_2px_0px_rgba(0,0,0,1)]"
-                />
-              </label>
-            </>
-          ) : null}
-
-          <label className="relative block">
-            <Mail size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="email"
-              dir="ltr"
-              autoComplete="email"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-              placeholder="you@example.com"
-              className="h-12 w-full rounded-full border-2 border-black bg-white px-4 pr-12 text-base text-slate-900 placeholder-slate-400 outline-none transition focus:shadow-[2px_2px_0px_rgba(0,0,0,1)]"
-            />
-          </label>
-
-          <label className="relative block">
-            <Lock size={18} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type={showPassword ? 'text' : 'password'}
-              dir="ltr"
-              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder="••••••••"
-              className="h-12 w-full rounded-full border-2 border-black bg-white px-4 pl-12 pr-12 text-base text-slate-900 placeholder-slate-400 outline-none transition focus:shadow-[2px_2px_0px_rgba(0,0,0,1)]"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword((v) => !v)}
-              aria-label={showPassword ? 'הסתר סיסמה' : 'הצג סיסמה'}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-700"
-            >
-              {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-            </button>
-          </label>
-
-          {error ? (
-            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
-              {error}
-            </p>
-          ) : null}
-
-          {info ? (
-            <p className="rounded-lg bg-green-50 px-3 py-2 text-sm font-medium text-green-700">
-              {info}
-            </p>
-          ) : null}
-
-          <NeoButton
-            type="submit"
-            variant="cyan-filled"
-            disabled={submitting || !configured}
-            className="mt-1 h-12 w-full text-base"
-            ariaLabel={mode === 'login' ? 'התחבר' : 'צור חשבון'}
-          >
-            {submitting ? (
-              <Loader2 size={18} className="animate-spin" />
-            ) : mode === 'login' ? (
-              'התחבר'
-            ) : (
-              'צור חשבון'
-            )}
-          </NeoButton>
-
-          <NeoButton
-            type="button"
-            variant="ghost"
-            disabled={submitting || !configured}
-            onClick={() => void handleGoogleSignIn()}
-            className="h-12 w-full text-base"
-            ariaLabel="המשך עם Google"
-          >
-            {submitting ? (
-              <Loader2 size={18} className="animate-spin" />
-            ) : (
+          <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+            {mode === 'signup' ? (
               <>
-                <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
-                  <path
-                    fill="#EA4335"
-                    d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
+                <label className="relative block">
+                  <input
+                    type="text"
+                    autoComplete="given-name"
+                    value={firstName}
+                    onChange={(event) => setFirstName(event.target.value)}
+                    placeholder="שם פרטי"
+                    className="h-12 w-full rounded-full border-2 border-black bg-white px-4 text-base text-slate-900 placeholder-slate-400 outline-none transition focus:shadow-[2px_2px_0px_rgba(0,0,0,1)]"
                   />
-                  <path
-                    fill="#4285F4"
-                    d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
+                </label>
+
+                <label className="relative block">
+                  <input
+                    type="text"
+                    autoComplete="family-name"
+                    value={lastName}
+                    onChange={(event) => setLastName(event.target.value)}
+                    placeholder="שם משפחה"
+                    className="h-12 w-full rounded-full border-2 border-black bg-white px-4 text-base text-slate-900 placeholder-slate-400 outline-none transition focus:shadow-[2px_2px_0px_rgba(0,0,0,1)]"
                   />
-                  <path
-                    fill="#FBBC05"
-                    d="M10.53 28.59a14.5 14.5 0 0 1 0-9.18l-7.98-6.19a24.0 24.0 0 0 0 0 21.56l7.98-6.19z"
-                  />
-                  <path
-                    fill="#34A853"
-                    d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
-                  />
-                </svg>
-                המשך עם Google
+                </label>
               </>
-            )}
-          </NeoButton>
-        </form>
+            ) : null}
 
-        <button
-          type="button"
-          onClick={() => {
-            setMode((current) => (current === 'login' ? 'signup' : 'login'));
-            setError(null);
-            setInfo(null);
-          }}
-          className="mt-4 w-full text-center text-sm text-slate-600 transition hover:text-slate-900"
-        >
-          {mode === 'login' ? 'אין לך חשבון? צור חשבון' : 'כבר יש לך חשבון? התחבר'}
-        </button>
+            <label className="relative block">
+              <Mail
+                size={18}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"
+              />
+              <input
+                type="email"
+                dir="ltr"
+                autoComplete="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="you@example.com"
+                className="h-12 w-full rounded-full border-2 border-black bg-white px-4 pr-12 text-base text-slate-900 placeholder-slate-400 outline-none transition focus:shadow-[2px_2px_0px_rgba(0,0,0,1)]"
+              />
+            </label>
 
-        <button
-          type="button"
-          onClick={onBack}
-          className="mx-auto mt-6 flex items-center gap-1.5 text-sm font-medium text-slate-400 transition hover:text-slate-700"
-        >
-          <ArrowRight size={15} />
-          חזרה
-        </button>
-      </div>
-    </div>
+            <label className="relative block">
+              <Lock
+                size={18}
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400"
+              />
+              <input
+                type={showPassword ? 'text' : 'password'}
+                dir="ltr"
+                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="••••••••"
+                className="h-12 w-full rounded-full border-2 border-black bg-white px-4 pl-12 pr-12 text-base text-slate-900 placeholder-slate-400 outline-none transition focus:shadow-[2px_2px_0px_rgba(0,0,0,1)]"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? 'הסתר סיסמה' : 'הצג סיסמה'}
+                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-700"
+              >
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </label>
+
+            {error ? (
+              <p className="rounded-lg bg-red-50 px-3 py-2 text-sm font-medium text-red-700">
+                {error}
+              </p>
+            ) : null}
+
+            {info ? (
+              <p className="rounded-lg bg-green-50 px-3 py-2 text-sm font-medium text-green-700">
+                {info}
+              </p>
+            ) : null}
+
+            <NeoButton
+              type="submit"
+              variant="cyan-filled"
+              disabled={submitting || !configured}
+              className="mt-1 h-12 w-full text-base"
+              ariaLabel={mode === 'login' ? 'התחבר' : 'צור חשבון'}
+            >
+              {submitting ? (
+                <Loader2 size={18} className="animate-spin" />
+              ) : mode === 'login' ? (
+                'התחבר'
+              ) : (
+                'צור חשבון'
+              )}
+            </NeoButton>
+
+            <NeoButton
+              type="button"
+              variant="ghost"
+              disabled={submitting || !configured}
+              onClick={() => void handleGoogleSignIn()}
+              className="h-12 w-full text-base"
+              ariaLabel="המשך עם Google"
+            >
+              {submitting ? (
+                <Loader2 size={18} className="animate-spin" />
+              ) : (
+                <>
+                  <svg width="20" height="20" viewBox="0 0 48 48" aria-hidden="true">
+                    <path
+                      fill="#EA4335"
+                      d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
+                    />
+                    <path
+                      fill="#4285F4"
+                      d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
+                    />
+                    <path
+                      fill="#FBBC05"
+                      d="M10.53 28.59a14.5 14.5 0 0 1 0-9.18l-7.98-6.19a24.0 24.0 0 0 0 0 21.56l7.98-6.19z"
+                    />
+                    <path
+                      fill="#34A853"
+                      d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
+                    />
+                  </svg>
+                  המשך עם Google
+                </>
+              )}
+            </NeoButton>
+          </form>
+
+          <button
+            type="button"
+            onClick={() => {
+              setMode((current) => (current === 'login' ? 'signup' : 'login'));
+              setError(null);
+              setInfo(null);
+            }}
+            className="mt-4 w-full text-center text-sm text-slate-600 transition hover:text-slate-900"
+          >
+            {mode === 'login' ? 'אין לך חשבון? צור חשבון' : 'כבר יש לך חשבון? התחבר'}
+          </button>
+
+          <button
+            type="button"
+            onClick={onBack}
+            className="mx-auto mt-6 flex items-center gap-1.5 text-sm font-medium text-slate-400 transition hover:text-slate-700"
+          >
+            <ArrowRight size={15} />
+            חזרה
+          </button>
+        </div>
+      </main>
+    </WayPageShell>
   );
 }
