@@ -40,7 +40,6 @@ import {
 import {
   RecommendedField,
   ProfileScores,
-  EnvironmentPreference,
   ProfileDimension,
   GeographicRegion,
 } from '@/types';
@@ -62,7 +61,6 @@ interface Props {
   recommendations: RecommendedField[];
   onSelectDegree: (degreeId: string) => void;
   profileScores: ProfileScores;
-  environment: EnvironmentPreference;
   geographicPreference?: GeographicRegion;
   savedProgramIds?: string[];
   onToggleSave?: (programId: string) => void;
@@ -757,7 +755,6 @@ export default function RecommendationResults({
   recommendations,
   onSelectDegree,
   profileScores,
-  environment,
   geographicPreference = 'any',
   savedProgramIds,
   onToggleSave,

@@ -8,8 +8,6 @@ import {
 import { BGU_SCORE_URL, getBguProgramConfig } from '@/data/admissions/bguProgramVerification';
 
 const BGU_INDEX_URL = 'https://bgu4u.bgu.ac.il/html/average_calc/index.php';
-const BGU_SUBMIT_URL = 'https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem';
-
 export async function runBguAdmissionsProof(
   context: AdmissionsAdapterContext,
 ): Promise<AdmissionsSourceProof> {

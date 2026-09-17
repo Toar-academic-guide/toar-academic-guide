@@ -8,7 +8,6 @@ import {
   ValuesProfile,
   EngineeringOptions,
   RecommendedField,
-  UniversityResult,
   UserScores,
   GeographicRegion,
   AvoidanceTag,
@@ -766,8 +765,6 @@ export default function AppExperience({
   const shouldBlockCatalogueStep =
     catalogueStatus !== 'ready' &&
     (step === 'recommendations' || step === 'bucket-list' || step === 'calculator');
-  const sekhemPrograms = cataloguePrograms.filter((program) => program.admissionType === 'sekhem');
-
   return (
     <WayPageShell
       navigation={
@@ -833,7 +830,6 @@ export default function AppExperience({
             recommendations={recommendations}
             onSelectDegree={handleSelectDegree}
             profileScores={assessmentProfile.scores}
-            environment={{ soloScore: 1, deskScore: 1 }}
             geographicPreference={assessmentProfile.geographicPreference}
             savedProgramIds={profile.savedProgramIds}
             onToggleSave={handleToggleSave}

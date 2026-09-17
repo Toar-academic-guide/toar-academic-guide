@@ -197,9 +197,13 @@ export default function AcademicProfileForm({
         setError('לא הצלחנו לשמור את הפרופיל שלך. אפשר לנסות שוב.');
         setIsSaving(false);
       }
-    } catch (caughtError: any) {
+    } catch (caughtError: unknown) {
       console.error('[AcademicProfileForm] Error saving documents:', caughtError);
-      setError(caughtError.message || 'התרחשה שגיאה בשמירת המסמכים. אנא נסה שנית.');
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'התרחשה שגיאה בשמירת המסמכים. אנא נסה שנית.',
+      );
       setIsSaving(false);
     }
   }

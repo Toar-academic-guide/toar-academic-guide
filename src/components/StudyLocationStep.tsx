@@ -14,7 +14,6 @@ import {
   X,
 } from 'lucide-react';
 import {
-  SELECTABLE_STUDY_REGION_IDS,
   STUDY_REGIONS,
   type StudyLocationChoiceId,
   type StudyRegionDefinition,
@@ -321,7 +320,6 @@ export default function StudyLocationStep({
     return Array.from(new Set(names)).slice(0, 3);
   }, [programs, savedProgramIds]);
 
-  const activeRegionIds = allRegionsSelected ? SELECTABLE_STUDY_REGION_IDS : selectedRegions;
   const hasSelection = allRegionsSelected || selectedRegions.length > 0;
   const activeRegionNames = allRegionsSelected
     ? [allRegionsOption.shortName]
@@ -379,8 +377,6 @@ export default function StudyLocationStep({
 
         <main className="grid flex-1 items-stretch gap-6 py-7 lg:grid-cols-[minmax(0,1.06fr)_minmax(420px,0.94fr)] lg:py-9">
           <IsraelRegionMap
-            activeRegionIds={activeRegionIds}
-            allRegionsSelected={allRegionsSelected}
             shouldReduceMotion={shouldReduceMotion}
             onToggleRegion={toggleRegion}
           />
@@ -438,7 +434,6 @@ export default function StudyLocationStep({
               <SelectedSummary
                 allRegionsSelected={allRegionsSelected}
                 regionNames={activeRegionNames}
-                selectedRegions={selectedRegions}
                 onRemoveRegion={removeRegion}
                 onClearAll={() => {
                   setAllRegionsSelected(false);
@@ -722,17 +717,15 @@ function AllRegionsRow({ selected, onToggle }: { selected: boolean; onToggle: ()
 function SelectedSummary({
   allRegionsSelected,
   regionNames,
-  selectedRegions,
   onRemoveRegion,
   onClearAll,
 }: {
   allRegionsSelected: boolean;
   regionNames: string[];
-  selectedRegions: StudyRegionId[];
   onRemoveRegion: (id: StudyRegionId) => void;
   onClearAll: () => void;
 }) {
-  const hasSelection = allRegionsSelected || regionNames.length > 0;
+  const hasSelection = regionNames.length > 0;
 
   return (
     <div className="mt-6 rounded-[1rem] border border-[#e2e9f5] bg-white/56 px-4 py-3 shadow-[0_14px_38px_rgba(73,94,145,0.08)] backdrop-blur-xl">
@@ -769,18 +762,13 @@ function SelectedSummary({
 }
 
 function IsraelRegionMap({
-  activeRegionIds,
-  allRegionsSelected,
   shouldReduceMotion,
   onToggleRegion,
 }: {
-  activeRegionIds: StudyRegionId[];
-  allRegionsSelected: boolean;
   shouldReduceMotion: boolean | null;
   onToggleRegion: (id: StudyLocationChoiceId) => void;
 }) {
   const [zoom, setZoom] = useState(1);
-  const activeSet = new Set(activeRegionIds);
 
   function zoomIn() {
     setZoom((current) => Math.min(2.05, Number((current + 0.35).toFixed(2))));
@@ -918,8 +906,6 @@ function IsraelRegionMap({
 
               <g>
                 {regionDefinitions.map((region) => {
-                  const selected = activeSet.has(region.id);
-                  const highlighted = selected || allRegionsSelected;
                   const shape = MAP_REGION_SHAPES[region.id];
 
                   return (
