@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { AnimatePresence, motion } from 'framer-motion';
 
 const DEGREES = [
@@ -75,9 +76,13 @@ export default function KineticTextSwapper() {
       </div>
 
       <div className="flex justify-start pb-8 md:pb-12" dir="ltr">
-        <img
+        <Image
           src="/way-cartoon.png"
+          width={1448}
+          height={1086}
           alt="I'm not sure which way to go"
+          loading="eager"
+          sizes="(max-width: 768px) calc(100vw - 4rem), (max-width: 1280px) calc(100vw - 8rem), 896px"
           className="h-auto w-full max-w-2xl md:max-w-4xl"
           style={{ mixBlendMode: 'multiply', filter: 'brightness(1.1) contrast(1.2)' }}
         />

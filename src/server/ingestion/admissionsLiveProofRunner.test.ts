@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 import { runAdmissionsLiveProof } from './admissionsLiveProofRunner';
 
-function tauResponse(score: number, threshold: number) {
+function tauResponse(score: number) {
   return new Response(
     JSON.stringify({
       data: { getLastScore: { body: JSON.stringify({ hatama_handasa: score }) } },
@@ -34,7 +34,7 @@ describe('runAdmissionsLiveProof', () => {
   it('withholds a live response until independent eligible and below captures are supplied', async () => {
     const fetcher = vi
       .fn<typeof fetch>()
-      .mockResolvedValueOnce(tauResponse(704, 700))
+      .mockResolvedValueOnce(tauResponse(704))
       .mockResolvedValueOnce(tauThresholdResponse(700));
 
     const report = await runAdmissionsLiveProof({
@@ -59,9 +59,9 @@ describe('runAdmissionsLiveProof', () => {
   it('requires both independently captured fixture boundaries to match', async () => {
     const fetcher = vi
       .fn<typeof fetch>()
-      .mockResolvedValueOnce(tauResponse(704, 700))
+      .mockResolvedValueOnce(tauResponse(704))
       .mockResolvedValueOnce(tauThresholdResponse(700))
-      .mockResolvedValueOnce(tauResponse(600, 700))
+      .mockResolvedValueOnce(tauResponse(600))
       .mockResolvedValueOnce(tauThresholdResponse(700));
 
     const report = await runAdmissionsLiveProof({
@@ -96,7 +96,7 @@ describe('runAdmissionsLiveProof', () => {
   it('withholds a proof when its supplied captures do not cover both verdict boundaries', async () => {
     const fetcher = vi
       .fn<typeof fetch>()
-      .mockResolvedValueOnce(tauResponse(704, 700))
+      .mockResolvedValueOnce(tauResponse(704))
       .mockResolvedValueOnce(tauThresholdResponse(700));
 
     const report = await runAdmissionsLiveProof({
@@ -127,9 +127,9 @@ describe('runAdmissionsLiveProof', () => {
   it('withholds the pair when either fixture drifts', async () => {
     const fetcher = vi
       .fn<typeof fetch>()
-      .mockResolvedValueOnce(tauResponse(704, 700))
+      .mockResolvedValueOnce(tauResponse(704))
       .mockResolvedValueOnce(tauThresholdResponse(700))
-      .mockResolvedValueOnce(tauResponse(601, 700))
+      .mockResolvedValueOnce(tauResponse(601))
       .mockResolvedValueOnce(tauThresholdResponse(700));
 
     const report = await runAdmissionsLiveProof({

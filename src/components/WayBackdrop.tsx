@@ -1,6 +1,7 @@
 'use client';
 
 import { useSyncExternalStore } from 'react';
+import Image from 'next/image';
 import {
   motion,
   useScroll,
@@ -38,13 +39,14 @@ type Artwork = (typeof objects)[number];
 function ArtworkImage({ artwork }: { artwork: Artwork }) {
   const sculpture = artwork.shape === 'sculpture';
   return (
-    <img
+    <Image
       src={sculpture ? '/rescale-sculpture.webp' : '/rescale-crystal.webp'}
       width={sculpture ? 400 : 220}
       height={sculpture ? 408 : 230}
       alt=""
       draggable={false}
       decoding="async"
+      loading="eager"
       className={styles.image}
     />
   );
