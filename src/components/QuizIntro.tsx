@@ -143,14 +143,16 @@ export default function QuizIntro({
             className="relative order-first mx-auto w-full max-w-[55rem] rounded-[2rem] border border-white/80 bg-white/74 px-6 py-8 text-center shadow-[0_28px_90px_rgba(105,133,190,0.16)] backdrop-blur-xl sm:px-10 sm:py-12 lg:order-none lg:mx-0 lg:min-h-[52rem] lg:px-16 xl:px-20"
             dir="rtl"
           >
-            <div className="mx-auto mb-5 flex w-full max-w-[47rem] items-center justify-center gap-4 text-lg font-bold text-[#7784e8] lg:justify-start">
-              <span className="relative right-8 h-px w-12 bg-[#9c7dff]" />
-              <span>בוא נתחיל</span>
-            </div>
+            <div className="mx-auto w-fit max-w-full">
+              <div className="relative mb-5 flex items-center justify-start text-xl font-bold text-[#7784e8]">
+                <span aria-hidden="true" className="absolute -right-6 top-1/2 h-px w-4 bg-[#9c7dff] sm:-right-11 sm:w-8" />
+                <span className="whitespace-nowrap">בוא נתחיל</span>
+              </div>
 
-            <h1 className="mx-auto max-w-[47rem] text-4xl font-semibold leading-tight text-[#0c1d45] sm:text-5xl lg:text-[2.7rem]">
-              כדי לדייק את הכיוון הרלוונטי עבורך
-            </h1>
+              <h1 className="max-w-[47rem] text-4xl font-semibold leading-tight text-[#0c1d45] sm:text-5xl lg:text-[2.7rem]">
+                כדי לדייק את הכיוון הרלוונטי עבורך
+              </h1>
+            </div>
 
             <div className="mx-auto mt-8 grid max-w-[46rem] gap-6 text-lg leading-9 text-[#33405f] sm:text-xl sm:leading-10 lg:text-[1.28rem]">
               <p>
