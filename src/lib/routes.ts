@@ -1,5 +1,6 @@
 export const ROUTES = {
   home: '/',
+  about: '/about',
   login: '/login',
   signup: '/signup',
   institutions: '/institutions',
@@ -141,7 +142,7 @@ function isAllowedReturnPath(path: string) {
     return true;
   }
 
-  if (path === ROUTES.institutions) {
+  if (path === ROUTES.about || path === ROUTES.institutions) {
     return true;
   }
 

@@ -11,8 +11,12 @@
   --secondary: #ef83bb;
   --text-heading: #0c1d45;
   --text-body: #435072;
-  --text-muted: #6f7a99;
+  --text-muted: #65718c;
   --border: #d9e3f3;
+  --way-page-background: linear-gradient(180deg, #fbfdff 0%, #eef7ff 42%, #fbfdff 100%);
+  --way-surface: rgba(255, 255, 255, 0.78);
+  --way-shadow: 0 24px 70px rgba(105, 133, 190, 0.13);
+  --way-action: linear-gradient(100deg, #6979dd, #8c73df);
 }
 
 * {
@@ -25,10 +29,7 @@ body {
     'Segoe UI',
     Arial,
     sans-serif;
-  background:
-    radial-gradient(circle at 18% 24%, rgba(174, 227, 255, 0.62), transparent 30%),
-    radial-gradient(circle at 80% 20%, rgba(199, 214, 255, 0.58), transparent 26%),
-    linear-gradient(180deg, #ffffff 0%, #f8fbff 48%, #eef6ff 100%);
+  background: var(--way-page-background);
   color: var(--text-body);
 }
 
@@ -44,37 +45,6 @@ textarea {
   font-family: var(--font-sans);
 }
 
-.way-app::before,
-.way-app::after {
-  pointer-events: none;
-  content: '';
-  position: fixed;
-  z-index: 0;
-  border-radius: 999px;
-  filter: blur(8px);
-}
-
-.way-app::before {
-  right: -5rem;
-  top: 6rem;
-  width: 18rem;
-  height: 18rem;
-  background: radial-gradient(circle, rgba(143, 216, 255, 0.36), transparent 68%);
-}
-
-.way-app::after {
-  left: -4rem;
-  bottom: 2rem;
-  width: 16rem;
-  height: 16rem;
-  background: radial-gradient(circle, rgba(239, 131, 187, 0.28), transparent 68%);
-}
-
-.way-app > * {
-  position: relative;
-  z-index: 1;
-}
-
 .way-app :where(h1, h2, h3, h4, h5, h6) {
   color: var(--text-heading);
   letter-spacing: 0;
@@ -84,7 +54,7 @@ textarea {
   letter-spacing: 0;
 }
 
-.way-app :where(input, select, textarea) {
+.way-app :where(input:not([type='checkbox']):not([type='radio']):not([type='range']), select, textarea) {
   border-color: #d9e3f3 !important;
   border-radius: 1rem !important;
   background: rgba(248, 251, 255, 0.92) !important;
@@ -93,7 +63,7 @@ textarea {
 }
 
 .way-app :where(input, select, textarea)::placeholder {
-  color: #9aa8c2 !important;
+  color: #6d7894 !important;
 }
 
 .way-app :where(input, select, textarea):focus {
@@ -107,16 +77,15 @@ textarea {
 }
 
 .way-app .bg-white {
-  background-color: rgba(255, 255, 255, 0.82);
+  background-color: var(--way-surface);
 }
 
 .way-app :where(section, article, form, aside, [class*='rounded-2xl'], [class*='rounded-3xl'])[class*='bg-white'] {
   border-color: rgba(255, 255, 255, 0.9) !important;
-  box-shadow: 0 20px 64px rgba(105, 133, 190, 0.12);
+  box-shadow: var(--way-shadow);
   backdrop-filter: blur(18px);
 }
 
-.way-app [class*='bg-[#f5f4f0]'],
 .way-app .bg-slate-50,
 .way-app .bg-gray-50 {
   background-color: rgba(255, 255, 255, 0.58) !important;
@@ -149,13 +118,13 @@ textarea {
 
 .way-app .text-slate-950,
 .way-app .text-slate-900,
+.way-app .text-slate-800,
 .way-app .text-gray-900,
 .way-app .text-gray-800,
 .way-app [class*='text-[#1e1b4b]'] {
-  color: #445274 !important;
+  color: #0c1d45 !important;
 }
 
-.way-app .text-slate-800,
 .way-app .text-slate-700,
 .way-app .text-gray-700,
 .way-app .text-gray-600,
@@ -167,7 +136,7 @@ textarea {
 .way-app .text-slate-400,
 .way-app .text-gray-500,
 .way-app .text-gray-400 {
-  color: #7c86a2 !important;
+  color: var(--text-muted) !important;
 }
 
 .way-app .text-indigo-600,
@@ -178,10 +147,57 @@ textarea {
 }
 
 .way-app .shadow-sm {
-  box-shadow: 0 14px 40px rgba(105, 133, 190, 0.1);
+  box-shadow: 0 3px 12px rgba(105, 133, 190, 0.1);
 }
 
 button:not(:disabled),
 [role='button']:not([aria-disabled='true']) {
   cursor: pointer;
+}
+
+.way-surface {
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  border-radius: 1.75rem;
+  background: var(--way-surface);
+  box-shadow: var(--way-shadow);
+  backdrop-filter: blur(18px);
+}
+
+.way-button-primary {
+  border: 1px solid transparent;
+  border-radius: 1rem;
+  background: var(--way-action);
+  color: white;
+  box-shadow: 0 12px 28px rgba(112, 114, 208, 0.22);
+}
+
+.way-button-primary:hover:not(:disabled) { filter: brightness(1.05); }
+
+.way-button-secondary {
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.8);
+  color: var(--text-body);
+  box-shadow: 0 4px 12px rgba(105, 133, 190, 0.08);
+}
+
+.way-button-secondary:hover:not(:disabled) {
+  background: #eef4ff;
+  border-color: #bac9ed;
+}
+
+.way-app :where(a, button, summary):focus-visible {
+  outline: 3px solid #8fd8ff;
+  outline-offset: 3px;
+}
+
+.way-app :where(section[id]) { scroll-margin-top: 7rem; }
+
+@media (prefers-reduced-motion: reduce) {
+  .way-app *, .way-app *::before, .way-app *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -18,7 +18,7 @@ export default async function DataHealthPage() {
 
   if (report.status === 'unavailable') {
     return (
-      <WayPageShell dir="ltr" showLogo>
+      <WayPageShell dir="ltr">
         <main className="flex min-h-[calc(100vh-88px)] items-center justify-center px-6 py-12 text-[#445274]">
           <section className="max-w-xl rounded-[1.7rem] border border-white bg-white/82 p-8 shadow-[0_24px_80px_rgba(105,133,190,0.16)] backdrop-blur-xl">
             <p className="text-sm font-bold uppercase tracking-[0.25em] text-[#7784e8]">

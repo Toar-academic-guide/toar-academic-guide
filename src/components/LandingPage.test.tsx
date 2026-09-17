@@ -96,6 +96,18 @@ describe('LandingPage calculator', () => {
     expect(onSignOut).toHaveBeenCalledTimes(1);
   });
 
+  it('links to the about page from the public navigation', () => {
+    render(
+      <LandingPage
+        {...defaultProps}
+        onCalculate={vi.fn()}
+        programs={[program('degree', 'מסלול')]}
+      />,
+    );
+
+    expect(screen.getByRole('link', { name: 'מי אנחנו' }).getAttribute('href')).toBe('/about');
+  });
+
   it('keeps the selected degree valid when the catalogue is replaced', async () => {
     const onCalculate = vi.fn();
     const { rerender } = render(

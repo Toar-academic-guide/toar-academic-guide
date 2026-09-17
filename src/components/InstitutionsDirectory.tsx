@@ -5,14 +5,13 @@ import Link from 'next/link';
 import { ArrowUpLeft, ExternalLink, MapPin, Search, SlidersHorizontal } from 'lucide-react';
 
 import InstitutionLogo from '@/components/InstitutionLogo';
-import LogoCanvas from '@/components/LogoCanvas';
+import WayPageShell from '@/components/WayPageShell';
 import type {
   InstitutionAreaFilter,
   InstitutionCategoryFilter,
   InstitutionCredentialFilter,
   InstitutionDirectoryItem,
 } from '@/data/institutionDirectory';
-import { ROUTES } from '@/lib/routes';
 
 interface InstitutionsDirectoryProps {
   institutions: InstitutionDirectoryItem[];
@@ -117,31 +116,6 @@ function getEmptyStateText(searchTerm: string) {
     : 'לא נמצאו מוסדות שמתאימים למסננים שבחרת.';
 }
 
-function DirectoryBackdrop() {
-  return (
-    <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-      <img
-        src="/way-abstract-glass-blob.png"
-        alt=""
-        draggable={false}
-        className="absolute left-[-9rem] top-28 h-[24rem] w-[24rem] object-contain opacity-45 drop-shadow-[0_36px_70px_rgba(99,126,206,0.18)]"
-      />
-      <img
-        src="/way-abstract-glass-knot.png"
-        alt=""
-        draggable={false}
-        className="absolute right-[-8rem] top-[32rem] h-80 w-80 object-contain opacity-35 drop-shadow-[0_36px_70px_rgba(99,126,206,0.18)]"
-      />
-      <img
-        src="/way-abstract-glass-pebble.png"
-        alt=""
-        draggable={false}
-        className="absolute left-[10%] top-[44rem] h-32 w-32 object-contain opacity-30 drop-shadow-[0_26px_54px_rgba(99,126,206,0.14)]"
-      />
-    </div>
-  );
-}
-
 export default function InstitutionsDirectory({ institutions }: InstitutionsDirectoryProps) {
   const [area, setArea] = useState<InstitutionAreaFilter>('all');
   const [category, setCategory] = useState<InstitutionCategoryFilter>('all');
@@ -184,55 +158,8 @@ export default function InstitutionsDirectory({ institutions }: InstitutionsDire
   );
 
   return (
-    <main
-      dir="rtl"
-      className="relative min-h-screen overflow-hidden bg-[#f8fbff] text-[#435072]"
-      style={{
-        backgroundImage:
-          'linear-gradient(180deg, #fbfdff 0%, #eef7ff 38%, #fbfdff 72%), radial-gradient(circle at 18% 18%, rgba(142,222,255,0.34), transparent 28%), radial-gradient(circle at 86% 24%, rgba(177,164,255,0.30), transparent 30%)',
-      }}
-    >
-      <DirectoryBackdrop />
-      <header className="fixed inset-x-0 top-0 z-50 px-4 pt-5 sm:px-6">
-        <div className="mx-auto flex h-[68px] max-w-6xl items-center justify-between rounded-[1.4rem] border border-white bg-white/78 px-4 shadow-[0_20px_70px_rgba(117,139,190,0.18)] backdrop-blur-xl sm:px-5">
-          <Link
-            href={ROUTES.home}
-            aria-label="דף הבית"
-            className="flex h-11 items-center rounded-2xl border border-[#e3e9f6] bg-white px-3 shadow-sm transition hover:bg-[#f6f9ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fd8ff]"
-          >
-            <LogoCanvas size={30} brighten={false} />
-          </Link>
-
-          <nav
-            className="hidden items-center gap-1 text-sm font-semibold text-[#647091] md:flex"
-            aria-label="ניווט"
-          >
-            <Link
-              href={ROUTES.assessment}
-              className="rounded-2xl px-4 py-2 transition hover:bg-[#eef4ff] hover:text-[#5262d9]"
-            >
-              שאלון
-            </Link>
-            <span className="rounded-2xl bg-[#eef4ff] px-4 py-2 font-bold text-[#5262d9]">
-              מוסדות
-            </span>
-            <Link
-              href={ROUTES.calculator}
-              className="rounded-2xl px-4 py-2 transition hover:bg-[#eef4ff] hover:text-[#5262d9]"
-            >
-              מחשבון קבלה
-            </Link>
-          </nav>
-
-          <Link
-            href={ROUTES.savedPrograms}
-            className="rounded-2xl bg-[#7784e8] px-4 py-2 text-sm font-bold text-white shadow-[0_16px_34px_rgba(119,132,232,0.24)] transition hover:bg-[#6574dc]"
-          >
-            הרשימה שלי
-          </Link>
-        </div>
-      </header>
-
+    <WayPageShell contentClassName="">
+      <main>
       <section className="relative z-10">
         <div className="mx-auto grid max-w-6xl gap-10 px-4 pb-8 pt-32 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-end lg:pb-12 lg:pt-36">
           <div>
@@ -440,6 +367,7 @@ export default function InstitutionsDirectory({ institutions }: InstitutionsDire
           </section>
         )}
       </section>
-    </main>
+      </main>
+    </WayPageShell>
   );
 }

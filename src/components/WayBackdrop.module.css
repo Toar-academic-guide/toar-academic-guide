@@ -1,0 +1,89 @@
+.backdrop {
+  position: fixed;
+  inset: 0;
+  /* Keep silhouettes whole where a wide translucent panel reaches the gutter. */
+  z-index: 20;
+  pointer-events: none;
+  user-select: none;
+}
+
+.object {
+  position: absolute;
+  --travel: 1;
+  transform:
+    translate3d(calc(var(--drift-x, 0px) * var(--travel)), calc(var(--drift-y, 0px) * var(--travel)), 0)
+    rotate(var(--turn, 0deg));
+}
+
+.image {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+.sculpture {
+  top: 14rem;
+  left: 1.75rem;
+  width: 6rem;
+  opacity: 0.78;
+}
+
+.crystal {
+  top: 6.75rem;
+  right: 2rem;
+  width: 2.5rem;
+  opacity: 0.7;
+}
+
+.ribbon {
+  top: 42%;
+  right: 1.75rem;
+  width: 3rem;
+  opacity: 0.64;
+}
+
+.facet {
+  top: 54%;
+  left: 1.5rem;
+  width: 2rem;
+  opacity: 0.6;
+}
+
+.twist {
+  bottom: 9%;
+  left: 1.75rem;
+  width: 2.5rem;
+  opacity: 0.65;
+}
+
+.prism {
+  bottom: 10%;
+  right: 2rem;
+  width: 3.25rem;
+  opacity: 0.66;
+}
+
+@media (min-width: 1600px) {
+  .sculpture { width: 8.5rem; }
+  .ribbon { width: 5rem; right: 2.5rem; }
+  .facet { width: 3.5rem; left: 2rem; }
+  .twist { width: 5rem; left: 2.5rem; }
+  .prism { width: 5.5rem; right: 2.5rem; }
+}
+
+/* Narrow screens keep the artwork in clear bands, away from reading and input. */
+@media (max-width: 1439px) {
+  .backdrop { position: absolute; }
+  .object { --travel: 0.35; }
+  .sculpture { top: 7.25rem; left: 1.5rem; width: 4rem; }
+  .crystal { top: 7.5rem; right: 1.5rem; width: 3rem; }
+  .ribbon { top: 8.25rem; right: calc(36% - 1.125rem); width: 2.25rem; }
+  .facet { top: 7.75rem; left: calc(42% - 1rem); width: 2rem; }
+  .twist { bottom: 2rem; left: 2rem; width: 4rem; }
+  .prism { bottom: 2.5rem; right: 2rem; width: 3rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .object { transform: none; }
+}

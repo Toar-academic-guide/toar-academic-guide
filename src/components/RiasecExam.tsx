@@ -185,7 +185,7 @@ export default function RiasecExam({ onComplete }: Props) {
   const isLast = screenIndex === TOTAL_SCREENS - 1;
 
   return (
-    <div className="min-h-screen w-full bg-[#f5f4f0] px-2 py-10 sm:px-4">
+    <div className="w-full px-4 py-10 sm:px-6">
       <div className="mx-auto max-w-3xl rounded-3xl border border-[#e5e7eb] bg-white p-8 shadow-lg md:p-12">
         {/* ── Progress ───────────────────────────────────────────────── */}
         <div className="mb-8 flex flex-col gap-2">

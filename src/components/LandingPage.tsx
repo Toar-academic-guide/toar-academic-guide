@@ -1,8 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import { motion, useScroll, useTransform } from 'framer-motion';
-import Link from 'next/link';
+import { motion } from 'framer-motion';
 import {
   ArrowLeft,
   CheckCircle2,
@@ -14,8 +13,8 @@ import {
   Radar,
   Target,
 } from 'lucide-react';
-import LogoCanvas from './LogoCanvas';
-import { ROUTES } from '@/lib/routes';
+import PublicNavBar from './PublicNavBar';
+import WayPageShell from './WayPageShell';
 import type { CatalogueProgram } from '@/types/catalogue';
 
 interface Props {
@@ -32,17 +31,6 @@ interface Props {
   userInitials?: string;
   userEmail?: string;
   onSignOut?: () => void;
-}
-
-function getInitials(email: string): string {
-  const prefix = email.split('@')[0] ?? '';
-  const parts = prefix.split(/[._-]/).filter(Boolean);
-
-  if (parts.length >= 2) {
-    return `${parts[0][0] ?? ''}${parts[1][0] ?? ''}`.toUpperCase();
-  }
-
-  return prefix.slice(0, 2).toUpperCase();
 }
 
 const processSteps = [
@@ -101,175 +89,6 @@ const funnelStages = [
     accent: 'text-[#ef83bb]',
   },
 ];
-
-function SoftShape({ className = '', delay = 0 }: { className?: string; delay?: number }) {
-  return (
-    <motion.div
-      aria-hidden="true"
-      data-soft-shape
-      className={`pointer-events-none absolute ${className}`}
-      initial={{ opacity: 0, y: 18, rotate: -4 }}
-      whileInView={{ opacity: 1, y: 0, rotate: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
-      animate={{ y: [0, -16, 8, 0], rotate: [0, 3, -2, 0] }}
-      transition={{
-        delay,
-        duration: 9,
-        ease: 'easeInOut',
-        repeat: Infinity,
-      }}
-    />
-  );
-}
-
-function FloatingGlassAsset({
-  asset = 'blob',
-  className = '',
-  delay = 0,
-  xRange = [0, 36],
-  yRange = [0, 120],
-  rotateRange = [-4, 12],
-  scaleRange = [1, 1.06],
-}: {
-  asset?: 'blob' | 'knot' | 'pebble';
-  className?: string;
-  delay?: number;
-  xRange?: [number, number];
-  yRange?: [number, number];
-  rotateRange?: [number, number];
-  scaleRange?: [number, number];
-}) {
-  const { scrollYProgress } = useScroll();
-  const x = useTransform(scrollYProgress, [0, 1], xRange);
-  const y = useTransform(scrollYProgress, [0, 1], yRange);
-  const rotate = useTransform(scrollYProgress, [0, 1], rotateRange);
-  const scale = useTransform(scrollYProgress, [0, 1], scaleRange);
-  const src =
-    asset === 'blob'
-      ? '/way-abstract-glass-blob.png'
-      : asset === 'pebble'
-        ? '/way-abstract-glass-pebble.png'
-        : '/way-abstract-glass-knot.png';
-
-  return (
-    <motion.div
-      aria-hidden="true"
-      data-soft-shape
-      className={`pointer-events-none absolute select-none ${className}`}
-      style={{
-        x,
-        y,
-        rotate,
-        scale,
-        transformPerspective: 1000,
-        willChange: 'transform',
-      }}
-    >
-      <motion.img
-        src={src}
-        alt=""
-        draggable={false}
-        className="h-full w-full object-contain drop-shadow-[0_36px_70px_rgba(99,126,206,0.18)]"
-        animate={{
-          y: [0, -18, 10, 0],
-          rotate: [0, asset === 'blob' ? 2.5 : -2, asset === 'blob' ? -1.5 : 1.5, 0],
-        }}
-        transition={{
-          delay,
-          duration: asset === 'pebble' ? 7.4 : asset === 'blob' ? 9.5 : 8,
-          ease: 'easeInOut',
-          repeat: Infinity,
-        }}
-      />
-    </motion.div>
-  );
-}
-
-function BreathingBackdrop() {
-  const { scrollYProgress } = useScroll();
-  const upperY = useTransform(scrollYProgress, [0, 1], [0, -190]);
-  const lowerY = useTransform(scrollYProgress, [0, 1], [0, 140]);
-
-  return (
-    <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-      <motion.div
-        className="absolute inset-x-[-12%] top-[-9rem] h-[760px] opacity-80 blur-3xl"
-        style={{
-          y: upperY,
-          background:
-            'linear-gradient(116deg, rgba(93, 196, 255, 0.20) 0%, rgba(255,255,255,0.72) 32%, rgba(126, 140, 232, 0.22) 56%, rgba(230, 246, 255, 0.62) 100%)',
-          backgroundSize: '180% 180%',
-        }}
-        animate={{
-          backgroundPosition: ['0% 52%', '100% 45%', '22% 60%', '0% 52%'],
-          opacity: [0.62, 0.86, 0.72, 0.62],
-          scale: [1, 1.035, 0.99, 1],
-        }}
-        transition={{ duration: 13, repeat: Infinity, ease: 'easeInOut' }}
-      />
-      <motion.div
-        className="absolute inset-x-[-18%] top-[18rem] h-[620px] opacity-50 blur-3xl"
-        style={{
-          y: lowerY,
-          background:
-            'linear-gradient(138deg, rgba(255,255,255,0) 0%, rgba(111, 218, 255, 0.25) 34%, rgba(126, 132, 232, 0.18) 63%, rgba(255, 172, 220, 0.16) 100%)',
-          backgroundSize: '200% 200%',
-        }}
-        animate={{
-          backgroundPosition: ['80% 20%', '18% 62%', '92% 44%', '80% 20%'],
-          opacity: [0.34, 0.58, 0.42, 0.34],
-          scale: [0.98, 1.04, 1.01, 0.98],
-        }}
-        transition={{ duration: 15, repeat: Infinity, ease: 'easeInOut' }}
-      />
-    </div>
-  );
-}
-
-function ScrollReactiveShapes() {
-  const { scrollYProgress } = useScroll();
-  const yLeft = useTransform(scrollYProgress, [0, 1], [0, -180]);
-  const yRight = useTransform(scrollYProgress, [0, 1], [0, 150]);
-  const rotateLeft = useTransform(scrollYProgress, [0, 1], [-8, 16]);
-  const rotateRight = useTransform(scrollYProgress, [0, 1], [10, -18]);
-
-  return (
-    <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-0 overflow-hidden">
-      <motion.img
-        src="/way-abstract-glass-blob.png"
-        alt=""
-        draggable={false}
-        data-soft-shape
-        style={{ y: yLeft, rotate: rotateLeft }}
-        className="absolute left-[-11rem] top-[39rem] h-[26rem] w-[26rem] object-contain opacity-[0.45] blur-[0.4px]"
-      />
-      <motion.img
-        src="/way-abstract-glass-knot.png"
-        alt=""
-        draggable={false}
-        data-soft-shape
-        style={{ y: yRight, rotate: rotateRight }}
-        className="absolute right-[-9rem] top-[56rem] h-80 w-80 object-contain opacity-[0.40] blur-[0.5px]"
-      />
-      <motion.img
-        src="/way-abstract-glass-pebble.png"
-        alt=""
-        draggable={false}
-        data-soft-shape
-        style={{ y: yLeft }}
-        className="absolute left-[7%] top-[91rem] h-32 w-32 object-contain opacity-[0.36] blur-[0.7px]"
-      />
-      <motion.img
-        src="/way-abstract-glass-blob.png"
-        alt=""
-        draggable={false}
-        data-soft-shape
-        style={{ y: yRight }}
-        className="absolute right-[6%] top-[132rem] h-52 w-52 object-contain opacity-[0.24] blur-[1.3px]"
-      />
-    </div>
-  );
-}
 
 function DecisionFunnel({
   onNeedHelp,
@@ -451,7 +270,7 @@ function HeroFunnelPreview() {
   const heroStages = [
     {
       title: 'מה',
-      text: 'כיוון לימודים',
+      text: 'סינון ראשוני במטרה להבין מה הכיוון הכללי',
       icon: Compass,
       accent: 'text-[#5f75f1]',
       glow: 'from-[#f5f2ff] to-white',
@@ -469,11 +288,11 @@ function HeroFunnelPreview() {
     },
     {
       title: 'איך',
-      text: 'דרך קבלה',
+      text: 'דרך קבלה מותאמת אישית',
       icon: GraduationCap,
       accent: 'text-[#ef83bb]',
       glow: 'from-[#fff0f8] to-white',
-      width: '76%',
+      width: '80%',
       badge: 'bg-[#ef83bb]',
     },
   ];
@@ -564,14 +383,14 @@ function HeroFunnelPreview() {
         </motion.div>
       ))}
 
-      <div className="relative z-10 mx-auto flex max-w-[430px] flex-col items-center pt-[300px]">
+      <div className="relative z-10 mx-auto flex max-w-[500px] flex-col items-center pt-[300px]">
         {heroStages.map((stage, index) => {
           const Icon = stage.icon;
 
           return (
             <motion.div
               key={stage.title}
-              className={`relative mb-4 grid min-h-[92px] w-full grid-cols-[1fr_auto] items-center gap-4 rounded-[1.55rem] border border-white/90 bg-gradient-to-br ${stage.glow} px-6 py-4 text-right shadow-[0_18px_52px_rgba(105,133,190,0.14)] backdrop-blur-xl`}
+              className={`relative mb-5 grid min-h-[108px] w-full grid-cols-[1fr_auto] items-center gap-5 rounded-[1.7rem] border border-white/90 bg-gradient-to-br ${stage.glow} px-7 py-5 text-right shadow-[0_20px_58px_rgba(105,133,190,0.15)] backdrop-blur-xl`}
               style={{ width: stage.width }}
               animate={{ y: [0, -5, 0] }}
               transition={{
@@ -587,11 +406,13 @@ function HeroFunnelPreview() {
                 {index + 1}
               </span>
               <div className="min-w-0">
-                <div className={`text-3xl font-bold leading-none ${stage.accent}`}>{stage.title}</div>
-                <div className="mt-2 text-base font-bold text-[#445274]">{stage.text}</div>
+                <div className={`text-4xl font-bold leading-none ${stage.accent}`}>{stage.title}</div>
+                <div className="mt-2 text-sm font-bold leading-5 text-[#445274] sm:text-base">
+                  {stage.text}
+                </div>
               </div>
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-white/86 text-[#7784e8] shadow-sm">
-                <Icon className={stage.accent} size={23} />
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white/86 text-[#7784e8] shadow-sm">
+                <Icon className={stage.accent} size={25} />
               </div>
               {index < heroStages.length - 1 ? (
                 <span className="absolute -bottom-5 left-1/2 h-5 w-px -translate-x-1/2 bg-[linear-gradient(180deg,#9cc8ff,#f0a2d2)]" />
@@ -601,14 +422,14 @@ function HeroFunnelPreview() {
         })}
 
         <motion.div
-          className="mt-2 flex w-[86%] items-center justify-center gap-3 rounded-[1.7rem] border border-white bg-white/92 px-5 py-5 text-center shadow-[0_20px_60px_rgba(105,133,190,0.16)] backdrop-blur-xl"
+          className="mt-1 flex w-[58%] min-w-[250px] items-center justify-center gap-2 rounded-[1.45rem] border border-white bg-white/92 px-4 py-4 text-center shadow-[0_16px_48px_rgba(105,133,190,0.14)] backdrop-blur-xl"
           animate={{ y: [0, -6, 0] }}
           transition={{ duration: 5.2, repeat: Infinity, ease: 'easeInOut' }}
         >
-          <CheckCircle2 className="shrink-0 text-[#7784e8]" size={26} />
+          <CheckCircle2 className="shrink-0 text-[#7784e8]" size={22} />
           <div>
-            <div className="text-xl font-bold text-[#445274]">הצעד הבא שלך</div>
-            <div className="mt-1 text-sm font-medium text-[#6f7a99]">מסלול ברור להתחיל ממנו</div>
+            <div className="text-lg font-bold text-[#445274]">הצעד הבא שלך</div>
+            <div className="mt-1 text-xs font-medium text-[#6f7a99]">מסלול ברור להתחיל ממנו</div>
           </div>
         </motion.div>
       </div>
@@ -693,153 +514,25 @@ export default function LandingPage({
   }
 
   return (
-    <div
-      dir="rtl"
-      className="min-h-screen overflow-hidden bg-[#f8fbff] text-[#435072]"
-      style={{
-        backgroundImage:
-          'linear-gradient(180deg, #fbfdff 0%, #eef7ff 38%, #fbfdff 72%), radial-gradient(circle at 18% 18%, rgba(142,222,255,0.34), transparent 28%), radial-gradient(circle at 86% 24%, rgba(177,164,255,0.30), transparent 30%)',
-      }}
-    >
-      <header className="fixed inset-x-0 top-0 z-50 px-3 pt-5 sm:px-6 lg:px-8">
-        <div className="mx-auto flex h-[68px] w-full max-w-[92rem] items-center justify-between rounded-[1.4rem] border border-white bg-white/78 px-4 shadow-[0_20px_70px_rgba(117,139,190,0.18)] backdrop-blur-xl sm:px-5 lg:px-6">
-          <div className="flex items-center gap-3">
-            <button
-              type="button"
-              aria-label="דף הבית"
-              className="flex h-11 items-center rounded-2xl border border-[#e3e9f6] bg-white px-3 shadow-sm transition hover:bg-[#f6f9ff] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fd8ff]"
-            >
-              <LogoCanvas size={30} brighten={false} />
-            </button>
-          </div>
+    <WayPageShell contentClassName="" navigation={
+      <PublicNavBar
+        authLoading={authLoading}
+        isAuthenticated={isAuthenticated}
+        onCalculatorClick={() => scrollToSection('calculator')}
+        onGoToBucket={onGoToBucket}
+        onMethodClick={() => scrollToSection('method')}
+        onPathClick={() => scrollToSection('path')}
+        onSignIn={onSignIn}
+        onSignOut={onSignOut}
+        onStartClick={scrollToStart}
+        savedCount={savedCount}
+        userEmail={userEmail}
+        userInitials={userInitials}
+      />
 
-          <nav className="hidden items-center gap-1 text-sm font-semibold text-[#647091] md:flex">
-            <button
-              type="button"
-              onClick={() => scrollToSection('method')}
-              className="rounded-2xl px-4 py-2 transition hover:bg-[#eef4ff] hover:text-[#5262d9]"
-            >
-              איך זה עובד
-            </button>
-            <button
-              type="button"
-              onClick={() => scrollToSection('calculator')}
-              className="rounded-2xl px-4 py-2 transition hover:bg-[#eef4ff] hover:text-[#5262d9]"
-            >
-              מחשבון קבלה
-            </button>
-            <Link
-              href={ROUTES.institutions}
-              className="rounded-2xl px-4 py-2 transition hover:bg-[#eef4ff] hover:text-[#5262d9]"
-            >
-              מוסדות
-            </Link>
-            <button
-              type="button"
-              onClick={() => scrollToSection('path')}
-              className="rounded-2xl px-4 py-2 transition hover:bg-[#eef4ff] hover:text-[#5262d9]"
-            >
-              המסלול
-            </button>
-            <button
-              type="button"
-              onClick={onGoToBucket}
-              className="inline-flex items-center gap-1.5 rounded-2xl px-4 py-2 transition hover:bg-[#eef4ff] hover:text-[#5262d9]"
-            >
-              הרשימה שלי
-              {savedCount > 0 ? (
-                <span className="rounded-full bg-[#eef4ff] px-1.5 py-0.5 text-[10px] font-bold text-[#7784e8]">
-                  {savedCount}
-                </span>
-              ) : null}
-            </button>
-          </nav>
-
-          <div className="flex items-center gap-2">
-            {authLoading ? (
-              <div className="h-10 w-10 animate-pulse rounded-2xl bg-[#edf3ff]" />
-            ) : isAuthenticated && (userInitials || userEmail) ? (
-              <div className="flex items-center gap-2">
-                <span
-                  title={userEmail ? `מחובר כ-${userEmail}` : 'מחובר'}
-                  className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#7784e8] text-xs font-bold text-white shadow-sm"
-                >
-                  {userInitials ?? (userEmail ? getInitials(userEmail) : '')}
-                </span>
-                <button
-                  type="button"
-                  onClick={onSignOut}
-                  className="hidden rounded-2xl px-3 py-2 text-sm font-bold text-[#647091] transition hover:bg-[#eef4ff] hover:text-[#5262d9] sm:inline-flex"
-                >
-                  התנתק
-                </button>
-              </div>
-            ) : (
-              <button
-                type="button"
-                onClick={onSignIn}
-                className="hidden rounded-2xl px-3 py-2 text-sm font-bold text-[#647091] transition hover:bg-[#eef4ff] hover:text-[#5262d9] sm:inline-flex"
-              >
-                התחברות
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={scrollToStart}
-              className="inline-flex h-11 items-center gap-2 rounded-2xl bg-[#7784e8] px-5 text-sm font-bold text-white shadow-[0_16px_34px_rgba(119,132,232,0.32)] transition hover:bg-[#6574dc] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fd8ff]"
-            >
-              מתחילים
-              <ArrowLeft size={16} />
-            </button>
-          </div>
-        </div>
-      </header>
-
+    }>
       <main className="relative overflow-hidden">
-        <BreathingBackdrop />
-        <ScrollReactiveShapes />
         <section className="relative px-4 pb-16 pt-28 sm:px-6 lg:pb-24 lg:pt-28">
-          <FloatingGlassAsset
-            asset="knot"
-            className="right-[-6rem] top-28 h-52 w-52 opacity-[0.58] blur-[0.35px] sm:right-[-4rem] lg:h-64 lg:w-64"
-            delay={0.25}
-            xRange={[0, -54]}
-            yRange={[0, 120]}
-            rotateRange={[8, -16]}
-          />
-          <FloatingGlassAsset
-            asset="blob"
-            className="left-[-14rem] top-[21rem] h-[430px] w-[430px] opacity-[0.70] blur-[0.25px] sm:h-[520px] sm:w-[520px] lg:left-[-15rem] lg:top-[22rem] lg:h-[620px] lg:w-[620px]"
-            delay={0.45}
-            xRange={[0, 70]}
-            yRange={[0, -170]}
-            rotateRange={[-12, 16]}
-            scaleRange={[1, 1.1]}
-          />
-          <FloatingGlassAsset
-            asset="knot"
-            className="right-[-7rem] top-[40rem] hidden h-56 w-56 opacity-[0.48] blur-[0.5px] lg:block"
-            delay={0.65}
-            xRange={[0, -88]}
-            yRange={[0, -140]}
-            rotateRange={[-18, 20]}
-          />
-          <FloatingGlassAsset
-            asset="pebble"
-            className="left-[3%] top-[30rem] h-20 w-20 opacity-[0.76] blur-[0.25px] sm:h-24 sm:w-24 lg:left-[5%]"
-            delay={0.85}
-            xRange={[0, 38]}
-            yRange={[0, -95]}
-            rotateRange={[-20, 24]}
-          />
-          <FloatingGlassAsset
-            asset="pebble"
-            className="right-[4%] top-[54rem] h-20 w-20 opacity-[0.54] blur-[0.55px] sm:h-24 sm:w-24"
-            delay={1.05}
-            xRange={[0, -42]}
-            yRange={[0, -125]}
-            rotateRange={[16, -22]}
-          />
 
           <div className="mx-auto grid max-w-6xl items-start gap-10 lg:grid-cols-[0.95fr_1.05fr]">
             <motion.div
@@ -910,16 +603,6 @@ export default function LandingPage({
         </section>
 
         <section id="method" className="relative scroll-mt-28 px-4 py-16 sm:px-6 lg:py-24">
-          <SoftShape className="right-[-4rem] top-20 h-40 w-72 rounded-[999px] bg-[linear-gradient(90deg,#8ee4ff,#c2b5ff)] opacity-35 blur-md" />
-          <SoftShape className="left-[-4rem] bottom-10 h-56 w-56 rounded-[38%_62%_55%_45%] bg-[linear-gradient(135deg,#f7a9d5,#91e0ff)] opacity-35 blur-md" delay={0.4} />
-          <FloatingGlassAsset
-            asset="blob"
-            className="right-[-4rem] top-28 hidden h-56 w-56 opacity-[0.28] blur-[1px] lg:block"
-            delay={0.6}
-            xRange={[0, -42]}
-            yRange={[0, 110]}
-            rotateRange={[10, -14]}
-          />
           <DecisionFunnel onNeedHelp={onNeedHelp} onAlreadyKnow={onAlreadyKnow} />
         </section>
 
@@ -1073,7 +756,6 @@ export default function LandingPage({
         </section>
 
         <section id="path" className="relative scroll-mt-28 px-4 py-16 sm:px-6 lg:py-24">
-          <SoftShape className="left-10 top-0 h-36 w-64 rounded-[999px] bg-[linear-gradient(90deg,#a2e9ff,#cdbdff)] opacity-35 blur-md" />
           <div className="relative z-10 mx-auto max-w-6xl">
             <div className="mb-8 max-w-2xl">
               <p className="text-sm font-bold text-[#7784e8]">מסלול עבודה</p>
@@ -1131,6 +813,6 @@ export default function LandingPage({
           </div>
         </section>
       </main>
-    </div>
+    </WayPageShell>
   );
 }

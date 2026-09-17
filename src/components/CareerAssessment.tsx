@@ -169,7 +169,8 @@ export default function CareerAssessment({ onComplete }: Props) {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <div dir="rtl" className="relative mx-auto flex min-h-screen max-w-2xl flex-col px-4 py-6">
+    <div dir="rtl" className="relative mx-auto max-w-3xl px-4 py-6 sm:px-6">
+      <div className="way-surface flex min-h-[32rem] flex-col p-5 sm:p-8">
       {/* Progress bar */}
       <div className="mb-6">
         <div className="mb-2 flex items-center justify-between text-xs text-slate-400">
@@ -202,7 +203,7 @@ export default function CareerAssessment({ onComplete }: Props) {
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -slideDir * 60 }}
         transition={SLIDE}
-        className="flex-1"
+        className="flex-1 pb-8"
       >
         {screen.kind === 'transition' && (
           <TransitionScreen title={screen.title} subtitle={screen.subtitle} />
@@ -278,12 +279,13 @@ export default function CareerAssessment({ onComplete }: Props) {
             type="button"
             onClick={isLastScreen ? handleFinish : handleNext}
             disabled={isLastScreen && !hasEnough}
-            className="flex items-center gap-1 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:opacity-40"
+            className="way-button-primary flex items-center gap-1 px-5 py-2.5 text-sm font-semibold transition disabled:opacity-40"
           >
             {isLastScreen ? 'הצג המלצות' : 'הבא'}
             {!isLastScreen && <ChevronLeft size={16} />}
           </button>
         </div>
+      </div>
       </div>
     </div>
   );
@@ -327,7 +329,7 @@ function MultiSelectScreen({
               className={`rounded-xl border-2 px-4 py-3.5 text-right transition ${
                 isSelected
                   ? 'border-indigo-500 bg-indigo-50/70'
-                  : 'border-slate-200 hover:border-indigo-300 hover:bg-slate-50'
+                  : 'border-slate-200 bg-white hover:border-indigo-300 hover:bg-slate-50'
               }`}
             >
               <div className="flex items-start gap-3">
@@ -367,7 +369,7 @@ function QuickPicksScreen({
   return (
     <div className="flex flex-col gap-5">
       {items.map((item) => (
-        <div key={item.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div key={item.id} className="border-b border-slate-200 pb-5 last:border-b-0">
           <p className="mb-3 text-base font-medium text-slate-700">{item.text}</p>
           <div className="flex gap-2">
             {QP_CHOICES.map((choice) => {

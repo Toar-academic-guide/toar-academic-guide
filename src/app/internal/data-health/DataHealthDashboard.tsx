@@ -22,7 +22,7 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
   }));
 
   return (
-    <WayPageShell dir="ltr" showLogo>
+    <WayPageShell dir="ltr">
       <main className="px-5 py-8 text-[#445274] sm:px-8 lg:px-12">
         <div className="mx-auto flex max-w-7xl flex-col gap-8">
           <header className="overflow-hidden rounded-[1.7rem] border border-white bg-white/82 p-8 text-[#445274] shadow-[0_24px_80px_rgba(105,133,190,0.16)] backdrop-blur-xl">

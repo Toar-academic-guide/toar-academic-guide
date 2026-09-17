@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import posthog from 'posthog-js';
 import {
@@ -27,6 +27,7 @@ import { getRecommendations } from '@/utils/recommendationEngine';
 import { extractFilterAnswers } from '@/utils/riasecEngine';
 import { ArrowRight } from 'lucide-react';
 import NavBar from '@/components/NavBar';
+import PublicNavBar from '@/components/PublicNavBar';
 import CareerAssessment from '@/components/CareerAssessment';
 import OnboardingFunnel from '@/components/OnboardingFunnel';
 import LandingPage from '@/components/LandingPage';
@@ -426,7 +427,7 @@ export default function AppExperience({
         onClick={handleGoBack}
         aria-label="חזרה לעמוד הקודם"
         title="חזרה לעמוד הקודם"
-        className="fixed top-6 right-4 z-50 flex items-center gap-2 rounded-full border border-white/20 bg-[#1e1b4b]/80 px-5 py-2.5 text-base font-medium text-white/80 shadow-lg backdrop-blur transition hover:bg-[#1e1b4b] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+        className="way-button-secondary flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition"
       >
         <ArrowRight size={18} />
         <span>חזרה</span>
@@ -462,7 +463,7 @@ export default function AppExperience({
           <button
             type="button"
             onClick={handleGoHome}
-            className="rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700"
+            className="way-button-primary px-5 py-2.5 text-sm font-semibold transition"
           >
             חזרה לעמוד הבית
           </button>
@@ -487,7 +488,36 @@ export default function AppExperience({
 
   const savedCount = profile.savedProgramIds?.length ?? 0;
 
-  /* ── Full-screen steps (no header) ───────────────────────────────────────── */
+  function renderStep(content: ReactNode, showBack = true) {
+    return (
+      <WayPageShell
+        navigation={
+          <PublicNavBar
+            authLoading={authLoading}
+            isAuthenticated={isAuthenticated}
+            savedCount={savedCount}
+            userEmail={user?.email ?? undefined}
+            onGoHome={handleGoHome}
+            onGoToBucket={() => navigateToStep('bucket-list')}
+            onStartClick={() => navigateToStep('intro')}
+            onSignIn={() => router.push(ROUTES.login)}
+            onSignOut={() => {
+              void signOut();
+            }}
+          />
+        }
+      >
+        {showBack ? (
+          <div className="mx-auto max-w-6xl px-4 pt-4 sm:px-6">
+            <BackButton />
+          </div>
+        ) : null}
+        {content}
+      </WayPageShell>
+    );
+  }
+
+  /* Workflow steps share the same navigation and page background. */
   if (step === 'landing') {
     return (
       <LandingPage
@@ -533,7 +563,7 @@ export default function AppExperience({
   }
 
   if (step === 'calculator-results' && landingCalcScores) {
-    return (
+    return renderStep(
       <CalculatorResults
         psychometric={landingCalcScores.psychometric}
         bagrut={landingCalcScores.bagrut}
@@ -544,7 +574,8 @@ export default function AppExperience({
         onBack={() => {
           navigateToStep('landing');
         }}
-      />
+      />,
+      false,
     );
   }
 
@@ -560,11 +591,10 @@ export default function AppExperience({
   }
 
   if (step === 'degree-picker') {
-    return (
+    return renderStep(
       <>
-        <BackButton />
         {syncError && (
-          <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-xl px-4">
+          <div className="mx-auto w-full max-w-xl px-4 pt-4">
             <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 shadow-md">
               {syncError}
             </div>
@@ -578,7 +608,7 @@ export default function AppExperience({
             onDone={() => navigateToStep('study-location')}
           />
         ) : (
-          <div className="min-h-screen bg-[#f5f4f0] px-4 py-10 sm:px-6">
+          <div className="px-4 py-10 sm:px-6">
             {renderCatalogueState(
               'טוענים את קטלוג התארים',
               'רק לאחר שהקטלוג ייטען אפשר לבחור תארים להשוואה.',
@@ -590,17 +620,16 @@ export default function AppExperience({
   }
 
   if (step === 'study-location') {
-    return (
+    return renderStep(
       <>
         {syncError && (
-          <div className="fixed top-20 left-1/2 z-50 w-full max-w-xl -translate-x-1/2 px-4">
+          <div className="mx-auto w-full max-w-xl px-4 pt-4">
             <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 shadow-md">
               {syncError}
             </div>
           </div>
         )}
         {catalogueStatus === 'ready' ? (
-          <WayPageShell>
             <StudyLocationStep
               programs={cataloguePrograms}
               savedProgramIds={profile.savedProgramIds ?? []}
@@ -616,32 +645,46 @@ export default function AppExperience({
                 navigateToStep('bucket-list');
               }}
             />
-          </WayPageShell>
         ) : (
-          <div className="min-h-screen bg-[#f5f4f0] px-4 py-10 sm:px-6">
+          <div className="px-4 py-10 sm:px-6">
             {renderCatalogueState(
               'טוענים את אזורי הלימוד',
               'רק לאחר שהקטלוג ייטען אפשר להציג את מפת האפשרויות לפי התארים שבחרת.',
             )}
           </div>
         )}
-      </>
+      </>,
+      false,
     );
   }
 
   if (step === 'intro') {
     return (
-      <>
-        <BackButton />
-        <QuizIntro onStart={() => navigateToStep('academic-profile')} />
-      </>
+      <QuizIntro
+        onStart={() => navigateToStep('academic-profile')}
+        authLoading={authLoading}
+        isAuthenticated={isAuthenticated}
+        savedCount={savedCount}
+        userInitials={user?.email ? getUserInitials(user.email) : undefined}
+        userEmail={user?.email ?? undefined}
+        onGoHome={() => navigateToStep('landing')}
+        onGoToBucket={() => {
+          setBucketReturnsTo('intro');
+          navigateToStep('bucket-list');
+        }}
+        onSignIn={() => {
+          router.push(ROUTES.login);
+        }}
+        onSignOut={() => {
+          void signOut();
+        }}
+      />
     );
   }
 
   if (step === 'academic-profile') {
-    return (
+    return renderStep(
       <>
-        <BackButton />
         <AcademicProfileForm
           initialScores={profile.academicScores}
           initialDocuments={profile.uploadedDocuments}
@@ -692,18 +735,16 @@ export default function AppExperience({
   }
 
   if (step === 'career-assessment') {
-    return (
+    return renderStep(
       <>
-        <BackButton />
         <CareerAssessment onComplete={handleAssessmentComplete} />
       </>
     );
   }
 
   if (step === 'quick-filters') {
-    return (
+    return renderStep(
       <>
-        <BackButton />
         <OnboardingFunnel onComplete={handleFiltersComplete} />
       </>
     );
@@ -728,8 +769,7 @@ export default function AppExperience({
   const sekhemPrograms = cataloguePrograms.filter((program) => program.admissionType === 'sekhem');
 
   return (
-    <WayPageShell>
-      <BackButton />
+    <WayPageShell navigation={
       <NavBar
         step={step}
         savedCount={savedCount}
@@ -758,7 +798,12 @@ export default function AppExperience({
           navigateToStep(bucketReturnsTo);
         }}
       />
-
+    }>
+      {step !== 'bucket-list' && !(step === 'calculator' && appCalcScores) ? (
+        <div className="mx-auto max-w-5xl px-4 pt-4 sm:px-6">
+          <BackButton />
+        </div>
+      ) : null}
       <main className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-4 py-12 sm:px-6">
         {!hydrated || syncing ? (
           <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
@@ -802,7 +847,7 @@ export default function AppExperience({
             <button
               type="button"
               onClick={() => navigateToStep('intro')}
-              className="mt-5 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700"
+              className="way-button-primary mt-5 px-5 py-2.5 text-sm font-semibold transition"
             >
               להתחיל שאלון
             </button>

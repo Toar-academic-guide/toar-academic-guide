@@ -25,7 +25,7 @@ export default function DevShortcuts() {
   ];
 
   return (
-    <WayPageShell showLogo>
+    <WayPageShell>
       <main className="dev-shortcuts">
       <style>{`
         .dev-shortcuts {

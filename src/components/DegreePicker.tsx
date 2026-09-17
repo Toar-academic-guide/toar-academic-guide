@@ -350,8 +350,8 @@ export default function DegreePicker({
   }
 
   return (
-    <div className="min-h-screen" dir="rtl">
-      <div className="mx-auto max-w-7xl px-5 pb-32 pt-20 sm:px-8 sm:pt-0 lg:px-10">
+    <div dir="rtl">
+      <div className="mx-auto max-w-7xl px-5 pb-32 pt-8 sm:px-8 lg:px-10">
         <div className="mx-auto mb-7 max-w-4xl text-center">
           <h1 className="mb-2 mt-0 text-[1.7rem] font-semibold leading-tight text-[#0c1d45] md:text-[2.2rem]">
             בחר את התחום שמעניין אותך

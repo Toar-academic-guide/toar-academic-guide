@@ -371,18 +371,8 @@ export default function StudyLocationStep({
   }
 
   return (
-    <div className="relative min-h-screen overflow-hidden px-4 pb-10 pt-5 sm:px-6 lg:px-8" dir="rtl">
-      <div className="pointer-events-none fixed inset-0 bg-[radial-gradient(circle_at_18%_26%,rgba(142,205,255,0.34),transparent_31%),radial-gradient(circle_at_84%_74%,rgba(236,116,187,0.16),transparent_26%),linear-gradient(180deg,#fbfdff_0%,#f7faff_42%,#f2f7ff_100%)]" />
-      <div className="pointer-events-none fixed left-0 top-0 h-full w-[54vw] bg-[linear-gradient(90deg,rgba(184,219,255,0.48),rgba(255,255,255,0.04))]" />
-
+    <div className="relative px-4 pb-10 pt-5 sm:px-6 lg:px-8" dir="rtl">
       <div className="relative z-10 mx-auto flex min-h-[calc(100vh-2.5rem)] w-full max-w-[1440px] flex-col">
-        <div
-          className="absolute right-2 top-2 hidden items-center gap-2 text-2xl font-extrabold tracking-normal text-[#071638] md:flex"
-          dir="ltr"
-        >
-          <span className="inline-flex h-7 w-10 rounded-[0.6rem] bg-gradient-to-br from-[#1682ff] via-[#7458e9] to-[#f06fbd] shadow-[0_10px_24px_rgba(91,101,235,0.2)]" />
-          Way
-        </div>
         <ProgressStepper onBack={onBack} />
 
         <main className="grid flex-1 items-stretch gap-6 py-7 lg:grid-cols-[minmax(0,1.06fr)_minmax(420px,0.94fr)] lg:py-9">

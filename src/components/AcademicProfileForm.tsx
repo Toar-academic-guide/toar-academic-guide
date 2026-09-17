@@ -5,7 +5,6 @@ import { motion } from 'framer-motion';
 import { Upload, FileText, X, Brain, GraduationCap, Loader2 } from 'lucide-react';
 import type { AcademicScores, UserProfile } from '@/types';
 import BagrutCalculatorWizard from './BagrutCalculatorWizard';
-import LogoCanvas from './LogoCanvas';
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 const fadeUp = (delay: number) => ({
@@ -211,12 +210,8 @@ export default function AcademicProfileForm({
     'focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100';
 
   return (
-    <div className="min-h-screen bg-[#f5f4f0] px-4 py-10">
+    <div className="px-4 py-8">
       <div className="mx-auto flex max-w-2xl flex-col items-center gap-8">
-        <motion.div {...fadeUp(0)}>
-          <LogoCanvas size={96} brighten={false} className="md:h-32" />
-        </motion.div>
-
         <motion.div
           {...fadeUp(0.18)}
           className="w-full rounded-3xl border border-[#e5e7eb] bg-white p-8 shadow-lg md:p-10"
