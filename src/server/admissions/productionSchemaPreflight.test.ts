@@ -67,6 +67,24 @@ describe('production admissions schema preflight', () => {
     );
   });
 
+  it('accepts ingestion source metadata isolated from runtime roles', () => {
+    const snapshot = makeSnapshot();
+    snapshot.tables.ingestion_sources.grants.app_runtime = [];
+    snapshot.tables.ingestion_sources.grants.ops_readonly = [];
+    snapshot.tables.ingestion_sources.policies = [
+      'ingestion_sources_private_deny_all',
+      'ingestion_sources_app_runtime_deny_all',
+      'ingestion_sources_admissions_automation_read',
+      'ingestion_sources_admissions_automation_insert',
+      'ingestion_sources_admissions_automation_update',
+    ];
+
+    expect(assessProductionSchema(snapshot)).toMatchObject({
+      status: 'current',
+      issues: [],
+    });
+  });
+
   it('records both Drizzle and Supabase payload fingerprints for applied migrations', () => {
     for (const migrationId of ['0020', '0021', '0022', '0023'] as const) {
       const migration = FORWARD_PRODUCTION_MIGRATIONS.find(({ id }) => id === migrationId);
