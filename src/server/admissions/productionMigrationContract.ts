@@ -170,6 +170,9 @@ export const FORWARD_PRODUCTION_MIGRATIONS: ForwardProductionMigration[] = [
     remoteName: 'grant_admissions_automation_review_handoff',
     repositoryPath: 'src/db/migrations/0025_grant_admissions_automation_review_handoff.sql',
     statementFingerprint: 'b19b08849da7e9e17c59587a33291a5d',
-    legacyStatementFingerprints: ['0c9ff2b4e1d26778e4b04f71c80ac908'],
+    legacyStatementFingerprints: [
+      '0c9ff2b4e1d26778e4b04f71c80ac908',
+      '7328e7cd08240243f60c1a7b5c04d2f4',
+    ],
   },
 ];

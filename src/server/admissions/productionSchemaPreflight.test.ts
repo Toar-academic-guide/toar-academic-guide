@@ -354,6 +354,21 @@ describe('production admissions schema preflight', () => {
     });
   });
 
+  it('accepts the Supabase payload fingerprint for 0025', () => {
+    const snapshot = makeSnapshot();
+    const migration = snapshot.migrationHistory.find(
+      ({ name }) => name === 'grant_admissions_automation_review_handoff',
+    );
+    if (migration) {
+      migration.statementFingerprint = '7328e7cd08240243f60c1a7b5c04d2f4';
+    }
+
+    expect(assessProductionSchema(snapshot)).toMatchObject({
+      status: 'current',
+      issues: [],
+    });
+  });
+
   it('accepts the legacy ops grant only until 0024 revokes it', () => {
     const appliedCount = FORWARD_PRODUCTION_MIGRATIONS.findIndex(({ id }) => id === '0024');
     const snapshot = makeSnapshot({ appliedCount });
