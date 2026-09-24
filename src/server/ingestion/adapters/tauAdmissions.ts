@@ -16,7 +16,7 @@ export async function runTauAdmissionsProof(
   const program = context.program ?? {
     targetId: 'tau-digital-sciences-live',
     pairId: 'tau_datascience__tau',
-    id: 'tau-digital-sciences',
+    id: 'tau_datascience',
     name: 'Digital Sciences for High-Tech',
     externalId: '056011050000',
     searchText: 'מדעים דיגיטליים',

@@ -200,7 +200,7 @@ describe('monday admissions source contracts', () => {
     expect(mapped.mapping.sourceDescriptor).toMatchObject({
       id: 'tau-digital-sciences-live',
       institutionId: 'tau',
-      programId: 'tau-digital-sciences',
+      programId: 'tau_datascience',
       difficulty: 'easy',
       sourceUrl: 'https://go.tau.ac.il/graphql',
     });

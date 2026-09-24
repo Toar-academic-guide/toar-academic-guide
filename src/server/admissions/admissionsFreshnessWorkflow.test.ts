@@ -35,6 +35,14 @@ describe('weekly admissions freshness workflow', () => {
     }
     expect(workflow).toContain('npm run admissions:slack-preflight');
   });
+
+  it('passes a comma-separated dispatch target list as repeated safe target arguments', async () => {
+    const workflow = await readWorkflow();
+
+    expect(workflow).toContain('TARGET_INPUT: ${{ inputs.target }}');
+    expect(workflow).toContain('IFS=\',\' read -r -a targets <<< "$TARGET_INPUT"');
+    expect(workflow).toContain('args+=(--target "$target")');
+  });
 });
 
 function readWorkflow() {
