@@ -10,6 +10,8 @@ export interface AdmissionsReviewSlackConfig {
 export type AdmissionsReviewSlackDeliveryResult =
   { status: 'sent'; timestamp?: string } | { status: 'failed'; error: string };
 
+export const ADMISSIONS_REVIEW_SLACK_REQUEST_TIMEOUT_MS = 10_000;
+
 export function canInjectAdmissionsReviewSlackFailure(input: {
   releaseKind: 'canonical_bootstrap' | 'canonical_change' | 'operational_proof';
   proofScenario: string | null;
@@ -36,26 +38,32 @@ export async function postAdmissionsReviewSlackMessage(
   payload: AdmissionsReviewSlackMessage,
   config: AdmissionsReviewSlackConfig = readAdmissionsReviewSlackConfig(),
   fetcher: typeof fetch = fetch,
+  options: { requestTimeoutMs?: number } = {},
 ): Promise<AdmissionsReviewSlackDeliveryResult> {
   if (!config.slackBotToken || !config.slackChannelId) {
     return { status: 'failed', error: 'Admissions review Slack is not configured.' };
   }
 
   try {
-    const response = await fetcher('https://slack.com/api/chat.postMessage', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${config.slackBotToken}`,
-        'Content-Type': 'application/json; charset=utf-8',
+    const response = await fetchSlackApiWithTimeout(
+      fetcher,
+      'https://slack.com/api/chat.postMessage',
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${config.slackBotToken}`,
+          'Content-Type': 'application/json; charset=utf-8',
+        },
+        body: JSON.stringify({
+          channel: config.slackChannelId,
+          text: payload.text,
+          blocks: payload.blocks,
+          unfurl_links: false,
+          unfurl_media: false,
+        }),
       },
-      body: JSON.stringify({
-        channel: config.slackChannelId,
-        text: payload.text,
-        blocks: payload.blocks,
-        unfurl_links: false,
-        unfurl_media: false,
-      }),
-    });
+      options.requestTimeoutMs ?? ADMISSIONS_REVIEW_SLACK_REQUEST_TIMEOUT_MS,
+    );
     if (!response.ok) {
       return { status: 'failed', error: `Slack API request failed (${response.status}).` };
     }
@@ -73,6 +81,31 @@ export async function postAdmissionsReviewSlackMessage(
       status: 'failed',
       error: safeError(error instanceof Error ? error.message : String(error)),
     };
+  }
+}
+
+async function fetchSlackApiWithTimeout(
+  fetcher: typeof fetch,
+  input: Parameters<typeof fetch>[0],
+  init: RequestInit,
+  timeoutMs: number,
+): Promise<Response> {
+  const controller = new AbortController();
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  const timeoutError = new Promise<never>((_resolve, reject) => {
+    timeout = setTimeout(() => {
+      reject(new Error(`Slack API request timed out after ${timeoutMs}ms.`));
+      controller.abort();
+    }, timeoutMs);
+  });
+
+  try {
+    return await Promise.race([
+      fetcher(input, { ...init, signal: controller.signal }),
+      timeoutError,
+    ]);
+  } finally {
+    if (timeout) clearTimeout(timeout);
   }
 }
 

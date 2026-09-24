@@ -67,4 +67,31 @@ describe('admissions review Slack delivery', () => {
       expect.objectContaining({ method: 'POST' }),
     );
   });
+
+  it('turns an unresponsive Slack request into a retryable failure', async () => {
+    vi.useFakeTimers();
+    try {
+      const fetcher = vi.fn<typeof fetch>().mockImplementation(
+        (_input, init) =>
+          new Promise((_resolve, reject) => {
+            init?.signal?.addEventListener('abort', () => reject(new Error('aborted')));
+          }),
+      );
+      const result = postAdmissionsReviewSlackMessage(
+        { text: 'summary', blocks: [] },
+        { slackBotToken: 'xoxb-token', slackChannelId: 'C123' },
+        fetcher,
+        { requestTimeoutMs: 10 },
+      );
+
+      await vi.advanceTimersByTimeAsync(10);
+
+      await expect(result).resolves.toEqual({
+        status: 'failed',
+        error: 'Slack API request timed out after 10ms.',
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });
