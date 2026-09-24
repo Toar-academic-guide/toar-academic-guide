@@ -1,11 +1,30 @@
+const SLACK_REQUEST_TIMEOUT_MS = 10_000;
+
 async function slackRequest(path, token) {
-  const response = await fetch(`https://slack.com/api/${path}`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}` },
+  const controller = new AbortController();
+  let timeout;
+  const timeoutError = new Promise((_, reject) => {
+    timeout = setTimeout(() => {
+      reject(new Error(`Slack preflight request timed out after ${SLACK_REQUEST_TIMEOUT_MS}ms.`));
+      controller.abort();
+    }, SLACK_REQUEST_TIMEOUT_MS);
   });
-  if (!response.ok) throw new Error(`Slack preflight request failed (${response.status}).`);
-  const body = await response.json();
-  if (!body.ok) throw new Error('Slack preflight was rejected by the configured workspace.');
+
+  try {
+    const response = await Promise.race([
+      fetch(`https://slack.com/api/${path}`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        signal: controller.signal,
+      }),
+      timeoutError,
+    ]);
+    if (!response.ok) throw new Error(`Slack preflight request failed (${response.status}).`);
+    const body = await response.json();
+    if (!body.ok) throw new Error('Slack preflight was rejected by the configured workspace.');
+  } finally {
+    if (timeout) clearTimeout(timeout);
+  }
 }
 
 async function main() {
