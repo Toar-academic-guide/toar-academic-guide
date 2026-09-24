@@ -18,7 +18,7 @@ describe('production admissions schema preflight', () => {
     expect(report).toMatchObject({
       status: 'current',
       safeToMigrate: false,
-      appliedThrough: '0024',
+      appliedThrough: '0025',
       pendingMigrations: [],
       issues: [],
     });
@@ -67,6 +67,28 @@ describe('production admissions schema preflight', () => {
     );
   });
 
+  it('requires the insert-only grants and policies needed for freshness review handoffs', () => {
+    const snapshot = makeSnapshot();
+    snapshot.tables.ingestion_jobs.grants.admissions_automation = [];
+    snapshot.tables.ingestion_payloads.policies =
+      snapshot.tables.ingestion_payloads.policies.filter(
+        (policy) => policy !== 'ingestion_payloads_admissions_automation_insert',
+      );
+
+    expect(assessProductionSchema(snapshot).issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'grant_mismatch',
+          object: 'grant:admissions_automation:ingestion_jobs',
+        }),
+        expect.objectContaining({
+          code: 'missing_policy',
+          object: 'policy:ingestion_payloads_admissions_automation_insert',
+        }),
+      ]),
+    );
+  });
+
   it('accepts ingestion source metadata isolated from runtime roles', () => {
     const snapshot = makeSnapshot();
     snapshot.tables.ingestion_sources.grants.app_runtime = [];
@@ -86,7 +108,7 @@ describe('production admissions schema preflight', () => {
   });
 
   it('records both Drizzle and Supabase payload fingerprints for applied migrations', () => {
-    for (const migrationId of ['0020', '0021', '0022', '0023', '0024'] as const) {
+    for (const migrationId of ['0020', '0021', '0022', '0023', '0024', '0025'] as const) {
       const migration = FORWARD_PRODUCTION_MIGRATIONS.find(({ id }) => id === migrationId);
       const source = readFileSync(migration?.repositoryPath ?? '', 'utf8');
       const statements = source
@@ -137,6 +159,7 @@ describe('production admissions schema preflight', () => {
       '0022',
       '0023',
       '0024',
+      '0025',
     ]);
   });
 
@@ -159,6 +182,7 @@ describe('production admissions schema preflight', () => {
       '0022',
       '0023',
       '0024',
+      '0025',
     ]);
   });
 
@@ -338,7 +362,7 @@ describe('production admissions schema preflight', () => {
     expect(assessProductionSchema(snapshot)).toMatchObject({
       status: 'migration_required',
       safeToMigrate: true,
-      pendingMigrations: ['0024'],
+      pendingMigrations: ['0024', '0025'],
       issues: [],
     });
   });
@@ -512,6 +536,18 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
               ]
             : []),
         ],
+      },
+      ingestion_jobs: {
+        grants: appliedIds.has('0025') ? ['INSERT'] : [],
+        policies: appliedIds.has('0025') ? ['ingestion_jobs_admissions_automation_insert'] : [],
+      },
+      ingestion_payloads: {
+        grants: appliedIds.has('0025') ? ['INSERT'] : [],
+        policies: appliedIds.has('0025') ? ['ingestion_payloads_admissions_automation_insert'] : [],
+      },
+      review_items: {
+        grants: appliedIds.has('0025') ? ['INSERT'] : [],
+        policies: appliedIds.has('0025') ? ['review_items_admissions_automation_insert'] : [],
       },
       admission_thresholds: {
         grants: ['SELECT'],
