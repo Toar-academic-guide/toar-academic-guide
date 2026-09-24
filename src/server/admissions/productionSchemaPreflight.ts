@@ -154,6 +154,18 @@ const tables: Record<string, TableContract> = {
   admission_facts: securedExistingTable('admission_facts'),
   admissions_source_candidates: securedExistingTable('admissions_source_candidates'),
   ingestion_sources: automationOnlyExistingTable('ingestion_sources'),
+  ingestion_jobs: {
+    ...automationOnlyExistingTable('ingestion_jobs'),
+    policyMigrations: { ingestion_jobs_admissions_automation_insert: '0025' },
+  },
+  ingestion_payloads: {
+    ...automationOnlyExistingTable('ingestion_payloads'),
+    policyMigrations: { ingestion_payloads_admissions_automation_insert: '0025' },
+  },
+  review_items: {
+    ...automationOnlyExistingTable('review_items'),
+    policyMigrations: { review_items_admissions_automation_insert: '0025' },
+  },
   source_freshness_checks: securedExistingTable('source_freshness_checks', ['SELECT', 'INSERT']),
   source_freshness_states: securedExistingTable('source_freshness_states', [
     'SELECT',
@@ -1083,6 +1095,18 @@ function assessAdmissionsAutomationAccess(
             ]
           : []),
       ],
+    },
+    ingestion_jobs: {
+      grants: applied.has('0025') ? ['INSERT'] : [],
+      policies: applied.has('0025') ? ['ingestion_jobs_admissions_automation_insert'] : [],
+    },
+    ingestion_payloads: {
+      grants: applied.has('0025') ? ['INSERT'] : [],
+      policies: applied.has('0025') ? ['ingestion_payloads_admissions_automation_insert'] : [],
+    },
+    review_items: {
+      grants: applied.has('0025') ? ['INSERT'] : [],
+      policies: applied.has('0025') ? ['review_items_admissions_automation_insert'] : [],
     },
     admission_thresholds: {
       grants: ['SELECT'],
