@@ -18,7 +18,7 @@ describe('production admissions schema preflight', () => {
     expect(report).toMatchObject({
       status: 'current',
       safeToMigrate: false,
-      appliedThrough: '0023',
+      appliedThrough: '0024',
       pendingMigrations: [],
       issues: [],
     });
@@ -86,7 +86,7 @@ describe('production admissions schema preflight', () => {
   });
 
   it('records both Drizzle and Supabase payload fingerprints for applied migrations', () => {
-    for (const migrationId of ['0020', '0021', '0022', '0023'] as const) {
+    for (const migrationId of ['0020', '0021', '0022', '0023', '0024'] as const) {
       const migration = FORWARD_PRODUCTION_MIGRATIONS.find(({ id }) => id === migrationId);
       const source = readFileSync(migration?.repositoryPath ?? '', 'utf8');
       const statements = source
@@ -136,6 +136,7 @@ describe('production admissions schema preflight', () => {
       '0021',
       '0022',
       '0023',
+      '0024',
     ]);
   });
 
@@ -157,6 +158,7 @@ describe('production admissions schema preflight', () => {
       '0021',
       '0022',
       '0023',
+      '0024',
     ]);
   });
 
@@ -313,6 +315,34 @@ describe('production admissions schema preflight', () => {
     });
   });
 
+  it('accepts the reviewed single-statement 0023 production fingerprint', () => {
+    const snapshot = makeSnapshot();
+    const migration = snapshot.migrationHistory.find(
+      ({ name }) => name === 'grant_admissions_automation_ingestion_sources',
+    );
+    if (migration) {
+      migration.statementFingerprint = 'dfcf630423db70fcebe9b9aac016f764';
+    }
+
+    expect(assessProductionSchema(snapshot)).toMatchObject({
+      status: 'current',
+      issues: [],
+    });
+  });
+
+  it('accepts the legacy ops grant only until 0024 revokes it', () => {
+    const appliedCount = FORWARD_PRODUCTION_MIGRATIONS.findIndex(({ id }) => id === '0024');
+    const snapshot = makeSnapshot({ appliedCount });
+    snapshot.tables.ingestion_sources.grants.ops_readonly = ['SELECT'];
+
+    expect(assessProductionSchema(snapshot)).toMatchObject({
+      status: 'migration_required',
+      safeToMigrate: true,
+      pendingMigrations: ['0024'],
+      issues: [],
+    });
+  });
+
   it('stops when admissions automation gains elevated attributes or memberships', () => {
     const snapshot = makeSnapshot();
     const automation = snapshot.roles.find((role) => role.name === 'admissions_automation');
@@ -428,6 +458,9 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
       (policy) => policy !== 'bagrut_profile_versions_ops_readonly_read',
     );
     tables.bagrut_profile_versions.grants.ops_readonly = [];
+  }
+  if (appliedIds.has('0011') && !appliedIds.has('0024') && tables.ingestion_sources) {
+    tables.ingestion_sources.grants.ops_readonly = ['SELECT'];
   }
   if (appliedIds.has('0020')) {
     for (const column of [

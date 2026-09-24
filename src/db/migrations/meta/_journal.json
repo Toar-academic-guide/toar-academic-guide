@@ -169,6 +169,13 @@
       "when": 1790284781000,
       "tag": "0023_grant_admissions_automation_ingestion_sources",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1790286117000,
+      "tag": "0024_revoke_ops_readonly_ingestion_sources",
+      "breakpoints": true
     }
   ]
 }

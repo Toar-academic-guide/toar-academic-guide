@@ -797,9 +797,11 @@ function assessTableSecurity(
   for (const role of runtimeRoles) {
     const actual = normalizedPrivileges(table.grants[role] ?? []);
     const expected = normalizedPrivileges(
-      tableName === 'bagrut_profile_versions' && role === 'ops_readonly' && !applied.has('0017')
-        ? []
-        : (contract.grants[role] ?? []),
+      tableName === 'ingestion_sources' && role === 'ops_readonly' && !applied.has('0024')
+        ? ['SELECT']
+        : tableName === 'bagrut_profile_versions' && role === 'ops_readonly' && !applied.has('0017')
+          ? []
+          : (contract.grants[role] ?? []),
     );
     if (actual.join(',') !== expected.join(',')) {
       issues.push({

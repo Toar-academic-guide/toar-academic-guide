@@ -12,7 +12,8 @@ export type MigrationId =
   | '0020'
   | '0021'
   | '0022'
-  | '0023';
+  | '0023'
+  | '0024';
 
 export type MigrationHistoryEntry = {
   version: string;
@@ -151,6 +152,16 @@ export const FORWARD_PRODUCTION_MIGRATIONS: ForwardProductionMigration[] = [
     remoteName: 'grant_admissions_automation_ingestion_sources',
     repositoryPath: 'src/db/migrations/0023_grant_admissions_automation_ingestion_sources.sql',
     statementFingerprint: '278cb3475dbd6f8f17a9783745c74dab',
-    legacyStatementFingerprints: ['59f930ea170294b1bc3fa78fd3e7e09f'],
+    legacyStatementFingerprints: [
+      '59f930ea170294b1bc3fa78fd3e7e09f',
+      'dfcf630423db70fcebe9b9aac016f764',
+    ],
+  },
+  {
+    id: '0024',
+    remoteName: 'revoke_ops_readonly_ingestion_sources',
+    repositoryPath: 'src/db/migrations/0024_revoke_ops_readonly_ingestion_sources.sql',
+    statementFingerprint: '592681f361662c157bae075ac3ac955c',
+    legacyStatementFingerprints: ['a11e01dce8c1018c8ceec33c31cb929d'],
   },
 ];
