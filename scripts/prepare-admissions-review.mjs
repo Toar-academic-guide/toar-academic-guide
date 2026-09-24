@@ -178,7 +178,12 @@ async function main() {
       }),
     );
   } finally {
-    await vite.close();
+    try {
+      const { closeDb } = await vite.ssrLoadModule('/src/db/client.ts');
+      await closeDb();
+    } finally {
+      await vite.close();
+    }
   }
 }
 
