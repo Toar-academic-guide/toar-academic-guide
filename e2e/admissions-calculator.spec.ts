@@ -13,9 +13,8 @@ test.describe('app admissions calculator', () => {
     await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
 
     await expect(page).toHaveURL(/\/app\/calculator$/);
-    await expect(page.getByLabel('אוניברסיטת תל אביב: האימות טרם הושלם')).toBeVisible();
-    await expect(page.getByText('האימות הרשמי טרם הושלם', { exact: true })).toBeVisible();
-    await expect(page.getByText('בדקו בינתיים ישירות במחשבון הרשמי של המוסד.')).toBeVisible();
+    await expect(page.getByLabel('אוניברסיטת תל אביב: נדרשים נתונים')).toBeVisible();
+    await expect(page.getByText('נדרשים נתונים נוספים', { exact: true })).toBeVisible();
 
     await page.getByRole('button', { name: 'חזרה', exact: true }).click();
 
@@ -25,9 +24,10 @@ test.describe('app admissions calculator', () => {
     await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
 
     await expect(page).toHaveURL(/\/app\/calculator$/);
-    await expect(page.getByLabel('אוניברסיטת בן-גוריון בנגב: האימות טרם הושלם')).toBeVisible({
+    await expect(page.getByLabel('אוניברסיטת בן-גוריון בנגב: מתקבל/ת')).toBeVisible({
       timeout: 15_000,
     });
+    await expect(page.getByText('אימות רשמי', { exact: true })).toBeVisible();
 
     await page.getByRole('button', { name: 'חזרה', exact: true }).click();
 
@@ -37,7 +37,8 @@ test.describe('app admissions calculator', () => {
     await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
 
     await expect(page).toHaveURL(/\/app\/calculator$/);
-    await expect(page.getByLabel('אוניברסיטת חיפה: האימות טרם הושלם')).toBeVisible();
+    await expect(page.getByLabel('אוניברסיטת חיפה: נדרשים נתונים')).toBeVisible();
+    await expect(page.getByText('נדרשים נתונים נוספים', { exact: true })).toBeVisible();
 
     await page.getByRole('button', { name: 'חזרה', exact: true }).click();
 
@@ -47,6 +48,7 @@ test.describe('app admissions calculator', () => {
     await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
 
     await expect(page).toHaveURL(/\/app\/calculator$/);
-    await expect(page.getByLabel('הטכניון – מכון טכנולוגי לישראל: האימות טרם הושלם')).toBeVisible();
+    await expect(page.getByLabel('הטכניון – מכון טכנולוגי לישראל: נדרשים נתונים')).toBeVisible();
+    await expect(page.getByText('נדרשים נתונים נוספים', { exact: true })).toBeVisible();
   });
 });
