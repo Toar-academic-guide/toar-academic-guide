@@ -39,6 +39,7 @@ async function loadSnapshot(sql) {
     indexRows,
     policyRows,
     privilegeRows,
+    columnPrivilegeRows,
     enumRows,
     triggerRows,
     functionRows,
@@ -193,6 +194,30 @@ async function loadSnapshot(sql) {
     `,
     sql`
       select
+        c.relname as table_name,
+        database_role.rolname as role_name,
+        column_privilege.privilege,
+        attribute.attname as column_name,
+        has_column_privilege(
+          database_role.oid,
+          format('%I.%I', n.nspname, c.relname),
+          attribute.attname,
+          column_privilege.privilege
+        ) as allowed
+      from pg_class c
+      join pg_namespace n on n.oid = c.relnamespace
+      join pg_attribute attribute on attribute.attrelid = c.oid
+      join pg_roles database_role on database_role.rolname = 'admissions_automation'
+      cross join unnest(${['INSERT', 'UPDATE', 'REFERENCES']}::text[]) as column_privilege(privilege)
+      where n.nspname = 'public'
+        and c.relname = 'admission_thresholds'
+        and c.relkind in ('r', 'p')
+        and attribute.attnum > 0
+        and not attribute.attisdropped
+      order by c.relname, role_name, column_privilege.privilege, attribute.attnum
+    `,
+    sql`
+      select
         t.typname as enum_name,
         e.enumlabel as enum_value
       from pg_type t
@@ -228,6 +253,7 @@ async function loadSnapshot(sql) {
       rowLevelSecurity: row.row_level_security,
       policies: [],
       grants: {},
+      columnGrants: {},
     };
   }
   for (const row of columnRows) {
@@ -249,6 +275,12 @@ async function loadSnapshot(sql) {
     if (!row.allowed || !tables[row.table_name]) continue;
     const roleGrants = (tables[row.table_name].grants[row.role_name] ??= []);
     roleGrants.push(row.privilege);
+  }
+  for (const row of columnPrivilegeRows) {
+    if (!row.allowed || !tables[row.table_name]) continue;
+    const roleColumnGrants = (tables[row.table_name].columnGrants[row.role_name] ??= {});
+    const privilegeColumns = (roleColumnGrants[row.privilege] ??= []);
+    privilegeColumns.push(row.column_name);
   }
 
   const enums = {};

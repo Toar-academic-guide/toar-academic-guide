@@ -24,6 +24,37 @@ describe('production admissions schema preflight', () => {
     });
   });
 
+  it('rejects an automation update grant on any other threshold column', () => {
+    const snapshot = makeSnapshot();
+    snapshot.tables.admission_thresholds.columnGrants.admissions_automation.UPDATE.push(
+      'updated_at',
+    );
+
+    expect(assessProductionSchema(snapshot).issues).toContainEqual(
+      expect.objectContaining({
+        code: 'grant_mismatch',
+        object: 'grant:admissions_automation:admission_thresholds.column:UPDATE',
+      }),
+    );
+  });
+
+  it.each(['INSERT', 'REFERENCES'])(
+    'rejects an automation %s grant on a threshold column',
+    (privilege) => {
+      const snapshot = makeSnapshot();
+      snapshot.tables.admission_thresholds.columnGrants.admissions_automation[privilege] = [
+        'threshold_value',
+      ];
+
+      expect(assessProductionSchema(snapshot).issues).toContainEqual(
+        expect.objectContaining({
+          code: 'grant_mismatch',
+          object: `grant:admissions_automation:admission_thresholds.column:${privilege}`,
+        }),
+      );
+    },
+  );
+
   it('records both Drizzle and Supabase payload fingerprints for applied migrations', () => {
     for (const migrationId of ['0020', '0021', '0022'] as const) {
       const migration = FORWARD_PRODUCTION_MIGRATIONS.find(({ id }) => id === migrationId);
@@ -342,6 +373,7 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
             Object.entries(contract.grants).map(([role, privileges]) => [role, [...privileges]]),
           )
         : {},
+      columnGrants: {},
     };
   }
 
@@ -394,7 +426,10 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
     tables.admission_releases?.indexes.push('admission_releases_kind_published_at_idx');
     tables.admission_review_runs?.indexes.push('admission_review_runs_kind_status_idx');
 
-    const automationAccess: Record<string, { grants: string[]; policies?: string[] }> = {
+    const automationAccess: Record<
+      string,
+      { grants: string[]; policies?: string[]; columnGrants?: Record<string, string[]> }
+    > = {
       institutions: { grants: ['SELECT'], policies: ['institutions_admissions_automation_read'] },
       programs: { grants: ['SELECT'], policies: ['programs_admissions_automation_read'] },
       program_institutions: {
@@ -406,7 +441,8 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
         policies: ['ingestion_sources_admissions_automation_read'],
       },
       admission_thresholds: {
-        grants: ['SELECT', 'UPDATE'],
+        grants: ['SELECT'],
+        columnGrants: { UPDATE: ['threshold_value'] },
         policies: [
           'admission_thresholds_admissions_automation_read',
           'admission_thresholds_admissions_automation_update',
@@ -480,6 +516,7 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
       const table = tables[tableName];
       if (!table) continue;
       table.grants.admissions_automation = access.grants;
+      table.columnGrants.admissions_automation = access.columnGrants ?? {};
       table.policies.push(...(access.policies ?? []));
     }
   }

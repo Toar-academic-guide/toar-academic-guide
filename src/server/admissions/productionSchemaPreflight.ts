@@ -32,6 +32,7 @@ export type TableSnapshot = {
   rowLevelSecurity: boolean;
   policies: string[];
   grants: Record<string, string[]>;
+  columnGrants: Record<string, Record<string, string[]>>;
 };
 
 export type ProductionSchemaSnapshot = {
@@ -1058,7 +1059,10 @@ function assessAdmissionsAutomationAccess(
   issues: ProductionSchemaIssue[],
 ) {
   if (!applied.has('0021')) return;
-  const access: Record<string, { grants: string[]; policies?: string[] }> = {
+  const access: Record<
+    string,
+    { grants: string[]; policies?: string[]; columnGrants?: Record<string, string[]> }
+  > = {
     institutions: { grants: ['SELECT'], policies: ['institutions_admissions_automation_read'] },
     programs: { grants: ['SELECT'], policies: ['programs_admissions_automation_read'] },
     program_institutions: {
@@ -1070,7 +1074,8 @@ function assessAdmissionsAutomationAccess(
       policies: ['ingestion_sources_admissions_automation_read'],
     },
     admission_thresholds: {
-      grants: ['SELECT', 'UPDATE'],
+      grants: ['SELECT'],
+      columnGrants: { UPDATE: ['threshold_value'] },
       policies: [
         'admission_thresholds_admissions_automation_read',
         'admission_thresholds_admissions_automation_update',
@@ -1156,6 +1161,23 @@ function assessAdmissionsAutomationAccess(
         object: `grant:${admissionsAutomationRole}:${tableName}`,
         detail: `Expected [${expectedGrants.join(', ')}], found [${actualGrants.join(', ')}].`,
       });
+    }
+    const actualColumnGrants = table.columnGrants[admissionsAutomationRole] ?? {};
+    const expectedColumnGrants = expected.columnGrants ?? {};
+    const columnPrivileges = normalizedPrivileges([
+      ...Object.keys(actualColumnGrants),
+      ...Object.keys(expectedColumnGrants),
+    ]);
+    for (const privilege of columnPrivileges) {
+      const actualColumns = [...(actualColumnGrants[privilege] ?? [])].sort();
+      const normalizedExpectedColumns = [...(expectedColumnGrants[privilege] ?? [])].sort();
+      if (actualColumns.join(',') !== normalizedExpectedColumns.join(',')) {
+        issues.push({
+          code: 'grant_mismatch',
+          object: `grant:${admissionsAutomationRole}:${tableName}.column:${privilege}`,
+          detail: `Expected columns [${normalizedExpectedColumns.join(', ')}], found [${actualColumns.join(', ')}].`,
+        });
+      }
     }
     for (const policy of expected.policies ?? []) {
       if (!table.policies.includes(policy)) {
