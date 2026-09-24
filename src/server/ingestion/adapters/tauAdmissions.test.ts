@@ -99,6 +99,7 @@ describe('runTauAdmissionsProof', () => {
         'derivedVerdict',
       ],
       normalizedPayload: {
+        programId: 'tau_datascience',
         selectedScoreField: 'hatama_handasa',
         selectedScore: 704,
         acceptanceThreshold: 700,

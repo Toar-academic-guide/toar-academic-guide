@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       target:
-        description: Optional source target id to check
+        description: Optional comma-separated source target ids to check
         required: false
         type: string
       dry_run:
@@ -149,12 +149,22 @@ jobs:
           fi
 
       - name: Prepare admissions review run
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          TARGET_INPUT: ${{ inputs.target }}
         shell: bash
         run: |
           set -euo pipefail
           args=()
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.target }}" ]; then
-            args+=(--target "${{ inputs.target }}")
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ -n "$TARGET_INPUT" ]; then
+            IFS=',' read -r -a targets <<< "$TARGET_INPUT"
+            for target in "${targets[@]}"; do
+              [[ "$target" =~ ^[a-z0-9]+([_-][a-z0-9]+)*$ ]] || {
+                echo 'target must be one or more comma-separated safe source target identifiers.'
+                exit 1
+              }
+              args+=(--target "$target")
+            done
           fi
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then
             args+=(--dry-run)
