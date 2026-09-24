@@ -153,6 +153,7 @@ const tables: Record<string, TableContract> = {
   admission_alternative_paths: securedExistingTable('admission_alternative_paths'),
   admission_facts: securedExistingTable('admission_facts'),
   admissions_source_candidates: securedExistingTable('admissions_source_candidates'),
+  ingestion_sources: securedExistingTable('ingestion_sources'),
   source_freshness_checks: securedExistingTable('source_freshness_checks', ['SELECT', 'INSERT']),
   source_freshness_states: securedExistingTable('source_freshness_states', [
     'SELECT',
@@ -1070,8 +1071,16 @@ function assessAdmissionsAutomationAccess(
       policies: ['program_institutions_admissions_automation_read'],
     },
     ingestion_sources: {
-      grants: ['SELECT'],
-      policies: ['ingestion_sources_admissions_automation_read'],
+      grants: applied.has('0023') ? ['SELECT', 'INSERT', 'UPDATE'] : ['SELECT'],
+      policies: [
+        'ingestion_sources_admissions_automation_read',
+        ...(applied.has('0023')
+          ? [
+              'ingestion_sources_admissions_automation_insert',
+              'ingestion_sources_admissions_automation_update',
+            ]
+          : []),
+      ],
     },
     admission_thresholds: {
       grants: ['SELECT'],

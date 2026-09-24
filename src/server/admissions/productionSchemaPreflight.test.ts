@@ -18,7 +18,7 @@ describe('production admissions schema preflight', () => {
     expect(report).toMatchObject({
       status: 'current',
       safeToMigrate: false,
-      appliedThrough: '0022',
+      appliedThrough: '0023',
       pendingMigrations: [],
       issues: [],
     });
@@ -55,8 +55,20 @@ describe('production admissions schema preflight', () => {
     },
   );
 
+  it('requires automation to upsert ingestion source metadata', () => {
+    const snapshot = makeSnapshot();
+    snapshot.tables.ingestion_sources.grants.admissions_automation = ['SELECT'];
+
+    expect(assessProductionSchema(snapshot).issues).toContainEqual(
+      expect.objectContaining({
+        code: 'grant_mismatch',
+        object: 'grant:admissions_automation:ingestion_sources',
+      }),
+    );
+  });
+
   it('records both Drizzle and Supabase payload fingerprints for applied migrations', () => {
-    for (const migrationId of ['0020', '0021', '0022'] as const) {
+    for (const migrationId of ['0020', '0021', '0022', '0023'] as const) {
       const migration = FORWARD_PRODUCTION_MIGRATIONS.find(({ id }) => id === migrationId);
       const source = readFileSync(migration?.repositoryPath ?? '', 'utf8');
       const statements = source
@@ -105,6 +117,7 @@ describe('production admissions schema preflight', () => {
       '0020',
       '0021',
       '0022',
+      '0023',
     ]);
   });
 
@@ -125,6 +138,7 @@ describe('production admissions schema preflight', () => {
       '0020',
       '0021',
       '0022',
+      '0023',
     ]);
   });
 
@@ -437,8 +451,16 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
         policies: ['program_institutions_admissions_automation_read'],
       },
       ingestion_sources: {
-        grants: ['SELECT'],
-        policies: ['ingestion_sources_admissions_automation_read'],
+        grants: appliedIds.has('0023') ? ['SELECT', 'INSERT', 'UPDATE'] : ['SELECT'],
+        policies: [
+          'ingestion_sources_admissions_automation_read',
+          ...(appliedIds.has('0023')
+            ? [
+                'ingestion_sources_admissions_automation_insert',
+                'ingestion_sources_admissions_automation_update',
+              ]
+            : []),
+        ],
       },
       admission_thresholds: {
         grants: ['SELECT'],

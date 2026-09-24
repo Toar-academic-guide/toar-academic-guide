@@ -1,4 +1,5 @@
 import { spawnSync } from 'node:child_process';
+import { readFileSync } from 'node:fs';
 
 import { describe, expect, it } from 'vitest';
 
@@ -22,5 +23,13 @@ describe('operational database verifier script', () => {
     expect(result.stderr).toContain('Missing DATABASE_URL');
     expect(result.stderr).not.toContain('ERR_MODULE_NOT_FOUND');
     expect(result.stderr).not.toContain('Cannot find module');
+  });
+
+  it('closes the one-off review preparation database pool on every exit path', () => {
+    const source = readFileSync('scripts/prepare-admissions-review.mjs', 'utf8');
+
+    expect(source).toMatch(
+      /const \{ closeDb \} = await vite\.ssrLoadModule\('\/src\/db\/client\.ts'\);\s+await closeDb\(\);/,
+    );
   });
 });
