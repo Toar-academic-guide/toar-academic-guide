@@ -153,7 +153,7 @@ const tables: Record<string, TableContract> = {
   admission_alternative_paths: securedExistingTable('admission_alternative_paths'),
   admission_facts: securedExistingTable('admission_facts'),
   admissions_source_candidates: securedExistingTable('admissions_source_candidates'),
-  ingestion_sources: securedExistingTable('ingestion_sources'),
+  ingestion_sources: automationOnlyExistingTable('ingestion_sources'),
   source_freshness_checks: securedExistingTable('source_freshness_checks', ['SELECT', 'INSERT']),
   source_freshness_states: securedExistingTable('source_freshness_states', [
     'SELECT',
@@ -1257,6 +1257,24 @@ function securedExistingTable(tableName: string, appRuntime = ['SELECT']): Table
       appRuntime,
     }),
   );
+}
+
+function automationOnlyExistingTable(tableName: string): TableContract {
+  return {
+    private: true,
+    securedBy: '0011',
+    columns: [],
+    columnTypes: {},
+    constraints: [],
+    indexes: [],
+    policies: [`${tableName}_private_deny_all`],
+    grants: {
+      anon: [],
+      authenticated: [],
+      app_runtime: [],
+      ops_readonly: [],
+    },
+  };
 }
 
 function createdPrivateTable(
