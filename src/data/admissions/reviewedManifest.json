@@ -1,5 +1,26 @@
 {
   "version": 2,
-  "releaseKind": "canonical_change",
-  "changes": []
+  "releaseKind": "canonical_bootstrap",
+  "changes": [
+    {
+      "target": {
+        "institutionId": "bgu",
+        "programId": "bgu_cs",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 645,
+      "after": 720,
+      "effectiveFrom": "2026-09-25",
+      "sourceProofs": [
+        {
+          "sourceId": "bgu-bgu_cs-live",
+          "digest": "sha256:c1fb1849c6956562e6aae25035f2dedbed990aea6b14d1ec5a970770f197f216",
+          "excerpt": "Official bgu_cs admission cutoff: 720.",
+          "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=232&p_pat1=1&p_spe1=3&p_degree_level=1",
+          "proofType": "exact_official"
+        }
+      ]
+    }
+  ]
 }
