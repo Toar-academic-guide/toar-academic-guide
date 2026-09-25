@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('..', import.meta.url));
 const manifestPath = 'src/data/admissions/reviewedManifest.json';
+const releaseKinds = new Set(['canonical_bootstrap', 'canonical_change', 'operational_proof']);
 
 function parseArguments(argv) {
   if (argv.length !== 2 || argv[0] !== '--run-key' || !/^20\d{2}-W\d{2}$/.test(argv[1])) {
@@ -35,9 +36,20 @@ function branchFiles() {
 }
 
 function validateManifest() {
-  const value = JSON.parse(readFileSync(resolve(root, manifestPath), 'utf8'));
-  if (!value || value.version !== 1 || !Array.isArray(value.changes)) {
-    throw new Error('Generated reviewed manifest must have version 1 and a changes array.');
+  validateManifestValue(JSON.parse(readFileSync(resolve(root, manifestPath), 'utf8')));
+}
+
+export function validateManifestValue(value) {
+  if (
+    !value ||
+    typeof value !== 'object' ||
+    value.version !== 2 ||
+    !releaseKinds.has(value.releaseKind) ||
+    !Array.isArray(value.changes)
+  ) {
+    throw new Error(
+      'Generated reviewed manifest must have version 2, a supported release kind, and a changes array.',
+    );
   }
   if (value.changes.length === 0)
     throw new Error('Generated review PR cannot contain an empty manifest.');
@@ -91,9 +103,11 @@ function main() {
   );
 }
 
-try {
-  main();
-} catch (error) {
-  console.error(error instanceof Error ? error.message : error);
-  process.exitCode = 1;
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  try {
+    main();
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : error);
+    process.exitCode = 1;
+  }
 }
