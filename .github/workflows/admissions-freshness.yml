@@ -218,6 +218,8 @@ jobs:
             git switch --create "$REVIEW_BRANCH"
           fi
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git config user.name "admissions-automation[bot]"
+          git config user.email "admissions-automation[bot]@users.noreply.github.com"
 
           jq '.run.manifest' scratch/admissions-review/run.json > src/data/admissions/reviewedManifest.json
           mkdir -p docs/admissions-review-runs
