@@ -43,6 +43,15 @@ describe('weekly admissions freshness workflow', () => {
     expect(workflow).toContain('IFS=\',\' read -r -a targets <<< "$TARGET_INPUT"');
     expect(workflow).toContain('args+=(--target "$target")');
   });
+
+  it('sets an explicit bot identity before committing a generated review branch', async () => {
+    const workflow = await readWorkflow();
+
+    expect(workflow).toContain('git config user.name "admissions-automation[bot]"');
+    expect(workflow).toContain(
+      'git config user.email "admissions-automation[bot]@users.noreply.github.com"',
+    );
+  });
 });
 
 function readWorkflow() {
