@@ -12,15 +12,15 @@ const OPERATIONAL_PROOF_CYCLE = '2099';
 const scenarios = {
   'proof-plan001-20260820': [
     { institutionId: 'tau', programId: 'tau_cs', before: 700, after: 701 },
-    { institutionId: 'bgu', programId: 'bgu_cs', before: 720, after: 721 },
+    { institutionId: 'bgu', programId: 'bgu_cs', before: 645, after: 646 },
   ],
   'proof-plan001-failure-20260820': [
     { institutionId: 'tau', programId: 'tau_cs', before: 701, after: 702 },
-    { institutionId: 'bgu', programId: 'bgu_cs', before: 721, after: 722 },
+    { institutionId: 'bgu', programId: 'bgu_cs', before: 646, after: 647 },
   ],
   'proof-plan001-corrective-20260820': [
     { institutionId: 'tau', programId: 'tau_cs', before: 702, after: 700 },
-    { institutionId: 'bgu', programId: 'bgu_cs', before: 722, after: 720 },
+    { institutionId: 'bgu', programId: 'bgu_cs', before: 647, after: 645 },
   ],
 } as const;
 
