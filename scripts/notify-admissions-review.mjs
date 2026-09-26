@@ -38,9 +38,12 @@ function resolveRunFile(path) {
   return resolved;
 }
 
-async function main() {
-  const args = parseArguments(process.argv.slice(2));
-  const vite = await createServer({
+export async function runAdmissionsReviewNotification(
+  argv,
+  { createViteServer = createServer, readRunFile = readFile } = {},
+) {
+  const args = parseArguments(argv);
+  const vite = await createViteServer({
     root,
     appType: 'custom',
     logLevel: 'error',
@@ -48,8 +51,9 @@ async function main() {
     resolve: { alias: { 'server-only': serverOnlyShim }, tsconfigPaths: true },
     optimizeDeps: { noDiscovery: true },
   });
+  let closeDb;
   try {
-    const { run } = JSON.parse(await readFile(resolveRunFile(args.runFile), 'utf8'));
+    const { run } = JSON.parse(await readRunFile(resolveRunFile(args.runFile), 'utf8'));
     const [
       { createAdmissionsReviewRunLedger },
       { buildAdmissionsReviewSlackMessage },
@@ -58,12 +62,15 @@ async function main() {
         postAdmissionsReviewSlackMessage,
         shouldPostAdmissionsReviewSlack,
       },
+      { closeDb: closeDatabase },
     ] =
       await Promise.all([
         vite.ssrLoadModule('/src/server/admissions/admissionsReviewRunLedger.ts'),
         vite.ssrLoadModule('/src/server/admissions/weeklyReviewRun.ts'),
         vite.ssrLoadModule('/src/server/automation/admissionsReviewSlack.ts'),
+        vite.ssrLoadModule('/src/db/client.ts'),
       ]);
+    closeDb = closeDatabase;
     const ledger = createAdmissionsReviewRunLedger();
     if (args.prNumber !== undefined) {
       await ledger.recordPullRequest({
@@ -113,11 +120,17 @@ async function main() {
     }
     console.info(JSON.stringify({ ...result, runKey: run.runKey }));
   } finally {
-    await vite.close();
+    try {
+      await closeDb?.();
+    } finally {
+      await vite.close();
+    }
   }
 }
 
-main().catch((error) => {
-  console.error(error instanceof Error ? error.message : error);
-  process.exitCode = 1;
-});
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  runAdmissionsReviewNotification(process.argv.slice(2)).catch((error) => {
+    console.error(error instanceof Error ? error.message : error);
+    process.exitCode = 1;
+  });
+}
