@@ -235,10 +235,13 @@ jobs:
             exit 0
           fi
 
+          trusted_main_sha="$(git rev-parse --verify origin/main^{commit})"
+          npm run guard:pre-pr
+
           if git show-ref --verify --quiet "refs/remotes/origin/$REVIEW_BRANCH"; then
-            git switch --force-create "$REVIEW_BRANCH" "origin/$REVIEW_BRANCH"
+            git -c core.hooksPath=/dev/null switch --force-create "$REVIEW_BRANCH" "origin/$REVIEW_BRANCH"
           else
-            git switch --create "$REVIEW_BRANCH"
+            git -c core.hooksPath=/dev/null switch --create "$REVIEW_BRANCH"
           fi
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git config user.name "admissions-automation[bot]"
@@ -248,10 +251,10 @@ jobs:
           mkdir -p docs/admissions-review-runs
           jq -r '.run.markdown' scratch/admissions-review/run.json > "docs/admissions-review-runs/$RUN_KEY.md"
           jq '.run.reviewMetadata' scratch/admissions-review/run.json > "docs/admissions-review-runs/$RUN_KEY.json"
-          npm run guard:pre-pr
 
           git add src/data/admissions/reviewedManifest.json "docs/admissions-review-runs/$RUN_KEY.md" "docs/admissions-review-runs/$RUN_KEY.json"
-          npm run admissions:validate-review-pr -- --run-key "$RUN_KEY"
+          git show "$trusted_main_sha:scripts/validate-admissions-review-pr.mjs" > "$RUNNER_TEMP/validate-admissions-review-pr.mjs"
+          ADMISSIONS_REVIEW_WORKTREE="$GITHUB_WORKSPACE" ADMISSIONS_REVIEW_BASE_REF="$trusted_main_sha" node "$RUNNER_TEMP/validate-admissions-review-pr.mjs" --run-key "$RUN_KEY"
           npm test -- src/server/admissions/reviewedManifest.test.ts src/server/admissions/weeklyReviewRun.test.ts src/server/admissions/weeklyReviewPreparation.test.ts
           if ! git diff --cached --quiet; then
             git commit -m "chore(admissions): prepare weekly review $RUN_KEY"

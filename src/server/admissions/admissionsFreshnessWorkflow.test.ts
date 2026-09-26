@@ -93,6 +93,29 @@ describe('weekly admissions freshness workflow', () => {
       /else\s+remote_status=\$\?\s+if \[ "\$remote_status" -ne 2 \]; then\s+exit "\$remote_status"\s+fi\s+fi/,
     );
   });
+
+  it('validates generated review branches with the validator from current main', async () => {
+    const workflow = await readWorkflow();
+    const reviewPr = stepBlock(workflow, 'Create or update the one combined admissions review PR');
+
+    expect(reviewPr).toContain('trusted_main_sha="$(git rev-parse --verify origin/main^{commit})"');
+    expect(reviewPr).toContain(
+      'git show "$trusted_main_sha:scripts/validate-admissions-review-pr.mjs" > "$RUNNER_TEMP/validate-admissions-review-pr.mjs"',
+    );
+    expect(reviewPr).toContain(
+      'ADMISSIONS_REVIEW_WORKTREE="$GITHUB_WORKSPACE" ADMISSIONS_REVIEW_BASE_REF="$trusted_main_sha" node "$RUNNER_TEMP/validate-admissions-review-pr.mjs" --run-key "$RUN_KEY"',
+    );
+    expect(reviewPr.indexOf('npm run guard:pre-pr')).toBeLessThan(
+      reviewPr.indexOf('git -c core.hooksPath=/dev/null switch'),
+    );
+    expect(reviewPr.indexOf('trusted_main_sha=')).toBeLessThan(
+      reviewPr.indexOf('git -c core.hooksPath=/dev/null switch'),
+    );
+    expect(reviewPr).toContain(
+      'git -c core.hooksPath=/dev/null switch --force-create "$REVIEW_BRANCH" "origin/$REVIEW_BRANCH"',
+    );
+    expect(reviewPr).toContain('git -c core.hooksPath=/dev/null switch --create "$REVIEW_BRANCH"');
+  });
 });
 
 function readWorkflow() {

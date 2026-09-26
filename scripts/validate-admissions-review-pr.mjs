@@ -4,9 +4,16 @@ import { readFileSync } from 'node:fs';
 import { relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const root = fileURLToPath(new URL('..', import.meta.url));
+const scriptRoot = fileURLToPath(new URL('..', import.meta.url));
 const manifestPath = 'src/data/admissions/reviewedManifest.json';
 const releaseKinds = new Set(['canonical_bootstrap', 'canonical_change', 'operational_proof']);
+const branchBase = process.env.ADMISSIONS_REVIEW_BASE_REF || 'origin/main';
+
+export function resolveAdmissionsReviewWorktree(worktree) {
+  return worktree ? resolve(worktree) : scriptRoot;
+}
+
+const root = resolveAdmissionsReviewWorktree(process.env.ADMISSIONS_REVIEW_WORKTREE);
 
 function parseArguments(argv) {
   if (argv.length !== 2 || argv[0] !== '--run-key' || !/^20\d{2}-W\d{2}$/.test(argv[1])) {
@@ -26,7 +33,7 @@ function stagedFiles() {
 }
 
 function branchFiles() {
-  return execFileSync('git', ['diff', '--name-only', 'origin/main...HEAD'], {
+  return execFileSync('git', ['diff', '--name-only', `${branchBase}...HEAD`], {
     cwd: root,
     encoding: 'utf8',
   })
