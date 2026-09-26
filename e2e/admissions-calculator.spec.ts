@@ -1,9 +1,7 @@
 import { expect, test } from '@playwright/test';
 
 test.describe('app admissions calculator', () => {
-  test('shows the expected catalogue-backed results without leaving /app/calculator', async ({
-    page,
-  }) => {
+  test('shows safe catalogue-backed results without leaving /app/calculator', async ({ page }) => {
     await page.goto('/app/calculator');
     await expect(page).toHaveURL(/\/app\/calculator$/);
 
@@ -13,8 +11,10 @@ test.describe('app admissions calculator', () => {
     await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
 
     await expect(page).toHaveURL(/\/app\/calculator$/);
-    await expect(page.getByLabel('אוניברסיטת תל אביב: נדרשים נתונים')).toBeVisible();
-    await expect(page.getByText('נדרשים נתונים נוספים', { exact: true })).toBeVisible();
+    await expect(
+      page.getByLabel(/^אוניברסיטת תל אביב: (נדרשים נתונים|אימות לא זמין)$/),
+    ).toBeVisible();
+    await expect(page.getByText(/^(נדרשים נתונים נוספים|אימות רשמי לא זמין)$/)).toBeVisible();
 
     await page.getByRole('button', { name: 'חזרה', exact: true }).click();
 

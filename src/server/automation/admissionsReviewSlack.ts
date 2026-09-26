@@ -8,7 +8,9 @@ export interface AdmissionsReviewSlackConfig {
 }
 
 export type AdmissionsReviewSlackDeliveryResult =
-  { status: 'sent'; timestamp?: string } | { status: 'failed'; error: string };
+  | { status: 'sent'; timestamp?: string }
+  | { status: 'failed'; error: string }
+  | { status: 'acceptance_unknown'; error: string };
 
 export const ADMISSIONS_REVIEW_SLACK_REQUEST_TIMEOUT_MS = 10_000;
 
@@ -22,6 +24,12 @@ export function canInjectAdmissionsReviewSlackFailure(input: {
     input.proofScenario !== null &&
     input.proofScenario === input.confirmationId
   );
+}
+
+export function shouldPostAdmissionsReviewSlack(
+  status: 'pending' | 'sent' | 'failed' | 'acceptance_unknown' | undefined,
+): boolean {
+  return status !== 'sent' && status !== 'acceptance_unknown';
 }
 
 export function readAdmissionsReviewSlackConfig(
@@ -45,7 +53,7 @@ export async function postAdmissionsReviewSlackMessage(
   }
 
   try {
-    const response = await fetchSlackApiWithTimeout(
+    const { response, body } = await fetchSlackApiWithTimeout(
       fetcher,
       'https://slack.com/api/chat.postMessage',
       {
@@ -68,7 +76,13 @@ export async function postAdmissionsReviewSlackMessage(
       return { status: 'failed', error: `Slack API request failed (${response.status}).` };
     }
 
-    const body = (await response.json()) as { ok?: boolean; error?: unknown; ts?: unknown };
+    if (!body) {
+      return {
+        status: 'acceptance_unknown',
+        error: 'Slack API returned a successful response without a delivery acknowledgement.',
+      };
+    }
+
     if (!body.ok) {
       return {
         status: 'failed',
@@ -78,7 +92,7 @@ export async function postAdmissionsReviewSlackMessage(
     return { status: 'sent', timestamp: typeof body.ts === 'string' ? body.ts : undefined };
   } catch (error) {
     return {
-      status: 'failed',
+      status: error instanceof SlackResponseAfterHeadersError ? 'acceptance_unknown' : 'failed',
       error: safeError(error instanceof Error ? error.message : String(error)),
     };
   }
@@ -89,8 +103,12 @@ async function fetchSlackApiWithTimeout(
   input: Parameters<typeof fetch>[0],
   init: RequestInit,
   timeoutMs: number,
-): Promise<Response> {
+): Promise<{
+  response: Response;
+  body: { ok?: boolean; error?: unknown; ts?: unknown } | null;
+}> {
   const controller = new AbortController();
+  let responseReceived = false;
   let timeout: ReturnType<typeof setTimeout> | undefined;
   const timeoutError = new Promise<never>((_resolve, reject) => {
     timeout = setTimeout(() => {
@@ -101,13 +119,29 @@ async function fetchSlackApiWithTimeout(
 
   try {
     return await Promise.race([
-      fetcher(input, { ...init, signal: controller.signal }),
+      fetcher(input, { ...init, signal: controller.signal }).then(async (response) => {
+        responseReceived = true;
+        if (!response.ok) return { response, body: null };
+        return {
+          response,
+          body: (await response.json()) as { ok?: boolean; error?: unknown; ts?: unknown },
+        };
+      }),
       timeoutError,
     ]);
+  } catch (error) {
+    if (responseReceived) {
+      throw new SlackResponseAfterHeadersError(
+        error instanceof Error ? error.message : String(error),
+      );
+    }
+    throw error;
   } finally {
     if (timeout) clearTimeout(timeout);
   }
 }
+
+class SlackResponseAfterHeadersError extends Error {}
 
 function safeError(value: unknown): string {
   const text = typeof value === 'string' ? value : 'unknown error';
