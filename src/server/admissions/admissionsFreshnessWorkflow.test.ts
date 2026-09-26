@@ -63,6 +63,7 @@ describe('weekly admissions freshness workflow', () => {
     );
 
     expect(checkout).toContain('persist-credentials: false');
+    expect(checkout).toContain('fetch-depth: 0');
     expect(appToken).toContain('uses: actions/create-github-app-token@v2');
     expect(appToken).toContain('id: admissions_app');
     expect(appToken).toContain('if: ${{ !inputs.dry_run }}');
