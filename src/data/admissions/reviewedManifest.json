@@ -30,14 +30,14 @@
         "cycle": "2099"
       },
       "ruleKind": "admission_cutoff",
-      "before": 720,
-      "after": 721,
+      "before": 645,
+      "after": 646,
       "effectiveFrom": "2026-09-26",
       "sourceProofs": [
         {
           "sourceId": "proof-plan001-20260820-bgu-bgu_cs",
-          "digest": "sha256:26f5f3afd6ee8247ebcb77f4d6dd80c0f73476af56f9ba65120acf5b222c4b5d",
-          "excerpt": "Controlled Plan 001 fixture for bgu/bgu_cs: 720 to 721.",
+          "digest": "sha256:ead63ccde2b306e664c48cf92b96926cb043182b06796bf6ad97544be5932cc6",
+          "excerpt": "Controlled Plan 001 fixture for bgu/bgu_cs: 645 to 646.",
           "url": "https://example.invalid/admissions-operational-proof/proof-plan001-20260820",
           "proofType": "controlled_fixture"
         }
