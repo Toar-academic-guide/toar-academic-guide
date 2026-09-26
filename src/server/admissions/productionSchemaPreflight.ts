@@ -815,13 +815,21 @@ function assessTableSecurity(
   }
   for (const role of runtimeRoles) {
     const actual = normalizedPrivileges(table.grants[role] ?? []);
-    const expected = normalizedPrivileges(
-      tableName === 'ingestion_sources' && role === 'ops_readonly' && !applied.has('0024')
-        ? ['SELECT']
-        : tableName === 'bagrut_profile_versions' && role === 'ops_readonly' && !applied.has('0017')
-          ? []
-          : (contract.grants[role] ?? []),
-    );
+    let expectedPrivileges = contract.grants[role] ?? [];
+    if (role === 'ops_readonly') {
+      if (
+        applied.has('0025') &&
+        !applied.has('0027') &&
+        (tableName === 'ingestion_jobs' || tableName === 'review_items')
+      ) {
+        expectedPrivileges = ['SELECT'];
+      } else if (tableName === 'ingestion_sources' && !applied.has('0024')) {
+        expectedPrivileges = ['SELECT'];
+      } else if (tableName === 'bagrut_profile_versions' && !applied.has('0017')) {
+        expectedPrivileges = [];
+      }
+    }
+    const expected = normalizedPrivileges(expectedPrivileges);
     if (actual.join(',') !== expected.join(',')) {
       issues.push({
         code: 'grant_mismatch',
