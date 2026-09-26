@@ -60,6 +60,7 @@ type TableContract = {
 type EnumContract = {
   createdBy: MigrationId;
   values: string[];
+  valueMigrations?: { id: MigrationId; values: string[] }[];
 };
 
 export type ProductionSchemaIssue = {
@@ -519,6 +520,12 @@ export const PRODUCTION_SCHEMA_CONTRACT: {
     admission_review_slack_status: {
       createdBy: '0016',
       values: ['pending', 'sent', 'failed'],
+      valueMigrations: [
+        {
+          id: '0026',
+          values: ['pending', 'sent', 'failed', 'acceptance_unknown'],
+        },
+      ],
     },
     admission_release_kind: {
       createdBy: '0021',
@@ -863,7 +870,10 @@ function assessEnums(
       });
       continue;
     }
-    if (actual.join('\u0000') !== contract.values.join('\u0000')) {
+    const expectedValues =
+      contract.valueMigrations?.filter((migration) => applied.has(migration.id)).at(-1)?.values ??
+      contract.values;
+    if (actual.join('\u0000') !== expectedValues.join('\u0000')) {
       issues.push({
         code: 'enum_values_mismatch',
         object: `enum:${name}`,

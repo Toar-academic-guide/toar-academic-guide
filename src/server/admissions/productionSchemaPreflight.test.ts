@@ -18,10 +18,25 @@ describe('production admissions schema preflight', () => {
     expect(report).toMatchObject({
       status: 'current',
       safeToMigrate: false,
-      appliedThrough: '0025',
+      appliedThrough: '0026',
       pendingMigrations: [],
       issues: [],
     });
+  });
+
+  it('requires the indeterminate Slack acceptance status in the review-run ledger enum', () => {
+    const snapshot = makeSnapshot();
+    snapshot.enums.admission_review_slack_status =
+      snapshot.enums.admission_review_slack_status.filter(
+        (value) => value !== 'acceptance_unknown',
+      );
+
+    expect(assessProductionSchema(snapshot).issues).toContainEqual(
+      expect.objectContaining({
+        code: 'enum_values_mismatch',
+        object: 'enum:admission_review_slack_status',
+      }),
+    );
   });
 
   it('rejects an automation update grant on any other threshold column', () => {
@@ -108,7 +123,7 @@ describe('production admissions schema preflight', () => {
   });
 
   it('records both Drizzle and Supabase payload fingerprints for applied migrations', () => {
-    for (const migrationId of ['0020', '0021', '0022', '0023', '0024', '0025'] as const) {
+    for (const migrationId of ['0020', '0021', '0022', '0023', '0024', '0025', '0026'] as const) {
       const migration = FORWARD_PRODUCTION_MIGRATIONS.find(({ id }) => id === migrationId);
       const source = readFileSync(migration?.repositoryPath ?? '', 'utf8');
       const statements = source
@@ -119,9 +134,10 @@ describe('production admissions schema preflight', () => {
       expect(migration?.statementFingerprint).toBe(
         createHash('md5').update(statements.join('\n')).digest('hex'),
       );
-      expect(migration?.legacyStatementFingerprints).toContain(
-        createHash('md5').update(source).digest('hex'),
-      );
+      expect([
+        migration?.statementFingerprint,
+        ...(migration?.legacyStatementFingerprints ?? []),
+      ]).toContain(createHash('md5').update(source).digest('hex'));
     }
   });
 
@@ -160,6 +176,7 @@ describe('production admissions schema preflight', () => {
       '0023',
       '0024',
       '0025',
+      '0026',
     ]);
   });
 
@@ -183,6 +200,7 @@ describe('production admissions schema preflight', () => {
       '0023',
       '0024',
       '0025',
+      '0026',
     ]);
   });
 
@@ -377,7 +395,7 @@ describe('production admissions schema preflight', () => {
     expect(assessProductionSchema(snapshot)).toMatchObject({
       status: 'migration_required',
       safeToMigrate: true,
-      pendingMigrations: ['0024', '0025'],
+      pendingMigrations: ['0024', '0025', '0026'],
       issues: [],
     });
   });
@@ -724,7 +742,13 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
     enums: Object.fromEntries(
       Object.entries(PRODUCTION_SCHEMA_CONTRACT.enums)
         .filter(([, contract]) => appliedIds.has(contract.createdBy))
-        .map(([name, contract]) => [name, [...contract.values]]),
+        .map(([name, contract]) => [
+          name,
+          [
+            ...(contract.valueMigrations?.filter((migration) => appliedIds.has(migration.id)).at(-1)
+              ?.values ?? contract.values),
+          ],
+        ]),
     ),
     triggers: appliedIds.has('0014') ? ['admission_threshold_scope_invariant'] : [],
     functions: appliedIds.has('0014')

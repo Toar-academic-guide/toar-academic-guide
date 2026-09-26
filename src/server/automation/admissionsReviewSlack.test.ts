@@ -6,6 +6,7 @@ import {
   canInjectAdmissionsReviewSlackFailure,
   postAdmissionsReviewSlackMessage,
   readAdmissionsReviewSlackConfig,
+  shouldPostAdmissionsReviewSlack,
 } from './admissionsReviewSlack';
 
 describe('admissions review Slack delivery', () => {
@@ -34,6 +35,13 @@ describe('admissions review Slack delivery', () => {
         SLACK_ADMISSIONS_REVIEW_CHANNEL_ID: 'C-legacy',
       }),
     ).toEqual({ slackBotToken: 'xoxb-token', slackChannelId: 'C0BBT7304SF' });
+  });
+
+  it('blocks automatic retries after an indeterminate Slack acceptance', () => {
+    expect(shouldPostAdmissionsReviewSlack('failed')).toBe(true);
+    expect(shouldPostAdmissionsReviewSlack('pending')).toBe(true);
+    expect(shouldPostAdmissionsReviewSlack('sent')).toBe(false);
+    expect(shouldPostAdmissionsReviewSlack('acceptance_unknown')).toBe(false);
   });
 
   it('uses a dedicated review channel and does not post when it is unconfigured', async () => {
@@ -93,5 +101,50 @@ describe('admissions review Slack delivery', () => {
     } finally {
       vi.useRealTimers();
     }
+  });
+
+  it('times out when Slack sends headers but never finishes its response body', async () => {
+    vi.useFakeTimers();
+    try {
+      const fetcher = vi.fn<typeof fetch>().mockResolvedValue({
+        ok: true,
+        json: () => new Promise(() => {}),
+      } as Response);
+      const result = postAdmissionsReviewSlackMessage(
+        { text: 'summary', blocks: [] },
+        { slackBotToken: 'xoxb-token', slackChannelId: 'C123' },
+        fetcher,
+        { requestTimeoutMs: 10 },
+      );
+
+      await vi.advanceTimersByTimeAsync(10);
+
+      await expect(result).resolves.toEqual({
+        status: 'acceptance_unknown',
+        error: 'Slack API request timed out after 10ms.',
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('returns an HTTP failure without waiting for an error response body', async () => {
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue({
+      ok: false,
+      status: 429,
+      json: () => new Promise(() => {}),
+    } as Response);
+
+    await expect(
+      postAdmissionsReviewSlackMessage(
+        { text: 'summary', blocks: [] },
+        { slackBotToken: 'xoxb-token', slackChannelId: 'C123' },
+        fetcher,
+        { requestTimeoutMs: 10 },
+      ),
+    ).resolves.toEqual({
+      status: 'failed',
+      error: 'Slack API request failed (429).',
+    });
   });
 });

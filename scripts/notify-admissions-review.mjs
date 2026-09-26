@@ -53,7 +53,11 @@ async function main() {
     const [
       { createAdmissionsReviewRunLedger },
       { buildAdmissionsReviewSlackMessage },
-      { canInjectAdmissionsReviewSlackFailure, postAdmissionsReviewSlackMessage },
+      {
+        canInjectAdmissionsReviewSlackFailure,
+        postAdmissionsReviewSlackMessage,
+        shouldPostAdmissionsReviewSlack,
+      },
     ] =
       await Promise.all([
         vite.ssrLoadModule('/src/server/admissions/admissionsReviewRunLedger.ts'),
@@ -69,8 +73,13 @@ async function main() {
       });
     }
     const existing = await ledger.getRun(run.runKey);
-    if (existing?.slackStatus === 'sent') {
-      console.info(JSON.stringify({ status: 'already_sent', runKey: run.runKey }));
+    if (!shouldPostAdmissionsReviewSlack(existing?.slackStatus)) {
+      console.info(
+        JSON.stringify({
+          status: existing?.slackStatus === 'acceptance_unknown' ? 'acceptance_unknown' : 'already_sent',
+          runKey: run.runKey,
+        }),
+      );
       return;
     }
     if (args.controlledFailureConfirmationId) {
@@ -97,7 +106,11 @@ async function main() {
       buildAdmissionsReviewSlackMessage(run, { pullRequestUrl: args.prUrl }),
     );
     if (result.status === 'sent') await ledger.recordSlackSent({ runKey: run.runKey });
-    else await ledger.recordSlackFailure({ runKey: run.runKey, error: result.error });
+    else if (result.status === 'acceptance_unknown') {
+      await ledger.recordSlackAcceptanceUnknown({ runKey: run.runKey, error: result.error });
+    } else {
+      await ledger.recordSlackFailure({ runKey: run.runKey, error: result.error });
+    }
     console.info(JSON.stringify({ ...result, runKey: run.runKey }));
   } finally {
     await vite.close();
