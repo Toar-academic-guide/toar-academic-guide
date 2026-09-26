@@ -91,6 +91,7 @@ jobs:
         with:
           ref: main
           persist-credentials: false
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
