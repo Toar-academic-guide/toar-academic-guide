@@ -18,7 +18,7 @@ describe('production admissions schema preflight', () => {
     expect(report).toMatchObject({
       status: 'current',
       safeToMigrate: false,
-      appliedThrough: '0026',
+      appliedThrough: '0027',
       pendingMigrations: [],
       issues: [],
     });
@@ -123,7 +123,16 @@ describe('production admissions schema preflight', () => {
   });
 
   it('records both Drizzle and Supabase payload fingerprints for applied migrations', () => {
-    for (const migrationId of ['0020', '0021', '0022', '0023', '0024', '0025', '0026'] as const) {
+    for (const migrationId of [
+      '0020',
+      '0021',
+      '0022',
+      '0023',
+      '0024',
+      '0025',
+      '0026',
+      '0027',
+    ] as const) {
       const migration = FORWARD_PRODUCTION_MIGRATIONS.find(({ id }) => id === migrationId);
       const source = readFileSync(migration?.repositoryPath ?? '', 'utf8');
       const statements = source
@@ -177,6 +186,7 @@ describe('production admissions schema preflight', () => {
       '0024',
       '0025',
       '0026',
+      '0027',
     ]);
   });
 
@@ -201,7 +211,22 @@ describe('production admissions schema preflight', () => {
       '0024',
       '0025',
       '0026',
+      '0027',
     ]);
+  });
+
+  it('accepts legacy review-handoff grants only until 0027 revokes them', () => {
+    const appliedCount = FORWARD_PRODUCTION_MIGRATIONS.findIndex(({ id }) => id === '0027');
+    const snapshot = makeSnapshot({ appliedCount });
+    snapshot.tables.ingestion_jobs.grants.ops_readonly = ['SELECT'];
+    snapshot.tables.review_items.grants.ops_readonly = ['SELECT'];
+
+    expect(assessProductionSchema(snapshot)).toMatchObject({
+      status: 'migration_required',
+      safeToMigrate: true,
+      pendingMigrations: ['0027'],
+      issues: [],
+    });
   });
 
   it('stops when a pending migration is partially present', () => {
@@ -395,7 +420,7 @@ describe('production admissions schema preflight', () => {
     expect(assessProductionSchema(snapshot)).toMatchObject({
       status: 'migration_required',
       safeToMigrate: true,
-      pendingMigrations: ['0024', '0025', '0026'],
+      pendingMigrations: ['0024', '0025', '0026', '0027'],
       issues: [],
     });
   });
@@ -518,6 +543,12 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
   }
   if (appliedIds.has('0011') && !appliedIds.has('0024') && tables.ingestion_sources) {
     tables.ingestion_sources.grants.ops_readonly = ['SELECT'];
+  }
+  if (appliedIds.has('0025') && !appliedIds.has('0027')) {
+    for (const tableName of ['ingestion_jobs', 'review_items'] as const) {
+      const table = tables[tableName];
+      if (table) table.grants.ops_readonly = ['SELECT'];
+    }
   }
   if (appliedIds.has('0020')) {
     for (const column of [
