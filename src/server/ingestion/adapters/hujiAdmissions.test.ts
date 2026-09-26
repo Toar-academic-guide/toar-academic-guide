@@ -24,6 +24,7 @@ describe('runHujiAdmissionsProof', () => {
     expect(proof.normalizedPayload).toMatchObject({
       derivedVerdict: 'pending',
       decisionProvenance: 'verified_derivation',
+      publicationMetric: 'formula_score',
     });
   });
 

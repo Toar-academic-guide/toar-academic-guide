@@ -21,6 +21,7 @@ export interface ExcludedAdmissionsCandidate {
   sourceProofId: string;
   reason:
     | 'proof_not_decision_capable'
+    | 'cutoff_metric_incompatible'
     | 'missing_program_or_cutoff'
     | 'pair_verification_incomplete'
     | 'no_reviewed_baseline'
@@ -43,6 +44,10 @@ export function classifyAdmissionsProofCandidates(args: {
       proof.status !== 'succeeded'
     ) {
       excluded.push({ sourceProofId: proof.id, reason: 'proof_not_decision_capable' });
+      continue;
+    }
+    if (proof.normalizedPayload.publicationMetric === 'formula_score') {
+      excluded.push({ sourceProofId: proof.id, reason: 'cutoff_metric_incompatible' });
       continue;
     }
     const adapterProgramId = stringValue(proof.normalizedPayload.programId);

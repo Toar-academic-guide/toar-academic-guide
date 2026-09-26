@@ -94,6 +94,7 @@ export async function runHujiAdmissionsProof(
         selectedScore,
         acceptanceThreshold,
         rejectionThreshold,
+        publicationMetric: 'formula_score',
         derivedVerdict,
         proofStatus: 'succeeded',
         proofLevel: 'exact_official',

@@ -104,6 +104,34 @@ describe('weekly admissions review run', () => {
     expect(run.markdown).toContain('endpoint timeout');
   });
 
+  it('keeps HUJI formula-score thresholds out of the integer cutoff manifest', () => {
+    const run = buildAdmissionsReviewRun({
+      runKey: '2026-W30',
+      checkedAt: new Date('2026-07-19T03:00:00.000Z'),
+      cycle: '2027',
+      baseline,
+      proofs: [
+        decisionProof({
+          id: 'huji-cs-live',
+          institutionId: 'huji',
+          institutionName: 'Hebrew University of Jerusalem',
+          normalizedPayload: {
+            pairId: 'cs__huji',
+            programId: 'cs',
+            acceptanceThreshold: 23.75,
+            publicationMetric: 'formula_score',
+          },
+        }),
+      ],
+      verificationLedger: exactTauLedger,
+    });
+
+    expect(run.manifest.changes).toEqual([]);
+    expect(run.excluded).toMatchObject([
+      { sourceProofId: 'huji-cs-live', reason: 'cutoff_metric_incompatible' },
+    ]);
+  });
+
   it('keeps an explicitly reviewer-excluded safe candidate out of the generated manifest', () => {
     const run = buildAdmissionsReviewRun({
       runKey: '2026-W30',
