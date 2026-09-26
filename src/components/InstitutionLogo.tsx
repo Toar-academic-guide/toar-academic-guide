@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { INSTITUTION_BY_NAME, type InstitutionRecord } from '@/data/institutions';
 
 /**
@@ -90,7 +91,7 @@ export default function InstitutionLogo({
         {firstLetter}
       </span>
       {src ? (
-        <img
+        <Image
           key={src}
           src={src}
           alt={displayName}
@@ -99,6 +100,8 @@ export default function InstitutionLogo({
              width/height collapse to 0×0. */
           width={imgPx}
           height={imgPx}
+          loading="eager"
+          unoptimized
           style={{
             width: imgPx,
             height: imgPx,

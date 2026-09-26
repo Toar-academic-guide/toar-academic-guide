@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import InstitutionLogo from '@/components/InstitutionLogo';
 
 describe('InstitutionLogo', () => {
-  it('keeps the fallback avatar visible until an external logo loads', () => {
+  it('keeps the fallback avatar visible until an external logo loads', async () => {
     render(
       <InstitutionLogo
         institution="מוסד בדיקה"
@@ -20,7 +20,9 @@ describe('InstitutionLogo', () => {
 
     fireEvent.load(screen.getByRole('img', { name: 'מוסד בדיקה' }));
 
-    expect(screen.getByRole('img', { name: 'מוסד בדיקה' }).style.opacity).toBe('1');
+    await waitFor(() => {
+      expect(screen.getByRole('img', { name: 'מוסד בדיקה' }).style.opacity).toBe('1');
+    });
   });
 
   it('tries the favicon fallback after an explicit logo fails', async () => {

@@ -5,7 +5,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import AcademicProfileForm from '@/components/AcademicProfileForm';
 
 vi.mock('next/image', () => ({
-  default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => <img {...props} />,
+  default: () => <span data-next-image />,
 }));
 
 vi.mock('framer-motion', () => ({

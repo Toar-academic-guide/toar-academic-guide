@@ -61,7 +61,6 @@ vi.mock('@/lib/catalogueStatic', () => ({
 }));
 
 import {
-  CatalogueQueryError,
   evaluateCatalogueReadiness,
   listCataloguePrograms,
   resetDatabaseCatalogueSnapshotCache,

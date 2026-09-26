@@ -37,13 +37,7 @@ import {
   Bookmark,
   BookmarkCheck,
 } from 'lucide-react';
-import {
-  RecommendedField,
-  ProfileScores,
-  EnvironmentPreference,
-  ProfileDimension,
-  GeographicRegion,
-} from '@/types';
+import { RecommendedField, ProfileScores, ProfileDimension, GeographicRegion } from '@/types';
 import { DIMENSION_LABELS } from '@/data/testItems';
 import {
   INSTITUTION_REGIONS,
@@ -62,7 +56,6 @@ interface Props {
   recommendations: RecommendedField[];
   onSelectDegree: (degreeId: string) => void;
   profileScores: ProfileScores;
-  environment: EnvironmentPreference;
   geographicPreference?: GeographicRegion;
   savedProgramIds?: string[];
   onToggleSave?: (programId: string) => void;
@@ -757,7 +750,6 @@ export default function RecommendationResults({
   recommendations,
   onSelectDegree,
   profileScores,
-  environment,
   geographicPreference = 'any',
   savedProgramIds,
   onToggleSave,

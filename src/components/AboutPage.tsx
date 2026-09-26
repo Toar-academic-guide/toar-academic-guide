@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import WayPageShell from '@/components/WayPageShell';
 
 // Temporary founders photo; replace the public asset before publishing.
@@ -13,9 +14,13 @@ export default function AboutPage() {
           </h1>
 
           <div className="mt-8 w-full max-w-[22.5rem] overflow-hidden rounded-[1.6rem] border border-white bg-white/72 p-2 shadow-[0_20px_64px_rgba(105,133,190,0.15)] backdrop-blur sm:max-w-[25rem]">
-            <img
+            <Image
               src={ABOUT_FOUNDERS_IMAGE_SRC}
+              width={1200}
+              height={1600}
               alt="יונתן ועמית בשדה חמניות"
+              loading="eager"
+              sizes="(max-width: 640px) calc(100vw - 2rem), 400px"
               className="aspect-[4/3] w-full rounded-[1.2rem] object-cover object-center"
             />
           </div>
