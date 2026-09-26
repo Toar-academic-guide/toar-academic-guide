@@ -6,11 +6,6 @@ on:
       - main
     paths:
       - src/data/admissions/reviewedManifest.json
-      - src/server/admissions/admissionsReleasePublisher.ts
-      - src/server/admissions/publicationArgs.ts
-      - scripts/publish-admissions-release.mjs
-      - src/db/migrations/**
-      - src/db/schema.ts
   workflow_dispatch:
     inputs:
       repository_commit:
@@ -77,15 +72,22 @@ jobs:
       PUBLISHED_COMMIT: ${{ needs.release_intent.outputs.repository_commit }}
 
     steps:
-      - name: Checkout classified main commit
+      - name: Checkout current publication runner
         uses: actions/checkout@v7
         with:
-          ref: ${{ env.PUBLISHED_COMMIT }}
+          ref: main
           fetch-depth: 0
 
       - name: Verify commit is merged into main
         shell: bash
         run: git merge-base --is-ancestor "$PUBLISHED_COMMIT" origin/main
+
+      - name: Materialize reviewed manifest from original commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p scratch/admissions-publication
+          git show "$PUBLISHED_COMMIT:src/data/admissions/reviewedManifest.json" > scratch/admissions-publication/reviewedManifest.json
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -109,7 +111,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          args=(--manifest src/data/admissions/reviewedManifest.json --repository-commit "$PUBLISHED_COMMIT")
+          args=(--manifest scratch/admissions-publication/reviewedManifest.json --repository-commit "$PUBLISHED_COMMIT")
           if [ -n "$PROOF_FAILURE_STAGE" ] || [ -n "$PROOF_CONFIRMATION_ID" ]; then
             args+=(--proof-failure-stage "$PROOF_FAILURE_STAGE" --proof-confirmation-id "$PROOF_CONFIRMATION_ID")
           fi
