@@ -25,8 +25,8 @@ describe('operational proof review run', () => {
         },
         {
           target: { institutionId: 'bgu', programId: 'bgu_cs', cycle: '2099' },
-          before: 720,
-          after: 721,
+          before: 645,
+          after: 646,
           sourceProofs: [{ proofType: 'controlled_fixture' }],
         },
       ],
@@ -47,5 +47,21 @@ describe('operational proof review run', () => {
 
     expect(rerun.reviewMetadata).toEqual(first.reviewMetadata);
     expect(rerun.manifest).toEqual(first.manifest);
+  });
+
+  it('chains BGU proof scenarios from the verified canonical baseline', () => {
+    const failure = buildOperationalProofReviewRun({
+      runKey: 'proof-plan001-failure-20260820',
+      checkedAt: new Date('2026-08-20T12:00:00.000Z'),
+      proofScenario: 'proof-plan001-failure-20260820',
+    });
+    const corrective = buildOperationalProofReviewRun({
+      runKey: 'proof-plan001-corrective-20260820',
+      checkedAt: new Date('2026-08-20T12:00:00.000Z'),
+      proofScenario: 'proof-plan001-corrective-20260820',
+    });
+
+    expect(failure.manifest.changes[1]).toMatchObject({ before: 646, after: 647 });
+    expect(corrective.manifest.changes[1]).toMatchObject({ before: 647, after: 645 });
   });
 });
