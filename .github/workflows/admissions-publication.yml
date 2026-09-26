@@ -104,6 +104,75 @@ jobs:
       - name: Verify production operational schema
         run: npm run db:operational:publication
 
+      - name: Verify publisher database identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          import { readFile } from 'node:fs/promises';
+          import postgres from 'postgres';
+
+          if (!process.env.DATABASE_URL) {
+            throw new Error('DATABASE_URL is unavailable.');
+          }
+          const sql = postgres(process.env.DATABASE_URL, { max: 1, prepare: false });
+          try {
+            const [identity] = await sql`
+              select
+                current_user as database_role,
+                has_column_privilege(current_user, 'public.admission_thresholds', 'threshold_value', 'UPDATE') as has_update_column_grant
+            `;
+            const manifest = JSON.parse(
+              await readFile('scratch/admissions-publication/reviewedManifest.json', 'utf8'),
+            );
+            if (!Array.isArray(manifest.changes)) {
+              throw new Error('Reviewed manifest changes are invalid.');
+            }
+            const targets =
+              manifest.releaseKind === 'operational_proof'
+                ? []
+                : manifest.changes
+                    .filter((change) => change?.ruleKind === 'admission_cutoff')
+                    .map((change) => {
+                      if (
+                        typeof change.before !== 'number' ||
+                        typeof change.target?.institutionId !== 'string' ||
+                        typeof change.target?.programId !== 'string'
+                      ) {
+                        throw new Error('Reviewed manifest cutoff target is invalid.');
+                      }
+                      return {
+                        institutionId: change.target.institutionId,
+                        programId: change.target.programId,
+                        before: change.before,
+                      };
+                    });
+            const targetRows = [];
+            for (const target of targets) {
+              const [result] = await sql`
+                select count(*)::int as matching_rows
+                from public.admission_thresholds
+                where institution_id = ${target.institutionId}
+                  and program_id = ${target.programId}
+                  and threshold_kind = 'sekhem'
+                  and threshold_value = ${target.before}
+              `;
+              targetRows.push({
+                institutionId: target.institutionId,
+                programId: target.programId,
+                matchingRows: result.matching_rows,
+              });
+            }
+            console.log(
+              JSON.stringify({
+                publicationDatabaseDiagnostic: { status: 'complete', ...identity, targetRows },
+              }),
+            );
+          } finally {
+            await sql.end({ timeout: 5 });
+          }
+          NODE
+
       - name: Publish the reviewed manifest atomically
         env:
           PROOF_FAILURE_STAGE: ${{ inputs.proof_failure_stage }}
