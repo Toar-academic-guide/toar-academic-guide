@@ -1,7 +1,7 @@
 {
   "version": 2,
   "releaseKind": "operational_proof",
-  "proofScenario": "proof-plan001-20260820",
+  "proofScenario": "proof-plan001-failure-20260820",
   "changes": [
     {
       "target": {
@@ -10,15 +10,15 @@
         "cycle": "2099"
       },
       "ruleKind": "admission_cutoff",
-      "before": 700,
-      "after": 701,
+      "before": 701,
+      "after": 702,
       "effectiveFrom": "2026-09-26",
       "sourceProofs": [
         {
-          "sourceId": "proof-plan001-20260820-tau-tau_cs",
-          "digest": "sha256:66bd833a853bc253017be51ca1422e5a0e3a9ad76f4bfa3f276bfcdbd9d0b09e",
-          "excerpt": "Controlled Plan 001 fixture for tau/tau_cs: 700 to 701.",
-          "url": "https://example.invalid/admissions-operational-proof/proof-plan001-20260820",
+          "sourceId": "proof-plan001-failure-20260820-tau-tau_cs",
+          "digest": "sha256:bc869141da252a84b5c40c75a9c4b0b489783cc2cb558b097b867db91eed7280",
+          "excerpt": "Controlled Plan 001 fixture for tau/tau_cs: 701 to 702.",
+          "url": "https://example.invalid/admissions-operational-proof/proof-plan001-failure-20260820",
           "proofType": "controlled_fixture"
         }
       ]
@@ -30,15 +30,15 @@
         "cycle": "2099"
       },
       "ruleKind": "admission_cutoff",
-      "before": 645,
-      "after": 646,
+      "before": 646,
+      "after": 647,
       "effectiveFrom": "2026-09-26",
       "sourceProofs": [
         {
-          "sourceId": "proof-plan001-20260820-bgu-bgu_cs",
-          "digest": "sha256:ead63ccde2b306e664c48cf92b96926cb043182b06796bf6ad97544be5932cc6",
-          "excerpt": "Controlled Plan 001 fixture for bgu/bgu_cs: 645 to 646.",
-          "url": "https://example.invalid/admissions-operational-proof/proof-plan001-20260820",
+          "sourceId": "proof-plan001-failure-20260820-bgu-bgu_cs",
+          "digest": "sha256:ea87010422673ebe109569a8b4833c60871d4dbfa8733c29e8fd528180de309c",
+          "excerpt": "Controlled Plan 001 fixture for bgu/bgu_cs: 646 to 647.",
+          "url": "https://example.invalid/admissions-operational-proof/proof-plan001-failure-20260820",
           "proofType": "controlled_fixture"
         }
       ]
