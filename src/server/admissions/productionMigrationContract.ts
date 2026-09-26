@@ -14,7 +14,9 @@ export type MigrationId =
   | '0022'
   | '0023'
   | '0024'
-  | '0025';
+  | '0025'
+  | '0026'
+  | '0027';
 
 export type MigrationHistoryEntry = {
   version: string;
@@ -174,5 +176,18 @@ export const FORWARD_PRODUCTION_MIGRATIONS: ForwardProductionMigration[] = [
       '0c9ff2b4e1d26778e4b04f71c80ac908',
       '7328e7cd08240243f60c1a7b5c04d2f4',
     ],
+  },
+  {
+    id: '0026',
+    remoteName: 'admission_review_slack_acceptance_unknown',
+    repositoryPath: 'src/db/migrations/0026_admission_review_slack_acceptance_unknown.sql',
+    statementFingerprint: '97aa155652d7ba6a59bbdf2a24f1531f',
+  },
+  {
+    id: '0027',
+    remoteName: 'revoke_ops_readonly_review_handoff',
+    repositoryPath: 'src/db/migrations/0027_revoke_ops_readonly_review_handoff.sql',
+    statementFingerprint: '8acbaad833b5e2da72dfa31ef56a83d6',
+    legacyStatementFingerprints: ['817ccbe148a65119a4d464a62fd78411'],
   },
 ];

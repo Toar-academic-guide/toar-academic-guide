@@ -91,6 +91,7 @@ jobs:
         with:
           ref: main
           persist-credentials: false
+          fetch-depth: 0
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -140,6 +141,7 @@ jobs:
           echo "cycle=$cycle" >> "$GITHUB_OUTPUT"
 
       - name: Load existing review metadata without executing the generated branch
+        id: review_metadata
         env:
           GH_TOKEN: ${{ inputs.dry_run && github.token || steps.admissions_app.outputs.token }}
           REVIEW_BRANCH: ${{ steps.run.outputs.branch }}
@@ -158,13 +160,15 @@ jobs:
             fi
           fi
           if git show-ref --verify --quiet "refs/remotes/origin/$REVIEW_BRANCH"; then
-            metadata_file="docs/admissions-review-runs/$RUN_KEY.json"
-            git cat-file -e "origin/$REVIEW_BRANCH:$metadata_file" || {
+            branch_metadata_file="docs/admissions-review-runs/$RUN_KEY.json"
+            git cat-file -e "origin/$REVIEW_BRANCH:$branch_metadata_file" || {
               echo "Existing generated branch is missing its exclusion metadata.";
               exit 1;
             }
+            metadata_file="docs/admissions-review-runs/.workflow-inputs/$RUN_KEY.json"
             mkdir -p "$(dirname "$metadata_file")"
-            git show "origin/$REVIEW_BRANCH:$metadata_file" > "$metadata_file"
+            git show "origin/$REVIEW_BRANCH:$branch_metadata_file" > "$metadata_file"
+            echo "metadata_file=$metadata_file" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Prepare admissions review run
@@ -188,8 +192,12 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then
             args+=(--dry-run)
           fi
-          metadata_file="docs/admissions-review-runs/${{ steps.run.outputs.run_key }}.json"
-          if [ -f "$metadata_file" ]; then
+          metadata_file="${{ steps.review_metadata.outputs.metadata_file }}"
+          if [ -n "$metadata_file" ]; then
+            test -f "$metadata_file" || {
+              echo 'Existing review metadata is unavailable.'
+              exit 1
+            }
             args+=(--exclusions-file "$metadata_file")
           fi
           if [ "$ADMISSIONS_MODE" = 'operational_proof' ]; then
@@ -202,6 +210,10 @@ jobs:
             --mode "$ADMISSIONS_MODE" \
             --output scratch/admissions-review/run.json \
             "${args[@]}"
+          if [ -n "$metadata_file" ]; then
+            rm -f "$metadata_file"
+            rmdir "$(dirname "$metadata_file")" 2>/dev/null || true
+          fi
 
       - name: Create or update the one combined admissions review PR
         id: review_pr
@@ -223,10 +235,13 @@ jobs:
             exit 0
           fi
 
+          trusted_main_sha="$(git rev-parse --verify origin/main^{commit})"
+          npm run guard:pre-pr
+
           if git show-ref --verify --quiet "refs/remotes/origin/$REVIEW_BRANCH"; then
-            git switch --force-create "$REVIEW_BRANCH" "origin/$REVIEW_BRANCH"
+            git -c core.hooksPath=/dev/null switch --force-create "$REVIEW_BRANCH" "origin/$REVIEW_BRANCH"
           else
-            git switch --create "$REVIEW_BRANCH"
+            git -c core.hooksPath=/dev/null switch --create "$REVIEW_BRANCH"
           fi
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git config user.name "admissions-automation[bot]"
@@ -236,10 +251,10 @@ jobs:
           mkdir -p docs/admissions-review-runs
           jq -r '.run.markdown' scratch/admissions-review/run.json > "docs/admissions-review-runs/$RUN_KEY.md"
           jq '.run.reviewMetadata' scratch/admissions-review/run.json > "docs/admissions-review-runs/$RUN_KEY.json"
-          npm run guard:pre-pr
 
           git add src/data/admissions/reviewedManifest.json "docs/admissions-review-runs/$RUN_KEY.md" "docs/admissions-review-runs/$RUN_KEY.json"
-          npm run admissions:validate-review-pr -- --run-key "$RUN_KEY"
+          git show "$trusted_main_sha:scripts/validate-admissions-review-pr.mjs" > "$RUNNER_TEMP/validate-admissions-review-pr.mjs"
+          ADMISSIONS_REVIEW_WORKTREE="$GITHUB_WORKSPACE" ADMISSIONS_REVIEW_BASE_REF="$trusted_main_sha" node "$RUNNER_TEMP/validate-admissions-review-pr.mjs" --run-key "$RUN_KEY"
           npm test -- src/server/admissions/reviewedManifest.test.ts src/server/admissions/weeklyReviewRun.test.ts src/server/admissions/weeklyReviewPreparation.test.ts
           if ! git diff --cached --quiet; then
             git commit -m "chore(admissions): prepare weekly review $RUN_KEY"

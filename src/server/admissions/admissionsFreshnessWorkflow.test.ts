@@ -63,6 +63,7 @@ describe('weekly admissions freshness workflow', () => {
     );
 
     expect(checkout).toContain('persist-credentials: false');
+    expect(checkout).toContain('fetch-depth: 0');
     expect(appToken).toContain('uses: actions/create-github-app-token@v2');
     expect(appToken).toContain('id: admissions_app');
     expect(appToken).toContain('if: ${{ !inputs.dry_run }}');
@@ -79,9 +80,41 @@ describe('weekly admissions freshness workflow', () => {
       metadata.indexOf('git fetch origin main'),
     );
     expect(metadata).toContain('git ls-remote --exit-code --heads origin "$REVIEW_BRANCH"');
+    expect(metadata).toContain('id: review_metadata');
+    expect(metadata).toContain(
+      'metadata_file="docs/admissions-review-runs/.workflow-inputs/$RUN_KEY.json"',
+    );
+    expect(metadata).toContain('echo "metadata_file=$metadata_file" >> "$GITHUB_OUTPUT"');
+    expect(workflow).toContain(
+      'metadata_file="${{ steps.review_metadata.outputs.metadata_file }}"',
+    );
+    expect(workflow).toContain('rmdir "$(dirname "$metadata_file")" 2>/dev/null || true');
     expect(metadata).toMatch(
       /else\s+remote_status=\$\?\s+if \[ "\$remote_status" -ne 2 \]; then\s+exit "\$remote_status"\s+fi\s+fi/,
     );
+  });
+
+  it('validates generated review branches with the validator from current main', async () => {
+    const workflow = await readWorkflow();
+    const reviewPr = stepBlock(workflow, 'Create or update the one combined admissions review PR');
+
+    expect(reviewPr).toContain('trusted_main_sha="$(git rev-parse --verify origin/main^{commit})"');
+    expect(reviewPr).toContain(
+      'git show "$trusted_main_sha:scripts/validate-admissions-review-pr.mjs" > "$RUNNER_TEMP/validate-admissions-review-pr.mjs"',
+    );
+    expect(reviewPr).toContain(
+      'ADMISSIONS_REVIEW_WORKTREE="$GITHUB_WORKSPACE" ADMISSIONS_REVIEW_BASE_REF="$trusted_main_sha" node "$RUNNER_TEMP/validate-admissions-review-pr.mjs" --run-key "$RUN_KEY"',
+    );
+    expect(reviewPr.indexOf('npm run guard:pre-pr')).toBeLessThan(
+      reviewPr.indexOf('git -c core.hooksPath=/dev/null switch'),
+    );
+    expect(reviewPr.indexOf('trusted_main_sha=')).toBeLessThan(
+      reviewPr.indexOf('git -c core.hooksPath=/dev/null switch'),
+    );
+    expect(reviewPr).toContain(
+      'git -c core.hooksPath=/dev/null switch --force-create "$REVIEW_BRANCH" "origin/$REVIEW_BRANCH"',
+    );
+    expect(reviewPr).toContain('git -c core.hooksPath=/dev/null switch --create "$REVIEW_BRANCH"');
   });
 });
 

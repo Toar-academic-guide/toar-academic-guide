@@ -19,7 +19,7 @@ export interface AdmissionsReviewRunRecord {
   exclusionCount: number;
   pullRequestNumber: number | null;
   pullRequestUrl: string | null;
-  slackStatus: 'pending' | 'sent' | 'failed';
+  slackStatus: 'pending' | 'sent' | 'failed' | 'acceptance_unknown';
   slackError: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -35,7 +35,7 @@ export interface AdmissionsReviewRunLedgerRepository {
   }): Promise<void>;
   setSlackStatus(input: {
     runKey: string;
-    slackStatus: 'sent' | 'failed';
+    slackStatus: 'sent' | 'failed' | 'acceptance_unknown';
     slackError: string | null;
   }): Promise<void>;
 }
@@ -78,6 +78,13 @@ export function createAdmissionsReviewRunLedger(
       await repository.setSlackStatus({
         runKey: input.runKey,
         slackStatus: 'failed',
+        slackError: safeError(input.error),
+      });
+    },
+    async recordSlackAcceptanceUnknown(input: { runKey: string; error: string }): Promise<void> {
+      await repository.setSlackStatus({
+        runKey: input.runKey,
+        slackStatus: 'acceptance_unknown',
         slackError: safeError(input.error),
       });
     },

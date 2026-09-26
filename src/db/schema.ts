@@ -169,6 +169,7 @@ export const admissionReviewSlackStatusEnum = pgEnum('admission_review_slack_sta
   'pending',
   'sent',
   'failed',
+  'acceptance_unknown',
 ]);
 export const admissionPublicationAttemptStatusEnum = pgEnum(
   'admission_publication_attempt_status',

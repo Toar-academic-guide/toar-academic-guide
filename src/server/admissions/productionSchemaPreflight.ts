@@ -60,6 +60,7 @@ type TableContract = {
 type EnumContract = {
   createdBy: MigrationId;
   values: string[];
+  valueMigrations?: { id: MigrationId; values: string[] }[];
 };
 
 export type ProductionSchemaIssue = {
@@ -519,6 +520,12 @@ export const PRODUCTION_SCHEMA_CONTRACT: {
     admission_review_slack_status: {
       createdBy: '0016',
       values: ['pending', 'sent', 'failed'],
+      valueMigrations: [
+        {
+          id: '0026',
+          values: ['pending', 'sent', 'failed', 'acceptance_unknown'],
+        },
+      ],
     },
     admission_release_kind: {
       createdBy: '0021',
@@ -808,13 +815,21 @@ function assessTableSecurity(
   }
   for (const role of runtimeRoles) {
     const actual = normalizedPrivileges(table.grants[role] ?? []);
-    const expected = normalizedPrivileges(
-      tableName === 'ingestion_sources' && role === 'ops_readonly' && !applied.has('0024')
-        ? ['SELECT']
-        : tableName === 'bagrut_profile_versions' && role === 'ops_readonly' && !applied.has('0017')
-          ? []
-          : (contract.grants[role] ?? []),
-    );
+    let expectedPrivileges = contract.grants[role] ?? [];
+    if (role === 'ops_readonly') {
+      if (
+        applied.has('0025') &&
+        !applied.has('0027') &&
+        (tableName === 'ingestion_jobs' || tableName === 'review_items')
+      ) {
+        expectedPrivileges = ['SELECT'];
+      } else if (tableName === 'ingestion_sources' && !applied.has('0024')) {
+        expectedPrivileges = ['SELECT'];
+      } else if (tableName === 'bagrut_profile_versions' && !applied.has('0017')) {
+        expectedPrivileges = [];
+      }
+    }
+    const expected = normalizedPrivileges(expectedPrivileges);
     if (actual.join(',') !== expected.join(',')) {
       issues.push({
         code: 'grant_mismatch',
@@ -863,7 +878,10 @@ function assessEnums(
       });
       continue;
     }
-    if (actual.join('\u0000') !== contract.values.join('\u0000')) {
+    const expectedValues =
+      contract.valueMigrations?.filter((migration) => applied.has(migration.id)).at(-1)?.values ??
+      contract.values;
+    if (actual.join('\u0000') !== expectedValues.join('\u0000')) {
       issues.push({
         code: 'enum_values_mismatch',
         object: `enum:${name}`,
