@@ -16,5 +16,13 @@ describe('admissions publication workflow', () => {
     expect(workflow).toContain('proof_failure_stage');
     expect(workflow).toContain('--proof-failure-stage');
     expect(workflow).toContain('git merge-base --is-ancestor');
+    expect(workflow).toContain('Checkout current publication runner');
+    expect(workflow).toContain('ref: main');
+    expect(workflow).toContain('Materialize reviewed manifest from original commit');
+    expect(workflow).toContain(
+      'git show "$PUBLISHED_COMMIT:src/data/admissions/reviewedManifest.json" > scratch/admissions-publication/reviewedManifest.json',
+    );
+    expect(workflow).toContain('--manifest scratch/admissions-publication/reviewedManifest.json');
+    expect(workflow).not.toContain('ref: ${{ env.PUBLISHED_COMMIT }}');
   });
 });

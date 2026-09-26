@@ -165,7 +165,9 @@ function completeWithin(promise, description, timeoutMs) {
 }
 
 function cleanupErrorMessage(error) {
-  return error instanceof Error ? error.message : String(error);
+  return error instanceof Error && error.message.startsWith('Admissions publication')
+    ? error.message
+    : 'cleanup operation did not complete';
 }
 
 function resolveInsideRepository(path) {
