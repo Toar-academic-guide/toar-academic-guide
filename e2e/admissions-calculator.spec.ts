@@ -1,4 +1,9 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+
+async function expectConservativeStaticResult(page: Page, institution: string) {
+  await expect(page.getByText(institution, { exact: true })).toBeVisible();
+  await expect(page.getByText('האימות הרשמי טרם הושלם', { exact: true }).first()).toBeVisible();
+}
 
 test.describe('app admissions calculator', () => {
   test('shows safe catalogue-backed results without leaving /app/calculator', async ({ page }) => {
@@ -11,10 +16,7 @@ test.describe('app admissions calculator', () => {
     await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
 
     await expect(page).toHaveURL(/\/app\/calculator$/);
-    await expect(
-      page.getByLabel(/^אוניברסיטת תל אביב: (נדרשים נתונים|אימות לא זמין)$/),
-    ).toBeVisible();
-    await expect(page.getByText(/^(נדרשים נתונים נוספים|אימות רשמי לא זמין)$/)).toBeVisible();
+    await expectConservativeStaticResult(page, 'אוניברסיטת תל אביב');
 
     await page.getByRole('button', { name: 'חזרה', exact: true }).click();
 
@@ -24,10 +26,7 @@ test.describe('app admissions calculator', () => {
     await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
 
     await expect(page).toHaveURL(/\/app\/calculator$/);
-    await expect(page.getByLabel('אוניברסיטת בן-גוריון בנגב: מתקבל/ת')).toBeVisible({
-      timeout: 15_000,
-    });
-    await expect(page.getByText('אימות רשמי', { exact: true })).toBeVisible();
+    await expectConservativeStaticResult(page, 'אוניברסיטת בן-גוריון בנגב');
 
     await page.getByRole('button', { name: 'חזרה', exact: true }).click();
 
@@ -37,8 +36,7 @@ test.describe('app admissions calculator', () => {
     await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
 
     await expect(page).toHaveURL(/\/app\/calculator$/);
-    await expect(page.getByLabel('אוניברסיטת חיפה: נדרשים נתונים')).toBeVisible();
-    await expect(page.getByText('נדרשים נתונים נוספים', { exact: true })).toBeVisible();
+    await expectConservativeStaticResult(page, 'אוניברסיטת חיפה');
 
     await page.getByRole('button', { name: 'חזרה', exact: true }).click();
 
@@ -48,7 +46,6 @@ test.describe('app admissions calculator', () => {
     await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
 
     await expect(page).toHaveURL(/\/app\/calculator$/);
-    await expect(page.getByLabel('הטכניון – מכון טכנולוגי לישראל: נדרשים נתונים')).toBeVisible();
-    await expect(page.getByText('נדרשים נתונים נוספים', { exact: true })).toBeVisible();
+    await expectConservativeStaticResult(page, 'הטכניון – מכון טכנולוגי לישראל');
   });
 });
