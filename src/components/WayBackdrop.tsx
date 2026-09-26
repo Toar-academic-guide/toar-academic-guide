@@ -47,6 +47,7 @@ function ArtworkImage({ artwork }: { artwork: Artwork }) {
       draggable={false}
       decoding="async"
       loading="eager"
+      unoptimized
       className={styles.image}
     />
   );
