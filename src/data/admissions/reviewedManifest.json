@@ -11,13 +11,33 @@
       "ruleKind": "admission_cutoff",
       "before": 645,
       "after": 720,
-      "effectiveFrom": "2026-09-25",
+      "effectiveFrom": "2026-09-26",
       "sourceProofs": [
         {
           "sourceId": "bgu-bgu_cs-live",
           "digest": "sha256:c1fb1849c6956562e6aae25035f2dedbed990aea6b14d1ec5a970770f197f216",
           "excerpt": "Official bgu_cs admission cutoff: 720.",
           "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=232&p_pat1=1&p_spe1=3&p_degree_level=1",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "tau",
+        "programId": "tau_datascience",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 688,
+      "after": 652,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "tau-digital-sciences-live",
+          "digest": "sha256:b682c359c3a9d8dbd4a59737e70d9d92a15361e1a9def06cc1e849e354a2e76c",
+          "excerpt": "Official tau-digital-sciences-live admission cutoff: 652.",
+          "url": "https://go.tau.ac.il/graphql",
           "proofType": "exact_official"
         }
       ]
