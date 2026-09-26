@@ -15,7 +15,8 @@ function parseArguments(argv) {
     if (!['--run-file', '--pr-number', '--pr-url', '--controlled-failure-before-send'].includes(flag)) {
       throw new Error(`Unknown admissions review notification argument: ${flag ?? '(missing)'}.`);
     }
-    if (!value || value.startsWith('--') || values.has(flag)) throw new Error(`${flag} requires one value.`);
+    if (!value || value.startsWith('--') || values.has(flag))
+      throw new Error(`${flag} requires one value.`);
     values.set(flag, value);
   }
   const runFile = values.get('--run-file');
@@ -40,7 +41,7 @@ function resolveRunFile(path) {
 
 export async function runAdmissionsReviewNotification(
   argv,
-  { createViteServer = createServer, readRunFile = readFile } = {},
+  { createViteServer = createServer, readRunFile = readFile, operationTimeoutMs = 15_000 } = {},
 ) {
   const args = parseArguments(argv);
   const vite = await createViteServer({
@@ -63,13 +64,12 @@ export async function runAdmissionsReviewNotification(
         shouldPostAdmissionsReviewSlack,
       },
       { closeDb: closeDatabase },
-    ] =
-      await Promise.all([
-        vite.ssrLoadModule('/src/server/admissions/admissionsReviewRunLedger.ts'),
-        vite.ssrLoadModule('/src/server/admissions/weeklyReviewRun.ts'),
-        vite.ssrLoadModule('/src/server/automation/admissionsReviewSlack.ts'),
-        vite.ssrLoadModule('/src/db/client.ts'),
-      ]);
+    ] = await Promise.all([
+      vite.ssrLoadModule('/src/server/admissions/admissionsReviewRunLedger.ts'),
+      vite.ssrLoadModule('/src/server/admissions/weeklyReviewRun.ts'),
+      vite.ssrLoadModule('/src/server/automation/admissionsReviewSlack.ts'),
+      vite.ssrLoadModule('/src/db/client.ts'),
+    ]);
     closeDb = closeDatabase;
     const ledger = createAdmissionsReviewRunLedger();
     if (args.prNumber !== undefined) {
@@ -79,11 +79,18 @@ export async function runAdmissionsReviewNotification(
         pullRequestUrl: args.prUrl,
       });
     }
-    const existing = await ledger.getRun(run.runKey);
+    console.info(JSON.stringify({ phase: 'ledger_read_start', runKey: run.runKey }));
+    const existing = await completeWithin(
+      ledger.getRun(run.runKey),
+      'Admissions review ledger read',
+      operationTimeoutMs,
+    );
+    console.info(JSON.stringify({ phase: 'ledger_read_complete', runKey: run.runKey }));
     if (!shouldPostAdmissionsReviewSlack(existing?.slackStatus)) {
       console.info(
         JSON.stringify({
-          status: existing?.slackStatus === 'acceptance_unknown' ? 'acceptance_unknown' : 'already_sent',
+          status:
+            existing?.slackStatus === 'acceptance_unknown' ? 'acceptance_unknown' : 'already_sent',
           runKey: run.runKey,
         }),
       );
@@ -121,10 +128,33 @@ export async function runAdmissionsReviewNotification(
     console.info(JSON.stringify({ ...result, runKey: run.runKey }));
   } finally {
     try {
-      await closeDb?.();
+      if (closeDb) {
+        console.info(JSON.stringify({ phase: 'database_close_start' }));
+        await completeWithin(closeDb(), 'Admissions review database cleanup', operationTimeoutMs);
+        console.info(JSON.stringify({ phase: 'database_close_complete' }));
+      }
     } finally {
-      await vite.close();
+      console.info(JSON.stringify({ phase: 'vite_close_start' }));
+      await completeWithin(vite.close(), 'Admissions review Vite cleanup', operationTimeoutMs);
+      console.info(JSON.stringify({ phase: 'vite_close_complete' }));
     }
+  }
+}
+
+async function completeWithin(promise, operation, timeoutMs) {
+  let timeout;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise((_, reject) => {
+        timeout = setTimeout(
+          () => reject(new Error(`${operation} timed out after ${timeoutMs}ms.`)),
+          timeoutMs,
+        );
+      }),
+    ]);
+  } finally {
+    if (timeout) clearTimeout(timeout);
   }
 }
 
