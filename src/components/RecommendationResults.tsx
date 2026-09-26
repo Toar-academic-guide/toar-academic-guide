@@ -37,12 +37,7 @@ import {
   Bookmark,
   BookmarkCheck,
 } from 'lucide-react';
-import {
-  RecommendedField,
-  ProfileScores,
-  ProfileDimension,
-  GeographicRegion,
-} from '@/types';
+import { RecommendedField, ProfileScores, ProfileDimension, GeographicRegion } from '@/types';
 import { DIMENSION_LABELS } from '@/data/testItems';
 import {
   INSTITUTION_REGIONS,

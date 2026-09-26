@@ -376,10 +376,7 @@ export default function StudyLocationStep({
         <ProgressStepper onBack={onBack} />
 
         <main className="grid flex-1 items-stretch gap-6 py-7 lg:grid-cols-[minmax(0,1.06fr)_minmax(420px,0.94fr)] lg:py-9">
-          <IsraelRegionMap
-            shouldReduceMotion={shouldReduceMotion}
-            onToggleRegion={toggleRegion}
-          />
+          <IsraelRegionMap shouldReduceMotion={shouldReduceMotion} onToggleRegion={toggleRegion} />
 
           <section className="flex min-w-0 flex-col justify-center px-1 lg:px-6">
             <div className="mx-auto w-full max-w-[540px]">
