@@ -125,4 +125,37 @@ describe('admissions proof candidate classification', () => {
     expect(result.candidates).toEqual([]);
     expect(result.excluded).toMatchObject([{ reason: 'proof_not_decision_capable' }]);
   });
+
+  it('excludes HUJI formula-score thresholds from catalogue cutoff candidates', () => {
+    const result = classifyAdmissionsProofCandidates({
+      baseline,
+      cycle: '2027',
+      verificationLedger: exactTauLedger,
+      proofs: [
+        {
+          id: 'huji-cs-live',
+          institutionId: 'huji',
+          institutionName: 'HUJI',
+          officialUrl: 'https://go.huji.ac.il/jjson/huji.json.gz',
+          adapterId: 'huji',
+          capability: 'decision_capable',
+          proofLevel: 'exact_official',
+          status: 'succeeded',
+          sourceClass: 'api_static_json',
+          reproducedFields: ['acceptanceThreshold'],
+          normalizedPayload: {
+            pairId: 'cs__huji',
+            programId: 'cs',
+            acceptanceThreshold: 23.75,
+            publicationMetric: 'formula_score',
+          },
+          limitations: [],
+          nextAction: 'review',
+        },
+      ],
+    });
+
+    expect(result.candidates).toEqual([]);
+    expect(result.excluded).toMatchObject([{ reason: 'cutoff_metric_incompatible' }]);
+  });
 });
