@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { runAdmissionsReviewNotification } from '../../../scripts/notify-admissions-review.mjs';
+import { runAdmissionsReviewNotificationCli } from '../../../scripts/notify-admissions-review.mjs';
 
 describe('admissions review notification script', () => {
   afterEach(() => {
@@ -35,15 +35,21 @@ describe('admissions review notification script', () => {
       }),
     };
     const log = vi.spyOn(console, 'info').mockImplementation(() => undefined);
+    const exit = vi.fn();
 
-    await runAdmissionsReviewNotification(['--run-file', 'scratch/admissions-review/run.json'], {
-      createViteServer: vi.fn().mockResolvedValue(vite),
-      readRunFile: vi.fn().mockResolvedValue(JSON.stringify({ run: { runKey: '2026-W40' } })),
-    });
+    await runAdmissionsReviewNotificationCli(
+      ['--run-file', 'scratch/admissions-review/run.json'],
+      {
+        createViteServer: vi.fn().mockResolvedValue(vite),
+        readRunFile: vi.fn().mockResolvedValue(JSON.stringify({ run: { runKey: '2026-W40' } })),
+      },
+      exit,
+    );
 
     expect(postAdmissionsReviewSlackMessage).not.toHaveBeenCalled();
     expect(closeDb).toHaveBeenCalledOnce();
     expect(vite.close).toHaveBeenCalledOnce();
+    expect(exit).toHaveBeenCalledExactlyOnceWith(0);
     expect(log).toHaveBeenCalledWith(
       JSON.stringify({ status: 'already_sent', runKey: '2026-W40' }),
     );

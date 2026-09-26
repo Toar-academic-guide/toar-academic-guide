@@ -128,9 +128,20 @@ export async function runAdmissionsReviewNotification(
   }
 }
 
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  runAdmissionsReviewNotification(process.argv.slice(2)).catch((error) => {
+export async function runAdmissionsReviewNotificationCli(
+  argv,
+  dependencies,
+  exit = /** @type {(code: number) => void} */ (process.exit),
+) {
+  try {
+    await runAdmissionsReviewNotification(argv, dependencies);
+    exit(0);
+  } catch (error) {
     console.error(error instanceof Error ? error.message : error);
-    process.exitCode = 1;
-  });
+    exit(1);
+  }
+}
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  void runAdmissionsReviewNotificationCli(process.argv.slice(2));
 }
