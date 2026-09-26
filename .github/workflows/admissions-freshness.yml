@@ -140,6 +140,7 @@ jobs:
           echo "cycle=$cycle" >> "$GITHUB_OUTPUT"
 
       - name: Load existing review metadata without executing the generated branch
+        id: review_metadata
         env:
           GH_TOKEN: ${{ inputs.dry_run && github.token || steps.admissions_app.outputs.token }}
           REVIEW_BRANCH: ${{ steps.run.outputs.branch }}
@@ -158,13 +159,15 @@ jobs:
             fi
           fi
           if git show-ref --verify --quiet "refs/remotes/origin/$REVIEW_BRANCH"; then
-            metadata_file="docs/admissions-review-runs/$RUN_KEY.json"
-            git cat-file -e "origin/$REVIEW_BRANCH:$metadata_file" || {
+            branch_metadata_file="docs/admissions-review-runs/$RUN_KEY.json"
+            git cat-file -e "origin/$REVIEW_BRANCH:$branch_metadata_file" || {
               echo "Existing generated branch is missing its exclusion metadata.";
               exit 1;
             }
+            metadata_file="docs/admissions-review-runs/.workflow-inputs/$RUN_KEY.json"
             mkdir -p "$(dirname "$metadata_file")"
-            git show "origin/$REVIEW_BRANCH:$metadata_file" > "$metadata_file"
+            git show "origin/$REVIEW_BRANCH:$branch_metadata_file" > "$metadata_file"
+            echo "metadata_file=$metadata_file" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Prepare admissions review run
@@ -188,8 +191,12 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then
             args+=(--dry-run)
           fi
-          metadata_file="docs/admissions-review-runs/${{ steps.run.outputs.run_key }}.json"
-          if [ -f "$metadata_file" ]; then
+          metadata_file="${{ steps.review_metadata.outputs.metadata_file }}"
+          if [ -n "$metadata_file" ]; then
+            test -f "$metadata_file" || {
+              echo 'Existing review metadata is unavailable.'
+              exit 1
+            }
             args+=(--exclusions-file "$metadata_file")
           fi
           if [ "$ADMISSIONS_MODE" = 'operational_proof' ]; then
@@ -202,6 +209,10 @@ jobs:
             --mode "$ADMISSIONS_MODE" \
             --output scratch/admissions-review/run.json \
             "${args[@]}"
+          if [ -n "$metadata_file" ]; then
+            rm -f "$metadata_file"
+            rmdir "$(dirname "$metadata_file")" 2>/dev/null || true
+          fi
 
       - name: Create or update the one combined admissions review PR
         id: review_pr

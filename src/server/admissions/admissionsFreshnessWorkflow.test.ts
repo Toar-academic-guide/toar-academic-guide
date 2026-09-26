@@ -79,6 +79,15 @@ describe('weekly admissions freshness workflow', () => {
       metadata.indexOf('git fetch origin main'),
     );
     expect(metadata).toContain('git ls-remote --exit-code --heads origin "$REVIEW_BRANCH"');
+    expect(metadata).toContain('id: review_metadata');
+    expect(metadata).toContain(
+      'metadata_file="docs/admissions-review-runs/.workflow-inputs/$RUN_KEY.json"',
+    );
+    expect(metadata).toContain('echo "metadata_file=$metadata_file" >> "$GITHUB_OUTPUT"');
+    expect(workflow).toContain(
+      'metadata_file="${{ steps.review_metadata.outputs.metadata_file }}"',
+    );
+    expect(workflow).toContain('rmdir "$(dirname "$metadata_file")" 2>/dev/null || true');
     expect(metadata).toMatch(
       /else\s+remote_status=\$\?\s+if \[ "\$remote_status" -ne 2 \]; then\s+exit "\$remote_status"\s+fi\s+fi/,
     );
