@@ -1,5 +1,986 @@
 {
   "version": 2,
-  "releaseKind": "canonical_change",
-  "changes": []
+  "releaseKind": "canonical_bootstrap",
+  "changes": [
+    {
+      "target": {
+        "institutionId": "haifa",
+        "programId": "economics",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 660,
+      "after": 660,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "haifa-economics-live",
+          "digest": "sha256:e920b01d48a8954f4c078a5cdc6e73f3d7aafce0fcc4787d2860e33ab96bd4b1",
+          "excerpt": "Official economics admission cutoff: 660.",
+          "url": "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "haifa",
+        "programId": "haifa_accounting",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 680,
+      "after": 680,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "haifa-haifa_accounting-live",
+          "digest": "sha256:f4f084189a62c29995cd970654c0ce3f5c9755444788d57f214e690e17aa9c90",
+          "excerpt": "Official haifa_accounting admission cutoff: 680.",
+          "url": "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "haifa",
+        "programId": "haifa_biology",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 640,
+      "after": 640,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "haifa-haifa_biology-live",
+          "digest": "sha256:56eb48ee652bdfa792870dd28ab4e3f952abc680077870c193d1c98d7f32c1b9",
+          "excerpt": "Official haifa_biology admission cutoff: 640.",
+          "url": "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "haifa",
+        "programId": "haifa_communication",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 550,
+      "after": 550,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "haifa-haifa_communication-live",
+          "digest": "sha256:cfaa7a8815b4981bf7425542b1ebf318782b0fd748742537744df697f33abaae",
+          "excerpt": "Official haifa_communication admission cutoff: 550.",
+          "url": "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "haifa",
+        "programId": "haifa_cs",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 705,
+      "after": 700,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "haifa-haifa_cs-live",
+          "digest": "sha256:1a92697142e6faff49ecba55c377a1316ccc53f471713062203e5ea4420c1ef5",
+          "excerpt": "Official haifa_cs admission cutoff: 700.",
+          "url": "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "haifa",
+        "programId": "haifa_economics",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 660,
+      "after": 660,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "haifa-haifa_economics-live",
+          "digest": "sha256:53cf1b43b4e6190b0bd05b1bf14de49340181fff4330f0f32feb810054155e6f",
+          "excerpt": "Official haifa_economics admission cutoff: 660.",
+          "url": "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "haifa",
+        "programId": "haifa_infosystems",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 680,
+      "after": 680,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "haifa-haifa_infosystems-live",
+          "digest": "sha256:5d5459b66cc8a7e89938ae75187989ae28b800495979f573dbf5718993c1c2d9",
+          "excerpt": "Official haifa_infosystems admission cutoff: 680.",
+          "url": "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "haifa",
+        "programId": "haifa_law",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 680,
+      "after": 680,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "haifa-haifa_law-live",
+          "digest": "sha256:c189ea3b1fb31db0fc48c1e8109cf41cbe1fbe19fd03dc7e3ba5f7373ef38e2a",
+          "excerpt": "Official haifa_law admission cutoff: 680.",
+          "url": "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "haifa",
+        "programId": "haifa_math",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 610,
+      "after": 610,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "haifa-haifa_math-live",
+          "digest": "sha256:5fad9ca105d15bfa4daadbc2e3593eae949ca86cdbad2e4599b93c0f83567388",
+          "excerpt": "Official haifa_math admission cutoff: 610.",
+          "url": "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "haifa",
+        "programId": "haifa_nursing",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 580,
+      "after": 580,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "haifa-haifa_nursing-live",
+          "digest": "sha256:84071c4c8a4cc53b3bfe5378223200fae111cb015177218b741905e04864fc04",
+          "excerpt": "Official haifa_nursing admission cutoff: 580.",
+          "url": "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "haifa",
+        "programId": "haifa_physiotherapy",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 680,
+      "after": 680,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "haifa-haifa_physiotherapy-live",
+          "digest": "sha256:45ceb3aea01d2426d9b79212e580814803806a88afbc4ec4d1924fa056feb6d4",
+          "excerpt": "Official haifa_physiotherapy admission cutoff: 680.",
+          "url": "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "haifa",
+        "programId": "haifa_politicalscience",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 580,
+      "after": 580,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "haifa-haifa_politicalscience-live",
+          "digest": "sha256:1e536146943acebdb3687c9a63ce9367864858661e8c60dc001b3e1787bcd78b",
+          "excerpt": "Official haifa_politicalscience admission cutoff: 580.",
+          "url": "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "haifa",
+        "programId": "haifa_psychology",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 650,
+      "after": 650,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "haifa-haifa_psychology-live",
+          "digest": "sha256:16b29d39c2aa817af849ce163276c49e5a806e567a07233c9a1dd295d70bda56",
+          "excerpt": "Official haifa_psychology admission cutoff: 650.",
+          "url": "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "haifa",
+        "programId": "haifa_socialwork",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 615,
+      "after": 615,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "haifa-haifa_socialwork-live",
+          "digest": "sha256:e2f7675a0365efe6d29da9f24539d0308ae537320438b87afe1299f3c3bc4153",
+          "excerpt": "Official haifa_socialwork admission cutoff: 615.",
+          "url": "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "haifa",
+        "programId": "haifa_sociology",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 540,
+      "after": 540,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "haifa-haifa_sociology-live",
+          "digest": "sha256:84f1d845ecc7a6d51ed6fa83f4061338db48b9aa85ce716ddc439d17048d046a",
+          "excerpt": "Official haifa_sociology admission cutoff: 540.",
+          "url": "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "haifa",
+        "programId": "haifa_statistics",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 650,
+      "after": 630,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "haifa-haifa_statistics-live",
+          "digest": "sha256:0b97d556d559265d0f4b9f95dc909748d4779484d9f8bca77a7726418faf660c",
+          "excerpt": "Official haifa_statistics admission cutoff: 630.",
+          "url": "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "haifa",
+        "programId": "law",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 680,
+      "after": 680,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "haifa-law-live",
+          "digest": "sha256:c09073bf9b0a44422bdfc47add4dacbebed6e9738ec0874fa87afe084149dbb5",
+          "excerpt": "Official law admission cutoff: 680.",
+          "url": "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "haifa",
+        "programId": "psychology",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 650,
+      "after": 650,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "haifa-psychology-live",
+          "digest": "sha256:2c87a5704d45fdced4fb056f8554f2da7ff5008f6e6b41f3015d1afafe273bcb",
+          "excerpt": "Official psychology admission cutoff: 650.",
+          "url": "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "huji",
+        "programId": "business",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 630,
+      "after": 20.75,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "huji-business-live",
+          "digest": "sha256:19e11a0154e3effaa5463701268bffb012832382c1dc17649a08d8cd125da6bb",
+          "excerpt": "Official business admission cutoff: 20.75.",
+          "url": "https://go.huji.ac.il/jjson/huji.json.gz",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "huji",
+        "programId": "cs",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 690,
+      "after": 23.75,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "huji-cs-live",
+          "digest": "sha256:5af792783354c0defd59612c1ea0db6480efb25a4e6f07a158c4f7eb4a36eab0",
+          "excerpt": "Official cs admission cutoff: 23.75.",
+          "url": "https://go.huji.ac.il/jjson/huji.json.gz",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "huji",
+        "programId": "datascience",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 678,
+      "after": 20.75,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "huji-datascience-live",
+          "digest": "sha256:ebf4c1e8316d5b5ce028015293ba1d150fa6827c97b5fef42b25bd391ac74f3a",
+          "excerpt": "Official datascience admission cutoff: 20.75.",
+          "url": "https://go.huji.ac.il/jjson/huji.json.gz",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "huji",
+        "programId": "economics",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 660,
+      "after": 20.75,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "huji-economics-live",
+          "digest": "sha256:6eafda14d380fa8e9a8f3d13dd15d9d0a168652896d323aa24e92d14d194b73c",
+          "excerpt": "Official economics admission cutoff: 20.75.",
+          "url": "https://go.huji.ac.il/jjson/huji.json.gz",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "huji",
+        "programId": "huji_accounting",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 650,
+      "after": 20.75,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "huji-huji_accounting-live",
+          "digest": "sha256:f311cafcdf3b53e3c6a8c8380545468e7a92d240cbf94f499f31841173dd9a0e",
+          "excerpt": "Official huji_accounting admission cutoff: 20.75.",
+          "url": "https://go.huji.ac.il/jjson/huji.json.gz",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "huji",
+        "programId": "huji_biology",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 640,
+      "after": 19,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "huji-huji_biology-live",
+          "digest": "sha256:e87e694538a6596004667f94c23ccbf109c1fdf18fbe8e96204b5fda71c05f28",
+          "excerpt": "Official huji_biology admission cutoff: 19.",
+          "url": "https://go.huji.ac.il/jjson/huji.json.gz",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "huji",
+        "programId": "huji_business",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 630,
+      "after": 20.75,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "huji-huji_business-live",
+          "digest": "sha256:2d526cb49031fe7ea48592f465b6556d3c95e3af074a1883dece16d8dd02f87a",
+          "excerpt": "Official huji_business admission cutoff: 20.75.",
+          "url": "https://go.huji.ac.il/jjson/huji.json.gz",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "huji",
+        "programId": "huji_cs",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 690,
+      "after": 23.75,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "huji-huji_cs-live",
+          "digest": "sha256:167cec4496bfa2ac5c590b531518577fb056121c129dfe78c3f6963d718bcf8c",
+          "excerpt": "Official huji_cs admission cutoff: 23.75.",
+          "url": "https://go.huji.ac.il/jjson/huji.json.gz",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "huji",
+        "programId": "huji_datascience",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 678,
+      "after": 20.75,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "huji-huji_datascience-live",
+          "digest": "sha256:4bc684c29a6816274dd91da23a761abc0efa478529c5df17d73611607a43f558",
+          "excerpt": "Official huji_datascience admission cutoff: 20.75.",
+          "url": "https://go.huji.ac.il/jjson/huji.json.gz",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "huji",
+        "programId": "huji_economics",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 660,
+      "after": 20.75,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "huji-huji_economics-live",
+          "digest": "sha256:3698f793a68d6b221e8668eb01934ad8a82feb24dda09f63cc73fc0de0bdcb6c",
+          "excerpt": "Official huji_economics admission cutoff: 20.75.",
+          "url": "https://go.huji.ac.il/jjson/huji.json.gz",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "huji",
+        "programId": "huji_law",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 705,
+      "after": 22.7,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "huji-huji_law-live",
+          "digest": "sha256:ed0f42e546f46455b1acfa86720e86315ea1ec46eb4a13ffb3261c9d47299bdc",
+          "excerpt": "Official huji_law admission cutoff: 22.7.",
+          "url": "https://go.huji.ac.il/jjson/huji.json.gz",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "huji",
+        "programId": "huji_medicine",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 775,
+      "after": 25.6,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "huji-huji_medicine-live",
+          "digest": "sha256:14c790f48ac4183171004023e23312c9fb96f279c3ebef008b9bf44ec9590d96",
+          "excerpt": "Official huji_medicine admission cutoff: 25.6.",
+          "url": "https://go.huji.ac.il/jjson/huji.json.gz",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "huji",
+        "programId": "huji_occupational_therapy",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 660,
+      "after": 20.5,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "huji-huji_occupational_therapy-live",
+          "digest": "sha256:ce1898dea89d2d2d7a2737e16a6720db19c7dfb2cbd81f98c7d0508d90473737",
+          "excerpt": "Official huji_occupational_therapy admission cutoff: 20.5.",
+          "url": "https://go.huji.ac.il/jjson/huji.json.gz",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "huji",
+        "programId": "huji_psychology",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 725,
+      "after": 22.5,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "huji-huji_psychology-live",
+          "digest": "sha256:0dab410d9f76fa1a66166da4d6b42067531789855afe9bd0e59f30e74a0b9aa7",
+          "excerpt": "Official huji_psychology admission cutoff: 22.5.",
+          "url": "https://go.huji.ac.il/jjson/huji.json.gz",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "huji",
+        "programId": "huji_socialwork",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 635,
+      "after": 20.25,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "huji-huji_socialwork-live",
+          "digest": "sha256:fa291f72519710ca0e42805bbaec8d1b10db69c1616beb0a81a17ec71b7900df",
+          "excerpt": "Official huji_socialwork admission cutoff: 20.25.",
+          "url": "https://go.huji.ac.il/jjson/huji.json.gz",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "huji",
+        "programId": "law",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 705,
+      "after": 22.7,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "huji-law-live",
+          "digest": "sha256:a3a11c3c8e57f8e5a98457b17be9d556a47511ca4e0459dd9be9b1bb57a3cb78",
+          "excerpt": "Official law admission cutoff: 22.7.",
+          "url": "https://go.huji.ac.il/jjson/huji.json.gz",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "huji",
+        "programId": "medicine",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 775,
+      "after": 25.6,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "huji-medicine-live",
+          "digest": "sha256:f0dcb6fe3fe9bb3fd2c42f38c333e181a13e50876052b85cc2d205ba27a648c3",
+          "excerpt": "Official medicine admission cutoff: 25.6.",
+          "url": "https://go.huji.ac.il/jjson/huji.json.gz",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "huji",
+        "programId": "pharmacy",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 700,
+      "after": 22.5,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "huji-pharmacy-live",
+          "digest": "sha256:7127af3439bc34867f7f7619b7b4e818af470f212ddf0c2538048a23eac58458",
+          "excerpt": "Official pharmacy admission cutoff: 22.5.",
+          "url": "https://go.huji.ac.il/jjson/huji.json.gz",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "huji",
+        "programId": "psychology",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 725,
+      "after": 22.5,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "huji-psychology-live",
+          "digest": "sha256:b26bf9d550b117ff8c0597d96dbfc0938580c8a4191b6c364ccb11680c1ef502",
+          "excerpt": "Official psychology admission cutoff: 22.5.",
+          "url": "https://go.huji.ac.il/jjson/huji.json.gz",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "tau",
+        "programId": "tau_datascience",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 688,
+      "after": 652,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "tau-digital-sciences-live",
+          "digest": "sha256:b682c359c3a9d8dbd4a59737e70d9d92a15361e1a9def06cc1e849e354a2e76c",
+          "excerpt": "Official tau-digital-sciences-live admission cutoff: 652.",
+          "url": "https://go.tau.ac.il/graphql",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "technion",
+        "programId": "cs",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 92,
+      "after": 91,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "technion-cs-live",
+          "digest": "sha256:a0b6957792aec4605a234bb6c2cc0dc7a4f749df4e5afde35cf6e0a1bab3581b",
+          "excerpt": "Official cs admission cutoff: 91.",
+          "url": "https://admissions.technion.ac.il/calculator/",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "technion",
+        "programId": "datascience",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 90,
+      "after": 91,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "technion-datascience-live",
+          "digest": "sha256:6b768bb569820a362e7cf4dadd22b8cce024100a243e515dc2729acc62bb4304",
+          "excerpt": "Official datascience admission cutoff: 91.",
+          "url": "https://admissions.technion.ac.il/calculator/",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "technion",
+        "programId": "ee",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 88,
+      "after": 94,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "technion-ee-live",
+          "digest": "sha256:11174f31b1e5b7bc46bf003a8612115038413c6cefed770ea3e993626bebbd23",
+          "excerpt": "Official ee admission cutoff: 94.",
+          "url": "https://admissions.technion.ac.il/calculator/",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "technion",
+        "programId": "me",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 86,
+      "after": 92,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "technion-me-live",
+          "digest": "sha256:c944ec137e7c6813528640dce0c1712c6b56a297a69ffe889f1164eefcd8e10d",
+          "excerpt": "Official me admission cutoff: 92.",
+          "url": "https://admissions.technion.ac.il/calculator/",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "technion",
+        "programId": "medicine",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 94,
+      "after": 92,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "technion-medicine-live",
+          "digest": "sha256:77c967e1b16e2ab2ddfbc45584a9fa414620f83f1cf8ab9b0e25928d46c3937e",
+          "excerpt": "Official medicine admission cutoff: 92.",
+          "url": "https://admissions.technion.ac.il/calculator/",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "technion",
+        "programId": "technion_biomedical",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 87,
+      "after": 87,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "technion-technion_biomedical-live",
+          "digest": "sha256:f44fe69d1b0a8b7f8e81527314948971aa2113e7d491a848a28fad16a56c60f8",
+          "excerpt": "Official technion_biomedical admission cutoff: 87.",
+          "url": "https://admissions.technion.ac.il/calculator/",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "technion",
+        "programId": "technion_civil",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 87,
+      "after": 88,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "technion-technion_civil-live",
+          "digest": "sha256:870ddd922fda9d10c8d4459f162c085d77663987d3dfb5d7ebc6314907de809d",
+          "excerpt": "Official technion_civil admission cutoff: 88.",
+          "url": "https://admissions.technion.ac.il/calculator/",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "technion",
+        "programId": "technion_cs",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 91,
+      "after": 91,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "technion-technion_cs-live",
+          "digest": "sha256:372b032904cbd9bf497b4b038c51177c624a0bba6c1ec08ff2e7a3ac44dbad7d",
+          "excerpt": "Official technion_cs admission cutoff: 91.",
+          "url": "https://admissions.technion.ac.il/calculator/",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "technion",
+        "programId": "technion_ee",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 94,
+      "after": 94,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "technion-technion_ee-live",
+          "digest": "sha256:3f179381346844f04be630cd0d0fa08e81d91c8c755bf8df0e890d6902234c11",
+          "excerpt": "Official technion_ee admission cutoff: 94.",
+          "url": "https://admissions.technion.ac.il/calculator/",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "technion",
+        "programId": "technion_industrial",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 89,
+      "after": 89,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "technion-technion_industrial-live",
+          "digest": "sha256:9c3893d34eae31ec9285d9382456422165f1868c40db854fc27605440c446b8f",
+          "excerpt": "Official technion_industrial admission cutoff: 89.",
+          "url": "https://admissions.technion.ac.il/calculator/",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "technion",
+        "programId": "technion_me",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 92,
+      "after": 92,
+      "effectiveFrom": "2026-09-26",
+      "sourceProofs": [
+        {
+          "sourceId": "technion-technion_me-live",
+          "digest": "sha256:2ae5326ffc3202a25070bb5e4f232f9f346520203ef01a1fcce6ef0477ea6f17",
+          "excerpt": "Official technion_me admission cutoff: 92.",
+          "url": "https://admissions.technion.ac.il/calculator/",
+          "proofType": "exact_official"
+        }
+      ]
+    }
+  ]
 }
