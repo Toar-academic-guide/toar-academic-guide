@@ -55,6 +55,23 @@ export function validateManifestValue(value) {
     throw new Error('Generated review PR cannot contain an empty manifest.');
 }
 
+export function validateGeneratedReviewFiles({ branch, staged, required }) {
+  const allowed = new Set(required);
+  const present = new Set([...branch, ...staged]);
+  const unexpected = [...present].filter((path) => !allowed.has(path));
+  if (unexpected.length > 0) {
+    throw new Error(
+      `Generated review branch changed non-allowlisted paths: ${unexpected.join(', ')}`,
+    );
+  }
+  const missing = required.filter((path) => !present.has(path));
+  if (missing.length > 0) {
+    throw new Error(
+      `Generated review branch must stage or retain the manifest, run report, and exclusion metadata: ${missing.join(', ')}`,
+    );
+  }
+}
+
 function validateReviewMetadata(path, runKey) {
   const value = JSON.parse(readFileSync(resolve(root, path), 'utf8'));
   if (
@@ -74,25 +91,9 @@ function main() {
   const runKey = parseArguments(process.argv.slice(2));
   const reportPath = `docs/admissions-review-runs/${runKey}.md`;
   const metadataPath = `docs/admissions-review-runs/${runKey}.json`;
-  const allowed = new Set([manifestPath, reportPath, metadataPath]);
+  const required = [manifestPath, reportPath, metadataPath];
   const changed = stagedFiles();
-  const unexpected = [...new Set([...branchFiles(), ...changed])].filter(
-    (path) => !allowed.has(path),
-  );
-  if (unexpected.length > 0) {
-    throw new Error(
-      `Generated review branch changed non-allowlisted paths: ${unexpected.join(', ')}`,
-    );
-  }
-  if (
-    !changed.includes(manifestPath) ||
-    !changed.includes(reportPath) ||
-    !changed.includes(metadataPath)
-  ) {
-    throw new Error(
-      'Generated review branch must stage the manifest, run report, and exclusion metadata.',
-    );
-  }
+  validateGeneratedReviewFiles({ branch: branchFiles(), staged: changed, required });
   validateManifest();
   validateReviewMetadata(metadataPath, runKey);
   console.info(
