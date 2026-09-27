@@ -18,6 +18,7 @@ const SUBJECT_IDS_BY_WIZARD_LABEL: Record<string, string> = {
   'מדעי המחשב': 'computer_science',
   מתמטיקה: 'mathematics',
   פיזיקה: 'physics',
+  פיסיקה: 'physics',
   ספרות: 'literature',
   'תנ״ך': 'bible',
   'תנ"ך': 'bible',
@@ -87,10 +88,7 @@ function subjectIdForWizardLabel(label: string): string {
   const normalizedLabel = label.trim();
   return (
     SUBJECT_IDS_BY_WIZARD_LABEL[normalizedLabel] ??
-    `subject_${encodeURIComponent(normalizedLabel)
-      .replace(/%/g, '_')
-      .replace(/[^a-zA-Z0-9_]/g, '_')
-      .toLowerCase()}`
+    `subject_${Array.from(normalizedLabel, (character) => character.codePointAt(0)!.toString(16)).join('_')}`
   );
 }
 

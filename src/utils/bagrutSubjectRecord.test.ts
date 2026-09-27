@@ -1,8 +1,37 @@
 import { describe, expect, it } from 'vitest';
 
 import { buildBagrutSubjectRecord } from './bagrutSubjectRecord';
+import { userProfileSchema } from '@/server/user/profileSchema';
 
 describe('buildBagrutSubjectRecord', () => {
+  it.each(['פיסיקה', 'פיזיקה'])('recognizes the physics picker spelling %s', (label) => {
+    const record = buildBagrutSubjectRecord({
+      sectorLabel: 'יהודי',
+      subjects: [{ label, units: 4, grade: 70 }],
+    });
+
+    expect(record.subjects).toEqual([{ subjectId: 'physics', units: 4, grade: 70 }]);
+  });
+
+  it('allows unmapped elective subjects to pass the real profile API schema', () => {
+    const record = buildBagrutSubjectRecord({
+      sectorLabel: 'יהודי',
+      subjects: [
+        { label: 'ביולוגיה חקלאית', units: 5, grade: 85 },
+        { label: 'אמנות הקולנוע', units: 5, grade: 90 },
+      ],
+    });
+
+    expect(record.subjects).toHaveLength(2);
+    expect(new Set(record.subjects.map((subject) => subject.subjectId)).size).toBe(2);
+    expect(
+      userProfileSchema.safeParse({
+        geographicPreference: 'any',
+        academicScores: { bagrut: { weightedAverage: 115, subjectRecord: record } },
+      }).success,
+    ).toBe(true);
+  });
+
   it('converts wizard labels into stable structured subjects for replay', () => {
     expect(
       buildBagrutSubjectRecord({
