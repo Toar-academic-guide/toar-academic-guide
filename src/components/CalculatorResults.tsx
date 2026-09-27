@@ -89,6 +89,9 @@ function formatResultSummary(result: AdmissionsEvaluationResult): string {
   }
 
   if (result.requiredInputs?.length) {
+    if (result.requiredInputs.some((input) => input.startsWith('technion_architecture_'))) {
+      return 'נדרשים נתוני ארכיטקטורה בטכניון';
+    }
     const onlyPsychometricSubscores = result.requiredInputs.every((input) =>
       ['psychometric_math', 'psychometric_verbal', 'psychometric_english'].includes(input),
     );
@@ -632,7 +635,13 @@ export default function CalculatorResults({
                                 : result.kind === 'manual_gate'
                                   ? result.decision === 'below'
                                     ? STATUS_CONFIG.manualGateBelow
-                                    : STATUS_CONFIG.manualGateEligible
+                                    : selectedProgram?.id === 'architecture' &&
+                                        institution.id === 'technion'
+                                      ? {
+                                          ...STATUS_CONFIG.manualGateEligible,
+                                          label: 'עמידה בתנאים — בכפוף למקום פנוי',
+                                        }
+                                      : STATUS_CONFIG.manualGateEligible
                                   : result.kind === 'requirements_only'
                                     ? STATUS_CONFIG.requirementsOnly
                                     : result.kind === 'tracked_missing_rule'

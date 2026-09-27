@@ -7,6 +7,18 @@ import {
 } from '@/server/user/profileSchema';
 
 describe('userProfileSchema', () => {
+  it('preserves optional Architecture scores, false and zero', () => {
+    const admissions = {
+      technionArchitectureBagrutAverage: 101.9,
+      technionArchitectureExamScore: 0,
+      technionArchitectureExamPassed: false,
+      technionArchitectureRequirementsConfirmed: true,
+    };
+    expect(
+      userProfileSchema.parse({ geographicPreference: 'any', academicScores: { admissions } })
+        .academicScores?.admissions,
+    ).toEqual(admissions);
+  });
   it('accepts a normalized subject-level Bagrut record without trusting a client hash', () => {
     const parsed = userProfileSchema.parse({
       geographicPreference: 'center',
@@ -112,6 +124,10 @@ describe('userProfileSchema', () => {
       { bguLanguageRequirementsConfirmed: 1 },
       { tauMathPlacementScore: -1 },
       { tauMathPlacementScore: 101 },
+      { technionArchitectureBagrutAverage: 119.1 },
+      { technionArchitectureExamScore: 140.1 },
+      { technionArchitectureExamPassed: 'yes' },
+      { technionArchitectureRequirementsConfirmed: 1 },
       { tauMathPlacementScore: false },
     ]) {
       expect(() =>

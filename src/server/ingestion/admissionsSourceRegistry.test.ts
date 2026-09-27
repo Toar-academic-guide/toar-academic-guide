@@ -20,7 +20,6 @@ describe('admissionsSourceRegistry', () => {
   );
 
   it.each([
-    ['technion-architecture-live', 'manual_gate'],
     ['colman-computer-science-live', 'requirements_only'],
     ['tau-medicine-live', 'manual_gate'],
     ['tau-medicine-legacy-live', 'manual_gate'],
@@ -110,6 +109,7 @@ describe('admissionsSourceRegistry', () => {
       'technion-technion_biomedical-live',
       'technion-technion_civil-live',
       'technion-technion_industrial-live',
+      'technion-architecture-live',
       'haifa-accounting-live',
       'haifa-haifa_accounting-live',
       'haifa-biology-live',

@@ -92,6 +92,9 @@ describe('user profile migration helpers', () => {
             tauBagrutAverage: 110.5,
             tauApplicationRequirementsConfirmed: false,
             tauMathPlacementScore: 0,
+            technionArchitectureBagrutAverage: 101.9,
+            technionArchitectureExamScore: 0,
+            technionArchitectureExamPassed: false,
           },
         },
       },
@@ -104,6 +107,9 @@ describe('user profile migration helpers', () => {
             tauApplicationRequirementsConfirmed: true,
             bguLanguageRequirementsConfirmed: false,
             tauMathPlacementScore: 75,
+            technionArchitectureExamScore: 110,
+            technionArchitectureExamPassed: true,
+            technionArchitectureRequirementsConfirmed: true,
           },
         },
       },
@@ -115,6 +121,10 @@ describe('user profile migration helpers', () => {
       tauApplicationRequirementsConfirmed: false,
       bguLanguageRequirementsConfirmed: false,
       tauMathPlacementScore: 0,
+      technionArchitectureBagrutAverage: 101.9,
+      technionArchitectureExamScore: 0,
+      technionArchitectureExamPassed: false,
+      technionArchitectureRequirementsConfirmed: true,
     });
   });
 });

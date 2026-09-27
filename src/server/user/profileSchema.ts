@@ -63,6 +63,10 @@ const bagrutRecordSchema = z.strictObject({
 });
 
 const admissionsInputsSchema = z.strictObject({
+  technionArchitectureBagrutAverage: z.number().min(0).max(119).optional(),
+  technionArchitectureExamScore: z.number().min(0).max(140).optional(),
+  technionArchitectureExamPassed: z.boolean().optional(),
+  technionArchitectureRequirementsConfirmed: z.boolean().optional(),
   tauBagrutAverage: z.number().min(50).max(130).optional(),
   bguBagrutAverage: z.number().min(50).max(130).optional(),
   tauApplicationRequirementsConfirmed: z.boolean().optional(),

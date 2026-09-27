@@ -14,6 +14,35 @@ import { buildUserProfileRow, serializeUserProfileSnapshot } from '@/server/user
 import { getUserProfileSnapshot } from '@/server/user/profile';
 
 describe('user profile serializers', () => {
+  it('round-trips Architecture inputs through the stored profile row without losing zero or false', () => {
+    const admissions = {
+      technionArchitectureBagrutAverage: 101.9,
+      technionArchitectureExamScore: 0,
+      technionArchitectureExamPassed: false,
+      technionArchitectureRequirementsConfirmed: true,
+    };
+    const row = buildUserProfileRow('00000000-0000-0000-0000-000000000001', {
+      geographicPreference: 'any',
+      academicScores: { admissions },
+    });
+    expect(row.admissionsInputs).toEqual(admissions);
+    const snapshot = serializeUserProfileSnapshot(
+      {
+        ...row,
+        riasecR: null,
+        riasecI: null,
+        riasecA: null,
+        riasecS: null,
+        riasecE: null,
+        riasecC: null,
+        avoidanceTags: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      [],
+    );
+    expect(snapshot.academicScores).toEqual({ admissions });
+  });
   it('serializes a sparse row into the frontend profile shape', () => {
     const snapshot = serializeUserProfileSnapshot(
       {

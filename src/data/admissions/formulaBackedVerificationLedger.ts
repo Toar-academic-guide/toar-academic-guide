@@ -293,11 +293,6 @@ const WITHHELD_PAIR_EVIDENCE: Record<string, { url: string; reason: string }> = 
     reason:
       'The current BGU 2027 admission dataset has no nutrition programme row from which a current programme mapping and two verdict fixtures can be proven.',
   },
-  architecture__technion: {
-    url: 'https://admissions.technion.ac.il/architecture-info/',
-    reason:
-      'Technion publishes a special Architecture Sekhem formula and states that the architecture entrance-exam score participates in the admission decision. The current proof does not reproduce that formula, exam-score contribution, or final verdict.',
-  },
   colmgmt_cs__colman: {
     url: 'https://www.colman.ac.il/academics/ba/computer-science/',
     reason:

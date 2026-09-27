@@ -62,6 +62,10 @@ describe('admissionsExtraInputsFromAcademicScores', () => {
           tauApplicationRequirementsConfirmed: false,
           bguLanguageRequirementsConfirmed: true,
           tauMathPlacementScore: 0,
+          technionArchitectureBagrutAverage: 101.9,
+          technionArchitectureExamScore: 0,
+          technionArchitectureExamPassed: false,
+          technionArchitectureRequirementsConfirmed: true,
         },
       }),
     ).toEqual({
@@ -70,6 +74,10 @@ describe('admissionsExtraInputsFromAcademicScores', () => {
       tauApplicationRequirementsConfirmed: false,
       bguLanguageRequirementsConfirmed: true,
       tauMathPlacementScore: 0,
+      technionArchitectureBagrutAverage: 101.9,
+      technionArchitectureExamScore: 0,
+      technionArchitectureExamPassed: false,
+      technionArchitectureRequirementsConfirmed: true,
     });
   });
 
@@ -80,6 +88,10 @@ describe('admissionsExtraInputsFromAcademicScores', () => {
       tauApplicationRequirementsConfirmed: false,
       bguLanguageRequirementsConfirmed: true,
       tauMathPlacementScore: 0,
+      technionArchitectureBagrutAverage: 101.9,
+      technionArchitectureExamScore: 0,
+      technionArchitectureExamPassed: false,
+      technionArchitectureRequirementsConfirmed: true,
     };
 
     expect(admissionsInputValue(inputs, 'tau_bagrut_average')).toBe(112.5);

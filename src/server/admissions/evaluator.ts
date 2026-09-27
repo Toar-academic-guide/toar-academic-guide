@@ -25,6 +25,10 @@ import {
   hasTechnionRequiredSubjectRecord,
   runTechnionAdmissionsProof,
 } from '@/server/ingestion/adapters/technionAdmissions';
+import {
+  TECHNION_ARCHITECTURE_REQUIREMENTS_URL,
+  technionArchitectureUnmetRequirements,
+} from './technionArchitecturePolicy';
 import { runBguAdmissionsProof } from '@/server/ingestion/adapters/bguAdmissions';
 import {
   getMondayAdmissionEvidenceByCatalogueInstitutionId,
@@ -205,7 +209,15 @@ async function evaluateExactResult(args: {
 
     if (exactTarget.sourceTarget.adapterId === 'technion') {
       const bagrutSubjectRecord = input.extraInputs?.bagrutSubjectRecord;
-      if (!hasTechnionRequiredSubjectRecord(bagrutSubjectRecord)) {
+      if (program.id === 'architecture') {
+        const unmet = technionArchitectureUnmetRequirements(input.extraInputs ?? {});
+        if (unmet.length)
+          return exactGateFailureResult({
+            institution,
+            unmetRequirements: unmet,
+            requirementsUrl: TECHNION_ARCHITECTURE_REQUIREMENTS_URL,
+          });
+      } else if (!hasTechnionRequiredSubjectRecord(bagrutSubjectRecord)) {
         return requiredInputsResult(institution, ['bagrut_subject_record']);
       }
       const proof = await runTechnionAdmissionsProof({
@@ -215,8 +227,28 @@ async function evaluateExactResult(args: {
           bagrutAverage: input.bagrut,
           bagrutSubjectRecord,
           psychometric: input.psychometric,
+          extraInputs: input.extraInputs,
         },
       });
+
+      if (program.id === 'architecture') {
+        const result = normalizeExactProofResult({
+          institution,
+          proof: proof.normalizedPayload,
+          explanationPrefix: 'הנוסחה והסף הרשמיים של הטכניון',
+        });
+        if (result.decision === 'eligible_to_apply') {
+          return {
+            ...result,
+            sourceLabel: 'עמידה בתנאים — על בסיס מקום פנוי',
+            explanation:
+              'הציון עומד בסף הרשמי לארכיטקטורה ותנאי ההגשה אושרו. הקבלה תלויה במקום פנוי ובהחלטה הסופית של הטכניון.',
+            nextAction: 'בדקו מול מדור הקבלה בטכניון אם יש מקום פנוי ומהי החלטת הקבלה הסופית.',
+            officialUrls: [TECHNION_ARCHITECTURE_REQUIREMENTS_URL],
+          };
+        }
+        return result;
+      }
 
       return applyStructuredRequirementsToAcceptedScoreResult({
         input,
@@ -2018,6 +2050,13 @@ function requiredInputsResult(
 }
 
 function missingInputsCopy(requiredInputs: AdmissionsRequiredInput[]) {
+  if (requiredInputs.some((input) => input.startsWith('technion_architecture_'))) {
+    return {
+      explanation:
+        'לחישוב ארכיטקטורה בטכניון נדרשים הממוצע הרשמי לארכיטקטורה, ציון בחינת הכניסה, תוצאת ״עובר״ הרשמית ואישור שאר תנאי ההגשה.',
+      nextAction: 'השלימו את נתוני הארכיטקטורה בטכניון בפרופיל האקדמי ונסו שוב.',
+    };
+  }
   if (
     requiredInputs.some((input) =>
       [

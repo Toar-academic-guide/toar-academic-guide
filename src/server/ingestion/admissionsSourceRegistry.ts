@@ -122,7 +122,19 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
         expectedCapability: 'decision_capable' as const,
         proofLevel: 'exact_official' as const,
         category: 'exact' as const,
-        defaultApplicant: { bagrutAverage: 100, psychometric: 800 },
+        defaultApplicant:
+          artifact.contract.programId === 'architecture'
+            ? {
+                bagrutAverage: 100,
+                psychometric: 730,
+                extraInputs: {
+                  technionArchitectureBagrutAverage: 115,
+                  technionArchitectureExamScore: 110,
+                  technionArchitectureExamPassed: true,
+                  technionArchitectureRequirementsConfirmed: true,
+                },
+              }
+            : { bagrutAverage: 100, psychometric: 800 },
         defaultProgram: {
           targetId: artifact.contract.source.targetId,
           pairId: artifact.contract.pairId,
@@ -139,32 +151,17 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
           'selectedScore',
           'acceptanceThreshold',
           'rejectionThreshold',
-          'officialVerdict',
+          'derivedVerdict',
         ],
         limitations: [
-          'Exact replay is scoped to the official Technion Sekhem calculator and current cutoff table.',
+          artifact.contract.programId === 'architecture'
+            ? 'Architecture uses Form 73, the regular Bagrut route and confirmed exam/registration requirements. Eligibility depends on available places and is not final admission.'
+            : 'Exact replay is scoped to the official Technion Sekhem calculator and current cutoff table.',
         ],
         nextAction:
           'Keep the calculator input mapping, cutoff table, fixtures, and source fingerprint under review.',
       }) satisfies AdmissionsSourceTarget,
   ),
-  {
-    id: 'technion-architecture-live',
-    institutionId: 'technion',
-    institutionName: 'Technion',
-    officialUrl: 'https://admissions.technion.ac.il/architecture-info/',
-    adapterId: 'capability_matrix',
-    expectedCapability: 'score_only',
-    proofLevel: 'partial_official',
-    category: 'manual_gate',
-    reproducedFields: ['publishedPrerequisites', 'specialSekhemDisclosure'],
-    limitations: [
-      'Architecture uses a special Sekhem formula that has not been reproduced.',
-      'The architecture entrance-exam score participates in the admission decision and is not available to the evaluator.',
-    ],
-    nextAction:
-      'Keep the pair authority-unavailable until the special Sekhem, entrance-exam contribution, cutoff, and final verdict are reproduced against the official calculator.',
-  },
   {
     id: 'colman-computer-science-live',
     institutionId: 'colman',

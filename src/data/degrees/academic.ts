@@ -197,7 +197,7 @@ export const ACADEMIC_PROGRAMS: Program[] = [
     profileScore: { AN: 3, TE: 4, CR: 5, SO: 1, LE: 2, OR: 3, DI: 2, ER: 2 },
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: 650, huji: null, technion: 87, bgu: null, ariel: 573 },
+    thresholds: { tau: 650, huji: null, technion: 85, bgu: null, ariel: 573 },
     isTauEngineering: false,
   },
   {

@@ -1,0 +1,111 @@
+{
+  "checkedAt": "2026-09-27T12:24:20.195Z",
+  "report": {
+    "summary": {
+      "total": 1,
+      "exactReproduced": 1,
+      "partial": 0,
+      "blocked": 0,
+      "failed": 0
+    },
+    "results": [
+      {
+        "proof": {
+          "id": "technion-architecture-live",
+          "institutionId": "technion",
+          "institutionName": "Technion",
+          "officialUrl": "https://admissions.technion.ac.il/calculator/",
+          "adapterId": "technion",
+          "capability": "decision_capable",
+          "proofLevel": "exact_official",
+          "status": "succeeded",
+          "decisionProvenance": "verified_derivation",
+          "sourceClass": "api_static_json",
+          "reproducedFields": [
+            "selectedScore",
+            "acceptanceThreshold",
+            "rejectionThreshold",
+            "derivedVerdict",
+            "admissionRequirements"
+          ],
+          "normalizedPayload": {
+            "programId": "architecture",
+            "officialProgramId": "73",
+            "admissionCycle": "2026-2027",
+            "source": "technion_architecture_form73_and_cutoff_table",
+            "selectedScore": 82.6,
+            "acceptanceThreshold": 85,
+            "rejectionThreshold": 85,
+            "derivedVerdict": "below",
+            "proofStatus": "succeeded",
+            "proofLevel": "exact_official",
+            "decisionProvenance": "verified_derivation",
+            "conditionalOnAvailablePlaces": true,
+            "controlledFixtureCaptureIds": [
+              "technion-architecture-live:conditional-eligible:2026-09-27",
+              "technion-architecture-live:below:2026-09-27"
+            ]
+          },
+          "limitations": [
+            "Regular Israeli Bagrut route only. Applicant confirms valid exam passing, general requirements and registration. Above-cutoff eligibility remains conditional on available places; it is not final admission."
+          ],
+          "nextAction": "Confirm available places and the final decision with Technion admissions",
+          "rawResponseMetadata": [
+            {
+              "endpoint": "https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/",
+              "status": 200,
+              "contentType": "text/html; charset=UTF-8"
+            },
+            {
+              "endpoint": "https://admissions.technion.ac.il/english-exam/",
+              "status": 200,
+              "contentType": "text/html; charset=UTF-8"
+            },
+            {
+              "endpoint": "https://admissions.technion.ac.il/architecture-info/",
+              "status": 200,
+              "contentType": "text/html; charset=UTF-8"
+            },
+            {
+              "endpoint": "https://admissions.technion.ac.il/knowledge-of-hebrew/",
+              "status": 200,
+              "contentType": "text/html; charset=UTF-8"
+            },
+            {
+              "endpoint": "https://admissions.technion.ac.il/calculator/",
+              "status": 200,
+              "contentType": "text/html; charset=UTF-8"
+            }
+          ],
+          "reviewedSourceFingerprint": "sha256:7e0249152873bca013001ee471d7ff357623a1055c31c5910d13a8ea7420e4c3"
+        },
+        "freshness": {
+          "id": "technion-architecture-live",
+          "sourceClass": "api_static_json",
+          "capability": "decision_capable",
+          "status": "fresh",
+          "rawFingerprint": "e39fe25f2d452aaf7f4f6834f2e94cd178c8f827efd81a43f9380f0ebbfee17a",
+          "normalizedFingerprint": "0effb4782b971492cb12d8900987d38b18e54b0383a8c2e97528553b370e7970",
+          "reviewWorthy": false,
+          "blockedReason": null,
+          "normalizedDecisionPayload": {
+            "fields": {
+              "acceptanceThreshold": 85,
+              "controlledFixtureCaptureIds": [
+                "technion-architecture-live:conditional-eligible:2026-09-27",
+                "technion-architecture-live:below:2026-09-27"
+              ],
+              "derivedVerdict": "below",
+              "officialProgramId": "73",
+              "programId": "architecture",
+              "rejectionThreshold": 85,
+              "selectedScore": 82.6
+            }
+          },
+          "ignoredNoise": []
+        }
+      }
+    ]
+  },
+  "persistence": null
+}

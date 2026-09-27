@@ -87,6 +87,37 @@ function route(id: string, durationWeeks: number, effortPoints: number) {
 }
 
 describe('CalculatorResults', () => {
+  it('labels Technion Architecture eligibility as conditional on available places', async () => {
+    hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
+      report([
+        {
+          institution: { id: 'technion', name: 'הטכניון', region: 'north' },
+          linkedInstitutionId: 'technion',
+          capability: 'exact',
+          kind: 'manual_gate',
+          decision: 'eligible_to_apply',
+          confidence: 'high',
+          score: 97.5,
+          threshold: 85,
+          sourceLabel: 'עמידה בתנאים — על בסיס מקום פנוי',
+          explanation: 'הקבלה תלויה במקום פנוי ובהחלטה הסופית של הטכניון.',
+          nextAction: 'בדקו מקום פנוי עם הטכניון.',
+        },
+      ]),
+    );
+    render(
+      <CalculatorResults
+        degreeId="architecture"
+        programs={programs}
+        psychometric={730}
+        bagrut={100}
+        onBack={() => {}}
+      />,
+    );
+    expect(await screen.findByText('עמידה בתנאים — בכפוף למקום פנוי')).toBeTruthy();
+    expect(screen.queryByText('מתקבל/ת')).toBeNull();
+  });
+
   beforeEach(() => {
     vi.restoreAllMocks();
     hoistedMocks.fetchAdmissionsEvaluation.mockReset();

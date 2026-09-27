@@ -191,6 +191,10 @@ describe('admissions evaluate route', () => {
       tauApplicationRequirementsConfirmed: false,
       bguLanguageRequirementsConfirmed: true,
       tauMathPlacementScore: 0,
+      technionArchitectureBagrutAverage: 101.9,
+      technionArchitectureExamScore: 0,
+      technionArchitectureExamPassed: false,
+      technionArchitectureRequirementsConfirmed: true,
     };
 
     const response = await POST(
@@ -231,6 +235,10 @@ describe('admissions evaluate route', () => {
       { tauApplicationRequirementsConfirmed: 'yes' },
       { bguLanguageRequirementsConfirmed: 1 },
       { tauMathPlacementScore: 101 },
+      { technionArchitectureBagrutAverage: 119.1 },
+      { technionArchitectureExamScore: 140.1 },
+      { technionArchitectureExamPassed: 'yes' },
+      { technionArchitectureRequirementsConfirmed: 1 },
     ]) {
       expect((await POST(requestWith(invalid))).status).toBe(400);
     }

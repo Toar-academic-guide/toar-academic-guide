@@ -52,9 +52,17 @@ export type AdmissionsRequiredInput =
   | 'bgu_bagrut_average'
   | 'tau_application_requirements'
   | 'bgu_language_requirements'
-  | 'tau_math_placement_score';
+  | 'tau_math_placement_score'
+  | 'technion_architecture_bagrut_average'
+  | 'technion_architecture_exam_score'
+  | 'technion_architecture_exam_passed'
+  | 'technion_architecture_requirements';
 
 export interface AdmissionsExtraInputs {
+  technionArchitectureBagrutAverage?: number;
+  technionArchitectureExamScore?: number;
+  technionArchitectureExamPassed?: boolean;
+  technionArchitectureRequirementsConfirmed?: boolean;
   psychometricMath?: number;
   psychometricVerbal?: number;
   psychometricEnglish?: number;

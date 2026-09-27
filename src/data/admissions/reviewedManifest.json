@@ -4,80 +4,20 @@
   "changes": [
     {
       "target": {
-        "institutionId": "bgu",
-        "programId": "bgu_cs",
+        "institutionId": "technion",
+        "programId": "architecture",
         "cycle": "2027"
       },
       "ruleKind": "admission_cutoff",
-      "before": 645,
-      "after": 720,
+      "before": 87,
+      "after": 85,
       "effectiveFrom": "2026-09-27",
       "sourceProofs": [
         {
-          "sourceId": "bgu-bgu_cs-live",
-          "digest": "sha256:45147bb2cc996ea164fefe843ab5e55ad7b4ba761f08a33a1506e1911a7bad5e",
-          "excerpt": "Official bgu_cs admission cutoff: 720.",
-          "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_institution=0&p_year=2027&p_semester=1&p_dep1=232&p_pat1=1&p_spe1=3&p_degree_level=1",
-          "proofType": "exact_official"
-        }
-      ]
-    },
-    {
-      "target": {
-        "institutionId": "bgu",
-        "programId": "cs",
-        "cycle": "2027"
-      },
-      "ruleKind": "admission_cutoff",
-      "before": 645,
-      "after": 720,
-      "effectiveFrom": "2026-09-27",
-      "sourceProofs": [
-        {
-          "sourceId": "bgu-cs-live",
-          "digest": "sha256:cfde6d89d0a05518da90962fb10625c950bc2f67cd9d2c8ce073e56df74aa123",
-          "excerpt": "Official cs admission cutoff: 720.",
-          "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_institution=0&p_year=2027&p_semester=1&p_dep1=232&p_pat1=1&p_spe1=3&p_degree_level=1",
-          "proofType": "exact_official"
-        }
-      ]
-    },
-    {
-      "target": {
-        "institutionId": "tau",
-        "programId": "cs",
-        "cycle": "2027"
-      },
-      "ruleKind": "admission_cutoff",
-      "before": 700,
-      "after": 705,
-      "effectiveFrom": "2026-09-27",
-      "sourceProofs": [
-        {
-          "sourceId": "tau-cs-live",
-          "digest": "sha256:8b9b95fca9cc51cf4b7e2407bff281cb09ffc3eb381cb6aa73b6c38305c93050",
-          "excerpt": "Official tau-cs-live admission cutoff: 705.",
-          "url": "https://go.tau.ac.il/graphql",
-          "proofType": "exact_official"
-        }
-      ]
-    },
-    {
-      "target": {
-        "institutionId": "tau",
-        "programId": "tau_cs",
-        "cycle": "2027"
-      },
-      "ruleKind": "admission_cutoff",
-      "before": 700,
-      "after": 705,
-      "effectiveFrom": "2026-09-27",
-      "sourceProofs": [
-        {
-          "sourceId": "tau-cs-legacy-live",
-          "digest": "sha256:33d13aaf887e94e27ef71d23fea13eb3ee4e027439dc426a2b12903458c51212",
-          "excerpt": "Official tau-cs-legacy-live admission cutoff: 705.",
-          "url": "https://go.tau.ac.il/graphql",
+          "sourceId": "technion-architecture-live",
+          "digest": "sha256:e39fe25f2d452aaf7f4f6834f2e94cd178c8f827efd81a43f9380f0ebbfee17a",
+          "excerpt": "Official technion-architecture-live admission cutoff: 85.",
+          "url": "https://admissions.technion.ac.il/calculator/",
           "proofType": "exact_official"
         }
       ]

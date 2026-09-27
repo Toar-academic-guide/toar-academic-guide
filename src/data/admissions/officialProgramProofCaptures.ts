@@ -181,6 +181,45 @@ export const OFFICIAL_PROGRAM_PROOF_CAPTURES_BY_TARGET_ID: Record<
   string,
   readonly OfficialProgramProofCapture[]
 > = Object.fromEntries([
+  [
+    'technion-architecture-live',
+    [
+      // Scores were observed in Form 73. Verdicts derive from the current 85 cutoff,
+      // confirmed regular-route requirements and available places, not an acceptance response.
+      {
+        captureId: 'technion-architecture-live:conditional-eligible:2026-09-27',
+        capturedAt: '2026-09-27T11:46:56.000Z',
+        officialUrl: TECHNION_OFFICIAL_URL,
+        applicant: {
+          bagrutAverage: 100,
+          psychometric: 730,
+          extraInputs: {
+            technionArchitectureBagrutAverage: 115,
+            technionArchitectureExamScore: 110,
+            technionArchitectureExamPassed: true,
+            technionArchitectureRequirementsConfirmed: true,
+          },
+        },
+        expected: { score: 97.5, verdict: 'eligible_to_apply' },
+      },
+      {
+        captureId: 'technion-architecture-live:below:2026-09-27',
+        capturedAt: '2026-09-27T11:40:55.000Z',
+        officialUrl: TECHNION_OFFICIAL_URL,
+        applicant: {
+          bagrutAverage: 100,
+          psychometric: 650,
+          extraInputs: {
+            technionArchitectureBagrutAverage: 101.9,
+            technionArchitectureExamScore: 80,
+            technionArchitectureExamPassed: true,
+            technionArchitectureRequirementsConfirmed: true,
+          },
+        },
+        expected: { score: 82.6, verdict: 'below' },
+      },
+    ],
+  ],
   ...TECHNION_ACCEPTED_TARGET_IDS.map((targetId) => [
     targetId,
     capturedTechnionFixtures(targetId, 'accepted'),

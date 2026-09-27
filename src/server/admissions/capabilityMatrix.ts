@@ -42,7 +42,6 @@ const WITHHELD_FORMULA_PAIR_CAPABILITIES: Record<
   string,
   Extract<AdmissionsEvaluationCapability, 'manual_gate' | 'requirements_only'>
 > = {
-  architecture__technion: 'manual_gate',
   colmgmt_cs__colman: 'manual_gate',
   medicine__tau: 'manual_gate',
   nutrition__tau: 'requirements_only',
@@ -137,7 +136,10 @@ const TECHNION_EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = Ob
             ? 'invitation'
             : undefined,
       },
-      requiredInputs: ['bagrut_subject_record'],
+      requiredInputs:
+        artifact.contract.programId === 'architecture'
+          ? artifact.contract.calculation.requiredInputs
+          : ['bagrut_subject_record'],
     } satisfies ExactCapabilityTarget,
   ]),
 );
