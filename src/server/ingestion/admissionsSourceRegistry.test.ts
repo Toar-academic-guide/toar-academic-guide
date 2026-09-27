@@ -8,6 +8,18 @@ import {
 
 describe('admissionsSourceRegistry', () => {
   it.each([
+    ['tau-cs-live', 'cs', 'cs__tau'],
+    ['tau-cs-legacy-live', 'tau_cs', 'tau_cs__tau'],
+  ])(
+    'maps %s to its catalogue identifier for reviewed publication',
+    (targetId, programId, pairId) => {
+      const target = selectAdmissionsSourceTargets([targetId])[0];
+
+      expect(target?.defaultProgram).toMatchObject({ id: programId, pairId });
+    },
+  );
+
+  it.each([
     ['technion-architecture-live', 'manual_gate'],
     ['colman-computer-science-live', 'requirements_only'],
     ['tau-medicine-live', 'manual_gate'],
