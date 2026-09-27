@@ -67,7 +67,9 @@ export default function LandingPage({
     const errs: typeof calcErrors = {};
     const psy = Number(psychometric);
     const bag = Number(bagrut);
-    const allowsNoPsychometric = ['business', 'tau_business'].includes(selectedDegreeId);
+    const allowsNoPsychometric = ['business', 'tau_business', 'bgu_industrial'].includes(
+      selectedDegreeId,
+    );
     if (
       (!psychometric && !allowsNoPsychometric) ||
       (psychometric && (isNaN(psy) || psy < 200 || psy > 800))
@@ -345,7 +347,7 @@ export default function LandingPage({
                   className="mb-1 block text-sm font-semibold text-slate-700"
                 >
                   ציון פסיכומטרי
-                  {['business', 'tau_business'].includes(selectedDegreeId)
+                  {['business', 'tau_business', 'bgu_industrial'].includes(selectedDegreeId)
                     ? ' (רשות לאפיק ללא פסיכומטרי)'
                     : ''}
                 </label>

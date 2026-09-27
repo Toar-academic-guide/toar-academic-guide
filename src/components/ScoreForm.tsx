@@ -29,7 +29,7 @@ export default function ScoreForm({
   const [errors, setErrors] = useState<{ psychometric?: string; bagrut?: string }>({});
 
   const selectedDegree = programs.find((program) => program.id === degreeId);
-  const allowsNoPsychometric = ['business', 'tau_business'].includes(degreeId);
+  const allowsNoPsychometric = ['business', 'tau_business', 'bgu_industrial'].includes(degreeId);
   const showEngineeringSection = selectedDegree?.isTauEngineering ?? false;
 
   function validate(): boolean {

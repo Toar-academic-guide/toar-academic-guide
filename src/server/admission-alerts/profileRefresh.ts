@@ -19,6 +19,8 @@ export function shouldRefreshAdmissionAlerts(
   }
 
   return (
+    JSON.stringify(previous.admissionsInputs?.bguEngineering) !==
+      JSON.stringify(next.admissionsInputs?.bguEngineering) ||
     previous.psychometricOverall !== next.psychometricOverall ||
     previous.psychometricQuantitative !== next.psychometricQuantitative ||
     previous.psychometricVerbal !== next.psychometricVerbal ||

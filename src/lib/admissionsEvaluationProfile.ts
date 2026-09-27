@@ -19,6 +19,7 @@ export function admissionsExtraInputsFromAcademicScores(
   const computerScience = subjectsById.get('computer_science');
 
   const extraInputs: AdmissionsExtraInputs = {
+    bguEngineering: academicScores?.admissions?.bguEngineering,
     technionArchitectureBagrutAverage:
       academicScores?.admissions?.technionArchitectureBagrutAverage,
     technionArchitectureExamScore: academicScores?.admissions?.technionArchitectureExamScore,

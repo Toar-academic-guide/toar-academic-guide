@@ -216,6 +216,35 @@ describe('admissions evaluate route', () => {
     );
   });
 
+  it('passes structured engineering data and an absent psychometric score for Industrial direct evaluation', async () => {
+    hoistedMocks.listCataloguePrograms.mockResolvedValue({
+      data: [{ id: 'bgu_industrial', name: 'הנדסת תעשייה וניהול', linkedInstitutionIds: ['bgu'] }],
+    });
+    const extraInputs = {
+      bguBagrutAverage: 109,
+      bguLanguageRequirementsConfirmed: true,
+      bguEngineering: {
+        detailsConfirmed: true,
+        route: 'direct',
+        physicsCoursePassed: false,
+        preparatoryInstitution: 'bgu',
+        preparatoryCompletionYear: 2026,
+        industrialPreparatoryAverage: 91.25,
+      },
+    };
+    const response = await POST(
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ degreeId: 'bgu_industrial', bagrut: 100, extraInputs }),
+      }),
+    );
+    expect(response.status).toBe(200);
+    const input = hoistedMocks.evaluateAdmissionsForProgram.mock.calls[0][0].input;
+    expect(input.psychometric).toBeUndefined();
+    expect(input.extraInputs).toEqual(extraInputs);
+  });
+
   it('supports an actual missing psychometric score only for the implemented Management route', async () => {
     hoistedMocks.listCataloguePrograms.mockResolvedValue({
       data: [{ id: 'business', name: 'ניהול', linkedInstitutionIds: ['tau'] }],

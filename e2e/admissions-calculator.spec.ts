@@ -32,6 +32,32 @@ async function expectSafeResult(
 }
 
 test.describe('app admissions calculator', () => {
+  test('submits Industrial Engineering without inventing a psychometric score', async ({
+    page,
+  }) => {
+    await page.goto('/app/calculator');
+    await page.locator('#bagrut').fill('109');
+    await page.locator('#degree').selectOption('bgu_industrial');
+    await expect(page.getByLabel('ציון פסיכומטרי (רשות לאפיק ללא פסיכומטרי)')).toBeVisible();
+    const responsePromise = page.waitForResponse(
+      (response) =>
+        response.url().endsWith('/api/admissions/evaluate') &&
+        response.request().method() === 'POST',
+    );
+    await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
+    const response = await responsePromise;
+    expect(response.request().postDataJSON()).toMatchObject({
+      degreeId: 'bgu_industrial',
+      bagrut: 109,
+    });
+    expect(response.request().postDataJSON().psychometric).toBeUndefined();
+    expect(response.status()).toBe(200);
+    await expect(page.getByText('אוניברסיטת בן-גוריון בנגב', { exact: true })).toBeVisible();
+    await expect(
+      page.getByLabel('אוניברסיטת בן-גוריון בנגב: מתקבל/ת', { exact: true }),
+    ).toHaveCount(0);
+  });
+
   test('shows safe catalogue-backed results without leaving /app/calculator', async ({ page }) => {
     await page.goto('/app/calculator');
     await expect(page).toHaveURL(/\/app\/calculator$/);

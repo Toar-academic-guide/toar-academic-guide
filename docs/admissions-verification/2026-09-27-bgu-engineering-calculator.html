@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+<meta content="IE=10" http-equiv="X-UA-Compatible">
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-8-i">
+<title>BGU_TITLE -  חישוב סכם להנדסה </title>
+<script>var appLang = "he";var appName = "";var curDate= "27.09.2026";</script>
+    <script src="/js/mouseActionOnLogo.js"></script>
+    <script src="/js/jquery-1.11.3.min.js"></script>
+    <script src="/js/acc.common.js"></script>
+    <script src="/js/averageCalcNew.js"></script>
+    <link href="/css/style.php?lang=he" rel="stylesheet" type="text/css">
+    <link href="/css/SPLstyle.css" rel="stylesheet" type="text/css">
+</head>
+<body><center>
+                 <d1iv id="body_wrap">
+                 <div id="skiptocontent"><a href="#maincontent">דלג לתוכן</a></div>
+
+
+<TABLE style="wi1dth:540px;" role="presentation" border=0>
+<TR>
+      <TD><a href="https://in.bgu.ac.il/Pages/4students.aspx?" target="newwin_bguURL"" title="MNAV_ALT_KIOSK">
+            <IMG height="50px" src="/images/logo19c/web-icon.png" alt="MNAV_ALT_KIOSK">
+           </a>
+       </TD>
+      <td style="width:20px">&nbsp;</td>
+      <TD><a href="https://bgu4u22.bgu.ac.il/apex/10g/r/f_login1004/login_desktop?p_lang=he" target="newwin_bguKioskURL"" title="MNAV_ALT_PERSONAL">
+            <IMG height="50px" src="/images/logo19c/info-icon.png" alt="MNAV_ALT_PERSONAL">
+           </a>
+       </TD>
+      <td style="width:20px">&nbsp;</td>
+      <TD><a href="mailto:helpdesk@bgu.ac.il" title="MNAV_ALT_EMAIL">
+            <IMG height="50px" src="/images/logo19c/contact-icon.png" alt="MNAV_ALT_EMAIL">
+           </a>
+       </TD>
+       <td style="width:20px">&nbsp;</td>
+      <TD><a href="https://in.bgu.ac.il/Pages/default.aspx" target="newwin_bguURL"" title="MNAV_ALT_BGU">
+            <IMG height="100px" src="/images/logo19c/heb-eng-clear-flame.png" alt="MNAV_ALT_BGU">
+            </a>
+      </TD>
+</TR>
+</TABLE>
+<h1  style="width:800px;"> חישוב סכם להנדסה</h1>
+<a id="maincontent"></a>
+<!-- Start Main Table -->
+<table id="mainTable" role="presentation" style="width: 740px">
+ <tr>
+  <td class="vtop">
+  <table border=0 role="presentation"  style="margin:auto; width:100%">
+   <tr>
+    <td style="background-image: url(/images/frame-corner-top-l.gif);"></td>
+    <td style="background-image: url(/images/frame-top.gif);" class="vtop" >
+
+    <table role="presentation">
+     <tr>
+      <td><img src="/images/nothing.gif" width=584 height=1></td>
+     </tr></table>
+    </td>
+    <td><img src="/images/frame-corner-top-r1.gif" ></td>
+   </tr>
+   <tr>
+    <td style="background-image: url(/images/frame-l.gif);">&nbsp;</td>
+    <td class="vtop" align="center">
+
+
+        <div class="mainForm " >
+
+<FORM NAME="mainForm" ID="mainForm"  METHOD="post" ACTION="!rg.acc_SubmitEngSekem" TARGET="hidden">
+
+    <input type="hidden" name="rn_year"  value="2">
+    <input type="hidden" name="rn_semester"  value="1">
+    <fieldset>
+        <legend>  חישוב סכם להנדסה  תשפ"ז א'</legend>
+           <label class="upperLabel"> תנאי סף לחישוב סכם הנדסה :
+           <br>
+           1. פסיכומטרי כללי רב תחומי / נתיב לאקדמיה בציון 550 לפחות.
+           <br>
+           2. מתמטיקה 4/5 יח"ל.
+           </label>
+           <br>
+        <fieldset class="clear">
+            <legend class="nestedLegend">בחר מחלקה</legend>
+            <div class="rightContainer">
+              <label for="rn_eng_dprt_list" class="sideLabel"> מחלקה מבוקשת *</label>
+<SELECT  id="rn_eng_dprt_list" NAME="rn_eng_dprt_list" DIR="rtl">
+<OPTION value="367">הנדסה ביו-רפואית
+<OPTION value="363">הנדסה כימית
+<OPTION value="370">הנדסה שנה א'
+<OPTION value="369">הנדסת ביוטכנולוגיה
+<OPTION value="374">הנדסת בניין
+<OPTION value="365">הנדסת חומרים
+<OPTION value="361">הנדסת חשמל ומחשבים
+<OPTION value="381">הנדסת מחשבים
+<OPTION value="362">הנדסת מכונות
+<OPTION value="372">הנדסת מערכות מידע
+<OPTION value="371">הנדסת מערכות תקשורת
+<OPTION value="382">הנדסת נתונים
+<OPTION value="373">הנדסת תכנה
+<OPTION value="364">הנדסת תעשיה וניהול
+<OPTION SELECTED value="">
+</SELECT>
+</div>
+        </fieldset>
+
+        <fieldset class="clear">
+            <legend class="nestedLegend">פסיכומטרי</legend>
+
+         <div class="rightContainer clear"  style="padding-top:10px;">
+         <label  for="on_grade_classi_psycho" id="lon_grade_classi_psycho" class="sideLabel" style="line-height:13px;">ציון כללי רב תחומי * </label>
+
+         <input type="text" id="on_grade_classi_psycho" name="on_grade_classi_psycho" dir="rtl"  maxlength="3"
+                style="width:50px;"
+
+
+                value=""  size="5"  onblur="checkField(event)"
+                aria-required="true"
+                aria-invalid="false"
+                aria-describedby="on_grade_classi_psycho_verror">
+        </div>
+
+    <div class="error" id="on_grade_classi_psycho_verror" ></div>
+
+         <div class="rightContainer clear"  style="padding-top:10px;">
+         <label  for="on_grade_classi_quant" id="lon_grade_classi_quant" class="sideLabel" style="line-height:13px;">מרכיב כמותי מתוך <br> פסיכומטרי כללי רב תחומי *</label>
+
+         <input type="text" id="on_grade_classi_quant" name="on_grade_classi_quant" dir="rtl"  maxlength="3"
+                style="width:50px;"
+
+
+                value=""  size="5"  onblur="checkField(event)"
+                aria-required="true"
+                aria-invalid="false"
+                aria-describedby="on_grade_classi_quant_verror">
+        </div>
+
+    <div class="error" id="on_grade_classi_quant_verror" ></div>
+</fieldset>
+                <fieldset class="clear">
+                <legend class="nestedLegend">  ציוני בגרות </legend>
+
+         <div class="rightContainer clear"  style="padding-top:10px;">
+         <label  for="on_bag_avg" id="lon_bag_avg" class="sideLabel" >ממוצע בגרות</label>
+
+         <input type="text" id="on_bag_avg" name="on_bag_avg" dir="rtl"  maxlength="6"
+                style="width:50px;"
+
+
+                value=""  size="5"  onblur="checkField(event)"
+                aria-required="false"
+                aria-invalid="false"
+                aria-describedby="on_bag_avg_verror">
+        </div>
+
+    <div class="error" id="on_bag_avg_verror" ></div>
+
+            <div class="rightContainer clear" >
+            <label for="on_learning_units_bag_math" class="sideLabel h50" > מתמטיקה </label>
+            </div>
+
+
+         <div class="rightContainer"  style="padding-right:0px;">
+         <label  for="on_learning_units_bag_math" id="lon_learning_units_bag_math" class="upperLabel" >יחידות</label>
+         <label for="on_learning_units_bag_math" id="off_on_learning_units_bag_math" class="offscreen" >יחידות במקצוע "מתמטיקה" בציוני בגרות</label>
+         <input type="text" id="on_learning_units_bag_math" name="on_learning_units_bag_math" dir="rtl"  maxlength="3"
+                style="width:50px;"
+
+
+                value=""  size="5"  onblur="checkField(event)"
+                aria-required="false"
+                aria-invalid="false"
+                aria-describedby="on_learning_units_bag_math_verror">
+        </div>
+
+
+         <div class="rightContainer"  >
+         <label  for="on_grade_bag_math" id="lon_grade_bag_math" class="upperLabel" >ציון</label>
+         <label for="on_grade_bag_math" id="off_on_grade_bag_math" class="offscreen" >ציון במקצוע "מתמטיקה" בציוני בגרות</label>
+         <input type="text" id="on_grade_bag_math" name="on_grade_bag_math" dir="rtl"  maxlength="3"
+                style="width:50px;"
+
+
+                value=""  size="5"  onblur="checkField(event)"
+                aria-required="false"
+                aria-invalid="false"
+                aria-describedby="on_grade_bag_math_verror">
+        </div>
+
+    <div class="error" id="on_learning_units_bag_math_verror" ></div>
+    <div class="error" id="on_grade_bag_math_verror" ></div>
+
+            <div class="rightContainer clear" >
+            <label for="on_learning_units_bag_phy" class="sideLabel h50" >פיזיקה</label>
+            </div>
+
+
+         <div class="rightContainer"  style="padding-right:0px;">
+         <label  for="on_learning_units_bag_phy" id="lon_learning_units_bag_phy" class="upperLabel" >יחידות</label>
+         <label for="on_learning_units_bag_phy" id="off_on_learning_units_bag_phy" class="offscreen" >יחידות במקצוע "פיזיקה" בציוני בגרות</label>
+         <input type="text" id="on_learning_units_bag_phy" name="on_learning_units_bag_phy" dir="rtl"  maxlength="3"
+                style="width:50px;"
+
+
+                value=""  size="5"  onblur="checkField(event)"
+                aria-required="false"
+                aria-invalid="false"
+                aria-describedby="on_learning_units_bag_phy_verror">
+        </div>
+
+
+         <div class="rightContainer"  >
+         <label  for="on_grade_bag_phy" id="lon_grade_bag_phy" class="upperLabel" >ציון</label>
+         <label for="on_grade_bag_phy" id="off_on_grade_bag_phy" class="offscreen" >ציון במקצוע "פיזיקה" בציוני בגרות</label>
+         <input type="text" id="on_grade_bag_phy" name="on_grade_bag_phy" dir="rtl"  maxlength="3"
+                style="width:50px;"
+
+
+                value=""  size="5"  onblur="checkField(event)"
+                aria-required="false"
+                aria-invalid="false"
+                aria-describedby="on_grade_bag_phy_verror">
+        </div>
+
+    <div class="error" id="on_learning_units_bag_phy_verror" ></div>
+    <div class="error" id="on_grade_bag_phy_verror" ></div>
+<div class="rightContainer clear">
+            <label for="on_subject" class="upperLabel">A מקצוע לבונוס</label>
+<SELECT  id="on_subject" NAME="on_subject" DIR="rtl">
+<OPTION value="126">אלקטרוניקה ומחשבים
+<OPTION value="169">ביוטכנולוגיה
+<OPTION value="21">ביולוגיה
+<OPTION value="122">בקרת מכונות
+<OPTION value="19">כימיה
+<OPTION value="51">כימיה טכנולוגית
+<OPTION value="114">מדעי החיים והחקלאות
+<OPTION value="188">מדעי המחשב
+<OPTION value="674">מידע ונתונים
+<OPTION value="190">מערכות ביוטכנולוגיות
+<OPTION value="693">ניתוח נתונים
+<OPTION value="654">ע. גמר בתכנות ותכנון מע'
+<OPTION value="5">תכנון ותכנות מערכות
+<OPTION SELECTED value="">
+</SELECT>
+</div>
+
+
+         <div class="rightContainer"  >
+         <label  for="on_learning_units_bonus" id="lon_learning_units_bonus" class="upperLabel" >יחידות</label>
+         <label for="on_learning_units_bonus" id="off_on_learning_units_bonus" class="offscreen" >יחידות במקצוע "מקצוע לבונוס A" בציוני בגרות</label>
+         <input type="text" id="on_learning_units_bonus" name="on_learning_units_bonus" dir="rtl"  maxlength="3"
+                style="width:50px;"
+
+
+                value=""  size="5"  onblur="checkField(event)"
+                aria-required="false"
+                aria-invalid="false"
+                aria-describedby="on_learning_units_bonus_verror">
+        </div>
+
+
+         <div class="rightContainer"  >
+         <label  for="on_grade_bonus" id="lon_grade_bonus" class="upperLabel" >ציון</label>
+         <label for="on_grade_bonus" id="off_on_grade_bonus" class="offscreen" >ציון במקצוע "מקצוע לבונוס A" בציוני בגרות</label>
+         <input type="text" id="on_grade_bonus" name="on_grade_bonus" dir="rtl"  maxlength="3"
+                style="width:50px;"
+
+
+                value=""  size="5"  onblur="checkField(event)"
+                aria-required="false"
+                aria-invalid="false"
+                aria-describedby="on_grade_bonus_verror">
+        </div>
+
+    <div class="error" id="on_learning_units_bonus_verror" ></div>
+    <div class="error" id="on_grade_bonus_verror" ></div>
+<div class="rightContainer clear">
+            <label for="on_subject2" class="upperLabel">B מקצוע לבונוס</label>
+<SELECT  id="on_subject2" NAME="on_subject2" DIR="rtl">
+<OPTION value="126">אלקטרוניקה ומחשבים
+<OPTION value="169">ביוטכנולוגיה
+<OPTION value="21">ביולוגיה
+<OPTION value="122">בקרת מכונות
+<OPTION value="19">כימיה
+<OPTION value="51">כימיה טכנולוגית
+<OPTION value="114">מדעי החיים והחקלאות
+<OPTION value="188">מדעי המחשב
+<OPTION value="674">מידע ונתונים
+<OPTION value="190">מערכות ביוטכנולוגיות
+<OPTION value="693">ניתוח נתונים
+<OPTION value="654">ע. גמר בתכנות ותכנון מע'
+<OPTION value="5">תכנון ותכנות מערכות
+<OPTION SELECTED value="">
+</SELECT>
+</div>
+
+
+         <div class="rightContainer"  >
+         <label  for="on_learning_units_bonus2" id="lon_learning_units_bonus2" class="upperLabel" >יחידות</label>
+         <label for="on_learning_units_bonus2" id="off_on_learning_units_bonus2" class="offscreen" >יחידות במקצוע "מקצוע לבונוס B" בציוני בגרות</label>
+         <input type="text" id="on_learning_units_bonus2" name="on_learning_units_bonus2" dir="rtl"  maxlength="3"
+                style="width:50px;"
+
+
+                value=""  size="5"  onblur="checkField(event)"
+                aria-required="false"
+                aria-invalid="false"
+                aria-describedby="on_learning_units_bonus2_verror">
+        </div>
+
+
+         <div class="rightContainer"  >
+         <label  for="on_grade_bonus2" id="lon_grade_bonus2" class="upperLabel" >ציון</label>
+         <label for="on_grade_bonus2" id="off_on_grade_bonus2" class="offscreen" >ציון במקצוע "מקצוע לבונוס B" בציוני בגרות</label>
+         <input type="text" id="on_grade_bonus2" name="on_grade_bonus2" dir="rtl"  maxlength="3"
+                style="width:50px;"
+
+
+                value=""  size="5"  onblur="checkField(event)"
+                aria-required="false"
+                aria-invalid="false"
+                aria-describedby="on_grade_bonus2_verror">
+        </div>
+
+    <div class="error" id="on_learning_units_bonus2_verror" ></div>
+    <div class="error" id="on_grade_bonus2_verror" ></div>
+<div class="rightContainer clear">
+            <label for="on_subject3" class="upperLabel">C מקצוע לבונוס</label>
+<SELECT  id="on_subject3" NAME="on_subject3" DIR="rtl">
+<OPTION value="126">אלקטרוניקה ומחשבים
+<OPTION value="169">ביוטכנולוגיה
+<OPTION value="21">ביולוגיה
+<OPTION value="122">בקרת מכונות
+<OPTION value="19">כימיה
+<OPTION value="51">כימיה טכנולוגית
+<OPTION value="114">מדעי החיים והחקלאות
+<OPTION value="188">מדעי המחשב
+<OPTION value="674">מידע ונתונים
+<OPTION value="190">מערכות ביוטכנולוגיות
+<OPTION value="693">ניתוח נתונים
+<OPTION value="654">ע. גמר בתכנות ותכנון מע'
+<OPTION value="5">תכנון ותכנות מערכות
+<OPTION SELECTED value="">
+</SELECT>
+</div>
+
+
+         <div class="rightContainer"  >
+         <label  for="on_learning_units_bonus3" id="lon_learning_units_bonus3" class="upperLabel" >יחידות</label>
+         <label for="on_learning_units_bonus3" id="off_on_learning_units_bonus3" class="offscreen" >יחידות במקצוע "מקצוע לבונוס C" בציוני בגרות</label>
+         <input type="text" id="on_learning_units_bonus3" name="on_learning_units_bonus3" dir="rtl"  maxlength="3"
+                style="width:50px;"
+
+
+                value=""  size="5"  onblur="checkField(event)"
+                aria-required="false"
+                aria-invalid="false"
+                aria-describedby="on_learning_units_bonus3_verror">
+        </div>
+
+
+         <div class="rightContainer"  >
+         <label  for="on_grade_bonus3" id="lon_grade_bonus3" class="upperLabel" >ציון</label>
+         <label for="on_grade_bonus3" id="off_on_grade_bonus3" class="offscreen" >ציון במקצוע "מקצוע לבונוס C" בציוני בגרות</label>
+         <input type="text" id="on_grade_bonus3" name="on_grade_bonus3" dir="rtl"  maxlength="3"
+                style="width:50px;"
+
+
+                value=""  size="5"  onblur="checkField(event)"
+                aria-required="false"
+                aria-invalid="false"
+                aria-describedby="on_grade_bonus3_verror">
+        </div>
+
+    <div class="error" id="on_learning_units_bonus3_verror" ></div>
+    <div class="error" id="on_grade_bonus3_verror" ></div>
+</fieldset>
+                <fieldset class="clear">
+                <legend class="nestedLegend"> ציוני מכינת הנדסה של אוניברסיטת בן-גוריון בנגב
+                <br> (או מכינת טכניון החל מתשע"ח)
+                </legend>
+
+            <div class="rightContainer clear" >
+            <label for="on_learning_units_mech_math" class="sideLabel h50" >מתמטיקה</label>
+            </div>
+
+
+         <div class="rightContainer"  style="padding-right:0px;">
+         <label  for="on_learning_units_mech_math" id="lon_learning_units_mech_math" class="upperLabel" >יחידות</label>
+         <label for="on_learning_units_mech_math" id="off_on_learning_units_mech_math" class="offscreen" >יחידות במקצוע "מתמטיקה" בציוני מכינה</label>
+         <input type="text" id="on_learning_units_mech_math" name="on_learning_units_mech_math" dir="rtl"  maxlength="3"
+                style="width:50px;"
+
+
+                value=""  size="5"  onblur="checkField(event)"
+                aria-required="false"
+                aria-invalid="false"
+                aria-describedby="on_learning_units_mech_math_verror">
+        </div>
+
+
+         <div class="rightContainer"  >
+         <label  for="on_grade_mech_math" id="lon_grade_mech_math" class="upperLabel" >ציון</label>
+         <label for="on_grade_mech_math" id="off_on_grade_mech_math" class="offscreen" >ציון במקצוע "מתמטיקה" בציוני מכינה</label>
+         <input type="text" id="on_grade_mech_math" name="on_grade_mech_math" dir="rtl"  maxlength="3"
+                style="width:50px;"
+
+
+                value=""  size="5"  onblur="checkField(event)"
+                aria-required="false"
+                aria-invalid="false"
+                aria-describedby="on_grade_mech_math_verror">
+        </div>
+
+    <div class="error" id="on_learning_units_mech_math_verror" ></div>
+    <div class="error" id="on_grade_mech_math_verror" ></div>
+
+            <div class="rightContainer clear" >
+            <label for="on_learning_units_mech_phy" class="sideLabel h50" >פיזיקה</label>
+            </div>
+
+
+         <div class="rightContainer"  style="padding-right:0px;">
+         <label  for="on_learning_units_mech_phy" id="lon_learning_units_mech_phy" class="upperLabel" >יחידות</label>
+         <label for="on_learning_units_mech_phy" id="off_on_learning_units_mech_phy" class="offscreen" >יחידות במקצוע "פיזיקה" בציוני מכינה</label>
+         <input type="text" id="on_learning_units_mech_phy" name="on_learning_units_mech_phy" dir="rtl"  maxlength="3"
+                style="width:50px;"
+
+
+                value=""  size="5"  onblur="checkField(event)"
+                aria-required="false"
+                aria-invalid="false"
+                aria-describedby="on_learning_units_mech_phy_verror">
+        </div>
+
+
+         <div class="rightContainer"  >
+         <label  for="on_grade_mech_phy" id="lon_grade_mech_phy" class="upperLabel" >ציון</label>
+         <label for="on_grade_mech_phy" id="off_on_grade_mech_phy" class="offscreen" >ציון במקצוע "פיזיקה" בציוני מכינה</label>
+         <input type="text" id="on_grade_mech_phy" name="on_grade_mech_phy" dir="rtl"  maxlength="3"
+                style="width:50px;"
+
+
+                value=""  size="5"  onblur="checkField(event)"
+                aria-required="false"
+                aria-invalid="false"
+                aria-describedby="on_grade_mech_phy_verror">
+        </div>
+
+    <div class="error" id="on_learning_units_mech_phy_verror" ></div>
+    <div class="error" id="on_grade_mech_phy_verror" ></div>
+</fieldset>
+                <fieldset class="clear">
+                <legend class="nestedLegend">הנדסאים</legend>
+
+            <div class="rightContainer clear" >
+            <label for="on_learning_units_eng_math" class="sideLabel h50" >מתמטיקה</label>
+            </div>
+
+
+         <div class="rightContainer"  style="padding-right:0px;">
+         <label  for="on_learning_units_eng_math" id="lon_learning_units_eng_math" class="upperLabel" >יחידות</label>
+         <label for="on_learning_units_eng_math" id="off_on_learning_units_eng_math" class="offscreen" >יחידות במקצוע "מתמטיקה" בציוני להנדסאים</label>
+         <input type="text" id="on_learning_units_eng_math" name="on_learning_units_eng_math" dir="rtl"  maxlength="3"
+                style="width:50px;"
+
+
+                value=""  size="5"  onblur="checkField(event)"
+                aria-required="false"
+                aria-invalid="false"
+                aria-describedby="on_learning_units_eng_math_verror">
+        </div>
+
+
+         <div class="rightContainer"  >
+         <label  for="on_grade_eng_math" id="lon_grade_eng_math" class="upperLabel" >ציון</label>
+         <label for="on_grade_eng_math" id="off_on_grade_eng_math" class="offscreen" >ציון במקצוע "מתמטיקה" בציוני להנדסאים</label>
+         <input type="text" id="on_grade_eng_math" name="on_grade_eng_math" dir="rtl"  maxlength="3"
+                style="width:50px;"
+
+
+                value=""  size="5"  onblur="checkField(event)"
+                aria-required="false"
+                aria-invalid="false"
+                aria-describedby="on_grade_eng_math_verror">
+        </div>
+
+    <div class="error" id="on_learning_units_eng_math_verror" ></div>
+    <div class="error" id="on_grade_eng_math_verror" ></div>
+</fieldset>
+
+
+
+        <div id="result">
+            <div  class="result_center" role="region" aria-live="polite" aria-atomic=TRUE>
+              <div class="result_label">סכם הנדסה:</div>
+              <div class="result_data"><span id="on_c_val"></span></div>
+            </div>
+        </div>
+
+        <div class="clear">
+            <span class="CourseSearchFormText"  style="color:black;" valign="bottom"> * שדות חובה    </span>
+        </div>
+
+    </fieldset>
+
+        <div style="margin:auto 0; direction:rtl;  text-align:center; padding-top:10px;">
+        <input class="styled-button-3" type="button" onClick="calcSekemEng();" value="חשב">
+        <input class="styled-button-3" type="reset" onClick="calcSekemEngReset();"  class="reset1" value="מחק">
+    </div>
+
+  </form>
+
+
+
+</div>
+<table style="margin-top: 15px;" role="presentation">
+    <tr>
+      <td><img role="presentation" src="/images/images-search-course/pic1.jpg" width=466 height=69  ></td>
+    </tr>
+    </table>
+</td>
+    <td class="vtop" background="/images/frame-r.gif" align=right >
+      &nbsp;
+
+
+     </td>
+   </tr>
+   <tr>
+    <td><img src="/images/frame-corner-bot-l.gif" width=52 height=72  ></td>
+
+    <td class="vtop"  style="background-image: url(/images/frame-bot.gif);" align=center>
+        <table role="presentation">
+        <tr>
+            <td><a href="/html/average_calc/index.php"
+                onmouseover="backButtonOver()"
+                onmouseout="backButtonOut()">
+                <img src="" width="50" height="72" alt="" name="buttonBack" id="buttonBack">
+            </a></td>
+        </tr>
+        </table>
+    </td>
+    <td><img src="/images/frame-corner-bot-r.gif"></td>
+   </tr>
+  </table>
+  </td>
+ </tr>
+</table>
+
+</center>
+</body>
+</html>

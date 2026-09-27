@@ -1,5 +1,6 @@
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type { BagrutSector, BagrutSubjectRecord, DeltaNeeded } from '@/types';
+import type { BguEngineeringInputs } from './bguEngineering';
 
 export type AdmissionsEvaluationDecision =
   'accepted' | 'below' | 'eligible_to_apply' | 'pending' | 'unknown';
@@ -34,6 +35,8 @@ export type AdmissionsEvaluationCapability =
 export type AdmissionsConfidence = 'high' | 'medium' | 'low';
 
 export type AdmissionsRequiredInput =
+  | 'bgu_engineering_details'
+  | 'bgu_engineering_physics_course'
   | 'psychometric_overall'
   | 'tau_management_requirements'
   | 'tau_management_academic_route'
@@ -64,6 +67,7 @@ export type AdmissionsRequiredInput =
   | 'technion_architecture_requirements';
 
 export interface AdmissionsExtraInputs {
+  bguEngineering?: BguEngineeringInputs;
   technionArchitectureBagrutAverage?: number;
   technionArchitectureExamScore?: number;
   technionArchitectureExamPassed?: boolean;
@@ -99,7 +103,8 @@ export interface AdmissionsVerificationFixtureInput {
   psychometric: number;
   bagrut: number;
   bagrutSubjectRecord?: BagrutSubjectRecord;
-  [field: string]: string | number | boolean | null | BagrutSubjectRecord | undefined;
+  [field: string]:
+    string | number | boolean | null | BagrutSubjectRecord | BguEngineeringInputs | undefined;
 }
 
 export interface AdmissionsVerificationFixture {

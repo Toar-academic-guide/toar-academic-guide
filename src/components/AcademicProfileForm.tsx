@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Upload, FileText, X, Brain, GraduationCap, Loader2 } from 'lucide-react';
 import type { AcademicScores, UserProfile } from '@/types';
 import BagrutCalculatorWizard from './BagrutCalculatorWizard';
+import { BguEngineeringFields } from './BguEngineeringFields';
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 const fadeUp = (delay: number) => ({
@@ -65,6 +66,7 @@ export default function AcademicProfileForm({
   const [bguBagrutAverage, setBguBagrutAverage] = useState(
     initialScores?.admissions?.bguBagrutAverage?.toString() ?? '',
   );
+  const [bguEngineering, setBguEngineering] = useState(initialScores?.admissions?.bguEngineering);
   const [tauApplicationRequirements, setTauApplicationRequirements] = useState(
     initialScores?.admissions?.tauApplicationRequirementsConfirmed?.toString() ?? '',
   );
@@ -175,6 +177,7 @@ export default function AcademicProfileForm({
     }
 
     const admissions: NonNullable<AcademicScores['admissions']> = {};
+    if (bguEngineering !== undefined) admissions.bguEngineering = bguEngineering;
     const architectureAverageValue = optionalNumber(architectureAverage);
     const architectureExamValue = optionalNumber(architectureExam);
     if (
@@ -655,7 +658,7 @@ export default function AcademicProfileForm({
               </div>
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="bgu-bagrut-average" className="text-xs font-medium text-slate-600">
-                  ממוצע בגרות רשמי של בן־גוריון (50–130)
+                  ממוצע בגרות או הנדסאי מוכר של בן־גוריון (50–130)
                 </label>
                 <input
                   id="bgu-bagrut-average"
@@ -701,6 +704,12 @@ export default function AcademicProfileForm({
                   <option value="false">לא</option>
                 </select>
               </label>
+              <BguEngineeringFields
+                value={bguEngineering}
+                onChange={setBguEngineering}
+                disabled={isSaving}
+                inputClassName={inputBase}
+              />
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="tau-math-placement" className="text-xs font-medium text-slate-600">
                   ציון סיווג במתמטיקה של אוניברסיטת תל אביב (0–100)

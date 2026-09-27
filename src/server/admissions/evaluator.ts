@@ -51,6 +51,12 @@ import {
   BGU_COMPUTER_SCIENCE_QUANTITATIVE_POLICY,
 } from './bguComputerSciencePolicy';
 import { withBoundedOfficialResponse } from '@/server/ingestion/boundedOfficialFetch';
+import {
+  isBguEngineeringProgram,
+  resolveBguEngineeringInputs,
+  BGU_ENGINEERING_GUIDE_URL,
+} from './bguEngineeringPolicy';
+import { runBguEngineeringAdmissionsProof } from '@/server/ingestion/adapters/bguEngineeringAdmissions';
 
 type AdmissionsEvaluationInput = AdmissionsEvaluationRequest & { psychometric: number };
 
@@ -183,6 +189,61 @@ async function evaluateExactResult(args: {
   });
 
   try {
+    if (exactTarget.sourceTarget.adapterId === 'bgu' && isBguEngineeringProgram(program.id)) {
+      const resolution = resolveBguEngineeringInputs(program.id, requestedInput);
+      if (resolution.kind === 'needs_input')
+        return requiredInputsResult(institution, resolution.requiredInputs);
+      if (resolution.kind === 'below')
+        return exactGateFailureResult({
+          institution,
+          unmetRequirements: [resolution.reason],
+          requirementsUrl: exactTarget.program.searchText!,
+        });
+      const proof = await runBguEngineeringAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: {
+          bagrutAverage: requestedInput.bagrut,
+          psychometric: requestedInput.psychometric,
+          extraInputs: requestedInput.extraInputs,
+        },
+      });
+      const result = normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'סכם ההנדסה ותנאי הקבלה הרשמיים של בן־גוריון',
+      });
+      if (result.capability !== 'exact') return result;
+      return {
+        ...result,
+        scoreLabel:
+          resolution.kind === 'direct'
+            ? resolution.basis === 'preparatory'
+              ? 'ממוצע מכינה'
+              : 'ממוצע בגרות רשמי'
+            : 'סכם הנדסה',
+        ...(result.decision === 'eligible_to_apply'
+          ? {
+              sourceLabel:
+                proof.normalizedPayload.waitingList === true
+                  ? 'עמידה בתנאים — רשימת המתנה'
+                  : 'עמידה בתנאים — בכפוף לאישור בן־גוריון',
+              explanation: [
+                proof.normalizedPayload.waitingList === true
+                  ? 'הנתונים עומדים בסף הרשמי. בן־גוריון מודיעה שמכסת המקומות מלאה וניתן להירשם לרשימת המתנה.'
+                  : 'הנתונים עומדים בתנאי האפיק הרשמי; הקבלה הסופית תלויה במקום פנוי ובאישור בן־גוריון.',
+                proof.normalizedPayload.physicsConditionOutstanding === true
+                  ? 'נדרשת השלמת קורס מוכר בפיזיקה לפני תחילת הלימודים.'
+                  : '',
+              ]
+                .filter(Boolean)
+                .join(' '),
+              nextAction: 'בדקו את מצב ההרשמה ואת דרישות קורס הפיזיקה באתר בן־גוריון.',
+            }
+          : {}),
+        officialUrls: [exactTarget.program.searchText!, BGU_ENGINEERING_GUIDE_URL],
+      };
+    }
     if (
       exactTarget.program.pairId === 'business__tau' ||
       exactTarget.program.pairId === 'tau_business__tau'
@@ -2073,6 +2134,12 @@ function requiredInputsResult(
 }
 
 function missingInputsCopy(requiredInputs: AdmissionsRequiredInput[]) {
+  if (requiredInputs.some((input) => input.startsWith('bgu_engineering_')))
+    return {
+      explanation:
+        'לסכם הנדסה בבן־גוריון נדרשים מקצועות הבגרות וכל ציוני המכינה או ההנדסאי הרלוונטיים, וגם מצב השלמת הפיזיקה.',
+      nextAction: 'השלימו את סעיף ההנדסה בבן־גוריון בפרופיל האקדמי ונסו שוב.',
+    };
   if (requiredInputs.some((input) => input.startsWith('tau_management_'))) {
     return {
       explanation: 'נדרשים פרטי אפיקי הקבלה לניהול באוניברסיטת תל אביב.',

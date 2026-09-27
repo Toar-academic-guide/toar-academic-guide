@@ -32,6 +32,7 @@ describe('alert profile refresh detection', () => {
       { tauApplicationRequirementsConfirmed: false },
       { bguLanguageRequirementsConfirmed: false },
       { tauMathPlacementScore: 0 },
+      { bguEngineering: { detailsConfirmed: true, physicsCoursePassed: false } },
     ]) {
       expect(shouldRefreshAdmissionAlerts(previous, { ...previous, admissionsInputs })).toBe(true);
       expect(shouldRefreshAdmissionAlerts({ ...previous, admissionsInputs }, previous)).toBe(true);
@@ -45,5 +46,22 @@ describe('alert profile refresh detection', () => {
     expect(shouldRefreshAdmissionAlerts(previous, { ...previous, admissionsInputs: {} })).toBe(
       false,
     );
+  });
+
+  it('refreshes when an engineering qualification changes within an existing input object', () => {
+    const admissionsInputs = {
+      bguEngineering: { detailsConfirmed: true, physicsCoursePassed: false },
+    };
+    expect(
+      shouldRefreshAdmissionAlerts(
+        { ...previous, admissionsInputs },
+        {
+          ...previous,
+          admissionsInputs: {
+            bguEngineering: { ...admissionsInputs.bguEngineering, physicsCoursePassed: true },
+          },
+        },
+      ),
+    ).toBe(true);
   });
 });

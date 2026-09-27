@@ -5,6 +5,10 @@ export function admissionsInputValue(
   requiredInput: AdmissionsRequiredInput,
 ): unknown {
   switch (requiredInput) {
+    case 'bgu_engineering_details':
+      return input?.bguEngineering;
+    case 'bgu_engineering_physics_course':
+      return input?.bguEngineering?.physicsCoursePassed;
     case 'technion_architecture_bagrut_average':
       return input?.technionArchitectureBagrutAverage;
     case 'technion_architecture_exam_score':
