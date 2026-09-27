@@ -951,7 +951,7 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     defaultProgram: {
       targetId: 'tau-cs-live',
       pairId: 'cs__tau',
-      id: 'tau-cs',
+      id: 'cs',
       name: 'Computer Science',
       nodeId: 8220,
       externalId: '036811010000',
@@ -982,7 +982,7 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     defaultProgram: {
       targetId: 'tau-cs-legacy-live',
       pairId: 'tau_cs__tau',
-      id: 'tau-cs',
+      id: 'tau_cs',
       name: 'Computer Science',
       nodeId: 8220,
       externalId: '036811010000',

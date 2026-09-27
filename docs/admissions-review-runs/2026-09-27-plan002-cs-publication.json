@@ -1,0 +1,185 @@
+{
+  "runKey": "2026-W39",
+  "checkedAt": "2026-09-27T09:07:55.606Z",
+  "releaseKind": "canonical_bootstrap",
+  "proofScenario": null,
+  "summary": {
+    "status": "reviewable",
+    "candidateCount": 4,
+    "excludedCount": 0,
+    "freshCount": 0,
+    "blockedCount": 0,
+    "failedCount": 0
+  },
+  "candidates": [
+    {
+      "id": "bgu-bgu_cs-live:admission_cutoff",
+      "target": {
+        "institutionId": "bgu",
+        "programId": "bgu_cs",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 645,
+      "after": 720,
+      "sourceProof": {
+        "sourceId": "bgu-bgu_cs-live",
+        "digest": "sha256:45147bb2cc996ea164fefe843ab5e55ad7b4ba761f08a33a1506e1911a7bad5e",
+        "excerpt": "Official bgu_cs admission cutoff: 720.",
+        "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_institution=0&p_year=2027&p_semester=1&p_dep1=232&p_pat1=1&p_spe1=3&p_degree_level=1",
+        "proofType": "exact_official"
+      },
+      "institutionName": "Ben-Gurion University"
+    },
+    {
+      "id": "bgu-cs-live:admission_cutoff",
+      "target": {
+        "institutionId": "bgu",
+        "programId": "cs",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 645,
+      "after": 720,
+      "sourceProof": {
+        "sourceId": "bgu-cs-live",
+        "digest": "sha256:cfde6d89d0a05518da90962fb10625c950bc2f67cd9d2c8ce073e56df74aa123",
+        "excerpt": "Official cs admission cutoff: 720.",
+        "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_institution=0&p_year=2027&p_semester=1&p_dep1=232&p_pat1=1&p_spe1=3&p_degree_level=1",
+        "proofType": "exact_official"
+      },
+      "institutionName": "Ben-Gurion University"
+    },
+    {
+      "id": "tau-cs-live:admission_cutoff",
+      "target": {
+        "institutionId": "tau",
+        "programId": "cs",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 700,
+      "after": 705,
+      "sourceProof": {
+        "sourceId": "tau-cs-live",
+        "digest": "sha256:8b9b95fca9cc51cf4b7e2407bff281cb09ffc3eb381cb6aa73b6c38305c93050",
+        "excerpt": "Official tau-cs-live admission cutoff: 705.",
+        "url": "https://go.tau.ac.il/graphql",
+        "proofType": "exact_official"
+      },
+      "institutionName": "Tel Aviv University"
+    },
+    {
+      "id": "tau-cs-legacy-live:admission_cutoff",
+      "target": {
+        "institutionId": "tau",
+        "programId": "tau_cs",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 700,
+      "after": 705,
+      "sourceProof": {
+        "sourceId": "tau-cs-legacy-live",
+        "digest": "sha256:33d13aaf887e94e27ef71d23fea13eb3ee4e027439dc426a2b12903458c51212",
+        "excerpt": "Official tau-cs-legacy-live admission cutoff: 705.",
+        "url": "https://go.tau.ac.il/graphql",
+        "proofType": "exact_official"
+      },
+      "institutionName": "Tel Aviv University"
+    }
+  ],
+  "excluded": [],
+  "reviewMetadata": {
+    "version": 1,
+    "runKey": "2026-W39",
+    "excludedCandidateIds": []
+  },
+  "manifest": {
+    "version": 2,
+    "releaseKind": "canonical_bootstrap",
+    "changes": [
+      {
+        "target": {
+          "institutionId": "bgu",
+          "programId": "bgu_cs",
+          "cycle": "2027"
+        },
+        "ruleKind": "admission_cutoff",
+        "before": 645,
+        "after": 720,
+        "effectiveFrom": "2026-09-27",
+        "sourceProofs": [
+          {
+            "sourceId": "bgu-bgu_cs-live",
+            "digest": "sha256:45147bb2cc996ea164fefe843ab5e55ad7b4ba761f08a33a1506e1911a7bad5e",
+            "excerpt": "Official bgu_cs admission cutoff: 720.",
+            "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_institution=0&p_year=2027&p_semester=1&p_dep1=232&p_pat1=1&p_spe1=3&p_degree_level=1",
+            "proofType": "exact_official"
+          }
+        ]
+      },
+      {
+        "target": {
+          "institutionId": "bgu",
+          "programId": "cs",
+          "cycle": "2027"
+        },
+        "ruleKind": "admission_cutoff",
+        "before": 645,
+        "after": 720,
+        "effectiveFrom": "2026-09-27",
+        "sourceProofs": [
+          {
+            "sourceId": "bgu-cs-live",
+            "digest": "sha256:cfde6d89d0a05518da90962fb10625c950bc2f67cd9d2c8ce073e56df74aa123",
+            "excerpt": "Official cs admission cutoff: 720.",
+            "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_institution=0&p_year=2027&p_semester=1&p_dep1=232&p_pat1=1&p_spe1=3&p_degree_level=1",
+            "proofType": "exact_official"
+          }
+        ]
+      },
+      {
+        "target": {
+          "institutionId": "tau",
+          "programId": "cs",
+          "cycle": "2027"
+        },
+        "ruleKind": "admission_cutoff",
+        "before": 700,
+        "after": 705,
+        "effectiveFrom": "2026-09-27",
+        "sourceProofs": [
+          {
+            "sourceId": "tau-cs-live",
+            "digest": "sha256:8b9b95fca9cc51cf4b7e2407bff281cb09ffc3eb381cb6aa73b6c38305c93050",
+            "excerpt": "Official tau-cs-live admission cutoff: 705.",
+            "url": "https://go.tau.ac.il/graphql",
+            "proofType": "exact_official"
+          }
+        ]
+      },
+      {
+        "target": {
+          "institutionId": "tau",
+          "programId": "tau_cs",
+          "cycle": "2027"
+        },
+        "ruleKind": "admission_cutoff",
+        "before": 700,
+        "after": 705,
+        "effectiveFrom": "2026-09-27",
+        "sourceProofs": [
+          {
+            "sourceId": "tau-cs-legacy-live",
+            "digest": "sha256:33d13aaf887e94e27ef71d23fea13eb3ee4e027439dc426a2b12903458c51212",
+            "excerpt": "Official tau-cs-legacy-live admission cutoff: 705.",
+            "url": "https://go.tau.ac.il/graphql",
+            "proofType": "exact_official"
+          }
+        ]
+      }
+    ]
+  },
+  "markdown": "# Admissions review run 2026-W39\n\nChecked at: 2026-09-27T09:07:55.606Z\nStatus: reviewable\n\n## Included changes\n\n- **Ben-Gurion University / bgu_cs** — 645 → 720\n  - Candidate id: bgu-bgu_cs-live:admission_cutoff\n  - Source: https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_institution=0&p_year=2027&p_semester=1&p_dep1=232&p_pat1=1&p_spe1=3&p_degree_level=1\n  - Evidence: Official bgu_cs admission cutoff: 720.\n- **Ben-Gurion University / cs** — 645 → 720\n  - Candidate id: bgu-cs-live:admission_cutoff\n  - Source: https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_institution=0&p_year=2027&p_semester=1&p_dep1=232&p_pat1=1&p_spe1=3&p_degree_level=1\n  - Evidence: Official cs admission cutoff: 720.\n- **Tel Aviv University / cs** — 700 → 705\n  - Candidate id: tau-cs-live:admission_cutoff\n  - Source: https://go.tau.ac.il/graphql\n  - Evidence: Official tau-cs-live admission cutoff: 705.\n- **Tel Aviv University / tau_cs** — 700 → 705\n  - Candidate id: tau-cs-legacy-live:admission_cutoff\n  - Source: https://go.tau.ac.il/graphql\n  - Evidence: Official tau-cs-legacy-live admission cutoff: 705.\n\n## Excluded investigation items\n\nNone.\n"
+}
