@@ -124,6 +124,38 @@ describe('CalculatorResults', () => {
     hoistedMocks.fetchTauComputerScienceRoutes.mockReset();
   });
 
+  it('labels exact Management eligibility as eligible to apply, without asking for more data', async () => {
+    hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
+      report([
+        {
+          institution: { id: 'tau', name: 'אוניברסיטת תל אביב', region: 'center' },
+          linkedInstitutionId: 'tau',
+          capability: 'exact',
+          kind: 'exact',
+          decision: 'eligible_to_apply',
+          confidence: 'high',
+          score: 639,
+          threshold: 610,
+          sourceLabel: 'תנאי קבלה רשמיים לניהול',
+          explanation: 'עומדים בתנאי אפיק PMA (PMA 835).',
+          nextAction: 'בדקו את תנאי החוג השני.',
+        },
+      ]),
+    );
+    render(
+      <CalculatorResults
+        degreeId="tau_business"
+        programs={programs}
+        psychometric={605}
+        bagrut={100}
+        onBack={() => {}}
+      />,
+    );
+    expect(await screen.findByLabelText('אוניברסיטת תל אביב: אפשר להגיש מועמדות')).toBeTruthy();
+    expect(screen.queryByText('נדרשים נתונים')).toBeNull();
+    expect(screen.queryByText('מתקבל/ת')).toBeNull();
+  });
+
   it('renders a pending official verdict as waiting, not missing input', async () => {
     hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
       report([
