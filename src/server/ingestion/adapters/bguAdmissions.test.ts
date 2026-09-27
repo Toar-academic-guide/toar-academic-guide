@@ -11,6 +11,10 @@ import {
   normalizeBguComputerScienceRule,
 } from '@/data/admissions/bguComputerScienceVerification';
 import { BGU_PROGRAM_VERIFICATION_METADATA } from '@/data/admissions/bguProgramVerification';
+import {
+  BGU_DATA_SCIENCE_OFFICIAL_PROOF_CAPTURES_BY_TARGET_ID,
+  BGU_DATA_SCIENCE_SOURCE_FINGERPRINT,
+} from '@/data/admissions/bguDataScienceVerification';
 import { evaluateProgramVerification } from '@/server/admissions/verification/programVerification';
 import { runBguAdmissionsProof, runBguComputerScienceLiveVerification } from './bguAdmissions';
 import type { AdmissionsAdapterContext } from '../admissionsSourceAdapters';
@@ -97,6 +101,73 @@ function htmlResponse(score: number) {
 }
 
 describe('BGU Computer Science official proof', () => {
+  it('keeps Data Science captures and fingerprints separate from Computer Science', () => {
+    expect(BGU_DATA_SCIENCE_SOURCE_FINGERPRINT).not.toBe(BGU_COMPUTER_SCIENCE_SOURCE_FINGERPRINT);
+    for (const programId of ['datascience', 'bgu_datascience']) {
+      const artifact = BGU_PROGRAM_VERIFICATION_METADATA[`${programId}__bgu`];
+      expect(artifact.contract.officialProgramId).toBe('dep232-pat1-spe13');
+      expect(artifact.fixtures.map((fixture) => fixture.expected)).toEqual([
+        { score: 879, verdict: 'accepted' },
+        { score: 636, verdict: 'below' },
+      ]);
+      expect(
+        BGU_DATA_SCIENCE_OFFICIAL_PROOF_CAPTURES_BY_TARGET_ID[artifact.contract.source.targetId],
+      ).toHaveLength(2);
+      expect(
+        evaluateProgramVerification({
+          contract: artifact.contract,
+          fixtures: artifact.fixtures,
+          currentAdmissionCycle: '2026-2027',
+          currentSourceFingerprint: BGU_DATA_SCIENCE_SOURCE_FINGERPRINT,
+        }).capability,
+      ).toBe('exact');
+    }
+  });
+
+  it('withholds Data Science when the source returns the Computer Science mapping', async () => {
+    const request = context();
+    const artifact = BGU_PROGRAM_VERIFICATION_METADATA.bgu_datascience__bgu;
+    request.program = {
+      ...request.program,
+      id: 'bgu_datascience',
+      pairId: 'bgu_datascience__bgu',
+      externalId: 'dep232-pat1-spe13',
+      searchText: artifact.contract.source.url,
+    };
+    const proof = await runBguAdmissionsProof(request);
+    expect(proof.proofLevel).toBe('blocked');
+    expect(request.fetcher).toHaveBeenCalledTimes(1);
+  });
+  it.each(['datascience', 'bgu_datascience'])(
+    'replays the quantitative calculator for Data Science with its own programme mapping (%s)',
+    async (programId) => {
+      const artifact = BGU_PROGRAM_VERIFICATION_METADATA[`${programId}__bgu`];
+      const request = context({
+        fetcher: vi
+          .fn<typeof fetch>()
+          .mockResolvedValueOnce(jsonResponse({ items: [currentRule({ specialization: 13 })] }))
+          .mockResolvedValueOnce(htmlResponse(879)),
+      });
+      request.program = {
+        targetId: artifact.contract.source.targetId,
+        pairId: artifact.contract.pairId,
+        id: programId,
+        name: 'Data Science',
+        externalId: 'dep232-pat1-spe13',
+        searchText: artifact.contract.source.url,
+      };
+      const proof = await runBguAdmissionsProof(request);
+      expect(proof.normalizedPayload).toMatchObject({
+        officialProgramId: 'dep232-pat1-spe13',
+        selectedScore: 879,
+        acceptanceThreshold: 720,
+        derivedVerdict: 'accepted',
+      });
+      expect(request.fetcher.mock.calls[1][0]).toBe(
+        'https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem',
+      );
+    },
+  );
   it('publishes pair-specific contracts, captured fixtures, and calculated rule fingerprints', () => {
     expect(normalizeBguComputerScienceRule({ items: [currentRule()] })).toEqual(
       BGU_COMPUTER_SCIENCE_REVIEWED_RULE_SNAPSHOT,

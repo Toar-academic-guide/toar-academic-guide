@@ -16,9 +16,7 @@ import {
 } from '@/data/admissions/bguProgramVerification';
 import {
   BGU_COMPUTER_SCIENCE_CALCULATOR_URL,
-  BGU_COMPUTER_SCIENCE_OFFICIAL_PROGRAM_ID,
   BGU_COMPUTER_SCIENCE_SCORE_URL,
-  BGU_COMPUTER_SCIENCE_SOURCE_FINGERPRINT,
   BGU_COMPUTER_SCIENCE_SOURCE_URL,
   fingerprintBguComputerScienceRules,
   normalizeBguComputerScienceRule,
@@ -36,7 +34,10 @@ export async function runBguAdmissionsProof(
     throw new Error('BGU adapter requires a program context');
   }
 
-  if (program.id === 'cs' || program.id === 'bgu_cs') {
+  if (
+    BGU_PROGRAM_VERIFICATION_METADATA[`${program.id}__bgu`]?.contract.calculation.formulaFamily ===
+    'bgu_quantitative_sekhem'
+  ) {
     return runBguComputerScienceProof(context);
   }
 
@@ -171,6 +172,11 @@ async function runBguComputerScienceProof(
   context: AdmissionsAdapterContext,
 ): Promise<AdmissionsSourceProof> {
   const program = context.program!;
+  const contract = BGU_PROGRAM_VERIFICATION_METADATA[`${program.id}__bgu`].contract;
+  const sourceUrl = contract.source.url;
+  const reviewedFingerprint = contract.sourceFingerprint;
+  const officialProgramId = contract.officialProgramId;
+  const specialization = officialProgramId === 'dep232-pat1-spe13' ? 13 : 3;
   const metadata: NonNullable<AdmissionsSourceProof['rawResponseMetadata']> = [];
   const applicant = context.applicant;
   const extraInputs = applicant.extraInputs;
@@ -179,52 +185,49 @@ async function runBguComputerScienceProof(
     return failedComputerScienceProof(
       program,
       metadata,
-      'BGU Computer Science requires valid psychometric, component scores, official Bagrut average, mathematics record, and language confirmation.',
+      'BGU quantitative-route requires valid psychometric, component scores, official Bagrut average, mathematics record, and language confirmation.',
     );
   }
 
-  if (program.searchText !== BGU_COMPUTER_SCIENCE_SOURCE_URL) {
+  if (program.searchText !== sourceUrl) {
     return failedComputerScienceProof(
       program,
       metadata,
-      'BGU Computer Science target does not match the reviewed quantitative programme mapping.',
+      'BGU quantitative-route target does not match the reviewed quantitative programme mapping.',
     );
   }
-  if (
-    program.pairId !== `${program.id}__bgu` ||
-    program.externalId !== BGU_COMPUTER_SCIENCE_OFFICIAL_PROGRAM_ID
-  ) {
+  if (program.pairId !== `${program.id}__bgu` || program.externalId !== officialProgramId) {
     return failedComputerScienceProof(
       program,
       metadata,
-      'BGU Computer Science target does not match the reviewed pair and official programme identifier.',
+      'BGU quantitative-route target does not match the reviewed pair and official programme identifier.',
     );
   }
 
   try {
-    const sourceResponse = await (context.fetcher ?? fetch)(BGU_COMPUTER_SCIENCE_SOURCE_URL);
-    metadata.push(readOfficialResponseMetadata(BGU_COMPUTER_SCIENCE_SOURCE_URL, sourceResponse));
+    const sourceResponse = await (context.fetcher ?? fetch)(sourceUrl);
+    metadata.push(readOfficialResponseMetadata(sourceUrl, sourceResponse));
     if (!sourceResponse.ok) {
       throw new Error(`BGU conditions endpoint returned HTTP ${sourceResponse.status}`);
     }
 
     const sourcePayload = (await sourceResponse.json()) as unknown;
-    const ruleSnapshot = normalizeBguComputerScienceRule(sourcePayload);
+    const ruleSnapshot = normalizeBguComputerScienceRule(sourcePayload, specialization);
     if (!ruleSnapshot) {
       throw new Error(
-        'BGU Computer Science conditions response has an invalid programme mapping or missing rule fields',
+        'BGU quantitative-route conditions response has an invalid programme mapping or missing rule fields',
       );
     }
 
     const currentSourceFingerprint = fingerprintBguComputerScienceRules(ruleSnapshot);
-    if (currentSourceFingerprint !== BGU_COMPUTER_SCIENCE_SOURCE_FINGERPRINT) {
+    if (currentSourceFingerprint !== reviewedFingerprint) {
       return partialComputerScienceProof({
         program,
         metadata,
         currentSourceFingerprint,
         acceptanceThreshold: ruleSnapshot.acceptanceThreshold,
         reason:
-          'BGU Computer Science critical source rules changed and require review before exact decisions can resume.',
+          'BGU quantitative-route critical source rules changed and require review before exact decisions can resume.',
       });
     }
 
@@ -262,13 +265,13 @@ async function runBguComputerScienceProof(
       id: program.targetId ?? `bgu-${program.id}-live`,
       institutionId: 'bgu',
       institutionName: 'Ben-Gurion University',
-      officialUrl: BGU_COMPUTER_SCIENCE_SOURCE_URL,
+      officialUrl: sourceUrl,
       adapterId: 'bgu',
       capability: 'decision_capable',
       proofLevel: 'exact_official',
       status: 'succeeded',
       decisionProvenance: 'verified_derivation',
-      reviewedSourceFingerprint: BGU_COMPUTER_SCIENCE_SOURCE_FINGERPRINT,
+      reviewedSourceFingerprint: reviewedFingerprint,
       sourceClass: sourceClassForCapability('decision_capable'),
       reproducedFields: [
         'selectedScore',
@@ -280,14 +283,14 @@ async function runBguComputerScienceProof(
         pairId: program.pairId,
         programId: program.id,
         programName: program.name,
-        officialProgramId: BGU_COMPUTER_SCIENCE_OFFICIAL_PROGRAM_ID,
+        officialProgramId: officialProgramId,
         source: 'bgu_quantitative_rdp_and_TevaSekem',
         selectedScore,
         acceptanceThreshold,
         rejectionThreshold: acceptanceThreshold,
         derivedVerdict,
         sourceFingerprint: currentSourceFingerprint,
-        reviewedSourceFingerprint: BGU_COMPUTER_SCIENCE_SOURCE_FINGERPRINT,
+        reviewedSourceFingerprint: reviewedFingerprint,
         proofStatus: 'succeeded',
         proofLevel: 'exact_official',
         decisionProvenance: 'verified_derivation',
@@ -396,7 +399,7 @@ function failedComputerScienceProof(
     id: program.targetId ?? `bgu-${program.id}-live`,
     institutionId: 'bgu',
     institutionName: 'Ben-Gurion University',
-    officialUrl: BGU_COMPUTER_SCIENCE_SOURCE_URL,
+    officialUrl: program.searchText ?? BGU_COMPUTER_SCIENCE_SOURCE_URL,
     adapterId: 'bgu',
     capability: 'blocked',
     proofLevel: 'blocked',
@@ -405,10 +408,10 @@ function failedComputerScienceProof(
     reproducedFields: [],
     normalizedPayload: {},
     limitations: [
-      'BGU Computer Science proof is blocked until all current programme and applicant fields validate.',
+      'BGU quantitative-route proof is blocked until all current programme and applicant fields validate.',
     ],
     nextAction:
-      'Resolve the BGU Computer Science input or source rule issue, then repeat the controlled proof.',
+      'Resolve the BGU quantitative-route input or source rule issue, then repeat the controlled proof.',
     blockedReason: reason,
     errorReason: reason,
     rawResponseMetadata: metadata,
@@ -426,7 +429,7 @@ function partialComputerScienceProof(args: {
     id: args.program.targetId ?? `bgu-${args.program.id}-live`,
     institutionId: 'bgu',
     institutionName: 'Ben-Gurion University',
-    officialUrl: BGU_COMPUTER_SCIENCE_SOURCE_URL,
+    officialUrl: args.program.searchText ?? BGU_COMPUTER_SCIENCE_SOURCE_URL,
     adapterId: 'bgu',
     capability: 'score_only',
     proofLevel: 'partial_official',
@@ -436,23 +439,28 @@ function partialComputerScienceProof(args: {
     normalizedPayload: {
       pairId: args.program.pairId,
       programId: args.program.id,
-      officialProgramId: BGU_COMPUTER_SCIENCE_OFFICIAL_PROGRAM_ID,
+      officialProgramId: args.program.externalId,
       acceptanceThreshold: args.acceptanceThreshold,
       sourceFingerprint: args.currentSourceFingerprint,
-      reviewedSourceFingerprint: BGU_COMPUTER_SCIENCE_SOURCE_FINGERPRINT,
+      reviewedSourceFingerprint:
+        BGU_PROGRAM_VERIFICATION_METADATA[`${args.program.id}__bgu`].contract.sourceFingerprint,
       proofStatus: 'partial',
       proofLevel: 'partial_official',
       decisionProvenance: 'none',
     },
     limitations: [args.reason],
     nextAction:
-      'Review the changed official CS rule snapshot and capture new fixtures before exact decisions resume.',
+      'Review the changed official quantitative rule snapshot and capture new fixtures before exact decisions resume.',
     rawResponseMetadata: args.metadata,
   };
 }
 
 export async function runBguComputerScienceLiveVerification(
-  args: { fetcher?: typeof fetch; checkedAt?: Date; pairId?: 'cs__bgu' | 'bgu_cs__bgu' } = {},
+  args: {
+    fetcher?: typeof fetch;
+    checkedAt?: Date;
+    pairId?: 'cs__bgu' | 'bgu_cs__bgu' | 'datascience__bgu' | 'bgu_datascience__bgu';
+  } = {},
 ): Promise<BguComputerScienceLiveVerificationReport> {
   const pairId = args.pairId ?? 'bgu_cs__bgu';
   const artifact = BGU_PROGRAM_VERIFICATION_METADATA[pairId];
