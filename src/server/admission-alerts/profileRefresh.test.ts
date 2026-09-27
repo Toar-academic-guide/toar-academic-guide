@@ -32,6 +32,11 @@ describe('alert profile refresh detection', () => {
       { tauApplicationRequirementsConfirmed: false },
       { bguLanguageRequirementsConfirmed: false },
       { tauMathPlacementScore: 0 },
+      { bguPsychologyRoute: 'bagrut' as const },
+      { bguPsychologyRequirementsConfirmed: false },
+      { bguPreparatoryTrack: 'natural_life_sciences' as const },
+      { bguPreparatoryAverage: 94.25 },
+      { bguPreparatoryCompleted: false },
     ]) {
       expect(shouldRefreshAdmissionAlerts(previous, { ...previous, admissionsInputs })).toBe(true);
       expect(shouldRefreshAdmissionAlerts({ ...previous, admissionsInputs }, previous)).toBe(true);

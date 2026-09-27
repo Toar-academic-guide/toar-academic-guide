@@ -5,6 +5,8 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { Upload, FileText, X, Brain, GraduationCap, Loader2 } from 'lucide-react';
 import type { AcademicScores, UserProfile } from '@/types';
+import BguPsychologyFields, { type PsychologyFormValues } from './BguPsychologyFields';
+import { BGU_PSYCHOLOGY_PROFILE_KEYS, bguPsychologyInputsSchema } from '@/lib/bguPsychologyInputs';
 import BagrutCalculatorWizard from './BagrutCalculatorWizard';
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
@@ -42,6 +44,14 @@ export default function AcademicProfileForm({
   isAuthenticated = false,
   alertContinuation,
 }: Props) {
+  const [psychologyValues, setPsychologyValues] = useState<PsychologyFormValues>(() =>
+    Object.fromEntries(
+      BGU_PSYCHOLOGY_PROFILE_KEYS.map((key) => [
+        key,
+        initialScores?.admissions?.[key]?.toString() ?? '',
+      ]),
+    ),
+  );
   const [psyOverall, setPsyOverall] = useState(
     initialScores?.psychometric?.overall?.toString() ?? '',
   );
@@ -124,6 +134,7 @@ export default function AcademicProfileForm({
     setBagrutAverage('');
     setBagrutSubjectRecord(undefined);
     setTauBagrutAverage('');
+    setPsychologyValues({});
     setBguBagrutAverage('');
     setTauApplicationRequirements('');
     setBguLanguageRequirements('');
@@ -175,6 +186,25 @@ export default function AcademicProfileForm({
     }
 
     const admissions: NonNullable<AcademicScores['admissions']> = {};
+    const psychologyInputs = Object.fromEntries(
+      BGU_PSYCHOLOGY_PROFILE_KEYS.filter(
+        (key) => psychologyValues[key] !== undefined && psychologyValues[key] !== '',
+      ).map((key) => [
+        key,
+        key.endsWith('Confirmed') || key.endsWith('Completed')
+          ? psychologyValues[key] === 'true'
+          : key.endsWith('Average')
+            ? Number(psychologyValues[key])
+            : psychologyValues[key],
+      ]),
+    );
+    const parsedPsychology = bguPsychologyInputsSchema.safeParse(psychologyInputs);
+    if (!parsedPsychology.success) {
+      setError('יש להזין נתוני פסיכולוגיה ומכינה תקינים; ממוצע מכינה בין 0 ל־100.');
+      setIsSaving(false);
+      return;
+    }
+    Object.assign(admissions, parsedPsychology.data);
     const architectureAverageValue = optionalNumber(architectureAverage);
     const architectureExamValue = optionalNumber(architectureExam);
     if (
@@ -636,6 +666,14 @@ export default function AcademicProfileForm({
             </div>
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <BguPsychologyFields
+                values={psychologyValues}
+                onChange={(key, value) =>
+                  setPsychologyValues((previous) => ({ ...previous, [key]: value }))
+                }
+                disabled={isSaving}
+                inputClassName={inputBase}
+              />
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="tau-bagrut-average" className="text-xs font-medium text-slate-600">
                   ממוצע בגרות רשמי של אוניברסיטת תל אביב (50–130)

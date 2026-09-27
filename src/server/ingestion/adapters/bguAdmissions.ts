@@ -1,3 +1,5 @@
+import { isBguPsychologyProgram } from '@/lib/bguPsychologyInputs';
+import { runBguPsychologyProof } from './bguPsychology';
 import {
   parseOfficialNumeric,
   readOfficialResponseMetadata,
@@ -36,6 +38,7 @@ export async function runBguAdmissionsProof(
     throw new Error('BGU adapter requires a program context');
   }
 
+  if (isBguPsychologyProgram(program.id)) return runBguPsychologyProof(context);
   if (program.id === 'cs' || program.id === 'bgu_cs') {
     return runBguComputerScienceProof(context);
   }

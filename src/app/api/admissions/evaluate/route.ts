@@ -1,3 +1,5 @@
+import { allowsNoPsychometric, allowsNoGenericBagrut } from '@/lib/calculatorInputRequirements';
+import { bguPsychologyInputsShape } from '@/lib/bguPsychologyInputs';
 import { headers } from 'next/headers';
 import { z } from 'zod';
 
@@ -43,7 +45,7 @@ const admissionsEvaluationSchema = z
   .object({
     degreeId: z.string().min(1),
     psychometric: z.number().int().min(200).max(800).optional(),
-    bagrut: z.number().min(60).max(120),
+    bagrut: z.number().min(60).max(120).optional(),
     extraInputs: z
       .object({
         psychometricMath: z.number().int().min(50).max(150).optional(),
@@ -65,6 +67,7 @@ const admissionsEvaluationSchema = z
         technionArchitectureExamScore: z.number().min(0).max(140).optional(),
         technionArchitectureExamPassed: z.boolean().optional(),
         technionArchitectureRequirementsConfirmed: z.boolean().optional(),
+        ...bguPsychologyInputsShape,
         bguBagrutAverage: z.number().min(50).max(130).optional(),
         tauApplicationRequirementsConfirmed: z.boolean().optional(),
         tauManagementRequirementsConfirmed: z.boolean().optional(),
@@ -79,10 +82,14 @@ const admissionsEvaluationSchema = z
       .optional(),
   })
   .superRefine((input, context) => {
-    if (
-      input.psychometric === undefined &&
-      !['business', 'tau_business'].includes(input.degreeId)
-    ) {
+    if (input.bagrut === undefined && !allowsNoGenericBagrut(input.degreeId)) {
+      context.addIssue({
+        code: 'custom',
+        path: ['bagrut'],
+        message: 'Bagrut average is required for this programme.',
+      });
+    }
+    if (input.psychometric === undefined && !allowsNoPsychometric(input.degreeId)) {
       context.addIssue({
         code: 'custom',
         path: ['psychometric'],

@@ -1,3 +1,8 @@
+import {
+  BGU_PSYCHOLOGY_METADATA_BY_PAIR_ID,
+  BGU_PSYCHOLOGY_SOURCE_URL,
+  BGU_PSYCHOLOGY_OFFICIAL_PROGRAM_ID,
+} from './bguPsychologyVerification';
 import { createHash } from 'node:crypto';
 
 import type {
@@ -116,11 +121,11 @@ const CONFIGS: BguConfig[] = [
   },
   {
     programId: 'psychology',
-    sourceUrl: baseUrl('p_dep1=101&p_pat1=2&p_degree_level=1'),
-    officialProgramId: 'dep101-pat2',
-    acceptance: 550,
-    rejection: 550,
-    verdict: 'accepted',
+    sourceUrl: BGU_PSYCHOLOGY_SOURCE_URL,
+    officialProgramId: BGU_PSYCHOLOGY_OFFICIAL_PROGRAM_ID,
+    acceptance: 650,
+    rejection: 650,
+    verdict: 'eligible_to_apply',
   },
   {
     programId: 'social_work',
@@ -244,6 +249,8 @@ export const BGU_PROGRAM_VERIFICATION_METADATA: Record<string, BguProgramVerific
   Object.fromEntries(
     ALIASES.flatMap((programIds) =>
       programIds.map((programId) => {
+        if (BGU_PSYCHOLOGY_METADATA_BY_PAIR_ID[`${programId}__bgu`])
+          return [`${programId}__bgu`, BGU_PSYCHOLOGY_METADATA_BY_PAIR_ID[`${programId}__bgu`]];
         if (programId === 'cs' || programId === 'bgu_cs') {
           const pairId = `${programId}__bgu`;
           return [pairId, BGU_COMPUTER_SCIENCE_VERIFICATION_METADATA_BY_PAIR_ID[pairId]];
