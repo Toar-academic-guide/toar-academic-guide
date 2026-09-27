@@ -620,9 +620,11 @@ export default function CalculatorResults({
                         ? { ...STATUS_CONFIG.exactAccepted, label: acceptedLabel() }
                         : result.decision === 'below'
                           ? STATUS_CONFIG.exactBelow
-                          : result.decision === 'pending'
-                            ? STATUS_CONFIG.exactPending
-                            : STATUS_CONFIG.needsInput
+                          : result.decision === 'eligible_to_apply'
+                            ? STATUS_CONFIG.manualGateEligible
+                            : result.decision === 'pending'
+                              ? STATUS_CONFIG.exactPending
+                              : STATUS_CONFIG.needsInput
                       : result.kind === 'estimated'
                         ? result.decision === 'accepted'
                           ? { ...STATUS_CONFIG.estimatedAccepted, label: acceptedLabel() }
