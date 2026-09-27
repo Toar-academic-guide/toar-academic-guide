@@ -1,3 +1,5 @@
+import type { AdmissionsProfileInputs } from '@/types';
+
 export interface AlertRelevantAcademicProfile {
   psychometricOverall: number | null;
   psychometricQuantitative: number | null;
@@ -5,6 +7,7 @@ export interface AlertRelevantAcademicProfile {
   psychometricEnglish: number | null;
   bagrutWeightedAverage: number | null;
   bagrutProfileVersionId: string | null;
+  admissionsInputs?: AdmissionsProfileInputs | null;
 }
 
 export function shouldRefreshAdmissionAlerts(
@@ -21,6 +24,14 @@ export function shouldRefreshAdmissionAlerts(
     previous.psychometricVerbal !== next.psychometricVerbal ||
     previous.psychometricEnglish !== next.psychometricEnglish ||
     previous.bagrutWeightedAverage !== next.bagrutWeightedAverage ||
-    previous.bagrutProfileVersionId !== next.bagrutProfileVersionId
+    previous.bagrutProfileVersionId !== next.bagrutProfileVersionId ||
+    previous.admissionsInputs?.tauBagrutAverage !== next.admissionsInputs?.tauBagrutAverage ||
+    previous.admissionsInputs?.bguBagrutAverage !== next.admissionsInputs?.bguBagrutAverage ||
+    previous.admissionsInputs?.tauApplicationRequirementsConfirmed !==
+      next.admissionsInputs?.tauApplicationRequirementsConfirmed ||
+    previous.admissionsInputs?.bguLanguageRequirementsConfirmed !==
+      next.admissionsInputs?.bguLanguageRequirementsConfirmed ||
+    previous.admissionsInputs?.tauMathPlacementScore !==
+      next.admissionsInputs?.tauMathPlacementScore
   );
 }

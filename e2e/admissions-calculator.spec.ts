@@ -45,7 +45,7 @@ test.describe('app admissions calculator', () => {
     await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
 
     await expect(page).toHaveURL(/\/app\/calculator$/);
-    await expectSafeResult(page, 'אוניברסיטת בן-גוריון בנגב', /מתקבל\/ת/, /אימות רשמי/);
+    await expectSafeResult(page, 'אוניברסיטת בן-גוריון בנגב', /נדרשים נתונים/, /נדרשים נתונים נוספים/);
 
     await page.getByRole('button', { name: 'חזרה', exact: true }).click();
 

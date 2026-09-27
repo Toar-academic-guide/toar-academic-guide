@@ -5,6 +5,10 @@ import type {
   AdmissionsVerificationFixture,
 } from '@/types/admissionsEvaluation';
 import { fingerprintVerificationFixtures } from '@/server/admissions/verification/programVerification';
+import {
+  BGU_COMPUTER_SCIENCE_SOURCE_URL,
+  BGU_COMPUTER_SCIENCE_VERIFICATION_METADATA_BY_PAIR_ID,
+} from './bguComputerScienceVerification';
 
 export const BGU_SOURCE_URL = 'https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/';
 const BGU_SCORE_URL = 'https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem';
@@ -48,7 +52,7 @@ const CONFIGS: BguConfig[] = [
   },
   {
     programId: 'cs',
-    sourceUrl: baseUrl('p_dep1=232&p_pat1=1&p_spe1=3&p_degree_level=1'),
+    sourceUrl: BGU_COMPUTER_SCIENCE_SOURCE_URL,
     officialProgramId: 'dep232-pat1-spe3',
     acceptance: 720,
     rejection: 720,
@@ -240,6 +244,11 @@ export const BGU_PROGRAM_VERIFICATION_METADATA: Record<string, BguProgramVerific
   Object.fromEntries(
     ALIASES.flatMap((programIds) =>
       programIds.map((programId) => {
+        if (programId === 'cs' || programId === 'bgu_cs') {
+          const pairId = `${programId}__bgu`;
+          return [pairId, BGU_COMPUTER_SCIENCE_VERIFICATION_METADATA_BY_PAIR_ID[pairId]];
+        }
+
         const config = configFor(programId);
         const pairId = `${programId}__bgu`;
         const fixtures = fixturesFor(pairId, config);

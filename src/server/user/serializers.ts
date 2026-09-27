@@ -1,4 +1,4 @@
-import type { BagrutSector, UserProfile } from '@/types';
+import type { AdmissionsProfileInputs, BagrutSector, UserProfile } from '@/types';
 import type {
   BagrutProfileVersionRow,
   SavedProgramRow,
@@ -32,6 +32,7 @@ type SerializedProfileRow = Pick<
   | 'updatedAt'
 > & {
   bagrutProfileVersionId?: string | null;
+  admissionsInputs?: AdmissionsProfileInputs | null;
 };
 
 type PublicUploadedDocument = NonNullable<UserProfileSnapshot['uploadedDocuments']>[number];
@@ -88,8 +89,13 @@ export function serializeUserProfileSnapshot(
     profileRow.psychometricQuantitative !== null ||
     profileRow.psychometricVerbal !== null ||
     profileRow.psychometricEnglish !== null ||
-    profileRow.bagrutWeightedAverage !== null
+    profileRow.bagrutWeightedAverage !== null ||
+    Boolean(bagrutProfileVersion) ||
+    (profileRow.admissionsInputs != null && Object.keys(profileRow.admissionsInputs).length > 0)
       ? {
+          ...(profileRow.admissionsInputs && Object.keys(profileRow.admissionsInputs).length > 0
+            ? { admissions: profileRow.admissionsInputs }
+            : {}),
           ...(profileRow.psychometricOverall !== null ||
           profileRow.psychometricQuantitative !== null ||
           profileRow.psychometricVerbal !== null ||
@@ -169,5 +175,6 @@ export function buildUserProfileRow(userId: string, profile: UserProfile) {
     psychometricVerbal: profile.academicScores?.psychometric?.verbal ?? null,
     psychometricEnglish: profile.academicScores?.psychometric?.english ?? null,
     bagrutWeightedAverage: profile.academicScores?.bagrut?.weightedAverage ?? null,
+    admissionsInputs: profile.academicScores?.admissions ?? null,
   };
 }

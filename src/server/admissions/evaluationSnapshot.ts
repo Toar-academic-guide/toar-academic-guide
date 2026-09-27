@@ -8,7 +8,7 @@ import type {
   AdmissionsEvaluationSnapshot,
 } from '@/types/admissionsEvaluation';
 
-export const ADMISSIONS_EVALUATOR_VERSION = 'admissions-evaluator-v1';
+export const ADMISSIONS_EVALUATOR_VERSION = 'admissions-evaluator-v2';
 
 type SnapshotResult = Pick<
   AdmissionsEvaluationResult,

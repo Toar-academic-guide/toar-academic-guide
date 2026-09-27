@@ -131,6 +131,54 @@ describe('AcademicProfileForm', () => {
     expect(onComplete).not.toHaveBeenCalled();
   });
 
+  it('hydrates and saves only defined admissions inputs, preserving false and zero', async () => {
+    const onComplete = vi.fn();
+
+    render(
+      <AcademicProfileForm
+        onComplete={onComplete}
+        onClearLocalProfileData={vi.fn().mockResolvedValue(undefined)}
+        onSkip={vi.fn()}
+        initialScores={{
+          admissions: {
+            tauBagrutAverage: 112.5,
+            tauApplicationRequirementsConfirmed: false,
+            tauMathPlacementScore: 0,
+          },
+        }}
+      />,
+    );
+
+    expect(screen.getByDisplayValue('112.5')).toBeTruthy();
+    expect(screen.getByDisplayValue('0')).toBeTruthy();
+    expect(screen.getByLabelText('אישור תנאי הגשה לתל אביב')).toHaveProperty('value', 'false');
+    expect(screen.getByLabelText('אישור דרישות שפה בבן־גוריון')).toHaveProperty('value', '');
+    expect(screen.getByRole('link', { name: 'מחשבון ממוצע בגרות של אוניברסיטת תל אביב' })).toHaveProperty(
+      'href',
+      'https://www.ims.tau.ac.il/md/ut/bagrut.aspx',
+    );
+
+    fireEvent.change(screen.getByLabelText('ממוצע בגרות רשמי של בן־גוריון (50–130)'), {
+      target: { value: '108.25' },
+    });
+    fireEvent.change(screen.getByLabelText('אישור דרישות שפה בבן־גוריון'), {
+      target: { value: 'false' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+
+    await waitFor(() =>
+      expect(onComplete).toHaveBeenCalledWith({
+        admissions: {
+          tauBagrutAverage: 112.5,
+          bguBagrutAverage: 108.25,
+          tauApplicationRequirementsConfirmed: false,
+          bguLanguageRequirementsConfirmed: false,
+          tauMathPlacementScore: 0,
+        },
+      }),
+    );
+  });
+
   it('triggers POST requests for newly selected files on save', async () => {
     const onComplete = vi.fn();
     const fetchMock = vi.fn().mockResolvedValue({
@@ -159,6 +207,9 @@ describe('AcademicProfileForm', () => {
 
     expect(
       screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }).hasAttribute('disabled'),
+    ).toBe(true);
+    expect(
+      screen.getByLabelText('אישור תנאי הגשה לתל אביב').hasAttribute('disabled'),
     ).toBe(true);
 
     await waitFor(() => expect(onComplete).toHaveBeenCalled());
@@ -261,6 +312,11 @@ describe('AcademicProfileForm', () => {
         initialScores={{
           psychometric: { overall: 700 },
           bagrut: { weightedAverage: 105 },
+          admissions: {
+            tauBagrutAverage: 112.5,
+            tauApplicationRequirementsConfirmed: false,
+            tauMathPlacementScore: 0,
+          },
         }}
       />,
     );
@@ -273,6 +329,9 @@ describe('AcademicProfileForm', () => {
     await waitFor(() => expect(onClearLocalProfileData).toHaveBeenCalled());
     expect(screen.queryByDisplayValue('700')).toBeNull();
     expect(screen.queryByDisplayValue('105')).toBeNull();
+    expect(screen.queryByDisplayValue('112.5')).toBeNull();
+    expect(screen.queryByDisplayValue('0')).toBeNull();
+    expect(screen.getByLabelText('אישור תנאי הגשה לתל אביב')).toHaveProperty('value', '');
   });
 
   it('shows signed-in copy that the clear action does not delete account data', () => {

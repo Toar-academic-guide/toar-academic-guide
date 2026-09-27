@@ -215,10 +215,25 @@ export interface BagrutRecord {
   subjectRecord?: BagrutSubjectRecord;
 }
 
+/** Institution-specific inputs collected only when the student knows them. */
+export interface AdmissionsProfileInputs {
+  /** Official TAU Bagrut average, which may differ from the generic profile average. */
+  tauBagrutAverage?: number;
+  /** Official BGU Bagrut average, which may differ from the generic profile average. */
+  bguBagrutAverage?: number;
+  /** Confirms Bagrut, Advanced A English (psychometric or separate exam), Hebrew and first choice. */
+  tauApplicationRequirementsConfirmed?: boolean;
+  /** Whether BGU English Basic and applicable Hebrew level E requirements are met. */
+  bguLanguageRequirementsConfirmed?: boolean;
+  /** TAU mathematics placement/classification score, when available. */
+  tauMathPlacementScore?: number;
+}
+
 /** Combined academic-scores object stored in the user profile. */
 export interface AcademicScores {
   psychometric?: PsychometricScores;
   bagrut?: BagrutRecord;
+  admissions?: AdmissionsProfileInputs;
 }
 
 /** User profile snapshot used by the browser and authenticated profile APIs. */

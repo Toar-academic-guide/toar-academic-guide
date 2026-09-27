@@ -13,7 +13,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
-import type { BagrutSubject } from '@/types';
+import type { AdmissionsProfileInputs, BagrutSubject } from '@/types';
 
 export const geographicRegionEnum = pgEnum('geographic_region', [
   'center',
@@ -418,6 +418,7 @@ export const userProfiles = pgTable('user_profiles', {
   psychometricVerbal: integer('psychometric_verbal'),
   psychometricEnglish: integer('psychometric_english'),
   bagrutWeightedAverage: integer('bagrut_weighted_average'),
+  admissionsInputs: jsonb('admissions_inputs').$type<AdmissionsProfileInputs>(),
   bagrutProfileVersionId: uuid('bagrut_profile_version_id').references(
     () => bagrutProfileVersions.id,
     { onDelete: 'set null' },

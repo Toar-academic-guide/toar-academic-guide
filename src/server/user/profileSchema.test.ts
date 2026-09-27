@@ -79,6 +79,50 @@ describe('userProfileSchema', () => {
     });
   });
 
+  it('accepts optional institution-specific admissions inputs, including false and zero', () => {
+    const parsed = userProfileSchema.parse({
+      geographicPreference: 'any',
+      academicScores: {
+        admissions: {
+          tauBagrutAverage: 112.5,
+          bguBagrutAverage: 108.25,
+          tauApplicationRequirementsConfirmed: false,
+          bguLanguageRequirementsConfirmed: true,
+          tauMathPlacementScore: 0,
+        },
+      },
+    });
+
+    expect(parsed.academicScores?.admissions).toEqual({
+      tauBagrutAverage: 112.5,
+      bguBagrutAverage: 108.25,
+      tauApplicationRequirementsConfirmed: false,
+      bguLanguageRequirementsConfirmed: true,
+      tauMathPlacementScore: 0,
+    });
+  });
+
+  it('rejects invalid ranges and types for institution-specific admissions inputs', () => {
+    for (const admissions of [
+      { tauBagrutAverage: 49 },
+      { tauBagrutAverage: 130.1 },
+      { tauBagrutAverage: '112' },
+      { bguBagrutAverage: 131 },
+      { tauApplicationRequirementsConfirmed: 'yes' },
+      { bguLanguageRequirementsConfirmed: 1 },
+      { tauMathPlacementScore: -1 },
+      { tauMathPlacementScore: 101 },
+      { tauMathPlacementScore: false },
+    ]) {
+      expect(() =>
+        userProfileSchema.parse({
+          geographicPreference: 'any',
+          academicScores: { admissions },
+        }),
+      ).toThrow();
+    }
+  });
+
   it('accepts a full browser snapshot payload', () => {
     const parsed = userProfileSchema.parse({
       firstName: ' Dana ',

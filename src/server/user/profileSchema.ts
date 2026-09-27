@@ -62,9 +62,18 @@ const bagrutRecordSchema = z.strictObject({
   subjectRecord: bagrutSubjectRecordSchema.optional(),
 });
 
+const admissionsInputsSchema = z.strictObject({
+  tauBagrutAverage: z.number().min(50).max(130).optional(),
+  bguBagrutAverage: z.number().min(50).max(130).optional(),
+  tauApplicationRequirementsConfirmed: z.boolean().optional(),
+  bguLanguageRequirementsConfirmed: z.boolean().optional(),
+  tauMathPlacementScore: z.number().min(0).max(100).optional(),
+});
+
 const academicScoresSchema = z.strictObject({
   psychometric: psychometricScoresSchema.optional(),
   bagrut: bagrutRecordSchema.optional(),
+  admissions: admissionsInputsSchema.optional(),
 });
 
 const uploadedDocumentSchema = z.strictObject({

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { admissionsExtraInputsFromAcademicScores } from './admissionsEvaluationProfile';
+import { admissionsInputValue } from '@/server/admissions/admissionsInputValue';
 
 describe('admissionsExtraInputsFromAcademicScores', () => {
   it('maps saved psychometric subscores and Bagrut subjects into the admissions evaluator contract', () => {
@@ -50,5 +51,41 @@ describe('admissionsExtraInputsFromAcademicScores', () => {
 
   it('does not attach an empty extra-input payload when no saved structured values exist', () => {
     expect(admissionsExtraInputsFromAcademicScores({})).toBeUndefined();
+  });
+
+  it('maps optional institution-specific inputs while preserving false and zero', () => {
+    expect(
+      admissionsExtraInputsFromAcademicScores({
+        admissions: {
+          tauBagrutAverage: 112.5,
+          bguBagrutAverage: 108.25,
+          tauApplicationRequirementsConfirmed: false,
+          bguLanguageRequirementsConfirmed: true,
+          tauMathPlacementScore: 0,
+        },
+      }),
+    ).toEqual({
+      tauBagrutAverage: 112.5,
+      bguBagrutAverage: 108.25,
+      tauApplicationRequirementsConfirmed: false,
+      bguLanguageRequirementsConfirmed: true,
+      tauMathPlacementScore: 0,
+    });
+  });
+
+  it('resolves all institution-specific required inputs to their corresponding values', () => {
+    const inputs = {
+      tauBagrutAverage: 112.5,
+      bguBagrutAverage: 108.25,
+      tauApplicationRequirementsConfirmed: false,
+      bguLanguageRequirementsConfirmed: true,
+      tauMathPlacementScore: 0,
+    };
+
+    expect(admissionsInputValue(inputs, 'tau_bagrut_average')).toBe(112.5);
+    expect(admissionsInputValue(inputs, 'bgu_bagrut_average')).toBe(108.25);
+    expect(admissionsInputValue(inputs, 'tau_application_requirements')).toBe(false);
+    expect(admissionsInputValue(inputs, 'bgu_language_requirements')).toBe(true);
+    expect(admissionsInputValue(inputs, 'tau_math_placement_score')).toBe(0);
   });
 });

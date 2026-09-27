@@ -33,5 +33,15 @@ export function admissionsInputValue(
       return input?.bagrutProfileSchemaVersion;
     case 'bagrut_sector':
       return input?.bagrutSector;
+    case 'tau_bagrut_average':
+      return input?.tauBagrutAverage;
+    case 'bgu_bagrut_average':
+      return input?.bguBagrutAverage;
+    case 'tau_application_requirements':
+      return input?.tauApplicationRequirementsConfirmed;
+    case 'bgu_language_requirements':
+      return input?.bguLanguageRequirementsConfirmed;
+    case 'tau_math_placement_score':
+      return input?.tauMathPlacementScore;
   }
 }

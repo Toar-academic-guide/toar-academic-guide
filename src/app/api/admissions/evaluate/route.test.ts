@@ -184,6 +184,58 @@ describe('admissions evaluate route', () => {
     );
   });
 
+  it('accepts institution-specific inputs and preserves false and zero', async () => {
+    const extraInputs = {
+      tauBagrutAverage: 112.5,
+      bguBagrutAverage: 108.25,
+      tauApplicationRequirementsConfirmed: false,
+      bguLanguageRequirementsConfirmed: true,
+      tauMathPlacementScore: 0,
+    };
+
+    const response = await POST(
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          degreeId: 'tau_datascience',
+          psychometric: 700,
+          bagrut: 110,
+          extraInputs,
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenCalledWith(
+      expect.objectContaining({ input: expect.objectContaining({ extraInputs }) }),
+    );
+  });
+
+  it('rejects out-of-range admissions inputs and non-boolean confirmations', async () => {
+    const requestWith = (extraInputs: Record<string, unknown>) =>
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          degreeId: 'tau_datascience',
+          psychometric: 700,
+          bagrut: 110,
+          extraInputs,
+        }),
+      });
+
+    for (const invalid of [
+      { tauBagrutAverage: 49 },
+      { bguBagrutAverage: 130.1 },
+      { tauApplicationRequirementsConfirmed: 'yes' },
+      { bguLanguageRequirementsConfirmed: 1 },
+      { tauMathPlacementScore: 101 },
+    ]) {
+      expect((await POST(requestWith(invalid))).status).toBe(400);
+    }
+  });
+
   it('accepts 64 Bagrut subjects and rejects 65', async () => {
     const requestForSubjectCount = (count: number) =>
       new Request('http://localhost/api/admissions/evaluate', {

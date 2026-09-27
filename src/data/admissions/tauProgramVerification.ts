@@ -7,6 +7,21 @@ import { HUJI_PROGRAM_VERIFICATION_ARTIFACTS } from './hujiProgramVerification';
 import { BGU_PROGRAM_VERIFICATION_ARTIFACTS } from './bguProgramVerification';
 import { TECHNION_PROGRAM_VERIFICATION_ARTIFACTS } from './technionProgramVerification';
 import { HAIFA_PROGRAM_VERIFICATION_ARTIFACTS } from './haifaProgramVerification';
+import {
+  TAU_COMPUTER_SCIENCE_CONTRACT as TAU_CS_CONTRACT,
+  TAU_COMPUTER_SCIENCE_FIXTURES as TAU_CS_FIXTURES,
+  TAU_COMPUTER_SCIENCE_REQUIREMENTS_URL,
+  TAU_LEGACY_COMPUTER_SCIENCE_CONTRACT as TAU_LEGACY_CS_CONTRACT,
+  TAU_LEGACY_COMPUTER_SCIENCE_FIXTURES as TAU_LEGACY_CS_FIXTURES,
+} from './tauComputerScienceVerification';
+
+export {
+  TAU_CS_CONTRACT,
+  TAU_CS_FIXTURES,
+  TAU_LEGACY_CS_CONTRACT,
+  TAU_LEGACY_CS_FIXTURES,
+  TAU_COMPUTER_SCIENCE_REQUIREMENTS_URL,
+};
 
 const SOURCE_FINGERPRINT =
   'sha256:62a6a2f398b737b2139671f32c48a921083a4966ea43e8135c081870d42e9971';
@@ -1317,9 +1332,9 @@ export const TAU_LEGACY_ECONOMICS_CONTRACT: AdmissionsProgramVerificationContrac
   fixtureSetFingerprint: 'sha256:d43bb35b6ac0071fd07f5e8b012fe6184a01aebeb3fb2358deac3e48f63a9529',
 };
 
-const TAU_CS_SOURCE_FINGERPRINT =
+const TAU_CS_TEMPLATE_SOURCE_FINGERPRINT =
   'sha256:4df15136e5d73cd89389c1d63e90e47a3f79aa9d3764b6481b54d48f5abde09c';
-export const TAU_CS_FIXTURES: AdmissionsVerificationFixture[] = TAU_ECONOMICS_FIXTURES.map(
+const TAU_CS_TEMPLATE_FIXTURES: AdmissionsVerificationFixture[] = TAU_ECONOMICS_FIXTURES.map(
   (fixture) => ({
     ...fixture,
     id: fixture.id.replace('economics__tau', 'cs__tau'),
@@ -1332,10 +1347,10 @@ export const TAU_CS_FIXTURES: AdmissionsVerificationFixture[] = TAU_ECONOMICS_FI
       fixture.verdict === 'accepted'
         ? { score: 730, verdict: 'accepted' }
         : { score: 496, verdict: 'below' },
-    sourceFingerprint: TAU_CS_SOURCE_FINGERPRINT,
+    sourceFingerprint: TAU_CS_TEMPLATE_SOURCE_FINGERPRINT,
   }),
 );
-export const TAU_CS_CONTRACT: AdmissionsProgramVerificationContract = {
+const TAU_CS_TEMPLATE_CONTRACT: AdmissionsProgramVerificationContract = {
   ...TAU_ECONOMICS_CONTRACT,
   pairId: 'cs__tau',
   programId: 'cs',
@@ -1377,43 +1392,30 @@ export const TAU_CS_CONTRACT: AdmissionsProgramVerificationContract = {
       },
     ],
   },
-  fixtureIds: TAU_CS_FIXTURES.map((fixture) => fixture.id),
+  fixtureIds: TAU_CS_TEMPLATE_FIXTURES.map((fixture) => fixture.id),
   fixtureSetFingerprint: 'sha256:fdf34a5ff608244646f39fe20d7e501265f06b6590b17f4b1543ce7e35f17bf4',
-  sourceFingerprint: TAU_CS_SOURCE_FINGERPRINT,
-  proof: { ...TAU_ECONOMICS_CONTRACT.proof, sourceFingerprint: TAU_CS_SOURCE_FINGERPRINT },
-};
-export const TAU_LEGACY_CS_FIXTURES: AdmissionsVerificationFixture[] = TAU_CS_FIXTURES.map(
-  (fixture) => ({
-    ...fixture,
-    id: fixture.id.replace('cs__tau', 'tau_cs__tau'),
-    pairId: 'tau_cs__tau',
-  }),
-);
-export const TAU_LEGACY_CS_CONTRACT: AdmissionsProgramVerificationContract = {
-  ...TAU_CS_CONTRACT,
-  pairId: 'tau_cs__tau',
-  programId: 'tau_cs',
-  source: { ...TAU_CS_CONTRACT.source, targetId: 'tau-cs-legacy-live' },
-  fixtureIds: TAU_LEGACY_CS_FIXTURES.map((fixture) => fixture.id),
-  fixtureSetFingerprint: 'sha256:c957bc5e6109faeba483df1e7a517d13b789deb8d8c30568e0780ab97a2e559a',
+  sourceFingerprint: TAU_CS_TEMPLATE_SOURCE_FINGERPRINT,
+  proof: { ...TAU_ECONOMICS_CONTRACT.proof, sourceFingerprint: TAU_CS_TEMPLATE_SOURCE_FINGERPRINT },
 };
 
 const TAU_EE_SOURCE_FINGERPRINT =
   'sha256:8a3b9a884d83a8d6a52da7f25d6f4f938dd1ad33da0a9bfba5cc1d4fb7fbf507';
-export const TAU_EE_FIXTURES: AdmissionsVerificationFixture[] = TAU_CS_FIXTURES.map((fixture) => ({
-  ...fixture,
-  id: fixture.id.replace('cs__tau', 'ee__tau'),
-  pairId: 'ee__tau',
-  sourceFingerprint: TAU_EE_SOURCE_FINGERPRINT,
-}));
+export const TAU_EE_FIXTURES: AdmissionsVerificationFixture[] = TAU_CS_TEMPLATE_FIXTURES.map(
+  (fixture) => ({
+    ...fixture,
+    id: fixture.id.replace('cs__tau', 'ee__tau'),
+    pairId: 'ee__tau',
+    sourceFingerprint: TAU_EE_SOURCE_FINGERPRINT,
+  }),
+);
 export const TAU_EE_CONTRACT: AdmissionsProgramVerificationContract = {
-  ...TAU_CS_CONTRACT,
+  ...TAU_CS_TEMPLATE_CONTRACT,
   pairId: 'ee__tau',
   programId: 'ee',
   officialProgramId: '051211010000',
   source: { targetId: 'tau-ee-live', url: 'https://go.tau.ac.il/graphql' },
   calculation: {
-    ...TAU_CS_CONTRACT.calculation,
+    ...TAU_CS_TEMPLATE_CONTRACT.calculation,
     cutoff: { acceptance: 710, rejection: 690 },
     gates: [
       {
@@ -1441,7 +1443,7 @@ export const TAU_EE_CONTRACT: AdmissionsProgramVerificationContract = {
   fixtureIds: TAU_EE_FIXTURES.map((fixture) => fixture.id),
   fixtureSetFingerprint: 'sha256:6771a16d97b6b5eea7ec285fb96223abf967e94d27a08fec80b4a248e1a7e4aa',
   sourceFingerprint: TAU_EE_SOURCE_FINGERPRINT,
-  proof: { ...TAU_CS_CONTRACT.proof, sourceFingerprint: TAU_EE_SOURCE_FINGERPRINT },
+  proof: { ...TAU_CS_TEMPLATE_CONTRACT.proof, sourceFingerprint: TAU_EE_SOURCE_FINGERPRINT },
 };
 export const TAU_LEGACY_EE_FIXTURES: AdmissionsVerificationFixture[] = TAU_EE_FIXTURES.map(
   (fixture) => ({
@@ -1876,18 +1878,16 @@ export const TAU_PROGRAM_VERIFICATION_METADATA: Record<string, TauProgramVerific
   [TAU_CS_CONTRACT.pairId]: {
     contract: TAU_CS_CONTRACT,
     fixtures: TAU_CS_FIXTURES,
-    requirementsUrl:
-      'https://go.tau.ac.il/he/engineering/ba/computer-science?v=admission-requirements',
+    requirementsUrl: TAU_COMPUTER_SCIENCE_REQUIREMENTS_URL,
     ledgerReason:
-      'Verified against the current TAU Computer Science programme node, meduyakim score field, subject-record gates, accepted/below fixtures, and live score-and-verdict replay.',
+      'Captured official TAU Computer Science accepted/below calculator outputs, current programme mapping and cutoffs, and the current requirements text; live exactness is withheld if any reviewed source field or requirement changes.',
   },
   [TAU_LEGACY_CS_CONTRACT.pairId]: {
     contract: TAU_LEGACY_CS_CONTRACT,
     fixtures: TAU_LEGACY_CS_FIXTURES,
-    requirementsUrl:
-      'https://go.tau.ac.il/he/engineering/ba/computer-science?v=admission-requirements',
+    requirementsUrl: TAU_COMPUTER_SCIENCE_REQUIREMENTS_URL,
     ledgerReason:
-      'Verified the legacy TAU Computer Science catalogue alias against the same current node, score field, subject gates, fixtures, and live replay.',
+      'The legacy TAU Computer Science alias shares the current CS captures and reviewed source contract; live exactness is withheld on source drift.',
   },
   [TAU_EE_CONTRACT.pairId]: {
     contract: TAU_EE_CONTRACT,

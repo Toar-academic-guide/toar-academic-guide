@@ -331,6 +331,30 @@ const bguCs: CatalogueProgram = {
   linkedInstitutionIds: ['bgu'],
 };
 
+const tauCs: CatalogueProgram = {
+  ...bguCs,
+  id: 'tau_cs',
+  institutionId: 'tau',
+  linkedInstitutionIds: ['tau'],
+  thresholds: { tau: 705 },
+  minimumPsychometric: { tau: 660 },
+};
+
+const csInputs = {
+  psychometricMath: 150,
+  psychometricVerbal: 150,
+  psychometricEnglish: 150,
+  bguBagrutAverage: 120,
+  bguLanguageRequirementsConfirmed: true,
+  tauBagrutAverage: 115,
+  tauApplicationRequirementsConfirmed: true,
+  bagrutSubjectRecord: {
+    schemaVersion: 1 as const,
+    sector: 'jewish' as const,
+    subjects: [{ subjectId: 'mathematics', units: 5, grade: 85 }],
+  },
+};
+
 const bguEe: CatalogueProgram = {
   id: 'bgu_ee',
   name: 'הנדסת חשמל',
@@ -616,7 +640,8 @@ describe('evaluateAdmissionsForProgram', () => {
     );
   });
 
-  it('returns an exact BGU Computer Science verdict', async () => {
+  it('requests official BGU CS inputs instead of replaying a generic average and total', async () => {
+    const fetcher = bguMockFetcher(720, 875);
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'bgu_cs',
@@ -625,10 +650,87 @@ describe('evaluateAdmissionsForProgram', () => {
       },
       program: bguCs,
       institutions,
-      fetcher: bguMockFetcher(720, 875),
+      fetcher,
     });
 
-    expectBguExact(report, 'accepted');
+    expect(report.results[0]).toMatchObject({ kind: 'needs_input', decision: 'unknown' });
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    { psychometric: 599, extraInputs: csInputs },
+    { psychometric: 800, extraInputs: { ...csInputs, psychometricMath: 124 } },
+    { psychometric: 800, extraInputs: { ...csInputs, bguLanguageRequirementsConfirmed: false } },
+    {
+      psychometric: 800,
+      extraInputs: {
+        ...csInputs,
+        bagrutSubjectRecord: {
+          ...csInputs.bagrutSubjectRecord,
+          subjects: [{ subjectId: 'mathematics', units: 5, grade: 79 }],
+        },
+      },
+    },
+  ])(
+    'checks BGU CS minimum gates before a high score can qualify ($psychometric)',
+    async (testInput) => {
+      const fetcher = vi.fn<typeof fetch>();
+      const report = await evaluateAdmissionsForProgram({
+        input: { degreeId: 'bgu_cs', bagrut: 120, ...testInput },
+        program: bguCs,
+        institutions,
+        fetcher,
+      });
+      expect(report.results[0]).toMatchObject({ kind: 'exact', decision: 'below' });
+      expect(fetcher).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
+    { psychometric: 659, extraInputs: csInputs },
+    { psychometric: 730, extraInputs: { ...csInputs, tauApplicationRequirementsConfirmed: false } },
+  ])(
+    'checks TAU CS standard-route gates before score replay ($psychometric)',
+    async (testInput) => {
+      const fetcher = vi.fn<typeof fetch>();
+      const report = await evaluateAdmissionsForProgram({
+        input: { degreeId: 'tau_cs', bagrut: 115, ...testInput },
+        program: tauCs,
+        institutions,
+        fetcher,
+      });
+      expect(report.results[0], report.results[0].explanation).toMatchObject({
+        kind: 'exact',
+        decision: 'below',
+      });
+      expect(fetcher).not.toHaveBeenCalled();
+    },
+  );
+
+  it('asks for the TAU placement result when a lower mathematics grade needs it', async () => {
+    const fetcher = vi.fn<typeof fetch>();
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'tau_cs',
+        psychometric: 730,
+        bagrut: 115,
+        extraInputs: {
+          ...csInputs,
+          bagrutSubjectRecord: {
+            ...csInputs.bagrutSubjectRecord,
+            subjects: [{ subjectId: 'mathematics', units: 5, grade: 70 }],
+          },
+        },
+      },
+      program: tauCs,
+      institutions,
+      fetcher,
+    });
+    expect(report.results[0]).toMatchObject({
+      kind: 'needs_input',
+      requiredInputs: ['tau_math_placement_score'],
+    });
+    expect(fetcher).not.toHaveBeenCalled();
   });
 
   it('returns an exact BGU engineering verdict', async () => {
