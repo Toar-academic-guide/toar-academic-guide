@@ -1,0 +1,450 @@
+{
+  "checkedAt": "2026-09-27T13:58:20.855Z",
+  "scope": "business__tau and tau_business__tau; synthetic applicants only",
+  "authority": "Corrected local evaluator with isolated reviewed freshness and live public TAU numeric score/cutoff responses. Production source authority has not been updated.",
+  "reviewedPolicy": {
+    "fingerprint": "sha256:0325673833ba10324d437f73d9b877cd3c464c1e1bb0e98d99558184f3be0e20",
+    "snapshot": {
+      "node": 8267,
+      "program": "122111050000",
+      "score": "hatama_nihul",
+      "acceptance": 610,
+      "rejection": 609,
+      "math": {
+        "units": 4,
+        "passing": 55,
+        "quantitativeAlternative": 140
+      },
+      "routes": [
+        "P680",
+        "P640_D95",
+        "P640_recognized30hours85",
+        "P620_managementScore",
+        "PMA835_managementScore",
+        "D104_E5_85_M5_70orM4_90_financialReports85_python85"
+      ],
+      "pmaBonuses": {
+        "math5": 35,
+        "english5": 25,
+        "fourUnits": 12.5,
+        "minimumGrade": 60
+      },
+      "moocBonus": {
+        "points": 5,
+        "maxCourses": 2,
+        "minimumGrade": 85
+      },
+      "requirementsUpdated": "2026-09-03"
+    }
+  },
+  "observedPma": [
+    {
+      "psychometric": 605,
+      "mathUnits": 5,
+      "mathGrade": 70,
+      "englishUnits": 5,
+      "englishGrade": 100,
+      "pma": 835
+    },
+    {
+      "psychometric": 604,
+      "mathUnits": 5,
+      "mathGrade": 70,
+      "englishUnits": 5,
+      "englishGrade": 100,
+      "pma": 834
+    }
+  ],
+  "results": [
+    {
+      "input": {
+        "degreeId": "business",
+        "psychometric": 605,
+        "bagrut": 100,
+        "extraInputs": {
+          "tauBagrutAverage": 115,
+          "mathUnits": 5,
+          "mathGrade": 70,
+          "englishUnits": 5,
+          "englishGrade": 100,
+          "tauManagementRequirementsConfirmed": true,
+          "tauManagementAcademicRouteConfirmed": false,
+          "tauManagementQualifyingMoocCount": 0,
+          "tauManagementNoPsychometricMoocsConfirmed": false
+        }
+      },
+      "result": {
+        "institution": {
+          "id": "tau",
+          "name": "אוניברסיטת תל אביב",
+          "region": "center",
+          "domain": "tau.ac.il",
+          "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e5/Tel_Aviv_University_logo.svg",
+          "programUrl": "https://www.tau.ac.il",
+          "universityId": "tau"
+        },
+        "linkedInstitutionId": "tau",
+        "officialUrls": ["https://go.tau.ac.il/he/management/ba/management?v=requirements"],
+        "capability": "exact",
+        "kind": "exact",
+        "confidence": "high",
+        "decision": "eligible_to_apply",
+        "sourceLabel": "תנאי קבלה רשמיים לניהול",
+        "score": 639,
+        "threshold": 610,
+        "scoreLabel": "ציון התאמה לניהול",
+        "explanation": "עומדים בתנאי אפיק PMA של 835 ומעלה וציון התאמה לניהול (PMA 835). הזכאות מותנית בשאר תנאי האוניברסיטה והחוג השני שאישרתם.",
+        "nextAction": "בדקו באתר התוכנית את תנאי הרישום והחוג השני.",
+        "snapshot": {
+          "evaluatorVersion": "admissions-evaluator-v2",
+          "ruleVersion": "admissions-evaluator-v2:tau:exact",
+          "ruleFingerprint": "sha256:a972807b12ef7e4330f7b0edc7860371b23521dd4418c7171b4fd03c13776572",
+          "inputDigest": "sha256:b9777cd023a3ab3b3db66faa77d92bad51073f74ca2365a3eedb2b779066250a",
+          "evaluationDigest": "sha256:3bfe4bf8aa0d004e6517e5e36292b7646a3da17a3ae609b6656f89ae0438f4c5"
+        }
+      },
+      "authority": "isolated supplied reviewed freshness; real live TAU score/cutoff replay when used"
+    },
+    {
+      "input": {
+        "degreeId": "business",
+        "psychometric": 604,
+        "bagrut": 100,
+        "extraInputs": {
+          "tauBagrutAverage": 115,
+          "mathUnits": 5,
+          "mathGrade": 70,
+          "englishUnits": 5,
+          "englishGrade": 100,
+          "tauManagementRequirementsConfirmed": true,
+          "tauManagementAcademicRouteConfirmed": false,
+          "tauManagementQualifyingMoocCount": 0,
+          "tauManagementNoPsychometricMoocsConfirmed": false
+        }
+      },
+      "result": {
+        "institution": {
+          "id": "tau",
+          "name": "אוניברסיטת תל אביב",
+          "region": "center",
+          "domain": "tau.ac.il",
+          "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e5/Tel_Aviv_University_logo.svg",
+          "programUrl": "https://www.tau.ac.il",
+          "universityId": "tau"
+        },
+        "linkedInstitutionId": "tau",
+        "officialUrls": ["https://go.tau.ac.il/he/management/ba/management?v=requirements"],
+        "capability": "exact",
+        "kind": "exact",
+        "confidence": "high",
+        "decision": "below",
+        "sourceLabel": "תנאי קבלה רשמיים לניהול",
+        "score": 638,
+        "threshold": 610,
+        "scoreLabel": "ציון התאמה לניהול",
+        "explanation": "לא מתקיימים תנאי אפיקי הניהול שנבדקו (PMA 834, נדרש 835).",
+        "nextAction": "בדקו באתר התוכנית את תנאי הרישום והחוג השני.",
+        "snapshot": {
+          "evaluatorVersion": "admissions-evaluator-v2",
+          "ruleVersion": "admissions-evaluator-v2:tau:exact",
+          "ruleFingerprint": "sha256:a972807b12ef7e4330f7b0edc7860371b23521dd4418c7171b4fd03c13776572",
+          "inputDigest": "sha256:2f8ec014a4b500bd748a96a6ee5fd82bb6610083d2f8a6f83c346f0207d46551",
+          "evaluationDigest": "sha256:25c10e54bcc514cb992b2fe45a10108df67691f1cb7045ddd3843cad03c8181c"
+        }
+      },
+      "authority": "isolated supplied reviewed freshness; real live TAU score/cutoff replay when used"
+    },
+    {
+      "input": {
+        "degreeId": "business",
+        "psychometric": 620,
+        "bagrut": 90,
+        "extraInputs": {
+          "tauBagrutAverage": 90,
+          "mathUnits": 5,
+          "mathGrade": 70,
+          "englishUnits": 5,
+          "englishGrade": 100,
+          "tauManagementRequirementsConfirmed": true,
+          "tauManagementAcademicRouteConfirmed": false,
+          "tauManagementQualifyingMoocCount": 0,
+          "tauManagementNoPsychometricMoocsConfirmed": false
+        }
+      },
+      "result": {
+        "institution": {
+          "id": "tau",
+          "name": "אוניברסיטת תל אביב",
+          "region": "center",
+          "domain": "tau.ac.il",
+          "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e5/Tel_Aviv_University_logo.svg",
+          "programUrl": "https://www.tau.ac.il",
+          "universityId": "tau"
+        },
+        "linkedInstitutionId": "tau",
+        "officialUrls": ["https://go.tau.ac.il/he/management/ba/management?v=requirements"],
+        "capability": "exact",
+        "kind": "exact",
+        "confidence": "high",
+        "decision": "below",
+        "sourceLabel": "תנאי קבלה רשמיים לניהול",
+        "score": 577,
+        "threshold": 610,
+        "scoreLabel": "ציון התאמה לניהול",
+        "explanation": "לא מתקיימים תנאי אפיקי הניהול שנבדקו (PMA 850, נדרש 835).",
+        "nextAction": "בדקו באתר התוכנית את תנאי הרישום והחוג השני.",
+        "snapshot": {
+          "evaluatorVersion": "admissions-evaluator-v2",
+          "ruleVersion": "admissions-evaluator-v2:tau:exact",
+          "ruleFingerprint": "sha256:a972807b12ef7e4330f7b0edc7860371b23521dd4418c7171b4fd03c13776572",
+          "inputDigest": "sha256:0c10f598937cfd78095c3b3c9d1533b303ebacbdff04106423a87d47e6677dcb",
+          "evaluationDigest": "sha256:7410a911beefcccd7c517f95aa94235a6c429a11245a98ce4506555074d4ef8e"
+        }
+      },
+      "authority": "isolated supplied reviewed freshness; real live TAU score/cutoff replay when used"
+    },
+    {
+      "input": {
+        "degreeId": "business",
+        "bagrut": 100,
+        "extraInputs": {
+          "tauBagrutAverage": 115,
+          "mathUnits": 5,
+          "mathGrade": 70,
+          "englishUnits": 5,
+          "englishGrade": 100,
+          "tauManagementRequirementsConfirmed": true,
+          "tauManagementAcademicRouteConfirmed": false,
+          "tauManagementQualifyingMoocCount": 0,
+          "tauManagementNoPsychometricMoocsConfirmed": true
+        }
+      },
+      "result": {
+        "institution": {
+          "id": "tau",
+          "name": "אוניברסיטת תל אביב",
+          "region": "center",
+          "domain": "tau.ac.il",
+          "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e5/Tel_Aviv_University_logo.svg",
+          "programUrl": "https://www.tau.ac.il",
+          "universityId": "tau"
+        },
+        "linkedInstitutionId": "tau",
+        "officialUrls": ["https://go.tau.ac.il/he/management/ba/management?v=requirements"],
+        "capability": "exact",
+        "kind": "exact",
+        "confidence": "high",
+        "decision": "eligible_to_apply",
+        "sourceLabel": "תנאי קבלה רשמיים לניהול",
+        "score": 115,
+        "threshold": 104,
+        "scoreLabel": "ממוצע בגרות רשמי",
+        "explanation": "עומדים בתנאי אפיק בגרות וקורסים מקוונים ללא פסיכומטרי. הזכאות מותנית בשאר תנאי האוניברסיטה והחוג השני שאישרתם.",
+        "nextAction": "בדקו באתר התוכנית את תנאי הרישום והחוג השני.",
+        "snapshot": {
+          "evaluatorVersion": "admissions-evaluator-v2",
+          "ruleVersion": "admissions-evaluator-v2:tau:exact",
+          "ruleFingerprint": "sha256:6acadf4a6cd16c1569aa1d6cd686c5c12505b4f26ba40c907caea2a35434c319",
+          "inputDigest": "sha256:aeb8f142a19b9ee7b5caf5286645f5e0b6867803f6228afb7cc1d1fcb2dc020b",
+          "evaluationDigest": "sha256:2698e4112fafcbc09b81c13410a76f1c4cb68a4ff24f9311a5dc6b40d5f3dc21"
+        }
+      },
+      "authority": "isolated supplied reviewed freshness; real live TAU score/cutoff replay when used"
+    },
+    {
+      "input": {
+        "degreeId": "tau_business",
+        "psychometric": 605,
+        "bagrut": 100,
+        "extraInputs": {
+          "tauBagrutAverage": 115,
+          "mathUnits": 5,
+          "mathGrade": 70,
+          "englishUnits": 5,
+          "englishGrade": 100,
+          "tauManagementRequirementsConfirmed": true,
+          "tauManagementAcademicRouteConfirmed": false,
+          "tauManagementQualifyingMoocCount": 0,
+          "tauManagementNoPsychometricMoocsConfirmed": false
+        }
+      },
+      "result": {
+        "institution": {
+          "id": "tau",
+          "name": "אוניברסיטת תל אביב",
+          "region": "center",
+          "domain": "tau.ac.il",
+          "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e5/Tel_Aviv_University_logo.svg",
+          "programUrl": "https://www.tau.ac.il",
+          "universityId": "tau"
+        },
+        "linkedInstitutionId": "tau",
+        "officialUrls": ["https://go.tau.ac.il/he/management/ba/management?v=requirements"],
+        "capability": "exact",
+        "kind": "exact",
+        "confidence": "high",
+        "decision": "eligible_to_apply",
+        "sourceLabel": "תנאי קבלה רשמיים לניהול",
+        "score": 639,
+        "threshold": 610,
+        "scoreLabel": "ציון התאמה לניהול",
+        "explanation": "עומדים בתנאי אפיק PMA של 835 ומעלה וציון התאמה לניהול (PMA 835). הזכאות מותנית בשאר תנאי האוניברסיטה והחוג השני שאישרתם.",
+        "nextAction": "בדקו באתר התוכנית את תנאי הרישום והחוג השני.",
+        "snapshot": {
+          "evaluatorVersion": "admissions-evaluator-v2",
+          "ruleVersion": "admissions-evaluator-v2:tau:exact",
+          "ruleFingerprint": "sha256:062024858773988d7152fc98d33aca25a24d0db7e1c2a39caa6e410ae68723f3",
+          "inputDigest": "sha256:039d93a332d7c6960970b123d76e22e135024d72923983135cbe9b4adf6731e1",
+          "evaluationDigest": "sha256:9c639aad4db6695ad462123474ed25adc873d96cff671c7d3c13bf56857ebbe1"
+        }
+      },
+      "authority": "isolated supplied reviewed freshness; real live TAU score/cutoff replay when used"
+    },
+    {
+      "input": {
+        "degreeId": "tau_business",
+        "psychometric": 604,
+        "bagrut": 100,
+        "extraInputs": {
+          "tauBagrutAverage": 115,
+          "mathUnits": 5,
+          "mathGrade": 70,
+          "englishUnits": 5,
+          "englishGrade": 100,
+          "tauManagementRequirementsConfirmed": true,
+          "tauManagementAcademicRouteConfirmed": false,
+          "tauManagementQualifyingMoocCount": 0,
+          "tauManagementNoPsychometricMoocsConfirmed": false
+        }
+      },
+      "result": {
+        "institution": {
+          "id": "tau",
+          "name": "אוניברסיטת תל אביב",
+          "region": "center",
+          "domain": "tau.ac.il",
+          "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e5/Tel_Aviv_University_logo.svg",
+          "programUrl": "https://www.tau.ac.il",
+          "universityId": "tau"
+        },
+        "linkedInstitutionId": "tau",
+        "officialUrls": ["https://go.tau.ac.il/he/management/ba/management?v=requirements"],
+        "capability": "exact",
+        "kind": "exact",
+        "confidence": "high",
+        "decision": "below",
+        "sourceLabel": "תנאי קבלה רשמיים לניהול",
+        "score": 638,
+        "threshold": 610,
+        "scoreLabel": "ציון התאמה לניהול",
+        "explanation": "לא מתקיימים תנאי אפיקי הניהול שנבדקו (PMA 834, נדרש 835).",
+        "nextAction": "בדקו באתר התוכנית את תנאי הרישום והחוג השני.",
+        "snapshot": {
+          "evaluatorVersion": "admissions-evaluator-v2",
+          "ruleVersion": "admissions-evaluator-v2:tau:exact",
+          "ruleFingerprint": "sha256:062024858773988d7152fc98d33aca25a24d0db7e1c2a39caa6e410ae68723f3",
+          "inputDigest": "sha256:ec9545c8c49eb4abc7ed78af0fae3e5db905b92ff3a8823acdaa2d8a97ecf546",
+          "evaluationDigest": "sha256:d14cf0db19ce05b03566cf752b3bb9f215bce92e4287dcbb1df260299fbf9879"
+        }
+      },
+      "authority": "isolated supplied reviewed freshness; real live TAU score/cutoff replay when used"
+    },
+    {
+      "input": {
+        "degreeId": "tau_business",
+        "psychometric": 620,
+        "bagrut": 90,
+        "extraInputs": {
+          "tauBagrutAverage": 90,
+          "mathUnits": 5,
+          "mathGrade": 70,
+          "englishUnits": 5,
+          "englishGrade": 100,
+          "tauManagementRequirementsConfirmed": true,
+          "tauManagementAcademicRouteConfirmed": false,
+          "tauManagementQualifyingMoocCount": 0,
+          "tauManagementNoPsychometricMoocsConfirmed": false
+        }
+      },
+      "result": {
+        "institution": {
+          "id": "tau",
+          "name": "אוניברסיטת תל אביב",
+          "region": "center",
+          "domain": "tau.ac.il",
+          "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e5/Tel_Aviv_University_logo.svg",
+          "programUrl": "https://www.tau.ac.il",
+          "universityId": "tau"
+        },
+        "linkedInstitutionId": "tau",
+        "officialUrls": ["https://go.tau.ac.il/he/management/ba/management?v=requirements"],
+        "capability": "exact",
+        "kind": "exact",
+        "confidence": "high",
+        "decision": "below",
+        "sourceLabel": "תנאי קבלה רשמיים לניהול",
+        "score": 577,
+        "threshold": 610,
+        "scoreLabel": "ציון התאמה לניהול",
+        "explanation": "לא מתקיימים תנאי אפיקי הניהול שנבדקו (PMA 850, נדרש 835).",
+        "nextAction": "בדקו באתר התוכנית את תנאי הרישום והחוג השני.",
+        "snapshot": {
+          "evaluatorVersion": "admissions-evaluator-v2",
+          "ruleVersion": "admissions-evaluator-v2:tau:exact",
+          "ruleFingerprint": "sha256:062024858773988d7152fc98d33aca25a24d0db7e1c2a39caa6e410ae68723f3",
+          "inputDigest": "sha256:cbcd100381f6cbef154d1f9160bcbec48623efee1455db90f43aedf026afb119",
+          "evaluationDigest": "sha256:ff035ddf47c3df8fbee6f4d541d5d29910e7eeba558dcd2d62ef4f5c674b1634"
+        }
+      },
+      "authority": "isolated supplied reviewed freshness; real live TAU score/cutoff replay when used"
+    },
+    {
+      "input": {
+        "degreeId": "tau_business",
+        "bagrut": 100,
+        "extraInputs": {
+          "tauBagrutAverage": 115,
+          "mathUnits": 5,
+          "mathGrade": 70,
+          "englishUnits": 5,
+          "englishGrade": 100,
+          "tauManagementRequirementsConfirmed": true,
+          "tauManagementAcademicRouteConfirmed": false,
+          "tauManagementQualifyingMoocCount": 0,
+          "tauManagementNoPsychometricMoocsConfirmed": true
+        }
+      },
+      "result": {
+        "institution": {
+          "id": "tau",
+          "name": "אוניברסיטת תל אביב",
+          "region": "center",
+          "domain": "tau.ac.il",
+          "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e5/Tel_Aviv_University_logo.svg",
+          "programUrl": "https://www.tau.ac.il",
+          "universityId": "tau"
+        },
+        "linkedInstitutionId": "tau",
+        "officialUrls": ["https://go.tau.ac.il/he/management/ba/management?v=requirements"],
+        "capability": "exact",
+        "kind": "exact",
+        "confidence": "high",
+        "decision": "eligible_to_apply",
+        "sourceLabel": "תנאי קבלה רשמיים לניהול",
+        "score": 115,
+        "threshold": 104,
+        "scoreLabel": "ממוצע בגרות רשמי",
+        "explanation": "עומדים בתנאי אפיק בגרות וקורסים מקוונים ללא פסיכומטרי. הזכאות מותנית בשאר תנאי האוניברסיטה והחוג השני שאישרתם.",
+        "nextAction": "בדקו באתר התוכנית את תנאי הרישום והחוג השני.",
+        "snapshot": {
+          "evaluatorVersion": "admissions-evaluator-v2",
+          "ruleVersion": "admissions-evaluator-v2:tau:exact",
+          "ruleFingerprint": "sha256:52c95870925ac2571bcb85da6dd99a6fb9defefed51ccf738adde9810ae89a7d",
+          "inputDigest": "sha256:0131051341be41f4d4933f2ebe28da98b2b93c94efde82e0f5a03c10007e2d93",
+          "evaluationDigest": "sha256:a0a0ebce9a140143f73016c9d3398a01cacab157d427b69a0664acb16a69103c"
+        }
+      },
+      "authority": "isolated supplied reviewed freshness; real live TAU score/cutoff replay when used"
+    }
+  ]
+}

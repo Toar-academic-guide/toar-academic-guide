@@ -131,6 +131,48 @@ describe('AcademicProfileForm', () => {
     expect(onComplete).not.toHaveBeenCalled();
   });
 
+  it('keeps Management route confirmations separate from CS and preserves false and zero when saved', async () => {
+    const onComplete = vi.fn();
+    render(
+      <AcademicProfileForm
+        onComplete={onComplete}
+        onSkip={vi.fn()}
+        onClearLocalProfileData={vi.fn().mockResolvedValue(undefined)}
+        initialScores={{
+          admissions: {
+            tauManagementRequirementsConfirmed: true,
+            tauManagementAcademicRouteConfirmed: false,
+            tauManagementQualifyingMoocCount: 0,
+            tauManagementNoPsychometricMoocsConfirmed: false,
+          },
+        }}
+      />,
+    );
+    expect(screen.getByLabelText('אישור תנאי הגשה לניהול בתל אביב')).toHaveProperty(
+      'value',
+      'true',
+    );
+    expect(screen.getByLabelText('אישור תנאי הגשה לתל אביב')).toHaveProperty('value', '');
+    expect(screen.getByLabelText('מספר קורסי הבונוס לניהול בציון 85 ומעלה')).toHaveProperty(
+      'value',
+      '0',
+    );
+    fireEvent.change(screen.getByLabelText('שני הקורסים לאפיק ללא פסיכומטרי'), {
+      target: { value: 'true' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    await waitFor(() =>
+      expect(onComplete).toHaveBeenCalledWith({
+        admissions: {
+          tauManagementRequirementsConfirmed: true,
+          tauManagementAcademicRouteConfirmed: false,
+          tauManagementQualifyingMoocCount: 0,
+          tauManagementNoPsychometricMoocsConfirmed: true,
+        },
+      }),
+    );
+  });
+
   it('hydrates and saves only defined admissions inputs, preserving false and zero', async () => {
     const onComplete = vi.fn();
 

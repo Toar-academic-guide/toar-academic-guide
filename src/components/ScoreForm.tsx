@@ -1,12 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { UserScores, EngineeringOptions } from '@/types';
+import { CalculatorScores, EngineeringOptions } from '@/types';
 import type { Program } from '@/data/degrees/types';
 
 interface Props {
   programs: Program[];
-  onSubmit: (scores: UserScores, degreeId: string, engineering: EngineeringOptions) => void;
+  onSubmit: (scores: CalculatorScores, degreeId: string, engineering: EngineeringOptions) => void;
   defaultDegreeId?: string;
   /** Pre-fill from user profile (overall psychometric score, 200–800) */
   defaultPsychometric?: number;
@@ -29,6 +29,7 @@ export default function ScoreForm({
   const [errors, setErrors] = useState<{ psychometric?: string; bagrut?: string }>({});
 
   const selectedDegree = programs.find((program) => program.id === degreeId);
+  const allowsNoPsychometric = ['business', 'tau_business'].includes(degreeId);
   const showEngineeringSection = selectedDegree?.isTauEngineering ?? false;
 
   function validate(): boolean {
@@ -36,7 +37,10 @@ export default function ScoreForm({
     const psy = Number(psychometric);
     const bag = Number(bagrut);
 
-    if (!psychometric || isNaN(psy) || psy < 200 || psy > 800) {
+    if (
+      (!psychometric && !allowsNoPsychometric) ||
+      (psychometric && (isNaN(psy) || psy < 200 || psy > 800))
+    ) {
       errs.psychometric = 'יש להזין ציון פסיכומטרי תקין בין 200 ל-800';
     }
     if (!bagrut || isNaN(bag) || bag < 60 || bag > 120) {
@@ -50,10 +54,14 @@ export default function ScoreForm({
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!validate()) return;
-    onSubmit({ psychometric: Number(psychometric), bagrut: Number(bagrut) }, degreeId, {
-      hasMath5,
-      hasPhysics5,
-    });
+    onSubmit(
+      { psychometric: psychometric ? Number(psychometric) : undefined, bagrut: Number(bagrut) },
+      degreeId,
+      {
+        hasMath5,
+        hasPhysics5,
+      },
+    );
   }
 
   const inputBase = 'rounded-xl border px-4 py-2.5 text-sm outline-none transition focus:ring-2';
@@ -66,7 +74,7 @@ export default function ScoreForm({
         {/* Psychometric */}
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-gray-700" htmlFor="psychometric">
-            ציון פסיכומטרי
+            ציון פסיכומטרי{allowsNoPsychometric ? ' (רשות לאפיק ללא פסיכומטרי)' : ''}
           </label>
           <input
             id="psychometric"

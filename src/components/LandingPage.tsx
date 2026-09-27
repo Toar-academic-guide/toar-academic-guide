@@ -13,7 +13,7 @@ interface Props {
   onAlreadyKnow: () => void;
   onNeedHelp: () => void;
   onSignIn: () => void;
-  onCalculate: (psychometric: number, bagrut: number, degreeId: string) => void;
+  onCalculate: (psychometric: number | undefined, bagrut: number, degreeId: string) => void;
   onGoToProfile: () => void;
   programs: CatalogueProgram[];
   authLoading?: boolean;
@@ -67,7 +67,11 @@ export default function LandingPage({
     const errs: typeof calcErrors = {};
     const psy = Number(psychometric);
     const bag = Number(bagrut);
-    if (!psychometric || isNaN(psy) || psy < 200 || psy > 800) {
+    const allowsNoPsychometric = ['business', 'tau_business'].includes(selectedDegreeId);
+    if (
+      (!psychometric && !allowsNoPsychometric) ||
+      (psychometric && (isNaN(psy) || psy < 200 || psy > 800))
+    ) {
       errs.psychometric = 'ציון בין 200 ל-800';
     }
     if (!bagrut || isNaN(bag) || bag < 60 || bag > 120) {
@@ -78,7 +82,7 @@ export default function LandingPage({
       return;
     }
     if (Object.keys(errs).length === 0) {
-      onCalculate(psy, bag, selectedDegreeId);
+      onCalculate(psychometric ? psy : undefined, bag, selectedDegreeId);
     }
   }
 
@@ -341,6 +345,9 @@ export default function LandingPage({
                   className="mb-1 block text-sm font-semibold text-slate-700"
                 >
                   ציון פסיכומטרי
+                  {['business', 'tau_business'].includes(selectedDegreeId)
+                    ? ' (רשות לאפיק ללא פסיכומטרי)'
+                    : ''}
                 </label>
                 <input
                   id="calc-psychometric"

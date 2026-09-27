@@ -261,7 +261,7 @@ const WITHHELD_PAIR_EVIDENCE: Record<string, { url: string; reason: string }> = 
   medicine__tau: {
     url: 'https://go.tau.ac.il/he/med/ba/med-doc?v=important-info',
     reason:
-      'Current TAU medicine uses a 30% cognitive plus 70% non-cognitive selection process and does not publish a numeric programme acceptance/rejection cutoff that can support an exact two-verdict replay.',
+      'TAU publishes preliminary eligibility at 726.44 and final selection cutoffs of 743.57 for acceptance and 742.52 or below for rejection. Exact final replay remains withheld because the current official sources do not provide the institution-specific assessment weighting and score transformation needed to combine the 2026 non-cognitive component scores with the 30% preliminary score.',
   },
   nutrition__tau: {
     url: 'https://go.tau.ac.il/he/med',
@@ -281,7 +281,7 @@ const WITHHELD_PAIR_EVIDENCE: Record<string, { url: string; reason: string }> = 
   tau_medicine__tau: {
     url: 'https://go.tau.ac.il/he/med/ba/med-doc?v=important-info',
     reason:
-      'Current TAU medicine uses a 30% cognitive plus 70% non-cognitive selection process and does not publish a numeric programme acceptance/rejection cutoff that can support an exact two-verdict replay.',
+      'TAU publishes preliminary eligibility at 726.44 and final selection cutoffs of 743.57 for acceptance and 742.52 or below for rejection. Exact final replay remains withheld because the current official sources do not provide the institution-specific assessment weighting and score transformation needed to combine the 2026 non-cognitive component scores with the 30% preliminary score.',
   },
   physiotherapy__huji: {
     url: 'https://go.huji.ac.il/jjson/huji.json.gz',

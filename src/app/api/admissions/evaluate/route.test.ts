@@ -216,6 +216,32 @@ describe('admissions evaluate route', () => {
     );
   });
 
+  it('supports an actual missing psychometric score only for the implemented Management route', async () => {
+    hoistedMocks.listCataloguePrograms.mockResolvedValue({
+      data: [{ id: 'business', name: 'ניהול', linkedInstitutionIds: ['tau'] }],
+    });
+    const request = (degreeId: string) =>
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          degreeId,
+          bagrut: 100,
+          extraInputs: {
+            tauManagementRequirementsConfirmed: true,
+            tauManagementAcademicRouteConfirmed: false,
+            tauManagementQualifyingMoocCount: 0,
+            tauManagementNoPsychometricMoocsConfirmed: true,
+          },
+        }),
+      });
+    expect((await POST(request('business'))).status).toBe(200);
+    const input = hoistedMocks.evaluateAdmissionsForProgram.mock.calls[0][0].input;
+    expect(input.psychometric).toBeUndefined();
+    expect(input.extraInputs.tauManagementQualifyingMoocCount).toBe(0);
+    expect((await POST(request('tau_datascience'))).status).toBe(400);
+  });
+
   it('rejects out-of-range admissions inputs and non-boolean confirmations', async () => {
     const requestWith = (extraInputs: Record<string, unknown>) =>
       new Request('http://localhost/api/admissions/evaluate', {
@@ -233,6 +259,9 @@ describe('admissions evaluate route', () => {
       { tauBagrutAverage: 49 },
       { bguBagrutAverage: 130.1 },
       { tauApplicationRequirementsConfirmed: 'yes' },
+      { tauManagementRequirementsConfirmed: 'yes' },
+      { tauManagementQualifyingMoocCount: 3 },
+      { tauManagementNoPsychometricMoocsConfirmed: 1 },
       { bguLanguageRequirementsConfirmed: 1 },
       { tauMathPlacementScore: 101 },
       { technionArchitectureBagrutAverage: 119.1 },

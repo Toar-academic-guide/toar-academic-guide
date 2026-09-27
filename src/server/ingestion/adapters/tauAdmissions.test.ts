@@ -194,7 +194,7 @@ describe('runTauAdmissionsProof', () => {
     });
   });
 
-  it('replays the current medicine preliminary threshold as eligibility for non-cognitive review', async () => {
+  it('keeps medicine preliminary eligibility separate from the published final selection cutoffs', async () => {
     const fetcher = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(
@@ -210,7 +210,10 @@ describe('runTauAdmissionsProof', () => {
               title: 'לימודי תואר "דוקטור ברפואה"',
               receipt_threshol: null,
               rejection_thresh: null,
-              field_registration_comments: '<p>ציון התאמה רפואה ראשוני - 726.44</p>',
+              field_registration_comments:
+                '<p><strong>ציון התאמה רפואה ראשוני - 726.44</strong></p>' +
+                '<p><strong><u>קבלה</u> - ציון התאמה רפואה כולל מור - 743.57</strong></p>' +
+                '<p><strong><u>דחיה</u> - ציון התאמה רפואה כולל מור - 742.52 ומטה</strong></p>',
               field_plain_id_programs: ['011167010000'],
             },
           },

@@ -9,7 +9,7 @@ import {
   EngineeringOptions,
   RecommendedField,
   UniversityResult,
-  UserScores,
+  CalculatorScores,
   GeographicRegion,
   AvoidanceTag,
 } from '@/types';
@@ -224,7 +224,7 @@ export default function AppExperience({
   const [bucketReturnsTo, setBucketReturnsTo] = useState<AppStep>('recommendations');
   const [authReturnTo] = useState<Exclude<AppStep, 'auth'>>('landing');
   const [landingCalcScores, setLandingCalcScores] = useState<{
-    psychometric: number;
+    psychometric?: number;
     bagrut: number;
     degreeId: string;
   } | null>(null);
@@ -232,7 +232,7 @@ export default function AppExperience({
   const isTauComputerScienceAlertContinuation =
     admissionAlertTarget?.institutionId === 'tau' && admissionAlertTarget.programId === 'tau_cs';
   const [appCalcScores, setAppCalcScores] = useState<{
-    psychometric: number;
+    psychometric?: number;
     bagrut: number;
     degreeId: string;
   } | null>(null);
@@ -447,7 +447,11 @@ export default function AppExperience({
     return null;
   }
 
-  function handleCalculate(scores: UserScores, degreeId: string, _engineering: EngineeringOptions) {
+  function handleCalculate(
+    scores: CalculatorScores,
+    degreeId: string,
+    _engineering: EngineeringOptions,
+  ) {
     posthog.capture('degree_calculator_submitted', {
       degree_id: degreeId,
     });

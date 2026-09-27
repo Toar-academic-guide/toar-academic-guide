@@ -70,6 +70,10 @@ const admissionsInputsSchema = z.strictObject({
   tauBagrutAverage: z.number().min(50).max(130).optional(),
   bguBagrutAverage: z.number().min(50).max(130).optional(),
   tauApplicationRequirementsConfirmed: z.boolean().optional(),
+  tauManagementRequirementsConfirmed: z.boolean().optional(),
+  tauManagementAcademicRouteConfirmed: z.boolean().optional(),
+  tauManagementQualifyingMoocCount: z.union([z.literal(0), z.literal(1), z.literal(2)]).optional(),
+  tauManagementNoPsychometricMoocsConfirmed: z.boolean().optional(),
   bguLanguageRequirementsConfirmed: z.boolean().optional(),
   tauMathPlacementScore: z.number().min(0).max(100).optional(),
 });

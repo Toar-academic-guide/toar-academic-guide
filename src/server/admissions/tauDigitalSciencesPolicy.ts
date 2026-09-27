@@ -46,6 +46,7 @@ export function evaluateTauDigitalSciencesGates(
 ): TauDigitalSciencesGateResult {
   const extraInputs = input.extraInputs;
   const missingInputs: AdmissionsRequiredInput[] = [];
+  if (input.psychometric === undefined) missingInputs.push('psychometric_overall');
   if (extraInputs?.psychometricEnglish === undefined) {
     missingInputs.push('psychometric_english');
   }
@@ -55,6 +56,7 @@ export function evaluateTauDigitalSciencesGates(
 
   if (
     missingInputs.length > 0 ||
+    input.psychometric === undefined ||
     extraInputs?.psychometricEnglish === undefined ||
     !extraInputs.bagrutSubjectRecord
   ) {

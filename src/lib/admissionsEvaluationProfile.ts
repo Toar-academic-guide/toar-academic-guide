@@ -33,6 +33,13 @@ export function admissionsExtraInputsFromAcademicScores(
     tauApplicationRequirementsConfirmed:
       academicScores?.admissions?.tauApplicationRequirementsConfirmed,
     bguLanguageRequirementsConfirmed: academicScores?.admissions?.bguLanguageRequirementsConfirmed,
+    tauManagementRequirementsConfirmed:
+      academicScores?.admissions?.tauManagementRequirementsConfirmed,
+    tauManagementAcademicRouteConfirmed:
+      academicScores?.admissions?.tauManagementAcademicRouteConfirmed,
+    tauManagementQualifyingMoocCount: academicScores?.admissions?.tauManagementQualifyingMoocCount,
+    tauManagementNoPsychometricMoocsConfirmed:
+      academicScores?.admissions?.tauManagementNoPsychometricMoocsConfirmed,
     tauMathPlacementScore: academicScores?.admissions?.tauMathPlacementScore,
     bagrutSubjectRecord,
     bagrutProfileSchemaVersion: bagrutSubjectRecord?.schemaVersion,
