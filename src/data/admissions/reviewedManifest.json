@@ -1,23 +1,43 @@
 {
   "version": 2,
-  "releaseKind": "canonical_bootstrap",
+  "releaseKind": "canonical_change",
   "changes": [
     {
       "target": {
-        "institutionId": "technion",
-        "programId": "architecture",
+        "institutionId": "bgu",
+        "programId": "psychology",
         "cycle": "2027"
       },
       "ruleKind": "admission_cutoff",
-      "before": 87,
-      "after": 85,
+      "before": 675,
+      "after": 650,
       "effectiveFrom": "2026-09-27",
       "sourceProofs": [
         {
-          "sourceId": "technion-architecture-live",
-          "digest": "sha256:e39fe25f2d452aaf7f4f6834f2e94cd178c8f827efd81a43f9380f0ebbfee17a",
-          "excerpt": "Official technion-architecture-live admission cutoff: 85.",
-          "url": "https://admissions.technion.ac.il/calculator/",
+          "sourceId": "bgu-psychology-live",
+          "digest": "sha256:69bd3b03bd3de64a32fcacf8ad5bb545423d31c12c30862c7d298728204e4a72",
+          "excerpt": "Main-campus Psychology (department 101, path 2) requires general score 650 and psychometric 650. Alternative routes remain subject to the official programme requirements.",
+          "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=101&p_pat1=2&p_degree_level=1",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "bgu",
+        "programId": "bgu_psychology",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 675,
+      "after": 650,
+      "effectiveFrom": "2026-09-27",
+      "sourceProofs": [
+        {
+          "sourceId": "bgu-bgu_psychology-live",
+          "digest": "sha256:69bd3b03bd3de64a32fcacf8ad5bb545423d31c12c30862c7d298728204e4a72",
+          "excerpt": "Main-campus Psychology (department 101, path 2) requires general score 650 and psychometric 650. Alternative routes remain subject to the official programme requirements.",
+          "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=101&p_pat1=2&p_degree_level=1",
           "proofType": "exact_official"
         }
       ]
