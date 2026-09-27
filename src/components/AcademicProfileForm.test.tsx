@@ -450,3 +450,45 @@ it('restores and saves Psychology prep decimals and false values without generic
   fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
   await waitFor(() => expect(onComplete).toHaveBeenCalledWith({ admissions }));
 });
+
+it('restores and saves social science details and shares the same prep values', async () => {
+  const admissions = {
+    bguSocialScienceRoute: 'bagrut' as const,
+    bguSocialScienceRequirementsConfirmed: false,
+    bguSocialScienceLanguageConfirmed: true,
+    bguReturningFromStudyBreak: false,
+    bguSocialWorkAcademicBackground: 'social_work' as const,
+    bguSocialWorkAcademicAverage: 85.25,
+    bguSocialWorkTranscriptProvided: false,
+    bguApplicantAge: 45,
+    bguPreparatoryAverage: 90.25,
+    bguPreparatoryTrack: 'natural_life_sciences' as const,
+    bguPreparatoryCompleted: false,
+  };
+  const onComplete = vi.fn();
+  render(
+    <AcademicProfileForm
+      onComplete={onComplete}
+      onClearLocalProfileData={vi.fn()}
+      onSkip={vi.fn()}
+      initialScores={{ admissions }}
+    />,
+  );
+  expect(screen.getByLabelText('ממוצע לימודים קודמים בעבודה סוציאלית (0–100)')).toHaveProperty(
+    'value',
+    '85.25',
+  );
+  fireEvent.change(screen.getByLabelText('ממוצע מכינה מוכרת למדעי החברה (0–100)'), {
+    target: { value: '90.75' },
+  });
+  expect(screen.getByLabelText('ממוצע מכינה מוכרת לפסיכולוגיה (0–100)')).toHaveProperty(
+    'value',
+    '90.75',
+  );
+  fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+  await waitFor(() =>
+    expect(onComplete).toHaveBeenCalledWith({
+      admissions: { ...admissions, bguPreparatoryAverage: 90.75 },
+    }),
+  );
+});

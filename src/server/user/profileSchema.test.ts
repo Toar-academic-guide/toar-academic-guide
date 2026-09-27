@@ -7,6 +7,38 @@ import {
 } from '@/server/user/profileSchema';
 
 describe('userProfileSchema', () => {
+  it('preserves the complete social science input record and rejects invalid age or averages', () => {
+    const admissions = {
+      bguSocialScienceRoute: 'education_conditional',
+      bguSocialScienceRequirementsConfirmed: false,
+      bguSocialScienceLanguageConfirmed: false,
+      bguReturningFromStudyBreak: false,
+      bguSocialWorkAcademicBackground: 'social_work',
+      bguSocialWorkAcademicAverage: 85.25,
+      bguSocialWorkTranscriptProvided: false,
+      bguApplicantAge: 45,
+      bguEducationSecondDepartment: 'art',
+      bguEnglishClassificationMissing: true,
+      bguHebrewRequirementsConfirmed: true,
+      bguEducationEnglishConditionAcknowledged: false,
+    };
+    expect(
+      userProfileSchema.parse({ geographicPreference: 'any', academicScores: { admissions } })
+        .academicScores?.admissions,
+    ).toEqual(admissions);
+    for (const extra of [
+      { bguApplicantAge: 44.5 },
+      { bguApplicantAge: 121 },
+      { bguSocialWorkAcademicAverage: 100.01 },
+      { bguSocialScienceRoute: 'expired' },
+    ])
+      expect(
+        userProfileSchema.safeParse({
+          geographicPreference: 'any',
+          academicScores: { admissions: { ...admissions, ...extra } },
+        }).success,
+      ).toBe(false);
+  });
   it('preserves optional Architecture scores, false and zero', () => {
     const admissions = {
       technionArchitectureBagrutAverage: 101.9,

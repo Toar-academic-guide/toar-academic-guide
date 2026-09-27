@@ -9,6 +9,28 @@ export function admissionsInputValue(
       return undefined;
     case 'bgu_psychology_requirements':
       return input?.bguPsychologyRequirementsConfirmed;
+    case 'bgu_social_science_requirements':
+      return input?.bguSocialScienceRequirementsConfirmed;
+    case 'bgu_social_science_language':
+      return input?.bguSocialScienceLanguageConfirmed;
+    case 'bgu_returning_from_study_break':
+      return input?.bguReturningFromStudyBreak;
+    case 'bgu_social_work_academic_background':
+      return input?.bguSocialWorkAcademicBackground;
+    case 'bgu_social_work_academic_average':
+      return input?.bguSocialWorkAcademicAverage;
+    case 'bgu_social_work_transcript':
+      return input?.bguSocialWorkTranscriptProvided;
+    case 'bgu_applicant_age':
+      return input?.bguApplicantAge;
+    case 'bgu_education_second_department':
+      return input?.bguEducationSecondDepartment;
+    case 'bgu_english_classification_missing':
+      return input?.bguEnglishClassificationMissing;
+    case 'bgu_hebrew_requirements':
+      return input?.bguHebrewRequirementsConfirmed;
+    case 'bgu_education_english_condition':
+      return input?.bguEducationEnglishConditionAcknowledged;
     case 'bgu_preparatory_average':
       return input?.bguPreparatoryAverage;
     case 'bgu_preparatory_track':

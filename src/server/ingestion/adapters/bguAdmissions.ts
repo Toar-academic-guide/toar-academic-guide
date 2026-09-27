@@ -1,5 +1,7 @@
 import { isBguPsychologyProgram } from '@/lib/bguPsychologyInputs';
 import { runBguPsychologyProof } from './bguPsychology';
+import { bguSocialScienceProgram } from '@/lib/bguSocialScienceInputs';
+import { runBguSocialScienceProof } from './bguSocialScience';
 import {
   parseOfficialNumeric,
   readOfficialResponseMetadata,
@@ -39,6 +41,7 @@ export async function runBguAdmissionsProof(
   }
 
   if (isBguPsychologyProgram(program.id)) return runBguPsychologyProof(context);
+  if (bguSocialScienceProgram(program.id)) return runBguSocialScienceProof(context);
   if (program.id === 'cs' || program.id === 'bgu_cs') {
     return runBguComputerScienceProof(context);
   }

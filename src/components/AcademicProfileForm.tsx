@@ -7,6 +7,11 @@ import { Upload, FileText, X, Brain, GraduationCap, Loader2 } from 'lucide-react
 import type { AcademicScores, UserProfile } from '@/types';
 import BguPsychologyFields, { type PsychologyFormValues } from './BguPsychologyFields';
 import { BGU_PSYCHOLOGY_PROFILE_KEYS, bguPsychologyInputsSchema } from '@/lib/bguPsychologyInputs';
+import BguSocialScienceFields, { type SocialScienceFormValues } from './BguSocialScienceFields';
+import {
+  BGU_SOCIAL_SCIENCE_PROFILE_KEYS,
+  bguSocialScienceInputsSchema,
+} from '@/lib/bguSocialScienceInputs';
 import BagrutCalculatorWizard from './BagrutCalculatorWizard';
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
@@ -44,6 +49,14 @@ export default function AcademicProfileForm({
   isAuthenticated = false,
   alertContinuation,
 }: Props) {
+  const [socialScienceValues, setSocialScienceValues] = useState<SocialScienceFormValues>(() =>
+    Object.fromEntries(
+      BGU_SOCIAL_SCIENCE_PROFILE_KEYS.map((key) => [
+        key,
+        initialScores?.admissions?.[key]?.toString() ?? '',
+      ]),
+    ),
+  );
   const [psychologyValues, setPsychologyValues] = useState<PsychologyFormValues>(() =>
     Object.fromEntries(
       BGU_PSYCHOLOGY_PROFILE_KEYS.map((key) => [
@@ -135,6 +148,7 @@ export default function AcademicProfileForm({
     setBagrutSubjectRecord(undefined);
     setTauBagrutAverage('');
     setPsychologyValues({});
+    setSocialScienceValues({});
     setBguBagrutAverage('');
     setTauApplicationRequirements('');
     setBguLanguageRequirements('');
@@ -205,6 +219,31 @@ export default function AcademicProfileForm({
       return;
     }
     Object.assign(admissions, parsedPsychology.data);
+    const socialScienceInputs = Object.fromEntries(
+      BGU_SOCIAL_SCIENCE_PROFILE_KEYS.filter(
+        (key) => socialScienceValues[key] !== undefined && socialScienceValues[key] !== '',
+      ).map((key) => [
+        key,
+        key.endsWith('Confirmed') ||
+        [
+          'bguReturningFromStudyBreak',
+          'bguSocialWorkTranscriptProvided',
+          'bguEnglishClassificationMissing',
+          'bguEducationEnglishConditionAcknowledged',
+        ].includes(key)
+          ? socialScienceValues[key] === 'true'
+          : key.endsWith('Average') || key === 'bguApplicantAge'
+            ? Number(socialScienceValues[key])
+            : socialScienceValues[key],
+      ]),
+    );
+    const parsedSocialScience = bguSocialScienceInputsSchema.safeParse(socialScienceInputs);
+    if (!parsedSocialScience.success) {
+      setError('יש להזין נתוני מדעי החברה תקינים: גיל שלם בין 0 ל־120 וממוצע אקדמי בין 0 ל־100.');
+      setIsSaving(false);
+      return;
+    }
+    Object.assign(admissions, parsedSocialScience.data);
     const architectureAverageValue = optionalNumber(architectureAverage);
     const architectureExamValue = optionalNumber(architectureExam);
     if (
@@ -669,6 +708,18 @@ export default function AcademicProfileForm({
               <BguPsychologyFields
                 values={psychologyValues}
                 onChange={(key, value) =>
+                  setPsychologyValues((previous) => ({ ...previous, [key]: value }))
+                }
+                disabled={isSaving}
+                inputClassName={inputBase}
+              />
+              <BguSocialScienceFields
+                values={socialScienceValues}
+                onChange={(key, value) =>
+                  setSocialScienceValues((previous) => ({ ...previous, [key]: value }))
+                }
+                prepValues={psychologyValues}
+                onPrepChange={(key, value) =>
                   setPsychologyValues((previous) => ({ ...previous, [key]: value }))
                 }
                 disabled={isSaving}

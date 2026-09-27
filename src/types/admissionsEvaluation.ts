@@ -1,4 +1,5 @@
 import type { BguPsychologyInputs } from '@/lib/bguPsychologyInputs';
+import type { BguSocialScienceInputs } from '@/lib/bguSocialScienceInputs';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type { BagrutSector, BagrutSubjectRecord, DeltaNeeded } from '@/types';
 
@@ -37,6 +38,17 @@ export type AdmissionsConfidence = 'high' | 'medium' | 'low';
 export type AdmissionsRequiredInput =
   | 'bagrut_average'
   | 'bgu_psychology_requirements'
+  | 'bgu_social_science_requirements'
+  | 'bgu_social_science_language'
+  | 'bgu_returning_from_study_break'
+  | 'bgu_social_work_academic_background'
+  | 'bgu_social_work_academic_average'
+  | 'bgu_social_work_transcript'
+  | 'bgu_applicant_age'
+  | 'bgu_education_second_department'
+  | 'bgu_english_classification_missing'
+  | 'bgu_hebrew_requirements'
+  | 'bgu_education_english_condition'
   | 'bgu_preparatory_average'
   | 'bgu_preparatory_completed'
   | 'bgu_preparatory_track'
@@ -69,7 +81,7 @@ export type AdmissionsRequiredInput =
   | 'technion_architecture_exam_passed'
   | 'technion_architecture_requirements';
 
-export interface AdmissionsExtraInputs extends BguPsychologyInputs {
+export interface AdmissionsExtraInputs extends BguPsychologyInputs, BguSocialScienceInputs {
   technionArchitectureBagrutAverage?: number;
   technionArchitectureExamScore?: number;
   technionArchitectureExamPassed?: boolean;

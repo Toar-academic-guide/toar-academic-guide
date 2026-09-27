@@ -1,4 +1,8 @@
 import { isBguPsychologyProgram } from '@/lib/bguPsychologyInputs';
+import { bguSocialScienceProgram } from '@/lib/bguSocialScienceInputs';
+import { resolveBguSocialScienceAdmission } from './bguSocialSciencePolicy';
+import { runBguSocialScienceProof } from '@/server/ingestion/adapters/bguSocialScience';
+import { bguSocialScienceSource } from '@/data/admissions/bguSocialScienceVerification';
 import { resolveBguPsychologyAdmission } from './bguPsychologyPolicy';
 import { runBguPsychologyProof } from '@/server/ingestion/adapters/bguPsychology';
 import { BGU_PSYCHOLOGY_SOURCE_URL } from '@/data/admissions/bguPsychologyVerification';
@@ -243,6 +247,67 @@ async function evaluateExactResult(args: {
           result.decision === 'below'
             ? 'בדקו אפיק חלופי לפי התנאים הרשמיים. אין זכאות אוטומטית לדיון בחריגים.'
             : 'מכסת המתקבלים מלאה כרגע; הזכאים יכולים להירשם ולעקוב אחר מקום פנוי. נדרש אישור מוסדי ועמידה בתנאי החוג הנוסף.',
+      };
+    }
+    if (exactTarget.sourceTarget.adapterId === 'bgu' && bguSocialScienceProgram(program.id)) {
+      const route = resolveBguSocialScienceAdmission(requestedInput);
+      const { source, rule } = bguSocialScienceSource(program.id);
+      if (route.kind === 'needs_input')
+        return requiredInputsResult(institution, route.requiredInputs);
+      if (route.kind === 'below')
+        return exactGateFailureResult({
+          institution,
+          unmetRequirements: [route.reason],
+          requirementsUrl: source.url,
+        });
+      if (route.kind === 'manual_gate')
+        return {
+          institution: publicInstitutionShape(institution),
+          linkedInstitutionId: institution.id,
+          capability: 'manual_gate',
+          kind: 'manual_gate',
+          decision: 'unknown',
+          confidence: 'high',
+          sourceLabel: 'נדרש דיון במחלקה',
+          explanation: route.reason,
+          nextAction: 'פנו למחלקה והגישו את המסמכים הנדרשים לקבלת החלטה מוסדית.',
+          officialUrls: [source.url],
+        };
+      const proof = await runBguSocialScienceProof({
+        program: exactTarget.program,
+        applicant: {
+          psychometric: requestedInput.psychometric,
+          bagrutAverage: requestedInput.bagrut,
+          extraInputs: requestedInput.extraInputs,
+        },
+        fetcher: timedFetcher,
+      });
+      const result = normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: `תנאי ${rule.name} בקמפוס באר שבע`,
+        positiveDecision: 'eligible_to_apply',
+      });
+      if (result.capability !== 'exact') return result;
+      const labels = {
+        score: rule.operator === 'or' ? 'סכם (או אפיק פסיכומטרי)' : 'סכם ופסיכומטרי',
+        psychometric: 'פסיכומטרי',
+        bagrut: 'ממוצע בגרות רשמי בבן־גוריון',
+        preparatory: 'ממוצע מכינה מוכרת בבן־גוריון',
+        age45: 'גיל באפיק 45 ומעלה',
+      };
+      return {
+        ...result,
+        sourceLabel: 'תנאי קבלה רשמיים',
+        scoreLabel: labels[proof.normalizedPayload.route as keyof typeof labels],
+        officialUrls: [source.url],
+        explanation: String(proof.normalizedPayload.reason),
+        nextAction:
+          result.decision === 'below'
+            ? 'בדקו אפיק חלופי לפי התנאים הרשמיים. דיון בחריגים דורש החלטה מוסדית.'
+            : rule.waitingList
+              ? 'מכסת המקומות מלאה; הזכאים יכולים להירשם לרשימת המתנה. נדרש אישור מוסדי.'
+              : 'השלימו את ההרשמה ועמידה בתנאי החוג הנוסף. הזכאות להגשת מועמדות טעונה אישור מוסדי.',
       };
     }
     if (requestedInput.psychometric === undefined || requestedInput.bagrut === undefined) {
