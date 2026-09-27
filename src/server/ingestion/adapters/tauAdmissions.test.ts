@@ -676,7 +676,12 @@ describe('runTauAdmissionsProof', () => {
   const sourceDriftCases: Array<
     [string, Record<string, unknown> | undefined, string | undefined, string | undefined]
   > = [
-    ['the official program mapping', { field_plain_id_programs: ['other-program'] }, undefined, undefined],
+    [
+      'the official program mapping',
+      { field_plain_id_programs: ['other-program'] },
+      undefined,
+      undefined,
+    ],
     ['the published acceptance cutoff', { receipt_threshol: [706, 706] }, undefined, undefined],
     [
       'the critical published requirements',

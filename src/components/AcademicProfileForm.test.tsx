@@ -153,10 +153,9 @@ describe('AcademicProfileForm', () => {
     expect(screen.getByDisplayValue('0')).toBeTruthy();
     expect(screen.getByLabelText('אישור תנאי הגשה לתל אביב')).toHaveProperty('value', 'false');
     expect(screen.getByLabelText('אישור דרישות שפה בבן־גוריון')).toHaveProperty('value', '');
-    expect(screen.getByRole('link', { name: 'מחשבון ממוצע בגרות של אוניברסיטת תל אביב' })).toHaveProperty(
-      'href',
-      'https://www.ims.tau.ac.il/md/ut/bagrut.aspx',
-    );
+    expect(
+      screen.getByRole('link', { name: 'מחשבון ממוצע בגרות של אוניברסיטת תל אביב' }),
+    ).toHaveProperty('href', 'https://www.ims.tau.ac.il/md/ut/bagrut.aspx');
 
     fireEvent.change(screen.getByLabelText('ממוצע בגרות רשמי של בן־גוריון (50–130)'), {
       target: { value: '108.25' },
@@ -208,9 +207,7 @@ describe('AcademicProfileForm', () => {
     expect(
       screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }).hasAttribute('disabled'),
     ).toBe(true);
-    expect(
-      screen.getByLabelText('אישור תנאי הגשה לתל אביב').hasAttribute('disabled'),
-    ).toBe(true);
+    expect(screen.getByLabelText('אישור תנאי הגשה לתל אביב').hasAttribute('disabled')).toBe(true);
 
     await waitFor(() => expect(onComplete).toHaveBeenCalled());
 

@@ -26,8 +26,7 @@ export function admissionsExtraInputsFromAcademicScores(
     bguBagrutAverage: academicScores?.admissions?.bguBagrutAverage,
     tauApplicationRequirementsConfirmed:
       academicScores?.admissions?.tauApplicationRequirementsConfirmed,
-    bguLanguageRequirementsConfirmed:
-      academicScores?.admissions?.bguLanguageRequirementsConfirmed,
+    bguLanguageRequirementsConfirmed: academicScores?.admissions?.bguLanguageRequirementsConfirmed,
     tauMathPlacementScore: academicScores?.admissions?.tauMathPlacementScore,
     bagrutSubjectRecord,
     bagrutProfileSchemaVersion: bagrutSubjectRecord?.schemaVersion,

@@ -9,6 +9,7 @@ async function expectSafeResult(
   liveSourceLabel: RegExp,
 ) {
   await expect(page.getByText(institution, { exact: true })).toBeVisible();
+  await expect(page.getByLabel(`${institution}: מתקבל/ת`, { exact: true })).toHaveCount(0);
 
   if (isStaticCatalogue) {
     await expect(page.getByLabel(`${institution}: האימות טרם הושלם`)).toBeVisible();
@@ -17,10 +18,16 @@ async function expectSafeResult(
   }
 
   await expect(
-    page.getByLabel(new RegExp(`^${institution}: (?:${liveStatus.source}|אימות לא זמין)$`)),
+    page.getByLabel(
+      new RegExp(`^${institution}: (?:${liveStatus.source}|אימות לא זמין|האימות טרם הושלם)$`),
+    ),
   ).toBeVisible();
   await expect(
-    page.getByText(new RegExp(`^(?:${liveSourceLabel.source}|אימות רשמי לא זמין)$`)).first(),
+    page
+      .getByText(
+        new RegExp(`^(?:${liveSourceLabel.source}|אימות רשמי לא זמין|האימות הרשמי טרם הושלם)$`),
+      )
+      .first(),
   ).toBeVisible();
 }
 
@@ -45,7 +52,12 @@ test.describe('app admissions calculator', () => {
     await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
 
     await expect(page).toHaveURL(/\/app\/calculator$/);
-    await expectSafeResult(page, 'אוניברסיטת בן-גוריון בנגב', /נדרשים נתונים/, /נדרשים נתונים נוספים/);
+    await expectSafeResult(
+      page,
+      'אוניברסיטת בן-גוריון בנגב',
+      /נדרשים נתונים/,
+      /נדרשים נתונים נוספים/,
+    );
 
     await page.getByRole('button', { name: 'חזרה', exact: true }).click();
 

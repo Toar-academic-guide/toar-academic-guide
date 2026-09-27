@@ -385,7 +385,9 @@ describe('AppExperience route entry', () => {
 
     expect(screen.getByLabelText('test-official-average')).toHaveProperty('value', '114.75');
     resolveSave?.(false);
-    await waitFor(() => expect(screen.getByRole('button', { name: 'academic-profile' })).toBeTruthy());
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'academic-profile' })).toBeTruthy(),
+    );
     expect(screen.getByLabelText('test-official-average')).toHaveProperty('value', '114.75');
   });
 });
