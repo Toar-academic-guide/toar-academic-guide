@@ -1,3 +1,4 @@
+import type { BguPsychologyInputs } from '@/lib/bguPsychologyInputs';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type { BagrutSector, BagrutSubjectRecord, DeltaNeeded } from '@/types';
 
@@ -34,6 +35,11 @@ export type AdmissionsEvaluationCapability =
 export type AdmissionsConfidence = 'high' | 'medium' | 'low';
 
 export type AdmissionsRequiredInput =
+  | 'bagrut_average'
+  | 'bgu_psychology_requirements'
+  | 'bgu_preparatory_average'
+  | 'bgu_preparatory_completed'
+  | 'bgu_preparatory_track'
   | 'psychometric_overall'
   | 'tau_management_requirements'
   | 'tau_management_academic_route'
@@ -63,7 +69,7 @@ export type AdmissionsRequiredInput =
   | 'technion_architecture_exam_passed'
   | 'technion_architecture_requirements';
 
-export interface AdmissionsExtraInputs {
+export interface AdmissionsExtraInputs extends BguPsychologyInputs {
   technionArchitectureBagrutAverage?: number;
   technionArchitectureExamScore?: number;
   technionArchitectureExamPassed?: boolean;
@@ -163,7 +169,7 @@ export type AdmissionsPairVerificationState =
 export interface AdmissionsEvaluationInput {
   degreeId: string;
   psychometric?: number;
-  bagrut: number;
+  bagrut?: number;
   extraInputs?: AdmissionsExtraInputs;
 }
 

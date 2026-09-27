@@ -225,7 +225,7 @@ export default function AppExperience({
   const [authReturnTo] = useState<Exclude<AppStep, 'auth'>>('landing');
   const [landingCalcScores, setLandingCalcScores] = useState<{
     psychometric?: number;
-    bagrut: number;
+    bagrut?: number;
     degreeId: string;
   } | null>(null);
 
@@ -233,7 +233,7 @@ export default function AppExperience({
     admissionAlertTarget?.institutionId === 'tau' && admissionAlertTarget.programId === 'tau_cs';
   const [appCalcScores, setAppCalcScores] = useState<{
     psychometric?: number;
-    bagrut: number;
+    bagrut?: number;
     degreeId: string;
   } | null>(null);
 
