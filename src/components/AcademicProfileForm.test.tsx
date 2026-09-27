@@ -178,6 +178,40 @@ describe('AcademicProfileForm', () => {
     );
   });
 
+  it('restores and saves Architecture decimals, zero and false without replacing the generic average', async () => {
+    const onComplete = vi.fn();
+    const admissions = {
+      technionArchitectureBagrutAverage: 101.9,
+      technionArchitectureExamScore: 0,
+      technionArchitectureExamPassed: false,
+      technionArchitectureRequirementsConfirmed: true,
+    };
+    render(
+      <AcademicProfileForm
+        onComplete={onComplete}
+        onSkip={vi.fn()}
+        onClearLocalProfileData={vi.fn().mockResolvedValue(undefined)}
+        initialScores={{ bagrut: { weightedAverage: 100 }, admissions }}
+      />,
+    );
+    expect(screen.getByLabelText('ממוצע בגרות רשמי לארכיטקטורה בטכניון (עד 119)')).toHaveProperty(
+      'value',
+      '101.9',
+    );
+    expect(screen.getByLabelText('ציון בחינת כניסה לארכיטקטורה בטכניון (0–140)')).toHaveProperty(
+      'value',
+      '0',
+    );
+    expect(screen.getByLabelText('תוצאה רשמית של בחינת הכניסה לארכיטקטורה')).toHaveProperty(
+      'value',
+      'false',
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    await waitFor(() =>
+      expect(onComplete).toHaveBeenCalledWith({ bagrut: { weightedAverage: 100 }, admissions }),
+    );
+  });
+
   it('triggers POST requests for newly selected files on save', async () => {
     const onComplete = vi.fn();
     const fetchMock = vi.fn().mockResolvedValue({

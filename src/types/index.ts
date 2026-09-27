@@ -217,6 +217,14 @@ export interface BagrutRecord {
 
 /** Institution-specific inputs collected only when the student knows them. */
 export interface AdmissionsProfileInputs {
+  /** Official Architecture average, without doubled mathematics weight; capped at 119. */
+  technionArchitectureBagrutAverage?: number;
+  /** Architecture entrance examination score (0–140), not the Landscape examination. */
+  technionArchitectureExamScore?: number;
+  /** Official passing status cannot be inferred from the numeric examination score. */
+  technionArchitectureExamPassed?: boolean;
+  /** Regular Bagrut route: certificate, subjects, languages, registration and valid score dates. */
+  technionArchitectureRequirementsConfirmed?: boolean;
   /** Official TAU Bagrut average, which may differ from the generic profile average. */
   tauBagrutAverage?: number;
   /** Official BGU Bagrut average, which may differ from the generic profile average. */

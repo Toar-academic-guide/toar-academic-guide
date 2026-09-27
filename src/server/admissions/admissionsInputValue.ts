@@ -5,6 +5,14 @@ export function admissionsInputValue(
   requiredInput: AdmissionsRequiredInput,
 ): unknown {
   switch (requiredInput) {
+    case 'technion_architecture_bagrut_average':
+      return input?.technionArchitectureBagrutAverage;
+    case 'technion_architecture_exam_score':
+      return input?.technionArchitectureExamScore;
+    case 'technion_architecture_exam_passed':
+      return input?.technionArchitectureExamPassed;
+    case 'technion_architecture_requirements':
+      return input?.technionArchitectureRequirementsConfirmed;
     case 'psychometric_math':
       return input?.psychometricMath;
     case 'psychometric_verbal':

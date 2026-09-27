@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { architectureInputs, architectureSourceResponse } from '@/test/technionArchitecture';
 
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type { AdmissionsEvaluationReport } from '@/types/admissionsEvaluation';
@@ -458,9 +459,78 @@ const hitEngineering: CatalogueProgram = {
 };
 
 describe('evaluateAdmissionsForProgram', () => {
+  const architecture: CatalogueProgram = {
+    ...hitEngineering,
+    id: 'architecture',
+    name: 'ארכיטקטורה',
+    institutionId: 'technion',
+    linkedInstitutionIds: ['technion'],
+    thresholds: { technion: 85 },
+  };
+
+  it.each([
+    [115, 730, 110, 97.5, 'eligible_to_apply'],
+    [101.9, 650, 80, 82.6, 'below'],
+  ] as const)(
+    'evaluates Architecture using its own average and exam for D=%s',
+    async (average, psychometric, exam, score, decision) => {
+      const fetcher = vi
+        .fn<typeof fetch>()
+        .mockImplementation(async (url) => new Response(architectureSourceResponse(String(url))));
+      const report = await evaluateAdmissionsForProgram({
+        program: architecture,
+        institutions,
+        fetcher,
+        input: {
+          degreeId: 'architecture',
+          psychometric,
+          bagrut: 100,
+          extraInputs: {
+            ...architectureInputs,
+            technionArchitectureBagrutAverage: average,
+            technionArchitectureExamScore: exam,
+          },
+        },
+      });
+      expect(report.results[0]).toMatchObject({
+        capability: 'exact',
+        decision,
+        score,
+        threshold: 85,
+      });
+      if (decision === 'eligible_to_apply') {
+        expect(report.results[0].explanation).toContain('מקום פנוי');
+        expect(report.results[0].explanation).toContain('בהחלטה הסופית');
+      }
+    },
+  );
+
+  it.each([undefined, false] as const)(
+    'requires an official Architecture pass result (%s), regardless of a high exam score',
+    async (passed) => {
+      const fetcher = vi.fn<typeof fetch>();
+      const report = await evaluateAdmissionsForProgram({
+        program: architecture,
+        institutions,
+        fetcher,
+        input: {
+          degreeId: 'architecture',
+          psychometric: 730,
+          bagrut: 115,
+          extraInputs: { ...architectureInputs, technionArchitectureExamPassed: passed },
+        },
+      });
+      expect(report.results[0]).toMatchObject(
+        passed === undefined
+          ? { kind: 'needs_input', requiredInputs: ['technion_architecture_exam_passed'] }
+          : { decision: 'below' },
+      );
+      expect(fetcher).not.toHaveBeenCalled();
+    },
+  );
+
   it.each([
     ['tau_infosystems', 'tau', 'requirements_only'],
-    ['architecture', 'technion', 'manual_gate'],
     ['colmgmt_cs', 'colman', 'manual_gate'],
   ] as const)(
     'uses the official non-numeric admissions path for %s without calling an exact source',

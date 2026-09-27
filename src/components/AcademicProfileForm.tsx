@@ -74,6 +74,18 @@ export default function AcademicProfileForm({
   const [tauMathPlacementScore, setTauMathPlacementScore] = useState(
     initialScores?.admissions?.tauMathPlacementScore?.toString() ?? '',
   );
+  const [architectureAverage, setArchitectureAverage] = useState(
+    initialScores?.admissions?.technionArchitectureBagrutAverage?.toString() ?? '',
+  );
+  const [architectureExam, setArchitectureExam] = useState(
+    initialScores?.admissions?.technionArchitectureExamScore?.toString() ?? '',
+  );
+  const [architectureExamPassed, setArchitectureExamPassed] = useState(
+    initialScores?.admissions?.technionArchitectureExamPassed?.toString() ?? '',
+  );
+  const [architectureRequirements, setArchitectureRequirements] = useState(
+    initialScores?.admissions?.technionArchitectureRequirementsConfirmed?.toString() ?? '',
+  );
 
   const initialPsy = initialDocuments?.find((document) => document.kind === 'psychometric');
   const initialBagrut = initialDocuments?.find((document) => document.kind === 'bagrut');
@@ -104,6 +116,10 @@ export default function AcademicProfileForm({
     setTauApplicationRequirements('');
     setBguLanguageRequirements('');
     setTauMathPlacementScore('');
+    setArchitectureAverage('');
+    setArchitectureExam('');
+    setArchitectureExamPassed('');
+    setArchitectureRequirements('');
     setPsyFile(null);
     setBagrutFile(null);
     setPsyFileObject(null);
@@ -143,6 +159,26 @@ export default function AcademicProfileForm({
     }
 
     const admissions: NonNullable<AcademicScores['admissions']> = {};
+    const architectureAverageValue = optionalNumber(architectureAverage);
+    const architectureExamValue = optionalNumber(architectureExam);
+    if (
+      (architectureAverageValue !== undefined &&
+        (architectureAverageValue < 0 || architectureAverageValue > 119)) ||
+      (architectureExamValue !== undefined &&
+        (architectureExamValue < 0 || architectureExamValue > 140))
+    ) {
+      setError('לארכיטקטורה בטכניון יש להזין ממוצע רשמי עד 119 וציון בחינת כניסה בין 0 ל־140.');
+      setIsSaving(false);
+      return;
+    }
+    if (architectureAverageValue !== undefined)
+      admissions.technionArchitectureBagrutAverage = architectureAverageValue;
+    if (architectureExamValue !== undefined)
+      admissions.technionArchitectureExamScore = architectureExamValue;
+    if (architectureExamPassed !== '')
+      admissions.technionArchitectureExamPassed = architectureExamPassed === 'true';
+    if (architectureRequirements !== '')
+      admissions.technionArchitectureRequirementsConfirmed = architectureRequirements === 'true';
     const tauAverage = optionalNumber(tauBagrutAverage);
     const bguAverage = optionalNumber(bguBagrutAverage);
     const mathPlacement = optionalNumber(tauMathPlacementScore);
@@ -657,6 +693,108 @@ export default function AcademicProfileForm({
                   className={inputBase + ' disabled:cursor-not-allowed disabled:opacity-50'}
                 />
               </div>
+            </div>
+          </section>
+
+          <section className="mb-8 rounded-2xl border border-indigo-100 bg-indigo-50/50 p-4">
+            <h2 className="text-sm font-semibold text-slate-800">
+              נתונים לקבלה לארכיטקטורה בטכניון (רשות)
+            </h2>
+            <p className="mt-1 text-xs leading-5 text-slate-500">
+              למסלול הבגרות הישראלי הרגיל בלבד, לשנת תשפ״ז (2026–2027). הזן את הממוצע הרשמי
+              לארכיטקטורה, שבו אין כפל משקל במתמטיקה, ואת תוצאת בחינת הכניסה לארכיטקטורה. גם עמידה
+              בסף אינה מבטיחה קבלה: הקבלה תלויה במקום פנוי.
+            </p>
+            <div className="my-3 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+              <a
+                href="https://admissions.technion.ac.il/calculator/"
+                target="_blank"
+                rel="noreferrer"
+                className="font-medium text-indigo-700 underline underline-offset-2"
+              >
+                מחשבון הטכניון — ארכיטקטורה
+              </a>
+              <a
+                href="https://admissions.technion.ac.il/architecture-info/"
+                target="_blank"
+                rel="noreferrer"
+                className="font-medium text-indigo-700 underline underline-offset-2"
+              >
+                תנאי הקבלה לארכיטקטורה בטכניון
+              </a>
+            </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="flex flex-col gap-1.5">
+                <label
+                  htmlFor="technion-architecture-average"
+                  className="text-xs font-medium text-slate-600"
+                >
+                  ממוצע בגרות רשמי לארכיטקטורה בטכניון (עד 119)
+                </label>
+                <input
+                  id="technion-architecture-average"
+                  type="number"
+                  min={0}
+                  max={119}
+                  step="any"
+                  placeholder="לא ידוע"
+                  value={architectureAverage}
+                  onChange={(event) => setArchitectureAverage(event.target.value)}
+                  disabled={isSaving}
+                  className={inputBase + ' disabled:cursor-not-allowed disabled:opacity-50'}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label
+                  htmlFor="technion-architecture-exam"
+                  className="text-xs font-medium text-slate-600"
+                >
+                  ציון בחינת כניסה לארכיטקטורה בטכניון (0–140)
+                </label>
+                <input
+                  id="technion-architecture-exam"
+                  type="number"
+                  min={0}
+                  max={140}
+                  step="any"
+                  placeholder="לא ידוע"
+                  value={architectureExam}
+                  onChange={(event) => setArchitectureExam(event.target.value)}
+                  disabled={isSaving}
+                  className={inputBase + ' disabled:cursor-not-allowed disabled:opacity-50'}
+                />
+              </div>
+              <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-600">
+                האם התוצאה הרשמית בבחינת הכניסה התקפה לארכיטקטורה היא ״עובר״? אין להסיק זאת מציון
+                הבחינה בלבד.
+                <select
+                  aria-label="תוצאה רשמית של בחינת הכניסה לארכיטקטורה"
+                  value={architectureExamPassed}
+                  onChange={(event) => setArchitectureExamPassed(event.target.value)}
+                  disabled={isSaving}
+                  className={inputBase + ' disabled:cursor-not-allowed disabled:opacity-50'}
+                >
+                  <option value="">לא ידוע</option>
+                  <option value="true">עובר</option>
+                  <option value="false">לא עובר</option>
+                </select>
+              </label>
+              <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-600">
+                האם מולאו תנאי המסלול הרגיל: בגרות ישראלית מלאה, מתמטיקה 4 יח׳ בציון 70 או 5 יח׳
+                בציון 65, אנגלית 4 יח׳ לפחות, סיווג אנגלית מעל 104 או חלופה רשמית, עברית 121 או פטור
+                תקף, והרשמה וציונים תקפים לתשפ״ז לפי המועדים הרשמיים?
+                <select
+                  aria-label="אישור תנאי הגשה לארכיטקטורה בטכניון"
+                  value={architectureRequirements}
+                  onChange={(event) => setArchitectureRequirements(event.target.value)}
+                  disabled={isSaving}
+                  className={inputBase + ' disabled:cursor-not-allowed disabled:opacity-50'}
+                >
+                  <option value="">לא ידוע</option>
+                  <option value="true">כן</option>
+                  <option value="false">לא</option>
+                </select>
+              </label>
             </div>
           </section>
 

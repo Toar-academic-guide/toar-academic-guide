@@ -6,6 +6,13 @@ import {
   type AdmissionsSourceProof,
 } from '../admissionsSourceAdapters';
 import type { BagrutSubjectRecord } from '@/types';
+import {
+  calculateTechnionArchitectureScore,
+  TECHNION_ARCHITECTURE_CUTOFF,
+  TECHNION_ARCHITECTURE_FORMULA,
+  TECHNION_ARCHITECTURE_REQUIREMENTS_URL,
+  technionArchitectureUnmetRequirements,
+} from '@/server/admissions/technionArchitecturePolicy';
 
 const TECHNION_INDEX_URL = 'https://admissions.technion.ac.il/calculator/';
 const TECHNION_THRESHOLD_URL =
@@ -25,6 +32,7 @@ const TECHNION_SUBJECT_FIELDS = [
 ] as const;
 
 const TECHNION_OFFICIAL_TITLE_BY_PROGRAM_ID: Record<string, string> = {
+  architecture: 'ארכיטקטורה',
   biomedical: 'הנדסה ביו רפואית',
   civil: 'הנדסה אזרחית',
   cs: 'מדעי המחשב',
@@ -57,6 +65,9 @@ export async function runTechnionAdmissionsProof(
   const metadata: NonNullable<AdmissionsSourceProof['rawResponseMetadata']> = [];
 
   try {
+    if (program.id === 'architecture') {
+      return await runArchitectureProof(context, metadata);
+    }
     const psy = context.applicant.psychometric;
     const subjectRecord = context.applicant.bagrutSubjectRecord;
     if (!hasTechnionRequiredSubjectRecord(subjectRecord)) {
@@ -167,6 +178,112 @@ export async function runTechnionAdmissionsProof(
   }
 }
 
+async function runArchitectureProof(
+  context: AdmissionsAdapterContext,
+  metadata: NonNullable<AdmissionsSourceProof['rawResponseMetadata']>,
+): Promise<AdmissionsSourceProof> {
+  const inputs = context.applicant.extraInputs ?? {};
+  const unmet = technionArchitectureUnmetRequirements(inputs);
+  if (unmet.length)
+    throw new Error(`Architecture requirements are unconfirmed: ${unmet.join('; ')}`);
+  const score = calculateTechnionArchitectureScore(
+    inputs.technionArchitectureBagrutAverage ?? NaN,
+    context.applicant.psychometric,
+    inputs.technionArchitectureExamScore ?? NaN,
+  );
+  const urls = [
+    TECHNION_INDEX_URL,
+    TECHNION_THRESHOLD_URL,
+    TECHNION_ARCHITECTURE_REQUIREMENTS_URL,
+    'https://admissions.technion.ac.il/english-exam/',
+    'https://admissions.technion.ac.il/knowledge-of-hebrew/',
+  ];
+  const pages = await Promise.all(
+    urls.map(async (url) => {
+      const response = await (context.fetcher ?? fetch)(url);
+      metadata.push(readOfficialResponseMetadata(url, response));
+      if (!response.ok)
+        throw new Error(`Technion Architecture source returned HTTP ${response.status}`);
+      return response.text();
+    }),
+  );
+  const match = pages[0].match(/new GFCalc\(73,\s*(\[[\s\S]*?\])\)/);
+  const fields: Array<{ field_id: number; formula: string; rounding: string }> = match
+    ? JSON.parse(match[1])
+    : [];
+  const result = fields.find((field) => field.field_id === 5);
+  const formula = result?.formula
+    .replace(/\{[^{}]*:(1|3|8)\}/g, (_, id: string) => ({ '1': 'D', '3': 'P', '8': 'A' })[id]!)
+    .replace(/\s/g, '');
+  if (formula !== TECHNION_ARCHITECTURE_FORMULA || result?.rounding !== '1') {
+    throw new Error(
+      'Architecture official formula or rounding changed; review the contract before calculating',
+    );
+  }
+  const cutoff = parseTechnionOfficialThreshold(pages[1], 'architecture');
+  const plain = (html: string) =>
+    html
+      .replace(/<script\b[\s\S]*?<\/script>/gi, '')
+      .replace(/<[^>]*>/g, ' ')
+      .replace(/&[^;]+;/g, ' ')
+      .replace(/[^א-תa-zA-Z0-9]/g, '');
+  const cutoffText = plain(pages[1]);
+  const requirementsText = plain(pages[2]);
+  if (
+    cutoff !== TECHNION_ARCHITECTURE_CUTOFF ||
+    !cutoffText.includes('אוקטובר2026') ||
+    !cutoffText.includes('קבלהעלבסיסמקוםפנוי') ||
+    !requirementsText.includes('4יחללפחותבציון70ומעלהאוציון65ומעלהב5יחל') ||
+    !requirementsText.includes('בחינהבאנגליתברמהשל4יחללפחות') ||
+    !requirementsText.includes('בשלישהתחתון') ||
+    !plain(pages[3]).includes('ציוןאנגליתגבוהמ104') ||
+    !plain(pages[4]).includes('ציוןשל121')
+  ) {
+    throw new Error(
+      'Architecture cutoff, cycle or admission requirements changed; review current official sources',
+    );
+  }
+  const derivedVerdict = score >= cutoff ? 'eligible_to_apply' : 'below';
+  return {
+    id: context.program?.targetId ?? 'technion-architecture-live',
+    institutionId: 'technion',
+    institutionName: 'Technion',
+    officialUrl: TECHNION_INDEX_URL,
+    adapterId: 'technion',
+    capability: 'decision_capable',
+    proofLevel: 'exact_official',
+    status: 'succeeded',
+    decisionProvenance: 'verified_derivation',
+    sourceClass: 'api_static_json',
+    reproducedFields: [
+      'selectedScore',
+      'acceptanceThreshold',
+      'rejectionThreshold',
+      'derivedVerdict',
+      'admissionRequirements',
+    ],
+    normalizedPayload: {
+      programId: 'architecture',
+      officialProgramId: '73',
+      admissionCycle: '2026-2027',
+      source: 'technion_architecture_form73_and_cutoff_table',
+      selectedScore: score,
+      acceptanceThreshold: cutoff,
+      rejectionThreshold: cutoff,
+      derivedVerdict,
+      proofStatus: 'succeeded',
+      proofLevel: 'exact_official',
+      decisionProvenance: 'verified_derivation',
+      conditionalOnAvailablePlaces: true,
+    },
+    limitations: [
+      'Regular Israeli Bagrut route only. Applicant confirms valid exam passing, general requirements and registration. Above-cutoff eligibility remains conditional on available places; it is not final admission.',
+    ],
+    nextAction: 'Confirm available places and the final decision with Technion admissions',
+    rawResponseMetadata: metadata,
+  };
+}
+
 export function parseTechnionOfficialThreshold(
   html: string,
   programId: string,
@@ -178,9 +295,10 @@ export function parseTechnionOfficialThreshold(
   if (!officialTitle) return undefined;
 
   const escapedTitle = officialTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const titleSuffix = normalizedProgramId === 'architecture' ? '\\s*\\*?\\s*</td>' : '';
   const row = html.match(
     new RegExp(
-      `<tr[^>]*>\\s*<td[^>]*column-1[^>]*>\\s*${escapedTitle}[\\s\\S]*?<td[^>]*column-2[^>]*>\\s*([\\d.]+)`,
+      `<tr[^>]*>\\s*<td[^>]*column-1[^>]*>\\s*${escapedTitle}${titleSuffix}[\\s\\S]*?<td[^>]*column-2[^>]*>\\s*([\\d.]+)`,
     ),
   );
   return row ? parseOfficialNumeric(row[1]) : undefined;

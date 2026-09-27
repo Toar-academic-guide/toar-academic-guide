@@ -34,8 +34,8 @@ describe('formula-backed verification ledger', () => {
 
     expect(completion).toMatchObject({
       total: 135,
-      exact: 126,
-      withheld: 9,
+      exact: 127,
+      withheld: 8,
       isComplete: false,
     });
     expect(completion.totalsByInstitution).toEqual({
@@ -43,14 +43,14 @@ describe('formula-backed verification ledger', () => {
       huji: { total: 29, exact: 28, withheld: 1, stale: 0, blocked: 0 },
       bgu: { total: 29, exact: 28, withheld: 1, stale: 0, blocked: 0 },
       haifa: { total: 27, exact: 27, withheld: 0, stale: 0, blocked: 0 },
-      technion: { total: 14, exact: 13, withheld: 1, stale: 0, blocked: 0 },
+      technion: { total: 14, exact: 14, withheld: 0, stale: 0, blocked: 0 },
       colman: { total: 1, exact: 0, withheld: 1, stale: 0, blocked: 0 },
     });
     expect(
       FORMULA_BACKED_VERIFICATION_LEDGER.filter((entry) => entry.state === 'exact').map(
         (entry) => entry.pairId,
       ),
-    ).toHaveLength(126);
+    ).toHaveLength(127);
   });
 
   it('names a newly discovered pair that lacks a reviewed ledger record', () => {
@@ -94,16 +94,12 @@ describe('formula-backed verification ledger', () => {
       (entry) => entry.state === 'withheld',
     );
 
-    expect(withheld).toHaveLength(9);
+    expect(withheld).toHaveLength(8);
     expect(withheld.every((entry) => entry.reason.length > 80)).toBe(true);
     expect(withheld.every((entry) => entry.sourceUrl.startsWith('https://'))).toBe(true);
     expect(
       withheld
-        .filter((entry) =>
-          ['tau_infosystems__tau', 'architecture__technion', 'colmgmt_cs__colman'].includes(
-            entry.pairId,
-          ),
-        )
+        .filter((entry) => ['tau_infosystems__tau', 'colmgmt_cs__colman'].includes(entry.pairId))
         .every(
           (entry) =>
             entry.officialProgramId === null &&

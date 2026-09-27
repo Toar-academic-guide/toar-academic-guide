@@ -103,6 +103,10 @@ describeWithPostgres(
         tauApplicationRequirementsConfirmed: false,
         bguLanguageRequirementsConfirmed: false,
         tauMathPlacementScore: 0,
+        technionArchitectureBagrutAverage: 101.9,
+        technionArchitectureExamScore: 0,
+        technionArchitectureExamPassed: false,
+        technionArchitectureRequirementsConfirmed: true,
       };
       expect((await save(admissions)).status).toBe(200);
       const response = await GET();
@@ -121,6 +125,10 @@ describeWithPostgres(
           await save({
             tauBagrutAverage: 112.5,
             tauMathPlacementScore: 0,
+            technionArchitectureBagrutAverage: 101.9,
+            technionArchitectureExamScore: 0,
+            technionArchitectureExamPassed: false,
+            technionArchitectureRequirementsConfirmed: true,
             tauApplicationRequirementsConfirmed: false,
           })
         ).status,
@@ -140,6 +148,10 @@ describeWithPostgres(
       expect((await (await GET()).json()).data.academicScores.admissions).toMatchObject({
         tauBagrutAverage: 112.5,
         tauMathPlacementScore: 0,
+        technionArchitectureBagrutAverage: 101.9,
+        technionArchitectureExamScore: 0,
+        technionArchitectureExamPassed: false,
+        technionArchitectureRequirementsConfirmed: true,
         tauApplicationRequirementsConfirmed: false,
       });
     });
