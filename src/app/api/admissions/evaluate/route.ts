@@ -59,6 +59,11 @@ const admissionsEvaluationSchema = z.object({
       physicsGrade: z.number().int().min(50).max(100).optional(),
       csUnits: z.number().int().min(3).max(5).optional(),
       csGrade: z.number().int().min(50).max(100).optional(),
+      tauBagrutAverage: z.number().min(50).max(130).optional(),
+      bguBagrutAverage: z.number().min(50).max(130).optional(),
+      tauApplicationRequirementsConfirmed: z.boolean().optional(),
+      bguLanguageRequirementsConfirmed: z.boolean().optional(),
+      tauMathPlacementScore: z.number().min(0).max(100).optional(),
     })
     .optional(),
 });

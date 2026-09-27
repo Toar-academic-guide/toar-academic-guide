@@ -82,6 +82,9 @@ const targetedTests = [
   'src/server/admissions/calculatorCoverage.test.ts',
   'src/server/admissions/capabilityMatrix.test.ts',
   'src/server/admissions/evaluator.test.ts',
+  'src/server/admissions/tauComputerSciencePolicy.test.ts',
+  'src/server/ingestion/adapters/tauAdmissions.test.ts',
+  'src/server/ingestion/adapters/bguAdmissions.test.ts',
   'src/server/admissions/verification/programVerification.test.ts',
   'src/server/ingestion/admissionsLiveProofRunner.test.ts',
   'src/server/admissions/admissionsReleasePublisher.test.ts',
@@ -97,6 +100,11 @@ const targetedTests = [
   'src/app/api/catalog/programs/route.test.ts',
   'src/app/api/catalog/institutions/route.test.ts',
   'src/app/api/admissions/evaluate/route.test.ts',
+  'src/app/api/profile/route.test.ts',
+  'src/server/user/profile.test.ts',
+  'src/server/user/profileSchema.test.ts',
+  'src/server/user/migration.test.ts',
+  'src/server/admission-alerts/profileRefresh.test.ts',
 ];
 
 const admissionsGeneratedFiles = [

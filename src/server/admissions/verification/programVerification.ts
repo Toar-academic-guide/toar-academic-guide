@@ -26,6 +26,11 @@ const requiredInputSchema = z.enum([
   'bagrut_subject_record',
   'bagrut_profile_version',
   'bagrut_sector',
+  'tau_bagrut_average',
+  'bgu_bagrut_average',
+  'tau_application_requirements',
+  'bgu_language_requirements',
+  'tau_math_placement_score',
 ]);
 const verificationVerdictSchema = z.enum(['accepted', 'below', 'eligible_to_apply']);
 const fixtureInputValueSchema = z.union([z.string(), z.number(), z.boolean(), z.null()]);

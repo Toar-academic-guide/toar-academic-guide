@@ -59,6 +59,21 @@ export default function AcademicProfileForm({
   const [bagrutSubjectRecord, setBagrutSubjectRecord] = useState(
     initialScores?.bagrut?.subjectRecord,
   );
+  const [tauBagrutAverage, setTauBagrutAverage] = useState(
+    initialScores?.admissions?.tauBagrutAverage?.toString() ?? '',
+  );
+  const [bguBagrutAverage, setBguBagrutAverage] = useState(
+    initialScores?.admissions?.bguBagrutAverage?.toString() ?? '',
+  );
+  const [tauApplicationRequirements, setTauApplicationRequirements] = useState(
+    initialScores?.admissions?.tauApplicationRequirementsConfirmed?.toString() ?? '',
+  );
+  const [bguLanguageRequirements, setBguLanguageRequirements] = useState(
+    initialScores?.admissions?.bguLanguageRequirementsConfirmed?.toString() ?? '',
+  );
+  const [tauMathPlacementScore, setTauMathPlacementScore] = useState(
+    initialScores?.admissions?.tauMathPlacementScore?.toString() ?? '',
+  );
 
   const initialPsy = initialDocuments?.find((document) => document.kind === 'psychometric');
   const initialBagrut = initialDocuments?.find((document) => document.kind === 'bagrut');
@@ -84,6 +99,11 @@ export default function AcademicProfileForm({
     setPsyEnglish('');
     setBagrutAverage('');
     setBagrutSubjectRecord(undefined);
+    setTauBagrutAverage('');
+    setBguBagrutAverage('');
+    setTauApplicationRequirements('');
+    setBguLanguageRequirements('');
+    setTauMathPlacementScore('');
     setPsyFile(null);
     setBagrutFile(null);
     setPsyFileObject(null);
@@ -120,6 +140,23 @@ export default function AcademicProfileForm({
         ...(weightedAverage !== undefined ? { weightedAverage } : {}),
         ...(bagrutSubjectRecord ? { subjectRecord: bagrutSubjectRecord } : {}),
       };
+    }
+
+    const admissions: NonNullable<AcademicScores['admissions']> = {};
+    const tauAverage = optionalNumber(tauBagrutAverage);
+    const bguAverage = optionalNumber(bguBagrutAverage);
+    const mathPlacement = optionalNumber(tauMathPlacementScore);
+    if (tauAverage !== undefined) admissions.tauBagrutAverage = tauAverage;
+    if (bguAverage !== undefined) admissions.bguBagrutAverage = bguAverage;
+    if (tauApplicationRequirements !== '') {
+      admissions.tauApplicationRequirementsConfirmed = tauApplicationRequirements === 'true';
+    }
+    if (bguLanguageRequirements !== '') {
+      admissions.bguLanguageRequirementsConfirmed = bguLanguageRequirements === 'true';
+    }
+    if (mathPlacement !== undefined) admissions.tauMathPlacementScore = mathPlacement;
+    if (Object.keys(admissions).length > 0) {
+      scores.admissions = admissions;
     }
 
     if (
@@ -508,6 +545,121 @@ export default function AcademicProfileForm({
             </div>
           </section>
 
+          <section className="mb-8 rounded-2xl border border-indigo-100 bg-indigo-50/50 p-4">
+            <div className="mb-4">
+              <h2 className="text-sm font-semibold text-slate-800">
+                נתונים נוספים לקבלה למדעי המחשב (רשות)
+              </h2>
+              <p className="mt-1 text-xs leading-5 text-slate-500">
+                ממוצעים מוסדיים עשויים להיות שונים מהממוצע הכללי. הזן רק ממוצע רשמי שכבר חישבת; אל
+                תעתיק לכאן אוטומטית אומדן מהאשף.
+              </p>
+              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+                <a
+                  href="https://www.ims.tau.ac.il/md/ut/bagrut.aspx"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-medium text-indigo-700 underline underline-offset-2"
+                >
+                  מחשבון ממוצע בגרות של אוניברסיטת תל אביב
+                </a>
+                <a
+                  href="https://bgu4u.bgu.ac.il/html/average_calc/index.php"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="font-medium text-indigo-700 underline underline-offset-2"
+                >
+                  מחשבון ממוצע בגרות של בן־גוריון
+                </a>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="tau-bagrut-average" className="text-xs font-medium text-slate-600">
+                  ממוצע בגרות רשמי של אוניברסיטת תל אביב (50–130)
+                </label>
+                <input
+                  id="tau-bagrut-average"
+                  type="number"
+                  min={50}
+                  max={130}
+                  step={0.01}
+                  placeholder="לא ידוע"
+                  value={tauBagrutAverage}
+                  onChange={(event) => setTauBagrutAverage(event.target.value)}
+                  disabled={isSaving}
+                  className={inputBase + ' disabled:cursor-not-allowed disabled:opacity-50'}
+                />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="bgu-bagrut-average" className="text-xs font-medium text-slate-600">
+                  ממוצע בגרות רשמי של בן־גוריון (50–130)
+                </label>
+                <input
+                  id="bgu-bagrut-average"
+                  type="number"
+                  min={50}
+                  max={130}
+                  step={0.01}
+                  placeholder="לא ידוע"
+                  value={bguBagrutAverage}
+                  onChange={(event) => setBguBagrutAverage(event.target.value)}
+                  disabled={isSaving}
+                  className={inputBase + ' disabled:cursor-not-allowed disabled:opacity-50'}
+                />
+              </div>
+              <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-600">
+                האם מולאו תנאי ההגשה לתל אביב: זכאות לבגרות, אנגלית ברמת מתקדמים א׳ (100 לפחות
+                בפסיכומטרי או במבחן מיון נפרד באנגלית), דרישת העברית והרשמה בעדיפות ראשונה למדעי
+                המחשב?
+                <select
+                  aria-label="אישור תנאי הגשה לתל אביב"
+                  value={tauApplicationRequirements}
+                  onChange={(event) => setTauApplicationRequirements(event.target.value)}
+                  disabled={isSaving}
+                  className={inputBase + ' disabled:cursor-not-allowed disabled:opacity-50'}
+                >
+                  <option value="">לא ידוע</option>
+                  <option value="true">כן</option>
+                  <option value="false">לא</option>
+                </select>
+              </label>
+              <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-600">
+                האם דרישות האנגלית (בסיסי) והעברית (רמה ה׳, אם נדרשת) בבן־גוריון מולאו או שיש פטור
+                תקף?
+                <select
+                  aria-label="אישור דרישות שפה בבן־גוריון"
+                  value={bguLanguageRequirements}
+                  onChange={(event) => setBguLanguageRequirements(event.target.value)}
+                  disabled={isSaving}
+                  className={inputBase + ' disabled:cursor-not-allowed disabled:opacity-50'}
+                >
+                  <option value="">לא ידוע</option>
+                  <option value="true">כן</option>
+                  <option value="false">לא</option>
+                </select>
+              </label>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="tau-math-placement" className="text-xs font-medium text-slate-600">
+                  ציון סיווג במתמטיקה של אוניברסיטת תל אביב (0–100)
+                </label>
+                <input
+                  id="tau-math-placement"
+                  type="number"
+                  min={0}
+                  max={100}
+                  step={1}
+                  placeholder="לא ידוע"
+                  value={tauMathPlacementScore}
+                  onChange={(event) => setTauMathPlacementScore(event.target.value)}
+                  disabled={isSaving}
+                  className={inputBase + ' disabled:cursor-not-allowed disabled:opacity-50'}
+                />
+              </div>
+            </div>
+          </section>
+
           <section className="mb-8 rounded-2xl border border-slate-200 bg-slate-50 p-4">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
               <div className="max-w-xl">
@@ -571,4 +723,10 @@ export default function AcademicProfileForm({
       </div>
     </div>
   );
+}
+
+function optionalNumber(value: string): number | undefined {
+  if (value.trim() === '') return undefined;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : undefined;
 }

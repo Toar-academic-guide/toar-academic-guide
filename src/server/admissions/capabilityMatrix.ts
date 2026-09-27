@@ -112,7 +112,7 @@ const BGU_EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = Object.
         externalId: artifact.contract.officialProgramId,
         searchText: artifact.contract.source.url,
       },
-      requiredInputs: [],
+      requiredInputs: artifact.contract.calculation.requiredInputs,
     } satisfies ExactCapabilityTarget,
   ]),
 );
@@ -521,7 +521,7 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
       externalId: '036811010000',
       scoreField: 'hatama_meduyakim',
     },
-    requiredInputs: ['psychometric_english', 'bagrut_subject_record'],
+    requiredInputs: ['bagrut_subject_record', 'tau_bagrut_average', 'tau_application_requirements'],
   },
   tau_cs__tau: {
     targetId: 'tau-cs-legacy-live',
@@ -535,7 +535,7 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
       externalId: '036811010000',
       scoreField: 'hatama_meduyakim',
     },
-    requiredInputs: ['psychometric_english', 'bagrut_subject_record'],
+    requiredInputs: ['bagrut_subject_record', 'tau_bagrut_average', 'tau_application_requirements'],
   },
   ee__tau: {
     targetId: 'tau-ee-live',

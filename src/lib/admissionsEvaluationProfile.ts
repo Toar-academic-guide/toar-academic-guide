@@ -22,6 +22,12 @@ export function admissionsExtraInputsFromAcademicScores(
     psychometricMath: academicScores?.psychometric?.quantitative,
     psychometricVerbal: academicScores?.psychometric?.verbal,
     psychometricEnglish: academicScores?.psychometric?.english,
+    tauBagrutAverage: academicScores?.admissions?.tauBagrutAverage,
+    bguBagrutAverage: academicScores?.admissions?.bguBagrutAverage,
+    tauApplicationRequirementsConfirmed:
+      academicScores?.admissions?.tauApplicationRequirementsConfirmed,
+    bguLanguageRequirementsConfirmed: academicScores?.admissions?.bguLanguageRequirementsConfirmed,
+    tauMathPlacementScore: academicScores?.admissions?.tauMathPlacementScore,
     bagrutSubjectRecord,
     bagrutProfileSchemaVersion: bagrutSubjectRecord?.schemaVersion,
     bagrutSector: bagrutSubjectRecord?.sector,

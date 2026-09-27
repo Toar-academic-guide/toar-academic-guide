@@ -40,6 +40,11 @@ import { evaluateTauNursingGates } from './tauNursingPolicy';
 import { evaluateTauPsychologyGates, TAU_PSYCHOLOGY_REQUIREMENTS_URL } from './tauPsychologyPolicy';
 import { evaluateTauLawGates, TAU_LAW_REQUIREMENTS_URL } from './tauLawPolicy';
 import { evaluateTauEngineeringExactSciencesBonus } from './bagrutPolicies';
+import { evaluateTauComputerScienceGates } from './tauComputerSciencePolicy';
+import {
+  evaluateBguComputerScienceGates,
+  BGU_COMPUTER_SCIENCE_QUANTITATIVE_POLICY,
+} from './bguComputerSciencePolicy';
 import { withBoundedOfficialResponse } from '@/server/ingestion/boundedOfficialFetch';
 
 const MAX_CONCURRENT_EXACT_SOURCE_CALLS = 2;
@@ -226,12 +231,39 @@ async function evaluateExactResult(args: {
     }
 
     if (exactTarget.sourceTarget.adapterId === 'bgu') {
+      if (program.id === 'cs' || program.id === 'bgu_cs') {
+        const subjects = input.extraInputs?.bagrutSubjectRecord?.subjects;
+        if (!subjects?.some((subject) => subject.subjectId === 'mathematics')) {
+          return requiredInputsResult(institution, ['bagrut_subject_record']);
+        }
+        const gates = evaluateBguComputerScienceGates({
+          psychometric: input.psychometric,
+          quantitativeSubscore: input.extraInputs?.psychometricMath,
+          subjects,
+          languageRequirementsConfirmed:
+            input.extraInputs?.bguLanguageRequirementsConfirmed === true,
+        });
+        if (!gates.eligibleForScoreComparison) {
+          const descriptions = {
+            psychometric_600: 'פסיכומטרי 600 ומעלה',
+            psychometric_quantitative_125: 'ציון כמותי 125 ומעלה',
+            mathematics_90_at_4_or_80_at_5: 'מתמטיקה: 4 יחידות בציון 90 או 5 יחידות בציון 80',
+            language_classifications: 'אנגלית ברמה בסיסית ועברית ברמה ה׳ לנדרשים',
+          };
+          return exactGateFailureResult({
+            institution,
+            unmetRequirements: gates.unmetRequirements.map((gate) => descriptions[gate]),
+            requirementsUrl: BGU_COMPUTER_SCIENCE_QUANTITATIVE_POLICY.sourceUrl,
+          });
+        }
+      }
       const proof = await runBguAdmissionsProof({
         fetcher: timedFetcher,
         program: exactTarget.program,
         applicant: {
           bagrutAverage: input.bagrut,
           psychometric: input.psychometric,
+          extraInputs: input.extraInputs,
         },
       });
 
@@ -650,25 +682,16 @@ async function evaluateExactResult(args: {
     }
 
     if (exactTarget.targetId === 'tau-cs-live' || exactTarget.targetId === 'tau-cs-legacy-live') {
-      const psychometricEnglish = input.extraInputs?.psychometricEnglish;
-      const bagrutSubjectRecord = input.extraInputs?.bagrutSubjectRecord;
-      if (typeof psychometricEnglish !== 'number' || !bagrutSubjectRecord) {
-        return requiredInputsResult(institution, [
-          ...(typeof psychometricEnglish !== 'number' ? ['psychometric_english' as const] : []),
-          ...(!bagrutSubjectRecord ? ['bagrut_subject_record' as const] : []),
-        ]);
+      const gates = evaluateTauComputerScienceGates(input);
+      if (gates.requiredInputs.length > 0) {
+        return requiredInputsResult(institution, gates.requiredInputs);
       }
-      if (psychometricEnglish < 100) {
+      if (gates.unmetRequirements.length > 0) {
         return exactGateFailureResult({
           institution,
-          unmetRequirements: ['אנגלית בפסיכומטרי ברמת 100 ומעלה'],
-          requirementsUrl:
-            'https://go.tau.ac.il/he/engineering/ba/computer-science?v=admission-requirements',
+          unmetRequirements: gates.unmetRequirements,
+          requirementsUrl: 'https://go.tau.ac.il/he/exact/ba/computer?v=requirements',
         });
-      }
-      const exactSciencesBonusEligible = tauEngineeringBonusEligibility(bagrutSubjectRecord);
-      if (exactSciencesBonusEligible === undefined) {
-        return requiredInputsResult(institution, ['bagrut_subject_record']);
       }
 
       const proof = await runTauAdmissionsProof({
@@ -676,8 +699,9 @@ async function evaluateExactResult(args: {
         program: exactTarget.program,
         applicant: {
           bagrutAverage: input.bagrut,
-          exactSciencesBonusEligible,
+          exactSciencesBonusEligible: gates.exactSciencesBonusEligible,
           psychometric: input.psychometric,
+          extraInputs: input.extraInputs,
         },
       });
 
@@ -1051,8 +1075,10 @@ function evaluateNonExactResult(args: {
       confidence: 'low',
       sourceLabel: 'האימות הרשמי טרם הושלם',
       explanation:
-        entry.pairVerification?.reason ??
-        'עדיין אין למסלול זה שתי דוגמאות גבול והשוואה חיה של הציון והחלטת הקבלה מול המקור הרשמי.',
+        entry.pairVerification?.state === 'exact'
+          ? 'תנאי המסלול נבדקו, אך עדיין חסר אימות עדכני של המקור הרשמי. בדקו במוסד לפני הרשמה.'
+          : (entry.pairVerification?.reason ??
+            'עדיין אין מספיק מידע רשמי מאומת כדי להציג החלטת קבלה למסלול זה.'),
       nextAction: entry.pairVerification?.sourceUrl
         ? 'בדקו בינתיים ישירות במחשבון הרשמי של המוסד.'
         : 'בדקו בינתיים ישירות באתר המוסד.',
@@ -1992,6 +2018,23 @@ function requiredInputsResult(
 }
 
 function missingInputsCopy(requiredInputs: AdmissionsRequiredInput[]) {
+  if (
+    requiredInputs.some((input) =>
+      [
+        'tau_bagrut_average',
+        'bgu_bagrut_average',
+        'tau_application_requirements',
+        'bgu_language_requirements',
+        'tau_math_placement_score',
+      ].includes(input),
+    )
+  ) {
+    return {
+      explanation:
+        'לאימות המסלול נדרשים גם הממוצע ממחשבון הבגרות הרשמי של המוסד ואישור תנאי הקבלה.',
+      nextAction: 'השלימו את נתוני הקבלה הרשמיים בפרופיל האקדמי ונסו שוב.',
+    };
+  }
   const needsOnlyPsychometricSubscores =
     requiredInputs.length > 0 &&
     requiredInputs.every((input) =>

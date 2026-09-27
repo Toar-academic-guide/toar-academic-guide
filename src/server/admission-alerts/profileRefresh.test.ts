@@ -24,4 +24,26 @@ describe('alert profile refresh detection', () => {
   it('does not pause monitoring for unrelated account metadata updates', () => {
     expect(shouldRefreshAdmissionAlerts(previous, previous)).toBe(false);
   });
+
+  it('refreshes for admissions input changes, including missing versus false or zero', () => {
+    for (const admissionsInputs of [
+      { tauBagrutAverage: 112.5 },
+      { bguBagrutAverage: 110.25 },
+      { tauApplicationRequirementsConfirmed: false },
+      { bguLanguageRequirementsConfirmed: false },
+      { tauMathPlacementScore: 0 },
+    ]) {
+      expect(shouldRefreshAdmissionAlerts(previous, { ...previous, admissionsInputs })).toBe(true);
+      expect(shouldRefreshAdmissionAlerts({ ...previous, admissionsInputs }, previous)).toBe(true);
+      expect(
+        shouldRefreshAdmissionAlerts(
+          { ...previous, admissionsInputs },
+          { ...previous, admissionsInputs: { ...admissionsInputs } },
+        ),
+      ).toBe(false);
+    }
+    expect(shouldRefreshAdmissionAlerts(previous, { ...previous, admissionsInputs: {} })).toBe(
+      false,
+    );
+  });
 });

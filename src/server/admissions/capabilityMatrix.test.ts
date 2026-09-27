@@ -188,6 +188,26 @@ function buildCapabilityMatrix(
 const buildAdmissionsCapabilityMatrix = buildCapabilityMatrix;
 
 describe('buildAdmissionsCapabilityMatrix', () => {
+  it.each(['cs', 'tau_cs'])(
+    '%s allows confirmed TAU English qualification without a psychometric English score',
+    (id) => {
+      const [entry] = buildAdmissionsCapabilityMatrix({
+        program: makeProgram({ id, linkedInstitutionIds: ['tau'] }),
+        institutions: INSTITUTIONS,
+        input: {
+          tauBagrutAverage: 115,
+          tauApplicationRequirementsConfirmed: true,
+          bagrutSubjectRecord: {
+            schemaVersion: 1,
+            sector: 'jewish',
+            subjects: [{ subjectId: 'mathematics', units: 5, grade: 85 }],
+          },
+        },
+      });
+      expect(entry?.capability).toBe('exact');
+    },
+  );
+
   it.each([
     ['medicine', 'tau', 'manual_gate'],
     ['tau_medicine', 'tau', 'manual_gate'],
@@ -658,6 +678,18 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     const entries = buildAdmissionsCapabilityMatrix({
       program,
       institutions: INSTITUTIONS,
+      input: {
+        bguBagrutAverage: 120,
+        bguLanguageRequirementsConfirmed: true,
+        psychometricMath: 150,
+        psychometricVerbal: 150,
+        psychometricEnglish: 150,
+        bagrutSubjectRecord: {
+          schemaVersion: 1,
+          sector: 'jewish',
+          subjects: [{ subjectId: 'mathematics', units: 5, grade: 85 }],
+        },
+      },
     });
 
     const bguEntry = entries.find((e) => e.institutionId === 'bgu');

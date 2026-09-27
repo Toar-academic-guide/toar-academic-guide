@@ -73,6 +73,7 @@ export async function replaceUserProfileSnapshot(
         psychometricVerbal: userProfiles.psychometricVerbal,
         psychometricEnglish: userProfiles.psychometricEnglish,
         bagrutWeightedAverage: userProfiles.bagrutWeightedAverage,
+        admissionsInputs: userProfiles.admissionsInputs,
         bagrutProfileVersionId: userProfiles.bagrutProfileVersionId,
       })
       .from(userProfiles)
@@ -99,6 +100,7 @@ export async function replaceUserProfileSnapshot(
           psychometricVerbal: profile.academicScores?.psychometric?.verbal ?? null,
           psychometricEnglish: profile.academicScores?.psychometric?.english ?? null,
           bagrutWeightedAverage: profile.academicScores?.bagrut?.weightedAverage ?? null,
+          admissionsInputs: profile.academicScores?.admissions ?? null,
           bagrutProfileVersionId,
           updatedAt: new Date(),
         },
@@ -110,6 +112,7 @@ export async function replaceUserProfileSnapshot(
       psychometricVerbal: profile.academicScores?.psychometric?.verbal ?? null,
       psychometricEnglish: profile.academicScores?.psychometric?.english ?? null,
       bagrutWeightedAverage: profile.academicScores?.bagrut?.weightedAverage ?? null,
+      admissionsInputs: profile.academicScores?.admissions ?? null,
       bagrutProfileVersionId,
     };
 

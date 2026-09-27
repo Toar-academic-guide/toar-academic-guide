@@ -5,6 +5,7 @@ import {
   type FreshnessSourceClass,
 } from './freshnessDiscovery';
 import type { BagrutSubjectRecord } from '@/types';
+import type { AdmissionsExtraInputs } from '@/types/admissionsEvaluation';
 
 export type AdmissionsProofLevel =
   'blocked' | 'exact_official' | 'open_admission' | 'partial_official' | 'static_data_candidate';
@@ -16,6 +17,7 @@ export type AdmissionsAdapterId =
   'capability_matrix' | 'haifa' | 'tau' | 'huji' | 'technion' | 'bgu';
 
 export interface AdmissionsApplicantInput {
+  extraInputs?: AdmissionsExtraInputs;
   bagrutAverage: number;
   bagrutSubjectRecord?: BagrutSubjectRecord;
   psychometric: number;

@@ -488,6 +488,51 @@ describe('CalculatorResults', () => {
     expect(screen.queryByText('אימות רשמי')).toBeNull();
   });
 
+  it('summarizes institution-specific inputs as official averages or confirmed requirements', async () => {
+    hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
+      report([
+        {
+          institution: { id: 'tau', name: 'אוניברסיטת תל אביב', region: 'center' },
+          linkedInstitutionId: 'tau',
+          capability: 'needs_input',
+          kind: 'needs_input',
+          decision: 'unknown',
+          confidence: 'low',
+          sourceLabel: 'נדרשים נתונים נוספים',
+          explanation: 'חסרים ממוצע רשמי ואישור תנאי קבלה.',
+          nextAction: 'עדכנו את הנתונים.',
+          requiredInputs: ['tau_bagrut_average', 'tau_application_requirements'],
+        },
+        {
+          institution: { id: 'bgu', name: 'אוניברסיטת בן־גוריון', region: 'south' },
+          linkedInstitutionId: 'bgu',
+          capability: 'needs_input',
+          kind: 'needs_input',
+          decision: 'unknown',
+          confidence: 'low',
+          sourceLabel: 'נדרשים נתונים נוספים',
+          explanation: 'חסר ציון סיווג במתמטיקה.',
+          nextAction: 'עדכנו את הנתון.',
+          requiredInputs: ['tau_math_placement_score'],
+        },
+      ]),
+    );
+
+    render(
+      <CalculatorResults
+        degreeId="tau_cs"
+        programs={programs}
+        psychometric={700}
+        bagrut={110}
+        onBack={() => {}}
+      />,
+    );
+
+    expect(await screen.findByLabelText('אוניברסיטת תל אביב: נדרשים נתונים')).toBeTruthy();
+    expect(screen.getByText(/נדרשים ממוצעים רשמיים או אישור תנאי קבלה/)).toBeTruthy();
+    expect(screen.getByText(/נדרש ציון סיווג במתמטיקה/)).toBeTruthy();
+  });
+
   it('renders the official link for mapped estimated results when the official source is currently blocked', async () => {
     hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
       report([

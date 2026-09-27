@@ -92,9 +92,25 @@ function formatResultSummary(result: AdmissionsEvaluationResult): string {
     const onlyPsychometricSubscores = result.requiredInputs.every((input) =>
       ['psychometric_math', 'psychometric_verbal', 'psychometric_english'].includes(input),
     );
-    return onlyPsychometricSubscores
-      ? 'נדרשים גם תתי-ציונים בפסיכומטרי'
-      : 'נדרשים פרטי מקצועות בגרות';
+    if (onlyPsychometricSubscores) {
+      return 'נדרשים גם תתי-ציונים בפסיכומטרי';
+    }
+    if (
+      result.requiredInputs.some((input) =>
+        [
+          'tau_bagrut_average',
+          'bgu_bagrut_average',
+          'tau_application_requirements',
+          'bgu_language_requirements',
+        ].includes(input),
+      )
+    ) {
+      return 'נדרשים ממוצעים רשמיים או אישור תנאי קבלה';
+    }
+    if (result.requiredInputs.includes('tau_math_placement_score')) {
+      return 'נדרש ציון סיווג במתמטיקה';
+    }
+    return 'נדרשים פרטי מקצועות בגרות';
   }
 
   return result.sourceLabel;

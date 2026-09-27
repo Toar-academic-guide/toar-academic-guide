@@ -47,7 +47,12 @@ export type AdmissionsRequiredInput =
   | 'cs_grade'
   | 'bagrut_subject_record'
   | 'bagrut_profile_version'
-  | 'bagrut_sector';
+  | 'bagrut_sector'
+  | 'tau_bagrut_average'
+  | 'bgu_bagrut_average'
+  | 'tau_application_requirements'
+  | 'bgu_language_requirements'
+  | 'tau_math_placement_score';
 
 export interface AdmissionsExtraInputs {
   psychometricMath?: number;
@@ -64,6 +69,11 @@ export interface AdmissionsExtraInputs {
   physicsGrade?: number;
   csUnits?: number;
   csGrade?: number;
+  tauBagrutAverage?: number;
+  bguBagrutAverage?: number;
+  tauApplicationRequirementsConfirmed?: boolean;
+  bguLanguageRequirementsConfirmed?: boolean;
+  tauMathPlacementScore?: number;
 }
 
 export type AdmissionsVerificationVerdict = 'accepted' | 'below' | 'eligible_to_apply';
