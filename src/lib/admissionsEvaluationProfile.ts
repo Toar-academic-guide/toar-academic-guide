@@ -1,3 +1,4 @@
+import { BGU_QUANTITATIVE_PROFILE_KEYS } from './calculatorInputRequirements';
 import type { AcademicScores } from '@/types';
 import type { AdmissionsExtraInputs } from '@/types/admissionsEvaluation';
 
@@ -19,6 +20,9 @@ export function admissionsExtraInputsFromAcademicScores(
   const computerScience = subjectsById.get('computer_science');
 
   const extraInputs: AdmissionsExtraInputs = {
+    ...Object.fromEntries(
+      BGU_QUANTITATIVE_PROFILE_KEYS.map((key) => [key, academicScores?.admissions?.[key]]),
+    ),
     technionArchitectureBagrutAverage:
       academicScores?.admissions?.technionArchitectureBagrutAverage,
     technionArchitectureExamScore: academicScores?.admissions?.technionArchitectureExamScore,

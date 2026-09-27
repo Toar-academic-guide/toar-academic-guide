@@ -1,3 +1,4 @@
+import { BGU_QUANTITATIVE_OFFICIAL_CAPTURES_BY_TARGET_ID } from './bguQuantitativeRoutesVerification';
 import type { AdmissionsApplicantInput } from '@/server/ingestion/admissionsSourceAdapters';
 import { BGU_COMPUTER_SCIENCE_OFFICIAL_PROOF_CAPTURES_BY_TARGET_ID } from './bguComputerScienceVerification';
 import { TAU_COMPUTER_SCIENCE_OFFICIAL_PROOF_CAPTURES } from './tauComputerScienceVerification';
@@ -661,4 +662,9 @@ Object.assign(
     'tau-cs-live': TAU_COMPUTER_SCIENCE_OFFICIAL_PROOF_CAPTURES,
     'tau-cs-legacy-live': TAU_COMPUTER_SCIENCE_OFFICIAL_PROOF_CAPTURES,
   },
+);
+
+Object.assign(
+  OFFICIAL_PROGRAM_PROOF_CAPTURES_BY_TARGET_ID,
+  BGU_QUANTITATIVE_OFFICIAL_CAPTURES_BY_TARGET_ID,
 );

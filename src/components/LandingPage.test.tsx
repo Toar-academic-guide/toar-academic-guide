@@ -63,6 +63,18 @@ const defaultProps = {
 };
 
 describe('LandingPage calculator', () => {
+  it('submits Biology without unused generic scores for its official alternative routes', () => {
+    const onCalculate = vi.fn();
+    render(
+      <LandingPage
+        {...defaultProps}
+        onCalculate={onCalculate}
+        programs={[program('bgu_biology', 'ביולוגיה')]}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'חשב סיכויים ←' }));
+    expect(onCalculate).toHaveBeenCalledWith(undefined, undefined, 'bgu_biology');
+  });
   it('keeps initials separate from the logout action', () => {
     const onSignOut = vi.fn();
     render(

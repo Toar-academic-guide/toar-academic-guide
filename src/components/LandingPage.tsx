@@ -1,5 +1,6 @@
 'use client';
 
+import { allowsNoPsychometric, allowsNoGenericBagrut } from '@/lib/calculatorInputRequirements';
 import { useEffect, useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Target, Sparkles, BarChart3 } from 'lucide-react';
@@ -13,7 +14,11 @@ interface Props {
   onAlreadyKnow: () => void;
   onNeedHelp: () => void;
   onSignIn: () => void;
-  onCalculate: (psychometric: number | undefined, bagrut: number, degreeId: string) => void;
+  onCalculate: (
+    psychometric: number | undefined,
+    bagrut: number | undefined,
+    degreeId: string,
+  ) => void;
   onGoToProfile: () => void;
   programs: CatalogueProgram[];
   authLoading?: boolean;
@@ -67,14 +72,17 @@ export default function LandingPage({
     const errs: typeof calcErrors = {};
     const psy = Number(psychometric);
     const bag = Number(bagrut);
-    const allowsNoPsychometric = ['business', 'tau_business'].includes(selectedDegreeId);
+    const optionalPsychometric = allowsNoPsychometric(selectedDegreeId);
     if (
-      (!psychometric && !allowsNoPsychometric) ||
+      (!psychometric && !optionalPsychometric) ||
       (psychometric && (isNaN(psy) || psy < 200 || psy > 800))
     ) {
       errs.psychometric = 'ציון בין 200 ל-800';
     }
-    if (!bagrut || isNaN(bag) || bag < 60 || bag > 120) {
+    if (
+      (!bagrut && !allowsNoGenericBagrut(selectedDegreeId)) ||
+      (bagrut && (isNaN(bag) || bag < 60 || bag > 120))
+    ) {
       errs.bagrut = 'ממוצע בין 60 ל-120';
     }
     setCalcErrors(errs);
@@ -82,7 +90,7 @@ export default function LandingPage({
       return;
     }
     if (Object.keys(errs).length === 0) {
-      onCalculate(psychometric ? psy : undefined, bag, selectedDegreeId);
+      onCalculate(psychometric ? psy : undefined, bagrut ? bag : undefined, selectedDegreeId);
     }
   }
 
@@ -345,9 +353,7 @@ export default function LandingPage({
                   className="mb-1 block text-sm font-semibold text-slate-700"
                 >
                   ציון פסיכומטרי
-                  {['business', 'tau_business'].includes(selectedDegreeId)
-                    ? ' (רשות לאפיק ללא פסיכומטרי)'
-                    : ''}
+                  {allowsNoPsychometric(selectedDegreeId) ? ' (רשות לאפיק ללא פסיכומטרי)' : ''}
                 </label>
                 <input
                   id="calc-psychometric"
@@ -374,6 +380,7 @@ export default function LandingPage({
                   className="mb-1 block text-sm font-semibold text-slate-700"
                 >
                   ממוצע בגרות
+                  {allowsNoGenericBagrut(selectedDegreeId) ? ' (רשות לאפיקי בן־גוריון)' : ''}
                 </label>
                 <input
                   id="calc-bagrut"

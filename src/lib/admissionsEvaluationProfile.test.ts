@@ -4,6 +4,20 @@ import { admissionsExtraInputsFromAcademicScores } from './admissionsEvaluationP
 import { admissionsInputValue } from '@/server/admissions/admissionsInputValue';
 
 describe('admissionsExtraInputsFromAcademicScores', () => {
+  it('passes saved quantitative-route details to evaluation without losing false or decimal grades', () => {
+    const admissions = {
+      bguQuantitativeRoute: 'bagrut' as const,
+      bguPreparatoryTrack: 'natural_life_sciences' as const,
+      bguPreparatoryCompleted: true,
+      bguPreparatoryAverage: 87.25,
+      bguPriorAcademicStudies: false,
+      bguReturningOrChangingTrack: false,
+      bguCertificateRequirementsConfirmed: true,
+      bguApplicationPriority: 1,
+      bguSecondTrackRequirementsConfirmed: true,
+    };
+    expect(admissionsExtraInputsFromAcademicScores({ admissions })).toMatchObject(admissions);
+  });
   it('maps saved psychometric subscores and Bagrut subjects into the admissions evaluator contract', () => {
     expect(
       admissionsExtraInputsFromAcademicScores({

@@ -1,3 +1,4 @@
+import { bguQuantitativeInputShape } from '@/lib/bguQuantitativeInputs';
 import { z } from 'zod';
 import { MAX_BAGRUT_SUBJECTS } from '@/lib/bagrutSubjectLimits';
 
@@ -75,6 +76,7 @@ const admissionsInputsSchema = z.strictObject({
   tauManagementQualifyingMoocCount: z.union([z.literal(0), z.literal(1), z.literal(2)]).optional(),
   tauManagementNoPsychometricMoocsConfirmed: z.boolean().optional(),
   bguLanguageRequirementsConfirmed: z.boolean().optional(),
+  ...bguQuantitativeInputShape,
   tauMathPlacementScore: z.number().min(0).max(100).optional(),
 });
 

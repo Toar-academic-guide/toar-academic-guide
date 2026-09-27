@@ -13,6 +13,7 @@ const admissionCycleSchema = z.string().regex(/^\d{4}-\d{4}$/);
 const timestampSchema = z.string().datetime({ offset: true });
 const requiredInputSchema = z.enum([
   'psychometric_overall',
+  'bagrut_average',
   'tau_management_requirements',
   'tau_management_academic_route',
   'tau_management_mooc_count',
@@ -39,6 +40,12 @@ const requiredInputSchema = z.enum([
   'bgu_bagrut_average',
   'tau_application_requirements',
   'bgu_language_requirements',
+  'bgu_certificate_requirements',
+  'bgu_prior_academic_studies',
+  'bgu_returning_or_changing_track',
+  'bgu_application_priority',
+  'bgu_second_track_requirements',
+  'bgu_preparatory_qualification',
   'tau_math_placement_score',
 ]);
 const verificationVerdictSchema = z.enum(['accepted', 'below', 'eligible_to_apply']);

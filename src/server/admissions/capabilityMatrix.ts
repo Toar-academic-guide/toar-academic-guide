@@ -1,3 +1,4 @@
+import { isBguQuantitativeRouteProgram } from '@/lib/calculatorInputRequirements';
 import 'server-only';
 
 import { inArray } from 'drizzle-orm';
@@ -111,7 +112,10 @@ const BGU_EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = Object.
         externalId: artifact.contract.officialProgramId,
         searchText: artifact.contract.source.url,
       },
-      requiredInputs: artifact.contract.calculation.requiredInputs,
+      // Published alternative routes use different inputs; the route policy resolves them.
+      requiredInputs: isBguQuantitativeRouteProgram(artifact.contract.programId)
+        ? []
+        : artifact.contract.calculation.requiredInputs,
     } satisfies ExactCapabilityTarget,
   ]),
 );

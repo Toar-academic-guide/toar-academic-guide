@@ -1,3 +1,4 @@
+import { BGU_QUANTITATIVE_PROFILE_KEYS } from '@/lib/calculatorInputRequirements';
 import type { AdmissionsProfileInputs } from '@/types';
 
 export interface AlertRelevantAcademicProfile {
@@ -19,6 +20,9 @@ export function shouldRefreshAdmissionAlerts(
   }
 
   return (
+    BGU_QUANTITATIVE_PROFILE_KEYS.some(
+      (key) => previous.admissionsInputs?.[key] !== next.admissionsInputs?.[key],
+    ) ||
     previous.psychometricOverall !== next.psychometricOverall ||
     previous.psychometricQuantitative !== next.psychometricQuantitative ||
     previous.psychometricVerbal !== next.psychometricVerbal ||

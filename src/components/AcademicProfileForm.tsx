@@ -5,6 +5,9 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { Upload, FileText, X, Brain, GraduationCap, Loader2 } from 'lucide-react';
 import type { AcademicScores, UserProfile } from '@/types';
+import BguQuantitativeFields from './BguQuantitativeFields';
+import { BGU_QUANTITATIVE_PROFILE_KEYS } from '@/lib/calculatorInputRequirements';
+import type { BguQuantitativeInputs } from '@/lib/bguQuantitativeInputs';
 import BagrutCalculatorWizard from './BagrutCalculatorWizard';
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
@@ -71,6 +74,13 @@ export default function AcademicProfileForm({
   const [bguLanguageRequirements, setBguLanguageRequirements] = useState(
     initialScores?.admissions?.bguLanguageRequirementsConfirmed?.toString() ?? '',
   );
+  const [bguQuantitative, setBguQuantitative] = useState<BguQuantitativeInputs>(() =>
+    Object.fromEntries(
+      BGU_QUANTITATIVE_PROFILE_KEYS.map((key) => [key, initialScores?.admissions?.[key]]).filter(
+        ([, value]) => value !== undefined,
+      ),
+    ),
+  );
   const [tauMathPlacementScore, setTauMathPlacementScore] = useState(
     initialScores?.admissions?.tauMathPlacementScore?.toString() ?? '',
   );
@@ -127,6 +137,7 @@ export default function AcademicProfileForm({
     setBguBagrutAverage('');
     setTauApplicationRequirements('');
     setBguLanguageRequirements('');
+    setBguQuantitative({});
     setTauMathPlacementScore('');
     setManagementRequirements('');
     setManagementAcademic('');
@@ -174,7 +185,19 @@ export default function AcademicProfileForm({
       };
     }
 
-    const admissions: NonNullable<AcademicScores['admissions']> = {};
+    const admissions: NonNullable<AcademicScores['admissions']> = Object.fromEntries(
+      Object.entries(bguQuantitative).filter(([, value]) => value !== undefined),
+    );
+    if (
+      bguQuantitative.bguPreparatoryAverage !== undefined &&
+      (!Number.isFinite(bguQuantitative.bguPreparatoryAverage) ||
+        bguQuantitative.bguPreparatoryAverage < 0 ||
+        bguQuantitative.bguPreparatoryAverage > 100)
+    ) {
+      setError('ממוצע המכינה חייב להיות בין 0 ל־100.');
+      setIsSaving(false);
+      return;
+    }
     const architectureAverageValue = optionalNumber(architectureAverage);
     const architectureExamValue = optionalNumber(architectureExam);
     if (
@@ -701,6 +724,11 @@ export default function AcademicProfileForm({
                   <option value="false">לא</option>
                 </select>
               </label>
+              <BguQuantitativeFields
+                value={bguQuantitative}
+                onChange={setBguQuantitative}
+                disabled={isSaving}
+              />
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="tau-math-placement" className="text-xs font-medium text-slate-600">
                   ציון סיווג במתמטיקה של אוניברסיטת תל אביב (0–100)

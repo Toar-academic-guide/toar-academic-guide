@@ -25,6 +25,50 @@ vi.mock('@/components/BagrutCalculatorWizard', () => ({
 }));
 
 describe('AcademicProfileForm', () => {
+  it('saves and reopens recognized preparatory route details without generic scores', async () => {
+    const onComplete = vi.fn();
+    const props = {
+      onComplete,
+      onSkip: vi.fn(),
+      onClearLocalProfileData: vi.fn().mockResolvedValue(undefined),
+    };
+    const view = render(<AcademicProfileForm {...props} />);
+    fireEvent.change(screen.getByLabelText('אפיק לבדיקה בבן־גוריון'), {
+      target: { value: 'bagrut' },
+    });
+    fireEvent.change(screen.getByLabelText('מכינה מוכרת של בן־גוריון'), {
+      target: { value: 'natural_life_sciences' },
+    });
+    fireEvent.change(screen.getByLabelText('ממוצע מכינה מוכרת בבן־גוריון'), {
+      target: { value: '87.25' },
+    });
+    fireEvent.change(screen.getByLabelText('האם המכינה המוכרת בבן־גוריון הושלמה?'), {
+      target: { value: 'true' },
+    });
+    fireEvent.change(screen.getByLabelText('האם יש לימודים אקדמיים קודמים?'), {
+      target: { value: 'false' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    await waitFor(() => expect(onComplete).toHaveBeenCalled());
+    const saved = onComplete.mock.calls[0][0];
+    expect(saved).toEqual({
+      admissions: {
+        bguQuantitativeRoute: 'bagrut',
+        bguPreparatoryTrack: 'natural_life_sciences',
+        bguPreparatoryAverage: 87.25,
+        bguPreparatoryCompleted: true,
+        bguPriorAcademicStudies: false,
+      },
+    });
+    view.unmount();
+    render(<AcademicProfileForm {...props} initialScores={saved} />);
+    expect((screen.getByLabelText('ממוצע מכינה מוכרת בבן־גוריון') as HTMLInputElement).value).toBe(
+      '87.25',
+    );
+    expect(
+      (screen.getByLabelText('האם יש לימודים אקדמיים קודמים?') as HTMLSelectElement).value,
+    ).toBe('false');
+  });
   beforeEach(() => {
     vi.restoreAllMocks();
   });

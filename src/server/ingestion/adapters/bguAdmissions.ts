@@ -1,3 +1,5 @@
+import { isBguQuantitativeRouteProgram } from '@/lib/calculatorInputRequirements';
+import { runBguQuantitativeRoutesProof } from './bguQuantitativeRoutes';
 import {
   parseOfficialNumeric,
   readOfficialResponseMetadata,
@@ -34,6 +36,10 @@ export async function runBguAdmissionsProof(
   const program = context.program;
   if (!program) {
     throw new Error('BGU adapter requires a program context');
+  }
+
+  if (isBguQuantitativeRouteProgram(program.id)) {
+    return runBguQuantitativeRoutesProof({ ...context, program });
   }
 
   if (program.id === 'cs' || program.id === 'bgu_cs') {

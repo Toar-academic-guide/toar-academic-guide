@@ -31,6 +31,15 @@ describe('alert profile refresh detection', () => {
       { bguBagrutAverage: 110.25 },
       { tauApplicationRequirementsConfirmed: false },
       { bguLanguageRequirementsConfirmed: false },
+      { bguQuantitativeRoute: 'bagrut' as const },
+      { bguCertificateRequirementsConfirmed: false },
+      { bguPriorAcademicStudies: false },
+      { bguReturningOrChangingTrack: false },
+      { bguApplicationPriority: 1 },
+      { bguSecondTrackRequirementsConfirmed: false },
+      { bguPreparatoryTrack: 'natural_life_sciences' as const },
+      { bguPreparatoryAverage: 0 },
+      { bguPreparatoryCompleted: false },
       { tauMathPlacementScore: 0 },
     ]) {
       expect(shouldRefreshAdmissionAlerts(previous, { ...previous, admissionsInputs })).toBe(true);
