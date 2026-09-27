@@ -27,6 +27,9 @@ export interface UserScores {
   csGrade?: number;
 }
 
+/** Calculator requests may omit psychometric only for a supported admission route. */
+export type CalculatorScores = Omit<UserScores, 'psychometric'> & { psychometric?: number };
+
 export interface University {
   id: UniversityId;
   name: string;
@@ -231,6 +234,10 @@ export interface AdmissionsProfileInputs {
   bguBagrutAverage?: number;
   /** Confirms Bagrut, Advanced A English (psychometric or separate exam), Hebrew and first choice. */
   tauApplicationRequirementsConfirmed?: boolean;
+  tauManagementRequirementsConfirmed?: boolean;
+  tauManagementAcademicRouteConfirmed?: boolean;
+  tauManagementQualifyingMoocCount?: 0 | 1 | 2;
+  tauManagementNoPsychometricMoocsConfirmed?: boolean;
   /** Whether BGU English Basic and applicable Hebrew level E requirements are met. */
   bguLanguageRequirementsConfirmed?: boolean;
   /** TAU mathematics placement/classification score, when available. */

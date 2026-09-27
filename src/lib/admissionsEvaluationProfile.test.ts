@@ -57,6 +57,10 @@ describe('admissionsExtraInputsFromAcademicScores', () => {
     expect(
       admissionsExtraInputsFromAcademicScores({
         admissions: {
+          tauManagementRequirementsConfirmed: true,
+          tauManagementAcademicRouteConfirmed: false,
+          tauManagementQualifyingMoocCount: 0,
+          tauManagementNoPsychometricMoocsConfirmed: false,
           tauBagrutAverage: 112.5,
           bguBagrutAverage: 108.25,
           tauApplicationRequirementsConfirmed: false,
@@ -69,6 +73,10 @@ describe('admissionsExtraInputsFromAcademicScores', () => {
         },
       }),
     ).toEqual({
+      tauManagementRequirementsConfirmed: true,
+      tauManagementAcademicRouteConfirmed: false,
+      tauManagementQualifyingMoocCount: 0,
+      tauManagementNoPsychometricMoocsConfirmed: false,
       tauBagrutAverage: 112.5,
       bguBagrutAverage: 108.25,
       tauApplicationRequirementsConfirmed: false,

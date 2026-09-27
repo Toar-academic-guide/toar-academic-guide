@@ -92,6 +92,10 @@ function formatResultSummary(result: AdmissionsEvaluationResult): string {
     if (result.requiredInputs.some((input) => input.startsWith('technion_architecture_'))) {
       return 'נדרשים נתוני ארכיטקטורה בטכניון';
     }
+    if (result.requiredInputs.some((input) => input.startsWith('tau_management_'))) {
+      return 'נדרשים נתוני קבלה לניהול בתל אביב';
+    }
+    if (result.requiredInputs.includes('psychometric_overall')) return 'נדרש ציון פסיכומטרי';
     const onlyPsychometricSubscores = result.requiredInputs.every((input) =>
       ['psychometric_math', 'psychometric_verbal', 'psychometric_english'].includes(input),
     );
@@ -120,7 +124,7 @@ function formatResultSummary(result: AdmissionsEvaluationResult): string {
 }
 
 interface Props {
-  psychometric: number;
+  psychometric?: number;
   bagrut: number;
   degreeId: string;
   programs: CatalogueProgram[];
@@ -259,7 +263,7 @@ export default function CalculatorResults({
   const routeProfileMatchesCalculation = Boolean(
     hasCompleteRouteProfile &&
     academicScores?.psychometric?.overall === psychometric &&
-    academicScores.bagrut?.weightedAverage === bagrut,
+    academicScores?.bagrut?.weightedAverage === bagrut,
   );
 
   async function handleAdmissionAlert() {
@@ -473,7 +477,8 @@ export default function CalculatorResults({
             {selectedProgram?.name ?? 'תוכנית לא נמצאה'}
           </p>
           <p className="mt-1 text-sm text-slate-500">
-            פסיכומטרי {psychometric} · ממוצע בגרות {bagrut}
+            {psychometric === undefined ? 'ללא פסיכומטרי' : `פסיכומטרי ${psychometric}`} · ממוצע
+            בגרות {bagrut}
           </p>
         </div>
 

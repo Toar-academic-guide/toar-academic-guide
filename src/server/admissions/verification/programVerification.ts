@@ -12,6 +12,11 @@ const fingerprintSchema = z.string().regex(/^sha256:[a-f0-9]{64}$/);
 const admissionCycleSchema = z.string().regex(/^\d{4}-\d{4}$/);
 const timestampSchema = z.string().datetime({ offset: true });
 const requiredInputSchema = z.enum([
+  'psychometric_overall',
+  'tau_management_requirements',
+  'tau_management_academic_route',
+  'tau_management_mooc_count',
+  'tau_management_no_psychometric_moocs',
   'technion_architecture_bagrut_average',
   'technion_architecture_exam_score',
   'technion_architecture_exam_passed',

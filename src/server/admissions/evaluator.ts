@@ -4,7 +4,7 @@ import { getCalculatorInstitutionsFromCatalogue } from '@/lib/calculatorInstitut
 import { evaluateUniversities } from '@/utils/sekhemCalculators';
 import type { University } from '@/types';
 import type {
-  AdmissionsEvaluationInput,
+  AdmissionsEvaluationInput as AdmissionsEvaluationRequest,
   AdmissionsEvaluationReport,
   AdmissionsEvaluationResult,
   AdmissionsRequiredInput,
@@ -39,6 +39,7 @@ import {
   createAdmissionsInputDigest,
   createAdmissionsEvaluationSnapshot,
 } from './evaluationSnapshot';
+import { evaluateTauManagementResult } from './tauManagementEvaluation';
 import { evaluateTauDigitalSciencesGates } from './tauDigitalSciencesPolicy';
 import { evaluateTauNursingGates } from './tauNursingPolicy';
 import { evaluateTauPsychologyGates, TAU_PSYCHOLOGY_REQUIREMENTS_URL } from './tauPsychologyPolicy';
@@ -51,11 +52,13 @@ import {
 } from './bguComputerSciencePolicy';
 import { withBoundedOfficialResponse } from '@/server/ingestion/boundedOfficialFetch';
 
+type AdmissionsEvaluationInput = AdmissionsEvaluationRequest & { psychometric: number };
+
 const MAX_CONCURRENT_EXACT_SOURCE_CALLS = 2;
 const OFFICIAL_SOURCE_TIMEOUT_MS = 5000;
 
 export async function evaluateAdmissionsForProgram(args: {
-  input: AdmissionsEvaluationInput;
+  input: AdmissionsEvaluationRequest;
   program: CatalogueProgram;
   institutions: CatalogueInstitution[];
   fetcher?: typeof fetch;
@@ -112,7 +115,7 @@ export async function evaluateAdmissionsForProgram(args: {
 }
 
 async function evaluateCapabilityEntries(args: {
-  input: AdmissionsEvaluationInput;
+  input: AdmissionsEvaluationRequest;
   program: CatalogueProgram;
   institutions: CatalogueInstitution[];
   capabilityEntries: AdmissionsCapabilityEntry[];
@@ -167,19 +170,34 @@ async function runWithConcurrency(tasks: Array<() => Promise<void>>, limit: numb
 }
 
 async function evaluateExactResult(args: {
-  input: AdmissionsEvaluationInput;
+  input: AdmissionsEvaluationRequest;
   program: CatalogueProgram;
   institution: CatalogueInstitution;
   exactTarget: NonNullable<AdmissionsCapabilityEntry['exactTarget']>;
   fetcher?: typeof fetch;
 }): Promise<AdmissionsEvaluationResult> {
-  const { input, program, institution, exactTarget, fetcher } = args;
+  const { input: requestedInput, program, institution, exactTarget, fetcher } = args;
 
   const timedFetcher = withBoundedOfficialResponse(fetcher ?? fetch, {
     timeoutMs: OFFICIAL_SOURCE_TIMEOUT_MS,
   });
 
   try {
+    if (
+      exactTarget.program.pairId === 'business__tau' ||
+      exactTarget.program.pairId === 'tau_business__tau'
+    ) {
+      return await evaluateTauManagementResult({
+        input: requestedInput,
+        institution,
+        program: exactTarget.program,
+        fetcher: timedFetcher,
+      });
+    }
+    if (requestedInput.psychometric === undefined) {
+      return requiredInputsResult(institution, ['psychometric_overall']);
+    }
+    const input = { ...requestedInput, psychometric: requestedInput.psychometric };
     if (exactTarget.sourceTarget.adapterId === 'haifa') {
       const proof = await runHaifaAdmissionsProof({
         fetcher: timedFetcher,
@@ -1066,12 +1084,12 @@ function exactGateFailureResult(args: {
 }
 
 function evaluateNonExactResult(args: {
-  input: AdmissionsEvaluationInput;
+  input: AdmissionsEvaluationRequest;
   program: CatalogueProgram;
   institution: CatalogueInstitution;
   entry: AdmissionsCapabilityEntry;
 }): AdmissionsEvaluationResult {
-  const { input, program, institution, entry } = args;
+  const { input: requestedInput, program, institution, entry } = args;
 
   const evidenceRecord =
     entry.evidence ?? getMondayAdmissionEvidenceByCatalogueInstitutionId(institution.id)[0];
@@ -1181,6 +1199,11 @@ function evaluateNonExactResult(args: {
       nextAction: 'הירשמו ישירות למסלול הלימודים באתר הרשמי של המוסד.',
     };
   }
+
+  if (requestedInput.psychometric === undefined) {
+    return requiredInputsResult(institution, ['psychometric_overall']);
+  }
+  const input = { ...requestedInput, psychometric: requestedInput.psychometric };
 
   if (entry.capability === 'manual_gate') {
     const verifiedThreshold = getVerifiedProgramThreshold(entry.evidence, program.id);
@@ -2050,6 +2073,18 @@ function requiredInputsResult(
 }
 
 function missingInputsCopy(requiredInputs: AdmissionsRequiredInput[]) {
+  if (requiredInputs.some((input) => input.startsWith('tau_management_'))) {
+    return {
+      explanation: 'נדרשים פרטי אפיקי הקבלה לניהול באוניברסיטת תל אביב.',
+      nextAction: 'השלימו את נתוני הניהול בפרופיל האקדמי ונסו שוב.',
+    };
+  }
+  if (requiredInputs.includes('psychometric_overall')) {
+    return {
+      explanation: 'כדי לבדוק אפיק זה נדרש ציון פסיכומטרי.',
+      nextAction: 'הזינו ציון פסיכומטרי או בדקו אפיק ללא פסיכומטרי באתר התוכנית.',
+    };
+  }
   if (requiredInputs.some((input) => input.startsWith('technion_architecture_'))) {
     return {
       explanation:

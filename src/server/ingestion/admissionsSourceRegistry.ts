@@ -699,7 +699,7 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
       'officialVerdict',
     ],
     limitations: [
-      'The proof covers the standard Management score route; alternate routes remain manual.',
+      'This replay proves the Management numeric score and cutoffs; the runtime separately checks all published routes and applicant conditions.',
     ],
     nextAction: 'Keep the Management node, score field, fixtures, and thresholds under review.',
   },

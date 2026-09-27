@@ -459,6 +459,133 @@ const hitEngineering: CatalogueProgram = {
 };
 
 describe('evaluateAdmissionsForProgram', () => {
+  const management: CatalogueProgram = {
+    ...hitEngineering,
+    id: 'business',
+    linkedInstitutionIds: ['tau'],
+    institutionId: 'tau',
+    thresholds: { tau: 610 },
+  };
+  const managementInputs = {
+    tauBagrutAverage: 115,
+    mathUnits: 5,
+    mathGrade: 70,
+    englishUnits: 5,
+    englishGrade: 100,
+    tauManagementRequirementsConfirmed: true,
+    tauManagementAcademicRouteConfirmed: false,
+    tauManagementQualifyingMoocCount: 0 as const,
+    tauManagementNoPsychometricMoocsConfirmed: false,
+  };
+  const managementFetcher = (score: number) =>
+    vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            data: { getLastScore: { body: { hatama_nihul: String(score) } } },
+          }),
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            data: {
+              getProgramByIdAndLang: {
+                nid: '8267',
+                title: 'ניהול',
+                field_plain_id_programs: ['122111050000'],
+                receipt_threshol: [610],
+                rejection_thresh: [609],
+              },
+            },
+          }),
+        ),
+      );
+
+  it.each([
+    [605, 639, 'eligible_to_apply'],
+    [604, 638, 'below'],
+  ] as const)(
+    'uses Management PMA gates for P=%s, independently of Digital Sciences',
+    async (psychometric, score, decision) => {
+      const fetcher = managementFetcher(score);
+      const report = await evaluateAdmissionsForProgram({
+        input: { degreeId: 'business', psychometric, bagrut: 100, extraInputs: managementInputs },
+        program: management,
+        institutions,
+        fetcher,
+      });
+      expect(report.results[0]).toMatchObject({ kind: 'exact', decision, score });
+      const request = JSON.parse(String(fetcher.mock.calls[0][1]?.body));
+      expect(JSON.stringify(request)).toContain('115');
+      expect(report.results[0].officialUrls).toContain(
+        'https://go.tau.ac.il/he/management/ba/management?v=requirements',
+      );
+    },
+  );
+
+  it('accepts the published Management route without a psychometric score or dummy official replay', async () => {
+    const fetcher = vi.fn<typeof fetch>();
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'business',
+        bagrut: 100,
+        extraInputs: {
+          ...managementInputs,
+          tauManagementNoPsychometricMoocsConfirmed: true,
+        },
+      },
+      program: management,
+      institutions,
+      fetcher,
+    });
+    expect(report.results[0]).toMatchObject({ kind: 'exact', decision: 'eligible_to_apply' });
+    expect(report.results[0].scoreLabel).toBe('ממוצע בגרות רשמי');
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+
+  it('withholds a Management verdict when its official calculator fails', async () => {
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'business',
+        psychometric: 605,
+        bagrut: 100,
+        extraInputs: managementInputs,
+      },
+      program: management,
+      institutions,
+      fetcher: vi.fn<typeof fetch>().mockRejectedValue(new Error('Official source unavailable')),
+    });
+    expect(report.results[0]).toMatchObject({ kind: 'degraded', decision: 'unknown' });
+    expect(report.results[0].score).toBeUndefined();
+  });
+
+  it('preserves unavailable Management source authority when the applicant has no psychometric score', async () => {
+    const report = await evaluateAdmissionsForProgram({
+      input: { degreeId: 'business', bagrut: 100, extraInputs: managementInputs },
+      program: management,
+      institutions,
+      freshnessStatesBySourceId: new Map(),
+    });
+    expect(report.results[0]).toMatchObject({ kind: 'authority_unavailable', decision: 'unknown' });
+  });
+
+  it('asks for Management conditions instead of unrelated Digital Sciences subjects', async () => {
+    const fetcher = vi.fn<typeof fetch>();
+    const report = await evaluateAdmissionsForProgram({
+      input: { degreeId: 'business', psychometric: 680, bagrut: 100 },
+      program: management,
+      institutions,
+      fetcher,
+    });
+    expect(report.results[0]).toMatchObject({
+      kind: 'needs_input',
+      requiredInputs: ['tau_management_requirements'],
+    });
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+
   const architecture: CatalogueProgram = {
     ...hitEngineering,
     id: 'architecture',

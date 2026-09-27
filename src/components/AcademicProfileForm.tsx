@@ -74,6 +74,18 @@ export default function AcademicProfileForm({
   const [tauMathPlacementScore, setTauMathPlacementScore] = useState(
     initialScores?.admissions?.tauMathPlacementScore?.toString() ?? '',
   );
+  const [managementRequirements, setManagementRequirements] = useState(
+    initialScores?.admissions?.tauManagementRequirementsConfirmed?.toString() ?? '',
+  );
+  const [managementAcademic, setManagementAcademic] = useState(
+    initialScores?.admissions?.tauManagementAcademicRouteConfirmed?.toString() ?? '',
+  );
+  const [managementMoocCount, setManagementMoocCount] = useState(
+    initialScores?.admissions?.tauManagementQualifyingMoocCount?.toString() ?? '',
+  );
+  const [managementNoPsychometricMoocs, setManagementNoPsychometricMoocs] = useState(
+    initialScores?.admissions?.tauManagementNoPsychometricMoocsConfirmed?.toString() ?? '',
+  );
   const [architectureAverage, setArchitectureAverage] = useState(
     initialScores?.admissions?.technionArchitectureBagrutAverage?.toString() ?? '',
   );
@@ -116,6 +128,10 @@ export default function AcademicProfileForm({
     setTauApplicationRequirements('');
     setBguLanguageRequirements('');
     setTauMathPlacementScore('');
+    setManagementRequirements('');
+    setManagementAcademic('');
+    setManagementMoocCount('');
+    setManagementNoPsychometricMoocs('');
     setArchitectureAverage('');
     setArchitectureExam('');
     setArchitectureExamPassed('');
@@ -190,6 +206,15 @@ export default function AcademicProfileForm({
     if (bguLanguageRequirements !== '') {
       admissions.bguLanguageRequirementsConfirmed = bguLanguageRequirements === 'true';
     }
+    if (managementRequirements !== '')
+      admissions.tauManagementRequirementsConfirmed = managementRequirements === 'true';
+    if (managementAcademic !== '')
+      admissions.tauManagementAcademicRouteConfirmed = managementAcademic === 'true';
+    if (managementMoocCount !== '')
+      admissions.tauManagementQualifyingMoocCount = Number(managementMoocCount) as 0 | 1 | 2;
+    if (managementNoPsychometricMoocs !== '')
+      admissions.tauManagementNoPsychometricMoocsConfirmed =
+        managementNoPsychometricMoocs === 'true';
     if (mathPlacement !== undefined) admissions.tauMathPlacementScore = mathPlacement;
     if (Object.keys(admissions).length > 0) {
       scores.admissions = admissions;
@@ -584,7 +609,7 @@ export default function AcademicProfileForm({
           <section className="mb-8 rounded-2xl border border-indigo-100 bg-indigo-50/50 p-4">
             <div className="mb-4">
               <h2 className="text-sm font-semibold text-slate-800">
-                נתונים נוספים לקבלה למדעי המחשב (רשות)
+                ממוצעים רשמיים ונתוני קבלה (רשות)
               </h2>
               <p className="mt-1 text-xs leading-5 text-slate-500">
                 ממוצעים מוסדיים עשויים להיות שונים מהממוצע הכללי. הזן רק ממוצע רשמי שכבר חישבת; אל
@@ -692,6 +717,117 @@ export default function AcademicProfileForm({
                   disabled={isSaving}
                   className={inputBase + ' disabled:cursor-not-allowed disabled:opacity-50'}
                 />
+              </div>
+            </div>
+          </section>
+
+          <section className="mb-8 rounded-2xl border border-indigo-100 bg-indigo-50/50 p-4">
+            <h2 className="text-sm font-semibold text-slate-800">
+              ניהול באוניברסיטת תל אביב (רשות)
+            </h2>
+            <p className="mt-1 text-xs leading-5 text-slate-500">
+              השתמשו בממוצע תל אביב הרשמי שבשדה למעלה ובמקצועות המתמטיקה והאנגלית שהזנתם. אפיק PMA
+              יכול להתאים גם מתחת לפסיכומטרי 620.
+            </p>
+            <a
+              href="https://go.tau.ac.il/he/management/ba/management?v=requirements"
+              target="_blank"
+              rel="noreferrer"
+              className="mt-2 inline-block text-xs font-medium text-indigo-700 underline"
+            >
+              תנאי הקבלה לניהול בתל אביב
+            </a>
+            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div className="flex flex-col gap-1.5">
+                <label
+                  htmlFor="tau-management-requirements"
+                  className="text-xs font-medium text-slate-600"
+                >
+                  אישור תנאי הגשה לניהול בתל אביב
+                </label>
+                <select
+                  id="tau-management-requirements"
+                  value={managementRequirements}
+                  onChange={(event) => setManagementRequirements(event.target.value)}
+                  disabled={isSaving}
+                  className={inputBase}
+                >
+                  <option value="">לא ידוע</option>
+                  <option value="true">כן</option>
+                  <option value="false">לא</option>
+                </select>
+                <p className="text-xs leading-5 text-slate-500">
+                  תעודת בגרות מוכרת, עברית ואנגלית, לימודים קודמים מותרים ותנאי החוג השני לפי העמוד
+                  הרשמי.
+                </p>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label
+                  htmlFor="tau-management-academic"
+                  className="text-xs font-medium text-slate-600"
+                >
+                  אפיק לימודים אקדמיים קודמים לניהול
+                </label>
+                <select
+                  id="tau-management-academic"
+                  value={managementAcademic}
+                  onChange={(event) => setManagementAcademic(event.target.value)}
+                  disabled={isSaving}
+                  className={inputBase}
+                >
+                  <option value="">לא ידוע</option>
+                  <option value="true">כן</option>
+                  <option value="false">לא</option>
+                </select>
+                <p className="text-xs leading-5 text-slate-500">
+                  לפחות 30 שעות אקדמיות מוכרות בממוצע 85 ומעלה.
+                </p>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label
+                  htmlFor="tau-management-no-psychometric"
+                  className="text-xs font-medium text-slate-600"
+                >
+                  שני הקורסים לאפיק ללא פסיכומטרי
+                </label>
+                <select
+                  id="tau-management-no-psychometric"
+                  value={managementNoPsychometricMoocs}
+                  onChange={(event) => setManagementNoPsychometricMoocs(event.target.value)}
+                  disabled={isSaving}
+                  className={inputBase}
+                >
+                  <option value="">לא ידוע</option>
+                  <option value="true">כן</option>
+                  <option value="false">לא</option>
+                </select>
+                <p className="text-xs leading-5 text-slate-500">
+                  להבין דוחות כספיים ומבוא לתכנות בשפת פייתון, בציון 85 ומעלה בכל אחד.
+                </p>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label
+                  htmlFor="tau-management-mooc-count"
+                  className="text-xs font-medium text-slate-600"
+                >
+                  מספר קורסי הבונוס לניהול בציון 85 ומעלה
+                </label>
+                <select
+                  id="tau-management-mooc-count"
+                  value={managementMoocCount}
+                  onChange={(event) => setManagementMoocCount(event.target.value)}
+                  disabled={isSaving}
+                  className={inputBase}
+                >
+                  <option value="">לא ידוע</option>
+                  <option value="0">0</option>
+                  <option value="1">1</option>
+                  <option value="2">2 או יותר</option>
+                </select>
+                <p className="text-xs leading-5 text-slate-500">
+                  מתוך מבוא לפסיכולוגיה, צמיחה כלכלית וצדק חלוקתי, מבוא לפייתון ולהבין דוחות כספיים.
+                  בונוס 5 נקודות לקורס, עד שני קורסים.
+                </p>
               </div>
             </div>
           </section>

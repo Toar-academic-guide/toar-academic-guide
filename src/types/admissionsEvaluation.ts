@@ -34,6 +34,11 @@ export type AdmissionsEvaluationCapability =
 export type AdmissionsConfidence = 'high' | 'medium' | 'low';
 
 export type AdmissionsRequiredInput =
+  | 'psychometric_overall'
+  | 'tau_management_requirements'
+  | 'tau_management_academic_route'
+  | 'tau_management_mooc_count'
+  | 'tau_management_no_psychometric_moocs'
   | 'psychometric_math'
   | 'psychometric_verbal'
   | 'psychometric_english'
@@ -80,6 +85,10 @@ export interface AdmissionsExtraInputs {
   tauBagrutAverage?: number;
   bguBagrutAverage?: number;
   tauApplicationRequirementsConfirmed?: boolean;
+  tauManagementRequirementsConfirmed?: boolean;
+  tauManagementAcademicRouteConfirmed?: boolean;
+  tauManagementQualifyingMoocCount?: 0 | 1 | 2;
+  tauManagementNoPsychometricMoocsConfirmed?: boolean;
   bguLanguageRequirementsConfirmed?: boolean;
   tauMathPlacementScore?: number;
 }
@@ -153,7 +162,7 @@ export type AdmissionsPairVerificationState =
 
 export interface AdmissionsEvaluationInput {
   degreeId: string;
-  psychometric: number;
+  psychometric?: number;
   bagrut: number;
   extraInputs?: AdmissionsExtraInputs;
 }

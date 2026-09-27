@@ -13,6 +13,16 @@ export function admissionsInputValue(
       return input?.technionArchitectureExamPassed;
     case 'technion_architecture_requirements':
       return input?.technionArchitectureRequirementsConfirmed;
+    case 'psychometric_overall':
+      return undefined; // Overall score is read from the evaluation request, not extraInputs.
+    case 'tau_management_requirements':
+      return input?.tauManagementRequirementsConfirmed;
+    case 'tau_management_academic_route':
+      return input?.tauManagementAcademicRouteConfirmed;
+    case 'tau_management_mooc_count':
+      return input?.tauManagementQualifyingMoocCount;
+    case 'tau_management_no_psychometric_moocs':
+      return input?.tauManagementNoPsychometricMoocsConfirmed;
     case 'psychometric_math':
       return input?.psychometricMath;
     case 'psychometric_verbal':

@@ -1638,8 +1638,8 @@ export const TAU_LEGACY_BIOLOGY_CONTRACT: AdmissionsProgramVerificationContract 
 };
 
 const TAU_BUSINESS_SOURCE_FINGERPRINT =
-  'sha256:7e0d6b4b37d5676c1d92d5b06c91dd2b0df38e14e2a55d8fda1fd0b2ac3988c1';
-const TAU_BUSINESS_CAPTURED_AT = '2026-07-26T06:00:00.000Z';
+  'sha256:0325673833ba10324d437f73d9b877cd3c464c1e1bb0e98d99558184f3be0e20';
+const TAU_BUSINESS_CAPTURED_AT = '2026-09-27T13:58:20.855Z';
 
 export const TAU_BUSINESS_FIXTURES: AdmissionsVerificationFixture[] = [
   {
@@ -1647,8 +1647,20 @@ export const TAU_BUSINESS_FIXTURES: AdmissionsVerificationFixture[] = [
     pairId: 'business__tau',
     admissionCycle: '2026-2027',
     verdict: 'accepted',
-    input: { psychometric: 680, bagrut: 110 },
-    expected: { score: 677, verdict: 'accepted' },
+    input: {
+      psychometric: 605,
+      bagrut: 115,
+      tauBagrutAverage: 115,
+      mathUnits: 5,
+      mathGrade: 70,
+      englishUnits: 5,
+      englishGrade: 100,
+      tauManagementRequirementsConfirmed: true,
+      tauManagementAcademicRouteConfirmed: false,
+      tauManagementQualifyingMoocCount: 0,
+      tauManagementNoPsychometricMoocsConfirmed: false,
+    },
+    expected: { score: 639, verdict: 'accepted' },
     sourceFingerprint: TAU_BUSINESS_SOURCE_FINGERPRINT,
     capturedAt: TAU_BUSINESS_CAPTURED_AT,
   },
@@ -1657,7 +1669,19 @@ export const TAU_BUSINESS_FIXTURES: AdmissionsVerificationFixture[] = [
     pairId: 'business__tau',
     admissionCycle: '2026-2027',
     verdict: 'below',
-    input: { psychometric: 620, bagrut: 90 },
+    input: {
+      psychometric: 620,
+      bagrut: 90,
+      tauBagrutAverage: 90,
+      mathUnits: 5,
+      mathGrade: 70,
+      englishUnits: 5,
+      englishGrade: 100,
+      tauManagementRequirementsConfirmed: true,
+      tauManagementAcademicRouteConfirmed: false,
+      tauManagementQualifyingMoocCount: 0,
+      tauManagementNoPsychometricMoocsConfirmed: false,
+    },
     expected: { score: 577, verdict: 'below' },
     sourceFingerprint: TAU_BUSINESS_SOURCE_FINGERPRINT,
     capturedAt: TAU_BUSINESS_CAPTURED_AT,
@@ -1675,14 +1699,35 @@ export const TAU_BUSINESS_CONTRACT: AdmissionsProgramVerificationContract = {
     adapterId: 'tau',
     mode: 'official_replay',
     formulaFamily: 'tau_hatama_nihul',
-    requiredInputs: [],
+    requiredInputs: ['tau_management_requirements'],
     cutoff: { acceptance: 610, rejection: 609 },
     gates: [
       {
-        id: 'tau-business:alternative-routes',
+        id: 'tau-management:general',
         kind: 'manual',
-        field: 'alternativeAdmissionRoute',
-        description: 'Alternative business admission routes require separate official review.',
+        field: 'tauManagementRequirementsConfirmed',
+        description:
+          'Recognized certificate, university language conditions, permissible academic history and second-major requirements.',
+      },
+      {
+        id: 'tau-management:math',
+        kind: 'subject',
+        field: 'mathUnits/mathGrade or psychometricMath',
+        description: 'Four-unit mathematics with a passing grade (55), or quantitative score 140.',
+      },
+      {
+        id: 'tau-management:routes',
+        kind: 'direct_track',
+        field: 'managementAdmissionRoutes',
+        description:
+          'P680; P640 plus TAU average95; P640 plus recognized30hours/average85; Management cutoff plus P620; Management cutoff plus PMA835; average104, English5/85, Math5/70 or4/90, Financial Reports and Python85 each without psychometric.',
+      },
+      {
+        id: 'tau-management:moocs',
+        kind: 'direct_track',
+        field: 'tauManagementQualifyingMoocCount',
+        description:
+          'Five Management score points per listed course with grade85, up to two courses.',
       },
     ],
   },
@@ -1953,16 +1998,16 @@ export const TAU_PROGRAM_VERIFICATION_METADATA: Record<string, TauProgramVerific
   [TAU_BUSINESS_CONTRACT.pairId]: {
     contract: TAU_BUSINESS_CONTRACT,
     fixtures: TAU_BUSINESS_FIXTURES,
-    requirementsUrl: 'https://go.tau.ac.il/he/management/ba/management?v=admission-requirements',
+    requirementsUrl: 'https://go.tau.ac.il/he/management/ba/management?v=requirements',
     ledgerReason:
-      'Verified against the current TAU Management programme node, management score field, accepted/below fixtures, and live score-and-verdict replay.',
+      'Verified against the current TAU Management programme node, management score field, all six published routes and common gates, accepted/below fixtures, and controlled live score/PMA comparison.',
   },
   [TAU_LEGACY_BUSINESS_CONTRACT.pairId]: {
     contract: TAU_LEGACY_BUSINESS_CONTRACT,
     fixtures: TAU_LEGACY_BUSINESS_FIXTURES,
-    requirementsUrl: 'https://go.tau.ac.il/he/management/ba/management?v=admission-requirements',
+    requirementsUrl: 'https://go.tau.ac.il/he/management/ba/management?v=requirements',
     ledgerReason:
-      'Verified the legacy TAU Business catalogue alias against the current Management programme node, score field, fixtures, and live score-and-verdict replay.',
+      'Verified the legacy TAU Business catalogue alias against the current Management programme node, score field, six published routes and common gates, fixtures, and controlled live score/PMA comparison.',
   },
 };
 

@@ -393,7 +393,7 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
       externalId: '122111050000',
       scoreField: 'hatama_nihul',
     },
-    requiredInputs: [],
+    requiredInputs: ['tau_management_requirements'],
   },
   tau_business__tau: {
     targetId: 'tau-business-legacy-live',
@@ -407,7 +407,7 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
       externalId: '122111050000',
       scoreField: 'hatama_nihul',
     },
-    requiredInputs: [],
+    requiredInputs: ['tau_management_requirements'],
   },
   architecture__tau: {
     targetId: 'tau-architecture-live',

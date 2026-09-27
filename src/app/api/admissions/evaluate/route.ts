@@ -39,38 +39,57 @@ const bagrutSubjectRecordSchema = z
   })
   .strict();
 
-const admissionsEvaluationSchema = z.object({
-  degreeId: z.string().min(1),
-  psychometric: z.number().int().min(200).max(800),
-  bagrut: z.number().min(60).max(120),
-  extraInputs: z
-    .object({
-      psychometricMath: z.number().int().min(50).max(150).optional(),
-      psychometricVerbal: z.number().int().min(50).max(150).optional(),
-      psychometricEnglish: z.number().int().min(50).max(150).optional(),
-      bagrutSubjectRecord: bagrutSubjectRecordSchema.optional(),
-      bagrutProfileSchemaVersion: z.literal(1).optional(),
-      bagrutSector: bagrutSectorSchema.optional(),
-      mathUnits: z.number().int().min(3).max(5).optional(),
-      mathGrade: z.number().int().min(50).max(100).optional(),
-      englishUnits: z.number().int().min(3).max(5).optional(),
-      englishGrade: z.number().int().min(50).max(100).optional(),
-      physicsUnits: z.number().int().min(3).max(5).optional(),
-      physicsGrade: z.number().int().min(50).max(100).optional(),
-      csUnits: z.number().int().min(3).max(5).optional(),
-      csGrade: z.number().int().min(50).max(100).optional(),
-      tauBagrutAverage: z.number().min(50).max(130).optional(),
-      technionArchitectureBagrutAverage: z.number().min(0).max(119).optional(),
-      technionArchitectureExamScore: z.number().min(0).max(140).optional(),
-      technionArchitectureExamPassed: z.boolean().optional(),
-      technionArchitectureRequirementsConfirmed: z.boolean().optional(),
-      bguBagrutAverage: z.number().min(50).max(130).optional(),
-      tauApplicationRequirementsConfirmed: z.boolean().optional(),
-      bguLanguageRequirementsConfirmed: z.boolean().optional(),
-      tauMathPlacementScore: z.number().min(0).max(100).optional(),
-    })
-    .optional(),
-});
+const admissionsEvaluationSchema = z
+  .object({
+    degreeId: z.string().min(1),
+    psychometric: z.number().int().min(200).max(800).optional(),
+    bagrut: z.number().min(60).max(120),
+    extraInputs: z
+      .object({
+        psychometricMath: z.number().int().min(50).max(150).optional(),
+        psychometricVerbal: z.number().int().min(50).max(150).optional(),
+        psychometricEnglish: z.number().int().min(50).max(150).optional(),
+        bagrutSubjectRecord: bagrutSubjectRecordSchema.optional(),
+        bagrutProfileSchemaVersion: z.literal(1).optional(),
+        bagrutSector: bagrutSectorSchema.optional(),
+        mathUnits: z.number().int().min(3).max(5).optional(),
+        mathGrade: z.number().int().min(50).max(100).optional(),
+        englishUnits: z.number().int().min(3).max(5).optional(),
+        englishGrade: z.number().int().min(50).max(100).optional(),
+        physicsUnits: z.number().int().min(3).max(5).optional(),
+        physicsGrade: z.number().int().min(50).max(100).optional(),
+        csUnits: z.number().int().min(3).max(5).optional(),
+        csGrade: z.number().int().min(50).max(100).optional(),
+        tauBagrutAverage: z.number().min(50).max(130).optional(),
+        technionArchitectureBagrutAverage: z.number().min(0).max(119).optional(),
+        technionArchitectureExamScore: z.number().min(0).max(140).optional(),
+        technionArchitectureExamPassed: z.boolean().optional(),
+        technionArchitectureRequirementsConfirmed: z.boolean().optional(),
+        bguBagrutAverage: z.number().min(50).max(130).optional(),
+        tauApplicationRequirementsConfirmed: z.boolean().optional(),
+        tauManagementRequirementsConfirmed: z.boolean().optional(),
+        tauManagementAcademicRouteConfirmed: z.boolean().optional(),
+        tauManagementQualifyingMoocCount: z
+          .union([z.literal(0), z.literal(1), z.literal(2)])
+          .optional(),
+        tauManagementNoPsychometricMoocsConfirmed: z.boolean().optional(),
+        bguLanguageRequirementsConfirmed: z.boolean().optional(),
+        tauMathPlacementScore: z.number().min(0).max(100).optional(),
+      })
+      .optional(),
+  })
+  .superRefine((input, context) => {
+    if (
+      input.psychometric === undefined &&
+      !['business', 'tau_business'].includes(input.degreeId)
+    ) {
+      context.addIssue({
+        code: 'custom',
+        path: ['psychometric'],
+        message: 'Psychometric score is required for this programme.',
+      });
+    }
+  });
 
 export async function POST(request: Request) {
   try {
