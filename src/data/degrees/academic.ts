@@ -277,13 +277,13 @@ export const ACADEMIC_PROGRAMS: Program[] = [
   {
     id: 'nutrition',
     name: 'תזונה ודיאטטיקה',
-    institution: 'אוניברסיטת תל אביב',
+    institution: 'האוניברסיטה העברית בירושלים',
     type: 'academic',
     category: 'מדעי הבריאות',
     profileScore: { AN: 4, TE: 2, CR: 1, SO: 3, LE: 2, OR: 3, DI: 0, ER: 3 },
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: 640, huji: 635, technion: null, bgu: 600, ariel: 620 },
+    thresholds: { huji: 635, ariel: 620 },
     isTauEngineering: false,
   },
   {

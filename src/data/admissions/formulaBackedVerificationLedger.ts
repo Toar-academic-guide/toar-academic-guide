@@ -86,7 +86,6 @@ const REVIEWED_PAIR_IDS_BY_INSTITUTION: Record<FormulaBackedInstitutionId, reado
     'me__tau',
     'medicine__tau',
     'nursing__tau',
-    'nutrition__tau',
     'occupational_therapy__tau',
     'physiotherapy__tau',
     'political_science__tau',
@@ -163,7 +162,6 @@ const REVIEWED_PAIR_IDS_BY_INSTITUTION: Record<FormulaBackedInstitutionId, reado
     'education__bgu',
     'ee__bgu',
     'me__bgu',
-    'nutrition__bgu',
     'occupational_therapy__bgu',
     'physiotherapy__bgu',
     'political_science__bgu',
@@ -263,11 +261,6 @@ const WITHHELD_PAIR_EVIDENCE: Record<string, { url: string; reason: string }> = 
     reason:
       'TAU publishes preliminary eligibility at 726.44 and final selection cutoffs of 743.57 for acceptance and 742.52 or below for rejection. Exact final replay remains withheld because the current official sources do not provide the institution-specific assessment weighting and score transformation needed to combine the 2026 non-cognitive component scores with the 30% preliminary score.',
   },
-  nutrition__tau: {
-    url: 'https://go.tau.ac.il/he/med',
-    reason:
-      'The current TAU health-programme catalogue does not expose a standalone nutrition programme target or numeric verdict route for this legacy formula-backed row.',
-  },
   physiotherapy__tau: {
     url: 'https://go.tau.ac.il/he/med/ba/phys?v=important-info',
     reason:
@@ -287,11 +280,6 @@ const WITHHELD_PAIR_EVIDENCE: Record<string, { url: string; reason: string }> = 
     url: 'https://go.huji.ac.il/jjson/huji.json.gz',
     reason:
       'The current HUJI programme dataset has no physiotherapy track or numeric programme verdict for this legacy catalogue row.',
-  },
-  nutrition__bgu: {
-    url: 'https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/',
-    reason:
-      'The current BGU 2027 admission dataset has no nutrition programme row from which a current programme mapping and two verdict fixtures can be proven.',
   },
   colmgmt_cs__colman: {
     url: 'https://www.colman.ac.il/academics/ba/computer-science/',

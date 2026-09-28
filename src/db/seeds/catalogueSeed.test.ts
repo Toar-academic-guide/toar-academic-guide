@@ -23,6 +23,30 @@ function duplicatedValues(values: string[]): string[] {
 }
 
 describe('catalogueSeed', () => {
+  it('keeps supported Nutrition options without TAU or BGU listings', () => {
+    const payload = buildCatalogueSeed();
+
+    expect(payload.programs.find((row) => row.id === 'nutrition')).toMatchObject({
+      institutionId: 'huji',
+      institutionName: 'האוניברסיטה העברית בירושלים',
+    });
+    expect(
+      payload.programInstitutions
+        .filter((row) => row.programId === 'nutrition')
+        .map((row) => row.institutionId)
+        .sort(),
+    ).toEqual(['ariel', 'huji']);
+    expect(
+      payload.admissionThresholds
+        .filter((row) => row.programId === 'nutrition')
+        .map((row) => row.institutionId)
+        .sort(),
+    ).toEqual(['ariel', 'huji']);
+    expect(payload.programs.find((row) => row.id === 'ariel_nutrition')).toMatchObject({
+      institutionId: 'ariel',
+    });
+  });
+
   it('reconciles the DB seed payload with the canonical formula-backed pair inventory', () => {
     const inventory = buildFormulaBackedPairInventory(allPrograms);
     const payload = buildCatalogueSeed();
