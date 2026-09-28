@@ -11,9 +11,15 @@ import {
   normalizeBguComputerScienceRule,
 } from '@/data/admissions/bguComputerScienceVerification';
 import { BGU_PROGRAM_VERIFICATION_METADATA } from '@/data/admissions/bguProgramVerification';
+import {
+  BGU_DATA_SCIENCE_OFFICIAL_PROOF_CAPTURES_BY_TARGET_ID,
+  BGU_DATA_SCIENCE_SOURCE_FINGERPRINT,
+} from '@/data/admissions/bguDataScienceVerification';
 import { evaluateProgramVerification } from '@/server/admissions/verification/programVerification';
 import { runBguAdmissionsProof, runBguComputerScienceLiveVerification } from './bguAdmissions';
 import type { AdmissionsAdapterContext } from '../admissionsSourceAdapters';
+import engineeringRules from '../../../../docs/admissions-verification/2026-09-27-bgu-engineering-rules.json';
+import { readFileSync } from 'node:fs';
 
 const BGU_CS_SOURCE_URL =
   'https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_institution=0&p_year=2027&p_semester=1&p_dep1=232&p_pat1=1&p_spe1=3&p_degree_level=1';
@@ -25,6 +31,121 @@ const BAGruT_RECORD: BagrutSubjectRecord = {
 };
 
 type MockFetcher = ReturnType<typeof vi.fn<typeof fetch>>;
+
+describe('BGU engineering calculator regression', () => {
+  function engineeringContext(psychometric = 800): BguTestContext {
+    const request = context();
+    request.program = {
+      targetId: 'bgu-bgu_ee-live',
+      pairId: 'bgu_ee__bgu',
+      id: 'bgu_ee',
+      name: 'Electrical Engineering',
+      externalId: 'dep361-pat1',
+      searchText: engineeringRules[0].url,
+    };
+    request.applicant = {
+      psychometric,
+      bagrutAverage: 120,
+      extraInputs: Object.assign(
+        {
+          bguBagrutAverage: 120,
+          psychometricMath: 150,
+          bguLanguageRequirementsConfirmed: true,
+          bagrutSubjectRecord: {
+            schemaVersion: 1 as const,
+            sector: 'jewish' as const,
+            subjects: [
+              { subjectId: 'mathematics', units: 5, grade: 95 },
+              { subjectId: 'physics', units: 5, grade: 95 },
+            ],
+          },
+        },
+        { bguEngineering: { detailsConfirmed: true } },
+      ),
+    };
+    request.fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(jsonResponse(engineeringRules[0].payload))
+      .mockResolvedValueOnce(
+        new Response(
+          readFileSync(
+            'docs/admissions-verification/2026-09-27-bgu-engineering-calculator.html',
+            'utf8',
+          ),
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(readFileSync('docs/admissions-verification/2026-09-27-bgu-2027-guide.pdf')),
+      )
+      .mockResolvedValueOnce(htmlResponse(595));
+    return request;
+  }
+
+  it('uses the department-specific engineering calculator and reports waiting-list eligibility', async () => {
+    const request = engineeringContext();
+    const proof = await runBguAdmissionsProof(request);
+    expect(proof.normalizedPayload).toMatchObject({
+      selectedScore: 595,
+      acceptanceThreshold: 547,
+      derivedVerdict: 'eligible_to_apply',
+    });
+    expect(request.fetcher.mock.calls[3][0]).toBe(
+      'https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitEngSekem',
+    );
+    const parameters = new URLSearchParams(String(request.fetcher.mock.calls[3][1]?.body));
+    expect(parameters.get('rn_eng_dprt_list')).toBe('361');
+    expect(parameters.get('on_grade_classi_quant')).toBe('150');
+    expect(parameters.get('on_grade_bag_math')).toBe('95');
+    expect(parameters.get('on_grade_bag_phy')).toBe('95');
+  });
+
+  it('does not replay an Electrical Engineering score below the published psychometric minimum', async () => {
+    const request = engineeringContext(599);
+    const proof = await runBguAdmissionsProof(request);
+    expect(proof.capability).toBe('blocked');
+    expect(request.fetcher).not.toHaveBeenCalled();
+  });
+
+  it('does not replace missing engineering subject inputs with a general BGU score', async () => {
+    const request = engineeringContext();
+    request.applicant.extraInputs = undefined;
+    const proof = await runBguAdmissionsProof(request);
+    expect(proof.capability).toBe('blocked');
+    expect(request.fetcher).not.toHaveBeenCalled();
+  });
+
+  it.each(['cutoff', 'guide', 'form'] as const)(
+    'withholds an exact decision when the reviewed %s changes',
+    async (changed) => {
+      const request = engineeringContext();
+      const rule = structuredClone(engineeringRules[0].payload);
+      if (changed === 'cutoff') rule.items[0].psycho_sekem += 1;
+      const form = readFileSync(
+        'docs/admissions-verification/2026-09-27-bgu-engineering-calculator.html',
+        'utf8',
+      );
+      request.fetcher = vi
+        .fn<typeof fetch>()
+        .mockResolvedValueOnce(jsonResponse(rule))
+        .mockResolvedValueOnce(
+          new Response(
+            changed === 'form' ? form.replaceAll('on_grade_classi_quant', 'changed_quant') : form,
+          ),
+        )
+        .mockResolvedValueOnce(
+          new Response(
+            changed === 'guide'
+              ? 'changed guide'
+              : readFileSync('docs/admissions-verification/2026-09-27-bgu-2027-guide.pdf'),
+          ),
+        );
+      const proof = await runBguAdmissionsProof(request);
+      expect(proof.proofLevel).not.toBe('exact_official');
+      expect(proof.normalizedPayload.derivedVerdict).toBeUndefined();
+      expect(request.fetcher).toHaveBeenCalledTimes(3);
+    },
+  );
+});
 
 interface BguTestContext extends AdmissionsAdapterContext {
   fetcher: MockFetcher;
@@ -97,6 +218,73 @@ function htmlResponse(score: number) {
 }
 
 describe('BGU Computer Science official proof', () => {
+  it('keeps Data Science captures and fingerprints separate from Computer Science', () => {
+    expect(BGU_DATA_SCIENCE_SOURCE_FINGERPRINT).not.toBe(BGU_COMPUTER_SCIENCE_SOURCE_FINGERPRINT);
+    for (const programId of ['datascience', 'bgu_datascience']) {
+      const artifact = BGU_PROGRAM_VERIFICATION_METADATA[`${programId}__bgu`];
+      expect(artifact.contract.officialProgramId).toBe('dep232-pat1-spe13');
+      expect(artifact.fixtures.map((fixture) => fixture.expected)).toEqual([
+        { score: 879, verdict: 'accepted' },
+        { score: 636, verdict: 'below' },
+      ]);
+      expect(
+        BGU_DATA_SCIENCE_OFFICIAL_PROOF_CAPTURES_BY_TARGET_ID[artifact.contract.source.targetId],
+      ).toHaveLength(2);
+      expect(
+        evaluateProgramVerification({
+          contract: artifact.contract,
+          fixtures: artifact.fixtures,
+          currentAdmissionCycle: '2026-2027',
+          currentSourceFingerprint: BGU_DATA_SCIENCE_SOURCE_FINGERPRINT,
+        }).capability,
+      ).toBe('exact');
+    }
+  });
+
+  it('withholds Data Science when the source returns the Computer Science mapping', async () => {
+    const request = context();
+    const artifact = BGU_PROGRAM_VERIFICATION_METADATA.bgu_datascience__bgu;
+    request.program = {
+      ...request.program,
+      id: 'bgu_datascience',
+      pairId: 'bgu_datascience__bgu',
+      externalId: 'dep232-pat1-spe13',
+      searchText: artifact.contract.source.url,
+    };
+    const proof = await runBguAdmissionsProof(request);
+    expect(proof.proofLevel).toBe('blocked');
+    expect(request.fetcher).toHaveBeenCalledTimes(1);
+  });
+  it.each(['datascience', 'bgu_datascience'])(
+    'replays the quantitative calculator for Data Science with its own programme mapping (%s)',
+    async (programId) => {
+      const artifact = BGU_PROGRAM_VERIFICATION_METADATA[`${programId}__bgu`];
+      const request = context({
+        fetcher: vi
+          .fn<typeof fetch>()
+          .mockResolvedValueOnce(jsonResponse({ items: [currentRule({ specialization: 13 })] }))
+          .mockResolvedValueOnce(htmlResponse(879)),
+      });
+      request.program = {
+        targetId: artifact.contract.source.targetId,
+        pairId: artifact.contract.pairId,
+        id: programId,
+        name: 'Data Science',
+        externalId: 'dep232-pat1-spe13',
+        searchText: artifact.contract.source.url,
+      };
+      const proof = await runBguAdmissionsProof(request);
+      expect(proof.normalizedPayload).toMatchObject({
+        officialProgramId: 'dep232-pat1-spe13',
+        selectedScore: 879,
+        acceptanceThreshold: 720,
+        derivedVerdict: 'accepted',
+      });
+      expect(request.fetcher.mock.calls[1][0]).toBe(
+        'https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem',
+      );
+    },
+  );
   it('publishes pair-specific contracts, captured fixtures, and calculated rule fingerprints', () => {
     expect(normalizeBguComputerScienceRule({ items: [currentRule()] })).toEqual(
       BGU_COMPUTER_SCIENCE_REVIEWED_RULE_SNAPSHOT,
@@ -337,20 +525,20 @@ describe('BGU Computer Science official proof', () => {
     expect(unconfirmedLanguage.fetcher).not.toHaveBeenCalled();
   });
 
-  it('keeps the existing BGU score endpoint and generic parsing for non-CS programs', async () => {
+  it('keeps the existing BGU score endpoint and generic parsing for programmes without a specialised adapter', async () => {
     const fetcher = vi
       .fn<typeof fetch>()
-      .mockResolvedValueOnce(jsonResponse({ items: [{ psycho_sekem: 620 }] }))
+      .mockResolvedValueOnce(jsonResponse({ items: [{ psycho_sekem: 520 }] }))
       .mockResolvedValueOnce(new Response('<script>on_final_sekem.value = 875;</script>'));
     const request = {
       fetcher,
       program: {
-        targetId: 'bgu-accounting-live',
-        pairId: 'accounting__bgu',
-        id: 'accounting',
-        name: 'Accounting',
+        targetId: 'bgu-bgu_nursing-live',
+        pairId: 'bgu_nursing__bgu',
+        id: 'bgu_nursing',
+        name: 'Nursing',
         searchText:
-          'https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_dep1=142&p_pat1=1&p_spe1=6',
+          'https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_dep1=472&p_pat1=1',
       },
       applicant: { psychometric: 800, bagrutAverage: 120 },
     } satisfies AdmissionsAdapterContext & { fetcher: MockFetcher };
@@ -359,7 +547,7 @@ describe('BGU Computer Science official proof', () => {
 
     expect(proof.normalizedPayload).toMatchObject({
       selectedScore: 875,
-      derivedVerdict: 'accepted',
+      derivedVerdict: 'eligible_to_apply',
     });
     expect(fetcher.mock.calls[1][0]).toBe('https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem');
   });

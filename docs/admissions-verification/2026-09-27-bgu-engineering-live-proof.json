@@ -1,0 +1,832 @@
+[
+  {
+    "pairId": "ee__bgu",
+    "label": "eligible",
+    "capturedAt": "2026-09-27T15:31:05.011Z",
+    "source": {
+      "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=361&p_pat1=1&p_degree_level=1",
+      "status": 200,
+      "payload": {
+        "items": [
+          {
+            "department_dsc": "הנדסת חשמל ומחשבים",
+            "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/engn/Electrical_Computer_Engineering_degree_1.aspx",
+            "path_dsc": "הנדסת חשמל ומחשבים חד מחלקתי",
+            "psycho_sekem": 547,
+            "psycho_and_or": " ובנוסף  ",
+            "psycho_value": 600,
+            "psycho_info": "4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ה'",
+            "bagrut_average": null,
+            "bagrut_info": "רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ה'",
+            "bagrut_additional": null,
+            "comments": "החל מיום רביעי ה 20.5.26 נעצור קבלות בהנדסת חשמל. מכסת המתקבלים למסלול זה מלאה בשלב זה, אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם. במידה שיתפנו מקומות נקבל מועמדים נוספים מרשימות המתנה.\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<br>\n<p>עד לחודש יולי בכל שנה ניתן להתקבל ללא בגרות בפיזיקה ועמידה בכל תנאי הקבלה, עם דרישה להשלמת קורס  \"מבוא לפיזיקה מכניקה\" בסמסטר קיץ במרכז ללימודיים קדם אקדמיים.  החל מחודש יולי בכל שנה יתקבלו רק מועמדים שהשלימו 5 יח' פיזיקה בציון עובר או קורס מקביל <b> </a> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/welcome/kdam/programs/refresh_programs/?tab=17379\">מאושר</a> </b> ע\"י המרכז ללימודים קדם אקדמיים  בנוסף לכל דרישות הקבלה\n\n<br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר בעלי סכם הנדסה ו/או פסיכומטרי הנמוך עד 10 נק' מהנדרש ייבחנו בועדת הקבלה של המחלקה על בסיס מכלול נתוניהם.דיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה. אין צורך לשלוח מכתב\n\n<br>\nתאריך אחרון להרשמה ולשינויי עדיפויות לעתודאים: 31.7.2026.",
+            "reg_status": "פתוחה ",
+            "sekem_label": "סכם הנדסה  ",
+            "department": 361,
+            "path": 1,
+            "specialization": null,
+            "show_simulator": 0,
+            "path_description": "חד מחלקתי",
+            "spec_description": null
+          }
+        ],
+        "hasMore": false,
+        "limit": 0,
+        "offset": 0,
+        "count": 1,
+        "links": [
+          {
+            "rel": "self",
+            "href": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=361&p_pat1=1&p_degree_level=1"
+          },
+          {
+            "rel": "describedby",
+            "href": "https://bgu4u22.bgu.ac.il/apex/10g/metadata-catalog/candidate_site/GetRdpData/"
+          }
+        ]
+      }
+    },
+    "calculator": {
+      "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitEngSekem",
+      "status": 200,
+      "request": {
+        "rn_year": "2",
+        "rn_semester": "1",
+        "rn_eng_dprt_list": "361",
+        "on_grade_classi_psycho": "800",
+        "on_grade_classi_quant": "150",
+        "on_bag_avg": "120",
+        "on_learning_units_bag_math": "5",
+        "on_grade_bag_math": "95",
+        "on_learning_units_bag_phy": "5",
+        "on_grade_bag_phy": "95",
+        "on_subject": "",
+        "on_learning_units_bonus": "",
+        "on_grade_bonus": "",
+        "on_subject2": "",
+        "on_learning_units_bonus2": "",
+        "on_grade_bonus2": "",
+        "on_subject3": "",
+        "on_learning_units_bonus3": "",
+        "on_grade_bonus3": "",
+        "on_learning_units_mech_math": "",
+        "on_grade_mech_math": "",
+        "on_learning_units_mech_phy": "",
+        "on_grade_mech_phy": "",
+        "on_learning_units_eng_math": "",
+        "on_grade_eng_math": ""
+      },
+      "response": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 595;</script> \n</center>\n</body>  \n</html>\n"
+    },
+    "score": 595,
+    "threshold": 547,
+    "verdict": "eligible_to_apply"
+  },
+  {
+    "pairId": "ee__bgu",
+    "label": "below",
+    "capturedAt": "2026-09-27T15:31:05.096Z",
+    "source": {
+      "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=361&p_pat1=1&p_degree_level=1",
+      "status": 200,
+      "payload": {
+        "items": [
+          {
+            "department_dsc": "הנדסת חשמל ומחשבים",
+            "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/engn/Electrical_Computer_Engineering_degree_1.aspx",
+            "path_dsc": "הנדסת חשמל ומחשבים חד מחלקתי",
+            "psycho_sekem": 547,
+            "psycho_and_or": " ובנוסף  ",
+            "psycho_value": 600,
+            "psycho_info": "4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ה'",
+            "bagrut_average": null,
+            "bagrut_info": "רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ה'",
+            "bagrut_additional": null,
+            "comments": "החל מיום רביעי ה 20.5.26 נעצור קבלות בהנדסת חשמל. מכסת המתקבלים למסלול זה מלאה בשלב זה, אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם. במידה שיתפנו מקומות נקבל מועמדים נוספים מרשימות המתנה.\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<br>\n<p>עד לחודש יולי בכל שנה ניתן להתקבל ללא בגרות בפיזיקה ועמידה בכל תנאי הקבלה, עם דרישה להשלמת קורס  \"מבוא לפיזיקה מכניקה\" בסמסטר קיץ במרכז ללימודיים קדם אקדמיים.  החל מחודש יולי בכל שנה יתקבלו רק מועמדים שהשלימו 5 יח' פיזיקה בציון עובר או קורס מקביל <b> </a> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/welcome/kdam/programs/refresh_programs/?tab=17379\">מאושר</a> </b> ע\"י המרכז ללימודים קדם אקדמיים  בנוסף לכל דרישות הקבלה\n\n<br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר בעלי סכם הנדסה ו/או פסיכומטרי הנמוך עד 10 נק' מהנדרש ייבחנו בועדת הקבלה של המחלקה על בסיס מכלול נתוניהם.דיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה. אין צורך לשלוח מכתב\n\n<br>\nתאריך אחרון להרשמה ולשינויי עדיפויות לעתודאים: 31.7.2026.",
+            "reg_status": "פתוחה ",
+            "sekem_label": "סכם הנדסה  ",
+            "department": 361,
+            "path": 1,
+            "specialization": null,
+            "show_simulator": 0,
+            "path_description": "חד מחלקתי",
+            "spec_description": null
+          }
+        ],
+        "hasMore": false,
+        "limit": 0,
+        "offset": 0,
+        "count": 1,
+        "links": [
+          {
+            "rel": "self",
+            "href": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=361&p_pat1=1&p_degree_level=1"
+          },
+          {
+            "rel": "describedby",
+            "href": "https://bgu4u22.bgu.ac.il/apex/10g/metadata-catalog/candidate_site/GetRdpData/"
+          }
+        ]
+      }
+    },
+    "calculator": {
+      "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitEngSekem",
+      "status": 200,
+      "request": {
+        "rn_year": "2",
+        "rn_semester": "1",
+        "rn_eng_dprt_list": "361",
+        "on_grade_classi_psycho": "600",
+        "on_grade_classi_quant": "110",
+        "on_bag_avg": "100",
+        "on_learning_units_bag_math": "5",
+        "on_grade_bag_math": "80",
+        "on_learning_units_bag_phy": "5",
+        "on_grade_bag_phy": "70",
+        "on_subject": "",
+        "on_learning_units_bonus": "",
+        "on_grade_bonus": "",
+        "on_subject2": "",
+        "on_learning_units_bonus2": "",
+        "on_grade_bonus2": "",
+        "on_subject3": "",
+        "on_learning_units_bonus3": "",
+        "on_grade_bonus3": "",
+        "on_learning_units_mech_math": "",
+        "on_grade_mech_math": "",
+        "on_learning_units_mech_phy": "",
+        "on_grade_mech_phy": "",
+        "on_learning_units_eng_math": "",
+        "on_grade_eng_math": ""
+      },
+      "response": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 412;</script> \n</center>\n</body>  \n</html>\n"
+    },
+    "score": 412,
+    "threshold": 547,
+    "verdict": "below"
+  },
+  {
+    "pairId": "bgu_ee__bgu",
+    "label": "eligible",
+    "capturedAt": "2026-09-27T15:31:05.289Z",
+    "source": {
+      "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=361&p_pat1=1&p_degree_level=1",
+      "status": 200,
+      "payload": {
+        "items": [
+          {
+            "department_dsc": "הנדסת חשמל ומחשבים",
+            "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/engn/Electrical_Computer_Engineering_degree_1.aspx",
+            "path_dsc": "הנדסת חשמל ומחשבים חד מחלקתי",
+            "psycho_sekem": 547,
+            "psycho_and_or": " ובנוסף  ",
+            "psycho_value": 600,
+            "psycho_info": "4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ה'",
+            "bagrut_average": null,
+            "bagrut_info": "רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ה'",
+            "bagrut_additional": null,
+            "comments": "החל מיום רביעי ה 20.5.26 נעצור קבלות בהנדסת חשמל. מכסת המתקבלים למסלול זה מלאה בשלב זה, אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם. במידה שיתפנו מקומות נקבל מועמדים נוספים מרשימות המתנה.\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<br>\n<p>עד לחודש יולי בכל שנה ניתן להתקבל ללא בגרות בפיזיקה ועמידה בכל תנאי הקבלה, עם דרישה להשלמת קורס  \"מבוא לפיזיקה מכניקה\" בסמסטר קיץ במרכז ללימודיים קדם אקדמיים.  החל מחודש יולי בכל שנה יתקבלו רק מועמדים שהשלימו 5 יח' פיזיקה בציון עובר או קורס מקביל <b> </a> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/welcome/kdam/programs/refresh_programs/?tab=17379\">מאושר</a> </b> ע\"י המרכז ללימודים קדם אקדמיים  בנוסף לכל דרישות הקבלה\n\n<br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר בעלי סכם הנדסה ו/או פסיכומטרי הנמוך עד 10 נק' מהנדרש ייבחנו בועדת הקבלה של המחלקה על בסיס מכלול נתוניהם.דיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה. אין צורך לשלוח מכתב\n\n<br>\nתאריך אחרון להרשמה ולשינויי עדיפויות לעתודאים: 31.7.2026.",
+            "reg_status": "פתוחה ",
+            "sekem_label": "סכם הנדסה  ",
+            "department": 361,
+            "path": 1,
+            "specialization": null,
+            "show_simulator": 0,
+            "path_description": "חד מחלקתי",
+            "spec_description": null
+          }
+        ],
+        "hasMore": false,
+        "limit": 0,
+        "offset": 0,
+        "count": 1,
+        "links": [
+          {
+            "rel": "self",
+            "href": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=361&p_pat1=1&p_degree_level=1"
+          },
+          {
+            "rel": "describedby",
+            "href": "https://bgu4u22.bgu.ac.il/apex/10g/metadata-catalog/candidate_site/GetRdpData/"
+          }
+        ]
+      }
+    },
+    "calculator": {
+      "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitEngSekem",
+      "status": 200,
+      "request": {
+        "rn_year": "2",
+        "rn_semester": "1",
+        "rn_eng_dprt_list": "361",
+        "on_grade_classi_psycho": "800",
+        "on_grade_classi_quant": "150",
+        "on_bag_avg": "120",
+        "on_learning_units_bag_math": "5",
+        "on_grade_bag_math": "95",
+        "on_learning_units_bag_phy": "5",
+        "on_grade_bag_phy": "95",
+        "on_subject": "",
+        "on_learning_units_bonus": "",
+        "on_grade_bonus": "",
+        "on_subject2": "",
+        "on_learning_units_bonus2": "",
+        "on_grade_bonus2": "",
+        "on_subject3": "",
+        "on_learning_units_bonus3": "",
+        "on_grade_bonus3": "",
+        "on_learning_units_mech_math": "",
+        "on_grade_mech_math": "",
+        "on_learning_units_mech_phy": "",
+        "on_grade_mech_phy": "",
+        "on_learning_units_eng_math": "",
+        "on_grade_eng_math": ""
+      },
+      "response": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 595;</script> \n</center>\n</body>  \n</html>\n"
+    },
+    "score": 595,
+    "threshold": 547,
+    "verdict": "eligible_to_apply"
+  },
+  {
+    "pairId": "bgu_ee__bgu",
+    "label": "below",
+    "capturedAt": "2026-09-27T15:31:05.366Z",
+    "source": {
+      "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=361&p_pat1=1&p_degree_level=1",
+      "status": 200,
+      "payload": {
+        "items": [
+          {
+            "department_dsc": "הנדסת חשמל ומחשבים",
+            "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/engn/Electrical_Computer_Engineering_degree_1.aspx",
+            "path_dsc": "הנדסת חשמל ומחשבים חד מחלקתי",
+            "psycho_sekem": 547,
+            "psycho_and_or": " ובנוסף  ",
+            "psycho_value": 600,
+            "psycho_info": "4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ה'",
+            "bagrut_average": null,
+            "bagrut_info": "רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ה'",
+            "bagrut_additional": null,
+            "comments": "החל מיום רביעי ה 20.5.26 נעצור קבלות בהנדסת חשמל. מכסת המתקבלים למסלול זה מלאה בשלב זה, אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם. במידה שיתפנו מקומות נקבל מועמדים נוספים מרשימות המתנה.\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<br>\n<p>עד לחודש יולי בכל שנה ניתן להתקבל ללא בגרות בפיזיקה ועמידה בכל תנאי הקבלה, עם דרישה להשלמת קורס  \"מבוא לפיזיקה מכניקה\" בסמסטר קיץ במרכז ללימודיים קדם אקדמיים.  החל מחודש יולי בכל שנה יתקבלו רק מועמדים שהשלימו 5 יח' פיזיקה בציון עובר או קורס מקביל <b> </a> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/welcome/kdam/programs/refresh_programs/?tab=17379\">מאושר</a> </b> ע\"י המרכז ללימודים קדם אקדמיים  בנוסף לכל דרישות הקבלה\n\n<br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר בעלי סכם הנדסה ו/או פסיכומטרי הנמוך עד 10 נק' מהנדרש ייבחנו בועדת הקבלה של המחלקה על בסיס מכלול נתוניהם.דיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה. אין צורך לשלוח מכתב\n\n<br>\nתאריך אחרון להרשמה ולשינויי עדיפויות לעתודאים: 31.7.2026.",
+            "reg_status": "פתוחה ",
+            "sekem_label": "סכם הנדסה  ",
+            "department": 361,
+            "path": 1,
+            "specialization": null,
+            "show_simulator": 0,
+            "path_description": "חד מחלקתי",
+            "spec_description": null
+          }
+        ],
+        "hasMore": false,
+        "limit": 0,
+        "offset": 0,
+        "count": 1,
+        "links": [
+          {
+            "rel": "self",
+            "href": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=361&p_pat1=1&p_degree_level=1"
+          },
+          {
+            "rel": "describedby",
+            "href": "https://bgu4u22.bgu.ac.il/apex/10g/metadata-catalog/candidate_site/GetRdpData/"
+          }
+        ]
+      }
+    },
+    "calculator": {
+      "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitEngSekem",
+      "status": 200,
+      "request": {
+        "rn_year": "2",
+        "rn_semester": "1",
+        "rn_eng_dprt_list": "361",
+        "on_grade_classi_psycho": "600",
+        "on_grade_classi_quant": "110",
+        "on_bag_avg": "100",
+        "on_learning_units_bag_math": "5",
+        "on_grade_bag_math": "80",
+        "on_learning_units_bag_phy": "5",
+        "on_grade_bag_phy": "70",
+        "on_subject": "",
+        "on_learning_units_bonus": "",
+        "on_grade_bonus": "",
+        "on_subject2": "",
+        "on_learning_units_bonus2": "",
+        "on_grade_bonus2": "",
+        "on_subject3": "",
+        "on_learning_units_bonus3": "",
+        "on_grade_bonus3": "",
+        "on_learning_units_mech_math": "",
+        "on_grade_mech_math": "",
+        "on_learning_units_mech_phy": "",
+        "on_grade_mech_phy": "",
+        "on_learning_units_eng_math": "",
+        "on_grade_eng_math": ""
+      },
+      "response": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 412;</script> \n</center>\n</body>  \n</html>\n"
+    },
+    "score": 412,
+    "threshold": 547,
+    "verdict": "below"
+  },
+  {
+    "pairId": "me__bgu",
+    "label": "eligible",
+    "capturedAt": "2026-09-27T15:31:05.544Z",
+    "source": {
+      "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=362&p_pat1=1&p_degree_level=1",
+      "status": 200,
+      "payload": {
+        "items": [
+          {
+            "department_dsc": "הנדסת מכונות",
+            "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/engn/Mechanical_Engineering_degree_1.aspx",
+            "path_dsc": "הנדסת מכונות חד מחלקתי",
+            "psycho_sekem": 520,
+            "psycho_and_or": " ובנוסף  ",
+            "psycho_value": 550,
+            "psycho_info": "4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ה'",
+            "bagrut_average": null,
+            "bagrut_info": "רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ה'",
+            "bagrut_additional": null,
+            "comments": " החל ממחר ה-22.4 נעצור קבלות. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם. במידה שיתפנו מקומות נקבל מועמדים נוספים מרשימות המתנה.\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n\n<br>\nהחל מתאריך 9.3.26 סכם ההנדסה יעלה ל520\n<br>\nמתקבלים שלא למדו פיזיקה בהיקף של 5 יח\"ל בציון עובר או קורס מקביל <b> </a> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/welcome/kdam/programs/refresh_programs/?tab=17379\">מאושר</a> </b> ע\"י המרכז ללימודים קדם אקדמיים, חייבים בקורס \"מבוא לפיזיקה- מכניקה\" 500-5-0006 המתקיים בקיץ או בסמסטר א' במסגרת המרכז ללימודים קדם אקדמיים.\n<br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\n<br>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר בעלי סכם הנדסה הנמוך עד 15 נק' מהנדרש ייבחנו בועדת הקבלה של המחלקה על בסיס מכלול נתוניהם.דיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה. אין צורך לשלוח מכתב<br>\nתאריך אחרון להרשמה ולשינויי עדיפויות לעתודאים: 31.7.2026.\n",
+            "reg_status": "פתוחה ",
+            "sekem_label": "סכם הנדסה  ",
+            "department": 362,
+            "path": 1,
+            "specialization": null,
+            "show_simulator": 0,
+            "path_description": "חד מחלקתי",
+            "spec_description": null
+          }
+        ],
+        "hasMore": false,
+        "limit": 0,
+        "offset": 0,
+        "count": 1,
+        "links": [
+          {
+            "rel": "self",
+            "href": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=362&p_pat1=1&p_degree_level=1"
+          },
+          {
+            "rel": "describedby",
+            "href": "https://bgu4u22.bgu.ac.il/apex/10g/metadata-catalog/candidate_site/GetRdpData/"
+          }
+        ]
+      }
+    },
+    "calculator": {
+      "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitEngSekem",
+      "status": 200,
+      "request": {
+        "rn_year": "2",
+        "rn_semester": "1",
+        "rn_eng_dprt_list": "362",
+        "on_grade_classi_psycho": "800",
+        "on_grade_classi_quant": "150",
+        "on_bag_avg": "120",
+        "on_learning_units_bag_math": "5",
+        "on_grade_bag_math": "95",
+        "on_learning_units_bag_phy": "5",
+        "on_grade_bag_phy": "95",
+        "on_subject": "",
+        "on_learning_units_bonus": "",
+        "on_grade_bonus": "",
+        "on_subject2": "",
+        "on_learning_units_bonus2": "",
+        "on_grade_bonus2": "",
+        "on_subject3": "",
+        "on_learning_units_bonus3": "",
+        "on_grade_bonus3": "",
+        "on_learning_units_mech_math": "",
+        "on_grade_mech_math": "",
+        "on_learning_units_mech_phy": "",
+        "on_grade_mech_phy": "",
+        "on_learning_units_eng_math": "",
+        "on_grade_eng_math": ""
+      },
+      "response": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 595;</script> \n</center>\n</body>  \n</html>\n"
+    },
+    "score": 595,
+    "threshold": 520,
+    "verdict": "eligible_to_apply"
+  },
+  {
+    "pairId": "me__bgu",
+    "label": "below",
+    "capturedAt": "2026-09-27T15:31:05.633Z",
+    "source": {
+      "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=362&p_pat1=1&p_degree_level=1",
+      "status": 200,
+      "payload": {
+        "items": [
+          {
+            "department_dsc": "הנדסת מכונות",
+            "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/engn/Mechanical_Engineering_degree_1.aspx",
+            "path_dsc": "הנדסת מכונות חד מחלקתי",
+            "psycho_sekem": 520,
+            "psycho_and_or": " ובנוסף  ",
+            "psycho_value": 550,
+            "psycho_info": "4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ה'",
+            "bagrut_average": null,
+            "bagrut_info": "רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ה'",
+            "bagrut_additional": null,
+            "comments": " החל ממחר ה-22.4 נעצור קבלות. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם. במידה שיתפנו מקומות נקבל מועמדים נוספים מרשימות המתנה.\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n\n<br>\nהחל מתאריך 9.3.26 סכם ההנדסה יעלה ל520\n<br>\nמתקבלים שלא למדו פיזיקה בהיקף של 5 יח\"ל בציון עובר או קורס מקביל <b> </a> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/welcome/kdam/programs/refresh_programs/?tab=17379\">מאושר</a> </b> ע\"י המרכז ללימודים קדם אקדמיים, חייבים בקורס \"מבוא לפיזיקה- מכניקה\" 500-5-0006 המתקיים בקיץ או בסמסטר א' במסגרת המרכז ללימודים קדם אקדמיים.\n<br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\n<br>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר בעלי סכם הנדסה הנמוך עד 15 נק' מהנדרש ייבחנו בועדת הקבלה של המחלקה על בסיס מכלול נתוניהם.דיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה. אין צורך לשלוח מכתב<br>\nתאריך אחרון להרשמה ולשינויי עדיפויות לעתודאים: 31.7.2026.\n",
+            "reg_status": "פתוחה ",
+            "sekem_label": "סכם הנדסה  ",
+            "department": 362,
+            "path": 1,
+            "specialization": null,
+            "show_simulator": 0,
+            "path_description": "חד מחלקתי",
+            "spec_description": null
+          }
+        ],
+        "hasMore": false,
+        "limit": 0,
+        "offset": 0,
+        "count": 1,
+        "links": [
+          {
+            "rel": "self",
+            "href": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=362&p_pat1=1&p_degree_level=1"
+          },
+          {
+            "rel": "describedby",
+            "href": "https://bgu4u22.bgu.ac.il/apex/10g/metadata-catalog/candidate_site/GetRdpData/"
+          }
+        ]
+      }
+    },
+    "calculator": {
+      "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitEngSekem",
+      "status": 200,
+      "request": {
+        "rn_year": "2",
+        "rn_semester": "1",
+        "rn_eng_dprt_list": "362",
+        "on_grade_classi_psycho": "600",
+        "on_grade_classi_quant": "110",
+        "on_bag_avg": "100",
+        "on_learning_units_bag_math": "5",
+        "on_grade_bag_math": "80",
+        "on_learning_units_bag_phy": "5",
+        "on_grade_bag_phy": "70",
+        "on_subject": "",
+        "on_learning_units_bonus": "",
+        "on_grade_bonus": "",
+        "on_subject2": "",
+        "on_learning_units_bonus2": "",
+        "on_grade_bonus2": "",
+        "on_subject3": "",
+        "on_learning_units_bonus3": "",
+        "on_grade_bonus3": "",
+        "on_learning_units_mech_math": "",
+        "on_grade_mech_math": "",
+        "on_learning_units_mech_phy": "",
+        "on_grade_mech_phy": "",
+        "on_learning_units_eng_math": "",
+        "on_grade_eng_math": ""
+      },
+      "response": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 412;</script> \n</center>\n</body>  \n</html>\n"
+    },
+    "score": 412,
+    "threshold": 520,
+    "verdict": "below"
+  },
+  {
+    "pairId": "bgu_me__bgu",
+    "label": "eligible",
+    "capturedAt": "2026-09-27T15:31:05.902Z",
+    "source": {
+      "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=362&p_pat1=1&p_degree_level=1",
+      "status": 200,
+      "payload": {
+        "items": [
+          {
+            "department_dsc": "הנדסת מכונות",
+            "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/engn/Mechanical_Engineering_degree_1.aspx",
+            "path_dsc": "הנדסת מכונות חד מחלקתי",
+            "psycho_sekem": 520,
+            "psycho_and_or": " ובנוסף  ",
+            "psycho_value": 550,
+            "psycho_info": "4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ה'",
+            "bagrut_average": null,
+            "bagrut_info": "רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ה'",
+            "bagrut_additional": null,
+            "comments": " החל ממחר ה-22.4 נעצור קבלות. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם. במידה שיתפנו מקומות נקבל מועמדים נוספים מרשימות המתנה.\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n\n<br>\nהחל מתאריך 9.3.26 סכם ההנדסה יעלה ל520\n<br>\nמתקבלים שלא למדו פיזיקה בהיקף של 5 יח\"ל בציון עובר או קורס מקביל <b> </a> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/welcome/kdam/programs/refresh_programs/?tab=17379\">מאושר</a> </b> ע\"י המרכז ללימודים קדם אקדמיים, חייבים בקורס \"מבוא לפיזיקה- מכניקה\" 500-5-0006 המתקיים בקיץ או בסמסטר א' במסגרת המרכז ללימודים קדם אקדמיים.\n<br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\n<br>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר בעלי סכם הנדסה הנמוך עד 15 נק' מהנדרש ייבחנו בועדת הקבלה של המחלקה על בסיס מכלול נתוניהם.דיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה. אין צורך לשלוח מכתב<br>\nתאריך אחרון להרשמה ולשינויי עדיפויות לעתודאים: 31.7.2026.\n",
+            "reg_status": "פתוחה ",
+            "sekem_label": "סכם הנדסה  ",
+            "department": 362,
+            "path": 1,
+            "specialization": null,
+            "show_simulator": 0,
+            "path_description": "חד מחלקתי",
+            "spec_description": null
+          }
+        ],
+        "hasMore": false,
+        "limit": 0,
+        "offset": 0,
+        "count": 1,
+        "links": [
+          {
+            "rel": "self",
+            "href": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=362&p_pat1=1&p_degree_level=1"
+          },
+          {
+            "rel": "describedby",
+            "href": "https://bgu4u22.bgu.ac.il/apex/10g/metadata-catalog/candidate_site/GetRdpData/"
+          }
+        ]
+      }
+    },
+    "calculator": {
+      "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitEngSekem",
+      "status": 200,
+      "request": {
+        "rn_year": "2",
+        "rn_semester": "1",
+        "rn_eng_dprt_list": "362",
+        "on_grade_classi_psycho": "800",
+        "on_grade_classi_quant": "150",
+        "on_bag_avg": "120",
+        "on_learning_units_bag_math": "5",
+        "on_grade_bag_math": "95",
+        "on_learning_units_bag_phy": "5",
+        "on_grade_bag_phy": "95",
+        "on_subject": "",
+        "on_learning_units_bonus": "",
+        "on_grade_bonus": "",
+        "on_subject2": "",
+        "on_learning_units_bonus2": "",
+        "on_grade_bonus2": "",
+        "on_subject3": "",
+        "on_learning_units_bonus3": "",
+        "on_grade_bonus3": "",
+        "on_learning_units_mech_math": "",
+        "on_grade_mech_math": "",
+        "on_learning_units_mech_phy": "",
+        "on_grade_mech_phy": "",
+        "on_learning_units_eng_math": "",
+        "on_grade_eng_math": ""
+      },
+      "response": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 595;</script> \n</center>\n</body>  \n</html>\n"
+    },
+    "score": 595,
+    "threshold": 520,
+    "verdict": "eligible_to_apply"
+  },
+  {
+    "pairId": "bgu_me__bgu",
+    "label": "below",
+    "capturedAt": "2026-09-27T15:31:05.986Z",
+    "source": {
+      "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=362&p_pat1=1&p_degree_level=1",
+      "status": 200,
+      "payload": {
+        "items": [
+          {
+            "department_dsc": "הנדסת מכונות",
+            "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/engn/Mechanical_Engineering_degree_1.aspx",
+            "path_dsc": "הנדסת מכונות חד מחלקתי",
+            "psycho_sekem": 520,
+            "psycho_and_or": " ובנוסף  ",
+            "psycho_value": 550,
+            "psycho_info": "4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ה'",
+            "bagrut_average": null,
+            "bagrut_info": "רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ה'",
+            "bagrut_additional": null,
+            "comments": " החל ממחר ה-22.4 נעצור קבלות. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם. במידה שיתפנו מקומות נקבל מועמדים נוספים מרשימות המתנה.\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n\n<br>\nהחל מתאריך 9.3.26 סכם ההנדסה יעלה ל520\n<br>\nמתקבלים שלא למדו פיזיקה בהיקף של 5 יח\"ל בציון עובר או קורס מקביל <b> </a> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/welcome/kdam/programs/refresh_programs/?tab=17379\">מאושר</a> </b> ע\"י המרכז ללימודים קדם אקדמיים, חייבים בקורס \"מבוא לפיזיקה- מכניקה\" 500-5-0006 המתקיים בקיץ או בסמסטר א' במסגרת המרכז ללימודים קדם אקדמיים.\n<br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\n<br>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר בעלי סכם הנדסה הנמוך עד 15 נק' מהנדרש ייבחנו בועדת הקבלה של המחלקה על בסיס מכלול נתוניהם.דיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה. אין צורך לשלוח מכתב<br>\nתאריך אחרון להרשמה ולשינויי עדיפויות לעתודאים: 31.7.2026.\n",
+            "reg_status": "פתוחה ",
+            "sekem_label": "סכם הנדסה  ",
+            "department": 362,
+            "path": 1,
+            "specialization": null,
+            "show_simulator": 0,
+            "path_description": "חד מחלקתי",
+            "spec_description": null
+          }
+        ],
+        "hasMore": false,
+        "limit": 0,
+        "offset": 0,
+        "count": 1,
+        "links": [
+          {
+            "rel": "self",
+            "href": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=362&p_pat1=1&p_degree_level=1"
+          },
+          {
+            "rel": "describedby",
+            "href": "https://bgu4u22.bgu.ac.il/apex/10g/metadata-catalog/candidate_site/GetRdpData/"
+          }
+        ]
+      }
+    },
+    "calculator": {
+      "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitEngSekem",
+      "status": 200,
+      "request": {
+        "rn_year": "2",
+        "rn_semester": "1",
+        "rn_eng_dprt_list": "362",
+        "on_grade_classi_psycho": "600",
+        "on_grade_classi_quant": "110",
+        "on_bag_avg": "100",
+        "on_learning_units_bag_math": "5",
+        "on_grade_bag_math": "80",
+        "on_learning_units_bag_phy": "5",
+        "on_grade_bag_phy": "70",
+        "on_subject": "",
+        "on_learning_units_bonus": "",
+        "on_grade_bonus": "",
+        "on_subject2": "",
+        "on_learning_units_bonus2": "",
+        "on_grade_bonus2": "",
+        "on_subject3": "",
+        "on_learning_units_bonus3": "",
+        "on_grade_bonus3": "",
+        "on_learning_units_mech_math": "",
+        "on_grade_mech_math": "",
+        "on_learning_units_mech_phy": "",
+        "on_grade_mech_phy": "",
+        "on_learning_units_eng_math": "",
+        "on_grade_eng_math": ""
+      },
+      "response": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 412;</script> \n</center>\n</body>  \n</html>\n"
+    },
+    "score": 412,
+    "threshold": 520,
+    "verdict": "below"
+  },
+  {
+    "pairId": "bgu_industrial__bgu",
+    "label": "eligible",
+    "capturedAt": "2026-09-27T15:31:06.171Z",
+    "source": {
+      "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=364&p_pat1=1&p_degree_level=1",
+      "status": 200,
+      "payload": {
+        "items": [
+          {
+            "department_dsc": "הנדסת תעשיה וניהול",
+            "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/engn/Management_Industrial_Engineering_degree_1.aspx",
+            "path_dsc": "הנדסת תעשיה וניהול חד מחלקתי",
+            "psycho_sekem": 505,
+            "psycho_and_or": " ובנוסף  ",
+            "psycho_value": 550,
+            "psycho_info": "4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ה'",
+            "bagrut_average": 109,
+            "bagrut_info": "מתמטיקה=90/5$פיסיקה=90/5$רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ה'",
+            "bagrut_additional": "\n18.3.26 החל דיון בחריגים\n<br>\nממוצע מכינה למדעים מדויקים והנדסה של אוניברסיטת-בן גוריון בנגב יכולה להחליף את ממוצע הבגרות באפיק קבלה זה. ממוצע המכינה הנדרש 91.\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<br>\n<br><b>מדיניות דיון בחריגים:<br></b>\n<br>מועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט הבא:<br>\n ממוצע בגרות נמוך עד 5 נקודות מהממוצע ו עד 5 נקודות במקצועות הבגרות הנדרשים. <br>\nמועמדים העומדים בתנאים אלו ידונו בוועדת הקבלה של המחלקה על בסיס מכלול נתוניהם. <br>\nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה. אין צורך לשלוח מכתב <br>\n",
+            "comments": "\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n\n<br><br>\n.18.3 החל דיון בחריגים.\n<br><br>\nמתקבלים שלא למדו פיזיקה בהיקף של 5 יח\"ל בציון עובר או קורס מקביל <b> </a> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/welcome/kdam/programs/refresh_programs/?tab=17379\">מאושר</a> </b> ע\"י המרכז ללימודים קדם אקדמיים, חייבים בקורס \"מבוא לפיזיקה- מכניקה\" 500-5-0006 המתקיים בקיץ או בסמסטר א' במסגרת המרכז ללימודים קדם אקדמיים.\n<br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר בעלי סכם הנדסה הנמוך עד 10 נק' מהנדרש ייבחנו בועדת הקבלה של המחלקה על בסיס מכלול נתוניהם.דיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה. אין צורך לשלוח מכתב\n\nתאריך אחרון להרשמה ולשינויי עדיפויות לעתודאים: 31.7.2026.\n",
+            "reg_status": "פתוחה ",
+            "sekem_label": "סכם הנדסה  ",
+            "department": 364,
+            "path": 1,
+            "specialization": null,
+            "show_simulator": 0,
+            "path_description": "חד מחלקתי",
+            "spec_description": null
+          }
+        ],
+        "hasMore": false,
+        "limit": 0,
+        "offset": 0,
+        "count": 1,
+        "links": [
+          {
+            "rel": "self",
+            "href": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=364&p_pat1=1&p_degree_level=1"
+          },
+          {
+            "rel": "describedby",
+            "href": "https://bgu4u22.bgu.ac.il/apex/10g/metadata-catalog/candidate_site/GetRdpData/"
+          }
+        ]
+      }
+    },
+    "calculator": {
+      "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitEngSekem",
+      "status": 200,
+      "request": {
+        "rn_year": "2",
+        "rn_semester": "1",
+        "rn_eng_dprt_list": "364",
+        "on_grade_classi_psycho": "800",
+        "on_grade_classi_quant": "150",
+        "on_bag_avg": "120",
+        "on_learning_units_bag_math": "5",
+        "on_grade_bag_math": "95",
+        "on_learning_units_bag_phy": "5",
+        "on_grade_bag_phy": "95",
+        "on_subject": "",
+        "on_learning_units_bonus": "",
+        "on_grade_bonus": "",
+        "on_subject2": "",
+        "on_learning_units_bonus2": "",
+        "on_grade_bonus2": "",
+        "on_subject3": "",
+        "on_learning_units_bonus3": "",
+        "on_grade_bonus3": "",
+        "on_learning_units_mech_math": "",
+        "on_grade_mech_math": "",
+        "on_learning_units_mech_phy": "",
+        "on_grade_mech_phy": "",
+        "on_learning_units_eng_math": "",
+        "on_grade_eng_math": ""
+      },
+      "response": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 600;</script> \n</center>\n</body>  \n</html>\n"
+    },
+    "score": 600,
+    "threshold": 505,
+    "verdict": "eligible_to_apply"
+  },
+  {
+    "pairId": "bgu_industrial__bgu",
+    "label": "below",
+    "capturedAt": "2026-09-27T15:31:06.341Z",
+    "source": {
+      "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=364&p_pat1=1&p_degree_level=1",
+      "status": 200,
+      "payload": {
+        "items": [
+          {
+            "department_dsc": "הנדסת תעשיה וניהול",
+            "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/engn/Management_Industrial_Engineering_degree_1.aspx",
+            "path_dsc": "הנדסת תעשיה וניהול חד מחלקתי",
+            "psycho_sekem": 505,
+            "psycho_and_or": " ובנוסף  ",
+            "psycho_value": 550,
+            "psycho_info": "4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ה'",
+            "bagrut_average": 109,
+            "bagrut_info": "מתמטיקה=90/5$פיסיקה=90/5$רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ה'",
+            "bagrut_additional": "\n18.3.26 החל דיון בחריגים\n<br>\nממוצע מכינה למדעים מדויקים והנדסה של אוניברסיטת-בן גוריון בנגב יכולה להחליף את ממוצע הבגרות באפיק קבלה זה. ממוצע המכינה הנדרש 91.\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<br>\n<br><b>מדיניות דיון בחריגים:<br></b>\n<br>מועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט הבא:<br>\n ממוצע בגרות נמוך עד 5 נקודות מהממוצע ו עד 5 נקודות במקצועות הבגרות הנדרשים. <br>\nמועמדים העומדים בתנאים אלו ידונו בוועדת הקבלה של המחלקה על בסיס מכלול נתוניהם. <br>\nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה. אין צורך לשלוח מכתב <br>\n",
+            "comments": "\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n\n<br><br>\n.18.3 החל דיון בחריגים.\n<br><br>\nמתקבלים שלא למדו פיזיקה בהיקף של 5 יח\"ל בציון עובר או קורס מקביל <b> </a> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/welcome/kdam/programs/refresh_programs/?tab=17379\">מאושר</a> </b> ע\"י המרכז ללימודים קדם אקדמיים, חייבים בקורס \"מבוא לפיזיקה- מכניקה\" 500-5-0006 המתקיים בקיץ או בסמסטר א' במסגרת המרכז ללימודים קדם אקדמיים.\n<br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר בעלי סכם הנדסה הנמוך עד 10 נק' מהנדרש ייבחנו בועדת הקבלה של המחלקה על בסיס מכלול נתוניהם.דיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה. אין צורך לשלוח מכתב\n\nתאריך אחרון להרשמה ולשינויי עדיפויות לעתודאים: 31.7.2026.\n",
+            "reg_status": "פתוחה ",
+            "sekem_label": "סכם הנדסה  ",
+            "department": 364,
+            "path": 1,
+            "specialization": null,
+            "show_simulator": 0,
+            "path_description": "חד מחלקתי",
+            "spec_description": null
+          }
+        ],
+        "hasMore": false,
+        "limit": 0,
+        "offset": 0,
+        "count": 1,
+        "links": [
+          {
+            "rel": "self",
+            "href": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=364&p_pat1=1&p_degree_level=1"
+          },
+          {
+            "rel": "describedby",
+            "href": "https://bgu4u22.bgu.ac.il/apex/10g/metadata-catalog/candidate_site/GetRdpData/"
+          }
+        ]
+      }
+    },
+    "calculator": {
+      "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitEngSekem",
+      "status": 200,
+      "request": {
+        "rn_year": "2",
+        "rn_semester": "1",
+        "rn_eng_dprt_list": "364",
+        "on_grade_classi_psycho": "600",
+        "on_grade_classi_quant": "110",
+        "on_bag_avg": "100",
+        "on_learning_units_bag_math": "5",
+        "on_grade_bag_math": "80",
+        "on_learning_units_bag_phy": "5",
+        "on_grade_bag_phy": "70",
+        "on_subject": "",
+        "on_learning_units_bonus": "",
+        "on_grade_bonus": "",
+        "on_subject2": "",
+        "on_learning_units_bonus2": "",
+        "on_grade_bonus2": "",
+        "on_subject3": "",
+        "on_learning_units_bonus3": "",
+        "on_grade_bonus3": "",
+        "on_learning_units_mech_math": "",
+        "on_grade_mech_math": "",
+        "on_learning_units_mech_phy": "",
+        "on_grade_mech_phy": "",
+        "on_learning_units_eng_math": "",
+        "on_grade_eng_math": ""
+      },
+      "response": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 417;</script> \n</center>\n</body>  \n</html>\n"
+    },
+    "score": 417,
+    "threshold": 505,
+    "verdict": "below"
+  }
+]

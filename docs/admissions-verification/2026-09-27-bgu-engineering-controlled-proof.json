@@ -1,0 +1,142 @@
+[
+  {
+    "pairId": "ee__bgu",
+    "comparedAt": "2026-09-27T15:42:51.190Z",
+    "comparisons": [
+      {
+        "fixtureId": "ee__bgu:eligible:2026-2027",
+        "score": 595,
+        "expected": {
+          "score": 595,
+          "verdict": "eligible_to_apply"
+        },
+        "verdict": "eligible_to_apply",
+        "fingerprintMatches": true,
+        "proofStatus": "succeeded"
+      },
+      {
+        "fixtureId": "ee__bgu:below:2026-2027",
+        "score": 412,
+        "expected": {
+          "score": 412,
+          "verdict": "below"
+        },
+        "verdict": "below",
+        "fingerprintMatches": true,
+        "proofStatus": "succeeded"
+      }
+    ]
+  },
+  {
+    "pairId": "bgu_ee__bgu",
+    "comparedAt": "2026-09-27T15:42:52.384Z",
+    "comparisons": [
+      {
+        "fixtureId": "bgu_ee__bgu:eligible:2026-2027",
+        "score": 595,
+        "expected": {
+          "score": 595,
+          "verdict": "eligible_to_apply"
+        },
+        "verdict": "eligible_to_apply",
+        "fingerprintMatches": true,
+        "proofStatus": "succeeded"
+      },
+      {
+        "fixtureId": "bgu_ee__bgu:below:2026-2027",
+        "score": 412,
+        "expected": {
+          "score": 412,
+          "verdict": "below"
+        },
+        "verdict": "below",
+        "fingerprintMatches": true,
+        "proofStatus": "succeeded"
+      }
+    ]
+  },
+  {
+    "pairId": "me__bgu",
+    "comparedAt": "2026-09-27T15:42:53.721Z",
+    "comparisons": [
+      {
+        "fixtureId": "me__bgu:eligible:2026-2027",
+        "score": 595,
+        "expected": {
+          "score": 595,
+          "verdict": "eligible_to_apply"
+        },
+        "verdict": "eligible_to_apply",
+        "fingerprintMatches": true,
+        "proofStatus": "succeeded"
+      },
+      {
+        "fixtureId": "me__bgu:below:2026-2027",
+        "score": 412,
+        "expected": {
+          "score": 412,
+          "verdict": "below"
+        },
+        "verdict": "below",
+        "fingerprintMatches": true,
+        "proofStatus": "succeeded"
+      }
+    ]
+  },
+  {
+    "pairId": "bgu_me__bgu",
+    "comparedAt": "2026-09-27T15:42:54.876Z",
+    "comparisons": [
+      {
+        "fixtureId": "bgu_me__bgu:eligible:2026-2027",
+        "score": 595,
+        "expected": {
+          "score": 595,
+          "verdict": "eligible_to_apply"
+        },
+        "verdict": "eligible_to_apply",
+        "fingerprintMatches": true,
+        "proofStatus": "succeeded"
+      },
+      {
+        "fixtureId": "bgu_me__bgu:below:2026-2027",
+        "score": 412,
+        "expected": {
+          "score": 412,
+          "verdict": "below"
+        },
+        "verdict": "below",
+        "fingerprintMatches": true,
+        "proofStatus": "succeeded"
+      }
+    ]
+  },
+  {
+    "pairId": "bgu_industrial__bgu",
+    "comparedAt": "2026-09-27T15:42:55.911Z",
+    "comparisons": [
+      {
+        "fixtureId": "bgu_industrial__bgu:eligible:2026-2027",
+        "score": 600,
+        "expected": {
+          "score": 600,
+          "verdict": "eligible_to_apply"
+        },
+        "verdict": "eligible_to_apply",
+        "fingerprintMatches": true,
+        "proofStatus": "succeeded"
+      },
+      {
+        "fixtureId": "bgu_industrial__bgu:below:2026-2027",
+        "score": 417,
+        "expected": {
+          "score": 417,
+          "verdict": "below"
+        },
+        "verdict": "below",
+        "fingerprintMatches": true,
+        "proofStatus": "succeeded"
+      }
+    ]
+  }
+]

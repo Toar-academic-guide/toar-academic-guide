@@ -1,7 +1,10 @@
 import { bguHealthInputsShape } from '@/lib/bguHealthInputs';
+import { bguQuantitativeInputShape } from '@/lib/bguQuantitativeInputs';
 import { bguPsychologyInputsShape } from '@/lib/bguPsychologyInputs';
+import { bguSocialScienceInputsShape } from '@/lib/bguSocialScienceInputs';
 import { z } from 'zod';
 import { MAX_BAGRUT_SUBJECTS } from '@/lib/bagrutSubjectLimits';
+import { bguEngineeringSchema } from '@/lib/bguEngineeringSchema';
 
 const geographicRegionSchema = z.enum(['center', 'north', 'south', 'any']);
 
@@ -65,6 +68,7 @@ const bagrutRecordSchema = z.strictObject({
 });
 
 const admissionsInputsSchema = z.strictObject({
+  bguEngineering: bguEngineeringSchema.optional(),
   technionArchitectureBagrutAverage: z.number().min(0).max(119).optional(),
   technionArchitectureExamScore: z.number().min(0).max(140).optional(),
   technionArchitectureExamPassed: z.boolean().optional(),
@@ -72,6 +76,7 @@ const admissionsInputsSchema = z.strictObject({
   tauBagrutAverage: z.number().min(50).max(130).optional(),
   ...bguPsychologyInputsShape,
   ...bguHealthInputsShape,
+  ...bguSocialScienceInputsShape,
   bguBagrutAverage: z.number().min(50).max(130).optional(),
   tauApplicationRequirementsConfirmed: z.boolean().optional(),
   tauManagementRequirementsConfirmed: z.boolean().optional(),
@@ -79,6 +84,7 @@ const admissionsInputsSchema = z.strictObject({
   tauManagementQualifyingMoocCount: z.union([z.literal(0), z.literal(1), z.literal(2)]).optional(),
   tauManagementNoPsychometricMoocsConfirmed: z.boolean().optional(),
   bguLanguageRequirementsConfirmed: z.boolean().optional(),
+  ...bguQuantitativeInputShape,
   tauMathPlacementScore: z.number().min(0).max(100).optional(),
 });
 
