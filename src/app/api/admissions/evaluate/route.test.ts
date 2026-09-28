@@ -73,6 +73,32 @@ describe('admissions evaluate route', () => {
     });
   });
 
+  it('forwards degree-only health inputs without dummy generic scores', async () => {
+    hoistedMocks.listCataloguePrograms.mockResolvedValue({
+      data: [{ id: 'occupational_therapy', name: 'ריפוי בעיסוק', linkedInstitutionIds: ['bgu'] }],
+    });
+    const input = {
+      degreeId: 'occupational_therapy',
+      extraInputs: {
+        bguOccupationalTherapyRoute: 'academic',
+        bguOccupationalTherapyRequirementsConfirmed: false,
+        bguBachelorsDegreeCompleted: true,
+        bguBachelorsDegreeAverage: 85.25,
+        bguPhysiotherapyRequirementsConfirmed: false,
+      },
+    };
+    const response = await POST(
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      }),
+    );
+    expect(response.status).toBe(200);
+    expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenCalledWith(
+      expect.objectContaining({ input }),
+    );
+  });
   it('allows Psychology prep-only requests without inventing generic scores', async () => {
     hoistedMocks.listCataloguePrograms.mockResolvedValue({
       data: [{ id: 'bgu_psychology', name: 'פסיכולוגיה', linkedInstitutionIds: ['bgu'] }],

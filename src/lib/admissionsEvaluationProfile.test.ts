@@ -109,3 +109,17 @@ describe('admissionsExtraInputsFromAcademicScores', () => {
     expect(admissionsInputValue(inputs, 'tau_math_placement_score')).toBe(0);
   });
 });
+
+it('forwards all health profile inputs while preserving decimals and false', () => {
+  const admissions = {
+    bguOccupationalTherapyRoute: 'academic' as const,
+    bguOccupationalTherapyRequirementsConfirmed: true,
+    bguBachelorsDegreeCompleted: false,
+    bguBachelorsDegreeAverage: 85.25,
+    bguPhysiotherapyRequirementsConfirmed: false,
+    bguOccupationalTherapyExamSession: 'spring_nativ' as const,
+  };
+  expect(admissionsExtraInputsFromAcademicScores({ admissions })).toEqual(admissions);
+  expect(admissionsInputValue(admissions, 'bgu_bachelors_degree_completed')).toBe(false);
+  expect(admissionsInputValue(admissions, 'bgu_bachelors_degree_average')).toBe(85.25);
+});

@@ -7,6 +7,16 @@ export function admissionsInputValue(
   switch (requiredInput) {
     case 'bagrut_average':
       return undefined;
+    case 'bgu_occupational_therapy_requirements':
+      return input?.bguOccupationalTherapyRequirementsConfirmed;
+    case 'bgu_physiotherapy_requirements':
+      return input?.bguPhysiotherapyRequirementsConfirmed;
+    case 'bgu_occupational_therapy_exam_session':
+      return input?.bguOccupationalTherapyExamSession;
+    case 'bgu_bachelors_degree_completed':
+      return input?.bguBachelorsDegreeCompleted;
+    case 'bgu_bachelors_degree_average':
+      return input?.bguBachelorsDegreeAverage;
     case 'bgu_psychology_requirements':
       return input?.bguPsychologyRequirementsConfirmed;
     case 'bgu_preparatory_average':

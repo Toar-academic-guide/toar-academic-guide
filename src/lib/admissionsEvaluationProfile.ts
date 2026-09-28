@@ -1,3 +1,4 @@
+import { BGU_HEALTH_PROFILE_KEYS } from './bguHealthInputs';
 import type { AcademicScores } from '@/types';
 import type { AdmissionsExtraInputs } from '@/types/admissionsEvaluation';
 
@@ -29,6 +30,9 @@ export function admissionsExtraInputsFromAcademicScores(
     psychometricVerbal: academicScores?.psychometric?.verbal,
     psychometricEnglish: academicScores?.psychometric?.english,
     tauBagrutAverage: academicScores?.admissions?.tauBagrutAverage,
+    ...Object.fromEntries(
+      BGU_HEALTH_PROFILE_KEYS.map((key) => [key, academicScores?.admissions?.[key]]),
+    ),
     bguPsychologyRoute: academicScores?.admissions?.bguPsychologyRoute,
     bguPsychologyRequirementsConfirmed:
       academicScores?.admissions?.bguPsychologyRequirementsConfirmed,

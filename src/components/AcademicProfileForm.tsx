@@ -5,6 +5,8 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { Upload, FileText, X, Brain, GraduationCap, Loader2 } from 'lucide-react';
 import type { AcademicScores, UserProfile } from '@/types';
+import BguHealthFields, { type HealthFormValues } from './BguHealthFields';
+import { BGU_HEALTH_PROFILE_KEYS, bguHealthInputsSchema } from '@/lib/bguHealthInputs';
 import BguPsychologyFields, { type PsychologyFormValues } from './BguPsychologyFields';
 import { BGU_PSYCHOLOGY_PROFILE_KEYS, bguPsychologyInputsSchema } from '@/lib/bguPsychologyInputs';
 import BagrutCalculatorWizard from './BagrutCalculatorWizard';
@@ -44,6 +46,14 @@ export default function AcademicProfileForm({
   isAuthenticated = false,
   alertContinuation,
 }: Props) {
+  const [healthValues, setHealthValues] = useState<HealthFormValues>(() =>
+    Object.fromEntries(
+      BGU_HEALTH_PROFILE_KEYS.map((key) => [
+        key,
+        initialScores?.admissions?.[key]?.toString() ?? '',
+      ]),
+    ),
+  );
   const [psychologyValues, setPsychologyValues] = useState<PsychologyFormValues>(() =>
     Object.fromEntries(
       BGU_PSYCHOLOGY_PROFILE_KEYS.map((key) => [
@@ -135,6 +145,7 @@ export default function AcademicProfileForm({
     setBagrutSubjectRecord(undefined);
     setTauBagrutAverage('');
     setPsychologyValues({});
+    setHealthValues({});
     setBguBagrutAverage('');
     setTauApplicationRequirements('');
     setBguLanguageRequirements('');
@@ -205,6 +216,25 @@ export default function AcademicProfileForm({
       return;
     }
     Object.assign(admissions, parsedPsychology.data);
+    const healthInputs = Object.fromEntries(
+      BGU_HEALTH_PROFILE_KEYS.filter(
+        (key) => healthValues[key] !== undefined && healthValues[key] !== '',
+      ).map((key) => [
+        key,
+        key.endsWith('Confirmed') || key.endsWith('Completed')
+          ? healthValues[key] === 'true'
+          : key.endsWith('Average')
+            ? Number(healthValues[key])
+            : healthValues[key],
+      ]),
+    );
+    const parsedHealth = bguHealthInputsSchema.safeParse(healthInputs);
+    if (!parsedHealth.success) {
+      setError('יש להזין נתוני מדעי הבריאות תקינים; ממוצע תואר ראשון בין 0 ל־100.');
+      setIsSaving(false);
+      return;
+    }
+    Object.assign(admissions, parsedHealth.data);
     const architectureAverageValue = optionalNumber(architectureAverage);
     const architectureExamValue = optionalNumber(architectureExam);
     if (
@@ -666,6 +696,14 @@ export default function AcademicProfileForm({
             </div>
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <BguHealthFields
+                values={healthValues}
+                onChange={(key, value) =>
+                  setHealthValues((previous) => ({ ...previous, [key]: value }))
+                }
+                disabled={isSaving}
+                inputClassName={inputBase}
+              />
               <BguPsychologyFields
                 values={psychologyValues}
                 onChange={(key, value) =>

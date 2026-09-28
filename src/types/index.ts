@@ -1,3 +1,4 @@
+import type { BguHealthInputs } from '@/lib/bguHealthInputs';
 import type { BguPsychologyInputs } from '@/lib/bguPsychologyInputs';
 export type UniversityId = string;
 
@@ -223,7 +224,7 @@ export interface BagrutRecord {
 }
 
 /** Institution-specific inputs collected only when the student knows them. */
-export interface AdmissionsProfileInputs extends BguPsychologyInputs {
+export interface AdmissionsProfileInputs extends BguPsychologyInputs, BguHealthInputs {
   /** Official Architecture average, without doubled mathematics weight; capped at 119. */
   technionArchitectureBagrutAverage?: number;
   /** Architecture entrance examination score (0–140), not the Landscape examination. */

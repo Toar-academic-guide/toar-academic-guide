@@ -450,3 +450,44 @@ it('restores and saves Psychology prep decimals and false values without generic
   fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
   await waitFor(() => expect(onComplete).toHaveBeenCalledWith({ admissions }));
 });
+
+it('saves and reopens health decimals, false and unknown values without generic scores', async () => {
+  const admissions = {
+    bguOccupationalTherapyRoute: 'academic' as const,
+    bguOccupationalTherapyRequirementsConfirmed: true,
+    bguBachelorsDegreeCompleted: true,
+    bguBachelorsDegreeAverage: 85.25,
+    bguPhysiotherapyRequirementsConfirmed: false,
+  };
+  const onComplete = vi.fn();
+  const view = render(
+    <AcademicProfileForm
+      onComplete={onComplete}
+      onClearLocalProfileData={vi.fn()}
+      onSkip={vi.fn()}
+      initialScores={{ admissions }}
+    />,
+  );
+  expect(screen.getByLabelText('ממוצע תואר ראשון לריפוי בעיסוק (0–100)')).toHaveProperty(
+    'value',
+    '85.25',
+  );
+  expect(screen.getByLabelText(/פיזיותרפיה: תעודת קבלה מוכרת/)).toHaveProperty('value', 'false');
+  expect(screen.getByLabelText('מועד הבחינה לריפוי בעיסוק')).toHaveProperty('value', '');
+  fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+  await waitFor(() => expect(onComplete).toHaveBeenCalledWith({ admissions }));
+  view.unmount();
+  render(
+    <AcademicProfileForm
+      onComplete={vi.fn()}
+      onClearLocalProfileData={vi.fn()}
+      onSkip={vi.fn()}
+      initialScores={onComplete.mock.calls[0][0]}
+    />,
+  );
+  expect(screen.getByLabelText('ממוצע תואר ראשון לריפוי בעיסוק (0–100)')).toHaveProperty(
+    'value',
+    '85.25',
+  );
+  expect(screen.getByLabelText(/פיזיותרפיה: תעודת קבלה מוכרת/)).toHaveProperty('value', 'false');
+});

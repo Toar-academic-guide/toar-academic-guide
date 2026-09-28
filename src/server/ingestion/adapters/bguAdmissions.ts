@@ -1,3 +1,5 @@
+import { isBguHealthProgram } from '@/lib/bguHealthInputs';
+import { runBguHealthProof } from './bguHealth';
 import { isBguPsychologyProgram } from '@/lib/bguPsychologyInputs';
 import { runBguPsychologyProof } from './bguPsychology';
 import {
@@ -38,6 +40,7 @@ export async function runBguAdmissionsProof(
     throw new Error('BGU adapter requires a program context');
   }
 
+  if (isBguHealthProgram(program.id)) return runBguHealthProof(context);
   if (isBguPsychologyProgram(program.id)) return runBguPsychologyProof(context);
   if (program.id === 'cs' || program.id === 'bgu_cs') {
     return runBguComputerScienceProof(context);

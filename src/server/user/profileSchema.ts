@@ -1,3 +1,4 @@
+import { bguHealthInputsShape } from '@/lib/bguHealthInputs';
 import { bguPsychologyInputsShape } from '@/lib/bguPsychologyInputs';
 import { z } from 'zod';
 import { MAX_BAGRUT_SUBJECTS } from '@/lib/bagrutSubjectLimits';
@@ -70,6 +71,7 @@ const admissionsInputsSchema = z.strictObject({
   technionArchitectureRequirementsConfirmed: z.boolean().optional(),
   tauBagrutAverage: z.number().min(50).max(130).optional(),
   ...bguPsychologyInputsShape,
+  ...bguHealthInputsShape,
   bguBagrutAverage: z.number().min(50).max(130).optional(),
   tauApplicationRequirementsConfirmed: z.boolean().optional(),
   tauManagementRequirementsConfirmed: z.boolean().optional(),
