@@ -25,6 +25,73 @@ vi.mock('@/components/BagrutCalculatorWizard', () => ({
 }));
 
 describe('AcademicProfileForm', () => {
+  it('shares preparatory facts across BGU sections and saves the latest edit or clearing', async () => {
+    const onComplete = vi.fn();
+    const props = {
+      onComplete,
+      onSkip: vi.fn(),
+      onClearLocalProfileData: vi.fn().mockResolvedValue(undefined),
+    };
+    const view = render(
+      <AcademicProfileForm
+        {...props}
+        initialScores={{
+          admissions: {
+            bguPsychologyRoute: 'bagrut',
+            bguPsychologyRequirementsConfirmed: false,
+            bguQuantitativeRoute: 'bagrut',
+            bguPriorAcademicStudies: false,
+            bguPreparatoryTrack: 'natural_life_sciences',
+            bguPreparatoryAverage: 94.25,
+            bguPreparatoryCompleted: true,
+          },
+        }}
+      />,
+    );
+    const quantitativeAverage = () => screen.getByLabelText('ממוצע מכינה מוכרת בבן־גוריון');
+    const psychologyAverage = () => screen.getByLabelText('ממוצע מכינה מוכרת לפסיכולוגיה (0–100)');
+    expect(quantitativeAverage()).toHaveProperty('value', '94.25');
+    expect(psychologyAverage()).toHaveProperty('value', '94.25');
+    fireEvent.change(quantitativeAverage(), { target: { value: '87.25' } });
+    expect(psychologyAverage()).toHaveProperty('value', '87.25');
+    fireEvent.change(psychologyAverage(), { target: { value: '0' } });
+    expect(quantitativeAverage()).toHaveProperty('value', '0');
+    fireEvent.change(screen.getByLabelText('האם המכינה לפסיכולוגיה הושלמה?'), {
+      target: { value: 'false' },
+    });
+    expect(screen.getByLabelText('האם המכינה המוכרת בבן־גוריון הושלמה?')).toHaveProperty(
+      'value',
+      'false',
+    );
+    fireEvent.change(screen.getByLabelText('מכינה מוכרת של בן־גוריון'), {
+      target: { value: 'precise_sciences_engineering' },
+    });
+    expect(screen.getByLabelText('מכינה מוכרת של בן־גוריון לפסיכולוגיה')).toHaveProperty(
+      'value',
+      'precise_sciences_engineering',
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    await waitFor(() => expect(onComplete).toHaveBeenCalledTimes(1));
+    const saved = onComplete.mock.calls[0][0];
+    expect(saved.admissions).toEqual({
+      bguPsychologyRoute: 'bagrut',
+      bguPsychologyRequirementsConfirmed: false,
+      bguQuantitativeRoute: 'bagrut',
+      bguPriorAcademicStudies: false,
+      bguPreparatoryTrack: 'precise_sciences_engineering',
+      bguPreparatoryAverage: 0,
+      bguPreparatoryCompleted: false,
+    });
+    view.unmount();
+    render(<AcademicProfileForm {...props} initialScores={saved} />);
+    expect(psychologyAverage()).toHaveProperty('value', '0');
+    fireEvent.change(psychologyAverage(), { target: { value: '' } });
+    expect(quantitativeAverage()).toHaveProperty('value', '');
+    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    await waitFor(() => expect(onComplete).toHaveBeenCalledTimes(2));
+    expect(onComplete.mock.calls[1][0].admissions).not.toHaveProperty('bguPreparatoryAverage');
+    expect(onComplete.mock.calls[1][0].admissions.bguPreparatoryCompleted).toBe(false);
+  });
   it('saves and reopens recognized preparatory route details without generic scores', async () => {
     const onComplete = vi.fn();
     const props = {
@@ -467,4 +534,30 @@ describe('AcademicProfileForm', () => {
       ),
     ).toBeTruthy();
   });
+});
+
+it('restores and saves Psychology prep decimals and false values without generic scores', async () => {
+  const admissions = {
+    bguPsychologyRoute: 'bagrut' as const,
+    bguPsychologyRequirementsConfirmed: false,
+    bguPreparatoryTrack: 'natural_life_sciences' as const,
+    bguPreparatoryAverage: 94.25,
+    bguPreparatoryCompleted: false,
+  };
+  const onComplete = vi.fn();
+  render(
+    <AcademicProfileForm
+      onComplete={onComplete}
+      onClearLocalProfileData={vi.fn()}
+      onSkip={vi.fn()}
+      initialScores={{ admissions }}
+    />,
+  );
+  expect(screen.getByLabelText('ממוצע מכינה מוכרת לפסיכולוגיה (0–100)')).toHaveProperty(
+    'value',
+    '94.25',
+  );
+  expect(screen.getByLabelText('האם המכינה לפסיכולוגיה הושלמה?')).toHaveProperty('value', 'false');
+  fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+  await waitFor(() => expect(onComplete).toHaveBeenCalledWith({ admissions }));
 });

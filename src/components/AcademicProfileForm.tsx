@@ -8,6 +8,8 @@ import type { AcademicScores, UserProfile } from '@/types';
 import BguQuantitativeFields from './BguQuantitativeFields';
 import { BGU_QUANTITATIVE_PROFILE_KEYS } from '@/lib/calculatorInputRequirements';
 import type { BguQuantitativeInputs } from '@/lib/bguQuantitativeInputs';
+import BguPsychologyFields, { type PsychologyFormValues } from './BguPsychologyFields';
+import { BGU_PSYCHOLOGY_PROFILE_KEYS, bguPsychologyInputsSchema } from '@/lib/bguPsychologyInputs';
 import BagrutCalculatorWizard from './BagrutCalculatorWizard';
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
@@ -45,6 +47,14 @@ export default function AcademicProfileForm({
   isAuthenticated = false,
   alertContinuation,
 }: Props) {
+  const [psychologyValues, setPsychologyValues] = useState<PsychologyFormValues>(() =>
+    Object.fromEntries(
+      BGU_PSYCHOLOGY_PROFILE_KEYS.filter((key) => !key.startsWith('bguPreparatory')).map((key) => [
+        key,
+        initialScores?.admissions?.[key]?.toString() ?? '',
+      ]),
+    ),
+  );
   const [psyOverall, setPsyOverall] = useState(
     initialScores?.psychometric?.overall?.toString() ?? '',
   );
@@ -81,6 +91,32 @@ export default function AcademicProfileForm({
       ),
     ),
   );
+  const psychologyFormValues: PsychologyFormValues = {
+    ...psychologyValues,
+    bguPreparatoryTrack: bguQuantitative.bguPreparatoryTrack ?? '',
+    bguPreparatoryAverage: bguQuantitative.bguPreparatoryAverage?.toString() ?? '',
+    bguPreparatoryCompleted: bguQuantitative.bguPreparatoryCompleted?.toString() ?? '',
+  };
+  function handlePsychologyChange(key: keyof PsychologyFormValues, value: string) {
+    if (key === 'bguPreparatoryAverage') {
+      setBguQuantitative((previous) => ({
+        ...previous,
+        bguPreparatoryAverage: value === '' ? undefined : Number(value),
+      }));
+    } else if (key === 'bguPreparatoryCompleted') {
+      setBguQuantitative((previous) => ({
+        ...previous,
+        bguPreparatoryCompleted: value === '' ? undefined : value === 'true',
+      }));
+    } else if (key === 'bguPreparatoryTrack') {
+      setBguQuantitative((previous) => ({
+        ...previous,
+        bguPreparatoryTrack: (value || undefined) as BguQuantitativeInputs['bguPreparatoryTrack'],
+      }));
+    } else {
+      setPsychologyValues((previous) => ({ ...previous, [key]: value }));
+    }
+  }
   const [tauMathPlacementScore, setTauMathPlacementScore] = useState(
     initialScores?.admissions?.tauMathPlacementScore?.toString() ?? '',
   );
@@ -134,6 +170,7 @@ export default function AcademicProfileForm({
     setBagrutAverage('');
     setBagrutSubjectRecord(undefined);
     setTauBagrutAverage('');
+    setPsychologyValues({});
     setBguBagrutAverage('');
     setTauApplicationRequirements('');
     setBguLanguageRequirements('');
@@ -198,6 +235,25 @@ export default function AcademicProfileForm({
       setIsSaving(false);
       return;
     }
+    const psychologyInputs = Object.fromEntries(
+      BGU_PSYCHOLOGY_PROFILE_KEYS.filter(
+        (key) => psychologyFormValues[key] !== undefined && psychologyFormValues[key] !== '',
+      ).map((key) => [
+        key,
+        key.endsWith('Confirmed') || key.endsWith('Completed')
+          ? psychologyFormValues[key] === 'true'
+          : key.endsWith('Average')
+            ? Number(psychologyFormValues[key])
+            : psychologyFormValues[key],
+      ]),
+    );
+    const parsedPsychology = bguPsychologyInputsSchema.safeParse(psychologyInputs);
+    if (!parsedPsychology.success) {
+      setError('יש להזין נתוני פסיכולוגיה ומכינה תקינים; ממוצע מכינה בין 0 ל־100.');
+      setIsSaving(false);
+      return;
+    }
+    Object.assign(admissions, parsedPsychology.data);
     const architectureAverageValue = optionalNumber(architectureAverage);
     const architectureExamValue = optionalNumber(architectureExam);
     if (
@@ -659,6 +715,12 @@ export default function AcademicProfileForm({
             </div>
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <BguPsychologyFields
+                values={psychologyFormValues}
+                onChange={handlePsychologyChange}
+                disabled={isSaving}
+                inputClassName={inputBase}
+              />
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="tau-bagrut-average" className="text-xs font-medium text-slate-600">
                   ממוצע בגרות רשמי של אוניברסיטת תל אביב (50–130)

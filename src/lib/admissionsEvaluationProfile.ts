@@ -33,6 +33,12 @@ export function admissionsExtraInputsFromAcademicScores(
     psychometricVerbal: academicScores?.psychometric?.verbal,
     psychometricEnglish: academicScores?.psychometric?.english,
     tauBagrutAverage: academicScores?.admissions?.tauBagrutAverage,
+    bguPsychologyRoute: academicScores?.admissions?.bguPsychologyRoute,
+    bguPsychologyRequirementsConfirmed:
+      academicScores?.admissions?.bguPsychologyRequirementsConfirmed,
+    bguPreparatoryTrack: academicScores?.admissions?.bguPreparatoryTrack,
+    bguPreparatoryAverage: academicScores?.admissions?.bguPreparatoryAverage,
+    bguPreparatoryCompleted: academicScores?.admissions?.bguPreparatoryCompleted,
     bguBagrutAverage: academicScores?.admissions?.bguBagrutAverage,
     tauApplicationRequirementsConfirmed:
       academicScores?.admissions?.tauApplicationRequirementsConfirmed,

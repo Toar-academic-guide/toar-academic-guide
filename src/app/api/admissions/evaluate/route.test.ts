@@ -111,6 +111,34 @@ describe('admissions evaluate route', () => {
     expect(response.status).toBe(400);
     expect(hoistedMocks.evaluateAdmissionsForProgram).not.toHaveBeenCalled();
   });
+  it('allows Psychology prep-only requests without inventing generic scores', async () => {
+    hoistedMocks.listCataloguePrograms.mockResolvedValue({
+      data: [{ id: 'bgu_psychology', name: 'פסיכולוגיה', linkedInstitutionIds: ['bgu'] }],
+    });
+    const input = {
+      degreeId: 'bgu_psychology',
+      extraInputs: {
+        bguPsychologyRoute: 'bagrut',
+        bguPreparatoryTrack: 'natural_life_sciences',
+        bguPreparatoryAverage: 94.25,
+        bguPreparatoryCompleted: true,
+        bguPsychologyRequirementsConfirmed: true,
+        bguLanguageRequirementsConfirmed: true,
+      },
+    };
+    const response = await POST(
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      }),
+    );
+    expect(response.status).toBe(200);
+    expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenCalledWith(
+      expect.objectContaining({ input }),
+    );
+  });
+
   it('returns the admissions evaluation report for a valid request', async () => {
     const response = await POST(
       new Request('http://localhost/api/admissions/evaluate', {

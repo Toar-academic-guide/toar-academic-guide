@@ -1,5 +1,6 @@
 import { allowsNoPsychometric, allowsNoGenericBagrut } from '@/lib/calculatorInputRequirements';
 import { bguQuantitativeInputShape } from '@/lib/bguQuantitativeInputs';
+import { bguPsychologyInputsShape } from '@/lib/bguPsychologyInputs';
 import { headers } from 'next/headers';
 import { z } from 'zod';
 
@@ -67,6 +68,7 @@ const admissionsEvaluationSchema = z
         technionArchitectureExamScore: z.number().min(0).max(140).optional(),
         technionArchitectureExamPassed: z.boolean().optional(),
         technionArchitectureRequirementsConfirmed: z.boolean().optional(),
+        ...bguPsychologyInputsShape,
         bguBagrutAverage: z.number().min(50).max(130).optional(),
         tauApplicationRequirementsConfirmed: z.boolean().optional(),
         tauManagementRequirementsConfirmed: z.boolean().optional(),

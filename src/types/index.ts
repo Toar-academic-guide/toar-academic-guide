@@ -1,4 +1,5 @@
 import type { BguQuantitativeInputs } from '@/lib/bguQuantitativeInputs';
+import type { BguPsychologyInputs } from '@/lib/bguPsychologyInputs';
 export type UniversityId = string;
 
 // ── Avoidance tags ────────────────────────────────────────────────────────────
@@ -28,7 +29,7 @@ export interface UserScores {
   csGrade?: number;
 }
 
-/** Calculator requests may omit psychometric only for a supported admission route. */
+/** Calculator requests may omit generic scores for a supported alternate admission route. */
 export type CalculatorScores = Omit<UserScores, 'psychometric' | 'bagrut'> & {
   psychometric?: number;
   bagrut?: number;
@@ -223,7 +224,7 @@ export interface BagrutRecord {
 }
 
 /** Institution-specific inputs collected only when the student knows them. */
-export interface AdmissionsProfileInputs extends BguQuantitativeInputs {
+export interface AdmissionsProfileInputs extends BguQuantitativeInputs, BguPsychologyInputs {
   /** Official Architecture average, without doubled mathematics weight; capped at 119. */
   technionArchitectureBagrutAverage?: number;
   /** Architecture entrance examination score (0–140), not the Landscape examination. */

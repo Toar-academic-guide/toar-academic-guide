@@ -1,4 +1,5 @@
 import type { BguQuantitativeInputs } from '@/lib/bguQuantitativeInputs';
+import type { BguPsychologyInputs } from '@/lib/bguPsychologyInputs';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type { BagrutSector, BagrutSubjectRecord, DeltaNeeded } from '@/types';
 
@@ -35,6 +36,11 @@ export type AdmissionsEvaluationCapability =
 export type AdmissionsConfidence = 'high' | 'medium' | 'low';
 
 export type AdmissionsRequiredInput =
+  | 'bagrut_average'
+  | 'bgu_psychology_requirements'
+  | 'bgu_preparatory_average'
+  | 'bgu_preparatory_completed'
+  | 'bgu_preparatory_track'
   | 'psychometric_overall'
   | 'bagrut_average'
   | 'tau_management_requirements'
@@ -71,7 +77,7 @@ export type AdmissionsRequiredInput =
   | 'technion_architecture_exam_passed'
   | 'technion_architecture_requirements';
 
-export interface AdmissionsExtraInputs extends BguQuantitativeInputs {
+export interface AdmissionsExtraInputs extends BguQuantitativeInputs, BguPsychologyInputs {
   technionArchitectureBagrutAverage?: number;
   technionArchitectureExamScore?: number;
   technionArchitectureExamPassed?: boolean;

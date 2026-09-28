@@ -1,3 +1,5 @@
+import { isBguPsychologyProgram } from './bguPsychologyInputs';
+
 export const BGU_QUANTITATIVE_PROGRAM_IDS = [
   'biology',
   'bgu_biology',
@@ -14,19 +16,22 @@ export function isBguQuantitativeRouteProgram(programId: string): boolean {
 }
 
 export function allowsNoPsychometric(programId: string): boolean {
-  return [
-    'business',
-    'tau_business',
-    'biology',
-    'bgu_biology',
-    'economics',
-    'bgu_economics',
-    'bgu_business',
-  ].includes(programId);
+  return (
+    isBguPsychologyProgram(programId) ||
+    [
+      'business',
+      'tau_business',
+      'biology',
+      'bgu_biology',
+      'economics',
+      'bgu_economics',
+      'bgu_business',
+    ].includes(programId)
+  );
 }
 
 export function allowsNoGenericBagrut(programId: string): boolean {
-  return isBguQuantitativeRouteProgram(programId);
+  return isBguQuantitativeRouteProgram(programId) || isBguPsychologyProgram(programId);
 }
 
 export const BGU_QUANTITATIVE_PROFILE_KEYS = [

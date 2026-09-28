@@ -328,3 +328,23 @@ describe('savedProgramRequestBodySchema', () => {
     ).toThrow();
   });
 });
+
+it('preserves Psychology recognized prep decimals and false in profile JSONB input', () => {
+  const admissions = {
+    bguPsychologyRoute: 'bagrut',
+    bguPsychologyRequirementsConfirmed: false,
+    bguPreparatoryTrack: 'natural_life_sciences',
+    bguPreparatoryAverage: 94.25,
+    bguPreparatoryCompleted: false,
+  };
+  expect(
+    userProfileSchema.parse({ geographicPreference: 'any', academicScores: { admissions } })
+      .academicScores?.admissions,
+  ).toEqual(admissions);
+  expect(
+    userProfileSchema.safeParse({
+      geographicPreference: 'any',
+      academicScores: { admissions: { ...admissions, bguPreparatoryAverage: 100.01 } },
+    }).success,
+  ).toBe(false);
+});

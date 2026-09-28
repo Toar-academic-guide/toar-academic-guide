@@ -4,6 +4,10 @@ import {
   bguQuantitativeProgramme,
 } from './bguQuantitativeRoutesPolicy';
 import { runBguQuantitativeRoutesProof } from '@/server/ingestion/adapters/bguQuantitativeRoutes';
+import { isBguPsychologyProgram } from '@/lib/bguPsychologyInputs';
+import { resolveBguPsychologyAdmission } from './bguPsychologyPolicy';
+import { runBguPsychologyProof } from '@/server/ingestion/adapters/bguPsychology';
+import { BGU_PSYCHOLOGY_SOURCE_URL } from '@/data/admissions/bguPsychologyVerification';
 import 'server-only';
 
 import { getCalculatorInstitutionsFromCatalogue } from '@/lib/calculatorInstitutions';
@@ -202,6 +206,50 @@ async function evaluateExactResult(args: {
         program: exactTarget.program,
         fetcher: timedFetcher,
       });
+    }
+    if (exactTarget.sourceTarget.adapterId === 'bgu' && isBguPsychologyProgram(program.id)) {
+      const route = resolveBguPsychologyAdmission(requestedInput);
+      if (route.kind === 'needs_input')
+        return requiredInputsResult(institution, route.requiredInputs);
+      if (route.kind === 'below')
+        return exactGateFailureResult({
+          institution,
+          unmetRequirements: [route.reason],
+          requirementsUrl: BGU_PSYCHOLOGY_SOURCE_URL,
+        });
+      const proof = await runBguPsychologyProof({
+        program: exactTarget.program,
+        applicant: {
+          psychometric: requestedInput.psychometric,
+          bagrutAverage: requestedInput.bagrut,
+          extraInputs: requestedInput.extraInputs,
+        },
+        fetcher: timedFetcher,
+      });
+      const result = normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'תנאי פסיכולוגיה בקמפוס באר שבע',
+        positiveDecision: 'eligible_to_apply',
+      });
+      if (result.capability !== 'exact') return result;
+      const labels = {
+        score: 'סכם',
+        psychometric: 'פסיכומטרי',
+        bagrut: 'ממוצע בגרות רשמי בבן־גוריון',
+        preparatory: 'ממוצע מכינה מוכרת בבן־גוריון',
+      };
+      const selectedRoute = proof.normalizedPayload.route as keyof typeof labels;
+      return {
+        ...result,
+        scoreLabel: labels[selectedRoute],
+        officialUrls: [BGU_PSYCHOLOGY_SOURCE_URL],
+        explanation: String(proof.normalizedPayload.reason),
+        nextAction:
+          result.decision === 'below'
+            ? 'בדקו אפיק חלופי לפי התנאים הרשמיים. אין זכאות אוטומטית לדיון בחריגים.'
+            : 'מכסת המתקבלים מלאה כרגע; הזכאים יכולים להירשם ולעקוב אחר מקום פנוי. נדרש אישור מוסדי ועמידה בתנאי החוג הנוסף.',
+      };
     }
     if (exactTarget.sourceTarget.adapterId === 'bgu' && isBguQuantitativeRouteProgram(program.id)) {
       const config = bguQuantitativeProgramme(program.id);
