@@ -25,6 +25,41 @@ vi.mock('@/components/BagrutCalculatorWizard', () => ({
 }));
 
 describe('AcademicProfileForm', () => {
+  it('restores and saves explicit TAU physiotherapy inputs, including a false bonus', async () => {
+    const onComplete = vi.fn();
+    const admissions = {
+      tauPhysiotherapyRoute: 'bagrut' as const,
+      tauPhysiotherapyRequirementsConfirmed: true,
+      tauPhysiotherapyMoocBonusConfirmed: false,
+      tauBagrutAverage: 110,
+    };
+    render(
+      <AcademicProfileForm
+        onComplete={onComplete}
+        onClearLocalProfileData={vi.fn()}
+        onSkip={vi.fn()}
+        initialScores={{ admissions }}
+      />,
+    );
+    expect(screen.getByLabelText('אפיק הקבלה לפיזיותרפיה בתל אביב')).toHaveProperty(
+      'value',
+      'bagrut',
+    );
+    expect(screen.getByLabelText('האם מגיע לך בונוס הקורס המקוון לפיזיותרפיה?')).toHaveProperty(
+      'value',
+      'false',
+    );
+    fireEvent.change(screen.getByLabelText('האם אושר קורס אקדמי במתמטיקה כחלופה לבגרות?'), {
+      target: { value: 'true' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    await waitFor(() =>
+      expect(onComplete).toHaveBeenCalledWith({
+        admissions: { ...admissions, tauPhysiotherapyAcademicMathConfirmed: true },
+      }),
+    );
+  });
+
   it('asks the student to correct an invalid Haifa year before saving a device draft', async () => {
     const onComplete = vi.fn();
     render(

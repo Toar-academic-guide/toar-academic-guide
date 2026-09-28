@@ -66,14 +66,15 @@ function getInstitutionType(inst: InstitutionRecord): InstitutionType {
 
 function formatResultSummary(result: AdmissionsEvaluationResult): string {
   if (typeof result.score === 'number') {
+    const decimalPlaces = result.scoreLabel?.startsWith('סכם פיזיותרפיה') ? 2 : 1;
     const formattedScore = Number.isInteger(result.score)
       ? String(result.score)
-      : result.score.toFixed(1);
+      : result.score.toFixed(decimalPlaces);
     const formattedThreshold =
       typeof result.threshold === 'number'
         ? Number.isInteger(result.threshold)
           ? String(result.threshold)
-          : result.threshold.toFixed(1)
+          : result.threshold.toFixed(decimalPlaces)
         : null;
 
     return `${result.scoreLabel ?? 'ציון'} ${formattedScore}${
@@ -116,6 +117,9 @@ function formatResultSummary(result: AdmissionsEvaluationResult): string {
     }
     if (result.requiredInputs.some((input) => input.startsWith('tau_management_'))) {
       return 'נדרשים נתוני קבלה לניהול בתל אביב';
+    }
+    if (result.requiredInputs.some((input) => input.startsWith('tau_physiotherapy_'))) {
+      return 'השלימו בפרופיל את תנאי הפיזיותרפיה בתל אביב';
     }
     if (result.requiredInputs.includes('psychometric_overall')) return 'נדרש ציון פסיכומטרי';
     const onlyPsychometricSubscores = result.requiredInputs.every((input) =>

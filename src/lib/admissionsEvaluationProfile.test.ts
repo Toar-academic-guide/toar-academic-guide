@@ -6,6 +6,17 @@ import { admissionsExtraInputsFromAcademicScores } from './admissionsEvaluationP
 import { admissionsInputValue } from '@/server/admissions/admissionsInputValue';
 
 describe('admissionsExtraInputsFromAcademicScores', () => {
+  it('forwards explicit physiotherapy route and false confirmations', () => {
+    const admissions = {
+      tauPhysiotherapyRoute: 'bagrut' as const,
+      tauPhysiotherapyRequirementsConfirmed: true,
+      tauPhysiotherapyMoocBonusConfirmed: false,
+    };
+    const extra = admissionsExtraInputsFromAcademicScores({ admissions });
+    expect(extra).toMatchObject(admissions);
+    expect(admissionsInputValue(extra, 'tau_physiotherapy_mooc_bonus')).toBe(false);
+  });
+
   it('forwards saved Medicine facts and resolves their required-input names', () => {
     const admissions = {
       ...HUJI_MEDICINE_ELIGIBLE_INPUTS,

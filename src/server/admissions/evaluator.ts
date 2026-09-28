@@ -1,3 +1,4 @@
+import { evaluateTauPhysiotherapyResult } from './tauPhysiotherapyEvaluation';
 import { isHujiMedicineProgram } from '@/lib/hujiMedicineInputs';
 import {
   resolveHujiMedicineAdmission,
@@ -166,6 +167,13 @@ async function evaluateCapabilityEntries(args: {
   for (const [index, entry] of capabilityEntries.entries()) {
     const institution = institutions.find((item) => item.id === entry.institutionId);
     if (!institution) {
+      continue;
+    }
+
+    if (program.id === 'physiotherapy' && institution.id === 'tau') {
+      exactTasks.push(async () => {
+        results[index] = await evaluateTauPhysiotherapyResult({ input, institution, fetcher });
+      });
       continue;
     }
 
@@ -825,36 +833,6 @@ async function evaluateExactResult(args: {
             ...(mathUnits < 4 ? ['מתמטיקה ברמת 4 יחידות ומעלה'] : []),
           ],
           requirementsUrl: 'https://go.tau.ac.il/he/med/ba/med-doc?v=important-info',
-        });
-      }
-
-      const proof = await runTauAdmissionsProof({
-        fetcher: timedFetcher,
-        program: exactTarget.program,
-        applicant: {
-          bagrutAverage: input.bagrut,
-          psychometric: input.psychometric,
-        },
-      });
-
-      return normalizeExactProofResult({
-        institution,
-        proof: proof.normalizedPayload,
-        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
-        positiveDecision: 'eligible_to_apply',
-      });
-    }
-
-    if (exactTarget.targetId === 'tau-physiotherapy-live') {
-      const psychometricEnglish = input.extraInputs?.psychometricEnglish;
-      if (typeof psychometricEnglish !== 'number') {
-        return requiredInputsResult(institution, ['psychometric_english']);
-      }
-      if (psychometricEnglish < 100) {
-        return exactGateFailureResult({
-          institution,
-          unmetRequirements: ['אנגלית בפסיכומטרי ברמת 100 ומעלה'],
-          requirementsUrl: 'https://go.tau.ac.il/he/med/ba/phys?v=important-info',
         });
       }
 

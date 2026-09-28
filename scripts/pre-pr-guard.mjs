@@ -82,6 +82,7 @@ const targetedTests = [
   'src/server/admissions/calculatorCoverage.test.ts',
   'src/server/admissions/capabilityMatrix.test.ts',
   'src/server/admissions/evaluator.test.ts',
+  'src/server/admissions/tauPhysiotherapyEvaluation.test.ts',
   'src/server/admissions/bguEngineeringPolicy.test.ts',
   'src/server/admissions/tauComputerSciencePolicy.test.ts',
   'src/server/admissions/bguQuantitativeRoutes.test.ts',

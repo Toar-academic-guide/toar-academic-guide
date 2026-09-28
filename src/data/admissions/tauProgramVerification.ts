@@ -451,14 +451,15 @@ export const TAU_PHYSIOTHERAPY_CONTRACT: AdmissionsProgramVerificationContract =
     mode: 'official_replay',
     formulaFamily: 'tau_hatama_with_manual_interview',
     requiredInputs: ['psychometric_english'],
-    cutoff: { acceptance: 664.92, rejection: 640 },
+    cutoff: { acceptance: 658.6, rejection: 640 },
     gates: [
       {
         id: 'tau-physiotherapy:english-minimum',
         kind: 'language',
         field: 'psychometricEnglish',
-        minimum: 100,
-        description: 'TAU requires at least English level Advanced A.',
+        minimum: 120,
+        description:
+          'TAU physiotherapy requires English 120 or an officially recognised alternative.',
       },
       {
         id: 'tau-physiotherapy:personal-interview',

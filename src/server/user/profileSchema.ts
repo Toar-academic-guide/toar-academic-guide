@@ -1,3 +1,4 @@
+import { tauPhysiotherapyInputsShape } from '@/lib/tauPhysiotherapyInputs';
 import { hujiMedicineInputsShape } from '@/lib/hujiMedicineInputs';
 import { bguHealthInputsShape } from '@/lib/bguHealthInputs';
 import { bguQuantitativeInputShape } from '@/lib/bguQuantitativeInputs';
@@ -80,6 +81,7 @@ const admissionsInputsSchema = z.strictObject({
   ...bguPsychologyInputsShape,
   ...hujiMedicineInputsShape,
   ...bguHealthInputsShape,
+  ...tauPhysiotherapyInputsShape,
   ...bguSocialScienceInputsShape,
   bguBagrutAverage: z.number().min(50).max(130).optional(),
   tauApplicationRequirementsConfirmed: z.boolean().optional(),

@@ -1,4 +1,5 @@
 import { pickHujiMedicineInputs } from './hujiMedicineInputs';
+import { TAU_PHYSIOTHERAPY_PROFILE_KEYS } from './tauPhysiotherapyInputs';
 import { BGU_HEALTH_PROFILE_KEYS } from './bguHealthInputs';
 import { BGU_QUANTITATIVE_PROFILE_KEYS } from './calculatorInputRequirements';
 import type { AcademicScores } from '@/types';
@@ -27,6 +28,9 @@ export function admissionsExtraInputsFromAcademicScores(
     haifaInformationSystemsPartnerRequirementsConfirmed:
       academicScores?.admissions?.haifaInformationSystemsPartnerRequirementsConfirmed,
     ...pickHujiMedicineInputs(academicScores?.admissions),
+    ...Object.fromEntries(
+      TAU_PHYSIOTHERAPY_PROFILE_KEYS.map((key) => [key, academicScores?.admissions?.[key]]),
+    ),
     haifaBagrutAverage: academicScores?.admissions?.haifaBagrutAverage,
     haifaBagrutYear: academicScores?.admissions?.haifaBagrutYear,
     haifaPsychometricYear: academicScores?.admissions?.haifaPsychometricYear,
