@@ -1,3 +1,4 @@
+import { HUJI_MEDICINE_PROFILE_KEYS } from '@/lib/hujiMedicineInputs';
 import { BGU_HEALTH_PROFILE_KEYS } from '@/lib/bguHealthInputs';
 import { BGU_QUANTITATIVE_PROFILE_KEYS } from '@/lib/calculatorInputRequirements';
 import { BGU_PSYCHOLOGY_PROFILE_KEYS } from '@/lib/bguPsychologyInputs';
@@ -38,9 +39,11 @@ export function shouldRefreshAdmissionAlerts(
     HAIFA_PROFILE_KEYS.some(
       (key) => previous.admissionsInputs?.[key] !== next.admissionsInputs?.[key],
     ) ||
-    [...BGU_PSYCHOLOGY_PROFILE_KEYS, ...BGU_HEALTH_PROFILE_KEYS].some(
-      (key) => previous.admissionsInputs?.[key] !== next.admissionsInputs?.[key],
-    ) ||
+    [
+      ...BGU_PSYCHOLOGY_PROFILE_KEYS,
+      ...BGU_HEALTH_PROFILE_KEYS,
+      ...HUJI_MEDICINE_PROFILE_KEYS,
+    ].some((key) => previous.admissionsInputs?.[key] !== next.admissionsInputs?.[key]) ||
     BGU_SOCIAL_SCIENCE_PROFILE_KEYS.some(
       (key) => previous.admissionsInputs?.[key] !== next.admissionsInputs?.[key],
     ) ||

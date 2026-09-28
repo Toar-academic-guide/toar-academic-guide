@@ -1,3 +1,9 @@
+import { isHujiMedicineProgram } from '@/lib/hujiMedicineInputs';
+import {
+  resolveHujiMedicineAdmission,
+  HUJI_MEDICINE_REQUIREMENTS_URL,
+  HUJI_MEDICINE_CALCULATOR_URL,
+} from './hujiMedicinePolicy';
 import { isBguHealthProgram } from '@/lib/bguHealthInputs';
 import { BGU_HEALTH_CONFIG } from '@/data/admissions/bguHealthVerification';
 import { resolveBguHealthAdmission } from './bguHealthPolicy';
@@ -360,6 +366,69 @@ async function evaluateExactResult(args: {
           result.decision === 'below'
             ? 'בדקו אפיק חלופי לפי התנאים הרשמיים. אין זכאות אוטומטית לדיון בחריגים.'
             : 'מכסת המתקבלים מלאה כרגע; הזכאים יכולים להירשם ולעקוב אחר מקום פנוי. נדרש אישור מוסדי ועמידה בתנאי החוג הנוסף.',
+      };
+    }
+    if (exactTarget.sourceTarget.adapterId === 'huji' && isHujiMedicineProgram(program.id)) {
+      const route = resolveHujiMedicineAdmission(
+        requestedInput.psychometric,
+        requestedInput.extraInputs,
+      );
+      const details = {
+        score: route.score,
+        threshold: route.threshold,
+        scoreLabel:
+          route.stage === 'final'
+            ? 'ציון התאמה סופי לרפואה'
+            : route.stage === 'assessment'
+              ? 'ציון מו״ר/מרק״ם'
+              : 'ציון קוגניטיבי לרפואה',
+        officialUrls: [HUJI_MEDICINE_CALCULATOR_URL, HUJI_MEDICINE_REQUIREMENTS_URL],
+      };
+      if (route.status === 'needs_input')
+        return {
+          ...requiredInputsResult(institution, route.missing),
+          ...details,
+          explanation:
+            'נדרשים נתונים נוספים לרפואה בעברית. ציון קוגניטיבי לבדו אינו החלטת קבלה סופית.',
+          nextAction: 'השלימו את הנתונים הידועים לכם באזור רפואה בעברית בפרופיל האקדמי.',
+        };
+      if (route.status === 'manual')
+        return {
+          institution: publicInstitutionShape(institution),
+          linkedInstitutionId: institution.id,
+          capability: 'manual_gate',
+          kind: 'manual_gate',
+          decision: 'unknown',
+          confidence: 'low',
+          sourceLabel: 'נדרש אישור מדור הקבלה',
+          explanation: route.reasons.join(' '),
+          nextAction: 'פנו למדור הקבלה וקבלו אישור לאפיק או לנתון המסוים.',
+          ...details,
+        };
+      const proof = await runHujiAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: {
+          psychometric: requestedInput.psychometric!,
+          bagrutAverage: requestedInput.bagrut ?? 0,
+          extraInputs: requestedInput.extraInputs,
+        },
+      });
+      const normalized = normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'תנאי רפואה בעברית',
+        positiveDecision: 'eligible_to_apply',
+      });
+      if (normalized.capability !== 'exact') return normalized;
+      return {
+        ...normalized,
+        ...details,
+        explanation: route.reasons.join(' '),
+        nextAction:
+          route.decision === 'below'
+            ? 'בדקו את האפיק ותנאי המחזור הרשמי.'
+            : 'עקבו אחר החלטת האוניברסיטה ודירוג המועמדים; עמידה בספים אינה אישור קבלה סופי.',
       };
     }
     if (exactTarget.sourceTarget.adapterId === 'haifa') {

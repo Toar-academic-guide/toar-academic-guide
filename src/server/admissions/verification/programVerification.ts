@@ -1,3 +1,4 @@
+import { HUJI_MEDICINE_REQUIRED_INPUTS } from '@/lib/hujiMedicineInputs';
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
 import { bguEngineeringSchema } from '@/lib/bguEngineeringSchema';
@@ -13,6 +14,7 @@ const fingerprintSchema = z.string().regex(/^sha256:[a-f0-9]{64}$/);
 const admissionCycleSchema = z.string().regex(/^\d{4}-\d{4}$/);
 const timestampSchema = z.string().datetime({ offset: true });
 const requiredInputSchema = z.enum([
+  ...Object.values(HUJI_MEDICINE_REQUIRED_INPUTS),
   'bgu_engineering_details',
   'bgu_engineering_physics_course',
   'psychometric_overall',

@@ -1,6 +1,7 @@
 import type { BguHealthInputs } from '@/lib/bguHealthInputs';
 import type { BguQuantitativeInputs } from '@/lib/bguQuantitativeInputs';
 import type { BguPsychologyInputs } from '@/lib/bguPsychologyInputs';
+import type { HujiMedicineInputs, HujiMedicineRequiredInput } from '@/lib/hujiMedicineInputs';
 import type { HaifaAdmissionsInputs } from '@/lib/haifaAdmissionsInputs';
 import type { BguSocialScienceInputs } from '@/lib/bguSocialScienceInputs';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
@@ -40,6 +41,7 @@ export type AdmissionsEvaluationCapability =
 export type AdmissionsConfidence = 'high' | 'medium' | 'low';
 
 export type AdmissionsRequiredInput =
+  | HujiMedicineRequiredInput
   | 'bgu_engineering_details'
   | 'bgu_engineering_physics_course'
   | 'bagrut_average'
@@ -117,7 +119,8 @@ export interface AdmissionsExtraInputs
     BguPsychologyInputs,
     BguSocialScienceInputs,
     BguHealthInputs,
-    HaifaAdmissionsInputs {
+    HaifaAdmissionsInputs,
+    HujiMedicineInputs {
   bguEngineering?: BguEngineeringInputs;
   technionArchitectureBagrutAverage?: number;
   technionArchitectureExamScore?: number;

@@ -1,3 +1,4 @@
+import { pickHujiMedicineInputs } from './hujiMedicineInputs';
 import { BGU_HEALTH_PROFILE_KEYS } from './bguHealthInputs';
 import { BGU_QUANTITATIVE_PROFILE_KEYS } from './calculatorInputRequirements';
 import type { AcademicScores } from '@/types';
@@ -22,6 +23,7 @@ export function admissionsExtraInputsFromAcademicScores(
   const computerScience = subjectsById.get('computer_science');
 
   const extraInputs: AdmissionsExtraInputs = {
+    ...pickHujiMedicineInputs(academicScores?.admissions),
     haifaBagrutAverage: academicScores?.admissions?.haifaBagrutAverage,
     haifaBagrutYear: academicScores?.admissions?.haifaBagrutYear,
     haifaPsychometricYear: academicScores?.admissions?.haifaPsychometricYear,

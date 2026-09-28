@@ -1,3 +1,4 @@
+import { isHujiMedicineProgram } from './hujiMedicineInputs';
 import { isBguHealthProgram } from './bguHealthInputs';
 import { isBguPsychologyProgram } from './bguPsychologyInputs';
 import { isHaifaProgram } from './haifaAdmissionsInputs';
@@ -40,6 +41,7 @@ export function allowsNoGenericBagrut(programId: string): boolean {
   return (
     isBguQuantitativeRouteProgram(programId) ||
     isBguPsychologyProgram(programId) ||
+    isHujiMedicineProgram(programId) ||
     isHaifaProgram(programId) ||
     isBguHealthProgram(programId) ||
     bguSocialScienceProgram(programId) !== null ||

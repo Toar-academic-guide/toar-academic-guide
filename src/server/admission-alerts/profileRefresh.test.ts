@@ -1,3 +1,5 @@
+import { HUJI_MEDICINE_PROFILE_KEYS } from '@/lib/hujiMedicineInputs';
+import { HUJI_MEDICINE_ELIGIBLE_INPUTS } from '@/data/admissions/hujiMedicineVerification';
 import { describe, expect, it } from 'vitest';
 
 import { shouldRefreshAdmissionAlerts } from './profileRefresh';
@@ -12,6 +14,31 @@ const previous = {
 };
 
 describe('alert profile refresh detection', () => {
+  it('refreshes a saved Medicine calculation whenever a route fact changes or clears', () => {
+    const admissionsInputs = {
+      ...HUJI_MEDICINE_ELIGIBLE_INPUTS,
+      hujiMedicinePreparatoryAverage: 110,
+      hujiMedicinePreparatoryYear: 2021,
+      hujiMedicinePreparatoryEligible: true,
+      hujiMedicinePreparatoryConversionConfirmed: true,
+      hujiMedicineCognitiveScore: 27.921,
+      hujiMedicineHebrewScore: 0,
+    };
+    for (const key of HUJI_MEDICINE_PROFILE_KEYS) {
+      expect(
+        shouldRefreshAdmissionAlerts(
+          { ...previous, admissionsInputs },
+          { ...previous, admissionsInputs: { ...admissionsInputs, [key]: undefined } },
+        ),
+      ).toBe(true);
+    }
+    expect(
+      shouldRefreshAdmissionAlerts(
+        { ...previous, admissionsInputs },
+        { ...previous, admissionsInputs: { ...admissionsInputs } },
+      ),
+    ).toBe(false);
+  });
   it('pauses monitoring when an academic input or structured Bagrut version changes', () => {
     expect(shouldRefreshAdmissionAlerts(previous, { ...previous, psychometricOverall: 690 })).toBe(
       true,

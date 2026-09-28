@@ -1,3 +1,4 @@
+import { HUJI_MEDICINE_OFFICIAL_CAPTURES } from './hujiMedicineVerification';
 import { BGU_HEALTH_OFFICIAL_CAPTURES_BY_TARGET_ID } from './bguHealthVerification';
 import { BGU_QUANTITATIVE_OFFICIAL_CAPTURES_BY_TARGET_ID } from './bguQuantitativeRoutesVerification';
 import { BGU_PSYCHOLOGY_OFFICIAL_CAPTURES_BY_TARGET_ID } from './bguPsychologyVerification';
@@ -698,6 +699,10 @@ Object.assign(
   },
 );
 
+Object.assign(OFFICIAL_PROGRAM_PROOF_CAPTURES_BY_TARGET_ID, {
+  'huji-medicine-live': HUJI_MEDICINE_OFFICIAL_CAPTURES,
+  'huji-huji_medicine-live': HUJI_MEDICINE_OFFICIAL_CAPTURES,
+});
 Object.assign(
   OFFICIAL_PROGRAM_PROOF_CAPTURES_BY_TARGET_ID,
   BGU_QUANTITATIVE_OFFICIAL_CAPTURES_BY_TARGET_ID,

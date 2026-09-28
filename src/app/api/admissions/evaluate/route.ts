@@ -1,3 +1,4 @@
+import { hujiMedicineInputsShape } from '@/lib/hujiMedicineInputs';
 import { bguHealthInputsShape } from '@/lib/bguHealthInputs';
 import { allowsNoPsychometric, allowsNoGenericBagrut } from '@/lib/calculatorInputRequirements';
 import { bguQuantitativeInputShape } from '@/lib/bguQuantitativeInputs';
@@ -74,6 +75,7 @@ const admissionsEvaluationSchema = z
         technionArchitectureExamPassed: z.boolean().optional(),
         technionArchitectureRequirementsConfirmed: z.boolean().optional(),
         ...bguPsychologyInputsShape,
+        ...hujiMedicineInputsShape,
         ...haifaAdmissionsInputsShape,
         ...bguHealthInputsShape,
         ...bguSocialScienceInputsShape,

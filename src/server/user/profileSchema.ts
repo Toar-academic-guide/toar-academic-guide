@@ -1,3 +1,4 @@
+import { hujiMedicineInputsShape } from '@/lib/hujiMedicineInputs';
 import { bguHealthInputsShape } from '@/lib/bguHealthInputs';
 import { bguQuantitativeInputShape } from '@/lib/bguQuantitativeInputs';
 import { bguPsychologyInputsShape } from '@/lib/bguPsychologyInputs';
@@ -77,6 +78,7 @@ const admissionsInputsSchema = z.strictObject({
   technionArchitectureRequirementsConfirmed: z.boolean().optional(),
   tauBagrutAverage: z.number().min(50).max(130).optional(),
   ...bguPsychologyInputsShape,
+  ...hujiMedicineInputsShape,
   ...bguHealthInputsShape,
   ...bguSocialScienceInputsShape,
   bguBagrutAverage: z.number().min(50).max(130).optional(),

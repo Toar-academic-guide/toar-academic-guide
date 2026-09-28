@@ -1,3 +1,5 @@
+import medicineOfficial from '../../../docs/admissions-verification/2026-09-28-huji-medicine-official.json';
+import { HUJI_MEDICINE_ELIGIBLE_INPUTS } from '@/data/admissions/hujiMedicineVerification';
 import psychologyOfficial from '../../../docs/admissions-verification/2026-09-27-bgu-psychology-official.json';
 import haifaOfficial from '../../../docs/admissions-verification/2026-09-28-haifa-official.json';
 import socialScienceOfficial from '../../../docs/admissions-verification/2026-09-27-bgu-social-sciences-official.json';
@@ -2793,6 +2795,83 @@ it.each(['psychology', 'bgu_psychology'])(
     expect(fetcher).toHaveBeenCalledTimes(1);
   },
 );
+
+describe('current HUJI Medicine staged evaluation', () => {
+  const hujiInstitutions: CatalogueInstitution[] = [
+    {
+      id: 'huji',
+      name: 'האוניברסיטה העברית',
+      region: 'center',
+      domain: 'huji.ac.il',
+      universityId: 'huji',
+    },
+  ];
+  const medicine: CatalogueProgram = {
+    ...bguMedicine,
+    id: 'medicine',
+    institutionId: 'huji',
+    linkedInstitutionIds: ['huji'],
+    thresholds: {},
+  };
+  it.each(['medicine', 'huji_medicine'])('evaluates %s without generic Bagrut', async (id) => {
+    const report = await evaluateAdmissionsForProgram({
+      program: { ...medicine, id },
+      institutions: hujiInstitutions,
+      input: { degreeId: id, psychometric: 800, extraInputs: HUJI_MEDICINE_ELIGIBLE_INPUTS },
+      fetcher: vi
+        .fn<typeof fetch>()
+        .mockResolvedValue(new Response(medicineOfficial.calculatorHtml)),
+    });
+    expect(report.results).toContainEqual(
+      expect.objectContaining({
+        capability: 'exact',
+        kind: 'manual_gate',
+        decision: 'eligible_to_apply',
+        score: 26.612,
+        threshold: 25.783,
+        scoreLabel: 'ציון התאמה סופי לרפואה',
+      }),
+    );
+  });
+  it('shows passing screening as incomplete when assessment is missing', async () => {
+    const report = await evaluateAdmissionsForProgram({
+      program: medicine,
+      institutions: hujiInstitutions,
+      input: {
+        degreeId: 'medicine',
+        psychometric: 800,
+        extraInputs: { ...HUJI_MEDICINE_ELIGIBLE_INPUTS, hujiMedicineAssessmentScore: undefined },
+      },
+    });
+    expect(report.results).toContainEqual(
+      expect.objectContaining({
+        kind: 'needs_input',
+        decision: 'unknown',
+        score: 27.921,
+        requiredInputs: ['huji_medicine_assessment_score'],
+      }),
+    );
+  });
+  it('does not trust changed calculator arithmetic', async () => {
+    const report = await evaluateAdmissionsForProgram({
+      program: medicine,
+      institutions: hujiInstitutions,
+      input: {
+        degreeId: 'medicine',
+        psychometric: 800,
+        extraInputs: HUJI_MEDICINE_ELIGIBLE_INPUTS,
+      },
+      fetcher: vi
+        .fn<typeof fetch>()
+        .mockResolvedValue(
+          new Response(medicineOfficial.calculatorHtml.replace('0.0290', '0.0286')),
+        ),
+    });
+    expect(report.results).toContainEqual(
+      expect.objectContaining({ kind: 'degraded', decision: 'unknown' }),
+    );
+  });
+});
 
 import healthOfficial from '../../../docs/admissions-verification/2026-09-28-bgu-health-official.json';
 import { BGU_HEALTH_CONFIG } from '@/data/admissions/bguHealthVerification';

@@ -1,6 +1,7 @@
 import type { BguHealthInputs } from '@/lib/bguHealthInputs';
 import type { BguQuantitativeInputs } from '@/lib/bguQuantitativeInputs';
 import type { BguPsychologyInputs } from '@/lib/bguPsychologyInputs';
+import type { HujiMedicineInputs } from '@/lib/hujiMedicineInputs';
 import type { HaifaAdmissionsInputs } from '@/lib/haifaAdmissionsInputs';
 import type { BguSocialScienceInputs } from '@/lib/bguSocialScienceInputs';
 export type UniversityId = string;
@@ -233,7 +234,8 @@ export interface AdmissionsProfileInputs
     BguPsychologyInputs,
     BguSocialScienceInputs,
     BguHealthInputs,
-    HaifaAdmissionsInputs {
+    HaifaAdmissionsInputs,
+    HujiMedicineInputs {
   bguEngineering?: import('./bguEngineering').BguEngineeringInputs;
   /** Official Architecture average, without doubled mathematics weight; capped at 119. */
   technionArchitectureBagrutAverage?: number;
