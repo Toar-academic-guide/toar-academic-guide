@@ -1,3 +1,5 @@
+import { isBguHealthProgram } from '@/lib/bguHealthInputs';
+import { runBguHealthProof } from './bguHealth';
 import { isBguQuantitativeRouteProgram } from '@/lib/calculatorInputRequirements';
 import { runBguQuantitativeRoutesProof } from './bguQuantitativeRoutes';
 import { isBguPsychologyProgram } from '@/lib/bguPsychologyInputs';
@@ -42,6 +44,7 @@ export async function runBguAdmissionsProof(
     throw new Error('BGU adapter requires a program context');
   }
 
+  if (isBguHealthProgram(program.id)) return runBguHealthProof(context);
   if (isBguQuantitativeRouteProgram(program.id)) {
     return runBguQuantitativeRoutesProof({ ...context, program });
   }

@@ -1,3 +1,7 @@
+import { isBguHealthProgram } from '@/lib/bguHealthInputs';
+import { BGU_HEALTH_CONFIG } from '@/data/admissions/bguHealthVerification';
+import { resolveBguHealthAdmission } from './bguHealthPolicy';
+import { runBguHealthProof } from '@/server/ingestion/adapters/bguHealth';
 import { isBguQuantitativeRouteProgram } from '@/lib/calculatorInputRequirements';
 import {
   resolveBguQuantitativeRoute,
@@ -271,6 +275,42 @@ async function evaluateExactResult(args: {
         program: exactTarget.program,
         fetcher: timedFetcher,
       });
+    }
+    if (exactTarget.sourceTarget.adapterId === 'bgu' && isBguHealthProgram(program.id)) {
+      const route = resolveBguHealthAdmission(requestedInput);
+      const config = BGU_HEALTH_CONFIG[program.id];
+      if (route.kind === 'needs_input')
+        return requiredInputsResult(institution, route.requiredInputs);
+      if (route.kind === 'below')
+        return exactGateFailureResult({
+          institution,
+          unmetRequirements: [route.reason],
+          requirementsUrl: config.url,
+        });
+      const proof = await runBguHealthProof({
+        program: exactTarget.program,
+        applicant: {
+          psychometric: requestedInput.psychometric,
+          bagrutAverage: requestedInput.bagrut,
+          extraInputs: requestedInput.extraInputs,
+        },
+        fetcher: timedFetcher,
+      });
+      const result = normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'תנאי מדעי הבריאות בקמפוס באר שבע',
+        positiveDecision: 'eligible_to_apply',
+      });
+      if (result.capability !== 'exact') return result;
+      return {
+        ...result,
+        scoreLabel: proof.normalizedPayload.route === 'academic' ? 'ממוצע תואר ראשון' : 'סכם',
+        officialUrls: [config.url, 'https://www.bgu.ac.il/welcome/contents/admissions-forms/'],
+        explanation: String(proof.normalizedPayload.reason),
+        nextAction:
+          'ההרשמה למחזור הנוכחי סגורה. לנרשמים בזמן נדרש המשך טיפול מוסדי בראיון או בדיון במחלקה; אין הבטחת זימון או קבלה.',
+      };
     }
     if (exactTarget.sourceTarget.adapterId === 'bgu' && isBguPsychologyProgram(program.id)) {
       const route = resolveBguPsychologyAdmission(requestedInput);

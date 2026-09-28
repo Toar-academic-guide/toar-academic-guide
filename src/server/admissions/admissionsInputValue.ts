@@ -5,6 +5,16 @@ export function admissionsInputValue(
   requiredInput: AdmissionsRequiredInput,
 ): unknown {
   switch (requiredInput) {
+    case 'bgu_occupational_therapy_requirements':
+      return input?.bguOccupationalTherapyRequirementsConfirmed;
+    case 'bgu_physiotherapy_requirements':
+      return input?.bguPhysiotherapyRequirementsConfirmed;
+    case 'bgu_occupational_therapy_exam_session':
+      return input?.bguOccupationalTherapyExamSession;
+    case 'bgu_bachelors_degree_completed':
+      return input?.bguBachelorsDegreeCompleted;
+    case 'bgu_bachelors_degree_average':
+      return input?.bguBachelorsDegreeAverage;
     case 'bgu_engineering_details':
       return input?.bguEngineering;
     case 'bgu_engineering_physics_course':

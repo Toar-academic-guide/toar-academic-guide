@@ -1,3 +1,4 @@
+import { BGU_HEALTH_CONFIG, BGU_HEALTH_METADATA_BY_PAIR_ID } from './bguHealthVerification';
 import { BGU_SOCIAL_SCIENCE_METADATA_BY_PAIR_ID } from './bguSocialScienceVerification';
 import { BGU_QUANTITATIVE_METADATA_BY_PAIR_ID } from './bguQuantitativeRoutesVerification';
 import {
@@ -157,16 +158,16 @@ const CONFIGS: BguConfig[] = [
   },
   {
     programId: 'occupational_therapy',
-    sourceUrl: baseUrl('p_dep1=486&p_pat1=1'),
-    officialProgramId: 'dep486-pat1',
+    sourceUrl: BGU_HEALTH_CONFIG.occupational_therapy.url,
+    officialProgramId: BGU_HEALTH_CONFIG.occupational_therapy.officialProgramId,
     acceptance: 620,
     rejection: 620,
     verdict: 'eligible_to_apply',
   },
   {
     programId: 'physiotherapy',
-    sourceUrl: baseUrl('p_dep1=473&p_pat1=1'),
-    officialProgramId: 'dep473-pat1',
+    sourceUrl: BGU_HEALTH_CONFIG.physiotherapy.url,
+    officialProgramId: BGU_HEALTH_CONFIG.physiotherapy.officialProgramId,
     acceptance: 667,
     rejection: 667,
     verdict: 'eligible_to_apply',
@@ -253,6 +254,8 @@ export const BGU_PROGRAM_VERIFICATION_METADATA: Record<string, BguProgramVerific
   Object.fromEntries(
     ALIASES.flatMap((programIds) =>
       programIds.map((programId) => {
+        if (BGU_HEALTH_METADATA_BY_PAIR_ID[`${programId}__bgu`])
+          return [`${programId}__bgu`, BGU_HEALTH_METADATA_BY_PAIR_ID[`${programId}__bgu`]];
         if (BGU_SOCIAL_SCIENCE_METADATA_BY_PAIR_ID[`${programId}__bgu`])
           return [`${programId}__bgu`, BGU_SOCIAL_SCIENCE_METADATA_BY_PAIR_ID[`${programId}__bgu`]];
         if (BGU_QUANTITATIVE_METADATA_BY_PAIR_ID[`${programId}__bgu`]) {

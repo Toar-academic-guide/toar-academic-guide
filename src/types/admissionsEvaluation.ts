@@ -1,3 +1,4 @@
+import type { BguHealthInputs } from '@/lib/bguHealthInputs';
 import type { BguQuantitativeInputs } from '@/lib/bguQuantitativeInputs';
 import type { BguPsychologyInputs } from '@/lib/bguPsychologyInputs';
 import type { BguSocialScienceInputs } from '@/lib/bguSocialScienceInputs';
@@ -41,6 +42,11 @@ export type AdmissionsRequiredInput =
   | 'bgu_engineering_details'
   | 'bgu_engineering_physics_course'
   | 'bagrut_average'
+  | 'bgu_occupational_therapy_requirements'
+  | 'bgu_physiotherapy_requirements'
+  | 'bgu_occupational_therapy_exam_session'
+  | 'bgu_bachelors_degree_completed'
+  | 'bgu_bachelors_degree_average'
   | 'bgu_psychology_requirements'
   | 'bgu_social_science_requirements'
   | 'bgu_social_science_language'
@@ -93,7 +99,7 @@ export type AdmissionsRequiredInput =
   | 'technion_architecture_requirements';
 
 export interface AdmissionsExtraInputs
-  extends BguQuantitativeInputs, BguPsychologyInputs, BguSocialScienceInputs {
+  extends BguQuantitativeInputs, BguPsychologyInputs, BguSocialScienceInputs, BguHealthInputs {
   bguEngineering?: BguEngineeringInputs;
   technionArchitectureBagrutAverage?: number;
   technionArchitectureExamScore?: number;

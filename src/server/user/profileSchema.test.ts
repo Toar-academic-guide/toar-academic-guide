@@ -409,3 +409,35 @@ it('preserves Psychology recognized prep decimals and false in profile JSONB inp
     }).success,
   ).toBe(false);
 });
+
+it('validates health profile averages and preserves false, zero and omitted scores', () => {
+  const admissions = {
+    bguOccupationalTherapyRoute: 'academic',
+    bguOccupationalTherapyRequirementsConfirmed: true,
+    bguBachelorsDegreeCompleted: false,
+    bguBachelorsDegreeAverage: 85.25,
+    bguPhysiotherapyRequirementsConfirmed: false,
+  };
+  expect(
+    userProfileSchema.parse({ geographicPreference: 'any', academicScores: { admissions } })
+      .academicScores?.admissions,
+  ).toEqual(admissions);
+  expect(
+    userProfileSchema.parse({
+      geographicPreference: 'any',
+      academicScores: { admissions: { bguBachelorsDegreeAverage: 0 } },
+    }).academicScores?.admissions?.bguBachelorsDegreeAverage,
+  ).toBe(0);
+  for (const values of [
+    { bguBachelorsDegreeAverage: 100.1 },
+    { bguBachelorsDegreeAverage: -1 },
+    { bguBachelorsDegreeCompleted: 'true' },
+    { bguOccupationalTherapyExamSession: 'unknown' },
+  ])
+    expect(
+      userProfileSchema.safeParse({
+        geographicPreference: 'any',
+        academicScores: { admissions: values },
+      }).success,
+    ).toBe(false);
+});

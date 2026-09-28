@@ -2712,3 +2712,65 @@ it.each(['psychology', 'bgu_psychology'])(
     expect(fetcher).toHaveBeenCalledTimes(1);
   },
 );
+
+import healthOfficial from '../../../docs/admissions-verification/2026-09-28-bgu-health-official.json';
+import { BGU_HEALTH_CONFIG } from '@/data/admissions/bguHealthVerification';
+it.each([...healthOfficial.captures, ...healthOfficial.additionalCaptures])(
+  'evaluates health $pairId $kind through the public evaluator without generic Bagrut',
+  async (fixture) => {
+    const id = fixture.pairId.split('__')[0] as keyof typeof BGU_HEALTH_CONFIG;
+    const config = BGU_HEALTH_CONFIG[id];
+    const { psychometric, bagrut: _bagrut, ...extraInputs } = fixture.input;
+    const report = await evaluateAdmissionsForProgram({
+      program: {
+        ...bguCs,
+        id,
+        name: config.name,
+        thresholds: { bgu: config.threshold },
+        minimumPsychometric: { bgu: config.minimumPsychometric },
+      },
+      institutions,
+      input: { degreeId: id, psychometric, extraInputs: extraInputs as AdmissionsExtraInputs },
+      fetcher: vi
+        .fn<typeof fetch>()
+        .mockResolvedValueOnce(new Response(healthOfficial.programmes[id].rawRuleResponse))
+        .mockResolvedValueOnce(new Response(fixture.rawResponse)),
+    });
+    expectBguExact(report, fixture.kind === 'eligible' ? 'eligible_to_apply' : 'below');
+    expect(report.results[0].score).toBe(fixture.score);
+    expect(report.results[0].nextAction).toContain('סגורה');
+  },
+);
+it('evaluates OT degree review without psychometric or Bagrut and does not promise admission', async () => {
+  const config = BGU_HEALTH_CONFIG.occupational_therapy;
+  const report = await evaluateAdmissionsForProgram({
+    program: {
+      ...bguCs,
+      id: 'occupational_therapy',
+      name: config.name,
+      thresholds: { bgu: 620 },
+      minimumPsychometric: { bgu: 600 },
+    },
+    institutions,
+    input: {
+      degreeId: 'occupational_therapy',
+      extraInputs: {
+        bguOccupationalTherapyRoute: 'academic',
+        bguOccupationalTherapyRequirementsConfirmed: true,
+        bguBachelorsDegreeCompleted: true,
+        bguBachelorsDegreeAverage: 85.25,
+      },
+    },
+    fetcher: vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        new Response(healthOfficial.programmes.occupational_therapy.rawRuleResponse),
+      ),
+  });
+  expectBguExact(report, 'eligible_to_apply');
+  expect(report.results[0]).toMatchObject({
+    score: 85.25,
+    scoreLabel: 'ממוצע תואר ראשון',
+    explanation: expect.stringContaining('דיון במחלקה'),
+  });
+});
