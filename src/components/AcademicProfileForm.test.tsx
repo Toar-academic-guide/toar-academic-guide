@@ -502,6 +502,35 @@ it('retains Medicine inputs when reopened, edited and saved', async () => {
     }),
   );
 });
+it('retains an external preparatory conversion confirmation when the profile is saved and reopened', async () => {
+  const onComplete = vi.fn();
+  const admissions = {
+    hujiMedicineRoute: 'other_preparatory' as const,
+    hujiMedicinePreparatoryAverage: 110.25,
+    hujiMedicinePreparatoryYear: 2025,
+    hujiMedicinePreparatoryEligible: true,
+    hujiMedicinePreparatoryConversionConfirmed: false,
+  };
+  const props = {
+    onComplete,
+    onSkip: vi.fn(),
+    onClearLocalProfileData: vi.fn().mockResolvedValue(undefined),
+  };
+  const view = render(<AcademicProfileForm {...props} initialScores={{ admissions }} />);
+  const label = 'מדור הקבלה המיר את ממוצע המכינה לסולם העברית?';
+  expect(screen.getByLabelText(label)).toHaveProperty('value', 'false');
+  fireEvent.change(screen.getByLabelText(label), { target: { value: 'true' } });
+  fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+  const saved = { admissions: { ...admissions, hujiMedicinePreparatoryConversionConfirmed: true } };
+  await waitFor(() => expect(onComplete).toHaveBeenCalledWith(saved));
+  view.unmount();
+  render(<AcademicProfileForm {...props} initialScores={saved} />);
+  expect(screen.getByLabelText(label)).toHaveProperty('value', 'true');
+  expect(
+    screen.getByLabelText('ממוצע מכינה שהומר במדור הקבלה לסולם העברית (60–113)'),
+  ).toHaveProperty('value', '110.25');
+});
+
 it('clears a Medicine field without replacing unknown information with a value', async () => {
   const onComplete = vi.fn();
   render(

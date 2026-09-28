@@ -15,6 +15,7 @@ describe('HUJI Medicine current official policy', () => {
     ['huji2021Onwards', 90, 700, 21.465],
     ['older', 110, 800, 28.603],
     ['older', 90, 700, 22.114],
+    ['older', 110.6, 716, 27.064],
   ] as const)('reproduces the native %s observation %s / %s', (route, average, psy, expected) => {
     expect(hujiMedicineCognitiveScore(average, psy, route)).toBe(expected);
   });
@@ -98,10 +99,44 @@ describe('HUJI Medicine current official policy', () => {
       }),
     ).toMatchObject({ status: 'decided', score: 26.612 });
   });
+  it('calculates recognised external preparatory grades after 2022 once admissions converts them', () => {
+    expect(
+      resolveHujiMedicineAdmission(800, {
+        ...eligible,
+        hujiMedicineRoute: 'other_preparatory',
+        hujiMedicinePreparatoryAverage: 110,
+        hujiMedicinePreparatoryYear: 2023,
+        hujiMedicinePreparatoryEligible: true,
+        hujiMedicinePreparatoryConversionConfirmed: true,
+      }),
+    ).toMatchObject({
+      status: 'decided',
+      cognitiveScore: 28.603,
+      score: 26.885,
+      decision: 'eligible_to_apply',
+    });
+  });
+  it.each([undefined, false])(
+    'does not calculate an unconverted external grade (%s)',
+    (confirmed) => {
+      const result = resolveHujiMedicineAdmission(800, {
+        ...eligible,
+        hujiMedicineRoute: 'other_preparatory',
+        hujiMedicinePreparatoryAverage: 110,
+        hujiMedicinePreparatoryYear: 2020,
+        hujiMedicinePreparatoryEligible: true,
+        hujiMedicinePreparatoryConversionConfirmed: confirmed,
+      });
+      expect(result.status).toBe('needs_input');
+      expect(result.missing).toContain('huji_medicine_preparatory_conversion');
+      expect(result.cognitiveScore).toBeUndefined();
+      expect(result.score).toBeUndefined();
+      expect(result.decision).toBeUndefined();
+    },
+  );
   it.each([
     [{ hujiMedicineAffirmativeAction: 'eligible' }],
     [{ hujiMedicineAssessmentYear: 2023 }],
-    [{ hujiMedicineRoute: 'other_preparatory', hujiMedicinePreparatoryYear: 2023 }],
     [{ hujiMedicineRoute: 'huji_preparatory', hujiMedicinePreparatoryYear: 2027 }],
     [{ hujiMedicinePriorStudyStatus: 'review_needed' }],
     [{ hujiMedicineRegistrationConfirmed: false }],

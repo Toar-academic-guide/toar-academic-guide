@@ -76,10 +76,25 @@
   "limitations": [
     "The .html calculator has an older final formula; the current calculator is .htm.",
     "The generic official JSON returned error HTML and is not numerical proof.",
-    "Other preparatory cohorts after 2022 have no verified formula here.",
     "The programme page and general policy disagree about assessment scores from 2023; require clarification.",
     "Academic study routes use an actual office-issued cognitive score; no locally invented academic conversion.",
     "Affirmative-action candidates receive an unspecified cognitive bonus and separate ranking. This route remains manual and is not represented by the ordinary-track fixtures."
   ],
-  "calculatorHtmlProvenance": "Excerpt of the four complete calculator functions and minimum psychometric declaration, copied from the retained source whose SHA-256 is recorded above. Surrounding page and bundled libraries are omitted."
+  "calculatorHtmlProvenance": "Excerpt of the four complete calculator functions and minimum psychometric declaration, copied from the retained source whose SHA-256 is recorded above. Surrounding page and bundled libraries are omitted.",
+  "preparatorySource": {
+    "requirementsUrl": "https://info.huji.ac.il/reception-channels/Mechina",
+    "workbookUrl": "https://docs.google.com/spreadsheets/d/1SCkhz5xWXwoGO_J9qXDbrfJ-AUq7M35FIlxjzEcU-pY/edit",
+    "sheet": "חישוב שקלול",
+    "row": 171,
+    "track": "601-4601",
+    "capturedAt": "2026-09-28",
+    "scope": "Other recognised preparatory courses from all years after admissions-office conversion. Course/provider/year must be approved for Medicine in the current cycle.",
+    "formula": "ROUND(0.224844411*R171+0.01992054*S171-12.0665266,3)",
+    "cachedExample": {
+      "convertedAverage": 110.6,
+      "psychometric": 716,
+      "score": 27.064
+    },
+    "captureMethod": "Read-only native sheet cells, including formula and effective values; source not edited. Cached numerical example verifies the academic formula only."
+  }
 }

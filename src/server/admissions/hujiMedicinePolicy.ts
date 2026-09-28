@@ -30,7 +30,7 @@ export const HUJI_MEDICINE_POLICY = {
     older: [3.6201, -12.1296],
     weights: [0.5, 0.5],
     scale: [1.2422, -4.7609],
-    otherLastVerifiedYear: 2022,
+    externalGradeConversionRequired: true,
   },
   final: { assessment: [0.029, 19.9393], weights: [0.6, 0.4] },
 } as const;
@@ -167,20 +167,10 @@ export function resolveHujiMedicineAdmission(
     const year = extra.hujiMedicinePreparatoryYear;
     if (year !== undefined && year > 2026)
       return { ...result, status: 'manual', reasons: ['שנת מכינה עתידית אינה תקפה למחזור תשפ״ז.'] };
-    if (
-      route === 'other_preparatory' &&
-      year !== undefined &&
-      year > p.preparatory.otherLastVerifiedYear
-    ) {
-      return {
-        ...result,
-        status: 'manual',
-        reasons: [
-          'נוסחת מכינה אחרת לאחר תשפ״ב אינה מאומתת. יש לקבל ציון קוגניטיבי רשמי ממדור הקבלה ולהזינו באפיק הציון הרשמי.',
-        ],
-      };
-    }
-    if (extra.hujiMedicinePreparatoryAverage !== undefined && year !== undefined) {
+    const converted =
+      route !== 'other_preparatory' || extra.hujiMedicinePreparatoryConversionConfirmed === true;
+    if (!converted) missing('hujiMedicinePreparatoryConversionConfirmed');
+    if (converted && extra.hujiMedicinePreparatoryAverage !== undefined && year !== undefined) {
       result.cognitiveScore = hujiMedicineCognitiveScore(
         extra.hujiMedicinePreparatoryAverage,
         psychometric,

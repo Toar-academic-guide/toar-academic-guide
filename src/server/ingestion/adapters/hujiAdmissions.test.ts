@@ -7,6 +7,32 @@ import { HUJI_MEDICINE_ELIGIBLE_INPUTS } from '@/data/admissions/hujiMedicineVer
 const medicineHtml = official.calculatorHtml;
 
 describe('runHujiAdmissionsProof', () => {
+  it('replays a confirmed converted external preparatory grade after 2022', async () => {
+    const proof = await runHujiAdmissionsProof({
+      fetcher: vi.fn<typeof fetch>().mockResolvedValue(new Response(medicineHtml)),
+      applicant: {
+        bagrutAverage: 0,
+        psychometric: 800,
+        extraInputs: {
+          ...HUJI_MEDICINE_ELIGIBLE_INPUTS,
+          hujiMedicineRoute: 'other_preparatory',
+          hujiMedicinePreparatoryAverage: 110,
+          hujiMedicinePreparatoryYear: 2023,
+          hujiMedicinePreparatoryEligible: true,
+          hujiMedicinePreparatoryConversionConfirmed: true,
+        },
+      },
+      program: { id: 'medicine', name: 'Medicine', externalId: '601-4601' },
+    });
+    expect(proof).toMatchObject({
+      status: 'succeeded',
+      normalizedPayload: {
+        cognitiveScore: 28.603,
+        selectedScore: 26.885,
+        derivedVerdict: 'eligible_to_apply',
+      },
+    });
+  });
   it('reproduces the current Medicine final score instead of accepting a generic academic score', async () => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(new Response(medicineHtml));
     const extraInputs = {

@@ -16,6 +16,7 @@ describe('userProfileSchema', () => {
       hujiMedicinePreparatoryAverage: 110.25,
       hujiMedicinePreparatoryYear: 2021,
       hujiMedicinePreparatoryEligible: false,
+      hujiMedicinePreparatoryConversionConfirmed: false,
       hujiMedicineCognitiveScore: 27.921,
       hujiMedicineHebrewScore: 0,
     };
@@ -27,6 +28,7 @@ describe('userProfileSchema', () => {
       { hujiMedicinePsychometricDate: '2026-02-30' },
       { hujiMedicineAssessmentScore: 251 },
       { hujiBagrutAverage: 128 },
+      { hujiMedicinePreparatoryConversionConfirmed: 'yes' },
     ]) {
       expect(
         userProfileSchema.safeParse({

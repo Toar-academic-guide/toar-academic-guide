@@ -135,7 +135,7 @@ export function buildHujiMedicineVerification(programId: string): {
     },
     fixtures,
     ledgerReason:
-      'Current dedicated Medicine cognitive/final calculator captures plus published stage-specific cutoffs and prerequisites. Positive is eligibility for institutional selection, never guaranteed acceptance. Unresolved preparatory cohorts and assessment-year conflicts remain manual.',
+      'Current dedicated Medicine cognitive/final calculator captures plus published stage-specific cutoffs and prerequisites. Positive is eligibility for institutional selection, never guaranteed acceptance. External recognised preparatory grades require admissions conversion in all years. Assessment-year conflicts remain manual.',
   };
 }
 

@@ -20,6 +20,7 @@ describe('alert profile refresh detection', () => {
       hujiMedicinePreparatoryAverage: 110,
       hujiMedicinePreparatoryYear: 2021,
       hujiMedicinePreparatoryEligible: true,
+      hujiMedicinePreparatoryConversionConfirmed: true,
       hujiMedicineCognitiveScore: 27.921,
       hujiMedicineHebrewScore: 0,
     };

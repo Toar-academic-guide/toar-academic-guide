@@ -92,20 +92,31 @@ export default function HujiMedicineFields({ values, onChange, disabled, inputCl
           <>
             {number(
               'hujiMedicinePreparatoryAverage',
-              'ממוצע מכינה לרפואה בעברית (60–113)',
+              route === 'other_preparatory'
+                ? 'ממוצע מכינה שהומר במדור הקבלה לסולם העברית (60–113)'
+                : 'ממוצע מכינה לרפואה בעברית (60–113)',
               60,
               113,
             )}
             {number('hujiMedicinePreparatoryYear', 'שנת סיום מכינה לרפואה בעברית', 1900, 2026, '1')}
             {select(
               'hujiMedicinePreparatoryEligible',
-              'האם הושלמה מכינה במסלול טבע המוכר לרפואה בעברית?',
+              'מדור הקבלה אישר שהמכינה ומסלול הטבע מוכרים ותקפים למחזור תשפ״ז?',
               yesNo,
             )}
-            <p className="col-span-full text-xs text-slate-600">
-              מכינה אחרת לאחר 2022 דורשת ציון קוגניטיבי רשמי ממדור הקבלה; אין כאן נוסחה מאומתת
-              למחזור זה.
-            </p>
+            {route === 'other_preparatory' && (
+              <>
+                {select(
+                  'hujiMedicinePreparatoryConversionConfirmed',
+                  'מדור הקבלה המיר את ממוצע המכינה לסולם העברית?',
+                  yesNo,
+                )}
+                <p className="col-span-full text-xs text-slate-600">
+                  מכינה אחרת מוכרת מכל השנים מחייבת המרת הציון במדור הקבלה לפני החישוב. הזינו את
+                  הממוצע שהתקבל לאחר ההמרה.
+                </p>
+              </>
+            )}
           </>
         )}
         {number('hujiMedicineAssessmentScore', 'ציון מו״ר/מרק״ם לרפואה בעברית (150–250)', 150, 250)}
