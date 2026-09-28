@@ -133,7 +133,6 @@ const REVIEWED_PAIR_IDS_BY_INSTITUTION: Record<FormulaBackedInstitutionId, reado
     'nutrition__huji',
     'occupational_therapy__huji',
     'pharmacy__huji',
-    'physiotherapy__huji',
     'political_science__huji',
     'psychology__huji',
     'social_work__huji',
@@ -275,11 +274,6 @@ const WITHHELD_PAIR_EVIDENCE: Record<string, { url: string; reason: string }> = 
     url: 'https://go.tau.ac.il/he/med/ba/med-doc?v=important-info',
     reason:
       'TAU publishes preliminary eligibility at 726.44 and final selection cutoffs of 743.57 for acceptance and 742.52 or below for rejection. Exact final replay remains withheld because the current official sources do not provide the institution-specific assessment weighting and score transformation needed to combine the 2026 non-cognitive component scores with the 30% preliminary score.',
-  },
-  physiotherapy__huji: {
-    url: 'https://go.huji.ac.il/jjson/huji.json.gz',
-    reason:
-      'The current HUJI programme dataset has no physiotherapy track or numeric programme verdict for this legacy catalogue row.',
   },
   colmgmt_cs__colman: {
     url: 'https://www.colman.ac.il/academics/ba/computer-science/',

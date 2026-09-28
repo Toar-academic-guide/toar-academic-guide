@@ -23,6 +23,36 @@ function duplicatedValues(values: string[]): string[] {
 }
 
 describe('catalogueSeed', () => {
+  it('preserves valid Physiotherapy options without a HUJI listing', () => {
+    const payload = buildCatalogueSeed();
+
+    expect(payload.programs.find((row) => row.id === 'physiotherapy')).toMatchObject({
+      institutionId: 'tau',
+    });
+    expect(
+      payload.programInstitutions
+        .filter((row) => row.programId === 'physiotherapy')
+        .map((row) => row.institutionId)
+        .sort(),
+    ).toEqual(['bgu', 'haifa', 'tau']);
+    expect(
+      payload.admissionRequirements
+        .filter((row) => row.programId === 'physiotherapy')
+        .map((row) => row.institutionId)
+        .sort(),
+    ).toEqual(['bgu', 'haifa', 'tau']);
+    expect(
+      payload.admissionThresholds
+        .filter((row) => row.programId === 'physiotherapy')
+        .map((row) => [row.institutionId, row.thresholdValue])
+        .sort(),
+    ).toEqual([
+      ['bgu', 667],
+      ['haifa', 680],
+      ['tau', 660],
+    ]);
+  });
+
   it('keeps supported Nutrition options without TAU or BGU listings', () => {
     const payload = buildCatalogueSeed();
 

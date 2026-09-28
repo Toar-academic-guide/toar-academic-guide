@@ -13,10 +13,10 @@ describe('formula-backed pair catalogue', () => {
     const inventory = buildFormulaBackedPairInventory(allPrograms);
 
     expect(inventory.errors).toEqual([]);
-    expect(inventory.total).toBe(133);
+    expect(inventory.total).toBe(132);
     expect(inventory.totalsByInstitution).toEqual({
       tau: 34,
-      huji: 29,
+      huji: 28,
       bgu: 28,
       haifa: 27,
       technion: 14,
