@@ -4,6 +4,25 @@ import { admissionsExtraInputsFromAcademicScores } from './admissionsEvaluationP
 import { admissionsInputValue } from '@/server/admissions/admissionsInputValue';
 
 describe('admissionsExtraInputsFromAcademicScores', () => {
+  it('forwards social science route, false confirmations and academic decimals', () => {
+    const admissions = {
+      bguSocialScienceRoute: 'bagrut' as const,
+      bguSocialScienceRequirementsConfirmed: false,
+      bguSocialScienceLanguageConfirmed: true,
+      bguReturningFromStudyBreak: false,
+      bguSocialWorkAcademicBackground: 'social_work' as const,
+      bguSocialWorkAcademicAverage: 85.25,
+      bguSocialWorkTranscriptProvided: false,
+      bguApplicantAge: 45,
+      bguEducationSecondDepartment: 'art' as const,
+      bguEnglishClassificationMissing: false,
+      bguHebrewRequirementsConfirmed: true,
+      bguEducationEnglishConditionAcknowledged: false,
+    };
+    expect(admissionsExtraInputsFromAcademicScores({ admissions })).toMatchObject(admissions);
+    expect(admissionsInputValue(admissions, 'bgu_social_science_requirements')).toBe(false);
+    expect(admissionsInputValue(admissions, 'bgu_social_work_academic_average')).toBe(85.25);
+  });
   it('passes saved quantitative-route details to evaluation without losing false or decimal grades', () => {
     const admissions = {
       bguQuantitativeRoute: 'bagrut' as const,

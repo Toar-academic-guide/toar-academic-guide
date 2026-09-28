@@ -1,3 +1,4 @@
+import { BGU_SOCIAL_SCIENCE_METADATA_BY_PAIR_ID } from './bguSocialScienceVerification';
 import { BGU_QUANTITATIVE_METADATA_BY_PAIR_ID } from './bguQuantitativeRoutesVerification';
 import {
   BGU_PSYCHOLOGY_METADATA_BY_PAIR_ID,
@@ -252,6 +253,8 @@ export const BGU_PROGRAM_VERIFICATION_METADATA: Record<string, BguProgramVerific
   Object.fromEntries(
     ALIASES.flatMap((programIds) =>
       programIds.map((programId) => {
+        if (BGU_SOCIAL_SCIENCE_METADATA_BY_PAIR_ID[`${programId}__bgu`])
+          return [`${programId}__bgu`, BGU_SOCIAL_SCIENCE_METADATA_BY_PAIR_ID[`${programId}__bgu`]];
         if (BGU_QUANTITATIVE_METADATA_BY_PAIR_ID[`${programId}__bgu`]) {
           return [`${programId}__bgu`, BGU_QUANTITATIVE_METADATA_BY_PAIR_ID[`${programId}__bgu`]];
         }

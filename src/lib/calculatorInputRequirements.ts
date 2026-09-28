@@ -1,4 +1,5 @@
 import { isBguPsychologyProgram } from './bguPsychologyInputs';
+import { bguSocialScienceProgram } from './bguSocialScienceInputs';
 
 export const BGU_QUANTITATIVE_PROGRAM_IDS = [
   'biology',
@@ -18,6 +19,7 @@ export function isBguQuantitativeRouteProgram(programId: string): boolean {
 export function allowsNoPsychometric(programId: string): boolean {
   return (
     isBguPsychologyProgram(programId) ||
+    bguSocialScienceProgram(programId) !== null ||
     [
       'business',
       'tau_business',
@@ -35,6 +37,7 @@ export function allowsNoGenericBagrut(programId: string): boolean {
   return (
     isBguQuantitativeRouteProgram(programId) ||
     isBguPsychologyProgram(programId) ||
+    bguSocialScienceProgram(programId) !== null ||
     ['ee', 'bgu_ee', 'me', 'bgu_me', 'bgu_industrial'].includes(programId)
   );
 }

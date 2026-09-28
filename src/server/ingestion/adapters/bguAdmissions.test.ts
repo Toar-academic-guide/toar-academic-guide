@@ -525,20 +525,20 @@ describe('BGU Computer Science official proof', () => {
     expect(unconfirmedLanguage.fetcher).not.toHaveBeenCalled();
   });
 
-  it('keeps the existing BGU score endpoint and generic parsing for programmes outside the corrected quantitative families', async () => {
+  it('keeps the existing BGU score endpoint and generic parsing for programmes without a specialised adapter', async () => {
     const fetcher = vi
       .fn<typeof fetch>()
-      .mockResolvedValueOnce(jsonResponse({ items: [{ psycho_sekem: 620 }] }))
+      .mockResolvedValueOnce(jsonResponse({ items: [{ psycho_sekem: 520 }] }))
       .mockResolvedValueOnce(new Response('<script>on_final_sekem.value = 875;</script>'));
     const request = {
       fetcher,
       program: {
-        targetId: 'bgu-communication-live',
-        pairId: 'communication__bgu',
-        id: 'communication',
-        name: 'Communication',
+        targetId: 'bgu-bgu_nursing-live',
+        pairId: 'bgu_nursing__bgu',
+        id: 'bgu_nursing',
+        name: 'Nursing',
         searchText:
-          'https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_institution=0&p_dep1=183&p_pat1=2',
+          'https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_dep1=472&p_pat1=1',
       },
       applicant: { psychometric: 800, bagrutAverage: 120 },
     } satisfies AdmissionsAdapterContext & { fetcher: MockFetcher };
@@ -547,7 +547,7 @@ describe('BGU Computer Science official proof', () => {
 
     expect(proof.normalizedPayload).toMatchObject({
       selectedScore: 875,
-      derivedVerdict: 'accepted',
+      derivedVerdict: 'eligible_to_apply',
     });
     expect(fetcher.mock.calls[1][0]).toBe('https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem');
   });

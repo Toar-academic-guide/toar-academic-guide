@@ -176,6 +176,39 @@ describe('admissions evaluate route', () => {
     );
   });
 
+  it.each(['social_work', 'bgu_socialwork', 'communication', 'education', 'political_science'])(
+    'allows %s alternate inputs without dummy scores',
+    async (degreeId) => {
+      hoistedMocks.listCataloguePrograms.mockResolvedValue({
+        data: [{ id: degreeId, name: degreeId, linkedInstitutionIds: ['bgu'] }],
+      });
+      const input = {
+        degreeId,
+        extraInputs: {
+          bguSocialScienceRoute: 'bagrut',
+          bguPreparatoryTrack: 'natural_life_sciences',
+          bguPreparatoryAverage: 90.25,
+          bguPreparatoryCompleted: false,
+          bguSocialScienceRequirementsConfirmed: false,
+          bguSocialScienceLanguageConfirmed: true,
+          bguReturningFromStudyBreak: false,
+          bguSocialWorkAcademicBackground: 'none',
+        },
+      };
+      const response = await POST(
+        new Request('http://localhost/api/admissions/evaluate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(input),
+        }),
+      );
+      expect(response.status).toBe(200);
+      expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenCalledWith(
+        expect.objectContaining({ input }),
+      );
+    },
+  );
+
   it('returns the admissions evaluation report for a valid request', async () => {
     const response = await POST(
       new Request('http://localhost/api/admissions/evaluate', {

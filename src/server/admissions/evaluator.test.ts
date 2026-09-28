@@ -1,4 +1,5 @@
 import psychologyOfficial from '../../../docs/admissions-verification/2026-09-27-bgu-psychology-official.json';
+import socialScienceOfficial from '../../../docs/admissions-verification/2026-09-27-bgu-social-sciences-official.json';
 import { describe, expect, it, vi } from 'vitest';
 import { architectureInputs, architectureSourceResponse } from '@/test/technionArchitecture';
 import { readFileSync } from 'node:fs';
@@ -2591,6 +2592,60 @@ describe('evaluateAdmissionsForProgram', () => {
       }),
     );
   });
+});
+
+for (const source of socialScienceOfficial.programmes) {
+  for (const capture of source.calculatorCaptures) {
+    it(`evaluates current ${capture.pairId} P${capture.input.psychometric} without generic Bagrut`, async () => {
+      const id = capture.pairId.split('__')[0];
+      const program = { ...bguCs, id, name: source.programme };
+      const report = await evaluateAdmissionsForProgram({
+        program,
+        institutions,
+        input: {
+          degreeId: id,
+          psychometric: capture.input.psychometric,
+          extraInputs: {
+            bguBagrutAverage: capture.input.bguBagrutAverage,
+            bguSocialScienceRoute: 'score',
+            bguSocialScienceRequirementsConfirmed: true,
+            bguSocialScienceLanguageConfirmed: true,
+            bguReturningFromStudyBreak: false,
+            bguSocialWorkAcademicBackground: 'none',
+          },
+        },
+        fetcher: async (url) =>
+          new Response(
+            String(url).includes('GetRdpData')
+              ? JSON.stringify(source.payload)
+              : capture.rawResponse,
+          ),
+      });
+      expectBguExact(report, capture.expectedNumericRouteVerdict as 'below' | 'eligible_to_apply');
+      expect(report.results[0].score).toBe(capture.officialScore);
+      expect(report.results[0].nextAction).not.toContain('מבדק התאמה');
+    });
+  }
+}
+
+it('preserves a Social Work academic committee decision as unknown', async () => {
+  const program = { ...bguCs, id: 'bgu_socialwork' };
+  const report = await evaluateAdmissionsForProgram({
+    program,
+    institutions,
+    input: {
+      degreeId: program.id,
+      psychometric: 800,
+      extraInputs: {
+        bguSocialScienceRequirementsConfirmed: true,
+        bguSocialScienceLanguageConfirmed: true,
+        bguReturningFromStudyBreak: false,
+        bguSocialWorkAcademicBackground: 'other',
+        bguSocialWorkTranscriptProvided: false,
+      },
+    },
+  });
+  expect(report.results[0]).toMatchObject({ capability: 'manual_gate', decision: 'unknown' });
 });
 
 it.each(['psychology', 'bgu_psychology'])(

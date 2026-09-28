@@ -1,6 +1,7 @@
 import { BGU_QUANTITATIVE_PROFILE_KEYS } from './calculatorInputRequirements';
 import type { AcademicScores } from '@/types';
 import type { AdmissionsExtraInputs } from '@/types/admissionsEvaluation';
+import { BGU_SOCIAL_SCIENCE_PROFILE_KEYS } from './bguSocialScienceInputs';
 
 /**
  * Converts the structured academic profile into the explicit input contract
@@ -20,6 +21,9 @@ export function admissionsExtraInputsFromAcademicScores(
   const computerScience = subjectsById.get('computer_science');
 
   const extraInputs: AdmissionsExtraInputs = {
+    ...Object.fromEntries(
+      BGU_SOCIAL_SCIENCE_PROFILE_KEYS.map((key) => [key, academicScores?.admissions?.[key]]),
+    ),
     ...Object.fromEntries(
       BGU_QUANTITATIVE_PROFILE_KEYS.map((key) => [key, academicScores?.admissions?.[key]]),
     ),

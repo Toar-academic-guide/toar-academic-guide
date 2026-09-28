@@ -47,6 +47,18 @@ describe('alert profile refresh detection', () => {
       { bguPreparatoryTrack: 'natural_life_sciences' as const },
       { bguPreparatoryAverage: 94.25 },
       { bguPreparatoryCompleted: false },
+      { bguSocialScienceRoute: 'bagrut' as const },
+      { bguSocialScienceRequirementsConfirmed: false },
+      { bguSocialScienceLanguageConfirmed: false },
+      { bguReturningFromStudyBreak: false },
+      { bguSocialWorkAcademicBackground: 'none' as const },
+      { bguSocialWorkAcademicAverage: 85.25 },
+      { bguSocialWorkTranscriptProvided: false },
+      { bguApplicantAge: 45 },
+      { bguEducationSecondDepartment: 'art' as const },
+      { bguEnglishClassificationMissing: false },
+      { bguHebrewRequirementsConfirmed: false },
+      { bguEducationEnglishConditionAcknowledged: false },
     ]) {
       expect(shouldRefreshAdmissionAlerts(previous, { ...previous, admissionsInputs })).toBe(true);
       expect(shouldRefreshAdmissionAlerts({ ...previous, admissionsInputs }, previous)).toBe(true);
