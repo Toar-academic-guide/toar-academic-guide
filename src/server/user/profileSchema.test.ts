@@ -39,6 +39,35 @@ describe('userProfileSchema', () => {
         }).success,
       ).toBe(false);
   });
+  it('preserves quantitative route inputs, false, zero and decimal preparatory averages', () => {
+    const admissions = {
+      bguQuantitativeRoute: 'bagrut',
+      bguCertificateRequirementsConfirmed: true,
+      bguPriorAcademicStudies: false,
+      bguReturningOrChangingTrack: false,
+      bguApplicationPriority: 3,
+      bguSecondTrackRequirementsConfirmed: true,
+      bguPreparatoryTrack: 'natural_life_sciences',
+      bguPreparatoryAverage: 87.25,
+      bguPreparatoryCompleted: true,
+    };
+    expect(
+      userProfileSchema.parse({ geographicPreference: 'any', academicScores: { admissions } })
+        .academicScores?.admissions,
+    ).toEqual(admissions);
+    expect(
+      userProfileSchema.safeParse({
+        geographicPreference: 'any',
+        academicScores: { admissions: { ...admissions, bguPreparatoryAverage: 101 } },
+      }).success,
+    ).toBe(false);
+    expect(
+      userProfileSchema.safeParse({
+        geographicPreference: 'any',
+        academicScores: { admissions: { ...admissions, bguApplicationPriority: 1.5 } },
+      }).success,
+    ).toBe(false);
+  });
   it('preserves optional Architecture scores, false and zero', () => {
     const admissions = {
       technionArchitectureBagrutAverage: 101.9,
@@ -146,6 +175,32 @@ describe('userProfileSchema', () => {
     });
   });
 
+  it('preserves structured engineering inputs across profile parsing', () => {
+    const bguEngineering = {
+      detailsConfirmed: true,
+      route: 'direct',
+      physicsCoursePassed: false,
+      preparatoryInstitution: 'bgu',
+      preparatoryCompletionYear: 2026,
+      preparatoryMathUnits: 5,
+      preparatoryMathGrade: 95,
+      preparatoryPhysicsUnits: 5,
+      preparatoryPhysicsGrade: 90,
+      industrialPreparatoryAverage: 91.25,
+      diplomaRecognized: false,
+      diplomaMathHours: 90,
+      diplomaMathGrade: 95,
+      diplomaPhysicsHours: 90,
+      diplomaPhysicsGrade: 80,
+    };
+    expect(
+      userProfileSchema.parse({
+        geographicPreference: 'any',
+        academicScores: { admissions: { bguEngineering } },
+      }).academicScores?.admissions?.bguEngineering,
+    ).toEqual(bguEngineering);
+  });
+
   it('rejects invalid ranges and types for institution-specific admissions inputs', () => {
     for (const admissions of [
       { tauBagrutAverage: 49 },
@@ -161,6 +216,9 @@ describe('userProfileSchema', () => {
       { technionArchitectureExamPassed: 'yes' },
       { technionArchitectureRequirementsConfirmed: 1 },
       { tauMathPlacementScore: false },
+      { bguEngineering: { detailsConfirmed: true, preparatoryMathUnits: 3 } },
+      { bguEngineering: { detailsConfirmed: true, diplomaMathHours: 89.5 } },
+      { bguEngineering: { detailsConfirmed: true, diplomaRecognized: 'yes' } },
     ]) {
       expect(() =>
         userProfileSchema.parse({

@@ -1,3 +1,4 @@
+import { BGU_QUANTITATIVE_PROFILE_KEYS } from './calculatorInputRequirements';
 import type { AcademicScores } from '@/types';
 import type { AdmissionsExtraInputs } from '@/types/admissionsEvaluation';
 import { BGU_SOCIAL_SCIENCE_PROFILE_KEYS } from './bguSocialScienceInputs';
@@ -23,6 +24,10 @@ export function admissionsExtraInputsFromAcademicScores(
     ...Object.fromEntries(
       BGU_SOCIAL_SCIENCE_PROFILE_KEYS.map((key) => [key, academicScores?.admissions?.[key]]),
     ),
+    ...Object.fromEntries(
+      BGU_QUANTITATIVE_PROFILE_KEYS.map((key) => [key, academicScores?.admissions?.[key]]),
+    ),
+    bguEngineering: academicScores?.admissions?.bguEngineering,
     technionArchitectureBagrutAverage:
       academicScores?.admissions?.technionArchitectureBagrutAverage,
     technionArchitectureExamScore: academicScores?.admissions?.technionArchitectureExamScore,

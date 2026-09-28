@@ -31,7 +31,17 @@ describe('alert profile refresh detection', () => {
       { bguBagrutAverage: 110.25 },
       { tauApplicationRequirementsConfirmed: false },
       { bguLanguageRequirementsConfirmed: false },
+      { bguQuantitativeRoute: 'bagrut' as const },
+      { bguCertificateRequirementsConfirmed: false },
+      { bguPriorAcademicStudies: false },
+      { bguReturningOrChangingTrack: false },
+      { bguApplicationPriority: 1 },
+      { bguSecondTrackRequirementsConfirmed: false },
+      { bguPreparatoryTrack: 'natural_life_sciences' as const },
+      { bguPreparatoryAverage: 0 },
+      { bguPreparatoryCompleted: false },
       { tauMathPlacementScore: 0 },
+      { bguEngineering: { detailsConfirmed: true, physicsCoursePassed: false } },
       { bguPsychologyRoute: 'bagrut' as const },
       { bguPsychologyRequirementsConfirmed: false },
       { bguPreparatoryTrack: 'natural_life_sciences' as const },
@@ -62,5 +72,22 @@ describe('alert profile refresh detection', () => {
     expect(shouldRefreshAdmissionAlerts(previous, { ...previous, admissionsInputs: {} })).toBe(
       false,
     );
+  });
+
+  it('refreshes when an engineering qualification changes within an existing input object', () => {
+    const admissionsInputs = {
+      bguEngineering: { detailsConfirmed: true, physicsCoursePassed: false },
+    };
+    expect(
+      shouldRefreshAdmissionAlerts(
+        { ...previous, admissionsInputs },
+        {
+          ...previous,
+          admissionsInputs: {
+            bguEngineering: { ...admissionsInputs.bguEngineering, physicsCoursePassed: true },
+          },
+        },
+      ),
+    ).toBe(true);
   });
 });

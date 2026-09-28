@@ -1,7 +1,9 @@
+import type { BguQuantitativeInputs } from '@/lib/bguQuantitativeInputs';
 import type { BguPsychologyInputs } from '@/lib/bguPsychologyInputs';
 import type { BguSocialScienceInputs } from '@/lib/bguSocialScienceInputs';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type { BagrutSector, BagrutSubjectRecord, DeltaNeeded } from '@/types';
+import type { BguEngineeringInputs } from './bguEngineering';
 
 export type AdmissionsEvaluationDecision =
   'accepted' | 'below' | 'eligible_to_apply' | 'pending' | 'unknown';
@@ -36,6 +38,8 @@ export type AdmissionsEvaluationCapability =
 export type AdmissionsConfidence = 'high' | 'medium' | 'low';
 
 export type AdmissionsRequiredInput =
+  | 'bgu_engineering_details'
+  | 'bgu_engineering_physics_course'
   | 'bagrut_average'
   | 'bgu_psychology_requirements'
   | 'bgu_social_science_requirements'
@@ -53,6 +57,7 @@ export type AdmissionsRequiredInput =
   | 'bgu_preparatory_completed'
   | 'bgu_preparatory_track'
   | 'psychometric_overall'
+  | 'bagrut_average'
   | 'tau_management_requirements'
   | 'tau_management_academic_route'
   | 'tau_management_mooc_count'
@@ -75,13 +80,21 @@ export type AdmissionsRequiredInput =
   | 'bgu_bagrut_average'
   | 'tau_application_requirements'
   | 'bgu_language_requirements'
+  | 'bgu_certificate_requirements'
+  | 'bgu_prior_academic_studies'
+  | 'bgu_returning_or_changing_track'
+  | 'bgu_application_priority'
+  | 'bgu_second_track_requirements'
+  | 'bgu_preparatory_qualification'
   | 'tau_math_placement_score'
   | 'technion_architecture_bagrut_average'
   | 'technion_architecture_exam_score'
   | 'technion_architecture_exam_passed'
   | 'technion_architecture_requirements';
 
-export interface AdmissionsExtraInputs extends BguPsychologyInputs, BguSocialScienceInputs {
+export interface AdmissionsExtraInputs
+  extends BguQuantitativeInputs, BguPsychologyInputs, BguSocialScienceInputs {
+  bguEngineering?: BguEngineeringInputs;
   technionArchitectureBagrutAverage?: number;
   technionArchitectureExamScore?: number;
   technionArchitectureExamPassed?: boolean;
@@ -117,7 +130,8 @@ export interface AdmissionsVerificationFixtureInput {
   psychometric: number;
   bagrut: number;
   bagrutSubjectRecord?: BagrutSubjectRecord;
-  [field: string]: string | number | boolean | null | BagrutSubjectRecord | undefined;
+  [field: string]:
+    string | number | boolean | null | BagrutSubjectRecord | BguEngineeringInputs | undefined;
 }
 
 export interface AdmissionsVerificationFixture {

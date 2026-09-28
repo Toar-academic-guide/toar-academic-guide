@@ -5,8 +5,10 @@ export function admissionsInputValue(
   requiredInput: AdmissionsRequiredInput,
 ): unknown {
   switch (requiredInput) {
-    case 'bagrut_average':
-      return undefined;
+    case 'bgu_engineering_details':
+      return input?.bguEngineering;
+    case 'bgu_engineering_physics_course':
+      return input?.bguEngineering?.physicsCoursePassed;
     case 'bgu_psychology_requirements':
       return input?.bguPsychologyRequirementsConfirmed;
     case 'bgu_social_science_requirements':
@@ -45,6 +47,7 @@ export function admissionsInputValue(
       return input?.technionArchitectureExamPassed;
     case 'technion_architecture_requirements':
       return input?.technionArchitectureRequirementsConfirmed;
+    case 'bagrut_average':
     case 'psychometric_overall':
       return undefined; // Overall score is read from the evaluation request, not extraInputs.
     case 'tau_management_requirements':
@@ -89,6 +92,18 @@ export function admissionsInputValue(
       return input?.bguBagrutAverage;
     case 'tau_application_requirements':
       return input?.tauApplicationRequirementsConfirmed;
+    case 'bgu_certificate_requirements':
+      return input?.bguCertificateRequirementsConfirmed;
+    case 'bgu_prior_academic_studies':
+      return input?.bguPriorAcademicStudies;
+    case 'bgu_returning_or_changing_track':
+      return input?.bguReturningOrChangingTrack;
+    case 'bgu_application_priority':
+      return input?.bguApplicationPriority;
+    case 'bgu_second_track_requirements':
+      return input?.bguSecondTrackRequirementsConfirmed;
+    case 'bgu_preparatory_qualification':
+      return input?.bguPreparatoryCompleted === true ? input.bguPreparatoryAverage : undefined;
     case 'bgu_language_requirements':
       return input?.bguLanguageRequirementsConfirmed;
     case 'tau_math_placement_score':

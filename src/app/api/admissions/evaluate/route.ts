@@ -1,4 +1,5 @@
 import { allowsNoPsychometric, allowsNoGenericBagrut } from '@/lib/calculatorInputRequirements';
+import { bguQuantitativeInputShape } from '@/lib/bguQuantitativeInputs';
 import { bguPsychologyInputsShape } from '@/lib/bguPsychologyInputs';
 import { bguSocialScienceInputsShape } from '@/lib/bguSocialScienceInputs';
 import { headers } from 'next/headers';
@@ -9,6 +10,7 @@ import { listCatalogueInstitutions, listCataloguePrograms } from '@/server/catal
 import { evaluateAdmissionsForProgram } from '@/server/admissions/evaluator';
 import { assertAdmissionsEvaluationRateLimit } from '@/server/admissions/rateLimit';
 import { MAX_BAGRUT_SUBJECTS } from '@/lib/bagrutSubjectLimits';
+import { bguEngineeringSchema } from '@/lib/bguEngineeringSchema';
 
 export const dynamic = 'force-dynamic';
 
@@ -49,6 +51,7 @@ const admissionsEvaluationSchema = z
     bagrut: z.number().min(60).max(120).optional(),
     extraInputs: z
       .object({
+        bguEngineering: bguEngineeringSchema.optional(),
         psychometricMath: z.number().int().min(50).max(150).optional(),
         psychometricVerbal: z.number().int().min(50).max(150).optional(),
         psychometricEnglish: z.number().int().min(50).max(150).optional(),
@@ -79,6 +82,7 @@ const admissionsEvaluationSchema = z
           .optional(),
         tauManagementNoPsychometricMoocsConfirmed: z.boolean().optional(),
         bguLanguageRequirementsConfirmed: z.boolean().optional(),
+        ...bguQuantitativeInputShape,
         tauMathPlacementScore: z.number().min(0).max(100).optional(),
       })
       .optional(),
