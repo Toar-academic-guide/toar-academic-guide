@@ -1,3 +1,4 @@
+import { tauPhysiotherapyInputsShape } from '@/lib/tauPhysiotherapyInputs';
 import { hujiMedicineInputsShape } from '@/lib/hujiMedicineInputs';
 import { bguHealthInputsShape } from '@/lib/bguHealthInputs';
 import { allowsNoPsychometric, allowsNoGenericBagrut } from '@/lib/calculatorInputRequirements';
@@ -78,6 +79,7 @@ const admissionsEvaluationSchema = z
         ...hujiMedicineInputsShape,
         ...haifaAdmissionsInputsShape,
         ...bguHealthInputsShape,
+        ...tauPhysiotherapyInputsShape,
         ...bguSocialScienceInputsShape,
         bguBagrutAverage: z.number().min(50).max(130).optional(),
         tauApplicationRequirementsConfirmed: z.boolean().optional(),

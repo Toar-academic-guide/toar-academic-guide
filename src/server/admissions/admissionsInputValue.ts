@@ -96,6 +96,16 @@ export function admissionsInputValue(
     case 'bagrut_average':
     case 'psychometric_overall':
       return undefined; // Overall score is read from the evaluation request, not extraInputs.
+    case 'tau_physiotherapy_route':
+      return input?.tauPhysiotherapyRoute;
+    case 'tau_physiotherapy_requirements':
+      return input?.tauPhysiotherapyRequirementsConfirmed;
+    case 'tau_physiotherapy_english_alternative':
+      return input?.tauPhysiotherapyEnglishAlternativeConfirmed;
+    case 'tau_physiotherapy_academic_math':
+      return input?.tauPhysiotherapyAcademicMathConfirmed;
+    case 'tau_physiotherapy_mooc_bonus':
+      return input?.tauPhysiotherapyMoocBonusConfirmed;
     case 'tau_management_requirements':
       return input?.tauManagementRequirementsConfirmed;
     case 'tau_management_academic_route':

@@ -1,3 +1,4 @@
+import type { TauPhysiotherapyInputs } from '@/lib/tauPhysiotherapyInputs';
 import type { BguHealthInputs } from '@/lib/bguHealthInputs';
 import type { BguQuantitativeInputs } from '@/lib/bguQuantitativeInputs';
 import type { BguPsychologyInputs } from '@/lib/bguPsychologyInputs';
@@ -81,6 +82,11 @@ export type AdmissionsRequiredInput =
   | 'bgu_preparatory_track'
   | 'psychometric_overall'
   | 'bagrut_average'
+  | 'tau_physiotherapy_route'
+  | 'tau_physiotherapy_requirements'
+  | 'tau_physiotherapy_english_alternative'
+  | 'tau_physiotherapy_academic_math'
+  | 'tau_physiotherapy_mooc_bonus'
   | 'tau_management_requirements'
   | 'tau_management_academic_route'
   | 'tau_management_mooc_count'
@@ -121,6 +127,7 @@ export interface AdmissionsExtraInputs
     BguPsychologyInputs,
     BguSocialScienceInputs,
     BguHealthInputs,
+    TauPhysiotherapyInputs,
     HaifaAdmissionsInputs,
     HujiMedicineInputs {
   bguEngineering?: BguEngineeringInputs;

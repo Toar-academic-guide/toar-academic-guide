@@ -251,7 +251,7 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
       externalId: '016411010000',
       scoreField: 'hatama_refua',
       decisionMode: 'eligible_to_apply',
-      staticThresholds: { acceptance: 664.92, rejection: 640 },
+      staticThresholds: { acceptance: 658.6, rejection: 640 },
     },
     requiredInputs: ['psychometric_english'],
   },

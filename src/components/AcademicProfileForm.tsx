@@ -29,6 +29,11 @@ import {
   BGU_SOCIAL_SCIENCE_PROFILE_KEYS,
   bguSocialScienceInputsSchema,
 } from '@/lib/bguSocialScienceInputs';
+import TauPhysiotherapyFields, { type PhysiotherapyFormValues } from './TauPhysiotherapyFields';
+import {
+  TAU_PHYSIOTHERAPY_PROFILE_KEYS,
+  tauPhysiotherapyInputsSchema,
+} from '@/lib/tauPhysiotherapyInputs';
 import BagrutCalculatorWizard from './BagrutCalculatorWizard';
 import { BguEngineeringFields } from './BguEngineeringFields';
 
@@ -180,6 +185,14 @@ export default function AcademicProfileForm({
       setPsychologyValues((previous) => ({ ...previous, [key]: value }));
     }
   }
+  const [physiotherapyValues, setPhysiotherapyValues] = useState<PhysiotherapyFormValues>(() =>
+    Object.fromEntries(
+      TAU_PHYSIOTHERAPY_PROFILE_KEYS.map((key) => [
+        key,
+        initialScores?.admissions?.[key]?.toString() ?? '',
+      ]),
+    ),
+  );
   const [tauMathPlacementScore, setTauMathPlacementScore] = useState(
     initialScores?.admissions?.tauMathPlacementScore?.toString() ?? '',
   );
@@ -362,6 +375,24 @@ export default function AcademicProfileForm({
       return;
     }
     Object.assign(admissions, parsedHealth.data);
+    const parsedPhysiotherapy = tauPhysiotherapyInputsSchema.safeParse(
+      Object.fromEntries(
+        TAU_PHYSIOTHERAPY_PROFILE_KEYS.filter(
+          (key) => physiotherapyValues[key] !== '' && physiotherapyValues[key] !== undefined,
+        ).map((key) => [
+          key,
+          key === 'tauPhysiotherapyRoute'
+            ? physiotherapyValues[key]
+            : physiotherapyValues[key] === 'true',
+        ]),
+      ),
+    );
+    if (!parsedPhysiotherapy.success) {
+      setError('יש להזין נתוני פיזיותרפיה בתל אביב תקינים.');
+      setIsSaving(false);
+      return;
+    }
+    Object.assign(admissions, parsedPhysiotherapy.data);
     const socialScienceInputs = Object.fromEntries(
       BGU_SOCIAL_SCIENCE_PROFILE_KEYS.filter(
         (key) => socialScienceValues[key] !== undefined && socialScienceValues[key] !== '',
@@ -1020,6 +1051,14 @@ export default function AcademicProfileForm({
                   הזינו את השנה של הבחינה שממנה לקחתם את ציוני הכמותי, המילולי והאנגלית.
                 </p>
               </div>
+              <TauPhysiotherapyFields
+                values={physiotherapyValues}
+                onChange={(key, value) =>
+                  setPhysiotherapyValues((previous) => ({ ...previous, [key]: value }))
+                }
+                disabled={isSaving}
+                inputClassName={inputBase}
+              />
               <HaifaQualificationFields
                 values={haifaQualificationValues}
                 onChange={(key, value) =>

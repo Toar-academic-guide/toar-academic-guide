@@ -1,3 +1,4 @@
+import type { TauPhysiotherapyInputs } from '@/lib/tauPhysiotherapyInputs';
 import type { BguHealthInputs } from '@/lib/bguHealthInputs';
 import type { BguQuantitativeInputs } from '@/lib/bguQuantitativeInputs';
 import type { BguPsychologyInputs } from '@/lib/bguPsychologyInputs';
@@ -234,6 +235,7 @@ export interface AdmissionsProfileInputs
     BguPsychologyInputs,
     BguSocialScienceInputs,
     BguHealthInputs,
+    TauPhysiotherapyInputs,
     HaifaAdmissionsInputs,
     HujiMedicineInputs {
   bguEngineering?: import('./bguEngineering').BguEngineeringInputs;
