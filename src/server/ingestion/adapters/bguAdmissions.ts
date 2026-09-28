@@ -26,6 +26,8 @@ import {
   normalizeBguComputerScienceRule,
 } from '@/data/admissions/bguComputerScienceVerification';
 import { evaluateBguComputerScienceGates } from '@/server/admissions/bguComputerSciencePolicy';
+import { isBguEngineeringProgram } from '@/server/admissions/bguEngineeringPolicy';
+import { runBguEngineeringAdmissionsProof } from './bguEngineeringAdmissions';
 
 const BGU_INDEX_URL = 'https://bgu4u.bgu.ac.il/html/average_calc/index.php';
 
@@ -37,6 +39,8 @@ export async function runBguAdmissionsProof(
   if (!program) {
     throw new Error('BGU adapter requires a program context');
   }
+
+  if (isBguEngineeringProgram(program.id)) return runBguEngineeringAdmissionsProof(context);
 
   if (isBguPsychologyProgram(program.id)) return runBguPsychologyProof(context);
   if (program.id === 'cs' || program.id === 'bgu_cs') {

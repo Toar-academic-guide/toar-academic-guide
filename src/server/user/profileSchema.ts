@@ -1,6 +1,7 @@
 import { bguPsychologyInputsShape } from '@/lib/bguPsychologyInputs';
 import { z } from 'zod';
 import { MAX_BAGRUT_SUBJECTS } from '@/lib/bagrutSubjectLimits';
+import { bguEngineeringSchema } from '@/lib/bguEngineeringSchema';
 
 const geographicRegionSchema = z.enum(['center', 'north', 'south', 'any']);
 
@@ -64,6 +65,7 @@ const bagrutRecordSchema = z.strictObject({
 });
 
 const admissionsInputsSchema = z.strictObject({
+  bguEngineering: bguEngineeringSchema.optional(),
   technionArchitectureBagrutAverage: z.number().min(0).max(119).optional(),
   technionArchitectureExamScore: z.number().min(0).max(140).optional(),
   technionArchitectureExamPassed: z.boolean().optional(),
