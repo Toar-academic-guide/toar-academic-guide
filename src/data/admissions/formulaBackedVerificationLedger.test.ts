@@ -23,7 +23,7 @@ describe('formula-backed verification ledger', () => {
       unexpectedPairIds: [],
       duplicatePairIds: [],
     });
-    expect(FORMULA_BACKED_VERIFICATION_LEDGER).toHaveLength(132);
+    expect(FORMULA_BACKED_VERIFICATION_LEDGER).toHaveLength(131);
   });
 
   it('counts only fully proved pairs as exact', () => {
@@ -33,13 +33,13 @@ describe('formula-backed verification ledger', () => {
     );
 
     expect(completion).toMatchObject({
-      total: 132,
+      total: 131,
       exact: 126,
-      withheld: 5,
+      withheld: 4,
       isComplete: false,
     });
     expect(completion.totalsByInstitution).toEqual({
-      tau: { total: 34, exact: 30, withheld: 4, stale: 0, blocked: 0 },
+      tau: { total: 33, exact: 30, withheld: 3, stale: 0, blocked: 0 },
       huji: { total: 28, exact: 28, withheld: 0, stale: 0, blocked: 0 },
       bgu: { total: 28, exact: 28, withheld: 0, stale: 0, blocked: 0 },
       haifa: { total: 27, exact: 26, withheld: 0, stale: 0, blocked: 1 },
@@ -102,12 +102,12 @@ describe('formula-backed verification ledger', () => {
       (entry) => entry.state === 'withheld',
     );
 
-    expect(withheld).toHaveLength(5);
+    expect(withheld).toHaveLength(4);
     expect(withheld.every((entry) => entry.reason.length > 80)).toBe(true);
     expect(withheld.every((entry) => entry.sourceUrl.startsWith('https://'))).toBe(true);
     expect(
       withheld
-        .filter((entry) => ['tau_infosystems__tau', 'colmgmt_cs__colman'].includes(entry.pairId))
+        .filter((entry) => entry.pairId === 'colmgmt_cs__colman')
         .every(
           (entry) =>
             entry.officialProgramId === null &&

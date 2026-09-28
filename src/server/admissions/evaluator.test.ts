@@ -665,10 +665,7 @@ describe('evaluateAdmissionsForProgram', () => {
     },
   );
 
-  it.each([
-    ['tau_infosystems', 'tau', 'requirements_only'],
-    ['colmgmt_cs', 'colman', 'manual_gate'],
-  ] as const)(
+  it.each([['colmgmt_cs', 'colman', 'manual_gate']] as const)(
     'uses the official non-numeric admissions path for %s without calling an exact source',
     async (programId, institutionId, capability) => {
       const fetcher = vi.fn<typeof fetch>();

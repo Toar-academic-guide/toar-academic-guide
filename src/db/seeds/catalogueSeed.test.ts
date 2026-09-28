@@ -23,6 +23,27 @@ function duplicatedValues(values: string[]): string[] {
 }
 
 describe('catalogueSeed', () => {
+  it('keeps TAU Management and other Information Systems options without the extra TAU listing', () => {
+    const payload = buildCatalogueSeed();
+
+    expect(payload.programs.some((row) => row.id === 'tau_infosystems')).toBe(false);
+    expect(payload.programs.find((row) => row.id === 'tau_business')).toMatchObject({
+      name: 'מנהל עסקים',
+      institutionId: 'tau',
+    });
+    expect(payload.programInstitutions).toContainEqual({
+      programId: 'business',
+      institutionId: 'tau',
+    });
+    expect(payload.programInstitutions).toContainEqual({
+      programId: 'tau_business',
+      institutionId: 'tau',
+    });
+    for (const id of ['haifa_infosystems', 'reichman_infosystems', 'colmgmt_infosystems']) {
+      expect(payload.programs.some((row) => row.id === id)).toBe(true);
+    }
+  });
+
   it('preserves valid Physiotherapy options without a HUJI listing', () => {
     const payload = buildCatalogueSeed();
 

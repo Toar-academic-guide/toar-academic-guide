@@ -48,7 +48,6 @@ const WITHHELD_FORMULA_PAIR_CAPABILITIES: Record<
   nutrition__tau: 'requirements_only',
   physiotherapy__tau: 'manual_gate',
   tau_medicine__tau: 'manual_gate',
-  tau_infosystems__tau: 'requirements_only',
   physiotherapy__huji: 'requirements_only',
   nutrition__bgu: 'requirements_only',
 };

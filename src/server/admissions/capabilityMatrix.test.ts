@@ -212,7 +212,6 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     ['medicine', 'tau', 'manual_gate'],
     ['tau_medicine', 'tau', 'manual_gate'],
     ['physiotherapy', 'tau', 'manual_gate'],
-    ['tau_infosystems', 'tau', 'requirements_only'],
     ['colmgmt_cs', 'colman', 'manual_gate'],
   ] as const)(
     'routes %s to its official non-numeric admissions path when a final-verdict proof is unavailable',

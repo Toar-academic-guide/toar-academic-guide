@@ -99,7 +99,6 @@ const REVIEWED_PAIR_IDS_BY_INSTITUTION: Record<FormulaBackedInstitutionId, reado
     'tau_economics__tau',
     'tau_ee__tau',
     'tau_industrial__tau',
-    'tau_infosystems__tau',
     'tau_law__tau',
     'tau_me__tau',
     'tau_medicine__tau',
@@ -265,11 +264,7 @@ const WITHHELD_PAIR_EVIDENCE: Record<string, { url: string; reason: string }> = 
     reason:
       'TAU publishes a physiotherapy score and interview route, but final admission is determined after the personal interview; the calculator contract cannot prove the final verdict from the current structured applicant inputs alone.',
   },
-  tau_infosystems__tau: {
-    url: 'https://go.tau.ac.il/he/management/ba/management?v=requirements',
-    reason:
-      'The current TAU source identifies the official programme as the Management degree, not the legacy standalone Management and Information Systems programme represented by this pair. Reusing the Management identifier requires an explicit catalogue rename or merge decision before any pair-specific proof can activate.',
-  },
+
   tau_medicine__tau: {
     url: 'https://go.tau.ac.il/he/med/ba/med-doc?v=important-info',
     reason:
