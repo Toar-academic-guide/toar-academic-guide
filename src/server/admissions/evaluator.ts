@@ -400,7 +400,7 @@ async function evaluateExactResult(args: {
     }
 
     if (exactTarget.sourceTarget.adapterId === 'bgu') {
-      if (program.id === 'cs' || program.id === 'bgu_cs') {
+      if (['cs', 'bgu_cs', 'datascience', 'bgu_datascience'].includes(program.id)) {
         const subjects = input.extraInputs?.bagrutSubjectRecord?.subjects;
         if (!subjects?.some((subject) => subject.subjectId === 'mathematics')) {
           return requiredInputsResult(institution, ['bagrut_subject_record']);
@@ -422,7 +422,8 @@ async function evaluateExactResult(args: {
           return exactGateFailureResult({
             institution,
             unmetRequirements: gates.unmetRequirements.map((gate) => descriptions[gate]),
-            requirementsUrl: BGU_COMPUTER_SCIENCE_QUANTITATIVE_POLICY.sourceUrl,
+            requirementsUrl:
+              exactTarget.program.searchText ?? BGU_COMPUTER_SCIENCE_QUANTITATIVE_POLICY.sourceUrl,
           });
         }
       }

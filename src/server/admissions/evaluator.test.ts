@@ -859,6 +859,41 @@ describe('evaluateAdmissionsForProgram', () => {
     expect(fetcher).not.toHaveBeenCalled();
   });
 
+  it.each(['datascience', 'bgu_datascience'])(
+    'requests quantitative-route inputs for BGU Data Science (%s)',
+    async (programId) => {
+      const fetcher = bguMockFetcher(720, 831);
+      const report = await evaluateAdmissionsForProgram({
+        input: { degreeId: programId, psychometric: 730, bagrut: 120 },
+        program: { ...bguCs, id: programId, name: 'Data Science' },
+        institutions,
+        fetcher,
+      });
+      expect(report.results[0]).toMatchObject({ kind: 'needs_input', decision: 'unknown' });
+      expect(fetcher).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(['datascience', 'bgu_datascience'])(
+    'rejects quantitative 124 for BGU Data Science despite a high general score (%s)',
+    async (programId) => {
+      const fetcher = bguMockFetcher(720, 831);
+      const report = await evaluateAdmissionsForProgram({
+        input: {
+          degreeId: programId,
+          psychometric: 730,
+          bagrut: 120,
+          extraInputs: { ...csInputs, psychometricMath: 124 },
+        },
+        program: { ...bguCs, id: programId, name: 'Data Science' },
+        institutions,
+        fetcher,
+      });
+      expect(report.results[0]).toMatchObject({ kind: 'exact', decision: 'below' });
+      expect(fetcher).not.toHaveBeenCalled();
+    },
+  );
+
   it.each([
     { psychometric: 599, extraInputs: csInputs },
     { psychometric: 800, extraInputs: { ...csInputs, psychometricMath: 124 } },
