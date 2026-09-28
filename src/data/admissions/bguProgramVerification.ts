@@ -15,6 +15,7 @@ import {
   BGU_COMPUTER_SCIENCE_VERIFICATION_METADATA_BY_PAIR_ID,
 } from './bguComputerScienceVerification';
 import { BGU_DATA_SCIENCE_VERIFICATION_METADATA_BY_PAIR_ID } from './bguDataScienceVerification';
+import { BGU_ENGINEERING_METADATA_BY_PAIR_ID } from './bguEngineeringVerification';
 
 export const BGU_SOURCE_URL = 'https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/';
 const BGU_SCORE_URL = 'https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem';
@@ -254,6 +255,8 @@ export const BGU_PROGRAM_VERIFICATION_METADATA: Record<string, BguProgramVerific
           const pairId = `${programId}__bgu`;
           return [pairId, BGU_DATA_SCIENCE_VERIFICATION_METADATA_BY_PAIR_ID[pairId]];
         }
+        const engineering = BGU_ENGINEERING_METADATA_BY_PAIR_ID[`${programId}__bgu`];
+        if (engineering) return [engineering.contract.pairId, engineering];
         if (BGU_PSYCHOLOGY_METADATA_BY_PAIR_ID[`${programId}__bgu`])
           return [`${programId}__bgu`, BGU_PSYCHOLOGY_METADATA_BY_PAIR_ID[`${programId}__bgu`]];
         if (programId === 'cs' || programId === 'bgu_cs') {

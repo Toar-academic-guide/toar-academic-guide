@@ -1,6 +1,10 @@
 import psychologyOfficial from '../../../docs/admissions-verification/2026-09-27-bgu-psychology-official.json';
 import { describe, expect, it, vi } from 'vitest';
 import { architectureInputs, architectureSourceResponse } from '@/test/technionArchitecture';
+import { readFileSync } from 'node:fs';
+import engineeringRules from '../../../docs/admissions-verification/2026-09-27-bgu-engineering-rules.json';
+import { BGU_ENGINEERING_METADATA_BY_PAIR_ID } from '@/data/admissions/bguEngineeringVerification';
+import type { AdmissionsExtraInputs } from '@/types/admissionsEvaluation';
 
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type { AdmissionsEvaluationReport } from '@/types/admissionsEvaluation';
@@ -966,7 +970,8 @@ describe('evaluateAdmissionsForProgram', () => {
     expect(fetcher).not.toHaveBeenCalled();
   });
 
-  it('returns an exact BGU engineering verdict', async () => {
+  it('does not accept Electrical Engineering below psychometric 600 or without required inputs', async () => {
+    const fetcher = vi.fn<typeof fetch>();
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'bgu_ee',
@@ -975,11 +980,136 @@ describe('evaluateAdmissionsForProgram', () => {
       },
       program: bguEe,
       institutions,
-      fetcher: bguMockFetcher(547, 875),
+      fetcher,
     });
 
-    expectBguExact(report, 'accepted');
+    expect(report.results[0]).toMatchObject({
+      kind: 'needs_input',
+      requiredInputs: ['bgu_engineering_details', 'bgu_language_requirements'],
+    });
+    expect(fetcher).not.toHaveBeenCalled();
   });
+
+  it.each([
+    ['eligible', 595, 'eligible_to_apply'],
+    ['below', 412, 'below'],
+  ] as const)('replays the independent engineering %s example', async (label, score, decision) => {
+    const fixture = BGU_ENGINEERING_METADATA_BY_PAIR_ID.bgu_ee__bgu.fixtures.find((item) =>
+      item.id.includes(`:${label}:`),
+    )!;
+    const { psychometric, bagrut, ...extraInputs } = fixture.input;
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response(JSON.stringify(engineeringRules[0].payload)))
+      .mockResolvedValueOnce(
+        new Response(
+          readFileSync(
+            'docs/admissions-verification/2026-09-27-bgu-engineering-calculator.html',
+            'utf8',
+          ),
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(readFileSync('docs/admissions-verification/2026-09-27-bgu-2027-guide.pdf')),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          `<script>parent.main.document.getElementById("on_c_val").innerHTML = ${score};</script>`,
+        ),
+      );
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'bgu_ee',
+        psychometric,
+        bagrut,
+        extraInputs: extraInputs as AdmissionsExtraInputs,
+      },
+      program: bguEe,
+      institutions,
+      fetcher,
+    });
+    expectBguExact(report, decision);
+    expect(report.results[0]).toMatchObject({ score, threshold: 547, scoreLabel: 'סכם הנדסה' });
+    if (decision === 'eligible_to_apply')
+      expect(report.results[0].explanation).toContain('רשימת המתנה');
+  });
+
+  it('enforces Electrical minimum 600 even when all subject scores are high', async () => {
+    const {
+      psychometric: _,
+      bagrut,
+      ...extraInputs
+    } = BGU_ENGINEERING_METADATA_BY_PAIR_ID.bgu_ee__bgu.fixtures[0].input;
+    const fetcher = vi.fn<typeof fetch>();
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'bgu_ee',
+        psychometric: 599,
+        bagrut,
+        extraInputs: extraInputs as AdmissionsExtraInputs,
+      },
+      program: bguEe,
+      institutions,
+      fetcher,
+    });
+    expectBguExact(report, 'below');
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['bagrut', 109, 109, 'ממוצע בגרות רשמי'],
+    ['preparatory', 91.25, 91, 'ממוצע מכינה'],
+  ] as const)(
+    'evaluates the Industrial %s direct route without a calculator POST or a psychometric score',
+    async (basis, score, threshold, scoreLabel) => {
+      const program = { ...bguEe, id: 'bgu_industrial', name: 'הנדסת תעשייה וניהול' };
+      const fetcher = vi
+        .fn<typeof fetch>()
+        .mockResolvedValueOnce(new Response(JSON.stringify(engineeringRules[2].payload)))
+        .mockResolvedValueOnce(
+          new Response(
+            readFileSync(
+              'docs/admissions-verification/2026-09-27-bgu-engineering-calculator.html',
+              'utf8',
+            ),
+          ),
+        )
+        .mockResolvedValueOnce(
+          new Response(readFileSync('docs/admissions-verification/2026-09-27-bgu-2027-guide.pdf')),
+        );
+      const {
+        psychometric: omitted,
+        bagrut,
+        ...extra
+      } = BGU_ENGINEERING_METADATA_BY_PAIR_ID.bgu_industrial__bgu.fixtures[0].input;
+      void omitted;
+      const extraInputs = {
+        ...extra,
+        bguBagrutAverage: basis === 'bagrut' ? score : 100,
+        bguEngineering: {
+          detailsConfirmed: true,
+          route: 'direct',
+          ...(basis === 'preparatory'
+            ? {
+                preparatoryInstitution: 'bgu',
+                preparatoryCompletionYear: 2026,
+                industrialPreparatoryAverage: score,
+              }
+            : {}),
+        },
+      } as AdmissionsExtraInputs;
+      const report = await evaluateAdmissionsForProgram({
+        input: { degreeId: program.id, bagrut, extraInputs },
+        program,
+        institutions,
+        fetcher,
+      });
+      expectBguExact(report, 'eligible_to_apply');
+      expect(report.results[0]).toMatchObject({ score, threshold, scoreLabel });
+      expect(report.results[0].explanation).not.toContain('ראיון');
+      expect(fetcher).toHaveBeenCalledTimes(3);
+    },
+  );
 
   it('returns an exact BGU biology verdict', async () => {
     const report = await evaluateAdmissionsForProgram({

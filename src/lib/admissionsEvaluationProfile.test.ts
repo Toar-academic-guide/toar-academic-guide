@@ -89,6 +89,22 @@ describe('admissionsExtraInputsFromAcademicScores', () => {
     });
   });
 
+  it('carries engineering qualification data and preserves false when mapping a saved profile', () => {
+    const bguEngineering = {
+      detailsConfirmed: true,
+      physicsCoursePassed: false,
+      preparatoryInstitution: 'bgu' as const,
+      preparatoryCompletionYear: 2026,
+      preparatoryMathUnits: 5 as const,
+      preparatoryMathGrade: 95,
+      diplomaRecognized: false,
+    };
+    const extra = admissionsExtraInputsFromAcademicScores({ admissions: { bguEngineering } });
+    expect(extra).toEqual({ bguEngineering });
+    expect(admissionsInputValue(extra!, 'bgu_engineering_details')).toEqual(bguEngineering);
+    expect(admissionsInputValue(extra!, 'bgu_engineering_physics_course')).toBe(false);
+  });
+
   it('resolves all institution-specific required inputs to their corresponding values', () => {
     const inputs = {
       tauBagrutAverage: 112.5,

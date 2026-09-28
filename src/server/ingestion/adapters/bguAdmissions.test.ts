@@ -18,6 +18,8 @@ import {
 import { evaluateProgramVerification } from '@/server/admissions/verification/programVerification';
 import { runBguAdmissionsProof, runBguComputerScienceLiveVerification } from './bguAdmissions';
 import type { AdmissionsAdapterContext } from '../admissionsSourceAdapters';
+import engineeringRules from '../../../../docs/admissions-verification/2026-09-27-bgu-engineering-rules.json';
+import { readFileSync } from 'node:fs';
 
 const BGU_CS_SOURCE_URL =
   'https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_institution=0&p_year=2027&p_semester=1&p_dep1=232&p_pat1=1&p_spe1=3&p_degree_level=1';
@@ -29,6 +31,121 @@ const BAGruT_RECORD: BagrutSubjectRecord = {
 };
 
 type MockFetcher = ReturnType<typeof vi.fn<typeof fetch>>;
+
+describe('BGU engineering calculator regression', () => {
+  function engineeringContext(psychometric = 800): BguTestContext {
+    const request = context();
+    request.program = {
+      targetId: 'bgu-bgu_ee-live',
+      pairId: 'bgu_ee__bgu',
+      id: 'bgu_ee',
+      name: 'Electrical Engineering',
+      externalId: 'dep361-pat1',
+      searchText: engineeringRules[0].url,
+    };
+    request.applicant = {
+      psychometric,
+      bagrutAverage: 120,
+      extraInputs: Object.assign(
+        {
+          bguBagrutAverage: 120,
+          psychometricMath: 150,
+          bguLanguageRequirementsConfirmed: true,
+          bagrutSubjectRecord: {
+            schemaVersion: 1 as const,
+            sector: 'jewish' as const,
+            subjects: [
+              { subjectId: 'mathematics', units: 5, grade: 95 },
+              { subjectId: 'physics', units: 5, grade: 95 },
+            ],
+          },
+        },
+        { bguEngineering: { detailsConfirmed: true } },
+      ),
+    };
+    request.fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(jsonResponse(engineeringRules[0].payload))
+      .mockResolvedValueOnce(
+        new Response(
+          readFileSync(
+            'docs/admissions-verification/2026-09-27-bgu-engineering-calculator.html',
+            'utf8',
+          ),
+        ),
+      )
+      .mockResolvedValueOnce(
+        new Response(readFileSync('docs/admissions-verification/2026-09-27-bgu-2027-guide.pdf')),
+      )
+      .mockResolvedValueOnce(htmlResponse(595));
+    return request;
+  }
+
+  it('uses the department-specific engineering calculator and reports waiting-list eligibility', async () => {
+    const request = engineeringContext();
+    const proof = await runBguAdmissionsProof(request);
+    expect(proof.normalizedPayload).toMatchObject({
+      selectedScore: 595,
+      acceptanceThreshold: 547,
+      derivedVerdict: 'eligible_to_apply',
+    });
+    expect(request.fetcher.mock.calls[3][0]).toBe(
+      'https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitEngSekem',
+    );
+    const parameters = new URLSearchParams(String(request.fetcher.mock.calls[3][1]?.body));
+    expect(parameters.get('rn_eng_dprt_list')).toBe('361');
+    expect(parameters.get('on_grade_classi_quant')).toBe('150');
+    expect(parameters.get('on_grade_bag_math')).toBe('95');
+    expect(parameters.get('on_grade_bag_phy')).toBe('95');
+  });
+
+  it('does not replay an Electrical Engineering score below the published psychometric minimum', async () => {
+    const request = engineeringContext(599);
+    const proof = await runBguAdmissionsProof(request);
+    expect(proof.capability).toBe('blocked');
+    expect(request.fetcher).not.toHaveBeenCalled();
+  });
+
+  it('does not replace missing engineering subject inputs with a general BGU score', async () => {
+    const request = engineeringContext();
+    request.applicant.extraInputs = undefined;
+    const proof = await runBguAdmissionsProof(request);
+    expect(proof.capability).toBe('blocked');
+    expect(request.fetcher).not.toHaveBeenCalled();
+  });
+
+  it.each(['cutoff', 'guide', 'form'] as const)(
+    'withholds an exact decision when the reviewed %s changes',
+    async (changed) => {
+      const request = engineeringContext();
+      const rule = structuredClone(engineeringRules[0].payload);
+      if (changed === 'cutoff') rule.items[0].psycho_sekem += 1;
+      const form = readFileSync(
+        'docs/admissions-verification/2026-09-27-bgu-engineering-calculator.html',
+        'utf8',
+      );
+      request.fetcher = vi
+        .fn<typeof fetch>()
+        .mockResolvedValueOnce(jsonResponse(rule))
+        .mockResolvedValueOnce(
+          new Response(
+            changed === 'form' ? form.replaceAll('on_grade_classi_quant', 'changed_quant') : form,
+          ),
+        )
+        .mockResolvedValueOnce(
+          new Response(
+            changed === 'guide'
+              ? 'changed guide'
+              : readFileSync('docs/admissions-verification/2026-09-27-bgu-2027-guide.pdf'),
+          ),
+        );
+      const proof = await runBguAdmissionsProof(request);
+      expect(proof.proofLevel).not.toBe('exact_official');
+      expect(proof.normalizedPayload.derivedVerdict).toBeUndefined();
+      expect(request.fetcher).toHaveBeenCalledTimes(3);
+    },
+  );
+});
 
 interface BguTestContext extends AdmissionsAdapterContext {
   fetcher: MockFetcher;

@@ -224,6 +224,7 @@ export interface BagrutRecord {
 
 /** Institution-specific inputs collected only when the student knows them. */
 export interface AdmissionsProfileInputs extends BguPsychologyInputs {
+  bguEngineering?: import('./bguEngineering').BguEngineeringInputs;
   /** Official Architecture average, without doubled mathematics weight; capped at 119. */
   technionArchitectureBagrutAverage?: number;
   /** Architecture entrance examination score (0–140), not the Landscape examination. */
