@@ -1,5 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import haifaOfficial from '../../../../docs/admissions-verification/2026-09-28-haifa-official.json';
+import trackCaptures from '../../../../docs/admissions-verification/2026-09-28-haifa-information-systems-tracks.json';
+import { HAIFA_INFORMATION_SYSTEMS_TRACK_ARTIFACTS } from '@/data/admissions/haifaInformationSystemsVerification';
 import {
   getHaifaProgramConfig,
   HAIFA_PROGRAM_VERIFICATION_METADATA,
@@ -88,6 +90,33 @@ describe('parseHaifaChancesResponse', () => {
 });
 
 describe('runHaifaAdmissionsProof', () => {
+  it('reproduces both independent official captures for all six Information Systems track identities', async () => {
+    const report = await runAdmissionsLiveProof({
+      targetIds: Object.values(HAIFA_INFORMATION_SYSTEMS_TRACK_ARTIFACTS).map(
+        (artifact) => artifact.contract.source.targetId,
+      ),
+      fetcher: vi.fn<typeof fetch>().mockImplementation(async (url) => {
+        const params = new URL(String(url)).searchParams;
+        if (params.get('operation') === 'checkConnection') return jsonResponse({ data: {} });
+        expect(params.get('hug')).toBe('SC0026');
+        const record = trackCaptures.records.find(
+          (capture) => capture.officialProgramId === params.get('program'),
+        )!;
+        return jsonResponse(record[params.get('bag_avg') === '120' ? 'high' : 'low'].response);
+      }),
+    });
+    expect(report.summary).toEqual({
+      total: 6,
+      exactReproduced: 6,
+      partial: 0,
+      blocked: 0,
+      failed: 0,
+    });
+    for (const result of report.results) {
+      expect(result.proof.reviewedSourceFingerprint).toMatch(/^sha256:/);
+      expect(result.proof.normalizedPayload.controlledFixtureCaptureIds).toHaveLength(2);
+    }
+  });
   it('replays both current score and composed eligibility for every supported Haifa alias', async () => {
     const targetIds = Object.values(HAIFA_PROGRAM_VERIFICATION_METADATA)
       .filter((artifact) => artifact.contract.programId !== 'haifa_infosystems')

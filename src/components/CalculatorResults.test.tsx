@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import CalculatorResults from '@/components/CalculatorResults';
@@ -87,6 +87,52 @@ function route(id: string, durationWeeks: number, effortPoints: number) {
 }
 
 describe('CalculatorResults', () => {
+  it('sends an explicit Haifa track, clears partner confirmation when switching and labels the unverified option', async () => {
+    hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(report([]));
+    render(
+      <CalculatorResults
+        degreeId="haifa_infosystems"
+        programs={programs}
+        psychometric={800}
+        bagrut={120}
+        onBack={() => {}}
+      />,
+    );
+    const selector = screen.getByLabelText('מסלול מערכות מידע בחיפה');
+    expect(selector).toHaveProperty('value', '');
+    fireEvent.change(selector, { target: { value: 'computer_science' } });
+    fireEvent.change(screen.getByLabelText('האם אתם עומדים בתנאי הקבלה של החוג השני?'), {
+      target: { value: 'true' },
+    });
+    await waitFor(() =>
+      expect(hoistedMocks.fetchAdmissionsEvaluation).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          extraInputs: expect.objectContaining({
+            haifaInformationSystemsTrack: 'computer_science',
+            haifaInformationSystemsPartnerRequirementsConfirmed: true,
+          }),
+        }),
+      ),
+    );
+    fireEvent.change(selector, { target: { value: 'mathematics' } });
+    expect(screen.getByLabelText('האם אתם עומדים בתנאי הקבלה של החוג השני?')).toHaveProperty(
+      'value',
+      '',
+    );
+    await waitFor(() =>
+      expect(hoistedMocks.fetchAdmissionsEvaluation).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          extraInputs: expect.objectContaining({
+            haifaInformationSystemsTrack: 'mathematics',
+            haifaInformationSystemsPartnerRequirementsConfirmed: undefined,
+          }),
+        }),
+      ),
+    );
+    fireEvent.change(selector, { target: { value: 'single_major' } });
+    expect(await screen.findByText(/המיפוי של המסלול החד־חוגי הרגיל/)).toBeTruthy();
+    expect(screen.queryByLabelText('האם אתם עומדים בתנאי הקבלה של החוג השני?')).toBeNull();
+  });
   it('labels Technion Architecture eligibility as conditional on available places', async () => {
     hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
       report([

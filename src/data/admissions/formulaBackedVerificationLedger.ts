@@ -320,7 +320,7 @@ export const FORMULA_BACKED_VERIFICATION_LEDGER: FormulaPairVerificationLedgerEn
     });
   });
 
-function verifiedProgramEntry(
+export function verifiedProgramEntry(
   artifact:
     | TauProgramVerificationMetadata
     | HujiProgramVerificationMetadata

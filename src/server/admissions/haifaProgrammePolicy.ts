@@ -1,4 +1,5 @@
 import evidence from '@/data/admissions/haifaProgrammePolicies.json';
+import { getHaifaInformationSystemsTrack } from '@/lib/haifaAdmissionsInputs';
 import type {
   AdmissionsEvaluationInput,
   AdmissionsRequiredInput,
@@ -32,8 +33,13 @@ interface ProgrammePolicy {
   };
 }
 const policies: ProgrammePolicy[] = evidence.records;
-export function getHaifaProgrammePolicy(programId: string) {
-  return policies.find((policy) => policy.aliases.includes(programId));
+export function getHaifaProgrammePolicy(programId: string, trackValue?: string) {
+  const policy = policies.find((policy) => policy.aliases.includes(programId));
+  const track =
+    programId === 'haifa_infosystems' ? getHaifaInformationSystemsTrack(trackValue) : undefined;
+  return policy && track
+    ? { ...policy, mappingState: 'verified', officialCalculatorId: track.officialProgramId }
+    : policy;
 }
 
 type PolicyResult =
@@ -70,17 +76,29 @@ export function evaluateHaifaProgrammePolicy(args: {
   score?: number;
   now: Date;
 }): PolicyResult {
-  const policy = getHaifaProgrammePolicy(args.programId);
+  const extra = args.input.extraInputs ?? {};
+  if (args.programId === 'haifa_infosystems' && !extra.haifaInformationSystemsTrack)
+    return { kind: 'needs_input', requiredInputs: ['haifa_information_systems_track'] };
+  const track = getHaifaInformationSystemsTrack(extra.haifaInformationSystemsTrack);
+  const policy = getHaifaProgrammePolicy(args.programId, extra.haifaInformationSystemsTrack);
   if (!policy || policy.mappingState === 'unresolved')
     return {
       kind: 'unavailable',
       reason: 'מיפוי מסלול מערכות המידע למחשבון הרשמי טרם אומת; לא ניתן לקבוע זכאות.',
     };
-  const extra = args.input.extraInputs ?? {};
   const missing: AdmissionsRequiredInput[] = [];
   const reasons: string[] = [];
   const steps = [...(selectionSteps[policy.programme] ?? [])];
   let conditional = false;
+  if (args.programId === 'haifa_infosystems' && track?.partnerRequired) {
+    if (extra.haifaInformationSystemsPartnerRequirementsConfirmed === undefined)
+      missing.push('haifa_information_systems_partner_requirements');
+    else if (!extra.haifaInformationSystemsPartnerRequirementsConfirmed)
+      reasons.push('במסלול דו־חוגי יש לעמוד גם בתנאי הקבלה של החוג השני.');
+    steps.push(
+      'הבדיקה מתייחסת לצד מערכות המידע. אישרתם שאתם עומדים בתנאי החוג השני; תנאיו אינם מחושבים כאן.',
+    );
+  }
   if (extra.haifaAdmissionQualification === undefined)
     missing.push('haifa_admission_qualification');
   else if (extra.haifaAdmissionQualification === 'none')

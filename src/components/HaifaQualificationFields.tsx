@@ -1,6 +1,7 @@
 'use client';
 
 import type { HaifaAdmissionsInputs } from '@/lib/haifaAdmissionsInputs';
+import HaifaInformationSystemsTrackFields from './HaifaInformationSystemsTrackFields';
 
 export type HaifaQualificationValues = Partial<Record<keyof HaifaAdmissionsInputs, string>>;
 type Field = {
@@ -100,6 +101,21 @@ export default function HaifaQualificationFields(props: {
         ומבחני התאמה יופיעו בתוצאה כשלבים שנותרו.
       </p>
       <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <HaifaInformationSystemsTrackFields
+          track={props.values.haifaInformationSystemsTrack ?? ''}
+          partnerRequirements={
+            props.values.haifaInformationSystemsPartnerRequirementsConfirmed ?? ''
+          }
+          onTrackChange={(value) => {
+            props.onChange('haifaInformationSystemsTrack', value);
+            props.onChange('haifaInformationSystemsPartnerRequirementsConfirmed', '');
+          }}
+          onPartnerChange={(value) =>
+            props.onChange('haifaInformationSystemsPartnerRequirementsConfirmed', value)
+          }
+          disabled={props.disabled}
+          inputClassName={props.inputClassName}
+        />
         {fields
           .filter(
             (field) =>

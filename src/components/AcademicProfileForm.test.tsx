@@ -355,6 +355,8 @@ describe('AcademicProfileForm', () => {
       haifaScienceUnits: 8,
       haifaOtFailedSelectionAttempts: 0,
       haifaOtUnjustifiedAbsence: false,
+      haifaInformationSystemsTrack: 'computer_science' as const,
+      haifaInformationSystemsPartnerRequirementsConfirmed: false,
     };
     render(
       <AcademicProfileForm
@@ -369,6 +371,14 @@ describe('AcademicProfileForm', () => {
       'full_bagrut',
     );
     expect(screen.getByLabelText('תאריך מבחן העברית בחיפה')).toHaveProperty('value', '2026-04-01');
+    expect(screen.getByLabelText('מסלול מערכות מידע בחיפה')).toHaveProperty(
+      'value',
+      'computer_science',
+    );
+    expect(screen.getByLabelText('האם אתם עומדים בתנאי הקבלה של החוג השני?')).toHaveProperty(
+      'value',
+      'false',
+    );
     fireEvent.change(screen.getByLabelText('מספר היחידות המדעיות לסיעוד בחיפה'), {
       target: { value: '9' },
     });

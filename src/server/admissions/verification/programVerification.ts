@@ -44,6 +44,8 @@ const requiredInputSchema = z.enum([
   'tau_bagrut_average',
   'bgu_bagrut_average',
   'haifa_bagrut_average',
+  'haifa_information_systems_track',
+  'haifa_information_systems_partner_requirements',
   'haifa_bagrut_year',
   'haifa_psychometric_year',
   'haifa_psychometric_month',

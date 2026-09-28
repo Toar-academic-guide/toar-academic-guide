@@ -44,6 +44,7 @@ import {
 } from './capabilityMatrix';
 import { runHaifaAdmissionsProof } from '@/server/ingestion/adapters/haifaAdmissions';
 import { evaluateHaifaProgrammePolicy, getHaifaProgrammePolicy } from './haifaProgrammePolicy';
+import { getHaifaInformationSystemsTrack } from '@/lib/haifaAdmissionsInputs';
 import { HAIFA_REQUIRED_INPUT_LABELS } from '@/lib/haifaAdmissionsInputs';
 import { runTauAdmissionsProof } from '@/server/ingestion/adapters/tauAdmissions';
 import { runHujiAdmissionsProof } from '@/server/ingestion/adapters/hujiAdmissions';
@@ -109,7 +110,7 @@ export async function evaluateAdmissionsForProgram(args: {
     freshnessStatesBySourceId: suppliedFreshnessStates,
   } = args;
 
-  const exactSourceIds = exactSourceIdsForProgram(program);
+  const exactSourceIds = exactSourceIdsForProgram(program, input.extraInputs);
 
   const freshnessLoad = suppliedFreshnessStates
     ? { status: 'loaded' as const, states: suppliedFreshnessStates }
@@ -436,7 +437,16 @@ async function evaluateExactResult(args: {
         return requiredInputsResult(institution, ['psychometric_overall']);
       const average = requestedInput.extraInputs?.haifaBagrutAverage;
       if (average === undefined) return requiredInputsResult(institution, ['haifa_bagrut_average']);
-      const policy = getHaifaProgrammePolicy(program.id);
+      const policy = getHaifaProgrammePolicy(
+        program.id,
+        requestedInput.extraInputs?.haifaInformationSystemsTrack,
+      );
+      const track =
+        program.id === 'haifa_infosystems'
+          ? getHaifaInformationSystemsTrack(
+              requestedInput.extraInputs?.haifaInformationSystemsTrack,
+            )
+          : undefined;
       const gates = evaluateHaifaProgrammePolicy({
         programId: program.id,
         input: requestedInput,
@@ -483,7 +493,9 @@ async function evaluateExactResult(args: {
       const baseResult = normalizeExactProofResult({
         institution,
         proof: proof.normalizedPayload,
-        explanationPrefix: 'מקור רשמי של אוניברסיטת חיפה',
+        explanationPrefix: track
+          ? `מערכות מידע בחיפה — ${track.label}`
+          : 'מקור רשמי של אוניברסיטת חיפה',
       });
       if (baseResult.capability !== 'exact' || baseResult.score === undefined) return baseResult;
       if (baseResult.threshold !== policy.score.acceptance)
@@ -524,7 +536,7 @@ async function evaluateExactResult(args: {
             : eligibility.conditional
               ? 'עמידה מותנית בתנאי סף'
               : 'עמידה בתנאי סף',
-        explanation: eligibility.reason,
+        explanation: track ? `${track.label}: ${eligibility.reason}` : eligibility.reason,
         nextAction:
           eligibility.steps.join(' ') || 'בדקו את מצב ההרשמה ואת תנאי המסמכים בעמוד החוג הרשמי.',
         officialUrls: [
@@ -1531,6 +1543,26 @@ function evaluateNonExactResult(args: {
 }): AdmissionsEvaluationResult {
   const { input: requestedInput, program, institution, entry } = args;
 
+  if (
+    program.id === 'haifa_infosystems' &&
+    institution.id === 'haifa' &&
+    requestedInput.extraInputs?.haifaInformationSystemsTrack === 'single_major'
+  )
+    return {
+      institution: publicInstitutionShape(institution),
+      linkedInstitutionId: institution.id,
+      capability: 'blocked',
+      kind: 'tracked_missing_rule',
+      decision: 'unknown',
+      confidence: 'low',
+      sourceLabel: 'מיפוי המסלול טרם אומת',
+      explanation:
+        'המיפוי של מסלול מערכות המידע החד־חוגי הרגיל למחשבון הרשמי טרם אומת. לא ניתן לקבוע זכאות עבורו.',
+      nextAction:
+        'בדקו את המסלול מול החוג. בחרו מסלול אחר רק אם זה המסלול שאליו אתם מתכוונים להירשם.',
+      officialUrls: ['https://admissions.haifa.ac.il/computer-information-science/program/3218/'],
+    };
+
   const evidenceRecord =
     entry.evidence ?? getMondayAdmissionEvidenceByCatalogueInstitutionId(institution.id)[0];
   const dynamicRequirements = getDynamicRequirementsFromEvidence(evidenceRecord);
@@ -2520,6 +2552,19 @@ function requiredInputsResult(
 }
 
 function missingInputsCopy(requiredInputs: AdmissionsRequiredInput[]) {
+  if (requiredInputs.length === 1 && requiredInputs[0] === 'haifa_information_systems_track')
+    return {
+      explanation: 'יש לבחור את מסלול מערכות המידע המדויק בחיפה כדי לחשב סיכויי קבלה.',
+      nextAction: 'בחרו מסלול בתיבה שמעל התוצאות.',
+    };
+  if (
+    requiredInputs.length === 1 &&
+    requiredInputs[0] === 'haifa_information_systems_partner_requirements'
+  )
+    return {
+      explanation: 'במסלול דו־חוגי נדרשת עמידה גם בתנאי הקבלה של החוג השני.',
+      nextAction: 'בדקו את תנאי החוג השני וענו על השאלה שמעל התוצאות.',
+    };
   if (requiredInputs.some((input) => input.startsWith('haifa_')))
     return {
       explanation: `לבדיקת חיפה חסרים הנתונים הבאים: ${requiredInputs.map((input) => HAIFA_REQUIRED_INPUT_LABELS[input] ?? 'נתון נוסף').join(', ')}.`,

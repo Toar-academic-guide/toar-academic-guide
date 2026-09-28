@@ -23,6 +23,9 @@ export function admissionsExtraInputsFromAcademicScores(
   const computerScience = subjectsById.get('computer_science');
 
   const extraInputs: AdmissionsExtraInputs = {
+    haifaInformationSystemsTrack: academicScores?.admissions?.haifaInformationSystemsTrack,
+    haifaInformationSystemsPartnerRequirementsConfirmed:
+      academicScores?.admissions?.haifaInformationSystemsPartnerRequirementsConfirmed,
     ...pickHujiMedicineInputs(academicScores?.admissions),
     haifaBagrutAverage: academicScores?.admissions?.haifaBagrutAverage,
     haifaBagrutYear: academicScores?.admissions?.haifaBagrutYear,

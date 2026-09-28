@@ -17,6 +17,7 @@ import {
   getHaifaProgramConfig,
   HAIFA_PROGRAM_VERIFICATION_METADATA,
 } from '@/data/admissions/haifaProgramVerification';
+import { HAIFA_INFORMATION_SYSTEMS_TRACK_ARTIFACTS } from '@/data/admissions/haifaInformationSystemsVerification';
 
 export type AdmissionsSourceCategory =
   | 'blocked'
@@ -180,7 +181,10 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     nextAction:
       'Keep the pair authority-unavailable until a controlled comparison reproduces the official score, internal-test route, and final verdict.',
   },
-  ...Object.values(HAIFA_PROGRAM_VERIFICATION_METADATA).map(
+  ...[
+    ...Object.values(HAIFA_PROGRAM_VERIFICATION_METADATA),
+    ...Object.values(HAIFA_INFORMATION_SYSTEMS_TRACK_ARTIFACTS),
+  ].map(
     (artifact) =>
       ({
         id: artifact.contract.source.targetId,

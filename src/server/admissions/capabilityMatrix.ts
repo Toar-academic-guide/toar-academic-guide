@@ -13,6 +13,7 @@ import {
 import {
   formulaBackedPairScope,
   getFormulaPairVerificationEntry,
+  verifiedProgramEntry,
   type FormulaPairVerificationLedgerEntry,
 } from '@/data/admissions/formulaBackedVerificationLedger';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
@@ -36,6 +37,10 @@ import {
   HAIFA_PROGRAM_VERIFICATION_ARTIFACTS,
 } from '@/data/admissions/haifaProgramVerification';
 import { evaluateProgramVerification } from './verification/programVerification';
+import {
+  HAIFA_INFORMATION_SYSTEMS_TRACK_ARTIFACTS,
+  getHaifaInformationSystemsTrackArtifact,
+} from '@/data/admissions/haifaInformationSystemsVerification';
 
 const SOURCE_FRESHNESS_STALE_AFTER_MS = 8 * 24 * 60 * 60 * 1000;
 
@@ -658,11 +663,37 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
   },
 };
 
+const HAIFA_INFORMATION_SYSTEMS_TARGETS: Record<string, ExactCapabilityTarget> = Object.fromEntries(
+  Object.entries(HAIFA_INFORMATION_SYSTEMS_TRACK_ARTIFACTS).map(([track, artifact]) => [
+    track,
+    {
+      targetId: artifact.contract.source.targetId,
+      sourceTarget: admissionsSourceTargets.find(
+        (target) => target.id === artifact.contract.source.targetId,
+      )!,
+      program: {
+        targetId: artifact.contract.source.targetId,
+        pairId: artifact.contract.pairId,
+        id: artifact.contract.programId,
+        name: 'מערכות מידע',
+        externalId: artifact.contract.officialProgramId,
+        hug: 'SC0026',
+      },
+      requiredInputs: artifact.contract.calculation.requiredInputs,
+    },
+  ]),
+);
+
 export function exactSourceIdsForProgram(
   program: Pick<CatalogueProgram, 'id' | 'linkedInstitutionIds'>,
+  input?: AdmissionsExtraInputs,
 ) {
   return program.linkedInstitutionIds.flatMap((institutionId) => {
-    const target = EXACT_PROGRAM_TARGETS[`${program.id}__${institutionId}`];
+    const target =
+      program.id === 'haifa_infosystems' && institutionId === 'haifa'
+        ? (HAIFA_INFORMATION_SYSTEMS_TARGETS[input?.haifaInformationSystemsTrack ?? ''] ??
+          EXACT_PROGRAM_TARGETS[`${program.id}__${institutionId}`])
+        : EXACT_PROGRAM_TARGETS[`${program.id}__${institutionId}`];
     return target ? [target.targetId] : [];
   });
 }
@@ -713,9 +744,24 @@ export function buildAdmissionsCapabilityMatrix(args: {
   return program.linkedInstitutionIds.map((institutionId) => {
     const pairId = `${program.id}__${institutionId}`;
     const formulaPairScope = formulaBackedPairScope(pairId);
-    const pairVerification = getFormulaPairVerificationEntry(pairId);
-    const verificationArtifact = getProgramVerificationArtifact(pairId);
-    const exactTarget = EXACT_PROGRAM_TARGETS[pairId];
+    if (pairId === 'haifa_infosystems__haifa' && !input?.haifaInformationSystemsTrack)
+      return {
+        institutionId,
+        capability: 'needs_input',
+        formulaPairScope,
+        requiredInputs: ['haifa_information_systems_track'],
+      };
+    const trackArtifact =
+      pairId === 'haifa_infosystems__haifa'
+        ? getHaifaInformationSystemsTrackArtifact(input?.haifaInformationSystemsTrack)
+        : undefined;
+    const pairVerification = trackArtifact
+      ? verifiedProgramEntry(trackArtifact)
+      : getFormulaPairVerificationEntry(pairId);
+    const verificationArtifact = trackArtifact ?? getProgramVerificationArtifact(pairId);
+    const exactTarget = trackArtifact
+      ? HAIFA_INFORMATION_SYSTEMS_TARGETS[input!.haifaInformationSystemsTrack!]
+      : EXACT_PROGRAM_TARGETS[pairId];
     const sourceTarget =
       exactTarget?.sourceTarget ?? SOURCE_TARGETS_BY_INSTITUTION.get(institutionId);
     const evidence = selectBestEvidence(institutionId);
