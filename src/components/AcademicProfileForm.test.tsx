@@ -25,6 +25,125 @@ vi.mock('@/components/BagrutCalculatorWizard', () => ({
 }));
 
 describe('AcademicProfileForm', () => {
+  it('shares preparatory facts across BGU sections and saves the latest edit or clearing', async () => {
+    const onComplete = vi.fn();
+    const bguEngineering = {
+      detailsConfirmed: false,
+      industrialPreparatoryAverage: 91.25,
+      physicsCoursePassed: false,
+    };
+    const props = {
+      onComplete,
+      onSkip: vi.fn(),
+      onClearLocalProfileData: vi.fn().mockResolvedValue(undefined),
+    };
+    const view = render(
+      <AcademicProfileForm
+        {...props}
+        initialScores={{
+          admissions: {
+            bguEngineering,
+            bguPsychologyRoute: 'bagrut',
+            bguPsychologyRequirementsConfirmed: false,
+            bguQuantitativeRoute: 'bagrut',
+            bguPriorAcademicStudies: false,
+            bguPreparatoryTrack: 'natural_life_sciences',
+            bguPreparatoryAverage: 94.25,
+            bguPreparatoryCompleted: true,
+          },
+        }}
+      />,
+    );
+    const quantitativeAverage = () => screen.getByLabelText('ממוצע מכינה מוכרת בבן־גוריון');
+    const psychologyAverage = () => screen.getByLabelText('ממוצע מכינה מוכרת לפסיכולוגיה (0–100)');
+    expect(quantitativeAverage()).toHaveProperty('value', '94.25');
+    expect(psychologyAverage()).toHaveProperty('value', '94.25');
+    fireEvent.change(quantitativeAverage(), { target: { value: '87.25' } });
+    expect(psychologyAverage()).toHaveProperty('value', '87.25');
+    fireEvent.change(psychologyAverage(), { target: { value: '0' } });
+    expect(quantitativeAverage()).toHaveProperty('value', '0');
+    fireEvent.change(screen.getByLabelText('האם המכינה לפסיכולוגיה הושלמה?'), {
+      target: { value: 'false' },
+    });
+    expect(screen.getByLabelText('האם המכינה המוכרת בבן־גוריון הושלמה?')).toHaveProperty(
+      'value',
+      'false',
+    );
+    fireEvent.change(screen.getByLabelText('מכינה מוכרת של בן־גוריון'), {
+      target: { value: 'precise_sciences_engineering' },
+    });
+    expect(screen.getByLabelText('מכינה מוכרת של בן־גוריון לפסיכולוגיה')).toHaveProperty(
+      'value',
+      'precise_sciences_engineering',
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    await waitFor(() => expect(onComplete).toHaveBeenCalledTimes(1));
+    const saved = onComplete.mock.calls[0][0];
+    expect(saved.admissions).toEqual({
+      bguEngineering,
+      bguPsychologyRoute: 'bagrut',
+      bguPsychologyRequirementsConfirmed: false,
+      bguQuantitativeRoute: 'bagrut',
+      bguPriorAcademicStudies: false,
+      bguPreparatoryTrack: 'precise_sciences_engineering',
+      bguPreparatoryAverage: 0,
+      bguPreparatoryCompleted: false,
+    });
+    view.unmount();
+    render(<AcademicProfileForm {...props} initialScores={saved} />);
+    expect(psychologyAverage()).toHaveProperty('value', '0');
+    fireEvent.change(psychologyAverage(), { target: { value: '' } });
+    expect(quantitativeAverage()).toHaveProperty('value', '');
+    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    await waitFor(() => expect(onComplete).toHaveBeenCalledTimes(2));
+    expect(onComplete.mock.calls[1][0].admissions).not.toHaveProperty('bguPreparatoryAverage');
+    expect(onComplete.mock.calls[1][0].admissions.bguPreparatoryCompleted).toBe(false);
+    expect(onComplete.mock.calls[1][0].admissions.bguEngineering).toEqual(bguEngineering);
+  });
+  it('saves and reopens recognized preparatory route details without generic scores', async () => {
+    const onComplete = vi.fn();
+    const props = {
+      onComplete,
+      onSkip: vi.fn(),
+      onClearLocalProfileData: vi.fn().mockResolvedValue(undefined),
+    };
+    const view = render(<AcademicProfileForm {...props} />);
+    fireEvent.change(screen.getByLabelText('אפיק לבדיקה בבן־גוריון'), {
+      target: { value: 'bagrut' },
+    });
+    fireEvent.change(screen.getByLabelText('מכינה מוכרת של בן־גוריון'), {
+      target: { value: 'natural_life_sciences' },
+    });
+    fireEvent.change(screen.getByLabelText('ממוצע מכינה מוכרת בבן־גוריון'), {
+      target: { value: '87.25' },
+    });
+    fireEvent.change(screen.getByLabelText('האם המכינה המוכרת בבן־גוריון הושלמה?'), {
+      target: { value: 'true' },
+    });
+    fireEvent.change(screen.getByLabelText('האם יש לימודים אקדמיים קודמים?'), {
+      target: { value: 'false' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    await waitFor(() => expect(onComplete).toHaveBeenCalled());
+    const saved = onComplete.mock.calls[0][0];
+    expect(saved).toEqual({
+      admissions: {
+        bguQuantitativeRoute: 'bagrut',
+        bguPreparatoryTrack: 'natural_life_sciences',
+        bguPreparatoryAverage: 87.25,
+        bguPreparatoryCompleted: true,
+        bguPriorAcademicStudies: false,
+      },
+    });
+    view.unmount();
+    render(<AcademicProfileForm {...props} initialScores={saved} />);
+    expect((screen.getByLabelText('ממוצע מכינה מוכרת בבן־גוריון') as HTMLInputElement).value).toBe(
+      '87.25',
+    );
+    expect(
+      (screen.getByLabelText('האם יש לימודים אקדמיים קודמים?') as HTMLSelectElement).value,
+    ).toBe('false');
+  });
   beforeEach(() => {
     vi.restoreAllMocks();
   });

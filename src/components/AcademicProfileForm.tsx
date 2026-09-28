@@ -5,6 +5,9 @@ import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { Upload, FileText, X, Brain, GraduationCap, Loader2 } from 'lucide-react';
 import type { AcademicScores, UserProfile } from '@/types';
+import BguQuantitativeFields from './BguQuantitativeFields';
+import { BGU_QUANTITATIVE_PROFILE_KEYS } from '@/lib/calculatorInputRequirements';
+import type { BguQuantitativeInputs } from '@/lib/bguQuantitativeInputs';
 import BguPsychologyFields, { type PsychologyFormValues } from './BguPsychologyFields';
 import { BGU_PSYCHOLOGY_PROFILE_KEYS, bguPsychologyInputsSchema } from '@/lib/bguPsychologyInputs';
 import BagrutCalculatorWizard from './BagrutCalculatorWizard';
@@ -47,7 +50,7 @@ export default function AcademicProfileForm({
 }: Props) {
   const [psychologyValues, setPsychologyValues] = useState<PsychologyFormValues>(() =>
     Object.fromEntries(
-      BGU_PSYCHOLOGY_PROFILE_KEYS.map((key) => [
+      BGU_PSYCHOLOGY_PROFILE_KEYS.filter((key) => !key.startsWith('bguPreparatory')).map((key) => [
         key,
         initialScores?.admissions?.[key]?.toString() ?? '',
       ]),
@@ -83,6 +86,39 @@ export default function AcademicProfileForm({
   const [bguLanguageRequirements, setBguLanguageRequirements] = useState(
     initialScores?.admissions?.bguLanguageRequirementsConfirmed?.toString() ?? '',
   );
+  const [bguQuantitative, setBguQuantitative] = useState<BguQuantitativeInputs>(() =>
+    Object.fromEntries(
+      BGU_QUANTITATIVE_PROFILE_KEYS.map((key) => [key, initialScores?.admissions?.[key]]).filter(
+        ([, value]) => value !== undefined,
+      ),
+    ),
+  );
+  const psychologyFormValues: PsychologyFormValues = {
+    ...psychologyValues,
+    bguPreparatoryTrack: bguQuantitative.bguPreparatoryTrack ?? '',
+    bguPreparatoryAverage: bguQuantitative.bguPreparatoryAverage?.toString() ?? '',
+    bguPreparatoryCompleted: bguQuantitative.bguPreparatoryCompleted?.toString() ?? '',
+  };
+  function handlePsychologyChange(key: keyof PsychologyFormValues, value: string) {
+    if (key === 'bguPreparatoryAverage') {
+      setBguQuantitative((previous) => ({
+        ...previous,
+        bguPreparatoryAverage: value === '' ? undefined : Number(value),
+      }));
+    } else if (key === 'bguPreparatoryCompleted') {
+      setBguQuantitative((previous) => ({
+        ...previous,
+        bguPreparatoryCompleted: value === '' ? undefined : value === 'true',
+      }));
+    } else if (key === 'bguPreparatoryTrack') {
+      setBguQuantitative((previous) => ({
+        ...previous,
+        bguPreparatoryTrack: (value || undefined) as BguQuantitativeInputs['bguPreparatoryTrack'],
+      }));
+    } else {
+      setPsychologyValues((previous) => ({ ...previous, [key]: value }));
+    }
+  }
   const [tauMathPlacementScore, setTauMathPlacementScore] = useState(
     initialScores?.admissions?.tauMathPlacementScore?.toString() ?? '',
   );
@@ -140,6 +176,7 @@ export default function AcademicProfileForm({
     setBguBagrutAverage('');
     setTauApplicationRequirements('');
     setBguLanguageRequirements('');
+    setBguQuantitative({});
     setTauMathPlacementScore('');
     setManagementRequirements('');
     setManagementAcademic('');
@@ -187,18 +224,30 @@ export default function AcademicProfileForm({
       };
     }
 
-    const admissions: NonNullable<AcademicScores['admissions']> = {};
+    const admissions: NonNullable<AcademicScores['admissions']> = Object.fromEntries(
+      Object.entries(bguQuantitative).filter(([, value]) => value !== undefined),
+    );
     if (bguEngineering !== undefined) admissions.bguEngineering = bguEngineering;
+    if (
+      bguQuantitative.bguPreparatoryAverage !== undefined &&
+      (!Number.isFinite(bguQuantitative.bguPreparatoryAverage) ||
+        bguQuantitative.bguPreparatoryAverage < 0 ||
+        bguQuantitative.bguPreparatoryAverage > 100)
+    ) {
+      setError('ממוצע המכינה חייב להיות בין 0 ל־100.');
+      setIsSaving(false);
+      return;
+    }
     const psychologyInputs = Object.fromEntries(
       BGU_PSYCHOLOGY_PROFILE_KEYS.filter(
-        (key) => psychologyValues[key] !== undefined && psychologyValues[key] !== '',
+        (key) => psychologyFormValues[key] !== undefined && psychologyFormValues[key] !== '',
       ).map((key) => [
         key,
         key.endsWith('Confirmed') || key.endsWith('Completed')
-          ? psychologyValues[key] === 'true'
+          ? psychologyFormValues[key] === 'true'
           : key.endsWith('Average')
-            ? Number(psychologyValues[key])
-            : psychologyValues[key],
+            ? Number(psychologyFormValues[key])
+            : psychologyFormValues[key],
       ]),
     );
     const parsedPsychology = bguPsychologyInputsSchema.safeParse(psychologyInputs);
@@ -670,10 +719,8 @@ export default function AcademicProfileForm({
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               <BguPsychologyFields
-                values={psychologyValues}
-                onChange={(key, value) =>
-                  setPsychologyValues((previous) => ({ ...previous, [key]: value }))
-                }
+                values={psychologyFormValues}
+                onChange={handlePsychologyChange}
                 disabled={isSaving}
                 inputClassName={inputBase}
               />
@@ -742,6 +789,11 @@ export default function AcademicProfileForm({
                   <option value="false">לא</option>
                 </select>
               </label>
+              <BguQuantitativeFields
+                value={bguQuantitative}
+                onChange={setBguQuantitative}
+                disabled={isSaving}
+              />
               <BguEngineeringFields
                 value={bguEngineering}
                 onChange={setBguEngineering}

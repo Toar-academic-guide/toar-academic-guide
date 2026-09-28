@@ -1,3 +1,9 @@
+import { isBguQuantitativeRouteProgram } from '@/lib/calculatorInputRequirements';
+import {
+  resolveBguQuantitativeRoute,
+  bguQuantitativeProgramme,
+} from './bguQuantitativeRoutesPolicy';
+import { runBguQuantitativeRoutesProof } from '@/server/ingestion/adapters/bguQuantitativeRoutes';
 import { isBguPsychologyProgram } from '@/lib/bguPsychologyInputs';
 import { resolveBguPsychologyAdmission } from './bguPsychologyPolicy';
 import { runBguPsychologyProof } from '@/server/ingestion/adapters/bguPsychology';
@@ -304,6 +310,63 @@ async function evaluateExactResult(args: {
           result.decision === 'below'
             ? 'בדקו אפיק חלופי לפי התנאים הרשמיים. אין זכאות אוטומטית לדיון בחריגים.'
             : 'מכסת המתקבלים מלאה כרגע; הזכאים יכולים להירשם ולעקוב אחר מקום פנוי. נדרש אישור מוסדי ועמידה בתנאי החוג הנוסף.',
+      };
+    }
+    if (exactTarget.sourceTarget.adapterId === 'bgu' && isBguQuantitativeRouteProgram(program.id)) {
+      const config = bguQuantitativeProgramme(program.id);
+      const route = resolveBguQuantitativeRoute(program.id, requestedInput);
+      if (route.kind === 'needs_input')
+        return requiredInputsResult(institution, route.requiredInputs);
+      if (route.kind === 'below')
+        return exactGateFailureResult({
+          institution,
+          unmetRequirements: [route.reason],
+          requirementsUrl: config.sourceUrl,
+        });
+      const proof = await runBguQuantitativeRoutesProof({
+        program: exactTarget.program,
+        applicant: {
+          psychometric: requestedInput.psychometric,
+          extraInputs: requestedInput.extraInputs,
+        },
+        fetcher: timedFetcher,
+      });
+      const result = normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'המקור הרשמי של בן־גוריון',
+        positiveDecision: 'eligible_to_apply',
+      });
+      if (result.capability !== 'exact') return result;
+      const label =
+        route.kind === 'quantitative'
+          ? 'סכם כמותי'
+          : {
+              psychometric: 'פסיכומטרי',
+              preparatory: 'ממוצע מכינה מוכרת בבן־גוריון',
+              bagrut: 'ממוצע בגרות רשמי בבן־גוריון',
+            }[route.route];
+      const conditions = [
+        proof.normalizedPayload.waitingList
+          ? 'מכסת המתקבלים מלאה כרגע; המוסד ממליץ לזכאים להירשם ולעקוב אחר מקום פנוי.'
+          : 'יש להשלים הרשמה ואישור מוסדי.',
+        route.priorAcademicReview
+          ? 'נדרש דיון מחלקתי על רקע לימודים קודמים, חזרה מהפסקה או שינוי מסלול.'
+          : '',
+        route.mathematicsCourseRequired ? 'נדרש קורס מבוא למתמטיקה בסמסטר א׳.' : '',
+      ]
+        .filter(Boolean)
+        .join(' ');
+      return {
+        ...result,
+        scoreLabel: label,
+        sourceLabel: 'תנאי קבלה רשמיים בבן־גוריון',
+        officialUrls: [config.sourceUrl],
+        explanation:
+          result.decision === 'below'
+            ? `ה${label} נמוך מהסף הנדרש באפיק שנבדק. אפשר לפנות לדיון בחריגים לפי התנאים שבאתר; זו אינה זכאות אוטומטית.`
+            : `עומדים בתנאים המספריים באפיק שנבדק. ${conditions}`,
+        nextAction: `בדקו את דף ההרשמה והשלימו את תנאי התוכנית, החוג או החטיבה הנוספים, אם נבחרו. ${conditions}`,
       };
     }
     if (requestedInput.psychometric === undefined || requestedInput.bagrut === undefined) {
@@ -2206,16 +2269,19 @@ function missingInputsCopy(requiredInputs: AdmissionsRequiredInput[]) {
         'לסכם הנדסה בבן־גוריון נדרשים מקצועות הבגרות וכל ציוני המכינה או ההנדסאי הרלוונטיים, וגם מצב השלמת הפיזיקה.',
       nextAction: 'השלימו את סעיף ההנדסה בבן־גוריון בפרופיל האקדמי ונסו שוב.',
     };
-  if (requiredInputs.some((input) => input.startsWith('bgu_')))
+  if (requiredInputs.some((input) => input.startsWith('bgu_'))) {
     return {
-      explanation: 'נדרשים נתוני האפיק הרשמי בבן־גוריון ואישור תנאי התוכנית והשפה.',
+      explanation:
+        'לבדיקת האפיק בבן־גוריון נדרשים נתוני הבגרות הרשמית או המכינה, תנאי ההגשה והנתונים המתאימים לאפיק שנבחר.',
       nextAction: 'השלימו את נתוני בן־גוריון בפרופיל האקדמי ונסו שוב.',
     };
-  if (requiredInputs.includes('bagrut_average'))
+  }
+  if (requiredInputs.includes('bagrut_average')) {
     return {
       explanation: 'במוסד זה נדרש ממוצע בגרות לחישוב.',
       nextAction: 'הזינו ממוצע בגרות או בדקו אפיק חלופי באתר המוסד.',
     };
+  }
   if (requiredInputs.some((input) => input.startsWith('tau_management_'))) {
     return {
       explanation: 'נדרשים פרטי אפיקי הקבלה לניהול באוניברסיטת תל אביב.',

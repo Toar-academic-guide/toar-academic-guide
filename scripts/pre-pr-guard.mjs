@@ -84,6 +84,7 @@ const targetedTests = [
   'src/server/admissions/evaluator.test.ts',
   'src/server/admissions/bguEngineeringPolicy.test.ts',
   'src/server/admissions/tauComputerSciencePolicy.test.ts',
+  'src/server/admissions/bguQuantitativeRoutes.test.ts',
   'src/server/admissions/tauManagementPolicy.test.ts',
   'src/server/ingestion/adapters/tauAdmissions.test.ts',
   'src/server/ingestion/adapters/bguAdmissions.test.ts',

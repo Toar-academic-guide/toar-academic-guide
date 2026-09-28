@@ -1,3 +1,5 @@
+import { isBguQuantitativeRouteProgram } from '@/lib/calculatorInputRequirements';
+import { runBguQuantitativeRoutesProof } from './bguQuantitativeRoutes';
 import { isBguPsychologyProgram } from '@/lib/bguPsychologyInputs';
 import { runBguPsychologyProof } from './bguPsychology';
 import {
@@ -38,6 +40,9 @@ export async function runBguAdmissionsProof(
     throw new Error('BGU adapter requires a program context');
   }
 
+  if (isBguQuantitativeRouteProgram(program.id)) {
+    return runBguQuantitativeRoutesProof({ ...context, program });
+  }
   if (isBguEngineeringProgram(program.id)) return runBguEngineeringAdmissionsProof(context);
 
   if (isBguPsychologyProgram(program.id)) return runBguPsychologyProof(context);

@@ -7,6 +7,35 @@ import {
 } from '@/server/user/profileSchema';
 
 describe('userProfileSchema', () => {
+  it('preserves quantitative route inputs, false, zero and decimal preparatory averages', () => {
+    const admissions = {
+      bguQuantitativeRoute: 'bagrut',
+      bguCertificateRequirementsConfirmed: true,
+      bguPriorAcademicStudies: false,
+      bguReturningOrChangingTrack: false,
+      bguApplicationPriority: 3,
+      bguSecondTrackRequirementsConfirmed: true,
+      bguPreparatoryTrack: 'natural_life_sciences',
+      bguPreparatoryAverage: 87.25,
+      bguPreparatoryCompleted: true,
+    };
+    expect(
+      userProfileSchema.parse({ geographicPreference: 'any', academicScores: { admissions } })
+        .academicScores?.admissions,
+    ).toEqual(admissions);
+    expect(
+      userProfileSchema.safeParse({
+        geographicPreference: 'any',
+        academicScores: { admissions: { ...admissions, bguPreparatoryAverage: 101 } },
+      }).success,
+    ).toBe(false);
+    expect(
+      userProfileSchema.safeParse({
+        geographicPreference: 'any',
+        academicScores: { admissions: { ...admissions, bguApplicationPriority: 1.5 } },
+      }).success,
+    ).toBe(false);
+  });
   it('preserves optional Architecture scores, false and zero', () => {
     const admissions = {
       technionArchitectureBagrutAverage: 101.9,

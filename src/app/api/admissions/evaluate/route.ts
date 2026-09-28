@@ -1,4 +1,5 @@
 import { allowsNoPsychometric, allowsNoGenericBagrut } from '@/lib/calculatorInputRequirements';
+import { bguQuantitativeInputShape } from '@/lib/bguQuantitativeInputs';
 import { bguPsychologyInputsShape } from '@/lib/bguPsychologyInputs';
 import { headers } from 'next/headers';
 import { z } from 'zod';
@@ -79,6 +80,7 @@ const admissionsEvaluationSchema = z
           .optional(),
         tauManagementNoPsychometricMoocsConfirmed: z.boolean().optional(),
         bguLanguageRequirementsConfirmed: z.boolean().optional(),
+        ...bguQuantitativeInputShape,
         tauMathPlacementScore: z.number().min(0).max(100).optional(),
       })
       .optional(),

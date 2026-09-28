@@ -1111,7 +1111,7 @@ describe('evaluateAdmissionsForProgram', () => {
     },
   );
 
-  it('returns an exact BGU biology verdict', async () => {
+  it('requires the official Biology route details before returning a verdict', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'bgu_biology',
@@ -1123,7 +1123,17 @@ describe('evaluateAdmissionsForProgram', () => {
       fetcher: bguMockFetcher(585, 875),
     });
 
-    expectBguExact(report, 'accepted');
+    expect(report.results).toContainEqual(
+      expect.objectContaining({
+        linkedInstitutionId: 'bgu',
+        capability: 'needs_input',
+        decision: 'unknown',
+        requiredInputs: expect.arrayContaining([
+          'bgu_application_priority',
+          'bgu_certificate_requirements',
+        ]),
+      }),
+    );
   });
 
   it('returns an exact BGU nursing invitation verdict', async () => {

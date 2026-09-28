@@ -1,3 +1,4 @@
+import { BGU_QUANTITATIVE_PROFILE_KEYS } from '@/lib/calculatorInputRequirements';
 import { BGU_PSYCHOLOGY_PROFILE_KEYS } from '@/lib/bguPsychologyInputs';
 import type { AdmissionsProfileInputs } from '@/types';
 
@@ -20,6 +21,9 @@ export function shouldRefreshAdmissionAlerts(
   }
 
   return (
+    BGU_QUANTITATIVE_PROFILE_KEYS.some(
+      (key) => previous.admissionsInputs?.[key] !== next.admissionsInputs?.[key],
+    ) ||
     JSON.stringify(previous.admissionsInputs?.bguEngineering) !==
       JSON.stringify(next.admissionsInputs?.bguEngineering) ||
     previous.psychometricOverall !== next.psychometricOverall ||

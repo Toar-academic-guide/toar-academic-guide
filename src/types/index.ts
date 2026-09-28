@@ -1,3 +1,4 @@
+import type { BguQuantitativeInputs } from '@/lib/bguQuantitativeInputs';
 import type { BguPsychologyInputs } from '@/lib/bguPsychologyInputs';
 export type UniversityId = string;
 
@@ -223,7 +224,7 @@ export interface BagrutRecord {
 }
 
 /** Institution-specific inputs collected only when the student knows them. */
-export interface AdmissionsProfileInputs extends BguPsychologyInputs {
+export interface AdmissionsProfileInputs extends BguQuantitativeInputs, BguPsychologyInputs {
   bguEngineering?: import('./bguEngineering').BguEngineeringInputs;
   /** Official Architecture average, without doubled mathematics weight; capped at 119. */
   technionArchitectureBagrutAverage?: number;

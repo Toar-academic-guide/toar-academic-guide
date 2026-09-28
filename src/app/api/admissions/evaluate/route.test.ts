@@ -73,6 +73,44 @@ describe('admissions evaluate route', () => {
     });
   });
 
+  it('accepts preparatory-only BGU input and preserves false and decimals without invented generic scores', async () => {
+    hoistedMocks.listCataloguePrograms.mockResolvedValue({
+      data: [{ id: 'bgu_economics', name: 'כלכלה', linkedInstitutionIds: ['bgu'] }],
+    });
+    const input = {
+      degreeId: 'bgu_economics',
+      extraInputs: {
+        bguQuantitativeRoute: 'bagrut',
+        bguPreparatoryTrack: 'natural_life_sciences',
+        bguPreparatoryAverage: 87.25,
+        bguPreparatoryCompleted: true,
+        bguPriorAcademicStudies: false,
+        bguReturningOrChangingTrack: false,
+        bguCertificateRequirementsConfirmed: true,
+        bguSecondTrackRequirementsConfirmed: true,
+      },
+    };
+    const response = await POST(
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        body: JSON.stringify(input),
+      }),
+    );
+    expect(response.status).toBe(200);
+    expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenCalledWith(
+      expect.objectContaining({ input }),
+    );
+  });
+  it('still requires a generic Bagrut average for unsupported omission routes', async () => {
+    const response = await POST(
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        body: JSON.stringify({ degreeId: 'tau_datascience', psychometric: 700 }),
+      }),
+    );
+    expect(response.status).toBe(400);
+    expect(hoistedMocks.evaluateAdmissionsForProgram).not.toHaveBeenCalled();
+  });
   it.each(['ee', 'bgu_ee', 'me', 'bgu_me', 'bgu_industrial'])(
     'accepts preparatory-only engineering inputs for %s without a generic Bagrut average',
     async (degreeId) => {

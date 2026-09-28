@@ -63,6 +63,18 @@ const defaultProps = {
 };
 
 describe('LandingPage calculator', () => {
+  it('submits Biology without unused generic scores for its official alternative routes', () => {
+    const onCalculate = vi.fn();
+    render(
+      <LandingPage
+        {...defaultProps}
+        onCalculate={onCalculate}
+        programs={[program('bgu_biology', 'ביולוגיה')]}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'חשב סיכויים ←' }));
+    expect(onCalculate).toHaveBeenCalledWith(undefined, undefined, 'bgu_biology');
+  });
   it.each(['ee', 'bgu_ee', 'me', 'bgu_me', 'bgu_industrial'])(
     'submits %s with psychometric and no generic Bagrut average',
     (degreeId) => {

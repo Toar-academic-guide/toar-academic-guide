@@ -525,7 +525,7 @@ describe('BGU Computer Science official proof', () => {
     expect(unconfirmedLanguage.fetcher).not.toHaveBeenCalled();
   });
 
-  it('keeps the existing BGU score endpoint and generic parsing for non-CS programs', async () => {
+  it('keeps the existing BGU score endpoint and generic parsing for programmes outside the corrected quantitative families', async () => {
     const fetcher = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(jsonResponse({ items: [{ psycho_sekem: 620 }] }))
@@ -533,12 +533,12 @@ describe('BGU Computer Science official proof', () => {
     const request = {
       fetcher,
       program: {
-        targetId: 'bgu-accounting-live',
-        pairId: 'accounting__bgu',
-        id: 'accounting',
-        name: 'Accounting',
+        targetId: 'bgu-communication-live',
+        pairId: 'communication__bgu',
+        id: 'communication',
+        name: 'Communication',
         searchText:
-          'https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_dep1=142&p_pat1=1&p_spe1=6',
+          'https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_institution=0&p_dep1=183&p_pat1=2',
       },
       applicant: { psychometric: 800, bagrutAverage: 120 },
     } satisfies AdmissionsAdapterContext & { fetcher: MockFetcher };

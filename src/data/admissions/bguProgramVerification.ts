@@ -1,3 +1,4 @@
+import { BGU_QUANTITATIVE_METADATA_BY_PAIR_ID } from './bguQuantitativeRoutesVerification';
 import {
   BGU_PSYCHOLOGY_METADATA_BY_PAIR_ID,
   BGU_PSYCHOLOGY_SOURCE_URL,
@@ -76,7 +77,7 @@ const CONFIGS: BguConfig[] = [
   {
     programId: 'economics',
     sourceUrl: baseUrl('p_dep1=142&p_pat1=3'),
-    officialProgramId: 'dep142-pat1-spe3',
+    officialProgramId: 'dep142-pat3',
     acceptance: 620,
     rejection: 620,
     verdict: 'accepted',
@@ -251,6 +252,9 @@ export const BGU_PROGRAM_VERIFICATION_METADATA: Record<string, BguProgramVerific
   Object.fromEntries(
     ALIASES.flatMap((programIds) =>
       programIds.map((programId) => {
+        if (BGU_QUANTITATIVE_METADATA_BY_PAIR_ID[`${programId}__bgu`]) {
+          return [`${programId}__bgu`, BGU_QUANTITATIVE_METADATA_BY_PAIR_ID[`${programId}__bgu`]];
+        }
         if (programId === 'datascience' || programId === 'bgu_datascience') {
           const pairId = `${programId}__bgu`;
           return [pairId, BGU_DATA_SCIENCE_VERIFICATION_METADATA_BY_PAIR_ID[pairId]];
