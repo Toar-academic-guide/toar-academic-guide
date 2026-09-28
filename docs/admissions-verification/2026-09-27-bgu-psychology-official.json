@@ -1,0 +1,93 @@
+{
+  "rulesUrl": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=101&p_pat1=2&p_degree_level=1",
+  "ruleCapturedAt": "2026-09-27T17:25:42.044Z",
+  "officialRule": {
+    "department_dsc": "פסיכולוגיה",
+    "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/humsos/Psychology_degree_1.aspx",
+    "path_dsc": "פסיכולוגיה דו מחלקתי",
+    "psycho_sekem": 650,
+    "psycho_and_or": " ובנוסף  ",
+    "psycho_value": 650,
+    "psycho_info": "4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ה'",
+    "bagrut_average": 113,
+    "bagrut_info": "רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ה'",
+    "bagrut_additional": "17.05.2026- עצרנו את הקבלות בפסיכולוגיה עם רוח. <br>\n01.03.2026- עצרנו קבלות במחלקה לפסיכולוגיה וכלל שילוביה. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם. <br>\nממוצע מכינה למדעים מדויקים והנדסה או מכינה למדעי הטבע והחיים של אוניברסיטת-בן גוריון בנגב יכולה להחליף את ממוצע הבגרות באפיק קבלה זה. ממוצע המכינה הנדרש 94.\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<br>\n\n מועמדים עם רקע אקדמי נדרשים לעמוד בתנאי הקבלה . מועמדים אלו יתקבלו ללא צורך בשליחת גיליון ציונים.<br>\nלא מתקיים דיון במועמדים שלא עומדים בתנאי הקבלה .<br>\n",
+    "comments": "17.05.2026- עצרנו את הקבלות בפסיכולוגיה עם רוח.  <br>\n01.03.2026 עצרנו קבלות בפסיכולוגיה בשילוב עם קוגניציה, פיזיקה וחברה. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם. במידה שיתפנו מקומות נקבל מועמדים נוספים מרשימות המתנה.<p>\n\nהמחלקות במדעי הרוח הן: <p>\nספרות,  לשון,  מזרח תיכון , היסטוריה של עם ישראל, מחשבת ישראל, היסטוריה כללית, פילוסופיה, ספרות אנגלית, בלשנות, אמנות, מקרא וארכיאולוגיה, לימודים רב תחומיים, לימודי מדינת ישראל, לימודי אפריקה.\n<BR>\n\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<p>אפיק קבלה נוסף - סכם או פסיכומטרי 680<p>\n<br>  \n\nלא מתקיים דיון במועמדים שלא עומדים בתנאי הקבלה.<br>\nמועמדים עם רקע אקדמי נדרשים לעמוד בתנאי הקבלה.  מועמדים אלו יתקבלו ללא צורך בשליחת גיליון ציונים.<br>\n\n\n\n",
+    "reg_status": "פתוחה ",
+    "sekem_label": "סכם",
+    "department": 101,
+    "path": 2,
+    "specialization": null,
+    "show_simulator": 1,
+    "path_description": "דו מחלקתי",
+    "spec_description": null
+  },
+  "calculatorUrl": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_CalcMain?type=1",
+  "scoreUrl": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem",
+  "captures": [
+    {
+      "pairId": "psychology__bgu",
+      "kind": "eligible",
+      "capturedAt": "2026-09-27T17:40:18.159Z",
+      "input": {
+        "psychometric": 650,
+        "bagrut": 100,
+        "bguBagrutAverage": 100,
+        "bguLanguageRequirementsConfirmed": true,
+        "bguPsychologyRequirementsConfirmed": true,
+        "bguPsychologyRoute": "score"
+      },
+      "score": 663,
+      "responseHtml": "<script>parent.main.document.mainForm.on_final_sekem.value = 663;</script> \n",
+      "expectedVerdict": "eligible_to_apply"
+    },
+    {
+      "pairId": "psychology__bgu",
+      "kind": "below",
+      "capturedAt": "2026-09-27T17:40:19.080Z",
+      "input": {
+        "psychometric": 649,
+        "bagrut": 100,
+        "bguBagrutAverage": 100,
+        "bguLanguageRequirementsConfirmed": true,
+        "bguPsychologyRequirementsConfirmed": true,
+        "bguPsychologyRoute": "score"
+      },
+      "score": 662,
+      "responseHtml": "<script>parent.main.document.mainForm.on_final_sekem.value = 662;</script> \n",
+      "expectedVerdict": "below"
+    },
+    {
+      "pairId": "bgu_psychology__bgu",
+      "kind": "eligible",
+      "capturedAt": "2026-09-27T17:40:19.380Z",
+      "input": {
+        "psychometric": 650,
+        "bagrut": 100,
+        "bguBagrutAverage": 100,
+        "bguLanguageRequirementsConfirmed": true,
+        "bguPsychologyRequirementsConfirmed": true,
+        "bguPsychologyRoute": "score"
+      },
+      "score": 663,
+      "responseHtml": "<script>parent.main.document.mainForm.on_final_sekem.value = 663;</script> \n",
+      "expectedVerdict": "eligible_to_apply"
+    },
+    {
+      "pairId": "bgu_psychology__bgu",
+      "kind": "below",
+      "capturedAt": "2026-09-27T17:40:19.677Z",
+      "input": {
+        "psychometric": 649,
+        "bagrut": 100,
+        "bguBagrutAverage": 100,
+        "bguLanguageRequirementsConfirmed": true,
+        "bguPsychologyRequirementsConfirmed": true,
+        "bguPsychologyRoute": "score"
+      },
+      "score": 662,
+      "responseHtml": "<script>parent.main.document.mainForm.on_final_sekem.value = 662;</script> \n",
+      "expectedVerdict": "below"
+    }
+  ]
+}

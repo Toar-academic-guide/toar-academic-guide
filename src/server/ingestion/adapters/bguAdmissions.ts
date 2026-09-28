@@ -1,3 +1,5 @@
+import { isBguPsychologyProgram } from '@/lib/bguPsychologyInputs';
+import { runBguPsychologyProof } from './bguPsychology';
 import {
   parseOfficialNumeric,
   readOfficialResponseMetadata,
@@ -34,6 +36,7 @@ export async function runBguAdmissionsProof(
     throw new Error('BGU adapter requires a program context');
   }
 
+  if (isBguPsychologyProgram(program.id)) return runBguPsychologyProof(context);
   if (
     BGU_PROGRAM_VERIFICATION_METADATA[`${program.id}__bgu`]?.contract.calculation.formulaFamily ===
     'bgu_quantitative_sekhem'

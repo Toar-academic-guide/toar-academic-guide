@@ -1,3 +1,4 @@
+import { BGU_PSYCHOLOGY_OFFICIAL_CAPTURES_BY_TARGET_ID } from './bguPsychologyVerification';
 import type { AdmissionsApplicantInput } from '@/server/ingestion/admissionsSourceAdapters';
 import { BGU_COMPUTER_SCIENCE_OFFICIAL_PROOF_CAPTURES_BY_TARGET_ID } from './bguComputerScienceVerification';
 import { BGU_DATA_SCIENCE_OFFICIAL_PROOF_CAPTURES_BY_TARGET_ID } from './bguDataScienceVerification';
@@ -659,6 +660,7 @@ Object.assign(
   OFFICIAL_PROGRAM_PROOF_CAPTURES_BY_TARGET_ID,
   BGU_COMPUTER_SCIENCE_OFFICIAL_PROOF_CAPTURES_BY_TARGET_ID,
   BGU_DATA_SCIENCE_OFFICIAL_PROOF_CAPTURES_BY_TARGET_ID,
+  BGU_PSYCHOLOGY_OFFICIAL_CAPTURES_BY_TARGET_ID,
   {
     'tau-cs-live': TAU_COMPUTER_SCIENCE_OFFICIAL_PROOF_CAPTURES,
     'tau-cs-legacy-live': TAU_COMPUTER_SCIENCE_OFFICIAL_PROOF_CAPTURES,

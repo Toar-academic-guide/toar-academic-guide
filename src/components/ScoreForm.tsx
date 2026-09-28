@@ -1,5 +1,9 @@
 'use client';
 
+import {
+  allowsNoPsychometric as permitsNoPsychometric,
+  allowsNoGenericBagrut,
+} from '@/lib/calculatorInputRequirements';
 import { useState } from 'react';
 import { CalculatorScores, EngineeringOptions } from '@/types';
 import type { Program } from '@/data/degrees/types';
@@ -29,7 +33,8 @@ export default function ScoreForm({
   const [errors, setErrors] = useState<{ psychometric?: string; bagrut?: string }>({});
 
   const selectedDegree = programs.find((program) => program.id === degreeId);
-  const allowsNoPsychometric = ['business', 'tau_business'].includes(degreeId);
+  const allowsNoPsychometric = permitsNoPsychometric(degreeId);
+  const optionalBagrut = allowsNoGenericBagrut(degreeId);
   const showEngineeringSection = selectedDegree?.isTauEngineering ?? false;
 
   function validate(): boolean {
@@ -43,7 +48,7 @@ export default function ScoreForm({
     ) {
       errs.psychometric = 'יש להזין ציון פסיכומטרי תקין בין 200 ל-800';
     }
-    if (!bagrut || isNaN(bag) || bag < 60 || bag > 120) {
+    if ((!bagrut && !optionalBagrut) || (bagrut && (isNaN(bag) || bag < 60 || bag > 120))) {
       errs.bagrut = 'יש להזין ממוצע בגרות תקין בין 60 ל-120 (כולל בונוסים)';
     }
 
@@ -55,7 +60,10 @@ export default function ScoreForm({
     e.preventDefault();
     if (!validate()) return;
     onSubmit(
-      { psychometric: psychometric ? Number(psychometric) : undefined, bagrut: Number(bagrut) },
+      {
+        psychometric: psychometric ? Number(psychometric) : undefined,
+        bagrut: bagrut ? Number(bagrut) : undefined,
+      },
       degreeId,
       {
         hasMath5,
@@ -92,7 +100,7 @@ export default function ScoreForm({
         {/* Bagrut */}
         <div className="flex flex-col gap-1.5">
           <label className="text-sm font-medium text-gray-700" htmlFor="bagrut">
-            ממוצע בגרות כולל בונוסים
+            ממוצע בגרות כולל בונוסים{optionalBagrut ? ' (רשות לאפיקי בן־גוריון)' : ''}
           </label>
           <input
             id="bagrut"
@@ -107,7 +115,9 @@ export default function ScoreForm({
           />
           {errors.bagrut && <p className="text-xs text-red-600">{errors.bagrut}</p>}
           <p className="text-xs text-gray-400">
-            ממוצע סופי כולל כל הבונוסים הגנריים שחושבו (מקסימום 120)
+            {optionalBagrut
+              ? 'לאפיקי בן־גוריון יש להשלים בפרופיל את הממוצע הרשמי, המכינה או נתוני האפיק החלופי.'
+              : 'ממוצע סופי כולל כל הבונוסים הגנריים שחושבו (מקסימום 120)'}
           </p>
         </div>
       </div>

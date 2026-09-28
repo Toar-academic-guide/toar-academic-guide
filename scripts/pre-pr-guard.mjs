@@ -86,6 +86,7 @@ const targetedTests = [
   'src/server/admissions/tauManagementPolicy.test.ts',
   'src/server/ingestion/adapters/tauAdmissions.test.ts',
   'src/server/ingestion/adapters/bguAdmissions.test.ts',
+  'src/server/admissions/bguPsychologyRoutes.test.ts',
   'src/server/ingestion/adapters/technionAdmissions.test.ts',
   'src/server/admissions/verification/programVerification.test.ts',
   'src/server/ingestion/admissionsLiveProofRunner.test.ts',
