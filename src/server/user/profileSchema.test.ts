@@ -1,3 +1,4 @@
+import { HUJI_MEDICINE_ELIGIBLE_INPUTS } from '@/data/admissions/hujiMedicineVerification';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -7,6 +8,34 @@ import {
 } from '@/server/user/profileSchema';
 
 describe('userProfileSchema', () => {
+  it('preserves all Medicine route facts, decimals, date and false/zero', () => {
+    const admissions = {
+      ...HUJI_MEDICINE_ELIGIBLE_INPUTS,
+      hujiBagrutAverage: 120.25,
+      hujiMedicineQualificationConfirmed: false,
+      hujiMedicinePreparatoryAverage: 110.25,
+      hujiMedicinePreparatoryYear: 2021,
+      hujiMedicinePreparatoryEligible: false,
+      hujiMedicineCognitiveScore: 27.921,
+      hujiMedicineHebrewScore: 0,
+    };
+    expect(
+      userProfileSchema.parse({ geographicPreference: 'any', academicScores: { admissions } })
+        .academicScores?.admissions,
+    ).toEqual(admissions);
+    for (const invalid of [
+      { hujiMedicinePsychometricDate: '2026-02-30' },
+      { hujiMedicineAssessmentScore: 251 },
+      { hujiBagrutAverage: 128 },
+    ]) {
+      expect(
+        userProfileSchema.safeParse({
+          geographicPreference: 'any',
+          academicScores: { admissions: invalid },
+        }).success,
+      ).toBe(false);
+    }
+  });
   it('preserves optional Architecture scores, false and zero', () => {
     const admissions = {
       technionArchitectureBagrutAverage: 101.9,

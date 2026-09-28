@@ -73,6 +73,32 @@ describe('admissions evaluate route', () => {
     });
   });
 
+  it('forwards Medicine inputs without requiring a generic average', async () => {
+    hoistedMocks.listCataloguePrograms.mockResolvedValue({
+      data: [{ id: 'huji_medicine', name: 'רפואה', linkedInstitutionIds: ['huji'] }],
+    });
+    const input = {
+      degreeId: 'huji_medicine',
+      psychometric: 800,
+      extraInputs: {
+        hujiBagrutAverage: 120.25,
+        hujiMedicineAssessmentScore: 200,
+        hujiMedicinePsychometricDate: '2026-04-01',
+        hujiMedicineQualificationConfirmed: false,
+      },
+    };
+    const response = await POST(
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(input),
+      }),
+    );
+    expect(response.status).toBe(200);
+    expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenCalledWith(
+      expect.objectContaining({ input }),
+    );
+  });
   it('allows Psychology prep-only requests without inventing generic scores', async () => {
     hoistedMocks.listCataloguePrograms.mockResolvedValue({
       data: [{ id: 'bgu_psychology', name: 'פסיכולוגיה', linkedInstitutionIds: ['bgu'] }],

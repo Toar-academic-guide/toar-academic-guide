@@ -1,9 +1,17 @@
+import {
+  HUJI_MEDICINE_PROFILE_KEYS,
+  HUJI_MEDICINE_REQUIRED_INPUTS,
+} from '@/lib/hujiMedicineInputs';
 import type { AdmissionsExtraInputs, AdmissionsRequiredInput } from '@/types/admissionsEvaluation';
 
 export function admissionsInputValue(
   input: AdmissionsExtraInputs | undefined,
   requiredInput: AdmissionsRequiredInput,
 ): unknown {
+  const medicineKey = HUJI_MEDICINE_PROFILE_KEYS.find(
+    (key) => HUJI_MEDICINE_REQUIRED_INPUTS[key] === requiredInput,
+  );
+  if (medicineKey) return input?.[medicineKey];
   switch (requiredInput) {
     case 'bagrut_average':
       return undefined;

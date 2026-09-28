@@ -1,3 +1,4 @@
+import { pickHujiMedicineInputs } from './hujiMedicineInputs';
 import type { AcademicScores } from '@/types';
 import type { AdmissionsExtraInputs } from '@/types/admissionsEvaluation';
 
@@ -19,6 +20,7 @@ export function admissionsExtraInputsFromAcademicScores(
   const computerScience = subjectsById.get('computer_science');
 
   const extraInputs: AdmissionsExtraInputs = {
+    ...pickHujiMedicineInputs(academicScores?.admissions),
     technionArchitectureBagrutAverage:
       academicScores?.admissions?.technionArchitectureBagrutAverage,
     technionArchitectureExamScore: academicScores?.admissions?.technionArchitectureExamScore,

@@ -7,6 +7,8 @@ import { Upload, FileText, X, Brain, GraduationCap, Loader2 } from 'lucide-react
 import type { AcademicScores, UserProfile } from '@/types';
 import BguPsychologyFields, { type PsychologyFormValues } from './BguPsychologyFields';
 import { BGU_PSYCHOLOGY_PROFILE_KEYS, bguPsychologyInputsSchema } from '@/lib/bguPsychologyInputs';
+import HujiMedicineFields, { type MedicineFormValues } from './HujiMedicineFields';
+import { HUJI_MEDICINE_PROFILE_KEYS, hujiMedicineInputsSchema } from '@/lib/hujiMedicineInputs';
 import BagrutCalculatorWizard from './BagrutCalculatorWizard';
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
@@ -44,6 +46,14 @@ export default function AcademicProfileForm({
   isAuthenticated = false,
   alertContinuation,
 }: Props) {
+  const [medicineValues, setMedicineValues] = useState<MedicineFormValues>(() =>
+    Object.fromEntries(
+      HUJI_MEDICINE_PROFILE_KEYS.map((key) => [
+        key,
+        initialScores?.admissions?.[key]?.toString() ?? '',
+      ]),
+    ),
+  );
   const [psychologyValues, setPsychologyValues] = useState<PsychologyFormValues>(() =>
     Object.fromEntries(
       BGU_PSYCHOLOGY_PROFILE_KEYS.map((key) => [
@@ -135,6 +145,7 @@ export default function AcademicProfileForm({
     setBagrutSubjectRecord(undefined);
     setTauBagrutAverage('');
     setPsychologyValues({});
+    setMedicineValues({});
     setBguBagrutAverage('');
     setTauApplicationRequirements('');
     setBguLanguageRequirements('');
@@ -205,6 +216,25 @@ export default function AcademicProfileForm({
       return;
     }
     Object.assign(admissions, parsedPsychology.data);
+    const medicineInputs = Object.fromEntries(
+      HUJI_MEDICINE_PROFILE_KEYS.filter(
+        (key) => medicineValues[key] !== undefined && medicineValues[key] !== '',
+      ).map((key) => [
+        key,
+        /(?:Confirmed|Eligible)$/.test(key)
+          ? medicineValues[key] === 'true'
+          : /(?:Average|Score|Year)$/.test(key)
+            ? Number(medicineValues[key])
+            : medicineValues[key],
+      ]),
+    );
+    const parsedMedicine = hujiMedicineInputsSchema.safeParse(medicineInputs);
+    if (!parsedMedicine.success) {
+      setError('יש להזין נתוני רפואה בעברית בטווחים המוצגים ותאריך תקין.');
+      setIsSaving(false);
+      return;
+    }
+    Object.assign(admissions, parsedMedicine.data);
     const architectureAverageValue = optionalNumber(architectureAverage);
     const architectureExamValue = optionalNumber(architectureExam);
     if (
@@ -666,6 +696,14 @@ export default function AcademicProfileForm({
             </div>
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <HujiMedicineFields
+                values={medicineValues}
+                onChange={(key, value) =>
+                  setMedicineValues((previous) => ({ ...previous, [key]: value }))
+                }
+                disabled={isSaving}
+                inputClassName={inputBase}
+              />
               <BguPsychologyFields
                 values={psychologyValues}
                 onChange={(key, value) =>

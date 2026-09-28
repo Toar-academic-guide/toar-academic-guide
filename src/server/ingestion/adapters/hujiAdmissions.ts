@@ -1,4 +1,12 @@
 import { gunzipSync } from 'node:zlib';
+import { isHujiMedicineProgram } from '@/lib/hujiMedicineInputs';
+import {
+  HUJI_MEDICINE_CALCULATOR_URL,
+  HUJI_MEDICINE_REQUIREMENTS_URL,
+  HUJI_MEDICINE_POLICY,
+  resolveHujiMedicineAdmission,
+} from '@/server/admissions/hujiMedicinePolicy';
+import { HUJI_MEDICINE_SOURCE_FINGERPRINT } from '@/data/admissions/hujiMedicineVerification';
 
 import {
   readOfficialResponseMetadata,
@@ -21,6 +29,7 @@ export async function runHujiAdmissionsProof(
   const fetcher = context.fetcher ?? fetch;
   const program = context.program;
   if (!program) throw new Error('HUJI adapter requires a program context');
+  if (isHujiMedicineProgram(program.id)) return runMedicineProof(context);
 
   const metadata: NonNullable<AdmissionsSourceProof['rawResponseMetadata']> = [];
   const targetId = program.targetId ?? `huji-${program.id}-live`;
@@ -128,6 +137,123 @@ export async function runHujiAdmissionsProof(
       rawResponseMetadata: metadata,
     };
   }
+}
+
+async function runMedicineProof(context: AdmissionsAdapterContext): Promise<AdmissionsSourceProof> {
+  const program = context.program!;
+  const metadata: NonNullable<AdmissionsSourceProof['rawResponseMetadata']> = [];
+  const base = {
+    id: program.targetId ?? `huji-${program.id}-live`,
+    institutionId: 'huji',
+    institutionName: 'Hebrew University of Jerusalem',
+    officialUrl: HUJI_MEDICINE_CALCULATOR_URL,
+    adapterId: 'huji' as const,
+    rawResponseMetadata: metadata,
+  };
+  try {
+    if (program.externalId !== '601-4601')
+      throw new Error(
+        'Medicine requires ordinary track601-4601; no alternate track may be substituted.',
+      );
+    const response = await (context.fetcher ?? fetch)(HUJI_MEDICINE_CALCULATOR_URL);
+    metadata.push(readOfficialResponseMetadata(HUJI_MEDICINE_CALCULATOR_URL, response));
+    if (!response.ok) throw new Error(`Medicine calculator returned HTTP${response.status}`);
+    const html = (await readBoundedBody(response, MAX_HUJI_COMPRESSED_BYTES)).toString('utf8');
+    if (!matchesCurrentMedicineCalculator(html))
+      throw new Error(
+        'Current Medicine calculator coefficients, rounding or cycle no longer match the reviewed source.',
+      );
+    const result = resolveHujiMedicineAdmission(
+      context.applicant.psychometric,
+      context.applicant.extraInputs,
+    );
+    return {
+      ...base,
+      capability: result.status === 'decided' ? 'decision_capable' : 'blocked',
+      proofLevel: result.status === 'decided' ? 'exact_official' : 'partial_official',
+      status: result.status === 'decided' ? 'succeeded' : 'partial',
+      sourceClass: 'official_html',
+      decisionProvenance: 'verified_derivation',
+      reviewedSourceFingerprint: HUJI_MEDICINE_SOURCE_FINGERPRINT,
+      reproducedFields: [
+        'selectedScore',
+        'cognitiveScore',
+        'medicineStage',
+        'acceptanceThreshold',
+        'derivedVerdict',
+      ],
+      normalizedPayload: {
+        pairId: program.pairId,
+        programId: program.id,
+        trackNumber: '601-4601',
+        source: 'huji_medicine_current_calculator',
+        selectedScore: result.score,
+        cognitiveScore: result.cognitiveScore,
+        medicineStage: result.stage,
+        // Publish the final programme cutoff; the applicant-specific stage threshold stays separate.
+        acceptanceThreshold: HUJI_MEDICINE_POLICY.finalCutoff,
+        rejectionThreshold: null,
+        medicineThreshold: result.threshold,
+        derivedVerdict: result.decision ?? 'unknown',
+        proofStatus: result.status === 'decided' ? 'succeeded' : 'partial',
+        proofLevel: result.status === 'decided' ? 'exact_official' : 'partial_official',
+        medicineStatus: result.status,
+        requiredInputs: result.missing,
+        medicineReasons: result.reasons,
+        publicationMetric: 'formula_score',
+        sourceFingerprint: HUJI_MEDICINE_SOURCE_FINGERPRINT,
+        decisionProvenance: 'verified_derivation',
+      },
+      limitations: [
+        'Published prerequisites and stage-specific cutoffs are composed with the dedicated calculator; final institutional selection remains required.',
+        ...result.reasons,
+      ],
+      nextAction:
+        result.status === 'manual'
+          ? 'Obtain the specific official admissions clarification.'
+          : 'Complete the stage-specific applicant facts and keep the current policy under reviewed publication.',
+    };
+  } catch (error) {
+    return {
+      ...base,
+      capability: 'blocked',
+      proofLevel: 'blocked',
+      status: 'failed',
+      sourceClass: 'browser_required',
+      reproducedFields: [],
+      normalizedPayload: {},
+      limitations: ['Current Medicine calculator could not be verified.'],
+      nextAction: `Review ${HUJI_MEDICINE_REQUIREMENTS_URL} and the current calculator.`,
+      errorReason: error instanceof Error ? error.message : String(error),
+    };
+  }
+}
+
+function matchesCurrentMedicineCalculator(html: string): boolean {
+  if (!html.includes('2026-2027')) return false;
+  const normalized = html.replace(/<!--[\s\S]*?-->/g, '').replace(/\s/g, '');
+  if (!normalized.includes('varmin_psych=700;')) return false;
+  // Verify each function's arithmetic independently; never execute fetched scripts.
+  const expected: Record<string, string> = {
+    'a(bag,psy)':
+      'varB=3.9630*bag-20.0621;varP=0.032073*psy+0.3672;varX=0.3*B+0.7*P;varY=Math.floor((1.2235*X-4.4598+0.0005)*1000)/1000;',
+    'c(mechina,psy)':
+      'varB=3.9261*mechina-15.9285;varP=0.032073*psy+0.3672;varX=0.5*B+0.5*P;varY=Math.floor((1.2422*X-4.7609+0.0005)*1000)/1000;',
+    'd(mechina,psy)':
+      'varB=3.6201*mechina-12.1296;varP=0.032073*psy+0.3672;varX=0.5*B+0.5*P;varY=Math.floor((1.2422*X-4.7609+0.0005)*1000)/1000;',
+    'b(mesh,m)':
+      'varY=mesh;varM=0.0290*m+19.9393;varS=Math.floor(((0.6*M+0.4*Y)+0.0005)*1000)/1000;',
+  };
+  return Object.entries(expected).every(([signature, arithmetic]) => {
+    const start = normalized.indexOf(`functionmed_meshuklal_func_${signature}{`);
+    if (start < 0) return false;
+    const bodyStart = normalized.indexOf('{', start) + 1;
+    const firstValidation = normalized.indexOf('if(', bodyStart);
+    const body = normalized
+      .slice(bodyStart, firstValidation)
+      .replace(/console\.log\([^;]*\);/g, '');
+    return body === arithmetic;
+  });
 }
 
 interface HujiSource {

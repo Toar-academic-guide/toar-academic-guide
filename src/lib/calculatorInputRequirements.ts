@@ -1,3 +1,4 @@
+import { isHujiMedicineProgram } from './hujiMedicineInputs';
 import { isBguPsychologyProgram } from './bguPsychologyInputs';
 
 export function allowsNoPsychometric(programId: string): boolean {
@@ -5,5 +6,5 @@ export function allowsNoPsychometric(programId: string): boolean {
 }
 
 export function allowsNoGenericBagrut(programId: string): boolean {
-  return isBguPsychologyProgram(programId);
+  return isBguPsychologyProgram(programId) || isHujiMedicineProgram(programId);
 }

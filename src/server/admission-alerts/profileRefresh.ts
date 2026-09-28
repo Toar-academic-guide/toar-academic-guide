@@ -1,3 +1,4 @@
+import { HUJI_MEDICINE_PROFILE_KEYS } from '@/lib/hujiMedicineInputs';
 import { BGU_PSYCHOLOGY_PROFILE_KEYS } from '@/lib/bguPsychologyInputs';
 import type { AdmissionsProfileInputs } from '@/types';
 
@@ -26,7 +27,7 @@ export function shouldRefreshAdmissionAlerts(
     previous.psychometricEnglish !== next.psychometricEnglish ||
     previous.bagrutWeightedAverage !== next.bagrutWeightedAverage ||
     previous.bagrutProfileVersionId !== next.bagrutProfileVersionId ||
-    BGU_PSYCHOLOGY_PROFILE_KEYS.some(
+    [...BGU_PSYCHOLOGY_PROFILE_KEYS, ...HUJI_MEDICINE_PROFILE_KEYS].some(
       (key) => previous.admissionsInputs?.[key] !== next.admissionsInputs?.[key],
     ) ||
     previous.admissionsInputs?.tauBagrutAverage !== next.admissionsInputs?.tauBagrutAverage ||

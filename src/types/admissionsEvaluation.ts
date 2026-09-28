@@ -1,4 +1,5 @@
 import type { BguPsychologyInputs } from '@/lib/bguPsychologyInputs';
+import type { HujiMedicineInputs, HujiMedicineRequiredInput } from '@/lib/hujiMedicineInputs';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type { BagrutSector, BagrutSubjectRecord, DeltaNeeded } from '@/types';
 
@@ -35,6 +36,7 @@ export type AdmissionsEvaluationCapability =
 export type AdmissionsConfidence = 'high' | 'medium' | 'low';
 
 export type AdmissionsRequiredInput =
+  | HujiMedicineRequiredInput
   | 'bagrut_average'
   | 'bgu_psychology_requirements'
   | 'bgu_preparatory_average'
@@ -69,7 +71,7 @@ export type AdmissionsRequiredInput =
   | 'technion_architecture_exam_passed'
   | 'technion_architecture_requirements';
 
-export interface AdmissionsExtraInputs extends BguPsychologyInputs {
+export interface AdmissionsExtraInputs extends BguPsychologyInputs, HujiMedicineInputs {
   technionArchitectureBagrutAverage?: number;
   technionArchitectureExamScore?: number;
   technionArchitectureExamPassed?: boolean;

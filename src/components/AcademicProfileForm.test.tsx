@@ -450,3 +450,71 @@ it('restores and saves Psychology prep decimals and false values without generic
   fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
   await waitFor(() => expect(onComplete).toHaveBeenCalledWith({ admissions }));
 });
+
+it('retains Medicine inputs when reopened, edited and saved', async () => {
+  const onComplete = vi.fn();
+  const admissions = {
+    hujiMedicineRoute: 'bagrut' as const,
+    hujiBagrutAverage: 120.25,
+    hujiMedicineAssessmentScore: 200,
+    hujiMedicineAssessmentYear: 2026,
+    hujiMedicinePsychometricDate: '2026-04-01',
+    hujiMedicineQualificationConfirmed: false,
+    hujiMedicinePriorStudyStatus: 'documents_submitted' as const,
+  };
+  render(
+    <AcademicProfileForm
+      onComplete={onComplete}
+      onSkip={vi.fn()}
+      onClearLocalProfileData={vi.fn().mockResolvedValue(undefined)}
+      initialScores={{ admissions }}
+    />,
+  );
+  expect(
+    (screen.getByLabelText('ממוצע בגרות רשמי של העברית (60–127)') as HTMLInputElement).value,
+  ).toBe('120.25');
+  expect(
+    (
+      screen.getByLabelText(
+        'זכאות לבגרות או תעודה חלופית מוכרת לרפואה בעברית?',
+      ) as HTMLSelectElement
+    ).value,
+  ).toBe('false');
+  fireEvent.change(screen.getByLabelText('תאריך הפסיכומטרי לרפואה בעברית'), {
+    target: { value: '2026-04-02' },
+  });
+  fireEvent.change(screen.getByLabelText('ציון מו״ר/מרק״ם לרפואה בעברית (150–250)'), {
+    target: { value: '201.5' },
+  });
+  fireEvent.change(
+    screen.getByLabelText('לימודים קודמים ברפואה, רפואת שיניים או הפסקת לימודי בריאות'),
+    { target: { value: 'documents_and_committee_approved' } },
+  );
+  fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+  await waitFor(() =>
+    expect(onComplete).toHaveBeenCalledWith({
+      admissions: {
+        ...admissions,
+        hujiMedicineAssessmentScore: 201.5,
+        hujiMedicinePsychometricDate: '2026-04-02',
+        hujiMedicinePriorStudyStatus: 'documents_and_committee_approved',
+      },
+    }),
+  );
+});
+it('clears a Medicine field without replacing unknown information with a value', async () => {
+  const onComplete = vi.fn();
+  render(
+    <AcademicProfileForm
+      onComplete={onComplete}
+      onSkip={vi.fn()}
+      onClearLocalProfileData={vi.fn().mockResolvedValue(undefined)}
+      initialScores={{ admissions: { hujiBagrutAverage: 120 } }}
+    />,
+  );
+  fireEvent.change(screen.getByLabelText('ממוצע בגרות רשמי של העברית (60–127)'), {
+    target: { value: '' },
+  });
+  fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+  await waitFor(() => expect(onComplete).toHaveBeenCalledWith({}));
+});

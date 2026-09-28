@@ -1,4 +1,6 @@
 import { createHash } from 'node:crypto';
+import { isHujiMedicineProgram } from '@/lib/hujiMedicineInputs';
+import { buildHujiMedicineVerification } from './hujiMedicineVerification';
 
 import type {
   AdmissionsProgramVerificationContract,
@@ -238,6 +240,8 @@ export interface HujiProgramVerificationMetadata {
 export const HUJI_PROGRAM_VERIFICATION_METADATA: Record<string, HujiProgramVerificationMetadata> =
   Object.fromEntries(
     HUJI_ALIAS_PROGRAM_IDS.map((programId) => {
+      if (isHujiMedicineProgram(programId))
+        return [`${programId}__huji`, buildHujiMedicineVerification(programId)];
       const config = configFor(programId);
       const pairId = `${programId}__huji`;
       const fixtures = fixturesFor(pairId, config);

@@ -1,9 +1,22 @@
+import { HUJI_MEDICINE_ELIGIBLE_INPUTS } from '@/data/admissions/hujiMedicineVerification';
+import { HUJI_MEDICINE_PROFILE_KEYS, HUJI_MEDICINE_REQUIRED_INPUTS } from './hujiMedicineInputs';
 import { describe, expect, it } from 'vitest';
 
 import { admissionsExtraInputsFromAcademicScores } from './admissionsEvaluationProfile';
 import { admissionsInputValue } from '@/server/admissions/admissionsInputValue';
 
 describe('admissionsExtraInputsFromAcademicScores', () => {
+  it('forwards saved Medicine facts and resolves their required-input names', () => {
+    const admissions = {
+      ...HUJI_MEDICINE_ELIGIBLE_INPUTS,
+      hujiMedicineQualificationConfirmed: false,
+      hujiMedicineHebrewScore: 0,
+    };
+    const extra = admissionsExtraInputsFromAcademicScores({ admissions });
+    expect(extra).toMatchObject(admissions);
+    for (const key of HUJI_MEDICINE_PROFILE_KEYS)
+      expect(admissionsInputValue(extra, HUJI_MEDICINE_REQUIRED_INPUTS[key])).toBe(extra?.[key]);
+  });
   it('maps saved psychometric subscores and Bagrut subjects into the admissions evaluator contract', () => {
     expect(
       admissionsExtraInputsFromAcademicScores({
