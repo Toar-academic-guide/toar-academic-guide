@@ -4,6 +4,18 @@ import { admissionsExtraInputsFromAcademicScores } from './admissionsEvaluationP
 import { admissionsInputValue } from '@/server/admissions/admissionsInputValue';
 
 describe('admissionsExtraInputsFromAcademicScores', () => {
+  it('forwards the saved Haifa average and real years without rounding or substituting them', () => {
+    const admissions = {
+      haifaBagrutAverage: 102.25,
+      haifaBagrutYear: 2015,
+      haifaPsychometricYear: 2026,
+    };
+    const input = admissionsExtraInputsFromAcademicScores({ admissions });
+    expect(input).toMatchObject(admissions);
+    expect(admissionsInputValue(input, 'haifa_bagrut_average')).toBe(102.25);
+    expect(admissionsInputValue(input, 'haifa_bagrut_year')).toBe(2015);
+    expect(admissionsInputValue(input, 'haifa_psychometric_year')).toBe(2026);
+  });
   it('maps saved psychometric subscores and Bagrut subjects into the admissions evaluator contract', () => {
     expect(
       admissionsExtraInputsFromAcademicScores({

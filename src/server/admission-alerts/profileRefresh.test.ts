@@ -29,6 +29,9 @@ describe('alert profile refresh detection', () => {
     for (const admissionsInputs of [
       { tauBagrutAverage: 112.5 },
       { bguBagrutAverage: 110.25 },
+      { haifaBagrutAverage: 102.25 },
+      { haifaBagrutYear: 2015 },
+      { haifaPsychometricYear: 2026 },
       { tauApplicationRequirementsConfirmed: false },
       { bguLanguageRequirementsConfirmed: false },
       { tauMathPlacementScore: 0 },

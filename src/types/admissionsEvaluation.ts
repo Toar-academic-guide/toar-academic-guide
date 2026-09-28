@@ -1,4 +1,5 @@
 import type { BguPsychologyInputs } from '@/lib/bguPsychologyInputs';
+import type { HaifaAdmissionsInputs } from '@/lib/haifaAdmissionsInputs';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type { BagrutSector, BagrutSubjectRecord, DeltaNeeded } from '@/types';
 
@@ -36,6 +37,9 @@ export type AdmissionsConfidence = 'high' | 'medium' | 'low';
 
 export type AdmissionsRequiredInput =
   | 'bagrut_average'
+  | 'haifa_bagrut_average'
+  | 'haifa_bagrut_year'
+  | 'haifa_psychometric_year'
   | 'bgu_psychology_requirements'
   | 'bgu_preparatory_average'
   | 'bgu_preparatory_completed'
@@ -69,7 +73,7 @@ export type AdmissionsRequiredInput =
   | 'technion_architecture_exam_passed'
   | 'technion_architecture_requirements';
 
-export interface AdmissionsExtraInputs extends BguPsychologyInputs {
+export interface AdmissionsExtraInputs extends BguPsychologyInputs, HaifaAdmissionsInputs {
   technionArchitectureBagrutAverage?: number;
   technionArchitectureExamScore?: number;
   technionArchitectureExamPassed?: boolean;

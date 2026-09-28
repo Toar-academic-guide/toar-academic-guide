@@ -245,6 +245,37 @@ async function evaluateExactResult(args: {
             : 'מכסת המתקבלים מלאה כרגע; הזכאים יכולים להירשם ולעקוב אחר מקום פנוי. נדרש אישור מוסדי ועמידה בתנאי החוג הנוסף.',
       };
     }
+    if (exactTarget.sourceTarget.adapterId === 'haifa') {
+      if (requestedInput.psychometric === undefined)
+        return requiredInputsResult(institution, ['psychometric_overall']);
+      const average = requestedInput.extraInputs?.haifaBagrutAverage;
+      if (average === undefined) return requiredInputsResult(institution, ['haifa_bagrut_average']);
+      const proof = await runHaifaAdmissionsProof({
+        fetcher: timedFetcher,
+        program: exactTarget.program,
+        applicant: {
+          bagrutAverage: average,
+          bagrutYear: requestedInput.extraInputs?.haifaBagrutYear?.toString(),
+          psychometric: requestedInput.psychometric,
+          psychometricYear: requestedInput.extraInputs?.haifaPsychometricYear?.toString(),
+          psychometricSubscores: {
+            english: requestedInput.extraInputs?.psychometricEnglish ?? 0,
+            math: requestedInput.extraInputs?.psychometricMath ?? 0,
+            verbal: requestedInput.extraInputs?.psychometricVerbal ?? 0,
+          },
+        },
+      });
+      return applyStructuredRequirementsToAcceptedScoreResult({
+        input: { ...requestedInput, psychometric: requestedInput.psychometric, bagrut: average },
+        program,
+        institution,
+        baseResult: normalizeExactProofResult({
+          institution,
+          proof: proof.normalizedPayload,
+          explanationPrefix: 'מקור רשמי של אוניברסיטת חיפה',
+        }),
+      });
+    }
     if (requestedInput.psychometric === undefined || requestedInput.bagrut === undefined) {
       return requiredInputsResult(institution, [
         ...(requestedInput.psychometric === undefined ? ['psychometric_overall' as const] : []),
@@ -256,33 +287,6 @@ async function evaluateExactResult(args: {
       psychometric: requestedInput.psychometric,
       bagrut: requestedInput.bagrut,
     };
-    if (exactTarget.sourceTarget.adapterId === 'haifa') {
-      const proof = await runHaifaAdmissionsProof({
-        fetcher: timedFetcher,
-        program: exactTarget.program,
-        applicant: {
-          bagrutAverage: input.bagrut,
-          psychometric: input.psychometric,
-          psychometricSubscores: {
-            english: input.extraInputs?.psychometricEnglish ?? 0,
-            math: input.extraInputs?.psychometricMath ?? 0,
-            verbal: input.extraInputs?.psychometricVerbal ?? 0,
-          },
-        },
-      });
-
-      return applyStructuredRequirementsToAcceptedScoreResult({
-        input,
-        program,
-        institution,
-        baseResult: normalizeExactProofResult({
-          institution,
-          proof: proof.normalizedPayload,
-          explanationPrefix: 'מקור רשמי של אוניברסיטת חיפה',
-        }),
-      });
-    }
-
     if (exactTarget.sourceTarget.adapterId === 'technion') {
       const bagrutSubjectRecord = input.extraInputs?.bagrutSubjectRecord;
       if (program.id === 'architecture') {
@@ -2138,6 +2142,12 @@ function requiredInputsResult(
 }
 
 function missingInputsCopy(requiredInputs: AdmissionsRequiredInput[]) {
+  if (requiredInputs.some((input) => input.startsWith('haifa_')))
+    return {
+      explanation: 'הסכם בחיפה תלוי בממוצע הבגרות הרשמי ובשנות הבגרות והבחינה הפסיכומטרית.',
+      nextAction:
+        'השלימו את הממוצע הרשמי והשנים בפרופיל האקדמי, לצד ציוני הכמותי, המילולי והאנגלית.',
+    };
   if (requiredInputs.some((input) => input.startsWith('bgu_')))
     return {
       explanation: 'נדרשים נתוני האפיק הרשמי בבן־גוריון ואישור תנאי התוכנית והשפה.',

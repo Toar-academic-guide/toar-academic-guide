@@ -1,4 +1,5 @@
 import { BGU_PSYCHOLOGY_PROFILE_KEYS } from '@/lib/bguPsychologyInputs';
+import { HAIFA_PROFILE_KEYS } from '@/lib/haifaAdmissionsInputs';
 import type { AdmissionsProfileInputs } from '@/types';
 
 export interface AlertRelevantAcademicProfile {
@@ -26,6 +27,9 @@ export function shouldRefreshAdmissionAlerts(
     previous.psychometricEnglish !== next.psychometricEnglish ||
     previous.bagrutWeightedAverage !== next.bagrutWeightedAverage ||
     previous.bagrutProfileVersionId !== next.bagrutProfileVersionId ||
+    HAIFA_PROFILE_KEYS.some(
+      (key) => previous.admissionsInputs?.[key] !== next.admissionsInputs?.[key],
+    ) ||
     BGU_PSYCHOLOGY_PROFILE_KEYS.some(
       (key) => previous.admissionsInputs?.[key] !== next.admissionsInputs?.[key],
     ) ||

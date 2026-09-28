@@ -1,5 +1,7 @@
 'use client';
 
+import { HAIFA_ADMISSION_YEAR, haifaProfileInputsSchema } from '@/lib/haifaAdmissionsInputs';
+
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
@@ -75,6 +77,15 @@ export default function AcademicProfileForm({
   const [bguBagrutAverage, setBguBagrutAverage] = useState(
     initialScores?.admissions?.bguBagrutAverage?.toString() ?? '',
   );
+  const [haifaBagrutAverage, setHaifaBagrutAverage] = useState(
+    initialScores?.admissions?.haifaBagrutAverage?.toString() ?? '',
+  );
+  const [haifaBagrutYear, setHaifaBagrutYear] = useState(
+    initialScores?.admissions?.haifaBagrutYear?.toString() ?? '',
+  );
+  const [haifaPsychometricYear, setHaifaPsychometricYear] = useState(
+    initialScores?.admissions?.haifaPsychometricYear?.toString() ?? '',
+  );
   const [tauApplicationRequirements, setTauApplicationRequirements] = useState(
     initialScores?.admissions?.tauApplicationRequirementsConfirmed?.toString() ?? '',
   );
@@ -136,6 +147,9 @@ export default function AcademicProfileForm({
     setTauBagrutAverage('');
     setPsychologyValues({});
     setBguBagrutAverage('');
+    setHaifaBagrutAverage('');
+    setHaifaBagrutYear('');
+    setHaifaPsychometricYear('');
     setTauApplicationRequirements('');
     setBguLanguageRequirements('');
     setTauMathPlacementScore('');
@@ -230,6 +244,17 @@ export default function AcademicProfileForm({
     const mathPlacement = optionalNumber(tauMathPlacementScore);
     if (tauAverage !== undefined) admissions.tauBagrutAverage = tauAverage;
     if (bguAverage !== undefined) admissions.bguBagrutAverage = bguAverage;
+    const haifaAverage = optionalNumber(haifaBagrutAverage);
+    const certificateYear = optionalNumber(haifaBagrutYear);
+    const examYear = optionalNumber(haifaPsychometricYear);
+    if (haifaAverage !== undefined) admissions.haifaBagrutAverage = haifaAverage;
+    if (certificateYear !== undefined) admissions.haifaBagrutYear = certificateYear;
+    if (examYear !== undefined) admissions.haifaPsychometricYear = examYear;
+    if (!haifaProfileInputsSchema.safeParse(admissions).success) {
+      setError(`בדקו את נתוני חיפה: ממוצע 50–130 ושנים שלמות בין 1948 ל־${HAIFA_ADMISSION_YEAR}.`);
+      setIsSaving(false);
+      return;
+    }
     if (tauApplicationRequirements !== '') {
       admissions.tauApplicationRequirementsConfirmed = tauApplicationRequirements === 'true';
     }
@@ -707,6 +732,78 @@ export default function AcademicProfileForm({
                   disabled={isSaving}
                   className={inputBase + ' disabled:cursor-not-allowed disabled:opacity-50'}
                 />
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label
+                  htmlFor="haifa-bagrut-average"
+                  className="text-xs font-medium text-slate-600"
+                >
+                  ממוצע בגרות רשמי של אוניברסיטת חיפה (50–130)
+                </label>
+                <input
+                  id="haifa-bagrut-average"
+                  type="number"
+                  min={50}
+                  max={130}
+                  step={0.01}
+                  placeholder="לא ידוע"
+                  value={haifaBagrutAverage}
+                  onChange={(event) => setHaifaBagrutAverage(event.target.value)}
+                  disabled={isSaving}
+                  className={inputBase + ' disabled:cursor-not-allowed disabled:opacity-50'}
+                />
+                <a
+                  href="https://applicants.haifa.ac.il/enrollmentChances/index.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-blue-600 underline"
+                >
+                  למחשבון הבגרות הרשמי של חיפה
+                </a>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="haifa-bagrut-year" className="text-xs font-medium text-slate-600">
+                  שנת הזכאות לבגרות או השיפור האחרון בחיפה
+                </label>
+                <input
+                  id="haifa-bagrut-year"
+                  type="number"
+                  min={1948}
+                  max={HAIFA_ADMISSION_YEAR}
+                  step={1}
+                  placeholder="לא ידוע"
+                  value={haifaBagrutYear}
+                  onChange={(event) => setHaifaBagrutYear(event.target.value)}
+                  disabled={isSaving}
+                  className={inputBase + ' disabled:cursor-not-allowed disabled:opacity-50'}
+                />
+                <p className="text-xs text-slate-500">
+                  אם שיפרתם שני מקצועות בגרות או יותר, הזינו את שנת השיפור האחרון. השנה משפיעה על
+                  משקל הבגרות בסכם.
+                </p>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label
+                  htmlFor="haifa-psychometric-year"
+                  className="text-xs font-medium text-slate-600"
+                >
+                  שנת הבחינה הפסיכומטרית לחישוב בחיפה
+                </label>
+                <input
+                  id="haifa-psychometric-year"
+                  type="number"
+                  min={1948}
+                  max={HAIFA_ADMISSION_YEAR}
+                  step={1}
+                  placeholder="לא ידוע"
+                  value={haifaPsychometricYear}
+                  onChange={(event) => setHaifaPsychometricYear(event.target.value)}
+                  disabled={isSaving}
+                  className={inputBase + ' disabled:cursor-not-allowed disabled:opacity-50'}
+                />
+                <p className="text-xs text-slate-500">
+                  הזינו את השנה של הבחינה שממנה לקחתם את ציוני הכמותי, המילולי והאנגלית.
+                </p>
               </div>
               <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-600">
                 האם מולאו תנאי ההגשה לתל אביב: זכאות לבגרות, אנגלית ברמת מתקדמים א׳ (100 לפחות

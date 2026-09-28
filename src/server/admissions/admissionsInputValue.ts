@@ -5,6 +5,12 @@ export function admissionsInputValue(
   requiredInput: AdmissionsRequiredInput,
 ): unknown {
   switch (requiredInput) {
+    case 'haifa_bagrut_average':
+      return input?.haifaBagrutAverage;
+    case 'haifa_bagrut_year':
+      return input?.haifaBagrutYear;
+    case 'haifa_psychometric_year':
+      return input?.haifaPsychometricYear;
     case 'bagrut_average':
       return undefined;
     case 'bgu_psychology_requirements':

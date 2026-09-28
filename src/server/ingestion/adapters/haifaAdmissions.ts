@@ -5,12 +5,13 @@ import {
   type AdmissionsAdapterContext,
   type AdmissionsSourceProof,
 } from '../admissionsSourceAdapters';
+import { HAIFA_ADMISSION_YEAR, haifaScoreInputsSchema } from '@/lib/haifaAdmissionsInputs';
 
 const HAIFA_INDEX_URL = 'https://applicants.haifa.ac.il/enrollmentChances/index.html';
 const HAIFA_SERVLET_URL = 'https://applicants.haifa.ac.il/enrollmentChances/CandChancesServlet';
-const DEFAULT_YEAR = '2026';
+const DEFAULT_YEAR = String(HAIFA_ADMISSION_YEAR);
 const DEFAULT_SEMESTER = '001';
-const DEFAULT_HUG = 'SC0001';
+const DEFAULT_HUG = 'SC0021';
 
 export async function runHaifaAdmissionsProof(
   context: AdmissionsAdapterContext,
@@ -19,11 +20,28 @@ export async function runHaifaAdmissionsProof(
   const program = context.program ?? {
     id: 'haifa-cs',
     name: 'Computer Science',
-    externalId: '52258372',
+    externalId: '52256544',
   };
   const metadata: NonNullable<AdmissionsSourceProof['rawResponseMetadata']> = [];
 
   try {
+    const yearsAndAverage = haifaScoreInputsSchema.safeParse({
+      haifaBagrutAverage: context.applicant.bagrutAverage,
+      haifaBagrutYear: Number(context.applicant.bagrutYear),
+      haifaPsychometricYear: Number(context.applicant.psychometricYear),
+    });
+    const components = context.applicant.psychometricSubscores;
+    if (
+      !yearsAndAverage.success ||
+      !components ||
+      ![components.math, components.verbal, components.english].every(
+        (score) => Number.isInteger(score) && score >= 50 && score <= 150,
+      )
+    ) {
+      throw new Error(
+        'Haifa requires its official Bagrut average, actual certificate/exam years and all three valid psychometric components.',
+      );
+    }
     const connectionUrl = `${HAIFA_SERVLET_URL}?operation=checkConnection`;
     const connectionResponse = await fetcher(connectionUrl, { headers: defaultHeaders() });
     metadata.push(readOfficialResponseMetadata(connectionUrl, connectionResponse));
@@ -100,11 +118,10 @@ export function parseHaifaChancesResponse(value: unknown): Record<string, number
 
 function buildHaifaParams(
   context: AdmissionsAdapterContext,
-  programId = '52258372',
+  programId = '52256544',
   hug = DEFAULT_HUG,
 ) {
-  const subscores =
-    context.applicant.psychometricSubscores ?? defaultSubscores(context.applicant.psychometric);
+  const subscores = context.applicant.psychometricSubscores!;
 
   return new URLSearchParams({
     operation: 'calculateChances',
@@ -112,23 +129,14 @@ function buildHaifaParams(
     semester: DEFAULT_SEMESTER,
     hug,
     program: programId,
-    bag_year: context.applicant.bagrutYear ?? '2020',
+    bag_year: context.applicant.bagrutYear!,
     bag_type: '001',
-    bag_avg: context.applicant.bagrutAverage.toFixed(1),
-    psy_year: context.applicant.psychometricYear ?? '2021',
+    bag_avg: String(context.applicant.bagrutAverage),
+    psy_year: context.applicant.psychometricYear!,
     psy_math: String(subscores.math),
     psy_english: String(subscores.english),
     psy_verbal: String(subscores.verbal),
   });
-}
-
-function defaultSubscores(psychometric: number) {
-  const score = Math.round(psychometric / 5);
-  return {
-    english: score,
-    math: score,
-    verbal: score,
-  };
 }
 
 function defaultHeaders() {

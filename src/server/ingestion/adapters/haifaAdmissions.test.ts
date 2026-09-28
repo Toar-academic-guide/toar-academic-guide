@@ -1,10 +1,17 @@
 import { describe, expect, it, vi } from 'vitest';
+import haifaOfficial from '../../../../docs/admissions-verification/2026-09-28-haifa-official.json';
+import {
+  getHaifaProgramConfig,
+  HAIFA_PROGRAM_VERIFICATION_METADATA,
+} from '@/data/admissions/haifaProgramVerification';
 
 import { evaluateAdmissionsSourceProof } from '../admissionsSourceAdapters';
 import { parseHaifaChancesResponse, runHaifaAdmissionsProof } from './haifaAdmissions';
 
 const applicant = {
   bagrutAverage: 105,
+  bagrutYear: '2026',
+  psychometricYear: '2026',
   psychometric: 680,
   psychometricSubscores: {
     english: 136,
@@ -22,6 +29,29 @@ function jsonResponse(body: unknown, init?: ResponseInit) {
 }
 
 describe('parseHaifaChancesResponse', () => {
+  it('reconciles refreshed fixtures with independent official captures for all Haifa programmes', () => {
+    for (const artifact of Object.values(HAIFA_PROGRAM_VERIFICATION_METADATA)) {
+      const config = getHaifaProgramConfig(artifact.contract.programId);
+      const captured = haifaOfficial.records.find(
+        (record) => record.officialProgramId === config.officialProgramId,
+      )!;
+      for (const [index, boundary] of ['high', 'low'].entries()) {
+        const official = captured[boundary as 'high' | 'low'];
+        const parsed = parseHaifaChancesResponse(official.response);
+        expect(parsed.weightedScore).toBe(artifact.fixtures[index].expected.score);
+        expect(parsed.acceptanceCutoff).toBe(config.acceptance);
+        expect(parsed.rejectionCutoff).toBe(config.rejection);
+        expect(artifact.fixtures[index].input).toMatchObject({
+          haifaBagrutAverage: Number(official.request.bag_avg),
+          haifaBagrutYear: Number(official.request.bag_year),
+          haifaPsychometricYear: Number(official.request.psy_year),
+          psychometricMath: Number(official.request.psy_math),
+          psychometricVerbal: Number(official.request.psy_verbal),
+          psychometricEnglish: Number(official.request.psy_english),
+        });
+      }
+    }
+  });
   it('keeps official score and cutoff fields from nested label/value content', () => {
     const parsed = parseHaifaChancesResponse({
       data: [
@@ -51,6 +81,51 @@ describe('parseHaifaChancesResponse', () => {
 });
 
 describe('runHaifaAdmissionsProof', () => {
+  it('preserves the actual certificate year, exam year and full official average', async () => {
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(jsonResponse({ data: [] }));
+    await runHaifaAdmissionsProof({
+      applicant: {
+        ...applicant,
+        bagrutAverage: 102.25,
+        bagrutYear: '2015',
+        psychometricYear: '2026',
+      },
+      fetcher,
+    });
+    const params = new URL(String(fetcher.mock.calls[1][0])).searchParams;
+    expect(params.get('bag_year')).toBe('2015');
+    expect(params.get('psy_year')).toBe('2026');
+    expect(params.get('bag_avg')).toBe('102.25');
+    expect(params.get('hug')).toBe('SC0021');
+    expect(params.get('program')).toBe('52256544');
+  });
+
+  it.each([
+    { bagrutYear: '2027' },
+    { bagrutYear: '2015.5' },
+    { psychometricYear: undefined },
+    { bagrutAverage: 130.01 },
+    { psychometricSubscores: { math: 151, verbal: 130, english: 130 } },
+  ])('withholds invalid Haifa inputs before fetching: %o', async (invalid) => {
+    const fetcher = vi.fn<typeof fetch>();
+    const proof = await runHaifaAdmissionsProof({
+      applicant: { ...applicant, ...invalid },
+      fetcher,
+    });
+    expect(fetcher).not.toHaveBeenCalled();
+    expect(proof.capability).toBe('blocked');
+  });
+
+  it('does not call the official calculator with fabricated years or components', async () => {
+    const fetcher = vi.fn<typeof fetch>();
+    const proof = await runHaifaAdmissionsProof({
+      applicant: { ...applicant, bagrutYear: undefined },
+      fetcher,
+    });
+    expect(fetcher).not.toHaveBeenCalled();
+    expect(proof.capability).toBe('blocked');
+  });
+
   it('returns a decision-capable proof from mocked official responses', async () => {
     const fetcher = vi
       .fn<typeof fetch>()

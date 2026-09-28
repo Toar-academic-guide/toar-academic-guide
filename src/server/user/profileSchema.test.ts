@@ -91,6 +91,18 @@ describe('userProfileSchema', () => {
     });
   });
 
+  it('preserves Haifa official average and real certificate and exam years', () => {
+    const admissions = {
+      haifaBagrutAverage: 102.25,
+      haifaBagrutYear: 2015,
+      haifaPsychometricYear: 2026,
+    };
+    expect(
+      userProfileSchema.parse({ geographicPreference: 'any', academicScores: { admissions } })
+        .academicScores?.admissions,
+    ).toEqual(admissions);
+  });
+
   it('accepts optional institution-specific admissions inputs, including false and zero', () => {
     const parsed = userProfileSchema.parse({
       geographicPreference: 'any',

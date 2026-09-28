@@ -193,7 +193,9 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
         defaultApplicant: {
           bagrutAverage: 120,
           psychometric: 800,
-          psychometricSubscores: { math: 160, verbal: 160, english: 160 },
+          bagrutYear: '2026',
+          psychometricYear: '2026',
+          psychometricSubscores: { math: 150, verbal: 150, english: 150 },
         },
         defaultProgram: {
           targetId: artifact.contract.source.targetId,
