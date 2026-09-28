@@ -1,3 +1,4 @@
+import psychologyOfficial from '../../../docs/admissions-verification/2026-09-27-bgu-psychology-official.json';
 import { describe, expect, it, vi } from 'vitest';
 import { architectureInputs, architectureSourceResponse } from '@/test/technionArchitecture';
 import { readFileSync } from 'node:fs';
@@ -2546,3 +2547,68 @@ describe('evaluateAdmissionsForProgram', () => {
     );
   });
 });
+
+it.each(['psychology', 'bgu_psychology'])(
+  'evaluates %s main-campus score and prep routes without generic Bagrut',
+  async (id) => {
+    const program = {
+      ...bguCs,
+      id,
+      name: 'פסיכולוגיה',
+      thresholds: { bgu: 650 },
+      minimumPsychometric: { bgu: 650 },
+    };
+    const common = {
+      bguLanguageRequirementsConfirmed: true,
+      bguPsychologyRequirementsConfirmed: true,
+    };
+    for (const [psychometric, score, decision] of [
+      [650, 663, 'eligible_to_apply'],
+      [649, 662, 'below'],
+    ] as const) {
+      const fetcher = vi
+        .fn<typeof fetch>()
+        .mockResolvedValueOnce(
+          new Response(JSON.stringify({ items: [psychologyOfficial.officialRule] })),
+        )
+        .mockResolvedValueOnce(
+          new Response(`parent.main.document.mainForm.on_final_sekem.value = ${score};`),
+        );
+      const report = await evaluateAdmissionsForProgram({
+        program,
+        institutions,
+        input: {
+          degreeId: id,
+          psychometric,
+          extraInputs: { ...common, bguBagrutAverage: 100, bguPsychologyRoute: 'score' },
+        },
+        fetcher,
+      });
+      expectBguExact(report, decision);
+      expect(report.results[0].score).toBe(score);
+    }
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ items: [psychologyOfficial.officialRule] })),
+      );
+    const report = await evaluateAdmissionsForProgram({
+      program,
+      institutions,
+      input: {
+        degreeId: id,
+        extraInputs: {
+          ...common,
+          bguPsychologyRoute: 'bagrut',
+          bguPreparatoryTrack: 'natural_life_sciences',
+          bguPreparatoryAverage: 94.25,
+          bguPreparatoryCompleted: true,
+        },
+      },
+      fetcher,
+    });
+    expectBguExact(report, 'eligible_to_apply');
+    expect(report.results[0].score).toBe(94.25);
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  },
+);

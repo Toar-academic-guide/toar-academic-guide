@@ -482,3 +482,29 @@ describe('AcademicProfileForm', () => {
     ).toBeTruthy();
   });
 });
+
+it('restores and saves Psychology prep decimals and false values without generic scores', async () => {
+  const admissions = {
+    bguPsychologyRoute: 'bagrut' as const,
+    bguPsychologyRequirementsConfirmed: false,
+    bguPreparatoryTrack: 'natural_life_sciences' as const,
+    bguPreparatoryAverage: 94.25,
+    bguPreparatoryCompleted: false,
+  };
+  const onComplete = vi.fn();
+  render(
+    <AcademicProfileForm
+      onComplete={onComplete}
+      onClearLocalProfileData={vi.fn()}
+      onSkip={vi.fn()}
+      initialScores={{ admissions }}
+    />,
+  );
+  expect(screen.getByLabelText('ממוצע מכינה מוכרת לפסיכולוגיה (0–100)')).toHaveProperty(
+    'value',
+    '94.25',
+  );
+  expect(screen.getByLabelText('האם המכינה לפסיכולוגיה הושלמה?')).toHaveProperty('value', 'false');
+  fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+  await waitFor(() => expect(onComplete).toHaveBeenCalledWith({ admissions }));
+});

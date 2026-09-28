@@ -111,3 +111,78 @@ test.describe('app admissions calculator', () => {
     );
   });
 });
+
+test('Psychology alternate routes accept omitted generic scores in the deployed calculator and API', async ({
+  page,
+  request,
+}) => {
+  await page.goto('/app/calculator');
+  await page.locator('#degree').selectOption('bgu_psychology');
+  const evaluation = page.waitForResponse(
+    (response) =>
+      response.url().includes('/api/admissions/evaluate') && response.request().method() === 'POST',
+  );
+  await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
+  expect((await evaluation).status()).toBe(200);
+  await expectSafeResult(
+    page,
+    'אוניברסיטת בן-גוריון בנגב',
+    /נדרשים נתונים/,
+    /נדרשים נתונים נוספים/,
+  );
+  const input = {
+    degreeId: 'bgu_psychology',
+    extraInputs: {
+      bguPsychologyRoute: 'bagrut',
+      bguPreparatoryTrack: 'natural_life_sciences',
+      bguPreparatoryAverage: 94.25,
+      bguPreparatoryCompleted: true,
+      bguPsychologyRequirementsConfirmed: true,
+      bguLanguageRequirementsConfirmed: true,
+    },
+  };
+  const response = await request.post('/api/admissions/evaluate', { data: input });
+  expect(response.status()).toBe(200);
+  expect((await response.json()).data.input).toEqual(input);
+});
+
+test('BGU engineering accepts prep-only requests without a generic Bagrut average', async ({
+  page,
+  request,
+}) => {
+  await page.goto('/app/calculator');
+  await page.locator('#degree').selectOption('bgu_ee');
+  await page.locator('#psychometric').fill('700');
+  const evaluation = page.waitForResponse(
+    (response) =>
+      response.url().includes('/api/admissions/evaluate') && response.request().method() === 'POST',
+  );
+  await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
+  expect((await evaluation).status()).toBe(200);
+  await expectSafeResult(
+    page,
+    'אוניברסיטת בן-גוריון בנגב',
+    /נדרשים נתונים/,
+    /נדרשים נתונים נוספים/,
+  );
+  const input = {
+    degreeId: 'bgu_ee',
+    psychometric: 700,
+    extraInputs: {
+      psychometricMath: 140,
+      bguLanguageRequirementsConfirmed: true,
+      bguEngineering: {
+        detailsConfirmed: true,
+        preparatoryInstitution: 'bgu',
+        preparatoryCompletionYear: 2026,
+        preparatoryMathUnits: 5,
+        preparatoryMathGrade: 90,
+        preparatoryPhysicsUnits: 5,
+        preparatoryPhysicsGrade: 90,
+      },
+    },
+  };
+  const response = await request.post('/api/admissions/evaluate', { data: input });
+  expect(response.status()).toBe(200);
+  expect((await response.json()).data.input).toEqual(input);
+});

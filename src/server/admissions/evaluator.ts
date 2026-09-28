@@ -1,3 +1,7 @@
+import { isBguPsychologyProgram } from '@/lib/bguPsychologyInputs';
+import { resolveBguPsychologyAdmission } from './bguPsychologyPolicy';
+import { runBguPsychologyProof } from '@/server/ingestion/adapters/bguPsychology';
+import { BGU_PSYCHOLOGY_SOURCE_URL } from '@/data/admissions/bguPsychologyVerification';
 import 'server-only';
 
 import { getCalculatorInstitutionsFromCatalogue } from '@/lib/calculatorInstitutions';
@@ -58,7 +62,10 @@ import {
 } from './bguEngineeringPolicy';
 import { runBguEngineeringAdmissionsProof } from '@/server/ingestion/adapters/bguEngineeringAdmissions';
 
-type AdmissionsEvaluationInput = AdmissionsEvaluationRequest & { psychometric: number };
+type AdmissionsEvaluationInput = AdmissionsEvaluationRequest & {
+  psychometric: number;
+  bagrut: number;
+};
 
 const MAX_CONCURRENT_EXACT_SOURCE_CALLS = 2;
 const OFFICIAL_SOURCE_TIMEOUT_MS = 5000;
@@ -255,10 +262,61 @@ async function evaluateExactResult(args: {
         fetcher: timedFetcher,
       });
     }
-    if (requestedInput.psychometric === undefined) {
-      return requiredInputsResult(institution, ['psychometric_overall']);
+    if (exactTarget.sourceTarget.adapterId === 'bgu' && isBguPsychologyProgram(program.id)) {
+      const route = resolveBguPsychologyAdmission(requestedInput);
+      if (route.kind === 'needs_input')
+        return requiredInputsResult(institution, route.requiredInputs);
+      if (route.kind === 'below')
+        return exactGateFailureResult({
+          institution,
+          unmetRequirements: [route.reason],
+          requirementsUrl: BGU_PSYCHOLOGY_SOURCE_URL,
+        });
+      const proof = await runBguPsychologyProof({
+        program: exactTarget.program,
+        applicant: {
+          psychometric: requestedInput.psychometric,
+          bagrutAverage: requestedInput.bagrut,
+          extraInputs: requestedInput.extraInputs,
+        },
+        fetcher: timedFetcher,
+      });
+      const result = normalizeExactProofResult({
+        institution,
+        proof: proof.normalizedPayload,
+        explanationPrefix: 'תנאי פסיכולוגיה בקמפוס באר שבע',
+        positiveDecision: 'eligible_to_apply',
+      });
+      if (result.capability !== 'exact') return result;
+      const labels = {
+        score: 'סכם',
+        psychometric: 'פסיכומטרי',
+        bagrut: 'ממוצע בגרות רשמי בבן־גוריון',
+        preparatory: 'ממוצע מכינה מוכרת בבן־גוריון',
+      };
+      const selectedRoute = proof.normalizedPayload.route as keyof typeof labels;
+      return {
+        ...result,
+        scoreLabel: labels[selectedRoute],
+        officialUrls: [BGU_PSYCHOLOGY_SOURCE_URL],
+        explanation: String(proof.normalizedPayload.reason),
+        nextAction:
+          result.decision === 'below'
+            ? 'בדקו אפיק חלופי לפי התנאים הרשמיים. אין זכאות אוטומטית לדיון בחריגים.'
+            : 'מכסת המתקבלים מלאה כרגע; הזכאים יכולים להירשם ולעקוב אחר מקום פנוי. נדרש אישור מוסדי ועמידה בתנאי החוג הנוסף.',
+      };
     }
-    const input = { ...requestedInput, psychometric: requestedInput.psychometric };
+    if (requestedInput.psychometric === undefined || requestedInput.bagrut === undefined) {
+      return requiredInputsResult(institution, [
+        ...(requestedInput.psychometric === undefined ? ['psychometric_overall' as const] : []),
+        ...(requestedInput.bagrut === undefined ? ['bagrut_average' as const] : []),
+      ]);
+    }
+    const input = {
+      ...requestedInput,
+      psychometric: requestedInput.psychometric,
+      bagrut: requestedInput.bagrut,
+    };
     if (exactTarget.sourceTarget.adapterId === 'haifa') {
       const proof = await runHaifaAdmissionsProof({
         fetcher: timedFetcher,
@@ -1261,10 +1319,17 @@ function evaluateNonExactResult(args: {
     };
   }
 
-  if (requestedInput.psychometric === undefined) {
-    return requiredInputsResult(institution, ['psychometric_overall']);
+  if (requestedInput.psychometric === undefined || requestedInput.bagrut === undefined) {
+    return requiredInputsResult(institution, [
+      ...(requestedInput.psychometric === undefined ? ['psychometric_overall' as const] : []),
+      ...(requestedInput.bagrut === undefined ? ['bagrut_average' as const] : []),
+    ]);
   }
-  const input = { ...requestedInput, psychometric: requestedInput.psychometric };
+  const input = {
+    ...requestedInput,
+    psychometric: requestedInput.psychometric,
+    bagrut: requestedInput.bagrut,
+  };
 
   if (entry.capability === 'manual_gate') {
     const verifiedThreshold = getVerifiedProgramThreshold(entry.evidence, program.id);
@@ -2139,6 +2204,16 @@ function missingInputsCopy(requiredInputs: AdmissionsRequiredInput[]) {
       explanation:
         'לסכם הנדסה בבן־גוריון נדרשים מקצועות הבגרות וכל ציוני המכינה או ההנדסאי הרלוונטיים, וגם מצב השלמת הפיזיקה.',
       nextAction: 'השלימו את סעיף ההנדסה בבן־גוריון בפרופיל האקדמי ונסו שוב.',
+    };
+  if (requiredInputs.some((input) => input.startsWith('bgu_')))
+    return {
+      explanation: 'נדרשים נתוני האפיק הרשמי בבן־גוריון ואישור תנאי התוכנית והשפה.',
+      nextAction: 'השלימו את נתוני בן־גוריון בפרופיל האקדמי ונסו שוב.',
+    };
+  if (requiredInputs.includes('bagrut_average'))
+    return {
+      explanation: 'במוסד זה נדרש ממוצע בגרות לחישוב.',
+      nextAction: 'הזינו ממוצע בגרות או בדקו אפיק חלופי באתר המוסד.',
     };
   if (requiredInputs.some((input) => input.startsWith('tau_management_'))) {
     return {

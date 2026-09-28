@@ -21,8 +21,9 @@ import {
 } from '@/server/admissions/bguEngineeringPolicy';
 
 type BguEngineeringAdapterContext = Omit<AdmissionsAdapterContext, 'applicant'> & {
-  applicant: Omit<AdmissionsAdapterContext['applicant'], 'psychometric'> & {
+  applicant: Omit<AdmissionsAdapterContext['applicant'], 'psychometric' | 'bagrutAverage'> & {
     psychometric?: number;
+    bagrutAverage?: number;
   };
 };
 

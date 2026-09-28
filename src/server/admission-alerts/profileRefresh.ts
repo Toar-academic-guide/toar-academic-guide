@@ -1,3 +1,4 @@
+import { BGU_PSYCHOLOGY_PROFILE_KEYS } from '@/lib/bguPsychologyInputs';
 import type { AdmissionsProfileInputs } from '@/types';
 
 export interface AlertRelevantAcademicProfile {
@@ -27,6 +28,9 @@ export function shouldRefreshAdmissionAlerts(
     previous.psychometricEnglish !== next.psychometricEnglish ||
     previous.bagrutWeightedAverage !== next.bagrutWeightedAverage ||
     previous.bagrutProfileVersionId !== next.bagrutProfileVersionId ||
+    BGU_PSYCHOLOGY_PROFILE_KEYS.some(
+      (key) => previous.admissionsInputs?.[key] !== next.admissionsInputs?.[key],
+    ) ||
     previous.admissionsInputs?.tauBagrutAverage !== next.admissionsInputs?.tauBagrutAverage ||
     previous.admissionsInputs?.bguBagrutAverage !== next.admissionsInputs?.bguBagrutAverage ||
     previous.admissionsInputs?.tauApplicationRequirementsConfirmed !==

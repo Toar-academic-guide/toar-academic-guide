@@ -125,7 +125,7 @@ function formatResultSummary(result: AdmissionsEvaluationResult): string {
 
 interface Props {
   psychometric?: number;
-  bagrut: number;
+  bagrut?: number;
   degreeId: string;
   programs: CatalogueProgram[];
   onBack: () => void;
@@ -478,7 +478,7 @@ export default function CalculatorResults({
           </p>
           <p className="mt-1 text-sm text-slate-500">
             {psychometric === undefined ? 'ללא פסיכומטרי' : `פסיכומטרי ${psychometric}`} · ממוצע
-            בגרות {bagrut}
+            בגרות {bagrut ?? 'לא הוזן'}
           </p>
         </div>
 
