@@ -720,6 +720,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     const entries = buildAdmissionsCapabilityMatrix({
       program,
       institutions: INSTITUTIONS,
+      input: { bguEngineering: { detailsConfirmed: true }, bguLanguageRequirementsConfirmed: true },
     });
 
     const bguEntry = entries.find((e) => e.institutionId === 'bgu');

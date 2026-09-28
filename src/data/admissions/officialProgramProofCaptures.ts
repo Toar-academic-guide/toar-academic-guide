@@ -1,7 +1,12 @@
+import { BGU_HEALTH_OFFICIAL_CAPTURES_BY_TARGET_ID } from './bguHealthVerification';
+import { BGU_QUANTITATIVE_OFFICIAL_CAPTURES_BY_TARGET_ID } from './bguQuantitativeRoutesVerification';
 import { BGU_PSYCHOLOGY_OFFICIAL_CAPTURES_BY_TARGET_ID } from './bguPsychologyVerification';
+import { BGU_SOCIAL_SCIENCE_OFFICIAL_CAPTURES_BY_TARGET_ID } from './bguSocialScienceVerification';
 import type { AdmissionsApplicantInput } from '@/server/ingestion/admissionsSourceAdapters';
 import { BGU_COMPUTER_SCIENCE_OFFICIAL_PROOF_CAPTURES_BY_TARGET_ID } from './bguComputerScienceVerification';
+import { BGU_DATA_SCIENCE_OFFICIAL_PROOF_CAPTURES_BY_TARGET_ID } from './bguDataScienceVerification';
 import { TAU_COMPUTER_SCIENCE_OFFICIAL_PROOF_CAPTURES } from './tauComputerScienceVerification';
+import { BGU_ENGINEERING_OFFICIAL_PROOF_CAPTURES_BY_TARGET_ID } from './bguEngineeringVerification';
 
 export interface OfficialProgramProofCapture {
   captureId: string;
@@ -678,13 +683,22 @@ function technionRecord(grade: number) {
   };
 }
 
-// These two score families were recaptured independently of the replay adapters.
+// Reviewed score families were recaptured independently of the replay adapters.
 Object.assign(
   OFFICIAL_PROGRAM_PROOF_CAPTURES_BY_TARGET_ID,
   BGU_COMPUTER_SCIENCE_OFFICIAL_PROOF_CAPTURES_BY_TARGET_ID,
+  BGU_DATA_SCIENCE_OFFICIAL_PROOF_CAPTURES_BY_TARGET_ID,
+  BGU_ENGINEERING_OFFICIAL_PROOF_CAPTURES_BY_TARGET_ID,
   BGU_PSYCHOLOGY_OFFICIAL_CAPTURES_BY_TARGET_ID,
+  BGU_HEALTH_OFFICIAL_CAPTURES_BY_TARGET_ID,
+  BGU_SOCIAL_SCIENCE_OFFICIAL_CAPTURES_BY_TARGET_ID,
   {
     'tau-cs-live': TAU_COMPUTER_SCIENCE_OFFICIAL_PROOF_CAPTURES,
     'tau-cs-legacy-live': TAU_COMPUTER_SCIENCE_OFFICIAL_PROOF_CAPTURES,
   },
+);
+
+Object.assign(
+  OFFICIAL_PROGRAM_PROOF_CAPTURES_BY_TARGET_ID,
+  BGU_QUANTITATIVE_OFFICIAL_CAPTURES_BY_TARGET_ID,
 );

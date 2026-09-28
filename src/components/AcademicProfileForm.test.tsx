@@ -71,6 +71,130 @@ describe('AcademicProfileForm', () => {
     );
   });
 
+  it('shares preparatory facts across BGU sections and saves the latest edit or clearing', async () => {
+    const onComplete = vi.fn();
+    const bguEngineering = {
+      detailsConfirmed: false,
+      industrialPreparatoryAverage: 91.25,
+      physicsCoursePassed: false,
+    };
+    const props = {
+      onComplete,
+      onSkip: vi.fn(),
+      onClearLocalProfileData: vi.fn().mockResolvedValue(undefined),
+    };
+    const view = render(
+      <AcademicProfileForm
+        {...props}
+        initialScores={{
+          admissions: {
+            bguEngineering,
+            bguPsychologyRoute: 'bagrut',
+            bguPsychologyRequirementsConfirmed: false,
+            bguQuantitativeRoute: 'bagrut',
+            bguPriorAcademicStudies: false,
+            bguPreparatoryTrack: 'natural_life_sciences',
+            bguPreparatoryAverage: 94.25,
+            bguPreparatoryCompleted: true,
+          },
+        }}
+      />,
+    );
+    const quantitativeAverage = () => screen.getByLabelText('ממוצע מכינה מוכרת בבן־גוריון');
+    const psychologyAverage = () => screen.getByLabelText('ממוצע מכינה מוכרת לפסיכולוגיה (0–100)');
+    const socialAverage = () => screen.getByLabelText('ממוצע מכינה מוכרת למדעי החברה (0–100)');
+    expect(quantitativeAverage()).toHaveProperty('value', '94.25');
+    expect(psychologyAverage()).toHaveProperty('value', '94.25');
+    expect(socialAverage()).toHaveProperty('value', '94.25');
+    fireEvent.change(quantitativeAverage(), { target: { value: '87.25' } });
+    expect(psychologyAverage()).toHaveProperty('value', '87.25');
+    expect(socialAverage()).toHaveProperty('value', '87.25');
+    fireEvent.change(socialAverage(), { target: { value: '0' } });
+    expect(psychologyAverage()).toHaveProperty('value', '0');
+    expect(quantitativeAverage()).toHaveProperty('value', '0');
+    fireEvent.change(screen.getByLabelText('האם המכינה לפסיכולוגיה הושלמה?'), {
+      target: { value: 'false' },
+    });
+    expect(screen.getByLabelText('האם המכינה המוכרת בבן־גוריון הושלמה?')).toHaveProperty(
+      'value',
+      'false',
+    );
+    fireEvent.change(screen.getByLabelText('מכינה מוכרת של בן־גוריון'), {
+      target: { value: 'precise_sciences_engineering' },
+    });
+    expect(screen.getByLabelText('מכינה מוכרת של בן־גוריון לפסיכולוגיה')).toHaveProperty(
+      'value',
+      'precise_sciences_engineering',
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    await waitFor(() => expect(onComplete).toHaveBeenCalledTimes(1));
+    const saved = onComplete.mock.calls[0][0];
+    expect(saved.admissions).toEqual({
+      bguEngineering,
+      bguPsychologyRoute: 'bagrut',
+      bguPsychologyRequirementsConfirmed: false,
+      bguQuantitativeRoute: 'bagrut',
+      bguPriorAcademicStudies: false,
+      bguPreparatoryTrack: 'precise_sciences_engineering',
+      bguPreparatoryAverage: 0,
+      bguPreparatoryCompleted: false,
+    });
+    view.unmount();
+    render(<AcademicProfileForm {...props} initialScores={saved} />);
+    expect(psychologyAverage()).toHaveProperty('value', '0');
+    fireEvent.change(psychologyAverage(), { target: { value: '' } });
+    expect(quantitativeAverage()).toHaveProperty('value', '');
+    expect(socialAverage()).toHaveProperty('value', '');
+    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    await waitFor(() => expect(onComplete).toHaveBeenCalledTimes(2));
+    expect(onComplete.mock.calls[1][0].admissions).not.toHaveProperty('bguPreparatoryAverage');
+    expect(onComplete.mock.calls[1][0].admissions.bguPreparatoryCompleted).toBe(false);
+    expect(onComplete.mock.calls[1][0].admissions.bguEngineering).toEqual(bguEngineering);
+  });
+  it('saves and reopens recognized preparatory route details without generic scores', async () => {
+    const onComplete = vi.fn();
+    const props = {
+      onComplete,
+      onSkip: vi.fn(),
+      onClearLocalProfileData: vi.fn().mockResolvedValue(undefined),
+    };
+    const view = render(<AcademicProfileForm {...props} />);
+    fireEvent.change(screen.getByLabelText('אפיק לבדיקה בבן־גוריון'), {
+      target: { value: 'bagrut' },
+    });
+    fireEvent.change(screen.getByLabelText('מכינה מוכרת של בן־גוריון'), {
+      target: { value: 'natural_life_sciences' },
+    });
+    fireEvent.change(screen.getByLabelText('ממוצע מכינה מוכרת בבן־גוריון'), {
+      target: { value: '87.25' },
+    });
+    fireEvent.change(screen.getByLabelText('האם המכינה המוכרת בבן־גוריון הושלמה?'), {
+      target: { value: 'true' },
+    });
+    fireEvent.change(screen.getByLabelText('האם יש לימודים אקדמיים קודמים?'), {
+      target: { value: 'false' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    await waitFor(() => expect(onComplete).toHaveBeenCalled());
+    const saved = onComplete.mock.calls[0][0];
+    expect(saved).toEqual({
+      admissions: {
+        bguQuantitativeRoute: 'bagrut',
+        bguPreparatoryTrack: 'natural_life_sciences',
+        bguPreparatoryAverage: 87.25,
+        bguPreparatoryCompleted: true,
+        bguPriorAcademicStudies: false,
+      },
+    });
+    view.unmount();
+    render(<AcademicProfileForm {...props} initialScores={saved} />);
+    expect((screen.getByLabelText('ממוצע מכינה מוכרת בבן־גוריון') as HTMLInputElement).value).toBe(
+      '87.25',
+    );
+    expect(
+      (screen.getByLabelText('האם יש לימודים אקדמיים קודמים?') as HTMLSelectElement).value,
+    ).toBe('false');
+  });
   beforeEach(() => {
     vi.restoreAllMocks();
   });
@@ -285,7 +409,7 @@ describe('AcademicProfileForm', () => {
       screen.getByRole('link', { name: 'מחשבון ממוצע בגרות של אוניברסיטת תל אביב' }),
     ).toHaveProperty('href', 'https://www.ims.tau.ac.il/md/ut/bagrut.aspx');
 
-    fireEvent.change(screen.getByLabelText('ממוצע בגרות רשמי של בן־גוריון (50–130)'), {
+    fireEvent.change(screen.getByLabelText('ממוצע בגרות או הנדסאי מוכר של בן־גוריון (50–130)'), {
       target: { value: '108.25' },
     });
     fireEvent.change(screen.getByLabelText('אישור דרישות שפה בבן־גוריון'), {
@@ -304,6 +428,64 @@ describe('AcademicProfileForm', () => {
           haifaBagrutAverage: 102.25,
           haifaBagrutYear: 2015,
           haifaPsychometricYear: 2026,
+        },
+      }),
+    );
+  });
+
+  it('restores, edits and saves engineering qualification fields without losing false confirmations', async () => {
+    const onComplete = vi.fn();
+    const bguEngineering = {
+      detailsConfirmed: true,
+      route: 'engineering_score' as const,
+      physicsCoursePassed: false,
+      preparatoryInstitution: 'bgu' as const,
+      preparatoryCompletionYear: 2026,
+      preparatoryMathUnits: 5 as const,
+      preparatoryMathGrade: 95,
+      preparatoryPhysicsUnits: 5 as const,
+      preparatoryPhysicsGrade: 90,
+      industrialPreparatoryAverage: 91.25,
+      diplomaRecognized: true,
+      diplomaMathHours: 90,
+      diplomaMathGrade: 95,
+      diplomaPhysicsHours: 90,
+      diplomaPhysicsGrade: 80,
+    };
+    render(
+      <AcademicProfileForm
+        onComplete={onComplete}
+        onClearLocalProfileData={vi.fn().mockResolvedValue(undefined)}
+        onSkip={vi.fn()}
+        initialScores={{ admissions: { bguEngineering } }}
+      />,
+    );
+    expect(screen.getByLabelText('השלמת קורס פיזיקה מוכר בבן־גוריון')).toHaveProperty(
+      'value',
+      'false',
+    );
+    expect(screen.getByLabelText('כל נתוני ההנדסה הרלוונטיים הוזנו')).toHaveProperty(
+      'checked',
+      true,
+    );
+    fireEvent.change(screen.getByLabelText('ציון מתמטיקה במכינה'), { target: { value: '96' } });
+    fireEvent.change(screen.getByLabelText('תעודת הנדסאי מוסמך מוכרת בבן־גוריון'), {
+      target: { value: 'false' },
+    });
+    fireEvent.change(screen.getByLabelText('השלמת קורס פיזיקה מוכר בבן־גוריון'), {
+      target: { value: '' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    const { physicsCoursePassed: omitted, ...remaining } = bguEngineering;
+    void omitted;
+    await waitFor(() =>
+      expect(onComplete).toHaveBeenCalledWith({
+        admissions: {
+          bguEngineering: {
+            ...remaining,
+            preparatoryMathGrade: 96,
+            diplomaRecognized: false,
+          },
         },
       }),
     );
@@ -544,4 +726,87 @@ it('restores and saves Psychology prep decimals and false values without generic
   expect(screen.getByLabelText('האם המכינה לפסיכולוגיה הושלמה?')).toHaveProperty('value', 'false');
   fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
   await waitFor(() => expect(onComplete).toHaveBeenCalledWith({ admissions }));
+});
+
+it('restores and saves social science details and shares the same prep values', async () => {
+  const admissions = {
+    bguSocialScienceRoute: 'bagrut' as const,
+    bguSocialScienceRequirementsConfirmed: false,
+    bguSocialScienceLanguageConfirmed: true,
+    bguReturningFromStudyBreak: false,
+    bguSocialWorkAcademicBackground: 'social_work' as const,
+    bguSocialWorkAcademicAverage: 85.25,
+    bguSocialWorkTranscriptProvided: false,
+    bguApplicantAge: 45,
+    bguPreparatoryAverage: 90.25,
+    bguPreparatoryTrack: 'natural_life_sciences' as const,
+    bguPreparatoryCompleted: false,
+  };
+  const onComplete = vi.fn();
+  render(
+    <AcademicProfileForm
+      onComplete={onComplete}
+      onClearLocalProfileData={vi.fn()}
+      onSkip={vi.fn()}
+      initialScores={{ admissions }}
+    />,
+  );
+  expect(screen.getByLabelText('ממוצע לימודים קודמים בעבודה סוציאלית (0–100)')).toHaveProperty(
+    'value',
+    '85.25',
+  );
+  fireEvent.change(screen.getByLabelText('ממוצע מכינה מוכרת למדעי החברה (0–100)'), {
+    target: { value: '90.75' },
+  });
+  expect(screen.getByLabelText('ממוצע מכינה מוכרת לפסיכולוגיה (0–100)')).toHaveProperty(
+    'value',
+    '90.75',
+  );
+  fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+  await waitFor(() =>
+    expect(onComplete).toHaveBeenCalledWith({
+      admissions: { ...admissions, bguPreparatoryAverage: 90.75 },
+    }),
+  );
+});
+
+it('saves and reopens health decimals, false and unknown values without generic scores', async () => {
+  const admissions = {
+    bguOccupationalTherapyRoute: 'academic' as const,
+    bguOccupationalTherapyRequirementsConfirmed: true,
+    bguBachelorsDegreeCompleted: true,
+    bguBachelorsDegreeAverage: 85.25,
+    bguPhysiotherapyRequirementsConfirmed: false,
+  };
+  const onComplete = vi.fn();
+  const view = render(
+    <AcademicProfileForm
+      onComplete={onComplete}
+      onClearLocalProfileData={vi.fn()}
+      onSkip={vi.fn()}
+      initialScores={{ admissions }}
+    />,
+  );
+  expect(screen.getByLabelText('ממוצע תואר ראשון לריפוי בעיסוק (0–100)')).toHaveProperty(
+    'value',
+    '85.25',
+  );
+  expect(screen.getByLabelText(/פיזיותרפיה: תעודת קבלה מוכרת/)).toHaveProperty('value', 'false');
+  expect(screen.getByLabelText('מועד הבחינה לריפוי בעיסוק')).toHaveProperty('value', '');
+  fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+  await waitFor(() => expect(onComplete).toHaveBeenCalledWith({ admissions }));
+  view.unmount();
+  render(
+    <AcademicProfileForm
+      onComplete={vi.fn()}
+      onClearLocalProfileData={vi.fn()}
+      onSkip={vi.fn()}
+      initialScores={onComplete.mock.calls[0][0]}
+    />,
+  );
+  expect(screen.getByLabelText('ממוצע תואר ראשון לריפוי בעיסוק (0–100)')).toHaveProperty(
+    'value',
+    '85.25',
+  );
+  expect(screen.getByLabelText(/פיזיותרפיה: תעודת קבלה מוכרת/)).toHaveProperty('value', 'false');
 });

@@ -29,10 +29,44 @@ export function admissionsInputValue(
       return input?.haifaOtFailedSelectionAttempts;
     case 'haifa_ot_unjustified_absence':
       return input?.haifaOtUnjustifiedAbsence;
-    case 'bagrut_average':
-      return undefined;
+    case 'bgu_occupational_therapy_requirements':
+      return input?.bguOccupationalTherapyRequirementsConfirmed;
+    case 'bgu_physiotherapy_requirements':
+      return input?.bguPhysiotherapyRequirementsConfirmed;
+    case 'bgu_occupational_therapy_exam_session':
+      return input?.bguOccupationalTherapyExamSession;
+    case 'bgu_bachelors_degree_completed':
+      return input?.bguBachelorsDegreeCompleted;
+    case 'bgu_bachelors_degree_average':
+      return input?.bguBachelorsDegreeAverage;
+    case 'bgu_engineering_details':
+      return input?.bguEngineering;
+    case 'bgu_engineering_physics_course':
+      return input?.bguEngineering?.physicsCoursePassed;
     case 'bgu_psychology_requirements':
       return input?.bguPsychologyRequirementsConfirmed;
+    case 'bgu_social_science_requirements':
+      return input?.bguSocialScienceRequirementsConfirmed;
+    case 'bgu_social_science_language':
+      return input?.bguSocialScienceLanguageConfirmed;
+    case 'bgu_returning_from_study_break':
+      return input?.bguReturningFromStudyBreak;
+    case 'bgu_social_work_academic_background':
+      return input?.bguSocialWorkAcademicBackground;
+    case 'bgu_social_work_academic_average':
+      return input?.bguSocialWorkAcademicAverage;
+    case 'bgu_social_work_transcript':
+      return input?.bguSocialWorkTranscriptProvided;
+    case 'bgu_applicant_age':
+      return input?.bguApplicantAge;
+    case 'bgu_education_second_department':
+      return input?.bguEducationSecondDepartment;
+    case 'bgu_english_classification_missing':
+      return input?.bguEnglishClassificationMissing;
+    case 'bgu_hebrew_requirements':
+      return input?.bguHebrewRequirementsConfirmed;
+    case 'bgu_education_english_condition':
+      return input?.bguEducationEnglishConditionAcknowledged;
     case 'bgu_preparatory_average':
       return input?.bguPreparatoryAverage;
     case 'bgu_preparatory_track':
@@ -47,6 +81,7 @@ export function admissionsInputValue(
       return input?.technionArchitectureExamPassed;
     case 'technion_architecture_requirements':
       return input?.technionArchitectureRequirementsConfirmed;
+    case 'bagrut_average':
     case 'psychometric_overall':
       return undefined; // Overall score is read from the evaluation request, not extraInputs.
     case 'tau_management_requirements':
@@ -91,6 +126,18 @@ export function admissionsInputValue(
       return input?.bguBagrutAverage;
     case 'tau_application_requirements':
       return input?.tauApplicationRequirementsConfirmed;
+    case 'bgu_certificate_requirements':
+      return input?.bguCertificateRequirementsConfirmed;
+    case 'bgu_prior_academic_studies':
+      return input?.bguPriorAcademicStudies;
+    case 'bgu_returning_or_changing_track':
+      return input?.bguReturningOrChangingTrack;
+    case 'bgu_application_priority':
+      return input?.bguApplicationPriority;
+    case 'bgu_second_track_requirements':
+      return input?.bguSecondTrackRequirementsConfirmed;
+    case 'bgu_preparatory_qualification':
+      return input?.bguPreparatoryCompleted === true ? input.bguPreparatoryAverage : undefined;
     case 'bgu_language_requirements':
       return input?.bguLanguageRequirementsConfirmed;
     case 'tau_math_placement_score':

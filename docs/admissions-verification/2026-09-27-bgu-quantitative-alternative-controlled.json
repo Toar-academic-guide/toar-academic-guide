@@ -1,0 +1,490 @@
+[
+  {
+    "pairId": "bgu_biology__bgu",
+    "caseId": "preparatory-only",
+    "input": {
+      "psychometric": 600,
+      "extraInputs": {
+        "bguQuantitativeRoute": "quantitative",
+        "bguPreparatoryAverage": 87.25,
+        "bguPreparatoryTrack": "natural_life_sciences",
+        "bguPreparatoryCompleted": true,
+        "psychometricMath": 140,
+        "psychometricVerbal": 100,
+        "psychometricEnglish": 100,
+        "bguCertificateRequirementsConfirmed": true,
+        "bguLanguageRequirementsConfirmed": true,
+        "bguSecondTrackRequirementsConfirmed": true,
+        "bguPriorAcademicStudies": false,
+        "bguApplicationPriority": 1,
+        "bagrutSubjectRecord": {
+          "schemaVersion": 1,
+          "sector": "jewish",
+          "subjects": [
+            {
+              "subjectId": "mathematics",
+              "units": 5,
+              "grade": 90
+            }
+          ]
+        }
+      }
+    },
+    "checkedAt": "2026-09-27T16:53:05.447Z",
+    "independentCaptureAt": "2026-09-27T16:52:13.355Z",
+    "expectedScore": 719,
+    "actualScore": 719,
+    "scoreMatches": true,
+    "expectedVerdict": "eligible_to_apply",
+    "actualVerdict": "eligible_to_apply",
+    "verdictMatches": true,
+    "sourceFingerprint": "sha256:3628de6a72b26e2c6987a4154e64a81263585afdc44a07b5206300bfe7f5d49f"
+  },
+  {
+    "pairId": "bgu_biology__bgu",
+    "caseId": "bagrut-and-preparatory",
+    "input": {
+      "psychometric": 600,
+      "extraInputs": {
+        "bguQuantitativeRoute": "quantitative",
+        "bguBagrutAverage": 100,
+        "bguPreparatoryAverage": 87.25,
+        "bguPreparatoryTrack": "natural_life_sciences",
+        "bguPreparatoryCompleted": true,
+        "psychometricMath": 140,
+        "psychometricVerbal": 100,
+        "psychometricEnglish": 100,
+        "bguCertificateRequirementsConfirmed": true,
+        "bguLanguageRequirementsConfirmed": true,
+        "bguSecondTrackRequirementsConfirmed": true,
+        "bguPriorAcademicStudies": false,
+        "bguApplicationPriority": 1,
+        "bagrutSubjectRecord": {
+          "schemaVersion": 1,
+          "sector": "jewish",
+          "subjects": [
+            {
+              "subjectId": "mathematics",
+              "units": 5,
+              "grade": 90
+            }
+          ]
+        }
+      }
+    },
+    "checkedAt": "2026-09-27T16:53:05.679Z",
+    "independentCaptureAt": "2026-09-27T16:52:13.696Z",
+    "expectedScore": 719,
+    "actualScore": 719,
+    "scoreMatches": true,
+    "expectedVerdict": "eligible_to_apply",
+    "actualVerdict": "eligible_to_apply",
+    "verdictMatches": true,
+    "sourceFingerprint": "sha256:3628de6a72b26e2c6987a4154e64a81263585afdc44a07b5206300bfe7f5d49f"
+  },
+  {
+    "pairId": "bgu_biology__bgu",
+    "caseId": "bagrut-only",
+    "input": {
+      "psychometric": 600,
+      "extraInputs": {
+        "bguQuantitativeRoute": "quantitative",
+        "bguBagrutAverage": 100,
+        "psychometricMath": 140,
+        "psychometricVerbal": 100,
+        "psychometricEnglish": 100,
+        "bguCertificateRequirementsConfirmed": true,
+        "bguLanguageRequirementsConfirmed": true,
+        "bguSecondTrackRequirementsConfirmed": true,
+        "bguPriorAcademicStudies": false,
+        "bguApplicationPriority": 1,
+        "bagrutSubjectRecord": {
+          "schemaVersion": 1,
+          "sector": "jewish",
+          "subjects": [
+            {
+              "subjectId": "mathematics",
+              "units": 5,
+              "grade": 90
+            }
+          ]
+        }
+      }
+    },
+    "checkedAt": "2026-09-27T16:53:05.859Z",
+    "independentCaptureAt": "2026-09-27T16:52:13.773Z",
+    "expectedScore": 669,
+    "actualScore": 669,
+    "scoreMatches": true,
+    "expectedVerdict": "eligible_to_apply",
+    "actualVerdict": "eligible_to_apply",
+    "verdictMatches": true,
+    "sourceFingerprint": "sha256:3628de6a72b26e2c6987a4154e64a81263585afdc44a07b5206300bfe7f5d49f"
+  },
+  {
+    "pairId": "bgu_economics__bgu",
+    "caseId": "preparatory-only",
+    "input": {
+      "psychometric": 600,
+      "extraInputs": {
+        "bguQuantitativeRoute": "quantitative",
+        "bguPreparatoryAverage": 87.25,
+        "bguPreparatoryTrack": "natural_life_sciences",
+        "bguPreparatoryCompleted": true,
+        "psychometricMath": 140,
+        "psychometricVerbal": 100,
+        "psychometricEnglish": 100,
+        "bguCertificateRequirementsConfirmed": true,
+        "bguLanguageRequirementsConfirmed": true,
+        "bguSecondTrackRequirementsConfirmed": true,
+        "bguPriorAcademicStudies": false,
+        "bguApplicationPriority": 1,
+        "bagrutSubjectRecord": {
+          "schemaVersion": 1,
+          "sector": "jewish",
+          "subjects": [
+            {
+              "subjectId": "mathematics",
+              "units": 5,
+              "grade": 90
+            }
+          ]
+        }
+      }
+    },
+    "checkedAt": "2026-09-27T16:53:06.033Z",
+    "independentCaptureAt": "2026-09-27T16:52:13.355Z",
+    "expectedScore": 719,
+    "actualScore": 719,
+    "scoreMatches": true,
+    "expectedVerdict": "eligible_to_apply",
+    "actualVerdict": "eligible_to_apply",
+    "verdictMatches": true,
+    "sourceFingerprint": "sha256:d9b5219b45f72f91ceb535afc64f847c3eb67b9cbfaedc25388685da6ca24fb5"
+  },
+  {
+    "pairId": "bgu_economics__bgu",
+    "caseId": "bagrut-and-preparatory",
+    "input": {
+      "psychometric": 600,
+      "extraInputs": {
+        "bguQuantitativeRoute": "quantitative",
+        "bguBagrutAverage": 100,
+        "bguPreparatoryAverage": 87.25,
+        "bguPreparatoryTrack": "natural_life_sciences",
+        "bguPreparatoryCompleted": true,
+        "psychometricMath": 140,
+        "psychometricVerbal": 100,
+        "psychometricEnglish": 100,
+        "bguCertificateRequirementsConfirmed": true,
+        "bguLanguageRequirementsConfirmed": true,
+        "bguSecondTrackRequirementsConfirmed": true,
+        "bguPriorAcademicStudies": false,
+        "bguApplicationPriority": 1,
+        "bagrutSubjectRecord": {
+          "schemaVersion": 1,
+          "sector": "jewish",
+          "subjects": [
+            {
+              "subjectId": "mathematics",
+              "units": 5,
+              "grade": 90
+            }
+          ]
+        }
+      }
+    },
+    "checkedAt": "2026-09-27T16:53:06.300Z",
+    "independentCaptureAt": "2026-09-27T16:52:13.696Z",
+    "expectedScore": 719,
+    "actualScore": 719,
+    "scoreMatches": true,
+    "expectedVerdict": "eligible_to_apply",
+    "actualVerdict": "eligible_to_apply",
+    "verdictMatches": true,
+    "sourceFingerprint": "sha256:d9b5219b45f72f91ceb535afc64f847c3eb67b9cbfaedc25388685da6ca24fb5"
+  },
+  {
+    "pairId": "bgu_economics__bgu",
+    "caseId": "bagrut-only",
+    "input": {
+      "psychometric": 600,
+      "extraInputs": {
+        "bguQuantitativeRoute": "quantitative",
+        "bguBagrutAverage": 100,
+        "psychometricMath": 140,
+        "psychometricVerbal": 100,
+        "psychometricEnglish": 100,
+        "bguCertificateRequirementsConfirmed": true,
+        "bguLanguageRequirementsConfirmed": true,
+        "bguSecondTrackRequirementsConfirmed": true,
+        "bguPriorAcademicStudies": false,
+        "bguApplicationPriority": 1,
+        "bagrutSubjectRecord": {
+          "schemaVersion": 1,
+          "sector": "jewish",
+          "subjects": [
+            {
+              "subjectId": "mathematics",
+              "units": 5,
+              "grade": 90
+            }
+          ]
+        }
+      }
+    },
+    "checkedAt": "2026-09-27T16:53:06.478Z",
+    "independentCaptureAt": "2026-09-27T16:52:13.773Z",
+    "expectedScore": 669,
+    "actualScore": 669,
+    "scoreMatches": true,
+    "expectedVerdict": "eligible_to_apply",
+    "actualVerdict": "eligible_to_apply",
+    "verdictMatches": true,
+    "sourceFingerprint": "sha256:d9b5219b45f72f91ceb535afc64f847c3eb67b9cbfaedc25388685da6ca24fb5"
+  },
+  {
+    "pairId": "bgu_business__bgu",
+    "caseId": "preparatory-only",
+    "input": {
+      "psychometric": 600,
+      "extraInputs": {
+        "bguQuantitativeRoute": "quantitative",
+        "bguPreparatoryAverage": 87.25,
+        "bguPreparatoryTrack": "natural_life_sciences",
+        "bguPreparatoryCompleted": true,
+        "psychometricMath": 140,
+        "psychometricVerbal": 100,
+        "psychometricEnglish": 100,
+        "bguCertificateRequirementsConfirmed": true,
+        "bguLanguageRequirementsConfirmed": true,
+        "bguSecondTrackRequirementsConfirmed": true,
+        "bguPriorAcademicStudies": false,
+        "bguApplicationPriority": 1,
+        "bagrutSubjectRecord": {
+          "schemaVersion": 1,
+          "sector": "jewish",
+          "subjects": [
+            {
+              "subjectId": "mathematics",
+              "units": 5,
+              "grade": 90
+            }
+          ]
+        }
+      }
+    },
+    "checkedAt": "2026-09-27T16:53:06.727Z",
+    "independentCaptureAt": "2026-09-27T16:52:13.355Z",
+    "expectedScore": 719,
+    "actualScore": 719,
+    "scoreMatches": true,
+    "expectedVerdict": "eligible_to_apply",
+    "actualVerdict": "eligible_to_apply",
+    "verdictMatches": true,
+    "sourceFingerprint": "sha256:117bb830db9c922ab98fe81b72d2326f5a94318a84c7eb12287579cb3941ac91"
+  },
+  {
+    "pairId": "bgu_business__bgu",
+    "caseId": "bagrut-and-preparatory",
+    "input": {
+      "psychometric": 600,
+      "extraInputs": {
+        "bguQuantitativeRoute": "quantitative",
+        "bguBagrutAverage": 100,
+        "bguPreparatoryAverage": 87.25,
+        "bguPreparatoryTrack": "natural_life_sciences",
+        "bguPreparatoryCompleted": true,
+        "psychometricMath": 140,
+        "psychometricVerbal": 100,
+        "psychometricEnglish": 100,
+        "bguCertificateRequirementsConfirmed": true,
+        "bguLanguageRequirementsConfirmed": true,
+        "bguSecondTrackRequirementsConfirmed": true,
+        "bguPriorAcademicStudies": false,
+        "bguApplicationPriority": 1,
+        "bagrutSubjectRecord": {
+          "schemaVersion": 1,
+          "sector": "jewish",
+          "subjects": [
+            {
+              "subjectId": "mathematics",
+              "units": 5,
+              "grade": 90
+            }
+          ]
+        }
+      }
+    },
+    "checkedAt": "2026-09-27T16:53:06.900Z",
+    "independentCaptureAt": "2026-09-27T16:52:13.696Z",
+    "expectedScore": 719,
+    "actualScore": 719,
+    "scoreMatches": true,
+    "expectedVerdict": "eligible_to_apply",
+    "actualVerdict": "eligible_to_apply",
+    "verdictMatches": true,
+    "sourceFingerprint": "sha256:117bb830db9c922ab98fe81b72d2326f5a94318a84c7eb12287579cb3941ac91"
+  },
+  {
+    "pairId": "bgu_business__bgu",
+    "caseId": "bagrut-only",
+    "input": {
+      "psychometric": 600,
+      "extraInputs": {
+        "bguQuantitativeRoute": "quantitative",
+        "bguBagrutAverage": 100,
+        "psychometricMath": 140,
+        "psychometricVerbal": 100,
+        "psychometricEnglish": 100,
+        "bguCertificateRequirementsConfirmed": true,
+        "bguLanguageRequirementsConfirmed": true,
+        "bguSecondTrackRequirementsConfirmed": true,
+        "bguPriorAcademicStudies": false,
+        "bguApplicationPriority": 1,
+        "bagrutSubjectRecord": {
+          "schemaVersion": 1,
+          "sector": "jewish",
+          "subjects": [
+            {
+              "subjectId": "mathematics",
+              "units": 5,
+              "grade": 90
+            }
+          ]
+        }
+      }
+    },
+    "checkedAt": "2026-09-27T16:53:07.080Z",
+    "independentCaptureAt": "2026-09-27T16:52:13.773Z",
+    "expectedScore": 669,
+    "actualScore": 669,
+    "scoreMatches": true,
+    "expectedVerdict": "eligible_to_apply",
+    "actualVerdict": "eligible_to_apply",
+    "verdictMatches": true,
+    "sourceFingerprint": "sha256:117bb830db9c922ab98fe81b72d2326f5a94318a84c7eb12287579cb3941ac91"
+  },
+  {
+    "pairId": "bgu_accounting__bgu",
+    "caseId": "preparatory-only",
+    "input": {
+      "psychometric": 620,
+      "extraInputs": {
+        "bguQuantitativeRoute": "quantitative",
+        "bguPreparatoryAverage": 87.25,
+        "bguPreparatoryTrack": "natural_life_sciences",
+        "bguPreparatoryCompleted": true,
+        "psychometricMath": 140,
+        "psychometricVerbal": 100,
+        "psychometricEnglish": 100,
+        "bguCertificateRequirementsConfirmed": true,
+        "bguLanguageRequirementsConfirmed": true,
+        "bguSecondTrackRequirementsConfirmed": true,
+        "bguPriorAcademicStudies": false,
+        "bguApplicationPriority": 1,
+        "bagrutSubjectRecord": {
+          "schemaVersion": 1,
+          "sector": "jewish",
+          "subjects": [
+            {
+              "subjectId": "mathematics",
+              "units": 5,
+              "grade": 90
+            }
+          ]
+        }
+      }
+    },
+    "checkedAt": "2026-09-27T16:53:07.346Z",
+    "independentCaptureAt": "2026-09-27T16:52:13.355Z",
+    "expectedScore": 719,
+    "actualScore": 719,
+    "scoreMatches": true,
+    "expectedVerdict": "eligible_to_apply",
+    "actualVerdict": "eligible_to_apply",
+    "verdictMatches": true,
+    "sourceFingerprint": "sha256:a67601c4582d9c2d8afaf40e79cb712071169487899cfa428d2707345dcbcfdd"
+  },
+  {
+    "pairId": "bgu_accounting__bgu",
+    "caseId": "bagrut-and-preparatory",
+    "input": {
+      "psychometric": 620,
+      "extraInputs": {
+        "bguQuantitativeRoute": "quantitative",
+        "bguBagrutAverage": 100,
+        "bguPreparatoryAverage": 87.25,
+        "bguPreparatoryTrack": "natural_life_sciences",
+        "bguPreparatoryCompleted": true,
+        "psychometricMath": 140,
+        "psychometricVerbal": 100,
+        "psychometricEnglish": 100,
+        "bguCertificateRequirementsConfirmed": true,
+        "bguLanguageRequirementsConfirmed": true,
+        "bguSecondTrackRequirementsConfirmed": true,
+        "bguPriorAcademicStudies": false,
+        "bguApplicationPriority": 1,
+        "bagrutSubjectRecord": {
+          "schemaVersion": 1,
+          "sector": "jewish",
+          "subjects": [
+            {
+              "subjectId": "mathematics",
+              "units": 5,
+              "grade": 90
+            }
+          ]
+        }
+      }
+    },
+    "checkedAt": "2026-09-27T16:53:07.516Z",
+    "independentCaptureAt": "2026-09-27T16:52:13.696Z",
+    "expectedScore": 719,
+    "actualScore": 719,
+    "scoreMatches": true,
+    "expectedVerdict": "eligible_to_apply",
+    "actualVerdict": "eligible_to_apply",
+    "verdictMatches": true,
+    "sourceFingerprint": "sha256:a67601c4582d9c2d8afaf40e79cb712071169487899cfa428d2707345dcbcfdd"
+  },
+  {
+    "pairId": "bgu_accounting__bgu",
+    "caseId": "bagrut-only",
+    "input": {
+      "psychometric": 620,
+      "extraInputs": {
+        "bguQuantitativeRoute": "quantitative",
+        "bguBagrutAverage": 100,
+        "psychometricMath": 140,
+        "psychometricVerbal": 100,
+        "psychometricEnglish": 100,
+        "bguCertificateRequirementsConfirmed": true,
+        "bguLanguageRequirementsConfirmed": true,
+        "bguSecondTrackRequirementsConfirmed": true,
+        "bguPriorAcademicStudies": false,
+        "bguApplicationPriority": 1,
+        "bagrutSubjectRecord": {
+          "schemaVersion": 1,
+          "sector": "jewish",
+          "subjects": [
+            {
+              "subjectId": "mathematics",
+              "units": 5,
+              "grade": 90
+            }
+          ]
+        }
+      }
+    },
+    "checkedAt": "2026-09-27T16:53:07.774Z",
+    "independentCaptureAt": "2026-09-27T16:52:13.773Z",
+    "expectedScore": 669,
+    "actualScore": 669,
+    "scoreMatches": true,
+    "expectedVerdict": "eligible_to_apply",
+    "actualVerdict": "eligible_to_apply",
+    "verdictMatches": true,
+    "sourceFingerprint": "sha256:a67601c4582d9c2d8afaf40e79cb712071169487899cfa428d2707345dcbcfdd"
+  }
+]

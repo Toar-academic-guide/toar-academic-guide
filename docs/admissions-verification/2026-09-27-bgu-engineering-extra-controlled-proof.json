@@ -1,0 +1,779 @@
+[
+  {
+    "id": "bgu_ee",
+    "label": "prep-math-physics",
+    "expected": 608,
+    "captureAt": "2026-09-27T15:26:51.702Z",
+    "input": {
+      "degreeId": "bgu_ee",
+      "psychometric": 800,
+      "bagrut": 120,
+      "extraInputs": {
+        "bguBagrutAverage": 120,
+        "psychometricMath": 150,
+        "bguLanguageRequirementsConfirmed": true,
+        "bagrutSubjectRecord": {
+          "schemaVersion": 1,
+          "sector": "jewish",
+          "subjects": [
+            {
+              "subjectId": "mathematics",
+              "units": 5,
+              "grade": 95
+            },
+            {
+              "subjectId": "physics",
+              "units": 5,
+              "grade": 95
+            }
+          ]
+        },
+        "bguEngineering": {
+          "detailsConfirmed": true,
+          "route": "engineering_score",
+          "preparatoryInstitution": "bgu",
+          "preparatoryCompletionYear": 2026,
+          "preparatoryMathUnits": 5,
+          "preparatoryMathGrade": 100,
+          "preparatoryPhysicsUnits": 5,
+          "preparatoryPhysicsGrade": 100
+        }
+      }
+    },
+    "comparedAt": "2026-09-27T16:01:45.504Z",
+    "request": {
+      "rn_year": "2",
+      "rn_semester": "1",
+      "rn_eng_dprt_list": "361",
+      "on_grade_classi_psycho": "800",
+      "on_grade_classi_quant": "150",
+      "on_bag_avg": "120",
+      "on_learning_units_bag_math": "5",
+      "on_grade_bag_math": "95",
+      "on_learning_units_bag_phy": "5",
+      "on_grade_bag_phy": "95",
+      "on_subject": "",
+      "on_learning_units_bonus": "",
+      "on_grade_bonus": "",
+      "on_subject2": "",
+      "on_learning_units_bonus2": "",
+      "on_grade_bonus2": "",
+      "on_subject3": "",
+      "on_learning_units_bonus3": "",
+      "on_grade_bonus3": "",
+      "on_learning_units_mech_math": "5",
+      "on_grade_mech_math": "100",
+      "on_learning_units_mech_phy": "5",
+      "on_grade_mech_phy": "100",
+      "on_learning_units_eng_math": "",
+      "on_grade_eng_math": ""
+    },
+    "score": 608,
+    "response": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 608;</script> \n</center>\n</body>  \n</html>\n"
+  },
+  {
+    "id": "bgu_ee",
+    "label": "prep-only",
+    "expected": 608,
+    "captureAt": "2026-09-27T15:26:51.859Z",
+    "input": {
+      "degreeId": "bgu_ee",
+      "psychometric": 800,
+      "bagrut": 120,
+      "extraInputs": {
+        "psychometricMath": 150,
+        "bguLanguageRequirementsConfirmed": true,
+        "bguEngineering": {
+          "detailsConfirmed": true,
+          "route": "engineering_score",
+          "preparatoryInstitution": "bgu",
+          "preparatoryCompletionYear": 2026,
+          "preparatoryMathUnits": 5,
+          "preparatoryMathGrade": 100,
+          "preparatoryPhysicsUnits": 5,
+          "preparatoryPhysicsGrade": 100
+        }
+      }
+    },
+    "comparedAt": "2026-09-27T16:01:45.811Z",
+    "request": {
+      "rn_year": "2",
+      "rn_semester": "1",
+      "rn_eng_dprt_list": "361",
+      "on_grade_classi_psycho": "800",
+      "on_grade_classi_quant": "150",
+      "on_bag_avg": "",
+      "on_learning_units_bag_math": "",
+      "on_grade_bag_math": "",
+      "on_learning_units_bag_phy": "",
+      "on_grade_bag_phy": "",
+      "on_subject": "",
+      "on_learning_units_bonus": "",
+      "on_grade_bonus": "",
+      "on_subject2": "",
+      "on_learning_units_bonus2": "",
+      "on_grade_bonus2": "",
+      "on_subject3": "",
+      "on_learning_units_bonus3": "",
+      "on_grade_bonus3": "",
+      "on_learning_units_mech_math": "5",
+      "on_grade_mech_math": "100",
+      "on_learning_units_mech_phy": "5",
+      "on_grade_mech_phy": "100",
+      "on_learning_units_eng_math": "",
+      "on_grade_eng_math": ""
+    },
+    "score": 608,
+    "response": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 608;</script> \n</center>\n</body>  \n</html>\n"
+  },
+  {
+    "id": "bgu_ee",
+    "label": "diploma-math",
+    "expected": 600,
+    "captureAt": "2026-09-27T15:26:51.781Z",
+    "input": {
+      "degreeId": "bgu_ee",
+      "psychometric": 800,
+      "bagrut": 120,
+      "extraInputs": {
+        "bguBagrutAverage": 120,
+        "psychometricMath": 150,
+        "bguLanguageRequirementsConfirmed": true,
+        "bagrutSubjectRecord": {
+          "schemaVersion": 1,
+          "sector": "jewish",
+          "subjects": [
+            {
+              "subjectId": "mathematics",
+              "units": 5,
+              "grade": 95
+            },
+            {
+              "subjectId": "physics",
+              "units": 5,
+              "grade": 95
+            }
+          ]
+        },
+        "bguEngineering": {
+          "detailsConfirmed": true,
+          "route": "engineering_score",
+          "diplomaRecognized": true,
+          "diplomaMathHours": 90,
+          "diplomaMathGrade": 100
+        }
+      }
+    },
+    "comparedAt": "2026-09-27T16:01:45.894Z",
+    "request": {
+      "rn_year": "2",
+      "rn_semester": "1",
+      "rn_eng_dprt_list": "361",
+      "on_grade_classi_psycho": "800",
+      "on_grade_classi_quant": "150",
+      "on_bag_avg": "120",
+      "on_learning_units_bag_math": "5",
+      "on_grade_bag_math": "95",
+      "on_learning_units_bag_phy": "5",
+      "on_grade_bag_phy": "95",
+      "on_subject": "",
+      "on_learning_units_bonus": "",
+      "on_grade_bonus": "",
+      "on_subject2": "",
+      "on_learning_units_bonus2": "",
+      "on_grade_bonus2": "",
+      "on_subject3": "",
+      "on_learning_units_bonus3": "",
+      "on_grade_bonus3": "",
+      "on_learning_units_mech_math": "",
+      "on_grade_mech_math": "",
+      "on_learning_units_mech_phy": "",
+      "on_grade_mech_phy": "",
+      "on_learning_units_eng_math": "5",
+      "on_grade_eng_math": "100"
+    },
+    "score": 600,
+    "response": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 600;</script> \n</center>\n</body>  \n</html>\n"
+  },
+  {
+    "id": "bgu_me",
+    "label": "prep-math-physics",
+    "expected": 608,
+    "captureAt": "2026-09-27T15:26:52.755Z",
+    "input": {
+      "degreeId": "bgu_me",
+      "psychometric": 800,
+      "bagrut": 120,
+      "extraInputs": {
+        "bguBagrutAverage": 120,
+        "psychometricMath": 150,
+        "bguLanguageRequirementsConfirmed": true,
+        "bagrutSubjectRecord": {
+          "schemaVersion": 1,
+          "sector": "jewish",
+          "subjects": [
+            {
+              "subjectId": "mathematics",
+              "units": 5,
+              "grade": 95
+            },
+            {
+              "subjectId": "physics",
+              "units": 5,
+              "grade": 95
+            }
+          ]
+        },
+        "bguEngineering": {
+          "detailsConfirmed": true,
+          "route": "engineering_score",
+          "preparatoryInstitution": "bgu",
+          "preparatoryCompletionYear": 2026,
+          "preparatoryMathUnits": 5,
+          "preparatoryMathGrade": 100,
+          "preparatoryPhysicsUnits": 5,
+          "preparatoryPhysicsGrade": 100
+        }
+      }
+    },
+    "comparedAt": "2026-09-27T16:01:46.015Z",
+    "request": {
+      "rn_year": "2",
+      "rn_semester": "1",
+      "rn_eng_dprt_list": "362",
+      "on_grade_classi_psycho": "800",
+      "on_grade_classi_quant": "150",
+      "on_bag_avg": "120",
+      "on_learning_units_bag_math": "5",
+      "on_grade_bag_math": "95",
+      "on_learning_units_bag_phy": "5",
+      "on_grade_bag_phy": "95",
+      "on_subject": "",
+      "on_learning_units_bonus": "",
+      "on_grade_bonus": "",
+      "on_subject2": "",
+      "on_learning_units_bonus2": "",
+      "on_grade_bonus2": "",
+      "on_subject3": "",
+      "on_learning_units_bonus3": "",
+      "on_grade_bonus3": "",
+      "on_learning_units_mech_math": "5",
+      "on_grade_mech_math": "100",
+      "on_learning_units_mech_phy": "5",
+      "on_grade_mech_phy": "100",
+      "on_learning_units_eng_math": "",
+      "on_grade_eng_math": ""
+    },
+    "score": 608,
+    "response": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 608;</script> \n</center>\n</body>  \n</html>\n"
+  },
+  {
+    "id": "bgu_me",
+    "label": "prep-only",
+    "expected": 608,
+    "captureAt": "2026-09-27T15:26:52.924Z",
+    "input": {
+      "degreeId": "bgu_me",
+      "psychometric": 800,
+      "bagrut": 120,
+      "extraInputs": {
+        "psychometricMath": 150,
+        "bguLanguageRequirementsConfirmed": true,
+        "bguEngineering": {
+          "detailsConfirmed": true,
+          "route": "engineering_score",
+          "preparatoryInstitution": "bgu",
+          "preparatoryCompletionYear": 2026,
+          "preparatoryMathUnits": 5,
+          "preparatoryMathGrade": 100,
+          "preparatoryPhysicsUnits": 5,
+          "preparatoryPhysicsGrade": 100
+        }
+      }
+    },
+    "comparedAt": "2026-09-27T16:01:46.092Z",
+    "request": {
+      "rn_year": "2",
+      "rn_semester": "1",
+      "rn_eng_dprt_list": "362",
+      "on_grade_classi_psycho": "800",
+      "on_grade_classi_quant": "150",
+      "on_bag_avg": "",
+      "on_learning_units_bag_math": "",
+      "on_grade_bag_math": "",
+      "on_learning_units_bag_phy": "",
+      "on_grade_bag_phy": "",
+      "on_subject": "",
+      "on_learning_units_bonus": "",
+      "on_grade_bonus": "",
+      "on_subject2": "",
+      "on_learning_units_bonus2": "",
+      "on_grade_bonus2": "",
+      "on_subject3": "",
+      "on_learning_units_bonus3": "",
+      "on_grade_bonus3": "",
+      "on_learning_units_mech_math": "5",
+      "on_grade_mech_math": "100",
+      "on_learning_units_mech_phy": "5",
+      "on_grade_mech_phy": "100",
+      "on_learning_units_eng_math": "",
+      "on_grade_eng_math": ""
+    },
+    "score": 608,
+    "response": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 608;</script> \n</center>\n</body>  \n</html>\n"
+  },
+  {
+    "id": "bgu_me",
+    "label": "diploma-math",
+    "expected": 600,
+    "captureAt": "2026-09-27T15:26:52.841Z",
+    "input": {
+      "degreeId": "bgu_me",
+      "psychometric": 800,
+      "bagrut": 120,
+      "extraInputs": {
+        "bguBagrutAverage": 120,
+        "psychometricMath": 150,
+        "bguLanguageRequirementsConfirmed": true,
+        "bagrutSubjectRecord": {
+          "schemaVersion": 1,
+          "sector": "jewish",
+          "subjects": [
+            {
+              "subjectId": "mathematics",
+              "units": 5,
+              "grade": 95
+            },
+            {
+              "subjectId": "physics",
+              "units": 5,
+              "grade": 95
+            }
+          ]
+        },
+        "bguEngineering": {
+          "detailsConfirmed": true,
+          "route": "engineering_score",
+          "diplomaRecognized": true,
+          "diplomaMathHours": 90,
+          "diplomaMathGrade": 100
+        }
+      }
+    },
+    "comparedAt": "2026-09-27T16:01:46.169Z",
+    "request": {
+      "rn_year": "2",
+      "rn_semester": "1",
+      "rn_eng_dprt_list": "362",
+      "on_grade_classi_psycho": "800",
+      "on_grade_classi_quant": "150",
+      "on_bag_avg": "120",
+      "on_learning_units_bag_math": "5",
+      "on_grade_bag_math": "95",
+      "on_learning_units_bag_phy": "5",
+      "on_grade_bag_phy": "95",
+      "on_subject": "",
+      "on_learning_units_bonus": "",
+      "on_grade_bonus": "",
+      "on_subject2": "",
+      "on_learning_units_bonus2": "",
+      "on_grade_bonus2": "",
+      "on_subject3": "",
+      "on_learning_units_bonus3": "",
+      "on_grade_bonus3": "",
+      "on_learning_units_mech_math": "",
+      "on_grade_mech_math": "",
+      "on_learning_units_mech_phy": "",
+      "on_grade_mech_phy": "",
+      "on_learning_units_eng_math": "5",
+      "on_grade_eng_math": "100"
+    },
+    "score": 600,
+    "response": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 600;</script> \n</center>\n</body>  \n</html>\n"
+  },
+  {
+    "id": "bgu_industrial",
+    "label": "prep-math-physics",
+    "expected": 608,
+    "captureAt": "2026-09-27T15:26:53.728Z",
+    "input": {
+      "degreeId": "bgu_industrial",
+      "psychometric": 800,
+      "bagrut": 120,
+      "extraInputs": {
+        "bguBagrutAverage": 120,
+        "psychometricMath": 150,
+        "bguLanguageRequirementsConfirmed": true,
+        "bagrutSubjectRecord": {
+          "schemaVersion": 1,
+          "sector": "jewish",
+          "subjects": [
+            {
+              "subjectId": "mathematics",
+              "units": 5,
+              "grade": 95
+            },
+            {
+              "subjectId": "physics",
+              "units": 5,
+              "grade": 95
+            }
+          ]
+        },
+        "bguEngineering": {
+          "detailsConfirmed": true,
+          "route": "engineering_score",
+          "preparatoryInstitution": "bgu",
+          "preparatoryCompletionYear": 2026,
+          "preparatoryMathUnits": 5,
+          "preparatoryMathGrade": 100,
+          "preparatoryPhysicsUnits": 5,
+          "preparatoryPhysicsGrade": 100
+        }
+      }
+    },
+    "comparedAt": "2026-09-27T16:01:46.247Z",
+    "request": {
+      "rn_year": "2",
+      "rn_semester": "1",
+      "rn_eng_dprt_list": "364",
+      "on_grade_classi_psycho": "800",
+      "on_grade_classi_quant": "150",
+      "on_bag_avg": "120",
+      "on_learning_units_bag_math": "5",
+      "on_grade_bag_math": "95",
+      "on_learning_units_bag_phy": "5",
+      "on_grade_bag_phy": "95",
+      "on_subject": "",
+      "on_learning_units_bonus": "",
+      "on_grade_bonus": "",
+      "on_subject2": "",
+      "on_learning_units_bonus2": "",
+      "on_grade_bonus2": "",
+      "on_subject3": "",
+      "on_learning_units_bonus3": "",
+      "on_grade_bonus3": "",
+      "on_learning_units_mech_math": "5",
+      "on_grade_mech_math": "100",
+      "on_learning_units_mech_phy": "5",
+      "on_grade_mech_phy": "100",
+      "on_learning_units_eng_math": "",
+      "on_grade_eng_math": ""
+    },
+    "score": 608,
+    "response": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 608;</script> \n</center>\n</body>  \n</html>\n"
+  },
+  {
+    "id": "bgu_industrial",
+    "label": "prep-only",
+    "expected": 608,
+    "captureAt": "2026-09-27T15:26:53.894Z",
+    "input": {
+      "degreeId": "bgu_industrial",
+      "psychometric": 800,
+      "bagrut": 120,
+      "extraInputs": {
+        "psychometricMath": 150,
+        "bguLanguageRequirementsConfirmed": true,
+        "bguEngineering": {
+          "detailsConfirmed": true,
+          "route": "engineering_score",
+          "preparatoryInstitution": "bgu",
+          "preparatoryCompletionYear": 2026,
+          "preparatoryMathUnits": 5,
+          "preparatoryMathGrade": 100,
+          "preparatoryPhysicsUnits": 5,
+          "preparatoryPhysicsGrade": 100
+        }
+      }
+    },
+    "comparedAt": "2026-09-27T16:01:46.324Z",
+    "request": {
+      "rn_year": "2",
+      "rn_semester": "1",
+      "rn_eng_dprt_list": "364",
+      "on_grade_classi_psycho": "800",
+      "on_grade_classi_quant": "150",
+      "on_bag_avg": "",
+      "on_learning_units_bag_math": "",
+      "on_grade_bag_math": "",
+      "on_learning_units_bag_phy": "",
+      "on_grade_bag_phy": "",
+      "on_subject": "",
+      "on_learning_units_bonus": "",
+      "on_grade_bonus": "",
+      "on_subject2": "",
+      "on_learning_units_bonus2": "",
+      "on_grade_bonus2": "",
+      "on_subject3": "",
+      "on_learning_units_bonus3": "",
+      "on_grade_bonus3": "",
+      "on_learning_units_mech_math": "5",
+      "on_grade_mech_math": "100",
+      "on_learning_units_mech_phy": "5",
+      "on_grade_mech_phy": "100",
+      "on_learning_units_eng_math": "",
+      "on_grade_eng_math": ""
+    },
+    "score": 608,
+    "response": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 608;</script> \n</center>\n</body>  \n</html>\n"
+  },
+  {
+    "id": "bgu_industrial",
+    "label": "diploma-math",
+    "expected": 605,
+    "captureAt": "2026-09-27T15:26:53.812Z",
+    "input": {
+      "degreeId": "bgu_industrial",
+      "psychometric": 800,
+      "bagrut": 120,
+      "extraInputs": {
+        "bguBagrutAverage": 120,
+        "psychometricMath": 150,
+        "bguLanguageRequirementsConfirmed": true,
+        "bagrutSubjectRecord": {
+          "schemaVersion": 1,
+          "sector": "jewish",
+          "subjects": [
+            {
+              "subjectId": "mathematics",
+              "units": 5,
+              "grade": 95
+            },
+            {
+              "subjectId": "physics",
+              "units": 5,
+              "grade": 95
+            }
+          ]
+        },
+        "bguEngineering": {
+          "detailsConfirmed": true,
+          "route": "engineering_score",
+          "diplomaRecognized": true,
+          "diplomaMathHours": 90,
+          "diplomaMathGrade": 100
+        }
+      }
+    },
+    "comparedAt": "2026-09-27T16:01:46.408Z",
+    "request": {
+      "rn_year": "2",
+      "rn_semester": "1",
+      "rn_eng_dprt_list": "364",
+      "on_grade_classi_psycho": "800",
+      "on_grade_classi_quant": "150",
+      "on_bag_avg": "120",
+      "on_learning_units_bag_math": "5",
+      "on_grade_bag_math": "95",
+      "on_learning_units_bag_phy": "5",
+      "on_grade_bag_phy": "95",
+      "on_subject": "",
+      "on_learning_units_bonus": "",
+      "on_grade_bonus": "",
+      "on_subject2": "",
+      "on_learning_units_bonus2": "",
+      "on_grade_bonus2": "",
+      "on_subject3": "",
+      "on_learning_units_bonus3": "",
+      "on_grade_bonus3": "",
+      "on_learning_units_mech_math": "",
+      "on_grade_mech_math": "",
+      "on_learning_units_mech_phy": "",
+      "on_grade_mech_phy": "",
+      "on_learning_units_eng_math": "5",
+      "on_grade_eng_math": "100"
+    },
+    "score": 605,
+    "response": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 605;</script> \n</center>\n</body>  \n</html>\n"
+  },
+  {
+    "id": "bgu_industrial",
+    "label": "industrial-three-bonuses-highest-only",
+    "expected": 605,
+    "captureAt": "2026-09-27T15:28:49.073Z",
+    "input": {
+      "degreeId": "bgu_industrial",
+      "psychometric": 800,
+      "bagrut": 120,
+      "extraInputs": {
+        "bguBagrutAverage": 120,
+        "psychometricMath": 150,
+        "bguLanguageRequirementsConfirmed": true,
+        "bagrutSubjectRecord": {
+          "schemaVersion": 1,
+          "sector": "jewish",
+          "subjects": [
+            {
+              "subjectId": "mathematics",
+              "units": 5,
+              "grade": 95
+            },
+            {
+              "subjectId": "physics",
+              "units": 5,
+              "grade": 95
+            },
+            {
+              "subjectId": "computer_science",
+              "units": 5,
+              "grade": 85
+            },
+            {
+              "subjectId": "chemistry",
+              "units": 5,
+              "grade": 90
+            },
+            {
+              "subjectId": "biology",
+              "units": 5,
+              "grade": 96
+            }
+          ]
+        },
+        "bguEngineering": {
+          "detailsConfirmed": true,
+          "route": "engineering_score"
+        }
+      }
+    },
+    "comparedAt": "2026-09-27T16:01:46.542Z",
+    "request": {
+      "rn_year": "2",
+      "rn_semester": "1",
+      "rn_eng_dprt_list": "364",
+      "on_grade_classi_psycho": "800",
+      "on_grade_classi_quant": "150",
+      "on_bag_avg": "120",
+      "on_learning_units_bag_math": "5",
+      "on_grade_bag_math": "95",
+      "on_learning_units_bag_phy": "5",
+      "on_grade_bag_phy": "95",
+      "on_subject": "21",
+      "on_learning_units_bonus": "5",
+      "on_grade_bonus": "96",
+      "on_subject2": "",
+      "on_learning_units_bonus2": "",
+      "on_grade_bonus2": "",
+      "on_subject3": "",
+      "on_learning_units_bonus3": "",
+      "on_grade_bonus3": "",
+      "on_learning_units_mech_math": "",
+      "on_grade_mech_math": "",
+      "on_learning_units_mech_phy": "",
+      "on_grade_mech_phy": "",
+      "on_learning_units_eng_math": "",
+      "on_grade_eng_math": ""
+    },
+    "score": 605,
+    "response": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 605;</script> \n</center>\n</body>  \n</html>\n"
+  },
+  {
+    "id": "bgu_ee",
+    "label": "diploma-only-equivalent-4",
+    "input": {
+      "degreeId": "bgu_ee",
+      "psychometric": 800,
+      "bagrut": 90,
+      "extraInputs": {
+        "bguBagrutAverage": 90,
+        "psychometricMath": 150,
+        "bguLanguageRequirementsConfirmed": true,
+        "bguEngineering": {
+          "detailsConfirmed": true,
+          "route": "engineering_score",
+          "diplomaRecognized": true,
+          "diplomaMathHours": 60,
+          "diplomaMathGrade": 100,
+          "diplomaPhysicsHours": 90,
+          "diplomaPhysicsGrade": 90
+        }
+      }
+    },
+    "capturedAt": "2026-09-27T16:01:46.627Z",
+    "request": {
+      "rn_year": "2",
+      "rn_semester": "1",
+      "rn_eng_dprt_list": "361",
+      "on_grade_classi_psycho": "800",
+      "on_grade_classi_quant": "150",
+      "on_bag_avg": "90",
+      "on_learning_units_bag_math": "4",
+      "on_grade_bag_math": "100",
+      "on_learning_units_bag_phy": "5",
+      "on_grade_bag_phy": "90",
+      "on_subject": "",
+      "on_learning_units_bonus": "",
+      "on_grade_bonus": "",
+      "on_subject2": "",
+      "on_learning_units_bonus2": "",
+      "on_grade_bonus2": "",
+      "on_subject3": "",
+      "on_learning_units_bonus3": "",
+      "on_grade_bonus3": "",
+      "on_learning_units_mech_math": "",
+      "on_grade_mech_math": "",
+      "on_learning_units_mech_phy": "",
+      "on_grade_mech_phy": "",
+      "on_learning_units_eng_math": "4",
+      "on_grade_eng_math": "100"
+    },
+    "score": 553,
+    "response": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 553;</script> \n</center>\n</body>  \n</html>\n",
+    "derivation": "The current guide explicitly substitutes qualifying diploma mathematics/physics for Bagrut subjects. Independent calculator request matches policy fields."
+  },
+  {
+    "id": "bgu_ee",
+    "label": "diploma-only-equivalent-5",
+    "input": {
+      "degreeId": "bgu_ee",
+      "psychometric": 800,
+      "bagrut": 90,
+      "extraInputs": {
+        "bguBagrutAverage": 90,
+        "psychometricMath": 150,
+        "bguLanguageRequirementsConfirmed": true,
+        "bguEngineering": {
+          "detailsConfirmed": true,
+          "route": "engineering_score",
+          "diplomaRecognized": true,
+          "diplomaMathHours": 90,
+          "diplomaMathGrade": 100,
+          "diplomaPhysicsHours": 90,
+          "diplomaPhysicsGrade": 90
+        }
+      }
+    },
+    "capturedAt": "2026-09-27T16:01:46.713Z",
+    "request": {
+      "rn_year": "2",
+      "rn_semester": "1",
+      "rn_eng_dprt_list": "361",
+      "on_grade_classi_psycho": "800",
+      "on_grade_classi_quant": "150",
+      "on_bag_avg": "90",
+      "on_learning_units_bag_math": "5",
+      "on_grade_bag_math": "100",
+      "on_learning_units_bag_phy": "5",
+      "on_grade_bag_phy": "90",
+      "on_subject": "",
+      "on_learning_units_bonus": "",
+      "on_grade_bonus": "",
+      "on_subject2": "",
+      "on_learning_units_bonus2": "",
+      "on_grade_bonus2": "",
+      "on_subject3": "",
+      "on_learning_units_bonus3": "",
+      "on_grade_bonus3": "",
+      "on_learning_units_mech_math": "",
+      "on_grade_mech_math": "",
+      "on_learning_units_mech_phy": "",
+      "on_grade_mech_phy": "",
+      "on_learning_units_eng_math": "5",
+      "on_grade_eng_math": "100"
+    },
+    "score": 589,
+    "response": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 589;</script> \n</center>\n</body>  \n</html>\n",
+    "derivation": "The current guide explicitly substitutes qualifying diploma mathematics/physics for Bagrut subjects. Independent calculator request matches policy fields."
+  }
+]

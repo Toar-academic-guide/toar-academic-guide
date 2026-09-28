@@ -32,6 +32,32 @@ async function expectSafeResult(
 }
 
 test.describe('app admissions calculator', () => {
+  test('submits Industrial Engineering without inventing a psychometric score', async ({
+    page,
+  }) => {
+    await page.goto('/app/calculator');
+    await page.locator('#bagrut').fill('109');
+    await page.locator('#degree').selectOption('bgu_industrial');
+    await expect(page.getByLabel('ציון פסיכומטרי (רשות לאפיק ללא פסיכומטרי)')).toBeVisible();
+    const responsePromise = page.waitForResponse(
+      (response) =>
+        response.url().endsWith('/api/admissions/evaluate') &&
+        response.request().method() === 'POST',
+    );
+    await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
+    const response = await responsePromise;
+    expect(response.request().postDataJSON()).toMatchObject({
+      degreeId: 'bgu_industrial',
+      bagrut: 109,
+    });
+    expect(response.request().postDataJSON().psychometric).toBeUndefined();
+    expect(response.status()).toBe(200);
+    await expect(page.getByText('אוניברסיטת בן-גוריון בנגב', { exact: true })).toBeVisible();
+    await expect(
+      page.getByLabel('אוניברסיטת בן-גוריון בנגב: מתקבל/ת', { exact: true }),
+    ).toHaveCount(0);
+  });
+
   test('shows safe catalogue-backed results without leaving /app/calculator', async ({ page }) => {
     await page.goto('/app/calculator');
     await expect(page).toHaveURL(/\/app\/calculator$/);
@@ -113,6 +139,47 @@ test('Psychology alternate routes accept omitted generic scores in the deployed 
       bguPreparatoryCompleted: true,
       bguPsychologyRequirementsConfirmed: true,
       bguLanguageRequirementsConfirmed: true,
+    },
+  };
+  const response = await request.post('/api/admissions/evaluate', { data: input });
+  expect(response.status()).toBe(200);
+  expect((await response.json()).data.input).toEqual(input);
+});
+
+test('BGU engineering accepts prep-only requests without a generic Bagrut average', async ({
+  page,
+  request,
+}) => {
+  await page.goto('/app/calculator');
+  await page.locator('#degree').selectOption('bgu_ee');
+  await page.locator('#psychometric').fill('700');
+  const evaluation = page.waitForResponse(
+    (response) =>
+      response.url().includes('/api/admissions/evaluate') && response.request().method() === 'POST',
+  );
+  await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
+  expect((await evaluation).status()).toBe(200);
+  await expectSafeResult(
+    page,
+    'אוניברסיטת בן-גוריון בנגב',
+    /נדרשים נתונים/,
+    /נדרשים נתונים נוספים/,
+  );
+  const input = {
+    degreeId: 'bgu_ee',
+    psychometric: 700,
+    extraInputs: {
+      psychometricMath: 140,
+      bguLanguageRequirementsConfirmed: true,
+      bguEngineering: {
+        detailsConfirmed: true,
+        preparatoryInstitution: 'bgu',
+        preparatoryCompletionYear: 2026,
+        preparatoryMathUnits: 5,
+        preparatoryMathGrade: 90,
+        preparatoryPhysicsUnits: 5,
+        preparatoryPhysicsGrade: 90,
+      },
     },
   };
   const response = await request.post('/api/admissions/evaluate', { data: input });

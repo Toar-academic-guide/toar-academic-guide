@@ -747,3 +747,36 @@ describe('CalculatorResults', () => {
     expect(screen.getByRole('button', { name: 'נסו שוב' })).toBeTruthy();
   });
 });
+
+it('forwards degree-route profile inputs when optional generic scores are omitted', async () => {
+  hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(report([]));
+  const admissions = {
+    bguOccupationalTherapyRoute: 'academic' as const,
+    bguOccupationalTherapyRequirementsConfirmed: true,
+    bguBachelorsDegreeCompleted: true,
+    bguBachelorsDegreeAverage: 85.25,
+    bguPhysiotherapyRequirementsConfirmed: false,
+  };
+  render(
+    <CalculatorResults
+      degreeId="occupational_therapy"
+      programs={programs}
+      onBack={() => {}}
+      academicScores={{
+        psychometric: { overall: 700 },
+        bagrut: { weightedAverage: 100 },
+        admissions,
+      }}
+    />,
+  );
+  await waitFor(() =>
+    expect(hoistedMocks.fetchAdmissionsEvaluation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        degreeId: 'occupational_therapy',
+        psychometric: undefined,
+        bagrut: undefined,
+        extraInputs: expect.objectContaining(admissions),
+      }),
+    ),
+  );
+});
