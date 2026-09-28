@@ -13,6 +13,10 @@ export function admissionsInputValue(
   );
   if (medicineKey) return input?.[medicineKey];
   switch (requiredInput) {
+    case 'haifa_information_systems_track':
+      return input?.haifaInformationSystemsTrack;
+    case 'haifa_information_systems_partner_requirements':
+      return input?.haifaInformationSystemsPartnerRequirementsConfirmed;
     case 'haifa_bagrut_average':
       return input?.haifaBagrutAverage;
     case 'haifa_bagrut_year':

@@ -14,6 +14,8 @@ import {
 } from '@/data/institutions';
 import { REGION_LABEL } from '@/data/geography';
 import InstitutionLogo from '@/components/InstitutionLogo';
+import HaifaInformationSystemsTrackFields from '@/components/HaifaInformationSystemsTrackFields';
+import { haifaInformationSystemsTrackSchema } from '@/lib/haifaAdmissionsInputs';
 import { useAuth } from '@/context/AuthContext';
 import { buildAdmissionAlertIntentPath, buildAdmissionAlertSignupPath } from '@/lib/routes';
 import {
@@ -91,6 +93,10 @@ function formatResultSummary(result: AdmissionsEvaluationResult): string {
   }
 
   if (result.requiredInputs?.length) {
+    if (result.requiredInputs.includes('haifa_information_systems_track'))
+      return 'בחרו מסלול מערכות מידע בחיפה';
+    if (result.requiredInputs.includes('haifa_information_systems_partner_requirements'))
+      return 'יש לבדוק גם את תנאי החוג השני';
     if (result.requiredInputs.some((input) => input.startsWith('haifa_')))
       return 'נדרשים נתוני חיפה בפרופיל: ממוצע, מועדי בחינות ודרישות החוג';
     if (
@@ -175,6 +181,8 @@ export default function CalculatorResults({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<AdmissionsEvaluationApiError | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
+  const [haifaTrackOverride, setHaifaTrackOverride] = useState<string>();
+  const [haifaPartnerOverride, setHaifaPartnerOverride] = useState<string>();
   const [routeResult, setRouteResult] = useState<AdmissionsRouteSearchResult | null>(null);
   const [routeLoading, setRouteLoading] = useState(false);
   const [routeError, setRouteError] = useState<AdmissionsRouteApiError | null>(null);
@@ -194,13 +202,25 @@ export default function CalculatorResults({
       (psychometric === undefined && allowsNoPsychometric(degreeId))) &&
     (academicScores?.bagrut?.weightedAverage === bagrut ||
       (bagrut === undefined && allowsNoGenericBagrut(degreeId)));
-  const extraInputs = useMemo(
-    () =>
-      savedAcademicScoresMatchCalculation
-        ? admissionsExtraInputsFromAcademicScores(academicScores)
-        : undefined,
-    [academicScores, savedAcademicScoresMatchCalculation],
-  );
+  const haifaTrack =
+    haifaTrackOverride ?? academicScores?.admissions?.haifaInformationSystemsTrack ?? '';
+  const savedHaifaPartner =
+    academicScores?.admissions?.haifaInformationSystemsPartnerRequirementsConfirmed;
+  const haifaPartner =
+    haifaPartnerOverride ?? (savedHaifaPartner === undefined ? '' : String(savedHaifaPartner));
+  const extraInputs = useMemo(() => {
+    const saved = savedAcademicScoresMatchCalculation
+      ? admissionsExtraInputsFromAcademicScores(academicScores)
+      : undefined;
+    if (degreeId !== 'haifa_infosystems') return saved;
+    const parsed = haifaInformationSystemsTrackSchema.safeParse(haifaTrack);
+    return {
+      ...saved,
+      haifaInformationSystemsTrack: parsed.success ? parsed.data : undefined,
+      haifaInformationSystemsPartnerRequirementsConfirmed:
+        haifaPartner === '' ? undefined : haifaPartner === 'true',
+    };
+  }, [academicScores, savedAcademicScoresMatchCalculation, degreeId, haifaTrack, haifaPartner]);
 
   useEffect(() => {
     let cancelled = false;
@@ -499,6 +519,21 @@ export default function CalculatorResults({
             בגרות {bagrut ?? 'לא הוזן'}
           </p>
         </div>
+
+        {degreeId === 'haifa_infosystems' && (
+          <div className="mb-6 rounded-2xl border-2 border-black bg-white p-4">
+            <HaifaInformationSystemsTrackFields
+              track={haifaTrack}
+              partnerRequirements={haifaPartner}
+              onTrackChange={(value) => {
+                setHaifaTrackOverride(value);
+                setHaifaPartnerOverride('');
+              }}
+              onPartnerChange={setHaifaPartnerOverride}
+              inputClassName="rounded-lg border border-slate-300 bg-white p-2 text-sm"
+            />
+          </div>
+        )}
 
         <div className="mb-6">
           <div className="mb-3 flex items-center justify-between">

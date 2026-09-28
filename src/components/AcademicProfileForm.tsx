@@ -424,7 +424,10 @@ export default function AcademicProfileForm({
           haifaQualificationValues[key] !== undefined && haifaQualificationValues[key] !== '',
       ).map((key) => [
         key,
-        key === 'haifaOtUnjustifiedAbsence'
+        [
+          'haifaOtUnjustifiedAbsence',
+          'haifaInformationSystemsPartnerRequirementsConfirmed',
+        ].includes(key)
           ? haifaQualificationValues[key] === 'true'
           : HAIFA_NUMERIC_QUALIFICATION_KEYS.includes(key)
             ? Number(haifaQualificationValues[key])

@@ -31,12 +31,18 @@ describe('admissionsExtraInputsFromAcademicScores', () => {
       haifaScienceUnits: 8,
       haifaOtFailedSelectionAttempts: 0,
       haifaOtUnjustifiedAbsence: false,
+      haifaInformationSystemsTrack: 'computer_science' as const,
+      haifaInformationSystemsPartnerRequirementsConfirmed: false,
     };
     const input = admissionsExtraInputsFromAcademicScores({ admissions });
     expect(input).toMatchObject(admissions);
     expect(admissionsInputValue(input, 'haifa_bagrut_average')).toBe(102.25);
     expect(admissionsInputValue(input, 'haifa_bagrut_year')).toBe(2015);
     expect(admissionsInputValue(input, 'haifa_psychometric_year')).toBe(2026);
+    expect(admissionsInputValue(input, 'haifa_information_systems_track')).toBe('computer_science');
+    expect(admissionsInputValue(input, 'haifa_information_systems_partner_requirements')).toBe(
+      false,
+    );
   });
   it('forwards social science route, false confirmations and academic decimals', () => {
     const admissions = {

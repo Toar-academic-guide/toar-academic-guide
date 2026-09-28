@@ -8,6 +8,8 @@ import { BGU_COMPUTER_SCIENCE_OFFICIAL_PROOF_CAPTURES_BY_TARGET_ID } from './bgu
 import { BGU_DATA_SCIENCE_OFFICIAL_PROOF_CAPTURES_BY_TARGET_ID } from './bguDataScienceVerification';
 import { TAU_COMPUTER_SCIENCE_OFFICIAL_PROOF_CAPTURES } from './tauComputerScienceVerification';
 import { BGU_ENGINEERING_OFFICIAL_PROOF_CAPTURES_BY_TARGET_ID } from './bguEngineeringVerification';
+import haifaTrackCaptures from '../../../docs/admissions-verification/2026-09-28-haifa-information-systems-tracks.json';
+import { HAIFA_INFORMATION_SYSTEMS_TRACKS } from '@/lib/haifaAdmissionsInputs';
 
 export interface OfficialProgramProofCapture {
   captureId: string;
@@ -706,4 +708,57 @@ Object.assign(OFFICIAL_PROGRAM_PROOF_CAPTURES_BY_TARGET_ID, {
 Object.assign(
   OFFICIAL_PROGRAM_PROOF_CAPTURES_BY_TARGET_ID,
   BGU_QUANTITATIVE_OFFICIAL_CAPTURES_BY_TARGET_ID,
+);
+
+Object.assign(
+  OFFICIAL_PROGRAM_PROOF_CAPTURES_BY_TARGET_ID,
+  Object.fromEntries(
+    HAIFA_INFORMATION_SYSTEMS_TRACKS.map((track) => {
+      const capture = haifaTrackCaptures.records.find(
+        (record) => record.officialProgramId === track.officialProgramId,
+      )!;
+      const targetId = `haifa-infosystems-${track.value}-live`;
+      return [
+        targetId,
+        (['high', 'low'] as const).map((band): OfficialProgramProofCapture => {
+          const official = capture[band];
+          const content = official.response.data[0].results?.[0].content ?? [];
+          return {
+            captureId: `${targetId}:${band}:${capture.capturedAt}`,
+            capturedAt: capture.capturedAt,
+            officialUrl: haifaTrackCaptures.sourceUrl,
+            applicant: {
+              bagrutAverage: Number(official.request.bag_avg),
+              bagrutYear: official.request.bag_year,
+              psychometricYear: official.request.psy_year,
+              psychometric: Number(
+                content.find((entry) => entry.label === 'ציון הפסיכומטרי שלך')?.value,
+              ),
+              psychometricSubscores: {
+                math: Number(official.request.psy_math),
+                verbal: Number(official.request.psy_verbal),
+                english: Number(official.request.psy_english),
+              },
+              extraInputs: {
+                haifaInformationSystemsTrack: track.value,
+                ...(track.partnerRequired
+                  ? { haifaInformationSystemsPartnerRequirementsConfirmed: true }
+                  : {}),
+                haifaAdmissionQualification: 'full_bagrut',
+                haifaHebrewQualification: 'hebrew_school',
+                haifaPsychometricYear: 2026,
+                haifaPsychometricMonth: 4,
+                mathUnits: 5,
+                mathGrade: 100,
+              },
+            },
+            expected: {
+              score: Number(content.find((entry) => entry.label === 'הציון המשוקלל שלך')?.value),
+              verdict: band === 'high' ? 'eligible_to_apply' : 'below',
+            },
+          };
+        }),
+      ];
+    }),
+  ),
 );

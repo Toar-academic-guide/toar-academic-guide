@@ -2,6 +2,11 @@ import medicineOfficial from '../../../docs/admissions-verification/2026-09-28-h
 import { HUJI_MEDICINE_ELIGIBLE_INPUTS } from '@/data/admissions/hujiMedicineVerification';
 import psychologyOfficial from '../../../docs/admissions-verification/2026-09-27-bgu-psychology-official.json';
 import haifaOfficial from '../../../docs/admissions-verification/2026-09-28-haifa-official.json';
+import haifaTrackCaptures from '../../../docs/admissions-verification/2026-09-28-haifa-information-systems-tracks.json';
+import {
+  getHaifaInformationSystemsTrackArtifact,
+  HAIFA_INFORMATION_SYSTEMS_TRACK_ARTIFACTS,
+} from '@/data/admissions/haifaInformationSystemsVerification';
 import socialScienceOfficial from '../../../docs/admissions-verification/2026-09-27-bgu-social-sciences-official.json';
 import { describe, expect, it, vi } from 'vitest';
 import { architectureInputs, architectureSourceResponse } from '@/test/technionArchitecture';
@@ -81,13 +86,19 @@ function bguMockFetcher(threshold: number, score: number): typeof fetch {
     );
 }
 
-function qualifiedFreshnessStates(program: CatalogueProgram): Map<string, SourceFreshnessStateRow> {
+function qualifiedFreshnessStates(
+  program: CatalogueProgram,
+  extraInputs?: AdmissionsExtraInputs,
+): Map<string, SourceFreshnessStateRow> {
   const checkedAt = new Date();
-  const exactSourceIds = new Set(exactSourceIdsForProgram(program));
+  const exactSourceIds = new Set(exactSourceIdsForProgram(program, extraInputs));
 
   return new Map(
     program.linkedInstitutionIds.flatMap((institutionId) => {
-      const artifact = getProgramVerificationArtifact(`${program.id}__${institutionId}`);
+      const artifact =
+        (program.id === 'haifa_infosystems'
+          ? getHaifaInformationSystemsTrackArtifact(extraInputs?.haifaInformationSystemsTrack)
+          : undefined) ?? getProgramVerificationArtifact(`${program.id}__${institutionId}`);
       const sourceId = artifact?.contract.source.targetId;
       if (!artifact || !sourceId || !exactSourceIds.has(sourceId)) {
         return [];
@@ -130,7 +141,8 @@ function evaluateAdmissionsForProgram(
   return evaluateAdmissionsForProgramInternal({
     ...args,
     freshnessStatesBySourceId:
-      args.freshnessStatesBySourceId ?? qualifiedFreshnessStates(args.program),
+      args.freshnessStatesBySourceId ??
+      qualifiedFreshnessStates(args.program, args.input.extraInputs),
   });
 }
 
@@ -468,6 +480,76 @@ const hitEngineering: CatalogueProgram = {
 };
 
 describe('evaluateAdmissionsForProgram', () => {
+  it('explains the unresolved ordinary Haifa Information Systems mapping without a numeric replay', async () => {
+    const fetcher = vi.fn<typeof fetch>();
+    const result = await evaluateAdmissionsForProgram({
+      program: { ...haifaCs, id: 'haifa_infosystems' },
+      institutions,
+      input: {
+        degreeId: 'haifa_infosystems',
+        psychometric: 800,
+        bagrut: 120,
+        extraInputs: { haifaInformationSystemsTrack: 'single_major' },
+      },
+      fetcher,
+    });
+    expect(result.results[0]).toMatchObject({
+      capability: 'blocked',
+      decision: 'unknown',
+      sourceLabel: 'מיפוי המסלול טרם אומת',
+    });
+    expect(result.results[0].score).toBeUndefined();
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+  it.each(Object.entries(HAIFA_INFORMATION_SYSTEMS_TRACK_ARTIFACTS))(
+    'evaluates both official captures using the selected Haifa track %s',
+    async (_track, artifact) => {
+      const program = {
+        ...haifaCs,
+        id: 'haifa_infosystems',
+        name: 'מערכות מידע',
+        thresholds: { haifa: 680 },
+      };
+      const captured = haifaTrackCaptures.records.find(
+        (record) => record.officialProgramId === artifact.contract.officialProgramId,
+      )!;
+      for (const [index, band] of (['high', 'low'] as const).entries()) {
+        const fixture = artifact.fixtures[index];
+        const { psychometric, bagrut, ...extraInputs } = fixture.input;
+        const fetcher = vi.fn<typeof fetch>().mockImplementation(async (url) => {
+          const params = new URL(String(url)).searchParams;
+          if (params.get('operation') !== 'checkConnection')
+            expect(params.get('program')).toBe(artifact.contract.officialProgramId);
+          return new Response(
+            JSON.stringify(
+              params.get('operation') === 'checkConnection'
+                ? { data: {} }
+                : captured[band].response,
+            ),
+            { status: 200, headers: { 'content-type': 'application/json' } },
+          );
+        });
+        const result = await evaluateAdmissionsForProgram({
+          program,
+          institutions,
+          input: {
+            degreeId: program.id,
+            psychometric: Number(psychometric),
+            bagrut: Number(bagrut),
+            extraInputs: extraInputs as AdmissionsExtraInputs,
+          },
+          fetcher,
+          now: new Date('2026-09-28T20:00:00Z'),
+        });
+        expect(result.results[0]).toMatchObject({
+          capability: 'exact',
+          score: fixture.expected.score,
+          threshold: 680,
+          decision: band === 'high' ? 'eligible_to_apply' : 'below',
+        });
+      }
+    },
+  );
   const management: CatalogueProgram = {
     ...hitEngineering,
     id: 'business',

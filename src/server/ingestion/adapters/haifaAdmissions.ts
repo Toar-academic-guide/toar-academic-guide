@@ -58,7 +58,10 @@ export async function runHaifaAdmissionsProof(
     const parsed = parseHaifaChancesResponse(chancesJson);
 
     const programId = program.pairId?.split('__')[0] ?? program.id.replace('haifa-cs', 'haifa_cs');
-    const policy = getHaifaProgrammePolicy(programId);
+    const policy = getHaifaProgrammePolicy(
+      programId,
+      context.applicant.extraInputs?.haifaInformationSystemsTrack,
+    );
     const eligibility = evaluateHaifaProgrammePolicy({
       programId,
       input: {

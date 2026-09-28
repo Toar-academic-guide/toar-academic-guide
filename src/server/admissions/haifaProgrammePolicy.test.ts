@@ -1,5 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { HAIFA_PROGRAM_ALIASES } from '@/lib/haifaAdmissionsInputs';
+import {
+  HAIFA_PROGRAM_ALIASES,
+  HAIFA_INFORMATION_SYSTEMS_TRACKS,
+} from '@/lib/haifaAdmissionsInputs';
 import type { AdmissionsEvaluationInput } from '@/types/admissionsEvaluation';
 import { evaluateHaifaProgrammePolicy } from './haifaProgrammePolicy';
 
@@ -30,9 +33,52 @@ function evaluate(programId: string, score = 850, extra = {}) {
 }
 
 describe('current Haifa programme requirements', () => {
+  it('requires an explicit Information Systems track and keeps ordinary single-major unavailable', () => {
+    expect(evaluate('haifa_infosystems')).toMatchObject({
+      kind: 'needs_input',
+      requiredInputs: ['haifa_information_systems_track'],
+    });
+    expect(
+      evaluate('haifa_infosystems', 806, { haifaInformationSystemsTrack: 'single_major' }).kind,
+    ).toBe('unavailable');
+  });
+  it.each(HAIFA_INFORMATION_SYSTEMS_TRACKS)(
+    'checks score, maths and partner requirements for $value',
+    (track) => {
+      const extra = {
+        haifaInformationSystemsTrack: track.value,
+        haifaInformationSystemsPartnerRequirementsConfirmed: true,
+      };
+      expect(evaluate('haifa_infosystems', 806, extra).kind).toBe('eligible');
+      expect(evaluate('haifa_infosystems', 493, extra).kind).toBe('below');
+      expect(
+        evaluate('haifa_infosystems', 806, { ...extra, mathUnits: 5, mathGrade: 69 }).kind,
+      ).toBe('below');
+      expect(
+        evaluate('haifa_infosystems', 806, { ...extra, mathUnits: 4, mathGrade: 80 }).kind,
+      ).toBe('eligible');
+      if (track.partnerRequired) {
+        expect(
+          evaluate('haifa_infosystems', 806, {
+            ...extra,
+            haifaInformationSystemsPartnerRequirementsConfirmed: undefined,
+          }),
+        ).toMatchObject({
+          kind: 'needs_input',
+          requiredInputs: ['haifa_information_systems_partner_requirements'],
+        });
+        expect(
+          evaluate('haifa_infosystems', 806, {
+            ...extra,
+            haifaInformationSystemsPartnerRequirementsConfirmed: false,
+          }).kind,
+        ).toBe('below');
+      }
+    },
+  );
   it.each(HAIFA_PROGRAM_ALIASES.flat())('checks the primary route for %s', (programId) => {
     expect(evaluate(programId).kind).toBe(
-      programId === 'haifa_infosystems' ? 'unavailable' : 'eligible',
+      programId === 'haifa_infosystems' ? 'needs_input' : 'eligible',
     );
     if (programId !== 'haifa_infosystems') {
       expect(
