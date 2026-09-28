@@ -7,8 +7,15 @@ import {
 
 import { evaluateAdmissionsSourceProof } from '../admissionsSourceAdapters';
 import { parseHaifaChancesResponse, runHaifaAdmissionsProof } from './haifaAdmissions';
+import { runAdmissionsLiveProof } from '../admissionsLiveProofRunner';
 
 const applicant = {
+  extraInputs: {
+    haifaAdmissionQualification: 'full_bagrut' as const,
+    haifaHebrewQualification: 'hebrew_school' as const,
+    mathUnits: 5,
+    mathGrade: 100,
+  },
   bagrutAverage: 105,
   bagrutYear: '2026',
   psychometricYear: '2026',
@@ -81,6 +88,57 @@ describe('parseHaifaChancesResponse', () => {
 });
 
 describe('runHaifaAdmissionsProof', () => {
+  it('replays both current score and composed eligibility for every supported Haifa alias', async () => {
+    const targetIds = Object.values(HAIFA_PROGRAM_VERIFICATION_METADATA)
+      .filter((artifact) => artifact.contract.programId !== 'haifa_infosystems')
+      .map((artifact) => artifact.contract.source.targetId);
+    const report = await runAdmissionsLiveProof({
+      targetIds,
+      fetcher: vi.fn<typeof fetch>().mockImplementation(async (url) => {
+        const params = new URL(String(url)).searchParams;
+        if (params.get('operation') === 'checkConnection') return jsonResponse({ data: {} });
+        const record = haifaOfficial.records.find(
+          (capture) => capture.officialProgramId === params.get('program'),
+        )!;
+        return jsonResponse(record[params.get('bag_avg') === '120' ? 'high' : 'low'].response);
+      }),
+    });
+    expect(report.summary).toMatchObject({
+      total: 26,
+      exactReproduced: 26,
+      partial: 0,
+      blocked: 0,
+      failed: 0,
+    });
+  });
+  it('withholds a numeric result when applicant gates are missing or the current cutoff changes', async () => {
+    for (const [extraInputs, cutoff] of [
+      [undefined, 700],
+      [applicant.extraInputs, 705],
+    ] as const) {
+      const proof = await runHaifaAdmissionsProof({
+        applicant: { ...applicant, extraInputs },
+        fetcher: vi.fn<typeof fetch>().mockImplementation(async () =>
+          jsonResponse({
+            data: [
+              {
+                results: [
+                  {
+                    content: [
+                      { label: 'הציון המשוקלל', value: '806' },
+                      { label: 'סף קבלה', value: String(cutoff) },
+                    ],
+                  },
+                ],
+              },
+            ],
+          }),
+        ),
+      });
+      expect(proof.capability).toBe('score_only');
+      expect(proof.normalizedPayload.derivedVerdict).toBeUndefined();
+    }
+  });
   it('preserves the actual certificate year, exam year and full official average', async () => {
     const fetcher = vi.fn<typeof fetch>().mockResolvedValue(jsonResponse({ data: [] }));
     await runHaifaAdmissionsProof({
@@ -138,7 +196,7 @@ describe('runHaifaAdmissionsProof', () => {
                 {
                   content: [
                     { label: 'הציון המשוקלל', value: '706' },
-                    { label: 'סף קבלה', value: '705' },
+                    { label: 'סף קבלה', value: '700' },
                     { label: 'סף דחייה', value: '680' },
                   ],
                 },
@@ -159,9 +217,9 @@ describe('runHaifaAdmissionsProof', () => {
       reproducedFields: ['weightedScore', 'acceptanceCutoff', 'rejectionCutoff'],
       normalizedPayload: {
         weightedScore: 706,
-        acceptanceCutoff: 705,
+        acceptanceCutoff: 700,
         rejectionCutoff: 680,
-        derivedVerdict: 'accepted',
+        derivedVerdict: 'eligible_to_apply',
         decisionProvenance: 'verified_derivation',
       },
     });
@@ -199,7 +257,7 @@ describe('runHaifaAdmissionsProof', () => {
                 {
                   content: [
                     { label: 'הציון המשוקלל', value: '690' },
-                    { label: 'סף קבלה', value: '705' },
+                    { label: 'סף קבלה', value: '700' },
                     { label: 'סף דחייה', value: '680' },
                   ],
                 },
@@ -251,7 +309,7 @@ describe('runHaifaAdmissionsProof', () => {
                   {
                     content: [
                       { label: 'הציון המשוקלל', value: '706' },
-                      { label: 'סף קבלה', value: '705' },
+                      { label: 'סף קבלה', value: '700' },
                     ],
                   },
                 ],

@@ -53,6 +53,7 @@ export interface AdmissionsAdapterContext {
   applicant: AdmissionsApplicantInput;
   program?: AdmissionsProgramInput;
   fetcher?: typeof fetch;
+  now?: Date;
 }
 
 export interface AdmissionsSourceProof {

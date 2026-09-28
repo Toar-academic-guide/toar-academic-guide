@@ -35,6 +35,15 @@ describe('admissions evaluate route', () => {
       haifaBagrutAverage: 102.25,
       haifaBagrutYear: 2015,
       haifaPsychometricYear: 2026,
+      haifaAdmissionQualification: 'full_bagrut',
+      haifaEnglishLevel: 'advanced_a',
+      haifaHebrewQualification: 'exam',
+      haifaHebrewScore: 120,
+      haifaHebrewExamDate: '2026-04-01',
+      haifaPsychometricMonth: 4,
+      haifaScienceUnits: 8,
+      haifaOtFailedSelectionAttempts: 0,
+      haifaOtUnjustifiedAbsence: false,
     };
     const response = await POST(
       new Request('http://localhost/api/admissions/evaluate', {

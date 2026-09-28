@@ -90,7 +90,7 @@ function formatResultSummary(result: AdmissionsEvaluationResult): string {
 
   if (result.requiredInputs?.length) {
     if (result.requiredInputs.some((input) => input.startsWith('haifa_')))
-      return 'נדרשים הממוצע הרשמי ושנות הבגרות והפסיכומטרי בחיפה';
+      return 'נדרשים נתוני חיפה בפרופיל: ממוצע, מועדי בחינות ודרישות החוג';
     if (result.requiredInputs.some((input) => input.startsWith('technion_architecture_'))) {
       return 'נדרשים נתוני ארכיטקטורה בטכניון';
     }

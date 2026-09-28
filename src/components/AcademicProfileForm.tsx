@@ -1,6 +1,14 @@
 'use client';
 
-import { HAIFA_ADMISSION_YEAR, haifaProfileInputsSchema } from '@/lib/haifaAdmissionsInputs';
+import {
+  HAIFA_ADMISSION_YEAR,
+  HAIFA_QUALIFICATION_PROFILE_KEYS,
+  HAIFA_NUMERIC_QUALIFICATION_KEYS,
+  haifaProfileInputsSchema,
+} from '@/lib/haifaAdmissionsInputs';
+import HaifaQualificationFields, {
+  type HaifaQualificationValues,
+} from './HaifaQualificationFields';
 
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
@@ -46,6 +54,15 @@ export default function AcademicProfileForm({
   isAuthenticated = false,
   alertContinuation,
 }: Props) {
+  const [haifaQualificationValues, setHaifaQualificationValues] =
+    useState<HaifaQualificationValues>(() =>
+      Object.fromEntries(
+        HAIFA_QUALIFICATION_PROFILE_KEYS.map((key) => [
+          key,
+          initialScores?.admissions?.[key]?.toString() ?? '',
+        ]),
+      ),
+    );
   const [psychologyValues, setPsychologyValues] = useState<PsychologyFormValues>(() =>
     Object.fromEntries(
       BGU_PSYCHOLOGY_PROFILE_KEYS.map((key) => [
@@ -250,11 +267,31 @@ export default function AcademicProfileForm({
     if (haifaAverage !== undefined) admissions.haifaBagrutAverage = haifaAverage;
     if (certificateYear !== undefined) admissions.haifaBagrutYear = certificateYear;
     if (examYear !== undefined) admissions.haifaPsychometricYear = examYear;
-    if (!haifaProfileInputsSchema.safeParse(admissions).success) {
-      setError(`בדקו את נתוני חיפה: ממוצע 50–130 ושנים שלמות בין 1948 ל־${HAIFA_ADMISSION_YEAR}.`);
+    const haifaQualificationInputs = Object.fromEntries(
+      HAIFA_QUALIFICATION_PROFILE_KEYS.filter(
+        (key) =>
+          haifaQualificationValues[key] !== undefined && haifaQualificationValues[key] !== '',
+      ).map((key) => [
+        key,
+        key === 'haifaOtUnjustifiedAbsence'
+          ? haifaQualificationValues[key] === 'true'
+          : HAIFA_NUMERIC_QUALIFICATION_KEYS.includes(key)
+            ? Number(haifaQualificationValues[key])
+            : haifaQualificationValues[key],
+      ]),
+    );
+    const parsedHaifa = haifaProfileInputsSchema.safeParse({
+      ...admissions,
+      ...haifaQualificationInputs,
+    });
+    if (!parsedHaifa.success) {
+      setError(
+        `בדקו את נתוני חיפה: ממוצע 50–130, שנים שלמות עד ${HAIFA_ADMISSION_YEAR}, חודש 1–12 וציון עברית 50–150. יחידות וניסיונות מיון צריכים להיות מספרים שלמים.`,
+      );
       setIsSaving(false);
       return;
     }
+    Object.assign(admissions, parsedHaifa.data);
     if (tauApplicationRequirements !== '') {
       admissions.tauApplicationRequirementsConfirmed = tauApplicationRequirements === 'true';
     }
@@ -805,6 +842,14 @@ export default function AcademicProfileForm({
                   הזינו את השנה של הבחינה שממנה לקחתם את ציוני הכמותי, המילולי והאנגלית.
                 </p>
               </div>
+              <HaifaQualificationFields
+                values={haifaQualificationValues}
+                onChange={(key, value) =>
+                  setHaifaQualificationValues((previous) => ({ ...previous, [key]: value }))
+                }
+                disabled={isSaving}
+                inputClassName={inputBase}
+              />
               <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-600">
                 האם מולאו תנאי ההגשה לתל אביב: זכאות לבגרות, אנגלית ברמת מתקדמים א׳ (100 לפחות
                 בפסיכומטרי או במבחן מיון נפרד באנגלית), דרישת העברית והרשמה בעדיפות ראשונה למדעי

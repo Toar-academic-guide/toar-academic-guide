@@ -219,6 +219,43 @@ describe('AcademicProfileForm', () => {
     );
   });
 
+  it('collects, saves and restores programme-specific Haifa facts without assuming missing answers', async () => {
+    const onComplete = vi.fn();
+    const admissions = {
+      haifaAdmissionQualification: 'full_bagrut' as const,
+      haifaEnglishLevel: 'advanced_a' as const,
+      haifaHebrewQualification: 'university_exam' as const,
+      haifaHebrewScore: 120,
+      haifaHebrewExamDate: '2026-04-01',
+      haifaPsychometricMonth: 4,
+      haifaScienceUnits: 8,
+      haifaOtFailedSelectionAttempts: 0,
+      haifaOtUnjustifiedAbsence: false,
+    };
+    render(
+      <AcademicProfileForm
+        onComplete={onComplete}
+        onClearLocalProfileData={vi.fn().mockResolvedValue(undefined)}
+        onSkip={vi.fn()}
+        initialScores={{ admissions }}
+      />,
+    );
+    expect(screen.getByLabelText('תעודת הקבלה לאוניברסיטת חיפה')).toHaveProperty(
+      'value',
+      'full_bagrut',
+    );
+    expect(screen.getByLabelText('תאריך מבחן העברית בחיפה')).toHaveProperty('value', '2026-04-01');
+    fireEvent.change(screen.getByLabelText('מספר היחידות המדעיות לסיעוד בחיפה'), {
+      target: { value: '9' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    await waitFor(() =>
+      expect(onComplete).toHaveBeenCalledWith({
+        admissions: { ...admissions, haifaScienceUnits: 9 },
+      }),
+    );
+  });
+
   it('hydrates and saves only defined admissions inputs, preserving false and zero', async () => {
     const onComplete = vi.fn();
 

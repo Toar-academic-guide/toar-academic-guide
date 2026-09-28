@@ -11,6 +11,24 @@ export function admissionsInputValue(
       return input?.haifaBagrutYear;
     case 'haifa_psychometric_year':
       return input?.haifaPsychometricYear;
+    case 'haifa_psychometric_month':
+      return input?.haifaPsychometricMonth;
+    case 'haifa_admission_qualification':
+      return input?.haifaAdmissionQualification;
+    case 'haifa_english_level':
+      return input?.haifaEnglishLevel;
+    case 'haifa_hebrew_qualification':
+      return input?.haifaHebrewQualification;
+    case 'haifa_hebrew_score':
+      return input?.haifaHebrewScore;
+    case 'haifa_hebrew_exam_date':
+      return input?.haifaHebrewExamDate;
+    case 'haifa_science_units':
+      return input?.haifaScienceUnits;
+    case 'haifa_ot_failed_selection_attempts':
+      return input?.haifaOtFailedSelectionAttempts;
+    case 'haifa_ot_unjustified_absence':
+      return input?.haifaOtUnjustifiedAbsence;
     case 'bagrut_average':
       return undefined;
     case 'bgu_psychology_requirements':

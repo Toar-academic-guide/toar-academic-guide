@@ -783,7 +783,7 @@ describe('evaluateAdmissionsForProgram', () => {
   });
 
   it.each([
-    { year: 2015, bagrut: 115, score: 702, decision: 'accepted' },
+    { year: 2015, bagrut: 115, score: 702, decision: 'eligible_to_apply' },
     { year: 2020, bagrut: undefined, score: 699, decision: 'pending' },
   ])(
     'uses the Haifa average and actual year $year, preserving $decision',
@@ -809,6 +809,10 @@ describe('evaluateAdmissionsForProgram', () => {
             haifaBagrutAverage: 102,
             haifaBagrutYear: year,
             haifaPsychometricYear: 2026,
+            haifaAdmissionQualification: 'full_bagrut',
+            haifaHebrewQualification: 'hebrew_school',
+            mathUnits: 5,
+            mathGrade: 75,
           },
         },
         program: haifaCs,

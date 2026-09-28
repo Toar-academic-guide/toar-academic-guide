@@ -6,6 +6,10 @@ import {
   type AdmissionsSourceProof,
 } from '../admissionsSourceAdapters';
 import { HAIFA_ADMISSION_YEAR, haifaScoreInputsSchema } from '@/lib/haifaAdmissionsInputs';
+import {
+  evaluateHaifaProgrammePolicy,
+  getHaifaProgrammePolicy,
+} from '@/server/admissions/haifaProgrammePolicy';
 
 const HAIFA_INDEX_URL = 'https://applicants.haifa.ac.il/enrollmentChances/index.html';
 const HAIFA_SERVLET_URL = 'https://applicants.haifa.ac.il/enrollmentChances/CandChancesServlet';
@@ -53,7 +57,31 @@ export async function runHaifaAdmissionsProof(
     const chancesJson = await readJson(chancesResponse);
     const parsed = parseHaifaChancesResponse(chancesJson);
 
-    const hasDecision = parsed.weightedScore !== undefined && hasCutoff(parsed);
+    const programId = program.pairId?.split('__')[0] ?? program.id.replace('haifa-cs', 'haifa_cs');
+    const policy = getHaifaProgrammePolicy(programId);
+    const eligibility = evaluateHaifaProgrammePolicy({
+      programId,
+      input: {
+        degreeId: programId,
+        psychometric: context.applicant.psychometric,
+        extraInputs: {
+          ...context.applicant.extraInputs,
+          haifaPsychometricYear: yearsAndAverage.data.haifaPsychometricYear,
+          psychometricEnglish: components.english,
+        },
+      },
+      score: typeof parsed.weightedScore === 'number' ? parsed.weightedScore : undefined,
+      now: context.now ?? new Date(),
+    });
+    const mappingMatches =
+      policy?.officialCalculatorId === program.externalId &&
+      (!program.hug || policy?.officialCalculatorHug === program.hug);
+    const hasDecision =
+      parsed.weightedScore !== undefined &&
+      hasCutoff(parsed) &&
+      mappingMatches &&
+      parsed.acceptanceCutoff === policy?.score.acceptance &&
+      ['eligible', 'pending', 'below'].includes(eligibility.kind);
     const capability = hasDecision ? 'decision_capable' : 'score_only';
 
     return {
@@ -72,17 +100,27 @@ export async function runHaifaAdmissionsProof(
         programName: program.name,
         source: 'haifa_calculateChances',
         ...parsed,
-        derivedVerdict: derivedVerdictFrom(parsed),
+        derivedVerdict: hasDecision
+          ? eligibility.kind === 'eligible'
+            ? 'eligible_to_apply'
+            : eligibility.kind
+          : undefined,
+        numericBandVerdict: derivedVerdictFrom(parsed),
+        programmeRequirementsUrl: policy?.source.url,
         proofStatus: hasDecision ? 'succeeded' : 'partial',
         proofLevel: hasDecision ? 'exact_official' : 'partial_official',
         decisionProvenance: hasDecision ? 'verified_derivation' : 'none',
       },
       limitations: hasDecision
-        ? ['Representative Haifa program only; broad program coverage is deferred']
-        : ['Official response produced a score but not enough cutoff/status fields for acceptance'],
+        ? [
+            'Numeric replay combined with current published programme gates; selection and registration remain institutional decisions.',
+          ]
+        : [
+            'A numeric score alone does not prove programme eligibility. Complete applicant gates and verify the current mapping/cutoff.',
+          ],
       nextAction: hasDecision
-        ? 'Promote Haifa to the first weekly GitHub Action adapter candidate'
-        : 'Find the official Haifa cutoff/status field for this program before product decisions',
+        ? 'Keep numeric replay and published programme policy under the matching reviewed fingerprint.'
+        : 'Complete programme facts or resolve the current source mapping and cutoff before activation.',
       rawResponseMetadata: metadata,
     };
   } catch (error) {

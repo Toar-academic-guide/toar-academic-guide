@@ -9,6 +9,15 @@ describe('admissionsExtraInputsFromAcademicScores', () => {
       haifaBagrutAverage: 102.25,
       haifaBagrutYear: 2015,
       haifaPsychometricYear: 2026,
+      haifaAdmissionQualification: 'full_bagrut' as const,
+      haifaEnglishLevel: 'advanced_a' as const,
+      haifaHebrewQualification: 'exam' as const,
+      haifaHebrewScore: 120,
+      haifaHebrewExamDate: '2026-04-01',
+      haifaPsychometricMonth: 4,
+      haifaScienceUnits: 8,
+      haifaOtFailedSelectionAttempts: 0,
+      haifaOtUnjustifiedAbsence: false,
     };
     const input = admissionsExtraInputsFromAcademicScores({ admissions });
     expect(input).toMatchObject(admissions);
