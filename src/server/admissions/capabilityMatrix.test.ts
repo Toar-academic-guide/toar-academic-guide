@@ -542,6 +542,9 @@ describe('buildAdmissionsCapabilityMatrix', () => {
       'psychometric_math',
       'psychometric_verbal',
       'psychometric_english',
+      'haifa_bagrut_average',
+      'haifa_bagrut_year',
+      'haifa_psychometric_year',
     ]);
   });
 
@@ -558,6 +561,9 @@ describe('buildAdmissionsCapabilityMatrix', () => {
         psychometricMath: 120,
         psychometricVerbal: 120,
         psychometricEnglish: 120,
+        haifaBagrutAverage: 105,
+        haifaBagrutYear: 2015,
+        haifaPsychometricYear: 2026,
       },
     });
 

@@ -5,6 +5,30 @@ export function admissionsInputValue(
   requiredInput: AdmissionsRequiredInput,
 ): unknown {
   switch (requiredInput) {
+    case 'haifa_bagrut_average':
+      return input?.haifaBagrutAverage;
+    case 'haifa_bagrut_year':
+      return input?.haifaBagrutYear;
+    case 'haifa_psychometric_year':
+      return input?.haifaPsychometricYear;
+    case 'haifa_psychometric_month':
+      return input?.haifaPsychometricMonth;
+    case 'haifa_admission_qualification':
+      return input?.haifaAdmissionQualification;
+    case 'haifa_english_level':
+      return input?.haifaEnglishLevel;
+    case 'haifa_hebrew_qualification':
+      return input?.haifaHebrewQualification;
+    case 'haifa_hebrew_score':
+      return input?.haifaHebrewScore;
+    case 'haifa_hebrew_exam_date':
+      return input?.haifaHebrewExamDate;
+    case 'haifa_science_units':
+      return input?.haifaScienceUnits;
+    case 'haifa_ot_failed_selection_attempts':
+      return input?.haifaOtFailedSelectionAttempts;
+    case 'haifa_ot_unjustified_absence':
+      return input?.haifaOtUnjustifiedAbsence;
     case 'bgu_occupational_therapy_requirements':
       return input?.bguOccupationalTherapyRequirementsConfirmed;
     case 'bgu_physiotherapy_requirements':

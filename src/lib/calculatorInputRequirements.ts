@@ -1,5 +1,6 @@
 import { isBguHealthProgram } from './bguHealthInputs';
 import { isBguPsychologyProgram } from './bguPsychologyInputs';
+import { isHaifaProgram } from './haifaAdmissionsInputs';
 import { bguSocialScienceProgram } from './bguSocialScienceInputs';
 
 export const BGU_QUANTITATIVE_PROGRAM_IDS = [
@@ -39,6 +40,7 @@ export function allowsNoGenericBagrut(programId: string): boolean {
   return (
     isBguQuantitativeRouteProgram(programId) ||
     isBguPsychologyProgram(programId) ||
+    isHaifaProgram(programId) ||
     isBguHealthProgram(programId) ||
     bguSocialScienceProgram(programId) !== null ||
     ['ee', 'bgu_ee', 'me', 'bgu_me', 'bgu_industrial'].includes(programId)

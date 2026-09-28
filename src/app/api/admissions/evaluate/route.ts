@@ -2,6 +2,7 @@ import { bguHealthInputsShape } from '@/lib/bguHealthInputs';
 import { allowsNoPsychometric, allowsNoGenericBagrut } from '@/lib/calculatorInputRequirements';
 import { bguQuantitativeInputShape } from '@/lib/bguQuantitativeInputs';
 import { bguPsychologyInputsShape } from '@/lib/bguPsychologyInputs';
+import { haifaAdmissionsInputsShape } from '@/lib/haifaAdmissionsInputs';
 import { bguSocialScienceInputsShape } from '@/lib/bguSocialScienceInputs';
 import { headers } from 'next/headers';
 import { z } from 'zod';
@@ -73,6 +74,7 @@ const admissionsEvaluationSchema = z
         technionArchitectureExamPassed: z.boolean().optional(),
         technionArchitectureRequirementsConfirmed: z.boolean().optional(),
         ...bguPsychologyInputsShape,
+        ...haifaAdmissionsInputsShape,
         ...bguHealthInputsShape,
         ...bguSocialScienceInputsShape,
         bguBagrutAverage: z.number().min(50).max(130).optional(),

@@ -34,7 +34,7 @@ describe('formula-backed verification ledger', () => {
 
     expect(completion).toMatchObject({
       total: 135,
-      exact: 127,
+      exact: 126,
       withheld: 8,
       isComplete: false,
     });
@@ -42,7 +42,7 @@ describe('formula-backed verification ledger', () => {
       tau: { total: 35, exact: 30, withheld: 5, stale: 0, blocked: 0 },
       huji: { total: 29, exact: 28, withheld: 1, stale: 0, blocked: 0 },
       bgu: { total: 29, exact: 28, withheld: 1, stale: 0, blocked: 0 },
-      haifa: { total: 27, exact: 27, withheld: 0, stale: 0, blocked: 0 },
+      haifa: { total: 27, exact: 26, withheld: 0, stale: 0, blocked: 1 },
       technion: { total: 14, exact: 14, withheld: 0, stale: 0, blocked: 0 },
       colman: { total: 1, exact: 0, withheld: 1, stale: 0, blocked: 0 },
     });
@@ -50,7 +50,7 @@ describe('formula-backed verification ledger', () => {
       FORMULA_BACKED_VERIFICATION_LEDGER.filter((entry) => entry.state === 'exact').map(
         (entry) => entry.pairId,
       ),
-    ).toHaveLength(127);
+    ).toHaveLength(126);
   });
 
   it('names a newly discovered pair that lacks a reviewed ledger record', () => {
@@ -80,6 +80,14 @@ describe('formula-backed verification ledger', () => {
       isMatching: false,
       missingPairIds: ['new_program__tau'],
     });
+  });
+
+  it('does not count the unresolved Haifa Information Systems mapping as verified', () => {
+    expect(
+      FORMULA_BACKED_VERIFICATION_LEDGER.find(
+        (entry) => entry.pairId === 'haifa_infosystems__haifa',
+      ),
+    ).toMatchObject({ state: 'blocked', liveProof: { comparedVerdict: false } });
   });
 
   it('never puts explicitly excluded Ariel or Bar-Ilan pairs in completion totals', () => {

@@ -22,6 +22,18 @@ export function admissionsExtraInputsFromAcademicScores(
   const computerScience = subjectsById.get('computer_science');
 
   const extraInputs: AdmissionsExtraInputs = {
+    haifaBagrutAverage: academicScores?.admissions?.haifaBagrutAverage,
+    haifaBagrutYear: academicScores?.admissions?.haifaBagrutYear,
+    haifaPsychometricYear: academicScores?.admissions?.haifaPsychometricYear,
+    haifaPsychometricMonth: academicScores?.admissions?.haifaPsychometricMonth,
+    haifaAdmissionQualification: academicScores?.admissions?.haifaAdmissionQualification,
+    haifaEnglishLevel: academicScores?.admissions?.haifaEnglishLevel,
+    haifaHebrewQualification: academicScores?.admissions?.haifaHebrewQualification,
+    haifaHebrewScore: academicScores?.admissions?.haifaHebrewScore,
+    haifaHebrewExamDate: academicScores?.admissions?.haifaHebrewExamDate,
+    haifaScienceUnits: academicScores?.admissions?.haifaScienceUnits,
+    haifaOtFailedSelectionAttempts: academicScores?.admissions?.haifaOtFailedSelectionAttempts,
+    haifaOtUnjustifiedAbsence: academicScores?.admissions?.haifaOtUnjustifiedAbsence,
     ...Object.fromEntries(
       BGU_SOCIAL_SCIENCE_PROFILE_KEYS.map((key) => [key, academicScores?.admissions?.[key]]),
     ),

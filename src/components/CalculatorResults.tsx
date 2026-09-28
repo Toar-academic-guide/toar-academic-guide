@@ -91,6 +91,8 @@ function formatResultSummary(result: AdmissionsEvaluationResult): string {
   }
 
   if (result.requiredInputs?.length) {
+    if (result.requiredInputs.some((input) => input.startsWith('haifa_')))
+      return 'נדרשים נתוני חיפה בפרופיל: ממוצע, מועדי בחינות ודרישות החוג';
     if (
       result.requiredInputs.some((input) =>
         [

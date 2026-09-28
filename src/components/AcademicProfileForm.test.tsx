@@ -25,6 +25,52 @@ vi.mock('@/components/BagrutCalculatorWizard', () => ({
 }));
 
 describe('AcademicProfileForm', () => {
+  it('asks the student to correct an invalid Haifa year before saving a device draft', async () => {
+    const onComplete = vi.fn();
+    render(
+      <AcademicProfileForm
+        onComplete={onComplete}
+        onClearLocalProfileData={vi.fn()}
+        onSkip={vi.fn()}
+      />,
+    );
+    fireEvent.change(screen.getByLabelText('שנת הזכאות לבגרות או השיפור האחרון בחיפה'), {
+      target: { value: '2015.5' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    expect(onComplete).not.toHaveBeenCalled();
+    expect(await screen.findByText(/בדקו את נתוני חיפה/)).toBeTruthy();
+  });
+  it('loads and saves Haifa decimal average and actual years without generic scores', async () => {
+    const onComplete = vi.fn();
+    const admissions = {
+      haifaBagrutAverage: 102.25,
+      haifaBagrutYear: 2015,
+      haifaPsychometricYear: 2026,
+    };
+    render(
+      <AcademicProfileForm
+        onComplete={onComplete}
+        onClearLocalProfileData={vi.fn().mockResolvedValue(undefined)}
+        onSkip={vi.fn()}
+        initialScores={{ admissions }}
+      />,
+    );
+    expect(screen.getByLabelText('ממוצע בגרות רשמי של אוניברסיטת חיפה (50–130)')).toHaveProperty(
+      'value',
+      '102.25',
+    );
+    fireEvent.change(screen.getByLabelText('שנת הזכאות לבגרות או השיפור האחרון בחיפה'), {
+      target: { value: '2020' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    await waitFor(() =>
+      expect(onComplete).toHaveBeenCalledWith({
+        admissions: { ...admissions, haifaBagrutYear: 2020 },
+      }),
+    );
+  });
+
   it('shares preparatory facts across BGU sections and saves the latest edit or clearing', async () => {
     const onComplete = vi.fn();
     const bguEngineering = {
@@ -297,6 +343,43 @@ describe('AcademicProfileForm', () => {
     );
   });
 
+  it('collects, saves and restores programme-specific Haifa facts without assuming missing answers', async () => {
+    const onComplete = vi.fn();
+    const admissions = {
+      haifaAdmissionQualification: 'full_bagrut' as const,
+      haifaEnglishLevel: 'advanced_a' as const,
+      haifaHebrewQualification: 'university_exam' as const,
+      haifaHebrewScore: 120,
+      haifaHebrewExamDate: '2026-04-01',
+      haifaPsychometricMonth: 4,
+      haifaScienceUnits: 8,
+      haifaOtFailedSelectionAttempts: 0,
+      haifaOtUnjustifiedAbsence: false,
+    };
+    render(
+      <AcademicProfileForm
+        onComplete={onComplete}
+        onClearLocalProfileData={vi.fn().mockResolvedValue(undefined)}
+        onSkip={vi.fn()}
+        initialScores={{ admissions }}
+      />,
+    );
+    expect(screen.getByLabelText('תעודת הקבלה לאוניברסיטת חיפה')).toHaveProperty(
+      'value',
+      'full_bagrut',
+    );
+    expect(screen.getByLabelText('תאריך מבחן העברית בחיפה')).toHaveProperty('value', '2026-04-01');
+    fireEvent.change(screen.getByLabelText('מספר היחידות המדעיות לסיעוד בחיפה'), {
+      target: { value: '9' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    await waitFor(() =>
+      expect(onComplete).toHaveBeenCalledWith({
+        admissions: { ...admissions, haifaScienceUnits: 9 },
+      }),
+    );
+  });
+
   it('hydrates and saves only defined admissions inputs, preserving false and zero', async () => {
     const onComplete = vi.fn();
 
@@ -310,6 +393,9 @@ describe('AcademicProfileForm', () => {
             tauBagrutAverage: 112.5,
             tauApplicationRequirementsConfirmed: false,
             tauMathPlacementScore: 0,
+            haifaBagrutAverage: 102.25,
+            haifaBagrutYear: 2015,
+            haifaPsychometricYear: 2026,
           },
         }}
       />,
@@ -339,6 +425,9 @@ describe('AcademicProfileForm', () => {
           tauApplicationRequirementsConfirmed: false,
           bguLanguageRequirementsConfirmed: false,
           tauMathPlacementScore: 0,
+          haifaBagrutAverage: 102.25,
+          haifaBagrutYear: 2015,
+          haifaPsychometricYear: 2026,
         },
       }),
     );
@@ -571,6 +660,9 @@ describe('AcademicProfileForm', () => {
             tauBagrutAverage: 112.5,
             tauApplicationRequirementsConfirmed: false,
             tauMathPlacementScore: 0,
+            haifaBagrutAverage: 102.25,
+            haifaBagrutYear: 2015,
+            haifaPsychometricYear: 2026,
           },
         }}
       />,
@@ -585,6 +677,9 @@ describe('AcademicProfileForm', () => {
     expect(screen.queryByDisplayValue('700')).toBeNull();
     expect(screen.queryByDisplayValue('105')).toBeNull();
     expect(screen.queryByDisplayValue('112.5')).toBeNull();
+    expect(screen.queryByDisplayValue('102.25')).toBeNull();
+    expect(screen.queryByDisplayValue('2015')).toBeNull();
+    expect(screen.queryByDisplayValue('2026')).toBeNull();
     expect(screen.queryByDisplayValue('0')).toBeNull();
     expect(screen.getByLabelText('אישור תנאי הגשה לתל אביב')).toHaveProperty('value', '');
   });

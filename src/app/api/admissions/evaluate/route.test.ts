@@ -27,6 +27,38 @@ vi.mock('server-only', () => ({}));
 import { POST } from './route';
 
 describe('admissions evaluate route', () => {
+  it('accepts Haifa years and decimal official average without an unused generic Bagrut', async () => {
+    hoistedMocks.listCataloguePrograms.mockResolvedValue({
+      data: [{ id: 'haifa_cs', name: 'CS', linkedInstitutionIds: ['haifa'] }],
+    });
+    const extraInputs = {
+      haifaBagrutAverage: 102.25,
+      haifaBagrutYear: 2015,
+      haifaPsychometricYear: 2026,
+      haifaAdmissionQualification: 'full_bagrut',
+      haifaEnglishLevel: 'advanced_a',
+      haifaHebrewQualification: 'exam',
+      haifaHebrewScore: 120,
+      haifaHebrewExamDate: '2026-04-01',
+      haifaPsychometricMonth: 4,
+      haifaScienceUnits: 8,
+      haifaOtFailedSelectionAttempts: 0,
+      haifaOtUnjustifiedAbsence: false,
+    };
+    const response = await POST(
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ degreeId: 'haifa_cs', psychometric: 680, extraInputs }),
+      }),
+    );
+    expect(response.status).toBe(200);
+    expect(hoistedMocks.evaluateAdmissionsForProgram.mock.calls[0][0].input).toEqual({
+      degreeId: 'haifa_cs',
+      psychometric: 680,
+      extraInputs,
+    });
+  });
   beforeEach(() => {
     vi.restoreAllMocks();
     resetAdmissionsEvaluationRateLimitForTests();

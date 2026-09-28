@@ -1,6 +1,7 @@
 import type { BguHealthInputs } from '@/lib/bguHealthInputs';
 import type { BguQuantitativeInputs } from '@/lib/bguQuantitativeInputs';
 import type { BguPsychologyInputs } from '@/lib/bguPsychologyInputs';
+import type { HaifaAdmissionsInputs } from '@/lib/haifaAdmissionsInputs';
 import type { BguSocialScienceInputs } from '@/lib/bguSocialScienceInputs';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type { BagrutSector, BagrutSubjectRecord, DeltaNeeded } from '@/types';
@@ -42,6 +43,18 @@ export type AdmissionsRequiredInput =
   | 'bgu_engineering_details'
   | 'bgu_engineering_physics_course'
   | 'bagrut_average'
+  | 'haifa_bagrut_average'
+  | 'haifa_bagrut_year'
+  | 'haifa_psychometric_year'
+  | 'haifa_psychometric_month'
+  | 'haifa_admission_qualification'
+  | 'haifa_english_level'
+  | 'haifa_hebrew_qualification'
+  | 'haifa_hebrew_score'
+  | 'haifa_hebrew_exam_date'
+  | 'haifa_science_units'
+  | 'haifa_ot_failed_selection_attempts'
+  | 'haifa_ot_unjustified_absence'
   | 'bgu_occupational_therapy_requirements'
   | 'bgu_physiotherapy_requirements'
   | 'bgu_occupational_therapy_exam_session'
@@ -99,7 +112,12 @@ export type AdmissionsRequiredInput =
   | 'technion_architecture_requirements';
 
 export interface AdmissionsExtraInputs
-  extends BguQuantitativeInputs, BguPsychologyInputs, BguSocialScienceInputs, BguHealthInputs {
+  extends
+    BguQuantitativeInputs,
+    BguPsychologyInputs,
+    BguSocialScienceInputs,
+    BguHealthInputs,
+    HaifaAdmissionsInputs {
   bguEngineering?: BguEngineeringInputs;
   technionArchitectureBagrutAverage?: number;
   technionArchitectureExamScore?: number;

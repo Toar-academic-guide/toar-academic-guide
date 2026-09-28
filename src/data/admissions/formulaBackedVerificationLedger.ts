@@ -356,7 +356,14 @@ function verifiedProgramEntry(
     pairId: contract.pairId,
     institutionId: contract.institutionId as FormulaBackedInstitutionId,
     admissionCycle: contract.admissionCycle as '2026-2027',
-    state: 'exact',
+    state:
+      contract.proof.state === 'blocked'
+        ? 'blocked'
+        : contract.proof.state === 'verified' &&
+            contract.proof.comparedScore &&
+            contract.proof.comparedVerdict
+          ? 'exact'
+          : 'withheld',
     officialProgramId: contract.officialProgramId,
     sourceUrl: 'requirementsUrl' in artifact ? artifact.requirementsUrl : contract.source.url,
     formulaFamily: contract.calculation.formulaFamily,

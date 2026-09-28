@@ -1,4 +1,5 @@
 import psychologyOfficial from '../../../docs/admissions-verification/2026-09-27-bgu-psychology-official.json';
+import haifaOfficial from '../../../docs/admissions-verification/2026-09-28-haifa-official.json';
 import socialScienceOfficial from '../../../docs/admissions-verification/2026-09-27-bgu-social-sciences-official.json';
 import { describe, expect, it, vi } from 'vitest';
 import { architectureInputs, architectureSourceResponse } from '@/test/technionArchitecture';
@@ -774,9 +775,89 @@ describe('evaluateAdmissionsForProgram', () => {
         kind: 'needs_input',
         capability: 'needs_input',
         decision: 'unknown',
-        requiredInputs: ['psychometric_math', 'psychometric_verbal', 'psychometric_english'],
+        requiredInputs: [
+          'psychometric_math',
+          'psychometric_verbal',
+          'psychometric_english',
+          'haifa_bagrut_average',
+          'haifa_bagrut_year',
+          'haifa_psychometric_year',
+        ],
       }),
     );
+  });
+
+  it.each([
+    { year: 2015, bagrut: 115, score: 702, decision: 'eligible_to_apply' },
+    { year: 2020, bagrut: undefined, score: 699, decision: 'pending' },
+  ])(
+    'uses the Haifa average and actual year $year, preserving $decision',
+    async ({ year, bagrut, score, decision }) => {
+      const fetcher = vi.fn<typeof fetch>().mockImplementation(async (url) => {
+        if (!String(url).includes('calculateChances'))
+          return new Response(JSON.stringify({ return: { type: 'S' } }));
+        const params = new URL(String(url)).searchParams;
+        const captured = haifaOfficial.yearBoundaryCases.find(
+          (record) => record.request.bag_year === params.get('bag_year'),
+        );
+        return new Response(JSON.stringify(captured?.response));
+      });
+      const report = await evaluateAdmissionsForProgram({
+        input: {
+          degreeId: 'haifa_cs',
+          psychometric: 693,
+          bagrut,
+          extraInputs: {
+            psychometricMath: 140,
+            psychometricVerbal: 130,
+            psychometricEnglish: 130,
+            haifaBagrutAverage: 102,
+            haifaBagrutYear: year,
+            haifaPsychometricYear: 2026,
+            haifaAdmissionQualification: 'full_bagrut',
+            haifaHebrewQualification: 'hebrew_school',
+            mathUnits: 5,
+            mathGrade: 75,
+          },
+        },
+        program: haifaCs,
+        institutions,
+        fetcher,
+      });
+      const params = new URL(String(fetcher.mock.calls[1][0])).searchParams;
+      expect(params.get('bag_avg')).toBe('102');
+      expect(params.get('bag_year')).toBe(String(year));
+      expect(params.get('psy_year')).toBe('2026');
+      expect(Object.fromEntries(params)).toEqual(
+        haifaOfficial.yearBoundaryCases.find((record) => record.request.bag_year === String(year))
+          ?.request,
+      );
+      expect(report.results[0]).toMatchObject({ score, decision });
+    },
+  );
+
+  it('requests missing Haifa years without contacting the official service', async () => {
+    const fetcher = vi.fn<typeof fetch>();
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'haifa_cs',
+        psychometric: 693,
+        extraInputs: {
+          haifaBagrutAverage: 102,
+          psychometricMath: 140,
+          psychometricVerbal: 130,
+          psychometricEnglish: 130,
+        },
+      },
+      program: haifaCs,
+      institutions,
+      fetcher,
+    });
+    expect(fetcher).not.toHaveBeenCalled();
+    expect(report.results[0]).toMatchObject({
+      kind: 'needs_input',
+      requiredInputs: ['haifa_bagrut_year', 'haifa_psychometric_year'],
+    });
   });
 
   it('asks for a Technion subject record before pair-level score and verdict replay', async () => {

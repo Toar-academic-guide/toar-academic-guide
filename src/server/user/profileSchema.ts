@@ -1,6 +1,7 @@
 import { bguHealthInputsShape } from '@/lib/bguHealthInputs';
 import { bguQuantitativeInputShape } from '@/lib/bguQuantitativeInputs';
 import { bguPsychologyInputsShape } from '@/lib/bguPsychologyInputs';
+import { haifaAdmissionsInputsShape } from '@/lib/haifaAdmissionsInputs';
 import { bguSocialScienceInputsShape } from '@/lib/bguSocialScienceInputs';
 import { z } from 'zod';
 import { MAX_BAGRUT_SUBJECTS } from '@/lib/bagrutSubjectLimits';
@@ -68,6 +69,7 @@ const bagrutRecordSchema = z.strictObject({
 });
 
 const admissionsInputsSchema = z.strictObject({
+  ...haifaAdmissionsInputsShape,
   bguEngineering: bguEngineeringSchema.optional(),
   technionArchitectureBagrutAverage: z.number().min(0).max(119).optional(),
   technionArchitectureExamScore: z.number().min(0).max(140).optional(),

@@ -152,6 +152,27 @@ describe('userProfileSchema', () => {
     });
   });
 
+  it('preserves Haifa official average and real certificate and exam years', () => {
+    const admissions = {
+      haifaBagrutAverage: 102.25,
+      haifaBagrutYear: 2015,
+      haifaPsychometricYear: 2026,
+      haifaAdmissionQualification: 'full_bagrut',
+      haifaEnglishLevel: 'advanced_a',
+      haifaHebrewQualification: 'exam',
+      haifaHebrewScore: 120,
+      haifaHebrewExamDate: '2026-04-01',
+      haifaPsychometricMonth: 4,
+      haifaScienceUnits: 8,
+      haifaOtFailedSelectionAttempts: 0,
+      haifaOtUnjustifiedAbsence: false,
+    };
+    expect(
+      userProfileSchema.parse({ geographicPreference: 'any', academicScores: { admissions } })
+        .academicScores?.admissions,
+    ).toEqual(admissions);
+  });
+
   it('accepts optional institution-specific admissions inputs, including false and zero', () => {
     const parsed = userProfileSchema.parse({
       geographicPreference: 'any',

@@ -25,7 +25,7 @@ const HUJI_CAPTURED_AT = '2026-07-31T11:03:00.000Z';
 const HUJI_OFFICIAL_URL = 'https://go.huji.ac.il/jjson/huji.json.gz';
 const BGU_CAPTURED_AT = '2026-07-31T11:10:00.000Z';
 const BGU_OFFICIAL_URL = 'https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem';
-const HAIFA_CAPTURED_AT = '2026-07-31T11:17:00.000Z';
+const HAIFA_CAPTURED_AT = '2026-09-28T06:45:06.973290+00:00';
 const HAIFA_OFFICIAL_URL = 'https://applicants.haifa.ac.il/enrollmentChances/CandChancesServlet';
 const TAU_CAPTURED_AT = '2026-07-31T10:11:16.543Z';
 const TAU_OFFICIAL_URL = 'https://go.tau.ac.il/graphql';
@@ -128,7 +128,7 @@ const BGU_ELIGIBLE_TO_APPLY_PROGRAM_IDS = [
   'physiotherapy',
 ] as const;
 
-const HAIFA_SCORE_848_PROGRAM_IDS = [
+const HAIFA_SCORE_806_PROGRAM_IDS = [
   'accounting',
   'haifa_accounting',
   'biology',
@@ -142,7 +142,7 @@ const HAIFA_SCORE_848_PROGRAM_IDS = [
   'haifa_statistics',
 ] as const;
 
-const HAIFA_SCORE_881_PROGRAM_IDS = [
+const HAIFA_SCORE_818_PROGRAM_IDS = [
   'communication',
   'haifa_communication',
   'nursing',
@@ -250,17 +250,17 @@ export const OFFICIAL_PROGRAM_PROOF_CAPTURES_BY_TARGET_ID: Record<
     `bgu-${programId}-live`,
     capturedBguFixtures(`bgu-${programId}-live`, 'eligible_to_apply'),
   ]),
-  ...HAIFA_SCORE_848_PROGRAM_IDS.map((programId) => [
+  ...HAIFA_SCORE_806_PROGRAM_IDS.map((programId) => [
     `haifa-${programId}-live`,
-    capturedHaifaFixtures(`haifa-${programId}-live`, 848, 493),
+    capturedHaifaFixtures(`haifa-${programId}-live`, 806, 493),
   ]),
-  ...HAIFA_SCORE_881_PROGRAM_IDS.map((programId) => [
+  ...HAIFA_SCORE_818_PROGRAM_IDS.map((programId) => [
     `haifa-${programId}-live`,
-    capturedHaifaFixtures(`haifa-${programId}-live`, 881, 493),
+    capturedHaifaFixtures(`haifa-${programId}-live`, 818, 493),
   ]),
   ...HAIFA_LAW_PROGRAM_IDS.map((programId) => [
     `haifa-${programId}-live`,
-    capturedHaifaFixtures(`haifa-${programId}-live`, 881, 492),
+    capturedHaifaFixtures(`haifa-${programId}-live`, 821, 492),
   ]),
 ]);
 
@@ -320,24 +320,48 @@ function capturedHaifaFixtures(
 ): OfficialProgramProofCapture[] {
   return [
     {
-      captureId: `${targetId}:official-eligible:2026-07-31`,
+      captureId: `${targetId}:official-eligible:2026-09-28`,
       capturedAt: HAIFA_CAPTURED_AT,
       officialUrl: HAIFA_OFFICIAL_URL,
       applicant: {
         bagrutAverage: 120,
+        bagrutYear: '2026',
+        psychometricYear: '2026',
         psychometric: 800,
-        psychometricSubscores: { english: 160, math: 160, verbal: 160 },
+        psychometricSubscores: { english: 150, math: 150, verbal: 150 },
+        extraInputs: {
+          haifaAdmissionQualification: 'full_bagrut',
+          haifaHebrewQualification: 'hebrew_school',
+          haifaPsychometricMonth: 4,
+          mathUnits: 5,
+          mathGrade: 100,
+          haifaScienceUnits: 8,
+          haifaOtFailedSelectionAttempts: 0,
+          haifaOtUnjustifiedAbsence: false,
+        },
       },
-      expected: { score: acceptedScore, verdict: 'accepted' },
+      expected: { score: acceptedScore, verdict: 'eligible_to_apply' },
     },
     {
-      captureId: `${targetId}:official-below:2026-07-31`,
+      captureId: `${targetId}:official-below:2026-09-28`,
       capturedAt: HAIFA_CAPTURED_AT,
       officialUrl: HAIFA_OFFICIAL_URL,
       applicant: {
         bagrutAverage: 80,
+        bagrutYear: '2026',
+        psychometricYear: '2026',
         psychometric: 500,
         psychometricSubscores: { english: 100, math: 100, verbal: 100 },
+        extraInputs: {
+          haifaAdmissionQualification: 'full_bagrut',
+          haifaHebrewQualification: 'hebrew_school',
+          haifaPsychometricMonth: 4,
+          mathUnits: 5,
+          mathGrade: 100,
+          haifaScienceUnits: 8,
+          haifaOtFailedSelectionAttempts: 0,
+          haifaOtUnjustifiedAbsence: false,
+        },
       },
       expected: { score: belowScore, verdict: 'below' },
     },

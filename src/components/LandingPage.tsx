@@ -380,7 +380,7 @@ export default function LandingPage({
                   className="mb-1 block text-sm font-semibold text-slate-700"
                 >
                   ממוצע בגרות
-                  {allowsNoGenericBagrut(selectedDegreeId) ? ' (רשות לאפיקי בן־גוריון)' : ''}
+                  {allowsNoGenericBagrut(selectedDegreeId) ? ' (רשות — לפי נתוני הפרופיל)' : ''}
                 </label>
                 <input
                   id="calc-bagrut"
