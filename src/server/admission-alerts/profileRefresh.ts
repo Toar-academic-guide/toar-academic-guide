@@ -24,6 +24,8 @@ export function shouldRefreshAdmissionAlerts(
     BGU_QUANTITATIVE_PROFILE_KEYS.some(
       (key) => previous.admissionsInputs?.[key] !== next.admissionsInputs?.[key],
     ) ||
+    JSON.stringify(previous.admissionsInputs?.bguEngineering) !==
+      JSON.stringify(next.admissionsInputs?.bguEngineering) ||
     previous.psychometricOverall !== next.psychometricOverall ||
     previous.psychometricQuantitative !== next.psychometricQuantitative ||
     previous.psychometricVerbal !== next.psychometricVerbal ||

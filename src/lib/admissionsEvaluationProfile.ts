@@ -23,6 +23,7 @@ export function admissionsExtraInputsFromAcademicScores(
     ...Object.fromEntries(
       BGU_QUANTITATIVE_PROFILE_KEYS.map((key) => [key, academicScores?.admissions?.[key]]),
     ),
+    bguEngineering: academicScores?.admissions?.bguEngineering,
     technionArchitectureBagrutAverage:
       academicScores?.admissions?.technionArchitectureBagrutAverage,
     technionArchitectureExamScore: academicScores?.admissions?.technionArchitectureExamScore,

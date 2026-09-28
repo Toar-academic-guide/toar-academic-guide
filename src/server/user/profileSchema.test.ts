@@ -143,6 +143,32 @@ describe('userProfileSchema', () => {
     });
   });
 
+  it('preserves structured engineering inputs across profile parsing', () => {
+    const bguEngineering = {
+      detailsConfirmed: true,
+      route: 'direct',
+      physicsCoursePassed: false,
+      preparatoryInstitution: 'bgu',
+      preparatoryCompletionYear: 2026,
+      preparatoryMathUnits: 5,
+      preparatoryMathGrade: 95,
+      preparatoryPhysicsUnits: 5,
+      preparatoryPhysicsGrade: 90,
+      industrialPreparatoryAverage: 91.25,
+      diplomaRecognized: false,
+      diplomaMathHours: 90,
+      diplomaMathGrade: 95,
+      diplomaPhysicsHours: 90,
+      diplomaPhysicsGrade: 80,
+    };
+    expect(
+      userProfileSchema.parse({
+        geographicPreference: 'any',
+        academicScores: { admissions: { bguEngineering } },
+      }).academicScores?.admissions?.bguEngineering,
+    ).toEqual(bguEngineering);
+  });
+
   it('rejects invalid ranges and types for institution-specific admissions inputs', () => {
     for (const admissions of [
       { tauBagrutAverage: 49 },
@@ -158,6 +184,9 @@ describe('userProfileSchema', () => {
       { technionArchitectureExamPassed: 'yes' },
       { technionArchitectureRequirementsConfirmed: 1 },
       { tauMathPlacementScore: false },
+      { bguEngineering: { detailsConfirmed: true, preparatoryMathUnits: 3 } },
+      { bguEngineering: { detailsConfirmed: true, diplomaMathHours: 89.5 } },
+      { bguEngineering: { detailsConfirmed: true, diplomaRecognized: 'yes' } },
     ]) {
       expect(() =>
         userProfileSchema.parse({

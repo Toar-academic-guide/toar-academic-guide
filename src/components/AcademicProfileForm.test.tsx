@@ -27,6 +27,11 @@ vi.mock('@/components/BagrutCalculatorWizard', () => ({
 describe('AcademicProfileForm', () => {
   it('shares preparatory facts across BGU sections and saves the latest edit or clearing', async () => {
     const onComplete = vi.fn();
+    const bguEngineering = {
+      detailsConfirmed: false,
+      industrialPreparatoryAverage: 91.25,
+      physicsCoursePassed: false,
+    };
     const props = {
       onComplete,
       onSkip: vi.fn(),
@@ -37,6 +42,7 @@ describe('AcademicProfileForm', () => {
         {...props}
         initialScores={{
           admissions: {
+            bguEngineering,
             bguPsychologyRoute: 'bagrut',
             bguPsychologyRequirementsConfirmed: false,
             bguQuantitativeRoute: 'bagrut',
@@ -74,6 +80,7 @@ describe('AcademicProfileForm', () => {
     await waitFor(() => expect(onComplete).toHaveBeenCalledTimes(1));
     const saved = onComplete.mock.calls[0][0];
     expect(saved.admissions).toEqual({
+      bguEngineering,
       bguPsychologyRoute: 'bagrut',
       bguPsychologyRequirementsConfirmed: false,
       bguQuantitativeRoute: 'bagrut',
@@ -91,6 +98,7 @@ describe('AcademicProfileForm', () => {
     await waitFor(() => expect(onComplete).toHaveBeenCalledTimes(2));
     expect(onComplete.mock.calls[1][0].admissions).not.toHaveProperty('bguPreparatoryAverage');
     expect(onComplete.mock.calls[1][0].admissions.bguPreparatoryCompleted).toBe(false);
+    expect(onComplete.mock.calls[1][0].admissions.bguEngineering).toEqual(bguEngineering);
   });
   it('saves and reopens recognized preparatory route details without generic scores', async () => {
     const onComplete = vi.fn();
@@ -310,7 +318,7 @@ describe('AcademicProfileForm', () => {
       screen.getByRole('link', { name: 'מחשבון ממוצע בגרות של אוניברסיטת תל אביב' }),
     ).toHaveProperty('href', 'https://www.ims.tau.ac.il/md/ut/bagrut.aspx');
 
-    fireEvent.change(screen.getByLabelText('ממוצע בגרות רשמי של בן־גוריון (50–130)'), {
+    fireEvent.change(screen.getByLabelText('ממוצע בגרות או הנדסאי מוכר של בן־גוריון (50–130)'), {
       target: { value: '108.25' },
     });
     fireEvent.change(screen.getByLabelText('אישור דרישות שפה בבן־גוריון'), {
@@ -326,6 +334,64 @@ describe('AcademicProfileForm', () => {
           tauApplicationRequirementsConfirmed: false,
           bguLanguageRequirementsConfirmed: false,
           tauMathPlacementScore: 0,
+        },
+      }),
+    );
+  });
+
+  it('restores, edits and saves engineering qualification fields without losing false confirmations', async () => {
+    const onComplete = vi.fn();
+    const bguEngineering = {
+      detailsConfirmed: true,
+      route: 'engineering_score' as const,
+      physicsCoursePassed: false,
+      preparatoryInstitution: 'bgu' as const,
+      preparatoryCompletionYear: 2026,
+      preparatoryMathUnits: 5 as const,
+      preparatoryMathGrade: 95,
+      preparatoryPhysicsUnits: 5 as const,
+      preparatoryPhysicsGrade: 90,
+      industrialPreparatoryAverage: 91.25,
+      diplomaRecognized: true,
+      diplomaMathHours: 90,
+      diplomaMathGrade: 95,
+      diplomaPhysicsHours: 90,
+      diplomaPhysicsGrade: 80,
+    };
+    render(
+      <AcademicProfileForm
+        onComplete={onComplete}
+        onClearLocalProfileData={vi.fn().mockResolvedValue(undefined)}
+        onSkip={vi.fn()}
+        initialScores={{ admissions: { bguEngineering } }}
+      />,
+    );
+    expect(screen.getByLabelText('השלמת קורס פיזיקה מוכר בבן־גוריון')).toHaveProperty(
+      'value',
+      'false',
+    );
+    expect(screen.getByLabelText('כל נתוני ההנדסה הרלוונטיים הוזנו')).toHaveProperty(
+      'checked',
+      true,
+    );
+    fireEvent.change(screen.getByLabelText('ציון מתמטיקה במכינה'), { target: { value: '96' } });
+    fireEvent.change(screen.getByLabelText('תעודת הנדסאי מוסמך מוכרת בבן־גוריון'), {
+      target: { value: 'false' },
+    });
+    fireEvent.change(screen.getByLabelText('השלמת קורס פיזיקה מוכר בבן־גוריון'), {
+      target: { value: '' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    const { physicsCoursePassed: omitted, ...remaining } = bguEngineering;
+    void omitted;
+    await waitFor(() =>
+      expect(onComplete).toHaveBeenCalledWith({
+        admissions: {
+          bguEngineering: {
+            ...remaining,
+            preparatoryMathGrade: 96,
+            diplomaRecognized: false,
+          },
         },
       }),
     );

@@ -11,6 +11,7 @@ import type { BguQuantitativeInputs } from '@/lib/bguQuantitativeInputs';
 import BguPsychologyFields, { type PsychologyFormValues } from './BguPsychologyFields';
 import { BGU_PSYCHOLOGY_PROFILE_KEYS, bguPsychologyInputsSchema } from '@/lib/bguPsychologyInputs';
 import BagrutCalculatorWizard from './BagrutCalculatorWizard';
+import { BguEngineeringFields } from './BguEngineeringFields';
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 const fadeUp = (delay: number) => ({
@@ -78,6 +79,7 @@ export default function AcademicProfileForm({
   const [bguBagrutAverage, setBguBagrutAverage] = useState(
     initialScores?.admissions?.bguBagrutAverage?.toString() ?? '',
   );
+  const [bguEngineering, setBguEngineering] = useState(initialScores?.admissions?.bguEngineering);
   const [tauApplicationRequirements, setTauApplicationRequirements] = useState(
     initialScores?.admissions?.tauApplicationRequirementsConfirmed?.toString() ?? '',
   );
@@ -225,6 +227,7 @@ export default function AcademicProfileForm({
     const admissions: NonNullable<AcademicScores['admissions']> = Object.fromEntries(
       Object.entries(bguQuantitative).filter(([, value]) => value !== undefined),
     );
+    if (bguEngineering !== undefined) admissions.bguEngineering = bguEngineering;
     if (
       bguQuantitative.bguPreparatoryAverage !== undefined &&
       (!Number.isFinite(bguQuantitative.bguPreparatoryAverage) ||
@@ -740,7 +743,7 @@ export default function AcademicProfileForm({
               </div>
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="bgu-bagrut-average" className="text-xs font-medium text-slate-600">
-                  ממוצע בגרות רשמי של בן־גוריון (50–130)
+                  ממוצע בגרות או הנדסאי מוכר של בן־גוריון (50–130)
                 </label>
                 <input
                   id="bgu-bagrut-average"
@@ -790,6 +793,12 @@ export default function AcademicProfileForm({
                 value={bguQuantitative}
                 onChange={setBguQuantitative}
                 disabled={isSaving}
+              />
+              <BguEngineeringFields
+                value={bguEngineering}
+                onChange={setBguEngineering}
+                disabled={isSaving}
+                inputClassName={inputBase}
               />
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="tau-math-placement" className="text-xs font-medium text-slate-600">

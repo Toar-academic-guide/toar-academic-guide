@@ -26,12 +26,17 @@ export function allowsNoPsychometric(programId: string): boolean {
       'economics',
       'bgu_economics',
       'bgu_business',
+      'bgu_industrial',
     ].includes(programId)
   );
 }
 
 export function allowsNoGenericBagrut(programId: string): boolean {
-  return isBguQuantitativeRouteProgram(programId) || isBguPsychologyProgram(programId);
+  return (
+    isBguQuantitativeRouteProgram(programId) ||
+    isBguPsychologyProgram(programId) ||
+    ['ee', 'bgu_ee', 'me', 'bgu_me', 'bgu_industrial'].includes(programId)
+  );
 }
 
 export const BGU_QUANTITATIVE_PROFILE_KEYS = [

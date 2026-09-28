@@ -1,5 +1,6 @@
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
+import { bguEngineeringSchema } from '@/lib/bguEngineeringSchema';
 
 import type {
   AdmissionsEvaluationCapability,
@@ -12,6 +13,8 @@ const fingerprintSchema = z.string().regex(/^sha256:[a-f0-9]{64}$/);
 const admissionCycleSchema = z.string().regex(/^\d{4}-\d{4}$/);
 const timestampSchema = z.string().datetime({ offset: true });
 const requiredInputSchema = z.enum([
+  'bgu_engineering_details',
+  'bgu_engineering_physics_course',
   'psychometric_overall',
   'bagrut_average',
   'tau_management_requirements',
@@ -70,6 +73,7 @@ const fixtureInputSchema = z
     psychometric: z.number().finite(),
     bagrut: z.number().finite(),
     bagrutSubjectRecord: fixtureBagrutSubjectRecordSchema.optional(),
+    bguEngineering: bguEngineeringSchema.optional(),
   })
   .catchall(fixtureInputValueSchema);
 

@@ -25,7 +25,7 @@ export interface BguComputerScienceRuleSnapshot {
   mapping: {
     department: 232;
     path: 1;
-    specialization: 3;
+    specialization: 3 | 13;
     label: 'סכם כמותי';
     year: 2027;
     semester: 1;
@@ -66,6 +66,7 @@ function numericValue(value: unknown): number | undefined {
 
 export function normalizeBguComputerScienceRule(
   value: unknown,
+  specialization: 3 | 13 = 3,
 ): BguComputerScienceRuleSnapshot | null {
   const payload = value && typeof value === 'object' ? (value as Record<string, unknown>) : null;
   const items = payload?.items;
@@ -83,7 +84,7 @@ export function normalizeBguComputerScienceRule(
   if (
     numericValue(rule.department) !== 232 ||
     numericValue(rule.path) !== 1 ||
-    numericValue(rule.specialization) !== 3 ||
+    numericValue(rule.specialization) !== specialization ||
     label !== 'סכם כמותי' ||
     acceptanceThreshold === undefined ||
     minimumPsychometric === undefined ||
@@ -97,7 +98,7 @@ export function normalizeBguComputerScienceRule(
     mapping: {
       department: 232,
       path: 1,
-      specialization: 3,
+      specialization,
       label,
       year: 2027,
       semester: 1,
