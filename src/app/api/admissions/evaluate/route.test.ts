@@ -27,6 +27,38 @@ vi.mock('server-only', () => ({}));
 import { POST } from './route';
 
 describe('admissions evaluate route', () => {
+  it('accepts Haifa years and decimal official average without an unused generic Bagrut', async () => {
+    hoistedMocks.listCataloguePrograms.mockResolvedValue({
+      data: [{ id: 'haifa_cs', name: 'CS', linkedInstitutionIds: ['haifa'] }],
+    });
+    const extraInputs = {
+      haifaBagrutAverage: 102.25,
+      haifaBagrutYear: 2015,
+      haifaPsychometricYear: 2026,
+      haifaAdmissionQualification: 'full_bagrut',
+      haifaEnglishLevel: 'advanced_a',
+      haifaHebrewQualification: 'exam',
+      haifaHebrewScore: 120,
+      haifaHebrewExamDate: '2026-04-01',
+      haifaPsychometricMonth: 4,
+      haifaScienceUnits: 8,
+      haifaOtFailedSelectionAttempts: 0,
+      haifaOtUnjustifiedAbsence: false,
+    };
+    const response = await POST(
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ degreeId: 'haifa_cs', psychometric: 680, extraInputs }),
+      }),
+    );
+    expect(response.status).toBe(200);
+    expect(hoistedMocks.evaluateAdmissionsForProgram.mock.calls[0][0].input).toEqual({
+      degreeId: 'haifa_cs',
+      psychometric: 680,
+      extraInputs,
+    });
+  });
   beforeEach(() => {
     vi.restoreAllMocks();
     resetAdmissionsEvaluationRateLimitForTests();
@@ -99,6 +131,107 @@ describe('admissions evaluate route', () => {
       expect.objectContaining({ input }),
     );
   });
+  it('forwards degree-only health inputs without dummy generic scores', async () => {
+    hoistedMocks.listCataloguePrograms.mockResolvedValue({
+      data: [{ id: 'occupational_therapy', name: 'ריפוי בעיסוק', linkedInstitutionIds: ['bgu'] }],
+    });
+    const input = {
+      degreeId: 'occupational_therapy',
+      extraInputs: {
+        bguOccupationalTherapyRoute: 'academic',
+        bguOccupationalTherapyRequirementsConfirmed: false,
+        bguBachelorsDegreeCompleted: true,
+        bguBachelorsDegreeAverage: 85.25,
+        bguPhysiotherapyRequirementsConfirmed: false,
+      },
+    };
+    const response = await POST(
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      }),
+    );
+    expect(response.status).toBe(200);
+    expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenCalledWith(
+      expect.objectContaining({ input }),
+    );
+  });
+  it('accepts preparatory-only BGU input and preserves false and decimals without invented generic scores', async () => {
+    hoistedMocks.listCataloguePrograms.mockResolvedValue({
+      data: [{ id: 'bgu_economics', name: 'כלכלה', linkedInstitutionIds: ['bgu'] }],
+    });
+    const input = {
+      degreeId: 'bgu_economics',
+      extraInputs: {
+        bguQuantitativeRoute: 'bagrut',
+        bguPreparatoryTrack: 'natural_life_sciences',
+        bguPreparatoryAverage: 87.25,
+        bguPreparatoryCompleted: true,
+        bguPriorAcademicStudies: false,
+        bguReturningOrChangingTrack: false,
+        bguCertificateRequirementsConfirmed: true,
+        bguSecondTrackRequirementsConfirmed: true,
+      },
+    };
+    const response = await POST(
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        body: JSON.stringify(input),
+      }),
+    );
+    expect(response.status).toBe(200);
+    expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenCalledWith(
+      expect.objectContaining({ input }),
+    );
+  });
+  it('still requires a generic Bagrut average for unsupported omission routes', async () => {
+    const response = await POST(
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        body: JSON.stringify({ degreeId: 'tau_datascience', psychometric: 700 }),
+      }),
+    );
+    expect(response.status).toBe(400);
+    expect(hoistedMocks.evaluateAdmissionsForProgram).not.toHaveBeenCalled();
+  });
+  it.each(['ee', 'bgu_ee', 'me', 'bgu_me', 'bgu_industrial'])(
+    'accepts preparatory-only engineering inputs for %s without a generic Bagrut average',
+    async (degreeId) => {
+      hoistedMocks.listCataloguePrograms.mockResolvedValue({
+        data: [{ id: degreeId, name: 'הנדסה', linkedInstitutionIds: ['bgu'] }],
+      });
+      const input = {
+        degreeId,
+        psychometric: 700,
+        extraInputs: {
+          psychometricMath: 140,
+          bguLanguageRequirementsConfirmed: true,
+          bguEngineering: {
+            detailsConfirmed: true,
+            preparatoryInstitution: 'bgu',
+            preparatoryCompletionYear: 2026,
+            preparatoryMathUnits: 5,
+            preparatoryMathGrade: 90,
+            preparatoryPhysicsUnits: 5,
+            preparatoryPhysicsGrade: 90,
+          },
+        },
+      };
+      const response = await POST(
+        new Request('http://localhost/api/admissions/evaluate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(input),
+        }),
+      );
+      expect(response.status).toBe(200);
+      expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenCalledWith(
+        expect.objectContaining({ input }),
+      );
+    },
+  );
+
   it('allows Psychology prep-only requests without inventing generic scores', async () => {
     hoistedMocks.listCataloguePrograms.mockResolvedValue({
       data: [{ id: 'bgu_psychology', name: 'פסיכולוגיה', linkedInstitutionIds: ['bgu'] }],
@@ -126,6 +259,39 @@ describe('admissions evaluate route', () => {
       expect.objectContaining({ input }),
     );
   });
+
+  it.each(['social_work', 'bgu_socialwork', 'communication', 'education', 'political_science'])(
+    'allows %s alternate inputs without dummy scores',
+    async (degreeId) => {
+      hoistedMocks.listCataloguePrograms.mockResolvedValue({
+        data: [{ id: degreeId, name: degreeId, linkedInstitutionIds: ['bgu'] }],
+      });
+      const input = {
+        degreeId,
+        extraInputs: {
+          bguSocialScienceRoute: 'bagrut',
+          bguPreparatoryTrack: 'natural_life_sciences',
+          bguPreparatoryAverage: 90.25,
+          bguPreparatoryCompleted: false,
+          bguSocialScienceRequirementsConfirmed: false,
+          bguSocialScienceLanguageConfirmed: true,
+          bguReturningFromStudyBreak: false,
+          bguSocialWorkAcademicBackground: 'none',
+        },
+      };
+      const response = await POST(
+        new Request('http://localhost/api/admissions/evaluate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(input),
+        }),
+      );
+      expect(response.status).toBe(200);
+      expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenCalledWith(
+        expect.objectContaining({ input }),
+      );
+    },
+  );
 
   it('returns the admissions evaluation report for a valid request', async () => {
     const response = await POST(
@@ -268,6 +434,35 @@ describe('admissions evaluate route', () => {
     expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenCalledWith(
       expect.objectContaining({ input: expect.objectContaining({ extraInputs }) }),
     );
+  });
+
+  it('passes structured engineering data and an absent psychometric score for Industrial direct evaluation', async () => {
+    hoistedMocks.listCataloguePrograms.mockResolvedValue({
+      data: [{ id: 'bgu_industrial', name: 'הנדסת תעשייה וניהול', linkedInstitutionIds: ['bgu'] }],
+    });
+    const extraInputs = {
+      bguBagrutAverage: 109,
+      bguLanguageRequirementsConfirmed: true,
+      bguEngineering: {
+        detailsConfirmed: true,
+        route: 'direct',
+        physicsCoursePassed: false,
+        preparatoryInstitution: 'bgu',
+        preparatoryCompletionYear: 2026,
+        industrialPreparatoryAverage: 91.25,
+      },
+    };
+    const response = await POST(
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ degreeId: 'bgu_industrial', bagrut: 100, extraInputs }),
+      }),
+    );
+    expect(response.status).toBe(200);
+    const input = hoistedMocks.evaluateAdmissionsForProgram.mock.calls[0][0].input;
+    expect(input.psychometric).toBeUndefined();
+    expect(input.extraInputs).toEqual(extraInputs);
   });
 
   it('supports an actual missing psychometric score only for the implemented Management route', async () => {

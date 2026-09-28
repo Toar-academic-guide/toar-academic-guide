@@ -1,0 +1,134 @@
+[
+  {
+    "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=361&p_pat1=1&p_degree_level=1",
+    "status": 200,
+    "checkedAt": "2026-09-27T15:18:30.101Z",
+    "payload": {
+      "items": [
+        {
+          "department_dsc": "הנדסת חשמל ומחשבים",
+          "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/engn/Electrical_Computer_Engineering_degree_1.aspx",
+          "path_dsc": "הנדסת חשמל ומחשבים חד מחלקתי",
+          "psycho_sekem": 547,
+          "psycho_and_or": " ובנוסף  ",
+          "psycho_value": 600,
+          "psycho_info": "4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ה'",
+          "bagrut_average": null,
+          "bagrut_info": "רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ה'",
+          "bagrut_additional": null,
+          "comments": "החל מיום רביעי ה 20.5.26 נעצור קבלות בהנדסת חשמל. מכסת המתקבלים למסלול זה מלאה בשלב זה, אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם. במידה שיתפנו מקומות נקבל מועמדים נוספים מרשימות המתנה.\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<br>\n<p>עד לחודש יולי בכל שנה ניתן להתקבל ללא בגרות בפיזיקה ועמידה בכל תנאי הקבלה, עם דרישה להשלמת קורס  \"מבוא לפיזיקה מכניקה\" בסמסטר קיץ במרכז ללימודיים קדם אקדמיים.  החל מחודש יולי בכל שנה יתקבלו רק מועמדים שהשלימו 5 יח' פיזיקה בציון עובר או קורס מקביל <b> </a> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/welcome/kdam/programs/refresh_programs/?tab=17379\">מאושר</a> </b> ע\"י המרכז ללימודים קדם אקדמיים  בנוסף לכל דרישות הקבלה\n\n<br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר בעלי סכם הנדסה ו/או פסיכומטרי הנמוך עד 10 נק' מהנדרש ייבחנו בועדת הקבלה של המחלקה על בסיס מכלול נתוניהם.דיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה. אין צורך לשלוח מכתב\n\n<br>\nתאריך אחרון להרשמה ולשינויי עדיפויות לעתודאים: 31.7.2026.",
+          "reg_status": "פתוחה ",
+          "sekem_label": "סכם הנדסה  ",
+          "department": 361,
+          "path": 1,
+          "specialization": null,
+          "show_simulator": 0,
+          "path_description": "חד מחלקתי",
+          "spec_description": null
+        }
+      ],
+      "hasMore": false,
+      "limit": 0,
+      "offset": 0,
+      "count": 1,
+      "links": [
+        {
+          "rel": "self",
+          "href": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=361&p_pat1=1&p_degree_level=1"
+        },
+        {
+          "rel": "describedby",
+          "href": "https://bgu4u22.bgu.ac.il/apex/10g/metadata-catalog/candidate_site/GetRdpData/"
+        }
+      ]
+    }
+  },
+  {
+    "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=362&p_pat1=1&p_degree_level=1",
+    "status": 200,
+    "checkedAt": "2026-09-27T15:18:30.442Z",
+    "payload": {
+      "items": [
+        {
+          "department_dsc": "הנדסת מכונות",
+          "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/engn/Mechanical_Engineering_degree_1.aspx",
+          "path_dsc": "הנדסת מכונות חד מחלקתי",
+          "psycho_sekem": 520,
+          "psycho_and_or": " ובנוסף  ",
+          "psycho_value": 550,
+          "psycho_info": "4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ה'",
+          "bagrut_average": null,
+          "bagrut_info": "רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ה'",
+          "bagrut_additional": null,
+          "comments": " החל ממחר ה-22.4 נעצור קבלות. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם. במידה שיתפנו מקומות נקבל מועמדים נוספים מרשימות המתנה.\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n\n<br>\nהחל מתאריך 9.3.26 סכם ההנדסה יעלה ל520\n<br>\nמתקבלים שלא למדו פיזיקה בהיקף של 5 יח\"ל בציון עובר או קורס מקביל <b> </a> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/welcome/kdam/programs/refresh_programs/?tab=17379\">מאושר</a> </b> ע\"י המרכז ללימודים קדם אקדמיים, חייבים בקורס \"מבוא לפיזיקה- מכניקה\" 500-5-0006 המתקיים בקיץ או בסמסטר א' במסגרת המרכז ללימודים קדם אקדמיים.\n<br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\n<br>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר בעלי סכם הנדסה הנמוך עד 15 נק' מהנדרש ייבחנו בועדת הקבלה של המחלקה על בסיס מכלול נתוניהם.דיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה. אין צורך לשלוח מכתב<br>\nתאריך אחרון להרשמה ולשינויי עדיפויות לעתודאים: 31.7.2026.\n",
+          "reg_status": "פתוחה ",
+          "sekem_label": "סכם הנדסה  ",
+          "department": 362,
+          "path": 1,
+          "specialization": null,
+          "show_simulator": 0,
+          "path_description": "חד מחלקתי",
+          "spec_description": null
+        }
+      ],
+      "hasMore": false,
+      "limit": 0,
+      "offset": 0,
+      "count": 1,
+      "links": [
+        {
+          "rel": "self",
+          "href": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=362&p_pat1=1&p_degree_level=1"
+        },
+        {
+          "rel": "describedby",
+          "href": "https://bgu4u22.bgu.ac.il/apex/10g/metadata-catalog/candidate_site/GetRdpData/"
+        }
+      ]
+    }
+  },
+  {
+    "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=364&p_pat1=1&p_degree_level=1",
+    "status": 200,
+    "checkedAt": "2026-09-27T15:18:30.532Z",
+    "payload": {
+      "items": [
+        {
+          "department_dsc": "הנדסת תעשיה וניהול",
+          "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/engn/Management_Industrial_Engineering_degree_1.aspx",
+          "path_dsc": "הנדסת תעשיה וניהול חד מחלקתי",
+          "psycho_sekem": 505,
+          "psycho_and_or": " ובנוסף  ",
+          "psycho_value": 550,
+          "psycho_info": "4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ה'",
+          "bagrut_average": 109,
+          "bagrut_info": "מתמטיקה=90/5$פיסיקה=90/5$רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ה'",
+          "bagrut_additional": "\n18.3.26 החל דיון בחריגים\n<br>\nממוצע מכינה למדעים מדויקים והנדסה של אוניברסיטת-בן גוריון בנגב יכולה להחליף את ממוצע הבגרות באפיק קבלה זה. ממוצע המכינה הנדרש 91.\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<br>\n<br><b>מדיניות דיון בחריגים:<br></b>\n<br>מועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט הבא:<br>\n ממוצע בגרות נמוך עד 5 נקודות מהממוצע ו עד 5 נקודות במקצועות הבגרות הנדרשים. <br>\nמועמדים העומדים בתנאים אלו ידונו בוועדת הקבלה של המחלקה על בסיס מכלול נתוניהם. <br>\nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה. אין צורך לשלוח מכתב <br>\n",
+          "comments": "\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n\n<br><br>\n.18.3 החל דיון בחריגים.\n<br><br>\nמתקבלים שלא למדו פיזיקה בהיקף של 5 יח\"ל בציון עובר או קורס מקביל <b> </a> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/welcome/kdam/programs/refresh_programs/?tab=17379\">מאושר</a> </b> ע\"י המרכז ללימודים קדם אקדמיים, חייבים בקורס \"מבוא לפיזיקה- מכניקה\" 500-5-0006 המתקיים בקיץ או בסמסטר א' במסגרת המרכז ללימודים קדם אקדמיים.\n<br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר בעלי סכם הנדסה הנמוך עד 10 נק' מהנדרש ייבחנו בועדת הקבלה של המחלקה על בסיס מכלול נתוניהם.דיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה. אין צורך לשלוח מכתב\n\nתאריך אחרון להרשמה ולשינויי עדיפויות לעתודאים: 31.7.2026.\n",
+          "reg_status": "פתוחה ",
+          "sekem_label": "סכם הנדסה  ",
+          "department": 364,
+          "path": 1,
+          "specialization": null,
+          "show_simulator": 0,
+          "path_description": "חד מחלקתי",
+          "spec_description": null
+        }
+      ],
+      "hasMore": false,
+      "limit": 0,
+      "offset": 0,
+      "count": 1,
+      "links": [
+        {
+          "rel": "self",
+          "href": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=364&p_pat1=1&p_degree_level=1"
+        },
+        {
+          "rel": "describedby",
+          "href": "https://bgu4u22.bgu.ac.il/apex/10g/metadata-catalog/candidate_site/GetRdpData/"
+        }
+      ]
+    }
+  }
+]

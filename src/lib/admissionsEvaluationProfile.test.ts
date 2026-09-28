@@ -17,6 +17,60 @@ describe('admissionsExtraInputsFromAcademicScores', () => {
     for (const key of HUJI_MEDICINE_PROFILE_KEYS)
       expect(admissionsInputValue(extra, HUJI_MEDICINE_REQUIRED_INPUTS[key])).toBe(extra?.[key]);
   });
+  it('forwards the saved Haifa average and real years without rounding or substituting them', () => {
+    const admissions = {
+      haifaBagrutAverage: 102.25,
+      haifaBagrutYear: 2015,
+      haifaPsychometricYear: 2026,
+      haifaAdmissionQualification: 'full_bagrut' as const,
+      haifaEnglishLevel: 'advanced_a' as const,
+      haifaHebrewQualification: 'exam' as const,
+      haifaHebrewScore: 120,
+      haifaHebrewExamDate: '2026-04-01',
+      haifaPsychometricMonth: 4,
+      haifaScienceUnits: 8,
+      haifaOtFailedSelectionAttempts: 0,
+      haifaOtUnjustifiedAbsence: false,
+    };
+    const input = admissionsExtraInputsFromAcademicScores({ admissions });
+    expect(input).toMatchObject(admissions);
+    expect(admissionsInputValue(input, 'haifa_bagrut_average')).toBe(102.25);
+    expect(admissionsInputValue(input, 'haifa_bagrut_year')).toBe(2015);
+    expect(admissionsInputValue(input, 'haifa_psychometric_year')).toBe(2026);
+  });
+  it('forwards social science route, false confirmations and academic decimals', () => {
+    const admissions = {
+      bguSocialScienceRoute: 'bagrut' as const,
+      bguSocialScienceRequirementsConfirmed: false,
+      bguSocialScienceLanguageConfirmed: true,
+      bguReturningFromStudyBreak: false,
+      bguSocialWorkAcademicBackground: 'social_work' as const,
+      bguSocialWorkAcademicAverage: 85.25,
+      bguSocialWorkTranscriptProvided: false,
+      bguApplicantAge: 45,
+      bguEducationSecondDepartment: 'art' as const,
+      bguEnglishClassificationMissing: false,
+      bguHebrewRequirementsConfirmed: true,
+      bguEducationEnglishConditionAcknowledged: false,
+    };
+    expect(admissionsExtraInputsFromAcademicScores({ admissions })).toMatchObject(admissions);
+    expect(admissionsInputValue(admissions, 'bgu_social_science_requirements')).toBe(false);
+    expect(admissionsInputValue(admissions, 'bgu_social_work_academic_average')).toBe(85.25);
+  });
+  it('passes saved quantitative-route details to evaluation without losing false or decimal grades', () => {
+    const admissions = {
+      bguQuantitativeRoute: 'bagrut' as const,
+      bguPreparatoryTrack: 'natural_life_sciences' as const,
+      bguPreparatoryCompleted: true,
+      bguPreparatoryAverage: 87.25,
+      bguPriorAcademicStudies: false,
+      bguReturningOrChangingTrack: false,
+      bguCertificateRequirementsConfirmed: true,
+      bguApplicationPriority: 1,
+      bguSecondTrackRequirementsConfirmed: true,
+    };
+    expect(admissionsExtraInputsFromAcademicScores({ admissions })).toMatchObject(admissions);
+  });
   it('maps saved psychometric subscores and Bagrut subjects into the admissions evaluator contract', () => {
     expect(
       admissionsExtraInputsFromAcademicScores({
@@ -102,6 +156,22 @@ describe('admissionsExtraInputsFromAcademicScores', () => {
     });
   });
 
+  it('carries engineering qualification data and preserves false when mapping a saved profile', () => {
+    const bguEngineering = {
+      detailsConfirmed: true,
+      physicsCoursePassed: false,
+      preparatoryInstitution: 'bgu' as const,
+      preparatoryCompletionYear: 2026,
+      preparatoryMathUnits: 5 as const,
+      preparatoryMathGrade: 95,
+      diplomaRecognized: false,
+    };
+    const extra = admissionsExtraInputsFromAcademicScores({ admissions: { bguEngineering } });
+    expect(extra).toEqual({ bguEngineering });
+    expect(admissionsInputValue(extra!, 'bgu_engineering_details')).toEqual(bguEngineering);
+    expect(admissionsInputValue(extra!, 'bgu_engineering_physics_course')).toBe(false);
+  });
+
   it('resolves all institution-specific required inputs to their corresponding values', () => {
     const inputs = {
       tauBagrutAverage: 112.5,
@@ -121,4 +191,18 @@ describe('admissionsExtraInputsFromAcademicScores', () => {
     expect(admissionsInputValue(inputs, 'bgu_language_requirements')).toBe(true);
     expect(admissionsInputValue(inputs, 'tau_math_placement_score')).toBe(0);
   });
+});
+
+it('forwards all health profile inputs while preserving decimals and false', () => {
+  const admissions = {
+    bguOccupationalTherapyRoute: 'academic' as const,
+    bguOccupationalTherapyRequirementsConfirmed: true,
+    bguBachelorsDegreeCompleted: false,
+    bguBachelorsDegreeAverage: 85.25,
+    bguPhysiotherapyRequirementsConfirmed: false,
+    bguOccupationalTherapyExamSession: 'spring_nativ' as const,
+  };
+  expect(admissionsExtraInputsFromAcademicScores({ admissions })).toEqual(admissions);
+  expect(admissionsInputValue(admissions, 'bgu_bachelors_degree_completed')).toBe(false);
+  expect(admissionsInputValue(admissions, 'bgu_bachelors_degree_average')).toBe(85.25);
 });

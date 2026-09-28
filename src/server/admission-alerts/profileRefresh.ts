@@ -1,5 +1,9 @@
 import { HUJI_MEDICINE_PROFILE_KEYS } from '@/lib/hujiMedicineInputs';
+import { BGU_HEALTH_PROFILE_KEYS } from '@/lib/bguHealthInputs';
+import { BGU_QUANTITATIVE_PROFILE_KEYS } from '@/lib/calculatorInputRequirements';
 import { BGU_PSYCHOLOGY_PROFILE_KEYS } from '@/lib/bguPsychologyInputs';
+import { HAIFA_PROFILE_KEYS } from '@/lib/haifaAdmissionsInputs';
+import { BGU_SOCIAL_SCIENCE_PROFILE_KEYS } from '@/lib/bguSocialScienceInputs';
 import type { AdmissionsProfileInputs } from '@/types';
 
 export interface AlertRelevantAcademicProfile {
@@ -21,13 +25,26 @@ export function shouldRefreshAdmissionAlerts(
   }
 
   return (
+    BGU_QUANTITATIVE_PROFILE_KEYS.some(
+      (key) => previous.admissionsInputs?.[key] !== next.admissionsInputs?.[key],
+    ) ||
+    JSON.stringify(previous.admissionsInputs?.bguEngineering) !==
+      JSON.stringify(next.admissionsInputs?.bguEngineering) ||
     previous.psychometricOverall !== next.psychometricOverall ||
     previous.psychometricQuantitative !== next.psychometricQuantitative ||
     previous.psychometricVerbal !== next.psychometricVerbal ||
     previous.psychometricEnglish !== next.psychometricEnglish ||
     previous.bagrutWeightedAverage !== next.bagrutWeightedAverage ||
     previous.bagrutProfileVersionId !== next.bagrutProfileVersionId ||
-    [...BGU_PSYCHOLOGY_PROFILE_KEYS, ...HUJI_MEDICINE_PROFILE_KEYS].some(
+    HAIFA_PROFILE_KEYS.some(
+      (key) => previous.admissionsInputs?.[key] !== next.admissionsInputs?.[key],
+    ) ||
+    [
+      ...BGU_PSYCHOLOGY_PROFILE_KEYS,
+      ...BGU_HEALTH_PROFILE_KEYS,
+      ...HUJI_MEDICINE_PROFILE_KEYS,
+    ].some((key) => previous.admissionsInputs?.[key] !== next.admissionsInputs?.[key]) ||
+    BGU_SOCIAL_SCIENCE_PROFILE_KEYS.some(
       (key) => previous.admissionsInputs?.[key] !== next.admissionsInputs?.[key],
     ) ||
     previous.admissionsInputs?.tauBagrutAverage !== next.admissionsInputs?.tauBagrutAverage ||

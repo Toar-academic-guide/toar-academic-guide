@@ -1,14 +1,18 @@
 import { createHash } from 'node:crypto';
+import { HAIFA_PROGRAM_ALIASES } from '@/lib/haifaAdmissionsInputs';
+import policyEvidence from './haifaProgrammePolicies.json';
+import { getHaifaProgrammePolicy } from '@/server/admissions/haifaProgrammePolicy';
 
 import type {
   AdmissionsProgramVerificationContract,
   AdmissionsVerificationFixture,
+  AdmissionsVerificationGate,
 } from '@/types/admissionsEvaluation';
 import { fingerprintVerificationFixtures } from '@/server/admissions/verification/programVerification';
 
 export const HAIFA_SOURCE_URL =
   'https://applicants.haifa.ac.il/enrollmentChances/CandChancesServlet';
-const CAPTURED_AT = '2026-07-26T00:00:00.000Z';
+const CAPTURED_AT = '2026-09-28T06:45:06.973290+00:00';
 
 interface HaifaProgramConfig {
   programId: string;
@@ -27,7 +31,7 @@ const CONFIGS: HaifaProgramConfig[] = [
     officialProgramId: '52261493',
     acceptance: 680,
     rejection: 659,
-    acceptedScore: 848,
+    acceptedScore: 806,
     belowScore: 493,
   },
   {
@@ -36,7 +40,7 @@ const CONFIGS: HaifaProgramConfig[] = [
     officialProgramId: '52255174',
     acceptance: 640,
     rejection: 619,
-    acceptedScore: 848,
+    acceptedScore: 806,
     belowScore: 493,
   },
   {
@@ -45,7 +49,7 @@ const CONFIGS: HaifaProgramConfig[] = [
     officialProgramId: '52253864',
     acceptance: 550,
     rejection: 499,
-    acceptedScore: 881,
+    acceptedScore: 818,
     belowScore: 493,
   },
   {
@@ -54,7 +58,7 @@ const CONFIGS: HaifaProgramConfig[] = [
     officialProgramId: '52256544',
     acceptance: 700,
     rejection: 679,
-    acceptedScore: 848,
+    acceptedScore: 806,
     belowScore: 493,
   },
   {
@@ -63,7 +67,7 @@ const CONFIGS: HaifaProgramConfig[] = [
     officialProgramId: '52261490',
     acceptance: 660,
     rejection: 639,
-    acceptedScore: 848,
+    acceptedScore: 806,
     belowScore: 493,
   },
   {
@@ -72,7 +76,7 @@ const CONFIGS: HaifaProgramConfig[] = [
     officialProgramId: '52256686',
     acceptance: 680,
     rejection: 649,
-    acceptedScore: 848,
+    acceptedScore: 806,
     belowScore: 493,
   },
   {
@@ -81,7 +85,7 @@ const CONFIGS: HaifaProgramConfig[] = [
     officialProgramId: '52255476',
     acceptance: 680,
     rejection: 629,
-    acceptedScore: 881,
+    acceptedScore: 821,
     belowScore: 492,
   },
   {
@@ -90,7 +94,7 @@ const CONFIGS: HaifaProgramConfig[] = [
     officialProgramId: '52257936',
     acceptance: 610,
     rejection: 579,
-    acceptedScore: 848,
+    acceptedScore: 806,
     belowScore: 493,
   },
   {
@@ -99,7 +103,7 @@ const CONFIGS: HaifaProgramConfig[] = [
     officialProgramId: '52257430',
     acceptance: 580,
     rejection: 569,
-    acceptedScore: 881,
+    acceptedScore: 818,
     belowScore: 493,
   },
   {
@@ -108,7 +112,7 @@ const CONFIGS: HaifaProgramConfig[] = [
     officialProgramId: '52255365',
     acceptance: 610,
     rejection: 594,
-    acceptedScore: 881,
+    acceptedScore: 818,
     belowScore: 493,
   },
   {
@@ -117,7 +121,7 @@ const CONFIGS: HaifaProgramConfig[] = [
     officialProgramId: '52256372',
     acceptance: 680,
     rejection: 639,
-    acceptedScore: 881,
+    acceptedScore: 818,
     belowScore: 493,
   },
   {
@@ -126,7 +130,7 @@ const CONFIGS: HaifaProgramConfig[] = [
     officialProgramId: '52254686',
     acceptance: 580,
     rejection: 519,
-    acceptedScore: 881,
+    acceptedScore: 818,
     belowScore: 493,
   },
   {
@@ -135,7 +139,7 @@ const CONFIGS: HaifaProgramConfig[] = [
     officialProgramId: '52252391',
     acceptance: 650,
     rejection: 629,
-    acceptedScore: 881,
+    acceptedScore: 818,
     belowScore: 493,
   },
   {
@@ -144,7 +148,7 @@ const CONFIGS: HaifaProgramConfig[] = [
     officialProgramId: '52253943',
     acceptance: 615,
     rejection: 579,
-    acceptedScore: 881,
+    acceptedScore: 818,
     belowScore: 493,
   },
   {
@@ -153,7 +157,7 @@ const CONFIGS: HaifaProgramConfig[] = [
     officialProgramId: '52252907',
     acceptance: 540,
     rejection: 539,
-    acceptedScore: 881,
+    acceptedScore: 818,
     belowScore: 493,
   },
   {
@@ -162,29 +166,10 @@ const CONFIGS: HaifaProgramConfig[] = [
     officialProgramId: '52253965',
     acceptance: 630,
     rejection: 599,
-    acceptedScore: 848,
+    acceptedScore: 806,
     belowScore: 493,
   },
 ];
-
-const ALIASES = [
-  ['accounting', 'haifa_accounting'],
-  ['biology', 'haifa_biology'],
-  ['communication', 'haifa_communication'],
-  ['cs', 'haifa_cs'],
-  ['economics', 'haifa_economics'],
-  ['haifa_infosystems'],
-  ['law', 'haifa_law'],
-  ['haifa_math'],
-  ['nursing', 'haifa_nursing'],
-  ['occupational_therapy'],
-  ['physiotherapy', 'haifa_physiotherapy'],
-  ['political_science', 'haifa_politicalscience'],
-  ['psychology', 'haifa_psychology'],
-  ['social_work', 'haifa_socialwork'],
-  ['haifa_sociology'],
-  ['haifa_statistics'],
-] as const;
 
 function configFor(programId: string): HaifaProgramConfig {
   const baseId = (programId.startsWith('haifa_') ? programId.slice(6) : programId)
@@ -196,21 +181,53 @@ function configFor(programId: string): HaifaProgramConfig {
 }
 
 function sourceFingerprint(config: HaifaProgramConfig): string {
-  return `sha256:${createHash('sha256').update(JSON.stringify(config)).digest('hex')}`;
+  return `sha256:${createHash('sha256')
+    .update(
+      JSON.stringify({
+        config,
+        inputPolicy: 'official_average_and_actual_years_v1',
+        gatePolicy: 'published_programme_requirements_v1',
+        programmePolicy: policyEvidence.records.find(
+          (record) => record.programme === config.programId,
+        ),
+        generalRequirements: policyEvidence.generalRequirements,
+        deadlineSource: policyEvidence.deadlineSource,
+        additionalSources: policyEvidence.additionalSourceReceipts,
+      }),
+    )
+    .digest('hex')}`;
 }
 
 function fixturesFor(pairId: string, config: HaifaProgramConfig): AdmissionsVerificationFixture[] {
   const fingerprint = sourceFingerprint(config);
+  const qualifications = {
+    haifaAdmissionQualification: 'full_bagrut',
+    haifaHebrewQualification: 'hebrew_school',
+    haifaPsychometricMonth: 4,
+    mathUnits: 5,
+    mathGrade: 100,
+    haifaScienceUnits: 8,
+    haifaOtFailedSelectionAttempts: 0,
+    haifaOtUnjustifiedAbsence: false,
+  };
   const acceptedInput = {
+    ...qualifications,
     psychometric: 800,
     bagrut: 120,
-    psychometricMath: 160,
-    psychometricVerbal: 160,
-    psychometricEnglish: 160,
+    haifaBagrutAverage: 120,
+    haifaBagrutYear: 2026,
+    haifaPsychometricYear: 2026,
+    psychometricMath: 150,
+    psychometricVerbal: 150,
+    psychometricEnglish: 150,
   };
   const belowInput = {
+    ...qualifications,
     psychometric: 500,
     bagrut: 80,
+    haifaBagrutAverage: 80,
+    haifaBagrutYear: 2026,
+    haifaPsychometricYear: 2026,
     psychometricMath: 100,
     psychometricVerbal: 100,
     psychometricEnglish: 100,
@@ -220,9 +237,9 @@ function fixturesFor(pairId: string, config: HaifaProgramConfig): AdmissionsVeri
       id: `${pairId}:accepted:2026-2027`,
       pairId,
       admissionCycle: '2026-2027',
-      verdict: 'accepted',
+      verdict: 'eligible_to_apply',
       input: acceptedInput,
-      expected: { score: config.acceptedScore, verdict: 'accepted' },
+      expected: { score: config.acceptedScore, verdict: 'eligible_to_apply' },
       sourceFingerprint: fingerprint,
       capturedAt: CAPTURED_AT,
     },
@@ -245,9 +262,83 @@ export interface HaifaProgramVerificationMetadata {
   ledgerReason: string;
 }
 
+function programmeGates(programId: string): AdmissionsVerificationGate[] {
+  const policy = getHaifaProgrammePolicy(programId)!;
+  const gates: AdmissionsVerificationGate[] = [
+    {
+      id: 'qualification',
+      kind: 'minimum',
+      field: 'haifaAdmissionQualification',
+      description: 'Full Bagrut or officially recognized equivalent.',
+    },
+    {
+      id: 'english',
+      kind: 'language',
+      field: 'haifaEnglishLevel',
+      minimum: policy.english.minimumClassificationScore,
+      description:
+        'Current official classification, or original psychometric English classification when no later level is supplied.',
+    },
+    {
+      id: 'hebrew',
+      kind: 'language',
+      field: 'haifaHebrewQualification',
+      minimum: policy.hebrew.minimumExamScore,
+      description:
+        'Programme-specific Hebrew score (Yael/Yaelnet with ten-year validity, or Haifa placement), recognized exemption or qualifying degree-Hebrew course; conditional obligations remain explicit.',
+    },
+  ];
+  if (policy.mathAlternatives.length)
+    gates.push({
+      id: 'mathematics',
+      kind: 'subject',
+      field: 'mathUnits/mathGrade',
+      description: JSON.stringify(policy.mathAlternatives),
+    });
+  if (policy.minimumScienceUnits !== undefined)
+    gates.push({
+      id: 'science_units',
+      kind: 'subject',
+      field: 'haifaScienceUnits',
+      minimum: policy.minimumScienceUnits,
+      description:
+        'Nursing: maths, physics, chemistry, biology, medical sciences or health sciences.',
+    });
+  if (policy.minimumPsychometricOverall !== undefined)
+    gates.push({
+      id: 'psychometric_minimum',
+      kind: 'minimum',
+      field: 'psychometric',
+      minimum: policy.minimumPsychometricOverall,
+      description: 'Minimum overall psychometric for Nursing, in addition to the score.',
+    });
+  if (policy.deadlines?.latestPsychometricSession)
+    gates.push({
+      id: 'exam_session',
+      kind: 'minimum',
+      field: 'haifaPsychometricYear/haifaPsychometricMonth',
+      description: `Latest ordinary-route psychometric session: ${policy.deadlines.latestPsychometricSession}.`,
+    });
+  for (const [index, description] of policy.manualStages.entries())
+    gates.push({
+      id: `selection_${index}`,
+      kind: 'manual',
+      field: 'department_selection',
+      description,
+    });
+  if (policy.latestHebrewExamSession)
+    gates.push({
+      id: 'hebrew_session',
+      kind: 'language',
+      field: 'haifaHebrewExamDate',
+      description: `Latest Hebrew exam session: ${policy.latestHebrewExamSession}.`,
+    });
+  return gates;
+}
+
 export const HAIFA_PROGRAM_VERIFICATION_METADATA: Record<string, HaifaProgramVerificationMetadata> =
   Object.fromEntries(
-    ALIASES.flatMap((programIds) =>
+    HAIFA_PROGRAM_ALIASES.flatMap((programIds) =>
       programIds.map((programId) => {
         const config = configFor(programId);
         const pairId = `${programId}__haifa`;
@@ -271,24 +362,29 @@ export const HAIFA_PROGRAM_VERIFICATION_METADATA: Record<string, HaifaProgramVer
                   'psychometric_math',
                   'psychometric_verbal',
                   'psychometric_english',
+                  'haifa_bagrut_average',
+                  'haifa_bagrut_year',
+                  'haifa_psychometric_year',
                 ],
                 cutoff: { acceptance: config.acceptance, rejection: config.rejection },
-                gates: [],
+                gates: programmeGates(programId),
               },
               fixtureIds: fixtures.map((fixture) => fixture.id),
               fixtureSetFingerprint: fingerprintVerificationFixtures(fixtures),
               sourceFingerprint: fingerprint,
               proof: {
-                state: 'verified',
+                state: config.programId === 'infosystems' ? 'blocked' : 'verified',
                 comparedScore: true,
-                comparedVerdict: true,
+                comparedVerdict: config.programId !== 'infosystems',
                 liveComparedAt: CAPTURED_AT,
                 sourceFingerprint: fingerprint,
               },
             },
             fixtures,
             ledgerReason:
-              'Verified against the current University of Haifa enrollment-chances calculator program mapping, score, acceptance/rejection cutoffs, accepted/below fixtures, and live score-and-verdict proof.',
+              config.programId === 'infosystems'
+                ? 'Current single-major calculator mapping remains unresolved: configured ID absent from the current dictionary. Not eligible for activation.'
+                : 'Official numeric replay is combined with current programme-page qualification, maths, language, exam-session and selection requirements. Positive verdict establishes eligibility for the stated route, never final discretionary admission. Fresh matching review is required before production activation.',
           } satisfies HaifaProgramVerificationMetadata,
         ];
       }),

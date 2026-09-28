@@ -1,5 +1,7 @@
 'use client';
 
+import { allowsNoGenericBagrut, allowsNoPsychometric } from '@/lib/calculatorInputRequirements';
+
 import { useEffect, useMemo, useState } from 'react';
 import { AlertCircle, ArrowRight, Check, ChevronDown, LoaderCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -89,6 +91,20 @@ function formatResultSummary(result: AdmissionsEvaluationResult): string {
   }
 
   if (result.requiredInputs?.length) {
+    if (result.requiredInputs.some((input) => input.startsWith('haifa_')))
+      return 'נדרשים נתוני חיפה בפרופיל: ממוצע, מועדי בחינות ודרישות החוג';
+    if (
+      result.requiredInputs.some((input) =>
+        [
+          'bgu_occupational_therapy_requirements',
+          'bgu_physiotherapy_requirements',
+          'bgu_occupational_therapy_exam_session',
+          'bgu_bachelors_degree_completed',
+          'bgu_bachelors_degree_average',
+        ].includes(input),
+      )
+    )
+      return 'השלימו בפרופיל האקדמי את אפיק מדעי הבריאות ותנאיו';
     if (result.requiredInputs.some((input) => input.startsWith('technion_architecture_'))) {
       return 'נדרשים נתוני ארכיטקטורה בטכניון';
     }
@@ -174,8 +190,10 @@ export default function CalculatorResults({
 
   const selectedProgram = programs.find((program) => program.id === degreeId);
   const savedAcademicScoresMatchCalculation =
-    academicScores?.psychometric?.overall === psychometric &&
-    academicScores?.bagrut?.weightedAverage === bagrut;
+    (academicScores?.psychometric?.overall === psychometric ||
+      (psychometric === undefined && allowsNoPsychometric(degreeId))) &&
+    (academicScores?.bagrut?.weightedAverage === bagrut ||
+      (bagrut === undefined && allowsNoGenericBagrut(degreeId)));
   const extraInputs = useMemo(
     () =>
       savedAcademicScoresMatchCalculation

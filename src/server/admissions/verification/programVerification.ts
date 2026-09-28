@@ -1,6 +1,7 @@
 import { HUJI_MEDICINE_REQUIRED_INPUTS } from '@/lib/hujiMedicineInputs';
 import { createHash } from 'node:crypto';
 import { z } from 'zod';
+import { bguEngineeringSchema } from '@/lib/bguEngineeringSchema';
 
 import type {
   AdmissionsEvaluationCapability,
@@ -14,7 +15,10 @@ const admissionCycleSchema = z.string().regex(/^\d{4}-\d{4}$/);
 const timestampSchema = z.string().datetime({ offset: true });
 const requiredInputSchema = z.enum([
   ...Object.values(HUJI_MEDICINE_REQUIRED_INPUTS),
+  'bgu_engineering_details',
+  'bgu_engineering_physics_course',
   'psychometric_overall',
+  'bagrut_average',
   'tau_management_requirements',
   'tau_management_academic_route',
   'tau_management_mooc_count',
@@ -39,8 +43,26 @@ const requiredInputSchema = z.enum([
   'bagrut_sector',
   'tau_bagrut_average',
   'bgu_bagrut_average',
+  'haifa_bagrut_average',
+  'haifa_bagrut_year',
+  'haifa_psychometric_year',
+  'haifa_psychometric_month',
+  'haifa_admission_qualification',
+  'haifa_english_level',
+  'haifa_hebrew_qualification',
+  'haifa_hebrew_score',
+  'haifa_hebrew_exam_date',
+  'haifa_science_units',
+  'haifa_ot_failed_selection_attempts',
+  'haifa_ot_unjustified_absence',
   'tau_application_requirements',
   'bgu_language_requirements',
+  'bgu_certificate_requirements',
+  'bgu_prior_academic_studies',
+  'bgu_returning_or_changing_track',
+  'bgu_application_priority',
+  'bgu_second_track_requirements',
+  'bgu_preparatory_qualification',
   'tau_math_placement_score',
 ]);
 const verificationVerdictSchema = z.enum(['accepted', 'below', 'eligible_to_apply']);
@@ -65,6 +87,7 @@ const fixtureInputSchema = z
     psychometric: z.number().finite(),
     bagrut: z.number().finite(),
     bagrutSubjectRecord: fixtureBagrutSubjectRecordSchema.optional(),
+    bguEngineering: bguEngineeringSchema.optional(),
   })
   .catchall(fixtureInputValueSchema);
 

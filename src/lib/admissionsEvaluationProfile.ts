@@ -1,6 +1,9 @@
 import { pickHujiMedicineInputs } from './hujiMedicineInputs';
+import { BGU_HEALTH_PROFILE_KEYS } from './bguHealthInputs';
+import { BGU_QUANTITATIVE_PROFILE_KEYS } from './calculatorInputRequirements';
 import type { AcademicScores } from '@/types';
 import type { AdmissionsExtraInputs } from '@/types/admissionsEvaluation';
+import { BGU_SOCIAL_SCIENCE_PROFILE_KEYS } from './bguSocialScienceInputs';
 
 /**
  * Converts the structured academic profile into the explicit input contract
@@ -21,6 +24,25 @@ export function admissionsExtraInputsFromAcademicScores(
 
   const extraInputs: AdmissionsExtraInputs = {
     ...pickHujiMedicineInputs(academicScores?.admissions),
+    haifaBagrutAverage: academicScores?.admissions?.haifaBagrutAverage,
+    haifaBagrutYear: academicScores?.admissions?.haifaBagrutYear,
+    haifaPsychometricYear: academicScores?.admissions?.haifaPsychometricYear,
+    haifaPsychometricMonth: academicScores?.admissions?.haifaPsychometricMonth,
+    haifaAdmissionQualification: academicScores?.admissions?.haifaAdmissionQualification,
+    haifaEnglishLevel: academicScores?.admissions?.haifaEnglishLevel,
+    haifaHebrewQualification: academicScores?.admissions?.haifaHebrewQualification,
+    haifaHebrewScore: academicScores?.admissions?.haifaHebrewScore,
+    haifaHebrewExamDate: academicScores?.admissions?.haifaHebrewExamDate,
+    haifaScienceUnits: academicScores?.admissions?.haifaScienceUnits,
+    haifaOtFailedSelectionAttempts: academicScores?.admissions?.haifaOtFailedSelectionAttempts,
+    haifaOtUnjustifiedAbsence: academicScores?.admissions?.haifaOtUnjustifiedAbsence,
+    ...Object.fromEntries(
+      BGU_SOCIAL_SCIENCE_PROFILE_KEYS.map((key) => [key, academicScores?.admissions?.[key]]),
+    ),
+    ...Object.fromEntries(
+      BGU_QUANTITATIVE_PROFILE_KEYS.map((key) => [key, academicScores?.admissions?.[key]]),
+    ),
+    bguEngineering: academicScores?.admissions?.bguEngineering,
     technionArchitectureBagrutAverage:
       academicScores?.admissions?.technionArchitectureBagrutAverage,
     technionArchitectureExamScore: academicScores?.admissions?.technionArchitectureExamScore,
@@ -31,6 +53,9 @@ export function admissionsExtraInputsFromAcademicScores(
     psychometricVerbal: academicScores?.psychometric?.verbal,
     psychometricEnglish: academicScores?.psychometric?.english,
     tauBagrutAverage: academicScores?.admissions?.tauBagrutAverage,
+    ...Object.fromEntries(
+      BGU_HEALTH_PROFILE_KEYS.map((key) => [key, academicScores?.admissions?.[key]]),
+    ),
     bguPsychologyRoute: academicScores?.admissions?.bguPsychologyRoute,
     bguPsychologyRequirementsConfirmed:
       academicScores?.admissions?.bguPsychologyRequirementsConfirmed,

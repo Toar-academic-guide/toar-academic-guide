@@ -1,15 +1,36 @@
 'use client';
 
+import {
+  HAIFA_ADMISSION_YEAR,
+  HAIFA_QUALIFICATION_PROFILE_KEYS,
+  HAIFA_NUMERIC_QUALIFICATION_KEYS,
+  haifaProfileInputsSchema,
+} from '@/lib/haifaAdmissionsInputs';
+import HaifaQualificationFields, {
+  type HaifaQualificationValues,
+} from './HaifaQualificationFields';
+
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import Image from 'next/image';
 import { Upload, FileText, X, Brain, GraduationCap, Loader2 } from 'lucide-react';
 import type { AcademicScores, UserProfile } from '@/types';
+import BguHealthFields, { type HealthFormValues } from './BguHealthFields';
+import { BGU_HEALTH_PROFILE_KEYS, bguHealthInputsSchema } from '@/lib/bguHealthInputs';
+import BguQuantitativeFields from './BguQuantitativeFields';
+import { BGU_QUANTITATIVE_PROFILE_KEYS } from '@/lib/calculatorInputRequirements';
+import type { BguQuantitativeInputs } from '@/lib/bguQuantitativeInputs';
 import BguPsychologyFields, { type PsychologyFormValues } from './BguPsychologyFields';
 import { BGU_PSYCHOLOGY_PROFILE_KEYS, bguPsychologyInputsSchema } from '@/lib/bguPsychologyInputs';
 import HujiMedicineFields, { type MedicineFormValues } from './HujiMedicineFields';
 import { HUJI_MEDICINE_PROFILE_KEYS, hujiMedicineInputsSchema } from '@/lib/hujiMedicineInputs';
+import BguSocialScienceFields, { type SocialScienceFormValues } from './BguSocialScienceFields';
+import {
+  BGU_SOCIAL_SCIENCE_PROFILE_KEYS,
+  bguSocialScienceInputsSchema,
+} from '@/lib/bguSocialScienceInputs';
 import BagrutCalculatorWizard from './BagrutCalculatorWizard';
+import { BguEngineeringFields } from './BguEngineeringFields';
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
 const fadeUp = (delay: number) => ({
@@ -54,9 +75,34 @@ export default function AcademicProfileForm({
       ]),
     ),
   );
+  const [haifaQualificationValues, setHaifaQualificationValues] =
+    useState<HaifaQualificationValues>(() =>
+      Object.fromEntries(
+        HAIFA_QUALIFICATION_PROFILE_KEYS.map((key) => [
+          key,
+          initialScores?.admissions?.[key]?.toString() ?? '',
+        ]),
+      ),
+    );
+  const [healthValues, setHealthValues] = useState<HealthFormValues>(() =>
+    Object.fromEntries(
+      BGU_HEALTH_PROFILE_KEYS.map((key) => [
+        key,
+        initialScores?.admissions?.[key]?.toString() ?? '',
+      ]),
+    ),
+  );
+  const [socialScienceValues, setSocialScienceValues] = useState<SocialScienceFormValues>(() =>
+    Object.fromEntries(
+      BGU_SOCIAL_SCIENCE_PROFILE_KEYS.map((key) => [
+        key,
+        initialScores?.admissions?.[key]?.toString() ?? '',
+      ]),
+    ),
+  );
   const [psychologyValues, setPsychologyValues] = useState<PsychologyFormValues>(() =>
     Object.fromEntries(
-      BGU_PSYCHOLOGY_PROFILE_KEYS.map((key) => [
+      BGU_PSYCHOLOGY_PROFILE_KEYS.filter((key) => !key.startsWith('bguPreparatory')).map((key) => [
         key,
         initialScores?.admissions?.[key]?.toString() ?? '',
       ]),
@@ -85,12 +131,55 @@ export default function AcademicProfileForm({
   const [bguBagrutAverage, setBguBagrutAverage] = useState(
     initialScores?.admissions?.bguBagrutAverage?.toString() ?? '',
   );
+  const [haifaBagrutAverage, setHaifaBagrutAverage] = useState(
+    initialScores?.admissions?.haifaBagrutAverage?.toString() ?? '',
+  );
+  const [haifaBagrutYear, setHaifaBagrutYear] = useState(
+    initialScores?.admissions?.haifaBagrutYear?.toString() ?? '',
+  );
+  const [haifaPsychometricYear, setHaifaPsychometricYear] = useState(
+    initialScores?.admissions?.haifaPsychometricYear?.toString() ?? '',
+  );
+  const [bguEngineering, setBguEngineering] = useState(initialScores?.admissions?.bguEngineering);
   const [tauApplicationRequirements, setTauApplicationRequirements] = useState(
     initialScores?.admissions?.tauApplicationRequirementsConfirmed?.toString() ?? '',
   );
   const [bguLanguageRequirements, setBguLanguageRequirements] = useState(
     initialScores?.admissions?.bguLanguageRequirementsConfirmed?.toString() ?? '',
   );
+  const [bguQuantitative, setBguQuantitative] = useState<BguQuantitativeInputs>(() =>
+    Object.fromEntries(
+      BGU_QUANTITATIVE_PROFILE_KEYS.map((key) => [key, initialScores?.admissions?.[key]]).filter(
+        ([, value]) => value !== undefined,
+      ),
+    ),
+  );
+  const psychologyFormValues: PsychologyFormValues = {
+    ...psychologyValues,
+    bguPreparatoryTrack: bguQuantitative.bguPreparatoryTrack ?? '',
+    bguPreparatoryAverage: bguQuantitative.bguPreparatoryAverage?.toString() ?? '',
+    bguPreparatoryCompleted: bguQuantitative.bguPreparatoryCompleted?.toString() ?? '',
+  };
+  function handlePsychologyChange(key: keyof PsychologyFormValues, value: string) {
+    if (key === 'bguPreparatoryAverage') {
+      setBguQuantitative((previous) => ({
+        ...previous,
+        bguPreparatoryAverage: value === '' ? undefined : Number(value),
+      }));
+    } else if (key === 'bguPreparatoryCompleted') {
+      setBguQuantitative((previous) => ({
+        ...previous,
+        bguPreparatoryCompleted: value === '' ? undefined : value === 'true',
+      }));
+    } else if (key === 'bguPreparatoryTrack') {
+      setBguQuantitative((previous) => ({
+        ...previous,
+        bguPreparatoryTrack: (value || undefined) as BguQuantitativeInputs['bguPreparatoryTrack'],
+      }));
+    } else {
+      setPsychologyValues((previous) => ({ ...previous, [key]: value }));
+    }
+  }
   const [tauMathPlacementScore, setTauMathPlacementScore] = useState(
     initialScores?.admissions?.tauMathPlacementScore?.toString() ?? '',
   );
@@ -146,9 +235,15 @@ export default function AcademicProfileForm({
     setTauBagrutAverage('');
     setPsychologyValues({});
     setMedicineValues({});
+    setHealthValues({});
+    setSocialScienceValues({});
     setBguBagrutAverage('');
+    setHaifaBagrutAverage('');
+    setHaifaBagrutYear('');
+    setHaifaPsychometricYear('');
     setTauApplicationRequirements('');
     setBguLanguageRequirements('');
+    setBguQuantitative({});
     setTauMathPlacementScore('');
     setManagementRequirements('');
     setManagementAcademic('');
@@ -196,17 +291,30 @@ export default function AcademicProfileForm({
       };
     }
 
-    const admissions: NonNullable<AcademicScores['admissions']> = {};
+    const admissions: NonNullable<AcademicScores['admissions']> = Object.fromEntries(
+      Object.entries(bguQuantitative).filter(([, value]) => value !== undefined),
+    );
+    if (bguEngineering !== undefined) admissions.bguEngineering = bguEngineering;
+    if (
+      bguQuantitative.bguPreparatoryAverage !== undefined &&
+      (!Number.isFinite(bguQuantitative.bguPreparatoryAverage) ||
+        bguQuantitative.bguPreparatoryAverage < 0 ||
+        bguQuantitative.bguPreparatoryAverage > 100)
+    ) {
+      setError('ממוצע המכינה חייב להיות בין 0 ל־100.');
+      setIsSaving(false);
+      return;
+    }
     const psychologyInputs = Object.fromEntries(
       BGU_PSYCHOLOGY_PROFILE_KEYS.filter(
-        (key) => psychologyValues[key] !== undefined && psychologyValues[key] !== '',
+        (key) => psychologyFormValues[key] !== undefined && psychologyFormValues[key] !== '',
       ).map((key) => [
         key,
         key.endsWith('Confirmed') || key.endsWith('Completed')
-          ? psychologyValues[key] === 'true'
+          ? psychologyFormValues[key] === 'true'
           : key.endsWith('Average')
-            ? Number(psychologyValues[key])
-            : psychologyValues[key],
+            ? Number(psychologyFormValues[key])
+            : psychologyFormValues[key],
       ]),
     );
     const parsedPsychology = bguPsychologyInputsSchema.safeParse(psychologyInputs);
@@ -235,6 +343,50 @@ export default function AcademicProfileForm({
       return;
     }
     Object.assign(admissions, parsedMedicine.data);
+    const healthInputs = Object.fromEntries(
+      BGU_HEALTH_PROFILE_KEYS.filter(
+        (key) => healthValues[key] !== undefined && healthValues[key] !== '',
+      ).map((key) => [
+        key,
+        key.endsWith('Confirmed') || key.endsWith('Completed')
+          ? healthValues[key] === 'true'
+          : key.endsWith('Average')
+            ? Number(healthValues[key])
+            : healthValues[key],
+      ]),
+    );
+    const parsedHealth = bguHealthInputsSchema.safeParse(healthInputs);
+    if (!parsedHealth.success) {
+      setError('יש להזין נתוני מדעי הבריאות תקינים; ממוצע תואר ראשון בין 0 ל־100.');
+      setIsSaving(false);
+      return;
+    }
+    Object.assign(admissions, parsedHealth.data);
+    const socialScienceInputs = Object.fromEntries(
+      BGU_SOCIAL_SCIENCE_PROFILE_KEYS.filter(
+        (key) => socialScienceValues[key] !== undefined && socialScienceValues[key] !== '',
+      ).map((key) => [
+        key,
+        key.endsWith('Confirmed') ||
+        [
+          'bguReturningFromStudyBreak',
+          'bguSocialWorkTranscriptProvided',
+          'bguEnglishClassificationMissing',
+          'bguEducationEnglishConditionAcknowledged',
+        ].includes(key)
+          ? socialScienceValues[key] === 'true'
+          : key.endsWith('Average') || key === 'bguApplicantAge'
+            ? Number(socialScienceValues[key])
+            : socialScienceValues[key],
+      ]),
+    );
+    const parsedSocialScience = bguSocialScienceInputsSchema.safeParse(socialScienceInputs);
+    if (!parsedSocialScience.success) {
+      setError('יש להזין נתוני מדעי החברה תקינים: גיל שלם בין 0 ל־120 וממוצע אקדמי בין 0 ל־100.');
+      setIsSaving(false);
+      return;
+    }
+    Object.assign(admissions, parsedSocialScience.data);
     const architectureAverageValue = optionalNumber(architectureAverage);
     const architectureExamValue = optionalNumber(architectureExam);
     if (
@@ -260,6 +412,37 @@ export default function AcademicProfileForm({
     const mathPlacement = optionalNumber(tauMathPlacementScore);
     if (tauAverage !== undefined) admissions.tauBagrutAverage = tauAverage;
     if (bguAverage !== undefined) admissions.bguBagrutAverage = bguAverage;
+    const haifaAverage = optionalNumber(haifaBagrutAverage);
+    const certificateYear = optionalNumber(haifaBagrutYear);
+    const examYear = optionalNumber(haifaPsychometricYear);
+    if (haifaAverage !== undefined) admissions.haifaBagrutAverage = haifaAverage;
+    if (certificateYear !== undefined) admissions.haifaBagrutYear = certificateYear;
+    if (examYear !== undefined) admissions.haifaPsychometricYear = examYear;
+    const haifaQualificationInputs = Object.fromEntries(
+      HAIFA_QUALIFICATION_PROFILE_KEYS.filter(
+        (key) =>
+          haifaQualificationValues[key] !== undefined && haifaQualificationValues[key] !== '',
+      ).map((key) => [
+        key,
+        key === 'haifaOtUnjustifiedAbsence'
+          ? haifaQualificationValues[key] === 'true'
+          : HAIFA_NUMERIC_QUALIFICATION_KEYS.includes(key)
+            ? Number(haifaQualificationValues[key])
+            : haifaQualificationValues[key],
+      ]),
+    );
+    const parsedHaifa = haifaProfileInputsSchema.safeParse({
+      ...admissions,
+      ...haifaQualificationInputs,
+    });
+    if (!parsedHaifa.success) {
+      setError(
+        `בדקו את נתוני חיפה: ממוצע 50–130, שנים שלמות עד ${HAIFA_ADMISSION_YEAR}, חודש 1–12 וציון עברית 50–150. יחידות וניסיונות מיון צריכים להיות מספרים שלמים.`,
+      );
+      setIsSaving(false);
+      return;
+    }
+    Object.assign(admissions, parsedHaifa.data);
     if (tauApplicationRequirements !== '') {
       admissions.tauApplicationRequirementsConfirmed = tauApplicationRequirements === 'true';
     }
@@ -704,11 +887,27 @@ export default function AcademicProfileForm({
                 disabled={isSaving}
                 inputClassName={inputBase}
               />
-              <BguPsychologyFields
-                values={psychologyValues}
+              <BguHealthFields
+                values={healthValues}
                 onChange={(key, value) =>
-                  setPsychologyValues((previous) => ({ ...previous, [key]: value }))
+                  setHealthValues((previous) => ({ ...previous, [key]: value }))
                 }
+                disabled={isSaving}
+                inputClassName={inputBase}
+              />
+              <BguPsychologyFields
+                values={psychologyFormValues}
+                onChange={handlePsychologyChange}
+                disabled={isSaving}
+                inputClassName={inputBase}
+              />
+              <BguSocialScienceFields
+                values={socialScienceValues}
+                onChange={(key, value) =>
+                  setSocialScienceValues((previous) => ({ ...previous, [key]: value }))
+                }
+                prepValues={psychologyFormValues}
+                onPrepChange={handlePsychologyChange}
                 disabled={isSaving}
                 inputClassName={inputBase}
               />
@@ -731,7 +930,7 @@ export default function AcademicProfileForm({
               </div>
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="bgu-bagrut-average" className="text-xs font-medium text-slate-600">
-                  ממוצע בגרות רשמי של בן־גוריון (50–130)
+                  ממוצע בגרות או הנדסאי מוכר של בן־גוריון (50–130)
                 </label>
                 <input
                   id="bgu-bagrut-average"
@@ -746,6 +945,86 @@ export default function AcademicProfileForm({
                   className={inputBase + ' disabled:cursor-not-allowed disabled:opacity-50'}
                 />
               </div>
+              <div className="flex flex-col gap-1.5">
+                <label
+                  htmlFor="haifa-bagrut-average"
+                  className="text-xs font-medium text-slate-600"
+                >
+                  ממוצע בגרות רשמי של אוניברסיטת חיפה (50–130)
+                </label>
+                <input
+                  id="haifa-bagrut-average"
+                  type="number"
+                  min={50}
+                  max={130}
+                  step={0.01}
+                  placeholder="לא ידוע"
+                  value={haifaBagrutAverage}
+                  onChange={(event) => setHaifaBagrutAverage(event.target.value)}
+                  disabled={isSaving}
+                  className={inputBase + ' disabled:cursor-not-allowed disabled:opacity-50'}
+                />
+                <a
+                  href="https://applicants.haifa.ac.il/enrollmentChances/index.html"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-blue-600 underline"
+                >
+                  למחשבון הבגרות הרשמי של חיפה
+                </a>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label htmlFor="haifa-bagrut-year" className="text-xs font-medium text-slate-600">
+                  שנת הזכאות לבגרות או השיפור האחרון בחיפה
+                </label>
+                <input
+                  id="haifa-bagrut-year"
+                  type="number"
+                  min={1948}
+                  max={HAIFA_ADMISSION_YEAR}
+                  step={1}
+                  placeholder="לא ידוע"
+                  value={haifaBagrutYear}
+                  onChange={(event) => setHaifaBagrutYear(event.target.value)}
+                  disabled={isSaving}
+                  className={inputBase + ' disabled:cursor-not-allowed disabled:opacity-50'}
+                />
+                <p className="text-xs text-slate-500">
+                  אם שיפרתם שני מקצועות בגרות או יותר, הזינו את שנת השיפור האחרון. השנה משפיעה על
+                  משקל הבגרות בסכם.
+                </p>
+              </div>
+              <div className="flex flex-col gap-1.5">
+                <label
+                  htmlFor="haifa-psychometric-year"
+                  className="text-xs font-medium text-slate-600"
+                >
+                  שנת הבחינה הפסיכומטרית לחישוב בחיפה
+                </label>
+                <input
+                  id="haifa-psychometric-year"
+                  type="number"
+                  min={1948}
+                  max={HAIFA_ADMISSION_YEAR}
+                  step={1}
+                  placeholder="לא ידוע"
+                  value={haifaPsychometricYear}
+                  onChange={(event) => setHaifaPsychometricYear(event.target.value)}
+                  disabled={isSaving}
+                  className={inputBase + ' disabled:cursor-not-allowed disabled:opacity-50'}
+                />
+                <p className="text-xs text-slate-500">
+                  הזינו את השנה של הבחינה שממנה לקחתם את ציוני הכמותי, המילולי והאנגלית.
+                </p>
+              </div>
+              <HaifaQualificationFields
+                values={haifaQualificationValues}
+                onChange={(key, value) =>
+                  setHaifaQualificationValues((previous) => ({ ...previous, [key]: value }))
+                }
+                disabled={isSaving}
+                inputClassName={inputBase}
+              />
               <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-600">
                 האם מולאו תנאי ההגשה לתל אביב: זכאות לבגרות, אנגלית ברמת מתקדמים א׳ (100 לפחות
                 בפסיכומטרי או במבחן מיון נפרד באנגלית), דרישת העברית והרשמה בעדיפות ראשונה למדעי
@@ -777,6 +1056,17 @@ export default function AcademicProfileForm({
                   <option value="false">לא</option>
                 </select>
               </label>
+              <BguQuantitativeFields
+                value={bguQuantitative}
+                onChange={setBguQuantitative}
+                disabled={isSaving}
+              />
+              <BguEngineeringFields
+                value={bguEngineering}
+                onChange={setBguEngineering}
+                disabled={isSaving}
+                inputClassName={inputBase}
+              />
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="tau-math-placement" className="text-xs font-medium text-slate-600">
                   ציון סיווג במתמטיקה של אוניברסיטת תל אביב (0–100)
