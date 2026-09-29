@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { and, desc, eq, inArray } from 'drizzle-orm';
+import { and, desc, eq } from 'drizzle-orm';
 
 import { getDb } from '@/db/client';
 import { admissionAlertOutbox, admissionAlertSubscriptions } from '@/db/schema';
@@ -73,26 +73,37 @@ export function createDrizzleAdmissionAlertAccountRepository(
             and(
               eq(admissionAlertSubscriptions.id, input.subscriptionId),
               eq(admissionAlertSubscriptions.userId, input.userId),
-              inArray(admissionAlertSubscriptions.status, [
-                'active',
-                'needs_profile_refresh',
-                'pending_delivery',
-              ]),
             ),
           )
-          .limit(1);
+          .limit(1)
+          .for('update');
         if (!subscription) return null;
 
         const [outbox] = await tx
-          .select({ id: admissionAlertOutbox.id, status: admissionAlertOutbox.status })
+          .select({
+            id: admissionAlertOutbox.id,
+            status: admissionAlertOutbox.status,
+            submissionStartedAt: admissionAlertOutbox.submissionStartedAt,
+            acceptanceUnknownAt: admissionAlertOutbox.acceptanceUnknownAt,
+          })
           .from(admissionAlertOutbox)
           .where(eq(admissionAlertOutbox.subscriptionId, subscription.id))
           .orderBy(desc(admissionAlertOutbox.createdAt))
-          .limit(1);
+          .limit(1)
+          .for('update');
         const cancellation = cancelAlertSubscription(
           subscription.status as AdmissionAlertSubscriptionStatus,
           (outbox?.status as AdmissionAlertOutboxStatus | undefined) ?? null,
         );
+        // A claimed row before its submission boundary is still safely cancellable.
+        if (
+          outbox?.status === 'processing' &&
+          !outbox.submissionStartedAt &&
+          !outbox.acceptanceUnknownAt
+        ) {
+          cancellation.outboxStatus = 'suppressed';
+          cancellation.mayStillArrive = false;
+        }
 
         await tx
           .update(admissionAlertSubscriptions)
@@ -109,7 +120,13 @@ export function createDrizzleAdmissionAlertAccountRepository(
         ) {
           await tx
             .update(admissionAlertOutbox)
-            .set({ status: cancellation.outboxStatus, updatedAt: new Date() })
+            .set({
+              status: cancellation.outboxStatus,
+              updatedAt: new Date(),
+              ...(cancellation.outboxStatus === 'suppressed'
+                ? { mailPayload: null, claimToken: null, leaseExpiresAt: null, nextAttemptAt: null }
+                : {}),
+            })
             .where(eq(admissionAlertOutbox.id, outbox.id));
         }
         return { mayStillArrive: cancellation.mayStillArrive };

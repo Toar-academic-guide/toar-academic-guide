@@ -114,3 +114,58 @@ approve the protected environment, and expect an aggregate `idle` or `batch_limi
 result followed by completed database/Vite cleanup. Then sign in to
 `/internal/data-health` and check transition counts. This proves worker invocation,
 not provider delivery or the final TAU/BGU live proof.
+
+## Outbox delivery recovery (U4)
+
+The **Deliver Admission Alerts** workflow uses the same protected environment and
+`ADMISSION_ALERT_DATABASE_URL`. Manual dispatch defaults to **dry run**, which only
+reads aggregate queue counts. It neither claims work nor contacts Resend. Verify
+the connection after merge by running that workflow with **dry_run** checked and
+expecting `status: dry_run` and completed cleanup. No UI changes are part of U4.
+
+Live delivery requires `ADMISSION_ALERT_DELIVERY_ENABLED=true` and the environment
+secret `ADMISSION_ALERT_RESEND_API_KEY` (a sending-only Resend key). **Do not enable
+it yet:** U5 must prepare the Hebrew message and U6 must implement its unsubscribe
+and signed webhook paths before the controlled TAU/BGU proof. U4 only consumes
+prepared immutable `mail_payload` snapshots; pending rows without one are not
+sendable. Do not manually populate production payloads to bypass those units.
+
+Once activated, the protected schedule drains at most 500 rows per run, with one
+second between attempts. It never accepts arbitrary recipients as CLI inputs.
+Claims expire after five minutes. Before each provider request, the worker locks
+and rechecks subscription state, the current Jerusalem admissions cycle, and
+category preference. Cancellation before submission suppresses the row and clears
+its prepared payload. Cancellation after the submission boundary reports that an
+email may still arrive; it prevents subsequent submissions, not a request already
+in flight. Acceptance records the provider ID without changing a cancelled
+subscription back to notified.
+
+The request snapshot and database idempotency key are reused exactly on recovery.
+An HTTP 429 is retryable; ordinary validation/authentication failures are terminal.
+Timeouts, network failures, server errors, and idempotency conflicts are
+`acceptance_unknown`. A later rejected reconciliation cannot erase that earlier
+uncertainty. The next attempt is at least five minutes later. Unknown/retryable
+submissions stop automatically 23 hours after the first submission, leaving a
+one-hour margin before [Resend's 24-hour key expiry](https://resend.com/docs/dashboard/emails/idempotency-keys).
+Rows then carry `idempotency_window_elapsed` for operator reconciliation. Never
+clear their first-submission time, replace their key, or blindly requeue them.
+Cancellation/category opt-out/prior-cycle state blocks reconciliation that could
+initiate another send. Signed provider telemetry in U6 will resolve confirmed
+acceptance without initiating mail.
+
+The prepared payload contains only recipient/sender addresses, support content,
+and management links, never academic inputs. It is cleared on acceptance,
+definitive failure, or safe suppression. No provider error body or request content
+is logged. U6/U7 own token handling and remaining retention/account-deletion cleanup.
+
+Focused disposable database verification (never production):
+
+```sh
+ALERT_DB_INTEGRATION=1 npx vitest run src/server/admission-alerts/deliveryWorker.integration.test.ts
+```
+
+Tests exercise concurrent claims, expired-owner fencing, cancellation after
+claim, category/cycle/profile rechecks, post-submit recovery, idempotent acceptance,
+unknown acceptance, retry scheduling, and the idempotency-window boundary. Live
+provider acceptance remains unproven until the authorized controlled send after
+the template and unsubscribe implementation.
