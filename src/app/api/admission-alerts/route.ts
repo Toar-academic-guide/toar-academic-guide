@@ -10,7 +10,7 @@ import {
   createAdmissionAlertSubscription,
   createDrizzleAdmissionAlertSubscriptionRepository,
 } from '@/server/admission-alerts/subscriptionService';
-import { evaluateTauComputerScienceAlertBaseline } from '@/server/admission-alerts/tauBaselineEvaluator';
+import { evaluateAdmissionAlertBaseline } from '@/server/admission-alerts/baselineEvaluator';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,7 +42,7 @@ export async function POST(request: Request) {
     const data = await createAdmissionAlertSubscription(target, {
       userId,
       repository: createDrizzleAdmissionAlertSubscriptionRepository(),
-      evaluate: evaluateTauComputerScienceAlertBaseline,
+      evaluate: evaluateAdmissionAlertBaseline,
     });
     return Response.json({ data });
   } catch (error) {

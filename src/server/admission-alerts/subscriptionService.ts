@@ -9,9 +9,14 @@ import {
   bagrutProfileVersions,
   userProfiles,
 } from '@/db/schema';
-import type { BagrutSubject } from '@/types';
+import type { BagrutSubject, BagrutSector } from '@/types';
+import type { AdmissionsExtraInputs } from '@/types/admissionsEvaluation';
+import { createAdmissionsInputDigest } from '@/server/admissions/evaluationSnapshot';
 import { admissionCycleFor } from './cycle';
-import { subjectsFromStoredBagrutProfile } from '@/lib/storedBagrutProfile';
+import {
+  fromStoredBagrutProfileVersion,
+  subjectsFromStoredBagrutProfile,
+} from '@/lib/storedBagrutProfile';
 
 export interface AdmissionAlertBaselineProfile {
   profileVersionId: string;
@@ -20,6 +25,7 @@ export interface AdmissionAlertBaselineProfile {
   bagrutAverage: number;
   hasStructuredBagrut: boolean;
   subjects: BagrutSubject[];
+  extraInputs?: AdmissionsExtraInputs;
 }
 
 export interface AdmissionAlertSubscriptionRepository {
@@ -110,44 +116,29 @@ export function createDrizzleAdmissionAlertSubscriptionRepository(
   return {
     async getProfile(userId) {
       const [profile] = await db
-        .select({
-          psychometric: userProfiles.psychometricOverall,
-          bagrutAverage: userProfiles.bagrutWeightedAverage,
-          profileVersionId: userProfiles.bagrutProfileVersionId,
-        })
+        .select()
         .from(userProfiles)
         .where(eq(userProfiles.userId, userId))
         .limit(1);
-      if (
-        !profile ||
-        profile.psychometric === null ||
-        profile.bagrutAverage === null ||
-        !profile.profileVersionId
-      ) {
+      if (!profile || !profile.bagrutProfileVersionId) {
         return null;
       }
 
       const [profileVersion] = await db
-        .select({
-          id: bagrutProfileVersions.id,
-          profileHash: bagrutProfileVersions.contentHash,
-          subjects: bagrutProfileVersions.subjects,
-        })
+        .select()
         .from(bagrutProfileVersions)
-        .where(eq(bagrutProfileVersions.id, profile.profileVersionId))
+        .where(
+          and(
+            eq(bagrutProfileVersions.id, profile.bagrutProfileVersionId),
+            eq(bagrutProfileVersions.userId, userId),
+          ),
+        )
         .limit(1);
       if (!profileVersion) {
         return null;
       }
 
-      return {
-        profileVersionId: profileVersion.id,
-        profileHash: profileVersion.profileHash,
-        psychometric: profile.psychometric,
-        bagrutAverage: profile.bagrutAverage,
-        hasStructuredBagrut: true,
-        subjects: subjectsFromStoredBagrutProfile(profileVersion.subjects),
-      };
+      return buildSavedAlertProfile(profile, profileVersion);
     },
     async findActiveSubscription(input) {
       const [subscription] = await db
@@ -171,6 +162,30 @@ export function createDrizzleAdmissionAlertSubscriptionRepository(
     },
     async createSubscription(input) {
       return db.transaction(async (tx) => {
+        // Profile writes take this same row lock before pausing subscriptions.
+        // Recheck after the network evaluation so a concurrent edit cannot establish a stale baseline.
+        const [profile] = await tx
+          .select()
+          .from(userProfiles)
+          .where(eq(userProfiles.userId, input.userId))
+          .for('update');
+        const [version] = await tx
+          .select()
+          .from(bagrutProfileVersions)
+          .where(
+            and(
+              eq(bagrutProfileVersions.id, input.profileVersionId),
+              eq(bagrutProfileVersions.userId, input.userId),
+            ),
+          );
+        const current = profile && version ? buildSavedAlertProfile(profile, version) : null;
+        if (
+          !current ||
+          profile.bagrutProfileVersionId !== input.profileVersionId ||
+          current.profileHash !== input.profileHash
+        ) {
+          throw new Error('Academic profile changed during alert activation. Please try again.');
+        }
         const [subscription] = await tx
           .insert(admissionAlertSubscriptions)
           .values({
@@ -221,6 +236,58 @@ export function createDrizzleAdmissionAlertSubscriptionRepository(
   };
 }
 
-function isSupportedTarget(target: { institutionId: string; programId: string }): boolean {
-  return target.institutionId === 'tau' && target.programId === 'tau_cs';
+export function buildSavedAlertProfile(
+  profile: Pick<
+    typeof userProfiles.$inferSelect,
+    | 'psychometricOverall'
+    | 'psychometricQuantitative'
+    | 'psychometricVerbal'
+    | 'psychometricEnglish'
+    | 'bagrutWeightedAverage'
+    | 'admissionsInputs'
+  >,
+  profileVersion: Pick<
+    typeof bagrutProfileVersions.$inferSelect,
+    'id' | 'schemaVersion' | 'sector' | 'subjects'
+  >,
+): AdmissionAlertBaselineProfile | null {
+  if (profile.psychometricOverall === null || profile.bagrutWeightedAverage === null) return null;
+  if (
+    !['jewish', 'arab', 'druze', 'circassian', 'bedouin', 'samaritan'].includes(
+      profileVersion.sector,
+    )
+  )
+    return null;
+  const extraInputs: AdmissionsExtraInputs = {
+    ...profile.admissionsInputs,
+    psychometricMath: profile.psychometricQuantitative ?? undefined,
+    psychometricVerbal: profile.psychometricVerbal ?? undefined,
+    psychometricEnglish: profile.psychometricEnglish ?? undefined,
+    bagrutSubjectRecord: fromStoredBagrutProfileVersion({
+      schemaVersion: profileVersion.schemaVersion,
+      sector: profileVersion.sector as BagrutSector,
+      payload: profileVersion.subjects,
+    }),
+  };
+  return {
+    profileVersionId: profileVersion.id,
+    profileHash: createAdmissionsInputDigest({
+      degreeId: 'admission-alert-profile',
+      psychometric: profile.psychometricOverall,
+      bagrut: profile.bagrutWeightedAverage,
+      extraInputs,
+    }),
+    psychometric: profile.psychometricOverall,
+    bagrutAverage: profile.bagrutWeightedAverage,
+    hasStructuredBagrut: Boolean(extraInputs.bagrutSubjectRecord),
+    subjects: subjectsFromStoredBagrutProfile(profileVersion.subjects),
+    extraInputs,
+  };
+}
+
+export function isSupportedTarget(target: { institutionId: string; programId: string }): boolean {
+  return (
+    (target.institutionId === 'tau' && target.programId === 'tau_cs') ||
+    (target.institutionId === 'bgu' && target.programId === 'bgu_cs')
+  );
 }

@@ -121,6 +121,9 @@ const targetedTests = [
   'src/server/admission-alerts/profileRefresh.test.ts',
   'src/server/admission-alerts/transitionProcessor.test.ts',
   'src/server/admission-alerts/transitionWork.test.ts',
+  'src/server/admission-alerts/subscriptionService.test.ts',
+  'src/server/admission-alerts/baselineEvaluator.test.ts',
+  'src/server/admission-alerts/processingRuntime.test.ts',
 ];
 
 const admissionsGeneratedFiles = [

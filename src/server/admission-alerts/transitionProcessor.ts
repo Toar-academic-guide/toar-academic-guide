@@ -1,7 +1,7 @@
 import 'server-only';
 
 import { createHash, randomUUID } from 'node:crypto';
-import { and, asc, eq, gt, inArray, or, sql } from 'drizzle-orm';
+import { and, asc, eq, gt, inArray, lte, or, sql } from 'drizzle-orm';
 import { getDb } from '@/db/client';
 import {
   admissionAlertBaselineHistory,
@@ -33,6 +33,7 @@ export interface ClaimedAlertTransitionWork {
   institutionId: string;
   programId: string;
   afterVersion: string;
+  transitionAt: Date;
   subscriptions: WorkSubscription[];
 }
 export interface AdmissionAlertTransitionProcessorRepository {
@@ -57,6 +58,7 @@ export async function processAdmissionAlertTransitionWork(input: {
   repository: AdmissionAlertTransitionProcessorRepository;
   evaluate: (subscription: {
     subscriptionId: string;
+    transitionId: string;
     profileHash: string;
     profileVersionId: string;
     institutionId: string;
@@ -81,6 +83,7 @@ export async function processAdmissionAlertTransitionWork(input: {
         try {
           const evaluation = await input.evaluate({
             subscriptionId: subscription.id,
+            transitionId: work.transitionId,
             profileHash: subscription.profileHash,
             profileVersionId: subscription.profileVersionId,
             institutionId: work.institutionId,
@@ -120,12 +123,17 @@ export async function processAdmissionAlertTransitionWork(input: {
 export function createDrizzleAdmissionAlertTransitionProcessorRepository(
   db = getDb(),
 ): AdmissionAlertTransitionProcessorRepository {
-  const scope = (work: { institutionId: string; programId: string }, cycle: string) =>
+  const scope = (
+    work: { institutionId: string; programId: string; transitionAt: Date },
+    cycle: string,
+  ) =>
     and(
       eq(admissionAlertSubscriptions.institutionId, work.institutionId),
       eq(admissionAlertSubscriptions.programId, work.programId),
       eq(admissionAlertSubscriptions.cycle, cycle),
       inArray(admissionAlertSubscriptions.status, ['active', 'needs_profile_refresh']),
+      lte(admissionAlertSubscriptions.activatedAt, work.transitionAt),
+      sql`coalesce(${admissionAlertSubscriptions.refreshedAt},${admissionAlertSubscriptions.activatedAt}) <= ${work.transitionAt.toISOString()}::timestamptz`,
     );
   return {
     async claimNextWork({ currentCycle, now }) {
@@ -139,9 +147,10 @@ export function createDrizzleAdmissionAlertTransitionProcessorRepository(
           institution_id: string;
           program_id: string;
           after_version: string;
+          created_at: string;
           cursor: string | null;
           retry_state: RetryState;
-        }>(sql`select w.id,w.transition_id,t.institution_id,t.program_id,t.after_version,w.cursor,w.retry_state
+        }>(sql`select w.id,w.transition_id,t.institution_id,t.program_id,t.after_version,t.created_at,w.cursor,w.retry_state
           from admission_alert_transition_work w
           join admission_target_transitions t on t.id=w.transition_id
           join admission_releases r on r.id=t.release_id
@@ -186,7 +195,11 @@ export function createDrizzleAdmissionAlertTransitionProcessorRepository(
           .where(
             and(
               scope(
-                { institutionId: candidate.institution_id, programId: candidate.program_id },
+                {
+                  institutionId: candidate.institution_id,
+                  programId: candidate.program_id,
+                  transitionAt: new Date(candidate.created_at),
+                },
                 currentCycle,
               ),
               or(
@@ -204,6 +217,7 @@ export function createDrizzleAdmissionAlertTransitionProcessorRepository(
           institutionId: candidate.institution_id,
           programId: candidate.program_id,
           afterVersion: candidate.after_version,
+          transitionAt: new Date(candidate.created_at),
           subscriptions,
         };
       });

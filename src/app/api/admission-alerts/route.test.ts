@@ -6,7 +6,7 @@ const mocks = vi.hoisted(() => ({
   createDrizzleAdmissionAlertAccountRepository: vi.fn(),
   createAdmissionAlertSubscription: vi.fn(),
   createDrizzleAdmissionAlertSubscriptionRepository: vi.fn(),
-  evaluateTauComputerScienceAlertBaseline: vi.fn(),
+  evaluateAdmissionAlertBaseline: vi.fn(),
 }));
 
 vi.mock('@/app/api/_lib/auth', () => ({
@@ -21,8 +21,8 @@ vi.mock('@/server/admission-alerts/subscriptionService', () => ({
   createDrizzleAdmissionAlertSubscriptionRepository:
     mocks.createDrizzleAdmissionAlertSubscriptionRepository,
 }));
-vi.mock('@/server/admission-alerts/tauBaselineEvaluator', () => ({
-  evaluateTauComputerScienceAlertBaseline: mocks.evaluateTauComputerScienceAlertBaseline,
+vi.mock('@/server/admission-alerts/baselineEvaluator', () => ({
+  evaluateAdmissionAlertBaseline: mocks.evaluateAdmissionAlertBaseline,
 }));
 
 import { GET, POST } from './route';
@@ -68,7 +68,7 @@ describe('admission alerts API', () => {
       {
         userId: 'user-1',
         repository: 'repository',
-        evaluate: mocks.evaluateTauComputerScienceAlertBaseline,
+        evaluate: mocks.evaluateAdmissionAlertBaseline,
       },
     );
   });

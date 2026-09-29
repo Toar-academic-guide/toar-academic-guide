@@ -65,6 +65,8 @@ jobs:
     if: ${{ github.event_name == 'workflow_dispatch' || needs.release_intent.outputs.release_kind != 'operational_proof' }}
     runs-on: ubuntu-latest
     environment: admissions-publication
+    outputs:
+      release_id: ${{ steps.publish.outputs.release_id }}
     env:
       CI: true
       OPS_DATABASE_URL: ${{ secrets.OPS_DATABASE_URL }}
@@ -174,6 +176,7 @@ jobs:
           NODE
 
       - name: Publish the reviewed manifest atomically
+        id: publish
         env:
           PROOF_FAILURE_STAGE: ${{ inputs.proof_failure_stage }}
           PROOF_CONFIRMATION_ID: ${{ inputs.proof_confirmation_id }}
@@ -185,3 +188,11 @@ jobs:
             args+=(--proof-failure-stage "$PROOF_FAILURE_STAGE" --proof-confirmation-id "$PROOF_CONFIRMATION_ID")
           fi
           npm run admissions:publish -- "${args[@]}"
+
+  process-admission-alerts:
+    needs: publish-reviewed-release
+    if: ${{ needs.publish-reviewed-release.result == 'success' && needs.publish-reviewed-release.outputs.release_id != '' }}
+    uses: ./.github/workflows/admission-alert-processing.yml
+    with:
+      release_id: ${{ needs.publish-reviewed-release.outputs.release_id }}
+    secrets: inherit
