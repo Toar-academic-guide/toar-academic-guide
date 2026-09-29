@@ -9,6 +9,11 @@ export type { RouteAction, RouteProfile } from './actions';
 export interface RouteVerification {
   eligible: boolean;
   margin: number;
+  score?: number;
+  cutoff?: number;
+  sourceUrl?: string;
+  ruleFingerprint?: string;
+  unmetRequirements?: string[];
 }
 
 export interface VerifiedAdmissionRoute {
