@@ -236,7 +236,11 @@ describe('findVerifiedAdmissionRoutes', () => {
     });
 
     const first = findVerifiedAdmissionRoutes({ profile, actions, evaluate });
-    const second = findVerifiedAdmissionRoutes({ profile, actions: [...actions].reverse(), evaluate });
+    const second = findVerifiedAdmissionRoutes({
+      profile,
+      actions: [...actions].reverse(),
+      evaluate,
+    });
 
     expect(second).toEqual(first);
   });
