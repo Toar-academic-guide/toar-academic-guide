@@ -8,7 +8,7 @@ export const TAU_BAGRUT_AVERAGE_VERIFICATION = {
   expectedAverage: 108.39,
   record: {
     schemaVersion: 2,
-    sector: 'jewish',
+    sector: 'arab',
     certificateType: 'internal',
     complete: true,
     subjects: [

@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { applyRouteAction, type RouteAction, type RouteProfile } from './actions';
+import { applyRouteActions, type RouteAction, type RouteProfile } from './actions';
 import { combineRouteEstimates, type RouteEstimate } from './estimateSeed';
 
 export type { RouteAction, RouteProfile } from './actions';
@@ -112,13 +112,6 @@ function candidateActionSets(actions: RouteAction[]): RouteAction[][] {
   }
 
   return candidates;
-}
-
-function applyRouteActions(profile: RouteProfile, actions: RouteAction[]): RouteProfile | null {
-  return actions.reduce<RouteProfile | null>(
-    (current, action) => (current ? applyRouteAction(current, action) : null),
-    profile,
-  );
 }
 
 function dominates(left: VerifiedAdmissionRoute, right: VerifiedAdmissionRoute): boolean {

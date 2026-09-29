@@ -4,6 +4,7 @@ vi.mock('server-only', () => ({}));
 
 import { runTauComputerScienceRouteSimulation } from './tauRouteSimulation';
 import type { TauFinalist } from './tauFinalistVerifier';
+import { TAU_BAGRUT_AVERAGE_VERIFICATION } from '@/data/admissions/tauBagrutAverageVerification';
 
 const record = {
   schemaVersion: 1 as const,
@@ -69,7 +70,7 @@ describe('runTauComputerScienceRouteSimulation', () => {
     expect(result.fastest).toBeUndefined();
   });
 
-  it('does not emit academic actions until the official TAU average can be recomputed', async () => {
+  it('replaces a stale aggregate with the recomputed schema-v2 TAU average', async () => {
     const verifyFinalists = vi.fn(async (finalists: TauFinalist[]) =>
       finalists.map((finalist) => ({
         id: finalist.id,
@@ -82,18 +83,15 @@ describe('runTauComputerScienceRouteSimulation', () => {
     await runTauComputerScienceRouteSimulation({
       profile: {
         psychometric: 660,
-        tauBagrutAverage: 111.5,
-        subjectRecord: {
-          ...record,
-          subjects: [{ subjectId: 'mathematics', units: 4, grade: 80 }],
-        },
+        tauBagrutAverage: 95,
+        subjectRecord: TAU_BAGRUT_AVERAGE_VERIFICATION.record,
       },
       verifyFinalists,
     });
 
     expect(verifyFinalists.mock.calls[0]?.[0]).toHaveLength(7);
     expect(verifyFinalists.mock.calls[0]?.[0]).toEqual(
-      expect.arrayContaining([expect.objectContaining({ bagrutAverage: 111.5 })]),
+      expect.arrayContaining([expect.objectContaining({ bagrutAverage: 108.39 })]),
     );
     expect(
       verifyFinalists.mock.calls[0]?.[0].some(({ id }) => !id.startsWith('psychometric_')),

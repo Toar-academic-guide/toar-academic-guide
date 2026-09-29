@@ -5,6 +5,7 @@ import { subjectIdForWizardLabel } from '@/utils/bagrutSubjectRecord';
 import {
   BGU_COMPUTER_SCIENCE_ROUTE_POLICY,
   TAU_ENGINEERING_EXACT_SCIENCES_POLICY,
+  calculateTauBagrutAverage,
   calculateOptimizedBagrutAverage,
   classifyPsychometricEnglishScore,
   evaluateBagrutRecordReadiness,
@@ -79,6 +80,10 @@ describe('TAU engineering and exact-sciences Bagrut policy', () => {
     ['computer_science', 5, 60, 'exam', 'jewish', 20],
     [subjectIdForWizardLabel('צרפתית'), 5, 60, 'exam', 'jewish', 20],
     ['arabic', 5, 60, 'exam', 'arab', 25],
+    ['arabic', 5, 60, 'exam', 'druze', 25],
+    ['arabic', 5, 60, 'exam', 'circassian', 25],
+    ['arabic', 5, 60, 'exam', 'bedouin', 25],
+    ['arabic', 5, 60, 'exam', 'samaritan', 25],
     ['arabic', 5, 60, 'exam', 'jewish', 20],
     ['physics', 5, 60, 'final_project', 'jewish', 20],
     ['physics', 5, 59, 'exam', 'jewish', 0],
@@ -310,5 +315,24 @@ describe('versioned admissions input policies', () => {
       policyVersion: 'tau-bagrut-profile-2026-09-29',
     });
     expect(TAU_BAGRUT_AVERAGE_VERIFICATION.expectedAverage).toBe(108.39);
+  });
+
+  it('reproduces the official TAU optimized-average example exactly', () => {
+    expect(calculateTauBagrutAverage(TAU_BAGRUT_AVERAGE_VERIFICATION.record)).toEqual({
+      state: 'calculated',
+      average: 108.39,
+      includedSubjectIds: ['arabic', 'chemistry', 'civics', 'english', 'history', 'mathematics'],
+      excludedSubjectIds: ['arab_history', 'biology', 'hebrew_expression'],
+      policyVersion: 'tau-bagrut-profile-2026-09-29',
+    });
+  });
+
+  it('adds the published external-certificate adjustment after optimizing the average', () => {
+    expect(
+      calculateTauBagrutAverage({
+        ...TAU_BAGRUT_AVERAGE_VERIFICATION.record,
+        certificateType: 'external_1977_or_later',
+      }),
+    ).toMatchObject({ state: 'calculated', average: 110.39 });
   });
 });

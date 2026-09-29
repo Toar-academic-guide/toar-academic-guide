@@ -6,10 +6,14 @@ import { findVerifiedAdmissionRoutes, type RouteAction, type RouteProfile } from
 
 const profile: RouteProfile = {
   psychometric: 650,
-  subjects: [
-    { subjectId: 'mathematics', units: 5, grade: 85 },
-    { subjectId: 'history', units: 2, grade: 85 },
-  ],
+  subjectRecord: {
+    schemaVersion: 1,
+    sector: 'jewish',
+    subjects: [
+      { subjectId: 'mathematics', units: 5, grade: 85 },
+      { subjectId: 'history', units: 2, grade: 85 },
+    ],
+  },
 };
 
 describe('findVerifiedAdmissionRoutes', () => {
@@ -100,5 +104,7 @@ function gradeAction(subjectId: string, toGrade: number): RouteAction {
 }
 
 function grade(candidate: RouteProfile, subjectId: string): number {
-  return candidate.subjects.find((subject) => subject.subjectId === subjectId)?.grade ?? 0;
+  return (
+    candidate.subjectRecord.subjects.find((subject) => subject.subjectId === subjectId)?.grade ?? 0
+  );
 }
