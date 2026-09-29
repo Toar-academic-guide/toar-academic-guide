@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   headers: vi.fn(),
   requireAuthenticatedUserId: vi.fn(),
   getUserProfileSnapshot: vi.fn(),
+  getAdmissionRouteCapability: vi.fn(),
   runTauComputerScienceRouteSimulation: vi.fn(),
 }));
 
@@ -16,6 +17,9 @@ vi.mock('@/app/api/_lib/auth', () => ({
 vi.mock('@/server/user/profile', () => ({ getUserProfileSnapshot: mocks.getUserProfileSnapshot }));
 vi.mock('@/server/admissions/routes/tauRouteSimulation', () => ({
   runTauComputerScienceRouteSimulation: mocks.runTauComputerScienceRouteSimulation,
+}));
+vi.mock('@/server/admissions/routes/capabilityRegistry', () => ({
+  getAdmissionRouteCapability: mocks.getAdmissionRouteCapability,
 }));
 vi.mock('server-only', () => ({}));
 
@@ -40,6 +44,7 @@ describe('admissions routes API', () => {
     resetAdmissionsRouteRateLimitForTests();
     mocks.requireAuthenticatedUserId.mockReset();
     mocks.getUserProfileSnapshot.mockReset();
+    mocks.getAdmissionRouteCapability.mockReset();
     mocks.runTauComputerScienceRouteSimulation.mockReset();
     mocks.headers.mockResolvedValue(new Headers({ 'x-forwarded-for': '203.0.113.10' }));
     mocks.runTauComputerScienceRouteSimulation.mockResolvedValue({
@@ -48,6 +53,7 @@ describe('admissions routes API', () => {
       evaluatedCandidateCount: 7,
       unavailableFinalistCount: 0,
     });
+    mocks.getAdmissionRouteCapability.mockReturnValue({ status: 'enabled' });
   });
 
   it('accepts a complete anonymous TAU profile without a user identifier', async () => {
@@ -63,6 +69,18 @@ describe('admissions routes API', () => {
     );
 
     expect(response.status).toBe(400);
+    expect(mocks.runTauComputerScienceRouteSimulation).not.toHaveBeenCalled();
+  });
+
+  it('withholds simulation when the composed route capability is disabled', async () => {
+    mocks.getAdmissionRouteCapability.mockReturnValue({ status: 'disabled' });
+
+    const response = await POST(request({ degreeId: 'tau_cs', source: 'input', profile }));
+
+    expect(response.status).toBe(422);
+    expect(await response.json()).toMatchObject({
+      error: { code: 'ADMISSIONS_ROUTE_UNSUPPORTED' },
+    });
     expect(mocks.runTauComputerScienceRouteSimulation).not.toHaveBeenCalled();
   });
 
