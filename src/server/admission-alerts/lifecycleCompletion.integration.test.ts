@@ -1,4 +1,5 @@
-import { randomUUID } from 'node:crypto';
+import { randomBytes, randomUUID } from 'node:crypto';
+import { setTimeout as delay } from 'node:timers/promises';
 import { afterAll, describe, expect, it, vi } from 'vitest';
 import postgres, { type TransactionSql } from 'postgres';
 import { drizzle } from 'drizzle-orm/postgres-js';
@@ -17,15 +18,18 @@ import {
   createAdmissionAlertSubscription,
 } from './subscriptionService';
 import { createDrizzleAdmissionAlertExpirationRepository } from './expirationService';
+import { createResendAdmissionAlertProvider } from './resendProvider';
+import { liveProofConfiguration } from '../../../scripts/admission-alert-live-proof.mjs';
 
+const liveProof = liveProofConfiguration(process.env);
 const enabled = process.env.ALERT_DB_INTEGRATION === '1';
 const url = process.env.DATABASE_URL ?? 'postgresql://unused';
 if (enabled && !['localhost', '127.0.0.1'].includes(new URL(url).hostname))
   throw new Error('Use disposable localhost PostgreSQL only.');
 describe.skipIf(!enabled)('complete alert lifecycle with real database functions', () => {
   const client = postgres(url, { max: 1, prepare: false });
-  const secret = 's'.repeat(43);
-  const config = {
+  const secret = liveProof ? randomBytes(32).toString('base64url') : 's'.repeat(43);
+  const config = liveProof?.email ?? {
     from: 'alerts@example.org',
     supportEmail: 'support@example.org',
     origin: 'https://example.org',
@@ -72,16 +76,46 @@ describe.skipIf(!enabled)('complete alert lifecycle with real database functions
     async (target) =>
       isolated(async (tx) => {
         const f = await seed(tx, target);
+        if (liveProof) {
+          await tx`update auth.users set email=${liveProof.recipient} where id=${f.userId}`;
+        }
         const db = database(tx);
         expect(await prepareNextAlertDelivery(config, secret, db)).toBe(true);
+        // Label only the disposable immutable snapshot, before its first submission.
+        // Exercise this in ordinary stub-provider tests too. Fixture tokens never exist in production.
+        const notice = 'בדיקה בלבד — אין שינוי אמיתי בתנאי הקבלה. קישור ההסרה בבדיקה אינו פעיל.';
+        await tx`update public.admission_alert_outbox set mail_payload = mail_payload || jsonb_build_object(
+            'subject', ${`[בדיקה בלבד — ${target.toUpperCase()}] MyWay`}::text,
+            'html', replace(mail_payload->>'html', '</body>', ${`<p dir="rtl">${notice}</p></body>`}),
+            'text', ${notice + '\n\n'} || (mail_payload->>'text')
+          ) where id=${f.outboxId}`;
         const [stored] =
           await tx`select * from public.admission_alert_outbox where id=${f.outboxId}`;
-        expect(JSON.stringify(stored)).not.toContain(
-          deriveAdmissionAlertUnsubscribeToken(f.outboxId, secret),
+        expect(
+          JSON.stringify(stored).includes(deriveAdmissionAlertUnsubscribeToken(f.outboxId, secret)),
+        ).toBe(false);
+        let providerCalls = 0;
+        const send = vi.fn<import('./deliveryWorker').AdmissionAlertMailProvider['send']>(
+          async (request) => {
+            if (!liveProof) return { status: 'accepted', providerMessageId: 'provider-fixture' };
+            if (request.payload.to !== liveProof.recipient || ++providerCalls !== 1)
+              throw new Error('Live proof recipient or send-count mismatch.');
+            await delay(1100);
+            const result = await createResendAdmissionAlertProvider({
+              apiKey: liveProof.apiKey,
+            }).send(request);
+            console.log(
+              JSON.stringify({
+                target,
+                status: result.status,
+                ...(result.status === 'accepted'
+                  ? { providerMessageId: result.providerMessageId }
+                  : {}),
+              }),
+            );
+            return result;
+          },
         );
-        const send = vi
-          .fn()
-          .mockResolvedValue({ status: 'accepted', providerMessageId: 'provider-fixture' });
         const repository = createDrizzleAdmissionAlertDeliveryRepository(db, secret);
         expect(await processAdmissionAlertDelivery({ repository, provider: { send } })).toEqual({
           status: 'accepted',
@@ -90,15 +124,18 @@ describe.skipIf(!enabled)('complete alert lifecycle with real database functions
           status: 'idle',
         });
         expect(send).toHaveBeenCalledTimes(1);
-        expect(JSON.stringify(send.mock.calls[0])).toContain(
-          deriveAdmissionAlertUnsubscribeToken(f.outboxId, secret),
-        );
+        expect(
+          JSON.stringify(send.mock.calls[0]).includes(
+            deriveAdmissionAlertUnsubscribeToken(f.outboxId, secret),
+          ),
+        ).toBe(true);
         expect(
           (
             await tx`select mail_payload from public.admission_alert_outbox where id=${f.outboxId}`
           )[0].mail_payload,
         ).toBeNull();
       }),
+    30_000,
   );
   it('blocks a changed or unverified recipient at the submission boundary', async () =>
     isolated(async (tx) => {
