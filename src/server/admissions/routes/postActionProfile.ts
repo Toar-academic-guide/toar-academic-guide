@@ -4,8 +4,10 @@ import { createHash } from 'node:crypto';
 
 import type { BagrutSubjectRecord, BagrutSubjectRecordV2 } from '@/types';
 import {
+  BGU_BAGRUT_PROFILE_POLICY,
   TAU_BAGRUT_PROFILE_POLICY,
   TAU_ENGINEERING_EXACT_SCIENCES_POLICY,
+  calculateBguBagrutAverage,
   calculateTauBagrutAverage,
   evaluateTauEngineeringExactSciencesBonus,
 } from '@/server/admissions/bagrutPolicies';
@@ -21,8 +23,11 @@ export type PostActionPairId = 'tau_cs__tau' | 'bgu_cs__bgu';
 
 export interface PostActionInstitutionInputs {
   tauBagrutAverage?: number;
+  bguBagrutAverage?: number;
   hasQualifiedMathAndPhysics?: boolean;
   quantitativeSubscore?: number;
+  verbalSubscore?: number;
+  englishSubscore?: number;
   languageRequirementsConfirmed?: boolean;
   gates?: ReturnType<typeof evaluateBguComputerScienceGates>;
 }
@@ -47,6 +52,8 @@ export function recomputePostActionProfile(args: {
   psychometric: number;
   subjectRecord: BagrutSubjectRecord;
   quantitativeSubscore?: number;
+  verbalSubscore?: number;
+  englishSubscore?: number;
   languageRequirementsConfirmed?: boolean;
   actions: RouteAction[];
 }): PostActionProfileResult {
@@ -64,6 +71,19 @@ export function recomputePostActionProfile(args: {
 
   let profile: RouteProfile = {
     psychometric: args.psychometric,
+    ...(args.quantitativeSubscore !== undefined ||
+    args.verbalSubscore !== undefined ||
+    args.englishSubscore !== undefined
+      ? {
+          psychometricComponents: {
+            ...(args.quantitativeSubscore !== undefined
+              ? { quantitative: args.quantitativeSubscore }
+              : {}),
+            ...(args.verbalSubscore !== undefined ? { verbal: args.verbalSubscore } : {}),
+            ...(args.englishSubscore !== undefined ? { english: args.englishSubscore } : {}),
+          },
+        }
+      : {}),
     subjectRecord: cloneVersionedRecord(args.subjectRecord),
   };
   for (const action of args.actions) {
@@ -100,22 +120,37 @@ export function recomputePostActionProfile(args: {
     });
   }
 
+  const bguAverage = calculateBguBagrutAverage(subjectRecord);
+  if (bguAverage.state === 'needs_input') {
+    return {
+      status: 'needs_input',
+      missingInputs: bguAverage.missingInputs,
+      policyVersion: bguAverage.policyVersion,
+    };
+  }
   const languageRequirementsConfirmed = args.languageRequirementsConfirmed ?? false;
+  const components = profile.psychometricComponents;
   return readySnapshot({
     pairId: args.pairId,
     psychometric: profile.psychometric,
     subjectRecord,
     institutionInputs: {
-      quantitativeSubscore: args.quantitativeSubscore,
+      bguBagrutAverage: bguAverage.average,
+      quantitativeSubscore: components?.quantitative,
+      verbalSubscore: components?.verbal,
+      englishSubscore: components?.english,
       languageRequirementsConfirmed,
       gates: evaluateBguComputerScienceGates({
         psychometric: profile.psychometric,
-        quantitativeSubscore: args.quantitativeSubscore,
+        quantitativeSubscore: components?.quantitative,
         subjects: bagrutExamSubjects(subjectRecord),
         languageRequirementsConfirmed,
       }),
     },
-    policyVersions: [BGU_COMPUTER_SCIENCE_QUANTITATIVE_POLICY.version],
+    policyVersions: [
+      BGU_BAGRUT_PROFILE_POLICY.version,
+      BGU_COMPUTER_SCIENCE_QUANTITATIVE_POLICY.version,
+    ],
   });
 }
 

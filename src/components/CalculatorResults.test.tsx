@@ -38,7 +38,7 @@ vi.mock('@/lib/admissionsRouteClient', () => ({
       this.code = code;
     }
   },
-  fetchTauComputerScienceRoutes: hoistedMocks.fetchTauComputerScienceRoutes,
+  fetchComputerScienceRoutes: hoistedMocks.fetchTauComputerScienceRoutes,
 }));
 
 vi.mock('posthog-js', () => ({
@@ -82,7 +82,15 @@ function route(id: string, durationWeeks: number, effortPoints: number) {
       },
     ],
     afterProfile: { psychometric: 700, subjects: [] },
-    estimate: { durationWeeks, effortPoints, version: 'standard-estimates-test' },
+    estimate: {
+      durationWeeks,
+      effortPoints,
+      estimateVersion: 'standard-estimates-test',
+      owner: 'Toar admissions editorial',
+      effectiveDate: '2026-07-20',
+      eligibility: 'Test estimate.',
+      rationale: 'Test estimate.',
+    },
     verification: { eligible: true, margin: 1, score: 707, cutoff: 706 },
   };
 }
@@ -453,9 +461,79 @@ describe('CalculatorResults', () => {
       />,
     );
 
+    expect(await screen.findByText(/בלי שם, דוא״ל או מזהה משתמש/)).toBeTruthy();
+    expect(hoistedMocks.fetchTauComputerScienceRoutes).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'בדיקת מסלולים מאומתים' }));
     expect(await screen.findByText('המהיר ביותר')).toBeTruthy();
     expect(screen.getByText('הכי מעט מאמץ')).toBeTruthy();
     expect(screen.getByText(/לשפר פסיכומטרי מ-680 ל-700/)).toBeTruthy();
+  });
+
+  it('requests and renders verified BGU route winners from a complete profile', async () => {
+    hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
+      report([
+        {
+          institution: { id: 'bgu', name: 'אוניברסיטת בן־גוריון', region: 'south' },
+          linkedInstitutionId: 'bgu',
+          capability: 'exact',
+          kind: 'exact',
+          decision: 'below',
+          confidence: 'high',
+          sourceLabel: 'אימות רשמי',
+          explanation: 'מתחת לסף',
+          nextAction: 'בדקו מסלול שיפור',
+          score: 636,
+          threshold: 681,
+        },
+      ]),
+    );
+    hoistedMocks.fetchTauComputerScienceRoutes.mockResolvedValue({
+      status: 'complete',
+      fastest: route('grade_history_80_95', 12, 3),
+      lowestEffort: route('grade_history_80_95', 12, 3),
+    });
+
+    render(
+      <CalculatorResults
+        degreeId="bgu_cs"
+        programs={programs}
+        psychometric={610}
+        bagrut={105}
+        onBack={() => {}}
+        academicScores={{
+          psychometric: { overall: 610, quantitative: 125, verbal: 110, english: 115 },
+          admissions: {
+            bguBagrutAverage: 105,
+            bguLanguageRequirementsConfirmed: true,
+          },
+          bagrut: {
+            weightedAverage: 105,
+            subjectRecord: {
+              schemaVersion: 2,
+              sector: 'jewish',
+              certificateType: 'internal',
+              complete: true,
+              subjects: [
+                {
+                  subjectId: 'mathematics',
+                  units: 4,
+                  grade: 90,
+                  assessmentKind: 'exam',
+                },
+              ],
+            },
+          },
+        }}
+      />,
+    );
+
+    expect(await screen.findByText(/להתקבל למדעי המחשב בבן־גוריון/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'בדיקת מסלולים מאומתים' }));
+    expect(await screen.findByText('המהיר ביותר')).toBeTruthy();
+    expect(hoistedMocks.fetchTauComputerScienceRoutes).toHaveBeenCalledWith(
+      'bgu_cs',
+      expect.any(Object),
+    );
   });
 
   it('renders an exact accepted result from the admissions evaluation route', async () => {

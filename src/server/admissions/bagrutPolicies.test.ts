@@ -5,6 +5,7 @@ import { subjectIdForWizardLabel } from '@/utils/bagrutSubjectRecord';
 import {
   BGU_COMPUTER_SCIENCE_ROUTE_POLICY,
   TAU_ENGINEERING_EXACT_SCIENCES_POLICY,
+  calculateBguBagrutAverage,
   calculateTauBagrutAverage,
   calculateOptimizedBagrutAverage,
   classifyPsychometricEnglishScore,
@@ -68,7 +69,7 @@ describe('TAU engineering and exact-sciences Bagrut policy', () => {
       authority: 'official-published-requirement',
     });
     expect(BGU_COMPUTER_SCIENCE_ROUTE_POLICY).toMatchObject({
-      enabled: false,
+      enabled: true,
       authority: 'official-published-requirement',
     });
   });
@@ -118,6 +119,30 @@ describe('TAU engineering and exact-sciences Bagrut policy', () => {
 });
 
 describe('versioned admissions input policies', () => {
+  it('reproduces the official BGU calculator sample and caps the optional average', () => {
+    const result = calculateBguBagrutAverage({
+      schemaVersion: 2,
+      sector: 'jewish',
+      certificateType: 'internal',
+      complete: true,
+      subjects: [
+        { subjectId: 'history', units: 2, grade: 100, assessmentKind: 'exam' },
+        { subjectId: 'civics', units: 2, grade: 100, assessmentKind: 'exam' },
+        { subjectId: 'mathematics', units: 3, grade: 100, assessmentKind: 'exam' },
+        { subjectId: 'english', units: 5, grade: 100, assessmentKind: 'exam' },
+        { subjectId: 'literature', units: 5, grade: 100, assessmentKind: 'exam' },
+        { subjectId: 'bible', units: 2, grade: 100, assessmentKind: 'exam' },
+        { subjectId: 'hebrew_expression', units: 2, grade: 100, assessmentKind: 'exam' },
+      ],
+    });
+
+    expect(result).toMatchObject({
+      state: 'calculated',
+      average: 111.9,
+      policyVersion: 'bgu-bagrut-profile-2026-09-29',
+    });
+  });
+
   it('classifies an English score only through an explicit institution policy', () => {
     expect(
       classifyPsychometricEnglishScore(121, {

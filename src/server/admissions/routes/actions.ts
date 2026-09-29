@@ -2,11 +2,22 @@ import type { BagrutSubjectRecord, BagrutSubjectV2 } from '@/types';
 
 export interface RouteProfile {
   psychometric: number;
+  psychometricComponents?: {
+    quantitative?: number;
+    verbal?: number;
+    english?: number;
+  };
   subjectRecord: BagrutSubjectRecord;
 }
 
 export type RouteAction =
-  | { id: string; kind: 'psychometric'; from: number; to: number }
+  | {
+      id: string;
+      kind: 'psychometric';
+      component?: 'overall' | 'quantitative' | 'verbal' | 'english';
+      from: number;
+      to: number;
+    }
   | {
       id: string;
       kind: 'improve_grade';
@@ -25,16 +36,28 @@ export type RouteAction =
 
 export function applyRouteAction(profile: RouteProfile, action: RouteAction): RouteProfile | null {
   if (action.kind === 'psychometric') {
+    const component = action.component ?? 'overall';
+    const current =
+      component === 'overall' ? profile.psychometric : profile.psychometricComponents?.[component];
+    const maximum = component === 'overall' ? 800 : 150;
+    const minimum = component === 'overall' ? 200 : 50;
     if (
-      profile.psychometric !== action.from ||
+      current !== action.from ||
       !Number.isInteger(action.to) ||
       action.to <= action.from ||
-      action.to > 800 ||
-      action.to < 200
+      action.to > maximum ||
+      action.to < minimum
     ) {
       return null;
     }
-    return { ...profile, psychometric: action.to };
+    if (component === 'overall') return { ...profile, psychometric: action.to };
+    return {
+      ...profile,
+      psychometricComponents: {
+        ...profile.psychometricComponents!,
+        [component]: action.to,
+      },
+    };
   }
 
   const subjects = profile.subjectRecord.subjects.map((subject) => ({ ...subject }));
