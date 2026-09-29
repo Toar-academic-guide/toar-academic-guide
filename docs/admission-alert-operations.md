@@ -313,3 +313,29 @@ consent changes, cycle expiration, retention and account deletion. These are not
 live Resend or production-user proofs. Until both controlled real-provider flows,
 signed events and deployed account controls have evidence, keep
 `ADMISSION_ALERT_PROCESSING_ENABLED` and `ADMISSION_ALERT_DELIVERY_ENABLED` off.
+
+### Isolated real-provider email check
+
+Use **Isolated Admission Alert Email Proof** on `main` with `confirm_send=true`
+only with the test recipient's approval. It sends exactly one labelled TAU and one
+labelled BGU message to the fixed approved recipient through the existing preparation,
+delivery worker and Resend adapter. Its PostgreSQL service is disposable; it has
+no production database credentials, no schedule, and does not enable either runtime
+switch. Normal CI continues using the stub provider. Fixture transactions roll back
+and GitHub removes the service after the job.
+
+The log reports only target, outcome and accepted provider message ID. A failed or
+uncertain submission stops the run; workflow reruns are disabled. Reconcile that
+message in Resend before authorizing a new dispatch, which is a new test send.
+
+Verify both labelled messages in the recipient's inbox (including spam). In Resend,
+open **Webhooks**, select the production endpoint, and inspect the corresponding
+`email.sent` / `email.delivered` attempts: expect HTTP 200 and `status: ignored`.
+That response is expected because the fixture outbox is not in production. It can
+prove the deployed signature verifier accepted the callback, but not production
+telemetry persistence. The test unsubscribe links are deliberately inactive in
+production and must not be presented as a cancellation proof.
+
+This check proves real-provider acceptance and email rendering, not a real reviewed
+admissions transition, authenticated account controls, or the complete Plan 004
+end-to-end lifecycle. Keep those remaining proofs distinct before activation.
