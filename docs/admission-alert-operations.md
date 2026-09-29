@@ -6,7 +6,8 @@ The server-only React Email renderer produces both RTL HTML and plain text. Its
 input is limited to the verified recipient, public institution/program names,
 reviewed date, cycle and an opaque unsubscribe token. Never pass a profile or
 evaluation result to the renderer. The Resend adapter sends only the six
-allowlisted mail fields; provider metadata must not contain academic inputs.
+allowlisted mail fields and one opaque delivery-correlation tag; provider metadata
+must not contain academic inputs.
 
 Delivery configuration (not enabled by the template PR):
 
@@ -18,8 +19,8 @@ Delivery configuration (not enabled by the template PR):
   credentials. Links must point to the deployed app, not the workflow runner.
 
 The unsubscribe token is in the link fragment to keep it out of access logs.
-The confirmation page and delivery integration are separate U6/U7 work. Do not
-enable sending until those controls and the controlled provider proof are ready.
+The confirmation page is implemented; delivery preparation remains U7 work. Do
+not enable sending until that integration and the controlled provider proof are ready.
 
 Verify the rendered TAU and BGU messages in Hebrew: the programme and review date
 are visible, the call to action opens `/app/calculator`, management points to
@@ -196,3 +197,54 @@ claim, category/cycle/profile rechecks, post-submit recovery, idempotent accepta
 unknown acceptance, retry scheduling, and the idempotency-window boundary. Live
 provider acceptance remains unproven until the authorized controlled send after
 the template and unsubscribe implementation.
+
+## Signed events and category unsubscribe (U6)
+
+Configure Resend's webhook endpoint as
+`https://<app-origin>/api/admission-alerts/webhooks/resend`. Put its signing secret
+in `ADMISSION_ALERT_RESEND_WEBHOOK_SECRET` on the matching Vercel environment.
+Subscribe to `email.sent`, `email.delivered`, `email.bounced`, `email.complained`,
+`email.failed`, `email.delivery_delayed`, and `email.suppressed`. The route verifies
+the exact raw body with Svix, including timestamp freshness, before interpreting
+the event. Missing configuration returns 503; invalid signatures return 400;
+database failures return a generic 503 so the provider can retry.
+
+The adapter adds only an opaque `admission_alert` tag derived from the existing
+idempotency key. A signed event can therefore reconcile an uncertain submission
+whose provider ID was not recorded. Work that was never submitted is ignored.
+Provider acceptance closes the one-email promise; delivered/bounced/complained
+facts are recorded independently, so later events cannot erase earlier facts.
+Duplicate event IDs have no effect. Events never send another message or reopen a
+cancelled/expired subscription. Stored event metadata contains only event time,
+type, provider message ID and the internal outbox reference, not raw bodies,
+recipient addresses or academic data. U7 owns the 30-day deduplication cleanup.
+
+The unsubscribe page reads the token from the URL fragment and immediately removes
+that fragment from browser history. It is a standalone page with no analytics or
+third-party scripts. Opening a link does not cancel anything: the Hebrew removal
+button submits the token to the API. No account login is required. A current-cycle
+link disables the category, cancels active/pending subscriptions, and suppresses
+work that has not crossed the submission boundary. In-flight or accepted mail may
+still arrive; the success message says so. Expired links cannot change a newer
+cycle. Repeated use is harmless, and a used link cannot revoke a later explicit
+opt-in. All existing links are marked used on category opt-out.
+
+Only SHA-256 token hashes are stored. The token helper derives a stable opaque
+value using HMAC-SHA-256 over a random delivery UUID and a secret containing at
+least 32 random bytes (base64url). U7 must provision that worker-only secret,
+prepare the hash, and materialize the raw token only in memory when rendering or
+submitting mail. Do not store the raw token inside `mail_payload`. Changing the
+secret must not silently change an already-submitted immutable request.
+
+To verify in the browser, open a test email's removal link, click **הסרה מכל התראות
+הקבלה**, and expect the cancellation message. Reopen and repeat: it should remain
+cancelled. An expired-cycle link must show an invalid/expired message and leave
+current subscriptions unchanged. The address bar must contain no token after
+the page loads. These checks can use disposable local fixtures; they do not prove
+live Resend delivery.
+
+Focused disposable database verification (never production):
+
+```sh
+ALERT_DB_INTEGRATION=1 npx vitest run src/server/admission-alerts/webhookUnsubscribe.integration.test.ts
+```
