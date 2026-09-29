@@ -5,6 +5,10 @@ vi.mock('server-only', () => ({}));
 import { runTauComputerScienceRouteSimulation } from './tauRouteSimulation';
 import type { TauFinalist } from './tauFinalistVerifier';
 import { TAU_BAGRUT_AVERAGE_VERIFICATION } from '@/data/admissions/tauBagrutAverageVerification';
+import {
+  TAU_COMPUTER_SCIENCE_ACCEPTANCE_CUTOFF,
+  TAU_COMPUTER_SCIENCE_SOURCE_FINGERPRINT,
+} from '@/data/admissions/tauComputerScienceVerification';
 
 const record = {
   schemaVersion: 1 as const,
@@ -23,7 +27,9 @@ describe('runTauComputerScienceRouteSimulation', () => {
         status: finalist.psychometric === 670 ? ('verified' as const) : ('unavailable' as const),
         eligible: finalist.psychometric === 670,
         score: finalist.psychometric === 670 ? 707 : undefined,
-        cutoff: finalist.psychometric === 670 ? 706 : undefined,
+        cutoff: finalist.psychometric === 670 ? TAU_COMPUTER_SCIENCE_ACCEPTANCE_CUTOFF : undefined,
+        ruleFingerprint:
+          finalist.psychometric === 670 ? TAU_COMPUTER_SCIENCE_SOURCE_FINGERPRINT : undefined,
         sourceUrl: 'https://go.tau.ac.il/he/exact/ba/computer',
       })),
     );
@@ -50,7 +56,9 @@ describe('runTauComputerScienceRouteSimulation', () => {
     expect(result).toMatchObject({
       status: 'complete',
       fastest: { actions: [{ kind: 'psychometric', to: 670 }] },
-      lowestEffort: { verification: { score: 707, cutoff: 706 } },
+      lowestEffort: {
+        verification: { score: 707, cutoff: TAU_COMPUTER_SCIENCE_ACCEPTANCE_CUTOFF },
+      },
     });
   });
 

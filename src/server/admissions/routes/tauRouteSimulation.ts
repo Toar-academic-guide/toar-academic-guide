@@ -2,6 +2,7 @@ import 'server-only';
 
 import type { BagrutSubjectRecord } from '@/types';
 import { evaluateTauEngineeringExactSciencesBonus } from '@/server/admissions/bagrutPolicies';
+import { evaluateTauComputerScienceGates } from '@/server/admissions/tauComputerSciencePolicy';
 
 import { applyRouteAction, type RouteAction, type RouteProfile } from './actions';
 import { combineRouteEstimates } from './estimateSeed';
@@ -23,6 +24,8 @@ export interface TauRouteSimulationProfile {
   psychometric: number;
   tauBagrutAverage: number;
   subjectRecord: BagrutSubjectRecord;
+  tauApplicationRequirementsConfirmed?: boolean;
+  tauMathPlacementScore?: number;
 }
 
 export type TauRouteSimulationResult = Omit<RouteSearchResult, 'status'> & {
@@ -53,18 +56,36 @@ export async function runTauComputerScienceRouteSimulation(args: {
       const { tauBagrutAverage, hasQualifiedMathAndPhysics } =
         recomputed.snapshot.institutionInputs;
       if (tauBagrutAverage !== undefined && hasQualifiedMathAndPhysics !== undefined) {
+        const gates = evaluateTauComputerScienceGates({
+          psychometric: recomputed.snapshot.psychometric,
+          extraInputs: {
+            bagrutSubjectRecord: recomputed.snapshot.subjectRecord,
+            tauApplicationRequirementsConfirmed: args.profile.tauApplicationRequirementsConfirmed,
+            tauMathPlacementScore: args.profile.tauMathPlacementScore,
+          },
+        });
         return [
           {
             id,
             psychometric: recomputed.snapshot.psychometric,
             bagrutAverage: tauBagrutAverage,
             hasQualifiedMathAndPhysics,
+            requiredInputs: gates.requiredInputs,
+            unmetRequirements: gates.unmetRequirements,
           },
         ];
       }
     }
 
     if (actions.some((action) => action.kind !== 'psychometric')) return [];
+    const gates = evaluateTauComputerScienceGates({
+      psychometric: afterProfile.psychometric,
+      extraInputs: {
+        bagrutSubjectRecord: afterProfile.subjectRecord,
+        tauApplicationRequirementsConfirmed: args.profile.tauApplicationRequirementsConfirmed,
+        tauMathPlacementScore: args.profile.tauMathPlacementScore,
+      },
+    });
     return [
       {
         id,
@@ -73,6 +94,8 @@ export async function runTauComputerScienceRouteSimulation(args: {
         hasQualifiedMathAndPhysics: evaluateTauEngineeringExactSciencesBonus(
           afterProfile.subjectRecord,
         ).qualifies,
+        requiredInputs: gates.requiredInputs,
+        unmetRequirements: gates.unmetRequirements,
       },
     ];
   });
@@ -90,7 +113,8 @@ export async function runTauComputerScienceRouteSimulation(args: {
       verification.status !== 'verified' ||
       !verification.eligible ||
       verification.score === undefined ||
-      verification.cutoff === undefined
+      verification.cutoff === undefined ||
+      !verification.ruleFingerprint
     ) {
       return [];
     }
@@ -105,6 +129,7 @@ export async function runTauComputerScienceRouteSimulation(args: {
           score: verification.score,
           cutoff: verification.cutoff,
           sourceUrl: verification.sourceUrl,
+          ruleFingerprint: verification.ruleFingerprint,
         },
       },
     ];
