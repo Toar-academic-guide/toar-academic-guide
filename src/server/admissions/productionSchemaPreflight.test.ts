@@ -14,14 +14,18 @@ import {
 describe('production admissions schema preflight', () => {
   it('recognizes the deployed profile admissions-input migration before publishing cutoffs', () => {
     const snapshot = makeSnapshot();
-    snapshot.migrationHistory = snapshot.migrationHistory.filter(
-      (migration) => migration.name !== 'profile_admissions_inputs',
+    snapshot.migrationHistory = snapshot.migrationHistory.map((migration) =>
+      migration.name === 'profile_admissions_inputs'
+        ? {
+            version: '20260927081154',
+            name: 'profile_admissions_inputs',
+            statementFingerprint: '7a8c79303c9c4110e663e729df123fc1',
+          }
+        : migration,
     );
-    snapshot.migrationHistory.push({
-      version: '20260927081154',
-      name: 'profile_admissions_inputs',
-      statementFingerprint: '7a8c79303c9c4110e663e729df123fc1',
-    });
+    snapshot.migrationHistory.find(
+      (migration) => migration.name === 'alert_transition_recovery',
+    )!.version = '20260929000000';
     if (!snapshot.tables.user_profiles.columns.includes('admissions_inputs')) {
       snapshot.tables.user_profiles.columns.push('admissions_inputs');
     }
@@ -29,7 +33,7 @@ describe('production admissions schema preflight', () => {
 
     expect(assessProductionSchema(snapshot)).toMatchObject({
       status: 'current',
-      appliedThrough: '0028',
+      appliedThrough: '0031',
       pendingMigrations: [],
       issues: [],
     });
@@ -64,10 +68,31 @@ describe('production admissions schema preflight', () => {
     expect(report).toMatchObject({
       status: 'current',
       safeToMigrate: false,
-      appliedThrough: '0028',
+      appliedThrough: '0031',
       pendingMigrations: [],
       issues: [],
     });
+  });
+
+  it('requires lease and retry columns after the recovery migration', () => {
+    const snapshot = makeSnapshot();
+    snapshot.tables.admission_alert_transition_work.columns =
+      snapshot.tables.admission_alert_transition_work.columns.filter(
+        (column) => column !== 'claim_token',
+      );
+    snapshot.tables.admission_alert_transition_work.columnTypes.retry_state = 'text';
+    expect(assessProductionSchema(snapshot).issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'missing_column',
+          object: 'table:admission_alert_transition_work.column:claim_token',
+        }),
+        expect.objectContaining({
+          code: 'column_type_mismatch',
+          object: 'table:admission_alert_transition_work.column:retry_state',
+        }),
+      ]),
+    );
   });
 
   it('rejects missing alert storage and incorrect alert role grants', () => {
@@ -194,6 +219,7 @@ describe('production admissions schema preflight', () => {
       '0026',
       '0027',
       '0028',
+      '0031',
     ] as const) {
       const migration = FORWARD_PRODUCTION_MIGRATIONS.find(({ id }) => id === migrationId);
       const source = readFileSync(migration?.repositoryPath ?? '', 'utf8');
@@ -250,6 +276,7 @@ describe('production admissions schema preflight', () => {
       '0026',
       '0027',
       '0028',
+      '0031',
     ]);
   });
 
@@ -276,6 +303,7 @@ describe('production admissions schema preflight', () => {
       '0026',
       '0027',
       '0028',
+      '0031',
     ]);
   });
 
@@ -288,7 +316,7 @@ describe('production admissions schema preflight', () => {
     expect(assessProductionSchema(snapshot)).toMatchObject({
       status: 'migration_required',
       safeToMigrate: true,
-      pendingMigrations: ['0027', '0028'],
+      pendingMigrations: ['0027', '0028', '0031'],
       issues: [],
     });
   });
@@ -484,7 +512,7 @@ describe('production admissions schema preflight', () => {
     expect(assessProductionSchema(snapshot)).toMatchObject({
       status: 'migration_required',
       safeToMigrate: true,
-      pendingMigrations: ['0024', '0025', '0026', '0027', '0028'],
+      pendingMigrations: ['0024', '0025', '0026', '0027', '0028', '0031'],
       issues: [],
     });
   });
@@ -585,6 +613,17 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
     };
   }
 
+  if (appliedIds.has('0031')) {
+    for (const [column, type] of [
+      ['claim_token', 'uuid'],
+      ['lease_expires_at', 'timestamp with time zone'],
+      ['next_attempt_at', 'timestamp with time zone'],
+      ['retry_state', 'jsonb'],
+    ]) {
+      tables.admission_alert_transition_work.columns.push(column);
+      tables.admission_alert_transition_work.columnTypes[column] = type;
+    }
+  }
   if (appliedIds.has('0028')) {
     tables.user_profiles.columns.push('admissions_inputs');
     tables.user_profiles.columnTypes.admissions_inputs = 'jsonb';

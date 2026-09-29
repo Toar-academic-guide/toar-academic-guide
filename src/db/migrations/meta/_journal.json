@@ -218,6 +218,13 @@
       "when": 1790614439253,
       "tag": "0030_retire_tau_infosystems_duplicate",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1790701816780,
+      "tag": "0031_alert_transition_recovery",
+      "breakpoints": true
     }
   ]
 }

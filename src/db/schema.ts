@@ -861,6 +861,13 @@ export const admissionAlertTransitionWork = pgTable(
     status: admissionAlertTransitionWorkStatusEnum('status').default('pending').notNull(),
     cursor: text('cursor'),
     claimedAt: timestamp('claimed_at', { withTimezone: true }),
+    claimToken: uuid('claim_token'),
+    leaseExpiresAt: timestamp('lease_expires_at', { withTimezone: true }),
+    nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }),
+    retryState: jsonb('retry_state')
+      .$type<Record<string, { attempts: number; nextAttemptAt: string; quarantined: boolean }>>()
+      .default({})
+      .notNull(),
     completedAt: timestamp('completed_at', { withTimezone: true }),
     failureReason: text('failure_reason'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),

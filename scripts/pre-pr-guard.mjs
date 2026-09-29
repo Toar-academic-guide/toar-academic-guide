@@ -119,6 +119,8 @@ const targetedTests = [
   'src/server/user/profileSchema.test.ts',
   'src/server/user/migration.test.ts',
   'src/server/admission-alerts/profileRefresh.test.ts',
+  'src/server/admission-alerts/transitionProcessor.test.ts',
+  'src/server/admission-alerts/transitionWork.test.ts',
 ];
 
 const admissionsGeneratedFiles = [
