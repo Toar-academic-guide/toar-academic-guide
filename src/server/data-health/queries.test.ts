@@ -337,6 +337,25 @@ describe('summarizeDataHealthRows', () => {
       withheld: 4,
       isComplete: false,
     });
+    expect(report.admissionRoutes).toMatchObject({
+      enabled: 2,
+      rows: expect.arrayContaining([
+        expect.objectContaining({
+          programId: 'tau_cs',
+          pairId: 'tau_cs__tau',
+          status: 'enabled',
+          evaluatorCapability: 'exact',
+          actionCapabilityStatus: 'ready',
+        }),
+        expect.objectContaining({
+          programId: 'bgu_cs',
+          pairId: 'bgu_cs__bgu',
+          status: 'enabled',
+          evaluatorCapability: 'exact',
+          actionCapabilityStatus: 'ready',
+        }),
+      ]),
+    });
   });
 
   it('reports the latest published admissions release separately from failed publication attempts', () => {

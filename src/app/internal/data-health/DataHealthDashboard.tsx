@@ -92,6 +92,67 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
         </section>
 
         <section className="rounded-[1.75rem] border border-slate-950/10 bg-white p-6 shadow-sm">
+          <h2 className="text-2xl font-black text-slate-950">Verified admission routes</h2>
+          <p className="mt-1 text-sm text-slate-500">
+            A target is active only when both the exact evaluator and its reviewed action model are
+            ready. These rows contain capability categories only, never applicant scores or subject
+            records.
+          </p>
+          <DefinitionGrid
+            items={[
+              ['Enabled targets', report.admissionRoutes.enabled],
+              ['Withheld targets', report.admissionRoutes.disabled],
+              ['Unsupported targets', report.admissionRoutes.unsupported],
+            ]}
+          />
+          <div className="mt-5 grid gap-3 lg:grid-cols-2">
+            {report.admissionRoutes.rows.map((route) => (
+              <article key={route.programId} className="rounded-2xl bg-slate-50 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <h3 className="font-black text-slate-950">{route.programId}</h3>
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-black ${
+                      route.status === 'enabled'
+                        ? 'bg-emerald-100 text-emerald-900'
+                        : 'bg-amber-100 text-amber-900'
+                    }`}
+                  >
+                    {route.status}
+                  </span>
+                </div>
+                <dl className="mt-3 grid gap-2 text-sm text-slate-700">
+                  <div>
+                    <dt className="inline font-bold">Pair: </dt>
+                    <dd className="inline">{route.pairId ?? 'none'}</dd>
+                  </div>
+                  <div>
+                    <dt className="inline font-bold">Evaluator: </dt>
+                    <dd className="inline">{route.evaluatorCapability}</dd>
+                  </div>
+                  <div>
+                    <dt className="inline font-bold">Action model: </dt>
+                    <dd className="inline">{route.actionCapabilityStatus}</dd>
+                  </div>
+                  <div>
+                    <dt className="inline font-bold">Verification: </dt>
+                    <dd className="inline">{route.verificationMode ?? 'none'}</dd>
+                  </div>
+                  <div>
+                    <dt className="inline font-bold">Actions: </dt>
+                    <dd className="inline">{route.supportedActionKinds.join(', ') || 'none'}</dd>
+                  </div>
+                </dl>
+                {route.missingCapabilities.length > 0 ? (
+                  <p className="mt-3 text-xs font-semibold text-amber-900">
+                    Missing: {route.missingCapabilities.join(', ')}
+                  </p>
+                ) : null}
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="rounded-[1.75rem] border border-slate-950/10 bg-white p-6 shadow-sm">
           <h2 className="text-2xl font-black text-slate-950">Admissions decision readiness</h2>
           <DefinitionGrid
             items={[

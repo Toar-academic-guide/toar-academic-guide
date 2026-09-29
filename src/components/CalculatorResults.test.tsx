@@ -12,6 +12,7 @@ const hoistedMocks = vi.hoisted(() => ({
   fetchAdmissionsEvaluation: vi.fn(),
   fetchTauComputerScienceRoutes: vi.fn(),
   push: vi.fn(),
+  posthogCapture: vi.fn(),
   user: null as { id: string } | null,
 }));
 
@@ -43,7 +44,7 @@ vi.mock('@/lib/admissionsRouteClient', () => ({
 
 vi.mock('posthog-js', () => ({
   default: {
-    capture: vi.fn(),
+    capture: hoistedMocks.posthogCapture,
   },
 }));
 
@@ -213,6 +214,7 @@ describe('CalculatorResults', () => {
     vi.restoreAllMocks();
     hoistedMocks.fetchAdmissionsEvaluation.mockReset();
     hoistedMocks.fetchTauComputerScienceRoutes.mockReset();
+    hoistedMocks.posthogCapture.mockReset();
   });
 
   it('labels exact Management eligibility as eligible to apply, without asking for more data', async () => {
@@ -534,6 +536,14 @@ describe('CalculatorResults', () => {
       'bgu_cs',
       expect.any(Object),
     );
+    expect(hoistedMocks.posthogCapture).toHaveBeenCalledWith('admissions_route_outcome', {
+      degree_id: 'bgu_cs',
+      outcome: 'complete',
+    });
+    const routeAnalytics = hoistedMocks.posthogCapture.mock.calls.find(
+      ([event]) => event === 'admissions_route_outcome',
+    );
+    expect(JSON.stringify(routeAnalytics)).not.toMatch(/grade|subject|profile|psychometric/i);
   });
 
   it('renders an exact accepted result from the admissions evaluation route', async () => {
