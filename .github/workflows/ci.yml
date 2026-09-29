@@ -256,7 +256,7 @@ jobs:
         run: |
           npm run test:publication:db
           npm run test:source-freshness:db
-          npx vitest run src/server/admission-alerts/health.integration.test.ts
+          npx vitest run src/server/admission-alerts/health.integration.test.ts src/server/admission-alerts/transitionProcessor.integration.test.ts
 
   # ---------------------------------------------------------------------------
   # Job 4: Admissions evidence and calculator verification

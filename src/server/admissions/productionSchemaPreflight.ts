@@ -897,6 +897,23 @@ function assessChangedObjects(
   issues: ProductionSchemaIssue[],
 ) {
   assessAddedColumn(snapshot, applied, '0028', 'user_profiles', 'admissions_inputs', issues);
+  for (const [column, type] of [
+    ['claim_token', 'uuid'],
+    ['lease_expires_at', 'timestamp with time zone'],
+    ['next_attempt_at', 'timestamp with time zone'],
+    ['retry_state', 'jsonb'],
+  ]) {
+    assessAddedColumn(snapshot, applied, '0031', 'admission_alert_transition_work', column, issues);
+    assessColumnType(
+      snapshot,
+      applied,
+      '0031',
+      'admission_alert_transition_work',
+      column,
+      type,
+      issues,
+    );
+  }
   assessColumnType(
     snapshot,
     applied,

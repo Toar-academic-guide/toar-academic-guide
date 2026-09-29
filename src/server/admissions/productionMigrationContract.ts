@@ -17,7 +17,8 @@ export type MigrationId =
   | '0025'
   | '0026'
   | '0027'
-  | '0028';
+  | '0028'
+  | '0031';
 
 export type MigrationHistoryEntry = {
   version: string;
@@ -198,5 +199,12 @@ export const FORWARD_PRODUCTION_MIGRATIONS: ForwardProductionMigration[] = [
     statementFingerprint: '30212c6087643b136c1dafc1cd6b151f',
     // The deployed Supabase payload included bounded lock and statement timeouts.
     legacyStatementFingerprints: ['7a8c79303c9c4110e663e729df123fc1'],
+  },
+  {
+    id: '0031',
+    remoteName: 'alert_transition_recovery',
+    repositoryPath: 'src/db/migrations/0031_alert_transition_recovery.sql',
+    statementFingerprint: 'd13d81b19eb4f3f7db66f7636fca586d',
+    legacyStatementFingerprints: ['bcf5e6bbb2c066076aab81078ac055fb'],
   },
 ];
