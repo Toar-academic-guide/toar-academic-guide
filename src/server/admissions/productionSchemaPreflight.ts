@@ -900,6 +900,17 @@ function assessChangedObjects(
   for (const [column, type] of [
     ['claim_token', 'uuid'],
     ['lease_expires_at', 'timestamp with time zone'],
+    ['first_submitted_at', 'timestamp with time zone'],
+    ['submission_started_at', 'timestamp with time zone'],
+    ['attempt_count', 'integer'],
+    ['mail_payload', 'jsonb'],
+  ]) {
+    assessAddedColumn(snapshot, applied, '0032', 'admission_alert_outbox', column, issues);
+    assessColumnType(snapshot, applied, '0032', 'admission_alert_outbox', column, type, issues);
+  }
+  for (const [column, type] of [
+    ['claim_token', 'uuid'],
+    ['lease_expires_at', 'timestamp with time zone'],
     ['next_attempt_at', 'timestamp with time zone'],
     ['retry_state', 'jsonb'],
   ]) {

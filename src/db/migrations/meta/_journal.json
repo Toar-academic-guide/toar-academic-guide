@@ -225,6 +225,13 @@
       "when": 1790701816780,
       "tag": "0031_alert_transition_recovery",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1790704798766,
+      "tag": "0032_alert_delivery_recovery",
+      "breakpoints": true
     }
   ]
 }

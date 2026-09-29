@@ -26,6 +26,9 @@ describe('production admissions schema preflight', () => {
     snapshot.migrationHistory.find(
       (migration) => migration.name === 'alert_transition_recovery',
     )!.version = '20260929000000';
+    snapshot.migrationHistory.find(
+      (migration) => migration.name === 'alert_delivery_recovery',
+    )!.version = '20260929000001';
     if (!snapshot.tables.user_profiles.columns.includes('admissions_inputs')) {
       snapshot.tables.user_profiles.columns.push('admissions_inputs');
     }
@@ -33,7 +36,7 @@ describe('production admissions schema preflight', () => {
 
     expect(assessProductionSchema(snapshot)).toMatchObject({
       status: 'current',
-      appliedThrough: '0031',
+      appliedThrough: '0032',
       pendingMigrations: [],
       issues: [],
     });
@@ -68,7 +71,7 @@ describe('production admissions schema preflight', () => {
     expect(report).toMatchObject({
       status: 'current',
       safeToMigrate: false,
-      appliedThrough: '0031',
+      appliedThrough: '0032',
       pendingMigrations: [],
       issues: [],
     });
@@ -220,6 +223,7 @@ describe('production admissions schema preflight', () => {
       '0027',
       '0028',
       '0031',
+      '0032',
     ] as const) {
       const migration = FORWARD_PRODUCTION_MIGRATIONS.find(({ id }) => id === migrationId);
       const source = readFileSync(migration?.repositoryPath ?? '', 'utf8');
@@ -277,6 +281,7 @@ describe('production admissions schema preflight', () => {
       '0027',
       '0028',
       '0031',
+      '0032',
     ]);
   });
 
@@ -304,6 +309,7 @@ describe('production admissions schema preflight', () => {
       '0027',
       '0028',
       '0031',
+      '0032',
     ]);
   });
 
@@ -316,7 +322,7 @@ describe('production admissions schema preflight', () => {
     expect(assessProductionSchema(snapshot)).toMatchObject({
       status: 'migration_required',
       safeToMigrate: true,
-      pendingMigrations: ['0027', '0028', '0031'],
+      pendingMigrations: ['0027', '0028', '0031', '0032'],
       issues: [],
     });
   });
@@ -512,7 +518,7 @@ describe('production admissions schema preflight', () => {
     expect(assessProductionSchema(snapshot)).toMatchObject({
       status: 'migration_required',
       safeToMigrate: true,
-      pendingMigrations: ['0024', '0025', '0026', '0027', '0028', '0031'],
+      pendingMigrations: ['0024', '0025', '0026', '0027', '0028', '0031', '0032'],
       issues: [],
     });
   });
@@ -622,6 +628,19 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
     ]) {
       tables.admission_alert_transition_work.columns.push(column);
       tables.admission_alert_transition_work.columnTypes[column] = type;
+    }
+  }
+  if (appliedIds.has('0032')) {
+    for (const [column, type] of [
+      ['claim_token', 'uuid'],
+      ['lease_expires_at', 'timestamp with time zone'],
+      ['first_submitted_at', 'timestamp with time zone'],
+      ['submission_started_at', 'timestamp with time zone'],
+      ['attempt_count', 'integer'],
+      ['mail_payload', 'jsonb'],
+    ]) {
+      tables.admission_alert_outbox.columns.push(column);
+      tables.admission_alert_outbox.columnTypes[column] = type;
     }
   }
   if (appliedIds.has('0028')) {

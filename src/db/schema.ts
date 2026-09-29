@@ -895,6 +895,20 @@ export const admissionAlertOutbox = pgTable(
     status: admissionAlertOutboxStatusEnum('status').default('pending').notNull(),
     providerMessageId: text('provider_message_id'),
     providerAcceptedAt: timestamp('provider_accepted_at', { withTimezone: true }),
+    claimToken: uuid('claim_token'),
+    leaseExpiresAt: timestamp('lease_expires_at', { withTimezone: true }),
+    firstSubmittedAt: timestamp('first_submitted_at', { withTimezone: true }),
+    submissionStartedAt: timestamp('submission_started_at', { withTimezone: true }),
+    attemptCount: integer('attempt_count').default(0).notNull(),
+    // Immutable request snapshot for provider idempotency. Never includes academic inputs.
+    mailPayload: jsonb('mail_payload').$type<{
+      from: string;
+      to: string;
+      subject: string;
+      html: string;
+      text: string;
+      reply_to: string;
+    }>(),
     lastAttemptAt: timestamp('last_attempt_at', { withTimezone: true }),
     nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }),
     acceptanceUnknownAt: timestamp('acceptance_unknown_at', { withTimezone: true }),
