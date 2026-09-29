@@ -6,6 +6,13 @@ import { admissionsExtraInputsFromAcademicScores } from './admissionsEvaluationP
 import { admissionsInputValue } from '@/server/admissions/admissionsInputValue';
 
 describe('admissionsExtraInputsFromAcademicScores', () => {
+  it('forwards the Colman average and false certificate confirmation', () => {
+    const admissions = { colmanBagrutAverage: 85.25, colmanBagrutCertificateConfirmed: false };
+    const extra = admissionsExtraInputsFromAcademicScores({ admissions });
+    expect(extra).toMatchObject(admissions);
+    expect(admissionsInputValue(extra, 'colman_bagrut_average')).toBe(85.25);
+    expect(admissionsInputValue(extra, 'colman_bagrut_certificate')).toBe(false);
+  });
   it('forwards explicit physiotherapy route and false confirmations', () => {
     const admissions = {
       tauPhysiotherapyRoute: 'bagrut' as const,

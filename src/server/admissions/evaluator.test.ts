@@ -747,8 +747,8 @@ describe('evaluateAdmissionsForProgram', () => {
     },
   );
 
-  it.each([['colmgmt_cs', 'colman', 'manual_gate']] as const)(
-    'uses the official non-numeric admissions path for %s without calling an exact source',
+  it.each([['colmgmt_cs', 'colman', 'needs_input']] as const)(
+    'asks for official route inputs for %s without calling an unrelated score source',
     async (programId, institutionId, capability) => {
       const fetcher = vi.fn<typeof fetch>();
       const program: CatalogueProgram = {
@@ -1460,7 +1460,12 @@ describe('evaluateAdmissionsForProgram', () => {
         degreeId: 'colmgmt_cs',
         psychometric: 580,
         bagrut: 92,
-        extraInputs: { mathUnits: 5, mathGrade: 75 },
+        extraInputs: {
+          mathUnits: 5,
+          mathGrade: 75,
+          colmanBagrutAverage: 85,
+          colmanBagrutCertificateConfirmed: true,
+        },
       },
       program: colmanCs,
       institutions: [...institutions, colmanInstitution],
@@ -1471,6 +1476,8 @@ describe('evaluateAdmissionsForProgram', () => {
         linkedInstitutionId: 'colman',
         capability: 'manual_gate',
         kind: 'manual_gate',
+        decision: 'eligible_to_apply',
+        score: 85,
       }),
     );
   });

@@ -60,6 +60,8 @@ export function admissionsExtraInputsFromAcademicScores(
     psychometricVerbal: academicScores?.psychometric?.verbal,
     psychometricEnglish: academicScores?.psychometric?.english,
     tauBagrutAverage: academicScores?.admissions?.tauBagrutAverage,
+    colmanBagrutAverage: academicScores?.admissions?.colmanBagrutAverage,
+    colmanBagrutCertificateConfirmed: academicScores?.admissions?.colmanBagrutCertificateConfirmed,
     ...Object.fromEntries(
       BGU_HEALTH_PROFILE_KEYS.map((key) => [key, academicScores?.admissions?.[key]]),
     ),

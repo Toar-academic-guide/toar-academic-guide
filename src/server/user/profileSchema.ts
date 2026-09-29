@@ -1,3 +1,4 @@
+import { colmanBagrutInputsShape } from '@/lib/colmanBagrutInputs';
 import { tauPhysiotherapyInputsShape } from '@/lib/tauPhysiotherapyInputs';
 import { hujiMedicineInputsShape } from '@/lib/hujiMedicineInputs';
 import { bguHealthInputsShape } from '@/lib/bguHealthInputs';
@@ -78,6 +79,7 @@ const admissionsInputsSchema = z.strictObject({
   technionArchitectureExamPassed: z.boolean().optional(),
   technionArchitectureRequirementsConfirmed: z.boolean().optional(),
   tauBagrutAverage: z.number().min(50).max(130).optional(),
+  ...colmanBagrutInputsShape,
   ...bguPsychologyInputsShape,
   ...hujiMedicineInputsShape,
   ...bguHealthInputsShape,

@@ -25,6 +25,36 @@ vi.mock('@/components/BagrutCalculatorWizard', () => ({
 }));
 
 describe('AcademicProfileForm', () => {
+  it('restores, edits and saves Colman Bagrut inputs without unused scores', async () => {
+    const onComplete = vi.fn();
+    render(
+      <AcademicProfileForm
+        onComplete={onComplete}
+        onClearLocalProfileData={vi.fn()}
+        onSkip={vi.fn()}
+        initialScores={{
+          admissions: { colmanBagrutAverage: 85.25, colmanBagrutCertificateConfirmed: true },
+        }}
+      />,
+    );
+    expect(screen.getByLabelText('ממוצע בגרות משוקלל של המכללה למינהל (50–130)')).toHaveProperty(
+      'value',
+      '85.25',
+    );
+    expect(screen.getByLabelText('האם יש לך זכאות לתעודת בגרות מלאה ומוכרת?')).toHaveProperty(
+      'value',
+      'true',
+    );
+    fireEvent.change(screen.getByLabelText('האם יש לך זכאות לתעודת בגרות מלאה ומוכרת?'), {
+      target: { value: 'false' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    await waitFor(() =>
+      expect(onComplete).toHaveBeenCalledWith({
+        admissions: { colmanBagrutAverage: 85.25, colmanBagrutCertificateConfirmed: false },
+      }),
+    );
+  });
   it('restores and saves explicit TAU physiotherapy inputs, including a false bonus', async () => {
     const onComplete = vi.fn();
     const admissions = {

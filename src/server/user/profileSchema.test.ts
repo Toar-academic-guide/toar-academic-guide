@@ -8,6 +8,19 @@ import {
 } from '@/server/user/profileSchema';
 
 describe('userProfileSchema', () => {
+  it('preserves Colman average and certificate confirmation in a saved profile', () => {
+    const admissions = { colmanBagrutAverage: 85.25, colmanBagrutCertificateConfirmed: false };
+    expect(
+      userProfileSchema.parse({ geographicPreference: 'any', academicScores: { admissions } })
+        .academicScores?.admissions,
+    ).toEqual(admissions);
+    expect(
+      userProfileSchema.safeParse({
+        geographicPreference: 'any',
+        academicScores: { admissions: { colmanBagrutAverage: 130.01 } },
+      }).success,
+    ).toBe(false);
+  });
   it('preserves all Medicine route facts, decimals, date and false/zero', () => {
     const admissions = {
       ...HUJI_MEDICINE_ELIGIBLE_INPUTS,

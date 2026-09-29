@@ -1,4 +1,5 @@
 import { evaluateTauPhysiotherapyResult } from './tauPhysiotherapyEvaluation';
+import { evaluateColmanBagrutResult } from './colmanBagrutEvaluation';
 import { isHujiMedicineProgram } from '@/lib/hujiMedicineInputs';
 import {
   resolveHujiMedicineAdmission,
@@ -167,6 +168,11 @@ async function evaluateCapabilityEntries(args: {
   for (const [index, entry] of capabilityEntries.entries()) {
     const institution = institutions.find((item) => item.id === entry.institutionId);
     if (!institution) {
+      continue;
+    }
+
+    if (program.id === 'colmgmt_cs' && institution.id === 'colman') {
+      results[index] = evaluateColmanBagrutResult({ input, institution });
       continue;
     }
 
