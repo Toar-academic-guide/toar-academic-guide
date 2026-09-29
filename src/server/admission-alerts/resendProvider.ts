@@ -25,6 +25,17 @@ export function createResendAdmissionAlertProvider(input: {
             html: payload.html,
             text: payload.text,
             reply_to: payload.reply_to,
+            // Only an opaque internal correlation value, never a profile or recipient tag.
+            ...(/^admission-alert:[a-f0-9]{64}$/.test(idempotencyKey)
+              ? {
+                  tags: [
+                    {
+                      name: 'admission_alert',
+                      value: idempotencyKey.slice('admission-alert:'.length),
+                    },
+                  ],
+                }
+              : {}),
           }),
           signal: AbortSignal.timeout(20_000),
           redirect: 'error',

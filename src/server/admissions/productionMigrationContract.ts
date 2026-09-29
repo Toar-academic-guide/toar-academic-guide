@@ -19,7 +19,8 @@ export type MigrationId =
   | '0027'
   | '0028'
   | '0031'
-  | '0032';
+  | '0032'
+  | '0033';
 
 export type MigrationHistoryEntry = {
   version: string;
@@ -214,5 +215,12 @@ export const FORWARD_PRODUCTION_MIGRATIONS: ForwardProductionMigration[] = [
     repositoryPath: 'src/db/migrations/0032_alert_delivery_recovery.sql',
     statementFingerprint: '8a1d0926e3aeb84b31831c53cadee306',
     legacyStatementFingerprints: ['ea804aa3a8a2e03ea1cd9e9d0fc3d66a'],
+  },
+  {
+    id: '0033',
+    remoteName: 'alert_webhooks_unsubscribe',
+    repositoryPath: 'src/db/migrations/0033_alert_webhooks_unsubscribe.sql',
+    statementFingerprint: 'e2433ba277ed53d39ba743f58573ec00',
+    legacyStatementFingerprints: ['fb1d1efcc1ed9c797c625b6b08610d6b'],
   },
 ];

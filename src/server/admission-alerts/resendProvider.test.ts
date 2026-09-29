@@ -10,6 +10,17 @@ const payload = {
   reply_to: 'support@example.org',
 };
 describe('Resend admission-alert adapter', () => {
+  it('attaches only the opaque delivery correlation tag', async () => {
+    const fetcher = vi.fn<typeof fetch>().mockResolvedValue(Response.json({ id: 'email-1' }));
+    await createResendAdmissionAlertProvider({ apiKey: 're_test', fetcher }).send({
+      idempotencyKey: `admission-alert:${'a'.repeat(64)}`,
+      payload,
+    });
+    expect(JSON.parse(fetcher.mock.calls[0][1]!.body as string)).toEqual({
+      ...payload,
+      tags: [{ name: 'admission_alert', value: 'a'.repeat(64) }],
+    });
+  });
   it.each([
     [200, { id: 'email-1' }, { status: 'accepted', providerMessageId: 'email-1' }],
     [429, { message: 'private' }, { status: 'retryable' }],

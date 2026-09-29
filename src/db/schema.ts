@@ -900,6 +900,9 @@ export const admissionAlertOutbox = pgTable(
     firstSubmittedAt: timestamp('first_submitted_at', { withTimezone: true }),
     submissionStartedAt: timestamp('submission_started_at', { withTimezone: true }),
     attemptCount: integer('attempt_count').default(0).notNull(),
+    unsubscribeTokenHash: text('unsubscribe_token_hash'),
+    unsubscribeUsedAt: timestamp('unsubscribe_used_at', { withTimezone: true }),
+    deliveryEvents: jsonb('delivery_events').$type<Record<string, string>>().default({}).notNull(),
     // Immutable request snapshot for provider idempotency. Never includes academic inputs.
     mailPayload: jsonb('mail_payload').$type<{
       from: string;
@@ -926,6 +929,9 @@ export const admissionAlertOutbox = pgTable(
     ),
     subscriptionUnique: uniqueIndex('admission_alert_outbox_subscription_unique').on(
       table.subscriptionId,
+    ),
+    unsubscribeTokenUnique: uniqueIndex('admission_alert_outbox_unsubscribe_token_unique').on(
+      table.unsubscribeTokenHash,
     ),
     queueIndex: index('admission_alert_outbox_queue_idx').on(table.status, table.nextAttemptAt),
   }),

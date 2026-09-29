@@ -232,6 +232,13 @@
       "when": 1790704798766,
       "tag": "0032_alert_delivery_recovery",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1790709695244,
+      "tag": "0033_alert_webhooks_unsubscribe",
+      "breakpoints": true
     }
   ]
 }

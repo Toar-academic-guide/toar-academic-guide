@@ -898,6 +898,22 @@ function assessChangedObjects(
 ) {
   assessAddedColumn(snapshot, applied, '0028', 'user_profiles', 'admissions_inputs', issues);
   for (const [column, type] of [
+    ['unsubscribe_token_hash', 'text'],
+    ['unsubscribe_used_at', 'timestamp with time zone'],
+    ['delivery_events', 'jsonb'],
+  ]) {
+    assessAddedColumn(snapshot, applied, '0033', 'admission_alert_outbox', column, issues);
+    assessColumnType(snapshot, applied, '0033', 'admission_alert_outbox', column, type, issues);
+  }
+  assessAddedIndex(
+    snapshot,
+    applied,
+    '0033',
+    'admission_alert_outbox',
+    'admission_alert_outbox_unsubscribe_token_unique',
+    issues,
+  );
+  for (const [column, type] of [
     ['claim_token', 'uuid'],
     ['lease_expires_at', 'timestamp with time zone'],
     ['first_submitted_at', 'timestamp with time zone'],
