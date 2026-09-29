@@ -100,7 +100,7 @@ export function tauBagrutBonusForSubject(subject: BagrutSubjectV2, sector: Bagru
 
   const hasTwentyFivePointBonus =
     TAU_TWENTY_FIVE_POINT_SUBJECT_IDS.has(subject.subjectId) ||
-    (subject.subjectId === 'arabic' && sector === 'arab');
+    (subject.subjectId === 'arabic' && sector !== 'jewish');
   const isStandardBonusSubject =
     hasTwentyFivePointBonus || TAU_STANDARD_BONUS_SUBJECT_IDS.has(subject.subjectId);
   if (!isStandardBonusSubject) {
@@ -110,6 +110,197 @@ export function tauBagrutBonusForSubject(subject: BagrutSubjectV2, sector: Bagru
     return hasTwentyFivePointBonus && subject.assessmentKind === 'exam' ? 25 : 20;
   }
   return subject.units === 4 ? 10 : 0;
+}
+
+export type TauBagrutAverageResult =
+  | {
+      state: 'calculated';
+      average: number;
+      includedSubjectIds: string[];
+      excludedSubjectIds: string[];
+      policyVersion: string;
+    }
+  | AdmissionsPolicyNeedsInput;
+
+/** Replays TAU's published bonus, omission, external-certificate, and cap rules. */
+export function calculateTauBagrutAverage(record: BagrutSubjectRecord): TauBagrutAverageResult {
+  const readiness = evaluateTauBagrutProfileReadiness(record);
+  if (readiness.state === 'needs_input') {
+    return readiness;
+  }
+  if (record.schemaVersion !== 2) {
+    return needsInput(TAU_BAGRUT_PROFILE_POLICY.version, ['bagrut_profile_version']);
+  }
+
+  const examBySubjectId = new Map(
+    record.subjects
+      .filter((subject) => subject.assessmentKind === 'exam')
+      .map((subject) => [subject.subjectId, subject]),
+  );
+  const requiredSubjectIds = new Set(['english', 'mathematics', 'history', 'civics']);
+  if (record.sector === 'jewish') {
+    requiredSubjectIds.add('hebrew_expression');
+    if (examBySubjectId.has('arabic')) requiredSubjectIds.add('arabic');
+  } else {
+    requiredSubjectIds.add('arabic');
+  }
+
+  const missingRequiredSubjects = [...requiredSubjectIds]
+    .filter((subjectId) => {
+      const subject = examBySubjectId.get(subjectId);
+      return !subject || (subjectId === 'history' && subject.units < 2);
+    })
+    .sort()
+    .map((subjectId) => `bagrut_subject:${subjectId}`);
+  if (missingRequiredSubjects.length > 0) {
+    return {
+      state: 'needs_input',
+      missingInputs: missingRequiredSubjects,
+      policyVersion: TAU_BAGRUT_PROFILE_POLICY.version,
+    };
+  }
+
+  if (examBySubjectId.get('english')!.units < 4) {
+    return {
+      state: 'needs_input',
+      missingInputs: ['bagrut_foreign_language'],
+      policyVersion: TAU_BAGRUT_PROFILE_POLICY.version,
+    };
+  }
+
+  const groups = groupTauSubjects(record.subjects, record.sector);
+  let states = new Map<string, TauAverageSelection>([['0', emptyTauSelection()]]);
+  for (const group of groups) {
+    const required = requiredSubjectIds.has(group.subjectId);
+    const choices = tauGroupChoices(group, required);
+    const nextStates = new Map<string, TauAverageSelection>();
+    for (const state of states.values()) {
+      for (const choice of choices) {
+        const candidate: TauAverageSelection = {
+          units: state.units + choice.units,
+          points: state.points + choice.points,
+          includedSubjectIds: choice.included
+            ? [...state.includedSubjectIds, group.subjectId]
+            : state.includedSubjectIds,
+        };
+        const key = String(candidate.units);
+        const current = nextStates.get(key);
+        if (!current || isBetterTauSelection(candidate, current)) {
+          nextStates.set(key, candidate);
+        }
+      }
+    }
+    states = nextStates;
+  }
+
+  const best = [...states.values()]
+    .filter((selection) => selection.units >= 20)
+    .sort(compareTauAverageSelections)[0];
+  if (!best) {
+    return {
+      state: 'needs_input',
+      missingInputs: ['bagrut_certificate_units'],
+      policyVersion: TAU_BAGRUT_PROFILE_POLICY.version,
+    };
+  }
+
+  const externalAdjustment = record.certificateType === 'external_1977_or_later' ? 2 : 0;
+  const average = roundToTwoDecimals(Math.min(117, best.points / best.units + externalAdjustment));
+  const includedSubjectIds = [...best.includedSubjectIds].sort();
+  const included = new Set(includedSubjectIds);
+
+  return {
+    state: 'calculated',
+    average,
+    includedSubjectIds,
+    excludedSubjectIds: groups
+      .map((group) => group.subjectId)
+      .filter((subjectId) => !included.has(subjectId))
+      .sort(),
+    policyVersion: TAU_BAGRUT_PROFILE_POLICY.version,
+  };
+}
+
+interface TauSubjectGroup {
+  subjectId: string;
+  subjects: BagrutSubjectV2[];
+  units: number;
+  points: number;
+}
+
+interface TauAverageSelection {
+  units: number;
+  points: number;
+  includedSubjectIds: string[];
+}
+
+function groupTauSubjects(subjects: BagrutSubjectV2[], sector: BagrutSector): TauSubjectGroup[] {
+  const bySubjectId = new Map<string, BagrutSubjectV2[]>();
+  for (const subject of subjects) {
+    const group = bySubjectId.get(subject.subjectId) ?? [];
+    group.push(subject);
+    bySubjectId.set(subject.subjectId, group);
+  }
+
+  return [...bySubjectId.entries()]
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([subjectId, entries]) => ({
+      subjectId,
+      subjects: entries,
+      units: entries.reduce((sum, subject) => sum + subject.units, 0),
+      points: entries.reduce(
+        (sum, subject) =>
+          sum + subject.units * (subject.grade + tauBagrutBonusForSubject(subject, sector)),
+        0,
+      ),
+    }));
+}
+
+function tauGroupChoices(
+  group: TauSubjectGroup,
+  required: boolean,
+): Array<{ included: boolean; units: number; points: number }> {
+  const includedChoices = [{ included: true, units: group.units, points: group.points }];
+  const hebrewExam = group.subjects.find(
+    (subject) => subject.assessmentKind === 'exam' && subject.units === 3,
+  );
+  if (required && group.subjectId === 'hebrew_expression' && hebrewExam) {
+    includedChoices.push({
+      included: true,
+      units: group.units - 1,
+      points: group.points - hebrewExam.grade,
+    });
+  }
+  return required
+    ? includedChoices
+    : [{ included: false, units: 0, points: 0 }, ...includedChoices];
+}
+
+function emptyTauSelection(): TauAverageSelection {
+  return { units: 0, points: 0, includedSubjectIds: [] };
+}
+
+function isBetterTauSelection(
+  candidate: TauAverageSelection,
+  current: TauAverageSelection,
+): boolean {
+  return (
+    candidate.points > current.points ||
+    (candidate.points === current.points &&
+      candidate.includedSubjectIds.join(',') < current.includedSubjectIds.join(','))
+  );
+}
+
+function compareTauAverageSelections(
+  left: TauAverageSelection,
+  right: TauAverageSelection,
+): number {
+  const crossProduct = right.points * left.units - left.points * right.units;
+  return (
+    crossProduct ||
+    left.units - right.units ||
+    left.includedSubjectIds.join(',').localeCompare(right.includedSubjectIds.join(','))
+  );
 }
 
 // BGU publishes the CS cutoff and minimum gates, but its official quantitative

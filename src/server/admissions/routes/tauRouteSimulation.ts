@@ -10,6 +10,7 @@ import {
   type RouteSearchResult,
   type VerifiedAdmissionRoute,
 } from './optimizer';
+import { recomputePostActionProfile } from './postActionProfile';
 import {
   verifyTauComputerScienceFinalists,
   type TauFinalist,
@@ -35,20 +36,46 @@ export async function runTauComputerScienceRouteSimulation(args: {
 }): Promise<TauRouteSimulationResult> {
   const profile: RouteProfile = {
     psychometric: args.profile.psychometric,
-    subjects: args.profile.subjectRecord.subjects,
+    subjectRecord: args.profile.subjectRecord,
   };
   const candidates = generateTauRouteCandidates(profile);
   const verifyFinalists =
     args.verifyFinalists ??
     ((finalists: TauFinalist[]) => verifyTauComputerScienceFinalists({ finalists }));
-  const finalists = candidates.map(({ id, afterProfile }) => ({
-    id,
-    psychometric: afterProfile.psychometric,
-    bagrutAverage: args.profile.tauBagrutAverage,
-    hasQualifiedMathAndPhysics: evaluateTauEngineeringExactSciencesBonus({
-      subjects: afterProfile.subjects,
-    }).qualifies,
-  }));
+  const finalists = candidates.flatMap<TauFinalist>(({ id, actions, afterProfile }) => {
+    const recomputed = recomputePostActionProfile({
+      pairId: 'tau_cs__tau',
+      psychometric: args.profile.psychometric,
+      subjectRecord: args.profile.subjectRecord,
+      actions,
+    });
+    if (recomputed.status === 'ready') {
+      const { tauBagrutAverage, hasQualifiedMathAndPhysics } =
+        recomputed.snapshot.institutionInputs;
+      if (tauBagrutAverage !== undefined && hasQualifiedMathAndPhysics !== undefined) {
+        return [
+          {
+            id,
+            psychometric: recomputed.snapshot.psychometric,
+            bagrutAverage: tauBagrutAverage,
+            hasQualifiedMathAndPhysics,
+          },
+        ];
+      }
+    }
+
+    if (actions.some((action) => action.kind !== 'psychometric')) return [];
+    return [
+      {
+        id,
+        psychometric: afterProfile.psychometric,
+        bagrutAverage: args.profile.tauBagrutAverage,
+        hasQualifiedMathAndPhysics: evaluateTauEngineeringExactSciencesBonus(
+          afterProfile.subjectRecord,
+        ).qualifies,
+      },
+    ];
+  });
   const verifications = await verifyFinalists(finalists);
   const verificationById = new Map(
     verifications.map((verification) => [verification.id, verification]),
