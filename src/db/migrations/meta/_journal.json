@@ -239,6 +239,13 @@
       "when": 1790709695244,
       "tag": "0033_alert_webhooks_unsubscribe",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1790711457054,
+      "tag": "0034_alert_lifecycle_completion",
+      "breakpoints": true
     }
   ]
 }

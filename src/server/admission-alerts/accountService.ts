@@ -18,6 +18,9 @@ export interface AdmissionAlertAccountRepository {
       programId: string;
       cycle: string;
       status: AdmissionAlertSubscriptionStatus;
+      deliveryStatus?: AdmissionAlertOutboxStatus | null;
+      deliveryEvents?: Record<string, string> | null;
+      mayStillArrive?: boolean;
     }>
   >;
   cancelSubscription(input: {
@@ -49,17 +52,33 @@ export function createDrizzleAdmissionAlertAccountRepository(
 ): AdmissionAlertAccountRepository {
   return {
     async listSubscriptions(userId) {
-      return db
+      const rows = await db
         .select({
           id: admissionAlertSubscriptions.id,
           institutionId: admissionAlertSubscriptions.institutionId,
           programId: admissionAlertSubscriptions.programId,
           cycle: admissionAlertSubscriptions.cycle,
           status: admissionAlertSubscriptions.status,
+          deliveryStatus: admissionAlertOutbox.status,
+          deliveryEvents: admissionAlertOutbox.deliveryEvents,
+          submissionStartedAt: admissionAlertOutbox.submissionStartedAt,
+          acceptanceUnknownAt: admissionAlertOutbox.acceptanceUnknownAt,
         })
         .from(admissionAlertSubscriptions)
+        .leftJoin(
+          admissionAlertOutbox,
+          eq(admissionAlertOutbox.subscriptionId, admissionAlertSubscriptions.id),
+        )
         .where(eq(admissionAlertSubscriptions.userId, userId))
         .orderBy(desc(admissionAlertSubscriptions.createdAt));
+      return rows.map(({ submissionStartedAt, acceptanceUnknownAt, ...row }) => ({
+        ...row,
+        mayStillArrive:
+          row.deliveryStatus === 'accepted' ||
+          row.deliveryStatus === 'acceptance_unknown' ||
+          (row.deliveryStatus === 'processing' &&
+            Boolean(submissionStartedAt || acceptanceUnknownAt)),
+      }));
     },
     async cancelSubscription(input) {
       return db.transaction(async (tx) => {

@@ -42,6 +42,7 @@ export type ProductionSchemaSnapshot = {
   enums: Record<string, string[]>;
   triggers: string[];
   functions: Record<string, string[]>;
+  functionAccess?: Record<string, { securityDefiner: boolean; executeRoles: string[] }>;
 };
 
 type TableContract = {
@@ -896,6 +897,64 @@ function assessChangedObjects(
   applied: Set<MigrationId>,
   issues: ProductionSchemaIssue[],
 ) {
+  assessAddedColumn(snapshot, applied, '0034', 'admission_alert_outbox', 'recipient_hash', issues);
+  assessColumnType(
+    snapshot,
+    applied,
+    '0034',
+    'admission_alert_outbox',
+    'recipient_hash',
+    'text',
+    issues,
+  );
+  for (const name of ['delivery_recipient', 'cleanup_deleted_account', 'prune_retained_data']) {
+    const fn = `admission_alert_private.${name}`;
+    if (applied.has('0034')) {
+      if (!snapshot.functions[fn])
+        issues.push({
+          code: 'missing_function',
+          object: `function:${fn}`,
+          detail: 'Private alert lifecycle function is absent.',
+        });
+      else if (
+        !snapshot.functions[fn].includes('search_path=""') ||
+        !snapshot.functionAccess?.[fn]?.securityDefiner
+      )
+        issues.push({
+          code: 'function_config_mismatch',
+          object: `function:${fn}`,
+          detail: 'Expected SECURITY DEFINER and an empty search path.',
+        });
+      const expected = name === 'cleanup_deleted_account' ? [] : ['app_runtime'];
+      if (
+        JSON.stringify(snapshot.functionAccess?.[fn]?.executeRoles?.toSorted()) !==
+        JSON.stringify(expected)
+      )
+        issues.push({
+          code: 'grant_mismatch',
+          object: `function:${fn}`,
+          detail: 'Unexpected private function execute privileges.',
+        });
+    } else if (snapshot.functions[fn])
+      issues.push({
+        code: 'unexpected_pending_object',
+        object: `function:${fn}`,
+        detail: 'Function belongs to pending migration 0034.',
+      });
+  }
+  const deletedTrigger = 'admission_alert_account_deleted';
+  if (applied.has('0034') && !snapshot.triggers.includes(deletedTrigger))
+    issues.push({
+      code: 'missing_trigger',
+      object: `trigger:${deletedTrigger}`,
+      detail: 'Account deletion cleanup trigger is absent.',
+    });
+  else if (!applied.has('0034') && snapshot.triggers.includes(deletedTrigger))
+    issues.push({
+      code: 'unexpected_pending_object',
+      object: `trigger:${deletedTrigger}`,
+      detail: 'Trigger belongs to pending migration 0034.',
+    });
   assessAddedColumn(snapshot, applied, '0028', 'user_profiles', 'admissions_inputs', issues);
   for (const [column, type] of [
     ['unsubscribe_token_hash', 'text'],

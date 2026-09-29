@@ -5,6 +5,7 @@ import { and, eq, gt, sql } from 'drizzle-orm';
 import { getDb } from '@/db/client';
 import { admissionAlertOutbox, admissionAlertSubscriptions } from '@/db/schema';
 import { admissionCycleFor } from './cycle';
+import { alertRecipientHash, materializeAlertPayload } from './deliveryPreparation';
 
 export const ALERT_DELIVERY_LEASE_MS = 5 * 60_000;
 // Resend retains idempotency keys for 24h. Leave an hour for clock/network margin.
@@ -49,6 +50,7 @@ export interface AdmissionAlertDeliveryRepository {
 
 export function createDrizzleAdmissionAlertDeliveryRepository(
   db = getDb(),
+  tokenSecret?: string,
 ): AdmissionAlertDeliveryRepository {
   const owned = (delivery: ClaimedAlertDelivery, now: Date) =>
     and(
@@ -94,8 +96,9 @@ export function createDrizzleAdmissionAlertDeliveryRepository(
           subscription_id: string;
           idempotency_key: string;
           mail_payload: AdmissionAlertMailPayload;
+          unsubscribe_token_hash: string | null;
         }>(sql`
-          select o.id, o.subscription_id, o.idempotency_key, o.mail_payload
+          select o.id, o.subscription_id, o.idempotency_key, o.mail_payload, o.unsubscribe_token_hash
           from admission_alert_outbox o
           join admission_alert_subscriptions s on s.id = o.subscription_id
           where o.status in ('pending','retryable','acceptance_unknown')
@@ -125,7 +128,14 @@ export function createDrizzleAdmissionAlertDeliveryRepository(
           subscriptionId: candidate.subscription_id,
           claimToken,
           idempotencyKey: candidate.idempotency_key,
-          payload: candidate.mail_payload,
+          payload: tokenSecret
+            ? materializeAlertPayload(
+                candidate.mail_payload,
+                candidate.id,
+                candidate.unsubscribe_token_hash ?? '',
+                tokenSecret,
+              )
+            : candidate.mail_payload,
         };
       });
     },
@@ -185,6 +195,32 @@ export function createDrizzleAdmissionAlertDeliveryRepository(
             })
             .where(owned(delivery, now));
           return 'suppressed';
+        }
+        // Runtime requests always carry a token secret; plain repositories also support provider-neutral tests.
+        if (tokenSecret) {
+          const [recipient] = await tx.execute<{ email: string | null }>(
+            sql`select admission_alert_private.delivery_recipient(${outbox.id}::uuid) as email`,
+          );
+          if (!recipient?.email || alertRecipientHash(recipient.email) !== outbox.recipientHash) {
+            await tx
+              .update(admissionAlertOutbox)
+              .set({
+                status: outbox.acceptanceUnknownAt ? 'acceptance_unknown' : 'failed',
+                failureReason: 'verified_recipient_changed',
+                mailPayload: null,
+                claimToken: null,
+                leaseExpiresAt: null,
+                nextAttemptAt: null,
+                updatedAt: now,
+              })
+              .where(owned(delivery, now));
+            if (!outbox.acceptanceUnknownAt)
+              await tx
+                .update(admissionAlertSubscriptions)
+                .set({ status: 'delivery_failed', updatedAt: now })
+                .where(eq(admissionAlertSubscriptions.id, delivery.subscriptionId));
+            return 'suppressed';
+          }
         }
         await tx
           .update(admissionAlertOutbox)

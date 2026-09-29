@@ -19,8 +19,8 @@ Delivery configuration (not enabled by the template PR):
   credentials. Links must point to the deployed app, not the workflow runner.
 
 The unsubscribe token is in the link fragment to keep it out of access logs.
-The confirmation page is implemented; delivery preparation remains U7 work. Do
-not enable sending until that integration and the controlled provider proof are ready.
+The confirmation page and delivery preparation are implemented. Do not enable
+scheduled sending until the controlled provider and signed-webhook proofs are complete.
 
 Verify the rendered TAU and BGU messages in Hebrew: the programme and review date
 are visible, the call to action opens `/app/calculator`, management points to
@@ -153,8 +153,7 @@ expecting `status: dry_run` and completed cleanup. No UI changes are part of U4.
 
 Live delivery requires `ADMISSION_ALERT_DELIVERY_ENABLED=true` and the environment
 secret `ADMISSION_ALERT_RESEND_API_KEY` (a sending-only Resend key). **Do not enable
-it yet:** U5 must prepare the Hebrew message and U6 must implement its unsubscribe
-and signed webhook paths before the controlled TAU/BGU proof. U4 only consumes
+it yet:** the controlled TAU/BGU and signed-webhook proofs remain required. The worker consumes
 prepared immutable `mail_payload` snapshots; pending rows without one are not
 sendable. Do not manually populate production payloads to bypass those units.
 
@@ -184,7 +183,7 @@ acceptance without initiating mail.
 The prepared payload contains only recipient/sender addresses, support content,
 and management links, never academic inputs. It is cleared on acceptance,
 definitive failure, or safe suppression. No provider error body or request content
-is logged. U6/U7 own token handling and remaining retention/account-deletion cleanup.
+is logged. The lifecycle preparation and cleanup behavior is described below.
 
 Focused disposable database verification (never production):
 
@@ -217,7 +216,7 @@ facts are recorded independently, so later events cannot erase earlier facts.
 Duplicate event IDs have no effect. Events never send another message or reopen a
 cancelled/expired subscription. Stored event metadata contains only event time,
 type, provider message ID and the internal outbox reference, not raw bodies,
-recipient addresses or academic data. U7 owns the 30-day deduplication cleanup.
+recipient addresses or academic data. The maintenance workflow performs the 30-day deduplication cleanup.
 
 The unsubscribe page reads the token from the URL fragment and immediately removes
 that fragment from browser history. It is a standalone page with no analytics or
@@ -231,10 +230,11 @@ opt-in. All existing links are marked used on category opt-out.
 
 Only SHA-256 token hashes are stored. The token helper derives a stable opaque
 value using HMAC-SHA-256 over a random delivery UUID and a secret containing at
-least 32 random bytes (base64url). U7 must provision that worker-only secret,
-prepare the hash, and materialize the raw token only in memory when rendering or
-submitting mail. Do not store the raw token inside `mail_payload`. Changing the
-secret must not silently change an already-submitted immutable request.
+least 32 random bytes (base64url). Provision `ADMISSION_ALERT_TOKEN_SECRET` only in
+the protected GitHub environment. Preparation stores a hash and replaces the token
+with a placeholder inside `mail_payload`; submission materializes it only in memory.
+Do not store the raw token inside `mail_payload`. A changed secret fails closed
+instead of silently changing an already-submitted immutable request.
 
 To verify in the browser, open a test email's removal link, click **הסרה מכל התראות
 הקבלה**, and expect the cancellation message. Reopen and repeat: it should remain
@@ -248,3 +248,68 @@ Focused disposable database verification (never production):
 ```sh
 ALERT_DB_INTEGRATION=1 npx vitest run src/server/admission-alerts/webhookUnsubscribe.integration.test.ts
 ```
+
+## Account controls and lifecycle completion (U7)
+
+Profile → **התראות שינוי קבלה** lists both TAU and BGU targets, cycle, subscription
+state and delivery problems. **ביטול המעקב** cancels just that target. Reload the
+page: cancellation must remain visible. An in-flight request may still arrive.
+Provider acceptance is not a claim of inbox delivery, and acceptance uncertainty
+never offers a new-send action. The email unsubscribe link disables the whole category.
+
+Activation requires the server-verified account email and explicit `optIn: true`.
+After a profile change, follow **לבדיקת הפרופיל והחישוב מחדש, ואז אישור המעקב**,
+save the profile, calculate the target and explicitly activate again. Only a fresh
+exact below verdict establishes a new baseline; the old subscription remains closed.
+Activation explicitly opts the category back in, but cannot undo a category opt-out
+that happened during evaluation. A new admissions cycle also requires a fresh activation.
+
+For definitive delivery failure, correct and verify the account email through
+account support, then use **בדיקת כתובת מאומתת וניסיון נוסף**. This command verifies
+ownership, consent, current cycle, unchanged saved profile and a changed verified
+address. It keeps the same logical outbox row. A new provider key is used only for
+the changed recipient after definitive rejection; accepted or uncertain requests
+cannot take this path. Bounces after acceptance require support, not another send.
+Set `ADMISSION_ALERT_SUPPORT_EMAIL` on Vercel as well as in the worker environment
+so the account page displays the support link.
+
+The private `delivery_recipient(uuid)` function exposes only a queued delivery's
+verified, non-deleted, non-anonymous, non-banned account email to `app_runtime`.
+It gives that role no direct access to `auth.users`; browser and operations roles
+cannot execute it. Preparation and the final submission boundary both check the
+verified recipient, so a queued message cannot follow a changed address silently.
+
+The existing **Expire Prior Admission Alert Cycles** workflow uses
+`ADMISSION_ALERT_DATABASE_URL` and runs expiration plus retention every 15 minutes.
+It clears stale payloads/tokens, suppresses safely cancellable work, and preserves
+in-flight acceptance uncertainty. Retention removes webhook deduplication rows
+after 30 days and up to 1,000 expired subscriptions per run 12 months after cycle
+end, including baseline, outbox and retry-map references. It never sends mail.
+
+Hard deletion of a Supabase Auth account fires `admission_alert_account_deleted`.
+The transaction removes its saved profile versions, profiles, saved programmes,
+subscriptions, outbox/payload/token data, category preference, linked webhook
+identifiers and retry-map references. Do not substitute a soft delete for this
+cleanup procedure. Already submitted email cannot be recalled from Resend; no
+reversible account tombstone is retained in the alert tables.
+
+Before rotating `ADMISSION_ALERT_TOKEN_SECRET`, disable delivery, reconcile any
+in-flight/uncertain requests and drain or safely suppress prepared work. Existing
+unsubscribe hashes remain usable until expiry; never replace a submitted request's
+key or payload to force a retry. Rotate a Resend API key by replacing the protected
+secret; rotate its webhook signing secret separately in Resend and Vercel, then
+verify a signed event before resuming.
+
+Disposable database proof:
+
+```sh
+ALERT_DB_INTEGRATION=1 npx vitest run src/server/admission-alerts/lifecycleCompletion.integration.test.ts
+```
+
+This suite requires localhost and rolls back every real-table fixture, including
+Auth fixtures. It checks TAU/BGU preparation and one-send-only acceptance with a
+stub provider, verified-recipient changes, failure recovery, fresh confirmation,
+consent changes, cycle expiration, retention and account deletion. These are not
+live Resend or production-user proofs. Until both controlled real-provider flows,
+signed events and deployed account controls have evidence, keep
+`ADMISSION_ALERT_PROCESSING_ENABLED` and `ADMISSION_ALERT_DELIVERY_ENABLED` off.

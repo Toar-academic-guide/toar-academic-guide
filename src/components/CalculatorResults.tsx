@@ -2,7 +2,7 @@
 
 import { allowsNoGenericBagrut, allowsNoPsychometric } from '@/lib/calculatorInputRequirements';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { AlertCircle, ArrowRight, Check, ChevronDown, LoaderCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import posthog from 'posthog-js';
@@ -203,12 +203,17 @@ export default function CalculatorResults({
     | 'existing'
     | 'profile_incomplete'
     | 'already_eligible'
+    | 'verify_email'
+    | 'closed'
     | 'error'
   >('idle');
 
+  const alertRequest = useRef<AbortController | null>(null);
   useEffect(() => {
     setRouteRequested(false);
-  }, [degreeId]);
+    setSubscriptionStatus('idle');
+    return () => alertRequest.current?.abort();
+  }, [degreeId, user?.id]);
 
   const selectedProgram = programs.find((program) => program.id === degreeId);
   const savedAcademicScoresMatchCalculation =
@@ -340,7 +345,10 @@ export default function CalculatorResults({
   );
 
   async function handleAdmissionAlert() {
-    const target = { institutionId: 'tau' as const, programId: 'tau_cs' as const };
+    const target =
+      degreeId === 'bgu_cs'
+        ? { institutionId: 'bgu' as const, programId: 'bgu_cs' as const }
+        : { institutionId: 'tau' as const, programId: 'tau_cs' as const };
     if (!user) {
       router.push(buildAdmissionAlertSignupPath(target));
       return;
@@ -351,26 +359,39 @@ export default function CalculatorResults({
     }
 
     setSubscriptionStatus('submitting');
+    alertRequest.current?.abort();
+    const controller = new AbortController();
+    alertRequest.current = controller;
     try {
       const response = await fetch('/api/admission-alerts', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(target),
+        body: JSON.stringify({ ...target, optIn: true }),
+        signal: controller.signal,
       });
-      const body = (await response.json()) as { data?: { status?: string } };
+      const body = (await response.json()) as {
+        data?: { status?: string };
+        error?: { code?: string };
+      };
+      if (controller.signal.aborted) return;
+      if (body.error?.code === 'VERIFIED_EMAIL_REQUIRED') {
+        setSubscriptionStatus('verify_email');
+        return;
+      }
       if (!response.ok || !body.data?.status) throw new Error('subscription failed');
       if (body.data.status === 'created' || body.data.status === 'existing') {
         setSubscriptionStatus(body.data.status);
       } else if (
         body.data.status === 'profile_incomplete' ||
-        body.data.status === 'already_eligible'
+        body.data.status === 'already_eligible' ||
+        body.data.status === 'closed'
       ) {
         setSubscriptionStatus(body.data.status);
       } else {
         setSubscriptionStatus('error');
       }
     } catch {
-      setSubscriptionStatus('error');
+      if (!controller.signal.aborted) setSubscriptionStatus('error');
     }
   }
 
@@ -899,6 +920,8 @@ function VerifiedRoutePanel({
     | 'existing'
     | 'profile_incomplete'
     | 'already_eligible'
+    | 'verify_email'
+    | 'closed'
     | 'error';
   onAdmissionAlert: () => void;
   email: string | null;
@@ -923,11 +946,12 @@ function VerifiedRoutePanel({
           </p>
         </div>
       ) : null}
-      {isTau ? (
+      {
         <div className="mt-4 rounded-xl border border-sky-200 bg-white p-4">
           <p className="text-sm font-bold text-slate-900">רוצה שנעדכן כשנפתח לך סיכוי קבלה?</p>
           <p className="mt-1 text-xs leading-relaxed text-slate-600">
-            נבדוק רק שינויים שפורסמו ונבדקו, ונשלח עדכון אם החישוב המתמטי שלך יהפוך לזכאות.
+            נבדוק רק שינויים שפורסמו ונבדקו, ונשלח עדכון אם החישוב המתמטי שלך יהפוך לזכאות. האישור
+            מפעיל מחדש את קטגוריית התראות הקבלה אם הוסרת ממנה בעבר.
           </p>
           {email ? (
             <p className="mt-2 text-xs font-medium text-slate-700">
@@ -963,8 +987,19 @@ function VerifiedRoutePanel({
               לא הצלחנו להפעיל מעקב כרגע. אפשר לנסות שוב.
             </p>
           ) : null}
+          {subscriptionStatus === 'verify_email' ? (
+            <p className="mt-2 text-sm">יש לאמת תחילה את כתובת הדוא״ל בחשבון.</p>
+          ) : null}
+          {subscriptionStatus === 'closed' ? (
+            <p className="mt-2 text-sm">
+              למעקב הזה כבר קיימת שליחה או תקלה לטיפול.{' '}
+              <a href="/app/profile#admission-alerts" className="underline">
+                לניהול ההתראות
+              </a>
+            </p>
+          ) : null}
         </div>
-      ) : null}
+      }
       {!completeProfile ? (
         <>
           <p className="mt-3 text-sm font-semibold text-slate-800">

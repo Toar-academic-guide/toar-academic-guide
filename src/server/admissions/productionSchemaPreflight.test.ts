@@ -32,6 +32,9 @@ describe('production admissions schema preflight', () => {
     snapshot.migrationHistory.find(
       (migration) => migration.name === 'alert_webhooks_unsubscribe',
     )!.version = '20260929000002';
+    snapshot.migrationHistory.find(
+      (migration) => migration.name === 'alert_lifecycle_completion',
+    )!.version = '20260929000003';
     if (!snapshot.tables.user_profiles.columns.includes('admissions_inputs')) {
       snapshot.tables.user_profiles.columns.push('admissions_inputs');
     }
@@ -39,7 +42,7 @@ describe('production admissions schema preflight', () => {
 
     expect(assessProductionSchema(snapshot)).toMatchObject({
       status: 'current',
-      appliedThrough: '0033',
+      appliedThrough: '0034',
       pendingMigrations: [],
       issues: [],
     });
@@ -74,7 +77,7 @@ describe('production admissions schema preflight', () => {
     expect(report).toMatchObject({
       status: 'current',
       safeToMigrate: false,
-      appliedThrough: '0033',
+      appliedThrough: '0034',
       pendingMigrations: [],
       issues: [],
     });
@@ -228,6 +231,7 @@ describe('production admissions schema preflight', () => {
       '0031',
       '0032',
       '0033',
+      '0034',
     ] as const) {
       const migration = FORWARD_PRODUCTION_MIGRATIONS.find(({ id }) => id === migrationId);
       const source = readFileSync(migration?.repositoryPath ?? '', 'utf8');
@@ -287,6 +291,7 @@ describe('production admissions schema preflight', () => {
       '0031',
       '0032',
       '0033',
+      '0034',
     ]);
   });
 
@@ -316,6 +321,7 @@ describe('production admissions schema preflight', () => {
       '0031',
       '0032',
       '0033',
+      '0034',
     ]);
   });
 
@@ -328,7 +334,7 @@ describe('production admissions schema preflight', () => {
     expect(assessProductionSchema(snapshot)).toMatchObject({
       status: 'migration_required',
       safeToMigrate: true,
-      pendingMigrations: ['0027', '0028', '0031', '0032', '0033'],
+      pendingMigrations: ['0027', '0028', '0031', '0032', '0033', '0034'],
       issues: [],
     });
   });
@@ -524,7 +530,7 @@ describe('production admissions schema preflight', () => {
     expect(assessProductionSchema(snapshot)).toMatchObject({
       status: 'migration_required',
       safeToMigrate: true,
-      pendingMigrations: ['0024', '0025', '0026', '0027', '0028', '0031', '0032', '0033'],
+      pendingMigrations: ['0024', '0025', '0026', '0027', '0028', '0031', '0032', '0033', '0034'],
       issues: [],
     });
   });
@@ -625,6 +631,10 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
     };
   }
 
+  if (appliedIds.has('0034')) {
+    tables.admission_alert_outbox.columns.push('recipient_hash');
+    tables.admission_alert_outbox.columnTypes.recipient_hash = 'text';
+  }
   if (appliedIds.has('0031')) {
     for (const [column, type] of [
       ['claim_token', 'uuid'],
@@ -924,9 +934,30 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
           ],
         ]),
     ),
-    triggers: appliedIds.has('0014') ? ['admission_threshold_scope_invariant'] : [],
+    triggers: [
+      ...(appliedIds.has('0014') ? ['admission_threshold_scope_invariant'] : []),
+      ...(appliedIds.has('0034') ? ['admission_alert_account_deleted'] : []),
+    ],
+    functionAccess: appliedIds.has('0034')
+      ? Object.fromEntries(
+          ['delivery_recipient', 'cleanup_deleted_account', 'prune_retained_data'].map((name) => [
+            `admission_alert_private.${name}`,
+            {
+              securityDefiner: true,
+              executeRoles: name === 'cleanup_deleted_account' ? [] : ['app_runtime'],
+            },
+          ]),
+        )
+      : {},
     functions: appliedIds.has('0014')
       ? {
+          ...(appliedIds.has('0034')
+            ? Object.fromEntries(
+                ['delivery_recipient', 'cleanup_deleted_account', 'prune_retained_data'].map(
+                  (name) => [`admission_alert_private.${name}`, ['search_path=""']],
+                ),
+              )
+            : {}),
           enforce_admission_threshold_scope: appliedIds.has('0018')
             ? ['search_path=pg_catalog, public']
             : [],

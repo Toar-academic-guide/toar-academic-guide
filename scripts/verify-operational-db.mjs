@@ -232,18 +232,23 @@ async function loadSnapshot(sql) {
       order by t.typname, e.enumsortorder
     `,
     sql`
-      select distinct trigger_name
-      from information_schema.triggers
-      where trigger_schema = 'public'
+      select distinct t.tgname as trigger_name
+      from pg_trigger t join pg_class c on c.oid=t.tgrelid
+      join pg_namespace n on n.oid=c.relnamespace
+      where not t.tgisinternal and t.tgenabled <> 'D' and
+        (n.nspname = 'public' or (n.nspname='auth' and c.relname='users' and t.tgname='admission_alert_account_deleted'))
       order by trigger_name
     `,
     sql`
       select
-        p.proname as function_name,
-        coalesce(p.proconfig, array[]::text[]) as function_config
+        case when n.nspname='public' then p.proname else n.nspname||'.'||p.proname end as function_name,
+        coalesce(p.proconfig, array[]::text[]) as function_config,
+        p.prosecdef as security_definer,
+        array(select role_name from unnest(array['anon','authenticated','app_runtime','ops_readonly','admissions_automation']) role_name
+          where has_function_privilege(role_name, p.oid, 'EXECUTE') order by role_name) as execute_roles
       from pg_proc p
       join pg_namespace n on n.oid = p.pronamespace
-      where n.nspname = 'public'
+      where n.nspname in ('public','admission_alert_private')
       order by p.proname, p.oid
     `,
   ]);
@@ -316,6 +321,15 @@ async function loadSnapshot(sql) {
     triggers: triggerRows.map((row) => row.trigger_name),
     functions: Object.fromEntries(
       functionRows.map((row) => [row.function_name, row.function_config]),
+    ),
+    functionAccess: Object.fromEntries(
+      functionRows.map((row) => [
+        row.function_name,
+        {
+          securityDefiner: row.security_definer,
+          executeRoles: row.execute_roles,
+        },
+      ]),
     ),
   };
 }
