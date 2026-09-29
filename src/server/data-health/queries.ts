@@ -5,6 +5,10 @@ import { eq } from 'drizzle-orm';
 import type { InstitutionId } from '@/data/institutions';
 import { getOpsDb } from '@/db/opsClient';
 import {
+  loadAdmissionAlertHealth,
+  type AdmissionAlertHealth,
+} from '@/server/admission-alerts/health';
+import {
   admissionAlternativePaths,
   admissionFacts,
   admissionReleases,
@@ -77,6 +81,7 @@ export interface DataHealthReadyReport {
     authorityUnavailable: number;
   };
   admissionRoutes: AdmissionRouteHealth;
+  admissionAlerts: AdmissionAlertHealth;
   coverage: {
     missingRequirementSourceCount: number;
     missingProgramSourceCount: number;
@@ -184,6 +189,7 @@ export interface MondayEvidenceBacklogGroup {
 }
 
 export interface DataHealthRows {
+  admissionAlerts: AdmissionAlertHealth;
   institutions: Array<{
     id: string;
     name: string;
@@ -490,7 +496,7 @@ export async function getDataHealthReport(
 ): Promise<DataHealthReport> {
   try {
     const rows = await withTimeout(
-      loadDataHealthRows(),
+      loadDataHealthRows(now),
       options.timeoutMs ?? DATA_HEALTH_QUERY_TIMEOUT_MS,
     );
     return summarizeDataHealthRows(rows, now);
@@ -680,6 +686,7 @@ export function summarizeDataHealthRows(
     ),
     runtimeFormulaVerification: summarizeRuntimeFormulaVerification(decisionEvidence.rows),
     admissionRoutes: buildAdmissionRouteHealth(),
+    admissionAlerts: rows.admissionAlerts,
     coverage: buildCoverageSummary(rows),
     decisionReadiness: buildDecisionReadinessSummary(rows),
     decisionEvidence,
@@ -873,7 +880,7 @@ function backlogBucketPriority(bucket: string): number {
   }
 }
 
-async function loadDataHealthRows(): Promise<DataHealthRows> {
+async function loadDataHealthRows(now: Date): Promise<DataHealthRows> {
   const db = getOpsDb();
 
   const institutionRows = await db
@@ -1040,7 +1047,10 @@ async function loadDataHealthRows(): Promise<DataHealthRows> {
     })
     .from(admissionReleases);
 
+  const admissionAlerts = await loadAdmissionAlertHealth((query) => db.execute(query), now);
+
   return {
+    admissionAlerts,
     institutions: institutionRows,
     programs: programRows,
     programInstitutions: programInstitutionRows,

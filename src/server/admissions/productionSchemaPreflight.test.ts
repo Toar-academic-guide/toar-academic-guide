@@ -70,6 +70,21 @@ describe('production admissions schema preflight', () => {
     });
   });
 
+  it('rejects missing alert storage and incorrect alert role grants', () => {
+    const missing = makeSnapshot();
+    delete missing.tables.admission_alert_outbox;
+    expect(assessProductionSchema(missing).status).not.toBe('current');
+
+    const wrongGrant = makeSnapshot();
+    wrongGrant.tables.admission_alert_subscriptions.grants.authenticated = ['SELECT'];
+    expect(assessProductionSchema(wrongGrant).issues).toContainEqual(
+      expect.objectContaining({
+        code: 'public_role_grant',
+        object: 'grant:authenticated:admission_alert_subscriptions',
+      }),
+    );
+  });
+
   it('requires the indeterminate Slack acceptance status in the review-run ledger enum', () => {
     const snapshot = makeSnapshot();
     snapshot.enums.admission_review_slack_status =
