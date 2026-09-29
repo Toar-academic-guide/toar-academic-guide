@@ -1,21 +1,43 @@
 import 'server-only';
 
-export type AdmissionRouteCapabilityStatus = 'enabled' | 'disabled' | 'unsupported';
+import { getFormulaPairVerificationEntry } from '@/data/admissions/formulaBackedVerificationLedger';
+import { getProgramVerificationArtifact } from '@/data/admissions/tauProgramVerification';
+import type { AdmissionsEvaluationCapability } from '@/types/admissionsEvaluation';
+import { evaluateProgramVerification } from '@/server/admissions/verification/programVerification';
 
-export interface AdmissionRouteCapability {
+export type AdmissionRouteCapabilityStatus = 'enabled' | 'disabled' | 'unsupported';
+export type AdmissionRouteActionKind =
+  'psychometric' | 'improve_grade' | 'expand_units' | 'add_subject';
+
+export interface AdmissionRouteActionCapability {
   programId: string;
-  status: AdmissionRouteCapabilityStatus;
-  verificationMode?: 'official_finalist_replay' | 'fixture_backed_local_formula';
-  supportedActionKinds: Array<'psychometric' | 'improve_grade' | 'expand_units' | 'add_subject'>;
+  pairId: string;
+  status: 'ready' | 'incomplete';
+  verificationMode: 'official_finalist_replay' | 'fixture_backed_local_formula';
+  supportedActionKinds: AdmissionRouteActionKind[];
   requiredInputs: string[];
   missingCapabilities: string[];
   sourceUrls: string[];
 }
 
-const ROUTE_CAPABILITIES: Record<string, AdmissionRouteCapability> = {
+export interface AdmissionRouteCapability {
+  programId: string;
+  pairId?: string;
+  status: AdmissionRouteCapabilityStatus;
+  evaluatorCapability: AdmissionsEvaluationCapability;
+  actionCapabilityStatus: AdmissionRouteActionCapability['status'];
+  verificationMode?: 'official_finalist_replay' | 'fixture_backed_local_formula';
+  supportedActionKinds: AdmissionRouteActionKind[];
+  requiredInputs: string[];
+  missingCapabilities: string[];
+  sourceUrls: string[];
+}
+
+const ROUTE_ACTION_CAPABILITIES: Record<string, AdmissionRouteActionCapability> = {
   tau_cs: {
     programId: 'tau_cs',
-    status: 'enabled',
+    pairId: 'tau_cs__tau',
+    status: 'ready',
     verificationMode: 'official_finalist_replay',
     supportedActionKinds: ['psychometric'],
     requiredInputs: ['psychometric', 'tau_bagrut_average', 'structured_bagrut_subjects'],
@@ -24,8 +46,9 @@ const ROUTE_CAPABILITIES: Record<string, AdmissionRouteCapability> = {
   },
   bgu_cs: {
     programId: 'bgu_cs',
-    status: 'disabled',
-    verificationMode: 'official_finalist_replay',
+    pairId: 'bgu_cs__bgu',
+    status: 'incomplete',
+    verificationMode: 'fixture_backed_local_formula',
     supportedActionKinds: [],
     requiredInputs: [
       'psychometric',
@@ -46,18 +69,103 @@ const ROUTE_CAPABILITIES: Record<string, AdmissionRouteCapability> = {
 };
 
 export function getAdmissionRouteCapability(programId: string): AdmissionRouteCapability {
-  return (
-    ROUTE_CAPABILITIES[programId] ?? {
+  const actionCapability = ROUTE_ACTION_CAPABILITIES[programId];
+  if (!actionCapability) {
+    return {
       programId,
       status: 'unsupported',
+      evaluatorCapability: 'unsupported',
+      actionCapabilityStatus: 'incomplete',
       supportedActionKinds: [],
       requiredInputs: [],
       missingCapabilities: ['reviewed_route_capability'],
       sourceUrls: [],
-    }
-  );
+    };
+  }
+
+  const evaluator = resolveEvaluatorCapability(actionCapability.pairId);
+  return composeAdmissionRouteCapability({
+    actionCapability,
+    evaluatorCapability: evaluator.capability,
+    evaluatorSourceUrl: evaluator.sourceUrl,
+  });
 }
 
 export function listAdmissionRouteCapabilities() {
-  return Object.values(ROUTE_CAPABILITIES);
+  return Object.keys(ROUTE_ACTION_CAPABILITIES).map(getAdmissionRouteCapability);
+}
+
+export function composeAdmissionRouteCapability(args: {
+  actionCapability: AdmissionRouteActionCapability;
+  evaluatorCapability: AdmissionsEvaluationCapability;
+  evaluatorSourceUrl?: string;
+}): AdmissionRouteCapability {
+  const { actionCapability, evaluatorCapability, evaluatorSourceUrl } = args;
+  const hasSupportedActions = actionCapability.supportedActionKinds.length > 0;
+  const actionModelReady = actionCapability.status === 'ready' && hasSupportedActions;
+  const evaluatorReady = evaluatorCapability === 'exact';
+  const missingCapabilities = new Set(actionCapability.missingCapabilities);
+
+  if (!evaluatorReady) {
+    missingCapabilities.add('exact_evaluator');
+  }
+  if (!actionModelReady) {
+    missingCapabilities.add('reviewed_route_action_model');
+  }
+
+  return {
+    programId: actionCapability.programId,
+    pairId: actionCapability.pairId,
+    status: evaluatorReady && actionModelReady ? 'enabled' : 'disabled',
+    evaluatorCapability,
+    actionCapabilityStatus: actionCapability.status,
+    verificationMode: actionCapability.verificationMode,
+    supportedActionKinds: actionCapability.supportedActionKinds,
+    requiredInputs: actionCapability.requiredInputs,
+    missingCapabilities: [...missingCapabilities],
+    sourceUrls: [
+      ...new Set(
+        evaluatorSourceUrl
+          ? [evaluatorSourceUrl, ...actionCapability.sourceUrls]
+          : actionCapability.sourceUrls,
+      ),
+    ],
+  };
+}
+
+function resolveEvaluatorCapability(pairId: string): {
+  capability: AdmissionsEvaluationCapability;
+  sourceUrl?: string;
+} {
+  const pairVerification = getFormulaPairVerificationEntry(pairId);
+  if (!pairVerification) {
+    return { capability: 'missing' };
+  }
+
+  if (pairVerification.state !== 'exact') {
+    return {
+      capability:
+        pairVerification.state === 'blocked'
+          ? 'blocked'
+          : pairVerification.state === 'stale'
+            ? 'stale'
+            : 'missing',
+      sourceUrl: pairVerification.sourceUrl,
+    };
+  }
+
+  const artifact = getProgramVerificationArtifact(pairId);
+  if (!artifact) {
+    return { capability: 'authority_unavailable', sourceUrl: pairVerification.sourceUrl };
+  }
+
+  return {
+    capability: evaluateProgramVerification({
+      contract: artifact.contract,
+      fixtures: artifact.fixtures,
+      currentAdmissionCycle: pairVerification.admissionCycle,
+      currentSourceFingerprint: pairVerification.liveProof.sourceFingerprint,
+    }).capability,
+    sourceUrl: pairVerification.sourceUrl,
+  };
 }
