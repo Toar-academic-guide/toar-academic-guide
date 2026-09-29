@@ -1,4 +1,5 @@
 import { bguSocialScienceProgram } from '@/lib/bguSocialScienceInputs';
+import { bagrutExamSubjects } from '@/lib/bagrutSubjectRecord';
 import { BGU_SOCIAL_SCIENCE_RULES } from '@/data/admissions/bguSocialScienceRules';
 import type { AdmissionsExtraInputs, AdmissionsRequiredInput } from '@/types/admissionsEvaluation';
 
@@ -54,7 +55,7 @@ export function resolveBguSocialScienceAdmission(
       'bgu_education_english_condition',
     );
     if (!extra.bguEducationSecondDepartment) missing.push('bgu_education_second_department');
-    const english = extra.bagrutSubjectRecord?.subjects.find(
+    const english = bagrutExamSubjects(extra.bagrutSubjectRecord).find(
       (subject) => subject.subjectId === 'english',
     );
     const units = english?.units ?? extra.englishUnits;

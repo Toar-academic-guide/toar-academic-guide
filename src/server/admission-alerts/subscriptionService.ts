@@ -11,6 +11,7 @@ import {
 } from '@/db/schema';
 import type { BagrutSubject } from '@/types';
 import { admissionCycleFor } from './cycle';
+import { subjectsFromStoredBagrutProfile } from '@/lib/storedBagrutProfile';
 
 export interface AdmissionAlertBaselineProfile {
   profileVersionId: string;
@@ -145,7 +146,7 @@ export function createDrizzleAdmissionAlertSubscriptionRepository(
         psychometric: profile.psychometric,
         bagrutAverage: profile.bagrutAverage,
         hasStructuredBagrut: true,
-        subjects: profileVersion.subjects,
+        subjects: subjectsFromStoredBagrutProfile(profileVersion.subjects),
       };
     },
     async findActiveSubscription(input) {

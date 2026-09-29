@@ -7,31 +7,16 @@ import { runTauComputerScienceRouteSimulation } from '@/server/admissions/routes
 import { acquireAdmissionsRouteRequest } from '@/server/admissions/routes/rateLimit';
 import { getAdmissionRouteCapability } from '@/server/admissions/routes/capabilityRegistry';
 import { getUserProfileSnapshot } from '@/server/user/profile';
+import { bagrutSubjectRecordSchema } from '@/lib/bagrutSubjectRecordSchema';
 
 export const dynamic = 'force-dynamic';
 
 const MAX_CONTENT_LENGTH_BYTES = 12_000;
-const subjectRecordSchema = z
-  .object({
-    schemaVersion: z.literal(1),
-    sector: z.enum(['jewish', 'arab', 'druze', 'circassian', 'bedouin', 'samaritan']),
-    subjects: z
-      .array(
-        z.object({
-          subjectId: z.string().regex(/^[a-z0-9]+(?:_[a-z0-9]+)*$/),
-          units: z.number().int().min(1).max(5),
-          grade: z.number().int().min(0).max(100),
-        }),
-      )
-      .min(1)
-      .max(64),
-  })
-  .strict();
 const inputProfileSchema = z
   .object({
     psychometric: z.number().int().min(200).max(800),
     tauBagrutAverage: z.number().min(60).max(120),
-    subjectRecord: subjectRecordSchema,
+    subjectRecord: bagrutSubjectRecordSchema,
   })
   .strict();
 const requestSchema = z.union([

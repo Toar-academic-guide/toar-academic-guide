@@ -7,8 +7,8 @@ import { bguPsychologyInputsShape } from '@/lib/bguPsychologyInputs';
 import { haifaAdmissionsInputsShape } from '@/lib/haifaAdmissionsInputs';
 import { bguSocialScienceInputsShape } from '@/lib/bguSocialScienceInputs';
 import { z } from 'zod';
-import { MAX_BAGRUT_SUBJECTS } from '@/lib/bagrutSubjectLimits';
 import { bguEngineeringSchema } from '@/lib/bguEngineeringSchema';
+import { bagrutSubjectRecordSchema } from '@/lib/bagrutSubjectRecordSchema';
 
 const geographicRegionSchema = z.enum(['center', 'north', 'south', 'any']);
 
@@ -21,50 +21,6 @@ const psychometricScoresSchema = z.strictObject({
   verbal: boundedInteger(50, 150).optional(),
   english: boundedInteger(50, 150).optional(),
 });
-
-const bagrutSectorSchema = z.enum([
-  'jewish',
-  'arab',
-  'druze',
-  'circassian',
-  'bedouin',
-  'samaritan',
-]);
-
-const bagrutSubjectSchema = z.strictObject({
-  subjectId: z
-    .string()
-    .trim()
-    .regex(/^[a-z0-9]+(?:_[a-z0-9]+)*$/),
-  units: boundedInteger(1, 5),
-  grade: boundedInteger(0, 100),
-});
-
-const bagrutSubjectRecordSchema = z
-  .strictObject({
-    schemaVersion: z.literal(1),
-    sector: bagrutSectorSchema,
-    subjects: z.array(bagrutSubjectSchema).min(1).max(MAX_BAGRUT_SUBJECTS),
-    profileHash: z
-      .string()
-      .regex(/^sha256:[a-f0-9]{64}$/)
-      .optional(),
-  })
-  .superRefine((record, context) => {
-    const seenSubjectIds = new Set<string>();
-
-    for (const [index, subject] of record.subjects.entries()) {
-      const normalizedSubjectId = subject.subjectId.trim().toLowerCase();
-      if (seenSubjectIds.has(normalizedSubjectId)) {
-        context.addIssue({
-          code: 'custom',
-          path: ['subjects', index, 'subjectId'],
-          message: 'Bagrut subjects must be unique.',
-        });
-      }
-      seenSubjectIds.add(normalizedSubjectId);
-    }
-  });
 
 const bagrutRecordSchema = z.strictObject({
   weightedAverage: boundedInteger(60, 120).optional(),

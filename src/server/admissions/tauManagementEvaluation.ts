@@ -5,6 +5,7 @@ import type {
 } from '@/types/admissionsEvaluation';
 import type { CatalogueInstitution } from '@/types/catalogue';
 import type { AdmissionsProgramInput } from '@/server/ingestion/admissionsSourceAdapters';
+import { bagrutExamSubjects } from '@/lib/bagrutSubjectRecord';
 import { runTauAdmissionsProof } from '@/server/ingestion/adapters/tauAdmissions';
 import { TAU_BUSINESS_CONTRACT } from '@/data/admissions/tauProgramVerification';
 import {
@@ -44,9 +45,9 @@ export async function evaluateTauManagementResult(args: {
 }): Promise<AdmissionsEvaluationResult> {
   const { input, institution, program, fetcher } = args;
   const extra = input.extraInputs;
-  const subjects = extra?.bagrutSubjectRecord?.subjects;
-  const mathematics = subjects?.find((subject) => subject.subjectId === 'mathematics');
-  const english = subjects?.find((subject) => subject.subjectId === 'english');
+  const subjects = bagrutExamSubjects(extra?.bagrutSubjectRecord);
+  const mathematics = subjects.find((subject) => subject.subjectId === 'mathematics');
+  const english = subjects.find((subject) => subject.subjectId === 'english');
   const applicant: TauManagementApplicant = {
     psychometric: input.psychometric,
     bagrutAverage: extra?.tauBagrutAverage,

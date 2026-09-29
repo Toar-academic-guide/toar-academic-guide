@@ -32,6 +32,8 @@ import {
 import { evaluateBguComputerScienceGates } from '@/server/admissions/bguComputerSciencePolicy';
 import { isBguEngineeringProgram } from '@/server/admissions/bguEngineeringPolicy';
 import { runBguEngineeringAdmissionsProof } from './bguEngineeringAdmissions';
+import { bagrutExamSubjects } from '@/lib/bagrutSubjectRecord';
+import { admissionsBagrutSubjectRecordSchema } from '@/lib/bagrutSubjectRecordSchema';
 
 const BGU_INDEX_URL = 'https://bgu4u.bgu.ac.il/html/average_calc/index.php';
 
@@ -357,7 +359,7 @@ function validateBguComputerScienceInputs(
   const gateResult = evaluateBguComputerScienceGates({
     psychometric: applicant.psychometric,
     quantitativeSubscore: quantitative,
-    subjects: subjectRecord.subjects,
+    subjects: bagrutExamSubjects(subjectRecord),
     languageRequirementsConfirmed,
   });
   if (!gateResult.eligibleForScoreComparison) return null;
@@ -368,33 +370,7 @@ function validateBguComputerScienceInputs(
 function isValidBguComputerScienceSubjectRecord(
   value: unknown,
 ): value is NonNullable<AdmissionsExtraInputs['bagrutSubjectRecord']> {
-  if (!value || typeof value !== 'object') return false;
-  const record = value as Record<string, unknown>;
-  const validSectors = new Set(['jewish', 'arab', 'druze', 'circassian', 'bedouin', 'samaritan']);
-  if (
-    record.schemaVersion !== 1 ||
-    typeof record.sector !== 'string' ||
-    !validSectors.has(record.sector) ||
-    !Array.isArray(record.subjects)
-  ) {
-    return false;
-  }
-  return record.subjects.every((subject) => {
-    if (!subject || typeof subject !== 'object') return false;
-    const item = subject as Record<string, unknown>;
-    return (
-      typeof item.subjectId === 'string' &&
-      item.subjectId.trim().length > 0 &&
-      typeof item.units === 'number' &&
-      Number.isInteger(item.units) &&
-      item.units >= 1 &&
-      item.units <= 5 &&
-      typeof item.grade === 'number' &&
-      Number.isInteger(item.grade) &&
-      item.grade >= 0 &&
-      item.grade <= 100
-    );
-  });
+  return admissionsBagrutSubjectRecordSchema.safeParse(value).success;
 }
 
 function parseBguComputerScienceScore(html: string): number | undefined {

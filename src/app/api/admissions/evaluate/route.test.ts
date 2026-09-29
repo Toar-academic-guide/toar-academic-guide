@@ -429,6 +429,48 @@ describe('admissions evaluate route', () => {
     );
   });
 
+  it('accepts a complete schema-v2 Bagrut subject record', async () => {
+    const bagrutSubjectRecord = {
+      schemaVersion: 2 as const,
+      sector: 'jewish' as const,
+      certificateType: 'internal' as const,
+      complete: true,
+      subjects: [
+        {
+          subjectId: 'mathematics',
+          units: 5,
+          grade: 95,
+          assessmentKind: 'exam' as const,
+        },
+      ],
+    };
+    const response = await POST(
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          degreeId: 'tau_datascience',
+          psychometric: 700,
+          bagrut: 110,
+          extraInputs: {
+            bagrutProfileSchemaVersion: 2,
+            bagrutSector: 'jewish',
+            bagrutSubjectRecord,
+          },
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.objectContaining({
+          extraInputs: expect.objectContaining({ bagrutSubjectRecord }),
+        }),
+      }),
+    );
+  });
+
   it('accepts institution-specific inputs and preserves false and zero', async () => {
     const extraInputs = {
       tauBagrutAverage: 112.5,
@@ -458,6 +500,33 @@ describe('admissions evaluate route', () => {
     expect(response.status).toBe(200);
     expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenCalledWith(
       expect.objectContaining({ input: expect.objectContaining({ extraInputs }) }),
+    );
+  });
+
+  it('keeps legacy schema-v1 Hebrew subject identifiers compatible', async () => {
+    const input = {
+      degreeId: 'tau_datascience',
+      psychometric: 700,
+      bagrut: 110,
+      extraInputs: {
+        bagrutSubjectRecord: {
+          schemaVersion: 1,
+          sector: 'jewish',
+          subjects: [{ subjectId: 'כימיה', units: 5, grade: 90 }],
+        },
+      },
+    };
+    const response = await POST(
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenCalledWith(
+      expect.objectContaining({ input }),
     );
   });
 

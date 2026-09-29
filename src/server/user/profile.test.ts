@@ -138,6 +138,62 @@ describe('user profile serializers', () => {
     });
   });
 
+  it('restores schema-v2 certificate metadata from the versioned JSON payload', () => {
+    const snapshot = serializeUserProfileSnapshot(
+      {
+        userId: '00000000-0000-0000-0000-000000000001',
+        firstName: null,
+        lastName: null,
+        geographicPreference: 'any',
+        psychometricOverall: null,
+        psychometricQuantitative: null,
+        psychometricVerbal: null,
+        psychometricEnglish: null,
+        bagrutWeightedAverage: 106,
+        riasecR: null,
+        riasecI: null,
+        riasecA: null,
+        riasecS: null,
+        riasecE: null,
+        riasecC: null,
+        avoidanceTags: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      [],
+      [],
+      {
+        id: '00000000-0000-0000-0000-000000000010',
+        userId: '00000000-0000-0000-0000-000000000001',
+        schemaVersion: 2,
+        contentHash: 'sha256:profile-v2-hash',
+        sector: 'jewish',
+        subjects: {
+          certificateType: 'internal',
+          complete: true,
+          subjects: [
+            {
+              subjectId: 'mathematics',
+              units: 5,
+              grade: 92,
+              assessmentKind: 'exam',
+            },
+          ],
+        },
+        createdAt: new Date(),
+      },
+    );
+
+    expect(snapshot.academicScores?.bagrut?.subjectRecord).toEqual({
+      schemaVersion: 2,
+      profileHash: 'sha256:profile-v2-hash',
+      sector: 'jewish',
+      certificateType: 'internal',
+      complete: true,
+      subjects: [{ subjectId: 'mathematics', units: 5, grade: 92, assessmentKind: 'exam' }],
+    });
+  });
+
   it('builds a DB row with nulls for missing score fields', () => {
     const row = buildUserProfileRow('00000000-0000-0000-0000-000000000002', {
       firstName: 'Dana',

@@ -5,6 +5,7 @@ import { BGU_QUANTITATIVE_PROFILE_KEYS } from './calculatorInputRequirements';
 import type { AcademicScores } from '@/types';
 import type { AdmissionsExtraInputs } from '@/types/admissionsEvaluation';
 import { BGU_SOCIAL_SCIENCE_PROFILE_KEYS } from './bguSocialScienceInputs';
+import { bagrutExamSubjects } from './bagrutSubjectRecord';
 
 /**
  * Converts the structured academic profile into the explicit input contract
@@ -16,7 +17,7 @@ export function admissionsExtraInputsFromAcademicScores(
 ): AdmissionsExtraInputs | undefined {
   const bagrutSubjectRecord = academicScores?.bagrut?.subjectRecord;
   const subjectsById = new Map(
-    bagrutSubjectRecord?.subjects.map((subject) => [subject.subjectId, subject]),
+    bagrutExamSubjects(bagrutSubjectRecord).map((subject) => [subject.subjectId, subject]),
   );
   const mathematics = subjectsById.get('mathematics');
   const english = subjectsById.get('english');

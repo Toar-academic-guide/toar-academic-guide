@@ -4,6 +4,7 @@ import type {
   AdmissionsEvaluationInput,
   AdmissionsRequiredInput,
 } from '@/types/admissionsEvaluation';
+import { bagrutExamSubjects } from '@/lib/bagrutSubjectRecord';
 
 export const BGU_ENGINEERING_PROGRAMS = {
   ee: { department: 361, cutoff: 547, minimumPsychometric: 600 },
@@ -129,7 +130,7 @@ export function resolveBguEngineeringInputs(
   if (!extra.bguLanguageRequirementsConfirmed)
     return { kind: 'below', reason: 'נדרשות אנגלית ברמה בסיסית ועברית ברמה ה׳ לנדרשים.' };
   const record = extra.bagrutSubjectRecord;
-  const subjects = record?.subjects ?? [];
+  const subjects = bagrutExamSubjects(record);
   if (
     subjects.some(
       (subject) =>

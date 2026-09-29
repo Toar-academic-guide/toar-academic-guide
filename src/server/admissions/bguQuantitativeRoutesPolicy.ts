@@ -1,4 +1,5 @@
 import type { AdmissionsExtraInputs, AdmissionsRequiredInput } from '@/types/admissionsEvaluation';
+import { bagrutExamSubjects } from '@/lib/bagrutSubjectRecord';
 
 export interface BguQuantitativeProgramme {
   family: 'biology' | 'economics' | 'business' | 'accounting';
@@ -137,7 +138,7 @@ export function resolveBguQuantitativeRoute(
   const route = extra.bguQuantitativeRoute ?? 'auto';
   const p = applicant.psychometric;
   const q = extra.psychometricMath;
-  const math = extra.bagrutSubjectRecord?.subjects.find(
+  const math = bagrutExamSubjects(extra.bagrutSubjectRecord).find(
     (subject) => subject.subjectId === 'mathematics',
   );
   const validMath =

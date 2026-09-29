@@ -6,6 +6,7 @@ import {
   type AdmissionsSourceProof,
 } from '../admissionsSourceAdapters';
 import type { BagrutSubjectRecord } from '@/types';
+import { bagrutExamSubjects } from '@/lib/bagrutSubjectRecord';
 import {
   calculateTechnionArchitectureScore,
   TECHNION_ARCHITECTURE_CUTOFF,
@@ -47,7 +48,7 @@ export function hasTechnionRequiredSubjectRecord(
   record: BagrutSubjectRecord | undefined,
 ): record is BagrutSubjectRecord {
   if (!record) return false;
-  const byId = new Map(record.subjects.map((subject) => [subject.subjectId, subject]));
+  const byId = new Map(bagrutExamSubjects(record).map((subject) => [subject.subjectId, subject]));
   return TECHNION_SUBJECT_FIELDS.every(([subjectId]) => {
     const subject = byId.get(subjectId);
     return subject && Number.isFinite(subject.units) && Number.isFinite(subject.grade);
@@ -84,7 +85,7 @@ export async function runTechnionAdmissionsProof(
       memuca: 'sehem',
     });
     const subjectsById = new Map(
-      subjectRecord.subjects.map((subject) => [subject.subjectId, subject]),
+      bagrutExamSubjects(subjectRecord).map((subject) => [subject.subjectId, subject]),
     );
     for (const [subjectId, unitsField, gradeField] of TECHNION_SUBJECT_FIELDS) {
       const subject = subjectsById.get(subjectId)!;

@@ -1,4 +1,5 @@
 import { COLMAN_CS_PROGRAM_URL, COLMAN_BAGRUT_CALCULATOR_URL } from '@/lib/colmanBagrutInputs';
+import { bagrutExamSubjects } from '@/lib/bagrutSubjectRecord';
 import type {
   AdmissionsEvaluationInput,
   AdmissionsEvaluationResult,
@@ -25,7 +26,7 @@ export function evaluateColmanBagrutResult({
   const extra = input.extraInputs;
   const average = extra?.colmanBagrutAverage;
   const certificate = extra?.colmanBagrutCertificateConfirmed;
-  const math = extra?.bagrutSubjectRecord?.subjects.find(
+  const math = bagrutExamSubjects(extra?.bagrutSubjectRecord).find(
     (subject) => subject.subjectId === 'mathematics',
   );
   const units = math?.units ?? extra?.mathUnits;

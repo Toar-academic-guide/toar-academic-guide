@@ -12,6 +12,7 @@ import {
   userProfiles,
 } from '@/db/schema';
 import type { UserProfile } from '@/types';
+import { toStoredBagrutProfilePayload } from '@/lib/storedBagrutProfile';
 
 import { mergeUserProfileDraft } from './migration';
 import {
@@ -196,7 +197,7 @@ async function getOrCreateBagrutProfileVersion(
       schemaVersion: record.schemaVersion,
       contentHash: record.profileHash,
       sector: record.sector,
-      subjects: record.subjects,
+      subjects: toStoredBagrutProfilePayload(record),
     })
     .onConflictDoNothing()
     .returning({ id: bagrutProfileVersions.id });
