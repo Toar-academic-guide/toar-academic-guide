@@ -66,7 +66,10 @@ function getInstitutionType(inst: InstitutionRecord): InstitutionType {
 
 function formatResultSummary(result: AdmissionsEvaluationResult): string {
   if (typeof result.score === 'number') {
-    const decimalPlaces = result.scoreLabel?.startsWith('סכם פיזיותרפיה') ? 2 : 1;
+    const decimalPlaces =
+      result.scoreLabel?.startsWith('סכם פיזיותרפיה') || result.linkedInstitutionId === 'colman'
+        ? 2
+        : 1;
     const formattedScore = Number.isInteger(result.score)
       ? String(result.score)
       : result.score.toFixed(decimalPlaces);
@@ -132,6 +135,8 @@ function formatResultSummary(result: AdmissionsEvaluationResult): string {
       result.requiredInputs.some((input) =>
         [
           'tau_bagrut_average',
+          'colman_bagrut_average',
+          'colman_bagrut_certificate',
           'bgu_bagrut_average',
           'tau_application_requirements',
           'bgu_language_requirements',
@@ -524,6 +529,16 @@ export default function CalculatorResults({
           </p>
         </div>
 
+        {degreeId === 'colmgmt_cs' && onCompleteAcademicProfile && (
+          <button
+            type="button"
+            onClick={onCompleteAcademicProfile}
+            className="mb-6 cursor-pointer rounded-xl border-2 border-black bg-white px-4 py-2 text-sm font-bold"
+          >
+            עדכון נתוני מסלול הבגרות בפרופיל האקדמי
+          </button>
+        )}
+
         {degreeId === 'haifa_infosystems' && (
           <div className="mb-6 rounded-2xl border-2 border-black bg-white p-4">
             <HaifaInformationSystemsTrackFields
@@ -698,14 +713,26 @@ export default function CalculatorResults({
                                   : STATUS_CONFIG.openAdmission
                                 : result.kind === 'manual_gate'
                                   ? result.decision === 'below'
-                                    ? STATUS_CONFIG.manualGateBelow
-                                    : selectedProgram?.id === 'architecture' &&
-                                        institution.id === 'technion'
+                                    ? selectedProgram?.id === 'colmgmt_cs' &&
+                                      institution.id === 'colman'
+                                      ? {
+                                          ...STATUS_CONFIG.manualGateBelow,
+                                          label: 'מתחת לתנאי מסלול הבגרות',
+                                        }
+                                      : STATUS_CONFIG.manualGateBelow
+                                    : selectedProgram?.id === 'colmgmt_cs' &&
+                                        institution.id === 'colman'
                                       ? {
                                           ...STATUS_CONFIG.manualGateEligible,
-                                          label: 'עמידה בתנאים — בכפוף למקום פנוי',
+                                          label: 'תנאי הציונים מתקיימים — נדרש מבדק פנימי',
                                         }
-                                      : STATUS_CONFIG.manualGateEligible
+                                      : selectedProgram?.id === 'architecture' &&
+                                          institution.id === 'technion'
+                                        ? {
+                                            ...STATUS_CONFIG.manualGateEligible,
+                                            label: 'עמידה בתנאים — בכפוף למקום פנוי',
+                                          }
+                                        : STATUS_CONFIG.manualGateEligible
                                   : result.kind === 'requirements_only'
                                     ? STATUS_CONFIG.requirementsOnly
                                     : result.kind === 'tracked_missing_rule'

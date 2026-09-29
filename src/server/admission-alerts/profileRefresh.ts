@@ -48,6 +48,9 @@ export function shouldRefreshAdmissionAlerts(
       (key) => previous.admissionsInputs?.[key] !== next.admissionsInputs?.[key],
     ) ||
     previous.admissionsInputs?.tauBagrutAverage !== next.admissionsInputs?.tauBagrutAverage ||
+    previous.admissionsInputs?.colmanBagrutAverage !== next.admissionsInputs?.colmanBagrutAverage ||
+    previous.admissionsInputs?.colmanBagrutCertificateConfirmed !==
+      next.admissionsInputs?.colmanBagrutCertificateConfirmed ||
     previous.admissionsInputs?.bguBagrutAverage !== next.admissionsInputs?.bguBagrutAverage ||
     previous.admissionsInputs?.tauApplicationRequirementsConfirmed !==
       next.admissionsInputs?.tauApplicationRequirementsConfirmed ||

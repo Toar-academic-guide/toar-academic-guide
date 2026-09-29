@@ -4,6 +4,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import CalculatorResults from '@/components/CalculatorResults';
+import { evaluateColmanBagrutResult } from '@/server/admissions/colmanBagrutEvaluation';
 import type { AdmissionsEvaluationReport } from '@/types/admissionsEvaluation';
 import { getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 
@@ -87,6 +88,42 @@ function route(id: string, durationWeeks: number, effortPoints: number) {
 }
 
 describe('CalculatorResults', () => {
+  it.each([
+    [85, 'תנאי הציונים מתקיימים — נדרש מבדק פנימי'],
+    [84.99, 'מתחת לתנאי מסלול הבגרות'],
+  ])(
+    'labels the Colman route for average %s and provides profile editing',
+    async (average, label) => {
+      const onCompleteAcademicProfile = vi.fn();
+      const result = evaluateColmanBagrutResult({
+        institution: { id: 'colman', name: 'מכללת ניהול – לימודים אקדמיים', region: 'center' },
+        input: {
+          degreeId: 'colmgmt_cs',
+          extraInputs: {
+            colmanBagrutAverage: average as number,
+            colmanBagrutCertificateConfirmed: true,
+            mathUnits: 5,
+            mathGrade: 70,
+          },
+        },
+      });
+      hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(report([result]));
+      render(
+        <CalculatorResults
+          degreeId="colmgmt_cs"
+          programs={programs}
+          onBack={vi.fn()}
+          onCompleteAcademicProfile={onCompleteAcademicProfile}
+        />,
+      );
+      expect(await screen.findByText(label)).toBeTruthy();
+      if (average === 84.99) expect(screen.getByText(/מסלול בגרות 84.99/)).toBeTruthy();
+      fireEvent.click(
+        screen.getByRole('button', { name: 'עדכון נתוני מסלול הבגרות בפרופיל האקדמי' }),
+      );
+      expect(onCompleteAcademicProfile).toHaveBeenCalledOnce();
+    },
+  );
   it('sends an explicit Haifa track, clears partner confirmation when switching and labels the unverified option', async () => {
     hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(report([]));
     render(

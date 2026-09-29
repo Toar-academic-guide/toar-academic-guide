@@ -1,3 +1,4 @@
+import { colmanBagrutInputsShape } from '@/lib/colmanBagrutInputs';
 import { tauPhysiotherapyInputsShape } from '@/lib/tauPhysiotherapyInputs';
 import { hujiMedicineInputsShape } from '@/lib/hujiMedicineInputs';
 import { bguHealthInputsShape } from '@/lib/bguHealthInputs';
@@ -71,6 +72,7 @@ const admissionsEvaluationSchema = z
         csUnits: z.number().int().min(3).max(5).optional(),
         csGrade: z.number().int().min(50).max(100).optional(),
         tauBagrutAverage: z.number().min(50).max(130).optional(),
+        ...colmanBagrutInputsShape,
         technionArchitectureBagrutAverage: z.number().min(0).max(119).optional(),
         technionArchitectureExamScore: z.number().min(0).max(140).optional(),
         technionArchitectureExamPassed: z.boolean().optional(),

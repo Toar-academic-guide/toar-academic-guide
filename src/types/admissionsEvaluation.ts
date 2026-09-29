@@ -106,6 +106,8 @@ export type AdmissionsRequiredInput =
   | 'bagrut_profile_version'
   | 'bagrut_sector'
   | 'tau_bagrut_average'
+  | 'colman_bagrut_average'
+  | 'colman_bagrut_certificate'
   | 'bgu_bagrut_average'
   | 'tau_application_requirements'
   | 'bgu_language_requirements'
@@ -150,6 +152,8 @@ export interface AdmissionsExtraInputs
   csUnits?: number;
   csGrade?: number;
   tauBagrutAverage?: number;
+  colmanBagrutAverage?: number;
+  colmanBagrutCertificateConfirmed?: boolean;
   bguBagrutAverage?: number;
   tauApplicationRequirementsConfirmed?: boolean;
   tauManagementRequirementsConfirmed?: boolean;

@@ -144,6 +144,10 @@ export function admissionsInputValue(
       return input?.bagrutSector;
     case 'tau_bagrut_average':
       return input?.tauBagrutAverage;
+    case 'colman_bagrut_average':
+      return input?.colmanBagrutAverage;
+    case 'colman_bagrut_certificate':
+      return input?.colmanBagrutCertificateConfirmed;
     case 'bgu_bagrut_average':
       return input?.bguBagrutAverage;
     case 'tau_application_requirements':

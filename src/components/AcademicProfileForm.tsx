@@ -35,6 +35,7 @@ import {
   tauPhysiotherapyInputsSchema,
 } from '@/lib/tauPhysiotherapyInputs';
 import BagrutCalculatorWizard from './BagrutCalculatorWizard';
+import { colmanBagrutInputsShape, COLMAN_BAGRUT_CALCULATOR_URL } from '@/lib/colmanBagrutInputs';
 import { BguEngineeringFields } from './BguEngineeringFields';
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
@@ -132,6 +133,12 @@ export default function AcademicProfileForm({
   );
   const [tauBagrutAverage, setTauBagrutAverage] = useState(
     initialScores?.admissions?.tauBagrutAverage?.toString() ?? '',
+  );
+  const [colmanBagrutAverage, setColmanBagrutAverage] = useState(
+    initialScores?.admissions?.colmanBagrutAverage?.toString() ?? '',
+  );
+  const [colmanBagrutCertificate, setColmanBagrutCertificate] = useState(
+    initialScores?.admissions?.colmanBagrutCertificateConfirmed?.toString() ?? '',
   );
   const [bguBagrutAverage, setBguBagrutAverage] = useState(
     initialScores?.admissions?.bguBagrutAverage?.toString() ?? '',
@@ -246,6 +253,8 @@ export default function AcademicProfileForm({
     setBagrutAverage('');
     setBagrutSubjectRecord(undefined);
     setTauBagrutAverage('');
+    setColmanBagrutAverage('');
+    setColmanBagrutCertificate('');
     setPsychologyValues({});
     setMedicineValues({});
     setHealthValues({});
@@ -442,6 +451,15 @@ export default function AcademicProfileForm({
     const bguAverage = optionalNumber(bguBagrutAverage);
     const mathPlacement = optionalNumber(tauMathPlacementScore);
     if (tauAverage !== undefined) admissions.tauBagrutAverage = tauAverage;
+    const colmanAverage = optionalNumber(colmanBagrutAverage);
+    if (!colmanBagrutInputsShape.colmanBagrutAverage.safeParse(colmanAverage).success) {
+      setError('ממוצע הבגרות המשוקלל של המכללה למינהל חייב להיות בין 50 ל־130.');
+      setIsSaving(false);
+      return;
+    }
+    if (colmanAverage !== undefined) admissions.colmanBagrutAverage = colmanAverage;
+    if (colmanBagrutCertificate !== '')
+      admissions.colmanBagrutCertificateConfirmed = colmanBagrutCertificate === 'true';
     if (bguAverage !== undefined) admissions.bguBagrutAverage = bguAverage;
     const haifaAverage = optionalNumber(haifaBagrutAverage);
     const certificateYear = optionalNumber(haifaBagrutYear);
@@ -945,6 +963,56 @@ export default function AcademicProfileForm({
                 disabled={isSaving}
                 inputClassName={inputBase}
               />
+              <div className="flex flex-col gap-1.5">
+                <label
+                  htmlFor="colman-bagrut-average"
+                  className="text-xs font-medium text-slate-600"
+                >
+                  ממוצע בגרות משוקלל של המכללה למינהל (50–130)
+                </label>
+                <input
+                  id="colman-bagrut-average"
+                  type="number"
+                  min={50}
+                  max={130}
+                  step={0.01}
+                  placeholder="לא ידוע"
+                  value={colmanBagrutAverage}
+                  onChange={(event) => setColmanBagrutAverage(event.target.value)}
+                  disabled={isSaving}
+                  className={inputBase + ' disabled:cursor-not-allowed disabled:opacity-50'}
+                />
+                <p className="text-xs text-slate-500">
+                  למסלול הבגרות במדעי המחשב נדרש ממוצע 85 לפחות לפי המכללה, בנוסף למתמטיקה ולמבדק
+                  פנימי. הזינו את יחידות וציון המתמטיקה במחשבון מקצועות הבגרות למעלה.{' '}
+                  <a
+                    href={COLMAN_BAGRUT_CALCULATOR_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="underline"
+                  >
+                    מחשבון הבגרות של המכללה
+                  </a>{' '}
+                  נותן הערכה; הממוצע הקובע נקבע במרכז הרישום.
+                </p>
+                <label
+                  htmlFor="colman-bagrut-certificate"
+                  className="text-xs font-medium text-slate-600"
+                >
+                  האם יש לך זכאות לתעודת בגרות מלאה ומוכרת?
+                </label>
+                <select
+                  id="colman-bagrut-certificate"
+                  value={colmanBagrutCertificate}
+                  onChange={(event) => setColmanBagrutCertificate(event.target.value)}
+                  disabled={isSaving}
+                  className={inputBase}
+                >
+                  <option value="">לא ידוע</option>
+                  <option value="true">כן</option>
+                  <option value="false">לא</option>
+                </select>
+              </div>
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="tau-bagrut-average" className="text-xs font-medium text-slate-600">
                   ממוצע בגרות רשמי של אוניברסיטת תל אביב (50–130)

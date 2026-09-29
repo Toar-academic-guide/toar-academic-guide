@@ -14,6 +14,25 @@ const previous = {
 };
 
 describe('alert profile refresh detection', () => {
+  it('refreshes when College of Management inputs change or clear', () => {
+    const saved = {
+      ...previous,
+      admissionsInputs: { colmanBagrutAverage: 85, colmanBagrutCertificateConfirmed: true },
+    };
+    expect(
+      shouldRefreshAdmissionAlerts(saved, {
+        ...saved,
+        admissionsInputs: { ...saved.admissionsInputs, colmanBagrutAverage: 84.99 },
+      }),
+    ).toBe(true);
+    expect(
+      shouldRefreshAdmissionAlerts(saved, {
+        ...saved,
+        admissionsInputs: { ...saved.admissionsInputs, colmanBagrutCertificateConfirmed: false },
+      }),
+    ).toBe(true);
+    expect(shouldRefreshAdmissionAlerts(saved, { ...saved, admissionsInputs: {} })).toBe(true);
+  });
   it('refreshes a saved Medicine calculation whenever a route fact changes or clears', () => {
     const admissionsInputs = {
       ...HUJI_MEDICINE_ELIGIBLE_INPUTS,

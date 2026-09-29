@@ -27,6 +27,31 @@ vi.mock('server-only', () => ({}));
 import { POST } from './route';
 
 describe('admissions evaluate route', () => {
+  it('forwards Colman Bagrut inputs without requiring generic average or psychometric', async () => {
+    hoistedMocks.listCataloguePrograms.mockResolvedValue({
+      data: [{ id: 'colmgmt_cs', name: 'CS', linkedInstitutionIds: ['colman'] }],
+    });
+    const input = {
+      degreeId: 'colmgmt_cs',
+      extraInputs: {
+        colmanBagrutAverage: 85.25,
+        colmanBagrutCertificateConfirmed: false,
+        mathUnits: 4,
+        mathGrade: 80,
+      },
+    };
+    const response = await POST(
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(input),
+      }),
+    );
+    expect(response.status).toBe(200);
+    expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenCalledWith(
+      expect.objectContaining({ input }),
+    );
+  });
   it('accepts Haifa years and decimal official average without an unused generic Bagrut', async () => {
     hoistedMocks.listCataloguePrograms.mockResolvedValue({
       data: [{ id: 'haifa_cs', name: 'CS', linkedInstitutionIds: ['haifa'] }],

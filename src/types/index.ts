@@ -249,6 +249,9 @@ export interface AdmissionsProfileInputs
   technionArchitectureRequirementsConfirmed?: boolean;
   /** Official TAU Bagrut average, which may differ from the generic profile average. */
   tauBagrutAverage?: number;
+  /** Official College of Management weighted average for the Bagrut-only route. */
+  colmanBagrutAverage?: number;
+  colmanBagrutCertificateConfirmed?: boolean;
   /** Official BGU Bagrut average, which may differ from the generic profile average. */
   bguBagrutAverage?: number;
   /** Confirms Bagrut, Advanced A English (psychometric or separate exam), Hebrew and first choice. */
