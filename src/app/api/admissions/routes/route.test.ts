@@ -23,7 +23,7 @@ import { POST } from './route';
 
 const profile = {
   psychometric: 660,
-  bagrutAverage: 108,
+  tauBagrutAverage: 108,
   subjectRecord: {
     schemaVersion: 1,
     sector: 'jewish',
@@ -72,6 +72,7 @@ describe('admissions routes API', () => {
       academicScores: {
         psychometric: { overall: 660 },
         bagrut: { weightedAverage: 108, subjectRecord: profile.subjectRecord },
+        admissions: { tauBagrutAverage: 111 },
       },
     });
 
@@ -79,6 +80,28 @@ describe('admissions routes API', () => {
 
     expect(response.status).toBe(200);
     expect(mocks.getUserProfileSnapshot).toHaveBeenCalledWith('user-1');
+    expect(mocks.runTauComputerScienceRouteSimulation).toHaveBeenCalledWith({
+      profile: {
+        psychometric: 660,
+        tauBagrutAverage: 111,
+        subjectRecord: profile.subjectRecord,
+      },
+    });
+  });
+
+  it('does not substitute the generic Bagrut average for the official TAU average', async () => {
+    mocks.requireAuthenticatedUserId.mockResolvedValue('user-1');
+    mocks.getUserProfileSnapshot.mockResolvedValue({
+      academicScores: {
+        psychometric: { overall: 660 },
+        bagrut: { weightedAverage: 108, subjectRecord: profile.subjectRecord },
+      },
+    });
+
+    const response = await POST(request({ degreeId: 'tau_cs', source: 'saved_profile' }));
+
+    expect(response.status).toBe(422);
+    expect(mocks.runTauComputerScienceRouteSimulation).not.toHaveBeenCalled();
   });
 
   it('returns Retry-After when the route quota is exhausted', async () => {

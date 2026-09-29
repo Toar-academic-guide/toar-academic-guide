@@ -304,7 +304,7 @@ export default function CalculatorResults({
   );
   const hasCompleteRouteProfile = Boolean(
     academicScores?.psychometric?.overall !== undefined &&
-    academicScores.bagrut?.weightedAverage !== undefined &&
+    academicScores.admissions?.tauBagrutAverage !== undefined &&
     academicScores.bagrut?.subjectRecord,
   );
   const routeProfileMatchesCalculation = Boolean(
@@ -909,7 +909,8 @@ function VerifiedRoutePanel({
       {!completeProfile ? (
         <>
           <p className="mt-3 text-sm font-semibold text-slate-800">
-            כדי לחשב מסלול מאומת, יש להשלים את מקצועות הבגרות והיחידות שלך בפרופיל.
+            כדי לחשב מסלול מאומת, יש להשלים בפרופיל את ממוצע הבגרות הרשמי של אוניברסיטת תל אביב ואת
+            מקצועות הבגרות והיחידות.
           </p>
           {onCompleteAcademicProfile ? (
             <button

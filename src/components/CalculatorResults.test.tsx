@@ -299,11 +299,60 @@ describe('CalculatorResults', () => {
         bagrut={108}
         onBack={() => {}}
         onCompleteAcademicProfile={() => {}}
-        academicScores={{ psychometric: { overall: 680 }, bagrut: { weightedAverage: 108 } }}
+        academicScores={{
+          psychometric: { overall: 680 },
+          bagrut: { weightedAverage: 108 },
+          admissions: { tauBagrutAverage: 108 },
+        }}
       />,
     );
 
     expect(await screen.findByText('השלמת פרופיל אקדמי')).toBeTruthy();
+    expect(hoistedMocks.fetchTauComputerScienceRoutes).not.toHaveBeenCalled();
+  });
+
+  it('withholds route cards until the official TAU Bagrut average is available', async () => {
+    hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
+      report([
+        {
+          institution: { id: 'tau', name: 'אוניברסיטת תל אביב', region: 'center' },
+          linkedInstitutionId: 'tau',
+          capability: 'exact',
+          kind: 'exact',
+          decision: 'below',
+          confidence: 'high',
+          sourceLabel: 'אימות רשמי',
+          explanation: 'מתחת לסף',
+          nextAction: 'השלימו נתונים',
+          score: 690,
+          threshold: 706,
+        },
+      ]),
+    );
+
+    render(
+      <CalculatorResults
+        degreeId="tau_cs"
+        programs={programs}
+        psychometric={680}
+        bagrut={108}
+        onBack={() => {}}
+        onCompleteAcademicProfile={() => {}}
+        academicScores={{
+          psychometric: { overall: 680 },
+          bagrut: {
+            weightedAverage: 108,
+            subjectRecord: {
+              schemaVersion: 1,
+              sector: 'jewish',
+              subjects: [{ subjectId: 'mathematics', units: 5, grade: 80 }],
+            },
+          },
+        }}
+      />,
+    );
+
+    expect(await screen.findByText(/ממוצע הבגרות הרשמי של אוניברסיטת תל אביב/)).toBeTruthy();
     expect(hoistedMocks.fetchTauComputerScienceRoutes).not.toHaveBeenCalled();
   });
 
@@ -336,6 +385,7 @@ describe('CalculatorResults', () => {
         onCompleteAcademicProfile={() => {}}
         academicScores={{
           psychometric: { overall: 690 },
+          admissions: { tauBagrutAverage: 108 },
           bagrut: {
             weightedAverage: 108,
             subjectRecord: {
@@ -387,6 +437,7 @@ describe('CalculatorResults', () => {
         onBack={() => {}}
         academicScores={{
           psychometric: { overall: 680 },
+          admissions: { tauBagrutAverage: 108 },
           bagrut: {
             weightedAverage: 108,
             subjectRecord: {
