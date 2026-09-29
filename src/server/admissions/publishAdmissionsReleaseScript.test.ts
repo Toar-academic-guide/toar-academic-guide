@@ -7,6 +7,38 @@ import {
 } from '../../../scripts/publish-admissions-release.mjs';
 
 describe('admissions publication script cleanup', () => {
+  it.each(['published', 'already_published', 'no_changes'])(
+    'hands off only a processable %s result',
+    async (status) => {
+      const emitReleaseId = vi.fn();
+      const vite = {
+        close: vi.fn().mockResolvedValue(undefined),
+        ssrLoadModule: vi.fn(async (path: string) => {
+          if (path.endsWith('/admissionsReleasePublisher.ts'))
+            return {
+              createAdmissionsReleasePublisher: () => ({
+                publish: async () => ({ status, releaseId: 'release-1' }),
+              }),
+            };
+          if (path.endsWith('/publicationArgs.ts'))
+            return {
+              parsePublicationArguments: () => ({
+                manifestPath: 'src/data/admissions/reviewedManifest.json',
+                repositoryCommit: 'abc1234',
+              }),
+            };
+          if (path.endsWith('/client.ts')) return { closeDb: vi.fn() };
+          throw new Error(`Unexpected module: ${path}`);
+        }),
+      };
+      await runAdmissionsReleasePublication([], {
+        createViteServer: vi.fn().mockResolvedValue(vite),
+        emitReleaseId,
+      });
+      if (status === 'no_changes') expect(emitReleaseId).not.toHaveBeenCalled();
+      else expect(emitReleaseId).toHaveBeenCalledExactlyOnceWith('release-1');
+    },
+  );
   it('reports incomplete cleanup within its deadline', async () => {
     const closeDb = vi.fn(() => new Promise<void>(() => undefined));
     const vite = {
@@ -43,6 +75,7 @@ describe('admissions publication script cleanup', () => {
   it('preserves a publication failure when cleanup times out', async () => {
     const publicationError = new Error('publication update failed');
     const closeDb = vi.fn(() => new Promise<void>(() => undefined));
+    const emitReleaseId = vi.fn();
     const vite = {
       close: vi.fn().mockResolvedValue(undefined),
       ssrLoadModule: vi.fn(async (path: string) => {
@@ -75,10 +108,12 @@ describe('admissions publication script cleanup', () => {
       runAdmissionsReleasePublication([], {
         createViteServer: vi.fn().mockResolvedValue(vite),
         operationTimeoutMs: 1,
+        emitReleaseId,
       }),
     ).rejects.toBe(publicationError);
 
     expect(closeDb).toHaveBeenCalledOnce();
     expect(vite.close).toHaveBeenCalledOnce();
+    expect(emitReleaseId).not.toHaveBeenCalled();
   });
 });

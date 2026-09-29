@@ -74,3 +74,43 @@ They cover 250 subscriptions, isolated retry and quarantine, recovery on the nex
 release, concurrent claims, expired-owner rejection, committed-cursor recovery,
 release ordering, duplicate enqueue and cancellation. They create and remove an
 isolated test schema; never point this test command at production.
+
+## Protected processing
+
+`.github/workflows/admission-alert-processing.yml` receives a published canonical
+release UUID after successful publication. It can also be dispatched manually
+without a UUID to enqueue missed current-cycle releases and recover due work.
+Maintenance runs every 15 minutes, but only existing published canonical releases
+can create work. No public processor endpoint exists and this workflow does not
+send email.
+
+Provision `ADMISSION_ALERT_DATABASE_URL` in the existing `admissions-publication`
+GitHub environment using the application's `app_runtime` database role. The
+publisher's `DATABASE_URL` uses `admissions_automation`, which deliberately cannot
+read private profiles or alerts; do not broaden that role. Set the repository
+variable `ADMISSION_ALERT_PROCESSING_ENABLED=true` only after a controlled manual
+run succeeds. Scheduled and publication-triggered processing remain off otherwise.
+Manual dispatch still requires the protected environment's approval.
+
+Each run processes at most ten batches and has a 45-minute workflow timeout.
+Release-scoped concurrency prevents duplicate invocations, while a shared job
+concurrency group serializes all official-source access. The fetch queue starts
+at most one request per two seconds (30/minute), with one concurrent request.
+Timeouts leave recoverable leases; due retries continue on a later maintenance
+run. Logs contain only counts, status and cleanup phases.
+
+TAU and BGU baselines use the same canonical evaluator as the calculator, including
+saved psychometric subscores, the structured certificate, institution averages,
+and admissions answers. The profile digest covers those inputs. A concurrent
+profile edit cannot establish a stale baseline. Historical releases do not scan
+subscriptions activated or refreshed after the change. A live verdict must match
+the reviewed cutoff's rule digest; drift or missing inputs cause an isolated retry,
+never a substituted estimate. Full academic inputs remain in the existing profile
+store, not the alert work or delivery rows.
+
+To verify the protected runtime after merge: open GitHub Actions → **Process
+Reviewed Admission Alerts** → **Run workflow**, leave the release UUID blank,
+approve the protected environment, and expect an aggregate `idle` or `batch_limit`
+result followed by completed database/Vite cleanup. Then sign in to
+`/internal/data-health` and check transition counts. This proves worker invocation,
+not provider delivery or the final TAU/BGU live proof.

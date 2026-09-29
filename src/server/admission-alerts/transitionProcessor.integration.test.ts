@@ -10,6 +10,9 @@ import {
   createDrizzleAdmissionAlertTransitionProcessorRepository,
   processAdmissionAlertTransitionWork,
 } from './transitionProcessor';
+import { createDrizzleAdmissionAlertSubscriptionRepository } from './subscriptionService';
+import { alertCutoffRuleVersion } from './baselineEvaluator';
+import { createAdmissionAlertTransitionEvaluator } from './transitionEvaluator';
 
 const enabled = process.env.ALERT_DB_INTEGRATION === '1';
 if (enabled && !process.env.DATABASE_URL) throw new Error('DATABASE_URL is required.');
@@ -21,9 +24,8 @@ describe.skipIf(!enabled)('transition recovery with PostgreSQL', () => {
     prepare: false,
     connection: { search_path: `${namespace},public` },
   });
-  const repository = createDrizzleAdmissionAlertTransitionProcessorRepository(
-    drizzle(client, { schema }),
-  );
+  const db = drizzle(client, { schema });
+  const repository = createDrizzleAdmissionAlertTransitionProcessorRepository(db);
   const tables = [
     'admission_releases',
     'admission_target_transitions',
@@ -31,6 +33,9 @@ describe.skipIf(!enabled)('transition recovery with PostgreSQL', () => {
     'admission_alert_transition_work',
     'admission_alert_outbox',
     'admission_alert_baseline_history',
+    'user_profiles',
+    'bagrut_profile_versions',
+    'admission_release_items',
   ];
   const now = new Date('2026-09-29T10:00:00Z');
   const below = async ({ ruleVersion }: { ruleVersion: string }) => ({
@@ -47,8 +52,8 @@ describe.skipIf(!enabled)('transition recovery with PostgreSQL', () => {
       values (${release.id},'tau','tau_cs','2026','v1',${version},${createdAt.toISOString()}::timestamptz) returning id`;
     await client`insert into admission_alert_transition_work (transition_id) values (${transition.id})`;
     for (let i = 0; i < count; i++) {
-      await client`insert into admission_alert_subscriptions (user_id,institution_id,program_id,cycle,profile_version_id,profile_hash,baseline_rule_version,baseline_verdict)
-        values (gen_random_uuid(),'tau','tau_cs','2026',gen_random_uuid(),'private-hash','v1','{"decision":"below"}')`;
+      await client`insert into admission_alert_subscriptions (user_id,institution_id,program_id,cycle,profile_version_id,profile_hash,baseline_rule_version,baseline_verdict,activated_at)
+        values (gen_random_uuid(),'tau','tau_cs','2026',gen_random_uuid(),'private-hash','v1','{"decision":"below"}',${new Date(createdAt.getTime() - 1000).toISOString()}::timestamptz)`;
     }
     return transition.id as string;
   }
@@ -182,5 +187,85 @@ describe.skipIf(!enabled)('transition recovery with PostgreSQL', () => {
     const [work] =
       await client`select retry_state,failure_reason from admission_alert_transition_work`;
     expect(work).toEqual({ retry_state: {}, failure_reason: null });
+  });
+
+  it('does not replay a release against subscriptions activated after that change', async () => {
+    await seed();
+    await client`update admission_alert_subscriptions set activated_at=${new Date(now.getTime() + 1).toISOString()}::timestamptz`;
+    expect((await claim())?.subscriptions).toHaveLength(0);
+  });
+
+  it('binds TAU and BGU work to saved inputs and the exact reviewed cutoff', async () => {
+    const ruleVersion = alertCutoffRuleVersion(700);
+    const tauTransition = await seed(0, ruleVersion);
+    const [release] =
+      await client`select release_id from admission_target_transitions where id=${tauTransition}`;
+    const [bguTransition] =
+      await client`insert into admission_target_transitions (release_id,institution_id,program_id,cycle,before_version,after_version,created_at)
+      values (${release.release_id},'bgu','bgu_cs','2026','v1',${ruleVersion},${now.toISOString()}::timestamptz) returning id`;
+    const profiles = createDrizzleAdmissionAlertSubscriptionRepository(db);
+    const canonical = vi.fn(async () => ({ decision: 'eligible' as const, ruleVersion }));
+    const evaluate = createAdmissionAlertTransitionEvaluator({ db, evaluate: canonical });
+    for (const [institutionId, transitionId] of [
+      ['tau', tauTransition],
+      ['bgu', bguTransition.id],
+    ]) {
+      const userId = randomUUID();
+      const [version] =
+        await client`insert into bagrut_profile_versions (user_id,schema_version,content_hash,sector,subjects)
+        values (${userId},1,'subjects','jewish','[{"subjectId":"mathematics","units":5,"grade":90}]') returning id`;
+      await client`insert into user_profiles (user_id,psychometric_overall,psychometric_quantitative,bagrut_weighted_average,bagrut_profile_version_id,admissions_inputs)
+        values (${userId},680,135,108,${version.id},'{"tauApplicationRequirementsConfirmed":true,"bguLanguageRequirementsConfirmed":true,"bguBagrutAverage":112}')`;
+      const profile = (await profiles.getProfile(userId))!;
+      const subscription = await profiles.createSubscription({
+        userId,
+        institutionId,
+        programId: `${institutionId}_cs`,
+        cycle: '2026',
+        profileVersionId: profile.profileVersionId,
+        profileHash: profile.profileHash,
+        baselineRuleVersion: 'v1',
+        baselineVerdict: { decision: 'below' },
+      });
+      await client`insert into admission_release_items (transition_id,rule_kind,before_value,after_value,effective_from,source_proofs)
+        values (${transitionId},'admission_cutoff','{"value":710}','{"value":700}','2026-09-29','[]')`;
+      const input = {
+        subscriptionId: subscription.id,
+        transitionId,
+        institutionId,
+        programId: `${institutionId}_cs`,
+        ruleVersion,
+        profileHash: profile.profileHash,
+        profileVersionId: profile.profileVersionId,
+      };
+      expect(await evaluate(input)).toEqual({
+        decision: 'eligible',
+        isMathematicallyVerified: true,
+        ruleVersion,
+      });
+      expect(canonical).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          profile: expect.objectContaining({
+            extraInputs: expect.objectContaining({ psychometricMath: 135, bguBagrutAverage: 112 }),
+          }),
+        }),
+        expect.anything(),
+      );
+      await client`update user_profiles set psychometric_overall=681 where user_id=${userId}`;
+      expect((await evaluate(input)).decision).toBe('unavailable');
+      await expect(
+        profiles.createSubscription({
+          userId,
+          institutionId,
+          programId: `${institutionId}_cs`,
+          cycle: '2026',
+          profileVersionId: profile.profileVersionId,
+          profileHash: profile.profileHash,
+          baselineRuleVersion: 'v1',
+          baselineVerdict: { decision: 'below' },
+        }),
+      ).rejects.toThrow('profile changed');
+    }
+    expect(canonical).toHaveBeenCalledTimes(2);
   });
 });

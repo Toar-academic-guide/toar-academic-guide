@@ -105,6 +105,7 @@ class MemoryRepository implements AdmissionAlertTransitionProcessorRepository {
       institutionId: 'tau',
       programId: 'tau_cs',
       afterVersion: 'v2',
+      transitionAt: new Date('2026-09-29T10:00:00Z'),
       subscriptions: [
         {
           id: 'eligible',
