@@ -1,5 +1,32 @@
 # Admission alert operations
 
+## Hebrew email rendering
+
+The server-only React Email renderer produces both RTL HTML and plain text. Its
+input is limited to the verified recipient, public institution/program names,
+reviewed date, cycle and an opaque unsubscribe token. Never pass a profile or
+evaluation result to the renderer. The Resend adapter sends only the six
+allowlisted mail fields; provider metadata must not contain academic inputs.
+
+Delivery configuration (not enabled by the template PR):
+
+- `ADMISSION_ALERT_FROM_EMAIL`: mailbox on a domain verified in Resend. A personal
+  Gmail address is not a production sender. Resend's test sender is restricted to
+  the Resend account's own email address.
+- `ADMISSION_ALERT_SUPPORT_EMAIL`: support/reply-to mailbox; Gmail is acceptable.
+- `ADMISSION_ALERT_APP_ORIGIN`: canonical HTTPS origin, without a path, query or
+  credentials. Links must point to the deployed app, not the workflow runner.
+
+The unsubscribe token is in the link fragment to keep it out of access logs.
+The confirmation page and delivery integration are separate U6/U7 work. Do not
+enable sending until those controls and the controlled provider proof are ready.
+
+Verify the rendered TAU and BGU messages in Hebrew: the programme and review date
+are visible, the call to action opens `/app/calculator`, management points to
+`/app/profile#admission-alerts`, removal opens the category-unsubscribe page,
+and support opens the configured mailbox. No grades, scores or profile hashes
+should appear in HTML, plain text, or the provider request.
+
 ## Persistence and health
 
 `npm run db:operational:verify` verifies the deployed alert tables, role grants,
