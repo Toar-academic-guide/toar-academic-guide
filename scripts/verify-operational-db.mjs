@@ -1,4 +1,5 @@
 import postgres from 'postgres';
+import { drizzle } from 'drizzle-orm/postgres-js';
 import { require as tsxRequire } from 'tsx/cjs/api';
 
 const { PRODUCTION_SCHEMA_CONTRACT, assessProductionSchema } = tsxRequire(
@@ -10,6 +11,10 @@ const { assessPublicationDatabaseState } = tsxRequire(
   import.meta.url,
 );
 const { requireOpsDatabaseUrl } = tsxRequire('../src/env.ts', import.meta.url);
+const { loadAdmissionAlertHealth } = tsxRequire(
+  '../src/server/admission-alerts/health.ts',
+  import.meta.url,
+);
 
 const mode = resolveMode(process.argv);
 const representativeTables = [
@@ -354,9 +359,7 @@ async function loadCatalogueEvidence(sql) {
     where id = 'colman_tourism'
   `;
   if (!colmanTourism || colmanTourism.admission_type !== 'requirements') {
-    throw new Error(
-      'Expected public.programs.colman_tourism to use requirements-based admission.',
-    );
+    throw new Error('Expected public.programs.colman_tourism to use requirements-based admission.');
   }
 
   return {
@@ -404,6 +407,10 @@ async function main() {
     const snapshot = await loadSnapshot(sql);
     const report = assessProductionSchema(snapshot);
     const catalogue = report.status === 'current' ? await loadCatalogueEvidence(sql) : null;
+    const alerts =
+      report.status === 'current'
+        ? await loadAdmissionAlertHealth((query) => drizzle(sql).execute(query))
+        : null;
     const publication =
       mode === 'publication' && report.status === 'current'
         ? await loadPublicationDatabaseState(sql)
@@ -414,6 +421,7 @@ async function main() {
       ...report,
       requiredTables: Object.keys(PRODUCTION_SCHEMA_CONTRACT.tables).sort(),
       catalogue,
+      alerts,
       publication,
     };
 

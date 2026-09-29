@@ -311,6 +311,19 @@ function baseRows(overrides: Partial<DataHealthRows> = {}): DataHealthRows {
     reviewItems: [],
     sourceFreshnessStates: [],
     admissionReleases: [],
+    admissionAlerts: {
+      currentCycle: '2026',
+      subscriptions: {},
+      transitions: {},
+      deliveries: {},
+      stuckTransitions: 0,
+      stuckDeliveries: 0,
+      staleCycleSubscriptions: 0,
+      expiredWebhookEvents: 0,
+      overdueSubscriptions: 0,
+      invalidCycles: 0,
+      retentionStatus: 'within_policy',
+    },
     ...overrides,
   };
 }
@@ -1109,12 +1122,13 @@ describe('getDataHealthReport', () => {
 
     hoistedMocks.getOpsDb.mockReturnValue({
       select: vi.fn(() => ({ from })),
+      execute: from,
     });
 
     const report = await getDataHealthReport(now);
 
     expect(report.status).toBe('ready');
-    expect(from).toHaveBeenCalledTimes(15);
+    expect(from).toHaveBeenCalledTimes(16);
     expect(maxActiveQueries).toBe(1);
   });
 

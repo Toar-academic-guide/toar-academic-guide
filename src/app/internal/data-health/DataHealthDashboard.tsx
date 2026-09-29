@@ -359,6 +359,49 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
         </section>
 
         <section>
+          <Panel title="Admission alert operations">
+            <DefinitionGrid
+              items={[
+                ['Current admissions cycle', report.admissionAlerts.currentCycle],
+                ['Stuck transition claims (15+ minutes)', report.admissionAlerts.stuckTransitions],
+                ['Stuck delivery claims (15+ minutes)', report.admissionAlerts.stuckDeliveries],
+                [
+                  'Active subscriptions from prior cycles',
+                  report.admissionAlerts.staleCycleSubscriptions,
+                ],
+                ['Webhook events beyond 30 days', report.admissionAlerts.expiredWebhookEvents],
+                [
+                  'Subscriptions beyond cycle + 12 months',
+                  report.admissionAlerts.overdueSubscriptions,
+                ],
+                ['Invalid subscription cycles', report.admissionAlerts.invalidCycles],
+                [
+                  'Retention status',
+                  report.admissionAlerts.retentionStatus === 'within_policy'
+                    ? 'Within policy'
+                    : 'Cleanup required',
+                ],
+              ]}
+            />
+            <p className="mt-3 text-sm text-slate-600">
+              Aggregate counts only. A claim older than 15 minutes needs investigation; this does
+              not prove provider acceptance or recovery. Retention counts report stored rows, not
+              whether cleanup is scheduled.
+            </p>
+            {(['subscriptions', 'transitions', 'deliveries'] as const).map((kind) => (
+              <div className="mt-4" key={kind}>
+                <h3 className="font-semibold capitalize">{kind}</h3>
+                {Object.keys(report.admissionAlerts[kind]).length === 0 ? (
+                  <p className="mt-1 text-sm text-slate-600">No rows</p>
+                ) : (
+                  <DefinitionGrid items={Object.entries(report.admissionAlerts[kind])} />
+                )}
+              </div>
+            ))}
+          </Panel>
+        </section>
+
+        <section>
           <Panel title="Admissions publication">
             <DefinitionGrid
               items={[
@@ -601,6 +644,24 @@ function AdmissionsEvidenceRows({
 
 function buildCriticalItems(report: DataHealthReadyReport): string[] {
   return [
+    ...(
+      [
+        ['Stuck alert transitions', report.admissionAlerts.stuckTransitions],
+        ['Stuck alert deliveries', report.admissionAlerts.stuckDeliveries],
+        ['Unknown alert acceptance', report.admissionAlerts.deliveries.acceptance_unknown ?? 0],
+        ['Failed alert transitions', report.admissionAlerts.transitions.failed ?? 0],
+        ['Failed alert deliveries', report.admissionAlerts.deliveries.failed ?? 0],
+        ['Stale-cycle alert subscriptions', report.admissionAlerts.staleCycleSubscriptions],
+        [
+          'Overdue alert retention rows',
+          report.admissionAlerts.expiredWebhookEvents +
+            report.admissionAlerts.overdueSubscriptions +
+            report.admissionAlerts.invalidCycles,
+        ],
+      ] as const
+    )
+      .filter(([, count]) => count > 0)
+      .map(([label, count]) => `${label}: ${count}`),
     ...report.readiness.issues,
     ...report.coverage.missingRequirementSources.map(
       (row) => `Missing source URL for ${row.admissionRequirementId}`,

@@ -9,6 +9,19 @@ import type { DataHealthReadyReport } from '@/server/data-health/queries';
 function reportWithRisks(): DataHealthReadyReport {
   return {
     status: 'ready',
+    admissionAlerts: {
+      currentCycle: '2026',
+      subscriptions: {},
+      transitions: {},
+      deliveries: {},
+      stuckTransitions: 0,
+      stuckDeliveries: 0,
+      staleCycleSubscriptions: 0,
+      expiredWebhookEvents: 0,
+      overdueSubscriptions: 0,
+      invalidCycles: 0,
+      retentionStatus: 'within_policy',
+    },
     generatedAt: '2026-06-24T18:00:00.000Z',
     readiness: {
       isReady: false,
@@ -346,6 +359,7 @@ describe('DataHealthDashboard', () => {
     expect(screen.getByRole('heading', { name: /source coverage/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /source freshness/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /admissions publication/i })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /admission alert operations/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /ingestion pipeline/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /review queue/i })).toBeTruthy();
     expect(screen.getByText('Non-catalogue evidence')).toBeTruthy();
