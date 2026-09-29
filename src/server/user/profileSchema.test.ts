@@ -152,6 +152,53 @@ describe('userProfileSchema', () => {
     });
   });
 
+  it('accepts a complete schema-v2 Bagrut record with distinct exam and final-project entries', () => {
+    const subjectRecord = {
+      schemaVersion: 2 as const,
+      sector: 'jewish' as const,
+      certificateType: 'external_1977_or_later' as const,
+      complete: true,
+      subjects: [
+        { subjectId: 'physics', units: 5, grade: 90, assessmentKind: 'exam' as const },
+        {
+          subjectId: 'physics',
+          units: 5,
+          grade: 95,
+          assessmentKind: 'final_project' as const,
+        },
+      ],
+    };
+
+    const parsed = userProfileSchema.parse({
+      geographicPreference: 'center',
+      academicScores: { bagrut: { subjectRecord } },
+    });
+
+    expect(parsed.academicScores?.bagrut?.subjectRecord).toEqual(subjectRecord);
+  });
+
+  it('rejects duplicate schema-v2 entries with the same subject and assessment kind', () => {
+    expect(() =>
+      userProfileSchema.parse({
+        geographicPreference: 'center',
+        academicScores: {
+          bagrut: {
+            subjectRecord: {
+              schemaVersion: 2,
+              sector: 'jewish',
+              certificateType: 'internal',
+              complete: true,
+              subjects: [
+                { subjectId: 'physics', units: 5, grade: 90, assessmentKind: 'exam' },
+                { subjectId: 'physics', units: 5, grade: 95, assessmentKind: 'exam' },
+              ],
+            },
+          },
+        },
+      }),
+    ).toThrow();
+  });
+
   it('rejects duplicate Bagrut subjects and invalid subject-level ranges', () => {
     const profile = {
       geographicPreference: 'any',

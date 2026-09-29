@@ -140,6 +140,35 @@ describe('admissionsExtraInputsFromAcademicScores', () => {
     });
   });
 
+  it('derives subject gates from schema-v2 exams rather than additional final projects', () => {
+    expect(
+      admissionsExtraInputsFromAcademicScores({
+        bagrut: {
+          subjectRecord: {
+            schemaVersion: 2,
+            sector: 'jewish',
+            certificateType: 'internal',
+            complete: true,
+            subjects: [
+              {
+                subjectId: 'mathematics',
+                units: 5,
+                grade: 90,
+                assessmentKind: 'exam',
+              },
+              {
+                subjectId: 'mathematics',
+                units: 5,
+                grade: 98,
+                assessmentKind: 'final_project',
+              },
+            ],
+          },
+        },
+      }),
+    ).toMatchObject({ mathUnits: 5, mathGrade: 90, bagrutProfileSchemaVersion: 2 });
+  });
+
   it('does not attach an empty extra-input payload when no saved structured values exist', () => {
     expect(admissionsExtraInputsFromAcademicScores({})).toBeUndefined();
   });

@@ -3,6 +3,7 @@ import type {
   AdmissionsRequiredInput,
 } from '@/types/admissionsEvaluation';
 import { TAU_DIGITAL_SCIENCES_REQUIREMENTS_URL } from '@/data/admissions/tauProgramVerification';
+import { bagrutExamSubjects } from '@/lib/bagrutSubjectRecord';
 
 export const TAU_DIGITAL_SCIENCES_PROGRAM_URL = TAU_DIGITAL_SCIENCES_REQUIREMENTS_URL;
 
@@ -68,7 +69,9 @@ export function evaluateTauDigitalSciencesGates(
   }
 
   const record = extraInputs.bagrutSubjectRecord;
-  const subjects = new Map(record.subjects.map((subject) => [subject.subjectId, subject]));
+  const subjects = new Map(
+    bagrutExamSubjects(record).map((subject) => [subject.subjectId, subject]),
+  );
   const mathematics = subjects.get('mathematics');
   const physics = subjects.get('physics');
   const unmetRequirements: string[] = [];

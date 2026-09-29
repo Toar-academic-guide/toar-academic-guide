@@ -8,6 +8,7 @@ import {
   TAU_PHYSIOTHERAPY_REGISTRATION_URL,
   TAU_PHYSIOTHERAPY_SELECTION_URL,
 } from '@/lib/tauPhysiotherapyInputs';
+import { bagrutExamSubjects } from '@/lib/bagrutSubjectRecord';
 import { runTauAdmissionsProof } from '@/server/ingestion/adapters/tauAdmissions';
 import { withBoundedOfficialResponse } from '@/server/ingestion/boundedOfficialFetch';
 
@@ -71,7 +72,7 @@ export async function evaluateTauPhysiotherapyResult({
   if (input.psychometric === undefined) missing.push('psychometric_overall');
   if (extra?.tauPhysiotherapyRequirementsConfirmed === undefined)
     missing.push('tau_physiotherapy_requirements');
-  const math = extra?.bagrutSubjectRecord?.subjects.find(
+  const math = bagrutExamSubjects(extra?.bagrutSubjectRecord).find(
     (subject) => subject.subjectId === 'mathematics',
   );
   const mathPasses =

@@ -13,7 +13,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
-import type { AdmissionsProfileInputs, BagrutSubject } from '@/types';
+import type { AdmissionsProfileInputs, StoredBagrutProfilePayload } from '@/types';
 
 export const geographicRegionEnum = pgEnum('geographic_region', [
   'center',
@@ -442,7 +442,7 @@ export const bagrutProfileVersions = pgTable(
     schemaVersion: integer('schema_version').notNull(),
     contentHash: text('content_hash').notNull(),
     sector: text('sector').notNull(),
-    subjects: jsonb('subjects').$type<BagrutSubject[]>().notNull(),
+    subjects: jsonb('subjects').$type<StoredBagrutProfilePayload>().notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => ({

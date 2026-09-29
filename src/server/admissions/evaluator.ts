@@ -27,6 +27,7 @@ import { BGU_PSYCHOLOGY_SOURCE_URL } from '@/data/admissions/bguPsychologyVerifi
 import 'server-only';
 
 import { getCalculatorInstitutionsFromCatalogue } from '@/lib/calculatorInstitutions';
+import { bagrutExamSubjects } from '@/lib/bagrutSubjectRecord';
 import { evaluateUniversities } from '@/utils/sekhemCalculators';
 import type { University } from '@/types';
 import type {
@@ -747,8 +748,8 @@ async function evaluateExactResult(args: {
 
     if (exactTarget.sourceTarget.adapterId === 'bgu') {
       if (['cs', 'bgu_cs', 'datascience', 'bgu_datascience'].includes(program.id)) {
-        const subjects = input.extraInputs?.bagrutSubjectRecord?.subjects;
-        if (!subjects?.some((subject) => subject.subjectId === 'mathematics')) {
+        const subjects = bagrutExamSubjects(input.extraInputs?.bagrutSubjectRecord);
+        if (!subjects.some((subject) => subject.subjectId === 'mathematics')) {
           return requiredInputsResult(institution, ['bagrut_subject_record']);
         }
         const gates = evaluateBguComputerScienceGates({
@@ -2632,7 +2633,7 @@ function tauEngineeringBonusEligibility(
   record: NonNullable<AdmissionsEvaluationInput['extraInputs']>['bagrutSubjectRecord'],
 ): boolean | undefined {
   if (!record) return undefined;
-  const subjectIds = new Set(record.subjects.map((subject) => subject.subjectId));
+  const subjectIds = new Set(bagrutExamSubjects(record).map((subject) => subject.subjectId));
   if (!subjectIds.has('mathematics') || !subjectIds.has('physics')) {
     return undefined;
   }

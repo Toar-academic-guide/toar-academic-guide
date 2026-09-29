@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest';
+import { TAU_BAGRUT_AVERAGE_VERIFICATION } from '@/data/admissions/tauBagrutAverageVerification';
+import { subjectIdForWizardLabel } from '@/utils/bagrutSubjectRecord';
 
 import {
   BGU_COMPUTER_SCIENCE_ROUTE_POLICY,
@@ -7,7 +9,9 @@ import {
   classifyPsychometricEnglishScore,
   evaluateBagrutRecordReadiness,
   evaluateDirectAdmissionsTrack,
+  evaluateTauBagrutProfileReadiness,
   evaluateTauEngineeringExactSciencesBonus,
+  tauBagrutBonusForSubject,
 } from './bagrutPolicies';
 
 describe('TAU engineering and exact-sciences Bagrut policy', () => {
@@ -37,6 +41,25 @@ describe('TAU engineering and exact-sciences Bagrut policy', () => {
     });
   });
 
+  it('does not use a final project as the mathematics or physics exam for the TAU gate', () => {
+    expect(
+      evaluateTauEngineeringExactSciencesBonus({
+        subjects: [
+          {
+            subjectId: 'mathematics',
+            units: 5,
+            grade: 95,
+            assessmentKind: 'final_project',
+          },
+          { subjectId: 'physics', units: 5, grade: 90, assessmentKind: 'exam' },
+        ],
+      }),
+    ).toMatchObject({
+      qualifies: false,
+      unmetRequirements: ['mathematics_5_units_grade_55'],
+    });
+  });
+
   it('records reviewed provenance rather than treating a local shortcut as an official formula', () => {
     expect(TAU_ENGINEERING_EXACT_SCIENCES_POLICY).toMatchObject({
       version: 'tau-engineering-exact-sciences-2026-06-11',
@@ -48,6 +71,45 @@ describe('TAU engineering and exact-sciences Bagrut policy', () => {
       authority: 'official-published-requirement',
     });
   });
+
+  it.each([
+    ['mathematics', 5, 60, 'exam', 'jewish', 35],
+    ['mathematics', 4, 60, 'exam', 'jewish', 12.5],
+    ['physics', 5, 60, 'exam', 'jewish', 25],
+    ['computer_science', 5, 60, 'exam', 'jewish', 20],
+    [subjectIdForWizardLabel('צרפתית'), 5, 60, 'exam', 'jewish', 20],
+    ['arabic', 5, 60, 'exam', 'arab', 25],
+    ['arabic', 5, 60, 'exam', 'jewish', 20],
+    ['physics', 5, 60, 'final_project', 'jewish', 20],
+    ['physics', 5, 59, 'exam', 'jewish', 0],
+    ['physics', 5, 90, 'combined', 'jewish', 0],
+    [subjectIdForWizardLabel('הגנת סייבר'), 5, 90, 'exam', 'jewish', 0],
+    ['subject_unlisted', 5, 90, 'exam', 'jewish', 0],
+  ] as const)(
+    'applies the reviewed TAU bonus for %s %i units (%s, %s sector)',
+    (subjectId, units, grade, assessmentKind, sector, expected) => {
+      expect(tauBagrutBonusForSubject({ subjectId, units, grade, assessmentKind }, sector)).toBe(
+        expected,
+      );
+    },
+  );
+
+  it.each(['מכונות חום ותרמודנמיקה', 'מנועי מטוסים ותרמודנמיקה'])(
+    'recognizes the wizard spelling %s as a reviewed standard-bonus subject',
+    (label) => {
+      expect(
+        tauBagrutBonusForSubject(
+          {
+            subjectId: subjectIdForWizardLabel(label),
+            units: 5,
+            grade: 90,
+            assessmentKind: 'exam',
+          },
+          'jewish',
+        ),
+      ).toBe(20);
+    },
+  );
 });
 
 describe('versioned admissions input policies', () => {
@@ -182,5 +244,71 @@ describe('versioned admissions input policies', () => {
       missingInputs: ['bagrut_profile_version'],
       policyVersion: '2027-test',
     });
+  });
+
+  it('requires complete schema-v2 certificate facts before TAU recomputation', () => {
+    expect(
+      evaluateTauBagrutProfileReadiness({
+        schemaVersion: 1,
+        sector: 'jewish',
+        subjects: [{ subjectId: 'mathematics', units: 5, grade: 90 }],
+      }),
+    ).toMatchObject({ state: 'needs_input', missingInputs: ['bagrut_profile_version'] });
+
+    expect(
+      evaluateTauBagrutProfileReadiness({
+        schemaVersion: 2,
+        sector: 'jewish',
+        certificateType: 'internal',
+        complete: false,
+        subjects: [{ subjectId: 'mathematics', units: 5, grade: 90, assessmentKind: 'exam' }],
+      }),
+    ).toMatchObject({ state: 'needs_input', missingInputs: ['bagrut_certificate_complete'] });
+
+    expect(
+      evaluateTauBagrutProfileReadiness({
+        schemaVersion: 2,
+        sector: 'jewish',
+        certificateType: 'other',
+        complete: true,
+        subjects: [{ subjectId: 'mathematics', units: 5, grade: 90, assessmentKind: 'exam' }],
+      }),
+    ).toMatchObject({ state: 'needs_input', missingInputs: ['bagrut_certificate_type'] });
+
+    expect(
+      evaluateTauBagrutProfileReadiness({
+        schemaVersion: 2,
+        sector: 'jewish',
+        certificateType: 'internal',
+        complete: true,
+        subjects: [{ subjectId: 'mathematics', units: 5, grade: 90, assessmentKind: 'exam' }],
+      }),
+    ).toMatchObject({ state: 'needs_input', missingInputs: ['bagrut_certificate_units'] });
+
+    expect(
+      evaluateTauBagrutProfileReadiness({
+        schemaVersion: 2,
+        sector: 'jewish',
+        certificateType: 'internal',
+        complete: true,
+        subjects: [
+          { subjectId: 'mathematics', units: 5, grade: 90, assessmentKind: 'exam' },
+          { subjectId: 'english', units: 5, grade: 90, assessmentKind: 'exam' },
+          { subjectId: 'history', units: 5, grade: 90, assessmentKind: 'exam' },
+          { subjectId: 'physics', units: 5, grade: 90, assessmentKind: 'final_project' },
+        ],
+      }),
+    ).toMatchObject({
+      state: 'needs_input',
+      missingInputs: ['bagrut_final_project_subject'],
+    });
+  });
+
+  it('recognizes the complete official TAU example as ready for policy calculation', () => {
+    expect(evaluateTauBagrutProfileReadiness(TAU_BAGRUT_AVERAGE_VERIFICATION.record)).toEqual({
+      state: 'ready',
+      policyVersion: 'tau-bagrut-profile-2026-09-29',
+    });
+    expect(TAU_BAGRUT_AVERAGE_VERIFICATION.expectedAverage).toBe(108.39);
   });
 });

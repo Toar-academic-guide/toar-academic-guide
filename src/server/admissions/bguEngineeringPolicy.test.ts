@@ -38,6 +38,32 @@ describe('current BGU engineering input and route rules', () => {
       }
     },
   );
+  it('keeps BGU engineering inputs unchanged when schema v2 also contains a final project', () => {
+    const value = input();
+    value.extraInputs!.bagrutSubjectRecord = {
+      schemaVersion: 2,
+      sector: 'jewish',
+      certificateType: 'internal',
+      complete: true,
+      subjects: [
+        { subjectId: 'mathematics', units: 5, grade: 95, assessmentKind: 'exam' },
+        {
+          subjectId: 'mathematics',
+          units: 5,
+          grade: 50,
+          assessmentKind: 'final_project',
+        },
+        { subjectId: 'physics', units: 5, grade: 95, assessmentKind: 'exam' },
+      ],
+    };
+
+    const resolution = resolveBguEngineeringInputs('bgu_ee', value, now);
+    expect(resolution.kind).toBe('score');
+    if (resolution.kind === 'score') {
+      expect(resolution.parameters.get('on_grade_bag_math')).toBe('95');
+      expect(resolution.parameters.get('on_grade_bag_phy')).toBe('95');
+    }
+  });
   it.each([
     ['bgu_ee', 599, 'below'],
     ['bgu_ee', 600, 'score'],

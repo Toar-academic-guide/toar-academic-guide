@@ -1,5 +1,6 @@
-import type { BagrutSubjectRecord } from '@/types';
+import type { BagrutSector, BagrutSubjectRecord, BagrutSubjectV2 } from '@/types';
 import type { AdmissionsExtraInputs, AdmissionsRequiredInput } from '@/types/admissionsEvaluation';
+import { TAU_STANDARD_BONUS_SUBJECT_IDS } from '@/data/admissions/tauBagrutBonusSubjects';
 
 export interface ReviewedBagrutPolicy {
   id: string;
@@ -18,6 +19,98 @@ export const TAU_ENGINEERING_EXACT_SCIENCES_POLICY: ReviewedBagrutPolicy = {
   effectiveFrom: '2026-06-11',
   enabled: true,
 };
+
+export const TAU_BAGRUT_PROFILE_POLICY = {
+  id: 'tau-bagrut-profile',
+  version: 'tau-bagrut-profile-2026-09-29',
+  sourceUrl: 'https://go.tau.ac.il/he/ba/how-to-calculate',
+  calculatorUrl: 'https://ims.tau.ac.il/Md/calc/Bagrut.aspx',
+  recordSchemaVersion: 2 as const,
+};
+
+/**
+ * Checks whether the record preserves every profile-level fact needed by the
+ * reviewed TAU policy. It deliberately does not calculate an average yet.
+ */
+export function evaluateTauBagrutProfileReadiness(
+  record: BagrutSubjectRecord,
+): { state: 'ready'; policyVersion: string } | AdmissionsPolicyNeedsInput {
+  const policyVersion = TAU_BAGRUT_PROFILE_POLICY.version;
+  if (record.schemaVersion !== TAU_BAGRUT_PROFILE_POLICY.recordSchemaVersion) {
+    return { state: 'needs_input', missingInputs: ['bagrut_profile_version'], policyVersion };
+  }
+  if (!record.complete) {
+    return { state: 'needs_input', missingInputs: ['bagrut_certificate_complete'], policyVersion };
+  }
+  if (record.certificateType === 'other') {
+    return { state: 'needs_input', missingInputs: ['bagrut_certificate_type'], policyVersion };
+  }
+
+  const totalUnits = record.subjects.reduce((sum, subject) => sum + subject.units, 0);
+  if (totalUnits < 20) {
+    return { state: 'needs_input', missingInputs: ['bagrut_certificate_units'], policyVersion };
+  }
+
+  const examSubjectIds = new Set(
+    record.subjects
+      .filter((subject) => subject.assessmentKind === 'exam')
+      .map((subject) => subject.subjectId),
+  );
+  if (
+    record.subjects.some(
+      (subject) =>
+        subject.assessmentKind === 'final_project' && !examSubjectIds.has(subject.subjectId),
+    )
+  ) {
+    return {
+      state: 'needs_input',
+      missingInputs: ['bagrut_final_project_subject'],
+      policyVersion,
+    };
+  }
+
+  return { state: 'ready', policyVersion };
+}
+
+const TAU_TWENTY_FIVE_POINT_SUBJECT_IDS = new Set([
+  'english',
+  'physics',
+  'chemistry',
+  'biology',
+  'literature',
+  'history',
+  'bible',
+]);
+
+/** Returns the reviewed TAU bonus for one schema-v2 certificate entry. */
+export function tauBagrutBonusForSubject(subject: BagrutSubjectV2, sector: BagrutSector): number {
+  if (subject.grade < 60 || subject.assessmentKind === 'combined') {
+    return 0;
+  }
+
+  if (subject.subjectId === 'mathematics' && subject.assessmentKind === 'exam') {
+    if (subject.units === 5) return 35;
+    if (subject.units === 4) return 12.5;
+    return 0;
+  }
+
+  if (subject.subjectId === 'english' && subject.units === 4 && subject.assessmentKind === 'exam') {
+    return 12.5;
+  }
+
+  const hasTwentyFivePointBonus =
+    TAU_TWENTY_FIVE_POINT_SUBJECT_IDS.has(subject.subjectId) ||
+    (subject.subjectId === 'arabic' && sector === 'arab');
+  const isStandardBonusSubject =
+    hasTwentyFivePointBonus || TAU_STANDARD_BONUS_SUBJECT_IDS.has(subject.subjectId);
+  if (!isStandardBonusSubject) {
+    return 0;
+  }
+  if (subject.units === 5) {
+    return hasTwentyFivePointBonus && subject.assessmentKind === 'exam' ? 25 : 20;
+  }
+  return subject.units === 4 ? 10 : 0;
+}
 
 // BGU publishes the CS cutoff and minimum gates, but its official quantitative
 // calculator has not yet been reproduced as a local, fixture-backed score
@@ -48,8 +141,12 @@ export interface TauEngineeringExactSciencesBonusResult {
 export function evaluateTauEngineeringExactSciencesBonus(
   record: Pick<BagrutSubjectRecord, 'subjects'>,
 ): TauEngineeringExactSciencesBonusResult {
-  const mathematics = record.subjects.find((subject) => subject.subjectId === 'mathematics');
-  const physics = record.subjects.find((subject) => subject.subjectId === 'physics');
+  const mathematics = record.subjects.find(
+    (subject) => subject.subjectId === 'mathematics' && isExamSubject(subject),
+  );
+  const physics = record.subjects.find(
+    (subject) => subject.subjectId === 'physics' && isExamSubject(subject),
+  );
   const unmetRequirements: TauEngineeringExactSciencesBonusResult['unmetRequirements'] = [];
 
   if (!qualifiesForFiveUnitBonus(mathematics)) {
@@ -71,6 +168,10 @@ function qualifiesForFiveUnitBonus(
   subject: BagrutSubjectRecord['subjects'][number] | undefined,
 ): boolean {
   return subject?.units === 5 && subject.grade >= 55;
+}
+
+function isExamSubject(subject: BagrutSubjectRecord['subjects'][number]): boolean {
+  return !('assessmentKind' in subject) || subject.assessmentKind === 'exam';
 }
 
 export interface EnglishClassificationPolicy {

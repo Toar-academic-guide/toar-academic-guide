@@ -372,6 +372,34 @@ describe('BGU Computer Science official proof', () => {
     );
   });
 
+  it('replays the same BGU Computer Science proof from a schema-v2 exam record', async () => {
+    const request = context();
+    request.applicant.extraInputs!.bagrutSubjectRecord = {
+      schemaVersion: 2,
+      sector: 'jewish',
+      certificateType: 'internal',
+      complete: true,
+      subjects: [
+        { subjectId: 'mathematics', units: 5, grade: 85, assessmentKind: 'exam' },
+        {
+          subjectId: 'mathematics',
+          units: 5,
+          grade: 95,
+          assessmentKind: 'final_project',
+        },
+      ],
+    };
+
+    const proof = await runBguAdmissionsProof(request);
+
+    expect(proof.normalizedPayload).toMatchObject({
+      selectedScore: 879,
+      acceptanceThreshold: 720,
+      derivedVerdict: 'accepted',
+    });
+    expect(request.fetcher).toHaveBeenCalledTimes(2);
+  });
+
   it('blocks an invalid rule mapping or changed critical gate fingerprint', async () => {
     const wrongMapping = context({
       fetcher: vi

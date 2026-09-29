@@ -91,4 +91,29 @@ describe('TAU Digital Sciences policy', () => {
       exactSciencesBonusEligible: false,
     });
   });
+
+  it.each([
+    [60, 95],
+    [95, 60],
+  ])('uses the exam grade %i instead of the paired final-project grade %i', (exam, project) => {
+    const candidate = input();
+    candidate.extraInputs!.bagrutSubjectRecord = {
+      schemaVersion: 2,
+      sector: 'jewish',
+      certificateType: 'internal',
+      complete: true,
+      subjects: [
+        { subjectId: 'mathematics', units: 5, grade: exam, assessmentKind: 'exam' },
+        {
+          subjectId: 'mathematics',
+          units: 5,
+          grade: project,
+          assessmentKind: 'final_project',
+        },
+        { subjectId: 'physics', units: 5, grade: 90, assessmentKind: 'exam' },
+      ],
+    };
+
+    expect(evaluateTauDigitalSciencesGates(candidate).state).toBe(exam >= 75 ? 'pass' : 'below');
+  });
 });

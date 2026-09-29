@@ -1,4 +1,5 @@
 import type { AdmissionsExtraInputs, AdmissionsRequiredInput } from '@/types/admissionsEvaluation';
+import { bagrutExamSubjects } from '@/lib/bagrutSubjectRecord';
 import { evaluateTauEngineeringExactSciencesBonus } from './bagrutPolicies';
 
 /** Standard Israeli Bagrut route; alternative academic routes require university review. */
@@ -14,7 +15,9 @@ export function evaluateTauComputerScienceGates(input: {
   const requiredInputs: AdmissionsRequiredInput[] = [];
   const unmetRequirements: string[] = [];
   const record = extra?.bagrutSubjectRecord;
-  const mathematics = record?.subjects.find((subject) => subject.subjectId === 'mathematics');
+  const mathematics = bagrutExamSubjects(record).find(
+    (subject) => subject.subjectId === 'mathematics',
+  );
 
   if (!mathematics) requiredInputs.push('bagrut_subject_record');
   if (extra?.tauApplicationRequirementsConfirmed === undefined) {

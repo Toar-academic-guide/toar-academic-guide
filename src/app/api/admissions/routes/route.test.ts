@@ -63,6 +63,31 @@ describe('admissions routes API', () => {
     expect(mocks.runTauComputerScienceRouteSimulation).toHaveBeenCalledWith({ profile });
   });
 
+  it('accepts a schema-v2 profile while academic actions remain capability-gated', async () => {
+    const versionedProfile = {
+      ...profile,
+      subjectRecord: {
+        schemaVersion: 2 as const,
+        sector: 'jewish' as const,
+        certificateType: 'internal' as const,
+        complete: true,
+        subjects: profile.subjectRecord.subjects.map((subject) => ({
+          ...subject,
+          assessmentKind: 'exam' as const,
+        })),
+      },
+    };
+
+    const response = await POST(
+      request({ degreeId: 'tau_cs', source: 'input', profile: versionedProfile }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(mocks.runTauComputerScienceRouteSimulation).toHaveBeenCalledWith({
+      profile: versionedProfile,
+    });
+  });
+
   it('rejects unreviewed targets and client-supplied rule versions', async () => {
     const response = await POST(
       request({ degreeId: 'bgu_cs', source: 'input', profile, ruleVersion: 'untrusted' }),

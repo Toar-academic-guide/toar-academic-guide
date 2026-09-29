@@ -210,7 +210,14 @@ export interface BagrutSubject {
   grade: number;
 }
 
-export interface BagrutSubjectRecord {
+export type BagrutAssessmentKind = 'exam' | 'final_project' | 'combined';
+
+export interface BagrutSubjectV2 extends BagrutSubject {
+  /** Distinguishes ordinary exams from bonus-sensitive final projects and combined grades. */
+  assessmentKind: BagrutAssessmentKind;
+}
+
+export interface BagrutSubjectRecordV1 {
   /** Version of the normalized subject-record contract. */
   schemaVersion: 1;
   /** Education-sector context required to interpret mandatory subjects. */
@@ -220,6 +227,25 @@ export interface BagrutSubjectRecord {
   /** Server-derived digest identifying this exact immutable record. */
   profileHash?: string;
 }
+
+export type BagrutCertificateType = 'internal' | 'external_1977_or_later' | 'other';
+
+export interface BagrutSubjectRecordV2 {
+  /** Version that preserves the certificate facts required by TAU's reviewed policy. */
+  schemaVersion: 2;
+  sector: BagrutSector;
+  certificateType: BagrutCertificateType;
+  /** True only when every subject appearing on the certificate was entered. */
+  complete: boolean;
+  subjects: BagrutSubjectV2[];
+  profileHash?: string;
+}
+
+export type BagrutSubjectRecord = BagrutSubjectRecordV1 | BagrutSubjectRecordV2;
+
+/** JSON payload persisted in the existing bagrut_profile_versions.subjects column. */
+export type StoredBagrutProfilePayload =
+  BagrutSubject[] | Pick<BagrutSubjectRecordV2, 'certificateType' | 'complete' | 'subjects'>;
 
 export interface BagrutRecord {
   /** Weighted average including all generic bonuses, 60–120 */

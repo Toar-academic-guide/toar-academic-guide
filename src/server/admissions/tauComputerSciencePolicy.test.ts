@@ -146,4 +146,35 @@ describe('TAU Computer Science standard admission gates', () => {
       }).exactSciencesBonusEligible,
     ).toBe(true);
   });
+
+  it('never uses a schema-v2 final project as the mathematics exam', () => {
+    expect(
+      evaluateTauComputerScienceGates({
+        ...input,
+        extraInputs: {
+          ...input.extraInputs,
+          bagrutSubjectRecord: {
+            schemaVersion: 2,
+            sector: 'jewish',
+            certificateType: 'internal',
+            complete: true,
+            subjects: [
+              {
+                subjectId: 'mathematics',
+                units: 5,
+                grade: 95,
+                assessmentKind: 'final_project',
+              },
+              {
+                subjectId: 'mathematics',
+                units: 5,
+                grade: 69,
+                assessmentKind: 'exam',
+              },
+            ],
+          },
+        },
+      }).unmetRequirements,
+    ).toHaveLength(1);
+  });
 });
