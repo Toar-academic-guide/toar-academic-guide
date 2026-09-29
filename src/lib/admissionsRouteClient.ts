@@ -47,11 +47,11 @@ export async function fetchTauComputerScienceRoutes(
   scores: AcademicScores,
 ): Promise<AdmissionsRouteSearchResult> {
   const psychometric = scores.psychometric?.overall;
-  const bagrutAverage = scores.bagrut?.weightedAverage;
+  const tauBagrutAverage = scores.admissions?.tauBagrutAverage;
   const subjectRecord = scores.bagrut?.subjectRecord;
-  if (psychometric === undefined || bagrutAverage === undefined || !subjectRecord) {
+  if (psychometric === undefined || tauBagrutAverage === undefined || !subjectRecord) {
     throw new AdmissionsRouteApiError(
-      'נדרשים ציוני פסיכומטרי ובגרות מפורטים.',
+      'נדרשים ציון פסיכומטרי, ממוצע הבגרות הרשמי של אוניברסיטת תל אביב וציוני בגרות מפורטים.',
       'ADMISSIONS_ROUTE_PROFILE_INCOMPLETE',
     );
   }
@@ -63,7 +63,7 @@ export async function fetchTauComputerScienceRoutes(
     body: JSON.stringify({
       degreeId: 'tau_cs',
       source: 'input',
-      profile: { psychometric, bagrutAverage, subjectRecord },
+      profile: { psychometric, tauBagrutAverage, subjectRecord },
     }),
   });
   const payload = (await response.json()) as {

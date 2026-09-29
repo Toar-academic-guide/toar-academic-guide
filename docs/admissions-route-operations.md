@@ -4,8 +4,8 @@ Route recommendations are separate from the baseline admissions calculator. A pr
 
 ## Current capability set
 
-- `tau_cs`: enabled pilot. The service generates at most eight candidates and verifies each displayed winner through TAU's official score replay and current Computer Science cutoff page.
-- `bgu_cs`: disabled. The official current cutoff and gates are stored, but a fixture-backed local quantitative-Sekhem model and safe route-action inputs are still missing. Do not enable it through a UI allowlist.
+- `tau_cs`: enabled for psychometric actions only. The service requires TAU's official Bagrut average, generates at most seven psychometric candidates, and verifies each displayed winner through TAU's official score replay and current Computer Science cutoff page. Academic actions remain withheld until their changed subjects can be converted into a reviewed post-action TAU average.
+- `bgu_cs`: disabled. Exact official score replay, cutoff, gates, and fixtures exist, but academic actions still lack reviewed post-action BGU-average recomputation and psychometric actions cannot safely project the required quantitative, verbal, and English component scores. Do not enable it through a UI allowlist.
 
 ## Onboarding a programme
 

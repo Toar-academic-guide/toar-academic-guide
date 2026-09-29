@@ -30,7 +30,7 @@ const subjectRecordSchema = z
 const inputProfileSchema = z
   .object({
     psychometric: z.number().int().min(200).max(800),
-    bagrutAverage: z.number().min(60).max(120),
+    tauBagrutAverage: z.number().min(60).max(120),
     subjectRecord: subjectRecordSchema,
   })
   .strict();
@@ -102,16 +102,16 @@ async function loadSavedProfile() {
   const userId = await requireAuthenticatedUserId();
   const profile = await getUserProfileSnapshot(userId);
   const psychometric = profile.academicScores?.psychometric?.overall;
-  const bagrutAverage = profile.academicScores?.bagrut?.weightedAverage;
+  const tauBagrutAverage = profile.academicScores?.admissions?.tauBagrutAverage;
   const subjectRecord = profile.academicScores?.bagrut?.subjectRecord;
-  if (psychometric === undefined || bagrutAverage === undefined || !subjectRecord) {
+  if (psychometric === undefined || tauBagrutAverage === undefined || !subjectRecord) {
     throw new ApiRouteError(
       422,
       'ADMISSIONS_ROUTE_PROFILE_INCOMPLETE',
       'Saved academic profile is incomplete.',
     );
   }
-  return { psychometric, bagrutAverage, subjectRecord };
+  return { psychometric, tauBagrutAverage, subjectRecord };
 }
 
 async function resolveClientKey() {

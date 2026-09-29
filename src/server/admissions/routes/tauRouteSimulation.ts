@@ -16,11 +16,11 @@ import {
   type TauFinalistVerification,
 } from './tauFinalistVerifier';
 
-const MAX_TAU_ROUTE_FINALISTS = 8;
+const MAX_TAU_ROUTE_FINALISTS = 7;
 
 export interface TauRouteSimulationProfile {
   psychometric: number;
-  bagrutAverage: number;
+  tauBagrutAverage: number;
   subjectRecord: BagrutSubjectRecord;
 }
 
@@ -44,7 +44,7 @@ export async function runTauComputerScienceRouteSimulation(args: {
   const finalists = candidates.map(({ id, afterProfile }) => ({
     id,
     psychometric: afterProfile.psychometric,
-    bagrutAverage: args.profile.bagrutAverage,
+    bagrutAverage: args.profile.tauBagrutAverage,
     hasQualifiedMathAndPhysics: evaluateTauEngineeringExactSciencesBonus({
       subjects: afterProfile.subjects,
     }).qualifies,
@@ -125,59 +125,5 @@ function generateTauRouteCandidates(profile: RouteProfile): Array<{
     }
   }
 
-  const bonusActions = actionsToQualifyForTauBonus(profile);
-  if (bonusActions.length > 0 && bonusActions.length <= 2) {
-    const afterProfile = bonusActions.reduce<RouteProfile | null>(
-      (current, action) => (current ? applyRouteAction(current, action) : null),
-      profile,
-    );
-    if (afterProfile) {
-      candidates.push({
-        id: bonusActions.map((action) => action.id).join('+'),
-        actions: bonusActions,
-        afterProfile,
-      });
-    }
-  }
-
   return candidates.slice(0, MAX_TAU_ROUTE_FINALISTS);
-}
-
-function actionsToQualifyForTauBonus(profile: RouteProfile): RouteAction[] {
-  const actions: RouteAction[] = [];
-
-  for (const subjectId of ['mathematics', 'physics']) {
-    const subject = profile.subjects.find((entry) => entry.subjectId === subjectId);
-    if (!subject) {
-      actions.push({
-        id: `add_${subjectId}_5_55`,
-        kind: 'add_subject',
-        subjectId,
-        units: 5,
-        grade: 55,
-      });
-      continue;
-    }
-
-    if (subject.units < 5) {
-      actions.push({
-        id: `expand_${subjectId}_${subject.units}_5`,
-        kind: 'expand_units',
-        subjectId,
-        fromUnits: subject.units,
-        toUnits: 5,
-      });
-    }
-    if (subject.grade < 55) {
-      actions.push({
-        id: `grade_${subjectId}_${subject.grade}_55`,
-        kind: 'improve_grade',
-        subjectId,
-        fromGrade: subject.grade,
-        toGrade: 55,
-      });
-    }
-  }
-
-  return actions;
 }
