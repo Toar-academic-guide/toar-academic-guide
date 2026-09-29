@@ -46,6 +46,35 @@ function reportWithRisks(): DataHealthReadyReport {
       blocked: 0,
       authorityUnavailable: 132,
     },
+    admissionRoutes: {
+      enabled: 2,
+      disabled: 0,
+      unsupported: 0,
+      rows: [
+        {
+          programId: 'tau_cs',
+          pairId: 'tau_cs__tau',
+          status: 'enabled',
+          evaluatorCapability: 'exact',
+          actionCapabilityStatus: 'ready',
+          verificationMode: 'official_finalist_replay',
+          supportedActionKinds: ['psychometric'],
+          requiredInputs: ['psychometric', 'tau_bagrut_average'],
+          missingCapabilities: [],
+        },
+        {
+          programId: 'bgu_cs',
+          pairId: 'bgu_cs__bgu',
+          status: 'enabled',
+          evaluatorCapability: 'exact',
+          actionCapabilityStatus: 'ready',
+          verificationMode: 'official_finalist_replay',
+          supportedActionKinds: ['psychometric', 'improve_grade'],
+          requiredInputs: ['psychometric', 'bgu_bagrut_average'],
+          missingCapabilities: [],
+        },
+      ],
+    },
     coverage: {
       missingRequirementSourceCount: 1,
       missingProgramSourceCount: 1,
@@ -308,6 +337,7 @@ describe('DataHealthDashboard', () => {
     expect(screen.getByRole('heading', { name: /data health/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /catalogue readiness/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /formula-backed pair verification/i })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /verified admission routes/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /admissions decision readiness/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /^admissions evidence$/i })).toBeTruthy();
     expect(

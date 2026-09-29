@@ -24,6 +24,7 @@ import {
 } from '@/db/schema';
 import type { SourceFreshnessStateRow } from '@/db/types';
 import { buildAdmissionsCapabilityMatrix } from '@/server/admissions/capabilityMatrix';
+import { listAdmissionRouteCapabilities } from '@/server/admissions/routes/capabilityRegistry';
 import {
   OPERATIONAL_PROOF_SCENARIOS,
   type OperationalProofScenario,
@@ -75,6 +76,7 @@ export interface DataHealthReadyReport {
     blocked: number;
     authorityUnavailable: number;
   };
+  admissionRoutes: AdmissionRouteHealth;
   coverage: {
     missingRequirementSourceCount: number;
     missingProgramSourceCount: number;
@@ -114,6 +116,23 @@ export interface DataHealthReadyReport {
   };
   publication: AdmissionsPublicationHealth;
   mondayEvidence: MondayEvidenceCoverage;
+}
+
+export interface AdmissionRouteHealth {
+  enabled: number;
+  disabled: number;
+  unsupported: number;
+  rows: Array<{
+    programId: string;
+    pairId: string | null;
+    status: 'enabled' | 'disabled' | 'unsupported';
+    evaluatorCapability: AdmissionsEvaluationCapability;
+    actionCapabilityStatus: 'ready' | 'incomplete';
+    verificationMode: 'official_finalist_replay' | 'fixture_backed_local_formula' | null;
+    supportedActionKinds: string[];
+    requiredInputs: string[];
+    missingCapabilities: string[];
+  }>;
 }
 
 export interface AdmissionsPublicationHealth {
@@ -660,6 +679,7 @@ export function summarizeDataHealthRows(
       FORMULA_BACKED_VERIFICATION_LEDGER,
     ),
     runtimeFormulaVerification: summarizeRuntimeFormulaVerification(decisionEvidence.rows),
+    admissionRoutes: buildAdmissionRouteHealth(),
     coverage: buildCoverageSummary(rows),
     decisionReadiness: buildDecisionReadinessSummary(rows),
     decisionEvidence,
@@ -668,6 +688,26 @@ export function summarizeDataHealthRows(
     freshness: buildSourceFreshnessSummary(rows, now),
     publication: buildAdmissionsPublicationHealth(rows.admissionReleases),
     mondayEvidence: buildMondayEvidenceCoverage(),
+  };
+}
+
+export function buildAdmissionRouteHealth(): AdmissionRouteHealth {
+  const rows = listAdmissionRouteCapabilities().map((capability) => ({
+    programId: capability.programId,
+    pairId: capability.pairId ?? null,
+    status: capability.status,
+    evaluatorCapability: capability.evaluatorCapability,
+    actionCapabilityStatus: capability.actionCapabilityStatus,
+    verificationMode: capability.verificationMode ?? null,
+    supportedActionKinds: capability.supportedActionKinds,
+    requiredInputs: capability.requiredInputs,
+    missingCapabilities: capability.missingCapabilities,
+  }));
+  return {
+    enabled: rows.filter((row) => row.status === 'enabled').length,
+    disabled: rows.filter((row) => row.status === 'disabled').length,
+    unsupported: rows.filter((row) => row.status === 'unsupported').length,
+    rows,
   };
 }
 

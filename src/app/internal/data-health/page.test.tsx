@@ -99,6 +99,12 @@ describe('/internal/data-health page', () => {
         blocked: 0,
         authorityUnavailable: 135,
       },
+      admissionRoutes: {
+        enabled: 2,
+        disabled: 0,
+        unsupported: 0,
+        rows: [],
+      },
       coverage: {
         missingRequirementSourceCount: 0,
         missingProgramSourceCount: 0,
