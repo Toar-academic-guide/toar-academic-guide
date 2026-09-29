@@ -35,19 +35,15 @@ describe('admission route capability registry', () => {
     });
   });
 
-  it('explains why the BGU pilot remains withheld', () => {
+  it('enables BGU once its exact evaluator and route action model are ready', () => {
     expect(getAdmissionRouteCapability('bgu_cs')).toMatchObject({
       pairId: 'bgu_cs__bgu',
-      status: 'disabled',
+      status: 'enabled',
       evaluatorCapability: 'exact',
-      actionCapabilityStatus: 'incomplete',
-      verificationMode: 'fixture_backed_local_formula',
-      supportedActionKinds: [],
-      missingCapabilities: expect.arrayContaining([
-        'academic_action_bagrut_recomputation',
-        'psychometric_action_component_projection',
-        'reviewed_route_action_model',
-      ]),
+      actionCapabilityStatus: 'ready',
+      verificationMode: 'official_finalist_replay',
+      supportedActionKinds: ['psychometric', 'improve_grade', 'expand_units', 'add_subject'],
+      missingCapabilities: [],
     });
   });
 

@@ -47,9 +47,9 @@ const ROUTE_ACTION_CAPABILITIES: Record<string, AdmissionRouteActionCapability> 
   bgu_cs: {
     programId: 'bgu_cs',
     pairId: 'bgu_cs__bgu',
-    status: 'incomplete',
-    verificationMode: 'fixture_backed_local_formula',
-    supportedActionKinds: [],
+    status: 'ready',
+    verificationMode: 'official_finalist_replay',
+    supportedActionKinds: ['psychometric', 'improve_grade', 'expand_units', 'add_subject'],
     requiredInputs: [
       'psychometric',
       'psychometric_component_scores',
@@ -57,10 +57,7 @@ const ROUTE_ACTION_CAPABILITIES: Record<string, AdmissionRouteActionCapability> 
       'structured_bagrut_subjects',
       'language_classifications',
     ],
-    missingCapabilities: [
-      'academic_action_bagrut_recomputation',
-      'psychometric_action_component_projection',
-    ],
+    missingCapabilities: [],
     sourceUrls: [
       'https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_CalcMain?type=4',
       'https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_institution=0&p_year=2027&p_semester=1&p_dep1=232&p_pat1=1&p_spe1=3&p_degree_level=1',

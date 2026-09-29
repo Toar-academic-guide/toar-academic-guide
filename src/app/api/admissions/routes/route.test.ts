@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   getUserProfileSnapshot: vi.fn(),
   getAdmissionRouteCapability: vi.fn(),
   runTauComputerScienceRouteSimulation: vi.fn(),
+  runBguComputerScienceProfileRouteSimulation: vi.fn(),
 }));
 
 vi.mock('next/headers', () => ({ headers: mocks.headers }));
@@ -17,6 +18,9 @@ vi.mock('@/app/api/_lib/auth', () => ({
 vi.mock('@/server/user/profile', () => ({ getUserProfileSnapshot: mocks.getUserProfileSnapshot }));
 vi.mock('@/server/admissions/routes/tauRouteSimulation', () => ({
   runTauComputerScienceRouteSimulation: mocks.runTauComputerScienceRouteSimulation,
+}));
+vi.mock('@/server/admissions/routes/bguRouteSimulation', () => ({
+  runBguComputerScienceProfileRouteSimulation: mocks.runBguComputerScienceProfileRouteSimulation,
 }));
 vi.mock('@/server/admissions/routes/capabilityRegistry', () => ({
   getAdmissionRouteCapability: mocks.getAdmissionRouteCapability,
@@ -46,11 +50,18 @@ describe('admissions routes API', () => {
     mocks.getUserProfileSnapshot.mockReset();
     mocks.getAdmissionRouteCapability.mockReset();
     mocks.runTauComputerScienceRouteSimulation.mockReset();
+    mocks.runBguComputerScienceProfileRouteSimulation.mockReset();
     mocks.headers.mockResolvedValue(new Headers({ 'x-forwarded-for': '203.0.113.10' }));
     mocks.runTauComputerScienceRouteSimulation.mockResolvedValue({
       status: 'no_route',
       pareto: [],
       evaluatedCandidateCount: 7,
+      unavailableFinalistCount: 0,
+    });
+    mocks.runBguComputerScienceProfileRouteSimulation.mockResolvedValue({
+      status: 'no_route',
+      pareto: [],
+      evaluatedCandidateCount: 8,
       unavailableFinalistCount: 0,
     });
     mocks.getAdmissionRouteCapability.mockReturnValue({ status: 'enabled' });
@@ -88,6 +99,42 @@ describe('admissions routes API', () => {
     });
   });
 
+  it('routes a complete BGU profile through the BGU simulator', async () => {
+    const bguProfile = {
+      psychometric: 610,
+      bguBagrutAverage: 105,
+      quantitativeSubscore: 125,
+      verbalSubscore: 110,
+      englishSubscore: 115,
+      languageRequirementsConfirmed: true as const,
+      subjectRecord: {
+        schemaVersion: 2 as const,
+        sector: 'jewish' as const,
+        certificateType: 'internal' as const,
+        complete: true,
+        subjects: [
+          { subjectId: 'mathematics', units: 4, grade: 90, assessmentKind: 'exam' as const },
+        ],
+      },
+    };
+
+    const response = await POST(
+      request({ degreeId: 'bgu_cs', source: 'input', profile: bguProfile }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(mocks.runBguComputerScienceProfileRouteSimulation).toHaveBeenCalledWith({
+      profile: bguProfile,
+    });
+    expect(await response.json()).toMatchObject({
+      data: {
+        status: 'no_route',
+        target: { degreeId: 'bgu_cs', institutionId: 'bgu' },
+        evidence: { evaluatedCandidateCount: 8 },
+      },
+    });
+  });
+
   it('rejects unreviewed targets and client-supplied rule versions', async () => {
     const response = await POST(
       request({ degreeId: 'bgu_cs', source: 'input', profile, ruleVersion: 'untrusted' }),
@@ -107,6 +154,25 @@ describe('admissions routes API', () => {
       error: { code: 'ADMISSIONS_ROUTE_UNSUPPORTED' },
     });
     expect(mocks.runTauComputerScienceRouteSimulation).not.toHaveBeenCalled();
+  });
+
+  it('returns authority unavailability as a normalized safe result', async () => {
+    mocks.runTauComputerScienceRouteSimulation.mockResolvedValue({
+      status: 'authority_unavailable',
+      pareto: [],
+      evaluatedCandidateCount: 7,
+      unavailableFinalistCount: 7,
+    });
+
+    const response = await POST(request({ degreeId: 'tau_cs', source: 'input', profile }));
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      data: {
+        status: 'authority_unavailable',
+        evidence: { unavailableFinalistCount: 7 },
+      },
+    });
   });
 
   it('loads only the authenticated caller profile for a saved-profile request', async () => {
