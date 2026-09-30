@@ -17,7 +17,12 @@ export type MigrationId =
   | '0025'
   | '0026'
   | '0027'
-  | '0028';
+  | '0028'
+  | '0031'
+  | '0032'
+  | '0033'
+  | '0034'
+  | '0035';
 
 export type MigrationHistoryEntry = {
   version: string;
@@ -198,5 +203,40 @@ export const FORWARD_PRODUCTION_MIGRATIONS: ForwardProductionMigration[] = [
     statementFingerprint: '30212c6087643b136c1dafc1cd6b151f',
     // The deployed Supabase payload included bounded lock and statement timeouts.
     legacyStatementFingerprints: ['7a8c79303c9c4110e663e729df123fc1'],
+  },
+  {
+    id: '0031',
+    remoteName: 'alert_transition_recovery',
+    repositoryPath: 'src/db/migrations/0031_alert_transition_recovery.sql',
+    statementFingerprint: 'd13d81b19eb4f3f7db66f7636fca586d',
+    legacyStatementFingerprints: ['bcf5e6bbb2c066076aab81078ac055fb'],
+  },
+  {
+    id: '0032',
+    remoteName: 'alert_delivery_recovery',
+    repositoryPath: 'src/db/migrations/0032_alert_delivery_recovery.sql',
+    statementFingerprint: '8a1d0926e3aeb84b31831c53cadee306',
+    legacyStatementFingerprints: ['ea804aa3a8a2e03ea1cd9e9d0fc3d66a'],
+  },
+  {
+    id: '0033',
+    remoteName: 'alert_webhooks_unsubscribe',
+    repositoryPath: 'src/db/migrations/0033_alert_webhooks_unsubscribe.sql',
+    statementFingerprint: 'e2433ba277ed53d39ba743f58573ec00',
+    legacyStatementFingerprints: ['fb1d1efcc1ed9c797c625b6b08610d6b'],
+  },
+  {
+    id: '0034',
+    remoteName: 'alert_lifecycle_completion',
+    repositoryPath: 'src/db/migrations/0034_alert_lifecycle_completion.sql',
+    statementFingerprint: 'f319162fd5e15695de577a90f50c0e2f',
+    legacyStatementFingerprints: ['13a81253e60768292272614b66b031aa'],
+  },
+  {
+    id: '0035',
+    remoteName: 'ops_dashboard_column_reads',
+    repositoryPath: 'src/db/migrations/0035_ops_dashboard_column_reads.sql',
+    statementFingerprint: '533d604059cf3fd96cd80628973508e9',
+    legacyStatementFingerprints: ['5882f5b6347019229234c9a424ecb9d7'],
   },
 ];

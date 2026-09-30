@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm';
 
 import type { InstitutionId } from '@/data/institutions';
 import { getOpsDb } from '@/db/opsClient';
+import { queryRows } from '@/db/queryRows';
 import {
   loadAdmissionAlertHealth,
   type AdmissionAlertHealth,
@@ -501,6 +502,7 @@ export async function getDataHealthReport(
     );
     return summarizeDataHealthRows(rows, now);
   } catch (error) {
+    console.error('[data-health] Report unavailable', classifyDataHealthError(error));
     return {
       status: 'unavailable',
       message:
@@ -509,6 +511,59 @@ export async function getDataHealthReport(
           : DATA_HEALTH_UNAVAILABLE_MESSAGE,
     };
   }
+}
+
+const DATA_HEALTH_ERROR_CATEGORIES: Record<string, string> = {
+  '42501': 'database_permission',
+  '28P01': 'database_authentication',
+  '28000': 'database_authentication',
+  '42P01': 'database_schema',
+  '42703': 'database_schema',
+  '53300': 'database_capacity',
+  '53400': 'database_capacity',
+  '57014': 'database_timeout',
+  ECONNREFUSED: 'database_connection',
+  ECONNRESET: 'database_connection',
+  ENOTFOUND: 'database_connection',
+  EAI_AGAIN: 'database_connection',
+  ETIMEDOUT: 'database_timeout',
+  SELF_SIGNED_CERT_IN_CHAIN: 'database_tls',
+  DEPTH_ZERO_SELF_SIGNED_CERT: 'database_tls',
+  UNABLE_TO_VERIFY_LEAF_SIGNATURE: 'database_tls',
+  UNABLE_TO_GET_ISSUER_CERT_LOCALLY: 'database_tls',
+  CERT_HAS_EXPIRED: 'database_tls',
+  ERR_TLS_CERT_ALTNAME_INVALID: 'database_tls',
+};
+
+function classifyDataHealthError(error: unknown): { category: string; code: string } {
+  // Drizzle wraps driver failures in cause. Never serialize the error itself:
+  // messages, stacks, SQL, parameters, and arbitrary codes may contain secrets.
+  for (let depth = 0; depth < 5 && error instanceof Error; depth += 1) {
+    if (error instanceof DataHealthTimeoutError) {
+      return { category: 'database_timeout', code: 'REPORT_TIMEOUT' };
+    }
+    if (
+      'code' in error &&
+      typeof error.code === 'string' &&
+      Object.hasOwn(DATA_HEALTH_ERROR_CATEGORIES, error.code)
+    ) {
+      return { category: DATA_HEALTH_ERROR_CATEGORIES[error.code], code: error.code };
+    }
+    if (
+      error.message.startsWith('Missing OPS_DATABASE_URL') ||
+      error.message.startsWith('Missing DATABASE_URL')
+    ) {
+      return { category: 'configuration', code: 'DATABASE_URL_MISSING' };
+    }
+    if (error.message.startsWith('Unsafe DATABASE_URL for production runtime:')) {
+      return { category: 'configuration', code: 'UNSAFE_DATABASE_ROLE' };
+    }
+    if (error instanceof TypeError) {
+      return { category: 'application', code: 'TYPE_ERROR' };
+    }
+    error = error.cause;
+  }
+  return { category: 'unknown', code: 'UNCLASSIFIED' };
 }
 
 export async function getReviewItemDetail(reviewItemId: string): Promise<ReviewItemDetailResult> {
@@ -1047,7 +1102,10 @@ async function loadDataHealthRows(now: Date): Promise<DataHealthRows> {
     })
     .from(admissionReleases);
 
-  const admissionAlerts = await loadAdmissionAlertHealth((query) => db.execute(query), now);
+  const admissionAlerts = await loadAdmissionAlertHealth(
+    async (query) => queryRows(await db.execute(query)),
+    now,
+  );
 
   return {
     admissionAlerts,

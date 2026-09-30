@@ -17,6 +17,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import { ROUTES, type AdmissionAlertTarget } from '@/lib/routes';
+import AdmissionAlertManager from './AdmissionAlertManager';
 import {
   CatalogueApiError,
   fetchCatalogueInstitutions,
@@ -229,8 +230,7 @@ export default function AppExperience({
     degreeId: string;
   } | null>(null);
 
-  const isTauComputerScienceAlertContinuation =
-    admissionAlertTarget?.institutionId === 'tau' && admissionAlertTarget.programId === 'tau_cs';
+  const isComputerScienceAlertContinuation = Boolean(admissionAlertTarget);
   const [appCalcScores, setAppCalcScores] = useState<{
     psychometric?: number;
     bagrut?: number;
@@ -607,9 +607,9 @@ export default function AppExperience({
           isAuthenticated={isAuthenticated}
           onClearLocalProfileData={clearLocalProfileData}
           alertContinuation={
-            isTauComputerScienceAlertContinuation
+            isComputerScienceAlertContinuation
               ? {
-                  title: 'נשמור את הפרופיל ואז נחזור לבדיקת הקבלה למדעי המחשב באוניברסיטת תל אביב',
+                  title: `נשמור את הפרופיל ואז נחזור לבדיקת הקבלה למדעי המחשב ב${admissionAlertTarget?.institutionId === 'bgu' ? 'אוניברסיטת בן־גוריון' : 'אוניברסיטת תל אביב'}`,
                   submitLabel: 'שמור והמשך לבדיקת המעקב ←',
                   requiresStructuredBagrut: true,
                 }
@@ -625,14 +625,15 @@ export default function AppExperience({
               return false;
             }
             if (
-              isTauComputerScienceAlertContinuation &&
+              isComputerScienceAlertContinuation &&
+              admissionAlertTarget &&
               scores.psychometric?.overall !== undefined &&
               scores.bagrut?.weightedAverage !== undefined
             ) {
               setLandingCalcScores({
                 psychometric: scores.psychometric.overall,
                 bagrut: scores.bagrut.weightedAverage,
-                degreeId: 'tau_cs',
+                degreeId: admissionAlertTarget.programId,
               });
               setStep('calculator-results');
               window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -646,6 +647,7 @@ export default function AppExperience({
             navigateToStep('career-assessment');
           }}
         />
+        {user ? <AdmissionAlertManager key={user.id} userId={user.id} /> : null}
       </>
     );
   }

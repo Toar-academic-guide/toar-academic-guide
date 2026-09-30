@@ -54,6 +54,9 @@ const operationalReadGrants = {
     'admission_review_runs',
   ],
   ops_readonly: [
+    'ingestion_sources',
+    'ingestion_jobs',
+    'review_items',
     'admission_alternative_paths',
     'admission_facts',
     'admissions_source_candidates',
@@ -119,6 +122,22 @@ const targetedTests = [
   'src/server/user/profileSchema.test.ts',
   'src/server/user/migration.test.ts',
   'src/server/admission-alerts/profileRefresh.test.ts',
+  'src/server/admission-alerts/transitionProcessor.test.ts',
+  'src/server/admission-alerts/deliveryWorker.test.ts',
+  'src/server/admission-alerts/deliveryPreparation.test.ts',
+  'src/components/AdmissionAlertManager.test.tsx',
+  'src/app/api/admission-alerts/route.test.ts',
+  'src/app/api/admission-alerts/[subscriptionId]/route.test.ts',
+  'src/app/api/_lib/auth.test.ts',
+  'src/server/admission-alerts/resendProvider.test.ts',
+  'src/server/admission-alerts/webhookService.test.ts',
+  'src/app/api/admission-alerts/webhooks/resend/route.test.ts',
+  'src/app/api/admission-alerts/unsubscribe/route.test.ts',
+  'src/server/admission-alerts/deliveryRuntime.test.ts',
+  'src/server/admission-alerts/transitionWork.test.ts',
+  'src/server/admission-alerts/subscriptionService.test.ts',
+  'src/server/admission-alerts/baselineEvaluator.test.ts',
+  'src/server/admission-alerts/processingRuntime.test.ts',
 ];
 
 const admissionsGeneratedFiles = [

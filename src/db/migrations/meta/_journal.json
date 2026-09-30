@@ -218,6 +218,41 @@
       "when": 1790614439253,
       "tag": "0030_retire_tau_infosystems_duplicate",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1790701816780,
+      "tag": "0031_alert_transition_recovery",
+      "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1790704798766,
+      "tag": "0032_alert_delivery_recovery",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1790709695244,
+      "tag": "0033_alert_webhooks_unsubscribe",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1790711457054,
+      "tag": "0034_alert_lifecycle_completion",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1790755937948,
+      "tag": "0035_ops_dashboard_column_reads",
+      "breakpoints": true
     }
   ]
 }

@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises';
+import { appendFile, readFile } from 'node:fs/promises';
 import { relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -24,7 +24,11 @@ const quietViteLogger = {
 
 export async function runAdmissionsReleasePublication(
   argv,
-  { createViteServer = createServer, operationTimeoutMs = 15_000 } = {},
+  {
+    createViteServer = createServer,
+    operationTimeoutMs = 15_000,
+    emitReleaseId = writeReleaseIdOutput,
+  } = {},
 ) {
   const vite = await createViteServer({
     root,
@@ -38,15 +42,12 @@ export async function runAdmissionsReleasePublication(
 
   let publicationError;
   try {
-    const [
-      { createAdmissionsReleasePublisher },
-      { parsePublicationArguments },
-      { enqueueAdmissionAlertTransitionWork },
-    ] = await Promise.all([
-      vite.ssrLoadModule('/src/server/admissions/admissionsReleasePublisher.ts'),
-      vite.ssrLoadModule('/src/server/admissions/publicationArgs.ts'),
-      vite.ssrLoadModule('/src/server/admission-alerts/transitionWork.ts'),
-    ]);
+    const [{ createAdmissionsReleasePublisher }, { parsePublicationArguments }] = await Promise.all(
+      [
+        vite.ssrLoadModule('/src/server/admissions/admissionsReleasePublisher.ts'),
+        vite.ssrLoadModule('/src/server/admissions/publicationArgs.ts'),
+      ],
+    );
     const args = parsePublicationArguments(argv);
     const manifestPath = resolveInsideRepository(args.manifestPath);
     const manifest = JSON.parse(await readFile(manifestPath, 'utf8'));
@@ -57,12 +58,12 @@ export async function runAdmissionsReleasePublication(
       proofConfirmationId: args.proofConfirmationId,
     });
 
-    const transitionWork =
-      result.status === 'no_changes' || manifest.releaseKind !== 'canonical_change'
-        ? null
-        : await enqueueAdmissionAlertTransitionWork({ releaseId: result.releaseId });
-
-    console.log(JSON.stringify({ ...result, transitionWork }));
+    // The publisher role intentionally cannot access private alert/profile tables.
+    // Hand the release ID to the separately credentialed protected worker.
+    if (result.status !== 'no_changes' && manifest.releaseKind === 'canonical_change') {
+      await emitReleaseId(result.releaseId);
+    }
+    console.log(JSON.stringify(result));
   } catch (error) {
     publicationError = error;
     throw error;
@@ -72,6 +73,11 @@ export async function runAdmissionsReleasePublication(
       throw new Error('Admissions publication cleanup did not settle before the deadline.');
     }
   }
+}
+
+async function writeReleaseIdOutput(releaseId) {
+  if (process.env.GITHUB_OUTPUT)
+    await appendFile(process.env.GITHUB_OUTPUT, `release_id=${releaseId}\n`);
 }
 
 /**
