@@ -292,7 +292,7 @@ describe('production admissions schema preflight', () => {
       '0035',
     ] as const) {
       const migration = FORWARD_PRODUCTION_MIGRATIONS.find(({ id }) => id === migrationId);
-      const source = readFileSync(migration?.repositoryPath ?? '', 'utf8');
+      const source = readFileSync(migration?.repositoryPath ?? '', 'utf8').replace(/\r\n/g, '\n');
       const statements = source
         .split(/-->\s*statement-breakpoint/)
         .map((statement) => statement.trim())

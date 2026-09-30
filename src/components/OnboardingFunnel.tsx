@@ -70,7 +70,7 @@ export default function OnboardingFunnel({ onComplete }: Props) {
   }
 
   return (
-    <div className="min-h-screen w-full bg-[#f5f4f0] px-2 py-8 sm:px-4">
+    <div className="w-full px-4 py-8 sm:px-6">
       {/* ── Floating canvas card ────────────────────────────────────── */}
       <div className="mx-auto max-w-3xl rounded-3xl border border-[#e5e7eb] bg-white p-8 shadow-lg md:p-12">
         {/* Progress */}

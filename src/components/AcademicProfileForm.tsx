@@ -12,7 +12,6 @@ import HaifaQualificationFields, {
 
 import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import Image from 'next/image';
 import { Upload, FileText, X, Brain, GraduationCap, Loader2 } from 'lucide-react';
 import type { AcademicScores, UserProfile } from '@/types';
 import BguHealthFields, { type HealthFormValues } from './BguHealthFields';
@@ -591,9 +590,13 @@ export default function AcademicProfileForm({
         setError('לא הצלחנו לשמור את הפרופיל שלך. אפשר לנסות שוב.');
         setIsSaving(false);
       }
-    } catch (caughtError: any) {
+    } catch (caughtError: unknown) {
       console.error('[AcademicProfileForm] Error saving documents:', caughtError);
-      setError(caughtError.message || 'התרחשה שגיאה בשמירת המסמכים. אנא נסה שנית.');
+      setError(
+        caughtError instanceof Error
+          ? caughtError.message
+          : 'התרחשה שגיאה בשמירת המסמכים. אנא נסה שנית.',
+      );
       setIsSaving(false);
     }
   }
@@ -604,19 +607,8 @@ export default function AcademicProfileForm({
     'focus:border-indigo-400 focus:ring-2 focus:ring-indigo-100';
 
   return (
-    <div className="min-h-screen bg-[#f5f4f0] px-4 py-10">
+    <div className="px-4 py-8">
       <div className="mx-auto flex max-w-2xl flex-col items-center gap-8">
-        <motion.div {...fadeUp(0)}>
-          <Image
-            src="/way-logo.png"
-            alt="לוגו"
-            width={440}
-            height={150}
-            className="h-24 w-auto object-contain md:h-32"
-            priority
-          />
-        </motion.div>
-
         <motion.div
           {...fadeUp(0.18)}
           className="w-full rounded-3xl border border-[#e5e7eb] bg-white p-8 shadow-lg md:p-10"
@@ -1416,7 +1408,7 @@ export default function AcademicProfileForm({
                 <h2 className="text-sm font-semibold text-slate-800">פרטיות ושליטה בנתונים</h2>
                 <p className="mt-1 text-xs leading-6 text-slate-500">
                   {isAuthenticated
-                    ? 'הפעולה הזאת מוחקת רק נתונים שנשמרו בדפדפן במכשיר הזה. נתוני החשבון, רשימת הייעוד והמסמכים שנשמרו בחשבון לא יימחקו כאן.'
+                    ? 'הפעולה הזאת מוחקת רק נתונים שנשמרו בדפדפן במכשיר הזה. נתוני החשבון, הרשימה שלי והמסמכים שנשמרו בחשבון לא יימחקו כאן.'
                     : 'הפעולה הזאת מוחקת את טיוטת הפרופיל שנשמרה בדפדפן במכשיר הזה, כולל ציונים ומסמכים שהוצגו מקומית.'}
                 </p>
               </div>

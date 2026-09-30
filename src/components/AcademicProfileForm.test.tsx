@@ -5,7 +5,7 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import AcademicProfileForm from '@/components/AcademicProfileForm';
 
 vi.mock('next/image', () => ({
-  default: (props: React.ImgHTMLAttributes<HTMLImageElement>) => <img {...props} />,
+  default: () => <span data-next-image />,
 }));
 
 vi.mock('framer-motion', () => ({
@@ -771,7 +771,7 @@ describe('AcademicProfileForm', () => {
 
     expect(
       screen.getByText(
-        'הפעולה הזאת מוחקת רק נתונים שנשמרו בדפדפן במכשיר הזה. נתוני החשבון, רשימת הייעוד והמסמכים שנשמרו בחשבון לא יימחקו כאן.',
+        'הפעולה הזאת מוחקת רק נתונים שנשמרו בדפדפן במכשיר הזה. נתוני החשבון, הרשימה שלי והמסמכים שנשמרו בחשבון לא יימחקו כאן.',
       ),
     ).toBeTruthy();
   });

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 const hoisted = vi.hoisted(() => ({
@@ -27,9 +27,11 @@ describe('InstitutionPage', () => {
     expect(screen.getByRole('link', { name: 'שאלון התאמה' }).getAttribute('href')).toBe(
       '/app/assessment',
     );
-    expect(screen.getByRole('link', { name: 'מחשבון קבלה' }).getAttribute('href')).toBe(
-      '/app/calculator',
-    );
+    expect(
+      within(screen.getByRole('main'))
+        .getByRole('link', { name: 'מחשבון קבלה' })
+        .getAttribute('href'),
+    ).toBe('/app/calculator');
     expect(screen.queryByText('academicScores')).toBeNull();
   });
 

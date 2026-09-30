@@ -1,0 +1,36 @@
+.bubble {
+  background-size: cover;
+  background-position: center;
+  background-blend-mode: multiply;
+  border: 1px solid rgb(174 201 248 / 55%);
+  box-shadow:
+    inset 5px 7px 14px rgb(255 255 255 / 85%),
+    inset -7px -9px 20px rgb(131 161 225 / 12%),
+    0 16px 36px rgb(100 143 193 / 9%);
+}
+
+.strengths {
+  border-radius: 38% 62% 45% 55% / 38% 48% 52% 62%;
+  background-color: #d6edff;
+  background-image: url('/rescale-surface-blue.webp');
+}
+
+.interests {
+  border-radius: 49% 51% 36% 64% / 57% 39% 61% 43%;
+  background-color: #e3dfff;
+  background-image: url('/rescale-surface-lilac.webp');
+  border-color: rgb(189 177 246 / 50%);
+}
+
+.goals {
+  border-radius: 36% 64% 53% 47% / 54% 55% 45% 46%;
+  background-color: #d1effc;
+  background-image: url('/rescale-surface-blue.webp');
+  background-position: 70% 35%;
+}
+
+.success {
+  border-radius: 55% 45% 58% 42% / 48% 62% 38% 52%;
+  background-color: #d9eef6;
+  background-image: url('/rescale-surface-lilac.webp');
+}
