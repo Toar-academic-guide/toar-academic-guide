@@ -14,6 +14,9 @@ describe('production-sensitive path classification', () => {
     'scripts/production-sensitive-paths.mjs',
     'scripts/pre-pr-guard.mjs',
     'scripts/publish-admissions-release.mjs',
+    'scripts/process-admission-alerts.mjs',
+    '.github/workflows/admission-alert-processing.yml',
+    'src/app/api/admission-alerts/route.ts',
   ])('requires operational verification for %s', (filePath) => {
     expect(findProductionSensitivePaths([filePath])).toEqual([filePath]);
   });
@@ -37,5 +40,19 @@ describe('production-sensitive path classification', () => {
 
     expect(workflow).toContain('git show "origin/$BASE_REF:$classifier" > "$base_classifier"');
     expect(workflow).toContain('node "$classifier" >> "$GITHUB_OUTPUT"');
+  });
+
+  it('runs the protected production preflight only after a sensitive change reaches main', async () => {
+    const workflow = await readFile(path.join(process.cwd(), '.github/workflows/ci.yml'), 'utf8');
+
+    expect(workflow).toContain(
+      "if: ${{ github.ref == 'refs/heads/main' && needs.production-sensitive-paths.outputs.applicable == 'true' }}",
+    );
+    expect(workflow).toContain(
+      "PREFLIGHT_REQUIRED: ${{ github.ref == 'refs/heads/main' && needs.production-sensitive-paths.outputs.applicable == 'true' }}",
+    );
+    expect(workflow).toContain(
+      'if [[ "$PREFLIGHT_REQUIRED" == "true" && "$PREFLIGHT_RESULT" != "success" ]]; then',
+    );
   });
 });

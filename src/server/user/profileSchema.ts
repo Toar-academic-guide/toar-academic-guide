@@ -1,4 +1,14 @@
+import { colmanBagrutInputsShape } from '@/lib/colmanBagrutInputs';
+import { tauPhysiotherapyInputsShape } from '@/lib/tauPhysiotherapyInputs';
+import { hujiMedicineInputsShape } from '@/lib/hujiMedicineInputs';
+import { bguHealthInputsShape } from '@/lib/bguHealthInputs';
+import { bguQuantitativeInputShape } from '@/lib/bguQuantitativeInputs';
+import { bguPsychologyInputsShape } from '@/lib/bguPsychologyInputs';
+import { haifaAdmissionsInputsShape } from '@/lib/haifaAdmissionsInputs';
+import { bguSocialScienceInputsShape } from '@/lib/bguSocialScienceInputs';
 import { z } from 'zod';
+import { bguEngineeringSchema } from '@/lib/bguEngineeringSchema';
+import { bagrutSubjectRecordSchema } from '@/lib/bagrutSubjectRecordSchema';
 
 const geographicRegionSchema = z.enum(['center', 'north', 'south', 'any']);
 
@@ -12,58 +22,40 @@ const psychometricScoresSchema = z.strictObject({
   english: boundedInteger(50, 150).optional(),
 });
 
-const bagrutSectorSchema = z.enum([
-  'jewish',
-  'arab',
-  'druze',
-  'circassian',
-  'bedouin',
-  'samaritan',
-]);
-
-const bagrutSubjectSchema = z.strictObject({
-  subjectId: z
-    .string()
-    .trim()
-    .regex(/^[a-z0-9]+(?:_[a-z0-9]+)*$/),
-  units: boundedInteger(1, 5),
-  grade: boundedInteger(0, 100),
-});
-
-const bagrutSubjectRecordSchema = z
-  .strictObject({
-    schemaVersion: z.literal(1),
-    sector: bagrutSectorSchema,
-    subjects: z.array(bagrutSubjectSchema).min(1).max(64),
-    profileHash: z
-      .string()
-      .regex(/^sha256:[a-f0-9]{64}$/)
-      .optional(),
-  })
-  .superRefine((record, context) => {
-    const seenSubjectIds = new Set<string>();
-
-    for (const [index, subject] of record.subjects.entries()) {
-      const normalizedSubjectId = subject.subjectId.trim().toLowerCase();
-      if (seenSubjectIds.has(normalizedSubjectId)) {
-        context.addIssue({
-          code: 'custom',
-          path: ['subjects', index, 'subjectId'],
-          message: 'Bagrut subjects must be unique.',
-        });
-      }
-      seenSubjectIds.add(normalizedSubjectId);
-    }
-  });
-
 const bagrutRecordSchema = z.strictObject({
   weightedAverage: boundedInteger(60, 120).optional(),
   subjectRecord: bagrutSubjectRecordSchema.optional(),
 });
 
+const admissionsInputsSchema = z.strictObject({
+  ...haifaAdmissionsInputsShape,
+  bguEngineering: bguEngineeringSchema.optional(),
+  technionArchitectureBagrutAverage: z.number().min(0).max(119).optional(),
+  technionArchitectureExamScore: z.number().min(0).max(140).optional(),
+  technionArchitectureExamPassed: z.boolean().optional(),
+  technionArchitectureRequirementsConfirmed: z.boolean().optional(),
+  tauBagrutAverage: z.number().min(50).max(130).optional(),
+  ...colmanBagrutInputsShape,
+  ...bguPsychologyInputsShape,
+  ...hujiMedicineInputsShape,
+  ...bguHealthInputsShape,
+  ...tauPhysiotherapyInputsShape,
+  ...bguSocialScienceInputsShape,
+  bguBagrutAverage: z.number().min(50).max(130).optional(),
+  tauApplicationRequirementsConfirmed: z.boolean().optional(),
+  tauManagementRequirementsConfirmed: z.boolean().optional(),
+  tauManagementAcademicRouteConfirmed: z.boolean().optional(),
+  tauManagementQualifyingMoocCount: z.union([z.literal(0), z.literal(1), z.literal(2)]).optional(),
+  tauManagementNoPsychometricMoocsConfirmed: z.boolean().optional(),
+  bguLanguageRequirementsConfirmed: z.boolean().optional(),
+  ...bguQuantitativeInputShape,
+  tauMathPlacementScore: z.number().min(0).max(100).optional(),
+});
+
 const academicScoresSchema = z.strictObject({
   psychometric: psychometricScoresSchema.optional(),
   bagrut: bagrutRecordSchema.optional(),
+  admissions: admissionsInputsSchema.optional(),
 });
 
 const uploadedDocumentSchema = z.strictObject({

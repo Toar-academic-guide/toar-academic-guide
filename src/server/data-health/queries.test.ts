@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const hoistedMocks = vi.hoisted(() => ({
   getOpsDb: vi.fn(),
@@ -311,6 +311,19 @@ function baseRows(overrides: Partial<DataHealthRows> = {}): DataHealthRows {
     reviewItems: [],
     sourceFreshnessStates: [],
     admissionReleases: [],
+    admissionAlerts: {
+      currentCycle: '2026',
+      subscriptions: {},
+      transitions: {},
+      deliveries: {},
+      stuckTransitions: 0,
+      stuckDeliveries: 0,
+      staleCycleSubscriptions: 0,
+      expiredWebhookEvents: 0,
+      overdueSubscriptions: 0,
+      invalidCycles: 0,
+      retentionStatus: 'within_policy',
+    },
     ...overrides,
   };
 }
@@ -331,6 +344,31 @@ describe('summarizeDataHealthRows', () => {
     });
     expect(report.readiness.isReady).toBe(true);
     expect(report.readiness.issues).toEqual([]);
+    expect(report.formulaVerification).toMatchObject({
+      total: 131,
+      exact: 126,
+      withheld: 4,
+      isComplete: false,
+    });
+    expect(report.admissionRoutes).toMatchObject({
+      enabled: 2,
+      rows: expect.arrayContaining([
+        expect.objectContaining({
+          programId: 'tau_cs',
+          pairId: 'tau_cs__tau',
+          status: 'enabled',
+          evaluatorCapability: 'exact',
+          actionCapabilityStatus: 'ready',
+        }),
+        expect.objectContaining({
+          programId: 'bgu_cs',
+          pairId: 'bgu_cs__bgu',
+          status: 'enabled',
+          evaluatorCapability: 'exact',
+          actionCapabilityStatus: 'ready',
+        }),
+      ]),
+    });
   });
 
   it('reports the latest published admissions release separately from failed publication attempts', () => {
@@ -341,6 +379,8 @@ describe('summarizeDataHealthRows', () => {
             id: 'release-old',
             manifestDigest: 'sha256:old',
             repositoryCommit: 'oldcommit',
+            releaseKind: 'canonical_change',
+            proofScenario: null,
             status: 'published',
             publishedAt: new Date('2026-06-23T17:00:00.000Z'),
           },
@@ -348,6 +388,8 @@ describe('summarizeDataHealthRows', () => {
             id: 'release-new',
             manifestDigest: 'sha256:new',
             repositoryCommit: 'newcommit',
+            releaseKind: 'canonical_change',
+            proofScenario: null,
             status: 'published',
             publishedAt: new Date('2026-06-24T17:00:00.000Z'),
           },
@@ -355,6 +397,8 @@ describe('summarizeDataHealthRows', () => {
             id: 'release-pending',
             manifestDigest: 'sha256:pending',
             repositoryCommit: 'pendingcommit',
+            releaseKind: 'canonical_change',
+            proofScenario: null,
             status: 'pending',
             publishedAt: null,
           },
@@ -362,6 +406,8 @@ describe('summarizeDataHealthRows', () => {
             id: 'release-failed',
             manifestDigest: 'sha256:failed',
             repositoryCommit: 'failedcommit',
+            releaseKind: 'canonical_change',
+            proofScenario: null,
             status: 'failed',
             publishedAt: null,
           },
@@ -379,7 +425,82 @@ describe('summarizeDataHealthRows', () => {
       },
       failedReleaseCount: 1,
       pendingReleaseCount: 1,
+      operationalProof: {
+        publishedReleaseCount: 0,
+        pendingReleaseCount: 0,
+        failedReleaseCount: 0,
+        matrixComplete: false,
+        scenarios: [
+          { scenario: 'proof-plan001-20260820', status: 'not_started' },
+          { scenario: 'proof-plan001-failure-20260820', status: 'not_started' },
+          { scenario: 'proof-plan001-corrective-20260820', status: 'not_started' },
+        ],
+      },
     });
+  });
+
+  it('never selects an operational proof release as the active applicant-facing release', () => {
+    const report = summarizeDataHealthRows(
+      baseRows({
+        admissionReleases: [
+          {
+            id: 'canonical-release',
+            manifestDigest: 'sha256:canonical',
+            repositoryCommit: 'canonicalcommit',
+            releaseKind: 'canonical_change',
+            proofScenario: null,
+            status: 'published',
+            publishedAt: new Date('2026-06-24T17:00:00.000Z'),
+          },
+          {
+            id: 'proof-release',
+            manifestDigest: 'sha256:proof',
+            repositoryCommit: 'proofcommit',
+            releaseKind: 'operational_proof',
+            proofScenario: 'proof-plan001-20260820',
+            status: 'published',
+            publishedAt: new Date('2026-06-25T17:00:00.000Z'),
+          },
+        ],
+      }),
+      now,
+    );
+
+    expect(report.publication.activeRelease?.id).toBe('canonical-release');
+    expect(report.publication.operationalProof).toEqual({
+      publishedReleaseCount: 1,
+      pendingReleaseCount: 0,
+      failedReleaseCount: 0,
+      matrixComplete: false,
+      scenarios: [
+        { scenario: 'proof-plan001-20260820', status: 'published' },
+        { scenario: 'proof-plan001-failure-20260820', status: 'not_started' },
+        { scenario: 'proof-plan001-corrective-20260820', status: 'not_started' },
+      ],
+    });
+  });
+
+  it('marks the operational proof matrix complete only after every prescribed scenario publishes', () => {
+    const report = summarizeDataHealthRows(
+      baseRows({
+        admissionReleases: [
+          'proof-plan001-20260820',
+          'proof-plan001-failure-20260820',
+          'proof-plan001-corrective-20260820',
+        ].map((proofScenario, index) => ({
+          id: `proof-${index}`,
+          manifestDigest: `sha256:proof-${index}`,
+          repositoryCommit: `proofcommit${index}`,
+          releaseKind: 'operational_proof' as const,
+          proofScenario,
+          status: 'published' as const,
+          publishedAt: new Date(`2026-06-${25 + index}T17:00:00.000Z`),
+        })),
+      }),
+      now,
+    );
+
+    expect(report.publication.operationalProof.matrixComplete).toBe(true);
   });
 
   it('includes admission requirements with no source URL in missing coverage', () => {
@@ -475,17 +596,19 @@ describe('summarizeDataHealthRows', () => {
             lastChangedAt: null,
             latestFailureReason: null,
             blockedReason: null,
+            normalizedFingerprint:
+              '62a6a2f398b737b2139671f32c48a921083a4966ea43e8135c081870d42e9971',
             latestReviewItemId: null,
             nextAction: null,
           }),
-          freshnessState('haifa-cs-live', {
-            sourceId: 'haifa-cs-live',
+          freshnessState('haifa-haifa_cs-live', {
+            sourceId: 'haifa-haifa_cs-live',
             sourceClass: 'official_html',
             capability: 'decision_capable',
-            status: 'fresh',
+            status: 'changed_needs_review',
             lastCheckedAt: new Date('2026-06-24T17:00:00.000Z'),
             lastSuccessfulCheckAt: new Date('2026-06-24T01:00:00.000Z'),
-            lastChangedAt: null,
+            lastChangedAt: new Date('2026-06-24T17:00:00.000Z'),
             latestFailureReason: null,
             blockedReason: null,
             latestReviewItemId: null,
@@ -502,8 +625,8 @@ describe('summarizeDataHealthRows', () => {
           programId: 'tau_datascience',
           institutionId: 'tau',
           institutionName: 'Tel Aviv University',
-          evidenceMode: 'exact',
-          severity: 'normal',
+          evidenceMode: 'stale',
+          severity: 'attention',
           sourceTargetId: 'tau-digital-sciences-live',
           officialSourceUrl: 'https://go.tau.ac.il/graphql',
           externalProgramId: '056011050000',
@@ -514,19 +637,22 @@ describe('summarizeDataHealthRows', () => {
           programId: 'haifa_cs',
           institutionId: 'haifa',
           institutionName: 'University of Haifa',
-          evidenceMode: 'needs_input',
-          severity: 'normal',
-          sourceTargetId: 'haifa-cs-live',
+          evidenceMode: 'stale',
+          severity: 'attention',
+          sourceTargetId: 'haifa-haifa_cs-live',
           officialSourceUrl: 'https://applicants.haifa.ac.il/enrollmentChances/index.html',
-          externalProgramId: '52258372',
-          requiredInputs: ['psychometric_math', 'psychometric_verbal', 'psychometric_english'],
+          externalProgramId: '52256544',
+          requiredInputs: [],
         }),
         expect.objectContaining({
           programId: 'tau_law',
           institutionId: 'tau',
-          evidenceMode: 'unsupported',
-          severity: 'informational',
-          sourceTargetId: null,
+          evidenceMode: 'authority_unavailable',
+          severity: 'attention',
+          sourceTargetId: 'tau-law-legacy-live',
+          externalProgramId: '141111010000',
+          freshnessStatus: null,
+          requiredInputs: [],
         }),
       ]),
     );
@@ -957,8 +1083,12 @@ function freshnessState(
     sourceClass: 'api_static_json',
     capability: 'decision_capable',
     status: 'fresh',
+    proofLevel: null,
+    decisionProvenance: null,
+    reviewedSourceFingerprint: null,
     lastCheckedAt: new Date('2026-06-23T18:00:00.000Z'),
     lastSuccessfulCheckAt: new Date('2026-06-23T18:00:00.000Z'),
+    lastExactCheckAt: null,
     lastChangedAt: null,
     latestFailureReason: null,
     blockedReason: null,
@@ -978,6 +1108,7 @@ describe('getDataHealthReport', () => {
     vi.restoreAllMocks();
     hoistedMocks.getOpsDb.mockReset();
   });
+  afterEach(() => vi.restoreAllMocks());
 
   it('loads report tables sequentially to stay within the ops role connection limit', async () => {
     let activeQueries = 0;
@@ -992,16 +1123,18 @@ describe('getDataHealthReport', () => {
 
     hoistedMocks.getOpsDb.mockReturnValue({
       select: vi.fn(() => ({ from })),
+      execute: from,
     });
 
     const report = await getDataHealthReport(now);
 
     expect(report.status).toBe('ready');
-    expect(from).toHaveBeenCalledTimes(15);
+    expect(from).toHaveBeenCalledTimes(16);
     expect(maxActiveQueries).toBe(1);
   });
 
   it('returns an unavailable state when the ops database is not configured', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
     hoistedMocks.getOpsDb.mockImplementation(() => {
       throw new Error('Missing OPS_DATABASE_URL');
     });
@@ -1010,9 +1143,51 @@ describe('getDataHealthReport', () => {
       status: 'unavailable',
       message: 'Operational data health is not configured.',
     });
+    expect(log).toHaveBeenCalledWith('[data-health] Report unavailable', {
+      category: 'configuration',
+      code: 'DATABASE_URL_MISSING',
+    });
+  });
+
+  it.each([
+    ['42501', 'database_permission'],
+    ['28P01', 'database_authentication'],
+    ['42P01', 'database_schema'],
+    ['ECONNREFUSED', 'database_connection'],
+    ['SELF_SIGNED_CERT_IN_CHAIN', 'database_tls'],
+  ])('logs only the recognized nested failure code %s', async (code, category) => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const cause = Object.assign(new Error('password and private SQL must not be logged'), {
+      code,
+      detail: 'private user data',
+    });
+    hoistedMocks.getOpsDb.mockImplementation(() => {
+      throw new Error('Failed query with private parameters', { cause });
+    });
+
+    expect((await getDataHealthReport()).status).toBe('unavailable');
+    expect(log.mock.calls).toEqual([['[data-health] Report unavailable', { category, code }]]);
+  });
+
+  it('does not log arbitrary error codes, messages, stacks, or circular causes', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const error = Object.assign(new Error('postgresql://private:password@host/db'), {
+      code: 'PRIVATE_TOKEN',
+      cause: {} as unknown,
+    });
+    error.cause = error;
+    hoistedMocks.getOpsDb.mockImplementation(() => {
+      throw error;
+    });
+
+    expect((await getDataHealthReport()).status).toBe('unavailable');
+    expect(log.mock.calls).toEqual([
+      ['[data-health] Report unavailable', { category: 'unknown', code: 'UNCLASSIFIED' }],
+    ]);
   });
 
   it('returns an unavailable state when the ops database query stalls', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.useFakeTimers();
     hoistedMocks.getOpsDb.mockReturnValue({
       select: vi.fn(() => ({
@@ -1029,6 +1204,10 @@ describe('getDataHealthReport', () => {
         status: 'unavailable',
         message:
           'Operational data health did not respond in time. Check OPS_DATABASE_URL and Supabase pooler connectivity.',
+      });
+      expect(log).toHaveBeenCalledWith('[data-health] Report unavailable', {
+        category: 'database_timeout',
+        code: 'REPORT_TIMEOUT',
       });
     } finally {
       vi.useRealTimers();

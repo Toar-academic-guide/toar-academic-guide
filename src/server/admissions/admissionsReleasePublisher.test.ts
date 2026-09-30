@@ -10,10 +10,12 @@ import {
   type AdmissionTargetTransitionRecord,
   type AdmissionsReleaseRepository,
   type AdmissionsReleaseWriter,
+  type PublishedAdmissionCutoffChange,
 } from './admissionsReleasePublisher';
 
 const manifest = {
-  version: 1,
+  version: 2,
+  releaseKind: 'canonical_change' as const,
   changes: [
     {
       target: { institutionId: 'tau', programId: 'tau_cs', cycle: '2027' },
@@ -27,23 +29,23 @@ const manifest = {
           digest: 'sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
           excerpt: 'Current published admission cutoff: 700.',
           url: 'https://go.tau.ac.il/he/exact/ba/computer',
+          proofType: 'exact_official' as const,
         },
       ],
     },
+  ],
+};
+
+const bguChange = {
+  ...manifest.changes[0],
+  target: { institutionId: 'bgu', programId: 'bgu_cs', cycle: '2027' },
+  sourceProofs: [
     {
-      target: { institutionId: 'tau', programId: 'tau_cs', cycle: '2027' },
-      ruleKind: 'minimum_gate' as const,
-      before: 650,
-      after: 640,
-      effectiveFrom: '2026-08-01',
-      sourceProofs: [
-        {
-          sourceId: 'tau-computer-science',
-          digest: 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
-          excerpt: 'The minimum gate is now 640.',
-          url: 'https://go.tau.ac.il/he/exact/ba/computer',
-        },
-      ],
+      ...manifest.changes[0]!.sourceProofs[0],
+      sourceId: 'bgu-computer-science',
+      digest: 'sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb',
+      excerpt: 'Current published admission cutoff: 700.',
+      url: 'https://in.bgu.ac.il/welcome/Pages/default.aspx',
     },
   ],
 };
@@ -55,7 +57,7 @@ describe('admissions release publisher', () => {
 
     await expect(
       publisher.publish({
-        manifest: { version: 1, changes: [] },
+        manifest: { version: 2, releaseKind: 'canonical_change', changes: [] },
         repositoryCommit: 'abc123',
       }),
     ).resolves.toEqual({ status: 'no_changes' });
@@ -67,13 +69,13 @@ describe('admissions release publisher', () => {
   it('does not initialize the database repository for an empty reviewed manifest', async () => {
     await expect(
       createAdmissionsReleasePublisher().publish({
-        manifest: { version: 1, changes: [] },
+        manifest: { version: 2, releaseKind: 'canonical_change', changes: [] },
         repositoryCommit: 'abc123',
       }),
     ).resolves.toEqual({ status: 'no_changes' });
   });
 
-  it('publishes every field for one target as one transition', async () => {
+  it('publishes one supported cutoff as one atomic transition', async () => {
     const repository = new MemoryAdmissionsReleaseRepository();
     const publisher = createAdmissionsReleasePublisher(repository);
 
@@ -93,7 +95,7 @@ describe('admissions release publisher', () => {
     expect(repository.transitions[0]?.beforeVersion).not.toBe(
       repository.transitions[0]?.afterVersion,
     );
-    expect(repository.items).toHaveLength(2);
+    expect(repository.items).toHaveLength(1);
     expect(repository.releases[0]).toMatchObject({
       status: 'published',
       repositoryCommit: 'abc123',
@@ -111,8 +113,7 @@ describe('admissions release publisher', () => {
         changes: [
           manifest.changes[0],
           {
-            ...manifest.changes[1],
-            target: { institutionId: 'bgu', programId: 'bgu_cs', cycle: '2027' },
+            ...bguChange,
           },
         ],
       },
@@ -167,8 +168,7 @@ describe('admissions release publisher', () => {
           changes: [
             manifest.changes[0],
             {
-              ...manifest.changes[1],
-              target: { institutionId: 'bgu', programId: 'bgu_cs', cycle: '2027' },
+              ...bguChange,
             },
           ],
         },
@@ -215,8 +215,7 @@ describe('admissions release publisher', () => {
               after: 690,
             },
             {
-              ...manifest.changes[1],
-              target: { institutionId: 'bgu', programId: 'bgu_cs', cycle: '2027' },
+              ...bguChange,
             },
           ],
         },
@@ -258,8 +257,7 @@ describe('admissions release publisher', () => {
         changes: [
           manifest.changes[0],
           {
-            ...manifest.changes[1],
-            target: { institutionId: 'bgu', programId: 'bgu_cs', cycle: '2027' },
+            ...bguChange,
           },
         ],
       },
@@ -294,8 +292,7 @@ describe('admissions release publisher', () => {
         changes: [
           manifest.changes[0],
           {
-            ...manifest.changes[1],
-            target: { institutionId: 'bgu', programId: 'bgu_cs', cycle: '2027' },
+            ...bguChange,
           },
         ],
       },
@@ -319,8 +316,7 @@ describe('admissions release publisher', () => {
       changes: [
         manifest.changes[0],
         {
-          ...manifest.changes[1],
-          target: { institutionId: 'bgu', programId: 'bgu_cs', cycle: '2027' },
+          ...bguChange,
         },
       ],
     };
@@ -350,8 +346,7 @@ describe('admissions release publisher', () => {
           changes: [
             manifest.changes[0],
             {
-              ...manifest.changes[1],
-              target: { institutionId: 'bgu', programId: 'bgu_cs', cycle: '2027' },
+              ...bguChange,
             },
           ],
         },
@@ -394,7 +389,160 @@ describe('admissions release publisher', () => {
     ]);
     expect(repository.releases.every((release) => release.status === 'published')).toBe(true);
   });
+
+  it('atomically rejects a canonical cutoff when production no longer matches before', async () => {
+    const repository = new MemoryAdmissionsReleaseRepository();
+    repository.canonicalCutoffs.set('tau:tau_cs', 705);
+
+    await expect(
+      createAdmissionsReleasePublisher(repository).publish({
+        manifest,
+        repositoryCommit: 'stale-before',
+      }),
+    ).rejects.toThrow('expected before value');
+
+    expect(repository.canonicalCutoffs.get('tau:tau_cs')).toBe(705);
+    expect(repository.transitions).toEqual([]);
+    expect(repository.releases).toEqual([expect.objectContaining({ status: 'failed' })]);
+  });
+
+  it('allows an unchanged exact-official canonical bootstrap to establish a release ledger', async () => {
+    const repository = new MemoryAdmissionsReleaseRepository();
+    const bootstrap = {
+      ...manifest,
+      releaseKind: 'canonical_bootstrap' as const,
+      changes: manifest.changes.map((change) => ({ ...change, after: change.before })),
+    };
+
+    await expect(
+      createAdmissionsReleasePublisher(repository).publish({
+        manifest: bootstrap,
+        repositoryCommit: 'bootstrap123',
+      }),
+    ).resolves.toMatchObject({ status: 'published' });
+
+    expect(repository.canonicalCutoffs.get('tau:tau_cs')).toBe(706);
+    expect(repository.releases[0]).toMatchObject({
+      releaseKind: 'canonical_bootstrap',
+      proofScenario: null,
+    });
+  });
+
+  it('fails closed for rule kinds that have no publisher mapping', async () => {
+    const repository = new MemoryAdmissionsReleaseRepository();
+    await expect(
+      createAdmissionsReleasePublisher(repository).publish({
+        manifest: {
+          ...manifest,
+          changes: [{ ...manifest.changes[0], ruleKind: 'minimum_gate' }],
+        },
+        repositoryCommit: 'unsupported-rule',
+      }),
+    ).rejects.toThrow('Unsupported admissions release rule');
+    expect(repository.releases).toEqual([]);
+  });
+
+  it('keeps operational proof values isolated through failure, retry, idempotency, and correction', async () => {
+    const repository = new MemoryAdmissionsReleaseRepository();
+    const publisher = createAdmissionsReleasePublisher(repository);
+    const proof = operationalProofManifest();
+
+    await expect(
+      publisher.publish({
+        manifest: proof,
+        repositoryCommit: 'proof-retry123',
+        proofFailureStage: 'after_attempt_started',
+        proofConfirmationId: 'proof-plan001-20260820',
+      }),
+    ).rejects.toThrow('Controlled operational-proof failure');
+    const failedReleaseId = repository.releases[0]?.id;
+    expect(repository.releases[0]).toMatchObject({
+      status: 'failed',
+      releaseKind: 'operational_proof',
+      proofScenario: 'proof-plan001-20260820',
+    });
+    expect(repository.transitions).toEqual([]);
+    expect(repository.operationalProofCutoffs.size).toBe(0);
+    expect(repository.canonicalCutoffs).toEqual(
+      new Map([
+        ['tau:tau_cs', 706],
+        ['bgu:bgu_cs', 706],
+      ]),
+    );
+
+    const retry = await publisher.publish({ manifest: proof, repositoryCommit: 'proof-retry123' });
+    expect(retry).toMatchObject({ status: 'published', releaseId: failedReleaseId });
+    expect(repository.attempts.map((attempt) => attempt.status)).toEqual(['failed', 'succeeded']);
+    expect(repository.operationalProofCutoffs).toEqual(
+      new Map([
+        ['tau:tau_cs:2099', 700],
+        ['bgu:bgu_cs:2099', 700],
+      ]),
+    );
+    await expect(
+      publisher.publish({ manifest: proof, repositoryCommit: 'proof-retry123' }),
+    ).resolves.toEqual({
+      status: 'already_published',
+      releaseId: failedReleaseId,
+    });
+
+    await publisher.publish({
+      manifest: operationalProofManifest({
+        before: 700,
+        after: 706,
+        proofScenario: 'proof-corrective',
+      }),
+      repositoryCommit: 'proof-corrective123',
+    });
+    expect(repository.operationalProofCutoffs.get('tau:tau_cs:2099')).toBe(706);
+    expect(repository.operationalProofCutoffs.get('bgu:bgu_cs:2099')).toBe(706);
+    expect(repository.canonicalCutoffs.get('tau:tau_cs')).toBe(706);
+    expect(repository.canonicalCutoffs.get('bgu:bgu_cs')).toBe(706);
+    expect(repository.releases).toHaveLength(2);
+  });
+
+  it('rejects fault injection outside the matching operational proof before creating a release', async () => {
+    const repository = new MemoryAdmissionsReleaseRepository();
+    await expect(
+      createAdmissionsReleasePublisher(repository).publish({
+        manifest,
+        repositoryCommit: 'canonical-fault',
+        proofFailureStage: 'after_attempt_started',
+        proofConfirmationId: 'proof-plan001-20260820',
+      }),
+    ).rejects.toThrow('Controlled publication failure is allowed only');
+    expect(repository.releases).toEqual([]);
+  });
 });
+
+function operationalProofManifest(
+  input: {
+    before?: number;
+    after?: number;
+    proofScenario?: string;
+  } = {},
+) {
+  const before = input.before ?? 706;
+  const after = input.after ?? 700;
+  const proofScenario = input.proofScenario ?? 'proof-plan001-20260820';
+  return {
+    version: 2,
+    releaseKind: 'operational_proof' as const,
+    proofScenario,
+    changes: [manifest.changes[0], bguChange].map((change) => ({
+      ...change,
+      target: { ...change.target, cycle: '2099' },
+      before,
+      after,
+      sourceProofs: [
+        {
+          ...change.sourceProofs[0],
+          proofType: 'controlled_fixture' as const,
+        },
+      ],
+    })),
+  };
+}
 
 class MemoryAdmissionsReleaseRepository
   implements AdmissionsReleaseRepository, AdmissionsReleaseWriter
@@ -403,6 +551,11 @@ class MemoryAdmissionsReleaseRepository
   transitions: AdmissionTargetTransitionRecord[] = [];
   items: AdmissionReleaseItemRecord[] = [];
   attempts: AdmissionPublicationAttemptRecord[] = [];
+  canonicalCutoffs = new Map<string, number>([
+    ['tau:tau_cs', 706],
+    ['bgu:bgu_cs', 706],
+  ]);
+  operationalProofCutoffs = new Map<string, number>();
 
   constructor(
     private readonly options: {
@@ -420,6 +573,8 @@ class MemoryAdmissionsReleaseRepository
       transitions: structuredClone(this.transitions),
       items: structuredClone(this.items),
       attempts: structuredClone(this.attempts),
+      canonicalCutoffs: structuredClone(this.canonicalCutoffs),
+      operationalProofCutoffs: structuredClone(this.operationalProofCutoffs),
     };
 
     try {
@@ -429,6 +584,8 @@ class MemoryAdmissionsReleaseRepository
       this.transitions = snapshot.transitions;
       this.items = snapshot.items;
       this.attempts = snapshot.attempts;
+      this.canonicalCutoffs = snapshot.canonicalCutoffs;
+      this.operationalProofCutoffs = snapshot.operationalProofCutoffs;
       throw error;
     }
   }
@@ -468,6 +625,36 @@ class MemoryAdmissionsReleaseRepository
 
   async createReleaseItems(items: AdmissionReleaseItemRecord[]) {
     this.items.push(...items);
+  }
+
+  async applyCanonicalAdmissionCutoff({ change }: { change: PublishedAdmissionCutoffChange }) {
+    const key = `${change.target.institutionId}:${change.target.programId}`;
+    if (this.canonicalCutoffs.get(key) !== change.before) {
+      throw new Error(`canonical cutoff ${key} did not match its expected before value`);
+    }
+    this.canonicalCutoffs.set(key, change.after);
+  }
+
+  async applyOperationalProofAdmissionCutoff({
+    change,
+  }: {
+    releaseId: string;
+    change: PublishedAdmissionCutoffChange;
+    updatedAt: Date;
+  }) {
+    const key = `${change.target.institutionId}:${change.target.programId}:${change.target.cycle}`;
+    const existing = this.operationalProofCutoffs.get(key);
+    if (existing === undefined) {
+      const canonical = this.canonicalCutoffs.get(
+        `${change.target.institutionId}:${change.target.programId}`,
+      );
+      if (canonical !== change.before) {
+        throw new Error(`operational proof cutoff ${key} must start from canonical before value`);
+      }
+    } else if (existing !== change.before) {
+      throw new Error(`operational proof cutoff ${key} did not match its expected before value`);
+    }
+    this.operationalProofCutoffs.set(key, change.after);
   }
 
   async markReleasePending(releaseId: string) {

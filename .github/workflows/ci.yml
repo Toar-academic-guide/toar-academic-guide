@@ -73,9 +73,9 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Install dependencies
@@ -102,21 +102,20 @@ jobs:
     needs:
       - production-sensitive-paths
       - quality
-    if: ${{ needs.production-sensitive-paths.outputs.applicable == 'true' }}
+    if: ${{ github.ref == 'refs/heads/main' && needs.production-sensitive-paths.outputs.applicable == 'true' }}
     environment: admissions-publication
     env:
       CI: true
       OPS_DATABASE_URL: ${{ secrets.OPS_DATABASE_URL }}
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Install dependencies
@@ -136,14 +135,14 @@ jobs:
     steps:
       - name: Require successful applicable preflight
         env:
-          APPLICABLE: ${{ needs.production-sensitive-paths.outputs.applicable }}
+          PREFLIGHT_REQUIRED: ${{ github.ref == 'refs/heads/main' && needs.production-sensitive-paths.outputs.applicable == 'true' }}
           PREFLIGHT_RESULT: ${{ needs.operational-schema.result }}
         run: |
-          if [[ "$APPLICABLE" == "true" && "$PREFLIGHT_RESULT" != "success" ]]; then
+          if [[ "$PREFLIGHT_REQUIRED" == "true" && "$PREFLIGHT_RESULT" != "success" ]]; then
             echo "Production-sensitive changes require a successful operational schema preflight."
             exit 1
           fi
-          echo "Operational schema gate passed (applicable=$APPLICABLE, result=$PREFLIGHT_RESULT)."
+          echo "Operational schema gate passed (required=$PREFLIGHT_REQUIRED, result=$PREFLIGHT_RESULT)."
 
   # ---------------------------------------------------------------------------
   # Job 2: Unit tests with coverage
@@ -161,9 +160,9 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Install dependencies
@@ -206,9 +205,9 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Install dependencies
@@ -241,6 +240,11 @@ jobs:
           $$;
           SQL
 
+      - name: Create disposable Auth contract
+        env:
+          PGPASSWORD: postgres
+        run: psql --host localhost --username postgres --dbname toar_academic_guide_ci --set ON_ERROR_STOP=1 --file scripts/disposable-auth-schema.sql
+
       - name: Apply migrations to disposable PostgreSQL
         run: npm run db:migrate
 
@@ -251,8 +255,15 @@ jobs:
 
       - name: Verify durable publication failure and retry lifecycle
         env:
+          APP_DB_INTEGRATION: '1'
           PUBLICATION_DB_INTEGRATION: '1'
-        run: npm run test:publication:db
+          SOURCE_FRESHNESS_DB_INTEGRATION: '1'
+          ALERT_DB_INTEGRATION: '1'
+        run: |
+          npx vitest run src/db/client.integration.test.ts
+          npm run test:publication:db
+          npm run test:source-freshness:db
+          npx vitest run src/server/admission-alerts/health.integration.test.ts src/server/admission-alerts/transitionProcessor.integration.test.ts src/server/admission-alerts/deliveryWorker.integration.test.ts src/server/admission-alerts/webhookUnsubscribe.integration.test.ts src/server/admission-alerts/lifecycleCompletion.integration.test.ts scripts/admission-alert-account-simulation.integration.test.ts
 
   # ---------------------------------------------------------------------------
   # Job 4: Admissions evidence and calculator verification
@@ -270,9 +281,9 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Install dependencies
@@ -311,9 +322,9 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Install dependencies
@@ -339,9 +350,9 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Install dependencies
@@ -386,9 +397,9 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Install dependencies
@@ -431,9 +442,9 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Install dependencies
@@ -477,9 +488,9 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Skip DB verification when DATABASE_URL is missing
@@ -512,9 +523,9 @@ jobs:
         uses: actions/checkout@v7
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Skip operational DB verification when no DB URL is configured

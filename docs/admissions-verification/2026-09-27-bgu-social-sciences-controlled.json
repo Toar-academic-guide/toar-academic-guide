@@ -1,0 +1,192 @@
+[
+  {
+    "fixtureId": "social_work__bgu:below:2026-2027",
+    "checkedAt": "2026-09-27T19:18:55.788Z",
+    "actualScore": 600,
+    "actualVerdict": "below",
+    "sourceFingerprint": "sha256:dcdf8633d590fecb0bac59ac4df6c62564b45981a299566b273ab06921b225aa",
+    "rawResponseMetadata": [
+      {
+        "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=144&p_pat1=1&p_spe1=12&p_institution=0&p_degree_level=1",
+        "status": 200,
+        "contentType": "application/json"
+      },
+      {
+        "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem",
+        "status": 200,
+        "contentType": "text/html; charset=ISO-8859-8-I"
+      }
+    ]
+  },
+  {
+    "fixtureId": "social_work__bgu:eligible:2026-2027",
+    "checkedAt": "2026-09-27T19:18:55.967Z",
+    "actualScore": 601,
+    "actualVerdict": "eligible_to_apply",
+    "sourceFingerprint": "sha256:dcdf8633d590fecb0bac59ac4df6c62564b45981a299566b273ab06921b225aa",
+    "rawResponseMetadata": [
+      {
+        "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=144&p_pat1=1&p_spe1=12&p_institution=0&p_degree_level=1",
+        "status": 200,
+        "contentType": "application/json"
+      },
+      {
+        "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem",
+        "status": 200,
+        "contentType": "text/html; charset=ISO-8859-8-I"
+      }
+    ]
+  },
+  {
+    "fixtureId": "bgu_socialwork__bgu:below:2026-2027",
+    "checkedAt": "2026-09-27T19:18:56.138Z",
+    "actualScore": 600,
+    "actualVerdict": "below",
+    "sourceFingerprint": "sha256:dcdf8633d590fecb0bac59ac4df6c62564b45981a299566b273ab06921b225aa",
+    "rawResponseMetadata": [
+      {
+        "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=144&p_pat1=1&p_spe1=12&p_institution=0&p_degree_level=1",
+        "status": 200,
+        "contentType": "application/json"
+      },
+      {
+        "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem",
+        "status": 200,
+        "contentType": "text/html; charset=ISO-8859-8-I"
+      }
+    ]
+  },
+  {
+    "fixtureId": "bgu_socialwork__bgu:eligible:2026-2027",
+    "checkedAt": "2026-09-27T19:18:56.306Z",
+    "actualScore": 601,
+    "actualVerdict": "eligible_to_apply",
+    "sourceFingerprint": "sha256:dcdf8633d590fecb0bac59ac4df6c62564b45981a299566b273ab06921b225aa",
+    "rawResponseMetadata": [
+      {
+        "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=144&p_pat1=1&p_spe1=12&p_institution=0&p_degree_level=1",
+        "status": 200,
+        "contentType": "application/json"
+      },
+      {
+        "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem",
+        "status": 200,
+        "contentType": "text/html; charset=ISO-8859-8-I"
+      }
+    ]
+  },
+  {
+    "fixtureId": "communication__bgu:below:2026-2027",
+    "checkedAt": "2026-09-27T19:18:56.483Z",
+    "actualScore": 286,
+    "actualVerdict": "below",
+    "sourceFingerprint": "sha256:e49ccf7d65a2611d661808fad528350cc08a76f689f36f40b15c4a32f875374a",
+    "rawResponseMetadata": [
+      {
+        "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=183&p_pat1=2&p_degree_level=1",
+        "status": 200,
+        "contentType": "application/json"
+      },
+      {
+        "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem",
+        "status": 200,
+        "contentType": "text/html; charset=ISO-8859-8-I"
+      }
+    ]
+  },
+  {
+    "fixtureId": "communication__bgu:eligible:2026-2027",
+    "checkedAt": "2026-09-27T19:18:56.653Z",
+    "actualScore": 287,
+    "actualVerdict": "eligible_to_apply",
+    "sourceFingerprint": "sha256:e49ccf7d65a2611d661808fad528350cc08a76f689f36f40b15c4a32f875374a",
+    "rawResponseMetadata": [
+      {
+        "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=183&p_pat1=2&p_degree_level=1",
+        "status": 200,
+        "contentType": "application/json"
+      },
+      {
+        "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem",
+        "status": 200,
+        "contentType": "text/html; charset=ISO-8859-8-I"
+      }
+    ]
+  },
+  {
+    "fixtureId": "education__bgu:below:2026-2027",
+    "checkedAt": "2026-09-27T19:18:56.821Z",
+    "actualScore": 286,
+    "actualVerdict": "below",
+    "sourceFingerprint": "sha256:ed04d32e92b442c87e115924f5c2920b1fe0f82918223b0fab903d65f74332d5",
+    "rawResponseMetadata": [
+      {
+        "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=129&p_pat1=2&p_degree_level=1",
+        "status": 200,
+        "contentType": "application/json"
+      },
+      {
+        "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem",
+        "status": 200,
+        "contentType": "text/html; charset=ISO-8859-8-I"
+      }
+    ]
+  },
+  {
+    "fixtureId": "education__bgu:eligible:2026-2027",
+    "checkedAt": "2026-09-27T19:18:57.004Z",
+    "actualScore": 287,
+    "actualVerdict": "eligible_to_apply",
+    "sourceFingerprint": "sha256:ed04d32e92b442c87e115924f5c2920b1fe0f82918223b0fab903d65f74332d5",
+    "rawResponseMetadata": [
+      {
+        "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=129&p_pat1=2&p_degree_level=1",
+        "status": 200,
+        "contentType": "application/json"
+      },
+      {
+        "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem",
+        "status": 200,
+        "contentType": "text/html; charset=ISO-8859-8-I"
+      }
+    ]
+  },
+  {
+    "fixtureId": "political_science__bgu:below:2026-2027",
+    "checkedAt": "2026-09-27T19:18:57.185Z",
+    "actualScore": 274,
+    "actualVerdict": "below",
+    "sourceFingerprint": "sha256:d25de63ea5d1914eba50dd7e6a305b6691f480bce3296830845e654b48ea27cf",
+    "rawResponseMetadata": [
+      {
+        "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=138&p_pat1=2&p_institution=0&p_degree_level=1",
+        "status": 200,
+        "contentType": "application/json"
+      },
+      {
+        "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem",
+        "status": 200,
+        "contentType": "text/html; charset=ISO-8859-8-I"
+      }
+    ]
+  },
+  {
+    "fixtureId": "political_science__bgu:eligible:2026-2027",
+    "checkedAt": "2026-09-27T19:18:57.358Z",
+    "actualScore": 274,
+    "actualVerdict": "eligible_to_apply",
+    "sourceFingerprint": "sha256:d25de63ea5d1914eba50dd7e6a305b6691f480bce3296830845e654b48ea27cf",
+    "rawResponseMetadata": [
+      {
+        "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=138&p_pat1=2&p_institution=0&p_degree_level=1",
+        "status": 200,
+        "contentType": "application/json"
+      },
+      {
+        "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem",
+        "status": 200,
+        "contentType": "text/html; charset=ISO-8859-8-I"
+      }
+    ]
+  }
+]

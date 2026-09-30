@@ -1,0 +1,1 @@
+ALTER TYPE "public"."admission_review_slack_status" ADD VALUE 'acceptance_unknown';

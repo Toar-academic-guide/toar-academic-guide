@@ -62,6 +62,19 @@ describe('/internal/data-health page', () => {
     });
     hoistedMocks.getDataHealthReport.mockResolvedValue({
       status: 'ready',
+      admissionAlerts: {
+        currentCycle: '2026',
+        subscriptions: {},
+        transitions: {},
+        deliveries: {},
+        stuckTransitions: 0,
+        stuckDeliveries: 0,
+        staleCycleSubscriptions: 0,
+        expiredWebhookEvents: 0,
+        overdueSubscriptions: 0,
+        invalidCycles: 0,
+        retentionStatus: 'within_policy',
+      },
       generatedAt: '2026-06-24T18:00:00.000Z',
       readiness: {
         isReady: true,
@@ -75,6 +88,35 @@ describe('/internal/data-health page', () => {
           sourceUrls: 3,
           universityCalculatorConfigs: 7,
         },
+      },
+      formulaVerification: {
+        total: 135,
+        exact: 3,
+        withheld: 132,
+        stale: 0,
+        blocked: 0,
+        isComplete: false,
+        totalsByInstitution: {
+          tau: { total: 35, exact: 3, withheld: 32, stale: 0, blocked: 0 },
+          huji: { total: 29, exact: 0, withheld: 29, stale: 0, blocked: 0 },
+          bgu: { total: 29, exact: 0, withheld: 29, stale: 0, blocked: 0 },
+          haifa: { total: 27, exact: 0, withheld: 27, stale: 0, blocked: 0 },
+          technion: { total: 14, exact: 0, withheld: 14, stale: 0, blocked: 0 },
+          colman: { total: 1, exact: 0, withheld: 1, stale: 0, blocked: 0 },
+        },
+      },
+      runtimeFormulaVerification: {
+        total: 135,
+        exact: 0,
+        stale: 0,
+        blocked: 0,
+        authorityUnavailable: 135,
+      },
+      admissionRoutes: {
+        enabled: 2,
+        disabled: 0,
+        unsupported: 0,
+        rows: [],
       },
       coverage: {
         missingRequirementSourceCount: 0,
@@ -117,6 +159,17 @@ describe('/internal/data-health page', () => {
         activeRelease: null,
         pendingReleaseCount: 0,
         failedReleaseCount: 0,
+        operationalProof: {
+          publishedReleaseCount: 0,
+          pendingReleaseCount: 0,
+          failedReleaseCount: 0,
+          matrixComplete: false,
+          scenarios: [
+            { scenario: 'proof-plan001-20260820', status: 'not_started' },
+            { scenario: 'proof-plan001-failure-20260820', status: 'not_started' },
+            { scenario: 'proof-plan001-corrective-20260820', status: 'not_started' },
+          ],
+        },
       },
       mondayEvidence: {
         totalItems: 212,

@@ -38,7 +38,7 @@ function parseArguments(argv) {
       index += 1;
       continue;
     }
-    if (!['--run-key', '--cycle', '--output', '--exclusions-file'].includes(flag)) {
+    if (!['--run-key', '--cycle', '--output', '--exclusions-file', '--mode', '--proof-scenario'].includes(flag)) {
       throw new Error(`Unknown admissions review argument: ${flag ?? '(missing)'}.`);
     }
     const value = argv[index + 1];
@@ -52,14 +52,36 @@ function parseArguments(argv) {
   const runKey = values.get('--run-key');
   const cycle = values.get('--cycle');
   const output = values.get('--output');
-  if (!/^20\d{2}-W\d{2}$/.test(runKey ?? '')) throw new Error('--run-key must use YYYY-Www.');
-  if (!/^20\d{2}$/.test(cycle ?? '')) throw new Error('--cycle must use YYYY.');
+  const mode = values.get('--mode') ?? 'live';
+  if (!['live', 'bootstrap', 'operational_proof'].includes(mode)) {
+    throw new Error('--mode must be live, bootstrap, or operational_proof.');
+  }
+  if (mode === 'operational_proof') {
+    if (!/^[a-z0-9]+(?:[_-][a-z0-9]+)*$/.test(runKey ?? '')) {
+      throw new Error('Operational proof --run-key must be a stable safe identifier.');
+    }
+    if (values.get('--proof-scenario') !== runKey) {
+      throw new Error('Operational proof --proof-scenario must match --run-key.');
+    }
+  } else if (!/^20\d{2}-W\d{2}$/.test(runKey ?? '')) {
+    throw new Error('--run-key must use YYYY-Www for live and bootstrap modes.');
+  }
+  if (mode === 'operational_proof') {
+    if (cycle !== '2099') throw new Error('Operational proof mode requires cycle 2099.');
+  } else if (!/^20\d{2}$/.test(cycle ?? '')) {
+    throw new Error('--cycle must use YYYY.');
+  }
+  if (mode !== 'operational_proof' && values.has('--proof-scenario')) {
+    throw new Error('--proof-scenario is only valid for operational_proof mode.');
+  }
   if (!output) throw new Error('--output is required.');
   return {
     runKey,
     cycle,
     output,
     exclusionsFile: values.get('--exclusions-file'),
+    mode,
+    proofScenario: values.get('--proof-scenario'),
     dryRun,
     targetIds: targets.length > 0 ? targets : undefined,
   };
@@ -98,10 +120,13 @@ async function readExcludedCandidateIds(path, runKey) {
   return [...new Set(value.excludedCandidateIds)].sort();
 }
 
-async function main() {
-  const args = parseArguments(process.argv.slice(2));
+export async function runAdmissionsReviewPreparation(
+  argv,
+  { createViteServer = createServer, operationTimeoutMs = 15_000 } = {},
+) {
+  const args = parseArguments(argv);
   const excludedCandidateIds = await readExcludedCandidateIds(args.exclusionsFile, args.runKey);
-  const vite = await createServer({
+  const vite = await createViteServer({
     root,
     appType: 'custom',
     customLogger: quietViteLogger,
@@ -112,18 +137,34 @@ async function main() {
   });
 
   try {
-    const [{ createAdmissionsWeeklyReviewPreparer }, { createAdmissionsReviewRunLedger }] =
+    const [
+      { createAdmissionsWeeklyReviewPreparer },
+      { createAdmissionsReviewRunLedger },
+      { buildOperationalProofReviewRun },
+    ] =
       await Promise.all([
         vite.ssrLoadModule('/src/server/admissions/weeklyReviewPreparation.ts'),
         vite.ssrLoadModule('/src/server/admissions/admissionsReviewRunLedger.ts'),
+        vite.ssrLoadModule('/src/server/admissions/operationalProofRun.ts'),
       ]);
-    const result = await createAdmissionsWeeklyReviewPreparer().prepare({
-      runKey: args.runKey,
-      cycle: args.cycle,
-      targetIds: args.targetIds,
-      excludedCandidateIds,
-      dryRun: args.dryRun,
-    });
+    const result =
+      args.mode === 'operational_proof'
+        ? {
+            run: buildOperationalProofReviewRun({
+              runKey: args.runKey,
+              proofScenario: args.proofScenario,
+              checkedAt: new Date(),
+            }),
+            persistence: null,
+          }
+        : await createAdmissionsWeeklyReviewPreparer().prepare({
+            runKey: args.runKey,
+            cycle: args.cycle,
+            targetIds: args.targetIds,
+            excludedCandidateIds,
+            dryRun: args.dryRun,
+            releaseKind: args.mode === 'bootstrap' ? 'canonical_bootstrap' : 'canonical_change',
+          });
     if (!args.dryRun) await createAdmissionsReviewRunLedger().recordPreparedRun(result.run);
 
     const output = resolveOutput(args.output);
@@ -135,15 +176,121 @@ async function main() {
         status: result.run.summary.status,
         candidateCount: result.run.summary.candidateCount,
         excludedCount: result.run.summary.excludedCount,
+        mode: args.mode,
         output: relative(root, output),
       }),
     );
   } finally {
-    await vite.close();
+    await closeReviewPreparationResources(vite, { operationTimeoutMs });
   }
 }
 
-main().catch((error) => {
-  console.error(error instanceof Error ? error.message : error);
-  process.exitCode = 1;
-});
+/**
+ * @param {{ ssrLoadModule: (path: string) => Promise<{ closeDb?: () => Promise<void> }>; close: () => Promise<void> }} vite
+ * @param {{ operationTimeoutMs?: number; log?: Pick<Console, 'info' | 'warn'> }} [options]
+ */
+export async function closeReviewPreparationResources(
+  vite,
+  { operationTimeoutMs = 15_000, log = console } = {},
+) {
+  let closeDb;
+  try {
+    const databaseClient = await completeWithin(
+      vite.ssrLoadModule('/src/db/client.ts'),
+      'Admissions review database client cleanup setup',
+      operationTimeoutMs,
+    );
+    closeDb = databaseClient.closeDb;
+  } catch (error) {
+    log.warn(
+      JSON.stringify({
+        phase: 'database_close_setup_incomplete',
+        error: cleanupErrorMessage(error),
+      }),
+    );
+  }
+
+  if (closeDb) {
+    await completeCleanup({
+      operation: closeDb,
+      description: 'Admissions review database cleanup',
+      startPhase: 'database_close_start',
+      completePhase: 'database_close_complete',
+      timeoutPhase: 'database_close_incomplete',
+      operationTimeoutMs,
+      log,
+    });
+  }
+
+  await completeCleanup({
+    operation: () => vite.close(),
+    description: 'Admissions review Vite cleanup',
+    startPhase: 'vite_close_start',
+    completePhase: 'vite_close_complete',
+    timeoutPhase: 'vite_close_incomplete',
+    operationTimeoutMs,
+    log,
+  });
+}
+
+async function completeCleanup({
+  operation,
+  description,
+  startPhase,
+  completePhase,
+  timeoutPhase,
+  operationTimeoutMs,
+  log,
+}) {
+  log.info(JSON.stringify({ phase: startPhase }));
+  try {
+    await completeWithin(operation(), description, operationTimeoutMs);
+    log.info(JSON.stringify({ phase: completePhase }));
+  } catch (error) {
+    log.warn(
+      JSON.stringify({
+        phase: timeoutPhase,
+        error: cleanupErrorMessage(error),
+      }),
+    );
+  }
+}
+
+function cleanupErrorMessage(error) {
+  return error instanceof Error ? error.message : String(error);
+}
+
+async function completeWithin(promise, operation, timeoutMs) {
+  let timeout;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise((_, reject) => {
+        timeout = setTimeout(
+          () => reject(new Error(`${operation} timed out after ${timeoutMs}ms.`)),
+          timeoutMs,
+        );
+      }),
+    ]);
+  } finally {
+    if (timeout) clearTimeout(timeout);
+  }
+}
+
+export async function runAdmissionsReviewPreparationCli(
+  argv,
+  dependencies,
+  exit = /** @type {(code: number) => void} */ (process.exit),
+) {
+  try {
+    await runAdmissionsReviewPreparation(argv, dependencies);
+    exit(0);
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : error);
+    exit(1);
+  }
+}
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  void runAdmissionsReviewPreparationCli(process.argv.slice(2));
+}

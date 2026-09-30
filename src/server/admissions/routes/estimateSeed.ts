@@ -1,51 +1,35 @@
 import type { RouteAction } from './actions';
+import {
+  ROUTE_ESTIMATE_OWNER,
+  ROUTE_ESTIMATE_SEED,
+  ROUTE_ESTIMATE_VERSION,
+  type RouteEstimateSeedEntry,
+} from '@/data/admissions/routeEstimateSeed';
 
-export const ROUTE_ESTIMATE_VERSION = 'standard-estimates-2026-07-20-v1';
+export { ROUTE_ESTIMATE_VERSION };
 
 export interface RouteEstimate {
   durationWeeks: number;
   effortPoints: number;
   estimateVersion: string;
   owner: 'Toar admissions editorial';
+  effectiveDate: string;
+  eligibility: string;
   rationale: string;
 }
 
 export function estimateRouteAction(action: RouteAction): RouteEstimate {
+  const entry = resolveEstimateSeedEntry(action);
   const base = {
     estimateVersion: ROUTE_ESTIMATE_VERSION,
-    owner: 'Toar admissions editorial' as const,
+    owner: ROUTE_ESTIMATE_OWNER as 'Toar admissions editorial',
+    effectiveDate: ROUTE_ESTIMATE_SEED.effectiveDate,
+    durationWeeks: entry.durationWeeks,
+    effortPoints: entry.effortPoints,
+    eligibility: entry.eligibility,
+    rationale: entry.rationale,
   };
-
-  switch (action.kind) {
-    case 'psychometric':
-      return {
-        ...base,
-        durationWeeks: action.to - action.from <= 30 ? 8 : 10,
-        effortPoints: 5,
-        rationale: 'Standard preparation and one additional psychometric sitting.',
-      };
-    case 'improve_grade':
-      return {
-        ...base,
-        durationWeeks: action.toGrade - action.fromGrade <= 10 ? 12 : 16,
-        effortPoints: action.toGrade - action.fromGrade <= 10 ? 3 : 4,
-        rationale: 'Standard independent Bagrut grade-improvement preparation.',
-      };
-    case 'expand_units':
-      return {
-        ...base,
-        durationWeeks: 16,
-        effortPoints: 4,
-        rationale: 'Standard preparation for an eligible higher-unit Bagrut subject.',
-      };
-    case 'add_subject':
-      return {
-        ...base,
-        durationWeeks: 28,
-        effortPoints: 5,
-        rationale: 'Standard preparation for one newly added five-unit Bagrut subject.',
-      };
-  }
+  return base;
 }
 
 export function combineRouteEstimates(actions: RouteAction[]): RouteEstimate {
@@ -54,7 +38,31 @@ export function combineRouteEstimates(actions: RouteAction[]): RouteEstimate {
     durationWeeks: estimates.reduce((total, estimate) => total + estimate.durationWeeks, 0),
     effortPoints: estimates.reduce((total, estimate) => total + estimate.effortPoints, 0),
     estimateVersion: ROUTE_ESTIMATE_VERSION,
-    owner: 'Toar admissions editorial',
+    owner: ROUTE_ESTIMATE_OWNER,
+    effectiveDate: ROUTE_ESTIMATE_SEED.effectiveDate,
+    eligibility: estimates.map((estimate) => estimate.eligibility).join(' '),
     rationale: estimates.map((estimate) => estimate.rationale).join(' '),
   };
+}
+
+function resolveEstimateSeedEntry(action: RouteAction): RouteEstimateSeedEntry {
+  const change =
+    action.kind === 'psychometric'
+      ? action.to - action.from
+      : action.kind === 'improve_grade'
+        ? action.toGrade - action.fromGrade
+        : action.kind === 'expand_units'
+          ? action.toUnits - action.fromUnits
+          : undefined;
+  const entry = ROUTE_ESTIMATE_SEED.entries.find(
+    (candidate) =>
+      candidate.actionKind === action.kind &&
+      (change === undefined ||
+        ((candidate.minChange ?? Number.NEGATIVE_INFINITY) <= change &&
+          change <= (candidate.maxChange ?? Number.POSITIVE_INFINITY))),
+  );
+  if (!entry) {
+    throw new Error(`ROUTE_ESTIMATE_MISSING:${action.kind}`);
+  }
+  return entry;
 }

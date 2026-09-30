@@ -73,6 +73,86 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
         </section>
 
         <section className="rounded-[1.75rem] border border-slate-950/10 bg-white p-6 shadow-sm">
+          <h2 className="text-2xl font-black text-slate-950">Formula-backed pair verification</h2>
+          <p className="mt-1 text-sm text-slate-500">
+            Reviewed baseline coverage is immutable. Runtime coverage is activated separately by the
+            persisted weekly authority check.
+          </p>
+          <DefinitionGrid
+            items={[
+              ['In-scope pairs', report.formulaVerification.total],
+              ['Exact', report.formulaVerification.exact],
+              ['Withheld', report.formulaVerification.withheld],
+              ['Stale', report.formulaVerification.stale],
+              ['Blocked', report.formulaVerification.blocked],
+              ['Runtime exact', report.runtimeFormulaVerification.exact],
+              ['Runtime unavailable', report.runtimeFormulaVerification.authorityUnavailable],
+            ]}
+          />
+        </section>
+
+        <section className="rounded-[1.75rem] border border-slate-950/10 bg-white p-6 shadow-sm">
+          <h2 className="text-2xl font-black text-slate-950">Verified admission routes</h2>
+          <p className="mt-1 text-sm text-slate-500">
+            A target is active only when both the exact evaluator and its reviewed action model are
+            ready. These rows contain capability categories only, never applicant scores or subject
+            records.
+          </p>
+          <DefinitionGrid
+            items={[
+              ['Enabled targets', report.admissionRoutes.enabled],
+              ['Withheld targets', report.admissionRoutes.disabled],
+              ['Unsupported targets', report.admissionRoutes.unsupported],
+            ]}
+          />
+          <div className="mt-5 grid gap-3 lg:grid-cols-2">
+            {report.admissionRoutes.rows.map((route) => (
+              <article key={route.programId} className="rounded-2xl bg-slate-50 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <h3 className="font-black text-slate-950">{route.programId}</h3>
+                  <span
+                    className={`rounded-full px-3 py-1 text-xs font-black ${
+                      route.status === 'enabled'
+                        ? 'bg-emerald-100 text-emerald-900'
+                        : 'bg-amber-100 text-amber-900'
+                    }`}
+                  >
+                    {route.status}
+                  </span>
+                </div>
+                <dl className="mt-3 grid gap-2 text-sm text-slate-700">
+                  <div>
+                    <dt className="inline font-bold">Pair: </dt>
+                    <dd className="inline">{route.pairId ?? 'none'}</dd>
+                  </div>
+                  <div>
+                    <dt className="inline font-bold">Evaluator: </dt>
+                    <dd className="inline">{route.evaluatorCapability}</dd>
+                  </div>
+                  <div>
+                    <dt className="inline font-bold">Action model: </dt>
+                    <dd className="inline">{route.actionCapabilityStatus}</dd>
+                  </div>
+                  <div>
+                    <dt className="inline font-bold">Verification: </dt>
+                    <dd className="inline">{route.verificationMode ?? 'none'}</dd>
+                  </div>
+                  <div>
+                    <dt className="inline font-bold">Actions: </dt>
+                    <dd className="inline">{route.supportedActionKinds.join(', ') || 'none'}</dd>
+                  </div>
+                </dl>
+                {route.missingCapabilities.length > 0 ? (
+                  <p className="mt-3 text-xs font-semibold text-amber-900">
+                    Missing: {route.missingCapabilities.join(', ')}
+                  </p>
+                ) : null}
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="rounded-[1.75rem] border border-slate-950/10 bg-white p-6 shadow-sm">
           <h2 className="text-2xl font-black text-slate-950">Admissions decision readiness</h2>
           <DefinitionGrid
             items={[
@@ -279,11 +359,70 @@ export default function DataHealthDashboard({ adminEmail, report }: DataHealthDa
         </section>
 
         <section>
+          <Panel title="Admission alert operations">
+            <DefinitionGrid
+              items={[
+                ['Current admissions cycle', report.admissionAlerts.currentCycle],
+                ['Stuck transition claims (15+ minutes)', report.admissionAlerts.stuckTransitions],
+                ['Stuck delivery claims (15+ minutes)', report.admissionAlerts.stuckDeliveries],
+                [
+                  'Active subscriptions from prior cycles',
+                  report.admissionAlerts.staleCycleSubscriptions,
+                ],
+                ['Webhook events beyond 30 days', report.admissionAlerts.expiredWebhookEvents],
+                [
+                  'Subscriptions beyond cycle + 12 months',
+                  report.admissionAlerts.overdueSubscriptions,
+                ],
+                ['Invalid subscription cycles', report.admissionAlerts.invalidCycles],
+                [
+                  'Retention status',
+                  report.admissionAlerts.retentionStatus === 'within_policy'
+                    ? 'Within policy'
+                    : 'Cleanup required',
+                ],
+              ]}
+            />
+            <p className="mt-3 text-sm text-slate-600">
+              Aggregate counts only. A claim older than 15 minutes needs investigation; this does
+              not prove provider acceptance or recovery. Retention counts report stored rows, not
+              whether cleanup is scheduled.
+            </p>
+            {(['subscriptions', 'transitions', 'deliveries'] as const).map((kind) => (
+              <div className="mt-4" key={kind}>
+                <h3 className="font-semibold capitalize">{kind}</h3>
+                {Object.keys(report.admissionAlerts[kind]).length === 0 ? (
+                  <p className="mt-1 text-sm text-slate-600">No rows</p>
+                ) : (
+                  <DefinitionGrid items={Object.entries(report.admissionAlerts[kind])} />
+                )}
+              </div>
+            ))}
+          </Panel>
+        </section>
+
+        <section>
           <Panel title="Admissions publication">
             <DefinitionGrid
               items={[
                 ['Pending releases', report.publication.pendingReleaseCount],
                 ['Failed releases', report.publication.failedReleaseCount],
+                [
+                  'Proof releases published',
+                  report.publication.operationalProof.publishedReleaseCount,
+                ],
+                ['Proof releases pending', report.publication.operationalProof.pendingReleaseCount],
+                ['Proof releases failed', report.publication.operationalProof.failedReleaseCount],
+                [
+                  'Operational proof matrix',
+                  report.publication.operationalProof.matrixComplete
+                    ? 'Complete'
+                    : `${
+                        report.publication.operationalProof.scenarios.filter(
+                          (scenario) => scenario.status === 'published',
+                        ).length
+                      } / ${report.publication.operationalProof.scenarios.length} complete`,
+                ],
               ]}
             />
             {report.publication.activeRelease ? (
@@ -422,7 +561,7 @@ function IssueList({ items }: { items: string[] }) {
   );
 }
 
-function DefinitionGrid({ items }: { items: Array<[string, number]> }) {
+function DefinitionGrid({ items }: { items: Array<[string, number | string]> }) {
   return (
     <dl className="mt-3 grid grid-cols-2 gap-3">
       {items.map(([label, value]) => (
@@ -505,6 +644,24 @@ function AdmissionsEvidenceRows({
 
 function buildCriticalItems(report: DataHealthReadyReport): string[] {
   return [
+    ...(
+      [
+        ['Stuck alert transitions', report.admissionAlerts.stuckTransitions],
+        ['Stuck alert deliveries', report.admissionAlerts.stuckDeliveries],
+        ['Unknown alert acceptance', report.admissionAlerts.deliveries.acceptance_unknown ?? 0],
+        ['Failed alert transitions', report.admissionAlerts.transitions.failed ?? 0],
+        ['Failed alert deliveries', report.admissionAlerts.deliveries.failed ?? 0],
+        ['Stale-cycle alert subscriptions', report.admissionAlerts.staleCycleSubscriptions],
+        [
+          'Overdue alert retention rows',
+          report.admissionAlerts.expiredWebhookEvents +
+            report.admissionAlerts.overdueSubscriptions +
+            report.admissionAlerts.invalidCycles,
+        ],
+      ] as const
+    )
+      .filter(([, count]) => count > 0)
+      .map(([label, count]) => `${label}: ${count}`),
     ...report.readiness.issues,
     ...report.coverage.missingRequirementSources.map(
       (row) => `Missing source URL for ${row.admissionRequirementId}`,
@@ -521,6 +678,11 @@ function buildCriticalItems(report: DataHealthReadyReport): string[] {
       .map((row) => `Source freshness ${row.status}: ${row.sourceId}`),
     ...(report.publication.failedReleaseCount > 0
       ? [`Failed admissions publications: ${report.publication.failedReleaseCount}`]
+      : []),
+    ...(!report.formulaVerification.isComplete
+      ? [
+          `Formula verification incomplete: ${report.formulaVerification.exact}/${report.formulaVerification.total} exact`,
+        ]
       : []),
     ...(report.reviewQueue.oldestPendingItem
       ? [`Oldest pending review ${report.reviewQueue.oldestPendingItem.id}`]
@@ -571,6 +733,8 @@ function evidenceModeLabel(
       return 'Blocked official';
     case 'stale':
       return 'Stale official';
+    case 'authority_unavailable':
+      return 'Official proof incomplete';
     case 'score_only':
       return 'Score only';
     case 'estimated':

@@ -1,0 +1,116 @@
+[
+  {
+    "fixtureId": "occupational_therapy__bgu:eligible:2026-2027",
+    "sourceFingerprint": "sha256:8a7e844250670d84e63bc0be35cabbca1ad215c2a4a635b42d46b679206aa1fe",
+    "actualScore": 691,
+    "actualVerdict": "eligible_to_apply",
+    "checkedAt": "2026-09-28T05:37:52.283Z",
+    "rawResponseMetadata": [
+      {
+        "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=486&p_pat1=1&p_degree_level=1",
+        "status": 200,
+        "contentType": "application/json"
+      },
+      {
+        "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem",
+        "status": 200,
+        "contentType": "text/html; charset=ISO-8859-8-I"
+      }
+    ]
+  },
+  {
+    "fixtureId": "occupational_therapy__bgu:below:2026-2027",
+    "sourceFingerprint": "sha256:8a7e844250670d84e63bc0be35cabbca1ad215c2a4a635b42d46b679206aa1fe",
+    "actualScore": 690,
+    "actualVerdict": "below",
+    "checkedAt": "2026-09-28T05:37:52.456Z",
+    "rawResponseMetadata": [
+      {
+        "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=486&p_pat1=1&p_degree_level=1",
+        "status": 200,
+        "contentType": "application/json"
+      },
+      {
+        "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem",
+        "status": 200,
+        "contentType": "text/html; charset=ISO-8859-8-I"
+      }
+    ]
+  },
+  {
+    "fixtureId": "physiotherapy__bgu:eligible:2026-2027",
+    "sourceFingerprint": "sha256:87af7c3955815c3bb763aaf9a832ca05404ba4c78283de68d483ce9ad3769720",
+    "actualScore": 733,
+    "actualVerdict": "eligible_to_apply",
+    "checkedAt": "2026-09-28T05:37:52.624Z",
+    "rawResponseMetadata": [
+      {
+        "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=473&p_pat1=1&p_degree_level=1",
+        "status": 200,
+        "contentType": "application/json"
+      },
+      {
+        "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem",
+        "status": 200,
+        "contentType": "text/html; charset=ISO-8859-8-I"
+      }
+    ]
+  },
+  {
+    "fixtureId": "physiotherapy__bgu:below:2026-2027",
+    "sourceFingerprint": "sha256:87af7c3955815c3bb763aaf9a832ca05404ba4c78283de68d483ce9ad3769720",
+    "actualScore": 732,
+    "actualVerdict": "below",
+    "checkedAt": "2026-09-28T05:37:52.798Z",
+    "rawResponseMetadata": [
+      {
+        "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=473&p_pat1=1&p_degree_level=1",
+        "status": 200,
+        "contentType": "application/json"
+      },
+      {
+        "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem",
+        "status": 200,
+        "contentType": "text/html; charset=ISO-8859-8-I"
+      }
+    ]
+  },
+  {
+    "fixtureId": "occupational_therapy__bgu:score_below:2026-2027",
+    "sourceFingerprint": "sha256:8a7e844250670d84e63bc0be35cabbca1ad215c2a4a635b42d46b679206aa1fe",
+    "actualScore": 514,
+    "actualVerdict": "below",
+    "checkedAt": "2026-09-28T05:37:52.970Z",
+    "rawResponseMetadata": [
+      {
+        "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=486&p_pat1=1&p_degree_level=1",
+        "status": 200,
+        "contentType": "application/json"
+      },
+      {
+        "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem",
+        "status": 200,
+        "contentType": "text/html; charset=ISO-8859-8-I"
+      }
+    ]
+  },
+  {
+    "fixtureId": "physiotherapy__bgu:score_below:2026-2027",
+    "sourceFingerprint": "sha256:87af7c3955815c3bb763aaf9a832ca05404ba4c78283de68d483ce9ad3769720",
+    "actualScore": 556,
+    "actualVerdict": "below",
+    "checkedAt": "2026-09-28T05:37:53.131Z",
+    "rawResponseMetadata": [
+      {
+        "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=473&p_pat1=1&p_degree_level=1",
+        "status": 200,
+        "contentType": "application/json"
+      },
+      {
+        "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem",
+        "status": 200,
+        "contentType": "text/html; charset=ISO-8859-8-I"
+      }
+    ]
+  }
+]

@@ -1,0 +1,68 @@
+{
+  "runKey": "2026-W39",
+  "checkedAt": "2026-09-27T12:24:20.195Z",
+  "releaseKind": "canonical_bootstrap",
+  "proofScenario": null,
+  "summary": {
+    "status": "reviewable",
+    "candidateCount": 1,
+    "excludedCount": 0,
+    "freshCount": 0,
+    "blockedCount": 0,
+    "failedCount": 0
+  },
+  "candidates": [
+    {
+      "id": "technion-architecture-live:admission_cutoff",
+      "target": {
+        "institutionId": "technion",
+        "programId": "architecture",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 87,
+      "after": 85,
+      "sourceProof": {
+        "sourceId": "technion-architecture-live",
+        "digest": "sha256:e39fe25f2d452aaf7f4f6834f2e94cd178c8f827efd81a43f9380f0ebbfee17a",
+        "excerpt": "Official technion-architecture-live admission cutoff: 85.",
+        "url": "https://admissions.technion.ac.il/calculator/",
+        "proofType": "exact_official"
+      },
+      "institutionName": "Technion"
+    }
+  ],
+  "excluded": [],
+  "reviewMetadata": {
+    "version": 1,
+    "runKey": "2026-W39",
+    "excludedCandidateIds": []
+  },
+  "manifest": {
+    "version": 2,
+    "releaseKind": "canonical_bootstrap",
+    "changes": [
+      {
+        "target": {
+          "institutionId": "technion",
+          "programId": "architecture",
+          "cycle": "2027"
+        },
+        "ruleKind": "admission_cutoff",
+        "before": 87,
+        "after": 85,
+        "effectiveFrom": "2026-09-27",
+        "sourceProofs": [
+          {
+            "sourceId": "technion-architecture-live",
+            "digest": "sha256:e39fe25f2d452aaf7f4f6834f2e94cd178c8f827efd81a43f9380f0ebbfee17a",
+            "excerpt": "Official technion-architecture-live admission cutoff: 85.",
+            "url": "https://admissions.technion.ac.il/calculator/",
+            "proofType": "exact_official"
+          }
+        ]
+      }
+    ]
+  },
+  "markdown": "# Admissions review run 2026-W39\n\nChecked at: 2026-09-27T12:24:20.195Z\nStatus: reviewable\n\n## Included changes\n\n- **Technion / architecture** — 87 → 85\n  - Candidate id: technion-architecture-live:admission_cutoff\n  - Source: https://admissions.technion.ac.il/calculator/\n  - Evidence: Official technion-architecture-live admission cutoff: 85.\n\n## Excluded investigation items\n\nNone.\n"
+}

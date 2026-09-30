@@ -58,7 +58,7 @@ describe('catalogue admissions evidence coverage', () => {
     );
   });
 
-  it('promotes officially verified Technion programme thresholds to decision coverage', () => {
+  it('keeps Technion threshold coverage unavailable until the qualified weekly check runs', () => {
     const entries = reconcileCatalogueAdmissionsEvidence({
       programs: staticPrograms,
       institutions: staticInstitutions,
@@ -69,16 +69,16 @@ describe('catalogue admissions evidence coverage', () => {
         expect.objectContaining({
           programId: 'technion_cs',
           institutionId: 'technion',
-          capability: 'estimated',
-          status: 'decision_rule_available',
+          capability: 'authority_unavailable',
+          status: 'verification_incomplete',
           trackingSource: 'monday_evidence',
           missingData: [],
         }),
         expect.objectContaining({
           programId: 'technion_datascience',
           institutionId: 'technion',
-          capability: 'estimated',
-          status: 'decision_rule_available',
+          capability: 'authority_unavailable',
+          status: 'verification_incomplete',
           trackingSource: 'monday_evidence',
           missingData: [],
         }),
@@ -86,7 +86,7 @@ describe('catalogue admissions evidence coverage', () => {
     );
   });
 
-  it('treats Technion medicine as covered manual-gate work once the invitation threshold is verified', () => {
+  it('keeps Technion medicine coverage unavailable until the qualified weekly check runs', () => {
     const entries = reconcileCatalogueAdmissionsEvidence({
       programs: staticPrograms,
       institutions: staticInstitutions,
@@ -97,8 +97,8 @@ describe('catalogue admissions evidence coverage', () => {
         expect.objectContaining({
           programId: 'technion_medicine',
           institutionId: 'technion',
-          capability: 'manual_gate',
-          status: 'manual_or_eligible',
+          capability: 'authority_unavailable',
+          status: 'verification_incomplete',
           trackingSource: 'monday_evidence',
           missingData: [],
         }),
@@ -106,7 +106,7 @@ describe('catalogue admissions evidence coverage', () => {
     );
   });
 
-  it('treats Colman catalogue programs as covered manual-or-eligible work once official programme pages are verified', () => {
+  it('covers the formula-backed Colman pair while preserving other requirements-only programs', () => {
     const entries = reconcileCatalogueAdmissionsEvidence({
       programs: staticPrograms,
       institutions: staticInstitutions,
@@ -205,7 +205,7 @@ describe('catalogue admissions evidence coverage', () => {
     expect(staticPrograms.some((program) => program.id === 'ono_psychology')).toBe(false);
   });
 
-  it('treats a BGU programme as decision-capable once its official threshold is verified', () => {
+  it('keeps BGU formula pairs unavailable until the qualified weekly check runs', () => {
     const entries = reconcileCatalogueAdmissionsEvidence({
       programs: staticPrograms,
       institutions: staticInstitutions,
@@ -216,48 +216,48 @@ describe('catalogue admissions evidence coverage', () => {
         expect.objectContaining({
           programId: 'bgu_cs',
           institutionId: 'bgu',
-          capability: 'estimated',
-          status: 'decision_rule_available',
+          capability: 'authority_unavailable',
+          status: 'verification_incomplete',
           trackingSource: 'monday_evidence',
           missingData: [],
         }),
         expect.objectContaining({
           programId: 'bgu_ee',
           institutionId: 'bgu',
-          capability: 'estimated',
-          status: 'decision_rule_available',
+          capability: 'authority_unavailable',
+          status: 'verification_incomplete',
           trackingSource: 'monday_evidence',
           missingData: [],
         }),
         expect.objectContaining({
           programId: 'bgu_biology',
           institutionId: 'bgu',
-          capability: 'estimated',
-          status: 'decision_rule_available',
+          capability: 'authority_unavailable',
+          status: 'verification_incomplete',
           trackingSource: 'monday_evidence',
           missingData: [],
         }),
         expect.objectContaining({
           programId: 'bgu_socialwork',
           institutionId: 'bgu',
-          capability: 'estimated',
-          status: 'decision_rule_available',
+          capability: 'authority_unavailable',
+          status: 'verification_incomplete',
           trackingSource: 'monday_evidence',
           missingData: [],
         }),
         expect.objectContaining({
           programId: 'bgu_nursing',
           institutionId: 'bgu',
-          capability: 'manual_gate',
-          status: 'manual_or_eligible',
+          capability: 'authority_unavailable',
+          status: 'verification_incomplete',
           trackingSource: 'monday_evidence',
           missingData: [],
         }),
         expect.objectContaining({
           programId: 'bgu_medicine',
           institutionId: 'bgu',
-          capability: 'manual_gate',
-          status: 'manual_or_eligible',
+          capability: 'authority_unavailable',
+          status: 'verification_incomplete',
           trackingSource: 'monday_evidence',
           missingData: [],
         }),

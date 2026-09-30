@@ -63,6 +63,35 @@ const defaultProps = {
 };
 
 describe('LandingPage calculator', () => {
+  it('submits Biology without unused generic scores for its official alternative routes', () => {
+    const onCalculate = vi.fn();
+    render(
+      <LandingPage
+        {...defaultProps}
+        onCalculate={onCalculate}
+        programs={[program('bgu_biology', 'ביולוגיה')]}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'חשב סיכויים ←' }));
+    expect(onCalculate).toHaveBeenCalledWith(undefined, undefined, 'bgu_biology');
+  });
+  it.each(['ee', 'bgu_ee', 'me', 'bgu_me', 'bgu_industrial'])(
+    'submits %s with psychometric and no generic Bagrut average',
+    (degreeId) => {
+      const onCalculate = vi.fn();
+      render(
+        <LandingPage
+          {...defaultProps}
+          onCalculate={onCalculate}
+          programs={[program(degreeId, 'הנדסה')]}
+        />,
+      );
+      fireEvent.change(screen.getByLabelText(/ציון פסיכומטרי/), { target: { value: '700' } });
+      fireEvent.click(screen.getByRole('button', { name: 'חשב סיכויים ←' }));
+      expect(onCalculate).toHaveBeenCalledWith(700, undefined, degreeId);
+    },
+  );
+
   it('keeps initials separate from the logout action', () => {
     const onSignOut = vi.fn();
     render(
@@ -108,7 +137,7 @@ describe('LandingPage calculator', () => {
       ),
     );
 
-    fireEvent.change(screen.getByLabelText('ציון פסיכומטרי'), { target: { value: '700' } });
+    fireEvent.change(screen.getByLabelText(/ציון פסיכומטרי/), { target: { value: '700' } });
     fireEvent.change(screen.getByLabelText('ממוצע בגרות'), { target: { value: '100' } });
     fireEvent.click(screen.getByRole('button', { name: 'חשב סיכויים ←' }));
 

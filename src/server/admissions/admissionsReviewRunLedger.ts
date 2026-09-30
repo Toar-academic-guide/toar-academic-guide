@@ -12,12 +12,14 @@ import type { AdmissionsReviewRun } from './weeklyReviewRun';
 export interface AdmissionsReviewRunRecord {
   runKey: string;
   sourceDigest: string;
+  releaseKind: AdmissionsReviewRun['releaseKind'];
+  proofScenario: string | null;
   status: 'reviewable' | 'no_changes';
   candidateCount: number;
   exclusionCount: number;
   pullRequestNumber: number | null;
   pullRequestUrl: string | null;
-  slackStatus: 'pending' | 'sent' | 'failed';
+  slackStatus: 'pending' | 'sent' | 'failed' | 'acceptance_unknown';
   slackError: string | null;
   createdAt: Date;
   updatedAt: Date;
@@ -33,7 +35,7 @@ export interface AdmissionsReviewRunLedgerRepository {
   }): Promise<void>;
   setSlackStatus(input: {
     runKey: string;
-    slackStatus: 'sent' | 'failed';
+    slackStatus: 'sent' | 'failed' | 'acceptance_unknown';
     slackError: string | null;
   }): Promise<void>;
 }
@@ -44,10 +46,19 @@ export function createAdmissionsReviewRunLedger(
   return {
     getRun: repository.find.bind(repository),
     async recordPreparedRun(run: AdmissionsReviewRun): Promise<void> {
+      const existing = await repository.find(run.runKey);
+      if (
+        existing &&
+        (existing.releaseKind !== run.releaseKind || existing.proofScenario !== run.proofScenario)
+      ) {
+        throw new Error(`Review run ${run.runKey} cannot change its release identity.`);
+      }
       const now = new Date();
       await repository.upsertPrepared({
         runKey: run.runKey,
         sourceDigest: reviewRunDigest(run),
+        releaseKind: run.releaseKind,
+        proofScenario: run.proofScenario,
         status: run.summary.status,
         candidateCount: run.summary.candidateCount,
         exclusionCount: run.summary.excludedCount,
@@ -67,6 +78,13 @@ export function createAdmissionsReviewRunLedger(
       await repository.setSlackStatus({
         runKey: input.runKey,
         slackStatus: 'failed',
+        slackError: safeError(input.error),
+      });
+    },
+    async recordSlackAcceptanceUnknown(input: { runKey: string; error: string }): Promise<void> {
+      await repository.setSlackStatus({
+        runKey: input.runKey,
+        slackStatus: 'acceptance_unknown',
         slackError: safeError(input.error),
       });
     },
@@ -97,6 +115,8 @@ export function createDrizzleAdmissionsReviewRunLedgerRepository(
           target: admissionReviewRuns.runKey,
           set: {
             sourceDigest: record.sourceDigest,
+            releaseKind: record.releaseKind,
+            proofScenario: record.proofScenario,
             status: record.status,
             candidateCount: record.candidateCount,
             exclusionCount: record.exclusionCount,

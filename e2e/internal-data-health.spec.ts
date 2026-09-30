@@ -21,6 +21,9 @@ test.describe('internal data health smoke', () => {
     await page.goto('/internal/data-health');
 
     await expect(page.getByRole('heading', { name: /data health/i })).toBeVisible();
+    if (process.env.OPS_DATABASE_URL) {
+      await expect(page.getByRole('heading', { name: /data health unavailable/i })).toBeHidden();
+    }
     if (await page.getByRole('heading', { name: /data health unavailable/i }).isVisible()) {
       await expect(
         page.getByText(/configure the read-only operational database connection/i),
@@ -34,6 +37,8 @@ test.describe('internal data health smoke', () => {
     ).toBeVisible();
     await expect(page.getByRole('heading', { name: /source coverage/i })).toBeVisible();
     await expect(page.getByRole('heading', { name: /source freshness/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /admission alert operations/i })).toBeVisible();
+    await expect(page.getByText('Current admissions cycle', { exact: true })).toBeVisible();
     await expect(page.getByRole('heading', { name: /ingestion pipeline/i })).toBeVisible();
     await expect(page.getByRole('heading', { name: /review queue/i })).toBeVisible();
   });

@@ -9,6 +9,19 @@ import type { DataHealthReadyReport } from '@/server/data-health/queries';
 function reportWithRisks(): DataHealthReadyReport {
   return {
     status: 'ready',
+    admissionAlerts: {
+      currentCycle: '2026',
+      subscriptions: {},
+      transitions: {},
+      deliveries: {},
+      stuckTransitions: 0,
+      stuckDeliveries: 0,
+      staleCycleSubscriptions: 0,
+      expiredWebhookEvents: 0,
+      overdueSubscriptions: 0,
+      invalidCycles: 0,
+      retentionStatus: 'within_policy',
+    },
     generatedAt: '2026-06-24T18:00:00.000Z',
     readiness: {
       isReady: false,
@@ -22,6 +35,58 @@ function reportWithRisks(): DataHealthReadyReport {
         sourceUrls: 2,
         universityCalculatorConfigs: 7,
       },
+    },
+    formulaVerification: {
+      total: 135,
+      exact: 3,
+      withheld: 132,
+      stale: 0,
+      blocked: 0,
+      isComplete: false,
+      totalsByInstitution: {
+        tau: { total: 35, exact: 3, withheld: 32, stale: 0, blocked: 0 },
+        huji: { total: 29, exact: 0, withheld: 29, stale: 0, blocked: 0 },
+        bgu: { total: 29, exact: 0, withheld: 29, stale: 0, blocked: 0 },
+        haifa: { total: 27, exact: 0, withheld: 27, stale: 0, blocked: 0 },
+        technion: { total: 14, exact: 0, withheld: 14, stale: 0, blocked: 0 },
+        colman: { total: 1, exact: 0, withheld: 1, stale: 0, blocked: 0 },
+      },
+    },
+    runtimeFormulaVerification: {
+      total: 135,
+      exact: 3,
+      stale: 0,
+      blocked: 0,
+      authorityUnavailable: 132,
+    },
+    admissionRoutes: {
+      enabled: 2,
+      disabled: 0,
+      unsupported: 0,
+      rows: [
+        {
+          programId: 'tau_cs',
+          pairId: 'tau_cs__tau',
+          status: 'enabled',
+          evaluatorCapability: 'exact',
+          actionCapabilityStatus: 'ready',
+          verificationMode: 'official_finalist_replay',
+          supportedActionKinds: ['psychometric'],
+          requiredInputs: ['psychometric', 'tau_bagrut_average'],
+          missingCapabilities: [],
+        },
+        {
+          programId: 'bgu_cs',
+          pairId: 'bgu_cs__bgu',
+          status: 'enabled',
+          evaluatorCapability: 'exact',
+          actionCapabilityStatus: 'ready',
+          verificationMode: 'official_finalist_replay',
+          supportedActionKinds: ['psychometric', 'improve_grade'],
+          requiredInputs: ['psychometric', 'bgu_bagrut_average'],
+          missingCapabilities: [],
+        },
+      ],
     },
     coverage: {
       missingRequirementSourceCount: 1,
@@ -89,6 +154,7 @@ function reportWithRisks(): DataHealthReadyReport {
           freshnessStatus: 'fresh',
           blockedReason: null,
           requiredInputs: [],
+          formulaPairScope: 'in_scope',
         },
         {
           programId: 'haifa_cs',
@@ -104,6 +170,7 @@ function reportWithRisks(): DataHealthReadyReport {
           freshnessStatus: 'fresh',
           blockedReason: null,
           requiredInputs: ['psychometric_math', 'psychometric_verbal', 'psychometric_english'],
+          formulaPairScope: 'in_scope',
         },
         {
           programId: 'tau_law',
@@ -119,6 +186,7 @@ function reportWithRisks(): DataHealthReadyReport {
           freshnessStatus: null,
           blockedReason: null,
           requiredInputs: [],
+          formulaPairScope: null,
         },
       ],
     },
@@ -216,6 +284,17 @@ function reportWithRisks(): DataHealthReadyReport {
       },
       pendingReleaseCount: 1,
       failedReleaseCount: 2,
+      operationalProof: {
+        publishedReleaseCount: 0,
+        pendingReleaseCount: 0,
+        failedReleaseCount: 0,
+        matrixComplete: false,
+        scenarios: [
+          { scenario: 'proof-plan001-20260820', status: 'not_started' },
+          { scenario: 'proof-plan001-failure-20260820', status: 'not_started' },
+          { scenario: 'proof-plan001-corrective-20260820', status: 'not_started' },
+        ],
+      },
     },
     mondayEvidence: {
       totalItems: 212,
@@ -270,6 +349,8 @@ describe('DataHealthDashboard', () => {
 
     expect(screen.getByRole('heading', { name: /data health/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /catalogue readiness/i })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /formula-backed pair verification/i })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /verified admission routes/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /admissions decision readiness/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /^admissions evidence$/i })).toBeTruthy();
     expect(
@@ -278,6 +359,7 @@ describe('DataHealthDashboard', () => {
     expect(screen.getByRole('heading', { name: /source coverage/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /source freshness/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /admissions publication/i })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /admission alert operations/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /ingestion pipeline/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /review queue/i })).toBeTruthy();
     expect(screen.getByText('Non-catalogue evidence')).toBeTruthy();
