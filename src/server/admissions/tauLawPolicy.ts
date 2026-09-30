@@ -1,4 +1,7 @@
-import type { AdmissionsEvaluationInput } from '@/types/admissionsEvaluation';
+import type {
+  AdmissionsEvaluationInput,
+  AdmissionsRequiredInput,
+} from '@/types/admissionsEvaluation';
 
 export const TAU_LAW_REQUIREMENTS_URL =
   'https://go.tau.ac.il/he/law/ba/law?v=admission-requirements';
@@ -8,7 +11,9 @@ export function evaluateTauLawGates(
 ):
   | { state: 'pass'; unmetRequirements: [] }
   | { state: 'below'; unmetRequirements: string[] }
-  | { state: 'needs_input'; requiredInputs: 'psychometric_english'[] } {
+  | { state: 'needs_input'; requiredInputs: AdmissionsRequiredInput[] } {
+  if (input.psychometric === undefined)
+    return { state: 'needs_input', requiredInputs: ['psychometric_overall'] };
   const psychometricEnglish = input.extraInputs?.psychometricEnglish;
   if (typeof psychometricEnglish !== 'number') {
     return { state: 'needs_input', requiredInputs: ['psychometric_english'] };

@@ -3,6 +3,7 @@ import type {
   AdmissionsRequiredInput,
 } from '@/types/admissionsEvaluation';
 import { TAU_DIGITAL_SCIENCES_REQUIREMENTS_URL } from '@/data/admissions/tauProgramVerification';
+import { bagrutExamSubjects } from '@/lib/bagrutSubjectRecord';
 
 export const TAU_DIGITAL_SCIENCES_PROGRAM_URL = TAU_DIGITAL_SCIENCES_REQUIREMENTS_URL;
 
@@ -46,6 +47,7 @@ export function evaluateTauDigitalSciencesGates(
 ): TauDigitalSciencesGateResult {
   const extraInputs = input.extraInputs;
   const missingInputs: AdmissionsRequiredInput[] = [];
+  if (input.psychometric === undefined) missingInputs.push('psychometric_overall');
   if (extraInputs?.psychometricEnglish === undefined) {
     missingInputs.push('psychometric_english');
   }
@@ -55,6 +57,7 @@ export function evaluateTauDigitalSciencesGates(
 
   if (
     missingInputs.length > 0 ||
+    input.psychometric === undefined ||
     extraInputs?.psychometricEnglish === undefined ||
     !extraInputs.bagrutSubjectRecord
   ) {
@@ -66,7 +69,9 @@ export function evaluateTauDigitalSciencesGates(
   }
 
   const record = extraInputs.bagrutSubjectRecord;
-  const subjects = new Map(record.subjects.map((subject) => [subject.subjectId, subject]));
+  const subjects = new Map(
+    bagrutExamSubjects(record).map((subject) => [subject.subjectId, subject]),
+  );
   const mathematics = subjects.get('mathematics');
   const physics = subjects.get('physics');
   const unmetRequirements: string[] = [];

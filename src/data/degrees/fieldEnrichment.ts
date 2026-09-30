@@ -214,7 +214,6 @@ export const PROGRAM_FIELD_MAP: Record<string, string> = {
   tau_accounting: 'accounting',
   huji_accounting: 'accounting',
   bgu_accounting: 'accounting',
-  tau_infosystems: 'infoSystems',
 
   // ── New specialised programs ───────────────────────────────────────────────
   hit_visual_comm: 'graphicDesign',
@@ -529,12 +528,7 @@ export const FIELD_ENRICHMENT: Record<string, FieldEnrichment> = {
     ],
     advancedDegreesSteps:
       'MBA עם התמחות בטכנולוגיה או M.Sc. ב-Information Systems מחזקים תפקידי ניהול. הסמכות PMP ו-Scrum Master נפוצות.',
-    programIds: [
-      'tau_infosystems',
-      'haifa_infosystems',
-      'reichman_infosystems',
-      'colmgmt_infosystems',
-    ],
+    programIds: ['haifa_infosystems', 'reichman_infosystems', 'colmgmt_infosystems'],
   },
 
   biology: {

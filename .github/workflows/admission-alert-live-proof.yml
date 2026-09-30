@@ -1,0 +1,72 @@
+name: Isolated Admission Alert Email Proof
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_send:
+        description: Send one labelled TAU and one BGU test email to the approved test recipient
+        type: boolean
+        required: true
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: admission-alert-live-proof
+  cancel-in-progress: false
+
+jobs:
+  proof:
+    if: ${{ github.ref == 'refs/heads/main' && inputs.confirm_send && github.run_attempt == 1 }}
+    runs-on: ubuntu-latest
+    environment: admissions-publication
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: admission_alert_live_proof
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d admission_alert_live_proof"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      CI: true
+      CATALOGUE_SOURCE_MODE: database
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/admission_alert_live_proof
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Create disposable roles and Auth contract
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql --host localhost --username postgres --dbname admission_alert_live_proof --set ON_ERROR_STOP=1 <<'SQL'
+          CREATE ROLE anon NOLOGIN;
+          CREATE ROLE authenticated NOLOGIN;
+          CREATE ROLE app_runtime NOLOGIN;
+          CREATE ROLE ops_readonly NOLOGIN;
+          SQL
+          psql --host localhost --username postgres --dbname admission_alert_live_proof --set ON_ERROR_STOP=1 --file scripts/disposable-auth-schema.sql
+      - name: Migrate and seed only the disposable database
+        run: |
+          npm run db:migrate
+          npm run db:seed
+      - name: Send the two approved isolated test emails
+        env:
+          ALERT_DB_INTEGRATION: '1'
+          ALERT_LIVE_PROOF: '1'
+          ADMISSION_ALERT_RESEND_API_KEY: ${{ secrets.ADMISSION_ALERT_RESEND_API_KEY }}
+        run: npx vitest run src/server/admission-alerts/lifecycleCompletion.integration.test.ts -t 'prepares (tau|bgu) without storing its token' --retry=0 --bail=1

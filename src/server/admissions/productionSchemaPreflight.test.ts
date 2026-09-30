@@ -12,20 +12,285 @@ import {
 } from './productionSchemaPreflight';
 
 describe('production admissions schema preflight', () => {
+  it('recognizes the deployed profile admissions-input migration before publishing cutoffs', () => {
+    const snapshot = makeSnapshot();
+    snapshot.migrationHistory = snapshot.migrationHistory.map((migration) =>
+      migration.name === 'profile_admissions_inputs'
+        ? {
+            version: '20260927081154',
+            name: 'profile_admissions_inputs',
+            statementFingerprint: '7a8c79303c9c4110e663e729df123fc1',
+          }
+        : migration,
+    );
+    snapshot.migrationHistory.find(
+      (migration) => migration.name === 'alert_transition_recovery',
+    )!.version = '20260929000000';
+    snapshot.migrationHistory.find(
+      (migration) => migration.name === 'alert_delivery_recovery',
+    )!.version = '20260929000001';
+    snapshot.migrationHistory.find(
+      (migration) => migration.name === 'alert_webhooks_unsubscribe',
+    )!.version = '20260929000002';
+    snapshot.migrationHistory.find(
+      (migration) => migration.name === 'alert_lifecycle_completion',
+    )!.version = '20260929000003';
+    if (!snapshot.tables.user_profiles.columns.includes('admissions_inputs')) {
+      snapshot.tables.user_profiles.columns.push('admissions_inputs');
+    }
+    snapshot.tables.user_profiles.columnTypes.admissions_inputs = 'jsonb';
+
+    expect(assessProductionSchema(snapshot)).toMatchObject({
+      status: 'current',
+      appliedThrough: '0035',
+      pendingMigrations: [],
+      issues: [],
+    });
+  });
+
+  it('requires the applied admissions-input column to exist as JSONB', () => {
+    const missing = makeSnapshot();
+    missing.tables.user_profiles.columns = missing.tables.user_profiles.columns.filter(
+      (column) => column !== 'admissions_inputs',
+    );
+    delete missing.tables.user_profiles.columnTypes.admissions_inputs;
+    expect(assessProductionSchema(missing).issues).toContainEqual(
+      expect.objectContaining({
+        code: 'missing_column',
+        object: 'table:user_profiles.column:admissions_inputs',
+      }),
+    );
+
+    const wrongType = makeSnapshot();
+    wrongType.tables.user_profiles.columnTypes.admissions_inputs = 'text';
+    expect(assessProductionSchema(wrongType).issues).toContainEqual(
+      expect.objectContaining({
+        code: 'column_type_mismatch',
+        object: 'table:user_profiles.column:admissions_inputs',
+      }),
+    );
+  });
+
   it('accepts a fully current schema', () => {
     const report = assessProductionSchema(makeSnapshot());
 
     expect(report).toMatchObject({
       status: 'current',
       safeToMigrate: false,
-      appliedThrough: '0022',
+      appliedThrough: '0035',
       pendingMigrations: [],
       issues: [],
     });
   });
 
+  it('allows the existing restricted schema to migrate to dashboard column reads', () => {
+    const snapshot = makeSnapshot({ appliedCount: FORWARD_PRODUCTION_MIGRATIONS.length - 1 });
+    expect(assessProductionSchema(snapshot)).toMatchObject({
+      status: 'migration_required',
+      safeToMigrate: true,
+      appliedThrough: '0034',
+      pendingMigrations: ['0035'],
+      issues: [],
+    });
+  });
+
+  it.each(['ingestion_sources', 'ingestion_jobs', 'review_items'])(
+    'requires the dashboard columns and RLS policy on %s',
+    (tableName) => {
+      const snapshot = makeSnapshot();
+      snapshot.tables[tableName].columnGrants.ops_readonly.SELECT = [];
+      snapshot.tables[tableName].policies = snapshot.tables[tableName].policies.filter(
+        (policy) => policy !== `${tableName}_ops_readonly_select`,
+      );
+      expect(assessProductionSchema(snapshot).issues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            code: 'grant_mismatch',
+            object: `grant:ops_readonly:${tableName}.column:SELECT`,
+          }),
+          expect.objectContaining({
+            code: 'missing_policy',
+            object: `policy:${tableName}_ops_readonly_select`,
+          }),
+        ]),
+      );
+    },
+  );
+
+  it.each([
+    ['ops_readonly', 'ingestion_sources', 'SELECT', 'notes'],
+    ['ops_readonly', 'review_items', 'SELECT', 'proposed_value'],
+    ['ops_readonly', 'ingestion_jobs', 'UPDATE', 'error_text'],
+    ['anon', 'ingestion_sources', 'SELECT', 'id'],
+    ['authenticated', 'review_items', 'SELECT', 'id'],
+    ['app_runtime', 'ingestion_jobs', 'SELECT', 'id'],
+  ])(
+    'rejects extra dashboard column access for %s on %s (%s %s)',
+    (role, tableName, privilege, column) => {
+      const snapshot = makeSnapshot();
+      const grants = (snapshot.tables[tableName].columnGrants[role] ??= {});
+      (grants[privilege] ??= []).push(column);
+      expect(assessProductionSchema(snapshot).issues).toContainEqual(
+        expect.objectContaining({
+          code: 'grant_mismatch',
+          object: `grant:${role}:${tableName}.column:${privilege}`,
+        }),
+      );
+    },
+  );
+
+  it('requires lease and retry columns after the recovery migration', () => {
+    const snapshot = makeSnapshot();
+    snapshot.tables.admission_alert_transition_work.columns =
+      snapshot.tables.admission_alert_transition_work.columns.filter(
+        (column) => column !== 'claim_token',
+      );
+    snapshot.tables.admission_alert_transition_work.columnTypes.retry_state = 'text';
+    expect(assessProductionSchema(snapshot).issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'missing_column',
+          object: 'table:admission_alert_transition_work.column:claim_token',
+        }),
+        expect.objectContaining({
+          code: 'column_type_mismatch',
+          object: 'table:admission_alert_transition_work.column:retry_state',
+        }),
+      ]),
+    );
+  });
+
+  it('rejects missing alert storage and incorrect alert role grants', () => {
+    const missing = makeSnapshot();
+    delete missing.tables.admission_alert_outbox;
+    expect(assessProductionSchema(missing).status).not.toBe('current');
+
+    const wrongGrant = makeSnapshot();
+    wrongGrant.tables.admission_alert_subscriptions.grants.authenticated = ['SELECT'];
+    expect(assessProductionSchema(wrongGrant).issues).toContainEqual(
+      expect.objectContaining({
+        code: 'public_role_grant',
+        object: 'grant:authenticated:admission_alert_subscriptions',
+      }),
+    );
+  });
+
+  it('requires the indeterminate Slack acceptance status in the review-run ledger enum', () => {
+    const snapshot = makeSnapshot();
+    snapshot.enums.admission_review_slack_status =
+      snapshot.enums.admission_review_slack_status.filter(
+        (value) => value !== 'acceptance_unknown',
+      );
+
+    expect(assessProductionSchema(snapshot).issues).toContainEqual(
+      expect.objectContaining({
+        code: 'enum_values_mismatch',
+        object: 'enum:admission_review_slack_status',
+      }),
+    );
+  });
+
+  it('rejects an automation update grant on any other threshold column', () => {
+    const snapshot = makeSnapshot();
+    snapshot.tables.admission_thresholds.columnGrants.admissions_automation.UPDATE.push(
+      'updated_at',
+    );
+
+    expect(assessProductionSchema(snapshot).issues).toContainEqual(
+      expect.objectContaining({
+        code: 'grant_mismatch',
+        object: 'grant:admissions_automation:admission_thresholds.column:UPDATE',
+      }),
+    );
+  });
+
+  it.each(['INSERT', 'REFERENCES'])(
+    'rejects an automation %s grant on a threshold column',
+    (privilege) => {
+      const snapshot = makeSnapshot();
+      snapshot.tables.admission_thresholds.columnGrants.admissions_automation[privilege] = [
+        'threshold_value',
+      ];
+
+      expect(assessProductionSchema(snapshot).issues).toContainEqual(
+        expect.objectContaining({
+          code: 'grant_mismatch',
+          object: `grant:admissions_automation:admission_thresholds.column:${privilege}`,
+        }),
+      );
+    },
+  );
+
+  it('requires automation to upsert ingestion source metadata', () => {
+    const snapshot = makeSnapshot();
+    snapshot.tables.ingestion_sources.grants.admissions_automation = ['SELECT'];
+
+    expect(assessProductionSchema(snapshot).issues).toContainEqual(
+      expect.objectContaining({
+        code: 'grant_mismatch',
+        object: 'grant:admissions_automation:ingestion_sources',
+      }),
+    );
+  });
+
+  it('requires the insert-only grants and policies needed for freshness review handoffs', () => {
+    const snapshot = makeSnapshot();
+    snapshot.tables.ingestion_jobs.grants.admissions_automation = [];
+    snapshot.tables.ingestion_payloads.policies =
+      snapshot.tables.ingestion_payloads.policies.filter(
+        (policy) => policy !== 'ingestion_payloads_admissions_automation_insert',
+      );
+
+    expect(assessProductionSchema(snapshot).issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'grant_mismatch',
+          object: 'grant:admissions_automation:ingestion_jobs',
+        }),
+        expect.objectContaining({
+          code: 'missing_policy',
+          object: 'policy:ingestion_payloads_admissions_automation_insert',
+        }),
+      ]),
+    );
+  });
+
+  it('accepts ingestion source metadata isolated except for dashboard column reads', () => {
+    const snapshot = makeSnapshot();
+    snapshot.tables.ingestion_sources.grants.app_runtime = [];
+    snapshot.tables.ingestion_sources.grants.ops_readonly = [];
+    snapshot.tables.ingestion_sources.policies = [
+      'ingestion_sources_private_deny_all',
+      'ingestion_sources_ops_readonly_select',
+      'ingestion_sources_app_runtime_deny_all',
+      'ingestion_sources_admissions_automation_read',
+      'ingestion_sources_admissions_automation_insert',
+      'ingestion_sources_admissions_automation_update',
+    ];
+
+    expect(assessProductionSchema(snapshot)).toMatchObject({
+      status: 'current',
+      issues: [],
+    });
+  });
+
   it('records both Drizzle and Supabase payload fingerprints for applied migrations', () => {
-    for (const migrationId of ['0020', '0021', '0022'] as const) {
+    for (const migrationId of [
+      '0020',
+      '0021',
+      '0022',
+      '0023',
+      '0024',
+      '0025',
+      '0026',
+      '0027',
+      '0028',
+      '0031',
+      '0032',
+      '0033',
+      '0034',
+      '0035',
+    ] as const) {
       const migration = FORWARD_PRODUCTION_MIGRATIONS.find(({ id }) => id === migrationId);
       const source = readFileSync(migration?.repositoryPath ?? '', 'utf8');
       const statements = source
@@ -36,9 +301,10 @@ describe('production admissions schema preflight', () => {
       expect(migration?.statementFingerprint).toBe(
         createHash('md5').update(statements.join('\n')).digest('hex'),
       );
-      expect(migration?.legacyStatementFingerprints).toContain(
-        createHash('md5').update(source).digest('hex'),
-      );
+      expect([
+        migration?.statementFingerprint,
+        ...(migration?.legacyStatementFingerprints ?? []),
+      ]).toContain(createHash('md5').update(source).digest('hex'));
     }
   });
 
@@ -74,6 +340,17 @@ describe('production admissions schema preflight', () => {
       '0020',
       '0021',
       '0022',
+      '0023',
+      '0024',
+      '0025',
+      '0026',
+      '0027',
+      '0028',
+      '0031',
+      '0032',
+      '0033',
+      '0034',
+      '0035',
     ]);
   });
 
@@ -94,7 +371,32 @@ describe('production admissions schema preflight', () => {
       '0020',
       '0021',
       '0022',
+      '0023',
+      '0024',
+      '0025',
+      '0026',
+      '0027',
+      '0028',
+      '0031',
+      '0032',
+      '0033',
+      '0034',
+      '0035',
     ]);
+  });
+
+  it('accepts legacy review-handoff grants only until 0027 revokes them', () => {
+    const appliedCount = FORWARD_PRODUCTION_MIGRATIONS.findIndex(({ id }) => id === '0027');
+    const snapshot = makeSnapshot({ appliedCount });
+    snapshot.tables.ingestion_jobs.grants.ops_readonly = ['SELECT'];
+    snapshot.tables.review_items.grants.ops_readonly = ['SELECT'];
+
+    expect(assessProductionSchema(snapshot)).toMatchObject({
+      status: 'migration_required',
+      safeToMigrate: true,
+      pendingMigrations: ['0027', '0028', '0031', '0032', '0033', '0034', '0035'],
+      issues: [],
+    });
   });
 
   it('stops when a pending migration is partially present', () => {
@@ -250,6 +552,60 @@ describe('production admissions schema preflight', () => {
     });
   });
 
+  it('accepts the reviewed single-statement 0023 production fingerprint', () => {
+    const snapshot = makeSnapshot();
+    const migration = snapshot.migrationHistory.find(
+      ({ name }) => name === 'grant_admissions_automation_ingestion_sources',
+    );
+    if (migration) {
+      migration.statementFingerprint = 'dfcf630423db70fcebe9b9aac016f764';
+    }
+
+    expect(assessProductionSchema(snapshot)).toMatchObject({
+      status: 'current',
+      issues: [],
+    });
+  });
+
+  it('accepts the Supabase payload fingerprint for 0025', () => {
+    const snapshot = makeSnapshot();
+    const migration = snapshot.migrationHistory.find(
+      ({ name }) => name === 'grant_admissions_automation_review_handoff',
+    );
+    if (migration) {
+      migration.statementFingerprint = '7328e7cd08240243f60c1a7b5c04d2f4';
+    }
+
+    expect(assessProductionSchema(snapshot)).toMatchObject({
+      status: 'current',
+      issues: [],
+    });
+  });
+
+  it('accepts the legacy ops grant only until 0024 revokes it', () => {
+    const appliedCount = FORWARD_PRODUCTION_MIGRATIONS.findIndex(({ id }) => id === '0024');
+    const snapshot = makeSnapshot({ appliedCount });
+    snapshot.tables.ingestion_sources.grants.ops_readonly = ['SELECT'];
+
+    expect(assessProductionSchema(snapshot)).toMatchObject({
+      status: 'migration_required',
+      safeToMigrate: true,
+      pendingMigrations: [
+        '0024',
+        '0025',
+        '0026',
+        '0027',
+        '0028',
+        '0031',
+        '0032',
+        '0033',
+        '0034',
+        '0035',
+      ],
+      issues: [],
+    });
+  });
+
   it('stops when admissions automation gains elevated attributes or memberships', () => {
     const snapshot = makeSnapshot();
     const automation = snapshot.roles.find((role) => role.name === 'admissions_automation');
@@ -342,9 +698,57 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
             Object.entries(contract.grants).map(([role, privileges]) => [role, [...privileges]]),
           )
         : {},
+      columnGrants: {},
     };
+    if (appliedIds.has('0035') && contract.dashboardReadColumns) {
+      tables[tableName].columnGrants.ops_readonly = { SELECT: [...contract.dashboardReadColumns] };
+      tables[tableName].policies.push(`${tableName}_ops_readonly_select`);
+    }
   }
 
+  if (appliedIds.has('0034')) {
+    tables.admission_alert_outbox.columns.push('recipient_hash');
+    tables.admission_alert_outbox.columnTypes.recipient_hash = 'text';
+  }
+  if (appliedIds.has('0031')) {
+    for (const [column, type] of [
+      ['claim_token', 'uuid'],
+      ['lease_expires_at', 'timestamp with time zone'],
+      ['next_attempt_at', 'timestamp with time zone'],
+      ['retry_state', 'jsonb'],
+    ]) {
+      tables.admission_alert_transition_work.columns.push(column);
+      tables.admission_alert_transition_work.columnTypes[column] = type;
+    }
+  }
+  if (appliedIds.has('0032')) {
+    for (const [column, type] of [
+      ['claim_token', 'uuid'],
+      ['lease_expires_at', 'timestamp with time zone'],
+      ['first_submitted_at', 'timestamp with time zone'],
+      ['submission_started_at', 'timestamp with time zone'],
+      ['attempt_count', 'integer'],
+      ['mail_payload', 'jsonb'],
+    ]) {
+      tables.admission_alert_outbox.columns.push(column);
+      tables.admission_alert_outbox.columnTypes[column] = type;
+    }
+  }
+  if (appliedIds.has('0033')) {
+    for (const [column, type] of [
+      ['unsubscribe_token_hash', 'text'],
+      ['unsubscribe_used_at', 'timestamp with time zone'],
+      ['delivery_events', 'jsonb'],
+    ]) {
+      tables.admission_alert_outbox.columns.push(column);
+      tables.admission_alert_outbox.columnTypes[column] = type;
+    }
+    tables.admission_alert_outbox.indexes.push('admission_alert_outbox_unsubscribe_token_unique');
+  }
+  if (appliedIds.has('0028')) {
+    tables.user_profiles.columns.push('admissions_inputs');
+    tables.user_profiles.columnTypes.admissions_inputs = 'jsonb';
+  }
   if (appliedIds.has('0010')) {
     tables.user_profiles?.columns.push('bagrut_profile_version_id');
     tables.user_profiles?.constraints.push(
@@ -364,6 +768,15 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
       (policy) => policy !== 'bagrut_profile_versions_ops_readonly_read',
     );
     tables.bagrut_profile_versions.grants.ops_readonly = [];
+  }
+  if (appliedIds.has('0011') && !appliedIds.has('0024') && tables.ingestion_sources) {
+    tables.ingestion_sources.grants.ops_readonly = ['SELECT'];
+  }
+  if (appliedIds.has('0025') && !appliedIds.has('0027')) {
+    for (const tableName of ['ingestion_jobs', 'review_items'] as const) {
+      const table = tables[tableName];
+      if (table) table.grants.ops_readonly = ['SELECT'];
+    }
   }
   if (appliedIds.has('0020')) {
     for (const column of [
@@ -394,7 +807,10 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
     tables.admission_releases?.indexes.push('admission_releases_kind_published_at_idx');
     tables.admission_review_runs?.indexes.push('admission_review_runs_kind_status_idx');
 
-    const automationAccess: Record<string, { grants: string[]; policies?: string[] }> = {
+    const automationAccess: Record<
+      string,
+      { grants: string[]; policies?: string[]; columnGrants?: Record<string, string[]> }
+    > = {
       institutions: { grants: ['SELECT'], policies: ['institutions_admissions_automation_read'] },
       programs: { grants: ['SELECT'], policies: ['programs_admissions_automation_read'] },
       program_institutions: {
@@ -402,11 +818,32 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
         policies: ['program_institutions_admissions_automation_read'],
       },
       ingestion_sources: {
-        grants: ['SELECT'],
-        policies: ['ingestion_sources_admissions_automation_read'],
+        grants: appliedIds.has('0023') ? ['SELECT', 'INSERT', 'UPDATE'] : ['SELECT'],
+        policies: [
+          'ingestion_sources_admissions_automation_read',
+          ...(appliedIds.has('0023')
+            ? [
+                'ingestion_sources_admissions_automation_insert',
+                'ingestion_sources_admissions_automation_update',
+              ]
+            : []),
+        ],
+      },
+      ingestion_jobs: {
+        grants: appliedIds.has('0025') ? ['INSERT'] : [],
+        policies: appliedIds.has('0025') ? ['ingestion_jobs_admissions_automation_insert'] : [],
+      },
+      ingestion_payloads: {
+        grants: appliedIds.has('0025') ? ['INSERT'] : [],
+        policies: appliedIds.has('0025') ? ['ingestion_payloads_admissions_automation_insert'] : [],
+      },
+      review_items: {
+        grants: appliedIds.has('0025') ? ['INSERT'] : [],
+        policies: appliedIds.has('0025') ? ['review_items_admissions_automation_insert'] : [],
       },
       admission_thresholds: {
-        grants: ['SELECT', 'UPDATE'],
+        grants: ['SELECT'],
+        columnGrants: { UPDATE: ['threshold_value'] },
         policies: [
           'admission_thresholds_admissions_automation_read',
           'admission_thresholds_admissions_automation_update',
@@ -480,6 +917,7 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
       const table = tables[tableName];
       if (!table) continue;
       table.grants.admissions_automation = access.grants;
+      table.columnGrants.admissions_automation = access.columnGrants ?? {};
       table.policies.push(...(access.policies ?? []));
     }
   }
@@ -563,11 +1001,38 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
     enums: Object.fromEntries(
       Object.entries(PRODUCTION_SCHEMA_CONTRACT.enums)
         .filter(([, contract]) => appliedIds.has(contract.createdBy))
-        .map(([name, contract]) => [name, [...contract.values]]),
+        .map(([name, contract]) => [
+          name,
+          [
+            ...(contract.valueMigrations?.filter((migration) => appliedIds.has(migration.id)).at(-1)
+              ?.values ?? contract.values),
+          ],
+        ]),
     ),
-    triggers: appliedIds.has('0014') ? ['admission_threshold_scope_invariant'] : [],
+    triggers: [
+      ...(appliedIds.has('0014') ? ['admission_threshold_scope_invariant'] : []),
+      ...(appliedIds.has('0034') ? ['admission_alert_account_deleted'] : []),
+    ],
+    functionAccess: appliedIds.has('0034')
+      ? Object.fromEntries(
+          ['delivery_recipient', 'cleanup_deleted_account', 'prune_retained_data'].map((name) => [
+            `admission_alert_private.${name}`,
+            {
+              securityDefiner: true,
+              executeRoles: name === 'cleanup_deleted_account' ? [] : ['app_runtime'],
+            },
+          ]),
+        )
+      : {},
     functions: appliedIds.has('0014')
       ? {
+          ...(appliedIds.has('0034')
+            ? Object.fromEntries(
+                ['delivery_recipient', 'cleanup_deleted_account', 'prune_retained_data'].map(
+                  (name) => [`admission_alert_private.${name}`, ['search_path=""']],
+                ),
+              )
+            : {}),
           enforce_admission_threshold_scope: appliedIds.has('0018')
             ? ['search_path=pg_catalog, public']
             : [],

@@ -7,6 +7,7 @@ import {
   type AdmissionsCapabilityEntry,
 } from './capabilityMatrix';
 import { getProgramVerificationArtifact } from '@/data/admissions/tauProgramVerification';
+import { HAIFA_INFORMATION_SYSTEMS_TRACK_ARTIFACTS } from '@/data/admissions/haifaInformationSystemsVerification';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type { SourceFreshnessStateRow } from '@/db/types';
 
@@ -188,15 +189,86 @@ function buildCapabilityMatrix(
 const buildAdmissionsCapabilityMatrix = buildCapabilityMatrix;
 
 describe('buildAdmissionsCapabilityMatrix', () => {
+  it('requires a track and does not substitute a verified track for ordinary single-major', () => {
+    const args = {
+      program: makeProgram({ id: 'haifa_infosystems', linkedInstitutionIds: ['haifa'] }),
+      institutions: INSTITUTIONS,
+    };
+    expect(buildCapabilityMatrix(args)[0]).toMatchObject({
+      capability: 'needs_input',
+      requiredInputs: ['haifa_information_systems_track'],
+    });
+    expect(
+      buildCapabilityMatrix({ ...args, input: { haifaInformationSystemsTrack: 'single_major' } })[0]
+        .capability,
+    ).toBe('blocked');
+  });
+  it.each(Object.entries(HAIFA_INFORMATION_SYSTEMS_TRACK_ARTIFACTS))(
+    'requires the reviewed fingerprint for selected Haifa track %s',
+    (track, artifact) => {
+      const args = {
+        program: makeProgram({ id: 'haifa_infosystems', linkedInstitutionIds: ['haifa'] }),
+        institutions: INSTITUTIONS,
+        now: new Date('2026-09-28T21:00:00Z'),
+        input: artifact.fixtures[0].input,
+      };
+      const sourceId = artifact.contract.source.targetId;
+      expect(
+        buildCapabilityMatrix({ ...args, freshnessStatesBySourceId: new Map() })[0].capability,
+      ).toBe('authority_unavailable');
+      const state = makeFreshnessState({
+        sourceId,
+        lastCheckedAt: args.now,
+        lastSuccessfulCheckAt: args.now,
+        lastExactCheckAt: args.now,
+        proofLevel: 'exact_official',
+        decisionProvenance: 'verified_derivation',
+        reviewedSourceFingerprint: artifact.contract.sourceFingerprint,
+      });
+      const [entry] = buildCapabilityMatrix({
+        ...args,
+        freshnessStatesBySourceId: new Map([[sourceId, state]]),
+      });
+      expect(entry.capability).toBe('exact');
+      expect(entry.exactTarget?.program.externalId).toBe(artifact.contract.officialProgramId);
+      expect(entry.pairVerification?.liveProof.sourceFingerprint).toBe(
+        artifact.contract.sourceFingerprint,
+      );
+      expect(
+        buildCapabilityMatrix({
+          ...args,
+          freshnessStatesBySourceId: new Map([
+            [sourceId, { ...state, reviewedSourceFingerprint: 'sha256:wrong-route' }],
+          ]),
+        })[0].capability,
+      ).not.toBe('exact');
+      expect(track).toBe(artifact.fixtures[0].input.haifaInformationSystemsTrack);
+    },
+  );
+  it.each(['cs', 'tau_cs'])(
+    '%s allows confirmed TAU English qualification without a psychometric English score',
+    (id) => {
+      const [entry] = buildAdmissionsCapabilityMatrix({
+        program: makeProgram({ id, linkedInstitutionIds: ['tau'] }),
+        institutions: INSTITUTIONS,
+        input: {
+          tauBagrutAverage: 115,
+          tauApplicationRequirementsConfirmed: true,
+          bagrutSubjectRecord: {
+            schemaVersion: 1,
+            sector: 'jewish',
+            subjects: [{ subjectId: 'mathematics', units: 5, grade: 85 }],
+          },
+        },
+      });
+      expect(entry?.capability).toBe('exact');
+    },
+  );
+
   it.each([
     ['medicine', 'tau', 'manual_gate'],
     ['tau_medicine', 'tau', 'manual_gate'],
     ['physiotherapy', 'tau', 'manual_gate'],
-    ['nutrition', 'tau', 'requirements_only'],
-    ['tau_infosystems', 'tau', 'requirements_only'],
-    ['physiotherapy', 'huji', 'requirements_only'],
-    ['nutrition', 'bgu', 'requirements_only'],
-    ['architecture', 'technion', 'manual_gate'],
     ['colmgmt_cs', 'colman', 'manual_gate'],
   ] as const)(
     'routes %s to its official non-numeric admissions path when a final-verdict proof is unavailable',
@@ -523,6 +595,9 @@ describe('buildAdmissionsCapabilityMatrix', () => {
       'psychometric_math',
       'psychometric_verbal',
       'psychometric_english',
+      'haifa_bagrut_average',
+      'haifa_bagrut_year',
+      'haifa_psychometric_year',
     ]);
   });
 
@@ -539,6 +614,9 @@ describe('buildAdmissionsCapabilityMatrix', () => {
         psychometricMath: 120,
         psychometricVerbal: 120,
         psychometricEnglish: 120,
+        haifaBagrutAverage: 105,
+        haifaBagrutYear: 2015,
+        haifaPsychometricYear: 2026,
       },
     });
 
@@ -658,6 +736,18 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     const entries = buildAdmissionsCapabilityMatrix({
       program,
       institutions: INSTITUTIONS,
+      input: {
+        bguBagrutAverage: 120,
+        bguLanguageRequirementsConfirmed: true,
+        psychometricMath: 150,
+        psychometricVerbal: 150,
+        psychometricEnglish: 150,
+        bagrutSubjectRecord: {
+          schemaVersion: 1,
+          sector: 'jewish',
+          subjects: [{ subjectId: 'mathematics', units: 5, grade: 85 }],
+        },
+      },
     });
 
     const bguEntry = entries.find((e) => e.institutionId === 'bgu');
@@ -683,6 +773,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     const entries = buildAdmissionsCapabilityMatrix({
       program,
       institutions: INSTITUTIONS,
+      input: { bguEngineering: { detailsConfirmed: true }, bguLanguageRequirementsConfirmed: true },
     });
 
     const bguEntry = entries.find((e) => e.institutionId === 'bgu');

@@ -13,6 +13,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:publication:db": "vitest run src/server/admissions/admissionsReleasePublisher.integration.test.ts",
+    "test:source-freshness:db": "vitest run src/server/ingestion/sourceFreshness.integration.test.ts",
     "test:e2e": "playwright test",
     "lint": "eslint .",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css,json}\"",
@@ -39,48 +40,52 @@
     "db:operational:publication": "node scripts/verify-operational-db.mjs --publication"
   },
   "dependencies": {
+    "@react-email/render": "2.1.0",
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.108.2",
     "framer-motion": "^12.38.0",
     "lucide-react": "^1.21.0",
-    "next": "16.2.11",
+    "next": "16.3.6",
+    "pg": "8.23.0",
     "posthog-js": "^1.396.3",
     "posthog-node": "^5.39.1",
     "react": "19.2.7",
     "react-dom": "19.2.7",
     "server-only": "^0.0.1",
+    "svix": "1.99.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@axe-core/playwright": "^4.12.1",
+    "@axe-core/playwright": "^4.13.0",
     "@eslint/js": "^9.39.4",
     "@next/env": "^16.2.9",
-    "@next/eslint-plugin-next": "^16.2.9",
-    "@playwright/test": "^1.61.1",
+    "@next/eslint-plugin-next": "^16.3.6",
+    "@playwright/test": "^1.63.0",
     "@tailwindcss/postcss": "^4",
-    "@testing-library/dom": "^10.4.1",
-    "@testing-library/react": "^16.3.2",
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/react": "^16.3.3",
     "@types/node": "^20",
+    "@types/pg": "8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
-    "@vitejs/plugin-react": "^6.0.3",
+    "@vitejs/plugin-react": "^6.1.1",
     "@vitest/coverage-v8": "^4.1.9",
-    "drizzle-kit": "^0.31.10",
-    "drizzle-orm": "^0.45.2",
+    "drizzle-kit": "^0.31.11",
+    "drizzle-orm": "^0.45.3",
     "eslint": "^9.39.4",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react-hooks": "^7.1.1",
     "jsdom": "^29.1.1",
     "postgres": "^3.4.9",
-    "prettier": "^3.9.4",
+    "prettier": "^3.9.9",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
-    "tsx": "^4.22.4",
+    "tsx": "^4.23.15",
     "typescript": "^6",
-    "typescript-eslint": "^8.62.1",
+    "typescript-eslint": "^8.70.1",
     "vite-tsconfig-paths": "^6.1.1",
-    "vitest": "^4.1.8"
+    "vitest": "^4.1.11"
   },
   "overrides": {
     "@eslint/eslintrc": {
@@ -91,7 +96,7 @@
     },
     "next": {
       "postcss": "8.5.23",
-      "sharp": "0.35.3"
+      "sharp": "0.35.4"
     }
   }
 }

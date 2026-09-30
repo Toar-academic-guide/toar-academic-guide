@@ -1,10 +1,119 @@
+import {
+  HUJI_MEDICINE_PROFILE_KEYS,
+  HUJI_MEDICINE_REQUIRED_INPUTS,
+} from '@/lib/hujiMedicineInputs';
 import type { AdmissionsExtraInputs, AdmissionsRequiredInput } from '@/types/admissionsEvaluation';
 
 export function admissionsInputValue(
   input: AdmissionsExtraInputs | undefined,
   requiredInput: AdmissionsRequiredInput,
 ): unknown {
+  const medicineKey = HUJI_MEDICINE_PROFILE_KEYS.find(
+    (key) => HUJI_MEDICINE_REQUIRED_INPUTS[key] === requiredInput,
+  );
+  if (medicineKey) return input?.[medicineKey];
   switch (requiredInput) {
+    case 'haifa_information_systems_track':
+      return input?.haifaInformationSystemsTrack;
+    case 'haifa_information_systems_partner_requirements':
+      return input?.haifaInformationSystemsPartnerRequirementsConfirmed;
+    case 'haifa_bagrut_average':
+      return input?.haifaBagrutAverage;
+    case 'haifa_bagrut_year':
+      return input?.haifaBagrutYear;
+    case 'haifa_psychometric_year':
+      return input?.haifaPsychometricYear;
+    case 'haifa_psychometric_month':
+      return input?.haifaPsychometricMonth;
+    case 'haifa_admission_qualification':
+      return input?.haifaAdmissionQualification;
+    case 'haifa_english_level':
+      return input?.haifaEnglishLevel;
+    case 'haifa_hebrew_qualification':
+      return input?.haifaHebrewQualification;
+    case 'haifa_hebrew_score':
+      return input?.haifaHebrewScore;
+    case 'haifa_hebrew_exam_date':
+      return input?.haifaHebrewExamDate;
+    case 'haifa_science_units':
+      return input?.haifaScienceUnits;
+    case 'haifa_ot_failed_selection_attempts':
+      return input?.haifaOtFailedSelectionAttempts;
+    case 'haifa_ot_unjustified_absence':
+      return input?.haifaOtUnjustifiedAbsence;
+    case 'bgu_occupational_therapy_requirements':
+      return input?.bguOccupationalTherapyRequirementsConfirmed;
+    case 'bgu_physiotherapy_requirements':
+      return input?.bguPhysiotherapyRequirementsConfirmed;
+    case 'bgu_occupational_therapy_exam_session':
+      return input?.bguOccupationalTherapyExamSession;
+    case 'bgu_bachelors_degree_completed':
+      return input?.bguBachelorsDegreeCompleted;
+    case 'bgu_bachelors_degree_average':
+      return input?.bguBachelorsDegreeAverage;
+    case 'bgu_engineering_details':
+      return input?.bguEngineering;
+    case 'bgu_engineering_physics_course':
+      return input?.bguEngineering?.physicsCoursePassed;
+    case 'bgu_psychology_requirements':
+      return input?.bguPsychologyRequirementsConfirmed;
+    case 'bgu_social_science_requirements':
+      return input?.bguSocialScienceRequirementsConfirmed;
+    case 'bgu_social_science_language':
+      return input?.bguSocialScienceLanguageConfirmed;
+    case 'bgu_returning_from_study_break':
+      return input?.bguReturningFromStudyBreak;
+    case 'bgu_social_work_academic_background':
+      return input?.bguSocialWorkAcademicBackground;
+    case 'bgu_social_work_academic_average':
+      return input?.bguSocialWorkAcademicAverage;
+    case 'bgu_social_work_transcript':
+      return input?.bguSocialWorkTranscriptProvided;
+    case 'bgu_applicant_age':
+      return input?.bguApplicantAge;
+    case 'bgu_education_second_department':
+      return input?.bguEducationSecondDepartment;
+    case 'bgu_english_classification_missing':
+      return input?.bguEnglishClassificationMissing;
+    case 'bgu_hebrew_requirements':
+      return input?.bguHebrewRequirementsConfirmed;
+    case 'bgu_education_english_condition':
+      return input?.bguEducationEnglishConditionAcknowledged;
+    case 'bgu_preparatory_average':
+      return input?.bguPreparatoryAverage;
+    case 'bgu_preparatory_track':
+      return input?.bguPreparatoryTrack;
+    case 'bgu_preparatory_completed':
+      return input?.bguPreparatoryCompleted;
+    case 'technion_architecture_bagrut_average':
+      return input?.technionArchitectureBagrutAverage;
+    case 'technion_architecture_exam_score':
+      return input?.technionArchitectureExamScore;
+    case 'technion_architecture_exam_passed':
+      return input?.technionArchitectureExamPassed;
+    case 'technion_architecture_requirements':
+      return input?.technionArchitectureRequirementsConfirmed;
+    case 'bagrut_average':
+    case 'psychometric_overall':
+      return undefined; // Overall score is read from the evaluation request, not extraInputs.
+    case 'tau_physiotherapy_route':
+      return input?.tauPhysiotherapyRoute;
+    case 'tau_physiotherapy_requirements':
+      return input?.tauPhysiotherapyRequirementsConfirmed;
+    case 'tau_physiotherapy_english_alternative':
+      return input?.tauPhysiotherapyEnglishAlternativeConfirmed;
+    case 'tau_physiotherapy_academic_math':
+      return input?.tauPhysiotherapyAcademicMathConfirmed;
+    case 'tau_physiotherapy_mooc_bonus':
+      return input?.tauPhysiotherapyMoocBonusConfirmed;
+    case 'tau_management_requirements':
+      return input?.tauManagementRequirementsConfirmed;
+    case 'tau_management_academic_route':
+      return input?.tauManagementAcademicRouteConfirmed;
+    case 'tau_management_mooc_count':
+      return input?.tauManagementQualifyingMoocCount;
+    case 'tau_management_no_psychometric_moocs':
+      return input?.tauManagementNoPsychometricMoocsConfirmed;
     case 'psychometric_math':
       return input?.psychometricMath;
     case 'psychometric_verbal':
@@ -33,5 +142,31 @@ export function admissionsInputValue(
       return input?.bagrutProfileSchemaVersion;
     case 'bagrut_sector':
       return input?.bagrutSector;
+    case 'tau_bagrut_average':
+      return input?.tauBagrutAverage;
+    case 'colman_bagrut_average':
+      return input?.colmanBagrutAverage;
+    case 'colman_bagrut_certificate':
+      return input?.colmanBagrutCertificateConfirmed;
+    case 'bgu_bagrut_average':
+      return input?.bguBagrutAverage;
+    case 'tau_application_requirements':
+      return input?.tauApplicationRequirementsConfirmed;
+    case 'bgu_certificate_requirements':
+      return input?.bguCertificateRequirementsConfirmed;
+    case 'bgu_prior_academic_studies':
+      return input?.bguPriorAcademicStudies;
+    case 'bgu_returning_or_changing_track':
+      return input?.bguReturningOrChangingTrack;
+    case 'bgu_application_priority':
+      return input?.bguApplicationPriority;
+    case 'bgu_second_track_requirements':
+      return input?.bguSecondTrackRequirementsConfirmed;
+    case 'bgu_preparatory_qualification':
+      return input?.bguPreparatoryCompleted === true ? input.bguPreparatoryAverage : undefined;
+    case 'bgu_language_requirements':
+      return input?.bguLanguageRequirementsConfirmed;
+    case 'tau_math_placement_score':
+      return input?.tauMathPlacementScore;
   }
 }

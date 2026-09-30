@@ -1,0 +1,53 @@
+name: Deliver Admission Alerts
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: Inspect aggregate queue counts without sending or changing rows
+        type: boolean
+        default: true
+  schedule:
+    - cron: '7,22,37,52 * * * *'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: admission-alert-delivery
+  cancel-in-progress: false
+
+jobs:
+  deliver:
+    if: ${{ vars.ADMISSION_ALERT_DELIVERY_ENABLED == 'true' || github.event_name == 'workflow_dispatch' }}
+    runs-on: ubuntu-latest
+    environment: admissions-publication
+    timeout-minutes: 45
+    env:
+      CI: true
+      ADMISSION_ALERT_DATABASE_URL: ${{ secrets.ADMISSION_ALERT_DATABASE_URL }}
+      ADMISSION_ALERT_RESEND_API_KEY: ${{ secrets.ADMISSION_ALERT_RESEND_API_KEY }}
+      ADMISSION_ALERT_TOKEN_SECRET: ${{ secrets.ADMISSION_ALERT_TOKEN_SECRET }}
+      ADMISSION_ALERT_FROM_EMAIL: ${{ vars.ADMISSION_ALERT_FROM_EMAIL }}
+      ADMISSION_ALERT_SUPPORT_EMAIL: ${{ vars.ADMISSION_ALERT_SUPPORT_EMAIL }}
+      ADMISSION_ALERT_APP_ORIGIN: ${{ vars.ADMISSION_ALERT_APP_ORIGIN }}
+      ADMISSION_ALERT_DELIVERY_ENABLED: ${{ vars.ADMISSION_ALERT_DELIVERY_ENABLED }}
+      DRY_RUN: ${{ inputs.dry_run }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Deliver bounded admission-alert queue
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "$DRY_RUN" = "true" ]; then
+            node scripts/deliver-admission-alerts.mjs --dry-run
+          else
+            node scripts/deliver-admission-alerts.mjs --send
+          fi
