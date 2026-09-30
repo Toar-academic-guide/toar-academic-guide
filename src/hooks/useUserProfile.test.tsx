@@ -81,7 +81,7 @@ describe('useUserProfile', () => {
     const { result } = renderHook(() => useUserProfile());
 
     await waitFor(() => expect(result.current.hydrated).toBe(true));
-    vi.spyOn(window.localStorage, 'setItem').mockImplementationOnce(() => {
+    vi.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem').mockImplementationOnce(() => {
       throw new DOMException('quota exceeded', 'QuotaExceededError');
     });
 
