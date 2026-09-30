@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-import { requireAuthenticatedUserId } from '@/app/api/_lib/auth';
+import { requireAuthenticatedUserId, requireVerifiedEmailUser } from '@/app/api/_lib/auth';
 import { ApiRouteError, toErrorResponse } from '@/app/api/_lib/errors';
 import {
   createDrizzleAdmissionAlertAccountRepository,
@@ -17,6 +17,7 @@ export const dynamic = 'force-dynamic';
 const subscriptionRequestSchema = z.strictObject({
   institutionId: z.string().trim().min(1),
   programId: z.string().trim().min(1),
+  optIn: z.literal(true),
 });
 
 export async function GET() {
@@ -26,9 +27,12 @@ export async function GET() {
       userId,
       repository: createDrizzleAdmissionAlertAccountRepository(),
     });
-    return Response.json({ data });
+    return Response.json(
+      { data, supportEmail: process.env.ADMISSION_ALERT_SUPPORT_EMAIL ?? null },
+      { headers: { 'Cache-Control': 'no-store' } },
+    );
   } catch (error) {
-    return toErrorResponse(error, {
+    return toErrorResponse(error instanceof ApiRouteError ? error : null, {
       code: 'ADMISSION_ALERTS_INTERNAL_ERROR',
       message: 'Unable to load admission alert subscriptions.',
     });
@@ -37,16 +41,18 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const userId = await requireAuthenticatedUserId();
-    const target = await parseSubscriptionRequest(request);
+    const user = await requireVerifiedEmailUser();
+    const { institutionId, programId } = await parseSubscriptionRequest(request);
+    const target = { institutionId, programId };
     const data = await createAdmissionAlertSubscription(target, {
-      userId,
+      userId: user.id,
+      reconfirm: true,
       repository: createDrizzleAdmissionAlertSubscriptionRepository(),
       evaluate: evaluateAdmissionAlertBaseline,
     });
     return Response.json({ data });
   } catch (error) {
-    return toErrorResponse(error, {
+    return toErrorResponse(error instanceof ApiRouteError ? error : null, {
       code: 'ADMISSION_ALERT_SUBSCRIPTION_CREATE_FAILED',
       message: 'Unable to create this admission alert subscription.',
     });

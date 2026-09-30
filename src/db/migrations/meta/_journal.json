@@ -232,6 +232,27 @@
       "when": 1790704798766,
       "tag": "0032_alert_delivery_recovery",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1790709695244,
+      "tag": "0033_alert_webhooks_unsubscribe",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1790711457054,
+      "tag": "0034_alert_lifecycle_completion",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1790755937948,
+      "tag": "0035_ops_dashboard_column_reads",
+      "breakpoints": true
     }
   ]
 }

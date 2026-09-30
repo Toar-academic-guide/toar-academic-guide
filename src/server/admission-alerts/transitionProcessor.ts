@@ -3,6 +3,7 @@ import 'server-only';
 import { createHash, randomUUID } from 'node:crypto';
 import { and, asc, eq, gt, inArray, lte, or, sql } from 'drizzle-orm';
 import { getDb } from '@/db/client';
+import { queryRows } from '@/db/queryRows';
 import {
   admissionAlertBaselineHistory,
   admissionAlertOutbox,
@@ -141,16 +142,17 @@ export function createDrizzleAdmissionAlertTransitionProcessorRepository(
         await tx.execute(sql`update admission_alert_transition_work set status='pending', claim_token=null,
           lease_expires_at=null, updated_at=${now.toISOString()}::timestamptz
           where status='processing' and (lease_expires_at is null or lease_expires_at <= ${now.toISOString()}::timestamptz)`);
-        const [candidate] = await tx.execute<{
-          id: string;
-          transition_id: string;
-          institution_id: string;
-          program_id: string;
-          after_version: string;
-          created_at: string;
-          cursor: string | null;
-          retry_state: RetryState;
-        }>(sql`select w.id,w.transition_id,t.institution_id,t.program_id,t.after_version,t.created_at,w.cursor,w.retry_state
+        const [candidate] = queryRows(
+          await tx.execute<{
+            id: string;
+            transition_id: string;
+            institution_id: string;
+            program_id: string;
+            after_version: string;
+            created_at: string;
+            cursor: string | null;
+            retry_state: RetryState;
+          }>(sql`select w.id,w.transition_id,t.institution_id,t.program_id,t.after_version,t.created_at,w.cursor,w.retry_state
           from admission_alert_transition_work w
           join admission_target_transitions t on t.id=w.transition_id
           join admission_releases r on r.id=t.release_id
@@ -165,7 +167,8 @@ export function createDrizzleAdmissionAlertTransitionProcessorRepository(
                 and (earlier.created_at,earlier.id) < (t.created_at,t.id)
                 and (ew.id is null or ew.status <> 'completed')
             )
-          order by t.created_at,t.id limit 1 for update of w skip locked`);
+          order by t.created_at,t.id limit 1 for update of w skip locked`),
+        );
         if (!candidate) return null;
         const claimToken = randomUUID();
         await tx

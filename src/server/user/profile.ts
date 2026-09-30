@@ -136,7 +136,14 @@ export async function replaceUserProfileSnapshot(
           .where(inArray(admissionAlertSubscriptions.id, subscriptionIds));
         await tx
           .update(admissionAlertOutbox)
-          .set({ status: 'suppressed', updatedAt: new Date() })
+          .set({
+            status: 'suppressed',
+            mailPayload: null,
+            claimToken: null,
+            leaseExpiresAt: null,
+            nextAttemptAt: null,
+            updatedAt: new Date(),
+          })
           .where(
             and(
               inArray(admissionAlertOutbox.subscriptionId, subscriptionIds),

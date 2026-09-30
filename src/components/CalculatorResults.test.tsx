@@ -212,10 +212,48 @@ describe('CalculatorResults', () => {
 
   beforeEach(() => {
     vi.restoreAllMocks();
+    hoistedMocks.user = null;
     hoistedMocks.fetchAdmissionsEvaluation.mockReset();
     hoistedMocks.fetchTauComputerScienceRoutes.mockReset();
     hoistedMocks.posthogCapture.mockReset();
   });
+  it.each(['tau', 'bgu'] as const)(
+    'preserves the %s alert target through signup',
+    async (institution) => {
+      hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
+        report([
+          {
+            institution: {
+              id: institution,
+              name: institution === 'tau' ? 'אוניברסיטת תל אביב' : 'אוניברסיטת בן גוריון',
+              region: institution === 'tau' ? 'center' : 'south',
+            },
+            linkedInstitutionId: institution,
+            capability: 'exact',
+            kind: 'exact',
+            decision: 'below',
+            confidence: 'high',
+            sourceLabel: 'אימות רשמי',
+            explanation: 'מתחת לסף',
+            nextAction: 'השלימו נתונים',
+            score: 690,
+            threshold: 706,
+          },
+        ]),
+      );
+      render(
+        <CalculatorResults
+          degreeId={`${institution}_cs`}
+          programs={programs}
+          psychometric={680}
+          bagrut={108}
+          onBack={() => {}}
+        />,
+      );
+      fireEvent.click(await screen.findByRole('button', { name: 'אשרו והפעילו מעקב' }));
+      expect(hoistedMocks.push).toHaveBeenCalledWith(expect.stringContaining(`${institution}_cs`));
+    },
+  );
 
   it('labels exact Management eligibility as eligible to apply, without asking for more data', async () => {
     hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(

@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
   requireAuthenticatedUserId: vi.fn(),
+  requireVerifiedEmailUser: vi.fn(),
   listAdmissionAlertSubscriptions: vi.fn(),
   createDrizzleAdmissionAlertAccountRepository: vi.fn(),
   createAdmissionAlertSubscription: vi.fn(),
@@ -11,6 +12,7 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock('@/app/api/_lib/auth', () => ({
   requireAuthenticatedUserId: mocks.requireAuthenticatedUserId,
+  requireVerifiedEmailUser: mocks.requireVerifiedEmailUser,
 }));
 vi.mock('@/server/admission-alerts/accountService', () => ({
   listAdmissionAlertSubscriptions: mocks.listAdmissionAlertSubscriptions,
@@ -36,7 +38,10 @@ describe('admission alerts API', () => {
     const response = await GET();
 
     expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toEqual({ data: [{ id: 'subscription-1' }] });
+    await expect(response.json()).resolves.toEqual({
+      data: [{ id: 'subscription-1' }],
+      supportEmail: null,
+    });
     expect(mocks.listAdmissionAlertSubscriptions).toHaveBeenCalledWith({
       userId: 'user-1',
       repository: 'repository',
@@ -44,7 +49,7 @@ describe('admission alerts API', () => {
   });
 
   it('creates a subscription only for the authenticated user through the server verifier', async () => {
-    mocks.requireAuthenticatedUserId.mockResolvedValue('user-1');
+    mocks.requireVerifiedEmailUser.mockResolvedValue({ id: 'user-1' });
     mocks.createDrizzleAdmissionAlertSubscriptionRepository.mockReturnValue('repository');
     mocks.createAdmissionAlertSubscription.mockResolvedValue({
       status: 'created',
@@ -55,7 +60,7 @@ describe('admission alerts API', () => {
       new Request('http://localhost/api/admission-alerts', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ institutionId: 'tau', programId: 'tau_cs' }),
+        body: JSON.stringify({ institutionId: 'tau', programId: 'tau_cs', optIn: true }),
       }),
     );
 
@@ -67,9 +72,20 @@ describe('admission alerts API', () => {
       { institutionId: 'tau', programId: 'tau_cs' },
       {
         userId: 'user-1',
+        reconfirm: true,
         repository: 'repository',
         evaluate: mocks.evaluateAdmissionAlertBaseline,
       },
     );
+  });
+  it('requires explicit category opt-in', async () => {
+    mocks.requireVerifiedEmailUser.mockResolvedValue({ id: 'user-1' });
+    const response = await POST(
+      new Request('http://localhost/api/admission-alerts', {
+        method: 'POST',
+        body: JSON.stringify({ institutionId: 'bgu', programId: 'bgu_cs' }),
+      }),
+    );
+    expect(response.status).toBe(400);
   });
 });

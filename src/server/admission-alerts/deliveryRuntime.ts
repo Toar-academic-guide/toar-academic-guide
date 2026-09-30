@@ -2,11 +2,15 @@ import 'server-only';
 import { setTimeout as delay } from 'node:timers/promises';
 import { sql } from 'drizzle-orm';
 import { getDb } from '@/db/client';
+import { queryRows } from '@/db/queryRows';
 import {
   createDrizzleAdmissionAlertDeliveryRepository,
   processAdmissionAlertDelivery,
 } from './deliveryWorker';
 import { createResendAdmissionAlertProvider } from './resendProvider';
+import { prepareNextAlertDelivery } from './deliveryPreparation';
+import { readAdmissionAlertEmailConfig } from './emailTemplate';
+import { deriveAdmissionAlertUnsubscribeToken } from './unsubscribeService';
 
 export function admissionAlertDeliveryConfiguration(
   env: Record<string, string | undefined> = process.env,
@@ -28,15 +32,23 @@ export async function runAdmissionAlertDelivery(input: {
     throw new Error('maxDeliveries must be between 1 and 500.');
   const configuration = input.dryRun ? null : admissionAlertDeliveryConfiguration();
   const db = getDb();
-  const counts = await db.execute<{ status: string; count: number }>(sql`
+  const counts = queryRows(
+    await db.execute<{ status: string; count: number }>(sql`
     select status::text, count(*)::int from admission_alert_outbox group by status
-  `);
+  `),
+  );
   if (input.dryRun)
     return {
       status: 'dry_run',
       counts: Object.fromEntries(counts.map((row) => [row.status, row.count])),
     };
-  const repository = createDrizzleAdmissionAlertDeliveryRepository(db);
+  const emailConfig = readAdmissionAlertEmailConfig(process.env);
+  const tokenSecret = process.env.ADMISSION_ALERT_TOKEN_SECRET ?? '';
+  deriveAdmissionAlertUnsubscribeToken('configuration-check', tokenSecret);
+  for (let i = 0; i < max; i++) {
+    if (!(await prepareNextAlertDelivery(emailConfig, tokenSecret, db))) break;
+  }
+  const repository = createDrizzleAdmissionAlertDeliveryRepository(db, tokenSecret);
   const provider = createResendAdmissionAlertProvider(configuration!);
   const outcomes: Record<string, number> = {};
   for (let i = 0; i < max; i++) {

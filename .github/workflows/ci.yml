@@ -240,6 +240,11 @@ jobs:
           $$;
           SQL
 
+      - name: Create disposable Auth contract
+        env:
+          PGPASSWORD: postgres
+        run: psql --host localhost --username postgres --dbname toar_academic_guide_ci --set ON_ERROR_STOP=1 --file scripts/disposable-auth-schema.sql
+
       - name: Apply migrations to disposable PostgreSQL
         run: npm run db:migrate
 
@@ -250,13 +255,15 @@ jobs:
 
       - name: Verify durable publication failure and retry lifecycle
         env:
+          APP_DB_INTEGRATION: '1'
           PUBLICATION_DB_INTEGRATION: '1'
           SOURCE_FRESHNESS_DB_INTEGRATION: '1'
           ALERT_DB_INTEGRATION: '1'
         run: |
+          npx vitest run src/db/client.integration.test.ts
           npm run test:publication:db
           npm run test:source-freshness:db
-          npx vitest run src/server/admission-alerts/health.integration.test.ts src/server/admission-alerts/transitionProcessor.integration.test.ts src/server/admission-alerts/deliveryWorker.integration.test.ts
+          npx vitest run src/server/admission-alerts/health.integration.test.ts src/server/admission-alerts/transitionProcessor.integration.test.ts src/server/admission-alerts/deliveryWorker.integration.test.ts src/server/admission-alerts/webhookUnsubscribe.integration.test.ts src/server/admission-alerts/lifecycleCompletion.integration.test.ts scripts/admission-alert-account-simulation.integration.test.ts
 
   # ---------------------------------------------------------------------------
   # Job 4: Admissions evidence and calculator verification
