@@ -25,6 +25,10 @@ function parseArgs(argv) {
       psychometric: 680,
     },
     includeCapabilityMatrix: false,
+    institutionId: undefined,
+    limit: undefined,
+    offset: 0,
+    summaryOnly: false,
     targetIds: [],
   };
 
@@ -33,8 +37,19 @@ function parseArgs(argv) {
 
     if (arg === '--all') {
       options.includeCapabilityMatrix = true;
+    } else if (arg === '--summary') {
+      options.summaryOnly = true;
     } else if (arg === '--target' && argv[index + 1]) {
       options.targetIds.push(argv[index + 1]);
+      index += 1;
+    } else if (arg === '--institution' && argv[index + 1]) {
+      options.institutionId = argv[index + 1];
+      index += 1;
+    } else if (arg === '--limit' && argv[index + 1]) {
+      options.limit = Number(argv[index + 1]);
+      index += 1;
+    } else if (arg === '--offset' && argv[index + 1]) {
+      options.offset = Number(argv[index + 1]);
       index += 1;
     } else if (arg === '--bagrut' && argv[index + 1]) {
       options.applicant.bagrutAverage = Number(argv[index + 1]);
@@ -72,8 +87,9 @@ async function main() {
       '/src/server/ingestion/admissionsLiveProofRunner.ts',
     );
 
-    const report = await runAdmissionsLiveProof(parseArgs(process.argv.slice(2)));
-    console.log(JSON.stringify(report, null, 2));
+    const options = parseArgs(process.argv.slice(2));
+    const report = await runAdmissionsLiveProof(options);
+    console.log(JSON.stringify(options.summaryOnly ? report.summary : report, null, 2));
   } finally {
     await vite.close();
   }

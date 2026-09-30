@@ -1,11 +1,29 @@
 import { describe, expect, it } from 'vitest';
 
+import { buildFormulaBackedPairInventory } from '../admissions/formulaBackedPairInventory';
 import { mondayAdmissionsEvidence } from '../admissions/mondayEvidence';
 import { INSTITUTIONS } from '../institutions';
 import { allPrograms } from './index';
 
 type CatalogueProgramLike = (typeof allPrograms)[number];
 type InstitutionDetailLike = NonNullable<CatalogueProgramLike['institutionDetails']>[number];
+
+describe('formula-backed pair catalogue', () => {
+  it('generates the current canonical formula-backed pair denominator', () => {
+    const inventory = buildFormulaBackedPairInventory(allPrograms);
+
+    expect(inventory.errors).toEqual([]);
+    expect(inventory.total).toBe(131);
+    expect(inventory.totalsByInstitution).toEqual({
+      tau: 33,
+      huji: 28,
+      bgu: 28,
+      haifa: 27,
+      technion: 14,
+      colman: 1,
+    });
+  });
+});
 
 function isSoftAdmissionsText(text: string) {
   return (

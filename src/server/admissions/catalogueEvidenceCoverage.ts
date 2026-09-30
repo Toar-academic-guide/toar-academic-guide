@@ -7,6 +7,7 @@ import { buildAdmissionsCapabilityMatrix } from './capabilityMatrix';
 
 export type CatalogueEvidenceCoverageStatus =
   | 'decision_rule_available'
+  | 'verification_incomplete'
   | 'needs_input'
   | 'manual_or_eligible'
   | 'open_admission'
@@ -163,6 +164,10 @@ function resolveCoverageStatus(args: {
 
   if (capability === 'exact' || capability === 'estimated') {
     return 'decision_rule_available';
+  }
+
+  if (capability === 'authority_unavailable') {
+    return 'verification_incomplete';
   }
 
   if (capability === 'needs_input') {

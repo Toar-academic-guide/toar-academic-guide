@@ -1,0 +1,441 @@
+{
+  "capturedAt": "2026-09-27T19:08:03.602Z",
+  "status": "primary evidence only; implementation and controlled replays pending",
+  "programmes": [
+    {
+      "programme": "social_work",
+      "pairs": [
+        "social_work__bgu",
+        "bgu_socialwork__bgu"
+      ],
+      "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=144&p_pat1=1&p_spe1=12&p_institution=0&p_degree_level=1",
+      "fetchedAt": "2026-09-27T19:08:01.542Z",
+      "httpStatus": 200,
+      "rawResponseSha256": "db239dd643bc4aebf60f319f3c35438e26cb501a2f882586266b17ce9b6f8f14",
+      "payload": {
+        "items": [
+          {
+            "department_dsc": "עבודה סוציאלית",
+            "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/humsos/Social_Work_degree_1.aspx",
+            "path_dsc": "עבודה סוציאלית חד מחלקתי - מסלול רגיל",
+            "psycho_sekem": 580,
+            "psycho_and_or": " ובנוסף  ",
+            "psycho_value": 550,
+            "psycho_info": "4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ו'",
+            "bagrut_average": 108,
+            "bagrut_info": "רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ו'",
+            "bagrut_additional": "01.03.2026- עצרנו קבלות במחלקה לעבודה סוציאלית. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם.<br>\nממוצע מכינה למדעים מדויקים והנדסה או מכינה למדעי הטבע והחיים של אוניברסיטת-בן גוריון בנגב יכולה להחליף את ממוצע הבגרות באפיק קבלה זה. ממוצע המכינה הנדרש 90.\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ו' בעברית לנדרשים</a>\n<br>\n<br><b>קבלה בעדיפות ראשונה בלבד או בעדיפות שניה לאחר עבודה סוציאלית  במגמת נוער<br></b>\n\n<br><b> מועמדים בעלי רקע אקדמי :<br></b>\n1. מועמדים עם רקע אקדמי מכל תחומי הלימודים, נדרשים לעמוד בתנאי הקבלה ומועברים לדיון בוועדת הקבלה של המחלקה לאחר הגשת גיליון ציונים מעודכן עם ציוני סימסטר א של שנת הלימודים הנוכחית. <br>\n2. מועמדים עם רקע אקדמי בעבודה סוציאלית, נדרשים לעמוד בתנאי הקבלה ומועברים לדיון בוועדת הקבלה של המחלקה לאחר הגשת גיליון ציונים מעודכן עם ממוצע של  85 ומעלה. <br> המחלקה לא מכירה ב\"הכשרה מעשית\" מלימודים קודמים. הכרה בקורסים אקדמים מותנית באישור המחלקה. <br>\n3. מועמדים ותיקים שחוזרים מהפסקת לימודים יעברו לדיון במחלקה. <br>\n4. אין קבלות לשנה ב'. <br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה.<br>  \nיועברו לדיון בועדת חריגים במחלקה מועמדים עם ממוצע בגרות נמוך עד נקודה אחת מהממוצע הנדרש והעומדים בדרישות האנגלית והעברית. <br>\nמועמדים העומדים בתנאים אלה נדרשים לשלוח קו\"ח והצהרת כוונות, יתכן זימון לראיון. <br>\n",
+            "comments": "01.03.2026- עצרנו קבלות במחלקה לעבודה סוציאלית. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם.\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ו' בעברית לנדרשים</a>\n<p> <BR><b>אפשרות נוספת לקבלה: פסיכומטרי 630. <br></b>\n<p>\n<br>קבלה בעדיפות ראשונה בלבד או בעדיפות שניה לאחר עבודה סוציאלית במגמת לימודי נוער<br>\n\n<br><b> מועמדים בעלי רקע אקדמי :<br></b>\n1. מועמדים עם רקע אקדמי מכל תחומי הלימודים, נדרשים לעמוד בתנאי הקבלה ומועברים לדיון בוועדת הקבלה של המחלקה לאחר הגשת גיליון ציונים מעודכן עם ציוני סימסטר א של שנת הלימודים הנוכחית. <br>\n2. מועמדים עם רקע אקדמי בעבודה סוציאלית, נדרשים לעמוד בתנאי הקבלה ומועברים לדיון בוועדת הקבלה של המחלקה לאחר הגשת גיליון ציונים מעודכן עם ממוצע של  85 ומעלה. <br> המחלקה לא מכירה ב\"הכשרה מעשית\" מלימודים קודמים. הכרה בקורסים אקדמים מותנית באישור המחלקה. <br>\n3. מועמדים ותיקים שחוזרים מהפסקת לימודים יעברו לדיון במחלקה. <br>\n4. אין קבלות לשנה ב'. <br>\n\n<br><b>מדיניות דיון בחריגים:<br> </b>\nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה.<br>  \nיועברו לדיון בועדת חריגים במחלקה מועמדים עם פסיכומטרי 530 לפחות וגם סכם 550 לפחות או מועמדים עם פסיכומטרי 620 והעומדים בדרישות האנגלית והעברית. <br>\nמועמדים העומדים בתנאים אלה נדרשים לשלוח קו\"ח והצהרת כוונות, יתכן זימון לראיון. \n\n",
+            "reg_status": "פתוחה ",
+            "sekem_label": "סכם",
+            "department": 144,
+            "path": 1,
+            "specialization": 12,
+            "show_simulator": 1,
+            "path_description": "חד מחלקתי",
+            "spec_description": "מסלול רגיל"
+          }
+        ],
+        "hasMore": false,
+        "limit": 0,
+        "offset": 0,
+        "count": 1,
+        "links": [
+          {
+            "rel": "self",
+            "href": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=144&p_pat1=1&p_spe1=12&p_institution=0&p_degree_level=1"
+          },
+          {
+            "rel": "describedby",
+            "href": "https://bgu4u22.bgu.ac.il/apex/10g/metadata-catalog/candidate_site/GetRdpData/"
+          }
+        ]
+      },
+      "calculatorCaptures": [
+        {
+          "pairId": "social_work__bgu",
+          "capturedAt": "2026-09-27T19:08:01.969Z",
+          "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem",
+          "method": "POST",
+          "request": {
+            "rn_include_mitsraf": "0",
+            "rn_year": "2027",
+            "on_bagrut_average": "100.00",
+            "on_psychometry": "549",
+            "on_final_sekem": ""
+          },
+          "input": {
+            "psychometric": 549,
+            "bguBagrutAverage": 100
+          },
+          "httpStatus": 200,
+          "rawResponse": "<script>parent.main.document.mainForm.on_final_sekem.value = 600;</script> \n",
+          "rawResponseSha256": "769304aa55844fe3038670ffecbdb47e30cc0b0ca45e6b48a36f00b3197a690e",
+          "officialScore": 600,
+          "expectedNumericRouteVerdict": "below",
+          "verdictBasis": "Derived only from the current published numeric score/psychometric route. Programme eligibility also requires route-specific language, qualification and review gates; these captures do not activate authority."
+        },
+        {
+          "pairId": "social_work__bgu",
+          "capturedAt": "2026-09-27T19:08:02.372Z",
+          "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem",
+          "method": "POST",
+          "request": {
+            "rn_include_mitsraf": "0",
+            "rn_year": "2027",
+            "on_bagrut_average": "100.00",
+            "on_psychometry": "550",
+            "on_final_sekem": ""
+          },
+          "input": {
+            "psychometric": 550,
+            "bguBagrutAverage": 100
+          },
+          "httpStatus": 200,
+          "rawResponse": "<script>parent.main.document.mainForm.on_final_sekem.value = 601;</script> \n",
+          "rawResponseSha256": "e090b9b16620eec655d6e3c2a8c21a54b055a241c028d22511f20a4e3a47f5d8",
+          "officialScore": 601,
+          "expectedNumericRouteVerdict": "eligible_to_apply",
+          "verdictBasis": "Derived only from the current published numeric score/psychometric route. Programme eligibility also requires route-specific language, qualification and review gates; these captures do not activate authority."
+        },
+        {
+          "pairId": "bgu_socialwork__bgu",
+          "capturedAt": "2026-09-27T19:08:02.680Z",
+          "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem",
+          "method": "POST",
+          "request": {
+            "rn_include_mitsraf": "0",
+            "rn_year": "2027",
+            "on_bagrut_average": "100.00",
+            "on_psychometry": "549",
+            "on_final_sekem": ""
+          },
+          "input": {
+            "psychometric": 549,
+            "bguBagrutAverage": 100
+          },
+          "httpStatus": 200,
+          "rawResponse": "<script>parent.main.document.mainForm.on_final_sekem.value = 600;</script> \n",
+          "rawResponseSha256": "769304aa55844fe3038670ffecbdb47e30cc0b0ca45e6b48a36f00b3197a690e",
+          "officialScore": 600,
+          "expectedNumericRouteVerdict": "below",
+          "verdictBasis": "Derived only from the current published numeric score/psychometric route. Programme eligibility also requires route-specific language, qualification and review gates; these captures do not activate authority."
+        },
+        {
+          "pairId": "bgu_socialwork__bgu",
+          "capturedAt": "2026-09-27T19:08:02.759Z",
+          "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem",
+          "method": "POST",
+          "request": {
+            "rn_include_mitsraf": "0",
+            "rn_year": "2027",
+            "on_bagrut_average": "100.00",
+            "on_psychometry": "550",
+            "on_final_sekem": ""
+          },
+          "input": {
+            "psychometric": 550,
+            "bguBagrutAverage": 100
+          },
+          "httpStatus": 200,
+          "rawResponse": "<script>parent.main.document.mainForm.on_final_sekem.value = 601;</script> \n",
+          "rawResponseSha256": "e090b9b16620eec655d6e3c2a8c21a54b055a241c028d22511f20a4e3a47f5d8",
+          "officialScore": 601,
+          "expectedNumericRouteVerdict": "eligible_to_apply",
+          "verdictBasis": "Derived only from the current published numeric score/psychometric route. Programme eligibility also requires route-specific language, qualification and review gates; these captures do not activate authority."
+        }
+      ]
+    },
+    {
+      "programme": "communication",
+      "pairs": [
+        "communication__bgu"
+      ],
+      "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=183&p_pat1=2&p_degree_level=1",
+      "fetchedAt": "2026-09-27T19:08:02.836Z",
+      "httpStatus": 200,
+      "rawResponseSha256": "4334c9b46bb06101493d788c8b34832c4285be5b5fe3f81177cfc5126a16e2e2",
+      "payload": {
+        "items": [
+          {
+            "department_dsc": "תקשורת",
+            "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/humsos/Communication_Studies_degree_1.aspx",
+            "path_dsc": "תקשורת דו מחלקתי",
+            "psycho_sekem": 520,
+            "psycho_and_or": " או ",
+            "psycho_value": 520,
+            "psycho_info": "4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ה'",
+            "bagrut_average": 98,
+            "bagrut_info": "רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ה'",
+            "bagrut_additional": "06.08.2026- חודשו קבלות למחלקה לתקשורת <br>\n16.06.2026 עצרנו קבלות במחלקה לתקשורת  למעט המסלול לדיפלומטיה ציבורית (תקשורת עם לימודי מדינת ישראל). מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם. <br>\n05.05.2026- החל דיון בחריגים במחלקה לתקשורת <br>\nממוצע מכינה למדעים מדויקים והנדסה או מכינה למדעי הטבע והחיים של אוניברסיטת-בן גוריון בנגב יכולה להחליף את ממוצע הבגרות באפיק קבלה זה. ממוצע המכינה הנדרש 70.\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<br>\nמועמדים בעלי רקע אקדמי קודם העומדים בתנאי הקבלה יתקבל ללא צורך בשליחת גיליון ציונים.<br>\nמועמד שאינו עומד בחתך הקבלה יעבור לדיון במחלקה לאחר הצגת גיליון ציונים עדכני. <br>\nמועמדים ותיקים שחוזרים מהפסקת לימודים יעברו לדיון במחלקה. <br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט הבא:<br>\n ממוצע בגרות נמוך עד 5 נקודות מהממוצע הנדרש. <br>\nמועמדים העומדים בתנאים אלו ידונו בוועדת הקבלה של המחלקה על בסיס מכלול נתוניהם. <br>\nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה. יש לשלוח מכתב המסביר את הרצון וההתאמה ללימודים במחלקה. <br>\n\n",
+            "comments": "06.08.2026- חודשו קבלות למחלקה לתקשורת <br>\n16.06.2026 עצרנו קבלות במחלקה לתקשורת למעט המסלול לדיפלומטיה ציבורית (תקשורת עם לימודי מדינת ישראל). מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם. <br>\n05.05.2026- החל דיון בחריגים במחלקה לתקשורת\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<br>\nמועמדים בעלי רקע אקדמי קודם העומדים בתנאי הקבלה יתקבל ללא צורך בשליחת גיליון ציונים.<br>\nמועמד שאינו עומד בחתך הקבלה יעבור לדיון במחלקה לאחר הצגת גיליון ציונים עדכני. <br>\nמועמדים ותיקים שחוזרים מהפסקת לימודים יעברו לדיון במחלקה. <br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט להלן:<br>\nמועמדים עם פסיכומטרי או סכם הנמוך עד 20 נק' מהנדרש.    <br>               \nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה.  יש לשלוח מכתב המסביר את הרצון וההתאמה ללימודים במחלקה.\n\n",
+            "reg_status": "פתוחה ",
+            "sekem_label": "סכם",
+            "department": 183,
+            "path": 2,
+            "specialization": null,
+            "show_simulator": 1,
+            "path_description": "דו מחלקתי",
+            "spec_description": null
+          }
+        ],
+        "hasMore": false,
+        "limit": 0,
+        "offset": 0,
+        "count": 1,
+        "links": [
+          {
+            "rel": "self",
+            "href": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=183&p_pat1=2&p_degree_level=1"
+          },
+          {
+            "rel": "describedby",
+            "href": "https://bgu4u22.bgu.ac.il/apex/10g/metadata-catalog/candidate_site/GetRdpData/"
+          }
+        ]
+      },
+      "calculatorCaptures": [
+        {
+          "pairId": "communication__bgu",
+          "capturedAt": "2026-09-27T19:08:02.934Z",
+          "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem",
+          "method": "POST",
+          "request": {
+            "rn_include_mitsraf": "0",
+            "rn_year": "2027",
+            "on_bagrut_average": "50.00",
+            "on_psychometry": "519",
+            "on_final_sekem": ""
+          },
+          "input": {
+            "psychometric": 519,
+            "bguBagrutAverage": 50
+          },
+          "httpStatus": 200,
+          "rawResponse": "<script>parent.main.document.mainForm.on_final_sekem.value = 286;</script> \n",
+          "rawResponseSha256": "43e1863ac434df1f39c3de62c9034f6f67938e4cb0a671736eaed99d964b4904",
+          "officialScore": 286,
+          "expectedNumericRouteVerdict": "below",
+          "verdictBasis": "Derived only from the current published numeric score/psychometric route. Programme eligibility also requires route-specific language, qualification and review gates; these captures do not activate authority."
+        },
+        {
+          "pairId": "communication__bgu",
+          "capturedAt": "2026-09-27T19:08:03.015Z",
+          "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem",
+          "method": "POST",
+          "request": {
+            "rn_include_mitsraf": "0",
+            "rn_year": "2027",
+            "on_bagrut_average": "50.00",
+            "on_psychometry": "520",
+            "on_final_sekem": ""
+          },
+          "input": {
+            "psychometric": 520,
+            "bguBagrutAverage": 50
+          },
+          "httpStatus": 200,
+          "rawResponse": "<script>parent.main.document.mainForm.on_final_sekem.value = 287;</script> \n",
+          "rawResponseSha256": "d11a8cd5164512043868ea6f8beb55770ab1dc9657322f59165bee553f6d1a42",
+          "officialScore": 287,
+          "expectedNumericRouteVerdict": "eligible_to_apply",
+          "verdictBasis": "Derived only from the current published numeric score/psychometric route. Programme eligibility also requires route-specific language, qualification and review gates; these captures do not activate authority."
+        }
+      ]
+    },
+    {
+      "programme": "education",
+      "pairs": [
+        "education__bgu"
+      ],
+      "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=129&p_pat1=2&p_degree_level=1",
+      "fetchedAt": "2026-09-27T19:08:03.104Z",
+      "httpStatus": 200,
+      "rawResponseSha256": "81991e570507663e8cc120d826ec162c3454b3ce474d5e3ed66c3579069784ee",
+      "payload": {
+        "items": [
+          {
+            "department_dsc": "חינוך",
+            "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/humsos/Education_degree_1.aspx",
+            "path_dsc": "חינוך דו-מחלקתי",
+            "psycho_sekem": 520,
+            "psycho_and_or": " או ",
+            "psycho_value": 520,
+            "psycho_info": "4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ה'",
+            "bagrut_average": 96,
+            "bagrut_info": "רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ה'",
+            "bagrut_additional": "22.09.2026-במחלקה לחינוך במסלול הדו מחלקתי, מועמדים שעומדים בתנאי הקבלה ע\"ס בגרות , ללא רמת סיווג באנגלית עם בגרות באנגלית 5/80 יתקבלו עם תנאי להגעה לרמה הנדרשת באנגלית עד סוף סמסמטר א' בשילוב עם המחלקות הבאות בלבד: פילוסופיה,לימודי מזרח תיכון, אומנות ולימודי מדינת ישראל.  <br>\n31.05.2026-במחלקה לחינוך, מועמדים שעומדים בתנאי הקבלה ע\"ס בגרות , ללא רמת סיווג באנגלית עם בגרות באנגלית 5/80 יתקבלו עד לתאריך 16.07.2026 עם תנאי להגעה לרמה הנדרשת באנגלית עד ל 26.07.2026. <br>\n12.04.2026- החל דיון בחריגים במחלקה לחינוך <br>\nממוצע מכינה למדעים מדויקים והנדסה או מכינה למדעי הטבע והחיים של אוניברסיטת-בן גוריון בנגב יכולה להחליף את ממוצע הבגרות באפיק קבלה זה. ממוצע המכינה הנדרש 70.\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<br>\nמועמדים בעלי רקע אקדמי קודם העומדים בתנאי הקבלה יתקבל ללא צורך בשליחת גיליון ציונים.<br>\nמועמד שאינו עומד בחתך הקבלה יעבור לדיון במחלקה לאחר הצגת גיליון ציונים עדכני. <br>\nמועמדים ותיקים שחוזרים מהפסקת לימודים יעברו לדיון במחלקה. <br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט הבא:<br>\n ממוצע בגרות נמוך עד 5 נקודות מהממוצע הנדרש. <br>\nמועמדים העומדים בתנאים אלו ידונו בוועדת הקבלה של המחלקה על בסיס מכלול נתוניהם. <br>\nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה <br>\nמועמדים אלו נדרשים לפנות בכתב לועדת הקבלה לאחר ביצוע הרשמה. \nאת המכתב יש להעלות דרך האיזור האישי למועמדים.\n<p><p> \nגיל 45+ מתקבל ללא פסיכומטרי (חייב זכאות לבגרות+רמה בסיסי באנגלית).",
+            "comments": "12.04.2026- החל דיון בחריגים במחלקה לחינוך\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n <br>  \nמועמדים בעלי רקע אקדמי קודם העומדים בתנאי הקבלה יתקבל ללא צורך בשליחת גיליון ציונים.<br>\nמועמד שאינו עומד בחתך הקבלה יעבור לדיון במחלקה לאחר הצגת גיליון ציונים עדכני. <br>\nמועמדים ותיקים שחוזרים מהפסקת לימודים יעברו לדיון במחלקה. <br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט להלן:<br>\nמועמדים עם פסיכומטרי או סכם הנמוך עד 20 נק' מהנדרש.    <br>                   \nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה.  <br>                            \nמועמדים אלו נדרשים לפנות בכתב לועדת הקבלה לאחר ביצוע הרשמה. \nאת המכתב יש להעלות דרך האיזור האישי למועמדים.\n<p><p> \nגיל 45+ מתקבל ללא פסיכומטרי (חייב זכאות לבגרות+רמה בסיסי באנגלית).",
+            "reg_status": "פתוחה ",
+            "sekem_label": "סכם",
+            "department": 129,
+            "path": 2,
+            "specialization": null,
+            "show_simulator": 1,
+            "path_description": "דו-מחלקתי",
+            "spec_description": null
+          }
+        ],
+        "hasMore": false,
+        "limit": 0,
+        "offset": 0,
+        "count": 1,
+        "links": [
+          {
+            "rel": "self",
+            "href": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=129&p_pat1=2&p_degree_level=1"
+          },
+          {
+            "rel": "describedby",
+            "href": "https://bgu4u22.bgu.ac.il/apex/10g/metadata-catalog/candidate_site/GetRdpData/"
+          }
+        ]
+      },
+      "calculatorCaptures": [
+        {
+          "pairId": "education__bgu",
+          "capturedAt": "2026-09-27T19:08:03.199Z",
+          "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem",
+          "method": "POST",
+          "request": {
+            "rn_include_mitsraf": "0",
+            "rn_year": "2027",
+            "on_bagrut_average": "50.00",
+            "on_psychometry": "519",
+            "on_final_sekem": ""
+          },
+          "input": {
+            "psychometric": 519,
+            "bguBagrutAverage": 50
+          },
+          "httpStatus": 200,
+          "rawResponse": "<script>parent.main.document.mainForm.on_final_sekem.value = 286;</script> \n",
+          "rawResponseSha256": "43e1863ac434df1f39c3de62c9034f6f67938e4cb0a671736eaed99d964b4904",
+          "officialScore": 286,
+          "expectedNumericRouteVerdict": "below",
+          "verdictBasis": "Derived only from the current published numeric score/psychometric route. Programme eligibility also requires route-specific language, qualification and review gates; these captures do not activate authority."
+        },
+        {
+          "pairId": "education__bgu",
+          "capturedAt": "2026-09-27T19:08:03.276Z",
+          "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem",
+          "method": "POST",
+          "request": {
+            "rn_include_mitsraf": "0",
+            "rn_year": "2027",
+            "on_bagrut_average": "50.00",
+            "on_psychometry": "520",
+            "on_final_sekem": ""
+          },
+          "input": {
+            "psychometric": 520,
+            "bguBagrutAverage": 50
+          },
+          "httpStatus": 200,
+          "rawResponse": "<script>parent.main.document.mainForm.on_final_sekem.value = 287;</script> \n",
+          "rawResponseSha256": "d11a8cd5164512043868ea6f8beb55770ab1dc9657322f59165bee553f6d1a42",
+          "officialScore": 287,
+          "expectedNumericRouteVerdict": "eligible_to_apply",
+          "verdictBasis": "Derived only from the current published numeric score/psychometric route. Programme eligibility also requires route-specific language, qualification and review gates; these captures do not activate authority."
+        }
+      ]
+    },
+    {
+      "programme": "political_science",
+      "pairs": [
+        "political_science__bgu"
+      ],
+      "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=138&p_pat1=2&p_institution=0&p_degree_level=1",
+      "fetchedAt": "2026-09-27T19:08:03.352Z",
+      "httpStatus": 200,
+      "rawResponseSha256": "c548168f0b94424e34fb7601cb2b0c60ab3884fd0b5e5d36fc78c13f4125be34",
+      "payload": {
+        "items": [
+          {
+            "department_dsc": "פוליטיקה וממשל",
+            "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/humsos/Politics_Government_degree_1.aspx",
+            "path_dsc": "פוליטיקה וממשל דו מחלקתי",
+            "psycho_sekem": 500,
+            "psycho_and_or": " או ",
+            "psycho_value": 500,
+            "psycho_info": "4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ה'",
+            "bagrut_average": 100,
+            "bagrut_info": "רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ה'",
+            "bagrut_additional": "31.05.2026-במחלקה לפוליטיקה וממשל, מועמדים שעומדים בתנאי הקבלה ע\"ס בגרות , ללא רמת סיווג באנגלית עם בגרות באנגלית 5/80 יתקבלו עד לתאריך 16.07.2026 עם תנאי להגעה לרמה הנדרשת באנגלית עד ל 26.07.2026. <br>\n12.04.2026- החל דיון בחריגים במחלקה לפוליטיקה וממשל<br>\nממוצע מכינה למדעים מדויקים והנדסה או מכינה למדעי הטבע והחיים של אוניברסיטת-בן גוריון בנגב יכולה להחליף את ממוצע הבגרות באפיק קבלה זה. ממוצע המכינה הנדרש 70.\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<br>  \nמועמדים בעלי רקע אקדמי קודם העומדים בתנאי הקבלה יתקבל ללא צורך בשליחת גיליון ציונים.<br>\nמועמד שאינו עומד בחתך הקבלה יעבור לדיון במחלקה לאחר הצגת גיליון ציונים עדכני. <br>\nמועמדים ותיקים שחוזרים מהפסקת לימודים יעברו לדיון במחלקה. <br>\n\n\n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות רמת האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט הבא:<br>\nממוצע בגרות נמוך עד 5 נקודות מהממוצע הנדרש  <br>\nמועמדים העומדים בתנאים אלו ידונו בוועדת הקבלה של המחלקה על בסיס מכלול נתוניהם. <br>\nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה. יש לשלוח מכתב המסביר את הרצון וההתאמה ללימודים במחלקה. <br>\n                                                                             \n<p> מועמדים בגילאי 45+ מתקבלים ללא פסיכומטרי (אך נדרשים לזכאות לבגרות+רמה בסיסי באנגלית).",
+            "comments": "12.04.2026- החל דיון בחריגים במחלקה לפוליטיקה וממשל<br>\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<br>  \nמועמדים בעלי רקע אקדמי קודם העומדים בתנאי הקבלה יתקבל ללא צורך בשליחת גיליון ציונים.<br>\nמועמד שאינו עומד בחתך הקבלה יעבור לדיון במחלקה לאחר הצגת גיליון ציונים עדכני. <br>\nמועמדים ותיקים שחוזרים מהפסקת לימודים יעברו לדיון במחלקה. <br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט להלן:<br>\nמועמדים עם פסיכומטרי או סכם הנמוך עד 20 נק' מהנדרש.    <br>              \nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה.   <br> \nיש לשלוח מכתב המסביר את הרצון וההתאמה ללימודים במחלקה. <br>\n                                                                                \n<p> מועמדים בגילאי 45+ מתקבלים ללא פסיכומטרי (אך נדרשים לזכאות לבגרות+רמה בסיסי באנגלית).",
+            "reg_status": "פתוחה ",
+            "sekem_label": "סכם",
+            "department": 138,
+            "path": 2,
+            "specialization": null,
+            "show_simulator": 1,
+            "path_description": "דו מחלקתי",
+            "spec_description": null
+          }
+        ],
+        "hasMore": false,
+        "limit": 0,
+        "offset": 0,
+        "count": 1,
+        "links": [
+          {
+            "rel": "self",
+            "href": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=138&p_pat1=2&p_institution=0&p_degree_level=1"
+          },
+          {
+            "rel": "describedby",
+            "href": "https://bgu4u22.bgu.ac.il/apex/10g/metadata-catalog/candidate_site/GetRdpData/"
+          }
+        ]
+      },
+      "calculatorCaptures": [
+        {
+          "pairId": "political_science__bgu",
+          "capturedAt": "2026-09-27T19:08:03.447Z",
+          "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem",
+          "method": "POST",
+          "request": {
+            "rn_include_mitsraf": "0",
+            "rn_year": "2027",
+            "on_bagrut_average": "50.00",
+            "on_psychometry": "499",
+            "on_final_sekem": ""
+          },
+          "input": {
+            "psychometric": 499,
+            "bguBagrutAverage": 50
+          },
+          "httpStatus": 200,
+          "rawResponse": "<script>parent.main.document.mainForm.on_final_sekem.value = 274;</script> \n",
+          "rawResponseSha256": "7bb13d31f5f1931ab68ed196060119ac9167f7f654ca8ae2b40fb51f262cfd75",
+          "officialScore": 274,
+          "expectedNumericRouteVerdict": "below",
+          "verdictBasis": "Derived only from the current published numeric score/psychometric route. Programme eligibility also requires route-specific language, qualification and review gates; these captures do not activate authority."
+        },
+        {
+          "pairId": "political_science__bgu",
+          "capturedAt": "2026-09-27T19:08:03.524Z",
+          "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem",
+          "method": "POST",
+          "request": {
+            "rn_include_mitsraf": "0",
+            "rn_year": "2027",
+            "on_bagrut_average": "50.00",
+            "on_psychometry": "500",
+            "on_final_sekem": ""
+          },
+          "input": {
+            "psychometric": 500,
+            "bguBagrutAverage": 50
+          },
+          "httpStatus": 200,
+          "rawResponse": "<script>parent.main.document.mainForm.on_final_sekem.value = 274;</script> \n",
+          "rawResponseSha256": "7bb13d31f5f1931ab68ed196060119ac9167f7f654ca8ae2b40fb51f262cfd75",
+          "officialScore": 274,
+          "expectedNumericRouteVerdict": "eligible_to_apply",
+          "verdictBasis": "Derived only from the current published numeric score/psychometric route. Programme eligibility also requires route-specific language, qualification and review gates; these captures do not activate authority."
+        }
+      ]
+    }
+  ]
+}

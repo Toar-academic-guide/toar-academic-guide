@@ -12,6 +12,7 @@ import type {
   AdmissionsSourceFreshnessRunResult,
   AdmissionsSourceFreshnessRunnerOptions,
 } from '@/server/ingestion/admissionsSourceFreshnessRunner';
+import { FORMULA_BACKED_VERIFICATION_LEDGER } from '@/data/admissions/formulaBackedVerificationLedger';
 
 const proof = {
   id: 'tau-digital-sciences-live',
@@ -24,7 +25,7 @@ const proof = {
   status: 'succeeded' as const,
   sourceClass: 'api_static_json' as const,
   reproducedFields: ['acceptanceThreshold'],
-  normalizedPayload: { programId: 'tau_digital_sciences', acceptanceThreshold: 695 },
+  normalizedPayload: { programId: 'tau_datascience', acceptanceThreshold: 695 },
   limitations: [],
   nextAction: 'Review changed threshold before publication',
 };
@@ -37,6 +38,10 @@ function report(): AdmissionsLiveProofReport {
 }
 
 describe('admissions weekly review preparation', () => {
+  const exactTauLedger = FORMULA_BACKED_VERIFICATION_LEDGER.map((entry) =>
+    entry.pairId === 'tau_datascience__tau' ? { ...entry, state: 'exact' as const } : entry,
+  );
+
   it('persists source freshness first, then compares only against published reviewed rules', async () => {
     const sourceRunner = vi.fn<
       (
@@ -48,14 +53,18 @@ describe('admissions weekly review preparation', () => {
         async () =>
           [
             {
-              target: { institutionId: 'tau', programId: 'tau_digital_sciences', cycle: '2027' },
+              target: { institutionId: 'tau', programId: 'tau_datascience', cycle: '2027' },
               ruleKind: 'admission_cutoff' as const,
               value: 700,
             },
           ] satisfies PublishedAdmissionRule[],
       ),
     };
-    const preparer = createAdmissionsWeeklyReviewPreparer({ sourceRunner, baselineRepository });
+    const preparer = createAdmissionsWeeklyReviewPreparer({
+      sourceRunner,
+      baselineRepository,
+      verificationLedger: exactTauLedger,
+    });
 
     const result = await preparer.prepare({
       runKey: '2026-W30',
@@ -69,5 +78,43 @@ describe('admissions weekly review preparation', () => {
     expect(baselineRepository.listPublishedRules).toHaveBeenCalledWith({ cycle: '2027' });
     expect(result.run.manifest.changes).toMatchObject([{ before: 700, after: 695 }]);
     expect(result.persistence).toBeNull();
+  });
+
+  it('uses the currently applied canonical threshold as the bootstrap baseline', async () => {
+    const sourceRunner = vi.fn<
+      (
+        options: AdmissionsSourceFreshnessRunnerOptions,
+      ) => Promise<AdmissionsSourceFreshnessRunResult>
+    >(async () => ({ report: report(), persistence: null }));
+    const baselineRepository: PublishedAdmissionRuleRepository = {
+      listPublishedRules: vi.fn(async () => []),
+      listCurrentCanonicalRules: vi.fn(
+        async () =>
+          [
+            {
+              target: { institutionId: 'tau', programId: 'tau_datascience', cycle: '2027' },
+              ruleKind: 'admission_cutoff' as const,
+              value: 695,
+            },
+          ] satisfies PublishedAdmissionRule[],
+      ),
+    };
+
+    const result = await createAdmissionsWeeklyReviewPreparer({
+      sourceRunner,
+      baselineRepository,
+      verificationLedger: exactTauLedger,
+    }).prepare({
+      runKey: 'bootstrap-2027',
+      cycle: '2027',
+      releaseKind: 'canonical_bootstrap',
+      checkedAt: new Date('2026-07-19T03:00:00.000Z'),
+    });
+
+    expect(baselineRepository.listCurrentCanonicalRules).toHaveBeenCalledWith({ cycle: '2027' });
+    expect(result.run.manifest).toMatchObject({
+      releaseKind: 'canonical_bootstrap',
+      changes: [{ before: 695, after: 695 }],
+    });
   });
 });

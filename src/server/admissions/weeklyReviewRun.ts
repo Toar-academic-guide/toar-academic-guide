@@ -1,6 +1,10 @@
 import { createHash } from 'node:crypto';
 
 import type { AdmissionsSourceProof } from '@/server/ingestion/admissionsSourceAdapters';
+import {
+  FORMULA_BACKED_VERIFICATION_LEDGER,
+  type FormulaPairVerificationLedgerEntry,
+} from '@/data/admissions/formulaBackedVerificationLedger';
 
 import type { ReviewedAdmissionsManifest } from './reviewedManifest';
 
@@ -12,7 +16,9 @@ export interface PublishedAdmissionRule {
 
 export type AdmissionsReviewExclusionReason =
   | 'proof_not_decision_capable'
+  | 'cutoff_metric_incompatible'
   | 'missing_program_or_cutoff'
+  | 'pair_verification_incomplete'
   | 'no_reviewed_baseline'
   | 'unchanged'
   | 'reviewer_excluded';
@@ -38,6 +44,8 @@ export interface AdmissionsReviewCandidate {
 export interface AdmissionsReviewRun {
   runKey: string;
   checkedAt: string;
+  releaseKind: ReviewedAdmissionsManifest['releaseKind'];
+  proofScenario: string | null;
   summary: {
     status: 'no_changes' | 'reviewable';
     candidateCount: number;
@@ -70,8 +78,12 @@ export function buildAdmissionsReviewRun(input: {
   cycle: string;
   baseline: PublishedAdmissionRule[];
   proofs: AdmissionsSourceProof[];
+  releaseKind?: ReviewedAdmissionsManifest['releaseKind'];
+  proofScenario?: string;
   excludedCandidateIds?: string[];
+  verificationLedger?: readonly FormulaPairVerificationLedgerEntry[];
 }): AdmissionsReviewRun {
+  const releaseKind = input.releaseKind ?? 'canonical_change';
   const baselineByTarget = new Map(
     input.baseline.map((rule) => [ruleKey(rule.target, rule.ruleKind), rule]),
   );
@@ -93,8 +105,21 @@ export function buildAdmissionsReviewRun(input: {
       excluded.push(exclusion(proof, 'proof_not_decision_capable'));
       continue;
     }
+    if (proof.normalizedPayload.publicationMetric === 'formula_score') {
+      excluded.push(exclusion(proof, 'cutoff_metric_incompatible'));
+      continue;
+    }
     if (!programId || cutoff === undefined) {
       excluded.push(exclusion(proof, 'missing_program_or_cutoff'));
+      continue;
+    }
+    const pairId =
+      stringValue(proof.normalizedPayload.pairId) ?? `${programId}__${proof.institutionId}`;
+    const pairVerification = (input.verificationLedger ?? FORMULA_BACKED_VERIFICATION_LEDGER).find(
+      (entry) => entry.pairId === pairId,
+    );
+    if (pairVerification?.state !== 'exact') {
+      excluded.push(exclusion(proof, 'pair_verification_incomplete'));
       continue;
     }
 
@@ -104,7 +129,7 @@ export function buildAdmissionsReviewRun(input: {
       excluded.push(exclusion(proof, 'no_reviewed_baseline'));
       continue;
     }
-    if (current.value === cutoff) {
+    if (current.value === cutoff && releaseKind !== 'canonical_bootstrap') {
       excluded.push(exclusion(proof, 'unchanged'));
       continue;
     }
@@ -121,6 +146,7 @@ export function buildAdmissionsReviewRun(input: {
           digest: digest(stableJson(proof.normalizedPayload)),
           excerpt: safeExcerpt(proof, cutoff),
           url: proof.officialUrl,
+          proofType: 'exact_official',
         },
         institutionName: proof.institutionName,
       },
@@ -151,7 +177,9 @@ export function buildAdmissionsReviewRun(input: {
   excluded.sort((left, right) => left.sourceProofId.localeCompare(right.sourceProofId));
 
   const manifest: ReviewedAdmissionsManifest = {
-    version: 1,
+    version: 2,
+    releaseKind,
+    ...(input.proofScenario ? { proofScenario: input.proofScenario } : {}),
     changes: includedCandidates.map((candidate) => ({
       target: candidate.target,
       ruleKind: candidate.ruleKind,
@@ -177,6 +205,8 @@ export function buildAdmissionsReviewRun(input: {
   const run = {
     runKey: input.runKey,
     checkedAt: input.checkedAt.toISOString(),
+    releaseKind,
+    proofScenario: input.proofScenario ?? null,
     summary,
     candidates: includedCandidates,
     excluded,
@@ -222,7 +252,7 @@ export function buildAdmissionsReviewSlackMessage(
   };
 }
 
-function buildAdmissionsReviewMarkdown(run: Omit<AdmissionsReviewRun, 'markdown'>): string {
+export function buildAdmissionsReviewMarkdown(run: Omit<AdmissionsReviewRun, 'markdown'>): string {
   const lines = [
     `# Admissions review run ${run.runKey}`,
     '',
@@ -270,8 +300,12 @@ function exclusion(
       proof.errorReason ??
       proof.blockedReason ??
       'The official proof is not safe for a canonical rule change.',
+    cutoff_metric_incompatible:
+      'The official threshold uses a formula-score metric that cannot replace the catalogue cutoff value.',
     missing_program_or_cutoff:
       'The official proof did not contain a verified program identifier and cutoff.',
+    pair_verification_incomplete:
+      'The pair has not passed its reviewed mapping, fixture, fingerprint, and live-proof gate.',
     no_reviewed_baseline: 'No reviewed published baseline exists for this target.',
     unchanged: 'The official cutoff matches the current reviewed baseline.',
     reviewer_excluded: 'A reviewer excluded this candidate from the generated admissions update.',

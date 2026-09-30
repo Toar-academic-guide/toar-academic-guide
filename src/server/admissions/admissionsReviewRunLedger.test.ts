@@ -8,6 +8,11 @@ import {
   type AdmissionsReviewRunRecord,
 } from './admissionsReviewRunLedger';
 import { buildAdmissionsReviewRun } from './weeklyReviewRun';
+import { FORMULA_BACKED_VERIFICATION_LEDGER } from '@/data/admissions/formulaBackedVerificationLedger';
+
+const exactTauLedger = FORMULA_BACKED_VERIFICATION_LEDGER.map((entry) =>
+  entry.pairId === 'tau_datascience__tau' ? { ...entry, state: 'exact' as const } : entry,
+);
 
 function run() {
   return buildAdmissionsReviewRun({
@@ -16,7 +21,7 @@ function run() {
     cycle: '2027',
     baseline: [
       {
-        target: { institutionId: 'tau', programId: 'tau_digital_sciences', cycle: '2027' },
+        target: { institutionId: 'tau', programId: 'tau_datascience', cycle: '2027' },
         ruleKind: 'admission_cutoff' as const,
         value: 700,
       },
@@ -33,11 +38,12 @@ function run() {
         status: 'succeeded' as const,
         sourceClass: 'api_static_json' as const,
         reproducedFields: ['acceptanceThreshold'],
-        normalizedPayload: { programId: 'tau_digital_sciences', acceptanceThreshold: 695 },
+        normalizedPayload: { programId: 'tau_datascience', acceptanceThreshold: 695 },
         limitations: [],
         nextAction: 'Review changed threshold before publication',
       },
     ],
+    verificationLedger: exactTauLedger,
   });
 }
 
@@ -66,6 +72,22 @@ describe('admissions review run ledger', () => {
 
     await ledger.recordSlackSent({ runKey: '2026-W30' });
     expect(repository.records[0]).toMatchObject({ slackStatus: 'sent', slackError: null });
+  });
+
+  it('records an indeterminate Slack acceptance without treating it as retryable', async () => {
+    const repository = new MemoryAdmissionsReviewRunRepository();
+    const ledger = createAdmissionsReviewRunLedger(repository);
+
+    await ledger.recordPreparedRun(run());
+    await ledger.recordSlackAcceptanceUnknown({
+      runKey: '2026-W30',
+      error: 'Slack API request timed out after 10ms.',
+    });
+
+    expect(await ledger.getRun('2026-W30')).toMatchObject({
+      slackStatus: 'acceptance_unknown',
+      slackError: 'Slack API request timed out after 10ms.',
+    });
   });
 });
 
@@ -102,7 +124,7 @@ class MemoryAdmissionsReviewRunRepository implements AdmissionsReviewRunLedgerRe
 
   async setSlackStatus(input: {
     runKey: string;
-    slackStatus: 'sent' | 'failed';
+    slackStatus: 'sent' | 'failed' | 'acceptance_unknown';
     slackError: string | null;
   }) {
     const record = this.requireRecord(input.runKey);

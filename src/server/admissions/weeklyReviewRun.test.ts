@@ -5,10 +5,11 @@ import {
   buildAdmissionsReviewSlackMessage,
   type PublishedAdmissionRule,
 } from './weeklyReviewRun';
+import { FORMULA_BACKED_VERIFICATION_LEDGER } from '@/data/admissions/formulaBackedVerificationLedger';
 
 const baseline: PublishedAdmissionRule[] = [
   {
-    target: { institutionId: 'tau', programId: 'tau_digital_sciences', cycle: '2027' },
+    target: { institutionId: 'tau', programId: 'tau_datascience', cycle: '2027' },
     ruleKind: 'admission_cutoff',
     value: 700,
   },
@@ -27,7 +28,7 @@ function decisionProof(overrides: Record<string, unknown> = {}) {
     sourceClass: 'api_static_json' as const,
     reproducedFields: ['acceptanceThreshold'],
     normalizedPayload: {
-      programId: 'tau_digital_sciences',
+      programId: 'tau_datascience',
       programName: 'Digital Sciences',
       acceptanceThreshold: 695,
     },
@@ -38,6 +39,10 @@ function decisionProof(overrides: Record<string, unknown> = {}) {
 }
 
 describe('weekly admissions review run', () => {
+  const exactTauLedger = FORMULA_BACKED_VERIFICATION_LEDGER.map((entry) =>
+    entry.pairId === 'tau_datascience__tau' ? { ...entry, state: 'exact' as const } : entry,
+  );
+
   it('turns a safe changed proof into one deterministic manifest change and human handoff', () => {
     const run = buildAdmissionsReviewRun({
       runKey: '2026-W30',
@@ -45,13 +50,15 @@ describe('weekly admissions review run', () => {
       cycle: '2027',
       baseline,
       proofs: [decisionProof()],
+      verificationLedger: exactTauLedger,
     });
 
     expect(run.manifest).toMatchObject({
-      version: 1,
+      version: 2,
+      releaseKind: 'canonical_change',
       changes: [
         {
-          target: { institutionId: 'tau', programId: 'tau_digital_sciences', cycle: '2027' },
+          target: { institutionId: 'tau', programId: 'tau_datascience', cycle: '2027' },
           ruleKind: 'admission_cutoff',
           before: 700,
           after: 695,
@@ -80,6 +87,7 @@ describe('weekly admissions review run', () => {
         decisionProof({ id: 'bgu-score-only', capability: 'score_only', status: 'partial' }),
         decisionProof({ id: 'tau-failed', status: 'failed', errorReason: 'endpoint timeout' }),
       ],
+      verificationLedger: exactTauLedger,
     });
 
     expect(run.manifest.changes).toEqual([]);
@@ -96,6 +104,34 @@ describe('weekly admissions review run', () => {
     expect(run.markdown).toContain('endpoint timeout');
   });
 
+  it('keeps HUJI formula-score thresholds out of the integer cutoff manifest', () => {
+    const run = buildAdmissionsReviewRun({
+      runKey: '2026-W30',
+      checkedAt: new Date('2026-07-19T03:00:00.000Z'),
+      cycle: '2027',
+      baseline,
+      proofs: [
+        decisionProof({
+          id: 'huji-cs-live',
+          institutionId: 'huji',
+          institutionName: 'Hebrew University of Jerusalem',
+          normalizedPayload: {
+            pairId: 'cs__huji',
+            programId: 'cs',
+            acceptanceThreshold: 23.75,
+            publicationMetric: 'formula_score',
+          },
+        }),
+      ],
+      verificationLedger: exactTauLedger,
+    });
+
+    expect(run.manifest.changes).toEqual([]);
+    expect(run.excluded).toMatchObject([
+      { sourceProofId: 'huji-cs-live', reason: 'cutoff_metric_incompatible' },
+    ]);
+  });
+
   it('keeps an explicitly reviewer-excluded safe candidate out of the generated manifest', () => {
     const run = buildAdmissionsReviewRun({
       runKey: '2026-W30',
@@ -104,6 +140,7 @@ describe('weekly admissions review run', () => {
       baseline,
       proofs: [decisionProof()],
       excludedCandidateIds: ['tau-digital-sciences-live:admission_cutoff'],
+      verificationLedger: exactTauLedger,
     });
 
     expect(run.manifest.changes).toEqual([]);
@@ -134,6 +171,7 @@ describe('weekly admissions review run', () => {
       cycle: '2027',
       baseline,
       proofs: [decisionProof()],
+      verificationLedger: exactTauLedger,
     });
     const noChange = buildAdmissionsReviewRun({
       runKey: '2026-W31',
@@ -142,9 +180,10 @@ describe('weekly admissions review run', () => {
       baseline,
       proofs: [
         decisionProof({
-          normalizedPayload: { programId: 'tau_digital_sciences', acceptanceThreshold: 700 },
+          normalizedPayload: { programId: 'tau_datascience', acceptanceThreshold: 700 },
         }),
       ],
+      verificationLedger: exactTauLedger,
     });
 
     expect(
@@ -153,5 +192,28 @@ describe('weekly admissions review run', () => {
       }).text,
     ).toContain('pull/95');
     expect(buildAdmissionsReviewSlackMessage(noChange).text).toContain('No review PR was created');
+  });
+
+  it('creates a bootstrap manifest for unchanged current official values', () => {
+    const run = buildAdmissionsReviewRun({
+      runKey: 'bootstrap-2027',
+      checkedAt: new Date('2026-07-19T03:00:00.000Z'),
+      cycle: '2027',
+      releaseKind: 'canonical_bootstrap',
+      baseline,
+      proofs: [
+        decisionProof({
+          normalizedPayload: { programId: 'tau_datascience', acceptanceThreshold: 700 },
+        }),
+      ],
+      verificationLedger: exactTauLedger,
+    });
+
+    expect(run.manifest).toMatchObject({
+      version: 2,
+      releaseKind: 'canonical_bootstrap',
+      changes: [{ before: 700, after: 700 }],
+    });
+    expect(run.summary.status).toBe('reviewable');
   });
 });

@@ -1,0 +1,402 @@
+[
+  {
+    "fixtureId": "biology__bgu:eligible:2026-2027",
+    "pairId": "biology__bgu",
+    "checkedAt": "2026-09-27T16:48:29.087Z",
+    "sourceFingerprint": "sha256:3628de6a72b26e2c6987a4154e64a81263585afdc44a07b5206300bfe7f5d49f",
+    "expectedScore": 879,
+    "actualScore": 879,
+    "expectedVerdict": "eligible_to_apply",
+    "actualVerdict": "eligible_to_apply",
+    "scoreMatches": true,
+    "verdictMatches": true,
+    "proofStatus": "succeeded",
+    "requestMetadata": [
+      {
+        "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=205&p_pat1=15",
+        "status": 200,
+        "contentType": "application/json"
+      },
+      {
+        "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+        "status": 200,
+        "contentType": "text/html; charset=ISO-8859-8-I"
+      }
+    ]
+  },
+  {
+    "fixtureId": "biology__bgu:below:2026-2027",
+    "pairId": "biology__bgu",
+    "checkedAt": "2026-09-27T16:48:29.305Z",
+    "sourceFingerprint": "sha256:3628de6a72b26e2c6987a4154e64a81263585afdc44a07b5206300bfe7f5d49f",
+    "expectedScore": 486,
+    "actualScore": 486,
+    "expectedVerdict": "below",
+    "actualVerdict": "below",
+    "scoreMatches": true,
+    "verdictMatches": true,
+    "proofStatus": "succeeded",
+    "requestMetadata": [
+      {
+        "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=205&p_pat1=15",
+        "status": 200,
+        "contentType": "application/json"
+      },
+      {
+        "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+        "status": 200,
+        "contentType": "text/html; charset=ISO-8859-8-I"
+      }
+    ]
+  },
+  {
+    "fixtureId": "bgu_biology__bgu:eligible:2026-2027",
+    "pairId": "bgu_biology__bgu",
+    "checkedAt": "2026-09-27T16:48:29.483Z",
+    "sourceFingerprint": "sha256:3628de6a72b26e2c6987a4154e64a81263585afdc44a07b5206300bfe7f5d49f",
+    "expectedScore": 879,
+    "actualScore": 879,
+    "expectedVerdict": "eligible_to_apply",
+    "actualVerdict": "eligible_to_apply",
+    "scoreMatches": true,
+    "verdictMatches": true,
+    "proofStatus": "succeeded",
+    "requestMetadata": [
+      {
+        "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=205&p_pat1=15",
+        "status": 200,
+        "contentType": "application/json"
+      },
+      {
+        "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+        "status": 200,
+        "contentType": "text/html; charset=ISO-8859-8-I"
+      }
+    ]
+  },
+  {
+    "fixtureId": "bgu_biology__bgu:below:2026-2027",
+    "pairId": "bgu_biology__bgu",
+    "checkedAt": "2026-09-27T16:48:29.659Z",
+    "sourceFingerprint": "sha256:3628de6a72b26e2c6987a4154e64a81263585afdc44a07b5206300bfe7f5d49f",
+    "expectedScore": 486,
+    "actualScore": 486,
+    "expectedVerdict": "below",
+    "actualVerdict": "below",
+    "scoreMatches": true,
+    "verdictMatches": true,
+    "proofStatus": "succeeded",
+    "requestMetadata": [
+      {
+        "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=205&p_pat1=15",
+        "status": 200,
+        "contentType": "application/json"
+      },
+      {
+        "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+        "status": 200,
+        "contentType": "text/html; charset=ISO-8859-8-I"
+      }
+    ]
+  },
+  {
+    "fixtureId": "economics__bgu:eligible:2026-2027",
+    "pairId": "economics__bgu",
+    "checkedAt": "2026-09-27T16:48:29.919Z",
+    "sourceFingerprint": "sha256:d9b5219b45f72f91ceb535afc64f847c3eb67b9cbfaedc25388685da6ca24fb5",
+    "expectedScore": 879,
+    "actualScore": 879,
+    "expectedVerdict": "eligible_to_apply",
+    "actualVerdict": "eligible_to_apply",
+    "scoreMatches": true,
+    "verdictMatches": true,
+    "proofStatus": "succeeded",
+    "requestMetadata": [
+      {
+        "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=142&p_pat1=3",
+        "status": 200,
+        "contentType": "application/json"
+      },
+      {
+        "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+        "status": 200,
+        "contentType": "text/html; charset=ISO-8859-8-I"
+      }
+    ]
+  },
+  {
+    "fixtureId": "economics__bgu:below:2026-2027",
+    "pairId": "economics__bgu",
+    "checkedAt": "2026-09-27T16:48:30.093Z",
+    "sourceFingerprint": "sha256:d9b5219b45f72f91ceb535afc64f847c3eb67b9cbfaedc25388685da6ca24fb5",
+    "expectedScore": 486,
+    "actualScore": 486,
+    "expectedVerdict": "below",
+    "actualVerdict": "below",
+    "scoreMatches": true,
+    "verdictMatches": true,
+    "proofStatus": "succeeded",
+    "requestMetadata": [
+      {
+        "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=142&p_pat1=3",
+        "status": 200,
+        "contentType": "application/json"
+      },
+      {
+        "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+        "status": 200,
+        "contentType": "text/html; charset=ISO-8859-8-I"
+      }
+    ]
+  },
+  {
+    "fixtureId": "bgu_economics__bgu:eligible:2026-2027",
+    "pairId": "bgu_economics__bgu",
+    "checkedAt": "2026-09-27T16:48:30.357Z",
+    "sourceFingerprint": "sha256:d9b5219b45f72f91ceb535afc64f847c3eb67b9cbfaedc25388685da6ca24fb5",
+    "expectedScore": 879,
+    "actualScore": 879,
+    "expectedVerdict": "eligible_to_apply",
+    "actualVerdict": "eligible_to_apply",
+    "scoreMatches": true,
+    "verdictMatches": true,
+    "proofStatus": "succeeded",
+    "requestMetadata": [
+      {
+        "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=142&p_pat1=3",
+        "status": 200,
+        "contentType": "application/json"
+      },
+      {
+        "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+        "status": 200,
+        "contentType": "text/html; charset=ISO-8859-8-I"
+      }
+    ]
+  },
+  {
+    "fixtureId": "bgu_economics__bgu:below:2026-2027",
+    "pairId": "bgu_economics__bgu",
+    "checkedAt": "2026-09-27T16:48:30.530Z",
+    "sourceFingerprint": "sha256:d9b5219b45f72f91ceb535afc64f847c3eb67b9cbfaedc25388685da6ca24fb5",
+    "expectedScore": 486,
+    "actualScore": 486,
+    "expectedVerdict": "below",
+    "actualVerdict": "below",
+    "scoreMatches": true,
+    "verdictMatches": true,
+    "proofStatus": "succeeded",
+    "requestMetadata": [
+      {
+        "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=142&p_pat1=3",
+        "status": 200,
+        "contentType": "application/json"
+      },
+      {
+        "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+        "status": 200,
+        "contentType": "text/html; charset=ISO-8859-8-I"
+      }
+    ]
+  },
+  {
+    "fixtureId": "business__bgu:eligible:2026-2027",
+    "pairId": "business__bgu",
+    "checkedAt": "2026-09-27T16:48:30.709Z",
+    "sourceFingerprint": "sha256:117bb830db9c922ab98fe81b72d2326f5a94318a84c7eb12287579cb3941ac91",
+    "expectedScore": 879,
+    "actualScore": 879,
+    "expectedVerdict": "eligible_to_apply",
+    "actualVerdict": "eligible_to_apply",
+    "scoreMatches": true,
+    "verdictMatches": true,
+    "proofStatus": "succeeded",
+    "requestMetadata": [
+      {
+        "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=142&p_pat1=1&p_spe1=1",
+        "status": 200,
+        "contentType": "application/json"
+      },
+      {
+        "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+        "status": 200,
+        "contentType": "text/html; charset=ISO-8859-8-I"
+      }
+    ]
+  },
+  {
+    "fixtureId": "business__bgu:below:2026-2027",
+    "pairId": "business__bgu",
+    "checkedAt": "2026-09-27T16:48:30.961Z",
+    "sourceFingerprint": "sha256:117bb830db9c922ab98fe81b72d2326f5a94318a84c7eb12287579cb3941ac91",
+    "expectedScore": 486,
+    "actualScore": 486,
+    "expectedVerdict": "below",
+    "actualVerdict": "below",
+    "scoreMatches": true,
+    "verdictMatches": true,
+    "proofStatus": "succeeded",
+    "requestMetadata": [
+      {
+        "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=142&p_pat1=1&p_spe1=1",
+        "status": 200,
+        "contentType": "application/json"
+      },
+      {
+        "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+        "status": 200,
+        "contentType": "text/html; charset=ISO-8859-8-I"
+      }
+    ]
+  },
+  {
+    "fixtureId": "bgu_business__bgu:eligible:2026-2027",
+    "pairId": "bgu_business__bgu",
+    "checkedAt": "2026-09-27T16:48:31.134Z",
+    "sourceFingerprint": "sha256:117bb830db9c922ab98fe81b72d2326f5a94318a84c7eb12287579cb3941ac91",
+    "expectedScore": 879,
+    "actualScore": 879,
+    "expectedVerdict": "eligible_to_apply",
+    "actualVerdict": "eligible_to_apply",
+    "scoreMatches": true,
+    "verdictMatches": true,
+    "proofStatus": "succeeded",
+    "requestMetadata": [
+      {
+        "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=142&p_pat1=1&p_spe1=1",
+        "status": 200,
+        "contentType": "application/json"
+      },
+      {
+        "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+        "status": 200,
+        "contentType": "text/html; charset=ISO-8859-8-I"
+      }
+    ]
+  },
+  {
+    "fixtureId": "bgu_business__bgu:below:2026-2027",
+    "pairId": "bgu_business__bgu",
+    "checkedAt": "2026-09-27T16:48:31.404Z",
+    "sourceFingerprint": "sha256:117bb830db9c922ab98fe81b72d2326f5a94318a84c7eb12287579cb3941ac91",
+    "expectedScore": 486,
+    "actualScore": 486,
+    "expectedVerdict": "below",
+    "actualVerdict": "below",
+    "scoreMatches": true,
+    "verdictMatches": true,
+    "proofStatus": "succeeded",
+    "requestMetadata": [
+      {
+        "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=142&p_pat1=1&p_spe1=1",
+        "status": 200,
+        "contentType": "application/json"
+      },
+      {
+        "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+        "status": 200,
+        "contentType": "text/html; charset=ISO-8859-8-I"
+      }
+    ]
+  },
+  {
+    "fixtureId": "accounting__bgu:eligible:2026-2027",
+    "pairId": "accounting__bgu",
+    "checkedAt": "2026-09-27T16:48:31.570Z",
+    "sourceFingerprint": "sha256:a67601c4582d9c2d8afaf40e79cb712071169487899cfa428d2707345dcbcfdd",
+    "expectedScore": 879,
+    "actualScore": 879,
+    "expectedVerdict": "eligible_to_apply",
+    "actualVerdict": "eligible_to_apply",
+    "scoreMatches": true,
+    "verdictMatches": true,
+    "proofStatus": "succeeded",
+    "requestMetadata": [
+      {
+        "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=142&p_pat1=1&p_spe1=6",
+        "status": 200,
+        "contentType": "application/json"
+      },
+      {
+        "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+        "status": 200,
+        "contentType": "text/html; charset=ISO-8859-8-I"
+      }
+    ]
+  },
+  {
+    "fixtureId": "accounting__bgu:below:2026-2027",
+    "pairId": "accounting__bgu",
+    "checkedAt": "2026-09-27T16:48:31.734Z",
+    "sourceFingerprint": "sha256:a67601c4582d9c2d8afaf40e79cb712071169487899cfa428d2707345dcbcfdd",
+    "expectedScore": 486,
+    "actualScore": 486,
+    "expectedVerdict": "below",
+    "actualVerdict": "below",
+    "scoreMatches": true,
+    "verdictMatches": true,
+    "proofStatus": "succeeded",
+    "requestMetadata": [
+      {
+        "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=142&p_pat1=1&p_spe1=6",
+        "status": 200,
+        "contentType": "application/json"
+      },
+      {
+        "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+        "status": 200,
+        "contentType": "text/html; charset=ISO-8859-8-I"
+      }
+    ]
+  },
+  {
+    "fixtureId": "bgu_accounting__bgu:eligible:2026-2027",
+    "pairId": "bgu_accounting__bgu",
+    "checkedAt": "2026-09-27T16:48:31.926Z",
+    "sourceFingerprint": "sha256:a67601c4582d9c2d8afaf40e79cb712071169487899cfa428d2707345dcbcfdd",
+    "expectedScore": 879,
+    "actualScore": 879,
+    "expectedVerdict": "eligible_to_apply",
+    "actualVerdict": "eligible_to_apply",
+    "scoreMatches": true,
+    "verdictMatches": true,
+    "proofStatus": "succeeded",
+    "requestMetadata": [
+      {
+        "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=142&p_pat1=1&p_spe1=6",
+        "status": 200,
+        "contentType": "application/json"
+      },
+      {
+        "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+        "status": 200,
+        "contentType": "text/html; charset=ISO-8859-8-I"
+      }
+    ]
+  },
+  {
+    "fixtureId": "bgu_accounting__bgu:below:2026-2027",
+    "pairId": "bgu_accounting__bgu",
+    "checkedAt": "2026-09-27T16:48:32.096Z",
+    "sourceFingerprint": "sha256:a67601c4582d9c2d8afaf40e79cb712071169487899cfa428d2707345dcbcfdd",
+    "expectedScore": 486,
+    "actualScore": 486,
+    "expectedVerdict": "below",
+    "actualVerdict": "below",
+    "scoreMatches": true,
+    "verdictMatches": true,
+    "proofStatus": "succeeded",
+    "requestMetadata": [
+      {
+        "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=142&p_pat1=1&p_spe1=6",
+        "status": 200,
+        "contentType": "application/json"
+      },
+      {
+        "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+        "status": 200,
+        "contentType": "text/html; charset=ISO-8859-8-I"
+      }
+    ]
+  }
+]

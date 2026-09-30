@@ -27,6 +27,63 @@ vi.mock('server-only', () => ({}));
 import { POST } from './route';
 
 describe('admissions evaluate route', () => {
+  it('forwards Colman Bagrut inputs without requiring generic average or psychometric', async () => {
+    hoistedMocks.listCataloguePrograms.mockResolvedValue({
+      data: [{ id: 'colmgmt_cs', name: 'CS', linkedInstitutionIds: ['colman'] }],
+    });
+    const input = {
+      degreeId: 'colmgmt_cs',
+      extraInputs: {
+        colmanBagrutAverage: 85.25,
+        colmanBagrutCertificateConfirmed: false,
+        mathUnits: 4,
+        mathGrade: 80,
+      },
+    };
+    const response = await POST(
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(input),
+      }),
+    );
+    expect(response.status).toBe(200);
+    expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenCalledWith(
+      expect.objectContaining({ input }),
+    );
+  });
+  it('accepts Haifa years and decimal official average without an unused generic Bagrut', async () => {
+    hoistedMocks.listCataloguePrograms.mockResolvedValue({
+      data: [{ id: 'haifa_cs', name: 'CS', linkedInstitutionIds: ['haifa'] }],
+    });
+    const extraInputs = {
+      haifaBagrutAverage: 102.25,
+      haifaBagrutYear: 2015,
+      haifaPsychometricYear: 2026,
+      haifaAdmissionQualification: 'full_bagrut',
+      haifaEnglishLevel: 'advanced_a',
+      haifaHebrewQualification: 'exam',
+      haifaHebrewScore: 120,
+      haifaHebrewExamDate: '2026-04-01',
+      haifaPsychometricMonth: 4,
+      haifaScienceUnits: 8,
+      haifaOtFailedSelectionAttempts: 0,
+      haifaOtUnjustifiedAbsence: false,
+    };
+    const response = await POST(
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ degreeId: 'haifa_cs', psychometric: 680, extraInputs }),
+      }),
+    );
+    expect(response.status).toBe(200);
+    expect(hoistedMocks.evaluateAdmissionsForProgram.mock.calls[0][0].input).toEqual({
+      degreeId: 'haifa_cs',
+      psychometric: 680,
+      extraInputs,
+    });
+  });
   beforeEach(() => {
     vi.restoreAllMocks();
     resetAdmissionsEvaluationRateLimitForTests();
@@ -72,6 +129,194 @@ describe('admissions evaluate route', () => {
       results: [],
     });
   });
+
+  it('forwards Medicine inputs without requiring a generic average', async () => {
+    hoistedMocks.listCataloguePrograms.mockResolvedValue({
+      data: [{ id: 'huji_medicine', name: 'רפואה', linkedInstitutionIds: ['huji'] }],
+    });
+    const input = {
+      degreeId: 'huji_medicine',
+      psychometric: 800,
+      extraInputs: {
+        hujiBagrutAverage: 120.25,
+        hujiMedicineAssessmentScore: 200,
+        hujiMedicinePsychometricDate: '2026-04-01',
+        hujiMedicineQualificationConfirmed: false,
+      },
+    };
+    const response = await POST(
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(input),
+      }),
+    );
+    expect(response.status).toBe(200);
+    expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenCalledWith(
+      expect.objectContaining({ input }),
+    );
+  });
+  it('forwards degree-only health inputs without dummy generic scores', async () => {
+    hoistedMocks.listCataloguePrograms.mockResolvedValue({
+      data: [{ id: 'occupational_therapy', name: 'ריפוי בעיסוק', linkedInstitutionIds: ['bgu'] }],
+    });
+    const input = {
+      degreeId: 'occupational_therapy',
+      extraInputs: {
+        bguOccupationalTherapyRoute: 'academic',
+        bguOccupationalTherapyRequirementsConfirmed: false,
+        bguBachelorsDegreeCompleted: true,
+        bguBachelorsDegreeAverage: 85.25,
+        bguPhysiotherapyRequirementsConfirmed: false,
+      },
+    };
+    const response = await POST(
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      }),
+    );
+    expect(response.status).toBe(200);
+    expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenCalledWith(
+      expect.objectContaining({ input }),
+    );
+  });
+  it('accepts preparatory-only BGU input and preserves false and decimals without invented generic scores', async () => {
+    hoistedMocks.listCataloguePrograms.mockResolvedValue({
+      data: [{ id: 'bgu_economics', name: 'כלכלה', linkedInstitutionIds: ['bgu'] }],
+    });
+    const input = {
+      degreeId: 'bgu_economics',
+      extraInputs: {
+        bguQuantitativeRoute: 'bagrut',
+        bguPreparatoryTrack: 'natural_life_sciences',
+        bguPreparatoryAverage: 87.25,
+        bguPreparatoryCompleted: true,
+        bguPriorAcademicStudies: false,
+        bguReturningOrChangingTrack: false,
+        bguCertificateRequirementsConfirmed: true,
+        bguSecondTrackRequirementsConfirmed: true,
+      },
+    };
+    const response = await POST(
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        body: JSON.stringify(input),
+      }),
+    );
+    expect(response.status).toBe(200);
+    expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenCalledWith(
+      expect.objectContaining({ input }),
+    );
+  });
+  it('still requires a generic Bagrut average for unsupported omission routes', async () => {
+    const response = await POST(
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        body: JSON.stringify({ degreeId: 'tau_datascience', psychometric: 700 }),
+      }),
+    );
+    expect(response.status).toBe(400);
+    expect(hoistedMocks.evaluateAdmissionsForProgram).not.toHaveBeenCalled();
+  });
+  it.each(['ee', 'bgu_ee', 'me', 'bgu_me', 'bgu_industrial'])(
+    'accepts preparatory-only engineering inputs for %s without a generic Bagrut average',
+    async (degreeId) => {
+      hoistedMocks.listCataloguePrograms.mockResolvedValue({
+        data: [{ id: degreeId, name: 'הנדסה', linkedInstitutionIds: ['bgu'] }],
+      });
+      const input = {
+        degreeId,
+        psychometric: 700,
+        extraInputs: {
+          psychometricMath: 140,
+          bguLanguageRequirementsConfirmed: true,
+          bguEngineering: {
+            detailsConfirmed: true,
+            preparatoryInstitution: 'bgu',
+            preparatoryCompletionYear: 2026,
+            preparatoryMathUnits: 5,
+            preparatoryMathGrade: 90,
+            preparatoryPhysicsUnits: 5,
+            preparatoryPhysicsGrade: 90,
+          },
+        },
+      };
+      const response = await POST(
+        new Request('http://localhost/api/admissions/evaluate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(input),
+        }),
+      );
+      expect(response.status).toBe(200);
+      expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenCalledWith(
+        expect.objectContaining({ input }),
+      );
+    },
+  );
+
+  it('allows Psychology prep-only requests without inventing generic scores', async () => {
+    hoistedMocks.listCataloguePrograms.mockResolvedValue({
+      data: [{ id: 'bgu_psychology', name: 'פסיכולוגיה', linkedInstitutionIds: ['bgu'] }],
+    });
+    const input = {
+      degreeId: 'bgu_psychology',
+      extraInputs: {
+        bguPsychologyRoute: 'bagrut',
+        bguPreparatoryTrack: 'natural_life_sciences',
+        bguPreparatoryAverage: 94.25,
+        bguPreparatoryCompleted: true,
+        bguPsychologyRequirementsConfirmed: true,
+        bguLanguageRequirementsConfirmed: true,
+      },
+    };
+    const response = await POST(
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      }),
+    );
+    expect(response.status).toBe(200);
+    expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenCalledWith(
+      expect.objectContaining({ input }),
+    );
+  });
+
+  it.each(['social_work', 'bgu_socialwork', 'communication', 'education', 'political_science'])(
+    'allows %s alternate inputs without dummy scores',
+    async (degreeId) => {
+      hoistedMocks.listCataloguePrograms.mockResolvedValue({
+        data: [{ id: degreeId, name: degreeId, linkedInstitutionIds: ['bgu'] }],
+      });
+      const input = {
+        degreeId,
+        extraInputs: {
+          bguSocialScienceRoute: 'bagrut',
+          bguPreparatoryTrack: 'natural_life_sciences',
+          bguPreparatoryAverage: 90.25,
+          bguPreparatoryCompleted: false,
+          bguSocialScienceRequirementsConfirmed: false,
+          bguSocialScienceLanguageConfirmed: true,
+          bguReturningFromStudyBreak: false,
+          bguSocialWorkAcademicBackground: 'none',
+        },
+      };
+      const response = await POST(
+        new Request('http://localhost/api/admissions/evaluate', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(input),
+        }),
+      );
+      expect(response.status).toBe(200);
+      expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenCalledWith(
+        expect.objectContaining({ input }),
+      );
+    },
+  );
 
   it('returns the admissions evaluation report for a valid request', async () => {
     const response = await POST(
@@ -144,6 +389,260 @@ describe('admissions evaluate route', () => {
     });
   });
 
+  it('accepts a replayable structured Bagrut subject record', async () => {
+    const extraInputs = {
+      psychometricMath: 130,
+      psychometricVerbal: 125,
+      psychometricEnglish: 120,
+      bagrutProfileSchemaVersion: 1,
+      bagrutSector: 'jewish',
+      bagrutSubjectRecord: {
+        schemaVersion: 1,
+        sector: 'jewish',
+        subjects: [
+          { subjectId: 'mathematics', units: 5, grade: 95 },
+          { subjectId: 'history', units: 2, grade: 88 },
+          { subjectId: 'bible', units: 2, grade: 90 },
+        ],
+      },
+    };
+    const response = await POST(
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          degreeId: 'tau_datascience',
+          psychometric: 700,
+          bagrut: 110,
+          extraInputs,
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.objectContaining({ extraInputs }),
+      }),
+    );
+  });
+
+  it('accepts a complete schema-v2 Bagrut subject record', async () => {
+    const bagrutSubjectRecord = {
+      schemaVersion: 2 as const,
+      sector: 'jewish' as const,
+      certificateType: 'internal' as const,
+      complete: true,
+      subjects: [
+        {
+          subjectId: 'mathematics',
+          units: 5,
+          grade: 95,
+          assessmentKind: 'exam' as const,
+        },
+      ],
+    };
+    const response = await POST(
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          degreeId: 'tau_datascience',
+          psychometric: 700,
+          bagrut: 110,
+          extraInputs: {
+            bagrutProfileSchemaVersion: 2,
+            bagrutSector: 'jewish',
+            bagrutSubjectRecord,
+          },
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: expect.objectContaining({
+          extraInputs: expect.objectContaining({ bagrutSubjectRecord }),
+        }),
+      }),
+    );
+  });
+
+  it('accepts institution-specific inputs and preserves false and zero', async () => {
+    const extraInputs = {
+      tauBagrutAverage: 112.5,
+      bguBagrutAverage: 108.25,
+      tauApplicationRequirementsConfirmed: false,
+      bguLanguageRequirementsConfirmed: true,
+      tauMathPlacementScore: 0,
+      technionArchitectureBagrutAverage: 101.9,
+      technionArchitectureExamScore: 0,
+      technionArchitectureExamPassed: false,
+      technionArchitectureRequirementsConfirmed: true,
+    };
+
+    const response = await POST(
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          degreeId: 'tau_datascience',
+          psychometric: 700,
+          bagrut: 110,
+          extraInputs,
+        }),
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenCalledWith(
+      expect.objectContaining({ input: expect.objectContaining({ extraInputs }) }),
+    );
+  });
+
+  it('keeps legacy schema-v1 Hebrew subject identifiers compatible', async () => {
+    const input = {
+      degreeId: 'tau_datascience',
+      psychometric: 700,
+      bagrut: 110,
+      extraInputs: {
+        bagrutSubjectRecord: {
+          schemaVersion: 1,
+          sector: 'jewish',
+          subjects: [{ subjectId: 'כימיה', units: 5, grade: 90 }],
+        },
+      },
+    };
+    const response = await POST(
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenCalledWith(
+      expect.objectContaining({ input }),
+    );
+  });
+
+  it('passes structured engineering data and an absent psychometric score for Industrial direct evaluation', async () => {
+    hoistedMocks.listCataloguePrograms.mockResolvedValue({
+      data: [{ id: 'bgu_industrial', name: 'הנדסת תעשייה וניהול', linkedInstitutionIds: ['bgu'] }],
+    });
+    const extraInputs = {
+      bguBagrutAverage: 109,
+      bguLanguageRequirementsConfirmed: true,
+      bguEngineering: {
+        detailsConfirmed: true,
+        route: 'direct',
+        physicsCoursePassed: false,
+        preparatoryInstitution: 'bgu',
+        preparatoryCompletionYear: 2026,
+        industrialPreparatoryAverage: 91.25,
+      },
+    };
+    const response = await POST(
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ degreeId: 'bgu_industrial', bagrut: 100, extraInputs }),
+      }),
+    );
+    expect(response.status).toBe(200);
+    const input = hoistedMocks.evaluateAdmissionsForProgram.mock.calls[0][0].input;
+    expect(input.psychometric).toBeUndefined();
+    expect(input.extraInputs).toEqual(extraInputs);
+  });
+
+  it('supports an actual missing psychometric score only for the implemented Management route', async () => {
+    hoistedMocks.listCataloguePrograms.mockResolvedValue({
+      data: [{ id: 'business', name: 'ניהול', linkedInstitutionIds: ['tau'] }],
+    });
+    const request = (degreeId: string) =>
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          degreeId,
+          bagrut: 100,
+          extraInputs: {
+            tauManagementRequirementsConfirmed: true,
+            tauManagementAcademicRouteConfirmed: false,
+            tauManagementQualifyingMoocCount: 0,
+            tauManagementNoPsychometricMoocsConfirmed: true,
+          },
+        }),
+      });
+    expect((await POST(request('business'))).status).toBe(200);
+    const input = hoistedMocks.evaluateAdmissionsForProgram.mock.calls[0][0].input;
+    expect(input.psychometric).toBeUndefined();
+    expect(input.extraInputs.tauManagementQualifyingMoocCount).toBe(0);
+    expect((await POST(request('tau_datascience'))).status).toBe(400);
+  });
+
+  it('rejects out-of-range admissions inputs and non-boolean confirmations', async () => {
+    const requestWith = (extraInputs: Record<string, unknown>) =>
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          degreeId: 'tau_datascience',
+          psychometric: 700,
+          bagrut: 110,
+          extraInputs,
+        }),
+      });
+
+    for (const invalid of [
+      { tauBagrutAverage: 49 },
+      { bguBagrutAverage: 130.1 },
+      { tauApplicationRequirementsConfirmed: 'yes' },
+      { tauManagementRequirementsConfirmed: 'yes' },
+      { tauManagementQualifyingMoocCount: 3 },
+      { tauManagementNoPsychometricMoocsConfirmed: 1 },
+      { bguLanguageRequirementsConfirmed: 1 },
+      { tauMathPlacementScore: 101 },
+      { technionArchitectureBagrutAverage: 119.1 },
+      { technionArchitectureExamScore: 140.1 },
+      { technionArchitectureExamPassed: 'yes' },
+      { technionArchitectureRequirementsConfirmed: 1 },
+    ]) {
+      expect((await POST(requestWith(invalid))).status).toBe(400);
+    }
+  });
+
+  it('accepts 64 Bagrut subjects and rejects 65', async () => {
+    const requestForSubjectCount = (count: number) =>
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          degreeId: 'tau_datascience',
+          psychometric: 700,
+          bagrut: 110,
+          extraInputs: {
+            bagrutSubjectRecord: {
+              schemaVersion: 1,
+              sector: 'jewish',
+              subjects: Array.from({ length: count }, (_, index) => ({
+                subjectId: `subject_${index}`,
+                units: 5,
+                grade: 90,
+              })),
+            },
+          },
+        }),
+      });
+
+    expect((await POST(requestForSubjectCount(64))).status).toBe(200);
+    expect((await POST(requestForSubjectCount(65))).status).toBe(400);
+  });
+
   it('returns 404 when the programme does not exist in the catalogue', async () => {
     const response = await POST(
       new Request('http://localhost/api/admissions/evaluate', {
@@ -171,7 +670,7 @@ describe('admissions evaluate route', () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'content-length': '4096',
+          'content-length': '32768',
         },
         body: JSON.stringify({
           degreeId: 'tau_datascience',

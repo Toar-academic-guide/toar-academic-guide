@@ -39,13 +39,20 @@ async function main() {
     const result = await expirePriorAdmissionAlertSubscriptions({
       repository: createDrizzleAdmissionAlertExpirationRepository(),
     });
-    console.log(JSON.stringify(result));
+    const { getDb } = await vite.ssrLoadModule('/src/db/client.ts');
+    const { sql } = await import('drizzle-orm');
+    const [retention] = await getDb().execute(
+      sql`select admission_alert_private.prune_retained_data() as cleanup`,
+    );
+    console.log(JSON.stringify({ ...result, retention: retention.cleanup }));
   } finally {
+    const { closeDb } = await vite.ssrLoadModule('/src/db/client.ts');
+    await closeDb();
     await vite.close();
   }
 }
 
-main().catch((error) => {
-  console.error(error instanceof Error ? error.message : error);
+main().catch(() => {
+  console.error('Admission-alert maintenance failed. Inspect schema and runtime grants.');
   process.exitCode = 1;
 });
