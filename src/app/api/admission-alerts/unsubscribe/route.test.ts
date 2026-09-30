@@ -1,8 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 vi.mock('@/server/admission-alerts/unsubscribeService', () => ({
   unsubscribeAdmissionAlerts: vi.fn(),
+  getAdmissionAlertUnsubscribeStatus: vi.fn(),
 }));
-import { unsubscribeAdmissionAlerts } from '@/server/admission-alerts/unsubscribeService';
+import {
+  unsubscribeAdmissionAlerts,
+  getAdmissionAlertUnsubscribeStatus,
+} from '@/server/admission-alerts/unsubscribeService';
 import { POST } from './route';
 import { GET } from '@/app/admission-alerts/unsubscribe/route';
 const token = 'a'.repeat(43);
@@ -13,6 +17,18 @@ const request = (value: string) =>
   });
 describe('unsubscribe HTTP boundary', () => {
   beforeEach(() => vi.clearAllMocks());
+  it('checks saved state without performing unsubscribe', async () => {
+    vi.mocked(getAdmissionAlertUnsubscribeStatus).mockResolvedValueOnce({ status: 'unsubscribed' });
+    const response = await POST(
+      new Request('https://app.example.org/api/admission-alerts/unsubscribe', {
+        method: 'POST',
+        body: JSON.stringify({ token, action: 'status' }),
+      }),
+    );
+    expect(await response.json()).toEqual({ data: { status: 'unsubscribed' } });
+    expect(response.headers.get('cache-control')).toBe('no-store');
+    expect(unsubscribeAdmissionAlerts).not.toHaveBeenCalled();
+  });
   it('rejects malformed tokens without reading the database', async () => {
     expect((await POST(request('bad'))).status).toBe(400);
     expect(unsubscribeAdmissionAlerts).not.toHaveBeenCalled();
