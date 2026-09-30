@@ -21,6 +21,8 @@ export type TauNursingGateResult =
   | { state: 'pass' };
 
 export function evaluateTauNursingGates(input: AdmissionsEvaluationInput): TauNursingGateResult {
+  if (input.psychometric === undefined)
+    return { state: 'needs_input', requiredInputs: ['psychometric_overall'] };
   const psychometricEnglish = input.extraInputs?.psychometricEnglish;
   if (psychometricEnglish === undefined) {
     return {

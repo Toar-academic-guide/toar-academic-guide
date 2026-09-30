@@ -19,7 +19,16 @@ export function hasMeaningfulProfileData(profile: UserProfile | null | undefined
     profile.academicScores?.bagrut?.weightedAverage,
   );
 
-  return hasIdentity || hasSavedPrograms || hasNonDefaultRegion || hasAcademicScores;
+  const hasAdmissionsInputs = Object.values(profile.academicScores?.admissions ?? {}).some(
+    (value) => value !== undefined,
+  );
+  return (
+    hasIdentity ||
+    hasSavedPrograms ||
+    hasNonDefaultRegion ||
+    hasAcademicScores ||
+    hasAdmissionsInputs
+  );
 }
 
 export function mergeUserProfileDraft(
@@ -107,6 +116,16 @@ function mergeAcademicScores(
 
   if (Object.keys(bagrut).length > 0) {
     merged.bagrut = bagrut;
+  }
+
+  const admissions = {
+    ...draft?.admissions,
+    ...Object.fromEntries(
+      Object.entries(existing?.admissions ?? {}).filter(([, value]) => value !== undefined),
+    ),
+  };
+  if (Object.values(admissions).some((value) => value !== undefined)) {
+    merged.admissions = admissions;
   }
 
   return Object.keys(merged).length > 0 ? merged : undefined;

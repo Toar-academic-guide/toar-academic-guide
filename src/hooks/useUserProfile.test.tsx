@@ -45,6 +45,7 @@ describe('useUserProfile', () => {
     const { result } = renderHook(() => useUserProfile());
 
     await waitFor(() => expect(result.current.hydrated).toBe(true));
+    await waitFor(() => expect(result.current.initialProfileStatus).toBe('ready'));
     expect(result.current.profile.geographicPreference).toBe('north');
     expect(result.current.profile.savedProgramIds).toEqual(['tau_cs']);
   });
@@ -133,7 +134,103 @@ describe('useUserProfile', () => {
     const { result } = renderHook(() => useUserProfile());
 
     await waitFor(() => expect(result.current.profile.savedProgramIds).toEqual(['huji_law']));
+    expect(result.current.initialProfileStatus).toBe('ready');
     expect(window.localStorage.getItem('sag_user_profile_v1')).toBeNull();
+  });
+
+  it('migrates admissions-only local drafts when a confirmation is false or a score is zero', async () => {
+    mockAuthState.user = { id: 'user-admissions-draft' };
+    const draft = {
+      geographicPreference: 'any',
+      academicScores: {
+        admissions: { tauApplicationRequirementsConfirmed: false, tauMathPlacementScore: 0 },
+      },
+      savedProgramIds: [],
+    };
+    window.localStorage.setItem('sag_user_profile_v1', JSON.stringify(draft));
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ data: { geographicPreference: 'any', savedProgramIds: [] } }),
+      })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ data: draft }) });
+    vi.stubGlobal('fetch', fetchMock);
+    const { result } = renderHook(() => useUserProfile());
+    await waitFor(() => expect(result.current.initialProfileStatus).toBe('ready'));
+    expect(JSON.parse(fetchMock.mock.calls[1][1].body)).toMatchObject({
+      mode: 'merge_local_draft',
+      profile: draft,
+    });
+    expect(result.current.profile.academicScores?.admissions).toEqual(
+      draft.academicScores.admissions,
+    );
+  });
+
+  it('keeps signed-in profile inputs unavailable until the initial server request settles', async () => {
+    mockAuthState.user = { id: 'user-delayed' };
+    let resolveFetch: ((response: unknown) => void) | undefined;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(
+        () =>
+          new Promise((resolve) => {
+            resolveFetch = resolve;
+          }),
+      ),
+    );
+
+    const { result } = renderHook(() => useUserProfile());
+
+    await waitFor(() => expect(result.current.hydrated).toBe(true));
+    expect(result.current.initialProfileStatus).toBe('loading');
+
+    await act(async () => {
+      resolveFetch?.({
+        ok: true,
+        json: async () => ({
+          data: {
+            geographicPreference: 'any',
+            academicScores: { admissions: { tauBagrutAverage: 114.25 } },
+            savedProgramIds: [],
+          },
+        }),
+      });
+    });
+
+    await waitFor(() => expect(result.current.initialProfileStatus).toBe('ready'));
+    expect(result.current.profile.academicScores?.admissions?.tauBagrutAverage).toBe(114.25);
+  });
+
+  it('shows initial profile load failures and retries the server request', async () => {
+    mockAuthState.user = { id: 'user-retry' };
+    const fetchMock = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('temporary profile outage'))
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: {
+            geographicPreference: 'any',
+            academicScores: { admissions: { tauBagrutAverage: 115.5 } },
+            savedProgramIds: [],
+          },
+        }),
+      });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const { result } = renderHook(() => useUserProfile());
+
+    await waitFor(() => expect(result.current.initialProfileStatus).toBe('error'));
+    expect(result.current.initialProfileError).toBe('temporary profile outage');
+
+    await act(async () => {
+      result.current.retryInitialProfileLoad();
+    });
+
+    await waitFor(() => expect(result.current.initialProfileStatus).toBe('ready'));
+    expect(result.current.profile.academicScores?.admissions?.tauBagrutAverage).toBe(115.5);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
   it('optimistically toggles saved programs for anonymous users', async () => {

@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { CatalogueApiError, fetchCataloguePrograms } from '@/lib/catalogueClient';
+import { fetchCataloguePrograms } from '@/lib/catalogueClient';
 
 describe('catalogueClient', () => {
   beforeEach(() => {

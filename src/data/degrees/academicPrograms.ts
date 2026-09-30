@@ -415,17 +415,6 @@ const D: Record<string, InstitutionDetail[]> = {
       officialCalculatorUrl: 'https://go.tau.ac.il/b.a/chishuv',
     },
   ],
-  tau_infosystems: [
-    {
-      institutionName: 'אוניברסיטת תל אביב',
-      durationYears: 3,
-      estimatedStudentsPerYear: 'כ-120 סטודנטים',
-      quantitativeMinRequirement: null,
-      englishMinRequirement: null,
-      specificAdmissionNotes: [],
-      officialCalculatorUrl: 'https://go.tau.ac.il/b.a/chishuv',
-    },
-  ],
 
   // ── הטכניון – מכון טכנולוגי לישראל ─────────────────────────────────────
   technion_cs: [
@@ -3058,19 +3047,6 @@ export const academicPrograms: Program[] = [
   // ══════════════════════════════════════════════════════════════════════════
   // ניהול ומערכות מידע
   // ══════════════════════════════════════════════════════════════════════════
-  {
-    id: 'tau_infosystems',
-    name: 'ניהול ומערכות מידע',
-    institution: 'אוניברסיטת תל אביב',
-    institutionId: 'tau',
-    type: 'academic',
-    category: 'כלכלה ועסקים',
-    profileScore: P.infoSystems,
-    admissionType: 'sekhem',
-    admissionRequirements: [],
-    thresholds: { tau: 660, huji: null, technion: null, bgu: null },
-    institutionDetails: D['tau_infosystems'],
-  },
   {
     id: 'reichman_infosystems',
     name: 'ניהול ומערכות מידע',

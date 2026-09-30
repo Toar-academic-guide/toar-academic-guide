@@ -37,13 +37,7 @@ import {
   Bookmark,
   BookmarkCheck,
 } from 'lucide-react';
-import {
-  RecommendedField,
-  ProfileScores,
-  EnvironmentPreference,
-  ProfileDimension,
-  GeographicRegion,
-} from '@/types';
+import { RecommendedField, ProfileScores, ProfileDimension, GeographicRegion } from '@/types';
 import { DIMENSION_LABELS } from '@/data/testItems';
 import {
   INSTITUTION_REGIONS,
@@ -62,7 +56,6 @@ interface Props {
   recommendations: RecommendedField[];
   onSelectDegree: (degreeId: string) => void;
   profileScores: ProfileScores;
-  environment: EnvironmentPreference;
   geographicPreference?: GeographicRegion;
   savedProgramIds?: string[];
   onToggleSave?: (programId: string) => void;
@@ -516,8 +509,8 @@ function ProgramDetailView({
                         <button
                           type="button"
                           onClick={() => onToggleSave?.(p.id)}
-                          aria-label={isSaved ? 'הסר מרשימת הייעוד' : 'שמור לרשימת הייעוד'}
-                          title={isSaved ? 'הסר מרשימת הייעוד' : 'שמור לרשימת הייעוד'}
+                          aria-label={isSaved ? 'הסר מהרשימה שלי' : 'שמור לרשימה שלי'}
+                          title={isSaved ? 'הסר מהרשימה שלי' : 'שמור לרשימה שלי'}
                           className={[
                             'flex h-8 w-8 items-center justify-center rounded-lg transition',
                             isSaved
@@ -663,8 +656,8 @@ function ProgramDetailView({
                         <button
                           type="button"
                           onClick={() => onToggleSave?.(p.id)}
-                          aria-label={isSaved ? 'הסר מרשימת הייעוד' : 'שמור לרשימת הייעוד'}
-                          title={isSaved ? 'הסר מרשימת הייעוד' : 'שמור לרשימת הייעוד'}
+                          aria-label={isSaved ? 'הסר מהרשימה שלי' : 'שמור לרשימה שלי'}
+                          title={isSaved ? 'הסר מהרשימה שלי' : 'שמור לרשימה שלי'}
                           className={[
                             'flex h-8 w-8 items-center justify-center rounded-lg transition',
                             isSaved
@@ -757,7 +750,6 @@ export default function RecommendationResults({
   recommendations,
   onSelectDegree,
   profileScores,
-  environment,
   geographicPreference = 'any',
   savedProgramIds,
   onToggleSave,

@@ -34,6 +34,15 @@ describe('user profile migration helpers', () => {
     ).toBe(true);
   });
 
+  it('detects institution-specific admissions inputs as meaningful draft data', () => {
+    expect(
+      hasMeaningfulProfileData({
+        geographicPreference: 'any',
+        academicScores: { admissions: { tauApplicationRequirementsConfirmed: false } },
+      }),
+    ).toBe(true);
+  });
+
   it('prefers existing scalar values while unioning saved programs during merge', () => {
     const merged = mergeUserProfileDraft(
       {
@@ -96,5 +105,51 @@ describe('user profile migration helpers', () => {
     );
 
     expect(merged.assessmentProgress).toBeUndefined();
+  });
+
+  it('merges each institution-specific input deliberately and preserves false and zero', () => {
+    const merged = mergeUserProfileDraft(
+      {
+        geographicPreference: 'any',
+        savedProgramIds: [],
+        academicScores: {
+          admissions: {
+            tauBagrutAverage: 110.5,
+            tauApplicationRequirementsConfirmed: false,
+            tauMathPlacementScore: 0,
+            technionArchitectureBagrutAverage: 101.9,
+            technionArchitectureExamScore: 0,
+            technionArchitectureExamPassed: false,
+          },
+        },
+      },
+      {
+        geographicPreference: 'any',
+        academicScores: {
+          admissions: {
+            tauBagrutAverage: 115,
+            bguBagrutAverage: 108.25,
+            tauApplicationRequirementsConfirmed: true,
+            bguLanguageRequirementsConfirmed: false,
+            tauMathPlacementScore: 75,
+            technionArchitectureExamScore: 110,
+            technionArchitectureExamPassed: true,
+            technionArchitectureRequirementsConfirmed: true,
+          },
+        },
+      },
+    );
+
+    expect(merged.academicScores?.admissions).toEqual({
+      tauBagrutAverage: 110.5,
+      bguBagrutAverage: 108.25,
+      tauApplicationRequirementsConfirmed: false,
+      bguLanguageRequirementsConfirmed: false,
+      tauMathPlacementScore: 0,
+      technionArchitectureBagrutAverage: 101.9,
+      technionArchitectureExamScore: 0,
+      technionArchitectureExamPassed: false,
+      technionArchitectureRequirementsConfirmed: true,
+    });
   });
 });

@@ -86,7 +86,6 @@ const REVIEWED_PAIR_IDS_BY_INSTITUTION: Record<FormulaBackedInstitutionId, reado
     'me__tau',
     'medicine__tau',
     'nursing__tau',
-    'nutrition__tau',
     'occupational_therapy__tau',
     'physiotherapy__tau',
     'political_science__tau',
@@ -100,7 +99,6 @@ const REVIEWED_PAIR_IDS_BY_INSTITUTION: Record<FormulaBackedInstitutionId, reado
     'tau_economics__tau',
     'tau_ee__tau',
     'tau_industrial__tau',
-    'tau_infosystems__tau',
     'tau_law__tau',
     'tau_me__tau',
     'tau_medicine__tau',
@@ -134,7 +132,6 @@ const REVIEWED_PAIR_IDS_BY_INSTITUTION: Record<FormulaBackedInstitutionId, reado
     'nutrition__huji',
     'occupational_therapy__huji',
     'pharmacy__huji',
-    'physiotherapy__huji',
     'political_science__huji',
     'psychology__huji',
     'social_work__huji',
@@ -163,7 +160,6 @@ const REVIEWED_PAIR_IDS_BY_INSTITUTION: Record<FormulaBackedInstitutionId, reado
     'education__bgu',
     'ee__bgu',
     'me__bgu',
-    'nutrition__bgu',
     'occupational_therapy__bgu',
     'physiotherapy__bgu',
     'political_science__bgu',
@@ -261,42 +257,18 @@ const WITHHELD_PAIR_EVIDENCE: Record<string, { url: string; reason: string }> = 
   medicine__tau: {
     url: 'https://go.tau.ac.il/he/med/ba/med-doc?v=important-info',
     reason:
-      'Current TAU medicine uses a 30% cognitive plus 70% non-cognitive selection process and does not publish a numeric programme acceptance/rejection cutoff that can support an exact two-verdict replay.',
-  },
-  nutrition__tau: {
-    url: 'https://go.tau.ac.il/he/med',
-    reason:
-      'The current TAU health-programme catalogue does not expose a standalone nutrition programme target or numeric verdict route for this legacy formula-backed row.',
+      'TAU publishes preliminary eligibility at 726.44 and final selection cutoffs of 743.57 for acceptance and 742.52 or below for rejection. Exact final replay remains withheld because the current official sources do not provide the institution-specific assessment weighting and score transformation needed to combine the 2026 non-cognitive component scores with the 30% preliminary score.',
   },
   physiotherapy__tau: {
     url: 'https://go.tau.ac.il/he/med/ba/phys?v=important-info',
     reason:
       'TAU publishes a physiotherapy score and interview route, but final admission is determined after the personal interview; the calculator contract cannot prove the final verdict from the current structured applicant inputs alone.',
   },
-  tau_infosystems__tau: {
-    url: 'https://go.tau.ac.il/he/management/ba/management?v=requirements',
-    reason:
-      'The current TAU source identifies the official programme as the Management degree, not the legacy standalone Management and Information Systems programme represented by this pair. Reusing the Management identifier requires an explicit catalogue rename or merge decision before any pair-specific proof can activate.',
-  },
+
   tau_medicine__tau: {
     url: 'https://go.tau.ac.il/he/med/ba/med-doc?v=important-info',
     reason:
-      'Current TAU medicine uses a 30% cognitive plus 70% non-cognitive selection process and does not publish a numeric programme acceptance/rejection cutoff that can support an exact two-verdict replay.',
-  },
-  physiotherapy__huji: {
-    url: 'https://go.huji.ac.il/jjson/huji.json.gz',
-    reason:
-      'The current HUJI programme dataset has no physiotherapy track or numeric programme verdict for this legacy catalogue row.',
-  },
-  nutrition__bgu: {
-    url: 'https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/',
-    reason:
-      'The current BGU 2027 admission dataset has no nutrition programme row from which a current programme mapping and two verdict fixtures can be proven.',
-  },
-  architecture__technion: {
-    url: 'https://admissions.technion.ac.il/architecture-info/',
-    reason:
-      'Technion publishes a special Architecture Sekhem formula and states that the architecture entrance-exam score participates in the admission decision. The current proof does not reproduce that formula, exam-score contribution, or final verdict.',
+      'TAU publishes preliminary eligibility at 726.44 and final selection cutoffs of 743.57 for acceptance and 742.52 or below for rejection. Exact final replay remains withheld because the current official sources do not provide the institution-specific assessment weighting and score transformation needed to combine the 2026 non-cognitive component scores with the 30% preliminary score.',
   },
   colmgmt_cs__colman: {
     url: 'https://www.colman.ac.il/academics/ba/computer-science/',
@@ -348,7 +320,7 @@ export const FORMULA_BACKED_VERIFICATION_LEDGER: FormulaPairVerificationLedgerEn
     });
   });
 
-function verifiedProgramEntry(
+export function verifiedProgramEntry(
   artifact:
     | TauProgramVerificationMetadata
     | HujiProgramVerificationMetadata
@@ -361,7 +333,14 @@ function verifiedProgramEntry(
     pairId: contract.pairId,
     institutionId: contract.institutionId as FormulaBackedInstitutionId,
     admissionCycle: contract.admissionCycle as '2026-2027',
-    state: 'exact',
+    state:
+      contract.proof.state === 'blocked'
+        ? 'blocked'
+        : contract.proof.state === 'verified' &&
+            contract.proof.comparedScore &&
+            contract.proof.comparedVerdict
+          ? 'exact'
+          : 'withheld',
     officialProgramId: contract.officialProgramId,
     sourceUrl: 'requirementsUrl' in artifact ? artifact.requirementsUrl : contract.source.url,
     formulaFamily: contract.calculation.formulaFamily,

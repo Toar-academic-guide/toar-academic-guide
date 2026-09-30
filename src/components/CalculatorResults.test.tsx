@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 
-import { render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import CalculatorResults from '@/components/CalculatorResults';
+import { evaluateColmanBagrutResult } from '@/server/admissions/colmanBagrutEvaluation';
 import type { AdmissionsEvaluationReport } from '@/types/admissionsEvaluation';
 import { getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 
@@ -11,6 +12,7 @@ const hoistedMocks = vi.hoisted(() => ({
   fetchAdmissionsEvaluation: vi.fn(),
   fetchTauComputerScienceRoutes: vi.fn(),
   push: vi.fn(),
+  posthogCapture: vi.fn(),
   user: null as { id: string } | null,
 }));
 
@@ -37,12 +39,12 @@ vi.mock('@/lib/admissionsRouteClient', () => ({
       this.code = code;
     }
   },
-  fetchTauComputerScienceRoutes: hoistedMocks.fetchTauComputerScienceRoutes,
+  fetchComputerScienceRoutes: hoistedMocks.fetchTauComputerScienceRoutes,
 }));
 
 vi.mock('posthog-js', () => ({
   default: {
-    capture: vi.fn(),
+    capture: hoistedMocks.posthogCapture,
   },
 }));
 
@@ -81,16 +83,208 @@ function route(id: string, durationWeeks: number, effortPoints: number) {
       },
     ],
     afterProfile: { psychometric: 700, subjects: [] },
-    estimate: { durationWeeks, effortPoints, version: 'standard-estimates-test' },
+    estimate: {
+      durationWeeks,
+      effortPoints,
+      estimateVersion: 'standard-estimates-test',
+      owner: 'Toar admissions editorial',
+      effectiveDate: '2026-07-20',
+      eligibility: 'Test estimate.',
+      rationale: 'Test estimate.',
+    },
     verification: { eligible: true, margin: 1, score: 707, cutoff: 706 },
   };
 }
 
 describe('CalculatorResults', () => {
+  it.each([
+    [85, 'תנאי הציונים מתקיימים — נדרש מבדק פנימי'],
+    [84.99, 'מתחת לתנאי מסלול הבגרות'],
+  ])(
+    'labels the Colman route for average %s and provides profile editing',
+    async (average, label) => {
+      const onCompleteAcademicProfile = vi.fn();
+      const result = evaluateColmanBagrutResult({
+        institution: { id: 'colman', name: 'מכללת ניהול – לימודים אקדמיים', region: 'center' },
+        input: {
+          degreeId: 'colmgmt_cs',
+          extraInputs: {
+            colmanBagrutAverage: average as number,
+            colmanBagrutCertificateConfirmed: true,
+            mathUnits: 5,
+            mathGrade: 70,
+          },
+        },
+      });
+      hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(report([result]));
+      render(
+        <CalculatorResults
+          degreeId="colmgmt_cs"
+          programs={programs}
+          onBack={vi.fn()}
+          onCompleteAcademicProfile={onCompleteAcademicProfile}
+        />,
+      );
+      expect(await screen.findByText(label)).toBeTruthy();
+      if (average === 84.99) expect(screen.getByText(/מסלול בגרות 84.99/)).toBeTruthy();
+      fireEvent.click(
+        screen.getByRole('button', { name: 'עדכון נתוני מסלול הבגרות בפרופיל האקדמי' }),
+      );
+      expect(onCompleteAcademicProfile).toHaveBeenCalledOnce();
+    },
+  );
+  it('sends an explicit Haifa track, clears partner confirmation when switching and labels the unverified option', async () => {
+    hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(report([]));
+    render(
+      <CalculatorResults
+        degreeId="haifa_infosystems"
+        programs={programs}
+        psychometric={800}
+        bagrut={120}
+        onBack={() => {}}
+      />,
+    );
+    const selector = screen.getByLabelText('מסלול מערכות מידע בחיפה');
+    expect(selector).toHaveProperty('value', '');
+    fireEvent.change(selector, { target: { value: 'computer_science' } });
+    fireEvent.change(screen.getByLabelText('האם אתם עומדים בתנאי הקבלה של החוג השני?'), {
+      target: { value: 'true' },
+    });
+    await waitFor(() =>
+      expect(hoistedMocks.fetchAdmissionsEvaluation).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          extraInputs: expect.objectContaining({
+            haifaInformationSystemsTrack: 'computer_science',
+            haifaInformationSystemsPartnerRequirementsConfirmed: true,
+          }),
+        }),
+      ),
+    );
+    fireEvent.change(selector, { target: { value: 'mathematics' } });
+    expect(screen.getByLabelText('האם אתם עומדים בתנאי הקבלה של החוג השני?')).toHaveProperty(
+      'value',
+      '',
+    );
+    await waitFor(() =>
+      expect(hoistedMocks.fetchAdmissionsEvaluation).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          extraInputs: expect.objectContaining({
+            haifaInformationSystemsTrack: 'mathematics',
+            haifaInformationSystemsPartnerRequirementsConfirmed: undefined,
+          }),
+        }),
+      ),
+    );
+    fireEvent.change(selector, { target: { value: 'single_major' } });
+    expect(await screen.findByText(/המיפוי של המסלול החד־חוגי הרגיל/)).toBeTruthy();
+    expect(screen.queryByLabelText('האם אתם עומדים בתנאי הקבלה של החוג השני?')).toBeNull();
+  });
+  it('labels Technion Architecture eligibility as conditional on available places', async () => {
+    hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
+      report([
+        {
+          institution: { id: 'technion', name: 'הטכניון', region: 'north' },
+          linkedInstitutionId: 'technion',
+          capability: 'exact',
+          kind: 'manual_gate',
+          decision: 'eligible_to_apply',
+          confidence: 'high',
+          score: 97.5,
+          threshold: 85,
+          sourceLabel: 'עמידה בתנאים — על בסיס מקום פנוי',
+          explanation: 'הקבלה תלויה במקום פנוי ובהחלטה הסופית של הטכניון.',
+          nextAction: 'בדקו מקום פנוי עם הטכניון.',
+        },
+      ]),
+    );
+    render(
+      <CalculatorResults
+        degreeId="architecture"
+        programs={programs}
+        psychometric={730}
+        bagrut={100}
+        onBack={() => {}}
+      />,
+    );
+    expect(await screen.findByText('עמידה בתנאים — בכפוף למקום פנוי')).toBeTruthy();
+    expect(screen.queryByText('מתקבל/ת')).toBeNull();
+  });
+
   beforeEach(() => {
     vi.restoreAllMocks();
+    hoistedMocks.user = null;
     hoistedMocks.fetchAdmissionsEvaluation.mockReset();
     hoistedMocks.fetchTauComputerScienceRoutes.mockReset();
+    hoistedMocks.posthogCapture.mockReset();
+  });
+  it.each(['tau', 'bgu'] as const)(
+    'preserves the %s alert target through signup',
+    async (institution) => {
+      hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
+        report([
+          {
+            institution: {
+              id: institution,
+              name: institution === 'tau' ? 'אוניברסיטת תל אביב' : 'אוניברסיטת בן גוריון',
+              region: institution === 'tau' ? 'center' : 'south',
+            },
+            linkedInstitutionId: institution,
+            capability: 'exact',
+            kind: 'exact',
+            decision: 'below',
+            confidence: 'high',
+            sourceLabel: 'אימות רשמי',
+            explanation: 'מתחת לסף',
+            nextAction: 'השלימו נתונים',
+            score: 690,
+            threshold: 706,
+          },
+        ]),
+      );
+      render(
+        <CalculatorResults
+          degreeId={`${institution}_cs`}
+          programs={programs}
+          psychometric={680}
+          bagrut={108}
+          onBack={() => {}}
+        />,
+      );
+      fireEvent.click(await screen.findByRole('button', { name: 'אשרו והפעילו מעקב' }));
+      expect(hoistedMocks.push).toHaveBeenCalledWith(expect.stringContaining(`${institution}_cs`));
+    },
+  );
+
+  it('labels exact Management eligibility as eligible to apply, without asking for more data', async () => {
+    hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
+      report([
+        {
+          institution: { id: 'tau', name: 'אוניברסיטת תל אביב', region: 'center' },
+          linkedInstitutionId: 'tau',
+          capability: 'exact',
+          kind: 'exact',
+          decision: 'eligible_to_apply',
+          confidence: 'high',
+          score: 639,
+          threshold: 610,
+          sourceLabel: 'תנאי קבלה רשמיים לניהול',
+          explanation: 'עומדים בתנאי אפיק PMA (PMA 835).',
+          nextAction: 'בדקו את תנאי החוג השני.',
+        },
+      ]),
+    );
+    render(
+      <CalculatorResults
+        degreeId="tau_business"
+        programs={programs}
+        psychometric={605}
+        bagrut={100}
+        onBack={() => {}}
+      />,
+    );
+    expect(await screen.findByLabelText('אוניברסיטת תל אביב: אפשר להגיש מועמדות')).toBeTruthy();
+    expect(screen.queryByText('נדרשים נתונים')).toBeNull();
+    expect(screen.queryByText('מתקבל/ת')).toBeNull();
   });
 
   it('renders a pending official verdict as waiting, not missing input', async () => {
@@ -153,11 +347,60 @@ describe('CalculatorResults', () => {
         bagrut={108}
         onBack={() => {}}
         onCompleteAcademicProfile={() => {}}
-        academicScores={{ psychometric: { overall: 680 }, bagrut: { weightedAverage: 108 } }}
+        academicScores={{
+          psychometric: { overall: 680 },
+          bagrut: { weightedAverage: 108 },
+          admissions: { tauBagrutAverage: 108 },
+        }}
       />,
     );
 
     expect(await screen.findByText('השלמת פרופיל אקדמי')).toBeTruthy();
+    expect(hoistedMocks.fetchTauComputerScienceRoutes).not.toHaveBeenCalled();
+  });
+
+  it('withholds route cards until the official TAU Bagrut average is available', async () => {
+    hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
+      report([
+        {
+          institution: { id: 'tau', name: 'אוניברסיטת תל אביב', region: 'center' },
+          linkedInstitutionId: 'tau',
+          capability: 'exact',
+          kind: 'exact',
+          decision: 'below',
+          confidence: 'high',
+          sourceLabel: 'אימות רשמי',
+          explanation: 'מתחת לסף',
+          nextAction: 'השלימו נתונים',
+          score: 690,
+          threshold: 706,
+        },
+      ]),
+    );
+
+    render(
+      <CalculatorResults
+        degreeId="tau_cs"
+        programs={programs}
+        psychometric={680}
+        bagrut={108}
+        onBack={() => {}}
+        onCompleteAcademicProfile={() => {}}
+        academicScores={{
+          psychometric: { overall: 680 },
+          bagrut: {
+            weightedAverage: 108,
+            subjectRecord: {
+              schemaVersion: 1,
+              sector: 'jewish',
+              subjects: [{ subjectId: 'mathematics', units: 5, grade: 80 }],
+            },
+          },
+        }}
+      />,
+    );
+
+    expect(await screen.findByText(/ממוצע הבגרות הרשמי של אוניברסיטת תל אביב/)).toBeTruthy();
     expect(hoistedMocks.fetchTauComputerScienceRoutes).not.toHaveBeenCalled();
   });
 
@@ -190,6 +433,7 @@ describe('CalculatorResults', () => {
         onCompleteAcademicProfile={() => {}}
         academicScores={{
           psychometric: { overall: 690 },
+          admissions: { tauBagrutAverage: 108 },
           bagrut: {
             weightedAverage: 108,
             subjectRecord: {
@@ -241,6 +485,7 @@ describe('CalculatorResults', () => {
         onBack={() => {}}
         academicScores={{
           psychometric: { overall: 680 },
+          admissions: { tauBagrutAverage: 108 },
           bagrut: {
             weightedAverage: 108,
             subjectRecord: {
@@ -256,9 +501,87 @@ describe('CalculatorResults', () => {
       />,
     );
 
+    expect(await screen.findByText(/בלי שם, דוא״ל או מזהה משתמש/)).toBeTruthy();
+    expect(hoistedMocks.fetchTauComputerScienceRoutes).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: 'בדיקת מסלולים מאומתים' }));
     expect(await screen.findByText('המהיר ביותר')).toBeTruthy();
     expect(screen.getByText('הכי מעט מאמץ')).toBeTruthy();
     expect(screen.getByText(/לשפר פסיכומטרי מ-680 ל-700/)).toBeTruthy();
+  });
+
+  it('requests and renders verified BGU route winners from a complete profile', async () => {
+    hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
+      report([
+        {
+          institution: { id: 'bgu', name: 'אוניברסיטת בן־גוריון', region: 'south' },
+          linkedInstitutionId: 'bgu',
+          capability: 'exact',
+          kind: 'exact',
+          decision: 'below',
+          confidence: 'high',
+          sourceLabel: 'אימות רשמי',
+          explanation: 'מתחת לסף',
+          nextAction: 'בדקו מסלול שיפור',
+          score: 636,
+          threshold: 681,
+        },
+      ]),
+    );
+    hoistedMocks.fetchTauComputerScienceRoutes.mockResolvedValue({
+      status: 'complete',
+      fastest: route('grade_history_80_95', 12, 3),
+      lowestEffort: route('grade_history_80_95', 12, 3),
+    });
+
+    render(
+      <CalculatorResults
+        degreeId="bgu_cs"
+        programs={programs}
+        psychometric={610}
+        bagrut={105}
+        onBack={() => {}}
+        academicScores={{
+          psychometric: { overall: 610, quantitative: 125, verbal: 110, english: 115 },
+          admissions: {
+            bguBagrutAverage: 105,
+            bguLanguageRequirementsConfirmed: true,
+          },
+          bagrut: {
+            weightedAverage: 105,
+            subjectRecord: {
+              schemaVersion: 2,
+              sector: 'jewish',
+              certificateType: 'internal',
+              complete: true,
+              subjects: [
+                {
+                  subjectId: 'mathematics',
+                  units: 4,
+                  grade: 90,
+                  assessmentKind: 'exam',
+                },
+              ],
+            },
+          },
+        }}
+      />,
+    );
+
+    expect(await screen.findByText(/להתקבל למדעי המחשב בבן־גוריון/)).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'בדיקת מסלולים מאומתים' }));
+    expect(await screen.findByText('המהיר ביותר')).toBeTruthy();
+    expect(hoistedMocks.fetchTauComputerScienceRoutes).toHaveBeenCalledWith(
+      'bgu_cs',
+      expect.any(Object),
+    );
+    expect(hoistedMocks.posthogCapture).toHaveBeenCalledWith('admissions_route_outcome', {
+      degree_id: 'bgu_cs',
+      outcome: 'complete',
+    });
+    const routeAnalytics = hoistedMocks.posthogCapture.mock.calls.find(
+      ([event]) => event === 'admissions_route_outcome',
+    );
+    expect(JSON.stringify(routeAnalytics)).not.toMatch(/grade|subject|profile|psychometric/i);
   });
 
   it('renders an exact accepted result from the admissions evaluation route', async () => {
@@ -488,6 +811,51 @@ describe('CalculatorResults', () => {
     expect(screen.queryByText('אימות רשמי')).toBeNull();
   });
 
+  it('summarizes institution-specific inputs as official averages or confirmed requirements', async () => {
+    hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
+      report([
+        {
+          institution: { id: 'tau', name: 'אוניברסיטת תל אביב', region: 'center' },
+          linkedInstitutionId: 'tau',
+          capability: 'needs_input',
+          kind: 'needs_input',
+          decision: 'unknown',
+          confidence: 'low',
+          sourceLabel: 'נדרשים נתונים נוספים',
+          explanation: 'חסרים ממוצע רשמי ואישור תנאי קבלה.',
+          nextAction: 'עדכנו את הנתונים.',
+          requiredInputs: ['tau_bagrut_average', 'tau_application_requirements'],
+        },
+        {
+          institution: { id: 'bgu', name: 'אוניברסיטת בן־גוריון', region: 'south' },
+          linkedInstitutionId: 'bgu',
+          capability: 'needs_input',
+          kind: 'needs_input',
+          decision: 'unknown',
+          confidence: 'low',
+          sourceLabel: 'נדרשים נתונים נוספים',
+          explanation: 'חסר ציון סיווג במתמטיקה.',
+          nextAction: 'עדכנו את הנתון.',
+          requiredInputs: ['tau_math_placement_score'],
+        },
+      ]),
+    );
+
+    render(
+      <CalculatorResults
+        degreeId="tau_cs"
+        programs={programs}
+        psychometric={700}
+        bagrut={110}
+        onBack={() => {}}
+      />,
+    );
+
+    expect(await screen.findByLabelText('אוניברסיטת תל אביב: נדרשים נתונים')).toBeTruthy();
+    expect(screen.getByText(/נדרשים ממוצעים רשמיים או אישור תנאי קבלה/)).toBeTruthy();
+    expect(screen.getByText(/נדרש ציון סיווג במתמטיקה/)).toBeTruthy();
+  });
+
   it('renders the official link for mapped estimated results when the official source is currently blocked', async () => {
     hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
       report([
@@ -638,4 +1006,37 @@ describe('CalculatorResults', () => {
     await waitFor(() => expect(screen.getByText('לא הצלחנו לחשב את התוצאות כרגע')).toBeTruthy());
     expect(screen.getByRole('button', { name: 'נסו שוב' })).toBeTruthy();
   });
+});
+
+it('forwards degree-route profile inputs when optional generic scores are omitted', async () => {
+  hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(report([]));
+  const admissions = {
+    bguOccupationalTherapyRoute: 'academic' as const,
+    bguOccupationalTherapyRequirementsConfirmed: true,
+    bguBachelorsDegreeCompleted: true,
+    bguBachelorsDegreeAverage: 85.25,
+    bguPhysiotherapyRequirementsConfirmed: false,
+  };
+  render(
+    <CalculatorResults
+      degreeId="occupational_therapy"
+      programs={programs}
+      onBack={() => {}}
+      academicScores={{
+        psychometric: { overall: 700 },
+        bagrut: { weightedAverage: 100 },
+        admissions,
+      }}
+    />,
+  );
+  await waitFor(() =>
+    expect(hoistedMocks.fetchAdmissionsEvaluation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        degreeId: 'occupational_therapy',
+        psychometric: undefined,
+        bagrut: undefined,
+        extraInputs: expect.objectContaining(admissions),
+      }),
+    ),
+  );
 });

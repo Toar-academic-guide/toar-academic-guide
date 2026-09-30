@@ -8,10 +8,24 @@ const hoisted = vi.hoisted(() => ({
   fetchCataloguePrograms: vi.fn(),
   fetchCatalogueInstitutions: vi.fn(),
   updateProfile: vi.fn(),
-  profile: { geographicPreference: 'any', savedProgramIds: [], academicScores: {} } as Record<
-    string,
-    unknown
-  >,
+  authState: { loading: false, user: null as null | { id: string } },
+  profileState: {
+    clearLocalProfileData: vi.fn(),
+    profile: {
+      geographicPreference: 'any',
+      savedProgramIds: [],
+      academicScores: {} as Record<string, unknown>,
+    } as Record<string, unknown>,
+    hydrated: true,
+    initialProfileStatus: 'ready' as 'loading' | 'ready' | 'error',
+    initialProfileError: null as string | null,
+    retryInitialProfileLoad: vi.fn(),
+    isAuthenticated: false,
+    removeSavedProgram: vi.fn(),
+    syncError: null as string | null,
+    syncing: false,
+    toggleSavedProgram: vi.fn(),
+  },
 }));
 
 vi.mock('next/navigation', () => ({
@@ -28,24 +42,14 @@ vi.mock('posthog-js', () => ({
 
 vi.mock('@/context/AuthContext', () => ({
   useAuth: () => ({
-    loading: false,
+    loading: hoisted.authState.loading,
     signOut: vi.fn(),
-    user: null,
+    user: hoisted.authState.user,
   }),
 }));
 
 vi.mock('@/hooks/useUserProfile', () => ({
-  useUserProfile: () => ({
-    clearLocalProfileData: vi.fn(),
-    profile: hoisted.profile,
-    hydrated: true,
-    isAuthenticated: false,
-    removeSavedProgram: vi.fn(),
-    syncError: null,
-    syncing: false,
-    toggleSavedProgram: vi.fn(),
-    updateProfile: hoisted.updateProfile,
-  }),
+  useUserProfile: () => ({ ...hoisted.profileState, updateProfile: hoisted.updateProfile }),
 }));
 
 vi.mock('@/lib/catalogueClient', () => {
@@ -121,25 +125,37 @@ vi.mock('@/components/QuizIntro', () => ({
 }));
 
 vi.mock('@/components/AcademicProfileForm', () => ({
-  default: ({ onComplete }: { onComplete: (scores: unknown) => void }) => (
-    <button
-      type="button"
-      onClick={() =>
-        onComplete({
-          psychometric: { overall: 650 },
-          bagrut: {
-            weightedAverage: 102,
-            subjectRecord: {
-              schemaVersion: 1,
-              sector: 'jewish',
-              subjects: [{ subjectId: 'mathematics', units: 5, grade: 90 }],
+  default: ({
+    initialScores,
+    onComplete,
+  }: {
+    initialScores?: { admissions?: { tauBagrutAverage?: number } };
+    onComplete: (scores: unknown) => void;
+  }) => (
+    <div>
+      <input
+        aria-label="test-official-average"
+        defaultValue={initialScores?.admissions?.tauBagrutAverage?.toString() ?? ''}
+      />
+      <button
+        type="button"
+        onClick={() =>
+          onComplete({
+            psychometric: { overall: 650 },
+            bagrut: {
+              weightedAverage: 102,
+              subjectRecord: {
+                schemaVersion: 1,
+                sector: 'jewish',
+                subjects: [{ subjectId: 'mathematics', units: 5, grade: 90 }],
+              },
             },
-          },
-        })
-      }
-    >
-      academic-profile
-    </button>
+          })
+        }
+      >
+        academic-profile
+      </button>
+    </div>
   ),
 }));
 
@@ -188,6 +204,18 @@ vi.mock('@/components/DegreePicker', () => ({
   default: () => <div>degree-picker</div>,
 }));
 
+vi.mock('@/components/StudyLocationStep', () => ({
+  default: ({
+    onDone,
+  }: {
+    onDone: (selection: { allRegions: boolean; regionIds: string[] }) => void;
+  }) => (
+    <button onClick={() => onDone({ allRegions: false, regionIds: ['haifa', 'south'] })}>
+      choose-regions
+    </button>
+  ),
+}));
+
 vi.mock('@/components/AuthScreen', () => ({
   default: () => <div>auth-screen</div>,
 }));
@@ -223,7 +251,6 @@ describe('AppExperience route entry', () => {
     hoisted.push.mockReset();
     hoisted.updateProfile.mockReset();
     hoisted.updateProfile.mockResolvedValue(true);
-    hoisted.profile = { geographicPreference: 'any', savedProgramIds: [], academicScores: {} };
     hoisted.fetchCataloguePrograms.mockResolvedValue([
       {
         id: 'technion-computer-science',
@@ -232,7 +259,27 @@ describe('AppExperience route entry', () => {
       },
     ]);
     hoisted.fetchCatalogueInstitutions.mockResolvedValue([]);
+    hoisted.authState.loading = false;
+    hoisted.authState.user = null;
+    Object.assign(hoisted.profileState, {
+      profile: { geographicPreference: 'any', savedProgramIds: [], academicScores: {} },
+      hydrated: true,
+      initialProfileStatus: 'ready',
+      initialProfileError: null,
+      isAuthenticated: false,
+      syncError: null,
+      syncing: false,
+    });
+    hoisted.profileState.retryInitialProfileLoad.mockReset();
     window.scrollTo = vi.fn();
+  });
+
+  it('carries study-region choices into the durable saved-program URL', async () => {
+    render(<AppExperience initialStep="study-location" />);
+    fireEvent.click(await screen.findByRole('button', { name: 'choose-regions' }));
+    expect(hoisted.push).toHaveBeenCalledWith(
+      '/app/saved-programs?from=study-location&regions=haifa%2Csouth',
+    );
   });
 
   it('shows a prerequisite state for direct recommendations links without assessment data', async () => {
@@ -248,7 +295,7 @@ describe('AppExperience route entry', () => {
   });
 
   it('offers an explicit resume and restores the saved career screen', async () => {
-    hoisted.profile = {
+    hoisted.profileState.profile = {
       geographicPreference: 'any',
       savedProgramIds: [],
       academicScores: {},
@@ -273,7 +320,7 @@ describe('AppExperience route entry', () => {
   });
 
   it('starts over by clearing only assessment progress', async () => {
-    hoisted.profile = {
+    hoisted.profileState.profile = {
       geographicPreference: 'north',
       savedProgramIds: ['tau_cs'],
       academicScores: { psychometric: { overall: 700 } },
@@ -301,7 +348,7 @@ describe('AppExperience route entry', () => {
   });
 
   it('restores completed recommendation inputs for direct recommendation links', async () => {
-    hoisted.profile = {
+    hoisted.profileState.profile = {
       geographicPreference: 'north',
       savedProgramIds: [],
       academicScores: {},
@@ -326,7 +373,7 @@ describe('AppExperience route entry', () => {
   });
 
   it('restores follow-up filters and persists completed recommendation inputs', async () => {
-    hoisted.profile = {
+    hoisted.profileState.profile = {
       geographicPreference: 'any',
       savedProgramIds: [],
       academicScores: {},
@@ -468,5 +515,76 @@ describe('AppExperience route entry', () => {
     await waitFor(() => expect(screen.getByText('career-assessment:0')).toBeTruthy());
     expect(hoisted.push).not.toHaveBeenCalledWith('/app/assessment');
     expect(window.location.pathname).toBe('/app/assessment');
+  });
+
+  it('waits for delayed guest hydration before mounting the profile form', async () => {
+    hoisted.profileState.hydrated = false;
+    hoisted.profileState.initialProfileStatus = 'loading';
+    const view = render(<AppExperience initialStep="academic-profile" />);
+
+    expect(screen.queryByRole('button', { name: 'academic-profile' })).toBeNull();
+    expect(screen.getByRole('status').textContent).toContain('טוענים את הנתונים השמורים');
+
+    hoisted.profileState.hydrated = true;
+    hoisted.profileState.initialProfileStatus = 'ready';
+    hoisted.profileState.profile.academicScores = {
+      admissions: { tauBagrutAverage: 111.5 },
+    };
+    view.rerender(<AppExperience initialStep="academic-profile" />);
+
+    expect(screen.getByRole('button', { name: 'academic-profile' })).toBeTruthy();
+    expect(screen.getByLabelText('test-official-average')).toHaveProperty('value', '111.5');
+  });
+
+  it('waits for the authenticated profile request before showing hydrated inputs', () => {
+    hoisted.authState.user = { id: 'user-123' };
+    hoisted.profileState.isAuthenticated = true;
+    hoisted.profileState.initialProfileStatus = 'loading';
+    const view = render(<AppExperience initialStep="academic-profile" />);
+
+    expect(screen.queryByRole('button', { name: 'academic-profile' })).toBeNull();
+
+    hoisted.profileState.profile.academicScores = {
+      admissions: { tauBagrutAverage: 113.25 },
+    };
+    hoisted.profileState.initialProfileStatus = 'ready';
+    view.rerender(<AppExperience initialStep="academic-profile" />);
+
+    expect(screen.getByLabelText('test-official-average')).toHaveProperty('value', '113.25');
+  });
+
+  it('shows a retryable error when the initial profile fetch fails', () => {
+    hoisted.profileState.initialProfileStatus = 'error';
+    hoisted.profileState.initialProfileError = 'Profile service unavailable';
+    render(<AppExperience initialStep="academic-profile" />);
+
+    expect(screen.getByText('לא הצלחנו לטעון את הפרופיל שלך')).toBeTruthy();
+    expect(screen.getByText('Profile service unavailable')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'נסו שוב' }));
+    expect(hoisted.profileState.retryInitialProfileLoad).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('button', { name: 'academic-profile' })).toBeNull();
+  });
+
+  it('keeps unsaved input mounted during ordinary profile syncing', async () => {
+    let resolveSave: ((success: boolean) => void) | undefined;
+    hoisted.updateProfile.mockImplementation(
+      () => new Promise<boolean>((resolve) => (resolveSave = resolve)),
+    );
+    const view = render(<AppExperience initialStep="academic-profile" />);
+
+    const average = screen.getByLabelText('test-official-average') as HTMLInputElement;
+    fireEvent.change(average, { target: { value: '114.75' } });
+    fireEvent.click(screen.getByRole('button', { name: 'academic-profile' }));
+    await waitFor(() => expect(hoisted.updateProfile).toHaveBeenCalled());
+
+    hoisted.profileState.syncing = true;
+    view.rerender(<AppExperience initialStep="academic-profile" />);
+
+    expect(screen.getByLabelText('test-official-average')).toHaveProperty('value', '114.75');
+    resolveSave?.(false);
+    await waitFor(() =>
+      expect(screen.getByRole('button', { name: 'academic-profile' })).toBeTruthy(),
+    );
+    expect(screen.getByLabelText('test-official-average')).toHaveProperty('value', '114.75');
   });
 });

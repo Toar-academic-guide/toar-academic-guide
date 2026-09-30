@@ -18,6 +18,7 @@ import { runTechnionAdmissionsProof } from './adapters/technionAdmissions';
 import { OFFICIAL_PROGRAM_PROOF_CAPTURES_BY_TARGET_ID } from '@/data/admissions/officialProgramProofCaptures';
 import { getFormulaPairVerificationEntry } from '@/data/admissions/formulaBackedVerificationLedger';
 import { withBoundedOfficialResponse } from './boundedOfficialFetch';
+import { HAIFA_INFORMATION_SYSTEMS_TRACK_ARTIFACTS } from '@/data/admissions/haifaInformationSystemsVerification';
 
 export interface AdmissionsLiveProofOptions {
   applicant?: AdmissionsApplicantInput;
@@ -175,6 +176,10 @@ async function runControlledTarget(
 }
 
 function reviewedSourceFingerprintFor(target: AdmissionsSourceTarget): string | undefined {
+  const track = Object.values(HAIFA_INFORMATION_SYSTEMS_TRACK_ARTIFACTS).find(
+    (artifact) => artifact.contract.source.targetId === target.id,
+  );
+  if (track) return track.contract.sourceFingerprint;
   const pairId = target.defaultProgram?.pairId;
   if (!pairId) return undefined;
   return getFormulaPairVerificationEntry(pairId)?.liveProof.sourceFingerprint ?? undefined;

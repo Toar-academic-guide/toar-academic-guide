@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { allowsNoGenericBagrut, allowsNoPsychometric } from '@/lib/calculatorInputRequirements';
+
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { AlertCircle, ArrowRight, Check, ChevronDown, LoaderCircle } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import posthog from 'posthog-js';
@@ -12,6 +14,8 @@ import {
 } from '@/data/institutions';
 import { REGION_LABEL } from '@/data/geography';
 import InstitutionLogo from '@/components/InstitutionLogo';
+import HaifaInformationSystemsTrackFields from '@/components/HaifaInformationSystemsTrackFields';
+import { haifaInformationSystemsTrackSchema } from '@/lib/haifaAdmissionsInputs';
 import { useAuth } from '@/context/AuthContext';
 import { buildAdmissionAlertIntentPath, buildAdmissionAlertSignupPath } from '@/lib/routes';
 import {
@@ -20,7 +24,7 @@ import {
 } from '@/lib/admissionsEvaluationClient';
 import {
   AdmissionsRouteApiError,
-  fetchTauComputerScienceRoutes,
+  fetchComputerScienceRoutes,
   type AdmissionsRouteResult,
   type AdmissionsRouteSearchResult,
 } from '@/lib/admissionsRouteClient';
@@ -62,14 +66,18 @@ function getInstitutionType(inst: InstitutionRecord): InstitutionType {
 
 function formatResultSummary(result: AdmissionsEvaluationResult): string {
   if (typeof result.score === 'number') {
+    const decimalPlaces =
+      result.scoreLabel?.startsWith('סכם פיזיותרפיה') || result.linkedInstitutionId === 'colman'
+        ? 2
+        : 1;
     const formattedScore = Number.isInteger(result.score)
       ? String(result.score)
-      : result.score.toFixed(1);
+      : result.score.toFixed(decimalPlaces);
     const formattedThreshold =
       typeof result.threshold === 'number'
         ? Number.isInteger(result.threshold)
           ? String(result.threshold)
-          : result.threshold.toFixed(1)
+          : result.threshold.toFixed(decimalPlaces)
         : null;
 
     return `${result.scoreLabel ?? 'ציון'} ${formattedScore}${
@@ -89,20 +97,66 @@ function formatResultSummary(result: AdmissionsEvaluationResult): string {
   }
 
   if (result.requiredInputs?.length) {
+    if (result.requiredInputs.includes('haifa_information_systems_track'))
+      return 'בחרו מסלול מערכות מידע בחיפה';
+    if (result.requiredInputs.includes('haifa_information_systems_partner_requirements'))
+      return 'יש לבדוק גם את תנאי החוג השני';
+    if (result.requiredInputs.some((input) => input.startsWith('haifa_')))
+      return 'נדרשים נתוני חיפה בפרופיל: ממוצע, מועדי בחינות ודרישות החוג';
+    if (
+      result.requiredInputs.some((input) =>
+        [
+          'bgu_occupational_therapy_requirements',
+          'bgu_physiotherapy_requirements',
+          'bgu_occupational_therapy_exam_session',
+          'bgu_bachelors_degree_completed',
+          'bgu_bachelors_degree_average',
+        ].includes(input),
+      )
+    )
+      return 'השלימו בפרופיל האקדמי את אפיק מדעי הבריאות ותנאיו';
+    if (result.requiredInputs.some((input) => input.startsWith('technion_architecture_'))) {
+      return 'נדרשים נתוני ארכיטקטורה בטכניון';
+    }
+    if (result.requiredInputs.some((input) => input.startsWith('tau_management_'))) {
+      return 'נדרשים נתוני קבלה לניהול בתל אביב';
+    }
+    if (result.requiredInputs.some((input) => input.startsWith('tau_physiotherapy_'))) {
+      return 'השלימו בפרופיל את תנאי הפיזיותרפיה בתל אביב';
+    }
+    if (result.requiredInputs.includes('psychometric_overall')) return 'נדרש ציון פסיכומטרי';
     const onlyPsychometricSubscores = result.requiredInputs.every((input) =>
       ['psychometric_math', 'psychometric_verbal', 'psychometric_english'].includes(input),
     );
-    return onlyPsychometricSubscores
-      ? 'נדרשים גם תתי-ציונים בפסיכומטרי'
-      : 'נדרשים פרטי מקצועות בגרות';
+    if (onlyPsychometricSubscores) {
+      return 'נדרשים גם תתי-ציונים בפסיכומטרי';
+    }
+    if (
+      result.requiredInputs.some((input) =>
+        [
+          'tau_bagrut_average',
+          'colman_bagrut_average',
+          'colman_bagrut_certificate',
+          'bgu_bagrut_average',
+          'tau_application_requirements',
+          'bgu_language_requirements',
+        ].includes(input),
+      )
+    ) {
+      return 'נדרשים ממוצעים רשמיים או אישור תנאי קבלה';
+    }
+    if (result.requiredInputs.includes('tau_math_placement_score')) {
+      return 'נדרש ציון סיווג במתמטיקה';
+    }
+    return 'נדרשים פרטי מקצועות בגרות';
   }
 
   return result.sourceLabel;
 }
 
 interface Props {
-  psychometric: number;
-  bagrut: number;
+  psychometric?: number;
+  bagrut?: number;
   degreeId: string;
   programs: CatalogueProgram[];
   onBack: () => void;
@@ -136,9 +190,12 @@ export default function CalculatorResults({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<AdmissionsEvaluationApiError | null>(null);
   const [reloadToken, setReloadToken] = useState(0);
+  const [haifaTrackOverride, setHaifaTrackOverride] = useState<string>();
+  const [haifaPartnerOverride, setHaifaPartnerOverride] = useState<string>();
   const [routeResult, setRouteResult] = useState<AdmissionsRouteSearchResult | null>(null);
   const [routeLoading, setRouteLoading] = useState(false);
   const [routeError, setRouteError] = useState<AdmissionsRouteApiError | null>(null);
+  const [routeRequested, setRouteRequested] = useState(false);
   const [subscriptionStatus, setSubscriptionStatus] = useState<
     | 'idle'
     | 'submitting'
@@ -146,20 +203,43 @@ export default function CalculatorResults({
     | 'existing'
     | 'profile_incomplete'
     | 'already_eligible'
+    | 'verify_email'
+    | 'closed'
     | 'error'
   >('idle');
 
+  const alertRequest = useRef<AbortController | null>(null);
+  useEffect(() => {
+    setRouteRequested(false);
+    setSubscriptionStatus('idle');
+    return () => alertRequest.current?.abort();
+  }, [degreeId, user?.id]);
+
   const selectedProgram = programs.find((program) => program.id === degreeId);
   const savedAcademicScoresMatchCalculation =
-    academicScores?.psychometric?.overall === psychometric &&
-    academicScores?.bagrut?.weightedAverage === bagrut;
-  const extraInputs = useMemo(
-    () =>
-      savedAcademicScoresMatchCalculation
-        ? admissionsExtraInputsFromAcademicScores(academicScores)
-        : undefined,
-    [academicScores, savedAcademicScoresMatchCalculation],
-  );
+    (academicScores?.psychometric?.overall === psychometric ||
+      (psychometric === undefined && allowsNoPsychometric(degreeId))) &&
+    (academicScores?.bagrut?.weightedAverage === bagrut ||
+      (bagrut === undefined && allowsNoGenericBagrut(degreeId)));
+  const haifaTrack =
+    haifaTrackOverride ?? academicScores?.admissions?.haifaInformationSystemsTrack ?? '';
+  const savedHaifaPartner =
+    academicScores?.admissions?.haifaInformationSystemsPartnerRequirementsConfirmed;
+  const haifaPartner =
+    haifaPartnerOverride ?? (savedHaifaPartner === undefined ? '' : String(savedHaifaPartner));
+  const extraInputs = useMemo(() => {
+    const saved = savedAcademicScoresMatchCalculation
+      ? admissionsExtraInputsFromAcademicScores(academicScores)
+      : undefined;
+    if (degreeId !== 'haifa_infosystems') return saved;
+    const parsed = haifaInformationSystemsTrackSchema.safeParse(haifaTrack);
+    return {
+      ...saved,
+      haifaInformationSystemsTrack: parsed.success ? parsed.data : undefined,
+      haifaInformationSystemsPartnerRequirementsConfirmed:
+        haifaPartner === '' ? undefined : haifaPartner === 'true',
+    };
+  }, [academicScores, savedAcademicScoresMatchCalculation, degreeId, haifaTrack, haifaPartner]);
 
   useEffect(() => {
     let cancelled = false;
@@ -229,22 +309,46 @@ export default function CalculatorResults({
     };
   }, [bagrut, degreeId, extraInputs, psychometric, reloadToken]);
 
-  const tauBelowThreshold = report?.results.some(
-    (result) => result.linkedInstitutionId === 'tau' && result.decision === 'below',
+  const routeTarget = useMemo(
+    () =>
+      degreeId === 'tau_cs'
+        ? ({ degreeId: 'tau_cs', institutionId: 'tau' } as const)
+        : degreeId === 'bgu_cs'
+          ? ({ degreeId: 'bgu_cs', institutionId: 'bgu' } as const)
+          : null,
+    [degreeId],
+  );
+  const routeTargetBelowThreshold = Boolean(
+    routeTarget &&
+    report?.results.some(
+      (result) =>
+        result.linkedInstitutionId === routeTarget.institutionId && result.decision === 'below',
+    ),
   );
   const hasCompleteRouteProfile = Boolean(
     academicScores?.psychometric?.overall !== undefined &&
-    academicScores.bagrut?.weightedAverage !== undefined &&
-    academicScores.bagrut?.subjectRecord,
+    academicScores.bagrut?.subjectRecord &&
+    (degreeId === 'tau_cs'
+      ? academicScores.admissions?.tauBagrutAverage !== undefined
+      : degreeId === 'bgu_cs'
+        ? academicScores.psychometric.quantitative !== undefined &&
+          academicScores.psychometric.verbal !== undefined &&
+          academicScores.psychometric.english !== undefined &&
+          academicScores.admissions?.bguBagrutAverage !== undefined &&
+          academicScores.admissions?.bguLanguageRequirementsConfirmed === true
+        : false),
   );
   const routeProfileMatchesCalculation = Boolean(
     hasCompleteRouteProfile &&
     academicScores?.psychometric?.overall === psychometric &&
-    academicScores.bagrut?.weightedAverage === bagrut,
+    academicScores?.bagrut?.weightedAverage === bagrut,
   );
 
   async function handleAdmissionAlert() {
-    const target = { institutionId: 'tau' as const, programId: 'tau_cs' as const };
+    const target =
+      degreeId === 'bgu_cs'
+        ? { institutionId: 'bgu' as const, programId: 'bgu_cs' as const }
+        : { institutionId: 'tau' as const, programId: 'tau_cs' as const };
     if (!user) {
       router.push(buildAdmissionAlertSignupPath(target));
       return;
@@ -255,26 +359,39 @@ export default function CalculatorResults({
     }
 
     setSubscriptionStatus('submitting');
+    alertRequest.current?.abort();
+    const controller = new AbortController();
+    alertRequest.current = controller;
     try {
       const response = await fetch('/api/admission-alerts', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify(target),
+        body: JSON.stringify({ ...target, optIn: true }),
+        signal: controller.signal,
       });
-      const body = (await response.json()) as { data?: { status?: string } };
+      const body = (await response.json()) as {
+        data?: { status?: string };
+        error?: { code?: string };
+      };
+      if (controller.signal.aborted) return;
+      if (body.error?.code === 'VERIFIED_EMAIL_REQUIRED') {
+        setSubscriptionStatus('verify_email');
+        return;
+      }
       if (!response.ok || !body.data?.status) throw new Error('subscription failed');
       if (body.data.status === 'created' || body.data.status === 'existing') {
         setSubscriptionStatus(body.data.status);
       } else if (
         body.data.status === 'profile_incomplete' ||
-        body.data.status === 'already_eligible'
+        body.data.status === 'already_eligible' ||
+        body.data.status === 'closed'
       ) {
         setSubscriptionStatus(body.data.status);
       } else {
         setSubscriptionStatus('error');
       }
     } catch {
-      setSubscriptionStatus('error');
+      if (!controller.signal.aborted) setSubscriptionStatus('error');
     }
   }
 
@@ -283,8 +400,9 @@ export default function CalculatorResults({
     setRouteResult(null);
     setRouteError(null);
     if (
-      degreeId !== 'tau_cs' ||
-      !tauBelowThreshold ||
+      !routeTarget ||
+      !routeRequested ||
+      !routeTargetBelowThreshold ||
       !hasCompleteRouteProfile ||
       !routeProfileMatchesCalculation ||
       !academicScores
@@ -294,8 +412,15 @@ export default function CalculatorResults({
     }
 
     setRouteLoading(true);
-    fetchTauComputerScienceRoutes(academicScores)
-      .then((result) => !cancelled && setRouteResult(result))
+    fetchComputerScienceRoutes(routeTarget.degreeId, academicScores)
+      .then((result) => {
+        if (cancelled) return;
+        setRouteResult(result);
+        posthog.capture('admissions_route_outcome', {
+          degree_id: routeTarget.degreeId,
+          outcome: result.status,
+        });
+      })
       .catch((error: unknown) => {
         if (!cancelled) {
           setRouteError(
@@ -315,7 +440,9 @@ export default function CalculatorResults({
     degreeId,
     hasCompleteRouteProfile,
     routeProfileMatchesCalculation,
-    tauBelowThreshold,
+    routeRequested,
+    routeTarget,
+    routeTargetBelowThreshold,
   ]);
 
   const displayRows = useMemo(() => {
@@ -431,13 +558,13 @@ export default function CalculatorResults({
   }
 
   return (
-    <div dir="rtl" className="min-h-screen bg-[#f5f4f0]">
-      <div className="border-b border-[#e5e7eb] bg-white px-6 py-4">
+    <div dir="rtl" className="pb-12">
+      <div className="px-6 py-6">
         <div className="mx-auto flex max-w-4xl items-center gap-4">
           <button
             type="button"
             onClick={onBack}
-            className="cursor-pointer flex items-center gap-2 rounded-full border-2 border-black px-4 py-2 text-sm font-bold text-slate-900 transition hover:bg-slate-50 hover:shadow-[2px_2px_0px_rgba(0,0,0,1)]"
+            className="way-button-secondary flex items-center gap-2 px-4 py-2 text-sm font-semibold transition"
           >
             <ArrowRight size={16} />
             חזרה
@@ -454,9 +581,35 @@ export default function CalculatorResults({
             {selectedProgram?.name ?? 'תוכנית לא נמצאה'}
           </p>
           <p className="mt-1 text-sm text-slate-500">
-            פסיכומטרי {psychometric} · ממוצע בגרות {bagrut}
+            {psychometric === undefined ? 'ללא פסיכומטרי' : `פסיכומטרי ${psychometric}`} · ממוצע
+            בגרות {bagrut ?? 'לא הוזן'}
           </p>
         </div>
+
+        {degreeId === 'colmgmt_cs' && onCompleteAcademicProfile && (
+          <button
+            type="button"
+            onClick={onCompleteAcademicProfile}
+            className="mb-6 cursor-pointer rounded-xl border-2 border-black bg-white px-4 py-2 text-sm font-bold"
+          >
+            עדכון נתוני מסלול הבגרות בפרופיל האקדמי
+          </button>
+        )}
+
+        {degreeId === 'haifa_infosystems' && (
+          <div className="mb-6 rounded-2xl border-2 border-black bg-white p-4">
+            <HaifaInformationSystemsTrackFields
+              track={haifaTrack}
+              partnerRequirements={haifaPartner}
+              onTrackChange={(value) => {
+                setHaifaTrackOverride(value);
+                setHaifaPartnerOverride('');
+              }}
+              onPartnerChange={setHaifaPartnerOverride}
+              inputClassName="rounded-lg border border-slate-300 bg-white p-2 text-sm"
+            />
+          </div>
+        )}
 
         <div className="mb-6">
           <div className="mb-3 flex items-center justify-between">
@@ -532,10 +685,13 @@ export default function CalculatorResults({
           </div>
         </div>
 
-        {degreeId === 'tau_cs' && tauBelowThreshold ? (
+        {routeTarget && routeTargetBelowThreshold ? (
           <VerifiedRoutePanel
+            degreeId={routeTarget.degreeId}
             completeProfile={hasCompleteRouteProfile}
             profileMatchesCalculation={routeProfileMatchesCalculation}
+            requested={routeRequested}
+            onRequest={() => setRouteRequested(true)}
             loading={routeLoading}
             result={routeResult}
             error={routeError}
@@ -563,7 +719,7 @@ export default function CalculatorResults({
             <button
               type="button"
               onClick={() => setReloadToken((current) => current + 1)}
-              className="mt-5 cursor-pointer rounded-full bg-slate-900 px-5 py-2 text-sm font-semibold text-white transition hover:bg-slate-700"
+              className="way-button-primary mt-5 px-5 py-2 text-sm font-semibold transition"
             >
               נסו שוב
             </button>
@@ -596,9 +752,11 @@ export default function CalculatorResults({
                         ? { ...STATUS_CONFIG.exactAccepted, label: acceptedLabel() }
                         : result.decision === 'below'
                           ? STATUS_CONFIG.exactBelow
-                          : result.decision === 'pending'
-                            ? STATUS_CONFIG.exactPending
-                            : STATUS_CONFIG.needsInput
+                          : result.decision === 'eligible_to_apply'
+                            ? STATUS_CONFIG.manualGateEligible
+                            : result.decision === 'pending'
+                              ? STATUS_CONFIG.exactPending
+                              : STATUS_CONFIG.needsInput
                       : result.kind === 'estimated'
                         ? result.decision === 'accepted'
                           ? { ...STATUS_CONFIG.estimatedAccepted, label: acceptedLabel() }
@@ -615,8 +773,26 @@ export default function CalculatorResults({
                                   : STATUS_CONFIG.openAdmission
                                 : result.kind === 'manual_gate'
                                   ? result.decision === 'below'
-                                    ? STATUS_CONFIG.manualGateBelow
-                                    : STATUS_CONFIG.manualGateEligible
+                                    ? selectedProgram?.id === 'colmgmt_cs' &&
+                                      institution.id === 'colman'
+                                      ? {
+                                          ...STATUS_CONFIG.manualGateBelow,
+                                          label: 'מתחת לתנאי מסלול הבגרות',
+                                        }
+                                      : STATUS_CONFIG.manualGateBelow
+                                    : selectedProgram?.id === 'colmgmt_cs' &&
+                                        institution.id === 'colman'
+                                      ? {
+                                          ...STATUS_CONFIG.manualGateEligible,
+                                          label: 'תנאי הציונים מתקיימים — נדרש מבדק פנימי',
+                                        }
+                                      : selectedProgram?.id === 'architecture' &&
+                                          institution.id === 'technion'
+                                        ? {
+                                            ...STATUS_CONFIG.manualGateEligible,
+                                            label: 'עמידה בתנאים — בכפוף למקום פנוי',
+                                          }
+                                        : STATUS_CONFIG.manualGateEligible
                                   : result.kind === 'requirements_only'
                                     ? STATUS_CONFIG.requirementsOnly
                                     : result.kind === 'tracked_missing_rule'
@@ -715,8 +891,11 @@ export default function CalculatorResults({
 }
 
 function VerifiedRoutePanel({
+  degreeId,
   completeProfile,
   profileMatchesCalculation,
+  requested,
+  onRequest,
   loading,
   result,
   error,
@@ -725,8 +904,11 @@ function VerifiedRoutePanel({
   onAdmissionAlert,
   email,
 }: {
+  degreeId: 'tau_cs' | 'bgu_cs';
   completeProfile: boolean;
   profileMatchesCalculation: boolean;
+  requested: boolean;
+  onRequest: () => void;
   loading: boolean;
   result: AdmissionsRouteSearchResult | null;
   error: AdmissionsRouteApiError | null;
@@ -738,68 +920,97 @@ function VerifiedRoutePanel({
     | 'existing'
     | 'profile_incomplete'
     | 'already_eligible'
+    | 'verify_email'
+    | 'closed'
     | 'error';
   onAdmissionAlert: () => void;
   email: string | null;
 }) {
+  const isTau = degreeId === 'tau_cs';
+  const institutionName = isTau ? 'אוניברסיטת תל אביב' : 'אוניברסיטת בן־גוריון';
   return (
     <section className="mb-8 rounded-2xl border-2 border-black bg-[#e8f9ff] p-5" aria-live="polite">
       <p className="text-base font-black text-slate-900">
-        הדרך המהירה ביותר להתקבל למדעי המחשב בתל אביב
+        הדרך המהירה ביותר להתקבל למדעי המחשב ב{isTau ? 'תל אביב' : 'בן־גוריון'}
       </p>
       <p className="mt-1 text-sm text-slate-600">
-        ההמלצות מוצגות רק אחרי אימות מול מחשבון הקבלה הרשמי של אוניברסיטת תל אביב.
+        ההמלצות מוצגות רק אחרי אימות מול מחשבון הקבלה הרשמי של {institutionName}.
       </p>
-      <div className="mt-4 rounded-xl border border-sky-200 bg-white p-4">
-        <p className="text-sm font-bold text-slate-900">רוצה שנעדכן כשנפתח לך סיכוי קבלה?</p>
-        <p className="mt-1 text-xs leading-relaxed text-slate-600">
-          נבדוק רק שינויים שפורסמו ונבדקו, ונשלח עדכון אם החישוב המתמטי שלך יהפוך לזכאות.
-        </p>
-        {email ? (
-          <p className="mt-2 text-xs font-medium text-slate-700">
-            אם תפעיל/י מעקב, העדכון החד-פעמי יישלח אל {email}.
+      {isTau ? (
+        <div className="mt-3 rounded-xl border border-sky-200 bg-white p-4">
+          <p className="text-sm font-bold text-slate-900">לפני בדיקת המסלולים</p>
+          <p className="mt-1 text-xs leading-relaxed text-slate-600">
+            הציון הפסיכומטרי, ממוצע הבגרות והסימון למתמטיקה ולפיזיקה יישלחו למחשבון הרשמי של תל אביב
+            בלי שם, דוא״ל או מזהה משתמש. אנחנו שומרים רק מפתח מטמון בלתי־הפיך ותוצאת אימות לזמן
+            מוגבל, ולא משתמשים בנתונים למטרה אחרת.
           </p>
-        ) : null}
-        {subscriptionStatus === 'created' || subscriptionStatus === 'existing' ? (
-          <p className="mt-3 text-sm font-semibold text-emerald-800">
-            המעקב פעיל. נעדכן אותך אם התנאים ישתנו.
+        </div>
+      ) : null}
+      {
+        <div className="mt-4 rounded-xl border border-sky-200 bg-white p-4">
+          <p className="text-sm font-bold text-slate-900">רוצה שנעדכן כשנפתח לך סיכוי קבלה?</p>
+          <p className="mt-1 text-xs leading-relaxed text-slate-600">
+            נבדוק רק שינויים שפורסמו ונבדקו, ונשלח עדכון אם החישוב המתמטי שלך יהפוך לזכאות. האישור
+            מפעיל מחדש את קטגוריית התראות הקבלה אם הוסרת ממנה בעבר.
           </p>
-        ) : (
-          <button
-            type="button"
-            onClick={onAdmissionAlert}
-            disabled={subscriptionStatus === 'submitting'}
-            className="mt-3 min-h-11 rounded-full bg-slate-900 px-4 py-2 text-sm font-bold text-white disabled:cursor-wait disabled:opacity-60"
-          >
-            {subscriptionStatus === 'submitting' ? 'מפעילים מעקב…' : 'אשרו והפעילו מעקב'}
-          </button>
-        )}
-        {subscriptionStatus === 'profile_incomplete' ? (
-          <p className="mt-2 text-xs font-semibold text-amber-800">
-            יש להשלים ולשמור את הפרופיל האקדמי לפני הפעלת המעקב.
-          </p>
-        ) : null}
-        {subscriptionStatus === 'already_eligible' ? (
-          <p className="mt-2 text-xs font-semibold text-slate-700">
-            לפי החישוב העדכני כבר אפשר להגיש מועמדות, ולכן לא הופעל מעקב.
-          </p>
-        ) : null}
-        {subscriptionStatus === 'error' ? (
-          <p className="mt-2 text-xs font-semibold text-rose-800">
-            לא הצלחנו להפעיל מעקב כרגע. אפשר לנסות שוב.
-          </p>
-        ) : null}
-      </div>
+          {email ? (
+            <p className="mt-2 text-xs font-medium text-slate-700">
+              אם תפעיל/י מעקב, העדכון החד-פעמי יישלח אל {email}.
+            </p>
+          ) : null}
+          {subscriptionStatus === 'created' || subscriptionStatus === 'existing' ? (
+            <p className="mt-3 text-sm font-semibold text-emerald-800">
+              המעקב פעיל. נעדכן אותך אם התנאים ישתנו.
+            </p>
+          ) : (
+            <button
+              type="button"
+              onClick={onAdmissionAlert}
+              disabled={subscriptionStatus === 'submitting'}
+              className="way-button-primary mt-3 min-h-11 px-4 py-2 text-sm font-bold disabled:cursor-wait disabled:opacity-60"
+            >
+              {subscriptionStatus === 'submitting' ? 'מפעילים מעקב…' : 'אשרו והפעילו מעקב'}
+            </button>
+          )}
+          {subscriptionStatus === 'profile_incomplete' ? (
+            <p className="mt-2 text-xs font-semibold text-amber-800">
+              יש להשלים ולשמור את הפרופיל האקדמי לפני הפעלת המעקב.
+            </p>
+          ) : null}
+          {subscriptionStatus === 'already_eligible' ? (
+            <p className="mt-2 text-xs font-semibold text-slate-700">
+              לפי החישוב העדכני כבר אפשר להגיש מועמדות, ולכן לא הופעל מעקב.
+            </p>
+          ) : null}
+          {subscriptionStatus === 'error' ? (
+            <p className="mt-2 text-xs font-semibold text-rose-800">
+              לא הצלחנו להפעיל מעקב כרגע. אפשר לנסות שוב.
+            </p>
+          ) : null}
+          {subscriptionStatus === 'verify_email' ? (
+            <p className="mt-2 text-sm">יש לאמת תחילה את כתובת הדוא״ל בחשבון.</p>
+          ) : null}
+          {subscriptionStatus === 'closed' ? (
+            <p className="mt-2 text-sm">
+              למעקב הזה כבר קיימת שליחה או תקלה לטיפול.{' '}
+              <a href="/app/profile#admission-alerts" className="underline">
+                לניהול ההתראות
+              </a>
+            </p>
+          ) : null}
+        </div>
+      }
       {!completeProfile ? (
         <>
           <p className="mt-3 text-sm font-semibold text-slate-800">
-            כדי לחשב מסלול מאומת, יש להשלים את מקצועות הבגרות והיחידות שלך בפרופיל.
+            כדי לחשב מסלול מאומת, יש להשלים בפרופיל את ממוצע הבגרות הרשמי של {institutionName},
+            מקצועות הבגרות והיחידות{isTau ? '' : ' ותתי־הציונים בפסיכומטרי'}.
           </p>
           {onCompleteAcademicProfile ? (
             <button
               type="button"
               onClick={onCompleteAcademicProfile}
-              className="mt-3 rounded-full bg-slate-900 px-4 py-2 text-sm font-bold text-white"
+              className="way-button-primary mt-3 px-4 py-2 text-sm font-bold"
             >
               השלמת פרופיל אקדמי
             </button>
@@ -815,12 +1026,21 @@ function VerifiedRoutePanel({
             <button
               type="button"
               onClick={onCompleteAcademicProfile}
-              className="mt-3 rounded-full bg-slate-900 px-4 py-2 text-sm font-bold text-white"
+              className="way-button-primary mt-3 px-4 py-2 text-sm font-bold"
             >
               עדכון פרופיל אקדמי
             </button>
           ) : null}
         </>
+      ) : null}
+      {completeProfile && profileMatchesCalculation && !requested ? (
+        <button
+          type="button"
+          onClick={onRequest}
+          className="mt-4 min-h-11 rounded-full bg-slate-900 px-5 py-2 text-sm font-bold text-white"
+        >
+          בדיקת מסלולים מאומתים
+        </button>
       ) : null}
       {loading ? (
         <p className="mt-3 text-sm font-semibold text-slate-700">
@@ -830,6 +1050,11 @@ function VerifiedRoutePanel({
       {error ? (
         <p className="mt-3 text-sm font-semibold text-rose-800">
           האימות הרשמי אינו זמין כרגע — לא הוצגה המלצה לא מאומתת.
+        </p>
+      ) : null}
+      {!loading && !error && result?.status === 'authority_unavailable' ? (
+        <p className="mt-3 text-sm font-semibold text-rose-800">
+          האימות הרשמי אינו זמין כרגע — תוצאת הקבלה המקורית נשארת מוצגת, ולא הוצגה המלצה לא מאומתת.
         </p>
       ) : null}
       {!loading && !error && result?.status === 'no_route' ? (
@@ -867,16 +1092,37 @@ function RouteCard({ title, route }: { title: string; route: AdmissionsRouteResu
         הערכה סטנדרטית ושקופה: כ-{route.estimate.durationWeeks} שבועות · מאמץ{' '}
         {route.estimate.effortPoints}/5
       </p>
+      <p className="mt-1 text-xs text-slate-500">הנחת ההערכה: {route.estimate.rationale}</p>
       <p className="mt-2 text-xs text-slate-500">
         אומת מול ציון {route.verification.score} וסף {route.verification.cutoff}. זהו חישוב קבלה, לא
         הבטחת קבלה סופית.
       </p>
+      {route.verification.sourceUrl ? (
+        <a
+          href={route.verification.sourceUrl}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-2 inline-block text-xs font-semibold text-[#4f46e5] underline"
+        >
+          מקור האימות הרשמי
+        </a>
+      ) : null}
     </article>
   );
 }
 
 function routeActionLabel(action: AdmissionsRouteResult['actions'][number]) {
-  if (action.kind === 'psychometric') return `לשפר פסיכומטרי מ-${action.from} ל-${action.to}`;
+  if (action.kind === 'psychometric') {
+    const componentLabel =
+      action.component === 'quantitative'
+        ? 'כמותי'
+        : action.component === 'verbal'
+          ? 'מילולי'
+          : action.component === 'english'
+            ? 'אנגלית'
+            : 'פסיכומטרי';
+    return `לשפר ${componentLabel} מ-${action.from} ל-${action.to}`;
+  }
   if (action.kind === 'improve_grade')
     return `לשפר ציון ${action.subjectId} מ-${action.fromGrade} ל-${action.toGrade}`;
   if (action.kind === 'expand_units')
@@ -897,14 +1143,15 @@ function FilterChip({
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex cursor-pointer items-center gap-2 rounded-full border-2 border-black px-4 py-2 text-sm font-bold transition ${
+      aria-pressed={selected}
+      className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm font-bold transition ${
         selected
-          ? 'bg-[#A6FAFF] hover:shadow-[2px_2px_0px_rgba(0,0,0,1)]'
-          : 'bg-white hover:bg-slate-50 hover:shadow-[2px_2px_0px_rgba(0,0,0,1)]'
+          ? 'border-[#b8c4ff] bg-[#eef4ff] text-[#4357ad] hover:bg-[#e3ebff]'
+          : 'border-[#d9e3f3] bg-white hover:border-[#b8c4ff] hover:bg-[#f6f9ff]'
       }`}
     >
       {selected ? (
-        <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full border-2 border-black bg-[#00E1EF]">
+        <span className="flex h-3.5 w-3.5 items-center justify-center rounded-full bg-[#7784e8] text-white">
           <Check size={8} strokeWidth={3} />
         </span>
       ) : (

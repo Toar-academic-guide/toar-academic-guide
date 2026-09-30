@@ -1,3 +1,11 @@
+import { BGU_HEALTH_CONFIG, BGU_HEALTH_METADATA_BY_PAIR_ID } from './bguHealthVerification';
+import { BGU_SOCIAL_SCIENCE_METADATA_BY_PAIR_ID } from './bguSocialScienceVerification';
+import { BGU_QUANTITATIVE_METADATA_BY_PAIR_ID } from './bguQuantitativeRoutesVerification';
+import {
+  BGU_PSYCHOLOGY_METADATA_BY_PAIR_ID,
+  BGU_PSYCHOLOGY_SOURCE_URL,
+  BGU_PSYCHOLOGY_OFFICIAL_PROGRAM_ID,
+} from './bguPsychologyVerification';
 import { createHash } from 'node:crypto';
 
 import type {
@@ -5,6 +13,12 @@ import type {
   AdmissionsVerificationFixture,
 } from '@/types/admissionsEvaluation';
 import { fingerprintVerificationFixtures } from '@/server/admissions/verification/programVerification';
+import {
+  BGU_COMPUTER_SCIENCE_SOURCE_URL,
+  BGU_COMPUTER_SCIENCE_VERIFICATION_METADATA_BY_PAIR_ID,
+} from './bguComputerScienceVerification';
+import { BGU_DATA_SCIENCE_VERIFICATION_METADATA_BY_PAIR_ID } from './bguDataScienceVerification';
+import { BGU_ENGINEERING_METADATA_BY_PAIR_ID } from './bguEngineeringVerification';
 
 export const BGU_SOURCE_URL = 'https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/';
 const BGU_SCORE_URL = 'https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem';
@@ -48,7 +62,7 @@ const CONFIGS: BguConfig[] = [
   },
   {
     programId: 'cs',
-    sourceUrl: baseUrl('p_dep1=232&p_pat1=1&p_spe1=3&p_degree_level=1'),
+    sourceUrl: BGU_COMPUTER_SCIENCE_SOURCE_URL,
     officialProgramId: 'dep232-pat1-spe3',
     acceptance: 720,
     rejection: 720,
@@ -65,7 +79,7 @@ const CONFIGS: BguConfig[] = [
   {
     programId: 'economics',
     sourceUrl: baseUrl('p_dep1=142&p_pat1=3'),
-    officialProgramId: 'dep142-pat1-spe3',
+    officialProgramId: 'dep142-pat3',
     acceptance: 620,
     rejection: 620,
     verdict: 'accepted',
@@ -112,11 +126,11 @@ const CONFIGS: BguConfig[] = [
   },
   {
     programId: 'psychology',
-    sourceUrl: baseUrl('p_dep1=101&p_pat1=2&p_degree_level=1'),
-    officialProgramId: 'dep101-pat2',
-    acceptance: 550,
-    rejection: 550,
-    verdict: 'accepted',
+    sourceUrl: BGU_PSYCHOLOGY_SOURCE_URL,
+    officialProgramId: BGU_PSYCHOLOGY_OFFICIAL_PROGRAM_ID,
+    acceptance: 650,
+    rejection: 650,
+    verdict: 'eligible_to_apply',
   },
   {
     programId: 'social_work',
@@ -144,16 +158,16 @@ const CONFIGS: BguConfig[] = [
   },
   {
     programId: 'occupational_therapy',
-    sourceUrl: baseUrl('p_dep1=486&p_pat1=1'),
-    officialProgramId: 'dep486-pat1',
+    sourceUrl: BGU_HEALTH_CONFIG.occupational_therapy.url,
+    officialProgramId: BGU_HEALTH_CONFIG.occupational_therapy.officialProgramId,
     acceptance: 620,
     rejection: 620,
     verdict: 'eligible_to_apply',
   },
   {
     programId: 'physiotherapy',
-    sourceUrl: baseUrl('p_dep1=473&p_pat1=1'),
-    officialProgramId: 'dep473-pat1',
+    sourceUrl: BGU_HEALTH_CONFIG.physiotherapy.url,
+    officialProgramId: BGU_HEALTH_CONFIG.physiotherapy.officialProgramId,
     acceptance: 667,
     rejection: 667,
     verdict: 'eligible_to_apply',
@@ -240,6 +254,26 @@ export const BGU_PROGRAM_VERIFICATION_METADATA: Record<string, BguProgramVerific
   Object.fromEntries(
     ALIASES.flatMap((programIds) =>
       programIds.map((programId) => {
+        if (BGU_HEALTH_METADATA_BY_PAIR_ID[`${programId}__bgu`])
+          return [`${programId}__bgu`, BGU_HEALTH_METADATA_BY_PAIR_ID[`${programId}__bgu`]];
+        if (BGU_SOCIAL_SCIENCE_METADATA_BY_PAIR_ID[`${programId}__bgu`])
+          return [`${programId}__bgu`, BGU_SOCIAL_SCIENCE_METADATA_BY_PAIR_ID[`${programId}__bgu`]];
+        if (BGU_QUANTITATIVE_METADATA_BY_PAIR_ID[`${programId}__bgu`]) {
+          return [`${programId}__bgu`, BGU_QUANTITATIVE_METADATA_BY_PAIR_ID[`${programId}__bgu`]];
+        }
+        if (programId === 'datascience' || programId === 'bgu_datascience') {
+          const pairId = `${programId}__bgu`;
+          return [pairId, BGU_DATA_SCIENCE_VERIFICATION_METADATA_BY_PAIR_ID[pairId]];
+        }
+        const engineering = BGU_ENGINEERING_METADATA_BY_PAIR_ID[`${programId}__bgu`];
+        if (engineering) return [engineering.contract.pairId, engineering];
+        if (BGU_PSYCHOLOGY_METADATA_BY_PAIR_ID[`${programId}__bgu`])
+          return [`${programId}__bgu`, BGU_PSYCHOLOGY_METADATA_BY_PAIR_ID[`${programId}__bgu`]];
+        if (programId === 'cs' || programId === 'bgu_cs') {
+          const pairId = `${programId}__bgu`;
+          return [pairId, BGU_COMPUTER_SCIENCE_VERIFICATION_METADATA_BY_PAIR_ID[pairId]];
+        }
+
         const config = configFor(programId);
         const pairId = `${programId}__bgu`;
         const fixtures = fixturesFor(pairId, config);

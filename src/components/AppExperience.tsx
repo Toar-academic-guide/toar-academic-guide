@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import posthog from 'posthog-js';
 import {
@@ -8,8 +8,7 @@ import {
   ValuesProfile,
   EngineeringOptions,
   RecommendedField,
-  UniversityResult,
-  UserScores,
+  CalculatorScores,
   GeographicRegion,
   AvoidanceTag,
   AssessmentFilterDraft,
@@ -20,6 +19,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import { ROUTES, type AdmissionAlertTarget } from '@/lib/routes';
+import AdmissionAlertManager from './AdmissionAlertManager';
 import {
   CatalogueApiError,
   fetchCatalogueInstitutions,
@@ -30,6 +30,7 @@ import { getRecommendations } from '@/utils/recommendationEngine';
 import { extractFilterAnswers } from '@/utils/riasecEngine';
 import { ArrowRight } from 'lucide-react';
 import NavBar from '@/components/NavBar';
+import PublicNavBar from '@/components/PublicNavBar';
 import CareerAssessment from '@/components/CareerAssessment';
 import OnboardingFunnel from '@/components/OnboardingFunnel';
 import LandingPage from '@/components/LandingPage';
@@ -39,8 +40,11 @@ import AcademicProfileForm from '@/components/AcademicProfileForm';
 import RecommendationResults from '@/components/RecommendationResults';
 import BucketList from '@/components/BucketList';
 import DegreePicker from '@/components/DegreePicker';
+import StudyLocationStep from '@/components/StudyLocationStep';
+import type { StudyRegionId } from '@/data/studyRegions';
 import ScoreForm from '@/components/ScoreForm';
 import CalculatorResults from '@/components/CalculatorResults';
+import WayPageShell from '@/components/WayPageShell';
 import type { AcademicScores, RiasecAnswers } from '@/types';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 
@@ -57,6 +61,7 @@ export type AppStep =
   | 'calculator'
   | 'bucket-list'
   | 'degree-picker'
+  | 'study-location'
   | 'calculator-results';
 
 const APP_STEPS: AppStep[] = [
@@ -70,6 +75,7 @@ const APP_STEPS: AppStep[] = [
   'calculator',
   'bucket-list',
   'degree-picker',
+  'study-location',
   'calculator-results',
 ];
 const ENABLE_DEV_SHORTCUTS = process.env.NODE_ENV !== 'production';
@@ -128,6 +134,8 @@ function toCatalogueError(error: unknown): CatalogueApiError {
 }
 
 interface AppExperienceProps {
+  initialStudyRegions?: StudyRegionId[];
+  fromStudyLocation?: boolean;
   initialStep?: AppStep;
   enableDevShortcuts?: boolean;
   admissionAlertTarget?: AdmissionAlertTarget | null;
@@ -144,15 +152,15 @@ const DURABLE_STEP_ROUTES: Partial<Record<AppStep, string>> = {
 };
 
 export default function AppExperience({
+  initialStudyRegions = [],
+  fromStudyLocation = false,
   initialStep: routeInitialStep = 'landing',
   enableDevShortcuts = false,
   admissionAlertTarget = null,
 }: AppExperienceProps) {
   const router = useRouter();
   const { loading: authLoading, signOut, user } = useAuth();
-  const [initialStep] = useState<AppStep>(() =>
-    enableDevShortcuts ? getDevStep(routeInitialStep) : routeInitialStep,
-  );
+  const [initialStep] = useState<AppStep>(routeInitialStep);
   const seedDevRecommendations = enableDevShortcuts && initialStep === 'recommendations';
   const [catalogueStatus, setCatalogueStatus] = useState<CatalogueStatus>('loading');
   const [catalogueError, setCatalogueError] = useState<CatalogueApiError | null>(null);
@@ -177,8 +185,11 @@ export default function AppExperience({
     clearLocalProfileData,
     profile,
     hydrated,
+    initialProfileError,
+    initialProfileStatus,
     isAuthenticated,
     removeSavedProgram,
+    retryInitialProfileLoad,
     syncError,
     syncing,
     toggleSavedProgram,
@@ -222,21 +233,34 @@ export default function AppExperience({
     STATIC_CATALOGUE_PROGRAMS[0]?.id ?? null,
   );
   const calculatorInstitutions = getCalculatorInstitutionsFromCatalogue(catalogueInstitutions);
-  const [bucketReturnsTo, setBucketReturnsTo] = useState<AppStep>('recommendations');
+  const [bucketReturnsTo, setBucketReturnsTo] = useState<AppStep>(
+    fromStudyLocation ? 'study-location' : 'recommendations',
+  );
+  const [studyRegions, setStudyRegions] = useState(initialStudyRegions);
   const [authReturnTo] = useState<Exclude<AppStep, 'auth'>>('landing');
   const [landingCalcScores, setLandingCalcScores] = useState<{
-    psychometric: number;
-    bagrut: number;
+    psychometric?: number;
+    bagrut?: number;
     degreeId: string;
   } | null>(null);
 
-  const isTauComputerScienceAlertContinuation =
-    admissionAlertTarget?.institutionId === 'tau' && admissionAlertTarget.programId === 'tau_cs';
+  const isComputerScienceAlertContinuation = Boolean(admissionAlertTarget);
   const [appCalcScores, setAppCalcScores] = useState<{
-    psychometric: number;
-    bagrut: number;
+    psychometric?: number;
+    bagrut?: number;
     degreeId: string;
   } | null>(null);
+
+  useEffect(() => {
+    if (!enableDevShortcuts) {
+      return;
+    }
+
+    const devStep = getDevStep(routeInitialStep);
+    if (devStep !== routeInitialStep) {
+      setStep(devStep);
+    }
+  }, [enableDevShortcuts, routeInitialStep]);
 
   function navigateToStep(nextStep: AppStep, path = DURABLE_STEP_ROUTES[nextStep]) {
     setStep(nextStep);
@@ -497,6 +521,21 @@ export default function AppExperience({
     void toggleSavedProgram(programId);
   }
 
+  function handleToggleProgramGroup(programIds: string[]) {
+    const currentIds = profile.savedProgramIds ?? [];
+    const currentSet = new Set(currentIds);
+    const allSaved = programIds.every((programId) => currentSet.has(programId));
+    const nextSavedProgramIds = allSaved
+      ? currentIds.filter((programId) => !programIds.includes(programId))
+      : Array.from(new Set([...currentIds, ...programIds]));
+
+    posthog.capture(allSaved ? 'degree_group_removed_from_bucket' : 'degree_group_saved', {
+      program_count: programIds.length,
+    });
+
+    void updateProfile({ savedProgramIds: nextSavedProgramIds });
+  }
+
   function handleRemoveFromBucket(programId: string) {
     posthog.capture('program_removed_from_bucket', { program_id: programId });
     void removeSavedProgram(programId);
@@ -525,6 +564,7 @@ export default function AppExperience({
     calculator: 'recommendations',
     'bucket-list': bucketReturnsTo,
     'degree-picker': 'landing',
+    'study-location': 'degree-picker',
     'calculator-results': 'landing',
   };
 
@@ -544,7 +584,7 @@ export default function AppExperience({
         onClick={handleGoBack}
         aria-label="חזרה לעמוד הקודם"
         title="חזרה לעמוד הקודם"
-        className="fixed top-6 right-4 z-50 flex items-center gap-2 rounded-full border border-white/20 bg-[#1e1b4b]/80 px-5 py-2.5 text-base font-medium text-white/80 shadow-lg backdrop-blur transition hover:bg-[#1e1b4b] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-400"
+        className="way-button-secondary flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition"
       >
         <ArrowRight size={18} />
         <span>חזרה</span>
@@ -580,7 +620,7 @@ export default function AppExperience({
           <button
             type="button"
             onClick={handleGoHome}
-            className="rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700"
+            className="way-button-primary px-5 py-2.5 text-sm font-semibold transition"
           >
             חזרה לעמוד הבית
           </button>
@@ -591,7 +631,11 @@ export default function AppExperience({
     return null;
   }
 
-  function handleCalculate(scores: UserScores, degreeId: string, _engineering: EngineeringOptions) {
+  function handleCalculate(
+    scores: CalculatorScores,
+    degreeId: string,
+    _engineering: EngineeringOptions,
+  ) {
     posthog.capture('degree_calculator_submitted', {
       degree_id: degreeId,
     });
@@ -603,14 +647,45 @@ export default function AppExperience({
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  /* ── Full-screen steps (no header) ───────────────────────────────────────── */
+  const savedCount = profile.savedProgramIds?.length ?? 0;
+
+  function renderStep(content: ReactNode, showBack = true) {
+    return (
+      <WayPageShell
+        navigation={
+          <PublicNavBar
+            authLoading={authLoading}
+            isAuthenticated={isAuthenticated}
+            savedCount={savedCount}
+            userEmail={user?.email ?? undefined}
+            onGoHome={handleGoHome}
+            onGoToBucket={() => navigateToStep('bucket-list')}
+            onStartClick={() => navigateToStep('intro')}
+            onSignIn={() => router.push(ROUTES.login)}
+            onSignOut={() => {
+              void signOut();
+            }}
+          />
+        }
+      >
+        {showBack ? (
+          <div className="mx-auto max-w-6xl px-4 pt-4 sm:px-6">
+            <BackButton />
+          </div>
+        ) : null}
+        {content}
+      </WayPageShell>
+    );
+  }
+
+  /* Workflow steps share the same navigation and page background. */
   if (step === 'landing') {
     return (
       <LandingPage
         onAlreadyKnow={() => {
           posthog.capture('landing_cta_clicked', { cta: 'already_know' });
           setBucketReturnsTo('degree-picker');
-          setStep('degree-picker');
+          navigateToStep('degree-picker');
         }}
         onNeedHelp={() => {
           posthog.capture('landing_cta_clicked', { cta: 'need_help' });
@@ -619,6 +694,10 @@ export default function AppExperience({
         }}
         onSignIn={() => {
           router.push(ROUTES.login);
+        }}
+        onGoToBucket={() => {
+          setBucketReturnsTo('landing');
+          navigateToStep('bucket-list');
         }}
         onCalculate={(psychometric, bagrut, degreeId) => {
           posthog.capture('landing_calculator_submitted', {
@@ -634,6 +713,8 @@ export default function AppExperience({
         programs={cataloguePrograms}
         authLoading={authLoading}
         isAuthenticated={isAuthenticated}
+        savedCount={savedCount}
+        userInitials={user?.email ? getUserInitials(user.email) : undefined}
         userEmail={user?.email ?? undefined}
         onSignOut={() => {
           void signOut();
@@ -643,7 +724,7 @@ export default function AppExperience({
   }
 
   if (step === 'calculator-results' && landingCalcScores) {
-    return (
+    return renderStep(
       <CalculatorResults
         psychometric={landingCalcScores.psychometric}
         bagrut={landingCalcScores.bagrut}
@@ -654,7 +735,8 @@ export default function AppExperience({
         onBack={() => {
           navigateToStep('landing');
         }}
-      />
+      />,
+      false,
     );
   }
 
@@ -670,11 +752,10 @@ export default function AppExperience({
   }
 
   if (step === 'degree-picker') {
-    return (
+    return renderStep(
       <>
-        <BackButton />
         {syncError && (
-          <div className="fixed top-20 left-1/2 -translate-x-1/2 z-50 w-full max-w-xl px-4">
+          <div className="mx-auto w-full max-w-xl px-4 pt-4">
             <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 shadow-md">
               {syncError}
             </div>
@@ -684,18 +765,63 @@ export default function AppExperience({
           <DegreePicker
             programs={cataloguePrograms}
             savedProgramIds={profile.savedProgramIds ?? []}
-            onToggleSave={handleToggleSave}
-            onDone={() => navigateToStep('bucket-list')}
+            onToggleProgramGroup={handleToggleProgramGroup}
+            onDone={() => navigateToStep('study-location')}
           />
         ) : (
-          <div className="min-h-screen bg-[#f5f4f0] px-4 py-10 sm:px-6">
+          <div className="px-4 py-10 sm:px-6">
             {renderCatalogueState(
               'טוענים את קטלוג התארים',
               'רק לאחר שהקטלוג ייטען אפשר לבחור תארים להשוואה.',
             )}
           </div>
         )}
-      </>
+      </>,
+    );
+  }
+
+  if (step === 'study-location') {
+    return renderStep(
+      <>
+        {syncError && (
+          <div className="mx-auto w-full max-w-xl px-4 pt-4">
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 shadow-md">
+              {syncError}
+            </div>
+          </div>
+        )}
+        {catalogueStatus === 'ready' ? (
+          <StudyLocationStep
+            programs={cataloguePrograms}
+            savedProgramIds={profile.savedProgramIds ?? []}
+            catalogueInstitutions={catalogueInstitutions}
+            onBack={() => navigateToStep('degree-picker')}
+            onDone={(selection) => {
+              posthog.capture('study_location_selected', {
+                all_regions: selection.allRegions,
+                region_count: selection.allRegions ? 'all' : selection.regionIds.length,
+                regions: selection.regionIds,
+              });
+              setBucketReturnsTo('study-location');
+              const regions = selection.allRegions ? [] : selection.regionIds;
+              setStudyRegions(regions);
+              const query = new URLSearchParams({
+                from: 'study-location',
+                regions: regions.join(','),
+              });
+              navigateToStep('bucket-list', `${ROUTES.savedPrograms}?${query}`);
+            }}
+          />
+        ) : (
+          <div className="px-4 py-10 sm:px-6">
+            {renderCatalogueState(
+              'טוענים את אזורי הלימוד',
+              'רק לאחר שהקטלוג ייטען אפשר להציג את מפת האפשרויות לפי התארים שבחרת.',
+            )}
+          </div>
+        )}
+      </>,
+      false,
     );
   }
 
@@ -755,26 +881,69 @@ export default function AppExperience({
     }
 
     return (
+      <QuizIntro
+        onStart={() => navigateToStep('academic-profile')}
+        authLoading={authLoading}
+        isAuthenticated={isAuthenticated}
+        savedCount={savedCount}
+        userInitials={user?.email ? getUserInitials(user.email) : undefined}
+        userEmail={user?.email ?? undefined}
+        onGoHome={() => navigateToStep('landing')}
+        onGoToBucket={() => {
+          setBucketReturnsTo('intro');
+          navigateToStep('bucket-list');
+        }}
+        onSignIn={() => {
+          router.push(ROUTES.login);
+        }}
+        onSignOut={() => {
+          void signOut();
+        }}
+      />
+    );
+  }
+
+  if (step === 'academic-profile' && initialProfileStatus !== 'ready') {
+    return (
       <>
         <BackButton />
-        <QuizIntro onStart={() => navigateToStep('academic-profile')} />
+        <div className="mx-auto my-10 w-full max-w-2xl rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+          {initialProfileStatus === 'error' ? (
+            <>
+              <h1 className="text-base font-bold text-slate-900">לא הצלחנו לטעון את הפרופיל שלך</h1>
+              <p className="mt-2 text-sm text-slate-600">
+                {initialProfileError ?? 'בדוק את החיבור ונסה שוב כדי לשמור על הנתונים הקיימים שלך.'}
+              </p>
+              <button
+                type="button"
+                onClick={retryInitialProfileLoad}
+                className="mt-4 rounded-full bg-indigo-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700"
+              >
+                נסו שוב
+              </button>
+            </>
+          ) : (
+            <p role="status" className="text-sm text-slate-600">
+              טוענים את הנתונים השמורים שלך…
+            </p>
+          )}
+        </div>
       </>
     );
   }
 
   if (step === 'academic-profile') {
-    return (
+    return renderStep(
       <>
-        <BackButton />
         <AcademicProfileForm
           initialScores={profile.academicScores}
           initialDocuments={profile.uploadedDocuments}
           isAuthenticated={isAuthenticated}
           onClearLocalProfileData={clearLocalProfileData}
           alertContinuation={
-            isTauComputerScienceAlertContinuation
+            isComputerScienceAlertContinuation
               ? {
-                  title: 'נשמור את הפרופיל ואז נחזור לבדיקת הקבלה למדעי המחשב באוניברסיטת תל אביב',
+                  title: `נשמור את הפרופיל ואז נחזור לבדיקת הקבלה למדעי המחשב ב${admissionAlertTarget?.institutionId === 'bgu' ? 'אוניברסיטת בן־גוריון' : 'אוניברסיטת תל אביב'}`,
                   submitLabel: 'שמור והמשך לבדיקת המעקב ←',
                   requiresStructuredBagrut: true,
                 }
@@ -790,14 +959,15 @@ export default function AppExperience({
               return false;
             }
             if (
-              isTauComputerScienceAlertContinuation &&
+              isComputerScienceAlertContinuation &&
+              admissionAlertTarget &&
               scores.psychometric?.overall !== undefined &&
               scores.bagrut?.weightedAverage !== undefined
             ) {
               setLandingCalcScores({
                 psychometric: scores.psychometric.overall,
                 bagrut: scores.bagrut.weightedAverage,
-                degreeId: 'tau_cs',
+                degreeId: admissionAlertTarget.programId,
               });
               setStep('calculator-results');
               window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -811,7 +981,8 @@ export default function AppExperience({
             navigateToStep('career-assessment');
           }}
         />
-      </>
+        {user ? <AdmissionAlertManager key={user.id} userId={user.id} /> : null}
+      </>,
     );
   }
 
@@ -822,9 +993,8 @@ export default function AppExperience({
       (savedProgress?.stage === 'career-assessment' || savedProgress?.stage === 'quick-filters')
         ? savedProgress.careerDraft
         : undefined;
-    return (
+    return renderStep(
       <>
-        <BackButton />
         {syncError ? (
           <div className="fixed top-20 left-1/2 z-50 w-full max-w-xl -translate-x-1/2 px-4">
             <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 shadow-md">
@@ -837,15 +1007,14 @@ export default function AppExperience({
           onProgressChange={handleCareerProgress}
           onComplete={handleAssessmentComplete}
         />
-      </>
+      </>,
     );
   }
 
   if (step === 'quick-filters') {
     const savedProgress = profile.assessmentProgress;
-    return (
+    return renderStep(
       <>
-        <BackButton />
         {syncError ? (
           <div className="fixed top-20 left-1/2 z-50 w-full max-w-xl -translate-x-1/2 px-4">
             <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 shadow-md">
@@ -860,13 +1029,11 @@ export default function AppExperience({
           onProgressChange={handleFilterProgress}
           onComplete={handleFiltersComplete}
         />
-      </>
+      </>,
     );
   }
 
   /* ── Steps with persistent header ───────────────────────────────────────── */
-  const savedCount = profile.savedProgramIds?.length ?? 0;
-
   // Source-aware: only navigate to recommendations when the user has a
   // saved assessment profile (i.e. came through the questionnaire). Degree-picker users
   // have no assessmentProfile — route them back to degree-picker instead.
@@ -882,37 +1049,41 @@ export default function AppExperience({
   const shouldBlockCatalogueStep =
     catalogueStatus !== 'ready' &&
     (step === 'recommendations' || step === 'bucket-list' || step === 'calculator');
-  const sekhemPrograms = cataloguePrograms.filter((program) => program.admissionType === 'sekhem');
-
   return (
-    <>
-      <BackButton />
-      <NavBar
-        step={step}
-        savedCount={savedCount}
-        authLoading={authLoading}
-        isAuthenticated={isAuthenticated}
-        userInitials={user?.email ? getUserInitials(user.email) : undefined}
-        onGoHome={handleGoHome}
-        onGoToExam={() => {
-          void handleStartAssessmentOver();
-        }}
-        onGoToRecommendations={handleGoToRecommendations}
-        onGoToBucket={() => navigateToStep('bucket-list')}
-        onGoToAuth={() => {
-          const nextPath = DURABLE_STEP_ROUTES[step] ?? ROUTES.home;
-          router.push(`${ROUTES.login}?next=${encodeURIComponent(nextPath)}`);
-        }}
-        onSignOut={() => {
-          void signOut();
-        }}
-        bucketSourceLabel={bucketReturnsTo === 'degree-picker' ? 'בחירת תארים' : 'המלצות'}
-        onGoToBucketSource={() => {
-          setAppCalcScores(null);
-          navigateToStep(bucketReturnsTo);
-        }}
-      />
-
+    <WayPageShell
+      navigation={
+        <NavBar
+          step={step}
+          savedCount={savedCount}
+          authLoading={authLoading}
+          isAuthenticated={isAuthenticated}
+          userInitials={user?.email ? getUserInitials(user.email) : undefined}
+          onGoHome={handleGoHome}
+          onGoToExam={() => {
+            void handleStartAssessmentOver();
+          }}
+          onGoToRecommendations={handleGoToRecommendations}
+          onGoToBucket={() => navigateToStep('bucket-list')}
+          onGoToAuth={() => {
+            const nextPath = DURABLE_STEP_ROUTES[step] ?? ROUTES.home;
+            router.push(`${ROUTES.login}?next=${encodeURIComponent(nextPath)}`);
+          }}
+          onSignOut={() => {
+            void signOut();
+          }}
+          bucketSourceLabel={bucketReturnsTo === 'degree-picker' ? 'בחירת תארים' : 'המלצות'}
+          onGoToBucketSource={() => {
+            setAppCalcScores(null);
+            navigateToStep(bucketReturnsTo);
+          }}
+        />
+      }
+    >
+      {step !== 'bucket-list' && !(step === 'calculator' && appCalcScores) ? (
+        <div className="mx-auto max-w-5xl px-4 pt-4 sm:px-6">
+          <BackButton />
+        </div>
+      ) : null}
       <main className="mx-auto flex w-full max-w-5xl flex-col gap-10 px-4 py-12 sm:px-6">
         {!hydrated || syncing ? (
           <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
@@ -940,7 +1111,6 @@ export default function AppExperience({
             recommendations={recommendations}
             onSelectDegree={handleSelectDegree}
             profileScores={assessmentProfile.scores}
-            environment={{ soloScore: 1, deskScore: 1 }}
             geographicPreference={assessmentProfile.geographicPreference}
             savedProgramIds={profile.savedProgramIds}
             onToggleSave={handleToggleSave}
@@ -962,7 +1132,7 @@ export default function AppExperience({
               <button
                 type="button"
                 onClick={() => navigateToStep('intro')}
-                className="mt-5 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700"
+                className="way-button-primary mt-5 px-5 py-2.5 text-sm font-semibold transition"
               >
                 להתחיל שאלון
               </button>
@@ -972,8 +1142,16 @@ export default function AppExperience({
         {/* ── Step: Bucket List ─────────────────────────────────── */}
         {!shouldBlockCatalogueStep && step === 'bucket-list' && (
           <BucketList
+            initialRegions={studyRegions}
+            onRegionsChange={(regions) => {
+              setStudyRegions(regions);
+              const url = new URL(window.location.href);
+              url.searchParams.set('regions', regions.join(','));
+              window.history.replaceState(null, '', url);
+            }}
             programs={cataloguePrograms}
             calculatorInstitutions={calculatorInstitutions}
+            catalogueInstitutions={catalogueInstitutions}
             savedProgramIds={profile.savedProgramIds ?? []}
             academicScores={profile.academicScores}
             onRemove={handleRemoveFromBucket}
@@ -981,10 +1159,24 @@ export default function AppExperience({
               setAppCalcScores(null);
               navigateToStep(bucketReturnsTo);
             }}
-            backLabel={bucketReturnsTo === 'degree-picker' ? 'חזרה לבחירת תארים' : 'חזרה להמלצות'}
+            backLabel={
+              bucketReturnsTo === 'study-location'
+                ? 'חזרה לבחירת אזור'
+                : bucketReturnsTo === 'degree-picker'
+                  ? 'חזרה לבחירת תארים'
+                  : 'חזרה להמלצות'
+            }
             emptyCtaLabel={
               bucketReturnsTo === 'degree-picker' ? 'חזור לבחור תארים ←' : 'עבור להמלצות ←'
             }
+            isAuthenticated={isAuthenticated}
+            onSignIn={() => {
+              router.push(`${ROUTES.login}?next=${encodeURIComponent(ROUTES.savedPrograms)}`);
+            }}
+            onContinueAsGuest={() => {
+              setBucketReturnsTo('degree-picker');
+              navigateToStep('degree-picker');
+            }}
           />
         )}
 
@@ -1025,6 +1217,6 @@ export default function AppExperience({
           </>
         )}
       </main>
-    </>
+    </WayPageShell>
   );
 }

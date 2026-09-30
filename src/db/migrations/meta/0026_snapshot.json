@@ -1,5 +1,5 @@
 {
-  "id": "bced0385-ad21-42a2-a68f-f0467b391204",
+  "id": "0492b9c5-2b91-41a7-8685-e309b9a1a545",
   "prevId": "9cccc408-5d17-4db5-adf1-46d04ac7bb75",
   "version": "7",
   "dialect": "postgresql",
@@ -3609,12 +3609,6 @@
           "notNull": true,
           "default": "'{}'"
         },
-        "assessment_progress": {
-          "name": "assessment_progress",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -3747,7 +3741,7 @@
     "public.admission_review_slack_status": {
       "name": "admission_review_slack_status",
       "schema": "public",
-      "values": ["pending", "sent", "failed"]
+      "values": ["pending", "sent", "failed", "acceptance_unknown"]
     },
     "public.admission_type": {
       "name": "admission_type",

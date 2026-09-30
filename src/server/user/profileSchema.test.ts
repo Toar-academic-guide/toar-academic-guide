@@ -1,3 +1,4 @@
+import { HUJI_MEDICINE_ELIGIBLE_INPUTS } from '@/data/admissions/hujiMedicineVerification';
 import { describe, expect, it } from 'vitest';
 
 import {
@@ -7,6 +8,122 @@ import {
 } from '@/server/user/profileSchema';
 
 describe('userProfileSchema', () => {
+  it('preserves Colman average and certificate confirmation in a saved profile', () => {
+    const admissions = { colmanBagrutAverage: 85.25, colmanBagrutCertificateConfirmed: false };
+    expect(
+      userProfileSchema.parse({ geographicPreference: 'any', academicScores: { admissions } })
+        .academicScores?.admissions,
+    ).toEqual(admissions);
+    expect(
+      userProfileSchema.safeParse({
+        geographicPreference: 'any',
+        academicScores: { admissions: { colmanBagrutAverage: 130.01 } },
+      }).success,
+    ).toBe(false);
+  });
+  it('preserves all Medicine route facts, decimals, date and false/zero', () => {
+    const admissions = {
+      ...HUJI_MEDICINE_ELIGIBLE_INPUTS,
+      hujiBagrutAverage: 120.25,
+      hujiMedicineQualificationConfirmed: false,
+      hujiMedicinePreparatoryAverage: 110.25,
+      hujiMedicinePreparatoryYear: 2021,
+      hujiMedicinePreparatoryEligible: false,
+      hujiMedicinePreparatoryConversionConfirmed: false,
+      hujiMedicineCognitiveScore: 27.921,
+      hujiMedicineHebrewScore: 0,
+    };
+    expect(
+      userProfileSchema.parse({ geographicPreference: 'any', academicScores: { admissions } })
+        .academicScores?.admissions,
+    ).toEqual(admissions);
+    for (const invalid of [
+      { hujiMedicinePsychometricDate: '2026-02-30' },
+      { hujiMedicineAssessmentScore: 251 },
+      { hujiBagrutAverage: 128 },
+      { hujiMedicinePreparatoryConversionConfirmed: 'yes' },
+    ]) {
+      expect(
+        userProfileSchema.safeParse({
+          geographicPreference: 'any',
+          academicScores: { admissions: invalid },
+        }).success,
+      ).toBe(false);
+    }
+  });
+  it('preserves the complete social science input record and rejects invalid age or averages', () => {
+    const admissions = {
+      bguSocialScienceRoute: 'education_conditional',
+      bguSocialScienceRequirementsConfirmed: false,
+      bguSocialScienceLanguageConfirmed: false,
+      bguReturningFromStudyBreak: false,
+      bguSocialWorkAcademicBackground: 'social_work',
+      bguSocialWorkAcademicAverage: 85.25,
+      bguSocialWorkTranscriptProvided: false,
+      bguApplicantAge: 45,
+      bguEducationSecondDepartment: 'art',
+      bguEnglishClassificationMissing: true,
+      bguHebrewRequirementsConfirmed: true,
+      bguEducationEnglishConditionAcknowledged: false,
+    };
+    expect(
+      userProfileSchema.parse({ geographicPreference: 'any', academicScores: { admissions } })
+        .academicScores?.admissions,
+    ).toEqual(admissions);
+    for (const extra of [
+      { bguApplicantAge: 44.5 },
+      { bguApplicantAge: 121 },
+      { bguSocialWorkAcademicAverage: 100.01 },
+      { bguSocialScienceRoute: 'expired' },
+    ])
+      expect(
+        userProfileSchema.safeParse({
+          geographicPreference: 'any',
+          academicScores: { admissions: { ...admissions, ...extra } },
+        }).success,
+      ).toBe(false);
+  });
+  it('preserves quantitative route inputs, false, zero and decimal preparatory averages', () => {
+    const admissions = {
+      bguQuantitativeRoute: 'bagrut',
+      bguCertificateRequirementsConfirmed: true,
+      bguPriorAcademicStudies: false,
+      bguReturningOrChangingTrack: false,
+      bguApplicationPriority: 3,
+      bguSecondTrackRequirementsConfirmed: true,
+      bguPreparatoryTrack: 'natural_life_sciences',
+      bguPreparatoryAverage: 87.25,
+      bguPreparatoryCompleted: true,
+    };
+    expect(
+      userProfileSchema.parse({ geographicPreference: 'any', academicScores: { admissions } })
+        .academicScores?.admissions,
+    ).toEqual(admissions);
+    expect(
+      userProfileSchema.safeParse({
+        geographicPreference: 'any',
+        academicScores: { admissions: { ...admissions, bguPreparatoryAverage: 101 } },
+      }).success,
+    ).toBe(false);
+    expect(
+      userProfileSchema.safeParse({
+        geographicPreference: 'any',
+        academicScores: { admissions: { ...admissions, bguApplicationPriority: 1.5 } },
+      }).success,
+    ).toBe(false);
+  });
+  it('preserves optional Architecture scores, false and zero', () => {
+    const admissions = {
+      technionArchitectureBagrutAverage: 101.9,
+      technionArchitectureExamScore: 0,
+      technionArchitectureExamPassed: false,
+      technionArchitectureRequirementsConfirmed: true,
+    };
+    expect(
+      userProfileSchema.parse({ geographicPreference: 'any', academicScores: { admissions } })
+        .academicScores?.admissions,
+    ).toEqual(admissions);
+  });
   it('accepts a normalized subject-level Bagrut record without trusting a client hash', () => {
     const parsed = userProfileSchema.parse({
       geographicPreference: 'center',
@@ -33,6 +150,53 @@ describe('userProfileSchema', () => {
         { subjectId: 'history', units: 2, grade: 88 },
       ],
     });
+  });
+
+  it('accepts a complete schema-v2 Bagrut record with distinct exam and final-project entries', () => {
+    const subjectRecord = {
+      schemaVersion: 2 as const,
+      sector: 'jewish' as const,
+      certificateType: 'external_1977_or_later' as const,
+      complete: true,
+      subjects: [
+        { subjectId: 'physics', units: 5, grade: 90, assessmentKind: 'exam' as const },
+        {
+          subjectId: 'physics',
+          units: 5,
+          grade: 95,
+          assessmentKind: 'final_project' as const,
+        },
+      ],
+    };
+
+    const parsed = userProfileSchema.parse({
+      geographicPreference: 'center',
+      academicScores: { bagrut: { subjectRecord } },
+    });
+
+    expect(parsed.academicScores?.bagrut?.subjectRecord).toEqual(subjectRecord);
+  });
+
+  it('rejects duplicate schema-v2 entries with the same subject and assessment kind', () => {
+    expect(() =>
+      userProfileSchema.parse({
+        geographicPreference: 'center',
+        academicScores: {
+          bagrut: {
+            subjectRecord: {
+              schemaVersion: 2,
+              sector: 'jewish',
+              certificateType: 'internal',
+              complete: true,
+              subjects: [
+                { subjectId: 'physics', units: 5, grade: 90, assessmentKind: 'exam' },
+                { subjectId: 'physics', units: 5, grade: 95, assessmentKind: 'exam' },
+              ],
+            },
+          },
+        },
+      }),
+    ).toThrow();
   });
 
   it('rejects duplicate Bagrut subjects and invalid subject-level ranges', () => {
@@ -77,6 +241,104 @@ describe('userProfileSchema', () => {
     expect(parsed).toEqual({
       geographicPreference: 'any',
     });
+  });
+
+  it('preserves Haifa official average and real certificate and exam years', () => {
+    const admissions = {
+      haifaBagrutAverage: 102.25,
+      haifaBagrutYear: 2015,
+      haifaPsychometricYear: 2026,
+      haifaAdmissionQualification: 'full_bagrut',
+      haifaEnglishLevel: 'advanced_a',
+      haifaHebrewQualification: 'exam',
+      haifaHebrewScore: 120,
+      haifaHebrewExamDate: '2026-04-01',
+      haifaPsychometricMonth: 4,
+      haifaScienceUnits: 8,
+      haifaOtFailedSelectionAttempts: 0,
+      haifaOtUnjustifiedAbsence: false,
+    };
+    expect(
+      userProfileSchema.parse({ geographicPreference: 'any', academicScores: { admissions } })
+        .academicScores?.admissions,
+    ).toEqual(admissions);
+  });
+
+  it('accepts optional institution-specific admissions inputs, including false and zero', () => {
+    const parsed = userProfileSchema.parse({
+      geographicPreference: 'any',
+      academicScores: {
+        admissions: {
+          tauBagrutAverage: 112.5,
+          bguBagrutAverage: 108.25,
+          tauApplicationRequirementsConfirmed: false,
+          bguLanguageRequirementsConfirmed: true,
+          tauMathPlacementScore: 0,
+        },
+      },
+    });
+
+    expect(parsed.academicScores?.admissions).toEqual({
+      tauBagrutAverage: 112.5,
+      bguBagrutAverage: 108.25,
+      tauApplicationRequirementsConfirmed: false,
+      bguLanguageRequirementsConfirmed: true,
+      tauMathPlacementScore: 0,
+    });
+  });
+
+  it('preserves structured engineering inputs across profile parsing', () => {
+    const bguEngineering = {
+      detailsConfirmed: true,
+      route: 'direct',
+      physicsCoursePassed: false,
+      preparatoryInstitution: 'bgu',
+      preparatoryCompletionYear: 2026,
+      preparatoryMathUnits: 5,
+      preparatoryMathGrade: 95,
+      preparatoryPhysicsUnits: 5,
+      preparatoryPhysicsGrade: 90,
+      industrialPreparatoryAverage: 91.25,
+      diplomaRecognized: false,
+      diplomaMathHours: 90,
+      diplomaMathGrade: 95,
+      diplomaPhysicsHours: 90,
+      diplomaPhysicsGrade: 80,
+    };
+    expect(
+      userProfileSchema.parse({
+        geographicPreference: 'any',
+        academicScores: { admissions: { bguEngineering } },
+      }).academicScores?.admissions?.bguEngineering,
+    ).toEqual(bguEngineering);
+  });
+
+  it('rejects invalid ranges and types for institution-specific admissions inputs', () => {
+    for (const admissions of [
+      { tauBagrutAverage: 49 },
+      { tauBagrutAverage: 130.1 },
+      { tauBagrutAverage: '112' },
+      { bguBagrutAverage: 131 },
+      { tauApplicationRequirementsConfirmed: 'yes' },
+      { bguLanguageRequirementsConfirmed: 1 },
+      { tauMathPlacementScore: -1 },
+      { tauMathPlacementScore: 101 },
+      { technionArchitectureBagrutAverage: 119.1 },
+      { technionArchitectureExamScore: 140.1 },
+      { technionArchitectureExamPassed: 'yes' },
+      { technionArchitectureRequirementsConfirmed: 1 },
+      { tauMathPlacementScore: false },
+      { bguEngineering: { detailsConfirmed: true, preparatoryMathUnits: 3 } },
+      { bguEngineering: { detailsConfirmed: true, diplomaMathHours: 89.5 } },
+      { bguEngineering: { detailsConfirmed: true, diplomaRecognized: 'yes' } },
+    ]) {
+      expect(() =>
+        userProfileSchema.parse({
+          geographicPreference: 'any',
+          academicScores: { admissions },
+        }),
+      ).toThrow();
+    }
   });
 
   it('accepts a full browser snapshot payload', () => {
@@ -306,4 +568,56 @@ describe('savedProgramRequestBodySchema', () => {
       }),
     ).toThrow();
   });
+});
+
+it('preserves Psychology recognized prep decimals and false in profile JSONB input', () => {
+  const admissions = {
+    bguPsychologyRoute: 'bagrut',
+    bguPsychologyRequirementsConfirmed: false,
+    bguPreparatoryTrack: 'natural_life_sciences',
+    bguPreparatoryAverage: 94.25,
+    bguPreparatoryCompleted: false,
+  };
+  expect(
+    userProfileSchema.parse({ geographicPreference: 'any', academicScores: { admissions } })
+      .academicScores?.admissions,
+  ).toEqual(admissions);
+  expect(
+    userProfileSchema.safeParse({
+      geographicPreference: 'any',
+      academicScores: { admissions: { ...admissions, bguPreparatoryAverage: 100.01 } },
+    }).success,
+  ).toBe(false);
+});
+
+it('validates health profile averages and preserves false, zero and omitted scores', () => {
+  const admissions = {
+    bguOccupationalTherapyRoute: 'academic',
+    bguOccupationalTherapyRequirementsConfirmed: true,
+    bguBachelorsDegreeCompleted: false,
+    bguBachelorsDegreeAverage: 85.25,
+    bguPhysiotherapyRequirementsConfirmed: false,
+  };
+  expect(
+    userProfileSchema.parse({ geographicPreference: 'any', academicScores: { admissions } })
+      .academicScores?.admissions,
+  ).toEqual(admissions);
+  expect(
+    userProfileSchema.parse({
+      geographicPreference: 'any',
+      academicScores: { admissions: { bguBachelorsDegreeAverage: 0 } },
+    }).academicScores?.admissions?.bguBachelorsDegreeAverage,
+  ).toBe(0);
+  for (const values of [
+    { bguBachelorsDegreeAverage: 100.1 },
+    { bguBachelorsDegreeAverage: -1 },
+    { bguBachelorsDegreeCompleted: 'true' },
+    { bguOccupationalTherapyExamSession: 'unknown' },
+  ])
+    expect(
+      userProfileSchema.safeParse({
+        geographicPreference: 'any',
+        academicScores: { admissions: values },
+      }).success,
+    ).toBe(false);
 });

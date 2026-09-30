@@ -1,7 +1,9 @@
 export const ROUTES = {
   home: '/',
+  about: '/about',
   login: '/login',
   signup: '/signup',
+  institutions: '/institutions',
   app: '/app',
   profile: '/app/profile',
   assessment: '/app/assessment',
@@ -22,10 +24,8 @@ export const APP_AREA_ROUTES: Record<AppAreaRoute, string> = {
   savedPrograms: ROUTES.savedPrograms,
 };
 
-export interface AdmissionAlertTarget {
-  institutionId: 'tau';
-  programId: 'tau_cs';
-}
+export type AdmissionAlertTarget =
+  { institutionId: 'tau'; programId: 'tau_cs' } | { institutionId: 'bgu'; programId: 'bgu_cs' };
 
 const SAFE_APP_PATHS = new Set(Object.values(APP_AREA_ROUTES));
 const SAFE_PUBLIC_PREFIXES = ['/programs/', '/institutions/'];
@@ -140,6 +140,10 @@ function isAllowedReturnPath(path: string) {
     return true;
   }
 
+  if (path === ROUTES.about || path === ROUTES.institutions) {
+    return true;
+  }
+
   if (SAFE_APP_PATHS.has(path) || parseAdmissionAlertIntent(path)) {
     return true;
   }
@@ -171,12 +175,9 @@ export function parseAdmissionAlertIntent(
   if (url.pathname !== ROUTES.profile || url.searchParams.size !== 2) {
     return null;
   }
-  if (
-    url.searchParams.get(ADMISSION_ALERT_INSTITUTION_PARAM) !== 'tau' ||
-    url.searchParams.get(ADMISSION_ALERT_PROGRAM_PARAM) !== 'tau_cs'
-  ) {
-    return null;
-  }
-
-  return { institutionId: 'tau', programId: 'tau_cs' };
+  const institutionId = url.searchParams.get(ADMISSION_ALERT_INSTITUTION_PARAM);
+  const programId = url.searchParams.get(ADMISSION_ALERT_PROGRAM_PARAM);
+  if (institutionId === 'tau' && programId === 'tau_cs') return { institutionId, programId };
+  if (institutionId === 'bgu' && programId === 'bgu_cs') return { institutionId, programId };
+  return null;
 }

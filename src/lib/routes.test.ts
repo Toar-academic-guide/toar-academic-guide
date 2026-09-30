@@ -20,6 +20,7 @@ describe('route contract', () => {
 
   it('accepts safe local return paths', () => {
     expect(normalizeSafeNextPath('/')).toBe(ROUTES.home);
+    expect(normalizeSafeNextPath('/about')).toBe(ROUTES.about);
     expect(normalizeSafeNextPath('/app/saved-programs')).toBe(ROUTES.savedPrograms);
     expect(normalizeSafeNextPath('/programs/technion-computer-science')).toBe(
       '/programs/technion-computer-science',
@@ -93,5 +94,10 @@ describe('route contract', () => {
         '/app/profile?admissionAlertInstitution=tau&admissionAlertProgram=nope',
       ),
     ).toBeNull();
+  });
+  it('preserves the BGU target through signup and return navigation', () => {
+    const path = '/app/profile?admissionAlertInstitution=bgu&admissionAlertProgram=bgu_cs';
+    expect(parseAdmissionAlertIntent(path)).toEqual({ institutionId: 'bgu', programId: 'bgu_cs' });
+    expect(normalizeSafeNextPath(path)).toBe(path);
   });
 });

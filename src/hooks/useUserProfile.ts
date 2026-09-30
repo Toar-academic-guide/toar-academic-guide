@@ -28,6 +28,9 @@ interface UseUserProfileResult {
   toggleSavedProgram: (programId: string) => Promise<void>;
   removeSavedProgram: (programId: string) => Promise<void>;
   hydrated: boolean;
+  initialProfileStatus: 'loading' | 'ready' | 'error';
+  initialProfileError: string | null;
+  retryInitialProfileLoad: () => void;
   syncing: boolean;
   syncError: string | null;
   isAuthenticated: boolean;
@@ -49,6 +52,13 @@ export function useUserProfile(): UseUserProfileResult {
     profileRef.current = nextProfile;
     setProfile(nextProfile);
   }
+  const [initialProfileLoad, setInitialProfileLoad] = useState<{
+    identity: string;
+    status: 'loading' | 'ready' | 'error';
+    error?: string;
+  } | null>(null);
+  const [initialLoadRetry, setInitialLoadRetry] = useState(0);
+  const identity = user ? `user:${user.id}` : 'guest';
 
   useEffect(() => {
     const storedProfile = readStoredProfile();
@@ -68,6 +78,7 @@ export function useUserProfile(): UseUserProfileResult {
       const storedProfile = readStoredProfile();
       replaceProfileState(storedProfile ?? DEFAULT_PROFILE);
       setSyncing(false);
+      setInitialProfileLoad({ identity, status: 'ready' });
       return;
     }
 
@@ -76,6 +87,7 @@ export function useUserProfile(): UseUserProfileResult {
     void (async () => {
       setSyncing(true);
       setSyncError(null);
+      setInitialProfileLoad({ identity, status: 'loading' });
 
       try {
         let nextProfile = await fetchProfileSnapshot();
@@ -96,10 +108,13 @@ export function useUserProfile(): UseUserProfileResult {
 
         if (!cancelled) {
           replaceProfileState(nextProfile);
+          setInitialProfileLoad({ identity, status: 'ready' });
         }
       } catch (error) {
         if (!cancelled) {
-          setSyncError(toErrorMessage(error, 'לא הצלחנו לסנכרן את הפרופיל שלך.'));
+          const message = toErrorMessage(error, 'לא הצלחנו לטעון את הפרופיל שלך.');
+          setSyncError(message);
+          setInitialProfileLoad({ identity, status: 'error', error: message });
         }
       } finally {
         if (!cancelled) {
@@ -111,7 +126,7 @@ export function useUserProfile(): UseUserProfileResult {
     return () => {
       cancelled = true;
     };
-  }, [authLoading, hydrated, user]);
+  }, [authLoading, hydrated, identity, initialLoadRetry, user]);
 
   async function updateProfile(updates: Partial<UserProfile>) {
     const previousProfile = profileRef.current;
@@ -165,6 +180,12 @@ export function useUserProfile(): UseUserProfileResult {
         setSyncing(false);
       }
     }
+  }
+
+  function retryInitialProfileLoad() {
+    setInitialProfileLoad({ identity, status: 'loading' });
+    setSyncError(null);
+    setInitialLoadRetry((attempt) => attempt + 1);
   }
 
   async function clearLocalProfileData() {
@@ -247,6 +268,15 @@ export function useUserProfile(): UseUserProfileResult {
     toggleSavedProgram,
     removeSavedProgram,
     hydrated,
+    initialProfileStatus:
+      !hydrated || authLoading || initialProfileLoad?.identity !== identity
+        ? 'loading'
+        : initialProfileLoad.status,
+    initialProfileError:
+      initialProfileLoad?.identity === identity && initialProfileLoad.status === 'error'
+        ? (initialProfileLoad.error ?? null)
+        : null,
+    retryInitialProfileLoad,
     syncing,
     syncError,
     isAuthenticated: Boolean(user),
@@ -375,6 +405,7 @@ function hasMeaningfulDraft(profile: UserProfile): boolean {
     Boolean(profile.academicScores?.psychometric?.verbal) ||
     Boolean(profile.academicScores?.psychometric?.english) ||
     Boolean(profile.academicScores?.bagrut?.weightedAverage) ||
+    Object.values(profile.academicScores?.admissions ?? {}).some((value) => value !== undefined) ||
     (profile.savedProgramIds?.length ?? 0) > 0
   );
 }

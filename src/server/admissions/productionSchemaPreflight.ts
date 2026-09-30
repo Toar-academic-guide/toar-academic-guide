@@ -42,6 +42,7 @@ export type ProductionSchemaSnapshot = {
   enums: Record<string, string[]>;
   triggers: string[];
   functions: Record<string, string[]>;
+  functionAccess?: Record<string, { securityDefiner: boolean; executeRoles: string[] }>;
 };
 
 type TableContract = {
@@ -55,11 +56,13 @@ type TableContract = {
   policies: string[];
   policyMigrations?: Record<string, MigrationId>;
   grants: Record<string, string[]>;
+  dashboardReadColumns?: string[];
 };
 
 type EnumContract = {
   createdBy: MigrationId;
   values: string[];
+  valueMigrations?: { id: MigrationId; values: string[] }[];
 };
 
 export type ProductionSchemaIssue = {
@@ -153,10 +156,23 @@ const tables: Record<string, TableContract> = {
   admission_alternative_paths: securedExistingTable('admission_alternative_paths'),
   admission_facts: securedExistingTable('admission_facts'),
   admissions_source_candidates: securedExistingTable('admissions_source_candidates'),
-  ingestion_sources: automationOnlyExistingTable('ingestion_sources'),
+  ingestion_sources: {
+    ...automationOnlyExistingTable('ingestion_sources'),
+    dashboardReadColumns: ['id', 'institution_id', 'program_id', 'difficulty', 'source_url'],
+  },
   ingestion_jobs: {
     ...automationOnlyExistingTable('ingestion_jobs'),
     policyMigrations: { ingestion_jobs_admissions_automation_insert: '0025' },
+    dashboardReadColumns: [
+      'id',
+      'source_id',
+      'status',
+      'difficulty',
+      'started_at',
+      'completed_at',
+      'error_text',
+      'created_at',
+    ],
   },
   ingestion_payloads: {
     ...automationOnlyExistingTable('ingestion_payloads'),
@@ -165,6 +181,15 @@ const tables: Record<string, TableContract> = {
   review_items: {
     ...automationOnlyExistingTable('review_items'),
     policyMigrations: { review_items_admissions_automation_insert: '0025' },
+    dashboardReadColumns: [
+      'id',
+      'payload_id',
+      'admission_requirement_id',
+      'target_field',
+      'status',
+      'created_at',
+      'reviewed_at',
+    ],
   },
   source_freshness_checks: securedExistingTable('source_freshness_checks', ['SELECT', 'INSERT']),
   source_freshness_states: securedExistingTable('source_freshness_states', [
@@ -519,6 +544,12 @@ export const PRODUCTION_SCHEMA_CONTRACT: {
     admission_review_slack_status: {
       createdBy: '0016',
       values: ['pending', 'sent', 'failed'],
+      valueMigrations: [
+        {
+          id: '0026',
+          values: ['pending', 'sent', 'failed', 'acceptance_unknown'],
+        },
+      ],
     },
     admission_release_kind: {
       createdBy: '0021',
@@ -808,19 +839,54 @@ function assessTableSecurity(
   }
   for (const role of runtimeRoles) {
     const actual = normalizedPrivileges(table.grants[role] ?? []);
-    const expected = normalizedPrivileges(
-      tableName === 'ingestion_sources' && role === 'ops_readonly' && !applied.has('0024')
-        ? ['SELECT']
-        : tableName === 'bagrut_profile_versions' && role === 'ops_readonly' && !applied.has('0017')
-          ? []
-          : (contract.grants[role] ?? []),
-    );
+    let expectedPrivileges = contract.grants[role] ?? [];
+    if (role === 'ops_readonly') {
+      if (
+        applied.has('0025') &&
+        !applied.has('0027') &&
+        (tableName === 'ingestion_jobs' || tableName === 'review_items')
+      ) {
+        expectedPrivileges = ['SELECT'];
+      } else if (tableName === 'ingestion_sources' && !applied.has('0024')) {
+        expectedPrivileges = ['SELECT'];
+      } else if (tableName === 'bagrut_profile_versions' && !applied.has('0017')) {
+        expectedPrivileges = [];
+      }
+    }
+    const expected = normalizedPrivileges(expectedPrivileges);
     if (actual.join(',') !== expected.join(',')) {
       issues.push({
         code: 'grant_mismatch',
         object: `grant:${role}:${tableName}`,
         detail: `Expected [${expected.join(', ')}], found [${actual.join(', ')}].`,
       });
+    }
+  }
+  if (contract.dashboardReadColumns && applied.has('0035')) {
+    const policy = `${tableName}_ops_readonly_select`;
+    if (!table.policies.includes(policy)) {
+      issues.push({
+        code: 'missing_policy',
+        object: `policy:${policy}`,
+        detail: `Required dashboard read policy on public.${tableName} is absent.`,
+      });
+    }
+    for (const role of [...browserRoles, ...runtimeRoles]) {
+      const actualGrants = table.columnGrants[role] ?? {};
+      for (const privilege of new Set(['SELECT', ...Object.keys(actualGrants)])) {
+        const expected =
+          role === 'ops_readonly' && privilege === 'SELECT'
+            ? [...contract.dashboardReadColumns].sort()
+            : [];
+        const actual = [...(actualGrants[privilege] ?? [])].sort();
+        if (actual.join(',') !== expected.join(',')) {
+          issues.push({
+            code: 'grant_mismatch',
+            object: `grant:${role}:${tableName}.column:${privilege}`,
+            detail: `Expected columns [${expected.join(', ')}], found [${actual.join(', ')}].`,
+          });
+        }
+      }
     }
   }
 }
@@ -863,7 +929,10 @@ function assessEnums(
       });
       continue;
     }
-    if (actual.join('\u0000') !== contract.values.join('\u0000')) {
+    const expectedValues =
+      contract.valueMigrations?.filter((migration) => applied.has(migration.id)).at(-1)?.values ??
+      contract.values;
+    if (actual.join('\u0000') !== expectedValues.join('\u0000')) {
       issues.push({
         code: 'enum_values_mismatch',
         object: `enum:${name}`,
@@ -878,6 +947,118 @@ function assessChangedObjects(
   applied: Set<MigrationId>,
   issues: ProductionSchemaIssue[],
 ) {
+  assessAddedColumn(snapshot, applied, '0034', 'admission_alert_outbox', 'recipient_hash', issues);
+  assessColumnType(
+    snapshot,
+    applied,
+    '0034',
+    'admission_alert_outbox',
+    'recipient_hash',
+    'text',
+    issues,
+  );
+  for (const name of ['delivery_recipient', 'cleanup_deleted_account', 'prune_retained_data']) {
+    const fn = `admission_alert_private.${name}`;
+    if (applied.has('0034')) {
+      if (!snapshot.functions[fn])
+        issues.push({
+          code: 'missing_function',
+          object: `function:${fn}`,
+          detail: 'Private alert lifecycle function is absent.',
+        });
+      else if (
+        !snapshot.functions[fn].includes('search_path=""') ||
+        !snapshot.functionAccess?.[fn]?.securityDefiner
+      )
+        issues.push({
+          code: 'function_config_mismatch',
+          object: `function:${fn}`,
+          detail: 'Expected SECURITY DEFINER and an empty search path.',
+        });
+      const expected = name === 'cleanup_deleted_account' ? [] : ['app_runtime'];
+      if (
+        JSON.stringify(snapshot.functionAccess?.[fn]?.executeRoles?.toSorted()) !==
+        JSON.stringify(expected)
+      )
+        issues.push({
+          code: 'grant_mismatch',
+          object: `function:${fn}`,
+          detail: 'Unexpected private function execute privileges.',
+        });
+    } else if (snapshot.functions[fn])
+      issues.push({
+        code: 'unexpected_pending_object',
+        object: `function:${fn}`,
+        detail: 'Function belongs to pending migration 0034.',
+      });
+  }
+  const deletedTrigger = 'admission_alert_account_deleted';
+  if (applied.has('0034') && !snapshot.triggers.includes(deletedTrigger))
+    issues.push({
+      code: 'missing_trigger',
+      object: `trigger:${deletedTrigger}`,
+      detail: 'Account deletion cleanup trigger is absent.',
+    });
+  else if (!applied.has('0034') && snapshot.triggers.includes(deletedTrigger))
+    issues.push({
+      code: 'unexpected_pending_object',
+      object: `trigger:${deletedTrigger}`,
+      detail: 'Trigger belongs to pending migration 0034.',
+    });
+  assessAddedColumn(snapshot, applied, '0028', 'user_profiles', 'admissions_inputs', issues);
+  for (const [column, type] of [
+    ['unsubscribe_token_hash', 'text'],
+    ['unsubscribe_used_at', 'timestamp with time zone'],
+    ['delivery_events', 'jsonb'],
+  ]) {
+    assessAddedColumn(snapshot, applied, '0033', 'admission_alert_outbox', column, issues);
+    assessColumnType(snapshot, applied, '0033', 'admission_alert_outbox', column, type, issues);
+  }
+  assessAddedIndex(
+    snapshot,
+    applied,
+    '0033',
+    'admission_alert_outbox',
+    'admission_alert_outbox_unsubscribe_token_unique',
+    issues,
+  );
+  for (const [column, type] of [
+    ['claim_token', 'uuid'],
+    ['lease_expires_at', 'timestamp with time zone'],
+    ['first_submitted_at', 'timestamp with time zone'],
+    ['submission_started_at', 'timestamp with time zone'],
+    ['attempt_count', 'integer'],
+    ['mail_payload', 'jsonb'],
+  ]) {
+    assessAddedColumn(snapshot, applied, '0032', 'admission_alert_outbox', column, issues);
+    assessColumnType(snapshot, applied, '0032', 'admission_alert_outbox', column, type, issues);
+  }
+  for (const [column, type] of [
+    ['claim_token', 'uuid'],
+    ['lease_expires_at', 'timestamp with time zone'],
+    ['next_attempt_at', 'timestamp with time zone'],
+    ['retry_state', 'jsonb'],
+  ]) {
+    assessAddedColumn(snapshot, applied, '0031', 'admission_alert_transition_work', column, issues);
+    assessColumnType(
+      snapshot,
+      applied,
+      '0031',
+      'admission_alert_transition_work',
+      column,
+      type,
+      issues,
+    );
+  }
+  assessColumnType(
+    snapshot,
+    applied,
+    '0028',
+    'user_profiles',
+    'admissions_inputs',
+    'jsonb',
+    issues,
+  );
   assessAddedColumn(
     snapshot,
     applied,
