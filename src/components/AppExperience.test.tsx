@@ -171,6 +171,18 @@ vi.mock('@/components/DegreePicker', () => ({
   default: () => <div>degree-picker</div>,
 }));
 
+vi.mock('@/components/StudyLocationStep', () => ({
+  default: ({
+    onDone,
+  }: {
+    onDone: (selection: { allRegions: boolean; regionIds: string[] }) => void;
+  }) => (
+    <button onClick={() => onDone({ allRegions: false, regionIds: ['haifa', 'south'] })}>
+      choose-regions
+    </button>
+  ),
+}));
+
 vi.mock('@/components/AuthScreen', () => ({
   default: () => <div>auth-screen</div>,
 }));
@@ -227,6 +239,14 @@ describe('AppExperience route entry', () => {
     });
     hoisted.profileState.retryInitialProfileLoad.mockReset();
     window.scrollTo = vi.fn();
+  });
+
+  it('carries study-region choices into the durable saved-program URL', async () => {
+    render(<AppExperience initialStep="study-location" />);
+    fireEvent.click(await screen.findByRole('button', { name: 'choose-regions' }));
+    expect(hoisted.push).toHaveBeenCalledWith(
+      '/app/saved-programs?from=study-location&regions=haifa%2Csouth',
+    );
   });
 
   it('shows a prerequisite state for direct recommendations links without assessment data', async () => {

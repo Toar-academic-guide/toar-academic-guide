@@ -38,6 +38,7 @@ import RecommendationResults from '@/components/RecommendationResults';
 import BucketList from '@/components/BucketList';
 import DegreePicker from '@/components/DegreePicker';
 import StudyLocationStep from '@/components/StudyLocationStep';
+import type { StudyRegionId } from '@/data/studyRegions';
 import ScoreForm from '@/components/ScoreForm';
 import CalculatorResults from '@/components/CalculatorResults';
 import WayPageShell from '@/components/WayPageShell';
@@ -130,6 +131,8 @@ function toCatalogueError(error: unknown): CatalogueApiError {
 }
 
 interface AppExperienceProps {
+  initialStudyRegions?: StudyRegionId[];
+  fromStudyLocation?: boolean;
   initialStep?: AppStep;
   enableDevShortcuts?: boolean;
   admissionAlertTarget?: AdmissionAlertTarget | null;
@@ -146,6 +149,8 @@ const DURABLE_STEP_ROUTES: Partial<Record<AppStep, string>> = {
 };
 
 export default function AppExperience({
+  initialStudyRegions = [],
+  fromStudyLocation = false,
   initialStep: routeInitialStep = 'landing',
   enableDevShortcuts = false,
   admissionAlertTarget = null,
@@ -224,7 +229,10 @@ export default function AppExperience({
     STATIC_CATALOGUE_PROGRAMS[0]?.id ?? null,
   );
   const calculatorInstitutions = getCalculatorInstitutionsFromCatalogue(catalogueInstitutions);
-  const [bucketReturnsTo, setBucketReturnsTo] = useState<AppStep>('recommendations');
+  const [bucketReturnsTo, setBucketReturnsTo] = useState<AppStep>(
+    fromStudyLocation ? 'study-location' : 'recommendations',
+  );
+  const [studyRegions, setStudyRegions] = useState(initialStudyRegions);
   const [authReturnTo] = useState<Exclude<AppStep, 'auth'>>('landing');
   const [landingCalcScores, setLandingCalcScores] = useState<{
     psychometric?: number;
@@ -648,7 +656,13 @@ export default function AppExperience({
                 regions: selection.regionIds,
               });
               setBucketReturnsTo('study-location');
-              navigateToStep('bucket-list');
+              const regions = selection.allRegions ? [] : selection.regionIds;
+              setStudyRegions(regions);
+              const query = new URLSearchParams({
+                from: 'study-location',
+                regions: regions.join(','),
+              });
+              navigateToStep('bucket-list', `${ROUTES.savedPrograms}?${query}`);
             }}
           />
         ) : (
@@ -893,6 +907,13 @@ export default function AppExperience({
         {/* ── Step: Bucket List ─────────────────────────────────── */}
         {!shouldBlockCatalogueStep && step === 'bucket-list' && (
           <BucketList
+            initialRegions={studyRegions}
+            onRegionsChange={(regions) => {
+              setStudyRegions(regions);
+              const url = new URL(window.location.href);
+              url.searchParams.set('regions', regions.join(','));
+              window.history.replaceState(null, '', url);
+            }}
             programs={cataloguePrograms}
             calculatorInstitutions={calculatorInstitutions}
             catalogueInstitutions={catalogueInstitutions}
@@ -903,7 +924,13 @@ export default function AppExperience({
               setAppCalcScores(null);
               navigateToStep(bucketReturnsTo);
             }}
-            backLabel={bucketReturnsTo === 'degree-picker' ? 'חזרה לבחירת תארים' : 'חזרה להמלצות'}
+            backLabel={
+              bucketReturnsTo === 'study-location'
+                ? 'חזרה לבחירת אזור'
+                : bucketReturnsTo === 'degree-picker'
+                  ? 'חזרה לבחירת תארים'
+                  : 'חזרה להמלצות'
+            }
             emptyCtaLabel={
               bucketReturnsTo === 'degree-picker' ? 'חזור לבחור תארים ←' : 'עבור להמלצות ←'
             }

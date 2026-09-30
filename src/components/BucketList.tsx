@@ -15,10 +15,32 @@ import type { Program } from '@/data/degrees/types';
 import type { CatalogueInstitution } from '@/types/catalogue';
 import { analyzeBucketList, type BucketEntry } from '@/utils/bucketListEngine';
 import InstitutionLogo from '@/components/InstitutionLogo';
+import { getInstitutionDirectoryItems } from '@/data/institutionDirectory';
+import type { StudyRegionId } from '@/data/studyRegions';
+
+const directoryById = new Map(getInstitutionDirectoryItems().map((item) => [item.id, item]));
+
+function getInstitutionRegions(institution: CatalogueInstitution | undefined): StudyRegionId[] {
+  if (!institution) return [];
+  const areas = directoryById.get(institution.id)?.areas;
+  if (areas?.length) {
+    return areas.filter(
+      (area): area is StudyRegionId =>
+        area === 'center' ||
+        area === 'north' ||
+        area === 'south' ||
+        area === 'haifa' ||
+        area === 'jerusalem',
+    );
+  }
+  return institution.region === 'any' ? [] : [institution.region];
+}
 
 // ── Props ─────────────────────────────────────────────────────────────────────
 
 interface Props {
+  initialRegions?: StudyRegionId[];
+  onRegionsChange?: (regions: StudyRegionId[]) => void;
   programs: Program[];
   calculatorInstitutions: University[];
   catalogueInstitutions: CatalogueInstitution[];
@@ -36,6 +58,8 @@ interface Props {
 // ── Individual saved-item card ────────────────────────────────────────────────
 
 const REGION_LABEL = {
+  haifa: 'חיפה והסביבה',
+  jerusalem: 'ירושלים והסביבה',
   center: 'מרכז',
   north: 'צפון',
   south: 'דרום',
@@ -283,6 +307,8 @@ function SectionHeader({
 // ── Main component ────────────────────────────────────────────────────────────
 
 export default function BucketList({
+  initialRegions = [],
+  onRegionsChange,
   programs,
   calculatorInstitutions,
   catalogueInstitutions,
@@ -299,7 +325,7 @@ export default function BucketList({
   const [filters, setFilters] = useState<BucketFilters>({
     degreeKeys: [],
     institutionKeys: [],
-    regions: [],
+    regions: initialRegions,
   });
 
   // Build UserScores only when both required fields are present
@@ -334,10 +360,10 @@ export default function BucketList({
         return [];
       }
 
-      const region = institutionByKey.get(
+      const institution = institutionByKey.get(
         getProgramInstitutionKey(entry.program, institutionByKey),
-      )?.region;
-      return region && region !== 'any' ? [region] : [];
+      );
+      return getInstitutionRegions(institution);
     });
     const degreeCounts = buildCountedOptions(entries, (entry) =>
       getProgramDegreeKeys(entry.program),
@@ -354,11 +380,14 @@ export default function BucketList({
       };
     }).sort((left, right) => left.label.localeCompare(right.label, 'he'));
 
-    const regionOptions = Array.from(regionCounts, ([id, count]) => ({
-      id,
-      count,
-      label: REGION_LABEL[id as keyof typeof REGION_LABEL] ?? id,
-    })).sort((left, right) => left.label.localeCompare(right.label, 'he'));
+    const regionOptions = Array.from(
+      new Set([...regionCounts.keys(), ...initialRegions]),
+      (id) => ({
+        id,
+        count: regionCounts.get(id) ?? 0,
+        label: REGION_LABEL[id as keyof typeof REGION_LABEL] ?? id,
+      }),
+    ).sort((left, right) => left.label.localeCompare(right.label, 'he'));
 
     const degreeOptions = Array.from(degreeCounts, ([id, count]) => ({
       id,
@@ -367,20 +396,20 @@ export default function BucketList({
     })).sort((left, right) => left.label.localeCompare(right.label, 'he'));
 
     return { degreeOptions, institutionOptions, regionOptions };
-  }, [entries, institutionByKey]);
+  }, [entries, institutionByKey, initialRegions]);
 
   const visibleEntries = useMemo(
     () =>
       entries.filter((entry) => {
         const institutionKey = getProgramInstitutionKey(entry.program, institutionByKey);
-        const region = institutionByKey.get(institutionKey)?.region;
+        const regions = getInstitutionRegions(institutionByKey.get(institutionKey));
         const degreeKeys = getProgramDegreeKeys(entry.program);
 
         const institutionMatch =
           filters.institutionKeys.length === 0 || filters.institutionKeys.includes(institutionKey);
         const regionMatch =
           filters.regions.length === 0 ||
-          (region !== undefined && filters.regions.includes(region as keyof typeof REGION_LABEL));
+          regions.some((region) => filters.regions.includes(region));
         const degreeMatch =
           filters.degreeKeys.length === 0 ||
           filters.degreeKeys.some((degreeKey) => degreeKeys.includes(degreeKey));
@@ -515,7 +544,10 @@ export default function BucketList({
             {activeFilterCount > 0 ? (
               <button
                 type="button"
-                onClick={() => setFilters({ degreeKeys: [], institutionKeys: [], regions: [] })}
+                onClick={() => {
+                  setFilters({ degreeKeys: [], institutionKeys: [], regions: [] });
+                  onRegionsChange?.([]);
+                }}
                 className="rounded-2xl border border-[#d9e3f3] bg-white/80 px-3 py-1 text-xs font-bold text-[#647091] transition hover:border-[#8fd8ff] hover:bg-white"
               >
                 נקה סינון
@@ -542,12 +574,11 @@ export default function BucketList({
             title="לפי אזור גיאוגרפי"
             options={filterOptions.regionOptions}
             activeIds={filters.regions}
-            onToggle={(id) =>
-              setFilters((current) => ({
-                ...current,
-                regions: toggleValue(current.regions, id as keyof typeof REGION_LABEL),
-              }))
-            }
+            onToggle={(id) => {
+              const regions = toggleValue(filters.regions, id as StudyRegionId);
+              setFilters((current) => ({ ...current, regions }));
+              onRegionsChange?.(regions);
+            }}
           />
           <FilterGroup
             kind="degree"
