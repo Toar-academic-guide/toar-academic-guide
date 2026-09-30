@@ -24,6 +24,37 @@ export function deriveAdmissionAlertUnsubscribeToken(deliveryId: string, secret:
     .digest('base64url');
 }
 
+/** Read-only token check; opening an email link must never change consent. */
+export async function getAdmissionAlertUnsubscribeStatus(
+  token: string,
+  db = getDb(),
+  now = new Date(),
+) {
+  if (!/^[A-Za-z0-9_-]{43}$/.test(token)) return { status: 'invalid' as const };
+  const [target] = await db
+    .select({
+      cycle: admissionAlertSubscriptions.cycle,
+      usedAt: admissionAlertOutbox.unsubscribeUsedAt,
+      optedIn: admissionAlertEmailPreferences.optedIn,
+    })
+    .from(admissionAlertOutbox)
+    .innerJoin(
+      admissionAlertSubscriptions,
+      eq(admissionAlertSubscriptions.id, admissionAlertOutbox.subscriptionId),
+    )
+    .leftJoin(
+      admissionAlertEmailPreferences,
+      eq(admissionAlertEmailPreferences.userId, admissionAlertSubscriptions.userId),
+    )
+    .where(eq(admissionAlertOutbox.unsubscribeTokenHash, hashAdmissionAlertToken(token)));
+  if (!target || target.cycle !== admissionCycleFor(now) || (target.usedAt && target.optedIn))
+    return { status: 'invalid' as const };
+  return {
+    status:
+      target.optedIn === false || target.usedAt ? ('unsubscribed' as const) : ('ready' as const),
+  };
+}
+
 export async function unsubscribeAdmissionAlerts(token: string, db = getDb(), now = new Date()) {
   if (!/^[A-Za-z0-9_-]{43}$/.test(token)) return { status: 'invalid' as const };
   const tokenHash = hashAdmissionAlertToken(token);

@@ -4,7 +4,11 @@ import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from '@/db/schema';
 vi.mock('server-only', () => ({}));
-import { unsubscribeAdmissionAlerts, hashAdmissionAlertToken } from './unsubscribeService';
+import {
+  unsubscribeAdmissionAlerts,
+  hashAdmissionAlertToken,
+  getAdmissionAlertUnsubscribeStatus,
+} from './unsubscribeService';
 import { recordAdmissionAlertWebhook, type VerifiedAlertEvent } from './webhookService';
 import { createDrizzleAdmissionAlertDeliveryRepository } from './deliveryWorker';
 
@@ -65,11 +69,18 @@ describe.skipIf(!enabled)('webhook and unsubscribe PostgreSQL transactions', () 
 
   it('suppresses claimed-before-send work and disables the category idempotently', async () => {
     const target = await seed();
+    expect(await getAdmissionAlertUnsubscribeStatus(target.token, db, now)).toEqual({
+      status: 'ready',
+    });
+    expect(await client`select * from admission_alert_email_preferences`).toHaveLength(0);
     const repository = createDrizzleAdmissionAlertDeliveryRepository(db);
     const delivery = (await repository.claimNextDelivery({ now, currentCycle: '2026' }))!;
     expect(await unsubscribeAdmissionAlerts(target.token, db, now)).toEqual({
       status: 'unsubscribed',
       mayStillArrive: false,
+    });
+    expect(await getAdmissionAlertUnsubscribeStatus(target.token, db, now)).toEqual({
+      status: 'unsubscribed',
     });
     expect(await repository.beginSubmission({ delivery, now, currentCycle: '2026' })).toBe(
       'lease_lost',
@@ -89,6 +100,9 @@ describe.skipIf(!enabled)('webhook and unsubscribe PostgreSQL transactions', () 
   });
   it('rejects invalid and expired tokens without changing preferences', async () => {
     const target = await seed('pending', '2025');
+    expect(await getAdmissionAlertUnsubscribeStatus(target.token, db, now)).toEqual({
+      status: 'invalid',
+    });
     expect(await unsubscribeAdmissionAlerts(target.token, db, now)).toEqual({ status: 'invalid' });
     expect(await unsubscribeAdmissionAlerts('bogus', db, now)).toEqual({ status: 'invalid' });
     expect(await client`select * from admission_alert_email_preferences`).toHaveLength(0);
@@ -97,6 +111,9 @@ describe.skipIf(!enabled)('webhook and unsubscribe PostgreSQL transactions', () 
     const target = await seed();
     await unsubscribeAdmissionAlerts(target.token, db, now);
     await client`update admission_alert_email_preferences set opted_in=true`;
+    expect(await getAdmissionAlertUnsubscribeStatus(target.token, db, now)).toEqual({
+      status: 'invalid',
+    });
     expect(await unsubscribeAdmissionAlerts(target.token, db, now)).toEqual({ status: 'invalid' });
     expect((await client`select opted_in from admission_alert_email_preferences`)[0].opted_in).toBe(
       true,
