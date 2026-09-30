@@ -1,0 +1,30 @@
+[
+  {
+    "fixtureId": "psychology__bgu:eligible:2026-2027",
+    "sourceFingerprint": "sha256:da39b2d00ab55c73ba604e87c1257dd3000605eda6830132ad3fafa6db1440d2",
+    "actualScore": 663,
+    "actualVerdict": "eligible_to_apply",
+    "checkedAt": "2026-09-27T17:40:18.774Z"
+  },
+  {
+    "fixtureId": "psychology__bgu:below:2026-2027",
+    "sourceFingerprint": "sha256:da39b2d00ab55c73ba604e87c1257dd3000605eda6830132ad3fafa6db1440d2",
+    "actualScore": 662,
+    "actualVerdict": "below",
+    "checkedAt": "2026-09-27T17:40:19.299Z"
+  },
+  {
+    "fixtureId": "bgu_psychology__bgu:eligible:2026-2027",
+    "sourceFingerprint": "sha256:da39b2d00ab55c73ba604e87c1257dd3000605eda6830132ad3fafa6db1440d2",
+    "actualScore": 663,
+    "actualVerdict": "eligible_to_apply",
+    "checkedAt": "2026-09-27T17:40:19.596Z"
+  },
+  {
+    "fixtureId": "bgu_psychology__bgu:below:2026-2027",
+    "sourceFingerprint": "sha256:da39b2d00ab55c73ba604e87c1257dd3000605eda6830132ad3fafa6db1440d2",
+    "actualScore": 662,
+    "actualVerdict": "below",
+    "checkedAt": "2026-09-27T17:40:19.906Z"
+  }
+]

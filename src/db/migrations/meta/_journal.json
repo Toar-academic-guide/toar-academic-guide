@@ -113,6 +113,146 @@
       "when": 1784975158112,
       "tag": "0015_support_fractional_program_durations",
       "breakpoints": true
+    },
+    {
+      "idx": 16,
+      "version": "7",
+      "when": 1784985515893,
+      "tag": "0016_admission_review_runs",
+      "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1784994218176,
+      "tag": "0017_grant_ops_readonly_bagrut_profile_versions",
+      "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1784994627234,
+      "tag": "0018_secure_admission_threshold_scope_function",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1785004543000,
+      "tag": "0019_repair_colman_tourism_admission_type",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1787247313024,
+      "tag": "0020_flowery_norman_osborn",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1787254053674,
+      "tag": "0021_simple_sugar_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1787591040000,
+      "tag": "0022_secure_operational_proof_access",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1790284781000,
+      "tag": "0023_grant_admissions_automation_ingestion_sources",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1790286117000,
+      "tag": "0024_revoke_ops_readonly_ingestion_sources",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1790289351000,
+      "tag": "0025_grant_admissions_automation_review_handoff",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1790328423876,
+      "tag": "0026_admission_review_slack_acceptance_unknown",
+      "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "7",
+      "when": 1790411881000,
+      "tag": "0027_revoke_ops_readonly_review_handoff",
+      "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1790493392762,
+      "tag": "0028_profile_admissions_inputs",
+      "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "7",
+      "when": 1790609146634,
+      "tag": "0029_correct_nutrition_institutions",
+      "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1790614439253,
+      "tag": "0030_retire_tau_infosystems_duplicate",
+      "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1790701816780,
+      "tag": "0031_alert_transition_recovery",
+      "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1790704798766,
+      "tag": "0032_alert_delivery_recovery",
+      "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1790709695244,
+      "tag": "0033_alert_webhooks_unsubscribe",
+      "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1790711457054,
+      "tag": "0034_alert_lifecycle_completion",
+      "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1790755937948,
+      "tag": "0035_ops_dashboard_column_reads",
+      "breakpoints": true
     }
   ]
 }

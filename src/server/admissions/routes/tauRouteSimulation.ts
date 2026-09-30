@@ -2,6 +2,7 @@ import 'server-only';
 
 import type { BagrutSubjectRecord } from '@/types';
 import { evaluateTauEngineeringExactSciencesBonus } from '@/server/admissions/bagrutPolicies';
+import { evaluateTauComputerScienceGates } from '@/server/admissions/tauComputerSciencePolicy';
 
 import { applyRouteAction, type RouteAction, type RouteProfile } from './actions';
 import { combineRouteEstimates } from './estimateSeed';
@@ -10,18 +11,21 @@ import {
   type RouteSearchResult,
   type VerifiedAdmissionRoute,
 } from './optimizer';
+import { recomputePostActionProfile } from './postActionProfile';
 import {
   verifyTauComputerScienceFinalists,
   type TauFinalist,
   type TauFinalistVerification,
 } from './tauFinalistVerifier';
 
-const MAX_TAU_ROUTE_FINALISTS = 8;
+const MAX_TAU_ROUTE_FINALISTS = 7;
 
 export interface TauRouteSimulationProfile {
   psychometric: number;
-  bagrutAverage: number;
+  tauBagrutAverage: number;
   subjectRecord: BagrutSubjectRecord;
+  tauApplicationRequirementsConfirmed?: boolean;
+  tauMathPlacementScore?: number;
 }
 
 export type TauRouteSimulationResult = Omit<RouteSearchResult, 'status'> & {
@@ -35,20 +39,66 @@ export async function runTauComputerScienceRouteSimulation(args: {
 }): Promise<TauRouteSimulationResult> {
   const profile: RouteProfile = {
     psychometric: args.profile.psychometric,
-    subjects: args.profile.subjectRecord.subjects,
+    subjectRecord: args.profile.subjectRecord,
   };
   const candidates = generateTauRouteCandidates(profile);
   const verifyFinalists =
     args.verifyFinalists ??
     ((finalists: TauFinalist[]) => verifyTauComputerScienceFinalists({ finalists }));
-  const finalists = candidates.map(({ id, afterProfile }) => ({
-    id,
-    psychometric: afterProfile.psychometric,
-    bagrutAverage: args.profile.bagrutAverage,
-    hasQualifiedMathAndPhysics: evaluateTauEngineeringExactSciencesBonus({
-      subjects: afterProfile.subjects,
-    }).qualifies,
-  }));
+  const finalists = candidates.flatMap<TauFinalist>(({ id, actions, afterProfile }) => {
+    const recomputed = recomputePostActionProfile({
+      pairId: 'tau_cs__tau',
+      psychometric: args.profile.psychometric,
+      subjectRecord: args.profile.subjectRecord,
+      actions,
+    });
+    if (recomputed.status === 'ready') {
+      const { tauBagrutAverage, hasQualifiedMathAndPhysics } =
+        recomputed.snapshot.institutionInputs;
+      if (tauBagrutAverage !== undefined && hasQualifiedMathAndPhysics !== undefined) {
+        const gates = evaluateTauComputerScienceGates({
+          psychometric: recomputed.snapshot.psychometric,
+          extraInputs: {
+            bagrutSubjectRecord: recomputed.snapshot.subjectRecord,
+            tauApplicationRequirementsConfirmed: args.profile.tauApplicationRequirementsConfirmed,
+            tauMathPlacementScore: args.profile.tauMathPlacementScore,
+          },
+        });
+        return [
+          {
+            id,
+            psychometric: recomputed.snapshot.psychometric,
+            bagrutAverage: tauBagrutAverage,
+            hasQualifiedMathAndPhysics,
+            requiredInputs: gates.requiredInputs,
+            unmetRequirements: gates.unmetRequirements,
+          },
+        ];
+      }
+    }
+
+    if (actions.some((action) => action.kind !== 'psychometric')) return [];
+    const gates = evaluateTauComputerScienceGates({
+      psychometric: afterProfile.psychometric,
+      extraInputs: {
+        bagrutSubjectRecord: afterProfile.subjectRecord,
+        tauApplicationRequirementsConfirmed: args.profile.tauApplicationRequirementsConfirmed,
+        tauMathPlacementScore: args.profile.tauMathPlacementScore,
+      },
+    });
+    return [
+      {
+        id,
+        psychometric: afterProfile.psychometric,
+        bagrutAverage: args.profile.tauBagrutAverage,
+        hasQualifiedMathAndPhysics: evaluateTauEngineeringExactSciencesBonus(
+          afterProfile.subjectRecord,
+        ).qualifies,
+        requiredInputs: gates.requiredInputs,
+        unmetRequirements: gates.unmetRequirements,
+      },
+    ];
+  });
   const verifications = await verifyFinalists(finalists);
   const verificationById = new Map(
     verifications.map((verification) => [verification.id, verification]),
@@ -63,7 +113,8 @@ export async function runTauComputerScienceRouteSimulation(args: {
       verification.status !== 'verified' ||
       !verification.eligible ||
       verification.score === undefined ||
-      verification.cutoff === undefined
+      verification.cutoff === undefined ||
+      !verification.ruleFingerprint
     ) {
       return [];
     }
@@ -78,6 +129,7 @@ export async function runTauComputerScienceRouteSimulation(args: {
           score: verification.score,
           cutoff: verification.cutoff,
           sourceUrl: verification.sourceUrl,
+          ruleFingerprint: verification.ruleFingerprint,
         },
       },
     ];
@@ -125,59 +177,5 @@ function generateTauRouteCandidates(profile: RouteProfile): Array<{
     }
   }
 
-  const bonusActions = actionsToQualifyForTauBonus(profile);
-  if (bonusActions.length > 0 && bonusActions.length <= 2) {
-    const afterProfile = bonusActions.reduce<RouteProfile | null>(
-      (current, action) => (current ? applyRouteAction(current, action) : null),
-      profile,
-    );
-    if (afterProfile) {
-      candidates.push({
-        id: bonusActions.map((action) => action.id).join('+'),
-        actions: bonusActions,
-        afterProfile,
-      });
-    }
-  }
-
   return candidates.slice(0, MAX_TAU_ROUTE_FINALISTS);
-}
-
-function actionsToQualifyForTauBonus(profile: RouteProfile): RouteAction[] {
-  const actions: RouteAction[] = [];
-
-  for (const subjectId of ['mathematics', 'physics']) {
-    const subject = profile.subjects.find((entry) => entry.subjectId === subjectId);
-    if (!subject) {
-      actions.push({
-        id: `add_${subjectId}_5_55`,
-        kind: 'add_subject',
-        subjectId,
-        units: 5,
-        grade: 55,
-      });
-      continue;
-    }
-
-    if (subject.units < 5) {
-      actions.push({
-        id: `expand_${subjectId}_${subject.units}_5`,
-        kind: 'expand_units',
-        subjectId,
-        fromUnits: subject.units,
-        toUnits: 5,
-      });
-    }
-    if (subject.grade < 55) {
-      actions.push({
-        id: `grade_${subjectId}_${subject.grade}_55`,
-        kind: 'improve_grade',
-        subjectId,
-        fromGrade: subject.grade,
-        toGrade: 55,
-      });
-    }
-  }
-
-  return actions;
 }

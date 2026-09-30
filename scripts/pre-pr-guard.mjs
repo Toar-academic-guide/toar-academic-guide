@@ -4,6 +4,8 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { findProductionSensitivePaths } from './production-sensitive-paths.mjs';
+
 const rootDir = dirname(fileURLToPath(new URL('../package.json', import.meta.url)));
 
 const highRiskPathPatterns = [
@@ -38,22 +40,73 @@ const operationalReadGrants = {
     'admissions_source_candidates',
     'source_freshness_checks',
     'source_freshness_states',
+    'bagrut_profile_versions',
+    'admission_publication_attempts',
+    'admission_release_items',
+    'admission_releases',
+    'admission_target_transitions',
+    'admission_alert_baseline_history',
+    'admission_alert_email_preferences',
+    'admission_alert_outbox',
+    'admission_alert_subscriptions',
+    'admission_alert_transition_work',
+    'admission_alert_webhook_events',
+    'admission_review_runs',
   ],
   ops_readonly: [
+    'ingestion_sources',
+    'ingestion_jobs',
+    'review_items',
     'admission_alternative_paths',
     'admission_facts',
     'admissions_source_candidates',
     'source_freshness_checks',
     'source_freshness_states',
+    'bagrut_profile_versions',
+    'admission_publication_attempts',
+    'admission_release_items',
+    'admission_releases',
+    'admission_target_transitions',
+    'admission_alert_baseline_history',
+    'admission_alert_email_preferences',
+    'admission_alert_outbox',
+    'admission_alert_subscriptions',
+    'admission_alert_transition_work',
+    'admission_alert_webhook_events',
+    'admission_review_runs',
   ],
 };
 
 const targetedTests = [
   'src/data/admissions/mondayEvidence.test.ts',
+  'src/data/admissions/formulaBackedPairInventory.test.ts',
+  'src/data/admissions/formulaBackedVerificationLedger.test.ts',
   'src/server/admissions/catalogueEvidenceCoverage.test.ts',
   'src/server/admissions/calculatorCoverage.test.ts',
   'src/server/admissions/capabilityMatrix.test.ts',
   'src/server/admissions/evaluator.test.ts',
+  'src/server/admissions/tauPhysiotherapyEvaluation.test.ts',
+  'src/server/admissions/colmanBagrutEvaluation.test.ts',
+  'src/server/admissions/bguEngineeringPolicy.test.ts',
+  'src/server/admissions/tauComputerSciencePolicy.test.ts',
+  'src/server/admissions/bguQuantitativeRoutes.test.ts',
+  'src/server/admissions/tauManagementPolicy.test.ts',
+  'src/server/ingestion/adapters/tauAdmissions.test.ts',
+  'src/server/ingestion/adapters/bguAdmissions.test.ts',
+  'src/server/admissions/bguPsychologyRoutes.test.ts',
+  'src/server/admissions/hujiMedicinePolicy.test.ts',
+  'src/server/ingestion/adapters/hujiAdmissions.test.ts',
+  'src/components/AcademicProfileForm.test.tsx',
+  'src/server/admissions/bguHealthRoutes.test.ts',
+  'src/server/admissions/bguSocialScienceRoutes.test.ts',
+  'src/server/ingestion/adapters/technionAdmissions.test.ts',
+  'src/server/ingestion/adapters/haifaAdmissions.test.ts',
+  'src/server/admissions/haifaProgrammePolicy.test.ts',
+  'src/server/admissions/verification/programVerification.test.ts',
+  'src/server/ingestion/admissionsLiveProofRunner.test.ts',
+  'src/server/admissions/admissionsReleasePublisher.test.ts',
+  'src/server/admissions/productionSchemaPreflight.test.ts',
+  'src/server/admissions/productionSensitivePaths.test.ts',
   'src/server/catalogue/queries.test.ts',
   'src/server/data-health/queries.test.ts',
   'src/db/seeds/catalogueSeed.test.ts',
@@ -63,6 +116,28 @@ const targetedTests = [
   'src/app/internal/data-health/DataHealthDashboard.test.tsx',
   'src/app/api/catalog/programs/route.test.ts',
   'src/app/api/catalog/institutions/route.test.ts',
+  'src/app/api/admissions/evaluate/route.test.ts',
+  'src/app/api/profile/route.test.ts',
+  'src/server/user/profile.test.ts',
+  'src/server/user/profileSchema.test.ts',
+  'src/server/user/migration.test.ts',
+  'src/server/admission-alerts/profileRefresh.test.ts',
+  'src/server/admission-alerts/transitionProcessor.test.ts',
+  'src/server/admission-alerts/deliveryWorker.test.ts',
+  'src/server/admission-alerts/deliveryPreparation.test.ts',
+  'src/components/AdmissionAlertManager.test.tsx',
+  'src/app/api/admission-alerts/route.test.ts',
+  'src/app/api/admission-alerts/[subscriptionId]/route.test.ts',
+  'src/app/api/_lib/auth.test.ts',
+  'src/server/admission-alerts/resendProvider.test.ts',
+  'src/server/admission-alerts/webhookService.test.ts',
+  'src/app/api/admission-alerts/webhooks/resend/route.test.ts',
+  'src/app/api/admission-alerts/unsubscribe/route.test.ts',
+  'src/server/admission-alerts/deliveryRuntime.test.ts',
+  'src/server/admission-alerts/transitionWork.test.ts',
+  'src/server/admission-alerts/subscriptionService.test.ts',
+  'src/server/admission-alerts/baselineEvaluator.test.ts',
+  'src/server/admission-alerts/processingRuntime.test.ts',
 ];
 
 const admissionsGeneratedFiles = [
@@ -140,7 +215,7 @@ function readMigrationStatements() {
     .flatMap((fileName) => {
       const sql = readFileSync(join(migrationsDir, fileName), 'utf8');
       return sql
-        .split(/;|-->\s*statement-breakpoint/)
+        .split(/-->\s*statement-breakpoint/)
         .map((statement) => statement.trim())
         .filter(Boolean);
     });
@@ -148,7 +223,7 @@ function readMigrationStatements() {
 
 function assertOperationalGrants() {
   const grantStatements = readMigrationStatements().filter((statement) =>
-    /\bGRANT\s+SELECT\s+ON\s+TABLE\b/i.test(statement),
+    /\bGRANT\s+[\s\S]*?\bSELECT\b[\s\S]*?\bON\s+TABLE\b/i.test(statement),
   );
   const missing = [];
 
@@ -196,7 +271,12 @@ function assertAdmissionsEvidenceFresh() {
 }
 
 const changedFiles = getChangedFiles();
-const highRiskChanges = changedFiles.filter(isHighRiskPath);
+const highRiskChanges = [
+  ...new Set([
+    ...changedFiles.filter(isHighRiskPath),
+    ...findProductionSensitivePaths(changedFiles),
+  ]),
+].sort();
 
 console.log('Pre-PR guard: checking migration grants.');
 assertOperationalGrants();

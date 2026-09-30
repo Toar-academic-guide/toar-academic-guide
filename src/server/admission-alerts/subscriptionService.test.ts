@@ -20,6 +20,21 @@ const completeProfile = {
 };
 
 describe('admission alert subscriptions', () => {
+  it('supports the BGU computer-science target with an exact below baseline', async () => {
+    const repository = new MemoryRepository();
+    expect(
+      (
+        await createAdmissionAlertSubscription(
+          { institutionId: 'bgu', programId: 'bgu_cs' },
+          {
+            userId: 'user-1',
+            repository,
+            evaluate: async () => ({ decision: 'below', ruleVersion: 'v1' }),
+          },
+        )
+      ).status,
+    ).toBe('created');
+  });
   it('creates a baseline only for a supported, complete, below-threshold target', async () => {
     const repository = new MemoryRepository();
     const result = await createAdmissionAlertSubscription(

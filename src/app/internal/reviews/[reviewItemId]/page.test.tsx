@@ -24,19 +24,9 @@ vi.mock('next/navigation', () => ({
 }));
 
 vi.mock('./ReviewActionPanel', () => ({
-  default: ({
-    approveBlockedReason,
-    canApprove,
-    canReject,
-    reviewItemId,
-  }: {
-    approveBlockedReason: string | null;
-    canApprove: boolean;
-    canReject: boolean;
-    reviewItemId: string;
-  }) => (
+  default: ({ canReject, reviewItemId }: { canReject: boolean; reviewItemId: string }) => (
     <div data-testid="review-actions">
-      {reviewItemId}:{String(canApprove)}:{String(canReject)}:{approveBlockedReason ?? 'ready'}
+      {reviewItemId}:{String(canReject)}
     </div>
   ),
 }));
@@ -80,7 +70,7 @@ describe('/internal/reviews/[reviewItemId] page', () => {
     expect(screen.getByText('https://go.tau.ac.il/graphql')).toBeTruthy();
     expect(screen.getAllByText('sekhem').length).toBeGreaterThan(0);
     expect(screen.getByText('715')).toBeTruthy();
-    expect(screen.getByTestId('review-actions').textContent).toContain('review-source-1:true:true');
+    expect(screen.getByTestId('review-actions').textContent).toContain('review-source-1:true');
     expect(screen.queryByText(/rawHtml/i)).toBeNull();
     expect(screen.queryByText(/payload json/i)).toBeNull();
   });
@@ -114,9 +104,7 @@ function reviewItemDetail() {
     createdAt: '2026-06-24T11:00:00.000Z',
     reviewedAt: null,
     actionEligibility: {
-      canApprove: true,
       canReject: true,
-      approveBlockedReason: null,
     },
     evidence: {
       sourceId: 'tau-live',

@@ -1,0 +1,636 @@
+{
+  "checkedAt": "2026-09-27T15:10:13.424989+00:00",
+  "pairIds": ["datascience__bgu", "bgu_datascience__bgu"],
+  "officialProgramme": {
+    "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=232&p_pat1=1&p_spe1=13&p_degree_level=1",
+    "status": 200,
+    "checkedAt": "2026-09-27T14:53:42.771Z",
+    "payload": {
+      "items": [
+        {
+          "department_dsc": "מדעי המחשב",
+          "department_url": null,
+          "path_dsc": "מדעי המחשב חד מחלקתי - מדעי הנתונים",
+          "psycho_sekem": 720,
+          "psycho_and_or": " ובנוסף  ",
+          "psycho_value": 600,
+          "psycho_info": "1=מתמטיקה=90/4 או 80/5$3=חשיבה כמותית=125$4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ה'",
+          "bagrut_average": null,
+          "bagrut_info": "רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ה'",
+          "bagrut_additional": null,
+          "comments": "12.4.26 החל דיון בחריגים\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<br>  \n<br><b>מדיניות דיון בחריגים:<br></b> \n<p>מועמדים העומדים בדרישות האנגלית והעברית ואשר בעלי סכם כמותי ו/או פסיכומטרי הנמוך עד 5 נק' מהנדרש, ו/או שחסר להם עד 5 נק' פחות באחד מהרכיבים הנדרשים,  ייבחנו בועדת הקבלה של המחלקה על בסיס מכלול נתוניהם. דיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה. אין צורך לשלוח מכתב.\n<br><b>מועמדים בעלי רקע אקדמי:<br></b>\nעוברים לדיון רק לאחר שיציגו גיליון ציונים עדכני.\n<br><b>עתודאים<br></b>\n מועד אחרון להרשמה ולשינוי עדיפויות: 31.07.2026",
+          "reg_status": "פתוחה ",
+          "sekem_label": "סכם כמותי ",
+          "department": 232,
+          "path": 1,
+          "specialization": 13,
+          "show_simulator": 0,
+          "path_description": "חד מחלקתי",
+          "spec_description": "מדעי הנתונים"
+        }
+      ],
+      "hasMore": false,
+      "limit": 0,
+      "offset": 0,
+      "count": 1,
+      "links": [
+        {
+          "rel": "self",
+          "href": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=232&p_pat1=1&p_spe1=13&p_degree_level=1"
+        },
+        {
+          "rel": "describedby",
+          "href": "https://bgu4u22.bgu.ac.il/apex/10g/metadata-catalog/candidate_site/GetRdpData/"
+        }
+      ]
+    }
+  },
+  "independentOfficialScoreCaptures": [
+    {
+      "pairId": "datascience__bgu",
+      "label": "accepted",
+      "capturedAt": "2026-09-27T14:56:36.816Z",
+      "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+      "status": 200,
+      "input": {
+        "label": "accepted",
+        "psychometric": 800,
+        "average": 120,
+        "q": 150,
+        "v": 150,
+        "e": 150
+      },
+      "score": 879,
+      "derivedVerdict": "accepted"
+    },
+    {
+      "pairId": "datascience__bgu",
+      "label": "below",
+      "capturedAt": "2026-09-27T14:56:36.895Z",
+      "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+      "status": 200,
+      "input": {
+        "label": "below",
+        "psychometric": 600,
+        "average": 100,
+        "q": 125,
+        "v": 110,
+        "e": 100
+      },
+      "score": 636,
+      "derivedVerdict": "below"
+    },
+    {
+      "pairId": "bgu_datascience__bgu",
+      "label": "accepted",
+      "capturedAt": "2026-09-27T14:56:36.972Z",
+      "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+      "status": 200,
+      "input": {
+        "label": "accepted",
+        "psychometric": 800,
+        "average": 120,
+        "q": 150,
+        "v": 150,
+        "e": 150
+      },
+      "score": 879,
+      "derivedVerdict": "accepted"
+    },
+    {
+      "pairId": "bgu_datascience__bgu",
+      "label": "below",
+      "capturedAt": "2026-09-27T14:56:37.116Z",
+      "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+      "status": 200,
+      "input": {
+        "label": "below",
+        "psychometric": 600,
+        "average": 100,
+        "q": 125,
+        "v": 110,
+        "e": 100
+      },
+      "score": 636,
+      "derivedVerdict": "below"
+    }
+  ],
+  "controlledLiveComparisonIncludingComputerScienceRegression": {
+    "checkedAt": "2026-09-27T15:00:23.499Z",
+    "reports": [
+      {
+        "pairId": "datascience__bgu",
+        "checkedAt": "2026-09-27T15:00:22.449Z",
+        "passed": true,
+        "comparisons": [
+          {
+            "fixtureId": "datascience__bgu:accepted:2026-2027",
+            "expectedScore": 879,
+            "actualScore": 879,
+            "expectedVerdict": "accepted",
+            "actualVerdict": "accepted",
+            "expectedSourceFingerprint": "sha256:e5a3144a572d61ac57a705983572c6542937faf18ce4236a5823cd83b5b446bb",
+            "actualSourceFingerprint": "sha256:e5a3144a572d61ac57a705983572c6542937faf18ce4236a5823cd83b5b446bb",
+            "scoreMatches": true,
+            "verdictMatches": true,
+            "sourceFingerprintMatches": true
+          },
+          {
+            "fixtureId": "datascience__bgu:below:2026-2027",
+            "expectedScore": 636,
+            "actualScore": 636,
+            "expectedVerdict": "below",
+            "actualVerdict": "below",
+            "expectedSourceFingerprint": "sha256:e5a3144a572d61ac57a705983572c6542937faf18ce4236a5823cd83b5b446bb",
+            "actualSourceFingerprint": "sha256:e5a3144a572d61ac57a705983572c6542937faf18ce4236a5823cd83b5b446bb",
+            "scoreMatches": true,
+            "verdictMatches": true,
+            "sourceFingerprintMatches": true
+          }
+        ]
+      },
+      {
+        "pairId": "bgu_datascience__bgu",
+        "checkedAt": "2026-09-27T15:00:22.803Z",
+        "passed": true,
+        "comparisons": [
+          {
+            "fixtureId": "bgu_datascience__bgu:accepted:2026-2027",
+            "expectedScore": 879,
+            "actualScore": 879,
+            "expectedVerdict": "accepted",
+            "actualVerdict": "accepted",
+            "expectedSourceFingerprint": "sha256:e5a3144a572d61ac57a705983572c6542937faf18ce4236a5823cd83b5b446bb",
+            "actualSourceFingerprint": "sha256:e5a3144a572d61ac57a705983572c6542937faf18ce4236a5823cd83b5b446bb",
+            "scoreMatches": true,
+            "verdictMatches": true,
+            "sourceFingerprintMatches": true
+          },
+          {
+            "fixtureId": "bgu_datascience__bgu:below:2026-2027",
+            "expectedScore": 636,
+            "actualScore": 636,
+            "expectedVerdict": "below",
+            "actualVerdict": "below",
+            "expectedSourceFingerprint": "sha256:e5a3144a572d61ac57a705983572c6542937faf18ce4236a5823cd83b5b446bb",
+            "actualSourceFingerprint": "sha256:e5a3144a572d61ac57a705983572c6542937faf18ce4236a5823cd83b5b446bb",
+            "scoreMatches": true,
+            "verdictMatches": true,
+            "sourceFingerprintMatches": true
+          }
+        ]
+      },
+      {
+        "pairId": "cs__bgu",
+        "checkedAt": "2026-09-27T15:00:23.160Z",
+        "passed": true,
+        "comparisons": [
+          {
+            "fixtureId": "cs__bgu:accepted:2026-2027",
+            "expectedScore": 879,
+            "actualScore": 879,
+            "expectedVerdict": "accepted",
+            "actualVerdict": "accepted",
+            "expectedSourceFingerprint": "sha256:7a0c67843cb2ef3ba149e3a7f39bd5597055cbbde1ceb39ee293b8eab015c169",
+            "actualSourceFingerprint": "sha256:7a0c67843cb2ef3ba149e3a7f39bd5597055cbbde1ceb39ee293b8eab015c169",
+            "scoreMatches": true,
+            "verdictMatches": true,
+            "sourceFingerprintMatches": true
+          },
+          {
+            "fixtureId": "cs__bgu:below:2026-2027",
+            "expectedScore": 636,
+            "actualScore": 636,
+            "expectedVerdict": "below",
+            "actualVerdict": "below",
+            "expectedSourceFingerprint": "sha256:7a0c67843cb2ef3ba149e3a7f39bd5597055cbbde1ceb39ee293b8eab015c169",
+            "actualSourceFingerprint": "sha256:7a0c67843cb2ef3ba149e3a7f39bd5597055cbbde1ceb39ee293b8eab015c169",
+            "scoreMatches": true,
+            "verdictMatches": true,
+            "sourceFingerprintMatches": true
+          }
+        ]
+      },
+      {
+        "pairId": "bgu_cs__bgu",
+        "checkedAt": "2026-09-27T15:00:23.498Z",
+        "passed": true,
+        "comparisons": [
+          {
+            "fixtureId": "bgu_cs__bgu:accepted:2026-2027",
+            "expectedScore": 879,
+            "actualScore": 879,
+            "expectedVerdict": "accepted",
+            "actualVerdict": "accepted",
+            "expectedSourceFingerprint": "sha256:7a0c67843cb2ef3ba149e3a7f39bd5597055cbbde1ceb39ee293b8eab015c169",
+            "actualSourceFingerprint": "sha256:7a0c67843cb2ef3ba149e3a7f39bd5597055cbbde1ceb39ee293b8eab015c169",
+            "scoreMatches": true,
+            "verdictMatches": true,
+            "sourceFingerprintMatches": true
+          },
+          {
+            "fixtureId": "bgu_cs__bgu:below:2026-2027",
+            "expectedScore": 636,
+            "actualScore": 636,
+            "expectedVerdict": "below",
+            "actualVerdict": "below",
+            "expectedSourceFingerprint": "sha256:7a0c67843cb2ef3ba149e3a7f39bd5597055cbbde1ceb39ee293b8eab015c169",
+            "actualSourceFingerprint": "sha256:7a0c67843cb2ef3ba149e3a7f39bd5597055cbbde1ceb39ee293b8eab015c169",
+            "scoreMatches": true,
+            "verdictMatches": true,
+            "sourceFingerprintMatches": true
+          }
+        ]
+      }
+    ]
+  },
+  "productionBugBeforeFix": {
+    "checkedAt": "2026-09-27T14:53:48.475Z",
+    "results": [
+      {
+        "name": "datascience-missing-inputs",
+        "input": {
+          "degreeId": "bgu_datascience",
+          "psychometric": 730,
+          "bagrut": 120
+        },
+        "status": 200,
+        "payload": {
+          "data": {
+            "generatedAt": "2026-09-27T14:53:45.272Z",
+            "evaluatorVersion": "admissions-evaluator-v2",
+            "inputDigest": "sha256:ecbc86948ea827ff15881aa4649b30c55043d96b96d2e8de1979dcc2833c79c8",
+            "input": {
+              "degreeId": "bgu_datascience",
+              "psychometric": 730,
+              "bagrut": 120
+            },
+            "program": {
+              "id": "bgu_datascience",
+              "name": "מדעי הנתונים"
+            },
+            "results": [
+              {
+                "institution": {
+                  "id": "bgu",
+                  "name": "אוניברסיטת בן-גוריון בנגב",
+                  "region": "south",
+                  "domain": "bgu.ac.il",
+                  "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/1/12/Ben-Gurion_University_of_the_Negev_logo.svg",
+                  "programUrl": "https://in.bgu.ac.il/Pages/default.aspx",
+                  "calculatorUrl": "https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html",
+                  "universityId": "bgu"
+                },
+                "linkedInstitutionId": "bgu",
+                "capability": "exact",
+                "kind": "exact",
+                "decision": "accepted",
+                "confidence": "high",
+                "sourceLabel": "אימות רשמי",
+                "explanation": "מקור רשמי של אוניברסיטת בן-גוריון סיפק ציון וסף קבלה מעודכנים למסלול זה.",
+                "nextAction": "בדקו את דף ההרשמה הרשמי והשלימו את בדיקת העבר האקדמי, העברית ושאר דרישות המסמכים.",
+                "score": 831,
+                "scoreLabel": "ציון התאמה",
+                "threshold": 720,
+                "snapshot": {
+                  "evaluatorVersion": "admissions-evaluator-v2",
+                  "ruleVersion": "admissions-evaluator-v2:bgu:exact",
+                  "ruleFingerprint": "sha256:a38d47cbaf1c4c9ec256f7cf0701eb1c03be8dc1ee069fba111ddf820acb14f4",
+                  "inputDigest": "sha256:ecbc86948ea827ff15881aa4649b30c55043d96b96d2e8de1979dcc2833c79c8",
+                  "evaluationDigest": "sha256:86f15e0f62246e6fd999e2dbfb6d6c94412fcb7e35d6fced648151a8ecfce1c9"
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "name": "datascience-quantitative-124",
+        "input": {
+          "degreeId": "bgu_datascience",
+          "psychometric": 730,
+          "bagrut": 120,
+          "extraInputs": {
+            "bguBagrutAverage": 120,
+            "psychometricMath": 124,
+            "psychometricVerbal": 140,
+            "psychometricEnglish": 130,
+            "bguLanguageRequirementsConfirmed": true,
+            "mathUnits": 5,
+            "mathGrade": 85
+          }
+        },
+        "status": 200,
+        "payload": {
+          "data": {
+            "generatedAt": "2026-09-27T14:53:47.419Z",
+            "evaluatorVersion": "admissions-evaluator-v2",
+            "inputDigest": "sha256:4ead20b7fc422ed9bd47fba20325c9e0eb454030c153cd9403eb2a463f980843",
+            "input": {
+              "degreeId": "bgu_datascience",
+              "psychometric": 730,
+              "bagrut": 120,
+              "extraInputs": {
+                "psychometricMath": 124,
+                "psychometricVerbal": 140,
+                "psychometricEnglish": 130,
+                "mathUnits": 5,
+                "mathGrade": 85,
+                "bguBagrutAverage": 120,
+                "bguLanguageRequirementsConfirmed": true
+              }
+            },
+            "program": {
+              "id": "bgu_datascience",
+              "name": "מדעי הנתונים"
+            },
+            "results": [
+              {
+                "institution": {
+                  "id": "bgu",
+                  "name": "אוניברסיטת בן-גוריון בנגב",
+                  "region": "south",
+                  "domain": "bgu.ac.il",
+                  "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/1/12/Ben-Gurion_University_of_the_Negev_logo.svg",
+                  "programUrl": "https://in.bgu.ac.il/Pages/default.aspx",
+                  "calculatorUrl": "https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html",
+                  "universityId": "bgu"
+                },
+                "linkedInstitutionId": "bgu",
+                "capability": "exact",
+                "kind": "exact",
+                "decision": "accepted",
+                "confidence": "high",
+                "sourceLabel": "אימות רשמי",
+                "explanation": "מקור רשמי של אוניברסיטת בן-גוריון סיפק ציון וסף קבלה מעודכנים למסלול זה.",
+                "nextAction": "בדקו את דף ההרשמה הרשמי והשלימו את בדיקת העבר האקדמי, העברית ושאר דרישות המסמכים.",
+                "score": 831,
+                "scoreLabel": "ציון התאמה",
+                "threshold": 720,
+                "snapshot": {
+                  "evaluatorVersion": "admissions-evaluator-v2",
+                  "ruleVersion": "admissions-evaluator-v2:bgu:exact",
+                  "ruleFingerprint": "sha256:a38d47cbaf1c4c9ec256f7cf0701eb1c03be8dc1ee069fba111ddf820acb14f4",
+                  "inputDigest": "sha256:4ead20b7fc422ed9bd47fba20325c9e0eb454030c153cd9403eb2a463f980843",
+                  "evaluationDigest": "sha256:416935174ede1022f462eebdc5b5099ac4f7ed7d62882238f306366c44d91ffa"
+                }
+              }
+            ]
+          }
+        }
+      },
+      {
+        "name": "computer-science-quantitative-124-control",
+        "input": {
+          "degreeId": "bgu_cs",
+          "psychometric": 730,
+          "bagrut": 120,
+          "extraInputs": {
+            "bguBagrutAverage": 120,
+            "psychometricMath": 124,
+            "psychometricVerbal": 140,
+            "psychometricEnglish": 130,
+            "bguLanguageRequirementsConfirmed": true,
+            "mathUnits": 5,
+            "mathGrade": 85
+          }
+        },
+        "status": 200,
+        "payload": {
+          "data": {
+            "generatedAt": "2026-09-27T14:53:48.199Z",
+            "evaluatorVersion": "admissions-evaluator-v2",
+            "inputDigest": "sha256:d6bb128402995089deb989938d1d6be3fdbee1ae6ec951ecbfe0c2deb65fc62e",
+            "input": {
+              "degreeId": "bgu_cs",
+              "psychometric": 730,
+              "bagrut": 120,
+              "extraInputs": {
+                "psychometricMath": 124,
+                "psychometricVerbal": 140,
+                "psychometricEnglish": 130,
+                "mathUnits": 5,
+                "mathGrade": 85,
+                "bguBagrutAverage": 120,
+                "bguLanguageRequirementsConfirmed": true
+              }
+            },
+            "program": {
+              "id": "bgu_cs",
+              "name": "מדעי המחשב"
+            },
+            "results": [
+              {
+                "institution": {
+                  "id": "bgu",
+                  "name": "אוניברסיטת בן-גוריון בנגב",
+                  "region": "south",
+                  "domain": "bgu.ac.il",
+                  "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/1/12/Ben-Gurion_University_of_the_Negev_logo.svg",
+                  "programUrl": "https://in.bgu.ac.il/Pages/default.aspx",
+                  "calculatorUrl": "https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html",
+                  "universityId": "bgu"
+                },
+                "linkedInstitutionId": "bgu",
+                "capability": "needs_input",
+                "kind": "needs_input",
+                "decision": "unknown",
+                "confidence": "low",
+                "sourceLabel": "נדרשים נתונים נוספים",
+                "explanation": "כדי לחשב את המסלול במוסד זה צריך נתוני מקצועות בגרות שהמחשבון הרשמי משתמש בהם.",
+                "nextAction": "השלימו את יחידות וציון המקצועות החסרים כדי לקבל הערכה למסלול.",
+                "requiredInputs": ["bagrut_subject_record"],
+                "snapshot": {
+                  "evaluatorVersion": "admissions-evaluator-v2",
+                  "ruleVersion": "admissions-evaluator-v2:bgu:needs_input",
+                  "ruleFingerprint": "sha256:4722b1a06e472c9238f604c5c5264f1a23c4ac7d737b010bd4b4b91f4d6d899c",
+                  "inputDigest": "sha256:d6bb128402995089deb989938d1d6be3fdbee1ae6ec951ecbfe0c2deb65fc62e",
+                  "evaluationDigest": "sha256:ea77b4c31ffba66151f60122aa8432f471631375b6986f20c3fcbdfa4ca9cea8"
+                }
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "sourceFreshnessDryRun": {
+    "report": {
+      "summary": {
+        "total": 2,
+        "exactReproduced": 2,
+        "partial": 0,
+        "blocked": 0,
+        "failed": 0
+      },
+      "results": [
+        {
+          "proof": {
+            "id": "bgu-datascience-live",
+            "institutionId": "bgu",
+            "institutionName": "Ben-Gurion University",
+            "officialUrl": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=232&p_pat1=1&p_spe1=13&p_degree_level=1",
+            "adapterId": "bgu",
+            "capability": "decision_capable",
+            "proofLevel": "exact_official",
+            "status": "succeeded",
+            "decisionProvenance": "verified_derivation",
+            "reviewedSourceFingerprint": "sha256:e5a3144a572d61ac57a705983572c6542937faf18ce4236a5823cd83b5b446bb",
+            "sourceClass": "api_static_json",
+            "reproducedFields": [
+              "selectedScore",
+              "acceptanceThreshold",
+              "derivedVerdict",
+              "sourceFingerprint"
+            ],
+            "normalizedPayload": {
+              "pairId": "datascience__bgu",
+              "programId": "datascience",
+              "programName": "datascience",
+              "officialProgramId": "dep232-pat1-spe13",
+              "source": "bgu_quantitative_rdp_and_TevaSekem",
+              "selectedScore": 636,
+              "acceptanceThreshold": 720,
+              "rejectionThreshold": 720,
+              "derivedVerdict": "below",
+              "sourceFingerprint": "sha256:e5a3144a572d61ac57a705983572c6542937faf18ce4236a5823cd83b5b446bb",
+              "reviewedSourceFingerprint": "sha256:e5a3144a572d61ac57a705983572c6542937faf18ce4236a5823cd83b5b446bb",
+              "proofStatus": "succeeded",
+              "proofLevel": "exact_official",
+              "decisionProvenance": "verified_derivation",
+              "controlledFixtureCaptureIds": [
+                "bgu-datascience-live:official-eligible:2026-09-27",
+                "bgu-datascience-live:official-below:2026-09-27"
+              ]
+            },
+            "limitations": [],
+            "nextAction": "Keep the current programme mapping, quantitative gates, two verdict fixtures, and live source fingerprint under review.",
+            "rawResponseMetadata": [
+              {
+                "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=232&p_pat1=1&p_spe1=13&p_degree_level=1",
+                "status": 200,
+                "contentType": "application/json"
+              },
+              {
+                "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+                "status": 200,
+                "contentType": "text/html; charset=ISO-8859-8-I"
+              }
+            ]
+          },
+          "freshness": {
+            "id": "bgu-datascience-live",
+            "sourceClass": "api_static_json",
+            "capability": "decision_capable",
+            "status": "fresh",
+            "rawFingerprint": "daceef0ec367ce18eeebb3942ccc5593601fb85b745fde4941de06c2a2d2dc2d",
+            "normalizedFingerprint": "192819d4192497149f6ef6057e8a6589125a4e04f9b2ea4a3aa0f334dd725c5b",
+            "reviewWorthy": false,
+            "blockedReason": null,
+            "normalizedDecisionPayload": {
+              "fields": {
+                "acceptanceThreshold": 720,
+                "controlledFixtureCaptureIds": [
+                  "bgu-datascience-live:official-eligible:2026-09-27",
+                  "bgu-datascience-live:official-below:2026-09-27"
+                ],
+                "derivedVerdict": "below",
+                "officialProgramId": "dep232-pat1-spe13",
+                "programId": "datascience",
+                "programName": "datascience",
+                "rejectionThreshold": 720,
+                "selectedScore": 636
+              }
+            },
+            "ignoredNoise": []
+          }
+        },
+        {
+          "proof": {
+            "id": "bgu-bgu_datascience-live",
+            "institutionId": "bgu",
+            "institutionName": "Ben-Gurion University",
+            "officialUrl": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=232&p_pat1=1&p_spe1=13&p_degree_level=1",
+            "adapterId": "bgu",
+            "capability": "decision_capable",
+            "proofLevel": "exact_official",
+            "status": "succeeded",
+            "decisionProvenance": "verified_derivation",
+            "reviewedSourceFingerprint": "sha256:e5a3144a572d61ac57a705983572c6542937faf18ce4236a5823cd83b5b446bb",
+            "sourceClass": "api_static_json",
+            "reproducedFields": [
+              "selectedScore",
+              "acceptanceThreshold",
+              "derivedVerdict",
+              "sourceFingerprint"
+            ],
+            "normalizedPayload": {
+              "pairId": "bgu_datascience__bgu",
+              "programId": "bgu_datascience",
+              "programName": "bgu_datascience",
+              "officialProgramId": "dep232-pat1-spe13",
+              "source": "bgu_quantitative_rdp_and_TevaSekem",
+              "selectedScore": 636,
+              "acceptanceThreshold": 720,
+              "rejectionThreshold": 720,
+              "derivedVerdict": "below",
+              "sourceFingerprint": "sha256:e5a3144a572d61ac57a705983572c6542937faf18ce4236a5823cd83b5b446bb",
+              "reviewedSourceFingerprint": "sha256:e5a3144a572d61ac57a705983572c6542937faf18ce4236a5823cd83b5b446bb",
+              "proofStatus": "succeeded",
+              "proofLevel": "exact_official",
+              "decisionProvenance": "verified_derivation",
+              "controlledFixtureCaptureIds": [
+                "bgu-bgu_datascience-live:official-eligible:2026-09-27",
+                "bgu-bgu_datascience-live:official-below:2026-09-27"
+              ]
+            },
+            "limitations": [],
+            "nextAction": "Keep the current programme mapping, quantitative gates, two verdict fixtures, and live source fingerprint under review.",
+            "rawResponseMetadata": [
+              {
+                "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=232&p_pat1=1&p_spe1=13&p_degree_level=1",
+                "status": 200,
+                "contentType": "application/json"
+              },
+              {
+                "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+                "status": 200,
+                "contentType": "text/html; charset=ISO-8859-8-I"
+              }
+            ]
+          },
+          "freshness": {
+            "id": "bgu-bgu_datascience-live",
+            "sourceClass": "api_static_json",
+            "capability": "decision_capable",
+            "status": "fresh",
+            "rawFingerprint": "096dc32d4f016951f1e7bd48464c219ef12d7a80236160f56a626c83ac53b758",
+            "normalizedFingerprint": "e71d02e9ec74f0e6541f96e3c5e5c639d2bda8f31337890d059179955257d6ac",
+            "reviewWorthy": false,
+            "blockedReason": null,
+            "normalizedDecisionPayload": {
+              "fields": {
+                "acceptanceThreshold": 720,
+                "controlledFixtureCaptureIds": [
+                  "bgu-bgu_datascience-live:official-eligible:2026-09-27",
+                  "bgu-bgu_datascience-live:official-below:2026-09-27"
+                ],
+                "derivedVerdict": "below",
+                "officialProgramId": "dep232-pat1-spe13",
+                "programId": "bgu_datascience",
+                "programName": "bgu_datascience",
+                "rejectionThreshold": 720,
+                "selectedScore": 636
+              }
+            },
+            "ignoredNoise": []
+          }
+        }
+      ]
+    },
+    "persistence": null
+  },
+  "activation": "Pending user merge and matching reviewed production authority update; no production database changed for this fix.",
+  "verdictScope": "Standard quantitative requirements, not a discretionary university offer.",
+  "privacy": "All applicant inputs are synthetic."
+}

@@ -4,19 +4,26 @@ import {
   type FreshnessDiscoveryResult,
   type FreshnessSourceClass,
 } from './freshnessDiscovery';
+import type { BagrutSubjectRecord } from '@/types';
+import type { AdmissionsExtraInputs } from '@/types/admissionsEvaluation';
 
 export type AdmissionsProofLevel =
   'blocked' | 'exact_official' | 'open_admission' | 'partial_official' | 'static_data_candidate';
 
 export type AdmissionsProofStatus = 'blocked' | 'failed' | 'partial' | 'succeeded';
+export type AdmissionsDecisionProvenance = 'official_response' | 'verified_derivation' | 'none';
 
-export type AdmissionsAdapterId = 'capability_matrix' | 'haifa' | 'tau' | 'technion' | 'bgu';
+export type AdmissionsAdapterId =
+  'capability_matrix' | 'haifa' | 'tau' | 'huji' | 'technion' | 'bgu';
 
 export interface AdmissionsApplicantInput {
+  extraInputs?: AdmissionsExtraInputs;
   bagrutAverage: number;
+  bagrutSubjectRecord?: BagrutSubjectRecord;
   psychometric: number;
   psychometricYear?: string;
   bagrutYear?: string;
+  exactSciencesBonusEligible?: boolean;
   psychometricSubscores?: {
     english: number;
     math: number;
@@ -25,18 +32,28 @@ export interface AdmissionsApplicantInput {
 }
 
 export interface AdmissionsProgramInput {
+  targetId?: string;
+  pairId?: string;
   id: string;
   name: string;
+  nodeId?: number;
   externalId?: string;
+  hug?: string;
   facultyCode?: string;
   searchText?: string;
   scoreField?: string;
+  decisionMode?: 'accepted' | 'eligible_to_apply';
+  staticThresholds?: {
+    acceptance: number;
+    rejection: number | null;
+  };
 }
 
 export interface AdmissionsAdapterContext {
   applicant: AdmissionsApplicantInput;
   program?: AdmissionsProgramInput;
   fetcher?: typeof fetch;
+  now?: Date;
 }
 
 export interface AdmissionsSourceProof {
@@ -48,6 +65,10 @@ export interface AdmissionsSourceProof {
   capability: FreshnessCapability;
   proofLevel: AdmissionsProofLevel;
   status: AdmissionsProofStatus;
+  /** How the final applicant decision was obtained; never imply a local derivation was returned by a university. */
+  decisionProvenance?: AdmissionsDecisionProvenance;
+  /** Canonical reviewed rule fingerprint this proof reproduced, when it is an exact proof. */
+  reviewedSourceFingerprint?: string;
   sourceClass: FreshnessSourceClass;
   reproducedFields: string[];
   normalizedPayload: Record<string, unknown>;

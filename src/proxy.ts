@@ -12,6 +12,11 @@ export async function proxy(request: NextRequest) {
     request,
   });
 
+  // The public calculator uses submitted scores, not the account session.
+  if (request.nextUrl.pathname === '/api/admissions/evaluate') {
+    return response;
+  }
+
   if (!isSupabaseConfigured) {
     return response;
   }

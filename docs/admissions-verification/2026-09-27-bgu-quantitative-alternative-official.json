@@ -1,0 +1,62 @@
+[
+  {
+    "id": "preparatory-only",
+    "capturedAt": "2026-09-27T16:52:13.355Z",
+    "request": {
+      "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+      "method": "POST",
+      "fields": {
+        "on_grade_psycho_quantity": "",
+        "rn_count_other_subjects": "0",
+        "on_grade_other_quantity": "140",
+        "on_grade_other_verbal": "100",
+        "on_grade_other_psycho": "100",
+        "on_grade_other_average": "",
+        "on_grade_prep_average": "87.25"
+      }
+    },
+    "status": 200,
+    "score": 719,
+    "rawResponse": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 719;</script> \n<script>parent.main.document.getElementById(\"on_grade_psycho_quantity\").innerHTML = 128;</script> \n</center>\n</body>  \n</html>\n"
+  },
+  {
+    "id": "bagrut-and-preparatory",
+    "capturedAt": "2026-09-27T16:52:13.696Z",
+    "request": {
+      "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+      "method": "POST",
+      "fields": {
+        "on_grade_psycho_quantity": "",
+        "rn_count_other_subjects": "0",
+        "on_grade_other_quantity": "140",
+        "on_grade_other_verbal": "100",
+        "on_grade_other_psycho": "100",
+        "on_grade_other_average": "100",
+        "on_grade_prep_average": "87.25"
+      }
+    },
+    "status": 200,
+    "score": 719,
+    "rawResponse": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 719;</script> \n<script>parent.main.document.getElementById(\"on_grade_psycho_quantity\").innerHTML = 128;</script> \n</center>\n</body>  \n</html>\n"
+  },
+  {
+    "id": "bagrut-only",
+    "capturedAt": "2026-09-27T16:52:13.773Z",
+    "request": {
+      "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+      "method": "POST",
+      "fields": {
+        "on_grade_psycho_quantity": "",
+        "rn_count_other_subjects": "0",
+        "on_grade_other_quantity": "140",
+        "on_grade_other_verbal": "100",
+        "on_grade_other_psycho": "100",
+        "on_grade_other_average": "100",
+        "on_grade_prep_average": ""
+      }
+    },
+    "status": 200,
+    "score": 669,
+    "rawResponse": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 669;</script> \n<script>parent.main.document.getElementById(\"on_grade_psycho_quantity\").innerHTML = 128;</script> \n</center>\n</body>  \n</html>\n"
+  }
+]
