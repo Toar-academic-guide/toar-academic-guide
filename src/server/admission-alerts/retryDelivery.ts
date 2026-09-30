@@ -2,6 +2,7 @@ import 'server-only';
 import { createHash } from 'node:crypto';
 import { and, eq, sql } from 'drizzle-orm';
 import { getDb } from '@/db/client';
+import { queryRows } from '@/db/queryRows';
 import {
   admissionAlertSubscriptions,
   admissionAlertOutbox,
@@ -75,8 +76,10 @@ export async function retryFailedAlertDelivery(
       buildSavedAlertProfile(profile, version)?.profileHash !== sub.profileHash
     )
       return { status: 'profile_changed' as const };
-    const [recipient] = await tx.execute<{ email: string | null }>(
-      sql`select admission_alert_private.delivery_recipient(${delivery.id}::uuid) as email`,
+    const [recipient] = queryRows(
+      await tx.execute<{ email: string | null }>(
+        sql`select admission_alert_private.delivery_recipient(${delivery.id}::uuid) as email`,
+      ),
     );
     if (!recipient?.email || alertRecipientHash(recipient.email) === delivery.recipientHash)
       return { status: 'changed_verified_email_required' as const };

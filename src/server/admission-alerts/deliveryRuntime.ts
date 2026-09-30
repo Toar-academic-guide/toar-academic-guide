@@ -2,6 +2,7 @@ import 'server-only';
 import { setTimeout as delay } from 'node:timers/promises';
 import { sql } from 'drizzle-orm';
 import { getDb } from '@/db/client';
+import { queryRows } from '@/db/queryRows';
 import {
   createDrizzleAdmissionAlertDeliveryRepository,
   processAdmissionAlertDelivery,
@@ -31,9 +32,11 @@ export async function runAdmissionAlertDelivery(input: {
     throw new Error('maxDeliveries must be between 1 and 500.');
   const configuration = input.dryRun ? null : admissionAlertDeliveryConfiguration();
   const db = getDb();
-  const counts = await db.execute<{ status: string; count: number }>(sql`
+  const counts = queryRows(
+    await db.execute<{ status: string; count: number }>(sql`
     select status::text, count(*)::int from admission_alert_outbox group by status
-  `);
+  `),
+  );
   if (input.dryRun)
     return {
       status: 'dry_run',

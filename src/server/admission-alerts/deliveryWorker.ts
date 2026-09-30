@@ -3,6 +3,7 @@ import 'server-only';
 import { randomUUID } from 'node:crypto';
 import { and, eq, gt, sql } from 'drizzle-orm';
 import { getDb } from '@/db/client';
+import { queryRows } from '@/db/queryRows';
 import { admissionAlertOutbox, admissionAlertSubscriptions } from '@/db/schema';
 import { admissionCycleFor } from './cycle';
 import { alertRecipientHash, materializeAlertPayload } from './deliveryPreparation';
@@ -91,13 +92,14 @@ export function createDrizzleAdmissionAlertDeliveryRepository(
             and first_submitted_at <= ${retryBoundary}::timestamptz
             and failure_reason is distinct from 'idempotency_window_elapsed'
         `);
-        const candidates = await tx.execute<{
-          id: string;
-          subscription_id: string;
-          idempotency_key: string;
-          mail_payload: AdmissionAlertMailPayload;
-          unsubscribe_token_hash: string | null;
-        }>(sql`
+        const candidates = queryRows(
+          await tx.execute<{
+            id: string;
+            subscription_id: string;
+            idempotency_key: string;
+            mail_payload: AdmissionAlertMailPayload;
+            unsubscribe_token_hash: string | null;
+          }>(sql`
           select o.id, o.subscription_id, o.idempotency_key, o.mail_payload, o.unsubscribe_token_hash
           from admission_alert_outbox o
           join admission_alert_subscriptions s on s.id = o.subscription_id
@@ -110,7 +112,8 @@ export function createDrizzleAdmissionAlertDeliveryRepository(
             and (o.first_submitted_at is null
               or o.first_submitted_at > ${retryBoundary}::timestamptz)
           order by o.created_at, o.id limit 1 for update of o skip locked
-        `);
+        `),
+        );
         const candidate = candidates[0];
         if (!candidate) return null;
         const claimToken = randomUUID();
@@ -171,10 +174,12 @@ export function createDrizzleAdmissionAlertDeliveryRepository(
           return 'suppressed';
         }
         const preferences = subscription
-          ? await tx.execute<{ opted_in: boolean }>(sql`
+          ? queryRows(
+              await tx.execute<{ opted_in: boolean }>(sql`
           select opted_in from admission_alert_email_preferences
           where user_id = ${subscription.userId} for update
-        `)
+        `),
+            )
           : [];
         const allowed =
           subscription?.status === 'pending_delivery' &&
@@ -198,8 +203,10 @@ export function createDrizzleAdmissionAlertDeliveryRepository(
         }
         // Runtime requests always carry a token secret; plain repositories also support provider-neutral tests.
         if (tokenSecret) {
-          const [recipient] = await tx.execute<{ email: string | null }>(
-            sql`select admission_alert_private.delivery_recipient(${outbox.id}::uuid) as email`,
+          const [recipient] = queryRows(
+            await tx.execute<{ email: string | null }>(
+              sql`select admission_alert_private.delivery_recipient(${outbox.id}::uuid) as email`,
+            ),
           );
           if (!recipient?.email || alertRecipientHash(recipient.email) !== outbox.recipientHash) {
             await tx

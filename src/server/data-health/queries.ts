@@ -4,6 +4,7 @@ import { eq } from 'drizzle-orm';
 
 import type { InstitutionId } from '@/data/institutions';
 import { getOpsDb } from '@/db/opsClient';
+import { queryRows } from '@/db/queryRows';
 import {
   loadAdmissionAlertHealth,
   type AdmissionAlertHealth,
@@ -1047,7 +1048,10 @@ async function loadDataHealthRows(now: Date): Promise<DataHealthRows> {
     })
     .from(admissionReleases);
 
-  const admissionAlerts = await loadAdmissionAlertHealth((query) => db.execute(query), now);
+  const admissionAlerts = await loadAdmissionAlertHealth(
+    async (query) => queryRows(await db.execute(query)),
+    now,
+  );
 
   return {
     admissionAlerts,
