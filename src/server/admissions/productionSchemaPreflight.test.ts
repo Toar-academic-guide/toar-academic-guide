@@ -42,7 +42,7 @@ describe('production admissions schema preflight', () => {
 
     expect(assessProductionSchema(snapshot)).toMatchObject({
       status: 'current',
-      appliedThrough: '0034',
+      appliedThrough: '0035',
       pendingMigrations: [],
       issues: [],
     });
@@ -77,11 +77,67 @@ describe('production admissions schema preflight', () => {
     expect(report).toMatchObject({
       status: 'current',
       safeToMigrate: false,
-      appliedThrough: '0034',
+      appliedThrough: '0035',
       pendingMigrations: [],
       issues: [],
     });
   });
+
+  it('allows the existing restricted schema to migrate to dashboard column reads', () => {
+    const snapshot = makeSnapshot({ appliedCount: FORWARD_PRODUCTION_MIGRATIONS.length - 1 });
+    expect(assessProductionSchema(snapshot)).toMatchObject({
+      status: 'migration_required',
+      safeToMigrate: true,
+      appliedThrough: '0034',
+      pendingMigrations: ['0035'],
+      issues: [],
+    });
+  });
+
+  it.each(['ingestion_sources', 'ingestion_jobs', 'review_items'])(
+    'requires the dashboard columns and RLS policy on %s',
+    (tableName) => {
+      const snapshot = makeSnapshot();
+      snapshot.tables[tableName].columnGrants.ops_readonly.SELECT = [];
+      snapshot.tables[tableName].policies = snapshot.tables[tableName].policies.filter(
+        (policy) => policy !== `${tableName}_ops_readonly_select`,
+      );
+      expect(assessProductionSchema(snapshot).issues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            code: 'grant_mismatch',
+            object: `grant:ops_readonly:${tableName}.column:SELECT`,
+          }),
+          expect.objectContaining({
+            code: 'missing_policy',
+            object: `policy:${tableName}_ops_readonly_select`,
+          }),
+        ]),
+      );
+    },
+  );
+
+  it.each([
+    ['ops_readonly', 'ingestion_sources', 'SELECT', 'notes'],
+    ['ops_readonly', 'review_items', 'SELECT', 'proposed_value'],
+    ['ops_readonly', 'ingestion_jobs', 'UPDATE', 'error_text'],
+    ['anon', 'ingestion_sources', 'SELECT', 'id'],
+    ['authenticated', 'review_items', 'SELECT', 'id'],
+    ['app_runtime', 'ingestion_jobs', 'SELECT', 'id'],
+  ])(
+    'rejects extra dashboard column access for %s on %s (%s %s)',
+    (role, tableName, privilege, column) => {
+      const snapshot = makeSnapshot();
+      const grants = (snapshot.tables[tableName].columnGrants[role] ??= {});
+      (grants[privilege] ??= []).push(column);
+      expect(assessProductionSchema(snapshot).issues).toContainEqual(
+        expect.objectContaining({
+          code: 'grant_mismatch',
+          object: `grant:${role}:${tableName}.column:${privilege}`,
+        }),
+      );
+    },
+  );
 
   it('requires lease and retry columns after the recovery migration', () => {
     const snapshot = makeSnapshot();
@@ -199,12 +255,13 @@ describe('production admissions schema preflight', () => {
     );
   });
 
-  it('accepts ingestion source metadata isolated from runtime roles', () => {
+  it('accepts ingestion source metadata isolated except for dashboard column reads', () => {
     const snapshot = makeSnapshot();
     snapshot.tables.ingestion_sources.grants.app_runtime = [];
     snapshot.tables.ingestion_sources.grants.ops_readonly = [];
     snapshot.tables.ingestion_sources.policies = [
       'ingestion_sources_private_deny_all',
+      'ingestion_sources_ops_readonly_select',
       'ingestion_sources_app_runtime_deny_all',
       'ingestion_sources_admissions_automation_read',
       'ingestion_sources_admissions_automation_insert',
@@ -232,6 +289,7 @@ describe('production admissions schema preflight', () => {
       '0032',
       '0033',
       '0034',
+      '0035',
     ] as const) {
       const migration = FORWARD_PRODUCTION_MIGRATIONS.find(({ id }) => id === migrationId);
       const source = readFileSync(migration?.repositoryPath ?? '', 'utf8');
@@ -292,6 +350,7 @@ describe('production admissions schema preflight', () => {
       '0032',
       '0033',
       '0034',
+      '0035',
     ]);
   });
 
@@ -322,6 +381,7 @@ describe('production admissions schema preflight', () => {
       '0032',
       '0033',
       '0034',
+      '0035',
     ]);
   });
 
@@ -334,7 +394,7 @@ describe('production admissions schema preflight', () => {
     expect(assessProductionSchema(snapshot)).toMatchObject({
       status: 'migration_required',
       safeToMigrate: true,
-      pendingMigrations: ['0027', '0028', '0031', '0032', '0033', '0034'],
+      pendingMigrations: ['0027', '0028', '0031', '0032', '0033', '0034', '0035'],
       issues: [],
     });
   });
@@ -530,7 +590,18 @@ describe('production admissions schema preflight', () => {
     expect(assessProductionSchema(snapshot)).toMatchObject({
       status: 'migration_required',
       safeToMigrate: true,
-      pendingMigrations: ['0024', '0025', '0026', '0027', '0028', '0031', '0032', '0033', '0034'],
+      pendingMigrations: [
+        '0024',
+        '0025',
+        '0026',
+        '0027',
+        '0028',
+        '0031',
+        '0032',
+        '0033',
+        '0034',
+        '0035',
+      ],
       issues: [],
     });
   });
@@ -629,6 +700,10 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
         : {},
       columnGrants: {},
     };
+    if (appliedIds.has('0035') && contract.dashboardReadColumns) {
+      tables[tableName].columnGrants.ops_readonly = { SELECT: [...contract.dashboardReadColumns] };
+      tables[tableName].policies.push(`${tableName}_ops_readonly_select`);
+    }
   }
 
   if (appliedIds.has('0034')) {

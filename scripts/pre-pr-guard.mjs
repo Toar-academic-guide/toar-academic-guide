@@ -54,6 +54,9 @@ const operationalReadGrants = {
     'admission_review_runs',
   ],
   ops_readonly: [
+    'ingestion_sources',
+    'ingestion_jobs',
+    'review_items',
     'admission_alternative_paths',
     'admission_facts',
     'admissions_source_candidates',
