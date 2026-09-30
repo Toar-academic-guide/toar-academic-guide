@@ -1,0 +1,100 @@
+{
+  "calculatorUrl": "https://www.huji.ac.il/documents/medicine_calc.htm",
+  "requirementsUrl": "https://info.huji.ac.il/bachelor/Medicine",
+  "capturedAt": "2026-09-28T10:16:53.000Z",
+  "cycle": "2026-2027",
+  "calculatorSha256": "0c927fc9ab8d6bb7d5f35af457e21a4a1120899ea946cc387345281d65c7b6ba",
+  "calculatorHtml": "<h3>2026-2027</h3><script>var min_psych = 700;\nfunction med_meshuklal_func_a(bag,psy){\n\t\tvar B = 3.9630 * bag - 20.0621;\n\t\tvar P = 0.032073 * psy + 0.3672;\n\t\tvar X = 0.3 * B + 0.7 * P;\n\t\tvar Y = Math.floor((1.2235 * X - 4.4598+0.0005)*1000)/1000;\n\n\t\tif (isNaN(Y) || psy > 800 || psy < 200 || bag < 6 || bag >12.7)\n      { Y= \"אחד או כמה מהערכים שהזנת אינם חוקיים, אנא נסו שוב\";}\n\t\telse if (psy < min_psych) {\n\t\tY=\"ציון הפסיכומטרי שלך נמוך מהמינימום הנדרש לחוג\";\n\t\t}\n    <!-- present results -->\n    console.log(\"B:\",B);\n    console.log(\"P:\",P);\n    console.log(\"X\",X);\n    console.log(\"Y\",Y);\n\n    document.getElementById(\"text_a\").innerHTML= \"ציון משוקלל לפי פסיכומטרי ובגרות:\";\n    document.getElementById(\"text_a\").style.direction=\"rtl\";\n\n    document.getElementById(\"result_a\").innerHTML= Y;\n    document.getElementById(\"result_a\").style.direction=\"rtl\";\n\n\t}\nfunction med_meshuklal_func_c(mechina,psy){\n\t\tvar B = 3.9261 * mechina- 15.9285;\n\t\tvar P = 0.032073 * psy + 0.3672;\n\t\tvar X = 0.5 * B + 0.5 * P;\n\t\tvar Y = Math.floor((1.2422 * X - 4.7609+0.0005)*1000)/1000;\n\n\t\tif (isNaN(Y) || psy > 800 || psy < 200 || mechina < 6 || mechina > 11.3)\n      { Y= \"אחד או כמה מהערכים שהזנת אינם חוקיים, אנא נסו שוב\";}\n\t\telse if (psy < min_psych) {\n\t\tY=\"ציון הפסיכומטרי שלך נמוך מהמינימום הנדרש לחוג\";\n\t\t}\n    <!-- present results -->\n    console.log(\"B:\",B);\n    console.log(\"P:\",P);\n    console.log(\"X\",X);\n    console.log(\"Y\",Y);\n\n    document.getElementById(\"text_a\").innerHTML= \"ציון משוקלל לפי פסיכומטרי ומכינת העברית משנת תשפ\\\"א ואילך:\";\n    document.getElementById(\"text_a\").style.direction=\"rtl\";\n\n    document.getElementById(\"result_a\").innerHTML= Y;\n    document.getElementById(\"result_a\").style.direction=\"rtl\";\n\n\t}\nfunction med_meshuklal_func_d(mechina,psy){\n\t\tvar B = 3.6201 * mechina- 12.1296;\n\t\tvar P = 0.032073 * psy + 0.3672;\n\t\tvar X = 0.5 * B + 0.5 * P;\n\t\tvar Y = Math.floor((1.2422 * X - 4.7609+0.0005)*1000)/1000;\n\n\t\tif (isNaN(Y) || psy > 800 || psy < 200 || mechina < 6 || mechina > 11.3)\n      { Y= \"אחד או כמה מהערכים שהזנת אינם חוקיים, אנא נסו שוב\";}\n\t\telse if (psy < min_psych) {\n\t\tY=\"ציון הפסיכומטרי שלך נמוך מהמינימום הנדרש לחוג\";\n\t\t}\n    <!-- present results -->\n    console.log(\"B:\",B);\n    console.log(\"P:\",P);\n    console.log(\"X\",X);\n    console.log(\"Y\",Y);\n\n    document.getElementById(\"text_a\").innerHTML= \"ציון משוקלל לפי מכינת העברית עד תש\\\"ף ומכינות אחרות:\";\n    document.getElementById(\"text_a\").style.direction=\"rtl\";\n\n    document.getElementById(\"result_a\").innerHTML= Y;\n    document.getElementById(\"result_a\").style.direction=\"rtl\";\n\n\t}\nfunction med_meshuklal_func_b(mesh,m){\n    var Y = mesh;\n\n    <!-- Mor/Mirkam Standardization (Tiknun) -->\n    var M = 0.0290 * m + 19.9393;\n\n    <!-- Personal Grade (Tziun Ishiuty): -->\n    var S = Math.floor(((0.6 * M + 0.4 * Y)+0.0005)*1000)/1000;\n\tconsole.log(\"Y\",Y);\n\tconsole.log(\"M\",M);\n\tconsole.log(\"S\",S);\n    <!-- check vlaues validity -->\n    if (isNaN(S) || m < 150 || m >250 || mesh< 16.000 || mesh > 30.000)\n      { S= \"אחד או כמה מהערכים שהזנת אינם חוקיים, אנא נסו שוב\";}\n    <!-- present results -->\n    document.getElementById(\"result_b\").innerHTML= S;\n    document.getElementById(\"result_b\").style.direction=\"rtl\";\n}</script>",
+  "observations": [
+    {
+      "route": "bagrut",
+      "psychometric": 800,
+      "average": 120,
+      "score": 27.921
+    },
+    {
+      "route": "bagrut",
+      "psychometric": 700,
+      "average": 100,
+      "score": 22.265
+    },
+    {
+      "route": "huji2021Onwards",
+      "psychometric": 800,
+      "average": 110,
+      "score": 28.334
+    },
+    {
+      "route": "huji2021Onwards",
+      "psychometric": 700,
+      "average": 90,
+      "score": 21.465
+    },
+    {
+      "route": "older",
+      "psychometric": 800,
+      "average": 110,
+      "score": 28.603
+    },
+    {
+      "route": "older",
+      "psychometric": 700,
+      "average": 90,
+      "score": 22.114
+    },
+    {
+      "route": "final",
+      "cognitive": 27.921,
+      "assessment": 200,
+      "score": 26.612
+    },
+    {
+      "route": "final",
+      "cognitive": 25.5,
+      "assessment": 175,
+      "score": 25.209
+    },
+    {
+      "route": "final",
+      "cognitive": 22.265,
+      "assessment": 200,
+      "score": 24.35
+    }
+  ],
+  "publishedRequirements": {
+    "minimumPsychometric": 700,
+    "screeningCutoff": 25.186,
+    "minimumAssessment": 175,
+    "finalCutoff": 25.783,
+    "minimumEnglish": 120,
+    "minimumHebrewForRequiredApplicants": 105,
+    "lastPsychometricMonth": "2026-04",
+    "registrationDeadline": "2026-05-12",
+    "citizenshipOrPermanentResidencyRequired": true
+  },
+  "provenance": "Scores were entered and read in the native in-app browser on the official current calculator. Verdicts are derived from the programme prerequisites and stage-specific cutoffs, not returned by the calculator. The programme page and current formula PDF were read via web tools; direct downloads returned error HTML.",
+  "limitations": [
+    "The .html calculator has an older final formula; the current calculator is .htm.",
+    "The generic official JSON returned error HTML and is not numerical proof.",
+    "The programme page and general policy disagree about assessment scores from 2023; require clarification.",
+    "Academic study routes use an actual office-issued cognitive score; no locally invented academic conversion.",
+    "Affirmative-action candidates receive an unspecified cognitive bonus and separate ranking. This route remains manual and is not represented by the ordinary-track fixtures."
+  ],
+  "calculatorHtmlProvenance": "Excerpt of the four complete calculator functions and minimum psychometric declaration, copied from the retained source whose SHA-256 is recorded above. Surrounding page and bundled libraries are omitted.",
+  "preparatorySource": {
+    "requirementsUrl": "https://info.huji.ac.il/reception-channels/Mechina",
+    "workbookUrl": "https://docs.google.com/spreadsheets/d/1SCkhz5xWXwoGO_J9qXDbrfJ-AUq7M35FIlxjzEcU-pY/edit",
+    "sheet": "חישוב שקלול",
+    "row": 171,
+    "track": "601-4601",
+    "capturedAt": "2026-09-28",
+    "scope": "Other recognised preparatory courses from all years after admissions-office conversion. Course/provider/year must be approved for Medicine in the current cycle.",
+    "formula": "ROUND(0.224844411*R171+0.01992054*S171-12.0665266,3)",
+    "cachedExample": {
+      "convertedAverage": 110.6,
+      "psychometric": 716,
+      "score": 27.064
+    },
+    "captureMethod": "Read-only native sheet cells, including formula and effective values; source not edited. Cached numerical example verifies the academic formula only."
+  }
+}

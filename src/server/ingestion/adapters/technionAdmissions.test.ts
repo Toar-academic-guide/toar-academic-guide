@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
+import { architectureInputs, architectureSourceResponse } from '@/test/technionArchitecture';
 
 import {
   hasTechnionRequiredSubjectRecord,
@@ -22,6 +23,77 @@ const record = {
 };
 
 describe('runTechnionAdmissionsProof', () => {
+  it.each([
+    ['/calculator/', '0.3*', '0.4*'],
+    ['/calculator/', '"rounding":"1"', '"rounding":"2"'],
+    ['/sechem-for-admission/', '>85 ', '>86 '],
+    ['/architecture-info/', 'ציון 65', 'ציון 75'],
+    ['/english-exam/', '104', '105'],
+  ])(
+    'withholds an Architecture result when the official source changes: %s',
+    async (path, before, after) => {
+      const fetcher = vi.fn<typeof fetch>().mockImplementation(async (url) => {
+        const page = architectureSourceResponse(String(url));
+        return new Response(String(url).includes(path) ? page.replace(before, after) : page);
+      });
+      const proof = await runTechnionAdmissionsProof({
+        fetcher,
+        program: { id: 'architecture', name: 'Architecture' },
+        applicant: { bagrutAverage: 100, psychometric: 730, extraInputs: architectureInputs },
+      });
+      expect(proof).toMatchObject({
+        status: 'failed',
+        proofLevel: 'blocked',
+        normalizedPayload: {},
+      });
+    },
+  );
+
+  it('does not mistake Landscape Architecture for Architecture in the cutoff table', () => {
+    expect(
+      parseTechnionOfficialThreshold(
+        '<tr><td class="column-1">ארכיטקטורה נוף</td><td class="column-2">80</td></tr><tr><td class="column-1">ארכיטקטורה*</td><td class="column-2">85</td></tr>',
+        'architecture',
+      ),
+    ).toBe(85);
+  });
+  it.each([
+    [115, 730, 110, 97.5, 'eligible_to_apply'],
+    [101.9, 650, 80, 82.6, 'below'],
+  ])(
+    'reproduces the Architecture score and conditional verdict for D=%s',
+    async (average, psy, exam, score, verdict) => {
+      const fetcher = vi
+        .fn<typeof fetch>()
+        .mockImplementation(async (url) => new Response(architectureSourceResponse(String(url))));
+      const proof = await runTechnionAdmissionsProof({
+        fetcher,
+        program: {
+          id: 'architecture',
+          name: 'Architecture',
+          targetId: 'technion-architecture-live',
+        },
+        applicant: {
+          bagrutAverage: 100,
+          psychometric: Number(psy),
+          extraInputs: {
+            technionArchitectureBagrutAverage: Number(average),
+            technionArchitectureExamScore: Number(exam),
+            technionArchitectureExamPassed: true,
+            technionArchitectureRequirementsConfirmed: true,
+          },
+        },
+      });
+      expect(proof.normalizedPayload).toMatchObject({
+        selectedScore: score,
+        acceptanceThreshold: 85,
+        derivedVerdict: verdict,
+        decisionProvenance: 'verified_derivation',
+        proofLevel: 'exact_official',
+      });
+    },
+  );
+
   it('requires the full transcript that the official calculator asks for', () => {
     expect(hasTechnionRequiredSubjectRecord(record)).toBe(true);
     expect(

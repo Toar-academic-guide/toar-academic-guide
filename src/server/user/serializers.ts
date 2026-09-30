@@ -1,10 +1,11 @@
-import type { BagrutSector, UserProfile } from '@/types';
+import type { AdmissionsProfileInputs, BagrutSector, UserProfile } from '@/types';
 import type {
   BagrutProfileVersionRow,
   SavedProgramRow,
   UserProfileRow,
   UploadedDocumentRow,
 } from '@/db/types';
+import { fromStoredBagrutProfileVersion } from '@/lib/storedBagrutProfile';
 
 export interface UserProfileSnapshot extends UserProfile {
   savedProgramIds: string[];
@@ -32,6 +33,7 @@ type SerializedProfileRow = Pick<
   | 'updatedAt'
 > & {
   bagrutProfileVersionId?: string | null;
+  admissionsInputs?: AdmissionsProfileInputs | null;
 };
 
 type PublicUploadedDocument = NonNullable<UserProfileSnapshot['uploadedDocuments']>[number];
@@ -83,13 +85,26 @@ export function serializeUserProfileSnapshot(
     };
   }
 
+  const subjectRecord = bagrutProfileVersion
+    ? fromStoredBagrutProfileVersion({
+        schemaVersion: bagrutProfileVersion.schemaVersion,
+        sector: bagrutProfileVersion.sector as BagrutSector,
+        payload: bagrutProfileVersion.subjects,
+        profileHash: bagrutProfileVersion.contentHash,
+      })
+    : undefined;
   const academicScores =
     profileRow.psychometricOverall !== null ||
     profileRow.psychometricQuantitative !== null ||
     profileRow.psychometricVerbal !== null ||
     profileRow.psychometricEnglish !== null ||
-    profileRow.bagrutWeightedAverage !== null
+    profileRow.bagrutWeightedAverage !== null ||
+    Boolean(subjectRecord) ||
+    (profileRow.admissionsInputs != null && Object.keys(profileRow.admissionsInputs).length > 0)
       ? {
+          ...(profileRow.admissionsInputs && Object.keys(profileRow.admissionsInputs).length > 0
+            ? { admissions: profileRow.admissionsInputs }
+            : {}),
           ...(profileRow.psychometricOverall !== null ||
           profileRow.psychometricQuantitative !== null ||
           profileRow.psychometricVerbal !== null ||
@@ -115,27 +130,13 @@ export function serializeUserProfileSnapshot(
             ? {
                 bagrut: {
                   weightedAverage: profileRow.bagrutWeightedAverage,
-                  ...(bagrutProfileVersion
-                    ? {
-                        subjectRecord: {
-                          schemaVersion: 1 as const,
-                          profileHash: bagrutProfileVersion.contentHash,
-                          sector: bagrutProfileVersion.sector as BagrutSector,
-                          subjects: bagrutProfileVersion.subjects,
-                        },
-                      }
-                    : {}),
+                  ...(subjectRecord ? { subjectRecord } : {}),
                 },
               }
-            : bagrutProfileVersion
+            : subjectRecord
               ? {
                   bagrut: {
-                    subjectRecord: {
-                      schemaVersion: 1 as const,
-                      profileHash: bagrutProfileVersion.contentHash,
-                      sector: bagrutProfileVersion.sector as BagrutSector,
-                      subjects: bagrutProfileVersion.subjects,
-                    },
+                    subjectRecord,
                   },
                 }
               : {}),
@@ -169,5 +170,6 @@ export function buildUserProfileRow(userId: string, profile: UserProfile) {
     psychometricVerbal: profile.academicScores?.psychometric?.verbal ?? null,
     psychometricEnglish: profile.academicScores?.psychometric?.english ?? null,
     bagrutWeightedAverage: profile.academicScores?.bagrut?.weightedAverage ?? null,
+    admissionsInputs: profile.academicScores?.admissions ?? null,
   };
 }

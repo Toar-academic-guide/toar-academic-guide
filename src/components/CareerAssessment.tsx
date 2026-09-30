@@ -13,8 +13,6 @@ import {
   getQuickPickItem,
   getScreenSection,
   getValueSlider,
-  QUICK_PICK_ITEMS,
-  type Screen,
   type QuickPickAnswer,
   type MultiSelectQuestion,
   type QuickPickItem,
@@ -83,7 +81,6 @@ export default function CareerAssessment({ onComplete }: Props) {
   const [multiSelectAnswers, setMultiSelectAnswers] = useState<Record<string, string[]>>({});
   const [quickPickAnswers, setQuickPickAnswers] = useState<Record<string, QuickPickAnswer>>({});
   const [sliderAnswers, setSliderAnswers] = useState<Record<string, number>>({});
-  const [skippedScreens, setSkippedScreens] = useState<Set<number>>(new Set());
 
   const screen = SCREEN_SEQUENCE[screenIndex];
   const progressPercent = Math.round(((screenIndex + 1) / TOTAL_SCREENS) * 100);
@@ -138,7 +135,6 @@ export default function CareerAssessment({ onComplete }: Props) {
   }
 
   function handleSkip() {
-    setSkippedScreens((prev) => new Set(prev).add(screenIndex));
     handleNext();
   }
 
@@ -152,12 +148,6 @@ export default function CareerAssessment({ onComplete }: Props) {
     const profileScores = computeProfileScores(answers);
     const valuesProfile = computeValuesProfile(answers);
     onComplete(profileScores, valuesProfile);
-  }
-
-  function canAdvance(): boolean {
-    if (screen.kind === 'transition') return true;
-    // All question screens can be advanced (they have skip)
-    return true;
   }
 
   // ── Check if we have enough answers for finishing ─────────────────────────

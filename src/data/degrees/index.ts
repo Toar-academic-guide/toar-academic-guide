@@ -130,16 +130,6 @@ function getMondayBaseSearchableText(record: (typeof mondayAdmissionsEvidence)[n
   return `${record.itemName} ${record.displayName} ${record.tags.join(' ')} ${record.officialUrls.join(' ')}`.toLowerCase();
 }
 
-function getMondaySearchableText(record: (typeof mondayAdmissionsEvidence)[number]) {
-  const baseText = getMondayBaseSearchableText(record);
-
-  if (record.publicBucket === 'decision_capable') {
-    return baseText;
-  }
-
-  return `${baseText} ${record.decisionReason}`.toLowerCase();
-}
-
 function fallbackDynamicProgram(record: (typeof mondayAdmissionsEvidence)[number]) {
   const searchable = getMondayBaseSearchableText(record);
   const isCertificate =

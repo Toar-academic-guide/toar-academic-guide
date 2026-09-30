@@ -1,4 +1,5 @@
 import postgres from 'postgres';
+import { drizzle } from 'drizzle-orm/postgres-js';
 import { require as tsxRequire } from 'tsx/cjs/api';
 
 const { PRODUCTION_SCHEMA_CONTRACT, assessProductionSchema } = tsxRequire(
@@ -10,6 +11,10 @@ const { assessPublicationDatabaseState } = tsxRequire(
   import.meta.url,
 );
 const { requireOpsDatabaseUrl } = tsxRequire('../src/env.ts', import.meta.url);
+const { loadAdmissionAlertHealth } = tsxRequire(
+  '../src/server/admission-alerts/health.ts',
+  import.meta.url,
+);
 
 const mode = resolveMode(process.argv);
 const representativeTables = [
@@ -39,6 +44,7 @@ async function loadSnapshot(sql) {
     indexRows,
     policyRows,
     privilegeRows,
+    columnPrivilegeRows,
     enumRows,
     triggerRows,
     functionRows,
@@ -193,6 +199,35 @@ async function loadSnapshot(sql) {
     `,
     sql`
       select
+        c.relname as table_name,
+        database_role.rolname as role_name,
+        column_privilege.privilege,
+        attribute.attname as column_name,
+        has_column_privilege(
+          database_role.oid,
+          format('%I.%I', n.nspname, c.relname),
+          attribute.attname,
+          column_privilege.privilege
+        ) as allowed
+      from pg_class c
+      join pg_namespace n on n.oid = c.relnamespace
+      join pg_attribute attribute on attribute.attrelid = c.oid
+      cross join pg_roles database_role
+      cross join unnest(${['SELECT', 'INSERT', 'UPDATE', 'REFERENCES']}::text[]) as column_privilege(privilege)
+      where n.nspname = 'public'
+        and (
+          (database_role.rolname = 'admissions_automation' and c.relname = 'admission_thresholds'
+            and column_privilege.privilege <> 'SELECT')
+          or (database_role.rolname = any(${['anon', 'authenticated', 'app_runtime', 'ops_readonly']}::text[])
+            and c.relname = any(${['ingestion_sources', 'ingestion_jobs', 'review_items']}::text[]))
+        )
+        and c.relkind in ('r', 'p')
+        and attribute.attnum > 0
+        and not attribute.attisdropped
+      order by c.relname, role_name, column_privilege.privilege, attribute.attnum
+    `,
+    sql`
+      select
         t.typname as enum_name,
         e.enumlabel as enum_value
       from pg_type t
@@ -202,18 +237,23 @@ async function loadSnapshot(sql) {
       order by t.typname, e.enumsortorder
     `,
     sql`
-      select distinct trigger_name
-      from information_schema.triggers
-      where trigger_schema = 'public'
+      select distinct t.tgname as trigger_name
+      from pg_trigger t join pg_class c on c.oid=t.tgrelid
+      join pg_namespace n on n.oid=c.relnamespace
+      where not t.tgisinternal and t.tgenabled <> 'D' and
+        (n.nspname = 'public' or (n.nspname='auth' and c.relname='users' and t.tgname='admission_alert_account_deleted'))
       order by trigger_name
     `,
     sql`
       select
-        p.proname as function_name,
-        coalesce(p.proconfig, array[]::text[]) as function_config
+        case when n.nspname='public' then p.proname else n.nspname||'.'||p.proname end as function_name,
+        coalesce(p.proconfig, array[]::text[]) as function_config,
+        p.prosecdef as security_definer,
+        array(select role_name from unnest(array['anon','authenticated','app_runtime','ops_readonly','admissions_automation']) role_name
+          where has_function_privilege(role_name, p.oid, 'EXECUTE') order by role_name) as execute_roles
       from pg_proc p
       join pg_namespace n on n.oid = p.pronamespace
-      where n.nspname = 'public'
+      where n.nspname in ('public','admission_alert_private')
       order by p.proname, p.oid
     `,
   ]);
@@ -228,6 +268,7 @@ async function loadSnapshot(sql) {
       rowLevelSecurity: row.row_level_security,
       policies: [],
       grants: {},
+      columnGrants: {},
     };
   }
   for (const row of columnRows) {
@@ -249,6 +290,12 @@ async function loadSnapshot(sql) {
     if (!row.allowed || !tables[row.table_name]) continue;
     const roleGrants = (tables[row.table_name].grants[row.role_name] ??= []);
     roleGrants.push(row.privilege);
+  }
+  for (const row of columnPrivilegeRows) {
+    if (!row.allowed || !tables[row.table_name]) continue;
+    const roleColumnGrants = (tables[row.table_name].columnGrants[row.role_name] ??= {});
+    const privilegeColumns = (roleColumnGrants[row.privilege] ??= []);
+    privilegeColumns.push(row.column_name);
   }
 
   const enums = {};
@@ -279,6 +326,15 @@ async function loadSnapshot(sql) {
     triggers: triggerRows.map((row) => row.trigger_name),
     functions: Object.fromEntries(
       functionRows.map((row) => [row.function_name, row.function_config]),
+    ),
+    functionAccess: Object.fromEntries(
+      functionRows.map((row) => [
+        row.function_name,
+        {
+          securityDefiner: row.security_definer,
+          executeRoles: row.execute_roles,
+        },
+      ]),
     ),
   };
 }
@@ -322,9 +378,7 @@ async function loadCatalogueEvidence(sql) {
     where id = 'colman_tourism'
   `;
   if (!colmanTourism || colmanTourism.admission_type !== 'requirements') {
-    throw new Error(
-      'Expected public.programs.colman_tourism to use requirements-based admission.',
-    );
+    throw new Error('Expected public.programs.colman_tourism to use requirements-based admission.');
   }
 
   return {
@@ -372,6 +426,10 @@ async function main() {
     const snapshot = await loadSnapshot(sql);
     const report = assessProductionSchema(snapshot);
     const catalogue = report.status === 'current' ? await loadCatalogueEvidence(sql) : null;
+    const alerts =
+      report.status === 'current'
+        ? await loadAdmissionAlertHealth((query) => drizzle(sql).execute(query))
+        : null;
     const publication =
       mode === 'publication' && report.status === 'current'
         ? await loadPublicationDatabaseState(sql)
@@ -382,6 +440,7 @@ async function main() {
       ...report,
       requiredTables: Object.keys(PRODUCTION_SCHEMA_CONTRACT.tables).sort(),
       catalogue,
+      alerts,
       publication,
     };
 

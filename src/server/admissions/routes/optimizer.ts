@@ -1,6 +1,7 @@
 import 'server-only';
 
-import { applyRouteAction, type RouteAction, type RouteProfile } from './actions';
+import { applyRouteActions, type RouteAction, type RouteProfile } from './actions';
+import { generateRouteActionSets } from './candidateGeneration';
 import { combineRouteEstimates, type RouteEstimate } from './estimateSeed';
 
 export type { RouteAction, RouteProfile } from './actions';
@@ -8,6 +9,11 @@ export type { RouteAction, RouteProfile } from './actions';
 export interface RouteVerification {
   eligible: boolean;
   margin: number;
+  score?: number;
+  cutoff?: number;
+  sourceUrl?: string;
+  ruleFingerprint?: string;
+  unmetRequirements?: string[];
 }
 
 export interface VerifiedAdmissionRoute {
@@ -36,24 +42,24 @@ export function findVerifiedAdmissionRoutes(args: {
   const maxDurationMs = args.limits?.maxDurationMs ?? 1500;
   const maxParetoFinalists = args.limits?.maxParetoFinalists ?? 12;
   const startedAt = Date.now();
-  const candidates = candidateActionSets(args.actions);
   const verified: VerifiedAdmissionRoute[] = [];
   let evaluatedCandidateCount = 0;
+  let examinedCandidateCount = 0;
 
-  for (const actions of candidates) {
-    if (evaluatedCandidateCount >= maxCandidates || Date.now() - startedAt > maxDurationMs) {
+  for (const actions of generateRouteActionSets(args.actions)) {
+    if (examinedCandidateCount >= maxCandidates || Date.now() - startedAt > maxDurationMs) {
       return {
         status: 'search_incomplete',
         pareto: [],
         evaluatedCandidateCount,
       };
     }
+    examinedCandidateCount += 1;
 
     const afterProfile = applyRouteActions(args.profile, actions);
     if (!afterProfile) {
       continue;
     }
-
     evaluatedCandidateCount += 1;
     const verification = args.evaluate(afterProfile);
     if (!verification.eligible) {
@@ -89,8 +95,11 @@ export function rankVerifiedAdmissionRoutes(args: {
 
   const pareto = verified
     .filter((candidate) => !verified.some((other) => dominates(other, candidate)))
-    .sort(compareFastest)
-    .slice(0, maxParetoFinalists);
+    .sort(compareFastest);
+
+  if (pareto.length > maxParetoFinalists) {
+    return { status: 'search_incomplete', pareto: [], evaluatedCandidateCount };
+  }
 
   return {
     status: 'complete',
@@ -99,26 +108,6 @@ export function rankVerifiedAdmissionRoutes(args: {
     pareto,
     evaluatedCandidateCount,
   };
-}
-
-function candidateActionSets(actions: RouteAction[]): RouteAction[][] {
-  const sorted = [...actions].sort((left, right) => left.id.localeCompare(right.id));
-  const candidates = sorted.map((action) => [action]);
-
-  for (let first = 0; first < sorted.length; first += 1) {
-    for (let second = first + 1; second < sorted.length; second += 1) {
-      candidates.push([sorted[first]!, sorted[second]!]);
-    }
-  }
-
-  return candidates;
-}
-
-function applyRouteActions(profile: RouteProfile, actions: RouteAction[]): RouteProfile | null {
-  return actions.reduce<RouteProfile | null>(
-    (current, action) => (current ? applyRouteAction(current, action) : null),
-    profile,
-  );
 }
 
 function dominates(left: VerifiedAdmissionRoute, right: VerifiedAdmissionRoute): boolean {

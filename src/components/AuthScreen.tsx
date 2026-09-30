@@ -125,6 +125,7 @@ export default function AuthScreen({
             {mode === 'signup' ? (
               <>
                 <label className="relative block">
+                  <span className="sr-only">שם פרטי</span>
                   <input
                     type="text"
                     autoComplete="given-name"
@@ -136,6 +137,7 @@ export default function AuthScreen({
                 </label>
 
                 <label className="relative block">
+                  <span className="sr-only">שם משפחה</span>
                   <input
                     type="text"
                     autoComplete="family-name"

@@ -1,0 +1,992 @@
+{
+  "checkedAt": "2026-09-28T07:47:43.214639+00:00",
+  "scope": {
+    "distinctProgrammes": 16,
+    "catalogueAliases": 27
+  },
+  "status": "research_evidence_only_not_activation_proof",
+  "interpretation": "Current admissions pages supply published programme gates. Calculator responses supply replay scores. Differences are retained for reviewed reconciliation.",
+  "generalRequirements": {
+    "qualification": "Full Bagrut certificate or an officially recognized equivalent.",
+    "hebrewExemptions": [
+      "Hebrew school instruction.",
+      "Admission psychometric exam taken in Hebrew.",
+      "Recognized practical-engineer diploma with Hebrew instruction and Hebrew state licensing exam."
+    ],
+    "hebrewCourse": "Only עברית באקדמיה לתואר satisfies the general requirement; similarly named עברית באקדמיה does not.",
+    "hebrewConditionalCourse": "In2026-2027, scores109or lower require the university degree-Hebrew course, subject to programme approval.",
+    "englishClassification": {
+      "pre_basic_a": [50, 69],
+      "pre_basic_b": [70, 84],
+      "basic": [85, 99],
+      "advanced_a": [100, 119],
+      "advanced_b": [120, 133],
+      "exemptMinimum": 134
+    },
+    "sources": [
+      {
+        "name": "general",
+        "url": "https://admissions.haifa.ac.il/university-admission-requirements-bachelor/",
+        "pageId": null,
+        "sha256": "c29b4ebbc66bc66be8315f47e89968b9936470bafe2e0f0057b493dea5410c02",
+        "bytes": 299503,
+        "textFile": "current-general.txt"
+      },
+      {
+        "name": "hebrew",
+        "url": "https://admissions.haifa.ac.il/hebrew-language-proficiency/",
+        "pageId": null,
+        "sha256": "ecf1326dee72df609bf881c17c685c87ee0dff8b2e55bba062650812cc5cf650",
+        "bytes": 302246,
+        "textFile": "current-hebrew.txt"
+      },
+      {
+        "name": "english",
+        "url": "https://admissions.haifa.ac.il/english-language-proficiency/",
+        "pageId": null,
+        "sha256": "4755ae0a2240ac8cf474901805c5deece6848d8eb3db70ab1153e50035cbf90f",
+        "bytes": 292427,
+        "textFile": "current-english.txt"
+      }
+    ]
+  },
+  "records": [
+    {
+      "programme": "accounting",
+      "route": "standard_score",
+      "admissionCycle": "2026-2027",
+      "source": {
+        "name": "accounting",
+        "url": "https://admissions.haifa.ac.il/social-sciences/program/2484",
+        "pageId": 2484,
+        "sha256": "436317829732cc7c5a53390a3e91a81cc10615c2d7d8dcf457395a0a9cb7e87e",
+        "bytes": 384402,
+        "textFile": "current-accounting.txt"
+      },
+      "score": {
+        "acceptance": 680,
+        "publishedWaitingMinimum": 660
+      },
+      "english": {
+        "minimumClassificationScore": 85,
+        "sourceUrl": "https://admissions.haifa.ac.il/english-language-proficiency/",
+        "conditionalBelowBasic": false
+      },
+      "hebrew": {
+        "minimumExamScore": 120,
+        "unconditionalExamScore": 120,
+        "conditionalAdmission": false,
+        "exemptionsSourceUrl": "https://admissions.haifa.ac.il/hebrew-language-proficiency/",
+        "examValidityYears": 10,
+        "universityCourse": "עברית באקדמיה לתואר"
+      },
+      "mathAlternatives": [
+        {
+          "units": 4,
+          "minimumGrade": 80
+        },
+        {
+          "units": 5,
+          "minimumGrade": 60
+        }
+      ],
+      "manualStages": [
+        "Pass the university accounting-information course with at least 60 before studies begin."
+      ],
+      "registrationHeadline": "ההרשמה נסגרה",
+      "activationState": "withheld",
+      "verificationStillOwed": [
+        "Runtime gate implementation and applicant input collection.",
+        "Programme-specific positive, missing-input and failed-gate fixtures.",
+        "Reviewed source/fixture fingerprint publication and deployed verification."
+      ],
+      "aliases": ["accounting", "haifa_accounting"],
+      "officialCalculatorId": "52261493",
+      "officialCalculatorHug": "SC0017",
+      "deadlines": {
+        "registration": "2026-07-08",
+        "documents": "2026-07-12",
+        "latestPsychometricSession": "2026-04",
+        "sourceUrl": "https://admissions.haifa.ac.il/registration-deadlines-and-entrance-exams/",
+        "scope": "ordinary undergraduate programme; special populations, routes and external branches may differ"
+      }
+    },
+    {
+      "programme": "biology",
+      "route": "standard_score",
+      "admissionCycle": "2026-2027",
+      "source": {
+        "name": "biology",
+        "url": "https://admissions.haifa.ac.il/natural-sciences/program/3036",
+        "pageId": 3036,
+        "sha256": "e6e5e622753a43e5876545add21fee5ff12949ad869dc36a047f110563d99c8b",
+        "bytes": 385279,
+        "textFile": "current-biology.txt"
+      },
+      "score": {
+        "acceptance": 640,
+        "publishedWaitingMinimum": 620
+      },
+      "english": {
+        "minimumClassificationScore": 50,
+        "sourceUrl": "https://admissions.haifa.ac.il/english-language-proficiency/",
+        "conditionalBelowBasic": true
+      },
+      "hebrew": {
+        "minimumExamScore": 110,
+        "unconditionalExamScore": 120,
+        "conditionalAdmission": true,
+        "exemptionsSourceUrl": "https://admissions.haifa.ac.il/hebrew-language-proficiency/",
+        "examValidityYears": 10,
+        "universityCourse": "עברית באקדמיה לתואר"
+      },
+      "mathAlternatives": [
+        {
+          "units": 3,
+          "minimumGrade": 90
+        },
+        {
+          "units": 4,
+          "minimumGrade": 80
+        },
+        {
+          "units": 5,
+          "minimumGrade": 70
+        }
+      ],
+      "manualStages": [],
+      "registrationHeadline": "ההרשמה נסגרה",
+      "activationState": "withheld",
+      "verificationStillOwed": [
+        "Runtime gate implementation and applicant input collection.",
+        "Programme-specific positive, missing-input and failed-gate fixtures.",
+        "Reviewed source/fixture fingerprint publication and deployed verification."
+      ],
+      "reconciliation": [
+        "Calculator otherConditions says no conditions found; current yearbook and admissions page explicitly publish maths and language requirements."
+      ],
+      "aliases": ["biology", "haifa_biology"],
+      "officialCalculatorId": "52255174",
+      "officialCalculatorHug": "SC0006",
+      "deadlines": {
+        "registration": "2026-08-31",
+        "documents": "2026-08-31",
+        "latestPsychometricSession": "2026-07",
+        "sourceUrl": "https://admissions.haifa.ac.il/registration-deadlines-and-entrance-exams/",
+        "scope": "ordinary undergraduate programme; special populations, routes and external branches may differ"
+      }
+    },
+    {
+      "programme": "communication",
+      "route": "standard_score",
+      "admissionCycle": "2026-2027",
+      "source": {
+        "name": "communication",
+        "url": "https://admissions.haifa.ac.il/social-sciences/program/3229",
+        "pageId": 3229,
+        "sha256": "a663baac099344ca5236f32bd6c1c5ce082d710f83e63f3e7786221b70ec6fa4",
+        "bytes": 402931,
+        "textFile": "current-communication.txt"
+      },
+      "score": {
+        "acceptance": 550,
+        "publishedWaitingMinimum": 500
+      },
+      "english": {
+        "minimumClassificationScore": 50,
+        "sourceUrl": "https://admissions.haifa.ac.il/english-language-proficiency/",
+        "conditionalBelowBasic": true
+      },
+      "hebrew": {
+        "minimumExamScore": 95,
+        "unconditionalExamScore": 120,
+        "conditionalAdmission": true,
+        "exemptionsSourceUrl": "https://admissions.haifa.ac.il/hebrew-language-proficiency/",
+        "examValidityYears": 10,
+        "universityCourse": "עברית באקדמיה לתואר"
+      },
+      "mathAlternatives": [],
+      "manualStages": [],
+      "registrationHeadline": "ההרשמה פתוחה",
+      "activationState": "withheld",
+      "verificationStillOwed": [
+        "Runtime gate implementation and applicant input collection.",
+        "Programme-specific positive, missing-input and failed-gate fixtures.",
+        "Reviewed source/fixture fingerprint publication and deployed verification."
+      ],
+      "reconciliation": [
+        "Calculator says waiting-range entrance exam; published page instead lists an Ofek route at500-549 with2-3courses requiring70. Do not equate those stages."
+      ],
+      "acceleratedProgrammeRequirements": {
+        "englishMinimumScore": 85,
+        "hebrewMinimumScore": 120,
+        "scope": "two-year dual-major programme only"
+      },
+      "aliases": ["communication", "haifa_communication"],
+      "officialCalculatorId": "52253864",
+      "officialCalculatorHug": "SC0052"
+    },
+    {
+      "programme": "cs",
+      "route": "standard_score",
+      "admissionCycle": "2026-2027",
+      "source": {
+        "name": "cs",
+        "url": "https://admissions.haifa.ac.il/computer-information-science/program/3210",
+        "pageId": 3210,
+        "sha256": "494b2bbc323dd913c491932cb0123fbb3d0fb0057f08c492d6f081b413e18380",
+        "bytes": 397062,
+        "textFile": "current-cs.txt"
+      },
+      "score": {
+        "acceptance": 700,
+        "publishedWaitingMinimum": 680
+      },
+      "english": {
+        "minimumClassificationScore": 50,
+        "sourceUrl": "https://admissions.haifa.ac.il/english-language-proficiency/",
+        "conditionalBelowBasic": true
+      },
+      "hebrew": {
+        "minimumExamScore": 120,
+        "unconditionalExamScore": 120,
+        "conditionalAdmission": false,
+        "exemptionsSourceUrl": "https://admissions.haifa.ac.il/hebrew-language-proficiency/",
+        "examValidityYears": 10,
+        "universityCourse": "עברית באקדמיה לתואר"
+      },
+      "mathAlternatives": [
+        {
+          "units": 4,
+          "minimumGrade": 90
+        },
+        {
+          "units": 5,
+          "minimumGrade": 75
+        }
+      ],
+      "manualStages": [],
+      "registrationHeadline": "ההרשמה פתוחה",
+      "activationState": "withheld",
+      "verificationStillOwed": [
+        "Runtime gate implementation and applicant input collection.",
+        "Programme-specific positive, missing-input and failed-gate fixtures.",
+        "Reviewed source/fixture fingerprint publication and deployed verification."
+      ],
+      "reconciliation": [
+        "Published page explicitly assigns Hebrew 125 to 2025-2026 and 120 to 2026-2027. Calculator otherConditions still says 125."
+      ],
+      "waitingStage": "Department committee reviews standard-route candidates with scores 680-699.",
+      "aliases": ["cs", "haifa_cs"],
+      "officialCalculatorId": "52256544",
+      "officialCalculatorHug": "SC0021"
+    },
+    {
+      "programme": "economics",
+      "route": "standard_score",
+      "admissionCycle": "2026-2027",
+      "source": {
+        "name": "economics",
+        "url": "https://admissions.haifa.ac.il/social-sciences/program/2482",
+        "pageId": 2482,
+        "sha256": "91056d541a6284ea03a98c1fe6654c6f9b335ec6aba18e8b85816f1ec7681f95",
+        "bytes": 403288,
+        "textFile": "current-economics.txt"
+      },
+      "score": {
+        "acceptance": 660,
+        "publishedWaitingMinimum": 640
+      },
+      "english": {
+        "minimumClassificationScore": 85,
+        "sourceUrl": "https://admissions.haifa.ac.il/english-language-proficiency/",
+        "conditionalBelowBasic": false
+      },
+      "hebrew": {
+        "minimumExamScore": 120,
+        "unconditionalExamScore": 120,
+        "conditionalAdmission": false,
+        "exemptionsSourceUrl": "https://admissions.haifa.ac.il/hebrew-language-proficiency/",
+        "examValidityYears": 10,
+        "universityCourse": "עברית באקדמיה לתואר"
+      },
+      "mathAlternatives": [
+        {
+          "units": 4,
+          "minimumGrade": 80
+        },
+        {
+          "units": 5,
+          "minimumGrade": 60
+        }
+      ],
+      "manualStages": [],
+      "registrationHeadline": "ההרשמה פתוחה",
+      "activationState": "withheld",
+      "verificationStillOwed": [
+        "Runtime gate implementation and applicant input collection.",
+        "Programme-specific positive, missing-input and failed-gate fixtures.",
+        "Reviewed source/fixture fingerprint publication and deployed verification."
+      ],
+      "reconciliation": [
+        "Published standard route Hebrew minimum120; calculator otherConditions still says110 conditional."
+      ],
+      "aliases": ["economics", "haifa_economics"],
+      "officialCalculatorId": "52261490",
+      "officialCalculatorHug": "SC0017",
+      "deadlines": {
+        "registration": "2026-10-04",
+        "documents": "2026-10-06",
+        "latestPsychometricSession": "2026-07",
+        "sourceUrl": "https://admissions.haifa.ac.il/registration-deadlines-and-entrance-exams/",
+        "scope": "ordinary undergraduate programme; special populations, routes and external branches may differ"
+      }
+    },
+    {
+      "programme": "infosystems",
+      "route": "standard_score",
+      "admissionCycle": "2026-2027",
+      "source": {
+        "name": "infosystems",
+        "url": "https://admissions.haifa.ac.il/computer-information-science/program/3218",
+        "pageId": 3218,
+        "sha256": "16a09775b734af87ab6d30802623f07afd3f88724c94253bb350d315f4a73337",
+        "bytes": 397439,
+        "textFile": "current-infosystems.txt"
+      },
+      "score": {
+        "acceptance": 680,
+        "publishedWaitingMinimum": 650
+      },
+      "english": {
+        "minimumClassificationScore": 50,
+        "sourceUrl": "https://admissions.haifa.ac.il/english-language-proficiency/",
+        "conditionalBelowBasic": true
+      },
+      "hebrew": {
+        "minimumExamScore": 120,
+        "unconditionalExamScore": 120,
+        "conditionalAdmission": false,
+        "exemptionsSourceUrl": "https://admissions.haifa.ac.il/hebrew-language-proficiency/",
+        "examValidityYears": 10,
+        "universityCourse": "עברית באקדמיה לתואר"
+      },
+      "mathAlternatives": [
+        {
+          "units": 4,
+          "minimumGrade": 80
+        },
+        {
+          "units": 5,
+          "minimumGrade": 70
+        }
+      ],
+      "manualStages": [],
+      "registrationHeadline": "ההרשמה פתוחה",
+      "activationState": "withheld",
+      "verificationStillOwed": [
+        "Runtime gate implementation and applicant input collection.",
+        "Programme-specific positive, missing-input and failed-gate fixtures.",
+        "Reviewed source/fixture fingerprint publication and deployed verification."
+      ],
+      "mappingState": "unresolved",
+      "yearbookSingleMajorCode": "214102-26-01",
+      "calculatorConfiguredId": "52256686",
+      "mappingEvidence": "Configured ID is absent from the current2026/001programme dictionary; page says registration open and current yearbook lists a single-major programme. No alternate numeric ID selected.",
+      "aliases": ["haifa_infosystems"],
+      "officialCalculatorId": "52256686",
+      "officialCalculatorHug": "SC0026",
+      "deadlines": {
+        "registration": "2026-08-31",
+        "documents": "2026-08-31",
+        "latestPsychometricSession": "2026-07",
+        "sourceUrl": "https://admissions.haifa.ac.il/registration-deadlines-and-entrance-exams/",
+        "scope": "ordinary undergraduate programme; special populations, routes and external branches may differ"
+      },
+      "reconciliation": [
+        "Programme headline says registration open, but published undergraduate deadline has passed. Preserve this disagreement rather than declaring the programme closed or changing mappings from it."
+      ]
+    },
+    {
+      "programme": "law",
+      "route": "standard_score",
+      "admissionCycle": "2026-2027",
+      "source": {
+        "name": "law",
+        "url": "https://admissions.haifa.ac.il/law/program/3000",
+        "pageId": 3000,
+        "sha256": "c06f9ed9f8a769a89fb958f04b9bd18b6c99b3f3d305f0531a7626fddeb58de1",
+        "bytes": 401024,
+        "textFile": "current-law.txt"
+      },
+      "score": {
+        "acceptance": 680,
+        "publishedWaitingMinimum": 630
+      },
+      "english": {
+        "minimumClassificationScore": 100,
+        "sourceUrl": "https://admissions.haifa.ac.il/english-language-proficiency/",
+        "conditionalBelowBasic": false
+      },
+      "hebrew": {
+        "minimumExamScore": 120,
+        "unconditionalExamScore": 120,
+        "conditionalAdmission": false,
+        "exemptionsSourceUrl": "https://admissions.haifa.ac.il/hebrew-language-proficiency/",
+        "examValidityYears": 10,
+        "universityCourse": "עברית באקדמיה לתואר",
+        "facultyConditionalMinimum": 115,
+        "facultyConditionalApprovalRequired": true
+      },
+      "mathAlternatives": [],
+      "manualStages": [],
+      "registrationHeadline": "ההרשמה נסגרה",
+      "activationState": "withheld",
+      "verificationStillOwed": [
+        "Runtime gate implementation and applicant input collection.",
+        "Programme-specific positive, missing-input and failed-gate fixtures.",
+        "Reviewed source/fixture fingerprint publication and deployed verification."
+      ],
+      "alternativeScoreRoute": {
+        "scoreRange": [600, 679],
+        "or": {
+          "psychometricOverallMinimum": 660,
+          "fullBagrutCertificate": true
+        },
+        "manualStage": "Pass suitability exam; faculty decides direct degree versus Ofek.",
+        "sameLanguageRequirements": true
+      },
+      "reconciliation": [
+        "Calculator text mentions630-679suitability; published alternate route explicitly includes600-679or psychometric660/fullcertificate."
+      ],
+      "aliases": ["law", "haifa_law"],
+      "officialCalculatorId": "52255476",
+      "officialCalculatorHug": "SC0029",
+      "deadlines": {
+        "registration": "2026-08-10",
+        "documents": "2026-08-10",
+        "latestPsychometricSession": "2026-07",
+        "sourceUrl": "https://admissions.haifa.ac.il/registration-deadlines-and-entrance-exams/",
+        "scope": "ordinary undergraduate programme; special populations, routes and external branches may differ"
+      }
+    },
+    {
+      "programme": "math",
+      "route": "standard_score",
+      "admissionCycle": "2026-2027",
+      "source": {
+        "name": "math",
+        "url": "https://admissions.haifa.ac.il/natural-sciences/program/3161",
+        "pageId": 3161,
+        "sha256": "db253c197c86b20b413dab82b179f8123adf34c2257d8f72745a17000410707c",
+        "bytes": 392754,
+        "textFile": "current-math.txt"
+      },
+      "score": {
+        "acceptance": 610,
+        "publishedWaitingMinimum": 580
+      },
+      "english": {
+        "minimumClassificationScore": 50,
+        "sourceUrl": "https://admissions.haifa.ac.il/english-language-proficiency/",
+        "conditionalBelowBasic": true
+      },
+      "hebrew": {
+        "minimumExamScore": 90,
+        "unconditionalExamScore": 120,
+        "conditionalAdmission": true,
+        "exemptionsSourceUrl": "https://admissions.haifa.ac.il/hebrew-language-proficiency/",
+        "examValidityYears": 10,
+        "universityCourse": "עברית באקדמיה לתואר"
+      },
+      "mathAlternatives": [
+        {
+          "units": 4,
+          "minimumGrade": 80
+        },
+        {
+          "units": 5,
+          "minimumGrade": 70
+        }
+      ],
+      "manualStages": [],
+      "registrationHeadline": "ההרשמה פתוחה",
+      "activationState": "withheld",
+      "verificationStillOwed": [
+        "Runtime gate implementation and applicant input collection.",
+        "Programme-specific positive, missing-input and failed-gate fixtures.",
+        "Reviewed source/fixture fingerprint publication and deployed verification."
+      ],
+      "aliases": ["haifa_math"],
+      "officialCalculatorId": "52257936",
+      "officialCalculatorHug": "SC0030"
+    },
+    {
+      "programme": "nursing",
+      "route": "standard_score",
+      "admissionCycle": "2026-2027",
+      "source": {
+        "name": "nursing",
+        "url": "https://admissions.haifa.ac.il/social-welfare-health-sciences/program/2973",
+        "pageId": 2973,
+        "sha256": "6ac19292f13f443ec80fce2a540be82c1927d38f5ce9314a01d8666689f3895d",
+        "bytes": 399374,
+        "textFile": "current-nursing.txt"
+      },
+      "score": {
+        "acceptance": 580,
+        "publishedWaitingMinimum": 570
+      },
+      "english": {
+        "minimumClassificationScore": 85,
+        "sourceUrl": "https://admissions.haifa.ac.il/english-language-proficiency/",
+        "conditionalBelowBasic": false
+      },
+      "hebrew": {
+        "minimumExamScore": 115,
+        "unconditionalExamScore": 120,
+        "conditionalAdmission": true,
+        "exemptionsSourceUrl": "https://admissions.haifa.ac.il/hebrew-language-proficiency/",
+        "examValidityYears": 10,
+        "universityCourse": "עברית באקדמיה לתואר"
+      },
+      "mathAlternatives": [],
+      "manualStages": [
+        "Computer-based emotional-intelligence/department suitability test; admission remains a department decision."
+      ],
+      "registrationHeadline": "ההרשמה פתוחה",
+      "activationState": "withheld",
+      "verificationStillOwed": [
+        "Runtime gate implementation and applicant input collection.",
+        "Programme-specific positive, missing-input and failed-gate fixtures.",
+        "Reviewed source/fixture fingerprint publication and deployed verification."
+      ],
+      "minimumPsychometricOverall": 550,
+      "minimumScienceUnits": 8,
+      "scienceSubjectsSource": "Current yearbook nursing post 2524: mathematics, physics, chemistry, biology, medical sciences or health sciences.",
+      "reconciliation": [
+        "Current admissions page explicitly allows Hebrew 115-119 conditionally; current yearbook wording says above 115. Retain both, use the explicit admissions-page range only after review.",
+        "Programme headline says registration open, but published undergraduate deadline has passed. Preserve this disagreement rather than declaring the programme closed or changing mappings from it."
+      ],
+      "aliases": ["nursing", "haifa_nursing"],
+      "officialCalculatorId": "52257430",
+      "officialCalculatorHug": "SC0034",
+      "deadlines": {
+        "registration": "2026-08-31",
+        "documents": null,
+        "latestPsychometricSession": "2026-07",
+        "sourceUrl": "https://admissions.haifa.ac.il/registration-deadlines-and-entrance-exams/",
+        "scope": "ordinary undergraduate programme; special populations, routes and external branches may differ"
+      }
+    },
+    {
+      "programme": "occupational_therapy",
+      "route": "standard_score",
+      "admissionCycle": "2026-2027",
+      "source": {
+        "name": "occupational_therapy",
+        "url": "https://admissions.haifa.ac.il/social-welfare-health-sciences/program/3088",
+        "pageId": 3088,
+        "sha256": "391c425ce12484524471d3fb8256d7410ea461545b969d978cdc7e5e6dee0bf8",
+        "bytes": 402920,
+        "textFile": "current-occupational_therapy.txt"
+      },
+      "score": {
+        "acceptance": 610,
+        "publishedWaitingMinimum": 595
+      },
+      "english": {
+        "minimumClassificationScore": 100,
+        "sourceUrl": "https://admissions.haifa.ac.il/english-language-proficiency/",
+        "conditionalBelowBasic": false
+      },
+      "hebrew": {
+        "minimumExamScore": 120,
+        "unconditionalExamScore": 120,
+        "conditionalAdmission": false,
+        "exemptionsSourceUrl": "https://admissions.haifa.ac.il/hebrew-language-proficiency/",
+        "examValidityYears": 10,
+        "universityCourse": "עברית באקדמיה לתואר"
+      },
+      "mathAlternatives": [],
+      "manualStages": [
+        "Written interview, followed by an oral interview for candidates who pass the written stage.",
+        "After two unsuccessful selection attempts, a third attempt is not allowed.",
+        "First-preference applicants receive priority; unjustified absence without notice prevents another interview."
+      ],
+      "registrationHeadline": "ההרשמה נסגרה",
+      "activationState": "withheld",
+      "verificationStillOwed": [
+        "Runtime gate implementation and applicant input collection.",
+        "Programme-specific positive, missing-input and failed-gate fixtures.",
+        "Reviewed source/fixture fingerprint publication and deployed verification."
+      ],
+      "latestPsychometricSession": "2026-04",
+      "latestHebrewExamSession": "2026-04",
+      "conditionalAdmissionAllowed": false,
+      "waitingStage": "595-609 does not automatically qualify for selection; department may contact chosen candidates.",
+      "reconciliation": [
+        "Current programme page/yearbook require the actual psychometric/Yael session, not just exam year."
+      ],
+      "aliases": ["occupational_therapy"],
+      "officialCalculatorId": "52255365",
+      "officialCalculatorHug": "SC0046",
+      "deadlines": {
+        "registration": "2026-06-14",
+        "documents": "2026-06-14",
+        "latestPsychometricSession": "2026-04",
+        "sourceUrl": "https://admissions.haifa.ac.il/registration-deadlines-and-entrance-exams/",
+        "scope": "ordinary undergraduate programme; special populations, routes and external branches may differ"
+      }
+    },
+    {
+      "programme": "physiotherapy",
+      "route": "standard_score",
+      "admissionCycle": "2026-2027",
+      "source": {
+        "name": "physiotherapy",
+        "url": "https://admissions.haifa.ac.il/social-welfare-health-sciences/program/3181",
+        "pageId": 3181,
+        "sha256": "36c7dec5b374ee45270c69c84c7a0b78607cfbaea8e71fc45cd7a324a1e46802",
+        "bytes": 394662,
+        "textFile": "current-physiotherapy.txt"
+      },
+      "score": {
+        "acceptance": 680,
+        "publishedWaitingMinimum": 630
+      },
+      "english": {
+        "minimumClassificationScore": 100,
+        "sourceUrl": "https://admissions.haifa.ac.il/english-language-proficiency/",
+        "conditionalBelowBasic": false
+      },
+      "hebrew": {
+        "minimumExamScore": 120,
+        "unconditionalExamScore": 120,
+        "conditionalAdmission": false,
+        "exemptionsSourceUrl": "https://admissions.haifa.ac.il/hebrew-language-proficiency/",
+        "examValidityYears": 10,
+        "universityCourse": "עברית באקדמיה לתואר"
+      },
+      "mathAlternatives": [
+        {
+          "units": 4,
+          "minimumGrade": 55
+        },
+        {
+          "units": 5,
+          "minimumGrade": 55
+        }
+      ],
+      "manualStages": ["Admission interview at department discretion."],
+      "registrationHeadline": "ההרשמה נסגרה",
+      "activationState": "withheld",
+      "verificationStillOwed": [
+        "Runtime gate implementation and applicant input collection.",
+        "Programme-specific positive, missing-input and failed-gate fixtures.",
+        "Reviewed source/fixture fingerprint publication and deployed verification."
+      ],
+      "mathRequirement": {
+        "minimumUnits": 4,
+        "grade": "passing",
+        "numericPassingGrade": 55,
+        "interpretation": "Apply the ordinary Israeli Bagrut passing grade55from the Ministry of Education to the university wordingpassing; the programme page itself does not print55.",
+        "passingGradeSourceUrl": "https://parents.education.gov.il/gov-education/school/matriculation/grades"
+      },
+      "reconciliation": [
+        "Published waiting range is 630-679; calculator response rejection cutoff is 639."
+      ],
+      "aliases": ["physiotherapy", "haifa_physiotherapy"],
+      "officialCalculatorId": "52256372",
+      "officialCalculatorHug": "SC0040",
+      "deadlines": {
+        "registration": "2026-06-01",
+        "documents": "2026-06-01",
+        "latestPsychometricSession": "2026-04",
+        "sourceUrl": "https://admissions.haifa.ac.il/registration-deadlines-and-entrance-exams/",
+        "scope": "ordinary undergraduate programme; special populations, routes and external branches may differ"
+      }
+    },
+    {
+      "programme": "political_science",
+      "route": "standard_score",
+      "admissionCycle": "2026-2027",
+      "source": {
+        "name": "political_science",
+        "url": "https://admissions.haifa.ac.il/social-sciences/program/3054",
+        "pageId": 3054,
+        "sha256": "314940b52126122f5a446ae99b4dd27d42a3ed4c4f0f606f5c1710b9b2530c88",
+        "bytes": 402195,
+        "textFile": "current-political_science.txt"
+      },
+      "score": {
+        "acceptance": 580,
+        "publishedWaitingMinimum": 520
+      },
+      "english": {
+        "minimumClassificationScore": 50,
+        "sourceUrl": "https://admissions.haifa.ac.il/english-language-proficiency/",
+        "conditionalBelowBasic": true
+      },
+      "hebrew": {
+        "minimumExamScore": 90,
+        "unconditionalExamScore": 120,
+        "conditionalAdmission": true,
+        "exemptionsSourceUrl": "https://admissions.haifa.ac.il/hebrew-language-proficiency/",
+        "examValidityYears": 10,
+        "universityCourse": "עברית באקדמיה לתואר"
+      },
+      "mathAlternatives": [],
+      "manualStages": [],
+      "registrationHeadline": "ההרשמה פתוחה",
+      "activationState": "withheld",
+      "verificationStillOwed": [
+        "Runtime gate implementation and applicant input collection.",
+        "Programme-specific positive, missing-input and failed-gate fixtures.",
+        "Reviewed source/fixture fingerprint publication and deployed verification."
+      ],
+      "acceleratedProgrammeRequirements": {
+        "englishMinimumScore": 85,
+        "hebrewMinimumScore": 120,
+        "scope": "two-year programme only"
+      },
+      "aliases": ["political_science", "haifa_politicalscience"],
+      "officialCalculatorId": "52254686",
+      "officialCalculatorHug": "SC0020"
+    },
+    {
+      "programme": "psychology",
+      "route": "standard_score",
+      "admissionCycle": "2026-2027",
+      "source": {
+        "name": "psychology",
+        "url": "https://admissions.haifa.ac.il/social-sciences/program/3268",
+        "pageId": 3268,
+        "sha256": "14d12df6ee6a03838ed88a270636bef453cbcb0aa313eeacf4d2b01e99ed6c71",
+        "bytes": 404963,
+        "textFile": "current-psychology.txt"
+      },
+      "score": {
+        "acceptance": 650,
+        "publishedWaitingMinimum": 630
+      },
+      "english": {
+        "minimumClassificationScore": 50,
+        "sourceUrl": "https://admissions.haifa.ac.il/english-language-proficiency/",
+        "conditionalBelowBasic": true
+      },
+      "hebrew": {
+        "minimumExamScore": 90,
+        "unconditionalExamScore": 120,
+        "conditionalAdmission": true,
+        "exemptionsSourceUrl": "https://admissions.haifa.ac.il/hebrew-language-proficiency/",
+        "examValidityYears": 10,
+        "universityCourse": "עברית באקדמיה לתואר"
+      },
+      "mathAlternatives": [],
+      "manualStages": [],
+      "registrationHeadline": "ההרשמה נסגרה",
+      "activationState": "withheld",
+      "verificationStillOwed": [
+        "Runtime gate implementation and applicant input collection.",
+        "Programme-specific positive, missing-input and failed-gate fixtures.",
+        "Reviewed source/fixture fingerprint publication and deployed verification."
+      ],
+      "aliases": ["psychology", "haifa_psychology"],
+      "officialCalculatorId": "52252391",
+      "officialCalculatorHug": "SC0042",
+      "deadlines": {
+        "registration": "2026-09-15",
+        "documents": "2026-09-15",
+        "latestPsychometricSession": "2026-07",
+        "sourceUrl": "https://admissions.haifa.ac.il/registration-deadlines-and-entrance-exams/",
+        "scope": "ordinary undergraduate programme; special populations, routes and external branches may differ"
+      }
+    },
+    {
+      "programme": "social_work",
+      "route": "standard_score",
+      "admissionCycle": "2026-2027",
+      "source": {
+        "name": "social_work",
+        "url": "https://admissions.haifa.ac.il/social-welfare-health-sciences/program/3082",
+        "pageId": 3082,
+        "sha256": "1e1218466afe141c49c3ea9f7d4904d01b4ff7bb832eeefcfa963edf472880f5",
+        "bytes": 406615,
+        "textFile": "current-social_work.txt"
+      },
+      "score": {
+        "acceptance": 615,
+        "publishedWaitingMinimum": 580
+      },
+      "english": {
+        "minimumClassificationScore": 85,
+        "sourceUrl": "https://admissions.haifa.ac.il/english-language-proficiency/",
+        "conditionalBelowBasic": false
+      },
+      "hebrew": {
+        "minimumExamScore": 120,
+        "unconditionalExamScore": 120,
+        "conditionalAdmission": false,
+        "exemptionsSourceUrl": "https://admissions.haifa.ac.il/hebrew-language-proficiency/",
+        "examValidityYears": 10,
+        "universityCourse": "עברית באקדמיה לתואר"
+      },
+      "mathAlternatives": [],
+      "manualStages": [
+        "Admission interview, including applicants in the waiting range.",
+        "Complete programme-specific candidate documents in the candidate system; application cannot be assessed without them."
+      ],
+      "registrationHeadline": "ההרשמה נסגרה",
+      "activationState": "withheld",
+      "verificationStillOwed": [
+        "Runtime gate implementation and applicant input collection.",
+        "Programme-specific positive, missing-input and failed-gate fixtures.",
+        "Reviewed source/fixture fingerprint publication and deployed verification."
+      ],
+      "aliases": ["social_work", "haifa_socialwork"],
+      "officialCalculatorId": "52253943",
+      "officialCalculatorHug": "SC0037",
+      "deadlines": {
+        "registration": "2026-06-30",
+        "documents": "2026-07-10",
+        "latestPsychometricSession": null,
+        "sourceUrl": "https://admissions.haifa.ac.il/registration-deadlines-and-entrance-exams/",
+        "scope": "ordinary undergraduate programme; special populations, routes and external branches may differ"
+      }
+    },
+    {
+      "programme": "sociology",
+      "route": "standard_score",
+      "admissionCycle": "2026-2027",
+      "source": {
+        "name": "sociology",
+        "url": "https://admissions.haifa.ac.il/social-sciences/program/2968",
+        "pageId": 2968,
+        "sha256": "17843bbf7239e4b993222d6d4cfeeb6e3d92f228871291a057be07a7496126b5",
+        "bytes": 400251,
+        "textFile": "current-sociology.txt"
+      },
+      "score": {
+        "acceptance": 540,
+        "publishedWaitingMinimum": 520
+      },
+      "english": {
+        "minimumClassificationScore": 50,
+        "sourceUrl": "https://admissions.haifa.ac.il/english-language-proficiency/",
+        "conditionalBelowBasic": true
+      },
+      "hebrew": {
+        "minimumExamScore": 110,
+        "unconditionalExamScore": 120,
+        "conditionalAdmission": true,
+        "exemptionsSourceUrl": "https://admissions.haifa.ac.il/hebrew-language-proficiency/",
+        "examValidityYears": 10,
+        "universityCourse": "עברית באקדמיה לתואר"
+      },
+      "mathAlternatives": [],
+      "manualStages": [],
+      "registrationHeadline": "ההרשמה נסגרה",
+      "activationState": "withheld",
+      "verificationStillOwed": [
+        "Runtime gate implementation and applicant input collection.",
+        "Programme-specific positive, missing-input and failed-gate fixtures.",
+        "Reviewed source/fixture fingerprint publication and deployed verification."
+      ],
+      "reconciliation": [
+        "Published standard route uses pre-basic English and Hebrew 110 conditional, versus calculator basic English/Hebrew120.",
+        "Published waiting range is 520-539; calculator rejection cutoff is539."
+      ],
+      "acceleratedProgrammeRequirements": {
+        "englishMinimumScore": 85,
+        "hebrewMinimumScore": 120,
+        "scope": "two-year programme starting in semester A only"
+      },
+      "aliases": ["haifa_sociology"],
+      "officialCalculatorId": "52252907",
+      "officialCalculatorHug": "SC0032"
+    },
+    {
+      "programme": "statistics",
+      "route": "standard_score",
+      "admissionCycle": "2026-2027",
+      "source": {
+        "name": "statistics",
+        "url": "https://admissions.haifa.ac.il/natural-sciences/program/3167",
+        "pageId": 3167,
+        "sha256": "b460b8faf296f0ef0732c5ef4cd288e85a17c40afec64dd12a968d14ef5bcff7",
+        "bytes": 391495,
+        "textFile": "current-statistics.txt"
+      },
+      "score": {
+        "acceptance": 630,
+        "publishedWaitingMinimum": 600
+      },
+      "english": {
+        "minimumClassificationScore": 50,
+        "sourceUrl": "https://admissions.haifa.ac.il/english-language-proficiency/",
+        "conditionalBelowBasic": true
+      },
+      "hebrew": {
+        "minimumExamScore": 90,
+        "unconditionalExamScore": 120,
+        "conditionalAdmission": "Programme page says90; general university rules make90-119 conditional.",
+        "exemptionsSourceUrl": "https://admissions.haifa.ac.il/hebrew-language-proficiency/",
+        "examValidityYears": 10,
+        "universityCourse": "עברית באקדמיה לתואר"
+      },
+      "mathAlternatives": [
+        {
+          "units": 4,
+          "minimumGrade": 75
+        },
+        {
+          "units": 5,
+          "minimumGrade": 75
+        }
+      ],
+      "manualStages": ["Admission interview."],
+      "registrationHeadline": "ההרשמה פתוחה",
+      "activationState": "withheld",
+      "verificationStillOwed": [
+        "Runtime gate implementation and applicant input collection.",
+        "Programme-specific positive, missing-input and failed-gate fixtures.",
+        "Reviewed source/fixture fingerprint publication and deployed verification."
+      ],
+      "reconciliation": [
+        "Published page additionally requires an admission interview; calculator otherConditions omits it."
+      ],
+      "aliases": ["haifa_statistics"],
+      "officialCalculatorId": "52253965",
+      "officialCalculatorHug": "SC0033"
+    }
+  ],
+  "retainedYearbookReceipts": "yearbook-receipts.json",
+  "retainedCalculatorEvidence": "all-programme-capture.json",
+  "boundaryConflict": "For14programmes the calculator rejection value is one below the published waiting minimum; Physiotherapy differs by9and Sociology by19in the opposite direction. The official RangeChart paints its rejection boundary inclusive but the published range is explicit; never silently infer all waiting bands from that value.",
+  "deadlineSource": {
+    "url": "https://admissions.haifa.ac.il/registration-deadlines-and-entrance-exams/",
+    "sha256": "cfdddc794c98d3543e5eb40bb2f5b9f8e69ad29f2425df676dfa9dbc26f096f3",
+    "textFile": "current-deadlines.txt",
+    "cycle": "2026-2027"
+  },
+  "deadlineInterpretation": "The July2026statement in the Medicine special-population section is not a universal rule for all programmes. Only the individually listed undergraduate programme deadlines above were captured. No graduate or Mivhar-branch deadline was substituted.",
+  "additionalSourceReceipts": [
+    {
+      "url": "https://parents.education.gov.il/gov-education/school/matriculation/grades",
+      "sha256": "09f3114ebb49053f1f175832c157ae14caa5b6ac52236952a7f52aa0fd9bbd83",
+      "textFile": "ministry-bagrut-grades.txt",
+      "observedText": "All other final grades must be55or above; university mathematics/English can require a passing grade even where a full certificate is granted by exception."
+    }
+  ],
+  "sourceReadFailures": [
+    {
+      "url": "https://applicants.haifa.ac.il/enrollmentChances/CandChancesServlet?operation=getProgramForHug&year=2026&semester=001&hug=SC0026",
+      "result": "HTTP500onfollowup; earlier successful current dictionary retained. No successful recheck claimed."
+    },
+    {
+      "url": "Current yearbook physiotherapy department-candidate URL",
+      "result": "HTTP404; programme admissions page/current yearbook/ministry evidence still successfully retained."
+    }
+  ]
+}

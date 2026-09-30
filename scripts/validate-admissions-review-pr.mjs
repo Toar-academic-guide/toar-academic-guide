@@ -4,12 +4,22 @@ import { readFileSync } from 'node:fs';
 import { relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const root = fileURLToPath(new URL('..', import.meta.url));
+const scriptRoot = fileURLToPath(new URL('..', import.meta.url));
 const manifestPath = 'src/data/admissions/reviewedManifest.json';
+const releaseKinds = new Set(['canonical_bootstrap', 'canonical_change', 'operational_proof']);
+const branchBase = process.env.ADMISSIONS_REVIEW_BASE_REF || 'origin/main';
+const weeklyRunKeyPattern = /^20\d{2}-W\d{2}$/;
+const stableProofRunKeyPattern = /^[a-z0-9]+([_-][a-z0-9]+)*$/;
+
+export function resolveAdmissionsReviewWorktree(worktree) {
+  return worktree ? resolve(worktree) : scriptRoot;
+}
+
+const root = resolveAdmissionsReviewWorktree(process.env.ADMISSIONS_REVIEW_WORKTREE);
 
 function parseArguments(argv) {
-  if (argv.length !== 2 || argv[0] !== '--run-key' || !/^20\d{2}-W\d{2}$/.test(argv[1])) {
-    throw new Error('Usage: validate-admissions-review-pr --run-key YYYY-Www');
+  if (argv.length !== 2 || argv[0] !== '--run-key') {
+    throw new Error('Usage: validate-admissions-review-pr --run-key YYYY-Www or stable-proof-id');
   }
   return argv[1];
 }
@@ -25,7 +35,7 @@ function stagedFiles() {
 }
 
 function branchFiles() {
-  return execFileSync('git', ['diff', '--name-only', 'origin/main...HEAD'], {
+  return execFileSync('git', ['diff', '--name-only', `${branchBase}...HEAD`], {
     cwd: root,
     encoding: 'utf8',
   })
@@ -35,12 +45,52 @@ function branchFiles() {
 }
 
 function validateManifest() {
-  const value = JSON.parse(readFileSync(resolve(root, manifestPath), 'utf8'));
-  if (!value || value.version !== 1 || !Array.isArray(value.changes)) {
-    throw new Error('Generated reviewed manifest must have version 1 and a changes array.');
+  const manifest = JSON.parse(readFileSync(resolve(root, manifestPath), 'utf8'));
+  validateManifestValue(manifest);
+  return manifest;
+}
+
+export function validateManifestValue(value) {
+  if (
+    !value ||
+    typeof value !== 'object' ||
+    value.version !== 2 ||
+    !releaseKinds.has(value.releaseKind) ||
+    !Array.isArray(value.changes)
+  ) {
+    throw new Error(
+      'Generated reviewed manifest must have version 2, a supported release kind, and a changes array.',
+    );
   }
   if (value.changes.length === 0)
     throw new Error('Generated review PR cannot contain an empty manifest.');
+}
+
+export function validateRunKey(runKey, manifest) {
+  if (
+    weeklyRunKeyPattern.test(runKey) ||
+    (manifest.releaseKind === 'operational_proof' && stableProofRunKeyPattern.test(runKey))
+  ) {
+    return;
+  }
+  throw new Error('Usage: validate-admissions-review-pr --run-key YYYY-Www or stable-proof-id');
+}
+
+export function validateGeneratedReviewFiles({ branch, staged, required }) {
+  const allowed = new Set(required);
+  const present = new Set([...branch, ...staged]);
+  const unexpected = [...present].filter((path) => !allowed.has(path));
+  if (unexpected.length > 0) {
+    throw new Error(
+      `Generated review branch changed non-allowlisted paths: ${unexpected.join(', ')}`,
+    );
+  }
+  const missing = required.filter((path) => !present.has(path));
+  if (missing.length > 0) {
+    throw new Error(
+      `Generated review branch must stage or retain the manifest, run report, and exclusion metadata: ${missing.join(', ')}`,
+    );
+  }
 }
 
 function validateReviewMetadata(path, runKey) {
@@ -62,26 +112,11 @@ function main() {
   const runKey = parseArguments(process.argv.slice(2));
   const reportPath = `docs/admissions-review-runs/${runKey}.md`;
   const metadataPath = `docs/admissions-review-runs/${runKey}.json`;
-  const allowed = new Set([manifestPath, reportPath, metadataPath]);
+  const required = [manifestPath, reportPath, metadataPath];
   const changed = stagedFiles();
-  const unexpected = [...new Set([...branchFiles(), ...changed])].filter(
-    (path) => !allowed.has(path),
-  );
-  if (unexpected.length > 0) {
-    throw new Error(
-      `Generated review branch changed non-allowlisted paths: ${unexpected.join(', ')}`,
-    );
-  }
-  if (
-    !changed.includes(manifestPath) ||
-    !changed.includes(reportPath) ||
-    !changed.includes(metadataPath)
-  ) {
-    throw new Error(
-      'Generated review branch must stage the manifest, run report, and exclusion metadata.',
-    );
-  }
-  validateManifest();
+  validateGeneratedReviewFiles({ branch: branchFiles(), staged: changed, required });
+  const manifest = validateManifest();
+  validateRunKey(runKey, manifest);
   validateReviewMetadata(metadataPath, runKey);
   console.info(
     JSON.stringify({
@@ -91,9 +126,11 @@ function main() {
   );
 }
 
-try {
-  main();
-} catch (error) {
-  console.error(error instanceof Error ? error.message : error);
-  process.exitCode = 1;
+if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
+  try {
+    main();
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : error);
+    process.exitCode = 1;
+  }
 }

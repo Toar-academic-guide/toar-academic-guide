@@ -31,6 +31,9 @@ describe('production-sensitive path classification', () => {
     'scripts/production-sensitive-paths.mjs',
     'scripts/pre-pr-guard.mjs',
     'scripts/publish-admissions-release.mjs',
+    'scripts/process-admission-alerts.mjs',
+    '.github/workflows/admission-alert-processing.yml',
+    'src/app/api/admission-alerts/route.ts',
   ])('requires operational verification for %s', (filePath) => {
     expect(findProductionSensitivePaths([filePath])).toEqual([filePath]);
   });

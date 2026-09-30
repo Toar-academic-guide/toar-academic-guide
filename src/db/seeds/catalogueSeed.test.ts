@@ -23,6 +23,81 @@ function duplicatedValues(values: string[]): string[] {
 }
 
 describe('catalogueSeed', () => {
+  it('keeps TAU Management and other Information Systems options without the extra TAU listing', () => {
+    const payload = buildCatalogueSeed();
+
+    expect(payload.programs.some((row) => row.id === 'tau_infosystems')).toBe(false);
+    expect(payload.programs.find((row) => row.id === 'tau_business')).toMatchObject({
+      name: 'מנהל עסקים',
+      institutionId: 'tau',
+    });
+    expect(payload.programInstitutions).toContainEqual({
+      programId: 'business',
+      institutionId: 'tau',
+    });
+    expect(payload.programInstitutions).toContainEqual({
+      programId: 'tau_business',
+      institutionId: 'tau',
+    });
+    for (const id of ['haifa_infosystems', 'reichman_infosystems', 'colmgmt_infosystems']) {
+      expect(payload.programs.some((row) => row.id === id)).toBe(true);
+    }
+  });
+
+  it('preserves valid Physiotherapy options without a HUJI listing', () => {
+    const payload = buildCatalogueSeed();
+
+    expect(payload.programs.find((row) => row.id === 'physiotherapy')).toMatchObject({
+      institutionId: 'tau',
+    });
+    expect(
+      payload.programInstitutions
+        .filter((row) => row.programId === 'physiotherapy')
+        .map((row) => row.institutionId)
+        .sort(),
+    ).toEqual(['bgu', 'haifa', 'tau']);
+    expect(
+      payload.admissionRequirements
+        .filter((row) => row.programId === 'physiotherapy')
+        .map((row) => row.institutionId)
+        .sort(),
+    ).toEqual(['bgu', 'haifa', 'tau']);
+    expect(
+      payload.admissionThresholds
+        .filter((row) => row.programId === 'physiotherapy')
+        .map((row) => [row.institutionId, row.thresholdValue])
+        .sort(),
+    ).toEqual([
+      ['bgu', 667],
+      ['haifa', 680],
+      ['tau', 660],
+    ]);
+  });
+
+  it('keeps supported Nutrition options without TAU or BGU listings', () => {
+    const payload = buildCatalogueSeed();
+
+    expect(payload.programs.find((row) => row.id === 'nutrition')).toMatchObject({
+      institutionId: 'huji',
+      institutionName: 'האוניברסיטה העברית בירושלים',
+    });
+    expect(
+      payload.programInstitutions
+        .filter((row) => row.programId === 'nutrition')
+        .map((row) => row.institutionId)
+        .sort(),
+    ).toEqual(['ariel', 'huji']);
+    expect(
+      payload.admissionThresholds
+        .filter((row) => row.programId === 'nutrition')
+        .map((row) => row.institutionId)
+        .sort(),
+    ).toEqual(['ariel', 'huji']);
+    expect(payload.programs.find((row) => row.id === 'ariel_nutrition')).toMatchObject({
+      institutionId: 'ariel',
+    });
+  });
+
   it('reconciles the DB seed payload with the canonical formula-backed pair inventory', () => {
     const inventory = buildFormulaBackedPairInventory(allPrograms);
     const payload = buildCatalogueSeed();

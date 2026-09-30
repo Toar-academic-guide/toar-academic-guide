@@ -1,3 +1,10 @@
+import type { TauPhysiotherapyInputs } from '@/lib/tauPhysiotherapyInputs';
+import type { BguHealthInputs } from '@/lib/bguHealthInputs';
+import type { BguQuantitativeInputs } from '@/lib/bguQuantitativeInputs';
+import type { BguPsychologyInputs } from '@/lib/bguPsychologyInputs';
+import type { HujiMedicineInputs } from '@/lib/hujiMedicineInputs';
+import type { HaifaAdmissionsInputs } from '@/lib/haifaAdmissionsInputs';
+import type { BguSocialScienceInputs } from '@/lib/bguSocialScienceInputs';
 export type UniversityId = string;
 
 // ── Avoidance tags ────────────────────────────────────────────────────────────
@@ -26,6 +33,12 @@ export interface UserScores {
   csUnits?: number;
   csGrade?: number;
 }
+
+/** Calculator requests may omit generic scores for a supported alternate admission route. */
+export type CalculatorScores = Omit<UserScores, 'psychometric' | 'bagrut'> & {
+  psychometric?: number;
+  bagrut?: number;
+};
 
 export interface University {
   id: UniversityId;
@@ -197,7 +210,14 @@ export interface BagrutSubject {
   grade: number;
 }
 
-export interface BagrutSubjectRecord {
+export type BagrutAssessmentKind = 'exam' | 'final_project' | 'combined';
+
+export interface BagrutSubjectV2 extends BagrutSubject {
+  /** Distinguishes ordinary exams from bonus-sensitive final projects and combined grades. */
+  assessmentKind: BagrutAssessmentKind;
+}
+
+export interface BagrutSubjectRecordV1 {
   /** Version of the normalized subject-record contract. */
   schemaVersion: 1;
   /** Education-sector context required to interpret mandatory subjects. */
@@ -208,6 +228,25 @@ export interface BagrutSubjectRecord {
   profileHash?: string;
 }
 
+export type BagrutCertificateType = 'internal' | 'external_1977_or_later' | 'other';
+
+export interface BagrutSubjectRecordV2 {
+  /** Version that preserves the certificate facts required by TAU's reviewed policy. */
+  schemaVersion: 2;
+  sector: BagrutSector;
+  certificateType: BagrutCertificateType;
+  /** True only when every subject appearing on the certificate was entered. */
+  complete: boolean;
+  subjects: BagrutSubjectV2[];
+  profileHash?: string;
+}
+
+export type BagrutSubjectRecord = BagrutSubjectRecordV1 | BagrutSubjectRecordV2;
+
+/** JSON payload persisted in the existing bagrut_profile_versions.subjects column. */
+export type StoredBagrutProfilePayload =
+  BagrutSubject[] | Pick<BagrutSubjectRecordV2, 'certificateType' | 'complete' | 'subjects'>;
+
 export interface BagrutRecord {
   /** Weighted average including all generic bonuses, 60–120 */
   weightedAverage?: number;
@@ -215,10 +254,49 @@ export interface BagrutRecord {
   subjectRecord?: BagrutSubjectRecord;
 }
 
+/** Institution-specific inputs collected only when the student knows them. */
+export interface AdmissionsProfileInputs
+  extends
+    BguQuantitativeInputs,
+    BguPsychologyInputs,
+    BguSocialScienceInputs,
+    BguHealthInputs,
+    TauPhysiotherapyInputs,
+    HaifaAdmissionsInputs,
+    HujiMedicineInputs {
+  bguEngineering?: import('./bguEngineering').BguEngineeringInputs;
+  /** Official Architecture average, without doubled mathematics weight; capped at 119. */
+  technionArchitectureBagrutAverage?: number;
+  /** Architecture entrance examination score (0–140), not the Landscape examination. */
+  technionArchitectureExamScore?: number;
+  /** Official passing status cannot be inferred from the numeric examination score. */
+  technionArchitectureExamPassed?: boolean;
+  /** Regular Bagrut route: certificate, subjects, languages, registration and valid score dates. */
+  technionArchitectureRequirementsConfirmed?: boolean;
+  /** Official TAU Bagrut average, which may differ from the generic profile average. */
+  tauBagrutAverage?: number;
+  /** Official College of Management weighted average for the Bagrut-only route. */
+  colmanBagrutAverage?: number;
+  colmanBagrutCertificateConfirmed?: boolean;
+  /** Official BGU Bagrut average, which may differ from the generic profile average. */
+  bguBagrutAverage?: number;
+  /** Confirms Bagrut, Advanced A English (psychometric or separate exam), Hebrew and first choice. */
+  tauApplicationRequirementsConfirmed?: boolean;
+  tauManagementRequirementsConfirmed?: boolean;
+  tauManagementAcademicRouteConfirmed?: boolean;
+  tauManagementQualifyingMoocCount?: 0 | 1 | 2;
+  tauManagementNoPsychometricMoocsConfirmed?: boolean;
+  /** Whether BGU English Basic and applicable Hebrew level E requirements are met. */
+  bguLanguageRequirementsConfirmed?: boolean;
+  /** TAU mathematics placement/classification score, when available. */
+  tauMathPlacementScore?: number;
+}
+
 /** Combined academic-scores object stored in the user profile. */
 export interface AcademicScores {
   psychometric?: PsychometricScores;
   bagrut?: BagrutRecord;
+  admissions?: AdmissionsProfileInputs;
 }
 
 /** User profile snapshot used by the browser and authenticated profile APIs. */

@@ -1,0 +1,1106 @@
+[
+  {
+    "pairId": "biology__bgu",
+    "family": "biology",
+    "kind": "eligible",
+    "input": {
+      "psychometric": 800,
+      "bagrut": 120,
+      "bguBagrutAverage": 120,
+      "psychometricMath": 150,
+      "psychometricVerbal": 150,
+      "psychometricEnglish": 150,
+      "bguLanguageRequirementsConfirmed": true,
+      "bguCertificateRequirementsConfirmed": true,
+      "bguPriorAcademicStudies": false,
+      "bguApplicationPriority": 1,
+      "bguQuantitativeRoute": "quantitative",
+      "bagrutSubjectRecord": {
+        "schemaVersion": 1,
+        "sector": "jewish",
+        "subjects": [
+          {
+            "subjectId": "mathematics",
+            "units": 5,
+            "grade": 95
+          }
+        ]
+      },
+      "bguSecondTrackRequirementsConfirmed": true
+    },
+    "request": {
+      "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+      "method": "POST",
+      "fields": {
+        "on_grade_psycho_quantity": "",
+        "rn_count_other_subjects": "0",
+        "on_grade_other_quantity": "150",
+        "on_grade_other_verbal": "150",
+        "on_grade_other_psycho": "150",
+        "on_grade_other_average": "120",
+        "on_grade_prep_average": ""
+      }
+    },
+    "status": 200,
+    "rawResponse": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 879;</script> \n<script>parent.main.document.getElementById(\"on_grade_psycho_quantity\").innerHTML = 150;</script> \n</center>\n</body>  \n</html>\n",
+    "score": 879,
+    "verdict": "eligible_to_apply",
+    "capturedAt": "2026-09-27T16:48:06.929Z",
+    "officialRule": {
+      "department_dsc": "מדעי החיים",
+      "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/nature/Life_Sciences_degree_1.aspx",
+      "path_dsc": "מדעי החיים ראשי",
+      "psycho_sekem": 585,
+      "psycho_and_or": " ובנוסף  ",
+      "psycho_value": 585,
+      "psycho_info": "1=מתמטיקה=70/4 או 60/5$4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ה'",
+      "bagrut_average": 106,
+      "bagrut_info": "מתמטיקה=80/5 או 90/4$רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ה'",
+      "bagrut_additional": "14.09.2026- עצרנו קבלות במחלקה למדעי החיים. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם.<br>\nממוצע מכינה למדעים מדויקים והנדסה או מכינה למדעי הטבע והחיים של אוניברסיטת-בן גוריון בנגב יכולה להחליף את ממוצע הבגרות באפיק קבלה זה. ממוצע המכינה הנדרש 88\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\"  באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<br>\n<br><b>מדיניות דיון בחריגים:<br></b>\n<br>מועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט הבא:<br>\n ממוצע בגרות נמוך עד 5 נקודות מהממוצע. חובה לעמוד ברכיבי הבגרות הנדרשים <br>\nמועמדים העומדים בתנאים אלו ידונו בוועדת הקבלה של המחלקה על בסיס מכלול נתוניהם. <br>\nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה <br>\n<br><b>מועמדים בעלי רקע אקדמי:<br></b>\nעוברים לדיון במחלקה רק לאחר שיציגו גיליון ציונים עדכני.\n<br><b>עתודאים<br></b>\n מועד אחרון להרשמה ולשינוי עדיפויות: 31.07.2026\n",
+      "comments": "14.09.2026- עצרנו קבלות במחלקה למדעי החיים. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם.<br>\n<br>מדעי החיים בלבד-כחלופה לסכם הכמותי ולציון במתמטיקה קיים אפיק קבלה נוסף:\nפסיכומטרי 680 + רכיב כמותי 125 (ללא ציון במתמטיקה)\n<br>\nניתן לשלב עם החטיבות: קיימות, ניהול, רוח וחברה (לא כולל מדעי ההתנהגות, פסיכולוגיה, סוציולוגיה, עבודה סוציאלית, תקשורת.)\nקבלה בעדיפות ראשונה/שנייה/שלישית בלבד\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<br>  \n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט להלן:<br>\nבקבלה על סמך פסיכומטרי וסכם: מועמדים עם פסיכומטרי עד 10 נק' מהנדרש (חובה לעמוד בסכם כמותי). מתמטיקה -  5 יח\"ל בציון עובר<br>             \n\n<br>\n\nמועמדים העומדים בתנאים אלה ידונו בועדת הקבלה של המחלקה על בסיס מכלול נתוניהם. br>>\nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה.  \n<br><b>מועמדים בעלי רקע אקדמי:<br></b>\nעוברים לדיון במחלקה רק לאחר שיציגו גיליון ציונים עדכני.\n<br><b>עתודאים<br></b>\n מועד אחרון להרשמה ולשינוי עדיפויות: 31.07.2026",
+      "reg_status": "פתוחה ",
+      "sekem_label": "סכם כמותי ",
+      "department": 205,
+      "path": 15,
+      "specialization": null,
+      "show_simulator": 0,
+      "path_description": "ראשי",
+      "spec_description": null
+    }
+  },
+  {
+    "pairId": "biology__bgu",
+    "family": "biology",
+    "kind": "below",
+    "input": {
+      "psychometric": 600,
+      "bagrut": 100,
+      "bguBagrutAverage": 100,
+      "psychometricMath": 50,
+      "psychometricVerbal": 150,
+      "psychometricEnglish": 150,
+      "bguLanguageRequirementsConfirmed": true,
+      "bguCertificateRequirementsConfirmed": true,
+      "bguPriorAcademicStudies": false,
+      "bguApplicationPriority": 1,
+      "bguQuantitativeRoute": "quantitative",
+      "bagrutSubjectRecord": {
+        "schemaVersion": 1,
+        "sector": "jewish",
+        "subjects": [
+          {
+            "subjectId": "mathematics",
+            "units": 5,
+            "grade": 90
+          }
+        ]
+      },
+      "bguSecondTrackRequirementsConfirmed": true
+    },
+    "request": {
+      "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+      "method": "POST",
+      "fields": {
+        "on_grade_psycho_quantity": "",
+        "rn_count_other_subjects": "0",
+        "on_grade_other_quantity": "50",
+        "on_grade_other_verbal": "150",
+        "on_grade_other_psycho": "150",
+        "on_grade_other_average": "100",
+        "on_grade_prep_average": ""
+      }
+    },
+    "status": 200,
+    "rawResponse": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 486;</script> \n<script>parent.main.document.getElementById(\"on_grade_psycho_quantity\").innerHTML = 80;</script> \n</center>\n</body>  \n</html>\n",
+    "score": 486,
+    "verdict": "below",
+    "capturedAt": "2026-09-27T16:48:07.287Z",
+    "officialRule": {
+      "department_dsc": "מדעי החיים",
+      "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/nature/Life_Sciences_degree_1.aspx",
+      "path_dsc": "מדעי החיים ראשי",
+      "psycho_sekem": 585,
+      "psycho_and_or": " ובנוסף  ",
+      "psycho_value": 585,
+      "psycho_info": "1=מתמטיקה=70/4 או 60/5$4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ה'",
+      "bagrut_average": 106,
+      "bagrut_info": "מתמטיקה=80/5 או 90/4$רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ה'",
+      "bagrut_additional": "14.09.2026- עצרנו קבלות במחלקה למדעי החיים. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם.<br>\nממוצע מכינה למדעים מדויקים והנדסה או מכינה למדעי הטבע והחיים של אוניברסיטת-בן גוריון בנגב יכולה להחליף את ממוצע הבגרות באפיק קבלה זה. ממוצע המכינה הנדרש 88\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\"  באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<br>\n<br><b>מדיניות דיון בחריגים:<br></b>\n<br>מועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט הבא:<br>\n ממוצע בגרות נמוך עד 5 נקודות מהממוצע. חובה לעמוד ברכיבי הבגרות הנדרשים <br>\nמועמדים העומדים בתנאים אלו ידונו בוועדת הקבלה של המחלקה על בסיס מכלול נתוניהם. <br>\nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה <br>\n<br><b>מועמדים בעלי רקע אקדמי:<br></b>\nעוברים לדיון במחלקה רק לאחר שיציגו גיליון ציונים עדכני.\n<br><b>עתודאים<br></b>\n מועד אחרון להרשמה ולשינוי עדיפויות: 31.07.2026\n",
+      "comments": "14.09.2026- עצרנו קבלות במחלקה למדעי החיים. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם.<br>\n<br>מדעי החיים בלבד-כחלופה לסכם הכמותי ולציון במתמטיקה קיים אפיק קבלה נוסף:\nפסיכומטרי 680 + רכיב כמותי 125 (ללא ציון במתמטיקה)\n<br>\nניתן לשלב עם החטיבות: קיימות, ניהול, רוח וחברה (לא כולל מדעי ההתנהגות, פסיכולוגיה, סוציולוגיה, עבודה סוציאלית, תקשורת.)\nקבלה בעדיפות ראשונה/שנייה/שלישית בלבד\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<br>  \n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט להלן:<br>\nבקבלה על סמך פסיכומטרי וסכם: מועמדים עם פסיכומטרי עד 10 נק' מהנדרש (חובה לעמוד בסכם כמותי). מתמטיקה -  5 יח\"ל בציון עובר<br>             \n\n<br>\n\nמועמדים העומדים בתנאים אלה ידונו בועדת הקבלה של המחלקה על בסיס מכלול נתוניהם. br>>\nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה.  \n<br><b>מועמדים בעלי רקע אקדמי:<br></b>\nעוברים לדיון במחלקה רק לאחר שיציגו גיליון ציונים עדכני.\n<br><b>עתודאים<br></b>\n מועד אחרון להרשמה ולשינוי עדיפויות: 31.07.2026",
+      "reg_status": "פתוחה ",
+      "sekem_label": "סכם כמותי ",
+      "department": 205,
+      "path": 15,
+      "specialization": null,
+      "show_simulator": 0,
+      "path_description": "ראשי",
+      "spec_description": null
+    }
+  },
+  {
+    "pairId": "bgu_biology__bgu",
+    "family": "biology",
+    "kind": "eligible",
+    "input": {
+      "psychometric": 800,
+      "bagrut": 120,
+      "bguBagrutAverage": 120,
+      "psychometricMath": 150,
+      "psychometricVerbal": 150,
+      "psychometricEnglish": 150,
+      "bguLanguageRequirementsConfirmed": true,
+      "bguCertificateRequirementsConfirmed": true,
+      "bguPriorAcademicStudies": false,
+      "bguApplicationPriority": 1,
+      "bguQuantitativeRoute": "quantitative",
+      "bagrutSubjectRecord": {
+        "schemaVersion": 1,
+        "sector": "jewish",
+        "subjects": [
+          {
+            "subjectId": "mathematics",
+            "units": 5,
+            "grade": 95
+          }
+        ]
+      },
+      "bguSecondTrackRequirementsConfirmed": true
+    },
+    "request": {
+      "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+      "method": "POST",
+      "fields": {
+        "on_grade_psycho_quantity": "",
+        "rn_count_other_subjects": "0",
+        "on_grade_other_quantity": "150",
+        "on_grade_other_verbal": "150",
+        "on_grade_other_psycho": "150",
+        "on_grade_other_average": "120",
+        "on_grade_prep_average": ""
+      }
+    },
+    "status": 200,
+    "rawResponse": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 879;</script> \n<script>parent.main.document.getElementById(\"on_grade_psycho_quantity\").innerHTML = 150;</script> \n</center>\n</body>  \n</html>\n",
+    "score": 879,
+    "verdict": "eligible_to_apply",
+    "capturedAt": "2026-09-27T16:48:07.365Z",
+    "officialRule": {
+      "department_dsc": "מדעי החיים",
+      "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/nature/Life_Sciences_degree_1.aspx",
+      "path_dsc": "מדעי החיים ראשי",
+      "psycho_sekem": 585,
+      "psycho_and_or": " ובנוסף  ",
+      "psycho_value": 585,
+      "psycho_info": "1=מתמטיקה=70/4 או 60/5$4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ה'",
+      "bagrut_average": 106,
+      "bagrut_info": "מתמטיקה=80/5 או 90/4$רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ה'",
+      "bagrut_additional": "14.09.2026- עצרנו קבלות במחלקה למדעי החיים. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם.<br>\nממוצע מכינה למדעים מדויקים והנדסה או מכינה למדעי הטבע והחיים של אוניברסיטת-בן גוריון בנגב יכולה להחליף את ממוצע הבגרות באפיק קבלה זה. ממוצע המכינה הנדרש 88\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\"  באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<br>\n<br><b>מדיניות דיון בחריגים:<br></b>\n<br>מועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט הבא:<br>\n ממוצע בגרות נמוך עד 5 נקודות מהממוצע. חובה לעמוד ברכיבי הבגרות הנדרשים <br>\nמועמדים העומדים בתנאים אלו ידונו בוועדת הקבלה של המחלקה על בסיס מכלול נתוניהם. <br>\nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה <br>\n<br><b>מועמדים בעלי רקע אקדמי:<br></b>\nעוברים לדיון במחלקה רק לאחר שיציגו גיליון ציונים עדכני.\n<br><b>עתודאים<br></b>\n מועד אחרון להרשמה ולשינוי עדיפויות: 31.07.2026\n",
+      "comments": "14.09.2026- עצרנו קבלות במחלקה למדעי החיים. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם.<br>\n<br>מדעי החיים בלבד-כחלופה לסכם הכמותי ולציון במתמטיקה קיים אפיק קבלה נוסף:\nפסיכומטרי 680 + רכיב כמותי 125 (ללא ציון במתמטיקה)\n<br>\nניתן לשלב עם החטיבות: קיימות, ניהול, רוח וחברה (לא כולל מדעי ההתנהגות, פסיכולוגיה, סוציולוגיה, עבודה סוציאלית, תקשורת.)\nקבלה בעדיפות ראשונה/שנייה/שלישית בלבד\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<br>  \n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט להלן:<br>\nבקבלה על סמך פסיכומטרי וסכם: מועמדים עם פסיכומטרי עד 10 נק' מהנדרש (חובה לעמוד בסכם כמותי). מתמטיקה -  5 יח\"ל בציון עובר<br>             \n\n<br>\n\nמועמדים העומדים בתנאים אלה ידונו בועדת הקבלה של המחלקה על בסיס מכלול נתוניהם. br>>\nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה.  \n<br><b>מועמדים בעלי רקע אקדמי:<br></b>\nעוברים לדיון במחלקה רק לאחר שיציגו גיליון ציונים עדכני.\n<br><b>עתודאים<br></b>\n מועד אחרון להרשמה ולשינוי עדיפויות: 31.07.2026",
+      "reg_status": "פתוחה ",
+      "sekem_label": "סכם כמותי ",
+      "department": 205,
+      "path": 15,
+      "specialization": null,
+      "show_simulator": 0,
+      "path_description": "ראשי",
+      "spec_description": null
+    }
+  },
+  {
+    "pairId": "bgu_biology__bgu",
+    "family": "biology",
+    "kind": "below",
+    "input": {
+      "psychometric": 600,
+      "bagrut": 100,
+      "bguBagrutAverage": 100,
+      "psychometricMath": 50,
+      "psychometricVerbal": 150,
+      "psychometricEnglish": 150,
+      "bguLanguageRequirementsConfirmed": true,
+      "bguCertificateRequirementsConfirmed": true,
+      "bguPriorAcademicStudies": false,
+      "bguApplicationPriority": 1,
+      "bguQuantitativeRoute": "quantitative",
+      "bagrutSubjectRecord": {
+        "schemaVersion": 1,
+        "sector": "jewish",
+        "subjects": [
+          {
+            "subjectId": "mathematics",
+            "units": 5,
+            "grade": 90
+          }
+        ]
+      },
+      "bguSecondTrackRequirementsConfirmed": true
+    },
+    "request": {
+      "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+      "method": "POST",
+      "fields": {
+        "on_grade_psycho_quantity": "",
+        "rn_count_other_subjects": "0",
+        "on_grade_other_quantity": "50",
+        "on_grade_other_verbal": "150",
+        "on_grade_other_psycho": "150",
+        "on_grade_other_average": "100",
+        "on_grade_prep_average": ""
+      }
+    },
+    "status": 200,
+    "rawResponse": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 486;</script> \n<script>parent.main.document.getElementById(\"on_grade_psycho_quantity\").innerHTML = 80;</script> \n</center>\n</body>  \n</html>\n",
+    "score": 486,
+    "verdict": "below",
+    "capturedAt": "2026-09-27T16:48:07.444Z",
+    "officialRule": {
+      "department_dsc": "מדעי החיים",
+      "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/nature/Life_Sciences_degree_1.aspx",
+      "path_dsc": "מדעי החיים ראשי",
+      "psycho_sekem": 585,
+      "psycho_and_or": " ובנוסף  ",
+      "psycho_value": 585,
+      "psycho_info": "1=מתמטיקה=70/4 או 60/5$4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ה'",
+      "bagrut_average": 106,
+      "bagrut_info": "מתמטיקה=80/5 או 90/4$רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ה'",
+      "bagrut_additional": "14.09.2026- עצרנו קבלות במחלקה למדעי החיים. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם.<br>\nממוצע מכינה למדעים מדויקים והנדסה או מכינה למדעי הטבע והחיים של אוניברסיטת-בן גוריון בנגב יכולה להחליף את ממוצע הבגרות באפיק קבלה זה. ממוצע המכינה הנדרש 88\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\"  באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<br>\n<br><b>מדיניות דיון בחריגים:<br></b>\n<br>מועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט הבא:<br>\n ממוצע בגרות נמוך עד 5 נקודות מהממוצע. חובה לעמוד ברכיבי הבגרות הנדרשים <br>\nמועמדים העומדים בתנאים אלו ידונו בוועדת הקבלה של המחלקה על בסיס מכלול נתוניהם. <br>\nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה <br>\n<br><b>מועמדים בעלי רקע אקדמי:<br></b>\nעוברים לדיון במחלקה רק לאחר שיציגו גיליון ציונים עדכני.\n<br><b>עתודאים<br></b>\n מועד אחרון להרשמה ולשינוי עדיפויות: 31.07.2026\n",
+      "comments": "14.09.2026- עצרנו קבלות במחלקה למדעי החיים. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם.<br>\n<br>מדעי החיים בלבד-כחלופה לסכם הכמותי ולציון במתמטיקה קיים אפיק קבלה נוסף:\nפסיכומטרי 680 + רכיב כמותי 125 (ללא ציון במתמטיקה)\n<br>\nניתן לשלב עם החטיבות: קיימות, ניהול, רוח וחברה (לא כולל מדעי ההתנהגות, פסיכולוגיה, סוציולוגיה, עבודה סוציאלית, תקשורת.)\nקבלה בעדיפות ראשונה/שנייה/שלישית בלבד\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<br>  \n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט להלן:<br>\nבקבלה על סמך פסיכומטרי וסכם: מועמדים עם פסיכומטרי עד 10 נק' מהנדרש (חובה לעמוד בסכם כמותי). מתמטיקה -  5 יח\"ל בציון עובר<br>             \n\n<br>\n\nמועמדים העומדים בתנאים אלה ידונו בועדת הקבלה של המחלקה על בסיס מכלול נתוניהם. br>>\nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה.  \n<br><b>מועמדים בעלי רקע אקדמי:<br></b>\nעוברים לדיון במחלקה רק לאחר שיציגו גיליון ציונים עדכני.\n<br><b>עתודאים<br></b>\n מועד אחרון להרשמה ולשינוי עדיפויות: 31.07.2026",
+      "reg_status": "פתוחה ",
+      "sekem_label": "סכם כמותי ",
+      "department": 205,
+      "path": 15,
+      "specialization": null,
+      "show_simulator": 0,
+      "path_description": "ראשי",
+      "spec_description": null
+    }
+  },
+  {
+    "pairId": "economics__bgu",
+    "family": "economics",
+    "kind": "eligible",
+    "input": {
+      "psychometric": 800,
+      "bagrut": 120,
+      "bguBagrutAverage": 120,
+      "psychometricMath": 150,
+      "psychometricVerbal": 150,
+      "psychometricEnglish": 150,
+      "bguLanguageRequirementsConfirmed": true,
+      "bguCertificateRequirementsConfirmed": true,
+      "bguPriorAcademicStudies": false,
+      "bguApplicationPriority": 1,
+      "bguQuantitativeRoute": "quantitative",
+      "bagrutSubjectRecord": {
+        "schemaVersion": 1,
+        "sector": "jewish",
+        "subjects": [
+          {
+            "subjectId": "mathematics",
+            "units": 5,
+            "grade": 95
+          }
+        ]
+      },
+      "bguSecondTrackRequirementsConfirmed": true
+    },
+    "request": {
+      "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+      "method": "POST",
+      "fields": {
+        "on_grade_psycho_quantity": "",
+        "rn_count_other_subjects": "0",
+        "on_grade_other_quantity": "150",
+        "on_grade_other_verbal": "150",
+        "on_grade_other_psycho": "150",
+        "on_grade_other_average": "120",
+        "on_grade_prep_average": ""
+      }
+    },
+    "status": 200,
+    "rawResponse": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 879;</script> \n<script>parent.main.document.getElementById(\"on_grade_psycho_quantity\").innerHTML = 150;</script> \n</center>\n</body>  \n</html>\n",
+    "score": 879,
+    "verdict": "eligible_to_apply",
+    "capturedAt": "2026-09-27T16:48:07.522Z",
+    "officialRule": {
+      "department_dsc": "כלכלה",
+      "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/humsos/Economics_degree_1.aspx",
+      "path_dsc": "כלכלה ראשי",
+      "psycho_sekem": null,
+      "psycho_and_or": null,
+      "psycho_value": 600,
+      "psycho_info": "1=מתמטיקה=75/4 או 65/5$4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ה'",
+      "bagrut_average": 107,
+      "bagrut_info": "מתמטיקה=75/5 או 85/4$רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ה'",
+      "bagrut_additional": "25.08.2026- עצרנו קבלות במחלקה לכלכלה. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם. <br>\nהחל מה16.03.2026- ממוצע הבגרות הנדרש 107+ עמידה בדרישות המתמטיקה. <br>\nמחלקה ראשית עם חטיבה במדעי הטבע וראשי עם חטיבה במחלקה למדעי המחשב. יש לעמוד גם בחתך הקבלה של החטיבה במדעי הטבע /מדעי המחשב תלוי במסלול הנבחר. <br>\nממוצע מכינה למדעים מדויקים והנדסה או מכינה למדעי הטבע והחיים של אוניברסיטת-בן גוריון בנגב יכולה להחליף את ממוצע הבגרות באפיק קבלה זה. ממוצע המכינה הנדרש 87.\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<br>\nמועמדים בעלי רקע אקדמי קודם העומדים בתנאי הקבלה יתקבל ללא צורך בשליחת גיליון ציונים.<br>\nמועמד שאינו עומד בחתך הקבלה יעבור לדיון במחלקה לאחר הצגת גיליון ציונים עדכני. <br>\nמועמדים ותיקים שחוזרים מהפסקת לימודים יעברו לדיון במחלקה. <br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט הבא:<br>\n ממוצע בגרות נמוך עד 5 נקודות מהממוצע הנדרש ועד 5 נקודות במקצועות הבגרות הנדרשים. <br>\nמועמדים העומדים בתנאים אלו ידונו בוועדת הקבלה של המחלקה על בסיס מכלול נתוניהם. <br>\nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה <br>\n<br>\nעתודאים - תאריך אחרון להרשמה ולשינויי עדיפויות  31.7.2025\n",
+      "comments": "25.08.2026- עצרנו קבלות במחלקה לכלכלה. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם. <br>\nהחל מה 16.03.2026- חתך הקבלה עלה ל 620 סכם כמותי+ 600 פסיכומטרי. בקבלה על סמך בגרות ממוצע הבגרות הנדרש 107 + דרישות הבגרות במתמטיקה. <br>\n\nמחלקה ראשית עם חטיבה במדעי הטבע / חטיבה במחלקה למדעי המחשב\nיש לעמוד גם בחתך הקבלה של החטיבה במדעי הטבע /מדעי המחשב תלוי במסלול הנבחר.\n<br><b>דרישות נוספות:</b> <br>\n<b>סכם כמותי 620</b>\n<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<p>אפיקי קבלה נוספים: סכם כמותי 640 ופסיכומטרי 570 \n<p>רכיב כמותי 130 בפסיכומטרי מחליף את הדרישה במתמטיקה בתנאי שיש ציון עובר ב4 או 5 יח\"ל\n<p>מועמדים שיתקבלו עם מתמטיקה 5 יח\"ל בטווח ציונים 65 עד 74 או 4 יח\"ל בטווח ציונים 75 עד 84  או על בסיס רכיב כמותי 130 לפחות- יחוייבו בקורס מבוא למתמטיקה בסמסטר א'.\n\nמועמדים בעלי רקע אקדמי קודם העומדים בתנאי הקבלה יתקבל ללא צורך בשליחת גיליון ציונים.<br>\nמועמד שאינו עומד בחתך הקבלה יעבור לדיון במחלקה לאחר הצגת גיליון ציונים עדכני. <br>\nמועמדים ותיקים שחוזרים מהפסקת לימודים יעברו לדיון במחלקה. <br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט להלן:<br>\nמועמדים עם פסיכומטרי וסכם הנמוך עד 20 נק' מהנדרש.    <br>        \nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה.   <br>\n\n<br>                                                                    \nאין צורך לשלוח מכתב.\n\n<br>\nעתודאים - תאריך אחרון להרשמה ולשינויי עדיפויות  31.7.2025",
+      "reg_status": "פתוחה ",
+      "sekem_label": "סכם",
+      "department": 142,
+      "path": 3,
+      "specialization": null,
+      "show_simulator": 0,
+      "path_description": "ראשי",
+      "spec_description": null
+    }
+  },
+  {
+    "pairId": "economics__bgu",
+    "family": "economics",
+    "kind": "below",
+    "input": {
+      "psychometric": 600,
+      "bagrut": 100,
+      "bguBagrutAverage": 100,
+      "psychometricMath": 50,
+      "psychometricVerbal": 150,
+      "psychometricEnglish": 150,
+      "bguLanguageRequirementsConfirmed": true,
+      "bguCertificateRequirementsConfirmed": true,
+      "bguPriorAcademicStudies": false,
+      "bguApplicationPriority": 1,
+      "bguQuantitativeRoute": "quantitative",
+      "bagrutSubjectRecord": {
+        "schemaVersion": 1,
+        "sector": "jewish",
+        "subjects": [
+          {
+            "subjectId": "mathematics",
+            "units": 5,
+            "grade": 90
+          }
+        ]
+      },
+      "bguSecondTrackRequirementsConfirmed": true
+    },
+    "request": {
+      "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+      "method": "POST",
+      "fields": {
+        "on_grade_psycho_quantity": "",
+        "rn_count_other_subjects": "0",
+        "on_grade_other_quantity": "50",
+        "on_grade_other_verbal": "150",
+        "on_grade_other_psycho": "150",
+        "on_grade_other_average": "100",
+        "on_grade_prep_average": ""
+      }
+    },
+    "status": 200,
+    "rawResponse": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 486;</script> \n<script>parent.main.document.getElementById(\"on_grade_psycho_quantity\").innerHTML = 80;</script> \n</center>\n</body>  \n</html>\n",
+    "score": 486,
+    "verdict": "below",
+    "capturedAt": "2026-09-27T16:48:07.602Z",
+    "officialRule": {
+      "department_dsc": "כלכלה",
+      "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/humsos/Economics_degree_1.aspx",
+      "path_dsc": "כלכלה ראשי",
+      "psycho_sekem": null,
+      "psycho_and_or": null,
+      "psycho_value": 600,
+      "psycho_info": "1=מתמטיקה=75/4 או 65/5$4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ה'",
+      "bagrut_average": 107,
+      "bagrut_info": "מתמטיקה=75/5 או 85/4$רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ה'",
+      "bagrut_additional": "25.08.2026- עצרנו קבלות במחלקה לכלכלה. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם. <br>\nהחל מה16.03.2026- ממוצע הבגרות הנדרש 107+ עמידה בדרישות המתמטיקה. <br>\nמחלקה ראשית עם חטיבה במדעי הטבע וראשי עם חטיבה במחלקה למדעי המחשב. יש לעמוד גם בחתך הקבלה של החטיבה במדעי הטבע /מדעי המחשב תלוי במסלול הנבחר. <br>\nממוצע מכינה למדעים מדויקים והנדסה או מכינה למדעי הטבע והחיים של אוניברסיטת-בן גוריון בנגב יכולה להחליף את ממוצע הבגרות באפיק קבלה זה. ממוצע המכינה הנדרש 87.\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<br>\nמועמדים בעלי רקע אקדמי קודם העומדים בתנאי הקבלה יתקבל ללא צורך בשליחת גיליון ציונים.<br>\nמועמד שאינו עומד בחתך הקבלה יעבור לדיון במחלקה לאחר הצגת גיליון ציונים עדכני. <br>\nמועמדים ותיקים שחוזרים מהפסקת לימודים יעברו לדיון במחלקה. <br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט הבא:<br>\n ממוצע בגרות נמוך עד 5 נקודות מהממוצע הנדרש ועד 5 נקודות במקצועות הבגרות הנדרשים. <br>\nמועמדים העומדים בתנאים אלו ידונו בוועדת הקבלה של המחלקה על בסיס מכלול נתוניהם. <br>\nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה <br>\n<br>\nעתודאים - תאריך אחרון להרשמה ולשינויי עדיפויות  31.7.2025\n",
+      "comments": "25.08.2026- עצרנו קבלות במחלקה לכלכלה. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם. <br>\nהחל מה 16.03.2026- חתך הקבלה עלה ל 620 סכם כמותי+ 600 פסיכומטרי. בקבלה על סמך בגרות ממוצע הבגרות הנדרש 107 + דרישות הבגרות במתמטיקה. <br>\n\nמחלקה ראשית עם חטיבה במדעי הטבע / חטיבה במחלקה למדעי המחשב\nיש לעמוד גם בחתך הקבלה של החטיבה במדעי הטבע /מדעי המחשב תלוי במסלול הנבחר.\n<br><b>דרישות נוספות:</b> <br>\n<b>סכם כמותי 620</b>\n<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<p>אפיקי קבלה נוספים: סכם כמותי 640 ופסיכומטרי 570 \n<p>רכיב כמותי 130 בפסיכומטרי מחליף את הדרישה במתמטיקה בתנאי שיש ציון עובר ב4 או 5 יח\"ל\n<p>מועמדים שיתקבלו עם מתמטיקה 5 יח\"ל בטווח ציונים 65 עד 74 או 4 יח\"ל בטווח ציונים 75 עד 84  או על בסיס רכיב כמותי 130 לפחות- יחוייבו בקורס מבוא למתמטיקה בסמסטר א'.\n\nמועמדים בעלי רקע אקדמי קודם העומדים בתנאי הקבלה יתקבל ללא צורך בשליחת גיליון ציונים.<br>\nמועמד שאינו עומד בחתך הקבלה יעבור לדיון במחלקה לאחר הצגת גיליון ציונים עדכני. <br>\nמועמדים ותיקים שחוזרים מהפסקת לימודים יעברו לדיון במחלקה. <br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט להלן:<br>\nמועמדים עם פסיכומטרי וסכם הנמוך עד 20 נק' מהנדרש.    <br>        \nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה.   <br>\n\n<br>                                                                    \nאין צורך לשלוח מכתב.\n\n<br>\nעתודאים - תאריך אחרון להרשמה ולשינויי עדיפויות  31.7.2025",
+      "reg_status": "פתוחה ",
+      "sekem_label": "סכם",
+      "department": 142,
+      "path": 3,
+      "specialization": null,
+      "show_simulator": 0,
+      "path_description": "ראשי",
+      "spec_description": null
+    }
+  },
+  {
+    "pairId": "bgu_economics__bgu",
+    "family": "economics",
+    "kind": "eligible",
+    "input": {
+      "psychometric": 800,
+      "bagrut": 120,
+      "bguBagrutAverage": 120,
+      "psychometricMath": 150,
+      "psychometricVerbal": 150,
+      "psychometricEnglish": 150,
+      "bguLanguageRequirementsConfirmed": true,
+      "bguCertificateRequirementsConfirmed": true,
+      "bguPriorAcademicStudies": false,
+      "bguApplicationPriority": 1,
+      "bguQuantitativeRoute": "quantitative",
+      "bagrutSubjectRecord": {
+        "schemaVersion": 1,
+        "sector": "jewish",
+        "subjects": [
+          {
+            "subjectId": "mathematics",
+            "units": 5,
+            "grade": 95
+          }
+        ]
+      },
+      "bguSecondTrackRequirementsConfirmed": true
+    },
+    "request": {
+      "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+      "method": "POST",
+      "fields": {
+        "on_grade_psycho_quantity": "",
+        "rn_count_other_subjects": "0",
+        "on_grade_other_quantity": "150",
+        "on_grade_other_verbal": "150",
+        "on_grade_other_psycho": "150",
+        "on_grade_other_average": "120",
+        "on_grade_prep_average": ""
+      }
+    },
+    "status": 200,
+    "rawResponse": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 879;</script> \n<script>parent.main.document.getElementById(\"on_grade_psycho_quantity\").innerHTML = 150;</script> \n</center>\n</body>  \n</html>\n",
+    "score": 879,
+    "verdict": "eligible_to_apply",
+    "capturedAt": "2026-09-27T16:48:07.681Z",
+    "officialRule": {
+      "department_dsc": "כלכלה",
+      "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/humsos/Economics_degree_1.aspx",
+      "path_dsc": "כלכלה ראשי",
+      "psycho_sekem": null,
+      "psycho_and_or": null,
+      "psycho_value": 600,
+      "psycho_info": "1=מתמטיקה=75/4 או 65/5$4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ה'",
+      "bagrut_average": 107,
+      "bagrut_info": "מתמטיקה=75/5 או 85/4$רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ה'",
+      "bagrut_additional": "25.08.2026- עצרנו קבלות במחלקה לכלכלה. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם. <br>\nהחל מה16.03.2026- ממוצע הבגרות הנדרש 107+ עמידה בדרישות המתמטיקה. <br>\nמחלקה ראשית עם חטיבה במדעי הטבע וראשי עם חטיבה במחלקה למדעי המחשב. יש לעמוד גם בחתך הקבלה של החטיבה במדעי הטבע /מדעי המחשב תלוי במסלול הנבחר. <br>\nממוצע מכינה למדעים מדויקים והנדסה או מכינה למדעי הטבע והחיים של אוניברסיטת-בן גוריון בנגב יכולה להחליף את ממוצע הבגרות באפיק קבלה זה. ממוצע המכינה הנדרש 87.\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<br>\nמועמדים בעלי רקע אקדמי קודם העומדים בתנאי הקבלה יתקבל ללא צורך בשליחת גיליון ציונים.<br>\nמועמד שאינו עומד בחתך הקבלה יעבור לדיון במחלקה לאחר הצגת גיליון ציונים עדכני. <br>\nמועמדים ותיקים שחוזרים מהפסקת לימודים יעברו לדיון במחלקה. <br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט הבא:<br>\n ממוצע בגרות נמוך עד 5 נקודות מהממוצע הנדרש ועד 5 נקודות במקצועות הבגרות הנדרשים. <br>\nמועמדים העומדים בתנאים אלו ידונו בוועדת הקבלה של המחלקה על בסיס מכלול נתוניהם. <br>\nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה <br>\n<br>\nעתודאים - תאריך אחרון להרשמה ולשינויי עדיפויות  31.7.2025\n",
+      "comments": "25.08.2026- עצרנו קבלות במחלקה לכלכלה. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם. <br>\nהחל מה 16.03.2026- חתך הקבלה עלה ל 620 סכם כמותי+ 600 פסיכומטרי. בקבלה על סמך בגרות ממוצע הבגרות הנדרש 107 + דרישות הבגרות במתמטיקה. <br>\n\nמחלקה ראשית עם חטיבה במדעי הטבע / חטיבה במחלקה למדעי המחשב\nיש לעמוד גם בחתך הקבלה של החטיבה במדעי הטבע /מדעי המחשב תלוי במסלול הנבחר.\n<br><b>דרישות נוספות:</b> <br>\n<b>סכם כמותי 620</b>\n<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<p>אפיקי קבלה נוספים: סכם כמותי 640 ופסיכומטרי 570 \n<p>רכיב כמותי 130 בפסיכומטרי מחליף את הדרישה במתמטיקה בתנאי שיש ציון עובר ב4 או 5 יח\"ל\n<p>מועמדים שיתקבלו עם מתמטיקה 5 יח\"ל בטווח ציונים 65 עד 74 או 4 יח\"ל בטווח ציונים 75 עד 84  או על בסיס רכיב כמותי 130 לפחות- יחוייבו בקורס מבוא למתמטיקה בסמסטר א'.\n\nמועמדים בעלי רקע אקדמי קודם העומדים בתנאי הקבלה יתקבל ללא צורך בשליחת גיליון ציונים.<br>\nמועמד שאינו עומד בחתך הקבלה יעבור לדיון במחלקה לאחר הצגת גיליון ציונים עדכני. <br>\nמועמדים ותיקים שחוזרים מהפסקת לימודים יעברו לדיון במחלקה. <br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט להלן:<br>\nמועמדים עם פסיכומטרי וסכם הנמוך עד 20 נק' מהנדרש.    <br>        \nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה.   <br>\n\n<br>                                                                    \nאין צורך לשלוח מכתב.\n\n<br>\nעתודאים - תאריך אחרון להרשמה ולשינויי עדיפויות  31.7.2025",
+      "reg_status": "פתוחה ",
+      "sekem_label": "סכם",
+      "department": 142,
+      "path": 3,
+      "specialization": null,
+      "show_simulator": 0,
+      "path_description": "ראשי",
+      "spec_description": null
+    }
+  },
+  {
+    "pairId": "bgu_economics__bgu",
+    "family": "economics",
+    "kind": "below",
+    "input": {
+      "psychometric": 600,
+      "bagrut": 100,
+      "bguBagrutAverage": 100,
+      "psychometricMath": 50,
+      "psychometricVerbal": 150,
+      "psychometricEnglish": 150,
+      "bguLanguageRequirementsConfirmed": true,
+      "bguCertificateRequirementsConfirmed": true,
+      "bguPriorAcademicStudies": false,
+      "bguApplicationPriority": 1,
+      "bguQuantitativeRoute": "quantitative",
+      "bagrutSubjectRecord": {
+        "schemaVersion": 1,
+        "sector": "jewish",
+        "subjects": [
+          {
+            "subjectId": "mathematics",
+            "units": 5,
+            "grade": 90
+          }
+        ]
+      },
+      "bguSecondTrackRequirementsConfirmed": true
+    },
+    "request": {
+      "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+      "method": "POST",
+      "fields": {
+        "on_grade_psycho_quantity": "",
+        "rn_count_other_subjects": "0",
+        "on_grade_other_quantity": "50",
+        "on_grade_other_verbal": "150",
+        "on_grade_other_psycho": "150",
+        "on_grade_other_average": "100",
+        "on_grade_prep_average": ""
+      }
+    },
+    "status": 200,
+    "rawResponse": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 486;</script> \n<script>parent.main.document.getElementById(\"on_grade_psycho_quantity\").innerHTML = 80;</script> \n</center>\n</body>  \n</html>\n",
+    "score": 486,
+    "verdict": "below",
+    "capturedAt": "2026-09-27T16:48:07.808Z",
+    "officialRule": {
+      "department_dsc": "כלכלה",
+      "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/humsos/Economics_degree_1.aspx",
+      "path_dsc": "כלכלה ראשי",
+      "psycho_sekem": null,
+      "psycho_and_or": null,
+      "psycho_value": 600,
+      "psycho_info": "1=מתמטיקה=75/4 או 65/5$4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ה'",
+      "bagrut_average": 107,
+      "bagrut_info": "מתמטיקה=75/5 או 85/4$רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ה'",
+      "bagrut_additional": "25.08.2026- עצרנו קבלות במחלקה לכלכלה. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם. <br>\nהחל מה16.03.2026- ממוצע הבגרות הנדרש 107+ עמידה בדרישות המתמטיקה. <br>\nמחלקה ראשית עם חטיבה במדעי הטבע וראשי עם חטיבה במחלקה למדעי המחשב. יש לעמוד גם בחתך הקבלה של החטיבה במדעי הטבע /מדעי המחשב תלוי במסלול הנבחר. <br>\nממוצע מכינה למדעים מדויקים והנדסה או מכינה למדעי הטבע והחיים של אוניברסיטת-בן גוריון בנגב יכולה להחליף את ממוצע הבגרות באפיק קבלה זה. ממוצע המכינה הנדרש 87.\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<br>\nמועמדים בעלי רקע אקדמי קודם העומדים בתנאי הקבלה יתקבל ללא צורך בשליחת גיליון ציונים.<br>\nמועמד שאינו עומד בחתך הקבלה יעבור לדיון במחלקה לאחר הצגת גיליון ציונים עדכני. <br>\nמועמדים ותיקים שחוזרים מהפסקת לימודים יעברו לדיון במחלקה. <br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט הבא:<br>\n ממוצע בגרות נמוך עד 5 נקודות מהממוצע הנדרש ועד 5 נקודות במקצועות הבגרות הנדרשים. <br>\nמועמדים העומדים בתנאים אלו ידונו בוועדת הקבלה של המחלקה על בסיס מכלול נתוניהם. <br>\nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה <br>\n<br>\nעתודאים - תאריך אחרון להרשמה ולשינויי עדיפויות  31.7.2025\n",
+      "comments": "25.08.2026- עצרנו קבלות במחלקה לכלכלה. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם. <br>\nהחל מה 16.03.2026- חתך הקבלה עלה ל 620 סכם כמותי+ 600 פסיכומטרי. בקבלה על סמך בגרות ממוצע הבגרות הנדרש 107 + דרישות הבגרות במתמטיקה. <br>\n\nמחלקה ראשית עם חטיבה במדעי הטבע / חטיבה במחלקה למדעי המחשב\nיש לעמוד גם בחתך הקבלה של החטיבה במדעי הטבע /מדעי המחשב תלוי במסלול הנבחר.\n<br><b>דרישות נוספות:</b> <br>\n<b>סכם כמותי 620</b>\n<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<p>אפיקי קבלה נוספים: סכם כמותי 640 ופסיכומטרי 570 \n<p>רכיב כמותי 130 בפסיכומטרי מחליף את הדרישה במתמטיקה בתנאי שיש ציון עובר ב4 או 5 יח\"ל\n<p>מועמדים שיתקבלו עם מתמטיקה 5 יח\"ל בטווח ציונים 65 עד 74 או 4 יח\"ל בטווח ציונים 75 עד 84  או על בסיס רכיב כמותי 130 לפחות- יחוייבו בקורס מבוא למתמטיקה בסמסטר א'.\n\nמועמדים בעלי רקע אקדמי קודם העומדים בתנאי הקבלה יתקבל ללא צורך בשליחת גיליון ציונים.<br>\nמועמד שאינו עומד בחתך הקבלה יעבור לדיון במחלקה לאחר הצגת גיליון ציונים עדכני. <br>\nמועמדים ותיקים שחוזרים מהפסקת לימודים יעברו לדיון במחלקה. <br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט להלן:<br>\nמועמדים עם פסיכומטרי וסכם הנמוך עד 20 נק' מהנדרש.    <br>        \nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה.   <br>\n\n<br>                                                                    \nאין צורך לשלוח מכתב.\n\n<br>\nעתודאים - תאריך אחרון להרשמה ולשינויי עדיפויות  31.7.2025",
+      "reg_status": "פתוחה ",
+      "sekem_label": "סכם",
+      "department": 142,
+      "path": 3,
+      "specialization": null,
+      "show_simulator": 0,
+      "path_description": "ראשי",
+      "spec_description": null
+    }
+  },
+  {
+    "pairId": "business__bgu",
+    "family": "business",
+    "kind": "eligible",
+    "input": {
+      "psychometric": 800,
+      "bagrut": 120,
+      "bguBagrutAverage": 120,
+      "psychometricMath": 150,
+      "psychometricVerbal": 150,
+      "psychometricEnglish": 150,
+      "bguLanguageRequirementsConfirmed": true,
+      "bguCertificateRequirementsConfirmed": true,
+      "bguPriorAcademicStudies": false,
+      "bguApplicationPriority": 1,
+      "bguQuantitativeRoute": "quantitative",
+      "bagrutSubjectRecord": {
+        "schemaVersion": 1,
+        "sector": "jewish",
+        "subjects": [
+          {
+            "subjectId": "mathematics",
+            "units": 5,
+            "grade": 95
+          }
+        ]
+      },
+      "bguSecondTrackRequirementsConfirmed": true
+    },
+    "request": {
+      "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+      "method": "POST",
+      "fields": {
+        "on_grade_psycho_quantity": "",
+        "rn_count_other_subjects": "0",
+        "on_grade_other_quantity": "150",
+        "on_grade_other_verbal": "150",
+        "on_grade_other_psycho": "150",
+        "on_grade_other_average": "120",
+        "on_grade_prep_average": ""
+      }
+    },
+    "status": 200,
+    "rawResponse": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 879;</script> \n<script>parent.main.document.getElementById(\"on_grade_psycho_quantity\").innerHTML = 150;</script> \n</center>\n</body>  \n</html>\n",
+    "score": 879,
+    "verdict": "eligible_to_apply",
+    "capturedAt": "2026-09-27T16:48:07.887Z",
+    "officialRule": {
+      "department_dsc": "כלכלה",
+      "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/humsos/Economics_degree_1.aspx",
+      "path_dsc": "כלכלה חד מחלקתי - מנהל עסקים",
+      "psycho_sekem": null,
+      "psycho_and_or": null,
+      "psycho_value": 600,
+      "psycho_info": "1=מתמטיקה=75/4 או 65/5$4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ה'",
+      "bagrut_average": 107,
+      "bagrut_info": "מתמטיקה=75/5 או 85/4$רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ה'",
+      "bagrut_additional": "25.08.2026- עצרנו קבלות במחלקה לכלכלה. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם. <br>\nהחל מה16.03.2026- ממוצע הבגרות הנדרש 107+ עמידה בדרישות המתמטיקה. <br>\nאפיק קבלה נוסף: ממוצע 107 ופרק כמותי 130+ וציון עובר ב-4 או 5 יחידות מתמטיקה.  <br>\nממוצע מכינה למדעים מדויקים והנדסה או מכינה למדעי הטבע והחיים של אוניברסיטת-בן גוריון בנגב יכולה להחליף את ממוצע הבגרות באפיק קבלה זה. ממוצע המכינה הנדרש 87.\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<br>\nמועמדים בעלי רקע אקדמי קודם העומדים בתנאי הקבלה יתקבל ללא צורך בשליחת גיליון ציונים.<br>\nמועמד שאינו עומד בחתך הקבלה יעבור לדיון במחלקה לאחר הצגת גיליון ציונים עדכני. <br>\nמועמדים ותיקים שחוזרים מהפסקת לימודים יעברו לדיון במחלקה. <br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט הבא:<br>\n ממוצע בגרות נמוך עד 5 נקודות מהממוצע הנדרש ועד 5 נקודות במקצועות הבגרות הנדרשים. <br>\nמועמדים העומדים בתנאים אלו ידונו בוועדת הקבלה של המחלקה על בסיס מכלול נתוניהם. <br>\nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה <br>\n<br>\nעתודאים - תאריך אחרון להרשמה ולשינויי עדיפויות  31.7.2025\n",
+      "comments": "25.08.2026- עצרנו קבלות במחלקה לכלכלה. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם. <br>\nהחל מה 16.03.2026- חתך הקבלה עלה ל 620 סכם כמותי+ 600 פסיכומטרי. בקבלה על סמך בגרות ממוצע הבגרות הנדרש 107 + דרישות הבגרות במתמטיקה. <br>\n\n<br><b>דרישות נוספות:</b> <br>\n<b>סכם כמותי 620</b>\n<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<p>אפיקי קבלה נוספים: סכם כמותי 640 ופסיכומטרי 570 \n<p> רכיב כמותי 130 בפסיכומטרי מחליף את הדרישה במתמטיקה בתנאי שיש ציון עובר ב4 או 5 יח\"ל.\n<p>מועמדים שיתקבלו עם מתמטיקה 5 יח\"ל בטווח ציונים 65 עד 74 או 4 יח\"ל בטווח ציונים 75 עד 84  או על בסיס רכיב כמותי 130 לפחות- יחוייבו בקורס מבוא למתמטיקה בסמסטר א'.<br>  \n<br>  \nמועמדים בעלי רקע אקדמי קודם העומדים בתנאי הקבלה יתקבל ללא צורך בשליחת גיליון ציונים.<br>\nמועמד שאינו עומד בחתך הקבלה יעבור לדיון במחלקה לאחר הצגת גיליון ציונים עדכני. <br>\nמועמדים ותיקים שחוזרים מהפסקת לימודים יעברו לדיון במחלקה. <br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט להלן:<br>\nמועמדים עם פסיכומטרי וסכם הנמוך עד 20 נק' מהנדרש .    <br>          \nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה.   <br>",
+      "reg_status": "פתוחה ",
+      "sekem_label": "סכם",
+      "department": 142,
+      "path": 1,
+      "specialization": 1,
+      "show_simulator": 0,
+      "path_description": "חד מחלקתי",
+      "spec_description": "מנהל עסקים"
+    }
+  },
+  {
+    "pairId": "business__bgu",
+    "family": "business",
+    "kind": "below",
+    "input": {
+      "psychometric": 600,
+      "bagrut": 100,
+      "bguBagrutAverage": 100,
+      "psychometricMath": 50,
+      "psychometricVerbal": 150,
+      "psychometricEnglish": 150,
+      "bguLanguageRequirementsConfirmed": true,
+      "bguCertificateRequirementsConfirmed": true,
+      "bguPriorAcademicStudies": false,
+      "bguApplicationPriority": 1,
+      "bguQuantitativeRoute": "quantitative",
+      "bagrutSubjectRecord": {
+        "schemaVersion": 1,
+        "sector": "jewish",
+        "subjects": [
+          {
+            "subjectId": "mathematics",
+            "units": 5,
+            "grade": 90
+          }
+        ]
+      },
+      "bguSecondTrackRequirementsConfirmed": true
+    },
+    "request": {
+      "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+      "method": "POST",
+      "fields": {
+        "on_grade_psycho_quantity": "",
+        "rn_count_other_subjects": "0",
+        "on_grade_other_quantity": "50",
+        "on_grade_other_verbal": "150",
+        "on_grade_other_psycho": "150",
+        "on_grade_other_average": "100",
+        "on_grade_prep_average": ""
+      }
+    },
+    "status": 200,
+    "rawResponse": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 486;</script> \n<script>parent.main.document.getElementById(\"on_grade_psycho_quantity\").innerHTML = 80;</script> \n</center>\n</body>  \n</html>\n",
+    "score": 486,
+    "verdict": "below",
+    "capturedAt": "2026-09-27T16:48:07.965Z",
+    "officialRule": {
+      "department_dsc": "כלכלה",
+      "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/humsos/Economics_degree_1.aspx",
+      "path_dsc": "כלכלה חד מחלקתי - מנהל עסקים",
+      "psycho_sekem": null,
+      "psycho_and_or": null,
+      "psycho_value": 600,
+      "psycho_info": "1=מתמטיקה=75/4 או 65/5$4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ה'",
+      "bagrut_average": 107,
+      "bagrut_info": "מתמטיקה=75/5 או 85/4$רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ה'",
+      "bagrut_additional": "25.08.2026- עצרנו קבלות במחלקה לכלכלה. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם. <br>\nהחל מה16.03.2026- ממוצע הבגרות הנדרש 107+ עמידה בדרישות המתמטיקה. <br>\nאפיק קבלה נוסף: ממוצע 107 ופרק כמותי 130+ וציון עובר ב-4 או 5 יחידות מתמטיקה.  <br>\nממוצע מכינה למדעים מדויקים והנדסה או מכינה למדעי הטבע והחיים של אוניברסיטת-בן גוריון בנגב יכולה להחליף את ממוצע הבגרות באפיק קבלה זה. ממוצע המכינה הנדרש 87.\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<br>\nמועמדים בעלי רקע אקדמי קודם העומדים בתנאי הקבלה יתקבל ללא צורך בשליחת גיליון ציונים.<br>\nמועמד שאינו עומד בחתך הקבלה יעבור לדיון במחלקה לאחר הצגת גיליון ציונים עדכני. <br>\nמועמדים ותיקים שחוזרים מהפסקת לימודים יעברו לדיון במחלקה. <br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט הבא:<br>\n ממוצע בגרות נמוך עד 5 נקודות מהממוצע הנדרש ועד 5 נקודות במקצועות הבגרות הנדרשים. <br>\nמועמדים העומדים בתנאים אלו ידונו בוועדת הקבלה של המחלקה על בסיס מכלול נתוניהם. <br>\nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה <br>\n<br>\nעתודאים - תאריך אחרון להרשמה ולשינויי עדיפויות  31.7.2025\n",
+      "comments": "25.08.2026- עצרנו קבלות במחלקה לכלכלה. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם. <br>\nהחל מה 16.03.2026- חתך הקבלה עלה ל 620 סכם כמותי+ 600 פסיכומטרי. בקבלה על סמך בגרות ממוצע הבגרות הנדרש 107 + דרישות הבגרות במתמטיקה. <br>\n\n<br><b>דרישות נוספות:</b> <br>\n<b>סכם כמותי 620</b>\n<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<p>אפיקי קבלה נוספים: סכם כמותי 640 ופסיכומטרי 570 \n<p> רכיב כמותי 130 בפסיכומטרי מחליף את הדרישה במתמטיקה בתנאי שיש ציון עובר ב4 או 5 יח\"ל.\n<p>מועמדים שיתקבלו עם מתמטיקה 5 יח\"ל בטווח ציונים 65 עד 74 או 4 יח\"ל בטווח ציונים 75 עד 84  או על בסיס רכיב כמותי 130 לפחות- יחוייבו בקורס מבוא למתמטיקה בסמסטר א'.<br>  \n<br>  \nמועמדים בעלי רקע אקדמי קודם העומדים בתנאי הקבלה יתקבל ללא צורך בשליחת גיליון ציונים.<br>\nמועמד שאינו עומד בחתך הקבלה יעבור לדיון במחלקה לאחר הצגת גיליון ציונים עדכני. <br>\nמועמדים ותיקים שחוזרים מהפסקת לימודים יעברו לדיון במחלקה. <br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט להלן:<br>\nמועמדים עם פסיכומטרי וסכם הנמוך עד 20 נק' מהנדרש .    <br>          \nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה.   <br>",
+      "reg_status": "פתוחה ",
+      "sekem_label": "סכם",
+      "department": 142,
+      "path": 1,
+      "specialization": 1,
+      "show_simulator": 0,
+      "path_description": "חד מחלקתי",
+      "spec_description": "מנהל עסקים"
+    }
+  },
+  {
+    "pairId": "bgu_business__bgu",
+    "family": "business",
+    "kind": "eligible",
+    "input": {
+      "psychometric": 800,
+      "bagrut": 120,
+      "bguBagrutAverage": 120,
+      "psychometricMath": 150,
+      "psychometricVerbal": 150,
+      "psychometricEnglish": 150,
+      "bguLanguageRequirementsConfirmed": true,
+      "bguCertificateRequirementsConfirmed": true,
+      "bguPriorAcademicStudies": false,
+      "bguApplicationPriority": 1,
+      "bguQuantitativeRoute": "quantitative",
+      "bagrutSubjectRecord": {
+        "schemaVersion": 1,
+        "sector": "jewish",
+        "subjects": [
+          {
+            "subjectId": "mathematics",
+            "units": 5,
+            "grade": 95
+          }
+        ]
+      },
+      "bguSecondTrackRequirementsConfirmed": true
+    },
+    "request": {
+      "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+      "method": "POST",
+      "fields": {
+        "on_grade_psycho_quantity": "",
+        "rn_count_other_subjects": "0",
+        "on_grade_other_quantity": "150",
+        "on_grade_other_verbal": "150",
+        "on_grade_other_psycho": "150",
+        "on_grade_other_average": "120",
+        "on_grade_prep_average": ""
+      }
+    },
+    "status": 200,
+    "rawResponse": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 879;</script> \n<script>parent.main.document.getElementById(\"on_grade_psycho_quantity\").innerHTML = 150;</script> \n</center>\n</body>  \n</html>\n",
+    "score": 879,
+    "verdict": "eligible_to_apply",
+    "capturedAt": "2026-09-27T16:48:08.042Z",
+    "officialRule": {
+      "department_dsc": "כלכלה",
+      "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/humsos/Economics_degree_1.aspx",
+      "path_dsc": "כלכלה חד מחלקתי - מנהל עסקים",
+      "psycho_sekem": null,
+      "psycho_and_or": null,
+      "psycho_value": 600,
+      "psycho_info": "1=מתמטיקה=75/4 או 65/5$4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ה'",
+      "bagrut_average": 107,
+      "bagrut_info": "מתמטיקה=75/5 או 85/4$רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ה'",
+      "bagrut_additional": "25.08.2026- עצרנו קבלות במחלקה לכלכלה. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם. <br>\nהחל מה16.03.2026- ממוצע הבגרות הנדרש 107+ עמידה בדרישות המתמטיקה. <br>\nאפיק קבלה נוסף: ממוצע 107 ופרק כמותי 130+ וציון עובר ב-4 או 5 יחידות מתמטיקה.  <br>\nממוצע מכינה למדעים מדויקים והנדסה או מכינה למדעי הטבע והחיים של אוניברסיטת-בן גוריון בנגב יכולה להחליף את ממוצע הבגרות באפיק קבלה זה. ממוצע המכינה הנדרש 87.\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<br>\nמועמדים בעלי רקע אקדמי קודם העומדים בתנאי הקבלה יתקבל ללא צורך בשליחת גיליון ציונים.<br>\nמועמד שאינו עומד בחתך הקבלה יעבור לדיון במחלקה לאחר הצגת גיליון ציונים עדכני. <br>\nמועמדים ותיקים שחוזרים מהפסקת לימודים יעברו לדיון במחלקה. <br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט הבא:<br>\n ממוצע בגרות נמוך עד 5 נקודות מהממוצע הנדרש ועד 5 נקודות במקצועות הבגרות הנדרשים. <br>\nמועמדים העומדים בתנאים אלו ידונו בוועדת הקבלה של המחלקה על בסיס מכלול נתוניהם. <br>\nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה <br>\n<br>\nעתודאים - תאריך אחרון להרשמה ולשינויי עדיפויות  31.7.2025\n",
+      "comments": "25.08.2026- עצרנו קבלות במחלקה לכלכלה. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם. <br>\nהחל מה 16.03.2026- חתך הקבלה עלה ל 620 סכם כמותי+ 600 פסיכומטרי. בקבלה על סמך בגרות ממוצע הבגרות הנדרש 107 + דרישות הבגרות במתמטיקה. <br>\n\n<br><b>דרישות נוספות:</b> <br>\n<b>סכם כמותי 620</b>\n<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<p>אפיקי קבלה נוספים: סכם כמותי 640 ופסיכומטרי 570 \n<p> רכיב כמותי 130 בפסיכומטרי מחליף את הדרישה במתמטיקה בתנאי שיש ציון עובר ב4 או 5 יח\"ל.\n<p>מועמדים שיתקבלו עם מתמטיקה 5 יח\"ל בטווח ציונים 65 עד 74 או 4 יח\"ל בטווח ציונים 75 עד 84  או על בסיס רכיב כמותי 130 לפחות- יחוייבו בקורס מבוא למתמטיקה בסמסטר א'.<br>  \n<br>  \nמועמדים בעלי רקע אקדמי קודם העומדים בתנאי הקבלה יתקבל ללא צורך בשליחת גיליון ציונים.<br>\nמועמד שאינו עומד בחתך הקבלה יעבור לדיון במחלקה לאחר הצגת גיליון ציונים עדכני. <br>\nמועמדים ותיקים שחוזרים מהפסקת לימודים יעברו לדיון במחלקה. <br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט להלן:<br>\nמועמדים עם פסיכומטרי וסכם הנמוך עד 20 נק' מהנדרש .    <br>          \nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה.   <br>",
+      "reg_status": "פתוחה ",
+      "sekem_label": "סכם",
+      "department": 142,
+      "path": 1,
+      "specialization": 1,
+      "show_simulator": 0,
+      "path_description": "חד מחלקתי",
+      "spec_description": "מנהל עסקים"
+    }
+  },
+  {
+    "pairId": "bgu_business__bgu",
+    "family": "business",
+    "kind": "below",
+    "input": {
+      "psychometric": 600,
+      "bagrut": 100,
+      "bguBagrutAverage": 100,
+      "psychometricMath": 50,
+      "psychometricVerbal": 150,
+      "psychometricEnglish": 150,
+      "bguLanguageRequirementsConfirmed": true,
+      "bguCertificateRequirementsConfirmed": true,
+      "bguPriorAcademicStudies": false,
+      "bguApplicationPriority": 1,
+      "bguQuantitativeRoute": "quantitative",
+      "bagrutSubjectRecord": {
+        "schemaVersion": 1,
+        "sector": "jewish",
+        "subjects": [
+          {
+            "subjectId": "mathematics",
+            "units": 5,
+            "grade": 90
+          }
+        ]
+      },
+      "bguSecondTrackRequirementsConfirmed": true
+    },
+    "request": {
+      "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+      "method": "POST",
+      "fields": {
+        "on_grade_psycho_quantity": "",
+        "rn_count_other_subjects": "0",
+        "on_grade_other_quantity": "50",
+        "on_grade_other_verbal": "150",
+        "on_grade_other_psycho": "150",
+        "on_grade_other_average": "100",
+        "on_grade_prep_average": ""
+      }
+    },
+    "status": 200,
+    "rawResponse": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 486;</script> \n<script>parent.main.document.getElementById(\"on_grade_psycho_quantity\").innerHTML = 80;</script> \n</center>\n</body>  \n</html>\n",
+    "score": 486,
+    "verdict": "below",
+    "capturedAt": "2026-09-27T16:48:08.118Z",
+    "officialRule": {
+      "department_dsc": "כלכלה",
+      "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/humsos/Economics_degree_1.aspx",
+      "path_dsc": "כלכלה חד מחלקתי - מנהל עסקים",
+      "psycho_sekem": null,
+      "psycho_and_or": null,
+      "psycho_value": 600,
+      "psycho_info": "1=מתמטיקה=75/4 או 65/5$4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ה'",
+      "bagrut_average": 107,
+      "bagrut_info": "מתמטיקה=75/5 או 85/4$רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ה'",
+      "bagrut_additional": "25.08.2026- עצרנו קבלות במחלקה לכלכלה. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם. <br>\nהחל מה16.03.2026- ממוצע הבגרות הנדרש 107+ עמידה בדרישות המתמטיקה. <br>\nאפיק קבלה נוסף: ממוצע 107 ופרק כמותי 130+ וציון עובר ב-4 או 5 יחידות מתמטיקה.  <br>\nממוצע מכינה למדעים מדויקים והנדסה או מכינה למדעי הטבע והחיים של אוניברסיטת-בן גוריון בנגב יכולה להחליף את ממוצע הבגרות באפיק קבלה זה. ממוצע המכינה הנדרש 87.\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<br>\nמועמדים בעלי רקע אקדמי קודם העומדים בתנאי הקבלה יתקבל ללא צורך בשליחת גיליון ציונים.<br>\nמועמד שאינו עומד בחתך הקבלה יעבור לדיון במחלקה לאחר הצגת גיליון ציונים עדכני. <br>\nמועמדים ותיקים שחוזרים מהפסקת לימודים יעברו לדיון במחלקה. <br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט הבא:<br>\n ממוצע בגרות נמוך עד 5 נקודות מהממוצע הנדרש ועד 5 נקודות במקצועות הבגרות הנדרשים. <br>\nמועמדים העומדים בתנאים אלו ידונו בוועדת הקבלה של המחלקה על בסיס מכלול נתוניהם. <br>\nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה <br>\n<br>\nעתודאים - תאריך אחרון להרשמה ולשינויי עדיפויות  31.7.2025\n",
+      "comments": "25.08.2026- עצרנו קבלות במחלקה לכלכלה. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם. <br>\nהחל מה 16.03.2026- חתך הקבלה עלה ל 620 סכם כמותי+ 600 פסיכומטרי. בקבלה על סמך בגרות ממוצע הבגרות הנדרש 107 + דרישות הבגרות במתמטיקה. <br>\n\n<br><b>דרישות נוספות:</b> <br>\n<b>סכם כמותי 620</b>\n<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<p>אפיקי קבלה נוספים: סכם כמותי 640 ופסיכומטרי 570 \n<p> רכיב כמותי 130 בפסיכומטרי מחליף את הדרישה במתמטיקה בתנאי שיש ציון עובר ב4 או 5 יח\"ל.\n<p>מועמדים שיתקבלו עם מתמטיקה 5 יח\"ל בטווח ציונים 65 עד 74 או 4 יח\"ל בטווח ציונים 75 עד 84  או על בסיס רכיב כמותי 130 לפחות- יחוייבו בקורס מבוא למתמטיקה בסמסטר א'.<br>  \n<br>  \nמועמדים בעלי רקע אקדמי קודם העומדים בתנאי הקבלה יתקבל ללא צורך בשליחת גיליון ציונים.<br>\nמועמד שאינו עומד בחתך הקבלה יעבור לדיון במחלקה לאחר הצגת גיליון ציונים עדכני. <br>\nמועמדים ותיקים שחוזרים מהפסקת לימודים יעברו לדיון במחלקה. <br>\n\n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט להלן:<br>\nמועמדים עם פסיכומטרי וסכם הנמוך עד 20 נק' מהנדרש .    <br>          \nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה.   <br>",
+      "reg_status": "פתוחה ",
+      "sekem_label": "סכם",
+      "department": 142,
+      "path": 1,
+      "specialization": 1,
+      "show_simulator": 0,
+      "path_description": "חד מחלקתי",
+      "spec_description": "מנהל עסקים"
+    }
+  },
+  {
+    "pairId": "accounting__bgu",
+    "family": "accounting",
+    "kind": "eligible",
+    "input": {
+      "psychometric": 800,
+      "bagrut": 120,
+      "bguBagrutAverage": 120,
+      "psychometricMath": 150,
+      "psychometricVerbal": 150,
+      "psychometricEnglish": 150,
+      "bguLanguageRequirementsConfirmed": true,
+      "bguCertificateRequirementsConfirmed": true,
+      "bguPriorAcademicStudies": false,
+      "bguApplicationPriority": 1,
+      "bguQuantitativeRoute": "quantitative",
+      "bagrutSubjectRecord": {
+        "schemaVersion": 1,
+        "sector": "jewish",
+        "subjects": [
+          {
+            "subjectId": "mathematics",
+            "units": 5,
+            "grade": 95
+          }
+        ]
+      },
+      "bguSecondTrackRequirementsConfirmed": true
+    },
+    "request": {
+      "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+      "method": "POST",
+      "fields": {
+        "on_grade_psycho_quantity": "",
+        "rn_count_other_subjects": "0",
+        "on_grade_other_quantity": "150",
+        "on_grade_other_verbal": "150",
+        "on_grade_other_psycho": "150",
+        "on_grade_other_average": "120",
+        "on_grade_prep_average": ""
+      }
+    },
+    "status": 200,
+    "rawResponse": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 879;</script> \n<script>parent.main.document.getElementById(\"on_grade_psycho_quantity\").innerHTML = 150;</script> \n</center>\n</body>  \n</html>\n",
+    "score": 879,
+    "verdict": "eligible_to_apply",
+    "capturedAt": "2026-09-27T16:48:08.199Z",
+    "officialRule": {
+      "department_dsc": "כלכלה",
+      "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/humsos/Economics_degree_1.aspx",
+      "path_dsc": "כלכלה חד מחלקתי - חשבונאות",
+      "psycho_sekem": null,
+      "psycho_and_or": null,
+      "psycho_value": 620,
+      "psycho_info": "1=מתמטיקה=75/4 או 65/5$4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ה'",
+      "bagrut_average": null,
+      "bagrut_info": "רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ה'",
+      "bagrut_additional": "\n",
+      "comments": "25.08.2026- עצרנו קבלות במחלקה לכלכלה. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם. <br>\n<br><b>דרישות נוספות:</b> <br>\n<b>סכם כמותי 620</b>\n<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<p>אפיקי קבלה נוספים: סכם כמותי 660 ופסיכומטרי 580 \n<p> רכיב כמותי 130 בפסיכומטרי מחליף את הדרישה במתמטיקה בתנאי שיש ציון עובר ב4 או 5 יח\"ל\n<p>מועמדים שיתקבלו עם מתמטיקה 5 יח\"ל בטווח ציונים 65 עד 74 או 4 יח\"ל בטווח ציונים 75 עד 84  או על בסיס רכיב כמותי 130 לפחות- יחוייבו בקורס מבוא למתמטיקה בסמסטר א'.<br>\n<br>  \nמועמדים בעלי רקע אקדמי קודם העומדים בתנאי הקבלה יתקבל ללא צורך בשליחת גיליון ציונים.<br>\nמועמד שאינו עומד בחתך הקבלה יעבור לדיון במחלקה לאחר הצגת גיליון ציונים עדכני. <br>\nמועמדים ותיקים שחוזרים מהפסקת לימודים יעברו לדיון במחלקה. <br>\nסטודנטים החוזרים מהפסקה או המבקשים לשנות מסלול באותה מחלקה יועברו לדיון בועדת הקבלה של המחלקה. <br> \n\n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט להלן:<br>\nמועמדים עם פסיכומטרי וסכם הנמוך עד 20 נק' מהנדרש.    <br>                   \nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה.   <br>\n<br>\nעתודאים - תאריך אחרון להרשמה ולשינויי עדיפויות  31.7.2025",
+      "reg_status": "פתוחה ",
+      "sekem_label": "סכם",
+      "department": 142,
+      "path": 1,
+      "specialization": 6,
+      "show_simulator": 0,
+      "path_description": "חד מחלקתי",
+      "spec_description": "חשבונאות"
+    }
+  },
+  {
+    "pairId": "accounting__bgu",
+    "family": "accounting",
+    "kind": "below",
+    "input": {
+      "psychometric": 600,
+      "bagrut": 100,
+      "bguBagrutAverage": 100,
+      "psychometricMath": 50,
+      "psychometricVerbal": 150,
+      "psychometricEnglish": 150,
+      "bguLanguageRequirementsConfirmed": true,
+      "bguCertificateRequirementsConfirmed": true,
+      "bguPriorAcademicStudies": false,
+      "bguApplicationPriority": 1,
+      "bguQuantitativeRoute": "quantitative",
+      "bagrutSubjectRecord": {
+        "schemaVersion": 1,
+        "sector": "jewish",
+        "subjects": [
+          {
+            "subjectId": "mathematics",
+            "units": 5,
+            "grade": 90
+          }
+        ]
+      },
+      "bguSecondTrackRequirementsConfirmed": true
+    },
+    "request": {
+      "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+      "method": "POST",
+      "fields": {
+        "on_grade_psycho_quantity": "",
+        "rn_count_other_subjects": "0",
+        "on_grade_other_quantity": "50",
+        "on_grade_other_verbal": "150",
+        "on_grade_other_psycho": "150",
+        "on_grade_other_average": "100",
+        "on_grade_prep_average": ""
+      }
+    },
+    "status": 200,
+    "rawResponse": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 486;</script> \n<script>parent.main.document.getElementById(\"on_grade_psycho_quantity\").innerHTML = 80;</script> \n</center>\n</body>  \n</html>\n",
+    "score": 486,
+    "verdict": "below",
+    "capturedAt": "2026-09-27T16:48:08.341Z",
+    "officialRule": {
+      "department_dsc": "כלכלה",
+      "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/humsos/Economics_degree_1.aspx",
+      "path_dsc": "כלכלה חד מחלקתי - חשבונאות",
+      "psycho_sekem": null,
+      "psycho_and_or": null,
+      "psycho_value": 620,
+      "psycho_info": "1=מתמטיקה=75/4 או 65/5$4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ה'",
+      "bagrut_average": null,
+      "bagrut_info": "רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ה'",
+      "bagrut_additional": "\n",
+      "comments": "25.08.2026- עצרנו קבלות במחלקה לכלכלה. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם. <br>\n<br><b>דרישות נוספות:</b> <br>\n<b>סכם כמותי 620</b>\n<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<p>אפיקי קבלה נוספים: סכם כמותי 660 ופסיכומטרי 580 \n<p> רכיב כמותי 130 בפסיכומטרי מחליף את הדרישה במתמטיקה בתנאי שיש ציון עובר ב4 או 5 יח\"ל\n<p>מועמדים שיתקבלו עם מתמטיקה 5 יח\"ל בטווח ציונים 65 עד 74 או 4 יח\"ל בטווח ציונים 75 עד 84  או על בסיס רכיב כמותי 130 לפחות- יחוייבו בקורס מבוא למתמטיקה בסמסטר א'.<br>\n<br>  \nמועמדים בעלי רקע אקדמי קודם העומדים בתנאי הקבלה יתקבל ללא צורך בשליחת גיליון ציונים.<br>\nמועמד שאינו עומד בחתך הקבלה יעבור לדיון במחלקה לאחר הצגת גיליון ציונים עדכני. <br>\nמועמדים ותיקים שחוזרים מהפסקת לימודים יעברו לדיון במחלקה. <br>\nסטודנטים החוזרים מהפסקה או המבקשים לשנות מסלול באותה מחלקה יועברו לדיון בועדת הקבלה של המחלקה. <br> \n\n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט להלן:<br>\nמועמדים עם פסיכומטרי וסכם הנמוך עד 20 נק' מהנדרש.    <br>                   \nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה.   <br>\n<br>\nעתודאים - תאריך אחרון להרשמה ולשינויי עדיפויות  31.7.2025",
+      "reg_status": "פתוחה ",
+      "sekem_label": "סכם",
+      "department": 142,
+      "path": 1,
+      "specialization": 6,
+      "show_simulator": 0,
+      "path_description": "חד מחלקתי",
+      "spec_description": "חשבונאות"
+    }
+  },
+  {
+    "pairId": "bgu_accounting__bgu",
+    "family": "accounting",
+    "kind": "eligible",
+    "input": {
+      "psychometric": 800,
+      "bagrut": 120,
+      "bguBagrutAverage": 120,
+      "psychometricMath": 150,
+      "psychometricVerbal": 150,
+      "psychometricEnglish": 150,
+      "bguLanguageRequirementsConfirmed": true,
+      "bguCertificateRequirementsConfirmed": true,
+      "bguPriorAcademicStudies": false,
+      "bguApplicationPriority": 1,
+      "bguQuantitativeRoute": "quantitative",
+      "bagrutSubjectRecord": {
+        "schemaVersion": 1,
+        "sector": "jewish",
+        "subjects": [
+          {
+            "subjectId": "mathematics",
+            "units": 5,
+            "grade": 95
+          }
+        ]
+      },
+      "bguSecondTrackRequirementsConfirmed": true
+    },
+    "request": {
+      "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+      "method": "POST",
+      "fields": {
+        "on_grade_psycho_quantity": "",
+        "rn_count_other_subjects": "0",
+        "on_grade_other_quantity": "150",
+        "on_grade_other_verbal": "150",
+        "on_grade_other_psycho": "150",
+        "on_grade_other_average": "120",
+        "on_grade_prep_average": ""
+      }
+    },
+    "status": 200,
+    "rawResponse": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 879;</script> \n<script>parent.main.document.getElementById(\"on_grade_psycho_quantity\").innerHTML = 150;</script> \n</center>\n</body>  \n</html>\n",
+    "score": 879,
+    "verdict": "eligible_to_apply",
+    "capturedAt": "2026-09-27T16:48:08.422Z",
+    "officialRule": {
+      "department_dsc": "כלכלה",
+      "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/humsos/Economics_degree_1.aspx",
+      "path_dsc": "כלכלה חד מחלקתי - חשבונאות",
+      "psycho_sekem": null,
+      "psycho_and_or": null,
+      "psycho_value": 620,
+      "psycho_info": "1=מתמטיקה=75/4 או 65/5$4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ה'",
+      "bagrut_average": null,
+      "bagrut_info": "רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ה'",
+      "bagrut_additional": "\n",
+      "comments": "25.08.2026- עצרנו קבלות במחלקה לכלכלה. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם. <br>\n<br><b>דרישות נוספות:</b> <br>\n<b>סכם כמותי 620</b>\n<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<p>אפיקי קבלה נוספים: סכם כמותי 660 ופסיכומטרי 580 \n<p> רכיב כמותי 130 בפסיכומטרי מחליף את הדרישה במתמטיקה בתנאי שיש ציון עובר ב4 או 5 יח\"ל\n<p>מועמדים שיתקבלו עם מתמטיקה 5 יח\"ל בטווח ציונים 65 עד 74 או 4 יח\"ל בטווח ציונים 75 עד 84  או על בסיס רכיב כמותי 130 לפחות- יחוייבו בקורס מבוא למתמטיקה בסמסטר א'.<br>\n<br>  \nמועמדים בעלי רקע אקדמי קודם העומדים בתנאי הקבלה יתקבל ללא צורך בשליחת גיליון ציונים.<br>\nמועמד שאינו עומד בחתך הקבלה יעבור לדיון במחלקה לאחר הצגת גיליון ציונים עדכני. <br>\nמועמדים ותיקים שחוזרים מהפסקת לימודים יעברו לדיון במחלקה. <br>\nסטודנטים החוזרים מהפסקה או המבקשים לשנות מסלול באותה מחלקה יועברו לדיון בועדת הקבלה של המחלקה. <br> \n\n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט להלן:<br>\nמועמדים עם פסיכומטרי וסכם הנמוך עד 20 נק' מהנדרש.    <br>                   \nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה.   <br>\n<br>\nעתודאים - תאריך אחרון להרשמה ולשינויי עדיפויות  31.7.2025",
+      "reg_status": "פתוחה ",
+      "sekem_label": "סכם",
+      "department": 142,
+      "path": 1,
+      "specialization": 6,
+      "show_simulator": 0,
+      "path_description": "חד מחלקתי",
+      "spec_description": "חשבונאות"
+    }
+  },
+  {
+    "pairId": "bgu_accounting__bgu",
+    "family": "accounting",
+    "kind": "below",
+    "input": {
+      "psychometric": 600,
+      "bagrut": 100,
+      "bguBagrutAverage": 100,
+      "psychometricMath": 50,
+      "psychometricVerbal": 150,
+      "psychometricEnglish": 150,
+      "bguLanguageRequirementsConfirmed": true,
+      "bguCertificateRequirementsConfirmed": true,
+      "bguPriorAcademicStudies": false,
+      "bguApplicationPriority": 1,
+      "bguQuantitativeRoute": "quantitative",
+      "bagrutSubjectRecord": {
+        "schemaVersion": 1,
+        "sector": "jewish",
+        "subjects": [
+          {
+            "subjectId": "mathematics",
+            "units": 5,
+            "grade": 90
+          }
+        ]
+      },
+      "bguSecondTrackRequirementsConfirmed": true
+    },
+    "request": {
+      "url": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+      "method": "POST",
+      "fields": {
+        "on_grade_psycho_quantity": "",
+        "rn_count_other_subjects": "0",
+        "on_grade_other_quantity": "50",
+        "on_grade_other_verbal": "150",
+        "on_grade_other_psycho": "150",
+        "on_grade_other_average": "100",
+        "on_grade_prep_average": ""
+      }
+    },
+    "status": 200,
+    "rawResponse": "<!doctype html>\n<!--[if lt IE 7 ]> <html lang=\"en\" class=\"no-js ie6\"> <![endif]-->\n<!--[if IE 7 ]>    <html lang=\"en\" class=\"no-js ie7\"> <![endif]-->\n<!--[if IE 8 ]>    <html lang=\"en\" class=\"no-js ie8\"> <![endif]-->\n<!--[if IE 9 ]>    <html lang=\"en\" class=\"no-js ie9\"> <![endif]-->\n<!--[if (gt IE 9)|!(IE)]><!--> <html lang=\"en\" class=\"no-js\"> <!--<![endif]-->\n<head>\n\t<title>Ben Gurion University of the Negev </title>\n\t<meta http-equiv=\"Content-Type\" content=\"text/html; charset=windows-1255\">\n\t<meta http-equiv=\"X-UA-Compatible\" content=\"IE=Edge\" >\n\t<script language=\"javascript\" src=\"/js/averageCalc.js\"></script>\n\n\t<link href=\"/css/style.css\" rel=\"stylesheet\" type=\"text/css\">\n\t<link href=\"/css/SPLstyle.css\" rel=\"stylesheet\" type=\"text/css\">\n</head>\n<body BGCOLOR=WHITE TOPMARGIND=5 LEFTMARGIND=0>\n                 <Center>\n<script>parent.main.document.getElementById(\"on_c_val\").innerHTML = 486;</script> \n<script>parent.main.document.getElementById(\"on_grade_psycho_quantity\").innerHTML = 80;</script> \n</center>\n</body>  \n</html>\n",
+    "score": 486,
+    "verdict": "below",
+    "capturedAt": "2026-09-27T16:48:08.499Z",
+    "officialRule": {
+      "department_dsc": "כלכלה",
+      "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/humsos/Economics_degree_1.aspx",
+      "path_dsc": "כלכלה חד מחלקתי - חשבונאות",
+      "psycho_sekem": null,
+      "psycho_and_or": null,
+      "psycho_value": 620,
+      "psycho_info": "1=מתמטיקה=75/4 או 65/5$4=רמה באנגלית=בסיסי$5=רמה בעברית לנדרשים=רמה ה'",
+      "bagrut_average": null,
+      "bagrut_info": "רמה באנגלית=בסיסי$רמה בעברית לנדרשים=רמה ה'",
+      "bagrut_additional": "\n",
+      "comments": "25.08.2026- עצרנו קבלות במחלקה לכלכלה. מכסת המתקבלים למסלול זה מלאה בשלב זה אך אנו ממליצים לכל המועמדים העומדים בתנאי הקבלה להירשם. <br>\n<br><b>דרישות נוספות:</b> <br>\n<b>סכם כמותי 620</b>\n<br></b><a target=\"_blank\" href=\"https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf\"> רמה \"בסיסי\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ה' בעברית לנדרשים</a>\n<p>אפיקי קבלה נוספים: סכם כמותי 660 ופסיכומטרי 580 \n<p> רכיב כמותי 130 בפסיכומטרי מחליף את הדרישה במתמטיקה בתנאי שיש ציון עובר ב4 או 5 יח\"ל\n<p>מועמדים שיתקבלו עם מתמטיקה 5 יח\"ל בטווח ציונים 65 עד 74 או 4 יח\"ל בטווח ציונים 75 עד 84  או על בסיס רכיב כמותי 130 לפחות- יחוייבו בקורס מבוא למתמטיקה בסמסטר א'.<br>\n<br>  \nמועמדים בעלי רקע אקדמי קודם העומדים בתנאי הקבלה יתקבל ללא צורך בשליחת גיליון ציונים.<br>\nמועמד שאינו עומד בחתך הקבלה יעבור לדיון במחלקה לאחר הצגת גיליון ציונים עדכני. <br>\nמועמדים ותיקים שחוזרים מהפסקת לימודים יעברו לדיון במחלקה. <br>\nסטודנטים החוזרים מהפסקה או המבקשים לשנות מסלול באותה מחלקה יועברו לדיון בועדת הקבלה של המחלקה. <br> \n\n<br><b>מדיניות דיון בחריגים:<br></b>\nמועמדים העומדים בדרישות האנגלית והעברית ואשר אינם עומדים בתנאי הקבלה הנדרשים יועברו לדיון במחלקה לפי הפירוט להלן:<br>\nמועמדים עם פסיכומטרי וסכם הנמוך עד 20 נק' מהנדרש.    <br>                   \nדיון בחריגים הינו על בסיס מקום פנוי במחלקה ועשוי להתקיים במועדים שונים במהלך תקופת ההרשמה.   <br>\n<br>\nעתודאים - תאריך אחרון להרשמה ולשינויי עדיפויות  31.7.2025",
+      "reg_status": "פתוחה ",
+      "sekem_label": "סכם",
+      "department": 142,
+      "path": 1,
+      "specialization": 6,
+      "show_simulator": 0,
+      "path_description": "חד מחלקתי",
+      "spec_description": "חשבונאות"
+    }
+  }
+]
