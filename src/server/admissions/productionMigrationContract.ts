@@ -21,7 +21,8 @@ export type MigrationId =
   | '0031'
   | '0032'
   | '0033'
-  | '0034';
+  | '0034'
+  | '0035';
 
 export type MigrationHistoryEntry = {
   version: string;
@@ -230,5 +231,12 @@ export const FORWARD_PRODUCTION_MIGRATIONS: ForwardProductionMigration[] = [
     repositoryPath: 'src/db/migrations/0034_alert_lifecycle_completion.sql',
     statementFingerprint: 'f319162fd5e15695de577a90f50c0e2f',
     legacyStatementFingerprints: ['13a81253e60768292272614b66b031aa'],
+  },
+  {
+    id: '0035',
+    remoteName: 'ops_dashboard_column_reads',
+    repositoryPath: 'src/db/migrations/0035_ops_dashboard_column_reads.sql',
+    statementFingerprint: '533d604059cf3fd96cd80628973508e9',
+    legacyStatementFingerprints: ['5882f5b6347019229234c9a424ecb9d7'],
   },
 ];

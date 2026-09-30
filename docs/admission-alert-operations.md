@@ -339,3 +339,46 @@ production and must not be presented as a cancellation proof.
 This check proves real-provider acceptance and email rendering, not a real reviewed
 admissions transition, authenticated account controls, or the complete Plan 004
 end-to-end lifecycle. Keep those remaining proofs distinct before activation.
+
+### Approved account-only change simulation
+
+**Account Admission Alert Simulation** is a manual, protected `main` workflow for
+the explicitly approved test account. Set `ADMISSION_ALERT_SIMULATION_USER_ID` in
+the existing protected environment to that account's UUID; the runner also verifies
+that its actual verified delivery address is `amitm1630@gmail.com`. A different or
+unverified recipient rolls back fixture creation. No new environment is needed.
+
+Run with `confirm_simulation=true` while both automatic worker switches remain off.
+The runner creates an `operational_proof` release with scenario
+`plan004-account-simulation-v1`, two account-owned subscriptions and separate test
+profile-version records. It never changes the saved profile, catalogue cutoffs,
+canonical releases or other accounts. The simulated evaluation and explicitly
+scoped claims are test code; production release selection and mail preparation
+continue rejecting operational proofs.
+
+The existing transition decision/commit, template, consent recheck, Resend adapter,
+acceptance persistence, deployed signed webhook and deployed unsubscribe handler
+are used. Both messages are labelled `SIMULATION` and explain that no real admission
+rule changed. Unsubscribe links are real and affect only this account's alert
+category. Fixture records remain for callback correlation and audit; ordinary
+cycle expiry and retention apply.
+
+Expect exactly one TAU and one BGU message. A stable per-account scenario prevents
+a fresh dispatch from creating another pair. After both are accepted, dispatching
+again must report the same provider IDs without sending. Any failed, suppressed,
+processing or uncertain row stops further dispatches for operator reconciliation;
+the runner never blindly retries it.
+
+In Profile → **התראות שינוי קבלה**, expect both targets to show provider acceptance.
+Open a simulation email's unsubscribe link and confirm removal. Reopen it: removal
+must remain effective. Verify `email.sent`/`email.delivered` in the persisted outbox
+telemetry and `unsubscribe_used_at` on both fixture rows. These are real downstream
+delivery/control proofs driven by a simulated trigger, not proof that a university
+published a newly eligible rule. Sending to other users still needs a verified
+sender domain; neither automatic switch is changed by this workflow.
+
+Local verification uses only the existing disposable database:
+
+```sh
+ALERT_DB_INTEGRATION=1 npx vitest run scripts/admission-alert-account-simulation.integration.test.ts
+```
