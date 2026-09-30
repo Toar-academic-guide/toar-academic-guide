@@ -11,6 +11,7 @@ import { bguEngineeringSchema } from '@/lib/bguEngineeringSchema';
 import { bagrutSubjectRecordSchema } from '@/lib/bagrutSubjectRecordSchema';
 
 const geographicRegionSchema = z.enum(['center', 'north', 'south', 'any']);
+const avoidanceTagSchema = z.enum(['heavy-math', 'heavy-reading', 'bureaucracy', 'solo-work']);
 
 const trimmedNonEmptyString = z.string().trim().min(1);
 const boundedInteger = (min: number, max: number) => z.number().int().min(min).max(max);
@@ -65,11 +66,67 @@ const uploadedDocumentSchema = z.strictObject({
   sizeBytes: z.number().int().nonnegative().nullable(),
 });
 
+const careerAssessmentDraftSchema = z.strictObject({
+  screenIndex: boundedInteger(0, 100),
+  multiSelectAnswers: z.record(z.string().min(1), z.array(trimmedNonEmptyString)),
+  quickPickAnswers: z.record(z.string().min(1), z.enum(['yes', 'maybe', 'no'])),
+  sliderAnswers: z.record(z.string().min(1), boundedInteger(-2, 2)),
+  skippedScreens: z.array(boundedInteger(0, 100)),
+});
+
+const profileScoresSchema = z.strictObject({
+  AN: z.number().min(0).max(5),
+  TE: z.number().min(0).max(5),
+  CR: z.number().min(0).max(5),
+  SO: z.number().min(0).max(5),
+  LE: z.number().min(0).max(5),
+  OR: z.number().min(0).max(5),
+  DI: z.number().min(0).max(5),
+  ER: z.number().min(0).max(5),
+});
+
+const valuesProfileSchema = z.strictObject({
+  incomeVsImpact: boundedInteger(-2, 2),
+  independenceVsTeam: boundedInteger(-2, 2),
+  growthVsStability: boundedInteger(-2, 2),
+  prestigeVsMeaning: boundedInteger(-2, 2),
+});
+
+const assessmentFilterDraftSchema = z.strictObject({
+  currentStep: boundedInteger(0, 100),
+  answers: z.record(z.string().min(1), z.array(trimmedNonEmptyString)),
+});
+
+export const assessmentProgressSchema = z.discriminatedUnion('stage', [
+  z.strictObject({
+    schemaVersion: z.literal(1),
+    stage: z.literal('career-assessment'),
+    careerDraft: careerAssessmentDraftSchema,
+  }),
+  z.strictObject({
+    schemaVersion: z.literal(1),
+    stage: z.literal('quick-filters'),
+    careerDraft: careerAssessmentDraftSchema,
+    filterDraft: assessmentFilterDraftSchema,
+    scores: profileScoresSchema,
+    values: valuesProfileSchema,
+  }),
+  z.strictObject({
+    schemaVersion: z.literal(1),
+    stage: z.literal('completed'),
+    scores: profileScoresSchema,
+    values: valuesProfileSchema,
+    geographicPreference: geographicRegionSchema,
+    avoidances: z.array(avoidanceTagSchema),
+  }),
+]);
+
 export const userProfileSchema = z.strictObject({
   firstName: trimmedNonEmptyString.optional(),
   lastName: trimmedNonEmptyString.optional(),
   geographicPreference: geographicRegionSchema,
   academicScores: academicScoresSchema.optional(),
+  assessmentProgress: assessmentProgressSchema.optional(),
   savedProgramIds: z.array(trimmedNonEmptyString).optional(),
   uploadedDocuments: z.array(uploadedDocumentSchema).optional(),
 });

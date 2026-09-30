@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { useAuth } from '@/context/AuthContext';
+import { userProfileSchema } from '@/server/user/profileSchema';
 import type { GeographicRegion, UserProfile } from '@/types';
 
 const STORAGE_KEY = 'sag_user_profile_v1';
@@ -41,6 +42,16 @@ export function useUserProfile(): UseUserProfileResult {
   const [hydrated, setHydrated] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
+  const profileRef = useRef<UserProfile>(DEFAULT_PROFILE);
+  const profileWriteQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const latestWriteRevisionRef = useRef(0);
+  const currentUserIdRef = useRef<string | null>(user?.id ?? null);
+  currentUserIdRef.current = user?.id ?? null;
+
+  function replaceProfileState(nextProfile: UserProfile) {
+    profileRef.current = nextProfile;
+    setProfile(nextProfile);
+  }
   const [initialProfileLoad, setInitialProfileLoad] = useState<{
     identity: string;
     status: 'loading' | 'ready' | 'error';
@@ -52,7 +63,7 @@ export function useUserProfile(): UseUserProfileResult {
   useEffect(() => {
     const storedProfile = readStoredProfile();
     if (storedProfile) {
-      setProfile(storedProfile);
+      replaceProfileState(storedProfile);
     }
 
     setHydrated(true);
@@ -65,7 +76,7 @@ export function useUserProfile(): UseUserProfileResult {
 
     if (!user) {
       const storedProfile = readStoredProfile();
-      setProfile(storedProfile ?? DEFAULT_PROFILE);
+      replaceProfileState(storedProfile ?? DEFAULT_PROFILE);
       setSyncing(false);
       setInitialProfileLoad({ identity, status: 'ready' });
       return;
@@ -96,7 +107,7 @@ export function useUserProfile(): UseUserProfileResult {
         clearStoredProfile();
 
         if (!cancelled) {
-          setProfile(nextProfile);
+          replaceProfileState(nextProfile);
           setInitialProfileLoad({ identity, status: 'ready' });
         }
       } catch (error) {
@@ -118,28 +129,56 @@ export function useUserProfile(): UseUserProfileResult {
   }, [authLoading, hydrated, identity, initialLoadRetry, user]);
 
   async function updateProfile(updates: Partial<UserProfile>) {
-    const previousProfile = profile;
+    const previousProfile = profileRef.current;
     const nextProfile = { ...previousProfile, ...updates };
 
-    setProfile(nextProfile);
+    replaceProfileState(nextProfile);
     setSyncError(null);
 
     if (!user) {
-      writeStoredProfile(nextProfile);
-      return true;
+      if (writeStoredProfile(nextProfile)) {
+        return true;
+      }
+
+      replaceProfileState(previousProfile);
+      setSyncError('שמירת הפרופיל במכשיר נכשלה.');
+      return false;
     }
 
+    const userId = user.id;
+    const revision = latestWriteRevisionRef.current + 1;
+    latestWriteRevisionRef.current = revision;
     setSyncing(true);
+
+    const saveRequest = profileWriteQueueRef.current
+      .catch(() => undefined)
+      .then(() => {
+        if (currentUserIdRef.current !== userId) {
+          throw new Error('Profile owner changed before the save could start.');
+        }
+        return putProfileSnapshot(nextProfile, 'replace');
+      });
+    profileWriteQueueRef.current = saveRequest.then(
+      () => undefined,
+      () => undefined,
+    );
+
     try {
-      const savedProfile = await putProfileSnapshot(nextProfile, 'replace');
-      setProfile(savedProfile);
+      const savedProfile = await saveRequest;
+      if (latestWriteRevisionRef.current === revision && currentUserIdRef.current === userId) {
+        replaceProfileState(savedProfile);
+      }
       return true;
     } catch (error) {
-      setSyncError(toErrorMessage(error, 'שמירת הפרופיל נכשלה.'));
-      setProfile(previousProfile);
+      if (latestWriteRevisionRef.current === revision && currentUserIdRef.current === userId) {
+        setSyncError(toErrorMessage(error, 'שמירת הפרופיל נכשלה.'));
+        replaceProfileState(previousProfile);
+      }
       return false;
     } finally {
-      setSyncing(false);
+      if (latestWriteRevisionRef.current === revision && currentUserIdRef.current === userId) {
+        setSyncing(false);
+      }
     }
   }
 
@@ -155,61 +194,68 @@ export function useUserProfile(): UseUserProfileResult {
     setSyncError(null);
 
     if (!user) {
-      setProfile(DEFAULT_PROFILE);
+      replaceProfileState(DEFAULT_PROFILE);
     }
   }
 
   async function toggleSavedProgram(programId: string) {
-    const current = profile.savedProgramIds ?? [];
+    const currentProfile = profileRef.current;
+    const current = currentProfile.savedProgramIds ?? [];
     if (current.includes(programId)) {
       await removeSavedProgram(programId);
       return;
     }
 
-    const previousProfile = profile;
-    const nextProfile = { ...profile, savedProgramIds: [...current, programId] };
-    setProfile(nextProfile);
+    const previousProfile = currentProfile;
+    const nextProfile = { ...currentProfile, savedProgramIds: [...current, programId] };
+    replaceProfileState(nextProfile);
     setSyncError(null);
 
     if (!user) {
-      writeStoredProfile(nextProfile);
+      if (!writeStoredProfile(nextProfile)) {
+        replaceProfileState(previousProfile);
+        setSyncError('שמירת הפרופיל במכשיר נכשלה.');
+      }
       return;
     }
 
     setSyncing(true);
     try {
       const savedProfile = await mutateSavedProgram(programId, 'POST');
-      setProfile(savedProfile);
+      replaceProfileState(savedProfile);
     } catch (error) {
       setSyncError(toErrorMessage(error, 'שמירת התוכנית נכשלה.'));
-      setProfile(previousProfile);
+      replaceProfileState(previousProfile);
     } finally {
       setSyncing(false);
     }
   }
 
   async function removeSavedProgram(programId: string) {
-    const previousProfile = profile;
+    const previousProfile = profileRef.current;
     const nextProfile = {
-      ...profile,
-      savedProgramIds: (profile.savedProgramIds ?? []).filter((id) => id !== programId),
+      ...previousProfile,
+      savedProgramIds: (previousProfile.savedProgramIds ?? []).filter((id) => id !== programId),
     };
 
-    setProfile(nextProfile);
+    replaceProfileState(nextProfile);
     setSyncError(null);
 
     if (!user) {
-      writeStoredProfile(nextProfile);
+      if (!writeStoredProfile(nextProfile)) {
+        replaceProfileState(previousProfile);
+        setSyncError('שמירת הפרופיל במכשיר נכשלה.');
+      }
       return;
     }
 
     setSyncing(true);
     try {
       const savedProfile = await mutateSavedProgram(programId, 'DELETE');
-      setProfile(savedProfile);
+      replaceProfileState(savedProfile);
     } catch (error) {
       setSyncError(toErrorMessage(error, 'הסרת התוכנית נכשלה.'));
-      setProfile(previousProfile);
+      replaceProfileState(previousProfile);
     } finally {
       setSyncing(false);
     }
@@ -240,7 +286,23 @@ export function useUserProfile(): UseUserProfileResult {
 function readStoredProfile(): UserProfile | null {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as UserProfile) : null;
+    if (!raw) {
+      return null;
+    }
+
+    const storedValue = JSON.parse(raw) as unknown;
+    const parsed = userProfileSchema.safeParse(storedValue);
+    if (parsed.success) {
+      return parsed.data;
+    }
+
+    if (storedValue && typeof storedValue === 'object' && 'assessmentProgress' in storedValue) {
+      const profileWithoutAssessment = { ...storedValue, assessmentProgress: undefined };
+      const compatibleProfile = userProfileSchema.safeParse(profileWithoutAssessment);
+      return compatibleProfile.success ? compatibleProfile.data : null;
+    }
+
+    return null;
   } catch {
     return null;
   }
@@ -287,7 +349,7 @@ export function mergeProfileDraftSources(
   }
 
   return {
-    ...(storedProfile ?? DEFAULT_PROFILE),
+    ...(storedProfile ? { ...storedProfile, assessmentProgress: undefined } : DEFAULT_PROFILE),
     ...(socialIdentityDraft?.firstName && !storedProfile?.firstName?.trim()
       ? { firstName: socialIdentityDraft.firstName }
       : {}),
@@ -297,11 +359,12 @@ export function mergeProfileDraftSources(
   };
 }
 
-function writeStoredProfile(profile: UserProfile) {
+function writeStoredProfile(profile: UserProfile): boolean {
   try {
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(profile));
+    return true;
   } catch {
-    // Ignore local storage write errors.
+    return false;
   }
 }
 

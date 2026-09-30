@@ -60,6 +60,7 @@ export function mergeUserProfileDraft(
     savedProgramIds: Array.from(
       new Set([...(base.savedProgramIds ?? []), ...(draft.savedProgramIds ?? [])]),
     ),
+    ...(base.assessmentProgress ? { assessmentProgress: base.assessmentProgress } : {}),
   };
 }
 

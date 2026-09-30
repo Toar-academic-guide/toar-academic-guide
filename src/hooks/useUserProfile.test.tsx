@@ -50,6 +50,63 @@ describe('useUserProfile', () => {
     expect(result.current.profile.savedProgramIds).toEqual(['tau_cs']);
   });
 
+  it('persists guest assessment progress in the existing local profile record', async () => {
+    const { result } = renderHook(() => useUserProfile());
+
+    await waitFor(() => expect(result.current.hydrated).toBe(true));
+
+    const assessmentProgress = {
+      schemaVersion: 1 as const,
+      stage: 'career-assessment' as const,
+      careerDraft: {
+        screenIndex: 3,
+        multiSelectAnswers: { Q1: ['Q1-A'] },
+        quickPickAnswers: {},
+        sliderAnswers: {},
+        skippedScreens: [],
+      },
+    };
+
+    await act(async () => {
+      await result.current.updateProfile({ assessmentProgress });
+    });
+
+    expect(result.current.profile.assessmentProgress).toEqual(assessmentProgress);
+    expect(JSON.parse(window.localStorage.getItem('sag_user_profile_v1') ?? '{}')).toMatchObject({
+      assessmentProgress,
+    });
+  });
+
+  it('reports a guest storage failure instead of claiming the assessment was saved', async () => {
+    const { result } = renderHook(() => useUserProfile());
+
+    await waitFor(() => expect(result.current.hydrated).toBe(true));
+    vi.spyOn(Object.getPrototypeOf(window.localStorage), 'setItem').mockImplementationOnce(() => {
+      throw new DOMException('quota exceeded', 'QuotaExceededError');
+    });
+
+    let saved = true;
+    await act(async () => {
+      saved = await result.current.updateProfile({
+        assessmentProgress: {
+          schemaVersion: 1,
+          stage: 'career-assessment',
+          careerDraft: {
+            screenIndex: 1,
+            multiSelectAnswers: {},
+            quickPickAnswers: {},
+            sliderAnswers: {},
+            skippedScreens: [],
+          },
+        },
+      });
+    });
+
+    expect(saved).toBe(false);
+    expect(result.current.syncError).toBe('שמירת הפרופיל במכשיר נכשלה.');
+    expect(result.current.profile.assessmentProgress).toBeUndefined();
+  });
+
   it('hydrates from the authenticated server snapshot without rewriting localStorage', async () => {
     mockAuthState.user = {
       id: '00000000-0000-0000-0000-000000000001',
@@ -310,19 +367,76 @@ describe('useUserProfile', () => {
     expect(fetchMock).toHaveBeenNthCalledWith(
       2,
       '/api/profile',
-      expect.objectContaining({
-        method: 'PUT',
-        body: JSON.stringify({
-          profile: {
-            geographicPreference: 'any',
-            firstName: 'מלי',
-            lastName: 'כהן',
+      expect.objectContaining({ method: 'PUT' }),
+    );
+    expect(secondCallBody).toEqual({
+      profile: {
+        firstName: 'מלי',
+        lastName: 'כהן',
+        geographicPreference: 'any',
+      },
+      mode: 'merge_local_draft',
+    });
+    expect(profileRequestBodySchema.safeParse(secondCallBody).success).toBe(true);
+  });
+
+  it('does not migrate an anonymous assessment draft into a signed-in account', async () => {
+    mockAuthState.user = {
+      id: '00000000-0000-0000-0000-000000000014',
+      email: 'shared-browser@example.com',
+    };
+
+    window.localStorage.setItem(
+      'sag_user_profile_v1',
+      JSON.stringify({
+        geographicPreference: 'any',
+        firstName: 'Dana',
+        assessmentProgress: {
+          schemaVersion: 1,
+          stage: 'career-assessment',
+          careerDraft: {
+            screenIndex: 4,
+            multiSelectAnswers: { Q1: ['Q1-A'] },
+            quickPickAnswers: {},
+            sliderAnswers: {},
+            skippedScreens: [],
           },
-          mode: 'merge_local_draft',
-        }),
+        },
       }),
     );
-    expect(profileRequestBodySchema.safeParse(secondCallBody).success).toBe(true);
+
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: {
+            geographicPreference: 'any',
+            savedProgramIds: [],
+          },
+        }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({
+          data: {
+            geographicPreference: 'any',
+            firstName: 'Dana',
+            savedProgramIds: [],
+          },
+        }),
+      });
+
+    vi.stubGlobal('fetch', fetchMock);
+
+    const { result } = renderHook(() => useUserProfile());
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(result.current.profile.assessmentProgress).toBeUndefined());
+    const mergeBody = JSON.parse(fetchMock.mock.calls[1]?.[1]?.body as string);
+
+    expect(mergeBody.profile.assessmentProgress).toBeUndefined();
+    expect(result.current.profile.firstName).toBe('Dana');
   });
 
   it('hydrates Google identity names into the authenticated snapshot when the server profile is empty', async () => {
@@ -420,6 +534,28 @@ describe('useUserProfile', () => {
     await waitFor(() => expect(result.current.hydrated).toBe(true));
     expect(result.current.profile).toEqual({
       geographicPreference: 'any',
+    });
+  });
+
+  it('drops an incompatible assessment draft without discarding the rest of the guest profile', async () => {
+    window.localStorage.setItem(
+      'sag_user_profile_v1',
+      JSON.stringify({
+        geographicPreference: 'north',
+        savedProgramIds: ['tau_cs'],
+        assessmentProgress: {
+          schemaVersion: 2,
+          stage: 'career-assessment',
+        },
+      }),
+    );
+
+    const { result } = renderHook(() => useUserProfile());
+
+    await waitFor(() => expect(result.current.hydrated).toBe(true));
+    expect(result.current.profile).toEqual({
+      geographicPreference: 'north',
+      savedProgramIds: ['tau_cs'],
     });
   });
 });

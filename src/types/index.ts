@@ -299,6 +299,43 @@ export interface AcademicScores {
   admissions?: AdmissionsProfileInputs;
 }
 
+export interface CareerAssessmentDraft {
+  screenIndex: number;
+  multiSelectAnswers: Record<string, string[]>;
+  quickPickAnswers: Record<string, 'yes' | 'maybe' | 'no'>;
+  sliderAnswers: Record<string, number>;
+  skippedScreens: number[];
+}
+
+export interface AssessmentFilterDraft {
+  currentStep: number;
+  answers: RiasecAnswers;
+}
+
+interface AssessmentResults {
+  scores: ProfileScores;
+  values: ValuesProfile;
+}
+
+export type AssessmentProgress =
+  | {
+      schemaVersion: 1;
+      stage: 'career-assessment';
+      careerDraft: CareerAssessmentDraft;
+    }
+  | ({
+      schemaVersion: 1;
+      stage: 'quick-filters';
+      careerDraft: CareerAssessmentDraft;
+      filterDraft: AssessmentFilterDraft;
+    } & AssessmentResults)
+  | ({
+      schemaVersion: 1;
+      stage: 'completed';
+      geographicPreference: GeographicRegion;
+      avoidances: AvoidanceTag[];
+    } & AssessmentResults);
+
 /** User profile snapshot used by the browser and authenticated profile APIs. */
 export interface UserProfile {
   /** Signup/profile identity fields kept in the app-owned profile model */
@@ -307,6 +344,8 @@ export interface UserProfile {
   geographicPreference: GeographicRegion;
   /** Academic scores entered in the profile setup step */
   academicScores?: AcademicScores;
+  /** Versioned questionnaire draft or completed recommendation inputs. */
+  assessmentProgress?: AssessmentProgress;
   /** IDs of programs the user has bookmarked ("bucket list") */
   savedProgramIds?: string[];
   uploadedDocuments?: Array<{

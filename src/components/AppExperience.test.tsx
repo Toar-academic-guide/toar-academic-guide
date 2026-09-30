@@ -11,7 +11,11 @@ const hoisted = vi.hoisted(() => ({
   authState: { loading: false, user: null as null | { id: string } },
   profileState: {
     clearLocalProfileData: vi.fn(),
-    profile: { savedProgramIds: [], academicScores: {} as Record<string, unknown> },
+    profile: {
+      geographicPreference: 'any',
+      savedProgramIds: [],
+      academicScores: {} as Record<string, unknown>,
+    } as Record<string, unknown>,
     hydrated: true,
     initialProfileStatus: 'ready' as 'loading' | 'ready' | 'error',
     initialProfileError: null as string | null,
@@ -156,11 +160,40 @@ vi.mock('@/components/AcademicProfileForm', () => ({
 }));
 
 vi.mock('@/components/CareerAssessment', () => ({
-  default: () => <div>career-assessment</div>,
+  default: ({ initialDraft }: { initialDraft?: { screenIndex: number } }) => (
+    <div>{`career-assessment:${initialDraft?.screenIndex ?? 0}`}</div>
+  ),
 }));
 
 vi.mock('@/components/OnboardingFunnel', () => ({
-  default: () => <div>quick-filters</div>,
+  default: ({
+    initialDraft,
+    onComplete,
+  }: {
+    initialDraft?: { currentStep: number; answers: Record<string, string[]> };
+    onComplete: (
+      answers: Record<string, string[]>,
+      draft: { currentStep: number; answers: Record<string, string[]> },
+    ) => void;
+  }) => (
+    <div>
+      {`quick-filters:${initialDraft?.currentStep ?? 0}`}
+      <button
+        type="button"
+        onClick={() =>
+          onComplete(
+            {
+              avoidances: ['מתמטיקה מתקדמת'],
+              geography: ['מחפש/ת הרפתקה חדשה ומעבר לצפון'],
+            },
+            initialDraft ?? { currentStep: 0, answers: {} },
+          )
+        }
+      >
+        complete-filters
+      </button>
+    </div>
+  ),
 }));
 
 vi.mock('@/components/BucketList', () => ({
@@ -229,7 +262,7 @@ describe('AppExperience route entry', () => {
     hoisted.authState.loading = false;
     hoisted.authState.user = null;
     Object.assign(hoisted.profileState, {
-      profile: { savedProgramIds: [], academicScores: {} },
+      profile: { geographicPreference: 'any', savedProgramIds: [], academicScores: {} },
       hydrated: true,
       initialProfileStatus: 'ready',
       initialProfileError: null,
@@ -259,6 +292,140 @@ describe('AppExperience route entry', () => {
     fireEvent.click(screen.getByRole('button', { name: 'להתחיל שאלון' }));
 
     expect(hoisted.push).toHaveBeenCalledWith('/app/assessment');
+  });
+
+  it('offers an explicit resume and restores the saved career screen', async () => {
+    hoisted.profileState.profile = {
+      geographicPreference: 'any',
+      savedProgramIds: [],
+      academicScores: {},
+      assessmentProgress: {
+        schemaVersion: 1,
+        stage: 'career-assessment',
+        careerDraft: {
+          screenIndex: 4,
+          multiSelectAnswers: { Q1: ['Q1-A'] },
+          quickPickAnswers: {},
+          sliderAnswers: {},
+          skippedScreens: [],
+        },
+      },
+    };
+
+    render(<AppExperience initialStep="intro" />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'להמשיך מאיפה שהפסקתי' }));
+
+    expect(screen.getByText('career-assessment:4')).toBeTruthy();
+  });
+
+  it('starts over by clearing only assessment progress', async () => {
+    hoisted.profileState.profile = {
+      geographicPreference: 'north',
+      savedProgramIds: ['tau_cs'],
+      academicScores: { psychometric: { overall: 700 } },
+      assessmentProgress: {
+        schemaVersion: 1,
+        stage: 'career-assessment',
+        careerDraft: {
+          screenIndex: 2,
+          multiSelectAnswers: { Q1: ['Q1-A'] },
+          quickPickAnswers: {},
+          sliderAnswers: {},
+          skippedScreens: [],
+        },
+      },
+    };
+
+    render(<AppExperience initialStep="intro" />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'להתחיל מחדש' }));
+
+    await waitFor(() =>
+      expect(hoisted.updateProfile).toHaveBeenCalledWith({ assessmentProgress: undefined }),
+    );
+    expect(screen.getByText('career-assessment:0')).toBeTruthy();
+  });
+
+  it('restores completed recommendation inputs for direct recommendation links', async () => {
+    hoisted.profileState.profile = {
+      geographicPreference: 'north',
+      savedProgramIds: [],
+      academicScores: {},
+      assessmentProgress: {
+        schemaVersion: 1,
+        stage: 'completed',
+        scores: { AN: 5, TE: 1, CR: 2, SO: 1, LE: 0, OR: 0, DI: 1, ER: 2 },
+        values: {
+          incomeVsImpact: -1,
+          independenceVsTeam: 0,
+          growthVsStability: 1,
+          prestigeVsMeaning: 2,
+        },
+        geographicPreference: 'north',
+        avoidances: ['heavy-math'],
+      },
+    };
+
+    render(<AppExperience initialStep="recommendations" />);
+
+    await waitFor(() => expect(screen.getByRole('button', { name: 'select-degree' })).toBeTruthy());
+  });
+
+  it('restores follow-up filters and persists completed recommendation inputs', async () => {
+    hoisted.profileState.profile = {
+      geographicPreference: 'any',
+      savedProgramIds: [],
+      academicScores: {},
+      assessmentProgress: {
+        schemaVersion: 1,
+        stage: 'quick-filters',
+        careerDraft: {
+          screenIndex: 16,
+          multiSelectAnswers: {},
+          quickPickAnswers: {},
+          sliderAnswers: {},
+          skippedScreens: [],
+        },
+        filterDraft: {
+          currentStep: 1,
+          answers: { avoidances: ['מתמטיקה מתקדמת'] },
+        },
+        scores: { AN: 5, TE: 1, CR: 2, SO: 1, LE: 0, OR: 0, DI: 1, ER: 2 },
+        values: {
+          incomeVsImpact: -1,
+          independenceVsTeam: 0,
+          growthVsStability: 1,
+          prestigeVsMeaning: 2,
+        },
+      },
+    };
+
+    render(<AppExperience initialStep="intro" />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'להמשיך מאיפה שהפסקתי' }));
+    expect(screen.getByText('quick-filters:1')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'complete-filters' }));
+
+    await waitFor(() =>
+      expect(hoisted.updateProfile).toHaveBeenLastCalledWith({
+        geographicPreference: 'north',
+        assessmentProgress: {
+          schemaVersion: 1,
+          stage: 'completed',
+          scores: { AN: 5, TE: 1, CR: 2, SO: 1, LE: 0, OR: 0, DI: 1, ER: 2 },
+          values: {
+            incomeVsImpact: -1,
+            independenceVsTeam: 0,
+            growthVsStability: 1,
+            prestigeVsMeaning: 2,
+          },
+          geographicPreference: 'north',
+          avoidances: ['heavy-math'],
+        },
+      }),
+    );
   });
 
   it('pushes durable app routes for recommendation and saved-program navigation', async () => {
@@ -338,6 +505,16 @@ describe('AppExperience route entry', () => {
     await waitFor(() => expect(hoisted.updateProfile).toHaveBeenCalled());
     expect(screen.getByRole('button', { name: 'academic-profile' })).toBeTruthy();
     expect(screen.queryByText('calculator-results:tau_cs:650:102')).toBeNull();
+  });
+
+  it('keeps the active client flow when moving from the profile to career questions', async () => {
+    render(<AppExperience initialStep="academic-profile" />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'academic-profile' }));
+
+    await waitFor(() => expect(screen.getByText('career-assessment:0')).toBeTruthy());
+    expect(hoisted.push).not.toHaveBeenCalledWith('/app/assessment');
+    expect(window.location.pathname).toBe('/app/assessment');
   });
 
   it('waits for delayed guest hydration before mounting the profile form', async () => {

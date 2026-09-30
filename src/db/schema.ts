@@ -13,7 +13,11 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
-import type { AdmissionsProfileInputs, StoredBagrutProfilePayload } from '@/types';
+import type {
+  AdmissionsProfileInputs,
+  AssessmentProgress,
+  StoredBagrutProfilePayload,
+} from '@/types';
 
 export const geographicRegionEnum = pgEnum('geographic_region', [
   'center',
@@ -430,6 +434,7 @@ export const userProfiles = pgTable('user_profiles', {
   riasecE: integer('riasec_e'),
   riasecC: integer('riasec_c'),
   avoidanceTags: text('avoidance_tags').array().default([]).notNull(),
+  assessmentProgress: jsonb('assessment_progress').$type<AssessmentProgress>(),
   createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
 });

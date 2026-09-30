@@ -103,6 +103,7 @@ export async function replaceUserProfileSnapshot(
           bagrutWeightedAverage: profile.academicScores?.bagrut?.weightedAverage ?? null,
           admissionsInputs: profile.academicScores?.admissions ?? null,
           bagrutProfileVersionId,
+          assessmentProgress: profile.assessmentProgress ?? null,
           updatedAt: new Date(),
         },
       });
