@@ -44,7 +44,18 @@ grant select on table
   public.ingestion_jobs,
   public.review_items,
   public.source_freshness_states,
-  public.source_freshness_checks
+  public.source_freshness_checks,
+  public.bagrut_profile_versions,
+  public.admission_releases,
+  public.admission_publication_attempts,
+  public.admission_target_transitions,
+  public.admission_review_runs,
+  public.admission_alert_subscriptions,
+  public.admission_alert_baseline_history,
+  public.admission_alert_transition_work,
+  public.admission_alert_outbox,
+  public.admission_alert_email_preferences,
+  public.admission_alert_webhook_events
 to ops_readonly;
 ```
 

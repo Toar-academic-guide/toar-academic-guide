@@ -46,8 +46,9 @@ export default async function ReviewItemPage({ params }: ReviewItemPageProps) {
             {item.id}
           </h1>
           <p className="mt-4 max-w-3xl text-base text-slate-200">
-            Inspect bounded evidence and resolve this Review Item through the server-owned review
-            workflow. The data-health dashboard remains read-only.
+            Inspect bounded evidence here. GitHub pull-request merge is the only approval surface
+            for admissions changes; this screen can only resolve an investigation with no canonical
+            change.
           </p>
         </header>
 
@@ -57,12 +58,7 @@ export default async function ReviewItemPage({ params }: ReviewItemPageProps) {
           <FactCard label="Created" value={formatDateTime(item.createdAt)} />
         </section>
 
-        <ReviewActionPanel
-          approveBlockedReason={item.actionEligibility.approveBlockedReason}
-          canApprove={item.actionEligibility.canApprove}
-          canReject={item.actionEligibility.canReject}
-          reviewItemId={item.id}
-        />
+        <ReviewActionPanel canReject={item.actionEligibility.canReject} reviewItemId={item.id} />
 
         <section className="grid gap-5 lg:grid-cols-[1fr_1.4fr]">
           <Panel title="Review context">

@@ -13,7 +13,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
-import type { BagrutSubject } from '@/types';
+import type { AdmissionsProfileInputs, StoredBagrutProfilePayload } from '@/types';
 
 export const geographicRegionEnum = pgEnum('geographic_region', [
   'center',
@@ -153,6 +153,23 @@ export const admissionReleaseStatusEnum = pgEnum('admission_release_status', [
   'pending',
   'published',
   'failed',
+]);
+export const admissionReleaseKindEnum = pgEnum('admission_release_kind', [
+  'canonical_bootstrap',
+  'canonical_change',
+  'operational_proof',
+]);
+export const admissionReviewRunStatusEnum = pgEnum('admission_review_run_status', [
+  'prepared',
+  'reviewable',
+  'no_changes',
+  'validation_failed',
+]);
+export const admissionReviewSlackStatusEnum = pgEnum('admission_review_slack_status', [
+  'pending',
+  'sent',
+  'failed',
+  'acceptance_unknown',
 ]);
 export const admissionPublicationAttemptStatusEnum = pgEnum(
   'admission_publication_attempt_status',
@@ -401,6 +418,7 @@ export const userProfiles = pgTable('user_profiles', {
   psychometricVerbal: integer('psychometric_verbal'),
   psychometricEnglish: integer('psychometric_english'),
   bagrutWeightedAverage: integer('bagrut_weighted_average'),
+  admissionsInputs: jsonb('admissions_inputs').$type<AdmissionsProfileInputs>(),
   bagrutProfileVersionId: uuid('bagrut_profile_version_id').references(
     () => bagrutProfileVersions.id,
     { onDelete: 'set null' },
@@ -424,7 +442,7 @@ export const bagrutProfileVersions = pgTable(
     schemaVersion: integer('schema_version').notNull(),
     contentHash: text('content_hash').notNull(),
     sector: text('sector').notNull(),
-    subjects: jsonb('subjects').$type<BagrutSubject[]>().notNull(),
+    subjects: jsonb('subjects').$type<StoredBagrutProfilePayload>().notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => ({
@@ -524,8 +542,12 @@ export const sourceFreshnessStates = pgTable(
     sourceClass: freshnessSourceClassEnum('source_class').notNull(),
     capability: freshnessCapabilityEnum('capability').notNull(),
     status: sourceFreshnessStatusEnum('status').notNull(),
+    proofLevel: text('proof_level'),
+    decisionProvenance: text('decision_provenance'),
+    reviewedSourceFingerprint: text('reviewed_source_fingerprint'),
     lastCheckedAt: timestamp('last_checked_at', { withTimezone: true }),
     lastSuccessfulCheckAt: timestamp('last_successful_check_at', { withTimezone: true }),
+    lastExactCheckAt: timestamp('last_exact_check_at', { withTimezone: true }),
     lastChangedAt: timestamp('last_changed_at', { withTimezone: true }),
     latestFailureReason: text('latest_failure_reason'),
     blockedReason: text('blocked_reason'),
@@ -560,6 +582,10 @@ export const sourceFreshnessChecks = pgTable(
     sourceClass: freshnessSourceClassEnum('source_class').notNull(),
     capability: freshnessCapabilityEnum('capability').notNull(),
     status: sourceFreshnessStatusEnum('status').notNull(),
+    proofLevel: text('proof_level'),
+    decisionProvenance: text('decision_provenance'),
+    reviewedSourceFingerprint: text('reviewed_source_fingerprint'),
+    exactQualified: boolean('exact_qualified').default(false).notNull(),
     checkedAt: timestamp('checked_at', { withTimezone: true }).defaultNow().notNull(),
     successful: boolean('successful').notNull(),
     failureReason: text('failure_reason'),
@@ -592,6 +618,8 @@ export const admissionReleases = pgTable(
     id: uuid('id').defaultRandom().primaryKey(),
     manifestDigest: text('manifest_digest').notNull(),
     repositoryCommit: text('repository_commit').notNull(),
+    releaseKind: admissionReleaseKindEnum('release_kind').default('canonical_change').notNull(),
+    proofScenario: text('proof_scenario'),
     status: admissionReleaseStatusEnum('status').default('pending').notNull(),
     publishedAt: timestamp('published_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
@@ -601,6 +629,39 @@ export const admissionReleases = pgTable(
       table.manifestDigest,
     ),
     publishedAtIndex: index('admission_releases_published_at_idx').on(table.publishedAt),
+    kindPublishedAtIndex: index('admission_releases_kind_published_at_idx').on(
+      table.releaseKind,
+      table.publishedAt,
+    ),
+  }),
+);
+
+export const admissionOperationalProofValues = pgTable(
+  'admission_operational_proof_values',
+  {
+    id: uuid('id').defaultRandom().primaryKey(),
+    releaseId: uuid('release_id')
+      .notNull()
+      .references(() => admissionReleases.id, { onDelete: 'restrict' }),
+    institutionId: text('institution_id')
+      .notNull()
+      .references(() => institutions.id, { onDelete: 'restrict' }),
+    programId: text('program_id')
+      .notNull()
+      .references(() => programs.id, { onDelete: 'restrict' }),
+    cycle: text('cycle').notNull(),
+    ruleKind: text('rule_kind').notNull(),
+    currentValue: jsonb('current_value').$type<{ value: number | string }>().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => ({
+    targetRuleUnique: uniqueIndex('admission_operational_proof_values_target_rule_unique').on(
+      table.institutionId,
+      table.programId,
+      table.cycle,
+      table.ruleKind,
+    ),
+    releaseIndex: index('admission_operational_proof_values_release_idx').on(table.releaseId),
   }),
 );
 
@@ -637,6 +698,33 @@ export const admissionTargetTransitions = pgTable(
   }),
 );
 
+export const admissionReviewRuns = pgTable(
+  'admission_review_runs',
+  {
+    runKey: text('run_key').primaryKey(),
+    sourceDigest: text('source_digest').notNull(),
+    releaseKind: admissionReleaseKindEnum('release_kind').default('canonical_change').notNull(),
+    proofScenario: text('proof_scenario'),
+    status: admissionReviewRunStatusEnum('status').default('prepared').notNull(),
+    candidateCount: integer('candidate_count').default(0).notNull(),
+    exclusionCount: integer('exclusion_count').default(0).notNull(),
+    pullRequestNumber: integer('pull_request_number'),
+    pullRequestUrl: text('pull_request_url'),
+    slackStatus: admissionReviewSlackStatusEnum('slack_status').default('pending').notNull(),
+    slackError: text('slack_error'),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+    updatedAt: timestamp('updated_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => ({
+    statusIdx: index('admission_review_runs_status_idx').on(table.status),
+    slackStatusIdx: index('admission_review_runs_slack_status_idx').on(table.slackStatus),
+    kindStatusIdx: index('admission_review_runs_kind_status_idx').on(
+      table.releaseKind,
+      table.status,
+    ),
+  }),
+);
+
 export const admissionReleaseItems = pgTable(
   'admission_release_items',
   {
@@ -655,6 +743,7 @@ export const admissionReleaseItems = pgTable(
           digest: string;
           excerpt: string;
           url: string;
+          proofType: 'exact_official' | 'controlled_fixture';
         }>
       >()
       .notNull(),
@@ -772,6 +861,13 @@ export const admissionAlertTransitionWork = pgTable(
     status: admissionAlertTransitionWorkStatusEnum('status').default('pending').notNull(),
     cursor: text('cursor'),
     claimedAt: timestamp('claimed_at', { withTimezone: true }),
+    claimToken: uuid('claim_token'),
+    leaseExpiresAt: timestamp('lease_expires_at', { withTimezone: true }),
+    nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }),
+    retryState: jsonb('retry_state')
+      .$type<Record<string, { attempts: number; nextAttemptAt: string; quarantined: boolean }>>()
+      .default({})
+      .notNull(),
     completedAt: timestamp('completed_at', { withTimezone: true }),
     failureReason: text('failure_reason'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
@@ -799,6 +895,24 @@ export const admissionAlertOutbox = pgTable(
     status: admissionAlertOutboxStatusEnum('status').default('pending').notNull(),
     providerMessageId: text('provider_message_id'),
     providerAcceptedAt: timestamp('provider_accepted_at', { withTimezone: true }),
+    claimToken: uuid('claim_token'),
+    leaseExpiresAt: timestamp('lease_expires_at', { withTimezone: true }),
+    firstSubmittedAt: timestamp('first_submitted_at', { withTimezone: true }),
+    submissionStartedAt: timestamp('submission_started_at', { withTimezone: true }),
+    attemptCount: integer('attempt_count').default(0).notNull(),
+    unsubscribeTokenHash: text('unsubscribe_token_hash'),
+    unsubscribeUsedAt: timestamp('unsubscribe_used_at', { withTimezone: true }),
+    recipientHash: text('recipient_hash'),
+    deliveryEvents: jsonb('delivery_events').$type<Record<string, string>>().default({}).notNull(),
+    // Immutable request snapshot for provider idempotency. Never includes academic inputs.
+    mailPayload: jsonb('mail_payload').$type<{
+      from: string;
+      to: string;
+      subject: string;
+      html: string;
+      text: string;
+      reply_to: string;
+    }>(),
     lastAttemptAt: timestamp('last_attempt_at', { withTimezone: true }),
     nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }),
     acceptanceUnknownAt: timestamp('acceptance_unknown_at', { withTimezone: true }),
@@ -816,6 +930,9 @@ export const admissionAlertOutbox = pgTable(
     ),
     subscriptionUnique: uniqueIndex('admission_alert_outbox_subscription_unique').on(
       table.subscriptionId,
+    ),
+    unsubscribeTokenUnique: uniqueIndex('admission_alert_outbox_unsubscribe_token_unique').on(
+      table.unsubscribeTokenHash,
     ),
     queueIndex: index('admission_alert_outbox_queue_idx').on(table.status, table.nextAttemptAt),
   }),

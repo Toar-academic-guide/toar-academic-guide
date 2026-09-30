@@ -12,6 +12,7 @@ import {
   userProfiles,
 } from '@/db/schema';
 import type { UserProfile } from '@/types';
+import { toStoredBagrutProfilePayload } from '@/lib/storedBagrutProfile';
 
 import { mergeUserProfileDraft } from './migration';
 import {
@@ -73,6 +74,7 @@ export async function replaceUserProfileSnapshot(
         psychometricVerbal: userProfiles.psychometricVerbal,
         psychometricEnglish: userProfiles.psychometricEnglish,
         bagrutWeightedAverage: userProfiles.bagrutWeightedAverage,
+        admissionsInputs: userProfiles.admissionsInputs,
         bagrutProfileVersionId: userProfiles.bagrutProfileVersionId,
       })
       .from(userProfiles)
@@ -99,6 +101,7 @@ export async function replaceUserProfileSnapshot(
           psychometricVerbal: profile.academicScores?.psychometric?.verbal ?? null,
           psychometricEnglish: profile.academicScores?.psychometric?.english ?? null,
           bagrutWeightedAverage: profile.academicScores?.bagrut?.weightedAverage ?? null,
+          admissionsInputs: profile.academicScores?.admissions ?? null,
           bagrutProfileVersionId,
           updatedAt: new Date(),
         },
@@ -110,6 +113,7 @@ export async function replaceUserProfileSnapshot(
       psychometricVerbal: profile.academicScores?.psychometric?.verbal ?? null,
       psychometricEnglish: profile.academicScores?.psychometric?.english ?? null,
       bagrutWeightedAverage: profile.academicScores?.bagrut?.weightedAverage ?? null,
+      admissionsInputs: profile.academicScores?.admissions ?? null,
       bagrutProfileVersionId,
     };
 
@@ -132,7 +136,14 @@ export async function replaceUserProfileSnapshot(
           .where(inArray(admissionAlertSubscriptions.id, subscriptionIds));
         await tx
           .update(admissionAlertOutbox)
-          .set({ status: 'suppressed', updatedAt: new Date() })
+          .set({
+            status: 'suppressed',
+            mailPayload: null,
+            claimToken: null,
+            leaseExpiresAt: null,
+            nextAttemptAt: null,
+            updatedAt: new Date(),
+          })
           .where(
             and(
               inArray(admissionAlertOutbox.subscriptionId, subscriptionIds),
@@ -193,7 +204,7 @@ async function getOrCreateBagrutProfileVersion(
       schemaVersion: record.schemaVersion,
       contentHash: record.profileHash,
       sector: record.sector,
-      subjects: record.subjects,
+      subjects: toStoredBagrutProfilePayload(record),
     })
     .onConflictDoNothing()
     .returning({ id: bagrutProfileVersions.id });

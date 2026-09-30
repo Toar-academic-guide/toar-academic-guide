@@ -9,7 +9,7 @@ import {
   EngineeringOptions,
   RecommendedField,
   UniversityResult,
-  UserScores,
+  CalculatorScores,
   GeographicRegion,
   AvoidanceTag,
 } from '@/types';
@@ -17,6 +17,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import { ROUTES, type AdmissionAlertTarget } from '@/lib/routes';
+import AdmissionAlertManager from './AdmissionAlertManager';
 import {
   CatalogueApiError,
   fetchCatalogueInstitutions,
@@ -174,8 +175,11 @@ export default function AppExperience({
     clearLocalProfileData,
     profile,
     hydrated,
+    initialProfileError,
+    initialProfileStatus,
     isAuthenticated,
     removeSavedProgram,
+    retryInitialProfileLoad,
     syncError,
     syncing,
     toggleSavedProgram,
@@ -221,16 +225,15 @@ export default function AppExperience({
   const [bucketReturnsTo, setBucketReturnsTo] = useState<AppStep>('recommendations');
   const [authReturnTo] = useState<Exclude<AppStep, 'auth'>>('landing');
   const [landingCalcScores, setLandingCalcScores] = useState<{
-    psychometric: number;
-    bagrut: number;
+    psychometric?: number;
+    bagrut?: number;
     degreeId: string;
   } | null>(null);
 
-  const isTauComputerScienceAlertContinuation =
-    admissionAlertTarget?.institutionId === 'tau' && admissionAlertTarget.programId === 'tau_cs';
+  const isComputerScienceAlertContinuation = Boolean(admissionAlertTarget);
   const [appCalcScores, setAppCalcScores] = useState<{
-    psychometric: number;
-    bagrut: number;
+    psychometric?: number;
+    bagrut?: number;
     degreeId: string;
   } | null>(null);
 
@@ -444,7 +447,11 @@ export default function AppExperience({
     return null;
   }
 
-  function handleCalculate(scores: UserScores, degreeId: string, _engineering: EngineeringOptions) {
+  function handleCalculate(
+    scores: CalculatorScores,
+    degreeId: string,
+    _engineering: EngineeringOptions,
+  ) {
     posthog.capture('degree_calculator_submitted', {
       degree_id: degreeId,
     });
@@ -561,6 +568,35 @@ export default function AppExperience({
     );
   }
 
+  if (step === 'academic-profile' && initialProfileStatus !== 'ready') {
+    return (
+      <>
+        <BackButton />
+        <div className="mx-auto my-10 w-full max-w-2xl rounded-2xl border border-slate-200 bg-white p-6 text-center shadow-sm">
+          {initialProfileStatus === 'error' ? (
+            <>
+              <h1 className="text-base font-bold text-slate-900">לא הצלחנו לטעון את הפרופיל שלך</h1>
+              <p className="mt-2 text-sm text-slate-600">
+                {initialProfileError ?? 'בדוק את החיבור ונסה שוב כדי לשמור על הנתונים הקיימים שלך.'}
+              </p>
+              <button
+                type="button"
+                onClick={retryInitialProfileLoad}
+                className="mt-4 rounded-full bg-indigo-600 px-5 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700"
+              >
+                נסו שוב
+              </button>
+            </>
+          ) : (
+            <p role="status" className="text-sm text-slate-600">
+              טוענים את הנתונים השמורים שלך…
+            </p>
+          )}
+        </div>
+      </>
+    );
+  }
+
   if (step === 'academic-profile') {
     return (
       <>
@@ -571,9 +607,9 @@ export default function AppExperience({
           isAuthenticated={isAuthenticated}
           onClearLocalProfileData={clearLocalProfileData}
           alertContinuation={
-            isTauComputerScienceAlertContinuation
+            isComputerScienceAlertContinuation
               ? {
-                  title: 'נשמור את הפרופיל ואז נחזור לבדיקת הקבלה למדעי המחשב באוניברסיטת תל אביב',
+                  title: `נשמור את הפרופיל ואז נחזור לבדיקת הקבלה למדעי המחשב ב${admissionAlertTarget?.institutionId === 'bgu' ? 'אוניברסיטת בן־גוריון' : 'אוניברסיטת תל אביב'}`,
                   submitLabel: 'שמור והמשך לבדיקת המעקב ←',
                   requiresStructuredBagrut: true,
                 }
@@ -589,14 +625,15 @@ export default function AppExperience({
               return false;
             }
             if (
-              isTauComputerScienceAlertContinuation &&
+              isComputerScienceAlertContinuation &&
+              admissionAlertTarget &&
               scores.psychometric?.overall !== undefined &&
               scores.bagrut?.weightedAverage !== undefined
             ) {
               setLandingCalcScores({
                 psychometric: scores.psychometric.overall,
                 bagrut: scores.bagrut.weightedAverage,
-                degreeId: 'tau_cs',
+                degreeId: admissionAlertTarget.programId,
               });
               setStep('calculator-results');
               window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -610,6 +647,7 @@ export default function AppExperience({
             navigateToStep('career-assessment');
           }}
         />
+        {user ? <AdmissionAlertManager key={user.id} userId={user.id} /> : null}
       </>
     );
   }

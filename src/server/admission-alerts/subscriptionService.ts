@@ -5,12 +5,20 @@ import { and, eq, inArray } from 'drizzle-orm';
 import { getDb } from '@/db/client';
 import {
   admissionAlertBaselineHistory,
+  admissionAlertEmailPreferences,
+  admissionAlertOutbox,
   admissionAlertSubscriptions,
   bagrutProfileVersions,
   userProfiles,
 } from '@/db/schema';
-import type { BagrutSubject } from '@/types';
+import type { BagrutSubject, BagrutSector } from '@/types';
+import type { AdmissionsExtraInputs } from '@/types/admissionsEvaluation';
+import { createAdmissionsInputDigest } from '@/server/admissions/evaluationSnapshot';
 import { admissionCycleFor } from './cycle';
+import {
+  fromStoredBagrutProfileVersion,
+  subjectsFromStoredBagrutProfile,
+} from '@/lib/storedBagrutProfile';
 
 export interface AdmissionAlertBaselineProfile {
   profileVersionId: string;
@@ -19,6 +27,8 @@ export interface AdmissionAlertBaselineProfile {
   bagrutAverage: number;
   hasStructuredBagrut: boolean;
   subjects: BagrutSubject[];
+  extraInputs?: AdmissionsExtraInputs;
+  consentVersion?: string;
 }
 
 export interface AdmissionAlertSubscriptionRepository {
@@ -28,7 +38,7 @@ export interface AdmissionAlertSubscriptionRepository {
     institutionId: string;
     programId: string;
     cycle: string;
-  }): Promise<{ id: string } | null>;
+  }): Promise<{ id: string; status?: string } | null>;
   createSubscription(input: {
     userId: string;
     institutionId: string;
@@ -38,6 +48,7 @@ export interface AdmissionAlertSubscriptionRepository {
     profileHash: string;
     baselineRuleVersion: string;
     baselineVerdict: Record<string, unknown>;
+    consentVersion?: string;
   }): Promise<{ id: string; created: boolean }>;
 }
 
@@ -54,11 +65,20 @@ export async function createAdmissionAlertSubscription(
     repository: AdmissionAlertSubscriptionRepository;
     evaluate: AdmissionAlertBaselineEvaluator;
     now?: Date;
+    reconfirm?: boolean;
   },
 ): Promise<
   | { status: 'created'; subscriptionId: string }
   | { status: 'existing'; subscriptionId: string }
-  | { status: 'unsupported' | 'profile_incomplete' | 'already_eligible' | 'evaluation_unavailable' }
+  | {
+      status:
+        | 'unsupported'
+        | 'profile_incomplete'
+        | 'already_eligible'
+        | 'evaluation_unavailable'
+        | 'needs_profile_refresh'
+        | 'closed';
+    }
 > {
   if (!isSupportedTarget(target)) {
     return { status: 'unsupported' };
@@ -72,7 +92,15 @@ export async function createAdmissionAlertSubscription(
     cycle,
   });
   if (existing) {
-    return { status: 'existing', subscriptionId: existing.id };
+    if (
+      existing.status === 'notified' ||
+      existing.status === 'delivery_failed' ||
+      existing.status === 'cancelled'
+    )
+      return { status: 'closed' };
+    if (existing.status !== 'needs_profile_refresh')
+      return { status: 'existing', subscriptionId: existing.id };
+    if (!options.reconfirm) return { status: 'needs_profile_refresh' };
   }
 
   const profile = await options.repository.getProfile(options.userId);
@@ -97,6 +125,7 @@ export async function createAdmissionAlertSubscription(
     profileHash: profile.profileHash,
     baselineRuleVersion: evaluation.ruleVersion,
     baselineVerdict: { decision: 'below' },
+    consentVersion: profile.consentVersion,
   });
   return created.created
     ? { status: 'created', subscriptionId: created.id }
@@ -109,48 +138,40 @@ export function createDrizzleAdmissionAlertSubscriptionRepository(
   return {
     async getProfile(userId) {
       const [profile] = await db
-        .select({
-          psychometric: userProfiles.psychometricOverall,
-          bagrutAverage: userProfiles.bagrutWeightedAverage,
-          profileVersionId: userProfiles.bagrutProfileVersionId,
-        })
+        .select()
         .from(userProfiles)
         .where(eq(userProfiles.userId, userId))
         .limit(1);
-      if (
-        !profile ||
-        profile.psychometric === null ||
-        profile.bagrutAverage === null ||
-        !profile.profileVersionId
-      ) {
+      if (!profile || !profile.bagrutProfileVersionId) {
         return null;
       }
 
       const [profileVersion] = await db
-        .select({
-          id: bagrutProfileVersions.id,
-          profileHash: bagrutProfileVersions.contentHash,
-          subjects: bagrutProfileVersions.subjects,
-        })
+        .select()
         .from(bagrutProfileVersions)
-        .where(eq(bagrutProfileVersions.id, profile.profileVersionId))
+        .where(
+          and(
+            eq(bagrutProfileVersions.id, profile.bagrutProfileVersionId),
+            eq(bagrutProfileVersions.userId, userId),
+          ),
+        )
         .limit(1);
       if (!profileVersion) {
         return null;
       }
 
-      return {
-        profileVersionId: profileVersion.id,
-        profileHash: profileVersion.profileHash,
-        psychometric: profile.psychometric,
-        bagrutAverage: profile.bagrutAverage,
-        hasStructuredBagrut: true,
-        subjects: profileVersion.subjects,
-      };
+      const saved = buildSavedAlertProfile(profile, profileVersion);
+      const [preference] = await db
+        .select()
+        .from(admissionAlertEmailPreferences)
+        .where(eq(admissionAlertEmailPreferences.userId, userId));
+      return saved
+        ? { ...saved, consentVersion: preference?.updatedAt.toISOString() ?? 'none' }
+        : null;
     },
     async findActiveSubscription(input) {
       const [subscription] = await db
-        .select({ id: admissionAlertSubscriptions.id })
+        .select({ id: admissionAlertSubscriptions.id, status: admissionAlertSubscriptions.status })
         .from(admissionAlertSubscriptions)
         .where(
           and(
@@ -162,6 +183,8 @@ export function createDrizzleAdmissionAlertSubscriptionRepository(
               'active',
               'needs_profile_refresh',
               'pending_delivery',
+              'notified',
+              'delivery_failed',
             ]),
           ),
         )
@@ -170,6 +193,97 @@ export function createDrizzleAdmissionAlertSubscriptionRepository(
     },
     async createSubscription(input) {
       return db.transaction(async (tx) => {
+        if (input.cycle !== admissionCycleFor())
+          throw new Error('The admissions cycle changed. Please confirm the new cycle.');
+        // Profile writes take this same row lock before pausing subscriptions.
+        // Recheck after the network evaluation so a concurrent edit cannot establish a stale baseline.
+        const [profile] = await tx
+          .select()
+          .from(userProfiles)
+          .where(eq(userProfiles.userId, input.userId))
+          .for('update');
+        const [version] = await tx
+          .select()
+          .from(bagrutProfileVersions)
+          .where(
+            and(
+              eq(bagrutProfileVersions.id, input.profileVersionId),
+              eq(bagrutProfileVersions.userId, input.userId),
+            ),
+          );
+        const current = profile && version ? buildSavedAlertProfile(profile, version) : null;
+        if (
+          !current ||
+          profile.bagrutProfileVersionId !== input.profileVersionId ||
+          current.profileHash !== input.profileHash
+        ) {
+          throw new Error('Academic profile changed during alert activation. Please try again.');
+        }
+        const existing = await tx
+          .select()
+          .from(admissionAlertSubscriptions)
+          .where(
+            and(
+              eq(admissionAlertSubscriptions.userId, input.userId),
+              eq(admissionAlertSubscriptions.institutionId, input.institutionId),
+              eq(admissionAlertSubscriptions.programId, input.programId),
+              eq(admissionAlertSubscriptions.cycle, input.cycle),
+            ),
+          )
+          .orderBy(admissionAlertSubscriptions.id)
+          .for('update');
+        const [preference] = await tx
+          .select()
+          .from(admissionAlertEmailPreferences)
+          .where(eq(admissionAlertEmailPreferences.userId, input.userId))
+          .for('update');
+        if (
+          input.consentVersion !== undefined &&
+          input.consentVersion !== (preference?.updatedAt.toISOString() ?? 'none')
+        )
+          throw new Error('Alert preference changed during activation. Please confirm again.');
+        for (const old of existing) {
+          const [delivery] = await tx
+            .select()
+            .from(admissionAlertOutbox)
+            .where(eq(admissionAlertOutbox.subscriptionId, old.id))
+            .for('update');
+          if (
+            delivery &&
+            (delivery.status === 'accepted' ||
+              delivery.acceptanceUnknownAt ||
+              delivery.submissionStartedAt)
+          ) {
+            throw new Error('A previous delivery requires account support before reactivation.');
+          }
+          if (old.status === 'needs_profile_refresh') {
+            // Preserve the old baseline/history; the explicit confirmation establishes a fresh subscription.
+            await tx
+              .update(admissionAlertSubscriptions)
+              .set({ status: 'cancelled', cancelledAt: new Date(), updatedAt: new Date() })
+              .where(eq(admissionAlertSubscriptions.id, old.id));
+            if (delivery)
+              await tx
+                .update(admissionAlertOutbox)
+                .set({
+                  status: 'suppressed',
+                  mailPayload: null,
+                  claimToken: null,
+                  leaseExpiresAt: null,
+                  nextAttemptAt: null,
+                  updatedAt: new Date(),
+                })
+                .where(eq(admissionAlertOutbox.id, delivery.id));
+          }
+        }
+        // This write is reached only through an explicit activation command after a below verdict.
+        await tx
+          .insert(admissionAlertEmailPreferences)
+          .values({ userId: input.userId, optedIn: true })
+          .onConflictDoUpdate({
+            target: admissionAlertEmailPreferences.userId,
+            set: { optedIn: true, unsubscribedAt: null, updatedAt: new Date() },
+          });
         const [subscription] = await tx
           .insert(admissionAlertSubscriptions)
           .values({
@@ -220,6 +334,58 @@ export function createDrizzleAdmissionAlertSubscriptionRepository(
   };
 }
 
-function isSupportedTarget(target: { institutionId: string; programId: string }): boolean {
-  return target.institutionId === 'tau' && target.programId === 'tau_cs';
+export function buildSavedAlertProfile(
+  profile: Pick<
+    typeof userProfiles.$inferSelect,
+    | 'psychometricOverall'
+    | 'psychometricQuantitative'
+    | 'psychometricVerbal'
+    | 'psychometricEnglish'
+    | 'bagrutWeightedAverage'
+    | 'admissionsInputs'
+  >,
+  profileVersion: Pick<
+    typeof bagrutProfileVersions.$inferSelect,
+    'id' | 'schemaVersion' | 'sector' | 'subjects'
+  >,
+): AdmissionAlertBaselineProfile | null {
+  if (profile.psychometricOverall === null || profile.bagrutWeightedAverage === null) return null;
+  if (
+    !['jewish', 'arab', 'druze', 'circassian', 'bedouin', 'samaritan'].includes(
+      profileVersion.sector,
+    )
+  )
+    return null;
+  const extraInputs: AdmissionsExtraInputs = {
+    ...profile.admissionsInputs,
+    psychometricMath: profile.psychometricQuantitative ?? undefined,
+    psychometricVerbal: profile.psychometricVerbal ?? undefined,
+    psychometricEnglish: profile.psychometricEnglish ?? undefined,
+    bagrutSubjectRecord: fromStoredBagrutProfileVersion({
+      schemaVersion: profileVersion.schemaVersion,
+      sector: profileVersion.sector as BagrutSector,
+      payload: profileVersion.subjects,
+    }),
+  };
+  return {
+    profileVersionId: profileVersion.id,
+    profileHash: createAdmissionsInputDigest({
+      degreeId: 'admission-alert-profile',
+      psychometric: profile.psychometricOverall,
+      bagrut: profile.bagrutWeightedAverage,
+      extraInputs,
+    }),
+    psychometric: profile.psychometricOverall,
+    bagrutAverage: profile.bagrutWeightedAverage,
+    hasStructuredBagrut: Boolean(extraInputs.bagrutSubjectRecord),
+    subjects: subjectsFromStoredBagrutProfile(profileVersion.subjects),
+    extraInputs,
+  };
+}
+
+export function isSupportedTarget(target: { institutionId: string; programId: string }): boolean {
+  return (
+    (target.institutionId === 'tau' && target.programId === 'tau_cs') ||
+    (target.institutionId === 'bgu' && target.programId === 'bgu_cs')
+  );
 }

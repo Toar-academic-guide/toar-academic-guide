@@ -1,0 +1,1042 @@
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
+
+import { describe, expect, it } from 'vitest';
+
+import {
+  BASELINE_PRODUCTION_MIGRATIONS,
+  FORWARD_PRODUCTION_MIGRATIONS,
+  PRODUCTION_SCHEMA_CONTRACT,
+  assessProductionSchema,
+  type ProductionSchemaSnapshot,
+} from './productionSchemaPreflight';
+
+describe('production admissions schema preflight', () => {
+  it('recognizes the deployed profile admissions-input migration before publishing cutoffs', () => {
+    const snapshot = makeSnapshot();
+    snapshot.migrationHistory = snapshot.migrationHistory.map((migration) =>
+      migration.name === 'profile_admissions_inputs'
+        ? {
+            version: '20260927081154',
+            name: 'profile_admissions_inputs',
+            statementFingerprint: '7a8c79303c9c4110e663e729df123fc1',
+          }
+        : migration,
+    );
+    snapshot.migrationHistory.find(
+      (migration) => migration.name === 'alert_transition_recovery',
+    )!.version = '20260929000000';
+    snapshot.migrationHistory.find(
+      (migration) => migration.name === 'alert_delivery_recovery',
+    )!.version = '20260929000001';
+    snapshot.migrationHistory.find(
+      (migration) => migration.name === 'alert_webhooks_unsubscribe',
+    )!.version = '20260929000002';
+    snapshot.migrationHistory.find(
+      (migration) => migration.name === 'alert_lifecycle_completion',
+    )!.version = '20260929000003';
+    if (!snapshot.tables.user_profiles.columns.includes('admissions_inputs')) {
+      snapshot.tables.user_profiles.columns.push('admissions_inputs');
+    }
+    snapshot.tables.user_profiles.columnTypes.admissions_inputs = 'jsonb';
+
+    expect(assessProductionSchema(snapshot)).toMatchObject({
+      status: 'current',
+      appliedThrough: '0035',
+      pendingMigrations: [],
+      issues: [],
+    });
+  });
+
+  it('requires the applied admissions-input column to exist as JSONB', () => {
+    const missing = makeSnapshot();
+    missing.tables.user_profiles.columns = missing.tables.user_profiles.columns.filter(
+      (column) => column !== 'admissions_inputs',
+    );
+    delete missing.tables.user_profiles.columnTypes.admissions_inputs;
+    expect(assessProductionSchema(missing).issues).toContainEqual(
+      expect.objectContaining({
+        code: 'missing_column',
+        object: 'table:user_profiles.column:admissions_inputs',
+      }),
+    );
+
+    const wrongType = makeSnapshot();
+    wrongType.tables.user_profiles.columnTypes.admissions_inputs = 'text';
+    expect(assessProductionSchema(wrongType).issues).toContainEqual(
+      expect.objectContaining({
+        code: 'column_type_mismatch',
+        object: 'table:user_profiles.column:admissions_inputs',
+      }),
+    );
+  });
+
+  it('accepts a fully current schema', () => {
+    const report = assessProductionSchema(makeSnapshot());
+
+    expect(report).toMatchObject({
+      status: 'current',
+      safeToMigrate: false,
+      appliedThrough: '0035',
+      pendingMigrations: [],
+      issues: [],
+    });
+  });
+
+  it('allows the existing restricted schema to migrate to dashboard column reads', () => {
+    const snapshot = makeSnapshot({ appliedCount: FORWARD_PRODUCTION_MIGRATIONS.length - 1 });
+    expect(assessProductionSchema(snapshot)).toMatchObject({
+      status: 'migration_required',
+      safeToMigrate: true,
+      appliedThrough: '0034',
+      pendingMigrations: ['0035'],
+      issues: [],
+    });
+  });
+
+  it.each(['ingestion_sources', 'ingestion_jobs', 'review_items'])(
+    'requires the dashboard columns and RLS policy on %s',
+    (tableName) => {
+      const snapshot = makeSnapshot();
+      snapshot.tables[tableName].columnGrants.ops_readonly.SELECT = [];
+      snapshot.tables[tableName].policies = snapshot.tables[tableName].policies.filter(
+        (policy) => policy !== `${tableName}_ops_readonly_select`,
+      );
+      expect(assessProductionSchema(snapshot).issues).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            code: 'grant_mismatch',
+            object: `grant:ops_readonly:${tableName}.column:SELECT`,
+          }),
+          expect.objectContaining({
+            code: 'missing_policy',
+            object: `policy:${tableName}_ops_readonly_select`,
+          }),
+        ]),
+      );
+    },
+  );
+
+  it.each([
+    ['ops_readonly', 'ingestion_sources', 'SELECT', 'notes'],
+    ['ops_readonly', 'review_items', 'SELECT', 'proposed_value'],
+    ['ops_readonly', 'ingestion_jobs', 'UPDATE', 'error_text'],
+    ['anon', 'ingestion_sources', 'SELECT', 'id'],
+    ['authenticated', 'review_items', 'SELECT', 'id'],
+    ['app_runtime', 'ingestion_jobs', 'SELECT', 'id'],
+  ])(
+    'rejects extra dashboard column access for %s on %s (%s %s)',
+    (role, tableName, privilege, column) => {
+      const snapshot = makeSnapshot();
+      const grants = (snapshot.tables[tableName].columnGrants[role] ??= {});
+      (grants[privilege] ??= []).push(column);
+      expect(assessProductionSchema(snapshot).issues).toContainEqual(
+        expect.objectContaining({
+          code: 'grant_mismatch',
+          object: `grant:${role}:${tableName}.column:${privilege}`,
+        }),
+      );
+    },
+  );
+
+  it('requires lease and retry columns after the recovery migration', () => {
+    const snapshot = makeSnapshot();
+    snapshot.tables.admission_alert_transition_work.columns =
+      snapshot.tables.admission_alert_transition_work.columns.filter(
+        (column) => column !== 'claim_token',
+      );
+    snapshot.tables.admission_alert_transition_work.columnTypes.retry_state = 'text';
+    expect(assessProductionSchema(snapshot).issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'missing_column',
+          object: 'table:admission_alert_transition_work.column:claim_token',
+        }),
+        expect.objectContaining({
+          code: 'column_type_mismatch',
+          object: 'table:admission_alert_transition_work.column:retry_state',
+        }),
+      ]),
+    );
+  });
+
+  it('rejects missing alert storage and incorrect alert role grants', () => {
+    const missing = makeSnapshot();
+    delete missing.tables.admission_alert_outbox;
+    expect(assessProductionSchema(missing).status).not.toBe('current');
+
+    const wrongGrant = makeSnapshot();
+    wrongGrant.tables.admission_alert_subscriptions.grants.authenticated = ['SELECT'];
+    expect(assessProductionSchema(wrongGrant).issues).toContainEqual(
+      expect.objectContaining({
+        code: 'public_role_grant',
+        object: 'grant:authenticated:admission_alert_subscriptions',
+      }),
+    );
+  });
+
+  it('requires the indeterminate Slack acceptance status in the review-run ledger enum', () => {
+    const snapshot = makeSnapshot();
+    snapshot.enums.admission_review_slack_status =
+      snapshot.enums.admission_review_slack_status.filter(
+        (value) => value !== 'acceptance_unknown',
+      );
+
+    expect(assessProductionSchema(snapshot).issues).toContainEqual(
+      expect.objectContaining({
+        code: 'enum_values_mismatch',
+        object: 'enum:admission_review_slack_status',
+      }),
+    );
+  });
+
+  it('rejects an automation update grant on any other threshold column', () => {
+    const snapshot = makeSnapshot();
+    snapshot.tables.admission_thresholds.columnGrants.admissions_automation.UPDATE.push(
+      'updated_at',
+    );
+
+    expect(assessProductionSchema(snapshot).issues).toContainEqual(
+      expect.objectContaining({
+        code: 'grant_mismatch',
+        object: 'grant:admissions_automation:admission_thresholds.column:UPDATE',
+      }),
+    );
+  });
+
+  it.each(['INSERT', 'REFERENCES'])(
+    'rejects an automation %s grant on a threshold column',
+    (privilege) => {
+      const snapshot = makeSnapshot();
+      snapshot.tables.admission_thresholds.columnGrants.admissions_automation[privilege] = [
+        'threshold_value',
+      ];
+
+      expect(assessProductionSchema(snapshot).issues).toContainEqual(
+        expect.objectContaining({
+          code: 'grant_mismatch',
+          object: `grant:admissions_automation:admission_thresholds.column:${privilege}`,
+        }),
+      );
+    },
+  );
+
+  it('requires automation to upsert ingestion source metadata', () => {
+    const snapshot = makeSnapshot();
+    snapshot.tables.ingestion_sources.grants.admissions_automation = ['SELECT'];
+
+    expect(assessProductionSchema(snapshot).issues).toContainEqual(
+      expect.objectContaining({
+        code: 'grant_mismatch',
+        object: 'grant:admissions_automation:ingestion_sources',
+      }),
+    );
+  });
+
+  it('requires the insert-only grants and policies needed for freshness review handoffs', () => {
+    const snapshot = makeSnapshot();
+    snapshot.tables.ingestion_jobs.grants.admissions_automation = [];
+    snapshot.tables.ingestion_payloads.policies =
+      snapshot.tables.ingestion_payloads.policies.filter(
+        (policy) => policy !== 'ingestion_payloads_admissions_automation_insert',
+      );
+
+    expect(assessProductionSchema(snapshot).issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'grant_mismatch',
+          object: 'grant:admissions_automation:ingestion_jobs',
+        }),
+        expect.objectContaining({
+          code: 'missing_policy',
+          object: 'policy:ingestion_payloads_admissions_automation_insert',
+        }),
+      ]),
+    );
+  });
+
+  it('accepts ingestion source metadata isolated except for dashboard column reads', () => {
+    const snapshot = makeSnapshot();
+    snapshot.tables.ingestion_sources.grants.app_runtime = [];
+    snapshot.tables.ingestion_sources.grants.ops_readonly = [];
+    snapshot.tables.ingestion_sources.policies = [
+      'ingestion_sources_private_deny_all',
+      'ingestion_sources_ops_readonly_select',
+      'ingestion_sources_app_runtime_deny_all',
+      'ingestion_sources_admissions_automation_read',
+      'ingestion_sources_admissions_automation_insert',
+      'ingestion_sources_admissions_automation_update',
+    ];
+
+    expect(assessProductionSchema(snapshot)).toMatchObject({
+      status: 'current',
+      issues: [],
+    });
+  });
+
+  it('records both Drizzle and Supabase payload fingerprints for applied migrations', () => {
+    for (const migrationId of [
+      '0020',
+      '0021',
+      '0022',
+      '0023',
+      '0024',
+      '0025',
+      '0026',
+      '0027',
+      '0028',
+      '0031',
+      '0032',
+      '0033',
+      '0034',
+      '0035',
+    ] as const) {
+      const migration = FORWARD_PRODUCTION_MIGRATIONS.find(({ id }) => id === migrationId);
+      const source = readFileSync(migration?.repositoryPath ?? '', 'utf8');
+      const statements = source
+        .split(/-->\s*statement-breakpoint/)
+        .map((statement) => statement.trim())
+        .filter(Boolean);
+
+      expect(migration?.statementFingerprint).toBe(
+        createHash('md5').update(statements.join('\n')).digest('hex'),
+      );
+      expect([
+        migration?.statementFingerprint,
+        ...(migration?.legacyStatementFingerprints ?? []),
+      ]).toContain(createHash('md5').update(source).digest('hex'));
+    }
+  });
+
+  it('accepts PostgreSQL-truncated constraint identifiers', () => {
+    const snapshot = makeSnapshot();
+    snapshot.tables.admission_alert_baseline_history.constraints =
+      snapshot.tables.admission_alert_baseline_history.constraints.map((constraint) =>
+        constraint.slice(0, 63),
+      );
+
+    expect(assessProductionSchema(snapshot)).toMatchObject({
+      status: 'current',
+      issues: [],
+    });
+  });
+
+  it('recognizes an intact production baseline that needs the forward migrations', () => {
+    const report = assessProductionSchema(makeSnapshot({ appliedCount: 0 }));
+
+    expect(report.status).toBe('migration_required');
+    expect(report.safeToMigrate).toBe(true);
+    expect(report.pendingMigrations).toEqual([
+      '0010',
+      '0011',
+      '0012',
+      '0013',
+      '0014',
+      '0015',
+      '0016',
+      '0017',
+      '0018',
+      '0019',
+      '0020',
+      '0021',
+      '0022',
+      '0023',
+      '0024',
+      '0025',
+      '0026',
+      '0027',
+      '0028',
+      '0031',
+      '0032',
+      '0033',
+      '0034',
+      '0035',
+    ]);
+  });
+
+  it('allows a safe rerun from a verified forward-migration prefix', () => {
+    const report = assessProductionSchema(makeSnapshot({ appliedCount: 3 }));
+
+    expect(report.status).toBe('migration_required');
+    expect(report.safeToMigrate).toBe(true);
+    expect(report.appliedThrough).toBe('0012');
+    expect(report.pendingMigrations).toEqual([
+      '0013',
+      '0014',
+      '0015',
+      '0016',
+      '0017',
+      '0018',
+      '0019',
+      '0020',
+      '0021',
+      '0022',
+      '0023',
+      '0024',
+      '0025',
+      '0026',
+      '0027',
+      '0028',
+      '0031',
+      '0032',
+      '0033',
+      '0034',
+      '0035',
+    ]);
+  });
+
+  it('accepts legacy review-handoff grants only until 0027 revokes them', () => {
+    const appliedCount = FORWARD_PRODUCTION_MIGRATIONS.findIndex(({ id }) => id === '0027');
+    const snapshot = makeSnapshot({ appliedCount });
+    snapshot.tables.ingestion_jobs.grants.ops_readonly = ['SELECT'];
+    snapshot.tables.review_items.grants.ops_readonly = ['SELECT'];
+
+    expect(assessProductionSchema(snapshot)).toMatchObject({
+      status: 'migration_required',
+      safeToMigrate: true,
+      pendingMigrations: ['0027', '0028', '0031', '0032', '0033', '0034', '0035'],
+      issues: [],
+    });
+  });
+
+  it('stops when a pending migration is partially present', () => {
+    const snapshot = makeSnapshot({ appliedCount: 0 });
+    snapshot.tables.bagrut_profile_versions = makeSnapshot().tables.bagrut_profile_versions;
+
+    const report = assessProductionSchema(snapshot);
+
+    expect(report.status).toBe('drift');
+    expect(report.safeToMigrate).toBe(false);
+    expect(report.issues).toContainEqual(
+      expect.objectContaining({
+        code: 'unexpected_pending_object',
+        object: 'table:bagrut_profile_versions',
+      }),
+    );
+  });
+
+  it('stops when a required column, constraint, or index is missing', () => {
+    const snapshot = makeSnapshot();
+    snapshot.tables.admission_releases.columns = snapshot.tables.admission_releases.columns.filter(
+      (column) => column !== 'repository_commit',
+    );
+    snapshot.tables.admission_releases.indexes = [];
+    snapshot.tables.admission_target_transitions.constraints = [];
+
+    const report = assessProductionSchema(snapshot);
+
+    expect(report.status).toBe('drift');
+    expect(report.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'missing_column',
+          object: 'table:admission_releases.column:repository_commit',
+        }),
+        expect.objectContaining({
+          code: 'missing_index',
+          object: 'index:admission_releases_manifest_digest_unique',
+        }),
+        expect.objectContaining({
+          code: 'missing_constraint',
+          object: 'constraint:admission_target_transitions_release_id_admission_releases_id_fk',
+        }),
+      ]),
+    );
+  });
+
+  it('stops when RLS is disabled or a required policy is missing', () => {
+    const snapshot = makeSnapshot();
+    snapshot.tables.admission_facts.rowLevelSecurity = false;
+    snapshot.tables.admission_review_runs.policies =
+      snapshot.tables.admission_review_runs.policies.filter(
+        (policy) => policy !== 'admission_review_runs_private_deny_all',
+      );
+
+    const report = assessProductionSchema(snapshot);
+
+    expect(report.status).toBe('drift');
+    expect(report.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'rls_disabled',
+          object: 'table:admission_facts',
+        }),
+        expect.objectContaining({
+          code: 'missing_policy',
+          object: 'policy:admission_review_runs_private_deny_all',
+        }),
+      ]),
+    );
+  });
+
+  it('stops on missing or excessive role grants', () => {
+    const snapshot = makeSnapshot();
+    snapshot.tables.admission_releases.grants.app_runtime = ['SELECT'];
+    snapshot.tables.admission_facts.grants.anon = ['SELECT'];
+    snapshot.tables.admission_operational_proof_values.grants.admissions_automation = [
+      'SELECT',
+      'INSERT',
+      'UPDATE',
+      'DELETE',
+    ];
+
+    const report = assessProductionSchema(snapshot);
+
+    expect(report.status).toBe('drift');
+    expect(report.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'grant_mismatch',
+          object: 'grant:app_runtime:admission_releases',
+        }),
+        expect.objectContaining({
+          code: 'public_role_grant',
+          object: 'grant:anon:admission_facts',
+        }),
+        expect.objectContaining({
+          code: 'grant_mismatch',
+          object: 'grant:admissions_automation:admission_operational_proof_values',
+        }),
+      ]),
+    );
+  });
+
+  it('stops when an effective runtime role is absent or can bypass RLS', () => {
+    const snapshot = makeSnapshot();
+    snapshot.roles = snapshot.roles.filter((role) => role.name !== 'ops_readonly');
+    const runtime = snapshot.roles.find((role) => role.name === 'app_runtime');
+    if (runtime) runtime.bypassRls = true;
+
+    const report = assessProductionSchema(snapshot);
+
+    expect(report.status).toBe('drift');
+    expect(report.issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'missing_role',
+          object: 'role:ops_readonly',
+        }),
+        expect.objectContaining({
+          code: 'role_bypasses_rls',
+          object: 'role:app_runtime',
+        }),
+      ]),
+    );
+  });
+
+  it('stops when a runtime role cannot authenticate', () => {
+    const snapshot = makeSnapshot();
+    const operationsRole = snapshot.roles.find((role) => role.name === 'ops_readonly');
+    if (operationsRole) operationsRole.canLogin = false;
+
+    expect(assessProductionSchema(snapshot).issues).toContainEqual(
+      expect.objectContaining({
+        code: 'role_cannot_login',
+        object: 'role:ops_readonly',
+      }),
+    );
+  });
+
+  it('accepts the original 0021 fingerprint as a reviewed legacy equivalent', () => {
+    const snapshot = makeSnapshot();
+    const migration = snapshot.migrationHistory.find(
+      ({ name }) => name === 'operational_proof_release_lane',
+    );
+    if (migration) {
+      migration.statementFingerprint = 'ba89e5847ef10fa529545c0120fb0f1f';
+    }
+
+    expect(assessProductionSchema(snapshot)).toMatchObject({
+      status: 'current',
+      issues: [],
+    });
+  });
+
+  it('accepts the reviewed single-statement 0023 production fingerprint', () => {
+    const snapshot = makeSnapshot();
+    const migration = snapshot.migrationHistory.find(
+      ({ name }) => name === 'grant_admissions_automation_ingestion_sources',
+    );
+    if (migration) {
+      migration.statementFingerprint = 'dfcf630423db70fcebe9b9aac016f764';
+    }
+
+    expect(assessProductionSchema(snapshot)).toMatchObject({
+      status: 'current',
+      issues: [],
+    });
+  });
+
+  it('accepts the Supabase payload fingerprint for 0025', () => {
+    const snapshot = makeSnapshot();
+    const migration = snapshot.migrationHistory.find(
+      ({ name }) => name === 'grant_admissions_automation_review_handoff',
+    );
+    if (migration) {
+      migration.statementFingerprint = '7328e7cd08240243f60c1a7b5c04d2f4';
+    }
+
+    expect(assessProductionSchema(snapshot)).toMatchObject({
+      status: 'current',
+      issues: [],
+    });
+  });
+
+  it('accepts the legacy ops grant only until 0024 revokes it', () => {
+    const appliedCount = FORWARD_PRODUCTION_MIGRATIONS.findIndex(({ id }) => id === '0024');
+    const snapshot = makeSnapshot({ appliedCount });
+    snapshot.tables.ingestion_sources.grants.ops_readonly = ['SELECT'];
+
+    expect(assessProductionSchema(snapshot)).toMatchObject({
+      status: 'migration_required',
+      safeToMigrate: true,
+      pendingMigrations: [
+        '0024',
+        '0025',
+        '0026',
+        '0027',
+        '0028',
+        '0031',
+        '0032',
+        '0033',
+        '0034',
+        '0035',
+      ],
+      issues: [],
+    });
+  });
+
+  it('stops when admissions automation gains elevated attributes or memberships', () => {
+    const snapshot = makeSnapshot();
+    const automation = snapshot.roles.find((role) => role.name === 'admissions_automation');
+    if (automation) {
+      automation.isSuperuser = true;
+      automation.memberOf = ['postgres'];
+      automation.ownedPublicObjects = ['routine:public.unsafe_helper'];
+    }
+
+    expect(assessProductionSchema(snapshot).issues).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: 'role_not_least_privileged',
+          object: 'role:admissions_automation',
+        }),
+        expect.objectContaining({
+          code: 'role_has_memberships',
+          object: 'role:admissions_automation',
+        }),
+        expect.objectContaining({
+          code: 'role_owns_public_objects',
+          object: 'role:admissions_automation',
+        }),
+      ]),
+    );
+  });
+
+  it('stops when the threshold trigger function loses its trusted search path', () => {
+    const snapshot = makeSnapshot();
+    snapshot.functions.enforce_admission_threshold_scope = [];
+
+    expect(assessProductionSchema(snapshot).issues).toContainEqual(
+      expect.objectContaining({
+        code: 'function_config_mismatch',
+        object: 'function:enforce_admission_threshold_scope.config:search_path',
+      }),
+    );
+  });
+
+  it('stops on a divergent baseline fingerprint or unexpected history entry', () => {
+    const divergent = makeSnapshot();
+    divergent.migrationHistory[2] = {
+      ...divergent.migrationHistory[2],
+      statementFingerprint: 'different',
+    };
+
+    expect(assessProductionSchema(divergent).issues).toContainEqual(
+      expect.objectContaining({
+        code: 'migration_history_diverged',
+        object: `migration:${BASELINE_PRODUCTION_MIGRATIONS[2]?.version}`,
+      }),
+    );
+
+    const unexpected = makeSnapshot();
+    unexpected.migrationHistory.push({
+      version: '20990101000000',
+      name: 'manual_dashboard_hotfix',
+      statementFingerprint: 'unknown',
+    });
+
+    expect(assessProductionSchema(unexpected).issues).toContainEqual(
+      expect.objectContaining({
+        code: 'unexpected_migration',
+        object: 'migration:20990101000000',
+      }),
+    );
+  });
+});
+
+function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchemaSnapshot {
+  const appliedCount = options.appliedCount ?? FORWARD_PRODUCTION_MIGRATIONS.length;
+  const appliedIds = new Set(
+    FORWARD_PRODUCTION_MIGRATIONS.slice(0, appliedCount).map((migration) => migration.id),
+  );
+  const tables: ProductionSchemaSnapshot['tables'] = {};
+
+  for (const [tableName, contract] of Object.entries(PRODUCTION_SCHEMA_CONTRACT.tables)) {
+    if (contract.createdBy && !appliedIds.has(contract.createdBy)) continue;
+
+    const securityApplies = !contract.securedBy || appliedIds.has(contract.securedBy);
+    tables[tableName] = {
+      columns: [...contract.columns],
+      columnTypes: { ...contract.columnTypes },
+      constraints: [...contract.constraints],
+      indexes: [...contract.indexes],
+      rowLevelSecurity: securityApplies && contract.private,
+      policies: securityApplies ? [...contract.policies] : [],
+      grants: securityApplies
+        ? Object.fromEntries(
+            Object.entries(contract.grants).map(([role, privileges]) => [role, [...privileges]]),
+          )
+        : {},
+      columnGrants: {},
+    };
+    if (appliedIds.has('0035') && contract.dashboardReadColumns) {
+      tables[tableName].columnGrants.ops_readonly = { SELECT: [...contract.dashboardReadColumns] };
+      tables[tableName].policies.push(`${tableName}_ops_readonly_select`);
+    }
+  }
+
+  if (appliedIds.has('0034')) {
+    tables.admission_alert_outbox.columns.push('recipient_hash');
+    tables.admission_alert_outbox.columnTypes.recipient_hash = 'text';
+  }
+  if (appliedIds.has('0031')) {
+    for (const [column, type] of [
+      ['claim_token', 'uuid'],
+      ['lease_expires_at', 'timestamp with time zone'],
+      ['next_attempt_at', 'timestamp with time zone'],
+      ['retry_state', 'jsonb'],
+    ]) {
+      tables.admission_alert_transition_work.columns.push(column);
+      tables.admission_alert_transition_work.columnTypes[column] = type;
+    }
+  }
+  if (appliedIds.has('0032')) {
+    for (const [column, type] of [
+      ['claim_token', 'uuid'],
+      ['lease_expires_at', 'timestamp with time zone'],
+      ['first_submitted_at', 'timestamp with time zone'],
+      ['submission_started_at', 'timestamp with time zone'],
+      ['attempt_count', 'integer'],
+      ['mail_payload', 'jsonb'],
+    ]) {
+      tables.admission_alert_outbox.columns.push(column);
+      tables.admission_alert_outbox.columnTypes[column] = type;
+    }
+  }
+  if (appliedIds.has('0033')) {
+    for (const [column, type] of [
+      ['unsubscribe_token_hash', 'text'],
+      ['unsubscribe_used_at', 'timestamp with time zone'],
+      ['delivery_events', 'jsonb'],
+    ]) {
+      tables.admission_alert_outbox.columns.push(column);
+      tables.admission_alert_outbox.columnTypes[column] = type;
+    }
+    tables.admission_alert_outbox.indexes.push('admission_alert_outbox_unsubscribe_token_unique');
+  }
+  if (appliedIds.has('0028')) {
+    tables.user_profiles.columns.push('admissions_inputs');
+    tables.user_profiles.columnTypes.admissions_inputs = 'jsonb';
+  }
+  if (appliedIds.has('0010')) {
+    tables.user_profiles?.columns.push('bagrut_profile_version_id');
+    tables.user_profiles?.constraints.push(
+      'user_profiles_bagrut_profile_version_id_bagrut_profile_versions_id_fk',
+    );
+  }
+  if (appliedIds.has('0015')) {
+    if (tables.admission_requirements) {
+      tables.admission_requirements.columnTypes.duration_years = 'real';
+    }
+    if (tables.requirement_versions) {
+      tables.requirement_versions.columnTypes.duration_years = 'real';
+    }
+  }
+  if (!appliedIds.has('0017') && tables.bagrut_profile_versions) {
+    tables.bagrut_profile_versions.policies = tables.bagrut_profile_versions.policies.filter(
+      (policy) => policy !== 'bagrut_profile_versions_ops_readonly_read',
+    );
+    tables.bagrut_profile_versions.grants.ops_readonly = [];
+  }
+  if (appliedIds.has('0011') && !appliedIds.has('0024') && tables.ingestion_sources) {
+    tables.ingestion_sources.grants.ops_readonly = ['SELECT'];
+  }
+  if (appliedIds.has('0025') && !appliedIds.has('0027')) {
+    for (const tableName of ['ingestion_jobs', 'review_items'] as const) {
+      const table = tables[tableName];
+      if (table) table.grants.ops_readonly = ['SELECT'];
+    }
+  }
+  if (appliedIds.has('0020')) {
+    for (const column of [
+      'proof_level',
+      'decision_provenance',
+      'reviewed_source_fingerprint',
+      'exact_qualified',
+    ]) {
+      tables.source_freshness_checks?.columns.push(column);
+    }
+    for (const column of [
+      'proof_level',
+      'decision_provenance',
+      'reviewed_source_fingerprint',
+      'last_exact_check_at',
+    ]) {
+      tables.source_freshness_states?.columns.push(column);
+    }
+  }
+  if (appliedIds.has('0021')) {
+    for (const tableName of ['admission_releases', 'admission_review_runs'] as const) {
+      tables[tableName]?.columns.push('release_kind', 'proof_scenario');
+    }
+    tables.admission_releases?.constraints.push('admission_releases_proof_scenario_kind_check');
+    tables.admission_review_runs?.constraints.push(
+      'admission_review_runs_proof_scenario_kind_check',
+    );
+    tables.admission_releases?.indexes.push('admission_releases_kind_published_at_idx');
+    tables.admission_review_runs?.indexes.push('admission_review_runs_kind_status_idx');
+
+    const automationAccess: Record<
+      string,
+      { grants: string[]; policies?: string[]; columnGrants?: Record<string, string[]> }
+    > = {
+      institutions: { grants: ['SELECT'], policies: ['institutions_admissions_automation_read'] },
+      programs: { grants: ['SELECT'], policies: ['programs_admissions_automation_read'] },
+      program_institutions: {
+        grants: ['SELECT'],
+        policies: ['program_institutions_admissions_automation_read'],
+      },
+      ingestion_sources: {
+        grants: appliedIds.has('0023') ? ['SELECT', 'INSERT', 'UPDATE'] : ['SELECT'],
+        policies: [
+          'ingestion_sources_admissions_automation_read',
+          ...(appliedIds.has('0023')
+            ? [
+                'ingestion_sources_admissions_automation_insert',
+                'ingestion_sources_admissions_automation_update',
+              ]
+            : []),
+        ],
+      },
+      ingestion_jobs: {
+        grants: appliedIds.has('0025') ? ['INSERT'] : [],
+        policies: appliedIds.has('0025') ? ['ingestion_jobs_admissions_automation_insert'] : [],
+      },
+      ingestion_payloads: {
+        grants: appliedIds.has('0025') ? ['INSERT'] : [],
+        policies: appliedIds.has('0025') ? ['ingestion_payloads_admissions_automation_insert'] : [],
+      },
+      review_items: {
+        grants: appliedIds.has('0025') ? ['INSERT'] : [],
+        policies: appliedIds.has('0025') ? ['review_items_admissions_automation_insert'] : [],
+      },
+      admission_thresholds: {
+        grants: ['SELECT'],
+        columnGrants: { UPDATE: ['threshold_value'] },
+        policies: [
+          'admission_thresholds_admissions_automation_read',
+          'admission_thresholds_admissions_automation_update',
+        ],
+      },
+      source_freshness_checks: {
+        grants: ['SELECT', 'INSERT', 'UPDATE'],
+        policies: [
+          'source_freshness_checks_admissions_automation_read',
+          'source_freshness_checks_admissions_automation_insert',
+          'source_freshness_checks_admissions_automation_update',
+        ],
+      },
+      source_freshness_states: {
+        grants: ['SELECT', 'INSERT', 'UPDATE'],
+        policies: [
+          'source_freshness_states_admissions_automation_read',
+          'source_freshness_states_admissions_automation_insert',
+          'source_freshness_states_admissions_automation_update',
+        ],
+      },
+      admission_review_runs: {
+        grants: ['SELECT', 'INSERT', 'UPDATE'],
+        policies: [
+          'admission_review_runs_admissions_automation_read',
+          'admission_review_runs_admissions_automation_insert',
+          'admission_review_runs_admissions_automation_update',
+        ],
+      },
+      admission_releases: {
+        grants: ['SELECT', 'INSERT', 'UPDATE'],
+        policies: [
+          'admission_releases_admissions_automation_read',
+          'admission_releases_admissions_automation_insert',
+          'admission_releases_admissions_automation_update',
+        ],
+      },
+      admission_target_transitions: {
+        grants: ['SELECT', 'INSERT', 'UPDATE'],
+        policies: [
+          'admission_target_transitions_admissions_automation_read',
+          'admission_target_transitions_admissions_automation_insert',
+          'admission_target_transitions_admissions_automation_update',
+        ],
+      },
+      admission_release_items: {
+        grants: ['SELECT', 'INSERT', 'UPDATE'],
+        policies: [
+          'admission_release_items_admissions_automation_read',
+          'admission_release_items_admissions_automation_insert',
+          'admission_release_items_admissions_automation_update',
+        ],
+      },
+      admission_publication_attempts: {
+        grants: ['SELECT', 'INSERT', 'UPDATE'],
+        policies: [
+          'admission_publication_attempts_admissions_automation_read',
+          'admission_publication_attempts_admissions_automation_insert',
+          'admission_publication_attempts_admissions_automation_update',
+        ],
+      },
+      admission_operational_proof_values: {
+        grants: ['SELECT', 'INSERT', 'UPDATE'],
+      },
+      user_profiles: { grants: [] },
+      saved_programs: { grants: [] },
+      uploaded_documents: { grants: [] },
+      bagrut_profile_versions: { grants: [] },
+    };
+    for (const [tableName, access] of Object.entries(automationAccess)) {
+      const table = tables[tableName];
+      if (!table) continue;
+      table.grants.admissions_automation = access.grants;
+      table.columnGrants.admissions_automation = access.columnGrants ?? {};
+      table.policies.push(...(access.policies ?? []));
+    }
+  }
+
+  return {
+    migrationHistory: [
+      ...BASELINE_PRODUCTION_MIGRATIONS,
+      ...FORWARD_PRODUCTION_MIGRATIONS.slice(0, appliedCount).map((migration, index) => ({
+        version: `20260725${String(index).padStart(6, '0')}`,
+        name: migration.remoteName,
+        statementFingerprint: migration.statementFingerprint,
+      })),
+    ],
+    roles: [
+      {
+        name: 'anon',
+        canLogin: false,
+        bypassRls: false,
+        isSuperuser: false,
+        canCreateDatabases: false,
+        canCreateRoles: false,
+        inheritsPrivileges: false,
+        canReplicate: false,
+        memberOf: [],
+        ownedPublicObjects: [],
+      },
+      {
+        name: 'authenticated',
+        canLogin: false,
+        bypassRls: false,
+        isSuperuser: false,
+        canCreateDatabases: false,
+        canCreateRoles: false,
+        inheritsPrivileges: false,
+        canReplicate: false,
+        memberOf: [],
+        ownedPublicObjects: [],
+      },
+      {
+        name: 'app_runtime',
+        canLogin: true,
+        bypassRls: false,
+        isSuperuser: false,
+        canCreateDatabases: false,
+        canCreateRoles: false,
+        inheritsPrivileges: false,
+        canReplicate: false,
+        memberOf: [],
+        ownedPublicObjects: [],
+      },
+      {
+        name: 'ops_readonly',
+        canLogin: true,
+        bypassRls: false,
+        isSuperuser: false,
+        canCreateDatabases: false,
+        canCreateRoles: false,
+        inheritsPrivileges: false,
+        canReplicate: false,
+        memberOf: [],
+        ownedPublicObjects: [],
+      },
+      ...(appliedIds.has('0021')
+        ? [
+            {
+              name: 'admissions_automation',
+              canLogin: true,
+              bypassRls: false,
+              isSuperuser: false,
+              canCreateDatabases: false,
+              canCreateRoles: false,
+              inheritsPrivileges: false,
+              canReplicate: false,
+              memberOf: [],
+              ownedPublicObjects: [],
+            },
+          ]
+        : []),
+    ],
+    tables,
+    enums: Object.fromEntries(
+      Object.entries(PRODUCTION_SCHEMA_CONTRACT.enums)
+        .filter(([, contract]) => appliedIds.has(contract.createdBy))
+        .map(([name, contract]) => [
+          name,
+          [
+            ...(contract.valueMigrations?.filter((migration) => appliedIds.has(migration.id)).at(-1)
+              ?.values ?? contract.values),
+          ],
+        ]),
+    ),
+    triggers: [
+      ...(appliedIds.has('0014') ? ['admission_threshold_scope_invariant'] : []),
+      ...(appliedIds.has('0034') ? ['admission_alert_account_deleted'] : []),
+    ],
+    functionAccess: appliedIds.has('0034')
+      ? Object.fromEntries(
+          ['delivery_recipient', 'cleanup_deleted_account', 'prune_retained_data'].map((name) => [
+            `admission_alert_private.${name}`,
+            {
+              securityDefiner: true,
+              executeRoles: name === 'cleanup_deleted_account' ? [] : ['app_runtime'],
+            },
+          ]),
+        )
+      : {},
+    functions: appliedIds.has('0014')
+      ? {
+          ...(appliedIds.has('0034')
+            ? Object.fromEntries(
+                ['delivery_recipient', 'cleanup_deleted_account', 'prune_retained_data'].map(
+                  (name) => [`admission_alert_private.${name}`, ['search_path=""']],
+                ),
+              )
+            : {}),
+          enforce_admission_threshold_scope: appliedIds.has('0018')
+            ? ['search_path=pg_catalog, public']
+            : [],
+        }
+      : {},
+  };
+}

@@ -1,0 +1,44 @@
+name: Account Admission Alert Simulation
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_simulation:
+        description: Send two labelled simulated-change emails to the approved test account
+        type: boolean
+        required: true
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: admission-alert-account-simulation
+  cancel-in-progress: false
+
+jobs:
+  simulation:
+    if: ${{ github.ref == 'refs/heads/main' && inputs.confirm_simulation && github.run_attempt == 1 }}
+    runs-on: ubuntu-latest
+    environment: admissions-publication
+    timeout-minutes: 15
+    env:
+      CI: true
+      CONFIRM_SIMULATION: ${{ inputs.confirm_simulation }}
+      ADMISSION_ALERT_SIMULATION_USER_ID: ${{ secrets.ADMISSION_ALERT_SIMULATION_USER_ID }}
+      ADMISSION_ALERT_DATABASE_URL: ${{ secrets.ADMISSION_ALERT_DATABASE_URL }}
+      ADMISSION_ALERT_RESEND_API_KEY: ${{ secrets.ADMISSION_ALERT_RESEND_API_KEY }}
+      ADMISSION_ALERT_TOKEN_SECRET: ${{ secrets.ADMISSION_ALERT_TOKEN_SECRET }}
+      ADMISSION_ALERT_PROCESSING_ENABLED: ${{ vars.ADMISSION_ALERT_PROCESSING_ENABLED }}
+      ADMISSION_ALERT_DELIVERY_ENABLED: ${{ vars.ADMISSION_ALERT_DELIVERY_ENABLED }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: main
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Run the account-scoped simulation
+        run: node scripts/admission-alert-account-simulation.mjs

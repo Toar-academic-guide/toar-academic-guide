@@ -18,6 +18,10 @@ import {
   type AdmissionsSourceProof,
 } from './admissionsSourceAdapters';
 import type {
+  AdmissionsDecisionProvenance,
+  AdmissionsProofLevel,
+} from './admissionsSourceAdapters';
+import type {
   FreshnessCapability,
   FreshnessSourceClass,
   IngestionSourceDescriptor,
@@ -30,8 +34,12 @@ export interface SourceFreshnessCurrentState {
   sourceClass: FreshnessSourceClass;
   capability: FreshnessCapability;
   status: SourceFreshnessStatus;
+  proofLevel?: AdmissionsProofLevel;
+  decisionProvenance?: AdmissionsDecisionProvenance;
+  reviewedSourceFingerprint?: string;
   lastCheckedAt?: Date;
   lastSuccessfulCheckAt?: Date;
+  lastExactCheckAt?: Date;
   lastChangedAt?: Date;
   latestFailureReason?: string;
   blockedReason?: string;
@@ -48,6 +56,10 @@ export interface SourceFreshnessCheckRecord {
   sourceClass: FreshnessSourceClass;
   capability: FreshnessCapability;
   status: SourceFreshnessStatus;
+  proofLevel?: AdmissionsProofLevel;
+  decisionProvenance?: AdmissionsDecisionProvenance;
+  reviewedSourceFingerprint?: string;
+  exactQualified: boolean;
   checkedAt: Date;
   successful: boolean;
   failureReason?: string;
@@ -127,8 +139,44 @@ export async function persistAdmissionsSourceProofs({
       pendingSameDecisionChange,
     );
     const successful = proof.status !== 'failed';
+    const exactQualified = isExactQualifiedProof({ proof, status });
     const failureReason = proof.errorReason;
     let reviewItemId = pendingSameDecisionChange ? previous.latestReviewItemId : undefined;
+    const normalizedPayload =
+      freshness?.normalizedDecisionPayload ?? previous?.normalizedDecisionPayload ?? {};
+    const rawFingerprint = freshness?.rawFingerprint ?? previous?.rawFingerprint;
+    const normalizedFingerprint =
+      freshness?.normalizedFingerprint ?? previous?.normalizedFingerprint;
+    const lastSuccessfulCheckAt = successful ? checkedAt : previous?.lastSuccessfulCheckAt;
+    const lastExactCheckAt = exactQualified ? checkedAt : previous?.lastExactCheckAt;
+    const lastChangedAt =
+      status === 'changed_needs_review' && previous?.normalizedFingerprint !== normalizedFingerprint
+        ? checkedAt
+        : previous?.lastChangedAt;
+    const currentState: SourceFreshnessCurrentState = {
+      sourceId: proof.id,
+      sourceClass: proof.sourceClass,
+      capability: proof.capability,
+      status,
+      proofLevel: proof.proofLevel,
+      decisionProvenance: proof.decisionProvenance ?? 'none',
+      reviewedSourceFingerprint: proof.reviewedSourceFingerprint,
+      lastCheckedAt: checkedAt,
+      lastSuccessfulCheckAt,
+      lastExactCheckAt,
+      lastChangedAt,
+      latestFailureReason: failureReason,
+      blockedReason: freshness?.blockedReason ?? proof.blockedReason,
+      rawFingerprint,
+      normalizedFingerprint,
+      normalizedDecisionPayload: normalizedPayload,
+      latestReviewItemId: reviewItemId,
+      nextAction: proof.nextAction,
+    };
+
+    // Revoke stale or changed authority before creating review work. A later failure can
+    // delay the handoff, but it must never leave a prior exact state usable.
+    await repository.upsertCurrentState(currentState);
 
     if (freshness?.reviewWorthy && status === 'changed_needs_review' && !reviewItemId) {
       const handoff = await repository.createReviewHandoff({
@@ -142,18 +190,8 @@ export async function persistAdmissionsSourceProofs({
       });
       reviewItemId = handoff.reviewItemId;
       summary.reviewsCreated += 1;
+      await repository.upsertCurrentState({ ...currentState, latestReviewItemId: reviewItemId });
     }
-
-    const normalizedPayload =
-      freshness?.normalizedDecisionPayload ?? previous?.normalizedDecisionPayload ?? {};
-    const rawFingerprint = freshness?.rawFingerprint ?? previous?.rawFingerprint;
-    const normalizedFingerprint =
-      freshness?.normalizedFingerprint ?? previous?.normalizedFingerprint;
-    const lastSuccessfulCheckAt = successful ? checkedAt : previous?.lastSuccessfulCheckAt;
-    const lastChangedAt =
-      status === 'changed_needs_review' && previous?.normalizedFingerprint !== normalizedFingerprint
-        ? checkedAt
-        : previous?.lastChangedAt;
 
     await repository.recordCheck({
       id: randomUUID(),
@@ -161,6 +199,10 @@ export async function persistAdmissionsSourceProofs({
       sourceClass: proof.sourceClass,
       capability: proof.capability,
       status,
+      proofLevel: proof.proofLevel,
+      decisionProvenance: proof.decisionProvenance ?? 'none',
+      reviewedSourceFingerprint: proof.reviewedSourceFingerprint,
+      exactQualified,
       checkedAt,
       successful,
       failureReason,
@@ -170,23 +212,6 @@ export async function persistAdmissionsSourceProofs({
       normalizedDecisionPayload: normalizedPayload,
       reviewWorthy: freshness?.reviewWorthy ?? false,
       reviewItemId,
-      nextAction: proof.nextAction,
-    });
-
-    await repository.upsertCurrentState({
-      sourceId: proof.id,
-      sourceClass: proof.sourceClass,
-      capability: proof.capability,
-      status,
-      lastCheckedAt: checkedAt,
-      lastSuccessfulCheckAt,
-      lastChangedAt,
-      latestFailureReason: failureReason,
-      blockedReason: freshness?.blockedReason ?? proof.blockedReason,
-      rawFingerprint,
-      normalizedFingerprint,
-      normalizedDecisionPayload: normalizedPayload,
-      latestReviewItemId: reviewItemId,
       nextAction: proof.nextAction,
     });
 
@@ -242,8 +267,13 @@ export function createDrizzleSourceFreshnessRepository(db = getDb()): SourceFres
         sourceClass: row.sourceClass,
         capability: row.capability,
         status: row.status,
+        proofLevel: (row.proofLevel as AdmissionsProofLevel | null) ?? undefined,
+        decisionProvenance:
+          (row.decisionProvenance as AdmissionsDecisionProvenance | null) ?? undefined,
+        reviewedSourceFingerprint: row.reviewedSourceFingerprint ?? undefined,
         lastCheckedAt: row.lastCheckedAt ?? undefined,
         lastSuccessfulCheckAt: row.lastSuccessfulCheckAt ?? undefined,
+        lastExactCheckAt: row.lastExactCheckAt ?? undefined,
         lastChangedAt: row.lastChangedAt ?? undefined,
         latestFailureReason: row.latestFailureReason ?? undefined,
         blockedReason: row.blockedReason ?? undefined,
@@ -262,6 +292,10 @@ export function createDrizzleSourceFreshnessRepository(db = getDb()): SourceFres
         sourceClass: record.sourceClass,
         capability: record.capability,
         status: record.status,
+        proofLevel: record.proofLevel ?? null,
+        decisionProvenance: record.decisionProvenance ?? null,
+        reviewedSourceFingerprint: record.reviewedSourceFingerprint ?? null,
+        exactQualified: record.exactQualified,
         checkedAt: record.checkedAt,
         successful: record.successful,
         failureReason: record.failureReason ?? null,
@@ -285,8 +319,12 @@ export function createDrizzleSourceFreshnessRepository(db = getDb()): SourceFres
             sourceClass: state.sourceClass,
             capability: state.capability,
             status: state.status,
+            proofLevel: state.proofLevel ?? null,
+            decisionProvenance: state.decisionProvenance ?? null,
+            reviewedSourceFingerprint: state.reviewedSourceFingerprint ?? null,
             lastCheckedAt: state.lastCheckedAt ?? null,
             lastSuccessfulCheckAt: state.lastSuccessfulCheckAt ?? null,
+            lastExactCheckAt: state.lastExactCheckAt ?? null,
             lastChangedAt: state.lastChangedAt ?? null,
             latestFailureReason: state.latestFailureReason ?? null,
             blockedReason: state.blockedReason ?? null,
@@ -350,6 +388,22 @@ export function createDrizzleSourceFreshnessRepository(db = getDb()): SourceFres
   };
 }
 
+function isExactQualifiedProof(args: {
+  proof: AdmissionsSourceProof;
+  status: SourceFreshnessStatus;
+}): boolean {
+  const { proof, status } = args;
+  return (
+    status === 'fresh' &&
+    proof.status === 'succeeded' &&
+    proof.capability === 'decision_capable' &&
+    proof.proofLevel === 'exact_official' &&
+    (proof.decisionProvenance === 'official_response' ||
+      proof.decisionProvenance === 'verified_derivation') &&
+    Boolean(proof.reviewedSourceFingerprint)
+  );
+}
+
 function sourceFreshnessStatusForProof(
   proof: AdmissionsSourceProof,
   freshnessStatus: 'blocked' | 'changed_needs_review' | 'fresh' | undefined,
@@ -408,8 +462,12 @@ function stateValues(state: SourceFreshnessCurrentState) {
     sourceClass: state.sourceClass,
     capability: state.capability,
     status: state.status,
+    proofLevel: state.proofLevel ?? null,
+    decisionProvenance: state.decisionProvenance ?? null,
+    reviewedSourceFingerprint: state.reviewedSourceFingerprint ?? null,
     lastCheckedAt: state.lastCheckedAt ?? null,
     lastSuccessfulCheckAt: state.lastSuccessfulCheckAt ?? null,
+    lastExactCheckAt: state.lastExactCheckAt ?? null,
     lastChangedAt: state.lastChangedAt ?? null,
     latestFailureReason: state.latestFailureReason ?? null,
     blockedReason: state.blockedReason ?? null,

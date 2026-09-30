@@ -1,4 +1,10 @@
-import type { BagrutSector, BagrutSubject, BagrutSubjectRecord } from '@/types';
+import type {
+  BagrutAssessmentKind,
+  BagrutCertificateType,
+  BagrutSector,
+  BagrutSubjectRecordV2,
+  BagrutSubjectV2,
+} from '@/types';
 
 const SECTOR_BY_WIZARD_LABEL: Record<string, BagrutSector> = {
   יהודי: 'jewish',
@@ -18,6 +24,7 @@ const SUBJECT_IDS_BY_WIZARD_LABEL: Record<string, string> = {
   'מדעי המחשב': 'computer_science',
   מתמטיקה: 'mathematics',
   פיזיקה: 'physics',
+  פיסיקה: 'physics',
   ספרות: 'literature',
   'תנ״ך': 'bible',
   'תנ"ך': 'bible',
@@ -35,9 +42,12 @@ export interface BagrutWizardSubjectInput {
   label: string;
   units: number;
   grade: number | '';
+  assessmentKind?: BagrutAssessmentKind;
 }
 
 export interface BuildBagrutSubjectRecordInput {
+  certificateType?: BagrutCertificateType;
+  complete?: boolean;
   sectorLabel: string;
   subjects: BagrutWizardSubjectInput[];
 }
@@ -48,23 +58,36 @@ export interface BuildBagrutSubjectRecordInput {
  * what a future verified admissions policy replays.
  */
 export function buildBagrutSubjectRecord({
+  certificateType = 'other',
+  complete = false,
   sectorLabel,
   subjects,
-}: BuildBagrutSubjectRecordInput): BagrutSubjectRecord {
+}: BuildBagrutSubjectRecordInput): BagrutSubjectRecordV2 {
   const sector = SECTOR_BY_WIZARD_LABEL[sectorLabel] ?? 'jewish';
-  const normalizedSubjects = subjects
-    .filter(isValidSubject)
-    .map(({ label, units, grade }) => ({
+  const validSubjects = subjects.filter(isValidSubject);
+  const normalizedSubjects = validSubjects
+    .map(({ label, units, grade, assessmentKind = 'exam' }) => ({
       subjectId: subjectIdForWizardLabel(label),
       units,
       grade,
+      assessmentKind,
     }))
-    .sort((left, right) => left.subjectId.localeCompare(right.subjectId));
+    .sort(
+      (left, right) =>
+        left.subjectId.localeCompare(right.subjectId) ||
+        left.assessmentKind.localeCompare(right.assessmentKind),
+    );
+  const uniqueNormalizedSubjects = uniqueSubjects(normalizedSubjects);
 
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
     sector,
-    subjects: uniqueSubjects(normalizedSubjects),
+    certificateType,
+    complete:
+      complete &&
+      validSubjects.length === subjects.length &&
+      uniqueNormalizedSubjects.length === normalizedSubjects.length,
+    subjects: uniqueNormalizedSubjects,
   };
 }
 
@@ -83,24 +106,22 @@ function isValidSubject(subject: BagrutWizardSubjectInput): subject is BagrutWiz
   );
 }
 
-function subjectIdForWizardLabel(label: string): string {
+export function subjectIdForWizardLabel(label: string): string {
   const normalizedLabel = label.trim();
   return (
     SUBJECT_IDS_BY_WIZARD_LABEL[normalizedLabel] ??
-    `subject_${encodeURIComponent(normalizedLabel)
-      .replace(/%/g, '_')
-      .replace(/[^a-zA-Z0-9_]/g, '_')
-      .toLowerCase()}`
+    `subject_${Array.from(normalizedLabel, (character) => character.codePointAt(0)!.toString(16)).join('_')}`
   );
 }
 
-function uniqueSubjects(subjects: BagrutSubject[]): BagrutSubject[] {
-  const seenSubjectIds = new Set<string>();
+function uniqueSubjects(subjects: BagrutSubjectV2[]): BagrutSubjectV2[] {
+  const seenEntries = new Set<string>();
   return subjects.filter((subject) => {
-    if (seenSubjectIds.has(subject.subjectId)) {
+    const entryKey = `${subject.subjectId}:${subject.assessmentKind}`;
+    if (seenEntries.has(entryKey)) {
       return false;
     }
-    seenSubjectIds.add(subject.subjectId);
+    seenEntries.add(entryKey);
     return true;
   });
 }

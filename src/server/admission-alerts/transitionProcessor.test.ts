@@ -35,19 +35,19 @@ describe('admission alert transition processor', () => {
     ]);
   });
 
-  it('retries the work without persisting a delivery when an evaluator is unavailable', async () => {
+  it('does not let an unavailable subscription block a healthy peer', async () => {
     const repository = new MemoryRepository();
-    const result = await processAdmissionAlertTransitionWork({
+    await processAdmissionAlertTransitionWork({
       repository,
-      evaluate: async () => ({
-        decision: 'unavailable',
-        isMathematicallyVerified: false,
-        ruleVersion: 'v2',
-      }),
+      evaluate: async ({ subscriptionId }) =>
+        subscriptionId === 'eligible'
+          ? { decision: 'unavailable', isMathematicallyVerified: false, ruleVersion: 'v2' }
+          : { decision: 'below', isMathematicallyVerified: true, ruleVersion: 'v2' },
     });
 
-    expect(result).toEqual({ status: 'retry_later' });
-    expect(repository.decisions).toEqual([]);
+    expect(repository.decisions).toContainEqual(
+      expect.objectContaining({ subscriptionId: 'below', action: 'advance_baseline' }),
+    );
   });
 
   it('claims work only for the current admissions cycle', async () => {
@@ -65,6 +65,26 @@ describe('admission alert transition processor', () => {
 
     expect(repository.claimedCycles).toEqual(['2027']);
   });
+
+  it('isolates evaluator exceptions and rejects a verdict from the wrong rule version', async () => {
+    const repository = new MemoryRepository();
+    await processAdmissionAlertTransitionWork({
+      repository,
+      evaluate: async ({ subscriptionId }) => {
+        if (subscriptionId === 'eligible') throw new Error('private academic inputs');
+        return {
+          decision: 'eligible',
+          isMathematicallyVerified: true,
+          ruleVersion: 'wrong-version',
+        };
+      },
+    });
+    expect(repository.decisions.map((decision) => decision.action)).toEqual([
+      'retry_later',
+      'retry_later',
+    ]);
+    expect(JSON.stringify(repository.decisions)).not.toContain('private');
+  });
 });
 
 class MemoryRepository implements AdmissionAlertTransitionProcessorRepository {
@@ -80,7 +100,12 @@ class MemoryRepository implements AdmissionAlertTransitionProcessorRepository {
     this.claimedCycles.push(currentCycle);
     return {
       id: 'work-1',
+      claimToken: 'claim-1',
       transitionId: 'transition-1',
+      institutionId: 'tau',
+      programId: 'tau_cs',
+      afterVersion: 'v2',
+      transitionAt: new Date('2026-09-29T10:00:00Z'),
       subscriptions: [
         {
           id: 'eligible',
@@ -99,14 +124,18 @@ class MemoryRepository implements AdmissionAlertTransitionProcessorRepository {
       ],
     };
   }
-  async recordDecision(input: {
-    transitionId: string;
-    subscriptionId: string;
-    action: string;
-    ruleVersion?: string;
-  }) {
-    this.decisions.push(input);
+  async recordDecision(
+    input: Parameters<AdmissionAlertTransitionProcessorRepository['recordDecision']>[0],
+  ) {
+    this.decisions.push({
+      transitionId: input.work.transitionId,
+      subscriptionId: input.subscription.id,
+      ...input.decision,
+    });
+    return true;
   }
-  async completeWork() {}
-  async retryWork() {}
+  async finishBatch() {
+    return 'completed' as const;
+  }
+  async releaseWork() {}
 }

@@ -1,0 +1,160 @@
+{
+  "programmes": {
+    "occupational_therapy": {
+      "rulesUrl": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=486&p_pat1=1&p_degree_level=1",
+      "capturedAt": "2026-09-27T21:07:59.171Z",
+      "rawRuleResponse": "{\"items\":[{\"department_dsc\":\"ריפוי בעיסוק\",\"department_url\":null,\"path_dsc\":\"ריפוי בעיסוק חד מחלקתי\",\"psycho_sekem\":620,\"psycho_and_or\":\" ובנוסף  \",\"psycho_value\":600,\"psycho_info\":\"4=רמה באנגלית=מתקדמים א$5=רמה בעברית לנדרשים=רמה ו'\",\"bagrut_average\":null,\"bagrut_info\":\"רמה באנגלית=מתקדמים א$רמה בעברית לנדרשים=רמה ו'\",\"bagrut_additional\":null,\"comments\":\"<p> ההרשמה סגורה.\\n<p>הגשת מסמכים עד 25.05.2026\\n<p>הטיפול בעדיפות ראשונה או שניה אחרי רפואה ופיזותרפיה.\\n<p>התנאים המפורטים הינם תנאים לזימון לראיון אישי.\\n<br><b>דרישות נוספות:<br></b><a target=\\\"_blank\\\" href=https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf> רמה \\\"מתקדמים א'\\\" באנגלית</a> <br> <a target=\\\"_blank\\\" href=\\\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\\\">רמה ו' בעברית לנדרשים</a>\\n<br> בוגרי תואר ראשון בכל התחומים בממוצע 85 ומעלה ללא פסיכומטרי יועברו לדיון במחלקה.\\n<br>פסיכומטרי מועד יולי - ניתן יהיה לזמן על בסיס מקום פנוי בלבד.\\n<br> נתיב לאקדמיה מועד אביב - ניתן יהיה לזמן לראיון על בסיס מקום פנוי בלבד.\\n<p>מסמכים הנדרשים לראיון האישי ניתן להוריד מהאתר בקישור: https://www.bgu.ac.il/welcome/contents/admissions-forms/\\n<p> נדרש למלא טופס הצהרת בריאות (להוריד מהקישור מעלה ) ובנוסף להביא אישור מצב בריאות חתום ע\\\"י רופא משפחה.\",\"reg_status\":\"סגורה\",\"sekem_label\":\"סכם\",\"department\":486,\"path\":1,\"specialization\":null,\"show_simulator\":1,\"path_description\":\"חד מחלקתי\",\"spec_description\":null}],\"hasMore\":false,\"limit\":0,\"offset\":0,\"count\":1,\"links\":[{\"rel\":\"self\",\"href\":\"https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=486&p_pat1=1&p_degree_level=1\"},{\"rel\":\"describedby\",\"href\":\"https://bgu4u22.bgu.ac.il/apex/10g/metadata-catalog/candidate_site/GetRdpData/\"}]}",
+      "rawRuleFingerprint": "sha256:b1d16881dc4f4f402afdb4df8939a8f68cac4e6c62fc73a53d98584c8808cef0",
+      "officialRule": {
+        "department_dsc": "ריפוי בעיסוק",
+        "department_url": null,
+        "path_dsc": "ריפוי בעיסוק חד מחלקתי",
+        "psycho_sekem": 620,
+        "psycho_and_or": " ובנוסף  ",
+        "psycho_value": 600,
+        "psycho_info": "4=רמה באנגלית=מתקדמים א$5=רמה בעברית לנדרשים=רמה ו'",
+        "bagrut_average": null,
+        "bagrut_info": "רמה באנגלית=מתקדמים א$רמה בעברית לנדרשים=רמה ו'",
+        "bagrut_additional": null,
+        "comments": "<p> ההרשמה סגורה.\n<p>הגשת מסמכים עד 25.05.2026\n<p>הטיפול בעדיפות ראשונה או שניה אחרי רפואה ופיזותרפיה.\n<p>התנאים המפורטים הינם תנאים לזימון לראיון אישי.\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf> רמה \"מתקדמים א'\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ו' בעברית לנדרשים</a>\n<br> בוגרי תואר ראשון בכל התחומים בממוצע 85 ומעלה ללא פסיכומטרי יועברו לדיון במחלקה.\n<br>פסיכומטרי מועד יולי - ניתן יהיה לזמן על בסיס מקום פנוי בלבד.\n<br> נתיב לאקדמיה מועד אביב - ניתן יהיה לזמן לראיון על בסיס מקום פנוי בלבד.\n<p>מסמכים הנדרשים לראיון האישי ניתן להוריד מהאתר בקישור: https://www.bgu.ac.il/welcome/contents/admissions-forms/\n<p> נדרש למלא טופס הצהרת בריאות (להוריד מהקישור מעלה ) ובנוסף להביא אישור מצב בריאות חתום ע\"י רופא משפחה.",
+        "reg_status": "סגורה",
+        "sekem_label": "סכם",
+        "department": 486,
+        "path": 1,
+        "specialization": null,
+        "show_simulator": 1,
+        "path_description": "חד מחלקתי",
+        "spec_description": null
+      }
+    },
+    "physiotherapy": {
+      "rulesUrl": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=473&p_pat1=1&p_degree_level=1",
+      "capturedAt": "2026-09-27T21:08:00.036Z",
+      "rawRuleResponse": "{\"items\":[{\"department_dsc\":\"פיזיותרפיה\",\"department_url\":\"http://in.bgu.ac.il/welcome/Pages/degree_1/health/Physiotherapy_degree_1.aspx\",\"path_dsc\":\"פיזיותרפיה חד-מחלקתי\",\"psycho_sekem\":667,\"psycho_and_or\":\" ובנוסף  \",\"psycho_value\":667,\"psycho_info\":\"4=רמה באנגלית=מתקדמים ב$5=רמה בעברית לנדרשים=רמה ו'\",\"bagrut_average\":null,\"bagrut_info\":\"רמה באנגלית=מתקדמים ב$רמה בעברית לנדרשים=רמה ו'\",\"bagrut_additional\":null,\"comments\":\"<p> ההרשמה סגורה.\\n<p> מועד אחרון להצגת מסמכים:  25.05.2026\\n<p>נתיב לאקדמיה מועד אחרון: סתיו\\n<p>פסיכומטרי אחרון מועד אפריל.\\n<p>הטיפול בעדיפות ראשונה בלבד.\\n<p>החל מהשנה חתך זימון לראיון יקבע לאחר קבלת תוצאות פסיכומטרי אפריל, יוזמנו לראיון מועמדים עם הפסיכומטרי והסכם הגבוהים ביותר. \\n<p>(בשנה קודמת חתך זימון לראיון היה פסיכומטרי וסכם 650 )\\nהתנאים המפורטים הינם תנאים לזימון לראיון אישי.\\n<br><b>דרישות נוספות:<br></b><a target=\\\"_blank\\\" href=https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf> רמה \\\"מתקדמים ב'\\\" באנגלית</a> <br> <a target=\\\"_blank\\\" href=\\\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\\\">רמה ו' בעברית לנדרשים</a>\\n<p>מסמכים הנדרשים לראיון האישי ניתן להוריד מהאתר בקישור: https://www.bgu.ac.il/welcome/contents/admissions-forms\\n\",\"reg_status\":\"סגורה\",\"sekem_label\":\"סכם\",\"department\":473,\"path\":1,\"specialization\":null,\"show_simulator\":1,\"path_description\":\"חד-מחלקתי\",\"spec_description\":null}],\"hasMore\":false,\"limit\":0,\"offset\":0,\"count\":1,\"links\":[{\"rel\":\"self\",\"href\":\"https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=473&p_pat1=1&p_degree_level=1\"},{\"rel\":\"describedby\",\"href\":\"https://bgu4u22.bgu.ac.il/apex/10g/metadata-catalog/candidate_site/GetRdpData/\"}]}",
+      "rawRuleFingerprint": "sha256:f6f5bcd506ed47ba45d9b64d6c48a3f2a97b3b35ef31b6ea67c85f0b62ac2aac",
+      "officialRule": {
+        "department_dsc": "פיזיותרפיה",
+        "department_url": "http://in.bgu.ac.il/welcome/Pages/degree_1/health/Physiotherapy_degree_1.aspx",
+        "path_dsc": "פיזיותרפיה חד-מחלקתי",
+        "psycho_sekem": 667,
+        "psycho_and_or": " ובנוסף  ",
+        "psycho_value": 667,
+        "psycho_info": "4=רמה באנגלית=מתקדמים ב$5=רמה בעברית לנדרשים=רמה ו'",
+        "bagrut_average": null,
+        "bagrut_info": "רמה באנגלית=מתקדמים ב$רמה בעברית לנדרשים=רמה ו'",
+        "bagrut_additional": null,
+        "comments": "<p> ההרשמה סגורה.\n<p> מועד אחרון להצגת מסמכים:  25.05.2026\n<p>נתיב לאקדמיה מועד אחרון: סתיו\n<p>פסיכומטרי אחרון מועד אפריל.\n<p>הטיפול בעדיפות ראשונה בלבד.\n<p>החל מהשנה חתך זימון לראיון יקבע לאחר קבלת תוצאות פסיכומטרי אפריל, יוזמנו לראיון מועמדים עם הפסיכומטרי והסכם הגבוהים ביותר. \n<p>(בשנה קודמת חתך זימון לראיון היה פסיכומטרי וסכם 650 )\nהתנאים המפורטים הינם תנאים לזימון לראיון אישי.\n<br><b>דרישות נוספות:<br></b><a target=\"_blank\" href=https://www.bgu.ac.il/media/ukbfudrj/english-classification.pdf> רמה \"מתקדמים ב'\" באנגלית</a> <br> <a target=\"_blank\" href=\"   https://www.bgu.ac.il/media/z52bi4we/yedion-hebrew-classification-2024-5.pdf\">רמה ו' בעברית לנדרשים</a>\n<p>מסמכים הנדרשים לראיון האישי ניתן להוריד מהאתר בקישור: https://www.bgu.ac.il/welcome/contents/admissions-forms\n",
+        "reg_status": "סגורה",
+        "sekem_label": "סכם",
+        "department": 473,
+        "path": 1,
+        "specialization": null,
+        "show_simulator": 1,
+        "path_description": "חד-מחלקתי",
+        "spec_description": null
+      }
+    }
+  },
+  "scoreUrl": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem",
+  "calculatorUrl": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_CalcMain?type=1",
+  "captures": [
+    {
+      "pairId": "occupational_therapy__bgu",
+      "kind": "eligible",
+      "input": {
+        "psychometric": 600,
+        "bagrut": 110,
+        "bguBagrutAverage": 110,
+        "bguOccupationalTherapyRequirementsConfirmed": true,
+        "bguOccupationalTherapyRoute": "score",
+        "bguOccupationalTherapyExamSession": "regular"
+      },
+      "score": 691,
+      "expectedVerdict": "eligible_to_apply",
+      "capturedAt": "2026-09-27T21:07:59.554Z",
+      "rawResponse": "<script>parent.main.document.mainForm.on_final_sekem.value = 691;</script> \n"
+    },
+    {
+      "pairId": "occupational_therapy__bgu",
+      "kind": "below",
+      "input": {
+        "psychometric": 599,
+        "bagrut": 110,
+        "bguBagrutAverage": 110,
+        "bguOccupationalTherapyRequirementsConfirmed": true,
+        "bguOccupationalTherapyRoute": "score",
+        "bguOccupationalTherapyExamSession": "regular"
+      },
+      "score": 690,
+      "expectedVerdict": "below",
+      "capturedAt": "2026-09-27T21:07:59.862Z",
+      "rawResponse": "<script>parent.main.document.mainForm.on_final_sekem.value = 690;</script> \n"
+    },
+    {
+      "pairId": "physiotherapy__bgu",
+      "kind": "eligible",
+      "input": {
+        "psychometric": 667,
+        "bagrut": 110,
+        "bguBagrutAverage": 110,
+        "bguPhysiotherapyRequirementsConfirmed": true,
+        "bguOccupationalTherapyRoute": "score",
+        "bguOccupationalTherapyExamSession": "regular"
+      },
+      "score": 733,
+      "expectedVerdict": "eligible_to_apply",
+      "capturedAt": "2026-09-27T21:08:00.112Z",
+      "rawResponse": "<script>parent.main.document.mainForm.on_final_sekem.value = 733;</script> \n"
+    },
+    {
+      "pairId": "physiotherapy__bgu",
+      "kind": "below",
+      "input": {
+        "psychometric": 666,
+        "bagrut": 110,
+        "bguBagrutAverage": 110,
+        "bguPhysiotherapyRequirementsConfirmed": true,
+        "bguOccupationalTherapyRoute": "score",
+        "bguOccupationalTherapyExamSession": "regular"
+      },
+      "score": 732,
+      "expectedVerdict": "below",
+      "capturedAt": "2026-09-27T21:08:00.197Z",
+      "rawResponse": "<script>parent.main.document.mainForm.on_final_sekem.value = 732;</script> \n"
+    }
+  ],
+  "additionalCaptures": [
+    {
+      "pairId": "occupational_therapy__bgu",
+      "kind": "score_below",
+      "input": {
+        "psychometric": 600,
+        "bagrut": 80,
+        "bguBagrutAverage": 80,
+        "bguOccupationalTherapyRequirementsConfirmed": true,
+        "bguOccupationalTherapyRoute": "score",
+        "bguOccupationalTherapyExamSession": "regular"
+      },
+      "score": 514,
+      "expectedVerdict": "below",
+      "capturedAt": "2026-09-27T21:07:59.938Z",
+      "rawResponse": "<script>parent.main.document.mainForm.on_final_sekem.value = 514;</script> \n"
+    },
+    {
+      "pairId": "physiotherapy__bgu",
+      "kind": "score_below",
+      "input": {
+        "psychometric": 667,
+        "bagrut": 80,
+        "bguBagrutAverage": 80,
+        "bguPhysiotherapyRequirementsConfirmed": true,
+        "bguOccupationalTherapyRoute": "score",
+        "bguOccupationalTherapyExamSession": "regular"
+      },
+      "score": 556,
+      "expectedVerdict": "below",
+      "capturedAt": "2026-09-27T21:08:00.279Z",
+      "rawResponse": "<script>parent.main.document.mainForm.on_final_sekem.value = 556;</script> \n"
+    }
+  ]
+}

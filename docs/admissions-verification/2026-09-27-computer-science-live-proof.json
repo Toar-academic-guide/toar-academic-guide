@@ -1,0 +1,387 @@
+{
+  "summary": {
+    "total": 4,
+    "exactReproduced": 4,
+    "partial": 0,
+    "blocked": 0,
+    "failed": 0
+  },
+  "results": [
+    {
+      "proof": {
+        "id": "bgu-cs-live",
+        "institutionId": "bgu",
+        "institutionName": "Ben-Gurion University",
+        "officialUrl": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_institution=0&p_year=2027&p_semester=1&p_dep1=232&p_pat1=1&p_spe1=3&p_degree_level=1",
+        "adapterId": "bgu",
+        "capability": "decision_capable",
+        "proofLevel": "exact_official",
+        "status": "succeeded",
+        "decisionProvenance": "verified_derivation",
+        "reviewedSourceFingerprint": "sha256:7a0c67843cb2ef3ba149e3a7f39bd5597055cbbde1ceb39ee293b8eab015c169",
+        "sourceClass": "api_static_json",
+        "reproducedFields": [
+          "selectedScore",
+          "acceptanceThreshold",
+          "derivedVerdict",
+          "sourceFingerprint"
+        ],
+        "normalizedPayload": {
+          "pairId": "cs__bgu",
+          "programId": "cs",
+          "programName": "cs",
+          "officialProgramId": "dep232-pat1-spe3",
+          "source": "bgu_quantitative_rdp_and_TevaSekem",
+          "selectedScore": 636,
+          "acceptanceThreshold": 720,
+          "rejectionThreshold": 720,
+          "derivedVerdict": "below",
+          "sourceFingerprint": "sha256:7a0c67843cb2ef3ba149e3a7f39bd5597055cbbde1ceb39ee293b8eab015c169",
+          "reviewedSourceFingerprint": "sha256:7a0c67843cb2ef3ba149e3a7f39bd5597055cbbde1ceb39ee293b8eab015c169",
+          "proofStatus": "succeeded",
+          "proofLevel": "exact_official",
+          "decisionProvenance": "verified_derivation",
+          "controlledFixtureCaptureIds": [
+            "bgu-cs-live:official-eligible:2026-09-27",
+            "bgu-cs-live:official-below:2026-09-27"
+          ]
+        },
+        "limitations": [],
+        "nextAction": "Keep the current programme mapping, quantitative gates, two verdict fixtures, and live source fingerprint under review.",
+        "rawResponseMetadata": [
+          {
+            "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_institution=0&p_year=2027&p_semester=1&p_dep1=232&p_pat1=1&p_spe1=3&p_degree_level=1",
+            "status": 200,
+            "contentType": "application/json"
+          },
+          {
+            "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+            "status": 200,
+            "contentType": "text/html; charset=ISO-8859-8-I"
+          }
+        ]
+      },
+      "freshness": {
+        "id": "bgu-cs-live",
+        "sourceClass": "api_static_json",
+        "capability": "decision_capable",
+        "status": "fresh",
+        "rawFingerprint": "cfde6d89d0a05518da90962fb10625c950bc2f67cd9d2c8ce073e56df74aa123",
+        "normalizedFingerprint": "a2db35095585681c1d9b44c101cd8c492631c09f826fe350c1a48bfe821e92ce",
+        "reviewWorthy": false,
+        "blockedReason": null,
+        "normalizedDecisionPayload": {
+          "fields": {
+            "acceptanceThreshold": 720,
+            "controlledFixtureCaptureIds": [
+              "bgu-cs-live:official-eligible:2026-09-27",
+              "bgu-cs-live:official-below:2026-09-27"
+            ],
+            "derivedVerdict": "below",
+            "officialProgramId": "dep232-pat1-spe3",
+            "programId": "cs",
+            "programName": "cs",
+            "rejectionThreshold": 720,
+            "selectedScore": 636
+          }
+        },
+        "ignoredNoise": []
+      }
+    },
+    {
+      "proof": {
+        "id": "bgu-bgu_cs-live",
+        "institutionId": "bgu",
+        "institutionName": "Ben-Gurion University",
+        "officialUrl": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_institution=0&p_year=2027&p_semester=1&p_dep1=232&p_pat1=1&p_spe1=3&p_degree_level=1",
+        "adapterId": "bgu",
+        "capability": "decision_capable",
+        "proofLevel": "exact_official",
+        "status": "succeeded",
+        "decisionProvenance": "verified_derivation",
+        "reviewedSourceFingerprint": "sha256:7a0c67843cb2ef3ba149e3a7f39bd5597055cbbde1ceb39ee293b8eab015c169",
+        "sourceClass": "api_static_json",
+        "reproducedFields": [
+          "selectedScore",
+          "acceptanceThreshold",
+          "derivedVerdict",
+          "sourceFingerprint"
+        ],
+        "normalizedPayload": {
+          "pairId": "bgu_cs__bgu",
+          "programId": "bgu_cs",
+          "programName": "bgu_cs",
+          "officialProgramId": "dep232-pat1-spe3",
+          "source": "bgu_quantitative_rdp_and_TevaSekem",
+          "selectedScore": 636,
+          "acceptanceThreshold": 720,
+          "rejectionThreshold": 720,
+          "derivedVerdict": "below",
+          "sourceFingerprint": "sha256:7a0c67843cb2ef3ba149e3a7f39bd5597055cbbde1ceb39ee293b8eab015c169",
+          "reviewedSourceFingerprint": "sha256:7a0c67843cb2ef3ba149e3a7f39bd5597055cbbde1ceb39ee293b8eab015c169",
+          "proofStatus": "succeeded",
+          "proofLevel": "exact_official",
+          "decisionProvenance": "verified_derivation",
+          "controlledFixtureCaptureIds": [
+            "bgu-bgu_cs-live:official-eligible:2026-09-27",
+            "bgu-bgu_cs-live:official-below:2026-09-27"
+          ]
+        },
+        "limitations": [],
+        "nextAction": "Keep the current programme mapping, quantitative gates, two verdict fixtures, and live source fingerprint under review.",
+        "rawResponseMetadata": [
+          {
+            "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_institution=0&p_year=2027&p_semester=1&p_dep1=232&p_pat1=1&p_spe1=3&p_degree_level=1",
+            "status": 200,
+            "contentType": "application/json"
+          },
+          {
+            "endpoint": "https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmiTevaSekem",
+            "status": 200,
+            "contentType": "text/html; charset=ISO-8859-8-I"
+          }
+        ]
+      },
+      "freshness": {
+        "id": "bgu-bgu_cs-live",
+        "sourceClass": "api_static_json",
+        "capability": "decision_capable",
+        "status": "fresh",
+        "rawFingerprint": "45147bb2cc996ea164fefe843ab5e55ad7b4ba761f08a33a1506e1911a7bad5e",
+        "normalizedFingerprint": "a3a0de304ff9e587cfe9d405cb9a31b39793b7728f9939a2744e0af44517e954",
+        "reviewWorthy": false,
+        "blockedReason": null,
+        "normalizedDecisionPayload": {
+          "fields": {
+            "acceptanceThreshold": 720,
+            "controlledFixtureCaptureIds": [
+              "bgu-bgu_cs-live:official-eligible:2026-09-27",
+              "bgu-bgu_cs-live:official-below:2026-09-27"
+            ],
+            "derivedVerdict": "below",
+            "officialProgramId": "dep232-pat1-spe3",
+            "programId": "bgu_cs",
+            "programName": "bgu_cs",
+            "rejectionThreshold": 720,
+            "selectedScore": 636
+          }
+        },
+        "ignoredNoise": []
+      }
+    },
+    {
+      "proof": {
+        "id": "tau-cs-live",
+        "institutionId": "tau",
+        "institutionName": "Tel Aviv University",
+        "officialUrl": "https://go.tau.ac.il/graphql",
+        "adapterId": "tau",
+        "capability": "decision_capable",
+        "proofLevel": "exact_official",
+        "reviewedSourceFingerprint": "sha256:c6d64174cedc09435ecc8d1fae9752eb0b68a4a250de64a0a67a25b38b5286ed",
+        "status": "succeeded",
+        "sourceClass": "api_static_json",
+        "reproducedFields": [
+          "selectedScore",
+          "acceptanceThreshold",
+          "rejectionThreshold",
+          "derivedVerdict"
+        ],
+        "normalizedPayload": {
+          "pairId": "cs__tau",
+          "programId": "tau-cs",
+          "programName": "Computer Science",
+          "source": "tau_graphql",
+          "selectedScoreField": "hatama_meduyakim",
+          "selectedScore": 618,
+          "currentSourceFingerprint": "sha256:c6d64174cedc09435ecc8d1fae9752eb0b68a4a250de64a0a67a25b38b5286ed",
+          "sourceReviewReasons": [],
+          "currentEnglishRequirementText": "כל המועמדות והמועמדים נדרשים להגיע לרמת מתקדמים א' לפחות באנגלית (100 נקודות במבחן המיון באנגלית במסגרת הבחינה הפסיכומטרית או בחינת אמיר\"ם ) ולרמת פטור עד סוף שנה א' ללימודים",
+          "exactSciencesBonus": 0,
+          "matchedProgramIds": [
+            "036811010000",
+            "036811040455"
+          ],
+          "matchedProgramTitle": "תואר ראשון במדעי המחשב ",
+          "derivedVerdict": "below",
+          "proofStatus": "succeeded",
+          "proofLevel": "exact_official",
+          "decisionProvenance": "verified_derivation",
+          "acceptanceThreshold": 705,
+          "rejectionThreshold": 704,
+          "controlledFixtureCaptureIds": [
+            "tau-cs-live:official-accepted:2026-09-27",
+            "tau-cs-live:official-below:2026-09-27"
+          ]
+        },
+        "limitations": [
+          "Proof applies only to the explicitly matched TAU program identifier and score field"
+        ],
+        "nextAction": "Keep the program-specific mapping, gates, fixtures, and source fingerprint under review",
+        "rawResponseMetadata": [
+          {
+            "endpoint": "https://go.tau.ac.il/graphql",
+            "status": 200,
+            "contentType": "application/json; charset=utf-8"
+          },
+          {
+            "endpoint": "https://go.tau.ac.il/graphql",
+            "status": 200,
+            "contentType": "application/json; charset=utf-8"
+          },
+          {
+            "endpoint": "https://go.tau.ac.il/he/exact/ba/computer?v=requirements",
+            "status": 200,
+            "contentType": "text/html; charset=UTF-8"
+          },
+          {
+            "endpoint": "https://go.tau.ac.il/he/ba/admissions",
+            "status": 200,
+            "contentType": "text/html; charset=UTF-8"
+          }
+        ],
+        "decisionProvenance": "verified_derivation"
+      },
+      "freshness": {
+        "id": "tau-cs-live",
+        "sourceClass": "api_static_json",
+        "capability": "decision_capable",
+        "status": "fresh",
+        "rawFingerprint": "2aa35cd1cc7d406f17c9b54196be9cff0876e27380dc11f6f2c5a568df293c73",
+        "normalizedFingerprint": "eb86b461896a71a9698dbf875e74c62a14d701d55d3b6f1aaa5065c86d02e397",
+        "reviewWorthy": false,
+        "blockedReason": null,
+        "normalizedDecisionPayload": {
+          "fields": {
+            "acceptanceThreshold": 705,
+            "controlledFixtureCaptureIds": [
+              "tau-cs-live:official-accepted:2026-09-27",
+              "tau-cs-live:official-below:2026-09-27"
+            ],
+            "currentEnglishRequirementText": "כל המועמדות והמועמדים נדרשים להגיע לרמת מתקדמים א' לפחות באנגלית (100 נקודות במבחן המיון באנגלית במסגרת הבחינה הפסיכומטרית או בחינת אמיר\"ם ) ולרמת פטור עד סוף שנה א' ללימודים",
+            "derivedVerdict": "below",
+            "exactSciencesBonus": 0,
+            "matchedProgramIds": [
+              "036811010000",
+              "036811040455"
+            ],
+            "matchedProgramTitle": "תואר ראשון במדעי המחשב",
+            "programId": "tau-cs",
+            "programName": "Computer Science",
+            "rejectionThreshold": 704,
+            "selectedScore": 618,
+            "selectedScoreField": "hatama_meduyakim"
+          }
+        },
+        "ignoredNoise": []
+      }
+    },
+    {
+      "proof": {
+        "id": "tau-cs-legacy-live",
+        "institutionId": "tau",
+        "institutionName": "Tel Aviv University",
+        "officialUrl": "https://go.tau.ac.il/graphql",
+        "adapterId": "tau",
+        "capability": "decision_capable",
+        "proofLevel": "exact_official",
+        "reviewedSourceFingerprint": "sha256:c6d64174cedc09435ecc8d1fae9752eb0b68a4a250de64a0a67a25b38b5286ed",
+        "status": "succeeded",
+        "sourceClass": "api_static_json",
+        "reproducedFields": [
+          "selectedScore",
+          "acceptanceThreshold",
+          "rejectionThreshold",
+          "derivedVerdict"
+        ],
+        "normalizedPayload": {
+          "pairId": "tau_cs__tau",
+          "programId": "tau-cs",
+          "programName": "Computer Science",
+          "source": "tau_graphql",
+          "selectedScoreField": "hatama_meduyakim",
+          "selectedScore": 618,
+          "currentSourceFingerprint": "sha256:c6d64174cedc09435ecc8d1fae9752eb0b68a4a250de64a0a67a25b38b5286ed",
+          "sourceReviewReasons": [],
+          "currentEnglishRequirementText": "כל המועמדות והמועמדים נדרשים להגיע לרמת מתקדמים א' לפחות באנגלית (100 נקודות במבחן המיון באנגלית במסגרת הבחינה הפסיכומטרית או בחינת אמיר\"ם ) ולרמת פטור עד סוף שנה א' ללימודים",
+          "exactSciencesBonus": 0,
+          "matchedProgramIds": [
+            "036811010000",
+            "036811040455"
+          ],
+          "matchedProgramTitle": "תואר ראשון במדעי המחשב ",
+          "derivedVerdict": "below",
+          "proofStatus": "succeeded",
+          "proofLevel": "exact_official",
+          "decisionProvenance": "verified_derivation",
+          "acceptanceThreshold": 705,
+          "rejectionThreshold": 704,
+          "controlledFixtureCaptureIds": [
+            "tau-cs-live:official-accepted:2026-09-27",
+            "tau-cs-live:official-below:2026-09-27"
+          ]
+        },
+        "limitations": [
+          "Proof applies only to the explicitly matched TAU program identifier and score field"
+        ],
+        "nextAction": "Keep the program-specific mapping, gates, fixtures, and source fingerprint under review",
+        "rawResponseMetadata": [
+          {
+            "endpoint": "https://go.tau.ac.il/graphql",
+            "status": 200,
+            "contentType": "application/json; charset=utf-8"
+          },
+          {
+            "endpoint": "https://go.tau.ac.il/graphql",
+            "status": 200,
+            "contentType": "application/json; charset=utf-8"
+          },
+          {
+            "endpoint": "https://go.tau.ac.il/he/exact/ba/computer?v=requirements",
+            "status": 200,
+            "contentType": "text/html; charset=UTF-8"
+          },
+          {
+            "endpoint": "https://go.tau.ac.il/he/ba/admissions",
+            "status": 200,
+            "contentType": "text/html; charset=UTF-8"
+          }
+        ],
+        "decisionProvenance": "verified_derivation"
+      },
+      "freshness": {
+        "id": "tau-cs-legacy-live",
+        "sourceClass": "api_static_json",
+        "capability": "decision_capable",
+        "status": "fresh",
+        "rawFingerprint": "f3dcc13e5ba2e7b47a91bab4c1ce74794f5573d03d6ca485f0ca2b6e113fb2ea",
+        "normalizedFingerprint": "eb86b461896a71a9698dbf875e74c62a14d701d55d3b6f1aaa5065c86d02e397",
+        "reviewWorthy": false,
+        "blockedReason": null,
+        "normalizedDecisionPayload": {
+          "fields": {
+            "acceptanceThreshold": 705,
+            "controlledFixtureCaptureIds": [
+              "tau-cs-live:official-accepted:2026-09-27",
+              "tau-cs-live:official-below:2026-09-27"
+            ],
+            "currentEnglishRequirementText": "כל המועמדות והמועמדים נדרשים להגיע לרמת מתקדמים א' לפחות באנגלית (100 נקודות במבחן המיון באנגלית במסגרת הבחינה הפסיכומטרית או בחינת אמיר\"ם ) ולרמת פטור עד סוף שנה א' ללימודים",
+            "derivedVerdict": "below",
+            "exactSciencesBonus": 0,
+            "matchedProgramIds": [
+              "036811010000",
+              "036811040455"
+            ],
+            "matchedProgramTitle": "תואר ראשון במדעי המחשב",
+            "programId": "tau-cs",
+            "programName": "Computer Science",
+            "rejectionThreshold": 704,
+            "selectedScore": 618,
+            "selectedScoreField": "hatama_meduyakim"
+          }
+        },
+        "ignoredNoise": []
+      }
+    }
+  ]
+}

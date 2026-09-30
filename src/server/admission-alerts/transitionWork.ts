@@ -10,7 +10,7 @@ import {
 } from '@/db/schema';
 
 export interface AdmissionAlertTransitionWorkRepository {
-  getPublishedRelease(releaseId: string): Promise<{ id: string } | null>;
+  getPublishedCanonicalRelease(releaseId: string): Promise<{ id: string } | null>;
   listTransitionIds(releaseId: string): Promise<string[]>;
   createWork(transitionId: string): Promise<boolean>;
 }
@@ -20,7 +20,7 @@ export async function enqueueAdmissionAlertTransitionWork(input: {
   repository?: AdmissionAlertTransitionWorkRepository;
 }): Promise<{ status: 'enqueued'; createdWorkCount: number } | { status: 'not_processable' }> {
   const repository = input.repository ?? createDrizzleAdmissionAlertTransitionWorkRepository();
-  const release = await repository.getPublishedRelease(input.releaseId);
+  const release = await repository.getPublishedCanonicalRelease(input.releaseId);
   if (!release) {
     return { status: 'not_processable' };
   }
@@ -36,11 +36,17 @@ export function createDrizzleAdmissionAlertTransitionWorkRepository(
   db = getDb(),
 ): AdmissionAlertTransitionWorkRepository {
   return {
-    async getPublishedRelease(releaseId) {
+    async getPublishedCanonicalRelease(releaseId) {
       const [release] = await db
         .select({ id: admissionReleases.id })
         .from(admissionReleases)
-        .where(and(eq(admissionReleases.id, releaseId), eq(admissionReleases.status, 'published')))
+        .where(
+          and(
+            eq(admissionReleases.id, releaseId),
+            eq(admissionReleases.status, 'published'),
+            eq(admissionReleases.releaseKind, 'canonical_change'),
+          ),
+        )
         .limit(1);
       return release ?? null;
     },
