@@ -133,6 +133,74 @@ describe('userProfileSchema', () => {
     });
   });
 
+  it('accepts versioned questionnaire progress and completed recommendation inputs', () => {
+    const draft = userProfileSchema.parse({
+      geographicPreference: 'any',
+      assessmentProgress: {
+        schemaVersion: 1,
+        stage: 'quick-filters',
+        careerDraft: {
+          screenIndex: 5,
+          multiSelectAnswers: { Q1: ['Q1-A'] },
+          quickPickAnswers: { I1: 'yes' },
+          sliderAnswers: { V1: -1 },
+          skippedScreens: [2],
+        },
+        scores: { AN: 5, TE: 1, CR: 2, SO: 1, LE: 0, OR: 0, DI: 1, ER: 2 },
+        values: {
+          incomeVsImpact: -1,
+          independenceVsTeam: 0,
+          growthVsStability: 1,
+          prestigeVsMeaning: 2,
+        },
+        filterDraft: {
+          currentStep: 1,
+          answers: { avoidances: ['מתמטיקה מתקדמת'] },
+        },
+      },
+    });
+
+    expect(draft.assessmentProgress?.stage).toBe('quick-filters');
+
+    const completed = userProfileSchema.parse({
+      geographicPreference: 'north',
+      assessmentProgress: {
+        schemaVersion: 1,
+        stage: 'completed',
+        scores: { AN: 5, TE: 1, CR: 2, SO: 1, LE: 0, OR: 0, DI: 1, ER: 2 },
+        values: {
+          incomeVsImpact: -1,
+          independenceVsTeam: 0,
+          growthVsStability: 1,
+          prestigeVsMeaning: 2,
+        },
+        geographicPreference: 'north',
+        avoidances: ['heavy-math'],
+      },
+    });
+
+    expect(completed.assessmentProgress?.stage).toBe('completed');
+  });
+
+  it('rejects incompatible questionnaire progress versions', () => {
+    expect(() =>
+      userProfileSchema.parse({
+        geographicPreference: 'any',
+        assessmentProgress: {
+          schemaVersion: 2,
+          stage: 'career-assessment',
+          careerDraft: {
+            screenIndex: 0,
+            multiSelectAnswers: {},
+            quickPickAnswers: {},
+            sliderAnswers: {},
+            skippedScreens: [],
+          },
+        },
+      }),
+    ).toThrow();
+  });
+
   it('rejects unsupported document kinds in the public profile snapshot', () => {
     expect(() =>
       userProfileSchema.parse({

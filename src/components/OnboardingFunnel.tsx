@@ -1,13 +1,18 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
-import { RiasecAnswers } from '@/types';
+import type { AssessmentFilterDraft, RiasecAnswers } from '@/types';
 import { QUIZ_QUESTIONS } from '@/data/questions';
 
 interface Props {
-  onComplete: (answers: RiasecAnswers) => void;
+  initialDraft?: AssessmentFilterDraft;
+  onProgressChange?: (draft: AssessmentFilterDraft) => void;
+  onComplete: (
+    answers: RiasecAnswers,
+    draft: AssessmentFilterDraft,
+  ) => boolean | void | Promise<boolean | void>;
 }
 
 const SLIDE: import('framer-motion').Transition = {
@@ -27,9 +32,20 @@ const ICON_PALETTES = [
   'bg-fuchsia-50 text-fuchsia-500',
 ] as const;
 
-export default function OnboardingFunnel({ onComplete }: Props) {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [answers, setAnswers] = useState<RiasecAnswers>({});
+export default function OnboardingFunnel({ initialDraft, onProgressChange, onComplete }: Props) {
+  const [startingDraft] = useState<AssessmentFilterDraft>(() => ({
+    currentStep:
+      initialDraft &&
+      initialDraft.currentStep >= 0 &&
+      initialDraft.currentStep < QUIZ_QUESTIONS.length
+        ? initialDraft.currentStep
+        : 0,
+    answers: initialDraft?.answers ?? {},
+  }));
+  const progressRef = useRef(startingDraft);
+  const [currentStep, setCurrentStep] = useState(startingDraft.currentStep);
+  const [answers, setAnswers] = useState<RiasecAnswers>(startingDraft.answers);
+  const [completing, setCompleting] = useState(false);
 
   const question = QUIZ_QUESTIONS[currentStep];
   const totalSteps = QUIZ_QUESTIONS.length;
@@ -39,34 +55,65 @@ export default function OnboardingFunnel({ onComplete }: Props) {
   const isLastStep = currentStep === totalSteps - 1;
   const progressPercent = Math.round(((currentStep + 1) / totalSteps) * 100);
 
+  function reportProgress(updates: Partial<AssessmentFilterDraft>) {
+    const nextDraft = { ...progressRef.current, ...updates };
+    progressRef.current = nextDraft;
+    onProgressChange?.(nextDraft);
+  }
+
   function toggleAnswer(label: string) {
     if (isMultiSelect) {
       if (currentAnswers.includes(label)) {
         // deselect
-        setAnswers({ ...answers, [question.id]: currentAnswers.filter((l) => l !== label) });
+        const nextAnswers = {
+          ...answers,
+          [question.id]: currentAnswers.filter((l) => l !== label),
+        };
+        setAnswers(nextAnswers);
+        reportProgress({ answers: nextAnswers });
       } else if (currentAnswers.length < maxSelect) {
         // select normally
-        setAnswers({ ...answers, [question.id]: [...currentAnswers, label] });
+        const nextAnswers = { ...answers, [question.id]: [...currentAnswers, label] };
+        setAnswers(nextAnswers);
+        reportProgress({ answers: nextAnswers });
       } else {
         // at max — deselect oldest (first added), add new at end
-        setAnswers({ ...answers, [question.id]: [...currentAnswers.slice(1), label] });
+        const nextAnswers = {
+          ...answers,
+          [question.id]: [...currentAnswers.slice(1), label],
+        };
+        setAnswers(nextAnswers);
+        reportProgress({ answers: nextAnswers });
       }
     } else {
-      setAnswers({ ...answers, [question.id]: [label] });
+      const nextAnswers = { ...answers, [question.id]: [label] };
+      setAnswers(nextAnswers);
+      reportProgress({ answers: nextAnswers });
     }
   }
 
-  function handleNext() {
+  async function handleNext() {
     if (currentAnswers.length === 0) return;
     if (currentStep < totalSteps - 1) {
-      setCurrentStep((s) => s + 1);
+      const nextStep = currentStep + 1;
+      setCurrentStep(nextStep);
+      reportProgress({ currentStep: nextStep });
     } else {
-      onComplete(answers);
+      setCompleting(true);
+      try {
+        await onComplete(answers, progressRef.current);
+      } finally {
+        setCompleting(false);
+      }
     }
   }
 
   function handleBack() {
-    if (currentStep > 0) setCurrentStep((s) => s - 1);
+    if (currentStep > 0) {
+      const nextStep = currentStep - 1;
+      setCurrentStep(nextStep);
+      reportProgress({ currentStep: nextStep });
+    }
   }
 
   return (
@@ -192,8 +239,8 @@ export default function OnboardingFunnel({ onComplete }: Props) {
 
           <motion.button
             whileTap={{ scale: 0.98 }}
-            onClick={handleNext}
-            disabled={currentAnswers.length === 0}
+            onClick={() => void handleNext()}
+            disabled={currentAnswers.length === 0 || completing}
             className={[
               'flex items-center gap-2 rounded-full px-10 py-3.5 text-sm font-bold text-white',
               'bg-gradient-to-l from-indigo-600 to-violet-600',
@@ -202,7 +249,7 @@ export default function OnboardingFunnel({ onComplete }: Props) {
               'disabled:cursor-not-allowed disabled:opacity-40',
             ].join(' ')}
           >
-            <span>{isLastStep ? 'קבל המלצות' : 'הבא'}</span>
+            <span>{completing ? 'שומר...' : isLastStep ? 'קבל המלצות' : 'הבא'}</span>
             <ChevronLeft size={16} />
           </motion.button>
         </div>

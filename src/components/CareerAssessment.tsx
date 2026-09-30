@@ -3,7 +3,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronLeft, ChevronRight, Check, Minus, X, SkipForward } from 'lucide-react';
-import type { ProfileScores, ValuesProfile } from '@/types';
+import type { CareerAssessmentDraft, ProfileScores, ValuesProfile } from '@/types';
 import {
   SCREEN_SEQUENCE,
   SECTION_LABELS,
@@ -31,7 +31,13 @@ import {
 } from '@/utils/scoringEngine';
 
 interface Props {
-  onComplete: (profileScores: ProfileScores, valuesProfile: ValuesProfile) => void;
+  initialDraft?: CareerAssessmentDraft;
+  onProgressChange?: (draft: CareerAssessmentDraft) => void;
+  onComplete: (
+    profileScores: ProfileScores,
+    valuesProfile: ValuesProfile,
+    draft: CareerAssessmentDraft,
+  ) => boolean | void | Promise<boolean | void>;
 }
 
 const TOTAL_SCREENS = SCREEN_SEQUENCE.length;
@@ -71,23 +77,60 @@ const QP_CHOICES: {
   },
 ];
 
-export default function CareerAssessment({ onComplete }: Props) {
-  const [screenIndex, setScreenIndex] = useState(() => {
+function createInitialDraft(initialDraft?: CareerAssessmentDraft): CareerAssessmentDraft {
+  const urlScreenIndex = (() => {
     if (typeof window === 'undefined') return 0;
     const p = new URLSearchParams(window.location.search).get('screen');
     const n = p ? parseInt(p, 10) : 0;
     return Number.isFinite(n) && n >= 0 && n < SCREEN_SEQUENCE.length ? n : 0;
-  });
+  })();
+
+  if (
+    initialDraft &&
+    initialDraft.screenIndex >= 0 &&
+    initialDraft.screenIndex < SCREEN_SEQUENCE.length
+  ) {
+    return initialDraft;
+  }
+
+  return {
+    screenIndex: urlScreenIndex,
+    multiSelectAnswers: {},
+    quickPickAnswers: {},
+    sliderAnswers: {},
+    skippedScreens: [],
+  };
+}
+
+export default function CareerAssessment({ initialDraft, onProgressChange, onComplete }: Props) {
+  const [startingDraft] = useState(() => createInitialDraft(initialDraft));
+  const progressRef = useRef(startingDraft);
+  const [screenIndex, setScreenIndex] = useState(startingDraft.screenIndex);
   const [slideDir, setSlideDir] = useState<1 | -1>(1);
 
-  const [multiSelectAnswers, setMultiSelectAnswers] = useState<Record<string, string[]>>({});
-  const [quickPickAnswers, setQuickPickAnswers] = useState<Record<string, QuickPickAnswer>>({});
-  const [sliderAnswers, setSliderAnswers] = useState<Record<string, number>>({});
-  const [skippedScreens, setSkippedScreens] = useState<Set<number>>(new Set());
+  const [multiSelectAnswers, setMultiSelectAnswers] = useState<Record<string, string[]>>(
+    startingDraft.multiSelectAnswers,
+  );
+  const [quickPickAnswers, setQuickPickAnswers] = useState<Record<string, QuickPickAnswer>>(
+    startingDraft.quickPickAnswers,
+  );
+  const [sliderAnswers, setSliderAnswers] = useState<Record<string, number>>(
+    startingDraft.sliderAnswers,
+  );
+  const [skippedScreens, setSkippedScreens] = useState<Set<number>>(
+    new Set(startingDraft.skippedScreens),
+  );
+  const [completing, setCompleting] = useState(false);
 
   const screen = SCREEN_SEQUENCE[screenIndex];
   const progressPercent = Math.round(((screenIndex + 1) / TOTAL_SCREENS) * 100);
   const currentSection = getScreenSection(screen);
+
+  function reportProgress(updates: Partial<CareerAssessmentDraft>) {
+    const nextDraft = { ...progressRef.current, ...updates };
+    progressRef.current = nextDraft;
+    onProgressChange?.(nextDraft);
+  }
 
   // ── Collect answers into the shape the scoring engine expects ────────────
 
@@ -110,39 +153,58 @@ export default function CareerAssessment({ onComplete }: Props) {
   // ── Multi-select toggling ─────────────────────────────────────────────────
 
   function toggleOption(questionId: string, optionId: string, maxSelect: number) {
-    setMultiSelectAnswers((prev) => {
-      const current = prev[questionId] ?? [];
-      if (current.includes(optionId)) {
-        return { ...prev, [questionId]: current.filter((id) => id !== optionId) };
-      }
-      if (current.length >= maxSelect) return prev;
-      return { ...prev, [questionId]: [...current, optionId] };
-    });
+    const current = progressRef.current.multiSelectAnswers[questionId] ?? [];
+    const selectedOptionIds = current.includes(optionId)
+      ? current.filter((id) => id !== optionId)
+      : current.length >= maxSelect
+        ? current
+        : [...current, optionId];
+    const nextAnswers = {
+      ...progressRef.current.multiSelectAnswers,
+      [questionId]: selectedOptionIds,
+    };
+
+    setMultiSelectAnswers(nextAnswers);
+    reportProgress({ multiSelectAnswers: nextAnswers });
   }
 
   // ── Navigation ────────────────────────────────────────────────────────────
 
   function handleBack() {
     if (screenIndex === 0) return;
+    const nextScreenIndex = screenIndex - 1;
     setSlideDir(-1);
-    setScreenIndex((i) => i - 1);
+    setScreenIndex(nextScreenIndex);
+    reportProgress({ screenIndex: nextScreenIndex });
   }
 
   function handleNext() {
     if (screenIndex < TOTAL_SCREENS - 1) {
+      const nextScreenIndex = screenIndex + 1;
       setSlideDir(1);
-      setScreenIndex((i) => i + 1);
+      setScreenIndex(nextScreenIndex);
+      reportProgress({ screenIndex: nextScreenIndex });
     } else {
-      handleFinish();
+      void handleFinish();
     }
   }
 
   function handleSkip() {
-    setSkippedScreens((prev) => new Set(prev).add(screenIndex));
-    handleNext();
+    const nextSkippedScreens = new Set(skippedScreens).add(screenIndex);
+    const nextScreenIndex = Math.min(screenIndex + 1, TOTAL_SCREENS - 1);
+    setSkippedScreens(nextSkippedScreens);
+    setSlideDir(1);
+    setScreenIndex(nextScreenIndex);
+    reportProgress({
+      screenIndex: nextScreenIndex,
+      skippedScreens: Array.from(nextSkippedScreens),
+    });
+    if (screenIndex === TOTAL_SCREENS - 1) {
+      void handleFinish();
+    }
   }
 
-  function handleFinish() {
+  async function handleFinish() {
     const answers = collectAnswers();
     const answered = countAnsweredItems(answers);
     if (answered < MIN_ANSWERED_ITEMS) {
@@ -151,7 +213,12 @@ export default function CareerAssessment({ onComplete }: Props) {
     }
     const profileScores = computeProfileScores(answers);
     const valuesProfile = computeValuesProfile(answers);
-    onComplete(profileScores, valuesProfile);
+    setCompleting(true);
+    try {
+      await onComplete(profileScores, valuesProfile, progressRef.current);
+    } finally {
+      setCompleting(false);
+    }
   }
 
   function canAdvance(): boolean {
@@ -224,9 +291,11 @@ export default function CareerAssessment({ onComplete }: Props) {
           <QuickPicksScreen
             itemIds={screen.itemIds}
             answers={quickPickAnswers}
-            onAnswer={(itemId, answer) =>
-              setQuickPickAnswers((prev) => ({ ...prev, [itemId]: answer }))
-            }
+            onAnswer={(itemId, answer) => {
+              const nextAnswers = { ...progressRef.current.quickPickAnswers, [itemId]: answer };
+              setQuickPickAnswers(nextAnswers);
+              reportProgress({ quickPickAnswers: nextAnswers });
+            }}
           />
         )}
 
@@ -237,7 +306,11 @@ export default function CareerAssessment({ onComplete }: Props) {
               <ValueSliderScreen
                 slider={slider}
                 value={sliderAnswers[slider.id] ?? 0}
-                onChange={(val) => setSliderAnswers((prev) => ({ ...prev, [slider.id]: val }))}
+                onChange={(val) => {
+                  const nextAnswers = { ...progressRef.current.sliderAnswers, [slider.id]: val };
+                  setSliderAnswers(nextAnswers);
+                  reportProgress({ sliderAnswers: nextAnswers });
+                }}
               />
             ) : null;
           })()}
@@ -276,11 +349,11 @@ export default function CareerAssessment({ onComplete }: Props) {
           )}
           <button
             type="button"
-            onClick={isLastScreen ? handleFinish : handleNext}
-            disabled={isLastScreen && !hasEnough}
+            onClick={isLastScreen ? () => void handleFinish() : handleNext}
+            disabled={(isLastScreen && !hasEnough) || completing}
             className="flex items-center gap-1 rounded-lg bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 disabled:opacity-40"
           >
-            {isLastScreen ? 'הצג המלצות' : 'הבא'}
+            {completing ? 'שומר...' : isLastScreen ? 'הצג המלצות' : 'הבא'}
             {!isLastScreen && <ChevronLeft size={16} />}
           </button>
         </div>

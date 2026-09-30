@@ -72,4 +72,29 @@ describe('user profile migration helpers', () => {
     expect(merged.academicScores?.bagrut?.weightedAverage).toBe(109);
     expect(merged.savedProgramIds).toEqual(['tau_cs', 'huji_law']);
   });
+
+  it('never imports anonymous assessment progress during an account merge', () => {
+    const merged = mergeUserProfileDraft(
+      {
+        geographicPreference: 'any',
+        savedProgramIds: [],
+      },
+      {
+        geographicPreference: 'any',
+        assessmentProgress: {
+          schemaVersion: 1,
+          stage: 'career-assessment',
+          careerDraft: {
+            screenIndex: 2,
+            multiSelectAnswers: { Q1: ['Q1-A'] },
+            quickPickAnswers: {},
+            sliderAnswers: {},
+            skippedScreens: [],
+          },
+        },
+      },
+    );
+
+    expect(merged.assessmentProgress).toBeUndefined();
+  });
 });

@@ -12,6 +12,9 @@ import {
   UserScores,
   GeographicRegion,
   AvoidanceTag,
+  AssessmentFilterDraft,
+  AssessmentProgress,
+  CareerAssessmentDraft,
 } from '@/types';
 import { useAuth } from '@/context/AuthContext';
 import { useUserProfile } from '@/hooks/useUserProfile';
@@ -184,6 +187,7 @@ export default function AppExperience({
 
   const [pendingScores, setPendingScores] = useState<ProfileScores | null>(null);
   const [pendingValues, setPendingValues] = useState<ValuesProfile | null>(null);
+  const [startingFreshAssessment, setStartingFreshAssessment] = useState(false);
 
   const [assessmentProfile, setAssessmentProfile] = useState<{
     scores: ProfileScores;
@@ -237,7 +241,11 @@ export default function AppExperience({
   function navigateToStep(nextStep: AppStep, path = DURABLE_STEP_ROUTES[nextStep]) {
     setStep(nextStep);
     if (path) {
-      router.push(path);
+      if (nextStep === 'career-assessment') {
+        window.history.pushState(null, '', path);
+      } else {
+        router.push(path);
+      }
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -293,7 +301,63 @@ export default function AppExperience({
     );
   }, [cataloguePrograms, catalogueStatus, recommendationRequest]);
 
-  function handleAssessmentComplete(profileScores: ProfileScores, valuesProfile: ValuesProfile) {
+  useEffect(() => {
+    if (!hydrated) {
+      return;
+    }
+
+    const savedProgress = profile.assessmentProgress;
+    if (savedProgress?.stage === 'quick-filters') {
+      setPendingScores(savedProgress.scores);
+      setPendingValues(savedProgress.values);
+    } else if (savedProgress?.stage === 'completed') {
+      setPendingScores(savedProgress.scores);
+      setPendingValues(savedProgress.values);
+      setAssessmentProfile({
+        scores: savedProgress.scores,
+        values: savedProgress.values,
+        geographicPreference: savedProgress.geographicPreference,
+      });
+      setRecommendationRequest({
+        scores: savedProgress.scores,
+        values: savedProgress.values,
+        geographicPreference: savedProgress.geographicPreference,
+        avoidances: savedProgress.avoidances,
+      });
+    }
+  }, [hydrated, profile.assessmentProgress]);
+
+  function handleCareerProgress(careerDraft: CareerAssessmentDraft) {
+    setStartingFreshAssessment(false);
+    void updateProfile({
+      assessmentProgress: {
+        schemaVersion: 1,
+        stage: 'career-assessment',
+        careerDraft,
+      },
+    });
+  }
+
+  async function handleAssessmentComplete(
+    profileScores: ProfileScores,
+    valuesProfile: ValuesProfile,
+    careerDraft: CareerAssessmentDraft,
+  ) {
+    const filterDraft: AssessmentFilterDraft = { currentStep: 0, answers: {} };
+    const saved = await updateProfile({
+      assessmentProgress: {
+        schemaVersion: 1,
+        stage: 'quick-filters',
+        careerDraft,
+        filterDraft,
+        scores: profileScores,
+        values: valuesProfile,
+      },
+    });
+    if (!saved) {
+      return false;
+    }
+
     posthog.capture('assessment_completed', {
       top_dimension: Object.entries(profileScores).sort((a, b) => b[1] - a[1])[0]?.[0],
     });
@@ -301,9 +365,29 @@ export default function AppExperience({
     setPendingValues(valuesProfile);
     setStep('quick-filters');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    return true;
   }
 
-  function handleFiltersComplete(rawAnswers: RiasecAnswers) {
+  function handleFilterProgress(filterDraft: AssessmentFilterDraft) {
+    const savedProgress = profile.assessmentProgress;
+    if (savedProgress?.stage !== 'quick-filters' || !pendingScores || !pendingValues) {
+      return;
+    }
+
+    void updateProfile({
+      assessmentProgress: {
+        ...savedProgress,
+        filterDraft,
+        scores: pendingScores,
+        values: pendingValues,
+      },
+    });
+  }
+
+  async function handleFiltersComplete(
+    rawAnswers: RiasecAnswers,
+    _filterDraft: AssessmentFilterDraft,
+  ) {
     const { geographicPreference, avoidances } = extractFilterAnswers(rawAnswers);
     const scores = pendingScores ?? {
       AN: 0,
@@ -322,6 +406,19 @@ export default function AppExperience({
       prestigeVsMeaning: 0,
     };
 
+    const assessmentProgress: AssessmentProgress = {
+      schemaVersion: 1,
+      stage: 'completed',
+      scores,
+      values,
+      geographicPreference,
+      avoidances,
+    };
+    const saved = await updateProfile({ geographicPreference, assessmentProgress });
+    if (!saved) {
+      return false;
+    }
+
     posthog.capture('quick_filters_completed', {
       geographic_preference: geographicPreference,
       avoidances_count: avoidances.length,
@@ -329,7 +426,6 @@ export default function AppExperience({
     posthog.capture('recommendations_viewed', {
       geographic_preference: geographicPreference,
     });
-    updateProfile({ geographicPreference });
     setAssessmentProfile({ scores, values, geographicPreference });
     setRecommendationRequest({ scores, values, geographicPreference, avoidances });
     setRecommendations(
@@ -340,6 +436,57 @@ export default function AppExperience({
     setAppCalcScores(null);
     setBucketReturnsTo('recommendations');
     navigateToStep('recommendations');
+    return true;
+  }
+
+  function handleResumeAssessment() {
+    const savedProgress = profile.assessmentProgress;
+    if (!savedProgress) {
+      return;
+    }
+
+    setStartingFreshAssessment(false);
+
+    if (savedProgress.stage === 'career-assessment') {
+      setStep('career-assessment');
+    } else if (savedProgress.stage === 'quick-filters') {
+      setPendingScores(savedProgress.scores);
+      setPendingValues(savedProgress.values);
+      setStep('quick-filters');
+    } else {
+      setAssessmentProfile({
+        scores: savedProgress.scores,
+        values: savedProgress.values,
+        geographicPreference: savedProgress.geographicPreference,
+      });
+      setRecommendationRequest({
+        scores: savedProgress.scores,
+        values: savedProgress.values,
+        geographicPreference: savedProgress.geographicPreference,
+        avoidances: savedProgress.avoidances,
+      });
+      navigateToStep('recommendations');
+      return;
+    }
+
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  async function handleStartAssessmentOver() {
+    const saved = await updateProfile({ assessmentProgress: undefined });
+    if (!saved) {
+      return false;
+    }
+
+    setPendingScores(null);
+    setPendingValues(null);
+    setAssessmentProfile(null);
+    setRecommendationRequest(null);
+    setRecommendations([]);
+    setAppCalcScores(null);
+    setStartingFreshAssessment(true);
+    navigateToStep('career-assessment');
+    return true;
   }
 
   function handleToggleSave(programId: string) {
@@ -553,6 +700,60 @@ export default function AppExperience({
   }
 
   if (step === 'intro') {
+    if (!hydrated || syncing) {
+      return (
+        <div className="min-h-screen bg-[#f5f4f0] px-4 py-24 text-center text-sm text-slate-600">
+          מסנכרנים את השאלון שלך...
+        </div>
+      );
+    }
+
+    if (profile.assessmentProgress) {
+      return (
+        <>
+          <BackButton />
+          <div
+            dir="rtl"
+            className="flex min-h-screen items-center justify-center bg-[#f5f4f0] px-4 py-12"
+          >
+            <section className="w-full max-w-xl rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-lg sm:p-10">
+              <p className="text-sm font-semibold text-indigo-600">מצאנו שאלון שמור</p>
+              <h1 className="mt-2 text-2xl font-bold text-slate-900">
+                {profile.assessmentProgress.stage === 'completed'
+                  ? 'ההמלצות שלך מוכנות'
+                  : 'אפשר להמשיך בדיוק מאיפה שהפסקת'}
+              </h1>
+              <p className="mx-auto mt-3 max-w-md text-sm leading-6 text-slate-500">
+                ההתקדמות נשמרה. אפשר להמשיך אותה, או להתחיל שאלון חדש בלי למחוק ציונים, תוכניות
+                שמורות, מסמכים או התראות.
+              </p>
+              {syncError ? (
+                <p className="mt-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                  {syncError}
+                </p>
+              ) : null}
+              <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
+                <button
+                  type="button"
+                  onClick={handleResumeAssessment}
+                  className="rounded-full bg-indigo-600 px-6 py-3 text-sm font-bold text-white transition hover:bg-indigo-700"
+                >
+                  להמשיך מאיפה שהפסקתי
+                </button>
+                <button
+                  type="button"
+                  onClick={() => void handleStartAssessmentOver()}
+                  className="rounded-full border border-slate-300 px-6 py-3 text-sm font-bold text-slate-700 transition hover:bg-slate-50"
+                >
+                  להתחיל מחדש
+                </button>
+              </div>
+            </section>
+          </div>
+        </>
+      );
+    }
+
     return (
       <>
         <BackButton />
@@ -615,19 +816,50 @@ export default function AppExperience({
   }
 
   if (step === 'career-assessment') {
+    const savedProgress = profile.assessmentProgress;
+    const initialDraft =
+      !startingFreshAssessment &&
+      (savedProgress?.stage === 'career-assessment' || savedProgress?.stage === 'quick-filters')
+        ? savedProgress.careerDraft
+        : undefined;
     return (
       <>
         <BackButton />
-        <CareerAssessment onComplete={handleAssessmentComplete} />
+        {syncError ? (
+          <div className="fixed top-20 left-1/2 z-50 w-full max-w-xl -translate-x-1/2 px-4">
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 shadow-md">
+              {syncError}
+            </div>
+          </div>
+        ) : null}
+        <CareerAssessment
+          initialDraft={initialDraft}
+          onProgressChange={handleCareerProgress}
+          onComplete={handleAssessmentComplete}
+        />
       </>
     );
   }
 
   if (step === 'quick-filters') {
+    const savedProgress = profile.assessmentProgress;
     return (
       <>
         <BackButton />
-        <OnboardingFunnel onComplete={handleFiltersComplete} />
+        {syncError ? (
+          <div className="fixed top-20 left-1/2 z-50 w-full max-w-xl -translate-x-1/2 px-4">
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 shadow-md">
+              {syncError}
+            </div>
+          </div>
+        ) : null}
+        <OnboardingFunnel
+          initialDraft={
+            savedProgress?.stage === 'quick-filters' ? savedProgress.filterDraft : undefined
+          }
+          onProgressChange={handleFilterProgress}
+          onComplete={handleFiltersComplete}
+        />
       </>
     );
   }
@@ -663,10 +895,7 @@ export default function AppExperience({
         userInitials={user?.email ? getUserInitials(user.email) : undefined}
         onGoHome={handleGoHome}
         onGoToExam={() => {
-          setAppCalcScores(null);
-          setPendingScores(null);
-          setPendingValues(null);
-          navigateToStep('career-assessment');
+          void handleStartAssessmentOver();
         }}
         onGoToRecommendations={handleGoToRecommendations}
         onGoToBucket={() => navigateToStep('bucket-list')}
@@ -718,21 +947,27 @@ export default function AppExperience({
           />
         )}
 
-        {!shouldBlockCatalogueStep && step === 'recommendations' && !assessmentProfile && (
-          <section className="rounded-2xl border border-[#e5e7eb] bg-white p-6 text-center shadow-sm sm:p-8">
-            <h2 className="text-xl font-bold text-slate-900">כדי להציג המלצות צריך להשלים שאלון</h2>
-            <p className="mx-auto mt-2 max-w-xl text-sm text-slate-500">
-              הקישור הזה מוביל לאזור ההמלצות, אבל ההמלצות עצמן נבנות מנתוני השאלון המקומיים שלך.
-            </p>
-            <button
-              type="button"
-              onClick={() => navigateToStep('intro')}
-              className="mt-5 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700"
-            >
-              להתחיל שאלון
-            </button>
-          </section>
-        )}
+        {!shouldBlockCatalogueStep &&
+          step === 'recommendations' &&
+          hydrated &&
+          !syncing &&
+          !assessmentProfile && (
+            <section className="rounded-2xl border border-[#e5e7eb] bg-white p-6 text-center shadow-sm sm:p-8">
+              <h2 className="text-xl font-bold text-slate-900">
+                כדי להציג המלצות צריך להשלים שאלון
+              </h2>
+              <p className="mx-auto mt-2 max-w-xl text-sm text-slate-500">
+                הקישור הזה מוביל לאזור ההמלצות, אבל ההמלצות עצמן נבנות מנתוני השאלון המקומיים שלך.
+              </p>
+              <button
+                type="button"
+                onClick={() => navigateToStep('intro')}
+                className="mt-5 rounded-full bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-700"
+              >
+                להתחיל שאלון
+              </button>
+            </section>
+          )}
 
         {/* ── Step: Bucket List ─────────────────────────────────── */}
         {!shouldBlockCatalogueStep && step === 'bucket-list' && (

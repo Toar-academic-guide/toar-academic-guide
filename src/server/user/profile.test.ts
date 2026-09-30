@@ -33,6 +33,19 @@ describe('user profile serializers', () => {
         riasecE: null,
         riasecC: null,
         avoidanceTags: [],
+        assessmentProgress: {
+          schemaVersion: 1,
+          stage: 'completed',
+          scores: { AN: 5, TE: 1, CR: 2, SO: 1, LE: 0, OR: 0, DI: 1, ER: 2 },
+          values: {
+            incomeVsImpact: -1,
+            independenceVsTeam: 0,
+            growthVsStability: 1,
+            prestigeVsMeaning: 2,
+          },
+          geographicPreference: 'south',
+          avoidances: ['heavy-math'],
+        },
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -54,6 +67,19 @@ describe('user profile serializers', () => {
       },
       savedProgramIds: ['tau_cs'],
       uploadedDocuments: [],
+      assessmentProgress: {
+        schemaVersion: 1,
+        stage: 'completed',
+        scores: { AN: 5, TE: 1, CR: 2, SO: 1, LE: 0, OR: 0, DI: 1, ER: 2 },
+        values: {
+          incomeVsImpact: -1,
+          independenceVsTeam: 0,
+          growthVsStability: 1,
+          prestigeVsMeaning: 2,
+        },
+        geographicPreference: 'south',
+        avoidances: ['heavy-math'],
+      },
     });
   });
 
@@ -161,6 +187,40 @@ describe('user profile serializers', () => {
 
     expect(snapshot).toEqual({
       geographicPreference: 'any',
+      savedProgramIds: [],
+      uploadedDocuments: [],
+    });
+  });
+
+  it('drops incompatible persisted assessment progress while preserving the profile', () => {
+    const snapshot = serializeUserProfileSnapshot(
+      {
+        userId: '00000000-0000-0000-0000-000000000013',
+        firstName: 'Dana',
+        lastName: null,
+        geographicPreference: 'north',
+        psychometricOverall: null,
+        psychometricQuantitative: null,
+        psychometricVerbal: null,
+        psychometricEnglish: null,
+        bagrutWeightedAverage: null,
+        riasecR: null,
+        riasecI: null,
+        riasecA: null,
+        riasecS: null,
+        riasecE: null,
+        riasecC: null,
+        avoidanceTags: [],
+        assessmentProgress: { schemaVersion: 2 } as never,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      [],
+    );
+
+    expect(snapshot).toEqual({
+      firstName: 'Dana',
+      geographicPreference: 'north',
       savedProgramIds: [],
       uploadedDocuments: [],
     });

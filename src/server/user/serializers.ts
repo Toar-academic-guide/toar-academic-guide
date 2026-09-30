@@ -5,6 +5,7 @@ import type {
   UserProfileRow,
   UploadedDocumentRow,
 } from '@/db/types';
+import { assessmentProgressSchema } from './profileSchema';
 
 export interface UserProfileSnapshot extends UserProfile {
   savedProgramIds: string[];
@@ -32,6 +33,7 @@ type SerializedProfileRow = Pick<
   | 'updatedAt'
 > & {
   bagrutProfileVersionId?: string | null;
+  assessmentProgress?: UserProfileRow['assessmentProgress'];
 };
 
 type PublicUploadedDocument = NonNullable<UserProfileSnapshot['uploadedDocuments']>[number];
@@ -141,12 +143,14 @@ export function serializeUserProfileSnapshot(
               : {}),
         }
       : undefined;
+  const assessmentProgress = assessmentProgressSchema.safeParse(profileRow.assessmentProgress);
 
   return {
     ...(profileRow.firstName ? { firstName: profileRow.firstName } : {}),
     ...(profileRow.lastName ? { lastName: profileRow.lastName } : {}),
     geographicPreference: profileRow.geographicPreference,
     ...(academicScores ? { academicScores } : {}),
+    ...(assessmentProgress.success ? { assessmentProgress: assessmentProgress.data } : {}),
     savedProgramIds: savedProgramRows.map((row) => row.programId),
     uploadedDocuments:
       uploadedDocumentRows?.filter(isPublicUploadedDocumentRow).map((row) => ({
@@ -169,5 +173,6 @@ export function buildUserProfileRow(userId: string, profile: UserProfile) {
     psychometricVerbal: profile.academicScores?.psychometric?.verbal ?? null,
     psychometricEnglish: profile.academicScores?.psychometric?.english ?? null,
     bagrutWeightedAverage: profile.academicScores?.bagrut?.weightedAverage ?? null,
+    assessmentProgress: profile.assessmentProgress ?? null,
   };
 }

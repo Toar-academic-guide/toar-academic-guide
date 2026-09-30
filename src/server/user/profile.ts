@@ -100,6 +100,7 @@ export async function replaceUserProfileSnapshot(
           psychometricEnglish: profile.academicScores?.psychometric?.english ?? null,
           bagrutWeightedAverage: profile.academicScores?.bagrut?.weightedAverage ?? null,
           bagrutProfileVersionId,
+          assessmentProgress: profile.assessmentProgress ?? null,
           updatedAt: new Date(),
         },
       });
