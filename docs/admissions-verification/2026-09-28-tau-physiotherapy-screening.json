@@ -1,0 +1,79 @@
+{
+  "official-high": {
+    "data": {
+      "getLastScore": {
+        "body": {
+          "hatama": "689",
+          "bagrut": "110",
+          "psicho": "700",
+          "hatama_nihul": "691",
+          "hatama_refua": "689.22",
+          "hatama_handasa": "689",
+          "hatama_meduyakim": "689"
+        },
+        "__typename": "Response"
+      }
+    }
+  },
+  "official-low": {
+    "data": {
+      "getLastScore": {
+        "body": {
+          "hatama": "639",
+          "bagrut": "100",
+          "psicho": "700",
+          "hatama_nihul": "662",
+          "hatama_refua": "639.19",
+          "hatama_handasa": "639",
+          "hatama_meduyakim": "639"
+        },
+        "__typename": "Response"
+      }
+    }
+  },
+  "programme": {
+    "data": {
+      "getProgramByIdAndLang": {
+        "nid": "8213",
+        "title": "תואר ראשון בפיזיותרפיה",
+        "receipt_threshol": null,
+        "rejection_thresh": null,
+        "field_registration_comments": null,
+        "field_plain_id_programs": ["016411010000"],
+        "field_faculty_mamta": "רפואה ומקצועות הבריאות"
+      }
+    }
+  },
+  "page-receipts": [
+    {
+      "name": "selection-page",
+      "url": "https://go.tau.ac.il/he/med/ba/phys?v=important-info",
+      "status": 200,
+      "sha256": "0b5af05e39363bd688eea3c86f38fb5bad598992d47dbd860a20499644d81c25",
+      "at": "2026-09-28T20:07:32.881383+00:00"
+    },
+    {
+      "name": "registration-page",
+      "url": "https://go.tau.ac.il/he/med/ba/phys?v=curriculum",
+      "status": 200,
+      "sha256": "cb89f480b260cbd7ab8a0ac5b8eca3b33e0f84e35676885821bb096e68943193",
+      "at": "2026-09-28T20:07:32.943880+00:00"
+    }
+  ],
+  "scope": "2026-2027 TAU physiotherapy Bagrut numerical screening only; interview and academic alternative conversions remain uncalculated.",
+  "cutoffs": {
+    "acceptance": 658.6,
+    "rejection": 640
+  },
+  "requirements": {
+    "psychometricMinimum": 630,
+    "englishMinimumOrApprovedAlternative": 120,
+    "mathMinimumUnitsAndPassingGradeOrApprovedCourse": 4,
+    "moocBonusOnce": 5
+  },
+  "officialUrls": [
+    "https://go.tau.ac.il/he/med/ba/phys?v=important-info",
+    "https://go.tau.ac.il/he/med/ba/phys?v=curriculum",
+    "https://go.tau.ac.il/graphql"
+  ]
+}

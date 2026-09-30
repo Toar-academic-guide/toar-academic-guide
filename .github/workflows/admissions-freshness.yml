@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       target:
-        description: Optional source target id to check
+        description: Optional comma-separated source target ids to check
         required: false
         type: string
       dry_run:
@@ -90,15 +90,25 @@ jobs:
         uses: actions/checkout@v7
         with:
           ref: main
+          persist-credentials: false
+          fetch-depth: 0
 
       - name: Setup Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Create GitHub App token
+        id: admissions_app
+        if: ${{ !inputs.dry_run }}
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ env.ADMISSIONS_GITHUB_APP_ID }}
+          private-key: ${{ env.ADMISSIONS_GITHUB_APP_PRIVATE_KEY }}
 
       - name: Resolve stable weekly run identity
         id: run
@@ -131,36 +141,63 @@ jobs:
           echo "cycle=$cycle" >> "$GITHUB_OUTPUT"
 
       - name: Load existing review metadata without executing the generated branch
+        id: review_metadata
         env:
+          GH_TOKEN: ${{ inputs.dry_run && github.token || steps.admissions_app.outputs.token }}
           REVIEW_BRANCH: ${{ steps.run.outputs.branch }}
           RUN_KEY: ${{ steps.run.outputs.run_key }}
         shell: bash
         run: |
           set -euo pipefail
-          git fetch origin main "$REVIEW_BRANCH" || true
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git fetch origin main
+          if git ls-remote --exit-code --heads origin "$REVIEW_BRANCH" > /dev/null; then
+            git fetch origin "$REVIEW_BRANCH"
+          else
+            remote_status=$?
+            if [ "$remote_status" -ne 2 ]; then
+              exit "$remote_status"
+            fi
+          fi
           if git show-ref --verify --quiet "refs/remotes/origin/$REVIEW_BRANCH"; then
-            metadata_file="docs/admissions-review-runs/$RUN_KEY.json"
-            git cat-file -e "origin/$REVIEW_BRANCH:$metadata_file" || {
+            branch_metadata_file="docs/admissions-review-runs/$RUN_KEY.json"
+            git cat-file -e "origin/$REVIEW_BRANCH:$branch_metadata_file" || {
               echo "Existing generated branch is missing its exclusion metadata.";
               exit 1;
             }
+            metadata_file="docs/admissions-review-runs/.workflow-inputs/$RUN_KEY.json"
             mkdir -p "$(dirname "$metadata_file")"
-            git show "origin/$REVIEW_BRANCH:$metadata_file" > "$metadata_file"
+            git show "origin/$REVIEW_BRANCH:$branch_metadata_file" > "$metadata_file"
+            echo "metadata_file=$metadata_file" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Prepare admissions review run
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          TARGET_INPUT: ${{ inputs.target }}
         shell: bash
         run: |
           set -euo pipefail
           args=()
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ -n "${{ inputs.target }}" ]; then
-            args+=(--target "${{ inputs.target }}")
+          if [ "$EVENT_NAME" = "workflow_dispatch" ] && [ -n "$TARGET_INPUT" ]; then
+            IFS=',' read -r -a targets <<< "$TARGET_INPUT"
+            for target in "${targets[@]}"; do
+              [[ "$target" =~ ^[a-z0-9]+([_-][a-z0-9]+)*$ ]] || {
+                echo 'target must be one or more comma-separated safe source target identifiers.'
+                exit 1
+              }
+              args+=(--target "$target")
+            done
           fi
           if [ "${{ github.event_name }}" = "workflow_dispatch" ] && [ "${{ inputs.dry_run }}" = "true" ]; then
             args+=(--dry-run)
           fi
-          metadata_file="docs/admissions-review-runs/${{ steps.run.outputs.run_key }}.json"
-          if [ -f "$metadata_file" ]; then
+          metadata_file="${{ steps.review_metadata.outputs.metadata_file }}"
+          if [ -n "$metadata_file" ]; then
+            test -f "$metadata_file" || {
+              echo 'Existing review metadata is unavailable.'
+              exit 1
+            }
             args+=(--exclusions-file "$metadata_file")
           fi
           if [ "$ADMISSIONS_MODE" = 'operational_proof' ]; then
@@ -173,14 +210,10 @@ jobs:
             --mode "$ADMISSIONS_MODE" \
             --output scratch/admissions-review/run.json \
             "${args[@]}"
-
-      - name: Create GitHub App token
-        id: admissions_app
-        if: ${{ !inputs.dry_run }}
-        uses: actions/create-github-app-token@v2
-        with:
-          app-id: ${{ env.ADMISSIONS_GITHUB_APP_ID }}
-          private-key: ${{ env.ADMISSIONS_GITHUB_APP_PRIVATE_KEY }}
+          if [ -n "$metadata_file" ]; then
+            rm -f "$metadata_file"
+            rmdir "$(dirname "$metadata_file")" 2>/dev/null || true
+          fi
 
       - name: Create or update the one combined admissions review PR
         id: review_pr
@@ -202,21 +235,26 @@ jobs:
             exit 0
           fi
 
+          trusted_main_sha="$(git rev-parse --verify origin/main^{commit})"
+          npm run guard:pre-pr
+
           if git show-ref --verify --quiet "refs/remotes/origin/$REVIEW_BRANCH"; then
-            git switch --force-create "$REVIEW_BRANCH" "origin/$REVIEW_BRANCH"
+            git -c core.hooksPath=/dev/null switch --force-create "$REVIEW_BRANCH" "origin/$REVIEW_BRANCH"
           else
-            git switch --create "$REVIEW_BRANCH"
+            git -c core.hooksPath=/dev/null switch --create "$REVIEW_BRANCH"
           fi
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git config user.name "admissions-automation[bot]"
+          git config user.email "admissions-automation[bot]@users.noreply.github.com"
 
           jq '.run.manifest' scratch/admissions-review/run.json > src/data/admissions/reviewedManifest.json
           mkdir -p docs/admissions-review-runs
           jq -r '.run.markdown' scratch/admissions-review/run.json > "docs/admissions-review-runs/$RUN_KEY.md"
           jq '.run.reviewMetadata' scratch/admissions-review/run.json > "docs/admissions-review-runs/$RUN_KEY.json"
-          npm run guard:pre-pr
 
           git add src/data/admissions/reviewedManifest.json "docs/admissions-review-runs/$RUN_KEY.md" "docs/admissions-review-runs/$RUN_KEY.json"
-          npm run admissions:validate-review-pr -- --run-key "$RUN_KEY"
+          git show "$trusted_main_sha:scripts/validate-admissions-review-pr.mjs" > "$RUNNER_TEMP/validate-admissions-review-pr.mjs"
+          ADMISSIONS_REVIEW_WORKTREE="$GITHUB_WORKSPACE" ADMISSIONS_REVIEW_BASE_REF="$trusted_main_sha" node "$RUNNER_TEMP/validate-admissions-review-pr.mjs" --run-key "$RUN_KEY"
           npm test -- src/server/admissions/reviewedManifest.test.ts src/server/admissions/weeklyReviewRun.test.ts src/server/admissions/weeklyReviewPreparation.test.ts
           if ! git diff --cached --quiet; then
             git commit -m "chore(admissions): prepare weekly review $RUN_KEY"

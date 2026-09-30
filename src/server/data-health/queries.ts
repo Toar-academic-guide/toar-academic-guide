@@ -4,6 +4,11 @@ import { eq } from 'drizzle-orm';
 
 import type { InstitutionId } from '@/data/institutions';
 import { getOpsDb } from '@/db/opsClient';
+import { queryRows } from '@/db/queryRows';
+import {
+  loadAdmissionAlertHealth,
+  type AdmissionAlertHealth,
+} from '@/server/admission-alerts/health';
 import {
   admissionAlternativePaths,
   admissionFacts,
@@ -24,6 +29,7 @@ import {
 } from '@/db/schema';
 import type { SourceFreshnessStateRow } from '@/db/types';
 import { buildAdmissionsCapabilityMatrix } from '@/server/admissions/capabilityMatrix';
+import { listAdmissionRouteCapabilities } from '@/server/admissions/routes/capabilityRegistry';
 import {
   OPERATIONAL_PROOF_SCENARIOS,
   type OperationalProofScenario,
@@ -75,6 +81,8 @@ export interface DataHealthReadyReport {
     blocked: number;
     authorityUnavailable: number;
   };
+  admissionRoutes: AdmissionRouteHealth;
+  admissionAlerts: AdmissionAlertHealth;
   coverage: {
     missingRequirementSourceCount: number;
     missingProgramSourceCount: number;
@@ -114,6 +122,23 @@ export interface DataHealthReadyReport {
   };
   publication: AdmissionsPublicationHealth;
   mondayEvidence: MondayEvidenceCoverage;
+}
+
+export interface AdmissionRouteHealth {
+  enabled: number;
+  disabled: number;
+  unsupported: number;
+  rows: Array<{
+    programId: string;
+    pairId: string | null;
+    status: 'enabled' | 'disabled' | 'unsupported';
+    evaluatorCapability: AdmissionsEvaluationCapability;
+    actionCapabilityStatus: 'ready' | 'incomplete';
+    verificationMode: 'official_finalist_replay' | 'fixture_backed_local_formula' | null;
+    supportedActionKinds: string[];
+    requiredInputs: string[];
+    missingCapabilities: string[];
+  }>;
 }
 
 export interface AdmissionsPublicationHealth {
@@ -165,6 +190,7 @@ export interface MondayEvidenceBacklogGroup {
 }
 
 export interface DataHealthRows {
+  admissionAlerts: AdmissionAlertHealth;
   institutions: Array<{
     id: string;
     name: string;
@@ -471,11 +497,12 @@ export async function getDataHealthReport(
 ): Promise<DataHealthReport> {
   try {
     const rows = await withTimeout(
-      loadDataHealthRows(),
+      loadDataHealthRows(now),
       options.timeoutMs ?? DATA_HEALTH_QUERY_TIMEOUT_MS,
     );
     return summarizeDataHealthRows(rows, now);
   } catch (error) {
+    console.error('[data-health] Report unavailable', classifyDataHealthError(error));
     return {
       status: 'unavailable',
       message:
@@ -484,6 +511,59 @@ export async function getDataHealthReport(
           : DATA_HEALTH_UNAVAILABLE_MESSAGE,
     };
   }
+}
+
+const DATA_HEALTH_ERROR_CATEGORIES: Record<string, string> = {
+  '42501': 'database_permission',
+  '28P01': 'database_authentication',
+  '28000': 'database_authentication',
+  '42P01': 'database_schema',
+  '42703': 'database_schema',
+  '53300': 'database_capacity',
+  '53400': 'database_capacity',
+  '57014': 'database_timeout',
+  ECONNREFUSED: 'database_connection',
+  ECONNRESET: 'database_connection',
+  ENOTFOUND: 'database_connection',
+  EAI_AGAIN: 'database_connection',
+  ETIMEDOUT: 'database_timeout',
+  SELF_SIGNED_CERT_IN_CHAIN: 'database_tls',
+  DEPTH_ZERO_SELF_SIGNED_CERT: 'database_tls',
+  UNABLE_TO_VERIFY_LEAF_SIGNATURE: 'database_tls',
+  UNABLE_TO_GET_ISSUER_CERT_LOCALLY: 'database_tls',
+  CERT_HAS_EXPIRED: 'database_tls',
+  ERR_TLS_CERT_ALTNAME_INVALID: 'database_tls',
+};
+
+function classifyDataHealthError(error: unknown): { category: string; code: string } {
+  // Drizzle wraps driver failures in cause. Never serialize the error itself:
+  // messages, stacks, SQL, parameters, and arbitrary codes may contain secrets.
+  for (let depth = 0; depth < 5 && error instanceof Error; depth += 1) {
+    if (error instanceof DataHealthTimeoutError) {
+      return { category: 'database_timeout', code: 'REPORT_TIMEOUT' };
+    }
+    if (
+      'code' in error &&
+      typeof error.code === 'string' &&
+      Object.hasOwn(DATA_HEALTH_ERROR_CATEGORIES, error.code)
+    ) {
+      return { category: DATA_HEALTH_ERROR_CATEGORIES[error.code], code: error.code };
+    }
+    if (
+      error.message.startsWith('Missing OPS_DATABASE_URL') ||
+      error.message.startsWith('Missing DATABASE_URL')
+    ) {
+      return { category: 'configuration', code: 'DATABASE_URL_MISSING' };
+    }
+    if (error.message.startsWith('Unsafe DATABASE_URL for production runtime:')) {
+      return { category: 'configuration', code: 'UNSAFE_DATABASE_ROLE' };
+    }
+    if (error instanceof TypeError) {
+      return { category: 'application', code: 'TYPE_ERROR' };
+    }
+    error = error.cause;
+  }
+  return { category: 'unknown', code: 'UNCLASSIFIED' };
 }
 
 export async function getReviewItemDetail(reviewItemId: string): Promise<ReviewItemDetailResult> {
@@ -660,6 +740,8 @@ export function summarizeDataHealthRows(
       FORMULA_BACKED_VERIFICATION_LEDGER,
     ),
     runtimeFormulaVerification: summarizeRuntimeFormulaVerification(decisionEvidence.rows),
+    admissionRoutes: buildAdmissionRouteHealth(),
+    admissionAlerts: rows.admissionAlerts,
     coverage: buildCoverageSummary(rows),
     decisionReadiness: buildDecisionReadinessSummary(rows),
     decisionEvidence,
@@ -668,6 +750,26 @@ export function summarizeDataHealthRows(
     freshness: buildSourceFreshnessSummary(rows, now),
     publication: buildAdmissionsPublicationHealth(rows.admissionReleases),
     mondayEvidence: buildMondayEvidenceCoverage(),
+  };
+}
+
+export function buildAdmissionRouteHealth(): AdmissionRouteHealth {
+  const rows = listAdmissionRouteCapabilities().map((capability) => ({
+    programId: capability.programId,
+    pairId: capability.pairId ?? null,
+    status: capability.status,
+    evaluatorCapability: capability.evaluatorCapability,
+    actionCapabilityStatus: capability.actionCapabilityStatus,
+    verificationMode: capability.verificationMode ?? null,
+    supportedActionKinds: capability.supportedActionKinds,
+    requiredInputs: capability.requiredInputs,
+    missingCapabilities: capability.missingCapabilities,
+  }));
+  return {
+    enabled: rows.filter((row) => row.status === 'enabled').length,
+    disabled: rows.filter((row) => row.status === 'disabled').length,
+    unsupported: rows.filter((row) => row.status === 'unsupported').length,
+    rows,
   };
 }
 
@@ -833,7 +935,7 @@ function backlogBucketPriority(bucket: string): number {
   }
 }
 
-async function loadDataHealthRows(): Promise<DataHealthRows> {
+async function loadDataHealthRows(now: Date): Promise<DataHealthRows> {
   const db = getOpsDb();
 
   const institutionRows = await db
@@ -1000,7 +1102,13 @@ async function loadDataHealthRows(): Promise<DataHealthRows> {
     })
     .from(admissionReleases);
 
+  const admissionAlerts = await loadAdmissionAlertHealth(
+    async (query) => queryRows(await db.execute(query)),
+    now,
+  );
+
   return {
+    admissionAlerts,
     institutions: institutionRows,
     programs: programRows,
     programInstitutions: programInstitutionRows,

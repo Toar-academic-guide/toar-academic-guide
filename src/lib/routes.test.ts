@@ -95,4 +95,9 @@ describe('route contract', () => {
       ),
     ).toBeNull();
   });
+  it('preserves the BGU target through signup and return navigation', () => {
+    const path = '/app/profile?admissionAlertInstitution=bgu&admissionAlertProgram=bgu_cs';
+    expect(parseAdmissionAlertIntent(path)).toEqual({ institutionId: 'bgu', programId: 'bgu_cs' });
+    expect(normalizeSafeNextPath(path)).toBe(path);
+  });
 });

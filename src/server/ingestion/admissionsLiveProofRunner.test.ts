@@ -1,3 +1,4 @@
+import medicineOfficial from '../../../docs/admissions-verification/2026-09-28-huji-medicine-official.json';
 import { describe, expect, it, vi } from 'vitest';
 
 import { runAdmissionsLiveProof } from './admissionsLiveProofRunner';
@@ -31,6 +32,23 @@ function tauThresholdResponse(threshold: number) {
 }
 
 describe('runAdmissionsLiveProof', () => {
+  it('compares both independent Medicine captures while publishing the final cutoff', async () => {
+    const report = await runAdmissionsLiveProof({
+      targetIds: ['huji-medicine-live', 'huji-huji_medicine-live'],
+      fetcher: vi
+        .fn<typeof fetch>()
+        .mockImplementation(async () => new Response(medicineOfficial.calculatorHtml)),
+    });
+    expect(report.summary.exactReproduced).toBe(2);
+    for (const result of report.results)
+      expect(result.proof.normalizedPayload).toMatchObject({
+        selectedScore: 22.265,
+        derivedVerdict: 'below',
+        medicineStage: 'screening',
+        medicineThreshold: 25.186,
+        acceptanceThreshold: 25.783,
+      });
+  });
   it('withholds a live response until independent eligible and below captures are supplied', async () => {
     const fetcher = vi
       .fn<typeof fetch>()

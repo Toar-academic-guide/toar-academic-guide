@@ -2,7 +2,7 @@
 
 import { Fragment, useState, useRef, useEffect } from 'react';
 import { Check, ChevronDown, X } from 'lucide-react';
-import type { BagrutSubjectRecord } from '@/types';
+import type { BagrutAssessmentKind, BagrutCertificateType, BagrutSubjectRecord } from '@/types';
 import { buildBagrutSubjectRecord } from '@/utils/bagrutSubjectRecord';
 
 // ── Sector → mandatory subjects ───────────────────────────────────────────────
@@ -382,6 +382,7 @@ interface ElectiveRow {
   name: string;
   units: number;
   grade: number | '';
+  assessmentKind: BagrutAssessmentKind;
 }
 
 interface Props {
@@ -433,6 +434,8 @@ function WizBtn({
 export default function BagrutCalculatorWizard({ onComplete, onStructuredComplete }: Props) {
   const [step, setStep] = useState(1);
   const [sector, setSector] = useState('יהודי');
+  const [certificateType, setCertificateType] = useState<BagrutCertificateType>('other');
+  const [complete, setComplete] = useState(false);
   const [mandGrades, setMandGrades] = useState<MandGrade[]>(
     SECTORS['יהודי'].map((s) => ({ units: s.min, grade: '' })),
   );
@@ -455,61 +458,105 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
     return () => document.removeEventListener('mousedown', onDocMouseDown);
   }, []);
 
+  function invalidateCalculatedRecord() {
+    setComputedAvg(null);
+    setStructuredRecord(null);
+  }
+
   function handleSetSector(sec: string) {
+    invalidateCalculatedRecord();
     setSector(sec);
     setMandGrades(SECTORS[sec].map((s) => ({ units: s.min, grade: '' })));
   }
 
   function goStep(n: number) {
+    if (n === 4 && !structuredRecord) return;
     setStep(n);
     setDropOpen(false);
   }
 
   function updateMandUnits(i: number, v: number) {
+    invalidateCalculatedRecord();
     const sub = (SECTORS[sector] ?? SECTORS['יהודי'])[i];
     const clamped = Math.min(Math.max(v, sub.min), sub.max);
     setMandGrades((prev) => prev.map((mg, idx) => (idx === i ? { ...mg, units: clamped } : mg)));
   }
 
   function updateMandGrade(i: number, v: number | '') {
+    invalidateCalculatedRecord();
     setMandGrades((prev) => prev.map((mg, idx) => (idx === i ? { ...mg, grade: v } : mg)));
   }
 
   function addElective(name: string) {
-    if (!electives.find((e) => e.name === name)) {
-      setElectives((prev) => [...prev, { name, units: 1, grade: '' }]);
+    if (!electives.find((e) => e.name === name && e.assessmentKind === 'exam')) {
+      invalidateCalculatedRecord();
+      setElectives((prev) => [...prev, { name, units: 1, grade: '', assessmentKind: 'exam' }]);
     }
     setSearchQuery('');
     setDropOpen(false);
   }
 
+  function addFinalProject(name: string) {
+    if (
+      electives.some((entry) => entry.name === name && entry.assessmentKind === 'final_project')
+    ) {
+      return;
+    }
+    invalidateCalculatedRecord();
+    setElectives((previous) => [
+      ...previous,
+      { name, units: 1, grade: '', assessmentKind: 'final_project' },
+    ]);
+  }
+
   function removeElective(idx: number) {
+    invalidateCalculatedRecord();
     setElectives((prev) => prev.filter((_, i) => i !== idx));
   }
 
   function updateElectiveUnits(idx: number, v: number) {
+    invalidateCalculatedRecord();
     setElectives((prev) =>
       prev.map((e, i) => (i === idx ? { ...e, units: Math.min(Math.max(1, v), 5) } : e)),
     );
   }
 
   function updateElectiveGrade(idx: number, v: number | '') {
+    invalidateCalculatedRecord();
     setElectives((prev) => prev.map((e, i) => (i === idx ? { ...e, grade: v } : e)));
+  }
+
+  function updateElectiveAssessmentKind(idx: number, assessmentKind: BagrutAssessmentKind) {
+    invalidateCalculatedRecord();
+    setElectives((previous) =>
+      previous.some(
+        (entry, index) =>
+          index !== idx &&
+          entry.name === previous[idx]?.name &&
+          entry.assessmentKind === assessmentKind,
+      )
+        ? previous
+        : previous.map((entry, index) => (index === idx ? { ...entry, assessmentKind } : entry)),
+    );
   }
 
   function calculateAndAdvance() {
     const record = buildBagrutSubjectRecord({
+      certificateType,
+      complete,
       sectorLabel: sector,
       subjects: [
         ...sectorSubs.map((subject, index) => ({
           label: subject.n,
           units: mandGrades[index]?.units ?? subject.min,
           grade: mandGrades[index]?.grade ?? '',
+          assessmentKind: 'exam' as const,
         })),
         ...electives.map((subject) => ({
           label: subject.name,
           units: subject.units,
           grade: subject.grade,
+          assessmentKind: subject.assessmentKind,
         })),
       ],
     });
@@ -529,10 +576,14 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
     setMandGrades(SECTORS[sector].map((s) => ({ units: s.min, grade: '' })));
     setComputedAvg(null);
     setStructuredRecord(null);
+    setCertificateType('other');
+    setComplete(false);
     setStep(1);
   }
 
-  const addedNames = new Set(electives.map((e) => e.name));
+  const addedNames = new Set(
+    electives.filter((entry) => entry.assessmentKind === 'exam').map((entry) => entry.name),
+  );
   const filteredSubjects = ALL_SUBJECTS.filter(
     (s) => !addedNames.has(s) && (!searchQuery || s.includes(searchQuery)),
   );
@@ -557,15 +608,18 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
           const n = i + 1;
           const isDone = n < step;
           const isActive = n === step;
+          const isUnavailable = n === 4 && !structuredRecord;
           return (
             <Fragment key={n}>
               <div className="flex flex-col items-center">
                 <button
                   type="button"
                   onClick={() => goStep(n)}
+                  disabled={isUnavailable}
                   className={[
                     'flex h-9 w-9 cursor-pointer select-none items-center justify-center rounded-full border-2',
                     'text-sm font-bold transition hover:scale-110',
+                    isUnavailable ? 'cursor-not-allowed hover:scale-100' : '',
                     isDone
                       ? 'border-[#0891b2] bg-[#e0f9ff] text-[#0891b2] hover:bg-[#bae6fd]'
                       : isActive
@@ -576,8 +630,8 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
                   {isDone ? <Check size={14} /> : n}
                 </button>
                 <span
-                  className={`mt-1.5 cursor-pointer text-[11px] ${isActive ? 'font-bold text-slate-900' : 'text-slate-400'}`}
-                  onClick={() => goStep(n)}
+                  className={`mt-1.5 text-[11px] ${isUnavailable ? 'cursor-not-allowed' : 'cursor-pointer'} ${isActive ? 'font-bold text-slate-900' : 'text-slate-400'}`}
+                  onClick={isUnavailable ? undefined : () => goStep(n)}
                 >
                   {label}
                 </span>
@@ -616,6 +670,22 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
               </button>
             ))}
           </div>
+          <label className="mb-6 block text-sm font-bold text-slate-700">
+            סוג תעודת הבגרות
+            <select
+              aria-label="סוג תעודת הבגרות"
+              value={certificateType}
+              onChange={(event) => {
+                invalidateCalculatedRecord();
+                setCertificateType(event.target.value as BagrutCertificateType);
+              }}
+              className="mt-2 w-full rounded-xl border-2 border-[#bae6fd] bg-white px-4 py-3 text-sm font-medium text-slate-900 outline-none focus:border-[#0891b2]"
+            >
+              <option value="other">אחר / לא בטוח</option>
+              <option value="internal">תעודת בגרות אינטרנית</option>
+              <option value="external_1977_or_later">תעודה אקסטרנית מ־1977 ואילך</option>
+            </select>
+          </label>
           <WizBtn onClick={() => goStep(2)} className="w-full">
             המשך למקצועות חובה ←
           </WizBtn>
@@ -637,6 +707,7 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
                 <div className="flex flex-col items-center">
                   <span className="mb-1 text-[10px] font-semibold text-slate-400">יח׳</span>
                   <input
+                    aria-label={`יחידות ${sub.n}`}
                     type="number"
                     min={sub.min}
                     max={sub.max}
@@ -648,6 +719,7 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
                 <div className="flex flex-col items-center">
                   <span className="mb-1 text-[10px] font-semibold text-slate-400">ציון</span>
                   <input
+                    aria-label={`ציון ${sub.n}`}
                     type="number"
                     min={0}
                     max={100}
@@ -659,6 +731,18 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
                     className={numInput}
                   />
                 </div>
+                {!electives.some(
+                  (entry) => entry.name === sub.n && entry.assessmentKind === 'final_project',
+                ) && (
+                  <button
+                    type="button"
+                    aria-label={`הוסף עבודת גמר ב${sub.n}`}
+                    onClick={() => addFinalProject(sub.n)}
+                    className="rounded-lg border border-[#bae6fd] bg-white px-2 py-1 text-[10px] font-bold text-[#0891b2] hover:bg-[#e0f9ff]"
+                  >
+                    עבודת גמר +
+                  </button>
+                )}
               </div>
             ))}
           </div>
@@ -746,12 +830,25 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
                   className="flex items-center gap-3 rounded-xl border border-[#e0f9ff] bg-[#f8feff] px-4 py-2.5"
                 >
                   <span className="flex-1 text-sm font-bold text-slate-900">{e.name}</span>
+                  <select
+                    aria-label={`סוג הערכה ${e.name} ${i + 1}`}
+                    value={e.assessmentKind}
+                    onChange={(event) =>
+                      updateElectiveAssessmentKind(i, event.target.value as BagrutAssessmentKind)
+                    }
+                    className="max-w-28 rounded-lg border border-[#bae6fd] bg-white px-2 py-1.5 text-xs text-slate-700"
+                  >
+                    <option value="exam">בחינה</option>
+                    <option value="final_project">עבודת גמר</option>
+                    <option value="combined">ציון משולב</option>
+                  </select>
                   <div className="flex flex-col items-center">
                     <span className="mb-1 text-[10px] font-semibold text-slate-400">יח׳</span>
                     <input
+                      aria-label={`יחידות ${e.name} ${i + 1}`}
                       type="number"
                       min={1}
-                      max={10}
+                      max={5}
                       value={e.units}
                       onChange={(ev) => updateElectiveUnits(i, Number(ev.target.value))}
                       className={numInput}
@@ -760,6 +857,7 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
                   <div className="flex flex-col items-center">
                     <span className="mb-1 text-[10px] font-semibold text-slate-400">ציון</span>
                     <input
+                      aria-label={`ציון ${e.name} ${i + 1}`}
                       type="number"
                       min={0}
                       max={100}
@@ -782,10 +880,42 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
                   >
                     <X size={14} />
                   </button>
+                  {e.assessmentKind !== 'final_project' &&
+                    !electives.some(
+                      (entry) => entry.name === e.name && entry.assessmentKind === 'final_project',
+                    ) && (
+                      <button
+                        type="button"
+                        aria-label={`הוסף עבודת גמר ב${e.name}`}
+                        onClick={() => addFinalProject(e.name)}
+                        className="rounded-lg border border-[#bae6fd] bg-white px-2 py-1 text-[10px] font-bold text-[#0891b2] hover:bg-[#e0f9ff]"
+                      >
+                        גמר +
+                      </button>
+                    )}
                 </div>
               ))
             )}
           </div>
+
+          <label className="mb-4 flex items-start gap-2 rounded-xl border border-[#bae6fd] bg-[#f8feff] px-4 py-3 text-sm text-slate-700">
+            <input
+              aria-label="הזנתי את כל המקצועות שמופיעים בתעודת הבגרות"
+              type="checkbox"
+              checked={complete}
+              onChange={(event) => {
+                invalidateCalculatedRecord();
+                setComplete(event.target.checked);
+              }}
+              className="mt-0.5 h-4 w-4 accent-[#0891b2]"
+            />
+            <span>
+              הזנתי את כל המקצועות שמופיעים בתעודת הבגרות
+              <span className="mt-0.5 block text-xs text-slate-500">
+                נדרש לחישוב מוסדי מדויק; אפשר לשמור גם רשומה חלקית.
+              </span>
+            </span>
+          </label>
 
           <div className="flex gap-3">
             <WizBtn onClick={calculateAndAdvance} className="flex-1">

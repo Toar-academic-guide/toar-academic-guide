@@ -6,7 +6,9 @@ const mocks = vi.hoisted(() => ({
   headers: vi.fn(),
   requireAuthenticatedUserId: vi.fn(),
   getUserProfileSnapshot: vi.fn(),
+  getAdmissionRouteCapability: vi.fn(),
   runTauComputerScienceRouteSimulation: vi.fn(),
+  runBguComputerScienceProfileRouteSimulation: vi.fn(),
 }));
 
 vi.mock('next/headers', () => ({ headers: mocks.headers }));
@@ -17,13 +19,19 @@ vi.mock('@/server/user/profile', () => ({ getUserProfileSnapshot: mocks.getUserP
 vi.mock('@/server/admissions/routes/tauRouteSimulation', () => ({
   runTauComputerScienceRouteSimulation: mocks.runTauComputerScienceRouteSimulation,
 }));
+vi.mock('@/server/admissions/routes/bguRouteSimulation', () => ({
+  runBguComputerScienceProfileRouteSimulation: mocks.runBguComputerScienceProfileRouteSimulation,
+}));
+vi.mock('@/server/admissions/routes/capabilityRegistry', () => ({
+  getAdmissionRouteCapability: mocks.getAdmissionRouteCapability,
+}));
 vi.mock('server-only', () => ({}));
 
 import { POST } from './route';
 
 const profile = {
   psychometric: 660,
-  bagrutAverage: 108,
+  tauBagrutAverage: 108,
   subjectRecord: {
     schemaVersion: 1,
     sector: 'jewish',
@@ -40,7 +48,9 @@ describe('admissions routes API', () => {
     resetAdmissionsRouteRateLimitForTests();
     mocks.requireAuthenticatedUserId.mockReset();
     mocks.getUserProfileSnapshot.mockReset();
+    mocks.getAdmissionRouteCapability.mockReset();
     mocks.runTauComputerScienceRouteSimulation.mockReset();
+    mocks.runBguComputerScienceProfileRouteSimulation.mockReset();
     mocks.headers.mockResolvedValue(new Headers({ 'x-forwarded-for': '203.0.113.10' }));
     mocks.runTauComputerScienceRouteSimulation.mockResolvedValue({
       status: 'no_route',
@@ -48,6 +58,13 @@ describe('admissions routes API', () => {
       evaluatedCandidateCount: 7,
       unavailableFinalistCount: 0,
     });
+    mocks.runBguComputerScienceProfileRouteSimulation.mockResolvedValue({
+      status: 'no_route',
+      pareto: [],
+      evaluatedCandidateCount: 8,
+      unavailableFinalistCount: 0,
+    });
+    mocks.getAdmissionRouteCapability.mockReturnValue({ status: 'enabled' });
   });
 
   it('accepts a complete anonymous TAU profile without a user identifier', async () => {
@@ -55,6 +72,67 @@ describe('admissions routes API', () => {
 
     expect(response.status).toBe(200);
     expect(mocks.runTauComputerScienceRouteSimulation).toHaveBeenCalledWith({ profile });
+  });
+
+  it('accepts a schema-v2 profile while academic actions remain capability-gated', async () => {
+    const versionedProfile = {
+      ...profile,
+      subjectRecord: {
+        schemaVersion: 2 as const,
+        sector: 'jewish' as const,
+        certificateType: 'internal' as const,
+        complete: true,
+        subjects: profile.subjectRecord.subjects.map((subject) => ({
+          ...subject,
+          assessmentKind: 'exam' as const,
+        })),
+      },
+    };
+
+    const response = await POST(
+      request({ degreeId: 'tau_cs', source: 'input', profile: versionedProfile }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(mocks.runTauComputerScienceRouteSimulation).toHaveBeenCalledWith({
+      profile: versionedProfile,
+    });
+  });
+
+  it('routes a complete BGU profile through the BGU simulator', async () => {
+    const bguProfile = {
+      psychometric: 610,
+      bguBagrutAverage: 105,
+      quantitativeSubscore: 125,
+      verbalSubscore: 110,
+      englishSubscore: 115,
+      languageRequirementsConfirmed: true as const,
+      subjectRecord: {
+        schemaVersion: 2 as const,
+        sector: 'jewish' as const,
+        certificateType: 'internal' as const,
+        complete: true,
+        subjects: [
+          { subjectId: 'mathematics', units: 4, grade: 90, assessmentKind: 'exam' as const },
+        ],
+      },
+    };
+
+    const response = await POST(
+      request({ degreeId: 'bgu_cs', source: 'input', profile: bguProfile }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(mocks.runBguComputerScienceProfileRouteSimulation).toHaveBeenCalledWith({
+      profile: bguProfile,
+    });
+    expect(await response.json()).toMatchObject({
+      data: {
+        status: 'no_route',
+        target: { degreeId: 'bgu_cs', institutionId: 'bgu' },
+        evidence: { evaluatedCandidateCount: 8 },
+      },
+    });
   });
 
   it('rejects unreviewed targets and client-supplied rule versions', async () => {
@@ -66,7 +144,61 @@ describe('admissions routes API', () => {
     expect(mocks.runTauComputerScienceRouteSimulation).not.toHaveBeenCalled();
   });
 
+  it('withholds simulation when the composed route capability is disabled', async () => {
+    mocks.getAdmissionRouteCapability.mockReturnValue({ status: 'disabled' });
+
+    const response = await POST(request({ degreeId: 'tau_cs', source: 'input', profile }));
+
+    expect(response.status).toBe(422);
+    expect(await response.json()).toMatchObject({
+      error: { code: 'ADMISSIONS_ROUTE_UNSUPPORTED' },
+    });
+    expect(mocks.runTauComputerScienceRouteSimulation).not.toHaveBeenCalled();
+  });
+
+  it('returns authority unavailability as a normalized safe result', async () => {
+    mocks.runTauComputerScienceRouteSimulation.mockResolvedValue({
+      status: 'authority_unavailable',
+      pareto: [],
+      evaluatedCandidateCount: 7,
+      unavailableFinalistCount: 7,
+    });
+
+    const response = await POST(request({ degreeId: 'tau_cs', source: 'input', profile }));
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({
+      data: {
+        status: 'authority_unavailable',
+        evidence: { unavailableFinalistCount: 7 },
+      },
+    });
+  });
+
   it('loads only the authenticated caller profile for a saved-profile request', async () => {
+    mocks.requireAuthenticatedUserId.mockResolvedValue('user-1');
+    mocks.getUserProfileSnapshot.mockResolvedValue({
+      academicScores: {
+        psychometric: { overall: 660 },
+        bagrut: { weightedAverage: 108, subjectRecord: profile.subjectRecord },
+        admissions: { tauBagrutAverage: 111 },
+      },
+    });
+
+    const response = await POST(request({ degreeId: 'tau_cs', source: 'saved_profile' }));
+
+    expect(response.status).toBe(200);
+    expect(mocks.getUserProfileSnapshot).toHaveBeenCalledWith('user-1');
+    expect(mocks.runTauComputerScienceRouteSimulation).toHaveBeenCalledWith({
+      profile: {
+        psychometric: 660,
+        tauBagrutAverage: 111,
+        subjectRecord: profile.subjectRecord,
+      },
+    });
+  });
+
+  it('does not substitute the generic Bagrut average for the official TAU average', async () => {
     mocks.requireAuthenticatedUserId.mockResolvedValue('user-1');
     mocks.getUserProfileSnapshot.mockResolvedValue({
       academicScores: {
@@ -77,8 +209,8 @@ describe('admissions routes API', () => {
 
     const response = await POST(request({ degreeId: 'tau_cs', source: 'saved_profile' }));
 
-    expect(response.status).toBe(200);
-    expect(mocks.getUserProfileSnapshot).toHaveBeenCalledWith('user-1');
+    expect(response.status).toBe(422);
+    expect(mocks.runTauComputerScienceRouteSimulation).not.toHaveBeenCalled();
   });
 
   it('returns Retry-After when the route quota is exhausted', async () => {

@@ -13,7 +13,7 @@ import {
   uuid,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
-import type { BagrutSubject } from '@/types';
+import type { AdmissionsProfileInputs, StoredBagrutProfilePayload } from '@/types';
 
 export const geographicRegionEnum = pgEnum('geographic_region', [
   'center',
@@ -169,6 +169,7 @@ export const admissionReviewSlackStatusEnum = pgEnum('admission_review_slack_sta
   'pending',
   'sent',
   'failed',
+  'acceptance_unknown',
 ]);
 export const admissionPublicationAttemptStatusEnum = pgEnum(
   'admission_publication_attempt_status',
@@ -417,6 +418,7 @@ export const userProfiles = pgTable('user_profiles', {
   psychometricVerbal: integer('psychometric_verbal'),
   psychometricEnglish: integer('psychometric_english'),
   bagrutWeightedAverage: integer('bagrut_weighted_average'),
+  admissionsInputs: jsonb('admissions_inputs').$type<AdmissionsProfileInputs>(),
   bagrutProfileVersionId: uuid('bagrut_profile_version_id').references(
     () => bagrutProfileVersions.id,
     { onDelete: 'set null' },
@@ -440,7 +442,7 @@ export const bagrutProfileVersions = pgTable(
     schemaVersion: integer('schema_version').notNull(),
     contentHash: text('content_hash').notNull(),
     sector: text('sector').notNull(),
-    subjects: jsonb('subjects').$type<BagrutSubject[]>().notNull(),
+    subjects: jsonb('subjects').$type<StoredBagrutProfilePayload>().notNull(),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => ({
@@ -859,6 +861,13 @@ export const admissionAlertTransitionWork = pgTable(
     status: admissionAlertTransitionWorkStatusEnum('status').default('pending').notNull(),
     cursor: text('cursor'),
     claimedAt: timestamp('claimed_at', { withTimezone: true }),
+    claimToken: uuid('claim_token'),
+    leaseExpiresAt: timestamp('lease_expires_at', { withTimezone: true }),
+    nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }),
+    retryState: jsonb('retry_state')
+      .$type<Record<string, { attempts: number; nextAttemptAt: string; quarantined: boolean }>>()
+      .default({})
+      .notNull(),
     completedAt: timestamp('completed_at', { withTimezone: true }),
     failureReason: text('failure_reason'),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
@@ -886,6 +895,24 @@ export const admissionAlertOutbox = pgTable(
     status: admissionAlertOutboxStatusEnum('status').default('pending').notNull(),
     providerMessageId: text('provider_message_id'),
     providerAcceptedAt: timestamp('provider_accepted_at', { withTimezone: true }),
+    claimToken: uuid('claim_token'),
+    leaseExpiresAt: timestamp('lease_expires_at', { withTimezone: true }),
+    firstSubmittedAt: timestamp('first_submitted_at', { withTimezone: true }),
+    submissionStartedAt: timestamp('submission_started_at', { withTimezone: true }),
+    attemptCount: integer('attempt_count').default(0).notNull(),
+    unsubscribeTokenHash: text('unsubscribe_token_hash'),
+    unsubscribeUsedAt: timestamp('unsubscribe_used_at', { withTimezone: true }),
+    recipientHash: text('recipient_hash'),
+    deliveryEvents: jsonb('delivery_events').$type<Record<string, string>>().default({}).notNull(),
+    // Immutable request snapshot for provider idempotency. Never includes academic inputs.
+    mailPayload: jsonb('mail_payload').$type<{
+      from: string;
+      to: string;
+      subject: string;
+      html: string;
+      text: string;
+      reply_to: string;
+    }>(),
     lastAttemptAt: timestamp('last_attempt_at', { withTimezone: true }),
     nextAttemptAt: timestamp('next_attempt_at', { withTimezone: true }),
     acceptanceUnknownAt: timestamp('acceptance_unknown_at', { withTimezone: true }),
@@ -903,6 +930,9 @@ export const admissionAlertOutbox = pgTable(
     ),
     subscriptionUnique: uniqueIndex('admission_alert_outbox_subscription_unique').on(
       table.subscriptionId,
+    ),
+    unsubscribeTokenUnique: uniqueIndex('admission_alert_outbox_unsubscribe_token_unique').on(
+      table.unsubscribeTokenHash,
     ),
     queueIndex: index('admission_alert_outbox_queue_idx').on(table.status, table.nextAttemptAt),
   }),

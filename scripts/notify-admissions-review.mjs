@@ -15,7 +15,8 @@ function parseArguments(argv) {
     if (!['--run-file', '--pr-number', '--pr-url', '--controlled-failure-before-send'].includes(flag)) {
       throw new Error(`Unknown admissions review notification argument: ${flag ?? '(missing)'}.`);
     }
-    if (!value || value.startsWith('--') || values.has(flag)) throw new Error(`${flag} requires one value.`);
+    if (!value || value.startsWith('--') || values.has(flag))
+      throw new Error(`${flag} requires one value.`);
     values.set(flag, value);
   }
   const runFile = values.get('--run-file');
@@ -38,9 +39,12 @@ function resolveRunFile(path) {
   return resolved;
 }
 
-async function main() {
-  const args = parseArguments(process.argv.slice(2));
-  const vite = await createServer({
+export async function runAdmissionsReviewNotification(
+  argv,
+  { createViteServer = createServer, readRunFile = readFile, operationTimeoutMs = 15_000 } = {},
+) {
+  const args = parseArguments(argv);
+  const vite = await createViteServer({
     root,
     appType: 'custom',
     logLevel: 'error',
@@ -48,18 +52,25 @@ async function main() {
     resolve: { alias: { 'server-only': serverOnlyShim }, tsconfigPaths: true },
     optimizeDeps: { noDiscovery: true },
   });
+  let closeDb;
   try {
-    const { run } = JSON.parse(await readFile(resolveRunFile(args.runFile), 'utf8'));
+    const { run } = JSON.parse(await readRunFile(resolveRunFile(args.runFile), 'utf8'));
     const [
       { createAdmissionsReviewRunLedger },
       { buildAdmissionsReviewSlackMessage },
-      { canInjectAdmissionsReviewSlackFailure, postAdmissionsReviewSlackMessage },
-    ] =
-      await Promise.all([
-        vite.ssrLoadModule('/src/server/admissions/admissionsReviewRunLedger.ts'),
-        vite.ssrLoadModule('/src/server/admissions/weeklyReviewRun.ts'),
-        vite.ssrLoadModule('/src/server/automation/admissionsReviewSlack.ts'),
-      ]);
+      {
+        canInjectAdmissionsReviewSlackFailure,
+        postAdmissionsReviewSlackMessage,
+        shouldPostAdmissionsReviewSlack,
+      },
+      { closeDb: closeDatabase },
+    ] = await Promise.all([
+      vite.ssrLoadModule('/src/server/admissions/admissionsReviewRunLedger.ts'),
+      vite.ssrLoadModule('/src/server/admissions/weeklyReviewRun.ts'),
+      vite.ssrLoadModule('/src/server/automation/admissionsReviewSlack.ts'),
+      vite.ssrLoadModule('/src/db/client.ts'),
+    ]);
+    closeDb = closeDatabase;
     const ledger = createAdmissionsReviewRunLedger();
     if (args.prNumber !== undefined) {
       await ledger.recordPullRequest({
@@ -68,9 +79,21 @@ async function main() {
         pullRequestUrl: args.prUrl,
       });
     }
-    const existing = await ledger.getRun(run.runKey);
-    if (existing?.slackStatus === 'sent') {
-      console.info(JSON.stringify({ status: 'already_sent', runKey: run.runKey }));
+    console.info(JSON.stringify({ phase: 'ledger_read_start', runKey: run.runKey }));
+    const existing = await completeWithin(
+      ledger.getRun(run.runKey),
+      'Admissions review ledger read',
+      operationTimeoutMs,
+    );
+    console.info(JSON.stringify({ phase: 'ledger_read_complete', runKey: run.runKey }));
+    if (!shouldPostAdmissionsReviewSlack(existing?.slackStatus)) {
+      console.info(
+        JSON.stringify({
+          status:
+            existing?.slackStatus === 'acceptance_unknown' ? 'acceptance_unknown' : 'already_sent',
+          runKey: run.runKey,
+        }),
+      );
       return;
     }
     if (args.controlledFailureConfirmationId) {
@@ -97,14 +120,58 @@ async function main() {
       buildAdmissionsReviewSlackMessage(run, { pullRequestUrl: args.prUrl }),
     );
     if (result.status === 'sent') await ledger.recordSlackSent({ runKey: run.runKey });
-    else await ledger.recordSlackFailure({ runKey: run.runKey, error: result.error });
+    else if (result.status === 'acceptance_unknown') {
+      await ledger.recordSlackAcceptanceUnknown({ runKey: run.runKey, error: result.error });
+    } else {
+      await ledger.recordSlackFailure({ runKey: run.runKey, error: result.error });
+    }
     console.info(JSON.stringify({ ...result, runKey: run.runKey }));
   } finally {
-    await vite.close();
+    try {
+      if (closeDb) {
+        console.info(JSON.stringify({ phase: 'database_close_start' }));
+        await completeWithin(closeDb(), 'Admissions review database cleanup', operationTimeoutMs);
+        console.info(JSON.stringify({ phase: 'database_close_complete' }));
+      }
+    } finally {
+      console.info(JSON.stringify({ phase: 'vite_close_start' }));
+      await completeWithin(vite.close(), 'Admissions review Vite cleanup', operationTimeoutMs);
+      console.info(JSON.stringify({ phase: 'vite_close_complete' }));
+    }
   }
 }
 
-main().catch((error) => {
-  console.error(error instanceof Error ? error.message : error);
-  process.exitCode = 1;
-});
+async function completeWithin(promise, operation, timeoutMs) {
+  let timeout;
+  try {
+    return await Promise.race([
+      promise,
+      new Promise((_, reject) => {
+        timeout = setTimeout(
+          () => reject(new Error(`${operation} timed out after ${timeoutMs}ms.`)),
+          timeoutMs,
+        );
+      }),
+    ]);
+  } finally {
+    if (timeout) clearTimeout(timeout);
+  }
+}
+
+export async function runAdmissionsReviewNotificationCli(
+  argv,
+  dependencies,
+  exit = /** @type {(code: number) => void} */ (process.exit),
+) {
+  try {
+    await runAdmissionsReviewNotification(argv, dependencies);
+    exit(0);
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : error);
+    exit(1);
+  }
+}
+
+if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  void runAdmissionsReviewNotificationCli(process.argv.slice(2));
+}

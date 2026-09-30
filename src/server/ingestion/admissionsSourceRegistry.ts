@@ -1,3 +1,5 @@
+import { isHujiMedicineProgram } from '@/lib/hujiMedicineInputs';
+import { HUJI_MEDICINE_ELIGIBLE_INPUTS } from '@/data/admissions/hujiMedicineVerification';
 import {
   createCapabilityOnlyProof,
   type AdmissionsAdapterId,
@@ -8,16 +10,14 @@ import {
   type AdmissionsProofStatus,
 } from './admissionsSourceAdapters';
 import type { FreshnessCapability } from './freshnessDiscovery';
-import {
-  HUJI_PROGRAM_VERIFICATION_METADATA,
-  HUJI_SOURCE_URL,
-} from '@/data/admissions/hujiProgramVerification';
+import { HUJI_PROGRAM_VERIFICATION_METADATA } from '@/data/admissions/hujiProgramVerification';
 import { BGU_PROGRAM_VERIFICATION_METADATA } from '@/data/admissions/bguProgramVerification';
 import { TECHNION_PROGRAM_VERIFICATION_METADATA } from '@/data/admissions/technionProgramVerification';
 import {
   getHaifaProgramConfig,
   HAIFA_PROGRAM_VERIFICATION_METADATA,
 } from '@/data/admissions/haifaProgramVerification';
+import { HAIFA_INFORMATION_SYSTEMS_TRACK_ARTIFACTS } from '@/data/admissions/haifaInformationSystemsVerification';
 
 export type AdmissionsSourceCategory =
   | 'blocked'
@@ -52,12 +52,14 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
         id: artifact.contract.source.targetId,
         institutionId: 'huji',
         institutionName: 'Hebrew University of Jerusalem',
-        officialUrl: HUJI_SOURCE_URL,
+        officialUrl: artifact.contract.source.url,
         adapterId: 'huji' as const,
         expectedCapability: 'decision_capable' as const,
         proofLevel: 'exact_official' as const,
         category: 'exact' as const,
-        defaultApplicant: { bagrutAverage: 120, psychometric: 800 },
+        defaultApplicant: isHujiMedicineProgram(artifact.contract.programId)
+          ? { bagrutAverage: 0, psychometric: 800, extraInputs: HUJI_MEDICINE_ELIGIBLE_INPUTS }
+          : { bagrutAverage: 120, psychometric: 800 },
         defaultProgram: {
           targetId: artifact.contract.source.targetId,
           pairId: artifact.contract.pairId,
@@ -122,7 +124,19 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
         expectedCapability: 'decision_capable' as const,
         proofLevel: 'exact_official' as const,
         category: 'exact' as const,
-        defaultApplicant: { bagrutAverage: 100, psychometric: 800 },
+        defaultApplicant:
+          artifact.contract.programId === 'architecture'
+            ? {
+                bagrutAverage: 100,
+                psychometric: 730,
+                extraInputs: {
+                  technionArchitectureBagrutAverage: 115,
+                  technionArchitectureExamScore: 110,
+                  technionArchitectureExamPassed: true,
+                  technionArchitectureRequirementsConfirmed: true,
+                },
+              }
+            : { bagrutAverage: 100, psychometric: 800 },
         defaultProgram: {
           targetId: artifact.contract.source.targetId,
           pairId: artifact.contract.pairId,
@@ -139,32 +153,17 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
           'selectedScore',
           'acceptanceThreshold',
           'rejectionThreshold',
-          'officialVerdict',
+          'derivedVerdict',
         ],
         limitations: [
-          'Exact replay is scoped to the official Technion Sekhem calculator and current cutoff table.',
+          artifact.contract.programId === 'architecture'
+            ? 'Architecture uses Form 73, the regular Bagrut route and confirmed exam/registration requirements. Eligibility depends on available places and is not final admission.'
+            : 'Exact replay is scoped to the official Technion Sekhem calculator and current cutoff table.',
         ],
         nextAction:
           'Keep the calculator input mapping, cutoff table, fixtures, and source fingerprint under review.',
       }) satisfies AdmissionsSourceTarget,
   ),
-  {
-    id: 'technion-architecture-live',
-    institutionId: 'technion',
-    institutionName: 'Technion',
-    officialUrl: 'https://admissions.technion.ac.il/architecture-info/',
-    adapterId: 'capability_matrix',
-    expectedCapability: 'score_only',
-    proofLevel: 'partial_official',
-    category: 'manual_gate',
-    reproducedFields: ['publishedPrerequisites', 'specialSekhemDisclosure'],
-    limitations: [
-      'Architecture uses a special Sekhem formula that has not been reproduced.',
-      'The architecture entrance-exam score participates in the admission decision and is not available to the evaluator.',
-    ],
-    nextAction:
-      'Keep the pair authority-unavailable until the special Sekhem, entrance-exam contribution, cutoff, and final verdict are reproduced against the official calculator.',
-  },
   {
     id: 'colman-computer-science-live',
     institutionId: 'colman',
@@ -182,7 +181,10 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     nextAction:
       'Keep the pair authority-unavailable until a controlled comparison reproduces the official score, internal-test route, and final verdict.',
   },
-  ...Object.values(HAIFA_PROGRAM_VERIFICATION_METADATA).map(
+  ...[
+    ...Object.values(HAIFA_PROGRAM_VERIFICATION_METADATA),
+    ...Object.values(HAIFA_INFORMATION_SYSTEMS_TRACK_ARTIFACTS),
+  ].map(
     (artifact) =>
       ({
         id: artifact.contract.source.targetId,
@@ -196,7 +198,9 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
         defaultApplicant: {
           bagrutAverage: 120,
           psychometric: 800,
-          psychometricSubscores: { math: 160, verbal: 160, english: 160 },
+          bagrutYear: '2026',
+          psychometricYear: '2026',
+          psychometricSubscores: { math: 150, verbal: 150, english: 150 },
         },
         defaultProgram: {
           targetId: artifact.contract.source.targetId,
@@ -230,7 +234,7 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     defaultProgram: {
       targetId: 'tau-digital-sciences-live',
       pairId: 'tau_datascience__tau',
-      id: 'tau-digital-sciences',
+      id: 'tau_datascience',
       name: 'Digital Sciences for High-Tech',
       externalId: '056011050000',
       searchText: 'מדעים דיגיטליים',
@@ -702,7 +706,7 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
       'officialVerdict',
     ],
     limitations: [
-      'The proof covers the standard Management score route; alternate routes remain manual.',
+      'This replay proves the Management numeric score and cutoffs; the runtime separately checks all published routes and applicant conditions.',
     ],
     nextAction: 'Keep the Management node, score field, fixtures, and thresholds under review.',
   },
@@ -951,7 +955,7 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     defaultProgram: {
       targetId: 'tau-cs-live',
       pairId: 'cs__tau',
-      id: 'tau-cs',
+      id: 'cs',
       name: 'Computer Science',
       nodeId: 8220,
       externalId: '036811010000',
@@ -982,7 +986,7 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     defaultProgram: {
       targetId: 'tau-cs-legacy-live',
       pairId: 'tau_cs__tau',
-      id: 'tau-cs',
+      id: 'tau_cs',
       name: 'Computer Science',
       nodeId: 8220,
       externalId: '036811010000',

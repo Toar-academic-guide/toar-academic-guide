@@ -16,6 +16,7 @@ export interface PublishedAdmissionRule {
 
 export type AdmissionsReviewExclusionReason =
   | 'proof_not_decision_capable'
+  | 'cutoff_metric_incompatible'
   | 'missing_program_or_cutoff'
   | 'pair_verification_incomplete'
   | 'no_reviewed_baseline'
@@ -102,6 +103,10 @@ export function buildAdmissionsReviewRun(input: {
       proof.status !== 'succeeded'
     ) {
       excluded.push(exclusion(proof, 'proof_not_decision_capable'));
+      continue;
+    }
+    if (proof.normalizedPayload.publicationMetric === 'formula_score') {
+      excluded.push(exclusion(proof, 'cutoff_metric_incompatible'));
       continue;
     }
     if (!programId || cutoff === undefined) {
@@ -295,6 +300,8 @@ function exclusion(
       proof.errorReason ??
       proof.blockedReason ??
       'The official proof is not safe for a canonical rule change.',
+    cutoff_metric_incompatible:
+      'The official threshold uses a formula-score metric that cannot replace the catalogue cutoff value.',
     missing_program_or_cutoff:
       'The official proof did not contain a verified program identifier and cutoff.',
     pair_verification_incomplete:

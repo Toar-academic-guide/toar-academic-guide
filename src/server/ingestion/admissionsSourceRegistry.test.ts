@@ -8,7 +8,18 @@ import {
 
 describe('admissionsSourceRegistry', () => {
   it.each([
-    ['technion-architecture-live', 'manual_gate'],
+    ['tau-cs-live', 'cs', 'cs__tau'],
+    ['tau-cs-legacy-live', 'tau_cs', 'tau_cs__tau'],
+  ])(
+    'maps %s to its catalogue identifier for reviewed publication',
+    (targetId, programId, pairId) => {
+      const target = selectAdmissionsSourceTargets([targetId])[0];
+
+      expect(target?.defaultProgram).toMatchObject({ id: programId, pairId });
+    },
+  );
+
+  it.each([
     ['colman-computer-science-live', 'requirements_only'],
     ['tau-medicine-live', 'manual_gate'],
     ['tau-medicine-legacy-live', 'manual_gate'],
@@ -98,6 +109,7 @@ describe('admissionsSourceRegistry', () => {
       'technion-technion_biomedical-live',
       'technion-technion_civil-live',
       'technion-technion_industrial-live',
+      'technion-architecture-live',
       'haifa-accounting-live',
       'haifa-haifa_accounting-live',
       'haifa-biology-live',
@@ -125,6 +137,12 @@ describe('admissionsSourceRegistry', () => {
       'haifa-haifa_socialwork-live',
       'haifa-haifa_sociology-live',
       'haifa-haifa_statistics-live',
+      'haifa-infosystems-dual_major-live',
+      'haifa-infosystems-statistics-live',
+      'haifa-infosystems-marine_sciences-live',
+      'haifa-infosystems-neuroscience-live',
+      'haifa-infosystems-computer_science-live',
+      'haifa-infosystems-mathematics-live',
       'tau-digital-sciences-live',
       'tau-nursing-live',
       'tau-psychology-live',

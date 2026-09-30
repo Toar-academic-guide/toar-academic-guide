@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const hoistedMocks = vi.hoisted(() => ({
   getOpsDb: vi.fn(),
@@ -311,6 +311,19 @@ function baseRows(overrides: Partial<DataHealthRows> = {}): DataHealthRows {
     reviewItems: [],
     sourceFreshnessStates: [],
     admissionReleases: [],
+    admissionAlerts: {
+      currentCycle: '2026',
+      subscriptions: {},
+      transitions: {},
+      deliveries: {},
+      stuckTransitions: 0,
+      stuckDeliveries: 0,
+      staleCycleSubscriptions: 0,
+      expiredWebhookEvents: 0,
+      overdueSubscriptions: 0,
+      invalidCycles: 0,
+      retentionStatus: 'within_policy',
+    },
     ...overrides,
   };
 }
@@ -332,10 +345,29 @@ describe('summarizeDataHealthRows', () => {
     expect(report.readiness.isReady).toBe(true);
     expect(report.readiness.issues).toEqual([]);
     expect(report.formulaVerification).toMatchObject({
-      total: 135,
+      total: 131,
       exact: 126,
-      withheld: 9,
+      withheld: 4,
       isComplete: false,
+    });
+    expect(report.admissionRoutes).toMatchObject({
+      enabled: 2,
+      rows: expect.arrayContaining([
+        expect.objectContaining({
+          programId: 'tau_cs',
+          pairId: 'tau_cs__tau',
+          status: 'enabled',
+          evaluatorCapability: 'exact',
+          actionCapabilityStatus: 'ready',
+        }),
+        expect.objectContaining({
+          programId: 'bgu_cs',
+          pairId: 'bgu_cs__bgu',
+          status: 'enabled',
+          evaluatorCapability: 'exact',
+          actionCapabilityStatus: 'ready',
+        }),
+      ]),
     });
   });
 
@@ -1076,6 +1108,7 @@ describe('getDataHealthReport', () => {
     vi.restoreAllMocks();
     hoistedMocks.getOpsDb.mockReset();
   });
+  afterEach(() => vi.restoreAllMocks());
 
   it('loads report tables sequentially to stay within the ops role connection limit', async () => {
     let activeQueries = 0;
@@ -1090,16 +1123,18 @@ describe('getDataHealthReport', () => {
 
     hoistedMocks.getOpsDb.mockReturnValue({
       select: vi.fn(() => ({ from })),
+      execute: from,
     });
 
     const report = await getDataHealthReport(now);
 
     expect(report.status).toBe('ready');
-    expect(from).toHaveBeenCalledTimes(15);
+    expect(from).toHaveBeenCalledTimes(16);
     expect(maxActiveQueries).toBe(1);
   });
 
   it('returns an unavailable state when the ops database is not configured', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
     hoistedMocks.getOpsDb.mockImplementation(() => {
       throw new Error('Missing OPS_DATABASE_URL');
     });
@@ -1108,9 +1143,51 @@ describe('getDataHealthReport', () => {
       status: 'unavailable',
       message: 'Operational data health is not configured.',
     });
+    expect(log).toHaveBeenCalledWith('[data-health] Report unavailable', {
+      category: 'configuration',
+      code: 'DATABASE_URL_MISSING',
+    });
+  });
+
+  it.each([
+    ['42501', 'database_permission'],
+    ['28P01', 'database_authentication'],
+    ['42P01', 'database_schema'],
+    ['ECONNREFUSED', 'database_connection'],
+    ['SELF_SIGNED_CERT_IN_CHAIN', 'database_tls'],
+  ])('logs only the recognized nested failure code %s', async (code, category) => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const cause = Object.assign(new Error('password and private SQL must not be logged'), {
+      code,
+      detail: 'private user data',
+    });
+    hoistedMocks.getOpsDb.mockImplementation(() => {
+      throw new Error('Failed query with private parameters', { cause });
+    });
+
+    expect((await getDataHealthReport()).status).toBe('unavailable');
+    expect(log.mock.calls).toEqual([['[data-health] Report unavailable', { category, code }]]);
+  });
+
+  it('does not log arbitrary error codes, messages, stacks, or circular causes', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
+    const error = Object.assign(new Error('postgresql://private:password@host/db'), {
+      code: 'PRIVATE_TOKEN',
+      cause: {} as unknown,
+    });
+    error.cause = error;
+    hoistedMocks.getOpsDb.mockImplementation(() => {
+      throw error;
+    });
+
+    expect((await getDataHealthReport()).status).toBe('unavailable');
+    expect(log.mock.calls).toEqual([
+      ['[data-health] Report unavailable', { category: 'unknown', code: 'UNCLASSIFIED' }],
+    ]);
   });
 
   it('returns an unavailable state when the ops database query stalls', async () => {
+    const log = vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.useFakeTimers();
     hoistedMocks.getOpsDb.mockReturnValue({
       select: vi.fn(() => ({
@@ -1127,6 +1204,10 @@ describe('getDataHealthReport', () => {
         status: 'unavailable',
         message:
           'Operational data health did not respond in time. Check OPS_DATABASE_URL and Supabase pooler connectivity.',
+      });
+      expect(log).toHaveBeenCalledWith('[data-health] Report unavailable', {
+        category: 'database_timeout',
+        code: 'REPORT_TIMEOUT',
       });
     } finally {
       vi.useRealTimers();

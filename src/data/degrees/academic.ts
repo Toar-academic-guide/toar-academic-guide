@@ -183,7 +183,8 @@ export const ACADEMIC_PROGRAMS: Program[] = [
     profileScore: { AN: 3, TE: 3, CR: 3, SO: 5, LE: 2, OR: 2, DI: 0, ER: 3 },
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: 640, huji: 635, technion: null, bgu: 600, haifa: 610 },
+    thresholds: { tau: 640, huji: 635, technion: null, bgu: 620, haifa: 610 },
+    minimumPsychometric: { bgu: 600 },
     isTauEngineering: false,
   },
 
@@ -197,7 +198,7 @@ export const ACADEMIC_PROGRAMS: Program[] = [
     profileScore: { AN: 3, TE: 4, CR: 5, SO: 1, LE: 2, OR: 3, DI: 2, ER: 2 },
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: 650, huji: null, technion: 87, bgu: null, ariel: 573 },
+    thresholds: { tau: 650, huji: null, technion: 85, bgu: null, ariel: 573 },
     isTauEngineering: false,
   },
   {
@@ -245,7 +246,8 @@ export const ACADEMIC_PROGRAMS: Program[] = [
     profileScore: { AN: 3, TE: 4, CR: 2, SO: 4, LE: 2, OR: 2, DI: 0, ER: 2 },
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: 660, huji: 655, technion: null, bgu: 620, haifa: 680 },
+    thresholds: { tau: 660, technion: null, bgu: 667, haifa: 680 },
+    minimumPsychometric: { bgu: 667 },
     isTauEngineering: false,
   },
   {
@@ -275,13 +277,13 @@ export const ACADEMIC_PROGRAMS: Program[] = [
   {
     id: 'nutrition',
     name: 'תזונה ודיאטטיקה',
-    institution: 'אוניברסיטת תל אביב',
+    institution: 'האוניברסיטה העברית בירושלים',
     type: 'academic',
     category: 'מדעי הבריאות',
     profileScore: { AN: 4, TE: 2, CR: 1, SO: 3, LE: 2, OR: 3, DI: 0, ER: 3 },
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: 640, huji: 635, technion: null, bgu: 600, ariel: 620 },
+    thresholds: { huji: 635, ariel: 620 },
     isTauEngineering: false,
   },
   {

@@ -1,3 +1,4 @@
+import { isBguQuantitativeRouteProgram } from '@/lib/calculatorInputRequirements';
 import 'server-only';
 
 import { inArray } from 'drizzle-orm';
@@ -12,6 +13,7 @@ import {
 import {
   formulaBackedPairScope,
   getFormulaPairVerificationEntry,
+  verifiedProgramEntry,
   type FormulaPairVerificationLedgerEntry,
 } from '@/data/admissions/formulaBackedVerificationLedger';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
@@ -35,6 +37,10 @@ import {
   HAIFA_PROGRAM_VERIFICATION_ARTIFACTS,
 } from '@/data/admissions/haifaProgramVerification';
 import { evaluateProgramVerification } from './verification/programVerification';
+import {
+  HAIFA_INFORMATION_SYSTEMS_TRACK_ARTIFACTS,
+  getHaifaInformationSystemsTrackArtifact,
+} from '@/data/admissions/haifaInformationSystemsVerification';
 
 const SOURCE_FRESHNESS_STALE_AFTER_MS = 8 * 24 * 60 * 60 * 1000;
 
@@ -42,13 +48,11 @@ const WITHHELD_FORMULA_PAIR_CAPABILITIES: Record<
   string,
   Extract<AdmissionsEvaluationCapability, 'manual_gate' | 'requirements_only'>
 > = {
-  architecture__technion: 'manual_gate',
   colmgmt_cs__colman: 'manual_gate',
   medicine__tau: 'manual_gate',
   nutrition__tau: 'requirements_only',
   physiotherapy__tau: 'manual_gate',
   tau_medicine__tau: 'manual_gate',
-  tau_infosystems__tau: 'requirements_only',
   physiotherapy__huji: 'requirements_only',
   nutrition__bgu: 'requirements_only',
 };
@@ -112,7 +116,10 @@ const BGU_EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = Object.
         externalId: artifact.contract.officialProgramId,
         searchText: artifact.contract.source.url,
       },
-      requiredInputs: [],
+      // Published alternative routes use different inputs; the route policy resolves them.
+      requiredInputs: isBguQuantitativeRouteProgram(artifact.contract.programId)
+        ? []
+        : artifact.contract.calculation.requiredInputs,
     } satisfies ExactCapabilityTarget,
   ]),
 );
@@ -137,7 +144,10 @@ const TECHNION_EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = Ob
             ? 'invitation'
             : undefined,
       },
-      requiredInputs: ['bagrut_subject_record'],
+      requiredInputs:
+        artifact.contract.programId === 'architecture'
+          ? artifact.contract.calculation.requiredInputs
+          : ['bagrut_subject_record'],
     } satisfies ExactCapabilityTarget,
   ]),
 );
@@ -241,7 +251,7 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
       externalId: '016411010000',
       scoreField: 'hatama_refua',
       decisionMode: 'eligible_to_apply',
-      staticThresholds: { acceptance: 664.92, rejection: 640 },
+      staticThresholds: { acceptance: 658.6, rejection: 640 },
     },
     requiredInputs: ['psychometric_english'],
   },
@@ -391,7 +401,7 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
       externalId: '122111050000',
       scoreField: 'hatama_nihul',
     },
-    requiredInputs: [],
+    requiredInputs: ['tau_management_requirements'],
   },
   tau_business__tau: {
     targetId: 'tau-business-legacy-live',
@@ -405,7 +415,7 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
       externalId: '122111050000',
       scoreField: 'hatama_nihul',
     },
-    requiredInputs: [],
+    requiredInputs: ['tau_management_requirements'],
   },
   architecture__tau: {
     targetId: 'tau-architecture-live',
@@ -521,7 +531,7 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
       externalId: '036811010000',
       scoreField: 'hatama_meduyakim',
     },
-    requiredInputs: ['psychometric_english', 'bagrut_subject_record'],
+    requiredInputs: ['bagrut_subject_record', 'tau_bagrut_average', 'tau_application_requirements'],
   },
   tau_cs__tau: {
     targetId: 'tau-cs-legacy-live',
@@ -535,7 +545,7 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
       externalId: '036811010000',
       scoreField: 'hatama_meduyakim',
     },
-    requiredInputs: ['psychometric_english', 'bagrut_subject_record'],
+    requiredInputs: ['bagrut_subject_record', 'tau_bagrut_average', 'tau_application_requirements'],
   },
   ee__tau: {
     targetId: 'tau-ee-live',
@@ -653,11 +663,37 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
   },
 };
 
+const HAIFA_INFORMATION_SYSTEMS_TARGETS: Record<string, ExactCapabilityTarget> = Object.fromEntries(
+  Object.entries(HAIFA_INFORMATION_SYSTEMS_TRACK_ARTIFACTS).map(([track, artifact]) => [
+    track,
+    {
+      targetId: artifact.contract.source.targetId,
+      sourceTarget: admissionsSourceTargets.find(
+        (target) => target.id === artifact.contract.source.targetId,
+      )!,
+      program: {
+        targetId: artifact.contract.source.targetId,
+        pairId: artifact.contract.pairId,
+        id: artifact.contract.programId,
+        name: 'מערכות מידע',
+        externalId: artifact.contract.officialProgramId,
+        hug: 'SC0026',
+      },
+      requiredInputs: artifact.contract.calculation.requiredInputs,
+    },
+  ]),
+);
+
 export function exactSourceIdsForProgram(
   program: Pick<CatalogueProgram, 'id' | 'linkedInstitutionIds'>,
+  input?: AdmissionsExtraInputs,
 ) {
   return program.linkedInstitutionIds.flatMap((institutionId) => {
-    const target = EXACT_PROGRAM_TARGETS[`${program.id}__${institutionId}`];
+    const target =
+      program.id === 'haifa_infosystems' && institutionId === 'haifa'
+        ? (HAIFA_INFORMATION_SYSTEMS_TARGETS[input?.haifaInformationSystemsTrack ?? ''] ??
+          EXACT_PROGRAM_TARGETS[`${program.id}__${institutionId}`])
+        : EXACT_PROGRAM_TARGETS[`${program.id}__${institutionId}`];
     return target ? [target.targetId] : [];
   });
 }
@@ -708,9 +744,24 @@ export function buildAdmissionsCapabilityMatrix(args: {
   return program.linkedInstitutionIds.map((institutionId) => {
     const pairId = `${program.id}__${institutionId}`;
     const formulaPairScope = formulaBackedPairScope(pairId);
-    const pairVerification = getFormulaPairVerificationEntry(pairId);
-    const verificationArtifact = getProgramVerificationArtifact(pairId);
-    const exactTarget = EXACT_PROGRAM_TARGETS[pairId];
+    if (pairId === 'haifa_infosystems__haifa' && !input?.haifaInformationSystemsTrack)
+      return {
+        institutionId,
+        capability: 'needs_input',
+        formulaPairScope,
+        requiredInputs: ['haifa_information_systems_track'],
+      };
+    const trackArtifact =
+      pairId === 'haifa_infosystems__haifa'
+        ? getHaifaInformationSystemsTrackArtifact(input?.haifaInformationSystemsTrack)
+        : undefined;
+    const pairVerification = trackArtifact
+      ? verifiedProgramEntry(trackArtifact)
+      : getFormulaPairVerificationEntry(pairId);
+    const verificationArtifact = trackArtifact ?? getProgramVerificationArtifact(pairId);
+    const exactTarget = trackArtifact
+      ? HAIFA_INFORMATION_SYSTEMS_TARGETS[input!.haifaInformationSystemsTrack!]
+      : EXACT_PROGRAM_TARGETS[pairId];
     const sourceTarget =
       exactTarget?.sourceTarget ?? SOURCE_TARGETS_BY_INSTITUTION.get(institutionId);
     const evidence = selectBestEvidence(institutionId);

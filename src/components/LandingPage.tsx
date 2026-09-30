@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { allowsNoPsychometric, allowsNoGenericBagrut } from '@/lib/calculatorInputRequirements';
 import { motion } from 'framer-motion';
 import {
   ArrowLeft,
@@ -22,7 +23,11 @@ interface Props {
   onNeedHelp: () => void;
   onSignIn: () => void;
   onGoToBucket: () => void;
-  onCalculate: (psychometric: number, bagrut: number, degreeId: string) => void;
+  onCalculate: (
+    psychometric: number | undefined,
+    bagrut: number | undefined,
+    degreeId: string,
+  ) => void;
   onGoToProfile: () => void;
   programs: CatalogueProgram[];
   authLoading?: boolean;
@@ -488,12 +493,17 @@ export default function LandingPage({
     const errs: typeof calcErrors = {};
     const psy = Number(psychometric);
     const bag = Number(bagrut);
-
-    if (!psychometric || Number.isNaN(psy) || psy < 200 || psy > 800) {
+    const optionalPsychometric = allowsNoPsychometric(selectedDegreeId);
+    if (
+      (!psychometric && !optionalPsychometric) ||
+      (psychometric && (isNaN(psy) || psy < 200 || psy > 800))
+    ) {
       errs.psychometric = 'ציון בין 200 ל-800';
     }
-
-    if (!bagrut || Number.isNaN(bag) || bag < 60 || bag > 120) {
+    if (
+      (!bagrut && !allowsNoGenericBagrut(selectedDegreeId)) ||
+      (bagrut && (isNaN(bag) || bag < 60 || bag > 120))
+    ) {
       errs.bagrut = 'ממוצע בין 60 ל-120';
     }
 
@@ -506,7 +516,7 @@ export default function LandingPage({
       return;
     }
     if (Object.keys(errs).length === 0) {
-      onCalculate(psy, bag, selectedDegreeId);
+      onCalculate(psychometric ? psy : undefined, bagrut ? bag : undefined, selectedDegreeId);
     }
   }
 
@@ -657,6 +667,7 @@ export default function LandingPage({
                 <div>
                   <label htmlFor="calc-psychometric" className="mb-2 block text-sm font-bold">
                     ציון פסיכומטרי
+                    {allowsNoPsychometric(selectedDegreeId) ? ' (רשות לאפיק ללא פסיכומטרי)' : ''}
                   </label>
                   <input
                     id="calc-psychometric"
@@ -681,6 +692,7 @@ export default function LandingPage({
                 <div>
                   <label htmlFor="calc-bagrut" className="mb-2 block text-sm font-bold">
                     ממוצע בגרות
+                    {allowsNoGenericBagrut(selectedDegreeId) ? ' (רשות — לפי נתוני הפרופיל)' : ''}
                   </label>
                   <input
                     id="calc-bagrut"
