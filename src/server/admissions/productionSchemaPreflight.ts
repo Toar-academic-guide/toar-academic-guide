@@ -56,6 +56,7 @@ type TableContract = {
   policies: string[];
   policyMigrations?: Record<string, MigrationId>;
   grants: Record<string, string[]>;
+  dashboardReadColumns?: string[];
 };
 
 type EnumContract = {
@@ -155,10 +156,23 @@ const tables: Record<string, TableContract> = {
   admission_alternative_paths: securedExistingTable('admission_alternative_paths'),
   admission_facts: securedExistingTable('admission_facts'),
   admissions_source_candidates: securedExistingTable('admissions_source_candidates'),
-  ingestion_sources: automationOnlyExistingTable('ingestion_sources'),
+  ingestion_sources: {
+    ...automationOnlyExistingTable('ingestion_sources'),
+    dashboardReadColumns: ['id', 'institution_id', 'program_id', 'difficulty', 'source_url'],
+  },
   ingestion_jobs: {
     ...automationOnlyExistingTable('ingestion_jobs'),
     policyMigrations: { ingestion_jobs_admissions_automation_insert: '0025' },
+    dashboardReadColumns: [
+      'id',
+      'source_id',
+      'status',
+      'difficulty',
+      'started_at',
+      'completed_at',
+      'error_text',
+      'created_at',
+    ],
   },
   ingestion_payloads: {
     ...automationOnlyExistingTable('ingestion_payloads'),
@@ -167,6 +181,15 @@ const tables: Record<string, TableContract> = {
   review_items: {
     ...automationOnlyExistingTable('review_items'),
     policyMigrations: { review_items_admissions_automation_insert: '0025' },
+    dashboardReadColumns: [
+      'id',
+      'payload_id',
+      'admission_requirement_id',
+      'target_field',
+      'status',
+      'created_at',
+      'reviewed_at',
+    ],
   },
   source_freshness_checks: securedExistingTable('source_freshness_checks', ['SELECT', 'INSERT']),
   source_freshness_states: securedExistingTable('source_freshness_states', [
@@ -837,6 +860,33 @@ function assessTableSecurity(
         object: `grant:${role}:${tableName}`,
         detail: `Expected [${expected.join(', ')}], found [${actual.join(', ')}].`,
       });
+    }
+  }
+  if (contract.dashboardReadColumns && applied.has('0035')) {
+    const policy = `${tableName}_ops_readonly_select`;
+    if (!table.policies.includes(policy)) {
+      issues.push({
+        code: 'missing_policy',
+        object: `policy:${policy}`,
+        detail: `Required dashboard read policy on public.${tableName} is absent.`,
+      });
+    }
+    for (const role of [...browserRoles, ...runtimeRoles]) {
+      const actualGrants = table.columnGrants[role] ?? {};
+      for (const privilege of new Set(['SELECT', ...Object.keys(actualGrants)])) {
+        const expected =
+          role === 'ops_readonly' && privilege === 'SELECT'
+            ? [...contract.dashboardReadColumns].sort()
+            : [];
+        const actual = [...(actualGrants[privilege] ?? [])].sort();
+        if (actual.join(',') !== expected.join(',')) {
+          issues.push({
+            code: 'grant_mismatch',
+            object: `grant:${role}:${tableName}.column:${privilege}`,
+            detail: `Expected columns [${expected.join(', ')}], found [${actual.join(', ')}].`,
+          });
+        }
+      }
     }
   }
 }

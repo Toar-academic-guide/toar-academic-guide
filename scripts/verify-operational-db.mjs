@@ -212,10 +212,15 @@ async function loadSnapshot(sql) {
       from pg_class c
       join pg_namespace n on n.oid = c.relnamespace
       join pg_attribute attribute on attribute.attrelid = c.oid
-      join pg_roles database_role on database_role.rolname = 'admissions_automation'
-      cross join unnest(${['INSERT', 'UPDATE', 'REFERENCES']}::text[]) as column_privilege(privilege)
+      cross join pg_roles database_role
+      cross join unnest(${['SELECT', 'INSERT', 'UPDATE', 'REFERENCES']}::text[]) as column_privilege(privilege)
       where n.nspname = 'public'
-        and c.relname = 'admission_thresholds'
+        and (
+          (database_role.rolname = 'admissions_automation' and c.relname = 'admission_thresholds'
+            and column_privilege.privilege <> 'SELECT')
+          or (database_role.rolname = any(${['anon', 'authenticated', 'app_runtime', 'ops_readonly']}::text[])
+            and c.relname = any(${['ingestion_sources', 'ingestion_jobs', 'review_items']}::text[]))
+        )
         and c.relkind in ('r', 'p')
         and attribute.attnum > 0
         and not attribute.attisdropped
