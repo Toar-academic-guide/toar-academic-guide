@@ -32,7 +32,8 @@ function operationalConnectionOptions(connectionString: string): PoolConfig {
   const url = new URL(connectionString);
   const mode = url.searchParams.get('sslmode');
   if (
-    /^db\.[a-z0-9]+\.supabase\.co$/.test(url.hostname) &&
+    (/^db\.[a-z0-9]+\.supabase\.co$/.test(url.hostname) ||
+      /^[a-z0-9-]+\.pooler\.supabase\.com$/.test(url.hostname)) &&
     mode &&
     ['require', 'prefer', 'verify-ca', 'verify-full'].includes(mode) &&
     !['sslrootcert', 'sslcert', 'sslkey', 'ssl'].some((key) => url.searchParams.has(key))
