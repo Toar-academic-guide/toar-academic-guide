@@ -2,6 +2,7 @@ import 'server-only';
 import { createHash } from 'node:crypto';
 import { and, eq, sql } from 'drizzle-orm';
 import { getDb } from '@/db/client';
+import { queryRows } from '@/db/queryRows';
 import { admissionAlertOutbox, admissionAlertSubscriptions } from '@/db/schema';
 import type { AdmissionAlertMailPayload } from './deliveryWorker';
 import { renderAdmissionAlertEmail, type AdmissionAlertEmailConfig } from './emailTemplate';
@@ -48,13 +49,15 @@ export async function prepareNextAlertDelivery(
   db = getDb(),
   now = new Date(),
 ) {
-  const candidates = await db.execute<{ id: string; subscription_id: string }>(sql`
+  const candidates = queryRows(
+    await db.execute<{ id: string; subscription_id: string }>(sql`
     select o.id, o.subscription_id from admission_alert_outbox o
     join admission_alert_subscriptions s on s.id=o.subscription_id
     where o.status='pending' and o.mail_payload is null and s.status='pending_delivery'
       and s.cycle=${admissionCycleFor(now)}
     order by o.created_at, o.id limit 1
-  `);
+  `),
+  );
   const candidate = candidates[0];
   if (!candidate) return false;
   await db.transaction(async (tx) => {
@@ -76,13 +79,14 @@ export async function prepareNextAlertDelivery(
       outbox.mailPayload
     )
       return;
-    const [context] = await tx.execute<{
-      email: string | null;
-      institution: string;
-      program: string;
-      published_at: Date;
-      opted_in: boolean | null;
-    }>(sql`
+    const [context] = queryRows(
+      await tx.execute<{
+        email: string | null;
+        institution: string;
+        program: string;
+        published_at: Date;
+        opted_in: boolean | null;
+      }>(sql`
       select admission_alert_private.delivery_recipient(${outbox.id}::uuid) as email,
         i.name as institution, p.name as program, r.published_at, pref.opted_in
       from admission_target_transitions t
@@ -92,7 +96,8 @@ export async function prepareNextAlertDelivery(
       where t.id=${outbox.transitionId}::uuid and r.status='published'
         and r.release_kind='canonical_change' and r.published_at is not null
         and t.institution_id=${sub.institutionId} and t.program_id=${sub.programId} and t.cycle=${sub.cycle}
-    `);
+    `),
+    );
     if (!context || context.opted_in === false || sub.cycle !== admissionCycleFor(now)) {
       await tx
         .update(admissionAlertOutbox)
