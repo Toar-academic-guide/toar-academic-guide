@@ -648,8 +648,41 @@ describe('evaluateAdmissionsForProgram', () => {
       institutions,
       fetcher: vi.fn<typeof fetch>().mockRejectedValue(new Error('Official source unavailable')),
     });
-    expect(report.results[0]).toMatchObject({ kind: 'degraded', decision: 'unknown' });
+    expect(report.results[0]).toMatchObject({
+      kind: 'requirements_only',
+      decision: 'unknown',
+      sourceLabel: 'תנאי הקבלה האחרונים שאומתו',
+    });
+    expect(report.results[0].explanation).toContain('610');
+    expect(report.results[0].explanation).toContain('נתוני הבסיס אומתו');
+    expect(report.results[0].officialUrls?.[0]).toMatch(/^https:\/\//);
     expect(report.results[0].score).toBeUndefined();
+  });
+
+  it('runs a live calculation with older verified rules and displays their verification date', async () => {
+    const states = qualifiedFreshnessStates(management, managementInputs);
+    for (const state of states.values()) state.lastExactCheckAt = new Date('2026-09-27T12:00:00Z');
+    const fetcher = managementFetcher(639);
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'business',
+        psychometric: 605,
+        bagrut: 100,
+        extraInputs: managementInputs,
+      },
+      program: management,
+      institutions,
+      freshnessStatesBySourceId: states,
+      fetcher,
+      now: new Date('2026-10-06T15:57:40Z'),
+    });
+    expect(report.results[0]).toMatchObject({
+      kind: 'exact',
+      decision: 'eligible_to_apply',
+      score: 639,
+    });
+    expect(report.results[0].explanation).toContain('27.9.2026');
+    expect(fetcher).toHaveBeenCalled();
   });
 
   it('preserves unavailable Management source authority when the applicant has no psychometric score', async () => {
@@ -659,7 +692,7 @@ describe('evaluateAdmissionsForProgram', () => {
       institutions,
       freshnessStatesBySourceId: new Map(),
     });
-    expect(report.results[0]).toMatchObject({ kind: 'authority_unavailable', decision: 'unknown' });
+    expect(report.results[0]).toMatchObject({ kind: 'requirements_only', decision: 'unknown' });
   });
 
   it('asks for Management conditions instead of unrelated Digital Sciences subjects', async () => {
@@ -813,7 +846,7 @@ describe('evaluateAdmissionsForProgram', () => {
     expect(haifaCs).toEqual(originalHaifaProgram);
   });
 
-  it('fails closed when an exact pair has no persisted weekly authority', async () => {
+  it('shows saved requirements and a usable calculator link when weekly authority is missing', async () => {
     const fetcher = vi.fn<typeof fetch>();
 
     const report = await evaluateAdmissionsForProgram({
@@ -823,7 +856,14 @@ describe('evaluateAdmissionsForProgram', () => {
         bagrut: 115,
       },
       program: bguCs,
-      institutions,
+      institutions: institutions.map((institution) =>
+        institution.id === 'bgu'
+          ? {
+              ...institution,
+              calculatorUrl: 'https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html',
+            }
+          : institution,
+      ),
       fetcher,
       freshnessStatesBySourceId: new Map(),
     });
@@ -832,9 +872,10 @@ describe('evaluateAdmissionsForProgram', () => {
     expect(report.results).toContainEqual(
       expect.objectContaining({
         linkedInstitutionId: 'bgu',
-        capability: 'authority_unavailable',
-        kind: 'authority_unavailable',
+        capability: 'requirements_only',
+        kind: 'requirements_only',
         decision: 'unknown',
+        officialUrls: ['https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html'],
       }),
     );
   });
@@ -2954,7 +2995,7 @@ describe('current HUJI Medicine staged evaluation', () => {
         ),
     });
     expect(report.results).toContainEqual(
-      expect.objectContaining({ kind: 'degraded', decision: 'unknown' }),
+      expect.objectContaining({ kind: 'requirements_only', decision: 'unknown' }),
     );
   });
 });

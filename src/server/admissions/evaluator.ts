@@ -87,6 +87,8 @@ import {
   BGU_ENGINEERING_GUIDE_URL,
 } from './bguEngineeringPolicy';
 import { runBguEngineeringAdmissionsProof } from '@/server/ingestion/adapters/bguEngineeringAdmissions';
+import { getProgramVerificationArtifact } from '@/data/admissions/tauProgramVerification';
+import { getHaifaInformationSystemsTrackArtifact } from '@/data/admissions/haifaInformationSystemsVerification';
 
 type AdmissionsEvaluationInput = AdmissionsEvaluationRequest & {
   psychometric: number;
@@ -136,10 +138,16 @@ export async function evaluateAdmissionsForProgram(args: {
     now,
   });
 
-  const versionedResults = results.map((result) => ({
-    ...result,
-    snapshot: createAdmissionsEvaluationSnapshot({ input, result }),
-  }));
+  const versionedResults = results.map((result) => {
+    const entry = capabilityEntries.find(
+      (item) => item.institutionId === result.linkedInstitutionId,
+    );
+    const displayedResult = withVerifiedAdmissionInformation(result, entry, input);
+    return {
+      ...displayedResult,
+      snapshot: createAdmissionsEvaluationSnapshot({ input, result: displayedResult }),
+    };
+  });
 
   return {
     generatedAt: now.toISOString(),
@@ -151,6 +159,63 @@ export async function evaluateAdmissionsForProgram(args: {
       name: program.name,
     },
     results: versionedResults,
+  };
+}
+
+function withVerifiedAdmissionInformation(
+  result: AdmissionsEvaluationResult,
+  entry: AdmissionsCapabilityEntry | undefined,
+  input: AdmissionsEvaluationRequest,
+): AdmissionsEvaluationResult {
+  if (entry?.formulaPairScope === 'excluded' || entry?.pairVerification?.state !== 'exact')
+    return result;
+
+  const artifact =
+    input.degreeId === 'haifa_infosystems' && result.linkedInstitutionId === 'haifa'
+      ? getHaifaInformationSystemsTrackArtifact(input.extraInputs?.haifaInformationSystemsTrack)
+      : getProgramVerificationArtifact(`${input.degreeId}__${result.linkedInstitutionId}`);
+  const contract = artifact?.contract;
+  if (!contract || contract.proof.state !== 'verified' || !contract.proof.liveComparedAt)
+    return result;
+
+  const checkedAt =
+    entry.freshnessState?.reviewedSourceFingerprint === contract.sourceFingerprint &&
+    entry.freshnessState.lastExactCheckAt
+      ? entry.freshnessState.lastExactCheckAt
+      : new Date(contract.proof.liveComparedAt);
+  const verificationNote = `נתוני הבסיס אומתו ב־${new Intl.DateTimeFormat('he-IL', {
+    dateStyle: 'short',
+    timeZone: 'Asia/Jerusalem',
+  }).format(checkedAt)}, למחזור ${contract.admissionCycle}.`;
+
+  if (result.capability === 'exact') {
+    return { ...result, explanation: `${result.explanation} ${verificationNote}` };
+  }
+  if (
+    !['degraded', 'authority_unavailable', 'unsupported'].includes(result.kind) ||
+    !Number.isFinite(contract.calculation.cutoff.acceptance) ||
+    contract.calculation.cutoff.acceptance <= 0
+  )
+    return result;
+
+  return {
+    institution: result.institution,
+    linkedInstitutionId: result.linkedInstitutionId,
+    capability: 'requirements_only',
+    kind: 'requirements_only',
+    decision: 'unknown',
+    confidence: 'low',
+    sourceLabel: 'תנאי הקבלה האחרונים שאומתו',
+    explanation: `סף הקבלה השמור למסלול הוא ${contract.calculation.cutoff.acceptance} בציון המוסדי. ${verificationNote}`,
+    nextAction:
+      'המידע השמור זמין לעיון, אך אין כרגע החלטת קבלה עדכנית. בדקו באתר המוסד את הסף ואת יתר תנאי הקבלה.',
+    officialUrls: [
+      result.institution.calculatorUrl ??
+        result.institution.programUrl ??
+        result.officialUrls?.[0] ??
+        contract.source.url,
+    ],
+    degradationReason: result.degradationReason,
   };
 }
 
@@ -1634,7 +1699,7 @@ function evaluateNonExactResult(args: {
       decision: 'unknown',
       confidence: 'low',
       sourceLabel: 'אימות רשמי לא זמין',
-      explanation: 'מצב המקור הרשמי מיושן או נכשל לאחרונה, ולכן לא נציג החלטה רשמית.',
+      explanation: 'לא הצלחנו להשלים אימות עדכני של תנאי הקבלה.',
       nextAction: 'נסו שוב מאוחר יותר או בדקו ישירות במקור הרשמי.',
       degradationReason: 'source_stale',
     };

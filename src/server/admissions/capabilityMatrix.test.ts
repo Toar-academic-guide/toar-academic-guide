@@ -189,6 +189,26 @@ function buildCapabilityMatrix(
 const buildAdmissionsCapabilityMatrix = buildCapabilityMatrix;
 
 describe('buildAdmissionsCapabilityMatrix', () => {
+  it.each(['tau', 'technion', 'huji', 'haifa'])(
+    'keeps the verified %s calculation available after eight days',
+    (institutionId) => {
+      const program = makeProgram({ id: 'cs', linkedInstitutionIds: [institutionId] });
+      const checkedAt = new Date('2026-09-27T12:00:00Z');
+      const args = {
+        program,
+        institutions: INSTITUTIONS,
+        freshnessStatesBySourceId: qualifiedFreshnessStatesFor(program, checkedAt),
+      };
+      const [before] = buildAdmissionsCapabilityMatrix({ ...args, now: checkedAt });
+      const [after] = buildAdmissionsCapabilityMatrix({
+        ...args,
+        now: new Date('2026-10-06T15:57:40Z'),
+      });
+      expect(['exact', 'needs_input']).toContain(before.capability);
+      expect(after.capability).toBe(before.capability);
+    },
+  );
+
   it('requires a track and does not substitute a verified track for ordinary single-major', () => {
     const args = {
       program: makeProgram({ id: 'haifa_infosystems', linkedInstitutionIds: ['haifa'] }),
@@ -348,7 +368,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     expect(entry?.capability).toBe('authority_unavailable');
   });
 
-  it('withdraws an exact pair when its last exact-qualified weekly check is stale', () => {
+  it('requests missing applicant inputs even when the last verified check is old', () => {
     const program = makeProgram({
       id: 'tau_datascience',
       linkedInstitutionIds: ['tau'],
@@ -362,7 +382,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
       now: new Date('2026-08-04T00:00:01Z'),
     });
 
-    expect(entry?.capability).toBe('stale');
+    expect(entry?.capability).toBe('needs_input');
   });
 
   it('does not let a partial weekly result activate an exact pair', () => {
