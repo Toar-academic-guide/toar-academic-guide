@@ -1,5 +1,5 @@
 import { randomUUID } from 'node:crypto';
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
 import * as schema from '@/db/schema';
@@ -66,7 +66,12 @@ describe.skipIf(!enabled)('transition recovery with PostgreSQL', () => {
       );
   });
   beforeEach(async () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(now);
     await client.unsafe(`truncate ${tables.map((table) => `${namespace}.${table}`).join(',')}`);
+  });
+  afterEach(() => {
+    vi.useRealTimers();
   });
   afterAll(async () => {
     await client.unsafe(`drop schema ${namespace} cascade`);
