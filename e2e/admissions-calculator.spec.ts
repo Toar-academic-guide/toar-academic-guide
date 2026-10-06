@@ -12,21 +12,21 @@ async function expectSafeResult(
   await expect(page.getByLabel(`${institution}: מתקבל/ת`, { exact: true })).toHaveCount(0);
 
   if (isStaticCatalogue) {
-    await expect(page.getByLabel(`${institution}: האימות טרם הושלם`)).toBeVisible();
-    await expect(page.getByText('האימות הרשמי טרם הושלם', { exact: true }).first()).toBeVisible();
+    await expect(page.getByLabel(`${institution}: תנאי קבלה`)).toBeVisible();
+    await expect(
+      page.getByText('תנאי הקבלה האחרונים שאומתו', { exact: true }).first(),
+    ).toBeVisible();
+    await expect(page.getByText(/סף הקבלה השמור למסלול הוא/).first()).toBeVisible();
+    await expect(page.getByText(/נתוני הבסיס אומתו ב־/).first()).toBeVisible();
     return;
   }
 
   await expect(
-    page.getByLabel(
-      new RegExp(`^${institution}: (?:${liveStatus.source}|אימות לא זמין|האימות טרם הושלם)$`),
-    ),
+    page.getByLabel(new RegExp(`^${institution}: (?:${liveStatus.source}|תנאי קבלה)$`)),
   ).toBeVisible();
   await expect(
     page
-      .getByText(
-        new RegExp(`^(?:${liveSourceLabel.source}|אימות רשמי לא זמין|האימות הרשמי טרם הושלם)$`),
-      )
+      .getByText(new RegExp(`^(?:${liveSourceLabel.source}|תנאי הקבלה האחרונים שאומתו)$`))
       .first(),
   ).toBeVisible();
 }

@@ -42,8 +42,6 @@ import {
   getHaifaInformationSystemsTrackArtifact,
 } from '@/data/admissions/haifaInformationSystemsVerification';
 
-const SOURCE_FRESHNESS_STALE_AFTER_MS = 8 * 24 * 60 * 60 * 1000;
-
 const WITHHELD_FORMULA_PAIR_CAPABILITIES: Record<
   string,
   Extract<AdmissionsEvaluationCapability, 'manual_gate' | 'requirements_only'>
@@ -738,7 +736,6 @@ export function buildAdmissionsCapabilityMatrix(args: {
     input,
     freshnessStatesBySourceId = new Map<string, SourceFreshnessStateRow>(),
     freshnessAuthorityUnavailable = false,
-    now = new Date(),
   } = args;
 
   return program.linkedInstitutionIds.map((institutionId) => {
@@ -873,14 +870,10 @@ export function buildAdmissionsCapabilityMatrix(args: {
         };
       }
 
-      if (
-        !isExactFreshnessState(freshnessState, verificationArtifact.contract.sourceFingerprint, now)
-      ) {
+      if (!isExactFreshnessState(freshnessState, verificationArtifact.contract.sourceFingerprint)) {
         return {
           institutionId,
-          capability: isFreshnessStateStale(freshnessState, now)
-            ? 'stale'
-            : 'authority_unavailable',
+          capability: freshnessState.lastExactCheckAt ? 'authority_unavailable' : 'stale',
           formulaPairScope,
           pairVerification,
           sourceTarget,
@@ -937,7 +930,7 @@ export function buildAdmissionsCapabilityMatrix(args: {
         };
       }
 
-      if (freshnessState?.status === 'failed' || isFreshnessStateStale(freshnessState, now)) {
+      if (freshnessState?.status === 'failed' || !freshnessState.lastExactCheckAt) {
         return {
           institutionId,
           capability: 'stale',
@@ -1181,7 +1174,6 @@ export function buildAdmissionsCapabilityMatrix(args: {
 function isExactFreshnessState(
   state: SourceFreshnessStateRow,
   reviewedSourceFingerprint: string,
-  now: Date,
 ): boolean {
   return (
     state.status === 'fresh' &&
@@ -1190,7 +1182,7 @@ function isExactFreshnessState(
     (state.decisionProvenance === 'official_response' ||
       state.decisionProvenance === 'verified_derivation') &&
     state.reviewedSourceFingerprint === reviewedSourceFingerprint &&
-    !isFreshnessStateStale(state, now)
+    Boolean(state.lastExactCheckAt)
   );
 }
 
@@ -1304,16 +1296,4 @@ function hasDecisionThreshold(program: CatalogueProgram, institutionId: string):
     (sekhemThreshold !== undefined && sekhemThreshold !== null) ||
     (directPsychometric !== undefined && directPsychometric !== null)
   );
-}
-
-function isFreshnessStateStale(state: SourceFreshnessStateRow | undefined, now: Date): boolean {
-  if (!state || state.status !== 'fresh') {
-    return false;
-  }
-
-  if (!state.lastExactCheckAt) {
-    return true;
-  }
-
-  return now.getTime() - state.lastExactCheckAt.getTime() > SOURCE_FRESHNESS_STALE_AFTER_MS;
 }
