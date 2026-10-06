@@ -40,9 +40,10 @@ async function main() {
       repository: createDrizzleAdmissionAlertExpirationRepository(),
     });
     const { getDb } = await vite.ssrLoadModule('/src/db/client.ts');
+    const { queryRows } = await vite.ssrLoadModule('/src/db/queryRows.ts');
     const { sql } = await import('drizzle-orm');
-    const [retention] = await getDb().execute(
-      sql`select admission_alert_private.prune_retained_data() as cleanup`,
+    const [retention] = queryRows(
+      await getDb().execute(sql`select admission_alert_private.prune_retained_data() as cleanup`),
     );
     console.log(JSON.stringify({ ...result, retention: retention.cleanup }));
   } finally {
