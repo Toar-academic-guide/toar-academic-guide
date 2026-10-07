@@ -50,7 +50,7 @@
     "posthog-js": "^1.396.3",
     "posthog-node": "^5.46.1",
     "react": "19.2.7",
-    "react-dom": "19.2.7",
+    "react-dom": "19.3.0",
     "server-only": "^0.0.1",
     "svix": "1.99.1",
     "zod": "^4.4.3"
