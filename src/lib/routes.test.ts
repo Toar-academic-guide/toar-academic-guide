@@ -19,6 +19,8 @@ describe('route contract', () => {
   });
 
   it('accepts safe local return paths', () => {
+    expect(normalizeSafeNextPath('/#saved')).toBe('/#saved');
+    expect(normalizeSafeNextPath('/#results')).toBe('/#results');
     expect(normalizeSafeNextPath('/')).toBe(ROUTES.home);
     expect(normalizeSafeNextPath('/about')).toBe(ROUTES.about);
     expect(normalizeSafeNextPath('/app/saved-programs')).toBe(ROUTES.savedPrograms);

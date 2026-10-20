@@ -1,135 +1,101 @@
 import { expect, test, type Page } from '@playwright/test';
 
-const isStaticCatalogue = process.env.CATALOGUE_SOURCE_MODE === 'static';
-
-async function expectSafeResult(
-  page: Page,
-  institution: string,
-  liveStatus: RegExp,
-  liveSourceLabel: RegExp,
-) {
-  await expect(page.getByText(institution, { exact: true })).toBeVisible();
-  await expect(page.getByLabel(`${institution}: מתקבל/ת`, { exact: true })).toHaveCount(0);
-
-  if (isStaticCatalogue) {
-    await expect(page.getByLabel(`${institution}: תנאי קבלה`)).toBeVisible();
-    await expect(
-      page.getByText('תנאי הקבלה האחרונים שאומתו', { exact: true }).first(),
-    ).toBeVisible();
-    await expect(page.getByText(/סף הקבלה השמור למסלול הוא/).first()).toBeVisible();
-    await expect(page.getByText(/נתוני הבסיס אומתו ב־/).first()).toBeVisible();
-    return;
+async function enterJourney(page: Page, field: string, bagrut?: number, psychometric?: number) {
+  await page.goto('/app/calculator');
+  await page.getByLabel('חיפוש תחום לימודים').fill(field);
+  await page.getByRole('button', { name: field, exact: true }).click();
+  await page.getByRole('button', { name: 'המשך', exact: true }).click();
+  await expect(page.getByRole('button', { name: 'כל הארץ', exact: true })).toHaveAttribute(
+    'aria-pressed',
+    'true',
+  );
+  await page.getByRole('button', { name: 'המשך', exact: true }).click();
+  if (bagrut === undefined) {
+    await page.getByRole('button', { name: /אין לי כרגע ציוני בגרות/ }).click();
+  } else {
+    await page.getByRole('button', { name: /יש לי ממוצע בגרות/ }).click();
+    await page.getByLabel('ממוצע בגרות', { exact: true }).fill(String(bagrut));
+    await page.getByRole('button', { name: 'המשך', exact: true }).click();
   }
-
-  await expect(
-    page.getByLabel(new RegExp(`^${institution}: (?:${liveStatus.source}|תנאי קבלה)$`)),
-  ).toBeVisible();
-  await expect(
-    page
-      .getByText(new RegExp(`^(?:${liveSourceLabel.source}|תנאי הקבלה האחרונים שאומתו)$`))
-      .first(),
-  ).toBeVisible();
+  if (psychometric === undefined) {
+    await page.getByRole('button', { name: 'בלי פסיכומטרי כרגע' }).click();
+  } else {
+    await page.getByRole('button', { name: 'כן, יש לי ציון' }).click();
+    await page.getByLabel('ציון כללי', { exact: true }).fill(String(psychometric));
+    await expect(page.getByLabel('כמותי', { exact: true })).toBeVisible();
+    await expect(page.getByLabel('מילולי', { exact: true })).toBeVisible();
+    await expect(page.getByLabel('אנגלית', { exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'המשך', exact: true }).click();
+  }
 }
 
-test.describe('app admissions calculator', () => {
-  test('submits Industrial Engineering without inventing a psychometric score', async ({
-    page,
-  }) => {
-    await page.goto('/app/calculator');
-    await page.locator('#bagrut').fill('109');
-    await page.locator('#degree').selectOption('bgu_industrial');
-    await expect(page.getByLabel('ציון פסיכומטרי (רשות לאפיק ללא פסיכומטרי)')).toBeVisible();
-    const responsePromise = page.waitForResponse(
-      (response) =>
-        response.url().endsWith('/api/admissions/evaluate') &&
-        response.request().method() === 'POST',
-    );
-    await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
-    const response = await responsePromise;
-    expect(response.request().postDataJSON()).toMatchObject({
-      degreeId: 'bgu_industrial',
-      bagrut: 109,
-    });
-    expect(response.request().postDataJSON().psychometric).toBeUndefined();
-    expect(response.status()).toBe(200);
-    await expect(page.getByText('אוניברסיטת בן-גוריון בנגב', { exact: true })).toBeVisible();
-    await expect(
-      page.getByLabel('אוניברסיטת בן-גוריון בנגב: מתקבל/ת', { exact: true }),
-    ).toHaveCount(0);
+function evaluationFor(page: Page, degreeId: string) {
+  return page.waitForResponse(
+    (response) =>
+      response.url().endsWith('/api/admissions/evaluate') &&
+      response.request().method() === 'POST' &&
+      response.request().postDataJSON().degreeId === degreeId,
+  );
+}
+
+test('Industrial Engineering keeps an omitted psychometric score omitted', async ({ page }) => {
+  await enterJourney(page, 'הנדסת תעשייה וניהול', 109);
+  const pending = evaluationFor(page, 'bgu_industrial');
+  await page.getByRole('button', { name: 'לגלות את האפשרויות שלי' }).click();
+  const response = await pending;
+  expect(response.status()).toBe(200);
+  expect(response.request().postDataJSON()).toMatchObject({
+    degreeId: 'bgu_industrial',
+    bagrut: 109,
   });
-
-  test('shows safe catalogue-backed results without leaving /app/calculator', async ({ page }) => {
-    await page.goto('/app/calculator');
-    await expect(page).toHaveURL(/\/app\/calculator$/);
-
-    await page.locator('#psychometric').fill('700');
-    await page.locator('#bagrut').fill('110');
-    await page.locator('#degree').selectOption('tau_datascience');
-    await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
-
-    await expect(page).toHaveURL(/\/app\/calculator$/);
-    await expectSafeResult(page, 'אוניברסיטת תל אביב', /נדרשים נתונים/, /נדרשים נתונים נוספים/);
-
-    await page.getByRole('button', { name: 'חזרה', exact: true }).click();
-
-    await page.locator('#psychometric').fill('760');
-    await page.locator('#bagrut').fill('115');
-    await page.locator('#degree').selectOption('bgu_cs');
-    await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
-
-    await expect(page).toHaveURL(/\/app\/calculator$/);
-    await expectSafeResult(
-      page,
-      'אוניברסיטת בן-גוריון בנגב',
-      /נדרשים נתונים/,
-      /נדרשים נתונים נוספים/,
-    );
-
-    await page.getByRole('button', { name: 'חזרה', exact: true }).click();
-
-    await page.locator('#psychometric').fill('700');
-    await page.locator('#bagrut').fill('110');
-    await page.locator('#degree').selectOption('haifa_cs');
-    await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
-
-    await expect(page).toHaveURL(/\/app\/calculator$/);
-    await expectSafeResult(page, 'אוניברסיטת חיפה', /נדרשים נתונים/, /נדרשים נתונים נוספים/);
-
-    await page.getByRole('button', { name: 'חזרה', exact: true }).click();
-
-    await page.locator('#psychometric').fill('760');
-    await page.locator('#bagrut').fill('115');
-    await page.locator('#degree').selectOption('technion_medicine');
-    await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
-
-    await expect(page).toHaveURL(/\/app\/calculator$/);
-    await expectSafeResult(
-      page,
-      'הטכניון – מכון טכנולוגי לישראל',
-      /נדרשים נתונים/,
-      /נדרשים נתונים נוספים/,
-    );
-  });
+  expect(response.request().postDataJSON().psychometric).toBeUndefined();
+  await expect(page.getByRole('heading', { name: 'האפשרויות שלך' })).toBeVisible();
 });
 
-test('Psychology alternate routes accept omitted generic scores in the deployed calculator and API', async ({
+test('grouped results retain visible contact and save actions and selected context after reload', async ({
   page,
   request,
 }) => {
-  await page.goto('/app/calculator');
-  await page.locator('#degree').selectOption('bgu_psychology');
-  const evaluation = page.waitForResponse(
-    (response) =>
-      response.url().includes('/api/admissions/evaluate') && response.request().method() === 'POST',
-  );
-  await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
-  expect((await evaluation).status()).toBe(200);
-  await expectSafeResult(
-    page,
-    'אוניברסיטת בן-גוריון בנגב',
-    /נדרשים נתונים/,
-    /נדרשים נתונים נוספים/,
-  );
+  await enterJourney(page, 'פיזיותרפיה', 110, 700);
+  const pending = evaluationFor(page, 'physiotherapy');
+  await page.getByRole('button', { name: 'לגלות את האפשרויות שלי' }).click();
+  expect((await pending).status()).toBe(200);
+  await expect(page).toHaveURL(/\/app\/calculator#results$/);
+  await expect(page.getByRole('button', { name: 'יצירת קשר', exact: true }).first()).toBeVisible();
+  const saved = page.getByRole('button', { name: 'שמירת פיזיותרפיה — אוניברסיטת תל אביב' });
+  await saved.click();
+  await expect(saved).toHaveAttribute('aria-pressed', 'true');
+  await page.getByRole('button', { name: 'יצירת קשר', exact: true }).first().click();
+  await expect(page.getByRole('heading', { name: 'רוצה לשמוע עוד?' })).toBeVisible();
+  await page.reload();
+  await expect(page.getByLabel('שם מלא', { exact: true })).toBeVisible();
+  await expect(page.getByLabel('מספר טלפון', { exact: true })).toBeVisible();
+
+  for (const degreeId of ['tau_datascience', 'bgu_cs', 'haifa_cs', 'technion_medicine']) {
+    const response = await request.post('/api/admissions/evaluate', {
+      data: { degreeId, bagrut: 110, psychometric: 700 },
+    });
+    expect(response.status()).toBe(200);
+    const report = (await response.json()).data;
+    expect(report.input).toMatchObject({ degreeId, bagrut: 110, psychometric: 700 });
+    expect(report.results.length).toBeGreaterThan(0);
+    expect(
+      report.results.every((result: { decision: string }) => result.decision !== 'accepted'),
+    ).toBe(true);
+  }
+});
+
+test('Psychology alternate routes accept omitted generic scores in the journey and API', async ({
+  page,
+  request,
+}) => {
+  await enterJourney(page, 'פסיכולוגיה');
+  const pending = evaluationFor(page, 'bgu_psychology');
+  await page.getByRole('button', { name: 'לגלות את האפשרויות שלי' }).click();
+  const evaluation = await pending;
+  expect(evaluation.status()).toBe(200);
+  expect(evaluation.request().postDataJSON().bagrut).toBeUndefined();
+  expect(evaluation.request().postDataJSON().psychometric).toBeUndefined();
   const input = {
     degreeId: 'bgu_psychology',
     extraInputs: {
@@ -150,21 +116,10 @@ test('BGU engineering accepts prep-only requests without a generic Bagrut averag
   page,
   request,
 }) => {
-  await page.goto('/app/calculator');
-  await page.locator('#degree').selectOption('bgu_ee');
-  await page.locator('#psychometric').fill('700');
-  const evaluation = page.waitForResponse(
-    (response) =>
-      response.url().includes('/api/admissions/evaluate') && response.request().method() === 'POST',
-  );
-  await page.getByRole('button', { name: 'חשב סיכויי קבלה ←' }).click();
-  expect((await evaluation).status()).toBe(200);
-  await expectSafeResult(
-    page,
-    'אוניברסיטת בן-גוריון בנגב',
-    /נדרשים נתונים/,
-    /נדרשים נתונים נוספים/,
-  );
+  await enterJourney(page, 'הנדסת חשמל', undefined, 700);
+  const pending = evaluationFor(page, 'bgu_ee');
+  await page.getByRole('button', { name: 'לגלות את האפשרויות שלי' }).click();
+  expect((await pending).status()).toBe(200);
   const input = {
     degreeId: 'bgu_ee',
     psychometric: 700,

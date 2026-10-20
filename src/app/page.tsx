@@ -1,5 +1,5 @@
-import AppExperience from '@/components/AppExperience';
+import StudyJourney from '@/components/StudyJourney';
 
 export default function Home() {
-  return <AppExperience enableDevShortcuts initialStep="landing" />;
+  return <StudyJourney />;
 }
