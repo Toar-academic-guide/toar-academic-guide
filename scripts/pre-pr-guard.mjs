@@ -21,6 +21,9 @@ const highRiskPathPatterns = [
   /^src\/app\/internal\//,
   /^src\/components\/CalculatorResults\./,
   /^src\/components\/LandingPage\./,
+  /^src\/components\/(StudyJourney|JourneyExactGrades|EnquiryForm)\./,
+  /^src\/lib\/(studyJourney|bagrutPdf)\./,
+  /^src\/app\/api\/enquiries\//,
   /^src\/data\/admissions\//,
   /^src\/data\/degrees\//,
   /^src\/db\//,
@@ -78,6 +81,10 @@ const operationalReadGrants = {
 };
 
 const targetedTests = [
+  'src/lib/studyJourney.test.ts',
+  'src/lib/bagrutPdf.test.ts',
+  'src/components/EnquiryForm.test.tsx',
+  'src/app/api/enquiries/route.test.ts',
   'src/data/admissions/mondayEvidence.test.ts',
   'src/data/admissions/formulaBackedPairInventory.test.ts',
   'src/data/admissions/formulaBackedVerificationLedger.test.ts',

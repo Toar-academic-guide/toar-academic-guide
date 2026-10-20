@@ -57,13 +57,18 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
             <h2 className="text-xl font-bold">מוסדות קשורים</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {institutions.map((institution) => (
-                <Link
+                <div
                   key={institution.id}
-                  href={`/institutions/${institution.id}`}
-                  className="rounded-xl border border-slate-200 px-4 py-3 transition hover:border-slate-900"
+                  className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-4 py-3"
                 >
-                  {institution.name}
-                </Link>
+                  <Link href={`/institutions/${institution.id}`}>{institution.name}</Link>
+                  <Link
+                    className="shrink-0 rounded-full border border-[#c9c2e4] px-3 py-2 text-sm text-[#6554b8]"
+                    href={`/enquiry?program=${encodeURIComponent(program.id)}&institution=${encodeURIComponent(institution.id)}`}
+                  >
+                    יצירת קשר
+                  </Link>
+                </div>
               ))}
             </div>
           </section>

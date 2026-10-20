@@ -210,15 +210,20 @@ describe('admissions evaluate route', () => {
       expect.objectContaining({ input }),
     );
   });
-  it('still requires a generic Bagrut average for unsupported omission routes', async () => {
+  it('lets the evaluator report missing inputs without blocking catalogue exploration', async () => {
+    hoistedMocks.listCataloguePrograms.mockResolvedValue({
+      data: [{ id: 'tau_datascience', name: 'מדעי הנתונים', linkedInstitutionIds: ['tau'] }],
+    });
     const response = await POST(
       new Request('http://localhost/api/admissions/evaluate', {
         method: 'POST',
         body: JSON.stringify({ degreeId: 'tau_datascience', psychometric: 700 }),
       }),
     );
-    expect(response.status).toBe(400);
-    expect(hoistedMocks.evaluateAdmissionsForProgram).not.toHaveBeenCalled();
+    expect(response.status).toBe(200);
+    expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenCalledWith(
+      expect.objectContaining({ input: { degreeId: 'tau_datascience', psychometric: 700 } }),
+    );
   });
   it.each(['ee', 'bgu_ee', 'me', 'bgu_me', 'bgu_industrial'])(
     'accepts preparatory-only engineering inputs for %s without a generic Bagrut average',
@@ -559,7 +564,7 @@ describe('admissions evaluate route', () => {
     expect(input.extraInputs).toEqual(extraInputs);
   });
 
-  it('supports an actual missing psychometric score only for the implemented Management route', async () => {
+  it('preserves an actual missing psychometric score and leaves route eligibility to the evaluator', async () => {
     hoistedMocks.listCataloguePrograms.mockResolvedValue({
       data: [{ id: 'business', name: 'ניהול', linkedInstitutionIds: ['tau'] }],
     });
@@ -582,7 +587,7 @@ describe('admissions evaluate route', () => {
     const input = hoistedMocks.evaluateAdmissionsForProgram.mock.calls[0][0].input;
     expect(input.psychometric).toBeUndefined();
     expect(input.extraInputs.tauManagementQualifyingMoocCount).toBe(0);
-    expect((await POST(request('tau_datascience'))).status).toBe(400);
+    expect((await POST(request('tau_datascience'))).status).toBe(404);
   });
 
   it('rejects out-of-range admissions inputs and non-boolean confirmations', async () => {

@@ -136,6 +136,8 @@ function isInternalPath(path: string) {
 }
 
 function isAllowedReturnPath(path: string) {
+  // Journey hashes contain screen names only; keep them through authentication.
+  if (path.startsWith('/#') && /^\/#[a-z-]+$/.test(path)) return true;
   if (path === ROUTES.home) {
     return true;
   }

@@ -1,5 +1,5 @@
-import AppExperience from '@/components/AppExperience';
+import StudyJourney from '@/components/StudyJourney';
 
 export default function CalculatorPage() {
-  return <AppExperience initialStep="calculator" />;
+  return <StudyJourney initialStep="subjects" />;
 }
