@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import { spawnSync } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import process from 'node:process';
 
 function readHookInput() {
@@ -87,7 +87,7 @@ function summarizeOutput(result) {
 }
 
 const input = readHookInput();
-const command = input?.tool_input?.command;
+const command = input?.tool_input?.command ?? input?.tool_input?.cmd;
 
 if (typeof command !== 'string') {
   process.exit(0);
@@ -103,7 +103,18 @@ if (bypassReason) {
   deny(`Codex blocked ${protectedCommand}: ${bypassReason}. Run npm run guard:pre-pr first.`);
 }
 
-const repoRoot = findGitRoot(input.cwd || process.cwd());
+const commandCwd = input?.tool_input?.workdir ?? input?.tool_input?.cwd;
+const hookCwd = input.cwd || process.cwd();
+let effectiveCwd =
+  typeof commandCwd === 'string' && commandCwd.trim() ? resolve(hookCwd, commandCwd) : hookCwd;
+// Some hook adapters omit workdir. Honor a leading literal cd used by the shell.
+const leadingCd = command.match(
+  /^\s*cd\s+(?:--\s+)?(?:'([^']+)'|"([^"$\x60\\]+)"|([^\s;&|()'"$\x60\\]+))\s*&&\s*/,
+);
+if (leadingCd) {
+  effectiveCwd = resolve(effectiveCwd, leadingCd[1] ?? leadingCd[2] ?? leadingCd[3]);
+}
+const repoRoot = findGitRoot(effectiveCwd);
 if (!repoRoot) {
   process.exit(0);
 }
@@ -125,7 +136,7 @@ process.stdout.write(
   JSON.stringify({
     hookSpecificOutput: {
       hookEventName: 'PreToolUse',
-      additionalContext: `npm run guard:pre-pr passed before ${protectedCommand}.`,
+      additionalContext: `npm run guard:pre-pr passed in ${repoRoot} before ${protectedCommand}.`,
     },
   }),
 );
