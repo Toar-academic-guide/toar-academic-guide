@@ -77,6 +77,23 @@ describe('useUserProfile', () => {
     });
   });
 
+  it('restores a saved decimal average together with the rest of the guest profile', async () => {
+    const initial = renderHook(() => useUserProfile());
+    await waitFor(() => expect(initial.result.current.hydrated).toBe(true));
+    const profile = {
+      geographicPreference: 'north' as const,
+      academicScores: { bagrut: { weightedAverage: 110.5 }, psychometric: { overall: 700 } },
+      savedProgramIds: ['tau_cs'],
+    };
+    await act(async () => {
+      expect(await initial.result.current.updateProfile(profile)).toBe(true);
+    });
+    initial.unmount();
+    const restored = renderHook(() => useUserProfile());
+    await waitFor(() => expect(restored.result.current.hydrated).toBe(true));
+    expect(restored.result.current.profile).toMatchObject(profile);
+  });
+
   it('reports a guest storage failure instead of claiming the assessment was saved', async () => {
     const { result } = renderHook(() => useUserProfile());
 

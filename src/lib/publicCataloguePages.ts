@@ -1,8 +1,35 @@
+import 'server-only';
+
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
+import { listCatalogueInstitutions, listCataloguePrograms } from '@/server/catalogue/queries';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 
 const PUBLIC_PROGRAMS = getStaticCataloguePrograms();
 const PUBLIC_INSTITUTIONS = getStaticCatalogueInstitutions();
+
+async function loadPublicCatalogue() {
+  const [programs, institutions] = await Promise.all([
+    listCataloguePrograms(),
+    listCatalogueInstitutions(),
+  ]);
+
+  // The active catalogue owns current IDs. Keep older public URLs available only
+  // after a successful read; database failures must not become a static fallback.
+  return {
+    programs: [
+      ...programs.data,
+      ...PUBLIC_PROGRAMS.filter(
+        (legacy) => !programs.data.some((current) => current.id === legacy.id),
+      ),
+    ],
+    institutions: [
+      ...institutions.data,
+      ...PUBLIC_INSTITUTIONS.filter(
+        (legacy) => !institutions.data.some((current) => current.id === legacy.id),
+      ),
+    ],
+  };
+}
 
 export interface PublicProgramPageData {
   program: CatalogueProgram;
@@ -14,8 +41,11 @@ export interface PublicInstitutionPageData {
   programs: CatalogueProgram[];
 }
 
-export function getPublicProgramPageData(programId: string): PublicProgramPageData | null {
-  const program = PUBLIC_PROGRAMS.find((candidate) => candidate.id === programId);
+export async function getPublicProgramPageData(
+  programId: string,
+): Promise<PublicProgramPageData | null> {
+  const catalogue = await loadPublicCatalogue();
+  const program = catalogue.programs.find((candidate) => candidate.id === programId);
 
   if (!program) {
     return null;
@@ -23,16 +53,17 @@ export function getPublicProgramPageData(programId: string): PublicProgramPageDa
 
   return {
     program,
-    institutions: PUBLIC_INSTITUTIONS.filter((institution) =>
+    institutions: catalogue.institutions.filter((institution) =>
       program.linkedInstitutionIds.includes(institution.id),
     ),
   };
 }
 
-export function getPublicInstitutionPageData(
+export async function getPublicInstitutionPageData(
   institutionId: string,
-): PublicInstitutionPageData | null {
-  const institution = PUBLIC_INSTITUTIONS.find((candidate) => candidate.id === institutionId);
+): Promise<PublicInstitutionPageData | null> {
+  const catalogue = await loadPublicCatalogue();
+  const institution = catalogue.institutions.find((candidate) => candidate.id === institutionId);
 
   if (!institution) {
     return null;
@@ -40,7 +71,7 @@ export function getPublicInstitutionPageData(
 
   return {
     institution,
-    programs: PUBLIC_PROGRAMS.filter((program) =>
+    programs: catalogue.programs.filter((program) =>
       program.linkedInstitutionIds.includes(institution.id),
     ),
   };

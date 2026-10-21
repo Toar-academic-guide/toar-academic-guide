@@ -421,7 +421,7 @@ export const userProfiles = pgTable('user_profiles', {
   psychometricQuantitative: integer('psychometric_quantitative'),
   psychometricVerbal: integer('psychometric_verbal'),
   psychometricEnglish: integer('psychometric_english'),
-  bagrutWeightedAverage: integer('bagrut_weighted_average'),
+  bagrutWeightedAverage: real('bagrut_weighted_average'),
   admissionsInputs: jsonb('admissions_inputs').$type<AdmissionsProfileInputs>(),
   bagrutProfileVersionId: uuid('bagrut_profile_version_id').references(
     () => bagrutProfileVersions.id,

@@ -5,6 +5,7 @@ test.describe('durable URL model', () => {
     page,
   }) => {
     await page.goto('/app/profile');
+    await page.getByLabel('ממוצע משוקלל כולל בונוסים', { exact: true }).fill('110.5');
     await page.getByLabel('ממוצע בגרות רשמי של אוניברסיטת תל אביב (50–130)').fill('112.5');
     await page.getByLabel('ממוצע בגרות או הנדסאי מוכר של בן־גוריון (50–130)').fill('110.25');
     await page.getByLabel('אישור תנאי הגשה לתל אביב').selectOption('false');
@@ -30,6 +31,9 @@ test.describe('durable URL model', () => {
     await expect(page).toHaveURL(/\/app\/assessment$/);
     await page.goto('/app/profile');
     await page.reload();
+    await expect(page.getByLabel('ממוצע משוקלל כולל בונוסים', { exact: true })).toHaveValue(
+      '110.5',
+    );
     await expect(page.getByLabel('ממוצע בגרות רשמי של אוניברסיטת תל אביב (50–130)')).toHaveValue(
       '112.5',
     );

@@ -5,13 +5,15 @@ import WayPageShell from '@/components/WayPageShell';
 import { getPublicInstitutionPageData } from '@/lib/publicCataloguePages';
 import { ROUTES } from '@/lib/routes';
 
+export const dynamic = 'force-dynamic';
+
 interface InstitutionPageProps {
   params: Promise<{ institutionId: string }>;
 }
 
 export default async function InstitutionPage({ params }: InstitutionPageProps) {
   const { institutionId } = await params;
-  const data = getPublicInstitutionPageData(institutionId);
+  const data = await getPublicInstitutionPageData(institutionId);
 
   if (!data) {
     notFound();

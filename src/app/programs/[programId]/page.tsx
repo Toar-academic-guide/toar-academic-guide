@@ -5,13 +5,15 @@ import WayPageShell from '@/components/WayPageShell';
 import { getPublicProgramPageData } from '@/lib/publicCataloguePages';
 import { ROUTES } from '@/lib/routes';
 
+export const dynamic = 'force-dynamic';
+
 interface ProgramPageProps {
   params: Promise<{ programId: string }>;
 }
 
 export default async function ProgramPage({ params }: ProgramPageProps) {
   const { programId } = await params;
-  const data = getPublicProgramPageData(programId);
+  const data = await getPublicProgramPageData(programId);
 
   if (!data) {
     notFound();

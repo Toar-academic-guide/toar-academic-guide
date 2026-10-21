@@ -1,7 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import { toggleLocation, resultLabel, groupJourneyRows } from './studyJourney';
+import { toggleLocation, resultLabel, groupJourneyRows, studyFields } from './studyJourney';
+import { getStaticCataloguePrograms } from './catalogueStatic';
 
 describe('approved journey', () => {
+  it('uses corrected catalogue classification even when a legacy ID ends in cs', () => {
+    const catalogue = getStaticCataloguePrograms();
+    const culinary = catalogue.find((program) => program.id === 'danon_culinary')!;
+    const corrected = { ...culinary, id: 'danon_cs' };
+    const fields = studyFields([...catalogue, corrected]);
+    expect(
+      fields
+        .find((field) => field.id === 'cs')
+        ?.programs.some((program) => program.institutionId === 'danon'),
+    ).toBe(false);
+    expect(fields.find((field) => field.programs.includes(corrected))?.name).toBe('קולינריה');
+  });
   it('keeps International independent of All Israel and domestic areas', () => {
     expect(toggleLocation(['all'], 'online')).toEqual(['all', 'online']);
     expect(toggleLocation(['all', 'online'], 'north')).toEqual(['online', 'north']);

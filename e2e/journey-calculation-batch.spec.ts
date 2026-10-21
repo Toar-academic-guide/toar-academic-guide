@@ -14,6 +14,8 @@ for (const width of [1440, 390]) {
     await page.getByRole('button', { name: 'המשך', exact: true }).click();
     await page.getByRole('button', { name: 'יש לי ממוצע בגרות' }).click();
     await page.getByLabel('ממוצע בגרות', { exact: true }).fill('110.5');
+    await page.reload();
+    await expect(page.getByLabel('ממוצע בגרות', { exact: true })).toHaveValue('110.5');
     await page.getByRole('button', { name: 'המשך', exact: true }).click();
     await expect(page).toHaveURL(/#psy-mode$/);
     await page.getByRole('button', { name: 'כן, יש לי ציון', exact: true }).click();
