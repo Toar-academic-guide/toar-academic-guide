@@ -1261,12 +1261,14 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                     </button>
                   </div>
                   <div className="journey-links">
-                    {!DANON_PROGRAM_URLS[activeRow.program.id] && (
-                      <>
-                        <button onClick={() => go('missing')}>השלמת נתונים לחישוב</button>
-                        <button onClick={() => go('alternatives')}>עוד דרכי קבלה</button>
-                      </>
-                    )}
+                    {!DANON_PROGRAM_URLS[activeRow.program.id] &&
+                      activeRow.result?.degradationReason !==
+                        'incomplete_published_requirements' && (
+                        <>
+                          <button onClick={() => go('missing')}>השלמת נתונים לחישוב</button>
+                          <button onClick={() => go('alternatives')}>עוד דרכי קבלה</button>
+                        </>
+                      )}
                     {officialUrl(details?.programUrl ?? activeRow.institution.programUrl) && (
                       <a
                         target="_blank"

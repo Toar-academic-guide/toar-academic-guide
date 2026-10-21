@@ -16,6 +16,7 @@ import engineeringRules from '../../../docs/admissions-verification/2026-09-27-b
 import { BGU_ENGINEERING_METADATA_BY_PAIR_ID } from '@/data/admissions/bguEngineeringVerification';
 import type { AdmissionsExtraInputs } from '@/types/admissionsEvaluation';
 import { DANON_PROGRAM_URLS } from '@/data/admissions/danon';
+import catalogueRepair from '@/data/admissions/catalogueContentRepair.json';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
@@ -483,6 +484,68 @@ const hitEngineering: CatalogueProgram = {
 };
 
 describe('evaluateAdmissionsForProgram', () => {
+  it.each(
+    catalogueRepair.requirements.filter(
+      (row) => row.coverage === 'incomplete_published_requirements',
+    ),
+  )(
+    'does not infer eligibility for $programId from missing official requirements or legacy claims',
+    async (row) => {
+      const institutionId = row.institutionId as CatalogueInstitution['id'];
+      const institution: CatalogueInstitution = getStaticCatalogueInstitutions().find(
+        (item) => item.id === row.institutionId,
+      ) ?? {
+        id: institutionId,
+        name: 'מכללת תילתן המכללה לרפואה משלימה',
+        region: 'center',
+        domain: 'tiltan-college.co.il',
+      };
+      const template = getStaticCataloguePrograms().find(
+        (item) => item.id === 'mon_12341122982_graphic_design',
+      )!;
+      const program: CatalogueProgram = {
+        ...template,
+        id: row.programId,
+        institutionId,
+        linkedInstitutionIds: [row.institutionId],
+        institutionDetails: template.institutionDetails!.map((detail) => ({
+          ...detail,
+          institutionName: institution.name,
+          specificAdmissionNotes: row.notes,
+        })),
+      };
+      const before = structuredClone(program);
+      const fetcher = vi.fn<typeof fetch>();
+      for (const scores of [
+        {},
+        { bagrut: 110, psychometric: 700 },
+        { bagrut: 60, psychometric: 200 },
+      ]) {
+        const report = await evaluateAdmissionsForProgram({
+          input: { degreeId: row.programId, ...scores },
+          program,
+          institutions: [institution],
+          fetcher,
+        });
+        expect(report.results).toHaveLength(1);
+        expect(report.results[0]).toMatchObject({
+          capability: 'requirements_only',
+          kind: 'requirements_only',
+          decision: 'unknown',
+          confidence: 'low',
+          degradationReason: 'incomplete_published_requirements',
+          officialUrls: ['programUrl' in row ? row.programUrl : row.sourceUrl],
+        });
+        expect(report.results[0].requiredInputs).toBeUndefined();
+        expect(report.results[0].score).toBeUndefined();
+        expect(report.results[0].threshold).toBeUndefined();
+        expect(report.results[0].explanation).not.toMatch(/ראיון|בגרות|פסיכומטרי|אין סף/);
+      }
+      expect(fetcher).not.toHaveBeenCalled();
+      expect(program).toEqual(before);
+    },
+  );
+
   it.each(
     routingOfficial.tau.flatMap((capture) => {
       const id = capture.pair.split('__')[0];

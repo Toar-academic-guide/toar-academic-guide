@@ -1,6 +1,7 @@
 import { evaluateTauPhysiotherapyResult } from './tauPhysiotherapyEvaluation';
 import { evaluateColmanBagrutResult } from './colmanBagrutEvaluation';
 import { DANON_PROGRAM_URLS } from '@/data/admissions/danon';
+import catalogueContentRepair from '@/data/admissions/catalogueContentRepair.json';
 import { isHujiMedicineProgram } from '@/lib/hujiMedicineInputs';
 import {
   resolveHujiMedicineAdmission,
@@ -98,6 +99,12 @@ type AdmissionsEvaluationInput = AdmissionsEvaluationRequest & {
 
 const MAX_CONCURRENT_EXACT_SOURCE_CALLS = 2;
 const OFFICIAL_SOURCE_TIMEOUT_MS = 5000;
+// Missing published conditions cannot be replaced by legacy claims of open admission.
+const incompleteRequirements = new Map(
+  catalogueContentRepair.requirements
+    .filter((row) => row.coverage === 'incomplete_published_requirements')
+    .map((row) => [`${row.programId}:${row.institutionId}`, row]),
+);
 
 export async function evaluateAdmissionsForProgram(args: {
   input: AdmissionsEvaluationRequest;
@@ -229,6 +236,24 @@ async function evaluateCapabilityEntries(args: {
   for (const [index, entry] of capabilityEntries.entries()) {
     const institution = institutions.find((item) => item.id === entry.institutionId);
     if (!institution) {
+      continue;
+    }
+
+    const incomplete = incompleteRequirements.get(`${program.id}:${institution.id}`);
+    if (incomplete) {
+      results[index] = {
+        institution: publicInstitutionShape(institution),
+        linkedInstitutionId: institution.id,
+        capability: 'requirements_only',
+        kind: 'requirements_only',
+        decision: 'unknown',
+        confidence: 'low',
+        sourceLabel: 'תנאי קבלה',
+        explanation: 'תנאי הקבלה המלאים אינם מפורסמים באתר המוסד, ולכן עדיין אי אפשר לקבוע התאמה.',
+        nextAction: 'בררו את תנאי הקבלה עם המוסד לפני ההרשמה.',
+        officialUrls: [incomplete.programUrl ?? incomplete.sourceUrl],
+        degradationReason: 'incomplete_published_requirements',
+      };
       continue;
     }
 

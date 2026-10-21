@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   toggleLocation,
   resultLabel,
+  resultExplanation,
   groupJourneyRows,
   studyFields,
   journeyRows,
@@ -66,6 +67,22 @@ describe('approved journey', () => {
     expect(resultLabel(undefined).label).toBe('טרם חושבה התאמה');
     expect(resultLabel(undefined, true).label).toBe('החישוב לא נטען');
     expect(resultLabel(undefined, false, true).label).toBe('החישוב מתבצע…');
+  });
+  it('keeps incomplete official conditions in exploration without asking for more grades', () => {
+    const result = {
+      institution: getStaticCatalogueInstitutions()[0],
+      linkedInstitutionId: 'test',
+      capability: 'requirements_only' as const,
+      kind: 'requirements_only' as const,
+      decision: 'unknown' as const,
+      confidence: 'low' as const,
+      sourceLabel: 'תנאי קבלה',
+      explanation: 'תנאי הקבלה המלאים אינם מפורסמים באתר המוסד, ולכן עדיין אי אפשר לקבוע התאמה.',
+      nextAction: 'בררו את תנאי הקבלה עם המוסד לפני ההרשמה.',
+      degradationReason: 'incomplete_published_requirements',
+    };
+    expect(resultLabel(result)).toEqual({ label: 'עדיין לא ניתן לקבוע התאמה', group: 'explore' });
+    expect(resultExplanation(result)).toBeUndefined();
   });
   it('groups degree results without hiding their contact rows', () => {
     expect(groupJourneyRows([], 'field')).toEqual([]);

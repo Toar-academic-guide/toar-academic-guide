@@ -137,6 +137,34 @@ describe('account grades in the homepage journey', () => {
     expect(state.evaluate).toHaveBeenCalledTimes(3);
   });
 
+  it('keeps saved courses with unpublished conditions without suggesting grades will resolve them', async () => {
+    savedCatalogue();
+    state.evaluate.mockResolvedValue({
+      reports: {
+        saved_course: {
+          results: [
+            {
+              linkedInstitutionId: 'tau',
+              kind: 'requirements_only',
+              decision: 'unknown',
+              degradationReason: 'incomplete_published_requirements',
+              explanation: 'תנאי הקבלה המלאים אינם מפורסמים באתר המוסד.',
+            },
+          ],
+        },
+      },
+      failedDegreeIds: [],
+    });
+    render(<StudyJourney initialStep="saved" />);
+    await screen.findByText('עדיין לא ניתן לקבוע התאמה');
+    fireEvent.click(screen.getByRole('button', { name: 'מסלול שמור — אוניברסיטת תל אביב' }));
+    await screen.findByText('עדיין לא ניתן לקבוע התאמה');
+    expect(screen.queryByRole('button', { name: 'השלמת נתונים לחישוב' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'עוד דרכי קבלה' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'יצירת קשר' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'הסרה מהרשימה' })).toBeTruthy();
+  });
+
   it('retries failed saved calculations and shows missing inputs without claiming a match', async () => {
     savedCatalogue();
     state.evaluate.mockRejectedValueOnce(new Error('temporary failure')).mockResolvedValue({

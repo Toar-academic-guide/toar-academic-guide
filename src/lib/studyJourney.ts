@@ -183,6 +183,8 @@ export function resultLabel(
 } {
   if (failed) return { label: 'החישוב לא נטען', group: 'explore' };
   if (loading) return { label: 'החישוב מתבצע…', group: 'explore' };
+  if (result?.degradationReason === 'incomplete_published_requirements')
+    return { label: 'עדיין לא ניתן לקבוע התאמה', group: 'explore' };
   if (result?.linkedInstitutionId === 'danon' && result.kind === 'requirements_only')
     return { label: 'הרשמה מול בית הספר', group: 'explore' };
   if (result?.kind === 'open_admission') return { label: 'הרשמה פתוחה', group: 'match' };
@@ -211,6 +213,7 @@ export function resultLabel(
 
 export function resultExplanation(result?: AdmissionsEvaluationResult): string | undefined {
   if (!result) return undefined;
+  if (result.degradationReason === 'incomplete_published_requirements') return undefined;
   if (result.linkedInstitutionId === 'danon' && result.kind === 'requirements_only')
     return undefined;
   switch (result.kind) {
