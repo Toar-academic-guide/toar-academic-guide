@@ -340,7 +340,7 @@ export default function InstitutionsDirectory({ institutions }: InstitutionsDire
                   <div className="mt-auto flex items-center justify-between gap-3 pt-5">
                     <Link
                       href={`/institutions/${institution.id}`}
-                      className="inline-flex h-10 items-center justify-center rounded-2xl bg-[#7784e8] px-4 text-sm font-bold text-white shadow-[0_14px_30px_rgba(119,132,232,0.22)] transition hover:bg-[#6574dc]"
+                      className="inline-flex h-10 items-center justify-center rounded-2xl bg-[#5868c7] px-4 text-sm font-bold text-white shadow-[0_14px_30px_rgba(119,132,232,0.22)] transition hover:bg-[#4b59b2]"
                     >
                       לעמוד המוסד
                     </Link>
