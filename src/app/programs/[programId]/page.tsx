@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import WayPageShell from '@/components/WayPageShell';
+import AdmissionRequirements from '@/components/AdmissionRequirements';
 
 import { getPublicProgramPageData } from '@/lib/publicCataloguePages';
 import { catalogueAdmissionRequirements } from '@/lib/catalogueDisplayText';
@@ -81,13 +82,9 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
             ) : (
               <div className="mt-4 space-y-6">
                 {institutions.length === 0 && (
-                  <ul className="list-inside list-disc space-y-2 text-sm text-slate-600">
-                    {catalogueAdmissionRequirements(program.admissionRequirements).map(
-                      (requirement) => (
-                        <li key={requirement}>{requirement}</li>
-                      ),
-                    )}
-                  </ul>
+                  <AdmissionRequirements
+                    requirements={catalogueAdmissionRequirements(program.admissionRequirements)}
+                  />
                 )}
                 {institutions.map((institution) => {
                   const detail = program.institutionDetails?.find(
@@ -99,14 +96,14 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                       {institutions.length > 1 && (
                         <h3 className="font-semibold">{institution.name}</h3>
                       )}
-                      <ul className="mt-2 list-inside list-disc space-y-2 text-sm text-slate-600">
-                        {catalogueAdmissionRequirements(
+                      <AdmissionRequirements
+                        programId={program.id}
+                        institutionId={institution.id}
+                        requirements={catalogueAdmissionRequirements(
                           detail?.specificAdmissionNotes,
                           program.admissionRequirements,
-                        ).map((requirement) => (
-                          <li key={requirement}>{requirement}</li>
-                        ))}
-                      </ul>
+                        )}
+                      />
                       {sourceUrl && (
                         <a
                           href={sourceUrl}

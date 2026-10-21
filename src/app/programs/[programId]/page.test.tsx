@@ -60,15 +60,19 @@ describe('ProgramPage', () => {
 
     render(await ProgramPage({ params: Promise.resolve({ programId: program.id }) }));
 
-    expect(screen.getByText(note)).toBeTruthy();
+    expect(
+      screen.getAllByRole('listitem', { hidden: true }).some((li) => li.textContent === note),
+    ).toBe(true);
     expect(screen.queryByText('לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד.')).toBeNull();
   });
 
   it('shows Communication’s sourced alternative routes and direct official link', async () => {
     render(await ProgramPage({ params: Promise.resolve({ programId: 'communication' }) }));
 
-    expect(screen.getByText('פסיכומטרי כללי 640 ומעלה וזכאות לבגרות.')).toBeTruthy();
-    expect(screen.getByText(/ללא פסיכומטרי: ממוצע בגרות 102 ומעלה/)).toBeTruthy();
+    const visibleNotes = screen.getAllByRole('listitem').map((li) => li.textContent);
+    expect(visibleNotes).toContain('פסיכומטרי כללי 640 ומעלה וזכאות לבגרות.');
+    expect(visibleNotes).toContain('ללא פסיכומטרי: ממוצע בגרות 102 ומעלה');
+    expect(screen.getByText('כל התנאים ודרכי קבלה נוספות').closest('details')?.open).toBe(false);
     expect(screen.getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toBe(
       'https://go.tau.ac.il/he/social-sciences/ba/communications?v=requirements',
     );

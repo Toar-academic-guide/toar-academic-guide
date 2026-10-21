@@ -15,7 +15,7 @@ The journey scan covered 253 visible programme/institution options after normal 
 - Wording is stored under the TAU institution detail, not under the shared programme-wide requirements. It must not appear as BGU or Haifa requirements.
 - No calculator thresholds, formulas, structured gates or admission decisions were changed. Alternative routes retain their existing evaluation behavior.
 
-The database-backed journey needs the two-row `2026-10-21-communication-copy-repair.sql`: update `communication:tau` descriptive notes and its `program` source URL. It was tested in disposable PostgreSQL, including idempotency, preservation of every other field, and rejection after unexpected edits. Live application is pending explicit user approval because preview and production share the database.
+The database-backed journey needs the two-row `2026-10-21-communication-copy-repair.sql`: update `communication:tau` descriptive notes and its `program` source URL. It was tested in disposable PostgreSQL, including idempotency, preservation of every other field, and rejection after unexpected edits. The user approved the live application, which committed at 2026-10-21T15:01:07Z. Exactly two rows changed; thresholds, other requirements, source links and saved-programme counts were verified unchanged.
 
 ## Shared display correction
 
@@ -132,3 +132,11 @@ This is an observed-gap inventory, not an assertion that a programme is offered 
 | `communication` | `tau` | תקשורת ועיתונאות |
 | `communication` | `bgu` | תקשורת ועיתונאות |
 | `communication` | `haifa` | תקשורת ועיתונאות |
+
+## Compact requirements display
+
+The user approved a shorter initial view on 21 October 2026. Public programme pages and calculator details now share a native disclosure: up to three requirements initially, with all remaining conditions expandable. Numeric values are emphasized. TAU Communication shows the three verified main alternatives; its complete source wording remains in the disclosure. Its short overview is used only while the corresponding source conditions match, and never for another institution.
+
+Focused verification: eight component/page tests, typecheck, lint (one existing warning), formatting, production build and the existing pre-push guard (1,094 tests) passed. Local production-browser checks at 390×844 and 1440×900 confirmed closed/open states, keyboard Enter/Space, right alignment and no horizontal overflow. Deployed verification is recorded in the local screenshot gallery.
+
+The original 96-record inventory includes TAU Communication, now repaired; 95 remain. The user has approved research of those records, correction of verified programme identities/links, and exclusion of unresolved identities from recommendations while retaining IDs and saved references. The remaining catalogue repair is in progress; this display change does not claim those records are complete.

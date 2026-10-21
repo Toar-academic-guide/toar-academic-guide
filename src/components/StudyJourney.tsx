@@ -51,6 +51,7 @@ import EnquiryForm from './EnquiryForm';
 import WayPageShell from './WayPageShell';
 import PublicNavBar from './PublicNavBar';
 import ProgramShareButton from './ProgramShareButton';
+import AdmissionRequirements from './AdmissionRequirements';
 import { DANON_PROGRAM_URLS } from '@/data/admissions/danon';
 import { buildLoginPath, ROUTES } from '@/lib/routes';
 import './StudyJourney.css';
@@ -1233,17 +1234,18 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                     </p>
                   )}
                   <h2>תנאי קבלה</h2>
-                  <ul className="journey-requirements">
-                    {(activeRow.program.isListed === false
-                      ? ['אין כרגע מידע עדכני על המסלול.']
-                      : catalogueAdmissionRequirements(
-                          details?.specificAdmissionNotes,
-                          activeRow.program.admissionRequirements,
-                        )
-                    ).map((text, index) => (
-                      <li key={index}>{text}</li>
-                    ))}
-                  </ul>
+                  <AdmissionRequirements
+                    programId={activeRow.program.id}
+                    institutionId={activeRow.institution.id}
+                    requirements={
+                      activeRow.program.isListed === false
+                        ? ['אין כרגע מידע עדכני על המסלול.']
+                        : catalogueAdmissionRequirements(
+                            details?.specificAdmissionNotes,
+                            activeRow.program.admissionRequirements,
+                          )
+                    }
+                  />
                   <div className="journey-actions">
                     <Primary onClick={() => go('inquiry')}>יצירת קשר</Primary>
                     <button
