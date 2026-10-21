@@ -14,12 +14,10 @@ export const metadata: Metadata = {
   },
   description: SITE_DESCRIPTION,
   metadataBase: new URL(SITE_URL),
-  alternates: { canonical: '/' },
   openGraph: {
     type: 'website',
     locale: 'he_IL',
     siteName: 'MyWay',
-    url: '/',
   },
   twitter: { card: 'summary' },
 };
