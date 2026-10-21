@@ -34,7 +34,7 @@ function evaluationFor(page: Page, degreeId: string) {
     (response) =>
       response.url().endsWith('/api/admissions/evaluate') &&
       response.request().method() === 'POST' &&
-      response.request().postDataJSON().degreeId === degreeId,
+      response.request().postDataJSON().degreeIds?.includes(degreeId),
   );
 }
 
@@ -45,10 +45,14 @@ test('Industrial Engineering keeps an omitted psychometric score omitted', async
   const response = await pending;
   expect(response.status()).toBe(200);
   expect(response.request().postDataJSON()).toMatchObject({
-    degreeId: 'bgu_industrial',
+    degreeIds: expect.arrayContaining(['bgu_industrial']),
     bagrut: 109,
   });
   expect(response.request().postDataJSON().psychometric).toBeUndefined();
+  expect((await response.json()).data.reports.bgu_industrial.input).toMatchObject({
+    degreeId: 'bgu_industrial',
+    bagrut: 109,
+  });
   await expect(page.getByRole('heading', { name: 'האפשרויות שלך' })).toBeVisible();
 });
 
