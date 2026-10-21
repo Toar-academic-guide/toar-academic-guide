@@ -13,6 +13,13 @@ import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/li
 import { getPublicInstitutionPageData, getPublicProgramPageData } from './publicCataloguePages';
 
 describe('public catalogue page data', () => {
+  it('keeps an unlisted saved programme URL accessible without advertising it on institution pages', async () => {
+    const program = { ...getStaticCataloguePrograms()[0], isListed: false };
+    vi.mocked(listCataloguePrograms).mockResolvedValue({ data: [program], meta: {} });
+    expect((await getPublicProgramPageData(program.id))?.program).toEqual(program);
+    const page = await getPublicInstitutionPageData(program.linkedInstitutionIds[0]);
+    expect(page?.programs.some((item) => item.id === program.id)).toBe(false);
+  });
   beforeEach(() => {
     vi.mocked(listCataloguePrograms).mockResolvedValue({
       data: getStaticCataloguePrograms(),

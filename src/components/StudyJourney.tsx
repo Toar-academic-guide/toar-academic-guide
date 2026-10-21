@@ -49,6 +49,8 @@ import JourneyRegionMap from './JourneyRegionMap';
 import EnquiryForm from './EnquiryForm';
 import WayPageShell from './WayPageShell';
 import PublicNavBar from './PublicNavBar';
+import ProgramShareButton from './ProgramShareButton';
+import { DANON_PROGRAM_URLS } from '@/data/admissions/danon';
 import { buildLoginPath, ROUTES } from '@/lib/routes';
 import './StudyJourney.css';
 
@@ -287,11 +289,15 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
     void loadCatalogue();
   }, [loadCatalogue]);
   const fields = useMemo(() => studyFields(programs), [programs]);
-  const allRows = useMemo(() => journeyRows(fields, institutions), [fields, institutions]);
+  const allRows = useMemo(
+    () => journeyRows(studyFields(programs, true), institutions),
+    [programs, institutions],
+  );
   const selectedRows = useMemo(
     () =>
       allRows.filter(
         (row) =>
+          row.program.isListed !== false &&
           (!draft.fields.length || draft.fields.includes(row.fieldId)) &&
           matchesLocation(row.institution, draft.locations) &&
           matchesInstitutionType(row.institution, row.program, draft.types),
@@ -326,6 +332,7 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
   const counts = useMemo(() => {
     const sets: Partial<Record<JourneyLocation, Set<string>>> = {};
     for (const row of allRows) {
+      if (row.program.isListed === false) continue;
       if (draft.fields.length && !draft.fields.includes(row.fieldId)) continue;
       if (!matchesInstitutionType(row.institution, row.program, draft.types)) continue;
       for (const area of institutionLocations(row.institution))
@@ -1186,9 +1193,12 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                   )}
                   <h2>תנאי קבלה</h2>
                   <ul className="journey-requirements">
-                    {catalogueAdmissionRequirements(
-                      details?.specificAdmissionNotes,
-                      activeRow.program.admissionRequirements,
+                    {(activeRow.program.isListed === false
+                      ? ['אין כרגע מידע עדכני על המסלול.']
+                      : catalogueAdmissionRequirements(
+                          details?.specificAdmissionNotes,
+                          activeRow.program.admissionRequirements,
+                        )
                     ).map((text, index) => (
                       <li key={index}>{text}</li>
                     ))}
@@ -1203,8 +1213,12 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                     </button>
                   </div>
                   <div className="journey-links">
-                    <button onClick={() => go('missing')}>השלמת נתונים לחישוב</button>
-                    <button onClick={() => go('alternatives')}>עוד דרכי קבלה</button>
+                    {!DANON_PROGRAM_URLS[activeRow.program.id] && (
+                      <>
+                        <button onClick={() => go('missing')}>השלמת נתונים לחישוב</button>
+                        <button onClick={() => go('alternatives')}>עוד דרכי קבלה</button>
+                      </>
+                    )}
                     {officialUrl(details?.programUrl ?? activeRow.institution.programUrl) && (
                       <a
                         target="_blank"
@@ -1214,25 +1228,11 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                         לאתר המוסד
                       </a>
                     )}
-                    <button
-                      onClick={async () => {
-                        const url = `${window.location.origin}/programs/${encodeURIComponent(activeRow.program.id)}`;
-                        try {
-                          if (navigator.share)
-                            await navigator.share({ title: activeRow.fieldName, url });
-                          else {
-                            await navigator.clipboard.writeText(url);
-                            setMessage('הקישור הועתק.');
-                          }
-                        } catch (cause) {
-                          if (!(cause instanceof Error && cause.name === 'AbortError')) {
-                            setMessage('לא הצלחנו לשתף את הקישור. נסו שוב.');
-                          }
-                        }
-                      }}
-                    >
-                      שיתוף המסלול
-                    </button>
+                    <ProgramShareButton
+                      key={activeRow.program.id}
+                      programId={activeRow.program.id}
+                      title={activeRow.fieldName}
+                    />
                   </div>
                 </>
               ) : (

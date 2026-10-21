@@ -14,6 +14,8 @@ import { readFileSync } from 'node:fs';
 import engineeringRules from '../../../docs/admissions-verification/2026-09-27-bgu-engineering-rules.json';
 import { BGU_ENGINEERING_METADATA_BY_PAIR_ID } from '@/data/admissions/bguEngineeringVerification';
 import type { AdmissionsExtraInputs } from '@/types/admissionsEvaluation';
+import { DANON_PROGRAM_URLS } from '@/data/admissions/danon';
+import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type { AdmissionsEvaluationReport } from '@/types/admissionsEvaluation';
@@ -480,6 +482,32 @@ const hitEngineering: CatalogueProgram = {
 };
 
 describe('evaluateAdmissionsForProgram', () => {
+  it.each(Object.entries(DANON_PROGRAM_URLS))(
+    'does not invent an academic score or entrance exam for Danon programme %s',
+    async (id, officialUrl) => {
+      const template = getStaticCataloguePrograms().find((program) => program.id === 'danon_chef')!;
+      const program = { ...template, id };
+      const fetcher = vi.fn<typeof fetch>();
+      for (const scores of [{}, { bagrut: 110.5, psychometric: 700 }]) {
+        const report = await evaluateAdmissionsForProgram({
+          program,
+          institutions: getStaticCatalogueInstitutions(),
+          input: { degreeId: id, ...scores },
+          fetcher,
+        });
+        expect(report.results).toHaveLength(1);
+        expect(report.results[0]).toMatchObject({
+          capability: 'requirements_only',
+          decision: 'unknown',
+          officialUrls: [officialUrl],
+        });
+        expect(report.results[0].requiredInputs).toBeUndefined();
+        expect(report.results[0].score).toBeUndefined();
+        expect(JSON.stringify(report.results)).not.toMatch(/ראיון|מבחן התאמה|בגרות|פסיכומטרי/);
+      }
+      expect(fetcher).not.toHaveBeenCalled();
+    },
+  );
   it('explains the unresolved ordinary Haifa Information Systems mapping without a numeric replay', async () => {
     const fetcher = vi.fn<typeof fetch>();
     const result = await evaluateAdmissionsForProgram({

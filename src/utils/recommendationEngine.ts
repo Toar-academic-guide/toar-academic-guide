@@ -327,7 +327,7 @@ export function getRecommendations(
   type Scored = { program: Program; score: number };
 
   const scored: Scored[] = programs
-    .filter((program) => program.institution !== 'אוניברסיטה')
+    .filter((program) => program.isListed !== false && program.institution !== 'אוניברסיטה')
     .map((program) => ({
       program,
       score: dotProduct(scores, program),

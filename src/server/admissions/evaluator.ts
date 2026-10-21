@@ -1,5 +1,6 @@
 import { evaluateTauPhysiotherapyResult } from './tauPhysiotherapyEvaluation';
 import { evaluateColmanBagrutResult } from './colmanBagrutEvaluation';
+import { DANON_PROGRAM_URLS } from '@/data/admissions/danon';
 import { isHujiMedicineProgram } from '@/lib/hujiMedicineInputs';
 import {
   resolveHujiMedicineAdmission,
@@ -1592,6 +1593,36 @@ function evaluateNonExactResult(args: {
   entry: AdmissionsCapabilityEntry;
 }): AdmissionsEvaluationResult {
   const { input: requestedInput, program, institution, entry } = args;
+
+  if (program.isListed === false) {
+    return {
+      institution: publicInstitutionShape(institution),
+      linkedInstitutionId: institution.id,
+      capability: 'requirements_only',
+      kind: 'requirements_only',
+      decision: 'unknown',
+      confidence: 'low',
+      sourceLabel: 'מידע על המסלול',
+      explanation: 'אין כרגע מידע עדכני על המסלול.',
+      nextAction: 'פנו למוסד לבירור המסלולים הזמינים.',
+    };
+  }
+
+  const danonUrl = institution.id === 'danon' ? DANON_PROGRAM_URLS[program.id] : undefined;
+  if (danonUrl) {
+    return {
+      institution: publicInstitutionShape(institution),
+      linkedInstitutionId: institution.id,
+      capability: 'requirements_only',
+      kind: 'requirements_only',
+      decision: 'unknown',
+      confidence: 'medium',
+      sourceLabel: 'הרשמה מול בית הספר',
+      explanation: 'ההרשמה למסלול מתבצעת מול בית הספר, ללא חישוב סכם.',
+      nextAction: 'בחרו מסלול ותאמו פגישת ייעוץ עם דנון.',
+      officialUrls: [danonUrl],
+    };
+  }
 
   if (
     program.id === 'haifa_infosystems' &&

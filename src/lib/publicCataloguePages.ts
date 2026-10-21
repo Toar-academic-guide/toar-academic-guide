@@ -71,8 +71,9 @@ export async function getPublicInstitutionPageData(
 
   return {
     institution,
-    programs: catalogue.programs.filter((program) =>
-      program.linkedInstitutionIds.includes(institution.id),
+    programs: catalogue.programs.filter(
+      (program) =>
+        program.isListed !== false && program.linkedInstitutionIds.includes(institution.id),
     ),
   };
 }

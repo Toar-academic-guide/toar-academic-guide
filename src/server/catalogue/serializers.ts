@@ -213,6 +213,7 @@ export function serializeProgramRow(args: {
   return {
     id: program.id,
     name: program.name,
+    isListed: program.isListed,
     institution: program.institutionName,
     institutionId: (program.institutionId ?? undefined) as CatalogueProgram['institutionId'],
     type: program.type,

@@ -82,7 +82,7 @@ export function matchesInstitutionType(
   return types.includes(university ? 'university' : 'college');
 }
 
-export function studyFields(programs: CatalogueProgram[]): StudyField[] {
+export function studyFields(programs: CatalogueProgram[], includeUnlisted = false): StudyField[] {
   const fields = new Map<string, StudyField>();
   const knownNames = new Map(
     programs.flatMap((program) => {
@@ -91,6 +91,7 @@ export function studyFields(programs: CatalogueProgram[]): StudyField[] {
     }),
   );
   for (const program of programs) {
+    if (!includeUnlisted && program.isListed === false) continue;
     const suffix = ` - ${program.institution}`;
     const name = program.name.endsWith(suffix)
       ? program.name.slice(0, -suffix.length)
@@ -159,6 +160,8 @@ export function resultLabel(
 } {
   if (failed) return { label: 'החישוב לא נטען', group: 'explore' };
   if (loading) return { label: 'החישוב מתבצע…', group: 'explore' };
+  if (result?.linkedInstitutionId === 'danon' && result.kind === 'requirements_only')
+    return { label: 'הרשמה מול בית הספר', group: 'explore' };
   if (result?.kind === 'open_admission') return { label: 'הרשמה פתוחה', group: 'match' };
   if (['exact', 'estimated'].includes(result?.kind ?? '') && result?.decision === 'accepted') {
     return { label: result.kind === 'exact' ? 'עומד/ת בסף שחושב' : 'התאמה משוערת', group: 'match' };
@@ -185,6 +188,8 @@ export function resultLabel(
 
 export function resultExplanation(result?: AdmissionsEvaluationResult): string | undefined {
   if (!result) return undefined;
+  if (result.linkedInstitutionId === 'danon' && result.kind === 'requirements_only')
+    return undefined;
   switch (result.kind) {
     case 'requirements_only':
     case 'tracked_missing_rule':

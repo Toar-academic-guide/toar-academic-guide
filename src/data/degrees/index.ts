@@ -6,6 +6,8 @@ export { vocationalPrograms } from './vocationalPrograms';
 import { ACADEMIC_PROGRAMS } from './academic';
 import { academicPrograms } from './academicPrograms';
 import { vocationalPrograms } from './vocationalPrograms';
+import { DANON_BEGINNER_REQUIREMENT, DANON_PROGRAM_URLS } from '../admissions/danon';
+import computingCourses from './computingCourses.json';
 import {
   mondayAdmissionsEvidence,
   type MondayAdmissionAlternativePath,
@@ -999,4 +1001,39 @@ export const allPrograms = [
   ...normalizeLegacyPrograms(academicPrograms),
   ...normalizeLegacyPrograms(vocationalPrograms),
   ...dynamicPrograms,
-];
+].map((program): Program => {
+  const course = (
+    computingCourses as Record<string, { name: string; category: string; programUrl: string }>
+  )[program.id];
+  if (course) {
+    return {
+      ...program,
+      name: course.name,
+      category: course.category,
+      type: 'certificate',
+      institutionDetails: program.institutionDetails?.map((detail) => ({
+        ...detail,
+        programUrl: course.programUrl,
+      })),
+    };
+  }
+  const programUrl = DANON_PROGRAM_URLS[program.id];
+  if (program.institutionId !== 'danon' || !programUrl) return program;
+  return {
+    ...program,
+    admissionRequirements: [DANON_BEGINNER_REQUIREMENT],
+    institutionDetails: [
+      {
+        institutionName: program.institution,
+        durationYears: null,
+        estimatedStudentsPerYear: '',
+        quantitativeMinRequirement: null,
+        englishMinRequirement: null,
+        specificAdmissionNotes: [DANON_BEGINNER_REQUIREMENT],
+        officialCalculatorUrl: '',
+        programUrl,
+        admissionFacts: [],
+      },
+    ],
+  };
+});

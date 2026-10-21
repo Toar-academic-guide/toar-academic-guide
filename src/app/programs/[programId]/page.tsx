@@ -75,11 +75,17 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
 
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
             <h2 className="text-xl font-bold">תנאי קבלה</h2>
-            <ul className="mt-4 list-inside list-disc space-y-2 text-sm text-slate-600">
-              {catalogueAdmissionRequirements(program.admissionRequirements).map((requirement) => (
-                <li key={requirement}>{requirement}</li>
-              ))}
-            </ul>
+            {program.isListed === false ? (
+              <p className="mt-4 text-sm text-slate-600">אין כרגע מידע עדכני על המסלול.</p>
+            ) : (
+              <ul className="mt-4 list-inside list-disc space-y-2 text-sm text-slate-600">
+                {catalogueAdmissionRequirements(program.admissionRequirements).map(
+                  (requirement) => (
+                    <li key={requirement}>{requirement}</li>
+                  ),
+                )}
+              </ul>
+            )}
           </section>
         </section>
       </main>

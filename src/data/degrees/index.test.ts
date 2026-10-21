@@ -441,19 +441,25 @@ describe('dynamic Monday-derived programme inference', () => {
     );
   });
 
-  it('keeps only clearly computing-oriented Monday institutions in the cs fallback bucket', () => {
+  it('does not present computing courses as Computer Science degrees', () => {
     const csFallbacks = allPrograms.filter(
       (program) =>
         program.name.startsWith('מדעי המחשב - ') &&
         (program.id.startsWith('mon_') || program.id === 'hackeru_cs'),
     );
 
-    expect(csFallbacks.map((program) => program.id).sort()).toEqual([
+    expect(csFallbacks).toEqual([]);
+    for (const id of [
       'hackeru_cs',
       'mon_12341101353_cs',
       'mon_12341113400_cs',
       'mon_12341147475_cs',
-    ]);
+    ]) {
+      expect(allPrograms.find((program) => program.id === id)).toMatchObject({
+        type: 'certificate',
+        category: 'טכנולוגיה ופיתוח',
+      });
+    }
   });
 
   it('gives every Monday evidence record at least one institution-backed generated programme', () => {

@@ -3,6 +3,11 @@ import { toggleLocation, resultLabel, groupJourneyRows, studyFields } from './st
 import { getStaticCataloguePrograms } from './catalogueStatic';
 
 describe('approved journey', () => {
+  it('excludes withdrawn import placeholders from choices while retaining saved references', () => {
+    const program = { ...getStaticCataloguePrograms()[0], isListed: false };
+    expect(studyFields([program])).toEqual([]);
+    expect(studyFields([program], true).flatMap((field) => field.programs)).toContain(program);
+  });
   it('uses corrected catalogue classification even when a legacy ID ends in cs', () => {
     const catalogue = getStaticCataloguePrograms();
     const culinary = catalogue.find((program) => program.id === 'danon_culinary')!;

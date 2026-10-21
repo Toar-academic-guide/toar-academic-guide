@@ -236,6 +236,7 @@ export const programs = pgTable('programs', {
   institutionId: text('institution_id').references(() => institutions.id),
   type: programTypeEnum('type').notNull(),
   category: text('category').notNull(),
+  isListed: boolean('is_listed').default(true).notNull(),
   admissionType: admissionTypeEnum('admission_type').notNull(),
   riasecR: integer('riasec_r').notNull(),
   riasecI: integer('riasec_i').notNull(),
