@@ -2,7 +2,13 @@
 
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { beforeAll, describe, expect, it, vi } from 'vitest';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+
+const auth = vi.hoisted(() => ({ user: null as null | { id: string } }));
+vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ loading: false, user: auth.user }) }));
+beforeEach(() => {
+  auth.user = null;
+});
 
 import LandingPage from '@/components/LandingPage';
 import type { CatalogueProgram } from '@/types/catalogue';
@@ -103,7 +109,8 @@ describe('LandingPage calculator', () => {
     },
   );
 
-  it('keeps initials separate from the logout action', () => {
+  it('opens the shared account surface without signing out', () => {
+    auth.user = { id: 'test-user' };
     const onSignOut = vi.fn();
     render(
       <LandingPage
@@ -117,11 +124,8 @@ describe('LandingPage calculator', () => {
       />,
     );
 
-    fireEvent.click(screen.getByTitle('מחובר כ-daniel.cohen@example.com'));
+    expect(screen.getByRole('link', { name: 'החשבון שלי' }).getAttribute('href')).toBe('/#account');
     expect(onSignOut).not.toHaveBeenCalled();
-
-    fireEvent.click(screen.getByRole('button', { name: 'התנתק' }));
-    expect(onSignOut).toHaveBeenCalledTimes(1);
   });
 
   it('links to the about page from the public navigation', () => {

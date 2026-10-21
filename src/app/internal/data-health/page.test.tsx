@@ -3,6 +3,10 @@
 import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+vi.mock('@/context/AuthContext', () => ({
+  useAuth: () => ({ loading: false, user: null }),
+}));
+
 const hoistedMocks = vi.hoisted(() => ({
   getInternalAdminAuthorization: vi.fn(),
   getDataHealthReport: vi.fn(),
@@ -20,6 +24,7 @@ vi.mock('@/server/data-health/queries', () => ({
 }));
 
 vi.mock('next/navigation', () => ({
+  usePathname: () => '/',
   notFound: hoistedMocks.notFound,
 }));
 

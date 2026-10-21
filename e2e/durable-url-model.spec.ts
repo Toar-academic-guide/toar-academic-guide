@@ -104,3 +104,48 @@ test.describe('durable URL model', () => {
     await expect(page.getByText('Operational Data Health')).toHaveCount(0);
   });
 });
+
+for (const width of [1440, 390]) {
+  test(`shared navigation keeps catalogue, saved and home destinations at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/');
+    const header = page.locator('header');
+    const checkHeader = async () => {
+      await expect(header).toHaveCount(1);
+      await expect(header.getByRole('link', { name: 'מוסדות לימוד' })).toBeVisible();
+      await expect(header.getByRole('link', { name: 'הרשימה שלי' })).toBeVisible();
+      await expect(header.getByRole('link', { name: 'מי אנחנו' })).toBeVisible();
+    };
+    await checkHeader();
+    await header.getByRole('link', { name: 'מוסדות לימוד' }).click();
+    await expect(page).toHaveURL(/\/institutions$/);
+    await checkHeader();
+    await page.getByRole('link', { name: 'אוניברסיטת תל אביב', exact: true }).click();
+    await expect(page).toHaveURL(/\/institutions\/tau$/);
+    await checkHeader();
+    await page
+      .locator('main')
+      .getByRole('link', { name: /מדעי המחשב/ })
+      .first()
+      .click();
+    await expect(page).toHaveURL(/\/programs\//);
+    await checkHeader();
+    await header.getByRole('link', { name: 'Way — עמוד הבית' }).click();
+    await expect(page.getByRole('button', { name: 'עזרו לי לבחור מה ללמוד' })).toBeVisible();
+    await page.goto('/app/calculator');
+    await header.getByRole('link', { name: 'Way — עמוד הבית' }).click();
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByRole('button', { name: 'עזרו לי לבחור מה ללמוד' })).toBeVisible();
+    await header.getByRole('link', { name: 'הרשימה שלי' }).click();
+    await expect(page).toHaveURL(/#saved$/);
+    await header.getByRole('link', { name: 'כניסה' }).click();
+    await expect(page).toHaveURL(/\/login\?next=%2F%23saved$/);
+    await page.goBack();
+    await expect(page).toHaveURL(/#saved$/);
+    await page.reload();
+    await expect(page.getByRole('heading', { name: 'הרשימה שלי', exact: true })).toBeVisible();
+    await checkHeader();
+  });
+}

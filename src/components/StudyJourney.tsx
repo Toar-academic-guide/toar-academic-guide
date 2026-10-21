@@ -45,6 +45,8 @@ import { getRecommendations } from '@/utils/recommendationEngine';
 import JourneyRegionMap from './JourneyRegionMap';
 import EnquiryForm from './EnquiryForm';
 import WayPageShell from './WayPageShell';
+import PublicNavBar from './PublicNavBar';
+import { buildLoginPath, ROUTES } from '@/lib/routes';
 import './StudyJourney.css';
 
 const CareerAssessment = dynamic(() => import('./CareerAssessment'));
@@ -540,35 +542,13 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
 
   return (
     <WayPageShell navigation={null} contentClassName="" className="study-journey">
-      <header className="journey-nav">
-        <Link
-          href="/"
-          aria-label="Way — עמוד הבית"
-          onClick={(event) => {
-            event.preventDefault();
-            go('home');
-          }}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/way-logo.png" alt="Way" width={82} height={42} />
-        </Link>
-        <nav aria-label="ניווט ראשי">
-          <Link href="/institutions">מוסדות לימוד</Link>
-          <button onClick={() => go('saved')}>הרשימה שלי</button>
-          <Link href="/about">מי אנחנו</Link>
-        </nav>
-        {auth.user ? (
-          <button className="journey-pill" onClick={() => go('account')}>
-            החשבון שלי
-          </button>
-        ) : (
-          <Link className="journey-pill" href={`/login?next=${encodeURIComponent('/#' + step)}`}>
-            כניסה
-          </Link>
-        )}
-      </header>
+      <PublicNavBar
+        onGoToBucket={() => go('saved')}
+        onAccountClick={() => go('account')}
+        loginHref={buildLoginPath('/#' + step)}
+      />
       <main
-        className={`journey-main ${step === 'home' ? 'journey-home' : ''} ${step === 'intent' ? 'journey-intent' : ''}`}
+        className={`journey-main ${step === 'home' ? 'journey-home' : ''} ${step === 'intent' ? 'journey-intent' : ''} ${['subjects', 'grade-mode', 'grades-quick', 'grades-exact', 'psy-mode', 'psy-score', 'psy-target', 'review', 'detail', 'alternatives', 'quiz-result', 'improve', 'account', 'inquiry', 'offer'].includes(step) ? 'journey-main-narrow' : ''}`}
       >
         {step !== 'home' && (
           <>
@@ -1416,6 +1396,9 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                 <ArrowLeft />
               </button>
             </div>
+            <Link className="journey-text-button" href={ROUTES.profile}>
+              הפרופיל שלי
+            </Link>
             <button
               className="journey-text-button"
               onClick={async () => {

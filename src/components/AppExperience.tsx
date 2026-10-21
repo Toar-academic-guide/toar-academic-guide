@@ -661,7 +661,11 @@ export default function AppExperience({
             onGoHome={handleGoHome}
             onGoToBucket={() => navigateToStep('bucket-list')}
             onStartClick={() => navigateToStep('intro')}
-            onSignIn={() => router.push(ROUTES.login)}
+            onSignIn={() =>
+              router.push(
+                `${ROUTES.login}?next=${encodeURIComponent(window.location.pathname + window.location.search + window.location.hash)}`,
+              )
+            }
             onSignOut={() => {
               void signOut();
             }}

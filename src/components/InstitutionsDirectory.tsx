@@ -161,7 +161,7 @@ export default function InstitutionsDirectory({ institutions }: InstitutionsDire
     <WayPageShell contentClassName="">
       <main>
         <section className="relative z-10">
-          <div className="mx-auto grid max-w-6xl gap-10 px-4 pb-8 pt-32 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-end lg:pb-12 lg:pt-36">
+          <div className="mx-auto grid max-w-6xl gap-10 px-5 pb-8 pt-8 sm:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-end lg:pb-12 lg:pt-12">
             <div>
               <p className="text-sm font-bold text-[#7784e8]">מוסדות לימוד בישראל</p>
               <h1 className="mt-3 max-w-3xl text-4xl font-semibold leading-tight text-[#445274] sm:text-6xl">
@@ -191,7 +191,7 @@ export default function InstitutionsDirectory({ institutions }: InstitutionsDire
           </div>
         </section>
 
-        <section className="relative z-10 mx-auto flex max-w-6xl flex-col gap-6 px-4 pb-16 pt-2 sm:px-6">
+        <section className="relative z-10 mx-auto flex max-w-6xl flex-col gap-6 px-5 pb-16 pt-2 sm:px-8">
           <div className="rounded-[1.6rem] border border-white bg-white/76 p-4 shadow-[0_24px_80px_rgba(105,133,190,0.16)] backdrop-blur sm:p-5">
             <label className="relative block">
               <Search

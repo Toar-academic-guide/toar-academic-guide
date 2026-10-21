@@ -10,7 +10,12 @@ const hoisted = vi.hoisted(() => ({
 }));
 
 vi.mock('next/navigation', () => ({
+  usePathname: () => '/',
   notFound: hoisted.notFound,
+}));
+
+vi.mock('@/context/AuthContext', () => ({
+  useAuth: () => ({ loading: false, user: null }),
 }));
 
 import { getStaticCataloguePrograms } from '@/lib/catalogueStatic';

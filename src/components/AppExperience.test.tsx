@@ -29,6 +29,7 @@ const hoisted = vi.hoisted(() => ({
 }));
 
 vi.mock('next/navigation', () => ({
+  usePathname: () => '/app/profile',
   useRouter: () => ({
     push: hoisted.push,
   }),
