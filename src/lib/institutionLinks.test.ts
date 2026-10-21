@@ -55,6 +55,12 @@ describe('official institution links', () => {
     expect(institutionWebsite('12341148655')).toBe('https://www.openu.ac.il/tafnit/');
     expect(institutionWebsite('12341168193')).toBe('https://www.ruppin-tech.co.il/');
     expect(institutionWebsite('12220708946')).toBe('https://www.ruppin.ac.il/');
+    expect(new URL(institutionLink(undefined, 'kinneret')!).hostname).toBe('do.kinneret.ac.il');
+    expect(new URL(institutionLink(undefined, 'mon_12341101391')!).hostname).toBe('www.ktec.co.il');
+    expect(new URL(institutionLink(undefined, 'tiltan')!).hostname).toBe('tiltan.co.il');
+    expect(new URL(institutionLink(undefined, 'mon_12341161868')!).hostname).toBe(
+      'www.tiltancollege.co.il',
+    );
   });
 
   it('does not substitute a homepage for an unavailable calculator or alternative route', () => {
