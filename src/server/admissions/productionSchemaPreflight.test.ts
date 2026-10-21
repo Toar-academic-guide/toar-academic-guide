@@ -12,6 +12,81 @@ import {
 } from './productionSchemaPreflight';
 
 describe('production admissions schema preflight', () => {
+  it('allows migration 0036 only when the assessment-progress column is absent', () => {
+    const snapshot = makeSnapshot({
+      appliedCount: FORWARD_PRODUCTION_MIGRATIONS.findIndex(({ id }) => id === '0036'),
+    });
+    expect(assessProductionSchema(snapshot)).toMatchObject({
+      status: 'migration_required',
+      safeToMigrate: true,
+      appliedThrough: '0035',
+      pendingMigrations: ['0036'],
+      issues: [],
+    });
+
+    snapshot.tables.user_profiles.columns.push('assessment_progress');
+    expect(assessProductionSchema(snapshot).issues).toContainEqual(
+      expect.objectContaining({
+        code: 'unexpected_pending_object',
+        object: 'table:user_profiles.column:assessment_progress',
+      }),
+    );
+  });
+
+  it('requires the applied assessment-progress column to exist as JSONB', () => {
+    const missing = makeSnapshot();
+    missing.tables.user_profiles.columns = missing.tables.user_profiles.columns.filter(
+      (column) => column !== 'assessment_progress',
+    );
+    delete missing.tables.user_profiles.columnTypes.assessment_progress;
+    expect(assessProductionSchema(missing).issues).toContainEqual(
+      expect.objectContaining({
+        code: 'missing_column',
+        object: 'table:user_profiles.column:assessment_progress',
+      }),
+    );
+
+    const wrongType = makeSnapshot();
+    wrongType.tables.user_profiles.columnTypes.assessment_progress = 'text';
+    expect(assessProductionSchema(wrongType).issues).toContainEqual(
+      expect.objectContaining({
+        code: 'column_type_mismatch',
+        object: 'table:user_profiles.column:assessment_progress',
+      }),
+    );
+  });
+
+  it('still rejects an altered assessment-progress migration payload', () => {
+    const snapshot = makeSnapshot();
+    snapshot.migrationHistory.find(
+      ({ name }) => name === 'assessment_progress',
+    )!.statementFingerprint = 'different';
+    expect(assessProductionSchema(snapshot).issues).toContainEqual(
+      expect.objectContaining({ code: 'unexpected_migration' }),
+    );
+  });
+
+  it('recognizes the deployed assessment-progress migration and its JSONB column', () => {
+    const snapshot = makeSnapshot();
+    snapshot.migrationHistory = snapshot.migrationHistory.filter(
+      ({ name }) => name !== 'assessment_progress',
+    );
+    snapshot.migrationHistory.push({
+      version: '20260930143645',
+      name: 'assessment_progress',
+      statementFingerprint: '6285f483628466394589deeaf818a0f7',
+    });
+    snapshot.tables.user_profiles.columns.push('assessment_progress');
+    snapshot.tables.user_profiles.columnTypes.assessment_progress = 'jsonb';
+
+    expect(assessProductionSchema(snapshot)).toMatchObject({
+      status: 'current',
+      appliedThrough: '0036',
+      pendingMigrations: [],
+      issues: [],
+    });
+  });
+
   it('recognizes the deployed profile admissions-input migration before publishing cutoffs', () => {
     const snapshot = makeSnapshot();
     snapshot.migrationHistory = snapshot.migrationHistory.map((migration) =>
@@ -42,7 +117,7 @@ describe('production admissions schema preflight', () => {
 
     expect(assessProductionSchema(snapshot)).toMatchObject({
       status: 'current',
-      appliedThrough: '0035',
+      appliedThrough: '0036',
       pendingMigrations: [],
       issues: [],
     });
@@ -77,19 +152,21 @@ describe('production admissions schema preflight', () => {
     expect(report).toMatchObject({
       status: 'current',
       safeToMigrate: false,
-      appliedThrough: '0035',
+      appliedThrough: '0036',
       pendingMigrations: [],
       issues: [],
     });
   });
 
   it('allows the existing restricted schema to migrate to dashboard column reads', () => {
-    const snapshot = makeSnapshot({ appliedCount: FORWARD_PRODUCTION_MIGRATIONS.length - 1 });
+    const snapshot = makeSnapshot({
+      appliedCount: FORWARD_PRODUCTION_MIGRATIONS.findIndex(({ id }) => id === '0035'),
+    });
     expect(assessProductionSchema(snapshot)).toMatchObject({
       status: 'migration_required',
       safeToMigrate: true,
       appliedThrough: '0034',
-      pendingMigrations: ['0035'],
+      pendingMigrations: ['0035', '0036'],
       issues: [],
     });
   });
@@ -290,6 +367,7 @@ describe('production admissions schema preflight', () => {
       '0033',
       '0034',
       '0035',
+      '0036',
     ] as const) {
       const migration = FORWARD_PRODUCTION_MIGRATIONS.find(({ id }) => id === migrationId);
       const source = readFileSync(migration?.repositoryPath ?? '', 'utf8').replace(/\r\n/g, '\n');
@@ -351,6 +429,7 @@ describe('production admissions schema preflight', () => {
       '0033',
       '0034',
       '0035',
+      '0036',
     ]);
   });
 
@@ -382,6 +461,7 @@ describe('production admissions schema preflight', () => {
       '0033',
       '0034',
       '0035',
+      '0036',
     ]);
   });
 
@@ -394,7 +474,7 @@ describe('production admissions schema preflight', () => {
     expect(assessProductionSchema(snapshot)).toMatchObject({
       status: 'migration_required',
       safeToMigrate: true,
-      pendingMigrations: ['0027', '0028', '0031', '0032', '0033', '0034', '0035'],
+      pendingMigrations: ['0027', '0028', '0031', '0032', '0033', '0034', '0035', '0036'],
       issues: [],
     });
   });
@@ -601,6 +681,7 @@ describe('production admissions schema preflight', () => {
         '0033',
         '0034',
         '0035',
+        '0036',
       ],
       issues: [],
     });
@@ -748,6 +829,10 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
   if (appliedIds.has('0028')) {
     tables.user_profiles.columns.push('admissions_inputs');
     tables.user_profiles.columnTypes.admissions_inputs = 'jsonb';
+  }
+  if (appliedIds.has('0036')) {
+    tables.user_profiles.columns.push('assessment_progress');
+    tables.user_profiles.columnTypes.assessment_progress = 'jsonb';
   }
   if (appliedIds.has('0010')) {
     tables.user_profiles?.columns.push('bagrut_profile_version_id');

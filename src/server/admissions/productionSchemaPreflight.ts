@@ -947,6 +947,16 @@ function assessChangedObjects(
   applied: Set<MigrationId>,
   issues: ProductionSchemaIssue[],
 ) {
+  assessAddedColumn(snapshot, applied, '0036', 'user_profiles', 'assessment_progress', issues);
+  assessColumnType(
+    snapshot,
+    applied,
+    '0036',
+    'user_profiles',
+    'assessment_progress',
+    'jsonb',
+    issues,
+  );
   assessAddedColumn(snapshot, applied, '0034', 'admission_alert_outbox', 'recipient_hash', issues);
   assessColumnType(
     snapshot,
