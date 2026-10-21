@@ -2,6 +2,7 @@ import { mondayAdmissionEvidenceRecords } from '@/data/admissions/mondayEvidence
 import { INSTITUTION_BY_ID, type InstitutionRecord } from '@/data/institutions';
 import mondayInstitutionsExport from '@/data/mondayInstitutions.generated.json';
 import yoramInstitutionLogos from '@/data/yoramInstitutionLogos.generated.json';
+import { institutionWebsite } from '@/lib/institutionLinks';
 
 export type InstitutionAreaFilter =
   'all' | 'center' | 'north' | 'south' | 'jerusalem' | 'tel_aviv' | 'haifa' | 'online';
@@ -68,14 +69,12 @@ const DIRECTORY_LOGO_OVERRIDES: Record<
   {
     domain?: string;
     logoUrl?: string;
-    sourceUrl?: string;
     location?: string;
   }
 > = {
   danon: {
     domain: 'danon.org.il',
     logoUrl: 'https://www.meirdanon.com/wp-content/uploads/2015/09/nl2-danon.png',
-    sourceUrl: 'https://www.danon.org.il',
   },
   wizo: {
     domain: 'wizo.org.il',
@@ -83,12 +82,10 @@ const DIRECTORY_LOGO_OVERRIDES: Record<
   mon_12220697934: {
     domain: 'bpm-music.com',
     logoUrl: 'https://i1.sndcdn.com/avatars-000030802522-35lsuk-t500x500.jpg',
-    sourceUrl: 'https://www.bpm-music.com',
   },
   mon_12220697940: {
     logoUrl: '/institution-logos/yoram-levinstein.png',
     domain: 'studioact.co.il',
-    sourceUrl: 'https://www.studioact.co.il/',
   },
   mon_12341118768: {
     logoUrl: '/institution-logos/hbs-college.png',
@@ -99,37 +96,29 @@ const DIRECTORY_LOGO_OVERRIDES: Record<
   mon_12341064485: {
     logoUrl: '/institution-logos/anat-barzilai.png',
     domain: 'dramacomedy.co.il',
-    sourceUrl: 'https://www.dramacomedy.co.il/about-2',
   },
   mon_12341092879: {
     logoUrl: '/institution-logos/studio-6b.png',
     domain: '6bstudio.co.il',
-    sourceUrl: 'https://www.6bstudio.co.il/',
   },
   mon_12341122982: {
     domain: 'leidaschool.co.il',
-    sourceUrl: 'https://www.leidaschool.co.il/',
     location: 'מרכז ברודט, צייטלין 22, תל אביב',
   },
   mon_12341137918: {
     domain: 'tiltan-college.co.il',
-    sourceUrl: 'https://www.tiltan-college.co.il/about',
   },
   mon_12341149221: {
     domain: 'tiltan.co.il',
-    sourceUrl: 'https://tiltan.co.il/',
   },
   mon_12341098628: {
     domain: 'abs-school.com',
-    sourceUrl: 'https://abs-school.com/',
   },
   nativ: {
     domain: 'nissan-nativ.org.il',
-    sourceUrl: 'https://www.nissan-nativ.org.il/',
   },
   reidman: {
     domain: 'reidman.co.il',
-    sourceUrl: 'https://www.reidman.co.il/',
   },
   mon_12341098736: {
     logoUrl: '/institution-logos/laledet.png',
@@ -203,7 +192,7 @@ function hostnameFromUrl(url: string | null) {
   }
 
   try {
-    return new URL(url).hostname;
+    return new URL(url).hostname.replace(/^www\./, '');
   } catch {
     return null;
   }
@@ -326,8 +315,7 @@ export function getInstitutionDirectoryItems(): InstitutionDirectoryItem[] {
         institution?.name ??
         evidence?.displayName ??
         cleanMondayItemName(row.itemName);
-      const sourceUrl =
-        override?.sourceUrl ??
+      const importedSourceUrl =
         extractUrl(row.officialSource) ??
         extractUrl(row.calculatorLink) ??
         extractUrl(row.additionalLink) ??
@@ -335,8 +323,10 @@ export function getInstitutionDirectoryItems(): InstitutionDirectoryItem[] {
         institution?.programUrl ??
         institution?.calculatorUrl ??
         null;
-      const domain = override?.domain ?? institution?.domain ?? hostnameFromUrl(sourceUrl);
-      const yoramLogoUrl = yoramLogoFromSourceUrl(sourceUrl);
+      const sourceUrl = institutionWebsite(row.itemId);
+      const domain = hostnameFromUrl(sourceUrl) ?? override?.domain ?? institution?.domain ?? null;
+      // Imported directory links are retained only for the existing local logo cache.
+      const yoramLogoUrl = yoramLogoFromSourceUrl(importedSourceUrl);
       const location = override?.location ?? row.location;
 
       return {

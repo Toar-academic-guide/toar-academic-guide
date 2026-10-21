@@ -247,12 +247,4 @@ export function groupJourneyRows(rows: JourneyRow[], groupBy: 'field' | 'institu
   return [...groups.values()];
 }
 
-export function officialUrl(value?: string) {
-  if (!value) return undefined;
-  try {
-    const url = new URL(value);
-    return ['https:', 'http:'].includes(url.protocol) ? url.href : undefined;
-  } catch {
-    return undefined;
-  }
-}
+export { institutionLink as officialUrl } from '@/lib/institutionLinks';

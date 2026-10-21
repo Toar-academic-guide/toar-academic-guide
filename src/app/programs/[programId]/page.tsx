@@ -90,7 +90,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                   const detail = program.institutionDetails?.find(
                     (entry) => entry.institutionName === institution.name,
                   );
-                  const sourceUrl = officialUrl(detail?.programUrl);
+                  const sourceUrl = officialUrl(detail?.programUrl, institution.id);
                   return (
                     <div key={institution.id}>
                       {institutions.length > 1 && (

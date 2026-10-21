@@ -6,6 +6,7 @@ import { ArrowUpLeft, ExternalLink, MapPin, Search, SlidersHorizontal } from 'lu
 
 import InstitutionLogo from '@/components/InstitutionLogo';
 import WayPageShell from '@/components/WayPageShell';
+import { institutionLink } from '@/lib/institutionLinks';
 import type {
   InstitutionAreaFilter,
   InstitutionCategoryFilter,
@@ -346,7 +347,7 @@ export default function InstitutionsDirectory({ institutions }: InstitutionsDire
                     </Link>
                     {institution.sourceUrl && (
                       <a
-                        href={institution.sourceUrl}
+                        href={institutionLink(institution.sourceUrl)}
                         target="_blank"
                         rel="noreferrer"
                         className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-[#d9e3f3] bg-white/70 text-[#60708c] transition hover:bg-white hover:text-[#445274]"

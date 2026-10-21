@@ -1,5 +1,7 @@
 'use client';
 
+import { institutionLink } from '@/lib/institutionLinks';
+
 import { useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
@@ -478,6 +480,17 @@ function ProgramDetailView({
                   p.admissionRequirements,
                 );
                 const instRecord = INSTITUTION_BY_NAME[p.institution];
+                const programUrl = institutionLink(
+                  detail?.programUrl ?? instRecord?.programUrl,
+                  instRecord?.id,
+                );
+                const calculatorUrl = institutionLink(
+                  detail?.calculatorUrl ??
+                    detail?.officialCalculatorUrl ??
+                    instRecord?.calculatorUrl,
+                  instRecord?.id,
+                  { fallbackToWebsite: false },
+                );
                 const region = instRecord?.region ?? INSTITUTION_REGIONS[p.institution];
                 const isPreferred =
                   geographicPreference &&
@@ -567,9 +580,9 @@ function ProgramDetailView({
                             Falls back to the master institution record URLs when
                             the program-level detail fields are absent. */}
                         <div className="flex flex-col gap-2 sm:flex-row">
-                          {(detail.programUrl ?? instRecord?.programUrl) && (
+                          {programUrl && (
                             <a
-                              href={detail.programUrl ?? instRecord?.programUrl}
+                              href={programUrl}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 active:scale-95"
@@ -577,18 +590,16 @@ function ProgramDetailView({
                               מידע על המסלול ↗
                             </a>
                           )}
-                          <a
-                            href={
-                              detail.calculatorUrl ??
-                              detail.officialCalculatorUrl ??
-                              instRecord?.calculatorUrl
-                            }
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#4f46e5] px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#4338ca] active:scale-95"
-                          >
-                            בדיקת סיכויי קבלה ומחשבון סכם ↗
-                          </a>
+                          {calculatorUrl && (
+                            <a
+                              href={calculatorUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#4f46e5] px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#4338ca] active:scale-95"
+                            >
+                              בדיקת סיכויי קבלה ומחשבון סכם ↗
+                            </a>
+                          )}
                         </div>
                       </>
                     )}
@@ -624,6 +635,17 @@ function ProgramDetailView({
                   p.admissionRequirements,
                 );
                 const instRecord = INSTITUTION_BY_NAME[p.institution];
+                const programUrl = institutionLink(
+                  detail?.programUrl ?? instRecord?.programUrl,
+                  instRecord?.id,
+                );
+                const calculatorUrl = institutionLink(
+                  detail?.calculatorUrl ??
+                    detail?.officialCalculatorUrl ??
+                    instRecord?.calculatorUrl,
+                  instRecord?.id,
+                  { fallbackToWebsite: false },
+                );
                 const region = instRecord?.region ?? INSTITUTION_REGIONS[p.institution];
                 const isPreferred =
                   geographicPreference &&
@@ -701,9 +723,9 @@ function ProgramDetailView({
                             Falls back to the master institution record URLs when
                             the program-level detail fields are absent. */}
                         <div className="flex flex-col gap-2 sm:flex-row">
-                          {(detail.programUrl ?? instRecord?.programUrl) && (
+                          {programUrl && (
                             <a
-                              href={detail.programUrl ?? instRecord?.programUrl}
+                              href={programUrl}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 active:scale-95"
@@ -711,18 +733,16 @@ function ProgramDetailView({
                               מידע על המסלול ↗
                             </a>
                           )}
-                          <a
-                            href={
-                              detail.calculatorUrl ??
-                              detail.officialCalculatorUrl ??
-                              instRecord?.calculatorUrl
-                            }
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#4f46e5] px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#4338ca] active:scale-95"
-                          >
-                            בדיקת סיכויי קבלה ומחשבון סכם ↗
-                          </a>
+                          {calculatorUrl && (
+                            <a
+                              href={calculatorUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#4f46e5] px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#4338ca] active:scale-95"
+                            >
+                              בדיקת סיכויי קבלה ומחשבון סכם ↗
+                            </a>
+                          )}
                         </div>
                       </>
                     ) : (

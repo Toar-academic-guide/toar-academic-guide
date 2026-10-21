@@ -1269,11 +1269,17 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                           <button onClick={() => go('alternatives')}>עוד דרכי קבלה</button>
                         </>
                       )}
-                    {officialUrl(details?.programUrl ?? activeRow.institution.programUrl) && (
+                    {officialUrl(
+                      details?.programUrl ?? activeRow.institution.programUrl,
+                      activeRow.institution.id,
+                    ) && (
                       <a
                         target="_blank"
                         rel="noopener noreferrer"
-                        href={officialUrl(details?.programUrl ?? activeRow.institution.programUrl)}
+                        href={officialUrl(
+                          details?.programUrl ?? activeRow.institution.programUrl,
+                          activeRow.institution.id,
+                        )}
                       >
                         לאתר המוסד
                       </a>
@@ -1292,8 +1298,16 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                       <article className="journey-alternative" key={path.id}>
                         <h2>{path.title}</h2>
                         <p>{path.description}</p>
-                        {officialUrl(path.url) && (
-                          <a href={officialUrl(path.url)} target="_blank" rel="noopener noreferrer">
+                        {officialUrl(path.url, activeRow.institution.id, {
+                          fallbackToWebsite: false,
+                        }) && (
+                          <a
+                            href={officialUrl(path.url, activeRow.institution.id, {
+                              fallbackToWebsite: false,
+                            })}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
                             לפרטים במוסד
                           </a>
                         )}

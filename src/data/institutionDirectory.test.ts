@@ -91,10 +91,10 @@ describe('institution directory data', () => {
     expect(byId.get('givat_washington')?.logoUrl).toBe('/institution-logos/givat-washington.png');
     expect(byId.get('danon')).toMatchObject({
       domain: 'danon.org.il',
-      sourceUrl: 'https://www.danon.org.il',
+      sourceUrl: 'https://www.danon.org.il/',
     });
     expect(byId.get('spieldocs')?.logoUrl).toContain('SamSpigelSchool.svg');
-    expect(byId.get('wizo')?.domain).toBe('wizo.org.il');
+    expect(byId.get('wizo')?.domain).toBe('lp.wizodzn.ac.il');
     expect(byId.get('mon_12220697934')).toMatchObject({
       domain: 'bpm-music.com',
       logoUrl: 'https://i1.sndcdn.com/avatars-000030802522-35lsuk-t500x500.jpg',

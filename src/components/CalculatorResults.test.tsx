@@ -897,11 +897,9 @@ describe('CalculatorResults', () => {
 
     expect(await screen.findByLabelText('אוניברסיטת אריאל: מתקבל/ת')).toBeTruthy();
     expect(screen.getByText('כלל קבלה ממופה, מקור רשמי חסום')).toBeTruthy();
-    expect(
-      screen.getByRole('link', {
-        name: 'https://pniot.ariel.ac.il/projects/tzmm/NewCalcMark/',
-      }),
-    ).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toBe(
+      'https://pniot.ariel.ac.il/projects/tzmm/NewCalcMark/?utm_source=myway&utm_medium=referral',
+    );
   });
 
   it('renders manual-gate results as eligible to apply', async () => {
