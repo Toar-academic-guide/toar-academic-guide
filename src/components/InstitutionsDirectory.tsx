@@ -169,10 +169,6 @@ export default function InstitutionsDirectory({ institutions }: InstitutionsDire
               <h1 className="mt-3 max-w-3xl text-3xl font-semibold leading-tight text-[#445274] sm:text-4xl">
                 למצוא מוסד לפי מקום, סוג ותעודה
               </h1>
-              <p className="mt-5 max-w-2xl text-base leading-8 text-[#6f7a99] sm:text-lg">
-                קטלוג מוסדות מתוך Monday, מאורגן לחיפוש מהיר בין אוניברסיטאות, מכללות ובתי ספר
-                מקצועיים.
-              </p>
             </div>
 
             <div className="grid grid-cols-3 gap-3">

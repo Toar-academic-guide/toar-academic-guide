@@ -74,7 +74,7 @@ describe('ProgramPage', () => {
     expect(visibleNotes).toContain('ללא פסיכומטרי: ממוצע בגרות 102 ומעלה');
     expect(screen.getByText('כל התנאים ודרכי קבלה נוספות').closest('details')?.open).toBe(false);
     expect(screen.getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toBe(
-      'https://go.tau.ac.il/he/social-sciences/ba/communications?v=requirements',
+      'https://go.tau.ac.il/he/social-sciences/ba/communications?v=requirements&utm_source=myway&utm_medium=referral',
     );
   });
 
@@ -83,6 +83,10 @@ describe('ProgramPage', () => {
     const institutions = getStaticCatalogueInstitutions().filter((entry) =>
       ['tau', 'bgu'].includes(entry.id),
     );
+    const officialSources: Record<string, string> = {
+      tau: 'https://go.tau.ac.il/he/social-sciences/ba/communications?v=requirements',
+      bgu: 'https://www.bgu.ac.il/welcome/ba/',
+    };
     vi.mocked(getPublicProgramPageData).mockResolvedValueOnce({
       program: {
         ...program,
@@ -90,7 +94,7 @@ describe('ProgramPage', () => {
           ...program.institutionDetails![0],
           institutionName: institution.name,
           specificAdmissionNotes: [`תנאי ${institution.id}`],
-          programUrl: `https://example.org/${institution.id}`,
+          programUrl: officialSources[institution.id],
         })),
       },
       institutions,
@@ -102,8 +106,11 @@ describe('ProgramPage', () => {
       const section = screen.getByRole('heading', { name: institution.name }).parentElement!;
       expect(within(section).getByText(`תנאי ${institution.id}`)).toBeTruthy();
       expect(within(section).getAllByRole('listitem')).toHaveLength(1);
+      const expectedLink = new URL(officialSources[institution.id]);
+      expectedLink.searchParams.set('utm_source', 'myway');
+      expectedLink.searchParams.set('utm_medium', 'referral');
       expect(within(section).getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toBe(
-        `https://example.org/${institution.id}`,
+        expectedLink.toString(),
       );
     }
   });
