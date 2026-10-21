@@ -1,5 +1,7 @@
 import InstitutionsDirectory from '@/components/InstitutionsDirectory';
 import { getInstitutionDirectoryItems } from '@/data/institutionDirectory';
+import JsonLd from '@/components/seo/JsonLd';
+import { institutionDirectoryLd } from '@/lib/seo/jsonLd';
 
 export const metadata = {
   title: 'מוסדות לימוד',
@@ -16,5 +18,11 @@ export const metadata = {
 };
 
 export default function InstitutionsPage() {
-  return <InstitutionsDirectory institutions={getInstitutionDirectoryItems()} />;
+  const institutions = getInstitutionDirectoryItems();
+  return (
+    <>
+      <JsonLd data={institutionDirectoryLd(institutions)} />
+      <InstitutionsDirectory institutions={institutions} />
+    </>
+  );
 }

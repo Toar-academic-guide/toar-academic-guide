@@ -12,5 +12,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/institutions',
     ...indexableInstitutionIds().map((id) => `/institutions/${encodeURIComponent(id)}`),
     ...indexableProgramIds().map((id) => `/programs/${encodeURIComponent(id)}`),
-  ].map((path) => ({ url: absoluteUrl(path), lastModified: LAST_MODIFIED }));
+  ].map((path) => ({
+    url: absoluteUrl(path),
+    lastModified: LAST_MODIFIED,
+    changeFrequency: path === '/about' ? 'monthly' : 'weekly',
+    priority: path === '/' ? 1 : path === '/institutions' ? 0.9 : path === '/about' ? 0.5 : 0.7,
+  }));
 }

@@ -3,6 +3,8 @@ import { describe, expect, it } from 'vitest';
 import robots from '@/app/robots';
 import sitemap from '@/app/sitemap';
 import JsonLd from '@/components/seo/JsonLd';
+import { getInstitutionDirectoryItems } from '@/data/institutionDirectory';
+import { buildRobots, TRAINING_BOTS_POLICY } from './robots';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import { getPublicInstitutionPageData, getPublicProgramPageData } from '@/lib/publicCataloguePages';
 import { absoluteUrl, SITE_ALT_NAMES, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/site';
@@ -15,6 +17,8 @@ import {
 import { buildInstitutionMetadata, buildProgramMetadata } from './metadata';
 import {
   breadcrumbLd,
+  institutionDirectoryLd,
+  webApplicationLd,
   institutionBreadcrumbLd,
   institutionLd,
   organizationLd,
@@ -27,26 +31,27 @@ const institutions = getStaticCatalogueInstitutions();
 const programs = getStaticCataloguePrograms();
 
 describe('crawl policy', () => {
-  it('explicitly allows search and training crawlers with identical operational exclusions', () => {
-    const result = robots();
+  it('separates wildcard, search and allowed training policies with operational exclusions', () => {
+    expect(robots()).toEqual(buildRobots(TRAINING_BOTS_POLICY));
+    const result = buildRobots('allow');
     const rules = Array.isArray(result.rules) ? result.rules : [result.rules];
     expect(rules.map((rule) => rule.userAgent)).toEqual([
       '*',
-      'GPTBot',
-      'OAI-SearchBot',
-      'ChatGPT-User',
-      'PerplexityBot',
-      'Perplexity-User',
-      'Google-Extended',
-      'ClaudeBot',
-      'Claude-SearchBot',
-      'Claude-User',
-      'Applebot-Extended',
-      'CCBot',
+      [
+        'OAI-SearchBot',
+        'ChatGPT-User',
+        'PerplexityBot',
+        'Perplexity-User',
+        'Claude-SearchBot',
+        'Claude-User',
+      ],
+      ['GPTBot', 'ClaudeBot', 'Google-Extended', 'CCBot', 'Applebot-Extended'],
     ]);
     for (const rule of rules) {
       expect(rule.allow).toBe('/');
       expect(rule.disallow).toEqual([
+        '/app/',
+        '/login',
         '/api/',
         '/internal/',
         '/auth/',
@@ -54,12 +59,23 @@ describe('crawl policy', () => {
         '/ingest/',
         '/dev',
       ]);
-      for (const path of ['/app', '/login', '/signup', '/enquiry']) {
-        expect(rule.disallow).not.toContain(path);
-      }
+      expect(rule.disallow).not.toContain('/signup');
+      expect(rule.disallow).not.toContain('/enquiry');
     }
     expect(result.sitemap).toBe(`${SITE_URL}/sitemap.xml`);
     expect(result.host).toBe(SITE_URL);
+  });
+
+  it('can block training in one policy change without affecting answer/search crawlers', () => {
+    const allowed = buildRobots('allow');
+    const blocked = buildRobots('block');
+    expect(Array.isArray(allowed.rules) && Array.isArray(blocked.rules)).toBe(true);
+    if (!Array.isArray(allowed.rules) || !Array.isArray(blocked.rules))
+      throw new Error('Expected rule groups');
+    expect(blocked.rules.slice(0, 2)).toEqual(allowed.rules.slice(0, 2));
+    expect(blocked.rules[2].userAgent).toEqual(allowed.rules[2].userAgent);
+    expect(blocked.rules[2].disallow).toBe('/');
+    expect(blocked.rules[2].allow).toBeUndefined();
   });
 
   it('indexes exactly existing non-opaque pages with at least one resolved relation', () => {
@@ -108,7 +124,13 @@ describe('crawl policy', () => {
       expect(url.endsWith('/')).toBe(false);
       expect(url).not.toMatch(/mon_|\/(?:app|login|signup|enquiry|internal|auth|api|dev)(?:\/|$)/);
     }
-    expect(entries[0].lastModified).toBeInstanceOf(Date);
+    for (const entry of entries) {
+      expect(entry.lastModified).toBeInstanceOf(Date);
+      expect(entry.changeFrequency).toBe(entry.url.endsWith('/about') ? 'monthly' : 'weekly');
+      expect(entry.priority).toBeGreaterThan(0);
+      expect(entry.priority).toBeLessThanOrEqual(1);
+    }
+    expect(entries[0].priority).toBe(1);
     expect(new Set(entries.map((entry) => entry.lastModified)).size).toBe(1);
     expect(sitemap()[0].lastModified).toBe(entries[0].lastModified);
   });
@@ -174,6 +196,22 @@ describe('metadata', () => {
     expect(buildProgramMetadata('missing')).toEqual({});
   });
 
+  it('leads with real relation facts and keeps descriptions unique across indexable detail pages', () => {
+    const institution = getPublicInstitutionPageData('tau')!;
+    expect(buildInstitutionMetadata('tau').description).toMatch(
+      new RegExp(`^${institution.programs.length} מסלולי לימוד`),
+    );
+    expect(buildProgramMetadata('tau_cs').description).toMatch(/^מדעי המחשב באוניברסיטת תל אביב:/);
+    expect(buildProgramMetadata('cs').description).toContain(
+      `ב-${getPublicProgramPageData('cs')!.institutions.length} מוסדות לימוד`,
+    );
+    const descriptions = [
+      ...indexableInstitutionIds().map((id) => buildInstitutionMetadata(id).description),
+      ...indexableProgramIds().map((id) => buildProgramMetadata(id).description),
+    ];
+    expect(new Set(descriptions).size).toBe(descriptions.length);
+  });
+
   it('has unique titles across all indexable public pages and disambiguates known collisions', () => {
     const titles = [
       'MyWay | הדרך שלך ללימודים',
@@ -208,7 +246,7 @@ describe('structured data', () => {
   it('connects Organization and WebSite without unsupported search or FAQ markup', () => {
     expect(organizationLd()).toMatchObject({
       '@type': 'Organization',
-      '@id': `${SITE_URL}/#org`,
+      '@id': `${SITE_URL}/#organization`,
       name: 'MyWay',
       alternateName: SITE_ALT_NAMES,
       url: SITE_URL,
@@ -219,10 +257,85 @@ describe('structured data', () => {
     expect(websiteLd()).toMatchObject({
       '@type': 'WebSite',
       '@id': `${SITE_URL}/#website`,
-      publisher: { '@id': `${SITE_URL}/#org` },
+      publisher: { '@id': `${SITE_URL}/#organization` },
       inLanguage: 'he',
     });
     expect(websiteLd()).not.toHaveProperty('potentialAction');
+  });
+
+  it('describes the existing free web application without reviews or invented features', () => {
+    expect(webApplicationLd()).toMatchObject({
+      '@type': 'WebApplication',
+      '@id': `${SITE_URL}/#webapp`,
+      url: SITE_URL,
+      applicationCategory: 'EducationalApplication',
+      operatingSystem: 'Web',
+      offers: { '@type': 'Offer', price: 0, priceCurrency: 'ILS' },
+      publisher: { '@id': `${SITE_URL}/#organization` },
+      isPartOf: { '@id': `${SITE_URL}/#website` },
+      featureList: [
+        'שאלון התאמה ללימודים',
+        'קטלוג מוסדות ומסלולי לימוד',
+        'בדיקת סיכויי קבלה אישית',
+      ],
+    });
+  });
+
+  it('lists precisely the directory cards in order, including their existing public IDs', () => {
+    const items = getInstitutionDirectoryItems();
+    const graph = institutionDirectoryLd(items);
+    expect(graph[0]).toMatchObject({
+      '@type': 'CollectionPage',
+      '@id': `${SITE_URL}/institutions#collection`,
+      url: `${SITE_URL}/institutions`,
+      isPartOf: { '@id': `${SITE_URL}/#website` },
+      mainEntity: { '@id': `${SITE_URL}/institutions#institutions` },
+      breadcrumb: { '@id': `${SITE_URL}/institutions#breadcrumb` },
+    });
+    expect(graph[1]).toMatchObject({
+      '@type': 'ItemList',
+      '@id': `${SITE_URL}/institutions#institutions`,
+      numberOfItems: items.length,
+      itemListElement: items.map((item, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: item.name,
+        url: `${SITE_URL}/institutions/${encodeURIComponent(item.id)}`,
+      })),
+    });
+    expect(graph[2]['@type']).toBe('BreadcrumbList');
+    for (const item of items) expect(getPublicInstitutionPageData(item.id)).not.toBeNull();
+  });
+
+  it('renders graph envelopes with consistent apex node IDs and no unsupported content schemas', () => {
+    const data = [
+      organizationLd(),
+      websiteLd(),
+      webApplicationLd(),
+      ...institutionDirectoryLd(getInstitutionDirectoryItems()),
+      institutionLd(getPublicInstitutionPageData('tau')!),
+      institutionBreadcrumbLd(getPublicInstitutionPageData('tau')!),
+      programLd(getPublicProgramPageData('tau_cs')!),
+      programBreadcrumbLd(getPublicProgramPageData('tau_cs')!),
+    ];
+    const markup = renderToStaticMarkup(JsonLd({ data }));
+    const graph = JSON.parse(
+      markup.slice(markup.indexOf('>') + 1, markup.lastIndexOf('</script>')),
+    );
+    expect(graph['@context']).toBe('https://schema.org');
+    expect(graph['@graph']).toEqual(data);
+    const ids = data.map((node) => node['@id']);
+    expect(new Set(ids).size).toBe(ids.length);
+    for (const id of ids) expect(new URL(id).origin).toBe(SITE_URL);
+    expect(institutionLd(getPublicInstitutionPageData('tau')!)['@id']).toBe(
+      `${SITE_URL}/institutions/tau#institution`,
+    );
+    expect(programLd(getPublicProgramPageData('tau_cs')!).provider[0]['@id']).toBe(
+      `${SITE_URL}/institutions/tau#institution`,
+    );
+    expect(JSON.stringify(graph)).not.toMatch(
+      /FAQPage|HowTo|Dataset|AggregateRating|"@type":"Review"/,
+    );
   });
 
   it('classifies institutions and emits only official HTTPS identities with no inferred address', () => {
@@ -317,6 +430,6 @@ describe('structured data', () => {
     const json = markup.slice(markup.indexOf('>') + 1, markup.lastIndexOf('</script>'));
     expect(json).not.toContain('<');
     expect(json).toContain('\\u003c');
-    expect(JSON.parse(json)).toEqual(data);
+    expect(JSON.parse(json)).toEqual({ '@context': 'https://schema.org', '@graph': [data] });
   });
 });

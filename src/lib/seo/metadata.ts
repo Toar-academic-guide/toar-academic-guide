@@ -70,7 +70,7 @@ export function buildInstitutionMetadata(id: string): Metadata {
 
   const { institution, programs } = data;
   const title = `${institution.name}: מסלולים ותנאי קבלה`;
-  const description = `מידע על ${institution.name} ו-${programs.length} מסלולי לימוד בקטלוג MyWay, תנאי קבלה ובדיקת סיכויי קבלה אישית בחינם.`;
+  const description = `${programs.length} מסלולי לימוד של ${institution.name} מופיעים בקטלוג MyWay. מידע על המסלולים ובדיקת סיכויי קבלה אישית בחינם; תנאי הקבלה המחייבים באתר המוסד.`;
   return pageMetadata(
     title,
     description,
@@ -84,7 +84,12 @@ export function buildProgramMetadata(id: string): Metadata {
   if (!data) return {};
 
   const title = PROGRAM_TITLES.get(id) ?? programTitle(data);
-  const description = `${title}: איפה לומדים, קישור לתנאי הקבלה הרשמיים ובדיקת סיכויי קבלה אישית בחינם ב-MyWay.`;
+  const qualifier = title.slice(programTitle(data).length);
+  const offering =
+    data.institutions.length === 1
+      ? `${data.program.name}${qualifier} ב${data.institutions[0].name}`
+      : `${data.program.name}${qualifier} ב-${data.institutions.length} מוסדות לימוד`;
+  const description = `${offering}: מידע על המסלול בקטלוג MyWay ובדיקת סיכויי קבלה אישית בחינם. תנאי הקבלה המחייבים באתר המוסד.`;
   return pageMetadata(
     title,
     description,

@@ -1,12 +1,15 @@
 import type { PublicInstitutionPageData, PublicProgramPageData } from '@/lib/publicCataloguePages';
 import { getPublicInstitutionPageData } from '@/lib/publicCataloguePages';
 import { absoluteUrl, SITE_ALT_NAMES, SITE_NAME } from '@/lib/site';
+import type { InstitutionDirectoryItem } from '@/data/institutionDirectory';
+
+const ORGANIZATION_ID = absoluteUrl('/#organization');
+const WEBSITE_ID = absoluteUrl('/#website');
 
 export function organizationLd() {
   return {
-    '@context': 'https://schema.org',
     '@type': 'Organization',
-    '@id': absoluteUrl('/#org'),
+    '@id': ORGANIZATION_ID,
     name: SITE_NAME,
     alternateName: SITE_ALT_NAMES,
     url: absoluteUrl(),
@@ -18,20 +21,19 @@ export function organizationLd() {
 
 export function websiteLd() {
   return {
-    '@context': 'https://schema.org',
     '@type': 'WebSite',
-    '@id': absoluteUrl('/#website'),
+    '@id': WEBSITE_ID,
     name: SITE_NAME,
     url: absoluteUrl(),
     inLanguage: 'he',
-    publisher: { '@id': absoluteUrl('/#org') },
+    publisher: { '@id': ORGANIZATION_ID },
   };
 }
 
 export function breadcrumbLd(items: { name: string; path: string }[]) {
   return {
-    '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
+    '@id': absoluteUrl(`${items.at(-1)?.path ?? '/'}#breadcrumb`),
     itemListElement: items.map(({ name, path }, index) => ({
       '@type': 'ListItem',
       position: index + 1,
@@ -60,8 +62,8 @@ export function institutionLd({ institution, programs }: PublicInstitutionPageDa
     Boolean(institution.universityId) || programs.some((program) => program.type === 'academic');
   const sameAs = officialHttpsUrl(institution.programUrl) ?? officialHttpsUrl(institution.domain);
   return {
-    '@context': 'https://schema.org',
     '@type': academic ? 'CollegeOrUniversity' : 'EducationalOrganization',
+    '@id': absoluteUrl(`/institutions/${encodeURIComponent(institution.id)}#institution`),
     name: institution.name,
     url: absoluteUrl(`/institutions/${encodeURIComponent(institution.id)}`),
     ...(sameAs ? { sameAs } : {}),
@@ -88,8 +90,8 @@ export function programLd({ program, institutions }: PublicProgramPageData) {
       : undefined;
   const months = duration == null ? 0 : duration * 12;
   return {
-    '@context': 'https://schema.org',
     '@type': 'EducationalOccupationalProgram',
+    '@id': absoluteUrl(`/programs/${encodeURIComponent(program.id)}#program`),
     name: program.name,
     url: absoluteUrl(`/programs/${encodeURIComponent(program.id)}`),
     provider: institutions.map((institution) =>
@@ -115,4 +117,53 @@ export function programBreadcrumbLd({ program, institutions }: PublicProgramPage
       : []),
     { name: program.name, path: `/programs/${encodeURIComponent(program.id)}` },
   ]);
+}
+
+export function webApplicationLd() {
+  return {
+    '@type': 'WebApplication',
+    '@id': absoluteUrl('/#webapp'),
+    name: SITE_NAME,
+    url: absoluteUrl(),
+    applicationCategory: 'EducationalApplication',
+    operatingSystem: 'Web',
+    inLanguage: 'he',
+    publisher: { '@id': ORGANIZATION_ID },
+    isPartOf: { '@id': WEBSITE_ID },
+    offers: { '@type': 'Offer', price: 0, priceCurrency: 'ILS' },
+    featureList: ['שאלון התאמה ללימודים', 'קטלוג מוסדות ומסלולי לימוד', 'בדיקת סיכויי קבלה אישית'],
+  };
+}
+
+export function institutionDirectoryLd(institutions: InstitutionDirectoryItem[]) {
+  const url = absoluteUrl('/institutions');
+  const listId = `${url}#institutions`;
+  const breadcrumb = breadcrumbLd([
+    { name: 'בית', path: '/' },
+    { name: 'מוסדות לימוד', path: '/institutions' },
+  ]);
+  return [
+    {
+      '@type': 'CollectionPage',
+      '@id': `${url}#collection`,
+      name: 'מוסדות לימוד',
+      url,
+      inLanguage: 'he',
+      isPartOf: { '@id': WEBSITE_ID },
+      mainEntity: { '@id': listId },
+      breadcrumb: { '@id': breadcrumb['@id'] },
+    },
+    {
+      '@type': 'ItemList',
+      '@id': listId,
+      numberOfItems: institutions.length,
+      itemListElement: institutions.map((institution, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: institution.name,
+        url: absoluteUrl(`/institutions/${encodeURIComponent(institution.id)}`),
+      })),
+    },
+    breadcrumb,
+  ];
 }

@@ -27,7 +27,7 @@ CE skills are unavailable in this environment. The task owner explicitly authori
 
 ## Scope fences
 
-No visible page changes, admissions/data changes, database writes, migrations, seeds, environment changes, new dependencies, image/icon changes, proxy changes, new questionnaire/start routes, static params/ISR/cache changes, slug changes or merges. Public detail data stays static. Previews always describe the production origin. Do not touch PR #230's branch or icons. Do not bypass hooks or mark the PR ready.
+No visible page changes except the follow-up's explicitly authorized neutral directory copy and official-link cleanup. No admissions/data changes, database writes, migrations, seeds, environment changes, new dependencies, image/icon changes, proxy changes, new questionnaire/start routes, static params/ISR/cache changes, slug changes or merges. Public detail data stays static. Previews always describe the production origin. Do not touch PR #230's branch or icons. Do not bypass hooks or mark the PR ready.
 
 ## Acceptance
 
@@ -42,4 +42,13 @@ No visible page changes, admissions/data changes, database writes, migrations, s
 - Added only metadata, structured-data scripts, crawl files, pass-through noindex layouts and tests. Existing detail/auth/enquiry page lines were not removed; icons, visible UI, data, dependencies, proxy, configuration and caching settings are untouched. Compared title edits directly with PR #230.
 - Lint, typecheck, full Vitest suite (1,476 passed, 64 skipped), build without DB/Supabase environment and guard (923 targeted tests) passed. Existing lint, migration-journal and Node-version warnings are documented in the PR.
 - Curl and Chromium confirmed titles, production canonicals, JSON-LD and noindex on the built server. Smoke: 6/7 passed; the existing analytics console test encounters a local-only 404 for `/_vercel/insights/script.js`, which Vercel serves on hosted deployments. No analytics behavior or test filtering was changed.
-- The task's exact requested PR title is not conventional-commit formatted, while the existing PR-title workflow requires that format. Preserve the requested title and disclose this expected CI limitation in the draft PR.
+- The original requested PR title was not conventional-commit formatted. The follow-up now authorizes correcting it to satisfy the existing validator.
+
+## Owner-authorized follow-up
+
+1. Split robots search/training groups, add `/app/` and `/login` exclusions, and expose a one-line training policy with tested allow/block behavior. Retain noindex metadata and disclose the robots/noindex tradeoff.
+2. Add sitemap frequency/priority and expand llms.txt into a citation/routing guide, with factual definitions, authoritative sources and an explicit unconfirmed business-model TODO.
+3. Wrap each JSON-LD script in an `@graph` with stable apex IDs. Keep one layout graph and one page graph (App Router pages cannot append nodes to an ancestor layout without changing its data flow). Add home WebApplication and directory CollectionPage/ItemList from the exact directory loader; no visible markup changes or unsupported review/FAQ/HowTo/Dataset nodes.
+4. Improve metadata descriptions using existing counts and relations. Keep title/template/locale, host, indexability and rendering settings.
+5. In a separate cleanup commit, neutralize public directory branding and remove aggregator/board URLs from public directory props. Preserve raw-row logo resolution and all live catalogue, enquiry, evidence, script/CI and environment integrations. Keep uncertain historical files rather than delete them speculatively.
+6. Extend meaningful regression tests; rerun required checks, production HTTP/browser inspection and directory leakage checks. Add commits, normal push, update existing draft #231 and its conventional title; document training-policy and business-model decisions for Amit.
