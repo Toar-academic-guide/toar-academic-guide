@@ -1,7 +1,7 @@
 import AboutPage from '@/components/AboutPage';
 
 export const metadata = {
-  title: 'מי אנחנו | Way',
+  title: 'מי אנחנו',
   description: 'הסיפור של יונתן ועמית, והדרך שבה נולד Way.',
 };
 

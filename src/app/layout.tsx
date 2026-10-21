@@ -4,8 +4,15 @@ import { AuthProvider } from '@/context/AuthContext';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Way — מה.איפה.איך',
+  applicationName: 'MyWay',
+  title: {
+    default: 'MyWay | הדרך שלך ללימודים',
+    template: '%s | MyWay',
+  },
   description: 'השותף שלך לדרך האקדמית — שאלון אישיות, המלצות תחומי לימוד, וחישוב סיכויי קבלה',
+  openGraph: {
+    siteName: 'MyWay',
+  },
 };
 
 export default function RootLayout({
