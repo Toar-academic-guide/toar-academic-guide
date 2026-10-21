@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen, within } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import AdmissionRequirements from './AdmissionRequirements';
 import { getStaticCataloguePrograms } from '@/lib/catalogueStatic';
@@ -67,23 +67,12 @@ describe('AdmissionRequirements', () => {
         requirements={psychologyNotes}
       />,
     );
-    for (const [name, scores] of [
-      ['סכם ופסיכומטרי — שני התנאים יחד', ['סכם 650 לפחות', 'פסיכומטרי 650 לפחות']],
-      ['לחלופין — אחד מהציונים הבאים', ['סכם 680 לפחות', 'פסיכומטרי 680 לפחות']],
-    ] as const) {
-      const route = screen.getByRole('region', { name });
-      expect(
-        within(route)
-          .getAllByRole('listitem')
-          .map((item) => item.textContent),
-      ).toEqual(scores);
-    }
-    const withoutPsychometric = screen.getByRole('region', {
-      name: 'ללא פסיכומטרי — אחת מהאפשרויות',
-    });
-    expect(within(withoutPsychometric).getAllByRole('listitem')).toHaveLength(2);
-    expect(withoutPsychometric.textContent).toContain('113');
-    expect(withoutPsychometric.textContent).toContain('94');
+    const bullets = screen.getAllByRole('listitem').map((item) => item.textContent);
+    expect(bullets[0]).toBe('שני התנאים יחד: סכם 650 לפחות וגם פסיכומטרי 650 לפחות');
+    expect(bullets[1]).toBe('לחלופין: סכם 680 לפחות או פסיכומטרי 680 לפחות');
+    expect(bullets[2]).toBe(
+      'ללא פסיכומטרי: ממוצע בגרות 113 לפחות או מכינה למדעים מדויקים והנדסה או למדעי הטבע והחיים של בן־גוריון בממוצע 94 לפחות',
+    );
     expect(screen.getByText(psychologyNotes[2])).toBeTruthy();
     expect(container.querySelector('details')?.open).toBe(false);
     expect(container.querySelector('details')?.textContent).toContain(psychologyNotes[3]);
@@ -98,7 +87,7 @@ describe('AdmissionRequirements', () => {
         requirements={psychologyNotes}
       />,
     );
-    expect(screen.queryByRole('region')).toBeNull();
+    expect(screen.queryByText(/שני התנאים יחד/)).toBeNull();
     rerender(
       <AdmissionRequirements
         programId="bgu_psychology"
@@ -106,7 +95,7 @@ describe('AdmissionRequirements', () => {
         requirements={[psychologyNotes[0].replaceAll('650', '660'), ...psychologyNotes.slice(1)]}
       />,
     );
-    expect(screen.queryByRole('region')).toBeNull();
+    expect(screen.queryByText(/שני התנאים יחד/)).toBeNull();
     expect(screen.getAllByRole('listitem')[0].textContent).toContain('660');
   });
 

@@ -22,7 +22,7 @@ function communicationOverview(requirements: string[]): string[] | undefined {
 
 function RequirementList({ items }: { items: string[] }) {
   return (
-    <ul className="list-outside list-disc space-y-3 ps-5 leading-7 marker:text-[#6554b8]">
+    <ul className="list-outside list-disc space-y-1 ps-4 leading-6 marker:text-[#6554b8]">
       {items.map((text, index) => (
         <li key={`${index}:${text}`}>
           {text.split(/(\d+(?:[.,]\d+)?)/).map((part, partIndex) =>
@@ -50,21 +50,9 @@ function psychologyRoutes(requirements: string[]) {
   )
     return undefined;
   return [
-    {
-      title: 'סכם ופסיכומטרי — שני התנאים יחד',
-      items: ['סכם 650 לפחות', 'פסיכומטרי 650 לפחות'],
-    },
-    {
-      title: 'לחלופין — אחד מהציונים הבאים',
-      items: ['סכם 680 לפחות', 'פסיכומטרי 680 לפחות'],
-    },
-    {
-      title: 'ללא פסיכומטרי — אחת מהאפשרויות',
-      items: [
-        'ממוצע בגרות 113 לפחות',
-        'מכינה למדעים מדויקים והנדסה או למדעי הטבע והחיים של בן־גוריון בממוצע 94 לפחות',
-      ],
-    },
+    'שני התנאים יחד: סכם 650 לפחות וגם פסיכומטרי 650 לפחות',
+    'לחלופין: סכם 680 לפחות או פסיכומטרי 680 לפחות',
+    'ללא פסיכומטרי: ממוצע בגרות 113 לפחות או מכינה למדעים מדויקים והנדסה או למדעי הטבע והחיים של בן־גוריון בממוצע 94 לפחות',
   ];
 }
 
@@ -88,34 +76,25 @@ export default function AdmissionRequirements({
   const additional = overview ? requirements : requirements.slice(3);
 
   return (
-    <div className="mt-3 text-right text-base text-[#35415b]" dir="rtl">
+    <div className="mt-3 text-right text-sm text-[#35415b]" dir="rtl">
       {routes && (
         <>
-          <p className="mb-4 leading-7">
+          <p className="mb-3 leading-6">
             סכם הוא ציון שמשלב בגרות ופסיכומטרי לפי חישוב האוניברסיטה.
           </p>
-          <div className="mb-5 space-y-3">
-            {routes.map((route) => (
-              <section
-                key={route.title}
-                aria-label={route.title}
-                className="rounded-xl border border-[#dce1ee] bg-[#f8f9fd] p-4"
-              >
-                <p className="mb-2 font-semibold text-[#19233d]">{route.title}</p>
-                <RequirementList items={route.items} />
-              </section>
-            ))}
+          <div className="mb-3">
+            <RequirementList items={routes} />
           </div>
         </>
       )}
       {overview && <p className="mb-2 font-semibold">אחד מאפיקי הקבלה:</p>}
       <RequirementList items={visible} />
       {additional.length > 0 && (
-        <details className="group mt-4 border-t border-[#dce1ee] pt-3">
+        <details className="group mt-3 border-t border-[#dce1ee] pt-1">
           <summary className="w-fit cursor-pointer rounded-sm py-2 font-semibold text-[#6554b8] underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#6554b8]">
             {overview ? 'כל התנאים ודרכי קבלה נוספות' : 'תנאים נוספים'}
           </summary>
-          <div className="pt-3">
+          <div className="pt-1">
             <RequirementList items={additional} />
           </div>
         </details>
