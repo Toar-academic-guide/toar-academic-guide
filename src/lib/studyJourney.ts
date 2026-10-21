@@ -1,4 +1,5 @@
 import { FIELD_ENRICHMENT, PROGRAM_FIELD_MAP } from '@/data/degrees/fieldEnrichment';
+import { DANON_PROGRAM_NAMES } from '@/data/admissions/danon';
 import { getInstitutionDirectoryItems } from '@/data/institutionDirectory';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type { AdmissionsEvaluationResult } from '@/types/admissionsEvaluation';
@@ -93,9 +94,11 @@ export function studyFields(programs: CatalogueProgram[], includeUnlisted = fals
   for (const program of programs) {
     if (!includeUnlisted && program.isListed === false) continue;
     const suffix = ` - ${program.institution}`;
-    const name = program.name.endsWith(suffix)
-      ? program.name.slice(0, -suffix.length)
-      : program.name;
+    const name = DANON_PROGRAM_NAMES[program.id]
+      ? 'קולינריה'
+      : program.name.endsWith(suffix)
+        ? program.name.slice(0, -suffix.length)
+        : program.name;
     const mapped =
       PROGRAM_FIELD_MAP[program.id] ??
       knownNames.get(program.name) ??

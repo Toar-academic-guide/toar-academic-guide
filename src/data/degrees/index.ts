@@ -6,7 +6,11 @@ export { vocationalPrograms } from './vocationalPrograms';
 import { ACADEMIC_PROGRAMS } from './academic';
 import { academicPrograms } from './academicPrograms';
 import { vocationalPrograms } from './vocationalPrograms';
-import { DANON_BEGINNER_REQUIREMENT, DANON_PROGRAM_URLS } from '../admissions/danon';
+import {
+  DANON_BEGINNER_REQUIREMENT,
+  DANON_PROGRAM_NAMES,
+  DANON_PROGRAM_URLS,
+} from '../admissions/danon';
 import computingCourses from './computingCourses.json';
 import {
   mondayAdmissionsEvidence,
@@ -1021,6 +1025,7 @@ export const allPrograms = [
   if (program.institutionId !== 'danon' || !programUrl) return program;
   return {
     ...program,
+    name: DANON_PROGRAM_NAMES[program.id] ?? program.name,
     admissionRequirements: [DANON_BEGINNER_REQUIREMENT],
     institutionDetails: [
       {

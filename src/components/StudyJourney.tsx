@@ -247,14 +247,32 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
       window.removeEventListener('popstate', readStep);
     };
   }, [initialStep]);
-  const importedProfile = useRef(false);
+  const importedProfile = useRef<string | null>(null);
+  const profileIdentity = auth.user?.id ?? 'guest';
   useEffect(() => {
-    if (!ready || !hydrated || initialProfileStatus !== 'ready' || importedProfile.current) return;
-    importedProfile.current = true;
-    if (!hadStoredDraft.current && profile.academicScores) {
-      setDraft((current) => ({ ...current, scores: profile.academicScores ?? {} }));
+    if (
+      !ready ||
+      !hydrated ||
+      initialProfileStatus !== 'ready' ||
+      importedProfile.current === profileIdentity
+    )
+      return;
+    importedProfile.current = profileIdentity;
+    if (auth.user || !hadStoredDraft.current) {
+      const scores = profile.academicScores ?? {};
+      setDraft((current) => ({
+        ...current,
+        scores,
+        gradeMode: scores.bagrut?.subjectRecord
+          ? 'exact'
+          : scores.bagrut?.weightedAverage
+            ? 'quick'
+            : 'none',
+        psyMode: scores.psychometric?.overall ? 'score' : 'none',
+        target: undefined,
+      }));
     }
-  }, [ready, hydrated, initialProfileStatus, profile.academicScores]);
+  }, [ready, hydrated, initialProfileStatus, profile.academicScores, profileIdentity, auth.user]);
   useEffect(() => {
     if (!ready) return;
     try {
@@ -1208,9 +1226,14 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                     <Primary onClick={() => go('inquiry')}>יצירת קשר</Primary>
                     <button
                       className="journey-secondary"
+                      aria-pressed={
+                        profile.savedProgramIds?.includes(activeRow.program.id) ?? false
+                      }
                       onClick={() => void save(activeRow.program.id)}
                     >
-                      שמירה לרשימה
+                      {profile.savedProgramIds?.includes(activeRow.program.id)
+                        ? 'הסרה מהרשימה'
+                        : 'שמירה לרשימה'}
                     </button>
                   </div>
                   <div className="journey-links">

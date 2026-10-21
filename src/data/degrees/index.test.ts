@@ -167,7 +167,7 @@ describe('dynamic Monday-derived programme inference', () => {
       expect.arrayContaining([
         expect.objectContaining({
           id: 'danon_culinary',
-          name: 'קולינריה - דנון - קולינריה',
+          name: 'קולינריה — דנון',
           category: 'קולינריה',
           type: 'certificate',
         }),

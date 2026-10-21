@@ -1,4 +1,5 @@
 import type { InstitutionDetail } from '@/data/degrees/types';
+import { DANON_PROGRAM_NAMES } from '@/data/admissions/danon';
 import { allPrograms } from '@/data/degrees';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type {
@@ -212,7 +213,7 @@ export function serializeProgramRow(args: {
 
   return {
     id: program.id,
-    name: program.name,
+    name: DANON_PROGRAM_NAMES[program.id] ?? program.name,
     isListed: program.isListed,
     institution: program.institutionName,
     institutionId: (program.institutionId ?? undefined) as CatalogueProgram['institutionId'],

@@ -2,6 +2,10 @@
 // These pages describe beginner suitability, not a Bagrut/psychometric cutoff,
 // mandatory interview, or practical entrance examination. Do not infer admission.
 export const DANON_BEGINNER_REQUIREMENT = 'המסלול מתאים גם למתחילים ללא ניסיון קודם.';
+export const DANON_PROGRAM_NAMES: Readonly<Record<string, string>> = {
+  danon_cs: 'קולינריה — דנון',
+  danon_culinary: 'קולינריה — דנון',
+};
 export const DANON_PROGRAM_URLS: Readonly<Record<string, string>> = {
   danon_chef: 'https://www.danon.org.il/chef/',
   danon_pastry: 'https://www.danon.org.il/pastry/pro/',

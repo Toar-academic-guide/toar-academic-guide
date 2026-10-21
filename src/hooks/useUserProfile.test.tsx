@@ -4,6 +4,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { profileRequestBodySchema } from '@/server/user/profileSchema';
+import type { UserProfile } from '@/types';
 
 let mockAuthState = {
   loading: false,
@@ -153,6 +154,78 @@ describe('useUserProfile', () => {
     await waitFor(() => expect(result.current.profile.savedProgramIds).toEqual(['huji_law']));
     expect(result.current.initialProfileStatus).toBe('ready');
     expect(window.localStorage.getItem('sag_user_profile_v1')).toBeNull();
+  });
+
+  it('imports exact Bagrut grades even without an average or psychometric score', async () => {
+    mockAuthState.user = { id: 'exact-grades-user' };
+    const draft: UserProfile = {
+      geographicPreference: 'any',
+      academicScores: {
+        bagrut: {
+          subjectRecord: {
+            schemaVersion: 1,
+            sector: 'jewish',
+            subjects: [{ subjectId: 'mathematics', units: 5, grade: 85 }],
+          },
+        },
+      },
+    };
+    window.localStorage.setItem('sag_user_profile_v1', JSON.stringify(draft));
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ data: { geographicPreference: 'any' } }),
+      })
+      .mockResolvedValueOnce({ ok: true, json: async () => ({ data: draft }) });
+    vi.stubGlobal('fetch', fetchMock);
+    const { result } = renderHook(() => useUserProfile());
+    await waitFor(() => expect(result.current.initialProfileStatus).toBe('ready'));
+    expect(result.current.profile.academicScores).toEqual(draft.academicScores);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('finishes a programme save before a following grade save can replace the profile', async () => {
+    mockAuthState.user = { id: 'overlapping-saves-user' };
+    let serverProfile: UserProfile = { geographicPreference: 'any', savedProgramIds: [] };
+    let finishProgramSave: (() => void) | undefined;
+    const fetchMock = vi.fn(async (url: string, options?: RequestInit) => {
+      if (url === '/api/saved-programs') {
+        serverProfile = { ...serverProfile, savedProgramIds: ['tau_cs'] };
+        const snapshot = structuredClone(serverProfile);
+        await new Promise<void>((resolve) => {
+          finishProgramSave = resolve;
+        });
+        return { ok: true, json: async () => ({ data: snapshot }) };
+      } else if (options?.method === 'PUT') {
+        serverProfile = JSON.parse(String(options.body)).profile;
+      }
+      const snapshot = structuredClone(serverProfile);
+      return { ok: true, json: async () => ({ data: snapshot }) };
+    });
+    vi.stubGlobal('fetch', fetchMock);
+    const { result } = renderHook(() => useUserProfile());
+    await waitFor(() => expect(result.current.initialProfileStatus).toBe('ready'));
+    let programSave: Promise<void>;
+    let gradeSave: Promise<boolean>;
+    await act(async () => {
+      programSave = result.current.toggleSavedProgram('tau_cs');
+      gradeSave = result.current.updateProfile({
+        academicScores: { bagrut: { weightedAverage: 110.5 } },
+      });
+    });
+    const writesBeforeProgramFinished = fetchMock.mock.calls.filter(
+      ([, options]) => options?.method === 'PUT',
+    ).length;
+    await act(async () => {
+      finishProgramSave?.();
+      await programSave;
+      await gradeSave;
+    });
+    expect(writesBeforeProgramFinished).toBe(0);
+    expect(serverProfile.savedProgramIds).toEqual(['tau_cs']);
+    expect(serverProfile.academicScores?.bagrut?.weightedAverage).toBe(110.5);
+    expect(result.current.profile).toEqual(serverProfile);
   });
 
   it('migrates admissions-only local drafts when a confirmation is false or a score is zero', async () => {
