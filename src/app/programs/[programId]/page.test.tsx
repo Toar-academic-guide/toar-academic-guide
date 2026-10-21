@@ -98,9 +98,9 @@ describe('ProgramPage', () => {
       const section = screen.getByRole('heading', { name: institution.name }).parentElement!;
       expect(within(section).getByText(`תנאי ${institution.id}`)).toBeTruthy();
       expect(within(section).getAllByRole('listitem')).toHaveLength(1);
-      expect(
-        within(section).getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href'),
-      ).toBe(`https://example.org/${institution.id}`);
+      expect(within(section).getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toBe(
+        `https://example.org/${institution.id}`,
+      );
     }
   });
 });
