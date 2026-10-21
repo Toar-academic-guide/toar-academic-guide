@@ -27,6 +27,7 @@ import {
   INSTITUTION_TYPES,
   studyFields,
   journeyRows,
+  distinctRecommendations,
   toggleLocation,
   institutionLocations,
   matchesLocation,
@@ -295,7 +296,7 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
   );
   const selectedRows = useMemo(
     () =>
-      allRows.filter(
+      distinctRecommendations(allRows).filter(
         (row) =>
           row.program.isListed !== false &&
           (!draft.fields.length || draft.fields.includes(row.fieldId)) &&

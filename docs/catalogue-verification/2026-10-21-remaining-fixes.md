@@ -56,3 +56,18 @@ native, clipboard, cancellation, denied and unresolved sharing paths.
 The local browser uses the production build against this disposable database;
 its extra seed fixtures are not a production record count. Shared-database and
 preview verification must be recorded separately after application.
+
+## Hosted result follow-up
+
+The shared-data browser check exposed two duplicate legacy recommendations:
+`mta_cs` alongside `tlvyaffo_cs`, and `colman_cs` alongside `colmgmt_cs`.
+Recommendations prefer the existing specific record when both occur for the
+same institution. The older rows remain available to saved lists and direct URLs.
+No records or admission rules are changed by this presentation correction.
+
+Afeka Software Engineering was also explicitly mapped to the Computer Science
+field. Its own pages confirm distinct degrees, so that alias is removed and
+Software Engineering remains selectable under its actual name:
+
+- https://www.afeka.ac.il/academic-departments/bsc/software-engineering/
+- https://www.afeka.ac.il/academic-departments/bsc/computer-science/

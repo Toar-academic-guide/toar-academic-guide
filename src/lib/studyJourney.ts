@@ -150,6 +150,26 @@ export function journeyRows(
 }
 
 export type JourneyResultGroup = 'match' | 'improve' | 'explore';
+
+// These older imported IDs describe the same institution/programme as an
+// existing specific record. Keep them in allRows for saved links, but avoid
+// presenting them as additional choices when the specific record is available.
+export function distinctRecommendations(rows: JourneyRow[]): JourneyRow[] {
+  const aliases: Record<string, string> = {
+    mta_cs: 'tlvyaffo_cs',
+    colman_cs: 'colmgmt_cs',
+  };
+  return rows.filter((row) => {
+    const canonicalId = aliases[row.program.id];
+    return (
+      !canonicalId ||
+      !rows.some(
+        (other) => other.program.id === canonicalId && other.institution.id === row.institution.id,
+      )
+    );
+  });
+}
+
 export function resultLabel(
   result?: AdmissionsEvaluationResult,
   failed = false,

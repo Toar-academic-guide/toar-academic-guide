@@ -1,8 +1,43 @@
 import { describe, expect, it } from 'vitest';
-import { toggleLocation, resultLabel, groupJourneyRows, studyFields } from './studyJourney';
-import { getStaticCataloguePrograms } from './catalogueStatic';
+import {
+  toggleLocation,
+  resultLabel,
+  groupJourneyRows,
+  studyFields,
+  journeyRows,
+  distinctRecommendations,
+} from './studyJourney';
+import { getStaticCataloguePrograms, getStaticCatalogueInstitutions } from './catalogueStatic';
 
 describe('approved journey', () => {
+  it('keeps Afeka software engineering in its own field, not Computer Science', () => {
+    const fields = studyFields(getStaticCataloguePrograms());
+    expect(
+      fields
+        .find((field) => field.id === 'cs')
+        ?.programs.some((program) => program.id === 'afeka_softwareeng'),
+    ).toBe(false);
+    expect(
+      fields.find((field) => field.programs.some((program) => program.id === 'afeka_softwareeng'))
+        ?.name,
+    ).toBe('הנדסת תוכנה');
+  });
+  it.each([
+    ['mta_cs', 'tlvyaffo_cs'],
+    ['colman_cs', 'colmgmt_cs'],
+  ])(
+    'shows one recommendation for %s while keeping its saved row available',
+    (alias, canonical) => {
+      const template = getStaticCataloguePrograms().find((program) => program.id === canonical)!;
+      const programmes = [template, { ...template, id: alias }];
+      const rows = journeyRows(studyFields(programmes), getStaticCatalogueInstitutions());
+      expect(rows.map((row) => row.program.id)).toContain(alias);
+      expect(distinctRecommendations(rows).map((row) => row.program.id)).toEqual([canonical]);
+      expect(distinctRecommendations(rows.filter((row) => row.program.id === alias))).toHaveLength(
+        1,
+      );
+    },
+  );
   it('excludes withdrawn import placeholders from choices while retaining saved references', () => {
     const program = { ...getStaticCataloguePrograms()[0], isListed: false };
     expect(studyFields([program])).toEqual([]);
