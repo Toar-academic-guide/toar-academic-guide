@@ -35,7 +35,7 @@ No visible page changes except the follow-up's explicitly authorized neutral dir
 - Indexable detail titles are unique; canonicals and JSON-LD use the production origin. Thin/app/auth/enquiry routes receive the specified robots metadata.
 - Required checks and HTTP/browser evidence are summarized in the draft PR, including any environment limitations and title disambiguation counts.
 
-## Implementation and manual review
+## Initial implementation and manual review
 
 - The gate yields 70 institutions and 286 programs: 359 sitemap URLs including the three public static routes. All 359 returned HTTP 200 on the production build locally.
 - Five pairs of program titles required category and ID suffixes (10 records). All indexable page titles are unique.
@@ -52,3 +52,12 @@ No visible page changes except the follow-up's explicitly authorized neutral dir
 4. Improve metadata descriptions using existing counts and relations. Keep title/template/locale, host, indexability and rendering settings.
 5. In a separate cleanup commit, neutralize public directory branding and remove aggregator/board URLs from public directory props. Preserve raw-row logo resolution and all live catalogue, enquiry, evidence, script/CI and environment integrations. Keep uncertain historical files rather than delete them speculatively.
 6. Extend meaningful regression tests; rerun required checks, production HTTP/browser inspection and directory leakage checks. Add commits, normal push, update existing draft #231 and its conventional title; document training-policy and business-model decisions for Amit.
+
+## Follow-up verification and scope review
+
+- Lint/typecheck/build passed; full Vitest: 1,483 passed, 64 environment-gated tests skipped. Guard: 923 targeted tests passed, migration consistency/grants and seed dry-run passed. Existing warnings remain unchanged.
+- Production build succeeded without database/Supabase environment. Home/directory remain static; detail routes remain dynamic. Curl checked crawl files, both graph envelopes and cross-references, locale/canonicals/noindex; all 359 sitemap entries again returned 200 with one timestamp and frequency/priority fields.
+- Directory HTML contains zero `yoram.walla.co.il` or `Monday` occurrences. Chromium confirmed 211 cards and 211 ItemList entries, 210 remaining official links and correct graphs. All 211 logo URLs match the pre-cleanup raw-row baseline. Only one legacy aggregator-only domain fallback was removed; its cached logo remains.
+- Manual diff review confirmed no changes to live enquiry code, generated exports/evidence, IDs, integrations/scripts, database/schema, environment, proxy/caching settings or image/icon files. Historical/research files with script/document references remain; no speculative dead-file deletion.
+- Repeated local Playwright smoke: 6/7 pass; its existing console assertion still fails only on the local Vercel Analytics script 404. Direct Chromium checks captured that exact network failure without changing analytics or filtering tests.
+- The PR title is corrected to conventional format. Training crawlers remain allowed with a tested one-line switch; the llms.txt business-model placeholder needs Amit's confirmation before merge. The PR remains a draft.
