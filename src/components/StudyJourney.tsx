@@ -413,11 +413,30 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
   );
   // Saved programmes use account grades, independently of the current journey or simulation.
   const evaluationScope =
-    step === 'saved' ? 'saved' : ['results', 'plan'].includes(step) ? 'results' : null;
-  const evaluationTargets = evaluationScope === 'saved' ? savedRows : selectedRows;
-  const evaluationScores =
-    evaluationScope === 'saved' ? (profile.academicScores ?? EMPTY.scores) : draft.scores;
-  const evaluationTarget = evaluationScope === 'saved' ? undefined : (simulation ?? draft.target);
+    step === 'saved'
+      ? 'saved'
+      : ['results', 'plan'].includes(step)
+        ? 'results'
+        : step === 'detail'
+          ? 'detail'
+          : null;
+  const evaluationTargets = useMemo(
+    () =>
+      evaluationScope === 'detail'
+        ? active
+          ? [active]
+          : []
+        : evaluationScope === 'saved'
+          ? savedRows
+          : selectedRows,
+    [evaluationScope, active, savedRows, selectedRows],
+  );
+  const usesSavedGrades =
+    evaluationScope === 'saved' || (evaluationScope === 'detail' && detailOrigin === 'saved');
+  const evaluationScores = usesSavedGrades
+    ? (profile.academicScores ?? EMPTY.scores)
+    : draft.scores;
+  const evaluationTarget = usesSavedGrades ? undefined : (simulation ?? draft.target);
   const resultSignature = JSON.stringify([
     evaluationScope,
     profileIdentity,
@@ -428,7 +447,9 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
   const lastEvaluation = useRef('');
   useEffect(() => {
     if (!ready || catalogueLoading || !evaluationScope) return;
-    if (evaluationScope === 'saved' && initialProfileStatus !== 'ready') return;
+    if (['saved', 'detail'].includes(evaluationScope) && initialProfileStatus !== 'ready') return;
+    // A detail reached from results already has a report; a refreshed detail does not.
+    if (evaluationScope === 'detail' && (activeRow?.result || activeRow?.failed)) return;
     if (evaluationScope === 'results' && !draft.fields.length) return;
     if (!evaluationTargets.length) {
       lastEvaluation.current = '';
@@ -441,6 +462,8 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
     void evaluate(evaluationTargets, evaluationScores, evaluationTarget);
   }, [
     evaluationScope,
+    activeRow?.result,
+    activeRow?.failed,
     ready,
     catalogueLoading,
     initialProfileStatus,
@@ -1233,7 +1256,9 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                   <span
                     className={`journey-status status-${resultLabel(activeRow.result, activeRow.failed).group}`}
                   >
-                    {resultLabel(activeRow.result, activeRow.failed).label}
+                    {calculating && !activeRow.result && !activeRow.failed
+                      ? 'מחשבים התאמה…'
+                      : resultLabel(activeRow.result, activeRow.failed).label}
                   </span>
                   {resultExplanation(activeRow.result) && (
                     <p className="journey-result-explanation">

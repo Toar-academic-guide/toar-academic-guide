@@ -175,6 +175,31 @@ describe('account grades in the homepage journey', () => {
     ).toBeTruthy();
   });
 
+  it('recalculates a refreshed programme detail after account grades load, without selected fields', async () => {
+    savedCatalogue();
+    state.profileStatus = 'loading';
+    window.sessionStorage.setItem(
+      'myway_study_journey_v2',
+      JSON.stringify({
+        fields: [],
+        locations: ['all'],
+        types: ['all'],
+        selectedRowId: 'saved_course:tau',
+        scores: {},
+      }),
+    );
+    const { rerender } = render(<StudyJourney initialStep="detail" />);
+    await screen.findByRole('button', { name: 'יצירת קשר' });
+    expect(state.evaluate).not.toHaveBeenCalled();
+    state.profileStatus = 'ready';
+    rerender(<StudyJourney initialStep="detail" />);
+    await screen.findByText('עומד/ת בסף שחושב');
+    expect(state.evaluate).toHaveBeenLastCalledWith(
+      expect.objectContaining({ degreeIds: ['saved_course'], psychometric: 700, bagrut: 110 }),
+    );
+    expect(screen.queryByText('טרם חושבה התאמה')).toBeNull();
+  });
+
   it('retries failed saved calculations and shows missing inputs without claiming a match', async () => {
     savedCatalogue();
     state.evaluate.mockRejectedValueOnce(new Error('temporary failure')).mockResolvedValue({
