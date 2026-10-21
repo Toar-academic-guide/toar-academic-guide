@@ -6,7 +6,7 @@ The original inventory has 96 programme/institution pairs. TAU Communication was
 
 21 programme identities are corrected, including music, acting, dance, doula training, complementary medicine and professional management courses. The directory also separates the design and complementary-medicine Tiltan institutions, corrects verified provider links, and puts Art of Birth in Tel Aviv instead of online-only. Official source URLs and SHA-256 receipts are recorded in `src/data/admissions/catalogueContentRepair.json`.
 
-The SQL is a manually applied, drift-checked repair, not an automatic migration. It does not update numeric thresholds, formula configuration, admission facts, grades, saved programmes or verification fingerprints. No shared database changes have been applied for this patch.
+The SQL is a manually applied, drift-checked repair, not an automatic migration. It does not update numeric thresholds, formula configuration, admission facts, grades, saved programmes or verification fingerprints. The user approved the shared data repair, which committed at 2026-10-21 16:48 UTC. Post-commit reads confirmed all 209 targeted operations and preservation of every other column.
 
 ## Remaining unpublished requirements
 
@@ -62,4 +62,4 @@ A separate official-source discrepancy also remains: the current Technion Englis
 
 ## Release state
 
-Prepared on `fix/myway-ui-consistency`; no production deployment or shared data repair. The eligibility correction is approved; the 209-operation shared data repair still needs separate live-data approval. No new PR: six unrelated PRs are open, so the one-PR rule prevents creating another.
+Implemented on `fix/myway-ui-consistency`. The approved 209-operation shared data repair is applied and verified; no production application deployment. Preview c402695 passed all 39 eligibility API scenarios and all 93 content/URL, 21 identity and 2 exclusion checks against the shared database. Real-browser verification used desktop 1440px and mobile 390px; all six existing account saves remained present and unchanged. Preview Playwright run 39638261119 passed. The initial full CI found a legacy text-inference test incompatible with the deliberately display-only overlay: that test now validates the original normalized legacy requirements, while a separate test checks every existing numeric rule, fact and alternative path survives the overlay unchanged. The final required checks are rerun after this focused test correction. No new PR: six unrelated PRs are open, so the one-PR rule prevents creating another.

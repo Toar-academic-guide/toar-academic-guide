@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { buildFormulaBackedPairInventory } from '../admissions/formulaBackedPairInventory';
 import { mondayAdmissionsEvidence } from '../admissions/mondayEvidence';
 import { INSTITUTIONS } from '../institutions';
-import { allPrograms } from './index';
+import { allPrograms, programsWithLegacyAdmissionFacts } from './index';
 
 type CatalogueProgramLike = (typeof allPrograms)[number];
 type InstitutionDetailLike = NonNullable<CatalogueProgramLike['institutionDetails']>[number];
@@ -531,8 +531,8 @@ describe('dynamic Monday-derived programme inference', () => {
     expect(missingDetails).toEqual([]);
   });
 
-  it('does not leave non-Ariel hard admissions requirements as unstructured text only', () => {
-    const uncovered = allPrograms.flatMap((program) => {
+  it('structures non-Ariel legacy admission requirements before applying display-only source content', () => {
+    const uncovered = programsWithLegacyAdmissionFacts.flatMap((program) => {
       if (program.institutionId === 'ariel') {
         return [];
       }

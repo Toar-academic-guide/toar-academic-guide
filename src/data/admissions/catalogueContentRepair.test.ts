@@ -1,4 +1,4 @@
-import { allPrograms } from '@/data/degrees';
+import { allPrograms, programsWithLegacyAdmissionFacts } from '@/data/degrees';
 import type { Program } from '@/data/degrees/types';
 import { buildCatalogueSeed } from '@/db/seeds/catalogueSeed';
 import { applyCatalogueContentRepair } from './catalogueContentRepair';
@@ -77,6 +77,25 @@ describe('verified catalogue content repair', () => {
       category: 'ליווי לידה',
       type: 'certificate',
     });
+  });
+
+  it('preserves every existing numeric rule, fact and alternative path across the content overlay', () => {
+    for (const before of programsWithLegacyAdmissionFacts) {
+      const after = applyCatalogueContentRepair(before);
+      expect(after.thresholds).toEqual(before.thresholds);
+      expect(after.minimumBagrut).toBe(before.minimumBagrut);
+      expect(after.minimumPsychometric).toBe(before.minimumPsychometric);
+      expect(after.admissionRequirements).toEqual(before.admissionRequirements);
+      for (const detail of before.institutionDetails ?? []) {
+        const updated = after.institutionDetails!.find(
+          (item) => item.institutionName === detail.institutionName,
+        )!;
+        expect(updated.admissionFacts).toEqual(detail.admissionFacts);
+        expect(updated.admissionAlternativePaths).toEqual(detail.admissionAlternativePaths);
+        expect(updated.quantitativeMinRequirement).toBe(detail.quantitativeMinRequirement);
+        expect(updated.englishMinRequirement).toBe(detail.englishMinRequirement);
+      }
+    }
   });
 
   it('does not derive admission facts from newly added display text', () => {
