@@ -4,6 +4,7 @@ import WayPageShell from '@/components/WayPageShell';
 
 import { getPublicProgramPageData } from '@/lib/publicCataloguePages';
 import { catalogueAdmissionRequirements } from '@/lib/catalogueDisplayText';
+import { officialUrl } from '@/lib/studyJourney';
 import { ROUTES } from '@/lib/routes';
 
 export const dynamic = 'force-dynamic';
@@ -78,13 +79,48 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
             {program.isListed === false ? (
               <p className="mt-4 text-sm text-slate-600">אין כרגע מידע עדכני על המסלול.</p>
             ) : (
-              <ul className="mt-4 list-inside list-disc space-y-2 text-sm text-slate-600">
-                {catalogueAdmissionRequirements(program.admissionRequirements).map(
-                  (requirement) => (
-                    <li key={requirement}>{requirement}</li>
-                  ),
+              <div className="mt-4 space-y-6">
+                {institutions.length === 0 && (
+                  <ul className="list-inside list-disc space-y-2 text-sm text-slate-600">
+                    {catalogueAdmissionRequirements(program.admissionRequirements).map(
+                      (requirement) => (
+                        <li key={requirement}>{requirement}</li>
+                      ),
+                    )}
+                  </ul>
                 )}
-              </ul>
+                {institutions.map((institution) => {
+                  const detail = program.institutionDetails?.find(
+                    (entry) => entry.institutionName === institution.name,
+                  );
+                  const sourceUrl = officialUrl(detail?.programUrl);
+                  return (
+                    <div key={institution.id}>
+                      {institutions.length > 1 && (
+                        <h3 className="font-semibold">{institution.name}</h3>
+                      )}
+                      <ul className="mt-2 list-inside list-disc space-y-2 text-sm text-slate-600">
+                        {catalogueAdmissionRequirements(
+                          detail?.specificAdmissionNotes,
+                          program.admissionRequirements,
+                        ).map((requirement) => (
+                          <li key={requirement}>{requirement}</li>
+                        ))}
+                      </ul>
+                      {sourceUrl && (
+                        <a
+                          href={sourceUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mt-3 inline-block text-sm font-semibold text-[#6554b8] underline"
+                        >
+                          תנאי הקבלה באתר המוסד
+                        </a>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
             )}
           </section>
         </section>

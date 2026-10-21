@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('server-only', () => ({}));
@@ -21,7 +21,13 @@ vi.mock('@/context/AuthContext', () => ({
   useAuth: () => ({ loading: false, user: null }),
 }));
 
-import { getStaticCataloguePrograms } from '@/lib/catalogueStatic';
+vi.mock('@/lib/publicCataloguePages', async (importOriginal) => {
+  const original = await importOriginal<typeof import('@/lib/publicCataloguePages')>();
+  return { ...original, getPublicProgramPageData: vi.fn(original.getPublicProgramPageData) };
+});
+
+import { getStaticCataloguePrograms, getStaticCatalogueInstitutions } from '@/lib/catalogueStatic';
+import { getPublicProgramPageData } from '@/lib/publicCataloguePages';
 
 import ProgramPage from './page';
 
@@ -46,5 +52,55 @@ describe('ProgramPage', () => {
       ProgramPage({ params: Promise.resolve({ programId: 'missing-program' }) }),
     ).rejects.toThrow('NEXT_NOT_FOUND');
     expect(hoisted.notFound).toHaveBeenCalled();
+  });
+
+  it('shows existing institution requirements instead of a generic placeholder', async () => {
+    const program = getStaticCataloguePrograms().find((entry) => entry.id === 'tau_ee')!;
+    const note = program.institutionDetails![0].specificAdmissionNotes[0];
+
+    render(await ProgramPage({ params: Promise.resolve({ programId: program.id }) }));
+
+    expect(screen.getByText(note)).toBeTruthy();
+    expect(screen.queryByText('לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד.')).toBeNull();
+  });
+
+  it('shows Communication’s sourced alternative routes and direct official link', async () => {
+    render(await ProgramPage({ params: Promise.resolve({ programId: 'communication' }) }));
+
+    expect(screen.getByText('פסיכומטרי כללי 640 ומעלה וזכאות לבגרות.')).toBeTruthy();
+    expect(screen.getByText(/ללא פסיכומטרי: ממוצע בגרות 102 ומעלה/)).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'תנאי הקבלה באתר המוסד' }).getAttribute('href')).toBe(
+      'https://go.tau.ac.il/he/social-sciences/ba/communications?v=requirements',
+    );
+  });
+
+  it('keeps each institution’s requirements with its own source', async () => {
+    const program = getStaticCataloguePrograms().find((entry) => entry.id === 'communication')!;
+    const institutions = getStaticCatalogueInstitutions().filter((entry) =>
+      ['tau', 'bgu'].includes(entry.id),
+    );
+    vi.mocked(getPublicProgramPageData).mockResolvedValueOnce({
+      program: {
+        ...program,
+        institutionDetails: institutions.map((institution) => ({
+          ...program.institutionDetails![0],
+          institutionName: institution.name,
+          specificAdmissionNotes: [`תנאי ${institution.id}`],
+          programUrl: `https://example.org/${institution.id}`,
+        })),
+      },
+      institutions,
+    });
+
+    render(await ProgramPage({ params: Promise.resolve({ programId: program.id }) }));
+
+    for (const institution of institutions) {
+      const section = screen.getByRole('heading', { name: institution.name }).parentElement!;
+      expect(within(section).getByText(`תנאי ${institution.id}`)).toBeTruthy();
+      expect(within(section).getAllByRole('listitem')).toHaveLength(1);
+      expect(
+        within(section).getByRole('link', { name: 'תנאי הקבלה באתר המוסד' }).getAttribute('href'),
+      ).toBe(`https://example.org/${institution.id}`);
+    }
   });
 });
