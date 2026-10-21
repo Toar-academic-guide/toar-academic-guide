@@ -163,6 +163,16 @@ describe('account grades in the homepage journey', () => {
     expect(screen.queryByRole('button', { name: 'עוד דרכי קבלה' })).toBeNull();
     expect(screen.getByRole('button', { name: 'יצירת קשר' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'הסרה מהרשימה' })).toBeTruthy();
+    const contact = screen.getByRole('button', { name: 'יצירת קשר' });
+    const save = screen.getByRole('button', { name: 'הסרה מהרשימה' });
+    const requirements = screen.getByRole('heading', { name: 'תנאי קבלה' });
+    // The main actions must be reached before supporting requirements, including by keyboard.
+    expect(
+      contact.compareDocumentPosition(requirements) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      save.compareDocumentPosition(requirements) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
   });
 
   it('retries failed saved calculations and shows missing inputs without claiming a match', async () => {

@@ -3026,6 +3026,40 @@ it('preserves a Social Work academic committee decision as unknown', async () =>
   expect(report.results[0]).toMatchObject({ capability: 'manual_gate', decision: 'unknown' });
 });
 
+it('names only the unanswered BGU confirmations when Psychology grades are present', async () => {
+  const program = { ...bguCs, id: 'bgu_psychology', name: 'פסיכולוגיה' };
+  const fetcher = vi.fn<typeof fetch>();
+  const report = await evaluateAdmissionsForProgram({
+    program,
+    institutions,
+    input: { degreeId: program.id, psychometric: 700, bagrut: 110 },
+    fetcher,
+  });
+  expect(report.results[0]).toMatchObject({
+    kind: 'needs_input',
+    decision: 'unknown',
+    requiredInputs: ['bgu_language_requirements', 'bgu_psychology_requirements'],
+    explanation:
+      'לבדיקת ההתאמה חסרים: אישור עמידה בדרישות האנגלית והעברית או פטור תקף; אישור תעודת קבלה מוכרת ותנאי החוג הנוסף.',
+  });
+  expect(report.results[0].explanation).not.toMatch(/ממוצע|מכינה/);
+  expect(fetcher).not.toHaveBeenCalled();
+
+  const partial = await evaluateAdmissionsForProgram({
+    program,
+    institutions,
+    input: {
+      degreeId: program.id,
+      psychometric: 700,
+      bagrut: 110,
+      extraInputs: { bguLanguageRequirementsConfirmed: true },
+    },
+    fetcher,
+  });
+  expect(partial.results[0].requiredInputs).toEqual(['bgu_psychology_requirements']);
+  expect(partial.results[0].explanation).not.toContain('האנגלית');
+});
+
 it.each(['psychology', 'bgu_psychology'])(
   'evaluates %s main-campus score and prep routes without generic Bagrut',
   async (id) => {

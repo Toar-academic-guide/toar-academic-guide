@@ -160,6 +160,12 @@
   gap: 16px;
   flex-wrap: wrap;
 }
+.journey-detail-actions {
+  margin: 0 0 24px;
+}
+.journey-detail-actions > button {
+  flex: 1 1 180px;
+}
 .journey-helper {
   font-size: 14px;
   color: #5b6580;

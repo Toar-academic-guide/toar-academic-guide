@@ -2652,6 +2652,23 @@ function requiredInputsResult(
 }
 
 function missingInputsCopy(requiredInputs: AdmissionsRequiredInput[]) {
+  const bguInputLabels: Partial<Record<AdmissionsRequiredInput, string>> = {
+    bgu_language_requirements: 'אישור עמידה בדרישות האנגלית והעברית או פטור תקף',
+    bgu_psychology_requirements: 'אישור תעודת קבלה מוכרת ותנאי החוג הנוסף',
+    bgu_bagrut_average: 'ממוצע הבגרות הרשמי של בן־גוריון',
+    bgu_preparatory_track: 'מסלול המכינה',
+    bgu_preparatory_average: 'ממוצע המכינה',
+    bgu_preparatory_completed: 'אישור השלמת המכינה',
+    psychometric_overall: 'ציון פסיכומטרי כללי',
+  };
+  if (
+    requiredInputs.some((input) => input.startsWith('bgu_')) &&
+    requiredInputs.every((input) => bguInputLabels[input])
+  )
+    return {
+      explanation: `לבדיקת ההתאמה חסרים: ${requiredInputs.map((input) => bguInputLabels[input]).join('; ')}.`,
+      nextAction: 'השלימו את הסעיפים האלה בנתוני בן־גוריון בפרופיל האקדמי.',
+    };
   if (requiredInputs.length === 1 && requiredInputs[0] === 'haifa_information_systems_track')
     return {
       explanation: 'יש לבחור את מסלול מערכות המידע המדויק בחיפה כדי לחשב סיכויי קבלה.',

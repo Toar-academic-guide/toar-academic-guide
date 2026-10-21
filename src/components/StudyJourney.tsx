@@ -1215,6 +1215,20 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
               <p className="journey-subtitle">{activeRow.institution.name}</p>
               {step === 'detail' ? (
                 <>
+                  <div className="journey-actions journey-detail-actions">
+                    <Primary onClick={() => go('inquiry')}>יצירת קשר</Primary>
+                    <button
+                      className="journey-secondary"
+                      aria-pressed={
+                        profile.savedProgramIds?.includes(activeRow.program.id) ?? false
+                      }
+                      onClick={() => void save(activeRow.program.id)}
+                    >
+                      {profile.savedProgramIds?.includes(activeRow.program.id)
+                        ? 'הסרה מהרשימה'
+                        : 'שמירה לרשימה'}
+                    </button>
+                  </div>
                   {description && <p>{description}</p>}
                   <span
                     className={`journey-status status-${resultLabel(activeRow.result, activeRow.failed).group}`}
@@ -1246,20 +1260,6 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                           )
                     }
                   />
-                  <div className="journey-actions">
-                    <Primary onClick={() => go('inquiry')}>יצירת קשר</Primary>
-                    <button
-                      className="journey-secondary"
-                      aria-pressed={
-                        profile.savedProgramIds?.includes(activeRow.program.id) ?? false
-                      }
-                      onClick={() => void save(activeRow.program.id)}
-                    >
-                      {profile.savedProgramIds?.includes(activeRow.program.id)
-                        ? 'הסרה מהרשימה'
-                        : 'שמירה לרשימה'}
-                    </button>
-                  </div>
                   <div className="journey-links">
                     {!DANON_PROGRAM_URLS[activeRow.program.id] &&
                       activeRow.result?.degradationReason !==
