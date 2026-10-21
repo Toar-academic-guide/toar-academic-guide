@@ -1,4 +1,5 @@
 import medicineOfficial from '../../../docs/admissions-verification/2026-09-28-huji-medicine-official.json';
+import routingOfficial from '../../../docs/admissions-verification/2026-10-21-calculator-routing.json';
 import { HUJI_MEDICINE_ELIGIBLE_INPUTS } from '@/data/admissions/hujiMedicineVerification';
 import psychologyOfficial from '../../../docs/admissions-verification/2026-09-27-bgu-psychology-official.json';
 import haifaOfficial from '../../../docs/admissions-verification/2026-09-28-haifa-official.json';
@@ -482,6 +483,83 @@ const hitEngineering: CatalogueProgram = {
 };
 
 describe('evaluateAdmissionsForProgram', () => {
+  it.each(
+    routingOfficial.tau.flatMap((capture) => {
+      const id = capture.pair.split('__')[0];
+      const aliases: Record<string, string[]> = {
+        ee: ['ee', 'tau_ee'],
+        me: ['me', 'tau_me'],
+        occupational_therapy: ['occupational_therapy', 'tau_occupational_therapy'],
+      };
+      return (aliases[id] ?? [id]).map((degreeId) => ({ degreeId, capture }));
+    }),
+  )(
+    'replays $degreeId through the evaluator against the captured official response',
+    async ({ degreeId, capture }) => {
+      const program = {
+        ...getStaticCataloguePrograms().find((p) => p.id === degreeId)!,
+        linkedInstitutionIds: ['tau'],
+      };
+      const fetcher = vi.fn<typeof fetch>();
+      for (const response of capture.responses)
+        fetcher.mockResolvedValueOnce(new Response(response.body, { status: response.status }));
+      const report = await evaluateAdmissionsForProgram({
+        input: {
+          degreeId,
+          psychometric: capture.fixture.input.psychometric,
+          bagrut: capture.fixture.input.bagrut,
+          extraInputs: {
+            psychometricEnglish: 110,
+            bagrutSubjectRecord: {
+              schemaVersion: 1,
+              sector: 'jewish',
+              subjects: [
+                { subjectId: 'mathematics', units: 5, grade: 82 },
+                { subjectId: 'physics', units: 4, grade: 80 },
+              ],
+            },
+          },
+        },
+        program,
+        institutions: getStaticCatalogueInstitutions(),
+        fetcher,
+      });
+      expect(report.results[0]).toMatchObject({
+        kind: 'exact',
+        decision: capture.fixture.expected.verdict,
+        score: capture.fixture.expected.score,
+      });
+      expect(fetcher).toHaveBeenCalledTimes(2);
+    },
+  );
+  it.each([
+    'ee',
+    'tau_ee',
+    'me',
+    'tau_me',
+    'occupational_therapy',
+    'tau_occupational_therapy',
+    'tau_industrial',
+    'communication',
+  ])(
+    'routes %s to its existing calculator and asks for missing applicant inputs',
+    async (degreeId) => {
+      const program = {
+        ...getStaticCataloguePrograms().find((p) => p.id === degreeId)!,
+        linkedInstitutionIds: ['tau'],
+      };
+      const fetcher = vi.fn<typeof fetch>();
+      const report = await evaluateAdmissionsForProgram({
+        input: { degreeId, psychometric: 700, bagrut: 110 },
+        program,
+        institutions: getStaticCatalogueInstitutions(),
+        fetcher,
+      });
+      expect(report.results[0]).toMatchObject({ kind: 'needs_input', decision: 'unknown' });
+      expect(report.results[0].requiredInputs).toContain('psychometric_english');
+      expect(fetcher).not.toHaveBeenCalled();
+    },
+  );
   it.each(Object.entries(DANON_PROGRAM_URLS))(
     'does not invent an academic score or entrance exam for Danon programme %s',
     async (id, officialUrl) => {
@@ -677,9 +755,8 @@ describe('evaluateAdmissionsForProgram', () => {
       fetcher: vi.fn<typeof fetch>().mockRejectedValue(new Error('Official source unavailable')),
     });
     expect(report.results[0]).toMatchObject({
-      kind: 'requirements_only',
+      kind: 'degraded',
       decision: 'unknown',
-      sourceLabel: 'תנאי הקבלה האחרונים שאומתו',
     });
     expect(report.results[0].explanation).toContain('610');
     expect(report.results[0].explanation).toContain('נתוני הבסיס אומתו');
@@ -720,7 +797,7 @@ describe('evaluateAdmissionsForProgram', () => {
       institutions,
       freshnessStatesBySourceId: new Map(),
     });
-    expect(report.results[0]).toMatchObject({ kind: 'requirements_only', decision: 'unknown' });
+    expect(report.results[0]).toMatchObject({ kind: 'authority_unavailable', decision: 'unknown' });
   });
 
   it('asks for Management conditions instead of unrelated Digital Sciences subjects', async () => {
@@ -900,8 +977,8 @@ describe('evaluateAdmissionsForProgram', () => {
     expect(report.results).toContainEqual(
       expect.objectContaining({
         linkedInstitutionId: 'bgu',
-        capability: 'requirements_only',
-        kind: 'requirements_only',
+        capability: 'authority_unavailable',
+        kind: 'authority_unavailable',
         decision: 'unknown',
         officialUrls: ['https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html'],
       }),
@@ -3023,7 +3100,7 @@ describe('current HUJI Medicine staged evaluation', () => {
         ),
     });
     expect(report.results).toContainEqual(
-      expect.objectContaining({ kind: 'requirements_only', decision: 'unknown' }),
+      expect.objectContaining({ kind: 'degraded', decision: 'unknown' }),
     );
   });
 });

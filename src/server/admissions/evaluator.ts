@@ -200,14 +200,8 @@ function withVerifiedAdmissionInformation(
     return result;
 
   return {
-    institution: result.institution,
-    linkedInstitutionId: result.linkedInstitutionId,
-    capability: 'requirements_only',
-    kind: 'requirements_only',
-    decision: 'unknown',
-    confidence: 'low',
-    sourceLabel: 'תנאי הקבלה האחרונים שאומתו',
-    explanation: `סף הקבלה השמור למסלול הוא ${contract.calculation.cutoff.acceptance} בציון המוסדי. ${verificationNote}`,
+    ...result,
+    explanation: `${result.explanation} סף הקבלה השמור למסלול הוא ${contract.calculation.cutoff.acceptance} בציון המוסדי. ${verificationNote}`,
     nextAction:
       'המידע השמור זמין לעיון, אך אין כרגע החלטת קבלה עדכנית. בדקו באתר המוסד את הסף ואת יתר תנאי הקבלה.',
     officialUrls: [
