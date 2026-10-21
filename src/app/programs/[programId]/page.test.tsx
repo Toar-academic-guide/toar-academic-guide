@@ -69,7 +69,7 @@ describe('ProgramPage', () => {
 
     expect(screen.getByText('פסיכומטרי כללי 640 ומעלה וזכאות לבגרות.')).toBeTruthy();
     expect(screen.getByText(/ללא פסיכומטרי: ממוצע בגרות 102 ומעלה/)).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'תנאי הקבלה באתר המוסד' }).getAttribute('href')).toBe(
+    expect(screen.getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toBe(
       'https://go.tau.ac.il/he/social-sciences/ba/communications?v=requirements',
     );
   });
@@ -99,7 +99,7 @@ describe('ProgramPage', () => {
       expect(within(section).getByText(`תנאי ${institution.id}`)).toBeTruthy();
       expect(within(section).getAllByRole('listitem')).toHaveLength(1);
       expect(
-        within(section).getByRole('link', { name: 'תנאי הקבלה באתר המוסד' }).getAttribute('href'),
+        within(section).getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href'),
       ).toBe(`https://example.org/${institution.id}`);
     }
   });

@@ -114,7 +114,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                           rel="noopener noreferrer"
                           className="mt-3 inline-block text-sm font-semibold text-[#6554b8] underline"
                         >
-                          תנאי הקבלה באתר המוסד
+                          לאתר המוסד
                         </a>
                       )}
                     </div>
