@@ -149,10 +149,16 @@ export function journeyRows(
 }
 
 export type JourneyResultGroup = 'match' | 'improve' | 'explore';
-export function resultLabel(result?: AdmissionsEvaluationResult): {
+export function resultLabel(
+  result?: AdmissionsEvaluationResult,
+  failed = false,
+  loading = false,
+): {
   label: string;
   group: JourneyResultGroup;
 } {
+  if (failed) return { label: 'החישוב לא נטען', group: 'explore' };
+  if (loading) return { label: 'החישוב מתבצע…', group: 'explore' };
   if (result?.kind === 'open_admission') return { label: 'הרשמה פתוחה', group: 'match' };
   if (['exact', 'estimated'].includes(result?.kind ?? '') && result?.decision === 'accepted') {
     return { label: result.kind === 'exact' ? 'עומד/ת בסף שחושב' : 'התאמה משוערת', group: 'match' };
@@ -160,15 +166,38 @@ export function resultLabel(result?: AdmissionsEvaluationResult): {
   if (result?.decision === 'below') return { label: 'אפשר לשפר את הסיכוי', group: 'improve' };
   if (result?.decision === 'eligible_to_apply')
     return { label: 'אפשר להגיש מועמדות', group: 'match' };
+  const labels: Partial<Record<AdmissionsEvaluationResult['kind'], string>> = {
+    needs_input: 'חסרים פרטים לחישוב',
+    manual_gate: 'נדרש מיון נוסף',
+    requirements_only: 'תנאי קבלה ללא חישוב',
+    unsupported: 'אין חישוב למסלול זה',
+    authority_unavailable: 'הנתונים הרשמיים אינם זמינים',
+    tracked_missing_rule: 'חסרים נתוני קבלה רשמיים',
+    degraded: 'החישוב אינו זמין כרגע',
+    exact: 'אין הכרעת קבלה',
+    estimated: 'אין הכרעת קבלה',
+  };
   return {
-    label:
-      result?.kind === 'needs_input'
-        ? 'לדייק את ההתאמה'
-        : result?.kind === 'manual_gate'
-          ? 'נדרש מיון נוסף'
-          : 'להכיר את המסלול',
+    label: result ? (labels[result.kind] ?? 'טרם חושבה התאמה') : 'טרם חושבה התאמה',
     group: 'explore',
   };
+}
+
+export function resultExplanation(result?: AdmissionsEvaluationResult): string | undefined {
+  if (!result) return undefined;
+  switch (result.kind) {
+    case 'requirements_only':
+    case 'tracked_missing_rule':
+    case 'unsupported':
+      return 'אין כרגע חישוב קבלה מאומת למסלול הזה. אפשר לבדוק את התנאים העדכניים באתר המוסד.';
+    case 'authority_unavailable':
+    case 'degraded':
+      return 'נתוני הקבלה הדרושים לחישוב אינם זמינים כרגע. אפשר לבדוק ישירות באתר המוסד.';
+    case 'manual_gate':
+      return 'בנוסף לציונים, צריך לבדוק את שלבי המיון ותנאי ההגשה של המוסד.';
+    default:
+      return result.explanation;
+  }
 }
 
 export function groupJourneyRows(rows: JourneyRow[], groupBy: 'field' | 'institution') {

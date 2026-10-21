@@ -89,19 +89,20 @@ function FilterButton({
   return (
     <button
       type="button"
+      aria-pressed={active}
       onClick={onClick}
       className={[
-        'inline-flex h-10 shrink-0 items-center gap-2 rounded-full border px-4 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fd8ff]',
+        'inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border px-4 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fd8ff]',
         active
-          ? 'border-[#7784e8] bg-[#7784e8] text-white shadow-[0_14px_30px_rgba(119,132,232,0.24)]'
+          ? 'border-[#5868c7] bg-[#5868c7] text-white shadow-[0_14px_30px_rgba(119,132,232,0.24)]'
           : 'border-[#d9e3f3] bg-white/80 text-[#647091] hover:border-[#b8c4ff] hover:bg-white hover:text-[#5262d9]',
       ].join(' ')}
     >
       <span>{label}</span>
       <span
         className={[
-          'rounded-full px-1.5 py-0.5 text-[10px]',
-          active ? 'bg-white/18 text-white' : 'bg-[#f0f4fa] text-[#72809a]',
+          'rounded-full px-1.5 py-0.5 text-[11px]',
+          active ? 'text-white' : 'bg-[#f0f4fa] text-[#596582]',
         ].join(' ')}
       >
         {count}
@@ -164,7 +165,7 @@ export default function InstitutionsDirectory({ institutions }: InstitutionsDire
           <div className="mx-auto grid max-w-6xl gap-10 px-5 pb-8 pt-8 sm:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-end lg:pb-12 lg:pt-12">
             <div>
               <p className="text-sm font-bold text-[#7784e8]">מוסדות לימוד בישראל</p>
-              <h1 className="mt-3 max-w-3xl text-4xl font-semibold leading-tight text-[#445274] sm:text-6xl">
+              <h1 className="mt-3 max-w-3xl text-3xl font-semibold leading-tight text-[#445274] sm:text-4xl">
                 למצוא מוסד לפי מקום, סוג ותעודה
               </h1>
               <p className="mt-5 max-w-2xl text-base leading-8 text-[#6f7a99] sm:text-lg">

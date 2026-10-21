@@ -33,12 +33,12 @@
   --secondary: #ef83bb;
   --text-heading: #0c1d45;
   --text-body: #435072;
-  --text-muted: #65718c;
+  --text-muted: #5e6a83;
   --border: #d9e3f3;
   --way-page-background: linear-gradient(180deg, #fbfdff 0%, #eef7ff 42%, #fbfdff 100%);
   --way-surface: rgba(255, 255, 255, 0.78);
   --way-shadow: 0 24px 70px rgba(105, 133, 190, 0.13);
-  --way-action: linear-gradient(100deg, #6979dd, #8c73df);
+  --way-action: linear-gradient(100deg, #5364c7, #7050bd);
 }
 
 * {
@@ -74,11 +74,15 @@ textarea {
 }
 
 .way-app
-  :where(input:not([type='checkbox']):not([type='radio']):not([type='range']), select, textarea) {
-  border-color: #d9e3f3 !important;
-  border-radius: 1rem !important;
-  background: rgba(248, 251, 255, 0.92) !important;
-  color: #445274 !important;
+  :is(
+    input:not([type='checkbox']):not([type='radio']):not([type='range']):not([type='file']),
+    select,
+    textarea
+  ):not(.way-input-unframed) {
+  border: 1px solid #8494ad !important;
+  border-radius: 0.625rem !important;
+  background: #ffffff !important;
+  color: #12234a !important;
   box-shadow: none !important;
 }
 
@@ -86,10 +90,11 @@ textarea {
   color: #6d7894 !important;
 }
 
-.way-app :where(input, select, textarea):focus {
-  border-color: #7784e8 !important;
+.way-app :is(input, select, textarea):focus {
+  border-color: #6554b8 !important;
   background: #ffffff !important;
-  box-shadow: 0 0 0 3px rgba(143, 216, 255, 0.35) !important;
+  outline: 2px solid #6554b8;
+  outline-offset: 2px;
 }
 
 .way-app :where(button, a) {
@@ -133,7 +138,7 @@ textarea {
 .way-app [class*='bg-[#4338ca]'],
 .way-app [class*='bg-[#6366f1]'],
 .way-app [class*='bg-[#1e1b4b]'] {
-  background-color: #7784e8 !important;
+  background-color: #5868c7 !important;
 }
 
 .way-app .border-black,
@@ -217,7 +222,7 @@ button:not(:disabled),
 }
 
 .way-app :where(a, button, summary):focus-visible {
-  outline: 3px solid #8fd8ff;
+  outline: 2px solid #6554b8;
   outline-offset: 3px;
 }
 

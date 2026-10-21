@@ -20,7 +20,7 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { fetchCatalogueInstitutions, fetchCataloguePrograms } from '@/lib/catalogueClient';
-import { fetchAdmissionsEvaluation } from '@/lib/admissionsEvaluationClient';
+import { fetchAdmissionsBatch } from '@/lib/admissionsEvaluationClient';
 import { admissionsExtraInputsFromAcademicScores } from '@/lib/admissionsEvaluationProfile';
 import {
   LOCATIONS,
@@ -33,6 +33,7 @@ import {
   matchesInstitutionType,
   groupJourneyRows,
   resultLabel,
+  resultExplanation,
   officialUrl,
   type JourneyLocation,
   type InstitutionType,
@@ -314,6 +315,7 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
         result: reports[active.program.id]?.results.find(
           (result) => result.linkedInstitutionId === active.institution.id,
         ),
+        failed: failedReports.includes(active.program.id),
       }
     : undefined;
   const details = activeRow?.program.institutionDetails?.find(
@@ -343,33 +345,31 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
     patch({ types: types.length ? types : ['all'] });
   };
   const evaluate = useCallback(
-    async (targets: JourneyRow[], scores: AcademicScores, target?: number) => {
+    async (targets: JourneyRow[], scores: AcademicScores, target?: number, retry = false) => {
       const version = ++calculation.current;
       setCalculating(true);
       setFailedReports([]);
-      setReports({});
+      if (!retry) setReports({});
       const ids = [...new Set(targets.map((row) => row.program.id))];
       const found: Record<string, AdmissionsEvaluationReport> = {};
       const failed: string[] = [];
-      // Keep requests bounded; catalogue browsing does not depend on a calculator response.
-      for (let index = 0; index < ids.length; index += 4) {
+      for (let index = 0; index < ids.length; index += 50) {
         if (calculation.current !== version) return;
-        await Promise.all(
-          ids.slice(index, index + 4).map(async (id) => {
-            try {
-              found[id] = await fetchAdmissionsEvaluation({
-                degreeId: id,
-                psychometric: target ?? scores.psychometric?.overall,
-                bagrut: scores.bagrut?.weightedAverage,
-                extraInputs: admissionsExtraInputsFromAcademicScores(scores),
-              });
-            } catch {
-              failed.push(id);
-            }
-          }),
-        );
+        const degreeIds = ids.slice(index, index + 50);
+        try {
+          const batch = await fetchAdmissionsBatch({
+            degreeIds,
+            psychometric: target ?? scores.psychometric?.overall,
+            bagrut: scores.bagrut?.weightedAverage,
+            extraInputs: admissionsExtraInputsFromAcademicScores(scores),
+          });
+          Object.assign(found, batch.reports);
+          failed.push(...batch.failedDegreeIds);
+        } catch {
+          failed.push(...degreeIds);
+        }
         if (calculation.current === version) {
-          setReports({ ...found });
+          setReports((current) => ({ ...(retry ? current : {}), ...found }));
           setFailedReports([...failed]);
         }
       }
@@ -478,7 +478,7 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
     compare: 'משווים אפשרויות',
     improve: 'מה יקרה אם נשפר את הציון?',
     plan: 'האפשרויות עם ציון היעד',
-    missing: 'מדייקים את ההתאמה',
+    missing: 'השלמת נתונים לחישוב',
     questionnaire: 'מגלים מה מתאים לך',
     'quiz-result': 'הכיוונים שמתאימים לך',
     account: 'החשבון שלי',
@@ -520,7 +520,7 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
   );
   const groups = groupJourneyRows(visibleRows, groupBy);
   const rowView = (row: JourneyRow) => {
-    const status = resultLabel(row.result);
+    const status = resultLabel(row.result, row.failed, calculating && !row.result);
     return (
       <article className="journey-result-row" key={row.id}>
         <div className="journey-row-info">
@@ -594,9 +594,15 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                 הדרך <strong>ללימודים שלך</strong> מתחילה כאן.
               </p>
               <h1 ref={heading} tabIndex={-1}>
-                בוחרים <span>מה</span> ללמוד,
-                <br />
-                <span>איפה</span> ללמוד ו<span>איך</span> להתקבל.
+                <span className="journey-hero-line">
+                  בוחרים <em className="hero-what">מה</em> ללמוד,
+                </span>
+                <span className="journey-hero-line">
+                  <em className="hero-where">איפה</em> ללמוד
+                </span>
+                <span className="journey-hero-line">
+                  ו<em className="hero-how">איך</em> להתקבל.
+                </span>
               </h1>
               <p>בתוך ריבוי האפשרויות, Way עוזרת לעשות סדר ולבנות דרך שמתאימה לך. שנתחיל?</p>
               <Primary onClick={() => go('intent')}>עזרו לי לבחור מה ללמוד</Primary>
@@ -843,10 +849,10 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
               ממוצע בגרות
               <input
                 type="number"
-                inputMode="numeric"
+                inputMode="decimal"
                 min={60}
                 max={120}
-                step={1}
+                step="any"
                 required
                 value={draft.scores.bagrut?.weightedAverage ?? ''}
                 onChange={(event) =>
@@ -1091,7 +1097,12 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                 <button
                   className="journey-text-button"
                   onClick={() =>
-                    void evaluate(selectedRows, draft.scores, simulation ?? draft.target)
+                    void evaluate(
+                      selectedRows.filter((row) => failedReports.includes(row.program.id)),
+                      draft.scores,
+                      simulation ?? draft.target,
+                      true,
+                    )
                   }
                 >
                   לנסות שוב
@@ -1154,9 +1165,16 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
               {step === 'detail' ? (
                 <>
                   <p>{details?.programDescription}</p>
-                  <span className={`journey-status status-${resultLabel(activeRow.result).group}`}>
-                    {resultLabel(activeRow.result).label}
+                  <span
+                    className={`journey-status status-${resultLabel(activeRow.result, activeRow.failed).group}`}
+                  >
+                    {resultLabel(activeRow.result, activeRow.failed).label}
                   </span>
+                  {resultExplanation(activeRow.result) && (
+                    <p className="journey-result-explanation">
+                      {resultExplanation(activeRow.result)}
+                    </p>
+                  )}
                   {activeRow.result?.score != null && (
                     <p>
                       {activeRow.result.scoreLabel ?? 'ציון מחושב'}:{' '}
@@ -1183,7 +1201,7 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                     </button>
                   </div>
                   <div className="journey-links">
-                    <button onClick={() => go('missing')}>לדייק את ההתאמה</button>
+                    <button onClick={() => go('missing')}>השלמת נתונים לחישוב</button>
                     <button onClick={() => go('alternatives')}>עוד דרכי קבלה</button>
                     {officialUrl(details?.programUrl ?? activeRow.institution.programUrl) && (
                       <a
@@ -1204,8 +1222,10 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                             await navigator.clipboard.writeText(url);
                             setMessage('הקישור הועתק.');
                           }
-                        } catch {
-                          /* Dismissed share sheet. */
+                        } catch (cause) {
+                          if (!(cause instanceof Error && cause.name === 'AbortError')) {
+                            setMessage('לא הצלחנו לשתף את הקישור. נסו שוב.');
+                          }
                         }
                       }}
                     >
@@ -1413,15 +1433,21 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
             <Link className="journey-text-button" href={ROUTES.profile}>
               הפרופיל שלי
             </Link>
-            <button
-              className="journey-text-button"
-              onClick={async () => {
-                await auth.signOut();
-                go('home');
-              }}
-            >
-              יציאה מהחשבון
-            </button>
+            {auth.user ? (
+              <button
+                className="journey-text-button"
+                onClick={async () => {
+                  await auth.signOut();
+                  go('home');
+                }}
+              >
+                יציאה מהחשבון
+              </button>
+            ) : (
+              <Link className="journey-text-button" href={buildLoginPath('/#account')}>
+                כניסה לחשבון
+              </Link>
+            )}
           </section>
         )}
       </main>

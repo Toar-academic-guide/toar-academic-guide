@@ -10,7 +10,9 @@ describe('approved journey', () => {
   });
   it('does not turn unavailable admissions data into an acceptance', () => {
     expect(resultLabel(undefined).group).toBe('explore');
-    expect(resultLabel(undefined).label).toBe('להכיר את המסלול');
+    expect(resultLabel(undefined).label).toBe('טרם חושבה התאמה');
+    expect(resultLabel(undefined, true).label).toBe('החישוב לא נטען');
+    expect(resultLabel(undefined, false, true).label).toBe('החישוב מתבצע…');
   });
   it('groups degree results without hiding their contact rows', () => {
     expect(groupJourneyRows([], 'field')).toEqual([]);

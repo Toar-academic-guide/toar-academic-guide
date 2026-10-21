@@ -93,7 +93,19 @@ export default function JourneyExactGrades({
           <select
             value={sector}
             onChange={(event) => {
-              setSector(event.target.value);
+              const nextSector = event.target.value;
+              const defaults = emptyRows(sector);
+              const untouched =
+                rows.length === defaults.length &&
+                rows.every(
+                  (row, index) =>
+                    row.label === defaults[index].label &&
+                    row.units === defaults[index].units &&
+                    row.grade === '' &&
+                    row.assessmentKind === defaults[index].assessmentKind,
+                );
+              if (untouched) setRows(emptyRows(nextSector));
+              setSector(nextSector);
             }}
             required
           >

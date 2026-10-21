@@ -288,3 +288,12 @@ export interface AdmissionsEvaluationReport {
   program: Pick<CatalogueProgram, 'id' | 'name'>;
   results: AdmissionsEvaluationResult[];
 }
+
+/** Journey requests share one applicant profile across a bounded set of programmes. */
+export type AdmissionsBatchInput = Omit<AdmissionsEvaluationInput, 'degreeId'> & {
+  degreeIds: string[];
+};
+export interface AdmissionsBatchReport {
+  reports: Record<string, AdmissionsEvaluationReport>;
+  failedDegreeIds: string[];
+}
