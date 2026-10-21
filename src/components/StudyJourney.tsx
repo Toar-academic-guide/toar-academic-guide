@@ -553,7 +553,11 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
       <article className="journey-result-row" key={row.id}>
         <div className="journey-row-info">
           <button className="journey-row-title" onClick={() => selectRow(row, 'detail')}>
-            {groupBy === 'field' ? row.institution.name : row.fieldName}
+            {step === 'saved'
+              ? `${row.fieldName} — ${row.institution.name}`
+              : groupBy === 'field'
+                ? row.institution.name
+                : row.fieldName}
           </button>
           <span className={`journey-status status-${status.group}`}>{status.label}</span>
         </div>
