@@ -12,6 +12,7 @@ import {
   DANON_PROGRAM_URLS,
 } from '../admissions/danon';
 import computingCourses from './computingCourses.json';
+import { applyCatalogueContentRepair } from '../admissions/catalogueContentRepair';
 import {
   mondayAdmissionsEvidence,
   type MondayAdmissionAlternativePath,
@@ -1005,40 +1006,42 @@ export const allPrograms = [
   ...normalizeLegacyPrograms(academicPrograms),
   ...normalizeLegacyPrograms(vocationalPrograms),
   ...dynamicPrograms,
-].map((program): Program => {
-  const course = (
-    computingCourses as Record<string, { name: string; category: string; programUrl: string }>
-  )[program.id];
-  if (course) {
+]
+  .map((program): Program => {
+    const course = (
+      computingCourses as Record<string, { name: string; category: string; programUrl: string }>
+    )[program.id];
+    if (course) {
+      return {
+        ...program,
+        name: course.name,
+        category: course.category,
+        type: 'certificate',
+        institutionDetails: program.institutionDetails?.map((detail) => ({
+          ...detail,
+          programUrl: course.programUrl,
+        })),
+      };
+    }
+    const programUrl = DANON_PROGRAM_URLS[program.id];
+    if (program.institutionId !== 'danon' || !programUrl) return program;
     return {
       ...program,
-      name: course.name,
-      category: course.category,
-      type: 'certificate',
-      institutionDetails: program.institutionDetails?.map((detail) => ({
-        ...detail,
-        programUrl: course.programUrl,
-      })),
+      name: DANON_PROGRAM_NAMES[program.id] ?? program.name,
+      admissionRequirements: [DANON_BEGINNER_REQUIREMENT],
+      institutionDetails: [
+        {
+          institutionName: program.institution,
+          durationYears: null,
+          estimatedStudentsPerYear: '',
+          quantitativeMinRequirement: null,
+          englishMinRequirement: null,
+          specificAdmissionNotes: [DANON_BEGINNER_REQUIREMENT],
+          officialCalculatorUrl: '',
+          programUrl,
+          admissionFacts: [],
+        },
+      ],
     };
-  }
-  const programUrl = DANON_PROGRAM_URLS[program.id];
-  if (program.institutionId !== 'danon' || !programUrl) return program;
-  return {
-    ...program,
-    name: DANON_PROGRAM_NAMES[program.id] ?? program.name,
-    admissionRequirements: [DANON_BEGINNER_REQUIREMENT],
-    institutionDetails: [
-      {
-        institutionName: program.institution,
-        durationYears: null,
-        estimatedStudentsPerYear: '',
-        quantitativeMinRequirement: null,
-        englishMinRequirement: null,
-        specificAdmissionNotes: [DANON_BEGINNER_REQUIREMENT],
-        officialCalculatorUrl: '',
-        programUrl,
-        admissionFacts: [],
-      },
-    ],
-  };
-});
+  })
+  .map(applyCatalogueContentRepair);

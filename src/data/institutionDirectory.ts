@@ -51,12 +51,25 @@ const POPULAR_INSTITUTION_IDS = new Set([
 
 const EXCLUDED_MONDAY_ITEM_IDS = new Set(['12242591498']);
 
+// These are separate institutions; the legacy name matcher collapsed both to "tiltan".
+const VERIFIED_DIRECTORY_IDENTITIES: Record<string, { id: string; name: string }> = {
+  '12341137918': {
+    id: 'mon_12341137918',
+    name: 'מכללת תילתן לרפואה משלימה',
+  },
+  '12341149221': {
+    id: 'mon_12341149221',
+    name: 'תילתן המכללה לעיצוב ולתקשורת חזותית',
+  },
+};
+
 const DIRECTORY_LOGO_OVERRIDES: Record<
   string,
   {
     domain?: string;
     logoUrl?: string;
     sourceUrl?: string;
+    location?: string;
   }
 > = {
   danon: {
@@ -74,6 +87,8 @@ const DIRECTORY_LOGO_OVERRIDES: Record<
   },
   mon_12220697940: {
     logoUrl: '/institution-logos/yoram-levinstein.png',
+    domain: 'studioact.co.il',
+    sourceUrl: 'https://www.studioact.co.il/',
   },
   mon_12341118768: {
     logoUrl: '/institution-logos/hbs-college.png',
@@ -83,9 +98,38 @@ const DIRECTORY_LOGO_OVERRIDES: Record<
   },
   mon_12341064485: {
     logoUrl: '/institution-logos/anat-barzilai.png',
+    domain: 'dramacomedy.co.il',
+    sourceUrl: 'https://www.dramacomedy.co.il/about-2',
   },
   mon_12341092879: {
     logoUrl: '/institution-logos/studio-6b.png',
+    domain: '6bstudio.co.il',
+    sourceUrl: 'https://www.6bstudio.co.il/',
+  },
+  mon_12341122982: {
+    domain: 'leidaschool.co.il',
+    sourceUrl: 'https://www.leidaschool.co.il/',
+    location: 'מרכז ברודט, צייטלין 22, תל אביב',
+  },
+  mon_12341137918: {
+    domain: 'tiltan-college.co.il',
+    sourceUrl: 'https://www.tiltan-college.co.il/about',
+  },
+  mon_12341149221: {
+    domain: 'tiltan.co.il',
+    sourceUrl: 'https://tiltan.co.il/',
+  },
+  mon_12341098628: {
+    domain: 'abs-school.com',
+    sourceUrl: 'https://abs-school.com/',
+  },
+  nativ: {
+    domain: 'nissan-nativ.org.il',
+    sourceUrl: 'https://www.nissan-nativ.org.il/',
+  },
+  reidman: {
+    domain: 'reidman.co.il',
+    sourceUrl: 'https://www.reidman.co.il/',
   },
   mon_12341098736: {
     logoUrl: '/institution-logos/laledet.png',
@@ -273,10 +317,15 @@ export function getInstitutionDirectoryItems(): InstitutionDirectoryItem[] {
     .filter((row: MondayInstitutionExportRow) => !EXCLUDED_MONDAY_ITEM_IDS.has(row.itemId))
     .map((row: MondayInstitutionExportRow) => {
       const evidence = evidenceByItemId.get(row.itemId);
-      const id = evidence?.catalogueInstitutionId ?? `mon_${row.itemId}`;
+      const verifiedIdentity = VERIFIED_DIRECTORY_IDENTITIES[row.itemId];
+      const id = verifiedIdentity?.id ?? evidence?.catalogueInstitutionId ?? `mon_${row.itemId}`;
       const institution = INSTITUTION_BY_ID[id as keyof typeof INSTITUTION_BY_ID];
       const override = DIRECTORY_LOGO_OVERRIDES[id];
-      const name = institution?.name ?? evidence?.displayName ?? cleanMondayItemName(row.itemName);
+      const name =
+        verifiedIdentity?.name ??
+        institution?.name ??
+        evidence?.displayName ??
+        cleanMondayItemName(row.itemName);
       const sourceUrl =
         override?.sourceUrl ??
         extractUrl(row.officialSource) ??
@@ -288,6 +337,7 @@ export function getInstitutionDirectoryItems(): InstitutionDirectoryItem[] {
         null;
       const domain = override?.domain ?? institution?.domain ?? hostnameFromUrl(sourceUrl);
       const yoramLogoUrl = yoramLogoFromSourceUrl(sourceUrl);
+      const location = override?.location ?? row.location;
 
       return {
         id,
@@ -296,12 +346,12 @@ export function getInstitutionDirectoryItems(): InstitutionDirectoryItem[] {
         mondayUrl: row.mondayUrl,
         type: row.institutionType,
         funding: row.funding,
-        location: row.location,
+        location,
         diplomaType: row.diplomaType,
         sourceUrl,
         domain,
         logoUrl: override?.logoUrl ?? institution?.logoUrl ?? yoramLogoUrl,
-        areas: inferAreas(row.location, institution?.region ?? null),
+        areas: inferAreas(location, institution?.region ?? null),
         categories: inferCategories({
           id,
           name,

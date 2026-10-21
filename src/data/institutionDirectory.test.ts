@@ -4,6 +4,19 @@ import { getInstitutionDirectoryItems } from './institutionDirectory';
 import yoramInstitutionLogos from './yoramInstitutionLogos.generated.json';
 
 describe('institution directory data', () => {
+  it('keeps the verified doula school in Israel and separates the two Tiltan schools', () => {
+    const institutions = getInstitutionDirectoryItems();
+    expect(institutions.find((item) => item.id === 'mon_12341122982')).toMatchObject({
+      sourceUrl: 'https://www.leidaschool.co.il/',
+      areas: expect.arrayContaining(['tel_aviv', 'center']),
+    });
+    expect(institutions.find((item) => item.id === 'mon_12341122982')?.areas).not.toContain(
+      'online',
+    );
+    expect(institutions.find((item) => item.id === 'mon_12341137918')?.sourceUrl).toBe(
+      'https://www.tiltan-college.co.il/about',
+    );
+  });
   it('builds one public directory item for every valid Monday institution row', () => {
     const institutions = getInstitutionDirectoryItems();
 
