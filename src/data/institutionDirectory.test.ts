@@ -1,9 +1,44 @@
 import { describe, expect, it } from 'vitest';
 
-import { getInstitutionDirectoryItems } from './institutionDirectory';
+import {
+  getInstitutionDirectoryItems,
+  getPublicInstitutionSourceUrl,
+} from './institutionDirectory';
 import yoramInstitutionLogos from './yoramInstitutionLogos.generated.json';
 
 describe('institution directory data', () => {
+  it('keeps aggregator and board URLs out of public directory items', () => {
+    const items = getInstitutionDirectoryItems();
+    for (const item of items) {
+      expect(item.sourceUrl ?? '').not.toMatch(/yoram\.walla\.co\.il/i);
+      expect(item.domain ?? '').not.toMatch(/yoram\.walla\.co\.il/i);
+      expect(item).not.toHaveProperty('mondayUrl');
+    }
+    expect(JSON.stringify(items)).not.toMatch(/monday\.com/i);
+  });
+
+  it('skips invalid, aggregator and board candidates and falls back in priority order', () => {
+    expect(
+      getPublicInstitutionSourceUrl([
+        'https://yoram.walla.co.il/institute/1',
+        'https://sub.yoram.walla.co.il/test',
+        'https://malichi-hub.monday.com/boards/18416803950',
+        'https://[invalid',
+        'https://user:pass@example.org',
+        'מקור: https://example.org/program',
+        'https://example.org/calculator',
+      ]),
+    ).toBe('https://example.org/program');
+    expect(
+      getPublicInstitutionSourceUrl([
+        'https://yoram.walla.co.il/institute/1 https://example.org/official',
+      ]),
+    ).toBe('https://example.org/official');
+    expect(
+      getPublicInstitutionSourceUrl(['https://yoram.walla.co.il/institute/1', null]),
+    ).toBeNull();
+  });
+
   it('builds one public directory item for every valid Monday institution row', () => {
     const institutions = getInstitutionDirectoryItems();
 

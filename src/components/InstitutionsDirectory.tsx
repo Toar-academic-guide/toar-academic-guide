@@ -168,8 +168,8 @@ export default function InstitutionsDirectory({ institutions }: InstitutionsDire
                 למצוא מוסד לפי מקום, סוג ותעודה
               </h1>
               <p className="mt-5 max-w-2xl text-base leading-8 text-[#6f7a99] sm:text-lg">
-                קטלוג מוסדות מתוך Monday, מאורגן לחיפוש מהיר בין אוניברסיטאות, מכללות ובתי ספר
-                מקצועיים.
+                כל המוסדות במקום אחד: אוניברסיטאות, מכללות, הנדסאים ולימודי תעודה, עם סינון לפי
+                אזור, סוג מוסד ותעודה.
               </p>
             </div>
 
