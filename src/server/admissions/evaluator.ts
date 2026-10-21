@@ -197,7 +197,9 @@ function withVerifiedAdmissionInformation(
   }).format(checkedAt)}, למחזור ${contract.admissionCycle}.`;
 
   if (result.capability === 'exact') {
-    return { ...result, explanation: `${result.explanation} ${verificationNote}` };
+    return result.scoreAssessment
+      ? result
+      : { ...result, explanation: `${result.explanation} ${verificationNote}` };
   }
   if (
     !['degraded', 'authority_unavailable', 'unsupported'].includes(result.kind) ||

@@ -230,7 +230,7 @@ describe('account grades in the homepage journey', () => {
     await screen.findByRole('heading', { name: 'תנאים נוספים לבדיקה' });
     expect(screen.getByText('טרם אושר')).toBeTruthy();
     expect(screen.getByText('לא מתקיים לפי הנתונים שהוזנו')).toBeTruthy();
-    expect(screen.getByText(/700.00/)).toBeTruthy();
+    expect(screen.getByText('פסיכומטרי: 700 · סף: 680')).toBeTruthy();
     expect(screen.getByRole('button', { name: 'עדכון נתונים ותנאים נוספים' })).toBeTruthy();
     expect(screen.queryByText('חסרים פרטים לחישוב')).toBeNull();
     expect(screen.queryByText('אפשר להגיש מועמדות')).toBeNull();

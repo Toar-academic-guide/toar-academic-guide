@@ -1269,7 +1269,7 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                   {activeRow.result?.score != null && (
                     <p>
                       {activeRow.result.scoreLabel ?? 'ציון מחושב'}:{' '}
-                      {activeRow.result.score.toFixed(2)}
+                      {activeRow.result.score.toLocaleString('he-IL', { maximumFractionDigits: 2 })}
                       {activeRow.result.threshold != null && ` · סף: ${activeRow.result.threshold}`}
                     </p>
                   )}
