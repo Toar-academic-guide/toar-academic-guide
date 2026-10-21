@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import WayPageShell from '@/components/WayPageShell';
 
 import { getPublicProgramPageData } from '@/lib/publicCataloguePages';
+import { catalogueAdmissionRequirements } from '@/lib/catalogueDisplayText';
 import { ROUTES } from '@/lib/routes';
 
 export const dynamic = 'force-dynamic';
@@ -35,9 +36,6 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
             <p className="text-sm font-semibold text-cyan-700">{program.category}</p>
             <h1 className="mt-2 text-3xl font-black sm:text-4xl">{program.name}</h1>
-            <p className="mt-3 text-base text-slate-600">
-              מסלול ציבורי לשיתוף, בדיקה ראשונית וחיבור למחשבון או לשאלון האישי.
-            </p>
 
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
@@ -56,7 +54,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
           </div>
 
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-            <h2 className="text-xl font-bold">מוסדות קשורים</h2>
+            <h2 className="text-xl font-bold">מוסדות לימוד</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {institutions.map((institution) => (
                 <div
@@ -76,9 +74,9 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
           </section>
 
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-            <h2 className="text-xl font-bold">תנאי קבלה פומביים</h2>
+            <h2 className="text-xl font-bold">תנאי קבלה</h2>
             <ul className="mt-4 list-inside list-disc space-y-2 text-sm text-slate-600">
-              {program.admissionRequirements.map((requirement) => (
+              {catalogueAdmissionRequirements(program.admissionRequirements).map((requirement) => (
                 <li key={requirement}>{requirement}</li>
               ))}
             </ul>

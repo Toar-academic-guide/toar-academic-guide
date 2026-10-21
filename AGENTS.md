@@ -80,3 +80,10 @@ For database-backed catalogue, Supabase, Vercel, authentication, and `/internal/
 - Use Playwright or an equivalent browser check for the affected user flow before marking the work complete. For this app, that includes the landing-page calculator flow and `/internal/data-health` when either path is touched.
 - Do not replace a failing database-backed flow with static fallbacks as the primary fix. Static data is acceptable only for explicit local/static modes; production database mode should fail loudly and the database/query/permissions issue should be fixed.
 - In the PR description, include the concrete Supabase, Vercel/GitHub Actions, and browser verification performed, or explain why a check was impossible.
+
+## Product Language: Write for Prospective Students
+
+- Write user-facing copy in natural, concise Hebrew for people choosing what to study. Use familiar labels such as `תנאי קבלה`; do not add internal qualifiers such as `פומביים`, `ציבורי`, or `מאומת` unless the distinction is necessary for the user's decision.
+- Never expose ingestion diagnostics, evidence-review notes, database statuses, implementation details, or untranslated internal English as programme descriptions or admission requirements. Keep these in internal tools and logs. Legitimate programme names and qualifications such as IELTS may remain in their original language.
+- State missing information plainly and only where it affects the next action. Do not fill gaps with invented requirements, redundant explanations, or awkward literal translations. Preserve actual conditions, scores, thresholds, and uncertainty.
+- Before sharing screenshots or marking UI work ready, read the visible copy as a prospective student on desktop and mobile, including catalogue-fed descriptions and requirements. Verify that labels are useful, Hebrew reads naturally, and no internal text leaks into the interface.

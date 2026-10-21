@@ -39,6 +39,7 @@ import {
   type InstitutionType,
   type JourneyRow,
 } from '@/lib/studyJourney';
+import { catalogueAdmissionRequirements, catalogueDescription } from '@/lib/catalogueDisplayText';
 import { userProfileSchema } from '@/server/user/profileSchema';
 import type { AcademicScores, RecommendedField, CareerAssessmentDraft } from '@/types';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
@@ -321,6 +322,7 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
   const details = activeRow?.program.institutionDetails?.find(
     (detail) => detail.institutionName === activeRow.institution.name,
   );
+  const description = catalogueDescription(details?.programDescription);
   const counts = useMemo(() => {
     const sets: Partial<Record<JourneyLocation, Set<string>>> = {};
     for (const row of allRows) {
@@ -1164,7 +1166,7 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
               <p className="journey-subtitle">{activeRow.institution.name}</p>
               {step === 'detail' ? (
                 <>
-                  <p>{details?.programDescription}</p>
+                  {description && <p>{description}</p>}
                   <span
                     className={`journey-status status-${resultLabel(activeRow.result, activeRow.failed).group}`}
                   >
@@ -1184,9 +1186,9 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                   )}
                   <h2>תנאי קבלה</h2>
                   <ul className="journey-requirements">
-                    {(details?.specificAdmissionNotes?.length
-                      ? details.specificAdmissionNotes
-                      : activeRow.program.admissionRequirements
+                    {catalogueAdmissionRequirements(
+                      details?.specificAdmissionNotes,
+                      activeRow.program.admissionRequirements,
                     ).map((text, index) => (
                       <li key={index}>{text}</li>
                     ))}
@@ -1335,9 +1337,11 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                   <h2>{row.fieldName}</h2>
                   <p>{row.institution.name}</p>
                   <ul>
-                    {row.program.admissionRequirements.map((item, index) => (
-                      <li key={index}>{item}</li>
-                    ))}
+                    {catalogueAdmissionRequirements(row.program.admissionRequirements).map(
+                      (item, index) => (
+                        <li key={index}>{item}</li>
+                      ),
+                    )}
                   </ul>
                   <Primary onClick={() => selectRow(row, 'inquiry')}>יצירת קשר</Primary>
                 </article>

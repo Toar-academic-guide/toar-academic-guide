@@ -35,9 +35,6 @@ export default async function InstitutionPage({ params }: InstitutionPageProps) 
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
             <p className="text-sm font-semibold text-cyan-700">מוסד לימודים</p>
             <h1 className="mt-2 text-3xl font-black sm:text-4xl">{institution.name}</h1>
-            <p className="mt-3 text-base text-slate-600">
-              עמוד ציבורי לשיתוף מוסד, מסלולים קשורים והמשך לבדיקה אישית באפליקציה.
-            </p>
 
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
@@ -56,7 +53,7 @@ export default async function InstitutionPage({ params }: InstitutionPageProps) 
           </div>
 
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-            <h2 className="text-xl font-bold">מסלולים קשורים</h2>
+            <h2 className="text-xl font-bold">מסלולי לימוד</h2>
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {programs.slice(0, 12).map((program) => (
                 <Link

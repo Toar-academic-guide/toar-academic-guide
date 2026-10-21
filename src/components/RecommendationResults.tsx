@@ -49,6 +49,7 @@ import { INSTITUTION_BY_NAME } from '@/data/institutions';
 import InstitutionLogo from '@/components/InstitutionLogo';
 import type { Program } from '@/data/degrees/types';
 import { PROGRAM_FIELD_MAP, FIELD_ENRICHMENT } from '@/data/degrees/fieldEnrichment';
+import { catalogueAdmissionRequirements, catalogueDescription } from '@/lib/catalogueDisplayText';
 import { getTopDimensions } from '@/utils/scoringEngine';
 
 interface Props {
@@ -471,6 +472,11 @@ function ProgramDetailView({
               <p className="text-xs font-semibold text-slate-500">אוניברסיטאות — פרטי קבלה</p>
               {sekhemInstitutions.map((p) => {
                 const detail = p.institutionDetails?.[0];
+                const description = catalogueDescription(detail?.programDescription);
+                const requirements = catalogueAdmissionRequirements(
+                  detail?.specificAdmissionNotes,
+                  p.admissionRequirements,
+                );
                 const instRecord = INSTITUTION_BY_NAME[p.institution];
                 const region = instRecord?.region ?? INSTITUTION_REGIONS[p.institution];
                 const isPreferred =
@@ -541,13 +547,13 @@ function ProgramDetailView({
                           </div>
                         )}
                         {/* Admission requirements headline + notes */}
-                        {detail.specificAdmissionNotes.length > 0 && (
+                        {requirements.length > 0 && (
                           <>
                             <p className="text-xs font-semibold text-slate-700">
                               מה נדרש כדי להתקבל
                             </p>
                             <ul className="space-y-0.5" dir="rtl">
-                              {detail.specificAdmissionNotes.map((note, i) => (
+                              {requirements.map((note, i) => (
                                 <li key={i} className="text-xs text-slate-600">
                                   • {note}
                                 </li>
@@ -556,9 +562,7 @@ function ProgramDetailView({
                           </>
                         )}
                         {/* Program description (expandable) */}
-                        {detail.programDescription && (
-                          <ExpandableDescription text={detail.programDescription} />
-                        )}
+                        {description && <ExpandableDescription text={description} />}
                         {/* Dual-action CTA — program info + admission calculator
                             Falls back to the master institution record URLs when
                             the program-level detail fields are absent. */}
@@ -614,6 +618,11 @@ function ProgramDetailView({
               </p>
               {reqInstitutions.map((p) => {
                 const detail = p.institutionDetails?.[0];
+                const description = catalogueDescription(detail?.programDescription);
+                const requirements = catalogueAdmissionRequirements(
+                  detail?.specificAdmissionNotes,
+                  p.admissionRequirements,
+                );
                 const instRecord = INSTITUTION_BY_NAME[p.institution];
                 const region = instRecord?.region ?? INSTITUTION_REGIONS[p.institution];
                 const isPreferred =
@@ -672,13 +681,13 @@ function ProgramDetailView({
                     {detail ? (
                       <>
                         {/* Admission requirements headline + notes from institutionDetails */}
-                        {detail.specificAdmissionNotes.length > 0 && (
+                        {requirements.length > 0 && (
                           <>
                             <p className="text-xs font-semibold text-slate-700">
                               מה נדרש כדי להתקבל
                             </p>
                             <ul className="space-y-0.5" dir="rtl">
-                              {detail.specificAdmissionNotes.map((note, i) => (
+                              {requirements.map((note, i) => (
                                 <li key={i} className="text-xs text-slate-600">
                                   • {note}
                                 </li>
@@ -687,9 +696,7 @@ function ProgramDetailView({
                           </>
                         )}
                         {/* Program description (expandable) */}
-                        {detail.programDescription && (
-                          <ExpandableDescription text={detail.programDescription} />
-                        )}
+                        {description && <ExpandableDescription text={description} />}
                         {/* Dual-action CTA — program info + admission portal
                             Falls back to the master institution record URLs when
                             the program-level detail fields are absent. */}
@@ -719,11 +726,11 @@ function ProgramDetailView({
                         </div>
                       </>
                     ) : (
-                      p.admissionRequirements.length > 0 && (
+                      requirements.length > 0 && (
                         <>
                           <p className="text-xs font-semibold text-slate-700">מה נדרש כדי להתקבל</p>
                           <ul className="space-y-0.5">
-                            {p.admissionRequirements.map((req, i) => (
+                            {requirements.map((req, i) => (
                               <li key={i} className="text-xs text-slate-600">
                                 • {req}
                               </li>
