@@ -200,6 +200,42 @@ describe('account grades in the homepage journey', () => {
     expect(screen.queryByText('טרם חושבה התאמה')).toBeNull();
   });
 
+  it('shows the saved-score match separately from outstanding entry conditions', async () => {
+    savedCatalogue();
+    state.evaluate.mockResolvedValue({
+      reports: {
+        saved_course: {
+          results: [
+            {
+              linkedInstitutionId: 'tau',
+              kind: 'exact',
+              decision: 'pending',
+              score: 700,
+              threshold: 680,
+              scoreLabel: 'פסיכומטרי',
+              scoreAssessment: 'meets_threshold',
+              additionalConditions: [
+                { id: 'bgu_language_requirements', label: 'דרישות שפה', status: 'unconfirmed' },
+                { id: 'bgu_psychology_requirements', label: 'תנאי החוג הנוסף', status: 'unmet' },
+              ],
+            },
+          ],
+        },
+      },
+      failedDegreeIds: [],
+    });
+    render(<StudyJourney initialStep="saved" />);
+    await screen.findByText('הציונים עומדים בסף');
+    fireEvent.click(screen.getByRole('button', { name: 'מסלול שמור — אוניברסיטת תל אביב' }));
+    await screen.findByRole('heading', { name: 'תנאים נוספים לבדיקה' });
+    expect(screen.getByText('טרם אושר')).toBeTruthy();
+    expect(screen.getByText('לא מתקיים לפי הנתונים שהוזנו')).toBeTruthy();
+    expect(screen.getByText(/700.00/)).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'עדכון נתונים ותנאים נוספים' })).toBeTruthy();
+    expect(screen.queryByText('חסרים פרטים לחישוב')).toBeNull();
+    expect(screen.queryByText('אפשר להגיש מועמדות')).toBeNull();
+  });
+
   it('retries failed saved calculations and shows missing inputs without claiming a match', async () => {
     savedCatalogue();
     state.evaluate.mockRejectedValueOnce(new Error('temporary failure')).mockResolvedValue({

@@ -272,6 +272,12 @@ export interface AdmissionsEvaluationResult {
   threshold?: number | null;
   deltaNeeded?: DeltaNeeded;
   requiredInputs?: AdmissionsRequiredInput[];
+  scoreAssessment?: 'meets_threshold' | 'below_threshold';
+  additionalConditions?: {
+    id: AdmissionsRequiredInput;
+    label: string;
+    status: 'confirmed' | 'unconfirmed' | 'unmet';
+  }[];
   evidenceItemId?: string;
   evidenceItemName?: string;
   missingData?: string[];

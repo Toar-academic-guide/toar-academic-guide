@@ -1,4 +1,5 @@
 'use client';
+import AdmissionConditions from './AdmissionConditions';
 
 import { institutionLink } from '@/lib/institutionLinks';
 
@@ -748,8 +749,11 @@ export default function CalculatorResults({
 
               <div className="flex flex-col gap-2">
                 {visible.map(({ institution, result }) => {
-                  const config =
-                    result.kind === 'exact'
+                  const config = result.scoreAssessment
+                    ? result.scoreAssessment === 'meets_threshold'
+                      ? { ...STATUS_CONFIG.exactAccepted, label: 'הציונים עומדים בסף' }
+                      : { ...STATUS_CONFIG.exactBelow, label: 'הציונים מתחת לסף' }
+                    : result.kind === 'exact'
                       ? result.decision === 'accepted'
                         ? { ...STATUS_CONFIG.exactAccepted, label: acceptedLabel() }
                         : result.decision === 'below'
@@ -829,6 +833,7 @@ export default function CalculatorResults({
                             {result.explanation}
                           </p>
                           <p className="mt-1 text-[11px] text-slate-500">{result.nextAction}</p>
+                          <AdmissionConditions conditions={result.additionalConditions} />
                           {sourceUrl ? (
                             <a
                               href={sourceUrl}

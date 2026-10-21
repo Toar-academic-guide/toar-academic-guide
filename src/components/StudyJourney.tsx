@@ -52,6 +52,7 @@ import WayPageShell from './WayPageShell';
 import PublicNavBar from './PublicNavBar';
 import ProgramShareButton from './ProgramShareButton';
 import AdmissionRequirements from './AdmissionRequirements';
+import AdmissionConditions from './AdmissionConditions';
 import { DANON_PROGRAM_URLS } from '@/data/admissions/danon';
 import { buildLoginPath, ROUTES } from '@/lib/routes';
 import './StudyJourney.css';
@@ -1272,6 +1273,7 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                       {activeRow.result.threshold != null && ` · סף: ${activeRow.result.threshold}`}
                     </p>
                   )}
+                  <AdmissionConditions conditions={activeRow.result?.additionalConditions} />
                   <h2>תנאי קבלה</h2>
                   <AdmissionRequirements
                     programId={activeRow.program.id}
@@ -1290,7 +1292,11 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                       activeRow.result?.degradationReason !==
                         'incomplete_published_requirements' && (
                         <>
-                          <button onClick={() => go('missing')}>השלמת נתונים לחישוב</button>
+                          <button onClick={() => go('missing')}>
+                            {activeRow.result?.scoreAssessment
+                              ? 'עדכון נתונים ותנאים נוספים'
+                              : 'השלמת נתונים לחישוב'}
+                          </button>
                           <button onClick={() => go('alternatives')}>עוד דרכי קבלה</button>
                         </>
                       )}

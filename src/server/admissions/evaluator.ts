@@ -23,7 +23,7 @@ import { bguSocialScienceProgram } from '@/lib/bguSocialScienceInputs';
 import { resolveBguSocialScienceAdmission } from './bguSocialSciencePolicy';
 import { runBguSocialScienceProof } from '@/server/ingestion/adapters/bguSocialScience';
 import { bguSocialScienceSource } from '@/data/admissions/bguSocialScienceVerification';
-import { resolveBguPsychologyAdmission } from './bguPsychologyPolicy';
+import { resolveBguPsychologyScores } from './bguPsychologyPolicy';
 import { runBguPsychologyProof } from '@/server/ingestion/adapters/bguPsychology';
 import { BGU_PSYCHOLOGY_SOURCE_URL } from '@/data/admissions/bguPsychologyVerification';
 import 'server-only';
@@ -426,16 +426,28 @@ async function evaluateExactResult(args: {
       };
     }
     if (exactTarget.sourceTarget.adapterId === 'bgu' && isBguPsychologyProgram(program.id)) {
-      const route = resolveBguPsychologyAdmission(requestedInput);
+      const additionalConditions: NonNullable<AdmissionsEvaluationResult['additionalConditions']> =
+        [
+          {
+            id: 'bgu_language_requirements',
+            label: 'אנגלית ברמת בסיסי ועברית ברמה ה׳ או פטור תקף',
+            value: requestedInput.extraInputs?.bguLanguageRequirementsConfirmed,
+          },
+          {
+            id: 'bgu_psychology_requirements',
+            label: 'תעודת קבלה מוכרת ועמידה בתנאי החוג הנוסף',
+            value: requestedInput.extraInputs?.bguPsychologyRequirementsConfirmed,
+          },
+        ].map(({ id, label, value }) => ({
+          id: id as 'bgu_language_requirements' | 'bgu_psychology_requirements',
+          label,
+          status: value === true ? 'confirmed' : value === false ? 'unmet' : 'unconfirmed',
+        }));
+      const route = resolveBguPsychologyScores(requestedInput);
       if (route.kind === 'needs_input')
-        return requiredInputsResult(institution, route.requiredInputs);
-      if (route.kind === 'below')
-        return exactGateFailureResult({
-          institution,
-          unmetRequirements: [route.reason],
-          requirementsUrl: BGU_PSYCHOLOGY_SOURCE_URL,
-        });
+        return { ...requiredInputsResult(institution, route.requiredInputs), additionalConditions };
       const proof = await runBguPsychologyProof({
+        assessment: 'scores',
         program: exactTarget.program,
         applicant: {
           psychometric: requestedInput.psychometric,
@@ -458,15 +470,35 @@ async function evaluateExactResult(args: {
         preparatory: 'ממוצע מכינה מוכרת בבן־גוריון',
       };
       const selectedRoute = proof.normalizedPayload.route as keyof typeof labels;
+      const meetsScore = proof.normalizedPayload.scoreAssessment === 'meets_threshold';
+      const hasUnmetCondition = additionalConditions.some(
+        (condition) => condition.status === 'unmet',
+      );
+      const allConfirmed = additionalConditions.every(
+        (condition) => condition.status === 'confirmed',
+      );
       return {
         ...result,
+        kind: 'exact',
+        decision:
+          !meetsScore || hasUnmetCondition
+            ? 'below'
+            : allConfirmed
+              ? 'eligible_to_apply'
+              : 'pending',
+        scoreAssessment: meetsScore ? 'meets_threshold' : 'below_threshold',
+        additionalConditions,
+        sourceLabel: 'התאמה לפי הציונים',
         scoreLabel: labels[selectedRoute],
         officialUrls: [BGU_PSYCHOLOGY_SOURCE_URL],
         explanation: String(proof.normalizedPayload.reason),
-        nextAction:
-          result.decision === 'below'
-            ? 'בדקו אפיק חלופי לפי התנאים הרשמיים. אין זכאות אוטומטית לדיון בחריגים.'
-            : 'מכסת המתקבלים מלאה כרגע; הזכאים יכולים להירשם ולעקוב אחר מקום פנוי. נדרש אישור מוסדי ועמידה בתנאי החוג הנוסף.',
+        nextAction: !meetsScore
+          ? 'בדקו אפיק חלופי לפי התנאים הרשמיים. אין זכאות אוטומטית לדיון בחריגים.'
+          : hasUnmetCondition
+            ? 'לפי הנתונים שהוזנו, תנאים נוספים אינם מתקיימים. אפשר לברר מול המוסד.'
+            : !allConfirmed
+              ? 'יש לבדוק גם את תנאי השפה ותנאי החוג הנוסף. העמידה בסף הציונים אינה אישור קבלה.'
+              : 'מכסת המתקבלים מלאה כרגע; הזכאים יכולים להירשם ולעקוב אחר מקום פנוי. נדרש אישור מוסדי.',
       };
     }
     if (exactTarget.sourceTarget.adapterId === 'huji' && isHujiMedicineProgram(program.id)) {

@@ -187,6 +187,15 @@ export function resultLabel(
     return { label: 'עדיין לא ניתן לקבוע התאמה', group: 'explore' };
   if (result?.linkedInstitutionId === 'danon' && result.kind === 'requirements_only')
     return { label: 'הרשמה מול בית הספר', group: 'explore' };
+  if (result?.scoreAssessment)
+    return result.scoreAssessment === 'meets_threshold'
+      ? {
+          label: 'הציונים עומדים בסף',
+          group: result.additionalConditions?.some((condition) => condition.status === 'unmet')
+            ? 'explore'
+            : 'match',
+        }
+      : { label: 'הציונים מתחת לסף', group: 'improve' };
   if (result?.kind === 'open_admission') return { label: 'הרשמה פתוחה', group: 'match' };
   if (['exact', 'estimated'].includes(result?.kind ?? '') && result?.decision === 'accepted') {
     return { label: result.kind === 'exact' ? 'עומד/ת בסף שחושב' : 'התאמה משוערת', group: 'match' };

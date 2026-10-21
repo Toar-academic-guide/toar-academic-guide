@@ -3026,38 +3026,139 @@ it('preserves a Social Work academic committee decision as unknown', async () =>
   expect(report.results[0]).toMatchObject({ capability: 'manual_gate', decision: 'unknown' });
 });
 
-it('names only the unanswered BGU confirmations when Psychology grades are present', async () => {
-  const program = { ...bguCs, id: 'bgu_psychology', name: 'פסיכולוגיה' };
+it.each([
+  [undefined, undefined, 'pending', 'unconfirmed', 'unconfirmed'],
+  [true, undefined, 'pending', 'confirmed', 'unconfirmed'],
+  [true, true, 'eligible_to_apply', 'confirmed', 'confirmed'],
+  [false, true, 'below', 'unmet', 'confirmed'],
+] as const)(
+  'assesses saved Psychology scores separately from confirmations %s/%s',
+  async (language, entry, decision, languageStatus, entryStatus) => {
+    const program = { ...bguCs, id: 'bgu_psychology', name: 'פסיכולוגיה' };
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ items: [psychologyOfficial.officialRule] })),
+      );
+    const report = await evaluateAdmissionsForProgram({
+      program,
+      institutions,
+      input: {
+        degreeId: program.id,
+        psychometric: 700,
+        bagrut: 110,
+        extraInputs: {
+          bguLanguageRequirementsConfirmed: language,
+          bguPsychologyRequirementsConfirmed: entry,
+        },
+      },
+      fetcher,
+    });
+    expect(report.results[0]).toMatchObject({
+      kind: 'exact',
+      decision,
+      score: 700,
+      threshold: 680,
+      scoreAssessment: 'meets_threshold',
+      additionalConditions: [
+        { id: 'bgu_language_requirements', status: languageStatus },
+        { id: 'bgu_psychology_requirements', status: entryStatus },
+      ],
+    });
+    expect(report.results[0].requiredInputs).toBeUndefined();
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  },
+);
+
+it('calculates the combined Psychology score without waiting for entry confirmations', async () => {
+  const program = { ...bguCs, id: 'bgu_psychology' };
+  const fetcher = vi
+    .fn<typeof fetch>()
+    .mockResolvedValueOnce(
+      new Response(JSON.stringify({ items: [psychologyOfficial.officialRule] })),
+    )
+    .mockResolvedValueOnce(
+      new Response('parent.main.document.mainForm.on_final_sekem.value = 663;'),
+    );
+  const report = await evaluateAdmissionsForProgram({
+    program,
+    institutions,
+    input: { degreeId: program.id, psychometric: 650, extraInputs: { bguBagrutAverage: 100 } },
+    fetcher,
+  });
+  expect(report.results[0]).toMatchObject({
+    kind: 'exact',
+    decision: 'pending',
+    score: 663,
+    threshold: 650,
+    scoreAssessment: 'meets_threshold',
+  });
+  expect(fetcher).toHaveBeenCalledTimes(2);
+});
+
+it('keeps a below-threshold score separate from unanswered Psychology conditions', async () => {
+  const program = { ...bguCs, id: 'bgu_psychology' };
+  const report = await evaluateAdmissionsForProgram({
+    program,
+    institutions,
+    input: {
+      degreeId: program.id,
+      psychometric: 679,
+      extraInputs: { bguPsychologyRoute: 'psychometric' },
+    },
+    fetcher: vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ items: [psychologyOfficial.officialRule] })),
+      ),
+  });
+  expect(report.results[0]).toMatchObject({
+    decision: 'below',
+    score: 679,
+    threshold: 680,
+    scoreAssessment: 'below_threshold',
+  });
+  expect(
+    report.results[0].additionalConditions?.every(
+      (condition) => condition.status === 'unconfirmed',
+    ),
+  ).toBe(true);
+});
+
+it('still requires actual numeric inputs and never substitutes generic Bagrut for the BGU average', async () => {
+  const program = { ...bguCs, id: 'bgu_psychology' };
   const fetcher = vi.fn<typeof fetch>();
   const report = await evaluateAdmissionsForProgram({
     program,
     institutions,
-    input: { degreeId: program.id, psychometric: 700, bagrut: 110 },
+    input: { degreeId: program.id, psychometric: 650, bagrut: 110 },
     fetcher,
   });
   expect(report.results[0]).toMatchObject({
     kind: 'needs_input',
     decision: 'unknown',
-    requiredInputs: ['bgu_language_requirements', 'bgu_psychology_requirements'],
-    explanation:
-      'לבדיקת ההתאמה חסרים: אישור עמידה בדרישות האנגלית והעברית או פטור תקף; אישור תעודת קבלה מוכרת ותנאי החוג הנוסף.',
+    requiredInputs: ['bgu_bagrut_average'],
   });
-  expect(report.results[0].explanation).not.toMatch(/ממוצע|מכינה/);
+  expect(report.results[0].scoreAssessment).toBeUndefined();
   expect(fetcher).not.toHaveBeenCalled();
+});
 
-  const partial = await evaluateAdmissionsForProgram({
+it('withholds the score assessment when official Psychology rules change', async () => {
+  const program = { ...bguCs, id: 'bgu_psychology' };
+  const report = await evaluateAdmissionsForProgram({
     program,
     institutions,
-    input: {
-      degreeId: program.id,
-      psychometric: 700,
-      bagrut: 110,
-      extraInputs: { bguLanguageRequirementsConfirmed: true },
-    },
-    fetcher,
+    input: { degreeId: program.id, psychometric: 700 },
+    fetcher: vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(
+        new Response(
+          JSON.stringify({ items: [{ ...psychologyOfficial.officialRule, psycho_value: 651 }] }),
+        ),
+      ),
   });
-  expect(partial.results[0].requiredInputs).toEqual(['bgu_psychology_requirements']);
-  expect(partial.results[0].explanation).not.toContain('האנגלית');
+  expect(report.results[0].decision).toBe('unknown');
+  expect(report.results[0].scoreAssessment).toBeUndefined();
 });
 
 it.each(['psychology', 'bgu_psychology'])(

@@ -21,6 +21,8 @@ type SnapshotResult = Pick<
   | 'threshold'
   | 'deltaNeeded'
   | 'requiredInputs'
+  | 'scoreAssessment'
+  | 'additionalConditions'
   | 'evidenceItemId'
   | 'officialUrls'
   | 'degradationReason'
@@ -65,6 +67,10 @@ export function createAdmissionsEvaluationSnapshot(args: {
       scoreLabel: args.result.scoreLabel ?? null,
       threshold: args.result.threshold ?? null,
       deltaNeeded: args.result.deltaNeeded ?? null,
+      ...(args.result.scoreAssessment && { scoreAssessment: args.result.scoreAssessment }),
+      ...(args.result.additionalConditions && {
+        additionalConditions: args.result.additionalConditions,
+      }),
     }),
   };
 }
