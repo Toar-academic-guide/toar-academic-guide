@@ -22,7 +22,8 @@ export type MigrationId =
   | '0032'
   | '0033'
   | '0034'
-  | '0035';
+  | '0035'
+  | '0036';
 
 export type MigrationHistoryEntry = {
   version: string;
@@ -238,5 +239,13 @@ export const FORWARD_PRODUCTION_MIGRATIONS: ForwardProductionMigration[] = [
     repositoryPath: 'src/db/migrations/0035_ops_dashboard_column_reads.sql',
     statementFingerprint: '533d604059cf3fd96cd80628973508e9',
     legacyStatementFingerprints: ['5882f5b6347019229234c9a424ecb9d7'],
+  },
+  {
+    id: '0036',
+    remoteName: 'assessment_progress',
+    repositoryPath: 'src/db/migrations/0036_cynical_ronan.sql',
+    statementFingerprint: 'bb5eb0d01f661d9aadfa07583e175e42',
+    // Deployed SQL uses public.user_profiles and unquoted identifiers for the same column.
+    legacyStatementFingerprints: ['6285f483628466394589deeaf818a0f7'],
   },
 ];
