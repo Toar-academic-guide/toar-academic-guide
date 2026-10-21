@@ -8,6 +8,10 @@ const catalogue = vi.hoisted(() => ({
   fetchCatalogueInstitutions: vi.fn(() => Promise.resolve([])),
 }));
 vi.mock('@/lib/catalogueClient', () => catalogue);
+vi.mock('next/navigation', () => ({
+  usePathname: () => '/',
+  useRouter: () => ({ push: vi.fn() }),
+}));
 vi.mock('@/context/AuthContext', () => ({
   useAuth: () => ({ loading: false, user: null, signOut: vi.fn() }),
 }));

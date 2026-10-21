@@ -134,6 +134,18 @@ for (const width of [1440, 390]) {
     await checkHeader();
     await header.getByRole('link', { name: 'Way — עמוד הבית' }).click();
     await expect(page.getByRole('button', { name: 'עזרו לי לבחור מה ללמוד' })).toBeVisible();
+    await page.getByRole('button', { name: 'עזרו לי לבחור מה ללמוד' }).click();
+    await header.getByRole('link', { name: 'הרשימה שלי' }).click();
+    await header.getByRole('link', { name: 'כניסה' }).click();
+    await page.getByPlaceholder('you@example.com').waitFor();
+    await page.goBack();
+    await expect(page.getByRole('heading', { name: 'הרשימה שלי', exact: true })).toBeVisible();
+    await page.goForward();
+    await expect(page.getByPlaceholder('you@example.com')).toBeVisible();
+    await page.goBack();
+    await header.getByRole('link', { name: 'Way — עמוד הבית' }).click();
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByRole('button', { name: 'עזרו לי לבחור מה ללמוד' })).toBeVisible();
     await page.goto('/app/calculator');
     await header.getByRole('link', { name: 'Way — עמוד הבית' }).click();
     await expect(page).toHaveURL(/\/$/);
@@ -144,6 +156,7 @@ for (const width of [1440, 390]) {
     await expect(page).toHaveURL(/\/login\?next=%2F%23saved$/);
     await page.goBack();
     await expect(page).toHaveURL(/#saved$/);
+    await expect(page.getByRole('heading', { name: 'הרשימה שלי', exact: true })).toBeVisible();
     await page.reload();
     await expect(page.getByRole('heading', { name: 'הרשימה שלי', exact: true })).toBeVisible();
     await checkHeader();

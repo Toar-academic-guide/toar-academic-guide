@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import {
   ArrowLeft,
@@ -171,6 +172,7 @@ function Chips<T extends string>({
 
 export default function StudyJourney({ initialStep = 'home' }: { initialStep?: Step }) {
   const auth = useAuth();
+  const router = useRouter();
   const {
     profile,
     updateProfile,
@@ -207,12 +209,19 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
   const [message, setMessage] = useState('');
   const [resultLimit, setResultLimit] = useState(10);
 
-  const go = useCallback((next: Step) => {
-    setStep(next);
-    setMessage('');
-    if (window.location.hash !== `#${next}`) window.location.hash = next;
-    window.scrollTo({ top: 0, behavior: 'instant' });
-  }, []);
+  const go = useCallback(
+    (next: Step) => {
+      setStep(next);
+      setMessage('');
+      if (next === 'home') router.push(ROUTES.home);
+      else if (window.location.hash !== `#${next}`) {
+        // Preserve Next's route state when creating a journey history entry.
+        window.history.pushState(null, '', `#${next}`);
+      }
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    },
+    [router],
+  );
   useEffect(() => {
     const stored = readDraft();
     hadStoredDraft.current = !!stored;
@@ -227,7 +236,11 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
     };
     readStep();
     window.addEventListener('hashchange', readStep);
-    return () => window.removeEventListener('hashchange', readStep);
+    window.addEventListener('popstate', readStep);
+    return () => {
+      window.removeEventListener('hashchange', readStep);
+      window.removeEventListener('popstate', readStep);
+    };
   }, [initialStep]);
   const importedProfile = useRef(false);
   useEffect(() => {
@@ -543,6 +556,7 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
   return (
     <WayPageShell navigation={null} contentClassName="" className="study-journey">
       <PublicNavBar
+        onGoHome={() => go('home')}
         onGoToBucket={() => go('saved')}
         onAccountClick={() => go('account')}
         loginHref={buildLoginPath('/#' + step)}
