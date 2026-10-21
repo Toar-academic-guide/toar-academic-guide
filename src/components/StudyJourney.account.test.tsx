@@ -155,5 +155,8 @@ describe('account grades in the homepage journey', () => {
     expect(screen.queryByText('החישוב לא נטען')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'מסלול שמור — אוניברסיטת תל אביב' }));
     await screen.findByText('חסרים פרטים לחישוב');
+    fireEvent.click(screen.getByRole('button', { name: 'חזרה' }));
+    await screen.findByRole('heading', { name: 'הרשימה שלי' });
+    expect(screen.getByText('חסרים פרטים לחישוב')).toBeTruthy();
   });
 });

@@ -209,6 +209,7 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
   const [resultFilter, setResultFilter] = useState('all');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [detailOrigin, setDetailOrigin] = useState<'saved' | 'results'>('results');
   const [compareIds, setCompareIds] = useState<string[]>([]);
   const [simulation, setSimulation] = useState<number | undefined>();
   const [message, setMessage] = useState('');
@@ -460,6 +461,7 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
       setMessage('שמירת הציונים לא הושלמה. אפשר להמשיך ולנסות לשמור שוב בהמשך.');
   };
   const selectRow = (row: JourneyRow, next: Step) => {
+    setDetailOrigin(step === 'saved' ? 'saved' : 'results');
     setActiveId(row.id);
     setDraft((current) => ({ ...current, selectedRowId: row.id }));
     go(next);
@@ -486,7 +488,7 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
       'psy-target': 'psy-mode',
       review: 'psy-mode',
       results: 'review',
-      detail: 'results',
+      detail: detailOrigin,
       alternatives: 'detail',
       inquiry: 'detail',
       offer: 'results',
