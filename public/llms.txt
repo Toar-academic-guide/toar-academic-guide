@@ -1,0 +1,16 @@
+# MyWay (findmyway.co.il)
+
+> MyWay עוזרת למסיימי תיכון ולמשוחררי צבא בישראל לבחור מה ואיפה ללמוד: תארים, קורסים, לימודי תעודה ותוכניות בינלאומיות. השירות כולל שאלון התאמה, קטלוג מוסדות ומסלולים ובדיקת סיכויי קבלה אישית, בחינם.
+
+MyWay is a free Hebrew study guidance app for Israeli students exploring degrees, courses, vocational and certificate studies, and international programs. It offers a fit questionnaire, an institutions and programs catalogue, and a personal admissions-chance check.
+
+המידע על תנאי קבלה מגיע ממקורות רשמיים; המספר המחייב הוא של המוסד.
+
+המותג: MyWay, מוכר גם כ-FindMyWay ו-Way. למידע על הצוות וליצירת קשר: [מי אנחנו](https://findmyway.co.il/about).
+
+## עמודים מרכזיים
+
+- [דף הבית](https://findmyway.co.il): בחירת דרך ללימודים ושאלון התאמה.
+- [מוסדות לימוד](https://findmyway.co.il/institutions): קטלוג מוסדות ומסלולי לימוד.
+- [מי אנחנו](https://findmyway.co.il/about): הסיפור והצוות של MyWay.
+- [מחשבון סיכויי קבלה](https://findmyway.co.il/app/calculator): בדיקה אישית בחינם.
