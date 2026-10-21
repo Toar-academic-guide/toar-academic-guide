@@ -182,7 +182,7 @@ For ordinary rows, the destination itself identified the institution. The source
 | 12341173466 | 164. ברלינגטון אינגליש | https://www.burlingtonenglish.co.il/ | https://www.burlingtonenglish.co.il/ | 200; ברלינגטון אינגליש: רשת בתי הספר לאנגלית מדוברת הגדולה בישראל |
 | 12341147227 | 165. אורין-שפלטר השכלה פיננסית. | https://www.orin-shpalter.co.il/ | https://www.orin-shpalter.co.il/ | 200; מכללת אורין שפלטר - המכללה המובילה בישראל ללימודים פיננסיים / קורסי ביטוח, השקעות ותכנון פיננסי |
 | 12341137650 | 166. מכללת נקסט | https://nextcollege.co.il/ | https://www.nextcollege.co.il/ | 200; מכללת נקסט - המקפצה שלך לעתיד |
-| 12341165867 | 167. מכללת הגל החדש | https://www.washington.ac.il/ | https://washington.ac.il/ | 200; ראשי - קריית החינוך גבעת וושינגטוןקריית החינוך גבעת וושינגטון |
+| 12341165867 | 167. מכללת הגל החדש | Unresolved | https://digital-studio.co.il/galhadash/ | School-branded business card found; standalone official website not established. Washington is an accrediting partner, not this school. |
 | 12341148361 | 168. "מה כתבת?" (לימודי גרפולוגיה ופענוח ציורים) | http://xn----zhchakcaca9ag7azh8bzac.com/ | http://xn----zhchakcaca9ag7azh8bzac.com/ | 522;  |
 | 12341165912 | 169. מכללת תרפיית מימדים | https://cmtm.co.il/ | https://cmtm.co.il/ | 200; מכללת תרפיית מימדים / טיפול בשיטת תרפיית שלושת מימדים של יובל לוי |
 | 12341148232 | 170. אמפייר אם – האקדמיה למצוינות במקצועות היופי | Unresolved | Unresolved | mpirem-college.com returns 403 and identity not corroborated by a current primary source. |
@@ -266,11 +266,13 @@ Primary source replacements additionally confirmed: [Elevation](https://elevatio
 
 ## Verification
 
-- 211 directory records inspected: 202 official destinations, 9 unresolved; 161 previous outbound links used Yoram. Additional catalogue registry: 19 verified destinations and 10 unresolved legacy identities/sites.
+- 211 directory records inspected: 201 official destinations, 10 unresolved; 161 previous outbound links used Yoram. Additional catalogue registry: 19 verified destinations and 10 unresolved legacy identities/sites.
 - Focused checks: 22 tests passed (URL tracking, identity correction, query/fragment preservation, directory coverage, unavailable destinations, existing journey behavior).
 - Required pre-PR guard: 1,108 tests across 64 files passed. Updated the existing calculator-link assertion for the Hebrew link label and tracked URL.
 - Production build and TypeScript passed. Formatting passed. ESLint: zero errors; the existing unused `AdmissionsRequiredInput` warning in `bagrutPolicies.ts` remains.
-- Local production browser: all 202 rendered directory outbound anchors include both UTM parameters; none points to Yoram. English Express CTA opens the official school and retains both tags. Communication's TAU deep link retains `v=requirements` alongside tracking.
+- Local production browser: all 202 then-rendered directory outbound anchors (before withholding the additional Gal Hadash accreditor link) include both UTM parameters; none points to Yoram. English Express CTA opens the official school and retains both tags. Communication's TAU deep link retains `v=requirements` alongside tracking.
 - Practical verification: open `/institutions`, search `אינגליש אקספרס`, and click the external-link icon. Expect `expressenglish.co.il` with `utm_source=myway&utm_medium=referral`. Open `/programs/communication`, click TAU's `לאתר המוסד`, and expect the official requirements page with `v=requirements` preserved. Search `רז אתגרים` in the directory: its card/internal link remains, but no unverified external CTA is offered.
 
 Canonical identity exceptions: academic `kinneret` uses [its official admissions portal](https://do.kinneret.ac.il/), while directory item `12341101391`/`mon_12341101391` uses the separate technological college at `ktec.co.il`. Canonical design-school `tiltan` uses `tiltan.co.il`; the separately imported Haredi complementary-medicine campus retains `tiltancollege.co.il`. These explicit exceptions prevent legacy canonical-ID collisions from redirecting programme links to a different school.
+
+Final identity check withheld Gal Hadash’s Washington destination: an accreditor or certificate partner must not be presented as the school’s own website. Its own standalone website remains unresolved. Final public directory count: 201 verified external destinations, 10 unresolved cards retained.
