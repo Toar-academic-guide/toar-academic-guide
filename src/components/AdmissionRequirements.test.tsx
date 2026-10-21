@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import AdmissionRequirements from './AdmissionRequirements';
 import { getStaticCataloguePrograms } from '@/lib/catalogueStatic';
@@ -53,5 +53,68 @@ describe('AdmissionRequirements', () => {
     const { container } = render(<AdmissionRequirements requirements={notes} />);
     expect([...container.querySelectorAll('li')].map((li) => li.textContent)).toEqual(notes);
     expect(container.querySelector('details')?.textContent).toContain('ריאיון אישי');
+  });
+
+  const psychologyNotes = getStaticCataloguePrograms().find(
+    (program) => program.id === 'bgu_psychology',
+  )!.institutionDetails![0].specificAdmissionNotes;
+
+  it('separates Psychology AND, OR and no-psychometric routes without losing shared conditions', () => {
+    const { container } = render(
+      <AdmissionRequirements
+        programId="bgu_psychology"
+        institutionId="bgu"
+        requirements={psychologyNotes}
+      />,
+    );
+    for (const [name, scores] of [
+      ['סכם ופסיכומטרי — שני התנאים יחד', ['סכם 650 לפחות', 'פסיכומטרי 650 לפחות']],
+      ['לחלופין — אחד מהציונים הבאים', ['סכם 680 לפחות', 'פסיכומטרי 680 לפחות']],
+    ] as const) {
+      const route = screen.getByRole('region', { name });
+      expect(
+        within(route)
+          .getAllByRole('listitem')
+          .map((item) => item.textContent),
+      ).toEqual(scores);
+    }
+    const withoutPsychometric = screen.getByRole('region', {
+      name: 'ללא פסיכומטרי — אחת מהאפשרויות',
+    });
+    expect(within(withoutPsychometric).getAllByRole('listitem')).toHaveLength(2);
+    expect(withoutPsychometric.textContent).toContain('113');
+    expect(withoutPsychometric.textContent).toContain('94');
+    expect(screen.getByText(psychologyNotes[2])).toBeTruthy();
+    expect(container.querySelector('details')?.open).toBe(false);
+    expect(container.querySelector('details')?.textContent).toContain(psychologyNotes[3]);
+    expect(container.querySelector('details')?.textContent).toContain(psychologyNotes[4]);
+  });
+
+  it('does not show old route scores for another institution or updated requirements', () => {
+    const { rerender } = render(
+      <AdmissionRequirements
+        programId="bgu_psychology"
+        institutionId="tau"
+        requirements={psychologyNotes}
+      />,
+    );
+    expect(screen.queryByRole('region')).toBeNull();
+    rerender(
+      <AdmissionRequirements
+        programId="bgu_psychology"
+        institutionId="bgu"
+        requirements={[psychologyNotes[0].replaceAll('650', '660'), ...psychologyNotes.slice(1)]}
+      />,
+    );
+    expect(screen.queryByRole('region')).toBeNull();
+    expect(screen.getAllByRole('listitem')[0].textContent).toContain('660');
+  });
+
+  it('puts an explicitly named additional route in its own bullet, preserving AND and OR', () => {
+    render(<AdmissionRequirements requirements={[psychologyNotes[0]]} />);
+    expect(screen.getAllByRole('listitem').map((item) => item.textContent)).toEqual([
+      'סכם 650 לפחות וגם פסיכומטרי 650 לפחות.',
+      'אפיק נוסף: סכם 680 לפחות או פסיכומטרי 680 לפחות.',
+    ]);
   });
 });
