@@ -522,7 +522,7 @@ export default function BucketList({
           {backLabel}
         </button>
 
-        <div className="text-left">
+        <div className="text-right">
           <h1 className="text-lg font-bold text-slate-900">הרשימה שלי</h1>
           <p className="text-xs text-slate-400">{savedProgramIds.length} תארים שמורים</p>
         </div>

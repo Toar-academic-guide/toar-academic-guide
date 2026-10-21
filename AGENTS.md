@@ -87,3 +87,9 @@ For database-backed catalogue, Supabase, Vercel, authentication, and `/internal/
 - Never expose ingestion diagnostics, evidence-review notes, database statuses, implementation details, or untranslated internal English as programme descriptions or admission requirements. Keep these in internal tools and logs. Legitimate programme names and qualifications such as IELTS may remain in their original language.
 - State missing information plainly and only where it affects the next action. Do not fill gaps with invented requirements, redundant explanations, or awkward literal translations. Preserve actual conditions, scores, thresholds, and uncertainty.
 - Before sharing screenshots or marking UI work ready, read the visible copy as a prospective student on desktop and mobile, including catalogue-fed descriptions and requirements. Verify that labels are useful, Hebrew reads naturally, and no internal text leaks into the interface.
+
+## Hebrew UI Alignment
+
+- Default all student-facing Hebrew text, labels, placeholders, and entered values to right alignment. Use centered alignment only where the component calls for it, such as a centered action or score. Do not leave text left-aligned because of English browser defaults.
+- Keep reading direction separate from alignment: email addresses, telephone numbers, URLs, and decimal numbers may need left-to-right character order, but their field or text block must still align right or deliberately center. Preserve punctuation, decimal points, editing, and caret behavior.
+- Verify alignment in a real browser on desktop and mobile, with both empty and filled fields. Include Bagrut averages, exact subject grades, psychometric scores, search, sign-in, registration, and contact fields. Check visible values and placeholders, not only the surrounding RTL container.

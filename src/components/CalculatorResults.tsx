@@ -815,7 +815,7 @@ export default function CalculatorResults({
                           <p className="truncate text-sm font-bold text-slate-900">
                             {institution.name}
                           </p>
-                          <p className="text-[10px] text-slate-500" dir="ltr">
+                          <p className="text-[10px] text-slate-500">
                             {institutionType === 'university' ? 'אוניברסיטה' : 'מכללה'} ·{' '}
                             {formatResultSummary(result)}
                           </p>
@@ -832,7 +832,7 @@ export default function CalculatorResults({
                               target="_blank"
                               rel="noopener noreferrer"
                               dir="ltr"
-                              className="mt-1 inline-block max-w-full truncate text-[11px] font-semibold text-[#4f46e5] underline decoration-[#a5b4fc] underline-offset-2 hover:text-[#3730a3]"
+                              className="mt-1 inline-block max-w-full truncate text-right text-[11px] font-semibold text-[#4f46e5] underline decoration-[#a5b4fc] underline-offset-2 hover:text-[#3730a3]"
                             >
                               {result.officialUrls[0]}
                             </a>

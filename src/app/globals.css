@@ -59,6 +59,16 @@ textarea {
   font: inherit;
 }
 
+@layer base {
+  .way-app[dir='rtl'] {
+    text-align: right;
+  }
+
+  .way-app[dir='rtl'] :where(input, select, textarea) {
+    text-align: right;
+  }
+}
+
 .way-app {
   isolation: isolate;
   font-family: var(--font-sans);

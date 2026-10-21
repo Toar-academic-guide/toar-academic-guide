@@ -536,7 +536,7 @@
 .journey-number-label input {
   font-size: 18px;
   height: 48px;
-  text-align: start;
+  text-align: right;
   font-weight: 400;
   font-variant-numeric: tabular-nums;
 }
@@ -563,6 +563,7 @@
   min-width: 0;
   width: 100%;
   direction: ltr;
+  text-align: right;
 }
 .study-journey input:not([type='checkbox']):not([type='radio']):not([type='file']),
 .study-journey select {
