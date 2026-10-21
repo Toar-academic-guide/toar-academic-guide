@@ -323,6 +323,10 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
       ),
     [allRows, draft.fields, draft.locations, draft.types],
   );
+  const savedRows = useMemo(
+    () => allRows.filter((row) => profile.savedProgramIds?.includes(row.program.id)),
+    [allRows, profile.savedProgramIds],
+  );
   const rows = useMemo(
     () =>
       selectedRows.map((row) => ({
@@ -405,32 +409,44 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
     },
     [],
   );
-  // Only the selected fields are evaluated upfront. Undecided visitors browse first.
+  // Saved programmes use account grades, independently of the current journey or simulation.
+  const evaluationScope =
+    step === 'saved' ? 'saved' : ['results', 'plan'].includes(step) ? 'results' : null;
+  const evaluationTargets = evaluationScope === 'saved' ? savedRows : selectedRows;
+  const evaluationScores =
+    evaluationScope === 'saved' ? (profile.academicScores ?? EMPTY.scores) : draft.scores;
+  const evaluationTarget = evaluationScope === 'saved' ? undefined : (simulation ?? draft.target);
   const resultSignature = JSON.stringify([
-    draft.fields,
-    draft.locations,
-    draft.types,
-    draft.scores,
-    draft.target,
-    simulation,
+    evaluationScope,
+    profileIdentity,
+    evaluationTargets.map((row) => row.id),
+    evaluationScores,
+    evaluationTarget,
   ]);
   const lastEvaluation = useRef('');
   useEffect(() => {
-    if (!ready || catalogueLoading || !['results', 'plan'].includes(step)) return;
-    if (!draft.fields.length || !selectedRows.length || lastEvaluation.current === resultSignature)
+    if (!ready || catalogueLoading || !evaluationScope) return;
+    if (evaluationScope === 'saved' && initialProfileStatus !== 'ready') return;
+    if (evaluationScope === 'results' && !draft.fields.length) return;
+    if (!evaluationTargets.length) {
+      lastEvaluation.current = '';
+      calculation.current++;
+      setCalculating(false);
       return;
+    }
+    if (lastEvaluation.current === resultSignature) return;
     lastEvaluation.current = resultSignature;
-    void evaluate(selectedRows, draft.scores, simulation ?? draft.target);
+    void evaluate(evaluationTargets, evaluationScores, evaluationTarget);
   }, [
-    step,
+    evaluationScope,
     ready,
     catalogueLoading,
+    initialProfileStatus,
     resultSignature,
-    selectedRows,
+    evaluationTargets,
+    evaluationScores,
+    evaluationTarget,
     draft.fields.length,
-    draft.scores,
-    draft.target,
-    simulation,
     evaluate,
   ]);
   useEffect(
@@ -1316,6 +1332,25 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
         {step === 'saved' && (
           <section>
             {catalogueStatus}
+            {calculating && <p role="status">בודקים את ההתאמה לציונים שלך…</p>}
+            {failedReports.length > 0 && (
+              <p role="alert">
+                חלק מהחישובים לא נטענו.{' '}
+                <button
+                  className="journey-text-button"
+                  onClick={() =>
+                    void evaluate(
+                      savedRows.filter((row) => failedReports.includes(row.program.id)),
+                      profile.academicScores ?? EMPTY.scores,
+                      undefined,
+                      true,
+                    )
+                  }
+                >
+                  לנסות שוב
+                </button>
+              </p>
+            )}
             {!profile.savedProgramIds?.length ? (
               <div className="journey-empty">
                 <Bookmark size={36} />
@@ -1324,22 +1359,26 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
               </div>
             ) : (
               <>
-                {allRows
-                  .filter((row) => profile.savedProgramIds?.includes(row.program.id))
-                  .map((row) => (
-                    <div className="journey-saved-row" key={row.id}>
-                      <label>
-                        <input
-                          type="checkbox"
-                          checked={compareIds.includes(row.id)}
-                          disabled={compareIds.length >= 3 && !compareIds.includes(row.id)}
-                          onChange={() => setCompareIds(toggle(compareIds, row.id))}
-                        />
-                        להשוואה
-                      </label>
-                      {rowView(row)}
-                    </div>
-                  ))}
+                {savedRows.map((row) => (
+                  <div className="journey-saved-row" key={row.id}>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={compareIds.includes(row.id)}
+                        disabled={compareIds.length >= 3 && !compareIds.includes(row.id)}
+                        onChange={() => setCompareIds(toggle(compareIds, row.id))}
+                      />
+                      להשוואה
+                    </label>
+                    {rowView({
+                      ...row,
+                      result: reports[row.program.id]?.results.find(
+                        (result) => result.linkedInstitutionId === row.institution.id,
+                      ),
+                      failed: failedReports.includes(row.program.id),
+                    })}
+                  </div>
+                ))}
                 <div className="journey-actions">
                   <Primary onClick={() => go('compare')} disabled={compareIds.length < 2}>
                     השוואת מסלולים
