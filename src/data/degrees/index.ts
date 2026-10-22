@@ -7,6 +7,13 @@ import { ACADEMIC_PROGRAMS } from './academic';
 import { academicPrograms } from './academicPrograms';
 import { vocationalPrograms } from './vocationalPrograms';
 import {
+  DANON_BEGINNER_REQUIREMENT,
+  DANON_PROGRAM_NAMES,
+  DANON_PROGRAM_URLS,
+} from '../admissions/danon';
+import computingCourses from './computingCourses.json';
+import { applyCatalogueContentRepair } from '../admissions/catalogueContentRepair';
+import {
   mondayAdmissionsEvidence,
   type MondayAdmissionAlternativePath,
   type MondayAdmissionStructuredFact,
@@ -994,9 +1001,48 @@ for (const record of mondayAdmissionsEvidence) {
 
 // Single combined catalogue.
 // Add future sub-modules by spreading their arrays here.
-export const allPrograms = [
+export const programsWithLegacyAdmissionFacts = [
   ...normalizeLegacyPrograms(ACADEMIC_PROGRAMS),
   ...normalizeLegacyPrograms(academicPrograms),
   ...normalizeLegacyPrograms(vocationalPrograms),
   ...dynamicPrograms,
-];
+].map((program): Program => {
+  const course = (
+    computingCourses as Record<string, { name: string; category: string; programUrl: string }>
+  )[program.id];
+  if (course) {
+    return {
+      ...program,
+      name: course.name,
+      category: course.category,
+      type: 'certificate',
+      institutionDetails: program.institutionDetails?.map((detail) => ({
+        ...detail,
+        programUrl: course.programUrl,
+      })),
+    };
+  }
+  const programUrl = DANON_PROGRAM_URLS[program.id];
+  if (program.institutionId !== 'danon' || !programUrl) return program;
+  return {
+    ...program,
+    name: DANON_PROGRAM_NAMES[program.id] ?? program.name,
+    admissionRequirements: [DANON_BEGINNER_REQUIREMENT],
+    institutionDetails: [
+      {
+        institutionName: program.institution,
+        durationYears: null,
+        estimatedStudentsPerYear: '',
+        quantitativeMinRequirement: null,
+        englishMinRequirement: null,
+        specificAdmissionNotes: [DANON_BEGINNER_REQUIREMENT],
+        officialCalculatorUrl: '',
+        programUrl,
+        admissionFacts: [],
+      },
+    ],
+  };
+});
+
+// Verified display copy is deliberately separate from inferred legacy calculation facts.
+export const allPrograms = programsWithLegacyAdmissionFacts.map(applyCatalogueContentRepair);

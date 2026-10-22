@@ -5,6 +5,7 @@ test.describe('durable URL model', () => {
     page,
   }) => {
     await page.goto('/app/profile');
+    await page.getByLabel('ממוצע משוקלל כולל בונוסים', { exact: true }).fill('110.5');
     await page.getByLabel('ממוצע בגרות רשמי של אוניברסיטת תל אביב (50–130)').fill('112.5');
     await page.getByLabel('ממוצע בגרות או הנדסאי מוכר של בן־גוריון (50–130)').fill('110.25');
     await page.getByLabel('אישור תנאי הגשה לתל אביב').selectOption('false');
@@ -30,6 +31,9 @@ test.describe('durable URL model', () => {
     await expect(page).toHaveURL(/\/app\/assessment$/);
     await page.goto('/app/profile');
     await page.reload();
+    await expect(page.getByLabel('ממוצע משוקלל כולל בונוסים', { exact: true })).toHaveValue(
+      '110.5',
+    );
     await expect(page.getByLabel('ממוצע בגרות רשמי של אוניברסיטת תל אביב (50–130)')).toHaveValue(
       '112.5',
     );
@@ -104,3 +108,61 @@ test.describe('durable URL model', () => {
     await expect(page.getByText('Operational Data Health')).toHaveCount(0);
   });
 });
+
+for (const width of [1440, 390]) {
+  test(`shared navigation keeps catalogue, saved and home destinations at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/');
+    const header = page.locator('header');
+    const checkHeader = async () => {
+      await expect(header).toHaveCount(1);
+      await expect(header.getByRole('link', { name: 'מוסדות לימוד' })).toBeVisible();
+      await expect(header.getByRole('link', { name: 'הרשימה שלי' })).toBeVisible();
+      await expect(header.getByRole('link', { name: 'מי אנחנו' })).toBeVisible();
+    };
+    await checkHeader();
+    await header.getByRole('link', { name: 'מוסדות לימוד' }).click();
+    await expect(page).toHaveURL(/\/institutions$/);
+    await checkHeader();
+    await page.getByRole('link', { name: 'אוניברסיטת תל אביב', exact: true }).click();
+    await expect(page).toHaveURL(/\/institutions\/tau$/);
+    await checkHeader();
+    await page
+      .locator('main')
+      .getByRole('link', { name: /מדעי המחשב/ })
+      .first()
+      .click();
+    await expect(page).toHaveURL(/\/programs\//);
+    await checkHeader();
+    await header.getByRole('link', { name: 'Way — עמוד הבית' }).click();
+    await expect(page.getByRole('button', { name: 'עזרו לי לבחור מה ללמוד' })).toBeVisible();
+    await page.getByRole('button', { name: 'עזרו לי לבחור מה ללמוד' }).click();
+    await header.getByRole('link', { name: 'הרשימה שלי' }).click();
+    await header.getByRole('link', { name: 'כניסה' }).click();
+    await page.getByPlaceholder('you@example.com').waitFor();
+    await page.goBack();
+    await expect(page.getByRole('heading', { name: 'הרשימה שלי', exact: true })).toBeVisible();
+    await page.goForward();
+    await expect(page.getByPlaceholder('you@example.com')).toBeVisible();
+    await page.goBack();
+    await header.getByRole('link', { name: 'Way — עמוד הבית' }).click();
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByRole('button', { name: 'עזרו לי לבחור מה ללמוד' })).toBeVisible();
+    await page.goto('/app/calculator');
+    await header.getByRole('link', { name: 'Way — עמוד הבית' }).click();
+    await expect(page).toHaveURL(/\/$/);
+    await expect(page.getByRole('button', { name: 'עזרו לי לבחור מה ללמוד' })).toBeVisible();
+    await header.getByRole('link', { name: 'הרשימה שלי' }).click();
+    await expect(page).toHaveURL(/#saved$/);
+    await header.getByRole('link', { name: 'כניסה' }).click();
+    await expect(page).toHaveURL(/\/login\?next=%2F%23saved$/);
+    await page.goBack();
+    await expect(page).toHaveURL(/#saved$/);
+    await expect(page.getByRole('heading', { name: 'הרשימה שלי', exact: true })).toBeVisible();
+    await page.reload();
+    await expect(page.getByRole('heading', { name: 'הרשימה שלי', exact: true })).toBeVisible();
+    await checkHeader();
+  });
+}

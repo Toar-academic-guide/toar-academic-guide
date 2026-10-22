@@ -98,8 +98,8 @@ function route(id: string, durationWeeks: number, effortPoints: number) {
 
 describe('CalculatorResults', () => {
   it.each([
-    [85, 'תנאי הציונים מתקיימים — נדרש מבדק פנימי'],
-    [84.99, 'מתחת לתנאי מסלול הבגרות'],
+    [85, 'הציונים עומדים בסף'],
+    [84.99, 'הציונים מתחת לסף'],
   ])(
     'labels the Colman route for average %s and provides profile editing',
     async (average, label) => {
@@ -897,11 +897,9 @@ describe('CalculatorResults', () => {
 
     expect(await screen.findByLabelText('אוניברסיטת אריאל: מתקבל/ת')).toBeTruthy();
     expect(screen.getByText('כלל קבלה ממופה, מקור רשמי חסום')).toBeTruthy();
-    expect(
-      screen.getByRole('link', {
-        name: 'https://pniot.ariel.ac.il/projects/tzmm/NewCalcMark/',
-      }),
-    ).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toBe(
+      'https://pniot.ariel.ac.il/projects/tzmm/NewCalcMark/?utm_source=myway&utm_medium=referral',
+    );
   });
 
   it('renders manual-gate results as eligible to apply', async () => {

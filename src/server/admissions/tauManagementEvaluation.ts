@@ -1,3 +1,4 @@
+import { confirmationCondition, withScoreAssessment } from './scoreAssessment';
 import type {
   AdmissionsEvaluationInput,
   AdmissionsEvaluationResult,
@@ -63,7 +64,7 @@ export async function evaluateTauManagementResult(args: {
     qualifyingMoocCount: extra?.tauManagementQualifyingMoocCount,
     noPsychometricMoocsConfirmed: extra?.tauManagementNoPsychometricMoocsConfirmed,
   };
-  let admission = evaluateTauManagementAdmission(applicant);
+  let admission = evaluateTauManagementAdmission(applicant, 'scores');
   // Direct routes need no combined score. Replay only when that score can affect the outcome.
   if (
     (admission.missingInputs.includes('managementScore') ||
@@ -91,7 +92,7 @@ export async function evaluateTauManagementResult(args: {
     applicant.managementScore = payload.selectedScore;
     applicant.acceptanceThreshold = payload.acceptanceThreshold;
     applicant.rejectionThreshold = payload.rejectionThreshold;
-    admission = evaluateTauManagementAdmission(applicant);
+    admission = evaluateTauManagementAdmission(applicant, 'scores');
   }
 
   const { id, name, region, domain, logoUrl, programUrl, calculatorUrl, universityId } =
@@ -135,21 +136,30 @@ export async function evaluateTauManagementResult(args: {
   }
   let explanation = `לא מתקיימים תנאי אפיקי הניהול שנבדקו${admission.pma !== undefined ? ` (PMA ${admission.pma}, נדרש 835)` : ''}.`;
   if (admission.route) {
-    explanation = `עומדים בתנאי אפיק ${routeNames[admission.route]}${admission.pma !== undefined ? ` (PMA ${admission.pma})` : ''}. הזכאות מותנית בשאר תנאי האוניברסיטה והחוג השני שאישרתם.`;
+    explanation = `עומדים בתנאי אפיק ${routeNames[admission.route]}${admission.pma !== undefined ? ` (PMA ${admission.pma})` : ''}. יש לבדוק בנפרד את תנאי האוניברסיטה והחוג השני.`;
   } else if (admission.unmetRequirements.length) {
     explanation = `לא מתקיימים תנאי ${admission.unmetRequirements.includes('mathematics') ? 'מתמטיקה: 4 יח״ל בציון עובר או כמותי 140 ומעלה' : 'האוניברסיטה והחוג השני'}.`;
   } else if (admission.decision === 'pending') {
     explanation = 'הציון בין סף הדחייה לסף הקבלה באפיקי הניהול שנבדקו.';
   }
-  return {
-    ...base,
-    capability: 'exact',
-    kind: 'exact',
-    confidence: 'high',
-    decision: admission.decision === 'accepted' ? 'eligible_to_apply' : admission.decision,
-    sourceLabel: 'תנאי קבלה רשמיים לניהול',
-    ...(score !== undefined ? { score, threshold, scoreLabel } : {}),
-    explanation,
-    nextAction: 'בדקו באתר התוכנית את תנאי הרישום והחוג השני.',
-  };
+  return withScoreAssessment(
+    {
+      ...base,
+      capability: 'exact',
+      kind: 'exact',
+      confidence: 'high',
+      decision: admission.decision === 'accepted' ? 'eligible_to_apply' : admission.decision,
+      sourceLabel: 'תנאי קבלה רשמיים לניהול',
+      ...(score !== undefined ? { score, threshold, scoreLabel } : {}),
+      explanation,
+      nextAction: 'בדקו באתר התוכנית את תנאי הרישום והחוג השני.',
+    },
+    [
+      confirmationCondition(
+        'tau_management_requirements',
+        'תנאי האוניברסיטה והחוג השני',
+        extra?.tauManagementRequirementsConfirmed,
+      ),
+    ],
+  );
 }

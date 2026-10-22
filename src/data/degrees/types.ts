@@ -112,6 +112,8 @@ export interface InstitutionDetail {
 export interface Program {
   id: string;
   name: string;
+  /** False for withdrawn import placeholders; keep IDs available to saved links. */
+  isListed?: boolean;
   /** Hebrew display name — must match InstitutionRecord.name in INSTITUTION_BY_NAME */
   institution: string;
   /** Typed reference to the master institutions dictionary */

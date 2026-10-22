@@ -80,3 +80,16 @@ For database-backed catalogue, Supabase, Vercel, authentication, and `/internal/
 - Use Playwright or an equivalent browser check for the affected user flow before marking the work complete. For this app, that includes the landing-page calculator flow and `/internal/data-health` when either path is touched.
 - Do not replace a failing database-backed flow with static fallbacks as the primary fix. Static data is acceptable only for explicit local/static modes; production database mode should fail loudly and the database/query/permissions issue should be fixed.
 - In the PR description, include the concrete Supabase, Vercel/GitHub Actions, and browser verification performed, or explain why a check was impossible.
+
+## Product Language: Write for Prospective Students
+
+- Write user-facing copy in natural, concise Hebrew for people choosing what to study. Use familiar labels such as `תנאי קבלה`; do not add internal qualifiers such as `פומביים`, `ציבורי`, or `מאומת` unless the distinction is necessary for the user's decision.
+- Never expose ingestion diagnostics, evidence-review notes, database statuses, implementation details, or untranslated internal English as programme descriptions or admission requirements. Keep these in internal tools and logs. Legitimate programme names and qualifications such as IELTS may remain in their original language.
+- State missing information plainly and only where it affects the next action. Do not fill gaps with invented requirements, redundant explanations, or awkward literal translations. Preserve actual conditions, scores, thresholds, and uncertainty.
+- Before sharing screenshots or marking UI work ready, read the visible copy as a prospective student on desktop and mobile, including catalogue-fed descriptions and requirements. Verify that labels are useful, Hebrew reads naturally, and no internal text leaks into the interface.
+
+## Hebrew UI Alignment
+
+- Default all student-facing Hebrew text, labels, placeholders, and entered values to right alignment. Use centered alignment only where the component calls for it, such as a centered action or score. Do not leave text left-aligned because of English browser defaults.
+- Keep reading direction separate from alignment: email addresses, telephone numbers, URLs, and decimal numbers may need left-to-right character order, but their field or text block must still align right or deliberately center. Preserve punctuation, decimal points, editing, and caret behavior.
+- Verify alignment in a real browser on desktop and mobile, with both empty and filled fields. Include Bagrut averages, exact subject grades, psychometric scores, search, sign-in, registration, and contact fields. Check visible values and placeholders, not only the surrounding RTL container.

@@ -1,5 +1,6 @@
 export const ROUTES = {
   home: '/',
+  account: '/#account',
   about: '/about',
   login: '/login',
   signup: '/signup',
@@ -182,4 +183,8 @@ export function parseAdmissionAlertIntent(
   if (institutionId === 'tau' && programId === 'tau_cs') return { institutionId, programId };
   if (institutionId === 'bgu' && programId === 'bgu_cs') return { institutionId, programId };
   return null;
+}
+
+export function buildLoginPath(nextPath: string | null | undefined) {
+  return `${ROUTES.login}?next=${encodeURIComponent(normalizeSafeNextPath(nextPath))}`;
 }

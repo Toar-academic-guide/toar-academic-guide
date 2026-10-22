@@ -6,10 +6,38 @@ import {
   FORMULA_BACKED_VERIFICATION_LEDGER,
   formulaPairVerificationCompletion,
   reconcileFormulaPairVerificationLedger,
+  verifiedProgramEntry,
 } from './formulaBackedVerificationLedger';
+import {
+  PROGRAM_VERIFICATION_ARTIFACTS,
+  TAU_PROGRAM_VERIFICATION_METADATA,
+} from './tauProgramVerification';
+import { evaluateProgramVerification } from '@/server/admissions/verification/programVerification';
 
 describe('formula-backed verification ledger', () => {
   const inventory = buildFormulaBackedPairInventory(allPrograms);
+
+  it.each(
+    Object.entries(PROGRAM_VERIFICATION_ARTIFACTS).filter(
+      ([, artifact]) => artifact.contract.proof.state === 'verified',
+    ),
+  )('keeps the complete verification artifacts valid for %s', (_pair, artifact) => {
+    expect(
+      evaluateProgramVerification({
+        ...artifact,
+        currentAdmissionCycle: artifact.contract.admissionCycle,
+        currentSourceFingerprint: artifact.contract.sourceFingerprint,
+      }),
+    ).toEqual({ state: 'exact', capability: 'exact', issues: [] });
+  });
+
+  it('does not claim exact coverage when a declared verified fixture has drifted', () => {
+    const artifact = structuredClone(TAU_PROGRAM_VERIFICATION_METADATA.ee__tau);
+    artifact.fixtures[0].expected.score += 1;
+    expect(verifiedProgramEntry(artifact).state).toBe('stale');
+    artifact.contract.sourceFingerprint = 'sha256:invalid';
+    expect(verifiedProgramEntry(artifact).state).toBe('blocked');
+  });
 
   it('has one reviewed capability record for every in-scope pair', () => {
     const reconciliation = reconcileFormulaPairVerificationLedger(

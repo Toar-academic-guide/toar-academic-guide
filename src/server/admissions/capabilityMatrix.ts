@@ -723,6 +723,8 @@ export async function loadFreshnessStatesBySourceIds(
 }
 
 export function buildAdmissionsCapabilityMatrix(args: {
+  /** Runtime-only confirmations evaluated separately from numeric score inputs. */
+  deferredRequiredInputs?: Map<string, AdmissionsRequiredInput[]>;
   program: CatalogueProgram;
   institutions: CatalogueInstitution[];
   input?: AdmissionsExtraInputs;
@@ -943,7 +945,11 @@ export function buildAdmissionsCapabilityMatrix(args: {
         };
       }
 
-      const missingRequiredInputs = requiredInputsMissingFrom(input, exactTarget.requiredInputs);
+      const deferred = args.deferredRequiredInputs?.get(institutionId) ?? [];
+      const missingRequiredInputs = requiredInputsMissingFrom(
+        input,
+        exactTarget.requiredInputs.filter((id) => !deferred.includes(id)),
+      );
       if (missingRequiredInputs.length > 0) {
         return {
           institutionId,

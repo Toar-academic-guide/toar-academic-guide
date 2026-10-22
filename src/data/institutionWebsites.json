@@ -1,0 +1,882 @@
+{
+  "checkedAt": "2026-10-21",
+  "directory": {
+    "12220699647": {
+      "institutionId": "huji",
+      "website": "https://info.huji.ac.il/"
+    },
+    "12220699649": {
+      "institutionId": "tau",
+      "website": "https://go.tau.ac.il/he"
+    },
+    "12220699650": {
+      "institutionId": "technion",
+      "website": "https://admissions.technion.ac.il/"
+    },
+    "12220699687": {
+      "institutionId": "bgu",
+      "website": "https://www.bgu.ac.il/"
+    },
+    "12220699688": {
+      "institutionId": "biu",
+      "website": "https://www.biu.ac.il/"
+    },
+    "12220699689": {
+      "institutionId": "haifa",
+      "website": "https://admissions.haifa.ac.il/"
+    },
+    "12220699690": {
+      "institutionId": "open_university",
+      "website": "https://www.openu.ac.il/"
+    },
+    "12220680983": {
+      "institutionId": "ariel",
+      "website": "https://www.ariel.ac.il/"
+    },
+    "12220697669": {
+      "institutionId": "telhai",
+      "website": "https://www.telhai.ac.il/"
+    },
+    "12220685577": {
+      "institutionId": "rubin",
+      "website": "https://arts.tau.ac.il/music"
+    },
+    "12220699692": {
+      "institutionId": "reichman",
+      "website": "https://www.runi.ac.il/"
+    },
+    "12220699121": {
+      "institutionId": "wingate",
+      "website": "https://www.l-w.ac.il/"
+    },
+    "12220699693": {
+      "institutionId": "afeka",
+      "website": "https://www.afeka.ac.il/"
+    },
+    "12220699694": {
+      "institutionId": "shenkar",
+      "website": "https://www.shenkar.ac.il/"
+    },
+    "12220699695": {
+      "institutionId": "hit",
+      "website": "https://www.hit.ac.il/"
+    },
+    "12220708940": {
+      "institutionId": "sce",
+      "website": "https://www.sce.ac.il/"
+    },
+    "12220708941": {
+      "institutionId": "azrieli",
+      "website": "https://www.jce.ac.il/"
+    },
+    "12220708942": {
+      "institutionId": "braude",
+      "website": "https://w3.braude.ac.il/"
+    },
+    "12220708944": {
+      "institutionId": "mta",
+      "website": "https://www.mta.ac.il/"
+    },
+    "12220708946": {
+      "institutionId": "ruppin",
+      "website": "https://www.ruppin.ac.il/"
+    },
+    "12220697668": {
+      "institutionId": "sapir",
+      "website": "https://www.sapir.ac.il/"
+    },
+    "12220697671": {
+      "institutionId": "emek_yezreel",
+      "website": "https://www.yvc.ac.il/"
+    },
+    "12220680984": {
+      "institutionId": "bezalel",
+      "website": "https://www.bezalel.ac.il/"
+    },
+    "12220685569": {
+      "institutionId": "hadassah",
+      "website": "https://www.jmc.ac.il/"
+    },
+    "12220687656": {
+      "institutionId": "wizo",
+      "website": "https://lp.wizodzn.ac.il/"
+    },
+    "12220685576": {
+      "institutionId": "jerusalem_academy",
+      "website": "https://jamd.ac.il/"
+    },
+    "12220696298": {
+      "institutionId": "beit_berl",
+      "website": "https://www.beitberl.ac.il/"
+    },
+    "12230979966": {
+      "institutionId": "colman",
+      "website": "https://www.colman.ac.il/"
+    },
+    "12220680982": {
+      "institutionId": "ono",
+      "website": "https://www.ono.ac.il/"
+    },
+    "12220685571": {
+      "institutionId": "danon",
+      "website": "https://www.danon.org.il/"
+    },
+    "12220685572": {
+      "institutionId": "bishulim",
+      "website": "https://www.bishulim-school.com/"
+    },
+    "12220685573": {
+      "institutionId": "mon_12220685573",
+      "website": "https://www.estella.co.il/"
+    },
+    "12220685575": {
+      "institutionId": "mon_12220685575",
+      "website": "https://www.rimonschool.co.il/"
+    },
+    "12220697934": {
+      "institutionId": "mon_12220697934",
+      "website": "https://www.bpm-music.com/"
+    },
+    "12220697936": {
+      "institutionId": "spieldocs",
+      "website": "https://www.jsfs.co.il/"
+    },
+    "12220697937": {
+      "institutionId": "minshar",
+      "website": "https://www.minshar.org.il/"
+    },
+    "12220697938": {
+      "institutionId": "mon_12220697938",
+      "website": "https://www.maale.co.il/"
+    },
+    "12220697939": {
+      "institutionId": "nativ",
+      "website": "https://www.nissan-nativ.org.il/"
+    },
+    "12220697940": {
+      "institutionId": "mon_12220697940",
+      "website": "https://www.studioact.co.il/"
+    },
+    "12220697941": {
+      "institutionId": "beit_zvi",
+      "website": "https://www.beit-zvi.com/"
+    },
+    "12220697942": {
+      "institutionId": "mon_12220697942",
+      "website": "https://musrara.co.il/"
+    },
+    "12220696299": {
+      "institutionId": "mon_12220696299",
+      "website": null
+    },
+    "12220699120": {
+      "institutionId": "mon_12220699120",
+      "website": "https://kcdc.co.il/"
+    },
+    "12341108218": {
+      "institutionId": "mon_12341108218",
+      "website": "https://zmanamiti.co.il/"
+    },
+    "12341126387": {
+      "institutionId": "david_yellin",
+      "website": "https://www.dyellin.ac.il/"
+    },
+    "12341128292": {
+      "institutionId": "mon_12341128292",
+      "website": "https://medicin.org.il/"
+    },
+    "12341102997": {
+      "institutionId": "shaare_mishpat",
+      "website": "https://www.mishpat.ac.il/"
+    },
+    "12341126565": {
+      "institutionId": "ramat_gan",
+      "website": "https://clb.ac.il/"
+    },
+    "12341063909": {
+      "institutionId": "mon_12341063909",
+      "website": "https://www.camera.org.il/"
+    },
+    "12341102212": {
+      "institutionId": "schechter",
+      "website": "https://schechter.ac.il/"
+    },
+    "12341064237": {
+      "institutionId": "mon_12341064237",
+      "website": "https://yarin-shahaf.co.il/"
+    },
+    "12341126300": {
+      "institutionId": "mon_12341126300",
+      "website": "https://www.telhai.ac.il/"
+    },
+    "12341128726": {
+      "institutionId": "herzog",
+      "website": "https://www.herzog.ac.il/"
+    },
+    "12341091743": {
+      "institutionId": "tech_management",
+      "website": "https://college.org.il/"
+    },
+    "12341107541": {
+      "institutionId": "mon_12341107541",
+      "website": "https://c.ort.org.il/"
+    },
+    "12341101519": {
+      "institutionId": "netanya",
+      "website": "https://www.netanya.ac.il/"
+    },
+    "12341119002": {
+      "institutionId": "wingate",
+      "website": "https://www.l-w.ac.il/"
+    },
+    "12341125350": {
+      "institutionId": "seminar",
+      "website": "https://www.smkb.ac.il/"
+    },
+    "12341107895": {
+      "institutionId": "tcb",
+      "website": "https://tcb.ac.il/"
+    },
+    "12341143342": {
+      "institutionId": "sce",
+      "website": "https://www.sce.ac.il/"
+    },
+    "12341108864": {
+      "institutionId": "telhai",
+      "website": "https://www.telhai.ac.il/"
+    },
+    "12341114234": {
+      "institutionId": "sce",
+      "website": "https://www.sce.ac.il/"
+    },
+    "12341098184": {
+      "institutionId": "mon_12341098184",
+      "website": "https://www.ariel.ac.il/"
+    },
+    "12341128848": {
+      "institutionId": "mon_12341128848",
+      "website": "https://www.cts.org.il/"
+    },
+    "12341118864": {
+      "institutionId": "ruppin",
+      "website": "https://www.ruppin-tech.co.il/"
+    },
+    "12341101391": {
+      "institutionId": "kinneret",
+      "website": "https://www.ktec.co.il/"
+    },
+    "12341114114": {
+      "institutionId": "mon_12341114114",
+      "website": "https://handesaim.ariel.ac.il/"
+    },
+    "12341098142": {
+      "institutionId": "telhai",
+      "website": "https://www.telhai.tech/"
+    },
+    "12341127690": {
+      "institutionId": "mon_12341127690",
+      "website": "https://erezcollege.org.il/"
+    },
+    "12341076875": {
+      "institutionId": "mon_12341076875",
+      "website": "https://www.cleo.co.il/"
+    },
+    "12341098712": {
+      "institutionId": "atid",
+      "website": "https://www.atid.org.il/"
+    },
+    "12341126575": {
+      "institutionId": "mon_12341126575",
+      "website": "https://www.ilmakiage.co.il/"
+    },
+    "12341088622": {
+      "institutionId": "israel_academic",
+      "website": "https://iac.ac.il/"
+    },
+    "12341122479": {
+      "institutionId": "mon_12341122479",
+      "website": "https://inline.co.il/"
+    },
+    "12341118768": {
+      "institutionId": "mon_12341118768",
+      "website": "https://hbsc-college.co.il/"
+    },
+    "12341101957": {
+      "institutionId": "mon_12341101957",
+      "website": "https://www.arti-studio.co.il/"
+    },
+    "12341064485": {
+      "institutionId": "mon_12341064485",
+      "website": "https://www.dramacomedy.co.il/"
+    },
+    "12341092879": {
+      "institutionId": "mon_12341092879",
+      "website": "https://6bstudio.co.il/"
+    },
+    "12341091518": {
+      "institutionId": "mon_12341091518",
+      "website": "https://c.ort.org.il/"
+    },
+    "12341092889": {
+      "institutionId": "mon_12341092889",
+      "website": "https://successcollege.co.il/"
+    },
+    "12341114237": {
+      "institutionId": "mon_12341114237",
+      "website": "https://www.cbc.org.il/"
+    },
+    "12341113399": {
+      "institutionId": "open_university",
+      "website": "https://www.openu.ac.il/hasifa/"
+    },
+    "12341088658": {
+      "institutionId": "open_university",
+      "website": "https://www.openu.ac.il/merav/"
+    },
+    "12341081785": {
+      "institutionId": "achva",
+      "website": "https://www.achva.ac.il/"
+    },
+    "12341113400": {
+      "institutionId": "mon_12341113400",
+      "website": "https://www.coding-academy.org/"
+    },
+    "12341102793": {
+      "institutionId": "mon_12341102793",
+      "website": "https://www.nitc.co.il/"
+    },
+    "12341141954": {
+      "institutionId": "sapir",
+      "website": "https://www.sapir.ac.il/sapirtech"
+    },
+    "12341107292": {
+      "institutionId": "mon_12341107292",
+      "website": "https://www.iccm.co.il/"
+    },
+    "12341128142": {
+      "institutionId": "mon_12341128142",
+      "website": "https://lee-amron.com/"
+    },
+    "12341143672": {
+      "institutionId": "mon_12341143672",
+      "website": "https://nihulcollege.co.il/"
+    },
+    "12341098736": {
+      "institutionId": "mon_12341098736",
+      "website": "https://laledet.co.il/"
+    },
+    "12341098628": {
+      "institutionId": "mon_12341098628",
+      "website": "https://abs-school.com/"
+    },
+    "12341114530": {
+      "institutionId": "open_university",
+      "website": "https://www.openu.ac.il/diploma/"
+    },
+    "12341126780": {
+      "institutionId": "mon_12341126780",
+      "website": "https://ravit-asaf.co.il/"
+    },
+    "12341098630": {
+      "institutionId": "afeka",
+      "website": "https://www.afeka.ac.il/"
+    },
+    "12341126233": {
+      "institutionId": "mon_12341126233",
+      "website": "https://afikonline.co.il/"
+    },
+    "12341108755": {
+      "institutionId": "mon_12341108755",
+      "website": "https://bmeniv.co.il/"
+    },
+    "12341091471": {
+      "institutionId": "mon_12341091471",
+      "website": "https://digital.jpostlite.co.il/homepage.aspx"
+    },
+    "12341128804": {
+      "institutionId": "givat_washington",
+      "website": "https://www.washington.ac.il/"
+    },
+    "12341142058": {
+      "institutionId": "mon_12341142058",
+      "website": "https://www.iplma.org.il/"
+    },
+    "12341092393": {
+      "institutionId": "lfa",
+      "website": "https://lfayou.com/"
+    },
+    "12341107297": {
+      "institutionId": "zefat",
+      "website": "https://www.zefat.ac.il/"
+    },
+    "12341114281": {
+      "institutionId": "mon_12341114281",
+      "website": "https://t-unit.co.il/"
+    },
+    "12341091651": {
+      "institutionId": "mon_12341091651",
+      "website": "https://www.yesodot-nadlan.co.il/"
+    },
+    "12341102883": {
+      "institutionId": "mon_12341102883",
+      "website": "https://www.res-nadlan.co.il/college/"
+    },
+    "12341113217": {
+      "institutionId": "mon_12341113217",
+      "website": "https://www.nlppro.co.il/"
+    },
+    "12341117410": {
+      "institutionId": "kaye",
+      "website": "https://kaye.ac.il/"
+    },
+    "12341114949": {
+      "institutionId": "mon_12341114949",
+      "website": "https://msccollege.co.il/"
+    },
+    "12341144078": {
+      "institutionId": "mon_12341144078",
+      "website": "https://www.natashadenona.co.il/pages/academy"
+    },
+    "12341101353": {
+      "institutionId": "mon_12341101353",
+      "website": "https://www.israelcybercampus.com/"
+    },
+    "12341091770": {
+      "institutionId": "mon_12341091770",
+      "website": null
+    },
+    "12341137571": {
+      "institutionId": "beit_berl",
+      "website": "https://www.beitberl.ac.il/"
+    },
+    "12341137918": {
+      "institutionId": "mon_12341137918",
+      "website": "https://www.tiltan-college.co.il/about"
+    },
+    "12341134516": {
+      "institutionId": "mon_12341134516",
+      "website": "https://www.ezway.co.il/"
+    },
+    "12341133521": {
+      "institutionId": "mon_12341133521",
+      "website": "https://minhaltech.co.il/"
+    },
+    "12341108662": {
+      "institutionId": "peres",
+      "website": "https://www.pac.ac.il/"
+    },
+    "12341144345": {
+      "institutionId": "hackeru",
+      "website": "https://www.hackeru.co.il/"
+    },
+    "12341147363": {
+      "institutionId": "mon_12341147363",
+      "website": "https://www.bagrut-erev.co.il/"
+    },
+    "12341122838": {
+      "institutionId": "mon_12341122838",
+      "website": "https://mishlav.co.il/"
+    },
+    "12341122522": {
+      "institutionId": "mon_12341122522",
+      "website": "https://www.gishot.co.il/"
+    },
+    "12341092241": {
+      "institutionId": "mon_12341092241",
+      "website": "https://psagot.org/"
+    },
+    "12341133625": {
+      "institutionId": "mon_12341133625",
+      "website": "https://www.pitronot.net/"
+    },
+    "12341167578": {
+      "institutionId": "aliya",
+      "website": "https://www.aliya.org.il/"
+    },
+    "12341138527": {
+      "institutionId": "mon_12341138527",
+      "website": "https://www.henot.co.il/"
+    },
+    "12341142616": {
+      "institutionId": "mon_12341142616",
+      "website": "https://www.master4u.co.il/"
+    },
+    "12341142920": {
+      "institutionId": "orin_shpalter",
+      "website": "https://www.orin-shpalter.co.il/"
+    },
+    "12341167854": {
+      "institutionId": "mon_12341167854",
+      "website": "https://hasharon-college.co.il/"
+    },
+    "12341122528": {
+      "institutionId": "bdo_academy",
+      "website": "https://www.bdo-academy.co.il/"
+    },
+    "12341134798": {
+      "institutionId": "mon_12341134798",
+      "website": "https://www.chakra999.com/"
+    },
+    "12341149187": {
+      "institutionId": "mon_12341149187",
+      "website": "https://www.home-design.co.il/"
+    },
+    "12341165209": {
+      "institutionId": "mon_12341165209",
+      "website": "https://www.izikzuri.co.il/"
+    },
+    "12341113458": {
+      "institutionId": "mon_12341113458",
+      "website": "https://hzschool.co.il/"
+    },
+    "12341134763": {
+      "institutionId": "mon_12341134763",
+      "website": "https://www.etgar.co.il/"
+    },
+    "12341144849": {
+      "institutionId": "mon_12341144849",
+      "website": "https://www.fire-center.co.il/"
+    },
+    "12341129101": {
+      "institutionId": "mon_12341129101",
+      "website": "https://sefaradit.com/"
+    },
+    "12341148145": {
+      "institutionId": "mon_12341148145",
+      "website": "https://www.smartnadlan.co.il/"
+    },
+    "12341148006": {
+      "institutionId": "atid",
+      "website": "https://www.atid.org.il/"
+    },
+    "12341138357": {
+      "institutionId": "mon_12341138357",
+      "website": "https://charshan.co.il/"
+    },
+    "12341165356": {
+      "institutionId": "mon_12341165356",
+      "website": "https://www.copywise.co.il/"
+    },
+    "12341150395": {
+      "institutionId": "mon_12341150395",
+      "website": "https://actsadna.co.il/"
+    },
+    "12341134000": {
+      "institutionId": "mon_12341134000",
+      "website": "https://www.orens.org.il/"
+    },
+    "12341144937": {
+      "institutionId": "mon_12341144937",
+      "website": "https://tnufa4u.co.il/"
+    },
+    "12341147475": {
+      "institutionId": "mon_12341147475",
+      "website": "https://www.kernelios.com/"
+    },
+    "12341144341": {
+      "institutionId": "mon_12341144341",
+      "website": "https://www.igl-labs.com/he/igl-academy"
+    },
+    "12341137886": {
+      "institutionId": "tcb",
+      "website": "https://tcb.ac.il/"
+    },
+    "12341108613": {
+      "institutionId": "mon_12341108613",
+      "website": "https://hastudio.co.il/"
+    },
+    "12341189515": {
+      "institutionId": "mon_12341189515",
+      "website": "https://ynrcollege.org.il/"
+    },
+    "12341138594": {
+      "institutionId": "mon_12341138594",
+      "website": "https://studycenter.co.il/"
+    },
+    "12341144650": {
+      "institutionId": "mon_12341144650",
+      "website": "https://kiv.co.il/"
+    },
+    "12341122982": {
+      "institutionId": "mon_12341122982",
+      "website": "https://www.leidaschool.co.il/"
+    },
+    "12341150917": {
+      "institutionId": "mon_12341150917",
+      "website": "https://newschool.co.il/"
+    },
+    "12341167899": {
+      "institutionId": "mon_12341167899",
+      "website": "https://svcollege.co.il/"
+    },
+    "12341141808": {
+      "institutionId": "mon_12341141808",
+      "website": "https://psagot.org/"
+    },
+    "12341168193": {
+      "institutionId": "ruppin",
+      "website": "https://www.ruppin-tech.co.il/"
+    },
+    "12341108962": {
+      "institutionId": "aliya",
+      "website": "https://www.aliya.org.il/"
+    },
+    "12341134431": {
+      "institutionId": "mon_12341134431",
+      "website": "https://sagie.org/"
+    },
+    "12341166173": {
+      "institutionId": "mon_12341166173",
+      "website": "https://waterworld-campus.co.il/"
+    },
+    "12341134448": {
+      "institutionId": "mon_12341134448",
+      "website": "https://www.michlalalp.co.il/"
+    },
+    "12341138641": {
+      "institutionId": "mon_12341138641",
+      "website": "https://ipc.co.il/"
+    },
+    "12341149221": {
+      "institutionId": "mon_12341149221",
+      "website": "https://www.tiltan.co.il/"
+    },
+    "12341142727": {
+      "institutionId": "mon_12341142727",
+      "website": "https://www.simplex.org.il/"
+    },
+    "12341161868": {
+      "institutionId": "tiltan",
+      "website": "https://www.tiltancollege.co.il/"
+    },
+    "12341137305": {
+      "institutionId": "mon_12341137305",
+      "website": "https://technologems.co.il/"
+    },
+    "12341173466": {
+      "institutionId": "mon_12341173466",
+      "website": "https://www.burlingtonenglish.co.il/"
+    },
+    "12341147227": {
+      "institutionId": "orin_shpalter",
+      "website": "https://www.orin-shpalter.co.il/"
+    },
+    "12341137650": {
+      "institutionId": "mon_12341137650",
+      "website": "https://nextcollege.co.il/"
+    },
+    "12341165867": {
+      "institutionId": "mon_12341165867",
+      "website": "https://galhadash.co.il/"
+    },
+    "12341148361": {
+      "institutionId": "mon_12341148361",
+      "website": "http://xn----zhchakcaca9ag7azh8bzac.com/"
+    },
+    "12341165912": {
+      "institutionId": "mon_12341165912",
+      "website": "https://cmtm.co.il/"
+    },
+    "12341148232": {
+      "institutionId": "mon_12341148232",
+      "website": null
+    },
+    "12341134405": {
+      "institutionId": "mon_12341134405",
+      "website": "https://www.stage-center.org/"
+    },
+    "12341189317": {
+      "institutionId": "mon_12341189317",
+      "website": "https://alfacoral.com/"
+    },
+    "12341162526": {
+      "institutionId": "mon_12341162526",
+      "website": "https://all4horses.co.il/"
+    },
+    "12341166462": {
+      "institutionId": "mon_12341166462",
+      "website": "https://alexgorbachov.com/"
+    },
+    "12341167257": {
+      "institutionId": "mon_12341167257",
+      "website": "https://merkazmami.co.il/"
+    },
+    "12341139122": {
+      "institutionId": "mon_12341139122",
+      "website": "https://www.znk.co.il/"
+    },
+    "12341173326": {
+      "institutionId": "bdo_academy",
+      "website": "https://www.bdo-academy.co.il/"
+    },
+    "12341189285": {
+      "institutionId": "reidman",
+      "website": "https://www.reidman.co.il/"
+    },
+    "12341162554": {
+      "institutionId": "mon_12341162554",
+      "website": null
+    },
+    "12341167263": {
+      "institutionId": "mon_12341167263",
+      "website": null
+    },
+    "12341138289": {
+      "institutionId": "mon_12341138289",
+      "website": "https://lp.smart-college.co.il/"
+    },
+    "12341155830": {
+      "institutionId": "johnbryce",
+      "website": "https://www.johnbryce.co.il/"
+    },
+    "12341175059": {
+      "institutionId": "mon_12341175059",
+      "website": "https://tech-zone.co.il/"
+    },
+    "12341148655": {
+      "institutionId": "open_university",
+      "website": "https://www.openu.ac.il/tafnit/"
+    },
+    "12341168601": {
+      "institutionId": "mon_12341168601",
+      "website": "https://expressenglish.co.il/"
+    },
+    "12341155971": {
+      "institutionId": "open_university",
+      "website": "https://www.openu.ac.il/dialog/"
+    },
+    "12341203461": {
+      "institutionId": "mon_12341203461",
+      "website": "https://6bstudio.co.il/גליץ-בית-הספר-לצילום/"
+    },
+    "12341167376": {
+      "institutionId": "lfa",
+      "website": "https://lfayou.com/"
+    },
+    "12341189545": {
+      "institutionId": "mediteva",
+      "website": "https://www.mediteva.co.il/"
+    },
+    "12341189547": {
+      "institutionId": "bishulim",
+      "website": "https://www.bishulim-school.com/"
+    },
+    "12341185928": {
+      "institutionId": "oranim",
+      "website": "https://www.oranim.ac.il/sites/heb/pages/default.aspx"
+    },
+    "12341168658": {
+      "institutionId": "mon_12341168658",
+      "website": "https://www.circle-a.academy/"
+    },
+    "12341166504": {
+      "institutionId": "mon_12341166504",
+      "website": "https://slim-skin.co.il/academy/"
+    },
+    "12341168659": {
+      "institutionId": "mon_12341168659",
+      "website": "https://www.justmusic.co.il/"
+    },
+    "12341155561": {
+      "institutionId": "mon_12341155561",
+      "website": "https://mc-college.co.il/"
+    },
+    "12341203750": {
+      "institutionId": "idan_hahorut",
+      "website": "https://www.idan-hahoroot.co.il/"
+    },
+    "12341144956": {
+      "institutionId": "mon_12341144956",
+      "website": "https://www.mishkit.co.il/"
+    },
+    "12341185806": {
+      "institutionId": "mon_12341185806",
+      "website": "https://michaldalyot.co.il/"
+    },
+    "12341166735": {
+      "institutionId": "mon_12341166735",
+      "website": "https://ben-dog.co.il/"
+    },
+    "12341138306": {
+      "institutionId": "mon_12341138306",
+      "website": null
+    },
+    "12341161220": {
+      "institutionId": "givat_washington",
+      "website": "https://www.washington.ac.il/"
+    },
+    "12341187468": {
+      "institutionId": "mon_12341187468",
+      "website": "https://www.boutiquetattoo.co.il/"
+    },
+    "12341167283": {
+      "institutionId": "mon_12341167283",
+      "website": "https://www.educenter.co.il/"
+    },
+    "12341179463": {
+      "institutionId": "mon_12341179463",
+      "website": "https://www.mhorut.org/"
+    },
+    "12341165560": {
+      "institutionId": "idan_hahorut",
+      "website": "https://subtext-academy.co.il/"
+    },
+    "12341187728": {
+      "institutionId": "mon_12341187728",
+      "website": "https://preciseclass.com/"
+    },
+    "12341203959": {
+      "institutionId": "mon_12341203959",
+      "website": null
+    },
+    "12341179578": {
+      "institutionId": "high_q",
+      "website": "https://www.high-q.co.il/"
+    },
+    "12341161996": {
+      "institutionId": "kidum",
+      "website": "https://kidum.com/"
+    },
+    "12341203595": {
+      "institutionId": "mon_12341203595",
+      "website": null
+    },
+    "12341189852": {
+      "institutionId": "mon_12341189852",
+      "website": null
+    }
+  },
+  "additional": {
+    "elevation": "https://elevation.ac/",
+    "ono_ce": "https://www.ono.ac.il/",
+    "kiryat_shmona": "https://www.telhai.ac.il/",
+    "ort_braude": "https://w3.braude.ac.il/",
+    "broshim": null,
+    "itc": null,
+    "pardeshana": null,
+    "galil_maaravi": "https://wgalil.ac.il/",
+    "weizmann": "https://www.weizmann.ac.il/pages/",
+    "shaanan": "https://www.shaanan.ac.il/",
+    "arab_college_haifa": "https://arabcol.ac.il/",
+    "talpiot": "https://www.talpiot.ac.il/",
+    "orot": "https://orot.ac.il/",
+    "sakhnin": "https://sakhnin.ac.il/",
+    "ashkelon": "https://www.aac.ac.il/",
+    "lev": "https://www.jct.ac.il/",
+    "shalem": "https://shalem.ac.il/he/",
+    "jerusalem_college": "https://www.michlala.edu/",
+    "gordon_college": "https://www.gordon.ac.il/",
+    "hamdat_darom": "https://www.hemdat.ac.il/",
+    "emuna": "https://emuna.emef.ac.il/",
+    "al_qasemi": "https://www.qsm.ac.il/",
+    "neri_bloomfield": null,
+    "beit_ziv": null,
+    "lander": null,
+    "carmel_academic": null,
+    "ohalo": null,
+    "lifshitz": null,
+    "morashah": null,
+    "kinneret": "https://do.kinneret.ac.il/",
+    "tiltan": "https://tiltan.co.il/"
+  }
+}

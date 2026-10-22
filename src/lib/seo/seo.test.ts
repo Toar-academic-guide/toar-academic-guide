@@ -1,6 +1,10 @@
 import { readFileSync } from 'node:fs';
+import type { InstitutionId } from '@/data/institutions';
+import type { ReactNode } from 'react';
+import InstitutionPage from '@/app/institutions/[institutionId]/page';
+import ProgramPage from '@/app/programs/[programId]/page';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import robots from '@/app/robots';
 import sitemap from '@/app/sitemap';
 import JsonLd from '@/components/seo/JsonLd';
@@ -8,6 +12,7 @@ import { getInstitutionDirectoryItems } from '@/data/institutionDirectory';
 import { buildRobots, TRAINING_BOTS_POLICY } from './robots';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import { getPublicInstitutionPageData, getPublicProgramPageData } from '@/lib/publicCataloguePages';
+import * as catalogueDisplayText from '@/lib/catalogueDisplayText';
 import { absoluteUrl, SITE_ALT_NAMES, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/site';
 import {
   indexableInstitutionIds,
@@ -16,6 +21,7 @@ import {
   isIndexableProgram,
 } from './indexability';
 import { buildInstitutionMetadata, buildProgramMetadata } from './metadata';
+import { canonicalProgramId } from './programAliases';
 import {
   breadcrumbLd,
   institutionDirectoryLd,
@@ -28,11 +34,45 @@ import {
   websiteLd,
 } from './jsonLd';
 
+vi.mock('server-only', () => ({}));
+vi.mock('@/components/WayPageShell', () => ({
+  default: ({ children }: { children: ReactNode }) => children,
+}));
+vi.mock('@/server/catalogue/queries', () => ({
+  listCataloguePrograms: vi.fn(),
+  listCatalogueInstitutions: vi.fn(),
+}));
+import { listCataloguePrograms, listCatalogueInstitutions } from '@/server/catalogue/queries';
+beforeEach(() => {
+  vi.mocked(listCataloguePrograms).mockResolvedValue({
+    data: getStaticCataloguePrograms().map((program) => ({
+      ...program,
+      institutionId: program.institutionId ?? (program.linkedInstitutionIds[0] as InstitutionId),
+    })),
+    meta: { catalogueSource: 'database' },
+  });
+  vi.mocked(listCatalogueInstitutions).mockResolvedValue({
+    data: [
+      ...getStaticCatalogueInstitutions(),
+      ...getInstitutionDirectoryItems()
+        .filter(
+          (item) =>
+            !getStaticCatalogueInstitutions().some((institution) => institution.id === item.id),
+        )
+        .map((item) => ({
+          id: item.id as InstitutionId,
+          name: item.name,
+          region: 'center' as const,
+        })),
+    ],
+    meta: {},
+  });
+});
 const institutions = getStaticCatalogueInstitutions();
 const programs = getStaticCataloguePrograms();
 
 describe('crawl policy', () => {
-  it('directs llms.txt readers to public pages and preserves the business-model disclosure', () => {
+  it('directs llms.txt readers to public pages and preserves the business-model disclosure', async () => {
     const llms = readFileSync('public/llms.txt', 'utf8');
     expect(llms).not.toContain('/app/');
     expect(llms).toContain('https://findmyway.co.il/institutions');
@@ -43,7 +83,7 @@ describe('crawl policy', () => {
     expect(llms).toContain('Last updated: 2026-10-22');
   });
 
-  it('separates wildcard, search and allowed training policies with operational exclusions', () => {
+  it('separates wildcard, search and allowed training policies with operational exclusions', async () => {
     expect(robots()).toEqual(buildRobots(TRAINING_BOTS_POLICY));
     const result = buildRobots('allow');
     const rules = Array.isArray(result.rules) ? result.rules : [result.rules];
@@ -78,7 +118,7 @@ describe('crawl policy', () => {
     expect(result.host).toBe(SITE_URL);
   });
 
-  it('can block training in one policy change without affecting answer/search crawlers', () => {
+  it('can block training in one policy change without affecting answer/search crawlers', async () => {
     const allowed = buildRobots('allow');
     const blocked = buildRobots('block');
     expect(Array.isArray(allowed.rules) && Array.isArray(blocked.rules)).toBe(true);
@@ -90,48 +130,67 @@ describe('crawl policy', () => {
     expect(blocked.rules[2].allow).toBeUndefined();
   });
 
-  it('indexes exactly existing non-opaque pages with at least one resolved relation', () => {
+  it('indexes exactly existing non-opaque pages with at least one resolved relation', async () => {
     for (const institution of institutions) {
-      expect(isIndexableInstitution(institution.id)).toBe(
+      expect(await isIndexableInstitution(institution.id)).toBe(
         !institution.id.startsWith('mon_') &&
-          getPublicInstitutionPageData(institution.id)!.programs.length > 0,
+          (await getPublicInstitutionPageData(institution.id))!.programs.length > 0,
       );
     }
     for (const program of programs) {
-      expect(isIndexableProgram(program.id)).toBe(
-        !program.id.startsWith('mon_') &&
-          getPublicProgramPageData(program.id)!.institutions.length > 0,
+      expect(await isIndexableProgram(program.id)).toBe(
+        canonicalProgramId(program.id) === program.id &&
+          !program.id.startsWith('mon_') &&
+          program.isListed !== false &&
+          (await getPublicProgramPageData(program.id))!.institutions.length > 0,
       );
     }
-    expect(isIndexableInstitution('tau')).toBe(true);
-    expect(isIndexableProgram('tau_cs')).toBe(true);
-    expect(isIndexableInstitution('weizmann')).toBe(false);
-    expect(isIndexableInstitution('missing')).toBe(false);
-    expect(isIndexableProgram('missing')).toBe(false);
-    expect(indexableInstitutionIds()).toEqual(
-      institutions.filter((i) => isIndexableInstitution(i.id)).map((i) => i.id),
+    expect(await isIndexableInstitution('tau')).toBe(true);
+    expect(await isIndexableProgram('tau_cs')).toBe(true);
+    expect(await isIndexableInstitution('weizmann')).toBe(false);
+    expect(await isIndexableInstitution('missing')).toBe(false);
+    expect(await isIndexableProgram('missing')).toBe(false);
+    expect(await indexableInstitutionIds()).toEqual(
+      institutions
+        .filter(
+          (i) =>
+            !i.id.startsWith('mon_') &&
+            programs.some((p) => p.isListed !== false && p.linkedInstitutionIds.includes(i.id)),
+        )
+        .map((i) => i.id),
     );
-    expect(indexableProgramIds()).toEqual(
-      programs.filter((p) => isIndexableProgram(p.id)).map((p) => p.id),
+    expect(await indexableProgramIds()).toEqual(
+      programs
+        .filter(
+          (p) =>
+            canonicalProgramId(p.id) === p.id &&
+            !p.id.startsWith('mon_') &&
+            p.isListed !== false &&
+            institutions.some((i) => p.linkedInstitutionIds.includes(i.id)),
+        )
+        .map((p) => p.id),
     );
-  });
+  }, 15_000);
 
-  it('keeps all 359 public URLs in order and omits lastmod without per-page data dates', () => {
-    const entries = sitemap();
+  it('keeps all 358 canonical public URLs in order and omits lastmod without per-page data dates', async () => {
+    const entries = await sitemap();
     const urls = entries.map((entry) => entry.url);
     expect(urls).toEqual([
       SITE_URL,
       `${SITE_URL}/about`,
       `${SITE_URL}/institutions`,
-      ...indexableInstitutionIds().map(
+      ...(await indexableInstitutionIds()).map(
         (id) => `${SITE_URL}/institutions/${encodeURIComponent(id)}`,
       ),
-      ...indexableProgramIds().map((id) => `${SITE_URL}/programs/${encodeURIComponent(id)}`),
+      ...(await indexableProgramIds()).map(
+        (id) => `${SITE_URL}/programs/${encodeURIComponent(id)}`,
+      ),
     ]);
     expect(urls).toContain(`${SITE_URL}/institutions/tau`);
     expect(urls).toContain(`${SITE_URL}/programs/tau_cs`);
     expect(new Set(urls).size).toBe(urls.length);
-    expect(urls).toHaveLength(359);
+    expect(urls).not.toContain(`${SITE_URL}/programs/danon_cs`);
+    expect(urls).toHaveLength(358);
     for (const url of urls) {
       expect(new URL(url).origin).toBe(SITE_URL);
       expect(url.endsWith('/')).toBe(false);
@@ -149,7 +208,20 @@ describe('crawl policy', () => {
 });
 
 describe('metadata', () => {
-  it('uses a fixed production origin and general study copy', () => {
+  it('uses live catalogue names and keeps unlisted saved references out of search indexing', async () => {
+    const program = programs.find((item) => item.id === 'tau_cs')!;
+    vi.mocked(listCataloguePrograms).mockResolvedValue({
+      data: [{ ...program, name: 'שם מסלול מעודכן', isListed: false }],
+      meta: { catalogueSource: 'database' },
+    });
+    const metadata = await buildProgramMetadata(program.id);
+    expect(metadata.title).toContain('שם מסלול מעודכן');
+    expect(metadata.robots).toEqual({ index: false, follow: true });
+    expect(await indexableProgramIds()).not.toContain(program.id);
+    expect(await getPublicProgramPageData(program.id)).not.toBeNull();
+  });
+
+  it('uses a fixed production origin and general study copy', async () => {
     expect(SITE_NAME).toBe('MyWay');
     expect(SITE_ALT_NAMES).toEqual(['FindMyWay', 'Way', 'findmyway.co.il']);
     expect(SITE_DESCRIPTION).toMatch(/תארים.*קורסים.*תעודה.*בינלאומיות/);
@@ -157,9 +229,9 @@ describe('metadata', () => {
     expect(absoluteUrl('/institutions/tau')).toBe(`${SITE_URL}/institutions/tau`);
   });
 
-  it('builds institution-specific title, count, canonical and social metadata', () => {
-    const data = getPublicInstitutionPageData('tau')!;
-    const meta = buildInstitutionMetadata('tau');
+  it('builds institution-specific title, count, canonical and social metadata', async () => {
+    const data = (await getPublicInstitutionPageData('tau'))!;
+    const meta = await buildInstitutionMetadata('tau');
     expect(meta.title).toBe(`${data.institution.name}: מסלולים ותנאי קבלה`);
     expect(meta.description).toContain(data.institution.name);
     expect(meta.description).toContain(`${data.programs.length} מסלולי לימוד`);
@@ -175,9 +247,9 @@ describe('metadata', () => {
     expect(meta.robots).toBeUndefined();
   });
 
-  it('distinguishes single-provider programs from generic multi-provider records', () => {
-    const data = getPublicProgramPageData('tau_cs')!;
-    const meta = buildProgramMetadata('tau_cs');
+  it('distinguishes single-provider programs from generic multi-provider records', async () => {
+    const data = (await getPublicProgramPageData('tau_cs'))!;
+    const meta = await buildProgramMetadata('tau_cs');
     expect(meta.title).toBe(`${data.program.name} – ${data.institutions[0].name}`);
     expect(meta.alternates).toEqual({ canonical: '/programs/tau_cs' });
     expect(meta.openGraph).toMatchObject({
@@ -188,74 +260,254 @@ describe('metadata', () => {
       locale: 'he_IL',
     });
     expect(meta.robots).toBeUndefined();
-    expect(buildProgramMetadata('cs').title).toBe('לימודי מדעי המחשב: באילו מוסדות לומדים');
+    expect((await buildProgramMetadata('cs')).title).toBe('לימודי מדעי המחשב: באילו מוסדות לומדים');
   });
 
-  it('gives every excluded existing detail page a self-canonical and noindex,follow', () => {
-    for (const { id } of institutions.filter((i) => !isIndexableInstitution(i.id))) {
-      expect(buildInstitutionMetadata(id)).toMatchObject({
+  it('builds metadata and JSON-LD without computing admission requirement summaries', async () => {
+    const requirements = vi.spyOn(catalogueDisplayText, 'catalogueAdmissionRequirements');
+    for (const id of ['nursing', 'haifa_nursing']) {
+      const page = (await getPublicProgramPageData(id))!;
+      expect((await buildProgramMetadata(id)).title).toBeTruthy();
+      expect((await programLd(page)).provider.length).toBe(page.institutions.length);
+      expect(programBreadcrumbLd(page).itemListElement.length).toBeGreaterThan(0);
+    }
+    expect(requirements).not.toHaveBeenCalled();
+  });
+
+  it('keeps the Danon alias renderable with only canonical SEO identities and no noindex', async () => {
+    // The retired ID exists in persisted catalogues, but is absent from current static data.
+    const canonical = programs.find((program) => program.id === 'danon_culinary')!;
+    vi.mocked(listCataloguePrograms).mockResolvedValue({
+      data: [...programs, { ...canonical, id: 'danon_cs' }],
+      meta: { catalogueSource: 'database' },
+    });
+    const page = (await getPublicProgramPageData('danon_cs'))!;
+    const metadata = await buildProgramMetadata('danon_cs');
+    expect(metadata.alternates).toEqual({ canonical: '/programs/danon_culinary' });
+    expect(metadata.openGraph).toMatchObject({ url: '/programs/danon_culinary' });
+    expect(metadata.robots).toBeUndefined();
+    expect(metadata.title).toBe('קולינריה — דנון – מכון דנון לבישול');
+    expect((await buildProgramMetadata('danon_culinary')).title).toBe(metadata.title);
+    expect(await indexableProgramIds()).not.toContain('danon_cs');
+    expect((await sitemap()).map((entry) => entry.url)).not.toContain(
+      `${SITE_URL}/programs/danon_cs`,
+    );
+    const titles = await Promise.all(
+      (await indexableProgramIds()).map(async (id) => (await buildProgramMetadata(id)).title),
+    );
+    expect(new Set(titles).size).toBe(titles.length);
+    expect(await programLd(page)).toMatchObject({
+      '@id': `${SITE_URL}/programs/danon_culinary#program`,
+      url: `${SITE_URL}/programs/danon_culinary`,
+    });
+    expect(JSON.stringify(await programLd(page))).not.toContain('/programs/danon_cs');
+    expect(programBreadcrumbLd(page).itemListElement.at(-1)?.item).toBe(
+      `${SITE_URL}/programs/danon_culinary`,
+    );
+    expect(
+      renderToStaticMarkup(
+        await ProgramPage({ params: Promise.resolve({ programId: 'danon_cs' }) }),
+      ),
+    ).toContain(page.program.name);
+  });
+
+  it('absorbs the definite article in institution descriptions', async () => {
+    expect((await buildProgramMetadata('huji_cs')).description).toContain(
+      'באוניברסיטה העברית בירושלים',
+    );
+  });
+
+  it('uses the general title even when the only subject signal is one institution', async () => {
+    const program = {
+      ...programs.find((program) => program.id === 'biology')!,
+      name: 'תחום עם מוסד אחד',
+      institutionId: 'tau' as const,
+      thresholds: { haifa: 500 } as (typeof programs)[0]['thresholds'],
+      institutionDetails: [],
+      linkedInstitutionIds: ['tau'],
+    };
+    vi.mocked(listCataloguePrograms).mockResolvedValue({
+      data: [program],
+      meta: { catalogueSource: 'database' },
+    });
+    const page = (await getPublicProgramPageData(program.id))!;
+    expect(page.institutions.map((institution) => institution.id)).toEqual(['haifa']);
+    expect((await buildProgramMetadata(program.id)).title).toBe(
+      'לימודי תחום עם מוסד אחד: באילו מוסדות לומדים',
+    );
+    expect(programBreadcrumbLd(page).itemListElement).toHaveLength(3);
+  });
+
+  it.each([
+    ['nursing', ['tau', 'bgu', 'haifa', 'ariel', 'telhai', 'mta', 'ono']],
+    ['biology', ['tau', 'huji', 'bgu', 'haifa', 'biu', 'telhai']],
+  ])(
+    'uses every provider for %s in metadata, JSON-LD and rendered links',
+    async (id, expectedIds) => {
+      const seeded = programs.find((program) => program.id === id)!;
+      vi.mocked(listCataloguePrograms).mockResolvedValue({
+        data: [
+          {
+            ...seeded,
+            institutionId: 'tau',
+            linkedInstitutionIds: ['tau'],
+            ...(id === 'nursing'
+              ? { thresholds: { tau: 610, haifa: 580 } as typeof seeded.thresholds }
+              : {}),
+          },
+          ...programs.filter((program) => program.id !== id),
+        ],
+        meta: { catalogueSource: 'database' },
+      });
+      const page = (await getPublicProgramPageData(id))!;
+      expect(page.isGeneral).toBe(true);
+      expect(page.institutions.map((institution) => institution.id)).toEqual(expectedIds);
+      const metadata = await buildProgramMetadata(id);
+      expect(metadata.title).toBe(`לימודי ${page.program.name}: באילו מוסדות לומדים`);
+      expect(metadata.description).toContain(`ב-${expectedIds.length} מוסדות לימוד`);
+      expect((await programLd(page)).provider.map((provider) => provider.url)).toEqual(
+        expectedIds.map((institutionId) => `${SITE_URL}/institutions/${institutionId}`),
+      );
+      const markup = renderToStaticMarkup(
+        await ProgramPage({ params: Promise.resolve({ programId: id }) }),
+      );
+      for (const institution of page.institutions) {
+        const specific = programs.find(
+          (program) =>
+            program.isListed !== false &&
+            program.name === seeded.name &&
+            program.institutionId === institution.id,
+        );
+        const path = specific ? `/programs/${specific.id}` : `/institutions/${institution.id}`;
+        expect(page.institutionProgramPaths[institution.id]).toBe(path);
+        expect(markup).toContain(`href="${path}"`);
+        expect(markup).toContain(`href="/enquiry?program=${id}&amp;institution=${institution.id}"`);
+      }
+      expect(markup).toContain('תנאי קבלה');
+      if (id === 'nursing') {
+        expect(page.institutionProgramPaths.bgu).toBe('/programs/bgu_nursing');
+        expect(page.institutionProgramPaths.tau).toBe('/institutions/tau');
+        expect(markup).not.toContain('href="/programs/nursing"');
+      }
+    },
+  );
+
+  it('lists own programs first and makes every ordered program accessible with matching metadata and JSON-LD counts', async () => {
+    for (const institution of institutions) {
+      const page = (await getPublicInstitutionPageData(institution.id))!;
+      const own = page.programs.filter((program) => program.institutionId === institution.id);
+      const general = page.programs.filter((program) => program.institutionId !== institution.id);
+      expect(page.programs).toEqual([...own, ...general]);
+      expect(new Set(general.map((program) => program.name)).size).toBe(general.length);
+      expect(
+        general.some((program) => own.some((specific) => specific.name === program.name)),
+      ).toBe(false);
+      const metadata = await buildInstitutionMetadata(institution.id);
+      expect(metadata.description).toContain(`${page.programs.length} מסלולי לימוד`);
+      const markup = renderToStaticMarkup(
+        await InstitutionPage({ params: Promise.resolve({ institutionId: institution.id }) }),
+      );
+      expect(markup.match(/href="\/programs\//g) ?? []).toHaveLength(page.programs.length);
+      const ld = institutionLd(page).hasOfferCatalog;
+      expect(ld.numberOfItems).toBe(page.programs.length);
+      expect(ld.itemListElement.map((item) => item.name)).toEqual(
+        page.programs.map((program) => program.name),
+      );
+      expect(ld.itemListElement.map((item) => item.url)).toEqual(
+        page.programs.map((program) => `${SITE_URL}/programs/${program.id}`),
+      );
+      if (page.programs.length > 12) {
+        expect(markup).toContain(`הצגת כל המסלולים (${page.programs.length})`);
+        const firstSection = markup.split('<details')[0];
+        expect(firstSection.match(/href="\/programs\//g)).toHaveLength(12);
+        expect(markup.split('</summary>')[1]).toContain(`/programs/${page.programs[12].id}`);
+      } else expect(markup).not.toContain('<details');
+    }
+  });
+
+  it('gives every excluded existing detail page a self-canonical and noindex,follow', async () => {
+    const institutionIds = await indexableInstitutionIds();
+    const programIds = await indexableProgramIds();
+    for (const { id } of institutions.filter((i) => !institutionIds.includes(i.id))) {
+      expect(await buildInstitutionMetadata(id)).toMatchObject({
         alternates: { canonical: `/institutions/${encodeURIComponent(id)}` },
         robots: { index: false, follow: true },
       });
     }
-    for (const { id } of programs.filter((p) => !isIndexableProgram(p.id))) {
-      expect(buildProgramMetadata(id)).toMatchObject({
+    for (const { id } of programs.filter(
+      (p) => !programIds.includes(p.id) && canonicalProgramId(p.id) === p.id,
+    )) {
+      expect(await buildProgramMetadata(id)).toMatchObject({
         alternates: { canonical: `/programs/${encodeURIComponent(id)}` },
         robots: { index: false, follow: true },
       });
     }
-    expect(buildInstitutionMetadata('missing')).toEqual({});
-    expect(buildProgramMetadata('missing')).toEqual({});
+    expect(await buildInstitutionMetadata('missing')).toEqual({});
+    expect(await buildProgramMetadata('missing')).toEqual({});
   });
 
-  it('leads with real relation facts and keeps descriptions unique across indexable detail pages', () => {
-    const institution = getPublicInstitutionPageData('tau')!;
-    expect(buildInstitutionMetadata('tau').description).toMatch(
+  it('leads with real relation facts and keeps descriptions unique across indexable detail pages', async () => {
+    const institution = (await getPublicInstitutionPageData('tau'))!;
+    expect((await buildInstitutionMetadata('tau')).description).toMatch(
       new RegExp(`^${institution.programs.length} מסלולי לימוד`),
     );
-    expect(buildProgramMetadata('tau_cs').description).toMatch(/^מדעי המחשב באוניברסיטת תל אביב:/);
-    expect(buildProgramMetadata('cs').description).toContain(
-      `ב-${getPublicProgramPageData('cs')!.institutions.length} מוסדות לימוד`,
+    expect((await buildProgramMetadata('tau_cs')).description).toMatch(
+      /^מדעי המחשב באוניברסיטת תל אביב:/,
+    );
+    expect((await buildProgramMetadata('cs')).description).toContain(
+      `ב-${(await getPublicProgramPageData('cs'))!.institutions.length} מוסדות לימוד`,
     );
     const descriptions = [
-      ...indexableInstitutionIds().map((id) => buildInstitutionMetadata(id).description),
-      ...indexableProgramIds().map((id) => buildProgramMetadata(id).description),
+      ...(await Promise.all(
+        (await indexableInstitutionIds()).map(
+          async (id) => (await buildInstitutionMetadata(id)).description,
+        ),
+      )),
+      ...(await Promise.all(
+        (await indexableProgramIds()).map(
+          async (id) => (await buildProgramMetadata(id)).description,
+        ),
+      )),
     ];
     expect(new Set(descriptions).size).toBe(descriptions.length);
   });
 
-  it('has unique titles across all indexable public pages and disambiguates known collisions', () => {
+  it('has unique titles across all indexable public pages and disambiguates known collisions', async () => {
+    const programIds = await indexableProgramIds();
+    const programMetadata = await Promise.all(programIds.map(buildProgramMetadata));
     const titles = [
       'MyWay | הדרך שלך ללימודים',
       'מי אנחנו | MyWay',
       'מוסדות לימוד | MyWay',
-      ...indexableInstitutionIds().map((id) => `${buildInstitutionMetadata(id).title} | MyWay`),
-      ...indexableProgramIds().map((id) => `${buildProgramMetadata(id).title} | MyWay`),
+      ...(await Promise.all(
+        (await indexableInstitutionIds()).map(
+          async (id) => `${(await buildInstitutionMetadata(id)).title} | MyWay`,
+        ),
+      )),
+      ...programMetadata.map((metadata) => `${metadata.title} | MyWay`),
     ];
     expect(new Set(titles).size).toBe(titles.length);
-    for (const id of [
-      'biology',
-      'tau_biology',
-      'social_work',
-      'tau_socialwork',
-      'accounting',
-      'tau_accounting',
-      'occupational_therapy',
-      'tau_occupational_therapy',
-      'criminology',
-      'biu_criminology',
-    ]) {
-      expect(buildProgramMetadata(id).title).toContain(
-        `(${getPublicProgramPageData(id)!.program.category})`,
-      );
+    for (const [index, id] of programIds.entries()) {
+      const program = programs.find((program) => program.id === id)!;
+      const title = String(programMetadata[index].title);
+      expect(title.endsWith(`(${program.category})`)).toBe(false);
+      expect(title.endsWith(`(${id})`)).toBe(false);
     }
-    expect(buildProgramMetadata('biology').title).toContain('(biology)');
-    expect(buildProgramMetadata('tau_biology').title).toContain('(tau_biology)');
-  });
+    expect((await buildProgramMetadata('biology')).title).toBe(
+      'לימודי ביולוגיה: באילו מוסדות לומדים',
+    );
+    expect((await buildProgramMetadata('tau_biology')).title).toBe('ביולוגיה – אוניברסיטת תל אביב');
+    expect((await buildProgramMetadata('nativ_acting')).title).toBe(
+      'משחק – בית הספר למשחק ניסן נתיב: מסלול במוזיקה ותיאטרון',
+    );
+    expect((await buildProgramMetadata('nativ_graphic_design')).title).toBe(
+      'משחק – בית הספר למשחק ניסן נתיב: מסלול באמנויות הבמה',
+    );
+  }, 15_000);
 });
 
 describe('structured data', () => {
-  it('connects Organization and WebSite without unsupported search or FAQ markup', () => {
+  it('connects Organization and WebSite without unsupported search or FAQ markup', async () => {
     expect(organizationLd()).toMatchObject({
       '@type': 'Organization',
       '@id': `${SITE_URL}/#organization`,
@@ -275,7 +527,7 @@ describe('structured data', () => {
     expect(websiteLd()).not.toHaveProperty('potentialAction');
   });
 
-  it('describes the existing free web application without reviews or invented features', () => {
+  it('describes the existing free web application without reviews or invented features', async () => {
     expect(webApplicationLd()).toMatchObject({
       '@type': 'WebApplication',
       '@id': `${SITE_URL}/#webapp`,
@@ -293,7 +545,7 @@ describe('structured data', () => {
     });
   });
 
-  it('lists precisely the directory cards in order, including their existing public IDs', () => {
+  it('lists precisely the directory cards in order, including their existing public IDs', async () => {
     const items = getInstitutionDirectoryItems();
     const graph = institutionDirectoryLd(items);
     expect(graph[0]).toMatchObject({
@@ -316,19 +568,19 @@ describe('structured data', () => {
       })),
     });
     expect(graph[2]['@type']).toBe('BreadcrumbList');
-    for (const item of items) expect(getPublicInstitutionPageData(item.id)).not.toBeNull();
+    for (const item of items) expect(await getPublicInstitutionPageData(item.id)).not.toBeNull();
   });
 
-  it('renders graph envelopes with consistent apex node IDs and no unsupported content schemas', () => {
+  it('renders graph envelopes with consistent apex node IDs and no unsupported content schemas', async () => {
     const data = [
       organizationLd(),
       websiteLd(),
       webApplicationLd(),
       ...institutionDirectoryLd(getInstitutionDirectoryItems()),
-      institutionLd(getPublicInstitutionPageData('tau')!),
-      institutionBreadcrumbLd(getPublicInstitutionPageData('tau')!),
-      programLd(getPublicProgramPageData('tau_cs')!),
-      programBreadcrumbLd(getPublicProgramPageData('tau_cs')!),
+      institutionLd((await getPublicInstitutionPageData('tau'))!),
+      institutionBreadcrumbLd((await getPublicInstitutionPageData('tau'))!),
+      await programLd((await getPublicProgramPageData('tau_cs'))!),
+      programBreadcrumbLd((await getPublicProgramPageData('tau_cs'))!),
     ];
     const markup = renderToStaticMarkup(JsonLd({ data }));
     const graph = JSON.parse(
@@ -339,10 +591,10 @@ describe('structured data', () => {
     const ids = data.map((node) => node['@id']);
     expect(new Set(ids).size).toBe(ids.length);
     for (const id of ids) expect(new URL(id).origin).toBe(SITE_URL);
-    expect(institutionLd(getPublicInstitutionPageData('tau')!)['@id']).toBe(
+    expect(institutionLd((await getPublicInstitutionPageData('tau'))!)['@id']).toBe(
       `${SITE_URL}/institutions/tau#institution`,
     );
-    expect(programLd(getPublicProgramPageData('tau_cs')!).provider[0]['@id']).toBe(
+    expect((await programLd((await getPublicProgramPageData('tau_cs'))!)).provider[0]['@id']).toBe(
       `${SITE_URL}/institutions/tau#institution`,
     );
     expect(JSON.stringify(graph)).not.toMatch(
@@ -350,12 +602,12 @@ describe('structured data', () => {
     );
   });
 
-  it('classifies institutions and emits only official HTTPS identities with no inferred address', () => {
-    expect(institutionLd(getPublicInstitutionPageData('tau')!)).toMatchObject({
+  it('classifies institutions and emits only official HTTPS identities with no inferred address', async () => {
+    expect(institutionLd((await getPublicInstitutionPageData('tau'))!)).toMatchObject({
       '@type': 'CollegeOrUniversity',
       url: `${SITE_URL}/institutions/tau`,
     });
-    const nonAcademic = getPublicInstitutionPageData('danon')!;
+    const nonAcademic = (await getPublicInstitutionPageData('danon'))!;
     expect(institutionLd(nonAcademic)['@type']).toBe('EducationalOrganization');
     expect(institutionLd(nonAcademic)).not.toHaveProperty('address');
     for (const url of [
@@ -379,9 +631,9 @@ describe('structured data', () => {
     ).toBe('https://example.org/');
   });
 
-  it('represents full programs and providers without inventing credentials or durations', () => {
-    const data = getPublicProgramPageData('tau_cs')!;
-    const ld = programLd(data);
+  it('represents full programs and providers without inventing credentials or durations', async () => {
+    const data = (await getPublicProgramPageData('tau_cs'))!;
+    const ld = await programLd(data);
     expect(ld).toMatchObject({
       '@type': 'EducationalOccupationalProgram',
       name: data.program.name,
@@ -398,39 +650,47 @@ describe('structured data', () => {
     expect(ld).not.toHaveProperty('educationalCredentialAwarded');
     const detail = data.program.institutionDetails![0];
     expect(
-      programLd({
-        ...data,
-        program: { ...data.program, institutionDetails: [{ ...detail, durationYears: 3.5 }] },
-      }).timeToComplete,
+      (
+        await programLd({
+          ...data,
+          program: { ...data.program, institutionDetails: [{ ...detail, durationYears: 3.5 }] },
+        })
+      ).timeToComplete,
     ).toBe('P42M');
     expect(
-      programLd({ ...data, program: { ...data.program, institutionDetails: [] } }),
+      await programLd({ ...data, program: { ...data.program, institutionDetails: [] } }),
     ).not.toHaveProperty('timeToComplete');
-    expect(programLd(getPublicProgramPageData('cs')!)).not.toHaveProperty('timeToComplete');
+    expect(await programLd((await getPublicProgramPageData('cs'))!)).not.toHaveProperty(
+      'timeToComplete',
+    );
     const opaque = programs.find((p) => p.id.startsWith('mon_'))!;
-    expect(programLd(getPublicProgramPageData(opaque.id)!)).not.toHaveProperty('timeToComplete');
+    expect(await programLd((await getPublicProgramPageData(opaque.id))!)).not.toHaveProperty(
+      'timeToComplete',
+    );
   });
 
-  it('builds ordered absolute breadcrumbs through existing pages', () => {
-    const institution = institutionBreadcrumbLd(getPublicInstitutionPageData('tau')!);
+  it('builds ordered absolute breadcrumbs through existing pages', async () => {
+    const institution = institutionBreadcrumbLd((await getPublicInstitutionPageData('tau'))!);
     expect(institution.itemListElement.map((item) => item.position)).toEqual([1, 2, 3]);
     expect(institution.itemListElement.map((item) => item.item)).toEqual([
       SITE_URL,
       `${SITE_URL}/institutions`,
       `${SITE_URL}/institutions/tau`,
     ]);
-    const program = programBreadcrumbLd(getPublicProgramPageData('tau_cs')!);
+    const program = programBreadcrumbLd((await getPublicProgramPageData('tau_cs'))!);
     expect(program.itemListElement.map((item) => item.item)).toEqual([
       SITE_URL,
       `${SITE_URL}/institutions`,
       `${SITE_URL}/institutions/tau`,
       `${SITE_URL}/programs/tau_cs`,
     ]);
-    expect(programBreadcrumbLd(getPublicProgramPageData('cs')!).itemListElement).toHaveLength(3);
+    expect(
+      programBreadcrumbLd((await getPublicProgramPageData('cs'))!).itemListElement,
+    ).toHaveLength(3);
     expect(breadcrumbLd([])['@type']).toBe('BreadcrumbList');
   });
 
-  it('escapes every less-than character so data cannot close the JSON-LD script', () => {
+  it('escapes every less-than character so data cannot close the JSON-LD script', async () => {
     const data = {
       '@type': 'Organization',
       name: '</script><script>alert(1)</script>',

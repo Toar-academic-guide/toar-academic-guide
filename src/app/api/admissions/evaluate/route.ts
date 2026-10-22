@@ -13,6 +13,7 @@ import { ApiRouteError, toErrorResponse } from '@/app/api/_lib/errors';
 import { listCatalogueInstitutions, listCataloguePrograms } from '@/server/catalogue/queries';
 import { evaluateAdmissionsForProgram } from '@/server/admissions/evaluator';
 import { assertAdmissionsEvaluationRateLimit } from '@/server/admissions/rateLimit';
+import type { AdmissionsBatchReport } from '@/types/admissionsEvaluation';
 import { bguEngineeringSchema } from '@/lib/bguEngineeringSchema';
 import {
   admissionsBagrutSubjectRecordSchema,
@@ -71,13 +72,22 @@ const admissionsEvaluationSchema = z.object({
     .optional(),
 });
 
+const batchSchema = admissionsEvaluationSchema.omit({ degreeId: true }).extend({
+  degreeIds: z
+    .array(z.string().min(1))
+    .min(1)
+    .max(50)
+    .refine((ids) => new Set(ids).size === ids.length),
+});
+const requestSchema = z.union([admissionsEvaluationSchema, batchSchema]);
+
 export async function POST(request: Request) {
   try {
     assertContentLength(request);
     assertAdmissionsEvaluationRateLimit(await resolveClientKey());
 
     const body = await readJsonBody(request);
-    const parsed = admissionsEvaluationSchema.safeParse(body);
+    const parsed = requestSchema.safeParse(body);
     if (!parsed.success) {
       throw new ApiRouteError(
         400,
@@ -91,7 +101,34 @@ export async function POST(request: Request) {
       listCatalogueInstitutions(),
     ]);
 
-    const program = programsResult.data.find((entry) => entry.id === parsed.data.degreeId);
+    if ('degreeIds' in parsed.data) {
+      const { degreeIds, ...applicant } = parsed.data;
+      const batch: AdmissionsBatchReport = { reports: {}, failedDegreeIds: [] };
+      // One user action loads the catalogue once; at most four evaluators run together.
+      for (let index = 0; index < degreeIds.length; index += 4) {
+        await Promise.all(
+          degreeIds.slice(index, index + 4).map(async (degreeId) => {
+            const program = programsResult.data.find((entry) => entry.id === degreeId);
+            if (!program) {
+              batch.failedDegreeIds.push(degreeId);
+              return;
+            }
+            try {
+              batch.reports[degreeId] = await evaluateAdmissionsForProgram({
+                input: { ...applicant, degreeId },
+                program,
+                institutions: institutionsResult.data,
+              });
+            } catch {
+              batch.failedDegreeIds.push(degreeId);
+            }
+          }),
+        );
+      }
+      return Response.json({ data: batch });
+    }
+    const degreeId = parsed.data.degreeId;
+    const program = programsResult.data.find((entry) => entry.id === degreeId);
     if (!program) {
       throw new ApiRouteError(
         404,

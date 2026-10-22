@@ -55,7 +55,6 @@ describe('Colman computer science Bagrut route', () => {
     { mathUnits: 5, mathGrade: 69 },
     { mathUnits: 4, mathGrade: 79 },
     { mathUnits: 3, mathGrade: 100 },
-    { colmanBagrutCertificateConfirmed: false },
   ])('reports below the direct route without rejecting other routes: %j', (extra) => {
     const result = evaluate(extra);
     expect(result.decision).toBe('below');
@@ -63,7 +62,6 @@ describe('Colman computer science Bagrut route', () => {
   });
   it.each([
     [{ colmanBagrutAverage: undefined }, 'colman_bagrut_average'],
-    [{ colmanBagrutCertificateConfirmed: undefined }, 'colman_bagrut_certificate'],
     [{ mathUnits: undefined }, 'math_units'],
     [{ mathGrade: undefined }, 'math_grade'],
   ] as const)(
@@ -92,4 +90,21 @@ describe('Colman computer science Bagrut route', () => {
     expect(result.explanation).toContain('עדיין נדרש מעבר מבדק פנימי');
     expect(result.nextAction).toContain('מתייחס למסלול המשולב');
   });
+  it.each([undefined, false, true])(
+    'keeps certificate confirmation %s separate from the grades',
+    (confirmed) => {
+      const result = evaluate({ colmanBagrutCertificateConfirmed: confirmed });
+      expect(result).toMatchObject({
+        score: 85,
+        scoreAssessment: 'meets_threshold',
+        decision: confirmed === undefined ? 'pending' : confirmed ? 'eligible_to_apply' : 'below',
+      });
+      expect(result.additionalConditions).toEqual([
+        expect.objectContaining({
+          id: 'colman_bagrut_certificate',
+          status: confirmed === undefined ? 'unconfirmed' : confirmed ? 'confirmed' : 'unmet',
+        }),
+      ]);
+    },
+  );
 });

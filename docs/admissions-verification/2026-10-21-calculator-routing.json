@@ -1,0 +1,1393 @@
+{
+  "checkedAt": "2026-10-21T13:34:30.013Z",
+  "applicantData": "synthetic verification examples; no account data",
+  "tau": [
+    {
+      "pair": "ee__tau",
+      "fixture": {
+        "id": "ee__tau:accepted:2026-2027",
+        "pairId": "ee__tau",
+        "admissionCycle": "2026-2027",
+        "verdict": "accepted",
+        "input": {
+          "psychometric": 730,
+          "bagrut": 115,
+          "psychometricEnglish": 110,
+          "bagrutSubjectRecord": {
+            "schemaVersion": 1,
+            "sector": "jewish",
+            "subjects": [
+              {
+                "subjectId": "mathematics",
+                "units": 5,
+                "grade": 82
+              },
+              {
+                "subjectId": "english",
+                "units": 5,
+                "grade": 90
+              },
+              {
+                "subjectId": "history",
+                "units": 2,
+                "grade": 92
+              },
+              {
+                "subjectId": "bible",
+                "units": 2,
+                "grade": 88
+              }
+            ]
+          }
+        },
+        "expected": {
+          "score": 730,
+          "verdict": "accepted"
+        },
+        "sourceFingerprint": "sha256:8a3b9a884d83a8d6a52da7f25d6f4f938dd1ad33da0a9bfba5cc1d4fb7fbf507",
+        "capturedAt": "2026-07-26T06:00:00.000Z"
+      },
+      "proof": {
+        "id": "tau-ee-live",
+        "institutionId": "tau",
+        "institutionName": "Tel Aviv University",
+        "officialUrl": "https://go.tau.ac.il/graphql",
+        "adapterId": "tau",
+        "capability": "decision_capable",
+        "proofLevel": "exact_official",
+        "status": "succeeded",
+        "sourceClass": "api_static_json",
+        "reproducedFields": [
+          "selectedScore",
+          "acceptanceThreshold",
+          "rejectionThreshold",
+          "derivedVerdict"
+        ],
+        "normalizedPayload": {
+          "pairId": "ee__tau",
+          "programId": "tau-ee",
+          "programName": "Electrical Engineering",
+          "source": "tau_graphql",
+          "selectedScoreField": "hatama_meduyakim",
+          "selectedScore": 730,
+          "exactSciencesBonus": 0,
+          "matchedProgramIds": [
+            "051211010000"
+          ],
+          "matchedProgramTitle": "תואר ראשון בהנדסת חשמל ",
+          "derivedVerdict": "accepted",
+          "proofStatus": "succeeded",
+          "proofLevel": "exact_official",
+          "decisionProvenance": "verified_derivation",
+          "acceptanceThreshold": 710,
+          "rejectionThreshold": 709
+        },
+        "limitations": [
+          "Proof applies only to the explicitly matched TAU program identifier and score field"
+        ],
+        "nextAction": "Keep the program-specific mapping, gates, fixtures, and source fingerprint under review",
+        "rawResponseMetadata": [
+          {
+            "endpoint": "https://go.tau.ac.il/graphql",
+            "status": 200,
+            "contentType": "application/json; charset=utf-8"
+          },
+          {
+            "endpoint": "https://go.tau.ac.il/graphql",
+            "status": 200,
+            "contentType": "application/json; charset=utf-8"
+          }
+        ]
+      },
+      "responses": [
+        {
+          "url": "https://go.tau.ac.il/graphql",
+          "status": 200,
+          "body": "{\"data\":{\"getLastScore\":{\"body\":{\"hatama\":\"730\",\"bagrut\":\"115\",\"psicho\":\"730\",\"hatama_nihul\":\"726\",\"hatama_refua\":\"729.83\",\"hatama_handasa\":\"730\",\"hatama_meduyakim\":\"730\"},\"__typename\":\"Response\"}}}"
+        },
+        {
+          "url": "https://go.tau.ac.il/graphql",
+          "status": 200,
+          "body": "{\"data\":{\"getProgramByIdAndLang\":{\"nid\":\"11233\",\"title\":\"תואר ראשון בהנדסת חשמל \",\"receipt_threshol\":[710,710],\"rejection_thresh\":[709,709],\"field_registration_comments\":null,\"field_plain_id_programs\":[\"051211010000\"],\"field_faculty_mamta\":\"הנדסה\"}}}"
+        }
+      ]
+    },
+    {
+      "pair": "ee__tau",
+      "fixture": {
+        "id": "ee__tau:below:2026-2027",
+        "pairId": "ee__tau",
+        "admissionCycle": "2026-2027",
+        "verdict": "below",
+        "input": {
+          "psychometric": 520,
+          "bagrut": 90,
+          "psychometricEnglish": 110,
+          "bagrutSubjectRecord": {
+            "schemaVersion": 1,
+            "sector": "jewish",
+            "subjects": [
+              {
+                "subjectId": "mathematics",
+                "units": 4,
+                "grade": 80
+              },
+              {
+                "subjectId": "english",
+                "units": 5,
+                "grade": 85
+              },
+              {
+                "subjectId": "history",
+                "units": 2,
+                "grade": 80
+              },
+              {
+                "subjectId": "bible",
+                "units": 2,
+                "grade": 78
+              }
+            ]
+          }
+        },
+        "expected": {
+          "score": 496,
+          "verdict": "below"
+        },
+        "sourceFingerprint": "sha256:8a3b9a884d83a8d6a52da7f25d6f4f938dd1ad33da0a9bfba5cc1d4fb7fbf507",
+        "capturedAt": "2026-07-26T06:00:00.000Z"
+      },
+      "proof": {
+        "id": "tau-ee-live",
+        "institutionId": "tau",
+        "institutionName": "Tel Aviv University",
+        "officialUrl": "https://go.tau.ac.il/graphql",
+        "adapterId": "tau",
+        "capability": "decision_capable",
+        "proofLevel": "exact_official",
+        "status": "succeeded",
+        "sourceClass": "api_static_json",
+        "reproducedFields": [
+          "selectedScore",
+          "acceptanceThreshold",
+          "rejectionThreshold",
+          "derivedVerdict"
+        ],
+        "normalizedPayload": {
+          "pairId": "ee__tau",
+          "programId": "tau-ee",
+          "programName": "Electrical Engineering",
+          "source": "tau_graphql",
+          "selectedScoreField": "hatama_meduyakim",
+          "selectedScore": 496,
+          "exactSciencesBonus": 0,
+          "matchedProgramIds": [
+            "051211010000"
+          ],
+          "matchedProgramTitle": "תואר ראשון בהנדסת חשמל ",
+          "derivedVerdict": "below",
+          "proofStatus": "succeeded",
+          "proofLevel": "exact_official",
+          "decisionProvenance": "verified_derivation",
+          "acceptanceThreshold": 710,
+          "rejectionThreshold": 709
+        },
+        "limitations": [
+          "Proof applies only to the explicitly matched TAU program identifier and score field"
+        ],
+        "nextAction": "Keep the program-specific mapping, gates, fixtures, and source fingerprint under review",
+        "rawResponseMetadata": [
+          {
+            "endpoint": "https://go.tau.ac.il/graphql",
+            "status": 200,
+            "contentType": "application/json; charset=utf-8"
+          },
+          {
+            "endpoint": "https://go.tau.ac.il/graphql",
+            "status": 200,
+            "contentType": "application/json; charset=utf-8"
+          }
+        ]
+      },
+      "responses": [
+        {
+          "url": "https://go.tau.ac.il/graphql",
+          "status": 200,
+          "body": "{\"data\":{\"getLastScore\":{\"body\":{\"hatama\":\"496\",\"bagrut\":\"90\",\"psicho\":\"520\",\"hatama_nihul\":\"507\",\"hatama_refua\":\"495.57\",\"hatama_handasa\":\"496\",\"hatama_meduyakim\":\"496\"},\"__typename\":\"Response\"}}}"
+        },
+        {
+          "url": "https://go.tau.ac.il/graphql",
+          "status": 200,
+          "body": "{\"data\":{\"getProgramByIdAndLang\":{\"nid\":\"11233\",\"title\":\"תואר ראשון בהנדסת חשמל \",\"receipt_threshol\":[710,710],\"rejection_thresh\":[709,709],\"field_registration_comments\":null,\"field_plain_id_programs\":[\"051211010000\"],\"field_faculty_mamta\":\"הנדסה\"}}}"
+        }
+      ]
+    },
+    {
+      "pair": "me__tau",
+      "fixture": {
+        "id": "me__tau:accepted:2026-2027",
+        "pairId": "me__tau",
+        "admissionCycle": "2026-2027",
+        "verdict": "accepted",
+        "input": {
+          "psychometric": 730,
+          "bagrut": 115,
+          "psychometricEnglish": 110,
+          "bagrutSubjectRecord": {
+            "schemaVersion": 1,
+            "sector": "jewish",
+            "subjects": [
+              {
+                "subjectId": "mathematics",
+                "units": 5,
+                "grade": 82
+              },
+              {
+                "subjectId": "english",
+                "units": 5,
+                "grade": 90
+              },
+              {
+                "subjectId": "history",
+                "units": 2,
+                "grade": 92
+              },
+              {
+                "subjectId": "bible",
+                "units": 2,
+                "grade": 88
+              }
+            ]
+          }
+        },
+        "expected": {
+          "score": 730,
+          "verdict": "accepted"
+        },
+        "sourceFingerprint": "sha256:7bfe392d71a6dce9e645b08fb64e868582755226073e5e4e8322d72e64a8a7c9",
+        "capturedAt": "2026-07-26T06:00:00.000Z"
+      },
+      "proof": {
+        "id": "tau-me-live",
+        "institutionId": "tau",
+        "institutionName": "Tel Aviv University",
+        "officialUrl": "https://go.tau.ac.il/graphql",
+        "adapterId": "tau",
+        "capability": "decision_capable",
+        "proofLevel": "exact_official",
+        "status": "succeeded",
+        "sourceClass": "api_static_json",
+        "reproducedFields": [
+          "selectedScore",
+          "acceptanceThreshold",
+          "rejectionThreshold",
+          "derivedVerdict"
+        ],
+        "normalizedPayload": {
+          "pairId": "me__tau",
+          "programId": "tau-me",
+          "programName": "Mechanical Engineering",
+          "source": "tau_graphql",
+          "selectedScoreField": "hatama_meduyakim",
+          "selectedScore": 730,
+          "exactSciencesBonus": 0,
+          "matchedProgramIds": [
+            "054211010000"
+          ],
+          "matchedProgramTitle": "תואר ראשון בהנדסה מכנית ",
+          "derivedVerdict": "accepted",
+          "proofStatus": "succeeded",
+          "proofLevel": "exact_official",
+          "decisionProvenance": "verified_derivation",
+          "acceptanceThreshold": 650,
+          "rejectionThreshold": 649
+        },
+        "limitations": [
+          "Proof applies only to the explicitly matched TAU program identifier and score field"
+        ],
+        "nextAction": "Keep the program-specific mapping, gates, fixtures, and source fingerprint under review",
+        "rawResponseMetadata": [
+          {
+            "endpoint": "https://go.tau.ac.il/graphql",
+            "status": 200,
+            "contentType": "application/json; charset=utf-8"
+          },
+          {
+            "endpoint": "https://go.tau.ac.il/graphql",
+            "status": 200,
+            "contentType": "application/json; charset=utf-8"
+          }
+        ]
+      },
+      "responses": [
+        {
+          "url": "https://go.tau.ac.il/graphql",
+          "status": 200,
+          "body": "{\"data\":{\"getLastScore\":{\"body\":{\"hatama\":\"730\",\"bagrut\":\"115\",\"psicho\":\"730\",\"hatama_nihul\":\"726\",\"hatama_refua\":\"729.83\",\"hatama_handasa\":\"730\",\"hatama_meduyakim\":\"730\"},\"__typename\":\"Response\"}}}"
+        },
+        {
+          "url": "https://go.tau.ac.il/graphql",
+          "status": 200,
+          "body": "{\"data\":{\"getProgramByIdAndLang\":{\"nid\":\"8288\",\"title\":\"תואר ראשון בהנדסה מכנית \",\"receipt_threshol\":[650],\"rejection_thresh\":[649],\"field_registration_comments\":null,\"field_plain_id_programs\":[\"054211010000\"],\"field_faculty_mamta\":\"הנדסה\"}}}"
+        }
+      ]
+    },
+    {
+      "pair": "me__tau",
+      "fixture": {
+        "id": "me__tau:below:2026-2027",
+        "pairId": "me__tau",
+        "admissionCycle": "2026-2027",
+        "verdict": "below",
+        "input": {
+          "psychometric": 520,
+          "bagrut": 90,
+          "psychometricEnglish": 110,
+          "bagrutSubjectRecord": {
+            "schemaVersion": 1,
+            "sector": "jewish",
+            "subjects": [
+              {
+                "subjectId": "mathematics",
+                "units": 4,
+                "grade": 80
+              },
+              {
+                "subjectId": "english",
+                "units": 5,
+                "grade": 85
+              },
+              {
+                "subjectId": "history",
+                "units": 2,
+                "grade": 80
+              },
+              {
+                "subjectId": "bible",
+                "units": 2,
+                "grade": 78
+              }
+            ]
+          }
+        },
+        "expected": {
+          "score": 496,
+          "verdict": "below"
+        },
+        "sourceFingerprint": "sha256:7bfe392d71a6dce9e645b08fb64e868582755226073e5e4e8322d72e64a8a7c9",
+        "capturedAt": "2026-07-26T06:00:00.000Z"
+      },
+      "proof": {
+        "id": "tau-me-live",
+        "institutionId": "tau",
+        "institutionName": "Tel Aviv University",
+        "officialUrl": "https://go.tau.ac.il/graphql",
+        "adapterId": "tau",
+        "capability": "decision_capable",
+        "proofLevel": "exact_official",
+        "status": "succeeded",
+        "sourceClass": "api_static_json",
+        "reproducedFields": [
+          "selectedScore",
+          "acceptanceThreshold",
+          "rejectionThreshold",
+          "derivedVerdict"
+        ],
+        "normalizedPayload": {
+          "pairId": "me__tau",
+          "programId": "tau-me",
+          "programName": "Mechanical Engineering",
+          "source": "tau_graphql",
+          "selectedScoreField": "hatama_meduyakim",
+          "selectedScore": 496,
+          "exactSciencesBonus": 0,
+          "matchedProgramIds": [
+            "054211010000"
+          ],
+          "matchedProgramTitle": "תואר ראשון בהנדסה מכנית ",
+          "derivedVerdict": "below",
+          "proofStatus": "succeeded",
+          "proofLevel": "exact_official",
+          "decisionProvenance": "verified_derivation",
+          "acceptanceThreshold": 650,
+          "rejectionThreshold": 649
+        },
+        "limitations": [
+          "Proof applies only to the explicitly matched TAU program identifier and score field"
+        ],
+        "nextAction": "Keep the program-specific mapping, gates, fixtures, and source fingerprint under review",
+        "rawResponseMetadata": [
+          {
+            "endpoint": "https://go.tau.ac.il/graphql",
+            "status": 200,
+            "contentType": "application/json; charset=utf-8"
+          },
+          {
+            "endpoint": "https://go.tau.ac.il/graphql",
+            "status": 200,
+            "contentType": "application/json; charset=utf-8"
+          }
+        ]
+      },
+      "responses": [
+        {
+          "url": "https://go.tau.ac.il/graphql",
+          "status": 200,
+          "body": "{\"data\":{\"getLastScore\":{\"body\":{\"hatama\":\"496\",\"bagrut\":\"90\",\"psicho\":\"520\",\"hatama_nihul\":\"507\",\"hatama_refua\":\"495.57\",\"hatama_handasa\":\"496\",\"hatama_meduyakim\":\"496\"},\"__typename\":\"Response\"}}}"
+        },
+        {
+          "url": "https://go.tau.ac.il/graphql",
+          "status": 200,
+          "body": "{\"data\":{\"getProgramByIdAndLang\":{\"nid\":\"8288\",\"title\":\"תואר ראשון בהנדסה מכנית \",\"receipt_threshol\":[650],\"rejection_thresh\":[649],\"field_registration_comments\":null,\"field_plain_id_programs\":[\"054211010000\"],\"field_faculty_mamta\":\"הנדסה\"}}}"
+        }
+      ]
+    },
+    {
+      "pair": "occupational_therapy__tau",
+      "fixture": {
+        "id": "occupational_therapy__tau:accepted:2026-2027",
+        "pairId": "occupational_therapy__tau",
+        "admissionCycle": "2026-2027",
+        "verdict": "accepted",
+        "input": {
+          "psychometric": 730,
+          "bagrut": 115,
+          "psychometricEnglish": 110,
+          "bagrutSubjectRecord": {
+            "schemaVersion": 1,
+            "sector": "jewish",
+            "subjects": [
+              {
+                "subjectId": "mathematics",
+                "units": 5,
+                "grade": 82
+              },
+              {
+                "subjectId": "english",
+                "units": 5,
+                "grade": 90
+              },
+              {
+                "subjectId": "history",
+                "units": 2,
+                "grade": 92
+              },
+              {
+                "subjectId": "bible",
+                "units": 2,
+                "grade": 88
+              }
+            ]
+          }
+        },
+        "expected": {
+          "score": 730,
+          "verdict": "accepted"
+        },
+        "sourceFingerprint": "sha256:4b48b5fdaf9f988cab905a25a68cb7a2f2873d9c4c99c4e9722fb4c3a674d0eb",
+        "capturedAt": "2026-07-26T06:00:00.000Z"
+      },
+      "proof": {
+        "id": "tau-occupational-live",
+        "institutionId": "tau",
+        "institutionName": "Tel Aviv University",
+        "officialUrl": "https://go.tau.ac.il/graphql",
+        "adapterId": "tau",
+        "capability": "decision_capable",
+        "proofLevel": "exact_official",
+        "status": "succeeded",
+        "sourceClass": "api_static_json",
+        "reproducedFields": [
+          "selectedScore",
+          "acceptanceThreshold",
+          "rejectionThreshold",
+          "derivedVerdict"
+        ],
+        "normalizedPayload": {
+          "pairId": "occupational_therapy__tau",
+          "programId": "tau-occupational-therapy",
+          "programName": "Occupational Therapy",
+          "source": "tau_graphql",
+          "selectedScoreField": "hatama",
+          "selectedScore": 730,
+          "exactSciencesBonus": 0,
+          "matchedProgramIds": [
+            "016511010000"
+          ],
+          "matchedProgramTitle": "תואר ראשון בלימודי ריפוי בעיסוק",
+          "derivedVerdict": "accepted",
+          "proofStatus": "succeeded",
+          "proofLevel": "exact_official",
+          "decisionProvenance": "verified_derivation",
+          "acceptanceThreshold": 607,
+          "rejectionThreshold": 606
+        },
+        "limitations": [
+          "Proof applies only to the explicitly matched TAU program identifier and score field"
+        ],
+        "nextAction": "Keep the program-specific mapping, gates, fixtures, and source fingerprint under review",
+        "rawResponseMetadata": [
+          {
+            "endpoint": "https://go.tau.ac.il/graphql",
+            "status": 200,
+            "contentType": "application/json; charset=utf-8"
+          },
+          {
+            "endpoint": "https://go.tau.ac.il/graphql",
+            "status": 200,
+            "contentType": "application/json; charset=utf-8"
+          }
+        ]
+      },
+      "responses": [
+        {
+          "url": "https://go.tau.ac.il/graphql",
+          "status": 200,
+          "body": "{\"data\":{\"getLastScore\":{\"body\":{\"hatama\":\"730\",\"bagrut\":\"115\",\"psicho\":\"730\",\"hatama_nihul\":\"726\",\"hatama_refua\":\"729.83\",\"hatama_handasa\":\"730\",\"hatama_meduyakim\":\"730\"},\"__typename\":\"Response\"}}}"
+        },
+        {
+          "url": "https://go.tau.ac.il/graphql",
+          "status": 200,
+          "body": "{\"data\":{\"getProgramByIdAndLang\":{\"nid\":\"8212\",\"title\":\"תואר ראשון בלימודי ריפוי בעיסוק\",\"receipt_threshol\":[607],\"rejection_thresh\":[606],\"field_registration_comments\":null,\"field_plain_id_programs\":[\"016511010000\"],\"field_faculty_mamta\":\"רפואה ומקצועות הבריאות\"}}}"
+        }
+      ]
+    },
+    {
+      "pair": "occupational_therapy__tau",
+      "fixture": {
+        "id": "occupational_therapy__tau:below:2026-2027",
+        "pairId": "occupational_therapy__tau",
+        "admissionCycle": "2026-2027",
+        "verdict": "below",
+        "input": {
+          "psychometric": 520,
+          "bagrut": 90,
+          "psychometricEnglish": 110,
+          "bagrutSubjectRecord": {
+            "schemaVersion": 1,
+            "sector": "jewish",
+            "subjects": [
+              {
+                "subjectId": "mathematics",
+                "units": 4,
+                "grade": 80
+              },
+              {
+                "subjectId": "english",
+                "units": 5,
+                "grade": 85
+              },
+              {
+                "subjectId": "history",
+                "units": 2,
+                "grade": 80
+              },
+              {
+                "subjectId": "bible",
+                "units": 2,
+                "grade": 78
+              }
+            ]
+          }
+        },
+        "expected": {
+          "score": 496,
+          "verdict": "below"
+        },
+        "sourceFingerprint": "sha256:4b48b5fdaf9f988cab905a25a68cb7a2f2873d9c4c99c4e9722fb4c3a674d0eb",
+        "capturedAt": "2026-07-26T06:00:00.000Z"
+      },
+      "proof": {
+        "id": "tau-occupational-live",
+        "institutionId": "tau",
+        "institutionName": "Tel Aviv University",
+        "officialUrl": "https://go.tau.ac.il/graphql",
+        "adapterId": "tau",
+        "capability": "decision_capable",
+        "proofLevel": "exact_official",
+        "status": "succeeded",
+        "sourceClass": "api_static_json",
+        "reproducedFields": [
+          "selectedScore",
+          "acceptanceThreshold",
+          "rejectionThreshold",
+          "derivedVerdict"
+        ],
+        "normalizedPayload": {
+          "pairId": "occupational_therapy__tau",
+          "programId": "tau-occupational-therapy",
+          "programName": "Occupational Therapy",
+          "source": "tau_graphql",
+          "selectedScoreField": "hatama",
+          "selectedScore": 496,
+          "exactSciencesBonus": 0,
+          "matchedProgramIds": [
+            "016511010000"
+          ],
+          "matchedProgramTitle": "תואר ראשון בלימודי ריפוי בעיסוק",
+          "derivedVerdict": "below",
+          "proofStatus": "succeeded",
+          "proofLevel": "exact_official",
+          "decisionProvenance": "verified_derivation",
+          "acceptanceThreshold": 607,
+          "rejectionThreshold": 606
+        },
+        "limitations": [
+          "Proof applies only to the explicitly matched TAU program identifier and score field"
+        ],
+        "nextAction": "Keep the program-specific mapping, gates, fixtures, and source fingerprint under review",
+        "rawResponseMetadata": [
+          {
+            "endpoint": "https://go.tau.ac.il/graphql",
+            "status": 200,
+            "contentType": "application/json; charset=utf-8"
+          },
+          {
+            "endpoint": "https://go.tau.ac.il/graphql",
+            "status": 200,
+            "contentType": "application/json; charset=utf-8"
+          }
+        ]
+      },
+      "responses": [
+        {
+          "url": "https://go.tau.ac.il/graphql",
+          "status": 200,
+          "body": "{\"data\":{\"getLastScore\":{\"body\":{\"hatama\":\"496\",\"bagrut\":\"90\",\"psicho\":\"520\",\"hatama_nihul\":\"507\",\"hatama_refua\":\"495.57\",\"hatama_handasa\":\"496\",\"hatama_meduyakim\":\"496\"},\"__typename\":\"Response\"}}}"
+        },
+        {
+          "url": "https://go.tau.ac.il/graphql",
+          "status": 200,
+          "body": "{\"data\":{\"getProgramByIdAndLang\":{\"nid\":\"8212\",\"title\":\"תואר ראשון בלימודי ריפוי בעיסוק\",\"receipt_threshol\":[607],\"rejection_thresh\":[606],\"field_registration_comments\":null,\"field_plain_id_programs\":[\"016511010000\"],\"field_faculty_mamta\":\"רפואה ומקצועות הבריאות\"}}}"
+        }
+      ]
+    },
+    {
+      "pair": "tau_industrial__tau",
+      "fixture": {
+        "id": "tau_industrial__tau:accepted:2026-2027",
+        "pairId": "tau_industrial__tau",
+        "admissionCycle": "2026-2027",
+        "verdict": "accepted",
+        "input": {
+          "psychometric": 730,
+          "bagrut": 115,
+          "psychometricEnglish": 110,
+          "bagrutSubjectRecord": {
+            "schemaVersion": 1,
+            "sector": "jewish",
+            "subjects": [
+              {
+                "subjectId": "mathematics",
+                "units": 5,
+                "grade": 82
+              },
+              {
+                "subjectId": "english",
+                "units": 5,
+                "grade": 90
+              },
+              {
+                "subjectId": "history",
+                "units": 2,
+                "grade": 92
+              },
+              {
+                "subjectId": "bible",
+                "units": 2,
+                "grade": 88
+              }
+            ]
+          }
+        },
+        "expected": {
+          "score": 730,
+          "verdict": "accepted"
+        },
+        "sourceFingerprint": "sha256:fd28470bf2cb573244b46e2b0ee55b6756f074b92cf94d7eaeb0ea4bda1a8f72",
+        "capturedAt": "2026-07-26T06:00:00.000Z"
+      },
+      "proof": {
+        "id": "tau-industrial-live",
+        "institutionId": "tau",
+        "institutionName": "Tel Aviv University",
+        "officialUrl": "https://go.tau.ac.il/graphql",
+        "adapterId": "tau",
+        "capability": "decision_capable",
+        "proofLevel": "exact_official",
+        "status": "succeeded",
+        "sourceClass": "api_static_json",
+        "reproducedFields": [
+          "selectedScore",
+          "acceptanceThreshold",
+          "rejectionThreshold",
+          "derivedVerdict"
+        ],
+        "normalizedPayload": {
+          "pairId": "tau_industrial__tau",
+          "programId": "tau-industrial",
+          "programName": "Industrial Engineering and Management",
+          "source": "tau_graphql",
+          "selectedScoreField": "hatama_meduyakim",
+          "selectedScore": 730,
+          "exactSciencesBonus": 0,
+          "matchedProgramIds": [
+            "057311010000"
+          ],
+          "matchedProgramTitle": "תואר ראשון בהנדסת תעשייה וניהול ",
+          "derivedVerdict": "accepted",
+          "proofStatus": "succeeded",
+          "proofLevel": "exact_official",
+          "decisionProvenance": "verified_derivation",
+          "acceptanceThreshold": 667,
+          "rejectionThreshold": 666
+        },
+        "limitations": [
+          "Proof applies only to the explicitly matched TAU program identifier and score field"
+        ],
+        "nextAction": "Keep the program-specific mapping, gates, fixtures, and source fingerprint under review",
+        "rawResponseMetadata": [
+          {
+            "endpoint": "https://go.tau.ac.il/graphql",
+            "status": 200,
+            "contentType": "application/json; charset=utf-8"
+          },
+          {
+            "endpoint": "https://go.tau.ac.il/graphql",
+            "status": 200,
+            "contentType": "application/json; charset=utf-8"
+          }
+        ]
+      },
+      "responses": [
+        {
+          "url": "https://go.tau.ac.il/graphql",
+          "status": 200,
+          "body": "{\"data\":{\"getLastScore\":{\"body\":{\"hatama\":\"730\",\"bagrut\":\"115\",\"psicho\":\"730\",\"hatama_nihul\":\"726\",\"hatama_refua\":\"729.83\",\"hatama_handasa\":\"730\",\"hatama_meduyakim\":\"730\"},\"__typename\":\"Response\"}}}"
+        },
+        {
+          "url": "https://go.tau.ac.il/graphql",
+          "status": 200,
+          "body": "{\"data\":{\"getProgramByIdAndLang\":{\"nid\":\"8291\",\"title\":\"תואר ראשון בהנדסת תעשייה וניהול \",\"receipt_threshol\":[667],\"rejection_thresh\":[666],\"field_registration_comments\":null,\"field_plain_id_programs\":[\"057311010000\"],\"field_faculty_mamta\":\"הנדסה\"}}}"
+        }
+      ]
+    },
+    {
+      "pair": "tau_industrial__tau",
+      "fixture": {
+        "id": "tau_industrial__tau:below:2026-2027",
+        "pairId": "tau_industrial__tau",
+        "admissionCycle": "2026-2027",
+        "verdict": "below",
+        "input": {
+          "psychometric": 520,
+          "bagrut": 90,
+          "psychometricEnglish": 110,
+          "bagrutSubjectRecord": {
+            "schemaVersion": 1,
+            "sector": "jewish",
+            "subjects": [
+              {
+                "subjectId": "mathematics",
+                "units": 4,
+                "grade": 80
+              },
+              {
+                "subjectId": "english",
+                "units": 5,
+                "grade": 85
+              },
+              {
+                "subjectId": "history",
+                "units": 2,
+                "grade": 80
+              },
+              {
+                "subjectId": "bible",
+                "units": 2,
+                "grade": 78
+              }
+            ]
+          }
+        },
+        "expected": {
+          "score": 496,
+          "verdict": "below"
+        },
+        "sourceFingerprint": "sha256:fd28470bf2cb573244b46e2b0ee55b6756f074b92cf94d7eaeb0ea4bda1a8f72",
+        "capturedAt": "2026-07-26T06:00:00.000Z"
+      },
+      "proof": {
+        "id": "tau-industrial-live",
+        "institutionId": "tau",
+        "institutionName": "Tel Aviv University",
+        "officialUrl": "https://go.tau.ac.il/graphql",
+        "adapterId": "tau",
+        "capability": "decision_capable",
+        "proofLevel": "exact_official",
+        "status": "succeeded",
+        "sourceClass": "api_static_json",
+        "reproducedFields": [
+          "selectedScore",
+          "acceptanceThreshold",
+          "rejectionThreshold",
+          "derivedVerdict"
+        ],
+        "normalizedPayload": {
+          "pairId": "tau_industrial__tau",
+          "programId": "tau-industrial",
+          "programName": "Industrial Engineering and Management",
+          "source": "tau_graphql",
+          "selectedScoreField": "hatama_meduyakim",
+          "selectedScore": 496,
+          "exactSciencesBonus": 0,
+          "matchedProgramIds": [
+            "057311010000"
+          ],
+          "matchedProgramTitle": "תואר ראשון בהנדסת תעשייה וניהול ",
+          "derivedVerdict": "below",
+          "proofStatus": "succeeded",
+          "proofLevel": "exact_official",
+          "decisionProvenance": "verified_derivation",
+          "acceptanceThreshold": 667,
+          "rejectionThreshold": 666
+        },
+        "limitations": [
+          "Proof applies only to the explicitly matched TAU program identifier and score field"
+        ],
+        "nextAction": "Keep the program-specific mapping, gates, fixtures, and source fingerprint under review",
+        "rawResponseMetadata": [
+          {
+            "endpoint": "https://go.tau.ac.il/graphql",
+            "status": 200,
+            "contentType": "application/json; charset=utf-8"
+          },
+          {
+            "endpoint": "https://go.tau.ac.il/graphql",
+            "status": 200,
+            "contentType": "application/json; charset=utf-8"
+          }
+        ]
+      },
+      "responses": [
+        {
+          "url": "https://go.tau.ac.il/graphql",
+          "status": 200,
+          "body": "{\"data\":{\"getLastScore\":{\"body\":{\"hatama\":\"496\",\"bagrut\":\"90\",\"psicho\":\"520\",\"hatama_nihul\":\"507\",\"hatama_refua\":\"495.57\",\"hatama_handasa\":\"496\",\"hatama_meduyakim\":\"496\"},\"__typename\":\"Response\"}}}"
+        },
+        {
+          "url": "https://go.tau.ac.il/graphql",
+          "status": 200,
+          "body": "{\"data\":{\"getProgramByIdAndLang\":{\"nid\":\"8291\",\"title\":\"תואר ראשון בהנדסת תעשייה וניהול \",\"receipt_threshol\":[667],\"rejection_thresh\":[666],\"field_registration_comments\":null,\"field_plain_id_programs\":[\"057311010000\"],\"field_faculty_mamta\":\"הנדסה\"}}}"
+        }
+      ]
+    },
+    {
+      "pair": "communication__tau",
+      "fixture": {
+        "id": "communication__tau:accepted:2026-2027",
+        "pairId": "communication__tau",
+        "admissionCycle": "2026-2027",
+        "verdict": "accepted",
+        "input": {
+          "psychometric": 680,
+          "bagrut": 110,
+          "psychometricEnglish": 110,
+          "bagrutSubjectRecord": {
+            "schemaVersion": 1,
+            "sector": "jewish",
+            "subjects": [
+              {
+                "subjectId": "mathematics",
+                "units": 5,
+                "grade": 82
+              },
+              {
+                "subjectId": "english",
+                "units": 5,
+                "grade": 90
+              },
+              {
+                "subjectId": "history",
+                "units": 2,
+                "grade": 92
+              },
+              {
+                "subjectId": "bible",
+                "units": 2,
+                "grade": 88
+              }
+            ]
+          }
+        },
+        "expected": {
+          "score": 679,
+          "verdict": "accepted"
+        },
+        "sourceFingerprint": "sha256:7f9160db9c455cf662f56d033203a2046e97f1d1c50f8dd2ab9b9a3b9ea6a69",
+        "capturedAt": "2026-07-26T06:00:00.000Z"
+      },
+      "proof": {
+        "id": "tau-communication-live",
+        "institutionId": "tau",
+        "institutionName": "Tel Aviv University",
+        "officialUrl": "https://go.tau.ac.il/graphql",
+        "adapterId": "tau",
+        "capability": "decision_capable",
+        "proofLevel": "exact_official",
+        "status": "succeeded",
+        "sourceClass": "api_static_json",
+        "reproducedFields": [
+          "selectedScore",
+          "acceptanceThreshold",
+          "rejectionThreshold",
+          "derivedVerdict"
+        ],
+        "normalizedPayload": {
+          "pairId": "communication__tau",
+          "programId": "tau-communication",
+          "programName": "Communication",
+          "source": "tau_graphql",
+          "selectedScoreField": "hatama",
+          "selectedScore": 679,
+          "exactSciencesBonus": 0,
+          "matchedProgramIds": [
+            "108511050000",
+            "108511054185"
+          ],
+          "matchedProgramTitle": "תואר ראשון בלימודי תקשורת ",
+          "derivedVerdict": "accepted",
+          "proofStatus": "succeeded",
+          "proofLevel": "exact_official",
+          "decisionProvenance": "verified_derivation",
+          "acceptanceThreshold": 530,
+          "rejectionThreshold": 529
+        },
+        "limitations": [
+          "Proof applies only to the explicitly matched TAU program identifier and score field"
+        ],
+        "nextAction": "Keep the program-specific mapping, gates, fixtures, and source fingerprint under review",
+        "rawResponseMetadata": [
+          {
+            "endpoint": "https://go.tau.ac.il/graphql",
+            "status": 200,
+            "contentType": "application/json; charset=utf-8"
+          },
+          {
+            "endpoint": "https://go.tau.ac.il/graphql",
+            "status": 200,
+            "contentType": "application/json; charset=utf-8"
+          }
+        ]
+      },
+      "responses": [
+        {
+          "url": "https://go.tau.ac.il/graphql",
+          "status": 200,
+          "body": "{\"data\":{\"getLastScore\":{\"body\":{\"hatama\":\"679\",\"bagrut\":\"110\",\"psicho\":\"680\",\"hatama_nihul\":\"677\",\"hatama_refua\":\"678.82\",\"hatama_handasa\":\"679\",\"hatama_meduyakim\":\"679\"},\"__typename\":\"Response\"}}}"
+        },
+        {
+          "url": "https://go.tau.ac.il/graphql",
+          "status": 200,
+          "body": "{\"data\":{\"getProgramByIdAndLang\":{\"nid\":\"8277\",\"title\":\"תואר ראשון בלימודי תקשורת \",\"receipt_threshol\":[530],\"rejection_thresh\":[529],\"field_registration_comments\":null,\"field_plain_id_programs\":[\"108511050000\",\"108511054185\"],\"field_faculty_mamta\":\"מדעי החברה\"}}}"
+        }
+      ]
+    },
+    {
+      "pair": "communication__tau",
+      "fixture": {
+        "id": "communication__tau:below:2026-2027",
+        "pairId": "communication__tau",
+        "admissionCycle": "2026-2027",
+        "verdict": "below",
+        "input": {
+          "psychometric": 520,
+          "bagrut": 90,
+          "psychometricEnglish": 110,
+          "bagrutSubjectRecord": {
+            "schemaVersion": 1,
+            "sector": "jewish",
+            "subjects": [
+              {
+                "subjectId": "mathematics",
+                "units": 4,
+                "grade": 80
+              },
+              {
+                "subjectId": "english",
+                "units": 5,
+                "grade": 85
+              },
+              {
+                "subjectId": "history",
+                "units": 2,
+                "grade": 80
+              },
+              {
+                "subjectId": "bible",
+                "units": 2,
+                "grade": 78
+              }
+            ]
+          }
+        },
+        "expected": {
+          "score": 496,
+          "verdict": "below"
+        },
+        "sourceFingerprint": "sha256:7f9160db9c455cf662f56d033203a2046e97f1d1c50f8dd2ab9b9a3b9ea6a69",
+        "capturedAt": "2026-07-26T06:00:00.000Z"
+      },
+      "proof": {
+        "id": "tau-communication-live",
+        "institutionId": "tau",
+        "institutionName": "Tel Aviv University",
+        "officialUrl": "https://go.tau.ac.il/graphql",
+        "adapterId": "tau",
+        "capability": "decision_capable",
+        "proofLevel": "exact_official",
+        "status": "succeeded",
+        "sourceClass": "api_static_json",
+        "reproducedFields": [
+          "selectedScore",
+          "acceptanceThreshold",
+          "rejectionThreshold",
+          "derivedVerdict"
+        ],
+        "normalizedPayload": {
+          "pairId": "communication__tau",
+          "programId": "tau-communication",
+          "programName": "Communication",
+          "source": "tau_graphql",
+          "selectedScoreField": "hatama",
+          "selectedScore": 496,
+          "exactSciencesBonus": 0,
+          "matchedProgramIds": [
+            "108511050000",
+            "108511054185"
+          ],
+          "matchedProgramTitle": "תואר ראשון בלימודי תקשורת ",
+          "derivedVerdict": "below",
+          "proofStatus": "succeeded",
+          "proofLevel": "exact_official",
+          "decisionProvenance": "verified_derivation",
+          "acceptanceThreshold": 530,
+          "rejectionThreshold": 529
+        },
+        "limitations": [
+          "Proof applies only to the explicitly matched TAU program identifier and score field"
+        ],
+        "nextAction": "Keep the program-specific mapping, gates, fixtures, and source fingerprint under review",
+        "rawResponseMetadata": [
+          {
+            "endpoint": "https://go.tau.ac.il/graphql",
+            "status": 200,
+            "contentType": "application/json; charset=utf-8"
+          },
+          {
+            "endpoint": "https://go.tau.ac.il/graphql",
+            "status": 200,
+            "contentType": "application/json; charset=utf-8"
+          }
+        ]
+      },
+      "responses": [
+        {
+          "url": "https://go.tau.ac.il/graphql",
+          "status": 200,
+          "body": "{\"data\":{\"getLastScore\":{\"body\":{\"hatama\":\"496\",\"bagrut\":\"90\",\"psicho\":\"520\",\"hatama_nihul\":\"507\",\"hatama_refua\":\"495.57\",\"hatama_handasa\":\"496\",\"hatama_meduyakim\":\"496\"},\"__typename\":\"Response\"}}}"
+        },
+        {
+          "url": "https://go.tau.ac.il/graphql",
+          "status": 200,
+          "body": "{\"data\":{\"getProgramByIdAndLang\":{\"nid\":\"8277\",\"title\":\"תואר ראשון בלימודי תקשורת \",\"receipt_threshol\":[530],\"rejection_thresh\":[529],\"field_registration_comments\":null,\"field_plain_id_programs\":[\"108511050000\",\"108511054185\"],\"field_faculty_mamta\":\"מדעי החברה\"}}}"
+        }
+      ]
+    }
+  ],
+  "technion": [
+    {
+      "fixture": {
+        "id": "technion_civil__technion:accepted:2026-2027",
+        "pairId": "technion_civil__technion",
+        "admissionCycle": "2026-2027",
+        "verdict": "accepted",
+        "input": {
+          "psychometric": 800,
+          "bagrut": 100,
+          "bagrutSubjectRecord": {
+            "schemaVersion": 1,
+            "sector": "jewish",
+            "subjects": [
+              {
+                "subjectId": "english",
+                "units": 5,
+                "grade": 100
+              },
+              {
+                "subjectId": "literature",
+                "units": 2,
+                "grade": 100
+              },
+              {
+                "subjectId": "mathematics",
+                "units": 5,
+                "grade": 100
+              },
+              {
+                "subjectId": "bible",
+                "units": 2,
+                "grade": 100
+              },
+              {
+                "subjectId": "civics",
+                "units": 2,
+                "grade": 100
+              },
+              {
+                "subjectId": "hebrew_expression",
+                "units": 2,
+                "grade": 100
+              },
+              {
+                "subjectId": "history",
+                "units": 2,
+                "grade": 100
+              },
+              {
+                "subjectId": "hebrew",
+                "units": 2,
+                "grade": 100
+              }
+            ]
+          }
+        },
+        "expected": {
+          "score": 98.9,
+          "verdict": "accepted"
+        },
+        "sourceFingerprint": "sha256:ae4b286298793e6f2ae7601aaeb51d7eb2e988ca9a99df4797c22bc6ead2afa5",
+        "capturedAt": "2026-07-26T00:00:00.000Z"
+      },
+      "proof": {
+        "id": "technion-technion_civil-live",
+        "institutionId": "technion",
+        "institutionName": "Technion",
+        "officialUrl": "https://admissions.technion.ac.il/calculator/",
+        "adapterId": "technion",
+        "capability": "decision_capable",
+        "proofLevel": "exact_official",
+        "status": "succeeded",
+        "sourceClass": "api_static_json",
+        "reproducedFields": [
+          "selectedScore",
+          "acceptanceThreshold",
+          "rejectionThreshold",
+          "derivedVerdict"
+        ],
+        "normalizedPayload": {
+          "programId": "technion_civil",
+          "programName": "technion_civil",
+          "source": "technion_calculators_sum_and_cutoff_table",
+          "selectedScore": 98.9,
+          "sekhemScore": 98.9,
+          "acceptanceThreshold": 87,
+          "rejectionThreshold": 87,
+          "derivedVerdict": "accepted",
+          "proofStatus": "succeeded",
+          "proofLevel": "exact_official",
+          "decisionProvenance": "verified_derivation"
+        },
+        "limitations": [
+          "The cutoff-table proof covers the numeric Sekhem threshold; programme-specific manual gates remain outside this replay."
+        ],
+        "nextAction": "Keep the calculator input mapping, current cutoff table, fixtures, and source fingerprint under review",
+        "rawResponseMetadata": [
+          {
+            "endpoint": "https://admissions.technion.ac.il/wp-content/plugins/technion-calculators/technion-calculators-sum.php",
+            "status": 200,
+            "contentType": "text/html; charset=UTF-8"
+          },
+          {
+            "endpoint": "https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/",
+            "status": 200,
+            "contentType": "text/html; charset=UTF-8"
+          }
+        ]
+      },
+      "responses": [
+        {
+          "url": "https://admissions.technion.ac.il/wp-content/plugins/technion-calculators/technion-calculators-sum.php",
+          "status": 200,
+          "body": "<script>\nfunction copyScore(value){\n  if (value === undefined || value === null) return;\n  value = String(value).trim();\n  if (!value) return;\n\n  if (navigator.clipboard && window.isSecureContext) {\n    navigator.clipboard.writeText(value);\n    return;\n  }\n  // Fallback\n  const ta = document.createElement('textarea');\n  ta.value = value;\n  ta.setAttribute('readonly','');\n  ta.style.position='fixed';\n  ta.style.left='-9999px';\n  document.body.appendChild(ta);\n  ta.select();\n  try { document.execCommand('copy'); } catch(e) {}\n  document.body.removeChild(ta);\n}\n</script>\n<style>\n  .copy-score-btn{\n    \n    margin-right:8px;\n    background-color: #002147 !important;\n    color: #ffffff !important;\n    cursor:pointer;\n    padding: 4px 10px;\n    border: 1px solid #ccc;\n    /*background: #fff;*/\n    border-radius: 6px;\n    font-size: 12px;\n    line-height: 1.2;\n  }\n</style><div class=\"tc_wrapper\">\n\t\t\t\t\t<div class=\"msg screen\">\n\t\t\t\t\t\t\t<p>\n\t\t\t\t\t\t\tשימו לב, <br/>\n\t\t\t\t\t\t\tחישוב זה הוא כלי עזר בלבד. בכל מקרה של אי התאמה בין תוצאות חישוב זה, לבין מידע המתקבל מן הטכניון, קובע המידע שהתקבל מן הטכניון.\n\t\t\t\t\t\t\t<br /></p>\n\t\t\t\t\t</div>\n\t\t\t  \t\t<div class=\"inner_wrapper\">\n\t\t\t\t\t<h2>חישוב ציון סכם לכל המסלולים <br/>פרט לארכיטקטורה ולאדריכלות נוף</h2>\n\t\t\t\t\t<table dir=\"rtl\" class=\"zebra_table\">\n\t\t\t\t\t<caption class=\"hidden\">תוצאות חישוב הסכם</caption>\n\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t<th colspan=\"5\"  class=\"new_tbl\"><center><h2>חישוב סכם</h2></center></th>\n\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t<th>מקצוע</th>\n\t\t\t\t\t\t\t<th>מספר יחידות</th>\n\t\t\t\t\t\t\t<th>ציון</th>\n\t\t\t\t\t\t\t<th width=\"20%\">בונוס  בנקודות</th>\n\t\t\t\t\t\t\t<th width=\"20%\">ציון עם בונוס</th>\n\t\t\t\t\t\t</tr><tr class=\"table_headline\">\n\t\t\t\t   \t\t\t<td  colspan=\"5\" >ציוני הבגרות</td></tr>\n\t\t\t\t\t\t<tr class=\"table_headline\">\n\t\t\t\t\t\t\t<td  colspan=\"5\"> מקצועות אשר נכנסו לממוצע</td>\n\t\t\t\t\t\t</tr>\t<tr>\n\t\t\t\t\t\t\t\t\t\t\t<td> אנגלית</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 5</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 100</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 25</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 125</td>\n\t\t\t\t\t\t\t\t\t\t</tr>\t<tr>\n\t\t\t\t\t\t\t\t\t\t\t<td> ספרות עברית</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 2</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 100</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 0</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 100</td>\n\t\t\t\t\t\t\t\t\t\t</tr>\t<tr>\n\t\t\t\t\t\t\t\t\t\t\t<td> מתמטיקה</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 10</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 100</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 30</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 130</td>\n\t\t\t\t\t\t\t\t\t\t</tr>\t<tr>\n\t\t\t\t\t\t\t\t\t\t\t<td> תנ\"ך</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 2</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 100</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 0</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 100</td>\n\t\t\t\t\t\t\t\t\t\t</tr>\t<tr>\n\t\t\t\t\t\t\t\t\t\t\t<td> אזרחות</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 2</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 100</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 0</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 100</td>\n\t\t\t\t\t\t\t\t\t\t</tr>\t<tr>\n\t\t\t\t\t\t\t\t\t\t\t<td> הבעה עברית</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 2</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 100</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 0</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 100</td>\n\t\t\t\t\t\t\t\t\t\t</tr>\t<tr>\n\t\t\t\t\t\t\t\t\t\t\t<td> הסטוריה</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 2</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 100</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 0</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 100</td>\n\t\t\t\t\t\t\t\t\t\t</tr>\t<tr>\n\t\t\t\t\t\t\t\t\t\t\t<td> לשון עברית לדוברי ערבית</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 2</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 100</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 0</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 100</td>\n\t\t\t\t\t\t\t\t\t\t</tr><tr class=\"table_headline\"><td colspan=\"5\">נתונים כללים</td></tr>\n\t\t\t\t\t  <tr><td colspan=\"5\" class=\"one_line_results\">ציון פסיכומטרי רב תחומי: 800 <button type=\"button\" class=\"copy-score-btn\" onclick=\"copyScore(&quot;800&quot;)\"> העתק </button><br/></br></td></tr><tr class=\"table_headline\"><td  colspan=\"5\">תוצאות החישוב</td></tr>\n\t\t\t\t\t  <tr><td colspan=\"5\" class=\"one_line_results\">ממוצע ציוני הבגרות ללא בונוסים: 100 <button type=\"button\" class=\"copy-score-btn\" onclick=\"copyScore(&quot;100&quot;)\"> העתק </button></br></br>ממוצע בגרות מיטבי: 115.7 <button type=\"button\" class=\"copy-score-btn\" onclick=\"copyScore(&quot;115.7&quot;)\"> העתק </button></br></br>סכם לפי ממוצע בגרות מיטבי והציון הפסיכומטרי הרב תחומי: 98.9 <button type=\"button\" class=\"copy-score-btn\" onclick=\"copyScore(&quot;98.9&quot;)\"> העתק </button></br></br><h2>הסכם לדיוני הקבלה הוא:98.9 <button type=\"button\" class=\"copy-score-btn\" onclick=\"copyScore(&quot;98.9&quot;)\"> העתק </button></h2></td></tr></table>\n\t\t</div><p class=\"screen\">אם אינכם יכולים להתקבל לעדיפויות המעניינות אתכם, אולי תשקלו ללמוד <a href=\"https://kdam.technion.ac.il/\" target=\"_blank\"> במכינת הטכניון?</a></p></div>"
+        },
+        {
+          "url": "https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/",
+          "status": 200,
+          "civilRows": [
+            "<tr class=\"row-6\">\n\t<td class=\"column-1\">הנדסה אזרחית</td><td class=\"column-2\">87</td><td class=\"column-3\">2</td><td class=\"column-4\">✔</td><td class=\"column-5\">✔</td><td class=\"column-6\">✔</td><td class=\"column-7\">2</td><td class=\"column-8\"></td><td class=\"column-9\"></td><td class=\"column-10\">✔</td><td class=\"column-11\">94</td>\n</tr>"
+          ]
+        }
+      ]
+    },
+    {
+      "fixture": {
+        "id": "technion_civil__technion:below:2026-2027",
+        "pairId": "technion_civil__technion",
+        "admissionCycle": "2026-2027",
+        "verdict": "below",
+        "input": {
+          "psychometric": 500,
+          "bagrut": 95,
+          "bagrutSubjectRecord": {
+            "schemaVersion": 1,
+            "sector": "jewish",
+            "subjects": [
+              {
+                "subjectId": "english",
+                "units": 5,
+                "grade": 95
+              },
+              {
+                "subjectId": "literature",
+                "units": 2,
+                "grade": 95
+              },
+              {
+                "subjectId": "mathematics",
+                "units": 5,
+                "grade": 95
+              },
+              {
+                "subjectId": "bible",
+                "units": 2,
+                "grade": 95
+              },
+              {
+                "subjectId": "civics",
+                "units": 2,
+                "grade": 95
+              },
+              {
+                "subjectId": "hebrew_expression",
+                "units": 2,
+                "grade": 95
+              },
+              {
+                "subjectId": "history",
+                "units": 2,
+                "grade": 95
+              },
+              {
+                "subjectId": "hebrew",
+                "units": 2,
+                "grade": 95
+              }
+            ]
+          }
+        },
+        "expected": {
+          "score": 73.9,
+          "verdict": "below"
+        },
+        "sourceFingerprint": "sha256:ae4b286298793e6f2ae7601aaeb51d7eb2e988ca9a99df4797c22bc6ead2afa5",
+        "capturedAt": "2026-07-26T00:00:00.000Z"
+      },
+      "proof": {
+        "id": "technion-technion_civil-live",
+        "institutionId": "technion",
+        "institutionName": "Technion",
+        "officialUrl": "https://admissions.technion.ac.il/calculator/",
+        "adapterId": "technion",
+        "capability": "decision_capable",
+        "proofLevel": "exact_official",
+        "status": "succeeded",
+        "sourceClass": "api_static_json",
+        "reproducedFields": [
+          "selectedScore",
+          "acceptanceThreshold",
+          "rejectionThreshold",
+          "derivedVerdict"
+        ],
+        "normalizedPayload": {
+          "programId": "technion_civil",
+          "programName": "technion_civil",
+          "source": "technion_calculators_sum_and_cutoff_table",
+          "selectedScore": 73.9,
+          "sekhemScore": 73.9,
+          "acceptanceThreshold": 87,
+          "rejectionThreshold": 87,
+          "derivedVerdict": "below",
+          "proofStatus": "succeeded",
+          "proofLevel": "exact_official",
+          "decisionProvenance": "verified_derivation"
+        },
+        "limitations": [
+          "The cutoff-table proof covers the numeric Sekhem threshold; programme-specific manual gates remain outside this replay."
+        ],
+        "nextAction": "Keep the calculator input mapping, current cutoff table, fixtures, and source fingerprint under review",
+        "rawResponseMetadata": [
+          {
+            "endpoint": "https://admissions.technion.ac.il/wp-content/plugins/technion-calculators/technion-calculators-sum.php",
+            "status": 200,
+            "contentType": "text/html; charset=UTF-8"
+          },
+          {
+            "endpoint": "https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/",
+            "status": 200,
+            "contentType": "text/html; charset=UTF-8"
+          }
+        ]
+      },
+      "responses": [
+        {
+          "url": "https://admissions.technion.ac.il/wp-content/plugins/technion-calculators/technion-calculators-sum.php",
+          "status": 200,
+          "body": "<script>\nfunction copyScore(value){\n  if (value === undefined || value === null) return;\n  value = String(value).trim();\n  if (!value) return;\n\n  if (navigator.clipboard && window.isSecureContext) {\n    navigator.clipboard.writeText(value);\n    return;\n  }\n  // Fallback\n  const ta = document.createElement('textarea');\n  ta.value = value;\n  ta.setAttribute('readonly','');\n  ta.style.position='fixed';\n  ta.style.left='-9999px';\n  document.body.appendChild(ta);\n  ta.select();\n  try { document.execCommand('copy'); } catch(e) {}\n  document.body.removeChild(ta);\n}\n</script>\n<style>\n  .copy-score-btn{\n    \n    margin-right:8px;\n    background-color: #002147 !important;\n    color: #ffffff !important;\n    cursor:pointer;\n    padding: 4px 10px;\n    border: 1px solid #ccc;\n    /*background: #fff;*/\n    border-radius: 6px;\n    font-size: 12px;\n    line-height: 1.2;\n  }\n</style><div class=\"tc_wrapper\">\n\t\t\t\t\t<div class=\"msg screen\">\n\t\t\t\t\t\t\t<p>\n\t\t\t\t\t\t\tשימו לב, <br/>\n\t\t\t\t\t\t\tחישוב זה הוא כלי עזר בלבד. בכל מקרה של אי התאמה בין תוצאות חישוב זה, לבין מידע המתקבל מן הטכניון, קובע המידע שהתקבל מן הטכניון.\n\t\t\t\t\t\t\t<br /></p>\n\t\t\t\t\t</div>\n\t\t\t  \t\t<div class=\"inner_wrapper\">\n\t\t\t\t\t<h2>חישוב ציון סכם לכל המסלולים <br/>פרט לארכיטקטורה ולאדריכלות נוף</h2>\n\t\t\t\t\t<table dir=\"rtl\" class=\"zebra_table\">\n\t\t\t\t\t<caption class=\"hidden\">תוצאות חישוב הסכם</caption>\n\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t<th colspan=\"5\"  class=\"new_tbl\"><center><h2>חישוב סכם</h2></center></th>\n\t\t\t\t\t\t</tr>\n\t\t\t\t\t\t<tr>\n\t\t\t\t\t\t\t<th>מקצוע</th>\n\t\t\t\t\t\t\t<th>מספר יחידות</th>\n\t\t\t\t\t\t\t<th>ציון</th>\n\t\t\t\t\t\t\t<th width=\"20%\">בונוס  בנקודות</th>\n\t\t\t\t\t\t\t<th width=\"20%\">ציון עם בונוס</th>\n\t\t\t\t\t\t</tr><tr class=\"table_headline\">\n\t\t\t\t   \t\t\t<td  colspan=\"5\" >ציוני הבגרות</td></tr>\n\t\t\t\t\t\t<tr class=\"table_headline\">\n\t\t\t\t\t\t\t<td  colspan=\"5\"> מקצועות אשר נכנסו לממוצע</td>\n\t\t\t\t\t\t</tr>\t<tr>\n\t\t\t\t\t\t\t\t\t\t\t<td> אנגלית</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 5</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 95</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 25</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 120</td>\n\t\t\t\t\t\t\t\t\t\t</tr>\t<tr>\n\t\t\t\t\t\t\t\t\t\t\t<td> ספרות עברית</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 2</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 95</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 0</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 95</td>\n\t\t\t\t\t\t\t\t\t\t</tr>\t<tr>\n\t\t\t\t\t\t\t\t\t\t\t<td> מתמטיקה</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 10</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 95</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 30</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 125</td>\n\t\t\t\t\t\t\t\t\t\t</tr>\t<tr>\n\t\t\t\t\t\t\t\t\t\t\t<td> תנ\"ך</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 2</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 95</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 0</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 95</td>\n\t\t\t\t\t\t\t\t\t\t</tr>\t<tr>\n\t\t\t\t\t\t\t\t\t\t\t<td> אזרחות</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 2</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 95</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 0</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 95</td>\n\t\t\t\t\t\t\t\t\t\t</tr>\t<tr>\n\t\t\t\t\t\t\t\t\t\t\t<td> הבעה עברית</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 2</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 95</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 0</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 95</td>\n\t\t\t\t\t\t\t\t\t\t</tr>\t<tr>\n\t\t\t\t\t\t\t\t\t\t\t<td> הסטוריה</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 2</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 95</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 0</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 95</td>\n\t\t\t\t\t\t\t\t\t\t</tr>\t<tr>\n\t\t\t\t\t\t\t\t\t\t\t<td> לשון עברית לדוברי ערבית</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 2</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 95</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 0</td>\n\t\t\t\t\t\t\t\t\t\t\t<td> 95</td>\n\t\t\t\t\t\t\t\t\t\t</tr><tr class=\"table_headline\"><td colspan=\"5\">נתונים כללים</td></tr>\n\t\t\t\t\t  <tr><td colspan=\"5\" class=\"one_line_results\">ציון פסיכומטרי רב תחומי: 500 <button type=\"button\" class=\"copy-score-btn\" onclick=\"copyScore(&quot;500&quot;)\"> העתק </button><br/></br></td></tr><tr class=\"table_headline\"><td  colspan=\"5\">תוצאות החישוב</td></tr>\n\t\t\t\t\t  <tr><td colspan=\"5\" class=\"one_line_results\">ממוצע ציוני הבגרות ללא בונוסים: 95 <button type=\"button\" class=\"copy-score-btn\" onclick=\"copyScore(&quot;95&quot;)\"> העתק </button></br></br>ממוצע בגרות מיטבי: 110.7 <button type=\"button\" class=\"copy-score-btn\" onclick=\"copyScore(&quot;110.7&quot;)\"> העתק </button></br></br>סכם לפי ממוצע בגרות מיטבי והציון הפסיכומטרי הרב תחומי: 73.9 <button type=\"button\" class=\"copy-score-btn\" onclick=\"copyScore(&quot;73.9&quot;)\"> העתק </button></br></br><h2>הסכם לדיוני הקבלה הוא:73.9 <button type=\"button\" class=\"copy-score-btn\" onclick=\"copyScore(&quot;73.9&quot;)\"> העתק </button></h2></td></tr></table>\n\t\t</div><p class=\"screen\">אם אינכם יכולים להתקבל לעדיפויות המעניינות אתכם, אולי תשקלו ללמוד <a href=\"https://kdam.technion.ac.il/\" target=\"_blank\"> במכינת הטכניון?</a></p></div>"
+        },
+        {
+          "url": "https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/",
+          "status": 200,
+          "civilRows": [
+            "<tr class=\"row-6\">\n\t<td class=\"column-1\">הנדסה אזרחית</td><td class=\"column-2\">87</td><td class=\"column-3\">2</td><td class=\"column-4\">✔</td><td class=\"column-5\">✔</td><td class=\"column-6\">✔</td><td class=\"column-7\">2</td><td class=\"column-8\"></td><td class=\"column-9\"></td><td class=\"column-10\">✔</td><td class=\"column-11\">94</td>\n</tr>"
+          ]
+        }
+      ]
+    }
+  ],
+  "communicationSource": {
+    "canonical": "{\"url\":\"https://go.tau.ac.il/graphql\",\"program\":{\"nid\":\"8277\",\"title\":\"תואר ראשון בלימודי תקשורת \",\"receipt_threshol\":[530],\"rejection_thresh\":[529],\"field_registration_comments\":null,\"field_plain_id_programs\":[\"108511050000\",\"108511054185\"],\"field_faculty_mamta\":\"מדעי החברה\"},\"scoreField\":\"hatama\"}",
+    "source": {
+      "url": "https://go.tau.ac.il/graphql",
+      "program": {
+        "nid": "8277",
+        "title": "תואר ראשון בלימודי תקשורת ",
+        "receipt_threshol": [
+          530
+        ],
+        "rejection_thresh": [
+          529
+        ],
+        "field_registration_comments": null,
+        "field_plain_id_programs": [
+          "108511050000",
+          "108511054185"
+        ],
+        "field_faculty_mamta": "מדעי החברה"
+      },
+      "scoreField": "hatama"
+    }
+  },
+  "repairs": [
+    {
+      "id": "tau-communication-live",
+      "old": "sha256:7f9160db9c455cf662f56d033203a2046e97f1d1c50f8dd2ab9b9a3b9ea6a69",
+      "next": "sha256:04e202dd1326f4ce1db5431a9e81b4a96e56b321b91b442d05f892b7fc49857d"
+    },
+    {
+      "id": "technion-technion_civil-live",
+      "old": "sha256:ae4b286298793e6f2ae7601aaeb51d7eb2e988ca9a99df4797c22bc6ead2afa5",
+      "next": "sha256:ae4b286298793e6f2ae7601aaeb51d7eb2e988ca9a99df4797c22bc6ead2afa5"
+    }
+  ]
+}

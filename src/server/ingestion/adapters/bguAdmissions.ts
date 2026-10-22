@@ -200,7 +200,11 @@ async function runBguComputerScienceProof(
   const metadata: NonNullable<AdmissionsSourceProof['rawResponseMetadata']> = [];
   const applicant = context.applicant;
   const extraInputs = applicant.extraInputs;
-  const applicantInputs = validateBguComputerScienceInputs(applicant, extraInputs);
+  const applicantInputs = validateBguComputerScienceInputs(
+    applicant,
+    extraInputs,
+    context.assessment,
+  );
   if (!applicantInputs) {
     return failedComputerScienceProof(
       program,
@@ -287,7 +291,7 @@ async function runBguComputerScienceProof(
       institutionName: 'Ben-Gurion University',
       officialUrl: sourceUrl,
       adapterId: 'bgu',
-      capability: 'decision_capable',
+      capability: context.assessment === 'scores' ? 'score_only' : 'decision_capable',
       proofLevel: 'exact_official',
       status: 'succeeded',
       decisionProvenance: 'verified_derivation',
@@ -308,7 +312,13 @@ async function runBguComputerScienceProof(
         selectedScore,
         acceptanceThreshold,
         rejectionThreshold: acceptanceThreshold,
-        derivedVerdict,
+        derivedVerdict:
+          context.assessment === 'scores' && derivedVerdict === 'accepted'
+            ? 'pending'
+            : derivedVerdict,
+        ...(context.assessment === 'scores' && {
+          scoreAssessment: derivedVerdict === 'accepted' ? 'meets_threshold' : 'below_threshold',
+        }),
         sourceFingerprint: currentSourceFingerprint,
         reviewedSourceFingerprint: reviewedFingerprint,
         proofStatus: 'succeeded',
@@ -332,6 +342,7 @@ async function runBguComputerScienceProof(
 function validateBguComputerScienceInputs(
   applicant: AdmissionsAdapterContext['applicant'],
   extraInputs: AdmissionsExtraInputs | undefined,
+  assessment?: 'scores',
 ): { bagrutAverage: number; quantitative: number; verbal: number; english: number } | null {
   const average = extraInputs?.bguBagrutAverage;
   const quantitative = extraInputs?.psychometricMath;
@@ -351,17 +362,20 @@ function validateBguComputerScienceInputs(
     !validInteger(verbal, 50, 150) ||
     !validInteger(english, 50, 150) ||
     !isValidBguComputerScienceSubjectRecord(subjectRecord) ||
-    !languageRequirementsConfirmed
+    (assessment !== 'scores' && !languageRequirementsConfirmed)
   ) {
     return null;
   }
 
-  const gateResult = evaluateBguComputerScienceGates({
-    psychometric: applicant.psychometric,
-    quantitativeSubscore: quantitative,
-    subjects: bagrutExamSubjects(subjectRecord),
-    languageRequirementsConfirmed,
-  });
+  const gateResult = evaluateBguComputerScienceGates(
+    {
+      psychometric: applicant.psychometric,
+      quantitativeSubscore: quantitative,
+      subjects: bagrutExamSubjects(subjectRecord),
+      languageRequirementsConfirmed,
+    },
+    assessment,
+  );
   if (!gateResult.eligibleForScoreComparison) return null;
 
   return { bagrutAverage: average, quantitative, verbal, english };

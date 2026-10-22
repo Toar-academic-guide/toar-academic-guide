@@ -2,6 +2,7 @@ import { mondayAdmissionEvidenceRecords } from '@/data/admissions/mondayEvidence
 import { INSTITUTION_BY_ID, type InstitutionRecord } from '@/data/institutions';
 import mondayInstitutionsExport from '@/data/mondayInstitutions.generated.json';
 import yoramInstitutionLogos from '@/data/yoramInstitutionLogos.generated.json';
+import { institutionWebsite } from '@/lib/institutionLinks';
 
 export type InstitutionAreaFilter =
   'all' | 'center' | 'north' | 'south' | 'jerusalem' | 'tel_aviv' | 'haifa' | 'online';
@@ -50,18 +51,29 @@ const POPULAR_INSTITUTION_IDS = new Set([
 
 const EXCLUDED_MONDAY_ITEM_IDS = new Set(['12242591498']);
 
+// These are separate institutions; the legacy name matcher collapsed both to "tiltan".
+const VERIFIED_DIRECTORY_IDENTITIES: Record<string, { id: string; name: string }> = {
+  '12341137918': {
+    id: 'mon_12341137918',
+    name: 'מכללת תילתן לרפואה משלימה',
+  },
+  '12341149221': {
+    id: 'mon_12341149221',
+    name: 'תילתן המכללה לעיצוב ולתקשורת חזותית',
+  },
+};
+
 const DIRECTORY_LOGO_OVERRIDES: Record<
   string,
   {
     domain?: string;
     logoUrl?: string;
-    sourceUrl?: string;
+    location?: string;
   }
 > = {
   danon: {
     domain: 'danon.org.il',
     logoUrl: 'https://www.meirdanon.com/wp-content/uploads/2015/09/nl2-danon.png',
-    sourceUrl: 'https://www.danon.org.il',
   },
   wizo: {
     domain: 'wizo.org.il',
@@ -69,10 +81,10 @@ const DIRECTORY_LOGO_OVERRIDES: Record<
   mon_12220697934: {
     domain: 'bpm-music.com',
     logoUrl: 'https://i1.sndcdn.com/avatars-000030802522-35lsuk-t500x500.jpg',
-    sourceUrl: 'https://www.bpm-music.com',
   },
   mon_12220697940: {
     logoUrl: '/institution-logos/yoram-levinstein.png',
+    domain: 'studioact.co.il',
   },
   mon_12341118768: {
     logoUrl: '/institution-logos/hbs-college.png',
@@ -82,9 +94,30 @@ const DIRECTORY_LOGO_OVERRIDES: Record<
   },
   mon_12341064485: {
     logoUrl: '/institution-logos/anat-barzilai.png',
+    domain: 'dramacomedy.co.il',
   },
   mon_12341092879: {
     logoUrl: '/institution-logos/studio-6b.png',
+    domain: '6bstudio.co.il',
+  },
+  mon_12341122982: {
+    domain: 'leidaschool.co.il',
+    location: 'מרכז ברודט, צייטלין 22, תל אביב',
+  },
+  mon_12341137918: {
+    domain: 'tiltan-college.co.il',
+  },
+  mon_12341149221: {
+    domain: 'tiltan.co.il',
+  },
+  mon_12341098628: {
+    domain: 'abs-school.com',
+  },
+  nativ: {
+    domain: 'nissan-nativ.org.il',
+  },
+  reidman: {
+    domain: 'reidman.co.il',
   },
   mon_12341098736: {
     logoUrl: '/institution-logos/laledet.png',
@@ -158,7 +191,7 @@ function hostnameFromUrl(url: string | null) {
   }
 
   try {
-    return new URL(url).hostname;
+    return new URL(url).hostname.replace(/^www\./, '');
   } catch {
     return null;
   }
@@ -295,13 +328,16 @@ export function getInstitutionDirectoryItems(): InstitutionDirectoryItem[] {
     .filter((row: MondayInstitutionExportRow) => !EXCLUDED_MONDAY_ITEM_IDS.has(row.itemId))
     .map((row: MondayInstitutionExportRow) => {
       const evidence = evidenceByItemId.get(row.itemId);
-      const id = evidence?.catalogueInstitutionId ?? `mon_${row.itemId}`;
+      const verifiedIdentity = VERIFIED_DIRECTORY_IDENTITIES[row.itemId];
+      const id = verifiedIdentity?.id ?? evidence?.catalogueInstitutionId ?? `mon_${row.itemId}`;
       const institution = INSTITUTION_BY_ID[id as keyof typeof INSTITUTION_BY_ID];
       const override = DIRECTORY_LOGO_OVERRIDES[id];
-      const name = institution?.name ?? evidence?.displayName ?? cleanMondayItemName(row.itemName);
-      // Logo provenance is independent of the public official-link policy.
-      const rawLogoSourceUrl =
-        override?.sourceUrl ??
+      const name =
+        verifiedIdentity?.name ??
+        institution?.name ??
+        evidence?.displayName ??
+        cleanMondayItemName(row.itemName);
+      const importedSourceUrl =
         extractUrl(row.officialSource) ??
         extractUrl(row.calculatorLink) ??
         extractUrl(row.additionalLink) ??
@@ -309,21 +345,14 @@ export function getInstitutionDirectoryItems(): InstitutionDirectoryItem[] {
         institution?.programUrl ??
         institution?.calculatorUrl ??
         null;
-      const sourceUrl = getPublicInstitutionSourceUrl([
-        override?.sourceUrl,
-        institution?.programUrl,
-        institution?.calculatorUrl,
-        ...(evidence?.officialUrls ?? []),
-        row.officialSource,
-        row.calculatorLink,
-        row.additionalLink,
-      ]);
+      const sourceUrl = getPublicInstitutionSourceUrl([institutionWebsite(row.itemId)]);
       const knownDomain = override?.domain ?? institution?.domain;
       const domain =
-        knownDomain && isPublicInstitutionHost(knownDomain)
-          ? knownDomain
-          : hostnameFromUrl(sourceUrl);
-      const yoramLogoUrl = yoramLogoFromSourceUrl(rawLogoSourceUrl);
+        hostnameFromUrl(sourceUrl) ??
+        (knownDomain && isPublicInstitutionHost(knownDomain) ? knownDomain : null);
+      // Imported directory links are retained only for the existing local logo cache.
+      const yoramLogoUrl = yoramLogoFromSourceUrl(importedSourceUrl);
+      const location = override?.location ?? row.location;
 
       return {
         id,
@@ -331,12 +360,12 @@ export function getInstitutionDirectoryItems(): InstitutionDirectoryItem[] {
         name,
         type: row.institutionType,
         funding: row.funding,
-        location: row.location,
+        location,
         diplomaType: row.diplomaType,
         sourceUrl,
         domain,
         logoUrl: override?.logoUrl ?? institution?.logoUrl ?? yoramLogoUrl,
-        areas: inferAreas(row.location, institution?.region ?? null),
+        areas: inferAreas(location, institution?.region ?? null),
         categories: inferCategories({
           id,
           name,

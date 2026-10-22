@@ -75,6 +75,7 @@ export function evaluateHaifaProgrammePolicy(args: {
   input: AdmissionsEvaluationInput;
   score?: number;
   now: Date;
+  assessment?: 'scores';
 }): PolicyResult {
   const extra = args.input.extraInputs ?? {};
   if (args.programId === 'haifa_infosystems' && !extra.haifaInformationSystemsTrack)
@@ -91,12 +92,18 @@ export function evaluateHaifaProgrammePolicy(args: {
   const steps = [...(selectionSteps[policy.programme] ?? [])];
   let conditional = false;
   if (args.programId === 'haifa_infosystems' && track?.partnerRequired) {
-    if (extra.haifaInformationSystemsPartnerRequirementsConfirmed === undefined)
+    if (
+      args.assessment !== 'scores' &&
+      extra.haifaInformationSystemsPartnerRequirementsConfirmed === undefined
+    )
       missing.push('haifa_information_systems_partner_requirements');
-    else if (!extra.haifaInformationSystemsPartnerRequirementsConfirmed)
+    else if (
+      args.assessment !== 'scores' &&
+      !extra.haifaInformationSystemsPartnerRequirementsConfirmed
+    )
       reasons.push('במסלול דו־חוגי יש לעמוד גם בתנאי הקבלה של החוג השני.');
     steps.push(
-      'הבדיקה מתייחסת לצד מערכות המידע. אישרתם שאתם עומדים בתנאי החוג השני; תנאיו אינם מחושבים כאן.',
+      'הבדיקה מתייחסת לצד מערכות המידע. יש לבדוק בנפרד את תנאי החוג השני; תנאיו אינם מחושבים כאן.',
     );
   }
   if (extra.haifaAdmissionQualification === undefined)

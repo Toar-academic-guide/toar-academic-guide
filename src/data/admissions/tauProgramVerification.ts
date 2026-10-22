@@ -1139,7 +1139,8 @@ export const TAU_BIOLOGY_CONTRACT: AdmissionsProgramVerificationContract = {
 };
 
 const TAU_COMMUNICATION_SOURCE_FINGERPRINT =
-  'sha256:7f9160db9c455cf662f56d033203a2046e97f1d1c50f8dd2ab9b9a3b9ea6a69';
+  'sha256:04e202dd1326f4ce1db5431a9e81b4a96e56b321b91b442d05f892b7fc49857d';
+const TAU_COMMUNICATION_RECHECKED_AT = '2026-10-21T13:34:30.013Z';
 export const TAU_COMMUNICATION_FIXTURES: AdmissionsVerificationFixture[] = TAU_BIOLOGY_FIXTURES.map(
   (fixture) => ({
     ...fixture,
@@ -1151,6 +1152,7 @@ export const TAU_COMMUNICATION_FIXTURES: AdmissionsVerificationFixture[] = TAU_B
         : { score: 496, verdict: 'below' },
     input: fixture.verdict === 'accepted' ? fixture.input : { ...fixture.input, psychometric: 520 },
     sourceFingerprint: TAU_COMMUNICATION_SOURCE_FINGERPRINT,
+    capturedAt: TAU_COMMUNICATION_RECHECKED_AT,
   }),
 );
 
@@ -1180,9 +1182,13 @@ export const TAU_COMMUNICATION_CONTRACT: AdmissionsProgramVerificationContract =
     ],
   },
   fixtureIds: TAU_COMMUNICATION_FIXTURES.map((fixture) => fixture.id),
-  fixtureSetFingerprint: 'sha256:563151fe6f1115be7fe2144b7b1cb60a82bafff05095ed5fe80b759c9c37df4c',
+  fixtureSetFingerprint: 'sha256:368227e8c39afd9c96355791a9e5533664bb077ceef0f24556ce791d25e415f3',
   sourceFingerprint: TAU_COMMUNICATION_SOURCE_FINGERPRINT,
-  proof: { ...TAU_BIOLOGY_CONTRACT.proof, sourceFingerprint: TAU_COMMUNICATION_SOURCE_FINGERPRINT },
+  proof: {
+    ...TAU_BIOLOGY_CONTRACT.proof,
+    liveComparedAt: TAU_COMMUNICATION_RECHECKED_AT,
+    sourceFingerprint: TAU_COMMUNICATION_SOURCE_FINGERPRINT,
+  },
 };
 
 const TAU_POLITICAL_SCIENCE_SOURCE_FINGERPRINT =
@@ -1197,6 +1203,8 @@ export const TAU_POLITICAL_SCIENCE_FIXTURES: AdmissionsVerificationFixture[] =
         ? { score: 679, verdict: 'accepted' }
         : { score: 496, verdict: 'below' },
     sourceFingerprint: TAU_POLITICAL_SCIENCE_SOURCE_FINGERPRINT,
+    // This independent capture was not refreshed by the Communication repair.
+    capturedAt: '2026-07-26T06:00:00.000Z',
   }));
 
 export const TAU_POLITICAL_SCIENCE_CONTRACT: AdmissionsProgramVerificationContract = {
@@ -1229,6 +1237,7 @@ export const TAU_POLITICAL_SCIENCE_CONTRACT: AdmissionsProgramVerificationContra
   sourceFingerprint: TAU_POLITICAL_SCIENCE_SOURCE_FINGERPRINT,
   proof: {
     ...TAU_COMMUNICATION_CONTRACT.proof,
+    liveComparedAt: '2026-07-26T06:01:00.000Z',
     sourceFingerprint: TAU_POLITICAL_SCIENCE_SOURCE_FINGERPRINT,
   },
 };
@@ -1442,7 +1451,7 @@ export const TAU_EE_CONTRACT: AdmissionsProgramVerificationContract = {
     ],
   },
   fixtureIds: TAU_EE_FIXTURES.map((fixture) => fixture.id),
-  fixtureSetFingerprint: 'sha256:6771a16d97b6b5eea7ec285fb96223abf967e94d27a08fec80b4a248e1a7e4aa',
+  fixtureSetFingerprint: 'sha256:0646c5443fc52ac428fdce0195eb17ad5da8584c3f43166728e3f74c91cc39da',
   sourceFingerprint: TAU_EE_SOURCE_FINGERPRINT,
   proof: { ...TAU_CS_TEMPLATE_CONTRACT.proof, sourceFingerprint: TAU_EE_SOURCE_FINGERPRINT },
 };
@@ -1459,7 +1468,7 @@ export const TAU_LEGACY_EE_CONTRACT: AdmissionsProgramVerificationContract = {
   programId: 'tau_ee',
   source: { ...TAU_EE_CONTRACT.source, targetId: 'tau-ee-legacy-live' },
   fixtureIds: TAU_LEGACY_EE_FIXTURES.map((fixture) => fixture.id),
-  fixtureSetFingerprint: 'sha256:e51c78d1dcacf49e478911e051ccc8d8d2d14bbceabd19f2faa86f668f3f4e40',
+  fixtureSetFingerprint: 'sha256:f8044c6c9e8f804e08e8291f2fa1baf371fa836dee623f56cafc5b1d2e64e7ab',
 };
 
 const TAU_ME_SOURCE_FINGERPRINT =
@@ -1503,7 +1512,7 @@ export const TAU_ME_CONTRACT: AdmissionsProgramVerificationContract = {
     ],
   },
   fixtureIds: TAU_ME_FIXTURES.map((fixture) => fixture.id),
-  fixtureSetFingerprint: 'sha256:3c53e717f7f3b8c540fa19da89e9315ae1687f31b915613141a5defedc7a64e6',
+  fixtureSetFingerprint: 'sha256:b56c524d92a5085680636d06168a246a3bcb036c7b78c104805061b39b45d1c4',
   sourceFingerprint: TAU_ME_SOURCE_FINGERPRINT,
   proof: { ...TAU_EE_CONTRACT.proof, sourceFingerprint: TAU_ME_SOURCE_FINGERPRINT },
 };
@@ -1520,7 +1529,7 @@ export const TAU_LEGACY_ME_CONTRACT: AdmissionsProgramVerificationContract = {
   programId: 'tau_me',
   source: { ...TAU_ME_CONTRACT.source, targetId: 'tau-me-legacy-live' },
   fixtureIds: TAU_LEGACY_ME_FIXTURES.map((fixture) => fixture.id),
-  fixtureSetFingerprint: 'sha256:ce0c30c4256743907ec1bf33198badf8b9fa89c965a883e6471ab317e9f1d63a',
+  fixtureSetFingerprint: 'sha256:056bf69483778340b571e9e3278d98fd1d39570d0ee0f23a97d5d3bd865e5b32',
 };
 
 const TAU_OCCUPATIONAL_SOURCE_FINGERPRINT =
@@ -1562,7 +1571,7 @@ export const TAU_OCCUPATIONAL_CONTRACT: AdmissionsProgramVerificationContract = 
     ],
   },
   fixtureIds: TAU_OCCUPATIONAL_FIXTURES.map((fixture) => fixture.id),
-  fixtureSetFingerprint: 'sha256:1f7bd700051fd142c77b2e6dcdd9dc0fc9fdbaf47c0b1a9299f5f4dc5b2492de',
+  fixtureSetFingerprint: 'sha256:f38610a87a7fbb3323673ddd85f6e9545fbef36ebbd8d85be2ec14ae9c2afe3b',
   sourceFingerprint: TAU_OCCUPATIONAL_SOURCE_FINGERPRINT,
   proof: { ...TAU_ME_CONTRACT.proof, sourceFingerprint: TAU_OCCUPATIONAL_SOURCE_FINGERPRINT },
 };
@@ -1578,7 +1587,7 @@ export const TAU_LEGACY_OCCUPATIONAL_CONTRACT: AdmissionsProgramVerificationCont
   programId: 'tau_occupational_therapy',
   source: { ...TAU_OCCUPATIONAL_CONTRACT.source, targetId: 'tau-occupational-legacy-live' },
   fixtureIds: TAU_LEGACY_OCCUPATIONAL_FIXTURES.map((fixture) => fixture.id),
-  fixtureSetFingerprint: 'sha256:ddad83f7dd7b66dbf14009cb1bec6450104ad82e68e73da104debdb29772c1e8',
+  fixtureSetFingerprint: 'sha256:4561340f8307577217f853c5b510d1ed46895b167b62dec7a2f6e76041318597',
 };
 
 const TAU_INDUSTRIAL_SOURCE_FINGERPRINT =
@@ -1618,7 +1627,7 @@ export const TAU_INDUSTRIAL_CONTRACT: AdmissionsProgramVerificationContract = {
     ],
   },
   fixtureIds: TAU_INDUSTRIAL_FIXTURES.map((fixture) => fixture.id),
-  fixtureSetFingerprint: 'sha256:688325b1ee3964b0bc4c5e2d89e91723d1e2424a0ef46b5ef24846729b3c0a8d',
+  fixtureSetFingerprint: 'sha256:f1783963b594b3aeba2689b703e79edac7ee103f3901be033c8851856125163d',
   sourceFingerprint: TAU_INDUSTRIAL_SOURCE_FINGERPRINT,
   proof: { ...TAU_ME_CONTRACT.proof, sourceFingerprint: TAU_INDUSTRIAL_SOURCE_FINGERPRINT },
 };

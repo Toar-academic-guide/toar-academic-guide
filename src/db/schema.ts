@@ -236,6 +236,7 @@ export const programs = pgTable('programs', {
   institutionId: text('institution_id').references(() => institutions.id),
   type: programTypeEnum('type').notNull(),
   category: text('category').notNull(),
+  isListed: boolean('is_listed').default(true).notNull(),
   admissionType: admissionTypeEnum('admission_type').notNull(),
   riasecR: integer('riasec_r').notNull(),
   riasecI: integer('riasec_i').notNull(),
@@ -421,7 +422,7 @@ export const userProfiles = pgTable('user_profiles', {
   psychometricQuantitative: integer('psychometric_quantitative'),
   psychometricVerbal: integer('psychometric_verbal'),
   psychometricEnglish: integer('psychometric_english'),
-  bagrutWeightedAverage: integer('bagrut_weighted_average'),
+  bagrutWeightedAverage: real('bagrut_weighted_average'),
   admissionsInputs: jsonb('admissions_inputs').$type<AdmissionsProfileInputs>(),
   bagrutProfileVersionId: uuid('bagrut_profile_version_id').references(
     () => bagrutProfileVersions.id,

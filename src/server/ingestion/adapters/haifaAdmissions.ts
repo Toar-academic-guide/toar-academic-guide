@@ -64,6 +64,7 @@ export async function runHaifaAdmissionsProof(
     );
     const eligibility = evaluateHaifaProgrammePolicy({
       programId,
+      assessment: context.assessment,
       input: {
         degreeId: programId,
         psychometric: context.applicant.psychometric,
@@ -85,7 +86,8 @@ export async function runHaifaAdmissionsProof(
       mappingMatches &&
       parsed.acceptanceCutoff === policy?.score.acceptance &&
       ['eligible', 'pending', 'below'].includes(eligibility.kind);
-    const capability = hasDecision ? 'decision_capable' : 'score_only';
+    const capability =
+      hasDecision && context.assessment !== 'scores' ? 'decision_capable' : 'score_only';
 
     return {
       id: program.targetId ?? `haifa-${program.id}-live`,
@@ -105,9 +107,17 @@ export async function runHaifaAdmissionsProof(
         ...parsed,
         derivedVerdict: hasDecision
           ? eligibility.kind === 'eligible'
-            ? 'eligible_to_apply'
+            ? context.assessment === 'scores'
+              ? 'pending'
+              : 'eligible_to_apply'
             : eligibility.kind
           : undefined,
+        ...(context.assessment === 'scores' &&
+          hasDecision &&
+          eligibility.kind !== 'pending' && {
+            scoreAssessment:
+              eligibility.kind === 'eligible' ? 'meets_threshold' : 'below_threshold',
+          }),
         numericBandVerdict: derivedVerdictFrom(parsed),
         programmeRequirementsUrl: policy?.source.url,
         proofStatus: hasDecision ? 'succeeded' : 'partial',

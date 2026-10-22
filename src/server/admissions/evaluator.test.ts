@@ -1,4 +1,5 @@
 import medicineOfficial from '../../../docs/admissions-verification/2026-09-28-huji-medicine-official.json';
+import routingOfficial from '../../../docs/admissions-verification/2026-10-21-calculator-routing.json';
 import { HUJI_MEDICINE_ELIGIBLE_INPUTS } from '@/data/admissions/hujiMedicineVerification';
 import psychologyOfficial from '../../../docs/admissions-verification/2026-09-27-bgu-psychology-official.json';
 import haifaOfficial from '../../../docs/admissions-verification/2026-09-28-haifa-official.json';
@@ -14,6 +15,9 @@ import { readFileSync } from 'node:fs';
 import engineeringRules from '../../../docs/admissions-verification/2026-09-27-bgu-engineering-rules.json';
 import { BGU_ENGINEERING_METADATA_BY_PAIR_ID } from '@/data/admissions/bguEngineeringVerification';
 import type { AdmissionsExtraInputs } from '@/types/admissionsEvaluation';
+import { DANON_PROGRAM_URLS } from '@/data/admissions/danon';
+import catalogueRepair from '@/data/admissions/catalogueContentRepair.json';
+import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type { AdmissionsEvaluationReport } from '@/types/admissionsEvaluation';
@@ -480,6 +484,171 @@ const hitEngineering: CatalogueProgram = {
 };
 
 describe('evaluateAdmissionsForProgram', () => {
+  it.each(
+    catalogueRepair.requirements.filter(
+      (row) => row.coverage === 'incomplete_published_requirements',
+    ),
+  )(
+    'does not infer eligibility for $programId from missing official requirements or legacy claims',
+    async (row) => {
+      const institutionId = row.institutionId as CatalogueInstitution['id'];
+      const institution: CatalogueInstitution = getStaticCatalogueInstitutions().find(
+        (item) => item.id === row.institutionId,
+      ) ?? {
+        id: institutionId,
+        name: 'מכללת תילתן המכללה לרפואה משלימה',
+        region: 'center',
+        domain: 'tiltan-college.co.il',
+      };
+      const template = getStaticCataloguePrograms().find(
+        (item) => item.id === 'mon_12341122982_graphic_design',
+      )!;
+      const program: CatalogueProgram = {
+        ...template,
+        id: row.programId,
+        institutionId,
+        linkedInstitutionIds: [row.institutionId],
+        institutionDetails: template.institutionDetails!.map((detail) => ({
+          ...detail,
+          institutionName: institution.name,
+          specificAdmissionNotes: row.notes,
+        })),
+      };
+      const before = structuredClone(program);
+      const fetcher = vi.fn<typeof fetch>();
+      for (const scores of [
+        {},
+        { bagrut: 110, psychometric: 700 },
+        { bagrut: 60, psychometric: 200 },
+      ]) {
+        const report = await evaluateAdmissionsForProgram({
+          input: { degreeId: row.programId, ...scores },
+          program,
+          institutions: [institution],
+          fetcher,
+        });
+        expect(report.results).toHaveLength(1);
+        expect(report.results[0]).toMatchObject({
+          capability: 'requirements_only',
+          kind: 'requirements_only',
+          decision: 'unknown',
+          confidence: 'low',
+          degradationReason: 'incomplete_published_requirements',
+          officialUrls: ['programUrl' in row ? row.programUrl : row.sourceUrl],
+        });
+        expect(report.results[0].requiredInputs).toBeUndefined();
+        expect(report.results[0].score).toBeUndefined();
+        expect(report.results[0].threshold).toBeUndefined();
+        expect(report.results[0].explanation).not.toMatch(/ראיון|בגרות|פסיכומטרי|אין סף/);
+      }
+      expect(fetcher).not.toHaveBeenCalled();
+      expect(program).toEqual(before);
+    },
+  );
+
+  it.each(
+    routingOfficial.tau.flatMap((capture) => {
+      const id = capture.pair.split('__')[0];
+      const aliases: Record<string, string[]> = {
+        ee: ['ee', 'tau_ee'],
+        me: ['me', 'tau_me'],
+        occupational_therapy: ['occupational_therapy', 'tau_occupational_therapy'],
+      };
+      return (aliases[id] ?? [id]).map((degreeId) => ({ degreeId, capture }));
+    }),
+  )(
+    'replays $degreeId through the evaluator against the captured official response',
+    async ({ degreeId, capture }) => {
+      const program = {
+        ...getStaticCataloguePrograms().find((p) => p.id === degreeId)!,
+        linkedInstitutionIds: ['tau'],
+      };
+      const fetcher = vi.fn<typeof fetch>();
+      for (const response of capture.responses)
+        fetcher.mockResolvedValueOnce(new Response(response.body, { status: response.status }));
+      const report = await evaluateAdmissionsForProgram({
+        input: {
+          degreeId,
+          psychometric: capture.fixture.input.psychometric,
+          bagrut: capture.fixture.input.bagrut,
+          extraInputs: {
+            psychometricEnglish: 110,
+            bagrutSubjectRecord: {
+              schemaVersion: 1,
+              sector: 'jewish',
+              subjects: [
+                { subjectId: 'mathematics', units: 5, grade: 82 },
+                { subjectId: 'physics', units: 4, grade: 80 },
+              ],
+            },
+          },
+        },
+        program,
+        institutions: getStaticCatalogueInstitutions(),
+        fetcher,
+      });
+      expect(report.results[0]).toMatchObject({
+        kind: 'exact',
+        decision: capture.fixture.expected.verdict,
+        score: capture.fixture.expected.score,
+      });
+      expect(fetcher).toHaveBeenCalledTimes(2);
+    },
+  );
+  it.each([
+    'ee',
+    'tau_ee',
+    'me',
+    'tau_me',
+    'occupational_therapy',
+    'tau_occupational_therapy',
+    'tau_industrial',
+    'communication',
+  ])(
+    'routes %s to its existing calculator and asks for missing applicant inputs',
+    async (degreeId) => {
+      const program = {
+        ...getStaticCataloguePrograms().find((p) => p.id === degreeId)!,
+        linkedInstitutionIds: ['tau'],
+      };
+      const fetcher = vi.fn<typeof fetch>();
+      const report = await evaluateAdmissionsForProgram({
+        input: { degreeId, psychometric: 700, bagrut: 110 },
+        program,
+        institutions: getStaticCatalogueInstitutions(),
+        fetcher,
+      });
+      expect(report.results[0]).toMatchObject({ kind: 'needs_input', decision: 'unknown' });
+      expect(report.results[0].requiredInputs).toContain('psychometric_english');
+      expect(fetcher).not.toHaveBeenCalled();
+    },
+  );
+  it.each(Object.entries(DANON_PROGRAM_URLS))(
+    'does not invent an academic score or entrance exam for Danon programme %s',
+    async (id, officialUrl) => {
+      const template = getStaticCataloguePrograms().find((program) => program.id === 'danon_chef')!;
+      const program = { ...template, id };
+      const fetcher = vi.fn<typeof fetch>();
+      for (const scores of [{}, { bagrut: 110.5, psychometric: 700 }]) {
+        const report = await evaluateAdmissionsForProgram({
+          program,
+          institutions: getStaticCatalogueInstitutions(),
+          input: { degreeId: id, ...scores },
+          fetcher,
+        });
+        expect(report.results).toHaveLength(1);
+        expect(report.results[0]).toMatchObject({
+          capability: 'requirements_only',
+          decision: 'unknown',
+          officialUrls: [officialUrl],
+        });
+        expect(report.results[0].requiredInputs).toBeUndefined();
+        expect(report.results[0].score).toBeUndefined();
+        expect(JSON.stringify(report.results)).not.toMatch(/ראיון|מבחן התאמה|בגרות|פסיכומטרי/);
+      }
+      expect(fetcher).not.toHaveBeenCalled();
+    },
+  );
   it('explains the unresolved ordinary Haifa Information Systems mapping without a numeric replay', async () => {
     const fetcher = vi.fn<typeof fetch>();
     const result = await evaluateAdmissionsForProgram({
@@ -649,9 +818,8 @@ describe('evaluateAdmissionsForProgram', () => {
       fetcher: vi.fn<typeof fetch>().mockRejectedValue(new Error('Official source unavailable')),
     });
     expect(report.results[0]).toMatchObject({
-      kind: 'requirements_only',
+      kind: 'degraded',
       decision: 'unknown',
-      sourceLabel: 'תנאי הקבלה האחרונים שאומתו',
     });
     expect(report.results[0].explanation).toContain('610');
     expect(report.results[0].explanation).toContain('נתוני הבסיס אומתו');
@@ -659,7 +827,36 @@ describe('evaluateAdmissionsForProgram', () => {
     expect(report.results[0].score).toBeUndefined();
   });
 
-  it('runs a live calculation with older verified rules and displays their verification date', async () => {
+  it.each([undefined, false] as const)(
+    'calculates Management with a separate registration confirmation (%s)',
+    async (confirmed) => {
+      const report = await evaluateAdmissionsForProgram({
+        program: management,
+        institutions,
+        input: {
+          degreeId: 'business',
+          psychometric: 605,
+          bagrut: 100,
+          extraInputs: { ...managementInputs, tauManagementRequirementsConfirmed: confirmed },
+        },
+        fetcher: managementFetcher(639),
+      });
+      expect(report.results[0]).toMatchObject({
+        kind: 'exact',
+        score: 639,
+        scoreAssessment: 'meets_threshold',
+        decision: confirmed === false ? 'below' : 'pending',
+      });
+      expect(report.results[0].additionalConditions).toContainEqual(
+        expect.objectContaining({
+          id: 'tau_management_requirements',
+          status: confirmed === false ? 'unmet' : 'unconfirmed',
+        }),
+      );
+    },
+  );
+
+  it('runs a live calculation with older verified rules and keeps score copy student-facing', async () => {
     const states = qualifiedFreshnessStates(management, managementInputs);
     for (const state of states.values()) state.lastExactCheckAt = new Date('2026-09-27T12:00:00Z');
     const fetcher = managementFetcher(639);
@@ -681,7 +878,8 @@ describe('evaluateAdmissionsForProgram', () => {
       decision: 'eligible_to_apply',
       score: 639,
     });
-    expect(report.results[0].explanation).toContain('27.9.2026');
+    expect(report.results[0].scoreAssessment).toBe('meets_threshold');
+    expect(report.results[0].explanation).not.toContain('נתוני הבסיס');
     expect(fetcher).toHaveBeenCalled();
   });
 
@@ -692,10 +890,10 @@ describe('evaluateAdmissionsForProgram', () => {
       institutions,
       freshnessStatesBySourceId: new Map(),
     });
-    expect(report.results[0]).toMatchObject({ kind: 'requirements_only', decision: 'unknown' });
+    expect(report.results[0]).toMatchObject({ kind: 'authority_unavailable', decision: 'unknown' });
   });
 
-  it('asks for Management conditions instead of unrelated Digital Sciences subjects', async () => {
+  it('still requires Management inputs that determine the numeric route', async () => {
     const fetcher = vi.fn<typeof fetch>();
     const report = await evaluateAdmissionsForProgram({
       input: { degreeId: 'business', psychometric: 680, bagrut: 100 },
@@ -705,7 +903,7 @@ describe('evaluateAdmissionsForProgram', () => {
     });
     expect(report.results[0]).toMatchObject({
       kind: 'needs_input',
-      requiredInputs: ['tau_management_requirements'],
+      requiredInputs: ['math_units', 'math_grade', 'psychometric_math'],
     });
     expect(fetcher).not.toHaveBeenCalled();
   });
@@ -757,9 +955,11 @@ describe('evaluateAdmissionsForProgram', () => {
   );
 
   it.each([undefined, false] as const)(
-    'requires an official Architecture pass result (%s), regardless of a high exam score',
+    'calculates Architecture scores while keeping the official pass result separate (%s)',
     async (passed) => {
-      const fetcher = vi.fn<typeof fetch>();
+      const fetcher = vi
+        .fn<typeof fetch>()
+        .mockImplementation(async (url) => new Response(architectureSourceResponse(String(url))));
       const report = await evaluateAdmissionsForProgram({
         program: architecture,
         institutions,
@@ -771,12 +971,18 @@ describe('evaluateAdmissionsForProgram', () => {
           extraInputs: { ...architectureInputs, technionArchitectureExamPassed: passed },
         },
       });
-      expect(report.results[0]).toMatchObject(
-        passed === undefined
-          ? { kind: 'needs_input', requiredInputs: ['technion_architecture_exam_passed'] }
-          : { decision: 'below' },
-      );
-      expect(fetcher).not.toHaveBeenCalled();
+      expect(report.results[0]).toMatchObject({
+        kind: 'exact',
+        scoreAssessment: 'meets_threshold',
+        decision: passed === undefined ? 'pending' : 'below',
+        additionalConditions: expect.arrayContaining([
+          expect.objectContaining({
+            id: 'technion_architecture_exam_passed',
+            status: passed === undefined ? 'unconfirmed' : 'unmet',
+          }),
+        ]),
+      });
+      expect(fetcher).toHaveBeenCalled();
     },
   );
 
@@ -872,8 +1078,8 @@ describe('evaluateAdmissionsForProgram', () => {
     expect(report.results).toContainEqual(
       expect.objectContaining({
         linkedInstitutionId: 'bgu',
-        capability: 'requirements_only',
-        kind: 'requirements_only',
+        capability: 'authority_unavailable',
+        kind: 'authority_unavailable',
         decision: 'unknown',
         officialUrls: ['https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html'],
       }),
@@ -1101,7 +1307,6 @@ describe('evaluateAdmissionsForProgram', () => {
   it.each([
     { psychometric: 599, extraInputs: csInputs },
     { psychometric: 800, extraInputs: { ...csInputs, psychometricMath: 124 } },
-    { psychometric: 800, extraInputs: { ...csInputs, bguLanguageRequirementsConfirmed: false } },
     {
       psychometric: 800,
       extraInputs: {
@@ -1127,10 +1332,7 @@ describe('evaluateAdmissionsForProgram', () => {
     },
   );
 
-  it.each([
-    { psychometric: 659, extraInputs: csInputs },
-    { psychometric: 730, extraInputs: { ...csInputs, tauApplicationRequirementsConfirmed: false } },
-  ])(
+  it.each([{ psychometric: 659, extraInputs: csInputs }])(
     'checks TAU CS standard-route gates before score replay ($psychometric)',
     async (testInput) => {
       const fetcher = vi.fn<typeof fetch>();
@@ -1189,7 +1391,7 @@ describe('evaluateAdmissionsForProgram', () => {
 
     expect(report.results[0]).toMatchObject({
       kind: 'needs_input',
-      requiredInputs: ['bgu_engineering_details', 'bgu_language_requirements'],
+      requiredInputs: ['bgu_engineering_details'],
     });
     expect(fetcher).not.toHaveBeenCalled();
   });
@@ -1332,10 +1534,7 @@ describe('evaluateAdmissionsForProgram', () => {
         linkedInstitutionId: 'bgu',
         capability: 'needs_input',
         decision: 'unknown',
-        requiredInputs: expect.arrayContaining([
-          'bgu_application_priority',
-          'bgu_certificate_requirements',
-        ]),
+        requiredInputs: expect.arrayContaining(['bgu_bagrut_average', 'psychometric_math']),
       }),
     );
   });
@@ -2838,11 +3037,17 @@ for (const source of socialScienceOfficial.programmes) {
   }
 }
 
-it('preserves a Social Work academic committee decision as unknown', async () => {
+it('shows Social Work scores while retaining the outstanding academic committee decision', async () => {
   const program = { ...bguCs, id: 'bgu_socialwork' };
   const report = await evaluateAdmissionsForProgram({
     program,
     institutions,
+    fetcher: async () =>
+      new Response(
+        JSON.stringify(
+          socialScienceOfficial.programmes.find((row) => row.programme === 'social_work')!.payload,
+        ),
+      ),
     input: {
       degreeId: program.id,
       psychometric: 800,
@@ -2855,7 +3060,150 @@ it('preserves a Social Work academic committee decision as unknown', async () =>
       },
     },
   });
-  expect(report.results[0]).toMatchObject({ capability: 'manual_gate', decision: 'unknown' });
+  expect(report.results[0]).toMatchObject({
+    capability: 'exact',
+    decision: 'pending',
+    scoreAssessment: 'meets_threshold',
+    score: 800,
+  });
+  expect(report.results[0].additionalConditions).toContainEqual(
+    expect.objectContaining({ id: 'bgu_social_work_academic_background', status: 'unconfirmed' }),
+  );
+});
+
+it.each([
+  [undefined, undefined, 'pending', 'unconfirmed', 'unconfirmed'],
+  [true, undefined, 'pending', 'confirmed', 'unconfirmed'],
+  [true, true, 'eligible_to_apply', 'confirmed', 'confirmed'],
+  [false, true, 'below', 'unmet', 'confirmed'],
+] as const)(
+  'assesses saved Psychology scores separately from confirmations %s/%s',
+  async (language, entry, decision, languageStatus, entryStatus) => {
+    const program = { ...bguCs, id: 'bgu_psychology', name: 'פסיכולוגיה' };
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ items: [psychologyOfficial.officialRule] })),
+      );
+    const report = await evaluateAdmissionsForProgram({
+      program,
+      institutions,
+      input: {
+        degreeId: program.id,
+        psychometric: 700,
+        bagrut: 110,
+        extraInputs: {
+          bguLanguageRequirementsConfirmed: language,
+          bguPsychologyRequirementsConfirmed: entry,
+        },
+      },
+      fetcher,
+    });
+    expect(report.results[0]).toMatchObject({
+      kind: 'exact',
+      decision,
+      score: 700,
+      threshold: 680,
+      scoreAssessment: 'meets_threshold',
+      additionalConditions: [
+        { id: 'bgu_language_requirements', status: languageStatus },
+        { id: 'bgu_psychology_requirements', status: entryStatus },
+      ],
+    });
+    expect(report.results[0].requiredInputs).toBeUndefined();
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  },
+);
+
+it('calculates the combined Psychology score without waiting for entry confirmations', async () => {
+  const program = { ...bguCs, id: 'bgu_psychology' };
+  const fetcher = vi
+    .fn<typeof fetch>()
+    .mockResolvedValueOnce(
+      new Response(JSON.stringify({ items: [psychologyOfficial.officialRule] })),
+    )
+    .mockResolvedValueOnce(
+      new Response('parent.main.document.mainForm.on_final_sekem.value = 663;'),
+    );
+  const report = await evaluateAdmissionsForProgram({
+    program,
+    institutions,
+    input: { degreeId: program.id, psychometric: 650, extraInputs: { bguBagrutAverage: 100 } },
+    fetcher,
+  });
+  expect(report.results[0]).toMatchObject({
+    kind: 'exact',
+    decision: 'pending',
+    score: 663,
+    threshold: 650,
+    scoreAssessment: 'meets_threshold',
+  });
+  expect(fetcher).toHaveBeenCalledTimes(2);
+});
+
+it('keeps a below-threshold score separate from unanswered Psychology conditions', async () => {
+  const program = { ...bguCs, id: 'bgu_psychology' };
+  const report = await evaluateAdmissionsForProgram({
+    program,
+    institutions,
+    input: {
+      degreeId: program.id,
+      psychometric: 679,
+      extraInputs: { bguPsychologyRoute: 'psychometric' },
+    },
+    fetcher: vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ items: [psychologyOfficial.officialRule] })),
+      ),
+  });
+  expect(report.results[0]).toMatchObject({
+    decision: 'below',
+    score: 679,
+    threshold: 680,
+    scoreAssessment: 'below_threshold',
+  });
+  expect(
+    report.results[0].additionalConditions?.every(
+      (condition) => condition.status === 'unconfirmed',
+    ),
+  ).toBe(true);
+});
+
+it('still requires actual numeric inputs and never substitutes generic Bagrut for the BGU average', async () => {
+  const program = { ...bguCs, id: 'bgu_psychology' };
+  const fetcher = vi.fn<typeof fetch>();
+  const report = await evaluateAdmissionsForProgram({
+    program,
+    institutions,
+    input: { degreeId: program.id, psychometric: 650, bagrut: 110 },
+    fetcher,
+  });
+  expect(report.results[0]).toMatchObject({
+    kind: 'needs_input',
+    decision: 'unknown',
+    requiredInputs: ['bgu_bagrut_average'],
+  });
+  expect(report.results[0].scoreAssessment).toBeUndefined();
+  expect(fetcher).not.toHaveBeenCalled();
+});
+
+it('withholds the score assessment when official Psychology rules change', async () => {
+  const program = { ...bguCs, id: 'bgu_psychology' };
+  const report = await evaluateAdmissionsForProgram({
+    program,
+    institutions,
+    input: { degreeId: program.id, psychometric: 700 },
+    fetcher: vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(
+        new Response(
+          JSON.stringify({ items: [{ ...psychologyOfficial.officialRule, psycho_value: 651 }] }),
+        ),
+      ),
+  });
+  expect(report.results[0].decision).toBe('unknown');
+  expect(report.results[0].scoreAssessment).toBeUndefined();
 });
 
 it.each(['psychology', 'bgu_psychology'])(
@@ -2995,7 +3343,7 @@ describe('current HUJI Medicine staged evaluation', () => {
         ),
     });
     expect(report.results).toContainEqual(
-      expect.objectContaining({ kind: 'requirements_only', decision: 'unknown' }),
+      expect.objectContaining({ kind: 'degraded', decision: 'unknown' }),
     );
   });
 });
@@ -3061,3 +3409,84 @@ it('evaluates OT degree review without psychometric or Bagrut and does not promi
     explanation: expect.stringContaining('דיון במחלקה'),
   });
 });
+
+for (const source of socialScienceOfficial.programmes) {
+  const capture = source.calculatorCaptures.find(
+    (row) => row.expectedNumericRouteVerdict === 'eligible_to_apply',
+  )!;
+  it.each([undefined, false] as const)(
+    `keeps ${capture.pairId} scores with a separate language condition (%s)`,
+    async (confirmed) => {
+      const id = capture.pairId.split('__')[0];
+      const input = {
+        degreeId: id,
+        psychometric: capture.input.psychometric,
+        extraInputs: {
+          bguBagrutAverage: capture.input.bguBagrutAverage,
+          bguSocialScienceRoute: 'score' as const,
+          bguSocialScienceLanguageConfirmed: confirmed,
+        },
+      };
+      const before = structuredClone(input);
+      const report = await evaluateAdmissionsForProgram({
+        program: { ...bguCs, id },
+        institutions,
+        input,
+        fetcher: async (url) =>
+          new Response(
+            String(url).includes('GetRdpData')
+              ? JSON.stringify(source.payload)
+              : capture.rawResponse,
+          ),
+      });
+      expect(report.results[0]).toMatchObject({
+        kind: 'exact',
+        score: capture.officialScore,
+        scoreAssessment: 'meets_threshold',
+        decision: confirmed === false ? 'below' : 'pending',
+        additionalConditions: expect.arrayContaining([
+          expect.objectContaining({
+            id: 'bgu_social_science_language',
+            status: confirmed === false ? 'unmet' : 'unconfirmed',
+          }),
+        ]),
+      });
+      expect(input).toEqual(before);
+    },
+  );
+}
+
+it.each(healthOfficial.captures.filter((fixture) => fixture.kind === 'eligible'))(
+  'keeps $pairId scores without confirming health registration requirements',
+  async (fixture) => {
+    const id = fixture.pairId.split('__')[0] as keyof typeof BGU_HEALTH_CONFIG;
+    const { psychometric, bagrut: _bagrut, ...extraInputs } = fixture.input;
+    const report = await evaluateAdmissionsForProgram({
+      program: { ...bguCs, id },
+      institutions,
+      input: {
+        degreeId: id,
+        psychometric,
+        extraInputs: {
+          ...extraInputs,
+          bguOccupationalTherapyRequirementsConfirmed: undefined,
+          bguPhysiotherapyRequirementsConfirmed: undefined,
+          bguOccupationalTherapyExamSession: undefined,
+        } as AdmissionsExtraInputs,
+      },
+      fetcher: vi
+        .fn<typeof fetch>()
+        .mockResolvedValueOnce(new Response(healthOfficial.programmes[id].rawRuleResponse))
+        .mockResolvedValueOnce(new Response(fixture.rawResponse)),
+    });
+    expect(report.results[0]).toMatchObject({
+      kind: 'exact',
+      score: fixture.score,
+      scoreAssessment: 'meets_threshold',
+      decision: 'pending',
+    });
+    expect(report.results[0].additionalConditions).toContainEqual(
+      expect.objectContaining({ status: 'unconfirmed' }),
+    );
+  },
+);

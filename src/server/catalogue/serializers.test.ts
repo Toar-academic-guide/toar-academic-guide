@@ -12,6 +12,34 @@ import type {
 } from '@/db/types';
 
 describe('catalogue serializers', () => {
+  it('presents the legacy Danon programme without repeating its subject', () => {
+    const program = {
+      id: 'danon_cs',
+      name: 'קולינריה - דנון - קולינריה',
+      institutionName: 'מכון דנון לבישול',
+      institutionId: 'danon',
+      type: 'certificate',
+      category: 'קולינריה',
+      riasecR: 1,
+      riasecI: 1,
+      riasecA: 1,
+      riasecS: 1,
+      riasecE: 1,
+      riasecC: 1,
+      admissionType: 'requirements',
+      isTauEngineering: false,
+    } as ProgramRow;
+    const result = serializeProgramRow({
+      program,
+      relations: [],
+      requirements: [],
+      thresholds: [],
+      sourceUrls: [],
+      institutionsById: new Map(),
+    });
+    expect(result.name).toBe('קולינריה — דנון');
+    expect(result.id).toBe('danon_cs');
+  });
   it('preserves missing durationYears as null instead of coercing to zero', () => {
     const program = {
       id: 'test_program',

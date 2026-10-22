@@ -1,4 +1,7 @@
 'use client';
+import AdmissionConditions from './AdmissionConditions';
+
+import { institutionLink } from '@/lib/institutionLinks';
 
 import { allowsNoGenericBagrut, allowsNoPsychometric } from '@/lib/calculatorInputRequirements';
 
@@ -746,8 +749,11 @@ export default function CalculatorResults({
 
               <div className="flex flex-col gap-2">
                 {visible.map(({ institution, result }) => {
-                  const config =
-                    result.kind === 'exact'
+                  const config = result.scoreAssessment
+                    ? result.scoreAssessment === 'meets_threshold'
+                      ? { ...STATUS_CONFIG.exactAccepted, label: 'הציונים עומדים בסף' }
+                      : { ...STATUS_CONFIG.exactBelow, label: 'הציונים מתחת לסף' }
+                    : result.kind === 'exact'
                       ? result.decision === 'accepted'
                         ? { ...STATUS_CONFIG.exactAccepted, label: acceptedLabel() }
                         : result.decision === 'below'
@@ -799,6 +805,7 @@ export default function CalculatorResults({
                                       ? STATUS_CONFIG.trackedMissingRule
                                       : STATUS_CONFIG.unsupported;
                   const institutionType = getInstitutionType(institution);
+                  const sourceUrl = institutionLink(result.officialUrls?.[0], institution.id);
 
                   return (
                     <div
@@ -815,7 +822,7 @@ export default function CalculatorResults({
                           <p className="truncate text-sm font-bold text-slate-900">
                             {institution.name}
                           </p>
-                          <p className="text-[10px] text-slate-500" dir="ltr">
+                          <p className="text-[10px] text-slate-500">
                             {institutionType === 'university' ? 'אוניברסיטה' : 'מכללה'} ·{' '}
                             {formatResultSummary(result)}
                           </p>
@@ -826,15 +833,16 @@ export default function CalculatorResults({
                             {result.explanation}
                           </p>
                           <p className="mt-1 text-[11px] text-slate-500">{result.nextAction}</p>
-                          {result.officialUrls && result.officialUrls.length > 0 ? (
+                          <AdmissionConditions conditions={result.additionalConditions} />
+                          {sourceUrl ? (
                             <a
-                              href={result.officialUrls[0]}
+                              href={sourceUrl}
                               target="_blank"
                               rel="noopener noreferrer"
                               dir="ltr"
-                              className="mt-1 inline-block max-w-full truncate text-[11px] font-semibold text-[#4f46e5] underline decoration-[#a5b4fc] underline-offset-2 hover:text-[#3730a3]"
+                              className="mt-1 inline-block max-w-full truncate text-right text-[11px] font-semibold text-[#4f46e5] underline decoration-[#a5b4fc] underline-offset-2 hover:text-[#3730a3]"
                             >
-                              {result.officialUrls[0]}
+                              לאתר המוסד
                             </a>
                           ) : null}
                         </div>
@@ -1080,6 +1088,7 @@ function VerifiedRoutePanel({
 }
 
 function RouteCard({ title, route }: { title: string; route: AdmissionsRouteResult }) {
+  const sourceUrl = institutionLink(route.verification.sourceUrl);
   return (
     <article className="rounded-xl border-2 border-black bg-white p-4">
       <h2 className="text-sm font-black text-slate-900">{title}</h2>
@@ -1097,9 +1106,9 @@ function RouteCard({ title, route }: { title: string; route: AdmissionsRouteResu
         אומת מול ציון {route.verification.score} וסף {route.verification.cutoff}. זהו חישוב קבלה, לא
         הבטחת קבלה סופית.
       </p>
-      {route.verification.sourceUrl ? (
+      {sourceUrl ? (
         <a
-          href={route.verification.sourceUrl}
+          href={sourceUrl}
           target="_blank"
           rel="noreferrer"
           className="mt-2 inline-block text-xs font-semibold text-[#4f46e5] underline"

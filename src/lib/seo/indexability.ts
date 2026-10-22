@@ -1,22 +1,45 @@
-import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
-import { getPublicInstitutionPageData, getPublicProgramPageData } from '@/lib/publicCataloguePages';
+import { loadPublicCatalogue } from '@/lib/publicCataloguePages';
+import { canonicalProgramId } from './programAliases';
 
-export function isIndexableInstitution(id: string): boolean {
-  return !id.startsWith('mon_') && (getPublicInstitutionPageData(id)?.programs.length ?? 0) > 0;
+type Catalogue = Awaited<ReturnType<typeof loadPublicCatalogue>>;
+
+export async function isIndexableInstitution(id: string, catalogue?: Catalogue): Promise<boolean> {
+  const { institutions, programs } = catalogue ?? (await loadPublicCatalogue());
+  return (
+    !id.startsWith('mon_') &&
+    institutions.some((institution) => institution.id === id) &&
+    programs.some(
+      (program) => program.isListed !== false && program.linkedInstitutionIds.includes(id),
+    )
+  );
 }
 
-export function isIndexableProgram(id: string): boolean {
-  return !id.startsWith('mon_') && (getPublicProgramPageData(id)?.institutions.length ?? 0) > 0;
+export async function isIndexableProgram(id: string, catalogue?: Catalogue): Promise<boolean> {
+  const { institutions, programs } = catalogue ?? (await loadPublicCatalogue());
+  const program = programs.find((program) => program.id === id);
+  return (
+    canonicalProgramId(id) === id &&
+    !id.startsWith('mon_') &&
+    !!program &&
+    program.isListed !== false &&
+    institutions.some((institution) => program.linkedInstitutionIds.includes(institution.id))
+  );
 }
 
-export function indexableInstitutionIds(): string[] {
-  return getStaticCatalogueInstitutions()
-    .filter((institution) => isIndexableInstitution(institution.id))
+export async function indexableInstitutionIds(): Promise<string[]> {
+  const catalogue = await loadPublicCatalogue();
+  const flags = await Promise.all(
+    catalogue.institutions.map((institution) => isIndexableInstitution(institution.id, catalogue)),
+  );
+  return catalogue.institutions
+    .filter((_, index) => flags[index])
     .map((institution) => institution.id);
 }
 
-export function indexableProgramIds(): string[] {
-  return getStaticCataloguePrograms()
-    .filter((program) => isIndexableProgram(program.id))
-    .map((program) => program.id);
+export async function indexableProgramIds(): Promise<string[]> {
+  const catalogue = await loadPublicCatalogue();
+  const flags = await Promise.all(
+    catalogue.programs.map((program) => isIndexableProgram(program.id, catalogue)),
+  );
+  return catalogue.programs.filter((_, index) => flags[index]).map((program) => program.id);
 }

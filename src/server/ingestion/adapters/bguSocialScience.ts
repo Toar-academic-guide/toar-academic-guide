@@ -16,6 +16,7 @@ import { resolveBguSocialScienceAdmission } from '@/server/admissions/bguSocialS
 
 export async function runBguSocialScienceProof(
   context: Omit<AdmissionsAdapterContext, 'applicant'> & {
+    assessment?: 'scores';
     applicant: {
       psychometric?: number;
       bagrutAverage?: number;
@@ -66,7 +67,7 @@ export async function runBguSocialScienceProof(
       psychometric: context.applicant.psychometric,
       extraInputs: context.applicant.extraInputs,
     };
-    let admission = resolveBguSocialScienceAdmission(input);
+    let admission = resolveBguSocialScienceAdmission(input, undefined, context.assessment);
     if (admission.kind === 'score') {
       const params = new URLSearchParams({
         rn_include_mitsraf: '0',
@@ -94,7 +95,7 @@ export async function runBguSocialScienceProof(
       const score = Number(matches[0][1]);
       if (!Number.isFinite(score))
         throw new Error('Official calculator returned a non-finite score');
-      admission = resolveBguSocialScienceAdmission(input, score);
+      admission = resolveBguSocialScienceAdmission(input, score, context.assessment);
     }
     if (admission.kind === 'needs_input' || admission.kind === 'score')
       throw new Error('Route-specific applicant inputs are missing');
@@ -117,7 +118,7 @@ export async function runBguSocialScienceProof(
       };
     return {
       ...base,
-      capability: 'decision_capable',
+      capability: context.assessment === 'scores' ? 'score_only' : 'decision_capable',
       proofLevel: 'exact_official',
       status: 'succeeded',
       sourceClass: sourceClassForCapability('decision_capable'),
@@ -138,7 +139,15 @@ export async function runBguSocialScienceProof(
         selectedScore: admission.score,
         acceptanceThreshold: admission.threshold,
         rejectionThreshold: admission.threshold,
-        derivedVerdict: admission.kind === 'eligible' ? 'eligible_to_apply' : 'below',
+        derivedVerdict:
+          admission.kind === 'eligible'
+            ? context.assessment === 'scores'
+              ? 'pending'
+              : 'eligible_to_apply'
+            : 'below',
+        ...(context.assessment === 'scores' && {
+          scoreAssessment: admission.kind === 'eligible' ? 'meets_threshold' : 'below_threshold',
+        }),
         route: admission.route,
         reason: admission.reason,
         waitingList: rule.waitingList,

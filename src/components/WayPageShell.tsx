@@ -16,7 +16,7 @@ interface WayPageShellProps {
 export default function WayPageShell({
   children,
   className = '',
-  contentClassName = 'pt-28',
+  contentClassName = '',
   dir = 'rtl',
   navigation = <PublicNavBar />,
 }: WayPageShellProps) {

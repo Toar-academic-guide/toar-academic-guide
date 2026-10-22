@@ -1,0 +1,26 @@
+{
+  "mon_12341113400_cs": {
+    "name": "פיתוח תוכנה - קודינג אקדמי",
+    "category": "טכנולוגיה ופיתוח",
+    "type": "certificate",
+    "programUrl": "https://www.coding-academy.org/"
+  },
+  "mon_12341101353_cs": {
+    "name": "סייבר ואבטחת מידע - Israel Cyber Campus",
+    "category": "טכנולוגיה ופיתוח",
+    "type": "certificate",
+    "programUrl": "https://www.israelcybercampus.com/"
+  },
+  "hackeru_cs": {
+    "name": "קורסי הייטק - HackerU - מזניקים אותך לקריירה בהייטק",
+    "category": "טכנולוגיה ופיתוח",
+    "type": "certificate",
+    "programUrl": "https://www.hackeru.co.il/"
+  },
+  "mon_12341147475_cs": {
+    "name": "סייבר ואבטחת מידע - KERNELiOS - Cyber Knowledge Center",
+    "category": "טכנולוגיה ופיתוח",
+    "type": "certificate",
+    "programUrl": "https://www.kernelios.com/"
+  }
+}

@@ -272,6 +272,12 @@ export interface AdmissionsEvaluationResult {
   threshold?: number | null;
   deltaNeeded?: DeltaNeeded;
   requiredInputs?: AdmissionsRequiredInput[];
+  scoreAssessment?: 'meets_threshold' | 'below_threshold';
+  additionalConditions?: {
+    id: AdmissionsRequiredInput;
+    label: string;
+    status: 'confirmed' | 'unconfirmed' | 'unmet';
+  }[];
   evidenceItemId?: string;
   evidenceItemName?: string;
   missingData?: string[];
@@ -287,4 +293,13 @@ export interface AdmissionsEvaluationReport {
   input: AdmissionsEvaluationInput;
   program: Pick<CatalogueProgram, 'id' | 'name'>;
   results: AdmissionsEvaluationResult[];
+}
+
+/** Journey requests share one applicant profile across a bounded set of programmes. */
+export type AdmissionsBatchInput = Omit<AdmissionsEvaluationInput, 'degreeId'> & {
+  degreeIds: string[];
+};
+export interface AdmissionsBatchReport {
+  reports: Record<string, AdmissionsEvaluationReport>;
+  failedDegreeIds: string[];
 }

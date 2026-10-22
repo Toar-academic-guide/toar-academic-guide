@@ -3,6 +3,9 @@
 import { render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 
+vi.mock('server-only', () => ({}));
+vi.mock('@/env', () => ({ getCatalogueSourceMode: () => 'static' }));
+
 const hoisted = vi.hoisted(() => ({
   notFound: vi.fn(() => {
     throw new Error('NEXT_NOT_FOUND');
@@ -10,7 +13,12 @@ const hoisted = vi.hoisted(() => ({
 }));
 
 vi.mock('next/navigation', () => ({
+  usePathname: () => '/',
   notFound: hoisted.notFound,
+}));
+
+vi.mock('@/context/AuthContext', () => ({
+  useAuth: () => ({ loading: false, user: null }),
 }));
 
 import { getStaticCatalogueInstitutions } from '@/lib/catalogueStatic';

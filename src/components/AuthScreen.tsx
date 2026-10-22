@@ -184,7 +184,7 @@ export default function AuthScreen({
                 type="button"
                 onClick={() => setShowPassword((v) => !v)}
                 aria-label={showPassword ? 'הסתר סיסמה' : 'הצג סיסמה'}
-                className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-700"
+                className="absolute left-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-slate-500 transition hover:text-slate-700"
               >
                 {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
               </button>

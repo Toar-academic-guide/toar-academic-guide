@@ -2,6 +2,7 @@ import type { PublicInstitutionPageData, PublicProgramPageData } from '@/lib/pub
 import { getPublicInstitutionPageData } from '@/lib/publicCataloguePages';
 import { absoluteUrl, SITE_ALT_NAMES, SITE_NAME } from '@/lib/site';
 import type { InstitutionDirectoryItem } from '@/data/institutionDirectory';
+import { canonicalProgramPath } from './programAliases';
 
 const ORGANIZATION_ID = absoluteUrl('/#organization');
 const WEBSITE_ID = absoluteUrl('/#website');
@@ -66,6 +67,17 @@ export function institutionLd({ institution, programs }: PublicInstitutionPageDa
     '@id': absoluteUrl(`/institutions/${encodeURIComponent(institution.id)}#institution`),
     name: institution.name,
     url: absoluteUrl(`/institutions/${encodeURIComponent(institution.id)}`),
+    hasOfferCatalog: {
+      '@type': 'OfferCatalog',
+      name: 'מסלולי לימוד',
+      numberOfItems: programs.length,
+      itemListElement: programs.map((program, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: program.name,
+        url: absoluteUrl(canonicalProgramPath(program.id)),
+      })),
+    },
     ...(sameAs ? { sameAs } : {}),
   };
 }
@@ -78,7 +90,7 @@ export function institutionBreadcrumbLd({ institution }: PublicInstitutionPageDa
   ]);
 }
 
-export function programLd({ program, institutions }: PublicProgramPageData) {
+export async function programLd({ program, institutions }: PublicProgramPageData) {
   // Whole study programs can award degrees or certificates; they are not individual lessons.
   // Only an explicit duration for the single provider is unambiguous. Monday-derived
   // records have inferred durations, so do not publish those as structured facts.
@@ -91,11 +103,13 @@ export function programLd({ program, institutions }: PublicProgramPageData) {
   const months = duration == null ? 0 : duration * 12;
   return {
     '@type': 'EducationalOccupationalProgram',
-    '@id': absoluteUrl(`/programs/${encodeURIComponent(program.id)}#program`),
+    '@id': absoluteUrl(`${canonicalProgramPath(program.id)}#program`),
     name: program.name,
-    url: absoluteUrl(`/programs/${encodeURIComponent(program.id)}`),
-    provider: institutions.map((institution) =>
-      institutionLd(getPublicInstitutionPageData(institution.id)!),
+    url: absoluteUrl(canonicalProgramPath(program.id)),
+    provider: await Promise.all(
+      institutions.map(async (institution) =>
+        institutionLd((await getPublicInstitutionPageData(institution.id))!),
+      ),
     ),
     inLanguage: 'he',
     ...(Number.isInteger(months) && months > 0 ? { timeToComplete: `P${months}M` } : {}),
@@ -103,11 +117,11 @@ export function programLd({ program, institutions }: PublicProgramPageData) {
   };
 }
 
-export function programBreadcrumbLd({ program, institutions }: PublicProgramPageData) {
+export function programBreadcrumbLd({ program, institutions, isGeneral }: PublicProgramPageData) {
   return breadcrumbLd([
     { name: 'בית', path: '/' },
     { name: 'מוסדות לימוד', path: '/institutions' },
-    ...(institutions.length === 1
+    ...(!isGeneral && institutions.length === 1
       ? [
           {
             name: institutions[0].name,
@@ -115,7 +129,7 @@ export function programBreadcrumbLd({ program, institutions }: PublicProgramPage
           },
         ]
       : []),
-    { name: program.name, path: `/programs/${encodeURIComponent(program.id)}` },
+    { name: program.name, path: canonicalProgramPath(program.id) },
   ]);
 }
 

@@ -611,7 +611,7 @@ export default function AcademicProfileForm({
       <div className="mx-auto flex max-w-2xl flex-col items-center gap-8">
         <motion.div
           {...fadeUp(0.18)}
-          className="w-full rounded-3xl border border-[#e5e7eb] bg-white p-8 shadow-lg md:p-10"
+          className="w-full rounded-3xl border border-[#e5e7eb] bg-white p-5 shadow-lg sm:p-8 md:p-10"
         >
           <div className="mb-8">
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">

@@ -37,6 +37,16 @@ export function resolveBguPsychologyAdmission(
     };
   if (missing.length) return { kind: 'needs_input', requiredInputs: missing };
 
+  return resolveBguPsychologyScores(input, score);
+}
+
+/** Numeric route assessment; entry and language confirmations are evaluated separately. */
+export function resolveBguPsychologyScores(
+  input: AdmissionsEvaluationInput,
+  score?: number,
+): Result {
+  const extra = input.extraInputs ?? {};
+  const missing: AdmissionsRequiredInput[] = [];
   const route = extra.bguPsychologyRoute ?? 'auto';
   const p = input.psychometric;
   const average = extra.bguBagrutAverage;

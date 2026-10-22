@@ -185,7 +185,6 @@ export const PROGRAM_FIELD_MAP: Record<string, string> = {
 
   // ── Afeka ─────────────────────────────────────────────────────────────────
   afeka_cs: 'cs',
-  afeka_softwareeng: 'cs',
   afeka_ee: 'ee',
   afeka_biomedical: 'biomedical',
 

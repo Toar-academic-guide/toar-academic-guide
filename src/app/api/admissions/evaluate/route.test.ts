@@ -27,6 +27,80 @@ vi.mock('server-only', () => ({}));
 import { POST } from './route';
 
 describe('admissions evaluate route', () => {
+  const batchRequest = (body: unknown) =>
+    POST(
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(body),
+      }),
+    );
+
+  it('evaluates 24 programmes as one rate-limited request with shared inputs and at most four workers', async () => {
+    const degreeIds = Array.from({ length: 24 }, (_, i) => `programme-${i}`);
+    hoistedMocks.listCataloguePrograms.mockResolvedValue({ data: degreeIds.map((id) => ({ id })) });
+    let active = 0;
+    let peak = 0;
+    hoistedMocks.evaluateAdmissionsForProgram.mockImplementation(async ({ input }) => {
+      active++;
+      peak = Math.max(peak, active);
+      await new Promise((resolve) => setTimeout(resolve, 1));
+      active--;
+      return { input, results: [] };
+    });
+    const applicant = {
+      psychometric: 700,
+      bagrut: 110,
+      extraInputs: {
+        tauBagrutAverage: 110.25,
+        tauApplicationRequirementsConfirmed: false,
+        tauManagementQualifyingMoocCount: 0,
+      },
+    };
+    const response = await batchRequest({ degreeIds, ...applicant });
+    expect(response.status).toBe(200);
+    const { data } = await response.json();
+    expect(Object.keys(data.reports)).toHaveLength(24);
+    expect(data.failedDegreeIds).toEqual([]);
+    for (const id of degreeIds)
+      expect(data.reports[id].input).toEqual({ degreeId: id, ...applicant });
+    expect(peak).toBeLessThanOrEqual(4);
+    expect(hoistedMocks.listCataloguePrograms).toHaveBeenCalledTimes(1);
+    expect(hoistedMocks.listCatalogueInstitutions).toHaveBeenCalledTimes(1);
+    // The batch consumed one quota slot, not twenty-four.
+    expect((await batchRequest({ degreeId: degreeIds[0], ...applicant })).status).toBe(200);
+  });
+
+  it('keeps successful reports when another programme fails or is unknown', async () => {
+    hoistedMocks.listCataloguePrograms.mockResolvedValue({ data: [{ id: 'good' }, { id: 'bad' }] });
+    hoistedMocks.evaluateAdmissionsForProgram.mockImplementation(async ({ input }) => {
+      if (input.degreeId === 'bad') throw new Error('internal details');
+      return { input, results: [] };
+    });
+    const response = await batchRequest({ degreeIds: ['good', 'bad', 'missing'] });
+    const { data } = await response.json();
+    expect(response.status).toBe(200);
+    expect(Object.keys(data.reports)).toEqual(['good']);
+    expect(data.failedDegreeIds.sort()).toEqual(['bad', 'missing']);
+    expect(JSON.stringify(data)).not.toContain('internal details');
+  });
+
+  it.each([
+    { degreeIds: [] },
+    { degreeIds: ['duplicate', 'duplicate'] },
+    { degreeIds: Array.from({ length: 51 }, (_, i) => `p${i}`) },
+  ])('rejects empty, duplicate and oversized batches before evaluating', async ({ degreeIds }) => {
+    expect((await batchRequest({ degreeIds })).status).toBe(400);
+    expect(hoistedMocks.evaluateAdmissionsForProgram).not.toHaveBeenCalled();
+  });
+
+  it('retains the request rate limit for batches', async () => {
+    for (let i = 0; i < 12; i++) {
+      expect((await batchRequest({ degreeIds: ['tau_datascience'] })).status).toBe(200);
+    }
+    expect((await batchRequest({ degreeIds: ['tau_datascience'] })).status).toBe(429);
+  });
+
   it('forwards Colman Bagrut inputs without requiring generic average or psychometric', async () => {
     hoistedMocks.listCataloguePrograms.mockResolvedValue({
       data: [{ id: 'colmgmt_cs', name: 'CS', linkedInstitutionIds: ['colman'] }],

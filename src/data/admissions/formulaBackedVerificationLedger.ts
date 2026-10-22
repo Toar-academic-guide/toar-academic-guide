@@ -1,4 +1,5 @@
 import { allPrograms } from '@/data/degrees';
+import { evaluateProgramVerification } from '@/server/admissions/verification/programVerification';
 import {
   buildFormulaBackedPairInventory,
   FORMULA_BACKED_INSTITUTION_IDS,
@@ -329,18 +330,17 @@ export function verifiedProgramEntry(
     | HaifaProgramVerificationMetadata,
 ): FormulaPairVerificationLedgerEntry {
   const { contract, fixtures } = artifact;
+  const verification = evaluateProgramVerification({
+    contract,
+    fixtures,
+    currentAdmissionCycle: contract.admissionCycle,
+    currentSourceFingerprint: contract.sourceFingerprint,
+  });
   return {
     pairId: contract.pairId,
     institutionId: contract.institutionId as FormulaBackedInstitutionId,
     admissionCycle: contract.admissionCycle as '2026-2027',
-    state:
-      contract.proof.state === 'blocked'
-        ? 'blocked'
-        : contract.proof.state === 'verified' &&
-            contract.proof.comparedScore &&
-            contract.proof.comparedVerdict
-          ? 'exact'
-          : 'withheld',
+    state: verification.state === 'authority_unavailable' ? 'withheld' : verification.state,
     officialProgramId: contract.officialProgramId,
     sourceUrl: 'requirementsUrl' in artifact ? artifact.requirementsUrl : contract.source.url,
     formulaFamily: contract.calculation.formulaFamily,
