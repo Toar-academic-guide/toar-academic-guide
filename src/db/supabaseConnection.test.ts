@@ -4,6 +4,13 @@ import { describe, expect, it } from 'vitest';
 import { supabaseConnectionOptions } from './supabaseConnection';
 
 describe('Supabase connection options', () => {
+  it('passes socket connection strings through when URL parsing fails', () => {
+    const connectionString = 'postgresql://app_runtime@/postgres?host=/var/run/postgresql';
+    expect(() => new URL(connectionString)).toThrow();
+    expect(() => supabaseConnectionOptions(connectionString)).not.toThrow();
+    expect(supabaseConnectionOptions(connectionString)).toEqual({ connectionString });
+  });
+
   it.each([
     ...['require', 'verify-ca', 'verify-full', 'prefer'].map((mode) => ({
       host: 'db.example.supabase.co:5432',

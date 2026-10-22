@@ -3,7 +3,13 @@ import type { PoolConfig } from 'pg';
 import { SUPABASE_ROOT_CA } from './supabaseRootCa';
 
 export function supabaseConnectionOptions(connectionString: string): PoolConfig {
-  const url = new URL(connectionString);
+  let url: URL;
+  try {
+    url = new URL(connectionString);
+  } catch {
+    // pg also accepts connection strings outside the URL parser's syntax.
+    return { connectionString };
+  }
   const mode = url.searchParams.get('sslmode');
   if (
     (/^db\.[a-z0-9]+\.supabase\.co$/.test(url.hostname) ||
