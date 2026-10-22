@@ -13,6 +13,7 @@ import { catalogueAdmissionRequirements } from '@/lib/catalogueDisplayText';
 import { officialUrl } from '@/lib/studyJourney';
 import repair from '@/data/admissions/catalogueContentRepair.json';
 import { isIndexableProgram } from '@/lib/seo/indexability';
+import { institutionLink } from '@/lib/institutionLinks';
 
 import {
   getPublicInstitutionPageData,
@@ -542,7 +543,12 @@ describe('public catalogue page data', () => {
     expect(sources.bgu).toMatchObject({
       sourceProgramId: entry.programId,
       requirements: entry.notes,
-      checked: { date: '21.10.2026', sourceUrl: entry.sourceUrl },
+      checked: {
+        date: '21.10.2026',
+        sourceUrl: institutionLink(entry.sourceUrl, entry.institutionId, {
+          fallbackToWebsite: false,
+        }),
+      },
     });
 
     // Existing general-row notes take precedence, even if the own row is checked.

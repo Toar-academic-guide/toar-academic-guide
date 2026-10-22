@@ -32,6 +32,7 @@ import { getStaticCataloguePrograms, getStaticCatalogueInstitutions } from '@/li
 import { listCataloguePrograms, listCatalogueInstitutions } from '@/server/catalogue/queries';
 import repair from '@/data/admissions/catalogueContentRepair.json';
 import * as publicCataloguePages from '@/lib/publicCataloguePages';
+import * as institutionLinks from '@/lib/institutionLinks';
 
 import ProgramPage from './page';
 
@@ -139,12 +140,15 @@ describe('ProgramPage', () => {
   describe('requirements checked line', () => {
     const entry = repair.requirements.find((row) => row.programId === 'bgu_psychology')!;
     const institution = getStaticCatalogueInstitutions().find((item) => item.id === 'bgu')!;
+    const trackedSource = new URL(entry.sourceUrl);
+    trackedSource.searchParams.set('utm_source', 'myway');
+    trackedSource.searchParams.set('utm_medium', 'referral');
 
     it('renders the exact date and fetched source below the link row', async () => {
       render(await ProgramPage({ params: Promise.resolve({ programId: entry.programId }) }));
 
       const link = screen.getByRole('link', { name: `אתר ${institution.name}` });
-      expect(link.getAttribute('href')).toBe(entry.sourceUrl);
+      expect(link.getAttribute('href')).toBe(trackedSource.href);
       expect(link.getAttribute('target')).toBe('_blank');
       expect(link.getAttribute('rel')).toBe('noopener noreferrer');
       const line = link.closest('p')!;
@@ -174,11 +178,13 @@ describe('ProgramPage', () => {
       expect(screen.queryByRole('link', { name: `אתר ${institution.name}` })).toBeNull();
     });
 
-    it('renders only the date when the fetched URL is outside the official domain', async () => {
-      vi.mocked(listCatalogueInstitutions).mockResolvedValue({
-        data: [{ ...institution, domain: 'another-institution.ac.il' }],
-        meta: {},
-      });
+    it('renders only the date when the presentation helper rejects the fetched URL', async () => {
+      const institutionLink = institutionLinks.institutionLink;
+      vi.spyOn(institutionLinks, 'institutionLink').mockImplementation((url, id, options) =>
+        url === entry.sourceUrl && options?.fallbackToWebsite === false
+          ? undefined
+          : institutionLink(url, id, options),
+      );
       render(await ProgramPage({ params: Promise.resolve({ programId: entry.programId }) }));
 
       expect(screen.getByText('עודכן לאחרונה: 21.10.2026').textContent).toBe(
@@ -197,7 +203,7 @@ describe('ProgramPage', () => {
       );
       expect(
         block.getByRole('link', { name: `אתר ${institution.name}` }).getAttribute('href'),
-      ).toBe(entry.sourceUrl);
+      ).toBe(trackedSource.href);
       expect(block.getByText(/עודכן לאחרונה:/).textContent).toBe(
         `עודכן לאחרונה: 21.10.2026 · מקור: אתר ${institution.name}`,
       );
@@ -208,7 +214,7 @@ describe('ProgramPage', () => {
         bgu: {
           sourceProgramId: entry.programId,
           requirements: entry.notes,
-          checked: { date: '21.10.2026', sourceUrl: entry.sourceUrl },
+          checked: { date: '21.10.2026', sourceUrl: trackedSource.href },
         },
       });
       render(await ProgramPage({ params: Promise.resolve({ programId: entry.programId }) }));

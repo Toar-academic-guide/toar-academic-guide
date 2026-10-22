@@ -1,4 +1,5 @@
 import repair from '@/data/admissions/catalogueContentRepair.json';
+import { institutionLink } from '@/lib/institutionLinks';
 import type { CatalogueInstitution } from '@/types/catalogue';
 
 export interface RequirementsChecked {
@@ -16,26 +17,10 @@ export function formatRequirementsCheckedDate(isoDate: string): string | undefin
   return `${day}.${month}.${year}`;
 }
 
-function isOfficialSource(sourceUrl: string, domain?: string): boolean {
-  if (!domain) return false;
-  try {
-    const url = new URL(sourceUrl);
-    const officialDomain = domain.toLowerCase();
-    return (
-      url.protocol === 'https:' &&
-      !url.username &&
-      !url.password &&
-      (url.hostname === officialDomain || url.hostname.endsWith(`.${officialDomain}`))
-    );
-  } catch {
-    return false;
-  }
-}
-
 /** Check the selected row's raw notes, before display filtering or fallback copy. */
 export function getRequirementsChecked(
   sourceProgramId: string,
-  institution: Pick<CatalogueInstitution, 'id' | 'domain'>,
+  institution: Pick<CatalogueInstitution, 'id'>,
   sourceNotes?: readonly string[],
 ): RequirementsChecked | undefined {
   const entry = repair.requirements.find(
@@ -53,6 +38,6 @@ export function getRequirementsChecked(
   if (!date) return undefined;
   return {
     date,
-    sourceUrl: isOfficialSource(entry.sourceUrl, institution.domain) ? entry.sourceUrl : undefined,
+    sourceUrl: institutionLink(entry.sourceUrl, institution.id, { fallbackToWebsite: false }),
   };
 }
