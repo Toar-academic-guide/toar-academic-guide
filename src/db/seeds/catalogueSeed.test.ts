@@ -8,6 +8,13 @@ import { INSTITUTION_BY_ID, INSTITUTIONS, type InstitutionId } from '@/data/inst
 import type { Program } from '@/data/degrees/types';
 import { buildCatalogueSeed, buildCatalogueSeedVerificationReport } from '@/db/seeds/catalogueSeed';
 
+const verifiedKeeperProgramUrls = [
+  ['tlvyaffo_cs', 'mta', 'https://www.mta.ac.il/faculty/computer_science_and_ai'],
+  ['colmgmt_law', 'colman', 'https://www.colman.ac.il/academics/ba/law/'],
+  ['colmgmt_business', 'colman', 'https://www.colman.ac.il/academics/ba/business-administration/'],
+  ['colmgmt_cs', 'colman', 'https://www.colman.ac.il/academics/ba/computer-science/'],
+] as const;
+
 function duplicatedValues(values: string[]): string[] {
   const seen = new Set<string>();
   const duplicates = new Set<string>();
@@ -23,6 +30,67 @@ function duplicatedValues(values: string[]): string[] {
 }
 
 describe('catalogueSeed', () => {
+  it.each(verifiedKeeperProgramUrls)(
+    'preserves the verified programme source URL for %s',
+    (programId, institutionId, url) => {
+      const payload = buildCatalogueSeed();
+      expect(
+        payload.sourceUrls.find((row) => row.id === `${programId}:${institutionId}:program`),
+      ).toEqual({
+        id: `${programId}:${institutionId}:program`,
+        admissionRequirementId: `${programId}:${institutionId}`,
+        programId,
+        institutionId,
+        kind: 'program',
+        url,
+      });
+    },
+  );
+
+  it('changes only keeper programme URLs and their version source snapshots', () => {
+    const urlsByProgramId = new Map<string, string>(
+      verifiedKeeperProgramUrls.map(([programId, , url]) => [programId, url]),
+    );
+    const withoutKeeperUrls = allPrograms.map((program) =>
+      urlsByProgramId.has(program.id)
+        ? {
+            ...program,
+            institutionDetails: program.institutionDetails?.map((detail) => {
+              const previous = { ...detail };
+              delete previous.programUrl;
+              return previous;
+            }),
+          }
+        : program,
+    );
+    const before = buildCatalogueSeed(withoutKeeperUrls);
+    const urlsByRequirementId = new Map<string, string>(
+      verifiedKeeperProgramUrls.map(([programId, institutionId, url]) => [
+        `${programId}:${institutionId}`,
+        url,
+      ]),
+    );
+    expect(buildCatalogueSeed()).toEqual({
+      ...before,
+      sourceUrls: before.sourceUrls.map((row) =>
+        row.kind === 'program' && row.programId && urlsByProgramId.has(row.programId)
+          ? { ...row, url: urlsByProgramId.get(row.programId) }
+          : row,
+      ),
+      requirementVersions: before.requirementVersions.map((row) =>
+        urlsByRequirementId.has(row.admissionRequirementId)
+          ? {
+              ...row,
+              sourceSnapshot: {
+                ...(row.sourceSnapshot as Record<string, unknown>),
+                program: urlsByRequirementId.get(row.admissionRequirementId),
+              },
+            }
+          : row,
+      ),
+    });
+  });
+
   it('keeps TAU Management and other Information Systems options without the extra TAU listing', () => {
     const payload = buildCatalogueSeed();
 

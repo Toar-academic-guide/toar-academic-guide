@@ -101,6 +101,12 @@ const MONDAY_PROGRAM_URL_OVERRIDES: Readonly<Record<string, string>> = {
   colman_law: 'https://www.colman.ac.il/academics/ba/law/',
   colman_business: 'https://www.colman.ac.il/academics/ba/business-administration/',
 };
+const VERIFIED_KEEPER_PROGRAM_URLS: Readonly<Record<string, string>> = {
+  tlvyaffo_cs: 'https://www.mta.ac.il/faculty/computer_science_and_ai',
+  colmgmt_law: 'https://www.colman.ac.il/academics/ba/law/',
+  colmgmt_business: 'https://www.colman.ac.il/academics/ba/business-administration/',
+  colmgmt_cs: 'https://www.colman.ac.il/academics/ba/computer-science/',
+};
 
 function mergeDynamicProgramDetails(existingProgram: Program, nextProgram: Program): Program {
   const existingDetails = existingProgram.institutionDetails ?? [];
@@ -1012,6 +1018,16 @@ export const programsWithLegacyAdmissionFacts = [
   ...normalizeLegacyPrograms(vocationalPrograms),
   ...dynamicPrograms,
 ].map((program): Program => {
+  const verifiedProgramUrl = VERIFIED_KEEPER_PROGRAM_URLS[program.id];
+  if (verifiedProgramUrl) {
+    return {
+      ...program,
+      institutionDetails: program.institutionDetails?.map((detail) => ({
+        ...detail,
+        programUrl: verifiedProgramUrl,
+      })),
+    };
+  }
   const course = (
     computingCourses as Record<string, { name: string; category: string; programUrl: string }>
   )[program.id];
