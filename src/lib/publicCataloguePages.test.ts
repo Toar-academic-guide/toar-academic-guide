@@ -11,6 +11,8 @@ import { listCataloguePrograms, listCatalogueInstitutions } from '@/server/catal
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import { catalogueAdmissionRequirements } from '@/lib/catalogueDisplayText';
 import { officialUrl } from '@/lib/studyJourney';
+import repair from '@/data/admissions/catalogueContentRepair.json';
+import { isIndexableProgram } from '@/lib/seo/indexability';
 
 import {
   getPublicInstitutionPageData,
@@ -229,6 +231,7 @@ describe('public catalogue page data', () => {
         requirements: expected,
         officialUrl: officialUrl(ownDetail?.programUrl, institution.id),
         fullDetailsPath: page.institutionProgramPaths[institution.id],
+        checked: undefined,
       });
       expect(ownSources[institution.id].requirements).toEqual(expected);
       expect(ownSources[institution.id].fullDetailsPath).toBeUndefined();
@@ -530,5 +533,62 @@ describe('public catalogue page data', () => {
   it('returns null for unknown public IDs', async () => {
     expect(await getPublicProgramPageData('missing-program')).toBeNull();
     expect(await getPublicInstitutionPageData('missing-institution')).toBeNull();
+  });
+
+  it('checks the own psychology row only while that row supplies the general block', async () => {
+    const page = (await getPublicProgramPageData('psychology'))!;
+    const sources = await getPublicProgramRequirementSources(page);
+    const entry = repair.requirements.find((row) => row.programId === 'bgu_psychology')!;
+    expect(sources.bgu).toMatchObject({
+      sourceProgramId: entry.programId,
+      requirements: entry.notes,
+      checked: { date: '21.10.2026', sourceUrl: entry.sourceUrl },
+    });
+
+    // Existing general-row notes take precedence, even if the own row is checked.
+    const bgu = page.institutions.find((institution) => institution.id === 'bgu')!;
+    const own = getStaticCataloguePrograms().find((program) => program.id === entry.programId)!;
+    const general = {
+      ...page.program,
+      institutionDetails: [
+        {
+          ...own.institutionDetails![0],
+          institutionName: bgu.name,
+          specificAdmissionNotes: entry.notes,
+        },
+      ],
+    };
+    const generalSources = await getPublicProgramRequirementSources({ ...page, program: general });
+    expect(generalSources.bgu).toMatchObject({
+      sourceProgramId: 'psychology',
+      requirements: entry.notes,
+      checked: undefined,
+    });
+  });
+
+  it('reports checked-line coverage across the static indexable catalogue', async () => {
+    const catalogue = await loadPublicCatalogue();
+    const pages = { both: 0, dateOnly: 0, none: 0 };
+    const blocks = { both: 0, dateOnly: 0, none: 0 };
+    let indexablePages = 0;
+    for (const program of catalogue.programs) {
+      if (!(await isIndexableProgram(program.id, catalogue))) continue;
+      indexablePages++;
+      const page = (await getPublicProgramPageData(program.id))!;
+      const sources = Object.values(await getPublicProgramRequirementSources(page));
+      const category = sources.some((source) => source.checked?.sourceUrl)
+        ? 'both'
+        : sources.some((source) => source.checked)
+          ? 'dateOnly'
+          : 'none';
+      pages[category]++;
+      for (const source of sources) {
+        blocks[source.checked?.sourceUrl ? 'both' : source.checked ? 'dateOnly' : 'none']++;
+      }
+    }
+    // Page buckets are exclusive: any official-source line, otherwise any date, otherwise none.
+    console.info('Requirements checked-line static coverage:', { indexablePages, pages, blocks });
+    expect(pages.both + pages.dateOnly + pages.none).toBe(indexablePages);
+    expect(pages.both).toBeGreaterThan(0);
   });
 });

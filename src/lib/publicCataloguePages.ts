@@ -4,6 +4,7 @@ import { cache } from 'react';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import { catalogueAdmissionRequirements } from '@/lib/catalogueDisplayText';
 import { officialUrl } from '@/lib/studyJourney';
+import { getRequirementsChecked, type RequirementsChecked } from '@/lib/requirementsChecked';
 import { listCatalogueInstitutions, listCataloguePrograms } from '@/server/catalogue/queries';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 
@@ -106,6 +107,7 @@ interface PublicProgramRequirementSource {
   requirements: string[];
   officialUrl?: string;
   fullDetailsPath?: string;
+  checked?: RequirementsChecked;
 }
 
 export interface PublicInstitutionPageData {
@@ -189,6 +191,11 @@ export async function getPublicProgramRequirementSources({
           : sourceRequirements,
       officialUrl: officialUrl(sourceDetail?.programUrl, institution.id),
       fullDetailsPath: useSpecific ? institutionProgramPaths[institution.id] : undefined,
+      checked: getRequirementsChecked(
+        sourceProgram.id,
+        institution,
+        sourceDetail?.specificAdmissionNotes,
+      ),
     };
   }
   return institutionRequirementSources;

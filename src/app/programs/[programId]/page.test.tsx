@@ -30,6 +30,8 @@ vi.mock('@/server/catalogue/queries', () => ({
 
 import { getStaticCataloguePrograms, getStaticCatalogueInstitutions } from '@/lib/catalogueStatic';
 import { listCataloguePrograms, listCatalogueInstitutions } from '@/server/catalogue/queries';
+import repair from '@/data/admissions/catalogueContentRepair.json';
+import * as publicCataloguePages from '@/lib/publicCataloguePages';
 
 import ProgramPage from './page';
 
@@ -132,6 +134,90 @@ describe('ProgramPage', () => {
         expectedLink.toString(),
       );
     }
+  });
+
+  describe('requirements checked line', () => {
+    const entry = repair.requirements.find((row) => row.programId === 'bgu_psychology')!;
+    const institution = getStaticCatalogueInstitutions().find((item) => item.id === 'bgu')!;
+
+    it('renders the exact date and fetched source below the link row', async () => {
+      render(await ProgramPage({ params: Promise.resolve({ programId: entry.programId }) }));
+
+      const link = screen.getByRole('link', { name: `אתר ${institution.name}` });
+      expect(link.getAttribute('href')).toBe(entry.sourceUrl);
+      expect(link.getAttribute('target')).toBe('_blank');
+      expect(link.getAttribute('rel')).toBe('noopener noreferrer');
+      const line = link.closest('p')!;
+      expect(line.textContent).toBe(`עודכן לאחרונה: 21.10.2026 · מקור: אתר ${institution.name}`);
+      expect(line.getAttribute('dir')).toBe('rtl');
+      expect(line.className).toBe(
+        'mt-2 text-right text-xs leading-[18px] font-normal text-[var(--text-muted)]',
+      );
+      expect(line.previousElementSibling?.textContent).toBe('לאתר המוסד');
+      expect(line.parentElement?.lastElementChild).toBe(line);
+    });
+
+    it.each(['different notes', 'no entry'])('hides the entire line for %s', async (reason) => {
+      const program = getStaticCataloguePrograms().find((item) => item.id === entry.programId)!;
+      const changed = {
+        ...program,
+        id: reason === 'no entry' ? 'program_without_repair' : program.id,
+        institutionDetails: program.institutionDetails!.map((detail) => ({
+          ...detail,
+          specificAdmissionNotes: reason === 'different notes' ? ['תנאי קבלה חדש'] : entry.notes,
+        })),
+      };
+      vi.mocked(listCataloguePrograms).mockResolvedValue({ data: [changed], meta: {} });
+      render(await ProgramPage({ params: Promise.resolve({ programId: changed.id }) }));
+
+      expect(screen.queryByText(/עודכן לאחרונה:/)).toBeNull();
+      expect(screen.queryByRole('link', { name: `אתר ${institution.name}` })).toBeNull();
+    });
+
+    it('renders only the date when the fetched URL is outside the official domain', async () => {
+      vi.mocked(listCatalogueInstitutions).mockResolvedValue({
+        data: [{ ...institution, domain: 'another-institution.ac.il' }],
+        meta: {},
+      });
+      render(await ProgramPage({ params: Promise.resolve({ programId: entry.programId }) }));
+
+      expect(screen.getByText('עודכן לאחרונה: 21.10.2026').textContent).toBe(
+        'עודכן לאחרונה: 21.10.2026',
+      );
+      expect(screen.queryByText(/מקור:/)).toBeNull();
+      expect(screen.queryByRole('link', { name: `אתר ${institution.name}` })).toBeNull();
+    });
+
+    it('uses the own program’s entry in a general psychology institution block', async () => {
+      render(await ProgramPage({ params: Promise.resolve({ programId: 'psychology' }) }));
+
+      const block = within(screen.getByRole('heading', { name: institution.name }).parentElement!);
+      expect(block.getByRole('link', { name: 'לפרטים המלאים' }).getAttribute('href')).toBe(
+        '/programs/bgu_psychology',
+      );
+      expect(
+        block.getByRole('link', { name: `אתר ${institution.name}` }).getAttribute('href'),
+      ).toBe(entry.sourceUrl);
+      expect(block.getByText(/עודכן לאחרונה:/).textContent).toBe(
+        `עודכן לאחרונה: 21.10.2026 · מקור: אתר ${institution.name}`,
+      );
+    });
+
+    it('keeps the line at the bottom when there is no link row', async () => {
+      vi.spyOn(publicCataloguePages, 'getPublicProgramRequirementSources').mockResolvedValue({
+        bgu: {
+          sourceProgramId: entry.programId,
+          requirements: entry.notes,
+          checked: { date: '21.10.2026', sourceUrl: entry.sourceUrl },
+        },
+      });
+      render(await ProgramPage({ params: Promise.resolve({ programId: entry.programId }) }));
+
+      const line = screen.getByText(/עודכן לאחרונה:/);
+      expect(screen.queryByRole('link', { name: 'לאתר המוסד' })).toBeNull();
+      expect(line.parentElement?.lastElementChild).toBe(line);
+      expect(line.classList.contains('mt-2')).toBe(true);
+    });
   });
 
   describe('general nursing requirement sources', () => {
