@@ -43,8 +43,10 @@ export default function RequirementTiles({
   return (
     <div className="mt-3 text-right text-sm text-[#35415b]" dir="rtl">
       <p className="mb-2 text-xs text-[var(--text-muted)]">
+        {model.scope ? `${model.scope} · ` : ''}
         {model.semantics === 'alternatives' ? 'מספיק אחד מאלה:' : 'התנאים:'}
       </p>
+
       <div className="flex flex-wrap gap-3">
         {model.tiles.map((tile, index) => (
           <div

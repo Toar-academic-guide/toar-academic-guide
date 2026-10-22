@@ -17,6 +17,8 @@ export interface RequirementTilesModel {
   chips: string[];
   details: string[];
   supplementalDetails?: string[];
+  /** Short scope shown once before the semantics label, e.g. 'מסלול דו־מחלקתי'. */
+  scope?: string;
 }
 export type RequirementTilesSelection =
   | { model: RequirementTilesModel; reason?: never }
@@ -39,6 +41,13 @@ const recent = (date: string, now: Date) => {
   // Number summaries expire; the complete source list remains available afterwards.
   return Number.isFinite(age) && age >= 0 && age <= 30 * 24 * 60 * 60 * 1000;
 };
+
+/** The official English level, as a short chip, if the notes state one. */
+const englishChip = (notes: readonly string[]) =>
+  notes
+    .map((t) => /^נדרשת אנגלית ברמת ([^\s,.]+(?: [א-ת]׳)?)/.exec(t)?.[1])
+    .filter(Boolean)
+    .map((level) => `אנגלית ברמת ${level}`);
 
 export function selectRequirementTiles({
   program,
@@ -106,16 +115,13 @@ export function selectRequirementTiles({
     return {
       model: {
         semantics: 'alternatives',
+        scope: 'מסלול דו־מחלקתי',
         tiles: [
-          { value: routes.score, label: 'סכם', qualifiers: ['במסלול הדו־מחלקתי'] },
-          { value: routes.psychometric, label: 'פסיכומטרי', qualifiers: ['במסלול הדו־מחלקתי'] },
-          {
-            value: routes.bagrut,
-            label: 'בגרות',
-            qualifiers: ['ללא פסיכומטרי', 'במסלול הדו־מחלקתי'],
-          },
+          { value: routes.score, label: 'סכם', qualifiers: [] },
+          { value: routes.psychometric, label: 'פסיכומטרי', qualifiers: [] },
+          { value: routes.bagrut, label: 'בגרות', qualifiers: ['ללא פסיכומטרי'] },
         ],
-        chips: ['דרישות השפה והחוג'],
+        chips: englishChip(row.notes),
         details: requirements,
       },
     };

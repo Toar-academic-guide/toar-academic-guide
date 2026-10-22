@@ -42,6 +42,13 @@ describe('verified requirement tiles', () => {
     expect(select('tau_law', 'tau').model).toBeUndefined();
   });
 
+  it('states the BGU double-major scope once and uses the official English level as the chip', () => {
+    const model = select('communication', 'bgu').model!;
+    expect(model.scope).toBe('מסלול דו־מחלקתי');
+    expect(model.chips).toEqual(['אנגלית ברמת בסיסי']);
+    expect(model.tiles.flatMap((tile) => tile.qualifiers)).toEqual(['ללא פסיכומטרי']);
+  });
+
   it.each(Object.values(official))('matches $program approved override thresholds', (value) => {
     const model = select(value.program, value.institution).model!;
     expect(model).toBeDefined();
