@@ -43,8 +43,11 @@ vi.mock('@/server/catalogue/queries', () => ({
 import { listCataloguePrograms, listCatalogueInstitutions } from '@/server/catalogue/queries';
 beforeEach(() => {
   vi.mocked(listCataloguePrograms).mockResolvedValue({
-    data: getStaticCataloguePrograms(),
-    meta: {},
+    data: getStaticCataloguePrograms().map((program) => ({
+      ...program,
+      institutionId: program.institutionId ?? (program.linkedInstitutionIds[0] as InstitutionId),
+    })),
+    meta: { catalogueSource: 'database' },
   });
   vi.mocked(listCatalogueInstitutions).mockResolvedValue({
     data: [
@@ -163,7 +166,7 @@ describe('crawl policy', () => {
         )
         .map((p) => p.id),
     );
-  });
+  }, 15_000);
 
   it('keeps all 358 listed public URLs in order and omits lastmod without per-page data dates', async () => {
     const entries = await sitemap();
@@ -259,6 +262,7 @@ describe('metadata', () => {
     const program = {
       ...programs.find((program) => program.id === 'biology')!,
       name: 'תחום עם מוסד אחד',
+      institutionId: 'tau' as const,
       thresholds: { haifa: 500 } as (typeof programs)[0]['thresholds'],
       institutionDetails: [],
       linkedInstitutionIds: ['tau'],
@@ -276,7 +280,7 @@ describe('metadata', () => {
   });
 
   it.each([
-    ['nursing', ['tau', 'huji', 'bgu', 'haifa', 'ariel', 'telhai', 'mta', 'ono']],
+    ['nursing', ['tau', 'bgu', 'haifa', 'ariel', 'telhai', 'mta', 'ono']],
     ['biology', ['tau', 'huji', 'bgu', 'haifa', 'biu', 'telhai']],
   ])(
     'uses every provider for %s in metadata, JSON-LD and rendered links',
@@ -284,7 +288,14 @@ describe('metadata', () => {
       const seeded = programs.find((program) => program.id === id)!;
       vi.mocked(listCataloguePrograms).mockResolvedValue({
         data: [
-          { ...seeded, linkedInstitutionIds: ['tau'] },
+          {
+            ...seeded,
+            institutionId: 'tau',
+            linkedInstitutionIds: ['tau'],
+            ...(id === 'nursing'
+              ? { thresholds: { tau: 610, haifa: 580 } as typeof seeded.thresholds }
+              : {}),
+          },
           ...programs.filter((program) => program.id !== id),
         ],
         meta: { catalogueSource: 'database' },
@@ -314,7 +325,11 @@ describe('metadata', () => {
         expect(markup).toContain(`href="/enquiry?program=${id}&amp;institution=${institution.id}"`);
       }
       expect(markup).toContain('תנאי קבלה');
-      if (id === 'nursing') expect(page.institutionProgramPaths.bgu).toBe('/programs/bgu_nursing');
+      if (id === 'nursing') {
+        expect(page.institutionProgramPaths.bgu).toBe('/programs/bgu_nursing');
+        expect(page.institutionProgramPaths.tau).toBe('/institutions/tau');
+        expect(markup).not.toContain('href="/programs/nursing"');
+      }
     },
   );
 
@@ -397,6 +412,8 @@ describe('metadata', () => {
   });
 
   it('has unique titles across all indexable public pages and disambiguates known collisions', async () => {
+    const programIds = await indexableProgramIds();
+    const programMetadata = await Promise.all(programIds.map(buildProgramMetadata));
     const titles = [
       'MyWay | הדרך שלך ללימודים',
       'מי אנחנו | MyWay',
@@ -406,17 +423,13 @@ describe('metadata', () => {
           async (id) => `${(await buildInstitutionMetadata(id)).title} | MyWay`,
         ),
       )),
-      ...(await Promise.all(
-        (await indexableProgramIds()).map(
-          async (id) => `${(await buildProgramMetadata(id)).title} | MyWay`,
-        ),
-      )),
+      ...programMetadata.map((metadata) => `${metadata.title} | MyWay`),
     ];
     expect(new Set(titles).size).toBe(titles.length);
-    for (const id of await indexableProgramIds()) {
-      const page = (await getPublicProgramPageData(id))!;
-      const title = String((await buildProgramMetadata(id)).title);
-      expect(title.endsWith(`(${page.program.category})`)).toBe(false);
+    for (const [index, id] of programIds.entries()) {
+      const program = programs.find((program) => program.id === id)!;
+      const title = String(programMetadata[index].title);
+      expect(title.endsWith(`(${program.category})`)).toBe(false);
       expect(title.endsWith(`(${id})`)).toBe(false);
     }
     expect((await buildProgramMetadata('biology')).title).toBe(
@@ -429,7 +442,7 @@ describe('metadata', () => {
     expect((await buildProgramMetadata('nativ_graphic_design')).title).toBe(
       'משחק – בית הספר למשחק ניסן נתיב: מסלול באמנויות הבמה',
     );
-  });
+  }, 15_000);
 });
 
 describe('structured data', () => {

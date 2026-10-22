@@ -150,6 +150,117 @@ describe('public catalogue page data', () => {
     });
   });
 
+  it('ignores seeded institution IDs on legacy subjects and links only to institution-specific programs', async () => {
+    const programs = getStaticCataloguePrograms();
+    const nursing = {
+      ...programs.find((program) => program.id === 'nursing')!,
+      institutionId: 'tau' as const,
+      linkedInstitutionIds: ['tau', 'haifa'],
+      thresholds: { tau: 610, haifa: 580 } as (typeof programs)[0]['thresholds'],
+    };
+    vi.mocked(listCataloguePrograms).mockResolvedValue({
+      data: programs.map((program) =>
+        program.id === nursing.id
+          ? nursing
+          : {
+              ...program,
+              // Reproduce the legacy ownership written to general subject DB rows.
+              institutionId:
+                program.institutionId ?? (program.linkedInstitutionIds[0] as InstitutionId),
+            },
+      ),
+      meta: { catalogueSource: 'database' },
+    });
+    const page = (await getPublicProgramPageData(nursing.id))!;
+    expect(page.isGeneral).toBe(true);
+    expect(page.program.institutionId).toBeUndefined();
+    expect(page.institutions.map((institution) => institution.id)).toEqual([
+      'tau',
+      'bgu',
+      'haifa',
+      'ariel',
+      'telhai',
+      'mta',
+      'ono',
+    ]);
+    expect(page.institutionProgramPaths).toMatchObject({
+      tau: '/institutions/tau',
+      bgu: '/programs/bgu_nursing',
+      haifa: '/programs/haifa_nursing',
+    });
+    expect(Object.values(page.institutionProgramPaths)).not.toContain('/programs/nursing');
+    const tau = (await getPublicInstitutionPageData('tau'))!;
+    const ownIds = programs
+      .filter((program) => program.isListed !== false && program.institutionId === 'tau')
+      .map((program) => program.id);
+    expect(tau.programs.slice(0, ownIds.length).map((program) => program.id)).toEqual(ownIds);
+    expect(new Set(tau.programs.map((program) => program.name)).size).toBe(tau.programs.length);
+    expect(tau.programs.some((program) => program.id === 'nursing')).toBe(true);
+    for (const id of ['biology', 'social_work', 'accounting', 'occupational_therapy']) {
+      expect(tau.programs.some((program) => program.id === id)).toBe(false);
+    }
+    expect(nursing.institutionId).toBe('tau');
+  });
+
+  it('does not use another general row as a provider or a specific-program destination', async () => {
+    const programs = getStaticCataloguePrograms();
+    const nursing = {
+      ...programs.find((program) => program.id === 'nursing')!,
+      institutionId: 'tau' as const,
+    };
+    const otherGeneral = {
+      ...programs.find((program) => program.id === 'biology')!,
+      name: nursing.name,
+      institutionId: 'technion' as const,
+      thresholds: { haifa: 580 } as typeof nursing.thresholds,
+      institutionDetails: [],
+    };
+    vi.mocked(listCataloguePrograms).mockResolvedValue({
+      data: [nursing, otherGeneral],
+      meta: { catalogueSource: 'database' },
+    });
+    const page = (await getPublicProgramPageData(nursing.id))!;
+    expect(page.isGeneral).toBe(true);
+    expect(page.institutions.map((institution) => institution.id)).not.toContain('technion');
+    expect(Object.values(page.institutionProgramPaths)).not.toContain('/programs/biology');
+    const otherPage = (await getPublicProgramPageData(otherGeneral.id))!;
+    expect(otherPage.isGeneral).toBe(true);
+    expect(otherPage.institutions.map((institution) => institution.id)).not.toContain('tau');
+    expect(Object.values(otherPage.institutionProgramPaths)).not.toContain('/programs/nursing');
+  });
+
+  it('preserves legacy ownership without subject signals and recognizes subjects supported only by a specific program', async () => {
+    const base = getStaticCataloguePrograms().find((program) => program.id === 'nursing')!;
+    const legacy = {
+      ...base,
+      name: 'תחום בדיקה ללא ספים',
+      institutionId: 'tau' as const,
+      thresholds: undefined,
+      institutionDetails: [],
+      linkedInstitutionIds: ['tau'],
+    };
+    vi.mocked(listCataloguePrograms).mockResolvedValue({
+      data: [legacy],
+      meta: { catalogueSource: 'database' },
+    });
+    expect(await getPublicProgramPageData(legacy.id)).toMatchObject({
+      isGeneral: false,
+      program: legacy,
+    });
+    vi.mocked(listCataloguePrograms).mockResolvedValue({
+      data: [
+        legacy,
+        { ...legacy, id: 'specific_only', institutionId: 'bgu', linkedInstitutionIds: ['bgu'] },
+      ],
+      meta: { catalogueSource: 'database' },
+    });
+    expect(await getPublicProgramPageData(legacy.id)).toMatchObject({
+      isGeneral: true,
+      program: { institutionId: undefined, linkedInstitutionIds: ['bgu'] },
+      institutionProgramPaths: { bgu: '/programs/specific_only' },
+    });
+  });
+
   it('orders own programs first, preserves own duplicates and deduplicates remaining names', async () => {
     const institution = {
       ...getStaticCatalogueInstitutions()[0],

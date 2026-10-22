@@ -7,6 +7,12 @@ import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 
 const PUBLIC_PROGRAMS = getStaticCataloguePrograms();
 const PUBLIC_INSTITUTIONS = getStaticCatalogueInstitutions();
+const STATIC_PROGRAM_BY_ID = new Map(PUBLIC_PROGRAMS.map((program) => [program.id, program]));
+
+function hasGeneralIdentity(program: CatalogueProgram): boolean {
+  const legacy = STATIC_PROGRAM_BY_ID.get(program.id);
+  return !program.institutionId || (!!legacy && !legacy.institutionId);
+}
 
 export const loadPublicCatalogue = cache(async () => {
   const [programs, institutions] = await Promise.all([
@@ -28,9 +34,26 @@ export const loadPublicCatalogue = cache(async () => {
       (legacy) => !institutions.data.some((current) => current.id === legacy.id),
     ),
   ];
-  const generalProgramIds = new Set<string>();
+  // Seeded DB rows can carry an institutionId inferred from a legacy label.
+  // Establish subject identity before resolving providers so subjects cannot
+  // supply ownership evidence for themselves or other subjects.
+  const institutionSpecificPrograms = allPrograms.filter(
+    (program) =>
+      program.isListed !== false && program.institutionId && !hasGeneralIdentity(program),
+  );
+  const generalProgramIds = new Set(
+    allPrograms
+      .filter(
+        (program) =>
+          hasGeneralIdentity(program) &&
+          (Object.values(program.thresholds ?? {}).some((threshold) => threshold != null) ||
+            !!program.institutionDetails?.length ||
+            institutionSpecificPrograms.some((specific) => specific.name === program.name)),
+      )
+      .map((program) => program.id),
+  );
   const resolvedPrograms = allPrograms.map((program) => {
-    if (program.institutionId) return program;
+    if (!generalProgramIds.has(program.id)) return program;
 
     const thresholdIds = Object.entries(program.thresholds ?? {})
       .filter(([, threshold]) => threshold != null)
@@ -38,19 +61,19 @@ export const loadPublicCatalogue = cache(async () => {
     const detailNames = program.institutionDetails?.map((detail) => detail.institutionName) ?? [];
     const specificPrograms = allPrograms.filter(
       (specific) =>
-        specific.isListed !== false && specific.institutionId && specific.name === program.name,
+        specific.id !== program.id &&
+        !generalProgramIds.has(specific.id) &&
+        specific.isListed !== false &&
+        specific.institutionId &&
+        specific.name === program.name,
     );
-    // The legacy institution label alone is not evidence of a subject's providers.
-    // Rows without subject-level signals keep their existing vocational/college link.
-    if (!thresholdIds.length && !detailNames.length && !specificPrograms.length) return program;
-
-    generalProgramIds.add(program.id);
     const providerIds = new Set([
       ...thresholdIds,
       ...specificPrograms.map((specific) => specific.institutionId!),
     ]);
     return {
       ...program,
+      institutionId: undefined,
       linkedInstitutionIds: allInstitutions
         .filter(
           (institution) =>
@@ -103,6 +126,8 @@ export async function getPublicProgramPageData(
           catalogue.programs.find(
             (candidate) =>
               candidate.isListed !== false &&
+              candidate.id !== program.id &&
+              !catalogue.generalProgramIds.has(candidate.id) &&
               candidate.name === program.name &&
               candidate.institutionId === institution.id,
           );
@@ -133,7 +158,10 @@ export async function getPublicInstitutionPageData(
       (program.institutionId === institution.id ||
         (!program.institutionId && program.linkedInstitutionIds.includes(institution.id))),
   );
-  const ownPrograms = listedPrograms.filter((program) => program.institutionId === institution.id);
+  const ownPrograms = listedPrograms.filter(
+    (program) =>
+      !catalogue.generalProgramIds.has(program.id) && program.institutionId === institution.id,
+  );
   const names = new Set(ownPrograms.map((program) => program.name));
   const generalPrograms = listedPrograms.filter((program) => {
     if (program.institutionId || names.has(program.name)) return false;
