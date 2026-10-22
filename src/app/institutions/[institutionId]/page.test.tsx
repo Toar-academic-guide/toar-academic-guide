@@ -21,7 +21,8 @@ vi.mock('@/context/AuthContext', () => ({
   useAuth: () => ({ loading: false, user: null }),
 }));
 
-import { getStaticCatalogueInstitutions } from '@/lib/catalogueStatic';
+import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
+import * as publicCataloguePages from '@/lib/publicCataloguePages';
 
 import InstitutionPage from './page';
 
@@ -48,5 +49,56 @@ describe('InstitutionPage', () => {
       InstitutionPage({ params: Promise.resolve({ institutionId: 'missing-institution' }) }),
     ).rejects.toThrow('NEXT_NOT_FOUND');
     expect(hoisted.notFound).toHaveBeenCalled();
+  });
+
+  it.each([
+    [17, 'הצגת עוד 5 מסלולים'],
+    [13, 'הצגת מסלול נוסף'],
+  ])(
+    'renders all %i program links in order with the remaining-count label',
+    async (count, label) => {
+      const institution = getStaticCatalogueInstitutions()[0];
+      const programs = getStaticCataloguePrograms().slice(0, count);
+      vi.spyOn(publicCataloguePages, 'getPublicInstitutionPageData').mockResolvedValue({
+        institution,
+        programs,
+      });
+
+      const { container } = render(
+        await InstitutionPage({ params: Promise.resolve({ institutionId: institution.id }) }),
+      );
+
+      expect(screen.getByText(label).tagName).toBe('SUMMARY');
+      expect(container.querySelector('details')?.open).toBe(false);
+      const links = Array.from(container.querySelectorAll('main a[href^="/programs/"]'));
+      expect(links.map((link) => link.getAttribute('href'))).toEqual(
+        programs.map((program) => `/programs/${encodeURIComponent(program.id)}`),
+      );
+      expect(container.querySelectorAll('details a[href^="/programs/"]')).toHaveLength(count - 12);
+    },
+  );
+
+  it.each([0, 1, 12])('renders no summary for %i programs', async (count) => {
+    const institution = getStaticCatalogueInstitutions()[0];
+    vi.spyOn(publicCataloguePages, 'getPublicInstitutionPageData').mockResolvedValue({
+      institution,
+      programs: getStaticCataloguePrograms().slice(0, count),
+    });
+
+    const { container } = render(
+      await InstitutionPage({ params: Promise.resolve({ institutionId: institution.id }) }),
+    );
+
+    expect(container.querySelector('summary')).toBeNull();
+    expect(container.querySelectorAll('main a[href^="/programs/"]')).toHaveLength(count);
+  });
+
+  it('uses the concise Haifa program name with its existing link', async () => {
+    render(await InstitutionPage({ params: Promise.resolve({ institutionId: 'haifa' }) }));
+
+    expect(screen.getByText('הנדסה וטכנולוגיה').closest('a')?.getAttribute('href')).toBe(
+      '/programs/haifa_engineering',
+    );
+    expect(screen.queryByText('הנדסה וטכנולוגיה - אוניברסיטת חיפה')).toBeNull();
   });
 });
