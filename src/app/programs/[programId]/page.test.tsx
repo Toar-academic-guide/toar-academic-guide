@@ -34,7 +34,7 @@ import repair from '@/data/admissions/catalogueContentRepair.json';
 import * as publicCataloguePages from '@/lib/publicCataloguePages';
 import * as institutionLinks from '@/lib/institutionLinks';
 
-import ProgramPage from './page';
+import ProgramPage, { generateMetadata } from './page';
 
 describe('ProgramPage', () => {
   beforeEach(() => {
@@ -67,6 +67,22 @@ describe('ProgramPage', () => {
       ProgramPage({ params: Promise.resolve({ programId: 'missing-program' }) }),
     ).rejects.toThrow('NEXT_NOT_FOUND');
     expect(hoisted.notFound).toHaveBeenCalled();
+  });
+
+  it('preserves the full generated Haifa name in the heading and main metadata title', async () => {
+    const props = { params: Promise.resolve({ programId: 'haifa_engineering' }) };
+    render(await ProgramPage(props));
+
+    expect(
+      screen.getByRole('heading', {
+        level: 1,
+        name: 'הנדסה וטכנולוגיה - אוניברסיטת חיפה',
+      }),
+    ).toBeTruthy();
+    expect(await generateMetadata(props)).toMatchObject({
+      title: 'הנדסה וטכנולוגיה - אוניברסיטת חיפה – אוניברסיטת חיפה',
+      alternates: { canonical: '/programs/haifa_engineering' },
+    });
   });
 
   it('shows existing institution requirements instead of a generic placeholder', async () => {

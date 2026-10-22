@@ -417,7 +417,11 @@ describe('metadata', () => {
         page.programs.map((program) => `${SITE_URL}/programs/${program.id}`),
       );
       if (page.programs.length > 12) {
-        expect(markup).toContain(`הצגת כל המסלולים (${page.programs.length})`);
+        expect(markup).toContain(
+          page.programs.length === 13
+            ? 'הצגת מסלול נוסף'
+            : `הצגת עוד ${page.programs.length - 12} מסלולים`,
+        );
         const firstSection = markup.split('<details')[0];
         expect(firstSection.match(/href="\/programs\//g)).toHaveLength(12);
         expect(markup.split('</summary>')[1]).toContain(`/programs/${page.programs[12].id}`);

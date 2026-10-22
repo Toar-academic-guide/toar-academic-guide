@@ -3,11 +3,12 @@ import { notFound } from 'next/navigation';
 import WayPageShell from '@/components/WayPageShell';
 
 import { getPublicInstitutionPageData } from '@/lib/publicCataloguePages';
+import { institutionProgramName } from '@/lib/institutionProgramName';
 import { ROUTES } from '@/lib/routes';
 import { buildInstitutionMetadata } from '@/lib/seo/metadata';
 import { institutionLd, institutionBreadcrumbLd } from '@/lib/seo/jsonLd';
 import JsonLd from '@/components/seo/JsonLd';
-import type { CatalogueProgram } from '@/types/catalogue';
+import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,16 +16,26 @@ interface InstitutionPageProps {
   params: Promise<{ institutionId: string }>;
 }
 
-function ProgramCards({ programs }: { programs: CatalogueProgram[] }) {
+function ProgramCards({
+  programs,
+  institution,
+  className = '',
+}: {
+  programs: CatalogueProgram[];
+  institution: CatalogueInstitution;
+  className?: string;
+}) {
   return (
-    <div className="mt-4 grid gap-3 sm:grid-cols-2">
+    <div className={`grid gap-3 sm:grid-cols-2 ${className}`}>
       {programs.map((program) => (
         <Link
           key={program.id}
           href={`/programs/${encodeURIComponent(program.id)}`}
           className="rounded-xl border border-slate-200 px-4 py-3 transition hover:border-slate-900"
         >
-          <span className="block font-semibold">{program.name}</span>
+          <span className="block font-semibold">
+            {institutionProgramName(program, institution)}
+          </span>
           {program.category !== program.name && (
             <span className="mt-1 block text-sm text-slate-500">{program.category}</span>
           )}
@@ -82,13 +93,19 @@ export default async function InstitutionPage({ params }: InstitutionPageProps) 
 
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
             <h2 className="text-xl font-bold">מסלולי לימוד</h2>
-            <ProgramCards programs={programs.slice(0, 12)} />
+            <ProgramCards
+              programs={programs.slice(0, 12)}
+              institution={institution}
+              className="mt-4"
+            />
             {programs.length > 12 && (
-              <details className="mt-4">
+              <details className="mt-4 open:mt-3 [&[open]>summary]:hidden">
                 <summary className="cursor-pointer font-semibold text-cyan-700">
-                  הצגת כל המסלולים ({programs.length})
+                  {programs.length === 13
+                    ? 'הצגת מסלול נוסף'
+                    : `הצגת עוד ${programs.length - 12} מסלולים`}
                 </summary>
-                <ProgramCards programs={programs.slice(12)} />
+                <ProgramCards programs={programs.slice(12)} institution={institution} />
               </details>
             )}
           </section>
