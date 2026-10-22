@@ -9,6 +9,8 @@ vi.mock('@/server/catalogue/queries', () => ({
 import { listCataloguePrograms, listCatalogueInstitutions } from '@/server/catalogue/queries';
 
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
+import { catalogueAdmissionRequirements } from '@/lib/catalogueDisplayText';
+import { officialUrl } from '@/lib/studyJourney';
 
 import { getPublicInstitutionPageData, getPublicProgramPageData } from './publicCataloguePages';
 
@@ -147,6 +149,128 @@ describe('public catalogue page data', () => {
       isGeneral: false,
       institutions: [{ id: 'danon' }],
       institutionProgramPaths: { danon: '/institutions/danon' },
+    });
+  });
+
+  it('selects one requirement source per institution and matches the own page calculation', async () => {
+    const institutions = getStaticCatalogueInstitutions();
+    const base = getStaticCataloguePrograms().find((item) => item.id === 'nursing')!;
+    const detail = (id: InstitutionId, notes: string[], url = '') => ({
+      ...base.institutionDetails![0],
+      institutionName: institutions.find((item) => item.id === id)!.name,
+      specificAdmissionNotes: notes,
+      programUrl: url,
+    });
+    const general = {
+      ...base,
+      name: 'סיעוד בדיקה',
+      institutionId: 'tau' as const,
+      linkedInstitutionIds: ['tau'],
+      admissionRequirements: [],
+      thresholds: { tau: 610, huji: 600 },
+      institutionDetails: [
+        detail('tau', ['תנאי תל אביב הקיימים']),
+        detail('haifa', [], 'https://www.haifa.ac.il/general-only'),
+      ],
+    };
+    const own = (id: InstitutionId, notes: string[], requirements: string[] = []) => ({
+      ...general,
+      id: `${id}_nursing`,
+      institutionId: id,
+      linkedInstitutionIds: [id],
+      thresholds: undefined,
+      admissionRequirements: requirements,
+      institutionDetails: [
+        detail(id, notes, id === 'haifa' ? 'https://www.haifa.ac.il/nursing' : ''),
+      ],
+    });
+    const haifa = own(
+      'haifa',
+      ['ביולוגיה — חובה', 'ציון פסיכומטרי מינימלי: 580', 'ממוצע בגרות מינימלי: 76'],
+      ['אין לצרף את הדרישה הזאת כשיש הערות למסלול'],
+    );
+    // A differently named detail must not supply notes or a URL to Haifa's block.
+    haifa.institutionDetails.unshift(detail('bgu', ['הערה של מוסד אחר'], 'https://www.bgu.ac.il/'));
+    const bgu = own('bgu', ['ראיון קבלה מחייב', 'ביולוגיה ברמה מקיפה — יתרון']);
+    const ariel = own('ariel', []);
+    const tau = own('tau', ['אין להחליף את התנאים הקיימים בתנאי השורה הזאת']);
+    const unlisted = { ...own('huji', ['אין לפרסם']), isListed: false };
+    vi.mocked(listCataloguePrograms).mockResolvedValue({
+      data: [general, tau, haifa, bgu, ariel, unlisted],
+      meta: { catalogueSource: 'database' },
+    });
+
+    const page = (await getPublicProgramPageData(general.id))!;
+    expect(page.isGeneral).toBe(true);
+    expect(page.institutionRequirementSources.tau).toMatchObject({
+      sourceProgramId: general.id,
+      requirements: ['תנאי תל אביב הקיימים'],
+      fullDetailsPath: undefined,
+    });
+    for (const program of [haifa, bgu]) {
+      const institution = institutions.find((item) => item.id === program.institutionId)!;
+      const ownDetail = program.institutionDetails.find(
+        (item) => item.institutionName === institution.name,
+      );
+      const expected = catalogueAdmissionRequirements(
+        ownDetail?.specificAdmissionNotes,
+        program.admissionRequirements,
+      );
+      const ownPage = (await getPublicProgramPageData(program.id))!;
+      expect(page.institutionRequirementSources[institution.id]).toEqual({
+        sourceProgramId: program.id,
+        requirements: expected,
+        officialUrl: officialUrl(ownDetail?.programUrl, institution.id),
+        fullDetailsPath: page.institutionProgramPaths[institution.id],
+      });
+      expect(ownPage.institutionRequirementSources[institution.id].requirements).toEqual(expected);
+      expect(ownPage.institutionRequirementSources[institution.id].fullDetailsPath).toBeUndefined();
+    }
+    expect(page.institutionRequirementSources.ariel).toMatchObject({
+      sourceProgramId: ariel.id,
+      requirements: [],
+      fullDetailsPath: '/programs/ariel_nursing',
+    });
+    expect(page.institutionRequirementSources.huji).toMatchObject({
+      sourceProgramId: general.id,
+      requirements: [],
+      fullDetailsPath: undefined,
+    });
+    expect(page.institutionProgramPaths.huji).toBe('/institutions/huji');
+    expect(
+      Object.values(page.institutionRequirementSources).flatMap((source) => source.requirements),
+    ).not.toContain(catalogueAdmissionRequirements()[0]);
+  });
+
+  it('uses each source row’s admissionRequirements fallback without merging rows', async () => {
+    const general = {
+      ...getStaticCataloguePrograms().find((item) => item.id === 'nursing')!,
+      name: 'סיעוד בדיקה',
+      admissionRequirements: [],
+      institutionDetails: [],
+      thresholds: { haifa: 580 },
+    };
+    const own = {
+      ...general,
+      id: 'haifa_nursing',
+      institutionId: 'haifa' as const,
+      admissionRequirements: ['תנאי מהמסלול של חיפה'],
+    };
+    vi.mocked(listCataloguePrograms).mockResolvedValue({ data: [general, own], meta: {} });
+    expect(
+      (await getPublicProgramPageData(general.id))!.institutionRequirementSources.haifa,
+    ).toMatchObject({
+      sourceProgramId: own.id,
+      requirements: own.admissionRequirements,
+    });
+    const updated = { ...general, admissionRequirements: ['תנאי מהעמוד הכללי'] };
+    vi.mocked(listCataloguePrograms).mockResolvedValue({ data: [updated, own], meta: {} });
+    expect(
+      (await getPublicProgramPageData(general.id))!.institutionRequirementSources.haifa,
+    ).toMatchObject({
+      sourceProgramId: general.id,
+      requirements: updated.admissionRequirements,
+      fullDetailsPath: undefined,
     });
   });
 

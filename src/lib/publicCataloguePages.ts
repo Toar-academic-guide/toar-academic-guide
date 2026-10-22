@@ -2,6 +2,8 @@ import 'server-only';
 import { cache } from 'react';
 
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
+import { catalogueAdmissionRequirements } from '@/lib/catalogueDisplayText';
+import { officialUrl } from '@/lib/studyJourney';
 import { listCatalogueInstitutions, listCataloguePrograms } from '@/server/catalogue/queries';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 
@@ -94,6 +96,14 @@ export interface PublicProgramPageData {
   institutions: CatalogueInstitution[];
   isGeneral: boolean;
   institutionProgramPaths: Record<string, string>;
+  institutionRequirementSources: Record<string, PublicProgramRequirementSource>;
+}
+
+interface PublicProgramRequirementSource {
+  sourceProgramId: string;
+  requirements: string[];
+  officialUrl?: string;
+  fullDetailsPath?: string;
 }
 
 export interface PublicInstitutionPageData {
@@ -115,30 +125,62 @@ export async function getPublicProgramPageData(
     program.linkedInstitutionIds.includes(institution.id),
   );
   const isGeneral = catalogue.generalProgramIds.has(program.id);
+  const institutionProgramPaths: Record<string, string> = {};
+  const institutionRequirementSources: Record<string, PublicProgramRequirementSource> = {};
+  const genericRequirement = catalogueAdmissionRequirements()[0];
+  const hasRequirements = (items: string[]) =>
+    !(items.length === 1 && items[0] === genericRequirement);
+  for (const institution of institutions) {
+    const specific = isGeneral
+      ? catalogue.programs.find(
+          (candidate) =>
+            candidate.isListed !== false &&
+            candidate.id !== program.id &&
+            !catalogue.generalProgramIds.has(candidate.id) &&
+            candidate.name === program.name &&
+            candidate.institutionId === institution.id,
+        )
+      : undefined;
+    const specificPath = specific ? `/programs/${encodeURIComponent(specific.id)}` : undefined;
+    institutionProgramPaths[institution.id] =
+      specificPath ?? `/institutions/${encodeURIComponent(institution.id)}`;
+
+    const detail = program.institutionDetails?.find(
+      (entry) => entry.institutionName === institution.name,
+    );
+    const requirements = catalogueAdmissionRequirements(
+      detail?.specificAdmissionNotes,
+      program.admissionRequirements,
+    );
+    const useSpecific =
+      isGeneral && program.isListed !== false && !hasRequirements(requirements) && !!specific;
+    const sourceProgram = useSpecific ? specific : program;
+    const sourceDetail = useSpecific
+      ? specific.institutionDetails?.find((entry) => entry.institutionName === institution.name)
+      : detail;
+    // Match the source page's calculation exactly; never combine rows' requirements or URLs.
+    const sourceRequirements = useSpecific
+      ? catalogueAdmissionRequirements(
+          sourceDetail?.specificAdmissionNotes,
+          sourceProgram.admissionRequirements,
+        )
+      : requirements;
+    institutionRequirementSources[institution.id] = {
+      sourceProgramId: sourceProgram.id,
+      requirements:
+        isGeneral && program.isListed !== false && !hasRequirements(sourceRequirements)
+          ? []
+          : sourceRequirements,
+      officialUrl: officialUrl(sourceDetail?.programUrl, institution.id),
+      fullDetailsPath: useSpecific ? specificPath : undefined,
+    };
+  }
   return {
     program,
     institutions,
     isGeneral,
-    institutionProgramPaths: Object.fromEntries(
-      institutions.map((institution) => {
-        const specific =
-          isGeneral &&
-          catalogue.programs.find(
-            (candidate) =>
-              candidate.isListed !== false &&
-              candidate.id !== program.id &&
-              !catalogue.generalProgramIds.has(candidate.id) &&
-              candidate.name === program.name &&
-              candidate.institutionId === institution.id,
-          );
-        return [
-          institution.id,
-          specific
-            ? `/programs/${encodeURIComponent(specific.id)}`
-            : `/institutions/${encodeURIComponent(institution.id)}`,
-        ];
-      }),
-    ),
+    institutionProgramPaths,
+    institutionRequirementSources,
   };
 }
 

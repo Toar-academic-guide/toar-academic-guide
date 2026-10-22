@@ -5,7 +5,6 @@ import AdmissionRequirements from '@/components/AdmissionRequirements';
 
 import { getPublicProgramPageData } from '@/lib/publicCataloguePages';
 import { catalogueAdmissionRequirements } from '@/lib/catalogueDisplayText';
-import { officialUrl } from '@/lib/studyJourney';
 import { ROUTES } from '@/lib/routes';
 import { buildProgramMetadata } from '@/lib/seo/metadata';
 import { programLd, programBreadcrumbLd } from '@/lib/seo/jsonLd';
@@ -29,7 +28,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
     notFound();
   }
 
-  const { program, institutions, institutionProgramPaths } = data;
+  const { program, institutions, institutionProgramPaths, institutionRequirementSources } = data;
 
   return (
     <WayPageShell>
@@ -95,32 +94,66 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                   />
                 )}
                 {institutions.map((institution) => {
-                  const detail = program.institutionDetails?.find(
-                    (entry) => entry.institutionName === institution.name,
+                  const source = institutionRequirementSources[institution.id];
+                  const officialLink = source.officialUrl && (
+                    <a
+                      href={source.officialUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-semibold text-[#6554b8] underline"
+                    >
+                      לאתר המוסד
+                    </a>
                   );
-                  const sourceUrl = officialUrl(detail?.programUrl, institution.id);
                   return (
                     <div key={institution.id}>
                       {institutions.length > 1 && (
                         <h3 className="font-semibold">{institution.name}</h3>
                       )}
-                      <AdmissionRequirements
-                        programId={program.id}
-                        institutionId={institution.id}
-                        requirements={catalogueAdmissionRequirements(
-                          detail?.specificAdmissionNotes,
-                          program.admissionRequirements,
-                        )}
-                      />
-                      {sourceUrl && (
-                        <a
-                          href={sourceUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="mt-3 inline-block text-sm font-semibold text-[#6554b8] underline"
-                        >
-                          לאתר המוסד
-                        </a>
+                      {source.requirements.length > 0 ? (
+                        <>
+                          <AdmissionRequirements
+                            programId={source.sourceProgramId}
+                            institutionId={institution.id}
+                            requirements={source.requirements}
+                          />
+                          {(source.fullDetailsPath || officialLink) && (
+                            <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
+                              {source.fullDetailsPath && (
+                                <Link
+                                  href={source.fullDetailsPath}
+                                  className="font-semibold text-[#6554b8] underline"
+                                >
+                                  לפרטים המלאים
+                                </Link>
+                              )}
+                              {officialLink}
+                            </div>
+                          )}
+                        </>
+                      ) : (
+                        <p className="mt-3 text-sm leading-6 text-[#35415b]">
+                          {source.fullDetailsPath ? (
+                            <Link
+                              href={source.fullDetailsPath}
+                              className="font-semibold text-[#6554b8] underline"
+                            >
+                              לפרטים על המסלול
+                            </Link>
+                          ) : (
+                            <>
+                              תנאי הקבלה מפורטים באתר המוסד.{' '}
+                              {officialLink || (
+                                <Link
+                                  href={institutionProgramPaths[institution.id]}
+                                  className="font-semibold text-[#6554b8] underline"
+                                >
+                                  לדף המוסד
+                                </Link>
+                              )}
+                            </>
+                          )}
+                        </p>
                       )}
                     </div>
                   );
