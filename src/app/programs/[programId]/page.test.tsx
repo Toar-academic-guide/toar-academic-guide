@@ -73,7 +73,12 @@ describe('ProgramPage', () => {
     expect(visibleNotes).toContain('פסיכומטרי כללי 640 ומעלה וזכאות לבגרות.');
     expect(visibleNotes).toContain('ללא פסיכומטרי: ממוצע בגרות 102 ומעלה');
     expect(screen.getByText('כל התנאים ודרכי קבלה נוספות').closest('details')?.open).toBe(false);
-    expect(screen.getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toBe(
+    const tauRequirements = screen.getByRole('heading', {
+      name: 'אוניברסיטת תל אביב',
+    }).parentElement!;
+    expect(
+      within(tauRequirements).getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href'),
+    ).toBe(
       'https://go.tau.ac.il/he/social-sciences/ba/communications?v=requirements&utm_source=myway&utm_medium=referral',
     );
   });
@@ -98,6 +103,10 @@ describe('ProgramPage', () => {
         })),
       },
       institutions,
+      isGeneral: true,
+      institutionProgramPaths: Object.fromEntries(
+        institutions.map((institution) => [institution.id, `/institutions/${institution.id}`]),
+      ),
     });
 
     render(await ProgramPage({ params: Promise.resolve({ programId: program.id }) }));

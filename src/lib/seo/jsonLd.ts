@@ -66,6 +66,17 @@ export function institutionLd({ institution, programs }: PublicInstitutionPageDa
     '@id': absoluteUrl(`/institutions/${encodeURIComponent(institution.id)}#institution`),
     name: institution.name,
     url: absoluteUrl(`/institutions/${encodeURIComponent(institution.id)}`),
+    hasOfferCatalog: {
+      '@type': 'OfferCatalog',
+      name: 'מסלולי לימוד',
+      numberOfItems: programs.length,
+      itemListElement: programs.map((program, index) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        name: program.name,
+        url: absoluteUrl(`/programs/${encodeURIComponent(program.id)}`),
+      })),
+    },
     ...(sameAs ? { sameAs } : {}),
   };
 }
@@ -105,11 +116,11 @@ export async function programLd({ program, institutions }: PublicProgramPageData
   };
 }
 
-export function programBreadcrumbLd({ program, institutions }: PublicProgramPageData) {
+export function programBreadcrumbLd({ program, institutions, isGeneral }: PublicProgramPageData) {
   return breadcrumbLd([
     { name: 'בית', path: '/' },
     { name: 'מוסדות לימוד', path: '/institutions' },
-    ...(institutions.length === 1
+    ...(!isGeneral && institutions.length === 1
       ? [
           {
             name: institutions[0].name,

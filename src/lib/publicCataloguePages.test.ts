@@ -16,7 +16,10 @@ describe('public catalogue page data', () => {
   it('keeps an unlisted saved programme URL accessible without advertising it on institution pages', async () => {
     const program = { ...getStaticCataloguePrograms()[0], isListed: false };
     vi.mocked(listCataloguePrograms).mockResolvedValue({ data: [program], meta: {} });
-    expect((await getPublicProgramPageData(program.id))?.program).toEqual(program);
+    expect((await getPublicProgramPageData(program.id))?.program).toMatchObject({
+      id: program.id,
+      isListed: false,
+    });
     const page = await getPublicInstitutionPageData(program.linkedInstitutionIds[0]);
     expect(page?.programs.some((item) => item.id === program.id)).toBe(false);
   });
@@ -65,6 +68,7 @@ describe('public catalogue page data', () => {
       ...getStaticCataloguePrograms()[0],
       id: 'database_program',
       name: 'מסלול מהקטלוג הפעיל',
+      institutionId: institution.id,
       linkedInstitutionIds: [institution.id],
     };
     const updated = { ...getStaticCataloguePrograms()[0], name: 'שם מעודכן' };
@@ -76,7 +80,7 @@ describe('public catalogue page data', () => {
       data: [institution],
       meta: { catalogueSource: 'database' },
     });
-    expect(await getPublicProgramPageData(program.id)).toEqual({
+    expect(await getPublicProgramPageData(program.id)).toMatchObject({
       program,
       institutions: [institution],
     });
@@ -89,6 +93,112 @@ describe('public catalogue page data', () => {
     expect(
       await getPublicInstitutionPageData(getStaticCatalogueInstitutions()[1].id),
     ).not.toBeNull();
+  });
+
+  it('replaces seeded single-provider links with all subject signals, excluding legacy labels and unknown institutions', async () => {
+    const base = getStaticCataloguePrograms().find((program) => program.id === 'nursing')!;
+    const institution = getStaticCatalogueInstitutions().find((item) => item.id === 'haifa')!;
+    const subject = {
+      ...base,
+      id: 'read_time_subject',
+      name: 'תחום בדיקה',
+      institution: 'האוניברסיטה העברית בירושלים',
+      linkedInstitutionIds: ['huji'],
+      thresholds: { tau: 0, huji: null, unknown: 500 } as typeof base.thresholds,
+      institutionDetails: [
+        { ...base.institutionDetails![0], institutionName: institution.name },
+        { ...base.institutionDetails![0], institutionName: 'מוסד שלא קיים' },
+      ],
+    };
+    vi.mocked(listCataloguePrograms).mockResolvedValue({
+      data: [
+        subject,
+        { ...subject, id: 'listed_specific', institutionId: 'bgu' },
+        { ...subject, id: 'unlisted_specific', institutionId: 'ariel', isListed: false },
+      ],
+      meta: { catalogueSource: 'database' },
+    });
+    const page = (await getPublicProgramPageData(subject.id))!;
+    expect(page.isGeneral).toBe(true);
+    expect(page.program.linkedInstitutionIds).toEqual(['tau', 'bgu', 'haifa']);
+    expect(page.institutions.map((item) => item.id)).toEqual(['tau', 'bgu', 'haifa']);
+    expect(page.institutionProgramPaths).toEqual({
+      tau: '/institutions/tau',
+      bgu: '/programs/listed_specific',
+      haifa: '/institutions/haifa',
+    });
+    expect(subject.linkedInstitutionIds).toEqual(['huji']);
+  });
+
+  it('keeps a vocational single-institution link when there are no subject signals', async () => {
+    const program = {
+      ...getStaticCataloguePrograms()[0],
+      id: 'vocational_single',
+      name: 'קורס בדיקה',
+      type: 'vocational' as const,
+      institution: 'דנון',
+      thresholds: undefined,
+      institutionDetails: [],
+      linkedInstitutionIds: ['danon'],
+    };
+    vi.mocked(listCataloguePrograms).mockResolvedValue({ data: [program], meta: {} });
+    expect(await getPublicProgramPageData(program.id)).toMatchObject({
+      program,
+      isGeneral: false,
+      institutions: [{ id: 'danon' }],
+      institutionProgramPaths: { danon: '/institutions/danon' },
+    });
+  });
+
+  it('orders own programs first, preserves own duplicates and deduplicates remaining names', async () => {
+    const institution = {
+      ...getStaticCatalogueInstitutions()[0],
+      id: 'test_college' as InstitutionId,
+      name: 'מכללת בדיקה',
+    };
+    const base = getStaticCataloguePrograms().find((program) => program.id === 'nursing')!;
+    const general = {
+      ...base,
+      id: 'general',
+      name: 'תחום משותף',
+      thresholds: undefined,
+      linkedInstitutionIds: ['tau'],
+      institutionDetails: [{ ...base.institutionDetails![0], institutionName: institution.name }],
+    };
+    const own = {
+      ...general,
+      id: 'own',
+      institutionId: institution.id,
+      linkedInstitutionIds: [institution.id],
+    };
+    const other = { ...general, id: 'other', name: 'תחום נוסף' };
+    const withdrawn = { ...own, id: 'withdrawn', name: 'תחום זמין', isListed: false };
+    vi.mocked(listCatalogueInstitutions).mockResolvedValue({ data: [institution], meta: {} });
+    vi.mocked(listCataloguePrograms).mockResolvedValue({
+      data: [
+        general,
+        other,
+        { ...other, id: 'other_duplicate' },
+        own,
+        { ...own, id: 'own_duplicate' },
+        withdrawn,
+        { ...general, id: 'available', name: withdrawn.name },
+      ],
+      meta: {},
+    });
+    const page = (await getPublicInstitutionPageData(institution.id))!;
+    expect(page.programs.map((program) => program.id)).toEqual([
+      'own',
+      'own_duplicate',
+      'other',
+      'available',
+    ]);
+    expect(
+      (await getPublicProgramPageData(general.id))!.institutionProgramPaths[institution.id],
+    ).toBe('/programs/own');
+    expect(
+      (await getPublicProgramPageData('available'))!.institutionProgramPaths[institution.id],
+    ).toBe('/institutions/test_college');
   });
 
   it('does not turn database failures into legacy data or a misleading 404', async () => {

@@ -29,12 +29,12 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
     notFound();
   }
 
-  const { program, institutions } = data;
+  const { program, institutions, institutionProgramPaths } = data;
 
   return (
     <WayPageShell>
       <JsonLd data={[await programLd(data), programBreadcrumbLd(data)]} />
-      <main dir="rtl" className="px-4 py-10 text-slate-900 sm:px-6">
+      <main dir="rtl" className="px-4 py-10 text-right text-slate-900 sm:px-6">
         <section className="mx-auto flex max-w-4xl flex-col gap-8">
           <Link
             href={ROUTES.home}
@@ -71,7 +71,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                   key={institution.id}
                   className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-4 py-3"
                 >
-                  <Link href={`/institutions/${institution.id}`}>{institution.name}</Link>
+                  <Link href={institutionProgramPaths[institution.id]}>{institution.name}</Link>
                   <Link
                     className="shrink-0 rounded-full border border-[#c9c2e4] px-3 py-2 text-sm text-[#6554b8]"
                     href={`/enquiry?program=${encodeURIComponent(program.id)}&institution=${encodeURIComponent(institution.id)}`}

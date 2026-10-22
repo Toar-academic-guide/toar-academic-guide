@@ -1,5 +1,8 @@
 import { readFileSync } from 'node:fs';
 import type { InstitutionId } from '@/data/institutions';
+import type { ReactNode } from 'react';
+import InstitutionPage from '@/app/institutions/[institutionId]/page';
+import ProgramPage from '@/app/programs/[programId]/page';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import robots from '@/app/robots';
@@ -30,6 +33,9 @@ import {
 } from './jsonLd';
 
 vi.mock('server-only', () => ({}));
+vi.mock('@/components/WayPageShell', () => ({
+  default: ({ children }: { children: ReactNode }) => children,
+}));
 vi.mock('@/server/catalogue/queries', () => ({
   listCataloguePrograms: vi.fn(),
   listCatalogueInstitutions: vi.fn(),
@@ -249,6 +255,102 @@ describe('metadata', () => {
     expect((await buildProgramMetadata('cs')).title).toBe('לימודי מדעי המחשב: באילו מוסדות לומדים');
   });
 
+  it('uses the general title even when the only subject signal is one institution', async () => {
+    const program = {
+      ...programs.find((program) => program.id === 'biology')!,
+      name: 'תחום עם מוסד אחד',
+      thresholds: { haifa: 500 } as (typeof programs)[0]['thresholds'],
+      institutionDetails: [],
+      linkedInstitutionIds: ['tau'],
+    };
+    vi.mocked(listCataloguePrograms).mockResolvedValue({
+      data: [program],
+      meta: { catalogueSource: 'database' },
+    });
+    const page = (await getPublicProgramPageData(program.id))!;
+    expect(page.institutions.map((institution) => institution.id)).toEqual(['haifa']);
+    expect((await buildProgramMetadata(program.id)).title).toBe(
+      'לימודי תחום עם מוסד אחד: באילו מוסדות לומדים',
+    );
+    expect(programBreadcrumbLd(page).itemListElement).toHaveLength(3);
+  });
+
+  it.each([
+    ['nursing', ['tau', 'huji', 'bgu', 'haifa', 'ariel', 'telhai', 'mta', 'ono']],
+    ['biology', ['tau', 'huji', 'bgu', 'haifa', 'biu', 'telhai']],
+  ])(
+    'uses every provider for %s in metadata, JSON-LD and rendered links',
+    async (id, expectedIds) => {
+      const seeded = programs.find((program) => program.id === id)!;
+      vi.mocked(listCataloguePrograms).mockResolvedValue({
+        data: [
+          { ...seeded, linkedInstitutionIds: ['tau'] },
+          ...programs.filter((program) => program.id !== id),
+        ],
+        meta: { catalogueSource: 'database' },
+      });
+      const page = (await getPublicProgramPageData(id))!;
+      expect(page.isGeneral).toBe(true);
+      expect(page.institutions.map((institution) => institution.id)).toEqual(expectedIds);
+      const metadata = await buildProgramMetadata(id);
+      expect(metadata.title).toBe(`לימודי ${page.program.name}: באילו מוסדות לומדים`);
+      expect(metadata.description).toContain(`ב-${expectedIds.length} מוסדות לימוד`);
+      expect((await programLd(page)).provider.map((provider) => provider.url)).toEqual(
+        expectedIds.map((institutionId) => `${SITE_URL}/institutions/${institutionId}`),
+      );
+      const markup = renderToStaticMarkup(
+        await ProgramPage({ params: Promise.resolve({ programId: id }) }),
+      );
+      for (const institution of page.institutions) {
+        const specific = programs.find(
+          (program) =>
+            program.isListed !== false &&
+            program.name === seeded.name &&
+            program.institutionId === institution.id,
+        );
+        const path = specific ? `/programs/${specific.id}` : `/institutions/${institution.id}`;
+        expect(page.institutionProgramPaths[institution.id]).toBe(path);
+        expect(markup).toContain(`href="${path}"`);
+        expect(markup).toContain(`href="/enquiry?program=${id}&amp;institution=${institution.id}"`);
+      }
+      expect(markup).toContain('תנאי קבלה');
+      if (id === 'nursing') expect(page.institutionProgramPaths.bgu).toBe('/programs/bgu_nursing');
+    },
+  );
+
+  it('lists own programs first and makes every ordered program accessible with matching metadata and JSON-LD counts', async () => {
+    for (const institution of institutions) {
+      const page = (await getPublicInstitutionPageData(institution.id))!;
+      const own = page.programs.filter((program) => program.institutionId === institution.id);
+      const general = page.programs.filter((program) => program.institutionId !== institution.id);
+      expect(page.programs).toEqual([...own, ...general]);
+      expect(new Set(general.map((program) => program.name)).size).toBe(general.length);
+      expect(
+        general.some((program) => own.some((specific) => specific.name === program.name)),
+      ).toBe(false);
+      const metadata = await buildInstitutionMetadata(institution.id);
+      expect(metadata.description).toContain(`${page.programs.length} מסלולי לימוד`);
+      const markup = renderToStaticMarkup(
+        await InstitutionPage({ params: Promise.resolve({ institutionId: institution.id }) }),
+      );
+      expect(markup.match(/href="\/programs\//g) ?? []).toHaveLength(page.programs.length);
+      const ld = institutionLd(page).hasOfferCatalog;
+      expect(ld.numberOfItems).toBe(page.programs.length);
+      expect(ld.itemListElement.map((item) => item.name)).toEqual(
+        page.programs.map((program) => program.name),
+      );
+      expect(ld.itemListElement.map((item) => item.url)).toEqual(
+        page.programs.map((program) => `${SITE_URL}/programs/${program.id}`),
+      );
+      if (page.programs.length > 12) {
+        expect(markup).toContain(`הצגת כל המסלולים (${page.programs.length})`);
+        const firstSection = markup.split('<details')[0];
+        expect(firstSection.match(/href="\/programs\//g)).toHaveLength(12);
+        expect(markup.split('</summary>')[1]).toContain(`/programs/${page.programs[12].id}`);
+      } else expect(markup).not.toContain('<details');
+    }
+  });
+
   it('gives every excluded existing detail page a self-canonical and noindex,follow', async () => {
     const institutionIds = await indexableInstitutionIds();
     const programIds = await indexableProgramIds();
@@ -311,24 +413,22 @@ describe('metadata', () => {
       )),
     ];
     expect(new Set(titles).size).toBe(titles.length);
-    for (const id of [
-      'biology',
-      'tau_biology',
-      'social_work',
-      'tau_socialwork',
-      'accounting',
-      'tau_accounting',
-      'occupational_therapy',
-      'tau_occupational_therapy',
-      'criminology',
-      'biu_criminology',
-    ]) {
-      expect((await buildProgramMetadata(id)).title).toContain(
-        `(${(await getPublicProgramPageData(id))!.program.category})`,
-      );
+    for (const id of await indexableProgramIds()) {
+      const page = (await getPublicProgramPageData(id))!;
+      const title = String((await buildProgramMetadata(id)).title);
+      expect(title.endsWith(`(${page.program.category})`)).toBe(false);
+      expect(title.endsWith(`(${id})`)).toBe(false);
     }
-    expect((await buildProgramMetadata('biology')).title).toContain('(biology)');
-    expect((await buildProgramMetadata('tau_biology')).title).toContain('(tau_biology)');
+    expect((await buildProgramMetadata('biology')).title).toBe(
+      'לימודי ביולוגיה: באילו מוסדות לומדים',
+    );
+    expect((await buildProgramMetadata('tau_biology')).title).toBe('ביולוגיה – אוניברסיטת תל אביב');
+    expect((await buildProgramMetadata('nativ_acting')).title).toBe(
+      'משחק – בית הספר למשחק ניסן נתיב: מסלול במוזיקה ותיאטרון',
+    );
+    expect((await buildProgramMetadata('nativ_graphic_design')).title).toBe(
+      'משחק – בית הספר למשחק ניסן נתיב: מסלול באמנויות הבמה',
+    );
   });
 });
 
