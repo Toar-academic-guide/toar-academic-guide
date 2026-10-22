@@ -1,4 +1,5 @@
 import type { Program } from '@/data/degrees/types';
+import { INSTITUTION_BY_ID } from '@/data/institutions';
 
 // These ingestion diagnostics are stored alongside catalogue copy. Keep the source
 // untouched for admissions processing; only adapt text at the UI boundary.
@@ -42,15 +43,27 @@ export function catalogueAdmissionRequirements(
     : ['לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד.'];
 }
 
-/** Prefer the current canonical programme's institution row over a legacy alias's notes. */
+/** Keep institution-specific copy; use a shared programme only when that copy is absent. */
 export function catalogueInstitutionDetail(
   programs: readonly Program[],
   program: Program,
   canonicalProgramId?: string,
 ) {
   const current = programs.find((item) => item.id === canonicalProgramId);
-  return (
-    current?.institutionDetails?.find((detail) => detail.institutionName === program.institution) ??
-    program.institutionDetails?.find((detail) => detail.institutionName === program.institution)
+  const institutionName = program.institutionId
+    ? (INSTITUTION_BY_ID[program.institutionId]?.name ?? program.institution)
+    : program.institution;
+  const own = program.institutionDetails?.find(
+    (detail) =>
+      detail.institutionName === institutionName || detail.institutionName === program.institution,
   );
+  const shared = current?.institutionDetails?.find(
+    (detail) =>
+      detail.institutionName === institutionName || detail.institutionName === program.institution,
+  );
+  return own?.specificAdmissionNotes.length
+    ? own
+    : shared?.specificAdmissionNotes.length
+      ? shared
+      : (own ?? shared);
 }

@@ -49,7 +49,7 @@ describe('catalogue display text', () => {
   });
 });
 
-it('uses current requirements for the same programme and institution instead of a legacy alias', () => {
+it('preserves institution requirements when shared catalogue rows are empty', () => {
   const programs = getStaticCataloguePrograms();
   const canonical = programs.find((program) => program.id === 'economics')!;
   const legacy = programs.find((program) => program.id === 'bgu_economics')!;
@@ -60,11 +60,40 @@ it('uses current requirements for the same programme and institution instead of 
     programUrl: 'https://www.bgu.ac.il/welcome/ba/catalog/categories/economics/',
   };
   const current = { ...canonical, institutionDetails: [detail] };
-  expect(catalogueInstitutionDetail([current, legacy], legacy, 'economics')).toEqual(detail);
+  expect(catalogueInstitutionDetail([current, legacy], legacy, 'economics')).toEqual(
+    legacy.institutionDetails?.[0],
+  );
+  const emptyLegacy = {
+    ...legacy,
+    institutionDetails: [{ ...legacy.institutionDetails![0], specificAdmissionNotes: [] }],
+  };
+  expect(catalogueInstitutionDetail([current, emptyLegacy], emptyLegacy, 'economics')).toEqual(
+    detail,
+  );
+  const emptyCurrent = {
+    ...current,
+    institutionDetails: [{ ...detail, specificAdmissionNotes: [] }],
+  };
+  expect(catalogueInstitutionDetail([emptyCurrent, legacy], legacy, 'economics')).toEqual(
+    legacy.institutionDetails?.[0],
+  );
   expect(
     catalogueInstitutionDetail([{ ...current, institutionDetails: [] }], legacy, 'economics'),
   ).toEqual(legacy.institutionDetails?.find((row) => row.institutionName === legacy.institution));
   expect(legacy.institutionDetails?.[0].specificAdmissionNotes).not.toEqual(
     detail.specificAdmissionNotes,
   );
+});
+
+it('matches institution aliases by their catalogue ID without using another institution', () => {
+  const program = getStaticCataloguePrograms().find((item) => item.id === 'bgu_economics')!;
+  const renamed = { ...program, institution: 'Ben Gurion', institutionId: 'bgu' as const };
+  expect(catalogueInstitutionDetail([], renamed)).toEqual(program.institutionDetails?.[0]);
+  const mismatched = {
+    ...program,
+    institutionDetails: [
+      { ...program.institutionDetails![0], institutionName: 'Other institution' },
+    ],
+  };
+  expect(catalogueInstitutionDetail([], mismatched)).toBeUndefined();
 });
