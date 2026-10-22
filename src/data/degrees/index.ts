@@ -947,7 +947,7 @@ for (const record of mondayAdmissionsEvidence) {
 
     const dynamicProgram: Program = {
       id: progId,
-      name: progId === 'haifa_engineering' ? prog.name : `${prog.name} - ${record.displayName}`,
+      name: `${prog.name} - ${record.displayName}`,
       institution: record.displayName,
       institutionId: instId,
       type,

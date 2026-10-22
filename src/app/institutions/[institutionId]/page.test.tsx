@@ -93,12 +93,49 @@ describe('InstitutionPage', () => {
     expect(container.querySelectorAll('main a[href^="/programs/"]')).toHaveLength(count);
   });
 
-  it('uses the concise Haifa program name with its existing link', async () => {
-    render(await InstitutionPage({ params: Promise.resolve({ institutionId: 'haifa' }) }));
+  it.each(['haifa', 'huji', 'technion'])(
+    'shortens %s program card names without changing links or JSON-LD names',
+    async (institutionId) => {
+      const program = getStaticCataloguePrograms().find(
+        (entry) => entry.id === `${institutionId}_engineering`,
+      )!;
+      const { container } = render(
+        await InstitutionPage({ params: Promise.resolve({ institutionId }) }),
+      );
 
-    expect(screen.getByText('הנדסה וטכנולוגיה').closest('a')?.getAttribute('href')).toBe(
-      '/programs/haifa_engineering',
+      const link = container.querySelector(`a[href="/programs/${program.id}"]`);
+      expect(link?.querySelector('span')?.textContent).toBe('הנדסה וטכנולוגיה');
+      expect(link?.getAttribute('href')).toBe(`/programs/${program.id}`);
+      expect(link?.textContent).not.toContain(program.institution);
+      expect(screen.queryByText(program.name)).toBeNull();
+      const jsonLd = JSON.parse(
+        container.querySelector('script[type="application/ld+json"]')!.textContent!,
+      );
+      const institutionLd = jsonLd['@graph'].find(
+        (item: { '@type': string }) => item['@type'] === 'CollegeOrUniversity',
+      );
+      expect(institutionLd.hasOfferCatalog.itemListElement).toContainEqual(
+        expect.objectContaining({ name: program.name }),
+      );
+    },
+  );
+
+  it('keeps a different institution mentioned in a program name', async () => {
+    const institution = getStaticCatalogueInstitutions().find((entry) => entry.id === 'haifa')!;
+    const program = {
+      ...getStaticCataloguePrograms().find((entry) => entry.id === 'huji_engineering')!,
+      institutionId: institution.id,
+      institution: institution.name,
+    };
+    vi.spyOn(publicCataloguePages, 'getPublicInstitutionPageData').mockResolvedValue({
+      institution,
+      programs: [program],
+    });
+
+    render(await InstitutionPage({ params: Promise.resolve({ institutionId: institution.id }) }));
+
+    expect(screen.getByText(program.name).closest('a')?.getAttribute('href')).toBe(
+      '/programs/huji_engineering',
     );
-    expect(screen.queryByText('הנדסה וטכנולוגיה - אוניברסיטת חיפה')).toBeNull();
   });
 });
