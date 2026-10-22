@@ -1,5 +1,10 @@
+import { getStaticCataloguePrograms } from './catalogueStatic';
 import { describe, expect, it } from 'vitest';
-import { catalogueAdmissionRequirements, catalogueDescription } from './catalogueDisplayText';
+import {
+  catalogueAdmissionRequirements,
+  catalogueDescription,
+  catalogueInstitutionDetail,
+} from './catalogueDisplayText';
 
 describe('catalogue display text', () => {
   it('does not present ingestion diagnostics as programme descriptions', () => {
@@ -42,4 +47,24 @@ describe('catalogue display text', () => {
       'לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד.',
     ]);
   });
+});
+
+it('uses current requirements for the same programme and institution instead of a legacy alias', () => {
+  const programs = getStaticCataloguePrograms();
+  const canonical = programs.find((program) => program.id === 'economics')!;
+  const legacy = programs.find((program) => program.id === 'bgu_economics')!;
+  const detail = {
+    ...legacy.institutionDetails![0],
+    institutionName: legacy.institution,
+    specificAdmissionNotes: ['סכם כמותי 620 לפחות'],
+    programUrl: 'https://www.bgu.ac.il/welcome/ba/catalog/categories/economics/',
+  };
+  const current = { ...canonical, institutionDetails: [detail] };
+  expect(catalogueInstitutionDetail([current, legacy], legacy, 'economics')).toEqual(detail);
+  expect(
+    catalogueInstitutionDetail([{ ...current, institutionDetails: [] }], legacy, 'economics'),
+  ).toEqual(legacy.institutionDetails?.find((row) => row.institutionName === legacy.institution));
+  expect(legacy.institutionDetails?.[0].specificAdmissionNotes).not.toEqual(
+    detail.specificAdmissionNotes,
+  );
 });

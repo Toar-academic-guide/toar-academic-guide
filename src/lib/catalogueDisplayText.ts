@@ -1,3 +1,5 @@
+import type { Program } from '@/data/degrees/types';
+
 // These ingestion diagnostics are stored alongside catalogue copy. Keep the source
 // untouched for admissions processing; only adapt text at the UI boundary.
 const INTERNAL_DESCRIPTIONS = new Set([
@@ -38,4 +40,17 @@ export function catalogueAdmissionRequirements(
   return fallbackRequirements.length
     ? fallbackRequirements
     : ['לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד.'];
+}
+
+/** Prefer the current canonical programme's institution row over a legacy alias's notes. */
+export function catalogueInstitutionDetail(
+  programs: readonly Program[],
+  program: Program,
+  canonicalProgramId?: string,
+) {
+  const current = programs.find((item) => item.id === canonicalProgramId);
+  return (
+    current?.institutionDetails?.find((detail) => detail.institutionName === program.institution) ??
+    program.institutionDetails?.find((detail) => detail.institutionName === program.institution)
+  );
 }

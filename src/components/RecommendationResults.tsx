@@ -52,7 +52,11 @@ import { INSTITUTION_BY_NAME } from '@/data/institutions';
 import InstitutionLogo from '@/components/InstitutionLogo';
 import type { Program } from '@/data/degrees/types';
 import { PROGRAM_FIELD_MAP, FIELD_ENRICHMENT } from '@/data/degrees/fieldEnrichment';
-import { catalogueAdmissionRequirements, catalogueDescription } from '@/lib/catalogueDisplayText';
+import {
+  catalogueAdmissionRequirements,
+  catalogueDescription,
+  catalogueInstitutionDetail,
+} from '@/lib/catalogueDisplayText';
 import { getTopDimensions } from '@/utils/scoringEngine';
 
 interface Props {
@@ -474,7 +478,7 @@ function ProgramDetailView({
             <div className="mb-5 flex flex-col gap-3">
               <p className="text-xs font-semibold text-slate-500">אוניברסיטאות — פרטי קבלה</p>
               {sekhemInstitutions.map((p) => {
-                const detail = p.institutionDetails?.[0];
+                const detail = catalogueInstitutionDetail(programs, p, fieldId);
                 const description = catalogueDescription(detail?.programDescription);
                 const requirements = catalogueAdmissionRequirements(
                   detail?.specificAdmissionNotes,
@@ -627,7 +631,7 @@ function ProgramDetailView({
                 מכללות ומוסדות — קבלה על פי דרישות
               </p>
               {reqInstitutions.map((p) => {
-                const detail = p.institutionDetails?.[0];
+                const detail = catalogueInstitutionDetail(programs, p, fieldId);
                 const description = catalogueDescription(detail?.programDescription);
                 const requirements = catalogueAdmissionRequirements(
                   detail?.specificAdmissionNotes,
