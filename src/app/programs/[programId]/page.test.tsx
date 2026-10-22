@@ -31,6 +31,7 @@ vi.mock('@/server/catalogue/queries', () => ({
 import { getStaticCataloguePrograms, getStaticCatalogueInstitutions } from '@/lib/catalogueStatic';
 import { listCataloguePrograms, listCatalogueInstitutions } from '@/server/catalogue/queries';
 import repair from '@/data/admissions/catalogueContentRepair.json';
+import { DANON_BEGINNER_REQUIREMENT } from '@/data/admissions/danon';
 import * as publicCataloguePages from '@/lib/publicCataloguePages';
 import * as institutionLinks from '@/lib/institutionLinks';
 
@@ -47,6 +48,17 @@ describe('ProgramPage', () => {
       meta: {},
     });
   });
+  it('renders Danon’s culinary programme link and the existing beginner note', async () => {
+    render(await ProgramPage({ params: Promise.resolve({ programId: 'danon_culinary' }) }));
+    expect(screen.getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toBe(
+      'https://www.danon.org.il/cuisine/?utm_source=myway&utm_medium=referral',
+    );
+    expect(screen.getAllByRole('listitem').map((item) => item.textContent)).toEqual([
+      DANON_BEGINNER_REQUIREMENT,
+    ]);
+    expect(screen.queryByText(/עודכן לאחרונה:/)).toBeNull();
+  });
+
   it('renders public program content and links into app routes', async () => {
     const program = getStaticCataloguePrograms()[0];
 

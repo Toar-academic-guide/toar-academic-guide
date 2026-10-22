@@ -172,7 +172,7 @@ describe('crawl policy', () => {
     );
   }, 15_000);
 
-  it('keeps all 358 canonical public URLs in order and omits lastmod without per-page data dates', async () => {
+  it('keeps all 351 canonical public URLs in order and omits lastmod without per-page data dates', async () => {
     const entries = await sitemap();
     const urls = entries.map((entry) => entry.url);
     expect(urls).toEqual([
@@ -190,7 +190,7 @@ describe('crawl policy', () => {
     expect(urls).toContain(`${SITE_URL}/programs/tau_cs`);
     expect(new Set(urls).size).toBe(urls.length);
     expect(urls).not.toContain(`${SITE_URL}/programs/danon_cs`);
-    expect(urls).toHaveLength(358);
+    expect(urls).toHaveLength(351);
     for (const url of urls) {
       expect(new URL(url).origin).toBe(SITE_URL);
       expect(url.endsWith('/')).toBe(false);
@@ -502,10 +502,10 @@ describe('metadata', () => {
     );
     expect((await buildProgramMetadata('tau_biology')).title).toBe('ביולוגיה – אוניברסיטת תל אביב');
     expect((await buildProgramMetadata('nativ_acting')).title).toBe(
-      'משחק – בית הספר למשחק ניסן נתיב: מסלול במוזיקה ותיאטרון',
+      'משחק – בית הספר למשחק ניסן נתיב',
     );
     expect((await buildProgramMetadata('nativ_graphic_design')).title).toBe(
-      'משחק – בית הספר למשחק ניסן נתיב: מסלול באמנויות הבמה',
+      'משחק – בית הספר למשחק ניסן נתיב',
     );
   }, 15_000);
 });

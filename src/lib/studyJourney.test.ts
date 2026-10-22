@@ -9,6 +9,7 @@ import {
   distinctRecommendations,
 } from './studyJourney';
 import { getStaticCataloguePrograms, getStaticCatalogueInstitutions } from './catalogueStatic';
+import { PROGRAM_CANONICAL_ALIASES } from './seo/programAliases';
 
 describe('approved journey', () => {
   it('keeps Afeka software engineering in its own field, not Computer Science', () => {
@@ -23,20 +24,37 @@ describe('approved journey', () => {
         ?.name,
     ).toBe('הנדסת תוכנה');
   });
-  it.each([
-    ['mta_cs', 'tlvyaffo_cs'],
-    ['colman_cs', 'colmgmt_cs'],
-  ])(
+  it.each(Object.entries(PROGRAM_CANONICAL_ALIASES))(
     'shows one recommendation for %s while keeping its saved row available',
     (alias, canonical) => {
-      const template = getStaticCataloguePrograms().find((program) => program.id === canonical)!;
-      const programmes = [template, { ...template, id: alias }];
+      const template = getStaticCataloguePrograms().find(
+        (program) => program.id === canonical || program.id === alias,
+      )!;
+      const programmes = [
+        { ...template, id: canonical },
+        { ...template, id: alias },
+      ];
       const rows = journeyRows(studyFields(programmes), getStaticCatalogueInstitutions());
       expect(rows.map((row) => row.program.id)).toContain(alias);
       expect(distinctRecommendations(rows).map((row) => row.program.id)).toEqual([canonical]);
       expect(distinctRecommendations(rows.filter((row) => row.program.id === alias))).toHaveLength(
         1,
       );
+      expect(distinctRecommendations([...rows].reverse()).map((row) => row.program.id)).toEqual([
+        canonical,
+      ]);
+      const otherInstitution = {
+        ...rows.find((row) => row.program.id === canonical)!,
+        institution: getStaticCatalogueInstitutions().find(
+          (institution) => institution.id !== template.institutionId,
+        )!,
+      };
+      expect(
+        distinctRecommendations([
+          ...rows.filter((row) => row.program.id === alias),
+          otherInstitution,
+        ]),
+      ).toHaveLength(2);
     },
   );
   it('excludes withdrawn import placeholders from choices while retaining saved references', () => {

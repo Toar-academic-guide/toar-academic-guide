@@ -16,7 +16,8 @@ vi.mock('@/server/catalogue/queries', () => ({
   listCatalogueInstitutions: async () => ({ data: getStaticCatalogueInstitutions(), meta: {} }),
 }));
 
-// Exact output captured from main (a4d84ae), before changing metadata or JSON-LD.
+// Metadata captured from main (a4d84ae). JSON-LD hashes include provider
+// catalogues, with duplicate aliases removed from MTA and Colman.
 const unchangedPrograms = [
   {
     id: 'bgu_psychology',
@@ -50,7 +51,7 @@ const unchangedPrograms = [
   },
   {
     id: 'nursing',
-    structuredDataSha256: 'f6a03c99f541580fbc70e8dc020af76746c2a808786e7aaff6c90e8daa4f4b09',
+    structuredDataSha256: 'fc6047df073cff42d75dd925c8a83cefc71d5c7fa8fc060d8738656bf8e9d238',
     name: 'סיעוד',
     title: 'לימודי סיעוד: באילו מוסדות לומדים',
     description:
@@ -93,7 +94,7 @@ const unchangedPrograms = [
   },
   {
     id: 'tlvyaffo_cs',
-    structuredDataSha256: '64fc327594b2d553de912b27b2863cbffd1c5fd9e10aa560ba7c7eac2a2bcaa4',
+    structuredDataSha256: '2eb3cb31261c1496c78e0332f9419540ac1160c262b8529cb5eed0793e927cf7',
     name: 'מדעי המחשב',
     title: 'מדעי המחשב – המכללה האקדמית תל-אביב-יפו',
     description:
@@ -108,7 +109,7 @@ const unchangedPrograms = [
   },
   {
     id: 'colmgmt_business',
-    structuredDataSha256: '25947af727e80b3d1247af0ae05bee767477336042362db969a20410aea0cf2c',
+    structuredDataSha256: 'b7e54dafef4bf8285dbfc3c0ed3afa171636a5dd471992f67efbd15d30f0c143',
     name: 'מנהל עסקים',
     title: 'מנהל עסקים – מכללת ניהול – לימודים אקדמיים',
     description:
@@ -123,7 +124,7 @@ const unchangedPrograms = [
   },
   {
     id: 'colmgmt_law',
-    structuredDataSha256: '7ecedaef33cd76f2c116fadcb5faf3291caa4af9ab5b0559c45e337a69c63d93',
+    structuredDataSha256: '33025153eb81bcb9d6a7848ad239ed8462dfb144129034b39cbbf0be5e71b021',
     name: 'משפטים',
     title: 'משפטים – מכללת ניהול – לימודים אקדמיים',
     description:
@@ -139,7 +140,7 @@ const unchangedPrograms = [
 ];
 
 describe('program institution attribution', () => {
-  it.each(unchangedPrograms)('preserves main output for $id', async (expected) => {
+  it.each(unchangedPrograms)('preserves canonical output for $id', async (expected) => {
     const page = (await getPublicProgramPageData(expected.id))!;
     expect(await buildProgramMetadata(expected.id)).toEqual({
       title: expected.title,
@@ -155,7 +156,7 @@ describe('program institution attribution', () => {
       },
     });
     const ld = await programLd(page);
-    // Freeze the complete JSON-LD, including nested provider catalogues, as captured on main.
+    // Freeze the complete JSON-LD, including nested provider catalogues.
     expect(
       createHash('sha256')
         .update(JSON.stringify({ ld, breadcrumb: programBreadcrumbLd(page) }))
@@ -233,13 +234,10 @@ describe('program institution attribution', () => {
   );
 
   it.each([
-    ['mta_cs', 'מדעי המחשב – המכללה האקדמית תל-אביב-יפו: מסלול במדעי המחשב'],
-    ['colman_law', 'משפטים – מכללת ניהול – לימודים אקדמיים: מסלול במשפטים'],
-    ['colman_business', 'מנהל עסקים – מכללת ניהול – לימודים אקדמיים: מסלול במנהל עסקים'],
-  ])(
-    'disambiguates the shortened %s without changing its unsuffixed counterpart',
-    async (id, title) => {
-      expect((await buildProgramMetadata(id)).title).toBe(title);
-    },
-  );
+    ['mta_cs', 'מדעי המחשב – המכללה האקדמית תל-אביב-יפו'],
+    ['colman_law', 'משפטים – מכללת ניהול – לימודים אקדמיים'],
+    ['colman_business', 'מנהל עסקים – מכללת ניהול – לימודים אקדמיים'],
+  ])('uses the keeper title for alias %s', async (id, title) => {
+    expect((await buildProgramMetadata(id)).title).toBe(title);
+  });
 });

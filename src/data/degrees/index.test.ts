@@ -8,6 +8,19 @@ import { allPrograms, programsWithLegacyAdmissionFacts } from './index';
 type CatalogueProgramLike = (typeof allPrograms)[number];
 type InstitutionDetailLike = NonNullable<CatalogueProgramLike['institutionDetails']>[number];
 
+it.each([
+  ['colman_law', 'https://www.colman.ac.il/academics/ba/law/'],
+  ['colman_business', 'https://www.colman.ac.il/academics/ba/business-administration/'],
+])('uses the specific official programme URL for %s', (id, url) => {
+  const program = allPrograms.find((program) => program.id === id)!;
+  expect(program.institutionDetails).toHaveLength(1);
+  expect(program.institutionDetails![0]).toMatchObject({
+    programUrl: url,
+    officialCalculatorUrl: url,
+    admissionsSourceCandidates: [expect.objectContaining({ url })],
+  });
+});
+
 describe('formula-backed pair catalogue', () => {
   it('generates the current canonical formula-backed pair denominator', () => {
     const inventory = buildFormulaBackedPairInventory(allPrograms);

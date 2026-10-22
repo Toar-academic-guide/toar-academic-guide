@@ -18,7 +18,12 @@ import {
   type MondayAdmissionAlternativePath,
   type MondayAdmissionStructuredFact,
 } from '../admissions/mondayEvidence';
-import { INSTITUTION_BY_NAME, type InstitutionId, resolveUrl } from '../institutions';
+import {
+  INSTITUTION_BY_ID,
+  INSTITUTION_BY_NAME,
+  type InstitutionId,
+  resolveUrl,
+} from '../institutions';
 import type {
   Program,
   AdmissionAlternativePath,
@@ -97,6 +102,16 @@ const DYNAMIC_PROGRAM_MAP = [
 ];
 
 const dynamicPrograms: Program[] = [];
+const MONDAY_PROGRAM_URL_OVERRIDES: Readonly<Record<string, string>> = {
+  colman_law: 'https://www.colman.ac.il/academics/ba/law/',
+  colman_business: 'https://www.colman.ac.il/academics/ba/business-administration/',
+};
+const VERIFIED_KEEPER_PROGRAM_URLS: Readonly<Record<string, string>> = {
+  tlvyaffo_cs: 'https://www.mta.ac.il/faculty/computer_science_and_ai',
+  colmgmt_law: 'https://www.colman.ac.il/academics/ba/law/',
+  colmgmt_business: 'https://www.colman.ac.il/academics/ba/business-administration/',
+  colmgmt_cs: 'https://www.colman.ac.il/academics/ba/computer-science/',
+};
 
 function mergeDynamicProgramDetails(existingProgram: Program, nextProgram: Program): Program {
   const existingDetails = existingProgram.institutionDetails ?? [];
@@ -829,7 +844,8 @@ for (const record of mondayAdmissionsEvidence) {
     const type = isCertificateType ? 'certificate' : 'academic';
 
     const detailId = `${progId}:${instId}`;
-    const primarySourceUrl = resolveUrl(record.displayName, record.officialUrls);
+    const primarySourceUrl =
+      MONDAY_PROGRAM_URL_OVERRIDES[progId] ?? resolveUrl(record.displayName, record.officialUrls);
     const sourceCandidateId = primarySourceUrl ? `${detailId}:source:monday-evidence` : undefined;
     const sourceCandidates: AdmissionsSourceCandidate[] =
       sourceCandidateId && primarySourceUrl
@@ -964,8 +980,8 @@ for (const record of mondayAdmissionsEvidence) {
           quantitativeMinRequirement: null,
           englishMinRequirement: null,
           specificAdmissionNotes: record.limitations ? [...record.limitations] : [],
-          officialCalculatorUrl: resolveUrl(record.displayName, record.officialUrls) || '',
-          programUrl: resolveUrl(record.displayName, record.officialUrls),
+          officialCalculatorUrl: primarySourceUrl || '',
+          programUrl: primarySourceUrl,
           calculatorUrl: record.officialUrls.find(
             (url) => url.includes('calculator') && !url.includes('yoram.walla.co.il'),
           ),
@@ -1007,6 +1023,16 @@ export const programsWithLegacyAdmissionFacts = [
   ...normalizeLegacyPrograms(vocationalPrograms),
   ...dynamicPrograms,
 ].map((program): Program => {
+  const verifiedProgramUrl = VERIFIED_KEEPER_PROGRAM_URLS[program.id];
+  if (verifiedProgramUrl) {
+    return {
+      ...program,
+      institutionDetails: program.institutionDetails?.map((detail) => ({
+        ...detail,
+        programUrl: verifiedProgramUrl,
+      })),
+    };
+  }
   const course = (
     computingCourses as Record<string, { name: string; category: string; programUrl: string }>
   )[program.id];
@@ -1030,7 +1056,7 @@ export const programsWithLegacyAdmissionFacts = [
     admissionRequirements: [DANON_BEGINNER_REQUIREMENT],
     institutionDetails: [
       {
-        institutionName: program.institution,
+        institutionName: INSTITUTION_BY_ID.danon.name,
         durationYears: null,
         estimatedStudentsPerYear: '',
         quantitativeMinRequirement: null,
