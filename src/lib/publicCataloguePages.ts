@@ -4,6 +4,7 @@ import { cache } from 'react';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import { catalogueAdmissionRequirements } from '@/lib/catalogueDisplayText';
 import { officialUrl } from '@/lib/studyJourney';
+import { canonicalProgramId } from '@/lib/seo/programAliases';
 import { getRequirementsChecked, type RequirementsChecked } from '@/lib/requirementsChecked';
 import { listCatalogueInstitutions, listCataloguePrograms } from '@/server/catalogue/queries';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
@@ -58,7 +59,12 @@ export const loadPublicCatalogue = cache(async () => {
   );
   const institutionProgramsByName = new Map<string, Map<string, CatalogueProgram>>();
   for (const program of allPrograms) {
-    if (program.isListed === false || !program.institutionId || generalProgramIds.has(program.id))
+    if (
+      program.isListed === false ||
+      canonicalProgramId(program.id) !== program.id ||
+      !program.institutionId ||
+      generalProgramIds.has(program.id)
+    )
       continue;
     const providers = institutionProgramsByName.get(program.name) ?? new Map();
     // Preserve the first listed match, as the page links did before indexing.
@@ -214,6 +220,7 @@ export async function getPublicInstitutionPageData(
   const listedPrograms = catalogue.programs.filter(
     (program) =>
       program.isListed !== false &&
+      canonicalProgramId(program.id) === program.id &&
       (program.institutionId === institution.id ||
         (!program.institutionId && program.linkedInstitutionIds.includes(institution.id))),
   );

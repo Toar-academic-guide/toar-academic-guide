@@ -1,6 +1,7 @@
 import { FIELD_ENRICHMENT, PROGRAM_FIELD_MAP } from '@/data/degrees/fieldEnrichment';
 import { DANON_PROGRAM_NAMES } from '@/data/admissions/danon';
 import { getInstitutionDirectoryItems } from '@/data/institutionDirectory';
+import { PROGRAM_CANONICAL_ALIASES } from '@/lib/seo/programAliases';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type { AdmissionsEvaluationResult } from '@/types/admissionsEvaluation';
 
@@ -158,12 +159,8 @@ export type JourneyResultGroup = 'match' | 'improve' | 'explore';
 // existing specific record. Keep them in allRows for saved links, but avoid
 // presenting them as additional choices when the specific record is available.
 export function distinctRecommendations(rows: JourneyRow[]): JourneyRow[] {
-  const aliases: Record<string, string> = {
-    mta_cs: 'tlvyaffo_cs',
-    colman_cs: 'colmgmt_cs',
-  };
   return rows.filter((row) => {
-    const canonicalId = aliases[row.program.id];
+    const canonicalId = PROGRAM_CANONICAL_ALIASES[row.program.id];
     return (
       !canonicalId ||
       !rows.some(

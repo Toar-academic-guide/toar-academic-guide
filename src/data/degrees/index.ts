@@ -97,6 +97,10 @@ const DYNAMIC_PROGRAM_MAP = [
 ];
 
 const dynamicPrograms: Program[] = [];
+const MONDAY_PROGRAM_URL_OVERRIDES: Readonly<Record<string, string>> = {
+  colman_law: 'https://www.colman.ac.il/academics/ba/law/',
+  colman_business: 'https://www.colman.ac.il/academics/ba/business-administration/',
+};
 
 function mergeDynamicProgramDetails(existingProgram: Program, nextProgram: Program): Program {
   const existingDetails = existingProgram.institutionDetails ?? [];
@@ -829,7 +833,8 @@ for (const record of mondayAdmissionsEvidence) {
     const type = isCertificateType ? 'certificate' : 'academic';
 
     const detailId = `${progId}:${instId}`;
-    const primarySourceUrl = resolveUrl(record.displayName, record.officialUrls);
+    const primarySourceUrl =
+      MONDAY_PROGRAM_URL_OVERRIDES[progId] ?? resolveUrl(record.displayName, record.officialUrls);
     const sourceCandidateId = primarySourceUrl ? `${detailId}:source:monday-evidence` : undefined;
     const sourceCandidates: AdmissionsSourceCandidate[] =
       sourceCandidateId && primarySourceUrl
@@ -964,8 +969,8 @@ for (const record of mondayAdmissionsEvidence) {
           quantitativeMinRequirement: null,
           englishMinRequirement: null,
           specificAdmissionNotes: record.limitations ? [...record.limitations] : [],
-          officialCalculatorUrl: resolveUrl(record.displayName, record.officialUrls) || '',
-          programUrl: resolveUrl(record.displayName, record.officialUrls),
+          officialCalculatorUrl: primarySourceUrl || '',
+          programUrl: primarySourceUrl,
           calculatorUrl: record.officialUrls.find(
             (url) => url.includes('calculator') && !url.includes('yoram.walla.co.il'),
           ),
