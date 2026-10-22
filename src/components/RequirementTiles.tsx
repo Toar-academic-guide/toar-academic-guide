@@ -49,7 +49,7 @@ export default function RequirementTiles({
         {model.tiles.map((tile, index) => (
           <div
             key={`${tile.label}:${index}`}
-            className="min-w-0 basis-full grow rounded-2xl border border-slate-200 px-4 py-3.5 sm:max-w-[220px] sm:basis-[150px]"
+            className="min-w-0 basis-full grow rounded-2xl text-center border border-slate-200 px-4 py-3.5 sm:max-w-[220px] sm:basis-[150px]"
           >
             <div
               className={`font-bold text-[#19233d] ${typeof tile.value === 'number' ? 'text-3xl leading-[1.1]' : 'text-[17px] leading-[33px]'}`}
