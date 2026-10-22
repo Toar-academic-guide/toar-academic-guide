@@ -160,3 +160,13 @@ Screenshots are in `C:/Users/Yonatan/AppData/Local/Temp/`:
   `way-parallax-profile-320.png`
 
 final result: passed
+
+## 2026-10-22 — official requirements for MTA CS and Colman law/business/CS
+
+- Ran real Chromium against Next.js in explicit local static-catalogue mode. Production text remains a separate, unapplied update owned by Amit.
+- All four public program pages passed at 320, 390, 768, 1280 and 1440px. Inspected the 390px and 1440px screenshots: natural Hebrew, right alignment, readable wrapping, no horizontal overflow, official links with MyWay referral attribution, and compact shared requirements disclosures. Program/calculator links remain separate; calculator links use small muted text.
+- All four calculator detail flows passed at 390px and 1440px using the real evaluation API. Contact and Save remain prominent. Numeric scores and additional confirmations remain separate; Colman CS visibly requires the internal test and MTA has no interview requirement. Program-specific explanations are preserved.
+- Empty and filled Bagrut-average, psychometric, quantitative and English fields passed right-alignment checks at desktop/mobile widths, including a decimal average. No forms were submitted and no account-owned data was changed.
+- The 31-check Playwright run passed. After refining the formula's Hebrew/number isolation, all five MTA public-page widths passed again and the mobile/desktop screenshots were re-inspected. Formula text stays identical to the canonical source while its expression reads left to right inside the right-aligned Hebrew block.
+- `npm run guard:pre-pr`: 67 test files / 1,196 tests passed. Typecheck passed. Lint passed with the pre-existing unused `AdmissionsRequiredInput` import warning in `src/server/admissions/bagrutPolicies.ts`.
+- Scope limits: no deployment commands, live DB writes, SQL, migration edits, seed execution, publication/freshness workflow runs or settings changes. No claim of authenticated production-browser access or post-rollout production verification. Official source evidence and rollout notes are in `docs/admissions-verification/2026-10-22-official-requirements-4-sources.md`.

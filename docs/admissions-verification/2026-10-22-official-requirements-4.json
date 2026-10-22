@@ -1,0 +1,89 @@
+{
+  "tlvyaffo_cs:mta": {
+    "program": "tlvyaffo_cs",
+    "institution": "mta",
+    "reqs": [
+      "קבלה אוטומטית באחת החלופות: ציון משולב 630; או פסיכומטרי 670 וזכאות לבגרות; או ממוצע בגרות 102 עם מתמטיקה 5 יח\"ל 80+ או 4 יח\"ל 95+",
+      "בכל החלופות: מתמטיקה 5 יח\"ל 70+ או 4 יח\"ל 90+, ואנגלית 100+ בפסיכומטרי או באמיר\"ם/אמירנ\"ט",
+      "מסלול מתוגבר: ממוצע בגרות 100 עם מתמטיקה 4 יח\"ל 80+ או 5 יח\"ל 60+; או ממוצע בגרות 95 ופסיכומטרי 550 עם אותה דרישת מתמטיקה",
+      "ציון משולב = (פסיכומטרי + (ממוצע בגרות − 30) × 10) ÷ 2, לפי ממוצע הבגרות שהמכללה מחשבת"
+    ],
+    "notes": [
+      "מי שלא עומדים בתנאי הקבלה האוטומטית יכולים לברר מול מרכז ייעוץ ורישום של המכללה אם אפשר להגיש מועמדות. יש גם מכינה שמחליפה את הפסיכומטרי."
+    ],
+    "quant": null,
+    "english": 100,
+    "urls": {
+      "institution": "https://www.mta.ac.il",
+      "program": "https://www.mta.ac.il/program/bsc_computer_science",
+      "calculator": "https://mtamn.mta.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1"
+    },
+    "requirements_source": "https://www.mta.ac.il/conditions_for_applying",
+    "cycle": "תשפ\"ז"
+  },
+  "colmgmt_law:colman": {
+    "program": "colmgmt_law",
+    "institution": "colman",
+    "reqs": [
+      "מסלול בגרות: ממוצע בגרות משוקלל 100+",
+      "מסלול בגרות ופסיכומטרי: פסיכומטרי 540+ ועמידה בציון המשוקלל של המכללה",
+      "מסלול לאקדמאים: ממוצע תואר 80+ וראיון קבלה",
+      "משפטים וכלכלה (דו־חוגי): עמידה בתנאי הקבלה האוטומטית וראיון קבלה",
+      "מי שלא עומדים בתנאי הקבלה יכולים להתקבל דרך מכינת שחקים"
+    ],
+    "notes": [
+      "המכללה לא מפרסמת את הציון המשוקלל הנדרש במסלול בגרות ופסיכומטרי, ולכן ההחלטה במסלול הזה היא שלה. כדאי לבדוק מול מרכז הרישום."
+    ],
+    "quant": null,
+    "english": null,
+    "urls": {
+      "institution": "https://www.colman.ac.il",
+      "program": "https://www.colman.ac.il/academics/ba/law/",
+      "calculator": "https://wwwi.colman.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1"
+    },
+    "requirements_source": "https://www.colman.ac.il/academics/ba/b-a-admission/",
+    "cycle": "2026/27 (לפי מועד פתיחה 1.11.2026; העמוד אינו מציין שנה)"
+  },
+  "colmgmt_business:colman": {
+    "program": "colmgmt_business",
+    "institution": "colman",
+    "reqs": [
+      "מסלול בגרות: ממוצע בגרות משוקלל 85+",
+      "מסלול בגרות ופסיכומטרי: פסיכומטרי 555+, כמותי 100+ ועמידה בציון המשוקלל של המכללה",
+      "מי שלא עומדים בתנאי הקבלה יכולים להתקבל דרך מכינת שחקים"
+    ],
+    "notes": [
+      "המכללה לא מפרסמת את הציון המשוקלל הנדרש במסלול בגרות ופסיכומטרי, ולכן ההחלטה במסלול הזה היא שלה. כדאי לבדוק מול מרכז הרישום."
+    ],
+    "quant": null,
+    "english": null,
+    "urls": {
+      "institution": "https://www.colman.ac.il",
+      "program": "https://www.colman.ac.il/academics/ba/business-administration/",
+      "calculator": "https://wwwi.colman.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1"
+    },
+    "requirements_source": "https://www.colman.ac.il/academics/ba/b-a-admission/",
+    "cycle": "2026/27 (לפי מועד פתיחה 1.11.2026; העמוד אינו מציין שנה)"
+  },
+  "colmgmt_cs:colman": {
+    "program": "colmgmt_cs",
+    "institution": "colman",
+    "reqs": [
+      "מסלול בגרות: ממוצע בגרות משוקלל 85+, מתמטיקה 5 יח\"ל 70+ או 4 יח\"ל 80+, ומעבר מבדק פנימי",
+      "מסלול בגרות ופסיכומטרי: עמידה בציון המשוקלל של המכללה ומעבר מבדק פנימי; פטור מהמבדק בפסיכומטרי 600+ וכמותי 120+",
+      "מי שחסר להם הממוצע או ציון המתמטיקה יכולים להתקבל אחרי מכינת שחקים, מכינת ריענון במתמטיקה או שתיהן, לפי מה שחסר"
+    ],
+    "notes": [
+      "המכללה לא מפרסמת את הציון המשוקלל הנדרש במסלול בגרות ופסיכומטרי, ולכן ההחלטה במסלול הזה היא שלה. כדאי לבדוק מול מרכז הרישום."
+    ],
+    "quant": null,
+    "english": null,
+    "urls": {
+      "institution": "https://www.colman.ac.il",
+      "program": "https://www.colman.ac.il/academics/ba/computer-science/",
+      "calculator": "https://wwwi.colman.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1"
+    },
+    "requirements_source": "https://www.colman.ac.il/academics/ba/b-a-admission/",
+    "cycle": "2026/27 (לפי מועד פתיחה 1.11.2026; העמוד אינו מציין שנה)"
+  }
+}

@@ -9,7 +9,7 @@ import type { Program } from '@/data/degrees/types';
 import { buildCatalogueSeed, buildCatalogueSeedVerificationReport } from '@/db/seeds/catalogueSeed';
 
 const verifiedKeeperProgramUrls = [
-  ['tlvyaffo_cs', 'mta', 'https://www.mta.ac.il/faculty/computer_science_and_ai'],
+  ['tlvyaffo_cs', 'mta', 'https://www.mta.ac.il/program/bsc_computer_science'],
   ['colmgmt_law', 'colman', 'https://www.colman.ac.il/academics/ba/law/'],
   ['colmgmt_business', 'colman', 'https://www.colman.ac.il/academics/ba/business-administration/'],
   ['colmgmt_cs', 'colman', 'https://www.colman.ac.il/academics/ba/computer-science/'],

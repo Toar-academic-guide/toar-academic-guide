@@ -18,6 +18,7 @@ export function catalogueDescription(text?: string): string | undefined {
 export function catalogueAdmissionRequirements(
   notes: readonly string[] = [],
   fallback: readonly string[] = [],
+  programId?: string,
 ): string[] {
   const display = (items: readonly string[]) =>
     items.flatMap((text) => {
@@ -35,6 +36,12 @@ export function catalogueAdmissionRequirements(
       }
       return catalogueDescription(text) ? [text] : [];
     });
+  if (
+    ['tlvyaffo_cs', 'colmgmt_law', 'colmgmt_business', 'colmgmt_cs'].includes(programId ?? '') &&
+    fallback.length
+  ) {
+    return [...new Set([...display(fallback), ...display(notes)])];
+  }
   const requirements = display(notes);
   if (requirements.length) return requirements;
   const fallbackRequirements = display(fallback);

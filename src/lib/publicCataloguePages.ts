@@ -112,6 +112,7 @@ interface PublicProgramRequirementSource {
   sourceProgramId: string;
   requirements: string[];
   officialUrl?: string;
+  officialCalculatorUrl?: string;
   fullDetailsPath?: string;
   checked?: RequirementsChecked;
 }
@@ -175,6 +176,7 @@ export async function getPublicProgramRequirementSources({
     const requirements = catalogueAdmissionRequirements(
       detail?.specificAdmissionNotes,
       program.admissionRequirements,
+      program.id,
     );
     const useSpecific =
       isGeneral && program.isListed !== false && !hasRequirements(requirements) && !!specific;
@@ -187,6 +189,7 @@ export async function getPublicProgramRequirementSources({
       ? catalogueAdmissionRequirements(
           sourceDetail?.specificAdmissionNotes,
           sourceProgram.admissionRequirements,
+          sourceProgram.id,
         )
       : requirements;
     institutionRequirementSources[institution.id] = {
@@ -196,6 +199,11 @@ export async function getPublicProgramRequirementSources({
           ? []
           : sourceRequirements,
       officialUrl: officialUrl(sourceDetail?.programUrl, institution.id),
+      ...(['tlvyaffo_cs', 'colmgmt_law', 'colmgmt_business', 'colmgmt_cs'].includes(
+        sourceProgram.id,
+      ) && sourceDetail?.officialCalculatorUrl
+        ? { officialCalculatorUrl: officialUrl(sourceDetail.officialCalculatorUrl, institution.id) }
+        : {}),
       fullDetailsPath: useSpecific ? institutionProgramPaths[institution.id] : undefined,
       checked: getRequirementsChecked(
         sourceProgram.id,

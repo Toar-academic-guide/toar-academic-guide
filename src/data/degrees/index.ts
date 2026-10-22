@@ -107,7 +107,7 @@ const MONDAY_PROGRAM_URL_OVERRIDES: Readonly<Record<string, string>> = {
   colman_business: 'https://www.colman.ac.il/academics/ba/business-administration/',
 };
 const VERIFIED_KEEPER_PROGRAM_URLS: Readonly<Record<string, string>> = {
-  tlvyaffo_cs: 'https://www.mta.ac.il/faculty/computer_science_and_ai',
+  tlvyaffo_cs: 'https://www.mta.ac.il/program/bsc_computer_science',
   colmgmt_law: 'https://www.colman.ac.il/academics/ba/law/',
   colmgmt_business: 'https://www.colman.ac.il/academics/ba/business-administration/',
   colmgmt_cs: 'https://www.colman.ac.il/academics/ba/computer-science/',

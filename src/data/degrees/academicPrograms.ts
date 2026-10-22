@@ -2794,7 +2794,27 @@ export const academicPrograms: Program[] = [
     category: 'מדעי המחשב',
     profileScore: P.cs,
     admissionType: 'requirements',
-    admissionRequirements: ['בגרות מלאה', 'ממוצע בגרות מינימלי: 75', 'ציון פסיכומטרי מינימלי: 500'],
+    admissionRequirements: [
+      'קבלה אוטומטית באחת החלופות: ציון משולב 630; או פסיכומטרי 670 וזכאות לבגרות; או ממוצע בגרות 102 עם מתמטיקה 5 יח"ל 80+ או 4 יח"ל 95+',
+      'בכל החלופות: מתמטיקה 5 יח"ל 70+ או 4 יח"ל 90+, ואנגלית 100+ בפסיכומטרי או באמיר"ם/אמירנ"ט',
+      'מסלול מתוגבר: ממוצע בגרות 100 עם מתמטיקה 4 יח"ל 80+ או 5 יח"ל 60+; או ממוצע בגרות 95 ופסיכומטרי 550 עם אותה דרישת מתמטיקה',
+      'ציון משולב = (פסיכומטרי + (ממוצע בגרות − 30) × 10) ÷ 2, לפי ממוצע הבגרות שהמכללה מחשבת',
+    ],
+    institutionDetails: [
+      {
+        institutionName: 'המכללה האקדמית תל-אביב-יפו',
+        durationYears: null,
+        estimatedStudentsPerYear: '',
+        quantitativeMinRequirement: null,
+        englishMinRequirement: 100,
+        specificAdmissionNotes: [
+          'מי שלא עומדים בתנאי הקבלה האוטומטית יכולים לברר מול מרכז ייעוץ ורישום של המכללה אם אפשר להגיש מועמדות. יש גם מכינה שמחליפה את הפסיכומטרי.',
+        ],
+        programUrl: 'https://www.mta.ac.il/program/bsc_computer_science',
+        officialCalculatorUrl: 'https://mtamn.mta.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1',
+        calculatorUrl: 'https://mtamn.mta.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1',
+      },
+    ],
   },
   {
     id: 'tlvyaffo_business',
@@ -2864,10 +2884,25 @@ export const academicPrograms: Program[] = [
     profileScore: P.cs,
     admissionType: 'requirements',
     admissionRequirements: [
-      'מסלול בגרות: ממוצע בגרות משוקלל 85+',
-      'מתמטיקה: 5 יח"ל 70+ או 4 יח"ל 80+',
-      'מסלול בגרות ופסיכומטרי: עמידה בציון המשוקלל; פטור ממבדק פנימי בפסיכומטרי 600+ וכמותי 120+',
-      'חלופות קבלה: מבדק פנימי ומכינות שחקים/ריענון במתמטיקה לפי הצורך',
+      'מסלול בגרות: ממוצע בגרות משוקלל 85+, מתמטיקה 5 יח"ל 70+ או 4 יח"ל 80+, ומעבר מבדק פנימי',
+      'מסלול בגרות ופסיכומטרי: עמידה בציון המשוקלל של המכללה ומעבר מבדק פנימי; פטור מהמבדק בפסיכומטרי 600+ וכמותי 120+',
+      'מי שחסר להם הממוצע או ציון המתמטיקה יכולים להתקבל אחרי מכינת שחקים, מכינת ריענון במתמטיקה או שתיהן, לפי מה שחסר',
+    ],
+    institutionDetails: [
+      {
+        institutionName: 'מכללת ניהול – לימודים אקדמיים',
+        durationYears: null,
+        estimatedStudentsPerYear: '',
+        quantitativeMinRequirement: null,
+        englishMinRequirement: null,
+        specificAdmissionNotes: [
+          'המכללה לא מפרסמת את הציון המשוקלל הנדרש במסלול בגרות ופסיכומטרי, ולכן ההחלטה במסלול הזה היא שלה. כדאי לבדוק מול מרכז הרישום.',
+        ],
+        programUrl: 'https://www.colman.ac.il/academics/ba/computer-science/',
+        officialCalculatorUrl:
+          'https://wwwi.colman.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1',
+        calculatorUrl: 'https://wwwi.colman.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1',
+      },
     ],
   },
   {
@@ -2881,8 +2916,24 @@ export const academicPrograms: Program[] = [
     admissionType: 'requirements',
     admissionRequirements: [
       'מסלול בגרות: ממוצע בגרות משוקלל 85+',
-      'מסלול בגרות ופסיכומטרי: פסיכומטרי 555+ וכמותי 100+ ועמידה בציון המשוקלל',
-      'חלופת קבלה: מכינת שחקים למי שלא עומדים בסף',
+      'מסלול בגרות ופסיכומטרי: פסיכומטרי 555+, כמותי 100+ ועמידה בציון המשוקלל של המכללה',
+      'מי שלא עומדים בתנאי הקבלה יכולים להתקבל דרך מכינת שחקים',
+    ],
+    institutionDetails: [
+      {
+        institutionName: 'מכללת ניהול – לימודים אקדמיים',
+        durationYears: null,
+        estimatedStudentsPerYear: '',
+        quantitativeMinRequirement: null,
+        englishMinRequirement: null,
+        specificAdmissionNotes: [
+          'המכללה לא מפרסמת את הציון המשוקלל הנדרש במסלול בגרות ופסיכומטרי, ולכן ההחלטה במסלול הזה היא שלה. כדאי לבדוק מול מרכז הרישום.',
+        ],
+        programUrl: 'https://www.colman.ac.il/academics/ba/business-administration/',
+        officialCalculatorUrl:
+          'https://wwwi.colman.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1',
+        calculatorUrl: 'https://wwwi.colman.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1',
+      },
     ],
   },
   {
@@ -2911,9 +2962,26 @@ export const academicPrograms: Program[] = [
     admissionType: 'requirements',
     admissionRequirements: [
       'מסלול בגרות: ממוצע בגרות משוקלל 100+',
-      'מסלול בגרות ופסיכומטרי: פסיכומטרי 540+ ועמידה בציון המשוקלל',
+      'מסלול בגרות ופסיכומטרי: פסיכומטרי 540+ ועמידה בציון המשוקלל של המכללה',
       'מסלול לאקדמאים: ממוצע תואר 80+ וראיון קבלה',
-      'חלופות קבלה: מכינת שחקים או בדיקת קבלה על תנאי דרך מרכז הרישום',
+      'משפטים וכלכלה (דו־חוגי): עמידה בתנאי הקבלה האוטומטית וראיון קבלה',
+      'מי שלא עומדים בתנאי הקבלה יכולים להתקבל דרך מכינת שחקים',
+    ],
+    institutionDetails: [
+      {
+        institutionName: 'מכללת ניהול – לימודים אקדמיים',
+        durationYears: null,
+        estimatedStudentsPerYear: '',
+        quantitativeMinRequirement: null,
+        englishMinRequirement: null,
+        specificAdmissionNotes: [
+          'המכללה לא מפרסמת את הציון המשוקלל הנדרש במסלול בגרות ופסיכומטרי, ולכן ההחלטה במסלול הזה היא שלה. כדאי לבדוק מול מרכז הרישום.',
+        ],
+        programUrl: 'https://www.colman.ac.il/academics/ba/law/',
+        officialCalculatorUrl:
+          'https://wwwi.colman.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1',
+        calculatorUrl: 'https://wwwi.colman.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1',
+      },
     ],
   },
   {

@@ -121,7 +121,9 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                             institutionId={institution.id}
                             requirements={source.requirements}
                           />
-                          {(source.fullDetailsPath || officialLink) && (
+                          {(source.fullDetailsPath ||
+                            officialLink ||
+                            source.officialCalculatorUrl) && (
                             <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm">
                               {source.fullDetailsPath && (
                                 <Link
@@ -132,6 +134,16 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                                 </Link>
                               )}
                               {officialLink}
+                              {source.officialCalculatorUrl && (
+                                <a
+                                  href={source.officialCalculatorUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs text-[var(--text-muted)] hover:underline"
+                                >
+                                  למחשבון המכללה
+                                </a>
+                              )}
                             </div>
                           )}
                         </>

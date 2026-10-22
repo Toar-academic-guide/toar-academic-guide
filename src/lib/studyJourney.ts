@@ -217,7 +217,10 @@ export function resultLabel(
   };
 }
 
-export function resultExplanation(result?: AdmissionsEvaluationResult): string | undefined {
+export function resultExplanation(
+  result?: AdmissionsEvaluationResult,
+  programId?: string,
+): string | undefined {
   if (!result) return undefined;
   if (result.degradationReason === 'incomplete_published_requirements') return undefined;
   if (result.linkedInstitutionId === 'danon' && result.kind === 'requirements_only')
@@ -231,6 +234,12 @@ export function resultExplanation(result?: AdmissionsEvaluationResult): string |
     case 'degraded':
       return 'נתוני הקבלה הדרושים לחישוב אינם זמינים כרגע. אפשר לבדוק ישירות באתר המוסד.';
     case 'manual_gate':
+      if (
+        (programId === 'tlvyaffo_cs' && result.linkedInstitutionId === 'mta') ||
+        (['colmgmt_law', 'colmgmt_business', 'colmgmt_cs'].includes(programId ?? '') &&
+          result.linkedInstitutionId === 'colman')
+      )
+        return result.explanation;
       return 'בנוסף לציונים, צריך לבדוק את שלבי המיון ותנאי ההגשה של המוסד.';
     default:
       return result.explanation;

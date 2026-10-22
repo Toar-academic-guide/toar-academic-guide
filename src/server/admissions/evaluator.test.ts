@@ -1716,7 +1716,7 @@ describe('evaluateAdmissionsForProgram', () => {
         linkedInstitutionId: 'colman',
         capability: 'manual_gate',
         kind: 'manual_gate',
-        decision: 'eligible_to_apply',
+        decision: 'pending',
         score: 85,
       }),
     );
