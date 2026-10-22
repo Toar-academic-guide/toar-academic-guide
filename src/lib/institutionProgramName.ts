@@ -1,6 +1,6 @@
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 
-/** Institution cards already identify the provider; preserve full catalogue and SEO names. */
+/** Remove an exact provider suffix when the surrounding context identifies the institution. */
 export function institutionProgramName(
   program: Pick<CatalogueProgram, 'name' | 'institution' | 'institutionId'>,
   institution: Pick<CatalogueInstitution, 'id' | 'name'>,

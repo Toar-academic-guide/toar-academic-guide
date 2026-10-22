@@ -3,6 +3,7 @@ import { getPublicInstitutionPageData } from '@/lib/publicCataloguePages';
 import { absoluteUrl, SITE_ALT_NAMES, SITE_NAME } from '@/lib/site';
 import type { InstitutionDirectoryItem } from '@/data/institutionDirectory';
 import { canonicalProgramPath } from './programAliases';
+import { institutionProgramName } from '@/lib/institutionProgramName';
 
 const ORGANIZATION_ID = absoluteUrl('/#organization');
 const WEBSITE_ID = absoluteUrl('/#website');
@@ -90,7 +91,7 @@ export function institutionBreadcrumbLd({ institution }: PublicInstitutionPageDa
   ]);
 }
 
-export async function programLd({ program, institutions }: PublicProgramPageData) {
+export async function programLd({ program, institutions, isGeneral }: PublicProgramPageData) {
   // Whole study programs can award degrees or certificates; they are not individual lessons.
   // Only an explicit duration for the single provider is unambiguous. Monday-derived
   // records have inferred durations, so do not publish those as structured facts.
@@ -104,7 +105,10 @@ export async function programLd({ program, institutions }: PublicProgramPageData
   return {
     '@type': 'EducationalOccupationalProgram',
     '@id': absoluteUrl(`${canonicalProgramPath(program.id)}#program`),
-    name: program.name,
+    name:
+      !isGeneral && institutions.length === 1
+        ? institutionProgramName(program, institutions[0])
+        : program.name,
     url: absoluteUrl(canonicalProgramPath(program.id)),
     provider: await Promise.all(
       institutions.map(async (institution) =>
@@ -129,7 +133,13 @@ export function programBreadcrumbLd({ program, institutions, isGeneral }: Public
           },
         ]
       : []),
-    { name: program.name, path: canonicalProgramPath(program.id) },
+    {
+      name:
+        !isGeneral && institutions.length === 1
+          ? institutionProgramName(program, institutions[0])
+          : program.name,
+      path: canonicalProgramPath(program.id),
+    },
   ]);
 }
 

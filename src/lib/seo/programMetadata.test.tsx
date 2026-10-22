@@ -1,0 +1,245 @@
+import { createHash } from 'node:crypto';
+import { renderToStaticMarkup } from 'react-dom/server';
+import { describe, expect, it, vi } from 'vitest';
+import { getStaticCataloguePrograms, getStaticCatalogueInstitutions } from '@/lib/catalogueStatic';
+import { getPublicProgramPageData } from '@/lib/publicCataloguePages';
+import { buildProgramMetadata } from './metadata';
+import { programLd, programBreadcrumbLd } from './jsonLd';
+import ProgramPage from '@/app/programs/[programId]/page';
+
+vi.mock('server-only', () => ({}));
+vi.mock('@/components/WayPageShell', () => ({
+  default: ({ children }: { children: React.ReactNode }) => children,
+}));
+vi.mock('@/server/catalogue/queries', () => ({
+  listCataloguePrograms: async () => ({ data: getStaticCataloguePrograms(), meta: {} }),
+  listCatalogueInstitutions: async () => ({ data: getStaticCatalogueInstitutions(), meta: {} }),
+}));
+
+// Exact output captured from main (a4d84ae), before changing metadata or JSON-LD.
+const unchangedPrograms = [
+  {
+    id: 'bgu_psychology',
+    structuredDataSha256: '910ed89e7982717df30a80277764f6b3041523f76814e25ba55f536728b8635d',
+    name: 'פסיכולוגיה',
+    title: 'פסיכולוגיה – אוניברסיטת בן-גוריון בנגב',
+    description:
+      'פסיכולוגיה באוניברסיטת בן-גוריון בנגב: מידע על המסלול בקטלוג MyWay ובדיקת סיכויי קבלה אישית בחינם. תנאי הקבלה המחייבים באתר המוסד.',
+    providers: [
+      {
+        id: 'bgu',
+        name: 'אוניברסיטת בן-גוריון בנגב',
+      },
+    ],
+    breadcrumbNames: ['בית', 'מוסדות לימוד', 'אוניברסיטת בן-גוריון בנגב', 'פסיכולוגיה'],
+  },
+  {
+    id: 'tau_cs',
+    structuredDataSha256: '7ceb4421cf5612ed958b4c0ebdadb6c7486d53e074d8374b18d33644b849dc64',
+    name: 'מדעי המחשב',
+    title: 'מדעי המחשב – אוניברסיטת תל אביב',
+    description:
+      'מדעי המחשב באוניברסיטת תל אביב: מידע על המסלול בקטלוג MyWay ובדיקת סיכויי קבלה אישית בחינם. תנאי הקבלה המחייבים באתר המוסד.',
+    providers: [
+      {
+        id: 'tau',
+        name: 'אוניברסיטת תל אביב',
+      },
+    ],
+    breadcrumbNames: ['בית', 'מוסדות לימוד', 'אוניברסיטת תל אביב', 'מדעי המחשב'],
+  },
+  {
+    id: 'nursing',
+    structuredDataSha256: 'f6a03c99f541580fbc70e8dc020af76746c2a808786e7aaff6c90e8daa4f4b09',
+    name: 'סיעוד',
+    title: 'לימודי סיעוד: באילו מוסדות לומדים',
+    description:
+      'סיעוד ב-8 מוסדות לימוד: מידע על המסלול בקטלוג MyWay ובדיקת סיכויי קבלה אישית בחינם. תנאי הקבלה המחייבים באתר המוסד.',
+    providers: [
+      {
+        id: 'tau',
+        name: 'אוניברסיטת תל אביב',
+      },
+      {
+        id: 'huji',
+        name: 'האוניברסיטה העברית בירושלים',
+      },
+      {
+        id: 'bgu',
+        name: 'אוניברסיטת בן-גוריון בנגב',
+      },
+      {
+        id: 'haifa',
+        name: 'אוניברסיטת חיפה',
+      },
+      {
+        id: 'ariel',
+        name: 'אוניברסיטת אריאל',
+      },
+      {
+        id: 'telhai',
+        name: 'מכללת תל-חי',
+      },
+      {
+        id: 'mta',
+        name: 'המכללה האקדמית תל-אביב-יפו',
+      },
+      {
+        id: 'ono',
+        name: 'המכללה האקדמית אונו',
+      },
+    ],
+    breadcrumbNames: ['בית', 'מוסדות לימוד', 'סיעוד'],
+  },
+  {
+    id: 'tlvyaffo_cs',
+    structuredDataSha256: '64fc327594b2d553de912b27b2863cbffd1c5fd9e10aa560ba7c7eac2a2bcaa4',
+    name: 'מדעי המחשב',
+    title: 'מדעי המחשב – המכללה האקדמית תל-אביב-יפו',
+    description:
+      'מדעי המחשב במכללה האקדמית תל-אביב-יפו: מידע על המסלול בקטלוג MyWay ובדיקת סיכויי קבלה אישית בחינם. תנאי הקבלה המחייבים באתר המוסד.',
+    providers: [
+      {
+        id: 'mta',
+        name: 'המכללה האקדמית תל-אביב-יפו',
+      },
+    ],
+    breadcrumbNames: ['בית', 'מוסדות לימוד', 'המכללה האקדמית תל-אביב-יפו', 'מדעי המחשב'],
+  },
+  {
+    id: 'colmgmt_business',
+    structuredDataSha256: '25947af727e80b3d1247af0ae05bee767477336042362db969a20410aea0cf2c',
+    name: 'מנהל עסקים',
+    title: 'מנהל עסקים – מכללת ניהול – לימודים אקדמיים',
+    description:
+      'מנהל עסקים במכללת ניהול – לימודים אקדמיים: מידע על המסלול בקטלוג MyWay ובדיקת סיכויי קבלה אישית בחינם. תנאי הקבלה המחייבים באתר המוסד.',
+    providers: [
+      {
+        id: 'colman',
+        name: 'מכללת ניהול – לימודים אקדמיים',
+      },
+    ],
+    breadcrumbNames: ['בית', 'מוסדות לימוד', 'מכללת ניהול – לימודים אקדמיים', 'מנהל עסקים'],
+  },
+  {
+    id: 'colmgmt_law',
+    structuredDataSha256: '7ecedaef33cd76f2c116fadcb5faf3291caa4af9ab5b0559c45e337a69c63d93',
+    name: 'משפטים',
+    title: 'משפטים – מכללת ניהול – לימודים אקדמיים',
+    description:
+      'משפטים במכללת ניהול – לימודים אקדמיים: מידע על המסלול בקטלוג MyWay ובדיקת סיכויי קבלה אישית בחינם. תנאי הקבלה המחייבים באתר המוסד.',
+    providers: [
+      {
+        id: 'colman',
+        name: 'מכללת ניהול – לימודים אקדמיים',
+      },
+    ],
+    breadcrumbNames: ['בית', 'מוסדות לימוד', 'מכללת ניהול – לימודים אקדמיים', 'משפטים'],
+  },
+];
+
+describe('program institution attribution', () => {
+  it.each(unchangedPrograms)('preserves main output for $id', async (expected) => {
+    const page = (await getPublicProgramPageData(expected.id))!;
+    expect(await buildProgramMetadata(expected.id)).toEqual({
+      title: expected.title,
+      description: expected.description,
+      alternates: { canonical: `/programs/${expected.id}` },
+      openGraph: {
+        title: expected.title,
+        description: expected.description,
+        url: `/programs/${expected.id}`,
+        type: 'website',
+        locale: 'he_IL',
+        siteName: 'MyWay',
+      },
+    });
+    const ld = await programLd(page);
+    // Freeze the complete JSON-LD, including nested provider catalogues, as captured on main.
+    expect(
+      createHash('sha256')
+        .update(JSON.stringify({ ld, breadcrumb: programBreadcrumbLd(page) }))
+        .digest('hex'),
+    ).toBe(expected.structuredDataSha256);
+    expect(ld.name).toBe(expected.name);
+    expect(ld.provider.map(({ name }) => name)).toEqual(expected.providers.map(({ name }) => name));
+    expect(ld.url).toBe(`https://findmyway.co.il/programs/${expected.id}`);
+    expect(programBreadcrumbLd(page).itemListElement.map(({ name }) => name)).toEqual(
+      expected.breadcrumbNames,
+    );
+    const markup = renderToStaticMarkup(
+      await ProgramPage({ params: Promise.resolve({ programId: expected.id }) }),
+    );
+    expect(markup.match(/<h1[^>]*>(.*?)<\/h1>/)?.[1]).toBe(expected.name);
+    if (expected.id === 'nursing') {
+      expect(page.isGeneral).toBe(true);
+      expect(page.program.institutionId).toBeUndefined();
+    }
+  });
+
+  it.each([
+    {
+      id: 'haifa_engineering',
+      institution: 'אוניברסיטת חיפה',
+      location: 'באוניברסיטת חיפה',
+      token: 'אוניברסיטת חיפה',
+    },
+    {
+      id: 'technion_engineering',
+      institution: 'הטכניון – מכון טכנולוגי לישראל',
+      location: 'בטכניון – מכון טכנולוגי לישראל',
+      token: 'טכניון',
+    },
+    {
+      id: 'huji_engineering',
+      institution: 'האוניברסיטה העברית בירושלים',
+      location: 'באוניברסיטה העברית בירושלים',
+      token: 'אוניברסיטה העברית בירושלים',
+    },
+  ])(
+    'names the provider once for $id without changing canonical',
+    async ({ id, institution, location, token }) => {
+      const page = (await getPublicProgramPageData(id))!;
+      const title = `הנדסה וטכנולוגיה – ${institution}`;
+      const description = `הנדסה וטכנולוגיה: מידע על המסלול ${location} בקטלוג MyWay ובדיקת סיכויי קבלה אישית בחינם. תנאי הקבלה המחייבים באתר המוסד.`;
+      const metadata = await buildProgramMetadata(id);
+      expect(metadata).toMatchObject({
+        title,
+        description,
+        openGraph: { title, description, url: `/programs/${id}` },
+        alternates: { canonical: `/programs/${id}` },
+      });
+      for (const text of [title, description]) expect(text.split(token)).toHaveLength(2);
+      const ld = await programLd(page);
+      expect(ld.name).toBe('הנדסה וטכנולוגיה');
+      expect(ld.provider.map(({ name }) => name)).toEqual([institution]);
+      expect([ld.name, ld.provider[0].name].join(' ').split(token)).toHaveLength(2);
+      expect(ld.url).toBe(`https://findmyway.co.il/programs/${id}`);
+      const breadcrumbs = programBreadcrumbLd(page).itemListElement;
+      expect(breadcrumbs.map(({ name }) => name)).toEqual([
+        'בית',
+        'מוסדות לימוד',
+        institution,
+        'הנדסה וטכנולוגיה',
+      ]);
+      expect(
+        breadcrumbs
+          .map(({ name }) => name)
+          .join(' ')
+          .split(token),
+      ).toHaveLength(2);
+      expect(breadcrumbs.at(-1)?.item).toBe(ld.url);
+    },
+  );
+
+  it.each([
+    ['mta_cs', 'מדעי המחשב – המכללה האקדמית תל-אביב-יפו: מסלול במדעי המחשב'],
+    ['colman_law', 'משפטים – מכללת ניהול – לימודים אקדמיים: מסלול במשפטים'],
+    ['colman_business', 'מנהל עסקים – מכללת ניהול – לימודים אקדמיים: מסלול במנהל עסקים'],
+  ])(
+    'disambiguates the shortened %s without changing its unsuffixed counterpart',
+    async (id, title) => {
+      expect((await buildProgramMetadata(id)).title).toBe(title);
+    },
+  );
+});
