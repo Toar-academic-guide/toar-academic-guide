@@ -49,6 +49,6 @@ MyWay עוזרת למסיימי תיכון ולמשוחררי צבא בישרא�
 
 ## Business model
 
-Business model: TODO(Amit) — confirm before merge
+Business model: MyWay is free for students; revenue comes from referring qualified leads to academic institutions.
 
 Last updated: 2026-10-21
