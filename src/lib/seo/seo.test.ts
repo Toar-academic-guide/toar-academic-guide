@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import robots from '@/app/robots';
@@ -31,6 +32,17 @@ const institutions = getStaticCatalogueInstitutions();
 const programs = getStaticCataloguePrograms();
 
 describe('crawl policy', () => {
+  it('directs llms.txt readers to public pages and preserves the business-model disclosure', () => {
+    const llms = readFileSync('public/llms.txt', 'utf8');
+    expect(llms).not.toContain('/app/');
+    expect(llms).toContain('https://findmyway.co.il/institutions');
+    expect(llms).toContain('https://findmyway.co.il/programs/<id>');
+    expect(llms.split('\n')).toContain(
+      'Business model: MyWay is free for students; revenue comes from referring qualified leads to academic institutions.',
+    );
+    expect(llms).toContain('Last updated: 2026-10-22');
+  });
+
   it('separates wildcard, search and allowed training policies with operational exclusions', () => {
     expect(robots()).toEqual(buildRobots(TRAINING_BOTS_POLICY));
     const result = buildRobots('allow');
@@ -104,7 +116,7 @@ describe('crawl policy', () => {
     );
   });
 
-  it('includes only public indexable routes in a unique production sitemap with one timestamp', () => {
+  it('keeps all 359 public URLs in order and omits lastmod without per-page data dates', () => {
     const entries = sitemap();
     const urls = entries.map((entry) => entry.url);
     expect(urls).toEqual([
@@ -119,20 +131,20 @@ describe('crawl policy', () => {
     expect(urls).toContain(`${SITE_URL}/institutions/tau`);
     expect(urls).toContain(`${SITE_URL}/programs/tau_cs`);
     expect(new Set(urls).size).toBe(urls.length);
+    expect(urls).toHaveLength(359);
     for (const url of urls) {
       expect(new URL(url).origin).toBe(SITE_URL);
       expect(url.endsWith('/')).toBe(false);
       expect(url).not.toMatch(/mon_|\/(?:app|login|signup|enquiry|internal|auth|api|dev)(?:\/|$)/);
     }
     for (const entry of entries) {
-      expect(entry.lastModified).toBeInstanceOf(Date);
+      // The static page records have no verified per-page modification dates.
+      expect(entry).not.toHaveProperty('lastModified');
       expect(entry.changeFrequency).toBe(entry.url.endsWith('/about') ? 'monthly' : 'weekly');
       expect(entry.priority).toBeGreaterThan(0);
       expect(entry.priority).toBeLessThanOrEqual(1);
     }
     expect(entries[0].priority).toBe(1);
-    expect(new Set(entries.map((entry) => entry.lastModified)).size).toBe(1);
-    expect(sitemap()[0].lastModified).toBe(entries[0].lastModified);
   });
 });
 
