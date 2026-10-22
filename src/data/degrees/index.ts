@@ -18,7 +18,12 @@ import {
   type MondayAdmissionAlternativePath,
   type MondayAdmissionStructuredFact,
 } from '../admissions/mondayEvidence';
-import { INSTITUTION_BY_NAME, type InstitutionId, resolveUrl } from '../institutions';
+import {
+  INSTITUTION_BY_ID,
+  INSTITUTION_BY_NAME,
+  type InstitutionId,
+  resolveUrl,
+} from '../institutions';
 import type {
   Program,
   AdmissionAlternativePath,
@@ -1051,7 +1056,7 @@ export const programsWithLegacyAdmissionFacts = [
     admissionRequirements: [DANON_BEGINNER_REQUIREMENT],
     institutionDetails: [
       {
-        institutionName: program.institution,
+        institutionName: INSTITUTION_BY_ID.danon.name,
         durationYears: null,
         estimatedStudentsPerYear: '',
         quantitativeMinRequirement: null,

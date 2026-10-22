@@ -14,6 +14,7 @@ import { officialUrl } from '@/lib/studyJourney';
 import repair from '@/data/admissions/catalogueContentRepair.json';
 import { isIndexableProgram } from '@/lib/seo/indexability';
 import { institutionLink } from '@/lib/institutionLinks';
+import { DANON_BEGINNER_REQUIREMENT } from '@/data/admissions/danon';
 
 import {
   getPublicInstitutionPageData,
@@ -23,6 +24,37 @@ import {
 } from './publicCataloguePages';
 
 describe('public catalogue page data', () => {
+  it('uses the Danon culinary programme link from static data while hiding the saved alias', async () => {
+    const programs = getStaticCataloguePrograms();
+    const culinary = programs.find((program) => program.id === 'danon_culinary')!;
+    vi.mocked(listCataloguePrograms).mockResolvedValue({
+      data: [
+        ...programs.filter((program) => program.id !== culinary.id),
+        { ...culinary, id: 'danon_cs' },
+      ],
+      meta: { catalogueSource: 'database' },
+    });
+    const page = (await getPublicProgramPageData(culinary.id))!;
+    expect(page.program.institutionDetails![0].institutionName).toBe(page.institutions[0].name);
+    expect((await getPublicProgramRequirementSources(page)).danon).toEqual({
+      sourceProgramId: culinary.id,
+      requirements: [DANON_BEGINNER_REQUIREMENT],
+      officialUrl: 'https://www.danon.org.il/cuisine/?utm_source=myway&utm_medium=referral',
+      fullDetailsPath: undefined,
+      checked: undefined,
+    });
+    const institutionPage = (await getPublicInstitutionPageData('danon'))!;
+    expect(institutionPage.programs.map((program) => program.id)).toEqual([
+      'danon_chef',
+      'danon_pastry',
+      'danon_culinary_arts',
+      'danon_culinary',
+    ]);
+    expect(new Set(institutionPage.programs.map((program) => program.name)).size).toBe(
+      institutionPage.programs.length,
+    );
+  });
+
   it('keeps an unlisted saved programme URL accessible without advertising it on institution pages', async () => {
     const program = { ...getStaticCataloguePrograms()[0], isListed: false };
     vi.mocked(listCataloguePrograms).mockResolvedValue({ data: [program], meta: {} });

@@ -30,6 +30,21 @@ function duplicatedValues(values: string[]): string[] {
 }
 
 describe('catalogueSeed', () => {
+  it('preserves every seed row when the Danon culinary detail name is corrected', () => {
+    const beforeNameCorrection = allPrograms.map((program) =>
+      program.id === 'danon_culinary'
+        ? {
+            ...program,
+            institutionDetails: program.institutionDetails?.map((detail) => ({
+              ...detail,
+              institutionName: 'דנון - קולינריה',
+            })),
+          }
+        : program,
+    );
+    expect(buildCatalogueSeed()).toEqual(buildCatalogueSeed(beforeNameCorrection));
+  });
+
   it.each(verifiedKeeperProgramUrls)(
     'preserves the verified programme source URL for %s',
     (programId, institutionId, url) => {
