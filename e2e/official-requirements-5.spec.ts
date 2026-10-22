@@ -1,6 +1,10 @@
 import { expect, test } from '@playwright/test';
 import official from '../docs/admissions-verification/2026-10-23-official-requirements-5.json';
 
+// The evaluate API allows 12 requests per minute per client. Give this spec its own
+// client key so earlier specs in the same run cannot exhaust its budget.
+test.use({ extraHTTPHeaders: { 'x-forwarded-for': '198.51.100.25' } });
+
 test.beforeAll(async ({ request }) => {
   const response = await request.get('/api/catalog/programs');
   expect(response.ok()).toBe(true);
