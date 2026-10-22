@@ -32,8 +32,18 @@ function highlightedNumbers(text: string) {
   );
 }
 
-function RequirementText({ text }: { text: string }) {
-  const formula = text.match(/^(ציון משולב = )(.+?)(, לפי .+)$/);
+function RequirementText({
+  text,
+  formulaOverview = false,
+}: {
+  text: string;
+  formulaOverview?: boolean;
+}) {
+  const formula = text.match(
+    formulaOverview
+      ? /^(ציון משולב = |איך מחושב הציון המשולב: )(.+?)(, לפי .+)?$/
+      : /^(ציון משולב = )(.+?)(, לפי .+)$/,
+  );
   if (!formula) return highlightedNumbers(text);
   return (
     <>
@@ -54,12 +64,18 @@ function RequirementText({ text }: { text: string }) {
   );
 }
 
-function RequirementList({ items }: { items: string[] }) {
+export function RequirementList({
+  items,
+  formulaOverview = false,
+}: {
+  items: string[];
+  formulaOverview?: boolean;
+}) {
   return (
     <ul className="list-outside list-disc space-y-1 ps-4 leading-6 marker:text-[#6554b8]">
       {items.map((text, index) => (
         <li key={`${index}:${text}`}>
-          <RequirementText text={text} />
+          <RequirementText text={text} formulaOverview={formulaOverview} />
         </li>
       ))}
     </ul>

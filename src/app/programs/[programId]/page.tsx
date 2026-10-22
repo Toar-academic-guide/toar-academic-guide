@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import WayPageShell from '@/components/WayPageShell';
 import AdmissionRequirements from '@/components/AdmissionRequirements';
+import RequirementTiles from '@/components/RequirementTiles';
 
 import {
   getPublicProgramPageData,
@@ -116,8 +117,9 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                       )}
                       {source.requirements.length > 0 ? (
                         <>
-                          <AdmissionRequirements
-                            programId={source.sourceProgramId}
+                          <RequirementTiles
+                            program={source.program}
+                            showCalculatorLink
                             institutionId={institution.id}
                             requirements={source.requirements}
                           />

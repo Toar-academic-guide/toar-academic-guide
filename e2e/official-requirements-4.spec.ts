@@ -34,13 +34,17 @@ for (const width of [320, 390, 768, 1280, 1440]) {
       const main = page.getByRole('main');
       await expect(main.getByRole('heading', { name: 'תנאי קבלה', exact: true })).toBeVisible();
       await expect(main).toHaveCSS('text-align', 'right');
-      const more = main.getByText('תנאים נוספים', { exact: true });
+      const more = main.locator('summary').filter({ hasText: /^(תנאים נוספים|פרטים נוספים)$/ });
       if (await more.count()) await more.click();
       await expect(main.getByRole('link', { name: 'יצירת קשר', exact: true })).toBeVisible();
       if (officialCatalogueApplied()) {
-        for (const requirement of [...value.reqs, ...value.notes]) {
-          await expect(main.getByText(requirement, { exact: true })).toBeVisible();
+        await expect(main.getByText('מספיק אחד מאלה:', { exact: true })).toBeVisible();
+        await expect(main.getByText('פרטים נוספים', { exact: true })).toBeVisible();
+        const details = main.locator('details');
+        for (const number of value.reqs.join(' ').match(/\d+/g) ?? []) {
+          await expect(main).toContainText(number);
         }
+        await expect(details).not.toContainText('ראיון קבלה חובה');
         const calculator = main.getByRole('link', { name: 'למחשבון המכללה', exact: true });
         const calculatorUrl = new URL((await calculator.getAttribute('href'))!);
         expect(calculatorUrl.searchParams.get('utm_source')).toBe('myway');
@@ -143,7 +147,7 @@ for (const width of [390, 1440]) {
       await expect(main.getByRole('button', { name: 'יצירת קשר', exact: true })).toBeVisible();
       await expect(main.getByRole('button', { name: 'שמירה לרשימה', exact: true })).toBeVisible();
       await expect(main.getByText('תנאי קבלה', { exact: true })).toBeVisible();
-      const more = main.getByText('תנאים נוספים', { exact: true });
+      const more = main.locator('summary').filter({ hasText: /^(תנאים נוספים|פרטים נוספים)$/ });
       if (await more.count()) await more.click();
       if (officialCatalogueApplied()) {
         for (const requirement of [...value.reqs, ...value.notes])

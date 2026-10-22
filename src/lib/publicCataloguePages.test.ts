@@ -37,6 +37,7 @@ describe('public catalogue page data', () => {
     const page = (await getPublicProgramPageData(culinary.id))!;
     expect(page.program.institutionDetails![0].institutionName).toBe(page.institutions[0].name);
     expect((await getPublicProgramRequirementSources(page)).danon).toEqual({
+      program: page.program,
       sourceProgramId: culinary.id,
       requirements: [DANON_BEGINNER_REQUIREMENT],
       officialUrl: 'https://www.danon.org.il/cuisine/?utm_source=myway&utm_medium=referral',
@@ -260,6 +261,7 @@ describe('public catalogue page data', () => {
       const ownPage = (await getPublicProgramPageData(program.id))!;
       const ownSources = await getPublicProgramRequirementSources(ownPage);
       expect(sources[institution.id]).toEqual({
+        program,
         sourceProgramId: program.id,
         requirements: expected,
         officialUrl: officialUrl(ownDetail?.programUrl, institution.id),
