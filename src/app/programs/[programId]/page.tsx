@@ -3,7 +3,10 @@ import { notFound } from 'next/navigation';
 import WayPageShell from '@/components/WayPageShell';
 import AdmissionRequirements from '@/components/AdmissionRequirements';
 
-import { getPublicProgramPageData } from '@/lib/publicCataloguePages';
+import {
+  getPublicProgramPageData,
+  getPublicProgramRequirementSources,
+} from '@/lib/publicCataloguePages';
 import { catalogueAdmissionRequirements } from '@/lib/catalogueDisplayText';
 import { ROUTES } from '@/lib/routes';
 import { buildProgramMetadata } from '@/lib/seo/metadata';
@@ -28,7 +31,8 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
     notFound();
   }
 
-  const { program, institutions, institutionProgramPaths, institutionRequirementSources } = data;
+  const { program, institutions, institutionProgramPaths } = data;
+  const institutionRequirementSources = await getPublicProgramRequirementSources(data);
 
   return (
     <WayPageShell>

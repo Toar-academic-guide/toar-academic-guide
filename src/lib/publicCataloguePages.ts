@@ -24,17 +24,15 @@ export const loadPublicCatalogue = cache(async () => {
 
   // The active catalogue owns current IDs. Keep older public URLs available only
   // after a successful read; database failures must not become a static fallback.
+  const currentProgramIds = new Set(programs.data.map((program) => program.id));
+  const currentInstitutionIds = new Set(institutions.data.map((institution) => institution.id));
   const allPrograms = [
     ...programs.data,
-    ...PUBLIC_PROGRAMS.filter(
-      (legacy) => !programs.data.some((current) => current.id === legacy.id),
-    ),
+    ...PUBLIC_PROGRAMS.filter((legacy) => !currentProgramIds.has(legacy.id)),
   ];
   const allInstitutions = [
     ...institutions.data,
-    ...PUBLIC_INSTITUTIONS.filter(
-      (legacy) => !institutions.data.some((current) => current.id === legacy.id),
-    ),
+    ...PUBLIC_INSTITUTIONS.filter((legacy) => !currentInstitutionIds.has(legacy.id)),
   ];
   // Seeded DB rows can carry an institutionId inferred from a legacy label.
   // Establish subject identity before resolving providers so subjects cannot
@@ -43,6 +41,9 @@ export const loadPublicCatalogue = cache(async () => {
     (program) =>
       program.isListed !== false && program.institutionId && !hasGeneralIdentity(program),
   );
+  const institutionSpecificNames = new Set(
+    institutionSpecificPrograms.map((program) => program.name),
+  );
   const generalProgramIds = new Set(
     allPrograms
       .filter(
@@ -50,10 +51,19 @@ export const loadPublicCatalogue = cache(async () => {
           hasGeneralIdentity(program) &&
           (Object.values(program.thresholds ?? {}).some((threshold) => threshold != null) ||
             !!program.institutionDetails?.length ||
-            institutionSpecificPrograms.some((specific) => specific.name === program.name)),
+            institutionSpecificNames.has(program.name)),
       )
       .map((program) => program.id),
   );
+  const institutionProgramsByName = new Map<string, Map<string, CatalogueProgram>>();
+  for (const program of allPrograms) {
+    if (program.isListed === false || !program.institutionId || generalProgramIds.has(program.id))
+      continue;
+    const providers = institutionProgramsByName.get(program.name) ?? new Map();
+    // Preserve the first listed match, as the page links did before indexing.
+    if (!providers.has(program.institutionId)) providers.set(program.institutionId, program);
+    institutionProgramsByName.set(program.name, providers);
+  }
   const resolvedPrograms = allPrograms.map((program) => {
     if (!generalProgramIds.has(program.id)) return program;
 
@@ -61,17 +71,9 @@ export const loadPublicCatalogue = cache(async () => {
       .filter(([, threshold]) => threshold != null)
       .map(([id]) => id);
     const detailNames = program.institutionDetails?.map((detail) => detail.institutionName) ?? [];
-    const specificPrograms = allPrograms.filter(
-      (specific) =>
-        specific.id !== program.id &&
-        !generalProgramIds.has(specific.id) &&
-        specific.isListed !== false &&
-        specific.institutionId &&
-        specific.name === program.name,
-    );
     const providerIds = new Set([
       ...thresholdIds,
-      ...specificPrograms.map((specific) => specific.institutionId!),
+      ...(institutionProgramsByName.get(program.name)?.keys() ?? []),
     ]);
     return {
       ...program,
@@ -88,6 +90,7 @@ export const loadPublicCatalogue = cache(async () => {
     programs: resolvedPrograms,
     institutions: allInstitutions,
     generalProgramIds,
+    institutionProgramsByName,
   };
 });
 
@@ -96,7 +99,6 @@ export interface PublicProgramPageData {
   institutions: CatalogueInstitution[];
   isGeneral: boolean;
   institutionProgramPaths: Record<string, string>;
-  institutionRequirementSources: Record<string, PublicProgramRequirementSource>;
 }
 
 interface PublicProgramRequirementSource {
@@ -126,24 +128,38 @@ export async function getPublicProgramPageData(
   );
   const isGeneral = catalogue.generalProgramIds.has(program.id);
   const institutionProgramPaths: Record<string, string> = {};
+  for (const institution of institutions) {
+    const specific = isGeneral
+      ? catalogue.institutionProgramsByName.get(program.name)?.get(institution.id)
+      : undefined;
+    institutionProgramPaths[institution.id] = specific
+      ? `/programs/${encodeURIComponent(specific.id)}`
+      : `/institutions/${encodeURIComponent(institution.id)}`;
+  }
+  return {
+    program,
+    institutions,
+    isGeneral,
+    institutionProgramPaths,
+  };
+}
+
+/** Presentation-only summaries; metadata and JSON-LD need only the page's relations. */
+export async function getPublicProgramRequirementSources({
+  program,
+  institutions,
+  isGeneral,
+  institutionProgramPaths,
+}: PublicProgramPageData): Promise<Record<string, PublicProgramRequirementSource>> {
+  const catalogue = await loadPublicCatalogue();
   const institutionRequirementSources: Record<string, PublicProgramRequirementSource> = {};
   const genericRequirement = catalogueAdmissionRequirements()[0];
   const hasRequirements = (items: string[]) =>
     !(items.length === 1 && items[0] === genericRequirement);
   for (const institution of institutions) {
     const specific = isGeneral
-      ? catalogue.programs.find(
-          (candidate) =>
-            candidate.isListed !== false &&
-            candidate.id !== program.id &&
-            !catalogue.generalProgramIds.has(candidate.id) &&
-            candidate.name === program.name &&
-            candidate.institutionId === institution.id,
-        )
+      ? catalogue.institutionProgramsByName.get(program.name)?.get(institution.id)
       : undefined;
-    const specificPath = specific ? `/programs/${encodeURIComponent(specific.id)}` : undefined;
-    institutionProgramPaths[institution.id] =
-      specificPath ?? `/institutions/${encodeURIComponent(institution.id)}`;
 
     const detail = program.institutionDetails?.find(
       (entry) => entry.institutionName === institution.name,
@@ -172,16 +188,10 @@ export async function getPublicProgramPageData(
           ? []
           : sourceRequirements,
       officialUrl: officialUrl(sourceDetail?.programUrl, institution.id),
-      fullDetailsPath: useSpecific ? specificPath : undefined,
+      fullDetailsPath: useSpecific ? institutionProgramPaths[institution.id] : undefined,
     };
   }
-  return {
-    program,
-    institutions,
-    isGeneral,
-    institutionProgramPaths,
-    institutionRequirementSources,
-  };
+  return institutionRequirementSources;
 }
 
 export async function getPublicInstitutionPageData(

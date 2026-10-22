@@ -12,7 +12,11 @@ import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/li
 import { catalogueAdmissionRequirements } from '@/lib/catalogueDisplayText';
 import { officialUrl } from '@/lib/studyJourney';
 
-import { getPublicInstitutionPageData, getPublicProgramPageData } from './publicCataloguePages';
+import {
+  getPublicInstitutionPageData,
+  getPublicProgramPageData,
+  getPublicProgramRequirementSources,
+} from './publicCataloguePages';
 
 describe('public catalogue page data', () => {
   it('keeps an unlisted saved programme URL accessible without advertising it on institution pages', async () => {
@@ -201,8 +205,9 @@ describe('public catalogue page data', () => {
     });
 
     const page = (await getPublicProgramPageData(general.id))!;
+    const sources = await getPublicProgramRequirementSources(page);
     expect(page.isGeneral).toBe(true);
-    expect(page.institutionRequirementSources.tau).toMatchObject({
+    expect(sources.tau).toMatchObject({
       sourceProgramId: general.id,
       requirements: ['תנאי תל אביב הקיימים'],
       fullDetailsPath: undefined,
@@ -217,29 +222,30 @@ describe('public catalogue page data', () => {
         program.admissionRequirements,
       );
       const ownPage = (await getPublicProgramPageData(program.id))!;
-      expect(page.institutionRequirementSources[institution.id]).toEqual({
+      const ownSources = await getPublicProgramRequirementSources(ownPage);
+      expect(sources[institution.id]).toEqual({
         sourceProgramId: program.id,
         requirements: expected,
         officialUrl: officialUrl(ownDetail?.programUrl, institution.id),
         fullDetailsPath: page.institutionProgramPaths[institution.id],
       });
-      expect(ownPage.institutionRequirementSources[institution.id].requirements).toEqual(expected);
-      expect(ownPage.institutionRequirementSources[institution.id].fullDetailsPath).toBeUndefined();
+      expect(ownSources[institution.id].requirements).toEqual(expected);
+      expect(ownSources[institution.id].fullDetailsPath).toBeUndefined();
     }
-    expect(page.institutionRequirementSources.ariel).toMatchObject({
+    expect(sources.ariel).toMatchObject({
       sourceProgramId: ariel.id,
       requirements: [],
       fullDetailsPath: '/programs/ariel_nursing',
     });
-    expect(page.institutionRequirementSources.huji).toMatchObject({
+    expect(sources.huji).toMatchObject({
       sourceProgramId: general.id,
       requirements: [],
       fullDetailsPath: undefined,
     });
     expect(page.institutionProgramPaths.huji).toBe('/institutions/huji');
-    expect(
-      Object.values(page.institutionRequirementSources).flatMap((source) => source.requirements),
-    ).not.toContain(catalogueAdmissionRequirements()[0]);
+    expect(Object.values(sources).flatMap((source) => source.requirements)).not.toContain(
+      catalogueAdmissionRequirements()[0],
+    );
   });
 
   it('uses each source row’s admissionRequirements fallback without merging rows', async () => {
@@ -258,7 +264,8 @@ describe('public catalogue page data', () => {
     };
     vi.mocked(listCataloguePrograms).mockResolvedValue({ data: [general, own], meta: {} });
     expect(
-      (await getPublicProgramPageData(general.id))!.institutionRequirementSources.haifa,
+      (await getPublicProgramRequirementSources((await getPublicProgramPageData(general.id))!))
+        .haifa,
     ).toMatchObject({
       sourceProgramId: own.id,
       requirements: own.admissionRequirements,
@@ -266,7 +273,8 @@ describe('public catalogue page data', () => {
     const updated = { ...general, admissionRequirements: ['תנאי מהעמוד הכללי'] };
     vi.mocked(listCataloguePrograms).mockResolvedValue({ data: [updated, own], meta: {} });
     expect(
-      (await getPublicProgramPageData(general.id))!.institutionRequirementSources.haifa,
+      (await getPublicProgramRequirementSources((await getPublicProgramPageData(general.id))!))
+        .haifa,
     ).toMatchObject({
       sourceProgramId: general.id,
       requirements: updated.admissionRequirements,

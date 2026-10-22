@@ -12,6 +12,7 @@ import { getInstitutionDirectoryItems } from '@/data/institutionDirectory';
 import { buildRobots, TRAINING_BOTS_POLICY } from './robots';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import { getPublicInstitutionPageData, getPublicProgramPageData } from '@/lib/publicCataloguePages';
+import * as catalogueDisplayText from '@/lib/catalogueDisplayText';
 import { absoluteUrl, SITE_ALT_NAMES, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/site';
 import {
   indexableInstitutionIds,
@@ -256,6 +257,17 @@ describe('metadata', () => {
     });
     expect(meta.robots).toBeUndefined();
     expect((await buildProgramMetadata('cs')).title).toBe('לימודי מדעי המחשב: באילו מוסדות לומדים');
+  });
+
+  it('builds metadata and JSON-LD without computing admission requirement summaries', async () => {
+    const requirements = vi.spyOn(catalogueDisplayText, 'catalogueAdmissionRequirements');
+    for (const id of ['nursing', 'haifa_nursing']) {
+      const page = (await getPublicProgramPageData(id))!;
+      expect((await buildProgramMetadata(id)).title).toBeTruthy();
+      expect((await programLd(page)).provider.length).toBe(page.institutions.length);
+      expect(programBreadcrumbLd(page).itemListElement.length).toBeGreaterThan(0);
+    }
+    expect(requirements).not.toHaveBeenCalled();
   });
 
   it('uses the general title even when the only subject signal is one institution', async () => {
