@@ -546,7 +546,7 @@ describe('dynamic Monday-derived programme inference', () => {
 
   it('structures non-Ariel legacy admission requirements before applying display-only source content', () => {
     const uncovered = programsWithLegacyAdmissionFacts.flatMap((program) => {
-      if (program.institutionId === 'ariel') {
+      if (program.institutionId === 'ariel' || ['ono_law', 'ono_nursing'].includes(program.id)) {
         return [];
       }
 

@@ -12,7 +12,7 @@ import { getStaticCataloguePrograms, getStaticCatalogueInstitutions } from './ca
 import { PROGRAM_CANONICAL_ALIASES } from './seo/programAliases';
 
 describe('approved journey', () => {
-  it.each(['tlvyaffo_cs', 'colmgmt_law', 'colmgmt_business', 'colmgmt_cs'])(
+  it.each(['tlvyaffo_cs', 'colmgmt_law', 'colmgmt_business', 'colmgmt_economics', 'colmgmt_cs'])(
     'preserves program-specific route explanations for %s',
     (programId) => {
       const result = {
@@ -27,7 +27,7 @@ describe('approved journey', () => {
         explanation: 'במסלול בגרות ופסיכומטרי ההחלטה היא של המכללה.',
       };
       expect(resultExplanation(result, programId)).toBe(result.explanation);
-      expect(resultExplanation(result, 'colmgmt_economics')).not.toBe(result.explanation);
+      expect(resultExplanation(result, 'colmgmt_accounting')).not.toBe(result.explanation);
     },
   );
   it('keeps Afeka software engineering in its own field, not Computer Science', () => {

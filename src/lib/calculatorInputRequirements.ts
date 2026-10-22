@@ -36,6 +36,7 @@ export function allowsNoPsychometric(programId: string): boolean {
       'colmgmt_cs',
       'colmgmt_law',
       'colmgmt_business',
+      'colmgmt_economics',
       'tlvyaffo_cs',
     ].includes(programId)
   );
@@ -58,6 +59,7 @@ export function allowsNoGenericBagrut(programId: string): boolean {
       'colmgmt_cs',
       'colmgmt_law',
       'colmgmt_business',
+      'colmgmt_economics',
       'tlvyaffo_cs',
     ].includes(programId)
   );

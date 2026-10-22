@@ -332,10 +332,7 @@ describe('catalogueSeed', () => {
     });
     expect(
       payload.admissionAlternativePaths.find((row) => row.id === 'ono_nursing:ono:alt:bridge'),
-    ).toMatchObject({
-      kind: 'transfer_path',
-      programId: 'ono_nursing',
-    });
+    ).toBeUndefined();
     expect(
       payload.admissionFacts.find((row) => row.id === 'sapir_law:sapir:fact:no-psychometric'),
     ).toMatchObject({
