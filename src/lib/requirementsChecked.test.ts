@@ -6,36 +6,57 @@ vi.mock('@/data/admissions/catalogueContentRepair.json', () => ({
       ['checked', 'https://admissions.bgu.ac.il/requirements?year=2027', '2026-10-21'],
       ['root', 'https://bgu.ac.il/requirements', '2026-10-21'],
       ['http', 'http://bgu.ac.il/requirements', '2026-10-21'],
+      [
+        'tracked',
+        'https://bgu.ac.il/requirements?utm_source=old&utm_medium=old#requirements',
+        '2026-10-21',
+      ],
       ['aggregator', 'https://www.study.co.il/requirements', '2026-10-21'],
       ['suffix', 'https://bgu.ac.il.example.com/requirements', '2026-10-21'],
       ['prefix', 'https://fakebgu.ac.il/requirements', '2026-10-21'],
       ['credentials', 'https://user:password@bgu.ac.il/requirements', '2026-10-21'],
       ['malformed', 'not a URL', '2026-10-21'],
+      ['javascript', 'javascript:alert(1)', '2026-10-21'],
+      ['unverified-institution', 'https://www.pardeshana.ac.il/requirements', '2026-10-21'],
       ['invalid-date', 'https://bgu.ac.il/requirements', '2026-02-30'],
     ].map(([programId, sourceUrl, checkedAt]) => ({
       programId,
-      institutionId: 'bgu',
+      institutionId: programId === 'unverified-institution' ? 'pardeshana' : 'bgu',
       notes: ['תנאי ראשון', 'תנאי שני'],
       sourceUrl,
       checkedAt,
+      sourceSha256: 'fixture-source-hash',
     })),
   },
 }));
 
 import { formatRequirementsCheckedDate, getRequirementsChecked } from './requirementsChecked';
+import repair from '@/data/admissions/catalogueContentRepair.json';
 
-const institution = { id: 'bgu' as const, domain: 'bgu.ac.il' };
+const institution = { id: 'bgu' as const };
 const notes = ['תנאי ראשון', 'תנאי שני'];
 
 describe('getRequirementsChecked', () => {
-  it('returns the entry date and exact official source URL for matching raw notes', () => {
+  it('returns the entry date and tracked official source URL for matching raw notes', () => {
     expect(getRequirementsChecked('checked', institution, [...notes])).toEqual({
       date: '21.10.2026',
-      sourceUrl: 'https://admissions.bgu.ac.il/requirements?year=2027',
+      sourceUrl:
+        'https://admissions.bgu.ac.il/requirements?year=2027&utm_source=myway&utm_medium=referral',
     });
     expect(getRequirementsChecked('root', institution, notes)?.sourceUrl).toBe(
-      'https://bgu.ac.il/requirements',
+      'https://bgu.ac.il/requirements?utm_source=myway&utm_medium=referral',
     );
+    expect(getRequirementsChecked('http', institution, notes)?.sourceUrl).toBe(
+      'http://bgu.ac.il/requirements?utm_source=myway&utm_medium=referral',
+    );
+  });
+
+  it('replaces existing tracking without changing the source evidence', () => {
+    const evidence = structuredClone(repair);
+    expect(getRequirementsChecked('tracked', institution, notes)?.sourceUrl).toBe(
+      'https://bgu.ac.il/requirements?utm_source=myway&utm_medium=referral#requirements',
+    );
+    expect(repair).toEqual(evidence);
   });
 
   it.each([
@@ -56,7 +77,7 @@ describe('getRequirementsChecked', () => {
     expect(getRequirementsChecked('invalid-date', institution, notes)).toBeUndefined();
   });
 
-  it.each(['http', 'aggregator', 'suffix', 'prefix', 'credentials', 'malformed'])(
+  it.each(['aggregator', 'suffix', 'prefix', 'credentials', 'malformed', 'javascript'])(
     'keeps only the checked date for a non-official source (%s)',
     (programId) => {
       expect(getRequirementsChecked(programId, institution, notes)).toEqual({
@@ -66,15 +87,12 @@ describe('getRequirementsChecked', () => {
     },
   );
 
-  it.each([undefined, 'tau.ac.il'])(
-    'withholds the URL without a matching official domain (%s)',
-    (domain) => {
-      expect(getRequirementsChecked('checked', { ...institution, domain }, notes)).toEqual({
-        date: '21.10.2026',
-        sourceUrl: undefined,
-      });
-    },
-  );
+  it('keeps only the date when the institution has no verified website', () => {
+    expect(getRequirementsChecked('unverified-institution', { id: 'pardeshana' }, notes)).toEqual({
+      date: '21.10.2026',
+      sourceUrl: undefined,
+    });
+  });
 });
 
 describe('formatRequirementsCheckedDate', () => {
