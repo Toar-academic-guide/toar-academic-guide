@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Smoke tests', () => {
   test('landing page loads and shows main heading', async ({ page }) => {
     await page.goto('/');
-    await expect(page).toHaveTitle(/Way|מה\.איפה\.איך/i);
+    await expect(page).toHaveTitle('MyWay | הדרך שלך ללימודים');
     // The page should render without a crash — verify a visible element exists
     const body = page.locator('body');
     await expect(body).toBeVisible();
