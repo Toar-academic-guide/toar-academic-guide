@@ -10,6 +10,10 @@ Actual numeric inputs, institution-specific averages, route-defining qualificati
 
 Comparison and legacy recommendation cards now use the existing shared compact admission component. Comparison uses the selected institution's requirements rather than the programme-wide fallback.
 
+The hosted check also confirmed that shared catalogue rows can have empty notes. Legacy cards retain the institution-specific notes in that case; a shared row is used only when it supplies missing copy for the same institution. Institution aliases resolve by catalogue ID. This is a display lookup fix, not a new source-data repair.
+
+Main's concurrent branding and SEO changes were integrated on this branch. SEO callers now await the live public catalogue, sharing its request-scoped load. Metadata uses current names; excluded saved references remain accessible but do not enter the sitemap. The directory keeps the verified destination registry and main's aggregator/board-link filtering.
+
 ## Thirteen incomplete requirement records
 
 The follow-up distinguishes absence of published criteria from a confirmed absence of requirements. These records still cannot support an eligibility claim. The existing conservative guard remains in place.
@@ -45,6 +49,8 @@ The other nine unresolved links from the 21 October audit remain withheld: Avni;
 - Focused comparison/account tests verify institution-specific compact requirements and expandable additional conditions.
 - Existing lint warning in `bagrutPolicies.ts` is present at base HEAD; no unrelated cleanup included.
 - Desktop/mobile preview verification and final commit evidence are recorded in the PR handoff after deployment.
+- After integrating main: production build, typecheck, formatting and 56 focused directory, account, display and SEO compatibility tests passed.
+- Hosted browser checks at 1440×900 and 390×844: BGU Communication uses saved psychometric 700 against its 520 route with outstanding conditions separate; a temporary save survives reload and was removed afterward. The original six saved-list rows were restored. Two-programme comparison, expanded conditions and the programme-specific contact form were exercised; no enquiry was submitted and no academic inputs were changed.
 
 ## UI verification steps
 

@@ -843,8 +843,8 @@ for (const record of mondayAdmissionsEvidence) {
                   : ('generic' as const),
               confidence: record.confidence,
               url: primarySourceUrl,
-              title: `מקור מוסדי שנגזר מ-Monday עבור ${record.displayName}`,
-              notes: `Derived from Monday admissions evidence item ${record.itemId}. ${record.nextAction}`,
+              title: `מקור מוסדי עבור ${record.displayName}`,
+              notes: `Institutional evidence item ${record.itemId}. ${record.nextAction}`,
             },
           ]
         : [];

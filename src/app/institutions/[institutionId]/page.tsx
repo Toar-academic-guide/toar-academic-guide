@@ -4,11 +4,18 @@ import WayPageShell from '@/components/WayPageShell';
 
 import { getPublicInstitutionPageData } from '@/lib/publicCataloguePages';
 import { ROUTES } from '@/lib/routes';
+import { buildInstitutionMetadata } from '@/lib/seo/metadata';
+import { institutionLd, institutionBreadcrumbLd } from '@/lib/seo/jsonLd';
+import JsonLd from '@/components/seo/JsonLd';
 
 export const dynamic = 'force-dynamic';
 
 interface InstitutionPageProps {
   params: Promise<{ institutionId: string }>;
+}
+
+export async function generateMetadata({ params }: InstitutionPageProps) {
+  return buildInstitutionMetadata((await params).institutionId);
 }
 
 export default async function InstitutionPage({ params }: InstitutionPageProps) {
@@ -23,6 +30,7 @@ export default async function InstitutionPage({ params }: InstitutionPageProps) 
 
   return (
     <WayPageShell>
+      <JsonLd data={[institutionLd(data), institutionBreadcrumbLd(data)]} />
       <main dir="rtl" className="px-4 py-10 text-slate-900 sm:px-6">
         <section className="mx-auto flex max-w-4xl flex-col gap-8">
           <Link

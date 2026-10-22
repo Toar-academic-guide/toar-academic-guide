@@ -1,4 +1,5 @@
 import 'server-only';
+import { cache } from 'react';
 
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import { listCatalogueInstitutions, listCataloguePrograms } from '@/server/catalogue/queries';
@@ -7,7 +8,7 @@ import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 const PUBLIC_PROGRAMS = getStaticCataloguePrograms();
 const PUBLIC_INSTITUTIONS = getStaticCatalogueInstitutions();
 
-async function loadPublicCatalogue() {
+export const loadPublicCatalogue = cache(async () => {
   const [programs, institutions] = await Promise.all([
     listCataloguePrograms(),
     listCatalogueInstitutions(),
@@ -29,7 +30,7 @@ async function loadPublicCatalogue() {
       ),
     ],
   };
-}
+});
 
 export interface PublicProgramPageData {
   program: CatalogueProgram;

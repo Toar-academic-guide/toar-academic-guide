@@ -22,7 +22,6 @@ export interface InstitutionDirectoryItem {
   id: string;
   itemId: string;
   name: string;
-  mondayUrl: string;
   type: string | null;
   funding: string | null;
   location: string | null;
@@ -198,6 +197,29 @@ function hostnameFromUrl(url: string | null) {
   }
 }
 
+function isPublicInstitutionHost(hostname: string) {
+  const host = hostname.toLowerCase().replace(/\.$/, '');
+  return !['yoram.walla.co.il', 'monday.com'].some(
+    (domain) => host === domain || host.endsWith(`.${domain}`),
+  );
+}
+
+export function getPublicInstitutionSourceUrl(
+  candidates: (string | null | undefined)[],
+): string | null {
+  for (const candidate of candidates) {
+    for (const value of candidate?.match(/https?:\/\/\S+/g) ?? []) {
+      try {
+        const url = new URL(value);
+        if (isPublicInstitutionHost(url.hostname) && !url.username && !url.password) return value;
+      } catch {
+        // Skip invalid candidates and try the next official source.
+      }
+    }
+  }
+  return null;
+}
+
 function yoramLogoFromSourceUrl(sourceUrl: string | null) {
   const instituteId = sourceUrl?.match(/yoram\.walla\.co\.il\/institute\/(\d+)/)?.[1];
 
@@ -323,8 +345,11 @@ export function getInstitutionDirectoryItems(): InstitutionDirectoryItem[] {
         institution?.programUrl ??
         institution?.calculatorUrl ??
         null;
-      const sourceUrl = institutionWebsite(row.itemId);
-      const domain = hostnameFromUrl(sourceUrl) ?? override?.domain ?? institution?.domain ?? null;
+      const sourceUrl = getPublicInstitutionSourceUrl([institutionWebsite(row.itemId)]);
+      const knownDomain = override?.domain ?? institution?.domain;
+      const domain =
+        hostnameFromUrl(sourceUrl) ??
+        (knownDomain && isPublicInstitutionHost(knownDomain) ? knownDomain : null);
       // Imported directory links are retained only for the existing local logo cache.
       const yoramLogoUrl = yoramLogoFromSourceUrl(importedSourceUrl);
       const location = override?.location ?? row.location;
@@ -333,7 +358,6 @@ export function getInstitutionDirectoryItems(): InstitutionDirectoryItem[] {
         id,
         itemId: row.itemId,
         name,
-        mondayUrl: row.mondayUrl,
         type: row.institutionType,
         funding: row.funding,
         location,

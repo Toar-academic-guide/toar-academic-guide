@@ -7,11 +7,18 @@ import { getPublicProgramPageData } from '@/lib/publicCataloguePages';
 import { catalogueAdmissionRequirements } from '@/lib/catalogueDisplayText';
 import { officialUrl } from '@/lib/studyJourney';
 import { ROUTES } from '@/lib/routes';
+import { buildProgramMetadata } from '@/lib/seo/metadata';
+import { programLd, programBreadcrumbLd } from '@/lib/seo/jsonLd';
+import JsonLd from '@/components/seo/JsonLd';
 
 export const dynamic = 'force-dynamic';
 
 interface ProgramPageProps {
   params: Promise<{ programId: string }>;
+}
+
+export async function generateMetadata({ params }: ProgramPageProps) {
+  return buildProgramMetadata((await params).programId);
 }
 
 export default async function ProgramPage({ params }: ProgramPageProps) {
@@ -26,6 +33,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
 
   return (
     <WayPageShell>
+      <JsonLd data={[await programLd(data), programBreadcrumbLd(data)]} />
       <main dir="rtl" className="px-4 py-10 text-slate-900 sm:px-6">
         <section className="mx-auto flex max-w-4xl flex-col gap-8">
           <Link
