@@ -591,14 +591,14 @@ export default function AppExperience({
       </button>
     ) : null;
 
-  function renderCatalogueState(title: string, description: string) {
+  function renderCatalogueState(title: string, description?: string) {
     if (catalogueStatus === 'loading') {
       return (
         <section className="mx-auto flex max-w-2xl flex-col items-center gap-3 rounded-3xl border border-slate-200 bg-white px-8 py-16 text-center shadow-sm">
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-slate-200 border-t-indigo-600" />
           <div>
             <h2 className="text-lg font-bold text-slate-900">{title}</h2>
-            <p className="mt-1.5 text-sm text-slate-500">{description}</p>
+            {description && <p className="mt-1.5 text-sm text-slate-500">{description}</p>}
           </div>
         </section>
       );
@@ -1092,12 +1092,7 @@ export default function AppExperience({
           </div>
         ) : null}
 
-        {shouldBlockCatalogueStep
-          ? renderCatalogueState(
-              'טוענים את הקטלוג',
-              'הקטלוג נטען דרך ה-API לפני שאפשר להציג המלצות, מחשבון או רשימת ייעוד.',
-            )
-          : null}
+        {shouldBlockCatalogueStep ? renderCatalogueState('טוענים את הקטלוג') : null}
 
         {/* ── Step: Recommendations ─────────────────────────────── */}
         {!shouldBlockCatalogueStep && step === 'recommendations' && assessmentProfile && (
