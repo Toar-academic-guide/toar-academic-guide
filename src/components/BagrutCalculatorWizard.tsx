@@ -8,6 +8,7 @@ import { buildBagrutSubjectRecord } from '@/utils/bagrutSubjectRecord';
 // ── Sector → mandatory subjects ───────────────────────────────────────────────
 
 import { SECTORS, ALL_SUBJECTS } from '@/data/bagrutSubjects';
+import { withBet } from '@/lib/hebrew';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -376,7 +377,7 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
                 ) && (
                   <button
                     type="button"
-                    aria-label={`הוסף עבודת גמר ב${sub.n}`}
+                    aria-label={`הוסף עבודת גמר ${withBet(sub.n)}`}
                     onClick={() => addFinalProject(sub.n)}
                     className="min-h-11 rounded-lg border border-[#bae6fd] bg-white px-2 py-1 text-xs font-bold text-[#0891b2] hover:bg-[#e0f9ff]"
                   >
@@ -526,7 +527,7 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
                     ) && (
                       <button
                         type="button"
-                        aria-label={`הוסף עבודת גמר ב${e.name}`}
+                        aria-label={`הוסף עבודת גמר ${withBet(e.name)}`}
                         onClick={() => addFinalProject(e.name)}
                         className="min-h-11 rounded-lg border border-[#bae6fd] bg-white px-2 py-1 text-xs font-bold text-[#0891b2] hover:bg-[#e0f9ff]"
                       >

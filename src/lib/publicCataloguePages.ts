@@ -217,6 +217,14 @@ export async function getPublicInstitutionPageData(
   const names = new Set(ownPrograms.map((program) => program.name));
   const generalPrograms = listedPrograms.filter((program) => {
     if (program.institutionId || names.has(program.name)) return false;
+    if (
+      ownPrograms.some(
+        (own) =>
+          own.name === program.category &&
+          (program.name.startsWith(`${own.name} `) || program.name.startsWith(`${own.name}ו`)),
+      )
+    )
+      return false;
     names.add(program.name);
     return true;
   });

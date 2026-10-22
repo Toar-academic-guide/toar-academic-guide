@@ -2,6 +2,7 @@ import type { PublicInstitutionPageData, PublicProgramPageData } from '@/lib/pub
 import { getPublicInstitutionPageData } from '@/lib/publicCataloguePages';
 import { absoluteUrl, SITE_ALT_NAMES, SITE_NAME } from '@/lib/site';
 import type { InstitutionDirectoryItem } from '@/data/institutionDirectory';
+import { canonicalProgramPath } from './programAliases';
 
 const ORGANIZATION_ID = absoluteUrl('/#organization');
 const WEBSITE_ID = absoluteUrl('/#website');
@@ -74,7 +75,7 @@ export function institutionLd({ institution, programs }: PublicInstitutionPageDa
         '@type': 'ListItem',
         position: index + 1,
         name: program.name,
-        url: absoluteUrl(`/programs/${encodeURIComponent(program.id)}`),
+        url: absoluteUrl(canonicalProgramPath(program.id)),
       })),
     },
     ...(sameAs ? { sameAs } : {}),
@@ -102,9 +103,9 @@ export async function programLd({ program, institutions }: PublicProgramPageData
   const months = duration == null ? 0 : duration * 12;
   return {
     '@type': 'EducationalOccupationalProgram',
-    '@id': absoluteUrl(`/programs/${encodeURIComponent(program.id)}#program`),
+    '@id': absoluteUrl(`${canonicalProgramPath(program.id)}#program`),
     name: program.name,
-    url: absoluteUrl(`/programs/${encodeURIComponent(program.id)}`),
+    url: absoluteUrl(canonicalProgramPath(program.id)),
     provider: await Promise.all(
       institutions.map(async (institution) =>
         institutionLd((await getPublicInstitutionPageData(institution.id))!),
@@ -128,7 +129,7 @@ export function programBreadcrumbLd({ program, institutions, isGeneral }: Public
           },
         ]
       : []),
-    { name: program.name, path: `/programs/${encodeURIComponent(program.id)}` },
+    { name: program.name, path: canonicalProgramPath(program.id) },
   ]);
 }
 

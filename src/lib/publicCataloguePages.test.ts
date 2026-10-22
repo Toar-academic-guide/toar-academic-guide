@@ -16,6 +16,7 @@ import {
   getPublicInstitutionPageData,
   getPublicProgramPageData,
   getPublicProgramRequirementSources,
+  loadPublicCatalogue,
 } from './publicCataloguePages';
 
 describe('public catalogue page data', () => {
@@ -442,6 +443,78 @@ describe('public catalogue page data', () => {
     expect(
       (await getPublicProgramPageData('available'))!.institutionProgramPaths[institution.id],
     ).toBe('/institutions/test_college');
+  });
+
+  it.each(['static', 'seeded database'])(
+    'audits additional general-program hides across every institution (%s)',
+    async (mode) => {
+      if (mode === 'seeded database') {
+        vi.mocked(listCataloguePrograms).mockResolvedValue({
+          data: getStaticCataloguePrograms().map((program) => ({
+            ...program,
+            institutionId:
+              program.institutionId ?? (program.linkedInstitutionIds[0] as InstitutionId),
+          })),
+          meta: { catalogueSource: 'database' },
+        });
+      }
+      const catalogue = await loadPublicCatalogue();
+      const extraHides: Record<string, string[]> = {};
+      for (const institution of catalogue.institutions) {
+        const page = (await getPublicInstitutionPageData(institution.id))!;
+        const ownNames = new Set(
+          page.programs.filter((p) => p.institutionId === institution.id).map((p) => p.name),
+        );
+        const oldGeneral = catalogue.programs.filter(
+          (p) =>
+            p.isListed !== false &&
+            !p.institutionId &&
+            p.linkedInstitutionIds.includes(institution.id) &&
+            !ownNames.has(p.name),
+        );
+        const hidden = oldGeneral.filter(
+          (p) => !page.programs.some((listed) => listed.name === p.name),
+        );
+        if (hidden.length) extraHides[institution.id] = hidden.map((p) => p.id);
+      }
+      expect(extraHides).toEqual({ haifa: ['communication'], ariel: ['communication'] });
+    },
+  );
+
+  it.each([
+    ['תקשורת', 'תקשורת', 'תקשורת ועיתונאות', false],
+    ['תקשורת', 'תקשורת', 'תקשורתועיתונאות', false],
+    ['תקשורת', 'תקשורת', 'תקשורתית', true],
+    ['מדעי המחשב', 'מדעי המחשב', 'מדעי הנתונים', true],
+    ['פיזיותרפיה', 'מדעי הבריאות', 'סיעוד', true],
+  ])('keeps general %s / %s / %s visible: %s', async (ownName, category, name, visible) => {
+    const base = getStaticCataloguePrograms().find((p) => p.id === 'communication')!;
+    const institution = {
+      ...getStaticCatalogueInstitutions()[0],
+      id: 'test_college' as InstitutionId,
+      name: 'מכללת בדיקה',
+    };
+    const general = {
+      ...base,
+      id: 'test_general',
+      name,
+      category,
+      institutionId: undefined,
+      thresholds: undefined,
+      institutionDetails: [{ ...base.institutionDetails![0], institutionName: institution.name }],
+    };
+    const own = {
+      ...base,
+      id: 'test_own',
+      name: ownName,
+      institutionId: institution.id,
+      linkedInstitutionIds: [institution.id],
+    };
+    vi.mocked(listCatalogueInstitutions).mockResolvedValue({ data: [institution], meta: {} });
+    vi.mocked(listCataloguePrograms).mockResolvedValue({ data: [general, own], meta: {} });
+    const page = (await getPublicInstitutionPageData(institution.id))!;
+    expect(page.programs.some((p) => p.id === general.id)).toBe(visible);
+    expect(page.programs.some((p) => p.id === own.id)).toBe(true);
   });
 
   it('does not turn database failures into legacy data or a misleading 404', async () => {

@@ -2,6 +2,7 @@ import 'server-only';
 
 import { render, toPlainText } from '@react-email/render';
 import type { AdmissionAlertMailPayload } from './deliveryWorker';
+import { withBet } from '@/lib/hebrew';
 
 export interface AdmissionAlertEmailConfig {
   origin: string;
@@ -118,7 +119,7 @@ export async function renderAdmissionAlertEmail(
                         </h1>
                         <p>
                           ייתכן שהמסלול שבחרת נמצא כעת בהישג יד:{' '}
-                          <strong>{content.programName}</strong> ב{content.institutionName}.
+                          <strong>{content.programName}</strong> {withBet(content.institutionName)}.
                         </p>
                         <p>
                           בעקבות שינוי בנתוני הקבלה שנבדק בתאריך {reviewedDate}, זוהתה התאמה ראשונית

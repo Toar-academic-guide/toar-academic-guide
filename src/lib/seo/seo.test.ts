@@ -21,6 +21,7 @@ import {
   isIndexableProgram,
 } from './indexability';
 import { buildInstitutionMetadata, buildProgramMetadata } from './metadata';
+import { canonicalProgramId } from './programAliases';
 import {
   breadcrumbLd,
   institutionDirectoryLd,
@@ -138,7 +139,8 @@ describe('crawl policy', () => {
     }
     for (const program of programs) {
       expect(await isIndexableProgram(program.id)).toBe(
-        !program.id.startsWith('mon_') &&
+        canonicalProgramId(program.id) === program.id &&
+          !program.id.startsWith('mon_') &&
           program.isListed !== false &&
           (await getPublicProgramPageData(program.id))!.institutions.length > 0,
       );
@@ -161,6 +163,7 @@ describe('crawl policy', () => {
       programs
         .filter(
           (p) =>
+            canonicalProgramId(p.id) === p.id &&
             !p.id.startsWith('mon_') &&
             p.isListed !== false &&
             institutions.some((i) => p.linkedInstitutionIds.includes(i.id)),
@@ -169,7 +172,7 @@ describe('crawl policy', () => {
     );
   }, 15_000);
 
-  it('keeps all 358 listed public URLs in order and omits lastmod without per-page data dates', async () => {
+  it('keeps all 358 canonical public URLs in order and omits lastmod without per-page data dates', async () => {
     const entries = await sitemap();
     const urls = entries.map((entry) => entry.url);
     expect(urls).toEqual([
@@ -186,6 +189,7 @@ describe('crawl policy', () => {
     expect(urls).toContain(`${SITE_URL}/institutions/tau`);
     expect(urls).toContain(`${SITE_URL}/programs/tau_cs`);
     expect(new Set(urls).size).toBe(urls.length);
+    expect(urls).not.toContain(`${SITE_URL}/programs/danon_cs`);
     expect(urls).toHaveLength(358);
     for (const url of urls) {
       expect(new URL(url).origin).toBe(SITE_URL);
@@ -268,6 +272,49 @@ describe('metadata', () => {
       expect(programBreadcrumbLd(page).itemListElement.length).toBeGreaterThan(0);
     }
     expect(requirements).not.toHaveBeenCalled();
+  });
+
+  it('keeps the Danon alias renderable with only canonical SEO identities and no noindex', async () => {
+    // The retired ID exists in persisted catalogues, but is absent from current static data.
+    const canonical = programs.find((program) => program.id === 'danon_culinary')!;
+    vi.mocked(listCataloguePrograms).mockResolvedValue({
+      data: [...programs, { ...canonical, id: 'danon_cs' }],
+      meta: { catalogueSource: 'database' },
+    });
+    const page = (await getPublicProgramPageData('danon_cs'))!;
+    const metadata = await buildProgramMetadata('danon_cs');
+    expect(metadata.alternates).toEqual({ canonical: '/programs/danon_culinary' });
+    expect(metadata.openGraph).toMatchObject({ url: '/programs/danon_culinary' });
+    expect(metadata.robots).toBeUndefined();
+    expect(metadata.title).toBe('קולינריה — דנון – מכון דנון לבישול');
+    expect((await buildProgramMetadata('danon_culinary')).title).toBe(metadata.title);
+    expect(await indexableProgramIds()).not.toContain('danon_cs');
+    expect((await sitemap()).map((entry) => entry.url)).not.toContain(
+      `${SITE_URL}/programs/danon_cs`,
+    );
+    const titles = await Promise.all(
+      (await indexableProgramIds()).map(async (id) => (await buildProgramMetadata(id)).title),
+    );
+    expect(new Set(titles).size).toBe(titles.length);
+    expect(await programLd(page)).toMatchObject({
+      '@id': `${SITE_URL}/programs/danon_culinary#program`,
+      url: `${SITE_URL}/programs/danon_culinary`,
+    });
+    expect(JSON.stringify(await programLd(page))).not.toContain('/programs/danon_cs');
+    expect(programBreadcrumbLd(page).itemListElement.at(-1)?.item).toBe(
+      `${SITE_URL}/programs/danon_culinary`,
+    );
+    expect(
+      renderToStaticMarkup(
+        await ProgramPage({ params: Promise.resolve({ programId: 'danon_cs' }) }),
+      ),
+    ).toContain(page.program.name);
+  });
+
+  it('absorbs the definite article in institution descriptions', async () => {
+    expect((await buildProgramMetadata('huji_cs')).description).toContain(
+      'באוניברסיטה העברית בירושלים',
+    );
   });
 
   it('uses the general title even when the only subject signal is one institution', async () => {
@@ -387,7 +434,9 @@ describe('metadata', () => {
         robots: { index: false, follow: true },
       });
     }
-    for (const { id } of programs.filter((p) => !programIds.includes(p.id))) {
+    for (const { id } of programs.filter(
+      (p) => !programIds.includes(p.id) && canonicalProgramId(p.id) === p.id,
+    )) {
       expect(await buildProgramMetadata(id)).toMatchObject({
         alternates: { canonical: `/programs/${encodeURIComponent(id)}` },
         robots: { index: false, follow: true },

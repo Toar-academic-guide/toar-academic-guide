@@ -7,6 +7,8 @@ import {
 } from '@/lib/publicCataloguePages';
 import { isIndexableInstitution, isIndexableProgram } from './indexability';
 import { SITE_NAME } from '@/lib/site';
+import { withBet } from '@/lib/hebrew';
+import { canonicalProgramId, canonicalProgramPath } from './programAliases';
 
 function programTitle({
   program,
@@ -31,7 +33,12 @@ function duplicateTitles(titles: Map<string, string>): Set<string> {
 async function buildUniqueProgramTitles(): Promise<Map<string, string>> {
   const catalogue = await loadPublicCatalogue();
   const pages = catalogue.programs
-    .filter((program) => !program.id.startsWith('mon_') && program.isListed !== false)
+    .filter(
+      (program) =>
+        canonicalProgramId(program.id) === program.id &&
+        !program.id.startsWith('mon_') &&
+        program.isListed !== false,
+    )
     .map((program) => ({
       program,
       isGeneral: catalogue.generalProgramIds.has(program.id),
@@ -45,7 +52,7 @@ async function buildUniqueProgramTitles(): Promise<Map<string, string>> {
   for (const { program } of pages) {
     const title = titles.get(program.id)!;
     if (collisions.has(title) && !catalogue.generalProgramIds.has(program.id)) {
-      titles.set(program.id, `${title}: מסלול ב${program.category}`);
+      titles.set(program.id, `${title}: מסלול ${withBet(program.category)}`);
     }
   }
   return titles;
@@ -92,17 +99,18 @@ export async function buildProgramMetadata(id: string): Promise<Metadata> {
   const data = await getPublicProgramPageData(id);
   if (!data) return {};
 
-  const title = (await buildUniqueProgramTitles()).get(id) ?? programTitle(data);
+  const title =
+    (await buildUniqueProgramTitles()).get(canonicalProgramId(id)) ?? programTitle(data);
   const qualifier = title.slice(programTitle(data).length);
   const offering =
     data.institutions.length === 1
-      ? `${data.program.name} ב${data.institutions[0].name}${qualifier}`
+      ? `${data.program.name} ${withBet(data.institutions[0].name)}${qualifier}`
       : `${data.program.name} ב-${data.institutions.length} מוסדות לימוד${qualifier}`;
   const description = `${offering}: מידע על המסלול בקטלוג MyWay ובדיקת סיכויי קבלה אישית בחינם. תנאי הקבלה המחייבים באתר המוסד.`;
   return pageMetadata(
     title,
     description,
-    `/programs/${encodeURIComponent(id)}`,
-    await isIndexableProgram(id),
+    canonicalProgramPath(id),
+    await isIndexableProgram(canonicalProgramId(id)),
   );
 }
