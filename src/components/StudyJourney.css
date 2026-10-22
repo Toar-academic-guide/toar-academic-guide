@@ -788,7 +788,7 @@
 }
 .journey-compare {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 24px;
 }
 .journey-compare > article {
@@ -796,8 +796,19 @@
   background: white;
   border-radius: 16px;
 }
+.journey-compare > article {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.journey-compare > article > h2 {
+  margin-top: 0;
+}
 .journey-compare > article > button {
-  margin-top: 20px;
+  margin-top: auto;
+}
+.journey-compare > article > div {
+  margin-bottom: 20px;
 }
 .journey-exact-top {
   display: flex;
