@@ -2,6 +2,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { SITE_DESCRIPTION } from '@/lib/site';
 
 // Inspect server metadata exports without loading unrelated client application code.
+vi.mock('server-only', () => ({}));
 vi.mock('@/components/StudyJourney', () => ({ default: () => null }));
 vi.mock('@/context/AuthContext', () => ({ AuthProvider: () => null }));
 vi.mock('@vercel/analytics/next', () => ({ Analytics: () => null }));
