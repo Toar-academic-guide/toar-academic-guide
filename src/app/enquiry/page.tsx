@@ -6,6 +6,8 @@ import { listCatalogueInstitutions, listCataloguePrograms } from '@/server/catal
 
 export const dynamic = 'force-dynamic';
 
+export const metadata = { robots: { index: false, follow: true } };
+
 export default async function EnquiryPage({
   searchParams,
 }: {

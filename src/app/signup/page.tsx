@@ -1,6 +1,8 @@
 import AuthRouteScreen from '@/components/AuthRouteScreen';
 import { ROUTES, normalizeSafeNextPath } from '@/lib/routes';
 
+export const metadata = { robots: { index: false, follow: true } };
+
 interface SignupPageProps {
   searchParams?: Promise<{ [key: string]: string | string[] | undefined }>;
 }

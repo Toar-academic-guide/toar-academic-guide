@@ -1,6 +1,9 @@
 import type { Metadata } from 'next';
 import { Analytics } from '@vercel/analytics/next';
 import { AuthProvider } from '@/context/AuthContext';
+import JsonLd from '@/components/seo/JsonLd';
+import { organizationLd, websiteLd } from '@/lib/seo/jsonLd';
+import { SITE_DESCRIPTION, SITE_URL } from '@/lib/site';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -9,10 +12,14 @@ export const metadata: Metadata = {
     default: 'MyWay | הדרך שלך ללימודים',
     template: '%s | MyWay',
   },
-  description: 'השותף שלך לדרך האקדמית — שאלון אישיות, המלצות תחומי לימוד, וחישוב סיכויי קבלה',
+  description: SITE_DESCRIPTION,
+  metadataBase: new URL(SITE_URL),
   openGraph: {
+    type: 'website',
+    locale: 'he_IL',
     siteName: 'MyWay',
   },
+  twitter: { card: 'summary' },
 };
 
 export default function RootLayout({
@@ -23,6 +30,7 @@ export default function RootLayout({
   return (
     <html lang="he" dir="rtl" className="h-full">
       <body className="min-h-full antialiased">
+        <JsonLd data={[organizationLd(), websiteLd()]} />
         <AuthProvider>{children}</AuthProvider>
         <Analytics />
       </body>

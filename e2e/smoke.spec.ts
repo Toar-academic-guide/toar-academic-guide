@@ -1,6 +1,19 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Smoke tests', () => {
+  test('crawl files are served with production URLs', async ({ request }) => {
+    const robots = await request.get('/robots.txt');
+    expect(robots.status()).toBe(200);
+    expect(await robots.text()).toContain('Sitemap: https://findmyway.co.il/sitemap.xml');
+    const sitemap = await request.get('/sitemap.xml');
+    expect(sitemap.status()).toBe(200);
+    expect(await sitemap.text()).toContain('<loc>https://findmyway.co.il/institutions/tau</loc>');
+    const llms = await request.get('/llms.txt');
+    expect(llms.status()).toBe(200);
+    expect(llms.headers()['content-type']).toContain('text/plain');
+    expect(await llms.text()).toContain('# MyWay (findmyway.co.il)');
+  });
+
   test('landing page loads and shows main heading', async ({ page }) => {
     await page.goto('/');
     await expect(page).toHaveTitle('MyWay | הדרך שלך ללימודים');

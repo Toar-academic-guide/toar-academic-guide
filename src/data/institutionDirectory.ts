@@ -21,7 +21,6 @@ export interface InstitutionDirectoryItem {
   id: string;
   itemId: string;
   name: string;
-  mondayUrl: string;
   type: string | null;
   funding: string | null;
   location: string | null;
@@ -165,6 +164,29 @@ function hostnameFromUrl(url: string | null) {
   }
 }
 
+function isPublicInstitutionHost(hostname: string) {
+  const host = hostname.toLowerCase().replace(/\.$/, '');
+  return !['yoram.walla.co.il', 'monday.com'].some(
+    (domain) => host === domain || host.endsWith(`.${domain}`),
+  );
+}
+
+export function getPublicInstitutionSourceUrl(
+  candidates: (string | null | undefined)[],
+): string | null {
+  for (const candidate of candidates) {
+    for (const value of candidate?.match(/https?:\/\/\S+/g) ?? []) {
+      try {
+        const url = new URL(value);
+        if (isPublicInstitutionHost(url.hostname) && !url.username && !url.password) return value;
+      } catch {
+        // Skip invalid candidates and try the next official source.
+      }
+    }
+  }
+  return null;
+}
+
 function yoramLogoFromSourceUrl(sourceUrl: string | null) {
   const instituteId = sourceUrl?.match(/yoram\.walla\.co\.il\/institute\/(\d+)/)?.[1];
 
@@ -277,7 +299,8 @@ export function getInstitutionDirectoryItems(): InstitutionDirectoryItem[] {
       const institution = INSTITUTION_BY_ID[id as keyof typeof INSTITUTION_BY_ID];
       const override = DIRECTORY_LOGO_OVERRIDES[id];
       const name = institution?.name ?? evidence?.displayName ?? cleanMondayItemName(row.itemName);
-      const sourceUrl =
+      // Logo provenance is independent of the public official-link policy.
+      const rawLogoSourceUrl =
         override?.sourceUrl ??
         extractUrl(row.officialSource) ??
         extractUrl(row.calculatorLink) ??
@@ -286,14 +309,26 @@ export function getInstitutionDirectoryItems(): InstitutionDirectoryItem[] {
         institution?.programUrl ??
         institution?.calculatorUrl ??
         null;
-      const domain = override?.domain ?? institution?.domain ?? hostnameFromUrl(sourceUrl);
-      const yoramLogoUrl = yoramLogoFromSourceUrl(sourceUrl);
+      const sourceUrl = getPublicInstitutionSourceUrl([
+        override?.sourceUrl,
+        institution?.programUrl,
+        institution?.calculatorUrl,
+        ...(evidence?.officialUrls ?? []),
+        row.officialSource,
+        row.calculatorLink,
+        row.additionalLink,
+      ]);
+      const knownDomain = override?.domain ?? institution?.domain;
+      const domain =
+        knownDomain && isPublicInstitutionHost(knownDomain)
+          ? knownDomain
+          : hostnameFromUrl(sourceUrl);
+      const yoramLogoUrl = yoramLogoFromSourceUrl(rawLogoSourceUrl);
 
       return {
         id,
         itemId: row.itemId,
         name,
-        mondayUrl: row.mondayUrl,
         type: row.institutionType,
         funding: row.funding,
         location: row.location,
