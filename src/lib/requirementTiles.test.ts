@@ -47,6 +47,13 @@ describe('verified requirement tiles', () => {
     expect(model.scope).toBe('מסלול דו־מחלקתי');
     expect(model.chips).toEqual(['אנגלית ברמת בסיסי']);
     expect(model.tiles.flatMap((tile) => tile.qualifiers)).toEqual(['ללא פסיכומטרי']);
+    expect(model.status).toBeUndefined();
+  });
+
+  it('shows the official closed-registration clause for physiotherapy', () => {
+    const model = select('physiotherapy', 'bgu').model!;
+    expect(model.status).toBe('במחזור תשפ״ז ההרשמה נסגרה');
+    expect(model.details.some((text) => text.startsWith(`${model.status}:`))).toBe(true);
   });
 
   it.each(Object.values(official))('matches $program approved override thresholds', (value) => {

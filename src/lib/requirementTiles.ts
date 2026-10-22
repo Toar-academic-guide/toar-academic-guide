@@ -19,6 +19,8 @@ export interface RequirementTilesModel {
   supplementalDetails?: string[];
   /** Short scope shown once before the semantics label, e.g. 'מסלול דו־מחלקתי'. */
   scope?: string;
+  /** Official status note shown under the label, e.g. closed registration. */
+  status?: string;
 }
 export type RequirementTilesSelection =
   | { model: RequirementTilesModel; reason?: never }
@@ -42,6 +44,9 @@ const recent = (date: string, now: Date) => {
   return Number.isFinite(age) && age >= 0 && age <= 30 * 24 * 60 * 60 * 1000;
 };
 
+/** The leading official clause of a closed-registration note, if any. */
+const closedRegistration = (notes: readonly string[]) =>
+  notes.map((t) => /^([^:]*ההרשמה נסגרה)/.exec(t)?.[1]).find(Boolean);
 /** The official English level, as a short chip, if the notes state one. */
 const englishChip = (notes: readonly string[]) =>
   notes
@@ -122,6 +127,7 @@ export function selectRequirementTiles({
           { value: routes.bagrut, label: 'בגרות', qualifiers: ['ללא פסיכומטרי'] },
         ],
         chips: englishChip(row.notes),
+        status: closedRegistration(row.notes),
         details: requirements,
       },
     };
@@ -150,6 +156,7 @@ export function selectRequirementTiles({
           { value: psychometric, label: 'פסיכומטרי', qualifiers: qualifier },
         ],
         chips: [],
+        status: closedRegistration(row.notes),
         details: requirements,
       },
     };
