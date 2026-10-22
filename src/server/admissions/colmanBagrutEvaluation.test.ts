@@ -42,7 +42,7 @@ describe('Colman computer science Bagrut route', () => {
       const result = evaluate(math);
       expect(result).toMatchObject({
         kind: 'manual_gate',
-        decision: 'eligible_to_apply',
+        decision: 'pending',
         score: 85,
         threshold: 85,
       });
@@ -97,14 +97,16 @@ describe('Colman computer science Bagrut route', () => {
       expect(result).toMatchObject({
         score: 85,
         scoreAssessment: 'meets_threshold',
-        decision: confirmed === undefined ? 'pending' : confirmed ? 'eligible_to_apply' : 'below',
+        decision: confirmed === undefined ? 'pending' : confirmed ? 'pending' : 'below',
       });
-      expect(result.additionalConditions).toEqual([
-        expect.objectContaining({
-          id: 'colman_bagrut_certificate',
-          status: confirmed === undefined ? 'unconfirmed' : confirmed ? 'confirmed' : 'unmet',
-        }),
-      ]);
+      expect(result.additionalConditions).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            id: 'colman_bagrut_certificate',
+            status: confirmed === undefined ? 'unconfirmed' : confirmed ? 'confirmed' : 'unmet',
+          }),
+        ]),
+      );
     },
   );
 });

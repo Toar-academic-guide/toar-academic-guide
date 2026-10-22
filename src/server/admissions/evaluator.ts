@@ -4,6 +4,8 @@ import {
   type AdditionalCondition,
 } from './scoreAssessment';
 import { evaluateTauPhysiotherapyResult } from './tauPhysiotherapyEvaluation';
+import { evaluateMtaComputerScience } from './mtaComputerScienceEvaluation';
+import { evaluateColmanPublishedRoutes } from './colmanPublishedRoutesEvaluation';
 import { evaluateColmanBagrutResult } from './colmanBagrutEvaluation';
 import { DANON_PROGRAM_URLS } from '@/data/admissions/danon';
 import catalogueContentRepair from '@/data/admissions/catalogueContentRepair.json';
@@ -266,6 +268,16 @@ async function evaluateCapabilityEntries(args: {
         officialUrls: [incomplete.programUrl ?? incomplete.sourceUrl],
         degradationReason: 'incomplete_published_requirements',
       };
+      continue;
+    }
+
+    if (['colmgmt_law', 'colmgmt_business'].includes(program.id) && institution.id === 'colman') {
+      results[index] = evaluateColmanPublishedRoutes({ input, institution });
+      continue;
+    }
+
+    if (program.id === 'tlvyaffo_cs' && institution.id === 'mta') {
+      results[index] = evaluateMtaComputerScience({ input, institution });
       continue;
     }
 

@@ -1261,9 +1261,9 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                       ? 'מחשבים התאמה…'
                       : resultLabel(activeRow.result, activeRow.failed).label}
                   </span>
-                  {resultExplanation(activeRow.result) && (
+                  {resultExplanation(activeRow.result, activeRow.program.id) && (
                     <p className="journey-result-explanation">
-                      {resultExplanation(activeRow.result)}
+                      {resultExplanation(activeRow.result, activeRow.program.id)}
                     </p>
                   )}
                   {activeRow.result?.score != null && (
@@ -1284,6 +1284,7 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                         : catalogueAdmissionRequirements(
                             details?.specificAdmissionNotes,
                             activeRow.program.admissionRequirements,
+                            activeRow.program.id,
                           )
                     }
                   />
@@ -1465,6 +1466,7 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                               (detail) => detail.institutionName === row.institution.name,
                             )?.specificAdmissionNotes,
                             row.program.admissionRequirements,
+                            row.program.id,
                           )
                     }
                   />

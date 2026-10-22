@@ -20,20 +20,46 @@ function communicationOverview(requirements: string[]): string[] | undefined {
   return [bagrut.split(';')[0], psychometric, combined.split('. ')[0]];
 }
 
+function highlightedNumbers(text: string) {
+  return text.split(/(\d+(?:[.,]\d+)?)/).map((part, index) =>
+    index % 2 ? (
+      <strong key={index} className="font-bold text-[#19233d]">
+        {part}
+      </strong>
+    ) : (
+      <Fragment key={index}>{part}</Fragment>
+    ),
+  );
+}
+
+function RequirementText({ text }: { text: string }) {
+  const formula = text.match(/^(ציון משולב = )(.+?)(, לפי .+)$/);
+  if (!formula) return highlightedNumbers(text);
+  return (
+    <>
+      {formula[1]}
+      <bdi dir="ltr" className="inline-block max-w-full align-middle">
+        {formula[2].split(/([\u0590-\u05ff]+(?:\s+[\u0590-\u05ff]+)*)/).map((part, index) =>
+          index % 2 ? (
+            <bdi dir="rtl" key={index}>
+              {part}
+            </bdi>
+          ) : (
+            <Fragment key={index}>{highlightedNumbers(part)}</Fragment>
+          ),
+        )}
+      </bdi>
+      {formula[3]}
+    </>
+  );
+}
+
 function RequirementList({ items }: { items: string[] }) {
   return (
     <ul className="list-outside list-disc space-y-1 ps-4 leading-6 marker:text-[#6554b8]">
       {items.map((text, index) => (
         <li key={`${index}:${text}`}>
-          {text.split(/(\d+(?:[.,]\d+)?)/).map((part, partIndex) =>
-            partIndex % 2 ? (
-              <strong key={partIndex} className="font-bold text-[#19233d]">
-                {part}
-              </strong>
-            ) : (
-              <Fragment key={partIndex}>{part}</Fragment>
-            ),
-          )}
+          <RequirementText text={text} />
         </li>
       ))}
     </ul>

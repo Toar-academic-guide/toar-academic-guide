@@ -60,7 +60,8 @@ export function evaluateColmanBagrutResult({
       ...base,
       capability: 'manual_gate',
       kind: 'manual_gate',
-      decision: unmet.length ? 'below' : 'eligible_to_apply',
+      decision: unmet.length ? 'below' : 'pending',
+      scoreAssessment: unmet.length ? 'below_threshold' : 'meets_threshold',
       confidence: 'high',
       score: average,
       scoreLabel: 'ממוצע בגרות משוקלל — מסלול בגרות',
@@ -69,10 +70,11 @@ export function evaluateColmanBagrutResult({
         ? `לא מתקיימים תנאי מסלול הבגרות הישיר: ${unmet.join('; ')}. זו אינה דחייה מכל מסלולי הקבלה; ייתכנו מסלולים אחרים הדורשים בדיקת המכללה.`
         : 'תנאי הציונים למסלול הבגרות מתקיימים: ממוצע משוקלל 85 לפחות ומתמטיקה 5 יחידות בציון 70 לפחות או 4 יחידות בציון 80 לפחות. עדיין נדרש מעבר מבדק פנימי; אין כאן אישור קבלה סופית.',
       nextAction: unmet.length
-        ? 'בדקו מול מרכז הרישום את חלופות הקבלה המתאימות. מסלול בגרות ופסיכומטרי אינו מחושב כאן.'
+        ? 'בדקו מול מרכז הרישום את חלופות הקבלה המתאימות. במסלול בגרות ופסיכומטרי ההחלטה היא של המכללה: היא לא מפרסמת את הציון המשוקלל הנדרש. כדאי לבדוק מול מרכז הרישום.'
         : 'פנו למרכז הרישום להסדרת המבדק הפנימי והקבלה. פטור לפי פסיכומטרי וכמותי מתייחס למסלול המשולב, ולא נבדק במסלול הבגרות כאן.',
     },
     [
+      confirmationCondition('colman_internal_test', 'מעבר מבדק פנימי של המכללה', undefined),
       confirmationCondition(
         'colman_bagrut_certificate',
         'זכאות לתעודת בגרות מלאה ומוכרת',
