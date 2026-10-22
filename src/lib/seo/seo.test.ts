@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import robots from '@/app/robots';
@@ -31,6 +32,17 @@ const institutions = getStaticCatalogueInstitutions();
 const programs = getStaticCataloguePrograms();
 
 describe('crawl policy', () => {
+  it('directs llms.txt readers to public pages and preserves the business-model disclosure', () => {
+    const llms = readFileSync('public/llms.txt', 'utf8');
+    expect(llms).not.toContain('/app/');
+    expect(llms).toContain('https://findmyway.co.il/institutions');
+    expect(llms).toContain('https://findmyway.co.il/programs/<id>');
+    expect(llms.split('\n')).toContain(
+      'Business model: MyWay is free for students; revenue comes from referring qualified leads to academic institutions.',
+    );
+    expect(llms).toContain('Last updated: 2026-10-22');
+  });
+
   it('separates wildcard, search and allowed training policies with operational exclusions', () => {
     expect(robots()).toEqual(buildRobots(TRAINING_BOTS_POLICY));
     const result = buildRobots('allow');
@@ -104,7 +116,7 @@ describe('crawl policy', () => {
     );
   });
 
-  it('includes only public indexable routes in a unique production sitemap with one timestamp', () => {
+  it('keeps all 359 public URLs in order and omits lastmod without per-page data dates', () => {
     const entries = sitemap();
     const urls = entries.map((entry) => entry.url);
     expect(urls).toEqual([
@@ -119,20 +131,20 @@ describe('crawl policy', () => {
     expect(urls).toContain(`${SITE_URL}/institutions/tau`);
     expect(urls).toContain(`${SITE_URL}/programs/tau_cs`);
     expect(new Set(urls).size).toBe(urls.length);
+    expect(urls).toHaveLength(359);
     for (const url of urls) {
       expect(new URL(url).origin).toBe(SITE_URL);
       expect(url.endsWith('/')).toBe(false);
       expect(url).not.toMatch(/mon_|\/(?:app|login|signup|enquiry|internal|auth|api|dev)(?:\/|$)/);
     }
     for (const entry of entries) {
-      expect(entry.lastModified).toBeInstanceOf(Date);
+      // The static page records have no verified per-page modification dates.
+      expect(entry).not.toHaveProperty('lastModified');
       expect(entry.changeFrequency).toBe(entry.url.endsWith('/about') ? 'monthly' : 'weekly');
       expect(entry.priority).toBeGreaterThan(0);
       expect(entry.priority).toBeLessThanOrEqual(1);
     }
     expect(entries[0].priority).toBe(1);
-    expect(new Set(entries.map((entry) => entry.lastModified)).size).toBe(1);
-    expect(sitemap()[0].lastModified).toBe(entries[0].lastModified);
   });
 });
 
@@ -179,6 +191,51 @@ describe('metadata', () => {
     expect(buildProgramMetadata('cs').title).toBe('לימודי מדעי המחשב: באילו מוסדות לומדים');
   });
 
+  it('uses all four nursing providers for general-page metadata and structured data', () => {
+    const data = getPublicProgramPageData('nursing')!;
+    const title = 'לימודי סיעוד: באילו מוסדות לומדים';
+    const description =
+      'סיעוד ב-4 מוסדות לימוד: מידע על המסלול בקטלוג MyWay ובדיקת סיכויי קבלה אישית בחינם. תנאי הקבלה המחייבים באתר המוסד.';
+    expect(data.institutions.map((institution) => institution.id)).toEqual([
+      'tau',
+      'huji',
+      'haifa',
+      'ariel',
+    ]);
+    expect(data.program.linkedInstitutionIds).toEqual(['tau', 'huji', 'haifa', 'ariel']);
+    expect(buildProgramMetadata('nursing')).toMatchObject({
+      title,
+      description,
+      openGraph: { title, description },
+    });
+    expect(programLd(data).provider.map((provider) => provider.name)).toEqual(
+      data.institutions.map((institution) => institution.name),
+    );
+    expect(programBreadcrumbLd(data).itemListElement).toEqual([
+      { '@type': 'ListItem', position: 1, name: 'בית', item: SITE_URL },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'מוסדות לימוד',
+        item: `${SITE_URL}/institutions`,
+      },
+      { '@type': 'ListItem', position: 3, name: 'סיעוד', item: `${SITE_URL}/programs/nursing` },
+    ]);
+    for (const id of ['tau', 'huji', 'haifa', 'ariel']) {
+      expect(getPublicInstitutionPageData(id)!.programs.map((program) => program.id)).toContain(
+        'nursing',
+      );
+    }
+    // The app/calculator still receives the original institution and linkage.
+    expect(programs.find((program) => program.id === 'nursing')).toMatchObject({
+      institution: 'אוניברסיטת תל אביב',
+      linkedInstitutionIds: ['tau'],
+    });
+    for (const program of programs.filter((program) => program.institutionId)) {
+      expect(getPublicProgramPageData(program.id)!.program).toEqual(program);
+    }
+  });
+
   it('gives every excluded existing detail page a self-canonical and noindex,follow', () => {
     for (const { id } of institutions.filter((i) => !isIndexableInstitution(i.id))) {
       expect(buildInstitutionMetadata(id)).toMatchObject({
@@ -212,7 +269,7 @@ describe('metadata', () => {
     expect(new Set(descriptions).size).toBe(descriptions.length);
   });
 
-  it('has unique titles across all indexable public pages and disambiguates known collisions', () => {
+  it('keeps all public titles unique and resolves former general/specific collisions', () => {
     const titles = [
       'MyWay | הדרך שלך ללימודים',
       'מי אנחנו | MyWay',
@@ -223,22 +280,27 @@ describe('metadata', () => {
     expect(new Set(titles).size).toBe(titles.length);
     for (const id of [
       'biology',
-      'tau_biology',
       'social_work',
-      'tau_socialwork',
       'accounting',
-      'tau_accounting',
       'occupational_therapy',
-      'tau_occupational_therapy',
       'criminology',
-      'biu_criminology',
     ]) {
-      expect(buildProgramMetadata(id).title).toContain(
-        `(${getPublicProgramPageData(id)!.program.category})`,
+      expect(buildProgramMetadata(id).title).toBe(
+        `לימודי ${getPublicProgramPageData(id)!.program.name}: באילו מוסדות לומדים`,
       );
     }
-    expect(buildProgramMetadata('biology').title).toContain('(biology)');
-    expect(buildProgramMetadata('tau_biology').title).toContain('(tau_biology)');
+    for (const id of [
+      'tau_biology',
+      'tau_socialwork',
+      'tau_accounting',
+      'tau_occupational_therapy',
+      'biu_criminology',
+    ]) {
+      const data = getPublicProgramPageData(id)!;
+      expect(buildProgramMetadata(id).title).toBe(
+        `${data.program.name} – ${data.institutions[0].name}`,
+      );
+    }
   });
 });
 

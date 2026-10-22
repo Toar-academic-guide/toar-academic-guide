@@ -1,7 +1,16 @@
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 
-const PUBLIC_PROGRAMS = getStaticCataloguePrograms();
+const PUBLIC_PROGRAMS = getStaticCataloguePrograms().map((program) => {
+  // General subjects can retain a legacy institution name. Resolve their public
+  // providers from thresholds without changing shared app/calculator linkage.
+  const thresholdIds = Object.entries(program.thresholds ?? {})
+    .filter(([, threshold]) => threshold !== null)
+    .map(([id]) => id);
+  return !program.institutionId && thresholdIds.length > 1
+    ? { ...program, linkedInstitutionIds: thresholdIds }
+    : program;
+});
 const PUBLIC_INSTITUTIONS = getStaticCatalogueInstitutions();
 
 export interface PublicProgramPageData {
