@@ -374,3 +374,30 @@ describe('BGU quantitative adapter and public evaluation', () => {
     expect(result).toMatchObject({ decision: 'eligible_to_apply', score: 680, threshold: 680 });
   });
 });
+
+it.each(['biology', 'economics', 'business', 'accounting'])(
+  'calculates %s without separate registration confirmations',
+  async (id) => {
+    const { result } = await evaluate(id, {
+      degreeId: id,
+      psychometric: 700,
+      extraInputs: {
+        ...extra,
+        bguLanguageRequirementsConfirmed: undefined,
+        bguCertificateRequirementsConfirmed: undefined,
+        bguPriorAcademicStudies: undefined,
+        bguSecondTrackRequirementsConfirmed: undefined,
+        bguApplicationPriority: undefined,
+      },
+    });
+    expect(result).toMatchObject({
+      kind: 'exact',
+      score: 879,
+      scoreAssessment: 'meets_threshold',
+      decision: 'pending',
+    });
+    expect(result.additionalConditions).toContainEqual(
+      expect.objectContaining({ id: 'bgu_language_requirements', status: 'unconfirmed' }),
+    );
+  },
+);

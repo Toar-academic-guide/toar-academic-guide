@@ -50,6 +50,8 @@ export interface AdmissionsProgramInput {
 }
 
 export interface AdmissionsAdapterContext {
+  /** Score comparison only; independent entry conditions remain unconfirmed. */
+  assessment?: 'scores';
   applicant: AdmissionsApplicantInput;
   program?: AdmissionsProgramInput;
   fetcher?: typeof fetch;

@@ -18,26 +18,29 @@ type Result =
 export function resolveBguHealthAdmission(
   input: AdmissionsEvaluationInput,
   score?: number,
+  assessment?: 'scores',
 ): Result {
   const ot = input.degreeId === 'occupational_therapy';
   const extra = input.extraInputs ?? {};
   const confirmed = ot
     ? extra.bguOccupationalTherapyRequirementsConfirmed
     : extra.bguPhysiotherapyRequirementsConfirmed;
-  if (confirmed === undefined)
-    return {
-      kind: 'needs_input',
-      requiredInputs: [
-        ot ? 'bgu_occupational_therapy_requirements' : 'bgu_physiotherapy_requirements',
-      ],
-    };
-  if (!confirmed)
-    return {
-      kind: 'below',
-      reason: ot
-        ? 'נדרשים תעודת קבלה מוכרת, אנגלית מתקדמים א׳, עברית ו׳ לנדרשים או פטור תקף, עדיפות ראשונה או שנייה אחרי רפואה/פיזיותרפיה ורישום והגשת מסמכים עד 25.05.2026.'
-        : 'נדרשים תעודת קבלה מוכרת, אנגלית מתקדמים ב׳, עברית ו׳ לנדרשים או פטור תקף, עדיפות ראשונה, פסיכומטרי עד אפריל או נתיב עד סתיו ורישום והגשת מסמכים עד 25.05.2026.',
-    };
+  if (assessment !== 'scores') {
+    if (confirmed === undefined)
+      return {
+        kind: 'needs_input',
+        requiredInputs: [
+          ot ? 'bgu_occupational_therapy_requirements' : 'bgu_physiotherapy_requirements',
+        ],
+      };
+    if (!confirmed)
+      return {
+        kind: 'below',
+        reason: ot
+          ? 'נדרשים תעודת קבלה מוכרת, אנגלית מתקדמים א׳, עברית ו׳ לנדרשים או פטור תקף, עדיפות ראשונה או שנייה אחרי רפואה/פיזיותרפיה ורישום והגשת מסמכים עד 25.05.2026.'
+          : 'נדרשים תעודת קבלה מוכרת, אנגלית מתקדמים ב׳, עברית ו׳ לנדרשים או פטור תקף, עדיפות ראשונה, פסיכומטרי עד אפריל או נתיב עד סתיו ורישום והגשת מסמכים עד 25.05.2026.',
+      };
+  }
   const missing: AdmissionsRequiredInput[] = [];
   if (ot && extra.bguOccupationalTherapyRoute === 'academic') {
     if (extra.bguBachelorsDegreeCompleted === undefined)
@@ -63,7 +66,7 @@ export function resolveBguHealthAdmission(
           : 'אפיק הדיון במחלקה ללא פסיכומטרי דורש ממוצע תואר ראשון 85 ומעלה.',
     };
   }
-  if (ot && extra.bguOccupationalTherapyExamSession === undefined)
+  if (assessment !== 'scores' && ot && extra.bguOccupationalTherapyExamSession === undefined)
     missing.push('bgu_occupational_therapy_exam_session');
   const p = input.psychometric;
   const average = extra.bguBagrutAverage;

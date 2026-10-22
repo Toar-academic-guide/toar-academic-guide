@@ -102,6 +102,44 @@ describe('account grades in the homepage journey', () => {
     });
   }
 
+  it('uses compact institution-specific requirements when comparing saved programmes', async () => {
+    savedCatalogue();
+    state.savedProgramIds = ['saved_course', 'other_course'];
+    const base = getStaticCataloguePrograms()[0];
+    state.fetchPrograms.mockResolvedValue(
+      ['saved_course', 'other_course'].map((id, index) => ({
+        ...base,
+        id,
+        name: `מסלול ${index + 1}`,
+        linkedInstitutionIds: ['tau'],
+        admissionRequirements: ['כלל שאינו שייך למוסד'],
+        institutionDetails: [
+          {
+            institutionName: 'אוניברסיטת תל אביב',
+            specificAdmissionNotes: [
+              'ממוצע בגרות 100 לפחות',
+              'פסיכומטרי 600 לפחות',
+              'מתמטיקה 5 יחידות',
+              'תנאי נוסף לבדיקה',
+            ],
+          },
+        ],
+      })),
+    );
+    render(<StudyJourney initialStep="saved" />);
+    await screen.findByRole('button', { name: 'מסלול 1 — אוניברסיטת תל אביב' });
+    for (const checkbox of screen.getAllByRole('checkbox', { name: 'להשוואה' }))
+      fireEvent.click(checkbox);
+    fireEvent.click(screen.getByRole('button', { name: 'השוואת מסלולים' }));
+    await screen.findByRole('heading', { name: 'משווים אפשרויות' });
+    expect(screen.queryByText('כלל שאינו שייך למוסד')).toBeNull();
+    const summaries = screen.getAllByText('תנאים נוספים');
+    expect(summaries).toHaveLength(2);
+    expect(summaries[0].closest('details')?.open).toBe(false);
+    fireEvent.click(summaries[0]);
+    expect(summaries[0].closest('details')?.open).toBe(true);
+  });
+
   it('evaluates saved programmes after account hydration using saved grades, then recalculates changed grades', async () => {
     savedCatalogue();
     state.profileStatus = 'loading';

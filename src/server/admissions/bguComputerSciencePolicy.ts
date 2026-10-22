@@ -25,12 +25,15 @@ export type BguComputerScienceUnmetRequirement =
   | 'mathematics_90_at_4_or_80_at_5'
   | 'language_classifications';
 
-export function evaluateBguComputerScienceGates(input: {
-  psychometric: number;
-  quantitativeSubscore: number | undefined;
-  subjects: BagrutSubject[];
-  languageRequirementsConfirmed: boolean;
-}): {
+export function evaluateBguComputerScienceGates(
+  input: {
+    psychometric: number;
+    quantitativeSubscore: number | undefined;
+    subjects: BagrutSubject[];
+    languageRequirementsConfirmed: boolean;
+  },
+  assessment?: 'scores',
+): {
   eligibleForScoreComparison: boolean;
   unmetRequirements: BguComputerScienceUnmetRequirement[];
 } {
@@ -57,7 +60,7 @@ export function evaluateBguComputerScienceGates(input: {
     unmetRequirements.push('mathematics_90_at_4_or_80_at_5');
   }
 
-  if (!input.languageRequirementsConfirmed) {
+  if (assessment !== 'scores' && !input.languageRequirementsConfirmed) {
     unmetRequirements.push('language_classifications');
   }
 

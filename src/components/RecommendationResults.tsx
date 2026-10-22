@@ -1,5 +1,6 @@
 'use client';
 
+import AdmissionRequirements from './AdmissionRequirements';
 import { institutionLink } from '@/lib/institutionLinks';
 
 import { useState } from 'react';
@@ -565,13 +566,11 @@ function ProgramDetailView({
                             <p className="text-xs font-semibold text-slate-700">
                               מה נדרש כדי להתקבל
                             </p>
-                            <ul className="space-y-0.5" dir="rtl">
-                              {requirements.map((note, i) => (
-                                <li key={i} className="text-xs text-slate-600">
-                                  • {note}
-                                </li>
-                              ))}
-                            </ul>
+                            <AdmissionRequirements
+                              requirements={requirements}
+                              programId={p.id}
+                              institutionId={instRecord?.id}
+                            />
                           </>
                         )}
                         {/* Program description (expandable) */}
@@ -708,13 +707,11 @@ function ProgramDetailView({
                             <p className="text-xs font-semibold text-slate-700">
                               מה נדרש כדי להתקבל
                             </p>
-                            <ul className="space-y-0.5" dir="rtl">
-                              {requirements.map((note, i) => (
-                                <li key={i} className="text-xs text-slate-600">
-                                  • {note}
-                                </li>
-                              ))}
-                            </ul>
+                            <AdmissionRequirements
+                              requirements={requirements}
+                              programId={p.id}
+                              institutionId={instRecord?.id}
+                            />
                           </>
                         )}
                         {/* Program description (expandable) */}
@@ -749,13 +746,11 @@ function ProgramDetailView({
                       requirements.length > 0 && (
                         <>
                           <p className="text-xs font-semibold text-slate-700">מה נדרש כדי להתקבל</p>
-                          <ul className="space-y-0.5">
-                            {requirements.map((req, i) => (
-                              <li key={i} className="text-xs text-slate-600">
-                                • {req}
-                              </li>
-                            ))}
-                          </ul>
+                          <AdmissionRequirements
+                            requirements={requirements}
+                            programId={p.id}
+                            institutionId={instRecord?.id}
+                          />
                         </>
                       )
                     )}

@@ -796,10 +796,8 @@
   background: white;
   border-radius: 16px;
 }
-.journey-compare ul {
-  font-size: 14px;
-  line-height: 1.8;
-  margin: 20px 0;
+.journey-compare > article > button {
+  margin-top: 20px;
 }
 .journey-exact-top {
   display: flex;

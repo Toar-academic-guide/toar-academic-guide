@@ -18,6 +18,7 @@ import {
 } from '../admissionsSourceAdapters';
 
 export async function runBguQuantitativeRoutesProof(context: {
+  assessment?: 'scores';
   program: AdmissionsProgramInput;
   applicant: { psychometric?: number; bagrutAverage?: number; extraInputs?: AdmissionsExtraInputs };
   fetcher?: typeof fetch;
@@ -45,7 +46,7 @@ export async function runBguQuantitativeRoutesProof(context: {
     limitations: [reason],
     nextAction: 'Complete the published route inputs or verify the official programme mapping.',
   });
-  const resolution = resolveBguQuantitativeRoute(program.id, applicant);
+  const resolution = resolveBguQuantitativeRoute(program.id, applicant, context.assessment);
   if (
     !config ||
     !artifact ||
@@ -111,7 +112,7 @@ export async function runBguQuantitativeRoutesProof(context: {
     const derivedVerdict = score >= resolution.threshold ? 'eligible_to_apply' : 'below';
     return {
       ...base,
-      capability: 'decision_capable',
+      capability: context.assessment === 'scores' ? 'score_only' : 'decision_capable',
       proofLevel: 'exact_official',
       status: 'succeeded',
       sourceClass: sourceClassForCapability('decision_capable'),
@@ -132,7 +133,14 @@ export async function runBguQuantitativeRoutesProof(context: {
         selectedScore: score,
         acceptanceThreshold: resolution.threshold,
         rejectionThreshold: resolution.threshold,
-        derivedVerdict,
+        derivedVerdict:
+          context.assessment === 'scores' && derivedVerdict === 'eligible_to_apply'
+            ? 'pending'
+            : derivedVerdict,
+        ...(context.assessment === 'scores' && {
+          scoreAssessment:
+            derivedVerdict === 'eligible_to_apply' ? 'meets_threshold' : 'below_threshold',
+        }),
         route: resolution.kind === 'direct' ? resolution.route : 'quantitative',
         priorAcademicReview: resolution.priorAcademicReview,
         mathematicsCourseRequired: resolution.mathematicsCourseRequired,

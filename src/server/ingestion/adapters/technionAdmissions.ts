@@ -185,7 +185,7 @@ async function runArchitectureProof(
 ): Promise<AdmissionsSourceProof> {
   const inputs = context.applicant.extraInputs ?? {};
   const unmet = technionArchitectureUnmetRequirements(inputs);
-  if (unmet.length)
+  if (context.assessment !== 'scores' && unmet.length)
     throw new Error(`Architecture requirements are unconfirmed: ${unmet.join('; ')}`);
   const score = calculateTechnionArchitectureScore(
     inputs.technionArchitectureBagrutAverage ?? NaN,
@@ -251,7 +251,7 @@ async function runArchitectureProof(
     institutionName: 'Technion',
     officialUrl: TECHNION_INDEX_URL,
     adapterId: 'technion',
-    capability: 'decision_capable',
+    capability: context.assessment === 'scores' ? 'score_only' : 'decision_capable',
     proofLevel: 'exact_official',
     status: 'succeeded',
     decisionProvenance: 'verified_derivation',
@@ -271,7 +271,14 @@ async function runArchitectureProof(
       selectedScore: score,
       acceptanceThreshold: cutoff,
       rejectionThreshold: cutoff,
-      derivedVerdict,
+      derivedVerdict:
+        context.assessment === 'scores' && derivedVerdict === 'eligible_to_apply'
+          ? 'pending'
+          : derivedVerdict,
+      ...(context.assessment === 'scores' && {
+        scoreAssessment:
+          derivedVerdict === 'eligible_to_apply' ? 'meets_threshold' : 'below_threshold',
+      }),
       proofStatus: 'succeeded',
       proofLevel: 'exact_official',
       decisionProvenance: 'verified_derivation',

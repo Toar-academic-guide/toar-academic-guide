@@ -75,6 +75,13 @@ describe('official institution links', () => {
     ).toContain('utm_medium=referral');
   });
 
+  it('links Gal Hadash to the school site identified by its branded business card', () => {
+    expect(institutionWebsite('12341165867')).toBe('https://galhadash.co.il/');
+    expect(institutionLink(undefined, 'mon_12341165867')).toBe(
+      'https://galhadash.co.il/?utm_source=myway&utm_medium=referral',
+    );
+  });
+
   it('withholds unverified destinations while retaining their directory entries', () => {
     expect(
       getInstitutionDirectoryItems().find((item) => item.itemId === '12341203595'),

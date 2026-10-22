@@ -98,8 +98,8 @@ function route(id: string, durationWeeks: number, effortPoints: number) {
 
 describe('CalculatorResults', () => {
   it.each([
-    [85, 'תנאי הציונים מתקיימים — נדרש מבדק פנימי'],
-    [84.99, 'מתחת לתנאי מסלול הבגרות'],
+    [85, 'הציונים עומדים בסף'],
+    [84.99, 'הציונים מתחת לסף'],
   ])(
     'labels the Colman route for average %s and provides profile editing',
     async (average, label) => {

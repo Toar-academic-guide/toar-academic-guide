@@ -1,3 +1,8 @@
+import {
+  confirmationCondition,
+  withScoreAssessment,
+  type AdditionalCondition,
+} from './scoreAssessment';
 import { evaluateTauPhysiotherapyResult } from './tauPhysiotherapyEvaluation';
 import { evaluateColmanBagrutResult } from './colmanBagrutEvaluation';
 import { DANON_PROGRAM_URLS } from '@/data/admissions/danon';
@@ -57,10 +62,7 @@ import {
   hasTechnionRequiredSubjectRecord,
   runTechnionAdmissionsProof,
 } from '@/server/ingestion/adapters/technionAdmissions';
-import {
-  TECHNION_ARCHITECTURE_REQUIREMENTS_URL,
-  technionArchitectureUnmetRequirements,
-} from './technionArchitecturePolicy';
+import { TECHNION_ARCHITECTURE_REQUIREMENTS_URL } from './technionArchitecturePolicy';
 import { runBguAdmissionsProof } from '@/server/ingestion/adapters/bguAdmissions';
 import {
   getMondayAdmissionEvidenceByCatalogueInstitutionId,
@@ -131,6 +133,14 @@ export async function evaluateAdmissionsForProgram(args: {
   const capabilityEntries = buildAdmissionsCapabilityMatrix({
     program,
     institutions,
+    deferredRequiredInputs: new Map(
+      institutions.map((institution) => [
+        institution.id,
+        independentAdmissionConditions(input, program, institution).map(
+          (condition) => condition.id,
+        ),
+      ]),
+    ),
     input: input.extraInputs,
     freshnessStatesBySourceId: freshnessLoad.states,
     freshnessAuthorityUnavailable: freshnessLoad.status === 'unavailable',
@@ -310,7 +320,179 @@ async function runWithConcurrency(tasks: Array<() => Promise<void>>, limit: numb
   await Promise.all(Array.from({ length: Math.min(limit, tasks.length) }, worker));
 }
 
-async function evaluateExactResult(args: {
+function socialScienceScoreAssessment(input: AdmissionsEvaluationRequest): 'scores' | undefined {
+  const extra = input.extraInputs;
+  const route = extra?.bguSocialScienceRoute ?? 'auto';
+  const ageRoute =
+    route === 'age45' ||
+    (route === 'auto' &&
+      (extra?.bguApplicantAge ?? 0) >= 45 &&
+      bguSocialScienceSource(input.degreeId).rule.age45);
+  return ageRoute || route === 'education_conditional' ? undefined : 'scores';
+}
+
+function independentAdmissionConditions(
+  input: AdmissionsEvaluationRequest,
+  program: CatalogueProgram,
+  institution: CatalogueInstitution,
+): AdditionalCondition[] {
+  const extra = input.extraInputs ?? {};
+  const conditions: AdditionalCondition[] = [];
+  if (institution.id === 'tau' && ['cs', 'tau_cs'].includes(program.id))
+    conditions.push(
+      confirmationCondition(
+        'tau_application_requirements',
+        'זכאות לבגרות, אנגלית מתקדמים א׳, עברית ועדיפות ראשונה למדעי המחשב',
+        extra.tauApplicationRequirementsConfirmed,
+      ),
+    );
+  if (
+    institution.id === 'bgu' &&
+    ['cs', 'bgu_cs', 'datascience', 'bgu_datascience'].includes(program.id)
+  )
+    conditions.push(
+      confirmationCondition(
+        'bgu_language_requirements',
+        'אנגלית ברמת בסיסי ועברית ברמה ה׳ או פטור תקף',
+        extra.bguLanguageRequirementsConfirmed,
+      ),
+    );
+  if (institution.id === 'bgu') {
+    if (isBguEngineeringProgram(program.id) || isBguQuantitativeRouteProgram(program.id)) {
+      conditions.push(
+        confirmationCondition(
+          'bgu_language_requirements',
+          'אנגלית ברמת בסיסי ועברית ברמה ה׳ או פטור תקף',
+          extra.bguLanguageRequirementsConfirmed,
+        ),
+      );
+    }
+    if (isBguHealthProgram(program.id)) {
+      const ot = program.id === 'occupational_therapy';
+      conditions.push(
+        confirmationCondition(
+          ot ? 'bgu_occupational_therapy_requirements' : 'bgu_physiotherapy_requirements',
+          ot
+            ? 'תעודת קבלה מוכרת, דרישות שפה, עדיפות הרשמה והגשת מסמכים במועד לריפוי בעיסוק'
+            : 'תעודת קבלה מוכרת, דרישות שפה, עדיפות ראשונה והגשת מסמכים במועד לפיזיותרפיה',
+          ot
+            ? extra.bguOccupationalTherapyRequirementsConfirmed
+            : extra.bguPhysiotherapyRequirementsConfirmed,
+        ),
+      );
+      if (ot && extra.bguOccupationalTherapyRoute !== 'academic')
+        conditions.push(
+          confirmationCondition(
+            'bgu_occupational_therapy_exam_session',
+            'מועד הבחינה מתאים למסלול ההרשמה; במועד המאוחר הזימון על בסיס מקום פנוי',
+            extra.bguOccupationalTherapyExamSession === undefined ? undefined : true,
+          ),
+        );
+    }
+    const social = bguSocialScienceProgram(program.id);
+    if (social && socialScienceScoreAssessment({ ...input, degreeId: program.id }) === 'scores') {
+      conditions.push(
+        confirmationCondition(
+          'bgu_social_science_requirements',
+          'תעודת קבלה מוכרת, תנאי החוג הנוסף ועדיפות הרשמה כנדרש',
+          extra.bguSocialScienceRequirementsConfirmed,
+        ),
+        confirmationCondition(
+          'bgu_social_science_language',
+          `אנגלית ברמת בסיסי ועברית ברמה ${social === 'social_work' ? 'ו׳' : 'ה׳'} או פטור תקף`,
+          extra.bguSocialScienceLanguageConfirmed,
+        ),
+        confirmationCondition(
+          'bgu_returning_from_study_break',
+          'בחזרה מהפסקת לימודים נדרש אישור המחלקה',
+          extra.bguReturningFromStudyBreak === false ? true : undefined,
+        ),
+      );
+      if (social === 'social_work')
+        conditions.push(
+          confirmationCondition(
+            'bgu_social_work_academic_background',
+            'ברקע אקדמי קודם נדרשת בדיקת גיליון ציונים ואישור ועדת הקבלה',
+            extra.bguSocialWorkAcademicBackground === 'none' ? true : undefined,
+          ),
+        );
+    }
+    if (isBguQuantitativeRouteProgram(program.id)) {
+      conditions.push(
+        confirmationCondition(
+          'bgu_certificate_requirements',
+          'תעודת קבלה מוכרת',
+          extra.bguCertificateRequirementsConfirmed,
+        ),
+        confirmationCondition(
+          'bgu_second_track_requirements',
+          'עמידה בתנאי החוג או החטיבה הנוספים, אם נבחרו',
+          extra.bguSecondTrackRequirementsConfirmed,
+        ),
+        confirmationCondition(
+          'bgu_prior_academic_studies',
+          'בדיקת לימודים קודמים, חזרה מהפסקה או שינוי מסלול לפי דרישות המחלקה',
+          extra.bguPriorAcademicStudies === false ? true : undefined,
+        ),
+      );
+      if (bguQuantitativeProgramme(program.id).family === 'biology')
+        conditions.push(
+          confirmationCondition(
+            'bgu_application_priority',
+            'הרשמה בעדיפות ראשונה, שנייה או שלישית',
+            extra.bguApplicationPriority === undefined
+              ? undefined
+              : [1, 2, 3].includes(extra.bguApplicationPriority),
+          ),
+        );
+    }
+  }
+  if (institution.id === 'technion' && program.id === 'architecture')
+    conditions.push(
+      confirmationCondition(
+        'technion_architecture_exam_passed',
+        'תוצאה רשמית של עובר בבחינת הכניסה',
+        extra.technionArchitectureExamPassed,
+      ),
+      confirmationCondition(
+        'technion_architecture_requirements',
+        'תנאי ההגשה, השפות, ההרשמה ותוקף הציונים',
+        extra.technionArchitectureRequirementsConfirmed,
+      ),
+    );
+  if (
+    institution.id === 'haifa' &&
+    program.id === 'haifa_infosystems' &&
+    getHaifaInformationSystemsTrack(extra.haifaInformationSystemsTrack)?.partnerRequired
+  ) {
+    conditions.push(
+      confirmationCondition(
+        'haifa_information_systems_partner_requirements',
+        'עמידה בתנאי החוג השני',
+        extra.haifaInformationSystemsPartnerRequirementsConfirmed,
+      ),
+    );
+  }
+  if (institution.id === 'tau' && ['business', 'tau_business'].includes(program.id))
+    conditions.push(
+      confirmationCondition(
+        'tau_management_requirements',
+        'תנאי הרישום הכלליים והשפות',
+        extra.tauManagementRequirementsConfirmed,
+      ),
+    );
+  return conditions;
+}
+
+async function evaluateExactResult(
+  args: Parameters<typeof evaluateExactScores>[0],
+): Promise<AdmissionsEvaluationResult> {
+  const conditions = independentAdmissionConditions(args.input, args.program, args.institution);
+  const result = await evaluateExactScores(args);
+  return conditions.length ? withScoreAssessment(result, conditions) : result;
+}
+
+async function evaluateExactScores(args: {
   input: AdmissionsEvaluationRequest;
   program: CatalogueProgram;
   institution: CatalogueInstitution;
@@ -326,7 +508,7 @@ async function evaluateExactResult(args: {
 
   try {
     if (exactTarget.sourceTarget.adapterId === 'bgu' && isBguEngineeringProgram(program.id)) {
-      const resolution = resolveBguEngineeringInputs(program.id, requestedInput);
+      const resolution = resolveBguEngineeringInputs(program.id, requestedInput, now, 'scores');
       if (resolution.kind === 'needs_input')
         return requiredInputsResult(institution, resolution.requiredInputs);
       if (resolution.kind === 'below')
@@ -336,6 +518,7 @@ async function evaluateExactResult(args: {
           requirementsUrl: exactTarget.program.searchText!,
         });
       const proof = await runBguEngineeringAdmissionsProof({
+        assessment: 'scores',
         fetcher: timedFetcher,
         program: exactTarget.program,
         applicant: {
@@ -358,7 +541,7 @@ async function evaluateExactResult(args: {
               ? 'ממוצע מכינה'
               : 'ממוצע בגרות רשמי'
             : 'סכם הנדסה',
-        ...(result.decision === 'eligible_to_apply'
+        ...(result.scoreAssessment === 'meets_threshold'
           ? {
               sourceLabel:
                 proof.normalizedPayload.waitingList === true
@@ -392,7 +575,7 @@ async function evaluateExactResult(args: {
       });
     }
     if (exactTarget.sourceTarget.adapterId === 'bgu' && isBguHealthProgram(program.id)) {
-      const route = resolveBguHealthAdmission(requestedInput);
+      const route = resolveBguHealthAdmission(requestedInput, undefined, 'scores');
       const config = BGU_HEALTH_CONFIG[program.id];
       if (route.kind === 'needs_input')
         return requiredInputsResult(institution, route.requiredInputs);
@@ -403,6 +586,7 @@ async function evaluateExactResult(args: {
           requirementsUrl: config.url,
         });
       const proof = await runBguHealthProof({
+        assessment: 'scores',
         program: exactTarget.program,
         applicant: {
           psychometric: requestedInput.psychometric,
@@ -571,6 +755,16 @@ async function evaluateExactResult(args: {
         return requiredInputsResult(institution, ['psychometric_overall']);
       const average = requestedInput.extraInputs?.haifaBagrutAverage;
       if (average === undefined) return requiredInputsResult(institution, ['haifa_bagrut_average']);
+      const missingScoreInputs: AdmissionsRequiredInput[] = [];
+      for (const [key, id] of [
+        ['haifaBagrutYear', 'haifa_bagrut_year'],
+        ['haifaPsychometricYear', 'haifa_psychometric_year'],
+        ['psychometricMath', 'psychometric_math'],
+        ['psychometricVerbal', 'psychometric_verbal'],
+        ['psychometricEnglish', 'psychometric_english'],
+      ] as const)
+        if (requestedInput.extraInputs?.[key] === undefined) missingScoreInputs.push(id);
+      if (missingScoreInputs.length) return requiredInputsResult(institution, missingScoreInputs);
       const policy = getHaifaProgrammePolicy(
         program.id,
         requestedInput.extraInputs?.haifaInformationSystemsTrack,
@@ -582,6 +776,7 @@ async function evaluateExactResult(args: {
             )
           : undefined;
       const gates = evaluateHaifaProgrammePolicy({
+        assessment: 'scores',
         programId: program.id,
         input: requestedInput,
         now,
@@ -608,6 +803,7 @@ async function evaluateExactResult(args: {
           officialUrls: policy ? [policy.source.url] : [],
         };
       const proof = await runHaifaAdmissionsProof({
+        assessment: 'scores',
         fetcher: timedFetcher,
         now,
         program: exactTarget.program,
@@ -645,6 +841,7 @@ async function evaluateExactResult(args: {
           officialUrls: [policy.source.url],
         };
       const eligibility = evaluateHaifaProgrammePolicy({
+        assessment: 'scores',
         programId: program.id,
         input: requestedInput,
         score: baseResult.score,
@@ -682,7 +879,8 @@ async function evaluateExactResult(args: {
       };
     }
     if (exactTarget.sourceTarget.adapterId === 'bgu' && bguSocialScienceProgram(program.id)) {
-      const route = resolveBguSocialScienceAdmission(requestedInput);
+      const assessment = socialScienceScoreAssessment(requestedInput);
+      const route = resolveBguSocialScienceAdmission(requestedInput, undefined, assessment);
       const { source, rule } = bguSocialScienceSource(program.id);
       if (route.kind === 'needs_input')
         return requiredInputsResult(institution, route.requiredInputs);
@@ -706,6 +904,7 @@ async function evaluateExactResult(args: {
           officialUrls: [source.url],
         };
       const proof = await runBguSocialScienceProof({
+        assessment,
         program: exactTarget.program,
         applicant: {
           psychometric: requestedInput.psychometric,
@@ -744,7 +943,7 @@ async function evaluateExactResult(args: {
     }
     if (exactTarget.sourceTarget.adapterId === 'bgu' && isBguQuantitativeRouteProgram(program.id)) {
       const config = bguQuantitativeProgramme(program.id);
-      const route = resolveBguQuantitativeRoute(program.id, requestedInput);
+      const route = resolveBguQuantitativeRoute(program.id, requestedInput, 'scores');
       if (route.kind === 'needs_input')
         return requiredInputsResult(institution, route.requiredInputs);
       if (route.kind === 'below')
@@ -754,6 +953,7 @@ async function evaluateExactResult(args: {
           requirementsUrl: config.sourceUrl,
         });
       const proof = await runBguQuantitativeRoutesProof({
+        assessment: 'scores',
         program: exactTarget.program,
         applicant: {
           psychometric: requestedInput.psychometric,
@@ -812,18 +1012,11 @@ async function evaluateExactResult(args: {
     };
     if (exactTarget.sourceTarget.adapterId === 'technion') {
       const bagrutSubjectRecord = input.extraInputs?.bagrutSubjectRecord;
-      if (program.id === 'architecture') {
-        const unmet = technionArchitectureUnmetRequirements(input.extraInputs ?? {});
-        if (unmet.length)
-          return exactGateFailureResult({
-            institution,
-            unmetRequirements: unmet,
-            requirementsUrl: TECHNION_ARCHITECTURE_REQUIREMENTS_URL,
-          });
-      } else if (!hasTechnionRequiredSubjectRecord(bagrutSubjectRecord)) {
+      if (program.id !== 'architecture' && !hasTechnionRequiredSubjectRecord(bagrutSubjectRecord)) {
         return requiredInputsResult(institution, ['bagrut_subject_record']);
       }
       const proof = await runTechnionAdmissionsProof({
+        assessment: 'scores',
         fetcher: timedFetcher,
         program: exactTarget.program,
         applicant: {
@@ -840,12 +1033,12 @@ async function evaluateExactResult(args: {
           proof: proof.normalizedPayload,
           explanationPrefix: 'הנוסחה והסף הרשמיים של הטכניון',
         });
-        if (result.decision === 'eligible_to_apply') {
+        if (result.scoreAssessment === 'meets_threshold') {
           return {
             ...result,
-            sourceLabel: 'עמידה בתנאים — על בסיס מקום פנוי',
+            sourceLabel: 'התאמה לפי הציונים',
             explanation:
-              'הציון עומד בסף הרשמי לארכיטקטורה ותנאי ההגשה אושרו. הקבלה תלויה במקום פנוי ובהחלטה הסופית של הטכניון.',
+              'הציון עומד בסף הרשמי לארכיטקטורה. הקבלה תלויה במקום פנוי ובהחלטה הסופית של הטכניון.',
             nextAction: 'בדקו מול מדור הקבלה בטכניון אם יש מקום פנוי ומהי החלטת הקבלה הסופית.',
             officialUrls: [TECHNION_ARCHITECTURE_REQUIREMENTS_URL],
           };
@@ -871,13 +1064,16 @@ async function evaluateExactResult(args: {
         if (!subjects.some((subject) => subject.subjectId === 'mathematics')) {
           return requiredInputsResult(institution, ['bagrut_subject_record']);
         }
-        const gates = evaluateBguComputerScienceGates({
-          psychometric: input.psychometric,
-          quantitativeSubscore: input.extraInputs?.psychometricMath,
-          subjects,
-          languageRequirementsConfirmed:
-            input.extraInputs?.bguLanguageRequirementsConfirmed === true,
-        });
+        const gates = evaluateBguComputerScienceGates(
+          {
+            psychometric: input.psychometric,
+            quantitativeSubscore: input.extraInputs?.psychometricMath,
+            subjects,
+            languageRequirementsConfirmed:
+              input.extraInputs?.bguLanguageRequirementsConfirmed === true,
+          },
+          'scores',
+        );
         if (!gates.eligibleForScoreComparison) {
           const descriptions = {
             psychometric_600: 'פסיכומטרי 600 ומעלה',
@@ -894,6 +1090,7 @@ async function evaluateExactResult(args: {
         }
       }
       const proof = await runBguAdmissionsProof({
+        assessment: 'scores',
         fetcher: timedFetcher,
         program: exactTarget.program,
         applicant: {
@@ -1288,7 +1485,7 @@ async function evaluateExactResult(args: {
     }
 
     if (exactTarget.targetId === 'tau-cs-live' || exactTarget.targetId === 'tau-cs-legacy-live') {
-      const gates = evaluateTauComputerScienceGates(input);
+      const gates = evaluateTauComputerScienceGates(input, 'scores');
       if (gates.requiredInputs.length > 0) {
         return requiredInputsResult(institution, gates.requiredInputs);
       }
@@ -1594,6 +1791,8 @@ function normalizeExactProofResult(args: {
     kind: decision === 'eligible_to_apply' ? 'manual_gate' : 'exact',
     decision,
     confidence: 'high',
+    ...((proof.scoreAssessment === 'meets_threshold' ||
+      proof.scoreAssessment === 'below_threshold') && { scoreAssessment: proof.scoreAssessment }),
     sourceLabel:
       decision === 'eligible_to_apply'
         ? 'כשירות להמשך מיון'
@@ -2429,7 +2628,7 @@ function applyStructuredRequirementsToAcceptedScoreResult(args: {
 }): AdmissionsEvaluationResult {
   const { input, program, institution, baseResult } = args;
 
-  if (baseResult.decision !== 'accepted') {
+  if (baseResult.decision !== 'accepted' && baseResult.scoreAssessment !== 'meets_threshold') {
     return baseResult;
   }
 

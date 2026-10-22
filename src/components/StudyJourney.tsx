@@ -1454,13 +1454,20 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                 <article key={row.id}>
                   <h2>{row.fieldName}</h2>
                   <p>{row.institution.name}</p>
-                  <ul>
-                    {catalogueAdmissionRequirements(row.program.admissionRequirements).map(
-                      (item, index) => (
-                        <li key={index}>{item}</li>
-                      ),
-                    )}
-                  </ul>
+                  <AdmissionRequirements
+                    programId={row.program.id}
+                    institutionId={row.institution.id}
+                    requirements={
+                      row.program.isListed === false
+                        ? ['אין כרגע מידע עדכני על המסלול.']
+                        : catalogueAdmissionRequirements(
+                            row.program.institutionDetails?.find(
+                              (detail) => detail.institutionName === row.institution.name,
+                            )?.specificAdmissionNotes,
+                            row.program.admissionRequirements,
+                          )
+                    }
+                  />
                   <Primary onClick={() => selectRow(row, 'inquiry')}>יצירת קשר</Primary>
                 </article>
               ))}
