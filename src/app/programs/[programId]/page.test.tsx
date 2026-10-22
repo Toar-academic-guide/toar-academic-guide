@@ -69,18 +69,18 @@ describe('ProgramPage', () => {
     expect(hoisted.notFound).toHaveBeenCalled();
   });
 
-  it('preserves the full generated Haifa name in the heading and main metadata title', async () => {
+  it('keeps the full Haifa heading without an adjacent institution label and deduplicates metadata', async () => {
     const props = { params: Promise.resolve({ programId: 'haifa_engineering' }) };
     render(await ProgramPage(props));
 
-    expect(
-      screen.getByRole('heading', {
-        level: 1,
-        name: 'הנדסה וטכנולוגיה - אוניברסיטת חיפה',
-      }),
-    ).toBeTruthy();
+    const heading = screen.getByRole('heading', {
+      level: 1,
+      name: 'הנדסה וטכנולוגיה - אוניברסיטת חיפה',
+    });
+    expect(heading.previousElementSibling?.textContent).toBe('הנדסה');
+    expect(within(heading.parentElement!).queryByText('אוניברסיטת חיפה')).toBeNull();
     expect(await generateMetadata(props)).toMatchObject({
-      title: 'הנדסה וטכנולוגיה - אוניברסיטת חיפה – אוניברסיטת חיפה',
+      title: 'הנדסה וטכנולוגיה – אוניברסיטת חיפה',
       alternates: { canonical: '/programs/haifa_engineering' },
     });
   });
