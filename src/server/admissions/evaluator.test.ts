@@ -531,18 +531,35 @@ describe('evaluateAdmissionsForProgram', () => {
           fetcher,
         });
         expect(report.results).toHaveLength(1);
+        const nowUnsupported = [
+          'mon_12341155561_business',
+          'mon_12341122982_graphic_design',
+          'mon_12341063909_graphic_design',
+          'mon_12341203461_graphic_design',
+          'reidman_medicine',
+          'mon_12341143672_business',
+          'mon_12341098628_business',
+        ].includes(row.programId);
         expect(report.results[0]).toMatchObject({
-          capability: 'requirements_only',
-          kind: 'requirements_only',
+          capability: nowUnsupported ? 'unsupported' : 'requirements_only',
+          kind: nowUnsupported ? 'unsupported' : 'requirements_only',
           decision: 'unknown',
           confidence: 'low',
-          degradationReason: 'incomplete_published_requirements',
-          officialUrls: ['programUrl' in row ? row.programUrl : row.sourceUrl],
         });
+        if (nowUnsupported) {
+          expect(report.results[0].explanation).toContain('אין כאן חישוב קבלה');
+          expect(report.results[0].nextAction).toContain('תנאי ההרשמה');
+        } else {
+          expect(report.results[0]).toMatchObject({
+            degradationReason: 'incomplete_published_requirements',
+            officialUrls: ['programUrl' in row ? row.programUrl : row.sourceUrl],
+          });
+          expect(report.results[0].explanation).not.toMatch(/ראיון|בגרות|פסיכומטרי|אין סף/);
+        }
         expect(report.results[0].requiredInputs).toBeUndefined();
+        expect(report.results[0].scoreAssessment).toBeUndefined();
         expect(report.results[0].score).toBeUndefined();
         expect(report.results[0].threshold).toBeUndefined();
-        expect(report.results[0].explanation).not.toMatch(/ראיון|בגרות|פסיכומטרי|אין סף/);
       }
       expect(fetcher).not.toHaveBeenCalled();
       expect(program).toEqual(before);
@@ -1574,7 +1591,7 @@ describe('evaluateAdmissionsForProgram', () => {
         capability: 'unsupported',
         kind: 'unsupported',
         decision: 'unknown',
-        sourceLabel: 'מחוץ להיקף האימות',
+        sourceLabel: 'אין חישוב למסלול זה',
       }),
     );
   });

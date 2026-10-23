@@ -1,3 +1,5 @@
+import { isBatchCUnsupportedProgramId } from '@/data/admissions/batchCUnsupportedProgramIds';
+import { evaluateBatchCUnsupportedPath } from './batchCUnsupportedPathEvaluation';
 import { evaluateBatchBManualPath, isBatchBManualProgram } from './batchBManualPathEvaluation';
 import { evaluateTelhaiPublishedRoutes } from './telhaiPublishedRoutesEvaluation';
 import { evaluateOnoPublishedRoutes } from './onoPublishedRoutesEvaluation';
@@ -261,7 +263,7 @@ async function evaluateCapabilityEntries(args: {
     }
 
     const incomplete = incompleteRequirements.get(`${program.id}:${institution.id}`);
-    if (incomplete) {
+    if (incomplete && !isBatchCUnsupportedProgramId(program.id, institution.id)) {
       results[index] = {
         institution: publicInstitutionShape(institution),
         linkedInstitutionId: institution.id,
@@ -342,6 +344,15 @@ async function evaluateCapabilityEntries(args: {
 
     if (program.id === 'colmgmt_cs' && institution.id === 'colman') {
       results[index] = evaluateColmanBagrutResult({ input, institution });
+      continue;
+    }
+
+    const batchC = evaluateBatchCUnsupportedPath({
+      program,
+      institution: publicInstitutionShape(institution),
+    });
+    if (batchC) {
+      results[index] = batchC;
       continue;
     }
 

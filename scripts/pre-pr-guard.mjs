@@ -108,6 +108,8 @@ const targetedTests = [
   'src/app/api/admissions/evaluate/batchA.test.ts',
   'src/server/admissions/batchBManualPathEvaluation.test.ts',
   'src/app/api/admissions/evaluate/batchB.test.ts',
+  'src/server/admissions/batchCUnsupportedPathEvaluation.test.ts',
+  'src/app/api/admissions/evaluate/batchC.test.ts',
   'src/server/admissions/mtaComputerScienceEvaluation.test.ts',
   'src/server/admissions/mtaPublishedRoutesEvaluation.test.ts',
   'src/server/admissions/mtaCombinedScore.test.ts',

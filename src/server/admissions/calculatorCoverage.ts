@@ -140,7 +140,7 @@ export const calculatorCoverageInventory: CalculatorCoverageEntry[] = [
     hasCalculatorConfig: true,
     hasSourceTarget: true,
     nextAction:
-      'Use the mapped sekhem estimate with blocked-source disclosure for thresholded programs, and keep the Hermes/VPS browser lane as the path to re-verify official thresholds.',
+      'Ariel programmes have no reliable admission calculation yet. Direct students to official programme requirements; formula and threshold verification remains follow-up work.',
   },
   {
     institutionId: 'reichman',
