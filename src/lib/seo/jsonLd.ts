@@ -164,6 +164,19 @@ const FAQ_PROGRAM_IDS = new Set([
   'ariel_economics',
   'huji_business',
   'bgu_accounting',
+  'tau_accounting',
+  'huji_accounting',
+  'haifa_accounting',
+  'biu_criminology',
+  'ariel_criminology',
+  'ariel_communication',
+  'haifa_communication',
+  'haifa_politicalscience',
+  'haifa_sociology',
+  'ariel_health_systems',
+  'biu_computational_bio',
+  'biu_biotech',
+  'biu_lifesciences',
 ]);
 
 export function programFaqPageLd(
