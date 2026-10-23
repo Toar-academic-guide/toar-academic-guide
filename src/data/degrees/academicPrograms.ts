@@ -3449,3 +3449,10 @@ export const academicPrograms: Program[] = [
     ],
   },
 ];
+
+const mtaComputerScience = academicPrograms.find((program) => program.id === 'tlvyaffo_cs')!;
+academicPrograms.push({
+  ...mtaComputerScience,
+  id: 'mta_cs',
+  name: 'מדעי המחשב - המכללה האקדמית תל אביב-יפו',
+});

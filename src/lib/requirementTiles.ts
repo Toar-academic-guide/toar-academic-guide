@@ -80,7 +80,8 @@ export function selectRequirementTiles({
     (r) => r.programId === program.id && r.institutionId === institutionId,
   );
   if (row?.coverage === 'incomplete_published_requirements') return { reason: 'incomplete' };
-  const override = requirementTileOverrides[program.id as keyof typeof requirementTileOverrides];
+  const overrideId = program.id === 'mta_cs' ? 'tlvyaffo_cs' : program.id;
+  const override = requirementTileOverrides[overrideId as keyof typeof requirementTileOverrides];
   if (override) {
     const evidence = Object.values(officialFour).find(
       (r) => r.program === program.id && r.institution === institutionId,

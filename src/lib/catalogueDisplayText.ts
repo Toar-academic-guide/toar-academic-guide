@@ -39,6 +39,7 @@ export function catalogueAdmissionRequirements(
   if (
     [
       'tlvyaffo_cs',
+      'mta_cs',
       'tlvyaffo_nursing',
       'tlvyaffo_business',
       'colmgmt_law',

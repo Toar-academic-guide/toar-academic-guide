@@ -318,7 +318,7 @@ async function evaluateCapabilityEntries(args: {
       continue;
     }
 
-    if (program.id === 'tlvyaffo_cs' && institution.id === 'mta') {
+    if (['tlvyaffo_cs', 'mta_cs'].includes(program.id) && institution.id === 'mta') {
       results[index] = evaluateMtaComputerScience({ input, institution });
       continue;
     }

@@ -1,12 +1,12 @@
 # Batch A — handoff to Jorje
 
-Codex has encoded nine numeric programme IDs and opened this batch for source/UX verification. **Awaiting Jorje; no merge-ready verdict.** No merge, database write, production seed/publication job, environment change, or manual deployment was performed.
+Codex has encoded nine new numeric programme IDs and wired one existing MTA CS alias and opened this batch for source/UX verification. **Awaiting Jorje; no merge-ready verdict.** No merge, database write, production seed/publication job, environment change, or manual deployment was performed.
 
 The public model remains: MyWay is free for students; revenue comes from referring qualified leads to academic institutions. Existing Contact/Save flows and referral-link handling are preserved. No new student composite-score field exists.
 
 ## Delivered
 
-`telhai_cs`, `telhai_biology`, `ono_cs`, `ono_business`, `ruppin_cs`, `reichman_business`, `reichman_economics`, `colmgmt_accounting`, `colmgmt_infosystems`.
+`telhai_cs`, `telhai_biology`, `ono_cs`, `ono_business`, `ruppin_cs`, `reichman_business`, `reichman_economics`, `colmgmt_accounting`, `colmgmt_infosystems`, plus alias `mta_cs`.
 
 Each has evaluator dispatch, inclusive-boundary/weak/missing-input coverage, and updated in-repo seed requirements. `ruppin_cs` already existed in the dynamic catalogue; its same ID now has an explicit academic seed record. Nothing was seeded to the database. Shared numeric checks were reused in the requested simplification pass; no code-review or multi-agent review pipeline ran.
 
@@ -27,12 +27,12 @@ Full numbers, sources and every deferred candidate: [verification table](2026-10
 | Check | Outcome |
 |---|---|
 | Focused numeric evaluator/API suite | 128 tests passed before simplification |
-| `npm run guard:pre-pr` after simplification | Passed: 84 test files, 1,504 tests; local migration consistency, operational grant validation and non-writing seed dry-run passed |
-| `npm run test:coverage` | Passed: 209 files, 2,265 tests; 11 files / 65 opt-in tests skipped; statements 76.57%, branches 72.57% |
+| `npm run guard:pre-pr` after simplification | Passed: 84 test files, 1,506 tests; local migration consistency, operational grant validation and non-writing seed dry-run passed |
+| `npm run test:coverage` | Passed: 209 files, 2,265 tests before the two additional MTA alias API cases; both alias cases also pass; 11 files / 65 opt-in tests skipped; statements 76.57%, branches 72.57% |
 | `npm run typecheck` | Passed |
 | `npm run lint` | Passed with one existing unused-import warning in `bagrutPolicies.ts`; no new errors |
 | `npm run format:check` | Passed |
-| Existing Playwright + new batch suite | 38 passed, 28.7s, Chromium; 390px and 1440px, local explicit static catalogue |
+| Existing Playwright + new batch suite | 38 passed initially, plus all 20 new/alias cases after the seed and alias updates, Chromium; 390px and 1440px, local explicit static catalogue |
 | Database / production verification | No state-dependent DB fix or DB write. Local browser results are not production verification. No authenticated preview access claimed. |
 
 Playwright command:
@@ -51,4 +51,6 @@ GitHub CI/preview status is reported in the PR checks and delivery message after
 
 Initial full CI found two issues missed by the original guard: legacy structured fact extraction did not recognize several new `לפחות` phrases or the Ruppin `פסיכומטרי:` colon, and the sitemap assertion predated the explicit Ruppin seed page. Equivalent natural Hebrew (`ומעלה`, ordinary psychometric label) preserves the legacy structured facts; the sitemap test now explicitly requires Ruppin and 352 unique public URLs. Both original suites are unchanged in purpose, pass locally, and are now part of the pre-push guard.
 
-The correct Vercel project built commit `dd268cb`; its initial preview browser run passed the other flows but failed four new desktop cases with HTTP 429. No calculator regression was observed in those failures. The bounded quota retry passed locally with a deliberately exhausted test client: 2 desktop/mobile cases passed in 1.1 minutes after the expected 429 and window wait. All 18 new-programme desktop/mobile cases also passed again after the seed-copy fix. Final PR checks supersede this initial run; Jorje still owns the source and admission-readiness gate.
+The correct Vercel project built commit `dd268cb`; its initial preview browser run passed the other flows but failed four new desktop cases with HTTP 429. No calculator regression was observed in those failures. The bounded quota retry passed locally with a deliberately exhausted test client: 2 desktop/mobile cases passed in 1.1 minutes after the expected 429 and window wait. All 18 new-programme desktop/mobile cases also passed again after the seed-copy fix; alias follow-up adds desktop/mobile coverage for MTA CS. Final PR checks supersede this initial run; Jorje still owns the source and admission-readiness gate.
+
+The final assembled-catalogue audit found `mta_cs` through dynamic generation. It now shares the existing MTA CS evaluator and seed requirements without changing formulas or thresholds. `colman_cs` is absent from the assembled catalogue. The dynamic MTA ID and display name are preserved; sitemap remains 352 URLs.

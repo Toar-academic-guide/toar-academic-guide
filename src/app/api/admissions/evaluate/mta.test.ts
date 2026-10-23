@@ -85,3 +85,43 @@ describe('MTA API with real admissions evaluator', () => {
     expect(result.requiredInputs).toBeUndefined();
   });
 });
+
+describe('MTA dynamically generated CS alias', () => {
+  beforeEach(() => resetAdmissionsEvaluationRateLimitForTests());
+  it('reuses the existing CS evaluator for weak and inclusive psychometric-boundary profiles', async () => {
+    for (const [psychometric, mathUnits, mathGrade, decision] of [
+      [420, 3, 70, 'below'],
+      [670, 5, 70, 'pending'],
+    ] as const) {
+      const data = await evaluate({
+        degreeIds: ['mta_cs', 'tlvyaffo_cs'],
+        bagrut: 70,
+        psychometric,
+        extraInputs: { mathUnits, mathGrade, psychometricEnglish: 100 },
+      });
+      expect(data.failedDegreeIds).toEqual([]);
+      const result = data.reports.mta_cs.results.find(
+        (r: { linkedInstitutionId: string }) => r.linkedInstitutionId === 'mta',
+      );
+      expect(result).toMatchObject({
+        decision,
+        scoreAssessment: decision === 'below' ? 'below_threshold' : 'meets_threshold',
+      });
+      const original = data.reports.tlvyaffo_cs.results.find(
+        (r: { linkedInstitutionId: string }) => r.linkedInstitutionId === 'mta',
+      );
+      const { snapshot: _aliasSnapshot, ...aliasDecision } = result;
+      const { snapshot: _originalSnapshot, ...originalDecision } = original;
+      expect(aliasDecision).toEqual(originalDecision);
+    }
+  });
+  it('requests ordinary missing subjects rather than a combined score', async () => {
+    const data = await evaluate({ degreeId: 'mta_cs', bagrut: 70, psychometric: 670 });
+    expect(
+      data.results.find((r: { linkedInstitutionId: string }) => r.linkedInstitutionId === 'mta'),
+    ).toMatchObject({
+      kind: 'needs_input',
+      requiredInputs: ['math_units', 'math_grade', 'psychometric_english'],
+    });
+  });
+});

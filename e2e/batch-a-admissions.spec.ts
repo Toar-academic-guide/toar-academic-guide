@@ -10,6 +10,7 @@ const targets = [
   ['reichman_economics', 'reichman'],
   ['colmgmt_accounting', 'colman'],
   ['colmgmt_infosystems', 'colman'],
+  ['mta_cs', 'mta'],
 ] as const;
 
 for (const width of [390, 1440]) {
@@ -44,7 +45,7 @@ for (const width of [390, 1440]) {
                     ],
                   },
                 },
-                psychometric: { overall: 740, quantitative: 130 },
+                psychometric: { overall: 740, quantitative: 130, english: 100 },
               },
             }),
           );

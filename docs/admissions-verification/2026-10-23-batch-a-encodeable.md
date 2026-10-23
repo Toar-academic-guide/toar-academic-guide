@@ -1,6 +1,6 @@
 # Batch A numeric admissions — 2026-10-23
 
-Codex implementation evidence for Jorje's verification. This document does **not** declare merge readiness. Nine institution/programme pairs receive numeric routes. No database writes, migrations, seed execution, freshness/publication jobs, environment changes, merge or manual deployment are part of this PR. The seed dry-run is a local, non-writing validation.
+Codex implementation evidence for Jorje's verification. This document does **not** declare merge readiness. Nine institution/programme pairs receive new numeric routes, and the existing dynamic `mta_cs` alias is wired to the established MTA CS evaluator. No database writes, migrations, seed execution, freshness/publication jobs, environment changes, merge or manual deployment are part of this PR. The seed dry-run is a local, non-writing validation.
 
 ## Sources and scope
 
@@ -32,6 +32,7 @@ Every matched numeric route remains `pending`, with `scoreAssessment: meets_thre
 | `reichman_economics` | Coordinated ≥600 OR Bagrut ≥100 OR psychometric ≥680. English ≥4u; math 4u≥75 OR 5u≥60. Psychometric route also quantitative ≥125. Prep remains unconfirmed below 4u≥85 / 5u≥65. | Estimated. PDF entry gate is **75/60**, not brief's provisional **85/65**; the latter are prep thresholds. Official row groups economics/business, economics/entrepreneurship and sustainability; generic catalogue mapping remains qualified. Entrepreneurship's application/committee process is not silently included. |
 | `colmgmt_accounting` | Bagrut ≥100, using provided Colman average when present, otherwise ordinary average as an estimate. Alternative prerequisites: psychometric ≥555 AND quantitative ≥100; institutional composite approval remains an explicit unconfirmed condition. | Estimated, partial. No combined score or overall composite match is invented; `meets_threshold` refers to the displayed psychometric prerequisite only. |
 | `colmgmt_infosystems` | Bagrut ≥95 plus math 5u≥70 / 4u≥80. Conditional Bagrut route ≥85 and ≤94.4 plus same math, with separate unconfirmed institutional approval. | Estimated, partial; page is dual-major information systems/business, catalogue ID preserved. Combined routes and relaxed math with quantitative 128 require unpublished institutional weighting and are not computed. The 94.4–95 gap is not silently rounded or filled. |
+| `mta_cs` | Existing MTA CS routes reused, including psychometric ≥670 with math 5u≥70 / 4u≥90 and English ≥100. Existing combined/Bagrut/reinforced alternatives are unchanged. API parity with `tlvyaffo_cs` tested at weak and inclusive-boundary profiles. | Estimated / alias only; no formula or threshold changes. Missing ordinary subjects and English request input. |
 
 ### Formula and subject handling
 
@@ -41,12 +42,12 @@ Structured ordinary exam rows override legacy subject inputs. Complete records a
 
 For partially covered programmes, `below` means below the checked numeric routes. The explanation preserves uncomputed alternatives. For Ono CS, weak 420/70 scores with missing math produce `needs_input`, because math can independently qualify under the brief. The complete weak fixture explicitly supplies 3u math at 70 and returns below; hiding missing math would incorrectly deny that alternative.
 
-## Deferred or skipped candidates
+## Conditional candidate dispositions
 
 | Programme(s) | Disposition and reason |
 |---|---|
 | `reichman_infosystems` | Deferred: no clear management/information-systems row. Business and Data Analytics is a distinct specialized programme with interview and cannot be substituted. |
-| `mta_cs` | Skipped duplicate alias: no separate ID in assembled in-repo catalogue. Existing `tlvyaffo_cs` evaluator unchanged. |
+| `mta_cs` | Encoded alias: generated dynamically by Monday inference. Dispatches to the existing `tlvyaffo_cs` evaluator; same established thresholds and formula. Explicit seed copy reuses that programme while preserving the dynamic ID and display name. |
 | `colman_cs` | Skipped duplicate alias: no separate ID in assembled in-repo catalogue. Existing `colmgmt_cs` evaluator unchanged. |
 | `tlvyaffo_economics` | Deferred: no distinct economics row separate from economics-management; do not apply `tlvyaffo_business` thresholds by assumption. |
 | `tau_medicine` | Deferred: supplied 743.86 is scoped to ראויים לקידום; no verified general match formula/threshold packet. Existing seed/scoring is untouched by this PR; this deferral does not certify its historical 770. |
@@ -59,7 +60,7 @@ For partially covered programmes, `below` means below the checked numeric routes
 | Generic `sports_science`, `criminology`, `nutrition` | Batch C unless institution-scoped; vague/wrong-fit candidates. |
 | Design/art/music/audition programmes; vocational and complementary-medicine generics | Batch B/C; outside numeric batch. |
 
-The inventory's ~30–35 count is a candidate count, not a claim that this PR scores all of them. Nine numeric programme IDs are delivered; unsupported composites and mappings are explicitly deferred.
+The inventory's ~30–35 count is a candidate count, not a claim that this PR scores all of them. Nine new numeric programme IDs plus one existing MTA CS alias are delivered; unsupported composites and mappings are explicitly deferred.
 
 ## Verification record
 
