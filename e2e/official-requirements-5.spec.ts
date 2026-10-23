@@ -88,13 +88,22 @@ for (const width of [390, 1440]) {
         }),
       );
     });
-    const evaluation = page.waitForResponse(
-      (response) =>
-        response.url().endsWith('/api/admissions/evaluate') &&
-        response.request().postDataJSON()?.degreeIds?.includes('colmgmt_economics'),
-    );
+    test.setTimeout(150_000);
+    const waitForEvaluation = () =>
+      page.waitForResponse(
+        (response) =>
+          response.url().endsWith('/api/admissions/evaluate') &&
+          response.request().postDataJSON()?.degreeIds?.includes('colmgmt_economics'),
+      );
+    const evaluation = waitForEvaluation();
     await page.goto('/app/calculator#detail');
-    const response = await evaluation;
+    let response = await evaluation;
+    if (response.status() === 429) {
+      await new Promise((resolve) => setTimeout(resolve, 60_000));
+      const retry = waitForEvaluation();
+      await page.reload();
+      response = await retry;
+    }
     expect(response.status()).toBe(200);
     const result = (await response.json()).data.reports.colmgmt_economics.results.find(
       (row: { linkedInstitutionId: string }) => row.linkedInstitutionId === 'colman',
