@@ -22,6 +22,10 @@ export function applyCatalogueContentRepair<T extends Program>(program: T): T {
   }
 
   const identity = rows.find((row) => row.identity)?.identity;
+  const afekaRoutes = rows.find(
+    (row) =>
+      row.institutionId === 'afeka' && ['afeka_ee', 'afeka_softwareeng'].includes(row.programId),
+  );
   const details = [...(program.institutionDetails ?? [])];
   for (const row of rows) {
     const institution = INSTITUTION_BY_ID[row.institutionId as InstitutionId];
@@ -45,6 +49,15 @@ export function applyCatalogueContentRepair<T extends Program>(program: T): T {
   return {
     ...program,
     ...identity,
+    ...(afekaRoutes
+      ? {
+          admissionRequirements: afekaRoutes.notes,
+          thresholds: undefined,
+          directPsychometric: undefined,
+          minimumBagrut: undefined,
+          minimumPsychometric: undefined,
+        }
+      : {}),
     institutionDetails: details.map((detail) => {
       const institutionId = INSTITUTION_BY_NAME[detail.institutionName]?.id;
       const row = rows.find((candidate) => candidate.institutionId === institutionId);
@@ -53,6 +66,14 @@ export function applyCatalogueContentRepair<T extends Program>(program: T): T {
         ...detail,
         specificAdmissionNotes: row.notes,
         programUrl: row.programUrl ?? row.sourceUrl,
+        ...(afekaRoutes && row.institutionId === 'afeka'
+          ? {
+              quantitativeMinRequirement: null,
+              englishMinRequirement: null,
+              admissionFacts: [],
+              admissionAlternativePaths: [],
+            }
+          : {}),
         ...(row.programId === 'haifa_psychology' && row.institutionId === 'haifa'
           ? {
               admissionFacts: detail.admissionFacts?.filter(

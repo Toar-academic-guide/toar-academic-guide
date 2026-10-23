@@ -85,12 +85,86 @@ describe('verified catalogue content repair', () => {
     ).toBeUndefined();
   });
 
-  it.each(['afeka_ee', 'afeka_softwareeng', 'hit_visual_comm'])(
-    'keeps the packet HOLD program %s unstamped',
-    (id) => {
-      expect(repair.requirements.some((row) => row.programId === id)).toBe(false);
-    },
-  );
+  it.each([
+    [
+      'afeka_ee',
+      'undergraduates/',
+      '6fa683075948f28ec51eac8dcf68b0c3c083f822f30a25b3d07ae9b6ba123a15',
+    ],
+    [
+      'afeka_softwareeng',
+      'admission-and-registration-in-science/',
+      '8bea4f6cda19dc7178fc78b642767766121d05f3544bf5008b35a7bd398201dc',
+    ],
+  ])('re-encodes and stamps %s without deriving cumulative floors', (id, path, sha) => {
+    const program = allPrograms.find((item) => item.id === id)!;
+    const notes = program.institutionDetails![0].specificAdmissionNotes;
+    const original = programsWithLegacyAdmissionFacts.find((item) => item.id === id)!;
+    expect(notes).toEqual(original.admissionRequirements);
+    expect(notes).toEqual(program.admissionRequirements);
+    expect(notes.join(' ')).not.toMatch(
+      /ממוצע בגרות מינימלי|ציון פסיכומטרי מינימלי|550|תואר קודם|הנדסאי|בדרך לאפקה/,
+    );
+    expect(notes.join(' ')).toContain('4 יחידות בציון 85 לפחות או 5 יחידות בציון 75 לפחות');
+    expect(notes.join(' ')).toContain('4 יחידות בציון 70 לפחות או 5 יחידות בציון 60 לפחות');
+    expect(notes.join(' ')).toContain('כמותי 115 לפחות');
+    expect(notes.join(' ')).toContain('זכאות לתעודת בגרות מלאה');
+    expect(notes.join(' ')).toContain('מתחילים/בסיסי לפני תחילת הלימודים');
+    expect(notes.join(' ')).toContain('4 יחידות בציון 80 לפחות או 5 יחידות בציון 70 לפחות');
+    expect(notes.join(' ')).toContain('מכינה במתמטיקה בציון 70 לפחות');
+    if (id === 'afeka_ee') {
+      expect(notes).toHaveLength(3);
+      expect(notes[1]).toContain('600 לפחות (רב־תחומי או בדגש כמותי) וגם כמותי 115 לפחות');
+      for (const route of notes.slice(0, 2)) {
+        expect(route).toContain('פיזיקה 5 יחידות בציון 60 לפחות או מכינה בפיזיקה בציון 70 לפחות');
+      }
+    } else {
+      expect(notes).toHaveLength(6);
+      expect(notes[0]).toContain('פיזיקה או מדעי המחשב 5 יחידות בציון 60 לפחות');
+      expect(notes[1]).toContain(
+        'ללא מקצוע מדעי מוגבר: מתמטיקה 4 יחידות בציון 90 לפחות או 5 יחידות בציון 80 לפחות',
+      );
+      expect(notes[2]).toContain('620 לפחות (רב־תחומי או בדגש כמותי) וגם כמותי 115 לפחות');
+      expect(notes[3]).toContain('600 לפחות (רב־תחומי או בדגש כמותי) וגם כמותי 115 לפחות');
+      expect(notes[3]).toContain(
+        'פיזיקה 5 יחידות בציון 60 לפחות, או מקצוע מדעי אחר 5 יחידות בציון 70 לפחות',
+      );
+      expect(notes[3]).not.toContain('מדעי המחשב');
+      for (const route of [notes[0], notes[3]]) {
+        expect(route).toContain('מכינה בפיזיקה או ביסודות התכנות והחשיבה הלוגית בציון 70 לפחות');
+      }
+      expect(notes[4]).toContain('כימיה, ביולוגיה, אלקטרוניקה');
+      expect(notes[4]).toContain('מדע חישובי ומדעי הנתונים');
+    }
+    expect(program.thresholds).toBeUndefined();
+    expect(program.minimumBagrut).toBeUndefined();
+    expect(program.minimumPsychometric).toBeUndefined();
+    expect(program.institutionDetails![0].admissionFacts ?? []).toEqual([]);
+    const sourceUrl = `https://www.afeka.ac.il/candidate/candidate-information-bsc/${path}`;
+    expect(repair.requirements.find((row) => row.programId === id)).toMatchObject({
+      institutionId: 'afeka',
+      sourceUrl,
+      sourceSha256: sha,
+      checkedAt: '2026-10-24',
+      coverage: 'published_conditions',
+      notes,
+    });
+    expect(getRequirementsChecked(id, { id: 'afeka' }, notes)).toEqual({
+      date: '24.10.2026',
+      sourceUrl: `${sourceUrl}?utm_source=myway&utm_medium=referral`,
+    });
+    expect(
+      getRequirementsChecked(
+        id,
+        { id: 'afeka' },
+        notes.map((note) => `${note} `),
+      ),
+    ).toBeUndefined();
+  });
+
+  it.each(['hit_visual_comm'])('keeps the packet HOLD program %s unstamped', (id) => {
+    expect(repair.requirements.some((row) => row.programId === id)).toBe(false);
+  });
 
   it.each([
     ['law', 112, [/אנגלית 5 יחידות בציון 90 לפחות/]],
