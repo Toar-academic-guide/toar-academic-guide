@@ -172,7 +172,7 @@ describe('crawl policy', () => {
     );
   }, 15_000);
 
-  it('keeps all 351 canonical public URLs in order and omits lastmod without per-page data dates', async () => {
+  it('keeps all 352 canonical public URLs in order and omits lastmod without per-page data dates', async () => {
     const entries = await sitemap();
     const urls = entries.map((entry) => entry.url);
     expect(urls).toEqual([
@@ -190,7 +190,8 @@ describe('crawl policy', () => {
     expect(urls).toContain(`${SITE_URL}/programs/tau_cs`);
     expect(new Set(urls).size).toBe(urls.length);
     expect(urls).not.toContain(`${SITE_URL}/programs/danon_cs`);
-    expect(urls).toHaveLength(351);
+    expect(urls).toContain(`${SITE_URL}/programs/ruppin_cs`);
+    expect(urls).toHaveLength(352);
     for (const url of urls) {
       expect(new URL(url).origin).toBe(SITE_URL);
       expect(url.endsWith('/')).toBe(false);

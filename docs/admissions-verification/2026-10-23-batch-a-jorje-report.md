@@ -27,7 +27,8 @@ Full numbers, sources and every deferred candidate: [verification table](2026-10
 | Check | Outcome |
 |---|---|
 | Focused numeric evaluator/API suite | 128 tests passed before simplification |
-| `npm run guard:pre-pr` after simplification | Passed: 82 test files, 1,465 tests; local migration consistency, operational grant validation and non-writing seed dry-run passed |
+| `npm run guard:pre-pr` after simplification | Passed: 84 test files, 1,504 tests; local migration consistency, operational grant validation and non-writing seed dry-run passed |
+| `npm run test:coverage` | Passed: 209 files, 2,265 tests; 11 files / 65 opt-in tests skipped; statements 76.57%, branches 72.57% |
 | `npm run typecheck` | Passed |
 | `npm run lint` | Passed with one existing unused-import warning in `bagrutPolicies.ts`; no new errors |
 | `npm run format:check` | Passed |
@@ -40,8 +41,14 @@ Playwright command:
 CI=1 BASE_URL=http://127.0.0.1:3000 npx playwright test e2e/batch-a-admissions.spec.ts e2e/reichman-admissions.spec.ts e2e/mta-admissions.spec.ts --workers=2 --retries=0 --reporter=line
 ```
 
-The initial browser batch shared a client identity and hit the existing rate limit; test clients were isolated without changing the limiter. The successful rerun used the real local API and evaluator. CE's interactive browser driver was unavailable; repository Playwright was used directly, with no new browser tooling installed.
+The initial local browser batch shared a client identity and hit the existing rate limit. Test clients were isolated locally; Vercel normalizes client IPs, so the preview still shares the real allowance. The test now respects a 429 by waiting one existing one-minute window and retrying once; the limiter and all admissions assertions are unchanged. The successful rerun used the real local API and evaluator. CE's interactive browser driver was unavailable; repository Playwright was used directly, with no new browser tooling installed.
 
 Screenshots for every new programme on both widths: `docs/ui-verification/2026-10-23-batch-a/`. Representative [desktop Tel Hai CS](../ui-verification/2026-10-23-batch-a/telhai_cs-1440.png) and [mobile](../ui-verification/2026-10-23-batch-a/telhai_cs-390.png). Visible copy was inspected for student-facing Hebrew, right alignment, separate confirmations and prominent Contact/Save.
 
 GitHub CI/preview status is reported in the PR checks and delivery message after publishing. Existing workflows are used; no new Action, freshness run or publication job was requested.
+
+## CI follow-up
+
+Initial full CI found two issues missed by the original guard: legacy structured fact extraction did not recognize several new `לפחות` phrases or the Ruppin `פסיכומטרי:` colon, and the sitemap assertion predated the explicit Ruppin seed page. Equivalent natural Hebrew (`ומעלה`, ordinary psychometric label) preserves the legacy structured facts; the sitemap test now explicitly requires Ruppin and 352 unique public URLs. Both original suites are unchanged in purpose, pass locally, and are now part of the pre-push guard.
+
+The correct Vercel project built commit `dd268cb`; its initial preview browser run passed the other flows but failed four new desktop cases with HTTP 429. No calculator regression was observed in those failures. The bounded quota retry passed locally with a deliberately exhausted test client: 2 desktop/mobile cases passed in 1.1 minutes after the expected 429 and window wait. All 18 new-programme desktop/mobile cases also passed again after the seed-copy fix. Final PR checks supersede this initial run; Jorje still owns the source and admission-readiness gate.

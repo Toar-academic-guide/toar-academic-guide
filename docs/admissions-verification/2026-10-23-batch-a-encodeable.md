@@ -66,7 +66,7 @@ The inventory's ~30–35 count is a candidate count, not a claim that this PR sc
 - Focused tests cover weak profiles, inclusive boundaries, committee/interview conditions, subject gates, missing ordinary inputs, preparation and structured records. API tests call the real evaluator through the route handler with a mocked read-only catalogue/database boundary.
 - Existing MTA/Reichman CS-law-psychology/Colman regression coverage is retained. The pre-push guard includes the new tests.
 - Browser verification uses the repository's existing Playwright/Chromium infrastructure, local explicit static catalogue mode, desktop 1440px and mobile 390px. This is browser → real API → seed catalogue → evaluator → visible result verification, not production DB verification. CE's interactive `agent-browser` driver is unavailable; no new browser stack was installed.
-- Initial combined browser run hit the existing 12-request/minute allowance because test cases shared a client identity. New cases receive isolated test client identities; production limiter is unchanged.
+- Initial combined browser run hit the existing 12-request/minute allowance because test cases shared a client identity. New cases receive isolated test client identities locally. Vercel normalizes client identities, so preview tests also wait one existing one-minute window and retry once after HTTP 429. Production limiter is unchanged.
 - No production schema/data change is requested or performed. Supabase writes and seed/publication runs remain prohibited. No authenticated preview or production scoring claim is made.
 
 Final command outcomes, screenshot locations and CI status are recorded in the companion Jorje report.
