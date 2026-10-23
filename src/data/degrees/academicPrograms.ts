@@ -753,8 +753,10 @@ const D: Record<string, InstitutionDetail[]> = {
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
       specificAdmissionNotes: [
-        'חובה ממוצע בגרות 100 ומעלה לקבלה ישירה במסלול המבוקש',
-        "מותנה ברמת אנגלית 'מתקדמים א' לפחות או ציון אמיר\"ם/פסיכומטרי תואם",
+        'ציון מתואם 630 לפחות המחושב מהבגרות והפסיכומטרי, או ממוצע בגרות 100 ומעלה, או פסיכומטרי 700 לפחות',
+        'אנגלית 4 יחידות לפחות; במסלולי בגרות 100 ומתואם: מתמטיקה ברמת 3 יחידות בציון 100; במסלול הפסיכומטרי: כמותי 125 ומעלה',
+        'חלופת בגרות 95–99: מתמטיקה 4 יחידות לפחות בציון 80 ומקצוע מדעי 5 יחידות בציון 75 לפחות',
+        'ייתכן קורס הכנה במתמטיקה לפי היחידות והציון; נדרש אישור זכאות לבגרות ודרישות שפה',
       ],
       officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/',
     },
@@ -767,8 +769,9 @@ const D: Record<string, InstitutionDetail[]> = {
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
       specificAdmissionNotes: [
-        'חובה ממוצע בגרות 100 ומעלה לקבלה ישירה במסלול המבוקש',
-        "מותנה ברמת אנגלית 'מתקדמים א' לפחות או ציון אמיר\"ם/פסיכומטרי תואם",
+        'ציון מתואם 600 לפחות המחושב מהבגרות והפסיכומטרי, או ממוצע בגרות 100 ומעלה, או פסיכומטרי 680 לפחות',
+        'אנגלית 4 יחידות לפחות ומתמטיקה 4 יחידות בציון 75 או 5 יחידות בציון 60; במסלול הפסיכומטרי גם כמותי 125 ומעלה',
+        'מתמטיקה מתחת ל־4 יחידות בציון 85 או 5 יחידות בציון 65 מחייבת קורס הכנה; נדרש אישור זכאות לבגרות ודרישות שפה',
       ],
       officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/',
     },
@@ -2644,7 +2647,12 @@ export const academicPrograms: Program[] = [
     category: 'כלכלה ועסקים',
     profileScore: P.business,
     admissionType: 'requirements',
-    admissionRequirements: [],
+    admissionRequirements: [
+      'ציון מתואם 630 לפחות המחושב מהבגרות והפסיכומטרי, או ממוצע בגרות 100 ומעלה, או פסיכומטרי 700 לפחות',
+      'אנגלית 4 יחידות לפחות; במסלולי בגרות 100 ומתואם: מתמטיקה ברמת 3 יחידות בציון 100; במסלול הפסיכומטרי: כמותי 125 ומעלה',
+      'חלופת בגרות 95–99: מתמטיקה 4 יחידות לפחות בציון 80 ומקצוע מדעי 5 יחידות בציון 75 לפחות',
+      'ייתכן קורס הכנה במתמטיקה לפי היחידות והציון; נדרש אישור זכאות לבגרות ודרישות שפה',
+    ],
     thresholds: { reichman: 0 },
     institutionDetails: D['reichman_business'],
   },
@@ -2657,7 +2665,11 @@ export const academicPrograms: Program[] = [
     category: 'כלכלה ועסקים',
     profileScore: P.economics,
     admissionType: 'requirements',
-    admissionRequirements: [],
+    admissionRequirements: [
+      'ציון מתואם 600 לפחות המחושב מהבגרות והפסיכומטרי, או ממוצע בגרות 100 ומעלה, או פסיכומטרי 680 לפחות',
+      'אנגלית 4 יחידות לפחות ומתמטיקה 4 יחידות בציון 75 או 5 יחידות בציון 60; במסלול הפסיכומטרי גם כמותי 125 ומעלה',
+      'מתמטיקה מתחת ל־4 יחידות בציון 85 או 5 יחידות בציון 65 מחייבת קורס הכנה; נדרש אישור זכאות לבגרות ודרישות שפה',
+    ],
     thresholds: { reichman: 0 },
     institutionDetails: D['reichman_economics'],
   },
@@ -2674,7 +2686,11 @@ export const academicPrograms: Program[] = [
     category: 'מדעי המחשב',
     profileScore: P.cs,
     admissionType: 'requirements',
-    admissionRequirements: ['בגרות מלאה', 'ממוצע בגרות מינימלי: 75', 'ציון פסיכומטרי מינימלי: 480'],
+    admissionRequirements: [
+      'זכאות לתעודת בגרות מלאה',
+      'פסיכומטרי 610 לפחות ומתמטיקה 4 יחידות בציון 85 או 5 יחידות בציון 75',
+      'ועדת קבלה: פסיכומטרי 585 עם מתמטיקה 4 יחידות בציון 85, או 570 עם 5 יחידות בציון 75',
+    ],
   },
   {
     id: 'telhai_biology',
@@ -2686,9 +2702,10 @@ export const academicPrograms: Program[] = [
     profileScore: P.biology,
     admissionType: 'requirements',
     admissionRequirements: [
-      'בגרות מלאה עם 5 יח"ל ביולוגיה ו/או כימיה',
-      'ממוצע בגרות מינימלי: 75',
-      'ציון פסיכומטרי מינימלי: 480',
+      'זכאות לתעודת בגרות מלאה ופסיכומטרי 570 לפחות; ועדת קבלה מפסיכומטרי 520',
+      'מתמטיקה: 4 יחידות בציון 75 או 5 יחידות בציון 65; 3 יחידות בכפוף לקורס הכנה בקיץ',
+      'מקצוע מדעי: 3 יחידות בציון 85, 4 יחידות בציון 75 או 5 יחידות בציון 65; ללא מקצוע מדעי נדרשים קורסי הכנה',
+      'אפשר לברר קבלה גם לפי ציון משולב שתל־חי מחשבת',
     ],
   },
   {
@@ -3053,9 +3070,9 @@ export const academicPrograms: Program[] = [
     profileScore: { AN: 3, TE: 0, CR: 0, SO: 1, LE: 3, OR: 5, DI: 2, ER: 2 },
     admissionType: 'requirements',
     admissionRequirements: [
-      'מסלול בגרות: ממוצע בגרות משוקלל 100+',
-      'מסלול בגרות ופסיכומטרי: פסיכומטרי 555+ וכמותי 100+ ועמידה בציון המשוקלל',
-      'חלופת קבלה: מכינת שחקים למי שלא עומדים בסף',
+      'מסלול בגרות: ממוצע משוקלל של המכללה 100 לפחות',
+      'מסלול בגרות ופסיכומטרי: פסיכומטרי 555 לפחות וכמותי 100 ומעלה, בכפוף לאישור השקלול של המכללה',
+      'זכאות לבגרות מלאה; אפשר לברר גם קבלה דרך מכינת שחקים',
     ],
   },
 
@@ -3147,10 +3164,9 @@ export const academicPrograms: Program[] = [
     profileScore: P.business,
     admissionType: 'requirements',
     admissionRequirements: [
-      'קבלה ישירה: ממוצע בגרות 95+ או פסיכומטרי 600 + בגרות מלאה',
-      'דרישת מתמטיקה: 3 יח"ל 75+ או 4 יח"ל 65+ או 5 יח"ל בציון עובר',
-      'קבלה משוקללת: ראיון קבלה עם ממוצע בגרות 80-94 או פסיכומטרי 550 + בגרות מלאה',
-      'חלופות קבלה: אפיק מעבר לאקדמיה או מכינה קדם-אקדמית',
+      'ממוצע בגרות 95 ומעלה או פסיכומטרי 600 לפחות, בכפוף לזכאות לבגרות מלאה',
+      'מסלול ראיון: ממוצע בגרות 80–94 או פסיכומטרי 550 לפחות',
+      'דרישות המתמטיקה תלויות בהתמחות; יש לאשר אותן מול המכללה',
     ],
   },
   {
@@ -3163,10 +3179,9 @@ export const academicPrograms: Program[] = [
     profileScore: P.cs,
     admissionType: 'requirements',
     admissionRequirements: [
-      'קבלה ישירה: ממוצע בגרות 100+',
-      'חלופת קבלה ישירה: פסיכומטרי 650 או שקלול בגרות ופסיכומטרי',
-      'דרישת מתמטיקה: 5 יח"ל 75+ או 4 יח"ל 95+',
-      'מסלולי הכנה: מכינה במדעי המחשב או מכינה במתמטיקה לפי ועדת הקבלה',
+      'זכאות לבגרות מלאה',
+      'ממוצע בגרות 100 ומעלה, או מתמטיקה 5 יחידות בציון 75 או 4 יחידות בציון 95, או פסיכומטרי 650 לפחות',
+      'שקלול בגרות ופסיכומטרי ואפשרויות מכינה נבדקים מול המכללה',
     ],
   },
   {
@@ -3301,10 +3316,10 @@ export const academicPrograms: Program[] = [
     profileScore: P.infoSystems,
     admissionType: 'requirements',
     admissionRequirements: [
-      'קבלה אוטומטית: מסלולי בגרות ובגרות+פסיכומטרי עם דרישות מתמטיקה מוגברות',
-      'מתמטיקה: 5 יח"ל 70+ או 4 יח"ל 80+; חלופה נוספת עם כמותי 128+ ומתמטיקה 65/70+',
-      'קבלה על תנאי: ממוצע בגרות 90+ או מסלול בגרות 85-94.4 עם דרישות המתמטיקה',
-      'חלופת קבלה: מכינת שחקים למי שלא עומדים בסף',
+      'מסלול בגרות: ממוצע משוקלל של המכללה 95 לפחות',
+      'מתמטיקה: 5 יחידות בציון 70 או 4 יחידות בציון 80 לפחות',
+      'קבלה על תנאי במסלול בגרות: ממוצע 85–94.4 ודרישות המתמטיקה',
+      'מסלולים המשלבים פסיכומטרי דורשים אישור השקלול של המכללה; קיימת גם מכינת שחקים',
     ],
   },
 
@@ -3342,6 +3357,37 @@ export const academicPrograms: Program[] = [
   // ══════════════════════════════════════════════════════════════════════════
   // ביולוגיה ימית ומכמורת — Marine Biology (Ruppin Academic Center)
   // ══════════════════════════════════════════════════════════════════════════
+  {
+    id: 'ruppin_cs',
+    name: 'מדעי המחשב',
+    institution: 'המרכז האקדמי רופין',
+    institutionId: 'ruppin',
+    type: 'academic',
+    category: 'מדעי המחשב',
+    profileScore: P.cs,
+    admissionType: 'requirements',
+    admissionRequirements: [
+      'זכאות לבגרות מלאה או תעודה מוכרת מקבילה',
+      'ממוצע בגרות 100 ומעלה, או 98 עם מתמטיקה 5 יחידות בציון 80 או 4 יחידות בציון 95',
+      'חלופה: פסיכומטרי 600 ומעלה, או 590 עם כמותי 120 ומעלה',
+      'בכל מסלול: מתמטיקה 5 יחידות בציון 70 או 4 יחידות בציון 85; אחרת קורס קדם או מבחן פטור בציון 70',
+      'מסלול משולב דורש חישוב ואישור של רופין; אפשר לברר אותו מול הרישום',
+    ],
+    institutionDetails: [
+      {
+        institutionName: 'המרכז האקדמי רופין',
+        durationYears: null,
+        estimatedStudentsPerYear: '',
+        quantitativeMinRequirement: null,
+        englishMinRequirement: null,
+        specificAdmissionNotes: [],
+        programUrl:
+          'https://www.ruppin.ac.il/faculties/ba/computer-science/?utm_source=myway&utm_medium=referral',
+        officialCalculatorUrl:
+          'https://www.ruppin.ac.il/faculties/ba/computer-science/application-requirements/',
+      },
+    ],
+  },
   {
     id: 'ruppin_marine_bio',
     name: 'ביולוגיה ימית ומכמורת',
@@ -3403,3 +3449,10 @@ export const academicPrograms: Program[] = [
     ],
   },
 ];
+
+const mtaComputerScience = academicPrograms.find((program) => program.id === 'tlvyaffo_cs')!;
+academicPrograms.push({
+  ...mtaComputerScience,
+  id: 'mta_cs',
+  name: 'מדעי המחשב - המכללה האקדמית תל אביב-יפו',
+});

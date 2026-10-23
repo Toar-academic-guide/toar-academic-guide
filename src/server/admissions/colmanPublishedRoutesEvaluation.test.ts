@@ -129,3 +129,63 @@ describe('economics certificate confirmation', () => {
     }
   });
 });
+
+describe('Batch A accounting and information systems', () => {
+  const extra = { mathUnits: 5, mathGrade: 70 };
+  const run = (
+    degreeId: string,
+    bagrut: number | undefined,
+    psychometric: number | undefined,
+    extraInputs = {},
+  ) =>
+    evaluateColmanPublishedRoutes({
+      institution,
+      input: { degreeId, bagrut, psychometric, extraInputs },
+    });
+  it.each(['colmgmt_accounting', 'colmgmt_infosystems'])('%s weak profile is below', (degreeId) =>
+    expect(run(degreeId, 70, 420, extra).decision).toBe('below'),
+  );
+  it('uses ordinary average as an estimate without asking for an institutional composite', () =>
+    expect(run('colmgmt_accounting', 100, undefined)).toMatchObject({
+      decision: 'pending',
+      kind: 'estimated',
+      scoreAssessment: 'meets_threshold',
+    }));
+  it('retains the unknown combined score as an unconfirmed condition', () => {
+    expect(run('colmgmt_accounting', 70, 555, { psychometricMath: 100 })).toMatchObject({
+      decision: 'pending',
+      additionalConditions: expect.arrayContaining([
+        expect.objectContaining({ id: 'institution_weighted_score', status: 'unconfirmed' }),
+      ]),
+    });
+    expect(run('colmgmt_accounting', 70, 554, { psychometricMath: 100 }).decision).toBe('below');
+    expect(run('colmgmt_accounting', 70, 555, { psychometricMath: 99 }).decision).toBe('below');
+    expect(run('colmgmt_accounting', 70, 555)).toMatchObject({
+      kind: 'needs_input',
+      requiredInputs: ['psychometric_math'],
+    });
+  });
+  it.each([
+    [95, 5, 70],
+    [95, 4, 80],
+    [85, 5, 70],
+    [94.4, 4, 80],
+  ])('checks Bagrut %i and math %iu@%i', (bagrut, mathUnits, mathGrade) =>
+    expect(run('colmgmt_infosystems', bagrut, 420, { mathUnits, mathGrade })).toMatchObject({
+      decision: 'pending',
+      scoreAssessment: 'meets_threshold',
+    }),
+  );
+  it('keeps conditional admission separate and does not invent an unpublished composite', () => {
+    expect(run('colmgmt_infosystems', 85, 420, extra).additionalConditions).toContainEqual(
+      expect.objectContaining({ id: 'admissions_committee', status: 'unconfirmed' }),
+    );
+    expect(run('colmgmt_infosystems', 84.9, 420, extra).decision).toBe('below');
+    expect(run('colmgmt_infosystems', 94.5, 420, extra).decision).toBe('below');
+    expect(run('colmgmt_infosystems', 95, 420, { ...extra, mathGrade: 69 }).decision).toBe('below');
+    expect(run('colmgmt_infosystems', 95, 420)).toMatchObject({
+      kind: 'needs_input',
+      requiredInputs: ['math_units', 'math_grade'],
+    });
+  });
+});

@@ -1,3 +1,10 @@
+import {
+  allOf,
+  evaluatePublishedNumericRoutes,
+  mathAlternatives,
+  minimum,
+  type PublishedNumericRoute,
+} from './publishedNumericRoutes';
 import { confirmationCondition, withScoreAssessment } from './scoreAssessment';
 import { COLMAN_BAGRUT_CALCULATOR_URL } from '@/lib/colmanBagrutInputs';
 import type {
@@ -38,6 +45,8 @@ export function evaluateColmanPublishedRoutes({
   input: AdmissionsEvaluationInput;
   institution: CatalogueInstitution;
 }): AdmissionsEvaluationResult {
+  if (['colmgmt_accounting', 'colmgmt_infosystems'].includes(input.degreeId))
+    return evaluateColmanAdditionalRoutes({ input, institution });
   const route = routes[input.degreeId as keyof typeof routes];
   const average = input.extraInputs?.colmanBagrutAverage;
   const quantitative = input.extraInputs?.psychometricMath;
@@ -150,4 +159,74 @@ export function evaluateColmanPublishedRoutes({
     explanation: `${bagrutBelow} ${collegeDecides}`,
     nextAction: 'בדקו מול מרכז הרישום את הציון המשוקלל הנדרש ואת אפשרויות הקבלה.',
   };
+}
+
+function evaluateColmanAdditionalRoutes({
+  input,
+  institution,
+}: {
+  input: AdmissionsEvaluationInput;
+  institution: CatalogueInstitution;
+}): AdmissionsEvaluationResult {
+  const accounting = input.degreeId === 'colmgmt_accounting';
+  const average = input.extraInputs?.colmanBagrutAverage ?? input.bagrut;
+  const math = accounting
+    ? allOf()
+    : mathAlternatives(input, [
+        [5, 70],
+        [4, 80],
+      ]);
+  const threshold = accounting ? 100 : 95;
+  const numericRoutes: PublishedNumericRoute[] = [
+    {
+      label: 'ממוצע בגרות משוער',
+      score: average,
+      threshold,
+      requirements: `ממוצע בגרות ${threshold} לפחות${accounting ? '' : ', ומתמטיקה 5 יחידות בציון 70 או 4 יחידות בציון 80'}`,
+      ...allOf(minimum(average, threshold, 'bagrut_average'), math),
+    },
+  ];
+  if (accounting)
+    numericRoutes.push({
+      label: 'פסיכומטרי — בכפוף לשקלול המכללה',
+      score: input.psychometric,
+      threshold: 555,
+      requirements: 'פסיכומטרי 555 לפחות וכמותי 100 לפחות; נדרש גם אישור השקלול של המכללה',
+      ...allOf(
+        minimum(input.psychometric, 555, 'psychometric_overall'),
+        minimum(input.extraInputs?.psychometricMath, 100, 'psychometric_math'),
+      ),
+      conditions: [
+        {
+          id: 'institution_weighted_score',
+          label: 'אישור עמידה בשקלול הבגרות והפסיכומטרי של המכללה',
+          status: 'unconfirmed',
+        },
+      ],
+    });
+  else
+    numericRoutes.push({
+      label: 'ממוצע בגרות — קבלה על תנאי',
+      score: average,
+      threshold: 85,
+      requirements: 'ממוצע בגרות 85–94.4 ומתמטיקה 5 יחידות בציון 70 או 4 יחידות בציון 80',
+      ...allOf(
+        minimum(average, 85, 'bagrut_average'),
+        { below: average !== undefined && average > 94.4, missing: [] },
+        math,
+      ),
+      conditions: [
+        { id: 'admissions_committee', label: 'אישור תנאי הקבלה של המכללה', status: 'unconfirmed' },
+      ],
+    });
+  return evaluatePublishedNumericRoutes({
+    institution,
+    routes: numericRoutes,
+    officialUrls: [
+      `https://www.colman.ac.il/academics/ba/${accounting ? 'accounting' : 'management-information-systems'}/`,
+      COLMAN_BAGRUT_CALCULATOR_URL,
+    ],
+    caveat:
+      'ממוצע הבגרות כפוף לחישוב המכללה. מסלולים נוספים המשלבים פסיכומטרי דורשים בדיקה מול הרישום.',
+  });
 }

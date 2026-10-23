@@ -3565,8 +3565,14 @@ describe('catalogue eligibility safety', () => {
       expect(result).toBeDefined();
       expect(result.decision).toBe(decision);
       if (decision === 'unknown') {
-        expect(result.kind).toBe('requirements_only');
+        expect(result.kind).toBe(degreeId === 'mta_cs' ? 'needs_input' : 'requirements_only');
         expect(resultLabel(result).group).toBe('explore');
+        if (degreeId === 'mta_cs')
+          expect(result.requiredInputs).toEqual([
+            'math_units',
+            'math_grade',
+            'psychometric_english',
+          ]);
       }
       expect(result.explanation).not.toMatch(/[A-Za-z]{2,}\s+[A-Za-z]{2,}/);
       if (degreeId === 'ono_socialwork') {

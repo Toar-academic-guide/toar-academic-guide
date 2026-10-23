@@ -1,3 +1,6 @@
+import { evaluateTelhaiPublishedRoutes } from './telhaiPublishedRoutesEvaluation';
+import { evaluateOnoPublishedRoutes } from './onoPublishedRoutesEvaluation';
+import { evaluateRuppinComputerScience } from './ruppinComputerScienceEvaluation';
 import {
   confirmationCondition,
   withScoreAssessment,
@@ -274,8 +277,27 @@ async function evaluateCapabilityEntries(args: {
       continue;
     }
 
+    if (['telhai_cs', 'telhai_biology'].includes(program.id) && institution.id === 'telhai') {
+      results[index] = evaluateTelhaiPublishedRoutes({ input, institution });
+      continue;
+    }
+    if (['ono_cs', 'ono_business'].includes(program.id) && institution.id === 'ono') {
+      results[index] = evaluateOnoPublishedRoutes({ input, institution });
+      continue;
+    }
+    if (program.id === 'ruppin_cs' && institution.id === 'ruppin') {
+      results[index] = evaluateRuppinComputerScience({ input, institution });
+      continue;
+    }
+
     if (
-      ['reichman_cs', 'reichman_law', 'reichman_psychology'].includes(program.id) &&
+      [
+        'reichman_cs',
+        'reichman_law',
+        'reichman_psychology',
+        'reichman_business',
+        'reichman_economics',
+      ].includes(program.id) &&
       institution.id === 'reichman'
     ) {
       results[index] = evaluateReichmanPublishedRoutes({ input, institution });
@@ -283,14 +305,20 @@ async function evaluateCapabilityEntries(args: {
     }
 
     if (
-      ['colmgmt_law', 'colmgmt_business', 'colmgmt_economics'].includes(program.id) &&
+      [
+        'colmgmt_law',
+        'colmgmt_business',
+        'colmgmt_economics',
+        'colmgmt_accounting',
+        'colmgmt_infosystems',
+      ].includes(program.id) &&
       institution.id === 'colman'
     ) {
       results[index] = evaluateColmanPublishedRoutes({ input, institution });
       continue;
     }
 
-    if (program.id === 'tlvyaffo_cs' && institution.id === 'mta') {
+    if (['tlvyaffo_cs', 'mta_cs'].includes(program.id) && institution.id === 'mta') {
       results[index] = evaluateMtaComputerScience({ input, institution });
       continue;
     }

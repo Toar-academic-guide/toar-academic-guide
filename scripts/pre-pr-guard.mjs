@@ -81,6 +81,8 @@ const operationalReadGrants = {
 };
 
 const targetedTests = [
+  'src/data/degrees/index.test.ts',
+  'src/lib/seo/seo.test.ts',
   'src/lib/requirementTiles.test.ts',
   'src/components/RequirementTiles.test.tsx',
   'src/components/AdmissionRequirements.test.tsx',
@@ -100,6 +102,10 @@ const targetedTests = [
   'src/server/admissions/colmanBagrutEvaluation.test.ts',
   'src/server/admissions/colmanPublishedRoutesEvaluation.test.ts',
   'src/server/admissions/reichmanPublishedRoutesEvaluation.test.ts',
+  'src/server/admissions/telhaiPublishedRoutesEvaluation.test.ts',
+  'src/server/admissions/onoPublishedRoutesEvaluation.test.ts',
+  'src/server/admissions/ruppinComputerScienceEvaluation.test.ts',
+  'src/app/api/admissions/evaluate/batchA.test.ts',
   'src/server/admissions/mtaComputerScienceEvaluation.test.ts',
   'src/server/admissions/mtaPublishedRoutesEvaluation.test.ts',
   'src/server/admissions/mtaCombinedScore.test.ts',
