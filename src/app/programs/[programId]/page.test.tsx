@@ -240,6 +240,7 @@ describe('ProgramPage', () => {
     it('keeps the line at the bottom when there is no link row', async () => {
       vi.spyOn(publicCataloguePages, 'getPublicProgramRequirementSources').mockResolvedValue({
         bgu: {
+          program: getStaticCataloguePrograms().find((p) => p.id === entry.programId)!,
           sourceProgramId: entry.programId,
           requirements: entry.notes,
           checked: { date: '21.10.2026', sourceUrl: trackedSource.href },

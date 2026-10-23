@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AcademicScores } from '@/types';
-import { getStaticCataloguePrograms } from '@/lib/catalogueStatic';
+import { getStaticCataloguePrograms, getStaticCatalogueInstitutions } from '@/lib/catalogueStatic';
+import baselineLaw from '../../docs/ui-verification/2026-10-23-requirement-tiles/baseline-law_low.json';
 
 const state = vi.hoisted(() => ({
   user: null as null | { id: string },
@@ -38,7 +39,10 @@ vi.mock('@/lib/admissionsEvaluationClient', () => ({ fetchAdmissionsBatch: state
 import StudyJourney from './StudyJourney';
 
 describe('account grades in the homepage journey', () => {
+  afterEach(() => vi.useRealTimers());
   beforeEach(() => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    vi.setSystemTime(new Date('2026-10-23T12:00:00Z'));
     state.user = null;
     state.savedProgramIds = [];
     state.profileStatus = 'ready';
@@ -60,6 +64,59 @@ describe('account grades in the homepage journey', () => {
       }),
     );
     vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+  });
+
+  it('changes only the calculator detail requirements while preserving the baseline decision and actions', async () => {
+    const program = getStaticCataloguePrograms().find((p) => p.id === 'colmgmt_law')!;
+    state.fetchPrograms.mockResolvedValue([program]);
+    state.fetchInstitutions.mockResolvedValue(
+      getStaticCatalogueInstitutions().filter((i) => i.id === 'colman'),
+    );
+    state.evaluate.mockResolvedValue({
+      reports: {
+        colmgmt_law: {
+          results: [
+            {
+              linkedInstitutionId: 'colman',
+              kind: 'manual_gate',
+              decision: 'below',
+              scoreAssessment: 'below_threshold',
+              explanation: baselineLaw.explanation[0],
+            },
+          ],
+        },
+      },
+      failedDegreeIds: [],
+    });
+    window.sessionStorage.setItem(
+      'myway_study_journey_v2',
+      JSON.stringify({
+        fields: [],
+        locations: ['all'],
+        types: ['all'],
+        selectedRowId: 'colmgmt_law:colman',
+        scores: {
+          bagrut: { weightedAverage: 60 },
+          psychometric: { overall: 400 },
+          admissions: { colmanBagrutAverage: 60, colmanBagrutCertificateConfirmed: true },
+        },
+      }),
+    );
+    const { container } = render(<StudyJourney initialStep="detail" />);
+    await screen.findByText(baselineLaw.badge);
+    expect(screen.getByText(baselineLaw.explanation[0])).toBeTruthy();
+    const details = screen.getByText('פרטים נוספים').closest('details')!;
+    expect(details.open).toBe(false);
+    const items = [...details.querySelectorAll('li')].map((li) => li.textContent);
+    for (const requirement of baselineLaw.requirements)
+      expect(items.filter((text) => text === requirement)).toHaveLength(1);
+    expect(screen.queryByText('התנאים מורכבים? בדקו את הסיכויים שלכם')).toBeNull();
+    expect(container.querySelector('.journey-detail-actions')?.textContent).toBe(
+      baselineLaw.actions.replaceAll('\n', ''),
+    );
+    expect(container.querySelector('.journey-links')?.textContent).toBe(
+      baselineLaw.links.replaceAll('\n', ''),
+    );
   });
 
   it('loads account grades over an old browser draft and preserves edits during the visit', async () => {

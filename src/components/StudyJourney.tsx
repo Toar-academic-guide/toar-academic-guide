@@ -53,6 +53,7 @@ import WayPageShell from './WayPageShell';
 import PublicNavBar from './PublicNavBar';
 import ProgramShareButton from './ProgramShareButton';
 import AdmissionRequirements from './AdmissionRequirements';
+import RequirementTiles from './RequirementTiles';
 import AdmissionConditions from './AdmissionConditions';
 import { DANON_PROGRAM_URLS } from '@/data/admissions/danon';
 import { buildLoginPath, ROUTES } from '@/lib/routes';
@@ -1338,8 +1339,10 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                   )}
                   <AdmissionConditions conditions={activeRow.result?.additionalConditions} />
                   <h2>תנאי קבלה</h2>
-                  <AdmissionRequirements
-                    programId={activeRow.program.id}
+                  <RequirementTiles
+                    program={activeRow.program}
+                    preserveRequirements
+                    verificationIssue={activeRow.result?.degradationReason}
                     institutionId={activeRow.institution.id}
                     requirements={
                       activeRow.program.isListed === false

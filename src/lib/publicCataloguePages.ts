@@ -109,6 +109,7 @@ export interface PublicProgramPageData {
 }
 
 interface PublicProgramRequirementSource {
+  program: CatalogueProgram;
   sourceProgramId: string;
   requirements: string[];
   officialUrl?: string;
@@ -193,6 +194,7 @@ export async function getPublicProgramRequirementSources({
         )
       : requirements;
     institutionRequirementSources[institution.id] = {
+      program: sourceProgram,
       sourceProgramId: sourceProgram.id,
       requirements:
         isGeneral && program.isListed !== false && !hasRequirements(sourceRequirements)

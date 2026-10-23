@@ -21,8 +21,8 @@ const highRiskPathPatterns = [
   /^src\/app\/internal\//,
   /^src\/components\/CalculatorResults\./,
   /^src\/components\/LandingPage\./,
-  /^src\/components\/(StudyJourney|JourneyExactGrades|EnquiryForm)\./,
-  /^src\/lib\/(studyJourney|bagrutPdf)\./,
+  /^src\/components\/(StudyJourney|JourneyExactGrades|EnquiryForm|AdmissionRequirements|RequirementTiles)\./,
+  /^src\/lib\/(studyJourney|bagrutPdf|requirementTiles|requirementTileOverrides)\./,
   /^src\/app\/api\/enquiries\//,
   /^src\/data\/admissions\//,
   /^src\/data\/degrees\//,
@@ -81,6 +81,10 @@ const operationalReadGrants = {
 };
 
 const targetedTests = [
+  'src/lib/requirementTiles.test.ts',
+  'src/components/RequirementTiles.test.tsx',
+  'src/components/AdmissionRequirements.test.tsx',
+  'src/components/StudyJourney.account.test.tsx',
   'src/lib/studyJourney.test.ts',
   'src/lib/bagrutPdf.test.ts',
   'src/components/EnquiryForm.test.tsx',
