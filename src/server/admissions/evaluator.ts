@@ -2076,41 +2076,6 @@ function evaluateNonExactResult(args: {
     };
   }
 
-  if (
-    entry.capability === 'manual_gate' &&
-    (requestedInput.psychometric === undefined || requestedInput.bagrut === undefined)
-  ) {
-    const detail = findInstitutionDetail(program, institution);
-    const earlyFacts = detail?.admissionFacts ?? [];
-    const hasOnlyManualStructured =
-      earlyFacts.length > 0 &&
-      earlyFacts.every(
-        (fact) =>
-          fact.kind === 'manual_gate' ||
-          fact.kind === 'open_admission' ||
-          fact.kind === 'explicit_absence',
-      );
-    if (hasOnlyManualStructured || Boolean(detail?.admissionAlternativePaths?.length)) {
-      const structuredEarly = evaluateStructuredRequirementsResult({
-        input: {
-          ...requestedInput,
-          psychometric: requestedInput.psychometric ?? 0,
-          bagrut: requestedInput.bagrut ?? 0,
-        },
-        institution,
-        capability: 'manual_gate',
-        detail,
-        dynamicRequirements,
-        noGradeGate: true,
-        scoreGatePassed: false,
-        programType: program.type,
-      });
-      if (structuredEarly && structuredEarly.kind === 'manual_gate') {
-        return structuredEarly;
-      }
-    }
-  }
-
   if (requestedInput.psychometric === undefined || requestedInput.bagrut === undefined) {
     return requiredInputsResult(institution, [
       ...(requestedInput.psychometric === undefined ? ['psychometric_overall' as const] : []),
@@ -2657,9 +2622,7 @@ function evaluateStructuredRequirementsResult(
       !scoreGatePassed &&
       metNumericDescriptions.length === 0 &&
       !hasOpenAdmissionFact &&
-      !hasNoFormalGradeGate &&
-      manualGateDescriptions.length === 0 &&
-      alternativePathDescriptions.length === 0)
+      !hasNoFormalGradeGate)
   ) {
     return unverifiedRequirementsResult(
       institution,
