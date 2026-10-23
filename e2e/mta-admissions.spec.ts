@@ -121,13 +121,23 @@ for (const width of [1440, 390]) {
           }),
         );
       }, c);
-      const evaluated = page.waitForResponse(
-        (r) =>
-          r.url().endsWith('/api/admissions/evaluate') &&
-          r.request().postDataJSON()?.degreeIds?.includes(c.program),
-      );
+      test.setTimeout(150_000);
+      const waitForEvaluation = () =>
+        page.waitForResponse(
+          (r) =>
+            r.url().endsWith('/api/admissions/evaluate') &&
+            r.request().postDataJSON()?.degreeIds?.includes(c.program),
+        );
+      const evaluated = waitForEvaluation();
       await page.goto(width === 1440 ? '/#detail' : '/app/calculator#detail');
-      const response = await evaluated;
+      let response = await evaluated;
+      if (response.status() === 429) {
+        // Preview shares one client IP → 12 evaluate req/min; mirror Batch A/B/BIU.
+        await new Promise((resolve) => setTimeout(resolve, 60_000));
+        const retry = waitForEvaluation();
+        await page.reload();
+        response = await retry;
+      }
       expect(response.status()).toBe(200);
       const result = (await response.json()).data.reports[c.program].results.find(
         (r: { linkedInstitutionId: string }) => r.linkedInstitutionId === 'mta',

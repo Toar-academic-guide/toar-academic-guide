@@ -31,13 +31,23 @@ for (const width of [390, 1440]) {
           }),
         );
       }, degreeId);
-      const evaluation = page.waitForResponse(
-        (response) =>
-          response.url().endsWith('/api/admissions/evaluate') &&
-          response.request().postDataJSON()?.degreeIds?.includes(degreeId),
-      );
+      test.setTimeout(150_000);
+      const waitForEvaluation = () =>
+        page.waitForResponse(
+          (response) =>
+            response.url().endsWith('/api/admissions/evaluate') &&
+            response.request().postDataJSON()?.degreeIds?.includes(degreeId),
+        );
+      const evaluated = waitForEvaluation();
       await page.goto('/app/calculator#detail');
-      const response = await evaluation;
+      let response = await evaluated;
+      if (response.status() === 429) {
+        // Preview shares one client IP → 12 evaluate req/min; mirror Batch A/B/BIU.
+        await new Promise((resolve) => setTimeout(resolve, 60_000));
+        const retry = waitForEvaluation();
+        await page.reload();
+        response = await retry;
+      }
       expect(response.status()).toBe(200);
       const result = (await response.json()).data.reports[degreeId].results.find(
         (entry: { linkedInstitutionId: string }) => entry.linkedInstitutionId === 'reichman',
