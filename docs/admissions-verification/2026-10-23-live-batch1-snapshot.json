@@ -1,0 +1,123 @@
+{
+  "capturedAt": "2026-10-23T01:40:00+03:00",
+  "note": "Read-only snapshot of the production catalogue rows written by the 2026-10-23 official-requirements data fix (batch1). The repo seed must reproduce these values so that `npm run db:seed` cannot restore the old placeholders. ono_psychology:ono and ono_socialwork:ono are intentionally not seed-managed (the repo dropped them), so a reseed leaves those production rows untouched.",
+  "pairs": {
+    "ono_law:ono": {
+      "admissionRequirements": [
+        "קבלה ישירה: ממוצע בגרות 95 ומעלה, או פסיכומטרי 600 ומעלה ובגרות מלאה",
+        "קבלה משוקללת: ראיון קבלה, וגם ממוצע בגרות 80–94 או פסיכומטרי 550 ומעלה ובגרות מלאה",
+        "מעל גיל 30: ראיון קבלה ובגרות מלאה",
+        "תואר קודם ממוסד מוכר, 24 נ״ז מהאוניברסיטה הפתוחה או תעודת הנדסאי: קבלה ישירה. בעלי רקע לימודי קודם אחר: ראיון קבלה"
+      ],
+      "specificAdmissionNotes": [
+        "קבלה ישירה: ממוצע בגרות 95 ומעלה, או פסיכומטרי 600 ומעלה ובגרות מלאה",
+        "קבלה משוקללת: ראיון קבלה, וגם ממוצע בגרות 80–94 או פסיכומטרי 550 ומעלה ובגרות מלאה",
+        "מעל גיל 30: ראיון קבלה ובגרות מלאה",
+        "תואר קודם ממוסד מוכר, 24 נ״ז מהאוניברסיטה הפתוחה או תעודת הנדסאי: קבלה ישירה. בעלי רקע לימודי קודם אחר: ראיון קבלה",
+        "אפיק מעבר לאקדמיה: למי שיש בגרות מלאה ולא עומדים בתנאי הממוצע. צריך לעבור מקבץ קורסים אקדמיים לפני תחילת הלימודים.",
+        "המחשבון בודק רק ממוצע בגרות ופסיכומטרי. מסלול גיל 30+, תואר קודם ואפיק המעבר לא נבדקים בו."
+      ],
+      "sourceUrls": {
+        "institution": "https://www.ono.ac.il",
+        "program": "https://www.ono.ac.il/curriculum/llb/"
+      },
+      "admissionFacts": [
+        {
+          "id": "ono_law:ono:fact:group:route%2Fbagrut:1",
+          "kind": "numeric_gate",
+          "field": "bagrut_average",
+          "comparison": "gte",
+          "valueNumber": 80.0,
+          "valueText": null,
+          "description": "ממוצע בגרות 80 לפחות (95 ומעלה: קבלה ישירה; 80–94: קבלה משוקללת עם ראיון)",
+          "isRequired": true
+        },
+        {
+          "id": "ono_law:ono:fact:group:route%2Fpsych:1",
+          "kind": "numeric_gate",
+          "field": "psychometric",
+          "comparison": "gte",
+          "valueNumber": 550.0,
+          "valueText": null,
+          "description": "פסיכומטרי 550 לפחות ובגרות מלאה (600 ומעלה: קבלה ישירה; 550–599: קבלה משוקללת עם ראיון)",
+          "isRequired": true
+        },
+        {
+          "id": "ono_law:ono:fact:interview",
+          "kind": "manual_gate",
+          "field": "interview",
+          "comparison": "present",
+          "valueNumber": null,
+          "valueText": "ראיון קבלה",
+          "description": "ראיון קבלה בקבלה המשוקללת",
+          "isRequired": true
+        }
+      ],
+      "admissionAlternativePaths": []
+    },
+    "ono_nursing:ono": {
+      "admissionRequirements": [
+        "ממוצע בגרות 85 ומעלה ופסיכומטרי 520 ומעלה, וראיון קבלה",
+        "בלי פסיכומטרי (אפיק מעבר): ממוצע בגרות 85 ומעלה, ראיון קבלה ועמידה בדרישות האקדמיות של המסלול",
+        "מסלולי מצוינות בלי פסיכומטרי: ממוצע בגרות 100 ומעלה עם 5 יח״ל במקצוע מדעי, או ממוצע בגרות 103 ומעלה",
+        "אנגלית ברמת מתקדמים א׳ לפחות ועברית ברמת מתקדמים (יע״ל 100 במסלול הרגיל, ציון גבוה יותר בחלק מהמסלולים)"
+      ],
+      "specificAdmissionNotes": [
+        "ממוצע בגרות 85 ומעלה ופסיכומטרי 520 ומעלה, וראיון קבלה",
+        "בלי פסיכומטרי (אפיק מעבר): ממוצע בגרות 85 ומעלה, ראיון קבלה ועמידה בדרישות האקדמיות של המסלול",
+        "מסלולי מצוינות בלי פסיכומטרי: ממוצע בגרות 100 ומעלה עם 5 יח״ל במקצוע מדעי, או ממוצע בגרות 103 ומעלה",
+        "אנגלית ברמת מתקדמים א׳ לפחות ועברית ברמת מתקדמים (יע״ל 100 במסלול הרגיל, ציון גבוה יותר בחלק מהמסלולים)",
+        "מסלולים ייחודיים: לוחמים, משרתי מילואים, מפונים ובני משפחה שכולה מתקבלים לפי ממוצע בגרות 85 ומעלה וראיון. בוגרי מגמת בריאות: ממוצע 90 במגמה וממוצע בגרות כולל 85 ומעלה.",
+        "המחשבון בודק רק את ממוצע הבגרות (85 לפחות בכל המסלולים). הפסיכומטרי, הראיון והשפות נבדקים במכללה."
+      ],
+      "sourceUrls": {
+        "institution": "https://www.ono.ac.il",
+        "program": "https://www.ono.ac.il/curriculum/nursing/"
+      },
+      "admissionFacts": [
+        {
+          "id": "ono_nursing:ono:fact:bagrut",
+          "kind": "numeric_gate",
+          "field": "bagrut_average",
+          "comparison": "gte",
+          "valueNumber": 85.0,
+          "valueText": null,
+          "description": "ממוצע בגרות 85 לפחות (בכל מסלולי הקבלה שהמכללה מפרסמת)",
+          "isRequired": true
+        },
+        {
+          "id": "ono_nursing:ono:fact:interview",
+          "kind": "manual_gate",
+          "field": "interview",
+          "comparison": "present",
+          "valueNumber": null,
+          "valueText": "ראיון קבלה",
+          "description": "ראיון קבלה",
+          "isRequired": true
+        }
+      ],
+      "admissionAlternativePaths": []
+    },
+    "haifa_nursing:haifa": {
+      "admissionRequirements": [
+        "ציון סכם 580 ומעלה (טווח המתנה 570–579) וגם ציון פסיכומטרי 550 לפחות",
+        "8 יחידות מדעיות בבגרות ומבחן אינטליגנציה רגשית ממוחשב",
+        "אנגלית ברמת בסיסי ומעלה ועברית 115 ומעלה"
+      ],
+      "specificAdmissionNotes": [
+        "ציון סכם 580 ומעלה (טווח המתנה 570–579) וגם ציון פסיכומטרי 550 לפחות",
+        "8 יחידות מדעיות בבגרות ומבחן אינטליגנציה רגשית ממוחשב",
+        "אנגלית ברמת בסיסי ומעלה ועברית 115 ומעלה",
+        "יש מסלולים נוספים, למשל בלי פסיכומטרי לבוגרי מגמת בריאות עם ממוצע 90 ומעלה, מכינת המדעים של האוניברסיטה, מעבר מהאוניברסיטה הפתוחה ומסלולים למשרתי מילואים ולמפונים. הפרטים בעמוד התוכנית.",
+        "האוניברסיטה שומרת לעצמה את הזכות לשנות את תנאי הקבלה."
+      ],
+      "sourceUrls": {
+        "institution": "https://www.haifa.ac.il/ba_programs/",
+        "program": "https://admissions.haifa.ac.il/social-welfare-health-sciences/program/2973/",
+        "calculator": "https://admissions.haifa.ac.il/score-calculation/"
+      },
+      "admissionFacts": [],
+      "admissionAlternativePaths": []
+    }
+  }
+}
