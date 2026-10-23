@@ -33,7 +33,9 @@ describe('Batch B manual path evaluation', () => {
 
   it('keeps client ID map in sync with evaluator registry', () => {
     const registryPairs = [
-      ...Object.entries(BATCH_B_PROGRAMS).map(([id, config]) => [id, config.institutionId] as const),
+      ...Object.entries(BATCH_B_PROGRAMS).map(
+        ([id, config]) => [id, config.institutionId] as const,
+      ),
       ['ono_nursing', 'ono'] as const,
     ];
     expect(Object.keys(BATCH_B_MANUAL_PROGRAM_INSTITUTIONS).sort()).toEqual(
