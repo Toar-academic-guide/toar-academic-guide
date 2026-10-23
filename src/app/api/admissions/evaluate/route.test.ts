@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { resetAdmissionsEvaluationRateLimitForTests } from '@/server/admissions/rateLimit';
+import { PROGRAM_CANONICAL_ALIASES } from '@/lib/seo/programAliases';
+import { BATCH_B_PROGRAMS } from '@/server/admissions/batchBManualPathEvaluation';
 
 const hoistedMocks = vi.hoisted(() => ({
   listCataloguePrograms: vi.fn(),
@@ -35,6 +37,39 @@ describe('admissions evaluate route', () => {
         body: JSON.stringify(body),
       }),
     );
+
+  it.each(
+    Object.entries(PROGRAM_CANONICAL_ALIASES).filter(([aliasId]) => !BATCH_B_PROGRAMS[aliasId]),
+  )(
+    'resolves %s to %s for single and batch evaluation even when an alias row exists',
+    async (aliasId, canonicalId) => {
+      const program = { id: canonicalId, name: 'Canonical programme' };
+      hoistedMocks.listCataloguePrograms.mockResolvedValue({
+        data: [{ id: aliasId, name: 'Legacy programme' }, program],
+      });
+      for (const body of [{ degreeId: aliasId }, { degreeIds: [aliasId] }]) {
+        expect((await batchRequest(body)).status).toBe(200);
+        expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenLastCalledWith({
+          input: { degreeId: canonicalId },
+          program,
+          institutions: expect.any(Array),
+        });
+      }
+    },
+  );
+
+  it('reports the requested alias when its canonical evaluator fails', async () => {
+    hoistedMocks.listCataloguePrograms.mockResolvedValue({ data: [{ id: 'colmgmt_law' }] });
+    hoistedMocks.evaluateAdmissionsForProgram.mockRejectedValue(new Error('internal details'));
+    const response = await batchRequest({ degreeIds: ['colman_law'] });
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      data: { reports: {}, failedDegreeIds: ['colman_law'] },
+    });
+    expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenCalledWith(
+      expect.objectContaining({ input: { degreeId: 'colmgmt_law' } }),
+    );
+  });
 
   it('evaluates 24 programmes as one rate-limited request with shared inputs and at most four workers', async () => {
     const degreeIds = Array.from({ length: 24 }, (_, i) => `programme-${i}`);
