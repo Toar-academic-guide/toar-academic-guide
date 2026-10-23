@@ -635,6 +635,19 @@ describe('structured data', () => {
     'ariel_economics',
     'huji_business',
     'bgu_accounting',
+    'tau_accounting',
+    'huji_accounting',
+    'haifa_accounting',
+    'biu_criminology',
+    'ariel_criminology',
+    'ariel_communication',
+    'haifa_communication',
+    'haifa_politicalscience',
+    'haifa_sociology',
+    'ariel_health_systems',
+    'biu_computational_bio',
+    'biu_biotech',
+    'biu_lifesciences',
   ])(
     'adds FAQPage alongside program and breadcrumb schema for %s using on-page facts',
     async (id) => {
@@ -707,29 +720,48 @@ describe('structured data', () => {
         [institutionId]: { ...sources[institutionId], requirements: [] },
       }),
     ).toBeNull();
-    for (const id of ['tau_cs', 'psychology', 'law', 'nursing', 'cs']) {
+    for (const id of [
+      'tau_cs',
+      'technion_cs',
+      'ariel_cs',
+      'afeka_ee',
+      'haifa_psychology',
+      'psychology',
+      'law',
+      'nursing',
+      'cs',
+      ...programs.filter((program) => program.id.startsWith('reichman_')).map(({ id }) => id),
+    ]) {
       expect(programFaqPageLd({ ...data, program: { ...data.program, id } }, sources)).toBeNull();
     }
   });
 
-  it.each(['tau_cs', 'psychology', 'law', 'nursing', 'cs'])(
-    'omits FAQPage from the rendered non-allowlisted page %s',
-    async (id) => {
-      const data = (await getPublicProgramPageData(id))!;
-      expect(programFaqPageLd(data, await getPublicProgramRequirementSources(data))).toBeNull();
-      const document = new DOMParser().parseFromString(
-        renderToStaticMarkup(await ProgramPage({ params: Promise.resolve({ programId: id }) })),
-        'text/html',
-      );
-      const graph = JSON.parse(
-        document.querySelector('script[type="application/ld+json"]')!.textContent!,
-      );
-      expect(graph['@graph'].map((node: { '@type': string }) => node['@type'])).toEqual([
-        'EducationalOccupationalProgram',
-        'BreadcrumbList',
-      ]);
-    },
-  );
+  it.each([
+    'tau_cs',
+    'technion_cs',
+    'ariel_cs',
+    'afeka_ee',
+    'haifa_psychology',
+    'psychology',
+    'law',
+    'nursing',
+    'cs',
+    ...programs.filter((program) => program.id.startsWith('reichman_')).map(({ id }) => id),
+  ])('omits FAQPage from the rendered non-allowlisted page %s', async (id) => {
+    const data = (await getPublicProgramPageData(id))!;
+    expect(programFaqPageLd(data, await getPublicProgramRequirementSources(data))).toBeNull();
+    const document = new DOMParser().parseFromString(
+      renderToStaticMarkup(await ProgramPage({ params: Promise.resolve({ programId: id }) })),
+      'text/html',
+    );
+    const graph = JSON.parse(
+      document.querySelector('script[type="application/ld+json"]')!.textContent!,
+    );
+    expect(graph['@graph'].map((node: { '@type': string }) => node['@type'])).toEqual([
+      'EducationalOccupationalProgram',
+      'BreadcrumbList',
+    ]);
+  });
 
   it('classifies institutions and emits only official HTTPS identities with no inferred address', async () => {
     expect(institutionLd((await getPublicInstitutionPageData('tau'))!)).toMatchObject({
