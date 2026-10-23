@@ -11,7 +11,7 @@ import {
 import { catalogueAdmissionRequirements } from '@/lib/catalogueDisplayText';
 import { ROUTES } from '@/lib/routes';
 import { buildProgramMetadata } from '@/lib/seo/metadata';
-import { programLd, programBreadcrumbLd } from '@/lib/seo/jsonLd';
+import { programLd, programBreadcrumbLd, programFaqPageLd } from '@/lib/seo/jsonLd';
 import JsonLd from '@/components/seo/JsonLd';
 
 export const dynamic = 'force-dynamic';
@@ -34,10 +34,11 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
 
   const { program, institutions, institutionProgramPaths } = data;
   const institutionRequirementSources = await getPublicProgramRequirementSources(data);
+  const faq = programFaqPageLd(data, institutionRequirementSources);
 
   return (
     <WayPageShell>
-      <JsonLd data={[await programLd(data), programBreadcrumbLd(data)]} />
+      <JsonLd data={[await programLd(data), programBreadcrumbLd(data), ...(faq ? [faq] : [])]} />
       <main dir="rtl" className="px-4 py-10 text-right text-slate-900 sm:px-6">
         <section className="mx-auto flex max-w-4xl flex-col gap-8">
           <Link
