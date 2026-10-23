@@ -20,7 +20,7 @@ const targets = [
   ['telhai_cs', 'telhai', { mathUnits: 5, mathGrade: 75 }],
   ['telhai_biology', 'telhai', { mathUnits: 5, mathGrade: 65, physicsUnits: 5, physicsGrade: 65 }],
   ['ono_cs', 'ono', { mathUnits: 5, mathGrade: 75 }],
-  ['ono_business', 'ono', {}],
+  ['ono_business', 'ono', { mathUnits: 3, mathGrade: 75 }],
   ['ruppin_cs', 'ruppin', { mathUnits: 5, mathGrade: 70 }],
   [
     'reichman_business',

@@ -21,18 +21,46 @@ describe('Ono published alternatives', () => {
         .decision,
     ).toBe('below'),
   );
-  it.each([
-    ['ono_cs', 100, 650],
-    ['ono_business', 95, 600],
-  ])('%s standalone boundaries remain pending', (degreeId, bagrut, psychometric) => {
-    for (const scores of [{ bagrut: Number(bagrut) }, { psychometric: Number(psychometric) }])
-      expect(evaluate(String(degreeId), scores)).toMatchObject({
+  it('CS standalone bagrut/psych boundaries remain pending', () => {
+    for (const scores of [{ bagrut: 100 }, { psychometric: 650 }])
+      expect(evaluate('ono_cs', scores)).toMatchObject({
         decision: 'pending',
         scoreAssessment: 'meets_threshold',
         additionalConditions: expect.arrayContaining([
           expect.objectContaining({ status: 'unconfirmed' }),
         ]),
       });
+  });
+  it('business direct boundaries require published math gates', () => {
+    expect(evaluate('ono_business', { bagrut: 95 })).toMatchObject({
+      kind: 'needs_input',
+      requiredInputs: expect.arrayContaining(['math_units', 'math_grade']),
+    });
+    expect(evaluate('ono_business', { bagrut: 95 }, { mathUnits: 3, mathGrade: 75 })).toMatchObject(
+      {
+        decision: 'pending',
+        scoreAssessment: 'meets_threshold',
+        scoreLabel: 'ממוצע בגרות',
+      },
+    );
+    expect(
+      evaluate('ono_business', { psychometric: 600 }, { mathUnits: 5, mathGrade: 55 }),
+    ).toMatchObject({
+      decision: 'pending',
+      scoreAssessment: 'meets_threshold',
+      scoreLabel: 'פסיכומטרי',
+    });
+    // Direct bagrut fails math; interview psych band remains open without a psych score.
+    expect(evaluate('ono_business', { bagrut: 95 }, { mathUnits: 3, mathGrade: 74 })).toMatchObject(
+      {
+        kind: 'needs_input',
+        requiredInputs: expect.arrayContaining(['psychometric_overall']),
+      },
+    );
+    expect(
+      evaluate('ono_business', { bagrut: 95, psychometric: 549 }, { mathUnits: 3, mathGrade: 74 })
+        .decision,
+    ).toBe('below');
   });
   it.each([
     [5, 75],

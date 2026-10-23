@@ -54,3 +54,8 @@ Initial full CI found two issues missed by the original guard: legacy structured
 The correct Vercel project built commit `dd268cb`; its initial preview browser run passed the other flows but failed four new desktop cases with HTTP 429. No calculator regression was observed in those failures. The bounded quota retry passed locally with a deliberately exhausted test client: 2 desktop/mobile cases passed in 1.1 minutes after the expected 429 and window wait. All 18 new-programme desktop/mobile cases also passed again after the seed-copy fix; alias follow-up adds desktop/mobile coverage for MTA CS. Final PR checks supersede this initial run; Jorje still owns the source and admission-readiness gate.
 
 The final assembled-catalogue audit found `mta_cs` through dynamic generation. It now shares the existing MTA CS evaluator and seed requirements without changing formulas or thresholds. `colman_cs` is absent from the assembled catalogue. The dynamic MTA ID and display name are preserved; sitemap remains 352 URLs.
+
+## Jorje verification fix (2026-10-23 evening Asia/Jerusalem)
+
+- Encoded official direct-path math gate on `ono_business` (3u@75 / 4u@65 / 5u pass) after live official finance page confirmation; direct routes evaluated before interview fallback.
+- Ono CS official URL pointed at faculty curriculum page that publishes the OR thresholds.
