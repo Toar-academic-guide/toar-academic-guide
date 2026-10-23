@@ -6,7 +6,6 @@ const targets = [
   ['samspiegel_cinema', 'spieldocs', 'eligible_to_apply'],
   ['telhai_nursing', 'telhai', 'eligible_to_apply'],
   ['ono_nursing', 'ono', 'pending'],
-  ['biu_socialwork', 'biu', 'eligible_to_apply'],
 ] as const;
 
 for (const width of [390, 1440]) {

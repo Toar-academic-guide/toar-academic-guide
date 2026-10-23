@@ -4,6 +4,7 @@ import { getInstitutionDirectoryItems } from '@/data/institutionDirectory';
 import { PROGRAM_CANONICAL_ALIASES } from '@/lib/seo/programAliases';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type { AdmissionsEvaluationResult } from '@/types/admissionsEvaluation';
+import { isBatchBManualProgramId } from '@/data/admissions/batchBManualProgramIds';
 
 export const LOCATIONS = {
   all: 'כל הארץ',
@@ -242,7 +243,8 @@ export function resultExplanation(
         (['colmgmt_law', 'colmgmt_business', 'colmgmt_economics', 'colmgmt_cs'].includes(
           programId ?? '',
         ) &&
-          result.linkedInstitutionId === 'colman')
+          result.linkedInstitutionId === 'colman') ||
+        isBatchBManualProgramId(programId ?? '', result.linkedInstitutionId)
       )
         return result.explanation;
       return 'בנוסף לציונים, צריך לבדוק את שלבי המיון ותנאי ההגשה של המוסד.';

@@ -6,6 +6,10 @@ import {
   isBatchBManualProgram,
 } from './batchBManualPathEvaluation';
 import type { CatalogueInstitution } from '@/types/catalogue';
+import {
+  BATCH_B_MANUAL_PROGRAM_INSTITUTIONS,
+  isBatchBManualProgramId,
+} from '@/data/admissions/batchBManualProgramIds';
 
 const institution = (id: string): CatalogueInstitution =>
   ({
@@ -24,6 +28,21 @@ describe('Batch B manual path evaluation', () => {
     expect(isBatchBManualProgram('bezalel_fashion', 'bezalel')).toBe(true);
     expect(isBatchBManualProgram('telhai_cs', 'telhai')).toBe(false);
     expect(isBatchBManualProgram('ariel_nursing', 'ariel')).toBe(false);
+    expect(isBatchBManualProgram('biu_socialwork', 'biu')).toBe(false);
+  });
+
+  it('keeps client ID map in sync with evaluator registry', () => {
+    const registryPairs = [
+      ...Object.entries(BATCH_B_PROGRAMS).map(([id, config]) => [id, config.institutionId] as const),
+      ['ono_nursing', 'ono'] as const,
+    ];
+    expect(Object.keys(BATCH_B_MANUAL_PROGRAM_INSTITUTIONS).sort()).toEqual(
+      registryPairs.map(([id]) => id).sort(),
+    );
+    for (const [id, institutionId] of registryPairs) {
+      expect(isBatchBManualProgramId(id, institutionId)).toBe(true);
+      expect(isBatchBManualProgram(id, institutionId)).toBe(true);
+    }
   });
 
   it.each(Object.entries(BATCH_B_PROGRAMS))(
