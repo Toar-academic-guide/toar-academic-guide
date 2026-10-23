@@ -8,12 +8,26 @@ import type {
 import type { CatalogueInstitution } from '@/types/catalogue';
 
 const routes = {
-  colmgmt_law: { average: 100, psychometric: 540, quantitative: undefined, path: 'law' },
+  colmgmt_law: {
+    average: 100,
+    psychometric: 540,
+    quantitative: undefined,
+    path: 'law',
+    unpublishedWeightedScore: true,
+  },
   colmgmt_business: {
     average: 85,
     psychometric: 555,
     quantitative: 100,
     path: 'business-administration',
+    unpublishedWeightedScore: true,
+  },
+  colmgmt_economics: {
+    average: 85,
+    psychometric: 540,
+    quantitative: 110,
+    path: 'economy',
+    unpublishedWeightedScore: false,
   },
 } as const;
 
@@ -51,7 +65,9 @@ export function evaluateColmanPublishedRoutes({
       requiredInputs: ['colman_bagrut_average'],
       explanation:
         'לבדיקת מסלול הבגרות נדרש ממוצע משוקלל של המכללה למינהל. הממוצע הכללי בפרופיל אינו מחליף את ממוצע המכללה. ' +
-        collegeDecides,
+        (route.unpublishedWeightedScore
+          ? collegeDecides
+          : `אפשר להגיש מועמדות גם עם זכאות לבגרות, פסיכומטרי ${route.psychometric} ומעלה וציון כמותי ${route.quantitative} ומעלה.`),
       nextAction:
         'פתחו את הפרופיל האקדמי והשלימו את ממוצע המכללה למינהל ואת אישור הזכאות לתעודת בגרות מלאה.',
     };
@@ -113,6 +129,20 @@ export function evaluateColmanPublishedRoutes({
       nextAction:
         'השלימו את הציונים בפרופיל האקדמי, או בדקו מול מרכז הרישום אפשרות קבלה דרך מכינת שחקים.',
     };
+  }
+  if (!route.unpublishedWeightedScore) {
+    return withScoreAssessment(
+      {
+        ...base,
+        decision: 'eligible_to_apply',
+        score: input.psychometric,
+        scoreLabel: 'פסיכומטרי — מסלול בגרות ופסיכומטרי',
+        threshold: route.psychometric,
+        explanation: `תנאי הציונים למסלול בגרות ופסיכומטרי מתקיימים: פסיכומטרי ${route.psychometric} ומעלה וציון כמותי ${route.quantitative} ומעלה. יש לאשר זכאות לבגרות מלאה; אין כאן אישור קבלה סופית.`,
+        nextAction: 'פנו למרכז הרישום לאישור הציונים והזכאות לתעודת בגרות מלאה.',
+      },
+      conditions,
+    );
   }
   return {
     ...base,

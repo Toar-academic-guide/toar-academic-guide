@@ -15,6 +15,9 @@ import { readFileSync } from 'node:fs';
 import engineeringRules from '../../../docs/admissions-verification/2026-09-27-bgu-engineering-rules.json';
 import { BGU_ENGINEERING_METADATA_BY_PAIR_ID } from '@/data/admissions/bguEngineeringVerification';
 import type { AdmissionsExtraInputs } from '@/types/admissionsEvaluation';
+import type { AdmissionFact } from '@/data/degrees/types';
+import { getMondayAdmissionEvidenceByCatalogueInstitutionId } from '@/data/admissions/mondayEvidence';
+import { resultLabel } from '@/lib/studyJourney';
 import { DANON_PROGRAM_URLS } from '@/data/admissions/danon';
 import catalogueRepair from '@/data/admissions/catalogueContentRepair.json';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
@@ -1621,7 +1624,7 @@ describe('evaluateAdmissionsForProgram', () => {
     expectBguExact(report, 'below');
   });
 
-  it('promotes Reichman to eligible_to_apply once the official bagrut-average rule is verified', async () => {
+  it('keeps Reichman neutral when its bagrut rule has not been checked', async () => {
     const reichmanCs: CatalogueProgram = {
       id: 'reichman_cs',
       name: 'מדעי המחשב',
@@ -1662,10 +1665,10 @@ describe('evaluateAdmissionsForProgram', () => {
     expect(report.results).toContainEqual(
       expect.objectContaining({
         linkedInstitutionId: 'reichman',
-        kind: 'manual_gate',
-        capability: 'manual_gate',
-        decision: 'eligible_to_apply',
-        confidence: 'high',
+        kind: 'requirements_only',
+        capability: 'requirements_only',
+        decision: 'unknown',
+        confidence: 'low',
       }),
     );
   });
@@ -1722,7 +1725,7 @@ describe('evaluateAdmissionsForProgram', () => {
     );
   });
 
-  it('surfaces Ono law as eligible_to_apply with current official requirements after verification', async () => {
+  it('keeps free-text-only Ono law neutral until its numeric requirements are checked', async () => {
     const onoLaw: CatalogueProgram = {
       id: 'ono_law',
       name: 'משפטים',
@@ -1750,8 +1753,8 @@ describe('evaluateAdmissionsForProgram', () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'ono_law',
-        psychometric: 590,
-        bagrut: 92,
+        psychometric: 420,
+        bagrut: 70,
       },
       program: onoLaw,
       institutions: [...institutions, onoInstitution],
@@ -1760,12 +1763,12 @@ describe('evaluateAdmissionsForProgram', () => {
     expect(report.results).toContainEqual(
       expect.objectContaining({
         linkedInstitutionId: 'ono',
-        kind: 'manual_gate',
-        capability: 'manual_gate',
-        decision: 'eligible_to_apply',
-        confidence: 'high',
-        nextAction: expect.stringContaining('הקבלה האוטומטי'),
-        explanation: expect.stringContaining('מסלול קבלה אוטומטי'),
+        kind: 'requirements_only',
+        capability: 'requirements_only',
+        decision: 'unknown',
+        confidence: 'low',
+        nextAction: expect.stringContaining('באתר המוסד'),
+        explanation: expect.stringContaining('ממוצע בגרות 95+'),
       }),
     );
   });
@@ -2067,7 +2070,10 @@ describe('evaluateAdmissionsForProgram', () => {
     );
   });
 
-  it('returns the node-specific TAU Psychology score and verdict', async () => {
+  it.each([
+    { psychometric: 680, bagrut: 110 },
+    { psychometric: 760, bagrut: 118 },
+  ])('preserves the TAU Psychology exact verdict for $psychometric/$bagrut', async (profile) => {
     const fetcher = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(
@@ -2098,8 +2104,7 @@ describe('evaluateAdmissionsForProgram', () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'tau_psychology',
-        psychometric: 680,
-        bagrut: 110,
+        ...profile,
         extraInputs: { psychometricEnglish: 110 },
       },
       program: tauPsychology,
@@ -2168,7 +2173,7 @@ describe('evaluateAdmissionsForProgram', () => {
     );
   });
 
-  it('returns eligible_to_apply for design programs with manual gates only', async () => {
+  it('keeps design programs neutral when only manual gates are known', async () => {
     const designProgram: CatalogueProgram = {
       id: 'bezalel_design',
       name: 'עיצוב גרפי',
@@ -2216,10 +2221,10 @@ describe('evaluateAdmissionsForProgram', () => {
     expect(report.results).toContainEqual(
       expect.objectContaining({
         linkedInstitutionId: 'bezalel',
-        kind: 'manual_gate',
-        capability: 'manual_gate',
-        decision: 'eligible_to_apply',
-        sourceLabel: 'אפשר להגיש מועמדות',
+        kind: 'requirements_only',
+        capability: 'requirements_only',
+        decision: 'unknown',
+        sourceLabel: 'תנאי קבלה',
         explanation: expect.stringContaining('תיק עבודות יצירתי'),
       }),
     );
@@ -2386,68 +2391,71 @@ describe('evaluateAdmissionsForProgram', () => {
     );
   });
 
-  it('turns an accepted score-based result into manual_gate when structured interview stages remain', async () => {
-    const scoreProgram: CatalogueProgram = {
-      id: 'structured_score_manual_program',
-      name: 'פסיכולוגיה יישומית',
-      institution: 'אוניברסיטת בן-גוריון בנגב',
-      institutionId: 'bgu',
-      type: 'academic',
-      category: 'פסיכולוגיה',
-      profileScore: { AN: 4, TE: 2, CR: 1, SO: 5, LE: 2, OR: 2, DI: 1, ER: 4 },
-      admissionType: 'sekhem',
-      admissionRequirements: [],
-      thresholds: { bgu: 600 },
-      linkedInstitutionIds: ['bgu'],
-      institutionDetails: [
-        {
-          institutionName: 'אוניברסיטת בן-גוריון בנגב',
-          durationYears: 3,
-          estimatedStudentsPerYear: 'לא ידוע',
-          quantitativeMinRequirement: null,
-          englishMinRequirement: null,
-          specificAdmissionNotes: [],
-          officialCalculatorUrl: '',
-          admissionFacts: [
-            {
-              id: 'structured_score_manual_program:bgu:interview',
-              kind: 'manual_gate',
-              field: 'interview',
-              comparison: 'present',
-              valueNumber: null,
-              valueText: 'ראיון קבלה',
-              unit: 'text',
-              description: 'ראיון קבלה מחייב',
-              confidence: 'high',
-              isRequired: true,
-            },
-          ],
+  it.each([115, 118])(
+    'keeps an accepted estimated score with bagrut %s eligible when an interview remains',
+    async (bagrut) => {
+      const scoreProgram: CatalogueProgram = {
+        id: 'structured_score_manual_program',
+        name: 'פסיכולוגיה יישומית',
+        institution: 'אוניברסיטת בן-גוריון בנגב',
+        institutionId: 'bgu',
+        type: 'academic',
+        category: 'פסיכולוגיה',
+        profileScore: { AN: 4, TE: 2, CR: 1, SO: 5, LE: 2, OR: 2, DI: 1, ER: 4 },
+        admissionType: 'sekhem',
+        admissionRequirements: [],
+        thresholds: { bgu: 600 },
+        linkedInstitutionIds: ['bgu'],
+        institutionDetails: [
+          {
+            institutionName: 'אוניברסיטת בן-גוריון בנגב',
+            durationYears: 3,
+            estimatedStudentsPerYear: 'לא ידוע',
+            quantitativeMinRequirement: null,
+            englishMinRequirement: null,
+            specificAdmissionNotes: [],
+            officialCalculatorUrl: '',
+            admissionFacts: [
+              {
+                id: 'structured_score_manual_program:bgu:interview',
+                kind: 'manual_gate',
+                field: 'interview',
+                comparison: 'present',
+                valueNumber: null,
+                valueText: 'ראיון קבלה',
+                unit: 'text',
+                description: 'ראיון קבלה מחייב',
+                confidence: 'high',
+                isRequired: true,
+              },
+            ],
+          },
+        ],
+      };
+
+      const report = await evaluateAdmissionsForProgram({
+        input: {
+          degreeId: 'structured_score_manual_program',
+          psychometric: 760,
+          bagrut,
         },
-      ],
-    };
+        program: scoreProgram,
+        institutions,
+      });
 
-    const report = await evaluateAdmissionsForProgram({
-      input: {
-        degreeId: 'structured_score_manual_program',
-        psychometric: 760,
-        bagrut: 115,
-      },
-      program: scoreProgram,
-      institutions,
-    });
-
-    expect(report.results).toContainEqual(
-      expect.objectContaining({
-        linkedInstitutionId: 'bgu',
-        capability: 'manual_gate',
-        kind: 'manual_gate',
-        decision: 'eligible_to_apply',
-        score: expect.any(Number),
-        threshold: 600,
-        explanation: expect.stringContaining('ראיון קבלה מחייב'),
-      }),
-    );
-  });
+      expect(report.results).toContainEqual(
+        expect.objectContaining({
+          linkedInstitutionId: 'bgu',
+          capability: 'manual_gate',
+          kind: 'manual_gate',
+          decision: 'eligible_to_apply',
+          score: expect.any(Number),
+          threshold: 600,
+          explanation: expect.stringContaining('ראיון קבלה מחייב'),
+        }),
+      );
+    },
+  );
 
   it('returns below when structured numeric admission facts are not met before a manual gate stage', async () => {
     const structuredProgram: CatalogueProgram = {
@@ -2771,7 +2779,7 @@ describe('evaluateAdmissionsForProgram', () => {
     );
   });
 
-  it('returns eligible_to_apply when the direct structured numeric gate is missed but an official alternative path exists', async () => {
+  it('returns below with the gap when the direct numeric gate is missed despite an alternative path', async () => {
     const structuredProgram: CatalogueProgram = {
       id: 'structured_alt_route_program',
       name: 'משפטים',
@@ -2843,10 +2851,12 @@ describe('evaluateAdmissionsForProgram', () => {
         linkedInstitutionId: 'structured_alt',
         capability: 'manual_gate',
         kind: 'manual_gate',
-        decision: 'eligible_to_apply',
+        decision: 'below',
         sourceLabel: 'קיימים אפיקים חלופיים',
         threshold: 85,
         score: 78,
+        deltaNeeded: { psychometric: 0, bagrut: 7 },
+        explanation: expect.stringContaining('מכינה קדם-אקדמית'),
       }),
     );
   });
@@ -3490,3 +3500,319 @@ it.each(healthOfficial.captures.filter((fixture) => fixture.kind === 'eligible')
     );
   },
 );
+
+describe('catalogue eligibility safety', () => {
+  const onoLaw = getStaticCataloguePrograms().find((program) => program.id === 'ono_law')!;
+  const onoSocialwork: CatalogueProgram = {
+    ...onoLaw,
+    id: 'ono_socialwork',
+    name: 'עבודה סוציאלית',
+    admissionRequirements: ['פסיכומטרי 440 ומעלה', 'ממוצע בגרות 70 ומעלה'],
+    institutionDetails: [
+      {
+        ...onoLaw.institutionDetails![0],
+        admissionFacts: [
+          {
+            id: 'ono_socialwork:psychometric',
+            kind: 'numeric_gate',
+            field: 'psychometric',
+            comparison: 'gte',
+            valueNumber: 440,
+            valueText: null,
+            unit: 'points',
+            description: 'פסיכומטרי 440 ומעלה',
+            confidence: 'high',
+            isRequired: true,
+          },
+          {
+            id: 'ono_socialwork:bagrut',
+            kind: 'numeric_gate',
+            field: 'bagrut_average',
+            comparison: 'gte',
+            valueNumber: 70,
+            valueText: null,
+            unit: 'average',
+            description: 'ממוצע בגרות 70 ומעלה',
+            confidence: 'high',
+            isRequired: true,
+          },
+        ],
+      },
+    ],
+  };
+
+  it.each([
+    ['ono_law', 'ono', 'below'],
+    ['ono_socialwork', 'ono', 'below'],
+    ['tau_medicine', 'tau', 'unknown'],
+    ['medicine', 'tau', 'unknown'],
+    ['mta_cs', 'mta', 'unknown'],
+  ])(
+    'does not claim eligibility for a weak profile at %s:%s',
+    async (degreeId, institutionId, decision) => {
+      const program =
+        degreeId === 'ono_socialwork'
+          ? onoSocialwork
+          : getStaticCataloguePrograms().find((item) => item.id === degreeId)!;
+      expect(program).toBeDefined();
+      const report = await evaluateAdmissionsForProgram({
+        input: { degreeId, psychometric: 420, bagrut: 70 },
+        program,
+        institutions: getStaticCatalogueInstitutions(),
+        fetcher: vi.fn<typeof fetch>().mockRejectedValue(new Error('Offline fixture')),
+      });
+      const result = report.results.find((item) => item.linkedInstitutionId === institutionId)!;
+      expect(result).toBeDefined();
+      expect(result.decision).toBe(decision);
+      if (decision === 'unknown') {
+        expect(result.kind).toBe('requirements_only');
+        expect(resultLabel(result).group).toBe('explore');
+      }
+      expect(result.explanation).not.toMatch(/[A-Za-z]{2,}\s+[A-Za-z]{2,}/);
+      if (degreeId === 'ono_socialwork') {
+        expect(result).toMatchObject({
+          score: 420,
+          threshold: 440,
+          deltaNeeded: { psychometric: 20, bagrut: 0 },
+        });
+        expect(result.explanation).toContain('אפיקים חלופיים');
+      }
+    },
+  );
+
+  const manualFact: AdmissionFact = {
+    id: 'fixture:interview',
+    kind: 'manual_gate',
+    field: 'interview',
+    comparison: 'present',
+    valueNumber: null,
+    valueText: null,
+    unit: 'text',
+    description: 'ריאיון קבלה',
+    confidence: 'high',
+    isRequired: true,
+  };
+  const numericFact = onoSocialwork.institutionDetails![0].admissionFacts![0];
+  const absence = (field: 'psychometric' | 'bagrut_average'): AdmissionFact => ({
+    ...manualFact,
+    id: `fixture:absence:${field}`,
+    kind: 'explicit_absence',
+    field,
+    comparison: 'not_required',
+    description: field === 'psychometric' ? 'אין צורך בפסיכומטרי' : 'אין צורך בבגרות',
+  });
+
+  it.each([
+    { name: 'manual steps alone', facts: [manualFact], eligible: false },
+    {
+      name: 'a missing numeric value',
+      facts: [manualFact, { ...numericFact, valueNumber: null }],
+      eligible: false,
+    },
+    {
+      name: 'a placeholder numeric threshold',
+      facts: [manualFact, { ...numericFact, valueNumber: 0 }],
+      eligible: false,
+    },
+    {
+      name: 'an unsupported numeric field',
+      facts: [manualFact, { ...numericFact, field: 'sekhem' as const }],
+      eligible: false,
+    },
+    {
+      name: 'an unverified numeric fact',
+      facts: [manualFact, { ...numericFact, confidence: 'low' as const }],
+      eligible: false,
+    },
+    {
+      name: 'an unchecked grouped route',
+      facts: [manualFact, { ...numericFact, valueNumber: null, groupKey: 'route/first' }],
+      eligible: false,
+    },
+    {
+      name: 'a partly checked route',
+      facts: [
+        manualFact,
+        { ...numericFact, valueNumber: 400 },
+        { ...numericFact, id: 'fixture:unchecked', field: 'sekhem' as const },
+      ],
+      eligible: false,
+    },
+    {
+      name: 'only psychometric explicitly absent',
+      facts: [manualFact, absence('psychometric')],
+      eligible: false,
+    },
+    {
+      name: 'unverified absence of grade gates',
+      facts: [
+        manualFact,
+        { ...absence('psychometric'), confidence: 'low' as const },
+        absence('bagrut_average'),
+      ],
+      eligible: false,
+    },
+    {
+      name: 'both grades explicitly absent',
+      facts: [manualFact, absence('psychometric'), absence('bagrut_average')],
+      eligible: true,
+    },
+    {
+      name: 'open admission with an interview',
+      facts: [
+        manualFact,
+        {
+          ...manualFact,
+          id: 'fixture:open',
+          kind: 'open_admission' as const,
+          field: 'open_admission' as const,
+        },
+      ],
+      eligible: true,
+    },
+    {
+      name: 'a checked numeric gate',
+      facts: [manualFact, { ...numericFact, valueNumber: 400 }],
+      eligible: true,
+    },
+    {
+      name: 'a checked grouped alternative',
+      facts: [
+        manualFact,
+        { ...numericFact, valueNumber: null, groupKey: 'route/first' },
+        { ...numericFact, id: 'fixture:passed', valueNumber: 400, groupKey: 'route/second' },
+      ],
+      eligible: true,
+    },
+  ])('requires checked numeric gates or explicit absence: $name', async ({ facts, eligible }) => {
+    // This institution has no institution-wide claim of admission without grades.
+    const institution = getStaticCatalogueInstitutions().find((item) => item.id === 'mta')!;
+    const program: CatalogueProgram = {
+      ...onoSocialwork,
+      id: 'eligibility_fixture',
+      institution: institution.name,
+      institutionId: 'mta',
+      linkedInstitutionIds: ['mta'],
+      institutionDetails: [
+        {
+          ...onoSocialwork.institutionDetails![0],
+          institutionName: institution.name,
+          admissionFacts: facts,
+          admissionAlternativePaths: [],
+          specificAdmissionNotes: [],
+        },
+      ],
+    };
+    const report = await evaluateAdmissionsForProgram({
+      program,
+      institutions: [institution],
+      input: { degreeId: program.id, psychometric: 420, bagrut: 70 },
+    });
+    expect(report.results[0].decision).toBe(eligible ? 'eligible_to_apply' : 'unknown');
+    if (!eligible) expect(resultLabel(report.results[0]).group).toBe('explore');
+  });
+
+  it('sanitises internal notes in free-text requirements without mutating source data', async () => {
+    const institution = getStaticCatalogueInstitutions().find((item) => item.id === 'mta')!;
+    const program: CatalogueProgram = {
+      ...onoSocialwork,
+      id: 'free_text_fixture',
+      institution: institution.name,
+      institutionId: 'mta',
+      linkedInstitutionIds: ['mta'],
+      admissionRequirements: [
+        'Admission depends on manual review such as interview, portfolio, exam, or committee.',
+        'ממוצע בגרות 90 ומעלה',
+        'IELTS 6.5',
+      ],
+      institutionDetails: [],
+    };
+    const before = structuredClone(program);
+    const report = await evaluateAdmissionsForProgram({
+      program,
+      institutions: [institution],
+      input: { degreeId: program.id, psychometric: 420, bagrut: 70 },
+    });
+    expect(report.results[0].decision).toBe('unknown');
+    expect(report.results[0].explanation).not.toContain('Admission depends');
+    expect(report.results[0].explanation).toContain('הקבלה כוללת מיון נוסף');
+    expect(report.results[0].explanation).toContain('ממוצע בגרות 90 ומעלה');
+    expect(report.results[0].explanation).toContain('IELTS 6.5');
+    expect(program).toEqual(before);
+  });
+
+  it('never marks a weak profile eligible across the catalogue without checked gates or explicit no-grade admission', async () => {
+    const profile = { psychometric: 420, bagrut: 70 };
+    const passes = (fact: AdmissionFact) => {
+      const actual =
+        fact.field === 'psychometric'
+          ? profile.psychometric
+          : fact.field === 'bagrut_average'
+            ? profile.bagrut
+            : undefined;
+      if (actual === undefined || fact.valueNumber === null || fact.confidence !== 'high')
+        return false;
+      if (fact.comparison === 'gte') return actual >= fact.valueNumber;
+      if (fact.comparison === 'lte') return actual <= fact.valueNumber;
+      return fact.comparison === 'eq' && actual === fact.valueNumber;
+    };
+    let checkedPairs = 0;
+    for (const program of getStaticCataloguePrograms()) {
+      const report = await evaluateAdmissionsForProgram({
+        program,
+        institutions: getStaticCatalogueInstitutions(),
+        input: { degreeId: program.id, ...profile },
+        fetcher: vi.fn<typeof fetch>().mockRejectedValue(new Error('Offline fixture')),
+      });
+      for (const result of report.results) {
+        checkedPairs += 1;
+        if (result.decision !== 'eligible_to_apply') continue;
+        const detail = program.institutionDetails?.find(
+          (item) =>
+            item.institutionName === program.institution ||
+            item.institutionName === result.institution.name,
+        );
+        const facts = detail?.admissionFacts ?? [];
+        const explicitNoGate =
+          facts.some((fact) => fact.kind === 'open_admission') ||
+          ['psychometric', 'bagrut_average'].every((field) =>
+            facts.some((fact) => fact.kind === 'explicit_absence' && fact.field === field),
+          ) ||
+          getMondayAdmissionEvidenceByCatalogueInstitutionId(result.linkedInstitutionId).some(
+            (evidence) => evidence.noBagrutNeeded && evidence.noPsychometricNeeded,
+          );
+        const numeric = facts.filter((fact) => fact.kind === 'numeric_gate');
+        const groups = new Map<string, Map<string, AdmissionFact[]>>();
+        const common: AdmissionFact[] = [];
+        for (const fact of numeric) {
+          const encoded = fact.id.match(/:fact:group:([^:]+):/u)?.[1];
+          const group = fact.groupKey ?? (encoded ? decodeURIComponent(encoded) : undefined);
+          if (!group) {
+            common.push(fact);
+            continue;
+          }
+          const [category, option] = group.split('/', 2);
+          const options = groups.get(category) ?? new Map<string, AdmissionFact[]>();
+          options.set(option, [...(options.get(option) ?? []), fact]);
+          groups.set(category, options);
+        }
+        const checkedFacts =
+          numeric.length > 0 &&
+          common.every(passes) &&
+          [...groups.values()].every((options) =>
+            [...options.values()].some((option) => option.every(passes)),
+          );
+        const checkedThreshold =
+          result.score !== undefined &&
+          result.threshold != null &&
+          result.threshold > 0 &&
+          result.score >= result.threshold;
+        expect(
+          explicitNoGate || checkedFacts || checkedThreshold,
+          `${program.id}:${result.linkedInstitutionId}`,
+        ).toBe(true);
+      }
+    }
+    expect(checkedPairs).toBeGreaterThan(400);
+  });
+});

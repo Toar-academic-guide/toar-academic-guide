@@ -2955,6 +2955,22 @@ export const academicPrograms: Program[] = [
       'מסלול בגרות ופסיכומטרי: זכאות לבגרות, פסיכומטרי 540+ וכמותי 110+',
       'חלופת קבלה: מכינת שחקים למי שלא עומדים בסף',
     ],
+    institutionDetails: [
+      {
+        institutionName: 'מכללת ניהול – לימודים אקדמיים',
+        durationYears: null,
+        estimatedStudentsPerYear: '',
+        quantitativeMinRequirement: null,
+        englishMinRequirement: null,
+        specificAdmissionNotes: [
+          'לוחמים בשירות סדיר או קבע עם תעודת שחרור מסוג "זהב" יכולים להתקבל במתווה מיוחד בתנאים מקלים, בתוך חמש שנים מתום שנת השחרור.',
+        ],
+        officialCalculatorUrl:
+          'https://wwwi.colman.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1',
+        programUrl: 'https://www.colman.ac.il/academics/ba/economy/',
+        calculatorUrl: 'https://wwwi.colman.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1',
+      },
+    ],
   },
   {
     id: 'colmgmt_law',

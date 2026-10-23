@@ -97,6 +97,7 @@ const targetedTests = [
   'src/server/admissions/colmanPublishedRoutesEvaluation.test.ts',
   'src/server/admissions/mtaComputerScienceEvaluation.test.ts',
   'src/server/admissions/officialRequirements4.test.ts',
+  'src/server/admissions/officialRequirements5.test.ts',
   'src/server/admissions/bguEngineeringPolicy.test.ts',
   'src/server/admissions/tauComputerSciencePolicy.test.ts',
   'src/server/admissions/bguQuantitativeRoutes.test.ts',
