@@ -9,6 +9,11 @@ import type { Program } from '@/data/degrees/types';
 // structured subject policy instead.
 const TAU_QUALIFYING_MATH_AND_PHYSICS_BONUS = 10;
 
+/** Reichman's client calculator formula; indicative until confirmed by admissions. */
+export function calculateReichmanCoordinatedScore(bagrut: number, psychometric: number): number {
+  return 4.812 * bagrut + 0.5131 * psychometric - 163.19;
+}
+
 // ── Bagrut normalization ──────────────────────────────────────────────────────
 // Converts raw bagrut average (60–120 with bonuses) to the 200–800 psychometric
 // scale used by TAU / HUJI / BGU weighted formulas.
@@ -51,7 +56,7 @@ export function calculateSekhem(
   engineeringOptions: EngineeringOptions,
 ): number {
   if (university.id === 'reichman') {
-    return 4.812 * scores.bagrut + 0.5131 * scores.psychometric - 163.19;
+    return calculateReichmanCoordinatedScore(scores.bagrut, scores.psychometric);
   }
 
   if (university.id === 'afeka') {
