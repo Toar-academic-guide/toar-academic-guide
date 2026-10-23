@@ -1,3 +1,4 @@
+import { isBatchCUnsupportedProgramId } from '@/data/admissions/batchCUnsupportedProgramIds';
 import { FIELD_ENRICHMENT, PROGRAM_FIELD_MAP } from '@/data/degrees/fieldEnrichment';
 import { DANON_PROGRAM_NAMES } from '@/data/admissions/danon';
 import { getInstitutionDirectoryItems } from '@/data/institutionDirectory';
@@ -230,6 +231,8 @@ export function resultExplanation(
     case 'requirements_only':
     case 'tracked_missing_rule':
     case 'unsupported':
+      if (isBatchCUnsupportedProgramId(programId ?? '', result.linkedInstitutionId))
+        return result.explanation;
       return 'אין כרגע חישוב קבלה מאומת למסלול הזה. אפשר לבדוק את התנאים העדכניים באתר המוסד.';
     case 'authority_unavailable':
     case 'degraded':

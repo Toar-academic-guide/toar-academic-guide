@@ -55,6 +55,7 @@ import ProgramShareButton from './ProgramShareButton';
 import AdmissionRequirements from './AdmissionRequirements';
 import RequirementTiles from './RequirementTiles';
 import AdmissionConditions from './AdmissionConditions';
+import { isBatchCUnsupportedProgramId } from '@/data/admissions/batchCUnsupportedProgramIds';
 import { DANON_PROGRAM_URLS } from '@/data/admissions/danon';
 import { buildLoginPath, ROUTES } from '@/lib/routes';
 import './StudyJourney.css';
@@ -353,8 +354,17 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
         failed: failedReports.includes(active.program.id),
       }
     : undefined;
+  const isBatchCUnsupported = activeRow
+    ? isBatchCUnsupportedProgramId(activeRow.program.id, activeRow.institution.id)
+    : false;
   const details = activeRow?.program.institutionDetails?.find(
     (detail) => detail.institutionName === activeRow.institution.name,
+  );
+  const activeOfficialUrl = officialUrl(
+    (isBatchCUnsupported ? activeRow?.result?.officialUrls?.[0] : undefined) ??
+      details?.programUrl ??
+      activeRow?.institution.programUrl,
+    activeRow?.institution.id,
   );
   const description = catalogueDescription(details?.programDescription);
   const counts = useMemo(() => {
@@ -1317,7 +1327,7 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                         : 'שמירה לרשימה'}
                     </button>
                   </div>
-                  {description && <p>{description}</p>}
+                  {description && !isBatchCUnsupported && <p>{description}</p>}
                   <span
                     className={`journey-status status-${resultLabel(activeRow.result, activeRow.failed).group}`}
                   >
@@ -1339,23 +1349,28 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                   )}
                   <AdmissionConditions conditions={activeRow.result?.additionalConditions} />
                   <h2>תנאי קבלה</h2>
-                  <RequirementTiles
-                    program={activeRow.program}
-                    preserveRequirements
-                    verificationIssue={activeRow.result?.degradationReason}
-                    institutionId={activeRow.institution.id}
-                    requirements={
-                      activeRow.program.isListed === false
-                        ? ['אין כרגע מידע עדכני על המסלול.']
-                        : catalogueAdmissionRequirements(
-                            details?.specificAdmissionNotes,
-                            activeRow.program.admissionRequirements,
-                            activeRow.program.id,
-                          )
-                    }
-                  />
+                  {isBatchCUnsupported ? (
+                    <p>{activeRow.result?.nextAction}</p>
+                  ) : (
+                    <RequirementTiles
+                      program={activeRow.program}
+                      preserveRequirements
+                      verificationIssue={activeRow.result?.degradationReason}
+                      institutionId={activeRow.institution.id}
+                      requirements={
+                        activeRow.program.isListed === false
+                          ? ['אין כרגע מידע עדכני על המסלול.']
+                          : catalogueAdmissionRequirements(
+                              details?.specificAdmissionNotes,
+                              activeRow.program.admissionRequirements,
+                              activeRow.program.id,
+                            )
+                      }
+                    />
+                  )}
                   <div className="journey-links">
-                    {!DANON_PROGRAM_URLS[activeRow.program.id] &&
+                    {!isBatchCUnsupported &&
+                      !DANON_PROGRAM_URLS[activeRow.program.id] &&
                       activeRow.result?.degradationReason !==
                         'incomplete_published_requirements' && (
                         <>
@@ -1367,18 +1382,8 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                           <button onClick={() => go('alternatives')}>עוד דרכי קבלה</button>
                         </>
                       )}
-                    {officialUrl(
-                      details?.programUrl ?? activeRow.institution.programUrl,
-                      activeRow.institution.id,
-                    ) && (
-                      <a
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        href={officialUrl(
-                          details?.programUrl ?? activeRow.institution.programUrl,
-                          activeRow.institution.id,
-                        )}
-                      >
+                    {activeOfficialUrl && (
+                      <a target="_blank" rel="noopener noreferrer" href={activeOfficialUrl}>
                         לאתר המוסד
                       </a>
                     )}
