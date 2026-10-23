@@ -113,10 +113,10 @@ describe('Batch B manual path evaluation', () => {
     expect(result?.decision).not.toBe('accepted');
   });
 
-  it('biu socialwork never asks for סכם', () => {
+  it('reichman infosystems never asks for סכם', () => {
     const result = evaluateBatchBManualPath({
-      input: { degreeId: 'biu_socialwork', psychometric: 700, bagrut: 100 },
-      institution: institution('biu'),
+      input: { degreeId: 'reichman_infosystems', psychometric: 700, bagrut: 100 },
+      institution: institution('reichman'),
     });
     expect(result?.explanation).toContain('ראיון');
     expect(result?.explanation).not.toMatch(/מתואם|סכם|מצרף/);

@@ -307,14 +307,6 @@ export const BATCH_B_PROGRAMS: Record<string, BatchBProgramConfig> = {
     officialUrls: ['https://www.telhai.ac.il/'],
     notes: 'סף הציונים מתפרסם בחוג; לא מחשבים כאן זכאות מספרית.',
   },
-  biu_socialwork: {
-    institutionId: 'biu',
-    gate: 'interview',
-    scoresOptional: true,
-    steps: ['ראיון קבלה'],
-    officialUrls: ['https://social-work.biu.ac.il/'],
-    notes: 'הקבלה כוללת ראיון; בדקו ספים באתר בר־אילן. לא מבקשים כאן ציון קבלה מוסדי.',
-  },
   // Still listed; product may delist later — honest gate only, no invented scores.
   tlvyaffo_socialwork: {
     institutionId: 'mta',

@@ -20,11 +20,11 @@ Registry: `src/server/admissions/batchBManualPathEvaluation.ts` (`BATCH_B_PROGRA
 | Cinema | samspiegel_* | manual mixed / interview |
 | Music / acting / dance / PE | jerusalem_academy_*, rubin_classical, nativ_acting, beit_zvi_*, seminar_*, wingate_* | audition / interview |
 | CE / complementary | reidman_*, broshim_*, ono_ce_*, pardeshana_integrative, bishulim_* | interview / practical exam |
-| Nursing / social | telhai_nursing, telhai_socialwork, biu_socialwork, tlvyaffo_socialwork, ono_socialwork | interview-primary; no invented floors |
+| Nursing / social | telhai_nursing, telhai_socialwork, tlvyaffo_socialwork, ono_socialwork | interview-primary; no invented floors |
 | Ono nursing | `ono_nursing` | Official floors from Ono nursing page extract + interview gate |
 | Reichman infosystems | `reichman_infosystems` | Interview/committee; no clear numeric MIS row (Batch A deferral) |
 
-Count: registry keys + `ono_nursing` ≈ 40.
+Count: registry keys + `ono_nursing` = 47 (biu_socialwork pulled after source verify).
 
 ## Ono nursing floors (official-grounded)
 
@@ -52,6 +52,7 @@ Seed previously claimed bagrut 76 / psych 460 (nursing) and 72 / 450 (socialwork
 |---|---|
 | All `ariel_*` | Batch C endpoint / source work |
 | BIU סכם composites (`biu_cs`, …) | Batch A follow-up; never ask student for סכם |
+| `biu_socialwork` | Official primary path is numeric שקלול 69 + psych ≥580; interview is reserved/optional. Pulled from Batch B to avoid false `eligible_to_apply` for weak scores — Batch A follow-up |
 | `mon_*` mislabeled graphic_design / vocational phantoms | Batch C |
 | danon_*, hackeru_*, elevation_*, itc_*, johnbryce_* | Vocational / already separate paths |
 | Tel Hai numeric floors | Official pages unreachable; smell-test failed on seed |
