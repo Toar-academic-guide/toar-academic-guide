@@ -1,6 +1,7 @@
 import type { InstitutionDetail } from '@/data/degrees/types';
 import { DANON_PROGRAM_NAMES } from '@/data/admissions/danon';
 import { allPrograms } from '@/data/degrees';
+import { applyCatalogueContentRepair } from '@/data/admissions/catalogueContentRepair';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type {
   AdmissionAlternativePathRow,
@@ -204,14 +205,14 @@ export function serializeProgramRow(args: {
   for (const threshold of thresholds) {
     if (threshold.thresholdKind === 'sekhem') {
       thresholdMap[threshold.universityId] = threshold.thresholdValue;
-    } else if (threshold.thresholdValue !== null) {
+    } else if (threshold.thresholdValue !== null && program.id !== 'haifa_psychology') {
       directPsychometricMap[threshold.universityId] = threshold.thresholdValue;
     }
   }
 
   const staticProgram = STATIC_PROGRAMS_BY_ID.get(program.id);
 
-  return {
+  const serialized: CatalogueProgram = {
     id: program.id,
     name: DANON_PROGRAM_NAMES[program.id] ?? program.name,
     isListed: program.isListed,
@@ -250,4 +251,5 @@ export function serializeProgramRow(args: {
     ),
     linkedInstitutionIds: relations.map((relation) => relation.institutionId),
   };
+  return program.id === 'haifa_psychology' ? applyCatalogueContentRepair(serialized) : serialized;
 }

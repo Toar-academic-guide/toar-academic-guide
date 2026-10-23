@@ -14,8 +14,8 @@ type ContentRepair = {
 const requirements = repair.requirements as ContentRepair[];
 const excludedIds = new Set(repair.excludedPrograms.map((row) => row.programId));
 
-/** Apply verified display content after legacy normalization, never deriving admission facts. */
-export function applyCatalogueContentRepair(program: Program): Program {
+/** Apply verified content after legacy normalization, never deriving admission facts. */
+export function applyCatalogueContentRepair<T extends Program>(program: T): T {
   const rows = requirements.filter((row) => row.programId === program.id);
   if (rows.length === 0) {
     return excludedIds.has(program.id) ? { ...program, isListed: false } : program;
@@ -53,6 +53,18 @@ export function applyCatalogueContentRepair(program: Program): Program {
         ...detail,
         specificAdmissionNotes: row.notes,
         programUrl: row.programUrl ?? row.sourceUrl,
+        ...(row.programId === 'haifa_psychology' && row.institutionId === 'haifa'
+          ? {
+              admissionFacts: detail.admissionFacts?.filter(
+                (fact) =>
+                  !(
+                    fact.kind === 'numeric_gate' &&
+                    ((fact.field === 'psychometric' && fact.valueNumber === 680) ||
+                      (fact.field === 'bagrut_average' && fact.valueNumber === 85))
+                  ),
+              ),
+            }
+          : {}),
       };
     }),
   };

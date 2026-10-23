@@ -1,8 +1,10 @@
 import { serializeInstitutionRow, serializeProgramRow } from '@/server/catalogue/serializers';
 import { allPrograms } from '@/data/degrees';
+import { buildCatalogueSeed } from '@/db/seeds/catalogueSeed';
 import type {
   AdmissionAlternativePathRow,
   AdmissionFactRow,
+  AdmissionThresholdRow,
   AdmissionRequirementRow,
   AdmissionsSourceCandidateRow,
   InstitutionRow,
@@ -12,6 +14,67 @@ import type {
 } from '@/db/types';
 
 describe('catalogue serializers', () => {
+  it('repairs persisted Haifa psychology floors without turning Pasifas into a main gate', () => {
+    const seed = buildCatalogueSeed();
+    const id = 'haifa_psychology';
+    const requirement = seed.admissionRequirements.find((row) => row.programId === id)!;
+    const result = serializeProgramRow({
+      program: seed.programs.find((row) => row.id === id)! as ProgramRow,
+      relations: seed.programInstitutions.filter(
+        (row) => row.programId === id,
+      ) as ProgramInstitutionRow[],
+      requirements: [
+        {
+          ...requirement,
+          specificAdmissionNotes: ['ציון פסיכומטרי מינימלי: 680', 'ממוצע בגרות מינימלי: 85'],
+        },
+      ] as AdmissionRequirementRow[],
+      thresholds: [
+        ...seed.admissionThresholds.filter((row) => row.programId === id),
+        {
+          id: 'legacy-direct',
+          programId: id,
+          universityId: 'haifa',
+          thresholdKind: 'psychometric',
+          thresholdValue: 680,
+        },
+      ] as AdmissionThresholdRow[],
+      sourceUrls: [],
+      admissionFacts: [
+        {
+          id: 'legacy-psych',
+          admissionRequirementId: requirement.id,
+          kind: 'numeric_gate',
+          field: 'psychometric',
+          valueNumber: 680,
+        },
+        {
+          id: 'legacy-bagrut',
+          admissionRequirementId: requirement.id,
+          kind: 'numeric_gate',
+          field: 'bagrut_average',
+          valueNumber: 85,
+        },
+      ] as AdmissionFactRow[],
+      institutionsById: new Map(seed.institutions.map((row) => [row.id, row as InstitutionRow])),
+    });
+    expect(result.institutionDetails![0].specificAdmissionNotes[0]).toBe(
+      'סכם 650 לפחות; ציונים 630–649 נמצאים בטווח ההמתנה.',
+    );
+    expect(result.institutionDetails![0].specificAdmissionNotes[2]).toMatch(
+      /פסיפס \(מסלול נפרד.*סכם 680.*ראיון/,
+    );
+    expect(result.institutionDetails![0].programUrl).toBe(
+      'https://admissions.haifa.ac.il/social-sciences/program/3268/',
+    );
+    expect(result.institutionDetails![0].admissionFacts ?? []).toEqual([]);
+    expect(result.thresholds).toEqual({ haifa: 650 });
+    expect(result.directPsychometric).toBeUndefined();
+    expect(result.minimumPsychometric).toBeUndefined();
+    expect(result.minimumBagrut).toBeUndefined();
+    expect(result.linkedInstitutionIds).toEqual(['haifa']);
+  });
+
   it('presents the legacy Danon programme without repeating its subject', () => {
     const program = {
       id: 'danon_cs',

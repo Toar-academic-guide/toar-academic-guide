@@ -156,6 +156,19 @@
       "coverage": "published_conditions"
     },
     {
+      "programId": "haifa_psychology",
+      "institutionId": "haifa",
+      "sourceUrl": "https://admissions.haifa.ac.il/social-sciences/program/3268/",
+      "sourceSha256": "ce3270195a0ee34608b949f6b2b698b69a4de9fcf80007721f99a915b2232476",
+      "checkedAt": "2026-10-24",
+      "notes": [
+        "סכם 650 לפחות; ציונים 630–649 נמצאים בטווח ההמתנה.",
+        "נדרשת אנגלית ברמת טרום בסיסי לפחות ועברית 90 ביעלנט או במבחן הסיווג של האוניברסיטה, בקבלה על תנאי עד השלמה ל־120 בשנה א׳; אפשר גם להשלים קורס עברית באקדמיה במכינה.",
+        "תוכנית פסיפס (מסלול נפרד עם החוג לפילוסופיה): סכם 680 לפחות + ראיון קבלה."
+      ],
+      "coverage": "published_conditions"
+    },
+    {
       "programId": "haifa_sociology",
       "institutionId": "haifa",
       "sourceUrl": "https://admissions.haifa.ac.il/social-sciences/program/2968/",

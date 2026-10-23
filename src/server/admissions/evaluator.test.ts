@@ -20,6 +20,7 @@ import { getMondayAdmissionEvidenceByCatalogueInstitutionId } from '@/data/admis
 import { resultLabel } from '@/lib/studyJourney';
 import { DANON_PROGRAM_URLS } from '@/data/admissions/danon';
 import catalogueRepair from '@/data/admissions/catalogueContentRepair.json';
+import haifaPolicies from '@/data/admissions/haifaProgrammePolicies.json';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
@@ -30,6 +31,32 @@ import { exactSourceIdsForProgram } from './capabilityMatrix';
 import { evaluateAdmissionsForProgram as evaluateAdmissionsForProgramInternal } from './evaluator';
 
 vi.mock('server-only', () => ({}));
+
+it.each([
+  { bagrut: 70, psychometric: 400 },
+  { bagrut: 120, psychometric: 800 },
+  ...[679, 680, 681].map((psychometric) => ({ bagrut: 85, psychometric })),
+  {},
+])('withholds Haifa psychology eligibility for ordinary inputs %j', async (scores) => {
+  const program = getStaticCataloguePrograms().find((row) => row.id === 'haifa_psychology')!;
+  const fetcher = vi.fn<typeof fetch>();
+  const report = await evaluateAdmissionsForProgram({
+    input: { degreeId: program.id, ...scores },
+    program,
+    institutions: getStaticCatalogueInstitutions(),
+    fetcher,
+  });
+  const result = report.results.find((row) => row.linkedInstitutionId === 'haifa')!;
+  expect(result).toMatchObject({ capability: 'authority_unavailable', decision: 'unknown' });
+  expect(result.score).toBeUndefined();
+  expect(result.requiredInputs).toBeUndefined();
+  expect(result.explanation).not.toMatch(/[a-zA-Z]|פסיכומטרי 680|בגרות 85/);
+  expect(fetcher).not.toHaveBeenCalled();
+  expect(haifaPolicies.records.find((row) => row.programme === 'psychology')).toMatchObject({
+    score: { acceptance: 650, publishedWaitingMinimum: 630 },
+    activationState: 'withheld',
+  });
+});
 
 vi.mock('@/db/client', () => ({
   getDb: vi.fn(() => ({

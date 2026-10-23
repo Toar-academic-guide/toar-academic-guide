@@ -883,10 +883,13 @@ const D: Record<string, InstitutionDetail[]> = {
       estimatedStudentsPerYear: 'כ-120 סטודנטים',
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
-      specificAdmissionNotes: ['ציון פסיכומטרי מינימלי: 680', 'ממוצע בגרות מינימלי: 85'],
+      specificAdmissionNotes: [
+        'סכם 650 לפחות; ציונים 630–649 נמצאים בטווח ההמתנה.',
+        'נדרשת אנגלית ברמת טרום בסיסי לפחות ועברית 90 ביעלנט או במבחן הסיווג של האוניברסיטה, בקבלה על תנאי עד השלמה ל־120 בשנה א׳; אפשר גם להשלים קורס עברית באקדמיה במכינה.',
+        'תוכנית פסיפס (מסלול נפרד עם החוג לפילוסופיה): סכם 680 לפחות + ראיון קבלה.',
+      ],
       officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif',
-      programUrl:
-        'https://www.haifa.ac.il/index.php/he/departments/departments-social-sciences/psychology',
+      programUrl: 'https://admissions.haifa.ac.il/social-sciences/program/3268/',
       calculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif',
     },
   ],

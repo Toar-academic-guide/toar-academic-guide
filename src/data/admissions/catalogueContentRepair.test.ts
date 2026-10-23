@@ -52,7 +52,40 @@ describe('verified catalogue content repair', () => {
     },
   );
 
-  it.each(['haifa_psychology', 'afeka_ee', 'afeka_softwareeng', 'hit_visual_comm'])(
+  it('re-encodes and stamps the regular Haifa psychology route', () => {
+    const program = allPrograms.find((item) => item.id === 'haifa_psychology')!;
+    const notes = program.institutionDetails![0].specificAdmissionNotes;
+    expect(notes).toEqual([
+      'סכם 650 לפחות; ציונים 630–649 נמצאים בטווח ההמתנה.',
+      'נדרשת אנגלית ברמת טרום בסיסי לפחות ועברית 90 ביעלנט או במבחן הסיווג של האוניברסיטה, בקבלה על תנאי עד השלמה ל־120 בשנה א׳; אפשר גם להשלים קורס עברית באקדמיה במכינה.',
+      'תוכנית פסיפס (מסלול נפרד עם החוג לפילוסופיה): סכם 680 לפחות + ראיון קבלה.',
+    ]);
+    expect(program.thresholds).toEqual({ haifa: 650 });
+    expect(program.institutionDetails![0].admissionFacts ?? []).toEqual([]);
+    expect(program.institutionDetails![0].admissionAlternativePaths ?? []).toEqual([]);
+    expect(repair.requirements.find((row) => row.programId === program.id)).toMatchObject({
+      institutionId: 'haifa',
+      sourceUrl: 'https://admissions.haifa.ac.il/social-sciences/program/3268/',
+      sourceSha256: 'ce3270195a0ee34608b949f6b2b698b69a4de9fcf80007721f99a915b2232476',
+      checkedAt: '2026-10-24',
+      coverage: 'published_conditions',
+      notes,
+    });
+    expect(getRequirementsChecked(program.id, { id: 'haifa' }, notes)).toEqual({
+      date: '24.10.2026',
+      sourceUrl:
+        'https://admissions.haifa.ac.il/social-sciences/program/3268/?utm_source=myway&utm_medium=referral',
+    });
+    expect(
+      getRequirementsChecked(
+        program.id,
+        { id: 'haifa' },
+        notes.map((note) => `${note} `),
+      ),
+    ).toBeUndefined();
+  });
+
+  it.each(['afeka_ee', 'afeka_softwareeng', 'hit_visual_comm'])(
     'keeps the packet HOLD program %s unstamped',
     (id) => {
       expect(repair.requirements.some((row) => row.programId === id)).toBe(false);
