@@ -197,11 +197,12 @@ export const calculatorCoverageInventory: CalculatorCoverageEntry[] = [
     mondayItemId: '12220708944',
     officialUrl: 'https://www.mta.ac.il/conditions_for_applying',
     evidenceKind: 'requirements_enrichment',
-    intendedCapability: 'requirements_only',
-    supportLevel: 'requirements_only',
+    intendedCapability: 'manual_gate',
+    supportLevel: 'manual_gate',
     hasCalculatorConfig: false,
     hasSourceTarget: true,
-    nextAction: 'Reverse-engineer the secondary calculator link or represent as requirements-only',
+    nextAction:
+      'CS, nursing and economics-management have estimated published-route scores with separate confirmations; other MTA programs remain requirements-only. Verify institution-weighted Bagrut before exact claims.',
   },
   {
     institutionId: 'colman',

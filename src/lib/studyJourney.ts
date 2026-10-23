@@ -235,7 +235,8 @@ export function resultExplanation(
       return 'נתוני הקבלה הדרושים לחישוב אינם זמינים כרגע. אפשר לבדוק ישירות באתר המוסד.';
     case 'manual_gate':
       if (
-        (programId === 'tlvyaffo_cs' && result.linkedInstitutionId === 'mta') ||
+        (['tlvyaffo_cs', 'tlvyaffo_nursing', 'tlvyaffo_business'].includes(programId ?? '') &&
+          result.linkedInstitutionId === 'mta') ||
         (['colmgmt_law', 'colmgmt_business', 'colmgmt_economics', 'colmgmt_cs'].includes(
           programId ?? '',
         ) &&

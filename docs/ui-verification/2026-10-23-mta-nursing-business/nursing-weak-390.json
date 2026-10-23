@@ -1,0 +1,33 @@
+{
+  "institution": {
+    "id": "mta",
+    "name": "המכללה האקדמית תל-אביב-יפו",
+    "region": "center",
+    "domain": "mta.ac.il",
+    "programUrl": "https://www.mta.ac.il"
+  },
+  "linkedInstitutionId": "mta",
+  "capability": "manual_gate",
+  "kind": "manual_gate",
+  "confidence": "medium",
+  "sourceLabel": "התאמה לפי הציונים",
+  "officialUrls": [
+    "https://www.mta.ac.il/conditions_for_applying",
+    "https://mtamn.mta.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1"
+  ],
+  "decision": "below",
+  "score": 70,
+  "threshold": 90,
+  "scoreLabel": "ממוצע בגרות משוער — מסלול אוטומטי",
+  "scoreAssessment": "below_threshold",
+  "explanation": "לפי הנתונים שהוזנו, לא מתקיימת אף חלופת ציונים שנבדקה לסיעוד. ממוצע הבגרות והציון המשולב הם הערכה; המכללה מחשבת אותם לפי שיטתה. אין כאן אישור קבלה סופית.",
+  "nextAction": "פנו למרכז ייעוץ ורישום לאישור הנתונים ולבירור אפשרויות הקבלה.",
+  "additionalConditions": [],
+  "snapshot": {
+    "evaluatorVersion": "admissions-evaluator-v2",
+    "ruleVersion": "admissions-evaluator-v2:mta:manual_gate",
+    "ruleFingerprint": "sha256:c26846547a4e3e7e887567976d76275e9914dfa467c4bb9261d2e48aed2f9127",
+    "inputDigest": "sha256:162959808360007a06b4ba027df2f24bb41226e2faed8e0ad17c45c3186a8c26",
+    "evaluationDigest": "sha256:0e5f653d791d72b514dcd7e7fd67b82af22eb049a954232e3f4abca4f1e0e215"
+  }
+}

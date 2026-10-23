@@ -5,6 +5,7 @@ import {
 } from './scoreAssessment';
 import { evaluateTauPhysiotherapyResult } from './tauPhysiotherapyEvaluation';
 import { evaluateMtaComputerScience } from './mtaComputerScienceEvaluation';
+import { evaluateMtaPublishedRoutes } from './mtaPublishedRoutesEvaluation';
 import { evaluateColmanPublishedRoutes } from './colmanPublishedRoutesEvaluation';
 import { evaluateReichmanPublishedRoutes } from './reichmanPublishedRoutesEvaluation';
 import { evaluateColmanBagrutResult } from './colmanBagrutEvaluation';
@@ -291,6 +292,14 @@ async function evaluateCapabilityEntries(args: {
 
     if (program.id === 'tlvyaffo_cs' && institution.id === 'mta') {
       results[index] = evaluateMtaComputerScience({ input, institution });
+      continue;
+    }
+
+    if (
+      ['tlvyaffo_nursing', 'tlvyaffo_business'].includes(program.id) &&
+      institution.id === 'mta'
+    ) {
+      results[index] = evaluateMtaPublishedRoutes({ input, institution });
       continue;
     }
 

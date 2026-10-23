@@ -37,7 +37,7 @@ describe('calculatorCoverage', () => {
 
     const mta = calculatorCoverageInventory.find((e) => e.institutionId === 'mta');
     expect(mta?.hasCalculatorConfig).toBe(false);
-    expect(mta?.intendedCapability).toBe('requirements_only');
+    expect(mta?.intendedCapability).toBe('manual_gate');
   });
 
   it('marks Reichman, Afeka, and HIT as estimated with calculator config', () => {

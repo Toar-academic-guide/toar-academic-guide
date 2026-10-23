@@ -1,0 +1,49 @@
+{
+  "institution": {
+    "id": "mta",
+    "name": "המכללה האקדמית תל-אביב-יפו",
+    "region": "center",
+    "domain": "mta.ac.il",
+    "programUrl": "https://www.mta.ac.il"
+  },
+  "linkedInstitutionId": "mta",
+  "capability": "manual_gate",
+  "kind": "manual_gate",
+  "confidence": "medium",
+  "sourceLabel": "התאמה לפי הציונים",
+  "officialUrls": [
+    "https://www.mta.ac.il/conditions_for_applying",
+    "https://mtamn.mta.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1"
+  ],
+  "decision": "pending",
+  "score": 94,
+  "threshold": 94,
+  "scoreLabel": "ממוצע בגרות משוער",
+  "scoreAssessment": "meets_threshold",
+  "explanation": "תנאי הציונים מתקיימים בחלופה: בגרות 94 לפחות ופסיכומטרי 550 לפחות. ממוצע הבגרות והציון המשולב הם הערכה; המכללה מחשבת אותם לפי שיטתה. אין כאן אישור קבלה סופית.",
+  "nextAction": "פנו למרכז ייעוץ ורישום לאישור הנתונים ולבירור אפשרויות הקבלה.",
+  "additionalConditions": [
+    {
+      "id": "psychometric_english",
+      "label": "אנגלית 85 לפחות בפסיכומטרי או באמיר״ם/אמירנ״ט",
+      "status": "confirmed"
+    },
+    {
+      "id": "bagrut_average",
+      "label": "זכאות לבגרות, עמידה בתנאי הסף הכלליים ואישור הנתונים בידי המכללה",
+      "status": "unconfirmed"
+    },
+    {
+      "id": "math_grade",
+      "label": "מתמטיקה 4 יחידות בציון 80 לפחות או 5 יחידות בציון 55 לפחות",
+      "status": "confirmed"
+    }
+  ],
+  "snapshot": {
+    "evaluatorVersion": "admissions-evaluator-v2",
+    "ruleVersion": "admissions-evaluator-v2:mta:manual_gate",
+    "ruleFingerprint": "sha256:72e6b2d213becdbe6c27fb991773726e984773b90807b59f753a9df86d33493d",
+    "inputDigest": "sha256:8af7fa83e1cb5811ac22e82fd20889eeeb114455253e499a36294de707488114",
+    "evaluationDigest": "sha256:80503dd10cf302f89623aeaf04d5a0fb269a610008172028ee13ad35f5825936"
+  }
+}

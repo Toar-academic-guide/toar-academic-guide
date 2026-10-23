@@ -1,0 +1,33 @@
+{
+  "institution": {
+    "id": "mta",
+    "name": "המכללה האקדמית תל-אביב-יפו",
+    "region": "center",
+    "domain": "mta.ac.il",
+    "programUrl": "https://www.mta.ac.il"
+  },
+  "linkedInstitutionId": "mta",
+  "capability": "manual_gate",
+  "kind": "manual_gate",
+  "confidence": "medium",
+  "sourceLabel": "התאמה לפי הציונים",
+  "officialUrls": [
+    "https://www.mta.ac.il/conditions_for_applying",
+    "https://mtamn.mta.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1"
+  ],
+  "decision": "below",
+  "score": 70,
+  "threshold": 94,
+  "scoreLabel": "ממוצע בגרות משוער",
+  "scoreAssessment": "below_threshold",
+  "explanation": "לפי הנתונים שהוזנו, לא מתקיימת אף חלופת ציונים שנבדקה לכלכלה וניהול. ממוצע הבגרות והציון המשולב הם הערכה; המכללה מחשבת אותם לפי שיטתה. אין כאן אישור קבלה סופית.",
+  "nextAction": "פנו למרכז ייעוץ ורישום לאישור הנתונים ולבירור אפשרויות הקבלה.",
+  "additionalConditions": [],
+  "snapshot": {
+    "evaluatorVersion": "admissions-evaluator-v2",
+    "ruleVersion": "admissions-evaluator-v2:mta:manual_gate",
+    "ruleFingerprint": "sha256:72e6b2d213becdbe6c27fb991773726e984773b90807b59f753a9df86d33493d",
+    "inputDigest": "sha256:27f39052b1aa6cb40516ac429c1b88b5ca755fea3665a10809eeed78a7556d1a",
+    "evaluationDigest": "sha256:c764d6d7e8143eb0fe2bc8e805b272e3240f3f70d37d953af114c1a1e2983fd9"
+  }
+}
