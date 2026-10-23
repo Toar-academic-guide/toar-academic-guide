@@ -8,7 +8,7 @@ Programmes whose admission path requires interview, portfolio, audition, committ
 
 ## Root cause fixed
 
-`evaluateStructuredRequirementsResult` treated “manual gates only” as unverified (`requirements_only` / `unknown`). Pure design/arts programmes therefore looked uncovered live. Batch B adds an explicit registry + early evaluator dispatch, and the structured path now continues to the manual-gate branch when only manual facts exist.
+`evaluateStructuredRequirementsResult` treated “manual gates only” as unverified (`requirements_only` / `unknown`). Pure design/arts programmes therefore looked uncovered live. Batch B fixes this with an **explicit programme registry** (`BATCH_B_PROGRAMS`) and early evaluator dispatch — intentionally scoped so medicine and other structured-only fixtures keep requirements_only/unknown until their own numeric facts are encoded.
 
 ## Encoded programmes
 
