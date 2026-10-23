@@ -165,13 +165,36 @@ describe('ProgramPage', () => {
     }
   });
 
+  it('shows the regular Haifa psychology floor and keeps Pasifas separate', async () => {
+    render(await ProgramPage({ params: Promise.resolve({ programId: 'haifa_psychology' }) }));
+    const items = screen.getAllByRole('listitem').map((item) => item.textContent);
+    expect(items).toContain('סכם 650 לפחות; ציונים 630–649 נמצאים בטווח ההמתנה.');
+    expect(items).toContain(
+      'תוכנית פסיפס (מסלול נפרד עם החוג לפילוסופיה): סכם 680 לפחות + ראיון קבלה.',
+    );
+    expect(items.join(' ')).not.toMatch(
+      /ציון פסיכומטרי מינימלי|ממוצע בגרות מינימלי|אופק|מילואים|תואר קודם|האוניברסיטה הפתוחה/,
+    );
+  });
+
   describe('requirements checked line', () => {
     it.each([
-      ['ono_law', 'ono', 'https://www.ono.ac.il/curriculum/llb/'],
-      ['colmgmt_cs', 'colman', 'https://www.colman.ac.il/academics/ba/b-a-admission/'],
+      ['ono_law', 'ono', 'https://www.ono.ac.il/curriculum/llb/', '23.10.2026'],
+      [
+        'colmgmt_cs',
+        'colman',
+        'https://www.colman.ac.il/academics/ba/b-a-admission/',
+        '23.10.2026',
+      ],
+      [
+        'haifa_psychology',
+        'haifa',
+        'https://admissions.haifa.ac.il/social-sciences/program/3268/',
+        '24.10.2026',
+      ],
     ] as const)(
       'renders the packet stamp for %s and withholds it on note drift',
-      async (programId, institutionId, sourceUrl) => {
+      async (programId, institutionId, sourceUrl, date) => {
         const institution = getStaticCatalogueInstitutions().find(
           (item) => item.id === institutionId,
         )!;
@@ -182,7 +205,7 @@ describe('ProgramPage', () => {
           `${sourceUrl}?utm_source=myway&utm_medium=referral`,
         );
         expect(sourceLink.closest('p')!.textContent).toBe(
-          `עודכן לאחרונה: 23.10.2026 · מקור: אתר ${institution.name}`,
+          `עודכן לאחרונה: ${date} · מקור: אתר ${institution.name}`,
         );
         if (programId === 'colmgmt_cs') {
           expect(screen.getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toBe(

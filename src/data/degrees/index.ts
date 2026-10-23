@@ -767,7 +767,7 @@ function buildSyntheticInstitutionDetail(program: Program): ProgramInstitutionDe
 }
 
 function enrichLegacyProgram(program: Program): Program {
-  if (program.id === 'ono_law' || program.id === 'ono_nursing') return program;
+  if (['ono_law', 'ono_nursing', 'haifa_psychology'].includes(program.id)) return program;
 
   const existingDetails = program.institutionDetails?.length ? [...program.institutionDetails] : [];
   const syntheticDetail = buildSyntheticInstitutionDetail(program);

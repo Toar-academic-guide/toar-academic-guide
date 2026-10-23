@@ -36,6 +36,26 @@ function select(id: string, institutionId: string) {
 }
 
 describe('verified requirement tiles', () => {
+  it('keeps Haifa psychology composite and separate-track conditions in the full copy', () => {
+    const program = programs.find((row) => row.id === 'haifa_psychology')!;
+    const requirements = catalogueAdmissionRequirements(
+      program.institutionDetails![0].specificAdmissionNotes,
+      program.admissionRequirements,
+      program.id,
+    );
+    expect(requirements[0]).toBe('סכם 650 לפחות; ציונים 630–649 נמצאים בטווח ההמתנה.');
+    expect(requirements[2]).toMatch(/פסיפס \(מסלול נפרד.*סכם 680/);
+    expect(requirements.join(' ')).not.toMatch(/פסיכומטרי מינימלי|בגרות מינימלי/);
+    expect(
+      selectRequirementTiles({
+        program,
+        institutionId: 'haifa',
+        requirements,
+        now: new Date('2026-10-24T12:00:00Z'),
+      }),
+    ).toEqual({ reason: 'unclear_semantics' });
+  });
+
   it.each([
     ['law', 112],
     ['biu_law', 112],
