@@ -51,7 +51,7 @@ const unchangedPrograms = [
   },
   {
     id: 'nursing',
-    structuredDataSha256: 'fc6047df073cff42d75dd925c8a83cefc71d5c7fa8fc060d8738656bf8e9d238',
+    structuredDataSha256: '33686bb46a67aa96fd14bf8c5fb39b1aa2b77ec2a0f68d7babfa08144b6d8f7a',
     name: 'סיעוד',
     title: 'לימודי סיעוד: באילו מוסדות לומדים',
     description:
@@ -94,7 +94,7 @@ const unchangedPrograms = [
   },
   {
     id: 'tlvyaffo_cs',
-    structuredDataSha256: '2eb3cb31261c1496c78e0332f9419540ac1160c262b8529cb5eed0793e927cf7',
+    structuredDataSha256: '7d9258988f8697550ab8798743294b51fa04e2bfcca15344d8e74a05a5be352a',
     name: 'מדעי המחשב',
     title: 'מדעי המחשב – המכללה האקדמית תל-אביב-יפו',
     description:

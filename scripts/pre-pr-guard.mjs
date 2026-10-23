@@ -129,6 +129,7 @@ const targetedTests = [
   'src/server/catalogue/queries.test.ts',
   'src/server/data-health/queries.test.ts',
   'src/db/seeds/catalogueSeed.test.ts',
+  'src/db/seeds/mtaCatalogueMirror.test.ts',
   'src/components/CalculatorResults.test.tsx',
   'src/components/LandingPage.test.tsx',
   'src/app/internal/data-health/page.test.tsx',

@@ -131,7 +131,7 @@ export function journeyRows(
               {
                 id: `${program.id}:${id}`,
                 fieldId: field.id,
-                fieldName: field.name,
+                fieldName: program.id === 'tlvyaffo_business' ? program.name : field.name,
                 program,
                 institution,
               },

@@ -2828,7 +2828,7 @@ export const academicPrograms: Program[] = [
   },
   {
     id: 'tlvyaffo_business',
-    name: 'מנהל עסקים',
+    name: 'כלכלה וניהול',
     institution: 'המכללה האקדמית תל-אביב-יפו',
     institutionId: 'mta',
     type: 'academic',
@@ -2836,9 +2836,24 @@ export const academicPrograms: Program[] = [
     profileScore: P.business,
     admissionType: 'requirements',
     admissionRequirements: [
-      'כלכלה וניהול: בגרות 94 ופסיכומטרי 550 לפחות, או פסיכומטרי 580 וזכאות לבגרות, או ציון משולב 580 לפחות, או בגרות 96 לפחות ללא פסיכומטרי.',
-      'מתמטיקה: 4 יחידות בציון 80 לפחות או 5 יחידות בציון 55 לפחות. חלופה נוספת: פסיכומטרי 600 וציון משולב 620 לפחות, עם 4 יחידות מתמטיקה בציון 65 לפחות.',
-      'אנגלית: ציון 85 לפחות בפסיכומטרי או באמיר״ם/אמירנ״ט. נדרשים זכאות לבגרות ואישור הנתונים בידי המכללה.',
+      'קבלה אוטומטית באחת החלופות: בגרות 94 ופסיכומטרי 550; או פסיכומטרי 580 וזכאות לבגרות; או ציון משולב 580; או בגרות 96',
+      'חלופה נוספת: פסיכומטרי 600 וציון משולב 620 עם מתמטיקה 4 יח"ל 65+',
+      'בכל החלופות הרגילות: מתמטיקה 4 יח"ל 80+ או 5 יח"ל 55+, ואנגלית 85+ בפסיכומטרי או באמיר"ם/אמירנ"ט',
+    ],
+    institutionDetails: [
+      {
+        institutionName: 'המכללה האקדמית תל-אביב-יפו',
+        durationYears: null,
+        estimatedStudentsPerYear: '',
+        quantitativeMinRequirement: null,
+        englishMinRequirement: 85,
+        specificAdmissionNotes: [
+          'מי שלא עומדים בתנאי הקבלה יכולים לברר מול מרכז ייעוץ ורישום של המכללה אם אפשר להגיש מועמדות. יש גם מכינה שמחליפה את הפסיכומטרי.',
+        ],
+        programUrl: 'https://www.mta.ac.il/program/management_economics_ba',
+        officialCalculatorUrl: 'https://mtamn.mta.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1',
+        calculatorUrl: 'https://mtamn.mta.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1',
+      },
     ],
   },
   {
@@ -2862,9 +2877,24 @@ export const academicPrograms: Program[] = [
     profileScore: P.nursing,
     admissionType: 'requirements',
     admissionRequirements: [
-      'מסלול אוטומטי: בגרות 90 ופסיכומטרי 520 לפחות, בכפוף לתנאי הסף הכלליים.',
-      'לדיון בוועדת קבלה ולראיון אישי: בגרות 90 ופסיכומטרי 500 לפחות, או פסיכומטרי 520 וזכאות לבגרות, או ציון משולב 515 לפחות עם פסיכומטרי 430 לפחות.',
-      'אנגלית: ציון 85 לפחות בפסיכומטרי או באמיר״ם/אמירנ״ט. נדרשים זכאות לבגרות ואישור הנתונים בידי המכללה.',
+      'קבלה אוטומטית: ממוצע בגרות 90 ופסיכומטרי 520, בכפוף לתנאי הסף הכלליים של המכללה',
+      'לדיון בוועדת קבלה ולראיון אישי באחת החלופות: בגרות 90 ופסיכומטרי 500; או פסיכומטרי 520 וזכאות לבגרות; או ציון משולב 515 עם פסיכומטרי 430+',
+      'אנגלית: 85+ בפסיכומטרי או באמיר"ם/אמירנ"ט',
+    ],
+    institutionDetails: [
+      {
+        institutionName: 'המכללה האקדמית תל-אביב-יפו',
+        durationYears: null,
+        estimatedStudentsPerYear: '',
+        quantitativeMinRequirement: null,
+        englishMinRequirement: 85,
+        specificAdmissionNotes: [
+          'מי שלא עומדים בתנאי הקבלה האוטומטית יכולים לברר מול מרכז ייעוץ ורישום של המכללה אם אפשר להגיש מועמדות.',
+        ],
+        programUrl: 'https://www.mta.ac.il/program/nursing_bsn',
+        officialCalculatorUrl: 'https://mtamn.mta.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1',
+        calculatorUrl: 'https://mtamn.mta.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1',
+      },
     ],
   },
   {
