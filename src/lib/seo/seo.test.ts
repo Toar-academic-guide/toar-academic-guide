@@ -2,6 +2,7 @@
 
 import { readFileSync } from 'node:fs';
 import type { InstitutionId } from '@/data/institutions';
+import { applyCatalogueContentRepair } from '@/data/admissions/catalogueContentRepair';
 import type { ReactNode } from 'react';
 import InstitutionPage from '@/app/institutions/[institutionId]/page';
 import ProgramPage from '@/app/programs/[programId]/page';
@@ -648,9 +649,28 @@ describe('structured data', () => {
     'biu_computational_bio',
     'biu_biotech',
     'biu_lifesciences',
+    'hit_cs',
+    'wingate_cs',
   ])(
     'adds FAQPage alongside program and breadcrumb schema for %s using on-page facts',
     async (id) => {
+      // These live catalogue IDs are absent from the static catalogue used by the mock.
+      if (id === 'hit_cs' || id === 'wingate_cs') {
+        const institutionId = id === 'hit_cs' ? 'hit' : 'wingate';
+        const institution = institutions.find((item) => item.id === institutionId)!;
+        const templateId = id === 'hit_cs' ? 'cs' : 'wingate_physical_ed';
+        const program = applyCatalogueContentRepair({
+          ...programs.find((item) => item.id === templateId)!,
+          id,
+          institutionId,
+          institution: institution.name,
+          institutionDetails: [],
+        });
+        vi.mocked(listCataloguePrograms).mockResolvedValue({
+          data: [...programs, { ...program, linkedInstitutionIds: [institutionId] }],
+          meta: { catalogueSource: 'database' },
+        });
+      }
       const data = (await getPublicProgramPageData(id))!;
       const sources = await getPublicProgramRequirementSources(data);
       const faq = programFaqPageLd(data, sources)!;
@@ -688,7 +708,9 @@ describe('structured data', () => {
         expect(entity['@type']).toBe('Question');
         expect(entity.name).toMatch(/[א-ת]/);
         expect(entity.acceptedAnswer['@type']).toBe('Answer');
-        expect(entity.acceptedAnswer.text).not.toMatch(/[a-z]|מתואם|מצרף/i);
+        expect(entity.acceptedAnswer.text.replace(data.institutions[0].name, '')).not.toMatch(
+          /[a-z]|מתואם|מצרף/i,
+        );
         if (!source.requirements.some((text) => text.includes('סכם'))) {
           expect(entity.acceptedAnswer.text).not.toContain('סכם');
         }
