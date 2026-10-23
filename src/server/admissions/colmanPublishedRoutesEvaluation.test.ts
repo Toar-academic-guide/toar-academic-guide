@@ -1,34 +1,102 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { evaluateColmanPublishedRoutes } from './colmanPublishedRoutesEvaluation';
+import { evaluateAdmissionsForProgram } from './evaluator';
+import { getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import type {
   AdmissionsEvaluationInput,
   AdmissionsExtraInputs,
 } from '@/types/admissionsEvaluation';
 import type { CatalogueInstitution } from '@/types/catalogue';
 
+vi.mock('server-only', () => ({}));
+
 const institution: CatalogueInstitution = { id: 'colman', name: 'המכללה למינהל', region: 'center' };
-for (const [degreeId, boundary, psychometric] of [
-  ['colmgmt_law', 100, 540],
-  ['colmgmt_business', 85, 555],
+const programs = getStaticCataloguePrograms();
+for (const [degreeId, aliasId, boundary, psychometric] of [
+  ['colmgmt_law', 'colman_law', 100, 540],
+  ['colmgmt_business', 'colman_business', 85, 555],
 ] as const) {
+  const inputFor = (
+    extra: Partial<AdmissionsExtraInputs> = {},
+    scores: Partial<AdmissionsEvaluationInput> = {},
+  ): AdmissionsEvaluationInput => ({
+    degreeId,
+    psychometric: psychometric - 1,
+    ...scores,
+    extraInputs: {
+      colmanBagrutAverage: boundary,
+      colmanBagrutCertificateConfirmed: true,
+      psychometricMath: 100,
+      ...extra,
+    },
+  });
   const evaluate = (
     extra: Partial<AdmissionsExtraInputs> = {},
     scores: Partial<AdmissionsEvaluationInput> = {},
-  ) =>
-    evaluateColmanPublishedRoutes({
-      institution,
-      input: {
-        degreeId,
-        psychometric: psychometric - 1,
-        ...scores,
-        extraInputs: {
-          colmanBagrutAverage: boundary,
-          colmanBagrutCertificateConfirmed: true,
-          psychometricMath: 100,
-          ...extra,
-        },
-      },
+  ) => evaluateColmanPublishedRoutes({ institution, input: inputFor(extra, scores) });
+
+  describe(`${aliasId} parity with ${degreeId}`, () => {
+    const fixtures = [
+      ['weak profile', inputFor({ colmanBagrutAverage: 70 }, { bagrut: 70, psychometric: 420 })],
+      ['inclusive Bagrut boundary', inputFor({}, { psychometric: undefined })],
+      ['missing Colman average', inputFor({ colmanBagrutAverage: undefined }, { bagrut: 110 })],
+      ['unconfirmed certificate', inputFor({ colmanBagrutCertificateConfirmed: undefined })],
+      ['unmet certificate', inputFor({ colmanBagrutCertificateConfirmed: false })],
+      ['Bagrut match without quantitative', inputFor({ psychometricMath: undefined })],
+      [
+        'psychometric boundary',
+        inputFor({ colmanBagrutAverage: boundary - 0.1 }, { psychometric }),
+      ],
+      ['just below both boundaries', inputFor({ colmanBagrutAverage: boundary - 0.1 })],
+      [
+        'missing psychometric',
+        inputFor({ colmanBagrutAverage: boundary - 0.1 }, { psychometric: undefined }),
+      ],
+      [
+        'missing quantitative',
+        inputFor(
+          { colmanBagrutAverage: boundary - 0.1, psychometricMath: undefined },
+          { psychometric },
+        ),
+      ],
+      [
+        'below quantitative with strong psychometric',
+        inputFor(
+          { colmanBagrutAverage: boundary - 0.1, psychometricMath: 99 },
+          { psychometric: 800 },
+        ),
+      ],
+      ['empty profile', { degreeId }],
+    ] as const;
+
+    it.each(fixtures)('reuses the published route for %s', (_label, input) => {
+      expect(
+        evaluateColmanPublishedRoutes({ institution, input: { ...input, degreeId: aliasId } }),
+      ).toEqual(evaluateColmanPublishedRoutes({ institution, input }));
     });
+
+    it.each(fixtures)('dispatches the same evaluator for %s', async (_label, input) => {
+      const program = programs.find((candidate) => candidate.id === degreeId)!;
+      const run = (id: string) =>
+        evaluateAdmissionsForProgram({
+          input: { ...input, degreeId: id },
+          // Persisted legacy aliases are absent from the assembled static catalogue.
+          program: { ...program, id },
+          institutions: [institution],
+          freshnessStatesBySourceId: new Map(),
+        });
+      const canonical = await run(degreeId);
+      const alias = await run(aliasId);
+      expect(alias.results).toHaveLength(1);
+      // Snapshots deliberately retain the requested ID for saved references.
+      const { snapshot: canonicalSnapshot, ...canonicalResult } = canonical.results[0];
+      const { snapshot: aliasSnapshot, ...aliasResult } = alias.results[0];
+      expect(aliasResult).toEqual(canonicalResult);
+      expect(alias.program.id).toBe(aliasId);
+      expect(alias.input.degreeId).toBe(aliasId);
+      expect(aliasSnapshot?.inputDigest).not.toBe(canonicalSnapshot?.inputDigest);
+    });
+  });
   describe(degreeId, () => {
     it('matches the inclusive Bagrut boundary without psychometric or general average', () => {
       expect(evaluate({}, { psychometric: undefined })).toMatchObject({

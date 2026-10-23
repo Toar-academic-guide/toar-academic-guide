@@ -2,7 +2,7 @@ import { isBatchCUnsupportedProgramId } from '@/data/admissions/batchCUnsupporte
 import { FIELD_ENRICHMENT, PROGRAM_FIELD_MAP } from '@/data/degrees/fieldEnrichment';
 import { DANON_PROGRAM_NAMES } from '@/data/admissions/danon';
 import { getInstitutionDirectoryItems } from '@/data/institutionDirectory';
-import { PROGRAM_CANONICAL_ALIASES } from '@/lib/seo/programAliases';
+import { canonicalProgramId, PROGRAM_CANONICAL_ALIASES } from '@/lib/seo/programAliases';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type { AdmissionsEvaluationResult } from '@/types/admissionsEvaluation';
 import { isBatchBManualProgramId } from '@/data/admissions/batchBManualProgramIds';
@@ -249,9 +249,8 @@ export function resultExplanation(
           programId ?? '',
         ) &&
           result.linkedInstitutionId === 'mta') ||
-        (['colmgmt_law', 'colmgmt_business', 'colmgmt_economics', 'colmgmt_cs'].includes(
-          programId ?? '',
-        ) &&
+        ((['colmgmt_law', 'colmgmt_business'].includes(canonicalProgramId(programId ?? '')) ||
+          ['colmgmt_economics', 'colmgmt_cs'].includes(programId ?? '')) &&
           result.linkedInstitutionId === 'colman') ||
         isBatchBManualProgramId(programId ?? '', result.linkedInstitutionId)
       )

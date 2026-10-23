@@ -15,6 +15,7 @@ import { evaluateTauPhysiotherapyResult } from './tauPhysiotherapyEvaluation';
 import { evaluateMtaComputerScience } from './mtaComputerScienceEvaluation';
 import { evaluateMtaPublishedRoutes } from './mtaPublishedRoutesEvaluation';
 import { evaluateColmanPublishedRoutes } from './colmanPublishedRoutesEvaluation';
+import { canonicalProgramId } from '@/lib/seo/programAliases';
 import { evaluateReichmanPublishedRoutes } from './reichmanPublishedRoutesEvaluation';
 import { evaluateColmanBagrutResult } from './colmanBagrutEvaluation';
 import { DANON_PROGRAM_URLS } from '@/data/admissions/danon';
@@ -329,10 +330,13 @@ async function evaluateCapabilityEntries(args: {
         'colmgmt_economics',
         'colmgmt_accounting',
         'colmgmt_infosystems',
-      ].includes(program.id) &&
+      ].includes(canonicalProgramId(program.id)) &&
       institution.id === 'colman'
     ) {
-      results[index] = evaluateColmanPublishedRoutes({ input, institution });
+      results[index] = evaluateColmanPublishedRoutes({
+        input: { ...input, degreeId: canonicalProgramId(input.degreeId) },
+        institution,
+      });
       continue;
     }
 
