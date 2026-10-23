@@ -236,7 +236,9 @@ export function resultExplanation(
     case 'manual_gate':
       if (
         (programId === 'tlvyaffo_cs' && result.linkedInstitutionId === 'mta') ||
-        (['colmgmt_law', 'colmgmt_business', 'colmgmt_cs'].includes(programId ?? '') &&
+        (['colmgmt_law', 'colmgmt_business', 'colmgmt_economics', 'colmgmt_cs'].includes(
+          programId ?? '',
+        ) &&
           result.linkedInstitutionId === 'colman')
       )
         return result.explanation;
