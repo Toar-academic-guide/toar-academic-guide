@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { buildFormulaBackedPairInventory } from '../admissions/formulaBackedPairInventory';
 import { mondayAdmissionsEvidence } from '../admissions/mondayEvidence';
+import repair from '../admissions/catalogueContentRepair.json';
 import { INSTITUTIONS } from '../institutions';
 import { allPrograms, programsWithLegacyAdmissionFacts } from './index';
 
@@ -552,6 +553,16 @@ describe('dynamic Monday-derived programme inference', () => {
       }
 
       return (program.institutionDetails ?? []).flatMap((detail) => {
+        if (['biu_lifesciences', 'biu_biotech', 'biu_computational_bio'].includes(program.id)) {
+          // These fallback notes mirror the display overlay; #254's dedicated evaluator
+          // owns their route gates, rather than the legacy text-to-fact parser.
+          const row = repair.requirements.find(
+            (row) => row.programId === program.id && row.institutionId === 'biu',
+          );
+          expect(row).toBeDefined();
+          expect(detail.specificAdmissionNotes).toEqual(row!.notes);
+          return [];
+        }
         const texts = [...(detail.specificAdmissionNotes ?? []), ...program.admissionRequirements];
         const missing = texts.filter(
           (text) =>

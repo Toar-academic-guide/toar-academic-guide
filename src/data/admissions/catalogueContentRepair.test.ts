@@ -5,6 +5,56 @@ import { applyCatalogueContentRepair } from './catalogueContentRepair';
 import repair from './catalogueContentRepair.json';
 
 describe('verified catalogue content repair', () => {
+  it.each([
+    ['law', 112, [/אנגלית 5 יחידות בציון 90 לפחות/]],
+    ['biu_law', 112, [/אנגלית 5 יחידות בציון 90 לפחות/]],
+    ['criminology', 98, [/דו־חוגי/, /תנאים של החוג הנוסף/]],
+    ['biu_criminology', 98, [/דו־חוגי/, /תנאים של החוג הנוסף/]],
+    [
+      'biu_lifesciences',
+      108,
+      [
+        /אחת משתי האפשרויות/,
+        /מתמטיקה 5 יחידות בציון 85 לפחות/,
+        /או מכפלת ציון המתמטיקה במספר היחידות של 320 לפחות ובנוסף שני מקצועות מדעיים שונים בהיקף 5 יחידות ובציון 80 לפחות בכל אחד/,
+      ],
+    ],
+    [
+      'biu_biotech',
+      108,
+      [
+        /מכפלת ציון המתמטיקה במספר היחידות של 320 לפחות ובנוסף שני מקצועות מדעיים שונים בהיקף 5 יחידות ובציון 80 לפחות בכל אחד/,
+      ],
+    ],
+    ['biu_computational_bio', 112, [/מתמטיקה 5 יחידות בציון 95 לפחות/]],
+  ] as const)('publishes the תשפ״ז Bagrut-only contract for %s at BIU', (id, floor, gates) => {
+    const row = repair.requirements.find(
+      (item) => item.programId === id && item.institutionId === 'biu',
+    )!;
+    expect(row).toBeDefined();
+    expect(row.checkedAt).toBe('2026-10-23');
+    expect(row.sourceUrl).toBe(
+      'https://www.biu.ac.il/registration-and-admission/information/acceptance-no-psychometry',
+    );
+    const program = allPrograms.find((item) => item.id === id)!;
+    const notes = program.institutionDetails!.find((detail) =>
+      detail.institutionName.includes('בר-אילן'),
+    )!.specificAdmissionNotes;
+    expect(notes).toEqual(row.notes);
+    const text = notes.join(' ');
+    expect(text).toContain(`לתשפ״ז, ללא פסיכומטרי: ממוצע בגרות ${floor} לפחות`);
+    expect(text).toMatch(/זכאות לתעודת בגרות/);
+    expect(text).toMatch(/סיווג אנגלית 85 לפחות/);
+    expect(text).toMatch(/עברית 105 לפחות למי שנדרשים לבחינת יע״ל/);
+    expect(text).toMatch(/משולב.*מחשבון הקבלה הרשמי של בר־אילן/);
+    expect(text).not.toMatch(/720|סכם\s*\d|משולב\s*\d|משוקלל\s*\d/);
+    for (const gate of gates) expect(text).toMatch(gate);
+    if (id === 'biu_lifesciences' || id === 'biu_biotech') {
+      expect(text).toContain('ביולוגיה, ביוטכנולוגיה, מתמטיקה, כימיה, פיזיקה, הנדסה ומדעי המחשב');
+      expect(text).toContain('מתמטיקה יכולה להיחשב כאחד משני המקצועות');
+    }
+  });
+
   it('seeds researched pairs present in the static catalogue without changing their keys', () => {
     const seed = buildCatalogueSeed();
     const seededIds = new Set(seed.programs.map((row) => row.id));

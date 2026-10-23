@@ -519,36 +519,40 @@
     {
       "programId": "biu_criminology",
       "institutionId": "biu",
-      "sourceUrl": "https://criminology.biu.ac.il/tracks/BA",
-      "sourceSha256": "8611cbd601b80c955a16db9686a826d553db96ba818cb7258c846aef69c79ba4",
-      "checkedAt": "2026-10-21",
+      "sourceUrl": "https://www.biu.ac.il/registration-and-admission/information/acceptance-no-psychometry",
+      "sourceSha256": "7b872260e25eb2b78c3203951baddf5cc2a089c76406017e8cd35b17f2d2d4ad",
+      "checkedAt": "2026-10-23",
       "notes": [
-        "ללא פסיכומטרי: ממוצע בגרות 98 לפחות ובחינת סיווג באנגלית.",
-        "בממוצע בגרות נמוך מ־98 נדרש גם פסיכומטרי. השילוב הנדרש נבדק במחשבון הקבלה של בר־אילן.",
-        "נדרשת אנגלית 85 לפחות ועברית 105 למי שנדרשים לבחינת יע״ל לפי כללי האוניברסיטה.",
-        "התואר דו־חוגי: יש לעמוד גם בתנאים של החוג הנוסף. קיימים אפיקי קבלה חלופיים למשרתי מילואים, לבוגרי החינוך החרדי ולעולים חדשים."
+        "לתשפ״ז, ללא פסיכומטרי: ממוצע בגרות 98 לפחות.",
+        "נדרשת זכאות לתעודת בגרות וסיווג אנגלית 85 לפחות. עברית 105 לפחות למי שנדרשים לבחינת יע״ל לפי כללי האוניברסיטה.",
+        "התואר דו־חוגי: יש לעמוד גם בתנאים של החוג הנוסף.",
+        "אפיק פסיכומטרי או משולב: בדקו במחשבון הקבלה הרשמי של בר־אילן."
       ],
       "supportingSources": [
-        "https://www.biu.ac.il/registration-and-admission/information/general-admission-req"
+        "https://www.biu.ac.il/registration-and-admission/information/general-admission-req",
+        "https://criminology.biu.ac.il/tracks/BA"
       ],
-      "coverage": "published_conditions"
+      "coverage": "published_conditions",
+      "programUrl": "https://criminology.biu.ac.il/tracks/BA"
     },
     {
       "programId": "criminology",
       "institutionId": "biu",
-      "sourceUrl": "https://criminology.biu.ac.il/tracks/BA",
-      "sourceSha256": "8611cbd601b80c955a16db9686a826d553db96ba818cb7258c846aef69c79ba4",
-      "checkedAt": "2026-10-21",
+      "sourceUrl": "https://www.biu.ac.il/registration-and-admission/information/acceptance-no-psychometry",
+      "sourceSha256": "7b872260e25eb2b78c3203951baddf5cc2a089c76406017e8cd35b17f2d2d4ad",
+      "checkedAt": "2026-10-23",
       "notes": [
-        "ללא פסיכומטרי: ממוצע בגרות 98 לפחות ובחינת סיווג באנגלית.",
-        "בממוצע בגרות נמוך מ־98 נדרש גם פסיכומטרי. השילוב הנדרש נבדק במחשבון הקבלה של בר־אילן.",
-        "נדרשת אנגלית 85 לפחות ועברית 105 למי שנדרשים לבחינת יע״ל לפי כללי האוניברסיטה.",
-        "התואר דו־חוגי: יש לעמוד גם בתנאים של החוג הנוסף. קיימים אפיקי קבלה חלופיים למשרתי מילואים, לבוגרי החינוך החרדי ולעולים חדשים."
+        "לתשפ״ז, ללא פסיכומטרי: ממוצע בגרות 98 לפחות.",
+        "נדרשת זכאות לתעודת בגרות וסיווג אנגלית 85 לפחות. עברית 105 לפחות למי שנדרשים לבחינת יע״ל לפי כללי האוניברסיטה.",
+        "התואר דו־חוגי: יש לעמוד גם בתנאים של החוג הנוסף.",
+        "אפיק פסיכומטרי או משולב: בדקו במחשבון הקבלה הרשמי של בר־אילן."
       ],
       "supportingSources": [
-        "https://www.biu.ac.il/registration-and-admission/information/general-admission-req"
+        "https://www.biu.ac.il/registration-and-admission/information/general-admission-req",
+        "https://criminology.biu.ac.il/tracks/BA"
       ],
-      "coverage": "published_conditions"
+      "coverage": "published_conditions",
+      "programUrl": "https://criminology.biu.ac.il/tracks/BA"
     },
     {
       "programId": "biu_psychology",
@@ -571,21 +575,19 @@
     {
       "programId": "biu_law",
       "institutionId": "biu",
-      "sourceUrl": "https://law.biu.ac.il/node/129",
-      "sourceSha256": "d2326f2bb03e25d6e013e73b83477f7195dd83c13b4e20b8ac15335c45589213",
-      "checkedAt": "2026-10-21",
+      "sourceUrl": "https://www.biu.ac.il/registration-and-admission/information/acceptance-no-psychometry",
+      "sourceSha256": "7b872260e25eb2b78c3203951baddf5cc2a089c76406017e8cd35b17f2d2d4ad",
+      "checkedAt": "2026-10-23",
       "notes": [
-        "ללא פסיכומטרי: בגרות 112 לפחות, אנגלית 5 יחידות בציון 90 וסיווג אנגלית 85 לפחות.",
-        "באפיק הפסיכומטרי: ציון 720 לפחות וזכאות לבגרות. קיים גם אפיק שמשקלל בגרות ופסיכומטרי לפי מחשבון הקבלה.",
-        "נדרשת אנגלית 85 לפחות ועברית 105 למי שחייבים בבחינת יע״ל לפי כללי האוניברסיטה.",
-        "לזכאים למסלול המילואים וכוחות הביטחון: בגרות 109 ואנגלית 5 יחידות בציון 80 או 4 יחידות בציון 90, בכפוף לתנאי הזכאות ולמכסה.",
-        "קיימים אפיקים לבעלי תואר קודם וללומדים באוניברסיטה הפתוחה, לפי החלטת ועדת הקבלה. למסלול המצטיינים נדרש גם ריאיון.",
-        "העמוד הרשמי מציין מועדי הרשמה ב־2026 וכותרות משנה משנים קודמות. יש לאשר את התנאים למחזור הבא לפני הרשמה."
+        "לתשפ״ז, ללא פסיכומטרי: ממוצע בגרות 112 לפחות, ואנגלית 5 יחידות בציון 90 לפחות.",
+        "נדרשת זכאות לתעודת בגרות וסיווג אנגלית 85 לפחות. עברית 105 לפחות למי שנדרשים לבחינת יע״ל לפי כללי האוניברסיטה.",
+        "אפיק פסיכומטרי או משולב: בדקו במחשבון הקבלה הרשמי של בר־אילן."
       ],
       "supportingSources": [
         "https://www.biu.ac.il/registration-and-admission/information/general-admission-req"
       ],
-      "coverage": "published_conditions"
+      "coverage": "published_conditions",
+      "programUrl": "https://law.biu.ac.il/node/129"
     },
     {
       "programId": "medicine",
@@ -1438,6 +1440,75 @@
         "category": "ניהול ועסקים",
         "type": "certificate"
       }
+    },
+    {
+      "programId": "biu_lifesciences",
+      "institutionId": "biu",
+      "sourceUrl": "https://www.biu.ac.il/registration-and-admission/information/acceptance-no-psychometry",
+      "sourceSha256": "7b872260e25eb2b78c3203951baddf5cc2a089c76406017e8cd35b17f2d2d4ad",
+      "checkedAt": "2026-10-23",
+      "notes": [
+        "לתשפ״ז, ללא פסיכומטרי: ממוצע בגרות 108 לפחות.",
+        "נדרשת אחת משתי האפשרויות: מתמטיקה 5 יחידות בציון 85 לפחות, או מכפלת ציון המתמטיקה במספר היחידות של 320 לפחות ובנוסף שני מקצועות מדעיים שונים בהיקף 5 יחידות ובציון 80 לפחות בכל אחד.",
+        "המקצועות המדעיים: ביולוגיה, ביוטכנולוגיה, מתמטיקה, כימיה, פיזיקה, הנדסה ומדעי המחשב. מתמטיקה יכולה להיחשב כאחד משני המקצועות אם היא עומדת בדרישה.",
+        "נדרשת זכאות לתעודת בגרות וסיווג אנגלית 85 לפחות. עברית 105 לפחות למי שנדרשים לבחינת יע״ל לפי כללי האוניברסיטה.",
+        "אפיק פסיכומטרי או משולב: בדקו במחשבון הקבלה הרשמי של בר־אילן."
+      ],
+      "supportingSources": [
+        "https://www.biu.ac.il/registration-and-admission/information/general-admission-req"
+      ],
+      "coverage": "published_conditions"
+    },
+    {
+      "programId": "biu_biotech",
+      "institutionId": "biu",
+      "sourceUrl": "https://www.biu.ac.il/registration-and-admission/information/acceptance-no-psychometry",
+      "sourceSha256": "7b872260e25eb2b78c3203951baddf5cc2a089c76406017e8cd35b17f2d2d4ad",
+      "checkedAt": "2026-10-23",
+      "notes": [
+        "לתשפ״ז, ללא פסיכומטרי: ממוצע בגרות 108 לפחות.",
+        "נדרשת מכפלת ציון המתמטיקה במספר היחידות של 320 לפחות ובנוסף שני מקצועות מדעיים שונים בהיקף 5 יחידות ובציון 80 לפחות בכל אחד.",
+        "המקצועות המדעיים: ביולוגיה, ביוטכנולוגיה, מתמטיקה, כימיה, פיזיקה, הנדסה ומדעי המחשב. מתמטיקה יכולה להיחשב כאחד משני המקצועות אם היא עומדת בדרישה.",
+        "נדרשת זכאות לתעודת בגרות וסיווג אנגלית 85 לפחות. עברית 105 לפחות למי שנדרשים לבחינת יע״ל לפי כללי האוניברסיטה.",
+        "אפיק פסיכומטרי או משולב: בדקו במחשבון הקבלה הרשמי של בר־אילן."
+      ],
+      "supportingSources": [
+        "https://www.biu.ac.il/registration-and-admission/information/general-admission-req"
+      ],
+      "coverage": "published_conditions"
+    },
+    {
+      "programId": "biu_computational_bio",
+      "institutionId": "biu",
+      "sourceUrl": "https://www.biu.ac.il/registration-and-admission/information/acceptance-no-psychometry",
+      "sourceSha256": "7b872260e25eb2b78c3203951baddf5cc2a089c76406017e8cd35b17f2d2d4ad",
+      "checkedAt": "2026-10-23",
+      "notes": [
+        "לתשפ״ז, ללא פסיכומטרי: ממוצע בגרות 112 לפחות, ומתמטיקה 5 יחידות בציון 95 לפחות.",
+        "נדרשת זכאות לתעודת בגרות וסיווג אנגלית 85 לפחות. עברית 105 לפחות למי שנדרשים לבחינת יע״ל לפי כללי האוניברסיטה.",
+        "אפיק פסיכומטרי או משולב: בדקו במחשבון הקבלה הרשמי של בר־אילן."
+      ],
+      "supportingSources": [
+        "https://www.biu.ac.il/registration-and-admission/information/general-admission-req"
+      ],
+      "coverage": "published_conditions"
+    },
+    {
+      "programId": "law",
+      "institutionId": "biu",
+      "sourceUrl": "https://www.biu.ac.il/registration-and-admission/information/acceptance-no-psychometry",
+      "sourceSha256": "7b872260e25eb2b78c3203951baddf5cc2a089c76406017e8cd35b17f2d2d4ad",
+      "checkedAt": "2026-10-23",
+      "notes": [
+        "לתשפ״ז, ללא פסיכומטרי: ממוצע בגרות 112 לפחות, ואנגלית 5 יחידות בציון 90 לפחות.",
+        "נדרשת זכאות לתעודת בגרות וסיווג אנגלית 85 לפחות. עברית 105 לפחות למי שנדרשים לבחינת יע״ל לפי כללי האוניברסיטה.",
+        "אפיק פסיכומטרי או משולב: בדקו במחשבון הקבלה הרשמי של בר־אילן."
+      ],
+      "supportingSources": [
+        "https://www.biu.ac.il/registration-and-admission/information/general-admission-req"
+      ],
+      "coverage": "published_conditions",
+      "programUrl": "https://law.biu.ac.il/node/129"
     }
   ],
   "excludedPrograms": [
