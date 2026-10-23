@@ -177,6 +177,8 @@ const FAQ_PROGRAM_IDS = new Set([
   'biu_computational_bio',
   'biu_biotech',
   'biu_lifesciences',
+  'hit_cs',
+  'wingate_cs',
 ]);
 
 export function programFaqPageLd(
