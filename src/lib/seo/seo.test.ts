@@ -619,7 +619,7 @@ describe('structured data', () => {
     );
   });
 
-  it.each([
+  const faqProgramIds = [
     'bgu_psychology',
     'huji_law',
     'biu_psychology',
@@ -653,7 +653,21 @@ describe('structured data', () => {
     'wingate_cs',
     'ono_law',
     'colmgmt_cs',
-  ])(
+    'haifa_psychology',
+  ];
+
+  it('allows FAQPage for exactly the 34 approved programs', async () => {
+    const data = (await getPublicProgramPageData('huji_law'))!;
+    const sources = await getPublicProgramRequirementSources(data);
+    const candidateIds = new Set([...programs.map(({ id }) => id), ...faqProgramIds]);
+    const allowedIds = [...candidateIds].filter((id) =>
+      programFaqPageLd({ ...data, program: { ...data.program, id } }, sources),
+    );
+    expect(allowedIds).toHaveLength(34);
+    expect(allowedIds.sort()).toEqual([...faqProgramIds].sort());
+  });
+
+  it.each(faqProgramIds)(
     'adds FAQPage alongside program and breadcrumb schema for %s using on-page facts',
     async (id) => {
       // These live catalogue IDs are absent from the static catalogue used by the mock.
@@ -735,6 +749,14 @@ describe('structured data', () => {
       if (id === 'ono_law' || id === 'colmgmt_cs') {
         expect(source.checked?.date).toBe('23.10.2026');
       }
+      if (id === 'haifa_psychology') {
+        expect(source.checked).toMatchObject({
+          date: '24.10.2026',
+          sourceUrl:
+            'https://admissions.haifa.ac.il/social-sciences/program/3268/?utm_source=myway&utm_medium=referral',
+        });
+        expect(faq.mainEntity[0].acceptedAnswer.text).not.toMatch(/אופק|מילואים|תואר קודם/);
+      }
       for (const entity of faq.mainEntity) {
         expect(entity['@type']).toBe('Question');
         expect(entity.name).toMatch(/[א-ת]/);
@@ -778,7 +800,6 @@ describe('structured data', () => {
       'technion_cs',
       'ariel_cs',
       'afeka_ee',
-      'haifa_psychology',
       'afeka_softwareeng',
       'hit_visual_comm',
       'huji_engineering',
@@ -798,7 +819,6 @@ describe('structured data', () => {
     'technion_cs',
     'ariel_cs',
     'afeka_ee',
-    'haifa_psychology',
     'afeka_softwareeng',
     'hit_visual_comm',
     'huji_engineering',

@@ -181,6 +181,7 @@ const FAQ_PROGRAM_IDS = new Set([
   'wingate_cs',
   'ono_law',
   'colmgmt_cs',
+  'haifa_psychology',
 ]);
 
 export function programFaqPageLd(
