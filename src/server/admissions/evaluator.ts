@@ -272,7 +272,10 @@ async function evaluateCapabilityEntries(args: {
       continue;
     }
 
-    if (['colmgmt_law', 'colmgmt_business'].includes(program.id) && institution.id === 'colman') {
+    if (
+      ['colmgmt_law', 'colmgmt_business', 'colmgmt_economics'].includes(program.id) &&
+      institution.id === 'colman'
+    ) {
       results[index] = evaluateColmanPublishedRoutes({ input, institution });
       continue;
     }

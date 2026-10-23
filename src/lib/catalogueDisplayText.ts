@@ -37,7 +37,9 @@ export function catalogueAdmissionRequirements(
       return catalogueDescription(text) ? [text] : [];
     });
   if (
-    ['tlvyaffo_cs', 'colmgmt_law', 'colmgmt_business', 'colmgmt_cs'].includes(programId ?? '') &&
+    ['tlvyaffo_cs', 'colmgmt_law', 'colmgmt_business', 'colmgmt_economics', 'colmgmt_cs'].includes(
+      programId ?? '',
+    ) &&
     fallback.length
   ) {
     return [...new Set([...display(fallback), ...display(notes)])];
