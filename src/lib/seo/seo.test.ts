@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+
 import { readFileSync } from 'node:fs';
 import type { InstitutionId } from '@/data/institutions';
 import type { ReactNode } from 'react';
@@ -11,7 +13,11 @@ import JsonLd from '@/components/seo/JsonLd';
 import { getInstitutionDirectoryItems } from '@/data/institutionDirectory';
 import { buildRobots, TRAINING_BOTS_POLICY } from './robots';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
-import { getPublicInstitutionPageData, getPublicProgramPageData } from '@/lib/publicCataloguePages';
+import {
+  getPublicInstitutionPageData,
+  getPublicProgramPageData,
+  getPublicProgramRequirementSources,
+} from '@/lib/publicCataloguePages';
 import * as catalogueDisplayText from '@/lib/catalogueDisplayText';
 import { absoluteUrl, SITE_ALT_NAMES, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/site';
 import {
@@ -30,6 +36,7 @@ import {
   institutionLd,
   organizationLd,
   programBreadcrumbLd,
+  programFaqPageLd,
   programLd,
   websiteLd,
 } from './jsonLd';
@@ -577,6 +584,9 @@ describe('structured data', () => {
   });
 
   it('renders graph envelopes with consistent apex node IDs and no unsupported content schemas', async () => {
+    const page = (await getPublicProgramPageData('tau_cs'))!;
+    const faq = programFaqPageLd(page, await getPublicProgramRequirementSources(page));
+    expect(faq).toBeNull();
     const data = [
       organizationLd(),
       websiteLd(),
@@ -586,6 +596,7 @@ describe('structured data', () => {
       institutionBreadcrumbLd((await getPublicInstitutionPageData('tau'))!),
       await programLd((await getPublicProgramPageData('tau_cs'))!),
       programBreadcrumbLd((await getPublicProgramPageData('tau_cs'))!),
+      ...(faq ? [faq] : []),
     ];
     const markup = renderToStaticMarkup(JsonLd({ data }));
     const graph = JSON.parse(
@@ -604,6 +615,92 @@ describe('structured data', () => {
     );
     expect(JSON.stringify(graph)).not.toMatch(
       /FAQPage|HowTo|Dataset|AggregateRating|"@type":"Review"/,
+    );
+  });
+
+  it.each([
+    'bgu_psychology',
+    'huji_law',
+    'biu_psychology',
+    'ariel_psychology',
+    'haifa_nursing',
+    'ono_nursing',
+    'afeka_cs',
+  ])(
+    'adds FAQPage alongside program and breadcrumb schema for %s using on-page facts',
+    async (id) => {
+      const data = (await getPublicProgramPageData(id))!;
+      const sources = await getPublicProgramRequirementSources(data);
+      const faq = programFaqPageLd(data, sources)!;
+      expect(faq).toMatchObject({
+        '@type': 'FAQPage',
+        '@id': `${SITE_URL}/programs/${id}#faq`,
+        inLanguage: 'he',
+      });
+      const document = new DOMParser().parseFromString(
+        renderToStaticMarkup(await ProgramPage({ params: Promise.resolve({ programId: id }) })),
+        'text/html',
+      );
+      const graph = JSON.parse(
+        document.querySelector('script[type="application/ld+json"]')!.textContent!,
+      );
+      expect(graph['@graph'].map((node: { '@type': string }) => node['@type'])).toEqual([
+        'EducationalOccupationalProgram',
+        'BreadcrumbList',
+        'FAQPage',
+      ]);
+      expect(graph['@graph'][2]).toEqual(faq);
+      const visibleText = Array.from(document.querySelectorAll('main li, main p'))
+        .map((element) => element.textContent)
+        .join(' ');
+      const source = sources[data.institutions[0].id];
+      expect(faq.mainEntity[0].acceptedAnswer.text).toBe(source.requirements.join(' '));
+      for (const requirement of source.requirements) {
+        expect(faq.mainEntity[0].acceptedAnswer.text).toContain(requirement);
+        // BGU splits its first two requirements into three near-verbatim route bullets.
+        if (id !== 'bgu_psychology' || source.requirements.indexOf(requirement) >= 2) {
+          expect(visibleText).toContain(requirement);
+        }
+      }
+      for (const entity of faq.mainEntity) {
+        expect(entity['@type']).toBe('Question');
+        expect(entity.name).toMatch(/[א-ת]/);
+        expect(entity.acceptedAnswer['@type']).toBe('Answer');
+        expect(entity.acceptedAnswer.text).not.toMatch(/[a-z]|מתואם|מצרף/i);
+        if (!source.requirements.some((text) => text.includes('סכם'))) {
+          expect(entity.acceptedAnswer.text).not.toContain('סכם');
+        }
+        for (const number of entity.acceptedAnswer.text.match(/\d+(?:\.\d+)?/g) ?? []) {
+          expect(visibleText).toContain(number);
+        }
+      }
+      expect(faq.mainEntity).toHaveLength(source.checked ? 2 : 1);
+      if (source.checked) {
+        expect(visibleText).toContain(faq.mainEntity[1].acceptedAnswer.text);
+      }
+      // The only addition is the schema script: no FAQ questions become visible UI.
+      for (const entity of faq.mainEntity) {
+        expect(document.querySelector('main')!.textContent).not.toContain(entity.name);
+      }
+    },
+  );
+
+  it('omits FAQs when scoped requirements are hidden or unavailable and for other programs', async () => {
+    const data = (await getPublicProgramPageData('huji_law'))!;
+    const sources = await getPublicProgramRequirementSources(data);
+    expect(
+      programFaqPageLd({ ...data, program: { ...data.program, isListed: false } }, sources),
+    ).toBeNull();
+    expect(programFaqPageLd(data, {})).toBeNull();
+    for (const id of ['tau_cs', 'psychology', 'cs']) {
+      expect(programFaqPageLd({ ...data, program: { ...data.program, id } }, sources)).toBeNull();
+    }
+    const document = new DOMParser().parseFromString(
+      renderToStaticMarkup(await ProgramPage({ params: Promise.resolve({ programId: 'tau_cs' }) })),
+      'text/html',
+    );
+    expect(document.querySelector('script[type="application/ld+json"]')!.textContent).not.toContain(
+      'FAQPage',
     );
   });
 
