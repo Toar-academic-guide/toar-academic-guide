@@ -36,6 +36,29 @@ function select(id: string, institutionId: string) {
 }
 
 describe('verified requirement tiles', () => {
+  it.each(['afeka_ee', 'afeka_softwareeng'])(
+    'keeps %s alternative unit-and-score routes in the full requirements',
+    (id) => {
+      const program = programs.find((row) => row.id === id)!;
+      const requirements = catalogueAdmissionRequirements(
+        program.institutionDetails![0].specificAdmissionNotes,
+        program.admissionRequirements,
+        id,
+      );
+      expect(requirements).toEqual(program.admissionRequirements);
+      expect(requirements.join(' ')).toContain('כמותי 115 לפחות');
+      expect(requirements.join(' ')).not.toMatch(/ממוצע בגרות מינימלי|ציון פסיכומטרי מינימלי|550/);
+      expect(
+        selectRequirementTiles({
+          program,
+          institutionId: 'afeka',
+          requirements,
+          now: new Date('2026-10-24T12:00:00Z'),
+        }),
+      ).toEqual({ reason: 'insufficient_structured_data' });
+    },
+  );
+
   it('keeps Haifa psychology composite and separate-track conditions in the full copy', () => {
     const program = programs.find((row) => row.id === 'haifa_psychology')!;
     const requirements = catalogueAdmissionRequirements(
