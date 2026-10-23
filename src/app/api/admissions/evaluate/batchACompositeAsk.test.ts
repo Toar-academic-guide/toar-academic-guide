@@ -16,8 +16,17 @@ vi.mock('@/db/client', () => ({
 import { POST } from './route';
 
 const degrees = [
-  'telhai_cs','telhai_biology','ono_cs','ono_business','ruppin_cs',
-  'reichman_business','reichman_economics','colmgmt_accounting','colmgmt_infosystems','tlvyaffo_cs','mta_cs',
+  'telhai_cs',
+  'telhai_biology',
+  'ono_cs',
+  'ono_business',
+  'ruppin_cs',
+  'reichman_business',
+  'reichman_economics',
+  'colmgmt_accounting',
+  'colmgmt_infosystems',
+  'tlvyaffo_cs',
+  'mta_cs',
 ] as const;
 
 describe('Batch A never asks for composites', () => {
