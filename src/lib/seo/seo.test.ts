@@ -651,6 +651,8 @@ describe('structured data', () => {
     'biu_lifesciences',
     'hit_cs',
     'wingate_cs',
+    'ono_law',
+    'colmgmt_cs',
   ])(
     'adds FAQPage alongside program and breadcrumb schema for %s using on-page facts',
     async (id) => {
@@ -692,17 +694,46 @@ describe('structured data', () => {
         'FAQPage',
       ]);
       expect(graph['@graph'][2]).toEqual(faq);
-      const visibleText = Array.from(document.querySelectorAll('main li, main p'))
-        .map((element) => element.textContent)
-        .join(' ');
+      const visibleText =
+        id === 'colmgmt_cs'
+          ? document.querySelector('main')!.textContent!
+          : Array.from(document.querySelectorAll('main li, main p'))
+              .map((element) => element.textContent)
+              .join(' ');
       const source = sources[data.institutions[0].id];
       expect(faq.mainEntity[0].acceptedAnswer.text).toBe(source.requirements.join(' '));
       for (const requirement of source.requirements) {
         expect(faq.mainEntity[0].acceptedAnswer.text).toContain(requirement);
         // BGU splits its first two requirements into three near-verbatim route bullets.
-        if (id !== 'bgu_psychology' || source.requirements.indexOf(requirement) >= 2) {
+        // Colman presents the equivalent conditions in tiles and expanded details below.
+        if (
+          id !== 'colmgmt_cs' &&
+          (id !== 'bgu_psychology' || source.requirements.indexOf(requirement) >= 2)
+        ) {
           expect(visibleText).toContain(requirement);
         }
+      }
+      if (id === 'colmgmt_cs') {
+        for (const [answerFact, pageFact] of [
+          ['ממוצע בגרות משוקלל 85+', '85בגרות'],
+          ['מתמטיקה 5 יח"ל 70+ או 4 יח"ל 80+', 'מתמטיקה 5 יח"ל 70 / 4 יח"ל 80'],
+          ['ומעבר מבדק פנימי', '+ מבדק פנימי'],
+          ['עמידה בציון המשוקלל של המכללה', 'המכללה מחליטה'],
+          ['פטור מהמבדק בפסיכומטרי 600+ וכמותי 120+', 'פטור: פסיכומטרי 600 וכמותי 120'],
+          ['לא מפרסמת את הציון המשוקלל הנדרש', 'ולא מפרסמת את הציון הנדרש'],
+          ['מכינת שחקים', 'חסר רק ממוצע הבגרות: אחרי סיום מכינת שחקים בהצלחה.'],
+          [
+            'מכינת ריענון במתמטיקה',
+            'חסר רק ציון המתמטיקה: אחרי מבדק פנימי וסיום מכינת ריענון במתמטיקה בהצלחה.',
+          ],
+          ['או שתיהן, לפי מה שחסר', 'חסרים שניהם: אחרי מבדק פנימי וסיום שתי המכינות בהצלחה.'],
+        ]) {
+          expect(faq.mainEntity[0].acceptedAnswer.text).toContain(answerFact);
+          expect(visibleText).toContain(pageFact);
+        }
+      }
+      if (id === 'ono_law' || id === 'colmgmt_cs') {
+        expect(source.checked?.date).toBe('23.10.2026');
       }
       for (const entity of faq.mainEntity) {
         expect(entity['@type']).toBe('Question');
@@ -748,6 +779,10 @@ describe('structured data', () => {
       'ariel_cs',
       'afeka_ee',
       'haifa_psychology',
+      'afeka_softwareeng',
+      'hit_visual_comm',
+      'huji_engineering',
+      'bezalel_graphic_design',
       'psychology',
       'law',
       'nursing',
@@ -764,6 +799,10 @@ describe('structured data', () => {
     'ariel_cs',
     'afeka_ee',
     'haifa_psychology',
+    'afeka_softwareeng',
+    'hit_visual_comm',
+    'huji_engineering',
+    'bezalel_graphic_design',
     'psychology',
     'law',
     'nursing',
