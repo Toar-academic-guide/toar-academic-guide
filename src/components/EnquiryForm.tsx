@@ -1,6 +1,7 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import posthog from 'posthog-js';
 import { ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { ENQUIRY_CONSENT, type EnquiryInput } from '@/lib/enquiries';
 
@@ -9,16 +10,29 @@ export default function EnquiryForm({
   institutionId,
   title,
   onBack,
+  surface = 'enquiry_page',
 }: {
   programId: string;
   institutionId: string;
   title: string;
   onBack?: () => void;
+  surface?: string;
 }) {
   const requestId = useRef<string | null>(null);
   const sending = useRef(false);
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent'>('idle');
   const [error, setError] = useState('');
+  const viewed = useRef(false);
+  useEffect(() => {
+    if (viewed.current) return;
+    viewed.current = true;
+    posthog.capture('enquiry_form_viewed', {
+      program_id: programId,
+      institution_id: institutionId,
+      surface,
+      source_path: window.location.pathname,
+    });
+  }, [programId, institutionId, surface]);
 
   if (status === 'sent') {
     return (
@@ -56,18 +70,33 @@ export default function EnquiryForm({
           sourcePath: `${window.location.pathname}${window.location.hash}`.slice(0, 300),
           consent: true,
         };
+        let httpStatus: number | null = null;
         try {
           const response = await fetch('/api/enquiries', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(body),
           });
+          httpStatus = response.status;
           const result = await response.json();
           if (!response.ok || !result.data?.received) {
             throw new Error(result.error?.message ?? 'הפנייה לא נשלחה. אפשר לנסות שוב.');
           }
+          posthog.capture('enquiry_submitted', {
+            program_id: programId,
+            institution_id: institutionId,
+            surface,
+            source_path: window.location.pathname,
+          });
           setStatus('sent');
         } catch (cause) {
+          posthog.capture('enquiry_submit_failed', {
+            program_id: programId,
+            institution_id: institutionId,
+            surface,
+            http_status: httpStatus,
+            reason: httpStatus === null ? 'network' : 'server',
+          });
           setError(cause instanceof Error ? cause.message : 'לא ניתן לשלוח כרגע.');
           setStatus('idle');
         } finally {
