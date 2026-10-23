@@ -1,4 +1,5 @@
 import { isBguQuantitativeRouteProgram } from '@/lib/calculatorInputRequirements';
+import { isBiuPublishedRoutePair } from '@/data/admissions/biuPublishedRoutes';
 import 'server-only';
 
 import { inArray } from 'drizzle-orm';
@@ -785,6 +786,16 @@ export function buildAdmissionsCapabilityMatrix(args: {
         sourceTarget,
         evidence,
         freshnessState,
+      };
+    }
+
+    if (isBiuPublishedRoutePair(program.id, institutionId)) {
+      return {
+        institutionId,
+        capability: 'estimated',
+        formulaPairScope,
+        pairVerification,
+        evidence,
       };
     }
 

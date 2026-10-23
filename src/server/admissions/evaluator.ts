@@ -1,4 +1,6 @@
 import { isBatchCUnsupportedProgramId } from '@/data/admissions/batchCUnsupportedProgramIds';
+import { isBiuPublishedRoutePair } from '@/data/admissions/biuPublishedRoutes';
+import { evaluateBiuPublishedRoutes } from './biuPublishedRoutesEvaluation';
 import { evaluateBatchCUnsupportedPath } from './batchCUnsupportedPathEvaluation';
 import { evaluateBatchBManualPath, isBatchBManualProgram } from './batchBManualPathEvaluation';
 import { evaluateTelhaiPublishedRoutes } from './telhaiPublishedRoutesEvaluation';
@@ -259,6 +261,11 @@ async function evaluateCapabilityEntries(args: {
   for (const [index, entry] of capabilityEntries.entries()) {
     const institution = institutions.find((item) => item.id === entry.institutionId);
     if (!institution) {
+      continue;
+    }
+
+    if (isBiuPublishedRoutePair(program.id, institution.id)) {
+      results[index] = evaluateBiuPublishedRoutes({ input, institution });
       continue;
     }
 

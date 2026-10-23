@@ -54,6 +54,7 @@ function reportWithRisks(): DataHealthReadyReport {
         haifa: { total: 27, exact: 0, withheld: 27, stale: 0, blocked: 0 },
         technion: { total: 14, exact: 0, withheld: 14, stale: 0, blocked: 0 },
         colman: { total: 1, exact: 0, withheld: 1, stale: 0, blocked: 0 },
+        biu: { total: 0, exact: 0, withheld: 0, stale: 0, blocked: 0 },
       },
     },
     runtimeFormulaVerification: {

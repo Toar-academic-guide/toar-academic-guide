@@ -97,13 +97,15 @@ export const calculatorCoverageInventory: CalculatorCoverageEntry[] = [
     institutionId: 'biu',
     institutionName: 'Bar-Ilan University',
     mondayItemId: '12220699688',
-    officialUrl: 'https://in.biu.ac.il/Pages/Psychometric.aspx',
-    evidenceKind: 'browser_blocked',
-    intendedCapability: 'unsupported',
-    supportLevel: 'unsupported',
+    officialUrl:
+      'https://www.biu.ac.il/registration-and-admission/information/acceptance-no-psychometry',
+    evidenceKind: 'requirements_enrichment',
+    intendedCapability: 'estimated',
+    supportLevel: 'estimated',
     hasCalculatorConfig: true,
     hasSourceTarget: true,
-    nextAction: 'Move to Hermes/VPS browser automation lane',
+    nextAction:
+      'Seven published Bagrut-only pairs are estimated; remaining BIU pairs stay excluded. Obtain official composite formula and programme thresholds; calculator returns HTTP 403 in Chromium.',
   },
   {
     institutionId: 'haifa',

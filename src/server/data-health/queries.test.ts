@@ -345,9 +345,9 @@ describe('summarizeDataHealthRows', () => {
     expect(report.readiness.isReady).toBe(true);
     expect(report.readiness.issues).toEqual([]);
     expect(report.formulaVerification).toMatchObject({
-      total: 131,
+      total: 138,
       exact: 126,
-      withheld: 4,
+      withheld: 11,
       isComplete: false,
     });
     expect(report.admissionRoutes).toMatchObject({

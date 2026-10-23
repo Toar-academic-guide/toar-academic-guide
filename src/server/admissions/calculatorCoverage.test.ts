@@ -48,9 +48,10 @@ describe('calculatorCoverage', () => {
     }
   });
 
-  it('marks BIU and Ariel as explicitly unsupported exclusions', () => {
+  it('records partial BIU published-route support while Ariel remains unsupported', () => {
     const biu = calculatorCoverageInventory.find((e) => e.institutionId === 'biu');
-    expect(biu?.intendedCapability).toBe('unsupported');
+    expect(biu?.intendedCapability).toBe('estimated');
+    expect(biu?.nextAction).toContain('remaining BIU pairs stay excluded');
 
     const ariel = calculatorCoverageInventory.find((e) => e.institutionId === 'ariel');
     expect(ariel?.intendedCapability).toBe('unsupported');
@@ -60,9 +61,9 @@ describe('calculatorCoverage', () => {
 
   it('reports pair-level formula coverage without institution-wide exact claims', () => {
     expect(formulaBackedPairCoverage).toMatchObject({
-      total: 131,
+      total: 138,
       exact: 126,
-      withheld: 4,
+      withheld: 11,
       isComplete: false,
     });
 
