@@ -1,22 +1,12 @@
 import { bagrutExamSubjects } from '@/lib/bagrutSubjectRecord';
 import { confirmationCondition, withScoreAssessment } from './scoreAssessment';
+import { mtaCombinedScore } from './mtaCombinedScore';
 import type {
   AdmissionsEvaluationInput,
   AdmissionsEvaluationResult,
   AdmissionsRequiredInput,
 } from '@/types/admissionsEvaluation';
 import type { CatalogueInstitution } from '@/types/catalogue';
-
-/** The official calculator accepts only this open Bagrut range and psychometric domain. */
-function combinedScore(bagrut: number | undefined, psychometric: number | undefined) {
-  if (
-    bagrut === undefined ||
-    psychometric === undefined ||
-    !(bagrut > 60 && bagrut < 130 && psychometric > 200 && psychometric <= 800)
-  )
-    return undefined;
-  return Math.round((psychometric + (bagrut - 30) * 10) / 2);
-}
 
 export function evaluateMtaComputerScience({
   input,
@@ -34,7 +24,7 @@ export function evaluateMtaComputerScience({
   const english = extra?.psychometricEnglish;
   const bagrut = input.bagrut;
   const psychometric = input.psychometric;
-  const combined = combinedScore(bagrut, psychometric);
+  const combined = mtaCombinedScore(bagrut, psychometric);
   const base = {
     institution,
     linkedInstitutionId: institution.id,

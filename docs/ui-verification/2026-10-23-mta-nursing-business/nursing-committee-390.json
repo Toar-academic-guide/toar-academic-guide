@@ -1,0 +1,49 @@
+{
+  "institution": {
+    "id": "mta",
+    "name": "המכללה האקדמית תל-אביב-יפו",
+    "region": "center",
+    "domain": "mta.ac.il",
+    "programUrl": "https://www.mta.ac.il"
+  },
+  "linkedInstitutionId": "mta",
+  "capability": "manual_gate",
+  "kind": "manual_gate",
+  "confidence": "medium",
+  "sourceLabel": "התאמה לפי הציונים",
+  "officialUrls": [
+    "https://www.mta.ac.il/conditions_for_applying",
+    "https://mtamn.mta.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1"
+  ],
+  "decision": "pending",
+  "score": 515,
+  "threshold": 515,
+  "scoreLabel": "ציון משולב משוער — ועדת קבלה",
+  "scoreAssessment": "meets_threshold",
+  "explanation": "תנאי הציונים מתקיימים בחלופה: ציון משולב 515 לפחות ופסיכומטרי 430 לפחות — הגשת מועמדות לוועדת קבלה ולראיון. ממוצע הבגרות והציון המשולב הם הערכה; המכללה מחשבת אותם לפי שיטתה. אין כאן אישור קבלה סופית.",
+  "nextAction": "פנו למרכז ייעוץ ורישום לבירור הגשת מועמדות לוועדת הקבלה ולראיון אישי.",
+  "additionalConditions": [
+    {
+      "id": "psychometric_english",
+      "label": "אנגלית 85 לפחות בפסיכומטרי או באמיר״ם/אמירנ״ט",
+      "status": "confirmed"
+    },
+    {
+      "id": "bagrut_average",
+      "label": "זכאות לבגרות, עמידה בתנאי הסף הכלליים ואישור הנתונים בידי המכללה",
+      "status": "unconfirmed"
+    },
+    {
+      "id": "mta_nursing_interview",
+      "label": "ועדת קבלה וראיון אישי",
+      "status": "unconfirmed"
+    }
+  ],
+  "snapshot": {
+    "evaluatorVersion": "admissions-evaluator-v2",
+    "ruleVersion": "admissions-evaluator-v2:mta:manual_gate",
+    "ruleFingerprint": "sha256:63bfc20a81d57912c4ba4dcb4ee59e54550bc96f2750a6e7b1006aa148556aab",
+    "inputDigest": "sha256:3aaadb8c9adc29dece9c3ec7da9cd78cf30d5d77e417dff87c0f7925bd8a6589",
+    "evaluationDigest": "sha256:98ded8e63d854b56c674b1917545d610ba63af4598228b8f6becaeff2a568fb3"
+  }
+}

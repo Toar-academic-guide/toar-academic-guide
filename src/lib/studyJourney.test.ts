@@ -12,24 +12,29 @@ import { getStaticCataloguePrograms, getStaticCatalogueInstitutions } from './ca
 import { PROGRAM_CANONICAL_ALIASES } from './seo/programAliases';
 
 describe('approved journey', () => {
-  it.each(['tlvyaffo_cs', 'colmgmt_law', 'colmgmt_business', 'colmgmt_economics', 'colmgmt_cs'])(
-    'preserves program-specific route explanations for %s',
-    (programId) => {
-      const result = {
-        institution: getStaticCatalogueInstitutions()[0],
-        linkedInstitutionId: programId === 'tlvyaffo_cs' ? 'mta' : 'colman',
-        capability: 'manual_gate' as const,
-        kind: 'manual_gate' as const,
-        decision: 'unknown' as const,
-        confidence: 'high' as const,
-        sourceLabel: 'תנאי קבלה',
-        nextAction: 'בדקו מול מרכז הרישום',
-        explanation: 'במסלול בגרות ופסיכומטרי ההחלטה היא של המכללה.',
-      };
-      expect(resultExplanation(result, programId)).toBe(result.explanation);
-      expect(resultExplanation(result, 'colmgmt_accounting')).not.toBe(result.explanation);
-    },
-  );
+  it.each([
+    'tlvyaffo_cs',
+    'tlvyaffo_nursing',
+    'tlvyaffo_business',
+    'colmgmt_law',
+    'colmgmt_business',
+    'colmgmt_economics',
+    'colmgmt_cs',
+  ])('preserves program-specific route explanations for %s', (programId) => {
+    const result = {
+      institution: getStaticCatalogueInstitutions()[0],
+      linkedInstitutionId: programId.startsWith('tlvyaffo_') ? 'mta' : 'colman',
+      capability: 'manual_gate' as const,
+      kind: 'manual_gate' as const,
+      decision: 'unknown' as const,
+      confidence: 'high' as const,
+      sourceLabel: 'תנאי קבלה',
+      nextAction: 'בדקו מול מרכז הרישום',
+      explanation: 'במסלול בגרות ופסיכומטרי ההחלטה היא של המכללה.',
+    };
+    expect(resultExplanation(result, programId)).toBe(result.explanation);
+    expect(resultExplanation(result, 'colmgmt_accounting')).not.toBe(result.explanation);
+  });
   it('keeps Afeka software engineering in its own field, not Computer Science', () => {
     const fields = studyFields(getStaticCataloguePrograms());
     expect(

@@ -38,6 +38,7 @@ export function allowsNoPsychometric(programId: string): boolean {
       'colmgmt_business',
       'colmgmt_economics',
       'tlvyaffo_cs',
+      'tlvyaffo_business',
     ].includes(programId)
   );
 }
@@ -61,6 +62,8 @@ export function allowsNoGenericBagrut(programId: string): boolean {
       'colmgmt_business',
       'colmgmt_economics',
       'tlvyaffo_cs',
+      'tlvyaffo_business',
+      'tlvyaffo_nursing',
     ].includes(programId)
   );
 }
