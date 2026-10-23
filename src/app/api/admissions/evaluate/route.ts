@@ -1,4 +1,5 @@
 import { colmanBagrutInputsShape } from '@/lib/colmanBagrutInputs';
+import { canonicalProgramId } from '@/lib/seo/programAliases';
 import { tauPhysiotherapyInputsShape } from '@/lib/tauPhysiotherapyInputs';
 import { hujiMedicineInputsShape } from '@/lib/hujiMedicineInputs';
 import { bguHealthInputsShape } from '@/lib/bguHealthInputs';
@@ -12,6 +13,7 @@ import { z } from 'zod';
 import { ApiRouteError, toErrorResponse } from '@/app/api/_lib/errors';
 import { listCatalogueInstitutions, listCataloguePrograms } from '@/server/catalogue/queries';
 import { evaluateAdmissionsForProgram } from '@/server/admissions/evaluator';
+import { BATCH_B_PROGRAMS } from '@/server/admissions/batchBManualPathEvaluation';
 import { assertAdmissionsEvaluationRateLimit } from '@/server/admissions/rateLimit';
 import type { AdmissionsBatchReport } from '@/types/admissionsEvaluation';
 import { bguEngineeringSchema } from '@/lib/bguEngineeringSchema';
@@ -108,14 +110,15 @@ export async function POST(request: Request) {
       for (let index = 0; index < degreeIds.length; index += 4) {
         await Promise.all(
           degreeIds.slice(index, index + 4).map(async (degreeId) => {
-            const program = programsResult.data.find((entry) => entry.id === degreeId);
+            const resolvedDegreeId = resolveEvaluationDegreeId(degreeId);
+            const program = programsResult.data.find((entry) => entry.id === resolvedDegreeId);
             if (!program) {
               batch.failedDegreeIds.push(degreeId);
               return;
             }
             try {
               batch.reports[degreeId] = await evaluateAdmissionsForProgram({
-                input: { ...applicant, degreeId },
+                input: { ...applicant, degreeId: resolvedDegreeId },
                 program,
                 institutions: institutionsResult.data,
               });
@@ -127,7 +130,7 @@ export async function POST(request: Request) {
       }
       return Response.json({ data: batch });
     }
-    const degreeId = parsed.data.degreeId;
+    const degreeId = resolveEvaluationDegreeId(parsed.data.degreeId);
     const program = programsResult.data.find((entry) => entry.id === degreeId);
     if (!program) {
       throw new ApiRouteError(
@@ -138,7 +141,7 @@ export async function POST(request: Request) {
     }
 
     const report = await evaluateAdmissionsForProgram({
-      input: parsed.data,
+      input: { ...parsed.data, degreeId },
       program,
       institutions: institutionsResult.data,
     });
@@ -162,6 +165,11 @@ export async function POST(request: Request) {
       message: 'Unable to evaluate admissions right now.',
     });
   }
+}
+
+function resolveEvaluationDegreeId(degreeId: string): string {
+  // Existing manual-gate programmes have evaluator-owned IDs; preserve those routes.
+  return BATCH_B_PROGRAMS[degreeId] ? degreeId : canonicalProgramId(degreeId);
 }
 
 async function resolveClientKey() {
