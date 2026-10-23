@@ -13,7 +13,7 @@ for (const width of [390, 1440]) {
       test(`${degreeId} shows honest unsupported result at ${width}px ${withScores ? 'with' : 'without'} scores`, async ({
         page,
       }, testInfo) => {
-        test.setTimeout(90_000);
+        test.setTimeout(150_000);
         await page.setExtraHTTPHeaders({
           'x-forwarded-for': `198.51.100.${180 + targets.findIndex(([id]) => id === degreeId) + (width === 390 ? 0 : 20) + (withScores ? 0 : 40)}`,
         });
@@ -35,13 +35,22 @@ for (const width of [390, 1440]) {
           },
           { degreeId, institutionId, withScores },
         );
-        const evaluation = page.waitForResponse(
-          (response) =>
-            response.url().endsWith('/api/admissions/evaluate') &&
-            response.request().postDataJSON()?.degreeIds?.includes(degreeId),
-        );
+        const waitForEvaluation = () =>
+          page.waitForResponse(
+            (response) =>
+              response.url().endsWith('/api/admissions/evaluate') &&
+              response.request().postDataJSON()?.degreeIds?.includes(degreeId),
+          );
+        const evaluation = waitForEvaluation();
         await page.goto('/app/calculator#detail');
-        const response = await evaluation;
+        let response = await evaluation;
+        if (response.status() === 429) {
+          // Same allowance as Batch A/B: preview shares one client IP → 12 req/min.
+          await new Promise((resolve) => setTimeout(resolve, 60_000));
+          const retry = waitForEvaluation();
+          await page.reload();
+          response = await retry;
+        }
         expect(response.status()).toBe(200);
         const result = (await response.json()).data.reports[degreeId].results.find(
           (entry: { linkedInstitutionId: string }) => entry.linkedInstitutionId === institutionId,
