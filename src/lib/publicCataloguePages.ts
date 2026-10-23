@@ -203,6 +203,8 @@ export async function getPublicProgramRequirementSources({
       officialUrl: officialUrl(sourceDetail?.programUrl, institution.id),
       ...([
         'tlvyaffo_cs',
+        'tlvyaffo_nursing',
+        'tlvyaffo_business',
         'colmgmt_law',
         'colmgmt_business',
         'colmgmt_economics',
