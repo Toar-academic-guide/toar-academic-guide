@@ -59,7 +59,7 @@ describe('Batch B API dispatch', () => {
     }
   });
 
-  it('ono nursing strong profile is pending interview, not final accept', async () => {
+  it('ono nursing strong profile is accepted with an unconfirmed interview', async () => {
     const response = await POST(
       new Request('http://localhost/api/admissions/evaluate', {
         method: 'POST',
@@ -67,6 +67,7 @@ describe('Batch B API dispatch', () => {
         body: JSON.stringify({ degreeId: 'ono_nursing', psychometric: 520, bagrut: 85 }),
       }),
     );
+    expect(response.status).toBe(200);
     const { data } = await response.json();
     const result = data.results.find(
       (row: AdmissionsEvaluationResult) => row.linkedInstitutionId === 'ono',
@@ -74,10 +75,17 @@ describe('Batch B API dispatch', () => {
     expect(result).toMatchObject({
       capability: 'manual_gate',
       kind: 'manual_gate',
-      decision: 'pending',
+      decision: 'accepted',
       scoreAssessment: 'meets_threshold',
     });
-    expect(result.explanation).toContain('ראיון');
+    expect(result.explanation).toContain('לפי הציונים שהזנת');
+    expect(result.additionalConditions).toContainEqual(
+      expect.objectContaining({
+        id: 'admissions_committee',
+        label: 'ראיון קבלה',
+        status: 'unconfirmed',
+      }),
+    );
   });
 
   it('bezalel answers without requiring bagrut or psychometric', async () => {

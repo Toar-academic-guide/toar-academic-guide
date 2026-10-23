@@ -5,7 +5,7 @@ const targets = [
   ['shenkar_fashion', 'shenkar', 'eligible_to_apply'],
   ['samspiegel_cinema', 'spieldocs', 'eligible_to_apply'],
   ['telhai_nursing', 'telhai', 'eligible_to_apply'],
-  ['ono_nursing', 'ono', 'pending'],
+  ['ono_nursing', 'ono', 'accepted'],
 ] as const;
 
 for (const width of [390, 1440]) {
@@ -70,8 +70,21 @@ for (const width of [390, 1440]) {
       });
       if (degreeId === 'ono_nursing') {
         expect(result.scoreAssessment).toBe('meets_threshold');
+        expect(result.additionalConditions).toContainEqual(
+          expect.objectContaining({ id: 'admissions_committee', status: 'unconfirmed' }),
+        );
+        await expect(page.locator('.journey-status')).toHaveText('מתקבלים');
+        const footnote = page.getByText('נדרש גם ריאיון קבלה. אישור סופי מהמכללה.', {
+          exact: true,
+        });
+        await expect(footnote).toBeVisible();
+        await expect(footnote).toHaveClass(/text-slate-400/);
+        await expect(footnote).toHaveCSS('font-size', '12px');
+        await expect(footnote).toHaveCSS('text-align', 'right');
+        await expect(page.getByRole('heading', { name: 'תנאים נוספים לבדיקה' })).toHaveCount(0);
       } else {
         expect(result.scoreAssessment).toBeUndefined();
+        await expect(page.locator('.journey-status')).toHaveText('אפשר להגיש מועמדות');
       }
       expect(result.requiredInputs).toBeUndefined();
       await expect(page.locator('.journey-result-explanation')).toHaveText(result.explanation);
@@ -82,12 +95,10 @@ for (const width of [390, 1440]) {
       expect(
         await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
       ).toBe(true);
-      if (width === 1440) {
-        await page.screenshot({
-          path: testInfo.outputPath(`${degreeId}-desktop.png`),
-          fullPage: true,
-        });
-      }
+      await page.screenshot({
+        path: testInfo.outputPath(`${degreeId}-${width}px.png`),
+        fullPage: true,
+      });
     });
   }
 }

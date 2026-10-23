@@ -9,6 +9,7 @@ import {
   distinctRecommendations,
 } from './studyJourney';
 import { getStaticCataloguePrograms, getStaticCatalogueInstitutions } from './catalogueStatic';
+import { evaluateBatchBManualPath } from '@/server/admissions/batchBManualPathEvaluation';
 import { PROGRAM_CANONICAL_ALIASES } from './seo/programAliases';
 
 describe('approved journey', () => {
@@ -55,6 +56,25 @@ describe('approved journey', () => {
     };
     expect(resultExplanation(result, programId)).toBe(result.explanation);
   });
+  it('gives accepted manual score passes priority over the score-assessment label', () => {
+    const result = evaluateBatchBManualPath({
+      input: { degreeId: 'ono_nursing', bagrut: 85, psychometric: 520 },
+      institution: getStaticCatalogueInstitutions().find((i) => i.id === 'ono')!,
+    })!;
+    expect(resultLabel(result)).toEqual({ label: 'מתקבלים', group: 'match' });
+    expect(resultExplanation(result, 'ono_nursing')).toBe(result.explanation);
+    expect(resultLabel({ ...result, decision: 'pending' })).toEqual({
+      label: 'הציונים עומדים בסף',
+      group: 'match',
+    });
+    expect(
+      resultLabel({ ...result, decision: 'below', scoreAssessment: 'below_threshold' }),
+    ).toEqual({ label: 'הציונים מתחת לסף', group: 'improve' });
+    expect(
+      resultLabel({ ...result, decision: 'eligible_to_apply', scoreAssessment: undefined }),
+    ).toEqual({ label: 'אפשר להגיש מועמדות', group: 'match' });
+  });
+
   it('keeps Afeka software engineering in its own field, not Computer Science', () => {
     const fields = studyFields(getStaticCataloguePrograms());
     expect(

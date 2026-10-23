@@ -55,6 +55,7 @@ import ProgramShareButton from './ProgramShareButton';
 import AdmissionRequirements from './AdmissionRequirements';
 import RequirementTiles from './RequirementTiles';
 import AdmissionConditions from './AdmissionConditions';
+import { acceptedManualGateFootnote } from '@/lib/acceptedManualGateFootnote';
 import { isBatchCUnsupportedProgramId } from '@/data/admissions/batchCUnsupportedProgramIds';
 import { DANON_PROGRAM_URLS } from '@/data/admissions/danon';
 import { buildLoginPath, ROUTES } from '@/lib/routes';
@@ -354,6 +355,7 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
         failed: failedReports.includes(active.program.id),
       }
     : undefined;
+  const activeFootnote = acceptedManualGateFootnote(activeRow?.result);
   const isBatchCUnsupported = activeRow
     ? isBatchCUnsupportedProgramId(activeRow.program.id, activeRow.institution.id)
     : false;
@@ -1340,6 +1342,12 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                       {resultExplanation(activeRow.result, activeRow.program.id)}
                     </p>
                   )}
+                  {activeFootnote && (
+                    <AdmissionConditions
+                      conditions={activeRow.result?.additionalConditions}
+                      footnote={activeFootnote}
+                    />
+                  )}
                   {activeRow.result?.score != null && (
                     <p>
                       {activeRow.result.scoreLabel ?? 'ציון מחושב'}:{' '}
@@ -1347,7 +1355,9 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                       {activeRow.result.threshold != null && ` · סף: ${activeRow.result.threshold}`}
                     </p>
                   )}
-                  <AdmissionConditions conditions={activeRow.result?.additionalConditions} />
+                  {!activeFootnote && (
+                    <AdmissionConditions conditions={activeRow.result?.additionalConditions} />
+                  )}
                   <h2>תנאי קבלה</h2>
                   {isBatchCUnsupported ? (
                     <p>{activeRow.result?.nextAction}</p>

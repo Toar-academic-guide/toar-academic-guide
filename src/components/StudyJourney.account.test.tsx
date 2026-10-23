@@ -37,6 +37,7 @@ vi.mock('@/lib/catalogueClient', () => ({
 }));
 vi.mock('@/lib/admissionsEvaluationClient', () => ({ fetchAdmissionsBatch: state.evaluate }));
 import StudyJourney from './StudyJourney';
+import { evaluateBatchBManualPath } from '@/server/admissions/batchBManualPathEvaluation';
 
 describe('account grades in the homepage journey', () => {
   afterEach(() => vi.useRealTimers());
@@ -64,6 +65,42 @@ describe('account grades in the homepage journey', () => {
       }),
     );
     vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+  });
+
+  it('shows accepted Ono nursing detail with the interview in a gray footnote', async () => {
+    const program = getStaticCataloguePrograms().find((p) => p.id === 'ono_nursing')!;
+    const institution = getStaticCatalogueInstitutions().find((i) => i.id === 'ono')!;
+    const result = evaluateBatchBManualPath({
+      input: { degreeId: program.id, bagrut: 85, psychometric: 520 },
+      institution,
+    })!;
+    state.fetchPrograms.mockResolvedValue([program]);
+    state.fetchInstitutions.mockResolvedValue([institution]);
+    state.evaluate.mockResolvedValue({
+      reports: { ono_nursing: { results: [result] } },
+      failedDegreeIds: [],
+    });
+    window.sessionStorage.setItem(
+      'myway_study_journey_v2',
+      JSON.stringify({
+        fields: [],
+        locations: ['all'],
+        types: ['all'],
+        selectedRowId: 'ono_nursing:ono',
+        scores: { bagrut: { weightedAverage: 85 }, psychometric: { overall: 520 } },
+      }),
+    );
+    const { container } = render(<StudyJourney initialStep="detail" />);
+    expect(await screen.findByText('מתקבלים')).toBeTruthy();
+    const footnote = screen.getByText('נדרש גם ריאיון קבלה. אישור סופי מהמכללה.');
+    expect(footnote.className).toContain('text-slate-400');
+    expect(footnote.className).toContain('text-xs');
+    expect(container.querySelector('.journey-result-explanation')?.textContent).toBe(
+      result.explanation,
+    );
+    expect(screen.queryByText('תנאים נוספים לבדיקה')).toBeNull();
+    expect(screen.getByRole('button', { name: 'יצירת קשר' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'שמירה לרשימה' })).toBeTruthy();
   });
 
   it('changes only the calculator detail requirements while preserving the baseline decision and actions', async () => {
