@@ -1,3 +1,4 @@
+import { evaluateBatchBManualPath, isBatchBManualProgram } from './batchBManualPathEvaluation';
 import { evaluateTelhaiPublishedRoutes } from './telhaiPublishedRoutesEvaluation';
 import { evaluateOnoPublishedRoutes } from './onoPublishedRoutesEvaluation';
 import { evaluateRuppinComputerScience } from './ruppinComputerScienceEvaluation';
@@ -275,6 +276,14 @@ async function evaluateCapabilityEntries(args: {
         degradationReason: 'incomplete_published_requirements',
       };
       continue;
+    }
+
+    if (isBatchBManualProgram(program.id, institution.id)) {
+      const batchB = evaluateBatchBManualPath({ input, institution });
+      if (batchB) {
+        results[index] = batchB;
+        continue;
+      }
     }
 
     if (['telhai_cs', 'telhai_biology'].includes(program.id) && institution.id === 'telhai') {
@@ -2067,6 +2076,41 @@ function evaluateNonExactResult(args: {
     };
   }
 
+  if (
+    entry.capability === 'manual_gate' &&
+    (requestedInput.psychometric === undefined || requestedInput.bagrut === undefined)
+  ) {
+    const detail = findInstitutionDetail(program, institution);
+    const earlyFacts = detail?.admissionFacts ?? [];
+    const hasOnlyManualStructured =
+      earlyFacts.length > 0 &&
+      earlyFacts.every(
+        (fact) =>
+          fact.kind === 'manual_gate' ||
+          fact.kind === 'open_admission' ||
+          fact.kind === 'explicit_absence',
+      );
+    if (hasOnlyManualStructured || Boolean(detail?.admissionAlternativePaths?.length)) {
+      const structuredEarly = evaluateStructuredRequirementsResult({
+        input: {
+          ...requestedInput,
+          psychometric: requestedInput.psychometric ?? 0,
+          bagrut: requestedInput.bagrut ?? 0,
+        },
+        institution,
+        capability: 'manual_gate',
+        detail,
+        dynamicRequirements,
+        noGradeGate: true,
+        scoreGatePassed: false,
+        programType: program.type,
+      });
+      if (structuredEarly && structuredEarly.kind === 'manual_gate') {
+        return structuredEarly;
+      }
+    }
+  }
+
   if (requestedInput.psychometric === undefined || requestedInput.bagrut === undefined) {
     return requiredInputsResult(institution, [
       ...(requestedInput.psychometric === undefined ? ['psychometric_overall' as const] : []),
@@ -2613,7 +2657,9 @@ function evaluateStructuredRequirementsResult(
       !scoreGatePassed &&
       metNumericDescriptions.length === 0 &&
       !hasOpenAdmissionFact &&
-      !hasNoFormalGradeGate)
+      !hasNoFormalGradeGate &&
+      manualGateDescriptions.length === 0 &&
+      alternativePathDescriptions.length === 0)
   ) {
     return unverifiedRequirementsResult(
       institution,
