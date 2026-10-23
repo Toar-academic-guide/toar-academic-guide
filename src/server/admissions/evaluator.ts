@@ -35,6 +35,7 @@ import { runBguPsychologyProof } from '@/server/ingestion/adapters/bguPsychology
 import { BGU_PSYCHOLOGY_SOURCE_URL } from '@/data/admissions/bguPsychologyVerification';
 import 'server-only';
 
+import { catalogueAdmissionRequirements, catalogueDescription } from '@/lib/catalogueDisplayText';
 import { getCalculatorInstitutionsFromCatalogue } from '@/lib/calculatorInstitutions';
 import { bagrutExamSubjects } from '@/lib/bagrutSubjectRecord';
 import { evaluateUniversities } from '@/utils/sekhemCalculators';
@@ -271,7 +272,10 @@ async function evaluateCapabilityEntries(args: {
       continue;
     }
 
-    if (['colmgmt_law', 'colmgmt_business'].includes(program.id) && institution.id === 'colman') {
+    if (
+      ['colmgmt_law', 'colmgmt_business', 'colmgmt_economics'].includes(program.id) &&
+      institution.id === 'colman'
+    ) {
       results[index] = evaluateColmanPublishedRoutes({ input, institution });
       continue;
     }
@@ -2003,7 +2007,7 @@ function evaluateNonExactResult(args: {
   if (entry.capability === 'open_admission') {
     const defaultText =
       'מוסד זה מציע אפיק קבלה פתוחה ללא צורך בציון פסיכומטרי או ממוצע בגרות מינימלי.';
-    const explanation = evidenceRecord?.decisionReason || defaultText;
+    const explanation = catalogueDescription(evidenceRecord?.decisionReason) || defaultText;
     return {
       institution: publicInstitutionShape(institution),
       linkedInstitutionId: institution.id,
@@ -2028,13 +2032,19 @@ function evaluateNonExactResult(args: {
     psychometric: requestedInput.psychometric,
     bagrut: requestedInput.bagrut,
   };
+  const noGradeGate = Boolean(
+    entry.evidence?.noBagrutNeeded && entry.evidence.noPsychometricNeeded,
+  );
 
   if (entry.capability === 'manual_gate') {
     const verifiedThreshold = getVerifiedProgramThreshold(entry.evidence, program.id);
-    if (verifiedThreshold?.thresholdKind === 'invitation_to_manual_gate') {
+    if (
+      verifiedThreshold?.thresholdKind === 'invitation_to_manual_gate' &&
+      verifiedThreshold.threshold > 0
+    ) {
       if (verifiedThreshold.scoreKind === 'psychometric') {
         const thresholdExplanation =
-          verifiedThreshold.notes ??
+          catalogueDescription(verifiedThreshold.notes) ??
           'הציון הרשמי כאן הוא סף זימון להמשך מיון ידני, ולא קבלה סופית למסלול.';
         const psychometricGap = Math.max(0, verifiedThreshold.threshold - input.psychometric);
 
@@ -2113,7 +2123,7 @@ function evaluateNonExactResult(args: {
 
         if (evaluation && evaluation.status !== 'unavailable') {
           const thresholdExplanation =
-            verifiedThreshold.notes ??
+            catalogueDescription(verifiedThreshold.notes) ??
             'הסכם הרשמי כאן הוא סף זימון להמשך מיון ידני, ולא קבלה סופית למסלול.';
 
           if (evaluation.status === 'below') {
@@ -2160,7 +2170,7 @@ function evaluateNonExactResult(args: {
       capability: 'manual_gate',
       detail,
       dynamicRequirements,
-      eligibleWithManualGate: entry.evidence?.publicBucket === 'eligible_with_manual_gate',
+      noGradeGate,
       programType: program.type,
     });
     if (structuredResult) {
@@ -2169,13 +2179,13 @@ function evaluateNonExactResult(args: {
 
     const factsList = detail?.admissionFacts?.map((fact) => fact.description) ?? [];
     const notesList = detail?.specificAdmissionNotes ?? [];
-    const allRequirements = [
+    const allRequirements = catalogueAdmissionRequirements([
       ...program.admissionRequirements,
       ...factsList,
       ...notesList,
       ...dynamicRequirements,
-    ];
-    const eligibleWithManualGate = entry.evidence?.publicBucket === 'eligible_with_manual_gate';
+    ]);
+    if (!noGradeGate) return unverifiedRequirementsResult(institution, allRequirements);
 
     return {
       institution: publicInstitutionShape(institution),
@@ -2185,17 +2195,8 @@ function evaluateNonExactResult(args: {
       decision: 'eligible_to_apply',
       confidence: 'high',
       sourceLabel: 'אפשר להגיש מועמדות',
-      explanation:
-        allRequirements.length > 0
-          ? eligibleWithManualGate
-            ? `לפי המקור הרשמי יש למסלול מסלול קבלה אוטומטי וגם אפיק קבלה חלופי דרך מכינה, מרכז הרישום או מיון ידני. בדקו את התנאים הבאים: ${allRequirements.join('; ')}`
-            : `לפי תנאי הקבלה שמופו, אין סף ציונים אוטומטי שמונע הגשה. עדיין צריך להשלים: ${allRequirements.join('; ')}`
-          : eligibleWithManualGate
-            ? 'לפי המקור הרשמי יש למסלול מסלול קבלה אוטומטי וגם אפיק קבלה חלופי דרך מכינה, מרכז הרישום או מיון ידני.'
-            : 'לפי תנאי הקבלה שמופו, אין סף ציונים אוטומטי שמונע הגשה. הקבלה עדיין תלויה במיונים ידניים כגון תיק עבודות, מבחן מעשי או ראיון.',
-      nextAction: eligibleWithManualGate
-        ? 'בדקו אם אתם עומדים במסלול הקבלה האוטומטי; אם לא, פנו למרכז הרישום או למכינה המתאימה באתר המוסד.'
-        : 'הגישו מועמדות ובדקו את מועדי תיק העבודות, המבחנים או הראיונות באתר המוסד.',
+      explanation: `אין דרישה לבגרות או לפסיכומטרי. עדיין צריך להשלים: ${allRequirements.join('; ')}`,
+      nextAction: 'בדקו את מועדי תיק העבודות, המבחנים או הראיונות באתר המוסד.',
     };
   }
 
@@ -2207,7 +2208,7 @@ function evaluateNonExactResult(args: {
       capability: 'requirements_only',
       detail,
       dynamicRequirements,
-      eligibleWithManualGate: entry.evidence?.publicBucket === 'eligible_with_manual_gate',
+      noGradeGate,
       programType: program.type,
     });
     if (structuredResult) {
@@ -2215,11 +2216,11 @@ function evaluateNonExactResult(args: {
     }
 
     const notesList = detail?.specificAdmissionNotes ?? [];
-    const allRequirements = [
+    const allRequirements = catalogueAdmissionRequirements([
       ...(program.admissionRequirements ?? []),
       ...notesList,
       ...dynamicRequirements,
-    ];
+    ]);
 
     return {
       institution: publicInstitutionShape(institution),
@@ -2358,13 +2359,33 @@ function getDynamicRequirementsFromEvidence(
 
 type ProgramInstitutionDetail = NonNullable<CatalogueProgram['institutionDetails']>[number];
 
+function unverifiedRequirementsResult(
+  institution: CatalogueInstitution,
+  requirements: string[],
+): AdmissionsEvaluationResult {
+  return {
+    institution: publicInstitutionShape(institution),
+    linkedInstitutionId: institution.id,
+    capability: 'requirements_only',
+    kind: 'requirements_only',
+    decision: 'unknown',
+    confidence: 'low',
+    sourceLabel: 'תנאי קבלה',
+    explanation:
+      'עדיין לא בדקנו את הציונים שלך מול תנאי הקבלה של המסלול הזה.' +
+      (requirements.length > 0 ? ` תנאי הקבלה שפורסמו: ${requirements.join('; ')}` : ''),
+    nextAction: 'בדקו את התנאים הרשמיים באתר המוסד או צרו קשר לבירור ההתאמה.',
+  };
+}
+
 interface StructuredRequirementsResultArgs {
   input: AdmissionsEvaluationInput;
   institution: CatalogueInstitution;
   capability: 'manual_gate' | 'requirements_only';
   detail: ProgramInstitutionDetail | undefined;
   dynamicRequirements: string[];
-  eligibleWithManualGate: boolean;
+  noGradeGate: boolean;
+  scoreGatePassed?: boolean;
   programType: CatalogueProgram['type'];
 }
 
@@ -2381,6 +2402,7 @@ interface GroupedNumericFactOptionResult {
   metDescriptions: string[];
   missingRequiredInputs: Set<AdmissionsRequiredInput>;
   unmetFacts: StructuredNumericFactResult[];
+  hasUncheckedFacts: boolean;
 }
 
 function evaluateStructuredRequirementsResult(
@@ -2392,7 +2414,8 @@ function evaluateStructuredRequirementsResult(
     capability,
     detail,
     dynamicRequirements,
-    eligibleWithManualGate,
+    noGradeGate,
+    scoreGatePassed = false,
     programType,
   } = args;
 
@@ -2400,24 +2423,38 @@ function evaluateStructuredRequirementsResult(
     return undefined;
   }
 
-  const facts = detail.admissionFacts;
+  const facts = detail.admissionFacts.map((fact) => ({
+    ...fact,
+    description: catalogueAdmissionRequirements([fact.description]).join('; '),
+  }));
   const alternativePathDescriptions =
-    detail.admissionAlternativePaths?.map((path) => path.title) ?? [];
-  const notesList = detail.specificAdmissionNotes ?? [];
+    detail.admissionAlternativePaths?.flatMap((path) =>
+      catalogueAdmissionRequirements([path.title]),
+    ) ?? [];
+  const notesList = detail.specificAdmissionNotes.length
+    ? catalogueAdmissionRequirements(detail.specificAdmissionNotes)
+    : [];
   const manualGateDescriptions = facts
     .filter((fact) => fact.kind === 'manual_gate')
     .map((fact) => fact.description);
   const numericFacts = facts.filter((fact) => fact.kind === 'numeric_gate');
   const hasOpenAdmissionFact = facts.some((fact) => fact.kind === 'open_admission');
-  const hasNoFormalGradeGate = facts.some(
-    (fact) =>
-      fact.kind === 'explicit_absence' &&
-      (fact.field === 'psychometric' || fact.field === 'bagrut_average'),
-  );
+  const hasNoFormalGradeGate =
+    noGradeGate ||
+    ['psychometric', 'bagrut_average'].every((field) =>
+      facts.some(
+        (fact) =>
+          fact.kind === 'explicit_absence' &&
+          fact.field === field &&
+          fact.comparison === 'not_required' &&
+          fact.confidence === 'high',
+      ),
+    );
 
   const missingRequiredInputs = new Set<AdmissionsRequiredInput>();
   const unmetNumericFacts: StructuredNumericFactResult[] = [];
   const metNumericDescriptions: string[] = [];
+  let hasUncheckedNumericFacts = false;
   const commonNumericFacts: typeof numericFacts = [];
   const groupedNumericFacts = new Map<string, Map<string, typeof numericFacts>>();
 
@@ -2452,6 +2489,7 @@ function evaluateStructuredRequirementsResult(
     if (evaluation.kind === 'fail') {
       unmetNumericFacts.push(evaluation.result);
     }
+    if (evaluation.kind === 'skip') hasUncheckedNumericFacts = true;
   }
 
   for (const [, optionFactsByKey] of groupedNumericFacts) {
@@ -2459,12 +2497,21 @@ function evaluateStructuredRequirementsResult(
       evaluateGroupedNumericFactOption(input, optionFacts),
     );
     const passedOption = optionResults.find(
-      (option) => option.unmetFacts.length === 0 && option.missingRequiredInputs.size === 0,
+      (option) =>
+        option.unmetFacts.length === 0 &&
+        option.missingRequiredInputs.size === 0 &&
+        !option.hasUncheckedFacts,
     );
 
     if (passedOption) {
       metNumericDescriptions.push(...passedOption.metDescriptions);
       continue;
+    }
+
+    if (
+      optionResults.some((option) => option.unmetFacts.length === 0 && option.hasUncheckedFacts)
+    ) {
+      hasUncheckedNumericFacts = true;
     }
 
     const optionsNeedingInputs = optionResults.filter(
@@ -2514,6 +2561,25 @@ function evaluateStructuredRequirementsResult(
     ...dynamicRequirements,
   ];
 
+  if (
+    hasUncheckedNumericFacts ||
+    (unmetNumericFacts.length === 0 &&
+      !scoreGatePassed &&
+      metNumericDescriptions.length === 0 &&
+      !hasOpenAdmissionFact &&
+      !hasNoFormalGradeGate)
+  ) {
+    return unverifiedRequirementsResult(
+      institution,
+      catalogueAdmissionRequirements([
+        ...facts.map((fact) => fact.description),
+        ...alternativePathDescriptions,
+        ...notesList,
+        ...dynamicRequirements,
+      ]),
+    );
+  }
+
   if (unmetNumericFacts.length > 0) {
     const firstUnmet = unmetNumericFacts[0];
 
@@ -2523,7 +2589,7 @@ function evaluateStructuredRequirementsResult(
         linkedInstitutionId: institution.id,
         capability: 'manual_gate',
         kind: 'manual_gate',
-        decision: 'eligible_to_apply',
+        decision: 'below',
         confidence: 'high',
         sourceLabel: 'קיימים אפיקים חלופיים',
         explanation: `לפי המסלול הישיר שמופה, עדיין חסר לעמוד בדרישות הבאות: ${unmetNumericFacts
@@ -2562,9 +2628,7 @@ function evaluateStructuredRequirementsResult(
     const directEligibilityPrefix =
       metNumericDescriptions.length > 0
         ? 'עמדתם בתנאים המספריים שמופו.'
-        : eligibleWithManualGate
-          ? 'לפי הכללים שמופו, אפשר להתקדם עם המועמדות.'
-          : 'אפשר להתקדם עם המועמדות.';
+        : 'אפשר להתקדם עם המועמדות.';
     const remainingManualSteps =
       manualGateDescriptions.length > 0
         ? ` עדיין צריך להשלים את השלבים הבאים: ${manualGateDescriptions.join('; ')}.`
@@ -2587,12 +2651,7 @@ function evaluateStructuredRequirementsResult(
       confidence: 'high',
       sourceLabel: manualGateDescriptions.length > 0 ? 'נדרש מיון נוסף' : 'אפשר להגיש מועמדות',
       explanation:
-        manualGateDescriptions.length > 0 ||
-        alternativePathDescriptions.length > 0 ||
-        notesList.length > 0 ||
-        dynamicRequirements.length > 0
-          ? `${directEligibilityPrefix}${remainingManualSteps}${alternativeRoutesNote}${notesExplanation}`.trim()
-          : 'אפשר להתקדם עם המועמדות, אך יש שלבים ידניים שהמוסד משלים אחרי ההגשה.',
+        `${directEligibilityPrefix}${remainingManualSteps}${alternativeRoutesNote}${notesExplanation}`.trim(),
       nextAction:
         alternativePathDescriptions.length > 0
           ? 'בדקו איזה אפיק הגשה או מכינה רלוונטיים לכם באתר המוסד, והשלימו את שלבי המיון הידניים.'
@@ -2658,7 +2717,8 @@ function applyStructuredRequirementsToAcceptedScoreResult(args: {
     capability: hasManualStage ? 'manual_gate' : 'requirements_only',
     detail,
     dynamicRequirements: [],
-    eligibleWithManualGate: false,
+    noGradeGate: false,
+    scoreGatePassed: baseResult.threshold != null && baseResult.threshold > 0,
     programType: program.type,
   });
 
@@ -2741,6 +2801,8 @@ function evaluateStructuredNumericFact(
   | { kind: 'fail'; result: StructuredNumericFactResult } {
   const value = readNumericAdmissionFactValue(input, fact.field);
 
+  if (fact.confidence !== 'high') return { kind: 'skip' };
+
   if (value.requiredInput && value.actual === undefined) {
     return {
       kind: 'missing_input',
@@ -2748,7 +2810,12 @@ function evaluateStructuredNumericFact(
     };
   }
 
-  if (value.actual === undefined || fact.valueNumber === null) {
+  if (
+    value.actual === undefined ||
+    fact.valueNumber === null ||
+    !Number.isFinite(fact.valueNumber) ||
+    fact.valueNumber <= 0
+  ) {
     return { kind: 'skip' };
   }
 
@@ -2776,6 +2843,7 @@ function evaluateGroupedNumericFactOption(
   const metDescriptions: string[] = [];
   const missingRequiredInputs = new Set<AdmissionsRequiredInput>();
   const unmetFacts: StructuredNumericFactResult[] = [];
+  let hasUncheckedFacts = false;
 
   for (const fact of facts) {
     descriptions.push(fact.description);
@@ -2794,6 +2862,7 @@ function evaluateGroupedNumericFactOption(
     if (evaluation.kind === 'fail') {
       unmetFacts.push(evaluation.result);
     }
+    if (evaluation.kind === 'skip') hasUncheckedFacts = true;
   }
 
   return {
@@ -2802,6 +2871,7 @@ function evaluateGroupedNumericFactOption(
     missingRequiredInputs:
       unmetFacts.length > 0 ? new Set<AdmissionsRequiredInput>() : missingRequiredInputs,
     unmetFacts,
+    hasUncheckedFacts,
   };
 }
 

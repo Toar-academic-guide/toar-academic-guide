@@ -201,9 +201,13 @@ export async function getPublicProgramRequirementSources({
           ? []
           : sourceRequirements,
       officialUrl: officialUrl(sourceDetail?.programUrl, institution.id),
-      ...(['tlvyaffo_cs', 'colmgmt_law', 'colmgmt_business', 'colmgmt_cs'].includes(
-        sourceProgram.id,
-      ) && sourceDetail?.officialCalculatorUrl
+      ...([
+        'tlvyaffo_cs',
+        'colmgmt_law',
+        'colmgmt_business',
+        'colmgmt_economics',
+        'colmgmt_cs',
+      ].includes(sourceProgram.id) && sourceDetail?.officialCalculatorUrl
         ? { officialCalculatorUrl: officialUrl(sourceDetail.officialCalculatorUrl, institution.id) }
         : {}),
       fullDetailsPath: useSpecific ? institutionProgramPaths[institution.id] : undefined,

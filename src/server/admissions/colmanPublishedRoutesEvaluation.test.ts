@@ -100,3 +100,32 @@ for (const [degreeId, boundary, psychometric] of [
     }
   });
 }
+
+describe('economics certificate confirmation', () => {
+  it.each([86, 80])('keeps the numeric match separate at average %s', (average) => {
+    for (const confirmed of [undefined, false, true]) {
+      const result = evaluateColmanPublishedRoutes({
+        institution,
+        input: {
+          degreeId: 'colmgmt_economics',
+          psychometric: 560,
+          extraInputs: {
+            colmanBagrutAverage: average,
+            psychometricMath: 115,
+            colmanBagrutCertificateConfirmed: confirmed,
+          },
+        },
+      });
+      expect(result).toMatchObject({
+        decision: confirmed === undefined ? 'pending' : confirmed ? 'eligible_to_apply' : 'below',
+        scoreAssessment: 'meets_threshold',
+        additionalConditions: [
+          {
+            id: 'colman_bagrut_certificate',
+            status: confirmed === undefined ? 'unconfirmed' : confirmed ? 'confirmed' : 'unmet',
+          },
+        ],
+      });
+    }
+  });
+});

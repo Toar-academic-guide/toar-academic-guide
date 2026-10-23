@@ -1,6 +1,8 @@
 import { createHash } from 'node:crypto';
+import { after } from 'next/server';
 import { z } from 'zod';
 import { ENQUIRY_CONSENT } from '@/lib/enquiries';
+import { getPostHogClient } from '@/lib/posthog-server';
 import { listCatalogueInstitutions, listCataloguePrograms } from '@/server/catalogue/queries';
 
 export const runtime = 'nodejs';
@@ -104,6 +106,30 @@ export async function POST(request: Request) {
     const result = await response.json();
     if (!response.ok || result.errors?.length || !result.data?.create_item?.id) {
       return failure(502, 'הפנייה לא נשלחה. הפרטים נשמרו בטופס ואפשר לנסות שוב.');
+    }
+    if (process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN?.trim()) {
+      try {
+        after(async () => {
+          try {
+            const posthog = getPostHogClient();
+            posthog.capture({
+              distinctId: input.requestId,
+              event: 'server_enquiry_created',
+              properties: {
+                program_id: input.programId,
+                institution_id: input.institutionId,
+                source_path: input.sourcePath.split(/[?#]/)[0],
+                $process_person_profile: false,
+              },
+            });
+            await posthog.flush();
+          } catch {
+            // Analytics must never affect lead delivery.
+          }
+        });
+      } catch {
+        // Scheduling analytics is also best effort.
+      }
     }
     return Response.json({ data: { received: true } }, { status: 201 });
   } catch {

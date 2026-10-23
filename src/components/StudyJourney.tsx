@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } fro
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import posthog from 'posthog-js';
 import {
   ArrowLeft,
   ArrowRight,
@@ -447,6 +448,39 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
     evaluationTarget,
   ]);
   const lastEvaluation = useRef('');
+  const viewedResults = useRef('');
+  useEffect(() => {
+    if (!['results', 'plan'].includes(step)) {
+      viewedResults.current = '';
+      return;
+    }
+    if (!ready || catalogueLoading || catalogueError || calculating) return;
+    // Wait for the current calculation, including when older reports are still rendered.
+    if (draft.fields.length && rows.length && lastEvaluation.current !== resultSignature) return;
+    if (draft.fields.length && rows.some((row) => !row.result && !row.failed)) return;
+    const key = `${step}:${resultSignature}`;
+    if (viewedResults.current === key) return;
+    viewedResults.current = key;
+    const groups = rows.map((row) => resultLabel(row.result, row.failed).group);
+    posthog.capture('journey_results_viewed', {
+      result_count: rows.length,
+      match_count: groups.filter((group) => group === 'match').length,
+      improve_count: groups.filter((group) => group === 'improve').length,
+      explore_count: groups.filter((group) => group === 'explore').length,
+      has_psychometric: !!draft.scores.psychometric?.overall,
+      has_bagrut: !!(draft.scores.bagrut?.weightedAverage || draft.scores.bagrut?.subjectRecord),
+    });
+  }, [
+    step,
+    ready,
+    catalogueLoading,
+    catalogueError,
+    calculating,
+    draft.fields.length,
+    draft.scores,
+    rows,
+    resultSignature,
+  ]);
   useEffect(() => {
     if (!ready || catalogueLoading || !evaluationScope) return;
     if (['saved', 'detail'].includes(evaluationScope) && initialProfileStatus !== 'ready') return;
@@ -482,6 +516,35 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
     },
     [],
   );
+  const contactProgramId = activeRow?.program.id;
+  const contactInstitutionId = activeRow?.institution.id;
+  const contactResultGroup =
+    activeRow?.result || activeRow?.failed
+      ? resultLabel(activeRow.result, activeRow.failed).group
+      : undefined;
+  const previousContactStep = useRef<Step | null>(null);
+  useEffect(() => {
+    const previous = previousContactStep.current;
+    if (previous === step || (step === 'inquiry' && !contactProgramId)) return;
+    previousContactStep.current = step;
+    if (step === 'offer') {
+      posthog.capture('journey_contact_clicked', {
+        program_id: 'psychometric-preparation',
+        institution_id: '',
+        surface: 'offer',
+      });
+    } else if (step === 'inquiry' && contactProgramId) {
+      posthog.capture('journey_contact_clicked', {
+        program_id: contactProgramId,
+        institution_id: contactInstitutionId,
+        surface:
+          previous && ['results', 'plan', 'saved'].includes(previous)
+            ? 'row'
+            : (previous ?? 'inquiry'),
+        ...(contactResultGroup ? { result_group: contactResultGroup } : {}),
+      });
+    }
+  }, [step, contactProgramId, contactInstitutionId, contactResultGroup]);
   const saveScores = async () => {
     if (!(await updateProfile({ academicScores: draft.scores })))
       setMessage('שמירת הציונים לא הושלמה. אפשר להמשיך ולנסות לשמור שוב בהמשך.');
@@ -1367,6 +1430,7 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                 key={activeRow.id}
                 programId={activeRow.program.id}
                 institutionId={activeRow.institution.id}
+                surface="journey"
                 title={`${activeRow.fieldName} · ${activeRow.institution.name}`}
                 onBack={() => go('results')}
               />
@@ -1379,6 +1443,7 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
             <EnquiryForm
               programId="psychometric-preparation"
               institutionId=""
+              surface="journey"
               title="הכנה לפסיכומטרי"
               onBack={() => go('results')}
             />
