@@ -2,9 +2,17 @@ import type { AdmissionsEvaluationResult } from '@/types/admissionsEvaluation';
 
 export default function AdmissionConditions({
   conditions,
+  footnote,
 }: {
   conditions: AdmissionsEvaluationResult['additionalConditions'];
+  footnote?: string;
 }) {
+  if (footnote)
+    return (
+      <p className="mt-2 text-right text-xs leading-relaxed text-slate-400" dir="rtl">
+        {footnote}
+      </p>
+    );
   const outstanding = conditions?.filter((condition) => condition.status !== 'confirmed') ?? [];
   if (!outstanding.length) return null;
   return (

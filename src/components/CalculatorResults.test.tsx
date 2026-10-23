@@ -4,6 +4,9 @@ import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import CalculatorResults from '@/components/CalculatorResults';
+import { evaluateOnoPublishedRoutes } from '@/server/admissions/onoPublishedRoutesEvaluation';
+import { evaluateBatchBManualPath } from '@/server/admissions/batchBManualPathEvaluation';
+import { getStaticCatalogueInstitutions } from '@/lib/catalogueStatic';
 import { evaluateColmanBagrutResult } from '@/server/admissions/colmanBagrutEvaluation';
 import type { AdmissionsEvaluationReport } from '@/types/admissionsEvaluation';
 import { getStaticCataloguePrograms } from '@/lib/catalogueStatic';
@@ -286,6 +289,58 @@ describe('CalculatorResults', () => {
     expect(screen.queryByText('נדרשים נתונים')).toBeNull();
     expect(screen.queryByText('מתקבל/ת')).toBeNull();
   });
+
+  it('shows accepted Ono nursing scores with a small interview footnote', async () => {
+    const result = evaluateBatchBManualPath({
+      input: { degreeId: 'ono_nursing', psychometric: 520, bagrut: 85 },
+      institution: getStaticCatalogueInstitutions().find((i) => i.id === 'ono')!,
+    })!;
+    hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(report([result]));
+    render(
+      <CalculatorResults
+        degreeId="ono_nursing"
+        programs={programs}
+        psychometric={520}
+        bagrut={85}
+        onBack={vi.fn()}
+      />,
+    );
+    expect(await screen.findByText('מתקבלים')).toBeTruthy();
+    const footnote = screen.getByText('נדרש גם ריאיון קבלה. אישור סופי מהמכללה.');
+    expect(footnote.className).toContain('text-slate-400');
+    expect(footnote.className).toContain('text-xs');
+    expect(screen.getByText(result.explanation)).toBeTruthy();
+    expect(screen.queryByText('תנאים נוספים לבדיקה')).toBeNull();
+    expect(screen.queryByText('בהמתנה לעדכון')).toBeNull();
+  });
+
+  it.each([
+    ['ono_cs', 100],
+    ['ono_business', 80],
+  ] as const)(
+    'keeps %s pending scores and its outstanding conditions unchanged',
+    async (degreeId, bagrut) => {
+      const result = evaluateOnoPublishedRoutes({
+        input: { degreeId, bagrut, psychometric: 420 },
+        institution: getStaticCatalogueInstitutions().find((i) => i.id === 'ono')!,
+      });
+      expect(result.decision).toBe('pending');
+      hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(report([result]));
+      render(
+        <CalculatorResults
+          degreeId={degreeId}
+          programs={programs}
+          bagrut={bagrut}
+          psychometric={420}
+          onBack={vi.fn()}
+        />,
+      );
+      expect(await screen.findByText('הציונים עומדים בסף')).toBeTruthy();
+      expect(screen.getByText('תנאים נוספים לבדיקה')).toBeTruthy();
+      expect(screen.queryByText('מתקבלים')).toBeNull();
+      expect(screen.queryByText('נדרש גם ריאיון קבלה. אישור סופי מהמכללה.')).toBeNull();
+    },
+  );
 
   it('renders a pending official verdict as waiting, not missing input', async () => {
     hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(

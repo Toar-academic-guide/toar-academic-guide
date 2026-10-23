@@ -440,10 +440,16 @@ function evaluateOnoNursing({
     caveat: 'עמידה בסף אינה אישור קבלה; נדרש גם ראיון קבלה ואישור שפות מול המכללה.',
     confidence: 'medium',
   });
-  if (result.additionalConditions?.some((c) => c.id === 'admissions_committee')) {
-    return { ...result, kind: 'manual_gate', capability: 'manual_gate' };
-  }
-  return result;
+  if (result.decision !== 'pending' || result.scoreAssessment !== 'meets_threshold') return result;
+
+  const match = routes.find((route) => !route.below && !route.missing.length)!;
+  return {
+    ...result,
+    decision: 'accepted',
+    kind: 'manual_gate',
+    capability: 'manual_gate',
+    explanation: `לפי הציונים שהזנת, אתה עומד בסף התוכנית (${match.requirements.replace(', וראיון קבלה', '')}).`,
+  };
 }
 
 export function isBatchBManualProgram(degreeId: string, institutionId: string): boolean {

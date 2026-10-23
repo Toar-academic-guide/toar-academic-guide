@@ -1,5 +1,6 @@
 'use client';
 import AdmissionConditions from './AdmissionConditions';
+import { acceptedManualGateFootnote } from '@/lib/acceptedManualGateFootnote';
 
 import { institutionLink } from '@/lib/institutionLinks';
 
@@ -749,7 +750,8 @@ export default function CalculatorResults({
 
               <div className="flex flex-col gap-2">
                 {visible.map(({ institution, result }) => {
-                  const config = result.scoreAssessment
+                  const footnote = acceptedManualGateFootnote(result);
+                  let config = result.scoreAssessment
                     ? result.scoreAssessment === 'meets_threshold'
                       ? { ...STATUS_CONFIG.exactAccepted, label: 'הציונים עומדים בסף' }
                       : { ...STATUS_CONFIG.exactBelow, label: 'הציונים מתחת לסף' }
@@ -804,6 +806,7 @@ export default function CalculatorResults({
                                     : result.kind === 'tracked_missing_rule'
                                       ? STATUS_CONFIG.trackedMissingRule
                                       : STATUS_CONFIG.unsupported;
+                  if (footnote) config = { ...STATUS_CONFIG.exactAccepted, label: 'מתקבלים' };
                   const institutionType = getInstitutionType(institution);
                   const sourceUrl = institutionLink(result.officialUrls?.[0], institution.id);
 
@@ -832,8 +835,16 @@ export default function CalculatorResults({
                           <p className="mt-1 text-xs leading-relaxed text-slate-500">
                             {result.explanation}
                           </p>
+                          {footnote && (
+                            <AdmissionConditions
+                              conditions={result.additionalConditions}
+                              footnote={footnote}
+                            />
+                          )}
                           <p className="mt-1 text-[11px] text-slate-500">{result.nextAction}</p>
-                          <AdmissionConditions conditions={result.additionalConditions} />
+                          {!footnote && (
+                            <AdmissionConditions conditions={result.additionalConditions} />
+                          )}
                           {sourceUrl ? (
                             <a
                               href={sourceUrl}

@@ -84,7 +84,7 @@ describe('Batch B manual path evaluation', () => {
     }
   });
 
-  it('ono nursing encodes official floors and keeps interview pending', () => {
+  it('ono nursing accepts passing scores and preserves the unconfirmed interview', () => {
     const weak = evaluateBatchBManualPath({
       input: { degreeId: 'ono_nursing', psychometric: 420, bagrut: 70 },
       institution: institution('ono'),
@@ -101,13 +101,14 @@ describe('Batch B manual path evaluation', () => {
     expect(strong).toMatchObject({
       capability: 'manual_gate',
       kind: 'manual_gate',
-      decision: 'pending',
+      decision: 'accepted',
       scoreAssessment: 'meets_threshold',
     });
     expect(strong?.additionalConditions).toContainEqual(
       expect.objectContaining({ id: 'admissions_committee', status: 'unconfirmed' }),
     );
-    expect(strong?.explanation).toContain('ראיון');
+    expect(strong?.explanation).toContain('לפי הציונים שהזנת');
+    expect(strong?.explanation).not.toMatch(/ראיון|ריאיון|אינה אישור/);
     expect(JSON.stringify(strong)).not.toMatch(/מתואם|סכם|מצרף/);
   });
 
@@ -119,8 +120,21 @@ describe('Batch B manual path evaluation', () => {
     expect(result).toMatchObject({
       capability: 'manual_gate',
       kind: 'manual_gate',
-      decision: 'pending',
+      decision: 'accepted',
       scoreAssessment: 'meets_threshold',
+    });
+  });
+
+  it('ono nursing still asks for missing bagrut rather than accepting an incomplete profile', () => {
+    expect(
+      evaluateBatchBManualPath({
+        input: { degreeId: 'ono_nursing', psychometric: 740 },
+        institution: institution('ono'),
+      }),
+    ).toMatchObject({
+      decision: 'unknown',
+      kind: 'needs_input',
+      requiredInputs: ['bagrut_average'],
     });
   });
 

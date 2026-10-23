@@ -186,6 +186,12 @@ export function resultLabel(
     return { label: 'עדיין לא ניתן לקבוע התאמה', group: 'explore' };
   if (result?.linkedInstitutionId === 'danon' && result.kind === 'requirements_only')
     return { label: 'הרשמה מול בית הספר', group: 'explore' };
+  if (
+    result?.decision === 'accepted' &&
+    result.kind === 'manual_gate' &&
+    result.scoreAssessment === 'meets_threshold'
+  )
+    return { label: 'מתקבלים', group: 'match' };
   if (result?.scoreAssessment)
     return result.scoreAssessment === 'meets_threshold'
       ? {
