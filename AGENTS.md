@@ -28,6 +28,12 @@ Always use the Compound Engineering plugin (`ce`) for project work. Pick the mos
 - `docs/solutions/` — documented solutions to past problems (bugs, best practices, workflow patterns), organized by category with YAML frontmatter. Relevant when implementing or debugging in documented areas.
 - `CONCEPTS.md` — shared domain vocabulary (entities, named processes, status concepts) at the repository root. Relevant when orienting to the codebase or discussing domain concepts.
 
+## UI copy / anti-slop
+
+- Avoid unnecessary secondary labels and descriptions. Let the layout do the explaining.
+- Prefer numbers, hierarchy, and whitespace over helper text under every field, tile, or requirement.
+- Don’t add redundant captions that restate what the primary label or layout already shows (RTL Hebrew UI included).
+
 ## GitHub Workflow
 
 Use the GitHub CLI (`gh`) for GitHub operations. Do not use browser-based GitHub flows, ad hoc web fetches, or other GitHub clients when `gh` can perform the task.
