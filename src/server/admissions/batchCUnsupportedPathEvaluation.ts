@@ -79,7 +79,6 @@ export const BATCH_C_PROGRAMS: Readonly<Record<string, BatchCProgramConfig>> = {
   technion_engineering: unsupportedProgram('technion', 'vague_mapping'),
   bgu_engineering: unsupportedProgram('bgu', 'vague_mapping'),
   haifa_engineering: unsupportedProgram('haifa', 'vague_mapping'),
-  ariel_engineering: unsupportedProgram('ariel', 'institution_unsupported'),
   telhai_general_academic: unsupportedProgram('telhai', 'vague_mapping'),
   rubin_graphic_design: unsupportedProgram('rubin', 'vague_mapping'),
   wingate_general_academic: unsupportedProgram('wingate', 'vague_mapping'),

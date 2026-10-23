@@ -8,7 +8,7 @@ Enumerated 406 programmes and 439 programme/institution pairs. Evaluated each pa
 
 The strict all-three-profile gap contains 53 pairs. Extending it to pairs that request scores when empty but still return unknown/requirements-only or unsupported at both supplied profiles gives 112 candidates. Offline authority-unavailable/exact cases are not evidence of unsupported admission; supported estimates, open admission and numeric/manual score paths were excluded. A/B handlers were inspected and their focused regression tests remain mandatory.
 
-Selected 84 IDs/pairs (one institution per ID), including **all 20 catalogue `ariel_*` IDs**: 19 explicit programmes plus the generated `ariel_engineering`. Five generic Ariel pairs (`cs`, `ee`, `psychology`, `me`, `economics`) also receive the honest explanation, without changing any other institution’s result.
+Selected 83 IDs/pairs (one institution per ID), including **all 19 explicit `ariel_*` programmes**. Five generic Ariel pairs (`cs`, `ee`, `psychology`, `me`, `economics`) also receive the honest explanation, without changing any other institution’s result. The generated `ariel_engineering` was removed from Batch C membership: it is static-only, absent from `academicPrograms.ts` and not surfaced by the live/preview catalogue. The Ariel e2e targets are `ariel_cs` and `ariel_me`; no catalogue rows were added.
 
 ## Full Batch C registry
 
@@ -51,7 +51,6 @@ Reasons describe MyWay’s calculation coverage, not an assertion that instituti
 | `technion_engineering`             | `technion`          | `vague_mapping`           |
 | `bgu_engineering`                  | `bgu`               | `vague_mapping`           |
 | `haifa_engineering`                | `haifa`             | `vague_mapping`           |
-| `ariel_engineering`                | `ariel`             | `institution_unsupported` |
 | `telhai_general_academic`          | `telhai`            | `vague_mapping`           |
 | `rubin_graphic_design`             | `rubin`             | `vague_mapping`           |
 | `wingate_general_academic`         | `wingate`           | `vague_mapping`           |
@@ -166,9 +165,15 @@ No production SQL/database access, migrations, seeds, freshness jobs, environmen
 - Production Next.js build passed in explicit local static catalogue mode.
 - Typecheck passed. ESLint passed with the existing unused `AdmissionsRequiredInput` warning in `bagrutPolicies.ts`; no new warnings.
 - Repository source Prettier check passed. Changed docs, e2e and guard files were formatted separately.
-- Existing Playwright runner, explicit local static catalogue mode: **40 passed** across Batch A (20), Batch B (10) and Batch C (10), at 390px and 1440px. Batch C covers Ariel CS with missing/maximum scores, generated Ariel engineering, Wingate sports science and the management course `mon_12341143672_business`.
+- Prior Playwright run, explicit local static catalogue mode: **40 passed** across Batch A (20), Batch B (10) and Batch C (10), at 390px and 1440px. That run covered Ariel CS with missing/maximum scores, generated Ariel engineering, Wingate sports science and the management course `mon_12341143672_business`. Preview run `39991226711` then failed only on the two generated Ariel engineering cases because the live catalogue does not surface that programme. Those cases now target the explicit `ariel_me` programme; the prior local result does not verify this replacement.
 - Browser assertions check unknown/unsupported, the exact evaluator explanation and action, Contact/Save, absence of composite or score-completion fields, official referral URL parameters, right/start text alignment and no horizontal overflow. Desktop Ariel and mobile management screenshots were opened and read as a student; no internal copy is visible. This uses automated Chromium; no separate interactive browser capability was available.
 - Screenshots are Playwright artifacts under `test-results/batch-c-admissions-*`, including `ariel_cs-1440-filled.png` and `mon_12341143672_business-390-filled.png`. No screenshot upload or outreach was performed.
 - `ce-simplify-code mode:pipeline` completed inline under the operator’s no-multi-agent-review constraint. Manual final diff scan found no scope or shipping blocker. Proof tests were preserved.
 
 Preview and CI results are reported with the PR after publication. Local static verification does not claim database catalogue parity or live official calculator verification. Jorje’s admissions accuracy review remains outstanding.
+
+## Preview failure correction
+
+- Removed only the static-only `ariel_engineering` membership from both Batch C registries and changed its e2e target to `ariel_me`. The existing membership test now compares against the 19 explicit Ariel academic programmes.
+- Typecheck passed; focused Batch C unit/API and evaluator tests: **352 passed**. Pre-PR guard: **88 files / 1,782 tests passed**, including local migration consistency, operational grant inspection, catalogue seed dry-run and committed Monday evidence checks.
+- Chromium in explicit local static catalogue mode: **2 passed**, exercising `ariel_me` at 390px and 1440px. Both screenshots were inspected for Hebrew copy, alignment and layout. Preview verification must run against the updated PR head; these local results do not establish live catalogue parity.

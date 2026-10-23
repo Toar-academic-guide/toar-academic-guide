@@ -34,7 +34,6 @@ export const BATCH_C_UNSUPPORTED_PROGRAM_INSTITUTIONS: Readonly<Record<string, s
   technion_engineering: 'technion',
   bgu_engineering: 'bgu',
   haifa_engineering: 'haifa',
-  ariel_engineering: 'ariel',
   telhai_general_academic: 'telhai',
   rubin_graphic_design: 'rubin',
   wingate_general_academic: 'wingate',

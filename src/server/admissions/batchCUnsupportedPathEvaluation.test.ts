@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 vi.mock('server-only', () => ({}));
+import { academicPrograms } from '@/data/degrees/academicPrograms';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import { BATCH_B_PROGRAM_IDS } from './batchBManualPathEvaluation';
 import { BATCH_C_PROGRAMS, evaluateBatchCUnsupportedPath } from './batchCUnsupportedPathEvaluation';
@@ -14,12 +15,12 @@ const programs = getStaticCataloguePrograms();
 const institutions = getStaticCatalogueInstitutions();
 
 describe('Batch C unsupported admission paths', () => {
-  it('covers every current catalogue Ariel ID, including generated entries', () => {
-    const arielIds = programs
+  it('covers all 19 explicit academic Ariel programmes', () => {
+    const arielIds = academicPrograms
       .filter((p) => p.id.startsWith('ariel_'))
       .map((p) => p.id)
       .sort();
-    expect(arielIds).toHaveLength(20);
+    expect(arielIds).toHaveLength(19);
     expect(
       Object.keys(BATCH_C_PROGRAMS)
         .filter((id) => id.startsWith('ariel_'))

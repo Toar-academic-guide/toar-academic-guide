@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 const targets = [
   ['ariel_cs', 'ariel'],
-  ['ariel_engineering', 'ariel'],
+  ['ariel_me', 'ariel'],
   ['sports_science', 'wingate'],
   ['mon_12341143672_business', 'mon_12341143672'],
 ] as const;
