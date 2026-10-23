@@ -256,3 +256,111 @@ describe('Reichman shared formula', () => {
     },
   );
 });
+
+describe('Batch A Reichman business and economics', () => {
+  const business = { mathUnits: 3, mathGrade: 100, englishUnits: 4 };
+  const economics = { mathUnits: 4, mathGrade: 75, englishUnits: 4, psychometricMath: 125 };
+  it.each(['reichman_business', 'reichman_economics'])('%s weak profile stays below', (degreeId) =>
+    expect(evaluate(degreeId, { bagrut: 70, psychometric: 420 }).decision).toBe('below'),
+  );
+  it.each([
+    ['reichman_business', 100, 700, business],
+    ['reichman_economics', 100, 680, economics],
+  ] as const)('%s standalone inclusive boundaries', (degreeId, bagrut, psychometric, extra) => {
+    expect(evaluate(degreeId, { bagrut }, extra)).toMatchObject({
+      decision: 'pending',
+      scoreLabel: 'מסלול בגרות',
+    });
+    expect(evaluate(degreeId, { psychometric }, { ...extra, psychometricMath: 125 })).toMatchObject(
+      { decision: 'pending', scoreLabel: 'מסלול פסיכומטרי' },
+    );
+    expect(evaluate(degreeId, { bagrut: 70, psychometric: psychometric - 1 }, extra).decision).toBe(
+      'below',
+    );
+    expect(
+      evaluate(degreeId, { bagrut: 70, psychometric }, { ...extra, psychometricMath: 124 })
+        .decision,
+    ).toBe('below');
+    expect(
+      evaluate(degreeId, { bagrut: 70, psychometric }, { ...extra, psychometricMath: undefined }),
+    ).toMatchObject({ kind: 'needs_input', requiredInputs: ['psychometric_math'] });
+  });
+  it.each([
+    ['reichman_business', 630, business],
+    ['reichman_economics', 600, economics],
+  ] as const)('%s computes the coordinated threshold inclusively', (degreeId, threshold, extra) => {
+    // Invert the existing reviewed formula without changing its coefficients.
+    const psychometric = 650;
+    const bagrut = (threshold + 163.19 - 0.5131 * psychometric) / 4.812;
+    expect(calculateReichmanCoordinatedScore(bagrut, psychometric)).toBeCloseTo(threshold, 9);
+    const atBoundary = evaluate(degreeId, { bagrut: bagrut + 1e-10, psychometric }, extra);
+    expect(atBoundary).toMatchObject({ decision: 'pending', scoreLabel: 'ציון מתואם', threshold });
+    expect(atBoundary.score).toBeCloseTo(threshold, 8);
+    expect(evaluate(degreeId, { bagrut, psychometric: psychometric - 1 }, extra).decision).toBe(
+      'below',
+    );
+  });
+  it('enforces the business 95–99 science route and excludes CS', () => {
+    const extra = {
+      mathUnits: 4,
+      mathGrade: 80,
+      englishUnits: 4,
+      physicsUnits: 5,
+      physicsGrade: 75,
+    };
+    expect(evaluate('reichman_business', { bagrut: 95, psychometric: 420 }, extra)).toMatchObject({
+      decision: 'pending',
+      scoreLabel: 'מסלול בגרות 95–99',
+    });
+    expect(
+      evaluate(
+        'reichman_business',
+        { bagrut: 95, psychometric: 420 },
+        { ...extra, physicsGrade: 74 },
+      ).decision,
+    ).not.toBe('pending');
+    expect(
+      evaluate(
+        'reichman_business',
+        { bagrut: 95, psychometric: 420 },
+        { ...extra, physicsUnits: undefined, physicsGrade: undefined, csUnits: 5, csGrade: 100 },
+      ).decision,
+    ).not.toBe('pending');
+  });
+  it('separates economics prep from the lower admission math boundary', () => {
+    const result = evaluate('reichman_economics', { psychometric: 680 }, economics);
+    expect(result.additionalConditions).toContainEqual(
+      expect.objectContaining({ id: 'math_grade', status: 'unconfirmed' }),
+    );
+    expect(
+      evaluate(
+        'reichman_economics',
+        { psychometric: 680 },
+        { ...economics, mathGrade: 85 },
+      ).additionalConditions?.some((condition) => condition.id === 'math_grade'),
+    ).toBe(false);
+    expect(
+      evaluate(
+        'reichman_economics',
+        { psychometric: 680 },
+        { ...economics, mathUnits: 5, mathGrade: 60 },
+      ).decision,
+    ).toBe('pending');
+    expect(
+      evaluate('reichman_economics', { psychometric: 680 }, { ...economics, mathGrade: 74 })
+        .decision,
+    ).toBe('below');
+  });
+  it('asks for English units and rejects a known lower level', () => {
+    expect(
+      evaluate('reichman_business', { psychometric: 700 }, { psychometricMath: 125 }),
+    ).toMatchObject({ kind: 'needs_input', requiredInputs: ['english_units'] });
+    expect(
+      evaluate(
+        'reichman_business',
+        { psychometric: 700 },
+        { psychometricMath: 125, englishUnits: 3 },
+      ).decision,
+    ).toBe('below');
+  });
+});
