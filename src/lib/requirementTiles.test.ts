@@ -36,6 +36,29 @@ function select(id: string, institutionId: string) {
 }
 
 describe('verified requirement tiles', () => {
+  it.each([
+    ['law', 112],
+    ['biu_law', 112],
+    ['criminology', 98],
+    ['biu_criminology', 98],
+    ['biu_lifesciences', 108],
+    ['biu_biotech', 108],
+    ['biu_computational_bio', 112],
+  ])('keeps %s BIU route gates in the full copy without inventing composite tiles', (id, floor) => {
+    const program = programs.find((p) => p.id === id)!;
+    const detail = program.institutionDetails!.find(
+      (d) => d.institutionName === INSTITUTION_BY_ID.biu.name,
+    )!;
+    const requirements = catalogueAdmissionRequirements(
+      detail.specificAdmissionNotes,
+      program.admissionRequirements,
+      id,
+    );
+    expect(requirements.join(' ')).toContain(`ממוצע בגרות ${floor} לפחות`);
+    expect(requirements.join(' ')).toContain('סיווג אנגלית 85 לפחות');
+    expect(select(id, 'biu')).toEqual({ reason: 'unclear_semantics' });
+  });
+
   it('uses alternatives only for explicit routes and keeps cumulative gates together', () => {
     expect(select('education', 'bgu').model?.semantics).toBe('alternatives');
     expect(select('physiotherapy', 'bgu').model?.semantics).toBe('cumulative');
