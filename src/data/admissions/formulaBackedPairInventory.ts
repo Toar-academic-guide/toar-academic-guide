@@ -1,4 +1,5 @@
 import type { Program } from '@/data/degrees/types';
+import { isBiuPublishedRoutePair } from './biuPublishedRoutes';
 import { INSTITUTIONS, INSTITUTION_BY_ID, type InstitutionId } from '@/data/institutions';
 
 export const FORMULA_BACKED_INSTITUTION_IDS = [
@@ -8,6 +9,7 @@ export const FORMULA_BACKED_INSTITUTION_IDS = [
   'haifa',
   'technion',
   'colman',
+  'biu',
 ] as const;
 
 export const FORMULA_BACKED_EXCLUDED_INSTITUTION_IDS = ['ariel', 'biu'] as const;
@@ -171,9 +173,11 @@ export function buildFormulaBackedPairInventory(
     errors.push(...resolution.errors);
 
     for (const pair of resolution.pairs) {
-      const destination = EXCLUDED_INSTITUTION_IDS.has(pair.institutionId)
-        ? excludedPairsById
-        : pairsById;
+      const destination =
+        EXCLUDED_INSTITUTION_IDS.has(pair.institutionId) &&
+        !isBiuPublishedRoutePair(pair.programId, pair.institutionId)
+          ? excludedPairsById
+          : pairsById;
 
       if (
         !INCLUDED_INSTITUTION_IDS.has(pair.institutionId) &&
@@ -242,7 +246,11 @@ export function reconcileFormulaBackedSeedPairs(
   const actualPairIds = new Set(
     seed.programInstitutions
       .filter(({ programId, institutionId }) => {
-        if (!INCLUDED_INSTITUTION_IDS.has(institutionId)) {
+        if (
+          !INCLUDED_INSTITUTION_IDS.has(institutionId) ||
+          (EXCLUDED_INSTITUTION_IDS.has(institutionId) &&
+            !isBiuPublishedRoutePair(programId, institutionId))
+        ) {
           return false;
         }
 

@@ -51,7 +51,7 @@ describe('formula-backed verification ledger', () => {
       unexpectedPairIds: [],
       duplicatePairIds: [],
     });
-    expect(FORMULA_BACKED_VERIFICATION_LEDGER).toHaveLength(131);
+    expect(FORMULA_BACKED_VERIFICATION_LEDGER).toHaveLength(138);
   });
 
   it('counts only fully proved pairs as exact', () => {
@@ -61,9 +61,9 @@ describe('formula-backed verification ledger', () => {
     );
 
     expect(completion).toMatchObject({
-      total: 131,
+      total: 138,
       exact: 126,
-      withheld: 4,
+      withheld: 11,
       isComplete: false,
     });
     expect(completion.totalsByInstitution).toEqual({
@@ -73,6 +73,7 @@ describe('formula-backed verification ledger', () => {
       haifa: { total: 27, exact: 26, withheld: 0, stale: 0, blocked: 1 },
       technion: { total: 14, exact: 14, withheld: 0, stale: 0, blocked: 0 },
       colman: { total: 1, exact: 0, withheld: 1, stale: 0, blocked: 0 },
+      biu: { total: 7, exact: 0, withheld: 7, stale: 0, blocked: 0 },
     });
     expect(
       FORMULA_BACKED_VERIFICATION_LEDGER.filter((entry) => entry.state === 'exact').map(
@@ -130,7 +131,7 @@ describe('formula-backed verification ledger', () => {
       (entry) => entry.state === 'withheld',
     );
 
-    expect(withheld).toHaveLength(4);
+    expect(withheld).toHaveLength(11);
     expect(withheld.every((entry) => entry.reason.length > 80)).toBe(true);
     expect(withheld.every((entry) => entry.sourceUrl.startsWith('https://'))).toBe(true);
     expect(
