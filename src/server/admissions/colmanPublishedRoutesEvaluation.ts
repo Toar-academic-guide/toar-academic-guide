@@ -7,6 +7,7 @@ import {
 } from './publishedNumericRoutes';
 import { confirmationCondition, withScoreAssessment } from './scoreAssessment';
 import { COLMAN_BAGRUT_CALCULATOR_URL } from '@/lib/colmanBagrutInputs';
+import { canonicalProgramId } from '@/lib/seo/programAliases';
 import type {
   AdmissionsEvaluationInput,
   AdmissionsEvaluationResult,
@@ -47,7 +48,7 @@ export function evaluateColmanPublishedRoutes({
 }): AdmissionsEvaluationResult {
   if (['colmgmt_accounting', 'colmgmt_infosystems'].includes(input.degreeId))
     return evaluateColmanAdditionalRoutes({ input, institution });
-  const route = routes[input.degreeId as keyof typeof routes];
+  const route = routes[canonicalProgramId(input.degreeId) as keyof typeof routes];
   const average = input.extraInputs?.colmanBagrutAverage;
   const quantitative = input.extraInputs?.psychometricMath;
   const base = {

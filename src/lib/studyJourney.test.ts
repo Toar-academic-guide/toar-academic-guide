@@ -19,6 +19,8 @@ describe('approved journey', () => {
     'tlvyaffo_business',
     'colmgmt_law',
     'colmgmt_business',
+    'colman_law',
+    'colman_business',
     'colmgmt_economics',
     'colmgmt_cs',
   ])('preserves program-specific route explanations for %s', (programId) => {

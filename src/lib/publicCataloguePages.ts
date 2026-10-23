@@ -167,21 +167,26 @@ export async function getPublicProgramRequirementSources({
   const hasRequirements = (items: string[]) =>
     !(items.length === 1 && items[0] === genericRequirement);
   for (const institution of institutions) {
+    const canonicalId = canonicalProgramId(program.id);
+    const requirementsProgram =
+      institution.id === 'colman' && ['colmgmt_law', 'colmgmt_business'].includes(canonicalId)
+        ? (catalogue.programs.find((candidate) => candidate.id === canonicalId) ?? program)
+        : program;
     const specific = isGeneral
       ? catalogue.institutionProgramsByName.get(program.name)?.get(institution.id)
       : undefined;
 
-    const detail = program.institutionDetails?.find(
+    const detail = requirementsProgram.institutionDetails?.find(
       (entry) => entry.institutionName === institution.name,
     );
     const requirements = catalogueAdmissionRequirements(
       detail?.specificAdmissionNotes,
-      program.admissionRequirements,
-      program.id,
+      requirementsProgram.admissionRequirements,
+      requirementsProgram.id,
     );
     const useSpecific =
       isGeneral && program.isListed !== false && !hasRequirements(requirements) && !!specific;
-    const sourceProgram = useSpecific ? specific : program;
+    const sourceProgram = useSpecific ? specific : requirementsProgram;
     const sourceDetail = useSpecific
       ? specific.institutionDetails?.find((entry) => entry.institutionName === institution.name)
       : detail;

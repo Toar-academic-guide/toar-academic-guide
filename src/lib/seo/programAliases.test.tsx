@@ -64,6 +64,42 @@ beforeEach(() => {
 });
 
 describe('canonical programme aliases', () => {
+  it.each([
+    ['colman_law', 'colmgmt_law'],
+    ['colman_business', 'colmgmt_business'],
+  ])('shows the canonical Colman requirements for legacy %s', async (aliasId, canonicalId) => {
+    const canonical = databasePairs.find((program) => program.id === canonicalId)!;
+    const staleCopy = 'תנאי ישן שאינו שייך למסלול';
+    const alias = {
+      ...canonical,
+      id: aliasId,
+      admissionRequirements: [staleCopy],
+      institutionDetails: canonical.institutionDetails?.map((detail) => ({
+        ...detail,
+        specificAdmissionNotes: [staleCopy],
+      })),
+    };
+    vi.mocked(listCataloguePrograms).mockResolvedValue({
+      data: [alias, canonical],
+      meta: { catalogueSource: 'database' },
+    });
+    const aliasPage = (await getPublicProgramPageData(aliasId))!;
+    const canonicalPage = (await getPublicProgramPageData(canonicalId))!;
+    const aliasSource = (await getPublicProgramRequirementSources(aliasPage)).colman;
+    const canonicalSource = (await getPublicProgramRequirementSources(canonicalPage)).colman;
+    expect(aliasPage.program.id).toBe(aliasId);
+    expect(aliasSource).toEqual(canonicalSource);
+    expect(aliasSource.sourceProgramId).toBe(canonicalId);
+    expect(aliasSource.requirements).toEqual([
+      ...canonical.admissionRequirements,
+      ...canonical.institutionDetails![0].specificAdmissionNotes,
+    ]);
+    const markup = renderToStaticMarkup(
+      await ProgramPage({ params: Promise.resolve({ programId: aliasId }) }),
+    );
+    expect(markup).not.toContain(staleCopy);
+  });
+
   it('registers the approved aliases without changing their IDs', () => {
     expect(PROGRAM_CANONICAL_ALIASES).toEqual(Object.fromEntries(aliases));
   });
