@@ -626,6 +626,15 @@ describe('structured data', () => {
     'haifa_nursing',
     'ono_nursing',
     'afeka_cs',
+    'tau_law',
+    'biu_law',
+    'ruppin_cs',
+    'tau_business',
+    'bgu_business',
+    'haifa_infosystems',
+    'ariel_economics',
+    'huji_business',
+    'bgu_accounting',
   ])(
     'adds FAQPage alongside program and breadcrumb schema for %s using on-page facts',
     async (id) => {
@@ -692,17 +701,35 @@ describe('structured data', () => {
       programFaqPageLd({ ...data, program: { ...data.program, isListed: false } }, sources),
     ).toBeNull();
     expect(programFaqPageLd(data, {})).toBeNull();
-    for (const id of ['tau_cs', 'psychology', 'cs']) {
+    const institutionId = data.institutions[0].id;
+    expect(
+      programFaqPageLd(data, {
+        [institutionId]: { ...sources[institutionId], requirements: [] },
+      }),
+    ).toBeNull();
+    for (const id of ['tau_cs', 'psychology', 'law', 'nursing', 'cs']) {
       expect(programFaqPageLd({ ...data, program: { ...data.program, id } }, sources)).toBeNull();
     }
-    const document = new DOMParser().parseFromString(
-      renderToStaticMarkup(await ProgramPage({ params: Promise.resolve({ programId: 'tau_cs' }) })),
-      'text/html',
-    );
-    expect(document.querySelector('script[type="application/ld+json"]')!.textContent).not.toContain(
-      'FAQPage',
-    );
   });
+
+  it.each(['tau_cs', 'psychology', 'law', 'nursing', 'cs'])(
+    'omits FAQPage from the rendered non-allowlisted page %s',
+    async (id) => {
+      const data = (await getPublicProgramPageData(id))!;
+      expect(programFaqPageLd(data, await getPublicProgramRequirementSources(data))).toBeNull();
+      const document = new DOMParser().parseFromString(
+        renderToStaticMarkup(await ProgramPage({ params: Promise.resolve({ programId: id }) })),
+        'text/html',
+      );
+      const graph = JSON.parse(
+        document.querySelector('script[type="application/ld+json"]')!.textContent!,
+      );
+      expect(graph['@graph'].map((node: { '@type': string }) => node['@type'])).toEqual([
+        'EducationalOccupationalProgram',
+        'BreadcrumbList',
+      ]);
+    },
+  );
 
   it('classifies institutions and emits only official HTTPS identities with no inferred address', async () => {
     expect(institutionLd((await getPublicInstitutionPageData('tau'))!)).toMatchObject({

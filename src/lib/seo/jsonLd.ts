@@ -155,6 +155,15 @@ const FAQ_PROGRAM_IDS = new Set([
   'haifa_nursing',
   'ono_nursing',
   'afeka_cs',
+  'tau_law',
+  'biu_law',
+  'ruppin_cs',
+  'tau_business',
+  'bgu_business',
+  'haifa_infosystems',
+  'ariel_economics',
+  'huji_business',
+  'bgu_accounting',
 ]);
 
 export function programFaqPageLd(
