@@ -1,10 +1,64 @@
 import { allPrograms, programsWithLegacyAdmissionFacts } from '@/data/degrees';
 import type { Program } from '@/data/degrees/types';
 import { buildCatalogueSeed } from '@/db/seeds/catalogueSeed';
+import { getRequirementsChecked } from '@/lib/requirementsChecked';
 import { applyCatalogueContentRepair } from './catalogueContentRepair';
 import repair from './catalogueContentRepair.json';
 
 describe('verified catalogue content repair', () => {
+  it.each([
+    [
+      'ono_law',
+      'ono',
+      'https://www.ono.ac.il/curriculum/llb/',
+      '2ea5e02446f90bb3c34fd480df1b11084bdd1b45133cebc8941c7f98d2888e8e',
+      6,
+    ],
+    [
+      'colmgmt_cs',
+      'colman',
+      'https://www.colman.ac.il/academics/ba/b-a-admission/',
+      '084c3ba35a4be7290448cd627a5db52a2d2ae0a50ea72d1017208eaadb4e3637',
+      1,
+    ],
+  ] as const)(
+    'stamps %s without changing its existing catalogue content',
+    (id, institutionId, sourceUrl, sourceSha256, noteCount) => {
+      const before = programsWithLegacyAdmissionFacts.find((program) => program.id === id)!;
+      const notes = before.institutionDetails![0].specificAdmissionNotes;
+      const row = repair.requirements.find(
+        (item) => item.programId === id && item.institutionId === institutionId,
+      );
+      expect(row).toMatchObject({
+        checkedAt: '2026-10-23',
+        sourceUrl,
+        sourceSha256,
+        coverage: 'published_conditions',
+        notes,
+      });
+      expect(notes).toHaveLength(noteCount);
+      expect(applyCatalogueContentRepair(before)).toEqual(before);
+      expect(getRequirementsChecked(id, { id: institutionId }, notes)).toEqual({
+        date: '23.10.2026',
+        sourceUrl: `${sourceUrl}?utm_source=myway&utm_medium=referral`,
+      });
+      expect(
+        getRequirementsChecked(
+          id,
+          { id: institutionId },
+          notes.map((note) => `${note} `),
+        ),
+      ).toBeUndefined();
+    },
+  );
+
+  it.each(['haifa_psychology', 'afeka_ee', 'afeka_softwareeng', 'hit_visual_comm'])(
+    'keeps the packet HOLD program %s unstamped',
+    (id) => {
+      expect(repair.requirements.some((row) => row.programId === id)).toBe(false);
+    },
+  );
+
   it.each([
     ['law', 112, [/אנגלית 5 יחידות בציון 90 לפחות/]],
     ['biu_law', 112, [/אנגלית 5 יחידות בציון 90 לפחות/]],

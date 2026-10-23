@@ -1509,6 +1509,34 @@
       ],
       "coverage": "published_conditions",
       "programUrl": "https://law.biu.ac.il/node/129"
+    },
+    {
+      "programId": "ono_law",
+      "institutionId": "ono",
+      "sourceUrl": "https://www.ono.ac.il/curriculum/llb/",
+      "sourceSha256": "2ea5e02446f90bb3c34fd480df1b11084bdd1b45133cebc8941c7f98d2888e8e",
+      "checkedAt": "2026-10-23",
+      "notes": [
+        "קבלה ישירה: ממוצע בגרות 95 ומעלה, או פסיכומטרי 600 ומעלה ובגרות מלאה",
+        "קבלה משוקללת: ראיון קבלה, וגם ממוצע בגרות 80–94 או פסיכומטרי 550 ומעלה ובגרות מלאה",
+        "מעל גיל 30: ראיון קבלה ובגרות מלאה",
+        "תואר קודם ממוסד מוכר, 24 נ״ז מהאוניברסיטה הפתוחה או תעודת הנדסאי: קבלה ישירה. בעלי רקע לימודי קודם אחר: ראיון קבלה",
+        "אפיק מעבר לאקדמיה: למי שיש בגרות מלאה ולא עומדים בתנאי הממוצע. צריך לעבור מקבץ קורסים אקדמיים לפני תחילת הלימודים.",
+        "המחשבון בודק רק ממוצע בגרות ופסיכומטרי. מסלול גיל 30+, תואר קודם ואפיק המעבר לא נבדקים בו."
+      ],
+      "coverage": "published_conditions"
+    },
+    {
+      "programId": "colmgmt_cs",
+      "institutionId": "colman",
+      "sourceUrl": "https://www.colman.ac.il/academics/ba/b-a-admission/",
+      "sourceSha256": "084c3ba35a4be7290448cd627a5db52a2d2ae0a50ea72d1017208eaadb4e3637",
+      "checkedAt": "2026-10-23",
+      "notes": [
+        "המכללה לא מפרסמת את הציון המשוקלל הנדרש במסלול בגרות ופסיכומטרי, ולכן ההחלטה במסלול הזה היא שלה. כדאי לבדוק מול מרכז הרישום."
+      ],
+      "coverage": "published_conditions",
+      "programUrl": "https://www.colman.ac.il/academics/ba/computer-science/"
     }
   ],
   "excludedPrograms": [

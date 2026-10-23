@@ -166,6 +166,50 @@ describe('ProgramPage', () => {
   });
 
   describe('requirements checked line', () => {
+    it.each([
+      ['ono_law', 'ono', 'https://www.ono.ac.il/curriculum/llb/'],
+      ['colmgmt_cs', 'colman', 'https://www.colman.ac.il/academics/ba/b-a-admission/'],
+    ] as const)(
+      'renders the packet stamp for %s and withholds it on note drift',
+      async (programId, institutionId, sourceUrl) => {
+        const institution = getStaticCatalogueInstitutions().find(
+          (item) => item.id === institutionId,
+        )!;
+        const { unmount } = render(await ProgramPage({ params: Promise.resolve({ programId }) }));
+
+        const sourceLink = screen.getByRole('link', { name: `אתר ${institution.name}` });
+        expect(sourceLink.getAttribute('href')).toBe(
+          `${sourceUrl}?utm_source=myway&utm_medium=referral`,
+        );
+        expect(sourceLink.closest('p')!.textContent).toBe(
+          `עודכן לאחרונה: 23.10.2026 · מקור: אתר ${institution.name}`,
+        );
+        if (programId === 'colmgmt_cs') {
+          expect(screen.getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toBe(
+            'https://www.colman.ac.il/academics/ba/computer-science/?utm_source=myway&utm_medium=referral',
+          );
+        }
+        unmount();
+
+        const program = getStaticCataloguePrograms().find((item) => item.id === programId)!;
+        vi.mocked(listCataloguePrograms).mockResolvedValue({
+          data: [
+            {
+              ...program,
+              institutionDetails: program.institutionDetails!.map((detail) => ({
+                ...detail,
+                specificAdmissionNotes: detail.specificAdmissionNotes.map((note) => `${note} `),
+              })),
+            },
+          ],
+          meta: { catalogueSource: 'database' },
+        });
+        render(await ProgramPage({ params: Promise.resolve({ programId }) }));
+        expect(screen.queryByText(/עודכן לאחרונה:/)).toBeNull();
+        expect(screen.queryByRole('link', { name: `אתר ${institution.name}` })).toBeNull();
+      },
+    );
+
     const entry = repair.requirements.find((row) => row.programId === 'bgu_psychology')!;
     const institution = getStaticCatalogueInstitutions().find((item) => item.id === 'bgu')!;
     const trackedSource = new URL(entry.sourceUrl);
