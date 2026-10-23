@@ -109,6 +109,7 @@ export type AdmissionsRequiredInput =
   | 'colman_bagrut_average'
   | 'colman_internal_test'
   | 'colman_bagrut_certificate'
+  | 'reichman_application_requirements'
   | 'bgu_bagrut_average'
   | 'tau_application_requirements'
   | 'bgu_language_requirements'

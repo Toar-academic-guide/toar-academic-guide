@@ -1624,7 +1624,7 @@ describe('evaluateAdmissionsForProgram', () => {
     expectBguExact(report, 'below');
   });
 
-  it('keeps Reichman neutral when its bagrut rule has not been checked', async () => {
+  it('calculates Reichman published routes instead of treating them as requirements only', async () => {
     const reichmanCs: CatalogueProgram = {
       id: 'reichman_cs',
       name: 'מדעי המחשב',
@@ -1665,10 +1665,10 @@ describe('evaluateAdmissionsForProgram', () => {
     expect(report.results).toContainEqual(
       expect.objectContaining({
         linkedInstitutionId: 'reichman',
-        kind: 'requirements_only',
-        capability: 'requirements_only',
-        decision: 'unknown',
-        confidence: 'low',
+        kind: 'estimated',
+        capability: 'estimated',
+        decision: 'below',
+        confidence: 'medium',
       }),
     );
   });
@@ -3575,7 +3575,7 @@ describe('catalogue eligibility safety', () => {
           threshold: 440,
           deltaNeeded: { psychometric: 20, bagrut: 0 },
         });
-        expect(result.explanation).toContain('אפיקים חלופיים');
+        expect(result.explanation).toContain('פסיכומטרי 440 ומעלה');
       }
     },
   );

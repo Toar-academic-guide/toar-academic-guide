@@ -696,8 +696,7 @@ const D: Record<string, InstitutionDetail[]> = {
     },
   ],
 
-  // ── אוניברסיטת רייכמן (IDC Herzliya) — requirements-track ───────────────
-  // ממוצע בגרות 100 לקבלה ישירה; אין סכ"ם — מפנה לדף הקבלה הרשמי
+  // ── אוניברסיטת רייכמן — published תשפ״ז routes ────────────────────────
   reichman_cs: [
     {
       institutionName: 'אוניברסיטת רייכמן',
@@ -706,10 +705,13 @@ const D: Record<string, InstitutionDetail[]> = {
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
       specificAdmissionNotes: [
-        'חובה ממוצע בגרות 100 ומעלה לקבלה ישירה במסלול המבוקש',
-        "מותנה ברמת אנגלית 'מתקדמים א' לפחות או ציון אמיר\"ם/פסיכומטרי תואם",
+        'ציון מתואם 705 ומעלה ופסיכומטרי 660 ומעלה, או ממוצע בגרות 108 ומעלה, או פסיכומטרי 720 ומעלה עם זכאות לבגרות.',
+        'במסלולי מתואם ובגרות: מתמטיקה 5 יחידות בציון 85 ומעלה. במסלול בגרות נדרשות גם 5 יחידות בפיזיקה, כימיה, ביולוגיה או מדעי המחשב (לא תכנון מערכות) בציון 85 ומעלה.',
+        'במסלול פסיכומטרי: מתמטיקה 5 יחידות בציון 80 ומעלה. קיימות גם אפשרויות קבלה הכוללות קורס הכנה במתמטיקה.',
       ],
-      officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/',
+      officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/calculator',
+      programUrl:
+        'https://www.runi.ac.il/schools/computer-science/undergraduate/?utm_source=myway&utm_medium=referral',
     },
   ],
   reichman_psychology: [
@@ -720,10 +722,12 @@ const D: Record<string, InstitutionDetail[]> = {
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
       specificAdmissionNotes: [
-        'חובה ממוצע בגרות 100 ומעלה לקבלה ישירה במסלול המבוקש',
-        "מותנה ברמת אנגלית 'מתקדמים א' לפחות או ציון אמיר\"ם/פסיכומטרי תואם",
+        'ציון מתואם 620 ומעלה, או ממוצע בגרות 100 ומעלה, או פסיכומטרי 640 ומעלה עם זכאות לבגרות.',
+        'מתמטיקה: 3 יחידות לפחות בציון 85 ומעלה. אנגלית: 4 יחידות לפחות בציון 90 ומעלה.',
       ],
-      officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/',
+      officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/calculator',
+      programUrl:
+        'https://www.runi.ac.il/schools/psychology/undergraduate/?utm_source=myway&utm_medium=referral',
     },
   ],
   reichman_law: [
@@ -734,10 +738,11 @@ const D: Record<string, InstitutionDetail[]> = {
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
       specificAdmissionNotes: [
-        'חובה ממוצע בגרות 100 ומעלה לקבלה ישירה במסלול המבוקש',
-        "מותנה ברמת אנגלית 'מתקדמים א' לפחות או ציון אמיר\"ם/פסיכומטרי תואם",
+        'ציון מתואם 650 ומעלה ופסיכומטרי 610 ומעלה, או ממוצע בגרות 100 ומעלה, או פסיכומטרי 700 ומעלה עם זכאות לבגרות.',
       ],
-      officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/',
+      officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/calculator',
+      programUrl:
+        'https://www.runi.ac.il/schools/law/undergraduate/?utm_source=myway&utm_medium=referral',
     },
   ],
   reichman_business: [

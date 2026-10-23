@@ -6,6 +6,7 @@ import {
 import { evaluateTauPhysiotherapyResult } from './tauPhysiotherapyEvaluation';
 import { evaluateMtaComputerScience } from './mtaComputerScienceEvaluation';
 import { evaluateColmanPublishedRoutes } from './colmanPublishedRoutesEvaluation';
+import { evaluateReichmanPublishedRoutes } from './reichmanPublishedRoutesEvaluation';
 import { evaluateColmanBagrutResult } from './colmanBagrutEvaluation';
 import { DANON_PROGRAM_URLS } from '@/data/admissions/danon';
 import catalogueContentRepair from '@/data/admissions/catalogueContentRepair.json';
@@ -269,6 +270,14 @@ async function evaluateCapabilityEntries(args: {
         officialUrls: [incomplete.programUrl ?? incomplete.sourceUrl],
         degradationReason: 'incomplete_published_requirements',
       };
+      continue;
+    }
+
+    if (
+      ['reichman_cs', 'reichman_law', 'reichman_psychology'].includes(program.id) &&
+      institution.id === 'reichman'
+    ) {
+      results[index] = evaluateReichmanPublishedRoutes({ input, institution });
       continue;
     }
 
