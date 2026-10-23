@@ -1,3 +1,4 @@
+import { evaluateBatchBManualPath, isBatchBManualProgram } from './batchBManualPathEvaluation';
 import { evaluateTelhaiPublishedRoutes } from './telhaiPublishedRoutesEvaluation';
 import { evaluateOnoPublishedRoutes } from './onoPublishedRoutesEvaluation';
 import { evaluateRuppinComputerScience } from './ruppinComputerScienceEvaluation';
@@ -275,6 +276,14 @@ async function evaluateCapabilityEntries(args: {
         degradationReason: 'incomplete_published_requirements',
       };
       continue;
+    }
+
+    if (isBatchBManualProgram(program.id, institution.id)) {
+      const batchB = evaluateBatchBManualPath({ input, institution });
+      if (batchB) {
+        results[index] = batchB;
+        continue;
+      }
     }
 
     if (['telhai_cs', 'telhai_biology'].includes(program.id) && institution.id === 'telhai') {

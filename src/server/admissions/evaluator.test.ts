@@ -3543,7 +3543,7 @@ describe('catalogue eligibility safety', () => {
 
   it.each([
     ['ono_law', 'ono', 'below'],
-    ['ono_socialwork', 'ono', 'below'],
+    ['ono_socialwork', 'ono', 'eligible_to_apply'],
     ['tau_medicine', 'tau', 'unknown'],
     ['medicine', 'tau', 'unknown'],
     ['mta_cs', 'mta', 'unknown'],
@@ -3577,11 +3577,13 @@ describe('catalogue eligibility safety', () => {
       expect(result.explanation).not.toMatch(/[A-Za-z]{2,}\s+[A-Za-z]{2,}/);
       if (degreeId === 'ono_socialwork') {
         expect(result).toMatchObject({
-          score: 420,
-          threshold: 440,
-          deltaNeeded: { psychometric: 20, bagrut: 0 },
+          capability: 'manual_gate',
+          kind: 'manual_gate',
+          decision: 'eligible_to_apply',
         });
-        expect(result.explanation).toContain('פסיכומטרי 440 ומעלה');
+        expect(result.scoreAssessment).toBeUndefined();
+        expect(result.explanation).toContain('ראיון');
+        expect(result.explanation).not.toMatch(/מתואם|סכם|מצרף/);
       }
     },
   );
@@ -3813,8 +3815,12 @@ describe('catalogue eligibility safety', () => {
           result.threshold != null &&
           result.threshold > 0 &&
           result.score >= result.threshold;
+        const honestManualGate =
+          result.capability === 'manual_gate' &&
+          result.kind === 'manual_gate' &&
+          result.scoreAssessment !== 'meets_threshold';
         expect(
-          explicitNoGate || checkedFacts || checkedThreshold,
+          explicitNoGate || checkedFacts || checkedThreshold || honestManualGate,
           `${program.id}:${result.linkedInstitutionId}`,
         ).toBe(true);
       }

@@ -2311,9 +2311,8 @@ export const academicPrograms: Program[] = [
     type: 'academic',
     category: 'מדעי החברה',
     profileScore: P.socialWork,
-    admissionType: 'sekhem',
-    admissionRequirements: [],
-    thresholds: { biu: 600 },
+    admissionType: 'requirements',
+    admissionRequirements: ['ראיון קבלה מחייב', 'בדקו ספי קבלה באתר בר־אילן'],
     institutionDetails: D['biu_socialwork'],
   },
   {
@@ -2718,10 +2717,9 @@ export const academicPrograms: Program[] = [
     profileScore: P.nursing,
     admissionType: 'requirements',
     admissionRequirements: [
-      'בגרות מלאה עם ביולוגיה',
-      'ממוצע בגרות מינימלי: 76',
-      'ציון פסיכומטרי מינימלי: 460',
-      'ראיון קבלה',
+      'בגרות מלאה עם ביולוגיה לפי דרישת החוג',
+      'ראיון קבלה ויום מיון',
+      'בדקו את ספי הציונים העדכניים באתר תל-חי',
     ],
   },
   {
@@ -2733,12 +2731,7 @@ export const academicPrograms: Program[] = [
     category: 'מדעי החברה',
     profileScore: P.socialWork,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'בגרות מלאה',
-      'ממוצע בגרות מינימלי: 72',
-      'ציון פסיכומטרי מינימלי: 450',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['בגרות מלאה', 'ראיון קבלה', 'בדקו את ספי הציונים העדכניים באתר תל-חי'],
   },
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -2923,12 +2916,7 @@ export const academicPrograms: Program[] = [
     category: 'מדעי החברה',
     profileScore: P.socialWork,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'בגרות מלאה',
-      'ממוצע בגרות מינימלי: 72',
-      'ציון פסיכומטרי מינימלי: 440',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['ראיון קבלה', 'בדקו באתר המכללה אם המסלול פתוח להרשמה'],
   },
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -3302,8 +3290,7 @@ export const academicPrograms: Program[] = [
     category: 'כלכלה ועסקים',
     profileScore: P.infoSystems,
     admissionType: 'requirements',
-    admissionRequirements: [],
-    thresholds: { reichman: 0 },
+    admissionRequirements: ['ראיון קבלה / ועדת קבלה', 'בדקו את תנאי המסלול באתר רייכמן'],
     institutionDetails: D['reichman_infosystems'],
   },
   {

@@ -35,6 +35,26 @@ describe('approved journey', () => {
     expect(resultExplanation(result, programId)).toBe(result.explanation);
     expect(resultExplanation(result, 'colmgmt_accounting')).not.toBe(result.explanation);
   });
+  it.each([
+    ['bezalel_industrial_design', 'bezalel'],
+    ['shenkar_fashion', 'shenkar'],
+    ['samspiegel_cinema', 'spieldocs'],
+    ['telhai_nursing', 'telhai'],
+    ['ono_nursing', 'ono'],
+  ] as const)('preserves Batch B manual-gate explanation for %s', (programId, institutionId) => {
+    const result = {
+      institution: getStaticCatalogueInstitutions()[0],
+      linkedInstitutionId: institutionId,
+      capability: 'manual_gate' as const,
+      kind: 'manual_gate' as const,
+      decision: 'eligible_to_apply' as const,
+      confidence: 'medium' as const,
+      sourceLabel: 'נדרש מיון נוסף',
+      nextAction: 'הגישו מועמדות',
+      explanation: 'במסלול הזה לא מספיקים ציוני בגרות או פסיכומטרי לבדם.',
+    };
+    expect(resultExplanation(result, programId)).toBe(result.explanation);
+  });
   it('keeps Afeka software engineering in its own field, not Computer Science', () => {
     const fields = studyFields(getStaticCataloguePrograms());
     expect(
