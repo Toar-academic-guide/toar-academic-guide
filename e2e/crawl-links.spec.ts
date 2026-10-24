@@ -76,10 +76,15 @@ test('subject index lists exactly the hubs the sitemap publishes', async ({ requ
       [...institutionProgramIds].filter((programId) => id.startsWith(`${programId}_`)),
       id,
     ).toEqual([]);
-  // Exact set contract: a sitemap programme URL renders a subject page iff it is in the index.
-  const kinds = await mapLimited(sitemapPrograms, 6, async (id) => {
+  // Candidate pages: every sitemap programme URL plus every general subject in the
+  // catalogue API, so 0-programme subjects (kept out of the sitemap) are checked too.
+  const subjectRows = rows.filter((row) => !row.institutionId).map((row) => row.id);
+  const candidates = [...new Set([...sitemapPrograms, ...subjectRows])];
+  const pages = await mapLimited(candidates, 6, async (id) => {
     const response = await request.get(`/programs/${encodeURIComponent(id)}`);
     const page = await response.text();
+    const main = page.split('<main')[1]?.split('</main>')[0] ?? '';
+    const links = anchors(main);
     return {
       id,
       status: response.status(),
@@ -87,13 +92,40 @@ test('subject index lists exactly the hubs the sitemap publishes', async ({ requ
       canonical: page.includes(
         `<link rel="canonical" href="https://findmyway.co.il/programs/${encodeURIComponent(id)}"/>`,
       ),
+      // The meta tag, not the header: Vercel previews add X-Robots-Tag: noindex everywhere.
+      robots: page.match(/<meta name="robots" content="([^"]+)"/)?.[1],
+      programLinks: links.filter(
+        (href) => href.startsWith('/programs/') && href !== `/programs/${encodeURIComponent(id)}`,
+      ).length,
+      institutionLinks: links.filter((href) => href.startsWith('/institutions/')).length,
     };
   });
-  for (const { id, status, kind, canonical } of kinds) {
+  const served = pages.filter((page) => page.status !== 404 || sitemapPrograms.includes(page.id));
+  const zeroHubs: string[] = [];
+  for (const page of served) {
+    const { id, status, kind, canonical, robots, programLinks, institutionLinks } = page;
     expect(status, id).toBe(200);
     expect(canonical, id).toBe(true);
-    expect(kind, id).toBe(index.includes(id) ? 'subject' : 'programme');
+    if (kind === 'subject' && programLinks === 0) {
+      // PM rule: a hub with no programme links stays up, noindex,follow, unlisted.
+      zeroHubs.push(id);
+      expect(robots, id).toBe('noindex, follow');
+      expect(institutionLinks, id).toBeGreaterThan(0);
+      expect(index, id).not.toContain(id);
+      expect(sitemapPrograms, id).not.toContain(id);
+    } else {
+      expect(robots, id).toBeUndefined();
+      expect(sitemapPrograms, id).toContain(id);
+      // Exact set contract: an indexable subject page is in the index, a programme page is not.
+      expect(kind, id).toBe(index.includes(id) ? 'subject' : 'programme');
+    }
   }
+  console.log(`0-programme hubs (noindex,follow): ${zeroHubs.sort().join(', ') || 'none'}`);
+  for (const id of index)
+    expect(
+      served.find((page) => page.id === id)?.programLinks,
+      `${id} programme links`,
+    ).toBeGreaterThan(0);
 });
 
 for (const [id, hub, minimum] of [

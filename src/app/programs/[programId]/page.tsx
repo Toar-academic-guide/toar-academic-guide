@@ -31,6 +31,7 @@ export async function generateMetadata({ params }: ProgramPageProps) {
     ? {
         title: `לימודי ${data.hub.name}`,
         alternates: { canonical: `/programs/${encodeURIComponent(data.hub.id)}` },
+        ...(data.hub.programLinks === 0 ? { robots: { index: false, follow: true } } : {}),
       }
     : metadata;
 }

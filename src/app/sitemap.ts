@@ -15,7 +15,7 @@ export const dynamic = 'force-dynamic';
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const catalogue = await loadPublicCatalogue();
   // Hubs generated from institution programmes have no catalogue row of their own.
-  const generatedHubs = buildSubjectHubs(catalogue).hubs.filter(
+  const generatedHubs = buildSubjectHubs(catalogue).publishedHubs.filter(
     (hub) => !catalogue.generalProgramIds.has(hub.id),
   );
   const dates = new Map<string, string>([

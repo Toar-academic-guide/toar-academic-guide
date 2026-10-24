@@ -101,6 +101,23 @@ export const loadPublicCatalogue = cache(async () => {
   };
 });
 
+/**
+ * The institution programme pages a general subject page links to, by
+ * institution. A subject with none links to institutions only.
+ */
+export function subjectProgramPages(
+  catalogue: Awaited<ReturnType<typeof loadPublicCatalogue>>,
+  program: CatalogueProgram,
+): Map<string, CatalogueProgram> {
+  const pages = new Map<string, CatalogueProgram>();
+  for (const institution of catalogue.institutions) {
+    if (!program.linkedInstitutionIds.includes(institution.id)) continue;
+    const specific = catalogue.institutionProgramsByName.get(program.name)?.get(institution.id);
+    if (specific) pages.set(institution.id, specific);
+  }
+  return pages;
+}
+
 export interface PublicProgramPageData {
   program: CatalogueProgram;
   institutions: CatalogueInstitution[];
@@ -137,11 +154,10 @@ export async function getPublicProgramPageData(
     program.linkedInstitutionIds.includes(institution.id),
   );
   const isGeneral = catalogue.generalProgramIds.has(program.id);
+  const programPages = isGeneral ? subjectProgramPages(catalogue, program) : new Map();
   const institutionProgramPaths: Record<string, string> = {};
   for (const institution of institutions) {
-    const specific = isGeneral
-      ? catalogue.institutionProgramsByName.get(program.name)?.get(institution.id)
-      : undefined;
+    const specific = programPages.get(institution.id);
     institutionProgramPaths[institution.id] = specific
       ? `/programs/${encodeURIComponent(specific.id)}`
       : `/institutions/${encodeURIComponent(institution.id)}`;

@@ -134,6 +134,9 @@ export function RelatedPrograms({
   institutions: CatalogueInstitution[];
 }) {
   if (!hub) return null;
+  // A hub with no programme links is noindex: link the sibling programmes only.
+  const hubLink = hub.programLinks > 0;
+  if (!hubLink && programs.length === 0) return null;
   return (
     <section
       dir="rtl"
@@ -143,13 +146,15 @@ export function RelatedPrograms({
       <h2 id="related-title" className="mb-4 text-xl font-bold">
         מסלולים נוספים
       </h2>
-      <Link
-        className={`${linkStyle} font-semibold`}
-        href={`/programs/${encodeURIComponent(hub.id)}`}
-      >
-        {hub.name}
-      </Link>
-      <ul className="mt-4 grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
+      {hubLink && (
+        <Link
+          className={`${linkStyle} mb-4 inline-block font-semibold`}
+          href={`/programs/${encodeURIComponent(hub.id)}`}
+        >
+          {hub.name}
+        </Link>
+      )}
+      <ul className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
         {programs.map((program) => (
           <li key={program.id}>
             <Link className={linkStyle} href={`/programs/${encodeURIComponent(program.id)}`}>

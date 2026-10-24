@@ -172,7 +172,11 @@ describe('server-rendered crawl paths', () => {
       const related = await getPublicRelatedPrograms(program.id);
       expect(related.hub, program.id).toBeDefined();
       const hrefs = paths(renderToStaticMarkup(<RelatedPrograms {...related} />));
-      expect(hrefs, program.id).toContain(`/programs/${related.hub!.id}`);
+      // PM rule (#271): a hub with no programme links is noindex, so the block
+      // links its sibling programmes but not the hub itself.
+      if (related.hub!.programLinks > 0)
+        expect(hrefs, program.id).toContain(`/programs/${related.hub!.id}`);
+      else expect(hrefs, program.id).not.toContain(`/programs/${related.hub!.id}`);
       expect(hrefs, program.id).not.toContain(`/programs/${program.id}`);
       expect(related.programs.length).toBeLessThanOrEqual(8);
       const institutions = getStaticCatalogueInstitutions();

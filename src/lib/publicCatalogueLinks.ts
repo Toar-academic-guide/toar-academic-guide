@@ -1,6 +1,6 @@
 import 'server-only';
 import { cache } from 'react';
-import { loadPublicCatalogue } from '@/lib/publicCataloguePages';
+import { loadPublicCatalogue, subjectProgramPages } from '@/lib/publicCataloguePages';
 import { canonicalProgramId, PROGRAM_CANONICAL_ALIASES } from '@/lib/seo/programAliases';
 import { institutionProgramName } from '@/lib/institutionProgramName';
 import type { CatalogueProgram } from '@/types/catalogue';
@@ -11,6 +11,8 @@ export interface SubjectHub {
   category: string;
   type: CatalogueProgram['type'];
   programs: CatalogueProgram[];
+  /** Programme pages the hub page links to; 0 means noindex and unlisted. */
+  programLinks: number;
 }
 
 type PublicCatalogue = Awaited<ReturnType<typeof loadPublicCatalogue>>;
@@ -31,7 +33,14 @@ export function buildSubjectHubs(catalogue: PublicCatalogue) {
   );
   const hubs: SubjectHub[] = programs
     .filter((program) => catalogue.generalProgramIds.has(program.id))
-    .map(({ id, name, category, type }) => ({ id, name, category, type, programs: [] }));
+    .map(({ id, name, category, type }) => ({
+      id,
+      name,
+      category,
+      type,
+      programs: [],
+      programLinks: 0,
+    }));
   const hubByName = new Map(hubs.map((hub) => [hub.name, hub]));
   const hubByProgram = new Map<string, SubjectHub>();
   const usedIds = new Set(catalogue.programs.map((program) => program.id));
@@ -66,7 +75,14 @@ export function buildSubjectHubs(catalogue: PublicCatalogue) {
         unpublishedNames.add(name);
         continue;
       }
-      hub = { id: subjectId, name, category: program.category, type: program.type, programs: [] };
+      hub = {
+        id: subjectId,
+        name,
+        category: program.category,
+        type: program.type,
+        programs: [],
+        programLinks: 0,
+      };
       hubs.push(hub);
       usedIds.add(subjectId);
     }
@@ -75,7 +91,17 @@ export function buildSubjectHubs(catalogue: PublicCatalogue) {
     hubByProgram.set(program.id, hub);
   }
 
-  return { hubs, hubByProgram, programs };
+  for (const hub of hubs) {
+    const general = catalogue.generalProgramIds.has(hub.id)
+      ? catalogue.programs.find((program) => program.id === hub.id)
+      : undefined;
+    hub.programLinks = general ? subjectProgramPages(catalogue, general).size : hub.programs.length;
+  }
+  // Hubs with no programme links stay reachable (noindex,follow) but are not
+  // listed in the index, the sitemap, the homepage or related-programme blocks.
+  const publishedHubs = hubs.filter((hub) => hub.programLinks > 0);
+
+  return { hubs, publishedHubs, hubByProgram, programs };
 }
 
 const loadCatalogueLinks = cache(async () => {
@@ -87,9 +113,9 @@ export const HOME_SUBJECT_COUNT = 12;
 export const HOME_INSTITUTION_COUNT = 8;
 
 export async function getPublicBrowseLinks() {
-  const { catalogue, hubs, programs } = await loadCatalogueLinks();
+  const { catalogue, publishedHubs, programs } = await loadCatalogueLinks();
   return {
-    hubs,
+    hubs: publishedHubs,
     institutions: catalogue.institutions
       .filter(
         (institution) =>
@@ -100,10 +126,10 @@ export async function getPublicBrowseLinks() {
   };
 }
 
-/** Every subject hub, alphabetical, for the /programs index. */
+/** Every published subject hub, alphabetical, for the /programs index. */
 export async function getPublicSubjectIndex(): Promise<SubjectHub[]> {
-  const { hubs } = await loadCatalogueLinks();
-  return [...hubs].sort((a, b) => a.name.localeCompare(b.name, 'he'));
+  const { publishedHubs } = await loadCatalogueLinks();
+  return [...publishedHubs].sort((a, b) => a.name.localeCompare(b.name, 'he'));
 }
 
 export async function getPublicSubjectHub(id: string) {
