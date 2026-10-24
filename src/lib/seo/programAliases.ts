@@ -18,6 +18,7 @@ export const PROGRAM_RETIREMENT_REDIRECTS: Readonly<Record<string, string>> = {
   rubin_graphic_design: '/programs/rubin_classical',
   spieldocs_graphic_design: '/institutions/spieldocs',
   samspiegel_documentary: '/institutions/spieldocs',
+  documentary: '/programs/cinema',
 };
 
 export function canonicalProgramId(id: string): string {

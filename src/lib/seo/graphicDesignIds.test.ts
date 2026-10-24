@@ -33,6 +33,7 @@ const redirects = [
   ['rubin_graphic_design', '/programs/rubin_classical'],
   ['spieldocs_graphic_design', '/institutions/spieldocs'],
   ['samspiegel_documentary', '/institutions/spieldocs'],
+  ['documentary', '/programs/cinema'],
 ] as const;
 const corrected = [
   ['jerusalem_academy_dance', 'jerusalem_academy', 'תואר ראשון במחול', 'B.Dance'],
@@ -65,7 +66,17 @@ describe('verified dance, TAU music and Sam Spiegel identities', () => {
     },
   );
 
-  it('removes the three retired records from the active source catalogue', () => {
+  it('keeps cinema as a published hub with a real programme for documentary visitors', async () => {
+    const catalogue = await loadPublicCatalogue();
+    const cinema = buildSubjectHubs(catalogue).publishedHubs.find((hub) => hub.id === 'cinema');
+    expect(cinema?.programs.map((program) => program.id)).toContain('samspiegel_cinema');
+    expect(cinema?.programLinks).toBeGreaterThan(0);
+    expect((await sitemap()).map((row) => row.url)).toContain(
+      'https://findmyway.co.il/programs/cinema',
+    );
+  });
+
+  it('removes the retired records and documentary hub from the active source catalogue', () => {
     for (const [id] of redirects) expect(allPrograms.map((p) => p.id)).not.toContain(id);
     expect(allPrograms.filter((p) => p.institutionId === 'rubin').map((p) => p.id)).toEqual([
       'rubin_classical',

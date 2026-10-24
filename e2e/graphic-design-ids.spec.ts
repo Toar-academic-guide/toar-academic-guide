@@ -5,6 +5,7 @@ for (const [oldId, destination] of [
   ['rubin_graphic_design', '/programs/rubin_classical'],
   ['spieldocs_graphic_design', '/institutions/spieldocs'],
   ['samspiegel_documentary', '/institutions/spieldocs'],
+  ['documentary', '/programs/cinema'],
 ]) {
   test(`${oldId} returns 308`, async ({ request }) => {
     const response = await request.get(`/programs/${oldId}`, { maxRedirects: 0 });
@@ -12,6 +13,29 @@ for (const [oldId, destination] of [
     expect(new URL(response.headers().location, response.url()).pathname).toBe(destination);
   });
 }
+
+test('sitemap omits retired programme and hub URLs and cinema still has a programme', async ({
+  request,
+  page,
+}) => {
+  const response = await request.get('/sitemap.xml');
+  expect(response.status()).toBe(200);
+  const xml = await response.text();
+  for (const id of [
+    'jerusalem_academy_graphic_design',
+    'rubin_graphic_design',
+    'spieldocs_graphic_design',
+    'samspiegel_documentary',
+    'documentary',
+  ]) {
+    expect(xml).not.toContain(`<loc>https://findmyway.co.il/programs/${id}</loc>`);
+  }
+  expect(xml).toContain('<loc>https://findmyway.co.il/programs/cinema</loc>');
+  const cinema = await page.goto('/programs/cinema');
+  expect(cinema?.status()).toBe(200);
+  await expect(page.locator('main[data-page-kind="subject"]')).toBeVisible();
+  await expect(page.locator('main a[href="/programs/samspiegel_cinema"]')).toBeVisible();
+});
 
 for (const width of [390, 1440]) {
   test(`correct programme content and sources at ${width}px`, async ({ page }) => {
