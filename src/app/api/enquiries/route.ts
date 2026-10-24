@@ -3,7 +3,7 @@ import { after } from 'next/server';
 import { z } from 'zod';
 import { ENQUIRY_CONSENT } from '@/lib/enquiries';
 import { getPostHogClient } from '@/lib/posthog-server';
-import { listCatalogueInstitutions, listCataloguePrograms } from '@/server/catalogue/queries';
+import { getEnquiryTarget } from '@/lib/enquiryTarget';
 
 export const runtime = 'nodejs';
 
@@ -57,17 +57,12 @@ export async function POST(request: Request) {
     if (input.programId === 'psychometric-preparation' && input.institutionId === '') {
       programName = 'הכנה לפסיכומטרי';
     } else {
-      const [programs, institutions] = await Promise.all([
-        listCataloguePrograms(),
-        listCatalogueInstitutions(),
-      ]);
-      const program = programs.data.find((entry) => entry.id === input.programId);
-      const institution = institutions.data.find((entry) => entry.id === input.institutionId);
-      if (!program || !institution || !program.linkedInstitutionIds.includes(institution.id)) {
+      const target = await getEnquiryTarget(input.programId, input.institutionId);
+      if (!target) {
         return failure(400, 'יש לבחור מסלול ומוסד מהרשימה.');
       }
-      programName = program.name;
-      institutionName = institution.name;
+      programName = target.program.name;
+      institutionName = target.institution.name;
     }
     const now = new Date().toISOString();
     const columns = {
