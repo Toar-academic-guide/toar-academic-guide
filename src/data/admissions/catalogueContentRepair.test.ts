@@ -198,9 +198,11 @@ describe('verified catalogue content repair', () => {
       (item) => item.programId === id && item.institutionId === 'biu',
     )!;
     expect(row).toBeDefined();
-    expect(row.checkedAt).toBe('2026-10-23');
+    expect(row.checkedAt).toBe(id === 'biu_law' ? '2026-10-25' : '2026-10-23');
     expect(row.sourceUrl).toBe(
-      'https://www.biu.ac.il/registration-and-admission/information/acceptance-no-psychometry',
+      id === 'biu_law'
+        ? 'https://shoham.biu.ac.il/kabala/'
+        : 'https://www.biu.ac.il/registration-and-admission/information/acceptance-no-psychometry',
     );
     const program = allPrograms.find((item) => item.id === id)!;
     const notes = program.institutionDetails!.find((detail) =>

@@ -18,7 +18,7 @@ import { selectRequirementTiles } from './requirementTiles';
 
 const programs = getStaticCataloguePrograms();
 const now = new Date('2026-10-23T12:00:00Z');
-function select(id: string, institutionId: string) {
+function select(id: string, institutionId: string, evaluationDate = now) {
   const program = programs.find((p) => p.id === id)!;
   const detail = program.institutionDetails?.find(
     (d) => d.institutionName === INSTITUTION_BY_ID[institutionId as InstitutionId]?.name,
@@ -31,7 +31,7 @@ function select(id: string, institutionId: string) {
       program.admissionRequirements,
       id,
     ),
-    now,
+    now: evaluationDate,
   });
 }
 
@@ -99,7 +99,9 @@ describe('verified requirement tiles', () => {
     );
     expect(requirements.join(' ')).toContain(`ממוצע בגרות ${floor} לפחות`);
     expect(requirements.join(' ')).toContain('סיווג אנגלית 85 לפחות');
-    expect(select(id, 'biu')).toEqual({ reason: 'unclear_semantics' });
+    expect(select(id, 'biu', new Date('2026-10-25T12:00:00Z'))).toEqual({
+      reason: 'unclear_semantics',
+    });
   });
 
   it('uses alternatives only for explicit routes and keeps cumulative gates together', () => {

@@ -1,11 +1,37 @@
 import { expect, test } from '@playwright/test';
 
-const cases = [
+const cases: {
+  id: string;
+  program: string;
+  bagrut: number;
+  psychometric?: number;
+  subjects: { subjectId: string; units: number; grade: number }[];
+  decision: string;
+  kind: string;
+}[] = [
   {
     id: 'law-boundary',
     program: 'biu_law',
     bagrut: 112,
     subjects: [{ subjectId: 'english', units: 5, grade: 90 }],
+    decision: 'pending',
+    kind: 'estimated',
+  },
+  {
+    id: 'law-combined-calculator',
+    program: 'biu_law',
+    bagrut: 105,
+    psychometric: 650,
+    subjects: [],
+    decision: 'unknown',
+    kind: 'estimated',
+  },
+  {
+    id: 'law-psychometric',
+    program: 'biu_law',
+    bagrut: 95,
+    psychometric: 730,
+    subjects: [],
     decision: 'pending',
     kind: 'estimated',
   },
@@ -64,7 +90,7 @@ for (const width of [390, 1440]) {
                   subjectRecord: { schemaVersion: 1, sector: 'jewish', subjects: c.subjects },
                 }),
               },
-              psychometric: { english: 85 },
+              psychometric: { overall: c.psychometric, english: 85 },
             },
           }),
         );
