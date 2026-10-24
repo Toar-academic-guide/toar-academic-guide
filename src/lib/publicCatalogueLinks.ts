@@ -1,9 +1,14 @@
 import 'server-only';
 import { cache } from 'react';
 import { loadPublicCatalogue, subjectProgramPages } from '@/lib/publicCataloguePages';
-import { canonicalProgramId, PROGRAM_CANONICAL_ALIASES } from '@/lib/seo/programAliases';
+import {
+  canonicalProgramId,
+  PROGRAM_CANONICAL_ALIASES,
+  PROGRAM_RETIREMENT_REDIRECTS,
+} from '@/lib/seo/programAliases';
 import { institutionProgramName } from '@/lib/institutionProgramName';
 import type { CatalogueProgram } from '@/types/catalogue';
+import { getInstitutionDirectoryItems } from '@/data/institutionDirectory';
 
 export interface SubjectHub {
   id: string;
@@ -46,7 +51,7 @@ export function buildSubjectHubs(catalogue: PublicCatalogue) {
   const usedIds = new Set(catalogue.programs.map((program) => program.id));
   // Subjects whose slug is already taken by a different subject. Their only
   // possible slug would be built from one institution's programme id (e.g.
-  // `rubin_graphic_design_subject` for "מוזיקה"), so they get no public hub.
+  // `<programme>_subject`), so they get no public hub.
   const unpublishedNames = new Set<string>();
 
   for (const program of programs) {
@@ -55,7 +60,7 @@ export function buildSubjectHubs(catalogue: PublicCatalogue) {
     const name = institution ? institutionProgramName(program, institution) : program.name;
     const descriptiveId =
       Object.entries(PROGRAM_CANONICAL_ALIASES).find(
-        ([, canonical]) => canonical === program.id,
+        ([alias, canonical]) => canonical === program.id && !PROGRAM_RETIREMENT_REDIRECTS[alias],
       )?.[0] ?? program.id;
     const prefix = `${program.institutionId}_`;
     const subjectId = descriptiveId.startsWith(prefix)
@@ -112,17 +117,51 @@ const loadCatalogueLinks = cache(async () => {
 export const HOME_SUBJECT_COUNT = 12;
 export const HOME_INSTITUTION_COUNT = 8;
 
+export function rankDegreeInstitutions(
+  catalogue: Pick<PublicCatalogue, 'institutions' | 'programs' | 'generalProgramIds'>,
+) {
+  const directory = getInstitutionDirectoryItems();
+  const counts = new Map<string, Set<string>>();
+  for (const program of catalogue.programs) {
+    if (
+      program.isListed === false ||
+      program.id.startsWith('mon_') ||
+      canonicalProgramId(program.id) !== program.id ||
+      catalogue.generalProgramIds.has(program.id)
+    )
+      continue;
+    for (const id of program.linkedInstitutionIds) {
+      const ids = counts.get(id) ?? new Set<string>();
+      ids.add(program.id);
+      counts.set(id, ids);
+    }
+  }
+  return catalogue.institutions
+    .map((institution) => ({
+      institution,
+      count: counts.get(institution.id)?.size ?? 0,
+      degree: directory.some(
+        (item) => item.id === institution.id && item.credentials.includes('academic_degree'),
+      ),
+      university: directory.some(
+        (item) => item.id === institution.id && item.categories.includes('universities'),
+      ),
+    }))
+    .filter((row) => row.degree && row.count > 0 && !row.institution.id.startsWith('mon_'))
+    .sort(
+      (a, b) =>
+        Number(b.university) - Number(a.university) ||
+        b.count - a.count ||
+        a.institution.id.localeCompare(b.institution.id),
+    )
+    .map((row) => row.institution);
+}
+
 export async function getPublicBrowseLinks() {
-  const { catalogue, publishedHubs, programs } = await loadCatalogueLinks();
+  const { catalogue, publishedHubs } = await loadCatalogueLinks();
   return {
     hubs: publishedHubs,
-    institutions: catalogue.institutions
-      .filter(
-        (institution) =>
-          !institution.id.startsWith('mon_') &&
-          programs.some((program) => program.linkedInstitutionIds.includes(institution.id)),
-      )
-      .slice(0, HOME_INSTITUTION_COUNT),
+    institutions: rankDegreeInstitutions(catalogue).slice(0, HOME_INSTITUTION_COUNT),
   };
 }
 

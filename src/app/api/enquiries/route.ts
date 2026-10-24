@@ -9,7 +9,7 @@ import { saveEnquiryBackup } from '@/server/enquiries/repository';
 import { sendEnquiryToMonday } from '@/server/enquiries/monday';
 import { notifyEnquiry } from '@/server/enquiries/notifications';
 import { getPostHogClient } from '@/lib/posthog-server';
-import { listCatalogueInstitutions, listCataloguePrograms } from '@/server/catalogue/queries';
+import { getEnquiryTarget } from '@/lib/enquiryTarget';
 
 export const runtime = 'nodejs';
 
@@ -52,15 +52,9 @@ async function resolveEnquiry(input: z.infer<typeof inputSchema>): Promise<Enqui
     programName = 'הכנה לפסיכומטרי';
     if (input.evaluationInput) return null;
   } else {
-    const [programs, institutions] = await Promise.all([
-      listCataloguePrograms(),
-      listCatalogueInstitutions(),
-    ]);
-    const program = programs.data.find((entry) => entry.id === input.programId);
-    const institution = institutions.data.find((entry) => entry.id === input.institutionId);
-    if (!program || !institution || !program.linkedInstitutionIds.includes(institution.id)) {
-      return null;
-    }
+    const target = await getEnquiryTarget(input.programId, input.institutionId);
+    if (!target) return null;
+    const { program, institution } = target;
     programName = program.name;
     institutionName = institution.name;
     if (input.evaluationInput) {
@@ -68,15 +62,11 @@ async function resolveEnquiry(input: z.infer<typeof inputSchema>): Promise<Enqui
       if (degreeId !== program.id && degreeId !== canonicalProgramId(program.id)) {
         return null;
       }
-      const evaluationProgram = programs.data.find((entry) => entry.id === degreeId);
-      if (!evaluationProgram?.linkedInstitutionIds.includes(institution.id)) {
-        return null;
-      }
       try {
         const report = await evaluateAdmissionsForProgram({
           input: input.evaluationInput,
-          program: evaluationProgram,
-          institutions: institutions.data,
+          program,
+          institutions: [institution],
         });
         const decision = report.results.find(
           (row) => row.linkedInstitutionId === institution.id,

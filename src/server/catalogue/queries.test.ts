@@ -325,3 +325,67 @@ describe('catalogue queries', () => {
     expect(hoistedMocks.getDb).toHaveBeenCalledTimes(2);
   });
 });
+
+describe('graphic-design identity repairs across the database cutover', () => {
+  beforeEach(() => {
+    hoistedMocks.getStaticCataloguePrograms.mockClear();
+    mockEnv = { mode: 'database', hasDatabaseUrl: true, isProduction: true };
+    resetDatabaseCatalogueSnapshotCache();
+  });
+
+  it.each(['before', 'during', 'after', 'rolled_back'] as const)(
+    'publishes one dance row and one TAU music row %s the packet',
+    async (state) => {
+      const dataset = createDatabaseBackedDataset();
+      const affected = [
+        ['jerusalem_academy_graphic_design', 'jerusalem_academy', 'מוזיקה ומחול'],
+        ['rubin_graphic_design', 'rubin', 'מוזיקה'],
+        ['spieldocs_graphic_design', 'spieldocs', 'קולנוע ותסריטאות'],
+        ['samspiegel_documentary', 'spieldocs', 'קולנוע דוקומנטרי'],
+        ['rubin_classical', 'rubin', 'מוזיקה קלאסית – ביצוע'],
+      ];
+      if (state !== 'before')
+        affected.push(['jerusalem_academy_dance', 'jerusalem_academy', 'תואר ראשון במחול']);
+      dataset.programs = affected.map(([id, institutionId, name]) => ({
+        ...dataset.programs[0],
+        id,
+        institutionId,
+        name,
+        institutionName:
+          institutionId === 'rubin'
+            ? 'בית הספר למוזיקה ע"ש בוכמן-מהטה – אוניברסיטת תל אביב'
+            : institutionId === 'jerusalem_academy'
+              ? 'האקדמיה למוזיקה ולמחול ירושלים'
+              : 'בית הספר לקולנוע ולטלוויזיה ע"ש סם שפיגל',
+        isListed:
+          state === 'rolled_back'
+            ? id !== 'jerusalem_academy_dance'
+            : state !== 'after' || !id.endsWith('graphic_design'),
+      }));
+      dataset.programInstitutions = dataset.programs.map((p) => ({
+        programId: p.id,
+        institutionId: p.institutionId,
+      }));
+      const { db } = createMockDb(dataset);
+      hoistedMocks.getDb.mockReturnValue(db);
+      const result = await listCataloguePrograms();
+      expect(result.meta.catalogueSource).toBe('database');
+      expect(result.data.map((p) => p.id).sort()).toEqual([
+        'jerusalem_academy_dance',
+        'rubin_classical',
+      ]);
+      expect(result.data.find((p) => p.id === 'jerusalem_academy_dance')).toMatchObject({
+        name: 'תואר ראשון במחול',
+        isListed: true,
+        awardedCredential: 'B.Dance',
+        institutionDetails: [expect.objectContaining({ durationYears: 4 })],
+      });
+      expect(result.data.find((p) => p.id === 'rubin_classical')).toMatchObject({
+        name: 'תואר ראשון במוזיקה',
+        awardedCredential: 'B.Mus.',
+        institutionDetails: [expect.objectContaining({ durationYears: 4 })],
+      });
+      expect(hoistedMocks.getStaticCataloguePrograms).not.toHaveBeenCalled();
+    },
+  );
+});
