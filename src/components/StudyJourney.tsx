@@ -181,7 +181,13 @@ function Chips<T extends string>({
   );
 }
 
-export default function StudyJourney({ initialStep = 'home' }: { initialStep?: Step }) {
+export default function StudyJourney({
+  initialStep = 'home',
+  browse,
+}: {
+  initialStep?: Step;
+  browse?: ReactNode;
+}) {
   const auth = useAuth();
   const router = useRouter();
   const {
@@ -1664,6 +1670,7 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
             )}
           </section>
         )}
+        {step === 'home' && browse}
       </main>
     </WayPageShell>
   );
