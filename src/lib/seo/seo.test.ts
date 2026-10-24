@@ -655,14 +655,14 @@ describe('structured data', () => {
     'haifa_psychology',
   ];
 
-  it('allows FAQPage for exactly the 34 approved programs', async () => {
+  it('allows FAQPage for exactly the 33 approved programs', async () => {
     const data = (await getPublicProgramPageData('huji_law'))!;
     const sources = await getPublicProgramRequirementSources(data);
     const candidateIds = new Set([...programs.map(({ id }) => id), ...faqProgramIds]);
     const allowedIds = [...candidateIds].filter((id) =>
       programFaqPageLd({ ...data, program: { ...data.program, id } }, sources),
     );
-    expect(allowedIds).toHaveLength(34);
+    expect(allowedIds).toHaveLength(33);
     expect(allowedIds.sort()).toEqual([...faqProgramIds].sort());
   });
 
