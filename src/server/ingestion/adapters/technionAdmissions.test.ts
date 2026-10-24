@@ -52,7 +52,7 @@ describe('runTechnionAdmissionsProof', () => {
   it('does not mistake Landscape Architecture for Architecture in the cutoff table', () => {
     expect(
       parseTechnionOfficialThreshold(
-        '<tr><td class="column-1">ארכיטקטורה נוף</td><td class="column-2">80</td></tr><tr><td class="column-1">ארכיטקטורה*</td><td class="column-2">85</td></tr>',
+        '<table id="tablepress-485"><tr><td class="column-1">ארכיטקטורה נוף</td><td class="column-2">80</td></tr><tr><td class="column-1">ארכיטקטורה*</td><td class="column-2">85</td></tr></table>',
         'architecture',
       ),
     ).toBe(85);
@@ -111,10 +111,13 @@ describe('runTechnionAdmissionsProof', () => {
         }),
       )
       .mockResolvedValueOnce(
-        new Response('<tr><td class="column-1">מדעי המחשב</td><td class="column-2">91</td></tr>', {
-          status: 200,
-          headers: { 'content-type': 'text/html' },
-        }),
+        new Response(
+          '<table id="tablepress-485"><tr><td class="column-1">מדעי המחשב</td><td class="column-2">91</td></tr></table>',
+          {
+            status: 200,
+            headers: { 'content-type': 'text/html' },
+          },
+        ),
       );
 
     const proof = await runTechnionAdmissionsProof({

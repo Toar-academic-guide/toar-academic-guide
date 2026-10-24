@@ -55,6 +55,7 @@ import ProgramShareButton from './ProgramShareButton';
 import AdmissionRequirements from './AdmissionRequirements';
 import RequirementTiles from './RequirementTiles';
 import AdmissionConditions from './AdmissionConditions';
+import TechnionThresholdNotice from './TechnionThresholdNotice';
 import { acceptedManualGateFootnote } from '@/lib/acceptedManualGateFootnote';
 import { isBatchCUnsupportedProgramId } from '@/data/admissions/batchCUnsupportedProgramIds';
 import { DANON_PROGRAM_URLS } from '@/data/admissions/danon';
@@ -685,6 +686,7 @@ export default function StudyJourney({
                 : row.fieldName}
           </button>
           <span className={`journey-status status-${status.group}`}>{status.label}</span>
+          <TechnionThresholdNotice programId={row.program.id} institutionId={row.institution.id} />
         </div>
         <div className="journey-row-actions">
           <button className="journey-contact" onClick={() => selectRow(row, 'inquiry')}>
@@ -1365,6 +1367,12 @@ export default function StudyJourney({
                     <AdmissionConditions conditions={activeRow.result?.additionalConditions} />
                   )}
                   <h2>תנאי קבלה</h2>
+                  {isBatchCUnsupported && (
+                    <TechnionThresholdNotice
+                      programId={activeRow.program.id}
+                      institutionId={activeRow.institution.id}
+                    />
+                  )}
                   {isBatchCUnsupported ? (
                     <p>{activeRow.result?.nextAction}</p>
                   ) : (

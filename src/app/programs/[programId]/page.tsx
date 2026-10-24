@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import WayPageShell from '@/components/WayPageShell';
 import AdmissionRequirements from '@/components/AdmissionRequirements';
+import TechnionThresholdNotice from '@/components/TechnionThresholdNotice';
 import RequirementTiles from '@/components/RequirementTiles';
 
 import {
@@ -159,6 +160,12 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                     <div key={institution.id}>
                       {institutions.length > 1 && (
                         <h3 className="font-semibold">{institution.name}</h3>
+                      )}
+                      {source.requirements.length === 0 && (
+                        <TechnionThresholdNotice
+                          programId={program.id}
+                          institutionId={institution.id}
+                        />
                       )}
                       {source.requirements.length > 0 ? (
                         <>

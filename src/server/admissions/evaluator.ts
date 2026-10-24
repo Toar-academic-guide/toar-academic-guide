@@ -46,6 +46,7 @@ import { resolveBguPsychologyScores } from './bguPsychologyPolicy';
 import { runBguPsychologyProof } from '@/server/ingestion/adapters/bguPsychology';
 import { BGU_PSYCHOLOGY_SOURCE_URL } from '@/data/admissions/bguPsychologyVerification';
 import 'server-only';
+import { TECHNION_THRESHOLD_URL } from '@/data/admissions/technionThresholds';
 
 import { catalogueAdmissionRequirements, catalogueDescription } from '@/lib/catalogueDisplayText';
 import { getCalculatorInstitutionsFromCatalogue } from '@/lib/calculatorInstitutions';
@@ -268,6 +269,22 @@ async function evaluateCapabilityEntries(args: {
 
     if (isBiuPublishedRoutePair(program.id, institution.id)) {
       results[index] = evaluateBiuPublishedRoutes({ input, institution });
+      continue;
+    }
+
+    if (institution.id === 'technion' && ['medicine', 'technion_medicine'].includes(program.id)) {
+      results[index] = {
+        institution: publicInstitutionShape(institution),
+        linkedInstitutionId: institution.id,
+        capability: 'requirements_only',
+        kind: 'requirements_only',
+        decision: 'unknown',
+        confidence: 'low',
+        sourceLabel: 'תנאי קבלה',
+        explanation: 'אי אפשר לקבוע התאמה לרפואה לפי הסכם בלבד.',
+        nextAction: 'בדקו את תנאי הקבלה ואת הליך המיון לרפואה באתר הטכניון.',
+        officialUrls: [TECHNION_THRESHOLD_URL],
+      };
       continue;
     }
 

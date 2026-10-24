@@ -23,6 +23,7 @@ import {
   getTechnionProgramVerificationMetadata,
   type TechnionProgramVerificationMetadata,
 } from './technionProgramVerification';
+import { TECHNION_THRESHOLD_URL } from './technionThresholds';
 import {
   getHaifaProgramVerificationMetadata,
   type HaifaProgramVerificationMetadata,
@@ -307,7 +308,17 @@ export const FORMULA_BACKED_VERIFICATION_LEDGER: FormulaPairVerificationLedgerEn
                   ? getHaifaProgramVerificationMetadata(pairId)
                   : undefined;
 
-      return verifiedProgram && !WITHHELD_PAIR_EVIDENCE[pairId]
+      const withheldEvidence =
+        institutionId === 'technion' &&
+        ['medicine__technion', 'technion_medicine__technion'].includes(pairId)
+          ? {
+              url: TECHNION_THRESHOLD_URL,
+              reason:
+                'The winter תשפ״ז table publishes 92.000 only as an estimated MOR-invitation threshold. It does not authorize an admission verdict or a below-threshold verdict at any score; withheld pending Jorje A1.',
+            }
+          : WITHHELD_PAIR_EVIDENCE[pairId];
+
+      return verifiedProgram && !withheldEvidence
         ? verifiedProgramEntry(verifiedProgram)
         : {
             pairId,
@@ -315,7 +326,7 @@ export const FORMULA_BACKED_VERIFICATION_LEDGER: FormulaPairVerificationLedgerEn
             admissionCycle: '2026-2027' as const,
             state: 'withheld' as const,
             officialProgramId: null,
-            sourceUrl: WITHHELD_PAIR_EVIDENCE[pairId]?.url ?? source.url,
+            sourceUrl: withheldEvidence?.url ?? source.url,
             formulaFamily: null,
             fixtureEvidence: {
               eligible: false,
@@ -328,7 +339,7 @@ export const FORMULA_BACKED_VERIFICATION_LEDGER: FormulaPairVerificationLedgerEn
               comparedAt: null,
               sourceFingerprint: null,
             },
-            reason: WITHHELD_PAIR_EVIDENCE[pairId]?.reason ?? source.reason,
+            reason: withheldEvidence?.reason ?? source.reason,
           };
     });
   });

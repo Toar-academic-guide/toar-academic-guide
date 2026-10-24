@@ -300,11 +300,18 @@ export function parseTechnionOfficialThreshold(
     ? programId.slice('technion_'.length)
     : programId;
   const officialTitle = TECHNION_OFFICIAL_TITLE_BY_PROGRAM_ID[normalizedProgramId];
-  if (!officialTitle) return undefined;
+  // Medicine's published number estimates MOR invitations, not admission eligibility.
+  if (!officialTitle || normalizedProgramId === 'medicine') return undefined;
+
+  // The spring table precedes winter in the document. Never use it as a cutoff.
+  const winterTable = html.match(
+    /<table\b[^>]*\bid=["']tablepress-485["'][^>]*>[\s\S]*?<\/table>/i,
+  )?.[0];
+  if (!winterTable) return undefined;
 
   const escapedTitle = officialTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const titleSuffix = normalizedProgramId === 'architecture' ? '\\s*\\*?\\s*</td>' : '';
-  const row = html.match(
+  const titleSuffix = '\\s*\\*?\\s*</td>';
+  const row = winterTable.match(
     new RegExp(
       `<tr[^>]*>\\s*<td[^>]*column-1[^>]*>\\s*${escapedTitle}${titleSuffix}[\\s\\S]*?<td[^>]*column-2[^>]*>\\s*([\\d.]+)`,
     ),
