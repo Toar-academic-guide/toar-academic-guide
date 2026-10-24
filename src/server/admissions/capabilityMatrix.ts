@@ -959,7 +959,17 @@ export function buildAdmissionsCapabilityMatrix(args: {
       const deferred = args.deferredRequiredInputs?.get(institutionId) ?? [];
       const missingRequiredInputs = requiredInputsMissingFrom(
         input,
-        exactTarget.requiredInputs.filter((id) => !deferred.includes(id)),
+        exactTarget.requiredInputs.filter(
+          (id) =>
+            !deferred.includes(id) &&
+            !(
+              id === 'bagrut_subject_record' &&
+              exactTarget.sourceTarget.adapterId === 'bgu' &&
+              ['cs', 'bgu_cs', 'datascience', 'bgu_datascience'].includes(program.id) &&
+              input?.mathUnits !== undefined &&
+              input.mathGrade !== undefined
+            ),
+        ),
       );
       if (missingRequiredInputs.length > 0) {
         return {

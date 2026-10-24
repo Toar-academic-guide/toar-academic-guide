@@ -1,3 +1,5 @@
+import psychologyWalkthroughOfficial from '../../../docs/admissions-verification/2026-10-25-bgu-psychology-live.json';
+import { BGU_COMPUTER_SCIENCE_RULE_CAPTURE } from '@/data/admissions/bguComputerScienceVerification';
 import { AFEKA_EVALUATOR_IDS, afekaCases } from '@/test/afekaAdmissions';
 import medicineOfficial from '../../../docs/admissions-verification/2026-09-28-huji-medicine-official.json';
 import routingOfficial from '../../../docs/admissions-verification/2026-10-21-calculator-routing.json';
@@ -3902,4 +3904,288 @@ describe('catalogue eligibility safety', () => {
     }
     expect(checkedPairs).toBeGreaterThan(400);
   });
+});
+
+describe('results average normalization regressions', () => {
+  const record = {
+    schemaVersion: 2 as const,
+    sector: 'jewish' as const,
+    certificateType: 'internal' as const,
+    complete: true,
+    subjects: [
+      { subjectId: 'history', units: 2, grade: 100, assessmentKind: 'exam' as const },
+      { subjectId: 'civics', units: 2, grade: 100, assessmentKind: 'exam' as const },
+      { subjectId: 'mathematics', units: 5, grade: 90, assessmentKind: 'exam' as const },
+      { subjectId: 'english', units: 5, grade: 100, assessmentKind: 'exam' as const },
+      { subjectId: 'literature', units: 5, grade: 100, assessmentKind: 'exam' as const },
+      { subjectId: 'bible', units: 2, grade: 100, assessmentKind: 'exam' as const },
+      { subjectId: 'hebrew_expression', units: 2, grade: 100, assessmentKind: 'exam' as const },
+    ],
+  };
+  it('derives an overall estimate so subjects alone do not remove otherwise usable results', async () => {
+    const program = getStaticCataloguePrograms().find((row) => row.id === 'huji_cs')!;
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: program.id,
+        psychometric: 700,
+        extraInputs: { bagrutSubjectRecord: record },
+      },
+      program,
+      institutions: getStaticCatalogueInstitutions(),
+      fetcher: vi.fn<typeof fetch>().mockRejectedValue(new Error('offline')),
+    });
+    const result = report.results.find((row) => row.linkedInstitutionId === 'huji')!;
+    expect(result.requiredInputs ?? []).not.toContain('bagrut_average');
+    expect(result.estimated).toBe(true);
+    expect(result.estimationReason).toBeTruthy();
+  });
+  it.each(['bgu_cs', 'tau_cs'])(
+    'derives the %s institutional average from a complete record',
+    async (degreeId) => {
+      const program = degreeId === 'bgu_cs' ? bguCs : tauCs;
+      const report = await evaluateAdmissionsForProgram({
+        input: {
+          degreeId,
+          bagrut: 110,
+          psychometric: 700,
+          extraInputs: {
+            bagrutSubjectRecord: record,
+            psychometricMath: 140,
+            psychometricVerbal: 130,
+            psychometricEnglish: 130,
+          },
+        },
+        program,
+        institutions,
+        fetcher: vi.fn<typeof fetch>().mockRejectedValue(new Error('offline')),
+      });
+      expect(report.results[0].requiredInputs ?? []).not.toContain(
+        degreeId === 'bgu_cs' ? 'bgu_bagrut_average' : 'tau_bagrut_average',
+      );
+      expect(report.results[0].estimated).not.toBe(true);
+    },
+  );
+  it('marks an average-only proxy explicitly without manufacturing a subject record', async () => {
+    const report = await evaluateAdmissionsForProgram({
+      input: { degreeId: 'tau_cs', bagrut: 110, psychometric: 700 },
+      program: tauCs,
+      institutions,
+    });
+    expect(report.results[0]).toMatchObject({
+      estimated: true,
+      requiredInputs: ['bagrut_subject_record'],
+    });
+    expect(report.results[0].estimationReason).toContain('110');
+  });
+  it('accepts paired BGU math inputs through the adapter without requiring a certificate record', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response(JSON.stringify(BGU_COMPUTER_SCIENCE_RULE_CAPTURE)))
+      .mockResolvedValueOnce(
+        new Response(
+          '<script>parent.main.document.getElementById("on_c_val").innerHTML = 875;</script>',
+        ),
+      );
+    const { bagrutSubjectRecord: _record, ...extraInputs } = csInputs;
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'bgu_cs',
+        bagrut: 110,
+        psychometric: 760,
+        extraInputs: { ...extraInputs, mathUnits: 5, mathGrade: 85 },
+      },
+      program: bguCs,
+      institutions,
+      fetcher,
+    });
+    expect(report.results[0]).toMatchObject({ kind: 'exact', score: 875 });
+    expect(fetcher).toHaveBeenCalledTimes(2);
+  });
+  it.each([
+    [5, 79],
+    [4, 89],
+    [3, 100],
+  ])(
+    'keeps the published BGU math floor for paired inputs %s × %s',
+    async (mathUnits, mathGrade) => {
+      const fetcher = vi.fn<typeof fetch>();
+      const { bagrutSubjectRecord: _record, ...extraInputs } = csInputs;
+      const report = await evaluateAdmissionsForProgram({
+        input: {
+          degreeId: 'bgu_cs',
+          bagrut: 110,
+          psychometric: 760,
+          extraInputs: { ...extraInputs, mathUnits, mathGrade },
+        },
+        program: bguCs,
+        institutions,
+        fetcher,
+      });
+      expect(report.results[0]).toMatchObject({ kind: 'exact', decision: 'below' });
+      expect(fetcher).not.toHaveBeenCalled();
+    },
+  );
+  it('defaults Haifa years while retaining qualification questions', async () => {
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'haifa_cs',
+        bagrut: 105,
+        psychometric: 650,
+        extraInputs: {
+          psychometricMath: 130,
+          psychometricVerbal: 130,
+          psychometricEnglish: 130,
+          mathUnits: 5,
+          mathGrade: 90,
+        },
+      },
+      program: haifaCs,
+      institutions,
+    });
+    expect(report.results[0]).toMatchObject({ estimated: true });
+    expect(report.results[0].requiredInputs).toContain('haifa_admission_qualification');
+    expect(report.results[0].requiredInputs).not.toContain('haifa_bagrut_year');
+  });
+  it('does not leak the HIT implementation note after math gates are supplied', async () => {
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'hit_cs',
+        bagrut: 110,
+        psychometric: 700,
+        extraInputs: { mathUnits: 5, mathGrade: 90 },
+      },
+      program: { ...hitEngineering, admissionType: 'requirements', thresholds: undefined },
+      institutions: institutions.map((row) =>
+        row.id === 'hit'
+          ? {
+              ...row,
+              calculatorConfig: { formulaType: 'minimum_floors', scaleDescription: 'סף קבלה HIT' },
+            }
+          : row,
+      ),
+    });
+    expect(report.results[0]).toMatchObject({ kind: 'unsupported', decision: 'unknown' });
+    expect(report.results[0].explanation).not.toMatch(/[A-Za-z]/);
+    expect(report.results[0].nextAction).not.toMatch(/[A-Za-z]/);
+  });
+});
+
+describe('BGU psychology production walkthrough regression', () => {
+  it.each([679, 680])('keeps the inclusive psych-only boundary at %s', async (psychometric) => {
+    const program = { ...bguCs, id: 'bgu_psychology' };
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(new Response(JSON.stringify(psychologyWalkthroughOfficial.rulePayload)));
+    const report = await evaluateAdmissionsForProgram({
+      program,
+      institutions,
+      fetcher,
+      input: {
+        degreeId: program.id,
+        bagrut: 112,
+        psychometric,
+        extraInputs: { bguPsychologyRoute: 'psychometric' },
+      },
+    });
+    expect(report.results[0]).toMatchObject({
+      decision: psychometric === 680 ? 'accepted' : 'below',
+      score: psychometric,
+      threshold: 680,
+      scoreLabel: 'פסיכומטרי',
+    });
+    expect(report.results[0].estimated).not.toBe(true);
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([650, 690, 720])(
+    'evaluates bagrut 112 / psychometric %s against the current official rule',
+    async (psychometric) => {
+      const program = { ...bguCs, id: 'bgu_psychology', name: 'פסיכולוגיה' };
+      const fetcher = vi
+        .fn<typeof fetch>()
+        .mockImplementation(
+          async (url) =>
+            new Response(
+              String(url) === psychologyWalkthroughOfficial.rulesUrl
+                ? JSON.stringify(psychologyWalkthroughOfficial.rulePayload)
+                : psychologyWalkthroughOfficial.scoreResponseHtml,
+            ),
+        );
+      const report = await evaluateAdmissionsForProgram({
+        program,
+        institutions,
+        fetcher,
+        input: { degreeId: program.id, bagrut: 112, psychometric },
+      });
+      const result = report.results[0];
+      expect(result.kind).toBe('exact');
+      expect(result.degradationReason).toBeUndefined();
+      expect(result.officialUrls).toContain(psychologyWalkthroughOfficial.rulesUrl);
+      if (psychometric >= 680) {
+        expect(result).toMatchObject({
+          decision: 'accepted',
+          score: psychometric,
+          threshold: 680,
+          scoreLabel: 'פסיכומטרי',
+          scoreAssessment: 'meets_threshold',
+        });
+        expect(result.estimated).not.toBe(true);
+        expect(fetcher).toHaveBeenCalledTimes(1);
+      } else {
+        expect(result).toMatchObject({
+          decision: 'pending',
+          score: 734,
+          estimated: true,
+          scoreLabel: 'סכם',
+          scoreAssessment: 'meets_threshold',
+        });
+        expect(fetcher).toHaveBeenCalledTimes(2);
+      }
+      expect(result.nextAction).toContain('סגורה');
+      expect(result.additionalConditions).toContainEqual(
+        expect.objectContaining({
+          id: 'bgu_language_requirements',
+          status: 'unconfirmed',
+        }),
+      );
+    },
+  );
+});
+
+it('asks for subjects rather than reporting unavailable when the Psychology proxy-score replay fails', async () => {
+  const program = { ...bguCs, id: 'bgu_psychology' };
+  const fetcher = vi
+    .fn<typeof fetch>()
+    .mockResolvedValueOnce(new Response(JSON.stringify(psychologyWalkthroughOfficial.rulePayload)))
+    .mockResolvedValueOnce(new Response('unavailable', { status: 503 }));
+  const report = await evaluateAdmissionsForProgram({
+    program,
+    institutions,
+    fetcher,
+    input: { degreeId: program.id, bagrut: 112, psychometric: 650 },
+  });
+  expect(report.results[0]).toMatchObject({
+    kind: 'needs_input',
+    decision: 'unknown',
+    estimated: true,
+    requiredInputs: ['bagrut_subject_record'],
+  });
+  expect(report.results[0].score).toBeUndefined();
+  expect(report.results[0].explanation).toContain('החישוב הרשמי לא הושלם');
+});
+
+it('keeps an actual Psychology score-service outage distinct when an explicit institutional average exists', async () => {
+  const program = { ...bguCs, id: 'bgu_psychology' };
+  const fetcher = vi
+    .fn<typeof fetch>()
+    .mockResolvedValueOnce(new Response(JSON.stringify(psychologyWalkthroughOfficial.rulePayload)))
+    .mockResolvedValueOnce(new Response('unavailable', { status: 503 }));
+  const report = await evaluateAdmissionsForProgram({
+    program,
+    institutions,
+    fetcher,
+    input: { degreeId: program.id, psychometric: 650, extraInputs: { bguBagrutAverage: 112 } },
+  });
+  expect(report.results[0]).toMatchObject({ kind: 'degraded', decision: 'unknown' });
+  expect(report.results[0].requiredInputs).toBeUndefined();
 });

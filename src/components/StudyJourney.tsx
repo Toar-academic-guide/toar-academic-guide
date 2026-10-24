@@ -1030,7 +1030,12 @@ export default function StudyJourney({
           <JourneyExactGrades
             initialRecord={draft.scores.bagrut?.subjectRecord}
             onComplete={(record) => {
-              patchScores({ bagrut: { subjectRecord: record } });
+              patchScores({
+                bagrut: {
+                  ...draft.scores.bagrut,
+                  subjectRecord: record,
+                },
+              });
               afterGrades();
             }}
           />

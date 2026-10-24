@@ -982,3 +982,31 @@ it('saves and reopens health decimals, false and unknown values without generic 
   );
   expect(screen.getByLabelText(/פיזיותרפיה: תעודת קבלה מוכרת/)).toHaveProperty('value', 'false');
 });
+
+it('allows a subject-only profile to continue without asking for an overall average', async () => {
+  const onComplete = vi.fn().mockResolvedValue(true);
+  render(
+    <AcademicProfileForm
+      onComplete={onComplete}
+      onClearLocalProfileData={vi.fn()}
+      onSkip={vi.fn()}
+      initialScores={{
+        psychometric: { overall: 650 },
+        bagrut: {
+          subjectRecord: {
+            schemaVersion: 1,
+            sector: 'jewish',
+            subjects: [{ subjectId: 'mathematics', units: 5, grade: 90 }],
+          },
+        },
+      }}
+      alertContinuation={{
+        title: 'המשך למעקב',
+        submitLabel: 'שמור והמשך לבדיקת המעקב ←',
+        requiresStructuredBagrut: true,
+      }}
+    />,
+  );
+  fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לבדיקת המעקב ←' }));
+  await waitFor(() => expect(onComplete).toHaveBeenCalled());
+});

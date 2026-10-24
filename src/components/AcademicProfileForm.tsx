@@ -11,6 +11,7 @@ import HaifaQualificationFields, {
 } from './HaifaQualificationFields';
 
 import { useState, useRef } from 'react';
+import { academicBagrutAverage } from '@/lib/admissionsEvaluationProfile';
 import { motion } from 'framer-motion';
 import { Upload, FileText, X, Brain, GraduationCap, Loader2 } from 'lucide-react';
 import type { AcademicScores, UserProfile } from '@/types';
@@ -517,8 +518,8 @@ export default function AcademicProfileForm({
     if (
       alertContinuation?.requiresStructuredBagrut &&
       (!scores.psychometric?.overall ||
-        !scores.bagrut?.weightedAverage ||
-        !scores.bagrut.subjectRecord?.subjects.length)
+        academicBagrutAverage(scores) === undefined ||
+        !scores.bagrut?.subjectRecord?.subjects.length)
     ) {
       setError('כדי להפעיל מעקב צריך להשלים את מקצועות הבגרות והיחידות שלך.');
       setIsSaving(false);

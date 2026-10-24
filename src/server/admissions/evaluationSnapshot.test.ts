@@ -38,6 +38,20 @@ describe('createAdmissionsEvaluationSnapshot', () => {
     expect(first.evaluationDigest).not.toBe(second.evaluationDigest);
   });
 
+  it('keeps estimated-input provenance distinct from an exact-input evaluation', () => {
+    const exact = createAdmissionsEvaluationSnapshot({ input, result: resultFixture() });
+    const estimated = createAdmissionsEvaluationSnapshot({
+      input,
+      result: {
+        ...resultFixture(),
+        estimated: true,
+        estimationReason: 'ממוצע כללי במקום ממוצע מוסדי',
+      },
+    });
+    expect(estimated.inputDigest).toBe(exact.inputDigest);
+    expect(estimated.evaluationDigest).not.toBe(exact.evaluationDigest);
+  });
+
   it('changes the rule fingerprint when a reviewed cutoff changes', () => {
     const before = createAdmissionsEvaluationSnapshot({ input, result: resultFixture() });
     const after = createAdmissionsEvaluationSnapshot({

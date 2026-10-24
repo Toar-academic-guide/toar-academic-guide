@@ -67,6 +67,26 @@ describe('account grades in the homepage journey', () => {
     vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
   });
 
+  it('keeps the entered average when completing subject grades', async () => {
+    render(<StudyJourney initialStep="grades-exact" />);
+    await screen.findByLabelText('סוג תעודה');
+    fireEvent.change(screen.getByLabelText('סוג תעודה'), { target: { value: 'internal' } });
+    const subjects = screen
+      .getAllByLabelText(/^מקצוע /)
+      .filter((element) => element.tagName === 'INPUT') as HTMLInputElement[];
+    for (const label of ['מתמטיקה', 'אנגלית']) {
+      const index = subjects.findIndex((input) => input.value === label) + 1;
+      fireEvent.change(screen.getByLabelText(`יחידות ${index}`), { target: { value: '5' } });
+      fireEvent.change(screen.getByLabelText(`ציון ${index}`), { target: { value: '90' } });
+    }
+    fireEvent.submit(screen.getByRole('button', { name: 'המשך' }).closest('form')!);
+    await waitFor(() => {
+      const draft = JSON.parse(window.sessionStorage.getItem('myway_study_journey_v2')!);
+      expect(draft.scores.bagrut.weightedAverage).toBe(95);
+      expect(draft.scores.bagrut.subjectRecord.subjects).toHaveLength(2);
+    });
+  });
+
   it('shows accepted Ono nursing detail with the interview in a gray footnote', async () => {
     const program = getStaticCataloguePrograms().find((p) => p.id === 'ono_nursing')!;
     const institution = getStaticCatalogueInstitutions().find((i) => i.id === 'ono')!;

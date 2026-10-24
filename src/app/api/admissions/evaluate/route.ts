@@ -1,3 +1,4 @@
+import { overallBagrutAverage } from '@/lib/bagrutSubjectRecord';
 import { colmanBagrutInputsShape } from '@/lib/colmanBagrutInputs';
 import { canonicalProgramId } from '@/lib/seo/programAliases';
 import { tauPhysiotherapyInputsShape } from '@/lib/tauPhysiotherapyInputs';
@@ -29,7 +30,8 @@ const MAX_CONTENT_LENGTH_BYTES = 16_384;
 const admissionsEvaluationSchema = z.object({
   degreeId: z.string().min(1),
   psychometric: z.number().int().min(200).max(800).optional(),
-  bagrut: z.number().min(60).max(120).optional(),
+  bagrut: z.number().min(0).max(120).optional(),
+  bagrutAverageEstimated: z.literal(true).optional(),
   extraInputs: z
     .object({
       bguEngineering: bguEngineeringSchema.optional(),
@@ -81,7 +83,25 @@ const batchSchema = admissionsEvaluationSchema.omit({ degreeId: true }).extend({
     .max(50)
     .refine((ids) => new Set(ids).size === ids.length),
 });
-const requestSchema = z.union([admissionsEvaluationSchema, batchSchema]);
+const requestSchema = z
+  .union([admissionsEvaluationSchema, batchSchema])
+  .superRefine((input, ctx) => {
+    if (input.bagrutAverageEstimated) {
+      const derived = overallBagrutAverage(input.extraInputs?.bagrutSubjectRecord);
+      if (derived === undefined || input.bagrut !== derived)
+        ctx.addIssue({
+          code: 'custom',
+          path: ['bagrut'],
+          message: 'Estimated overall average must match the subject record.',
+        });
+    } else if (input.bagrut !== undefined && input.bagrut < 60) {
+      ctx.addIssue({
+        code: 'custom',
+        path: ['bagrut'],
+        message: 'Entered overall average must be at least 60.',
+      });
+    }
+  });
 
 export async function POST(request: Request) {
   try {
