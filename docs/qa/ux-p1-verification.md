@@ -18,6 +18,23 @@ Each fix has a regression test run against the old implementation first:
 - Programme context: page, query-boundary and journey tests failed because
   the link lost its ID and the journey could not preselect its field.
 
+Samuel's follow-up on `49ffd31` found that the live catalogue lacked the
+broad engineering rows present in the static fixture. The first search test
+therefore missed the missing family chip. New `studyJourney` tests remove
+those broad rows and failed for both `הנדסה` and `הנדסת` before the fix.
+`studyFields` now emits the family from the existing engineering subjects;
+selecting it expands to their field IDs without duplicating programme rows.
+Both home and calculator use this builder. The original E2E file and all
+existing expected values are unchanged. This uses the existing chip markup
+and styles and adds no catalogue programme or database write.
+The unchanged eight E2E cases pass against the local production build. A
+separate browser check supplied the captured live catalogue to the existing
+catalogue GET in the browser: both spellings produced all nine chips on home
+and calculator at 1440/375, with no horizontal overflow; selecting the hub
+enabled continuation. Screenshots were inspected. The follow-up pre-PR
+guard passed with 2,407 targeted tests; build, typecheck, lint and formatting
+passed as well.
+
 ## Official URL check and network policy
 
 Run `npm run check:haifa-urls -- --strict` locally before marking these links

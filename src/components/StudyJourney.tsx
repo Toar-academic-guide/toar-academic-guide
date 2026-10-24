@@ -28,6 +28,7 @@ import {
   INSTITUTION_TYPES,
   studyFields,
   matchesStudyField,
+  selectedStudyFieldIds,
   journeyRows,
   distinctRecommendations,
   toggleLocation,
@@ -324,6 +325,10 @@ export default function StudyJourney({
     void loadCatalogue();
   }, [loadCatalogue]);
   const fields = useMemo(() => studyFields(programs), [programs]);
+  const selectedFieldIds = useMemo(
+    () => selectedStudyFieldIds(fields, draft.fields),
+    [fields, draft.fields],
+  );
   const allRows = useMemo(
     () => journeyRows(studyFields(programs, true), institutions),
     [programs, institutions],
@@ -357,11 +362,11 @@ export default function StudyJourney({
       distinctRecommendations(allRows).filter(
         (row) =>
           row.program.isListed !== false &&
-          (!draft.fields.length || draft.fields.includes(row.fieldId)) &&
+          (!selectedFieldIds.length || selectedFieldIds.includes(row.fieldId)) &&
           matchesLocation(row.institution, draft.locations) &&
           matchesInstitutionType(row.institution, row.program, draft.types),
       ),
-    [allRows, draft.fields, draft.locations, draft.types],
+    [allRows, selectedFieldIds, draft.locations, draft.types],
   );
   const savedRows = useMemo(
     () => allRows.filter((row) => profile.savedProgramIds?.includes(row.program.id)),
@@ -406,13 +411,13 @@ export default function StudyJourney({
     const sets: Partial<Record<JourneyLocation, Set<string>>> = {};
     for (const row of allRows) {
       if (row.program.isListed === false) continue;
-      if (draft.fields.length && !draft.fields.includes(row.fieldId)) continue;
+      if (selectedFieldIds.length && !selectedFieldIds.includes(row.fieldId)) continue;
       if (!matchesInstitutionType(row.institution, row.program, draft.types)) continue;
       for (const area of institutionLocations(row.institution))
         (sets[area] ??= new Set()).add(row.institution.id);
     }
     return Object.fromEntries(Object.entries(sets).map(([area, ids]) => [area, ids.size]));
-  }, [allRows, draft.fields, draft.types]);
+  }, [allRows, selectedFieldIds, draft.types]);
   const patch = (updates: Partial<Draft>) => setDraft((current) => ({ ...current, ...updates }));
   const patchScores = (updates: Partial<AcademicScores>) =>
     patch({ scores: { ...draft.scores, ...updates } });

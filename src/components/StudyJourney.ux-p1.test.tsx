@@ -34,6 +34,7 @@ const programs = getStaticCataloguePrograms().filter((program) => program.type =
 
 describe('UX P1 subject selection', () => {
   beforeEach(() => {
+    state.evaluate.mockReset().mockResolvedValue({ reports: {}, failedDegreeIds: [] });
     state.programs.mockResolvedValue(programs);
     state.institutions.mockResolvedValue(getStaticCatalogueInstitutions());
     window.history.replaceState(null, '', '/app/calculator');
@@ -54,6 +55,33 @@ describe('UX P1 subject selection', () => {
     }
     expect(screen.queryByRole('button', { name: 'מדעי המחשב' })).toBeNull();
   });
+
+  it.each(['הנדסה', 'הנדסת'])(
+    'selects the engineering hub from database-shaped choices for %s',
+    async (query) => {
+      const databasePrograms = programs.filter(
+        (program) => !program.name.startsWith('הנדסה וטכנולוגיה'),
+      );
+      state.programs.mockResolvedValue(databasePrograms);
+      render(<StudyJourney initialStep="subjects" />);
+      fireEvent.change(await screen.findByRole('textbox', { name: 'חיפוש תחום לימודים' }), {
+        target: { value: query },
+      });
+      fireEvent.click(screen.getByRole('button', { name: 'הנדסה וטכנולוגיה' }));
+      expect(screen.getByRole('button', { name: 'המשך' })).toHaveProperty('disabled', false);
+      fireEvent.click(screen.getByRole('button', { name: 'המשך' }));
+      fireEvent.click(screen.getByRole('button', { name: 'המשך' }));
+      fireEvent.click(screen.getByRole('button', { name: /אין לי כרגע ציוני בגרות/ }));
+      fireEvent.click(screen.getByRole('button', { name: 'בלי פסיכומטרי כרגע' }));
+      fireEvent.click(screen.getByRole('button', { name: 'לגלות את האפשרויות שלי' }));
+      await waitFor(() => expect(state.evaluate).toHaveBeenCalled());
+      const ids = state.evaluate.mock.calls.flatMap(([input]) => input.degreeIds);
+      expect(ids).toContain('afeka_softwareeng');
+      expect(ids).toContain('tau_ee');
+      expect(ids).not.toContain('tau_cs');
+      expect(new Set(ids).size).toBe(ids.length);
+    },
+  );
 
   it('preselects a linked programme over unrelated stored filters and retains its institution', async () => {
     window.sessionStorage.setItem(
