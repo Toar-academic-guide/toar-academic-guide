@@ -180,13 +180,14 @@ describe('crawl policy', () => {
     );
   }, 15_000);
 
-  it('keeps all 352 canonical public URLs in order with stable data modification dates', async () => {
+  it('keeps all 353 canonical public URLs in order with stable data modification dates', async () => {
     const entries = await sitemap();
     const urls = entries.map((entry) => entry.url);
     expect(urls).toEqual([
       `${SITE_URL}/`,
       `${SITE_URL}/about`,
       `${SITE_URL}/institutions`,
+      `${SITE_URL}/programs`,
       ...(await indexableInstitutionIds()).map(
         (id) => `${SITE_URL}/institutions/${encodeURIComponent(id)}`,
       ),
@@ -199,7 +200,14 @@ describe('crawl policy', () => {
     expect(new Set(urls).size).toBe(urls.length);
     expect(urls).not.toContain(`${SITE_URL}/programs/danon_cs`);
     expect(urls).toContain(`${SITE_URL}/programs/ruppin_cs`);
-    expect(urls).toHaveLength(352);
+    expect(urls).toHaveLength(353);
+    const subjectIndex = entries.find((entry) => entry.url === `${SITE_URL}/programs`)!;
+    expect(subjectIndex.priority).toBe(0.9);
+    // The index changes whenever any programme page changes.
+    const programDates = entries
+      .filter((entry) => entry.url.startsWith(`${SITE_URL}/programs/`))
+      .map((entry) => Date.parse(String(entry.lastModified)));
+    expect(Date.parse(String(subjectIndex.lastModified))).toBe(Math.max(...programDates));
     for (const url of urls) {
       expect(new URL(url).origin).toBe(SITE_URL);
       expect(url.endsWith('/')).toBe(url === `${SITE_URL}/`);

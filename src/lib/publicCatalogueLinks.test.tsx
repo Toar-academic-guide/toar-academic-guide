@@ -4,6 +4,7 @@ import { prerender } from 'react-dom/static';
 import { describe, expect, it, vi } from 'vitest';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import Home from '@/app/page';
+import SubjectIndexPage, { metadata as subjectIndexMetadata } from '@/app/programs/page';
 import ProgramPage, { generateMetadata } from '@/app/programs/[programId]/page';
 import { institutionProgramName } from '@/lib/institutionProgramName';
 import { canonicalProgramId } from '@/lib/seo/programAliases';
@@ -47,43 +48,62 @@ function paths(markup: string): string[] {
 }
 
 describe('server-rendered crawl paths', () => {
-  it('renders at least 20 catalogue anchors in the homepage, including all hubs and 16 institutions', async () => {
+  // PM trim spec: 12 subjects + 8 institutions, collapsed by default, all in the server HTML.
+  it('renders 12 subject and 8 institution anchors inside a collapsed details on the homepage', async () => {
     const links = await getPublicBrowseLinks();
-    const hrefs = paths(await ssr(<Home />));
-    expect(
-      hrefs.filter((href) => /^\/(institutions|programs)\//.test(href)).length,
-    ).toBeGreaterThanOrEqual(20);
-    expect(links.institutions).toHaveLength(16);
-    expect(links.hubs.length).toBeGreaterThanOrEqual(23);
-    for (const hub of links.hubs) expect(hrefs).toContain(`/programs/${hub.id}`);
-    for (const institution of links.institutions)
-      expect(hrefs).toContain(`/institutions/${institution.id}`);
+    const html = await ssr(<Home />);
+    const browse = html.slice(html.indexOf('aria-labelledby="browse-title"'));
+    const details = browse.slice(browse.indexOf('<details'), browse.indexOf('</details>'));
+    expect(details.startsWith('<details>')).toBe(true);
+    expect(details).not.toMatch(/<details[^>]*\bopen\b/);
+    const hrefs = paths(details);
+    const hubs = hrefs.filter((href) => /^\/programs\/[^/]+$/.test(href));
+    const institutions = hrefs.filter((href) => /^\/institutions\/[^/]+$/.test(href));
+    expect(hubs).toEqual(links.hubs.slice(0, 12).map((hub) => `/programs/${hub.id}`));
+    expect(institutions).toEqual(links.institutions.map((i) => `/institutions/${i.id}`));
+    expect(institutions).toHaveLength(8);
+    expect(hrefs).toContain('/programs');
     expect(hrefs).toContain('/institutions');
+    expect(html).toContain('עזרו לי לבחור מה ללמוד');
     expect(renderToStaticMarkup(<CatalogueBrowse {...links} />)).toContain('dir="rtl"');
   });
 
-  it('renders every hub in the site-wide footer with the directory and about links', async () => {
-    const links = await getPublicBrowseLinks();
-    const hrefs = paths(renderToStaticMarkup(await CatalogueFooter()));
-    expect(hrefs).toContain('/institutions');
-    expect(hrefs).toContain('/about');
-    for (const hub of links.hubs) expect(hrefs).toContain(`/programs/${hub.id}`);
+  it('links the footer to the subject index, the directory and about, with no subject list', () => {
+    const hrefs = paths(renderToStaticMarkup(<CatalogueFooter />));
+    expect(hrefs).toEqual(['/programs', '/institutions', '/about']);
   });
 
-  it('keeps the homepage CTA and static footer links when the catalogue read fails', async () => {
+  it('keeps the homepage CTA and the footer links when the catalogue read fails', async () => {
     const failure = () => Promise.reject(new Error('database unavailable'));
-    queries.listCataloguePrograms.mockImplementationOnce(failure).mockImplementationOnce(failure);
+    queries.listCataloguePrograms.mockImplementationOnce(failure);
     const home = await ssr(<Home />);
     expect(home).toContain('עזרו לי לבחור מה ללמוד');
     expect(home).not.toContain('browse-title');
-    const footer = paths(renderToStaticMarkup(await CatalogueFooter()));
-    expect(footer).toEqual(['/institutions', '/about']);
+    expect(paths(renderToStaticMarkup(<CatalogueFooter />))).toEqual([
+      '/programs',
+      '/institutions',
+      '/about',
+    ]);
   });
 
-  it('renders the footer as a contentinfo landmark without a second nav', async () => {
-    const markup = renderToStaticMarkup(await CatalogueFooter());
+  it('renders the footer as a contentinfo landmark without a second nav', () => {
+    const markup = renderToStaticMarkup(<CatalogueFooter />);
     expect(markup.startsWith('<footer')).toBe(true);
     expect(markup).not.toContain('<nav');
+  });
+
+  it('lists every subject hub on the indexable /programs page', async () => {
+    const links = await getPublicBrowseLinks();
+    const html = renderToStaticMarkup(await SubjectIndexPage());
+    expect(html).toContain('<h1');
+    expect(html).toContain('תחומי לימוד');
+    const hrefs = paths(html);
+    expect(hrefs).toHaveLength(links.hubs.length);
+    expect(new Set(hrefs)).toEqual(new Set(links.hubs.map((hub) => `/programs/${hub.id}`)));
+    expect(hrefs).toContain('/programs/engineering');
+    expect(subjectIndexMetadata.alternates).toEqual({ canonical: '/programs' });
+    expect(subjectIndexMetadata.robots).toBeUndefined();
+    expect(subjectIndexMetadata.openGraph).toMatchObject({ url: '/programs' });
   });
 
   it('links CS to its hub and eight siblings at other institutions, excluding self and aliases', async () => {

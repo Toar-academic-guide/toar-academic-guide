@@ -65,6 +65,9 @@ const loadCatalogueLinks = cache(async () => {
   return { catalogue, hubs, hubByProgram, programs };
 });
 
+export const HOME_SUBJECT_COUNT = 12;
+export const HOME_INSTITUTION_COUNT = 8;
+
 export async function getPublicBrowseLinks() {
   const { catalogue, hubs, programs } = await loadCatalogueLinks();
   return {
@@ -75,8 +78,14 @@ export async function getPublicBrowseLinks() {
           !institution.id.startsWith('mon_') &&
           programs.some((program) => program.linkedInstitutionIds.includes(institution.id)),
       )
-      .slice(0, 16),
+      .slice(0, HOME_INSTITUTION_COUNT),
   };
+}
+
+/** Every subject hub, alphabetical, for the /programs index. */
+export async function getPublicSubjectIndex(): Promise<SubjectHub[]> {
+  const { hubs } = await loadCatalogueLinks();
+  return [...hubs].sort((a, b) => a.name.localeCompare(b.name, 'he'));
 }
 
 export async function getPublicSubjectHub(id: string) {
