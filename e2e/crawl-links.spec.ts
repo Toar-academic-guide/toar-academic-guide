@@ -28,7 +28,10 @@ test('subject index is indexable, self-canonical and lists every hub', async ({ 
   const html = await response.text();
   expect(html).toContain('<link rel="canonical" href="https://findmyway.co.il/programs"/>');
   expect(html).not.toMatch(/<meta[^>]+name="robots"[^>]+noindex/);
-  expect(response.headers()['x-robots-tag'] ?? '').not.toContain('noindex');
+  // Vercel sends `X-Robots-Tag: noindex` on every preview deployment, so the
+  // header must match the homepage's rather than be absent.
+  const home = await request.get('/');
+  expect(response.headers()['x-robots-tag']).toBe(home.headers()['x-robots-tag']);
   const main = html.split('<main')[1]?.split('</main>')[0] ?? '';
   const hubs = anchors(main);
   expect(hubs.length).toBeGreaterThanOrEqual(23);
