@@ -174,6 +174,9 @@ jobs:
       - name: Validate catalogue seed (dry-run)
         run: npm run db:seed:dry-run
 
+      - name: Check Haifa catalogue official URLs
+        run: npm run check:haifa-urls -- --ci
+
   # ---------------------------------------------------------------------------
   # Job 3: Apply every migration and seed a clean PostgreSQL database
   # ---------------------------------------------------------------------------

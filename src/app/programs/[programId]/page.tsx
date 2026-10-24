@@ -98,7 +98,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
 
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
-                href={ROUTES.calculator}
+                href={`${ROUTES.calculator}?program=${encodeURIComponent(program.id)}`}
                 className="way-button-primary px-5 py-2.5 text-sm font-semibold transition"
               >
                 בדיקת סיכויי קבלה

@@ -4,6 +4,7 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import JourneyExactGrades from './JourneyExactGrades';
 import { SECTORS } from '@/data/bagrutSubjects';
+import { calculateOptimizedBagrutAverage } from '@/server/admissions/bagrutPolicies';
 
 describe('JourneyExactGrades sector selection', () => {
   it('updates untouched starter rows to the selected sector', () => {
@@ -45,6 +46,76 @@ describe('JourneyExactGrades blank rows', () => {
     fillRow(rowNumber('אנגלית'), '5', '85');
   };
   const submit = () => fireEvent.click(screen.getByRole('button', { name: 'המשך' }));
+
+  it('starts compulsory one-unit-minimum subjects empty and keeps clearing a units field empty', () => {
+    render(<JourneyExactGrades onComplete={vi.fn()} />);
+    for (const subject of ['תנ״ך', 'ספרות', 'הבעה עברית', 'היסטוריה / תע״י', 'אזרחות']) {
+      expect(field(`יחידות ${rowNumber(subject)}`).value).toBe('');
+    }
+    expect(field(`יחידות ${rowNumber('מתמטיקה')}`).value).toBe('3');
+    const civics = field(`יחידות ${rowNumber('אזרחות')}`);
+    fireEvent.change(civics, { target: { value: '2' } });
+    fireEvent.change(civics, { target: { value: '' } });
+    expect(civics.value).toBe('');
+  });
+
+  it('keeps the average unchanged when compulsory rows are left blank', () => {
+    const onComplete = vi.fn();
+    render(<JourneyExactGrades onComplete={onComplete} />);
+    fillMathAndEnglish();
+    const compulsory = ['תנ״ך', 'ספרות', 'הבעה עברית', 'היסטוריה / תע״י', 'אזרחות'];
+    for (const subject of compulsory) expect(field(`יחידות ${rowNumber(subject)}`).value).toBe('');
+    submit();
+    const withBlankRows = onComplete.mock.calls[0][0];
+    for (let index = labels().length; index >= 1; index--) {
+      if (compulsory.includes(labels()[index - 1])) {
+        fireEvent.click(screen.getByRole('button', { name: `הסרת מקצוע ${index}` }));
+      }
+    }
+    submit();
+    const withoutBlankRows = onComplete.mock.calls[1][0];
+    expect(withBlankRows).toEqual(withoutBlankRows);
+    const policy = {
+      id: 'ux-blank-rows',
+      version: 'test',
+      sourceUrl: 'https://example.edu/policy',
+      recordSchemaVersion: 2 as const,
+      requiredSubjectIds: ['english', 'mathematics'],
+      optionalSubjectIds: [],
+      subjectBonuses: [],
+      dropOptionalSubjectsWhenAverageImproves: false,
+    };
+    const average = calculateOptimizedBagrutAverage(withBlankRows, policy);
+    expect(average).toMatchObject({ state: 'calculated', average: 87.5 });
+    expect(calculateOptimizedBagrutAverage(withoutBlankRows, policy)).toEqual(average);
+  });
+
+  it('requires explicit units when a compulsory grade is entered', () => {
+    const onComplete = vi.fn();
+    render(<JourneyExactGrades onComplete={onComplete} />);
+    fillMathAndEnglish();
+    fireEvent.change(field(`ציון ${rowNumber('אזרחות')}`), { target: { value: '90' } });
+    expect(field(`יחידות ${rowNumber('אזרחות')}`).validity.valueMissing).toBe(true);
+    submit();
+    expect(onComplete).not.toHaveBeenCalled();
+  });
+
+  it('preserves units from a saved subject record', () => {
+    render(
+      <JourneyExactGrades
+        onComplete={vi.fn()}
+        initialRecord={{
+          schemaVersion: 2,
+          sector: 'jewish',
+          certificateType: 'internal',
+          complete: false,
+          subjects: [{ subjectId: 'civics', units: 2, grade: 88, assessmentKind: 'exam' }],
+        }}
+      />,
+    );
+    expect(field('יחידות 1').value).toBe('2');
+    expect(field('ציון 1').value).toBe('88');
+  });
 
   it('submits when the untouched starter rows are left blank and sends only filled rows', () => {
     const onComplete = vi.fn();

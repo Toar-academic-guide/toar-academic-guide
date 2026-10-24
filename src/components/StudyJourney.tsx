@@ -27,6 +27,7 @@ import {
   LOCATIONS,
   INSTITUTION_TYPES,
   studyFields,
+  matchesStudyField,
   journeyRows,
   distinctRecommendations,
   toggleLocation,
@@ -184,9 +185,11 @@ function Chips<T extends string>({
 export default function StudyJourney({
   initialStep = 'home',
   browse,
+  initialProgramId,
 }: {
   initialStep?: Step;
   browse?: ReactNode;
+  initialProgramId?: string;
 }) {
   const auth = useAuth();
   const router = useRouter();
@@ -325,6 +328,30 @@ export default function StudyJourney({
     () => journeyRows(studyFields(programs, true), institutions),
     [programs, institutions],
   );
+  const preselectedProgram = useRef<string | null>(null);
+  useEffect(() => {
+    if (
+      !initialProgramId ||
+      !ready ||
+      catalogueLoading ||
+      preselectedProgram.current === initialProgramId
+    )
+      return;
+    const field = fields.find((entry) =>
+      entry.programs.some((program) => program.id === initialProgramId),
+    );
+    if (!field) return;
+    const row = allRows.find((entry) => entry.program.id === initialProgramId);
+    preselectedProgram.current = initialProgramId;
+    setDraft((current) => ({
+      ...current,
+      fields: [field.id],
+      locations: ['all'],
+      types: ['all'],
+      selectedRowId: row?.id,
+    }));
+    setActiveId(row?.id ?? null);
+  }, [initialProgramId, ready, catalogueLoading, fields, allRows]);
   const selectedRows = useMemo(
     () =>
       distinctRecommendations(allRows).filter(
@@ -860,7 +887,7 @@ export default function StudyJourney({
               <Chips
                 items={Object.fromEntries(
                   fields
-                    .filter((field) => field.name.includes(query))
+                    .filter((field) => matchesStudyField(field, query))
                     .map((field) => [field.id, field.name]),
                 )}
                 selected={draft.fields}

@@ -66,7 +66,7 @@ describe('ProgramPage', () => {
 
     expect(screen.getByRole('heading', { name: program.name })).toBeTruthy();
     expect(screen.getByRole('link', { name: 'בדיקת סיכויי קבלה' }).getAttribute('href')).toBe(
-      '/app/calculator',
+      `/app/calculator?program=${encodeURIComponent(program.id)}`,
     );
     expect(screen.getByRole('link', { name: 'התאמה אישית' }).getAttribute('href')).toBe(
       '/app/assessment',

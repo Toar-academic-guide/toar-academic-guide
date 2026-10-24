@@ -2,6 +2,7 @@ import type { InstitutionDetail } from '@/data/degrees/types';
 import { DANON_PROGRAM_NAMES } from '@/data/admissions/danon';
 import { allPrograms } from '@/data/degrees';
 import { applyCatalogueContentRepair } from '@/data/admissions/catalogueContentRepair';
+import { applyHaifaOfficialUrls } from '@/data/admissions/haifaOfficialUrls';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type {
   AdmissionAlternativePathRow,
@@ -255,5 +256,5 @@ export function serializeProgramRow(args: {
   };
   return ['haifa_psychology', 'afeka_ee', 'afeka_softwareeng', 'afeka_cs'].includes(program.id)
     ? applyCatalogueContentRepair(serialized)
-    : serialized;
+    : applyHaifaOfficialUrls(serialized);
 }

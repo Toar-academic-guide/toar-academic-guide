@@ -1,4 +1,5 @@
 import type { Program, InstitutionDetail } from './types';
+import { HAIFA_CALCULATOR_URL, HAIFA_PROGRAM_URLS } from '../admissions/haifaOfficialUrls';
 
 // ── 8-dimension profile reference (0–5 scale) ───────────────────────────────
 // AN=Analytical  TE=Technical  CR=Creative  SO=Social
@@ -870,10 +871,9 @@ const D: Record<string, InstitutionDetail[]> = {
         'ציון פסיכומטרי מינימלי: 650',
         'ממוצע בגרות מינימלי: 85',
       ],
-      officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif',
-      programUrl:
-        'https://www.haifa.ac.il/index.php/he/departments/departments-science-a-technology/computer-science',
-      calculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif',
+      officialCalculatorUrl: HAIFA_CALCULATOR_URL,
+      programUrl: HAIFA_PROGRAM_URLS.haifa_cs,
+      calculatorUrl: HAIFA_CALCULATOR_URL,
     },
   ],
   haifa_psychology: [
@@ -901,9 +901,9 @@ const D: Record<string, InstitutionDetail[]> = {
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
       specificAdmissionNotes: ['ציון פסיכומטרי מינימלי: 640', 'ממוצע בגרות מינימלי: 82'],
-      officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif',
-      programUrl: 'https://www.haifa.ac.il/index.php/he/departments-fac/departments-law',
-      calculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif',
+      officialCalculatorUrl: HAIFA_CALCULATOR_URL,
+      programUrl: HAIFA_PROGRAM_URLS.haifa_law,
+      calculatorUrl: HAIFA_CALCULATOR_URL,
     },
   ],
   haifa_economics: [

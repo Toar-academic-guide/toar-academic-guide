@@ -26,7 +26,9 @@ const labels = [
 ];
 const labelById = new Map(labels.map((label) => [subjectIdForWizardLabel(label), label]));
 const starterRows = new Set(
-  Object.values(SECTORS).flatMap((items) => items.map((item) => `${item.n}|${item.min}`)),
+  Object.values(SECTORS).flatMap((items) =>
+    items.map((item) => `${item.n}|${item.min === 1 ? '' : item.min}`),
+  ),
 );
 // A row the student never filled: an empty added row, or an untouched starter row.
 const isBlankRow = (row: BagrutWizardSubjectInput) =>
@@ -36,7 +38,7 @@ const isBlankRow = (row: BagrutWizardSubjectInput) =>
 const emptyRows = (sector: string): BagrutWizardSubjectInput[] =>
   SECTORS[sector].map((subject) => ({
     label: subject.n,
-    units: subject.min,
+    units: subject.min === 1 ? '' : subject.min,
     grade: '',
     assessmentKind: 'exam',
   }));
@@ -212,7 +214,11 @@ export default function JourneyExactGrades({
                   step={1}
                   required={!isBlankRow(row)}
                   value={row.units}
-                  onChange={(event) => change(index, { units: Number(event.target.value) })}
+                  onChange={(event) =>
+                    change(index, {
+                      units: event.target.value === '' ? '' : Number(event.target.value),
+                    })
+                  }
                 />
               </td>
               <td>

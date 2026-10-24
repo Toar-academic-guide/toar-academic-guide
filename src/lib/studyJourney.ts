@@ -29,6 +29,17 @@ export interface StudyField {
   category: string;
   programs: CatalogueProgram[];
 }
+
+const normalizeSubjectSearch = (text: string) =>
+  text
+    .trim()
+    .replace(/\s+/g, ' ')
+    .replace(/הנדסת(?=\s|$)/g, 'הנדסה')
+    .toLowerCase();
+
+export function matchesStudyField(field: Pick<StudyField, 'name'>, query: string): boolean {
+  return normalizeSubjectSearch(field.name).includes(normalizeSubjectSearch(query));
+}
 export interface JourneyRow {
   id: string;
   fieldId: string;

@@ -5,12 +5,29 @@ import {
   resultExplanation,
   groupJourneyRows,
   studyFields,
+  matchesStudyField,
   journeyRows,
   distinctRecommendations,
 } from './studyJourney';
 import { getStaticCataloguePrograms, getStaticCatalogueInstitutions } from './catalogueStatic';
 import { evaluateBatchBManualPath } from '@/server/admissions/batchBManualPathEvaluation';
 import { PROGRAM_CANONICAL_ALIASES } from './seo/programAliases';
+
+describe('subject search synonyms', () => {
+  it.each(['הנדסה', 'הנדסת', '  הנדסה  '])('matches engineering forms for %s', (query) => {
+    for (const name of ['הנדסת תוכנה', 'הנדסה אזרחית', 'הנדסה וטכנולוגיה', 'הנדסת חלל']) {
+      expect(matchesStudyField({ name }, query)).toBe(true);
+    }
+    expect(matchesStudyField({ name: 'מדעי המחשב' }, query)).toBe(false);
+  });
+
+  it('preserves specific and unrelated subject searches', () => {
+    expect(matchesStudyField({ name: 'הנדסת חשמל' }, 'הנדסה חשמל')).toBe(true);
+    expect(matchesStudyField({ name: 'הנדסת מכונות' }, 'הנדסה חשמל')).toBe(false);
+    expect(matchesStudyField({ name: 'מדעי המחשב' }, 'מדעי   המחשב')).toBe(true);
+    expect(matchesStudyField({ name: 'משפטים' }, 'משפט')).toBe(true);
+  });
+});
 
 describe('approved journey', () => {
   it.each([
