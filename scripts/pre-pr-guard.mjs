@@ -116,6 +116,7 @@ const targetedTests = [
   'src/server/admissions/biuPublishedRoutesEvaluation.test.ts',
   'src/app/api/admissions/evaluate/biu.test.ts',
   'src/app/api/admissions/evaluate/mta.test.ts',
+  'src/app/api/admissions/evaluate/afeka.test.ts',
   'src/server/admissions/officialRequirements4.test.ts',
   'src/server/admissions/officialRequirements5.test.ts',
   'src/server/admissions/bguEngineeringPolicy.test.ts',

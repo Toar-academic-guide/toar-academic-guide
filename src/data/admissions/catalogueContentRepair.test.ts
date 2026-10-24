@@ -96,6 +96,11 @@ describe('verified catalogue content repair', () => {
       'admission-and-registration-in-science/',
       '8bea4f6cda19dc7178fc78b642767766121d05f3544bf5008b35a7bd398201dc',
     ],
+    [
+      'afeka_cs',
+      'admission-and-registration-in-science/',
+      '8bea4f6cda19dc7178fc78b642767766121d05f3544bf5008b35a7bd398201dc',
+    ],
   ])('re-encodes and stamps %s without deriving cumulative floors', (id, path, sha) => {
     const program = allPrograms.find((item) => item.id === id)!;
     const notes = program.institutionDetails![0].specificAdmissionNotes;

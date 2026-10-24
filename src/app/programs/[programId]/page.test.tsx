@@ -177,7 +177,7 @@ describe('ProgramPage', () => {
     );
   });
 
-  it.each(['afeka_ee', 'afeka_softwareeng'])(
+  it.each(['afeka_ee', 'afeka_softwareeng', 'afeka_cs'])(
     'renders %s complete official route copy without the obsolete shell',
     async (programId) => {
       render(await ProgramPage({ params: Promise.resolve({ programId }) }));
@@ -202,6 +202,12 @@ describe('ProgramPage', () => {
       ],
       [
         'afeka_softwareeng',
+        'afeka',
+        'https://www.afeka.ac.il/candidate/candidate-information-bsc/admission-and-registration-in-science/',
+        '24.10.2026',
+      ],
+      [
+        'afeka_cs',
         'afeka',
         'https://www.afeka.ac.il/candidate/candidate-information-bsc/admission-and-registration-in-science/',
         '24.10.2026',

@@ -24,7 +24,8 @@ export function applyCatalogueContentRepair<T extends Program>(program: T): T {
   const identity = rows.find((row) => row.identity)?.identity;
   const afekaRoutes = rows.find(
     (row) =>
-      row.institutionId === 'afeka' && ['afeka_ee', 'afeka_softwareeng'].includes(row.programId),
+      row.institutionId === 'afeka' &&
+      ['afeka_ee', 'afeka_softwareeng', 'afeka_cs'].includes(row.programId),
   );
   const details = [...(program.institutionDetails ?? [])];
   for (const row of rows) {

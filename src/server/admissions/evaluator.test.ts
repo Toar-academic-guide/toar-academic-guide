@@ -1,3 +1,4 @@
+import { AFEKA_EVALUATOR_IDS, afekaCases } from '@/test/afekaAdmissions';
 import medicineOfficial from '../../../docs/admissions-verification/2026-09-28-huji-medicine-official.json';
 import routingOfficial from '../../../docs/admissions-verification/2026-10-21-calculator-routing.json';
 import { HUJI_MEDICINE_ELIGIBLE_INPUTS } from '@/data/admissions/hujiMedicineVerification';
@@ -32,53 +33,33 @@ import { evaluateAdmissionsForProgram as evaluateAdmissionsForProgramInternal } 
 
 vi.mock('server-only', () => ({}));
 
-describe.each(['afeka_ee', 'afeka_softwareeng'])('%s published route honesty', (degreeId) => {
-  it.each([
-    {},
-    { bagrut: 70, psychometric: 400 },
-    { bagrut: 80, psychometric: 550 },
-    { bagrut: 120, psychometric: 800 },
-    ...[599, 600, 601, 619, 620, 621].map((psychometric) => ({ bagrut: 100, psychometric })),
-    ...[114, 115, 116].map((psychometricMath) => ({
-      bagrut: 100,
-      psychometric: 620,
-      extraInputs: {
-        psychometricMath,
-        mathUnits: 4,
-        mathGrade: 80,
-        englishUnits: 4,
-        englishGrade: 70,
-        physicsUnits: 5,
-        physicsGrade: 60,
-      },
-    })),
-    { psychometric: 600, extraInputs: { mathUnits: 4, mathGrade: 85 } },
-    { extraInputs: { mathUnits: 5, mathGrade: 75, englishUnits: 5, englishGrade: 60 } },
-  ])('does not infer eligibility from partial or boundary inputs %j', async (scores) => {
+describe.each(AFEKA_EVALUATOR_IDS)('%s published routes', (degreeId) => {
+  it.each(afekaCases(degreeId))('$name', async ({ input, decision, missing }) => {
     const program = getStaticCataloguePrograms().find((row) => row.id === degreeId)!;
     const fetcher = vi.fn<typeof fetch>();
     const report = await evaluateAdmissionsForProgram({
-      input: { degreeId, ...scores },
+      input: { degreeId, ...input },
       program,
       institutions: getStaticCatalogueInstitutions(),
       fetcher,
     });
     const result = report.results.find((row) => row.linkedInstitutionId === 'afeka')!;
-    expect(result).toMatchObject({
-      kind: 'unsupported',
-      capability: 'unsupported',
-      decision: 'unknown',
-    });
+    expect(result.decision).toBe(decision);
+    expect(result.requiredInputs).toEqual(missing);
+    expect(result.kind).toBe(decision === 'unknown' ? 'needs_input' : 'exact');
     expect(result.score).toBeUndefined();
     expect(result.threshold).toBeUndefined();
-    expect(result.scoreAssessment).toBeUndefined();
-    expect(result.requiredInputs).toBeUndefined();
     expect(result.officialUrls?.[0]).toContain(
       'https://www.afeka.ac.il/candidate/candidate-information-bsc/',
     );
     expect(result.explanation).not.toMatch(/550|ממוצע בגרות 80|מתואם|סכם|מצרף|[a-zA-Z]/);
     expect(fetcher).not.toHaveBeenCalled();
-    expect(resultLabel(result).group).toBe('explore');
+    if (decision === 'accepted') {
+      expect(resultLabel(result).group).toBe('match');
+      expect(result.explanation).toContain('זכאות לתעודת בגרות מלאה');
+      expect(result.explanation).toContain('סיווג אנגלית');
+      expect(result.explanation).toContain('70');
+    }
   });
 });
 

@@ -251,7 +251,7 @@ export function serializeProgramRow(args: {
     ),
     linkedInstitutionIds: relations.map((relation) => relation.institutionId),
   };
-  return ['haifa_psychology', 'afeka_ee', 'afeka_softwareeng'].includes(program.id)
+  return ['haifa_psychology', 'afeka_ee', 'afeka_softwareeng', 'afeka_cs'].includes(program.id)
     ? applyCatalogueContentRepair(serialized)
     : serialized;
 }
