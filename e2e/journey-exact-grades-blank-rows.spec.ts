@@ -3,10 +3,9 @@ import { expect, test } from '@playwright/test';
 function findSubjectRecords(value: unknown): { subjects: { subjectId: string }[] }[] {
   if (!value || typeof value !== 'object') return [];
   const record = value as Record<string, unknown>;
-  const own =
-    record.subjectRecord && typeof record.subjectRecord === 'object'
-      ? [record.subjectRecord as { subjects: { subjectId: string }[] }]
-      : [];
+  const own = Object.entries(record)
+    .filter(([key, item]) => /subjectRecord$/i.test(key) && item && typeof item === 'object')
+    .map(([, item]) => item as { subjects: { subjectId: string }[] });
   return [...own, ...Object.values(record).flatMap(findSubjectRecords)];
 }
 
