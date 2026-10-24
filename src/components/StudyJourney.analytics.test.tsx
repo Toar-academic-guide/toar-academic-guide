@@ -56,7 +56,12 @@ describe('journey funnel analytics', () => {
       })),
     );
     state.fetchInstitutions.mockResolvedValue([
-      { id: 'tau', name: 'אוניברסיטת תל אביב', region: 'center' },
+      {
+        id: 'tau',
+        name: 'אוניברסיטת תל אביב',
+        region: 'center',
+        programUrl: 'https://www.tau.ac.il/',
+      },
     ]);
     window.history.replaceState(null, '', '/');
     window.sessionStorage.clear();
@@ -207,5 +212,19 @@ describe('journey funnel analytics', () => {
       has_psychometric: false,
       has_bagrut: false,
     });
+  });
+
+  it('tracks the journey institution site link with only the active pair IDs', async () => {
+    state.capture.mockClear();
+    window.history.replaceState(null, '', '/');
+    render(<StudyJourney initialStep="results" />);
+    await waitFor(() => expect(events('journey_results_viewed')).toHaveLength(1));
+    fireEvent.click(screen.getAllByRole('button', { name: 'אוניברסיטת תל אביב' })[0]);
+    const link = await screen.findByRole('link', { name: 'לאתר המוסד' });
+    link.addEventListener('click', (e) => e.preventDefault());
+    fireEvent.click(link);
+    expect(events('institution_site_clicked')).toEqual([
+      ['institution_site_clicked', { program_id: 'tau_cs', institution_id: 'tau' }],
+    ]);
   });
 });

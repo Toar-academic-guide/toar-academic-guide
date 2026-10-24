@@ -78,14 +78,14 @@ export default function AuthScreen({
         firstName: trimmedFirstName,
         lastName: trimmedLastName,
       });
-      posthog.capture('user_signed_up', { email: email.trim() });
+      posthog.capture('user_signed_up');
       setInfo('שלחנו מייל לאישור החשבון. אשר אותו ואז חזור להתחבר.');
       setMode('login');
       setPassword('');
       return;
     }
 
-    posthog.capture('user_signed_in', { email: email.trim() });
+    posthog.capture('user_signed_in');
     onSuccess(nextPath);
   }
 

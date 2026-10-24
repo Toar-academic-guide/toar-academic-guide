@@ -1,14 +1,25 @@
+vi.mock('server-only', () => ({}));
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { listCataloguePrograms, listCatalogueInstitutions, capture, flush, after } = vi.hoisted(
-  () => ({
-    listCataloguePrograms: vi.fn(),
-    listCatalogueInstitutions: vi.fn(),
-    capture: vi.fn(),
-    flush: vi.fn(),
-    after: vi.fn(),
-  }),
-);
+const {
+  listCataloguePrograms,
+  listCatalogueInstitutions,
+  capture,
+  flush,
+  after,
+  evaluate,
+  backup,
+  notify,
+} = vi.hoisted(() => ({
+  listCataloguePrograms: vi.fn(),
+  listCatalogueInstitutions: vi.fn(),
+  capture: vi.fn(),
+  flush: vi.fn(),
+  after: vi.fn(),
+  evaluate: vi.fn(),
+  backup: vi.fn(),
+  notify: vi.fn(),
+}));
 vi.mock('@/server/catalogue/queries', () => ({ listCataloguePrograms, listCatalogueInstitutions }));
 vi.mock('next/server', () => ({ after }));
 vi.mock('posthog-node', () => ({
@@ -17,6 +28,9 @@ vi.mock('posthog-node', () => ({
     flush = flush;
   },
 }));
+vi.mock('@/server/admissions/evaluator', () => ({ evaluateAdmissionsForProgram: evaluate }));
+vi.mock('@/server/enquiries/repository', () => ({ saveEnquiryBackup: backup }));
+vi.mock('@/server/enquiries/notifications', () => ({ notifyEnquiry: notify }));
 import { POST } from './route';
 
 const enquiry = {
@@ -38,6 +52,12 @@ function request(overrides = {}, origin = 'https://myway.example') {
 
 describe('website enquiries → Monday', () => {
   beforeEach(() => {
+    backup.mockReset().mockRejectedValue(new Error('relation enquiries does not exist'));
+    notify.mockReset().mockResolvedValue(undefined);
+    evaluate
+      .mockReset()
+      .mockResolvedValue({ results: [{ linkedInstitutionId: 'tau', decision: 'accepted' }] });
+    vi.spyOn(console, 'error').mockImplementation(() => {});
     capture.mockReset();
     flush.mockReset().mockResolvedValue(undefined);
     after.mockReset();
@@ -79,7 +99,16 @@ describe('website enquiries → Monday', () => {
       boolean_mm8abpda: { checked: 'true' },
       color_mm8aqhym: { label: 'חדש' },
     });
-    expect(options?.body).not.toContain('bagrut');
+    const context = JSON.parse(
+      JSON.parse(body.variables.columns).long_text_mm8ay37r.text.split('\n\nLead context:\n')[1],
+    );
+    expect(context).toMatchObject({
+      program_id: 'physiotherapy',
+      institution_id: 'tau',
+      result_status: 'unknown',
+      bagrut: null,
+      psychometric: null,
+    });
   });
 
   it('does not accept unchecked consent or extra academic data', async () => {
@@ -131,10 +160,11 @@ describe('website enquiries → Monday', () => {
     expect(flush).toHaveBeenCalledTimes(1);
   });
 
-  it('skips analytics silently when its token is missing', async () => {
+  it('skips analytics while still scheduling notifications when its token is missing', async () => {
     vi.stubEnv('NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN', '');
     expect((await POST(request())).status).toBe(201);
-    expect(after).not.toHaveBeenCalled();
+    expect(after).toHaveBeenCalledOnce();
+    await after.mock.calls[0][0]();
     expect(capture).not.toHaveBeenCalled();
   });
 
@@ -148,7 +178,7 @@ describe('website enquiries → Monday', () => {
     flush.mockReturnValue(new Promise(() => {}));
     expect((await POST(request())).status).toBe(201);
     void after.mock.calls[0][0]();
-    expect(flush).toHaveBeenCalledTimes(1);
+    await vi.waitFor(() => expect(flush).toHaveBeenCalledTimes(1));
   });
 
   it.each(['capture', 'flush', 'schedule'])('ignores analytics %s errors', async (failure) => {
@@ -170,5 +200,154 @@ describe('website enquiries → Monday', () => {
     await POST(request());
     const calls = vi.mocked(fetch).mock.calls;
     expect(calls[0][1]?.headers).toEqual(calls[1][1]?.headers);
+  });
+});
+
+describe('enquiry context and independent delivery', () => {
+  beforeEach(() => {
+    vi.stubEnv('MONDAY_API_TOKEN', 'token');
+    vi.stubEnv('NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN', '');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    after.mockReset();
+    notify.mockReset().mockResolvedValue(undefined);
+    backup.mockReset().mockResolvedValue(undefined);
+    evaluate
+      .mockReset()
+      .mockResolvedValue({ results: [{ linkedInstitutionId: 'tau', decision: 'accepted' }] });
+    listCataloguePrograms.mockResolvedValue({
+      data: [{ id: 'physiotherapy', name: 'פיזיותרפיה', linkedInstitutionIds: ['tau'] }],
+    });
+    listCatalogueInstitutions.mockResolvedValue({ data: [{ id: 'tau', name: 'תל אביב' }] });
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(Response.json({ data: { create_item: { id: '123456' } } })),
+    );
+  });
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.unstubAllGlobals();
+  });
+  const evaluationInput = {
+    degreeId: 'physiotherapy',
+    bagrut: 105.5,
+    psychometric: 680,
+    extraInputs: { psychometricMath: 135 },
+  };
+  it.each(['accepted', 'below', 'eligible_to_apply', 'unknown', 'pending'])(
+    'derives %s from the server evaluator',
+    async (decision) => {
+      evaluate.mockResolvedValue({ results: [{ linkedInstitutionId: 'tau', decision }] });
+      expect((await POST(request({ evaluationInput }))).status).toBe(201);
+      expect(evaluate).toHaveBeenCalledWith(expect.objectContaining({ input: evaluationInput }));
+      const body = JSON.parse(vi.mocked(fetch).mock.calls[0][1]?.body as string);
+      const context = JSON.parse(
+        JSON.parse(body.variables.columns).long_text_mm8ay37r.text.split('\n\nLead context:\n')[1],
+      );
+      expect(context).toEqual({
+        program_id: 'physiotherapy',
+        institution_id: 'tau',
+        result_status: decision === 'pending' ? 'unknown' : decision,
+        bagrut: 105.5,
+        psychometric: 680,
+        evaluation_input: evaluationInput,
+      });
+      expect(backup).toHaveBeenCalledWith(
+        expect.objectContaining({
+          resultStatus: context.result_status,
+          evaluationInput,
+          bagrut: 105.5,
+          psychometric: 680,
+        }),
+      );
+    },
+  );
+  it.each([
+    { resultStatus: 'accepted' },
+    { evaluationInput: { ...evaluationInput, bagrut: 999 } },
+    { evaluationInput: { ...evaluationInput, psychometric: '680' } },
+    { evaluationInput: { ...evaluationInput, degreeId: 'other' } },
+    { evaluationInput: { ...evaluationInput, extraInputs: { email: 'private@example.com' } } },
+  ])('rejects forged or invalid context %j', async (extra) => {
+    expect((await POST(request(extra))).status).toBe(400);
+    expect(backup).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+  it('accepts a large valid evaluation record without losing the lead', async () => {
+    const largeInput = {
+      ...evaluationInput,
+      extraInputs: {
+        bagrutSubjectRecord: {
+          schemaVersion: 1,
+          sector: 'jewish',
+          subjects: Array.from({ length: 64 }, (_, i) => ({
+            subjectId: `subject_${i}_${'x'.repeat(80)}`,
+            units: 5,
+            grade: 95,
+          })),
+        },
+      },
+    };
+    expect((await POST(request({ evaluationInput: largeInput }))).status).toBe(201);
+    expect(backup).toHaveBeenCalledWith(expect.objectContaining({ evaluationInput: largeInput }));
+  });
+
+  it('keeps delivery working with unknown status when evaluation fails', async () => {
+    evaluate.mockRejectedValue(new Error('private failure'));
+    expect((await POST(request({ evaluationInput }))).status).toBe(201);
+    expect(backup).toHaveBeenCalledWith(
+      expect.objectContaining({ resultStatus: 'unknown', bagrut: 105.5 }),
+    );
+    expect(console.error).toHaveBeenCalled();
+    expect(JSON.stringify(vi.mocked(console.error).mock.calls)).not.toContain('private failure');
+  });
+  it.each(['graphql', 'network', 'missing token'])(
+    'accepts the DB backup despite Monday %s failure',
+    async (failure) => {
+      if (failure === 'graphql')
+        vi.mocked(fetch).mockResolvedValue(
+          Response.json({ errors: [{ message: 'private failure' }] }),
+        );
+      if (failure === 'network') vi.mocked(fetch).mockRejectedValue(new Error('private failure'));
+      if (failure === 'missing token') vi.stubEnv('MONDAY_API_TOKEN', '');
+      expect((await POST(request())).status).toBe(201);
+      expect(backup).toHaveBeenCalledOnce();
+      expect(console.error).toHaveBeenCalled();
+      await after.mock.calls[0][0]();
+      expect(notify).toHaveBeenCalledOnce();
+    },
+  );
+  it('keeps Monday working while the table is absent', async () => {
+    backup.mockRejectedValue(new Error('relation enquiries does not exist'));
+    expect((await POST(request())).status).toBe(201);
+    expect(console.error).toHaveBeenCalledWith(
+      '[enquiries] database write failed',
+      expect.objectContaining({ requestId: enquiry.requestId }),
+    );
+  });
+  it('starts both destinations before either settles', async () => {
+    let finish!: () => void;
+    backup.mockReturnValue(
+      new Promise<void>((resolve) => {
+        finish = resolve;
+      }),
+    );
+    const pending = POST(request());
+    await vi.waitFor(() => expect(fetch).toHaveBeenCalled());
+    expect(backup).toHaveBeenCalledOnce();
+    finish();
+    expect((await pending).status).toBe(201);
+  });
+  it('logs both failures and does not notify if neither destination accepts', async () => {
+    backup.mockRejectedValue(new Error('private failure'));
+    vi.mocked(fetch).mockRejectedValue(new Error('private failure'));
+    expect((await POST(request())).status).toBe(502);
+    expect(console.error).toHaveBeenCalledTimes(2);
+    expect(after).not.toHaveBeenCalled();
+  });
+  it('notification failure never changes a successful response', async () => {
+    notify.mockRejectedValue(new Error('private notification details'));
+    expect((await POST(request())).status).toBe(201);
+    await expect(after.mock.calls[0][0]()).resolves.toBeUndefined();
+    expect(console.error).toHaveBeenCalled();
   });
 });

@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import ProgramTrackedLink from './ProgramTrackedLink';
 import type { Program } from '@/data/degrees/types';
 import { selectRequirementTiles } from '@/lib/requirementTiles';
 import { ROUTES } from '@/lib/routes';
@@ -84,12 +84,15 @@ export default function RequirementTiles({
       )}
       {showCalculatorLink && (
         <p className="mt-3.5">
-          <Link
+          <ProgramTrackedLink
+            event="program_calculator_cta_clicked"
+            programId={program.id}
+            institutionId={institutionId}
             href={ROUTES.calculator}
             className="text-xs text-[var(--text-muted)] underline underline-offset-[3px]"
           >
             התנאים מורכבים? בדקו את הסיכויים שלכם
-          </Link>
+          </ProgramTrackedLink>
         </p>
       )}
       <details className="group mt-3 border-t border-[#dce1ee] pt-1">

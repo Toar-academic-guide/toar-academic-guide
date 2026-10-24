@@ -1,3 +1,4 @@
+import ProgramTrackedLink from '@/components/ProgramTrackedLink';
 import { RelatedPrograms } from '@/components/seo/CatalogueLinks';
 import { getPublicRelatedPrograms, getPublicSubjectHub } from '@/lib/publicCatalogueLinks';
 import Link from 'next/link';
@@ -97,12 +98,15 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
             <h1 className="mt-2 text-3xl font-black sm:text-4xl">{program.name}</h1>
 
             <div className="mt-6 flex flex-wrap gap-3">
-              <Link
+              <ProgramTrackedLink
+                event="program_calculator_cta_clicked"
+                programId={program.id}
+                institutionId={institutions.length === 1 ? institutions[0].id : ''}
                 href={ROUTES.calculator}
                 className="way-button-primary px-5 py-2.5 text-sm font-semibold transition"
               >
                 בדיקת סיכויי קבלה
-              </Link>
+              </ProgramTrackedLink>
               <Link
                 href={ROUTES.assessment}
                 className="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
@@ -121,12 +125,15 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                   className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-4 py-3"
                 >
                   <Link href={institutionProgramPaths[institution.id]}>{institution.name}</Link>
-                  <Link
+                  <ProgramTrackedLink
+                    event="program_contact_cta_clicked"
+                    programId={program.id}
+                    institutionId={institution.id}
                     className="shrink-0 rounded-full border border-[#c9c2e4] px-3 py-2 text-sm text-[#6554b8]"
                     href={`/enquiry?program=${encodeURIComponent(program.id)}&institution=${encodeURIComponent(institution.id)}`}
                   >
                     יצירת קשר
-                  </Link>
+                  </ProgramTrackedLink>
                 </div>
               ))}
             </div>
@@ -146,14 +153,17 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                 {institutions.map((institution) => {
                   const source = institutionRequirementSources[institution.id];
                   const officialLink = source.officialUrl && (
-                    <a
+                    <ProgramTrackedLink
+                      event="institution_site_clicked"
+                      programId={program.id}
+                      institutionId={institution.id}
                       href={source.officialUrl}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="font-semibold text-[#6554b8] underline"
                     >
                       לאתר המוסד
-                    </a>
+                    </ProgramTrackedLink>
                   );
                   return (
                     <div key={institution.id}>
@@ -182,14 +192,17 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                               )}
                               {officialLink}
                               {source.officialCalculatorUrl && (
-                                <a
+                                <ProgramTrackedLink
+                                  event="institution_calculator_clicked"
+                                  programId={program.id}
+                                  institutionId={institution.id}
                                   href={source.officialCalculatorUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="text-xs text-[var(--text-muted)] hover:underline"
                                 >
                                   למחשבון המכללה
-                                </a>
+                                </ProgramTrackedLink>
                               )}
                             </div>
                           )}

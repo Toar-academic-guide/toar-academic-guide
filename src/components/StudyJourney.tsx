@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import posthog from 'posthog-js';
+import ProgramTrackedLink from './ProgramTrackedLink';
 import {
   ArrowLeft,
   ArrowRight,
@@ -1399,13 +1400,21 @@ export default function StudyJourney({
                         </>
                       )}
                     {activeOfficialUrl && (
-                      <a target="_blank" rel="noopener noreferrer" href={activeOfficialUrl}>
+                      <ProgramTrackedLink
+                        event="institution_site_clicked"
+                        programId={activeRow.program.id}
+                        institutionId={activeRow.institution.id}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        href={activeOfficialUrl}
+                      >
                         לאתר המוסד
-                      </a>
+                      </ProgramTrackedLink>
                     )}
                     <ProgramShareButton
                       key={activeRow.program.id}
                       programId={activeRow.program.id}
+                      institutionId={activeRow.institution.id}
                       title={activeRow.fieldName}
                     />
                   </div>
@@ -1451,6 +1460,7 @@ export default function StudyJourney({
                 key={activeRow.id}
                 programId={activeRow.program.id}
                 institutionId={activeRow.institution.id}
+                evaluationInput={reports[activeRow.program.id]?.input}
                 surface="journey"
                 title={`${activeRow.fieldName} · ${activeRow.institution.name}`}
                 onBack={() => go('results')}

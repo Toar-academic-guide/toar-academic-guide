@@ -50,6 +50,7 @@ describe('EnquiryForm', () => {
         programId="physiotherapy"
         institutionId="tau"
         title="פיזיותרפיה"
+        evaluationInput={{ degreeId: 'physiotherapy', bagrut: 105.5, psychometric: 680 }}
         surface="journey"
       />,
     );
@@ -87,6 +88,7 @@ describe('EnquiryForm', () => {
       programId: 'physiotherapy',
       institutionId: 'tau',
       consent: true,
+      evaluationInput: { degreeId: 'physiotherapy', bagrut: 105.5, psychometric: 680 },
     });
     expect(capture.mock.calls[2]).toEqual([
       'enquiry_submitted',

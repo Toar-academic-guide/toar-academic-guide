@@ -11,12 +11,14 @@ export default function EnquiryForm({
   title,
   onBack,
   surface = 'enquiry_page',
+  evaluationInput,
 }: {
   programId: string;
   institutionId: string;
   title: string;
   onBack?: () => void;
   surface?: string;
+  evaluationInput?: EnquiryInput['evaluationInput'];
 }) {
   const requestId = useRef<string | null>(null);
   const sending = useRef(false);
@@ -69,6 +71,7 @@ export default function EnquiryForm({
           institutionId,
           sourcePath: `${window.location.pathname}${window.location.hash}`.slice(0, 300),
           consent: true,
+          ...(evaluationInput ? { evaluationInput } : {}),
         };
         let httpStatus: number | null = null;
         try {
