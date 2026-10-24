@@ -107,6 +107,22 @@ textarea {
   outline-offset: 2px;
 }
 
+.way-app .way-search-field > .way-input-unframed {
+  flex: 1;
+  min-width: 0;
+  width: 100%;
+  appearance: none;
+  border: 0 !important;
+  outline: none;
+  box-shadow: none !important;
+  background: transparent !important;
+}
+
+.way-app .way-search-field:focus-within {
+  outline: 2px solid #6554b8;
+  outline-offset: 2px;
+}
+
 .way-app :where(button, a) {
   letter-spacing: 0;
 }

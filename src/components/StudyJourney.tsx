@@ -836,9 +836,10 @@ export default function StudyJourney({
         {step === 'subjects' && (
           <section className="journey-narrow">
             {catalogueStatus}
-            <label className="journey-search">
+            <label className="journey-search way-search-field">
               <Search size={20} aria-hidden="true" />
               <input
+                className="way-input-unframed"
                 aria-label="חיפוש תחום לימודים"
                 placeholder="איזה תחום מעניין אותך?"
                 value={query}
@@ -1226,9 +1227,10 @@ export default function StudyJourney({
             </div>
             {filtersOpen && (
               <div className="journey-filters">
-                <label className="journey-search">
+                <label className="journey-search way-search-field">
                   <Search size={18} />
                   <input
+                    className="way-input-unframed"
                     aria-label="חיפוש אפשרויות"
                     placeholder="תחום או מוסד"
                     value={query}
