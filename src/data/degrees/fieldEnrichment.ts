@@ -99,7 +99,6 @@ export const PROGRAM_FIELD_MAP: Record<string, string> = {
   minshar_dance: 'dance',
   samspiegel_cinema: 'cinema',
   samspiegel_screenwriting: 'screenwriting',
-  samspiegel_documentary: 'documentary',
 
   // ── Culinary ────────────────────────────────────────────────────────────────
   danon_chef: 'chef',
@@ -680,17 +679,6 @@ export const FIELD_ENRICHMENT: Record<string, FieldEnrichment> = {
       'ביקוש גובר לתוכן ישראלי בעקבות הצלחות בינלאומיות (שרות המלך, Fauda). שכר 8,000–25,000 ₪.',
     endGoalJobs: ['תסריטאי/ת', 'כותב/ת ראשי/ת', 'שואנר', 'כותב/ת Adaptation'],
     programIds: ['samspiegel_screenwriting'],
-  },
-
-  documentary: {
-    name: 'קולנוע דוקומנטרי',
-    emoji: '🎞️',
-    aboutText:
-      'קולנוע דוקומנטרי מלמד לתעד מציאות — מחקר עומק, צילום בשטח, עריכה נרטיבית ואתיקה עיתונאית. ישראל ידועה בסצנה דוקומנטרית חזקה בינלאומית.',
-    marketStatus:
-      'שוק נישה אבל גלובלי. Netflix ו-HBO משקיעים בדוקומנטרים ישראליים. שכר 8,000–20,000 ₪.',
-    endGoalJobs: ['במאי/ת דוקומנטרי/ת', 'מפיק/ה', 'עיתונאי/ת טלוויזיה', 'כותב/ת תוכן'],
-    programIds: ['samspiegel_documentary'],
   },
 
   dance: {

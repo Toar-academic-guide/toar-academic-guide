@@ -138,3 +138,38 @@ describe('programme aliases through the evaluate API with the real evaluator', (
     });
   });
 });
+
+describe('retired arts programme saved references', () => {
+  beforeEach(() => resetAdmissionsEvaluationRateLimitForTests());
+
+  it.each([
+    ['jerusalem_academy_graphic_design', 'jerusalem_academy_dance', 'jerusalem_academy'],
+    ['rubin_graphic_design', 'rubin_classical', 'rubin'],
+  ])('%s evaluates through its corrected programme', async (oldId, id, institutionId) => {
+    for (const scores of [
+      {},
+      { bagrut: 60, psychometric: 200 },
+      { bagrut: 120, psychometric: 800 },
+    ]) {
+      const oldResponse = await request({ degreeId: oldId, ...scores });
+      const currentResponse = await request({ degreeId: id, ...scores });
+      expect(oldResponse.status).toBe(200);
+      expect(currentResponse.status).toBe(200);
+      const oldBody = await oldResponse.json();
+      const currentBody = await currentResponse.json();
+      const oldResult = oldBody.data.results.find(
+        (r: { linkedInstitutionId: string }) => r.linkedInstitutionId === institutionId,
+      );
+      const currentResult = currentBody.data.results.find(
+        (r: { linkedInstitutionId: string }) => r.linkedInstitutionId === institutionId,
+      );
+      expect(oldResult).toEqual(currentResult);
+      expect(oldResult).toMatchObject({
+        kind: 'manual_gate',
+        capability: 'manual_gate',
+        decision: 'eligible_to_apply',
+      });
+      expect(oldResult.threshold).toBeUndefined();
+    }
+  });
+});
