@@ -14,7 +14,7 @@ import type {
 } from '@/db/types';
 
 describe('catalogue serializers', () => {
-  it.each(['afeka_ee', 'afeka_softwareeng'])(
+  it.each(['afeka_ee', 'afeka_softwareeng', 'afeka_cs'])(
     'repairs persisted %s shells, facts and thresholds after a successful database read',
     (id) => {
       const seed = buildCatalogueSeed();

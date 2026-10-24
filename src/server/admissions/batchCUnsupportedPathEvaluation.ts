@@ -46,8 +46,6 @@ export const BATCH_C_PROGRAMS: Readonly<Record<string, BatchCProgramConfig>> = {
   psychology: unsupportedProgram('ariel', 'institution_unsupported'),
   me: unsupportedProgram('ariel', 'institution_unsupported'),
   economics: unsupportedProgram('ariel', 'institution_unsupported'),
-  afeka_ee: unsupportedProgram('afeka', 'unsupported'),
-  afeka_softwareeng: unsupportedProgram('afeka', 'unsupported'),
   sports_science: unsupportedProgram('wingate', 'unsupported'),
   ariel_cs: unsupportedProgram('ariel', 'institution_unsupported'),
   ariel_ee: unsupportedProgram('ariel', 'institution_unsupported'),

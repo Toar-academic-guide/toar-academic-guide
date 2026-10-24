@@ -4,8 +4,6 @@ export const BATCH_C_UNSUPPORTED_PROGRAM_INSTITUTIONS: Readonly<Record<string, s
   psychology: 'ariel',
   me: 'ariel',
   economics: 'ariel',
-  afeka_ee: 'afeka',
-  afeka_softwareeng: 'afeka',
   sports_science: 'wingate',
   ariel_cs: 'ariel',
   ariel_ee: 'ariel',

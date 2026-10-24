@@ -36,7 +36,7 @@ function select(id: string, institutionId: string) {
 }
 
 describe('verified requirement tiles', () => {
-  it.each(['afeka_ee', 'afeka_softwareeng'])(
+  it.each(['afeka_ee', 'afeka_softwareeng', 'afeka_cs'])(
     'keeps %s alternative unit-and-score routes in the full requirements',
     (id) => {
       const program = programs.find((row) => row.id === id)!;

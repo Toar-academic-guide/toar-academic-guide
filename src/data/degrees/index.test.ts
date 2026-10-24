@@ -9,7 +9,7 @@ import { allPrograms, programsWithLegacyAdmissionFacts } from './index';
 type CatalogueProgramLike = (typeof allPrograms)[number];
 type InstitutionDetailLike = NonNullable<CatalogueProgramLike['institutionDetails']>[number];
 
-it.each(['afeka_ee', 'afeka_softwareeng'])(
+it.each(['afeka_ee', 'afeka_softwareeng', 'afeka_cs'])(
   'keeps %s alternative routes out of legacy cumulative facts',
   (id) => {
     const program = allPrograms.find((row) => row.id === id)!;

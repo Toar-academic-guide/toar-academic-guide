@@ -1,3 +1,4 @@
+import { evaluateAfekaPublishedRoutes } from './afekaPublishedRoutesEvaluation';
 import { isBatchCUnsupportedProgramId } from '@/data/admissions/batchCUnsupportedProgramIds';
 import { isBiuPublishedRoutePair } from '@/data/admissions/biuPublishedRoutes';
 import { evaluateBiuPublishedRoutes } from './biuPublishedRoutesEvaluation';
@@ -355,6 +356,14 @@ async function evaluateCapabilityEntries(args: {
 
     if (program.id === 'colmgmt_cs' && institution.id === 'colman') {
       results[index] = evaluateColmanBagrutResult({ input, institution });
+      continue;
+    }
+
+    if (
+      ['afeka_ee', 'afeka_softwareeng', 'afeka_cs'].includes(program.id) &&
+      institution.id === 'afeka'
+    ) {
+      results[index] = evaluateAfekaPublishedRoutes({ input, institution });
       continue;
     }
 

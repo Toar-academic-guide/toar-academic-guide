@@ -768,9 +768,14 @@ function buildSyntheticInstitutionDetail(program: Program): ProgramInstitutionDe
 
 function enrichLegacyProgram(program: Program): Program {
   if (
-    ['ono_law', 'ono_nursing', 'haifa_psychology', 'afeka_ee', 'afeka_softwareeng'].includes(
-      program.id,
-    )
+    [
+      'ono_law',
+      'ono_nursing',
+      'haifa_psychology',
+      'afeka_ee',
+      'afeka_softwareeng',
+      'afeka_cs',
+    ].includes(program.id)
   )
     return program;
 
