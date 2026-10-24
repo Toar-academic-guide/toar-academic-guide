@@ -308,6 +308,7 @@ jobs:
   build:
     name: Build application
     runs-on: ubuntu-latest
+    if: ${{ !cancelled() && needs.test.result == 'success' && needs.db-migrations-and-seed.result == 'success' && needs.admissions-verify.result == 'success' && needs.operational-schema-gate.result == 'success' }}
     needs:
       - test
       - db-migrations-and-seed
@@ -340,7 +341,7 @@ jobs:
     name: Playwright PR smoke
     runs-on: ubuntu-latest
     needs: build
-    if: ${{ github.event_name == 'pull_request' }}
+    if: ${{ !cancelled() && needs.build.result == 'success' && github.event_name == 'pull_request' }}
     env:
       CI: true
       CATALOGUE_SOURCE_MODE: static
@@ -385,6 +386,7 @@ jobs:
     name: Internal data-health smoke
     runs-on: ubuntu-latest
     needs: build
+    if: ${{ !cancelled() && needs.build.result == 'success' }}
     env:
       CI: true
       CATALOGUE_SOURCE_MODE: static
