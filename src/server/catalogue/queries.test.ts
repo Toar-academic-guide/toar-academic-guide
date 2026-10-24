@@ -341,6 +341,7 @@ describe('graphic-design identity repairs across the database cutover', () => {
         ['jerusalem_academy_graphic_design', 'jerusalem_academy', 'מוזיקה ומחול'],
         ['rubin_graphic_design', 'rubin', 'מוזיקה'],
         ['spieldocs_graphic_design', 'spieldocs', 'קולנוע ותסריטאות'],
+        ['samspiegel_documentary', 'spieldocs', 'קולנוע דוקומנטרי'],
         ['rubin_classical', 'rubin', 'מוזיקה קלאסית – ביצוע'],
       ];
       if (state !== 'before')

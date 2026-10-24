@@ -3,7 +3,7 @@ import 'server-only';
 import { eq, inArray } from 'drizzle-orm';
 
 import { UNIVERSITIES } from '@/data/degreesData';
-import { RETIRED_GRAPHIC_DESIGN_PROGRAM_IDS } from '@/data/admissions/catalogueContentRepair';
+import { RETIRED_PROGRAM_IDS } from '@/data/admissions/catalogueContentRepair';
 import { getDb } from '@/db/client';
 import {
   admissionAlternativePaths,
@@ -473,7 +473,7 @@ export async function listCataloguePrograms(): Promise<CatalogueQueryResult<Cata
       .filter((row) => {
         // Rollback preserves the allocated ID as an archive for saved references.
         if (row.id === 'jerusalem_academy_dance' && row.isListed === false) return false;
-        if (!RETIRED_GRAPHIC_DESIGN_PROGRAM_IDS.includes(row.id)) return true;
+        if (!RETIRED_PROGRAM_IDS.includes(row.id)) return true;
         // Until the packet is applied, serialize the original dance row under
         // its corrected ID. Once present, the persisted canonical row owns it.
         return row.id === 'jerusalem_academy_graphic_design' && !hasListedDance;

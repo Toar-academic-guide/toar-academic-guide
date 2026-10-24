@@ -92,6 +92,16 @@ export interface AdmissionAlternativePath {
 export interface InstitutionDetail {
   institutionName: string;
   durationYears: number | null;
+  /** Null means no verified overall credit total for this programme row. */
+  creditPoints?: number | null;
+  departmentCredits?: {
+    id: string;
+    name: string;
+    creditPoints: number | null;
+    sourceUrl: string;
+  }[];
+  curriculumSourceUrl?: string;
+  curriculumCheckedAt?: string;
   estimatedStudentsPerYear: string;
   quantitativeMinRequirement: number | null;
   englishMinRequirement: number | null;

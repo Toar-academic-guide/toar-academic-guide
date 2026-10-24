@@ -12,9 +12,11 @@ import {
   DANON_PROGRAM_URLS,
 } from '../admissions/danon';
 import computingCourses from './computingCourses.json';
+import { applyJamdCurriculum } from './jamdCurriculum';
+import { repairSamSpiegelUrls } from '../admissions/samSpiegelUrls';
 import {
   applyCatalogueContentRepair,
-  RETIRED_GRAPHIC_DESIGN_PROGRAM_IDS,
+  RETIRED_PROGRAM_IDS,
 } from '../admissions/catalogueContentRepair';
 import {
   mondayAdmissionsEvidence,
@@ -839,7 +841,7 @@ for (const record of mondayAdmissionsEvidence) {
     const progId = `${programInstitutionKey}_${prog.id}`;
     // Verified dance/music rows replace these mixed imports; Sam Spiegel's
     // combined import duplicates its existing cinema and screenwriting rows.
-    if (RETIRED_GRAPHIC_DESIGN_PROGRAM_IDS.includes(progId)) continue;
+    if (RETIRED_PROGRAM_IDS.includes(progId)) continue;
 
     const existsInStatic =
       ACADEMIC_PROGRAMS.some((p) => p.id === progId) ||
@@ -1091,4 +1093,7 @@ export const programsWithLegacyAdmissionFacts = [
 });
 
 // Verified display copy is deliberately separate from inferred legacy calculation facts.
-export const allPrograms = programsWithLegacyAdmissionFacts.map(applyCatalogueContentRepair);
+export const allPrograms = programsWithLegacyAdmissionFacts.map((program) => {
+  const repaired = applyJamdCurriculum(applyCatalogueContentRepair(program));
+  return repaired.institutionId === 'spieldocs' ? repairSamSpiegelUrls(repaired) : repaired;
+});

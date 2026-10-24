@@ -32,6 +32,7 @@ const redirects = [
   ['jerusalem_academy_graphic_design', '/programs/jerusalem_academy_dance'],
   ['rubin_graphic_design', '/programs/rubin_classical'],
   ['spieldocs_graphic_design', '/institutions/spieldocs'],
+  ['samspiegel_documentary', '/institutions/spieldocs'],
 ] as const;
 const corrected = [
   ['jerusalem_academy_dance', 'jerusalem_academy', 'תואר ראשון במחול', 'B.Dance'],
@@ -69,7 +70,7 @@ describe('verified dance, TAU music and Sam Spiegel identities', () => {
     expect(allPrograms.filter((p) => p.institutionId === 'rubin').map((p) => p.id)).toEqual([
       'rubin_classical',
     ]);
-    expect(allPrograms.find((p) => p.id === 'samspiegel_documentary')).toBeDefined();
+    expect(allPrograms.find((p) => p.id === 'samspiegel_documentary')).toBeUndefined();
   });
 
   it.each(corrected)(

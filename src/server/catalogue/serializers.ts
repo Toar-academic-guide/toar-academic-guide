@@ -1,6 +1,8 @@
 import type { InstitutionDetail } from '@/data/degrees/types';
 import { DANON_PROGRAM_NAMES } from '@/data/admissions/danon';
 import { allPrograms } from '@/data/degrees';
+import { applyJamdCurriculum } from '@/data/degrees/jamdCurriculum';
+import { repairSamSpiegelUrls } from '@/data/admissions/samSpiegelUrls';
 import { INSTITUTION_BY_ID } from '@/data/institutions';
 import { applyCatalogueContentRepair } from '@/data/admissions/catalogueContentRepair';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
@@ -42,7 +44,7 @@ export function serializeInstitutionRow(
   row: InstitutionRow,
   calculatorConfig?: UniversityCalculatorConfigRow,
 ): CatalogueInstitution {
-  return {
+  const institution: CatalogueInstitution = {
     updatedAt: row.updatedAt?.toISOString(),
     id: row.id as CatalogueInstitution['id'],
     name: row.name,
@@ -57,6 +59,7 @@ export function serializeInstitutionRow(
     universityId: (row.universityId ?? undefined) as CatalogueInstitution['universityId'],
     calculatorConfig: calculatorConfig ? serializeCalculatorConfigRow(calculatorConfig) : undefined,
   };
+  return row.id === 'spieldocs' ? repairSamSpiegelUrls(institution) : institution;
 }
 
 function buildInstitutionDetails(
@@ -259,7 +262,7 @@ export function serializeProgramRow(args: {
     ),
     linkedInstitutionIds: relations.map((relation) => relation.institutionId),
   };
-  return [
+  const repaired = [
     'haifa_psychology',
     'afeka_ee',
     'afeka_softwareeng',
@@ -270,4 +273,6 @@ export function serializeProgramRow(args: {
   ].includes(program.id)
     ? applyCatalogueContentRepair(serialized)
     : serialized;
+  const curriculum = applyJamdCurriculum(repaired);
+  return curriculum.institutionId === 'spieldocs' ? repairSamSpiegelUrls(curriculum) : curriculum;
 }

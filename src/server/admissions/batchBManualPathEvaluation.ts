@@ -131,12 +131,6 @@ export const BATCH_B_PROGRAMS: Record<string, BatchBProgramConfig> = {
     scoresOptional: true,
     steps: ['הגשת תסריט קצר', 'ראיון קבלה'],
   },
-  samspiegel_documentary: {
-    institutionId: 'spieldocs',
-    gate: 'interview',
-    scoresOptional: true,
-    steps: ['הגשת פרויקט תיעודי או מסמך פיתוח', 'ראיון קבלה'],
-  },
 
   // ── Music / acting / dance / physical ed ──────────────────────────────────
   jerusalem_academy_classical: {

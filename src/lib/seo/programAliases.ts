@@ -17,6 +17,7 @@ export const PROGRAM_RETIREMENT_REDIRECTS: Readonly<Record<string, string>> = {
   jerusalem_academy_graphic_design: '/programs/jerusalem_academy_dance',
   rubin_graphic_design: '/programs/rubin_classical',
   spieldocs_graphic_design: '/institutions/spieldocs',
+  samspiegel_documentary: '/institutions/spieldocs',
 };
 
 export function canonicalProgramId(id: string): string {

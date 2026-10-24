@@ -13,10 +13,11 @@ type ContentRepair = {
   durationYears?: number;
 };
 
-export const RETIRED_GRAPHIC_DESIGN_PROGRAM_IDS = [
+export const RETIRED_PROGRAM_IDS = [
   'jerusalem_academy_graphic_design',
   'rubin_graphic_design',
   'spieldocs_graphic_design',
+  'samspiegel_documentary',
 ];
 
 const requirements = repair.requirements as ContentRepair[];

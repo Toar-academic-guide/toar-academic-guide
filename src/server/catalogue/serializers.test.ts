@@ -515,7 +515,16 @@ describe('verified programme identity overlays on stale DB data', () => {
         quantitativeMinRequirement: null,
         englishMinRequirement: null,
       });
-      expect(result.institutionDetails![0].programDescription).toBeUndefined();
+      expect(result.institutionDetails![0].programDescription).not.toBe(
+        'Mixed graphic design import',
+      );
+      if (id === 'jerusalem_academy_dance') {
+        expect(result.institutionDetails![0].programDescription).toBe(
+          'הלימודים לתואר B.Dance נמשכים ארבע שנים. הסטאז׳ מתקיים בשנה החמישית.',
+        );
+      } else {
+        expect(result.institutionDetails![0].programDescription).toBeUndefined();
+      }
       expect(result.institutionDetails![0].specificAdmissionNotes).toEqual(
         allPrograms.find((p) => p.id === id)!.institutionDetails![0].specificAdmissionNotes,
       );

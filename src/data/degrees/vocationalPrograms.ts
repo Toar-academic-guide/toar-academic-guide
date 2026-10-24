@@ -258,8 +258,7 @@ export const vocationalPrograms: Program[] = [
   },
 
   // ── בית הספר לקולנוע ולטלוויזיה ע"ש סם שפיגל ──────────────────────────────
-  // Jerusalem film school; diploma programs in filmmaking, screenwriting,
-  // and documentary.
+  // Jerusalem film school; full cinema and screenwriting tracks.
   {
     id: 'samspiegel_cinema',
     name: 'קולנוע',
@@ -285,17 +284,6 @@ export const vocationalPrograms: Program[] = [
     profileScore: P.screenwriting,
     admissionType: 'requirements',
     admissionRequirements: ['תסריט קצר מקורי (עד 10 עמ׳)', 'ראיון קבלה'],
-  },
-  {
-    id: 'samspiegel_documentary',
-    name: 'קולנוע דוקומנטרי',
-    institution: 'בית הספר לקולנוע ולטלוויזיה ע"ש סם שפיגל',
-    institutionId: 'spieldocs',
-    type: 'certificate',
-    category: 'אמנות ועיצוב',
-    profileScore: P.documentary,
-    admissionType: 'requirements',
-    admissionRequirements: ['פרויקט תיעודי קצר או מסמך פיתוח', 'ראיון קבלה'],
   },
 
   // ════════════════════════════════════════════════════════════════════════════

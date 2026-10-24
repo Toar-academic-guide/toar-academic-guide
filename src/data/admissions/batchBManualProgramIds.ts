@@ -17,7 +17,6 @@ export const BATCH_B_MANUAL_PROGRAM_INSTITUTIONS: Readonly<Record<string, string
   minshar_dance: 'minshar',
   samspiegel_cinema: 'spieldocs',
   samspiegel_screenwriting: 'spieldocs',
-  samspiegel_documentary: 'spieldocs',
   jerusalem_academy_classical: 'jerusalem_academy',
   jerusalem_academy_jazz: 'jerusalem_academy',
   jerusalem_academy_dance: 'jerusalem_academy',
