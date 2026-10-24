@@ -1,18 +1,42 @@
 import { expect, test } from '@playwright/test';
 
-for (const [oldId, destination] of [
-  ['jerusalem_academy_graphic_design', '/programs/jerusalem_academy_dance'],
-  ['rubin_graphic_design', '/programs/rubin_classical'],
-  ['spieldocs_graphic_design', '/institutions/spieldocs'],
-  ['samspiegel_documentary', '/institutions/spieldocs'],
-  ['documentary', '/programs/cinema'],
-]) {
-  test(`${oldId} returns 308`, async ({ request }) => {
-    const response = await request.get(`/programs/${oldId}`, { maxRedirects: 0 });
-    expect(response.status()).toBe(308);
-    expect(new URL(response.headers().location, response.url()).pathname).toBe(destination);
+test.describe('permanent catalogue redirects', () => {
+  test.use({
+    extraHTTPHeaders: async ({ extraHTTPHeaders }, use) => {
+      // Vercel's cookie-setting header adds a 307 before the application redirect.
+      // Keep bypass authentication while checking the application's first response.
+      await use(
+        Object.fromEntries(
+          Object.entries(extraHTTPHeaders ?? {}).filter(
+            ([name]) => name.toLowerCase() !== 'x-vercel-set-bypass-cookie',
+          ),
+        ),
+      );
+    },
   });
-}
+
+  for (const [oldId, destination] of [
+    ['jerusalem_academy_graphic_design', '/programs/jerusalem_academy_dance'],
+    ['rubin_graphic_design', '/programs/rubin_classical'],
+    ['spieldocs_graphic_design', '/institutions/spieldocs'],
+    ['samspiegel_documentary', '/institutions/spieldocs'],
+    ['documentary', '/programs/cinema'],
+  ]) {
+    test(`${oldId} returns 308`, async ({ request }) => {
+      for (const query of ['', '?ref=saved']) {
+        for (const method of ['get', 'head'] as const) {
+          const response = await request[method](`/programs/${oldId}${query}`, {
+            maxRedirects: 0,
+          });
+          expect(response.status()).toBe(308);
+          const location = new URL(response.headers().location, response.url());
+          expect(location.pathname).toBe(destination);
+          expect(location.search).toBe(query);
+        }
+      }
+    });
+  }
+});
 
 test('sitemap omits retired programme and hub URLs and cinema still has a programme', async ({
   request,
