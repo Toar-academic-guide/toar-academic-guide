@@ -14,6 +14,25 @@ import type {
 } from '@/db/types';
 
 describe('catalogue serializers', () => {
+  it('preserves database updated_at timestamps for sitemap provenance', () => {
+    const seed = buildCatalogueSeed();
+    const updatedAt = new Date('2026-10-23T12:34:56Z');
+    const institution = serializeInstitutionRow({
+      ...seed.institutions[0],
+      updatedAt,
+    } as InstitutionRow);
+    const program = serializeProgramRow({
+      program: { ...seed.programs[0], updatedAt } as ProgramRow,
+      relations: [],
+      requirements: [],
+      thresholds: [],
+      sourceUrls: [],
+      institutionsById: new Map(),
+    });
+    expect(institution.updatedAt).toBe('2026-10-23T12:34:56.000Z');
+    expect(program.updatedAt).toBe('2026-10-23T12:34:56.000Z');
+  });
+
   it.each(['afeka_ee', 'afeka_softwareeng', 'afeka_cs'])(
     'repairs persisted %s shells, facts and thresholds after a successful database read',
     (id) => {

@@ -21,10 +21,12 @@ export interface CatalogueInstitution extends Pick<
   InstitutionRecord,
   'id' | 'name' | 'region' | 'domain' | 'logoUrl' | 'programUrl' | 'calculatorUrl' | 'universityId'
 > {
+  updatedAt?: string;
   calculatorConfig?: CatalogueCalculatorConfig;
 }
 
 export interface CatalogueProgram extends Program {
+  updatedAt?: string;
   linkedInstitutionIds: string[];
 }
 

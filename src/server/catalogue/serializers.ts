@@ -42,6 +42,7 @@ export function serializeInstitutionRow(
   calculatorConfig?: UniversityCalculatorConfigRow,
 ): CatalogueInstitution {
   return {
+    updatedAt: row.updatedAt?.toISOString(),
     id: row.id as CatalogueInstitution['id'],
     name: row.name,
     region: row.region as CatalogueInstitution['region'],
@@ -213,6 +214,7 @@ export function serializeProgramRow(args: {
   const staticProgram = STATIC_PROGRAMS_BY_ID.get(program.id);
 
   const serialized: CatalogueProgram = {
+    updatedAt: program.updatedAt?.toISOString(),
     id: program.id,
     name: DANON_PROGRAM_NAMES[program.id] ?? program.name,
     isListed: program.isListed,

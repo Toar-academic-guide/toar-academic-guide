@@ -17,11 +17,12 @@ vi.mock('@/server/catalogue/queries', () => ({
 }));
 
 // Metadata captured from main (a4d84ae). JSON-LD hashes include provider
-// catalogues, with duplicate aliases removed from MTA and Colman.
+// catalogues, with duplicate aliases removed from MTA and Colman, and the
+// intentional slashed homepage breadcrumb identity from the indexing brief.
 const unchangedPrograms = [
   {
     id: 'bgu_psychology',
-    structuredDataSha256: '910ed89e7982717df30a80277764f6b3041523f76814e25ba55f536728b8635d',
+    structuredDataSha256: '2aabea44e74869b576a140ec5fac1e2714435596aa38f936bbc52a7350f73099',
     name: 'פסיכולוגיה',
     title: 'פסיכולוגיה – אוניברסיטת בן-גוריון בנגב',
     description:
@@ -36,7 +37,7 @@ const unchangedPrograms = [
   },
   {
     id: 'tau_cs',
-    structuredDataSha256: '7ceb4421cf5612ed958b4c0ebdadb6c7486d53e074d8374b18d33644b849dc64',
+    structuredDataSha256: '8158c55cfa799653bed1d042df8d973be1a1b48de29937f194b455239cda3449',
     name: 'מדעי המחשב',
     title: 'מדעי המחשב – אוניברסיטת תל אביב',
     description:
@@ -51,7 +52,7 @@ const unchangedPrograms = [
   },
   {
     id: 'nursing',
-    structuredDataSha256: '33686bb46a67aa96fd14bf8c5fb39b1aa2b77ec2a0f68d7babfa08144b6d8f7a',
+    structuredDataSha256: '2649cc67211782576c40ebdabfe960a98f7cdef762255bcc6290662a3006bbcd',
     name: 'סיעוד',
     title: 'לימודי סיעוד: באילו מוסדות לומדים',
     description:
@@ -94,7 +95,7 @@ const unchangedPrograms = [
   },
   {
     id: 'tlvyaffo_cs',
-    structuredDataSha256: '7d9258988f8697550ab8798743294b51fa04e2bfcca15344d8e74a05a5be352a',
+    structuredDataSha256: '3128a1f6c9654b14cb70ea9b739840dab5e00ee00d5301d565f45fa6261f97e8',
     name: 'מדעי המחשב',
     title: 'מדעי המחשב – המכללה האקדמית תל-אביב-יפו',
     description:
@@ -109,7 +110,7 @@ const unchangedPrograms = [
   },
   {
     id: 'colmgmt_business',
-    structuredDataSha256: 'b7e54dafef4bf8285dbfc3c0ed3afa171636a5dd471992f67efbd15d30f0c143',
+    structuredDataSha256: '1c8f153e91cd5124d44b2ac5d379025e82de08edfc8483578fe434f287979c67',
     name: 'מנהל עסקים',
     title: 'מנהל עסקים – מכללת ניהול – לימודים אקדמיים',
     description:
@@ -124,7 +125,7 @@ const unchangedPrograms = [
   },
   {
     id: 'colmgmt_law',
-    structuredDataSha256: '33025153eb81bcb9d6a7848ad239ed8462dfb144129034b39cbbf0be5e71b021',
+    structuredDataSha256: 'cd7b8253c7da8e582a88308253af83fa4d1c38845b7e4624a53355fff32e6498',
     name: 'משפטים',
     title: 'משפטים – מכללת ניהול – לימודים אקדמיים',
     description:

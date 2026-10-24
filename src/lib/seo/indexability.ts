@@ -26,8 +26,8 @@ export async function isIndexableProgram(id: string, catalogue?: Catalogue): Pro
   );
 }
 
-export async function indexableInstitutionIds(): Promise<string[]> {
-  const catalogue = await loadPublicCatalogue();
+export async function indexableInstitutionIds(catalogue?: Catalogue): Promise<string[]> {
+  catalogue ??= await loadPublicCatalogue();
   const flags = await Promise.all(
     catalogue.institutions.map((institution) => isIndexableInstitution(institution.id, catalogue)),
   );
@@ -36,8 +36,8 @@ export async function indexableInstitutionIds(): Promise<string[]> {
     .map((institution) => institution.id);
 }
 
-export async function indexableProgramIds(): Promise<string[]> {
-  const catalogue = await loadPublicCatalogue();
+export async function indexableProgramIds(catalogue?: Catalogue): Promise<string[]> {
+  catalogue ??= await loadPublicCatalogue();
   const flags = await Promise.all(
     catalogue.programs.map((program) => isIndexableProgram(program.id, catalogue)),
   );

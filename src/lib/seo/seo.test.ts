@@ -180,11 +180,11 @@ describe('crawl policy', () => {
     );
   }, 15_000);
 
-  it('keeps all 352 canonical public URLs in order and omits lastmod without per-page data dates', async () => {
+  it('keeps all 352 canonical public URLs in order with stable data modification dates', async () => {
     const entries = await sitemap();
     const urls = entries.map((entry) => entry.url);
     expect(urls).toEqual([
-      SITE_URL,
+      `${SITE_URL}/`,
       `${SITE_URL}/about`,
       `${SITE_URL}/institutions`,
       ...(await indexableInstitutionIds()).map(
@@ -202,17 +202,25 @@ describe('crawl policy', () => {
     expect(urls).toHaveLength(352);
     for (const url of urls) {
       expect(new URL(url).origin).toBe(SITE_URL);
-      expect(url.endsWith('/')).toBe(false);
+      expect(url.endsWith('/')).toBe(url === `${SITE_URL}/`);
       expect(url).not.toMatch(/mon_|\/(?:app|login|signup|enquiry|internal|auth|api|dev)(?:\/|$)/);
     }
     for (const entry of entries) {
-      // The static page records have no verified per-page modification dates.
-      expect(entry).not.toHaveProperty('lastModified');
+      expect(entry.lastModified).toBeTruthy();
+      expect(Number.isFinite(Date.parse(String(entry.lastModified)))).toBe(true);
       expect(entry.changeFrequency).toBe(entry.url.endsWith('/about') ? 'monthly' : 'weekly');
       expect(entry.priority).toBeGreaterThan(0);
       expect(entry.priority).toBeLessThanOrEqual(1);
     }
     expect(entries[0].priority).toBe(1);
+    expect(new Set(entries.map((entry) => entry.lastModified)).size).toBeGreaterThan(1);
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime('2030-01-01T00:00:00Z');
+      expect(await sitemap()).toEqual(entries);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });
 
@@ -234,7 +242,9 @@ describe('metadata', () => {
     expect(SITE_NAME).toBe('MyWay');
     expect(SITE_ALT_NAMES).toEqual(['FindMyWay', 'Way', 'findmyway.co.il']);
     expect(SITE_DESCRIPTION).toMatch(/תארים.*קורסים.*תעודה.*בינלאומיות/);
-    expect(absoluteUrl()).toBe(SITE_URL);
+    expect(absoluteUrl()).toBe(`${SITE_URL}/`);
+    expect(absoluteUrl('/')).toBe(`${SITE_URL}/`);
+    expect(absoluteUrl('/about/')).toBe(`${SITE_URL}/about`);
     expect(absoluteUrl('/institutions/tau')).toBe(`${SITE_URL}/institutions/tau`);
   });
 
@@ -526,7 +536,7 @@ describe('structured data', () => {
       '@id': `${SITE_URL}/#organization`,
       name: 'MyWay',
       alternateName: SITE_ALT_NAMES,
-      url: SITE_URL,
+      url: `${SITE_URL}/`,
       logo: `${SITE_URL}/way-logo.png`,
       areaServed: 'IL',
       knowsLanguage: 'he',
@@ -544,7 +554,7 @@ describe('structured data', () => {
     expect(webApplicationLd()).toMatchObject({
       '@type': 'WebApplication',
       '@id': `${SITE_URL}/#webapp`,
-      url: SITE_URL,
+      url: `${SITE_URL}/`,
       applicationCategory: 'EducationalApplication',
       operatingSystem: 'Web',
       offers: { '@type': 'Offer', price: 0, priceCurrency: 'ILS' },
@@ -916,13 +926,13 @@ describe('structured data', () => {
     const institution = institutionBreadcrumbLd((await getPublicInstitutionPageData('tau'))!);
     expect(institution.itemListElement.map((item) => item.position)).toEqual([1, 2, 3]);
     expect(institution.itemListElement.map((item) => item.item)).toEqual([
-      SITE_URL,
+      `${SITE_URL}/`,
       `${SITE_URL}/institutions`,
       `${SITE_URL}/institutions/tau`,
     ]);
     const program = programBreadcrumbLd((await getPublicProgramPageData('tau_cs'))!);
     expect(program.itemListElement.map((item) => item.item)).toEqual([
-      SITE_URL,
+      `${SITE_URL}/`,
       `${SITE_URL}/institutions`,
       `${SITE_URL}/institutions/tau`,
       `${SITE_URL}/programs/tau_cs`,

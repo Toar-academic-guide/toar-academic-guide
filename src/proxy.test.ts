@@ -53,3 +53,29 @@ describe('calculator request middleware', () => {
     expect(response.headers.get('x-middleware-next')).toBe('1');
   });
 });
+
+describe('production Vercel alias', () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  it('redirects the production alias permanently, preserving the path and exact query', async () => {
+    vi.stubEnv('VERCEL_ENV', 'production');
+    const response = await proxy(
+      new NextRequest('https://toar-academic-guide.vercel.app/programs/cs?x=a%20b&x=2'),
+    );
+    expect(response.status).toBe(308);
+    expect(response.headers.get('location')).toBe(
+      'https://findmyway.co.il/programs/cs?x=a%20b&x=2',
+    );
+  });
+
+  it.each([
+    ['production', 'findmyway.co.il'],
+    ['preview', 'toar-academic-guide-git-feature.vercel.app'],
+    ['production', 'vercel.app.example.com'],
+  ])('passes through %s on %s', async (environment, host) => {
+    vi.stubEnv('VERCEL_ENV', environment);
+    const response = await proxy(new NextRequest(`https://${host}/programs/cs`));
+    expect(response.headers.get('location')).toBeNull();
+    expect(response.headers.get('x-middleware-next')).toBe('1');
+  });
+});

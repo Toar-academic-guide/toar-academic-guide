@@ -4,6 +4,13 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { getSupabaseEnv, isSupabaseConfigured } from '@/lib/supabase/env';
 
 export async function proxy(request: NextRequest) {
+  if (process.env.VERCEL_ENV === 'production' && request.nextUrl.hostname.endsWith('.vercel.app')) {
+    return NextResponse.redirect(
+      `https://findmyway.co.il${request.nextUrl.pathname}${request.nextUrl.search}`,
+      308,
+    );
+  }
+
   if (process.env.NODE_ENV === 'production' && request.nextUrl.pathname === '/dev') {
     return new NextResponse(null, { status: 404 });
   }
