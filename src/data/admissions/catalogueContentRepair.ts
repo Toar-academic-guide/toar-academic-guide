@@ -1,6 +1,7 @@
 import repair from './catalogueContentRepair.json';
 import { INSTITUTION_BY_ID, INSTITUTION_BY_NAME, type InstitutionId } from '../institutions';
 import type { Program } from '../degrees/types';
+import { vocationalPrograms } from '../degrees/vocationalPrograms';
 
 type ContentRepair = {
   programId: string;
@@ -8,20 +9,35 @@ type ContentRepair = {
   notes: string[];
   sourceUrl: string;
   programUrl?: string;
-  identity?: Pick<Program, 'name' | 'category' | 'type'>;
+  identity?: Pick<Program, 'name' | 'category' | 'type' | 'awardedCredential'>;
+  durationYears?: number;
 };
+
+export const RETIRED_PROGRAM_IDS = [
+  'jerusalem_academy_graphic_design',
+  'rubin_graphic_design',
+  'spieldocs_graphic_design',
+  'samspiegel_documentary',
+];
 
 const requirements = repair.requirements as ContentRepair[];
 const excludedIds = new Set(repair.excludedPrograms.map((row) => row.programId));
 
 /** Apply verified content after legacy normalization, never deriving admission facts. */
 export function applyCatalogueContentRepair<T extends Program>(program: T): T {
+  if (program.id === 'jerusalem_academy_graphic_design') {
+    program = { ...program, id: 'jerusalem_academy_dance' };
+  }
   const rows = requirements.filter((row) => row.programId === program.id);
   if (rows.length === 0) {
     return excludedIds.has(program.id) ? { ...program, isListed: false } : program;
   }
 
   const identity = rows.find((row) => row.identity)?.identity;
+  const verifiedArts = ['jerusalem_academy_dance', 'rubin_classical'].includes(program.id);
+  const artsSource = verifiedArts
+    ? vocationalPrograms.find((source) => source.id === program.id)
+    : undefined;
   const afekaRoutes = rows.find(
     (row) =>
       row.institutionId === 'afeka' &&
@@ -50,9 +66,10 @@ export function applyCatalogueContentRepair<T extends Program>(program: T): T {
   return {
     ...program,
     ...identity,
-    ...(afekaRoutes
+    ...(afekaRoutes || verifiedArts
       ? {
-          admissionRequirements: afekaRoutes.notes,
+          admissionType: 'requirements' as const,
+          admissionRequirements: (afekaRoutes ?? rows[0]).notes,
           thresholds: undefined,
           directPsychometric: undefined,
           minimumBagrut: undefined,
@@ -67,11 +84,13 @@ export function applyCatalogueContentRepair<T extends Program>(program: T): T {
         ...detail,
         specificAdmissionNotes: row.notes,
         programUrl: row.programUrl ?? row.sourceUrl,
-        ...(afekaRoutes && row.institutionId === 'afeka'
+        ...(row.durationYears !== undefined ? { durationYears: row.durationYears } : {}),
+        ...(verifiedArts ? { programDescription: undefined } : {}),
+        ...((afekaRoutes && row.institutionId === 'afeka') || verifiedArts
           ? {
               quantitativeMinRequirement: null,
               englishMinRequirement: null,
-              admissionFacts: [],
+              admissionFacts: artsSource?.institutionDetails?.[0].admissionFacts ?? [],
               admissionAlternativePaths: [],
             }
           : {}),

@@ -143,12 +143,10 @@ describe('server-rendered crawl paths', () => {
     'tiltan_graphic_design',
     'danon_culinary',
     'hackeru_cs',
-    'jerusalem_academy_graphic_design',
+    'jerusalem_academy_dance',
     'reichman_infosystems',
     'colmgmt_infosystems',
     'reidman_medicine',
-    'rubin_graphic_design',
-    'spieldocs_graphic_design',
   ];
 
   it('gives no hub or related block to programmes whose subject slug is taken', async () => {
@@ -232,4 +230,58 @@ describe('server-rendered crawl paths', () => {
       expect(related.hub?.id).toBe(hubId);
     },
   );
+});
+
+describe('homepage degree institution ranking', () => {
+  it('derives the eight universities from published institution programme pages', async () => {
+    const links = await getPublicBrowseLinks();
+    // Current published page counts: 20, 16, 15, 14, 13, 13, 9, 7.
+    expect(links.institutions.map((i) => i.id)).toEqual([
+      'ariel',
+      'haifa',
+      'tau',
+      'bgu',
+      'biu',
+      'huji',
+      'technion',
+      'reichman',
+    ]);
+  });
+
+  it('puts universities before larger colleges, excludes non-degrees, and breaks ties by ID', async () => {
+    const { rankDegreeInstitutions } = await import('./publicCatalogueLinks');
+    const institutions = getStaticCatalogueInstitutions().filter((i) =>
+      ['tau', 'huji', 'hit', 'danon', 'shenkar'].includes(i.id),
+    );
+    const template = getStaticCataloguePrograms().find((p) => p.institutionId === 'tau')!;
+    const programs = [
+      ...Array.from({ length: 8 }, (_, i) => ({
+        ...template,
+        id: `college_${i}`,
+        institutionId: 'hit' as const,
+        linkedInstitutionIds: ['hit'],
+      })),
+      ...Array.from({ length: 9 }, (_, i) => ({
+        ...template,
+        id: `school_${i}`,
+        institutionId: 'danon' as const,
+        linkedInstitutionIds: ['danon'],
+      })),
+      ...['tau', 'huji', 'shenkar'].map((id) => ({
+        ...template,
+        id: `${id}_degree`,
+        institutionId: id as typeof template.institutionId,
+        linkedInstitutionIds: [id],
+      })),
+      { ...template, id: 'hidden_tau', isListed: false, linkedInstitutionIds: ['tau'] },
+      { ...template, id: 'subject_tau', linkedInstitutionIds: ['tau'] },
+    ];
+    expect(
+      rankDegreeInstitutions({
+        institutions,
+        programs,
+        generalProgramIds: new Set(['subject_tau']),
+      }).map((i) => i.id),
+    ).toEqual(['huji', 'tau', 'hit', 'shenkar']);
+  });
 });

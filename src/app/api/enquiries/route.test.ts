@@ -1,4 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
+
+vi.mock('server-only', () => ({}));
 
 const { listCataloguePrograms, listCatalogueInstitutions, capture, flush, after } = vi.hoisted(
   () => ({
@@ -44,7 +47,7 @@ describe('website enquiries → Monday', () => {
     vi.stubEnv('NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN', 'test-analytics-token');
     vi.stubEnv('MONDAY_API_TOKEN', 'test-server-token');
     listCataloguePrograms.mockResolvedValue({
-      data: [{ id: 'physiotherapy', name: 'פיזיותרפיה', linkedInstitutionIds: ['tau'] }],
+      data: [getStaticCataloguePrograms().find((program) => program.id === 'physiotherapy')!],
     });
     listCatalogueInstitutions.mockResolvedValue({
       data: [{ id: 'tau', name: 'אוניברסיטת תל אביב' }],
@@ -94,6 +97,34 @@ describe('website enquiries → Monday', () => {
     expect((await POST(request({}, 'https://unrelated.example'))).status).toBe(403);
     expect(fetch).not.toHaveBeenCalled();
     expect(after).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ['accounting', 'colman'],
+    ['cs', 'reichman'],
+    ['afeka_engineering', 'afeka'],
+    ['colman_law', 'colman'],
+  ])(
+    'accepts the resolved %s / %s target when the form is submitted',
+    async (programId, institutionId) => {
+      listCataloguePrograms.mockResolvedValue({
+        data: getStaticCataloguePrograms().filter((program) => program.id !== 'afeka_engineering'),
+      });
+      listCatalogueInstitutions.mockResolvedValue({ data: getStaticCatalogueInstitutions() });
+      expect((await POST(request({ programId, institutionId }))).status).toBe(201);
+      const body = JSON.parse(vi.mocked(fetch).mock.calls[0][1]?.body as string);
+      expect(JSON.parse(body.variables.columns)).toMatchObject({
+        text_mm8ag00n: programId,
+        text_mm8a4c4w: getStaticCatalogueInstitutions().find((entry) => entry.id === institutionId)!
+          .name,
+      });
+    },
+  );
+
+  it('does not submit a lead when the database catalogue cannot be read', async () => {
+    listCataloguePrograms.mockRejectedValue(new Error('database unavailable'));
+    expect((await POST(request())).status).toBe(502);
+    expect(fetch).not.toHaveBeenCalled();
   });
 
   it('never reports success when Monday rejects an item or the credential is absent', async () => {
