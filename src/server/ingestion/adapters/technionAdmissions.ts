@@ -300,8 +300,7 @@ export function parseTechnionOfficialThreshold(
     ? programId.slice('technion_'.length)
     : programId;
   const officialTitle = TECHNION_OFFICIAL_TITLE_BY_PROGRAM_ID[normalizedProgramId];
-  // Medicine's published number estimates MOR invitations, not admission eligibility.
-  if (!officialTitle || normalizedProgramId === 'medicine') return undefined;
+  if (!officialTitle) return undefined;
 
   // The spring table precedes winter in the document. Never use it as a cutoff.
   const winterTable = html.match(

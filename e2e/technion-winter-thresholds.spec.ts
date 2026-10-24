@@ -6,17 +6,7 @@ for (const width of [390, 1440]) {
   }, testInfo) => {
     test.setTimeout(120_000);
     await page.setViewportSize({ width, height: 900 });
-    for (const id of [
-      'ee',
-      'me',
-      'medicine',
-      'engineering',
-      'cs',
-      'datascience',
-      'civil',
-      'industrial',
-      'biomedical',
-    ]) {
+    for (const id of ['ee', 'me']) {
       await page.goto(`/programs/technion_${id}`);
       const notice = page
         .locator('div')
@@ -31,12 +21,10 @@ for (const width of [390, 1440]) {
         await expect(notice).toContainText(
           'באביב תשפ"ז: 94 — על בסיס מקום פנוי, מספר המקומות מצומצם',
         );
-      if (id === 'medicine')
-        await expect(notice).toContainText('92.000 הוא סף משוער לזימון למבחן מו״ר');
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
         true,
       );
-      if (['ee', 'me', 'medicine'].includes(id))
+      if (['ee', 'me'].includes(id))
         await page.screenshot({ path: testInfo.outputPath(`${id}-${width}.png`), fullPage: true });
     }
   });

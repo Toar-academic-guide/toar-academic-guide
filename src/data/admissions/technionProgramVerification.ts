@@ -25,6 +25,7 @@ const CONFIGS: TechnionConfig[] = [
   { programId: 'datascience', threshold: 91, verdict: 'accepted' },
   { programId: 'ee', threshold: 91.5, verdict: 'accepted' },
   { programId: 'me', threshold: 87, verdict: 'accepted' },
+  { programId: 'medicine', threshold: 92, verdict: 'eligible_to_apply' },
   { programId: 'biomedical', threshold: 87, verdict: 'accepted' },
   { programId: 'civil', threshold: 87, verdict: 'accepted' },
   { programId: 'industrial', threshold: 89, verdict: 'accepted' },
@@ -35,6 +36,7 @@ const ALIASES = [
   ['datascience', 'technion_datascience'],
   ['ee', 'technion_ee'],
   ['me', 'technion_me'],
+  ['medicine', 'technion_medicine'],
   ['technion_biomedical'],
   ['technion_civil'],
   ['technion_industrial'],
@@ -53,6 +55,10 @@ function sourceFingerprint(config: TechnionConfig): string {
     .digest('hex')}`;
 }
 
+function capturedAtFor(config: TechnionConfig): string {
+  return ['ee', 'me'].includes(config.programId) ? CAPTURED_AT : '2026-07-26T00:00:00.000Z';
+}
+
 function fixturesFor(pairId: string, config: TechnionConfig): AdmissionsVerificationFixture[] {
   const fingerprint = sourceFingerprint(config);
   return [
@@ -64,7 +70,7 @@ function fixturesFor(pairId: string, config: TechnionConfig): AdmissionsVerifica
       input: { psychometric: 800, bagrut: 100, bagrutSubjectRecord: technionRecord(100) },
       expected: { score: 98.9, verdict: config.verdict },
       sourceFingerprint: fingerprint,
-      capturedAt: CAPTURED_AT,
+      capturedAt: capturedAtFor(config),
     },
     {
       id: `${pairId}:below:2026-2027`,
@@ -74,7 +80,7 @@ function fixturesFor(pairId: string, config: TechnionConfig): AdmissionsVerifica
       input: { psychometric: 500, bagrut: 95, bagrutSubjectRecord: technionRecord(95) },
       expected: { score: 73.9, verdict: 'below' },
       sourceFingerprint: fingerprint,
-      capturedAt: CAPTURED_AT,
+      capturedAt: capturedAtFor(config),
     },
   ];
 }
@@ -244,7 +250,7 @@ export const TECHNION_PROGRAM_VERIFICATION_METADATA: Record<
               state: 'verified',
               comparedScore: true,
               comparedVerdict: true,
-              liveComparedAt: CAPTURED_AT,
+              liveComparedAt: capturedAtFor(config),
               sourceFingerprint: fingerprint,
             },
           },

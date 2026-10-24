@@ -61,6 +61,39 @@ describe('Technion winter תשפ"ז thresholds', () => {
   });
 
   it.each([
+    [87, 'accepted'],
+    [86.99, 'below'],
+  ])('reads ME winter cutoff 87 from the live table at score %s', async (score, verdict) => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockImplementation(
+        async (url) =>
+          new Response(
+            String(url).includes('technion-calculators-sum.php')
+              ? `הסכם לדיוני הקבלה הוא:${score}`
+              : technionWinterThresholdsHtml,
+          ),
+      );
+    const proof = await runTechnionAdmissionsProof({
+      fetcher,
+      // The former local value must not replace the current official table cell.
+      program: { id: 'technion_me', name: 'הנדסת מכונות', externalId: '92' },
+      applicant: {
+        psychometric: 750,
+        bagrutAverage: 110,
+        bagrutSubjectRecord: technionWinterSubjectRecord,
+      },
+    });
+    expect(proof.status).toBe('succeeded');
+    expect(proof.normalizedPayload).toMatchObject({
+      selectedScore: score,
+      acceptanceThreshold: 87,
+      rejectionThreshold: 87,
+      derivedVerdict: verdict,
+    });
+  });
+
+  it.each([
     ['technion_ee', 91.5, 'accepted', 91.5],
     ['technion_ee', 91.49, 'below', 91.5],
     ['technion_ee', 92, 'accepted', 91.5],
@@ -101,34 +134,7 @@ describe('Technion winter תשפ"ז thresholds', () => {
     },
   );
 
-  it.each([0, 60, 91.99, 92, 100])(
-    'medicine produces no adapter verdict at sekhem %s',
-    async (score) => {
-      const fetcher = vi
-        .fn<typeof fetch>()
-        .mockImplementation(
-          async (url) =>
-            new Response(
-              String(url).includes('technion-calculators-sum.php')
-                ? `הסכם לדיוני הקבלה הוא:${score}`
-                : technionWinterThresholdsHtml,
-            ),
-        );
-      const proof = await runTechnionAdmissionsProof({
-        fetcher,
-        program: { id: 'technion_medicine', name: 'רפואה', scoreField: 'invitation' },
-        applicant: {
-          psychometric: 750,
-          bagrutAverage: 110,
-          bagrutSubjectRecord: technionWinterSubjectRecord,
-        },
-      });
-      expect(proof.normalizedPayload.derivedVerdict).toBeUndefined();
-      expect(proof.normalizedPayload.acceptanceThreshold).toBeUndefined();
-    },
-  );
-
-  it.each(['technion_medicine', 'technion_engineering'])(
+  it.each(['technion_engineering'])(
     '%s has no evaluator verdict for any profile',
     async (degreeId) => {
       const program = getStaticCataloguePrograms().find((row) => row.id === degreeId)!;

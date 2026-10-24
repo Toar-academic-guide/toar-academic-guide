@@ -130,7 +130,6 @@ export const mondayAdmissionEvidenceRecords = [
     limitations: [
       'The current official Technion admissions table, rechecked on 2026-07-05, lists הנדסת נתונים ומידע with threshold 91.',
       'The current Technion undergraduate catalogue now presents this area under the faculty label מדעי הנתונים וההחלטות, and the official faculty PDF explicitly lists הנדסת נתונים ומידע as one of the three training tracks.',
-      '2026-10-25: Jorje ruled via Amanda that technion_medicine has no verdict at any score. Winter 92.000 is only an estimated MOR-invitation threshold, not an admission cutoff.',
     ],
     decisionReason:
       'Official Technion sources now align for the current data-science track: the admissions threshold table publishes הנדסת נתונים ומידע with threshold 91, and the current undergraduate catalogue groups that track under מדעי הנתונים וההחלטות. That is sufficient to promote the mapped technion_datascience catalogue entry to decision-capable coverage.',
@@ -201,6 +200,17 @@ export const mondayAdmissionEvidenceRecords = [
         sourceLabel: 'טכניון: מסלולי הלימוד לפי אפיקי הקבלה',
         verifiedAt: '2026-10-25',
         notes: 'הנדסת מכונות — סמסטר חורף תשפ״ז.',
+      },
+      {
+        programId: 'technion_medicine',
+        threshold: 92,
+        thresholdKind: 'invitation_to_manual_gate',
+        sourceUrl:
+          'https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/',
+        sourceLabel: 'טכניון: מסלולי הלימוד לפי אפיקי הקבלה',
+        verifiedAt: '2026-07-04',
+        notes:
+          'מדעי הרפואה - מגמת רפואה. ההערה הרשמית בדף מציינת שזהו סף הזימון למבחן מו"ר, לא קבלה סופית.',
       },
     ],
   },

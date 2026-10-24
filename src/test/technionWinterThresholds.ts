@@ -8,7 +8,6 @@ export const technionWinterThresholdsHtml = `
 <table id="tablepress-485"><tbody>
 <tr><td class="column-1">הנדסת חשמל</td><td class="column-2">91.5</td></tr>
 <tr><td class="column-1">הנדסת מכונות</td><td class="column-2">87</td></tr>
-<tr><td class="column-1">מדעי הרפואה - מגמת רפואה</td><td class="column-2">92.000 ציון מו"ר משוקלל לקבלה: 205</td></tr>
 </tbody></table>`;
 
 export const technionWinterSubjectRecord = {
