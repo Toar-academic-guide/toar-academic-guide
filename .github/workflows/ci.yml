@@ -345,6 +345,7 @@ jobs:
     env:
       CI: true
       CATALOGUE_SOURCE_MODE: static
+      ADMISSIONS_EVALUATION_CI_MAX_REQUESTS_PER_WINDOW: '1000'
 
     steps:
       - name: Checkout repository

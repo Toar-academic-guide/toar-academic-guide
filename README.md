@@ -11,6 +11,21 @@ npm run dev
 
 The test suite covers the current recommendation, bucket-list, and admission-calculation behavior before the catalogue moves behind the backend boundary.
 
+### PR smoke environment
+
+The `Playwright PR smoke` job starts a local production build with a static catalogue.
+Its requests share a localhost client key, so that job sets
+`ADMISSIONS_EVALUATION_CI_MAX_REQUESTS_PER_WINDOW=1000`. This server-only limit is
+honored only when `CI=true`, `GITHUB_ACTIONS=true`, and `CATALOGUE_SOURCE_MODE=static`,
+with neither `VERCEL` nor `VERCEL_ENV` set. Values must be integers from 12 to 1000;
+otherwise the default applies. The limiter remains active, with the same 60-second
+window. Vercel production and preview deployments always retain the default of
+12 requests per client per minute, even if the CI override is configured.
+
+Vercel Analytics is mounted only on Vercel deployments (`VERCEL=1`), where the
+platform serves `/_vercel/insights/script.js`. Local production builds do not
+request that platform-only endpoint.
+
 ## URL model
 
 The app uses durable URLs for places that can be reopened, refreshed, or shared:

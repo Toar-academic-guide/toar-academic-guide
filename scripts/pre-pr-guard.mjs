@@ -98,6 +98,7 @@ const targetedTests = [
   'src/server/admissions/calculatorCoverage.test.ts',
   'src/server/admissions/capabilityMatrix.test.ts',
   'src/server/admissions/evaluator.test.ts',
+  'src/server/admissions/rateLimit.test.ts',
   'src/server/admissions/tauPhysiotherapyEvaluation.test.ts',
   'src/server/admissions/colmanBagrutEvaluation.test.ts',
   'src/server/admissions/colmanPublishedRoutesEvaluation.test.ts',
