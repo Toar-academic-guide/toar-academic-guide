@@ -1,25 +1,35 @@
 import 'server-only';
 import type { EnquiryRecord } from '@/lib/enquiries';
-import {
-  postAdmissionsReviewSlackMessage,
-  readAdmissionsReviewSlackConfig,
-} from '@/server/automation/admissionsReviewSlack';
+import { postAdmissionsReviewSlackMessage } from '@/server/automation/admissionsReviewSlack';
 
 export async function notifyEnquiry(
-  enquiry: Pick<EnquiryRecord, 'requestId' | 'programId' | 'institutionId' | 'resultStatus'>,
+  enquiry: Pick<
+    EnquiryRecord,
+    | 'requestId'
+    | 'programId'
+    | 'programName'
+    | 'institutionId'
+    | 'institutionName'
+    | 'resultStatus'
+    | 'attribution'
+  >,
   mondayItemId: string | null,
 ): Promise<void> {
-  const config = readAdmissionsReviewSlackConfig();
+  const config = {
+    slackBotToken: process.env.SLACK_BOT_TOKEN?.trim(),
+    slackChannelId: process.env.SLACK_LEADS_CHANNEL_ID?.trim(),
+  };
   if (!config.slackBotToken || !config.slackChannelId) return;
   const text = [
-    'New MyWay enquiry',
-    `request_id: ${enquiry.requestId}`,
     `program_id: ${enquiry.programId}`,
-    `institution_id: ${enquiry.institutionId || '(none)'}`,
+    `program_name: ${enquiry.programName}`,
+    `institution_id: ${enquiry.institutionId}`,
+    `institution_name: ${enquiry.institutionName}`,
     `result_status: ${enquiry.resultStatus}`,
-    mondayItemId
-      ? `https://malichi-hub.monday.com/boards/18436300533/pulses/${mondayItemId}`
-      : 'Saved in the private enquiries backup; Monday delivery failed.',
+    ...(enquiry.attribution?.utm_source ? [`utm_source: ${enquiry.attribution.utm_source}`] : []),
+    ...(mondayItemId
+      ? [`https://malichi-hub.monday.com/boards/18436300533/pulses/${mondayItemId}`]
+      : []),
   ].join('\n');
   const outcome = await postAdmissionsReviewSlackMessage({ text, blocks: [] }, config);
   if (outcome.status !== 'sent') {

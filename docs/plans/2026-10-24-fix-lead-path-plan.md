@@ -40,7 +40,7 @@ R7. Failing-first proof for every feature; lint, typecheck, full unit suite, bui
 KTD1. Use report.input from the active journey evaluation rather than current editable draft; validate via the existing admissions Zod schema and recompute on the server. No client-supplied result status is accepted. Missing input or evaluation failure yields unknown.
 KTD2. Monday's existing long-text column holds unchanged consent text followed by structured lead context and numeric score inputs (full subject record stays in Postgres, respecting Monday’s 2,000-character limit), in the same create_item write. This avoids a board schema change or a second context write that could fail independently. Official API create_item has no initial-update argument.
 KTD3. Postgres request UUID is the primary key; insert conflict is an idempotent success. Both destinations run independently and settle before the response. The runtime DB uses server-only DATABASE_URL and an execute-only SECURITY DEFINER insert function; direct table access is restricted to service_role and the privileged owner. SQL grants no browser roles.
-KTD4. Reuse readAdmissionsReviewSlackConfig/postAdmissionsReviewSlackMessage with SLACK_BOT_TOKEN and SLACK_READY_PR_CHANNEL_ID (legacy SLACK_ADMISSIONS_REVIEW_CHANNEL_ID fallback). Messages contain lead IDs and status, with a Monday link when available; no contact details.
+KTD4. Reuse postAdmissionsReviewSlackMessage with SLACK_BOT_TOKEN for authentication and the dedicated SLACK_LEADS_CHANNEL_ID only. No-op when either is unset; never fall back to ready-PR or admissions-review channels. Messages contain only program/institution IDs and catalogue names, result status, utm_source when available, and a Monday link when available. Student contact details, free text, request IDs and other attribution fields are excluded.
 KTD5. Tiny client link wrappers retain existing Link/anchor DOM. Share fires once per click regardless of native/clipboard outcome.
 
 ### Data flow
@@ -83,7 +83,7 @@ Execution note: run failure matrix before implementation. No live DB writes in a
 ### U4. Notifications (R5)
 
 Files: src/server/enquiries/notifications.ts and test; enquiry route.
-Tests: unset config no-ops; configured accepted enquiry sends ID/status notification; Slack failure logged without breaking 201; no notification for total failure.
+Tests: unset leads channel no-ops even with development channels configured; a fixture containing student name, phone, email and free text produces only the allowed fields and contains no contact values or email/phone patterns; Slack failure logged without breaking 201; no notification for total failure.
 Execution note: mock all outbound delivery; failing-first proof.
 
 ### U5. CTA events (R6)
