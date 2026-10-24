@@ -308,6 +308,7 @@ jobs:
   build:
     name: Build application
     runs-on: ubuntu-latest
+    if: ${{ !cancelled() && needs.test.result == 'success' && needs.db-migrations-and-seed.result == 'success' && needs.admissions-verify.result == 'success' && needs.operational-schema-gate.result == 'success' }}
     needs:
       - test
       - db-migrations-and-seed
@@ -340,10 +341,11 @@ jobs:
     name: Playwright PR smoke
     runs-on: ubuntu-latest
     needs: build
-    if: ${{ github.event_name == 'pull_request' }}
+    if: ${{ !cancelled() && needs.build.result == 'success' && github.event_name == 'pull_request' }}
     env:
       CI: true
       CATALOGUE_SOURCE_MODE: static
+      ADMISSIONS_EVALUATION_CI_MAX_REQUESTS_PER_WINDOW: '1000'
 
     steps:
       - name: Checkout repository
@@ -385,6 +387,7 @@ jobs:
     name: Internal data-health smoke
     runs-on: ubuntu-latest
     needs: build
+    if: ${{ !cancelled() && needs.build.result == 'success' }}
     env:
       CI: true
       CATALOGUE_SOURCE_MODE: static
@@ -539,3 +542,30 @@ jobs:
       - name: Verify operational database
         if: ${{ env.DATABASE_URL != '' || env.OPS_DATABASE_URL != '' }}
         run: npm run db:operational:verify
+
+  # ---------------------------------------------------------------------------
+  # Final PR gate: skipped builds or smokes must never produce a green PR
+  # ---------------------------------------------------------------------------
+  pr-gate-integrity:
+    name: PR gate integrity
+    runs-on: ubuntu-latest
+    if: ${{ always() && github.event_name == 'pull_request' }}
+    needs:
+      - build
+      - e2e-pr
+      - internal-data-health-smoke
+
+    steps:
+      - name: Require successful PR build and smoke gates
+        env:
+          BUILD_RESULT: ${{ needs.build.result }}
+          PLAYWRIGHT_RESULT: ${{ needs.e2e-pr.result }}
+          DATA_HEALTH_RESULT: ${{ needs.internal-data-health-smoke.result }}
+        run: |
+          echo "Build application: $BUILD_RESULT"
+          echo "Playwright PR smoke: $PLAYWRIGHT_RESULT"
+          echo "Internal data-health smoke: $DATA_HEALTH_RESULT"
+          if [[ "$BUILD_RESULT" != "success" || "$PLAYWRIGHT_RESULT" != "success" || "$DATA_HEALTH_RESULT" != "success" ]]; then
+            echo "::error::All PR build and smoke gates must succeed; skipped, failed, or cancelled gates block the PR."
+            exit 1
+          fi
