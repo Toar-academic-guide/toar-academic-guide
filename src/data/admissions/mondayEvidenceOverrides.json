@@ -13,7 +13,7 @@
       "limitations": [
         "The current official Technion admissions table, rechecked on 2026-07-05, lists הנדסת נתונים ומידע with threshold 91.",
         "The current Technion undergraduate catalogue now presents this area under the faculty label מדעי הנתונים וההחלטות, and the official faculty PDF explicitly lists הנדסת נתונים ומידע as one of the three training tracks.",
-        "2026-10-25: technion_medicine has no verdict. Winter 92.000 is only an estimated MOR-invitation threshold, not an admission cutoff; pending Jorje A1."
+        "2026-10-25: Jorje ruled via Amanda that technion_medicine has no verdict at any score. Winter 92.000 is only an estimated MOR-invitation threshold, not an admission cutoff."
       ],
       "decisionReason": "Official Technion sources now align for the current data-science track: the admissions threshold table publishes הנדסת נתונים ומידע with threshold 91, and the current undergraduate catalogue groups that track under מדעי הנתונים וההחלטות. That is sufficient to promote the mapped technion_datascience catalogue entry to decision-capable coverage.",
       "nextAction": "Use the verified Technion threshold 91 for technion_datascience and recheck the faculty catalogue/admissions table when the next admissions cycle is published.",

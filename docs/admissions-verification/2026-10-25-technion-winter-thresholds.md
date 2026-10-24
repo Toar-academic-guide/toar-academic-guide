@@ -10,7 +10,7 @@ The first programme row was previously taken from the spring table (`tablepress-
 | --- | --- | --- |
 | technion_ee | 94 | **91.5** |
 | technion_me | 92 | **87** |
-| technion_medicine | 92; eligible_to_apply or below | **NO VERDICT**; 92.000 is only an estimated MOR-invitation note, pending Jorje A1 |
+| technion_medicine | 92; eligible_to_apply or below | **NO VERDICT**; 92.000 is only an estimated MOR-invitation note, confirmed by Jorje via Amanda |
 | technion_engineering | NO VERDICT (vague_mapping) | unchanged |
 | technion_cs | 91 | unchanged |
 | technion_datascience | 91 | unchanged |
@@ -37,6 +37,18 @@ Evidence packet: `/workspace/seo-geo/technion-threshold-sweep-2026-10-25.md`. Fo
 Generated Monday evidence was regenerated from the override JSON using the existing generator's `applyOverride` and `generatedTs` functions, preserving the committed export metadata and unrelated records. The ignored raw Monday export is unavailable in this worktree; no new board export or external write was performed.
 
 ## Verification
+
+### Addendum — Jorje's rulings via Amanda
+
+- Medicine's no-verdict policy is confirmed, replacing the pending A1 label. The existing Hebrew note, adjacent verification stamp, and official Technion link are retained.
+- Added explicit medicine regressions at **91.99, 92 and 95**. Each verifies the adapter successfully reads the official calculator score while returning no acceptance threshold, rejection threshold, or verdict. The public evaluator also returns `unknown` without requesting a calculator score.
+- The required fixture already places spring `tablepress-482` (`94 -על בסיס מקום פנוי`) above winter `tablepress-485` (`91.5`). Its parser regression passes with **91.5**.
+- All **26** focused regression/component tests pass. Existing tests and their expected values were not edited in this addendum.
+- Addendum verification: typecheck and scoped ESLint pass. `npm run guard:pre-pr` exits **1** again: **2348 passed, 9 preserved existing tests failed**. No guard or hook bypass was attempted.
+- `gh pr list --head codex/technion-winter-thresholds --state all` returns no PR. The updated body remains this local draft because the guard blocks branch publication; GitHub CI has not run for the local commits.
+- `technion_engineering` remains unchanged. `technion_computer_eng` is out of scope and was not added.
+
+### Original verification
 
 - Tests first: the new evaluator/parser suite initially had 12 failing tests and 2 passing tests; notice tests initially had 9 failures, before production edits.
 - All **23 new unit/component tests pass**: EE 91.5/91.49 and 92, ME 87/86.99, spring-first parsing, spring-only withholding, medicine adapter scores 0/60/91.99/92/100, and medicine/engineering evaluator results across empty/weak/strong profiles.

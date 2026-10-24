@@ -314,7 +314,7 @@ export const FORMULA_BACKED_VERIFICATION_LEDGER: FormulaPairVerificationLedgerEn
           ? {
               url: TECHNION_THRESHOLD_URL,
               reason:
-                'The winter תשפ״ז table publishes 92.000 only as an estimated MOR-invitation threshold. It does not authorize an admission verdict or a below-threshold verdict at any score; withheld pending Jorje A1.',
+                'The winter תשפ״ז table publishes 92.000 only as an estimated MOR-invitation threshold. Jorje ruled via Amanda that medicine must remain without an admission verdict or a below-threshold verdict at any score.',
             }
           : WITHHELD_PAIR_EVIDENCE[pairId];
 
