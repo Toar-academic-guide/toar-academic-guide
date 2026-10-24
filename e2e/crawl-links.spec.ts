@@ -1,5 +1,19 @@
 import { expect, test } from '@playwright/test';
 
+async function mapLimited<T, R>(items: T[], limit: number, fn: (item: T) => Promise<R>) {
+  const results: R[] = new Array(items.length);
+  let next = 0;
+  await Promise.all(
+    Array.from({ length: limit }, async () => {
+      while (next < items.length) {
+        const i = next++;
+        results[i] = await fn(items[i]);
+      }
+    }),
+  );
+  return results;
+}
+
 function anchors(html: string): string[] {
   return [...html.matchAll(/<a\b[^>]*href="([^"]+)"/g)].map((match) => match[1]);
 }
@@ -36,7 +50,7 @@ test('subject index is indexable and self-canonical', async ({ request }) => {
 
 // Set-based so it holds on the live DB as well as the static fixture.
 test('subject index lists exactly the hubs the sitemap publishes', async ({ request }) => {
-  test.setTimeout(120_000);
+  test.setTimeout(300_000);
   const html = await (await request.get('/programs')).text();
   const main = html.split('<main')[1]?.split('</main>')[0] ?? '';
   const index = anchors(main).map((href) => decodeURIComponent(href.replace(/^\/programs\//, '')));
@@ -62,28 +76,23 @@ test('subject index lists exactly the hubs the sitemap publishes', async ({ requ
       [...institutionProgramIds].filter((programId) => id.startsWith(`${programId}_`)),
       id,
     ).toEqual([]);
-  // Every other sitemap programme URL must be an institution programme page, not a hub.
-  const others = sitemapPrograms.filter(
-    (id) => !index.includes(id) && !institutionProgramIds.has(id),
-  );
-  const titles = await Promise.all(
-    others.map(async (id) => {
-      const page = await (await request.get(`/programs/${encodeURIComponent(id)}`)).text();
-      return [id, page.match(/<title>([^<]*)<\/title>/)?.[1]] as const;
-    }),
-  );
-  for (const [id, title] of titles) expect(title, id).not.toMatch(/^לימודי /);
-  const hubs = await Promise.all(
-    index.map(async (id) => {
-      const hub = await request.get(`/programs/${encodeURIComponent(id)}`);
-      return [id, hub.status(), await hub.text()] as const;
-    }),
-  );
-  for (const [id, status, page] of hubs) {
+  // Exact set contract: a sitemap programme URL renders a subject page iff it is in the index.
+  const kinds = await mapLimited(sitemapPrograms, 6, async (id) => {
+    const response = await request.get(`/programs/${encodeURIComponent(id)}`);
+    const page = await response.text();
+    return {
+      id,
+      status: response.status(),
+      kind: page.match(/<main[^>]*data-page-kind="([^"]+)"/)?.[1],
+      canonical: page.includes(
+        `<link rel="canonical" href="https://findmyway.co.il/programs/${encodeURIComponent(id)}"/>`,
+      ),
+    };
+  });
+  for (const { id, status, kind, canonical } of kinds) {
     expect(status, id).toBe(200);
-    expect(page, id).toContain(
-      `<link rel="canonical" href="https://findmyway.co.il/programs/${encodeURIComponent(id)}"/>`,
-    );
+    expect(canonical, id).toBe(true);
+    expect(kind, id).toBe(index.includes(id) ? 'subject' : 'programme');
   }
 });
 

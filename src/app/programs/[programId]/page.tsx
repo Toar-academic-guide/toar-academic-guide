@@ -44,7 +44,11 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
     if (!subject) notFound();
     return (
       <WayPageShell>
-        <main dir="rtl" className="mx-auto max-w-4xl px-4 py-10 text-right sm:px-6">
+        <main
+          dir="rtl"
+          data-page-kind="subject"
+          className="mx-auto max-w-4xl px-4 py-10 text-right sm:px-6"
+        >
           <h1 className="mb-8 text-3xl font-bold">{subject.hub.name}</h1>
           <ul className="grid gap-4 sm:grid-cols-2">
             {subject.hub.programs.map((program) => (
@@ -65,7 +69,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
     );
   }
 
-  const { program, institutions, institutionProgramPaths } = data;
+  const { program, institutions, isGeneral, institutionProgramPaths } = data;
   const institutionRequirementSources = await getPublicProgramRequirementSources(data);
   const related = await getPublicRelatedPrograms(program.id);
   const faq = programFaqPageLd(data, institutionRequirementSources);
@@ -73,7 +77,12 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
   return (
     <WayPageShell>
       <JsonLd data={[await programLd(data), programBreadcrumbLd(data), ...(faq ? [faq] : [])]} />
-      <main dir="rtl" className="px-4 py-10 text-right text-slate-900 sm:px-6">
+      <main
+        dir="rtl"
+        // Lets crawl tests tell subject pages from institution programme pages.
+        data-page-kind={isGeneral ? 'subject' : 'programme'}
+        className="px-4 py-10 text-right text-slate-900 sm:px-6"
+      >
         <section className="mx-auto flex max-w-4xl flex-col gap-8">
           <Link
             href={ROUTES.home}

@@ -79,6 +79,7 @@ describe.each(Object.entries(catalogues))('subject hub contract on the %s', (_, 
         await ProgramPage({ params: Promise.resolve({ programId: id }) }),
       );
       expect(html, id).toContain('<h1');
+      expect(html, id).toContain('data-page-kind="subject"');
     }
   });
 
