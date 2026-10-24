@@ -5,7 +5,10 @@ import {
 } from '@/data/admissions/biuPublishedRoutes';
 import { bagrutExamSubjects } from '@/lib/bagrutSubjectRecord';
 import { subjectIdForWizardLabel } from '@/utils/bagrutSubjectRecord';
-import type { AdmissionsEvaluationInput } from '@/types/admissionsEvaluation';
+import type {
+  AdmissionsEvaluationInput,
+  AdmissionsEvaluationResult,
+} from '@/types/admissionsEvaluation';
 import type { CatalogueInstitution } from '@/types/catalogue';
 import {
   allOf,
@@ -49,6 +52,79 @@ function twoScienceExams(input: AdmissionsEvaluationInput): NumericGate {
   );
   if (qualifying.size >= 2) return allOf();
   return { below: !!complete, missing: complete ? [] : ['bagrut_subject_record'] };
+}
+
+const BIU_LAW_CALCULATOR_URL = 'https://shoham.biu.ac.il/kabala/';
+const BIU_LAW_FACULTY_URL = 'https://law.biu.ac.il/node/129';
+
+function evaluateLawPsychometricChannels(
+  input: AdmissionsEvaluationInput,
+  institution: CatalogueInstitution,
+  bagrutResult: AdmissionsEvaluationResult,
+): AdmissionsEvaluationResult {
+  const officialUrls = [
+    BIU_LAW_CALCULATOR_URL,
+    BIU_LAW_FACULTY_URL,
+    ...(bagrutResult.officialUrls ?? []),
+  ];
+  const bagrut = { ...bagrutResult, officialUrls };
+  const psychometric = evaluatePublishedNumericRoutes({
+    institution,
+    officialUrls,
+    routes: [
+      {
+        ...allOf(minimum(input.psychometric, 720, 'psychometric_overall'), {
+          // The profile has no BIU certificate confirmation field. Keep entitlement
+          // unconfirmed in the shared result; do not invent a minimum average here.
+          below: false,
+          missing: input.bagrut === undefined ? ['bagrut_average'] : [],
+        }),
+        label: 'פסיכומטרי',
+        score: input.psychometric,
+        threshold: 720,
+        requirements: 'פסיכומטרי 720 לפחות וזכאות לתעודת בגרות',
+      },
+    ],
+  });
+  if (bagrut.scoreAssessment === 'meets_threshold') return bagrut;
+  if (psychometric.scoreAssessment === 'meets_threshold') return psychometric;
+
+  const combinedFloors = allOf(
+    minimum(input.psychometric, 600, 'psychometric_overall'),
+    minimum(input.bagrut, 90, 'bagrut_average'),
+  );
+  if (!combinedFloors.below && !combinedFloors.missing.length)
+    return {
+      institution,
+      linkedInstitutionId: institution.id,
+      capability: 'estimated',
+      kind: 'estimated',
+      decision: 'unknown',
+      confidence: 'medium',
+      sourceLabel: 'תנאי קבלה למשפטים בבר־אילן',
+      officialUrls,
+      explanation:
+        'הציונים שהוזנו עומדים בתנאי הסף למסלול המשולב: פסיכומטרי 600 וממוצע בגרות 90 לפחות. נדרשת בדיקה במחשבון הקבלה של בר־אילן; עמידה בתנאי הסף אינה אישור קבלה.',
+      nextAction: 'בדקו את השקלול במחשבון הקבלה הרשמי של בר־אילן.',
+    };
+  if (psychometric.kind === 'needs_input') return psychometric;
+  if (bagrut.kind === 'needs_input') return bagrut;
+  if (!combinedFloors.below)
+    return {
+      ...bagrut,
+      capability: 'needs_input',
+      kind: 'needs_input',
+      decision: 'unknown',
+      scoreAssessment: undefined,
+      requiredInputs: combinedFloors.missing,
+      explanation: 'חסר ממוצע בגרות לבדיקת תנאי הסף למסלול המשולב.',
+      nextAction: 'השלימו את ממוצע הבגרות בפרופיל האקדמי.',
+    };
+  return {
+    ...bagrut,
+    explanation:
+      'לפי הנתונים שהוזנו, לא מתקיימים תנאי המסלולים שנבדקו: בגרות 112 ואנגלית 5 יחידות בציון 90 לפחות עם סיווג אנגלית 85 לפחות; או פסיכומטרי 720 וזכאות לבגרות; או תנאי הסף למסלול המשולב — פסיכומטרי 600 וממוצע בגרות 90 לפחות.',
+  };
 }
 
 export function evaluateBiuPublishedRoutes({
@@ -100,7 +176,7 @@ export function evaluateBiuPublishedRoutes({
       ', ומכפלת ציון המתמטיקה במספר היחידות 320 לפחות ושני מקצועות של 5 יחידות בציון 80 לפחות מבין ביולוגיה, ביוטכנולוגיה, מתמטיקה, כימיה, פיזיקה, הנדסה ומחשבים';
     if (programme === 'lifesciences') requirements += '; לחלופין, מתמטיקה 5 יחידות בציון 85 לפחות';
   }
-  return evaluatePublishedNumericRoutes({
+  const bagrutResult = evaluatePublishedNumericRoutes({
     institution,
     officialUrls: [BIU_PUBLISHED_ROUTES_URL, BIU_GENERAL_REQUIREMENTS_URL],
     caveat:
@@ -120,4 +196,7 @@ export function evaluateBiuPublishedRoutes({
       },
     ],
   });
+  return input.degreeId === 'biu_law' && input.psychometric !== undefined
+    ? evaluateLawPsychometricChannels(input, institution, bagrutResult)
+    : bagrutResult;
 }

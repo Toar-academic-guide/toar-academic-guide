@@ -588,15 +588,17 @@
     {
       "programId": "biu_law",
       "institutionId": "biu",
-      "sourceUrl": "https://www.biu.ac.il/registration-and-admission/information/acceptance-no-psychometry",
-      "sourceSha256": "7b872260e25eb2b78c3203951baddf5cc2a089c76406017e8cd35b17f2d2d4ad",
-      "checkedAt": "2026-10-23",
+      "sourceUrl": "https://shoham.biu.ac.il/kabala/",
+      "sourceSha256": "60124ba833887d74252920626d24c3308fccac65c45d2e67ab698e6c593a7adb",
+      "checkedAt": "2026-10-25",
       "notes": [
         "לתשפ״ז, ללא פסיכומטרי: ממוצע בגרות 112 לפחות, ואנגלית 5 יחידות בציון 90 לפחות.",
         "נדרשת זכאות לתעודת בגרות וסיווג אנגלית 85 לפחות. עברית 105 לפחות למי שנדרשים לבחינת יע״ל לפי כללי האוניברסיטה.",
         "אפיק פסיכומטרי או משולב: בדקו במחשבון הקבלה הרשמי של בר־אילן."
       ],
       "supportingSources": [
+        "https://law.biu.ac.il/node/129",
+        "https://www.biu.ac.il/registration-and-admission/information/acceptance-no-psychometry",
         "https://www.biu.ac.il/registration-and-admission/information/general-admission-req"
       ],
       "coverage": "published_conditions",

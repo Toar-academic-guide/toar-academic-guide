@@ -70,6 +70,23 @@ describe('BIU API with real evaluator', () => {
     },
   );
 
+  it('returns calculator-only status for law 105/650 without a fabricated score', async () => {
+    const result = await evaluate('biu_law', { bagrut: 105, psychometric: 650 });
+    expect(result).toMatchObject({ kind: 'estimated', decision: 'unknown' });
+    expect(result.score).toBeUndefined();
+    expect(result.scoreAssessment).toBeUndefined();
+    expect(result.officialUrls).toContain('https://shoham.biu.ac.il/kabala/');
+  });
+
+  it('matches the law psychometric channel without requiring 112 or Bagrut English', async () => {
+    expect(await evaluate('biu_law', { bagrut: 95, psychometric: 730 })).toMatchObject({
+      decision: 'pending',
+      scoreAssessment: 'meets_threshold',
+      score: 730,
+      threshold: 720,
+    });
+  });
+
   it('requests missing subject grades at the law boundary', async () => {
     expect(
       await evaluate('biu_law', { bagrut: 112, extraInputs: { psychometricEnglish: 85 } }),
