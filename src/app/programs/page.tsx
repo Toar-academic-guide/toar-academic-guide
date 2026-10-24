@@ -3,6 +3,9 @@ import WayPageShell from '@/components/WayPageShell';
 import { HubLinks } from '@/components/seo/CatalogueLinks';
 import { getPublicSubjectIndex } from '@/lib/publicCatalogueLinks';
 
+// Rendered per request like the hub pages, so the build never needs the catalogue.
+export const dynamic = 'force-dynamic';
+
 const description = 'כל תחומי הלימוד, ולכל תחום המוסדות שמלמדים אותו.';
 
 export const metadata: Metadata = {
