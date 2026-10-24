@@ -541,3 +541,30 @@ jobs:
       - name: Verify operational database
         if: ${{ env.DATABASE_URL != '' || env.OPS_DATABASE_URL != '' }}
         run: npm run db:operational:verify
+
+  # ---------------------------------------------------------------------------
+  # Final PR gate: skipped builds or smokes must never produce a green PR
+  # ---------------------------------------------------------------------------
+  pr-gate-integrity:
+    name: PR gate integrity
+    runs-on: ubuntu-latest
+    if: ${{ always() && github.event_name == 'pull_request' }}
+    needs:
+      - build
+      - e2e-pr
+      - internal-data-health-smoke
+
+    steps:
+      - name: Require successful PR build and smoke gates
+        env:
+          BUILD_RESULT: ${{ needs.build.result }}
+          PLAYWRIGHT_RESULT: ${{ needs.e2e-pr.result }}
+          DATA_HEALTH_RESULT: ${{ needs.internal-data-health-smoke.result }}
+        run: |
+          echo "Build application: $BUILD_RESULT"
+          echo "Playwright PR smoke: $PLAYWRIGHT_RESULT"
+          echo "Internal data-health smoke: $DATA_HEALTH_RESULT"
+          if [[ "$BUILD_RESULT" != "success" || "$PLAYWRIGHT_RESULT" != "success" || "$DATA_HEALTH_RESULT" != "success" ]]; then
+            echo "::error::All PR build and smoke gates must succeed; skipped, failed, or cancelled gates block the PR."
+            exit 1
+          fi
