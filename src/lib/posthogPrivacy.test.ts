@@ -22,4 +22,23 @@ describe('PostHog payload privacy', () => {
   it('drops events whose distinct ID is an email', () => {
     expect(sanitizePostHogEvent({ properties: { distinct_id: 'private@example.com' } })).toBeNull();
   });
+  it('preserves SDK Date timestamps while removing person emails', () => {
+    const timestamp = new Date('2026-10-24T12:00:00Z');
+    const event = {
+      timestamp,
+      properties: { distinct_id: 'user-123' },
+      $set: { email: 'private@example.com' },
+    };
+    const result = sanitizePostHogEvent(event);
+    expect(result?.timestamp).toBe(timestamp);
+    expect(JSON.stringify(result)).toContain('2026-10-24T12:00:00.000Z');
+    expect(JSON.stringify(result)).not.toContain('private@example.com');
+  });
+  it('redacts international email addresses as well as ASCII addresses', () => {
+    const result = sanitizePostHogEvent({ properties: { message: 'עמית@example.com' } });
+    expect(result?.properties.message).toBe('[redacted]');
+  });
+  it('drops node SDK events whose distinctId is an email', () => {
+    expect(sanitizePostHogEvent({ properties: {}, distinctId: 'private@example.com' })).toBeNull();
+  });
 });
