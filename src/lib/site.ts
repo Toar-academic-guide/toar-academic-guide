@@ -6,5 +6,5 @@ export const SITE_DESCRIPTION =
 
 export function absoluteUrl(path = '/'): string {
   const pathname = path.replace(/^\/+|\/+$/g, '');
-  return pathname ? `${SITE_URL}/${pathname}` : SITE_URL;
+  return pathname ? `${SITE_URL}/${pathname}` : `${SITE_URL}/`;
 }
