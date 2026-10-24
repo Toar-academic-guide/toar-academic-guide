@@ -147,11 +147,13 @@ describe('runTechnionAdmissionsProof', () => {
   });
 
   it('reads the current cutoff from the official programme table rather than local metadata', () => {
+    // Changed per Jorje's CEO ruling 2026-10-25 01:46: winter tablepress-485 sets EE to 91.5; spring 94 is place-dependent.
+    // Official winter table: https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/
     expect(
       parseTechnionOfficialThreshold(
-        '<tr><td class="column-1">הנדסת חשמל</td><td class="column-2">94</td></tr>',
+        '<table id="tablepress-485"><tr><td class="column-1">הנדסת חשמל</td><td class="column-2">91.5</td></tr></table>',
         'technion_ee',
       ),
-    ).toBe(94);
+    ).toBe(91.5);
   });
 });

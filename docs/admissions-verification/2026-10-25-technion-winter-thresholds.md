@@ -2,7 +2,7 @@
 
 PR title: `fix(admissions): Technion cutoffs from winter תשפ"ז table`
 
-Status: **blocked; local commit only**. `npm run guard:pre-pr` exits 1 on preserved existing test expectations. No push or PR creation is permitted under the task's hard rule.
+Status: **blocked; local commit only**. The authorized EE pin now passes. `npm run guard:pre-pr` still exits 1 on eight other existing medicine-related expectations; the instruction to leave other expectations untouched prevents making those tests green or publishing the branch.
 
 The first programme row was previously taken from the spring table (`tablepress-482`). Parsing now reads only winter `tablepress-485`, with an exact programme-title match. An absent winter table produces no cutoff. Medicine has no eligible/below verdict at any score, including through its general `medicine` alias. Its verification contract and numeric evidence entry are removed, and its two ledger pairs are withheld. Engineering remains unsupported with no verdict.
 
@@ -38,6 +38,17 @@ Generated Monday evidence was regenerated from the override JSON using the exist
 
 ## Verification
 
+### CEO pin ruling — 2026-10-25 01:46
+
+| programme | authorized pinned change | status | official source |
+| --- | --- | --- | --- |
+| technion_ee | 94 → 91.5 | Changed per Jorje's ruling 2026-10-25 | [Technion winter tablepress-485][official-source] |
+| technion_me | 92 → 87 | Changed per Jorje's ruling 2026-10-25 in the implementation; no remaining ME=92 test pin was found | [Technion winter tablepress-485][official-source] |
+
+The existing EE parser test now uses a winter table wrapper and cell 91.5, expects 91.5, and has a comment citing Jorje's CEO ruling and the official winter URL. The separate spring-first fixture and regression are unchanged and pass. No other existing test expectation changed in this update; medicine and the CS=92 drift fixture remain untouched.
+
+All **37 focused tests pass**, including the corrected pin, spring-first parsing and medicine 91.99/92/95 no-verdict cases. The full local suite reports **3235 passed, 10 failed, 65 skipped**; all ten remaining failures are listed below. Scoped ESLint and `git diff --check` pass. The pre-push guard reports **2349 passed, 8 failed**; migration grants, consistency, seed dry-run and Monday evidence verification pass. The remaining failures require authorization beyond the EE/ME-only ruling. No hook bypass, push or PR creation occurred.
+
 ### Addendum — Jorje's rulings via Amanda
 
 - Medicine's no-verdict policy is confirmed, replacing the pending A1 label. The existing Hebrew note, adjacent verification stamp, and official Technion link are retained.
@@ -62,9 +73,9 @@ Generated Monday evidence was regenerated from the override JSON using the exist
 - Supabase/Vercel: no database writes, seed application, publication, deployment, or environment changes. Deployed behavior is unverified because the guard prevents pushing this branch; local static browser results do not establish production behavior. Jorje must verify and authorize any later catalogue publication and source-freshness update, then confirm deployed EE/ME thresholds and medicine no-verdict behavior.
 - UI copy was read on mobile and desktop; Amit/Jorje visual approval remains required before merge under the standing rules. No external messages were sent.
 
-## Preserved failing tests — Jorje ruling required
+## Remaining existing test expectations — authorization required
 
-The following rows include every failing existing test in the final focused run, including the two failures outside the guard's targeted suite. Existing assertions were neither edited nor removed to make the run green.
+The following rows exclude the now-passing EE pin and retain the other failing existing expectations, including the two failures outside the guard's targeted suite. These assertions were neither edited nor removed to make the run green.
 
 | test | old expected | new value | official source URL |
 | --- | --- | --- | --- |
@@ -78,9 +89,8 @@ The following rows include every failing existing test in the final focused run,
 | `src/server/admissions/capabilityMatrix.test.ts` — asks for a Technion medicine subject record before replaying its invitation gate | needs_input | authority_unavailable; no verdict authority | [Technion][official-source] |
 | `src/server/admissions/evaluator.test.ts` — asks for a Technion medicine subject record before the invitation flow | needs_input; bagrut_subject_record | requirements_only; decision unknown; no requested input | [Technion][official-source] |
 | `src/server/admissions/evaluator.test.ts` — does not issue a Technion medicine verdict without the subject record | needs_input; bagrut_subject_record | requirements_only; decision unknown; no requested input | [Technion][official-source] |
-| `src/server/ingestion/adapters/technionAdmissions.test.ts` — reads the current cutoff from the official programme table rather than local metadata | EE 94 | winter EE 91.5; actual undefined for the unchanged fixture lacking a winter table | [Technion][official-source] |
 
-The EE pin still receives `undefined` because its original HTML is an unscoped bare row; it was left byte-for-byte intact. The new spring-first winter fixture proves 91.5. Historical medicine proof captures also remain unchanged; Jorje must rule on their stale membership assertion alongside the other rows.
+The EE pin is resolved per the CEO ruling above and is no longer a failing-test row. Historical medicine proof captures remain unchanged; their stale membership assertion and the remaining medicine expectations still need a separate ruling.
 
 Code review: skipped (ce-code-review unavailable) — Encoded profile restriction.
 
