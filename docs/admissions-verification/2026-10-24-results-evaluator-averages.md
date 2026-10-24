@@ -61,7 +61,7 @@ Earlier bulk replays intermittently failed at the score endpoint for 650; a stan
 
 ## Retained failures for Jorje
 
-All pre-existing assertion values match the branch baseline. The original seven failures are deliberately retained. The three pre-existing Psychology status expectations were restored to their original values and also fail under the explicit accepted-route addendum. No test was removed, skipped or weakened to obtain green checks.
+The R1 diff does not change any pre-existing assertion value. The original seven failures are deliberately retained. The three pre-existing Psychology status expectations were restored to their original values and also fail under the explicit accepted-route addendum. No test was removed, skipped or weakened to obtain green checks.
 
 Spec citations below refer to the supplied `/workspace/codex-tasks/results-status-diagnosis-2026-10-24.md`: lines 32–37 describe the dropped overall average, 39–42 the unused calculators, 45 permits a flagged institutional proxy, 46 defaults missing Haifa years, and 47 calls for server-side derivation. R1 item 3 selects those estimated defaults. The Psychology addendum explicitly selects accepted via the psych-only route.
 
@@ -81,9 +81,9 @@ Spec citations below refer to the supplied `/workspace/codex-tasks/results-statu
 
 ## Checks and publication exception
 
-- Full suite: **3,210 passed, 10 retained failures, 65 skipped** (3,285 tests). All **36 added regressions pass**.
+- Full suite: **3,247 passed, 10 retained failures, 65 skipped** (3,322 tests). All **36 added regressions pass**.
 - Lint and typecheck pass; lint has one pre-existing unused-import warning in `bagrutPolicies.ts`.
-- Pre-PR guard was run: **2,369 passed, 8 retained failures**. The two alias cases are outside its selected suite. Migration consistency, catalogue dry-run, operational static grant checks and evidence checks preceding its test stage completed.
+- Pre-PR guard was run: **2,406 passed, 8 retained failures**. The two alias cases are outside its selected suite. Migration consistency, catalogue dry-run, operational static grant checks and evidence checks preceding its test stage completed.
 - The user explicitly instructed publication with those failures, unchanged expectations and Jorje adjudication. Publishing therefore uses the documented one-time `SKIP_PRE_PR_GUARD=1` exception after running the guard. Failed tests and deployed verification remain owed; this PR is not marked merge-ready.
 - No DB writes, migrations, seeds, freshness/publication workflows, environment changes, merge or manual deployment were performed. Local DOM tests exercise the changed profile flow; no direct desktop/mobile browser verification is claimed. Preview/browser CI and Jorje verification remain pending.
 

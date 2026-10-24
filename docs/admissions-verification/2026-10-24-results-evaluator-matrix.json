@@ -419,7 +419,7 @@
           "program": "huji_cs",
           "beforeKind": "degraded",
           "beforeRequiredInputs": [],
-          "afterKind": "exact",
+          "afterKind": "degraded",
           "afterRequiredInputs": []
         },
         {
@@ -661,7 +661,7 @@
           "beforeRequiredInputs": [
             "bagrut_average"
           ],
-          "afterKind": "exact",
+          "afterKind": "degraded",
           "afterRequiredInputs": []
         },
         {
@@ -920,7 +920,7 @@
           "program": "huji_cs",
           "beforeKind": "degraded",
           "beforeRequiredInputs": [],
-          "afterKind": "exact",
+          "afterKind": "degraded",
           "afterRequiredInputs": []
         },
         {
