@@ -9,6 +9,20 @@ import { allPrograms, programsWithLegacyAdmissionFacts } from './index';
 type CatalogueProgramLike = (typeof allPrograms)[number];
 type InstitutionDetailLike = NonNullable<CatalogueProgramLike['institutionDetails']>[number];
 
+it.each(['afeka_ee', 'afeka_softwareeng'])(
+  'keeps %s alternative routes out of legacy cumulative facts',
+  (id) => {
+    const program = allPrograms.find((row) => row.id === id)!;
+    expect(program.thresholds).toBeUndefined();
+    expect(program.institutionDetails).toHaveLength(1);
+    expect(program.institutionDetails![0].specificAdmissionNotes).toEqual(
+      program.admissionRequirements,
+    );
+    expect(program.institutionDetails![0].admissionFacts ?? []).toEqual([]);
+    expect(program.institutionDetails![0].admissionAlternativePaths ?? []).toEqual([]);
+  },
+);
+
 it.each([
   ['colman_law', 'https://www.colman.ac.il/academics/ba/law/'],
   ['colman_business', 'https://www.colman.ac.il/academics/ba/business-administration/'],

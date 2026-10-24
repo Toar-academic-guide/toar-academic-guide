@@ -177,9 +177,35 @@ describe('ProgramPage', () => {
     );
   });
 
+  it.each(['afeka_ee', 'afeka_softwareeng'])(
+    'renders %s complete official route copy without the obsolete shell',
+    async (programId) => {
+      render(await ProgramPage({ params: Promise.resolve({ programId }) }));
+      const items = screen.getAllByRole('listitem').map((item) => item.textContent);
+      const program = getStaticCataloguePrograms().find((row) => row.id === programId)!;
+      for (const note of program.admissionRequirements) expect(items).toContain(note);
+      expect(items.join(' ')).toContain('כמותי 115 לפחות');
+      expect(items.join(' ')).not.toMatch(
+        /ממוצע בגרות מינימלי|ציון פסיכומטרי מינימלי|550|בדרך לאפקה|הנדסאי/,
+      );
+    },
+  );
+
   describe('requirements checked line', () => {
     it.each([
       ['ono_law', 'ono', 'https://www.ono.ac.il/curriculum/llb/', '23.10.2026'],
+      [
+        'afeka_ee',
+        'afeka',
+        'https://www.afeka.ac.il/candidate/candidate-information-bsc/undergraduates/',
+        '24.10.2026',
+      ],
+      [
+        'afeka_softwareeng',
+        'afeka',
+        'https://www.afeka.ac.il/candidate/candidate-information-bsc/admission-and-registration-in-science/',
+        '24.10.2026',
+      ],
       [
         'colmgmt_cs',
         'colman',

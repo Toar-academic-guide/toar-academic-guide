@@ -154,7 +154,6 @@ const FAQ_PROGRAM_IDS = new Set([
   'ariel_psychology',
   'haifa_nursing',
   'ono_nursing',
-  'afeka_cs',
   'tau_law',
   'biu_law',
   'ruppin_cs',

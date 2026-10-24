@@ -14,6 +14,75 @@ import type {
 } from '@/db/types';
 
 describe('catalogue serializers', () => {
+  it.each(['afeka_ee', 'afeka_softwareeng'])(
+    'repairs persisted %s shells, facts and thresholds after a successful database read',
+    (id) => {
+      const seed = buildCatalogueSeed();
+      const requirement = seed.admissionRequirements.find((row) => row.programId === id)!;
+      const staleNotes = ['ממוצע בגרות מינימלי: 80', 'ציון פסיכומטרי מינימלי: 550'];
+      const result = serializeProgramRow({
+        program: seed.programs.find((row) => row.id === id)! as ProgramRow,
+        relations: seed.programInstitutions.filter(
+          (row) => row.programId === id,
+        ) as ProgramInstitutionRow[],
+        requirements: [
+          {
+            ...requirement,
+            admissionRequirements: staleNotes,
+            specificAdmissionNotes: staleNotes,
+            quantitativeMinRequirement: 550,
+            englishMinRequirement: 60,
+          },
+        ] as AdmissionRequirementRow[],
+        thresholds: ['sekhem', 'psychometric'].map((thresholdKind) => ({
+          id: `${id}:${thresholdKind}`,
+          programId: id,
+          universityId: 'afeka',
+          thresholdKind,
+          thresholdValue: 550,
+        })) as AdmissionThresholdRow[],
+        sourceUrls: [],
+        admissionFacts: [
+          ['psychometric', 550],
+          ['bagrut_average', 80],
+          ['math_units', 5],
+          ['physics_units', 5],
+        ].map(([field, valueNumber]) => ({
+          id: `${id}:${field}`,
+          admissionRequirementId: requirement.id,
+          kind: 'numeric_gate',
+          field,
+          valueNumber,
+        })) as AdmissionFactRow[],
+        admissionAlternativePaths: [
+          {
+            id: `${id}:prep`,
+            admissionRequirementId: requirement.id,
+            kind: 'prep_program',
+            title: 'בדרך לאפקה',
+            priority: 1,
+          },
+        ] as AdmissionAlternativePathRow[],
+        institutionsById: new Map(seed.institutions.map((row) => [row.id, row as InstitutionRow])),
+      });
+      const expected = allPrograms.find((program) => program.id === id)!;
+      expect(result.admissionRequirements).toEqual(expected.admissionRequirements);
+      expect(result.institutionDetails![0]).toMatchObject({
+        specificAdmissionNotes: expected.admissionRequirements,
+        programUrl: expected.institutionDetails![0].programUrl,
+        quantitativeMinRequirement: null,
+        englishMinRequirement: null,
+        admissionFacts: [],
+        admissionAlternativePaths: [],
+      });
+      expect(result.thresholds).toBeUndefined();
+      expect(result.directPsychometric).toBeUndefined();
+      expect(result.minimumBagrut).toBeUndefined();
+      expect(result.minimumPsychometric).toBeUndefined();
+      expect(result.linkedInstitutionIds).toEqual(['afeka']);
+    },
+  );
+
   it('repairs persisted Haifa psychology floors without turning Pasifas into a main gate', () => {
     const seed = buildCatalogueSeed();
     const id = 'haifa_psychology';
