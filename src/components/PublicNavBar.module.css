@@ -18,8 +18,8 @@
 }
 .logo img {
   display: block;
-  width: 82px;
-  height: auto;
+  width: auto;
+  height: 39.9px;
 }
 .links {
   display: flex;
@@ -63,12 +63,12 @@
 }
 @media (max-width: 760px) {
   .header {
-    grid-template-columns: 80px minmax(0, 1fr);
+    grid-template-columns: 105px minmax(0, 1fr);
     padding: 16px 20px 8px;
     gap: 8px 15px;
   }
   .logo img {
-    width: 70px;
+    height: 32px;
   }
   .links {
     grid-row: 2;

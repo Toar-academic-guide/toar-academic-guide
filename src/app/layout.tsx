@@ -9,6 +9,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   applicationName: 'MyWay',
+  manifest: '/site.webmanifest',
   title: {
     default: 'MyWay | הדרך שלך ללימודים',
     template: '%s | MyWay',
