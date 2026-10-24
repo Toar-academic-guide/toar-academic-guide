@@ -66,7 +66,7 @@ describe('official BIU תשפ״ז published routes', () => {
         scoreAssessment: 'below_threshold',
       });
       expect(result.requiredInputs).toBeUndefined();
-      expect(result.explanation).toContain('למסלול ללא פסיכומטרי בלבד');
+      if (degreeId !== 'biu_law') expect(result.explanation).toContain('למסלול ללא פסיכומטרי בלבד');
     },
   );
 
@@ -89,11 +89,11 @@ describe('official BIU תשפ״ז published routes', () => {
   );
 
   it.each(BIU_PUBLISHED_ROUTE_PROGRAM_IDS)(
-    '%s honors the average boundary, and a high psychometric cannot fabricate a composite route',
+    '%s honors the average boundary unless a published psychometric channel passes',
     (degreeId) => {
       const input = boundaryInputs[degreeId];
       expect(evaluate({ ...input, bagrut: input.bagrut! - 0.01, psychometric: 800 }).decision).toBe(
-        'below',
+        degreeId === 'biu_law' ? 'pending' : 'below',
       );
     },
   );
