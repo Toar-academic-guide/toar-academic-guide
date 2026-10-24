@@ -1,4 +1,22 @@
+import { enquiryAttributionSchema, referrerSchema } from './leadAttribution';
+
 const emailAddress = /[\p{L}\p{N}.!#$%&'*+/=?^_`{|}~-]+@[\p{L}\p{N}.-]+\.[\p{L}]{2,}/giu;
+
+function scrubCampaignUrl(value: unknown): unknown {
+  if (typeof value !== 'string') return value;
+  try {
+    const url = new URL(value);
+    for (const key of ['utm_source', 'utm_medium', 'utm_campaign'] as const) {
+      const candidate = url.searchParams.get(key);
+      if (candidate !== null && !enquiryAttributionSchema.shape[key].safeParse(candidate).success) {
+        url.searchParams.delete(key);
+      }
+    }
+    return url.href;
+  } catch {
+    return value;
+  }
+}
 
 function scrub(value: unknown): unknown {
   if (typeof value === 'string') {
@@ -17,10 +35,21 @@ function scrub(value: unknown): unknown {
     return Object.fromEntries(
       Object.entries(value)
         .filter(([key]) => !/email/i.test(key) && scrub(key) === key)
-        .map(([key, entry]) => [key, scrub(entry)]),
+        .map(([key, entry]) => [key, scrubProperty(key, entry)]),
     );
   }
   return value;
+}
+
+function scrubProperty(key: string, value: unknown): unknown {
+  if (/^(?:\$initial_|\$)?referrer$/.test(key)) {
+    const parsed = referrerSchema.safeParse(value);
+    return parsed.success ? parsed.data : null;
+  }
+  if (key === '$current_url' || key === '$initial_current_url') {
+    return scrub(scrubCampaignUrl(value));
+  }
+  return scrub(value);
 }
 
 export function sanitizePostHogEvent<

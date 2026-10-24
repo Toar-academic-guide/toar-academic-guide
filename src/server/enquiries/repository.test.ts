@@ -23,6 +23,12 @@ const enquiry = {
   bagrut: 105.5,
   psychometric: 680,
   evaluationInput: { degreeId: 'bgu_cs', bagrut: 105.5, psychometric: 680 },
+  attribution: {
+    utm_source: 'instagram',
+    utm_medium: 'social',
+    utm_campaign: 'fall_2026',
+    referrer: 'https://example.com/article',
+  },
   createdAt: new Date('2026-10-24T12:00:00Z'),
 };
 describe('private enquiry backup', () => {

@@ -1,5 +1,5 @@
 import type { BagrutSector, BagrutSubjectRecord, BagrutSubjectV2 } from '@/types';
-import type { AdmissionsExtraInputs, AdmissionsRequiredInput } from '@/types/admissionsEvaluation';
+import type { AdmissionsExtraInputs } from '@/types/admissionsEvaluation';
 import { TAU_STANDARD_BONUS_SUBJECT_IDS } from '@/data/admissions/tauBagrutBonusSubjects';
 
 export interface ReviewedBagrutPolicy {

@@ -1,3 +1,4 @@
+import { enquiryAttributionSchema } from '@/lib/leadAttribution';
 import { after } from 'next/server';
 import { z } from 'zod';
 import type { EnquiryRecord, EnquiryResultStatus } from '@/lib/enquiries';
@@ -28,6 +29,7 @@ const inputSchema = z
       .max(300)
       .refine((value) => value.startsWith('/') && !value.startsWith('//')),
     consent: z.literal(true),
+    attribution: enquiryAttributionSchema.optional(),
     evaluationInput: admissionsEvaluationSchema
       .extend({
         extraInputs: admissionsEvaluationSchema.shape.extraInputs.unwrap().strict().optional(),
@@ -148,6 +150,7 @@ export async function POST(request: Request) {
               distinctId: input.requestId,
               event: 'server_enquiry_created',
               properties: {
+                ...input.attribution,
                 program_id: input.programId,
                 institution_id: input.institutionId,
                 source_path: input.sourcePath.split(/[?#]/)[0],

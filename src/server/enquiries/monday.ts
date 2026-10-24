@@ -7,6 +7,7 @@ export async function sendEnquiryToMonday(enquiry: EnquiryRecord): Promise<strin
   if (!token) throw new Error('Monday is not configured');
   const now = enquiry.createdAt.toISOString();
   const context = {
+    ...enquiry.attribution,
     program_id: enquiry.programId,
     institution_id: enquiry.institutionId,
     result_status: enquiry.resultStatus,

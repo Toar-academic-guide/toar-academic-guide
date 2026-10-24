@@ -99,3 +99,25 @@ Run targeted tests after each unit. Run npm run lint, npm run typecheck, npm tes
 ## Definition of Done
 
 All R1-R7 implemented and locally verified; abandoned code removed; consent and visible UI remain unchanged. SQL packet exists but has not been executed. One PR opened with required title and skip line; report URL, head SHA, notification channel and packet path. Live DB/apply verification remains an explicit operator action outside this task.
+
+## Attribution and short-link addendum
+
+R8. Capture utm_source, utm_medium, utm_campaign and document.referrer at the first session visit; retain even an empty first touch in sessionStorage across internal navigation and reloads. Use session-only PostHog super properties and attach the same validated attribution to every enquiry destination. No contact fields or visible text change. Campaign values are capped safe tokens; referrers keep safe origin/path only, with query/fragment/credentials and recognizable email/phone data excluded.
+R9. Redirect /tt, /ig, /fb, /wa to /?utm_source=tiktok, instagram, facebook, whatsapp respectively. No inbound medium/campaign convention exists; do not add either. Redirect-only paths remain absent from sitemap.
+R10. Clear the unused admissions import and format the migration snapshot; require CI=true npm run lint -- --max-warnings 0, typecheck and CI format check. CI logs show format:check, rather than the unused-import warning, caused the original red job.
+
+### U6. Session attribution (R8)
+
+Use a shared Zod attribution contract in src/lib/leadAttribution.ts and a browser session helper. Initialize before interaction through instrumentation-client.ts; register session super properties in the SDK loaded callback before the initial pageview. Read the captured session in EnquiryForm without additional fields. Optional attribution preserves older clients. Validate again in the enquiry API and persist four nullable, bounded columns through the existing insert function. Include the fields in Monday's existing context and successful server analytics. Keep the existing independent-write guarantees and 2,000-character Monday limit.
+
+Update the existing unexecuted 0040 migration and its snapshot rather than creating a second table-creation path. The guarded packet must also upgrade an existing enquiries table idempotently with ADD COLUMN IF NOT EXISTS, preserving all RLS/grants, backup and archival rollback behavior. The packet stays unapplied.
+
+Tests first: source persistence across changed URLs/module reload; empty direct first touch wins; unavailable storage cannot break contact; spoofed/oversized/PII attribution is excluded or rejected; referrer query/fragment stripped on client and server; initial PostHog pageview receives session props; form retries retain attribution; API sends normalized attribution to Monday, DB and analytics; schema columns and bounded SQL function values; maximum-size Monday context stays within its limit.
+
+### U7. Redirects (R9)
+
+Use the existing proxy/NextResponse.redirect mechanism before auth session lookup. Exact path matches redirect to the landing URL with only the channel source. Tests assert status and exact target for all four paths, unaffected non-matches, and sitemap exclusion. Browser verification follows a short link into a journey/enquiry, changes the URL later, and verifies the original session attribution remains.
+
+### Addendum verification
+
+After implementation and ce-simplify-code, run lint with zero warnings, typecheck after the build has finished generating Next types, full units, production build, format check, migration consistency and the existing pre-push guard. Use existing Playwright Chromium, static local catalogue and intercepted lead submissions. Exercise desktop/mobile lead flow and redirect HTTP targets. Update PR #273 body and push once on the same branch; no additional PR, production SQL, env/config change, main push or merge.

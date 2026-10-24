@@ -79,6 +79,40 @@ describe('website enquiries → Monday', () => {
     vi.unstubAllEnvs();
   });
 
+  it('passes normalized attribution to Monday, the backup and server analytics', async () => {
+    const attribution = {
+      utm_source: 'instagram',
+      utm_medium: 'social',
+      utm_campaign: 'fall_2026',
+      referrer: 'https://example.com/article?phone=0501234567#private',
+    };
+    expect((await POST(request({ attribution }))).status).toBe(201);
+    const expected = { ...attribution, referrer: 'https://example.com/article' };
+    const body = JSON.parse(vi.mocked(fetch).mock.calls[0][1]?.body as string);
+    const context = JSON.parse(
+      JSON.parse(body.variables.columns).long_text_mm8ay37r.text.split('\n\nLead context:\n')[1],
+    );
+    expect(context).toMatchObject(expected);
+    expect(backup).toHaveBeenCalledWith(expect.objectContaining({ attribution: expected }));
+    await after.mock.calls[0][0]();
+    expect(capture).toHaveBeenCalledWith(
+      expect.objectContaining({ properties: expect.objectContaining(expected) }),
+    );
+  });
+  it.each([
+    { utm_source: 'x'.repeat(101) },
+    { utm_medium: 'x'.repeat(101) },
+    { utm_campaign: 'x'.repeat(101) },
+    { referrer: 'https://example.com/' + 'x'.repeat(256) },
+    { utm_source: 'private@example.com' },
+    { utm_campaign: '0501234567' },
+    { email: 'private@example.com' },
+  ])('rejects invalid attribution before either destination: %j', async (attribution) => {
+    expect((await POST(request({ attribution }))).status).toBe(400);
+    expect(backup).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+
   it('delivers only the consented contact fields and server-resolved programme', async () => {
     const result = await POST(request());
     expect(result.status).toBe(201);

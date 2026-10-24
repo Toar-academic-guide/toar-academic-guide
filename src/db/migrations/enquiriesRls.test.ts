@@ -16,6 +16,10 @@ describe('enquiries schema and unapplied packet', () => {
         'psychometric',
         'evaluation_input',
         'consent_text',
+        'utm_source',
+        'utm_medium',
+        'utm_campaign',
+        'referrer',
       ]),
     );
   });
@@ -40,4 +44,24 @@ describe('enquiries schema and unapplied packet', () => {
     expect(packet).toContain('CREATE TABLE IF NOT EXISTS public.enquiries');
     expect(packet).toContain('pg_dump');
   });
+});
+
+it('keeps attribution bounded in schema, migration, insert function and idempotent packet upgrades', () => {
+  const config = getTableConfig(schema.enquiries);
+  const migration = readFileSync('src/db/migrations/0040_enquiries.sql', 'utf8');
+  const packet = readFileSync('supabase/packets/2026-10-24-enquiries-table.sql', 'utf8');
+  for (const [column, length] of [
+    ['utm_source', 100],
+    ['utm_medium', 100],
+    ['utm_campaign', 100],
+    ['referrer', 256],
+  ] as const) {
+    expect(config.columns.find((entry) => entry.name === column)?.getSQLType()).toBe(
+      `varchar(${length})`,
+    );
+    expect(migration).toContain(`"${column}" varchar(${length})`);
+    expect(migration).toContain(`payload->'attribution'->>'${column}'`);
+    expect(packet).toContain(`ADD COLUMN IF NOT EXISTS "${column}" varchar(${length})`);
+    expect(packet).toContain(`payload->'attribution'->>'${column}'`);
+  }
 });

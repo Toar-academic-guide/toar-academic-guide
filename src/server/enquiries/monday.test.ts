@@ -26,6 +26,12 @@ it('keeps required context within the Monday 2000-character long-text limit with
     resultStatus: 'accepted',
     bagrut: 105.5,
     psychometric: 680,
+    attribution: {
+      utm_source: 'x'.repeat(100),
+      utm_medium: 'x'.repeat(100),
+      utm_campaign: 'x'.repeat(100),
+      referrer: 'https://example.com/' + 'x'.repeat(236),
+    },
     createdAt: new Date(),
     evaluationInput: {
       degreeId: 'bgu_cs',
@@ -50,6 +56,10 @@ it('keeps required context within the Monday 2000-character long-text limit with
   expect(text.length).toBeLessThanOrEqual(2000);
   const context = JSON.parse(text.split('\n\nLead context:\n')[1]);
   expect(context).toMatchObject({
+    utm_source: 'x'.repeat(100),
+    utm_medium: 'x'.repeat(100),
+    utm_campaign: 'x'.repeat(100),
+    referrer: 'https://example.com/' + 'x'.repeat(236),
     result_status: 'accepted',
     bagrut: 105.5,
     psychometric: 680,

@@ -12,6 +12,7 @@ import {
   timestamp,
   uniqueIndex,
   uuid,
+  varchar,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 import type { EnquiryResultStatus } from '@/lib/enquiries';
@@ -967,6 +968,10 @@ export const enquiries = pgTable(
     programName: text('program_name').notNull(),
     institutionName: text('institution_name').notNull(),
     sourcePath: text('source_path').notNull(),
+    utmSource: varchar('utm_source', { length: 100 }),
+    utmMedium: varchar('utm_medium', { length: 100 }),
+    utmCampaign: varchar('utm_campaign', { length: 100 }),
+    referrer: varchar('referrer', { length: 256 }),
     consent: boolean('consent').notNull(),
     consentText: text('consent_text').notNull(),
     resultStatus: text('result_status').$type<EnquiryResultStatus>().notNull(),

@@ -11,7 +11,9 @@ for (const width of [1440, 390]) {
       submitted = route.request().postDataJSON();
       await route.fulfill({ status: 201, json: { data: { received: true } } });
     });
-    await page.goto('/');
+    await page.goto(width === 390 ? '/ig' : '/tt', {
+      referer: 'https://example.com/social?private=secret',
+    });
     await page.getByRole('button', { name: 'עזרו לי לבחור מה ללמוד' }).click();
     await page.getByRole('button', { name: 'כן', exact: true }).click();
     await page.getByRole('button', { name: 'מדעי המחשב', exact: true }).click();
@@ -32,6 +34,9 @@ for (const width of [1440, 390]) {
       await page.getByRole('button', { name: 'לבדוק את האפשרויות' }).click();
       await expect(page.getByText('בודקים את ההתאמה לציונים שלך…', { exact: true })).toBeHidden();
     }
+    await page.evaluate(() =>
+      window.history.replaceState(null, '', '/?utm_source=facebook#results'),
+    );
     await page.getByRole('button', { name: 'יצירת קשר', exact: true }).first().click();
     await expect(page).toHaveURL(/#inquiry$/);
     await expect(page.locator('form input:not([type="checkbox"])')).toHaveCount(2);
@@ -43,6 +48,10 @@ for (const width of [1440, 390]) {
     expect(submitted).toMatchObject({
       consent: true,
       evaluationInput: { bagrut: 105.5, psychometric: evaluatedPsychometric },
+      attribution: {
+        utm_source: width === 390 ? 'instagram' : 'tiktok',
+        referrer: expect.stringMatching(/^https:\/\/example\.com\/(?:social)?$/),
+      },
     });
     expect(submitted?.evaluationInput).toMatchObject({ degreeId: submitted?.programId });
     expect(submitted).not.toHaveProperty('resultStatus');
@@ -50,7 +59,8 @@ for (const width of [1440, 390]) {
 
   test(`program contact CTA opens the existing standalone form at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
-    await page.goto('/programs/colmgmt_cs');
+    await page.goto('/wa');
+    await page.goto('/programs/colmgmt_cs?utm_source=facebook');
     await expect(
       page.getByRole('link', { name: 'בדיקת סיכויי קבלה', exact: true }),
     ).toHaveAttribute('href', '/app/calculator');
@@ -65,5 +75,34 @@ for (const width of [1440, 390]) {
     await expect(page.locator('form input:not([type="checkbox"])')).toHaveCount(2);
     await expect(page.getByLabel('שם מלא', { exact: true })).toBeVisible();
     await expect(page.getByLabel('מספר טלפון', { exact: true })).toBeVisible();
+    const attribution = await page.evaluate(() =>
+      JSON.parse(sessionStorage.getItem('myway_lead_attribution_v1')!),
+    );
+    expect(attribution.utm_source).toBe('whatsapp');
   });
 }
+
+for (const [path, source] of [
+  ['/tt', 'tiktok'],
+  ['/ig', 'instagram'],
+  ['/fb', 'facebook'],
+  ['/wa', 'whatsapp'],
+]) {
+  test(`${path} is a redirect only, with no invented medium/campaign`, async ({ request }) => {
+    const response = await request.get(`${path}?utm_source=other&email=private%40example.com`, {
+      maxRedirects: 0,
+    });
+    expect(response.status()).toBe(307);
+    const destination = new URL(response.headers().location, response.url());
+    expect(destination.origin).toBe(new URL(response.url()).origin);
+    expect(destination.pathname + destination.search).toBe(`/?utm_source=${source}`);
+  });
+}
+test('social short links are excluded from sitemap', async ({ request }) => {
+  const response = await request.get('/sitemap.xml');
+  expect(response.status()).toBe(200);
+  const xml = await response.text();
+  for (const path of ['/tt', '/ig', '/fb', '/wa']) {
+    expect(xml).not.toContain(`https://findmyway.co.il${path}</loc>`);
+  }
+});

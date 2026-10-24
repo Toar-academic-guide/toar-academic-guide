@@ -1,3 +1,4 @@
+import type { EnquiryAttribution } from './leadAttribution';
 import type { AdmissionsEvaluationInput } from '@/types/admissionsEvaluation';
 
 export const ENQUIRY_CONSENT =
@@ -11,6 +12,7 @@ export interface EnquiryInput {
   institutionId: string;
   sourcePath: string;
   consent: true;
+  attribution?: EnquiryAttribution;
   evaluationInput?: AdmissionsEvaluationInput;
 }
 
