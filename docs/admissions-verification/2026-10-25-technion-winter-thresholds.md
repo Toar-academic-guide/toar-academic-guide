@@ -34,7 +34,7 @@ The date/source notice is small and right-aligned. Contact and Save remain visib
 
 ## Verification
 
-- Full unit suite: **3250 passed, 0 failed, 65 skipped**.
+- Full unit suite: **3250 passed, 0 failed, 66 skipped**.
 - Focused parser/evaluator/component and unchanged medicine/coverage tests: **640 passed**. All ten formerly failing tests pass unchanged; `git diff origin/main --` their eight test files has no output.
 - EE boundary: **91.5 passes, 91.49 below**. ME boundary: **87 passes, 86.99 below**, through both the live adapter with fixture responses and the public evaluator.
 - Spring-first fixture: spring `94 -על בסיס מקום פנוי` above winter `91.5` returns **91.5**. An absent winter table yields no cutoff.
@@ -53,7 +53,7 @@ Only the reviewed EE/ME winter pairs now authorize their live replay from the ch
 
 Tests were added before the fix: 12 stale-catalogue cases (the four requested score boundaries with current, old and absent freshness) and the fractional seed test failed. They now pass. The fixture uses Samuel's public DB-backed catalogue capture without changing its old cutoff. Additional tests prove no DB freshness read occurs and an unavailable or changed live source cannot return a verdict. No existing expected value was changed in this follow-up.
 
-The disposable seed failed because `admission_thresholds.threshold_value` was integer; the seed dry-run does not execute PostgreSQL inserts. Forward-only migration `0040_fractional_admission_thresholds.sql` widens it to `numeric`. Drizzle's number mode preserves the existing application number type and reads the unchanged integer schema as well. The seed test verifies 91.5 serialization and old integer reads; the real disposable PostgreSQL job exercises migration plus seed.
+The disposable seed failed because `admission_thresholds.threshold_value` was integer; the seed dry-run does not execute PostgreSQL inserts. Forward-only migration `0040_fractional_admission_thresholds.sql` widens it to `numeric`. Drizzle's number mode preserves the existing application number type and reads the unchanged integer schema as well. The seed test verifies 91.5 serialization and old integer reads; the real disposable PostgreSQL job exercises migration plus seed. In the first follow-up CI run, both passed, then an existing publication integration assertion exposed raw PostgreSQL numeric text (`"700"`) versus its unchanged expected application number (`700`). That test now reads through the application column mapper, preserving the expectation. A new disposable integration test also reads the seeded EE 91.5 through that mapper.
 
 GUARDED SQL: Jorje applies to prod after merge; code works without it.
 
