@@ -252,6 +252,17 @@ export interface AdmissionsEvaluationSnapshot {
   evaluationDigest: string;
 }
 
+export interface FloorCheckRow {
+  channel: string;
+  label: string;
+  displayValue: number | string;
+  verdictThreshold: number;
+  studentValue?: number | string;
+  status: 'pass' | 'miss' | 'conflicting' | 'missing' | 'soft_miss';
+  note?: string;
+  sourceUrl: string;
+}
+
 export interface AdmissionsEvaluationResult {
   institution: Pick<
     CatalogueInstitution,
@@ -287,6 +298,7 @@ export interface AdmissionsEvaluationResult {
   evidenceItemName?: string;
   missingData?: string[];
   officialUrls?: string[];
+  floorChecks?: FloorCheckRow[];
   degradationReason?: string;
   snapshot?: AdmissionsEvaluationSnapshot;
 }

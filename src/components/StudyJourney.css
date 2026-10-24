@@ -1001,4 +1001,5 @@
 .journey-result-explanation {
   margin-top: 16px;
   color: #435072;
+  overflow-wrap: anywhere;
 }

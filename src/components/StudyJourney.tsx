@@ -1365,7 +1365,14 @@ export default function StudyJourney({
                     <AdmissionConditions conditions={activeRow.result?.additionalConditions} />
                   )}
                   <h2>תנאי קבלה</h2>
-                  {isBatchCUnsupported ? (
+                  {activeRow.result?.floorChecks ? (
+                    <AdmissionRequirements
+                      requirements={[]}
+                      programId={activeRow.program.id}
+                      institutionId={activeRow.institution.id}
+                      floorChecks={activeRow.result.floorChecks}
+                    />
+                  ) : isBatchCUnsupported ? (
                     <p>{activeRow.result?.nextAction}</p>
                   ) : (
                     <RequirementTiles

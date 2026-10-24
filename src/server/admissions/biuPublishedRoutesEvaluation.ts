@@ -3,13 +3,13 @@ import {
   BIU_PUBLISHED_ROUTE_PROGRAMMES,
   BIU_PUBLISHED_ROUTES_URL,
 } from '@/data/admissions/biuPublishedRoutes';
-import { bagrutExamSubjects } from '@/lib/bagrutSubjectRecord';
-import { subjectIdForWizardLabel } from '@/utils/bagrutSubjectRecord';
 import type {
   AdmissionsEvaluationInput,
   AdmissionsEvaluationResult,
 } from '@/types/admissionsEvaluation';
 import type { CatalogueInstitution } from '@/types/catalogue';
+import { evaluateBiuChannels, twoScienceExams } from './biuChannelEvaluation';
+import { BIU_CHANNELS, BIU_CALCULATOR_URL, BIU_LAW_URL } from '@/data/admissions/biuChannels';
 import {
   allOf,
   anyOf,
@@ -17,56 +17,14 @@ import {
   examSubject,
   mathAlternatives,
   minimum,
-  type NumericGate,
 } from './publishedNumericRoutes';
-
-const scienceIds = new Map(
-  [
-    ['biology', 'ביולוגיה'],
-    ['biotechnology', 'ביוטכנולוגיה'],
-    ['mathematics', 'מתמטיקה'],
-    ['chemistry', 'כימיה'],
-    ['physics', 'פיזיקה'],
-    ['engineering', 'הנדסה'],
-    ['computer_science', 'מדעי המחשב'],
-  ].flatMap(([id, label]) => [[id, id] as const, [subjectIdForWizardLabel(label), id] as const]),
-);
-
-function twoScienceExams(input: AdmissionsEvaluationInput): NumericGate {
-  const record = input.extraInputs?.bagrutSubjectRecord;
-  const complete = record?.schemaVersion === 2 && record.complete;
-  const subjects = [...bagrutExamSubjects(record)];
-  for (const subjectId of ['mathematics', 'physics', 'computer_science'] as const) {
-    if (complete || record?.subjects.some((row) => row.subjectId === subjectId)) continue;
-    const { units, grade } =
-      subjectId === 'computer_science'
-        ? { units: input.extraInputs?.csUnits, grade: input.extraInputs?.csGrade }
-        : examSubject(input, subjectId);
-    if (units !== undefined && grade !== undefined) subjects.push({ subjectId, units, grade });
-  }
-  const qualifying = new Set(
-    subjects
-      .filter((subject) => subject.units === 5 && subject.grade >= 80)
-      .map((subject) => scienceIds.get(subject.subjectId))
-      .filter((id) => id !== undefined),
-  );
-  if (qualifying.size >= 2) return allOf();
-  return { below: !!complete, missing: complete ? [] : ['bagrut_subject_record'] };
-}
-
-const BIU_LAW_CALCULATOR_URL = 'https://shoham.biu.ac.il/kabala/';
-const BIU_LAW_FACULTY_URL = 'https://law.biu.ac.il/node/129';
 
 function evaluateLawPsychometricChannels(
   input: AdmissionsEvaluationInput,
   institution: CatalogueInstitution,
   bagrutResult: AdmissionsEvaluationResult,
 ): AdmissionsEvaluationResult {
-  const officialUrls = [
-    BIU_LAW_CALCULATOR_URL,
-    BIU_LAW_FACULTY_URL,
-    ...(bagrutResult.officialUrls ?? []),
-  ];
+  const officialUrls = [BIU_CALCULATOR_URL, BIU_LAW_URL, ...(bagrutResult.officialUrls ?? [])];
   const bagrut = { ...bagrutResult, officialUrls };
   const psychometric = evaluatePublishedNumericRoutes({
     institution,
@@ -196,7 +154,10 @@ export function evaluateBiuPublishedRoutes({
       },
     ],
   });
-  return input.degreeId === 'biu_law' && input.psychometric !== undefined
-    ? evaluateLawPsychometricChannels(input, institution, bagrutResult)
-    : bagrutResult;
+  const channels = BIU_CHANNELS[input.degreeId];
+  const lawResult =
+    input.degreeId === 'biu_law' && input.psychometric !== undefined
+      ? evaluateLawPsychometricChannels(input, institution, bagrutResult)
+      : undefined;
+  return evaluateBiuChannels(input, institution, bagrutResult, channels, lawResult);
 }

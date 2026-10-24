@@ -3,6 +3,7 @@ import AdmissionConditions from './AdmissionConditions';
 import { acceptedManualGateFootnote } from '@/lib/acceptedManualGateFootnote';
 
 import { institutionLink } from '@/lib/institutionLinks';
+import AdmissionRequirements from './AdmissionRequirements';
 
 import { allowsNoGenericBagrut, allowsNoPsychometric } from '@/lib/calculatorInputRequirements';
 
@@ -751,7 +752,7 @@ export default function CalculatorResults({
               <div className="flex flex-col gap-2">
                 {visible.map(({ institution, result }) => {
                   const footnote = acceptedManualGateFootnote(result);
-                  let config = result.scoreAssessment
+                  let config: { label: string; bg: string } = result.scoreAssessment
                     ? result.scoreAssessment === 'meets_threshold'
                       ? { ...STATUS_CONFIG.exactAccepted, label: 'הציונים עומדים בסף' }
                       : { ...STATUS_CONFIG.exactBelow, label: 'הציונים מתחת לסף' }
@@ -808,6 +809,8 @@ export default function CalculatorResults({
                                       : STATUS_CONFIG.unsupported;
                   if (footnote) config = { ...STATUS_CONFIG.exactAccepted, label: 'מתקבלים' };
                   const institutionType = getInstitutionType(institution);
+                  if (result.floorChecks && result.decision === 'below')
+                    config = { ...config, label: 'לא עומד/ת בתנאי הסף' };
                   const sourceUrl = institutionLink(result.officialUrls?.[0], institution.id);
 
                   return (
@@ -832,9 +835,17 @@ export default function CalculatorResults({
                           <p className="mt-1 text-xs font-semibold text-slate-700">
                             {result.sourceLabel}
                           </p>
-                          <p className="mt-1 text-xs leading-relaxed text-slate-500">
+                          <p className="mt-1 text-xs leading-relaxed text-slate-500 [overflow-wrap:anywhere]">
                             {result.explanation}
                           </p>
+                          {result.floorChecks && (
+                            <AdmissionRequirements
+                              requirements={[]}
+                              floorChecks={result.floorChecks}
+                              programId={selectedProgram?.id}
+                              institutionId={institution.id}
+                            />
+                          )}
                           {footnote && (
                             <AdmissionConditions
                               conditions={result.additionalConditions}
@@ -845,7 +856,7 @@ export default function CalculatorResults({
                           {!footnote && (
                             <AdmissionConditions conditions={result.additionalConditions} />
                           )}
-                          {sourceUrl ? (
+                          {sourceUrl && !result.floorChecks ? (
                             <a
                               href={sourceUrl}
                               target="_blank"

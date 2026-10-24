@@ -155,14 +155,8 @@ describe('BIU law official admission channels are OR alternatives', () => {
     },
   );
 
-  it('does not add channels to the general law programme or other BIU programmes', () => {
-    for (const degreeId of [
-      'law',
-      'biu_criminology',
-      'biu_lifesciences',
-      'biu_biotech',
-      'biu_computational_bio',
-    ]) {
+  it('does not add channels to the general law programme or HOLD/UNKNOWN BIU programmes', () => {
+    for (const degreeId of ['law', 'biu_psychology', 'biu_optometry', 'biu_medicine']) {
       expect(
         evaluateBiuPublishedRoutes({
           institution,
