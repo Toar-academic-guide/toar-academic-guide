@@ -29,6 +29,9 @@ vi.mock('@/hooks/useUserProfile', () => ({
   }),
 }));
 vi.mock('@/components/WayBackdrop', () => ({ default: () => null }));
+// HomeBrowse is an async Server Component that jsdom's client renderer cannot run.
+// Its SSR output and catalogue-failure fallback are covered in publicCatalogueLinks.test.tsx.
+vi.mock('@/components/seo/CatalogueLinks', () => ({ HomeBrowse: () => null }));
 
 import Home from '@/app/page';
 
