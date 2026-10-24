@@ -2,6 +2,10 @@ import { describe, expect, it, vi } from 'vitest';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import { getProgramVerificationArtifact } from '@/data/admissions/tauProgramVerification';
 import type { SourceFreshnessStateRow } from '@/db/types';
+import type { CatalogueProgram } from '@/types/catalogue';
+import staleTechnionCatalogue from '@/test/fixtures/technionStaleCatalogue.json';
+import { createHash } from 'node:crypto';
+import { getDb } from '@/db/client';
 import {
   technionWinterSubjectRecord,
   technionWinterThresholdsHtml,
@@ -13,6 +17,11 @@ import {
 import { evaluateAdmissionsForProgram } from './evaluator';
 
 vi.mock('server-only', () => ({}));
+vi.mock('@/db/client', () => ({
+  getDb: vi.fn(() => {
+    throw new Error('The reviewed winter replay must not query DB freshness');
+  }),
+}));
 
 function freshnessFor(programId: string) {
   const artifact = getProgramVerificationArtifact(`${programId}__technion`);
@@ -49,6 +58,142 @@ function freshnessFor(programId: string) {
 }
 
 describe('Technion winter תשפ"ז thresholds', () => {
+  it('evaluates the reviewed winter pair without loading database freshness', async () => {
+    const program = staleTechnionCatalogue.find(
+      (row) => row.id === 'technion_ee',
+    )! as CatalogueProgram;
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockImplementation(
+        async (url) =>
+          new Response(
+            String(url).includes('technion-calculators-sum.php')
+              ? 'הסכם לדיוני הקבלה הוא:91.5'
+              : technionWinterThresholdsHtml,
+          ),
+      );
+    const report = await evaluateAdmissionsForProgram({
+      program,
+      institutions: getStaticCatalogueInstitutions(),
+      fetcher,
+      input: {
+        degreeId: program.id,
+        bagrut: 110,
+        psychometric: 735,
+        extraInputs: { bagrutSubjectRecord: technionWinterSubjectRecord },
+      },
+    });
+    expect(report.results[0]).toMatchObject({ decision: 'accepted', score: 91.5, threshold: 91.5 });
+    expect(getDb).not.toHaveBeenCalled();
+  });
+
+  it.each(['changed', 'absent', 'unreachable'] as const)(
+    'withholds a verdict when the live winter source is %s despite reviewed code',
+    async (failure) => {
+      const program = staleTechnionCatalogue.find(
+        (row) => row.id === 'technion_ee',
+      )! as CatalogueProgram;
+      const fetcher = vi.fn<typeof fetch>().mockImplementation(async (url) => {
+        if (String(url).includes('technion-calculators-sum.php'))
+          return new Response('הסכם לדיוני הקבלה הוא:91.5');
+        if (failure === 'unreachable') throw new Error('Official source unavailable');
+        return new Response(
+          failure === 'changed'
+            ? technionWinterThresholdsHtml.replace('>91.5<', '>92<')
+            : '<table id="tablepress-482"></table>',
+        );
+      });
+      const report = await evaluateAdmissionsForProgram({
+        program,
+        institutions: getStaticCatalogueInstitutions(),
+        fetcher,
+        freshnessStatesBySourceId: new Map(),
+        input: {
+          degreeId: program.id,
+          bagrut: 110,
+          psychometric: 735,
+          extraInputs: { bagrutSubjectRecord: technionWinterSubjectRecord },
+        },
+      });
+      expect(report.results[0].decision).toBe('unknown');
+      expect(report.results[0].threshold).toBeUndefined();
+      expect(report.results[0].score).toBeUndefined();
+    },
+  );
+
+  describe.each(['current', 'previous', 'missing'] as const)(
+    'with stale deployed catalogue and %s database freshness',
+    (freshness) => {
+      it.each([
+        ['technion_ee', 735, 91.5, 'accepted', 91.5, 94],
+        ['technion_ee', 734, 91.4, 'below', 91.5, 94],
+        ['technion_me', 675, 87, 'accepted', 87, 92],
+        ['technion_me', 674, 86.9, 'below', 87, 92],
+      ] as const)(
+        '%s psychometric %s evaluates against the reviewed winter cutoff',
+        async (degreeId, psychometric, score, decision, threshold, previousThreshold) => {
+          // Public DB-backed rows captured by Samuel at /workspace/qa-evidence/pr281-b53d9eb/.
+          const program = staleTechnionCatalogue.find(
+            (row) => row.id === degreeId,
+          )! as CatalogueProgram;
+          const before = structuredClone(program);
+          const states =
+            freshness === 'missing'
+              ? new Map<string, SourceFreshnessStateRow>()
+              : freshnessFor(degreeId);
+          if (freshness === 'previous') {
+            for (const state of states.values()) {
+              state.reviewedSourceFingerprint = `sha256:${createHash('sha256')
+                .update(
+                  JSON.stringify({
+                    source: getProgramVerificationArtifact(`${degreeId}__technion`)!.contract.source
+                      .url,
+                    programId: degreeId.slice('technion_'.length),
+                    threshold: previousThreshold,
+                    verdict: 'accepted',
+                  }),
+                )
+                .digest('hex')}`;
+            }
+          }
+          const fetcher = vi.fn<typeof fetch>().mockImplementation(async (url, options) => {
+            if (String(url).includes('technion-calculators-sum.php')) {
+              expect(new URLSearchParams(String(options?.body)).get('psychometry')).toBe(
+                String(psychometric),
+              );
+              return new Response(`הסכם לדיוני הקבלה הוא:${score}`);
+            }
+            return new Response(technionWinterThresholdsHtml);
+          });
+          const report = await evaluateAdmissionsForProgram({
+            program,
+            institutions: getStaticCatalogueInstitutions(),
+            fetcher,
+            freshnessStatesBySourceId: states,
+            input: {
+              degreeId,
+              bagrut: 110,
+              psychometric,
+              extraInputs: {
+                bagrutSubjectRecord: {
+                  ...technionWinterSubjectRecord,
+                  subjects: technionWinterSubjectRecord.subjects.map((subject) => ({
+                    ...subject,
+                    units: ['english', 'mathematics'].includes(subject.subjectId) ? 5 : 2,
+                  })),
+                },
+              },
+            },
+          });
+          expect(report.results[0]).toMatchObject({ decision, score, threshold });
+          expect(report.results[0].degradationReason).not.toBe('pair_verification_incomplete');
+          expect(program).toEqual(before);
+          expect(fetcher).toHaveBeenCalledTimes(2);
+        },
+      );
+    },
+  );
+
   it('uses winter EE 91.5 when spring 94 appears first', () => {
     expect(parseTechnionOfficialThreshold(technionWinterThresholdsHtml, 'technion_ee')).toBe(91.5);
   });

@@ -281,3 +281,15 @@ export function getTechnionProgramVerificationMetadata(pairId: string) {
 export function getTechnionProgramConfig(programId: string) {
   return configFor(programId);
 }
+
+// These reviewed winter pairs replay both the score and cutoff live. Persisted
+// catalogue/freshness rows may still describe the previous spring/stale cutoffs.
+export function getCodeReviewedTechnionWinterVerification(pairId: string) {
+  if (
+    !['ee__technion', 'technion_ee__technion', 'me__technion', 'technion_me__technion'].includes(
+      pairId,
+    )
+  )
+    return undefined;
+  return TECHNION_PROGRAM_VERIFICATION_METADATA[pairId];
+}

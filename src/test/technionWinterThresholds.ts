@@ -22,5 +22,9 @@ export const technionWinterSubjectRecord = {
     'hebrew_expression',
     'history',
     'hebrew',
-  ].map((subjectId) => ({ subjectId, units: subjectId === 'mathematics' ? 5 : 2, grade: 95 })),
+  ].map((subjectId) => ({
+    subjectId,
+    units: ['english', 'mathematics'].includes(subjectId) ? 5 : 2,
+    grade: 95,
+  })),
 };

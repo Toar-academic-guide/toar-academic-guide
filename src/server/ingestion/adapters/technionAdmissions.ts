@@ -7,6 +7,7 @@ import {
 } from '../admissionsSourceAdapters';
 import type { BagrutSubjectRecord } from '@/types';
 import { bagrutExamSubjects } from '@/lib/bagrutSubjectRecord';
+import { getCodeReviewedTechnionWinterVerification } from '@/data/admissions/technionProgramVerification';
 import {
   calculateTechnionArchitectureScore,
   TECHNION_ARCHITECTURE_CUTOFF,
@@ -129,6 +130,13 @@ export async function runTechnionAdmissionsProof(
       await thresholdResponse.text(),
       program.id,
     );
+    const codeReviewedWinter = getCodeReviewedTechnionWinterVerification(`${program.id}__technion`);
+    if (
+      codeReviewedWinter &&
+      acceptanceThreshold !== codeReviewedWinter.contract.calculation.cutoff.acceptance
+    ) {
+      throw new Error('Technion winter cutoff no longer matches the reviewed code contract');
+    }
     const exact = acceptanceThreshold !== undefined;
     const derivedVerdict = exact
       ? parsedSekhem >= acceptanceThreshold

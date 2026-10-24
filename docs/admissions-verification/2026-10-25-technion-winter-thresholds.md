@@ -34,16 +34,28 @@ The date/source notice is small and right-aligned. Contact and Save remain visib
 
 ## Verification
 
-- Full unit suite: **3233 passed, 0 failed, 65 skipped**.
+- Full unit suite: **3250 passed, 0 failed, 65 skipped**.
 - Focused parser/evaluator/component and unchanged medicine/coverage tests: **640 passed**. All ten formerly failing tests pass unchanged; `git diff origin/main --` their eight test files has no output.
 - EE boundary: **91.5 passes, 91.49 below**. ME boundary: **87 passes, 86.99 below**, through both the live adapter with fixture responses and the public evaluator.
 - Spring-first fixture: spring `94 -על בסיס מקום פנוי` above winter `91.5` returns **91.5**. An absent winter table yields no cutoff.
-- `npm run guard:pre-pr`: **passed**, including migration grants, migration consistency, catalogue seed dry-run, Monday evidence and **2359 targeted tests**. No hook bypass was used.
+- `npm run guard:pre-pr`: **passed**, including migration grants, migration consistency, catalogue seed dry-run, Monday evidence and **2386 targeted tests**. No hook bypass was used.
 - TypeScript: passed. ESLint: no errors; one existing unused-type warning in `bagrutPolicies.ts`.
 - Chromium: **4 Playwright tests passed** at 390px and 1440px. EE/ME programme pages show the stamp; EE score 92 renders cutoff 91.5 with spring 94 only as a note. Right alignment, overflow, Contact and Save were checked. The verdict rendering test mocks the evaluation response; evaluator and adapter behavior are tested separately with official HTML fixtures.
 - Browser screenshots: `/tmp/technion-ee-only-browser-evidence/`. Explicit local static catalogue mode was used; webpack dev mode accommodates the shared node_modules symlink. No repository configuration changed.
 - Generated evidence was regenerated from the override JSON using the existing generator functions while retaining the committed export metadata; the ignored raw Monday export is unavailable in this worktree.
-- No Supabase writes, applied seeds, freshness publication, manual deployments, environment changes, or production verification were performed. Catalogue/freshness publication and deployed database-backed verification remain separate operational work; the local tests do not establish production state.
+- No production/preview SQL, applied seeds, freshness publication, manual deployments or environment changes were performed. The existing disposable-Postgres CI job validates the migration and seed in an isolated database; deployed checks are recorded in the PR body.
+
+## Database-backed preview regression
+
+Samuel's captured public catalogue rows still contain EE 94 and ME 92. The capability matrix previously required that persisted cutoff to equal the reviewed contract cutoff (91.5/87), so even a current freshness row withheld the live replay with `pair_verification_incomplete`. The reviewed fingerprint also includes the cutoff; an older persisted fingerprint or missing freshness row independently causes the same reason. No production freshness row was inspected, so which gate ran first in that deployment is unknown. Local tests had used updated static catalogue rows and matching synthetic freshness, hiding both dependencies.
+
+Only the reviewed EE/ME winter pairs now authorize their live replay from the checked-in verification contract and fixtures. They do not query persisted Technion freshness. Required subject inputs remain enforced. The adapter must still obtain the score from the official calculator and the cutoff from winter `tablepress-485`; it withholds the verdict if that live cutoff differs from the reviewed contract, the winter table is absent or the request fails. Medicine and the other pairs retain their existing verification gates.
+
+Tests were added before the fix: 12 stale-catalogue cases (the four requested score boundaries with current, old and absent freshness) and the fractional seed test failed. They now pass. The fixture uses Samuel's public DB-backed catalogue capture without changing its old cutoff. Additional tests prove no DB freshness read occurs and an unavailable or changed live source cannot return a verdict. No existing expected value was changed in this follow-up.
+
+The disposable seed failed because `admission_thresholds.threshold_value` was integer; the seed dry-run does not execute PostgreSQL inserts. Forward-only migration `0040_fractional_admission_thresholds.sql` widens it to `numeric`. Drizzle's number mode preserves the existing application number type and reads the unchanged integer schema as well. The seed test verifies 91.5 serialization and old integer reads; the real disposable PostgreSQL job exercises migration plus seed.
+
+GUARDED SQL: Jorje applies to prod after merge; code works without it.
 
 Code review: skipped (ce-code-review unavailable) — Encoded profile restriction.
 
