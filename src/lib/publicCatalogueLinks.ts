@@ -13,8 +13,13 @@ export interface SubjectHub {
   programs: CatalogueProgram[];
 }
 
-const loadCatalogueLinks = cache(async () => {
-  const catalogue = await loadPublicCatalogue();
+type PublicCatalogue = Awaited<ReturnType<typeof loadPublicCatalogue>>;
+
+/**
+ * The one source of subject hubs: the /programs index, the hub route and the
+ * sitemap all read this, so they always agree.
+ */
+export function buildSubjectHubs(catalogue: PublicCatalogue) {
   const programs = catalogue.programs.filter(
     (program) =>
       program.isListed !== false &&
@@ -30,6 +35,10 @@ const loadCatalogueLinks = cache(async () => {
   const hubByName = new Map(hubs.map((hub) => [hub.name, hub]));
   const hubByProgram = new Map<string, SubjectHub>();
   const usedIds = new Set(catalogue.programs.map((program) => program.id));
+  // Subjects whose slug is already taken by a different subject. Their only
+  // possible slug would be built from one institution's programme id (e.g.
+  // `rubin_graphic_design_subject` for "מוזיקה"), so they get no public hub.
+  const unpublishedNames = new Set<string>();
 
   for (const program of programs) {
     if (catalogue.generalProgramIds.has(program.id)) continue;
@@ -43,6 +52,7 @@ const loadCatalogueLinks = cache(async () => {
     const subjectId = descriptiveId.startsWith(prefix)
       ? descriptiveId.slice(prefix.length)
       : descriptiveId.slice(descriptiveId.indexOf('_') + 1);
+    if (unpublishedNames.has(name)) continue;
     let hub =
       hubByName.get(name) ??
       hubs.find(
@@ -52,17 +62,25 @@ const loadCatalogueLinks = cache(async () => {
             (catalogue.generalProgramIds.has(candidate.id) && candidate.type === program.type)),
       );
     if (!hub) {
-      const id = usedIds.has(subjectId) ? `${program.id}_subject` : subjectId;
-      hub = { id, name, category: program.category, type: program.type, programs: [] };
+      if (usedIds.has(subjectId)) {
+        unpublishedNames.add(name);
+        continue;
+      }
+      hub = { id: subjectId, name, category: program.category, type: program.type, programs: [] };
       hubs.push(hub);
-      usedIds.add(id);
+      usedIds.add(subjectId);
     }
     hubByName.set(name, hub);
     hub.programs.push(program);
     hubByProgram.set(program.id, hub);
   }
 
-  return { catalogue, hubs, hubByProgram, programs };
+  return { hubs, hubByProgram, programs };
+}
+
+const loadCatalogueLinks = cache(async () => {
+  const catalogue = await loadPublicCatalogue();
+  return { catalogue, ...buildSubjectHubs(catalogue) };
 });
 
 export const HOME_SUBJECT_COUNT = 12;

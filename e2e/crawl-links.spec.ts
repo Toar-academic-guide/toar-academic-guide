@@ -22,7 +22,7 @@ test('homepage browse links are in raw HTML inside a collapsed details', async (
   expect(footer).toEqual(['/programs', '/institutions', '/about']);
 });
 
-test('subject index is indexable, self-canonical and lists every hub', async ({ request }) => {
+test('subject index is indexable and self-canonical', async ({ request }) => {
   const response = await request.get('/programs');
   expect(response.status()).toBe(200);
   const html = await response.text();
@@ -32,20 +32,59 @@ test('subject index is indexable, self-canonical and lists every hub', async ({ 
   // header must match the homepage's rather than be absent.
   const home = await request.get('/');
   expect(response.headers()['x-robots-tag']).toBe(home.headers()['x-robots-tag']);
-  const main = html.split('<main')[1]?.split('</main>')[0] ?? '';
-  const hubs = anchors(main);
-  expect(hubs.length).toBeGreaterThanOrEqual(23);
-  for (const href of ['/programs/cs', '/programs/engineering', '/programs/occupational_therapy'])
-    expect(hubs).toContain(href);
 });
 
-test('sitemap lists the subject index with a real lastmod', async ({ request }) => {
+// Set-based so it holds on the live DB as well as the static fixture.
+test('subject index lists exactly the hubs the sitemap publishes', async ({ request }) => {
+  test.setTimeout(120_000);
+  const html = await (await request.get('/programs')).text();
+  const main = html.split('<main')[1]?.split('</main>')[0] ?? '';
+  const index = anchors(main).map((href) => decodeURIComponent(href.replace(/^\/programs\//, '')));
+  expect(index.length).toBeGreaterThan(0);
+  expect(new Set(index).size).toBe(index.length);
+  for (const id of ['cs', 'engineering', 'occupational_therapy']) expect(index).toContain(id);
+
   const xml = await (await request.get('/sitemap.xml')).text();
-  const entry = xml.match(
-    /<url>\s*<loc>https:\/\/findmyway\.co\.il\/programs<\/loc>\s*<lastmod>([^<]+)<\/lastmod>/,
+  const sitemapPrograms = [
+    ...xml.matchAll(/<loc>https:\/\/findmyway\.co\.il\/programs\/([^<]+)<\/loc>/g),
+  ].map((match) => decodeURIComponent(match[1]));
+  for (const id of index) expect(sitemapPrograms, id).toContain(id);
+
+  const api = await request.get('/api/catalog/programs');
+  expect(api.status()).toBe(200);
+  const rows: { id: string; institutionId?: string }[] = (await api.json()).data;
+  const institutionProgramIds = new Set(
+    rows.filter((row) => row.institutionId).map((row) => row.id),
   );
-  expect(entry).not.toBeNull();
-  expect(Number.isFinite(Date.parse(entry![1]))).toBe(true);
+  // No hub slug may be built from one institution programme's id.
+  for (const id of index)
+    expect(
+      [...institutionProgramIds].filter((programId) => id.startsWith(`${programId}_`)),
+      id,
+    ).toEqual([]);
+  // Every other sitemap programme URL must be an institution programme page, not a hub.
+  const others = sitemapPrograms.filter(
+    (id) => !index.includes(id) && !institutionProgramIds.has(id),
+  );
+  const titles = await Promise.all(
+    others.map(async (id) => {
+      const page = await (await request.get(`/programs/${encodeURIComponent(id)}`)).text();
+      return [id, page.match(/<title>([^<]*)<\/title>/)?.[1]] as const;
+    }),
+  );
+  for (const [id, title] of titles) expect(title, id).not.toMatch(/^לימודי /);
+  const hubs = await Promise.all(
+    index.map(async (id) => {
+      const hub = await request.get(`/programs/${encodeURIComponent(id)}`);
+      return [id, hub.status(), await hub.text()] as const;
+    }),
+  );
+  for (const [id, status, page] of hubs) {
+    expect(status, id).toBe(200);
+    expect(page, id).toContain(
+      `<link rel="canonical" href="https://findmyway.co.il/programs/${encodeURIComponent(id)}"/>`,
+    );
+  }
 });
 
 for (const [id, hub, minimum] of [

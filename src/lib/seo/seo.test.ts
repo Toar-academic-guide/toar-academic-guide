@@ -13,11 +13,13 @@ import sitemap from '@/app/sitemap';
 import JsonLd from '@/components/seo/JsonLd';
 import { getInstitutionDirectoryItems } from '@/data/institutionDirectory';
 import { buildRobots, TRAINING_BOTS_POLICY } from './robots';
+import { buildSubjectHubs } from '@/lib/publicCatalogueLinks';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import {
   getPublicInstitutionPageData,
   getPublicProgramPageData,
   getPublicProgramRequirementSources,
+  loadPublicCatalogue,
 } from '@/lib/publicCataloguePages';
 import * as catalogueDisplayText from '@/lib/catalogueDisplayText';
 import { absoluteUrl, SITE_ALT_NAMES, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/site';
@@ -180,9 +182,13 @@ describe('crawl policy', () => {
     );
   }, 15_000);
 
-  it('keeps all 353 canonical public URLs in order with stable data modification dates', async () => {
+  it('keeps all 410 canonical public URLs in order with stable data modification dates', async () => {
     const entries = await sitemap();
     const urls = entries.map((entry) => entry.url);
+    const catalogue = await loadPublicCatalogue();
+    const generatedHubIds = buildSubjectHubs(catalogue)
+      .hubs.map((hub) => hub.id)
+      .filter((id) => !catalogue.generalProgramIds.has(id));
     expect(urls).toEqual([
       `${SITE_URL}/`,
       `${SITE_URL}/about`,
@@ -194,13 +200,18 @@ describe('crawl policy', () => {
       ...(await indexableProgramIds()).map(
         (id) => `${SITE_URL}/programs/${encodeURIComponent(id)}`,
       ),
+      // Subject hubs generated from institution programmes (no catalogue row).
+      ...generatedHubIds.map((id) => `${SITE_URL}/programs/${encodeURIComponent(id)}`),
     ]);
+    expect(generatedHubIds).toContain('engineering');
+    expect(generatedHubIds).toHaveLength(57);
+    expect(urls.filter((url) => url.endsWith('_subject'))).toEqual([]);
     expect(urls).toContain(`${SITE_URL}/institutions/tau`);
     expect(urls).toContain(`${SITE_URL}/programs/tau_cs`);
     expect(new Set(urls).size).toBe(urls.length);
     expect(urls).not.toContain(`${SITE_URL}/programs/danon_cs`);
     expect(urls).toContain(`${SITE_URL}/programs/ruppin_cs`);
-    expect(urls).toHaveLength(353);
+    expect(urls).toHaveLength(410);
     const subjectIndex = entries.find((entry) => entry.url === `${SITE_URL}/programs`)!;
     expect(subjectIndex.priority).toBe(0.9);
     // The index changes whenever any programme page changes.

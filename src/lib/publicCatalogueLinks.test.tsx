@@ -133,7 +133,33 @@ describe('server-rendered crawl paths', () => {
     expect(hrefs).not.toContain('/programs/tau_cs');
   });
 
-  it('gives every institution program a reachable subject hub and all available siblings up to eight', async () => {
+  // Subjects whose slug is taken by a different subject would only get a slug
+  // built from one institution's programme id (`<programme>_subject`), so they
+  // have no public hub and their programmes show no related block (as on prod).
+  const UNPUBLISHED_SUBJECT_PROGRAMS = [
+    'bezalel_graphic_design',
+    'beit_berl_graphic_design',
+    'minshar_graphic_design',
+    'tiltan_graphic_design',
+    'danon_culinary',
+    'hackeru_cs',
+    'jerusalem_academy_graphic_design',
+    'reichman_infosystems',
+    'colmgmt_infosystems',
+    'reidman_medicine',
+    'rubin_graphic_design',
+    'spieldocs_graphic_design',
+  ];
+
+  it('gives no hub or related block to programmes whose subject slug is taken', async () => {
+    for (const id of UNPUBLISHED_SUBJECT_PROGRAMS) {
+      const related = await getPublicRelatedPrograms(id);
+      expect(related.hub, id).toBeUndefined();
+      expect(renderToStaticMarkup(<RelatedPrograms {...related} />), id).toBe('');
+    }
+  });
+
+  it('gives every other institution program a reachable subject hub and all available siblings up to eight', async () => {
     const source = getStaticCataloguePrograms().filter(
       (program) =>
         program.institutionId &&
@@ -142,6 +168,7 @@ describe('server-rendered crawl paths', () => {
         canonicalProgramId(program.id) === program.id,
     );
     for (const program of source) {
+      if (UNPUBLISHED_SUBJECT_PROGRAMS.includes(program.id)) continue;
       const related = await getPublicRelatedPrograms(program.id);
       expect(related.hub, program.id).toBeDefined();
       const hrefs = paths(renderToStaticMarkup(<RelatedPrograms {...related} />));
