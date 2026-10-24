@@ -202,7 +202,7 @@ describe('crawl policy', () => {
     );
   }, 15_000);
 
-  it('keeps all 405 canonical public URLs in order with stable data modification dates', async () => {
+  it('keeps all 403 canonical public URLs in order with stable data modification dates', async () => {
     const entries = await sitemap();
     const urls = entries.map((entry) => entry.url);
     const catalogue = await loadPublicCatalogue();
@@ -235,7 +235,9 @@ describe('crawl policy', () => {
     // leave the sitemap: 410 before this rule - 5 = 405.
     for (const id of ['communication', 'education', 'nutrition', 'pharmacy', 'sports_science'])
       expect(urls).not.toContain(`${SITE_URL}/programs/${id}`);
-    expect(urls).toHaveLength(405);
+    // JAMD is a one-for-one replacement; TAU and Sam Spiegel each lose a
+    // duplicate programme (official sources checked 24.10.2026).
+    expect(urls).toHaveLength(403);
     const subjectIndex = entries.find((entry) => entry.url === `${SITE_URL}/programs`)!;
     expect(subjectIndex.priority).toBe(0.9);
     // The index changes whenever any programme page changes.

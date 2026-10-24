@@ -842,11 +842,11 @@
       "coverage": "published_conditions"
     },
     {
-      "programId": "rubin_graphic_design",
+      "programId": "rubin_classical",
       "institutionId": "rubin",
       "sourceUrl": "https://arts.tau.ac.il/music/kabla-I",
       "sourceSha256": "b565caed558f85d1e3efe5b575d5be7affb1eb1868d4be19d8f9e5a66c667b1a",
-      "checkedAt": "2026-10-21",
+      "checkedAt": "2026-10-24",
       "notes": [
         "תעודת בגרות ובחינה פסיכומטרית, בהתאם לתנאי הקבלה של אוניברסיטת תל אביב.",
         "בחינות כניסה בתיאוריה, פיתוח שמיעה ומיומנות מקלדת, ובחינה בנגינה או בזמרה או ריאיון לפי המגמה.",
@@ -854,10 +854,13 @@
       ],
       "coverage": "published_conditions",
       "identity": {
-        "name": "מוזיקה",
-        "category": "מוזיקה",
-        "type": "academic"
-      }
+        "name": "תואר ראשון במוזיקה",
+        "category": "מוזיקה ותיאטרון",
+        "type": "academic",
+        "awardedCredential": "B.Mus."
+      },
+      "programUrl": "https://go.tau.ac.il/he/arts/ba/music",
+      "durationYears": 4
     },
     {
       "programId": "mon_12220685575_graphic_design",
@@ -1002,23 +1005,6 @@
       "coverage": "published_conditions"
     },
     {
-      "programId": "spieldocs_graphic_design",
-      "institutionId": "spieldocs",
-      "sourceUrl": "https://www.jsfs.co.il/registration",
-      "sourceSha256": "86a74780c2a7498d63c8847ccf73e2a5a02ed81df10c1cbedaea3b238b72bbc1",
-      "checkedAt": "2026-10-21",
-      "notes": [
-        "במסלול המלא לקולנוע: מבחני מיון בבית הספר וריאיון אישי למי שעוברים את המבחנים.",
-        "במסלול תסריטאות: מבחני בית וריאיון אישי למי שעוברים את שלב המיון."
-      ],
-      "coverage": "published_conditions",
-      "identity": {
-        "name": "קולנוע ותסריטאות",
-        "category": "קולנוע",
-        "type": "certificate"
-      }
-    },
-    {
       "programId": "minshar_graphic_design",
       "institutionId": "minshar",
       "sourceUrl": "https://www.minshar.org.il/visual-communication/acceptance-tasks/",
@@ -1111,27 +1097,30 @@
       "coverage": "published_conditions"
     },
     {
-      "programId": "jerusalem_academy_graphic_design",
+      "programId": "jerusalem_academy_dance",
       "institutionId": "jerusalem_academy",
       "sourceUrl": "https://www.jamd.ac.il/acceptance",
       "sourceSha256": "945128acee5f3f9997e357cf5ac2d5e22ed106dfad7047e2b86ca5a2f54790a6",
-      "checkedAt": "2026-10-21",
+      "checkedAt": "2026-10-24",
       "notes": [
         "בגרות מלאה, מכינה ייעודית מוכרת, מכינת 30+ או השלמת אפיק מעבר מהאוניברסיטה הפתוחה.",
-        "בחינות כניסה לפי המחלקה: במוזיקה בחינות תיאוריה וביצוע לפי התחום, ובמחול בחינה מעשית. הרפרטואר והדרישות נקבעים בכל מחלקה בנפרד."
+        "נדרשת בחינת כניסה מעשית במחול (אודישן), לפי דרישות הפקולטה למחול."
       ],
       "supportingSources": [
         {
-          "url": "https://www.jamd.ac.il/entrance_exams",
-          "sha256": "8e252696f43085d1fb2c482dd9644619954a28fef3879d86680a93a49499c00c"
+          "url": "https://jamd.ac.il/dance",
+          "sha256": "bc269826b4d55dfdd46da051b5cb1febe51ca45c696e2def98ef9a3c14e832ad"
         }
       ],
       "coverage": "published_conditions",
       "identity": {
-        "name": "מוזיקה ומחול",
-        "category": "מוזיקה ומחול",
-        "type": "academic"
-      }
+        "name": "תואר ראשון במחול",
+        "category": "מוזיקה ותיאטרון",
+        "type": "academic",
+        "awardedCredential": "B.Dance"
+      },
+      "programUrl": "https://jamd.ac.il/dance",
+      "durationYears": 4
     },
     {
       "programId": "mon_12220697940_graphic_design",

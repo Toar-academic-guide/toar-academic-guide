@@ -12,7 +12,10 @@ import {
   DANON_PROGRAM_URLS,
 } from '../admissions/danon';
 import computingCourses from './computingCourses.json';
-import { applyCatalogueContentRepair } from '../admissions/catalogueContentRepair';
+import {
+  applyCatalogueContentRepair,
+  RETIRED_GRAPHIC_DESIGN_PROGRAM_IDS,
+} from '../admissions/catalogueContentRepair';
 import {
   mondayAdmissionsEvidence,
   type MondayAdmissionAlternativePath,
@@ -775,6 +778,8 @@ function enrichLegacyProgram(program: Program): Program {
       'afeka_ee',
       'afeka_softwareeng',
       'afeka_cs',
+      'jerusalem_academy_dance',
+      'rubin_classical',
     ].includes(program.id)
   )
     return program;
@@ -832,6 +837,9 @@ for (const record of mondayAdmissionsEvidence) {
 
   for (const prog of matches) {
     const progId = `${programInstitutionKey}_${prog.id}`;
+    // Verified dance/music rows replace these mixed imports; Sam Spiegel's
+    // combined import duplicates its existing cinema and screenwriting rows.
+    if (RETIRED_GRAPHIC_DESIGN_PROGRAM_IDS.includes(progId)) continue;
 
     const existsInStatic =
       ACADEMIC_PROGRAMS.some((p) => p.id === progId) ||

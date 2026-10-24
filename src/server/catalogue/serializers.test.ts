@@ -446,3 +446,94 @@ describe('catalogue serializers', () => {
     });
   });
 });
+
+describe('verified programme identity overlays on stale DB data', () => {
+  it.each([
+    [
+      'jerusalem_academy_graphic_design',
+      'jerusalem_academy_dance',
+      'jerusalem_academy',
+      'תואר ראשון במחול',
+      'B.Dance',
+    ],
+    [
+      'jerusalem_academy_dance',
+      'jerusalem_academy_dance',
+      'jerusalem_academy',
+      'תואר ראשון במחול',
+      'B.Dance',
+    ],
+    ['rubin_classical', 'rubin_classical', 'rubin', 'תואר ראשון במוזיקה', 'B.Mus.'],
+  ])(
+    'repairs %s without carrying invented score floors or descriptions',
+    (oldId, id, institutionId, name, credential) => {
+      const seed = buildCatalogueSeed();
+      const institution = seed.institutions.find(
+        (row) => row.id === institutionId,
+      )! as InstitutionRow;
+      const result = serializeProgramRow({
+        program: {
+          ...seed.programs[0],
+          id: oldId,
+          institutionId,
+          institutionName: institution.name,
+        } as ProgramRow,
+        relations: [{ programId: oldId, institutionId }] as ProgramInstitutionRow[],
+        requirements: [
+          {
+            id: `${oldId}:${institutionId}`,
+            programId: oldId,
+            institutionId,
+            durationYears: 3,
+            admissionRequirements: ['ממוצע בגרות 90'],
+            specificAdmissionNotes: ['Admission depends on manual review'],
+            programDescription: 'Mixed graphic design import',
+            quantitativeMinRequirement: 550,
+            englishMinRequirement: 80,
+          },
+        ] as AdmissionRequirementRow[],
+        thresholds: [
+          {
+            programId: oldId,
+            universityId: institutionId,
+            thresholdKind: 'sekhem',
+            thresholdValue: 550,
+          },
+        ] as AdmissionThresholdRow[],
+        sourceUrls: [],
+        institutionsById: new Map([[institutionId, institution]]),
+      });
+      expect(result).toMatchObject({
+        id,
+        name,
+        awardedCredential: credential,
+        admissionType: 'requirements',
+      });
+      expect(result.thresholds).toBeUndefined();
+      expect(result.institutionDetails![0]).toMatchObject({
+        durationYears: 4,
+        quantitativeMinRequirement: null,
+        englishMinRequirement: null,
+      });
+      expect(result.institutionDetails![0].programDescription).toBeUndefined();
+      expect(result.institutionDetails![0].specificAdmissionNotes).toEqual(
+        allPrograms.find((p) => p.id === id)!.institutionDetails![0].specificAdmissionNotes,
+      );
+    },
+  );
+
+  it('repairs the stale Sam Spiegel institution domain and homepage', () => {
+    const seed = buildCatalogueSeed();
+    const row = seed.institutions.find((i) => i.id === 'spieldocs')!;
+    expect(
+      serializeInstitutionRow({
+        ...row,
+        domain: 'spieldocs.ac.il',
+        programUrl: 'https://www.spieldocs.ac.il/',
+      } as InstitutionRow),
+    ).toMatchObject({
+      domain: 'www.jsfs.co.il',
+      programUrl: 'https://www.jsfs.co.il',
+    });
+  });
+});

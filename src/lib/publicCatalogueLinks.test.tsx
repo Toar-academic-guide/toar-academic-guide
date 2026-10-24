@@ -143,12 +143,10 @@ describe('server-rendered crawl paths', () => {
     'tiltan_graphic_design',
     'danon_culinary',
     'hackeru_cs',
-    'jerusalem_academy_graphic_design',
+    'jerusalem_academy_dance',
     'reichman_infosystems',
     'colmgmt_infosystems',
     'reidman_medicine',
-    'rubin_graphic_design',
-    'spieldocs_graphic_design',
   ];
 
   it('gives no hub or related block to programmes whose subject slug is taken', async () => {

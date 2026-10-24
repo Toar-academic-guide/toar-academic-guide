@@ -1,7 +1,11 @@
 import 'server-only';
 import { cache } from 'react';
 import { loadPublicCatalogue, subjectProgramPages } from '@/lib/publicCataloguePages';
-import { canonicalProgramId, PROGRAM_CANONICAL_ALIASES } from '@/lib/seo/programAliases';
+import {
+  canonicalProgramId,
+  PROGRAM_CANONICAL_ALIASES,
+  PROGRAM_RETIREMENT_REDIRECTS,
+} from '@/lib/seo/programAliases';
 import { institutionProgramName } from '@/lib/institutionProgramName';
 import type { CatalogueProgram } from '@/types/catalogue';
 
@@ -46,7 +50,7 @@ export function buildSubjectHubs(catalogue: PublicCatalogue) {
   const usedIds = new Set(catalogue.programs.map((program) => program.id));
   // Subjects whose slug is already taken by a different subject. Their only
   // possible slug would be built from one institution's programme id (e.g.
-  // `rubin_graphic_design_subject` for "מוזיקה"), so they get no public hub.
+  // `<programme>_subject`), so they get no public hub.
   const unpublishedNames = new Set<string>();
 
   for (const program of programs) {
@@ -55,7 +59,7 @@ export function buildSubjectHubs(catalogue: PublicCatalogue) {
     const name = institution ? institutionProgramName(program, institution) : program.name;
     const descriptiveId =
       Object.entries(PROGRAM_CANONICAL_ALIASES).find(
-        ([, canonical]) => canonical === program.id,
+        ([alias, canonical]) => canonical === program.id && !PROGRAM_RETIREMENT_REDIRECTS[alias],
       )?.[0] ?? program.id;
     const prefix = `${program.institutionId}_`;
     const subjectId = descriptiveId.startsWith(prefix)

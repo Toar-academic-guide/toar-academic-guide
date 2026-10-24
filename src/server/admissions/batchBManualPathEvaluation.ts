@@ -157,6 +157,13 @@ export const BATCH_B_PROGRAMS: Record<string, BatchBProgramConfig> = {
     scoresOptional: true,
     steps: ['אודישן ביצוע', 'ראיון קבלה'],
   },
+  jerusalem_academy_dance: {
+    institutionId: 'jerusalem_academy',
+    gate: 'audition',
+    scoresOptional: true,
+    steps: ['אודישן מעשי במחול'],
+    officialUrls: ['https://jamd.ac.il/dance', 'https://jamd.ac.il/acceptance'],
+  },
   nativ_acting: {
     institutionId: 'nativ',
     gate: 'audition',

@@ -1,6 +1,7 @@
 import type { InstitutionDetail } from '@/data/degrees/types';
 import { DANON_PROGRAM_NAMES } from '@/data/admissions/danon';
 import { allPrograms } from '@/data/degrees';
+import { INSTITUTION_BY_ID } from '@/data/institutions';
 import { applyCatalogueContentRepair } from '@/data/admissions/catalogueContentRepair';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type {
@@ -46,9 +47,12 @@ export function serializeInstitutionRow(
     id: row.id as CatalogueInstitution['id'],
     name: row.name,
     region: row.region as CatalogueInstitution['region'],
-    domain: row.domain ?? undefined,
+    domain: row.id === 'spieldocs' ? INSTITUTION_BY_ID.spieldocs.domain : (row.domain ?? undefined),
     logoUrl: row.logoUrl ?? undefined,
-    programUrl: row.programUrl ?? undefined,
+    programUrl:
+      row.id === 'spieldocs'
+        ? INSTITUTION_BY_ID.spieldocs.programUrl
+        : (row.programUrl ?? undefined),
     calculatorUrl: row.calculatorUrl ?? undefined,
     universityId: (row.universityId ?? undefined) as CatalogueInstitution['universityId'],
     calculatorConfig: calculatorConfig ? serializeCalculatorConfigRow(calculatorConfig) : undefined,
@@ -211,7 +215,9 @@ export function serializeProgramRow(args: {
     }
   }
 
-  const staticProgram = STATIC_PROGRAMS_BY_ID.get(program.id);
+  const staticProgram = STATIC_PROGRAMS_BY_ID.get(
+    program.id === 'jerusalem_academy_graphic_design' ? 'jerusalem_academy_dance' : program.id,
+  );
 
   const serialized: CatalogueProgram = {
     updatedAt: program.updatedAt?.toISOString(),
@@ -253,7 +259,15 @@ export function serializeProgramRow(args: {
     ),
     linkedInstitutionIds: relations.map((relation) => relation.institutionId),
   };
-  return ['haifa_psychology', 'afeka_ee', 'afeka_softwareeng', 'afeka_cs'].includes(program.id)
+  return [
+    'haifa_psychology',
+    'afeka_ee',
+    'afeka_softwareeng',
+    'afeka_cs',
+    'jerusalem_academy_graphic_design',
+    'jerusalem_academy_dance',
+    'rubin_classical',
+  ].includes(program.id)
     ? applyCatalogueContentRepair(serialized)
     : serialized;
 }

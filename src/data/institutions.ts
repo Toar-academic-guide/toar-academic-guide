@@ -331,7 +331,8 @@ export const INSTITUTIONS: InstitutionRecord[] = [
     id: 'spieldocs',
     name: 'בית הספר לקולנוע ולטלוויזיה ע"ש סם שפיגל',
     logoUrl: 'https://commons.wikimedia.org/wiki/Special:Redirect/file/SamSpigelSchool.svg',
-    domain: 'spieldocs.ac.il',
+    domain: 'www.jsfs.co.il',
+    programUrl: 'https://www.jsfs.co.il',
     region: 'center',
   },
 

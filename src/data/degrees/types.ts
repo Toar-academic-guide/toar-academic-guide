@@ -112,6 +112,8 @@ export interface InstitutionDetail {
 export interface Program {
   id: string;
   name: string;
+  /** Explicit official credential; never inferred from programme type. */
+  awardedCredential?: string;
   /** False for withdrawn import placeholders; keep IDs available to saved links. */
   isListed?: boolean;
   /** Hebrew display name — must match InstitutionRecord.name in INSTITUTION_BY_NAME */

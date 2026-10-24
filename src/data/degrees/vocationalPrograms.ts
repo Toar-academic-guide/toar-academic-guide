@@ -652,18 +652,100 @@ export const vocationalPrograms: Program[] = [
     admissionRequirements: ['אודישן ג׳אז ואלתור', 'מבחן תיאוריה מוזיקלית', 'ראיון קבלה'],
   },
 
+  {
+    id: 'jerusalem_academy_dance',
+    name: 'תואר ראשון במחול',
+    awardedCredential: 'B.Dance',
+    institution: 'האקדמיה למוזיקה ולמחול ירושלים',
+    institutionId: 'jerusalem_academy',
+    type: 'academic',
+    category: 'מוזיקה ותיאטרון',
+    profileScore: P.dance,
+    admissionType: 'requirements',
+    admissionRequirements: [
+      'בגרות מלאה, מכינה ייעודית מוכרת, מכינת 30+ או השלמת אפיק מעבר מהאוניברסיטה הפתוחה.',
+      'נדרשת בחינת כניסה מעשית במחול (אודישן), לפי דרישות הפקולטה למחול.',
+    ],
+    institutionDetails: [
+      {
+        institutionName: 'האקדמיה למוזיקה ולמחול ירושלים',
+        durationYears: 4,
+        estimatedStudentsPerYear: '',
+        quantitativeMinRequirement: null,
+        englishMinRequirement: null,
+        specificAdmissionNotes: [
+          'בגרות מלאה, מכינה ייעודית מוכרת, מכינת 30+ או השלמת אפיק מעבר מהאוניברסיטה הפתוחה.',
+          'נדרשת בחינת כניסה מעשית במחול (אודישן), לפי דרישות הפקולטה למחול.',
+        ],
+        admissionFacts: [
+          {
+            id: 'jerusalem_academy_dance:document_check',
+            kind: 'manual_gate',
+            field: 'document_check',
+            comparison: 'present',
+            valueNumber: null,
+            valueText: 'בגרות מלאה או מסלול חלופי מוכר',
+            unit: 'text',
+            description:
+              'בגרות מלאה, מכינה ייעודית מוכרת, מכינת 30+ או השלמת אפיק מעבר מהאוניברסיטה הפתוחה.',
+            confidence: 'high',
+            isRequired: true,
+          },
+          {
+            id: 'jerusalem_academy_dance:audition',
+            kind: 'manual_gate',
+            field: 'exam',
+            comparison: 'present',
+            valueNumber: null,
+            valueText: 'אודישן מעשי במחול',
+            unit: 'text',
+            description: 'נדרשת בחינת כניסה מעשית במחול (אודישן), לפי דרישות הפקולטה למחול.',
+            confidence: 'high',
+            isRequired: true,
+          },
+        ],
+        admissionAlternativePaths: [],
+        officialCalculatorUrl: '',
+        programUrl: 'https://jamd.ac.il/dance',
+      },
+    ],
+  },
+
   // ── בית הספר למוזיקה ע"ש בוכמן-מהטה – אוניברסיטת תל אביב ─────────────────
   // TAU's conservatory; B.Mus degree with academic university affiliation.
   {
     id: 'rubin_classical',
-    name: 'מוזיקה קלאסית – ביצוע',
+    name: 'תואר ראשון במוזיקה',
+    awardedCredential: 'B.Mus.',
     institution: 'בית הספר למוזיקה ע"ש בוכמן-מהטה – אוניברסיטת תל אביב',
     institutionId: 'rubin',
     type: 'academic',
     category: 'מוזיקה ותיאטרון',
     profileScore: P.classicalMusic,
     admissionType: 'requirements',
-    admissionRequirements: ['אודישן מקצועי', 'מבחן תיאוריה ואוזן מוזיקלית', 'ראיון קבלה'],
+    admissionRequirements: [
+      'תעודת בגרות ובחינה פסיכומטרית, בהתאם לתנאי הקבלה של אוניברסיטת תל אביב.',
+      'בחינות כניסה בתיאוריה, פיתוח שמיעה ומיומנות מקלדת, ובחינה בנגינה או בזמרה או ריאיון לפי המגמה.',
+      'מועמדים בעלי כישורים מתאימים הזקוקים להשלמות עשויים להידרש למכינת קיץ ולעמידה בכל דרישותיה לפני תחילת הלימודים.',
+    ],
+    institutionDetails: [
+      {
+        institutionName: 'בית הספר למוזיקה ע"ש בוכמן-מהטה – אוניברסיטת תל אביב',
+        durationYears: 4,
+        estimatedStudentsPerYear: '',
+        quantitativeMinRequirement: null,
+        englishMinRequirement: null,
+        specificAdmissionNotes: [
+          'תעודת בגרות ובחינה פסיכומטרית, בהתאם לתנאי הקבלה של אוניברסיטת תל אביב.',
+          'בחינות כניסה בתיאוריה, פיתוח שמיעה ומיומנות מקלדת, ובחינה בנגינה או בזמרה או ריאיון לפי המגמה.',
+          'מועמדים בעלי כישורים מתאימים הזקוקים להשלמות עשויים להידרש למכינת קיץ ולעמידה בכל דרישותיה לפני תחילת הלימודים.',
+        ],
+        admissionFacts: [],
+        admissionAlternativePaths: [],
+        officialCalculatorUrl: '',
+        programUrl: 'https://go.tau.ac.il/he/arts/ba/music',
+      },
+    ],
   },
 
   // ════════════════════════════════════════════════════════════════════════════

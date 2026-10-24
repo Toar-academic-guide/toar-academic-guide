@@ -20,6 +20,7 @@ export const BATCH_B_MANUAL_PROGRAM_INSTITUTIONS: Readonly<Record<string, string
   samspiegel_documentary: 'spieldocs',
   jerusalem_academy_classical: 'jerusalem_academy',
   jerusalem_academy_jazz: 'jerusalem_academy',
+  jerusalem_academy_dance: 'jerusalem_academy',
   rubin_classical: 'rubin',
   nativ_acting: 'nativ',
   beit_zvi_acting: 'beit_zvi',

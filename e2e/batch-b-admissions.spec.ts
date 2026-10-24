@@ -4,6 +4,7 @@ const targets = [
   ['bezalel_industrial_design', 'bezalel', 'eligible_to_apply'],
   ['shenkar_fashion', 'shenkar', 'eligible_to_apply'],
   ['samspiegel_cinema', 'spieldocs', 'eligible_to_apply'],
+  ['jerusalem_academy_dance', 'jerusalem_academy', 'eligible_to_apply'],
   ['telhai_nursing', 'telhai', 'eligible_to_apply'],
   ['ono_nursing', 'ono', 'accepted'],
 ] as const;
