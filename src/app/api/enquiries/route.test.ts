@@ -126,13 +126,43 @@ describe('website enquiries → Monday', () => {
     );
   });
   it.each([
+    ['/680', '/'],
+    ['/psychometric_680?bagrut=105.5#what_if_750', '/'],
+    ['/programs/cs', '/programs/cs'],
+    ['/app/calculator?psychometric=680', '/app/calculator'],
+  ])('guards the source route %s before either delivery', async (sourcePath, expected) => {
+    expect((await POST(request({ sourcePath }))).status).toBe(201);
+    const body = JSON.parse(vi.mocked(fetch).mock.calls[0][1]?.body as string);
+    expect(JSON.parse(body.variables.columns).text_mm8am52m).toBe(expected);
+    expect(backup).toHaveBeenCalledWith(expect.objectContaining({ sourcePath: expected }));
+  });
+  it('preserves names and bounded campaign strings, storing only supported attribution keys', async () => {
+    const attribution = {
+      utm_source: '105.5',
+      utm_medium: 'paid search',
+      utm_campaign: 'psy750 / סתיו',
+      unsupported_score: 750,
+    };
+    expect((await POST(request({ name: 'Dana 720', attribution }))).status).toBe(201);
+    const body = JSON.parse(vi.mocked(fetch).mock.calls[0][1]?.body as string);
+    expect(body.variables.name).toBe('Dana 720');
+    const context = JSON.parse(
+      JSON.parse(body.variables.columns).long_text_mm8ay37r.text.split('\n\nLead context:\n')[1],
+    );
+    const expected = {
+      utm_source: attribution.utm_source,
+      utm_medium: attribution.utm_medium,
+      utm_campaign: attribution.utm_campaign,
+    };
+    expect(context).toMatchObject(expected);
+    expect(context).not.toHaveProperty('unsupported_score');
+    expect(backup).toHaveBeenCalledWith(expect.objectContaining({ attribution: expected }));
+  });
+  it.each([
     { utm_source: 'x'.repeat(101) },
     { utm_medium: 'x'.repeat(101) },
     { utm_campaign: 'x'.repeat(101) },
     { referrer: 'https://example.com/' + 'x'.repeat(256) },
-    { utm_source: 'private@example.com' },
-    { utm_campaign: '0501234567' },
-    { email: 'private@example.com' },
   ])('rejects invalid attribution before either destination: %j', async (attribution) => {
     expect((await POST(request({ attribution }))).status).toBe(400);
     expect(backup).not.toHaveBeenCalled();

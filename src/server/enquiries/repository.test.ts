@@ -57,6 +57,35 @@ describe('private enquiry backup', () => {
     expect(payload.consentText).toContain('MyWay');
     expect(queries[1].sql).not.toContain(enquiry.phone);
   });
+  it.each([
+    ['/680?bagrut=105.5#what_if_750', '/'],
+    ['/680', '/'],
+    ['/programs/cs?psychometric=680#score_680', '/programs/cs'],
+    ['/programs/cs', '/programs/cs'],
+  ])(
+    'stores only a known pathname from %s while retaining exact evaluation inputs',
+    async (sourcePath, expected) => {
+      const attribution = {
+        utm_source: '105.5',
+        utm_medium: 'paid search',
+        utm_campaign: 'psy750',
+        unsupported_score: 750,
+      };
+      await saveEnquiryBackup({ ...enquiry, sourcePath, name: 'Dana 720', attribution });
+      const query = new PgDialect().sqlToQuery(execute.mock.calls[1][0]);
+      const payload = JSON.parse(query.params[0] as string);
+      expect(payload.sourcePath).toBe(expected);
+      expect(payload.name).toBe('Dana 720');
+      expect(payload.bagrut).toBe(105.5);
+      expect(payload.psychometric).toBe(680);
+      expect(payload.evaluationInput).toEqual(enquiry.evaluationInput);
+      expect(payload.attribution).toEqual({
+        utm_source: '105.5',
+        utm_medium: 'paid search',
+        utm_campaign: 'psy750',
+      });
+    },
+  );
   it('propagates missing-table failure to the independent delivery coordinator', async () => {
     execute.mockRejectedValue(new Error('42P01'));
     await expect(saveEnquiryBackup(enquiry)).rejects.toThrow('42P01');

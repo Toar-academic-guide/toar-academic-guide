@@ -1,4 +1,5 @@
 import { enquiryAttributionSchema } from '@/lib/leadAttribution';
+import { enquirySourcePath } from '@/lib/enquirySourcePath';
 import { after } from 'next/server';
 import { z } from 'zod';
 import type { EnquiryRecord, EnquiryResultStatus } from '@/lib/enquiries';
@@ -28,7 +29,7 @@ const inputSchema = z
       .string()
       .max(300)
       .refine((value) => value.startsWith('/') && !value.startsWith('//'))
-      .transform((value) => value.split(/[?#]/)[0]),
+      .transform(enquirySourcePath),
     consent: z.literal(true),
     attribution: enquiryAttributionSchema.optional(),
     evaluationInput: admissionsEvaluationSchema

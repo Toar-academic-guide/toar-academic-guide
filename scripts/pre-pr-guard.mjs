@@ -99,6 +99,7 @@ const targetedTests = [
   'src/db/migrations/enquiriesRls.test.ts',
   'src/lib/posthogPrivacy.test.ts',
   'src/lib/leadAttribution.test.ts',
+  'src/lib/enquirySourcePath.test.ts',
   'src/lib/sessionAttribution.analytics.test.ts',
   'src/server/enquiries/monday.test.ts',
   'src/server/enquiries/scoreBands.test.ts',

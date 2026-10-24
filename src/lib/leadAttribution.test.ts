@@ -36,7 +36,7 @@ describe('session first-touch attribution', () => {
     window.history.replaceState(null, '', '/?utm_source=tiktok');
     expect(getSessionAttribution()).toEqual({});
   });
-  it('drops unsafe or oversized values before keeping the first touch', () => {
+  it('keeps bounded UTM strings verbatim and drops oversized values before first touch', () => {
     window.history.replaceState(
       null,
       '',
@@ -45,7 +45,10 @@ describe('session first-touch attribution', () => {
     vi.spyOn(document, 'referrer', 'get').mockReturnValue(
       'https://example.com/private%40example.com?token=secret',
     );
-    expect(getSessionAttribution()).toEqual({});
+    expect(getSessionAttribution()).toEqual({
+      utm_source: 'private@example.com',
+      utm_medium: '0501234567',
+    });
   });
   it('does not break contact or overwrite memory attribution when sessionStorage is blocked', async () => {
     vi.resetModules();
@@ -66,12 +69,31 @@ describe('session first-touch attribution', () => {
   it('does not trust tampered session storage', () => {
     getSessionAttribution();
     const key = sessionStorage.key(0)!;
-    sessionStorage.setItem(key, JSON.stringify({ utm_source: 'private@example.com' }));
+    sessionStorage.setItem(key, JSON.stringify({ utm_source: 'x'.repeat(101) }));
     expect(getSessionAttribution()).toEqual({});
   });
 });
 
 describe('attribution trust boundary', () => {
+  it.each([
+    '105.5',
+    '680',
+    'psy750',
+    'bagrut-112',
+    'paid search',
+    'סתיו / 2026',
+    'private@example.com',
+    '050-123-4567',
+  ])('keeps bounded UTM values without content filtering: %s', (value) => {
+    expect(
+      enquiryAttributionSchema.parse({
+        utm_source: value,
+        utm_medium: value,
+        utm_campaign: value,
+        unsupported: 'ignored',
+      }),
+    ).toEqual({ utm_source: value, utm_medium: value, utm_campaign: value });
+  });
   it('strips referrer query and fragment before accepting it', () => {
     expect(
       enquiryAttributionSchema.parse({
@@ -84,14 +106,11 @@ describe('attribution trust boundary', () => {
     { utm_medium: 'x'.repeat(101) },
     { utm_campaign: 'x'.repeat(101) },
     { referrer: 'https://example.com/' + 'x'.repeat(256) },
-    { utm_source: 'private@example.com' },
-    { utm_campaign: '050-123-4567' },
     { referrer: 'javascript:alert(1)' },
     { referrer: 'https://user:password@example.com/' },
     { referrer: 'https://example.com/private%40example.com' },
     { referrer: 'https://example.com/0501234567' },
     { referrer: 'https://127.0.0.1/private' },
-    { email: 'private@example.com' },
   ])('rejects unsafe or oversized attribution: %j', (attribution) => {
     expect(enquiryAttributionSchema.safeParse(attribution).success).toBe(false);
   });

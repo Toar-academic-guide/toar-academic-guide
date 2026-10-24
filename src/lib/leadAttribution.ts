@@ -1,12 +1,8 @@
 import { z } from 'zod';
 
 const phoneLike = /(?:\d[-_ .()+]*){7}/;
-const campaignToken = z
-  .string()
-  .trim()
-  .max(100)
-  .regex(/^[a-z0-9][a-z0-9_-]*$/i)
-  .refine((value) => !phoneLike.test(value));
+// Campaign values are bounded metadata; do not reinterpret names, numbers or punctuation.
+const campaignValue = z.string().max(100);
 
 export const referrerSchema = z
   .string()
@@ -32,10 +28,10 @@ export const referrerSchema = z
   })
   .pipe(z.string().max(256));
 
-export const enquiryAttributionSchema = z.strictObject({
-  utm_source: campaignToken.optional(),
-  utm_medium: campaignToken.optional(),
-  utm_campaign: campaignToken.optional(),
+export const enquiryAttributionSchema = z.object({
+  utm_source: campaignValue.optional(),
+  utm_medium: campaignValue.optional(),
+  utm_campaign: campaignValue.optional(),
   referrer: referrerSchema.optional(),
 });
 

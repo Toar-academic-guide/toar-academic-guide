@@ -1,4 +1,6 @@
 import 'server-only';
+import { enquirySourcePath } from '@/lib/enquirySourcePath';
+import { enquiryAttributionSchema } from '@/lib/leadAttribution';
 import { createHash } from 'node:crypto';
 import { ENQUIRY_CONSENT, type EnquiryRecord } from '@/lib/enquiries';
 import { enquiryScoreBands } from './scoreBands';
@@ -8,7 +10,7 @@ export async function sendEnquiryToMonday(enquiry: EnquiryRecord): Promise<strin
   if (!token) throw new Error('Monday is not configured');
   const now = enquiry.createdAt.toISOString();
   const context = {
-    ...enquiry.attribution,
+    ...enquiryAttributionSchema.parse(enquiry.attribution ?? {}),
     program_id: enquiry.programId,
     institution_id: enquiry.institutionId,
     result_status: enquiry.resultStatus,
@@ -19,7 +21,7 @@ export async function sendEnquiryToMonday(enquiry: EnquiryRecord): Promise<strin
     text_mm8a6zex: enquiry.programName,
     text_mm8a4c4w: enquiry.institutionName,
     text_mm8ag00n: enquiry.programId,
-    text_mm8am52m: enquiry.sourcePath,
+    text_mm8am52m: enquirySourcePath(enquiry.sourcePath),
     boolean_mm8abpda: { checked: 'true' },
     long_text_mm8ay37r: { text: `${ENQUIRY_CONSENT}\n\nLead context:\n${JSON.stringify(context)}` },
     date_mm8a880y: { date: now.slice(0, 10), time: now.slice(11, 19) },

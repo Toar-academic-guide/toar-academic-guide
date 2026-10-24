@@ -102,7 +102,7 @@ All R1-R7 implemented and locally verified; abandoned code removed; consent and 
 
 ## Attribution and short-link addendum
 
-R8. Capture utm_source, utm_medium, utm_campaign and document.referrer at the first session visit; retain even an empty first touch in sessionStorage across internal navigation and reloads. Use session-only PostHog super properties and attach the same validated attribution to every enquiry destination. No contact fields or visible text change. Campaign values are capped safe tokens; referrers keep safe origin/path only, with query/fragment/credentials and recognizable email/phone data excluded.
+R8. Capture utm_source, utm_medium, utm_campaign and document.referrer at the first session visit; retain even an empty first touch in sessionStorage across internal navigation and reloads. Use session-only PostHog super properties and attach the same validated attribution to every enquiry destination. No contact fields or visible text change. Campaign values are capped at 100 characters without content filtering; referrers keep safe origin/path only, with query/fragment/credentials and recognizable email/phone data excluded.
 R9. Redirect /tt, /ig, /fb, /wa to /?utm_source=tiktok, instagram, facebook, whatsapp respectively. No inbound medium/campaign convention exists; do not add either. Redirect-only paths remain absent from sitemap.
 R10. Clear the unused admissions import and format the migration snapshot; require CI=true npm run lint -- --max-warnings 0, typecheck and CI format check. CI logs show format:check, rather than the unused-import warning, caused the original red job.
 
@@ -112,7 +112,7 @@ Use a shared Zod attribution contract in src/lib/leadAttribution.ts and a browse
 
 Update the existing unexecuted 0040 migration and its snapshot rather than creating a second table-creation path. The guarded packet must also upgrade an existing enquiries table idempotently with ADD COLUMN IF NOT EXISTS, preserving all RLS/grants, backup and archival rollback behavior. The packet stays unapplied.
 
-Tests first: source persistence across changed URLs/module reload; empty direct first touch wins; unavailable storage cannot break contact; spoofed/oversized/PII attribution is excluded or rejected; referrer query/fragment stripped on client and server; initial PostHog pageview receives session props; form retries retain attribution; API sends normalized attribution to Monday, DB and analytics; schema columns and bounded SQL function values; maximum-size Monday context stays within its limit.
+Tests first: source persistence across changed URLs/module reload; empty direct first touch wins; unavailable storage cannot break contact; unknown attribution keys are stripped and oversized values rejected; PostHog independently scrubs PII; referrer query/fragment stripped on client and server; initial PostHog pageview receives session props; form retries retain attribution; API sends normalized attribution to Monday, DB and analytics; schema columns and bounded SQL function values; maximum-size Monday context stays within its limit.
 
 ### U7. Redirects (R9)
 
@@ -121,3 +121,10 @@ Use the existing proxy/NextResponse.redirect mechanism before auth session looku
 ### Addendum verification
 
 After implementation and ce-simplify-code, run lint with zero warnings, typecheck after the build has finished generating Next types, full units, production build, format check, migration consistency and the existing pre-push guard. Use existing Playwright Chromium, static local catalogue and intercepted lead submissions. Exercise desktop/mobile lead flow and redirect HTTP targets. Update PR #273 body and push once on the same branch; no additional PR, production SQL, env/config change, main push or merge.
+
+
+## Jorje B2 ruling (2026-10-25)
+
+Monday retains the documented score bands; exact academic inputs and the evaluation record remain in the private enquiries backup. A failing-first regression serializes the complete Monday GraphQL body (item name, every column and Lead context) for bagrut 105.5, psychometric 680 and a separate what-if 750, including a crafted source path and unsupported attribution key. None of those exact inputs may escape through those fields. Names and bounded campaign strings are preserved verbatim, including numbers that happen to resemble scores; they are not academic score fields and are not censored.
+
+The shared source-path guard accepts only page patterns derived from src/app, after removing query and fragment; unknown paths such as /680 become /. Both the API and each delivery adapter apply the guard. A route-tree test detects new pages missing from the guard. Attribution allows only utm_source, utm_medium, utm_campaign (100 characters each) and the existing referrer field. Unsupported keys are stripped; UTM values have no syntax or score/PII content filtering in storage. Referrer URL privacy normalization and independent PostHog email/phone scrubbing remain in place. The private DB keeps exact score inputs. No SQL packet is executed.

@@ -12,7 +12,11 @@ function scrubCampaignUrl(value: unknown): unknown {
     const url = new URL(value);
     for (const key of ['utm_source', 'utm_medium', 'utm_campaign'] as const) {
       const candidate = url.searchParams.get(key);
-      if (candidate !== null && !enquiryAttributionSchema.shape[key].safeParse(candidate).success) {
+      if (
+        candidate !== null &&
+        (!enquiryAttributionSchema.shape[key].safeParse(candidate).success ||
+          scrub(candidate) !== candidate)
+      ) {
         url.searchParams.delete(key);
       }
     }
