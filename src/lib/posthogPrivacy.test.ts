@@ -41,4 +41,89 @@ describe('PostHog payload privacy', () => {
   it('drops node SDK events whose distinctId is an email', () => {
     expect(sanitizePostHogEvent({ properties: {}, distinctId: 'private@example.com' })).toBeNull();
   });
+
+  it.each([
+    '0501234567',
+    '050-1234567',
+    '052 123 4567',
+    '+972501234567',
+    '+972-50-123-4567',
+    '+972 50 123 4567',
+    '+972 (0) 50 123 4567',
+    '+1 (415) 555-2671',
+    '202-555-0123',
+    '+44 20 7946 0958',
+    '+33 6 12 34 56 78',
+    '0049 30 12345678',
+    '447700900123',
+    '+123456789012345',
+    '501234567',
+  ])('scrubs %s from captures, identify, super and person properties', (phone) => {
+    for (const event of ['contact_clicked', '$identify', '$set']) {
+      const result = sanitizePostHogEvent({
+        event,
+        properties: {
+          distinct_id: '12345678-1234-4234-8234-123456789012',
+          custom_super_property: phone,
+          $set: { contact: phone, phone_number: phone, plan: 'student' },
+          $set_once: { contact: phone, mobile: phone },
+          nested: [{ message: `Call ${phone} please`, numeric: Number(phone.replace(/\D/g, '')) }],
+          $current_url: `https://example.com/?contact=${encodeURIComponent(phone)}`,
+        },
+        $set: { contact: phone, $phone: phone },
+      });
+      expect(result?.properties.distinct_id).toBe('12345678-1234-4234-8234-123456789012');
+      expect(result?.properties.custom_super_property).toBe('[redacted]');
+      expect(result?.properties.$set).toEqual({ contact: '[redacted]', plan: 'student' });
+      expect(result?.properties.$set_once).toEqual({ contact: '[redacted]' });
+      expect(result?.$set).toEqual({ contact: '[redacted]' });
+      expect(result?.properties.nested).toEqual([
+        { message: 'Call [redacted] please', numeric: '[redacted]' },
+      ]);
+      expect(result?.properties.$current_url).toBe('https://example.com/?contact=[redacted]');
+      // Internal UUIDs contain long digit groups but are not phone numbers.
+      const serialized = JSON.stringify(result).replace(
+        /12345678-1234-4234-8234-123456789012/g,
+        '',
+      );
+      expect(serialized).not.toContain(phone);
+      expect(serialized).not.toMatch(/(?:\d[\s().-]*){7}/);
+    }
+  });
+
+  it('scrubs form-encoded URL spaces and phone property names even with nonstandard values', () => {
+    const result = sanitizePostHogEvent({
+      properties: {
+        $current_url: 'https://example.com/?contact=%2B972+50+123+4567',
+        phone: 'private contact',
+        mobileNumber: 'private contact',
+        telephone: 'private contact',
+        '+1 (415) 555-2671': 'private contact',
+      },
+    });
+    expect(result?.properties).toEqual({
+      $current_url: 'https://example.com/?contact=[redacted]',
+    });
+  });
+
+  it.each(['0501234567', '+972 50 123 4567', '+1 (415) 555-2671'])(
+    'drops browser and node events whose distinct ID is a phone: %s',
+    (phone) => {
+      expect(sanitizePostHogEvent({ properties: { distinct_id: phone } })).toBeNull();
+      expect(sanitizePostHogEvent({ properties: {}, distinctId: phone })).toBeNull();
+    },
+  );
+
+  it('drops a numeric phone distinct ID while preserving ordinary score/count properties', () => {
+    expect(sanitizePostHogEvent({ properties: { distinct_id: 501234567 } })).toBeNull();
+    const event = {
+      properties: {
+        distinct_id: '12345678-1234-4234-8234-123456789012',
+        count: 22,
+        psychometric: 680,
+        timestamp: '2026-10-24T12:00:00.000Z',
+      },
+    };
+    expect(sanitizePostHogEvent(event)).toEqual(event);
+  });
 });

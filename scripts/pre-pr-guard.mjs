@@ -101,6 +101,7 @@ const targetedTests = [
   'src/lib/leadAttribution.test.ts',
   'src/lib/sessionAttribution.analytics.test.ts',
   'src/server/enquiries/monday.test.ts',
+  'src/server/enquiries/scoreBands.test.ts',
   'src/proxy.test.ts',
   'src/data/admissions/mondayEvidence.test.ts',
   'src/data/admissions/formulaBackedPairInventory.test.ts',

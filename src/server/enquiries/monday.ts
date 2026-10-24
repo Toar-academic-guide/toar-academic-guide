@@ -1,6 +1,7 @@
 import 'server-only';
 import { createHash } from 'node:crypto';
 import { ENQUIRY_CONSENT, type EnquiryRecord } from '@/lib/enquiries';
+import { enquiryScoreBands } from './scoreBands';
 
 export async function sendEnquiryToMonday(enquiry: EnquiryRecord): Promise<string> {
   const token = process.env.MONDAY_API_TOKEN?.trim();
@@ -11,25 +12,7 @@ export async function sendEnquiryToMonday(enquiry: EnquiryRecord): Promise<strin
     program_id: enquiry.programId,
     institution_id: enquiry.institutionId,
     result_status: enquiry.resultStatus,
-    bagrut: enquiry.bagrut,
-    psychometric: enquiry.psychometric,
-    // Keep full subject records in Postgres; Monday long text has a 2000-character limit.
-    evaluation_input: enquiry.evaluationInput
-      ? {
-          degreeId: enquiry.evaluationInput.degreeId,
-          bagrut: enquiry.evaluationInput.bagrut,
-          psychometric: enquiry.evaluationInput.psychometric,
-          ...(enquiry.evaluationInput.extraInputs
-            ? {
-                extraInputs: Object.fromEntries(
-                  Object.entries(enquiry.evaluationInput.extraInputs).filter(
-                    ([key, value]) => /bagrut|psychometric/i.test(key) && typeof value === 'number',
-                  ),
-                ),
-              }
-            : {}),
-        }
-      : null,
+    ...enquiryScoreBands(enquiry),
   };
   const columns = {
     phone_mm8ar2e2: { phone: enquiry.phone.replace(/^0/, '+972'), countryShortName: 'IL' },

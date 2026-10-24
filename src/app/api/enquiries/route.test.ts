@@ -140,8 +140,8 @@ describe('website enquiries → Monday', () => {
       program_id: 'physiotherapy',
       institution_id: 'tau',
       result_status: 'unknown',
-      bagrut: null,
-      psychometric: null,
+      bagrut_band: null,
+      psychometric_band: null,
     });
   });
 
@@ -281,10 +281,11 @@ describe('enquiry context and independent delivery', () => {
         program_id: 'physiotherapy',
         institution_id: 'tau',
         result_status: decision === 'pending' ? 'unknown' : decision,
-        bagrut: 105.5,
-        psychometric: 680,
-        evaluation_input: evaluationInput,
+        bagrut_band: '105–109',
+        psychometric_band: '650–699',
       });
+      const mondayPayload = JSON.stringify(body);
+      for (const score of ['105.5', '680', '135']) expect(mondayPayload).not.toContain(score);
       expect(backup).toHaveBeenCalledWith(
         expect.objectContaining({
           resultStatus: context.result_status,

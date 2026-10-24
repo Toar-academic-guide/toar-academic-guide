@@ -27,8 +27,8 @@ Auth events expose email; enquiries have no evaluation context or backup, and re
 
 ### Requirements
 
-R1. Remove email from every analytics capture/identity/property path; authenticated identity uses Supabase ID only. Test outgoing payload privacy.
-R2. Attach canonical program/institution IDs, server-derived accepted/below/eligible_to_apply/unknown status, and the validated evaluation inputs to Monday. Preserve simulation and saved-profile inputs actually used; do not add student fields.
+R1. Remove email and phone from every analytics capture/identity/property path; authenticated identity uses Supabase ID only. Test outgoing payload privacy.
+R2. Attach canonical program/institution IDs, server-derived accepted/below/eligible_to_apply/unknown status, and score bands to Monday. Exact evaluation inputs are kept only in the private enquiries backup. Preserve simulation and saved-profile inputs actually used; do not add student fields.
 R3. Independently attempt Monday and Postgres backup; either success returns 201. Log provider failures without submitted personal data. Missing table must preserve Monday delivery.
 R4. Add Drizzle schema/migration and guarded, idempotent backup/apply/rollback packet at supabase/packets/2026-10-24-enquiries-table.sql. Deny anon/authenticated access; service-role access only. Leave all SQL unapplied.
 R5. Reuse existing Slack configuration and notifier, no-op when unset. Notify after any accepted enquiry; notification failure cannot fail delivery.
@@ -38,7 +38,7 @@ R7. Failing-first proof for every feature; lint, typecheck, full unit suite, bui
 ## Planning Contract
 
 KTD1. Use report.input from the active journey evaluation rather than current editable draft; validate via the existing admissions Zod schema and recompute on the server. No client-supplied result status is accepted. Missing input or evaluation failure yields unknown.
-KTD2. Monday's existing long-text column holds unchanged consent text followed by structured lead context and numeric score inputs (full subject record stays in Postgres, respecting Monday’s 2,000-character limit), in the same create_item write. This avoids a board schema change or a second context write that could fail independently. Official API create_item has no initial-update argument.
+KTD2. Monday's existing long-text column holds unchanged consent text followed by structured lead context and score bands, in the same create_item write. The enquiryScoreBands helper uses 50-point psychometric bands and 5-point Bagrut bands; decimal averages follow their floor bucket. Final bands include the valid maximum (750–800 and 115–120), avoiding a singleton perfect-score band. Missing scores stay null. Exact scores, institution-specific averages, subject scores and the full evaluation input stay only in Postgres. Monday receives no evaluation_input and stays within its 2,000-character limit. This avoids a board schema change or a second context write that could fail independently. Official API create_item has no initial-update argument.
 KTD3. Postgres request UUID is the primary key; insert conflict is an idempotent success. Both destinations run independently and settle before the response. The runtime DB uses server-only DATABASE_URL and an execute-only SECURITY DEFINER insert function; direct table access is restricted to service_role and the privileged owner. SQL grants no browser roles.
 KTD4. Reuse postAdmissionsReviewSlackMessage with SLACK_BOT_TOKEN for authentication and the dedicated SLACK_LEADS_CHANNEL_ID only. No-op when either is unset; never fall back to ready-PR or admissions-review channels. Messages contain only program/institution IDs and catalogue names, result status, utm_source when available, and a Monday link when available. Student contact details, free text, request IDs and other attribution fields are excluded.
 KTD5. Tiny client link wrappers retain existing Link/anchor DOM. Share fires once per click regardless of native/clipboard outcome.
@@ -63,8 +63,8 @@ flowchart LR
 ### U1. Analytics privacy (R1)
 
 Files: src/components/AuthScreen.tsx, src/context/AuthContext.tsx, instrumentation-client.ts, src/lib/posthog-server.ts and privacy helper/tests if needed.
-Approach: remove explicit email properties; identify initial and changed sessions by internal ID; apply payload email scrubbing at SDK boundaries for automatic URL/property capture too.
-Tests: successful login/signup payloads exclude submitted email; identity receives only Supabase ID; nested/URL email fields cannot escape the sanitizer.
+Approach: remove explicit email properties; identify initial and changed sessions by internal ID; apply recursive email/phone scrubbing at both SDK boundaries for automatic URLs, super properties and person properties too. Cover formatted Israeli/international numbers and ambiguous long numeric values; retain internal UUIDs and SDK Date timestamps.
+Tests: successful login/signup payloads exclude submitted email; identity receives only Supabase ID; nested/URL email and phone fields cannot escape the sanitizer; phone distinct IDs drop the event rather than collapsing identity to a placeholder.
 Execution note: observe failing tests before implementation.
 
 ### U2. Enquiry context (R2)

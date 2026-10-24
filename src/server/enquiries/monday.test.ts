@@ -32,7 +32,7 @@ it('keeps required context within the Monday 2000-character long-text limit with
       utm_campaign: 'x'.repeat(100),
       referrer: 'https://example.com/' + 'x'.repeat(236),
     },
-    createdAt: new Date(),
+    createdAt: new Date('2026-10-24T12:00:00Z'),
     evaluationInput: {
       degreeId: 'bgu_cs',
       bagrut: 105.5,
@@ -61,8 +61,11 @@ it('keeps required context within the Monday 2000-character long-text limit with
     utm_campaign: 'x'.repeat(100),
     referrer: 'https://example.com/' + 'x'.repeat(236),
     result_status: 'accepted',
-    bagrut: 105.5,
-    psychometric: 680,
-    evaluation_input: { extraInputs: { bguBagrutAverage: 112, psychometricMath: 135 } },
+    bagrut_band: '105–109',
+    psychometric_band: '650–699',
   });
+  expect(context).not.toHaveProperty('evaluation_input');
+  for (const score of ['105.5', '680', '112', '135']) {
+    expect(JSON.stringify(body)).not.toContain(score);
+  }
 });

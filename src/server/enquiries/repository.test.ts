@@ -22,7 +22,12 @@ const enquiry = {
   resultStatus: 'accepted' as const,
   bagrut: 105.5,
   psychometric: 680,
-  evaluationInput: { degreeId: 'bgu_cs', bagrut: 105.5, psychometric: 680 },
+  evaluationInput: {
+    degreeId: 'bgu_cs',
+    bagrut: 105.5,
+    psychometric: 680,
+    extraInputs: { bguBagrutAverage: 112.75, psychometricMath: 135 },
+  },
   attribution: {
     utm_source: 'instagram',
     utm_medium: 'social',
@@ -44,6 +49,11 @@ describe('private enquiry backup', () => {
     expect(queries[1].sql).toContain('public.store_enquiry');
     const payload = JSON.parse(queries[1].params[0] as string);
     expect(payload).toMatchObject({ ...enquiry, createdAt: '2026-10-24T12:00:00.000Z' });
+    expect(payload.bagrut).toBe(105.5);
+    expect(payload.psychometric).toBe(680);
+    expect(payload.evaluationInput).toEqual(enquiry.evaluationInput);
+    expect(payload).not.toHaveProperty('bagrut_band');
+    expect(payload).not.toHaveProperty('psychometric_band');
     expect(payload.consentText).toContain('MyWay');
     expect(queries[1].sql).not.toContain(enquiry.phone);
   });
