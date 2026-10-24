@@ -100,6 +100,31 @@ describe('website enquiries → Monday', () => {
     );
   });
   it.each([
+    '/programs/cs?psychometric=680#score_680',
+    '/programs/cs#score_680?psychometric=680',
+    '/programs/cs?psychometric=680',
+    '/programs/cs#score_680',
+  ])('stores only the pathname from %s in Monday and the private backup', async (sourcePath) => {
+    backup.mockResolvedValueOnce(undefined);
+    const attribution = { utm_source: 'instagram', utm_campaign: 'fall_2026' };
+    expect((await POST(request({ sourcePath, attribution }))).status).toBe(201);
+    const body = JSON.parse(vi.mocked(fetch).mock.calls[0][1]?.body as string);
+    const columns = JSON.parse(body.variables.columns);
+    expect(columns.text_mm8am52m).toBe('/programs/cs');
+    expect(JSON.stringify(body)).not.toContain('680');
+    expect(backup).toHaveBeenCalledWith(
+      expect.objectContaining({ sourcePath: '/programs/cs', attribution }),
+    );
+    const context = JSON.parse(columns.long_text_mm8ay37r.text.split('\n\nLead context:\n')[1]);
+    expect(context).toMatchObject(attribution);
+    await after.mock.calls[0][0]();
+    expect(capture).toHaveBeenCalledWith(
+      expect.objectContaining({
+        properties: expect.objectContaining({ source_path: '/programs/cs', ...attribution }),
+      }),
+    );
+  });
+  it.each([
     { utm_source: 'x'.repeat(101) },
     { utm_medium: 'x'.repeat(101) },
     { utm_campaign: 'x'.repeat(101) },

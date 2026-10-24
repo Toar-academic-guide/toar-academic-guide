@@ -94,6 +94,10 @@ for (const [path, source] of [
   ['/ig', 'instagram'],
   ['/fb', 'facebook'],
   ['/wa', 'whatsapp'],
+  ['/tt/', 'tiktok'],
+  ['/ig/', 'instagram'],
+  ['/fb/', 'facebook'],
+  ['/wa/', 'whatsapp'],
 ]) {
   test(`${path} is a redirect only, with no invented medium/campaign`, async ({ request }) => {
     const response = await request.get(`${path}?utm_source=other&email=private%40example.com`, {

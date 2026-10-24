@@ -17,7 +17,7 @@ const enquiry = {
   institutionId: 'bgu',
   programName: 'מדעי המחשב',
   institutionName: 'בן גוריון',
-  sourcePath: '/#inquiry',
+  sourcePath: '/',
   consent: true as const,
   resultStatus: 'accepted' as const,
   bagrut: 105.5,

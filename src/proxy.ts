@@ -18,7 +18,7 @@ export async function proxy(request: NextRequest) {
     );
   }
 
-  const source = socialShortLinks[request.nextUrl.pathname];
+  const source = socialShortLinks[request.nextUrl.pathname.replace(/\/$/, '')];
   if (source) {
     return NextResponse.redirect(new URL(`/?utm_source=${source}`, request.url), 307);
   }

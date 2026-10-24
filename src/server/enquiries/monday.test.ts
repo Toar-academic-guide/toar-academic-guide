@@ -21,7 +21,7 @@ it('keeps required context within the Monday 2000-character long-text limit with
     institutionId: 'bgu',
     programName: 'CS',
     institutionName: 'BGU',
-    sourcePath: '/#inquiry',
+    sourcePath: '/',
     consent: true,
     resultStatus: 'accepted',
     bagrut: 105.5,

@@ -27,7 +27,8 @@ const inputSchema = z
     sourcePath: z
       .string()
       .max(300)
-      .refine((value) => value.startsWith('/') && !value.startsWith('//')),
+      .refine((value) => value.startsWith('/') && !value.startsWith('//'))
+      .transform((value) => value.split(/[?#]/)[0]),
     consent: z.literal(true),
     attribution: enquiryAttributionSchema.optional(),
     evaluationInput: admissionsEvaluationSchema
@@ -153,7 +154,7 @@ export async function POST(request: Request) {
                 ...input.attribution,
                 program_id: input.programId,
                 institution_id: input.institutionId,
-                source_path: input.sourcePath.split(/[?#]/)[0],
+                source_path: input.sourcePath,
                 $process_person_profile: false,
               },
             });

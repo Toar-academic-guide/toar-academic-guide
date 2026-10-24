@@ -82,6 +82,26 @@ describe('production Vercel alias', () => {
 
 describe('social short-link redirects', () => {
   it.each([
+    ['/tt/', 'tiktok'],
+    ['/ig/', 'instagram'],
+    ['/fb/', 'facebook'],
+    ['/wa/', 'whatsapp'],
+  ])(
+    'redirects trailing-slash %s with 307 and discards incoming parameters',
+    async (path, source) => {
+      for (const query of ['', '?utm_source=other&email=private%40example.com']) {
+        mocks.getUser.mockClear();
+        const response = await proxy(new NextRequest(`https://findmyway.co.il${path}${query}`));
+        expect(response.status).toBe(307);
+        expect(response.headers.get('location')).toBe(
+          `https://findmyway.co.il/?utm_source=${source}`,
+        );
+        expect(mocks.getUser).not.toHaveBeenCalled();
+      }
+    },
+  );
+
+  it.each([
     ['/tt', 'tiktok'],
     ['/ig', 'instagram'],
     ['/fb', 'facebook'],
