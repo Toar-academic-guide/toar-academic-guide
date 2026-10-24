@@ -1,3 +1,5 @@
+import { RelatedPrograms } from '@/components/seo/CatalogueLinks';
+import { getPublicRelatedPrograms, getPublicSubjectHub } from '@/lib/publicCatalogueLinks';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import WayPageShell from '@/components/WayPageShell';
@@ -21,7 +23,17 @@ interface ProgramPageProps {
 }
 
 export async function generateMetadata({ params }: ProgramPageProps) {
-  return buildProgramMetadata((await params).programId);
+  const { programId } = await params;
+  const metadata = await buildProgramMetadata(programId);
+  if (metadata.title) return metadata;
+  const data = await getPublicSubjectHub(programId);
+  return data
+    ? {
+        title: `לימודי ${data.hub.name}`,
+        alternates: { canonical: `/programs/${encodeURIComponent(data.hub.id)}` },
+        ...(data.hub.programLinks === 0 ? { robots: { index: false, follow: true } } : {}),
+      }
+    : metadata;
 }
 
 export default async function ProgramPage({ params }: ProgramPageProps) {
@@ -29,17 +41,49 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
   const data = await getPublicProgramPageData(programId);
 
   if (!data) {
-    notFound();
+    const subject = await getPublicSubjectHub(programId);
+    if (!subject) notFound();
+    return (
+      <WayPageShell>
+        <main
+          dir="rtl"
+          data-page-kind="subject"
+          className="mx-auto max-w-4xl px-4 py-10 text-right sm:px-6"
+        >
+          <h1 className="mb-8 text-3xl font-bold">{subject.hub.name}</h1>
+          <ul className="grid gap-4 sm:grid-cols-2">
+            {subject.hub.programs.map((program) => (
+              <li key={program.id}>
+                <Link
+                  className="text-[var(--text-body)] underline-offset-4 hover:underline"
+                  href={`/programs/${encodeURIComponent(program.id)}`}
+                >
+                  {subject.institutions.find(
+                    (institution) => institution.id === program.institutionId,
+                  )?.name ?? program.institution}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </main>
+      </WayPageShell>
+    );
   }
 
-  const { program, institutions, institutionProgramPaths } = data;
+  const { program, institutions, isGeneral, institutionProgramPaths } = data;
   const institutionRequirementSources = await getPublicProgramRequirementSources(data);
+  const related = await getPublicRelatedPrograms(program.id);
   const faq = programFaqPageLd(data, institutionRequirementSources);
 
   return (
     <WayPageShell>
       <JsonLd data={[await programLd(data), programBreadcrumbLd(data), ...(faq ? [faq] : [])]} />
-      <main dir="rtl" className="px-4 py-10 text-right text-slate-900 sm:px-6">
+      <main
+        dir="rtl"
+        // Lets crawl tests tell subject pages from institution programme pages.
+        data-page-kind={isGeneral ? 'subject' : 'programme'}
+        className="px-4 py-10 text-right text-slate-900 sm:px-6"
+      >
         <section className="mx-auto flex max-w-4xl flex-col gap-8">
           <Link
             href={ROUTES.home}
@@ -201,6 +245,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
               </div>
             )}
           </section>
+          <RelatedPrograms {...related} />
         </section>
       </main>
     </WayPageShell>

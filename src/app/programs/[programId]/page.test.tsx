@@ -446,7 +446,11 @@ describe('ProgramPage', () => {
 
       view.unmount();
       render(await ProgramPage({ params: Promise.resolve({ programId: 'haifa_nursing' }) }));
-      expect(screen.getAllByRole('listitem').map((li) => li.textContent)).toEqual(haifaNotes);
+      expect(
+        within(screen.getByRole('heading', { name: 'תנאי קבלה' }).parentElement!)
+          .getAllByRole('listitem')
+          .map((li) => li.textContent),
+      ).toEqual(haifaNotes);
       expect(screen.queryByRole('link', { name: 'לפרטים המלאים' })).toBeNull();
     });
 
@@ -474,9 +478,11 @@ describe('ProgramPage', () => {
 
     it('keeps the existing placeholder on an institution-specific page without requirements', async () => {
       render(await ProgramPage({ params: Promise.resolve({ programId: 'ariel_nursing' }) }));
-      expect(screen.getByRole('listitem').textContent).toBe(
-        'לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד.',
-      );
+      expect(
+        within(screen.getByRole('heading', { name: 'תנאי קבלה' }).parentElement!).getByRole(
+          'listitem',
+        ).textContent,
+      ).toBe('לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד.');
       expect(screen.queryByRole('link', { name: 'לפרטים על המסלול' })).toBeNull();
     });
 

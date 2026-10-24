@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Analytics } from '@vercel/analytics/next';
 import { AuthProvider } from '@/context/AuthContext';
+import { CatalogueFooter } from '@/components/seo/CatalogueLinks';
 import JsonLd from '@/components/seo/JsonLd';
 import { organizationLd, websiteLd } from '@/lib/seo/jsonLd';
 import { SITE_DESCRIPTION, SITE_URL } from '@/lib/site';
@@ -32,6 +33,7 @@ export default function RootLayout({
       <body className="min-h-full antialiased">
         <JsonLd data={[organizationLd(), websiteLd()]} />
         <AuthProvider>{children}</AuthProvider>
+        <CatalogueFooter />
         <Analytics />
       </body>
     </html>

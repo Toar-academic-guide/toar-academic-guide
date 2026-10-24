@@ -13,11 +13,13 @@ import sitemap from '@/app/sitemap';
 import JsonLd from '@/components/seo/JsonLd';
 import { getInstitutionDirectoryItems } from '@/data/institutionDirectory';
 import { buildRobots, TRAINING_BOTS_POLICY } from './robots';
+import { buildSubjectHubs } from '@/lib/publicCatalogueLinks';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import {
   getPublicInstitutionPageData,
   getPublicProgramPageData,
   getPublicProgramRequirementSources,
+  loadPublicCatalogue,
 } from '@/lib/publicCataloguePages';
 import * as catalogueDisplayText from '@/lib/catalogueDisplayText';
 import { absoluteUrl, SITE_ALT_NAMES, SITE_DESCRIPTION, SITE_NAME, SITE_URL } from '@/lib/site';
@@ -145,12 +147,31 @@ describe('crawl policy', () => {
           (await getPublicInstitutionPageData(institution.id))!.programs.length > 0,
       );
     }
+    // PM rule (#271): a general subject page that links to no programme page
+    // (institution links only) is a thin hub and is not indexable.
+    const thinSubjects = new Set<string>();
+    for (const program of programs) {
+      const data = await getPublicProgramPageData(program.id);
+      if (
+        data?.isGeneral &&
+        !Object.values(data.institutionProgramPaths).some((path) => path.startsWith('/programs/'))
+      )
+        thinSubjects.add(program.id);
+    }
+    expect([...thinSubjects].sort()).toEqual([
+      'communication',
+      'education',
+      'nutrition',
+      'pharmacy',
+      'sports_science',
+    ]);
     for (const program of programs) {
       expect(await isIndexableProgram(program.id)).toBe(
         canonicalProgramId(program.id) === program.id &&
           !program.id.startsWith('mon_') &&
           program.isListed !== false &&
-          (await getPublicProgramPageData(program.id))!.institutions.length > 0,
+          (await getPublicProgramPageData(program.id))!.institutions.length > 0 &&
+          !thinSubjects.has(program.id),
       );
     }
     expect(await isIndexableInstitution('tau')).toBe(true);
@@ -174,32 +195,54 @@ describe('crawl policy', () => {
             canonicalProgramId(p.id) === p.id &&
             !p.id.startsWith('mon_') &&
             p.isListed !== false &&
-            institutions.some((i) => p.linkedInstitutionIds.includes(i.id)),
+            institutions.some((i) => p.linkedInstitutionIds.includes(i.id)) &&
+            !thinSubjects.has(p.id),
         )
         .map((p) => p.id),
     );
   }, 15_000);
 
-  it('keeps all 352 canonical public URLs in order with stable data modification dates', async () => {
+  it('keeps all 405 canonical public URLs in order with stable data modification dates', async () => {
     const entries = await sitemap();
     const urls = entries.map((entry) => entry.url);
+    const catalogue = await loadPublicCatalogue();
+    const generatedHubIds = buildSubjectHubs(catalogue)
+      .hubs.map((hub) => hub.id)
+      .filter((id) => !catalogue.generalProgramIds.has(id));
     expect(urls).toEqual([
       `${SITE_URL}/`,
       `${SITE_URL}/about`,
       `${SITE_URL}/institutions`,
+      `${SITE_URL}/programs`,
       ...(await indexableInstitutionIds()).map(
         (id) => `${SITE_URL}/institutions/${encodeURIComponent(id)}`,
       ),
       ...(await indexableProgramIds()).map(
         (id) => `${SITE_URL}/programs/${encodeURIComponent(id)}`,
       ),
+      // Subject hubs generated from institution programmes (no catalogue row).
+      ...generatedHubIds.map((id) => `${SITE_URL}/programs/${encodeURIComponent(id)}`),
     ]);
+    expect(generatedHubIds).toContain('engineering');
+    expect(generatedHubIds).toHaveLength(57);
+    expect(urls.filter((url) => url.endsWith('_subject'))).toEqual([]);
     expect(urls).toContain(`${SITE_URL}/institutions/tau`);
     expect(urls).toContain(`${SITE_URL}/programs/tau_cs`);
     expect(new Set(urls).size).toBe(urls.length);
     expect(urls).not.toContain(`${SITE_URL}/programs/danon_cs`);
     expect(urls).toContain(`${SITE_URL}/programs/ruppin_cs`);
-    expect(urls).toHaveLength(352);
+    // PM rule (#271): the 5 general subjects with no programme links (noindex,follow)
+    // leave the sitemap: 410 before this rule - 5 = 405.
+    for (const id of ['communication', 'education', 'nutrition', 'pharmacy', 'sports_science'])
+      expect(urls).not.toContain(`${SITE_URL}/programs/${id}`);
+    expect(urls).toHaveLength(405);
+    const subjectIndex = entries.find((entry) => entry.url === `${SITE_URL}/programs`)!;
+    expect(subjectIndex.priority).toBe(0.9);
+    // The index changes whenever any programme page changes.
+    const programDates = entries
+      .filter((entry) => entry.url.startsWith(`${SITE_URL}/programs/`))
+      .map((entry) => Date.parse(String(entry.lastModified)));
+    expect(Date.parse(String(subjectIndex.lastModified))).toBe(Math.max(...programDates));
     for (const url of urls) {
       expect(new URL(url).origin).toBe(SITE_URL);
       expect(url.endsWith('/')).toBe(url === `${SITE_URL}/`);
