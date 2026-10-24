@@ -115,6 +115,7 @@ const targetedTests = [
   'src/server/admissions/mtaPublishedRoutesEvaluation.test.ts',
   'src/server/admissions/mtaCombinedScore.test.ts',
   'src/server/admissions/biuPublishedRoutesEvaluation.test.ts',
+  'src/server/admissions/biuLawChannels.test.ts',
   'src/app/api/admissions/evaluate/biu.test.ts',
   'src/app/api/admissions/evaluate/mta.test.ts',
   'src/app/api/admissions/evaluate/afeka.test.ts',
