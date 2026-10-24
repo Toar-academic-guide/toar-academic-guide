@@ -1,5 +1,12 @@
 import { expect, test } from '@playwright/test';
 
+// Give this spec its own evaluation budget when the full suite shares one server.
+test.use({
+  extraHTTPHeaders: async ({ extraHTTPHeaders }, use) => {
+    await use({ ...extraHTTPHeaders, 'x-forwarded-for': '198.51.100.26' });
+  },
+});
+
 // Never send synthetic contacts to Monday, Supabase or a notification channel.
 for (const width of [1440, 390]) {
   test(`journey carries the evaluated inputs into the unchanged enquiry at ${width}px`, async ({
