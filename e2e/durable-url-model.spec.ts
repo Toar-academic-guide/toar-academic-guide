@@ -136,7 +136,7 @@ for (const width of [1440, 390]) {
       .click();
     await expect(page).toHaveURL(/\/programs\//);
     await checkHeader();
-    await header.getByRole('link', { name: 'Way — עמוד הבית' }).click();
+    await header.getByRole('link', { name: 'MyWay', exact: true }).click();
     await expect(page.getByRole('button', { name: 'עזרו לי לבחור מה ללמוד' })).toBeVisible();
     await page.getByRole('button', { name: 'עזרו לי לבחור מה ללמוד' }).click();
     await header.getByRole('link', { name: 'הרשימה שלי' }).click();
@@ -147,11 +147,11 @@ for (const width of [1440, 390]) {
     await page.goForward();
     await expect(page.getByPlaceholder('you@example.com')).toBeVisible();
     await page.goBack();
-    await header.getByRole('link', { name: 'Way — עמוד הבית' }).click();
+    await header.getByRole('link', { name: 'MyWay', exact: true }).click();
     await expect(page).toHaveURL(/\/$/);
     await expect(page.getByRole('button', { name: 'עזרו לי לבחור מה ללמוד' })).toBeVisible();
     await page.goto('/app/calculator');
-    await header.getByRole('link', { name: 'Way — עמוד הבית' }).click();
+    await header.getByRole('link', { name: 'MyWay', exact: true }).click();
     await expect(page).toHaveURL(/\/$/);
     await expect(page.getByRole('button', { name: 'עזרו לי לבחור מה ללמוד' })).toBeVisible();
     await header.getByRole('link', { name: 'הרשימה שלי' }).click();
