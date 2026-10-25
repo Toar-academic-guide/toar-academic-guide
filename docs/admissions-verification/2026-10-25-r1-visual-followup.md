@@ -15,7 +15,7 @@ Main bb041ef (#288) was merged without rebasing. Its smoke-quota isolation and 0
 
 Tests first: 3 failed / 4 passed across the seven new cases before implementation. After implementation the focused five-file suite passed 528 tests. The full suite passed 3,598 tests with zero failures and 86 existing skips; lint, typecheck and format check passed. The design detector reported no findings on the changed UI components. The focused simplification pass retained proof tests and source comments, and reused one estimate component across both rendering paths.
 
-The static production build, required real guard, affected Playwright specs and screenshot inspection are recorded with the committed evidence README. Screenshots are captured from the committed code SHA, before the evidence-only commit. They are review mockups, not Amit's visual approval.
+The static production build succeeded. The real guard passed 2,708 tests without a bypass. All ten affected Playwright specs ran against that build: 126 passed / 4 existing conditional skips / zero failures. All six screenshots were opened and inspected; RTL/right alignment, no horizontal overflow and no page errors were confirmed. Full inputs and metrics are recorded in the committed evidence README. Screenshots are captured from the committed code SHA, before the evidence-only commit. They are review mockups, not Amit's visual approval.
 
 VISUAL change — stays draft pending Amit's approval.
 
