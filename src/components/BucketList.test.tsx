@@ -4,6 +4,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import BucketList from './BucketList';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
+import { UNIVERSITIES } from '@/data/degreesData';
 import type { StudyRegionId } from '@/data/studyRegions';
 
 vi.mock('@/components/InstitutionLogo', () => ({ default: () => null }));
@@ -35,6 +36,24 @@ function showRegions(initialRegions: StudyRegionId[]) {
   );
   return onRegionsChange;
 }
+
+it('shows the original waiting-for-scores badge when no scores have been entered', () => {
+  const program = getStaticCataloguePrograms().find((entry) => entry.id === 'bgu_ee');
+  if (!program) throw new Error('Missing bgu_ee fixture');
+  render(
+    <BucketList
+      programs={[program]}
+      calculatorInstitutions={UNIVERSITIES}
+      catalogueInstitutions={institutions}
+      savedProgramIds={[program.id]}
+      onRemove={vi.fn()}
+      onBack={vi.fn()}
+    />,
+  );
+  expect(screen.getByText('ממתין לציונים')).toBeTruthy();
+  expect(screen.queryByText('בדקו תנאי קבלה')).toBeNull();
+  expect(screen.queryByText(/\/\s*≥/)).toBeNull();
+});
 
 describe('saved-program study-region continuation', () => {
   it.each(['center', 'haifa', 'jerusalem', 'south'] as const)(

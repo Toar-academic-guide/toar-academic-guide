@@ -14,10 +14,8 @@ export function calculateReichmanCoordinatedScore(bagrut: number, psychometric: 
   return 4.812 * bagrut + 0.5131 * psychometric - 163.19;
 }
 
-// ── Bagrut normalization ──────────────────────────────────────────────────────
-// Converts raw bagrut average (60–120 with bonuses) to the 200–800 psychometric
-// scale used by TAU / HUJI / BGU weighted formulas.
-// At bagrut=120 (max with bonuses) → 800; at bagrut=100 → 667.
+// TEMPORARY TAU-only legacy conversion, unbacked by an official formula.
+// Kept unchanged until postfreeze-2 replaces it.
 function normalizeBagrut(bagrut: number): number {
   return (bagrut / 120) * 800;
 }
@@ -30,12 +28,17 @@ function sekhemTechnion(scores: UserScores): number {
   return 0.5 * scores.bagrut + 0.075 * scores.psychometric - 18;
 }
 
-// ── Weighted formula (TAU, HUJI, BGU) ────────────────────────────────────────
-// Sekhem = w_psy × Psychometric + w_bag × (Bagrut / 120 × 800)
-// Output range: 200–800 (same axis as psychometric)
+// TAU-only legacy weighting; postfreeze-2 replaces this unbacked calculation.
 function sekhemWeighted(university: University, scores: UserScores): number {
   const w = university.sekhemWeight!;
   return w.psy * scores.psychometric + w.bag * normalizeBagrut(scores.bagrut);
+}
+
+function sekhemAriel(scores: UserScores): number {
+  // Ariel: "נוסחא לחישוב קבלה משולב: 2/ [(ממוצע בגרות * 6.666) + פסיכומטרי]"
+  // Source: Ariel BA registration process, ba-registration-process.2026-10-25T1357.txt:37.
+  // Text-verified, calculator not run; no published rounding rule or Bagrut cap.
+  return (6.666 * scores.bagrut + scores.psychometric) / 2;
 }
 
 // ── TAU engineering bonus calculation ────────────────────────────────────────
@@ -43,6 +46,8 @@ function sekhemWeighted(university: University, scores: UserScores): number {
 function tauEngineeringBonus(opts: EngineeringOptions): number {
   return opts.hasMath5 && opts.hasPhysics5 ? TAU_QUALIFYING_MATH_AND_PHYSICS_BONUS : 0;
 }
+
+const INSTITUTIONS_WITHOUT_COMPOSITE = new Set(['huji', 'bgu', 'haifa', 'biu']);
 
 // ── Core sekhem dispatcher ────────────────────────────────────────────────────
 // engineeringOptions is only applied when:
@@ -54,7 +59,9 @@ export function calculateSekhem(
   scores: UserScores,
   degree: Program,
   engineeringOptions: EngineeringOptions,
-): number {
+): number | null {
+  if (INSTITUTIONS_WITHOUT_COMPOSITE.has(university.id)) return null;
+
   if (university.id === 'reichman') {
     return calculateReichmanCoordinatedScore(scores.bagrut, scores.psychometric);
   }
@@ -87,21 +94,28 @@ export function calculateSekhem(
     return scores.psychometric;
   }
 
-  const base = sekhemWeighted(university, scores);
-
-  if (university.id === 'tau' && (degree.isTauEngineering ?? false)) {
-    // Cap at 800 — the upper bound of the TAU/HUJI/BGU scale
-    return Math.min(base + tauEngineeringBonus(engineeringOptions), 800);
+  if (university.id === 'ariel') {
+    return sekhemAriel(scores);
   }
 
-  return base;
+  if (university.id === 'tau') {
+    const base = sekhemWeighted(university, scores);
+    if (degree.isTauEngineering ?? false) {
+      // Preserve TAU's legacy bonus and clamp until postfreeze-2.
+      return Math.min(base + tauEngineeringBonus(engineeringOptions), 800);
+    }
+    return base;
+  }
+
+  return null;
 }
 
 // ── Delta calculator ─────────────────────────────────────────────────────────
 // Given a deficit (threshold − sekhem after bonuses), computes how many raw
 // points the user must add to either variable to close the remaining gap.
 // Engineering bonuses are fixed constants so derivatives are unchanged.
-export function calculateDelta(deficit: number, university: University): DeltaNeeded {
+export function calculateDelta(deficit: number, university: University): DeltaNeeded | null {
+  if (INSTITUTIONS_WITHOUT_COMPOSITE.has(university.id)) return null;
   if (university.id === 'reichman') {
     return {
       psychometric: Math.ceil(deficit / 0.5131),
@@ -130,14 +144,22 @@ export function calculateDelta(deficit: number, university: University): DeltaNe
       bagrut: 0,
     };
   }
-  const w = university.sekhemWeight!;
-  // d(sekhem)/d(psy)  = w.psy
-  // d(sekhem)/d(bag)  = w.bag × (800/120)   (chain rule through normalizeBagrut)
-  const dBag = w.bag * (800 / 120);
-  return {
-    psychometric: Math.ceil(deficit / w.psy),
-    bagrut: Math.ceil(deficit / dBag),
-  };
+  if (university.id === 'ariel') {
+    return {
+      psychometric: Math.ceil(deficit / 0.5),
+      bagrut: Math.ceil(deficit / 3.333),
+    };
+  }
+  if (university.id === 'tau') {
+    const w = university.sekhemWeight!;
+    // TAU-only derivative through the unchanged temporary normalizer.
+    const dBag = w.bag * normalizeBagrut(1);
+    return {
+      psychometric: Math.ceil(deficit / w.psy),
+      bagrut: Math.ceil(deficit / dBag),
+    };
+  }
+  return null;
 }
 
 export function evaluateMinimumFloorsAdmission(
@@ -171,7 +193,7 @@ export function evaluateUniversities(
     const threshold = degree.thresholds?.[university.id] ?? null;
 
     if (threshold === null) {
-      return { university, sekhem: 0, threshold: null, status: 'unavailable' };
+      return { university, sekhem: null, threshold: null, status: 'unavailable' };
     }
 
     // ── Minimum-floors model (colleges) ──────────────────────────────────────
@@ -196,7 +218,48 @@ export function evaluateUniversities(
       };
     }
 
+    const minimumPsychometric = degree.minimumPsychometric?.[university.id];
+    const minimumBagrut = degree.minimumBagrut?.[university.id];
+    const psychometricFloorGap = Math.max(0, (minimumPsychometric ?? 0) - scores.psychometric);
+    const bagrutFloorGap = Math.max(0, (minimumBagrut ?? 0) - scores.bagrut);
+    const unmetFloors: string[] = [];
+    if (psychometricFloorGap > 0 && minimumPsychometric !== undefined) {
+      unmetFloors.push(`פסיכומטרי לפחות ${minimumPsychometric}`);
+    }
+    if (bagrutFloorGap > 0 && minimumBagrut !== undefined) {
+      unmetFloors.push(`ממוצע בגרות לפחות ${minimumBagrut}`);
+    }
+    const explanation =
+      unmetFloors.length > 0
+        ? `אינו עומד בתנאי הסף של ${university.name}: חסר ${unmetFloors.join(', ')}`
+        : undefined;
+    const directCutoff = degree.directPsychometric?.[university.id];
+    const meetsDirectCutoff = directCutoff !== undefined && scores.psychometric >= directCutoff;
+
     const raw = calculateSekhem(university, scores, degree, engineeringOptions);
+    if (raw === null) {
+      if (unmetFloors.length > 0) {
+        return {
+          university,
+          sekhem: null,
+          threshold,
+          status: 'below',
+          explanation,
+          deltaNeeded: { psychometric: psychometricFloorGap, bagrut: bagrutFloorGap },
+        };
+      }
+      if (meetsDirectCutoff) {
+        return {
+          university,
+          sekhem: null,
+          threshold,
+          status: 'accepted',
+          admissionTrack: 'direct',
+        };
+      }
+      return { university, sekhem: null, threshold, status: 'unavailable' };
+    }
+
     // Technion: keep 1 decimal; others: round to integer
     const sekhem =
       university.formulaType === 'technion_linear' ? Math.round(raw * 10) / 10 : Math.round(raw);
@@ -266,29 +329,17 @@ export function evaluateUniversities(
     // ── Direct admission track (קבלה ישירה) ──────────────────────────────────
     // Some universities admit applicants whose raw psychometric score alone
     // exceeds a published cutoff, bypassing the combined-index threshold.
-    const directCutoff = degree.directPsychometric?.[university.id];
-    if (directCutoff !== undefined && scores.psychometric >= directCutoff) {
+    if (meetsDirectCutoff) {
       return { university, sekhem, threshold, status: 'accepted', admissionTrack: 'direct' };
     }
 
-    const minimumPsychometric = degree.minimumPsychometric?.[university.id];
-    const minimumBagrut = degree.minimumBagrut?.[university.id];
     const deficit = threshold - raw;
-    const psychometricFloorGap = Math.max(0, (minimumPsychometric ?? 0) - scores.psychometric);
-    const bagrutFloorGap = Math.max(0, (minimumBagrut ?? 0) - scores.bagrut);
 
     if (deficit <= 0 && psychometricFloorGap <= 0 && bagrutFloorGap <= 0) {
       return { university, sekhem, threshold, status: 'accepted' };
     }
 
     const deltaNeeded = calculateDelta(Math.max(0, deficit), university);
-    const unmetFloors: string[] = [];
-    if (psychometricFloorGap > 0 && minimumPsychometric !== undefined) {
-      unmetFloors.push(`פסיכומטרי לפחות ${minimumPsychometric}`);
-    }
-    if (bagrutFloorGap > 0 && minimumBagrut !== undefined) {
-      unmetFloors.push(`ממוצע בגרות לפחות ${minimumBagrut}`);
-    }
 
     return {
       university,
@@ -296,13 +347,10 @@ export function evaluateUniversities(
       threshold,
       status: 'below',
       deltaNeeded: {
-        psychometric: Math.max(deltaNeeded.psychometric, psychometricFloorGap),
-        bagrut: Math.max(deltaNeeded.bagrut, bagrutFloorGap),
+        psychometric: Math.max(deltaNeeded?.psychometric ?? 0, psychometricFloorGap),
+        bagrut: Math.max(deltaNeeded?.bagrut ?? 0, bagrutFloorGap),
       },
-      explanation:
-        unmetFloors.length > 0
-          ? `אינו עומד בתנאי הסף של ${university.name}: חסר ${unmetFloors.join(', ')}`
-          : undefined,
+      explanation,
     };
   });
 }

@@ -318,7 +318,9 @@ export function evaluateAdmissionsDecision({
       explanation: [
         calculatorResult.admissionTrack === 'direct'
           ? 'הציון הפסיכומטרי עומד במסלול קבלה ישירה.'
-          : `הסכם המחושב ${calculatorResult.sekhem} עומד בסף ${calculatorResult.threshold}.`,
+          : calculatorResult.sekhem === null
+            ? 'הציונים עומדים בתנאי הקבלה שפורסמו.'
+            : `הסכם המחושב ${calculatorResult.sekhem} עומד בסף ${calculatorResult.threshold}.`,
       ],
       metConditions: facts
         .filter((fact) => isPassingFact(fact, scores) === true)
@@ -342,7 +344,9 @@ export function evaluateAdmissionsDecision({
       status,
       confidence: 'high',
       explanation: [
-        `הסכם המחושב ${calculatorResult.sekhem} נמוך מסף ${calculatorResult.threshold}.`,
+        calculatorResult.sekhem === null
+          ? (calculatorResult.explanation ?? 'הציונים אינם עומדים בתנאי הסף שפורסמו.')
+          : `הסכם המחושב ${calculatorResult.sekhem} נמוך מסף ${calculatorResult.threshold}.`,
       ],
       metConditions: [],
       missing,

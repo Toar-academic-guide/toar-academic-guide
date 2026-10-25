@@ -11,8 +11,9 @@ async function main() {
 
   console.log(`Ariel Calculator Query: Bagrut=${bagrut}, Psychometric=${psycho}`);
 
-  const normalizedBagrut = (bagrut / 120) * 800;
-  const localSekhem = Math.round(0.5 * psycho + 0.5 * normalizedBagrut);
+  const unroundedSekhem = (6.666 * bagrut + psycho) / 2;
+  console.log(`Unrounded Sekhem: ${unroundedSekhem.toFixed(2)}`);
+  const localSekhem = Math.round(unroundedSekhem);
 
   const programs = [
     { name: 'מדעי המחשב', threshold: 600 },

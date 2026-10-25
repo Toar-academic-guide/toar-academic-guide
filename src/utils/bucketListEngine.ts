@@ -20,7 +20,7 @@ export interface BucketEntry {
   program: Program;
   status: BucketStatus;
   /** Calculated sekhem on the university's own scale (sekhem-track only) */
-  sekhem?: number;
+  sekhem?: number | null;
   /** Admission threshold for this program+university pair */
   threshold?: number;
   /** How many raw points are needed to close the gap (gap status only) */
@@ -112,6 +112,10 @@ export function analyzeBucketList(
       hasMath5: false,
       hasPhysics5: false,
     });
+    if (raw === null) {
+      entries.push({ program, status: 'no-data', sekhem: null });
+      continue;
+    }
     const sekhem =
       university.formulaType === 'technion_linear' ? Math.round(raw * 10) / 10 : Math.round(raw);
 
@@ -125,7 +129,7 @@ export function analyzeBucketList(
         status: 'gap',
         sekhem,
         threshold,
-        delta: calculateDelta(deficit, university),
+        delta: calculateDelta(deficit, university) ?? undefined,
       });
     }
   }

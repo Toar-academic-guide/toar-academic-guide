@@ -88,7 +88,7 @@ describe('sekhemCalculators', () => {
 
     expect(result?.status).toBe('below');
     expect(result?.threshold).toBe(547);
-    expect(result?.sekhem).toBe(706);
+    expect(result?.sekhem).toBeNull();
     expect(result?.deltaNeeded).toEqual({
       psychometric: 10,
       bagrut: 0,
@@ -106,7 +106,7 @@ describe('sekhemCalculators', () => {
 
     expect(result?.status).toBe('below');
     expect(result?.threshold).toBe(585);
-    expect(result?.sekhem).toBe(682);
+    expect(result?.sekhem).toBeNull();
     expect(result?.deltaNeeded).toEqual({
       psychometric: 0,
       bagrut: 6,

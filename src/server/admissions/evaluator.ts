@@ -2305,8 +2305,8 @@ function evaluateNonExactResult(args: {
               explanation: `לפי המקור הרשמי, צריך להגיע לפחות לסכם ${verifiedThreshold.threshold} כדי לעבור לשלב המיון הידני. ${thresholdExplanation}`,
               nextAction:
                 'שפרו את הנתונים שמופיעים בפער לפני הרשמה. גם מעבר סף הזימון לא מבטיח קבלה סופית.',
-              score: evaluation.sekhem,
-              scoreLabel: 'סכם',
+              score: evaluation.sekhem ?? undefined,
+              scoreLabel: evaluation.sekhem === null ? undefined : 'סכם',
               threshold: verifiedThreshold.threshold,
               deltaNeeded: evaluation.deltaNeeded,
             };
@@ -2322,8 +2322,8 @@ function evaluateNonExactResult(args: {
             sourceLabel: 'נדרש מיון נוסף',
             explanation: `לפי המקור הרשמי, הגעתם לסף הזימון ${verifiedThreshold.threshold}. ${thresholdExplanation}`,
             nextAction: 'הגישו מועמדות והשלימו את שלבי המיון הידניים או הראיונות שנדרשים למסלול.',
-            score: evaluation.sekhem,
-            scoreLabel: 'סכם',
+            score: evaluation.sekhem ?? undefined,
+            scoreLabel: evaluation.sekhem === null ? undefined : 'סכם',
             threshold: verifiedThreshold.threshold,
           };
         }
@@ -2473,8 +2473,8 @@ function evaluateNonExactResult(args: {
             : 'כלל קבלה ממופה ממקור חלקי',
         explanation: evaluation.explanation ?? defaultExplanation,
         nextAction: defaultNextAction,
-        score: evaluation.sekhem,
-        scoreLabel: 'סכם',
+        score: evaluation.sekhem ?? undefined,
+        scoreLabel: evaluation.sekhem === null ? undefined : 'סכם',
         threshold: evaluation.threshold,
         deltaNeeded: evaluation.deltaNeeded,
         evidenceItemId: entry.evidence?.itemId,
