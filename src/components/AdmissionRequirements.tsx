@@ -138,10 +138,10 @@ export default function AdmissionRequirements({
                 <th scope="col" className="w-[15%] py-2 pe-2 font-medium">
                   נדרש
                 </th>
-                <th scope="col" className="w-[20%] py-2 pe-2 font-medium">
+                <th scope="col" className="w-[25%] py-2 pe-2 font-medium">
                   שלך
                 </th>
-                <th scope="col" className="w-[35%] py-2 font-medium">
+                <th scope="col" className="w-[30%] py-2 font-medium">
                   בדיקה
                 </th>
               </tr>
