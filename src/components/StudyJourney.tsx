@@ -697,6 +697,9 @@ export default function StudyJourney({
           >
             {status.label}
           </span>
+          {isTechnionMedicineScore(row.result, row.program.id) && !row.failed && (
+            <TechnionMedicineComparison score={row.result.score} />
+          )}
           <TechnionThresholdNotice programId={row.program.id} institutionId={row.institution.id} />
         </div>
         <div className="journey-row-actions">

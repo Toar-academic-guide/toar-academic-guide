@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AcademicScores } from '@/types';
 import { getStaticCataloguePrograms, getStaticCatalogueInstitutions } from '@/lib/catalogueStatic';
@@ -174,6 +174,64 @@ describe('account grades in the homepage journey', () => {
     const listChip = await screen.findByText('קבלה דרך מבחני מו"ר');
     expect(listChip.className).toBe('journey-status status-match');
   });
+
+  // Samuel QA A1 2026-10-25
+  it.each([
+    [98.9, 'הסכם שלך 98.9, מעל סף הזימון המשוער (92)', 'text-green-700', 'status-match'],
+    [92, 'הסכם שלך 92, מעל סף הזימון המשוער (92)', 'text-green-700', 'status-match'],
+    [73.9, 'הסכם שלך 73.9, מתחת לסף הזימון המשוער (92)', 'text-slate-500', 'status-match'],
+  ] as const)(
+    'shows one comparison directly under the medicine list chip for sekem %s',
+    async (score, text, color, badge) => {
+      const program = getStaticCataloguePrograms().find((p) => p.id === 'technion_medicine')!;
+      const institution = getStaticCatalogueInstitutions().find((i) => i.id === 'technion')!;
+      state.fetchPrograms.mockResolvedValue([program]);
+      state.fetchInstitutions.mockResolvedValue([institution]);
+      state.evaluate.mockResolvedValue({
+        reports: {
+          technion_medicine: {
+            results: [
+              {
+                institution,
+                linkedInstitutionId: 'technion',
+                kind: 'exact',
+                decision: 'unknown',
+                score,
+              },
+            ],
+          },
+        },
+        failedDegreeIds: [],
+      });
+      window.sessionStorage.setItem(
+        'myway_study_journey_v2',
+        JSON.stringify({
+          fields: ['medicine'],
+          locations: ['all'],
+          types: ['all'],
+          scores: { bagrut: { weightedAverage: 110 }, psychometric: { overall: 720 } },
+        }),
+      );
+      render(<StudyJourney initialStep="results" />);
+      const chip = await screen.findByText('קבלה דרך מבחני מו"ר');
+      const row = within(chip.closest('article')!);
+      const line = row.getByText(text, { exact: true });
+      expect(row.getAllByText(/הסכם שלך/)).toHaveLength(1);
+      expect(screen.getAllByText(/הסכם שלך/)).toHaveLength(1);
+      expect(chip.nextElementSibling).toBe(line);
+      expect(line.classList.contains(color)).toBe(true);
+      expect(line.className).not.toMatch(/red|rose|amber|yellow|danger|warning/);
+      expect(chip.className).toBe(`journey-status ${badge}`);
+      expect(chip.classList.contains('status-match')).toBe(badge === 'status-match');
+      expect(row.queryByText('אין הכרעת קבלה')).toBeNull();
+      expect(row.queryByText(/סף זימון משוער למבחן המו"ר|סכם:|שיפור/)).toBeNull();
+      fireEvent.click(row.getByRole('button', { name: /פרטים על רפואה/ }));
+      const detailLine = await screen.findByText(text, { exact: true });
+      expect(screen.getAllByText(/הסכם שלך/)).toHaveLength(1);
+      expect(detailLine.className).toBe(line.className);
+      expect(detailLine.classList.contains(color)).toBe(true);
+    },
+  );
 
   // Amit ruling 2026-10-25 08:01 via Jorje
   it('keeps Haifa pending chip in its existing no-verdict style', async () => {
