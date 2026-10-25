@@ -78,14 +78,33 @@ describe('programme aliases through the evaluate API with the real evaluator', (
       expect(alias.inputDigest).toBe(canonical.inputDigest);
       expect(alias.results).toEqual(canonical.results);
       expect(alias.results).toHaveLength(1);
+      // Ruling: /workspace/codex-tasks/r1-pr278-rulings-2026-10-25.md row 6. Official source: https://www.colman.ac.il/academics/ba/law/. Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+      // Ruling: /workspace/codex-tasks/r1-pr278-rulings-2026-10-25.md row 7. Official source: https://www.colman.ac.il/academics/ba/business-administration/. Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
       expect(alias.results[0]).toMatchObject(
         label === 'missing Colman average'
-          ? { decision: 'unknown', requiredInputs: ['colman_bagrut_average'] }
+          ? {
+              // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+              decision: 'accepted',
+              // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+              kind: 'exact',
+              estimated: true,
+              score: 110,
+              threshold: boundary,
+            }
           : {
-              decision: label === 'weak profile' ? 'below' : 'eligible_to_apply',
+              // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+              decision: label === 'weak profile' ? 'below' : 'accepted',
               threshold: boundary,
             },
       );
+      if (label === 'missing Colman average') {
+        // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+        expect(alias.results[0].decision).toBe('accepted');
+        // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+        expect(alias.results[0].additionalConditions ?? []).not.toContainEqual(
+          expect.objectContaining({ id: 'colman_bagrut_certificate' }),
+        );
+      }
     });
   }
 
@@ -107,7 +126,8 @@ describe('programme aliases through the evaluate API with the real evaluator', (
       expect(data.reports[aliasId].program.id).toBe(canonicalId);
       expect(data.reports[aliasId].results).toEqual(data.reports[canonicalId].results);
       expect(data.reports[aliasId].results[0]).toMatchObject({
-        decision: 'eligible_to_apply',
+        // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+        decision: 'accepted',
         threshold,
       });
     }
@@ -173,3 +193,31 @@ describe('retired arts programme saved references', () => {
     }
   });
 });
+
+// G1: exercise serialized API responses, including the absence of estimate provenance.
+it.each([
+  ['haifa_cs', { haifaBagrutAverage: 105, haifaBagrutYear: 2020, haifaPsychometricYear: 2025 }],
+  ['bgu_cs', { bguBagrutAverage: 105 }],
+  ['colmgmt_law', { colmanBagrutAverage: 110 }],
+] as const)(
+  'G1 API estimate flag for %s versus explicit institutional inputs',
+  async (degreeId, extraInputs) => {
+    resetAdmissionsEvaluationRateLimitForTests();
+    for (const supplied of [false, true]) {
+      const response = await request({
+        degreeId,
+        bagrut: 110,
+        psychometric: 650,
+        ...(supplied ? { extraInputs } : {}),
+      });
+      expect(response.status).toBe(200);
+      const { data } = await response.json();
+      // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+      expect(data.results[0].estimated === true).toBe(degreeId === 'colmgmt_law' && !supplied);
+      // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+      if (degreeId === 'colmgmt_law' && !supplied)
+        expect(data.results[0].estimationReason).toBeTruthy();
+      else expect(data.results[0].estimationReason).toBeUndefined();
+    }
+  },
+);

@@ -39,7 +39,9 @@ test.beforeAll(async ({ request }) => {
 });
 
 for (const width of [390, 1440]) {
-  test(`economics asks for the Colman average at ${width}px`, async ({ page }) => {
+  test(`economics reports estimated below and allows grade updates at ${width}px`, async ({
+    page,
+  }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.addInitScript(() => {
       sessionStorage.setItem(
@@ -53,14 +55,31 @@ for (const width of [390, 1440]) {
         }),
       );
     });
+    const evaluation = page.waitForResponse(
+      (response) =>
+        response.url().endsWith('/api/admissions/evaluate') &&
+        response.request().postDataJSON()?.degreeIds?.includes('colmgmt_economics'),
+    );
     await page.goto('/app/calculator#detail');
-    await expect(page.locator('.journey-result-explanation')).toContainText(
-      'נדרש ממוצע משוקלל של המכללה למינהל',
+    const response = await evaluation;
+    expect(response.status()).toBe(200);
+    const result = (await response.json()).data.reports.colmgmt_economics.results.find(
+      (row: { linkedInstitutionId: string }) => row.linkedInstitutionId === 'colman',
+    );
+    // Ruling: /workspace/codex-tasks/r1-pr278-rulings-2026-10-25.md row 5 (per Jorje's 06:40 follow-up ruling extending it to these e2e expectations). Official source: https://www.colman.ac.il/academics/ba/economy/. Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+    // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+    expect(result).toMatchObject({ kind: 'exact', decision: 'below', estimated: true });
+    await expect(page.locator('.journey-result-explanation')).toContainText('הממוצע נמוך מ־85');
+    await expect(page.locator('.journey-result-explanation')).not.toContainText(
+      'זו אינה דחייה מכל מסלולי הקבלה.',
+    );
+    await expect(page.locator('.admission-estimate')).toHaveText(
+      'הערכה: חישבנו לפי הממוצע הכללי שהזנת, לא לפי ממוצע המוסד. להערכה מדויקת יותר, הזינו ציונים לפי מקצוע.',
     );
     await expect(
-      page.getByRole('main').getByText('חסרים פרטים לחישוב', { exact: true }),
+      page.getByRole('main').getByText('הציונים מתחת לסף', { exact: true }),
     ).toBeVisible();
-    await page.getByRole('button', { name: 'השלמת נתונים לחישוב', exact: true }).click();
+    await page.getByRole('button', { name: 'עדכון נתונים ותנאים נוספים', exact: true }).click();
     const average = page.getByLabel('ממוצע בגרות משוקלל של המכללה למינהל (50–130)', {
       exact: true,
     });
@@ -109,7 +128,8 @@ for (const width of [390, 1440]) {
       (row: { linkedInstitutionId: string }) => row.linkedInstitutionId === 'colman',
     );
     expect(result).toMatchObject({
-      decision: 'eligible_to_apply',
+      // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+      decision: 'accepted',
       scoreAssessment: 'meets_threshold',
     });
     await expect(page.locator('.journey-result-explanation')).toHaveText(result.explanation);

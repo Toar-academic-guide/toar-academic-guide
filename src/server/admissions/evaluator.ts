@@ -1,3 +1,7 @@
+import { isCalculatedAdmissionResult } from '@/lib/isCalculatedAdmissionResult';
+import { guardProxyEvaluation, usesInstitutionAverageProxy } from './proxyEvaluationGuard';
+import { normalizeEvaluationInputs } from './evaluationInputs';
+import { bguMathematicsSubjects } from '@/lib/bagrutSubjectRecord';
 import { evaluateAfekaPublishedRoutes } from './afekaPublishedRoutesEvaluation';
 import { isBatchCUnsupportedProgramId } from '@/data/admissions/batchCUnsupportedProgramIds';
 import { isBiuPublishedRoutePair } from '@/data/admissions/biuPublishedRoutes';
@@ -145,8 +149,10 @@ export async function evaluateAdmissionsForProgram(args: {
     freshnessStatesBySourceId: suppliedFreshnessStates,
   } = args;
 
+  const normalized = normalizeEvaluationInputs(input);
+  const evaluationInput = normalized.input;
   const codeReviewedWinter = getCodeReviewedTechnionWinterVerification(`${program.id}__technion`);
-  const exactSourceIds = exactSourceIdsForProgram(program, input.extraInputs).filter(
+  const exactSourceIds = exactSourceIdsForProgram(program, evaluationInput.extraInputs).filter(
     (sourceId) => sourceId !== codeReviewedWinter?.contract.source.targetId,
   );
 
@@ -159,19 +165,19 @@ export async function evaluateAdmissionsForProgram(args: {
     deferredRequiredInputs: new Map(
       institutions.map((institution) => [
         institution.id,
-        independentAdmissionConditions(input, program, institution).map(
+        independentAdmissionConditions(evaluationInput, program, institution).map(
           (condition) => condition.id,
         ),
       ]),
     ),
-    input: input.extraInputs,
+    input: evaluationInput.extraInputs,
     freshnessStatesBySourceId: freshnessLoad.states,
     freshnessAuthorityUnavailable: freshnessLoad.status === 'unavailable',
     now,
   });
 
   const results = await evaluateCapabilityEntries({
-    input,
+    input: evaluationInput,
     program,
     institutions,
     capabilityEntries,
@@ -183,29 +189,51 @@ export async function evaluateAdmissionsForProgram(args: {
     const entry = capabilityEntries.find(
       (item) => item.institutionId === result.linkedInstitutionId,
     );
+    const institutionId = result.linkedInstitutionId;
+    const usesProxy =
+      normalized.proxyInstitutions.has(institutionId) &&
+      (institutionId === 'colman' || usesInstitutionAverageProxy(result, evaluationInput));
+    const usesDirectRoute = normalized.proxyInstitutions.has(institutionId) && !usesProxy;
+    const estimateReasons = usesDirectRoute ? [] : [...(normalized.reasons[institutionId] ?? [])];
+    let displayedResult = withVerifiedAdmissionInformation(result, entry, evaluationInput);
+    if (usesProxy) {
+      displayedResult = guardProxyEvaluation(displayedResult, evaluationInput);
+      displayedResult = {
+        ...displayedResult,
+        scoreLabel: displayedResult.scoreLabel?.replace('רשמי', 'משוער'),
+        explanation: displayedResult.explanation.replace('ממוצע בגרות רשמי', 'ממוצע בגרות משוער'),
+      };
+    }
+    if (estimateReasons.length && isCalculatedAdmissionResult(displayedResult)) {
+      displayedResult = {
+        ...displayedResult,
+        estimated: true,
+        estimationReason: estimateReasons.join(' '),
+        ...(displayedResult.score !== undefined && { confidence: 'medium' }),
+      };
+    }
     // Medicine's 92 is an estimated MOR invitation score, not an admission cutoff.
     // Keep the calculation, but do not turn either side of that estimate into a verdict.
-    const displayedResult: AdmissionsEvaluationResult =
-      program.id === 'technion_medicine' && result.linkedInstitutionId === 'technion'
-        ? {
-            ...result,
-            capability: result.score !== undefined ? 'score_only' : result.capability,
-            kind: result.score !== undefined ? 'exact' : result.kind,
-            decision: 'unknown',
-            confidence: result.score !== undefined ? 'medium' : result.confidence,
-            scoreLabel: 'סכם',
-            threshold: undefined,
-            scoreAssessment: undefined,
-            deltaNeeded: undefined,
-            additionalConditions: undefined,
-            sourceLabel: 'סכם לרפואה',
-            explanation:
-              `סף זימון משוער למבחן המו"ר: ${TECHNION_MEDICINE_INVITATION_THRESHOLD} (הערכה). זהו סף זימון משוער בלבד, ולא סף קבלה לרפואה.` +
-              (result.score === undefined ? ` ${result.explanation}` : ''),
-            nextAction: 'בדקו באתר הטכניון את תנאי המיון והקבלה העדכניים לרפואה.',
-            officialUrls: [TECHNION_THRESHOLD_URL],
-          }
-        : withVerifiedAdmissionInformation(result, entry, input);
+    if (program.id === 'technion_medicine' && institutionId === 'technion') {
+      displayedResult = {
+        ...displayedResult,
+        capability: result.score !== undefined ? 'score_only' : result.capability,
+        kind: result.score !== undefined ? 'exact' : result.kind,
+        decision: 'unknown',
+        confidence: result.score !== undefined ? 'medium' : result.confidence,
+        scoreLabel: 'סכם',
+        threshold: undefined,
+        scoreAssessment: undefined,
+        deltaNeeded: undefined,
+        additionalConditions: undefined,
+        sourceLabel: 'סכם לרפואה',
+        explanation:
+          `סף זימון משוער למבחן המו"ר: ${TECHNION_MEDICINE_INVITATION_THRESHOLD} (הערכה). זהו סף זימון משוער בלבד, ולא סף קבלה לרפואה.` +
+          (result.score === undefined ? ` ${result.explanation}` : ''),
+        nextAction: 'בדקו באתר הטכניון את תנאי המיון והקבלה העדכניים לרפואה.',
+        officialUrls: [TECHNION_THRESHOLD_URL],
+      };
+    }
     return {
       ...displayedResult,
       snapshot: createAdmissionsEvaluationSnapshot({ input, result: displayedResult }),
@@ -267,7 +295,9 @@ function withVerifiedAdmissionInformation(
     ...result,
     explanation: `${result.explanation} סף הקבלה השמור למסלול הוא ${contract.calculation.cutoff.acceptance} בציון המוסדי. ${verificationNote}`,
     nextAction:
-      'המידע השמור זמין לעיון, אך אין כרגע החלטת קבלה עדכנית. בדקו באתר המוסד את הסף ואת יתר תנאי הקבלה.',
+      result.kind === 'degraded' && isBguPsychologyProgram(input.degreeId)
+        ? result.nextAction
+        : 'המידע השמור זמין לעיון, אך אין כרגע החלטת קבלה עדכנית. בדקו באתר המוסד את הסף ואת יתר תנאי הקבלה.',
     officialUrls: [
       result.institution.calculatorUrl ??
         result.institution.programUrl ??
@@ -474,7 +504,7 @@ function independentAdmissionConditions(
     conditions.push(
       confirmationCondition(
         'tau_application_requirements',
-        'זכאות לבגרות, אנגלית מתקדמים א׳, עברית ועדיפות ראשונה למדעי המחשב',
+        'אנגלית מתקדמים א׳, עברית ועדיפות ראשונה למדעי המחשב',
         extra.tauApplicationRequirementsConfirmed,
       ),
     );
@@ -505,8 +535,8 @@ function independentAdmissionConditions(
         confirmationCondition(
           ot ? 'bgu_occupational_therapy_requirements' : 'bgu_physiotherapy_requirements',
           ot
-            ? 'תעודת קבלה מוכרת, דרישות שפה, עדיפות הרשמה והגשת מסמכים במועד לריפוי בעיסוק'
-            : 'תעודת קבלה מוכרת, דרישות שפה, עדיפות ראשונה והגשת מסמכים במועד לפיזיותרפיה',
+            ? 'דרישות שפה, עדיפות הרשמה והגשת מסמכים במועד לריפוי בעיסוק'
+            : 'דרישות שפה, עדיפות ראשונה והגשת מסמכים במועד לפיזיותרפיה',
           ot
             ? extra.bguOccupationalTherapyRequirementsConfirmed
             : extra.bguPhysiotherapyRequirementsConfirmed,
@@ -526,7 +556,7 @@ function independentAdmissionConditions(
       conditions.push(
         confirmationCondition(
           'bgu_social_science_requirements',
-          'תעודת קבלה מוכרת, תנאי החוג הנוסף ועדיפות הרשמה כנדרש',
+          'תנאי החוג הנוסף ועדיפות הרשמה כנדרש',
           extra.bguSocialScienceRequirementsConfirmed,
         ),
         confirmationCondition(
@@ -551,11 +581,6 @@ function independentAdmissionConditions(
     }
     if (isBguQuantitativeRouteProgram(program.id)) {
       conditions.push(
-        confirmationCondition(
-          'bgu_certificate_requirements',
-          'תעודת קבלה מוכרת',
-          extra.bguCertificateRequirementsConfirmed,
-        ),
         confirmationCondition(
           'bgu_second_track_requirements',
           'עמידה בתנאי החוג או החטיבה הנוספים, אם נבחרו',
@@ -753,7 +778,7 @@ async function evaluateExactScores(args: {
           },
           {
             id: 'bgu_psychology_requirements',
-            label: 'תעודת קבלה מוכרת ועמידה בתנאי החוג הנוסף',
+            label: 'עמידה בתנאי החוג הנוסף',
             value: requestedInput.extraInputs?.bguPsychologyRequirementsConfirmed,
           },
         ].map(({ id, label, value }) => ({
@@ -780,7 +805,28 @@ async function evaluateExactScores(args: {
         explanationPrefix: 'תנאי פסיכולוגיה בקמפוס באר שבע',
         positiveDecision: 'eligible_to_apply',
       });
-      if (result.capability !== 'exact') return result;
+      if (result.capability !== 'exact') {
+        if (
+          proof.normalizedPayload.failureStage === 'score' &&
+          requestedInput.extraInputs?.bguBagrutAverageEstimated
+        ) {
+          return {
+            ...requiredInputsResult(institution, ['bagrut_subject_record']),
+            additionalConditions,
+            officialUrls: [BGU_PSYCHOLOGY_SOURCE_URL],
+            explanation:
+              'החישוב הרשמי לא הושלם עם ממוצע הבגרות המשוער. לחישוב ממוצע בן־גוריון נדרשים מקצועות הבגרות.',
+            nextAction: `${proof.normalizedPayload.registrationStatus === 'סגורה' ? 'ההרשמה למחזור הנוכחי סגורה. ' : ''}השלימו את מקצועות הבגרות או בדקו את התנאים באתר הרשמי.`,
+          };
+        }
+        return {
+          ...result,
+          explanation: 'החישוב הרשמי לא הושלם. לא ניתן לקבוע התאמה ללא תשובה מהמוסד.',
+          nextAction: 'השלימו את מקצועות הבגרות או בדקו את התנאים באתר הרשמי.',
+          officialUrls: [BGU_PSYCHOLOGY_SOURCE_URL],
+          additionalConditions,
+        };
+      }
       const labels = {
         score: 'סכם',
         psychometric: 'פסיכומטרי',
@@ -801,22 +847,27 @@ async function evaluateExactScores(args: {
         decision:
           !meetsScore || hasUnmetCondition
             ? 'below'
-            : allConfirmed
-              ? 'eligible_to_apply'
-              : 'pending',
+            : selectedRoute === 'psychometric'
+              ? 'accepted'
+              : allConfirmed
+                ? 'eligible_to_apply'
+                : 'pending',
         scoreAssessment: meetsScore ? 'meets_threshold' : 'below_threshold',
         additionalConditions,
         sourceLabel: 'התאמה לפי הציונים',
         scoreLabel: labels[selectedRoute],
         officialUrls: [BGU_PSYCHOLOGY_SOURCE_URL],
         explanation: String(proof.normalizedPayload.reason),
-        nextAction: !meetsScore
-          ? 'בדקו אפיק חלופי לפי התנאים הרשמיים. אין זכאות אוטומטית לדיון בחריגים.'
-          : hasUnmetCondition
-            ? 'לפי הנתונים שהוזנו, תנאים נוספים אינם מתקיימים. אפשר לברר מול המוסד.'
-            : !allConfirmed
-              ? 'יש לבדוק גם את תנאי השפה ותנאי החוג הנוסף. העמידה בסף הציונים אינה אישור קבלה.'
-              : 'מכסת המתקבלים מלאה כרגע; הזכאים יכולים להירשם ולעקוב אחר מקום פנוי. נדרש אישור מוסדי.',
+        nextAction:
+          proof.normalizedPayload.registrationStatus === 'סגורה'
+            ? 'ההרשמה למחזור הנוכחי סגורה. עמידה בסף הציונים אינה אישור קבלה; בדקו מול מדור הרישום את תנאי השפה, החוג הנוסף ומקום פנוי.'
+            : !meetsScore
+              ? 'בדקו אפיק חלופי לפי התנאים הרשמיים. אין זכאות אוטומטית לדיון בחריגים.'
+              : hasUnmetCondition
+                ? 'לפי הנתונים שהוזנו, תנאים נוספים אינם מתקיימים. אפשר לברר מול המוסד.'
+                : !allConfirmed
+                  ? 'יש לבדוק גם את תנאי השפה ותנאי החוג הנוסף. העמידה בסף הציונים אינה אישור קבלה.'
+                  : 'מכסת המתקבלים מלאה כרגע; הזכאים יכולים להירשם ולעקוב אחר מקום פנוי. נדרש אישור מוסדי.',
       };
     }
     if (exactTarget.sourceTarget.adapterId === 'huji' && isHujiMedicineProgram(program.id)) {
@@ -1192,9 +1243,9 @@ async function evaluateExactScores(args: {
 
     if (exactTarget.sourceTarget.adapterId === 'bgu') {
       if (['cs', 'bgu_cs', 'datascience', 'bgu_datascience'].includes(program.id)) {
-        const subjects = bagrutExamSubjects(input.extraInputs?.bagrutSubjectRecord);
+        const subjects = bguMathematicsSubjects(input.extraInputs);
         if (!subjects.some((subject) => subject.subjectId === 'mathematics')) {
-          return requiredInputsResult(institution, ['bagrut_subject_record']);
+          return requiredInputsResult(institution, ['math_units', 'math_grade']);
         }
         const gates = evaluateBguComputerScienceGates(
           {
@@ -2521,6 +2572,17 @@ interface GroupedNumericFactOptionResult {
   hasUncheckedFacts: boolean;
 }
 
+function isFullBagrutCertificateFact(
+  fact: NonNullable<ProgramInstitutionDetail['admissionFacts']>[number],
+) {
+  return (
+    fact.kind === 'manual_gate' &&
+    fact.field === 'document_check' &&
+    (fact.valueText === 'בדיקת מסמכי בגרות' ||
+      /זכאות.*בגרות|תעודת בגרות מלאה/u.test(fact.description))
+  );
+}
+
 function evaluateStructuredRequirementsResult(
   args: StructuredRequirementsResultArgs,
 ): AdmissionsEvaluationResult | undefined {
@@ -2539,10 +2601,13 @@ function evaluateStructuredRequirementsResult(
     return undefined;
   }
 
-  const facts = detail.admissionFacts.map((fact) => ({
-    ...fact,
-    description: catalogueAdmissionRequirements([fact.description]).join('; '),
-  }));
+  const certificateAssumed = detail.admissionFacts.some(isFullBagrutCertificateFact);
+  const facts = detail.admissionFacts
+    .filter((fact) => !isFullBagrutCertificateFact(fact))
+    .map((fact) => ({
+      ...fact,
+      description: catalogueAdmissionRequirements([fact.description]).join('; '),
+    }));
   const alternativePathDescriptions =
     detail.admissionAlternativePaths?.flatMap((path) =>
       catalogueAdmissionRequirements([path.title]),
@@ -2553,6 +2618,12 @@ function evaluateStructuredRequirementsResult(
   const manualGateDescriptions = facts
     .filter((fact) => fact.kind === 'manual_gate')
     .map((fact) => fact.description);
+  if (certificateAssumed)
+    manualGateDescriptions.push(
+      ...dynamicRequirements.filter((text) =>
+        ['ראיון קבלה חובה', 'הגשת תיק עבודות חובה'].includes(text),
+      ),
+    );
   const numericFacts = facts.filter((fact) => fact.kind === 'numeric_gate');
   const hasOpenAdmissionFact = facts.some((fact) => fact.kind === 'open_admission');
   const hasNoFormalGradeGate =
@@ -2737,6 +2808,27 @@ function evaluateStructuredRequirementsResult(
           ? 'שפרו את תנאי הסף המספריים לפני ההגשה. לאחר מכן עדיין תצטרכו להשלים את שלבי המיון הידניים של המוסד.'
           : 'שפרו את תנאי הסף המספריים או בדקו אפיק חלופי באתר המוסד.',
       ...(singleNumericGateMetrics(firstUnmet) ?? {}),
+    };
+  }
+
+  if (
+    certificateAssumed &&
+    numericFacts.length > 0 &&
+    metNumericDescriptions.length > 0 &&
+    manualGateDescriptions.length === 0 &&
+    alternativePathDescriptions.length === 0
+  ) {
+    return {
+      institution: publicInstitutionShape(institution),
+      linkedInstitutionId: institution.id,
+      capability: 'estimated',
+      kind: 'estimated',
+      decision: 'accepted',
+      confidence: 'high',
+      scoreAssessment: 'meets_threshold',
+      sourceLabel: 'התאמה לפי הציונים',
+      explanation: `הציונים שהוזנו עומדים בתנאי המסלול: ${metNumericDescriptions.join('; ')}.`,
+      nextAction: 'המשיכו להרשמה באתר המוסד ובדקו את מועדי ההרשמה.',
     };
   }
 
@@ -3085,7 +3177,7 @@ function requiredInputsResult(
 function missingInputsCopy(requiredInputs: AdmissionsRequiredInput[]) {
   const bguInputLabels: Partial<Record<AdmissionsRequiredInput, string>> = {
     bgu_language_requirements: 'אישור עמידה בדרישות האנגלית והעברית או פטור תקף',
-    bgu_psychology_requirements: 'אישור תעודת קבלה מוכרת ותנאי החוג הנוסף',
+    bgu_psychology_requirements: 'תנאי החוג הנוסף',
     bgu_bagrut_average: 'ממוצע הבגרות הרשמי של בן־גוריון',
     bgu_preparatory_track: 'מסלול המכינה',
     bgu_preparatory_average: 'ממוצע המכינה',
@@ -3221,9 +3313,14 @@ function unsupportedResult(
     confidence: 'low',
     sourceLabel: 'אין מספיק מידע',
     explanation:
-      entry.sourceTarget?.limitations[0] ??
+      (institution.id === 'hit'
+        ? 'אין כרגע נוסחת קבלה מאומתת למסלול זה. בדקו את תנאי הקבלה באתר המוסד.'
+        : entry.sourceTarget?.limitations[0]) ??
       'אין כרגע מספיק מידע מאומת כדי לחשב תוצאה אמינה למסלול זה.',
-    nextAction: entry.sourceTarget?.nextAction ?? 'בדקו ישירות באתר המוסד.',
+    nextAction:
+      institution.id === 'hit'
+        ? 'בדקו את תנאי הקבלה באתר המוסד או במחשבון הרשמי.'
+        : (entry.sourceTarget?.nextAction ?? 'בדקו ישירות באתר המוסד.'),
   };
 }
 

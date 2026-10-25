@@ -68,6 +68,26 @@ describe('account grades in the homepage journey', () => {
     vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
   });
 
+  it('keeps the entered average when completing subject grades', async () => {
+    render(<StudyJourney initialStep="grades-exact" />);
+    await screen.findByLabelText('סוג תעודה');
+    fireEvent.change(screen.getByLabelText('סוג תעודה'), { target: { value: 'internal' } });
+    const subjects = screen
+      .getAllByLabelText(/^מקצוע /)
+      .filter((element) => element.tagName === 'INPUT') as HTMLInputElement[];
+    for (const label of ['מתמטיקה', 'אנגלית']) {
+      const index = subjects.findIndex((input) => input.value === label) + 1;
+      fireEvent.change(screen.getByLabelText(`יחידות ${index}`), { target: { value: '5' } });
+      fireEvent.change(screen.getByLabelText(`ציון ${index}`), { target: { value: '90' } });
+    }
+    fireEvent.submit(screen.getByRole('button', { name: 'המשך' }).closest('form')!);
+    await waitFor(() => {
+      const draft = JSON.parse(window.sessionStorage.getItem('myway_study_journey_v2')!);
+      expect(draft.scores.bagrut.weightedAverage).toBe(95);
+      expect(draft.scores.bagrut.subjectRecord.subjects).toHaveLength(2);
+    });
+  });
+
   it('shows accepted Ono nursing detail with the interview in a gray footnote', async () => {
     const program = getStaticCataloguePrograms().find((p) => p.id === 'ono_nursing')!;
     const institution = getStaticCatalogueInstitutions().find((i) => i.id === 'ono')!;
@@ -367,6 +387,67 @@ describe('account grades in the homepage journey', () => {
       baselineLaw.links.replaceAll('\n', ''),
     );
   });
+
+  it.each([
+    {
+      estimated: true,
+      estimationReason: 'הממוצע הכללי 70 משמש אומדן לממוצע המוסדי.',
+      expected:
+        'הערכה: חישבנו לפי הממוצע הכללי שהזנת, לא לפי ממוצע המוסד. להערכה מדויקת יותר, הזינו ציונים לפי מקצוע.',
+    },
+    { estimated: false, estimationReason: undefined, expected: undefined },
+    { estimated: undefined, estimationReason: undefined, expected: undefined },
+    {
+      estimated: true,
+      estimationReason: 'שנת הבגרות לא נמסרה; החישוב מניח את מחזור 2026.',
+      expected:
+        'הערכה: שנת הבגרות לא נמסרה; החישוב מניח את מחזור 2026. להערכה מדויקת יותר, הזינו את שנת הבחינה בפועל.',
+    },
+  ])(
+    'discloses the actual estimate provenance in the journey detail: %j',
+    async ({ estimated, estimationReason, expected }) => {
+      const program = getStaticCataloguePrograms().find((p) => p.id === 'colmgmt_economics')!;
+      const institution = getStaticCatalogueInstitutions().find((i) => i.id === 'colman')!;
+      state.fetchPrograms.mockResolvedValue([program]);
+      state.fetchInstitutions.mockResolvedValue([institution]);
+      state.evaluate.mockResolvedValue({
+        reports: {
+          [program.id]: {
+            results: [
+              {
+                linkedInstitutionId: institution.id,
+                kind: 'manual_gate',
+                decision: 'below',
+                explanation: 'מסלול בגרות: הממוצע נמוך מ־85.',
+                estimated,
+                estimationReason,
+              },
+            ],
+          },
+        },
+        failedDegreeIds: [],
+      });
+      window.sessionStorage.setItem(
+        'myway_study_journey_v2',
+        JSON.stringify({
+          fields: [],
+          locations: ['all'],
+          types: ['all'],
+          selectedRowId: `${program.id}:${institution.id}`,
+          scores: { bagrut: { weightedAverage: 70 }, psychometric: { overall: 420 } },
+        }),
+      );
+      const { container } = render(<StudyJourney initialStep="detail" />);
+      await screen.findByText('מסלול בגרות: הממוצע נמוך מ־85.');
+      if (expected) {
+        const notice = screen.getByText(expected);
+        expect(notice.getAttribute('dir')).toBe('rtl');
+        expect(notice.className).toContain('text-right');
+        if (estimationReason?.startsWith('שנת'))
+          expect(notice.textContent).not.toContain('הממוצע הכללי');
+      } else expect(container.querySelector('.admission-estimate')).toBeNull();
+    },
+  );
 
   it('loads account grades over an old browser draft and preserves edits during the visit', async () => {
     state.user = { id: 'signed-in-account' };

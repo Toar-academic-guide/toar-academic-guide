@@ -41,7 +41,7 @@ export default function BguPsychologyFields({
           </select>
         </label>
         <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-600">
-          האם קיימת תעודת קבלה מוכרת ומתקיימים תנאי החוג הנוסף בפסיכולוגיה?
+          האם מתקיימים תנאי החוג הנוסף בפסיכולוגיה?
           <select
             value={values.bguPsychologyRequirementsConfirmed || ''}
             onChange={(e) => onChange('bguPsychologyRequirementsConfirmed', e.target.value)}

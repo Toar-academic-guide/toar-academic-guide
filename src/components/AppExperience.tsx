@@ -1,4 +1,5 @@
 'use client';
+import { academicBagrutAverage } from '@/lib/admissionsEvaluationProfile';
 
 import { useEffect, useState, type ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
@@ -953,15 +954,16 @@ export default function AppExperience({
             if (!profileSaved) {
               return false;
             }
+            const bagrutAverage = academicBagrutAverage(scores);
             if (
               isComputerScienceAlertContinuation &&
               admissionAlertTarget &&
               scores.psychometric?.overall !== undefined &&
-              scores.bagrut?.weightedAverage !== undefined
+              bagrutAverage !== undefined
             ) {
               setLandingCalcScores({
                 psychometric: scores.psychometric.overall,
-                bagrut: scores.bagrut.weightedAverage,
+                bagrut: bagrutAverage,
                 degreeId: admissionAlertTarget.programId,
               });
               setStep('calculator-results');

@@ -1,0 +1,1783 @@
+{
+  "baseline": "809c6cc",
+  "freshness": "fixture-qualified; not a production freshness health check",
+  "officialRequests": "live, evaluator timeouts apply",
+  "subjectRecord": {
+    "schemaVersion": 2,
+    "sector": "jewish",
+    "certificateType": "internal",
+    "complete": true,
+    "subjects": [
+      {
+        "subjectId": "mathematics",
+        "units": 5,
+        "grade": 90,
+        "assessmentKind": "exam"
+      },
+      {
+        "subjectId": "english",
+        "units": 5,
+        "grade": 90,
+        "assessmentKind": "exam"
+      },
+      {
+        "subjectId": "physics",
+        "units": 5,
+        "grade": 90,
+        "assessmentKind": "exam"
+      },
+      {
+        "subjectId": "computer_science",
+        "units": 5,
+        "grade": 90,
+        "assessmentKind": "exam"
+      },
+      {
+        "subjectId": "hebrew_expression",
+        "units": 2,
+        "grade": 90,
+        "assessmentKind": "exam"
+      },
+      {
+        "subjectId": "history",
+        "units": 2,
+        "grade": 90,
+        "assessmentKind": "exam"
+      },
+      {
+        "subjectId": "civics",
+        "units": 2,
+        "grade": 90,
+        "assessmentKind": "exam"
+      },
+      {
+        "subjectId": "literature",
+        "units": 2,
+        "grade": 90,
+        "assessmentKind": "exam"
+      },
+      {
+        "subjectId": "bible",
+        "units": 2,
+        "grade": 90,
+        "assessmentKind": "exam"
+      }
+    ]
+  },
+  "scenarios": [
+    {
+      "bagrut": 105,
+      "psychometric": 650,
+      "mode": "average-only",
+      "before": {
+        "cs": 10,
+        "psychology": 3,
+        "law": 3,
+        "nursing": 3,
+        "business": 6
+      },
+      "after": {
+        "cs": 10,
+        "psychology": 2,
+        "law": 2,
+        "nursing": 3,
+        "business": 5
+      },
+      "computerScienceRows": [
+        {
+          "institution": "bgu",
+          "program": "bgu_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "bgu_bagrut_average",
+            "psychometric_math",
+            "psychometric_verbal",
+            "psychometric_english",
+            "bagrut_subject_record"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "psychometric_math",
+            "psychometric_verbal",
+            "psychometric_english",
+            "bagrut_subject_record"
+          ]
+        },
+        {
+          "institution": "haifa",
+          "program": "haifa_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "psychometric_math",
+            "psychometric_verbal",
+            "psychometric_english",
+            "haifa_bagrut_average",
+            "haifa_bagrut_year",
+            "haifa_psychometric_year"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "psychometric_math",
+            "psychometric_verbal",
+            "psychometric_english"
+          ]
+        },
+        {
+          "institution": "biu",
+          "program": "biu_cs",
+          "beforeKind": "unsupported",
+          "beforeRequiredInputs": [],
+          "afterKind": "unsupported",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "ariel",
+          "program": "ariel_cs",
+          "beforeKind": "unsupported",
+          "beforeRequiredInputs": [],
+          "afterKind": "unsupported",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "huji",
+          "program": "huji_cs",
+          "beforeKind": "degraded",
+          "beforeRequiredInputs": [],
+          "afterKind": "degraded",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "reichman",
+          "program": "reichman_cs",
+          "beforeKind": "estimated",
+          "beforeRequiredInputs": [],
+          "afterKind": "estimated",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "telhai",
+          "program": "telhai_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "math_units",
+            "math_grade"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "math_units",
+            "math_grade"
+          ]
+        },
+        {
+          "institution": "afeka",
+          "program": "afeka_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "psychometric_math",
+            "math_units",
+            "math_grade"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "psychometric_math",
+            "math_units",
+            "math_grade"
+          ]
+        },
+        {
+          "institution": "mta",
+          "program": "tlvyaffo_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "math_units",
+            "math_grade",
+            "psychometric_english"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "math_units",
+            "math_grade",
+            "psychometric_english"
+          ]
+        },
+        {
+          "institution": "colman",
+          "program": "colmgmt_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "colman_bagrut_average",
+            "math_units",
+            "math_grade"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "math_units",
+            "math_grade"
+          ]
+        },
+        {
+          "institution": "ono",
+          "program": "ono_cs",
+          "beforeKind": "estimated",
+          "beforeRequiredInputs": [],
+          "afterKind": "estimated",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "open_university",
+          "program": "open_university_cs",
+          "beforeKind": "open_admission",
+          "beforeRequiredInputs": [],
+          "afterKind": "open_admission",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "tau",
+          "program": "tau_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "bagrut_subject_record",
+            "tau_bagrut_average"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "bagrut_subject_record"
+          ]
+        },
+        {
+          "institution": "technion",
+          "program": "technion_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "bagrut_subject_record"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "bagrut_subject_record"
+          ]
+        },
+        {
+          "institution": "hit",
+          "program": "hit_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "math_units",
+            "math_grade"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "math_units",
+            "math_grade"
+          ]
+        },
+        {
+          "institution": "mon_12220708940",
+          "program": "mon_12220708940_cs",
+          "beforeKind": "requirements_only",
+          "beforeRequiredInputs": [],
+          "afterKind": "requirements_only",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "mon_12220708941",
+          "program": "mon_12220708941_cs",
+          "beforeKind": "requirements_only",
+          "beforeRequiredInputs": [],
+          "afterKind": "requirements_only",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "mon_12220708942",
+          "program": "mon_12220708942_cs",
+          "beforeKind": "requirements_only",
+          "beforeRequiredInputs": [],
+          "afterKind": "requirements_only",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "ruppin",
+          "program": "ruppin_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "math_units",
+            "math_grade"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "math_units",
+            "math_grade"
+          ]
+        },
+        {
+          "institution": "sapir",
+          "program": "mon_12220697668_cs",
+          "beforeKind": "manual_gate",
+          "beforeRequiredInputs": [],
+          "afterKind": "manual_gate",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "mon_12220685569",
+          "program": "mon_12220685569_cs",
+          "beforeKind": "requirements_only",
+          "beforeRequiredInputs": [],
+          "afterKind": "requirements_only",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "netanya",
+          "program": "mon_12341101519_cs",
+          "beforeKind": "manual_gate",
+          "beforeRequiredInputs": [],
+          "afterKind": "manual_gate",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "mon_12341088622",
+          "program": "mon_12341088622_cs",
+          "beforeKind": "requirements_only",
+          "beforeRequiredInputs": [],
+          "afterKind": "requirements_only",
+          "afterRequiredInputs": []
+        }
+      ]
+    },
+    {
+      "bagrut": 105,
+      "psychometric": 650,
+      "mode": "subjects",
+      "before": {
+        "cs": 6,
+        "psychology": 2,
+        "law": 3,
+        "nursing": 3,
+        "business": 4
+      },
+      "after": {
+        "cs": 5,
+        "psychology": 1,
+        "law": 3,
+        "nursing": 3,
+        "business": 2
+      },
+      "computerScienceRows": [
+        {
+          "institution": "bgu",
+          "program": "bgu_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "bgu_bagrut_average",
+            "psychometric_math",
+            "psychometric_verbal",
+            "psychometric_english"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "psychometric_math",
+            "psychometric_verbal",
+            "psychometric_english"
+          ]
+        },
+        {
+          "institution": "haifa",
+          "program": "haifa_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "psychometric_math",
+            "psychometric_verbal",
+            "psychometric_english",
+            "haifa_bagrut_average",
+            "haifa_bagrut_year",
+            "haifa_psychometric_year"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "psychometric_math",
+            "psychometric_verbal",
+            "psychometric_english",
+            "haifa_bagrut_average"
+          ]
+        },
+        {
+          "institution": "biu",
+          "program": "biu_cs",
+          "beforeKind": "unsupported",
+          "beforeRequiredInputs": [],
+          "afterKind": "unsupported",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "ariel",
+          "program": "ariel_cs",
+          "beforeKind": "unsupported",
+          "beforeRequiredInputs": [],
+          "afterKind": "unsupported",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "huji",
+          "program": "huji_cs",
+          "beforeKind": "degraded",
+          "beforeRequiredInputs": [],
+          "afterKind": "degraded",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "reichman",
+          "program": "reichman_cs",
+          "beforeKind": "estimated",
+          "beforeRequiredInputs": [],
+          "afterKind": "estimated",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "telhai",
+          "program": "telhai_cs",
+          "beforeKind": "estimated",
+          "beforeRequiredInputs": [],
+          "afterKind": "estimated",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "afeka",
+          "program": "afeka_cs",
+          "beforeKind": "exact",
+          "beforeRequiredInputs": [],
+          "afterKind": "exact",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "mta",
+          "program": "tlvyaffo_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "psychometric_english"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "psychometric_english"
+          ]
+        },
+        {
+          "institution": "colman",
+          "program": "colmgmt_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "colman_bagrut_average"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "colman_bagrut_average"
+          ]
+        },
+        {
+          "institution": "ono",
+          "program": "ono_cs",
+          "beforeKind": "estimated",
+          "beforeRequiredInputs": [],
+          "afterKind": "estimated",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "open_university",
+          "program": "open_university_cs",
+          "beforeKind": "open_admission",
+          "beforeRequiredInputs": [],
+          "afterKind": "open_admission",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "tau",
+          "program": "tau_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "tau_bagrut_average"
+          ],
+          "afterKind": "exact",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "technion",
+          "program": "technion_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "bagrut_subject_record"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "bagrut_subject_record"
+          ]
+        },
+        {
+          "institution": "hit",
+          "program": "hit_cs",
+          "beforeKind": "unsupported",
+          "beforeRequiredInputs": [],
+          "afterKind": "unsupported",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "mon_12220708940",
+          "program": "mon_12220708940_cs",
+          "beforeKind": "requirements_only",
+          "beforeRequiredInputs": [],
+          "afterKind": "requirements_only",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "mon_12220708941",
+          "program": "mon_12220708941_cs",
+          "beforeKind": "requirements_only",
+          "beforeRequiredInputs": [],
+          "afterKind": "requirements_only",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "mon_12220708942",
+          "program": "mon_12220708942_cs",
+          "beforeKind": "requirements_only",
+          "beforeRequiredInputs": [],
+          "afterKind": "requirements_only",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "ruppin",
+          "program": "ruppin_cs",
+          "beforeKind": "estimated",
+          "beforeRequiredInputs": [],
+          "afterKind": "estimated",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "sapir",
+          "program": "mon_12220697668_cs",
+          "beforeKind": "manual_gate",
+          "beforeRequiredInputs": [],
+          "afterKind": "manual_gate",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "mon_12220685569",
+          "program": "mon_12220685569_cs",
+          "beforeKind": "requirements_only",
+          "beforeRequiredInputs": [],
+          "afterKind": "requirements_only",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "netanya",
+          "program": "mon_12341101519_cs",
+          "beforeKind": "manual_gate",
+          "beforeRequiredInputs": [],
+          "afterKind": "manual_gate",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "mon_12341088622",
+          "program": "mon_12341088622_cs",
+          "beforeKind": "requirements_only",
+          "beforeRequiredInputs": [],
+          "afterKind": "requirements_only",
+          "afterRequiredInputs": []
+        }
+      ]
+    },
+    {
+      "bagrut": 105,
+      "psychometric": 650,
+      "mode": "subjects-only",
+      "before": {
+        "cs": 16,
+        "psychology": 4,
+        "law": 7,
+        "nursing": 5,
+        "business": 7
+      },
+      "after": {
+        "cs": 5,
+        "psychology": 1,
+        "law": 3,
+        "nursing": 3,
+        "business": 2
+      },
+      "computerScienceRows": [
+        {
+          "institution": "bgu",
+          "program": "bgu_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "bgu_bagrut_average",
+            "psychometric_math",
+            "psychometric_verbal",
+            "psychometric_english"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "psychometric_math",
+            "psychometric_verbal",
+            "psychometric_english"
+          ]
+        },
+        {
+          "institution": "haifa",
+          "program": "haifa_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "psychometric_math",
+            "psychometric_verbal",
+            "psychometric_english",
+            "haifa_bagrut_average",
+            "haifa_bagrut_year",
+            "haifa_psychometric_year"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "psychometric_math",
+            "psychometric_verbal",
+            "psychometric_english",
+            "haifa_bagrut_average"
+          ]
+        },
+        {
+          "institution": "biu",
+          "program": "biu_cs",
+          "beforeKind": "unsupported",
+          "beforeRequiredInputs": [],
+          "afterKind": "unsupported",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "ariel",
+          "program": "ariel_cs",
+          "beforeKind": "unsupported",
+          "beforeRequiredInputs": [],
+          "afterKind": "unsupported",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "huji",
+          "program": "huji_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "bagrut_average"
+          ],
+          "afterKind": "degraded",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "reichman",
+          "program": "reichman_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "bagrut_average"
+          ],
+          "afterKind": "estimated",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "telhai",
+          "program": "telhai_cs",
+          "beforeKind": "estimated",
+          "beforeRequiredInputs": [],
+          "afterKind": "estimated",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "afeka",
+          "program": "afeka_cs",
+          "beforeKind": "exact",
+          "beforeRequiredInputs": [],
+          "afterKind": "exact",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "mta",
+          "program": "tlvyaffo_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "psychometric_english"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "psychometric_english"
+          ]
+        },
+        {
+          "institution": "colman",
+          "program": "colmgmt_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "colman_bagrut_average"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "colman_bagrut_average"
+          ]
+        },
+        {
+          "institution": "ono",
+          "program": "ono_cs",
+          "beforeKind": "estimated",
+          "beforeRequiredInputs": [],
+          "afterKind": "estimated",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "open_university",
+          "program": "open_university_cs",
+          "beforeKind": "open_admission",
+          "beforeRequiredInputs": [],
+          "afterKind": "open_admission",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "tau",
+          "program": "tau_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "tau_bagrut_average"
+          ],
+          "afterKind": "exact",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "technion",
+          "program": "technion_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "bagrut_average"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "bagrut_subject_record"
+          ]
+        },
+        {
+          "institution": "hit",
+          "program": "hit_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "bagrut_average"
+          ],
+          "afterKind": "unsupported",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "mon_12220708940",
+          "program": "mon_12220708940_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "bagrut_average"
+          ],
+          "afterKind": "requirements_only",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "mon_12220708941",
+          "program": "mon_12220708941_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "bagrut_average"
+          ],
+          "afterKind": "requirements_only",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "mon_12220708942",
+          "program": "mon_12220708942_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "bagrut_average"
+          ],
+          "afterKind": "requirements_only",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "ruppin",
+          "program": "ruppin_cs",
+          "beforeKind": "estimated",
+          "beforeRequiredInputs": [],
+          "afterKind": "estimated",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "sapir",
+          "program": "mon_12220697668_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "bagrut_average"
+          ],
+          "afterKind": "manual_gate",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "mon_12220685569",
+          "program": "mon_12220685569_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "bagrut_average"
+          ],
+          "afterKind": "requirements_only",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "netanya",
+          "program": "mon_12341101519_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "bagrut_average"
+          ],
+          "afterKind": "manual_gate",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "mon_12341088622",
+          "program": "mon_12341088622_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "bagrut_average"
+          ],
+          "afterKind": "requirements_only",
+          "afterRequiredInputs": []
+        }
+      ]
+    },
+    {
+      "bagrut": 110,
+      "psychometric": 700,
+      "mode": "average-only",
+      "before": {
+        "cs": 11,
+        "psychology": 2,
+        "law": 3,
+        "nursing": 3,
+        "business": 6
+      },
+      "after": {
+        "cs": 11,
+        "psychology": 2,
+        "law": 2,
+        "nursing": 3,
+        "business": 5
+      },
+      "computerScienceRows": [
+        {
+          "institution": "bgu",
+          "program": "bgu_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "bgu_bagrut_average",
+            "psychometric_math",
+            "psychometric_verbal",
+            "psychometric_english",
+            "bagrut_subject_record"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "psychometric_math",
+            "psychometric_verbal",
+            "psychometric_english",
+            "bagrut_subject_record"
+          ]
+        },
+        {
+          "institution": "haifa",
+          "program": "haifa_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "psychometric_math",
+            "psychometric_verbal",
+            "psychometric_english",
+            "haifa_bagrut_average",
+            "haifa_bagrut_year",
+            "haifa_psychometric_year"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "psychometric_math",
+            "psychometric_verbal",
+            "psychometric_english"
+          ]
+        },
+        {
+          "institution": "biu",
+          "program": "biu_cs",
+          "beforeKind": "unsupported",
+          "beforeRequiredInputs": [],
+          "afterKind": "unsupported",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "ariel",
+          "program": "ariel_cs",
+          "beforeKind": "unsupported",
+          "beforeRequiredInputs": [],
+          "afterKind": "unsupported",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "huji",
+          "program": "huji_cs",
+          "beforeKind": "degraded",
+          "beforeRequiredInputs": [],
+          "afterKind": "degraded",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "reichman",
+          "program": "reichman_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "math_units",
+            "math_grade"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "math_units",
+            "math_grade"
+          ]
+        },
+        {
+          "institution": "telhai",
+          "program": "telhai_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "math_units",
+            "math_grade"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "math_units",
+            "math_grade"
+          ]
+        },
+        {
+          "institution": "afeka",
+          "program": "afeka_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "psychometric_math",
+            "math_units",
+            "math_grade"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "psychometric_math",
+            "math_units",
+            "math_grade"
+          ]
+        },
+        {
+          "institution": "mta",
+          "program": "tlvyaffo_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "math_units",
+            "math_grade",
+            "psychometric_english"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "math_units",
+            "math_grade",
+            "psychometric_english"
+          ]
+        },
+        {
+          "institution": "colman",
+          "program": "colmgmt_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "colman_bagrut_average",
+            "math_units",
+            "math_grade"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "math_units",
+            "math_grade"
+          ]
+        },
+        {
+          "institution": "ono",
+          "program": "ono_cs",
+          "beforeKind": "estimated",
+          "beforeRequiredInputs": [],
+          "afterKind": "estimated",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "open_university",
+          "program": "open_university_cs",
+          "beforeKind": "open_admission",
+          "beforeRequiredInputs": [],
+          "afterKind": "open_admission",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "tau",
+          "program": "tau_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "bagrut_subject_record",
+            "tau_bagrut_average"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "bagrut_subject_record"
+          ]
+        },
+        {
+          "institution": "technion",
+          "program": "technion_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "bagrut_subject_record"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "bagrut_subject_record"
+          ]
+        },
+        {
+          "institution": "hit",
+          "program": "hit_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "math_units",
+            "math_grade"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "math_units",
+            "math_grade"
+          ]
+        },
+        {
+          "institution": "mon_12220708940",
+          "program": "mon_12220708940_cs",
+          "beforeKind": "requirements_only",
+          "beforeRequiredInputs": [],
+          "afterKind": "requirements_only",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "mon_12220708941",
+          "program": "mon_12220708941_cs",
+          "beforeKind": "requirements_only",
+          "beforeRequiredInputs": [],
+          "afterKind": "requirements_only",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "mon_12220708942",
+          "program": "mon_12220708942_cs",
+          "beforeKind": "requirements_only",
+          "beforeRequiredInputs": [],
+          "afterKind": "requirements_only",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "ruppin",
+          "program": "ruppin_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "math_units",
+            "math_grade"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "math_units",
+            "math_grade"
+          ]
+        },
+        {
+          "institution": "sapir",
+          "program": "mon_12220697668_cs",
+          "beforeKind": "manual_gate",
+          "beforeRequiredInputs": [],
+          "afterKind": "manual_gate",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "mon_12220685569",
+          "program": "mon_12220685569_cs",
+          "beforeKind": "requirements_only",
+          "beforeRequiredInputs": [],
+          "afterKind": "requirements_only",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "netanya",
+          "program": "mon_12341101519_cs",
+          "beforeKind": "manual_gate",
+          "beforeRequiredInputs": [],
+          "afterKind": "manual_gate",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "mon_12341088622",
+          "program": "mon_12341088622_cs",
+          "beforeKind": "requirements_only",
+          "beforeRequiredInputs": [],
+          "afterKind": "requirements_only",
+          "afterRequiredInputs": []
+        }
+      ]
+    },
+    {
+      "bagrut": 110,
+      "psychometric": 700,
+      "mode": "subjects",
+      "before": {
+        "cs": 6,
+        "psychology": 1,
+        "law": 3,
+        "nursing": 3,
+        "business": 4
+      },
+      "after": {
+        "cs": 5,
+        "psychology": 1,
+        "law": 3,
+        "nursing": 3,
+        "business": 3
+      },
+      "computerScienceRows": [
+        {
+          "institution": "bgu",
+          "program": "bgu_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "bgu_bagrut_average",
+            "psychometric_math",
+            "psychometric_verbal",
+            "psychometric_english"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "psychometric_math",
+            "psychometric_verbal",
+            "psychometric_english"
+          ]
+        },
+        {
+          "institution": "haifa",
+          "program": "haifa_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "psychometric_math",
+            "psychometric_verbal",
+            "psychometric_english",
+            "haifa_bagrut_average",
+            "haifa_bagrut_year",
+            "haifa_psychometric_year"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "psychometric_math",
+            "psychometric_verbal",
+            "psychometric_english",
+            "haifa_bagrut_average"
+          ]
+        },
+        {
+          "institution": "biu",
+          "program": "biu_cs",
+          "beforeKind": "unsupported",
+          "beforeRequiredInputs": [],
+          "afterKind": "unsupported",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "ariel",
+          "program": "ariel_cs",
+          "beforeKind": "unsupported",
+          "beforeRequiredInputs": [],
+          "afterKind": "unsupported",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "huji",
+          "program": "huji_cs",
+          "beforeKind": "degraded",
+          "beforeRequiredInputs": [],
+          "afterKind": "exact",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "reichman",
+          "program": "reichman_cs",
+          "beforeKind": "estimated",
+          "beforeRequiredInputs": [],
+          "afterKind": "estimated",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "telhai",
+          "program": "telhai_cs",
+          "beforeKind": "estimated",
+          "beforeRequiredInputs": [],
+          "afterKind": "estimated",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "afeka",
+          "program": "afeka_cs",
+          "beforeKind": "exact",
+          "beforeRequiredInputs": [],
+          "afterKind": "exact",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "mta",
+          "program": "tlvyaffo_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "psychometric_english"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "psychometric_english"
+          ]
+        },
+        {
+          "institution": "colman",
+          "program": "colmgmt_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "colman_bagrut_average"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "colman_bagrut_average"
+          ]
+        },
+        {
+          "institution": "ono",
+          "program": "ono_cs",
+          "beforeKind": "estimated",
+          "beforeRequiredInputs": [],
+          "afterKind": "estimated",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "open_university",
+          "program": "open_university_cs",
+          "beforeKind": "open_admission",
+          "beforeRequiredInputs": [],
+          "afterKind": "open_admission",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "tau",
+          "program": "tau_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "tau_bagrut_average"
+          ],
+          "afterKind": "exact",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "technion",
+          "program": "technion_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "bagrut_subject_record"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "bagrut_subject_record"
+          ]
+        },
+        {
+          "institution": "hit",
+          "program": "hit_cs",
+          "beforeKind": "unsupported",
+          "beforeRequiredInputs": [],
+          "afterKind": "unsupported",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "mon_12220708940",
+          "program": "mon_12220708940_cs",
+          "beforeKind": "requirements_only",
+          "beforeRequiredInputs": [],
+          "afterKind": "requirements_only",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "mon_12220708941",
+          "program": "mon_12220708941_cs",
+          "beforeKind": "requirements_only",
+          "beforeRequiredInputs": [],
+          "afterKind": "requirements_only",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "mon_12220708942",
+          "program": "mon_12220708942_cs",
+          "beforeKind": "requirements_only",
+          "beforeRequiredInputs": [],
+          "afterKind": "requirements_only",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "ruppin",
+          "program": "ruppin_cs",
+          "beforeKind": "estimated",
+          "beforeRequiredInputs": [],
+          "afterKind": "estimated",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "sapir",
+          "program": "mon_12220697668_cs",
+          "beforeKind": "manual_gate",
+          "beforeRequiredInputs": [],
+          "afterKind": "manual_gate",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "mon_12220685569",
+          "program": "mon_12220685569_cs",
+          "beforeKind": "requirements_only",
+          "beforeRequiredInputs": [],
+          "afterKind": "requirements_only",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "netanya",
+          "program": "mon_12341101519_cs",
+          "beforeKind": "manual_gate",
+          "beforeRequiredInputs": [],
+          "afterKind": "manual_gate",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "mon_12341088622",
+          "program": "mon_12341088622_cs",
+          "beforeKind": "requirements_only",
+          "beforeRequiredInputs": [],
+          "afterKind": "requirements_only",
+          "afterRequiredInputs": []
+        }
+      ]
+    },
+    {
+      "bagrut": 110,
+      "psychometric": 700,
+      "mode": "subjects-only",
+      "before": {
+        "cs": 16,
+        "psychology": 3,
+        "law": 6,
+        "nursing": 5,
+        "business": 6
+      },
+      "after": {
+        "cs": 5,
+        "psychology": 1,
+        "law": 3,
+        "nursing": 3,
+        "business": 3
+      },
+      "computerScienceRows": [
+        {
+          "institution": "bgu",
+          "program": "bgu_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "bgu_bagrut_average",
+            "psychometric_math",
+            "psychometric_verbal",
+            "psychometric_english"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "psychometric_math",
+            "psychometric_verbal",
+            "psychometric_english"
+          ]
+        },
+        {
+          "institution": "haifa",
+          "program": "haifa_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "psychometric_math",
+            "psychometric_verbal",
+            "psychometric_english",
+            "haifa_bagrut_average",
+            "haifa_bagrut_year",
+            "haifa_psychometric_year"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "psychometric_math",
+            "psychometric_verbal",
+            "psychometric_english",
+            "haifa_bagrut_average"
+          ]
+        },
+        {
+          "institution": "biu",
+          "program": "biu_cs",
+          "beforeKind": "unsupported",
+          "beforeRequiredInputs": [],
+          "afterKind": "unsupported",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "ariel",
+          "program": "ariel_cs",
+          "beforeKind": "unsupported",
+          "beforeRequiredInputs": [],
+          "afterKind": "unsupported",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "huji",
+          "program": "huji_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "bagrut_average"
+          ],
+          "afterKind": "degraded",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "reichman",
+          "program": "reichman_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "bagrut_average"
+          ],
+          "afterKind": "estimated",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "telhai",
+          "program": "telhai_cs",
+          "beforeKind": "estimated",
+          "beforeRequiredInputs": [],
+          "afterKind": "estimated",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "afeka",
+          "program": "afeka_cs",
+          "beforeKind": "exact",
+          "beforeRequiredInputs": [],
+          "afterKind": "exact",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "mta",
+          "program": "tlvyaffo_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "psychometric_english"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "psychometric_english"
+          ]
+        },
+        {
+          "institution": "colman",
+          "program": "colmgmt_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "colman_bagrut_average"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "colman_bagrut_average"
+          ]
+        },
+        {
+          "institution": "ono",
+          "program": "ono_cs",
+          "beforeKind": "estimated",
+          "beforeRequiredInputs": [],
+          "afterKind": "estimated",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "open_university",
+          "program": "open_university_cs",
+          "beforeKind": "open_admission",
+          "beforeRequiredInputs": [],
+          "afterKind": "open_admission",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "tau",
+          "program": "tau_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "tau_bagrut_average"
+          ],
+          "afterKind": "exact",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "technion",
+          "program": "technion_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "bagrut_average"
+          ],
+          "afterKind": "needs_input",
+          "afterRequiredInputs": [
+            "bagrut_subject_record"
+          ]
+        },
+        {
+          "institution": "hit",
+          "program": "hit_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "bagrut_average"
+          ],
+          "afterKind": "unsupported",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "mon_12220708940",
+          "program": "mon_12220708940_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "bagrut_average"
+          ],
+          "afterKind": "requirements_only",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "mon_12220708941",
+          "program": "mon_12220708941_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "bagrut_average"
+          ],
+          "afterKind": "requirements_only",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "mon_12220708942",
+          "program": "mon_12220708942_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "bagrut_average"
+          ],
+          "afterKind": "requirements_only",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "ruppin",
+          "program": "ruppin_cs",
+          "beforeKind": "estimated",
+          "beforeRequiredInputs": [],
+          "afterKind": "estimated",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "sapir",
+          "program": "mon_12220697668_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "bagrut_average"
+          ],
+          "afterKind": "manual_gate",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "mon_12220685569",
+          "program": "mon_12220685569_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "bagrut_average"
+          ],
+          "afterKind": "requirements_only",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "netanya",
+          "program": "mon_12341101519_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "bagrut_average"
+          ],
+          "afterKind": "manual_gate",
+          "afterRequiredInputs": []
+        },
+        {
+          "institution": "mon_12341088622",
+          "program": "mon_12341088622_cs",
+          "beforeKind": "needs_input",
+          "beforeRequiredInputs": [
+            "bagrut_average"
+          ],
+          "afterKind": "requirements_only",
+          "afterRequiredInputs": []
+        }
+      ]
+    }
+  ],
+  "psychologyWalkthrough": [
+    {
+      "bagrut": 112,
+      "psychometric": 650,
+      "result": {
+        "institution": {
+          "id": "bgu",
+          "name": "אוניברסיטת בן-גוריון בנגב",
+          "region": "south",
+          "domain": "bgu.ac.il",
+          "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/1/12/Ben-Gurion_University_of_the_Negev_logo.svg",
+          "programUrl": "https://in.bgu.ac.il/Pages/default.aspx",
+          "calculatorUrl": "https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html",
+          "universityId": "bgu"
+        },
+        "linkedInstitutionId": "bgu",
+        "capability": "exact",
+        "kind": "exact",
+        "decision": "pending",
+        "confidence": "medium",
+        "scoreAssessment": "meets_threshold",
+        "sourceLabel": "התאמה לפי הציונים",
+        "explanation": "סכם 650 ופסיכומטרי 650 ומעלה.",
+        "nextAction": "ההרשמה למחזור הנוכחי סגורה. עמידה בסף הציונים אינה אישור קבלה; בדקו מול מדור הרישום את תנאי השפה, החוג הנוסף ומקום פנוי.",
+        "score": 734,
+        "scoreLabel": "סכם",
+        "threshold": 650,
+        "additionalConditions": [
+          {
+            "id": "bgu_language_requirements",
+            "label": "אנגלית ברמת בסיסי ועברית ברמה ה׳ או פטור תקף",
+            "status": "unconfirmed"
+          },
+          {
+            "id": "bgu_psychology_requirements",
+            "label": "תעודת קבלה מוכרת ועמידה בתנאי החוג הנוסף",
+            "status": "unconfirmed"
+          }
+        ],
+        "officialUrls": [
+          "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=101&p_pat1=2&p_degree_level=1"
+        ],
+        "estimated": true,
+        "estimationReason": "הממוצע הכללי 112 משמש אומדן לממוצע המוסדי; לא חושב ממקצועות הבגרות.",
+        "snapshot": {
+          "evaluatorVersion": "admissions-evaluator-v2",
+          "ruleVersion": "admissions-evaluator-v2:bgu:exact",
+          "ruleFingerprint": "sha256:56a67163cb521f04e561e07887b92dbd5fb71600dc6161af7964d94cc45a2eef",
+          "inputDigest": "sha256:f369af585ce7b2840044c37a2278965cc5f0c5d4fbdf112201609b38e9a03570",
+          "evaluationDigest": "sha256:67a2f5139fc1d65928960dce067ab43cb0e47947e0acdb70943c63a0aadd853e"
+        }
+      }
+    },
+    {
+      "bagrut": 112,
+      "psychometric": 690,
+      "result": {
+        "institution": {
+          "id": "bgu",
+          "name": "אוניברסיטת בן-גוריון בנגב",
+          "region": "south",
+          "domain": "bgu.ac.il",
+          "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/1/12/Ben-Gurion_University_of_the_Negev_logo.svg",
+          "programUrl": "https://in.bgu.ac.il/Pages/default.aspx",
+          "calculatorUrl": "https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html",
+          "universityId": "bgu"
+        },
+        "linkedInstitutionId": "bgu",
+        "capability": "exact",
+        "kind": "exact",
+        "decision": "accepted",
+        "confidence": "high",
+        "scoreAssessment": "meets_threshold",
+        "sourceLabel": "התאמה לפי הציונים",
+        "explanation": "פסיכומטרי 680 ומעלה.",
+        "nextAction": "ההרשמה למחזור הנוכחי סגורה. עמידה בסף הציונים אינה אישור קבלה; בדקו מול מדור הרישום את תנאי השפה, החוג הנוסף ומקום פנוי.",
+        "score": 690,
+        "scoreLabel": "פסיכומטרי",
+        "threshold": 680,
+        "additionalConditions": [
+          {
+            "id": "bgu_language_requirements",
+            "label": "אנגלית ברמת בסיסי ועברית ברמה ה׳ או פטור תקף",
+            "status": "unconfirmed"
+          },
+          {
+            "id": "bgu_psychology_requirements",
+            "label": "תעודת קבלה מוכרת ועמידה בתנאי החוג הנוסף",
+            "status": "unconfirmed"
+          }
+        ],
+        "officialUrls": [
+          "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=101&p_pat1=2&p_degree_level=1"
+        ],
+        "snapshot": {
+          "evaluatorVersion": "admissions-evaluator-v2",
+          "ruleVersion": "admissions-evaluator-v2:bgu:exact",
+          "ruleFingerprint": "sha256:ba9f6eb6f4aa9a9a75efe94f0e600743a1715bc61f994b025ae407a3f5bce4e1",
+          "inputDigest": "sha256:f836d761f5cd7adb81f5b59e592a09087c0f5cf86a462bb5ba8ebc5cd9467df8",
+          "evaluationDigest": "sha256:67f136878612c80c97187ef566854cbacedec215af721e91fda781ed3fc9ffb2"
+        }
+      }
+    },
+    {
+      "bagrut": 112,
+      "psychometric": 720,
+      "result": {
+        "institution": {
+          "id": "bgu",
+          "name": "אוניברסיטת בן-גוריון בנגב",
+          "region": "south",
+          "domain": "bgu.ac.il",
+          "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/1/12/Ben-Gurion_University_of_the_Negev_logo.svg",
+          "programUrl": "https://in.bgu.ac.il/Pages/default.aspx",
+          "calculatorUrl": "https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html",
+          "universityId": "bgu"
+        },
+        "linkedInstitutionId": "bgu",
+        "capability": "exact",
+        "kind": "exact",
+        "decision": "accepted",
+        "confidence": "high",
+        "scoreAssessment": "meets_threshold",
+        "sourceLabel": "התאמה לפי הציונים",
+        "explanation": "פסיכומטרי 680 ומעלה.",
+        "nextAction": "ההרשמה למחזור הנוכחי סגורה. עמידה בסף הציונים אינה אישור קבלה; בדקו מול מדור הרישום את תנאי השפה, החוג הנוסף ומקום פנוי.",
+        "score": 720,
+        "scoreLabel": "פסיכומטרי",
+        "threshold": 680,
+        "additionalConditions": [
+          {
+            "id": "bgu_language_requirements",
+            "label": "אנגלית ברמת בסיסי ועברית ברמה ה׳ או פטור תקף",
+            "status": "unconfirmed"
+          },
+          {
+            "id": "bgu_psychology_requirements",
+            "label": "תעודת קבלה מוכרת ועמידה בתנאי החוג הנוסף",
+            "status": "unconfirmed"
+          }
+        ],
+        "officialUrls": [
+          "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=101&p_pat1=2&p_degree_level=1"
+        ],
+        "snapshot": {
+          "evaluatorVersion": "admissions-evaluator-v2",
+          "ruleVersion": "admissions-evaluator-v2:bgu:exact",
+          "ruleFingerprint": "sha256:ba9f6eb6f4aa9a9a75efe94f0e600743a1715bc61f994b025ae407a3f5bce4e1",
+          "inputDigest": "sha256:a5e4702457a48728a03cdcf1734927b31646a8ca53dde5c77ad1fbb689c245c4",
+          "evaluationDigest": "sha256:cff419cee4b5122b8a799a07f088bd73668b2fc45864fc71f0f3df75ab11cdf1"
+        }
+      }
+    }
+  ]
+}

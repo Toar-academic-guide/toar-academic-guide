@@ -188,8 +188,6 @@ export function resolveHujiMedicineAdmission(
     return fail('הציון הקוגניטיבי נמוך מסף המעבר למיון האישיותי, 25.186.');
   if (extra.hujiMedicineResidencyEligible === false)
     return fail('נדרשת אזרחות ישראלית או תושבות קבע.');
-  if (extra.hujiMedicineQualificationConfirmed === false)
-    return fail('נדרשת זכאות לבגרות או תעודה חלופית מוכרת.');
   if (extra.hujiMedicineRegistrationConfirmed === false)
     return {
       ...result,
@@ -201,7 +199,6 @@ export function resolveHujiMedicineAdmission(
     return fail('המועד האחרון התקף לתשפ״ז הוא פסיכומטרי אפריל 2026.');
   for (const key of [
     'hujiMedicineResidencyEligible',
-    'hujiMedicineQualificationConfirmed',
     'hujiMedicineRegistrationConfirmed',
     'hujiMedicinePriorStudyStatus',
   ] as const) {

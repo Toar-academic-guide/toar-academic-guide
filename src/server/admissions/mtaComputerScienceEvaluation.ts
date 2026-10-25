@@ -132,7 +132,7 @@ export function evaluateMtaComputerScience({
       threshold: route.threshold,
       scoreLabel: route.label,
       scoreAssessment: meets ? 'meets_threshold' : 'below_threshold',
-      explanation: `${route.text}. ${!automaticMath ? 'דרישת המתמטיקה למסלול האוטומטי אינה מתקיימת. ' : ''}${reinforced && !automatic ? 'זו התאמה למסלול המתוגבר בלבד. ' : ''}הממוצע והציון המשולב הם הערכה לפי ממוצע הבגרות שהוזן; המכללה מחשבת ממוצע וציון משולב משלה. אין כאן אישור קבלה סופית.`,
+      explanation: `${route.text}. ${!automaticMath ? 'דרישת המתמטיקה למסלול האוטומטי אינה מתקיימת. ' : ''}${reinforced && !automatic ? 'זו התאמה למסלול המתוגבר בלבד. ' : ''}הממוצע והציון המשולב הם הערכה לפי ממוצע הבגרות שהוזן; המכללה מחשבת ממוצע וציון משולב משלה.`,
       nextAction,
     },
     [
@@ -143,7 +143,7 @@ export function evaluateMtaComputerScience({
       ),
       confirmationCondition(
         'bagrut_average',
-        'זכאות לבגרות ועמידה בתנאי הסף הכלליים, ואישור הממוצע והנתונים בידי המכללה',
+        'עמידה בתנאי הסף הכלליים ואישור הממוצע והנתונים בידי המכללה',
         undefined,
       ),
     ],
