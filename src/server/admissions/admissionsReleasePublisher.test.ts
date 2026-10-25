@@ -1,11 +1,13 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import reviewedManifest from '@/data/admissions/reviewedManifest.json';
+import technionWinterManifest from './__fixtures__/technionWinterManifest.json';
 
 vi.mock('server-only', () => ({}));
 
 import {
   createAdmissionsReleasePublisher,
+  createDrizzleAdmissionsReleaseRepository,
   type AdmissionPublicationAttemptRecord,
   type AdmissionReleaseItemRecord,
   type AdmissionReleaseRecord,
@@ -53,44 +55,252 @@ const bguChange = {
 };
 
 describe('admissions release publisher', () => {
-  it('publishes the reviewed winter Technion cutoffs and legacy aliases once with their ledger', async () => {
-    const repository = new MemoryAdmissionsReleaseRepository();
-    const expected = [
-      ['technion_ee', 94, 91.5],
-      ['technion_me', 92, 87],
-      ['ee', 94, 91.5],
-      ['me', 92, 87],
-    ] as const;
-    expect(reviewedManifest.releaseKind).toBe('canonical_change');
-    expect(
-      reviewedManifest.changes.map(({ target, before, after }) => [
-        target.programId,
-        before,
-        after,
-      ]),
-    ).toEqual(expected);
-    for (const [id, before] of expected) repository.canonicalCutoffs.set(`technion:${id}`, before);
-    const publisher = createAdmissionsReleasePublisher(repository);
-    const input = { manifest: reviewedManifest, repositoryCommit: 'technion-winter-reviewed' };
+  it.each([
+    ['fixture', technionWinterManifest],
+    [
+      'repository',
+      {
+        ...reviewedManifest,
+        changes: reviewedManifest.changes.filter((change) =>
+          technionWinterManifest.changes.some(
+            (winter) =>
+              winter.target.programId === change.target?.programId &&
+              winter.target.institutionId === change.target.institutionId &&
+              winter.target.cycle === change.target.cycle &&
+              winter.ruleKind === change.ruleKind,
+          ),
+        ),
+      },
+    ],
+  ])(
+    'publishes the reviewed winter Technion cutoffs and legacy aliases once with their ledger (%s)',
+    async (_source, reviewedManifest) => {
+      const repository = new MemoryAdmissionsReleaseRepository();
+      const expected = [
+        ['technion_ee', 94, 91.5],
+        ['technion_me', 92, 87],
+        ['ee', 94, 91.5],
+        ['me', 92, 87],
+      ] as const;
+      expect(reviewedManifest.releaseKind).toBe('canonical_change');
+      expect(
+        reviewedManifest.changes.map(({ target, before, after }) => [
+          target.programId,
+          before,
+          after,
+        ]),
+      ).toEqual(expected);
+      for (const [id, before] of expected)
+        repository.canonicalCutoffs.set(`technion:${id}`, before);
+      const publisher = createAdmissionsReleasePublisher(repository);
+      const input = { manifest: reviewedManifest, repositoryCommit: 'technion-winter-reviewed' };
 
-    await expect(publisher.publish(input)).resolves.toMatchObject({ status: 'published' });
-    await expect(publisher.publish(input)).resolves.toMatchObject({ status: 'already_published' });
-
-    expect(repository.releases).toHaveLength(1);
-    expect(repository.transitions).toHaveLength(4);
-    expect(repository.items).toHaveLength(4);
-    for (const [programId, before, after] of expected) {
-      expect(repository.canonicalCutoffs.get(`technion:${programId}`)).toBe(after);
-      const transition = repository.transitions.find((item) => item.programId === programId)!;
-      expect(transition).toMatchObject({ institutionId: 'technion', cycle: '2027' });
-      expect(repository.items.find((item) => item.transitionId === transition.id)).toMatchObject({
-        beforeValue: { value: before },
-        afterValue: { value: after },
-        effectiveFrom: '2026-10-25',
-        sourceProofs: [expect.objectContaining({ proofType: 'exact_official' })],
+      await expect(publisher.publish(input)).resolves.toMatchObject({ status: 'published' });
+      await expect(publisher.publish(input)).resolves.toMatchObject({
+        status: 'already_published',
       });
+
+      expect(repository.releases).toHaveLength(1);
+      expect(repository.transitions).toHaveLength(4);
+      expect(repository.items).toHaveLength(4);
+      for (const [programId, before, after] of expected) {
+        expect(repository.canonicalCutoffs.get(`technion:${programId}`)).toBe(after);
+        const transition = repository.transitions.find((item) => item.programId === programId)!;
+        expect(transition).toMatchObject({ institutionId: 'technion', cycle: '2027' });
+        expect(repository.items.find((item) => item.transitionId === transition.id)).toMatchObject({
+          beforeValue: { value: before },
+          afterValue: { value: after },
+          effectiveFrom: '2026-10-25',
+          sourceProofs: [expect.objectContaining({ proofType: 'exact_official' })],
+        });
+      }
+      expect(repository.canonicalCutoffs.get('tau:tau_cs')).toBe(706);
+    },
+  );
+
+  it('skips and reports a cutoff already at after while publishing the remaining change', async () => {
+    const repository = new MemoryAdmissionsReleaseRepository();
+    repository.canonicalCutoffs.set('bgu:bgu_cs', 700);
+    const writes = vi.spyOn(repository.canonicalCutoffs, 'set');
+    const log = vi.spyOn(console, 'info').mockImplementation(() => {});
+    try {
+      const result = await createAdmissionsReleasePublisher(repository).publish({
+        manifest: { ...manifest, changes: [bguChange, manifest.changes[0]] },
+        repositoryCommit: 'carry-forward-mixed',
+      });
+
+      expect(result).toMatchObject({
+        status: 'published',
+        alreadyApplied: [{ target: bguChange.target, ruleKind: 'admission_cutoff' }],
+      });
+      expect(repository.canonicalCutoffs.get('tau:tau_cs')).toBe(700);
+      expect(repository.canonicalCutoffs.get('bgu:bgu_cs')).toBe(700);
+      expect(writes).not.toHaveBeenCalledWith('bgu:bgu_cs', 700);
+      expect(repository.transitions).toEqual([
+        expect.objectContaining({ institutionId: 'tau', programId: 'tau_cs' }),
+      ]);
+      expect(repository.items).toHaveLength(1);
+      expect(repository.items[0]).toMatchObject({
+        transitionId: repository.transitions[0].id,
+        beforeValue: { value: 706 },
+        afterValue: { value: 700 },
+      });
+      expect(repository.releases[0].status).toBe('published');
+      expect(repository.attempts[0].status).toBe('succeeded');
+      expect(log).toHaveBeenCalledWith(
+        expect.objectContaining({
+          event: 'admissions_release_change_already_applied',
+          releaseId: repository.releases[0].id,
+          institutionId: 'bgu',
+          programId: 'bgu_cs',
+          ruleKind: 'admission_cutoff',
+        }),
+      );
+    } finally {
+      log.mockRestore();
     }
-    expect(repository.canonicalCutoffs.get('tau:tau_cs')).toBe(706);
+  });
+
+  it('applies a cutoff at before and reports no already-applied targets', async () => {
+    const repository = new MemoryAdmissionsReleaseRepository();
+    const result = await createAdmissionsReleasePublisher(repository).publish({
+      manifest,
+      repositoryCommit: 'at-before',
+    });
+
+    expect(result).toMatchObject({ status: 'published', alreadyApplied: [] });
+    expect(repository.canonicalCutoffs.get('tau:tau_cs')).toBe(700);
+    expect(repository.transitions).toHaveLength(1);
+    expect(repository.items).toHaveLength(1);
+    expect(repository.items[0]).toMatchObject({
+      beforeValue: { value: 706 },
+      afterValue: { value: 700 },
+    });
+  });
+
+  it.each(['neither before nor after', 'missing row'])(
+    'rolls back valid writes and skipped targets when a later cutoff is %s',
+    async (scenario) => {
+      const repository = new MemoryAdmissionsReleaseRepository();
+      const validChange = {
+        ...bguChange,
+        target: { ...bguChange.target, programId: 'bgu_chem' },
+      };
+      repository.canonicalCutoffs.set('bgu:bgu_chem', 706);
+      repository.canonicalCutoffs.set('bgu:bgu_cs', 700);
+      if (scenario === 'missing row') repository.canonicalCutoffs.delete('tau:tau_cs');
+      else repository.canonicalCutoffs.set('tau:tau_cs', 705);
+      const originalCutoffs = structuredClone(repository.canonicalCutoffs);
+      const log = vi.spyOn(console, 'info').mockImplementation(() => {});
+      try {
+        await expect(
+          createAdmissionsReleasePublisher(repository).publish({
+            manifest: { ...manifest, changes: [validChange, bguChange, manifest.changes[0]] },
+            repositoryCommit: 'carry-forward-conflict',
+          }),
+        ).rejects.toThrow('canonical cutoff tau:tau_cs did not match its expected before value');
+
+        expect(repository.canonicalCutoffs).toEqual(originalCutoffs);
+        expect(repository.canonicalCutoffs.get('bgu:bgu_chem')).toBe(706);
+        expect(repository.transitions).toEqual([]);
+        expect(repository.items).toEqual([]);
+        expect(repository.releases).toEqual([
+          expect.objectContaining({
+            status: 'failed',
+            publishedAt: null,
+          }),
+        ]);
+        expect(repository.attempts).toEqual([
+          expect.objectContaining({
+            status: 'failed',
+            errorMessage: 'canonical cutoff tau:tau_cs did not match its expected before value',
+          }),
+        ]);
+        expect(log).not.toHaveBeenCalled();
+      } finally {
+        log.mockRestore();
+      }
+    },
+  );
+
+  it('publishes Technion civil alongside four already-published winter changes and aliases', async () => {
+    const repository = new MemoryAdmissionsReleaseRepository();
+    for (const [programId, value] of [
+      ['technion_ee', 91.5],
+      ['ee', 91.5],
+      ['technion_me', 87],
+      ['me', 87],
+    ] as const)
+      repository.canonicalCutoffs.set(`technion:${programId}`, value);
+    repository.canonicalCutoffs.set('technion:technion_civil', 88);
+    const civilChange = {
+      ...technionWinterManifest.changes[0],
+      target: { institutionId: 'technion', programId: 'technion_civil', cycle: '2027' },
+      before: 88,
+      after: 87,
+      sourceProofs: [
+        {
+          ...technionWinterManifest.changes[0].sourceProofs[0],
+          sourceId: 'technion-technion_civil-live',
+          excerpt: 'Fixture: Civil Engineering cutoff 87.',
+        },
+      ],
+    };
+    const result = await createAdmissionsReleasePublisher(repository).publish({
+      manifest: {
+        ...technionWinterManifest,
+        changes: [...technionWinterManifest.changes, civilChange],
+      },
+      repositoryCommit: 'technion-w43-carried-forward',
+    });
+
+    expect(result.status).toBe('published');
+    if (result.status !== 'published') throw new Error('Expected a published release.');
+    expect(result.alreadyApplied).toEqual(
+      ['ee', 'me', 'technion_ee', 'technion_me'].map((programId) => ({
+        target: { institutionId: 'technion', programId, cycle: '2027' },
+        ruleKind: 'admission_cutoff',
+      })),
+    );
+    expect(repository.canonicalCutoffs.get('technion:technion_civil')).toBe(87);
+    expect(repository.transitions).toEqual([
+      expect.objectContaining({
+        institutionId: 'technion',
+        programId: 'technion_civil',
+        cycle: '2027',
+      }),
+    ]);
+    expect(repository.items).toEqual([
+      expect.objectContaining({
+        transitionId: repository.transitions[0].id,
+        beforeValue: { value: 88 },
+        afterValue: { value: 87 },
+      }),
+    ]);
+    expect(repository.releases[0].status).toBe('published');
+    expect(repository.attempts[0].status).toBe('succeeded');
+  });
+
+  it('publishes an entirely already-applied manifest without claiming any transitions or items', async () => {
+    const repository = new MemoryAdmissionsReleaseRepository();
+    repository.canonicalCutoffs.set('tau:tau_cs', 700);
+    const writes = vi.spyOn(repository.canonicalCutoffs, 'set');
+
+    await expect(
+      createAdmissionsReleasePublisher(repository).publish({
+        manifest,
+        repositoryCommit: 'all-already-applied',
+      }),
+    ).resolves.toMatchObject({
+      status: 'published',
+      alreadyApplied: [{ target: manifest.changes[0].target, ruleKind: 'admission_cutoff' }],
+    });
+
+    expect(writes).not.toHaveBeenCalled();
+    expect(repository.transitions).toEqual([]);
+    expect(repository.items).toEqual([]);
+    expect(repository.releases[0].status).toBe('published');
+    expect(repository.attempts[0].status).toBe('succeeded');
   });
 
   it('does not create a release for an empty reviewed manifest', async () => {
@@ -557,6 +767,66 @@ describe('admissions release publisher', () => {
   });
 });
 
+describe('Drizzle canonical cutoff writer', () => {
+  it.each([
+    {
+      scenario: 'guarded update matches before',
+      updated: [{ id: 'tau-cutoff' }],
+      current: [],
+      expected: 'applied',
+    },
+    {
+      scenario: 'current row already equals after',
+      updated: [],
+      current: [{ thresholdValue: 700 }],
+      expected: 'already_applied',
+    },
+    {
+      scenario: 'current row still equals before',
+      updated: [],
+      current: [{ thresholdValue: 706 }],
+      expected: 'error',
+    },
+    {
+      scenario: 'current row equals neither value',
+      updated: [],
+      current: [{ thresholdValue: 705 }],
+      expected: 'error',
+    },
+    { scenario: 'current row is missing', updated: [], current: [], expected: 'error' },
+  ])('uses transactional cutoff state when $scenario', async ({ updated, current, expected }) => {
+    const updateQuery = {
+      set: vi.fn().mockReturnThis(),
+      where: vi.fn().mockReturnThis(),
+      returning: vi.fn(async () => updated),
+    };
+    const selectQuery = {
+      from: vi.fn().mockReturnThis(),
+      where: vi.fn().mockReturnThis(),
+      for: vi.fn(async () => current),
+    };
+    const tx = {
+      update: vi.fn(() => updateQuery),
+      select: vi.fn(() => selectQuery),
+    };
+    const db = {
+      transaction: async <T>(callback: (writer: typeof tx) => Promise<T>) => callback(tx),
+    } as unknown as Parameters<typeof createDrizzleAdmissionsReleaseRepository>[0];
+    const repository = createDrizzleAdmissionsReleaseRepository(db);
+    const result = repository.transaction((writer) =>
+      writer.applyCanonicalAdmissionCutoff({
+        change: manifest.changes[0],
+        allowAlreadyApplied: true,
+      }),
+    );
+
+    if (expected === 'error') await expect(result).rejects.toThrow('expected before value');
+    else await expect(result).resolves.toBe(expected);
+    if (updated.length === 0) expect(selectQuery.for).toHaveBeenCalledWith('update');
+    else expect(tx.select).not.toHaveBeenCalled();
+  });
+});
+
 function operationalProofManifest(
   input: {
     before?: number;
@@ -669,12 +939,22 @@ class MemoryAdmissionsReleaseRepository
     this.items.push(...items);
   }
 
-  async applyCanonicalAdmissionCutoff({ change }: { change: PublishedAdmissionCutoffChange }) {
+  async applyCanonicalAdmissionCutoff({
+    change,
+    allowAlreadyApplied = false,
+  }: {
+    change: PublishedAdmissionCutoffChange;
+    allowAlreadyApplied?: boolean;
+  }): Promise<'applied' | 'already_applied'> {
     const key = `${change.target.institutionId}:${change.target.programId}`;
     if (this.canonicalCutoffs.get(key) !== change.before) {
+      if (allowAlreadyApplied && this.canonicalCutoffs.get(key) === change.after) {
+        return 'already_applied';
+      }
       throw new Error(`canonical cutoff ${key} did not match its expected before value`);
     }
     this.canonicalCutoffs.set(key, change.after);
+    return 'applied';
   }
 
   async applyOperationalProofAdmissionCutoff({

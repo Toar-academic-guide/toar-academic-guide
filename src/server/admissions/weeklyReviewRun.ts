@@ -78,6 +78,7 @@ export function buildAdmissionsReviewRun(input: {
   cycle: string;
   baseline: PublishedAdmissionRule[];
   proofs: AdmissionsSourceProof[];
+  reviewedManifest?: ReviewedAdmissionsManifest;
   releaseKind?: ReviewedAdmissionsManifest['releaseKind'];
   proofScenario?: string;
   excludedCandidateIds?: string[];
@@ -176,18 +177,24 @@ export function buildAdmissionsReviewRun(input: {
   }
   excluded.sort((left, right) => left.sourceProofId.localeCompare(right.sourceProofId));
 
+  const newChanges: ReviewedAdmissionsManifest['changes'] = includedCandidates.map((candidate) => ({
+    target: candidate.target,
+    ruleKind: candidate.ruleKind,
+    before: candidate.before,
+    after: candidate.after,
+    effectiveFrom: input.checkedAt.toISOString().slice(0, 10),
+    sourceProofs: [candidate.sourceProof],
+  }));
+  const changesByTarget = new Map<string | symbol, ReviewedAdmissionsManifest['changes'][number]>();
+  for (const change of [...(input.reviewedManifest?.changes ?? []), ...newChanges]) {
+    const key = change.target ? ruleKey(change.target, change.ruleKind) : Symbol();
+    changesByTarget.set(key, change);
+  }
   const manifest: ReviewedAdmissionsManifest = {
     version: 2,
     releaseKind,
     ...(input.proofScenario ? { proofScenario: input.proofScenario } : {}),
-    changes: includedCandidates.map((candidate) => ({
-      target: candidate.target,
-      ruleKind: candidate.ruleKind,
-      before: candidate.before,
-      after: candidate.after,
-      effectiveFrom: input.checkedAt.toISOString().slice(0, 10),
-      sourceProofs: [candidate.sourceProof],
-    })),
+    changes: [...changesByTarget.values()],
   };
   const summary = {
     status: includedCandidates.length > 0 ? ('reviewable' as const) : ('no_changes' as const),

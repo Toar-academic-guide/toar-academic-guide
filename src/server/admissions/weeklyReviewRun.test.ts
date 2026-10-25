@@ -6,6 +6,8 @@ import {
   type PublishedAdmissionRule,
 } from './weeklyReviewRun';
 import { FORMULA_BACKED_VERIFICATION_LEDGER } from '@/data/admissions/formulaBackedVerificationLedger';
+import technionWinterManifest from './__fixtures__/technionWinterManifest.json';
+import type { ReviewedAdmissionsManifest } from './reviewedManifest';
 
 const baseline: PublishedAdmissionRule[] = [
   {
@@ -42,6 +44,130 @@ describe('weekly admissions review run', () => {
   const exactTauLedger = FORMULA_BACKED_VERIFICATION_LEDGER.map((entry) =>
     entry.pairId === 'tau_datascience__tau' ? { ...entry, state: 'exact' as const } : entry,
   );
+
+  it('carries forward every reviewed winter change and alias when adding a new change', () => {
+    const reviewedManifest = structuredClone(technionWinterManifest) as ReviewedAdmissionsManifest;
+    const original = structuredClone(reviewedManifest);
+    const run = buildAdmissionsReviewRun({
+      runKey: '2026-W43',
+      checkedAt: new Date('2026-10-25T03:00:00.000Z'),
+      cycle: '2027',
+      baseline,
+      proofs: [decisionProof()],
+      verificationLedger: exactTauLedger,
+      reviewedManifest,
+    });
+
+    expect(run.manifest.changes).toHaveLength(5);
+    expect(run.manifest.changes.slice(0, 4)).toEqual(original.changes);
+    expect(run.manifest.changes[4]).toMatchObject({
+      target: baseline[0].target,
+      before: 700,
+      after: 695,
+    });
+    expect(reviewedManifest).toEqual(original);
+    expect(run.summary).toMatchObject({ status: 'reviewable', candidateCount: 1 });
+  });
+
+  it('replaces an existing target and rule without duplicating it or changing aliases', () => {
+    const existingChange = {
+      ...technionWinterManifest.changes[0],
+      target: baseline[0].target,
+      before: 710,
+      after: 700,
+    };
+    const reviewedManifest = {
+      ...technionWinterManifest,
+      changes: [...technionWinterManifest.changes, existingChange],
+    } as ReviewedAdmissionsManifest;
+    const run = buildAdmissionsReviewRun({
+      runKey: '2026-W43',
+      checkedAt: new Date('2026-10-25T03:00:00.000Z'),
+      cycle: '2027',
+      baseline,
+      proofs: [decisionProof(), decisionProof()],
+      verificationLedger: exactTauLedger,
+      reviewedManifest,
+    });
+
+    expect(run.manifest.changes).toHaveLength(5);
+    expect(run.manifest.changes.slice(0, 4)).toEqual(technionWinterManifest.changes);
+    expect(run.manifest.changes[4]).toMatchObject({
+      target: baseline[0].target,
+      before: 700,
+      after: 695,
+      effectiveFrom: '2026-10-25',
+    });
+    expect(run.manifest.changes[4].sourceProofs[0].sourceId).toBe('tau-digital-sciences-live');
+  });
+
+  it.each(['unchanged', 'reviewer_excluded', 'absent'])(
+    'retains reviewed entries when a new proof is %s',
+    (scenario) => {
+      const reviewedManifest = {
+        ...technionWinterManifest,
+        changes: [
+          ...technionWinterManifest.changes,
+          {
+            ...technionWinterManifest.changes[0],
+            target: baseline[0].target,
+            before: 710,
+            after: 700,
+          },
+        ],
+      } as ReviewedAdmissionsManifest;
+      const run = buildAdmissionsReviewRun({
+        runKey: '2026-W43',
+        checkedAt: new Date('2026-10-25T03:00:00.000Z'),
+        cycle: '2027',
+        baseline,
+        proofs:
+          scenario === 'absent'
+            ? []
+            : [
+                decisionProof({
+                  normalizedPayload: {
+                    programId: 'tau_datascience',
+                    acceptanceThreshold: scenario === 'unchanged' ? 700 : 695,
+                  },
+                }),
+              ],
+        excludedCandidateIds: ['tau-digital-sciences-live:admission_cutoff'],
+        verificationLedger: exactTauLedger,
+        reviewedManifest,
+      });
+
+      expect(run.manifest.changes).toEqual(reviewedManifest.changes);
+      expect(run.summary).toMatchObject({ status: 'no_changes', candidateCount: 0 });
+    },
+  );
+
+  it('preserves other rule kinds and opaque future entries verbatim', () => {
+    const otherRule = {
+      ...technionWinterManifest.changes[0],
+      target: baseline[0].target,
+      ruleKind: 'minimum_gate',
+      before: 80,
+      after: 85,
+    };
+    const futureEntry = { kind: 'canonical_change', payload: { retained: ['verbatim'] } };
+    const reviewedManifest = {
+      ...technionWinterManifest,
+      changes: [...technionWinterManifest.changes, otherRule, futureEntry],
+    } as unknown as ReviewedAdmissionsManifest;
+    const run = buildAdmissionsReviewRun({
+      runKey: '2026-W43',
+      checkedAt: new Date('2026-10-25T03:00:00.000Z'),
+      cycle: '2027',
+      baseline,
+      proofs: [decisionProof()],
+      verificationLedger: exactTauLedger,
+      reviewedManifest,
+    });
+
+    expect(run.manifest.changes).toHaveLength(7);
+    expect(run.manifest.changes.slice(0, 6)).toEqual(reviewedManifest.changes);
+  });
 
   it('turns a safe changed proof into one deterministic manifest change and human handoff', () => {
     const run = buildAdmissionsReviewRun({

@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('server-only', () => ({}));
+vi.mock('@/data/admissions/reviewedManifest.json', async () => ({
+  default: (await import('./__fixtures__/technionWinterManifest.json')).default,
+}));
 
 import {
   createAdmissionsWeeklyReviewPreparer,
@@ -13,6 +16,7 @@ import type {
   AdmissionsSourceFreshnessRunnerOptions,
 } from '@/server/ingestion/admissionsSourceFreshnessRunner';
 import { FORMULA_BACKED_VERIFICATION_LEDGER } from '@/data/admissions/formulaBackedVerificationLedger';
+import technionWinterManifest from './__fixtures__/technionWinterManifest.json';
 
 const proof = {
   id: 'tau-digital-sciences-live',
@@ -42,6 +46,49 @@ describe('admissions weekly review preparation', () => {
     entry.pairId === 'tau_datascience__tau' ? { ...entry, state: 'exact' as const } : entry,
   );
 
+  it('loads the existing reviewed manifest into the weekly run output before the workflow overwrites it', async () => {
+    const civilProof = {
+      ...proof,
+      id: 'technion-technion_civil-live',
+      institutionId: 'technion',
+      institutionName: 'Technion',
+      officialUrl: 'https://admissions.technion.ac.il/sechem-for-admission/',
+      adapterId: 'technion' as const,
+      normalizedPayload: { programId: 'technion_civil', acceptanceThreshold: 87 },
+    };
+    const result = await createAdmissionsWeeklyReviewPreparer({
+      sourceRunner: async () => ({
+        report: { ...report(), results: [{ proof: civilProof, freshness: null }] },
+        persistence: null,
+      }),
+      baselineRepository: {
+        listPublishedRules: async () => [
+          {
+            target: { institutionId: 'technion', programId: 'technion_civil', cycle: '2027' },
+            ruleKind: 'admission_cutoff',
+            value: 88,
+          },
+        ],
+      },
+      verificationLedger: FORMULA_BACKED_VERIFICATION_LEDGER.map((entry) =>
+        entry.pairId === 'technion_civil__technion' ? { ...entry, state: 'exact' as const } : entry,
+      ),
+    }).prepare({
+      runKey: '2026-W43',
+      cycle: '2027',
+      checkedAt: new Date('2026-10-25T03:00:00.000Z'),
+    });
+
+    expect(result.run.manifest.changes).toHaveLength(5);
+    expect(result.run.manifest.changes.slice(0, 4)).toEqual(technionWinterManifest.changes);
+    expect(result.run.manifest.changes[4]).toMatchObject({
+      target: { institutionId: 'technion', programId: 'technion_civil', cycle: '2027' },
+      before: 88,
+      after: 87,
+    });
+    expect(result.run.summary).toMatchObject({ status: 'reviewable', candidateCount: 1 });
+  });
+
   it('persists source freshness first, then compares only against published reviewed rules', async () => {
     const sourceRunner = vi.fn<
       (
@@ -64,6 +111,7 @@ describe('admissions weekly review preparation', () => {
       sourceRunner,
       baselineRepository,
       verificationLedger: exactTauLedger,
+      reviewedManifest: { version: 2, releaseKind: 'canonical_change', changes: [] },
     });
 
     const result = await preparer.prepare({
@@ -104,6 +152,7 @@ describe('admissions weekly review preparation', () => {
       sourceRunner,
       baselineRepository,
       verificationLedger: exactTauLedger,
+      reviewedManifest: { version: 2, releaseKind: 'canonical_bootstrap', changes: [] },
     }).prepare({
       runKey: 'bootstrap-2027',
       cycle: '2027',
