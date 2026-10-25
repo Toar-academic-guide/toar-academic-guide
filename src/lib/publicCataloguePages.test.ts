@@ -711,6 +711,10 @@ describe('Braude CS published-condition parity', () => {
     expect(source.officialUrl).toBe(
       'https://w3.braude.ac.il/intrested/?utm_source=myway&utm_medium=referral',
     );
+    expect(source.checked).toEqual({
+      date: '21.10.2026',
+      sourceUrl: 'https://w3.braude.ac.il/intrested/?utm_source=myway&utm_medium=referral',
+    });
     expect(page.institutionProgramPaths.braude).toBe('/institutions/braude');
   });
   it('QA block 2: legacy mon_12220708942 institution retains its CS programme card and production link', async () => {
