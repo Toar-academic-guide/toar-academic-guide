@@ -107,7 +107,7 @@ jobs:
           echo "docs_only=false" >> "$GITHUB_OUTPUT"
           base_classifier="$RUNNER_TEMP/preview-production-sensitive-paths.mjs"
           if git show origin/main:scripts/production-sensitive-paths.mjs > "$base_classifier" &&
-            changed_paths="$(git diff --name-only "origin/main...$DEPLOYED_SHA")" &&
+            changed_paths="$(git diff --name-only --no-renames "origin/main...$DEPLOYED_SHA")" &&
             classification="$(printf '%s\n' "$changed_paths" | node "$base_classifier")"; then
             if grep -qx 'docs_only=true' <<< "$classification"; then
               echo "docs_only=true" >> "$GITHUB_OUTPUT"

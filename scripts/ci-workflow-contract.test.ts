@@ -1,5 +1,5 @@
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -48,6 +48,73 @@ const guardedJobs = [
   'e2e-pr',
   'internal-data-health-smoke',
 ];
+
+describe('rename-safe docs-only classification', () => {
+  const workflows = ['ci', 'playwright-preview'].map((name) => ({
+    name,
+    commands: Object.values(workflow(name).jobs).flatMap((job) =>
+      job.steps.flatMap((step) =>
+        (step.run?.match(/git diff\b[^\n|)]+/g) ?? [])
+          .filter((command) => command.includes('--name-only'))
+          .map((command) => command.trim()),
+      ),
+    ),
+  }));
+
+  it.each(workflows)(
+    '$name disables rename detection in every changed-path diff',
+    ({ commands }) => {
+      expect(commands.length).toBeGreaterThan(0);
+      for (const command of commands) {
+        expect(command, command).toMatch(/\s--no-renames(?:\s|$)/);
+      }
+    },
+  );
+
+  it.each(
+    workflows.flatMap(({ name, commands }) => commands.map((command) => ({ name, command }))),
+  )('$name keeps a runtime-to-Markdown rename out of docs-only: $command', ({ command }) => {
+    const dir = mkdtempSync(path.join(tmpdir(), 'renamed-runtime-classification-'));
+    const git = (...args: string[]) =>
+      execFileSync('git', args, { cwd: dir, encoding: 'utf8', stdio: 'pipe' }).trim();
+    try {
+      git('init', '--quiet');
+      git('config', 'user.name', 'Workflow contract test');
+      git('config', 'user.email', 'workflow-contract@example.com');
+      git('config', 'commit.gpgsign', 'false');
+      git('config', 'diff.renames', 'true');
+      mkdirSync(path.join(dir, 'src'));
+      mkdirSync(path.join(dir, 'docs'));
+      writeFileSync(path.join(dir, 'src/foo.ts'), 'export const runtime = true;\n');
+      git('add', 'src/foo.ts');
+      git('commit', '--quiet', '-m', 'Add runtime file');
+      const baseSha = git('rev-parse', 'HEAD');
+      git('update-ref', 'refs/remotes/origin/main', baseSha);
+      git('mv', 'src/foo.ts', 'docs/foo.md');
+      git('commit', '--quiet', '-m', 'Rename runtime file to Markdown');
+
+      const changedPaths = execFileSync('bash', ['-e', '-o', 'pipefail', '-c', command], {
+        cwd: dir,
+        env: {
+          ...process.env,
+          BASE_REF: 'main',
+          BEFORE_SHA: baseSha,
+          DEPLOYED_SHA: git('rev-parse', 'HEAD'),
+        },
+        encoding: 'utf8',
+      });
+      const classification = execFileSync(
+        process.execPath,
+        [path.resolve('scripts/production-sensitive-paths.mjs')],
+        { input: changedPaths, encoding: 'utf8' },
+      );
+      expect(classification).toContain('docs_only=false\n');
+      expect(changedPaths.trim().split('\n').sort()).toEqual(['docs/foo.md', 'src/foo.ts']);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});
 
 describe('CI minutes and gate contracts', () => {
   it('keeps every CI check name stable', () => {
@@ -183,7 +250,7 @@ describe('Preview minutes contracts', () => {
     expect(classify.if).toBe("${{ steps.superseded.outputs.already_tested != 'true' }}");
     expect(classify.id).toBe('classify');
     expect(classify.run).toContain('git show origin/main:scripts/production-sensitive-paths.mjs');
-    expect(classify.run).toContain('git diff --name-only "origin/main...$DEPLOYED_SHA"');
+    expect(classify.run).toContain('git diff --name-only --no-renames "origin/main...$DEPLOYED_SHA"');
     expect(job.steps[3].if).toBe("${{ steps.classify.outputs.docs_only == 'true' }}");
     for (const step of job.steps.slice(4)) {
       expect(step.if).toBe(

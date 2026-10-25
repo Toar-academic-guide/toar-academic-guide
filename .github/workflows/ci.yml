@@ -54,15 +54,15 @@ jobs:
           if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
             node "$classifier" --all >> "$GITHUB_OUTPUT"
           elif [[ "$EVENT_NAME" == "pull_request" ]]; then
-            git diff --name-only "origin/$BASE_REF...HEAD" |
+            git diff --name-only --no-renames "origin/$BASE_REF...HEAD" |
               node "$classifier" >> "$GITHUB_OUTPUT"
           elif [[ -n "$BEFORE_SHA" ]] &&
             [[ "$BEFORE_SHA" != "0000000000000000000000000000000000000000" ]] &&
             git cat-file -e "$BEFORE_SHA^{commit}"; then
-            git diff --name-only "$BEFORE_SHA...HEAD" |
+            git diff --name-only --no-renames "$BEFORE_SHA...HEAD" |
               node "$classifier" >> "$GITHUB_OUTPUT"
           else
-            git diff --name-only HEAD^...HEAD |
+            git diff --name-only --no-renames HEAD^...HEAD |
               node "$classifier" >> "$GITHUB_OUTPUT"
           fi
 
