@@ -108,6 +108,7 @@ import {
 import { runBguEngineeringAdmissionsProof } from '@/server/ingestion/adapters/bguEngineeringAdmissions';
 import { getProgramVerificationArtifact } from '@/data/admissions/tauProgramVerification';
 import { getHaifaInformationSystemsTrackArtifact } from '@/data/admissions/haifaInformationSystemsVerification';
+import { TECHNION_MEDICINE_INVITATION_THRESHOLD } from '@/data/admissions/technionThresholds';
 import {
   getCodeReviewedTechnionWinterVerification,
   TECHNION_THRESHOLD_URL,
@@ -199,7 +200,7 @@ export async function evaluateAdmissionsForProgram(args: {
             additionalConditions: undefined,
             sourceLabel: 'סכם לרפואה',
             explanation:
-              'סף זימון משוער למבחן המו"ר: 92 (הערכה). זהו סף זימון משוער בלבד, ולא סף קבלה לרפואה.' +
+              `סף זימון משוער למבחן המו"ר: ${TECHNION_MEDICINE_INVITATION_THRESHOLD} (הערכה). זהו סף זימון משוער בלבד, ולא סף קבלה לרפואה.` +
               (result.score === undefined ? ` ${result.explanation}` : ''),
             nextAction: 'בדקו באתר הטכניון את תנאי המיון והקבלה העדכניים לרפואה.',
             officialUrls: [TECHNION_THRESHOLD_URL],

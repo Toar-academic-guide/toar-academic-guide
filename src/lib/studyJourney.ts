@@ -172,16 +172,35 @@ export function distinctRecommendations(rows: JourneyRow[]): JourneyRow[] {
   });
 }
 
+export function isTechnionMedicineScore(
+  result: AdmissionsEvaluationResult | undefined,
+  programId: string | undefined,
+): result is AdmissionsEvaluationResult & { score: number } {
+  return (
+    programId === 'technion_medicine' &&
+    result?.linkedInstitutionId === 'technion' &&
+    result.decision === 'unknown' &&
+    result.score != null
+  );
+}
+
+export function formatJourneyScore(score: number): string {
+  return score.toLocaleString('he-IL', { maximumFractionDigits: 2 });
+}
+
 export function resultLabel(
   result?: AdmissionsEvaluationResult,
   failed = false,
   loading = false,
+  programId?: string,
 ): {
   label: string;
   group: JourneyResultGroup;
 } {
   if (failed) return { label: 'החישוב לא נטען', group: 'explore' };
   if (loading) return { label: 'החישוב מתבצע…', group: 'explore' };
+  if (isTechnionMedicineScore(result, programId))
+    return { label: 'קבלה דרך מבחני מו"ר', group: 'explore' };
   if (result?.degradationReason === 'incomplete_published_requirements')
     return { label: 'עדיין לא ניתן לקבוע התאמה', group: 'explore' };
   if (result?.linkedInstitutionId === 'danon' && result.kind === 'requirements_only')

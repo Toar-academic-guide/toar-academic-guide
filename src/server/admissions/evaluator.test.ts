@@ -409,6 +409,7 @@ describe('Technion medicine estimated MOR invitation threshold', () => {
   it.each([
     { psychometric: 720, score: 89 },
     { psychometric: 800, score: 98.9 },
+    { psychometric: 750, score: 92 },
     { psychometric: 500, score: 73.9 },
   ])(
     'keeps sekem $score without a verdict for psychometric $psychometric',

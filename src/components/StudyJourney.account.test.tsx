@@ -103,7 +103,13 @@ describe('account grades in the homepage journey', () => {
     expect(screen.getByRole('button', { name: 'שמירה לרשימה' })).toBeTruthy();
   });
 
-  it('shows the medicine sekem beside the estimated MOR invitation line using the existing no-verdict rendering', async () => {
+  // Amit ruling 2026-10-25 07:30 via Jorje
+  it.each([
+    [95, 'הסכם שלך 95, מעל סף הזימון המשוער (92)', 'text-green-700'],
+    [84.5, 'הסכם שלך 84.5, מתחת לסף הזימון המשוער (92)', 'text-slate-500'],
+    [92, 'הסכם שלך 92, מעל סף הזימון המשוער (92)', 'text-green-700'],
+    [95.125, 'הסכם שלך 95.13, מעל סף הזימון המשוער (92)', 'text-green-700'],
+  ] as const)('shows one medicine comparison for sekem %s', async (score, comparison, color) => {
     const program = getStaticCataloguePrograms().find((p) => p.id === 'technion_medicine')!;
     const institution = getStaticCatalogueInstitutions().find((i) => i.id === 'technion')!;
     state.fetchPrograms.mockResolvedValue([program]);
@@ -119,7 +125,7 @@ describe('account grades in the homepage journey', () => {
               kind: 'exact',
               decision: 'unknown',
               confidence: 'medium',
-              score: 89,
+              score,
               scoreLabel: 'סכם',
               sourceLabel: 'סכם לרפואה',
               explanation:
@@ -142,14 +148,59 @@ describe('account grades in the homepage journey', () => {
       }),
     );
     render(<StudyJourney initialStep="detail" />);
-    expect(await screen.findByText('אין הכרעת קבלה')).toBeTruthy();
-    expect(screen.getByText(/סף זימון משוער למבחן המו"ר: 92 \(הערכה\)/)).toBeTruthy();
-    expect(screen.getByText('סכם: 89')).toBeTruthy();
+    expect(await screen.findByText('קבלה דרך מבחני מו"ר')).toBeTruthy();
+    expect(screen.queryByText('אין הכרעת קבלה')).toBeNull();
+    const line = screen.getByText(comparison, { exact: true });
+    expect(line.classList.contains(color)).toBe(true);
+    expect(line.className).not.toMatch(/red|rose|amber|yellow|danger|warning/);
+    expect(screen.getAllByText(/הסכם שלך/)).toHaveLength(1);
+    expect(screen.queryByText(/סף זימון משוער למבחן המו"ר/)).toBeNull();
+    expect(screen.queryByText(/^סכם:/)).toBeNull();
     expect(screen.getByRole('button', { name: 'יצירת קשר' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'שמירה לרשימה' })).toBeTruthy();
     expect(screen.getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toBe(
       'https://www.technion.ac.il/?utm_source=myway&utm_medium=referral',
     );
+  });
+
+  it('preserves the medicine result explanation when no sekem is available', async () => {
+    const program = getStaticCataloguePrograms().find((p) => p.id === 'technion_medicine')!;
+    const institution = getStaticCatalogueInstitutions().find((i) => i.id === 'technion')!;
+    const explanation = 'סף זימון משוער למבחן המו"ר: 92 (הערכה). נדרשים פרטי מקצועות הבגרות.';
+    state.fetchPrograms.mockResolvedValue([program]);
+    state.fetchInstitutions.mockResolvedValue([institution]);
+    state.evaluate.mockResolvedValue({
+      reports: {
+        technion_medicine: {
+          results: [
+            {
+              institution,
+              linkedInstitutionId: 'technion',
+              capability: 'needs_input',
+              kind: 'needs_input',
+              decision: 'unknown',
+              explanation,
+              requiredInputs: ['bagrut_subject_record'],
+            },
+          ],
+        },
+      },
+      failedDegreeIds: [],
+    });
+    window.sessionStorage.setItem(
+      'myway_study_journey_v2',
+      JSON.stringify({
+        fields: [],
+        locations: ['all'],
+        types: ['all'],
+        selectedRowId: 'technion_medicine:technion',
+      }),
+    );
+    render(<StudyJourney initialStep="detail" />);
+    expect(await screen.findByText('חסרים פרטים לחישוב')).toBeTruthy();
+    expect(screen.getByText(explanation)).toBeTruthy();
+    expect(screen.queryByText('קבלה דרך מבחני מו"ר')).toBeNull();
+    expect(screen.queryByText(/הסכם שלך/)).toBeNull();
   });
 
   it('changes only the calculator detail requirements while preserving the baseline decision and actions', async () => {
