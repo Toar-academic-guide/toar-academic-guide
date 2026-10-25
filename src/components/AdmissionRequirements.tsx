@@ -1,9 +1,13 @@
 import { Fragment } from 'react';
+import type { FloorCheckRow } from '@/types/admissionsEvaluation';
+import { BIU_CALCULATOR_URL, BIU_ENGINEERING_URL } from '@/data/admissions/biuChannels';
+import { institutionLink } from '@/lib/institutionLinks';
 
 interface AdmissionRequirementsProps {
   requirements: string[];
   programId?: string;
   institutionId?: string;
+  floorChecks?: FloorCheckRow[];
 }
 
 // Only shorten the verified TAU copy while the underlying conditions match.
@@ -102,6 +106,7 @@ export default function AdmissionRequirements({
   requirements,
   programId,
   institutionId,
+  floorChecks,
 }: AdmissionRequirementsProps) {
   const routes =
     ['psychology', 'bgu_psychology'].includes(programId ?? '') && institutionId === 'bgu'
@@ -119,6 +124,109 @@ export default function AdmissionRequirements({
 
   return (
     <div className="mt-3 text-right text-sm text-[#35415b]" dir="rtl">
+      {floorChecks && (
+        <>
+          <table
+            className="w-full table-fixed border-collapse text-right text-xs leading-5"
+            aria-label="בדיקת תנאי הסף לפי הציונים שלך"
+          >
+            <thead>
+              <tr className="border-b border-[var(--border)] text-[var(--text-muted)]">
+                <th scope="col" className="w-[30%] py-2 pe-2 font-medium">
+                  תנאי
+                </th>
+                <th scope="col" className="w-[15%] py-2 pe-2 font-medium">
+                  נדרש
+                </th>
+                <th scope="col" className="w-[15%] py-2 pe-2 font-medium">
+                  שלך
+                </th>
+                <th scope="col" className="w-[40%] py-2 font-medium">
+                  בדיקה
+                </th>
+              </tr>
+            </thead>
+            {Array.from(new Set(floorChecks.map((row) => row.channel))).map((channel) => (
+              <tbody key={channel}>
+                <tr>
+                  <th
+                    colSpan={4}
+                    scope="rowgroup"
+                    className="pt-4 pb-1 font-semibold text-[#19233d]"
+                  >
+                    {channel}
+                  </th>
+                </tr>
+                {floorChecks
+                  .filter((row) => row.channel === channel)
+                  .map((row, index) => (
+                    <tr
+                      key={`${row.label}:${index}`}
+                      className="border-b border-[var(--border)] align-top"
+                    >
+                      <th scope="row" className="py-2 pe-2 font-normal [overflow-wrap:anywhere]">
+                        <a
+                          href={institutionLink(row.sourceUrl, institutionId)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="underline decoration-[#c9c2e4] underline-offset-4 hover:text-[#6554b8] focus-visible:outline-2 focus-visible:outline-offset-2"
+                        >
+                          {row.label}
+                        </a>
+                      </th>
+                      <td className="py-2 pe-2 tabular-nums">{row.displayValue}</td>
+                      <td className="py-2 pe-2 tabular-nums">{row.studentValue ?? '—'}</td>
+                      <td className="py-2 [overflow-wrap:anywhere]">
+                        <span>
+                          {
+                            (
+                              {
+                                pass: 'עומד/ת',
+                                miss: 'לא עומד/ת',
+                                missing: 'חסר נתון',
+                                conflicting: 'מקורות סותרים',
+                                soft_miss: 'לפי המחשבון: קבלה מותנית בקורס הכנה בקיץ',
+                              } as const
+                            )[row.status]
+                          }
+                        </span>
+                        {row.note && (
+                          <span className="mt-1 block text-[var(--text-muted)]">{row.note}</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+            ))}
+          </table>
+          <p className="mt-3 text-xs text-[var(--text-muted)] [overflow-wrap:anywhere]">
+            {programId !== 'biu_law' &&
+              programId !== 'law' &&
+              'עודכן לאחרונה: 25.10.2026 · מקור: אתר אוניברסיטת בר-אילן — '}
+            <a
+              href={institutionLink(BIU_CALCULATOR_URL, 'biu')}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold text-[#6554b8] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2"
+            >
+              המחשבון הרשמי של בר-אילן
+            </a>
+            {programId === 'biu_ee' && (
+              <>
+                {'; '}
+                <a
+                  href={institutionLink(BIU_ENGINEERING_URL, 'biu')}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2"
+                >
+                  תנאי הקבלה בפקולטה להנדסה
+                </a>
+              </>
+            )}
+          </p>
+        </>
+      )}
       {routes && (
         <>
           <p className="mb-3 leading-6">
@@ -130,7 +238,7 @@ export default function AdmissionRequirements({
         </>
       )}
       {overview && <p className="mb-2 font-semibold">אחד מאפיקי הקבלה:</p>}
-      <RequirementList items={visible} />
+      {visible.length > 0 && <RequirementList items={visible} />}
       {additional.length > 0 && (
         <details className="group mt-3 border-t border-[#dce1ee] pt-1">
           <summary className="w-fit cursor-pointer rounded-sm py-2 font-semibold text-[#6554b8] underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#6554b8]">
