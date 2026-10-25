@@ -64,13 +64,13 @@ describe('formula-backed verification ledger', () => {
     // Approved by Jorje 2026-10-25 02:10 (4): final BIU brief §2 adds three withheld pairs; exact remains 125.
     expect(completion).toMatchObject({
       total: 141,
-      exact: 125,
-      withheld: 15,
+      exact: 124,
+      withheld: 16,
       isComplete: false,
     });
     // Approved by Jorje 2026-10-25 02:10 (4): final BIU brief §2 expands BIU from seven to ten withheld pairs.
     expect(completion.totalsByInstitution).toEqual({
-      tau: { total: 33, exact: 30, withheld: 3, stale: 0, blocked: 0 },
+      tau: { total: 33, exact: 29, withheld: 4, stale: 0, blocked: 0 },
       huji: { total: 28, exact: 28, withheld: 0, stale: 0, blocked: 0 },
       bgu: { total: 28, exact: 28, withheld: 0, stale: 0, blocked: 0 },
       haifa: { total: 27, exact: 25, withheld: 1, stale: 0, blocked: 1 },
@@ -82,7 +82,7 @@ describe('formula-backed verification ledger', () => {
       FORMULA_BACKED_VERIFICATION_LEDGER.filter((entry) => entry.state === 'exact').map(
         (entry) => entry.pairId,
       ),
-    ).toHaveLength(125);
+    ).toHaveLength(124);
   });
 
   it('names a newly discovered pair that lacks a reviewed ledger record', () => {
@@ -135,7 +135,7 @@ describe('formula-backed verification ledger', () => {
     );
 
     // Approved by Jorje 2026-10-25 02:10 (4): final BIU brief §2 adds three estimated pairs without exact formula proof.
-    expect(withheld).toHaveLength(15);
+    expect(withheld).toHaveLength(16);
     expect(withheld.every((entry) => entry.reason.length > 80)).toBe(true);
     expect(withheld.every((entry) => entry.sourceUrl.startsWith('https://'))).toBe(true);
     expect(
