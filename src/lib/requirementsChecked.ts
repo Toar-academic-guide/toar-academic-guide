@@ -1,4 +1,5 @@
 import repair from '@/data/admissions/catalogueContentRepair.json';
+import { canonicalInstitutionId } from '@/data/institutionAliases';
 import { institutionLink } from '@/lib/institutionLinks';
 import type { CatalogueInstitution } from '@/types/catalogue';
 
@@ -24,7 +25,9 @@ export function getRequirementsChecked(
   sourceNotes?: readonly string[],
 ): RequirementsChecked | undefined {
   const entry = repair.requirements.find(
-    (row) => row.programId === sourceProgramId && row.institutionId === institution.id,
+    (row) =>
+      row.programId === sourceProgramId &&
+      canonicalInstitutionId(row.institutionId) === canonicalInstitutionId(institution.id),
   );
   if (
     !entry ||
