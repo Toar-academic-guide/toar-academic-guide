@@ -111,3 +111,10 @@ describe('Batch C unsupported admission paths', () => {
       expect(BATCH_C_PROGRAMS[id]).toBeUndefined();
   });
 });
+
+it('retains the unwired Braude engineering shell and mechina in Batch C', () => {
+  for (const id of ['braude_engineering', 'braude_prep']) {
+    expect(BATCH_C_PROGRAMS[id].institutionId).toBe('braude');
+    expect(isBatchCUnsupportedProgramId(id, 'braude')).toBe(true);
+  }
+});

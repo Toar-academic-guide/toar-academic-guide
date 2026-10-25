@@ -546,3 +546,33 @@ describe('verified programme identity overlays on stale DB data', () => {
     });
   });
 });
+
+describe('Braude persisted identity reconciliation', () => {
+  it.each(['ort_braude', 'mon_12220708942'])(
+    'serializes %s programmes under braude without changing stored ids',
+    (alias) => {
+      const seed = buildCatalogueSeed();
+      const original = {
+        ...seed.programs[0],
+        id: 'mon_12220708942_cs',
+        institutionId: alias,
+      } as ProgramRow;
+      const institution = { ...seed.institutions[0], id: alias } as InstitutionRow;
+      const result = serializeProgramRow({
+        program: original,
+        relations: [{ programId: original.id, institutionId: alias }],
+        requirements: [],
+        thresholds: [],
+        sourceUrls: [],
+        institutionsById: new Map([[alias, institution]]),
+      });
+      expect(result).toMatchObject({
+        id: 'mon_12220708942_cs',
+        institutionId: 'braude',
+        linkedInstitutionIds: ['braude'],
+      });
+      expect(original.institutionId).toBe(alias);
+      expect(serializeInstitutionRow(institution).id).toBe(alias);
+    },
+  );
+});

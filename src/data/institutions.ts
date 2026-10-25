@@ -1,3 +1,4 @@
+import { canonicalInstitutionId, INSTITUTION_ALIASES } from './institutionAliases';
 import type { GeographicRegion, UniversityId } from '@/types';
 
 // ── Institution ID union ──────────────────────────────────────────────────────
@@ -72,6 +73,7 @@ export type InstitutionId =
   | 'neri_bloomfield'
   | 'beit_ziv'
   // ── Engineering colleges ──────────────────────────────────────────────────
+  | 'braude'
   | 'ort_braude'
   | 'azrieli'
   | 'sce'
@@ -1005,3 +1007,14 @@ export const INSTITUTION_BY_ID = Object.fromEntries(
 export const INSTITUTION_BY_NAME: Record<string, InstitutionRecord> = Object.fromEntries(
   INSTITUTIONS.map((inst) => [inst.name, inst]),
 );
+
+// Keep legacy records, but resolve both legacy ids and Hebrew names to Braude.
+const braudeInstitution = INSTITUTION_BY_ID.braude;
+for (const alias of Object.keys(INSTITUTION_ALIASES)) {
+  INSTITUTION_BY_ID[alias as InstitutionId] = braudeInstitution;
+}
+for (const institution of INSTITUTIONS) {
+  if (canonicalInstitutionId(institution.id) === 'braude') {
+    INSTITUTION_BY_NAME[institution.name] = braudeInstitution;
+  }
+}

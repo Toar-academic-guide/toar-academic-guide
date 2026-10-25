@@ -1,3 +1,4 @@
+import { canonicalInstitutionId } from '@/data/institutionAliases';
 import { allPrograms } from '@/data/degrees';
 import type { Program } from '@/data/degrees/types';
 import { INSTITUTIONS, INSTITUTION_BY_NAME, type InstitutionId } from '@/data/institutions';
@@ -36,7 +37,12 @@ function getLinkedInstitutionIds(program: Program): InstitutionId[] {
 export function toStaticCatalogueProgram(program: Program): CatalogueProgram {
   return {
     ...program,
-    linkedInstitutionIds: getLinkedInstitutionIds(program),
+    ...(program.institutionId
+      ? { institutionId: canonicalInstitutionId(program.institutionId) as InstitutionId }
+      : {}),
+    linkedInstitutionIds: [
+      ...new Set(getLinkedInstitutionIds(program).map(canonicalInstitutionId)),
+    ],
   };
 }
 

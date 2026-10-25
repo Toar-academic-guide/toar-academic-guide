@@ -1,5 +1,7 @@
 import 'server-only';
 
+import { withCanonicalInstitutionAliases } from '@/data/institutionAliases';
+
 import { eq, inArray } from 'drizzle-orm';
 
 import { UNIVERSITIES } from '@/data/degreesData';
@@ -440,8 +442,10 @@ export async function listCatalogueInstitutions(): Promise<
   );
 
   return {
-    data: resolution.snapshot!.institutions.map((row) =>
-      serializeInstitutionRow(row, calculatorConfigsByInstitutionId.get(row.id)),
+    data: withCanonicalInstitutionAliases(
+      resolution.snapshot!.institutions.map((row) =>
+        serializeInstitutionRow(row, calculatorConfigsByInstitutionId.get(row.id)),
+      ),
     ),
     meta: resolution.meta,
   };

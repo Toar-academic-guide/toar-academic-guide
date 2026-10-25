@@ -70,6 +70,7 @@ vi.mock('@/lib/catalogueStatic', () => ({
 import {
   evaluateCatalogueReadiness,
   listCataloguePrograms,
+  listCatalogueInstitutions,
   resetDatabaseCatalogueSnapshotCache,
 } from '@/server/catalogue/queries';
 
@@ -475,4 +476,26 @@ describe('graphic-design identity repairs across the database cutover', () => {
       expect(hoistedMocks.getStaticCataloguePrograms).not.toHaveBeenCalled();
     },
   );
+});
+
+it('supplies the canonical Braude institution for persisted alias links without removing legacy ids', async () => {
+  mockEnv = { mode: 'database', hasDatabaseUrl: true, isProduction: true };
+  resetDatabaseCatalogueSnapshotCache();
+  const dataset = createDatabaseBackedDataset();
+  dataset.institutions.push({
+    ...dataset.institutions[0],
+    id: 'ort_braude',
+    name: 'בראודה',
+    universityId: 'ort_braude',
+  });
+  const { db } = createMockDb(dataset);
+  hoistedMocks.getDb.mockReturnValue(db);
+  const { data, meta } = await listCatalogueInstitutions();
+  expect(meta.catalogueSource).toBe('database');
+  expect(data.find((i) => i.id === 'braude')).toMatchObject({ id: 'braude', name: 'בראודה' });
+  expect(data.find((i) => i.id === 'ort_braude')).toMatchObject({
+    id: 'ort_braude',
+    name: 'בראודה',
+  });
+  expect(dataset.institutions.some((i) => i.id === 'braude')).toBe(false);
 });
