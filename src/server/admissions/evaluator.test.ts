@@ -5001,3 +5001,129 @@ it.each(['tlvyaffo_economics', 'ruppin_marine_bio'])(
     }
   },
 );
+
+describe('TAU architecture manual screening', () => {
+  const program = {
+    ...getStaticCataloguePrograms().find((row) => row.id === 'architecture')!,
+    linkedInstitutionIds: ['tau'],
+  };
+  const url = 'https://go.tau.ac.il/he/arts/ba/arch?v=admission-requirements';
+
+  async function evaluate(
+    psychometric = 680,
+    extraInputs: AdmissionsExtraInputs = { psychometricEnglish: 110 },
+  ) {
+    const fetcher = vi.fn<typeof fetch>();
+    const report = await evaluateAdmissionsForProgram({
+      program,
+      institutions,
+      input: { degreeId: 'architecture', bagrut: 110, psychometric, extraInputs },
+      fetcher,
+      freshnessStatesBySourceId: new Map(),
+    });
+    expect(fetcher).not.toHaveBeenCalled();
+    const result = report.results[0]!;
+    expect(result.score).toBeUndefined();
+    expect(result.threshold).toBeUndefined();
+    expect(result.scoreAssessment).toBeUndefined();
+    expect(result.officialUrls).toContain(url);
+    expect(result.explanation).not.toMatch(/679|629|600|תיק עבודות|ראיון/);
+    return result;
+  }
+
+  it('withholds a verdict for 680/110 and English 110 even without mathematics inputs', async () => {
+    const result = await evaluate();
+    expect(result).toMatchObject({
+      capability: 'manual_gate',
+      kind: 'manual_gate',
+      decision: 'unknown',
+      sourceLabel: 'נדרש מיון נוסף',
+    });
+    expect(result.explanation).toContain('50% ציון ההתאמה ו־50% ציון מבחן מיון');
+    expect(result.explanation).toContain('אוניברסיטת תל אביב מחליטה על הקבלה לאחריו');
+    expect(result.floorChecks).toEqual([
+      expect.objectContaining({
+        label: 'פסיכומטרי',
+        verdictThreshold: 551,
+        studentValue: 680,
+        status: 'pass',
+        sourceUrl: url,
+      }),
+      expect.objectContaining({ label: 'מתמטיקה', status: 'missing', sourceUrl: url }),
+      expect.objectContaining({
+        label: 'אנגלית בפסיכומטרי',
+        verdictThreshold: 100,
+        studentValue: 110,
+        status: 'pass',
+        sourceUrl: 'https://go.tau.ac.il/he/ba/admissions',
+      }),
+    ]);
+    expect(resultLabel(result)).toEqual({ label: 'נדרש מיון נוסף', group: 'explore' });
+  });
+
+  it.each([
+    [550, 'miss', 'below'],
+    [551, 'pass', 'unknown'],
+    [500, 'miss', 'below'],
+  ] as const)(
+    'checks the psychometric floor at %s without a composite verdict',
+    async (score, status, decision) => {
+      const result = await evaluate(score);
+      expect(result.decision).toBe(decision);
+      expect(result.capability).toBe('manual_gate');
+      expect(result.floorChecks?.[0]).toMatchObject({ status, studentValue: score });
+    },
+  );
+
+  it.each([
+    [90, 'miss', 'below'],
+    [99, 'miss', 'below'],
+    [100, 'pass', 'unknown'],
+    [undefined, 'missing', 'unknown'],
+  ] as const)(
+    'checks English %s against the university BA conditions',
+    async (english, status, decision) => {
+      const result = await evaluate(680, { psychometricEnglish: english });
+      expect(result.decision).toBe(decision);
+      expect(result.floorChecks?.[2]).toMatchObject({
+        status,
+        sourceUrl: 'https://go.tau.ac.il/he/ba/admissions',
+      });
+    },
+  );
+
+  it.each([
+    [5, 70, 'pass'],
+    [5, 69, 'miss'],
+    [4, 80, 'pass'],
+    [4, 79, 'miss'],
+    [3, 90, 'pass'],
+    [3, 89, 'miss'],
+  ] as const)('checks mathematics %s units / %s', async (units, grade, status) => {
+    const result = await evaluate(680, {
+      psychometricEnglish: 110,
+      mathUnits: units,
+      mathGrade: grade,
+    });
+    expect(result.decision).toBe(status === 'miss' ? 'below' : 'unknown');
+    expect(result.floorChecks?.[1]).toMatchObject({
+      status,
+      studentValue: `${units} יח״ל, ${grade}`,
+    });
+  });
+
+  it('uses the mathematics subject record before scalar inputs', async () => {
+    const result = await evaluate(680, {
+      psychometricEnglish: 110,
+      mathUnits: 5,
+      mathGrade: 100,
+      bagrutSubjectRecord: {
+        schemaVersion: 1,
+        sector: 'jewish',
+        subjects: [{ subjectId: 'mathematics', units: 4, grade: 79 }],
+      },
+    });
+    expect(result.decision).toBe('below');
+    expect(result.floorChecks?.[1]).toMatchObject({ status: 'miss', studentValue: '4 יח״ל, 79' });
+  });
+});

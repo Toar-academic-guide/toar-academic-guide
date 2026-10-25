@@ -1,9 +1,12 @@
 // @vitest-environment jsdom
 
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import CalculatorResults from '@/components/CalculatorResults';
+import { evaluateAdmissionsForProgram } from '@/server/admissions/evaluator';
+
+vi.mock('server-only', () => ({}));
 import { evaluateOnoPublishedRoutes } from '@/server/admissions/onoPublishedRoutesEvaluation';
 import { evaluateBatchBManualPath } from '@/server/admissions/batchBManualPathEvaluation';
 import { getStaticCatalogueInstitutions } from '@/lib/catalogueStatic';
@@ -242,6 +245,64 @@ describe('CalculatorResults', () => {
     expect(await screen.findByText(/המיפוי של המסלול החד־חוגי הרגיל/)).toBeTruthy();
     expect(screen.queryByLabelText('האם אתם עומדים בתנאי הקבלה של החוג השני?')).toBeNull();
   });
+  it.each([
+    [680, 110, 'אפשר להגיש מועמדות', 'עומד/ת', 'עומד/ת'],
+    [680, 90, 'לא עומד/ת בתנאי הסף', 'עומד/ת', 'לא עומד/ת'],
+    [500, 110, 'לא עומד/ת בתנאי הסף', 'לא עומד/ת', 'עומד/ת'],
+  ])(
+    'renders TAU architecture screening and checked floors for %s / English %s',
+    async (psychometric, english, label, psychStatus, englishStatus) => {
+      const program = {
+        ...programs.find((row) => row.id === 'architecture')!,
+        linkedInstitutionIds: ['tau'],
+      };
+      const evaluation = await evaluateAdmissionsForProgram({
+        program,
+        institutions: getStaticCatalogueInstitutions(),
+        input: {
+          degreeId: 'architecture',
+          psychometric,
+          bagrut: 110,
+          extraInputs: { psychometricEnglish: english, mathUnits: 5, mathGrade: 70 },
+        },
+        freshnessStatesBySourceId: new Map(),
+        fetcher: vi.fn<typeof fetch>(),
+      });
+      hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(evaluation);
+      render(
+        <CalculatorResults
+          degreeId="architecture"
+          programs={[program]}
+          psychometric={psychometric}
+          bagrut={110}
+          onBack={() => {}}
+        />,
+      );
+      expect(await screen.findByText('נדרש מיון נוסף', { exact: true })).toBeTruthy();
+      expect(screen.getByLabelText(`אוניברסיטת תל אביב: ${label}`)).toBeTruthy();
+      expect(screen.getByText(/אוניברסיטת תל אביב מחליטה על הקבלה לאחריו/)).toBeTruthy();
+      const table = screen.getByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלך' });
+      expect(
+        within(table).getByRole('row', { name: `פסיכומטרי 551 ${psychometric} ${psychStatus}` }),
+      ).toBeTruthy();
+      expect(
+        within(table).getByRole('row', {
+          name: `אנגלית בפסיכומטרי 100 ${english} ${englishStatus}`,
+        }),
+      ).toBeTruthy();
+      expect(
+        screen.getByRole('link', { name: 'תנאי קבלה', exact: true }).getAttribute('href'),
+      ).toBe(
+        'https://go.tau.ac.il/he/arts/ba/arch?v=admission-requirements&utm_source=myway&utm_medium=referral',
+      );
+      expect(screen.queryByText(/האימות.*טרם הושלם|בר-אילן|679|629/)).toBeNull();
+      expect(screen.queryByText('מתקבלים', { exact: true })).toBeNull();
+      expect(evaluation.results[0].decision).toBe(
+        english < 100 || psychometric < 551 ? 'below' : 'unknown',
+      );
+    },
+  );
+
   it('labels Technion Architecture eligibility as conditional on available places', async () => {
     hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
       report([
