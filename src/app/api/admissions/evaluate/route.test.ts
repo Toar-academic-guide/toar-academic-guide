@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { resetAdmissionsEvaluationRateLimitForTests } from '@/server/admissions/rateLimit';
 import { PROGRAM_CANONICAL_ALIASES } from '@/lib/seo/programAliases';
@@ -836,6 +836,37 @@ describe('admissions evaluate route', () => {
     expect(blocked.status).toBe(429);
     await expect(blocked.json()).resolves.toMatchObject({
       error: { code: 'ADMISSIONS_EVALUATION_RATE_LIMITED' },
+    });
+  });
+  describe('static Actions smoke bucket headers', () => {
+    beforeEach(() => {
+      vi.stubEnv('CI', 'true');
+      vi.stubEnv('GITHUB_ACTIONS', 'true');
+      vi.stubEnv('CATALOGUE_SOURCE_MODE', 'static');
+      vi.stubEnv('VERCEL', undefined);
+      vi.stubEnv('VERCEL_ENV', undefined);
+      vi.stubEnv('ADMISSIONS_EVALUATION_E2E_ISOLATION', '1');
+    });
+    afterEach(() => vi.unstubAllEnvs());
+
+    it('returns 429 on request 13 within one test and 200 for the next test', async () => {
+      hoistedMocks.headers.mockResolvedValue(
+        new Headers({
+          'x-forwarded-for': '127.0.0.1',
+          'x-myway-e2e-bucket': 'test-one',
+        }),
+      );
+      for (let i = 0; i < 12; i++) {
+        expect((await batchRequest({ degreeId: 'tau_datascience' })).status).toBe(200);
+      }
+      expect((await batchRequest({ degreeId: 'tau_datascience' })).status).toBe(429);
+      hoistedMocks.headers.mockResolvedValue(
+        new Headers({
+          'x-forwarded-for': '127.0.0.1',
+          'x-myway-e2e-bucket': 'test-two',
+        }),
+      );
+      expect((await batchRequest({ degreeId: 'tau_datascience' })).status).toBe(200);
     });
   });
 });

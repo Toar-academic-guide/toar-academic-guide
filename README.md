@@ -13,14 +13,20 @@ The test suite covers the current recommendation, bucket-list, and admission-cal
 
 ### PR smoke environment
 
-The `Playwright PR smoke` job starts a local production build with a static catalogue.
-Its requests share a localhost client key, so that job sets
-`ADMISSIONS_EVALUATION_CI_MAX_REQUESTS_PER_WINDOW=1000`. This server-only limit is
-honored only when `CI=true`, `GITHUB_ACTIONS=true`, and `CATALOGUE_SOURCE_MODE=static`,
-with neither `VERCEL` nor `VERCEL_ENV` set. Values must be integers from 12 to 1000;
-otherwise the default applies. The limiter remains active, with the same 60-second
-window. Vercel production and preview deployments always retain the default of
-12 requests per client per minute, even if the CI override is configured.
+Both `Playwright PR smoke` and main's `E2E smoke tests` start a local production
+build with a static catalogue and `ADMISSIONS_EVALUATION_E2E_ISOLATION=1`. The shared
+Playwright fixture gives each test (including each retry and subsequent suite run)
+a fresh `x-myway-e2e-bucket` UUID, preserved alongside any spec-specific headers.
+Browser and API requests within that test share its bucket. The real limit remains
+12 requests per client per 60 seconds; one batched evaluation consumes one request,
+even with more than 12 programmes. Isolation also ignores the legacy CI limit override.
+
+The server honors the bucket header only with the explicit isolation opt-in,
+`CI=true`, `GITHUB_ACTIONS=true`, `CATALOGUE_SOURCE_MODE=static`, and neither `VERCEL`
+nor `VERCEL_ENV` set. Otherwise it ignores the header and uses the normal client key.
+Vercel production and preview retain the production limit and cannot opt into test
+buckets. Regression tests require both smoke jobs to keep identical environments
+and every smoke spec to import the shared fixture.
 
 Vercel Analytics is mounted only on Vercel deployments (`VERCEL=1`), where the
 platform serves `/_vercel/insights/script.js`. Local production builds do not

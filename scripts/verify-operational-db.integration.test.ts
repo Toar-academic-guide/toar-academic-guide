@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import postgres, { type TransactionSql } from 'postgres';
 import { afterAll, describe, expect, it } from 'vitest';
 import { loadProductionSchemaSnapshot } from './lib/production-schema-snapshot.mjs';
@@ -64,12 +65,46 @@ describe.skipIf(!enabled)('operational schema snapshot with disposable PostgreSQ
       );
     }));
 
+  it('captures the 0042 body from PostgreSQL and rejects the pre-0042 body', async () =>
+    isolated(async (tx) => {
+      const fixed = readFileSync(
+        'src/db/migrations/0042_store_enquiry_createdat_default.sql',
+        'utf8',
+      );
+      const old = fixed.replace(
+        "COALESCE((payload->>'createdAt')::timestamptz, now())",
+        "(payload->>'createdAt')::timestamptz",
+      );
+      await tx.unsafe(old);
+      expect(await report(tx)).toMatchObject({
+        status: 'drift',
+        safeToMigrate: false,
+        issues: expect.arrayContaining([
+          expect.objectContaining({
+            code: 'function_body_mismatch',
+            object: 'function:store_enquiry(jsonb)',
+          }),
+        ]),
+      });
+      await tx.unsafe(fixed);
+      const snapshot = await loadProductionSchemaSnapshot(tx);
+      expect(snapshot.functionDefinitions['store_enquiry(jsonb)']).toContain(
+        "COALESCE((payload->>'createdAt')::timestamptz, now())",
+      );
+      expect(
+        (await report(tx)).issues.filter(({ object }) => object.includes('store_enquiry')),
+      ).toEqual([]);
+    }));
+
   it('sees private enquiries columns as ops_readonly without granting contact access', async () =>
     isolated(async (tx) => {
       await tx`grant usage on schema supabase_migrations to ops_readonly`;
       await tx`grant select on supabase_migrations.schema_migrations to ops_readonly`;
       await tx`set local role ops_readonly`;
       const snapshot = (await loadProductionSchemaSnapshot(tx)) as ProductionSchemaSnapshot;
+      expect(snapshot.functionDefinitions?.['store_enquiry(jsonb)']).toContain(
+        "COALESCE((payload->>'createdAt')::timestamptz, now())",
+      );
       expect(snapshot.tables.enquiries.columnTypes.created_at).toBe('timestamp with time zone');
       expect(snapshot.tables.enquiries.grants.ops_readonly ?? []).toEqual([]);
     }));

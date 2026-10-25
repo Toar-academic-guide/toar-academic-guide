@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 // Give this spec its own evaluation budget when the full suite shares one server.
 test.use({

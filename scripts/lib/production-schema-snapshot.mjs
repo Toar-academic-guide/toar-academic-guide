@@ -227,6 +227,8 @@ export async function loadProductionSchemaSnapshot(sql) {
           else n.nspname||'.'||p.proname
         end as function_name,
         coalesce(p.proconfig, array[]::text[]) as function_config,
+        case when n.nspname='public' and p.proname='store_enquiry' and p.prokind='f'
+          then pg_get_functiondef(p.oid) end as function_definition,
         p.prosecdef as security_definer,
         array(select r.rolname from pg_roles r
           where (r.rolname = any(array['anon','authenticated','app_runtime','ops_readonly','admissions_automation'])
@@ -313,6 +315,11 @@ export async function loadProductionSchemaSnapshot(sql) {
     triggers: triggerRows.map((row) => row.trigger_name),
     functions: Object.fromEntries(
       functionRows.map((row) => [row.function_name, row.function_config]),
+    ),
+    functionDefinitions: Object.fromEntries(
+      functionRows
+        .filter((row) => typeof row.function_definition === 'string')
+        .map((row) => [row.function_name, row.function_definition]),
     ),
     functionAccess: Object.fromEntries(
       functionRows.map((row) => [
