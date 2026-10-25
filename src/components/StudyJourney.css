@@ -376,11 +376,7 @@
   margin-bottom: 25px;
 }
 .journey-search input {
-  width: 100%;
-  border: 0 !important;
-  background: none !important;
   padding: 15px 0 !important;
-  box-shadow: none !important;
 }
 .journey-chips {
   display: flex;

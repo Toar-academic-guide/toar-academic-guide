@@ -406,7 +406,7 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
 
           {/* Search with flush chevron */}
           <div ref={searchWrapRef} className="relative mb-2">
-            <div className="flex overflow-hidden rounded-xl border-2 border-[#bae6fd] bg-white transition focus-within:border-[#0891b2]">
+            <div className="way-search-field flex overflow-hidden rounded-xl border-2 border-[#bae6fd] bg-white transition focus-within:border-[#0891b2]">
               <input
                 ref={searchRef}
                 type="text"
@@ -417,7 +417,7 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
                   setDropOpen(true);
                 }}
                 onFocus={() => setDropOpen(true)}
-                className="way-input-unframed min-w-0 flex-1 border-none bg-transparent px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400"
+                className="way-input-unframed px-4 py-3 text-sm text-slate-900 placeholder:text-slate-400"
               />
               <button
                 type="button"
