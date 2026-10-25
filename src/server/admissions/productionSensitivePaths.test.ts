@@ -105,6 +105,7 @@ describe('docs-only classification', () => {
     'scripts/README.md',
     '.github/README.md',
     'AGENTS.md',
+    'docs/ops/vercel-waf-rate-limits.md',
     'src/components/Header.tsx',
     'package-lock.json',
   ])('runs the suite for a mixed diff including %s', (filePath) => {

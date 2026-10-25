@@ -30,6 +30,7 @@ export function findProductionSensitivePaths(filePaths) {
 
 // Audit: `rg '\.md' src scripts e2e`. The admissions directories contain
 // generated/validated evidence; AGENTS.md is also a pre-PR guard input.
+// The workflow contract reads the WAF Markdown to reject concrete egress IPs.
 // Other docs formats (JSON, HTML, PDFs) can be runtime or test inputs.
 export function isDocsOnlyChange(filePaths) {
   const paths = filePaths.map((filePath) => filePath.trim()).filter(Boolean);
@@ -39,6 +40,7 @@ export function isDocsOnlyChange(filePaths) {
       (filePath) =>
         filePath.endsWith('.md') &&
         filePath !== 'AGENTS.md' &&
+        filePath !== 'docs/ops/vercel-waf-rate-limits.md' &&
         !/^(?:docs\/(?:admissions-coverage|admissions-review-runs)|public|src|e2e|scripts|\.github)\//.test(
           filePath,
         ),

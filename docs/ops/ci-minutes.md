@@ -12,11 +12,13 @@ Recorded 2026-10-25. Non-visual (CI only).
   `docs_only`. PR classification still executes the **base branch's** script.
   Missing/empty output runs everything, so the policy-changing PR itself runs
   the full suite. Only a non-empty diff consisting entirely of `.md` files is
-  eligible, excluding `AGENTS.md`, `docs/admissions-coverage/`,
+  eligible, excluding `AGENTS.md`, `docs/ops/vercel-waf-rate-limits.md`,
+  `docs/admissions-coverage/`,
   `docs/admissions-review-runs/`, `public/`, `src/`, `e2e/`, `scripts/` and
   `.github/`. An audit of `.md` references in `src/`, `scripts/` and `e2e/`
   found generated admissions evidence, review-run reports and the guard's
-  `AGENTS.md` rule; all are excluded. JSON, HTML and PDF evidence always runs
+  `AGENTS.md` rule. The new IP contract also reads the WAF Markdown; all
+  are excluded. JSON, HTML and PDF evidence always runs
   the full suite. Update this policy if code starts consuming another Markdown
   file.
 - **Docs-only checks:** six heavy jobs still get runners and report success,
@@ -120,8 +122,9 @@ The hostname filter earns **no duplicate-run savings**: the measured baseline
 already bills exactly one Preview run per head SHA; foreign project and other
 rejected events bill zero. Docs-only savings are unmeasured and are not credited
 in the projection. The baseline's broad docs candidate count, `3 / 68` (~4%),
-used `.md OR docs/**`, which is wider than the safe policy here (the raw sample
-also includes `AGENTS.md`). Notice-only jobs still incur runner billing, and
+used `.md OR docs/**`, which is wider than the safe policy here. Its raw sample
+is two WAF-documentation PRs and one `AGENTS.md` PR; all three are excluded
+under this policy, so that sample demonstrates no eligible docs-only savings. Notice-only jobs still incur runner billing, and
 Preview still checks out and classifies; neither is zero cost.
 
 This is far less than a 60% reduction. Even the optimistic cancellation case,
