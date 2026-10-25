@@ -1,6 +1,6 @@
 # Bagrut normalization — Option A, Ariel only
 
-Local implementation on `codex/bagrut-normalization-ariel-only`, starting from `d19466a` (main `214f0b7`, including #282). The branch has been pushed and [PR #294](https://github.com/Toar-academic-guide/toar-academic-guide/pull/294) is open. This PM-fix follow-up is local only, with no push. No external messages, production DB/SQL, migrations, seed writes, manifests, Vercel, or environment changes. The final task spec outside the repo remains read-only.
+Local implementation on `codex/bagrut-normalization-ariel-only`, starting from `d19466a` (main `214f0b7`, including #282). The branch has been pushed and [PR #294](https://github.com/Toar-academic-guide/toar-academic-guide/pull/294) is open. No external messages, production DB/SQL, migrations, seed writes, manifests, Vercel, or environment changes. The final task spec outside the repo remains read-only.
 
 ## Formula and retained conditions
 
@@ -93,7 +93,7 @@ Screenshots and machine evidence: `/tmp/pf5-browser/{before,after}-{filled,empty
 
 ## PM-fix verification — Jorje, 2026-10-25
 
-The approved follow-up restores the three original evaluator cases, keeps separate unsupported BGU coverage, reverts the badge copy and corrects PR status. Only `BucketList.tsx` changes production behavior. No push is performed; the coordinator owns publishing this single local commit.
+The approved follow-up restores the three original evaluator cases, keeps separate unsupported BGU coverage, reverts the badge copy and corrects PR status. Only `BucketList.tsx` changes production behavior. These PM-approved fixes belong to PR #294; the coordinator owns publishing follow-up commits to that PR.
 
 - `git fetch origin` followed by `git rev-list --left-right --count HEAD...origin/main`: 4 ahead / 0 behind before the PM-fix commit; no merge needed. `origin/main` matches the remote main SHA `214f0b7`.
 - Focused evaluator and bucket-list checks: 3 files / 437 tests passed, including 427 evaluator cases.
