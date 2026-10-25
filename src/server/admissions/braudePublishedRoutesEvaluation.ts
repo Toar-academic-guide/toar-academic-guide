@@ -321,15 +321,6 @@ export function evaluateBraudePublishedRoutes({
     officialUrls: [SOURCE, CALCULATOR],
     additionalConditions: conditions,
   };
-  if (!primary.below && !primary.missing.length && !gaps.length)
-    return {
-      ...base,
-      decision: 'accepted',
-      scoreAssessment: 'meets_threshold',
-      additionalConditions: conditions.slice(0, floors.length),
-      explanation: 'הציונים שהוזנו עומדים בתנאי הסף להרשמה למסלול הפסיכומטרי.',
-      nextAction: 'אפשר להמשיך להרשמה במכללה.',
-    };
   if (primary.below && bonus === undefined)
     return {
       ...base,
@@ -338,18 +329,28 @@ export function evaluateBraudePublishedRoutes({
       explanation: `הציונים שהוזנו אינם עומדים בתנאי הסף: ${missedFloors}. מקור: תנאי הסף של בראודה.`,
       nextAction: 'בדקו את תנאי הסף באתר המכללה ואת אפשרויות שיפור הציונים.',
     };
+  if (primary.below || primary.missing.length || gaps.length) {
+    return {
+      ...base,
+      kind: 'needs_input',
+      capability: 'needs_input',
+      decision: 'unknown',
+      requiredInputs: primary.below ? [] : primary.missing,
+      explanation: primary.below
+        ? `מסלול הפסיכומטרי אינו עומד בתנאי הסף: ${missedFloors}. מסלול הבגרות ללא פסיכומטרי טרם נבדק במלואו. מקור: תנאי הסף של בראודה.`
+        : `נדרשים נתונים נוספים לבדיקת כל תנאי הסף.${gaps.length ? ` תנאים שטרם נבדקו: ${gaps.map((f) => f.label).join('; ')}.` : ''}`,
+      nextAction:
+        gaps.length || bonus !== undefined
+          ? 'בדקו את התנאים שטרם נבדקו באתר המכללה ובמחשבון הבגרויות שלה.'
+          : 'השלימו את הציונים החסרים ואת מקצועות תעודת הבגרות בפרופיל האקדמי.',
+    };
+  }
   return {
     ...base,
-    kind: 'needs_input',
-    capability: 'needs_input',
-    decision: 'unknown',
-    requiredInputs: primary.below ? [] : primary.missing,
-    explanation: primary.below
-      ? `מסלול הפסיכומטרי אינו עומד בתנאי הסף: ${missedFloors}. מסלול הבגרות ללא פסיכומטרי טרם נבדק במלואו. מקור: תנאי הסף של בראודה.`
-      : `נדרשים נתונים נוספים לבדיקת כל תנאי הסף.${gaps.length ? ` תנאים שטרם נבדקו: ${gaps.map((f) => f.label).join('; ')}.` : ''}`,
-    nextAction:
-      gaps.length || bonus !== undefined
-        ? 'בדקו את התנאים שטרם נבדקו באתר המכללה ובמחשבון הבגרויות שלה.'
-        : 'השלימו את הציונים החסרים ואת מקצועות תעודת הבגרות בפרופיל האקדמי.',
+    decision: 'accepted',
+    scoreAssessment: 'meets_threshold',
+    additionalConditions: conditions.slice(0, floors.length),
+    explanation: 'הציונים שהוזנו עומדים בתנאי הסף להרשמה למסלול הפסיכומטרי.',
+    nextAction: 'אפשר להמשיך להרשמה במכללה.',
   };
 }

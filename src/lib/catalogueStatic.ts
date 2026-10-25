@@ -1,4 +1,4 @@
-import { canonicalInstitutionId } from '@/data/institutionAliases';
+import { canonicalInstitutionId, withCanonicalInstitutionAliases } from '@/data/institutionAliases';
 import { allPrograms } from '@/data/degrees';
 import type { Program } from '@/data/degrees/types';
 import { INSTITUTIONS, INSTITUTION_BY_NAME, type InstitutionId } from '@/data/institutions';
@@ -51,15 +51,17 @@ export function getStaticCataloguePrograms(programs: Program[] = allPrograms): C
 }
 
 export function getStaticCatalogueInstitutions(): CatalogueInstitution[] {
-  return INSTITUTIONS.map((institution) => ({
-    id: institution.id,
-    name: institution.name,
-    region: institution.region,
-    domain: institution.domain,
-    logoUrl: institution.logoUrl,
-    programUrl: institution.programUrl,
-    calculatorUrl: institution.calculatorUrl,
-    universityId: institution.universityId,
-    calculatorConfig: getStaticCalculatorConfig(institution.id),
-  }));
+  return withCanonicalInstitutionAliases(
+    INSTITUTIONS.map((institution) => ({
+      id: institution.id,
+      name: institution.name,
+      region: institution.region,
+      domain: institution.domain,
+      logoUrl: institution.logoUrl,
+      programUrl: institution.programUrl,
+      calculatorUrl: institution.calculatorUrl,
+      universityId: institution.universityId,
+      calculatorConfig: getStaticCalculatorConfig(institution.id),
+    })),
+  );
 }

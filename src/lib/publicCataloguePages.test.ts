@@ -12,7 +12,9 @@ import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/li
 import { catalogueAdmissionRequirements } from '@/lib/catalogueDisplayText';
 import { officialUrl } from '@/lib/studyJourney';
 import repair from '@/data/admissions/catalogueContentRepair.json';
-import { isIndexableProgram } from '@/lib/seo/indexability';
+import { getEnquiryTarget } from '@/lib/enquiryTarget';
+import { canonicalInstitutionId } from '@/data/institutionAliases';
+import { indexableInstitutionIds, isIndexableProgram } from '@/lib/seo/indexability';
 import { institutionLink } from '@/lib/institutionLinks';
 import { DANON_BEGINNER_REQUIREMENT } from '@/data/admissions/danon';
 
@@ -631,4 +633,54 @@ describe('public catalogue page data', () => {
     expect(pages.both + pages.dateOnly + pages.none).toBe(indexablePages);
     expect(pages.both).toBeGreaterThan(0);
   });
+});
+
+it('keeps one public Braude institution and sitemap entry while resolving legacy saved references', async () => {
+  vi.mocked(listCataloguePrograms).mockResolvedValue({
+    data: getStaticCataloguePrograms(),
+    meta: {},
+  });
+  vi.mocked(listCatalogueInstitutions).mockResolvedValue({
+    data: getStaticCatalogueInstitutions(),
+    meta: {},
+  });
+  const catalogue = await loadPublicCatalogue();
+  expect(
+    catalogue.institutions.filter((i) => canonicalInstitutionId(i.id) === 'braude'),
+  ).toHaveLength(1);
+  expect(
+    (await indexableInstitutionIds(catalogue)).filter(
+      (id) => canonicalInstitutionId(id) === 'braude',
+    ),
+  ).toEqual(['braude']);
+  for (const id of ['braude', 'ort_braude', 'mon_12220708942']) {
+    expect((await getPublicInstitutionPageData(id))?.institution).toMatchObject({
+      id: 'braude',
+      region: 'north',
+      domain: 'braude.ac.il',
+    });
+    expect((await getEnquiryTarget('braude_engineering', id))?.institution.id).toBe('braude');
+  }
+});
+
+it('keeps Braude admission details when the programme uses the legacy Hebrew institution name', async () => {
+  const program = getStaticCataloguePrograms().find((p) => p.id === 'braude_engineering')!;
+  const notes = ['פרטי המסלול נשמרים'];
+  const legacyProgram = {
+    ...program,
+    institutionDetails: [
+      {
+        ...program.institutionDetails![0],
+        institutionName: 'המכללה האקדמית להנדסה בראודה',
+        specificAdmissionNotes: notes,
+      },
+    ],
+  };
+  vi.mocked(listCataloguePrograms).mockResolvedValue({ data: [legacyProgram], meta: {} });
+  vi.mocked(listCatalogueInstitutions).mockResolvedValue({
+    data: getStaticCatalogueInstitutions(),
+    meta: {},
+  });
+  const page = (await getPublicProgramPageData('braude_engineering'))!;
+  expect((await getPublicProgramRequirementSources(page)).braude.requirements).toEqual(notes);
 });

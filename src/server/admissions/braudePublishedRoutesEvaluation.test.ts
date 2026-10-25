@@ -155,14 +155,14 @@ describe('Braude published department floors', () => {
     });
   }
 
-  it('is green only after every CS floor passes; no full-bagrut confirmation gate', () => {
+  it('precedence: all floors present and passing gives green without a full-bagrut confirmation gate', () => {
     const result = evaluate(profile());
     expect(result).toMatchObject({ decision: 'accepted', scoreAssessment: 'meets_threshold' });
     expect(result.additionalConditions?.every((c) => c.status === 'confirmed')).toBe(true);
     expect(result.explanation).toContain('תנאי הסף');
     expect(result.explanation).not.toMatch(/ועדה|ריאיון|תיק עבודות|אישור זכאות/);
   });
-  it('checkable CS miss beats a missing section and names the missed floor and source', () => {
+  it('precedence: a checkable floor miss plus a missing section gives below, naming the floor and source', () => {
     const input = profile();
     input.extraInputs!.psychometricMath = undefined;
     input.extraInputs!.psychometricEnglish = 84;
@@ -171,6 +171,37 @@ describe('Braude published department floors', () => {
     expect(result.explanation).toMatch(/אנגלית.*85/);
     expect(result.officialUrls).toContain(source);
   });
+  it.each([
+    ['braude_ee', 110],
+    ['braude_cs', 115],
+  ] as const)(
+    'precedence: %s missing quant section (%i) needs_input after bagrut and general psychometric pass',
+    (id, threshold) => {
+      const input = profile(id);
+      input.extraInputs!.psychometricMath = undefined;
+      const result = evaluate(input);
+      expect(result).toMatchObject({ kind: 'needs_input', decision: 'unknown' });
+      expect(result.requiredInputs).toContain('psychometric_math');
+      expect(result.additionalConditions).toContainEqual(
+        expect.objectContaining({
+          id: 'psychometric_math',
+          label: expect.stringContaining(String(threshold)),
+          status: 'unconfirmed',
+        }),
+      );
+      for (const field of [
+        'bagrut_average',
+        'psychometric_overall',
+        'math_grade',
+        'psychometric_english',
+      ] as const) {
+        expect(result.additionalConditions).toContainEqual(
+          expect.objectContaining({ id: field, status: 'confirmed' }),
+        );
+      }
+      expect(result.scoreAssessment).not.toBe('meets_threshold');
+    },
+  );
   it.each(['psychometricMath', 'psychometricEnglish'] as const)(
     'no miss plus missing %s needs input',
     (field) => {
@@ -186,11 +217,11 @@ describe('Braude published department floors', () => {
     },
   );
   it.each(['braude_civil_eng', 'braude_infosystems', 'braude_softwareeng'])(
-    '%s cannot be green from section scores',
+    'precedence: %s composite remains needs_input when all other floors and section scores pass',
     (id) => {
       const input = profile(id);
       subject(input, 'mathematics', 5, 100);
-      expect(evaluate(input).kind).toBe('needs_input');
+      expect(evaluate(input)).toMatchObject({ kind: 'needs_input', decision: 'unknown' });
       expect(evaluate(input).additionalConditions).toContainEqual(
         expect.objectContaining({
           id: 'institution_weighted_score',

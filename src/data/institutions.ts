@@ -992,6 +992,17 @@ for (const inst of INSTITUTIONS) {
   }
 }
 
+// Canonical metadata comes from the curated entry, not the Monday URL matcher.
+const braudeNames = INSTITUTIONS.filter(
+  (institution) => canonicalInstitutionId(institution.id) === 'braude',
+).map((institution) => institution.name);
+const braudeInstitution: InstitutionRecord = {
+  ...INSTITUTIONS.find((institution) => institution.id === 'ort_braude')!,
+  id: 'braude',
+};
+INSTITUTIONS[INSTITUTIONS.findIndex((institution) => institution.id === 'braude')] =
+  braudeInstitution;
+
 // ── Lookup tables ─────────────────────────────────────────────────────────────
 
 /** O(1) lookup by InstitutionId slug */
@@ -1009,12 +1020,9 @@ export const INSTITUTION_BY_NAME: Record<string, InstitutionRecord> = Object.fro
 );
 
 // Keep legacy records, but resolve both legacy ids and Hebrew names to Braude.
-const braudeInstitution = INSTITUTION_BY_ID.braude;
 for (const alias of Object.keys(INSTITUTION_ALIASES)) {
   INSTITUTION_BY_ID[alias as InstitutionId] = braudeInstitution;
 }
-for (const institution of INSTITUTIONS) {
-  if (canonicalInstitutionId(institution.id) === 'braude') {
-    INSTITUTION_BY_NAME[institution.name] = braudeInstitution;
-  }
+for (const name of braudeNames) {
+  INSTITUTION_BY_NAME[name] = braudeInstitution;
 }
