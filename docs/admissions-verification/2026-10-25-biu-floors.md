@@ -27,7 +27,7 @@ Every below result names the missed hard floors, student values and sources. Spe
 
 T1–T30 were written and run before production edits: 29 failed, 5 passed (34 expanded cases). The UI proof test also failed before implementation. The final focused run passes 73 tests, including public-dispatcher coverage for every new track, EE math-conflict boundaries, five-unit math enforcement and the unchanged law decision/boundary cases.
 
-Existing score, decision, copy and total-count expectations remain unchanged. Only the broad #277 exclusion test and inventory membership were narrowed/expanded as expressly requested by brief §2. The guard includes the new evaluator and UI proof tests.
+The initial implementation retained existing score, decision, copy and total-count expectations; the approved follow-up below updates only the assertions covered by Jorje’s ruling. Only the broad #277 exclusion test and inventory membership were narrowed/expanded as expressly requested by brief §2. The guard includes the new evaluator and UI proof tests.
 
 ### Existing expectations conflicting with the final brief
 
@@ -44,6 +44,12 @@ Existing score, decision, copy and total-count expectations remain unchanged. On
 
 The first guard run fails with **18 tests in 6 files**, while **2,390 tests pass**. Migration grant checks, migration consistency, catalogue seed dry-run and committed Monday evidence verification pass; the raw local Monday export is absent, so its optional regeneration check is skipped. No database writes occur.
 
-These expectations require Jorje's ruling. The normal pre-push hook runs this guard; no bypass is authorized. A failing guard prevents publication, so no PR, CI run or Vercel preview can be claimed until this conflict is resolved.
+### Jorje ruling — Approved by Jorje 2026-10-25 02:10
+
+All 18 original failures fit the four approved categories: floorless criminology combined channels give no verdict; supplied psych means the three science tracks are not bagrut-only checks; viable psych channels prevent below at the bagrut boundary; and adding three routed BIU pairs changes aggregates to 141 total / 15 withheld / 10 BIU, with exact still 125.
+
+Only the six affected test files and ruling/verification documentation change in this follow-up. Every changed assertion has a one-line source comment, and the prepared PR body enumerates each assertion under the existing ruling heading as `Approved by Jorje 2026-10-25 02:10`. Both criminology IDs also stop asserting bagrut-only explanation copy: that copy cannot describe their approved combined-channel no-verdict result. General law and #277 law decisions are unchanged.
+
+The six affected test files pass all 256 tests. The full pre-PR guard passes all 95 files / 2,408 tests, plus migration/grant checks, catalogue seed dry-run and committed Monday evidence verification, without bypass. Typecheck and scoped lint also pass. The PR remains a draft pending UI approval and preview verification.
 
 Code review: skipped (ce-code-review unavailable) — Encoded profile restriction.

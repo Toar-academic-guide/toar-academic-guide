@@ -60,10 +60,11 @@ describe('calculatorCoverage', () => {
   });
 
   it('reports pair-level formula coverage without institution-wide exact claims', () => {
+    // Approved by Jorje 2026-10-25 02:10 (4): final BIU brief §2 adds three withheld pairs; exact remains 125.
     expect(formulaBackedPairCoverage).toMatchObject({
-      total: 138,
+      total: 141,
       exact: 125,
-      withheld: 12,
+      withheld: 15,
       isComplete: false,
     });
 

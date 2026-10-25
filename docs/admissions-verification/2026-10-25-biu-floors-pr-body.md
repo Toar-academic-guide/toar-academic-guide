@@ -27,23 +27,46 @@ EE uses the exact note `בדף הפקולטה באנגלית ובדף מועמד
 - Final focused run: **73 passing tests**, including T1–T30, #277 law boundaries, full public-dispatcher routing, source conflict bands and table copy/link checks.
 - Existing BIU browser suite plus new per-floor cases: **22 passing Playwright tests** against the real local API, on desktop and mobile. The final eight per-floor cases were rerun after the last copy/RTL change and passed. No mocked admission responses, page errors, horizontal overflow or calculator requests. Contact and Save remain visible; table and explanations align right.
 - Typecheck, formatting and lint pass. Lint has one pre-existing unused-import warning in `bagrutPolicies.ts`.
-- `guard:pre-pr`: **fails on retained legacy expectations**; migration/grant checks, seed dry-run and committed Monday evidence checks pass. No bypass is used.
+- `guard:pre-pr`: the 18 original failures are covered by Jorje’s 2026-10-25 02:10 ruling. The six affected test files pass all **256 tests**; the full guard passes **95 files / 2,408 tests**, plus migration/grant checks, seed dry-run and committed Monday evidence verification. No bypass is used.
 - Browser environment: local explicit `CATALOGUE_SOURCE_MODE=static`, webpack dev server. The interactive `ce-test-browser` driver (`agent-browser`) is unavailable; the repository's existing Playwright/Chromium runner supplied browser evidence.
-- Supabase state was not changed. Vercel preview and deployed database-backed behavior remain unverified because publication is blocked by the guard, not missing Vercel variables.
+- Supabase state was not changed. Deployed database-backed behavior remains subject to preview verification; local browser evidence uses explicit static mode.
 
 ## Existing failing expectations — Jorje ruling required
 
-All existing expected score, decision, copy and aggregate-count values are retained. Brief §2 explicitly permits narrowing the blanket law exclusion test and updating routing-inventory membership.
+Jorje resolved all 18 original failing test cases at **2026-10-25 02:10**. Every changed assertion is listed below; some test cases contain more than one assertion. All changes fit ruling (1)–(4), and no production code or other expectations changed in this follow-up. Each changed assertion has a one-line source comment. General law and #277 law decisions remain unchanged.
 
-| Retained test | Conflict and source |
-| --- | --- |
-| `biuPublishedRoutesEvaluation.test.ts`: weak `criminology` and `biu_criminology` | Expects below for 70/420. Brief T16/§2 and [official calculator remarks](https://shoham.biu.ac.il/kabala/) provide no hard floor in the combined channel, so it remains unknown. |
-| Same file: weak life sciences, biotech, computational biology copy | Expects `למסלול ללא פסיכומטרי בלבד`. Brief §1/T1/T19 requires checking every channel when psych is supplied, so that sentence would be false. Sources: recorded calculator remarks and [BIU no-psych table](https://www.biu.ac.il/registration-and-admission/information/acceptance-no-psychometry). |
-| Same file: bagrut just below its floor with psych 800, for both criminology IDs and the three science tracks | Expects below. Brief T4/T16 and the recorded calculator floors leave a viable combined channel, so there is no verdict. |
-| `src/app/api/admissions/evaluate/biu.test.ts`: weak criminology, both IDs | Expects below + below_threshold. Same T16/source conflict. |
-| `formulaBackedVerificationLedger.test.ts`: ledger length, totals, withheld count; `src/data/degrees/index.test.ts`, `calculatorCoverage.test.ts`, `src/server/data-health/queries.test.ts`: totals | Retains 138 total / 12 withheld / 7 BIU. Brief §2 routes three additional pairs, giving 141 total / 15 withheld / 10 BIU; exact remains 125. |
+Rulings (1)–(3) use the recorded [official calculator remarks](https://shoham.biu.ac.il/kabala/) and final brief §1/§2/T4/T16. Ruling (4) adds the three approved routed pairs (CS, EE, social work); exact coverage stays 125. The calculator remains a link only.
 
-The guard reports **18 failures in 6 files**, with **2,390 passing tests**. The [verification note](https://github.com/Toar-academic-guide/toar-academic-guide/blob/codex/biu-floor-tracks/docs/admissions-verification/2026-10-25-biu-floors.md) records the sources and delivery blocker. The normal pre-push hook runs the same guard, so these retained failures prevent a push and PR publication.
+| Changed assertion | Approved expectation | Approval |
+| --- | --- | --- |
+| `biuPublishedRoutesEvaluation.test.ts` — weak `criminology`: decision | `below` → `unknown`; no published hard floor in combined-channel remarks | Approved by Jorje 2026-10-25 02:10 — (1) |
+| Same — weak `criminology`: score assessment | `below_threshold` → undefined | Approved by Jorje 2026-10-25 02:10 — (1) |
+| Same — weak `biu_criminology`: decision | `below` → `unknown`; no published hard floor in combined-channel remarks | Approved by Jorje 2026-10-25 02:10 — (1) |
+| Same — weak `biu_criminology`: score assessment | `below_threshold` → undefined | Approved by Jorje 2026-10-25 02:10 — (1) |
+| Same — weak `criminology`: explanation assertion | Drop `למסלול ללא פסיכומטרי בלבד` when the combined channel gives no verdict | Approved by Jorje 2026-10-25 02:10 — (1) |
+| Same — weak `biu_criminology`: explanation assertion | Drop `למסלול ללא פסיכומטרי בלבד` when the combined channel gives no verdict | Approved by Jorje 2026-10-25 02:10 — (1) |
+| Same — weak `biu_lifesciences`: explanation assertion | Drop `למסלול ללא פסיכומטרי בלבד` when psych is supplied | Approved by Jorje 2026-10-25 02:10 — (2) |
+| Same — weak `biu_biotech`: explanation assertion | Drop `למסלול ללא פסיכומטרי בלבד` when psych is supplied | Approved by Jorje 2026-10-25 02:10 — (2) |
+| Same — weak `biu_computational_bio`: explanation assertion | Drop `למסלול ללא פסיכומטרי בלבד` when psych is supplied | Approved by Jorje 2026-10-25 02:10 — (2) |
+| Same — `criminology`, bagrut just below its floor / psych 800 | `below` → `unknown`; combined channel remains viable | Approved by Jorje 2026-10-25 02:10 — (3) |
+| Same — `biu_criminology`, bagrut just below its floor / psych 800 | `below` → `unknown`; combined channel remains viable | Approved by Jorje 2026-10-25 02:10 — (3) |
+| Same — `biu_lifesciences`, bagrut just below its floor / psych 800 | `below` → `unknown`; combined channel remains viable | Approved by Jorje 2026-10-25 02:10 — (3) |
+| Same — `biu_biotech`, bagrut just below its floor / psych 800 | `below` → `unknown`; combined channel remains viable | Approved by Jorje 2026-10-25 02:10 — (3) |
+| Same — `biu_computational_bio`, bagrut just below its floor / psych 800 | `below` → `unknown`; combined channel remains viable | Approved by Jorje 2026-10-25 02:10 — (3) |
+| `src/app/api/admissions/evaluate/biu.test.ts` — weak `criminology`: decision | `below` → `unknown` | Approved by Jorje 2026-10-25 02:10 — (1) |
+| Same — weak `criminology`: score assessment | `below_threshold` → undefined | Approved by Jorje 2026-10-25 02:10 — (1) |
+| Same — weak `biu_criminology`: decision | `below` → `unknown` | Approved by Jorje 2026-10-25 02:10 — (1) |
+| Same — weak `biu_criminology`: score assessment | `below_threshold` → undefined | Approved by Jorje 2026-10-25 02:10 — (1) |
+| `formulaBackedVerificationLedger.test.ts` — ledger length | 138 → 141 | Approved by Jorje 2026-10-25 02:10 — (4) |
+| Same — completion aggregate assertion | 138 total / 12 withheld → 141 / 15; exact stays 125 | Approved by Jorje 2026-10-25 02:10 — (4) |
+| Same — totals by institution assertion | BIU 7 total / 7 withheld → 10 / 10; BIU exact stays 0 | Approved by Jorje 2026-10-25 02:10 — (4) |
+| Same — withheld-record count assertion | 12 → 15 | Approved by Jorje 2026-10-25 02:10 — (4) |
+| `src/data/degrees/index.test.ts` — denominator assertion | 138 → 141 | Approved by Jorje 2026-10-25 02:10 — (4) |
+| Same — totals by institution assertion | BIU 7 → 10 | Approved by Jorje 2026-10-25 02:10 — (4) |
+| `calculatorCoverage.test.ts` — completion aggregate assertion | 138 total / 12 withheld → 141 / 15; exact stays 125 | Approved by Jorje 2026-10-25 02:10 — (4) |
+| `src/server/data-health/queries.test.ts` — formula verification assertion | 138 total / 12 withheld → 141 / 15; exact stays 125 | Approved by Jorje 2026-10-25 02:10 — (4) |
+
+The [verification note](https://github.com/Toar-academic-guide/toar-academic-guide/blob/codex/biu-floor-tracks/docs/admissions-verification/2026-10-25-biu-floors.md) records the original failures and the ruling. This PR is a draft pending UI approval and preview verification.
 
 ## NEW UI ELEMENT: needs Jorje/Amit approval before merge
 

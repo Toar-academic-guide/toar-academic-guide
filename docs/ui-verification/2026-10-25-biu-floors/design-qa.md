@@ -12,7 +12,7 @@ Screenshots inspected: EE source conflict and below at 1280/390, CS alternative 
 | --- | --- |
 | `/#detail` | Pass — CS alternative, EE conflict/below, computational biology without psych, plus existing law cases. |
 | `/app/calculator#detail` | Pass — same mobile floor cases, plus existing law and bagrut boundaries. |
-| Deployed preview / production | Skip — local pre-push guard is blocked by retained legacy test expectations. No deployment or production database write was attempted. |
+| Deployed preview / production | Pending preview verification — Jorje approved the retained test expectation changes on 25.10.2026 at 02:10, and the local guard now passes. No manual deployment or production database write was attempted. |
 
 The `ce-test-browser` interactive driver is unavailable (`agent-browser` is not installed). Browser verification uses the repository's existing Playwright runner and installed Chromium, rather than claiming interactive-driver access. The Impeccable detector returned no findings for the changed frontend files. Lint passes with one unrelated pre-existing unused-import warning; typecheck and format checks pass.
 
