@@ -302,6 +302,82 @@ describe('CalculatorResults', () => {
     },
   );
 
+  it.each([
+    [680, 110, 90],
+    [500, 110, 110],
+  ])(
+    'never shows "אפשר להגיש מועמדות" for TAU architecture when a floor fails (psy %s, bagrut %s, English %s)',
+    async (psychometric, bagrut, english) => {
+      const program = {
+        ...programs.find((row) => row.id === 'architecture')!,
+        linkedInstitutionIds: ['tau'],
+      };
+      const evaluation = await evaluateAdmissionsForProgram({
+        program,
+        institutions: getStaticCatalogueInstitutions(),
+        input: {
+          degreeId: 'architecture',
+          psychometric,
+          bagrut,
+          extraInputs: { psychometricEnglish: english, mathUnits: 5, mathGrade: 70 },
+        },
+        freshnessStatesBySourceId: new Map(),
+        fetcher: vi.fn<typeof fetch>(),
+      });
+      expect(evaluation.results[0].linkedInstitutionId).toBe('tau');
+      expect(evaluation.results[0].decision).toBe('below');
+      hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(evaluation);
+      render(
+        <CalculatorResults
+          degreeId="architecture"
+          programs={[program]}
+          psychometric={psychometric}
+          bagrut={bagrut}
+          onBack={() => {}}
+        />,
+      );
+      expect(await screen.findByLabelText('אוניברסיטת תל אביב: לא עומד/ת בתנאי הסף')).toBeTruthy();
+      expect(screen.getByText('לא עומד/ת בתנאי הסף', { exact: true })).toBeTruthy();
+      expect(screen.queryByText('אפשר להגיש מועמדות')).toBeNull();
+      expect(screen.queryByLabelText(/אפשר להגיש מועמדות/)).toBeNull();
+    },
+  );
+
+  it('allows the TAU architecture apply badge with no verdict when every floor passes', async () => {
+    const program = {
+      ...programs.find((row) => row.id === 'architecture')!,
+      linkedInstitutionIds: ['tau'],
+    };
+    const evaluation = await evaluateAdmissionsForProgram({
+      program,
+      institutions: getStaticCatalogueInstitutions(),
+      input: {
+        degreeId: 'architecture',
+        psychometric: 680,
+        bagrut: 110,
+        extraInputs: { psychometricEnglish: 110, mathUnits: 5, mathGrade: 70 },
+      },
+      freshnessStatesBySourceId: new Map(),
+      fetcher: vi.fn<typeof fetch>(),
+    });
+    const result = evaluation.results[0];
+    expect(result.linkedInstitutionId).toBe('tau');
+    expect(result.decision).toBe('unknown');
+    expect(result.floorChecks).toHaveLength(3);
+    expect(result.floorChecks!.every((floor) => floor.status === 'pass')).toBe(true);
+    hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(evaluation);
+    render(
+      <CalculatorResults
+        degreeId="architecture"
+        programs={[program]}
+        psychometric={680}
+        bagrut={110}
+        onBack={() => {}}
+      />,
+    );
+    expect(await screen.findByLabelText('אוניברסיטת תל אביב: אפשר להגיש מועמדות')).toBeTruthy();
+  });
+
   it('labels Technion Architecture eligibility as conditional on available places', async () => {
     hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
       report([

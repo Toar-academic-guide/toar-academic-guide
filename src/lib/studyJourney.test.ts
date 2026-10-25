@@ -1,7 +1,7 @@
 import braudeCsFixture from './__fixtures__/braudeCsCatalogue.json';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import { catalogueAdmissionRequirements } from './catalogueDisplayText';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
   toggleLocation,
   resultLabel,
@@ -17,6 +17,47 @@ import { getStaticCataloguePrograms, getStaticCatalogueInstitutions } from './ca
 import { evaluateBatchBManualPath } from '@/server/admissions/batchBManualPathEvaluation';
 import { PROGRAM_CANONICAL_ALIASES } from './seo/programAliases';
 import type { AdmissionsEvaluationResult } from '@/types/admissionsEvaluation';
+import { evaluateAdmissionsForProgram } from '@/server/admissions/evaluator';
+
+vi.mock('server-only', () => ({}));
+
+it('never labels TAU architecture "אפשר להגיש מועמדות" when a floor fails', async () => {
+  const program = {
+    ...getStaticCataloguePrograms().find((row) => row.id === 'architecture')!,
+    linkedInstitutionIds: ['tau'],
+  };
+  for (const [psychometric, bagrut, english] of [
+    [680, 110, 90],
+    [500, 110, 110],
+    [680, 110, 110],
+  ] as const) {
+    const evaluation = await evaluateAdmissionsForProgram({
+      program,
+      institutions: getStaticCatalogueInstitutions(),
+      input: {
+        degreeId: 'architecture',
+        psychometric,
+        bagrut,
+        extraInputs: { psychometricEnglish: english, mathUnits: 5, mathGrade: 70 },
+      },
+      freshnessStatesBySourceId: new Map(),
+      fetcher: vi.fn<typeof fetch>(),
+    });
+    const result = evaluation.results[0];
+    expect(result.linkedInstitutionId).toBe('tau');
+    const { label } = resultLabel(result, false, false, 'architecture');
+    if (english < 100 || psychometric < 551) {
+      expect(result.decision).toBe('below');
+      expect(label).not.toBe('אפשר להגיש מועמדות');
+      expect(label).toBe('לא עומד/ת בתנאי הסף');
+    } else {
+      expect(result.decision).toBe('unknown');
+      expect(result.floorChecks).toHaveLength(3);
+      expect(result.floorChecks!.every((floor) => floor.status === 'pass')).toBe(true);
+      expect(label).toBe('נדרש מיון נוסף');
+    }
+  }
+});
 
 it.each(['exact', 'estimated'] as const)(
   'preserves other programmes no-verdict status for kind %s',
