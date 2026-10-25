@@ -52,3 +52,44 @@ describe('Reichman API with real admissions evaluator', () => {
     },
   );
 });
+
+it.each([
+  'reichman_cs',
+  'reichman_law',
+  'reichman_business',
+  'reichman_economics',
+  'reichman_psychology',
+])('%s preserves the estimated source label through API serialization', async (degreeId) => {
+  resetAdmissionsEvaluationRateLimitForTests();
+  const response = await POST(
+    new Request('http://localhost/api/admissions/evaluate', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        degreeId,
+        psychometric: 740,
+        bagrut: 110,
+        extraInputs: {
+          mathUnits: 5,
+          mathGrade: 90,
+          englishUnits: 5,
+          englishGrade: 95,
+          psychometricMath: 125,
+        },
+      }),
+    }),
+  );
+  expect(response.status).toBe(200);
+  const { data } = await response.json();
+  expect(
+    data.results.find(
+      (row: { linkedInstitutionId: string }) => row.linkedInstitutionId === 'reichman',
+    ),
+  ).toMatchObject({
+    kind: 'estimated',
+    confidence: 'medium',
+    sourceLabel: 'הערכה לפי הציונים',
+    decision: 'pending',
+    scoreAssessment: 'meets_threshold',
+  });
+});

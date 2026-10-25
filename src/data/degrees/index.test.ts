@@ -571,6 +571,17 @@ describe('dynamic Monday-derived programme inference', () => {
         return [];
       }
 
+      if (program.id === 'ruppin_marine_bio') {
+        // Sweep-38's OR routes and math alternatives cannot be flattened into cumulative facts.
+        const row = repair.requirements.find((row) => row.programId === program.id)!;
+        expect(program.admissionRequirements).toEqual(row.notes);
+        for (const detail of program.institutionDetails ?? []) {
+          expect(detail.specificAdmissionNotes).toEqual(row.notes);
+          expect(detail.admissionFacts ?? []).toEqual([]);
+        }
+        return [];
+      }
+
       return (program.institutionDetails ?? []).flatMap((detail) => {
         if (['biu_lifesciences', 'biu_biotech', 'biu_computational_bio'].includes(program.id)) {
           // These fallback notes mirror the display overlay; #254's dedicated evaluator

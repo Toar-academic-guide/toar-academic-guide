@@ -780,6 +780,8 @@ function enrichLegacyProgram(program: Program): Program {
       'afeka_ee',
       'afeka_softwareeng',
       'afeka_cs',
+      'afeka_biomedical',
+      'ruppin_marine_bio',
       'jerusalem_academy_dance',
       'rubin_classical',
     ].includes(program.id)
