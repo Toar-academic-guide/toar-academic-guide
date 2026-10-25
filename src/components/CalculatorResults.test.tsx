@@ -1037,7 +1037,8 @@ describe('CalculatorResults', () => {
     expect(screen.getByText(/אין סף ציונים אוטומטי שמונע הגשה/)).toBeTruthy();
   });
 
-  it('renders manual-gate threshold failures as below the official invitation score', async () => {
+  // Jorje ruling 2026-10-25: 92 is Technion's estimated MOR invitation threshold, not an admission threshold
+  it('renders the estimated medicine MOR invitation threshold without an admission verdict or improvement gap', async () => {
     hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
       report([
         {
@@ -1049,21 +1050,16 @@ describe('CalculatorResults', () => {
             universityId: 'technion',
           },
           linkedInstitutionId: 'technion',
-          capability: 'manual_gate',
-          kind: 'manual_gate',
-          decision: 'below',
-          confidence: 'high',
-          sourceLabel: 'סף זימון נדרש',
-          explanation: 'לפי המקור הרשמי, צריך להגיע לפחות לסכם 92 כדי לעבור לשלב המיון הידני.',
-          nextAction:
-            'שפרו את הנתונים שמופיעים בפער לפני הרשמה. גם מעבר סף הזימון לא מבטיח קבלה סופית.',
+          capability: 'score_only',
+          kind: 'exact',
+          decision: 'unknown',
+          confidence: 'medium',
+          sourceLabel: 'סכם לרפואה',
+          explanation:
+            'סף זימון משוער למבחן המו"ר: 92 (הערכה). זהו סף זימון משוער בלבד, ולא סף קבלה לרפואה.',
+          nextAction: 'בדקו באתר הטכניון את תנאי המיון והקבלה העדכניים לרפואה.',
           score: 84.5,
           scoreLabel: 'סכם',
-          threshold: 92,
-          deltaNeeded: {
-            psychometric: 100,
-            bagrut: 15,
-          },
         },
       ]),
     );
@@ -1078,9 +1074,11 @@ describe('CalculatorResults', () => {
       />,
     );
 
-    expect(await screen.findByLabelText('הטכניון – מכון טכנולוגי לישראל: מתחת לסף')).toBeTruthy();
-    expect(screen.getByText(/סכם 84\.5 · סף 92/)).toBeTruthy();
-    expect(screen.getByText(/צריך להגיע לפחות לסכם 92/)).toBeTruthy();
+    expect(await screen.findByText(/סף זימון משוער למבחן המו"ר: 92 \(הערכה\)/)).toBeTruthy();
+    expect(screen.getByText(/סכם 84\.5/)).toBeTruthy();
+    expect(screen.queryByLabelText(/הטכניון.*(?:מתחת לסף|מתקבל\/ת|אפשר להגיש מועמדות)/)).toBeNull();
+    expect(screen.queryByText(/סכם 84\.5 · סף 92/)).toBeNull();
+    expect(screen.queryByText(/\+100 פסיכומטרי|\+15 בגרות|שפרו את הנתונים/)).toBeNull();
   });
 
   it('renders a recoverable error state when the route request fails', async () => {
