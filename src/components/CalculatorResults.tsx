@@ -810,6 +810,9 @@ export default function CalculatorResults({
                                       ? STATUS_CONFIG.trackedMissingRule
                                       : STATUS_CONFIG.unsupported;
                   if (footnote) config = { ...STATUS_CONFIG.exactAccepted, label: 'מתקבלים' };
+                  const statusBackground = isTechnionMedicineScore(result, degreeId)
+                    ? STATUS_CONFIG.exactAccepted.bg
+                    : config.bg;
                   const statusLabel = isTechnionMedicineScore(result, degreeId)
                     ? resultLabel(result, false, false, degreeId).label
                     : config.label;
@@ -879,7 +882,7 @@ export default function CalculatorResults({
                       </div>
                       <span
                         aria-label={`${institution.name}: ${statusLabel}`}
-                        className={`${config.bg} self-start rounded-full border-2 border-black px-3 py-1 text-[10px] font-extrabold text-black sm:self-center`}
+                        className={`${statusBackground} self-start rounded-full border-2 border-black px-3 py-1 text-[10px] font-extrabold text-black sm:self-center`}
                       >
                         {statusLabel}
                       </span>

@@ -95,6 +95,10 @@ it.each([
       />,
     );
     expect(await screen.findByText('קבלה דרך מבחני מו"ר')).toBeTruthy();
+    // Amit ruling 2026-10-25 08:01 via Jorje
+    const chip = screen.getByLabelText('הטכניון – מכון טכנולוגי לישראל: קבלה דרך מבחני מו"ר');
+    expect(chip.classList.contains('bg-[#34D399]')).toBe(true);
+    expect(chip.className).not.toMatch(/violet|purple/);
     const line = screen.getByText(comparison, { exact: true });
     expect(line.classList.contains(color)).toBe(true);
     expect(line.className).not.toMatch(/red|rose|amber|yellow|danger|warning/);

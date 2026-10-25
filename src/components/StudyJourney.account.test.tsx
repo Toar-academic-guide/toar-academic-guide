@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AcademicScores } from '@/types';
 import { getStaticCataloguePrograms, getStaticCatalogueInstitutions } from '@/lib/catalogueStatic';
 import baselineLaw from '../../docs/ui-verification/2026-10-23-requirement-tiles/baseline-law_low.json';
+import { resultLabel } from '@/lib/studyJourney';
 
 const state = vi.hoisted(() => ({
   user: null as null | { id: string },
@@ -149,6 +150,14 @@ describe('account grades in the homepage journey', () => {
     );
     render(<StudyJourney initialStep="detail" />);
     expect(await screen.findByText('קבלה דרך מבחני מו"ר')).toBeTruthy();
+    // Amit ruling 2026-10-25 08:01 via Jorje
+    const chip = screen.getByText('קבלה דרך מבחני מו"ר');
+    expect(chip.className).toBe('journey-status status-match');
+    expect(chip.className).not.toMatch(/status-explore|violet|purple/);
+    const batch = await state.evaluate.mock.results[0].value;
+    expect(
+      resultLabel(batch.reports.technion_medicine.results[0], false, false, program.id).group,
+    ).toBe('explore');
     expect(screen.queryByText('אין הכרעת קבלה')).toBeNull();
     const line = screen.getByText(comparison, { exact: true });
     expect(line.classList.contains(color)).toBe(true);
@@ -161,6 +170,51 @@ describe('account grades in the homepage journey', () => {
     expect(screen.getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toBe(
       'https://www.technion.ac.il/?utm_source=myway&utm_medium=referral',
     );
+    fireEvent.click(screen.getByRole('button', { name: 'חזרה' }));
+    const listChip = await screen.findByText('קבלה דרך מבחני מו"ר');
+    expect(listChip.className).toBe('journey-status status-match');
+  });
+
+  // Amit ruling 2026-10-25 08:01 via Jorje
+  it('keeps Haifa pending chip in its existing no-verdict style', async () => {
+    const program = getStaticCataloguePrograms().find((p) => p.id === 'haifa_sociology')!;
+    const institution = getStaticCatalogueInstitutions().find((i) => i.id === 'haifa')!;
+    state.fetchPrograms.mockResolvedValue([program]);
+    state.fetchInstitutions.mockResolvedValue([institution]);
+    state.evaluate.mockResolvedValue({
+      reports: {
+        haifa_sociology: {
+          results: [
+            {
+              institution,
+              linkedInstitutionId: 'haifa',
+              capability: 'exact',
+              kind: 'exact',
+              decision: 'pending',
+              score: 520,
+              explanation: 'הסכם נמצא בטווח ההמתנה.',
+            },
+          ],
+        },
+      },
+      failedDegreeIds: [],
+    });
+    window.sessionStorage.setItem(
+      'myway_study_journey_v2',
+      JSON.stringify({
+        fields: [],
+        locations: ['all'],
+        types: ['all'],
+        selectedRowId: 'haifa_sociology:haifa',
+      }),
+    );
+    render(<StudyJourney initialStep="detail" />);
+    const chip = await screen.findByText('אין הכרעת קבלה');
+    expect(chip.className).toBe('journey-status status-explore');
+    expect(chip.classList.contains('status-match')).toBe(false);
+    fireEvent.click(screen.getByRole('button', { name: 'חזרה' }));
+    const listChip = await screen.findByText('אין הכרעת קבלה');
+    expect(listChip.className).toBe('journey-status status-explore');
   });
 
   it('preserves the medicine result explanation when no sekem is available', async () => {

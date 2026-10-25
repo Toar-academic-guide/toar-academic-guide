@@ -692,7 +692,11 @@ export default function StudyJourney({
                 ? row.institution.name
                 : row.fieldName}
           </button>
-          <span className={`journey-status status-${status.group}`}>{status.label}</span>
+          <span
+            className={`journey-status status-${isTechnionMedicineScore(row.result, row.program.id) && !row.failed ? 'match' : status.group}`}
+          >
+            {status.label}
+          </span>
           <TechnionThresholdNotice programId={row.program.id} institutionId={row.institution.id} />
         </div>
         <div className="journey-row-actions">
@@ -1346,7 +1350,7 @@ export default function StudyJourney({
                   </div>
                   {description && !isBatchCUnsupported && <p>{description}</p>}
                   <span
-                    className={`journey-status status-${resultLabel(activeRow.result, activeRow.failed, false, activeRow.program.id).group}`}
+                    className={`journey-status status-${isTechnionMedicineScore(activeRow.result, activeRow.program.id) && !activeRow.failed ? 'match' : resultLabel(activeRow.result, activeRow.failed, false, activeRow.program.id).group}`}
                   >
                     {calculating && !activeRow.result && !activeRow.failed
                       ? 'מחשבים התאמה…'
