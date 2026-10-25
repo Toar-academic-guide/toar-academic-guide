@@ -282,6 +282,8 @@ describe('CalculatorResults', () => {
       expect(screen.getByLabelText(`אוניברסיטת תל אביב: ${label}`)).toBeTruthy();
       expect(screen.getByText(/אוניברסיטת תל אביב מחליטה על הקבלה לאחריו/)).toBeTruthy();
       const table = screen.getByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלך' });
+      const studentMathsValue = within(table).getByRole('cell', { name: '5 יח״ל, 70' });
+      expect(studentMathsValue.classList.contains('whitespace-nowrap')).toBe(true);
       expect(
         within(table).getByRole('row', { name: `פסיכומטרי 551 ${psychometric} ${psychStatus}` }),
       ).toBeTruthy();
