@@ -250,9 +250,44 @@ export const FORWARD_PRODUCTION_MIGRATIONS: ForwardProductionMigration[] = [
   },
 ];
 
+const GUARDED_ENQUIRIES_TABLE = {
+  columnTypes: {
+    request_id: 'uuid',
+    name: 'text',
+    phone: 'text',
+    program_id: 'text',
+    institution_id: 'text',
+    program_name: 'text',
+    institution_name: 'text',
+    source_path: 'text',
+    utm_source: 'character varying',
+    utm_medium: 'character varying',
+    utm_campaign: 'character varying',
+    referrer: 'character varying',
+    consent: 'boolean',
+    consent_text: 'text',
+    result_status: 'text',
+    bagrut: 'real',
+    psychometric: 'integer',
+    evaluation_input: 'jsonb',
+    created_at: 'timestamp with time zone',
+  },
+  constraints: ['enquiries_pkey', 'enquiries_result_status_check', 'enquiries_consent_check'],
+  grants: {
+    PUBLIC: [],
+    anon: [],
+    authenticated: [],
+    app_runtime: [],
+    ops_readonly: [],
+    admissions_automation: [],
+    service_role: ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'TRUNCATE', 'REFERENCES', 'TRIGGER'],
+  },
+} as const;
+
 // Applied via guarded SQL, without Supabase migration-history entries. These are
 // required postconditions, never pending migrations to replay. Data repairs in
 // 0038/0039 are documented deployments, not inferred from a schema snapshot.
+// Enquiries deployment evidence: /workspace/seo/enquiries_0041_2026-10-25/.
 // Deployment record: /workspace/pm-research/db_changes.md (2026-10-25).
 export const GUARDED_PRODUCTION_MIGRATIONS = [
   {
@@ -274,5 +309,20 @@ export const GUARDED_PRODUCTION_MIGRATIONS = [
     id: '0040',
     repositoryPath: 'src/db/migrations/0040_fractional_admission_thresholds.sql',
     columns: [{ table: 'admission_thresholds', column: 'threshold_value', type: 'numeric' }],
+  },
+  {
+    id: '0041',
+    repositoryPath: 'src/db/migrations/0041_enquiries.sql',
+    columns: [],
+    tables: { enquiries: GUARDED_ENQUIRIES_TABLE },
+    functions: ['store_enquiry(jsonb)'],
+  },
+  {
+    id: '0042',
+    repositoryPath: 'src/db/migrations/0042_store_enquiry_createdat_default.sql',
+    columns: [],
+    functionBodies: {
+      'store_enquiry(jsonb)': "COALESCE((payload->>'createdAt')::timestamptz, now())",
+    },
   },
 ] as const;

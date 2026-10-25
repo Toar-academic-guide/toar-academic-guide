@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import official from '../docs/admissions-verification/2026-10-22-official-requirements-4.json';
 import type { ApiEnvelope, CatalogueProgram } from '../src/types/catalogue';
 

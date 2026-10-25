@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 test.describe('durable URL model', () => {
   test('guest profile retains official decimal averages, false confirmations and zero after reload', async ({
