@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-for (const width of [390, 1440]) {
+for (const width of [390, 1280]) {
   test(`Technion programme pages show the official verification notice at ${width}px`, async ({
     page,
   }, testInfo) => {
@@ -8,6 +8,9 @@ for (const width of [390, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     for (const id of ['ee', 'me']) {
       await page.goto(`/programs/technion_${id}`);
+      await expect(page.getByRole('listitem').first()).toHaveText(
+        `בחורף תשפ"ז: סכם ${id === 'ee' ? '91.5' : '87'}`,
+      );
       const notice = page
         .locator('div')
         .filter({ has: page.locator('> p > time[datetime="2026-10-25"]') });
@@ -19,8 +22,9 @@ for (const width of [390, 1440]) {
       );
       if (id === 'ee')
         await expect(notice).toContainText(
-          'באביב תשפ"ז: 94 — על בסיס מקום פנוי, מספר המקומות מצומצם',
+          'באביב תשפ"ז, על בסיס מקום פנוי: סכם 94 — מספר המקומות מצומצם',
         );
+      else await expect(page.getByText(/באביב תשפ/)).toHaveCount(0);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
         true,
       );
@@ -82,7 +86,7 @@ for (const width of [390, 1440]) {
       page.getByRole('main').getByText('עומד/ת בסף שחושב', { exact: true }),
     ).toBeVisible();
     await expect(
-      page.getByText('באביב תשפ"ז: 94 — על בסיס מקום פנוי, מספר המקומות מצומצם'),
+      page.getByText('באביב תשפ"ז, על בסיס מקום פנוי: סכם 94 — מספר המקומות מצומצם'),
     ).toBeVisible();
     await expect(page.getByText(/סף: 91.5/)).toBeVisible();
     await expect(

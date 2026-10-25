@@ -18,7 +18,7 @@ describe('Technion winter verification notice', () => {
       );
       if (id === 'technion_ee')
         expect(
-          screen.getByText('באביב תשפ"ז: 94 — על בסיס מקום פנוי, מספר המקומות מצומצם'),
+          screen.getByText('באביב תשפ"ז, על בסיס מקום פנוי: סכם 94 — מספר המקומות מצומצם'),
         ).toBeTruthy();
     },
   );

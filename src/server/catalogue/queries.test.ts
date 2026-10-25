@@ -251,7 +251,10 @@ describe('catalogue queries', () => {
       const source = (await getPublicProgramRequirementSources(published)).technion;
       expect(source.sourceProgramId).toBe(programId);
       expect(source.program.thresholds?.technion).toBe(change.after);
-      expect(source.requirements).toEqual(captured.institutionDetails[0].specificAdmissionNotes);
+      expect(source.requirements).toEqual([
+        `בחורף תשפ"ז: סכם ${change.after}`,
+        ...captured.institutionDetails[0].specificAdmissionNotes,
+      ]);
       expect(
         selectRequirementTiles({
           program: source.program,
