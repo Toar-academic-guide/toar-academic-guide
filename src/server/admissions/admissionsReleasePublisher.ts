@@ -29,6 +29,11 @@ export type PublishedAdmissionCutoffChange = ReviewedAdmissionsManifest['changes
   after: number;
 };
 
+export type AlreadyAppliedAdmissionChange = Pick<
+  PublishedAdmissionCutoffChange,
+  'target' | 'ruleKind'
+>;
+
 export interface AdmissionReleaseRecord {
   id: string;
   manifestDigest: string;
@@ -81,7 +86,10 @@ export interface AdmissionsReleaseWriter {
   createPublicationAttempt(attempt: AdmissionPublicationAttemptRecord): Promise<void>;
   createTargetTransition(transition: AdmissionTargetTransitionRecord): Promise<void>;
   createReleaseItems(items: AdmissionReleaseItemRecord[]): Promise<void>;
-  applyCanonicalAdmissionCutoff(input: { change: PublishedAdmissionCutoffChange }): Promise<void>;
+  applyCanonicalAdmissionCutoff(input: {
+    change: PublishedAdmissionCutoffChange;
+    allowAlreadyApplied?: boolean;
+  }): Promise<'applied' | 'already_applied'>;
   applyOperationalProofAdmissionCutoff(input: {
     releaseId: string;
     change: PublishedAdmissionCutoffChange;
@@ -108,7 +116,12 @@ export interface PublishAdmissionsReleaseInput {
 
 export type PublishAdmissionsReleaseResult =
   | { status: 'no_changes' }
-  | { status: 'published'; releaseId: string; manifestDigest: string }
+  | {
+      status: 'published';
+      releaseId: string;
+      manifestDigest: string;
+      alreadyApplied?: AlreadyAppliedAdmissionChange[];
+    }
   | { status: 'already_published'; releaseId: string };
 
 export function createAdmissionsReleasePublisher(repository?: AdmissionsReleaseRepository) {
@@ -138,8 +151,10 @@ export function createAdmissionsReleasePublisher(repository?: AdmissionsReleaseR
       }
 
       try {
-        await releaseRepository.transaction(async (writer) => {
+        const alreadyApplied = await releaseRepository.transaction(async (writer) => {
+          const skipped: AlreadyAppliedAdmissionChange[] = [];
           for (const transition of transitions) {
+            const appliedChanges: PublishedAdmissionCutoffChange[] = [];
             for (const change of transition.changes) {
               if (manifest.releaseKind === 'operational_proof') {
                 await writer.applyOperationalProofAdmissionCutoff({
@@ -148,9 +163,19 @@ export function createAdmissionsReleasePublisher(repository?: AdmissionsReleaseR
                   updatedAt: publishedAt,
                 });
               } else {
-                await writer.applyCanonicalAdmissionCutoff({ change });
+                const outcome = await writer.applyCanonicalAdmissionCutoff({
+                  change,
+                  allowAlreadyApplied: manifest.releaseKind === 'canonical_change',
+                });
+                if (outcome === 'already_applied') {
+                  skipped.push({ target: change.target, ruleKind: change.ruleKind });
+                  continue;
+                }
               }
+              appliedChanges.push(change);
             }
+            const [appliedTransition] = buildTargetTransitions(appliedChanges);
+            if (!appliedTransition) continue;
             const transitionId = randomUUID();
             await writer.createTargetTransition({
               id: transitionId,
@@ -158,12 +183,12 @@ export function createAdmissionsReleasePublisher(repository?: AdmissionsReleaseR
               institutionId: transition.target.institutionId,
               programId: transition.target.programId,
               cycle: transition.target.cycle,
-              beforeVersion: transition.beforeVersion,
-              afterVersion: transition.afterVersion,
+              beforeVersion: appliedTransition.beforeVersion,
+              afterVersion: appliedTransition.afterVersion,
               createdAt: publishedAt,
             });
             await writer.createReleaseItems(
-              transition.changes.map((change) => ({
+              appliedChanges.map((change) => ({
                 id: randomUUID(),
                 transitionId,
                 ruleKind: change.ruleKind,
@@ -184,12 +209,22 @@ export function createAdmissionsReleasePublisher(repository?: AdmissionsReleaseR
 
           await writer.markReleasePublished(preparation.releaseId, publishedAt);
           await writer.markPublicationAttemptSucceeded(preparation.attemptId, publishedAt);
+          return skipped;
         });
 
+        for (const change of alreadyApplied) {
+          console.info({
+            event: 'admissions_release_change_already_applied',
+            releaseId: preparation.releaseId,
+            ...change.target,
+            ruleKind: change.ruleKind,
+          });
+        }
         return {
           status: 'published',
           releaseId: preparation.releaseId,
           manifestDigest,
+          ...(manifest.releaseKind === 'canonical_change' ? { alreadyApplied } : {}),
         };
       } catch (error) {
         try {
@@ -343,7 +378,7 @@ export function createDrizzleAdmissionsReleaseRepository(
           async createReleaseItems(items) {
             await tx.insert(admissionReleaseItems).values(items);
           },
-          async applyCanonicalAdmissionCutoff({ change }) {
+          async applyCanonicalAdmissionCutoff({ change, allowAlreadyApplied = false }) {
             const updated = await tx
               .update(admissionThresholds)
               .set({ thresholdValue: change.after })
@@ -356,11 +391,26 @@ export function createDrizzleAdmissionsReleaseRepository(
                 ),
               )
               .returning({ id: admissionThresholds.id });
-            if (updated.length !== 1) {
-              throw new Error(
-                `Canonical cutoff for ${change.target.institutionId}/${change.target.programId} did not match its expected before value.`,
-              );
+            if (updated.length === 1) return 'applied';
+            if (updated.length === 0 && allowAlreadyApplied) {
+              const current = await tx
+                .select({ thresholdValue: admissionThresholds.thresholdValue })
+                .from(admissionThresholds)
+                .where(
+                  and(
+                    eq(admissionThresholds.institutionId, change.target.institutionId),
+                    eq(admissionThresholds.programId, change.target.programId),
+                    eq(admissionThresholds.thresholdKind, 'sekhem'),
+                  ),
+                )
+                .for('update');
+              if (current.length === 1 && current[0].thresholdValue === change.after) {
+                return 'already_applied';
+              }
             }
+            throw new Error(
+              `Canonical cutoff for ${change.target.institutionId}/${change.target.programId} did not match its expected before value.`,
+            );
           },
           async applyOperationalProofAdmissionCutoff({ releaseId, change, updatedAt }) {
             const [canonicalValue] = await tx
