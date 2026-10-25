@@ -81,6 +81,26 @@
           "proofType": "exact_official"
         }
       ]
+    },
+    {
+      "target": {
+        "institutionId": "bgu",
+        "programId": "medicine",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 760,
+      "after": 735,
+      "effectiveFrom": "2026-10-25",
+      "sourceProofs": [
+        {
+          "sourceId": "bgu-medicine-sweep38",
+          "digest": "sha256:8632337f881d83dc69a33a9f32bb00e4e2adb387b62692c37fac2c0ddce7c4cd",
+          "excerpt": "Medicine: psycho_sekem 735 AND psycho_value 680. Runtime alias and psychometric gate remain blocked by the lane fence. Checked 2026-10-25; capture: raw/official/bgu/sweep38_medicine-rdp_20261025T163448.txt",
+          "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=471&p_pat1=1&p_degree_level=8",
+          "proofType": "exact_official"
+        }
+      ]
     }
   ]
 }

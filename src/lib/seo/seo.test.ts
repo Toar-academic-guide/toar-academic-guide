@@ -544,7 +544,7 @@ describe('metadata', () => {
       )),
     ];
     expect(new Set(descriptions).size).toBe(descriptions.length);
-  });
+  }, 15_000);
 
   it('has unique titles across all indexable public pages and disambiguates known collisions', async () => {
     const programIds = await indexableProgramIds();

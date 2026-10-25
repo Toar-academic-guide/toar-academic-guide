@@ -203,38 +203,15 @@ export const hybridAdmissionSlice: HybridAdmissionSliceEntry[] = [
         origin: 'catalogue_url',
         specificity: 'program',
         confidence: 'high',
-        url: 'https://www.ruppin.ac.il/departments/marine-science/',
-        title: 'ביולוגיה ימית ומכמורת - המרכז האקדמי רופין',
+        url: 'https://www.ruppin.ac.il/faculties/ba/marine-science-and-environment/application-requirements/',
+        title: 'מדעי הים והסביבה הימית - המרכז האקדמי רופין',
       },
     ],
-    facts: [
-      {
-        id: 'ruppin_marine_bio:ruppin:fact:psychometric',
-        sourceCandidateId: 'ruppin_marine_bio:ruppin:program-source',
-        kind: 'numeric_gate',
-        field: 'psychometric',
-        comparison: 'gte',
-        valueNumber: 500,
-        valueText: null,
-        unit: 'points',
-        description: 'ציון פסיכומטרי מינימלי: 500',
-        confidence: 'high',
-        isRequired: true,
-      },
-      {
-        id: 'ruppin_marine_bio:ruppin:fact:bagrut',
-        sourceCandidateId: 'ruppin_marine_bio:ruppin:program-source',
-        kind: 'numeric_gate',
-        field: 'bagrut_average',
-        comparison: 'gte',
-        valueNumber: 75,
-        valueText: null,
-        unit: 'average',
-        description: 'ממוצע בגרות מינימלי: 75',
-        confidence: 'high',
-        isRequired: true,
-      },
-    ],
+    // Removed unpublished 500/75 gates. Official routes are alternatives, not cumulative.
+    // https://www.ruppin.ac.il/faculties/ba/marine-science-and-environment/application-requirements/
+    // Capture: raw/official/ruppin/sweep38_marine-ba-requirements_chrome_20261025T163156.txt (2026-10-25).
+    // Gate evidence: docs/admissions-verification/2026-10-25-sweep38-official-source-corrections.md.
+    facts: [],
     alternativePaths: [
       {
         id: 'ruppin_marine_bio:ruppin:alt:similar',
@@ -242,7 +219,7 @@ export const hybridAdmissionSlice: HybridAdmissionSliceEntry[] = [
         kind: 'similar_program',
         title: 'בדיקת מסלולי מדעי החיים קרובים',
         description: 'אם הפער גדול, מסלול קרוב במדעי החיים יכול להיות יעד נגיש יותר.',
-        url: 'https://www.ruppin.ac.il/departments/marine-science/',
+        url: 'https://www.ruppin.ac.il/faculties/ba/marine-science-and-environment/application-requirements/',
         priority: 40,
       },
     ],

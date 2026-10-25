@@ -7,6 +7,20 @@ import {
   TAU_BIOLOGY_CONTRACT,
   TAU_BIOLOGY_FIXTURES,
   TAU_PROGRAM_VERIFICATION_METADATA,
+  TAU_LEGACY_BIOLOGY_CONTRACT,
+  TAU_ECONOMICS_CONTRACT,
+  TAU_LEGACY_ECONOMICS_CONTRACT,
+  TAU_INDUSTRIAL_CONTRACT,
+  TAU_EE_CONTRACT,
+  TAU_LEGACY_EE_CONTRACT,
+  TAU_ME_CONTRACT,
+  TAU_LEGACY_ME_CONTRACT,
+  TAU_LEGACY_SOCIAL_WORK_CONTRACT,
+  TAU_COMMUNICATION_CONTRACT,
+  TAU_POLITICAL_SCIENCE_CONTRACT,
+  TAU_EDUCATION_CONTRACT,
+  TAU_OCCUPATIONAL_CONTRACT,
+  TAU_LEGACY_OCCUPATIONAL_CONTRACT,
   TAU_DIGITAL_SCIENCES_CONTRACT,
   TAU_DIGITAL_SCIENCES_FIXTURES,
   TAU_NURSING_CONTRACT,
@@ -32,6 +46,58 @@ import {
 import { TAU_NURSING_POLICY } from '@/server/admissions/tauNursingPolicy';
 import { TAU_PSYCHOLOGY_POLICY } from '@/server/admissions/tauPsychologyPolicy';
 import { runTauAdmissionsProof } from '@/server/ingestion/adapters/tauAdmissions';
+
+describe('TAU programme requirements URLs', () => {
+  it('uses the canonical node-redirect URLs for all 12 affected contracts', () => {
+    const expectedUrls = {
+      [TAU_BIOLOGY_CONTRACT.pairId]: 'https://go.tau.ac.il/he/life/ba/bio?v=admission-requirements',
+      [TAU_LEGACY_BIOLOGY_CONTRACT.pairId]:
+        'https://go.tau.ac.il/he/life/ba/bio?v=admission-requirements',
+      [TAU_COMMUNICATION_CONTRACT.pairId]:
+        'https://go.tau.ac.il/he/social-sciences/ba/communications?v=admission-requirements',
+      [TAU_EDUCATION_CONTRACT.pairId]:
+        'https://go.tau.ac.il/he/education/ba?v=admission-requirements',
+      [TAU_ECONOMICS_CONTRACT.pairId]:
+        'https://go.tau.ac.il/he/social-sciences/ba/economics?v=admission-requirements',
+      [TAU_LEGACY_ECONOMICS_CONTRACT.pairId]:
+        'https://go.tau.ac.il/he/social-sciences/ba/economics?v=admission-requirements',
+      [TAU_EE_CONTRACT.pairId]:
+        'https://go.tau.ac.il/he/engineering/ba/electrical?v=admission-requirements',
+      [TAU_LEGACY_EE_CONTRACT.pairId]:
+        'https://go.tau.ac.il/he/engineering/ba/electrical?v=admission-requirements',
+      [TAU_ME_CONTRACT.pairId]:
+        'https://go.tau.ac.il/he/engineering/ba/mechanical?v=admission-requirements',
+      [TAU_LEGACY_ME_CONTRACT.pairId]:
+        'https://go.tau.ac.il/he/engineering/ba/mechanical?v=admission-requirements',
+      [TAU_OCCUPATIONAL_CONTRACT.pairId]:
+        'https://go.tau.ac.il/he/med/ba/occu?v=admission-requirements',
+      [TAU_LEGACY_OCCUPATIONAL_CONTRACT.pairId]:
+        'https://go.tau.ac.il/he/med/ba/occu?v=admission-requirements',
+    };
+    const oldUrls = [
+      'https://go.tau.ac.il/he/life-sciences/ba/biology?v=admission-requirements',
+      'https://go.tau.ac.il/he/social-sciences/ba/communication?v=admission-requirements',
+      'https://go.tau.ac.il/he/social-sciences/ba/education?v=admission-requirements',
+      'https://go.tau.ac.il/he/management/ba/economics?v=admission-requirements',
+      'https://go.tau.ac.il/he/engineering/ba/electrical-engineering?v=admission-requirements',
+      'https://go.tau.ac.il/he/engineering/ba/mechanical-engineering?v=admission-requirements',
+      'https://go.tau.ac.il/he/med/ba/occupational-therapy?v=admission-requirements',
+    ];
+    const actualUrls = Object.fromEntries(
+      Object.keys(expectedUrls).map((pairId) => [
+        pairId,
+        TAU_PROGRAM_VERIFICATION_METADATA[pairId].requirementsUrl,
+      ]),
+    );
+
+    expect(actualUrls).toEqual(expectedUrls);
+    for (const url of Object.values(actualUrls)) {
+      for (const oldUrl of oldUrls) {
+        expect(url).not.toContain(oldUrl);
+      }
+    }
+  });
+});
 
 describe('TAU Digital Sciences verification artifact', () => {
   it('passes the composed pair-verification gate', () => {
@@ -293,6 +359,49 @@ describe('TAU Digital Sciences verification artifact', () => {
   );
 });
 
+describe('TAU 2027 official rejection thresholds', () => {
+  it.each([
+    ['Biology', TAU_BIOLOGY_CONTRACT, 576, 575],
+    ['legacy Biology', TAU_LEGACY_BIOLOGY_CONTRACT, 576, 575],
+    ['Digital Sciences', TAU_DIGITAL_SCIENCES_CONTRACT, 652, 651],
+    ['generic Data Science', TAU_GENERIC_DATASCIENCE_CONTRACT, 652, 651],
+    ['Economics', TAU_ECONOMICS_CONTRACT, 610, 609],
+    ['legacy Economics', TAU_LEGACY_ECONOMICS_CONTRACT, 610, 609],
+    ['Industrial Engineering', TAU_INDUSTRIAL_CONTRACT, 667, 666],
+    ['Electrical Engineering', TAU_EE_CONTRACT, 710, 709],
+    ['legacy Electrical Engineering', TAU_LEGACY_EE_CONTRACT, 710, 709],
+    ['Mechanical Engineering', TAU_ME_CONTRACT, 650, 649],
+    ['legacy Mechanical Engineering', TAU_LEGACY_ME_CONTRACT, 650, 649],
+    ['Social Work', TAU_SOCIAL_WORK_CONTRACT, 580, 579],
+    ['legacy Social Work', TAU_LEGACY_SOCIAL_WORK_CONTRACT, 580, 579],
+  ] as const)(
+    'uses the official rejection cutoff and unchanged acceptance cutoff for %s',
+    (_name, contract, acceptance, rejection) => {
+      expect(contract.calculation.cutoff.acceptance).toBe(acceptance);
+      expect(contract.calculation.cutoff.rejection).toBe(rejection);
+    },
+  );
+
+  it('uses the official Digital Sciences cutoffs in the runtime policy', () => {
+    expect(TAU_DIGITAL_SCIENCES_POLICY.acceptanceCutoff).toBe(652);
+    expect(TAU_DIGITAL_SCIENCES_POLICY.rejectionCutoff).toBe(651);
+  });
+
+  it.each([
+    ['Communication', TAU_COMMUNICATION_CONTRACT, 530, 529],
+    ['Political Science', TAU_POLITICAL_SCIENCE_CONTRACT, 535, 534],
+    ['Education', TAU_EDUCATION_CONTRACT, 550, 549],
+    ['Occupational Therapy', TAU_OCCUPATIONAL_CONTRACT, 607, 606],
+    ['legacy Occupational Therapy', TAU_LEGACY_OCCUPATIONAL_CONTRACT, 607, 606],
+  ] as const)(
+    'preserves the explicit cutoffs for non-target descendant %s',
+    (_name, contract, acceptance, rejection) => {
+      expect(contract.calculation.cutoff.acceptance).toBe(acceptance);
+      expect(contract.calculation.cutoff.rejection).toBe(rejection);
+    },
+  );
+});
+
 function jsonResponse(body: unknown): Response {
   return new Response(JSON.stringify(body), {
     status: 200,
@@ -468,7 +577,7 @@ describe('TAU Biology independence from Architecture', () => {
         requiredInputs: ['psychometric_english'],
         cutoff: {
           acceptance: 576,
-          rejection: 570,
+          rejection: 575,
         },
         gates: [
           {

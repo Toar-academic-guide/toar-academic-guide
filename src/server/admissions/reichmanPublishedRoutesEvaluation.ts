@@ -14,12 +14,25 @@ import type {
 } from '@/types/admissionsEvaluation';
 import type { CatalogueInstitution } from '@/types/catalogue';
 
-// תשפ״ז, columns: coordinated / Bagrut / psychometric. See the source audit in docs.
+// Last published thresholds: May 2026, captured 2026-05-19:
+// raw/official/runi_thresholds_tashpaz_18526.pdf (THRESHOLDS_URL below).
+// Checked 2026-10-25: PDF 404, raw/official/reichman/sweep38_thresholds-pdf-404_20261025T163004.txt.
+// Keep the table unchanged; expose the existing estimated mechanism and label.
 const programmes = {
+  // https://www.runi.ac.il/schools/computer-science/undergraduate
+  // raw/official/reichman/sweep38_school-computer-science_20261025T162855.txt: thresholds are dynamic.
   reichman_cs: { coordinated: 705, bagrut: 108, psychometric: 720, coordinatedPsy: 660 },
+  // https://www.runi.ac.il/schools/law/undergraduate
+  // raw/official/reichman/sweep38_school-law_20261025T162857.txt: thresholds are dynamic.
   reichman_law: { coordinated: 650, bagrut: 100, psychometric: 700, coordinatedPsy: 610 },
+  // https://www.runi.ac.il/schools/business/undergraduate
+  // raw/official/reichman/sweep38_school-business_20261025T162902.txt: thresholds are dynamic.
   reichman_business: { coordinated: 630, bagrut: 100, psychometric: 700, coordinatedPsy: 0 },
+  // https://www.runi.ac.il/schools/economics/undergraduate
+  // raw/official/reichman/sweep38_school-economics_20261025T162900.txt: thresholds are dynamic.
   reichman_economics: { coordinated: 600, bagrut: 100, psychometric: 680, coordinatedPsy: 0 },
+  // https://www.runi.ac.il/schools/psychology/undergraduate
+  // raw/official/reichman/sweep38_school-psychology_20261025T162858.txt: thresholds are dynamic.
   reichman_psychology: { coordinated: 620, bagrut: 100, psychometric: 640, coordinatedPsy: 0 },
 } as const;
 
@@ -206,7 +219,7 @@ export function evaluateReichmanPublishedRoutes({
     capability: 'estimated' as const,
     kind: 'estimated' as const,
     confidence: 'medium' as const,
-    sourceLabel: 'התאמה לפי הציונים',
+    sourceLabel: 'הערכה לפי הציונים',
     officialUrls: [THRESHOLDS_URL, CALCULATOR_URL],
   };
   const match = routes.find((route) => !route.below && !route.missing.length);
