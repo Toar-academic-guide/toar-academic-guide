@@ -28,6 +28,7 @@ describe('production-sensitive path classification', () => {
     'src/data/admissions/reviewedManifest.json',
     'src/server/admission-alerts/transitionWork.ts',
     'src/server/admissions/admissionsReleasePublisher.ts',
+    'scripts/lib/production-schema-snapshot.mjs',
     'scripts/production-sensitive-paths.mjs',
     'scripts/pre-pr-guard.mjs',
     'scripts/publish-admissions-release.mjs',
@@ -71,5 +72,48 @@ describe('production-sensitive path classification', () => {
     expect(workflow).toContain(
       'if [[ "$PREFLIGHT_REQUIRED" == "true" && "$PREFLIGHT_RESULT" != "success" ]]; then',
     );
+  });
+});
+
+describe('docs-only classification', () => {
+  function classify(paths: string[], args: string[] = []) {
+    return execFileSync(process.execPath, ['scripts/production-sensitive-paths.mjs', ...args], {
+      input: paths.join('\n'),
+      encoding: 'utf8',
+      stdio: ['pipe', 'pipe', 'pipe'],
+    });
+  }
+
+  it('accepts only non-empty changes to ordinary Markdown documentation', () => {
+    expect(classify(['README.md', 'docs/ops/ci-minutes.md', 'CONCEPTS.md'])).toContain(
+      'docs_only=true\n',
+    );
+    expect(classify([])).toContain('docs_only=false\n');
+    expect(classify(['', '  '])).toContain('docs_only=false\n');
+  });
+
+  it.each([
+    'docs/admissions-verification/requirements.json',
+    'docs/admissions-verification/table.pdf',
+    'docs/admissions-verification/page.html',
+    'docs/admissions-coverage/monday-evidence-summary.md',
+    'docs/admissions-coverage/missing-official-rules.md',
+    'docs/admissions-review-runs/2026-W40.md',
+    'public/README.md',
+    'src/README.md',
+    'e2e/README.md',
+    'scripts/README.md',
+    '.github/README.md',
+    'AGENTS.md',
+    'docs/ops/vercel-waf-rate-limits.md',
+    'src/components/Header.tsx',
+    'package-lock.json',
+  ])('runs the suite for a mixed diff including %s', (filePath) => {
+    expect(classify(['README.md', filePath])).toContain('docs_only=false\n');
+  });
+
+  it('never classifies --all as docs-only and preserves production sensitivity', () => {
+    expect(classify(['README.md'], ['--all'])).toBe('applicable=true\ndocs_only=false\n');
+    expect(classify(['README.md', 'src/db/schema.ts'])).toBe('applicable=true\ndocs_only=false\n');
   });
 });

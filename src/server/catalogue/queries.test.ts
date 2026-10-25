@@ -1,5 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { UNIVERSITIES } from '@/data/degreesData';
+import reviewedManifest from '@/data/admissions/reviewedManifest.json';
+import staleTechnionCatalogue from '@/test/fixtures/technionStaleCatalogue.json';
+import {
+  getPublicProgramPageData,
+  getPublicProgramRequirementSources,
+} from '@/lib/publicCataloguePages';
+import { selectRequirementTiles } from '@/lib/requirementTiles';
 import {
   admissionAlternativePaths,
   admissionFacts,
@@ -178,6 +185,86 @@ describe('catalogue queries', () => {
     hoistedMocks.getStaticCatalogueInstitutions.mockClear();
   });
 
+  it.each(['technion_ee', 'technion_me'])(
+    'resolves %s winter page data from its published DB row, independently of legacy rows and display notes',
+    async (programId) => {
+      mockEnv = { mode: 'database', hasDatabaseUrl: true, isProduction: true };
+      const changes = reviewedManifest.changes;
+      const change = changes.find((item) => item.target.programId === programId)!;
+      expect(change.target).toEqual({ programId, institutionId: 'technion', cycle: '2027' });
+      const captured = staleTechnionCatalogue.find((item) => item.id === programId)!;
+      const base = createDatabaseBackedDataset();
+      const thresholdRows = changes.map((item) => ({
+        id: `${item.target.programId}:technion:technion:sekhem`,
+        programId: item.target.programId,
+        institutionId: 'technion',
+        universityId: 'technion',
+        thresholdKind: 'sekhem',
+        thresholdValue: item.before,
+      }));
+      const dataset = {
+        ...base,
+        institutions: [
+          {
+            ...base.institutions[0],
+            id: 'technion',
+            name: captured.institution,
+            universityId: 'technion',
+          },
+        ],
+        programs: changes.map((item) => ({
+          ...base.programs[0],
+          id: item.target.programId,
+          institutionId: 'technion',
+          institutionName: captured.institution,
+          name: item.target.programId,
+          admissionType: 'sekhem',
+        })),
+        programInstitutions: changes.map((item) => ({
+          programId: item.target.programId,
+          institutionId: 'technion',
+        })),
+        admissionThresholds: thresholdRows,
+        admissionRequirements: [
+          {
+            ...captured.institutionDetails[0],
+            id: `${programId}:technion`,
+            programId,
+            institutionId: 'technion',
+            admissionRequirements: captured.admissionRequirements,
+          },
+        ],
+      };
+      const { db, from } = createMockDb(dataset);
+      hoistedMocks.getDb.mockReturnValue(db);
+
+      const before = (await getPublicProgramPageData(programId))!;
+      expect(before.program.thresholds?.technion).toBe(change.before);
+
+      // Supply the publication's after-value on this exact row. Leave the
+      // legacy alias stale to catch accidentally reading its old cutoff.
+      thresholdRows.find((row) => row.programId === programId)!.thresholdValue = change.after;
+      resetDatabaseCatalogueSnapshotCache();
+      const published = (await getPublicProgramPageData(programId))!;
+      expect(published.isGeneral).toBe(false);
+      expect(published.program.thresholds?.technion).toBe(programId === 'technion_ee' ? 91.5 : 87);
+      const source = (await getPublicProgramRequirementSources(published)).technion;
+      expect(source.sourceProgramId).toBe(programId);
+      expect(source.program.thresholds?.technion).toBe(change.after);
+      expect(source.requirements).toEqual(captured.institutionDetails[0].specificAdmissionNotes);
+      expect(
+        selectRequirementTiles({
+          program: source.program,
+          institutionId: 'technion',
+          requirements: source.requirements,
+        }).model,
+      ).toBeUndefined();
+      expect(from).toHaveBeenCalledWith(admissionThresholds);
+      expect(from).toHaveBeenCalledWith(admissionRequirements);
+      expect(hoistedMocks.getStaticCataloguePrograms).not.toHaveBeenCalled();
+    },
+  );
+
   it('serves static catalogue data when source mode is static', async () => {
     const result = await listCataloguePrograms();
 
@@ -324,4 +411,68 @@ describe('catalogue queries', () => {
     expect(secondResult.meta.catalogueSnapshotCacheStatus).toBe('miss');
     expect(hoistedMocks.getDb).toHaveBeenCalledTimes(2);
   });
+});
+
+describe('graphic-design identity repairs across the database cutover', () => {
+  beforeEach(() => {
+    hoistedMocks.getStaticCataloguePrograms.mockClear();
+    mockEnv = { mode: 'database', hasDatabaseUrl: true, isProduction: true };
+    resetDatabaseCatalogueSnapshotCache();
+  });
+
+  it.each(['before', 'during', 'after', 'rolled_back'] as const)(
+    'publishes one dance row and one TAU music row %s the packet',
+    async (state) => {
+      const dataset = createDatabaseBackedDataset();
+      const affected = [
+        ['jerusalem_academy_graphic_design', 'jerusalem_academy', 'מוזיקה ומחול'],
+        ['rubin_graphic_design', 'rubin', 'מוזיקה'],
+        ['spieldocs_graphic_design', 'spieldocs', 'קולנוע ותסריטאות'],
+        ['samspiegel_documentary', 'spieldocs', 'קולנוע דוקומנטרי'],
+        ['rubin_classical', 'rubin', 'מוזיקה קלאסית – ביצוע'],
+      ];
+      if (state !== 'before')
+        affected.push(['jerusalem_academy_dance', 'jerusalem_academy', 'תואר ראשון במחול']);
+      dataset.programs = affected.map(([id, institutionId, name]) => ({
+        ...dataset.programs[0],
+        id,
+        institutionId,
+        name,
+        institutionName:
+          institutionId === 'rubin'
+            ? 'בית הספר למוזיקה ע"ש בוכמן-מהטה – אוניברסיטת תל אביב'
+            : institutionId === 'jerusalem_academy'
+              ? 'האקדמיה למוזיקה ולמחול ירושלים'
+              : 'בית הספר לקולנוע ולטלוויזיה ע"ש סם שפיגל',
+        isListed:
+          state === 'rolled_back'
+            ? id !== 'jerusalem_academy_dance'
+            : state !== 'after' || !id.endsWith('graphic_design'),
+      }));
+      dataset.programInstitutions = dataset.programs.map((p) => ({
+        programId: p.id,
+        institutionId: p.institutionId,
+      }));
+      const { db } = createMockDb(dataset);
+      hoistedMocks.getDb.mockReturnValue(db);
+      const result = await listCataloguePrograms();
+      expect(result.meta.catalogueSource).toBe('database');
+      expect(result.data.map((p) => p.id).sort()).toEqual([
+        'jerusalem_academy_dance',
+        'rubin_classical',
+      ]);
+      expect(result.data.find((p) => p.id === 'jerusalem_academy_dance')).toMatchObject({
+        name: 'תואר ראשון במחול',
+        isListed: true,
+        awardedCredential: 'B.Dance',
+        institutionDetails: [expect.objectContaining({ durationYears: 4 })],
+      });
+      expect(result.data.find((p) => p.id === 'rubin_classical')).toMatchObject({
+        name: 'תואר ראשון במוזיקה',
+        awardedCredential: 'B.Mus.',
+        institutionDetails: [expect.objectContaining({ durationYears: 4 })],
+      });
+      expect(hoistedMocks.getStaticCataloguePrograms).not.toHaveBeenCalled();
+    },
+  );
 });

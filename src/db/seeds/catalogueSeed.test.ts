@@ -7,6 +7,7 @@ import { UNIVERSITIES } from '@/data/degreesData';
 import { INSTITUTION_BY_ID, INSTITUTIONS, type InstitutionId } from '@/data/institutions';
 import type { Program } from '@/data/degrees/types';
 import { buildCatalogueSeed, buildCatalogueSeedVerificationReport } from '@/db/seeds/catalogueSeed';
+import { admissionThresholds } from '@/db/schema';
 
 const verifiedKeeperProgramUrls = [
   ['tlvyaffo_cs', 'mta', 'https://www.mta.ac.il/program/bsc_computer_science'],
@@ -30,6 +31,17 @@ function duplicatedValues(values: string[]): string[] {
 }
 
 describe('catalogueSeed', () => {
+  it('persists the fractional EE cutoff without integer coercion', () => {
+    const row = buildCatalogueSeed().admissionThresholds.find(
+      (entry) => entry.programId === 'technion_ee' && entry.universityId === 'technion',
+    )!;
+    expect(row.thresholdValue).toBe(91.5);
+    expect(admissionThresholds.thresholdValue.getSQLType()).toBe('numeric');
+    expect(admissionThresholds.thresholdValue.mapFromDriverValue('91.50')).toBe(91.5);
+    expect(admissionThresholds.thresholdValue.mapToDriverValue(row.thresholdValue!)).toBe('91.5');
+    expect(admissionThresholds.thresholdValue.mapFromDriverValue(94)).toBe(94);
+  });
+
   it('preserves every seed row when the Danon culinary detail name is corrected', () => {
     const beforeNameCorrection = allPrograms.map((program) =>
       program.id === 'danon_culinary'

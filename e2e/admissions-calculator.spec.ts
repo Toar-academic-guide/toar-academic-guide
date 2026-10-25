@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures';
 
 async function enterJourney(page: Page, field: string, bagrut?: number, psychometric?: number) {
   await page.goto('/app/calculator');

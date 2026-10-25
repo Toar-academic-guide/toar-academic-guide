@@ -34,7 +34,7 @@ export default function RootLayout({
         <JsonLd data={[organizationLd(), websiteLd()]} />
         <AuthProvider>{children}</AuthProvider>
         <CatalogueFooter />
-        <Analytics />
+        {process.env.VERCEL === '1' && <Analytics />}
       </body>
     </html>
   );

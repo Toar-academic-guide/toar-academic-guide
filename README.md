@@ -11,6 +11,27 @@ npm run dev
 
 The test suite covers the current recommendation, bucket-list, and admission-calculation behavior before the catalogue moves behind the backend boundary.
 
+### PR smoke environment
+
+Both `Playwright PR smoke` and main's `E2E smoke tests` start a local production
+build with a static catalogue and `ADMISSIONS_EVALUATION_E2E_ISOLATION=1`. The shared
+Playwright fixture gives each test (including each retry and subsequent suite run)
+a fresh `x-myway-e2e-bucket` UUID, preserved alongside any spec-specific headers.
+Browser and API requests within that test share its bucket. The real limit remains
+12 requests per client per 60 seconds; one batched evaluation consumes one request,
+even with more than 12 programmes. Isolation also ignores the legacy CI limit override.
+
+The server honors the bucket header only with the explicit isolation opt-in,
+`CI=true`, `GITHUB_ACTIONS=true`, `CATALOGUE_SOURCE_MODE=static`, and neither `VERCEL`
+nor `VERCEL_ENV` set. Otherwise it ignores the header and uses the normal client key.
+Vercel production and preview retain the production limit and cannot opt into test
+buckets. Regression tests require both smoke jobs to keep identical environments
+and every smoke spec to import the shared fixture.
+
+Vercel Analytics is mounted only on Vercel deployments (`VERCEL=1`), where the
+platform serves `/_vercel/insights/script.js`. Local production builds do not
+request that platform-only endpoint.
+
 ## URL model
 
 The app uses durable URLs for places that can be reopened, refreshed, or shared:
