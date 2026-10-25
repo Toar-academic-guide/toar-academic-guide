@@ -55,6 +55,7 @@ jobs:
             *) echo 'Actor must be exactly jorje or amit after trimming (case-sensitive).' >&2; exit 1 ;;
           esac
           [[ -n "$TRIGGERING_ACTOR" ]] || { echo 'Triggering actor must be non-empty.' >&2; exit 1; }
+          [[ "$TRIGGERING_ACTOR" == 'funksinatra' ]] || { echo 'Triggering actor must be exactly funksinatra (case-sensitive, no whitespace).' >&2; exit 1; }
 
           uuid_pattern='^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$'
           ids=()
