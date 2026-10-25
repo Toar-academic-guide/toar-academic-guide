@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { UNIVERSITIES } from '@/data/degreesData';
 import reviewedManifest from '@/data/admissions/reviewedManifest.json';
+import technionWinterManifest from '@/server/admissions/__fixtures__/technionWinterManifest.json';
 import staleTechnionCatalogue from '@/test/fixtures/technionStaleCatalogue.json';
 import {
   getPublicProgramPageData,
@@ -190,8 +191,8 @@ describe('catalogue queries', () => {
     'resolves %s winter page data from its published DB row, independently of legacy rows and display notes',
     async (programId) => {
       mockEnv = { mode: 'database', hasDatabaseUrl: true, isProduction: true };
-      const changes = reviewedManifest.changes;
-      const change = changes.find((item) => item.target.programId === programId)!;
+      const changes = technionWinterManifest.changes;
+      const change = reviewedManifest.changes.find((item) => item.target.programId === programId)!;
       expect(change.target).toEqual({ programId, institutionId: 'technion', cycle: '2027' });
       const captured = staleTechnionCatalogue.find((item) => item.id === programId)!;
       const base = createDatabaseBackedDataset();

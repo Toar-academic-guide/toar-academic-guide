@@ -21,6 +21,7 @@ import {
   type PublishedAdmissionRule,
 } from './weeklyReviewRun';
 import type { FormulaPairVerificationLedgerEntry } from '@/data/admissions/formulaBackedVerificationLedger';
+import existingReviewedManifest from '@/data/admissions/reviewedManifest.json';
 import type { ReviewedAdmissionsManifest } from './reviewedManifest';
 
 export interface PublishedAdmissionRuleRepository {
@@ -34,6 +35,7 @@ export interface AdmissionsWeeklyReviewPreparerDependencies {
   ) => Promise<AdmissionsSourceFreshnessRunResult>;
   baselineRepository?: PublishedAdmissionRuleRepository;
   verificationLedger?: readonly FormulaPairVerificationLedgerEntry[];
+  reviewedManifest?: ReviewedAdmissionsManifest;
 }
 
 export interface AdmissionsWeeklyReviewPreparationInput extends Omit<
@@ -89,6 +91,9 @@ export function createAdmissionsWeeklyReviewPreparer(
           proofs: freshness.report.results.map((result) => result.proof),
           excludedCandidateIds: input.excludedCandidateIds,
           verificationLedger: dependencies.verificationLedger,
+          reviewedManifest:
+            dependencies.reviewedManifest ??
+            (existingReviewedManifest as ReviewedAdmissionsManifest),
           releaseKind,
         }),
         persistence: freshness.persistence,

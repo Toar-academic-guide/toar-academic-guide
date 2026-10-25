@@ -1,0 +1,86 @@
+{
+  "version": 2,
+  "releaseKind": "canonical_change",
+  "changes": [
+    {
+      "target": {
+        "institutionId": "technion",
+        "programId": "technion_ee",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 94,
+      "after": 91.5,
+      "effectiveFrom": "2026-10-25",
+      "sourceProofs": [
+        {
+          "sourceId": "technion-technion_ee-live",
+          "digest": "sha256:8dd512d269f64e33325e0342c8bcd1c7ff1b70c9a6cfce5773e2eac9a89cb400",
+          "excerpt": "Winter תשפ\"ז initial table (tablepress-485): הנדסת חשמל 91.5.",
+          "url": "https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "technion",
+        "programId": "technion_me",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 92,
+      "after": 87,
+      "effectiveFrom": "2026-10-25",
+      "sourceProofs": [
+        {
+          "sourceId": "technion-technion_me-live",
+          "digest": "sha256:8dd512d269f64e33325e0342c8bcd1c7ff1b70c9a6cfce5773e2eac9a89cb400",
+          "excerpt": "Winter תשפ\"ז initial table (tablepress-485): הנדסת מכונות 87.",
+          "url": "https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "technion",
+        "programId": "ee",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 94,
+      "after": 91.5,
+      "effectiveFrom": "2026-10-25",
+      "sourceProofs": [
+        {
+          "sourceId": "technion-ee-live",
+          "digest": "sha256:8dd512d269f64e33325e0342c8bcd1c7ff1b70c9a6cfce5773e2eac9a89cb400",
+          "excerpt": "Winter תשפ\"ז initial table (tablepress-485): הנדסת חשמל 91.5.",
+          "url": "https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "technion",
+        "programId": "me",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 92,
+      "after": 87,
+      "effectiveFrom": "2026-10-25",
+      "sourceProofs": [
+        {
+          "sourceId": "technion-me-live",
+          "digest": "sha256:8dd512d269f64e33325e0342c8bcd1c7ff1b70c9a6cfce5773e2eac9a89cb400",
+          "excerpt": "Winter תשפ\"ז initial table (tablepress-485): הנדסת מכונות 87.",
+          "url": "https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/",
+          "proofType": "exact_official"
+        }
+      ]
+    }
+  ]
+}
