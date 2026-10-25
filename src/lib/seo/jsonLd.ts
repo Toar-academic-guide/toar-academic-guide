@@ -121,7 +121,9 @@ export async function programLd({ program, institutions, isGeneral }: PublicProg
     ),
     inLanguage: 'he',
     ...(Number.isInteger(months) && months > 0 ? { timeToComplete: `P${months}M` } : {}),
-    // The catalogue has no explicit awarded-credential field; do not infer one from type.
+    ...(program.awardedCredential
+      ? { educationalCredentialAwarded: program.awardedCredential }
+      : {}),
   };
 }
 

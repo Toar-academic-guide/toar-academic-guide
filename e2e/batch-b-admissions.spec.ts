@@ -1,9 +1,12 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 const targets = [
   ['bezalel_industrial_design', 'bezalel', 'eligible_to_apply'],
   ['shenkar_fashion', 'shenkar', 'eligible_to_apply'],
   ['samspiegel_cinema', 'spieldocs', 'eligible_to_apply'],
+  ['jerusalem_academy_dance', 'jerusalem_academy', 'eligible_to_apply'],
+  ['jerusalem_academy_classical', 'jerusalem_academy', 'eligible_to_apply'],
+  ['jerusalem_academy_jazz', 'jerusalem_academy', 'eligible_to_apply'],
   ['telhai_nursing', 'telhai', 'eligible_to_apply'],
   ['ono_nursing', 'ono', 'accepted'],
 ] as const;
@@ -85,6 +88,12 @@ for (const width of [390, 1440]) {
       } else {
         expect(result.scoreAssessment).toBeUndefined();
         await expect(page.locator('.journey-status')).toHaveText('אפשר להגיש מועמדות');
+      }
+      if (degreeId === 'jerusalem_academy_classical') {
+        await expect(page.getByText(/במחלקות כלי מקלדת.*160 נקודות זכות/)).toBeVisible();
+      }
+      if (degreeId === 'jerusalem_academy_jazz' || degreeId === 'jerusalem_academy_dance') {
+        await expect(page.getByText(/(?:160|0) נקודות זכות/)).toHaveCount(0);
       }
       expect(result.requiredInputs).toBeUndefined();
       await expect(page.locator('.journey-result-explanation')).toHaveText(result.explanation);

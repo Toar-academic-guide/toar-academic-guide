@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 const runInternalSmoke = process.env.INTERNAL_DATA_HEALTH_SMOKE === '1';
 const internalToken = process.env.INTERNAL_ADMIN_E2E_TOKEN;

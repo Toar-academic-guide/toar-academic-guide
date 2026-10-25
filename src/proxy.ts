@@ -3,12 +3,24 @@ import { NextResponse, type NextRequest } from 'next/server';
 
 import { getSupabaseEnv, isSupabaseConfigured } from '@/lib/supabase/env';
 
+const socialShortLinks: Record<string, string> = {
+  '/tt': 'tiktok',
+  '/ig': 'instagram',
+  '/fb': 'facebook',
+  '/wa': 'whatsapp',
+};
+
 export async function proxy(request: NextRequest) {
   if (process.env.VERCEL_ENV === 'production' && request.nextUrl.hostname.endsWith('.vercel.app')) {
     return NextResponse.redirect(
       `https://findmyway.co.il${request.nextUrl.pathname}${request.nextUrl.search}`,
       308,
     );
+  }
+
+  const source = socialShortLinks[request.nextUrl.pathname.replace(/\/$/, '')];
+  if (source) {
+    return NextResponse.redirect(new URL(`/?utm_source=${source}`, request.url), 307);
   }
 
   if (process.env.NODE_ENV === 'production' && request.nextUrl.pathname === '/dev') {

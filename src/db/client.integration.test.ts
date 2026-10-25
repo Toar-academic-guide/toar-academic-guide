@@ -4,7 +4,7 @@ import { sql, eq } from 'drizzle-orm';
 import { afterAll, describe, expect, it, vi } from 'vitest';
 import { closeDb, getDb } from './client';
 import { queryRows } from './queryRows';
-import { programs, savedPrograms, userProfiles } from './schema';
+import { admissionThresholds, programs, savedPrograms, userProfiles } from './schema';
 
 vi.mock('server-only', () => ({}));
 import { getUserProfileSnapshot, replaceUserProfileSnapshot } from '@/server/user/profile';
@@ -19,6 +19,14 @@ describe.skipIf(!enabled)('application database driver with PostgreSQL', () => {
   afterAll(async () => {
     await getDb().delete(userProfiles).where(eq(userProfiles.userId, userId));
     await closeDb();
+  });
+
+  it('reads the seeded fractional EE threshold as an application number', async () => {
+    const [threshold] = await getDb()
+      .select({ value: admissionThresholds.thresholdValue })
+      .from(admissionThresholds)
+      .where(eq(admissionThresholds.programId, 'technion_ee'));
+    expect(threshold?.value).toBe(91.5);
   });
 
   it('settles overlapping parameterized and large reads without mixing results', async () => {

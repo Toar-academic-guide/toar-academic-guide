@@ -101,7 +101,11 @@ describe('canonical programme aliases', () => {
   });
 
   it('registers the approved aliases without changing their IDs', () => {
-    expect(PROGRAM_CANONICAL_ALIASES).toEqual(Object.fromEntries(aliases));
+    expect(PROGRAM_CANONICAL_ALIASES).toEqual({
+      ...Object.fromEntries(aliases),
+      jerusalem_academy_graphic_design: 'jerusalem_academy_dance',
+      rubin_graphic_design: 'rubin_classical',
+    });
   });
 
   it.each(aliases)('keeps %s accessible while advertising only %s', async (hidden, keeper) => {

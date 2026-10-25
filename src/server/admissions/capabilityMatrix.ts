@@ -32,7 +32,10 @@ import type { AdmissionsProgramInput } from '@/server/ingestion/admissionsSource
 import { getProgramVerificationArtifact } from '@/data/admissions/tauProgramVerification';
 import { HUJI_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/hujiProgramVerification';
 import { BGU_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/bguProgramVerification';
-import { TECHNION_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/technionProgramVerification';
+import {
+  TECHNION_PROGRAM_VERIFICATION_ARTIFACTS,
+  getCodeReviewedTechnionWinterVerification,
+} from '@/data/admissions/technionProgramVerification';
 import {
   getHaifaProgramConfig,
   HAIFA_PROGRAM_VERIFICATION_ARTIFACTS,
@@ -796,6 +799,37 @@ export function buildAdmissionsCapabilityMatrix(args: {
         formulaPairScope,
         pairVerification,
         evidence,
+      };
+    }
+
+    const codeReviewedWinter = getCodeReviewedTechnionWinterVerification(pairId);
+    if (codeReviewedWinter && pairVerification?.state === 'exact' && exactTarget) {
+      const verification = evaluateProgramVerification({
+        contract: codeReviewedWinter.contract,
+        fixtures: codeReviewedWinter.fixtures,
+        currentAdmissionCycle: pairVerification.admissionCycle,
+        currentSourceFingerprint: codeReviewedWinter.contract.sourceFingerprint,
+      });
+      const deferred = args.deferredRequiredInputs?.get(institutionId) ?? [];
+      const missing = requiredInputsMissingFrom(
+        input,
+        exactTarget.requiredInputs.filter((id) => !deferred.includes(id)),
+      );
+      return {
+        institutionId,
+        capability:
+          verification.capability !== 'exact'
+            ? verification.capability
+            : missing.length
+              ? 'needs_input'
+              : 'exact',
+        formulaPairScope,
+        pairVerification,
+        sourceTarget,
+        exactTarget,
+        evidence,
+        freshnessState,
+        ...(missing.length ? { requiredInputs: missing } : {}),
       };
     }
 
