@@ -59,7 +59,7 @@ it('keeps required context within the Monday 2000-character long-text limit with
     utm_source: 'x'.repeat(100),
     utm_medium: 'x'.repeat(100),
     utm_campaign: 'x'.repeat(100),
-    referrer: 'https://example.com/' + 'x'.repeat(236),
+    referrer: 'https://example.com',
     result_status: 'accepted',
     bagrut_band: '105–109',
     psychometric_band: '650–699',

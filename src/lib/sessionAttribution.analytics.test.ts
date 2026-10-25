@@ -22,7 +22,7 @@ it('registers session super properties before the initial pageview and keeps all
         utm_source: 'tiktok',
         utm_medium: null,
         utm_campaign: 'fall_2026',
-        referrer: 'https://example.com/article',
+        referrer: 'https://example.com',
       },
     ],
   ]);
@@ -37,8 +37,8 @@ it('registers session super properties before the initial pageview and keeps all
   expect(event.properties).toMatchObject({
     utm_source: 'tiktok',
     utm_campaign: 'fall_2026',
-    referrer: 'https://example.com/article',
-    $referrer: 'https://example.com/article',
+    referrer: 'https://example.com',
+    $referrer: 'https://example.com',
   });
   expect(JSON.stringify(event)).not.toContain('0501234567');
   expect(options.before_send(null)).toBeNull();

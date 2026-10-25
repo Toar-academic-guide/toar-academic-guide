@@ -88,7 +88,7 @@ describe('website enquiries → Monday', () => {
       referrer: 'https://example.com/article?phone=0501234567#private',
     };
     expect((await POST(request({ attribution }))).status).toBe(201);
-    const expected = { ...attribution, referrer: 'https://example.com/article' };
+    const expected = { ...attribution, referrer: 'https://example.com' };
     const body = JSON.parse(vi.mocked(fetch).mock.calls[0][1]?.body as string);
     const context = JSON.parse(
       JSON.parse(body.variables.columns).long_text_mm8ay37r.text.split('\n\nLead context:\n')[1],
@@ -159,10 +159,26 @@ describe('website enquiries → Monday', () => {
     expect(backup).toHaveBeenCalledWith(expect.objectContaining({ attribution: expected }));
   });
   it.each([
+    ['https://example.com/680?bagrut=105.5#750', 'https://example.com'],
+    ['https://findmyway.co.il/680?bagrut=105.5#750', 'https://findmyway.co.il/'],
+    ['https://findmyway.co.il/programs/cs?score=680', 'https://findmyway.co.il/programs/cs'],
+  ])('minimizes referrer %s before Monday and the private backup', async (referrer, expected) => {
+    const attribution = { referrer, utm_source: '105.5', utm_campaign: 'psy750' };
+    expect((await POST(request({ attribution }))).status).toBe(201);
+    const body = JSON.parse(vi.mocked(fetch).mock.calls[0][1]?.body as string);
+    const context = JSON.parse(
+      JSON.parse(body.variables.columns).long_text_mm8ay37r.text.split('\n\nLead context:\n')[1],
+    );
+    expect(context).toMatchObject({ ...attribution, referrer: expected });
+    expect(backup).toHaveBeenCalledWith(
+      expect.objectContaining({ attribution: { ...attribution, referrer: expected } }),
+    );
+  });
+  it.each([
     { utm_source: 'x'.repeat(101) },
     { utm_medium: 'x'.repeat(101) },
     { utm_campaign: 'x'.repeat(101) },
-    { referrer: 'https://example.com/' + 'x'.repeat(256) },
+    { referrer: 'https://example.com/' + 'x'.repeat(2048) },
   ])('rejects invalid attribution before either destination: %j', async (attribution) => {
     expect((await POST(request({ attribution }))).status).toBe(400);
     expect(backup).not.toHaveBeenCalled();

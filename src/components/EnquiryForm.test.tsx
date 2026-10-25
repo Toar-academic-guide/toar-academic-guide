@@ -124,7 +124,7 @@ describe('EnquiryForm', () => {
     expect(JSON.parse(send.mock.calls[0][1].body).attribution).toEqual({
       utm_source: 'instagram',
       utm_campaign: 'fall_2026',
-      referrer: 'https://example.com/article',
+      referrer: 'https://example.com',
     });
   });
 

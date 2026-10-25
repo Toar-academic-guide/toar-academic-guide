@@ -48,7 +48,11 @@ describe('private enquiry backup', () => {
     expect(queries[0].sql).toMatch(/statement_timeout/);
     expect(queries[1].sql).toContain('public.store_enquiry');
     const payload = JSON.parse(queries[1].params[0] as string);
-    expect(payload).toMatchObject({ ...enquiry, createdAt: '2026-10-24T12:00:00.000Z' });
+    expect(payload).toMatchObject({
+      ...enquiry,
+      attribution: { ...enquiry.attribution, referrer: 'https://example.com' },
+      createdAt: '2026-10-24T12:00:00.000Z',
+    });
     expect(payload.bagrut).toBe(105.5);
     expect(payload.psychometric).toBe(680);
     expect(payload.evaluationInput).toEqual(enquiry.evaluationInput);

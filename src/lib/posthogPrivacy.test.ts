@@ -127,3 +127,26 @@ describe('PostHog payload privacy', () => {
     expect(sanitizePostHogEvent(event)).toEqual(event);
   });
 });
+
+it.each(['qa-test%2540example.com', 'qa-test%252540example.com'])(
+  'scrubs repeatedly encoded contact data from URLs, replay, super/person properties and identity: %s',
+  (encoded) => {
+    const url = `/login?next=${encoded}`;
+    const result = sanitizePostHogEvent({
+      event: '$pageview',
+      properties: {
+        distinct_id: 'b783a6d4-0428-4ddd-827f-82d33251be52',
+        $current_url: `https://findmyway.co.il${url}`,
+        $session_entry_url: url,
+        $set: { contact: encoded },
+        $set_once: { contact: encoded },
+        nested: [{ $snapshot_data: [{ data: { href: url } }] }],
+      },
+    });
+    const serialized = JSON.stringify(result);
+    expect(serialized).not.toContain('qa-test');
+    expect(serialized).not.toMatch(/(?:@|%(?:25)*40)example\.com/i);
+    expect(serialized).toContain('[redacted]');
+    expect(sanitizePostHogEvent({ distinctId: encoded, properties: {} })).toBeNull();
+  },
+);

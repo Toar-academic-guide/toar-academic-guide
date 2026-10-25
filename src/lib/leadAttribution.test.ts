@@ -20,7 +20,7 @@ describe('session first-touch attribution', () => {
     utm_source: 'tiktok',
     utm_medium: 'social',
     utm_campaign: 'fall_2026',
-    referrer: 'https://example.com/article',
+    referrer: 'https://example.com',
   };
   it('retains the first URL/referrer across internal navigation and module reloads', async () => {
     expect(getSessionAttribution()).toEqual(firstTouch);
@@ -46,6 +46,7 @@ describe('session first-touch attribution', () => {
       'https://example.com/private%40example.com?token=secret',
     );
     expect(getSessionAttribution()).toEqual({
+      referrer: 'https://example.com',
       utm_source: 'private@example.com',
       utm_medium: '0501234567',
     });
@@ -99,19 +100,56 @@ describe('attribution trust boundary', () => {
       enquiryAttributionSchema.parse({
         referrer: 'https://example.com/article?phone=0501234567#token',
       }),
-    ).toEqual({ referrer: 'https://example.com/article' });
+    ).toEqual({ referrer: 'https://example.com' });
   });
   it.each([
     { utm_source: 'x'.repeat(101) },
     { utm_medium: 'x'.repeat(101) },
     { utm_campaign: 'x'.repeat(101) },
-    { referrer: 'https://example.com/' + 'x'.repeat(256) },
+    { referrer: 'https://example.com/' + 'x'.repeat(2048) },
     { referrer: 'javascript:alert(1)' },
     { referrer: 'https://user:password@example.com/' },
-    { referrer: 'https://example.com/private%40example.com' },
-    { referrer: 'https://example.com/0501234567' },
     { referrer: 'https://127.0.0.1/private' },
   ])('rejects unsafe or oversized attribution: %j', (attribution) => {
     expect(enquiryAttributionSchema.safeParse(attribution).success).toBe(false);
   });
+});
+
+describe('referrer path minimization', () => {
+  it.each([
+    ['https://example.com/680?bagrut=105.5#750', 'https://example.com'],
+    ['https://example.com/private%40example.com', 'https://example.com'],
+    ['https://example.com/0501234567', 'https://example.com'],
+    ['https://example.com/programs/cs?private=secret', 'https://example.com'],
+    ['https://findmyway.co.il/680?bagrut=105.5#750', 'https://findmyway.co.il/'],
+    [
+      'https://findmyway.co.il/programs/cs?private=secret#score',
+      'https://findmyway.co.il/programs/cs',
+    ],
+    ['https://findmyway.co.il/programs/680', 'https://findmyway.co.il/programs/680'],
+    ['https://findmyway.co.il/app/calculator#score', 'https://findmyway.co.il/app/calculator'],
+    ['https://findmyway.co.il.evil.example/680', 'https://findmyway.co.il.evil.example'],
+    ['http://localhost/680', 'http://localhost/'],
+    ['http://localhost/institutions/tau?score=750', 'http://localhost/institutions/tau'],
+  ])('normalizes %s to %s without changing UTM handling', (referrer, expected) => {
+    expect(enquiryAttributionSchema.parse({ referrer })).toEqual({ referrer: expected });
+  });
+});
+
+it('guards same-deployment referrers on the server using the existing deployment origin', () => {
+  vi.stubEnv('VERCEL_URL', 'toar-academic-guide-test.vercel.app');
+  try {
+    expect(
+      enquiryAttributionSchema.parse({
+        referrer: 'https://toar-academic-guide-test.vercel.app/680',
+      }),
+    ).toEqual({ referrer: 'https://toar-academic-guide-test.vercel.app/' });
+    expect(
+      enquiryAttributionSchema.parse({
+        referrer: 'https://toar-academic-guide-test.vercel.app/programs/cs#score',
+      }),
+    ).toEqual({ referrer: 'https://toar-academic-guide-test.vercel.app/programs/cs' });
+  } finally {
+    vi.unstubAllEnvs();
+  }
 });

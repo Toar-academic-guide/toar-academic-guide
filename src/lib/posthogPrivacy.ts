@@ -29,10 +29,15 @@ function scrubCampaignUrl(value: unknown): unknown {
 function scrub(value: unknown): unknown {
   if (typeof value === 'string') {
     let decoded = value;
-    try {
-      decoded = decodeURIComponent(value);
-    } catch {
-      // Error strings and DOM text are not necessarily URI encoded.
+    for (let pass = 0; pass < 3; pass++) {
+      try {
+        const next = decodeURIComponent(decoded);
+        if (next === decoded) break;
+        decoded = next;
+      } catch {
+        // Error strings and DOM text are not necessarily URI encoded.
+        break;
+      }
     }
     // Supabase and anonymous SDK UUIDs can contain long numeric groups.
     if (internalUuid.test(decoded)) return value;

@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { enquirySourcePath } from './enquirySourcePath';
+import { SITE_URL } from './site';
 
 const phoneLike = /(?:\d[-_ .()+]*){7}/;
 // Campaign values are bounded metadata; do not reinterpret names, numbers or punctuation.
@@ -11,9 +13,12 @@ export const referrerSchema = z
     try {
       const url = new URL(value);
       if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) return null;
-      url.search = '';
-      url.hash = '';
-      const decoded = decodeURIComponent(url.href);
+      const sameSite =
+        url.origin === SITE_URL ||
+        (typeof window !== 'undefined' && url.origin === window.location.origin) ||
+        (Boolean(process.env.VERCEL_URL) && url.origin === `https://${process.env.VERCEL_URL}`);
+      const referrer = url.origin + (sameSite ? enquirySourcePath(url.pathname) : '');
+      const decoded = decodeURIComponent(referrer);
       if (
         /@|%40|%25/i.test(decoded) ||
         phoneLike.test(decoded) ||
@@ -21,7 +26,7 @@ export const referrerSchema = z
         url.hostname.includes(':')
       )
         return null;
-      return url.href;
+      return referrer;
     } catch {
       return null;
     }

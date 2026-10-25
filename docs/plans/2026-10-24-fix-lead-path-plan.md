@@ -76,7 +76,7 @@ Execution note: observe failing API and component assertions first.
 
 ### U3. Independent backup and unapplied SQL (R3, R4)
 
-Files: src/server/enquiries/*, src/db/schema.ts, src/db/migrations/0040*, supabase/packets/2026-10-24-enquiries-table.sql, scripts/pre-pr-guard.mjs and tests.
+Files: src/server/enquiries/*, src/db/schema.ts, src/db/migrations/0041*, supabase/packets/2026-10-24-enquiries-table.sql, scripts/pre-pr-guard.mjs and tests.
 Tests: both success, Monday-only, DB-only, both failure, missing table, missing Monday token, provider timeout, duplicate request handling; migration/packet role restrictions and guarded rollback.
 Execution note: run failure matrix before implementation. No live DB writes in any verification.
 
@@ -110,7 +110,7 @@ R10. Clear the unused admissions import and format the migration snapshot; requi
 
 Use a shared Zod attribution contract in src/lib/leadAttribution.ts and a browser session helper. Initialize before interaction through instrumentation-client.ts; register session super properties in the SDK loaded callback before the initial pageview. Read the captured session in EnquiryForm without additional fields. Optional attribution preserves older clients. Validate again in the enquiry API and persist four nullable, bounded columns through the existing insert function. Include the fields in Monday's existing context and successful server analytics. Keep the existing independent-write guarantees and 2,000-character Monday limit.
 
-Update the existing unexecuted 0040 migration and its snapshot rather than creating a second table-creation path. The guarded packet must also upgrade an existing enquiries table idempotently with ADD COLUMN IF NOT EXISTS, preserving all RLS/grants, backup and archival rollback behavior. The packet stays unapplied.
+After merging main, regenerate the unapplied enquiries migration as 0041 with Drizzle; main owns 0040_fractional_admission_thresholds. Preserve the original enquiries security SQL and regenerate the snapshot/journal through tooling, without manual metadata edits. The guarded packet must also upgrade an existing enquiries table idempotently with ADD COLUMN IF NOT EXISTS, preserving all RLS/grants, backup and archival rollback behavior. The packet stays unapplied.
 
 Tests first: source persistence across changed URLs/module reload; empty direct first touch wins; unavailable storage cannot break contact; unknown attribution keys are stripped and oversized values rejected; PostHog independently scrubs PII; referrer query/fragment stripped on client and server; initial PostHog pageview receives session props; form retries retain attribution; API sends normalized attribution to Monday, DB and analytics; schema columns and bounded SQL function values; maximum-size Monday context stays within its limit.
 
@@ -127,4 +127,8 @@ After implementation and ce-simplify-code, run lint with zero warnings, typechec
 
 Monday retains the documented score bands; exact academic inputs and the evaluation record remain in the private enquiries backup. A failing-first regression serializes the complete Monday GraphQL body (item name, every column and Lead context) for bagrut 105.5, psychometric 680 and a separate what-if 750, including a crafted source path and unsupported attribution key. None of those exact inputs may escape through those fields. Names and bounded campaign strings are preserved verbatim, including numbers that happen to resemble scores; they are not academic score fields and are not censored.
 
-The shared source-path guard accepts only page patterns derived from src/app, after removing query and fragment; unknown paths such as /680 become /. Both the API and each delivery adapter apply the guard. A route-tree test detects new pages missing from the guard. Attribution allows only utm_source, utm_medium, utm_campaign (100 characters each) and the existing referrer field. Unsupported keys are stripped; UTM values have no syntax or score/PII content filtering in storage. Referrer URL privacy normalization and independent PostHog email/phone scrubbing remain in place. The private DB keeps exact score inputs. No SQL packet is executed.
+The existing source-path route-pattern guard remains unchanged: /programs/:slug and /institutions/:slug use pattern matching, with no real-id checks. External referrers store only the origin; same-site referrer paths pass through that same guard, and query/fragment are removed. PostHog decodes strings up to three times before scrubbing email/phone values, covering nested URLs, replay and identity properties.
+
+Jorje's ruling: "UTM keys allowlisted, values only length-capped." Allow only utm_source, utm_medium, utm_campaign (100 characters each) plus the existing bounded referrer field. Do not change UTM value handling or score bands.
+
+Implementation sequence: add failing migration lineage/packet, encoded-email and referrer regressions; resolve the merge using main's 0040 metadata; generate 0041 with npm run db:generate -- --name enquiries; preserve the enquiries RLS/function/grants; implement bounded decoding and referrer normalization; run focused/full tests, strict lint, typecheck, build and guard; push normally and verify all real CI gates including disposable Postgres migration/seed and the intended MyWay preview. No connected database operations or packet execution.

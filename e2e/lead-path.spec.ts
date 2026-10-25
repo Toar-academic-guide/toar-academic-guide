@@ -57,7 +57,7 @@ for (const width of [1440, 390]) {
       evaluationInput: { bagrut: 105.5, psychometric: evaluatedPsychometric },
       attribution: {
         utm_source: width === 390 ? 'instagram' : 'tiktok',
-        referrer: expect.stringMatching(/^https:\/\/example\.com\/(?:social)?$/),
+        referrer: 'https://example.com',
       },
     });
     expect(submitted?.evaluationInput).toMatchObject({ degreeId: submitted?.programId });
