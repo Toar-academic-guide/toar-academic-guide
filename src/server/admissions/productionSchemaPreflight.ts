@@ -578,7 +578,7 @@ export function assessProductionSchema(snapshot: ProductionSchemaSnapshot): Prod
   assessAdmissionsAutomationAccess(snapshot, applied, issues);
 
   // Older journal prefixes retain their existing migration checks. Once the
-  // journal is current, also require the separately applied 0037–0042 schema.
+  // journal is current, also require the separately applied 0037–0043 schema.
   if (appliedCount === FORWARD_PRODUCTION_MIGRATIONS.length) {
     for (const migration of GUARDED_PRODUCTION_MIGRATIONS) {
       if ('tables' in migration) assessGuardedEnquiries(snapshot, migration, issues);
@@ -1537,6 +1537,19 @@ function assessAdmissionsAutomationAccess(
     uploaded_documents: { grants: [] },
     bagrut_profile_versions: { grants: [] },
   };
+  if (applied.size === FORWARD_PRODUCTION_MIGRATIONS.length) {
+    for (const migration of GUARDED_PRODUCTION_MIGRATIONS) {
+      if ('automationAccess' in migration) {
+        for (const [table, expected] of Object.entries(migration.automationAccess)) {
+          access[table] = {
+            grants: [...expected.grants],
+            columnGrants: { UPDATE: [...expected.columnGrants.UPDATE] },
+            policies: [...expected.policies],
+          };
+        }
+      }
+    }
+  }
   for (const [tableName, expected] of Object.entries(access)) {
     const table = snapshot.tables[tableName];
     if (!table) continue;

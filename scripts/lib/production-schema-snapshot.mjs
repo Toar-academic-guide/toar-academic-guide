@@ -185,6 +185,8 @@ export async function loadProductionSchemaSnapshot(sql) {
             and column_privilege.privilege <> 'SELECT')
           or (database_role.rolname = any(${['anon', 'authenticated', 'app_runtime', 'ops_readonly']}::text[])
             and c.relname = any(${['ingestion_sources', 'ingestion_jobs', 'review_items', 'enquiries']}::text[]))
+          or (database_role.rolname = 'admissions_automation' and c.relname = 'review_items'
+            and column_privilege.privilege in ('UPDATE', 'REFERENCES'))
           or (database_role.rolname = 'admissions_automation' and c.relname = 'enquiries')
         )
         and c.relkind in ('r', 'p')

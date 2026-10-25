@@ -80,7 +80,8 @@ describe.skipIf(!enabled)('review resolution as admissions_automation with Postg
         const [review] = await tx.execute(
           query`select status, reviewed_at from review_items where id = ${id}`,
         );
-        expect(review).toEqual({ status: expectedStatus, reviewed_at: reviewedAt });
+        expect(review.status).toBe(expectedStatus);
+        expect(new Date(review.reviewed_at as string)).toEqual(reviewedAt);
         const [freshness] =
           await tx.execute(query`select status, latest_review_item_id, latest_failure_reason,
         next_action, updated_at from source_freshness_states where source_id = ${sourceId}`);
@@ -89,8 +90,9 @@ describe.skipIf(!enabled)('review resolution as admissions_automation with Postg
           latest_review_item_id: null,
           latest_failure_reason: null,
           next_action: null,
-          updated_at: reviewedAt,
+          updated_at: expect.any(String),
         });
+        expect(new Date(freshness.updated_at as string)).toEqual(reviewedAt);
         expect(auditLog).toHaveBeenCalledExactlyOnceWith(
           expect.objectContaining({
             status: expectedStatus,

@@ -325,4 +325,20 @@ export const GUARDED_PRODUCTION_MIGRATIONS = [
       'store_enquiry(jsonb)': "COALESCE((payload->>'createdAt')::timestamptz, now())",
     },
   },
+  {
+    id: '0043',
+    repositoryPath: 'src/db/migrations/0043_grant_admissions_automation_review_resolution.sql',
+    columns: [],
+    automationAccess: {
+      review_items: {
+        grants: ['INSERT', 'SELECT'],
+        columnGrants: { UPDATE: ['status', 'reviewed_at'] },
+        policies: [
+          'review_items_admissions_automation_insert',
+          'review_items_admissions_automation_read',
+          'review_items_admissions_automation_update',
+        ],
+      },
+    },
+  },
 ] as const;
