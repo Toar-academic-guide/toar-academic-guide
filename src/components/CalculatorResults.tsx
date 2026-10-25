@@ -827,6 +827,13 @@ export default function CalculatorResults({
                                       ? STATUS_CONFIG.trackedMissingRule
                                       : STATUS_CONFIG.unsupported;
                   if (footnote) config = { ...STATUS_CONFIG.exactAccepted, label: 'מתקבלים' };
+                  if (
+                    result.kind === 'manual_gate' &&
+                    result.floorChecks &&
+                    result.decision !== 'below' &&
+                    !result.floorChecks.every((floor) => floor.status === 'pass')
+                  )
+                    config = STATUS_CONFIG.needsInput;
                   if (result.floorChecks && result.decision === 'below')
                     config = { ...config, label: 'לא עומד/ת בתנאי הסף' };
                   const statusBackground = isTechnionMedicineScore(result, degreeId)
