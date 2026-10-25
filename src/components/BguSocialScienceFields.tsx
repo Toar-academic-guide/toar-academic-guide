@@ -8,10 +8,7 @@ export type SocialScienceFormValues = Partial<Record<Key, string>>;
 type PrepKey = 'bguPreparatoryTrack' | 'bguPreparatoryAverage' | 'bguPreparatoryCompleted';
 
 const booleanFields: Array<[Key, string]> = [
-  [
-    'bguSocialScienceRequirementsConfirmed',
-    'האם יש תעודת קבלה מוכרת ומתקיימים תנאי החוג הנוסף ועדיפות ההרשמה?',
-  ],
+  ['bguSocialScienceRequirementsConfirmed', 'האם מתקיימים תנאי החוג הנוסף ועדיפות ההרשמה?'],
   [
     'bguSocialScienceLanguageConfirmed',
     'האם מתקיימים אנגלית בסיסי ועברית ה׳ (ו׳ לעבודה סוציאלית), לנדרשים, או פטור תקף?',

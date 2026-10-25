@@ -1,3 +1,5 @@
+import psychologyWalkthroughOfficial from '../../../docs/admissions-verification/2026-10-25-bgu-psychology-live.json';
+import { BGU_COMPUTER_SCIENCE_RULE_CAPTURE } from '@/data/admissions/bguComputerScienceVerification';
 import { AFEKA_EVALUATOR_IDS, afekaCases } from '@/test/afekaAdmissions';
 import medicineOfficial from '../../../docs/admissions-verification/2026-09-28-huji-medicine-official.json';
 import routingOfficial from '../../../docs/admissions-verification/2026-10-21-calculator-routing.json';
@@ -58,7 +60,8 @@ describe.each(AFEKA_EVALUATOR_IDS)('%s published routes', (degreeId) => {
     expect(fetcher).not.toHaveBeenCalled();
     if (decision === 'accepted') {
       expect(resultLabel(result).group).toBe('match');
-      expect(result.explanation).toContain('זכאות לתעודת בגרות מלאה');
+      // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+      expect(result.explanation).not.toContain('זכאות לתעודת בגרות מלאה');
       expect(result.explanation).toContain('סיווג אנגלית');
       expect(result.explanation).toContain('70');
     }
@@ -1228,22 +1231,20 @@ describe('evaluateAdmissionsForProgram', () => {
       institutions,
     });
 
+    // Ruling: /workspace/codex-tasks/r1-pr278-rulings-2026-10-25.md row 1. Official source: none named in rulings; see PR #278 table. Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
     expect(report.results).toContainEqual(
       expect.objectContaining({
         linkedInstitutionId: 'haifa',
         kind: 'needs_input',
         capability: 'needs_input',
         decision: 'unknown',
-        requiredInputs: [
-          'psychometric_math',
-          'psychometric_verbal',
-          'psychometric_english',
-          'haifa_bagrut_average',
-          'haifa_bagrut_year',
-          'haifa_psychometric_year',
-        ],
+        requiredInputs: ['psychometric_math', 'psychometric_verbal', 'psychometric_english'],
       }),
     );
+    // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+    expect(report.results[0].estimated).not.toBe(true);
+    // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+    expect(report.results[0].estimationReason).toBeUndefined();
   });
 
   it.each([
@@ -1313,10 +1314,16 @@ describe('evaluateAdmissionsForProgram', () => {
       fetcher,
     });
     expect(fetcher).not.toHaveBeenCalled();
+    // Ruling: /workspace/codex-tasks/r1-pr278-rulings-2026-10-25.md row 2. Official source: none named in rulings; see PR #278 table. Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
     expect(report.results[0]).toMatchObject({
       kind: 'needs_input',
-      requiredInputs: ['haifa_bagrut_year', 'haifa_psychometric_year'],
+      // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+      requiredInputs: ['math_units', 'math_grade', 'haifa_hebrew_qualification'],
     });
+    // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+    expect(report.results[0].estimated).not.toBe(true);
+    // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+    expect(report.results[0].estimationReason).toBeUndefined();
   });
 
   it('asks for a Technion subject record before pair-level score and verdict replay', async () => {
@@ -1660,14 +1667,24 @@ describe('evaluateAdmissionsForProgram', () => {
       fetcher: bguMockFetcher(585, 875),
     });
 
+    // Ruling: /workspace/codex-tasks/r1-pr278-rulings-2026-10-25.md row 3. Official source: none named in rulings; see PR #278 table. Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
     expect(report.results).toContainEqual(
       expect.objectContaining({
         linkedInstitutionId: 'bgu',
         capability: 'needs_input',
         decision: 'unknown',
-        requiredInputs: expect.arrayContaining(['bgu_bagrut_average', 'psychometric_math']),
+        requiredInputs: [
+          'psychometric_math',
+          'bagrut_subject_record',
+          'psychometric_verbal',
+          'psychometric_english',
+        ],
       }),
     );
+    // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+    expect(report.results[0].estimated).not.toBe(true);
+    // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+    expect(report.results[0].estimationReason).toBeUndefined();
   });
 
   it('returns an exact BGU nursing invitation verdict', async () => {
@@ -3210,9 +3227,12 @@ it('shows Social Work scores while retaining the outstanding academic committee 
 });
 
 it.each([
-  [undefined, undefined, 'pending', 'unconfirmed', 'unconfirmed'],
-  [true, undefined, 'pending', 'confirmed', 'unconfirmed'],
-  [true, true, 'eligible_to_apply', 'confirmed', 'confirmed'],
+  // Ruling: /workspace/codex-tasks/r1-pr278-rulings-2026-10-25.md row 8. Official source: https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=101&p_pat1=2&p_degree_level=1. Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+  [undefined, undefined, 'accepted', 'unconfirmed', 'unconfirmed'],
+  // Ruling: /workspace/codex-tasks/r1-pr278-rulings-2026-10-25.md row 9. Official source: https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=101&p_pat1=2&p_degree_level=1. Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+  [true, undefined, 'accepted', 'confirmed', 'unconfirmed'],
+  // Ruling: /workspace/codex-tasks/r1-pr278-rulings-2026-10-25.md row 10. Official source: https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=101&p_pat1=2&p_degree_level=1. Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+  [true, true, 'accepted', 'confirmed', 'confirmed'],
   [false, true, 'below', 'unmet', 'confirmed'],
 ] as const)(
   'assesses saved Psychology scores separately from confirmations %s/%s',
@@ -3221,7 +3241,13 @@ it.each([
     const fetcher = vi
       .fn<typeof fetch>()
       .mockResolvedValue(
-        new Response(JSON.stringify({ items: [psychologyOfficial.officialRule] })),
+        new Response(
+          JSON.stringify(
+            language === false
+              ? { items: [psychologyOfficial.officialRule] }
+              : psychologyWalkthroughOfficial.rulePayload,
+          ),
+        ),
       );
     const report = await evaluateAdmissionsForProgram({
       program,
@@ -3249,6 +3275,12 @@ it.each([
       ],
     });
     expect(report.results[0].requiredInputs).toBeUndefined();
+    if (language !== false) {
+      expect(report.results[0].nextAction).toContain('סגורה');
+      expect(report.results[0].nextAction).toContain('תנאי השפה');
+      expect(report.results[0].nextAction).toContain('החוג הנוסף');
+      expect(report.results[0].estimated).not.toBe(true);
+    }
     expect(fetcher).toHaveBeenCalledTimes(1);
   },
 );
@@ -3308,7 +3340,7 @@ it('keeps a below-threshold score separate from unanswered Psychology conditions
   ).toBe(true);
 });
 
-it('still requires actual numeric inputs and never substitutes generic Bagrut for the BGU average', async () => {
+it('returns degraded/unknown when the official BGU response is empty', async () => {
   const program = { ...bguCs, id: 'bgu_psychology' };
   const fetcher = vi.fn<typeof fetch>();
   const report = await evaluateAdmissionsForProgram({
@@ -3317,13 +3349,43 @@ it('still requires actual numeric inputs and never substitutes generic Bagrut fo
     input: { degreeId: program.id, psychometric: 650, bagrut: 110 },
     fetcher,
   });
+  // Ruling: /workspace/codex-tasks/r1-pr278-rulings-2026-10-25.md row 4. Official source: https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=101&p_pat1=2&p_degree_level=1. Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
   expect(report.results[0]).toMatchObject({
-    kind: 'needs_input',
+    kind: 'degraded',
     decision: 'unknown',
-    requiredInputs: ['bgu_bagrut_average'],
   });
+  // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+  expect(report.results[0].estimated).not.toBe(true);
+  // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+  expect(report.results[0].estimationReason).toBeUndefined();
   expect(report.results[0].scoreAssessment).toBeUndefined();
-  expect(fetcher).not.toHaveBeenCalled();
+  expect(report.results[0].score).toBeUndefined();
+  expect(report.results[0].explanation).toContain('החישוב הרשמי לא הושלם');
+  expect(report.results[0].nextAction).toContain('מקצועות הבגרות');
+  expect(fetcher).toHaveBeenCalledTimes(1);
+});
+
+it('returns an estimated Psychology proxy score from a valid official response', async () => {
+  const program = { ...bguCs, id: 'bgu_psychology' };
+  const report = await evaluateAdmissionsForProgram({
+    program,
+    institutions,
+    input: { degreeId: program.id, psychometric: 650, bagrut: 110 },
+    fetcher: async (url) =>
+      new Response(
+        String(url).includes('GetRdpData')
+          ? JSON.stringify(psychologyWalkthroughOfficial.rulePayload)
+          : psychologyWalkthroughOfficial.scoreResponseHtml,
+      ),
+  });
+  expect(report.results[0]).toMatchObject({
+    kind: 'exact',
+    decision: 'pending',
+    score: 734,
+    estimated: true,
+  });
+  expect(report.results[0].estimationReason).toContain('110');
+  expect(report.results[0].nextAction).toContain('סגורה');
 });
 
 it('withholds the score assessment when official Psychology rules change', async () => {
@@ -3956,3 +4018,835 @@ describe('catalogue eligibility safety', () => {
     expect(checkedPairs).toBeGreaterThan(400);
   });
 });
+
+describe('results average normalization regressions', () => {
+  const record = {
+    schemaVersion: 2 as const,
+    sector: 'jewish' as const,
+    certificateType: 'internal' as const,
+    complete: true,
+    subjects: [
+      { subjectId: 'history', units: 2, grade: 100, assessmentKind: 'exam' as const },
+      { subjectId: 'civics', units: 2, grade: 100, assessmentKind: 'exam' as const },
+      { subjectId: 'mathematics', units: 5, grade: 90, assessmentKind: 'exam' as const },
+      { subjectId: 'english', units: 5, grade: 100, assessmentKind: 'exam' as const },
+      { subjectId: 'literature', units: 5, grade: 100, assessmentKind: 'exam' as const },
+      { subjectId: 'bible', units: 2, grade: 100, assessmentKind: 'exam' as const },
+      { subjectId: 'hebrew_expression', units: 2, grade: 100, assessmentKind: 'exam' as const },
+    ],
+  };
+  it('derives an overall estimate so subjects alone do not remove otherwise usable results', async () => {
+    const program = getStaticCataloguePrograms().find((row) => row.id === 'huji_cs')!;
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: program.id,
+        psychometric: 700,
+        extraInputs: { bagrutSubjectRecord: record },
+      },
+      program,
+      institutions: getStaticCatalogueInstitutions(),
+      fetcher: vi.fn<typeof fetch>().mockRejectedValue(new Error('offline')),
+    });
+    const result = report.results.find((row) => row.linkedInstitutionId === 'huji')!;
+    expect(result.requiredInputs ?? []).not.toContain('bagrut_average');
+    // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+    expect(result.estimated).not.toBe(true);
+    // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+    expect(result.estimationReason).toBeUndefined();
+  });
+  it.each(['bgu_cs', 'tau_cs'])(
+    'derives the %s institutional average from a complete record',
+    async (degreeId) => {
+      const program = degreeId === 'bgu_cs' ? bguCs : tauCs;
+      const report = await evaluateAdmissionsForProgram({
+        input: {
+          degreeId,
+          bagrut: 110,
+          psychometric: 700,
+          extraInputs: {
+            bagrutSubjectRecord: record,
+            psychometricMath: 140,
+            psychometricVerbal: 130,
+            psychometricEnglish: 130,
+          },
+        },
+        program,
+        institutions,
+        fetcher: vi.fn<typeof fetch>().mockRejectedValue(new Error('offline')),
+      });
+      expect(report.results[0].requiredInputs ?? []).not.toContain(
+        degreeId === 'bgu_cs' ? 'bgu_bagrut_average' : 'tau_bagrut_average',
+      );
+      expect(report.results[0].estimated).not.toBe(true);
+    },
+  );
+  it('marks an average-only proxy explicitly without manufacturing a subject record', async () => {
+    const report = await evaluateAdmissionsForProgram({
+      input: { degreeId: 'tau_cs', bagrut: 110, psychometric: 700 },
+      program: tauCs,
+      institutions,
+    });
+    expect(report.results[0]).toMatchObject({
+      requiredInputs: ['bagrut_subject_record'],
+    });
+    // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+    expect(report.results[0].estimated).not.toBe(true);
+    // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+    expect(report.results[0].estimationReason).toBeUndefined();
+  });
+  it.each(['huji_cs', 'bgu_cs', 'tau_cs', 'haifa_cs', 'colmgmt_law'])(
+    '07:24 subject-derived client averages never produce proxy provenance for %s',
+    async (degreeId) => {
+      const program = getStaticCataloguePrograms().find((row) => row.id === degreeId)!;
+      const report = await evaluateAdmissionsForProgram({
+        program,
+        institutions: getStaticCatalogueInstitutions(),
+        input: {
+          degreeId,
+          bagrut: 95,
+          bagrutAverageEstimated: true,
+          psychometric: 680,
+          extraInputs: {
+            bagrutSubjectRecord: record,
+            haifaBagrutYear: 2025,
+            haifaPsychometricYear: 2025,
+          },
+        },
+        fetcher: vi.fn<typeof fetch>().mockRejectedValue(new Error('offline')),
+      });
+      for (const result of report.results) {
+        expect(result.estimated).not.toBe(true);
+        expect(result.estimationReason).toBeUndefined();
+      }
+    },
+  );
+  it.each([
+    ['tau_cs', 'needs_input'],
+    ['tau_engineering', 'unsupported'],
+    ['tau_medicine', 'requirements_only'],
+  ] as const)(
+    '07:24 average-only %s has no estimate metadata without a calculation',
+    async (degreeId, kind) => {
+      const program = getStaticCataloguePrograms().find((row) => row.id === degreeId)!;
+      const report = await evaluateAdmissionsForProgram({
+        program,
+        institutions: getStaticCatalogueInstitutions(),
+        input: { degreeId, bagrut: 105, psychometric: 680 },
+        fetcher: vi.fn<typeof fetch>().mockRejectedValue(new Error('offline')),
+      });
+      expect(report.results[0].kind).toBe(kind);
+      expect(report.results[0].estimated).not.toBe(true);
+      expect(report.results[0].estimationReason).toBeUndefined();
+    },
+  );
+  it('accepts paired BGU math inputs through the adapter without requiring a certificate record', async () => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response(JSON.stringify(BGU_COMPUTER_SCIENCE_RULE_CAPTURE)))
+      .mockResolvedValueOnce(
+        new Response(
+          '<script>parent.main.document.getElementById("on_c_val").innerHTML = 875;</script>',
+        ),
+      );
+    const { bagrutSubjectRecord: _record, ...extraInputs } = csInputs;
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'bgu_cs',
+        bagrut: 110,
+        psychometric: 760,
+        extraInputs: { ...extraInputs, mathUnits: 5, mathGrade: 85 },
+      },
+      program: bguCs,
+      institutions,
+      fetcher,
+    });
+    expect(report.results[0]).toMatchObject({ kind: 'exact', score: 875 });
+    expect(fetcher).toHaveBeenCalledTimes(2);
+  });
+  it.each([
+    [5, 79],
+    [4, 89],
+    [3, 100],
+  ])(
+    'keeps the published BGU math floor for paired inputs %s × %s',
+    async (mathUnits, mathGrade) => {
+      const fetcher = vi.fn<typeof fetch>();
+      const { bagrutSubjectRecord: _record, ...extraInputs } = csInputs;
+      const report = await evaluateAdmissionsForProgram({
+        input: {
+          degreeId: 'bgu_cs',
+          bagrut: 110,
+          psychometric: 760,
+          extraInputs: { ...extraInputs, mathUnits, mathGrade },
+        },
+        program: bguCs,
+        institutions,
+        fetcher,
+      });
+      expect(report.results[0]).toMatchObject({ kind: 'exact', decision: 'below' });
+      expect(fetcher).not.toHaveBeenCalled();
+    },
+  );
+  it('defaults Haifa years while retaining qualification questions', async () => {
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'haifa_cs',
+        bagrut: 105,
+        psychometric: 650,
+        extraInputs: {
+          psychometricMath: 130,
+          psychometricVerbal: 130,
+          psychometricEnglish: 130,
+          mathUnits: 5,
+          mathGrade: 90,
+        },
+      },
+      program: haifaCs,
+      institutions,
+    });
+    // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+    expect(report.results[0].estimated).not.toBe(true);
+    // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+    expect(report.results[0].estimationReason).toBeUndefined();
+    // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+    expect(report.results[0].requiredInputs).not.toContain('haifa_admission_qualification');
+    expect(report.results[0].requiredInputs).not.toContain('haifa_bagrut_year');
+  });
+  it('does not leak the HIT implementation note after math gates are supplied', async () => {
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'hit_cs',
+        bagrut: 110,
+        psychometric: 700,
+        extraInputs: { mathUnits: 5, mathGrade: 90 },
+      },
+      program: { ...hitEngineering, admissionType: 'requirements', thresholds: undefined },
+      institutions: institutions.map((row) =>
+        row.id === 'hit'
+          ? {
+              ...row,
+              calculatorConfig: { formulaType: 'minimum_floors', scaleDescription: 'סף קבלה HIT' },
+            }
+          : row,
+      ),
+    });
+    expect(report.results[0]).toMatchObject({ kind: 'unsupported', decision: 'unknown' });
+    expect(report.results[0].explanation).not.toMatch(/[A-Za-z]/);
+    expect(report.results[0].nextAction).not.toMatch(/[A-Za-z]/);
+  });
+});
+
+describe('BGU psychology production walkthrough regression', () => {
+  it.each([679, 680])('keeps the inclusive psych-only boundary at %s', async (psychometric) => {
+    const program = { ...bguCs, id: 'bgu_psychology' };
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(new Response(JSON.stringify(psychologyWalkthroughOfficial.rulePayload)));
+    const report = await evaluateAdmissionsForProgram({
+      program,
+      institutions,
+      fetcher,
+      input: {
+        degreeId: program.id,
+        bagrut: 112,
+        psychometric,
+        extraInputs: { bguPsychologyRoute: 'psychometric' },
+      },
+    });
+    expect(report.results[0]).toMatchObject({
+      decision: psychometric === 680 ? 'accepted' : 'below',
+      score: psychometric,
+      threshold: 680,
+      scoreLabel: 'פסיכומטרי',
+    });
+    expect(report.results[0].estimated).not.toBe(true);
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([650, 690, 720])(
+    'evaluates bagrut 112 / psychometric %s against the current official rule',
+    async (psychometric) => {
+      const program = { ...bguCs, id: 'bgu_psychology', name: 'פסיכולוגיה' };
+      const fetcher = vi
+        .fn<typeof fetch>()
+        .mockImplementation(
+          async (url) =>
+            new Response(
+              String(url) === psychologyWalkthroughOfficial.rulesUrl
+                ? JSON.stringify(psychologyWalkthroughOfficial.rulePayload)
+                : psychologyWalkthroughOfficial.scoreResponseHtml,
+            ),
+        );
+      const report = await evaluateAdmissionsForProgram({
+        program,
+        institutions,
+        fetcher,
+        input: { degreeId: program.id, bagrut: 112, psychometric },
+      });
+      const result = report.results[0];
+      expect(result.kind).toBe('exact');
+      expect(result.degradationReason).toBeUndefined();
+      expect(result.officialUrls).toContain(psychologyWalkthroughOfficial.rulesUrl);
+      if (psychometric >= 680) {
+        expect(result).toMatchObject({
+          decision: 'accepted',
+          score: psychometric,
+          threshold: 680,
+          scoreLabel: 'פסיכומטרי',
+          scoreAssessment: 'meets_threshold',
+        });
+        expect(result.estimated).not.toBe(true);
+        expect(fetcher).toHaveBeenCalledTimes(1);
+      } else {
+        expect(result).toMatchObject({
+          decision: 'pending',
+          score: 734,
+          estimated: true,
+          scoreLabel: 'סכם',
+          scoreAssessment: 'meets_threshold',
+        });
+        expect(fetcher).toHaveBeenCalledTimes(2);
+      }
+      expect(result.nextAction).toContain('סגורה');
+      expect(result.additionalConditions).toContainEqual(
+        expect.objectContaining({
+          id: 'bgu_language_requirements',
+          status: 'unconfirmed',
+        }),
+      );
+    },
+  );
+});
+
+it('asks for subjects rather than reporting unavailable when the Psychology proxy-score replay fails', async () => {
+  const program = { ...bguCs, id: 'bgu_psychology' };
+  const fetcher = vi
+    .fn<typeof fetch>()
+    .mockResolvedValueOnce(new Response(JSON.stringify(psychologyWalkthroughOfficial.rulePayload)))
+    .mockResolvedValueOnce(new Response('unavailable', { status: 503 }));
+  const report = await evaluateAdmissionsForProgram({
+    program,
+    institutions,
+    fetcher,
+    input: { degreeId: program.id, bagrut: 112, psychometric: 650 },
+  });
+  expect(report.results[0]).toMatchObject({
+    kind: 'needs_input',
+    decision: 'unknown',
+    requiredInputs: ['bagrut_subject_record'],
+  });
+  // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+  expect(report.results[0].estimated).not.toBe(true);
+  // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+  expect(report.results[0].estimationReason).toBeUndefined();
+  expect(report.results[0].score).toBeUndefined();
+  expect(report.results[0].explanation).toContain('החישוב הרשמי לא הושלם');
+});
+
+it('keeps an actual Psychology score-service outage distinct when an explicit institutional average exists', async () => {
+  const program = { ...bguCs, id: 'bgu_psychology' };
+  const fetcher = vi
+    .fn<typeof fetch>()
+    .mockResolvedValueOnce(new Response(JSON.stringify(psychologyWalkthroughOfficial.rulePayload)))
+    .mockResolvedValueOnce(new Response('unavailable', { status: 503 }));
+  const report = await evaluateAdmissionsForProgram({
+    program,
+    institutions,
+    fetcher,
+    input: { degreeId: program.id, psychometric: 650, extraInputs: { bguBagrutAverage: 112 } },
+  });
+  expect(report.results[0]).toMatchObject({ kind: 'degraded', decision: 'unknown' });
+  expect(report.results[0].requiredInputs).toBeUndefined();
+});
+
+describe('R1 ruling safeguards G1–G3', () => {
+  async function psychology(score: number, extraInputs: AdmissionsExtraInputs = {}, bagrut = 110) {
+    const program = { ...bguCs, id: 'bgu_psychology' };
+    const report = await evaluateAdmissionsForProgram({
+      program,
+      institutions,
+      input: { degreeId: program.id, bagrut, psychometric: 650, extraInputs },
+      fetcher: async (url) =>
+        new Response(
+          String(url).includes('GetRdpData')
+            ? JSON.stringify(psychologyWalkthroughOfficial.rulePayload)
+            : `parent.main.document.mainForm.on_final_sekem.value = ${score};`,
+        ),
+    });
+    return report.results[0];
+  }
+
+  async function colman(
+    bagrut: number,
+    psychometric?: number,
+    extraInputs: AdmissionsExtraInputs = {},
+  ) {
+    const program = getStaticCataloguePrograms().find((row) => row.id === 'colmgmt_economics')!;
+    const report = await evaluateAdmissionsForProgram({
+      program,
+      institutions: getStaticCatalogueInstitutions(),
+      input: { degreeId: program.id, bagrut, psychometric, extraInputs },
+    });
+    return report.results.find((row) => row.linkedInstitutionId === 'colman')!;
+  }
+
+  it.each([0.98, 1.02, 0.979, 1.021])('G2 Colman proxy at floor × %s', async (ratio) => {
+    const result = await colman(85 * ratio, 420, { colmanBagrutCertificateConfirmed: true });
+    // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+    expect(result.estimated === true).toBe(ratio !== 0.98 && ratio !== 1.02);
+    if (ratio === 0.98 || ratio === 1.02) {
+      // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+      expect(result.estimationReason).toBeUndefined();
+      expect(result).toMatchObject({
+        kind: 'needs_input',
+        decision: 'unknown',
+        requiredInputs: ['bagrut_subject_record'],
+      });
+      expect(result.scoreAssessment).toBeUndefined();
+    } else {
+      expect(result).toMatchObject({
+        // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+        kind: 'exact',
+        // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+        decision: ratio < 1 ? 'below' : 'accepted',
+      });
+    }
+  });
+
+  it.each([0.98, 1.02, 0.979, 1.021])('G2 BGU proxy-derived score at floor × %s', async (ratio) => {
+    const result = await psychology(650 * ratio, {
+      bguPreparatoryTrack: 'natural_life_sciences',
+      bguPreparatoryCompleted: true,
+      bguPreparatoryAverage: 80,
+    });
+    // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+    expect(result.estimated === true).toBe(ratio !== 0.98 && ratio !== 1.02);
+    if (ratio === 0.98 || ratio === 1.02) {
+      // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+      expect(result.estimationReason).toBeUndefined();
+      expect(result).toMatchObject({
+        kind: 'needs_input',
+        decision: 'unknown',
+        requiredInputs: ['bagrut_subject_record'],
+      });
+      expect(result.scoreAssessment).toBeUndefined();
+    } else {
+      expect(result).toMatchObject({ kind: 'exact', decision: ratio < 1 ? 'below' : 'pending' });
+    }
+  });
+
+  it.each([
+    ['passing', 600, 130],
+    ['undecidable', undefined, undefined],
+    ['failing', 420, undefined],
+  ] as const)(
+    'G3 Colman proxy-below with %s alternative',
+    async (state, psychometric, quantitative) => {
+      const result = await colman(70, psychometric, {
+        psychometricMath: quantitative,
+        colmanBagrutCertificateConfirmed: true,
+      });
+      // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+      expect(result.estimated === true).toBe(state === 'failing');
+      // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+      if (state !== 'failing') expect(result.estimationReason).toBeUndefined();
+      if (state === 'failing')
+        // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+        expect(result).toMatchObject({ kind: 'exact', decision: 'below' });
+      else
+        expect(result).toMatchObject({
+          kind: 'needs_input',
+          decision: 'unknown',
+          requiredInputs: ['bagrut_subject_record'],
+        });
+    },
+  );
+
+  it('G3 BGU proxy-below with an undecidable preparatory channel has no verdict', async () => {
+    const result = await psychology(600);
+    expect(result).toMatchObject({
+      kind: 'needs_input',
+      decision: 'unknown',
+      requiredInputs: ['bagrut_subject_record'],
+    });
+    // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+    expect(result.estimated).not.toBe(true);
+    // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+    expect(result.estimationReason).toBeUndefined();
+  });
+
+  it('G3 BGU proxy-below with a passing preparatory channel has no below verdict', async () => {
+    const result = await psychology(600, {
+      bguPsychologyRoute: 'score',
+      bguPreparatoryTrack: 'natural_life_sciences',
+      bguPreparatoryCompleted: true,
+      bguPreparatoryAverage: 95,
+    });
+    expect(result).toMatchObject({
+      kind: 'needs_input',
+      decision: 'unknown',
+      requiredInputs: ['bagrut_subject_record'],
+    });
+    // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+    expect(result.estimated).not.toBe(true);
+    // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+    expect(result.estimationReason).toBeUndefined();
+  });
+
+  it('G1 real BGU average is unflagged and exempt from G2', async () => {
+    const result = await psychology(650, { bguBagrutAverage: 110 });
+    expect(result).toMatchObject({ kind: 'exact', decision: 'pending', score: 650 });
+    expect(result.estimated).not.toBe(true);
+  });
+
+  it('G1 real Colman average is unflagged and exempt from G2', async () => {
+    const result = await colman(85, 420, {
+      colmanBagrutAverage: 85,
+      colmanBagrutCertificateConfirmed: true,
+    });
+    // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+    expect(result).toMatchObject({ kind: 'exact', decision: 'accepted', score: 85 });
+    expect(result.estimated).not.toBe(true);
+  });
+
+  it.each([true, false])(
+    'G1 Haifa estimated years only when defaulted: %s',
+    async (defaultYears) => {
+      const report = await evaluateAdmissionsForProgram({
+        program: haifaCs,
+        institutions,
+        input: {
+          degreeId: 'haifa_cs',
+          bagrut: 105,
+          psychometric: 680,
+          extraInputs: {
+            haifaBagrutAverage: 102,
+            ...(defaultYears ? {} : { haifaBagrutYear: 2020, haifaPsychometricYear: 2025 }),
+          },
+        },
+      });
+      // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+      expect(report.results[0].estimated === true).toBe(false);
+      // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+      expect(report.results[0].estimationReason).toBeUndefined();
+    },
+  );
+
+  it('G1 a BGU average proxy is labelled as estimated, never official', async () => {
+    const result = await psychology(700, {}, 116);
+    expect(result).toMatchObject({ estimated: true, score: 116 });
+    expect(result.scoreLabel).not.toContain('רשמי');
+    expect(result.explanation).not.toContain('רשמי');
+  });
+});
+
+it.each([
+  { bagrut: 110, bguPsychologyRoute: 'bagrut' as const },
+  { bagrut: 112, bguPsychologyRoute: 'score' as const },
+])(
+  'G3 withholds proxy-below when another Psychology score channel is untested or borderline: %j',
+  async ({ bagrut, bguPsychologyRoute }) => {
+    const program = { ...bguCs, id: 'bgu_psychology' };
+    const report = await evaluateAdmissionsForProgram({
+      program,
+      institutions,
+      input: {
+        degreeId: program.id,
+        bagrut,
+        psychometric: 650,
+        extraInputs: {
+          bguPsychologyRoute,
+          bguPreparatoryTrack: 'natural_life_sciences',
+          bguPreparatoryCompleted: true,
+          bguPreparatoryAverage: 80,
+        },
+      },
+      fetcher: async (url) =>
+        new Response(
+          String(url).includes('GetRdpData')
+            ? JSON.stringify(psychologyWalkthroughOfficial.rulePayload)
+            : 'parent.main.document.mainForm.on_final_sekem.value = 600;',
+        ),
+    });
+    expect(report.results[0]).toMatchObject({
+      kind: 'needs_input',
+      decision: 'unknown',
+      requiredInputs: ['bagrut_subject_record'],
+    });
+    // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+    expect(report.results[0].estimated).not.toBe(true);
+    // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+    expect(report.results[0].estimationReason).toBeUndefined();
+  },
+);
+
+it.each([
+  { psychometric: 420, quantitative: undefined, decision: 'below' },
+  { psychometric: 600, quantitative: 130, decision: 'unknown' },
+  { psychometric: undefined, quantitative: undefined, decision: 'unknown' },
+] as const)(
+  '06:40 ruling: G3 economics copy follows all-channel outcome %j',
+  async ({ psychometric, quantitative, decision }) => {
+    const program = getStaticCataloguePrograms().find((row) => row.id === 'colmgmt_economics')!;
+    const report = await evaluateAdmissionsForProgram({
+      program,
+      institutions: getStaticCatalogueInstitutions(),
+      input: {
+        degreeId: program.id,
+        bagrut: 70,
+        psychometric,
+        extraInputs: { psychometricMath: quantitative },
+      },
+    });
+    const result = report.results.find((row) => row.linkedInstitutionId === 'colman')!;
+    expect(result.decision).toBe(decision);
+    expect(result.explanation).not.toContain('זו אינה דחייה מכל מסלולי הקבלה.');
+    if (decision === 'unknown') expect(result.kind).toBe('needs_input');
+  },
+);
+
+it.each([true, false])(
+  '07:24 calculated TAU proxy versus supplied institution average: %s',
+  async (proxy) => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ data: { getLastScore: { body: { hatama: 679 } } } })),
+      )
+      .mockResolvedValueOnce(
+        new Response(
+          JSON.stringify({
+            data: {
+              getProgramByIdAndLang: {
+                nid: '8275',
+                title: 'תואר ראשון בלימודי פסיכולוגיה',
+                field_plain_id_programs: ['107111050000', '107111030000'],
+                receipt_threshol: [660],
+                rejection_thresh: [659],
+              },
+            },
+          }),
+        ),
+      );
+    const report = await evaluateAdmissionsForProgram({
+      program: tauPsychology,
+      institutions,
+      input: {
+        degreeId: 'tau_psychology',
+        bagrut: 110,
+        psychometric: 680,
+        extraInputs: { psychometricEnglish: 110, ...(proxy ? {} : { tauBagrutAverage: 110 }) },
+      },
+      fetcher,
+      now: new Date('2026-07-25T21:00:00Z'),
+    });
+    expect(report.results[0]).toMatchObject({
+      kind: 'exact',
+      decision: 'accepted',
+      score: 679,
+      threshold: 660,
+    });
+    expect(report.results[0].estimated === true).toBe(proxy);
+    if (proxy) expect(report.results[0].estimationReason).toContain('110');
+    else expect(report.results[0].estimationReason).toBeUndefined();
+  },
+);
+
+it.each([
+  { defaulted: true, subjects: false, proxy: false },
+  { defaulted: false, subjects: false, proxy: false },
+  { defaulted: true, subjects: true, proxy: false },
+  { defaulted: true, subjects: false, proxy: true },
+])('07:24 calculated Haifa provenance: %j', async ({ defaulted, subjects, proxy }) => {
+  const report = await evaluateAdmissionsForProgram({
+    program: haifaCs,
+    institutions,
+    input: {
+      degreeId: 'haifa_cs',
+      psychometric: proxy ? 800 : 693,
+      ...(proxy ? { bagrut: 120 } : {}),
+      extraInputs: {
+        ...(proxy ? {} : { haifaBagrutAverage: 102 }),
+        ...(subjects
+          ? {
+              bagrutSubjectRecord: {
+                schemaVersion: 1,
+                sector: 'jewish',
+                subjects: [{ subjectId: 'mathematics', units: 5, grade: 75 }],
+              },
+            }
+          : {}),
+        psychometricMath: proxy ? 150 : 140,
+        psychometricVerbal: proxy ? 150 : 130,
+        psychometricEnglish: proxy ? 150 : 130,
+        haifaAdmissionQualification: 'full_bagrut',
+        haifaHebrewQualification: 'hebrew_school',
+        mathUnits: 5,
+        mathGrade: 75,
+        ...(defaulted ? {} : { haifaBagrutYear: 2015, haifaPsychometricYear: 2026 }),
+      },
+    },
+    fetcher: async (url) =>
+      new Response(
+        JSON.stringify(
+          String(url).includes('calculateChances')
+            ? proxy
+              ? haifaOfficial.records.find((row) => row.programId === 'cs')!.high.response
+              : haifaOfficial.yearBoundaryCases.find((row) => row.request.bag_year === '2015')!
+                  .response
+            : { return: { type: 'S' } },
+        ),
+      ),
+  });
+  expect(report.results[0].score).toBe(proxy ? 806 : 702);
+  expect(report.results[0].estimated === true).toBe(defaulted);
+  if (defaulted) {
+    expect(report.results[0].estimationReason).toContain('שנת הבגרות');
+    if (proxy) expect(report.results[0].estimationReason).toContain('הממוצע הכללי');
+    else expect(report.results[0].estimationReason).not.toContain('הממוצע הכללי');
+  } else expect(report.results[0].estimationReason).toBeUndefined();
+});
+
+describe('Amit 07:33 full-bagrut assumption', () => {
+  it.each([undefined, false, true])(
+    'law 110/650 ignores legacy certificate %s',
+    async (certificate) => {
+      const program = getStaticCataloguePrograms().find((row) => row.id === 'colmgmt_law')!;
+      const report = await evaluateAdmissionsForProgram({
+        program,
+        institutions: getStaticCatalogueInstitutions(),
+        input: {
+          degreeId: program.id,
+          bagrut: 110,
+          psychometric: 650,
+          extraInputs: { colmanBagrutCertificateConfirmed: certificate },
+        },
+      });
+      const result = report.results.find((row) => row.linkedInstitutionId === 'colman')!;
+      expect(result).toMatchObject({
+        kind: 'exact',
+        decision: 'accepted',
+        score: 110,
+        threshold: 100,
+        scoreAssessment: 'meets_threshold',
+        estimated: true,
+      });
+      expect(resultLabel(result)).toEqual({ label: 'הציונים עומדים בסף', group: 'match' });
+      expect(result.additionalConditions ?? []).toEqual([]);
+      expect(result.explanation).not.toContain('יש לאשר זכאות לבגרות מלאה');
+      expect(result.explanation).not.toContain('אין כאן אישור קבלה סופית');
+    },
+  );
+  it.each(['overall', 'subjects'] as const)(
+    'never requests a certificate across the catalogue with %s input',
+    async (mode) => {
+      const certificateIds = [
+        'colman_bagrut_certificate',
+        'bgu_certificate_requirements',
+        'huji_medicine_qualification',
+      ];
+      let pairs = 0;
+      for (const program of getStaticCataloguePrograms()) {
+        const report = await evaluateAdmissionsForProgram({
+          program,
+          institutions: getStaticCatalogueInstitutions(),
+          input: {
+            degreeId: program.id,
+            psychometric: 680,
+            ...(mode === 'overall'
+              ? { bagrut: 105 }
+              : {
+                  extraInputs: {
+                    bagrutSubjectRecord: {
+                      schemaVersion: 1,
+                      sector: 'jewish',
+                      subjects: [{ subjectId: 'mathematics', units: 5, grade: 90 }],
+                    },
+                  },
+                }),
+          },
+          fetcher: vi.fn<typeof fetch>().mockRejectedValue(new Error('offline')),
+        });
+        for (const result of report.results) {
+          pairs++;
+          const label = `${program.id}:${result.linkedInstitutionId}`;
+          expect(result.requiredInputs ?? [], label).not.toEqual(
+            expect.arrayContaining([
+              expect.stringMatching(
+                /^(colman_bagrut_certificate|bgu_certificate_requirements|haifa_admission_qualification|huji_medicine_qualification)$/,
+              ),
+            ]),
+          );
+          for (const condition of result.additionalConditions ?? []) {
+            expect(certificateIds, label).not.toContain(condition.id);
+            expect(condition.label, label).not.toMatch(
+              /זכאות לבגרות|תעודת בגרות|תעודת קבלה מוכרת/u,
+            );
+          }
+        }
+      }
+      expect(pairs).toBe(436);
+    },
+  );
+  it.each([
+    ['bezalel_fine_arts', 'admissions_committee', /תיק עבודות/u],
+    ['samspiegel_screenwriting', 'admissions_committee', /ראיון/u],
+  ])('retains genuine selection for %s', async (degreeId, conditionId, label) => {
+    const program = getStaticCataloguePrograms().find((row) => row.id === degreeId)!;
+    const report = await evaluateAdmissionsForProgram({
+      program,
+      institutions: getStaticCatalogueInstitutions(),
+      input: { degreeId, bagrut: 110, psychometric: 700 },
+    });
+    expect(report.results[0]).toMatchObject({ kind: 'manual_gate', decision: 'eligible_to_apply' });
+    expect(report.results[0].additionalConditions).toContainEqual(
+      expect.objectContaining({
+        id: conditionId,
+        label: expect.stringMatching(label),
+        status: 'unconfirmed',
+      }),
+    );
+  });
+  it('retains Colman internal assessment and missing mathematics', async () => {
+    const program = getStaticCataloguePrograms().find((row) => row.id === 'colmgmt_cs')!;
+    const run = (extraInputs = {}) =>
+      evaluateAdmissionsForProgram({
+        program,
+        institutions: getStaticCatalogueInstitutions(),
+        input: { degreeId: program.id, bagrut: 110, psychometric: 650, extraInputs },
+      });
+    const missing = (await run()).results[0];
+    expect(missing).toMatchObject({ kind: 'needs_input', decision: 'unknown' });
+    expect(missing.requiredInputs).toEqual(expect.arrayContaining(['math_units', 'math_grade']));
+    const result = (await run({ mathUnits: 5, mathGrade: 90 })).results[0];
+    expect(result.kind).toBe('manual_gate');
+    expect(result.additionalConditions).toContainEqual(
+      expect.objectContaining({ id: 'colman_internal_test', status: 'unconfirmed' }),
+    );
+    expect(result.additionalConditions).not.toContainEqual(
+      expect.objectContaining({ id: 'colman_bagrut_certificate' }),
+    );
+  });
+});
+
+// Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+it.each(['tlvyaffo_economics', 'ruppin_marine_bio'])(
+  'removes the generated certificate document gate from %s',
+  async (degreeId) => {
+    const program = getStaticCataloguePrograms().find((row) => row.id === degreeId)!;
+    const report = await evaluateAdmissionsForProgram({
+      program,
+      institutions: getStaticCatalogueInstitutions(),
+      input: { degreeId, bagrut: 105, psychometric: 680 },
+      fetcher: vi.fn<typeof fetch>().mockRejectedValue(new Error('offline')),
+    });
+    const result = report.results[0];
+    expect(result.explanation).not.toContain('נדרשת בדיקת זכאות לתעודת בגרות מלאה');
+    if (degreeId === 'ruppin_marine_bio')
+      expect(result).toMatchObject({ decision: 'accepted', kind: 'estimated' });
+    else {
+      expect(result.kind).toBe('manual_gate');
+      expect(result.explanation).toContain('ראיון');
+    }
+  },
+);

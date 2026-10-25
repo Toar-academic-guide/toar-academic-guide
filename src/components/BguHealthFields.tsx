@@ -54,7 +54,7 @@ export default function BguHealthFields({
         ])}
         {select(
           'bguOccupationalTherapyRequirementsConfirmed',
-          'ריפוי בעיסוק: תעודת קבלה מוכרת, אנגלית מתקדמים א׳, עברית ו׳ או פטור תקף, עדיפות ראשונה או שנייה אחרי רפואה/פיזיותרפיה ורישום ומסמכים בזמן?',
+          'ריפוי בעיסוק: אנגלית מתקדמים א׳, עברית ו׳ או פטור תקף, עדיפות ראשונה או שנייה אחרי רפואה/פיזיותרפיה ורישום ומסמכים בזמן?',
           booleanOptions,
         )}
         {select('bguOccupationalTherapyExamSession', 'מועד הבחינה לריפוי בעיסוק', [
@@ -79,7 +79,7 @@ export default function BguHealthFields({
         </label>
         {select(
           'bguPhysiotherapyRequirementsConfirmed',
-          'פיזיותרפיה: תעודת קבלה מוכרת, אנגלית מתקדמים ב׳, עברית ו׳ או פטור תקף, עדיפות ראשונה, פסיכומטרי עד אפריל או נתיב עד סתיו ורישום ומסמכים בזמן?',
+          'פיזיותרפיה: אנגלית מתקדמים ב׳, עברית ו׳ או פטור תקף, עדיפות ראשונה, פסיכומטרי עד אפריל או נתיב עד סתיו ורישום ומסמכים בזמן?',
           booleanOptions,
         )}
       </div>

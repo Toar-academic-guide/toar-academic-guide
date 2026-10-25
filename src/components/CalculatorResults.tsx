@@ -1,4 +1,6 @@
 'use client';
+
+import AdmissionEstimate from './AdmissionEstimate';
 import TechnionThresholdNotice from './TechnionThresholdNotice';
 import TechnionMedicineComparison from './TechnionMedicineComparison';
 import { isTechnionMedicineScore, resultLabel } from '@/lib/studyJourney';
@@ -36,7 +38,10 @@ import {
   type AdmissionsRouteResult,
   type AdmissionsRouteSearchResult,
 } from '@/lib/admissionsRouteClient';
-import { admissionsExtraInputsFromAcademicScores } from '@/lib/admissionsEvaluationProfile';
+import {
+  academicBagrutAverage,
+  admissionsExtraInputsFromAcademicScores,
+} from '@/lib/admissionsEvaluationProfile';
 import type { CatalogueProgram } from '@/types/catalogue';
 import type { AcademicScores, GeographicRegion } from '@/types';
 import type {
@@ -144,7 +149,6 @@ function formatResultSummary(result: AdmissionsEvaluationResult): string {
         [
           'tau_bagrut_average',
           'colman_bagrut_average',
-          'colman_bagrut_certificate',
           'bgu_bagrut_average',
           'tau_application_requirements',
           'bgu_language_requirements',
@@ -227,7 +231,7 @@ export default function CalculatorResults({
   const savedAcademicScoresMatchCalculation =
     (academicScores?.psychometric?.overall === psychometric ||
       (psychometric === undefined && allowsNoPsychometric(degreeId))) &&
-    (academicScores?.bagrut?.weightedAverage === bagrut ||
+    (academicBagrutAverage(academicScores) === bagrut ||
       (bagrut === undefined && allowsNoGenericBagrut(degreeId)));
   const haifaTrack =
     haifaTrackOverride ?? academicScores?.admissions?.haifaInformationSystemsTrack ?? '';
@@ -259,6 +263,10 @@ export default function CalculatorResults({
       degreeId,
       psychometric,
       bagrut,
+      ...(savedAcademicScoresMatchCalculation &&
+        academicScores?.bagrut?.weightedAverage === undefined &&
+        bagrut !== undefined &&
+        extraInputs?.bagrutSubjectRecord && { bagrutAverageEstimated: true as const }),
       ...(extraInputs ? { extraInputs } : {}),
     })
       .then((nextReport) => {
@@ -315,7 +323,15 @@ export default function CalculatorResults({
     return () => {
       cancelled = true;
     };
-  }, [bagrut, degreeId, extraInputs, psychometric, reloadToken]);
+  }, [
+    bagrut,
+    degreeId,
+    extraInputs,
+    psychometric,
+    reloadToken,
+    savedAcademicScoresMatchCalculation,
+    academicScores?.bagrut?.weightedAverage,
+  ]);
 
   const routeTarget = useMemo(
     () =>
@@ -349,7 +365,7 @@ export default function CalculatorResults({
   const routeProfileMatchesCalculation = Boolean(
     hasCompleteRouteProfile &&
     academicScores?.psychometric?.overall === psychometric &&
-    academicScores?.bagrut?.weightedAverage === bagrut,
+    academicBagrutAverage(academicScores) === bagrut,
   );
 
   async function handleAdmissionAlert() {
@@ -862,6 +878,7 @@ export default function CalculatorResults({
                               institutionId={institution.id}
                             />
                           )}
+                          <AdmissionEstimate result={result} />
                           {footnote && (
                             <AdmissionConditions
                               conditions={result.additionalConditions}

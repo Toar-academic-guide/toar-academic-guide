@@ -151,11 +151,6 @@ export default function HujiMedicineFields({ values, onChange, disabled, inputCl
           yesNo,
         )}
         {select(
-          'hujiMedicineQualificationConfirmed',
-          'זכאות לבגרות או תעודה חלופית מוכרת לרפואה בעברית?',
-          yesNo,
-        )}
-        {select(
           'hujiMedicineRegistrationConfirmed',
           'הרשמה והמסמכים לרפואה בעברית הושלמו עד 12.05.2026?',
           yesNo,
