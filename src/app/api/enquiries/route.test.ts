@@ -80,6 +80,54 @@ describe('website enquiries → Monday', () => {
     vi.unstubAllEnvs();
   });
 
+  it.each([55, 90])(
+    'accepts a subject-derived overall average %s with its evaluation provenance',
+    async (bagrut) => {
+      const evaluationInput = {
+        degreeId: 'physiotherapy',
+        bagrut,
+        bagrutAverageEstimated: true,
+        extraInputs: {
+          bagrutSubjectRecord: {
+            schemaVersion: 2,
+            sector: 'jewish',
+            certificateType: 'internal',
+            complete: false,
+            subjects: [
+              { subjectId: 'mathematics', units: 5, grade: bagrut, assessmentKind: 'exam' },
+            ],
+          },
+        },
+      };
+      expect((await POST(request({ evaluationInput }))).status).toBe(201);
+      expect(evaluate).toHaveBeenCalledWith(expect.objectContaining({ input: evaluationInput }));
+    },
+  );
+
+  it.each([true, false])(
+    'rejects an unsupported derived/entered average before delivery: provenance %s',
+    async (estimated) => {
+      const evaluationInput = {
+        degreeId: 'physiotherapy',
+        bagrut: 54,
+        ...(estimated ? { bagrutAverageEstimated: true } : {}),
+        extraInputs: {
+          bagrutSubjectRecord: {
+            schemaVersion: 2,
+            sector: 'jewish',
+            certificateType: 'internal',
+            complete: false,
+            subjects: [{ subjectId: 'mathematics', units: 5, grade: 55, assessmentKind: 'exam' }],
+          },
+        },
+      };
+      expect((await POST(request({ evaluationInput }))).status).toBe(400);
+      expect(evaluate).not.toHaveBeenCalled();
+      expect(fetch).not.toHaveBeenCalled();
+      expect(backup).not.toHaveBeenCalled();
+    },
+  );
+
   it('passes normalized attribution to Monday, the backup and server analytics', async () => {
     const attribution = {
       utm_source: 'instagram',

@@ -62,7 +62,9 @@ export function normalizeBguPsychologyRule(payload: unknown) {
     psychometric: row.psycho_value as number,
     score: row.psycho_sekem as number,
     bagrut: row.bagrut_average as number,
-    ...Object.fromEntries(textFields.map((key) => [key, row[key].trim().replace(/\s+/g, ' ')])),
+    ...(Object.fromEntries(
+      textFields.map((key) => [key, row[key].trim().replace(/\s+/g, ' ')]),
+    ) as Record<(typeof textFields)[number], string>),
   };
 }
 export function fingerprintBguPsychologyRule(
@@ -70,9 +72,18 @@ export function fingerprintBguPsychologyRule(
 ) {
   return `sha256:${createHash('sha256').update(JSON.stringify(rule)).digest('hex')}`;
 }
+/** Registration availability does not change the published numerical admissions routes. */
+export function fingerprintBguPsychologyAdmissionRules(
+  rule: NonNullable<ReturnType<typeof normalizeBguPsychologyRule>>,
+) {
+  const { reg_status: _registrationStatus, ...admissionRules } = rule;
+  return `sha256:${createHash('sha256').update(JSON.stringify(admissionRules)).digest('hex')}`;
+}
 const reviewed = normalizeBguPsychologyRule({ items: [official.officialRule] });
 if (!reviewed) throw new Error('Missing main-campus Psychology rule evidence');
 export const BGU_PSYCHOLOGY_SOURCE_FINGERPRINT = fingerprintBguPsychologyRule(reviewed);
+export const BGU_PSYCHOLOGY_ADMISSION_RULES_FINGERPRINT =
+  fingerprintBguPsychologyAdmissionRules(reviewed);
 
 export const BGU_PSYCHOLOGY_METADATA_BY_PAIR_ID = Object.fromEntries(
   ['psychology', 'bgu_psychology'].map((programId) => {

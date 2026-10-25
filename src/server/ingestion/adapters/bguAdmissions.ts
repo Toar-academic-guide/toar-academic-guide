@@ -32,7 +32,7 @@ import {
 import { evaluateBguComputerScienceGates } from '@/server/admissions/bguComputerSciencePolicy';
 import { isBguEngineeringProgram } from '@/server/admissions/bguEngineeringPolicy';
 import { runBguEngineeringAdmissionsProof } from './bguEngineeringAdmissions';
-import { bagrutExamSubjects } from '@/lib/bagrutSubjectRecord';
+import { bguMathematicsSubjects } from '@/lib/bagrutSubjectRecord';
 import { admissionsBagrutSubjectRecordSchema } from '@/lib/bagrutSubjectRecordSchema';
 
 const BGU_INDEX_URL = 'https://bgu4u.bgu.ac.il/html/average_calc/index.php';
@@ -361,7 +361,7 @@ function validateBguComputerScienceInputs(
     !validInteger(quantitative, 50, 150) ||
     !validInteger(verbal, 50, 150) ||
     !validInteger(english, 50, 150) ||
-    !isValidBguComputerScienceSubjectRecord(subjectRecord) ||
+    (subjectRecord !== undefined && !isValidBguComputerScienceSubjectRecord(subjectRecord)) ||
     (assessment !== 'scores' && !languageRequirementsConfirmed)
   ) {
     return null;
@@ -371,7 +371,7 @@ function validateBguComputerScienceInputs(
     {
       psychometric: applicant.psychometric,
       quantitativeSubscore: quantitative,
-      subjects: bagrutExamSubjects(subjectRecord),
+      subjects: bguMathematicsSubjects(extraInputs),
       languageRequirementsConfirmed,
     },
     assessment,

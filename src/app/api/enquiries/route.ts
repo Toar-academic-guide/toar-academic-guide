@@ -3,7 +3,10 @@ import { enquirySourcePath } from '@/lib/enquirySourcePath';
 import { after } from 'next/server';
 import { z } from 'zod';
 import type { EnquiryRecord, EnquiryResultStatus } from '@/lib/enquiries';
-import { admissionsEvaluationSchema } from '@/lib/admissionsEvaluationSchema';
+import {
+  admissionsEvaluationSchema,
+  validateOverallBagrutAverage,
+} from '@/lib/admissionsEvaluationSchema';
 import { canonicalProgramId } from '@/lib/seo/programAliases';
 import { evaluateAdmissionsForProgram } from '@/server/admissions/evaluator';
 import { saveEnquiryBackup } from '@/server/enquiries/repository';
@@ -37,6 +40,7 @@ const inputSchema = z
         extraInputs: admissionsEvaluationSchema.shape.extraInputs.unwrap().strict().optional(),
       })
       .strict()
+      .superRefine(validateOverallBagrutAverage)
       .optional(),
   })
   .strict();

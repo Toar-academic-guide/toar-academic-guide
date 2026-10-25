@@ -26,7 +26,6 @@ export function evaluateColmanBagrutResult({
   };
   const extra = input.extraInputs;
   const average = extra?.colmanBagrutAverage;
-  const certificate = extra?.colmanBagrutCertificateConfirmed;
   const math = bagrutExamSubjects(extra?.bagrutSubjectRecord).find(
     (subject) => subject.subjectId === 'mathematics',
   );
@@ -45,7 +44,7 @@ export function evaluateColmanBagrutResult({
       confidence: 'low',
       requiredInputs: missing,
       explanation:
-        'לבדיקת מסלול הבגרות נדרשים ממוצע משוקלל של המכללה למינהל, אישור זכאות לתעודת בגרות מלאה ויחידות וציון במתמטיקה. הממוצע הכללי בפרופיל אינו מחליף את ממוצע המכללה.',
+        'לבדיקת מסלול הבגרות נדרשים ממוצע משוקלל של המכללה למינהל ויחידות וציון במתמטיקה. הממוצע הכללי בפרופיל אינו מחליף את ממוצע המכללה.',
       nextAction:
         'פתחו את הפרופיל האקדמי, השלימו את נתוני המכללה למינהל והזינו מתמטיקה במחשבון מקצועות הבגרות. אין צורך בפסיכומטרי למסלול זה.',
     };
@@ -68,18 +67,11 @@ export function evaluateColmanBagrutResult({
       threshold: 85,
       explanation: unmet.length
         ? `לא מתקיימים תנאי מסלול הבגרות הישיר: ${unmet.join('; ')}. זו אינה דחייה מכל מסלולי הקבלה; ייתכנו מסלולים אחרים הדורשים בדיקת המכללה.`
-        : 'תנאי הציונים למסלול הבגרות מתקיימים: ממוצע משוקלל 85 לפחות ומתמטיקה 5 יחידות בציון 70 לפחות או 4 יחידות בציון 80 לפחות. עדיין נדרש מעבר מבדק פנימי; אין כאן אישור קבלה סופית.',
+        : 'תנאי הציונים למסלול הבגרות מתקיימים: ממוצע משוקלל 85 לפחות ומתמטיקה 5 יחידות בציון 70 לפחות או 4 יחידות בציון 80 לפחות. עדיין נדרש מעבר מבדק פנימי.',
       nextAction: unmet.length
         ? 'בדקו מול מרכז הרישום את חלופות הקבלה המתאימות. במסלול בגרות ופסיכומטרי ההחלטה היא של המכללה: היא לא מפרסמת את הציון המשוקלל הנדרש. כדאי לבדוק מול מרכז הרישום.'
         : 'פנו למרכז הרישום להסדרת המבדק הפנימי והקבלה. פטור לפי פסיכומטרי וכמותי מתייחס למסלול המשולב, ולא נבדק במסלול הבגרות כאן.',
     },
-    [
-      confirmationCondition('colman_internal_test', 'מעבר מבדק פנימי של המכללה', undefined),
-      confirmationCondition(
-        'colman_bagrut_certificate',
-        'זכאות לתעודת בגרות מלאה ומוכרת',
-        certificate,
-      ),
-    ],
+    [confirmationCondition('colman_internal_test', 'מעבר מבדק פנימי של המכללה', undefined)],
   );
 }

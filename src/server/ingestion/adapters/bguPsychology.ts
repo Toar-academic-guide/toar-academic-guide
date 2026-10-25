@@ -9,6 +9,8 @@ import {
   BGU_GENERAL_SCORE_URL,
   BGU_PSYCHOLOGY_OFFICIAL_PROGRAM_ID,
   BGU_PSYCHOLOGY_SOURCE_FINGERPRINT,
+  BGU_PSYCHOLOGY_ADMISSION_RULES_FINGERPRINT,
+  fingerprintBguPsychologyAdmissionRules,
   BGU_PSYCHOLOGY_SOURCE_URL,
   fingerprintBguPsychologyRule,
   normalizeBguPsychologyRule,
@@ -38,6 +40,8 @@ export async function runBguPsychologyProof(
     adapterId: 'bgu' as const,
     rawResponseMetadata: metadata,
   };
+  let failureStage: 'rules' | 'score' = 'rules';
+  let registrationStatus: string | undefined;
   try {
     if (
       program.searchText !== BGU_PSYCHOLOGY_SOURCE_URL ||
@@ -52,8 +56,9 @@ export async function runBguPsychologyProof(
     const rule = normalizeBguPsychologyRule(await response.json());
     if (!rule)
       throw new Error('Psychology source returned missing, duplicate or wrong-campus rules.');
+    registrationStatus = rule.reg_status;
     const fingerprint = fingerprintBguPsychologyRule(rule);
-    if (fingerprint !== BGU_PSYCHOLOGY_SOURCE_FINGERPRINT)
+    if (fingerprintBguPsychologyAdmissionRules(rule) !== BGU_PSYCHOLOGY_ADMISSION_RULES_FINGERPRINT)
       return {
         ...base,
         capability: 'blocked',
@@ -75,6 +80,7 @@ export async function runBguPsychologyProof(
       context.assessment === 'scores' ? resolveBguPsychologyScores : resolveBguPsychologyAdmission;
     let admission = resolve(input);
     if (admission.kind === 'score') {
+      failureStage = 'score';
       const params = new URLSearchParams({
         rn_include_mitsraf: '0',
         rn_year: '2027',
@@ -111,7 +117,7 @@ export async function runBguPsychologyProof(
         context.assessment === 'scores' ? 'score_only' : 'decision_capable',
       ),
       decisionProvenance: 'verified_derivation',
-      reviewedSourceFingerprint: fingerprint,
+      reviewedSourceFingerprint: BGU_PSYCHOLOGY_SOURCE_FINGERPRINT,
       reproducedFields: [
         'selectedScore',
         'acceptanceThreshold',
@@ -123,7 +129,7 @@ export async function runBguPsychologyProof(
         programId: program.id,
         officialProgramId: BGU_PSYCHOLOGY_OFFICIAL_PROGRAM_ID,
         sourceFingerprint: fingerprint,
-        reviewedSourceFingerprint: fingerprint,
+        reviewedSourceFingerprint: BGU_PSYCHOLOGY_SOURCE_FINGERPRINT,
         selectedScore: admission.score,
         acceptanceThreshold: admission.threshold,
         rejectionThreshold: admission.threshold,
@@ -136,6 +142,7 @@ export async function runBguPsychologyProof(
         ...(context.assessment === 'scores' && {
           scoreAssessment: admission.kind === 'eligible' ? 'meets_threshold' : 'below_threshold',
         }),
+        registrationStatus: rule.reg_status,
         route: admission.route,
         reason: admission.reason,
         waitingList: true,
@@ -156,7 +163,7 @@ export async function runBguPsychologyProof(
       status: 'failed',
       sourceClass: 'browser_required',
       reproducedFields: [],
-      normalizedPayload: {},
+      normalizedPayload: { failureStage, registrationStatus },
       limitations: [reason],
       blockedReason: reason,
       errorReason: reason,
