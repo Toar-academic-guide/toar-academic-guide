@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AcademicScores } from '@/types';
 import { getStaticCataloguePrograms, getStaticCatalogueInstitutions } from '@/lib/catalogueStatic';
 import baselineLaw from '../../docs/ui-verification/2026-10-23-requirement-tiles/baseline-law_low.json';
+import { resultLabel } from '@/lib/studyJourney';
 
 const state = vi.hoisted(() => ({
   user: null as null | { id: string },
@@ -101,6 +102,217 @@ describe('account grades in the homepage journey', () => {
     expect(screen.queryByText('תנאים נוספים לבדיקה')).toBeNull();
     expect(screen.getByRole('button', { name: 'יצירת קשר' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'שמירה לרשימה' })).toBeTruthy();
+  });
+
+  // Amit ruling 2026-10-25 07:30 via Jorje
+  it.each([
+    [95, 'הסכם שלך 95, מעל סף הזימון המשוער (92)', 'text-green-700'],
+    [84.5, 'הסכם שלך 84.5, מתחת לסף הזימון המשוער (92)', 'text-slate-500'],
+    [92, 'הסכם שלך 92, מעל סף הזימון המשוער (92)', 'text-green-700'],
+    [95.125, 'הסכם שלך 95.13, מעל סף הזימון המשוער (92)', 'text-green-700'],
+  ] as const)('shows one medicine comparison for sekem %s', async (score, comparison, color) => {
+    const program = getStaticCataloguePrograms().find((p) => p.id === 'technion_medicine')!;
+    const institution = getStaticCatalogueInstitutions().find((i) => i.id === 'technion')!;
+    state.fetchPrograms.mockResolvedValue([program]);
+    state.fetchInstitutions.mockResolvedValue([institution]);
+    state.evaluate.mockResolvedValue({
+      reports: {
+        technion_medicine: {
+          results: [
+            {
+              institution,
+              linkedInstitutionId: 'technion',
+              capability: 'score_only',
+              kind: 'exact',
+              decision: 'unknown',
+              confidence: 'medium',
+              score,
+              scoreLabel: 'סכם',
+              sourceLabel: 'סכם לרפואה',
+              explanation:
+                'סף זימון משוער למבחן המו"ר: 92 (הערכה). זהו סף זימון משוער בלבד, ולא סף קבלה לרפואה.',
+              officialUrls: ['https://admissions.technion.ac.il/calculator/'],
+            },
+          ],
+        },
+      },
+      failedDegreeIds: [],
+    });
+    window.sessionStorage.setItem(
+      'myway_study_journey_v2',
+      JSON.stringify({
+        fields: [],
+        locations: ['all'],
+        types: ['all'],
+        selectedRowId: 'technion_medicine:technion',
+        scores: { bagrut: { weightedAverage: 110 }, psychometric: { overall: 720 } },
+      }),
+    );
+    render(<StudyJourney initialStep="detail" />);
+    expect(await screen.findByText('קבלה דרך מבחני מו"ר')).toBeTruthy();
+    // Amit ruling 2026-10-25 08:01 via Jorje
+    const chip = screen.getByText('קבלה דרך מבחני מו"ר');
+    expect(chip.className).toBe('journey-status status-match');
+    expect(chip.className).not.toMatch(/status-explore|violet|purple/);
+    const batch = await state.evaluate.mock.results[0].value;
+    expect(
+      resultLabel(batch.reports.technion_medicine.results[0], false, false, program.id).group,
+    ).toBe('explore');
+    expect(screen.queryByText('אין הכרעת קבלה')).toBeNull();
+    const line = screen.getByText(comparison, { exact: true });
+    expect(line.classList.contains(color)).toBe(true);
+    expect(line.className).not.toMatch(/red|rose|amber|yellow|danger|warning/);
+    expect(screen.getAllByText(/הסכם שלך/)).toHaveLength(1);
+    expect(screen.queryByText(/סף זימון משוער למבחן המו"ר/)).toBeNull();
+    expect(screen.queryByText(/^סכם:/)).toBeNull();
+    expect(screen.getByRole('button', { name: 'יצירת קשר' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'שמירה לרשימה' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toBe(
+      'https://www.technion.ac.il/?utm_source=myway&utm_medium=referral',
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'חזרה' }));
+    const listChip = await screen.findByText('קבלה דרך מבחני מו"ר');
+    expect(listChip.className).toBe('journey-status status-match');
+  });
+
+  // Samuel QA A1 2026-10-25
+  it.each([
+    [98.9, 'הסכם שלך 98.9, מעל סף הזימון המשוער (92)', 'text-green-700', 'status-match'],
+    [92, 'הסכם שלך 92, מעל סף הזימון המשוער (92)', 'text-green-700', 'status-match'],
+    [73.9, 'הסכם שלך 73.9, מתחת לסף הזימון המשוער (92)', 'text-slate-500', 'status-match'],
+  ] as const)(
+    'shows one comparison directly under the medicine list chip for sekem %s',
+    async (score, text, color, badge) => {
+      const program = getStaticCataloguePrograms().find((p) => p.id === 'technion_medicine')!;
+      const institution = getStaticCatalogueInstitutions().find((i) => i.id === 'technion')!;
+      state.fetchPrograms.mockResolvedValue([program]);
+      state.fetchInstitutions.mockResolvedValue([institution]);
+      state.evaluate.mockResolvedValue({
+        reports: {
+          technion_medicine: {
+            results: [
+              {
+                institution,
+                linkedInstitutionId: 'technion',
+                kind: 'exact',
+                decision: 'unknown',
+                score,
+              },
+            ],
+          },
+        },
+        failedDegreeIds: [],
+      });
+      window.sessionStorage.setItem(
+        'myway_study_journey_v2',
+        JSON.stringify({
+          fields: ['medicine'],
+          locations: ['all'],
+          types: ['all'],
+          scores: { bagrut: { weightedAverage: 110 }, psychometric: { overall: 720 } },
+        }),
+      );
+      render(<StudyJourney initialStep="results" />);
+      const chip = await screen.findByText('קבלה דרך מבחני מו"ר');
+      const row = within(chip.closest('article')!);
+      const line = row.getByText(text, { exact: true });
+      expect(row.getAllByText(/הסכם שלך/)).toHaveLength(1);
+      expect(screen.getAllByText(/הסכם שלך/)).toHaveLength(1);
+      expect(chip.nextElementSibling).toBe(line);
+      expect(line.classList.contains(color)).toBe(true);
+      expect(line.className).not.toMatch(/red|rose|amber|yellow|danger|warning/);
+      expect(chip.className).toBe(`journey-status ${badge}`);
+      expect(chip.classList.contains('status-match')).toBe(badge === 'status-match');
+      expect(row.queryByText('אין הכרעת קבלה')).toBeNull();
+      expect(row.queryByText(/סף זימון משוער למבחן המו"ר|סכם:|שיפור/)).toBeNull();
+      fireEvent.click(row.getByRole('button', { name: /פרטים על רפואה/ }));
+      const detailLine = await screen.findByText(text, { exact: true });
+      expect(screen.getAllByText(/הסכם שלך/)).toHaveLength(1);
+      expect(detailLine.className).toBe(line.className);
+      expect(detailLine.classList.contains(color)).toBe(true);
+    },
+  );
+
+  // Amit ruling 2026-10-25 08:01 via Jorje
+  it('keeps Haifa pending chip in its existing no-verdict style', async () => {
+    const program = getStaticCataloguePrograms().find((p) => p.id === 'haifa_sociology')!;
+    const institution = getStaticCatalogueInstitutions().find((i) => i.id === 'haifa')!;
+    state.fetchPrograms.mockResolvedValue([program]);
+    state.fetchInstitutions.mockResolvedValue([institution]);
+    state.evaluate.mockResolvedValue({
+      reports: {
+        haifa_sociology: {
+          results: [
+            {
+              institution,
+              linkedInstitutionId: 'haifa',
+              capability: 'exact',
+              kind: 'exact',
+              decision: 'pending',
+              score: 520,
+              explanation: 'הסכם נמצא בטווח ההמתנה.',
+            },
+          ],
+        },
+      },
+      failedDegreeIds: [],
+    });
+    window.sessionStorage.setItem(
+      'myway_study_journey_v2',
+      JSON.stringify({
+        fields: [],
+        locations: ['all'],
+        types: ['all'],
+        selectedRowId: 'haifa_sociology:haifa',
+      }),
+    );
+    render(<StudyJourney initialStep="detail" />);
+    const chip = await screen.findByText('אין הכרעת קבלה');
+    expect(chip.className).toBe('journey-status status-explore');
+    expect(chip.classList.contains('status-match')).toBe(false);
+    fireEvent.click(screen.getByRole('button', { name: 'חזרה' }));
+    const listChip = await screen.findByText('אין הכרעת קבלה');
+    expect(listChip.className).toBe('journey-status status-explore');
+  });
+
+  it('preserves the medicine result explanation when no sekem is available', async () => {
+    const program = getStaticCataloguePrograms().find((p) => p.id === 'technion_medicine')!;
+    const institution = getStaticCatalogueInstitutions().find((i) => i.id === 'technion')!;
+    const explanation = 'סף זימון משוער למבחן המו"ר: 92 (הערכה). נדרשים פרטי מקצועות הבגרות.';
+    state.fetchPrograms.mockResolvedValue([program]);
+    state.fetchInstitutions.mockResolvedValue([institution]);
+    state.evaluate.mockResolvedValue({
+      reports: {
+        technion_medicine: {
+          results: [
+            {
+              institution,
+              linkedInstitutionId: 'technion',
+              capability: 'needs_input',
+              kind: 'needs_input',
+              decision: 'unknown',
+              explanation,
+              requiredInputs: ['bagrut_subject_record'],
+            },
+          ],
+        },
+      },
+      failedDegreeIds: [],
+    });
+    window.sessionStorage.setItem(
+      'myway_study_journey_v2',
+      JSON.stringify({
+        fields: [],
+        locations: ['all'],
+        types: ['all'],
+        selectedRowId: 'technion_medicine:technion',
+      }),
+    );
+    render(<StudyJourney initialStep="detail" />);
+    expect(await screen.findByText('חסרים פרטים לחישוב')).toBeTruthy();
+    expect(screen.getByText(explanation)).toBeTruthy();
+    expect(screen.queryByText('קבלה דרך מבחני מו"ר')).toBeNull();
+    expect(screen.queryByText(/הסכם שלך/)).toBeNull();
   });
 
   it('changes only the calculator detail requirements while preserving the baseline decision and actions', async () => {
