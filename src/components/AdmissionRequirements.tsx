@@ -220,7 +220,7 @@ export default function AdmissionRequirements({
                   rel="noopener noreferrer"
                   className="underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2"
                 >
-                  {BIU_ENGINEERING_URL}
+                  תנאי הקבלה בפקולטה להנדסה
                 </a>
               </>
             )}

@@ -14,6 +14,7 @@ import {
   BIU_GENERAL_REQUIREMENTS_URL,
   BIU_PUBLISHED_ROUTES_URL,
 } from '@/data/admissions/biuPublishedRoutes';
+import type { BiuFloorResult } from '@/lib/biuFloorPresentation';
 import { bagrutExamSubjects } from '@/lib/bagrutSubjectRecord';
 import { subjectIdForWizardLabel } from '@/utils/bagrutSubjectRecord';
 import type {
@@ -170,13 +171,26 @@ function missedFloors(rows: FloorCheckRow[]) {
 function annotateBelow(
   result: AdmissionsEvaluationResult,
   input: AdmissionsEvaluationInput,
-): AdmissionsEvaluationResult {
+): BiuFloorResult {
   if (result.decision !== 'below') return result;
   const programme = input.degreeId.replace(/^biu_/, '');
   const special = BIU_SPECIAL_CHANNELS[programme] ?? [];
   const psychLine = input.psychometric === undefined ? BIU_PSYCH_ROUTE_LINES[programme] : undefined;
   return {
     ...result,
+    // These programmes publish a reservist route in BIU_SPECIAL_CHANNELS.
+    // Keep its kind explicit: the detail view must never parse explanation copy.
+    ...([
+      'law',
+      'ee',
+      'socialwork',
+      'criminology',
+      'lifesciences',
+      'biotech',
+      'computational_bio',
+    ].includes(programme) && {
+      floorCaveats: [{ kind: 'reservist' as const }],
+    }),
     explanation: `לא עומד/ת בתנאי הסף — ${result.explanation} ${missedFloors(result.floorChecks ?? [])}${psychLine ? `. ${psychLine} · מקור: ${sourceReference(BIU_CALCULATOR_URL)}${programme === 'law' ? `; ${sourceReference(BIU_LAW_URL)}` : ''}` : ''}. ${special.map(({ text, url }) => `${text} · מקור: ${sourceReference(url)}`).join('. ')}${special.length ? '. ' : ''}ייתכנו גם מסלולי קבלה מיוחדים ברמת האוניברסיטה (תוכנית 30+, בני 40 ומעלה, הערכה חלופית לעד 10% מהסטודנטים בכל תוכנית) · מקורות: ${sourceReference(BIU_PUBLISHED_ROUTES_URL)} ; ${sourceReference(BIU_GENERAL_REQUIREMENTS_URL)}`,
     officialUrls: [
       ...new Set([

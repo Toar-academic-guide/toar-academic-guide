@@ -1,6 +1,7 @@
 'use client';
 
 import AdmissionEstimate from './AdmissionEstimate';
+import { biuFloorVerdict, type BiuFloorResult } from '@/lib/biuFloorPresentation';
 
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import Link from 'next/link';
@@ -368,6 +369,10 @@ export default function StudyJourney({
         failed: failedReports.includes(active.program.id),
       }
     : undefined;
+  const biuFloorResult =
+    activeRow?.result?.linkedInstitutionId === 'biu' && activeRow.result.floorChecks
+      ? (activeRow.result as BiuFloorResult)
+      : undefined;
   const activeFootnote = acceptedManualGateFootnote(activeRow?.result);
   const isBatchCUnsupported = activeRow
     ? isBatchCUnsupportedProgramId(activeRow.program.id, activeRow.institution.id)
@@ -1369,6 +1374,10 @@ export default function StudyJourney({
                   </span>
                   {isTechnionMedicineScore(activeRow.result, activeRow.program.id) ? (
                     <TechnionMedicineComparison score={activeRow.result.score} />
+                  ) : biuFloorResult ? (
+                    <p className="journey-result-explanation">
+                      {biuFloorVerdict(biuFloorResult.floorChecks!)}
+                    </p>
                   ) : (
                     resultExplanation(activeRow.result, activeRow.program.id) && (
                       <p className="journey-result-explanation">
@@ -1376,8 +1385,10 @@ export default function StudyJourney({
                       </p>
                     )
                   )}
-                  <AdmissionEstimate result={activeRow.result} />
-                  {activeFootnote && (
+                  {!activeRow.result?.floorChecks && (
+                    <AdmissionEstimate result={activeRow.result} />
+                  )}
+                  {!biuFloorResult && activeFootnote && (
                     <AdmissionConditions
                       conditions={activeRow.result?.additionalConditions}
                       footnote={activeFootnote}
@@ -1392,7 +1403,7 @@ export default function StudyJourney({
                           ` · סף: ${activeRow.result.threshold}`}
                       </p>
                     )}
-                  {!activeFootnote && (
+                  {!biuFloorResult && !activeFootnote && (
                     <AdmissionConditions conditions={activeRow.result?.additionalConditions} />
                   )}
                   <h2>תנאי קבלה</h2>
@@ -1428,6 +1439,13 @@ export default function StudyJourney({
                       }
                     />
                   )}
+                  {biuFloorResult?.decision === 'below' &&
+                    biuFloorResult.floorCaveats?.some((caveat) => caveat.kind === 'reservist') && (
+                      <p className="mt-2 text-right text-xs text-[var(--text-muted)]" dir="rtl">
+                        מילואימניקים: ייתכן מסלול קבלה ייעודי — כדאי לבדוק מול האוניברסיטה.
+                      </p>
+                    )}
+                  {activeRow.result?.floorChecks && <AdmissionEstimate result={activeRow.result} />}
                   <div className="journey-links">
                     {!isBatchCUnsupported &&
                       !DANON_PROGRAM_URLS[activeRow.program.id] &&

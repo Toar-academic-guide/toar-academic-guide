@@ -9,6 +9,7 @@ const cases = [
     quantitative: 132,
     mathGrade: 90,
     decision: 'unknown',
+    verdict: 'מקורות סותרים לגבי תנאי הסף — כדאי לבדוק במחשבון הרשמי',
   },
   {
     id: 'ee-below',
@@ -18,6 +19,7 @@ const cases = [
     quantitative: 132,
     mathGrade: 90,
     decision: 'below',
+    verdict: 'לא עומד/ת בתנאי הסף: פסיכומטרי 649 מתחת ל-700',
   },
   {
     id: 'cs-alternative',
@@ -27,6 +29,7 @@ const cases = [
     quantitative: 132,
     mathGrade: 92,
     decision: 'unknown',
+    verdict: 'עומד/ת בתנאי הסף באחד ממסלולי הקבלה',
   },
   {
     id: 'comp-bio-no-psych',
@@ -36,6 +39,7 @@ const cases = [
     quantitative: undefined,
     mathGrade: 80,
     decision: 'below',
+    verdict: 'לא עומד/ת בתנאי הסף: ממוצע בגרות 100 מתחת ל-112 · מתמטיקה 5 יח״ל 80 מתחת ל-95',
   },
 ];
 
@@ -107,7 +111,14 @@ for (const width of [1280, 390])
       await expect(table).toBeVisible();
       await expect(table).toHaveCSS('text-align', 'right');
       const explanation = page.locator('.journey-result-explanation');
-      await expect(explanation).toHaveText(result.explanation);
+      // Approved test update (Jorje, 2026-10-25): single verdict line replaces rejected prose paragraph
+      await expect(explanation).toHaveText(profile.verdict);
+      await expect(explanation).toHaveCount(1);
+      const summary = await explanation.textContent();
+      expect(summary).not.toMatch(
+        /https?:\/\/|[a-z0-9-]+(?:\.[a-z0-9-]+)*\.(?:ac\.il|co\.il|org\.il|com)/i,
+      );
+      expect(summary).not.toMatch(/\n|\.\s+\S/);
       await expect(explanation).toHaveCSS('text-align', 'right');
       if (profile.id === 'ee-conflicting') {
         await expect(table).toContainText('מקורות סותרים');
@@ -118,7 +129,35 @@ for (const width of [1280, 390])
         await expect(
           page.locator('.journey-status').filter({ hasText: 'לא עומד/ת בתנאי הסף' }),
         ).toBeVisible();
-        await expect(explanation).toContainText('אלא אם את/ה זכאי/ת למסלול מילואימניקים');
+        // Approved test update (Jorje, 2026-10-25): single verdict line replaces rejected prose paragraph
+        await expect(
+          page.getByText('מילואימניקים: ייתכן מסלול קבלה ייעודי — כדאי לבדוק מול האוניברסיטה.', {
+            exact: true,
+          }),
+        ).toBeVisible();
+      }
+      if (profile.decision !== 'below') {
+        await expect(
+          page.getByText('מילואימניקים: ייתכן מסלול קבלה ייעודי — כדאי לבדוק מול האוניברסיטה.', {
+            exact: true,
+          }),
+        ).toHaveCount(0);
+      }
+      const detailText = await table.locator('xpath=ancestor::section[1]').textContent();
+      expect(detailText).not.toMatch(
+        /https?:\/\/|[a-z0-9-]+(?:\.[a-z0-9-]+)*\.(?:ac\.il|co\.il|org\.il|com)/i,
+      );
+      const estimate = page.locator('.admission-estimate');
+      if (await estimate.count()) {
+        expect(
+          await table.evaluate(
+            (node) =>
+              !!(
+                node.compareDocumentPosition(document.querySelector('.admission-estimate')!) &
+                Node.DOCUMENT_POSITION_FOLLOWING
+              ),
+          ),
+        ).toBe(true);
       }
       const link = page.getByRole('link', { name: 'המחשבון הרשמי של בר-אילן', exact: true });
       await expect(link).toHaveAttribute(
