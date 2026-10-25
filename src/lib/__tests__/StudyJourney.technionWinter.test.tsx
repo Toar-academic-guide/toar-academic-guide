@@ -42,7 +42,6 @@ describe.each(['detail', 'compare'] as const)('Technion no-score %s requirements
   ])('%s', (programId, name, winter) => {
     let scope: HTMLElement;
 
-    // The ordinary setup test also runs these checks so setup errors cannot be hidden by it.fails.
     beforeEach(async () => {
       window.history.replaceState(null, '', '/app/calculator');
       window.sessionStorage.clear();
@@ -124,8 +123,7 @@ describe.each(['detail', 'compare'] as const)('Technion no-score %s requirements
         ).toContain(subject);
     });
 
-    // awaiting StudyJourney edit after #278 merges
-    it.fails('puts winter first, subjects next, and EE spring last', () => {
+    it('puts winter first, subjects next, and EE spring last', () => {
       const items = [...scope.querySelectorAll('li')].map((li) => li.textContent);
       expect(items[0], 'winter must be the first requirement').toBe(winter);
       expect(items.slice(1, 3)).toEqual(subjects);

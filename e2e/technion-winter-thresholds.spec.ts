@@ -169,8 +169,6 @@ for (const width of [390, 1280]) {
       );
       if (programId === 'technion_me') await expect(detail.getByText(/באביב תשפ/)).toHaveCount(0);
 
-      // awaiting StudyJourney edit after #278 merges
-      test.fail();
       const items = detail.getByRole('listitem');
       await expect(items.first(), 'winter must be the first requirement').toHaveText(winter);
       await expect(detail.getByText(winter, { exact: true })).toBeVisible();
