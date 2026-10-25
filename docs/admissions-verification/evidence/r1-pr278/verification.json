@@ -1,7 +1,7 @@
 [
   {
     "filename": "economics-1280.png",
-    "codeSha": "6c339ad",
+    "codeSha": "203fe98",
     "scenario": {
       "name": "economics",
       "program": "colmgmt_economics",
@@ -18,8 +18,8 @@
         "programUrl": "https://www.colman.ac.il"
       },
       "linkedInstitutionId": "colman",
-      "capability": "manual_gate",
-      "kind": "manual_gate",
+      "capability": "exact",
+      "kind": "exact",
       "confidence": "medium",
       "sourceLabel": "התאמה לפי הציונים",
       "officialUrls": [
@@ -28,27 +28,20 @@
         "https://wwwi.colman.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1"
       ],
       "decision": "below",
+      "scoreAssessment": "below_threshold",
       "score": 70,
       "threshold": 85,
       "scoreLabel": "ממוצע בגרות משוקלל — מסלול בגרות",
       "explanation": "מסלול בגרות: הממוצע נמוך מ־85. במסלול בגרות ופסיכומטרי לא מתקיים הסף של פסיכומטרי 540.",
       "nextAction": "בדקו מול מרכז הרישום אפשרות קבלה דרך מכינת שחקים.",
-      "scoreAssessment": "below_threshold",
-      "additionalConditions": [
-        {
-          "id": "colman_bagrut_certificate",
-          "label": "זכאות לתעודת בגרות מלאה ומוכרת",
-          "status": "unconfirmed"
-        }
-      ],
       "estimated": true,
       "estimationReason": "הממוצע הכללי 70 משמש אומדן לממוצע המוסדי; לא חושב ממקצועות הבגרות.",
       "snapshot": {
         "evaluatorVersion": "admissions-evaluator-v2",
-        "ruleVersion": "admissions-evaluator-v2:colman:manual_gate",
-        "ruleFingerprint": "sha256:308cad5a88c2f0d6f20b455c7cb91765b02e6f8631afdfc56e0d4d706c22a67f",
+        "ruleVersion": "admissions-evaluator-v2:colman:exact",
+        "ruleFingerprint": "sha256:674a381cc33b6e9dc000969be6e4691679b65f43872ef293d9a3a315039a3967",
         "inputDigest": "sha256:923ab68e188c16678e42b259a95967f63ad1c898c14bfd01c5903dd8ecc59cb6",
-        "evaluationDigest": "sha256:92b8279318c9b333983179c0106881822f0a788a645757be7eea2ec8f0db4e68"
+        "evaluationDigest": "sha256:abde5f5d9c8608059df00e5705dee404e274f8cdf05793fc10e776c4164174b9"
       }
     },
     "noteVisible": true,
@@ -63,7 +56,7 @@
   },
   {
     "filename": "economics-390.png",
-    "codeSha": "6c339ad",
+    "codeSha": "203fe98",
     "scenario": {
       "name": "economics",
       "program": "colmgmt_economics",
@@ -80,8 +73,8 @@
         "programUrl": "https://www.colman.ac.il"
       },
       "linkedInstitutionId": "colman",
-      "capability": "manual_gate",
-      "kind": "manual_gate",
+      "capability": "exact",
+      "kind": "exact",
       "confidence": "medium",
       "sourceLabel": "התאמה לפי הציונים",
       "officialUrls": [
@@ -90,27 +83,20 @@
         "https://wwwi.colman.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1"
       ],
       "decision": "below",
+      "scoreAssessment": "below_threshold",
       "score": 70,
       "threshold": 85,
       "scoreLabel": "ממוצע בגרות משוקלל — מסלול בגרות",
       "explanation": "מסלול בגרות: הממוצע נמוך מ־85. במסלול בגרות ופסיכומטרי לא מתקיים הסף של פסיכומטרי 540.",
       "nextAction": "בדקו מול מרכז הרישום אפשרות קבלה דרך מכינת שחקים.",
-      "scoreAssessment": "below_threshold",
-      "additionalConditions": [
-        {
-          "id": "colman_bagrut_certificate",
-          "label": "זכאות לתעודת בגרות מלאה ומוכרת",
-          "status": "unconfirmed"
-        }
-      ],
       "estimated": true,
       "estimationReason": "הממוצע הכללי 70 משמש אומדן לממוצע המוסדי; לא חושב ממקצועות הבגרות.",
       "snapshot": {
         "evaluatorVersion": "admissions-evaluator-v2",
-        "ruleVersion": "admissions-evaluator-v2:colman:manual_gate",
-        "ruleFingerprint": "sha256:308cad5a88c2f0d6f20b455c7cb91765b02e6f8631afdfc56e0d4d706c22a67f",
+        "ruleVersion": "admissions-evaluator-v2:colman:exact",
+        "ruleFingerprint": "sha256:674a381cc33b6e9dc000969be6e4691679b65f43872ef293d9a3a315039a3967",
         "inputDigest": "sha256:923ab68e188c16678e42b259a95967f63ad1c898c14bfd01c5903dd8ecc59cb6",
-        "evaluationDigest": "sha256:92b8279318c9b333983179c0106881822f0a788a645757be7eea2ec8f0db4e68"
+        "evaluationDigest": "sha256:abde5f5d9c8608059df00e5705dee404e274f8cdf05793fc10e776c4164174b9"
       }
     },
     "noteVisible": true,
@@ -125,13 +111,13 @@
   },
   {
     "filename": "estimate-1280.png",
-    "codeSha": "6c339ad",
+    "codeSha": "203fe98",
     "scenario": {
       "name": "estimate",
       "program": "colmgmt_law",
       "bagrut": 110,
       "psychometric": 650,
-      "decision": "pending"
+      "decision": "accepted"
     },
     "result": {
       "institution": {
@@ -142,8 +128,8 @@
         "programUrl": "https://www.colman.ac.il"
       },
       "linkedInstitutionId": "colman",
-      "capability": "manual_gate",
-      "kind": "manual_gate",
+      "capability": "exact",
+      "kind": "exact",
       "confidence": "medium",
       "sourceLabel": "התאמה לפי הציונים",
       "officialUrls": [
@@ -151,28 +137,21 @@
         "https://www.colman.ac.il/academics/ba/b-a-admission/",
         "https://wwwi.colman.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1"
       ],
-      "decision": "pending",
+      "decision": "accepted",
+      "scoreAssessment": "meets_threshold",
       "score": 110,
       "scoreLabel": "ממוצע בגרות משוקלל — מסלול בגרות",
       "threshold": 100,
-      "explanation": "תנאי הציונים למסלול הבגרות מתקיימים: ממוצע משוקלל 100 לפחות. יש לאשר זכאות לבגרות מלאה; אין כאן אישור קבלה סופית.",
-      "nextAction": "פנו למרכז הרישום לאישור הממוצע והזכאות לתעודת בגרות מלאה.",
-      "scoreAssessment": "meets_threshold",
-      "additionalConditions": [
-        {
-          "id": "colman_bagrut_certificate",
-          "label": "זכאות לתעודת בגרות מלאה ומוכרת",
-          "status": "unconfirmed"
-        }
-      ],
+      "explanation": "תנאי הציונים למסלול הבגרות מתקיימים: ממוצע משוקלל 100 לפחות.",
+      "nextAction": "המשיכו להרשמה באתר המכללה.",
       "estimated": true,
       "estimationReason": "הממוצע הכללי 110 משמש אומדן לממוצע המוסדי; לא חושב ממקצועות הבגרות.",
       "snapshot": {
         "evaluatorVersion": "admissions-evaluator-v2",
-        "ruleVersion": "admissions-evaluator-v2:colman:manual_gate",
-        "ruleFingerprint": "sha256:0c554eaca4eb10523f1bddbd662f0c554371a962e129144479da1c8e7a56e4da",
+        "ruleVersion": "admissions-evaluator-v2:colman:exact",
+        "ruleFingerprint": "sha256:19e17754976888c916ce612e549ff3b1ad65a73f85bd918df1c8940849c170c3",
         "inputDigest": "sha256:44c0d6d39ce307dbe33146f751099af77244a0990c217a01cae14c4331407640",
-        "evaluationDigest": "sha256:7a1c5d233bd64913c34d8b5ba3812ba342dcc6f175d6d65cfea752fe97e358c8"
+        "evaluationDigest": "sha256:6bb5790c634c6ebefb5425ab29b3dd35e6792128a1fdf1e78670ab7e58fa74ca"
       }
     },
     "noteVisible": true,
@@ -187,13 +166,13 @@
   },
   {
     "filename": "estimate-390.png",
-    "codeSha": "6c339ad",
+    "codeSha": "203fe98",
     "scenario": {
       "name": "estimate",
       "program": "colmgmt_law",
       "bagrut": 110,
       "psychometric": 650,
-      "decision": "pending"
+      "decision": "accepted"
     },
     "result": {
       "institution": {
@@ -204,8 +183,8 @@
         "programUrl": "https://www.colman.ac.il"
       },
       "linkedInstitutionId": "colman",
-      "capability": "manual_gate",
-      "kind": "manual_gate",
+      "capability": "exact",
+      "kind": "exact",
       "confidence": "medium",
       "sourceLabel": "התאמה לפי הציונים",
       "officialUrls": [
@@ -213,28 +192,131 @@
         "https://www.colman.ac.il/academics/ba/b-a-admission/",
         "https://wwwi.colman.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1"
       ],
-      "decision": "pending",
+      "decision": "accepted",
+      "scoreAssessment": "meets_threshold",
       "score": 110,
       "scoreLabel": "ממוצע בגרות משוקלל — מסלול בגרות",
       "threshold": 100,
-      "explanation": "תנאי הציונים למסלול הבגרות מתקיימים: ממוצע משוקלל 100 לפחות. יש לאשר זכאות לבגרות מלאה; אין כאן אישור קבלה סופית.",
-      "nextAction": "פנו למרכז הרישום לאישור הממוצע והזכאות לתעודת בגרות מלאה.",
-      "scoreAssessment": "meets_threshold",
-      "additionalConditions": [
-        {
-          "id": "colman_bagrut_certificate",
-          "label": "זכאות לתעודת בגרות מלאה ומוכרת",
-          "status": "unconfirmed"
-        }
-      ],
+      "explanation": "תנאי הציונים למסלול הבגרות מתקיימים: ממוצע משוקלל 100 לפחות.",
+      "nextAction": "המשיכו להרשמה באתר המכללה.",
       "estimated": true,
       "estimationReason": "הממוצע הכללי 110 משמש אומדן לממוצע המוסדי; לא חושב ממקצועות הבגרות.",
       "snapshot": {
         "evaluatorVersion": "admissions-evaluator-v2",
-        "ruleVersion": "admissions-evaluator-v2:colman:manual_gate",
-        "ruleFingerprint": "sha256:0c554eaca4eb10523f1bddbd662f0c554371a962e129144479da1c8e7a56e4da",
+        "ruleVersion": "admissions-evaluator-v2:colman:exact",
+        "ruleFingerprint": "sha256:19e17754976888c916ce612e549ff3b1ad65a73f85bd918df1c8940849c170c3",
         "inputDigest": "sha256:44c0d6d39ce307dbe33146f751099af77244a0990c217a01cae14c4331407640",
-        "evaluationDigest": "sha256:7a1c5d233bd64913c34d8b5ba3812ba342dcc6f175d6d65cfea752fe97e358c8"
+        "evaluationDigest": "sha256:6bb5790c634c6ebefb5425ab29b3dd35e6792128a1fdf1e78670ab7e58fa74ca"
+      }
+    },
+    "noteVisible": true,
+    "metrics": {
+      "alignment": "right",
+      "direction": "rtl",
+      "fontSize": "12px",
+      "color": "rgb(94, 106, 131)",
+      "overflow": false
+    },
+    "errors": []
+  },
+  {
+    "filename": "law-1280.png",
+    "codeSha": "203fe98",
+    "scenario": {
+      "name": "law",
+      "program": "colmgmt_law",
+      "bagrut": 110,
+      "psychometric": 650,
+      "decision": "accepted"
+    },
+    "result": {
+      "institution": {
+        "id": "colman",
+        "name": "מכללת ניהול – לימודים אקדמיים",
+        "region": "center",
+        "domain": "colman.ac.il",
+        "programUrl": "https://www.colman.ac.il"
+      },
+      "linkedInstitutionId": "colman",
+      "capability": "exact",
+      "kind": "exact",
+      "confidence": "medium",
+      "sourceLabel": "התאמה לפי הציונים",
+      "officialUrls": [
+        "https://www.colman.ac.il/academics/ba/law/",
+        "https://www.colman.ac.il/academics/ba/b-a-admission/",
+        "https://wwwi.colman.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1"
+      ],
+      "decision": "accepted",
+      "scoreAssessment": "meets_threshold",
+      "score": 110,
+      "scoreLabel": "ממוצע בגרות משוקלל — מסלול בגרות",
+      "threshold": 100,
+      "explanation": "תנאי הציונים למסלול הבגרות מתקיימים: ממוצע משוקלל 100 לפחות.",
+      "nextAction": "המשיכו להרשמה באתר המכללה.",
+      "estimated": true,
+      "estimationReason": "הממוצע הכללי 110 משמש אומדן לממוצע המוסדי; לא חושב ממקצועות הבגרות.",
+      "snapshot": {
+        "evaluatorVersion": "admissions-evaluator-v2",
+        "ruleVersion": "admissions-evaluator-v2:colman:exact",
+        "ruleFingerprint": "sha256:19e17754976888c916ce612e549ff3b1ad65a73f85bd918df1c8940849c170c3",
+        "inputDigest": "sha256:44c0d6d39ce307dbe33146f751099af77244a0990c217a01cae14c4331407640",
+        "evaluationDigest": "sha256:6bb5790c634c6ebefb5425ab29b3dd35e6792128a1fdf1e78670ab7e58fa74ca"
+      }
+    },
+    "noteVisible": true,
+    "metrics": {
+      "alignment": "right",
+      "direction": "rtl",
+      "fontSize": "12px",
+      "color": "rgb(94, 106, 131)",
+      "overflow": false
+    },
+    "errors": []
+  },
+  {
+    "filename": "law-390.png",
+    "codeSha": "203fe98",
+    "scenario": {
+      "name": "law",
+      "program": "colmgmt_law",
+      "bagrut": 110,
+      "psychometric": 650,
+      "decision": "accepted"
+    },
+    "result": {
+      "institution": {
+        "id": "colman",
+        "name": "מכללת ניהול – לימודים אקדמיים",
+        "region": "center",
+        "domain": "colman.ac.il",
+        "programUrl": "https://www.colman.ac.il"
+      },
+      "linkedInstitutionId": "colman",
+      "capability": "exact",
+      "kind": "exact",
+      "confidence": "medium",
+      "sourceLabel": "התאמה לפי הציונים",
+      "officialUrls": [
+        "https://www.colman.ac.il/academics/ba/law/",
+        "https://www.colman.ac.il/academics/ba/b-a-admission/",
+        "https://wwwi.colman.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1"
+      ],
+      "decision": "accepted",
+      "scoreAssessment": "meets_threshold",
+      "score": 110,
+      "scoreLabel": "ממוצע בגרות משוקלל — מסלול בגרות",
+      "threshold": 100,
+      "explanation": "תנאי הציונים למסלול הבגרות מתקיימים: ממוצע משוקלל 100 לפחות.",
+      "nextAction": "המשיכו להרשמה באתר המכללה.",
+      "estimated": true,
+      "estimationReason": "הממוצע הכללי 110 משמש אומדן לממוצע המוסדי; לא חושב ממקצועות הבגרות.",
+      "snapshot": {
+        "evaluatorVersion": "admissions-evaluator-v2",
+        "ruleVersion": "admissions-evaluator-v2:colman:exact",
+        "ruleFingerprint": "sha256:19e17754976888c916ce612e549ff3b1ad65a73f85bd918df1c8940849c170c3",
+        "inputDigest": "sha256:44c0d6d39ce307dbe33146f751099af77244a0990c217a01cae14c4331407640",
+        "evaluationDigest": "sha256:6bb5790c634c6ebefb5425ab29b3dd35e6792128a1fdf1e78670ab7e58fa74ca"
       }
     },
     "noteVisible": true,
@@ -249,7 +331,7 @@
   },
   {
     "filename": "g2-1280.png",
-    "codeSha": "6c339ad",
+    "codeSha": "203fe98",
     "scenario": {
       "name": "g2",
       "program": "colmgmt_economics",
@@ -281,13 +363,6 @@
       "scoreLabel": "ממוצע בגרות משוקלל — מסלול בגרות",
       "explanation": "נדרשים מקצועות הבגרות לחישוב הממוצע המוסדי ולבדיקת תנאי הקבלה.",
       "nextAction": "בדקו מול מרכז הרישום אפשרות קבלה דרך מכינת שחקים. השלימו את מקצועות הבגרות בפרופיל האקדמי.",
-      "additionalConditions": [
-        {
-          "id": "colman_bagrut_certificate",
-          "label": "זכאות לתעודת בגרות מלאה ומוכרת",
-          "status": "unconfirmed"
-        }
-      ],
       "requiredInputs": [
         "bagrut_subject_record"
       ],
@@ -296,7 +371,7 @@
         "ruleVersion": "admissions-evaluator-v2:colman:needs_input",
         "ruleFingerprint": "sha256:ee72e3cbf979bdad26942de4d0a95d08a9015d38c99889842ff35d304fe3d034",
         "inputDigest": "sha256:276e864da4b5c6bab1d6026d4a1fc3db25daad168934615233760c2a805b734c",
-        "evaluationDigest": "sha256:0ee3cc4f930c606fa67ba4c413197c028fd11d42b65332581bd538d0ff3a8df3"
+        "evaluationDigest": "sha256:a56037eede47f657be2df0c74f568fb5c1ac5ec15b9b66dd00ad39974bfd5ea1"
       }
     },
     "noteVisible": false,
@@ -311,7 +386,7 @@
   },
   {
     "filename": "g2-390.png",
-    "codeSha": "6c339ad",
+    "codeSha": "203fe98",
     "scenario": {
       "name": "g2",
       "program": "colmgmt_economics",
@@ -343,13 +418,6 @@
       "scoreLabel": "ממוצע בגרות משוקלל — מסלול בגרות",
       "explanation": "נדרשים מקצועות הבגרות לחישוב הממוצע המוסדי ולבדיקת תנאי הקבלה.",
       "nextAction": "בדקו מול מרכז הרישום אפשרות קבלה דרך מכינת שחקים. השלימו את מקצועות הבגרות בפרופיל האקדמי.",
-      "additionalConditions": [
-        {
-          "id": "colman_bagrut_certificate",
-          "label": "זכאות לתעודת בגרות מלאה ומוכרת",
-          "status": "unconfirmed"
-        }
-      ],
       "requiredInputs": [
         "bagrut_subject_record"
       ],
@@ -358,7 +426,7 @@
         "ruleVersion": "admissions-evaluator-v2:colman:needs_input",
         "ruleFingerprint": "sha256:ee72e3cbf979bdad26942de4d0a95d08a9015d38c99889842ff35d304fe3d034",
         "inputDigest": "sha256:276e864da4b5c6bab1d6026d4a1fc3db25daad168934615233760c2a805b734c",
-        "evaluationDigest": "sha256:0ee3cc4f930c606fa67ba4c413197c028fd11d42b65332581bd538d0ff3a8df3"
+        "evaluationDigest": "sha256:a56037eede47f657be2df0c74f568fb5c1ac5ec15b9b66dd00ad39974bfd5ea1"
       }
     },
     "noteVisible": false,
