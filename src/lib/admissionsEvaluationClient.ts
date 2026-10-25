@@ -1,3 +1,4 @@
+import { overallBagrutAverage } from './bagrutSubjectRecord';
 import type {
   AdmissionsEvaluationInput,
   AdmissionsBatchInput,
@@ -25,7 +26,7 @@ export async function fetchAdmissionsEvaluation(
       'Content-Type': 'application/json',
     },
     cache: 'no-store',
-    body: JSON.stringify(input),
+    body: JSON.stringify(withOverallAverage(input)),
   });
 
   const payload = (await response.json()) as {
@@ -50,7 +51,7 @@ export async function fetchAdmissionsBatch(
     method: 'POST',
     headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
     cache: 'no-store',
-    body: JSON.stringify(input),
+    body: JSON.stringify(withOverallAverage(input)),
   });
   const payload = (await response.json()) as {
     data?: AdmissionsBatchReport;
@@ -63,4 +64,12 @@ export async function fetchAdmissionsBatch(
     );
   }
   return payload.data;
+}
+
+function withOverallAverage<T extends Pick<AdmissionsEvaluationInput, 'bagrut' | 'extraInputs'>>(
+  input: T,
+) {
+  if (input.bagrut !== undefined) return input;
+  const bagrut = overallBagrutAverage(input.extraInputs?.bagrutSubjectRecord);
+  return bagrut === undefined ? input : { ...input, bagrut, bagrutAverageEstimated: true as const };
 }

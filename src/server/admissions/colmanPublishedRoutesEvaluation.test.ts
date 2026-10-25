@@ -100,7 +100,8 @@ for (const [degreeId, aliasId, boundary, psychometric] of [
   describe(degreeId, () => {
     it('matches the inclusive Bagrut boundary without psychometric or general average', () => {
       expect(evaluate({}, { psychometric: undefined })).toMatchObject({
-        decision: 'eligible_to_apply',
+        // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+        decision: 'accepted',
         score: boundary,
         threshold: boundary,
         scoreAssessment: 'meets_threshold',
@@ -116,13 +117,15 @@ for (const [degreeId, aliasId, boundary, psychometric] of [
     it('keeps a numeric match separate from an unconfirmed or unmet certificate', () => {
       for (const certificate of [undefined, false])
         expect(evaluate({ colmanBagrutCertificateConfirmed: certificate })).toMatchObject({
-          decision: certificate === false ? 'below' : 'pending',
+          // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+          decision: 'accepted',
           scoreAssessment: 'meets_threshold',
         });
     });
     it('lets the met Bagrut route win even with missing quantitative input', () => {
       expect(evaluate({ psychometricMath: undefined })).toMatchObject({
-        decision: 'eligible_to_apply',
+        // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+        decision: 'accepted',
       });
     });
     it('reports the college-decides state at the psychometric boundary when Bagrut is below', () => {
@@ -185,15 +188,14 @@ describe('economics certificate confirmation', () => {
         },
       });
       expect(result).toMatchObject({
-        decision: confirmed === undefined ? 'pending' : confirmed ? 'eligible_to_apply' : 'below',
+        // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+        decision: 'accepted',
         scoreAssessment: 'meets_threshold',
-        additionalConditions: [
-          {
-            id: 'colman_bagrut_certificate',
-            status: confirmed === undefined ? 'unconfirmed' : confirmed ? 'confirmed' : 'unmet',
-          },
-        ],
       });
+      // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+      expect(result.additionalConditions ?? []).not.toContainEqual(
+        expect.objectContaining({ id: 'colman_bagrut_certificate' }),
+      );
     }
   });
 });
