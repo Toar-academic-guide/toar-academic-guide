@@ -29,8 +29,9 @@ describe('Tel Hai CS', () => {
         threshold,
         scoreAssessment: 'meets_threshold',
       });
-      expect(result.additionalConditions).toContainEqual(
-        expect.objectContaining({ status: 'unconfirmed' }),
+      // Approved test update, Jorje 2026-10-25: bagrut_average condition removed (option A)
+      expect(result.additionalConditions).not.toContainEqual(
+        expect.objectContaining({ id: 'bagrut_average' }),
       );
       if (threshold < 610)
         expect(result.additionalConditions).toContainEqual(

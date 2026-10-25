@@ -110,14 +110,7 @@ export function evaluatePublishedNumericRoutes({
       threshold: match.threshold,
       scoreLabel: match.label,
       scoreAssessment: 'meets_threshold',
-      additionalConditions: [
-        {
-          id: 'bagrut_average',
-          label: 'זכאות לבגרות',
-          status: 'unconfirmed',
-        },
-        ...(match.conditions ?? []),
-      ],
+      additionalConditions: match.conditions ?? [],
       explanation: `הציונים שהוזנו עומדים בתנאי המסלול: ${match.requirements}. עמידה בסף אינה אישור קבלה.${caveat ? ` ${caveat}` : ''}`,
       nextAction: 'פנו לייעוץ והרשמה במוסד לאישור הנתונים והתנאים הנוספים.',
     };

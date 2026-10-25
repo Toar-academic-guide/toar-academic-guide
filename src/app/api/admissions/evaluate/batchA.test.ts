@@ -66,8 +66,11 @@ describe('Batch A API dispatch with the real evaluator', () => {
         expect(result.snapshot).toBeDefined();
         expect(result.requiredInputs).toBeUndefined();
         if (strong)
-          expect(result.additionalConditions).toContainEqual(
-            expect.objectContaining({ status: 'unconfirmed' }),
+          // Approved test update, Jorje 2026-10-25: bagrut_average condition removed (option A)
+          expect(result.additionalConditions).toEqual(
+            institutionId === 'reichman'
+              ? expect.arrayContaining([expect.objectContaining({ status: 'unconfirmed' })])
+              : expect.not.arrayContaining([expect.objectContaining({ id: 'bagrut_average' })]),
           );
       }
     },
