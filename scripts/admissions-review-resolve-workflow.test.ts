@@ -173,7 +173,72 @@ describe('admissions review resolution dispatch workflow', () => {
     expect(steps.some((entry) => entry.run === 'npm ci')).toBe(true);
   });
 
-  function validate(inputs: { ACTION?: string; IDS?: string; ACTOR?: string }) {
+  it('validates before Setup Node, npm ci and every database step', () => {
+    const steps = resolveJob().steps;
+    const validateIndex = steps.findIndex((entry) => entry.id === 'validate');
+    const runtimeSteps = steps.filter(
+      (entry) =>
+        entry.uses?.startsWith('actions/setup-node@') ||
+        entry.run?.includes('npm ci') ||
+        entry.env?.DATABASE_URL ||
+        entry.id === 'resolve',
+    );
+    expect(runtimeSteps).toHaveLength(3);
+    for (const entry of runtimeSteps) {
+      expect(validateIndex).toBeLessThan(steps.indexOf(entry));
+    }
+  });
+
+  it('passes the GitHub triggering actor through env only to validation and resolution', () => {
+    const job = resolveJob();
+    for (const name of ['validate', 'resolve']) {
+      expect({ ...job.env, ...step(name).env }).toHaveProperty(
+        'TRIGGERING_ACTOR',
+        '${{ github.triggering_actor }}',
+      );
+    }
+    for (const entry of job.steps) {
+      expect(entry.run ?? '').not.toContain('${{');
+    }
+  });
+
+  it.each(['approve', 'reject'])('passes the triggering actor to the %s CLI', (action) => {
+    const invocation = step('resolve')
+      .run!.split('\n')
+      .find((line) => line.includes(`npm run admissions:${action}-review`));
+    expect(invocation).toContain('--triggering-actor "$TRIGGERING_ACTOR"');
+  });
+
+  it.each(['mallory', 'Jorje', ' amit2', 'operator'])(
+    'rejects non-allowlisted actor %j during validation',
+    (actor) => {
+      const result = validate({ ACTOR: actor, TRIGGERING_ACTOR: 'github-operator' });
+      expect(result.status).toBe(1);
+      expect(result.stderr).toMatch(/Actor must be.*jorje.*amit/);
+    },
+  );
+
+  it.each(['jorje', 'amit', ' \tjorje\n ', ' amit '])(
+    'accepts allowlisted actor %j after trimming during validation',
+    (actor) => {
+      const result = validate({ ACTOR: actor, TRIGGERING_ACTOR: 'github-operator' });
+      expect(result.status).toBe(0);
+      expect(result.stderr).toBe('');
+    },
+  );
+
+  it('rejects an empty triggering actor during validation', () => {
+    const result = validate({ ACTOR: 'jorje', TRIGGERING_ACTOR: '' });
+    expect(result.status).toBe(1);
+    expect(result.stderr).toMatch(/Triggering actor must be non-empty/);
+  });
+
+  function validate(inputs: {
+    ACTION?: string;
+    IDS?: string;
+    ACTOR?: string;
+    TRIGGERING_ACTOR?: string;
+  }) {
     const script = step('validate').run!;
     const dir = mkdtempSync(path.join(tmpdir(), 'admissions-review-resolve-validation-'));
     try {
@@ -186,6 +251,7 @@ describe('admissions review resolution dispatch workflow', () => {
           ACTION: 'reject',
           IDS: id,
           ACTOR: 'operator',
+          TRIGGERING_ACTOR: 'github-operator',
           ...inputs,
         },
         encoding: 'utf8',
