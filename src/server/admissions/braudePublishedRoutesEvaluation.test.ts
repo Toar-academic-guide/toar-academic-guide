@@ -88,8 +88,8 @@ describe('Braude published department floors', () => {
     describe(id, () => {
       for (const [field, threshold] of [
         ['psychometric_overall', psych],
-        ['psychometric_math', quant],
-        ['psychometric_english', english],
+        ['psychometricMath', quant],
+        ['psychometricEnglish', english],
       ] as const) {
         if (threshold === undefined) continue;
         it.each([0, -1])(`${field} at threshold / one below (%i)`, (delta) => {
@@ -97,9 +97,8 @@ describe('Braude published department floors', () => {
           // Keep CS below the stronger-math switch, so this checks the 600 floor.
           subject(input, 'mathematics', 5, 70);
           if (field === 'psychometric_overall') input.psychometric = threshold + delta;
-          if (field === 'psychometric_math')
-            input.extraInputs!.psychometricMath = threshold + delta;
-          if (field === 'psychometric_english')
+          if (field === 'psychometricMath') input.extraInputs!.psychometricMath = threshold + delta;
+          if (field === 'psychometricEnglish')
             input.extraInputs!.psychometricEnglish = threshold + delta;
           expect(status(input, field)).toBe(delta ? 'unmet' : 'confirmed');
           expect(evaluate(input).officialUrls).toContain(source);
@@ -181,10 +180,10 @@ describe('Braude published department floors', () => {
       input.extraInputs!.psychometricMath = undefined;
       const result = evaluate(input);
       expect(result).toMatchObject({ kind: 'needs_input', decision: 'unknown' });
-      expect(result.requiredInputs).toContain('psychometric_math');
+      expect(result.requiredInputs).toEqual(['psychometricMath']);
       expect(result.additionalConditions).toContainEqual(
         expect.objectContaining({
-          id: 'psychometric_math',
+          id: 'psychometricMath',
           label: expect.stringContaining(String(threshold)),
           status: 'unconfirmed',
         }),
@@ -193,7 +192,7 @@ describe('Braude published department floors', () => {
         'bagrut_average',
         'psychometric_overall',
         'math_grade',
-        'psychometric_english',
+        'psychometricEnglish',
       ] as const) {
         expect(result.additionalConditions).toContainEqual(
           expect.objectContaining({ id: field, status: 'confirmed' }),
@@ -202,20 +201,20 @@ describe('Braude published department floors', () => {
       expect(result.scoreAssessment).not.toBe('meets_threshold');
     },
   );
-  it.each(['psychometricMath', 'psychometricEnglish'] as const)(
-    'no miss plus missing %s needs input',
-    (field) => {
-      const input = profile();
-      input.extraInputs![field] = undefined;
-      expect(evaluate(input)).toMatchObject({
-        kind: 'needs_input',
-        decision: 'unknown',
-        requiredInputs: [
-          field === 'psychometricMath' ? 'psychometric_math' : 'psychometric_english',
-        ],
-      });
-    },
-  );
+  it.each([
+    { field: 'psychometricMath', requiredInputs: ['psychometricMath'] },
+    { field: 'psychometricEnglish', requiredInputs: ['psychometricEnglish'] },
+  ] as const)('no miss plus missing $field needs input', ({ field, requiredInputs }) => {
+    const input = profile();
+    input.extraInputs![field] = undefined;
+    const result = evaluate(input);
+    expect(result).toMatchObject({
+      kind: 'needs_input',
+      decision: 'unknown',
+      requiredInputs,
+    });
+    expect(result.requiredInputs).toEqual(requiredInputs);
+  });
   it.each(['braude_civil_eng', 'braude_infosystems', 'braude_softwareeng'])(
     'precedence: %s composite remains needs_input when all other floors and section scores pass',
     (id) => {

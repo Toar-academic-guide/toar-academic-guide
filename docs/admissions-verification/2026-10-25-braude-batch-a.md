@@ -112,10 +112,16 @@ The evaluator now returns in explicit programme order: **below → needs_input �
 
 The four required precedence cases are explicitly named in `braudePublishedRoutesEvaluation.test.ts`:
 
-1. `precedence: %s missing quant section (%i) needs_input after bagrut and general psychometric pass` — electrical 110 and CS 115, with passing average/general/math/English checks and the quant score absent. Requires needs_input/unknown and `psychometric_math`, and excludes a green score assessment.
+1. `precedence: %s missing quant section (%i) needs_input after bagrut and general psychometric pass` — electrical 110 and CS 115, with passing average/general/math/English checks and the quant score absent. Requires needs_input/unknown and exactly `requiredInputs: ['psychometricMath']`, and excludes a green score assessment.
 2. `precedence: %s composite remains needs_input when all other floors and section scores pass` — software, information systems and civil. Requires needs_input/unknown and the unchecked quantitative-composite condition; never requests an institutional composite.
 3. `precedence: a checkable floor miss plus a missing section gives below, naming the floor and source` — CS English 84 against 85 with quant missing; requires below and the source URL.
 4. `precedence: all floors present and passing gives green without a full-bagrut confirmation gate` — complete passing CS profile; requires accepted/meets_threshold and every returned condition confirmed.
+
+## Corrective round 2: Braude section input keys
+
+Per Oded's confirmed client contract, Braude emits exactly `requiredInputs: ['psychometricMath']` for a missing quant-section score and `requiredInputs: ['psychometricEnglish']` for a missing English-section score when the other required inputs pass. Its section floor/condition ids use the same camelCase keys. The EE 110 / CS 115 precedence tests require the exact quant array, and the two missing-section cases require literal exact arrays for both fields; their other verdict and condition expectations remain in place.
+
+`AdmissionsRequiredInput` gains exactly the two additive members `psychometricMath` and `psychometricEnglish`. Its snake_case members are retained. This deliberately differs from Afeka and other existing producers, which continue using `psychometric_math` / `psychometric_english`. No other producer, `admissionsInputValue.ts`, exhaustive map or shared evaluator was changed; typecheck required no consumer edits. `missingData` is untouched. Oded owns the subsequent client wiring; this PR still leaves the dispatcher unwired and changes no input field or API request contract.
 
 ## SQL packet — NOT APPLIED
 
@@ -131,7 +137,7 @@ Tests were written and executed before the new rule/alias modules existed; both 
 
 - `npm run lint` — passed.
 - `npm run typecheck` — passed.
-- Focused Vitest: Braude rule, institution aliases, content repair, Monday evidence, catalogue serializers/queries and Batch C tests — **397 passed / 10 files** (the original seven files plus public catalogue pages, institution directory and public links).
+- Corrective round 2 focused Vitest: `npx vitest run src/server/admissions/braudePublishedRoutesEvaluation.test.ts src/app/api/admissions/evaluate/afeka.test.ts src/server/admissions/bagrutPolicies.test.ts` — **373 passed / 3 files**, covering the new Braude keys and unchanged snake_case producers. Corrective round 1's catalogue/alias verification passed **397 tests / 10 files**; those tests also remain in the full suite.
 - `npm test` — **3,721 passed, 86 skipped / 241 passed files, 13 skipped**; no failed checks to reproduce on origin/main.
 - `npm run guard:pre-pr` — passed; **2,624 tests / 106 files**. It ran migration consistency, read-grant checks, catalogue seed **dry-run** and Monday evidence verification; no database write/seed was performed. Existing migration-journal timestamp warning and absent local raw Monday export were reported by the guard; evidence verification passed.
 - `ce-simplify-code` applied within the diff, preserving proof tests: shared numeric gates retained; repeated missed-floor explanation reduced to one calculation; redundant comments removed. No agent review pipeline ran.
