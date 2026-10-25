@@ -39,6 +39,27 @@ The literal composite-ID search has no matches. The broader search and generic q
 
 Therefore both legacy rows are included in the canonical release.
 
+## NEW-1 addendum: programme-page data versus visible requirements
+
+Jorje's walkthrough evidence at `/workspace/qa-evidence/ux-walkthrough-2026-10-25-pr281/codex-findings.md` reports that EE displays only spring 94 and ME displays no winter 87. Tracing the renderer confirms that updating the threshold rows alone cannot fix the visible omission.
+
+The exact production read path is `ProgramPage` → `getPublicProgramPageData` → `loadPublicCatalogue` → `listCataloguePrograms` → `loadDatabaseCatalogueSnapshot` → `serializeProgramRow`. Database mode does not substitute the code verification registry for persisted thresholds. Each own programme page selects its own `programs.id`, not the general `ee`/`me` row. The related `program_institutions` rows select the Technion institution.
+
+| Page | Numeric DB row | Page-data field after canonical publication |
+| --- | --- | --- |
+| `/programs/technion_ee` | `admission_thresholds.id = technion_ee:technion:technion:sekhem` | `program.thresholds.technion = 91.5` |
+| `/programs/technion_me` | `admission_thresholds.id = technion_me:technion:technion:sekhem` | `program.thresholds.technion = 87` |
+
+The threshold rows have `program_id` as above, `institution_id = technion`, `university_id = technion`, and `threshold_kind = sekhem`. `admission_thresholds` has no cycle/intake column: `2027` belongs to the release target and ledger. The manifest's verified winter source supplies the meaning of the published numeric value. A page does not independently select a winter cycle. The process-local DB snapshot may retain the old value for up to its 60-second TTL.
+
+Visible requirement text follows a different branch: `getPublicProgramRequirementSources` → `catalogueAdmissionRequirements` chooses `admission_requirements.specific_admission_notes` from the own programme/Technion row (`<programme ID>:technion`), falling back to `admission_requirements.admission_requirements`. `serializeProgramRow` does not turn `admission_thresholds.threshold_value` into either text array. For the captured EE/ME rows those notes are the existing mathematics/physics requirements. `RequirementTiles` has no approved numeric summary for either pair, so it renders `AdmissionRequirements` with those notes and `TechnionThresholdNotice`. The spring 94 is the code constant `TECHNION_EE_SPRING_NOTE` in `src/data/admissions/technionThresholds.ts`, not a legacy threshold row or DB requirement.
+
+The new tests in `src/server/catalogue/queries.test.ts` run the actual database-mode query, serializer and public page-data/source resolvers against an in-memory DB adapter. They verify both before-values and the cycle-2027 manifest's published after-values (91.5/87), deliberately leaving legacy alias rows stale. They also prove that the rendered requirement-source text remains the captured subject notes and that no numeric tile model is selected. The database client alone is mocked; no production query or write is performed.
+
+**After publish:** numeric page data resolves to EE 91.5 and ME 87, but the existing visible requirements still omit both winter cutoffs. EE still shows the spring 94 note and ME still shows only the subject notes/date/source. Publication does not rewrite the requirement notes or the spring constant. No additional data-only defect was found in this path, so this addendum changes tests/documentation only.
+
+**visual change, needs Amit:** render the published cutoff with a `סכם` label and winter intake context; clarify EE's separately shown spring 94. This requires changing student-facing copy/presentation, or inserting new visible requirement text, and was not implemented. NEW-1 remains open for that approval; this PR must not be described as fixing the visible programme-page omission.
+
 ## Production schema contract
 
 The deployment record `/workspace/pm-research/db_changes.md` states that 0037–0040 are live but have no Supabase migration-history entries; the recorded history ends at 0036 (`assessment_progress`). `GUARDED_PRODUCTION_MIGRATIONS` now documents them separately from the journal and never puts them in the pending migration list.
