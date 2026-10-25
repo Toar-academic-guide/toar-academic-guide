@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import {
+  TAU_PROGRAM_VERIFICATION_METADATA,
   TAU_BIOLOGY_CONTRACT,
   TAU_LEGACY_BIOLOGY_CONTRACT,
   TAU_ECONOMICS_CONTRACT,
@@ -40,6 +41,58 @@ import {
 import { TAU_NURSING_POLICY } from '@/server/admissions/tauNursingPolicy';
 import { TAU_PSYCHOLOGY_POLICY } from '@/server/admissions/tauPsychologyPolicy';
 import { runTauAdmissionsProof } from '@/server/ingestion/adapters/tauAdmissions';
+
+describe('TAU programme requirements URLs', () => {
+  it('uses the canonical node-redirect URLs for all 12 affected contracts', () => {
+    const expectedUrls = {
+      [TAU_BIOLOGY_CONTRACT.pairId]: 'https://go.tau.ac.il/he/life/ba/bio?v=admission-requirements',
+      [TAU_LEGACY_BIOLOGY_CONTRACT.pairId]:
+        'https://go.tau.ac.il/he/life/ba/bio?v=admission-requirements',
+      [TAU_COMMUNICATION_CONTRACT.pairId]:
+        'https://go.tau.ac.il/he/social-sciences/ba/communications?v=admission-requirements',
+      [TAU_EDUCATION_CONTRACT.pairId]:
+        'https://go.tau.ac.il/he/education/ba?v=admission-requirements',
+      [TAU_ECONOMICS_CONTRACT.pairId]:
+        'https://go.tau.ac.il/he/social-sciences/ba/economics?v=admission-requirements',
+      [TAU_LEGACY_ECONOMICS_CONTRACT.pairId]:
+        'https://go.tau.ac.il/he/social-sciences/ba/economics?v=admission-requirements',
+      [TAU_EE_CONTRACT.pairId]:
+        'https://go.tau.ac.il/he/engineering/ba/electrical?v=admission-requirements',
+      [TAU_LEGACY_EE_CONTRACT.pairId]:
+        'https://go.tau.ac.il/he/engineering/ba/electrical?v=admission-requirements',
+      [TAU_ME_CONTRACT.pairId]:
+        'https://go.tau.ac.il/he/engineering/ba/mechanical?v=admission-requirements',
+      [TAU_LEGACY_ME_CONTRACT.pairId]:
+        'https://go.tau.ac.il/he/engineering/ba/mechanical?v=admission-requirements',
+      [TAU_OCCUPATIONAL_CONTRACT.pairId]:
+        'https://go.tau.ac.il/he/med/ba/occu?v=admission-requirements',
+      [TAU_LEGACY_OCCUPATIONAL_CONTRACT.pairId]:
+        'https://go.tau.ac.il/he/med/ba/occu?v=admission-requirements',
+    };
+    const oldUrls = [
+      'https://go.tau.ac.il/he/life-sciences/ba/biology?v=admission-requirements',
+      'https://go.tau.ac.il/he/social-sciences/ba/communication?v=admission-requirements',
+      'https://go.tau.ac.il/he/social-sciences/ba/education?v=admission-requirements',
+      'https://go.tau.ac.il/he/management/ba/economics?v=admission-requirements',
+      'https://go.tau.ac.il/he/engineering/ba/electrical-engineering?v=admission-requirements',
+      'https://go.tau.ac.il/he/engineering/ba/mechanical-engineering?v=admission-requirements',
+      'https://go.tau.ac.il/he/med/ba/occupational-therapy?v=admission-requirements',
+    ];
+    const actualUrls = Object.fromEntries(
+      Object.keys(expectedUrls).map((pairId) => [
+        pairId,
+        TAU_PROGRAM_VERIFICATION_METADATA[pairId].requirementsUrl,
+      ]),
+    );
+
+    expect(actualUrls).toEqual(expectedUrls);
+    for (const url of Object.values(actualUrls)) {
+      for (const oldUrl of oldUrls) {
+        expect(url).not.toContain(oldUrl);
+      }
+    }
+  });
+});
 
 describe('TAU Digital Sciences verification artifact', () => {
   it('passes the composed pair-verification gate', () => {

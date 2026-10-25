@@ -1888,7 +1888,7 @@ export const TAU_PROGRAM_VERIFICATION_METADATA: Record<string, TauProgramVerific
   [TAU_BIOLOGY_CONTRACT.pairId]: {
     contract: TAU_BIOLOGY_CONTRACT,
     fixtures: TAU_BIOLOGY_FIXTURES,
-    requirementsUrl: 'https://go.tau.ac.il/he/life-sciences/ba/biology?v=admission-requirements',
+    requirementsUrl: 'https://go.tau.ac.il/he/life/ba/bio?v=admission-requirements',
     ledgerReason:
       'Verified against the current TAU Biology programme node, score route, English and science gates, accepted/below fixtures, and live score-and-verdict replay.',
   },
@@ -1896,7 +1896,7 @@ export const TAU_PROGRAM_VERIFICATION_METADATA: Record<string, TauProgramVerific
     contract: TAU_COMMUNICATION_CONTRACT,
     fixtures: TAU_COMMUNICATION_FIXTURES,
     requirementsUrl:
-      'https://go.tau.ac.il/he/social-sciences/ba/communication?v=admission-requirements',
+      'https://go.tau.ac.il/he/social-sciences/ba/communications?v=admission-requirements',
     ledgerReason:
       'Verified against the current TAU Communication programme node, score route, English gate, accepted/below fixtures, and live score-and-verdict replay.',
   },
@@ -1911,22 +1911,23 @@ export const TAU_PROGRAM_VERIFICATION_METADATA: Record<string, TauProgramVerific
   [TAU_EDUCATION_CONTRACT.pairId]: {
     contract: TAU_EDUCATION_CONTRACT,
     fixtures: TAU_EDUCATION_FIXTURES,
-    requirementsUrl:
-      'https://go.tau.ac.il/he/social-sciences/ba/education?v=admission-requirements',
+    requirementsUrl: 'https://go.tau.ac.il/he/education/ba?v=admission-requirements',
     ledgerReason:
       'Verified against the current TAU Education programme node, score route, English gate, accepted/below fixtures, and live score-and-verdict replay.',
   },
   [TAU_ECONOMICS_CONTRACT.pairId]: {
     contract: TAU_ECONOMICS_CONTRACT,
     fixtures: TAU_ECONOMICS_FIXTURES,
-    requirementsUrl: 'https://go.tau.ac.il/he/management/ba/economics?v=admission-requirements',
+    requirementsUrl:
+      'https://go.tau.ac.il/he/social-sciences/ba/economics?v=admission-requirements',
     ledgerReason:
       'Verified against the current TAU Economics programme node, score route, English/quantitative gates, accepted/below fixtures, and live score-and-verdict replay.',
   },
   [TAU_LEGACY_ECONOMICS_CONTRACT.pairId]: {
     contract: TAU_LEGACY_ECONOMICS_CONTRACT,
     fixtures: TAU_LEGACY_ECONOMICS_FIXTURES,
-    requirementsUrl: 'https://go.tau.ac.il/he/management/ba/economics?v=admission-requirements',
+    requirementsUrl:
+      'https://go.tau.ac.il/he/social-sciences/ba/economics?v=admission-requirements',
     ledgerReason:
       'Verified the legacy TAU Economics catalogue alias against the same current programme node, score route, fixtures, and live replay.',
   },
@@ -1947,46 +1948,42 @@ export const TAU_PROGRAM_VERIFICATION_METADATA: Record<string, TauProgramVerific
   [TAU_EE_CONTRACT.pairId]: {
     contract: TAU_EE_CONTRACT,
     fixtures: TAU_EE_FIXTURES,
-    requirementsUrl:
-      'https://go.tau.ac.il/he/engineering/ba/electrical-engineering?v=admission-requirements',
+    requirementsUrl: 'https://go.tau.ac.il/he/engineering/ba/electrical?v=admission-requirements',
     ledgerReason:
       'Verified against the current TAU Electrical Engineering programme node, score field, math/physics subject gates, accepted/below fixtures, and live score-and-verdict replay.',
   },
   [TAU_LEGACY_EE_CONTRACT.pairId]: {
     contract: TAU_LEGACY_EE_CONTRACT,
     fixtures: TAU_LEGACY_EE_FIXTURES,
-    requirementsUrl:
-      'https://go.tau.ac.il/he/engineering/ba/electrical-engineering?v=admission-requirements',
+    requirementsUrl: 'https://go.tau.ac.il/he/engineering/ba/electrical?v=admission-requirements',
     ledgerReason:
       'Verified the legacy TAU Electrical Engineering alias against the same current node, score field, subject gates, fixtures, and live replay.',
   },
   [TAU_ME_CONTRACT.pairId]: {
     contract: TAU_ME_CONTRACT,
     fixtures: TAU_ME_FIXTURES,
-    requirementsUrl:
-      'https://go.tau.ac.il/he/engineering/ba/mechanical-engineering?v=admission-requirements',
+    requirementsUrl: 'https://go.tau.ac.il/he/engineering/ba/mechanical?v=admission-requirements',
     ledgerReason:
       'Verified against the current TAU Mechanical Engineering programme node, score field, math/physics gates, accepted/below fixtures, and live score-and-verdict replay.',
   },
   [TAU_LEGACY_ME_CONTRACT.pairId]: {
     contract: TAU_LEGACY_ME_CONTRACT,
     fixtures: TAU_LEGACY_ME_FIXTURES,
-    requirementsUrl:
-      'https://go.tau.ac.il/he/engineering/ba/mechanical-engineering?v=admission-requirements',
+    requirementsUrl: 'https://go.tau.ac.il/he/engineering/ba/mechanical?v=admission-requirements',
     ledgerReason:
       'Verified the legacy TAU Mechanical Engineering alias against the same current node, score field, subject gates, fixtures, and live replay.',
   },
   [TAU_OCCUPATIONAL_CONTRACT.pairId]: {
     contract: TAU_OCCUPATIONAL_CONTRACT,
     fixtures: TAU_OCCUPATIONAL_FIXTURES,
-    requirementsUrl: 'https://go.tau.ac.il/he/med/ba/occupational-therapy?v=admission-requirements',
+    requirementsUrl: 'https://go.tau.ac.il/he/med/ba/occu?v=admission-requirements',
     ledgerReason:
       'Verified against the current TAU Occupational Therapy programme node, score route, English/health-science gates, accepted/below fixtures, and live score-and-verdict replay.',
   },
   [TAU_LEGACY_OCCUPATIONAL_CONTRACT.pairId]: {
     contract: TAU_LEGACY_OCCUPATIONAL_CONTRACT,
     fixtures: TAU_LEGACY_OCCUPATIONAL_FIXTURES,
-    requirementsUrl: 'https://go.tau.ac.il/he/med/ba/occupational-therapy?v=admission-requirements',
+    requirementsUrl: 'https://go.tau.ac.il/he/med/ba/occu?v=admission-requirements',
     ledgerReason:
       'Verified the legacy TAU Occupational Therapy alias against the same current node, score route, gates, fixtures, and live replay.',
   },
@@ -2001,7 +1998,7 @@ export const TAU_PROGRAM_VERIFICATION_METADATA: Record<string, TauProgramVerific
   [TAU_LEGACY_BIOLOGY_CONTRACT.pairId]: {
     contract: TAU_LEGACY_BIOLOGY_CONTRACT,
     fixtures: TAU_LEGACY_BIOLOGY_FIXTURES,
-    requirementsUrl: 'https://go.tau.ac.il/he/life-sciences/ba/biology?v=admission-requirements',
+    requirementsUrl: 'https://go.tau.ac.il/he/life/ba/bio?v=admission-requirements',
     ledgerReason:
       'Verified the legacy TAU Biology catalogue alias against the same current node, score route, gates, fixtures, and live replay.',
   },
