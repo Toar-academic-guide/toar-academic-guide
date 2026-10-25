@@ -1177,20 +1177,15 @@ describe('evaluateAdmissionsForProgram', () => {
       institutions,
     });
 
+    // Ruling: /workspace/codex-tasks/r1-pr278-rulings-2026-10-25.md row 1. Official source: none named in rulings; see PR #278 table. Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
     expect(report.results).toContainEqual(
       expect.objectContaining({
         linkedInstitutionId: 'haifa',
         kind: 'needs_input',
         capability: 'needs_input',
         decision: 'unknown',
-        requiredInputs: [
-          'psychometric_math',
-          'psychometric_verbal',
-          'psychometric_english',
-          'haifa_bagrut_average',
-          'haifa_bagrut_year',
-          'haifa_psychometric_year',
-        ],
+        estimated: true,
+        requiredInputs: ['psychometric_math', 'psychometric_verbal', 'psychometric_english'],
       }),
     );
   });
@@ -1262,9 +1257,16 @@ describe('evaluateAdmissionsForProgram', () => {
       fetcher,
     });
     expect(fetcher).not.toHaveBeenCalled();
+    // Ruling: /workspace/codex-tasks/r1-pr278-rulings-2026-10-25.md row 2. Official source: none named in rulings; see PR #278 table. Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
     expect(report.results[0]).toMatchObject({
       kind: 'needs_input',
-      requiredInputs: ['haifa_bagrut_year', 'haifa_psychometric_year'],
+      estimated: true,
+      requiredInputs: [
+        'haifa_admission_qualification',
+        'math_units',
+        'math_grade',
+        'haifa_hebrew_qualification',
+      ],
     });
   });
 
@@ -1609,12 +1611,19 @@ describe('evaluateAdmissionsForProgram', () => {
       fetcher: bguMockFetcher(585, 875),
     });
 
+    // Ruling: /workspace/codex-tasks/r1-pr278-rulings-2026-10-25.md row 3. Official source: none named in rulings; see PR #278 table. Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
     expect(report.results).toContainEqual(
       expect.objectContaining({
         linkedInstitutionId: 'bgu',
         capability: 'needs_input',
         decision: 'unknown',
-        requiredInputs: expect.arrayContaining(['bgu_bagrut_average', 'psychometric_math']),
+        estimated: true,
+        requiredInputs: [
+          'psychometric_math',
+          'bagrut_subject_record',
+          'psychometric_verbal',
+          'psychometric_english',
+        ],
       }),
     );
   });
@@ -3159,9 +3168,12 @@ it('shows Social Work scores while retaining the outstanding academic committee 
 });
 
 it.each([
-  [undefined, undefined, 'pending', 'unconfirmed', 'unconfirmed'],
-  [true, undefined, 'pending', 'confirmed', 'unconfirmed'],
-  [true, true, 'eligible_to_apply', 'confirmed', 'confirmed'],
+  // Ruling: /workspace/codex-tasks/r1-pr278-rulings-2026-10-25.md row 8. Official source: https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=101&p_pat1=2&p_degree_level=1. Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+  [undefined, undefined, 'accepted', 'unconfirmed', 'unconfirmed'],
+  // Ruling: /workspace/codex-tasks/r1-pr278-rulings-2026-10-25.md row 9. Official source: https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=101&p_pat1=2&p_degree_level=1. Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+  [true, undefined, 'accepted', 'confirmed', 'unconfirmed'],
+  // Ruling: /workspace/codex-tasks/r1-pr278-rulings-2026-10-25.md row 10. Official source: https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=101&p_pat1=2&p_degree_level=1. Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+  [true, true, 'accepted', 'confirmed', 'confirmed'],
   [false, true, 'below', 'unmet', 'confirmed'],
 ] as const)(
   'assesses saved Psychology scores separately from confirmations %s/%s',
@@ -3170,7 +3182,13 @@ it.each([
     const fetcher = vi
       .fn<typeof fetch>()
       .mockResolvedValue(
-        new Response(JSON.stringify({ items: [psychologyOfficial.officialRule] })),
+        new Response(
+          JSON.stringify(
+            language === false
+              ? { items: [psychologyOfficial.officialRule] }
+              : psychologyWalkthroughOfficial.rulePayload,
+          ),
+        ),
       );
     const report = await evaluateAdmissionsForProgram({
       program,
@@ -3198,6 +3216,12 @@ it.each([
       ],
     });
     expect(report.results[0].requiredInputs).toBeUndefined();
+    if (language !== false) {
+      expect(report.results[0].nextAction).toContain('סגורה');
+      expect(report.results[0].nextAction).toContain('תנאי השפה');
+      expect(report.results[0].nextAction).toContain('החוג הנוסף');
+      expect(report.results[0].estimated).not.toBe(true);
+    }
     expect(fetcher).toHaveBeenCalledTimes(1);
   },
 );
@@ -3257,7 +3281,7 @@ it('keeps a below-threshold score separate from unanswered Psychology conditions
   ).toBe(true);
 });
 
-it('still requires actual numeric inputs and never substitutes generic Bagrut for the BGU average', async () => {
+it('returns degraded/unknown when the official BGU response is empty', async () => {
   const program = { ...bguCs, id: 'bgu_psychology' };
   const fetcher = vi.fn<typeof fetch>();
   const report = await evaluateAdmissionsForProgram({
@@ -3266,13 +3290,40 @@ it('still requires actual numeric inputs and never substitutes generic Bagrut fo
     input: { degreeId: program.id, psychometric: 650, bagrut: 110 },
     fetcher,
   });
+  // Ruling: /workspace/codex-tasks/r1-pr278-rulings-2026-10-25.md row 4. Official source: https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=101&p_pat1=2&p_degree_level=1. Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
   expect(report.results[0]).toMatchObject({
-    kind: 'needs_input',
+    kind: 'degraded',
     decision: 'unknown',
-    requiredInputs: ['bgu_bagrut_average'],
+    estimated: true,
   });
   expect(report.results[0].scoreAssessment).toBeUndefined();
-  expect(fetcher).not.toHaveBeenCalled();
+  expect(report.results[0].score).toBeUndefined();
+  expect(report.results[0].explanation).toContain('החישוב הרשמי לא הושלם');
+  expect(report.results[0].nextAction).toContain('מקצועות הבגרות');
+  expect(fetcher).toHaveBeenCalledTimes(1);
+});
+
+it('returns an estimated Psychology proxy score from a valid official response', async () => {
+  const program = { ...bguCs, id: 'bgu_psychology' };
+  const report = await evaluateAdmissionsForProgram({
+    program,
+    institutions,
+    input: { degreeId: program.id, psychometric: 650, bagrut: 110 },
+    fetcher: async (url) =>
+      new Response(
+        String(url).includes('GetRdpData')
+          ? JSON.stringify(psychologyWalkthroughOfficial.rulePayload)
+          : psychologyWalkthroughOfficial.scoreResponseHtml,
+      ),
+  });
+  expect(report.results[0]).toMatchObject({
+    kind: 'exact',
+    decision: 'pending',
+    score: 734,
+    estimated: true,
+  });
+  expect(report.results[0].estimationReason).toContain('110');
+  expect(report.results[0].nextAction).toContain('סגורה');
 });
 
 it('withholds the score assessment when official Psychology rules change', async () => {
@@ -4188,4 +4239,163 @@ it('keeps an actual Psychology score-service outage distinct when an explicit in
   });
   expect(report.results[0]).toMatchObject({ kind: 'degraded', decision: 'unknown' });
   expect(report.results[0].requiredInputs).toBeUndefined();
+});
+
+describe('R1 ruling safeguards G1–G3', () => {
+  async function psychology(score: number, extraInputs: AdmissionsExtraInputs = {}, bagrut = 110) {
+    const program = { ...bguCs, id: 'bgu_psychology' };
+    const report = await evaluateAdmissionsForProgram({
+      program,
+      institutions,
+      input: { degreeId: program.id, bagrut, psychometric: 650, extraInputs },
+      fetcher: async (url) =>
+        new Response(
+          String(url).includes('GetRdpData')
+            ? JSON.stringify(psychologyWalkthroughOfficial.rulePayload)
+            : `parent.main.document.mainForm.on_final_sekem.value = ${score};`,
+        ),
+    });
+    return report.results[0];
+  }
+
+  async function colman(
+    bagrut: number,
+    psychometric?: number,
+    extraInputs: AdmissionsExtraInputs = {},
+  ) {
+    const program = getStaticCataloguePrograms().find((row) => row.id === 'colmgmt_economics')!;
+    const report = await evaluateAdmissionsForProgram({
+      program,
+      institutions: getStaticCatalogueInstitutions(),
+      input: { degreeId: program.id, bagrut, psychometric, extraInputs },
+    });
+    return report.results.find((row) => row.linkedInstitutionId === 'colman')!;
+  }
+
+  it.each([0.98, 1.02, 0.979, 1.021])('G2 Colman proxy at floor × %s', async (ratio) => {
+    const result = await colman(85 * ratio, 420, { colmanBagrutCertificateConfirmed: true });
+    expect(result.estimated).toBe(true);
+    if (ratio === 0.98 || ratio === 1.02) {
+      expect(result).toMatchObject({
+        kind: 'needs_input',
+        decision: 'unknown',
+        requiredInputs: ['bagrut_subject_record'],
+      });
+      expect(result.scoreAssessment).toBeUndefined();
+    } else {
+      expect(result).toMatchObject({
+        kind: 'manual_gate',
+        decision: ratio < 1 ? 'below' : 'eligible_to_apply',
+      });
+    }
+  });
+
+  it.each([0.98, 1.02, 0.979, 1.021])('G2 BGU proxy-derived score at floor × %s', async (ratio) => {
+    const result = await psychology(650 * ratio, {
+      bguPreparatoryTrack: 'natural_life_sciences',
+      bguPreparatoryCompleted: true,
+      bguPreparatoryAverage: 80,
+    });
+    expect(result.estimated).toBe(true);
+    if (ratio === 0.98 || ratio === 1.02) {
+      expect(result).toMatchObject({
+        kind: 'needs_input',
+        decision: 'unknown',
+        requiredInputs: ['bagrut_subject_record'],
+      });
+      expect(result.scoreAssessment).toBeUndefined();
+    } else {
+      expect(result).toMatchObject({ kind: 'exact', decision: ratio < 1 ? 'below' : 'pending' });
+    }
+  });
+
+  it.each([
+    ['passing', 600, 130],
+    ['undecidable', undefined, undefined],
+    ['failing', 420, undefined],
+  ] as const)(
+    'G3 Colman proxy-below with %s alternative',
+    async (state, psychometric, quantitative) => {
+      const result = await colman(70, psychometric, {
+        psychometricMath: quantitative,
+        colmanBagrutCertificateConfirmed: true,
+      });
+      expect(result.estimated).toBe(true);
+      if (state === 'failing')
+        expect(result).toMatchObject({ kind: 'manual_gate', decision: 'below' });
+      else
+        expect(result).toMatchObject({
+          kind: 'needs_input',
+          decision: 'unknown',
+          requiredInputs: ['bagrut_subject_record'],
+        });
+    },
+  );
+
+  it('G3 BGU proxy-below with an undecidable preparatory channel has no verdict', async () => {
+    expect(await psychology(600)).toMatchObject({
+      kind: 'needs_input',
+      decision: 'unknown',
+      estimated: true,
+      requiredInputs: ['bagrut_subject_record'],
+    });
+  });
+
+  it('G3 BGU proxy-below with a passing preparatory channel has no below verdict', async () => {
+    const result = await psychology(600, {
+      bguPsychologyRoute: 'score',
+      bguPreparatoryTrack: 'natural_life_sciences',
+      bguPreparatoryCompleted: true,
+      bguPreparatoryAverage: 95,
+    });
+    expect(result).toMatchObject({
+      kind: 'needs_input',
+      decision: 'unknown',
+      estimated: true,
+      requiredInputs: ['bagrut_subject_record'],
+    });
+  });
+
+  it('G1 real BGU average is unflagged and exempt from G2', async () => {
+    const result = await psychology(650, { bguBagrutAverage: 110 });
+    expect(result).toMatchObject({ kind: 'exact', decision: 'pending', score: 650 });
+    expect(result.estimated).not.toBe(true);
+  });
+
+  it('G1 real Colman average is unflagged and exempt from G2', async () => {
+    const result = await colman(85, 420, {
+      colmanBagrutAverage: 85,
+      colmanBagrutCertificateConfirmed: true,
+    });
+    expect(result).toMatchObject({ kind: 'manual_gate', decision: 'eligible_to_apply', score: 85 });
+    expect(result.estimated).not.toBe(true);
+  });
+
+  it.each([true, false])(
+    'G1 Haifa estimated years only when defaulted: %s',
+    async (defaultYears) => {
+      const report = await evaluateAdmissionsForProgram({
+        program: haifaCs,
+        institutions,
+        input: {
+          degreeId: 'haifa_cs',
+          bagrut: 105,
+          psychometric: 680,
+          extraInputs: {
+            haifaBagrutAverage: 102,
+            ...(defaultYears ? {} : { haifaBagrutYear: 2020, haifaPsychometricYear: 2025 }),
+          },
+        },
+      });
+      expect(report.results[0].estimated === true).toBe(defaultYears);
+      if (defaultYears) expect(report.results[0].estimationReason).toContain('2026');
+    },
+  );
+
+  it('G1 a BGU average proxy is labelled as estimated, never official', async () => {
+    const result = await psychology(700, {}, 116);
+    expect(result).toMatchObject({ estimated: true, score: 116 });
+    expect(result.scoreLabel).not.toContain('רשמי');
+    expect(result.explanation).not.toContain('רשמי');
+  });
 });

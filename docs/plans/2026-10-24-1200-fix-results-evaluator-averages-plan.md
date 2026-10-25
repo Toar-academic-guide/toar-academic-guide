@@ -4,6 +4,7 @@ product_contract_source: legacy-requirements
 execution: code
 date: 2026-10-24
 ---
+
 # Results evaluator averages
 
 ## Goal Capsule
@@ -50,8 +51,21 @@ Add a reproducible matrix harness using the diagnosis catalogue and subject fixt
 
 ## Verification Contract
 
-Run new tests before implementation to establish failures where practical. Preserve existing expected values. Run focused tests, full unit suite, lint, typecheck, and `npm run guard:pre-pr`. Run the matrix through the actual evaluator using read-only official endpoints and catalogue snapshots; distinguish recorded source fixtures from live HTTP results. No DB writes, seeds, freshness workflow, GitHub comments, or deployment commands. Code-review pipelines are explicitly skipped by task instruction.
+Run new tests before implementation to establish failures where practical. Only the ten Jorje-adjudicated expectations may change, with row-specific source comments. All other existing expectations and numeric examples stay unchanged. Run focused tests, full unit suite, lint, typecheck, and `npm run guard:pre-pr`. Run the matrix through the actual evaluator using read-only official endpoints and catalogue snapshots; distinguish recorded source fixtures from live HTTP results. No DB writes, seeds, freshness workflow, GitHub comments, or deployment commands. Code-review pipelines are explicitly skipped by task instruction.
 
 ## Definition of Done
 
-All six requested behaviors have unit coverage; existing test expectations remain unchanged. The user’s Oct 25 instruction explicitly requires publishing the draft with the ten retained failing expectations for Jorje adjudication. Run and report the guard before the documented feature-branch publication exception; do not change or skip assertions. PR includes exact before/after matrix, estimate limitations, required skip text, and “No visual change.” Jorje retains admissions/source verification before a merge decision.
+All six original behaviors and G1–G3 have unit coverage. The Oct 25 rulings supersede the earlier retained-failure publication exception: the full suite and pre-PR guard must pass without a bypass. Keep the PR draft for coordinator verification, and preserve the existing evidence table.
+
+## Oct 25 rulings implementation
+
+Authority: the supplied R1 PR #278 rulings dated 2026-10-25 and this run's explicit row-by-row instructions.
+
+1. Merge current main (including e0a90d0) without rebasing; preserve Technion source handling and shared API schema extraction.
+2. Add failing integration tests through the real evaluator/API for G1 estimate provenance, G2 inclusive 2% threshold bands for Colman and BGU, and G3 alternative-channel evidence. Use existing official response fixtures; no new formulas or numeric thresholds.
+3. Apply safeguards only to institution-average proxies. Direct psychometric scores and supplied institution averages keep existing verdicts. Defaulted exam years add estimate provenance but do not make a directly supplied score proxy-derived.
+4. Preserve estimate reasons and distinguish score lineage from other estimated inputs. Borderline proxy scores request subject grades and return unknown; proxy-below requires independently established failure of every other channel. Otherwise request subject grades without a verdict.
+5. Update only the ten authorized old expectations, with ruling/source comments. Rename the empty-response Psychology fixture, retain degraded/unknown with an honest next action, and add a valid-response estimated-score sibling. Psych-only accepted cases retain closed-registration and additional-condition information.
+6. Simplify the focused implementation without changing proof tests, then run lint, typecheck, format, the full unit suite and the real guard. Normal push only when all pass; update PR #278 body and inspect head CI. Do not edit workflows, guard, coverage requirements, UI components or copy rendering.
+
+Known student-visible behavior: G2/G3 replace uncertain proxy verdicts with requests for subject grades; result statuses/next actions can change through the existing rendering. No layout or rendering change is intended. Jorje retains product/source verification and coordinator readiness authority.

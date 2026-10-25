@@ -231,3 +231,18 @@ function evaluateColmanAdditionalRoutes({
       'ממוצע הבגרות כפוף לחישוב המכללה. מסלולים נוספים המשלבים פסיכומטרי דורשים בדיקה מול הרישום.',
   });
 }
+
+/** Assess alternate-channel hard floors using the same published route configuration. */
+export function colmanProxyChannelAssessment(input: AdmissionsEvaluationInput) {
+  const route = routes[canonicalProgramId(input.degreeId) as keyof typeof routes];
+  if (!route) return undefined;
+  const average = input.extraInputs?.colmanBagrutAverage;
+  return {
+    bagrutBelow: average !== undefined && average < route.average,
+    otherChannelsFailed:
+      (input.psychometric !== undefined && input.psychometric < route.psychometric) ||
+      (route.quantitative !== undefined &&
+        input.extraInputs?.psychometricMath !== undefined &&
+        input.extraInputs.psychometricMath < route.quantitative),
+  };
+}

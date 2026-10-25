@@ -1,3 +1,4 @@
+import { guardProxyEvaluation, usesInstitutionAverageProxy } from './proxyEvaluationGuard';
 import { normalizeEvaluationInputs } from './evaluationInputs';
 import { bguMathematicsSubjects } from '@/lib/bagrutSubjectRecord';
 import { evaluateAfekaPublishedRoutes } from './afekaPublishedRoutesEvaluation';
@@ -184,16 +185,22 @@ export async function evaluateAdmissionsForProgram(args: {
       (item) => item.institutionId === result.linkedInstitutionId,
     );
     const institutionId = result.linkedInstitutionId;
-    const usesPsychometricOnly =
-      institutionId === 'bgu' &&
-      isBguPsychologyProgram(program.id) &&
-      result.scoreLabel === 'פסיכומטרי';
-    const estimateReasons = usesPsychometricOnly
-      ? []
-      : [...(normalized.reasons[institutionId] ?? [])];
+    const usesProxy =
+      normalized.proxyInstitutions.has(institutionId) &&
+      (institutionId === 'colman' || usesInstitutionAverageProxy(result, evaluationInput));
+    const usesDirectRoute = normalized.proxyInstitutions.has(institutionId) && !usesProxy;
+    const estimateReasons = usesDirectRoute ? [] : [...(normalized.reasons[institutionId] ?? [])];
     if (normalized.overallReason && !['bgu', 'tau', 'haifa', 'colman'].includes(institutionId))
       estimateReasons.push(normalized.overallReason);
     let displayedResult = withVerifiedAdmissionInformation(result, entry, evaluationInput);
+    if (usesProxy) {
+      displayedResult = guardProxyEvaluation(displayedResult, evaluationInput);
+      displayedResult = {
+        ...displayedResult,
+        scoreLabel: displayedResult.scoreLabel?.replace('רשמי', 'משוער'),
+        explanation: displayedResult.explanation.replace('ממוצע בגרות רשמי', 'ממוצע בגרות משוער'),
+      };
+    }
     if (estimateReasons.length) {
       displayedResult = {
         ...displayedResult,
@@ -263,7 +270,9 @@ function withVerifiedAdmissionInformation(
     ...result,
     explanation: `${result.explanation} סף הקבלה השמור למסלול הוא ${contract.calculation.cutoff.acceptance} בציון המוסדי. ${verificationNote}`,
     nextAction:
-      'המידע השמור זמין לעיון, אך אין כרגע החלטת קבלה עדכנית. בדקו באתר המוסד את הסף ואת יתר תנאי הקבלה.',
+      result.kind === 'degraded' && isBguPsychologyProgram(input.degreeId)
+        ? result.nextAction
+        : 'המידע השמור זמין לעיון, אך אין כרגע החלטת קבלה עדכנית. בדקו באתר המוסד את הסף ואת יתר תנאי הקבלה.',
     officialUrls: [
       result.institution.calculatorUrl ??
         result.institution.programUrl ??
@@ -790,7 +799,13 @@ async function evaluateExactScores(args: {
             nextAction: `${proof.normalizedPayload.registrationStatus === 'סגורה' ? 'ההרשמה למחזור הנוכחי סגורה. ' : ''}השלימו את מקצועות הבגרות או בדקו את התנאים באתר הרשמי.`,
           };
         }
-        return result;
+        return {
+          ...result,
+          explanation: 'החישוב הרשמי לא הושלם. לא ניתן לקבוע התאמה ללא תשובה מהמוסד.',
+          nextAction: 'השלימו את מקצועות הבגרות או בדקו את התנאים באתר הרשמי.',
+          officialUrls: [BGU_PSYCHOLOGY_SOURCE_URL],
+          additionalConditions,
+        };
       }
       const labels = {
         score: 'סכם',

@@ -78,14 +78,28 @@ describe('programme aliases through the evaluate API with the real evaluator', (
       expect(alias.inputDigest).toBe(canonical.inputDigest);
       expect(alias.results).toEqual(canonical.results);
       expect(alias.results).toHaveLength(1);
+      // Ruling: /workspace/codex-tasks/r1-pr278-rulings-2026-10-25.md row 6. Official source: https://www.colman.ac.il/academics/ba/law/. Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+      // Ruling: /workspace/codex-tasks/r1-pr278-rulings-2026-10-25.md row 7. Official source: https://www.colman.ac.il/academics/ba/business-administration/. Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
       expect(alias.results[0]).toMatchObject(
         label === 'missing Colman average'
-          ? { decision: 'unknown', requiredInputs: ['colman_bagrut_average'] }
+          ? {
+              decision: 'pending',
+              kind: 'manual_gate',
+              estimated: true,
+              score: 110,
+              threshold: boundary,
+            }
           : {
               decision: label === 'weak profile' ? 'below' : 'eligible_to_apply',
               threshold: boundary,
             },
       );
+      if (label === 'missing Colman average') {
+        expect(alias.results[0].decision).not.toBe('accepted');
+        expect(alias.results[0].additionalConditions).toContainEqual(
+          expect.objectContaining({ id: 'colman_bagrut_certificate', status: 'unconfirmed' }),
+        );
+      }
     });
   }
 
@@ -173,3 +187,27 @@ describe('retired arts programme saved references', () => {
     }
   });
 });
+
+// G1: exercise serialized API responses, including the absence of estimate provenance.
+it.each([
+  ['haifa_cs', { haifaBagrutAverage: 105, haifaBagrutYear: 2020, haifaPsychometricYear: 2025 }],
+  ['bgu_cs', { bguBagrutAverage: 105 }],
+  ['colmgmt_law', { colmanBagrutAverage: 110 }],
+] as const)(
+  'G1 API estimate flag for %s versus explicit institutional inputs',
+  async (degreeId, extraInputs) => {
+    resetAdmissionsEvaluationRateLimitForTests();
+    for (const supplied of [false, true]) {
+      const response = await request({
+        degreeId,
+        bagrut: 110,
+        psychometric: 650,
+        ...(supplied ? { extraInputs } : {}),
+      });
+      expect(response.status).toBe(200);
+      const { data } = await response.json();
+      expect(data.results[0].estimated === true).toBe(!supplied);
+      if (!supplied) expect(data.results[0].estimationReason).toBeTruthy();
+    }
+  },
+);

@@ -12,6 +12,7 @@ export function normalizeEvaluationInputs(input: AdmissionsEvaluationInput) {
   const record = extraInputs.bagrutSubjectRecord;
   const bagrut = input.bagrut ?? overallBagrutAverage(record);
   const reasons: Record<string, string[]> = {};
+  const proxyInstitutions = new Set<string>();
   const overallReason =
     (input.bagrut === undefined || input.bagrutAverageEstimated) && bagrut !== undefined
       ? 'הממוצע הכללי הוא אומדן משוקלל לפי ציונים ויחידות, ללא בונוסים מוסדיים.'
@@ -29,6 +30,7 @@ export function normalizeEvaluationInputs(input: AdmissionsEvaluationInput) {
       if (result?.state === 'calculated') extraInputs[key] = result.average;
     } else if (bagrut !== undefined) {
       extraInputs[key] = bagrut;
+      proxyInstitutions.add(institution);
       if (institution === 'bgu') extraInputs.bguBagrutAverageEstimated = true;
       reasons[institution] = [
         `הממוצע הכללי ${bagrut} משמש אומדן לממוצע המוסדי; לא חושב ממקצועות הבגרות.`,
@@ -43,5 +45,5 @@ export function normalizeEvaluationInputs(input: AdmissionsEvaluationInput) {
       );
     }
   }
-  return { input: { ...input, bagrut, extraInputs }, reasons, overallReason };
+  return { input: { ...input, bagrut, extraInputs }, reasons, overallReason, proxyInstitutions };
 }
