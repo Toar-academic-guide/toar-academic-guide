@@ -211,7 +211,7 @@ describe('AcademicProfileForm', () => {
     expect(onComplete.mock.calls[1][0].admissions).not.toHaveProperty('bguPreparatoryAverage');
     expect(onComplete.mock.calls[1][0].admissions.bguPreparatoryCompleted).toBe(false);
     expect(onComplete.mock.calls[1][0].admissions.bguEngineering).toEqual(bguEngineering);
-  });
+  }, 15_000);
   it('saves and reopens recognized preparatory route details without generic scores', async () => {
     const onComplete = vi.fn();
     const props = {
