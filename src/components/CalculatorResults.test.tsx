@@ -282,8 +282,13 @@ describe('CalculatorResults', () => {
       expect(screen.getByLabelText(`אוניברסיטת תל אביב: ${label}`)).toBeTruthy();
       expect(screen.getByText(/אוניברסיטת תל אביב מחליטה על הקבלה לאחריו/)).toBeTruthy();
       const table = screen.getByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלך' });
-      const studentMathsValue = within(table).getByRole('cell', { name: '5 יח״ל, 70' });
-      expect(studentMathsValue.classList.contains('whitespace-nowrap')).toBe(true);
+      const studentMathsValue = within(table).getByRole('cell', {
+        name: (name) => name.replace(/\u00a0/g, ' ') === '5 יח״ל, 70',
+      });
+      expect(studentMathsValue.className).not.toMatch(
+        /whitespace-nowrap|break-all|break-words|\[overflow-wrap:anywhere\]|wrap-anywhere/,
+      );
+      expect(studentMathsValue.textContent).toBe('5\u00a0יח״ל, 70');
       expect(
         within(table).getByRole('columnheader', { name: 'שלך' }).classList.contains('w-[25%]'),
       ).toBe(true);
@@ -309,6 +314,49 @@ describe('CalculatorResults', () => {
       );
     },
   );
+
+  it('renders BIU CS student values with wrapping only between whole unit tokens', async () => {
+    const program = programs.find((row) => row.id === 'biu_cs')!;
+    const evaluation = await evaluateAdmissionsForProgram({
+      program,
+      institutions: getStaticCatalogueInstitutions(),
+      input: {
+        degreeId: 'biu_cs',
+        bagrut: 105,
+        psychometric: 700,
+        extraInputs: {
+          psychometricEnglish: 110,
+          bagrutSubjectRecord: {
+            schemaVersion: 1,
+            sector: 'jewish',
+            subjects: [{ subjectId: 'mathematics', units: 4, grade: 100 }],
+          },
+        },
+      },
+      freshnessStatesBySourceId: new Map(),
+      fetcher: vi.fn<typeof fetch>(),
+    });
+    hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(evaluation);
+    render(
+      <CalculatorResults
+        degreeId="biu_cs"
+        programs={[program]}
+        psychometric={700}
+        bagrut={105}
+        onBack={() => {}}
+      />,
+    );
+    const table = await screen.findByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלך' });
+    const studentMathsValues = within(table).getAllByRole('cell', {
+      name: (name) => name.replace(/\u00a0/g, ' ') === '4 יח״ל בציון 100',
+    });
+    for (const cell of studentMathsValues) {
+      expect(cell.className).not.toMatch(
+        /whitespace-nowrap|break-all|break-words|\[overflow-wrap:anywhere\]|wrap-anywhere/,
+      );
+      expect(cell.textContent).toBe('4\u00a0יח״ל בציון\u00a0100');
+    }
+  });
 
   it.each([
     [680, 110, 90],
