@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page } from './fixtures';
 import { studyFields } from '../src/lib/studyJourney';
 import type { CatalogueProgram } from '../src/types/catalogue';
 
