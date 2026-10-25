@@ -59,6 +59,39 @@ it('never labels TAU architecture "אפשר להגיש מועמדות" when a fl
   }
 });
 
+it.each([
+  ['maths', 'מתמטיקה', { psychometricEnglish: 110 }],
+  ['English', 'אנגלית בפסיכומטרי', { mathUnits: 5, mathGrade: 70 }],
+] as const)(
+  'never labels TAU architecture "אפשר להגיש מועמדות" when %s is missing',
+  async (_missingInput, floorLabel, extraInputs) => {
+    const program = {
+      ...getStaticCataloguePrograms().find((row) => row.id === 'architecture')!,
+      linkedInstitutionIds: ['tau'],
+    };
+    const evaluation = await evaluateAdmissionsForProgram({
+      program,
+      institutions: getStaticCatalogueInstitutions(),
+      input: {
+        degreeId: 'architecture',
+        psychometric: 680,
+        bagrut: 110,
+        extraInputs,
+      },
+      freshnessStatesBySourceId: new Map(),
+      fetcher: vi.fn<typeof fetch>(),
+    });
+    const result = evaluation.results[0];
+    expect(result.linkedInstitutionId).toBe('tau');
+    expect(result.kind).toBe('manual_gate');
+    expect(result.decision).toBe('unknown');
+    expect(result.floorChecks?.find((floor) => floor.label === floorLabel)?.status).toBe('missing');
+    const { label } = resultLabel(result, false, false, 'architecture');
+    expect(label).not.toBe('אפשר להגיש מועמדות');
+    expect(label).toBe('נדרש מיון נוסף');
+  },
+);
+
 it.each(['exact', 'estimated'] as const)(
   'preserves other programmes no-verdict status for kind %s',
   (kind) => {

@@ -343,6 +343,52 @@ describe('CalculatorResults', () => {
     },
   );
 
+  it.each([
+    ['maths', 'מתמטיקה', { psychometricEnglish: 110 }],
+    ['English', 'אנגלית בפסיכומטרי', { mathUnits: 5, mathGrade: 70 }],
+  ] as const)(
+    'never shows "אפשר להגיש מועמדות" for TAU architecture when %s is missing',
+    async (_missingInput, floorLabel, extraInputs) => {
+      const program = {
+        ...programs.find((row) => row.id === 'architecture')!,
+        linkedInstitutionIds: ['tau'],
+      };
+      const evaluation = await evaluateAdmissionsForProgram({
+        program,
+        institutions: getStaticCatalogueInstitutions(),
+        input: {
+          degreeId: 'architecture',
+          psychometric: 680,
+          bagrut: 110,
+          extraInputs,
+        },
+        freshnessStatesBySourceId: new Map(),
+        fetcher: vi.fn<typeof fetch>(),
+      });
+      const result = evaluation.results[0];
+      expect(result.linkedInstitutionId).toBe('tau');
+      expect(result.kind).toBe('manual_gate');
+      expect(result.decision).toBe('unknown');
+      expect(result.floorChecks?.find((floor) => floor.label === floorLabel)?.status).toBe(
+        'missing',
+      );
+      hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(evaluation);
+      render(
+        <CalculatorResults
+          degreeId="architecture"
+          programs={[program]}
+          psychometric={680}
+          bagrut={110}
+          onBack={() => {}}
+        />,
+      );
+      expect(await screen.findByText('נדרש מיון נוסף', { exact: true })).toBeTruthy();
+      expect(screen.queryByText('אפשר להגיש מועמדות')).toBeNull();
+      expect(screen.queryByLabelText(/אפשר להגיש מועמדות/)).toBeNull();
+      expect(screen.getByLabelText('אוניברסיטת תל אביב: נדרשים נתונים')).toBeTruthy();
+    },
+  );
+
   it('allows the TAU architecture apply badge with no verdict when every floor passes', async () => {
     const program = {
       ...programs.find((row) => row.id === 'architecture')!,
