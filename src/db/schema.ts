@@ -1,5 +1,6 @@
 import {
   boolean,
+  check,
   index,
   integer,
   numeric,
@@ -12,8 +13,11 @@ import {
   timestamp,
   uniqueIndex,
   uuid,
+  varchar,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
+import type { EnquiryResultStatus } from '@/lib/enquiries';
+import type { AdmissionsEvaluationInput } from '@/types/admissionsEvaluation';
 import type {
   AdmissionsProfileInputs,
   AssessmentProgress,
@@ -953,3 +957,35 @@ export const admissionAlertWebhookEvents = pgTable('admission_alert_webhook_even
   receivedAt: timestamp('received_at', { withTimezone: true }).defaultNow().notNull(),
   payloadMetadata: jsonb('payload_metadata').$type<Record<string, unknown>>().default({}).notNull(),
 });
+
+export const enquiries = pgTable(
+  'enquiries',
+  {
+    requestId: uuid('request_id').primaryKey(),
+    name: text('name').notNull(),
+    phone: text('phone').notNull(),
+    programId: text('program_id').notNull(),
+    institutionId: text('institution_id').notNull(),
+    programName: text('program_name').notNull(),
+    institutionName: text('institution_name').notNull(),
+    sourcePath: text('source_path').notNull(),
+    utmSource: varchar('utm_source', { length: 100 }),
+    utmMedium: varchar('utm_medium', { length: 100 }),
+    utmCampaign: varchar('utm_campaign', { length: 100 }),
+    referrer: varchar('referrer', { length: 256 }),
+    consent: boolean('consent').notNull(),
+    consentText: text('consent_text').notNull(),
+    resultStatus: text('result_status').$type<EnquiryResultStatus>().notNull(),
+    bagrut: real('bagrut'),
+    psychometric: integer('psychometric'),
+    evaluationInput: jsonb('evaluation_input').$type<AdmissionsEvaluationInput>(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    check(
+      'enquiries_result_status_check',
+      sql`${table.resultStatus} in ('accepted', 'below', 'eligible_to_apply', 'unknown')`,
+    ),
+    check('enquiries_consent_check', sql`${table.consent} = true`),
+  ],
+);

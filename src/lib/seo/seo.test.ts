@@ -204,6 +204,9 @@ describe('crawl policy', () => {
 
   it('keeps all 401 canonical public URLs in order with stable data modification dates', async () => {
     const entries = await sitemap();
+    for (const path of ['/tt', '/ig', '/fb', '/wa']) {
+      expect(entries.map((entry) => entry.url)).not.toContain(`${SITE_URL}${path}`);
+    }
     const urls = entries.map((entry) => entry.url);
     const catalogue = await loadPublicCatalogue();
     const generatedHubIds = buildSubjectHubs(catalogue)
