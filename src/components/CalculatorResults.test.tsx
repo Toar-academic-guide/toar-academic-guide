@@ -476,6 +476,20 @@ describe('CalculatorResults', () => {
       />,
     );
     expect(await screen.findByLabelText('אוניברסיטת תל אביב: אפשר להגיש מועמדות')).toBeTruthy();
+    const table = screen.getByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלך' });
+    const englishCondition = within(table).getByRole('rowheader', { name: 'אנגלית בפסיכומטרי' });
+    for (const className of [
+      '[overflow-wrap:anywhere]',
+      'break-all',
+      'break-words',
+      'wrap-anywhere',
+      'wrap-break-word',
+    ]) {
+      expect([...englishCondition.classList]).not.toContain(className);
+    }
+    for (const property of ['word-break', 'overflow-wrap', 'word-wrap']) {
+      expect(englishCondition.style.getPropertyValue(property)).toBe('');
+    }
   });
 
   it('labels Technion Architecture eligibility as conditional on available places', async () => {
