@@ -103,6 +103,55 @@ describe('account grades in the homepage journey', () => {
     expect(screen.getByRole('button', { name: 'שמירה לרשימה' })).toBeTruthy();
   });
 
+  it('shows the medicine sekem beside the estimated MOR invitation line using the existing no-verdict rendering', async () => {
+    const program = getStaticCataloguePrograms().find((p) => p.id === 'technion_medicine')!;
+    const institution = getStaticCatalogueInstitutions().find((i) => i.id === 'technion')!;
+    state.fetchPrograms.mockResolvedValue([program]);
+    state.fetchInstitutions.mockResolvedValue([institution]);
+    state.evaluate.mockResolvedValue({
+      reports: {
+        technion_medicine: {
+          results: [
+            {
+              institution,
+              linkedInstitutionId: 'technion',
+              capability: 'score_only',
+              kind: 'exact',
+              decision: 'unknown',
+              confidence: 'medium',
+              score: 89,
+              scoreLabel: 'סכם',
+              sourceLabel: 'סכם לרפואה',
+              explanation:
+                'סף זימון משוער למבחן המו"ר: 92 (הערכה). זהו סף זימון משוער בלבד, ולא סף קבלה לרפואה.',
+              officialUrls: ['https://admissions.technion.ac.il/calculator/'],
+            },
+          ],
+        },
+      },
+      failedDegreeIds: [],
+    });
+    window.sessionStorage.setItem(
+      'myway_study_journey_v2',
+      JSON.stringify({
+        fields: [],
+        locations: ['all'],
+        types: ['all'],
+        selectedRowId: 'technion_medicine:technion',
+        scores: { bagrut: { weightedAverage: 110 }, psychometric: { overall: 720 } },
+      }),
+    );
+    render(<StudyJourney initialStep="detail" />);
+    expect(await screen.findByText('אין הכרעת קבלה')).toBeTruthy();
+    expect(screen.getByText(/סף זימון משוער למבחן המו"ר: 92 \(הערכה\)/)).toBeTruthy();
+    expect(screen.getByText('סכם: 89')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'יצירת קשר' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'שמירה לרשימה' })).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toBe(
+      'https://www.technion.ac.il/?utm_source=myway&utm_medium=referral',
+    );
+  });
+
   it('changes only the calculator detail requirements while preserving the baseline decision and actions', async () => {
     const program = getStaticCataloguePrograms().find((p) => p.id === 'colmgmt_law')!;
     state.fetchPrograms.mockResolvedValue([program]);

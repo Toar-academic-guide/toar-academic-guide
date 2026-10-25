@@ -12,6 +12,8 @@ import {
 import socialScienceOfficial from '../../../docs/admissions-verification/2026-09-27-bgu-social-sciences-official.json';
 import { describe, expect, it, vi } from 'vitest';
 import { architectureInputs, architectureSourceResponse } from '@/test/technionArchitecture';
+import { technionWinterSubjectRecord } from '@/test/technionWinterThresholds';
+import { TECHNION_THRESHOLD_URL } from '@/data/admissions/technionProgramVerification';
 import { readFileSync } from 'node:fs';
 import engineeringRules from '../../../docs/admissions-verification/2026-09-27-bgu-engineering-rules.json';
 import { BGU_ENGINEERING_METADATA_BY_PAIR_ID } from '@/data/admissions/bguEngineeringVerification';
@@ -402,6 +404,56 @@ const technionMedicine: CatalogueProgram = {
   thresholds: { technion: null },
   linkedInstitutionIds: ['technion'],
 };
+
+describe('Technion medicine estimated MOR invitation threshold', () => {
+  it.each([
+    { psychometric: 720, score: 89 },
+    { psychometric: 800, score: 98.9 },
+    { psychometric: 500, score: 73.9 },
+  ])(
+    'keeps sekem $score without a verdict for psychometric $psychometric',
+    async ({ psychometric, score }) => {
+      const fetcher = vi.fn<typeof fetch>().mockImplementation(async (url, options) => {
+        if (String(url).includes('technion-calculators-sum.php')) {
+          expect(new URLSearchParams(String(options?.body)).get('psychometry')).toBe(
+            String(psychometric),
+          );
+          return new Response(`הסכם לדיוני הקבלה הוא:${score}`);
+        }
+        return new Response(`<h2>סיכום אפשרויות הקבלה למסלולים בסמסטר חורף תשפ"ז</h2>
+        <table id="tablepress-485"><tbody><tr>
+          <td class="column-1">מדעי הרפואה - מגמת רפואה</td><td class="column-2">92.000</td>
+        </tr></tbody></table>`);
+      });
+      const report = await evaluateAdmissionsForProgram({
+        input: {
+          degreeId: technionMedicine.id,
+          psychometric,
+          bagrut: 110,
+          extraInputs: { bagrutSubjectRecord: technionWinterSubjectRecord },
+        },
+        program: technionMedicine,
+        institutions,
+        fetcher,
+      });
+      const result = report.results.find((row) => row.linkedInstitutionId === 'technion')!;
+      expect(result.decision).toBe('unknown');
+      expect(result).toMatchObject({
+        capability: 'score_only',
+        kind: 'exact',
+        score,
+        scoreLabel: 'סכם',
+      });
+      expect(result.explanation).toContain('סף זימון משוער למבחן המו"ר: 92 (הערכה)');
+      expect(result.officialUrls?.[0]).toBe(TECHNION_THRESHOLD_URL);
+      expect(result.threshold).toBeUndefined();
+      expect(result.scoreAssessment).toBeUndefined();
+      expect(result.deltaNeeded).toBeUndefined();
+      expect(resultLabel(result)).toEqual({ label: 'אין הכרעת קבלה', group: 'explore' });
+      expect(fetcher).toHaveBeenCalledTimes(2);
+    },
+  );
+});
 
 const bguCs: CatalogueProgram = {
   id: 'bgu_cs',

@@ -53,6 +53,48 @@ vi.mock('posthog-js', () => ({
 
 const programs = getStaticCataloguePrograms();
 
+it('renders the medicine sekem and estimated MOR invitation threshold without an admission verdict', async () => {
+  hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
+    report([
+      {
+        institution: {
+          id: 'technion',
+          name: 'הטכניון – מכון טכנולוגי לישראל',
+          region: 'north',
+          domain: 'technion.ac.il',
+        },
+        linkedInstitutionId: 'technion',
+        capability: 'score_only',
+        kind: 'exact',
+        decision: 'unknown',
+        confidence: 'medium',
+        score: 89,
+        scoreLabel: 'סכם',
+        sourceLabel: 'סכם לרפואה',
+        explanation:
+          'סף זימון משוער למבחן המו"ר: 92 (הערכה). זהו סף זימון משוער בלבד, ולא סף קבלה לרפואה.',
+        nextAction: 'בדקו באתר הטכניון את תנאי המיון והקבלה העדכניים לרפואה.',
+        officialUrls: ['https://admissions.technion.ac.il/calculator/'],
+      },
+    ]),
+  );
+  render(
+    <CalculatorResults
+      degreeId="technion_medicine"
+      programs={programs}
+      psychometric={720}
+      bagrut={110}
+      onBack={() => {}}
+    />,
+  );
+  expect(await screen.findByText(/סף זימון משוער למבחן המו"ר: 92 \(הערכה\)/)).toBeTruthy();
+  expect(screen.getByText(/סכם 89/)).toBeTruthy();
+  expect(screen.queryByLabelText(/הטכניון.*(?:מתחת לסף|מתקבל\/ת|אפשר להגיש מועמדות)/)).toBeNull();
+  expect(screen.getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toBe(
+    'https://admissions.technion.ac.il/calculator/?utm_source=myway&utm_medium=referral',
+  );
+});
+
 function report(results: AdmissionsEvaluationReport['results']): AdmissionsEvaluationReport {
   return {
     generatedAt: '2026-06-27T00:00:00.000Z',
