@@ -27,7 +27,7 @@ export function evaluateTauComputerScienceGates(
     requiredInputs.push('tau_application_requirements');
   } else if (assessment !== 'scores' && !extra?.tauApplicationRequirementsConfirmed) {
     unmetRequirements.push(
-      'זכאות לבגרות, אנגלית ברמת מתקדמים א׳, דרישות עברית והרשמה למדעי המחשב בעדיפות ראשונה',
+      'אנגלית ברמת מתקדמים א׳, דרישות עברית והרשמה למדעי המחשב בעדיפות ראשונה',
     );
   }
   if (input.psychometric < 660) unmetRequirements.push('פסיכומטרי 660 ומעלה במסלול הרגיל');

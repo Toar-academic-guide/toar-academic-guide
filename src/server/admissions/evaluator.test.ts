@@ -58,7 +58,8 @@ describe.each(AFEKA_EVALUATOR_IDS)('%s published routes', (degreeId) => {
     expect(fetcher).not.toHaveBeenCalled();
     if (decision === 'accepted') {
       expect(resultLabel(result).group).toBe('match');
-      expect(result.explanation).toContain('זכאות לתעודת בגרות מלאה');
+      // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+      expect(result.explanation).not.toContain('זכאות לתעודת בגרות מלאה');
       expect(result.explanation).toContain('סיווג אנגלית');
       expect(result.explanation).toContain('70');
     }
@@ -1263,12 +1264,8 @@ describe('evaluateAdmissionsForProgram', () => {
     // Ruling: /workspace/codex-tasks/r1-pr278-rulings-2026-10-25.md row 2. Official source: none named in rulings; see PR #278 table. Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
     expect(report.results[0]).toMatchObject({
       kind: 'needs_input',
-      requiredInputs: [
-        'haifa_admission_qualification',
-        'math_units',
-        'math_grade',
-        'haifa_hebrew_qualification',
-      ],
+      // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+      requiredInputs: ['math_units', 'math_grade', 'haifa_hebrew_qualification'],
     });
     // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
     expect(report.results[0].estimated).not.toBe(true);
@@ -4158,7 +4155,8 @@ describe('results average normalization regressions', () => {
     expect(report.results[0].estimated).not.toBe(true);
     // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
     expect(report.results[0].estimationReason).toBeUndefined();
-    expect(report.results[0].requiredInputs).toContain('haifa_admission_qualification');
+    // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+    expect(report.results[0].requiredInputs).not.toContain('haifa_admission_qualification');
     expect(report.results[0].requiredInputs).not.toContain('haifa_bagrut_year');
   });
   it('does not leak the HIT implementation note after math gates are supplied', async () => {
@@ -4354,8 +4352,10 @@ describe('R1 ruling safeguards G1–G3', () => {
       expect(result.scoreAssessment).toBeUndefined();
     } else {
       expect(result).toMatchObject({
-        kind: 'manual_gate',
-        decision: ratio < 1 ? 'below' : 'eligible_to_apply',
+        // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+        kind: 'exact',
+        // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+        decision: ratio < 1 ? 'below' : 'accepted',
       });
     }
   });
@@ -4398,7 +4398,8 @@ describe('R1 ruling safeguards G1–G3', () => {
       // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
       if (state !== 'failing') expect(result.estimationReason).toBeUndefined();
       if (state === 'failing')
-        expect(result).toMatchObject({ kind: 'manual_gate', decision: 'below' });
+        // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+        expect(result).toMatchObject({ kind: 'exact', decision: 'below' });
       else
         expect(result).toMatchObject({
           kind: 'needs_input',
@@ -4450,7 +4451,8 @@ describe('R1 ruling safeguards G1–G3', () => {
       colmanBagrutAverage: 85,
       colmanBagrutCertificateConfirmed: true,
     });
-    expect(result).toMatchObject({ kind: 'manual_gate', decision: 'eligible_to_apply', score: 85 });
+    // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+    expect(result).toMatchObject({ kind: 'exact', decision: 'accepted', score: 85 });
     expect(result.estimated).not.toBe(true);
   });
 
@@ -4651,3 +4653,147 @@ it.each([
     else expect(report.results[0].estimationReason).not.toContain('הממוצע הכללי');
   } else expect(report.results[0].estimationReason).toBeUndefined();
 });
+
+describe('Amit 07:33 full-bagrut assumption', () => {
+  it.each([undefined, false, true])(
+    'law 110/650 ignores legacy certificate %s',
+    async (certificate) => {
+      const program = getStaticCataloguePrograms().find((row) => row.id === 'colmgmt_law')!;
+      const report = await evaluateAdmissionsForProgram({
+        program,
+        institutions: getStaticCatalogueInstitutions(),
+        input: {
+          degreeId: program.id,
+          bagrut: 110,
+          psychometric: 650,
+          extraInputs: { colmanBagrutCertificateConfirmed: certificate },
+        },
+      });
+      const result = report.results.find((row) => row.linkedInstitutionId === 'colman')!;
+      expect(result).toMatchObject({
+        kind: 'exact',
+        decision: 'accepted',
+        score: 110,
+        threshold: 100,
+        scoreAssessment: 'meets_threshold',
+        estimated: true,
+      });
+      expect(resultLabel(result)).toEqual({ label: 'הציונים עומדים בסף', group: 'match' });
+      expect(result.additionalConditions ?? []).toEqual([]);
+      expect(result.explanation).not.toContain('יש לאשר זכאות לבגרות מלאה');
+      expect(result.explanation).not.toContain('אין כאן אישור קבלה סופית');
+    },
+  );
+  it.each(['overall', 'subjects'] as const)(
+    'never requests a certificate across the catalogue with %s input',
+    async (mode) => {
+      const certificateIds = [
+        'colman_bagrut_certificate',
+        'bgu_certificate_requirements',
+        'huji_medicine_qualification',
+      ];
+      let pairs = 0;
+      for (const program of getStaticCataloguePrograms()) {
+        const report = await evaluateAdmissionsForProgram({
+          program,
+          institutions: getStaticCatalogueInstitutions(),
+          input: {
+            degreeId: program.id,
+            psychometric: 680,
+            ...(mode === 'overall'
+              ? { bagrut: 105 }
+              : {
+                  extraInputs: {
+                    bagrutSubjectRecord: {
+                      schemaVersion: 1,
+                      sector: 'jewish',
+                      subjects: [{ subjectId: 'mathematics', units: 5, grade: 90 }],
+                    },
+                  },
+                }),
+          },
+          fetcher: vi.fn<typeof fetch>().mockRejectedValue(new Error('offline')),
+        });
+        for (const result of report.results) {
+          pairs++;
+          const label = `${program.id}:${result.linkedInstitutionId}`;
+          expect(result.requiredInputs ?? [], label).not.toEqual(
+            expect.arrayContaining([
+              expect.stringMatching(
+                /^(colman_bagrut_certificate|bgu_certificate_requirements|haifa_admission_qualification|huji_medicine_qualification)$/,
+              ),
+            ]),
+          );
+          for (const condition of result.additionalConditions ?? []) {
+            expect(certificateIds, label).not.toContain(condition.id);
+            expect(condition.label, label).not.toMatch(
+              /זכאות לבגרות|תעודת בגרות|תעודת קבלה מוכרת/u,
+            );
+          }
+        }
+      }
+      expect(pairs).toBe(436);
+    },
+  );
+  it.each([
+    ['bezalel_fine_arts', 'admissions_committee', /תיק עבודות/u],
+    ['samspiegel_screenwriting', 'admissions_committee', /ראיון/u],
+  ])('retains genuine selection for %s', async (degreeId, conditionId, label) => {
+    const program = getStaticCataloguePrograms().find((row) => row.id === degreeId)!;
+    const report = await evaluateAdmissionsForProgram({
+      program,
+      institutions: getStaticCatalogueInstitutions(),
+      input: { degreeId, bagrut: 110, psychometric: 700 },
+    });
+    expect(report.results[0]).toMatchObject({ kind: 'manual_gate', decision: 'eligible_to_apply' });
+    expect(report.results[0].additionalConditions).toContainEqual(
+      expect.objectContaining({
+        id: conditionId,
+        label: expect.stringMatching(label),
+        status: 'unconfirmed',
+      }),
+    );
+  });
+  it('retains Colman internal assessment and missing mathematics', async () => {
+    const program = getStaticCataloguePrograms().find((row) => row.id === 'colmgmt_cs')!;
+    const run = (extraInputs = {}) =>
+      evaluateAdmissionsForProgram({
+        program,
+        institutions: getStaticCatalogueInstitutions(),
+        input: { degreeId: program.id, bagrut: 110, psychometric: 650, extraInputs },
+      });
+    const missing = (await run()).results[0];
+    expect(missing).toMatchObject({ kind: 'needs_input', decision: 'unknown' });
+    expect(missing.requiredInputs).toEqual(expect.arrayContaining(['math_units', 'math_grade']));
+    const result = (await run({ mathUnits: 5, mathGrade: 90 })).results[0];
+    expect(result.kind).toBe('manual_gate');
+    expect(result.additionalConditions).toContainEqual(
+      expect.objectContaining({ id: 'colman_internal_test', status: 'unconfirmed' }),
+    );
+    expect(result.additionalConditions).not.toContainEqual(
+      expect.objectContaining({ id: 'colman_bagrut_certificate' }),
+    );
+  });
+});
+
+// Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+it.each(['tlvyaffo_economics', 'ruppin_marine_bio'])(
+  'removes the generated certificate document gate from %s',
+  async (degreeId) => {
+    const program = getStaticCataloguePrograms().find((row) => row.id === degreeId)!;
+    const report = await evaluateAdmissionsForProgram({
+      program,
+      institutions: getStaticCatalogueInstitutions(),
+      input: { degreeId, bagrut: 105, psychometric: 680 },
+      fetcher: vi.fn<typeof fetch>().mockRejectedValue(new Error('offline')),
+    });
+    const result = report.results[0];
+    expect(result.explanation).not.toContain('נדרשת בדיקת זכאות לתעודת בגרות מלאה');
+    if (degreeId === 'ruppin_marine_bio')
+      expect(result).toMatchObject({ decision: 'accepted', kind: 'estimated' });
+    else {
+      expect(result.kind).toBe('manual_gate');
+      expect(result.explanation).toContain('ראיון');
+    }
+  },
+);

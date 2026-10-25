@@ -88,13 +88,21 @@ describe('official requirements batch1 preservation and Colman economics', () =>
 
   it.each([
     // Ruling: /workspace/codex-tasks/r1-pr278-rulings-2026-10-25.md row 5. Official source: https://www.colman.ac.il/academics/ba/economy/. Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
-    [undefined, 420, undefined, 'below', 'manual_gate'],
-    [86, undefined, undefined, 'eligible_to_apply', 'manual_gate'],
-    [80, 560, 115, 'eligible_to_apply', 'manual_gate'],
-    [85, undefined, undefined, 'eligible_to_apply', 'manual_gate'],
-    [80, 540, 110, 'eligible_to_apply', 'manual_gate'],
-    [80, 520, undefined, 'below', 'manual_gate'],
-    [80, 560, 100, 'below', 'manual_gate'],
+    // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+    [undefined, 420, undefined, 'below', 'exact'],
+    // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+    [86, undefined, undefined, 'accepted', 'exact'],
+    // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+    [80, 560, 115, 'accepted', 'exact'],
+    // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+    [85, undefined, undefined, 'accepted', 'exact'],
+    // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+    [80, 540, 110, 'accepted', 'exact'],
+    // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+    [80, 520, undefined, 'below', 'exact'],
+    // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+    [80, 560, 100, 'below', 'exact'],
+    // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
     [80, 560, undefined, 'unknown', 'needs_input'],
   ] as const)(
     'economics average=%s psych=%s quant=%s returns %s/%s through dispatch',

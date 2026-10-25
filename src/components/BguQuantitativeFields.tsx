@@ -12,10 +12,6 @@ export default function BguQuantitativeFields({
   const inputClass =
     'rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm disabled:opacity-50';
   const confirmations = [
-    [
-      'bguCertificateRequirementsConfirmed',
-      'תעודת בגרות מלאה או תעודת קבלה חלופית המוכרת בבן־גוריון',
-    ],
     ['bguPriorAcademicStudies', 'האם יש לימודים אקדמיים קודמים?'],
     ['bguReturningOrChangingTrack', 'האם חוזרים מהפסקת לימודים או משנים מסלול בחשבונאות?'],
     ['bguSecondTrackRequirementsConfirmed', 'האם מתקיימים תנאי החוג או החטיבה הנוספים, אם נבחרו?'],

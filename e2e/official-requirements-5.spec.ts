@@ -67,7 +67,8 @@ for (const width of [390, 1440]) {
       (row: { linkedInstitutionId: string }) => row.linkedInstitutionId === 'colman',
     );
     // Ruling: /workspace/codex-tasks/r1-pr278-rulings-2026-10-25.md row 5 (per Jorje's 06:40 follow-up ruling extending it to these e2e expectations). Official source: https://www.colman.ac.il/academics/ba/economy/. Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
-    expect(result).toMatchObject({ kind: 'manual_gate', decision: 'below', estimated: true });
+    // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+    expect(result).toMatchObject({ kind: 'exact', decision: 'below', estimated: true });
     await expect(page.locator('.journey-result-explanation')).toContainText('הממוצע נמוך מ־85');
     await expect(page.locator('.journey-result-explanation')).not.toContainText(
       'זו אינה דחייה מכל מסלולי הקבלה.',
@@ -127,7 +128,8 @@ for (const width of [390, 1440]) {
       (row: { linkedInstitutionId: string }) => row.linkedInstitutionId === 'colman',
     );
     expect(result).toMatchObject({
-      decision: 'eligible_to_apply',
+      // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+      decision: 'accepted',
       scoreAssessment: 'meets_threshold',
     });
     await expect(page.locator('.journey-result-explanation')).toHaveText(result.explanation);

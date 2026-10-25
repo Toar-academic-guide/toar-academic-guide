@@ -478,7 +478,7 @@ function independentAdmissionConditions(
     conditions.push(
       confirmationCondition(
         'tau_application_requirements',
-        'זכאות לבגרות, אנגלית מתקדמים א׳, עברית ועדיפות ראשונה למדעי המחשב',
+        'אנגלית מתקדמים א׳, עברית ועדיפות ראשונה למדעי המחשב',
         extra.tauApplicationRequirementsConfirmed,
       ),
     );
@@ -509,8 +509,8 @@ function independentAdmissionConditions(
         confirmationCondition(
           ot ? 'bgu_occupational_therapy_requirements' : 'bgu_physiotherapy_requirements',
           ot
-            ? 'תעודת קבלה מוכרת, דרישות שפה, עדיפות הרשמה והגשת מסמכים במועד לריפוי בעיסוק'
-            : 'תעודת קבלה מוכרת, דרישות שפה, עדיפות ראשונה והגשת מסמכים במועד לפיזיותרפיה',
+            ? 'דרישות שפה, עדיפות הרשמה והגשת מסמכים במועד לריפוי בעיסוק'
+            : 'דרישות שפה, עדיפות ראשונה והגשת מסמכים במועד לפיזיותרפיה',
           ot
             ? extra.bguOccupationalTherapyRequirementsConfirmed
             : extra.bguPhysiotherapyRequirementsConfirmed,
@@ -530,7 +530,7 @@ function independentAdmissionConditions(
       conditions.push(
         confirmationCondition(
           'bgu_social_science_requirements',
-          'תעודת קבלה מוכרת, תנאי החוג הנוסף ועדיפות הרשמה כנדרש',
+          'תנאי החוג הנוסף ועדיפות הרשמה כנדרש',
           extra.bguSocialScienceRequirementsConfirmed,
         ),
         confirmationCondition(
@@ -555,11 +555,6 @@ function independentAdmissionConditions(
     }
     if (isBguQuantitativeRouteProgram(program.id)) {
       conditions.push(
-        confirmationCondition(
-          'bgu_certificate_requirements',
-          'תעודת קבלה מוכרת',
-          extra.bguCertificateRequirementsConfirmed,
-        ),
         confirmationCondition(
           'bgu_second_track_requirements',
           'עמידה בתנאי החוג או החטיבה הנוספים, אם נבחרו',
@@ -757,7 +752,7 @@ async function evaluateExactScores(args: {
           },
           {
             id: 'bgu_psychology_requirements',
-            label: 'תעודת קבלה מוכרת ועמידה בתנאי החוג הנוסף',
+            label: 'עמידה בתנאי החוג הנוסף',
             value: requestedInput.extraInputs?.bguPsychologyRequirementsConfirmed,
           },
         ].map(({ id, label, value }) => ({
@@ -2551,6 +2546,17 @@ interface GroupedNumericFactOptionResult {
   hasUncheckedFacts: boolean;
 }
 
+function isFullBagrutCertificateFact(
+  fact: NonNullable<ProgramInstitutionDetail['admissionFacts']>[number],
+) {
+  return (
+    fact.kind === 'manual_gate' &&
+    fact.field === 'document_check' &&
+    (fact.valueText === 'בדיקת מסמכי בגרות' ||
+      /זכאות.*בגרות|תעודת בגרות מלאה/u.test(fact.description))
+  );
+}
+
 function evaluateStructuredRequirementsResult(
   args: StructuredRequirementsResultArgs,
 ): AdmissionsEvaluationResult | undefined {
@@ -2569,10 +2575,13 @@ function evaluateStructuredRequirementsResult(
     return undefined;
   }
 
-  const facts = detail.admissionFacts.map((fact) => ({
-    ...fact,
-    description: catalogueAdmissionRequirements([fact.description]).join('; '),
-  }));
+  const certificateAssumed = detail.admissionFacts.some(isFullBagrutCertificateFact);
+  const facts = detail.admissionFacts
+    .filter((fact) => !isFullBagrutCertificateFact(fact))
+    .map((fact) => ({
+      ...fact,
+      description: catalogueAdmissionRequirements([fact.description]).join('; '),
+    }));
   const alternativePathDescriptions =
     detail.admissionAlternativePaths?.flatMap((path) =>
       catalogueAdmissionRequirements([path.title]),
@@ -2583,6 +2592,12 @@ function evaluateStructuredRequirementsResult(
   const manualGateDescriptions = facts
     .filter((fact) => fact.kind === 'manual_gate')
     .map((fact) => fact.description);
+  if (certificateAssumed)
+    manualGateDescriptions.push(
+      ...dynamicRequirements.filter((text) =>
+        ['ראיון קבלה חובה', 'הגשת תיק עבודות חובה'].includes(text),
+      ),
+    );
   const numericFacts = facts.filter((fact) => fact.kind === 'numeric_gate');
   const hasOpenAdmissionFact = facts.some((fact) => fact.kind === 'open_admission');
   const hasNoFormalGradeGate =
@@ -2767,6 +2782,27 @@ function evaluateStructuredRequirementsResult(
           ? 'שפרו את תנאי הסף המספריים לפני ההגשה. לאחר מכן עדיין תצטרכו להשלים את שלבי המיון הידניים של המוסד.'
           : 'שפרו את תנאי הסף המספריים או בדקו אפיק חלופי באתר המוסד.',
       ...(singleNumericGateMetrics(firstUnmet) ?? {}),
+    };
+  }
+
+  if (
+    certificateAssumed &&
+    numericFacts.length > 0 &&
+    metNumericDescriptions.length > 0 &&
+    manualGateDescriptions.length === 0 &&
+    alternativePathDescriptions.length === 0
+  ) {
+    return {
+      institution: publicInstitutionShape(institution),
+      linkedInstitutionId: institution.id,
+      capability: 'estimated',
+      kind: 'estimated',
+      decision: 'accepted',
+      confidence: 'high',
+      scoreAssessment: 'meets_threshold',
+      sourceLabel: 'התאמה לפי הציונים',
+      explanation: `הציונים שהוזנו עומדים בתנאי המסלול: ${metNumericDescriptions.join('; ')}.`,
+      nextAction: 'המשיכו להרשמה באתר המוסד ובדקו את מועדי ההרשמה.',
     };
   }
 
@@ -3115,7 +3151,7 @@ function requiredInputsResult(
 function missingInputsCopy(requiredInputs: AdmissionsRequiredInput[]) {
   const bguInputLabels: Partial<Record<AdmissionsRequiredInput, string>> = {
     bgu_language_requirements: 'אישור עמידה בדרישות האנגלית והעברית או פטור תקף',
-    bgu_psychology_requirements: 'אישור תעודת קבלה מוכרת ותנאי החוג הנוסף',
+    bgu_psychology_requirements: 'תנאי החוג הנוסף',
     bgu_bagrut_average: 'ממוצע הבגרות הרשמי של בן־גוריון',
     bgu_preparatory_track: 'מסלול המכינה',
     bgu_preparatory_average: 'ממוצע המכינה',

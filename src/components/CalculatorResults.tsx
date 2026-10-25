@@ -146,7 +146,6 @@ function formatResultSummary(result: AdmissionsEvaluationResult): string {
         [
           'tau_bagrut_average',
           'colman_bagrut_average',
-          'colman_bagrut_certificate',
           'bgu_bagrut_average',
           'tau_application_requirements',
           'bgu_language_requirements',

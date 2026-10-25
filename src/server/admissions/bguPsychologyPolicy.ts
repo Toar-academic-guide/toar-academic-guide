@@ -32,8 +32,7 @@ export function resolveBguPsychologyAdmission(
   )
     return {
       kind: 'below',
-      reason:
-        'נדרשים אנגלית בסיסי, עברית ה׳ או פטור תקף, תעודת קבלה מוכרת ועמידה בתנאי החוג הנוסף.',
+      reason: 'נדרשים אנגלית בסיסי, עברית ה׳ או פטור תקף, עמידה בתנאי החוג הנוסף.',
     };
   if (missing.length) return { kind: 'needs_input', requiredInputs: missing };
 

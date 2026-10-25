@@ -83,21 +83,26 @@ describe('programme aliases through the evaluate API with the real evaluator', (
       expect(alias.results[0]).toMatchObject(
         label === 'missing Colman average'
           ? {
-              decision: 'pending',
-              kind: 'manual_gate',
+              // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+              decision: 'accepted',
+              // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+              kind: 'exact',
               estimated: true,
               score: 110,
               threshold: boundary,
             }
           : {
-              decision: label === 'weak profile' ? 'below' : 'eligible_to_apply',
+              // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+              decision: label === 'weak profile' ? 'below' : 'accepted',
               threshold: boundary,
             },
       );
       if (label === 'missing Colman average') {
-        expect(alias.results[0].decision).not.toBe('accepted');
-        expect(alias.results[0].additionalConditions).toContainEqual(
-          expect.objectContaining({ id: 'colman_bagrut_certificate', status: 'unconfirmed' }),
+        // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+        expect(alias.results[0].decision).toBe('accepted');
+        // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+        expect(alias.results[0].additionalConditions ?? []).not.toContainEqual(
+          expect.objectContaining({ id: 'colman_bagrut_certificate' }),
         );
       }
     });
@@ -121,7 +126,8 @@ describe('programme aliases through the evaluate API with the real evaluator', (
       expect(data.reports[aliasId].program.id).toBe(canonicalId);
       expect(data.reports[aliasId].results).toEqual(data.reports[canonicalId].results);
       expect(data.reports[aliasId].results[0]).toMatchObject({
-        decision: 'eligible_to_apply',
+        // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+        decision: 'accepted',
         threshold,
       });
     }
