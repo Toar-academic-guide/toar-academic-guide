@@ -1,0 +1,62 @@
+{
+  "mode": "local static catalogue",
+  "baseUrl": "http://localhost:3027",
+  "evidence": [
+    {
+      "programId": "technion_ee",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "status": 200,
+      "winter": "בחורף תשפ\"ז: סכם 91.5",
+      "spring": "באביב תשפ\"ז, על בסיס מקום פנוי: סכם 94 — מספר המקומות מצומצם",
+      "source": "https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/?utm_source=myway&utm_medium=referral",
+      "contact": "/enquiry?program=technion_ee&institution=technion",
+      "overflow": 0,
+      "screenshot": "qa-evidence (not committed): technion_ee-1280.png"
+    },
+    {
+      "programId": "technion_me",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "status": 200,
+      "winter": "בחורף תשפ\"ז: סכם 87",
+      "spring": null,
+      "source": "https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/?utm_source=myway&utm_medium=referral",
+      "contact": "/enquiry?program=technion_me&institution=technion",
+      "overflow": 0,
+      "screenshot": "qa-evidence (not committed): technion_me-1280.png"
+    },
+    {
+      "programId": "technion_ee",
+      "viewport": {
+        "width": 390,
+        "height": 900
+      },
+      "status": 200,
+      "winter": "בחורף תשפ\"ז: סכם 91.5",
+      "spring": "באביב תשפ\"ז, על בסיס מקום פנוי: סכם 94 — מספר המקומות מצומצם",
+      "source": "https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/?utm_source=myway&utm_medium=referral",
+      "contact": "/enquiry?program=technion_ee&institution=technion",
+      "overflow": 0,
+      "screenshot": "qa-evidence (not committed): technion_ee-390.png"
+    },
+    {
+      "programId": "technion_me",
+      "viewport": {
+        "width": 390,
+        "height": 900
+      },
+      "status": 200,
+      "winter": "בחורף תשפ\"ז: סכם 87",
+      "spring": null,
+      "source": "https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/?utm_source=myway&utm_medium=referral",
+      "contact": "/enquiry?program=technion_me&institution=technion",
+      "overflow": 0,
+      "screenshot": "qa-evidence (not committed): technion_me-390.png"
+    }
+  ]
+}

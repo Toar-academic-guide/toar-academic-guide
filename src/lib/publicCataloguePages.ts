@@ -8,6 +8,7 @@ import { catalogueAdmissionRequirements } from '@/lib/catalogueDisplayText';
 import { officialUrl } from '@/lib/studyJourney';
 import { canonicalProgramId } from '@/lib/seo/programAliases';
 import { getRequirementsChecked, type RequirementsChecked } from '@/lib/requirementsChecked';
+import { getCodeReviewedTechnionWinterVerification } from '@/data/admissions/technionProgramVerification';
 import { listCatalogueInstitutions, listCataloguePrograms } from '@/server/catalogue/queries';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 
@@ -226,13 +227,22 @@ export async function getPublicProgramRequirementSources({
           sourceProgram.id,
         )
       : requirements;
+    // The reviewed winter registry also backs evaluator replay. Keep this
+    // presentation independent of stale catalogue rows in shared-DB previews.
+    const winterCutoff = getCodeReviewedTechnionWinterVerification(
+      `${sourceProgram.id}__${institution.id}`,
+    )?.contract.calculation.cutoff?.acceptance;
+    const displayRequirements =
+      winterCutoff == null
+        ? sourceRequirements
+        : [`בחורף תשפ"ז: סכם ${winterCutoff}`, ...sourceRequirements];
     institutionRequirementSources[institution.id] = {
       program: sourceProgram,
       sourceProgramId: sourceProgram.id,
       requirements:
-        isGeneral && program.isListed !== false && !hasRequirements(sourceRequirements)
+        isGeneral && program.isListed !== false && !hasRequirements(displayRequirements)
           ? []
-          : sourceRequirements,
+          : displayRequirements,
       officialUrl: officialUrl(sourceDetail?.programUrl, institution.id),
       ...([
         'tlvyaffo_cs',

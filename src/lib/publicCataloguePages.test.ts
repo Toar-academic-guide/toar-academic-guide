@@ -28,6 +28,31 @@ import {
 } from './publicCataloguePages';
 
 describe('public catalogue page data', () => {
+  it.each([
+    ['technion_ee', 94, 91.5],
+    ['technion_me', 92, 87],
+  ] as const)(
+    'puts the reviewed winter cutoff first for %s despite stale DB thresholds',
+    async (programId, stale, winter) => {
+      const program = getStaticCataloguePrograms().find((row) => row.id === programId)!;
+      vi.mocked(listCataloguePrograms).mockResolvedValue({
+        data: [{ ...program, thresholds: { technion: stale } }],
+        meta: { catalogueSource: 'database' },
+      });
+      const page = (await getPublicProgramPageData(programId))!;
+      const source = (await getPublicProgramRequirementSources(page)).technion;
+      expect(source.requirements).toEqual([
+        `בחורף תשפ"ז: סכם ${winter}`,
+        ...catalogueAdmissionRequirements(
+          program.institutionDetails![0].specificAdmissionNotes,
+          program.admissionRequirements,
+          programId,
+        ),
+      ]);
+      expect(page.program.thresholds?.technion).toBe(stale);
+    },
+  );
+
   it('uses the Danon culinary programme link from static data while hiding the saved alias', async () => {
     const programs = getStaticCataloguePrograms();
     const culinary = programs.find((program) => program.id === 'danon_culinary')!;

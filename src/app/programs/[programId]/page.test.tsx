@@ -41,6 +41,34 @@ import * as institutionLinks from '@/lib/institutionLinks';
 import ProgramPage, { generateMetadata } from './page';
 
 describe('ProgramPage', () => {
+  it.each([
+    ['technion_ee', 91.5],
+    ['technion_me', 87],
+  ] as const)(
+    'renders %s winter cutoff before other requirements and spring availability',
+    async (programId, cutoff) => {
+      render(await ProgramPage({ params: Promise.resolve({ programId }) }));
+      const winter = screen.getAllByRole('listitem')[0];
+      expect(winter.textContent).toBe(`בחורף תשפ"ז: סכם ${cutoff}`);
+      expect(winter.closest('[dir="rtl"]')?.className).toContain('text-right');
+      if (programId === 'technion_ee') {
+        const spring = screen.getByText(
+          'באביב תשפ"ז, על בסיס מקום פנוי: סכם 94 — מספר המקומות מצומצם',
+        );
+        expect(
+          winter.compareDocumentPosition(spring) & Node.DOCUMENT_POSITION_FOLLOWING,
+        ).toBeTruthy();
+        expect(
+          screen.queryByText('באביב תשפ"ז: 94 — על בסיס מקום פנוי, מספר המקומות מצומצם'),
+        ).toBeNull();
+      } else {
+        expect(screen.queryByText(/באביב תשפ/)).toBeNull();
+      }
+      const source = screen.getByRole('link', { name: 'הטכניון' });
+      expect(source.getAttribute('href')).toContain('utm_source=myway&utm_medium=referral');
+    },
+  );
+
   beforeEach(() => {
     hoisted.capture.mockReset();
     vi.mocked(listCataloguePrograms).mockResolvedValue({
