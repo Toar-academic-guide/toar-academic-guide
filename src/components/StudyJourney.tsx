@@ -47,6 +47,7 @@ import {
   type JourneyRow,
 } from '@/lib/studyJourney';
 import { catalogueAdmissionRequirements, catalogueDescription } from '@/lib/catalogueDisplayText';
+import { technionWinterRequirement } from '@/data/admissions/technionWinterCutoffs';
 import { userProfileSchema } from '@/server/user/profileSchema';
 import type { AcademicScores, RecommendedField, CareerAssessmentDraft } from '@/types';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
@@ -71,6 +72,27 @@ import './StudyJourney.css';
 const CareerAssessment = dynamic(() => import('./CareerAssessment'));
 const JourneyExactGrades = dynamic(() => import('./JourneyExactGrades'));
 const AcademicProfileForm = dynamic(() => import('./AcademicProfileForm'));
+
+function journeyAdmissionRequirements(
+  notes: readonly string[] | undefined,
+  program: CatalogueProgram,
+  institutionId: string,
+): string[] {
+  const requirements = catalogueAdmissionRequirements(
+    notes,
+    program.admissionRequirements,
+    program.id,
+  );
+  const winter = ['technion_ee', 'technion_me'].includes(program.id)
+    ? technionWinterRequirement(program.id, institutionId)
+    : undefined;
+  if (!winter) return requirements;
+  return [
+    winter,
+    ...requirements.filter((text) => !/^בחורף תשפ|^באביב תשפ/.test(text)),
+    ...requirements.filter((text) => /^באביב תשפ/.test(text)),
+  ];
+}
 
 const STEPS = [
   'home',
@@ -1413,10 +1435,10 @@ export default function StudyJourney({
                       requirements={
                         activeRow.program.isListed === false
                           ? ['אין כרגע מידע עדכני על המסלול.']
-                          : catalogueAdmissionRequirements(
+                          : journeyAdmissionRequirements(
                               details?.specificAdmissionNotes,
-                              activeRow.program.admissionRequirements,
-                              activeRow.program.id,
+                              activeRow.program,
+                              activeRow.institution.id,
                             )
                       }
                     />
@@ -1596,15 +1618,21 @@ export default function StudyJourney({
                     requirements={
                       row.program.isListed === false
                         ? ['אין כרגע מידע עדכני על המסלול.']
-                        : catalogueAdmissionRequirements(
+                        : journeyAdmissionRequirements(
                             row.program.institutionDetails?.find(
                               (detail) => detail.institutionName === row.institution.name,
                             )?.specificAdmissionNotes,
-                            row.program.admissionRequirements,
-                            row.program.id,
+                            row.program,
+                            row.institution.id,
                           )
                     }
                   />
+                  {row.program.id === 'technion_ee' && (
+                    <TechnionThresholdNotice
+                      programId={row.program.id}
+                      institutionId={row.institution.id}
+                    />
+                  )}
                   <Primary onClick={() => selectRow(row, 'inquiry')}>יצירת קשר</Primary>
                 </article>
               ))}
