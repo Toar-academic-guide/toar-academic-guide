@@ -108,6 +108,7 @@ import {
 import { runBguEngineeringAdmissionsProof } from '@/server/ingestion/adapters/bguEngineeringAdmissions';
 import { getProgramVerificationArtifact } from '@/data/admissions/tauProgramVerification';
 import { getHaifaInformationSystemsTrackArtifact } from '@/data/admissions/haifaInformationSystemsVerification';
+import { getCodeReviewedTechnionWinterVerification } from '@/data/admissions/technionProgramVerification';
 
 type AdmissionsEvaluationInput = AdmissionsEvaluationRequest & {
   psychometric: number;
@@ -140,7 +141,10 @@ export async function evaluateAdmissionsForProgram(args: {
     freshnessStatesBySourceId: suppliedFreshnessStates,
   } = args;
 
-  const exactSourceIds = exactSourceIdsForProgram(program, input.extraInputs);
+  const codeReviewedWinter = getCodeReviewedTechnionWinterVerification(`${program.id}__technion`);
+  const exactSourceIds = exactSourceIdsForProgram(program, input.extraInputs).filter(
+    (sourceId) => sourceId !== codeReviewedWinter?.contract.source.targetId,
+  );
 
   const freshnessLoad = suppliedFreshnessStates
     ? { status: 'loaded' as const, states: suppliedFreshnessStates }

@@ -2,6 +2,7 @@ import {
   boolean,
   index,
   integer,
+  numeric,
   jsonb,
   pgEnum,
   pgTable,
@@ -296,7 +297,7 @@ export const admissionThresholds = pgTable(
       .references(() => institutions.id, { onDelete: 'cascade' }),
     universityId: text('university_id').notNull(),
     thresholdKind: thresholdKindEnum('threshold_kind').notNull(),
-    thresholdValue: integer('threshold_value'),
+    thresholdValue: numeric('threshold_value', { mode: 'number' }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => ({
