@@ -1,4 +1,8 @@
-import { canonicalInstitutionId, INSTITUTION_ALIASES } from './institutionAliases';
+import {
+  canonicalInstitutionId,
+  curatedCanonicalInstitution,
+  INSTITUTION_ALIASES,
+} from './institutionAliases';
 import type { GeographicRegion, UniversityId } from '@/types';
 
 // ── Institution ID union ──────────────────────────────────────────────────────
@@ -996,12 +1000,12 @@ for (const inst of INSTITUTIONS) {
 const braudeNames = INSTITUTIONS.filter(
   (institution) => canonicalInstitutionId(institution.id) === 'braude',
 ).map((institution) => institution.name);
-const braudeInstitution: InstitutionRecord = {
-  ...INSTITUTIONS.find((institution) => institution.id === 'ort_braude')!,
-  id: 'braude',
-};
-INSTITUTIONS[INSTITUTIONS.findIndex((institution) => institution.id === 'braude')] =
-  braudeInstitution;
+const { index: braudeIndex, institution: braudeInstitution } = curatedCanonicalInstitution(
+  INSTITUTIONS,
+  'braude',
+  'ort_braude',
+);
+INSTITUTIONS[braudeIndex] = braudeInstitution;
 
 // ── Lookup tables ─────────────────────────────────────────────────────────────
 

@@ -102,3 +102,30 @@ it('prefers an existing canonical row in either input order without advertising 
     expect(rows).toHaveLength(2);
   }
 });
+
+describe('curated canonical metadata guards', () => {
+  it.each([
+    { missing: 'ort_braude', rows: [{ id: 'braude', name: 'stub' }] },
+    { missing: 'braude', rows: [{ id: 'ort_braude', name: 'curated' }] },
+  ])('throws a clear error when $missing metadata is absent', async ({ missing, rows }) => {
+    const { curatedCanonicalInstitution } = await import('./institutionAliases');
+    expect(() => curatedCanonicalInstitution(rows, 'braude', 'ort_braude')).toThrow(
+      `Missing institution metadata: ${missing}`,
+    );
+  });
+  it('selects the canonical position and curated metadata without changing saved rows', async () => {
+    const { curatedCanonicalInstitution } = await import('./institutionAliases');
+    const rows = [
+      { id: 'braude', name: 'stub' },
+      { id: 'ort_braude', name: 'curated' },
+    ];
+    expect(curatedCanonicalInstitution(rows, 'braude', 'ort_braude')).toEqual({
+      index: 0,
+      institution: { id: 'braude', name: 'curated' },
+    });
+    expect(rows).toEqual([
+      { id: 'braude', name: 'stub' },
+      { id: 'ort_braude', name: 'curated' },
+    ]);
+  });
+});

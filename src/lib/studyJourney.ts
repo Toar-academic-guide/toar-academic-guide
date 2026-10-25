@@ -1,6 +1,7 @@
 import { isBatchCUnsupportedProgramId } from '@/data/admissions/batchCUnsupportedProgramIds';
 import { FIELD_ENRICHMENT, PROGRAM_FIELD_MAP } from '@/data/degrees/fieldEnrichment';
 import { DANON_PROGRAM_NAMES } from '@/data/admissions/danon';
+import { INSTITUTION_BY_NAME } from '@/data/institutions';
 import { getInstitutionDirectoryItems } from '@/data/institutionDirectory';
 import { canonicalProgramId, PROGRAM_CANONICAL_ALIASES } from '@/lib/seo/programAliases';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
@@ -134,7 +135,17 @@ export function journeyRows(
                 id: `${program.id}:${id}`,
                 fieldId: field.id,
                 fieldName: program.id === 'tlvyaffo_business' ? program.name : field.name,
-                program,
+                // Detail consumers select by the displayed institution name. Preserve
+                // alias-owned copy when the public institution uses its curated name.
+                program: {
+                  ...program,
+                  institutionDetails: program.institutionDetails?.map((detail) =>
+                    detail.institutionName !== institution.name &&
+                    INSTITUTION_BY_NAME[detail.institutionName]?.id === institution.id
+                      ? { ...detail, institutionName: institution.name }
+                      : detail,
+                  ),
+                },
                 institution,
               },
             ]

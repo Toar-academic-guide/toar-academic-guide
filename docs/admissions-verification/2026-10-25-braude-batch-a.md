@@ -19,21 +19,67 @@ Key official wording:
 
 The bonus paragraph specifies 12.5 extra points for a four-unit science and 25 for a five-unit science; both figures are also in the supplied research. The calculator says its calculation is an aid and that the registration centre determines the binding average. These sources establish floors, **not a published combined bagrut/psychometric formula**. No composite is calculated or estimated. Confidence in the encoded numerical floors is high; route completeness limitations are explicit below.
 
+## Follow-up 4: verbatim regular-track English floors
+
+Approved source: `/workspace/pm-research/raw/official/braude/VERBATIM-english-floors.md`, [official registration page](https://w3.braude.ac.il/intrested/), fetched **2026-10-25 08:59:51 (Asia/Jerusalem, UTC+2)**, HTTP 200. The quotes below are verbatim from the saved `intrested.txt`; these regular-track values supersede the earlier research omissions.
+
+Electrical:
+
+> אנגלית –  ציון 70 ברמה של 4 יחידות לימוד או 60 ברמה של 5 יחידות לימוד
+
+`intrested.txt:349`.
+
+> 90 במרכיב אנגלית בפסיכומטרי/אמירנט
+
+`intrested.txt:340`.
+
+Mechanical:
+
+> אנגלית – ציון 70 ברמה של 4 יחידות לימוד או ציון 60 ברמה של  5 יחידות לימוד
+
+`intrested.txt:363`.
+
+> 85 במרכיב אנגלית בפסיכומטרי/אמירנט
+
+`intrested.txt:355`.
+
+Electrical–mechanical double major:
+
+> אנגלית –  ציון 70 ברמה של 4 יחידות לימוד או 60 ברמה של 5 יחידות לימוד
+
+`intrested.txt:439`.
+
+> 100 במרכיב אנגלית בפסיכומטרי/אמירנט
+
+`intrested.txt:430`.
+
+Industrial and management:
+
+> אנגלית – ציון 70 ברמה של 4 יחידות לימוד או 60 ברמה של 5 יחידות לימוד
+
+`intrested.txt:407`.
+
+> 85 במרכיב אנגלית בפסיכומטרי/אמירנט
+
+`intrested.txt:399`.
+
+All floors use `>=`. English bagrut is exactly `(units = 4 AND grade >= 70) OR (units = 5 AND grade >= 60)`, so 5u65 passes, 5u59 fails, and 4u65 fails. Existing English section floors 90 / 85 / 100 are confirmed; industrial adds 85 (84 fails). Missing sections emit exactly `requiredInputs: ['psychometric_english']`, with no green verdict. No values from the other tracks in the capture are newly encoded. EE + Applied Mathematics has no published threshold block and remains unsupported; EE–mechanical values are never borrowed for it.
+
 ## Encoded thresholds
 
-All thresholds are inclusive (`>=`). “4u/5u” means alternative unit counts with the corresponding grade; five units do not use the four-unit grade. Blank means **not encoded**, not “no requirement”. Every numeric value below appears in the research for that department and was confirmed on the official page.
+All thresholds are inclusive (`>=`). “4u/5u” means alternative unit counts with the corresponding grade; five units do not use the four-unit grade. Blank means **not encoded**, not “no requirement”. Every numeric value below appears in the supplied department research or the approved verbatim English-floor capture and was confirmed on the official page.
 
 | Department / local rule id | General psychometric | Quant section | English section | Bagrut without bonuses | Math 4u / 5u | English bagrut 4u / 5u | Physics 5u | Bonus-average route |
 | --- | ---: | ---: | ---: | ---: | --- | --- | ---: | ---: |
 | Civil / `braude_civil_eng` | 580, composite unchecked | — | 85 | 70 | 85 / 75 | 70 / 60 | 80 | unavailable |
 | Biotechnology / `braude_biotech` | 550 | — | 85 | 70 | 80 / 70 | 70 / 60 | — | 90 |
-| Electrical / `braude_ee` | 550 | 110 | 90 | 70 | 80 / 70 | — | 60 | 95 |
-| Mechanical / `braude_me` | 550 | — | 85 | 70 | 75 / 65 | — | — | 95 |
+| Electrical / `braude_ee` | 550 | 110 | 90 | 70 | 80 / 70 | 70 / 60 | 60 | 95 |
+| Mechanical / `braude_me` | 550 | — | 85 | 70 | 75 / 65 | 70 / 60 | — | 95 |
 | Information systems / `braude_infosystems` | 550 + unchecked quantitative composite | 110 | 85 | 70 | 80 / 70 | 70 / 60 | — | 101 |
 | Software / `braude_softwareeng` | 550 + unchecked quantitative composite | 110 | 85 | 70 | 80 / 70 | 70 / 60 | — | 101 |
-| Industrial / `braude_industrial_eng` | 550 | — | — | 70 | 80 / 70 | — | — | 101 |
+| Industrial / `braude_industrial_eng` | 550 | — | 85 | 70 | 80 / 70 | 70 / 60 | — | 101 |
 | CS / `braude_cs`, existing `mon_12220708942_cs` | 600; 580 with math 4u85 / 5u75 | 115 | 85 | 75 | 80 / 70 | 75 / 70 | — | unavailable |
-| Electrical–mechanical / `braude_ee_me` | 550 | 110 | 100 | 70 | 80 / 70 | — | 70 | 105 |
+| Electrical–mechanical / `braude_ee_me` | 550 | 110 | 100 | 70 | 80 / 70 | 70 / 60 | 70 | 105 |
 
 These department slugs are local rule selectors, not newly inserted catalogue programmes. Only `mon_12220708942_cs` already identifies a specific department in the persisted catalogue. No new programme/threshold rows are allocated by this phase.
 
@@ -47,7 +93,7 @@ The psychometric route also checks a non-math/non-English advanced subject at 60
 
 For the ordinary route, a schema-v2 subject record explicitly marked complete, nonempty and consisting entirely of ordinary exams supplies the conservative unit-weighted average `sum(units * final grade) / sum(units)`, without bonuses, subject deletion, or rounding. This is an interpretation of “weighted, without bonuses”, not an institutional composite. Any project/combined row, schema-v1 record, absent record, or incomplete record leaves that average unchecked (`bagrut_subject_record` required). Entering grades or an average assumes full bagrut; the completeness flag is needed to calculate the average, **not to confirm certificate eligibility**. There is no full-bagrut confirmation gate or caveat.
 
-For bonus routes, the research omits every department's subject floors and the full optimal-average policy. The live page contains additional numbers, but the brief forbids importing live-only thresholds. Therefore the route's published bonus-average threshold is recorded as an unchecked condition; neither a generic average just below the threshold nor one above it establishes pass/fail. A complete MyWay record also does not resolve the missing source contract. No science-bonus algorithm or guessed subject floors are applied. All seven bonus routes remain `needs_input` in this phase.
+The no-psychometric track stays outside this PR. The original research omitted its subject floors and full optimal-average policy; the new verbatim capture also includes other tracks, but follow-up 4 authorizes only regular-track English floors. Therefore the route's published bonus-average threshold is recorded as an unchecked condition; neither a generic average just below the threshold nor one above it establishes pass/fail. A complete MyWay record also does not resolve the missing source contract. No science-bonus algorithm or guessed subject floors are applied. All seven bonus routes remain `needs_input` in this phase.
 
 ## Precedence and result semantics
 
@@ -63,18 +109,17 @@ Civil's `580 (רב תחומי או כמותי הגבוה מביניהם)` and so
 
 ## Source gaps and deferred alternatives
 
-- The live page includes ordinary English-bagrut rows for electrical, mechanical, industrial and the double major, omitted from the research. They stay unchecked conditions without importing numbers; these ordinary routes cannot be green.
-- The research omits industrial engineering's English-section floor although the live page specifies one. It remains unchecked, also preventing green. No number is imported from the live-only row.
+- Electrical, mechanical, industrial and EE–mechanical ordinary English gaps are resolved by the approved verbatim capture above. Their fully checked ordinary routes can now be green. EE + Applied Mathematics remains unsupported because no floors were published for it.
 - The live page's “highest of general/quantitative” wording also accompanies other general-score rows. The encoded scores follow the brief's general-score floors; the quantitative-weighted alternative is not estimated. This is not a complete evaluator of every alternative the college may accept. The three composite-required programmes identified by the ruling are explicitly withheld as described above.
 - Advanced-subject eligibility beyond ordinary four/five-unit exams (projects/combined qualifications) is not inferred. These can leave a requirement unresolved.
 - The official page also describes prep/classification-exam substitutes, dedicated mechina, prior technician study, external courses, special populations and conditional Hebrew-language tests. The research does not supply a complete input-checkable rule set for those alternatives. No numbers from live-only language/special-route rows are encoded, and no new manual gate dilutes a successful ordinary-score check.
-- Bonus subject floors and science/optimal-average interpretation need a complete approved research extract before being encoded. The bonus conditions remain unchecked even for a high generic average.
+- Bonus-track encoding remains deferred by scope even though the new source capture contains additional quotes. Science/optimal-average interpretation also remains unresolved. The existing bonus conditions stay unchecked even for a high generic average.
 
 ## Identity reconciliation and unchanged live dispatch
 
 `src/data/institutionAliases.ts` maps `ort_braude` and `mon_12220708942` to `braude`. The canonical record copies the hand-written `ort_braude` metadata: name `המכללה האקדמית להנדסה אורט בראודה`, region `north`, domain `braude.ac.il`, and existing homepage `https://www.braude.ac.il`. It replaces the Monday stub's centre/mechina metadata. All three id lookups and both Hebrew names resolve to this curated canonical record. The raw curated `ort_braude` entry is retained; its name, region, domain, logo and homepage match origin/main, with only the lookup result's id canonicalized. Region-by-name lookup also preserves both Hebrew names. Database reads use the same curated name/region/domain/homepage and preserve stored logos.
 
-Both static and database institution lists return exactly one Braude row with id `braude`; aliases are lookup keys, not extra list entries. Normalization never mutates database input rows. Existing canonical rows take precedence over aliases, regardless of row order. Programme ids and raw database rows remain intact; saved institution ids resolve through `canonicalInstitutionId` in the institution-page and enquiry-target data lookups, without redirects. Legacy Hebrew names continue to match programme admission details. The existing content-repair entry stays under its historical id and matches through the alias map. No generated evidence was edited or regenerated.
+Both static and database institution lists return exactly one Braude row with id `braude`; aliases are lookup keys, not extra list entries. Normalization never mutates database input rows. Existing canonical rows take precedence over aliases, regardless of row order. Programme ids and raw database rows remain intact; saved institution ids resolve through `canonicalInstitutionId` in the institution-page and enquiry-target data lookups, without redirects. Public programme conditions match Hebrew aliases through `INSTITUTION_BY_NAME` and canonical ids, without a Braude-only name exception. Result-detail `journeyRows` projects matching alias-owned detail names to the displayed institution name; the source programme/notes/official URL stay intact. This preserves the existing component's exact-name selection. The canonical metadata helper throws a clear `Missing institution metadata: <id>` error if either curated or canonical metadata is absent, rather than writing an array entry at index -1. The existing content-repair entry stays under its historical id and matches through the alias map. No generated evidence was edited or regenerated.
 
 `braude_engineering` is an unspecified engineering shell; `braude_prep` is mechina. Neither is assigned department floors. Both Batch C lists remain unchanged and their regression tests still require unsupported live results. `mon_12220708942_cs` is supported by the standalone rule only: changing `evaluator.ts` is fenced.
 
@@ -121,7 +166,25 @@ The four required precedence cases are explicitly named in `braudePublishedRoute
 
 Braude emits exactly `requiredInputs: ['psychometric_math']` for a missing quant-section score and `requiredInputs: ['psychometric_english']` for a missing English-section score when the other required inputs pass. Its section floor/condition ids use those same existing `AdmissionsRequiredInput` members. The EE 110 / CS 115 precedence tests require the exact quant array, and the missing-section cases require exact arrays for both fields without weakening the other verdict or floor assertions.
 
-Both conventions were verified directly on `origin/main` using `git show`: `src/server/admissions/afekaPublishedRoutesEvaluation.ts` passes `psychometric_math` to `minimum`, and `src/server/admissions/bagrutPolicies.ts` returns `needsInput(..., ['psychometric_english'])`. Both members already exist in main's `AdmissionsRequiredInput` union. No type addition is needed: `git diff origin/main -- src/types/admissionsEvaluation.ts` is empty. Other producers, consumers and `missingData` are unchanged. Oded owns the separate client wiring; the dispatcher remains unwired.
+Both conventions were verified directly on `origin/main` using `git show`: `src/server/admissions/afekaPublishedRoutesEvaluation.ts` passes `psychometric_math` to `minimum`, and `src/server/admissions/bagrutPolicies.ts` returns `needsInput(..., ['psychometric_english'])`. Both members already exist in main's `AdmissionsRequiredInput` union. No type addition is needed: `git diff origin/main -- src/types/admissionsEvaluation.ts` is empty. Other section-key producers/consumers and `missingData` are unchanged. Oded owns the separate client wiring; the dispatcher remains unwired.
+
+## Follow-up 4: Samuel QA regressions and historical reproduction
+
+Read the complete `pr291-c21840a/SUMMARY.md`, the desktop/mobile production and preview text captures for CS published requirements, result conditions, the legacy CS card and legacy institution page, plus `braude-catalogue-diff.json` and `braude-api-comparison.json`. Production retains 75 / 600 / 115 / 580 in the CS conditions and links the legacy institution card to `/programs/mon_12220708942_cs`. The programme institution link remains `/institutions/braude` after the approved public-id reconciliation; no new UI/redirect/link is introduced. The test fixture copies the pinned preview's actual programme and relevant institution API rows, whose conditions match production.
+
+Tests were added before implementation in the owning `publicCataloguePages.test.ts` and `studyJourney.test.ts`. Only these new test blocks, their imports and captured test fixture were copied into a detached `/tmp/braude-c21840a` worktree at `c21840a317d3f1e81a524d69d8c910a495320e3f`, with `node_modules` symlinked. No historical production code was patched. Command: `npx vitest run src/lib/publicCataloguePages.test.ts src/lib/studyJourney.test.ts -t 'QA block' --reporter=verbose`.
+
+| New regression test | At c21840a | After follow-up 4 |
+| --- | --- | --- |
+| `QA block 1: mon_12220708942_cs programme page retains published CS conditions` | FAIL: generic institution-check text replaces the five published notes | PASS: exact notes, all four scores, official URL and canonical institution link retained |
+| `QA block 1: mon_12220708942_cs result detail retains published CS conditions after alias mapping` | FAIL: generic institution-check text replaces published notes | PASS: exact notes, all four scores and official URL retained; original programme unmutated |
+| `QA block 2: legacy mon_12220708942 institution retains its CS programme card and production link` | FAIL: CS card absent (`undefined`) | PASS: listed CS card and `/programs/mon_12220708942_cs` retained |
+
+Historical run: **3 failed / 57 unrelated tests skipped / 2 files**; all three fail for Samuel's reported behaviour. The temporary worktree and symlink were removed without stashing or changing this branch. On f6993b4 the new page/card regressions already passed; the result-detail test still failed and drove the remaining data-path fix.
+
+English tests were updated first: 4u70/69 and 5u60/59 for each of the four departments, literal-unit 5u65/59 and 4u65 cases, industrial English section 85/84, passing-route green precedence, and exact missing-English arrays. The pre-implementation run had **42 failures / 248 passes**, including the missing metadata helper, result-detail regression and English floor cases. The former unchecked-English-gap assertion was replaced with confirmed-floor/accepted assertions because the approved new quotes resolve that gap; unrelated assertions were retained.
+
+No follow-up edits to `src/server/catalogue/queries.ts`, `serializers.ts`, `api/`, geography, static catalogue, enquiry target, components, app, SEO, evaluator or the admissions input type. The existing legacy institution lookup fix is exercised by the new captured-CS regression without changing its production code again.
 
 ## SQL packet — NOT APPLIED
 
@@ -137,11 +200,11 @@ Tests were written and executed before the new rule/alias modules existed; both 
 
 - `npm run lint` — passed.
 - `npm run typecheck` — passed.
-- Focused Vitest: `npx vitest run src/server/admissions/braudePublishedRoutesEvaluation.test.ts` — **173 passed / 1 file**, including exact `psychometric_math` / `psychometric_english` missing-input arrays and precedence cases. The updated assertions failed against the previous section-key output before this producer change. Corrective round 1's catalogue/alias verification passed **397 tests / 10 files**; those tests also remain in the full suite.
-- `npm test` — **3,721 passed, 86 skipped / 241 passed files, 13 skipped**; no failed checks to reproduce on origin/main.
-- `npm run guard:pre-pr` — passed; **2,624 tests / 106 files**. It ran migration consistency, read-grant checks, catalogue seed **dry-run** and Monday evidence verification; no database write/seed was performed. Existing migration-journal timestamp warning and absent local raw Monday export were reported by the guard; evidence verification passed.
-- `ce-simplify-code` applied within the diff, preserving proof tests: shared numeric gates retained; repeated missed-floor explanation reduced to one calculation; redundant comments removed. No agent review pipeline ran.
+- Focused Vitest: `npx vitest run src/data/institutionAliases.test.ts src/lib/publicCataloguePages.test.ts src/lib/studyJourney.test.ts src/server/admissions/braudePublishedRoutesEvaluation.test.ts` — **290 passed / 4 files**, covering the three captured QA regressions, missing metadata guards, every new English boundary and literal-unit/precedence cases. Historical red evidence is recorded above; no assertion was weakened to obtain green.
+- `npm test` — **3,765 passed, 86 skipped / 241 passed files, 13 skipped**; no failed checks to reproduce on origin/main.
+- `npm run guard:pre-pr` — passed; **2,625 tests / 106 files**. It ran migration consistency, read-grant checks, catalogue seed **dry-run** and Monday evidence verification; no database write/seed was performed. Existing migration-journal timestamp warning and absent local raw Monday export were reported by the guard; evidence verification passed.
+- Earlier phase: `ce-simplify-code` applied within the diff, preserving proof tests: shared numeric gates retained; repeated missed-floor explanation reduced to one calculation; redundant comments removed. No agent review pipeline ran.
 
 Code review: skipped (ce-code-review not run) — per brief.
 
-No layout or styling change is intended; no UI or routing files were edited. The intended data-driven display correction is explicit: Braude appears once with the curated name and northern region, domain and homepage, rather than the Monday centre/mechina stub or duplicate alias entries. Curated `ort_braude` consumers retain their origin/main name/region/domain/logo metadata, and database logos are preserved. Both Hebrew names keep region lookup and admission detail matching. No browser/deployed/Supabase verification is claimed: dispatcher wiring is intentionally absent, the SQL is unapplied, and this brief forbids deployment/database writes. Direct data/lookup and floor tests establish the corrected behavior; production behavior has not gained Braude admissions coverage in phase 1.
+No layout or styling change is intended; no UI or routing files were edited. The intended data-driven display correction is explicit: Braude appears once with the curated name and northern region, domain and homepage, rather than the Monday centre/mechina stub or duplicate alias entries. Curated `ort_braude` consumers retain their origin/main name/region/domain/logo metadata, and database logos are preserved. Both Hebrew names keep region lookup and admission detail matching. The additional intended display restoration keeps published CS conditions on programme/result details and the production legacy CS card/link. No new UI, layout or routing was added. No new browser/deployed/Supabase verification is claimed: dispatcher wiring is intentionally absent, the SQL is unapplied, and this brief forbids deployment/database writes. Direct data/lookup and floor tests establish the corrected behavior; production behavior has not gained Braude admissions coverage in phase 1.

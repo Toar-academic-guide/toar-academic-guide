@@ -18,7 +18,7 @@ const STATIC_PROGRAM_BY_ID = new Map(PUBLIC_PROGRAMS.map((program) => [program.i
 function matchesInstitutionName(name: string, institution: CatalogueInstitution): boolean {
   return (
     name === institution.name ||
-    (institution.id === 'braude' && INSTITUTION_BY_NAME[name]?.id === 'braude')
+    INSTITUTION_BY_NAME[name]?.id === canonicalInstitutionId(institution.id)
   );
 }
 

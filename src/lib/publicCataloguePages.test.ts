@@ -1,3 +1,5 @@
+import braudeCsFixture from './__fixtures__/braudeCsCatalogue.json';
+import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type { InstitutionId } from '@/data/institutions';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -683,4 +685,40 @@ it('keeps Braude admission details when the programme uses the legacy Hebrew ins
   });
   const page = (await getPublicProgramPageData('braude_engineering'))!;
   expect((await getPublicProgramRequirementSources(page)).braude.requirements).toEqual(notes);
+});
+
+// QA captures: pr291-c21840a/braude-preview-programs.json and catalog-preview-institutions.json.
+describe('Braude CS published-condition parity', () => {
+  beforeEach(() => {
+    vi.mocked(listCataloguePrograms).mockResolvedValue({
+      data: [braudeCsFixture.program as CatalogueProgram],
+      meta: {},
+    });
+    vi.mocked(listCatalogueInstitutions).mockResolvedValue({
+      data: braudeCsFixture.institutions as CatalogueInstitution[],
+      meta: {},
+    });
+  });
+  it('QA block 1: mon_12220708942_cs programme page retains published CS conditions', async () => {
+    const page = (await getPublicProgramPageData('mon_12220708942_cs'))!;
+    const source = (await getPublicProgramRequirementSources(page)).braude;
+    expect(source.requirements).toEqual(
+      braudeCsFixture.program.institutionDetails[0].specificAdmissionNotes,
+    );
+    for (const floor of ['75', '600', '115', '580']) {
+      expect(source.requirements.join(' ')).toContain(floor);
+    }
+    expect(source.officialUrl).toBe(
+      'https://w3.braude.ac.il/intrested/?utm_source=myway&utm_medium=referral',
+    );
+    expect(page.institutionProgramPaths.braude).toBe('/institutions/braude');
+  });
+  it('QA block 2: legacy mon_12220708942 institution retains its CS programme card and production link', async () => {
+    const page = (await getPublicInstitutionPageData('mon_12220708942'))!;
+    const cs = page.programs.find((program) => program.id === 'mon_12220708942_cs');
+    expect(cs).toBeDefined();
+    expect(cs?.isListed).toBe(true);
+    // ProgramCards uses this exact programme-id URL on the institution page.
+    expect(cs && `/programs/${encodeURIComponent(cs.id)}`).toBe('/programs/mon_12220708942_cs');
+  });
 });

@@ -29,7 +29,7 @@ type Department = {
   composite?: string;
   cs?: boolean;
 };
-// Only department values present in both the supplied research and official page.
+// Department values from the supplied research and official verbatim source captures.
 const DEPARTMENTS: Readonly<Record<string, Department>> = {
   braude_civil_eng: {
     psych: 580,
@@ -54,10 +54,18 @@ const DEPARTMENTS: Readonly<Record<string, Department>> = {
     english: 90,
     average: 70,
     math: [80, 70],
+    englishBagrut: [70, 60],
     physics: 60,
     bonus: 95,
   },
-  braude_me: { psych: 550, english: 85, average: 70, math: [75, 65], bonus: 95 },
+  braude_me: {
+    psych: 550,
+    english: 85,
+    average: 70,
+    math: [75, 65],
+    englishBagrut: [70, 60],
+    bonus: 95,
+  },
   braude_infosystems: {
     psych: 550,
     quant: 110,
@@ -78,7 +86,14 @@ const DEPARTMENTS: Readonly<Record<string, Department>> = {
     bonus: 101,
     composite: '550 בציון רב תחומי ו־550 בדגש כמותי',
   },
-  braude_industrial_eng: { psych: 550, average: 70, math: [80, 70], bonus: 101 },
+  braude_industrial_eng: {
+    psych: 550,
+    english: 85,
+    average: 70,
+    math: [80, 70],
+    englishBagrut: [70, 60],
+    bonus: 101,
+  },
   braude_cs: {
     psych: 600,
     quant: 115,
@@ -94,6 +109,7 @@ const DEPARTMENTS: Readonly<Record<string, Department>> = {
     english: 100,
     average: 70,
     math: [80, 70],
+    englishBagrut: [70, 60],
     physics: 70,
     bonus: 105,
   },
@@ -271,12 +287,6 @@ export function evaluateBraudePublishedRoutes({
   const gaps: Floor[] = [
     ...(department.composite
       ? [unchecked('institution_weighted_score', department.composite)]
-      : []),
-    ...(!englishBagrut
-      ? [unchecked('english_grade', 'דרישת הבגרות באנגלית טעונה בדיקה מול המכללה')]
-      : []),
-    ...(input.degreeId === 'braude_industrial_eng'
-      ? [unchecked('psychometric_english', 'דרישת הסיווג באנגלית טעונה בדיקה מול המכללה')]
       : []),
   ];
   const primary = allOf(...floors);

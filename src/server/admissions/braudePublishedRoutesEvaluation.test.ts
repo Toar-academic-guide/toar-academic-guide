@@ -49,13 +49,13 @@ const departments = [
   // id, psych, quant, English section, raw average, math 4u/5u, English bagrut 4u/5u, physics
   ['braude_civil_eng', 580, undefined, 85, 70, 85, 75, 70, 60, 80],
   ['braude_biotech', 550, undefined, 85, 70, 80, 70, 70, 60, undefined],
-  ['braude_ee', 550, 110, 90, 70, 80, 70, undefined, undefined, 60],
-  ['braude_me', 550, undefined, 85, 70, 75, 65, undefined, undefined, undefined],
+  ['braude_ee', 550, 110, 90, 70, 80, 70, 70, 60, 60],
+  ['braude_me', 550, undefined, 85, 70, 75, 65, 70, 60, undefined],
   ['braude_infosystems', 550, 110, 85, 70, 80, 70, 70, 60, undefined],
   ['braude_softwareeng', 550, 110, 85, 70, 80, 70, 70, 60, undefined],
-  ['braude_industrial_eng', 550, undefined, undefined, 70, 80, 70, undefined, undefined, undefined],
+  ['braude_industrial_eng', 550, undefined, 85, 70, 80, 70, 70, 60, undefined],
   ['braude_cs', 600, 115, 85, 75, 80, 70, 75, 70, undefined],
-  ['braude_ee_me', 550, 110, 100, 70, 80, 70, undefined, undefined, 70],
+  ['braude_ee_me', 550, 110, 100, 70, 80, 70, 70, 60, 70],
 ] as const;
 
 describe('Braude published department floors', () => {
@@ -355,15 +355,49 @@ describe('Braude published department floors', () => {
     if (record.schemaVersion === 2) record.complete = false;
     expect(status(input, 'bagrut_subject_record')).toBe('unconfirmed');
   });
-  it('known English floors absent from the research stay unchecked', () => {
-    for (const id of ['braude_ee', 'braude_me', 'braude_industrial_eng', 'braude_ee_me']) {
+  it.each(['braude_ee', 'braude_me', 'braude_industrial_eng', 'braude_ee_me'])(
+    'precedence: %s is green when all floors including the verbatim English floors pass',
+    (id) => {
       const result = evaluate(profile(id));
-      expect(result.decision).not.toBe('accepted');
+      expect(result).toMatchObject({ decision: 'accepted', scoreAssessment: 'meets_threshold' });
+      expect(
+        result.additionalConditions?.every((condition) => condition.status === 'confirmed'),
+      ).toBe(true);
       expect(result.additionalConditions).toContainEqual(
-        expect.objectContaining({ id: 'english_grade', status: 'unconfirmed' }),
+        expect.objectContaining({ id: 'english_grade', status: 'confirmed' }),
       );
-    }
-  });
+    },
+  );
+  for (const id of ['braude_ee', 'braude_me', 'braude_industrial_eng', 'braude_ee_me']) {
+    it.each([
+      [5, 65, 'confirmed'],
+      [5, 59, 'unmet'],
+      [4, 65, 'unmet'],
+    ] as const)(
+      `${id} English uses the literal units: %iu at %i is %s`,
+      (units, grade, expected) => {
+        const input = profile(id);
+        subject(input, 'english', units, grade);
+        expect(status(input, 'english_grade')).toBe(expected);
+        if (expected === 'confirmed') expect(evaluate(input).decision).toBe('accepted');
+        else expect(evaluate(input).decision).not.toBe('accepted');
+      },
+    );
+    it(`precedence: ${id} missing English section needs_input with the existing key`, () => {
+      const input = profile(id);
+      input.extraInputs!.psychometricEnglish = undefined;
+      const result = evaluate(input);
+      expect(result).toMatchObject({ kind: 'needs_input', decision: 'unknown' });
+      expect(result.requiredInputs).toEqual(['psychometric_english']);
+      expect(result.additionalConditions).toContainEqual(
+        expect.objectContaining({ id: 'english_grade', status: 'confirmed' }),
+      );
+      expect(result.additionalConditions).toContainEqual(
+        expect.objectContaining({ id: 'psychometric_english', status: 'unconfirmed' }),
+      );
+      expect(result.scoreAssessment).not.toBe('meets_threshold');
+    });
+  }
   it('resolves both institution aliases and the existing CS programme without renaming it', () => {
     for (const id of ['braude', 'ort_braude', 'mon_12220708942']) {
       expect(isBraudePublishedRoutePair('mon_12220708942_cs', id)).toBe(true);
@@ -375,7 +409,7 @@ describe('Braude published department floors', () => {
       ).toBe('braude');
     }
   });
-  it.each(['braude_engineering', 'braude_prep', 'cs', 'unrelated'])(
+  it.each(['braude_engineering', 'braude_prep', 'braude_ee_math', 'cs', 'unrelated'])(
     'does not assign engineering departments to %s',
     (id) => {
       expect(isBraudePublishedRoutePair(id, 'braude')).toBe(false);
