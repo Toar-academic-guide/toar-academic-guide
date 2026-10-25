@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import reviewedManifest from '@/data/admissions/reviewedManifest.json';
+import technionWinterManifest from './__fixtures__/technionWinterManifest.json';
 
 vi.mock('server-only', () => ({}));
 
@@ -53,45 +54,68 @@ const bguChange = {
 };
 
 describe('admissions release publisher', () => {
-  it('publishes the reviewed winter Technion cutoffs and legacy aliases once with their ledger', async () => {
-    const repository = new MemoryAdmissionsReleaseRepository();
-    const expected = [
-      ['technion_ee', 94, 91.5],
-      ['technion_me', 92, 87],
-      ['ee', 94, 91.5],
-      ['me', 92, 87],
-    ] as const;
-    expect(reviewedManifest.releaseKind).toBe('canonical_change');
-    expect(
-      reviewedManifest.changes.map(({ target, before, after }) => [
-        target.programId,
-        before,
-        after,
-      ]),
-    ).toEqual(expected);
-    for (const [id, before] of expected) repository.canonicalCutoffs.set(`technion:${id}`, before);
-    const publisher = createAdmissionsReleasePublisher(repository);
-    const input = { manifest: reviewedManifest, repositoryCommit: 'technion-winter-reviewed' };
+  it.each([
+    ['fixture', technionWinterManifest],
+    [
+      'repository',
+      {
+        ...reviewedManifest,
+        changes: reviewedManifest.changes.filter((change) =>
+          technionWinterManifest.changes.some(
+            (winter) =>
+              winter.target.programId === change.target?.programId &&
+              winter.target.institutionId === change.target.institutionId &&
+              winter.target.cycle === change.target.cycle &&
+              winter.ruleKind === change.ruleKind,
+          ),
+        ),
+      },
+    ],
+  ])(
+    'publishes the reviewed winter Technion cutoffs and legacy aliases once with their ledger (%s)',
+    async (_source, reviewedManifest) => {
+      const repository = new MemoryAdmissionsReleaseRepository();
+      const expected = [
+        ['technion_ee', 94, 91.5],
+        ['technion_me', 92, 87],
+        ['ee', 94, 91.5],
+        ['me', 92, 87],
+      ] as const;
+      expect(reviewedManifest.releaseKind).toBe('canonical_change');
+      expect(
+        reviewedManifest.changes.map(({ target, before, after }) => [
+          target.programId,
+          before,
+          after,
+        ]),
+      ).toEqual(expected);
+      for (const [id, before] of expected)
+        repository.canonicalCutoffs.set(`technion:${id}`, before);
+      const publisher = createAdmissionsReleasePublisher(repository);
+      const input = { manifest: reviewedManifest, repositoryCommit: 'technion-winter-reviewed' };
 
-    await expect(publisher.publish(input)).resolves.toMatchObject({ status: 'published' });
-    await expect(publisher.publish(input)).resolves.toMatchObject({ status: 'already_published' });
-
-    expect(repository.releases).toHaveLength(1);
-    expect(repository.transitions).toHaveLength(4);
-    expect(repository.items).toHaveLength(4);
-    for (const [programId, before, after] of expected) {
-      expect(repository.canonicalCutoffs.get(`technion:${programId}`)).toBe(after);
-      const transition = repository.transitions.find((item) => item.programId === programId)!;
-      expect(transition).toMatchObject({ institutionId: 'technion', cycle: '2027' });
-      expect(repository.items.find((item) => item.transitionId === transition.id)).toMatchObject({
-        beforeValue: { value: before },
-        afterValue: { value: after },
-        effectiveFrom: '2026-10-25',
-        sourceProofs: [expect.objectContaining({ proofType: 'exact_official' })],
+      await expect(publisher.publish(input)).resolves.toMatchObject({ status: 'published' });
+      await expect(publisher.publish(input)).resolves.toMatchObject({
+        status: 'already_published',
       });
-    }
-    expect(repository.canonicalCutoffs.get('tau:tau_cs')).toBe(706);
-  });
+
+      expect(repository.releases).toHaveLength(1);
+      expect(repository.transitions).toHaveLength(4);
+      expect(repository.items).toHaveLength(4);
+      for (const [programId, before, after] of expected) {
+        expect(repository.canonicalCutoffs.get(`technion:${programId}`)).toBe(after);
+        const transition = repository.transitions.find((item) => item.programId === programId)!;
+        expect(transition).toMatchObject({ institutionId: 'technion', cycle: '2027' });
+        expect(repository.items.find((item) => item.transitionId === transition.id)).toMatchObject({
+          beforeValue: { value: before },
+          afterValue: { value: after },
+          effectiveFrom: '2026-10-25',
+          sourceProofs: [expect.objectContaining({ proofType: 'exact_official' })],
+        });
+      }
+      expect(repository.canonicalCutoffs.get('tau:tau_cs')).toBe(706);
+    },
+  );
 
   it('does not create a release for an empty reviewed manifest', async () => {
     const repository = new MemoryAdmissionsReleaseRepository();
