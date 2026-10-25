@@ -206,8 +206,12 @@ it.each([
       });
       expect(response.status).toBe(200);
       const { data } = await response.json();
-      expect(data.results[0].estimated === true).toBe(!supplied);
-      if (!supplied) expect(data.results[0].estimationReason).toBeTruthy();
+      // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+      expect(data.results[0].estimated === true).toBe(degreeId === 'colmgmt_law' && !supplied);
+      // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+      if (degreeId === 'colmgmt_law' && !supplied)
+        expect(data.results[0].estimationReason).toBeTruthy();
+      else expect(data.results[0].estimationReason).toBeUndefined();
     }
   },
 );

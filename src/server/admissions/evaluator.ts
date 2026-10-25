@@ -1,3 +1,4 @@
+import { isCalculatedAdmissionResult } from '@/lib/isCalculatedAdmissionResult';
 import { guardProxyEvaluation, usesInstitutionAverageProxy } from './proxyEvaluationGuard';
 import { normalizeEvaluationInputs } from './evaluationInputs';
 import { bguMathematicsSubjects } from '@/lib/bagrutSubjectRecord';
@@ -190,8 +191,6 @@ export async function evaluateAdmissionsForProgram(args: {
       (institutionId === 'colman' || usesInstitutionAverageProxy(result, evaluationInput));
     const usesDirectRoute = normalized.proxyInstitutions.has(institutionId) && !usesProxy;
     const estimateReasons = usesDirectRoute ? [] : [...(normalized.reasons[institutionId] ?? [])];
-    if (normalized.overallReason && !['bgu', 'tau', 'haifa', 'colman'].includes(institutionId))
-      estimateReasons.push(normalized.overallReason);
     let displayedResult = withVerifiedAdmissionInformation(result, entry, evaluationInput);
     if (usesProxy) {
       displayedResult = guardProxyEvaluation(displayedResult, evaluationInput);
@@ -201,7 +200,7 @@ export async function evaluateAdmissionsForProgram(args: {
         explanation: displayedResult.explanation.replace('ממוצע בגרות רשמי', 'ממוצע בגרות משוער'),
       };
     }
-    if (estimateReasons.length) {
+    if (estimateReasons.length && isCalculatedAdmissionResult(displayedResult)) {
       displayedResult = {
         ...displayedResult,
         estimated: true,

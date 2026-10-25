@@ -82,3 +82,15 @@ Continue the existing CE plan under the explicit follow-up authority. Keep PR #2
 6. Normal push after the real guard passes. Preserve the historical PR evidence table, add the follow-up ruling, visual changes, screenshot blob links and draft-approval statement. Watch final-head CI; inspect and fix in-scope failures without weakening gates or other expectations.
 
 No DB writes, external settings, workflow/guard/coverage edits, PR comments, ready transition or merge. The user's explicit existing-Playwright tooling request governs local browser verification and screenshots.
+
+## Follow-up 3: approved 07:24 estimate scope
+
+The coordinator explicitly approves superseding only estimated / estimationReason / notice assertions on subject-derived and non-calculated results. Preserve every other expected value and outcome. Add the exact supplied scope comment above every changed flag/reason assertion, and record the full supersession inventory in the PR.
+
+1. Test first: subject-derived inputs at HUJI and the four proxy institutions (including the exact client provenance marker); forbidden result kinds; calculated proxy results; Haifa year-only calculated/missing-input paths; client render gating even with a stale true flag.
+2. Introduce one shared calculated-result predicate (exclude needs_input/unsupported/requirements_only/degraded/authority_unavailable/tracked_missing_rule regardless of retained score; require a finite computed score or a concrete verdict for other kinds). Apply server metadata only after G2/G3; apply the same predicate in AdmissionEstimate. Preserve private proxy provenance and request-level derived-average validation.
+3. Stop forwarding raw subject-derived overall provenance as a public institution-average estimate. Keep subject calculations, numeric examples, formula/threshold values and every admission outcome unchanged.
+4. Use the saved 8d415df five-profile BEFORE run; run the same temporary offline/fresh-fixture harness against AFTER and compare all non-metadata result fields. Save all per-profile results, flagged counts/programmes/institutions/kinds and render counts in the requested QA directory. No harness commit.
+5. Simplify without changing proof tests, run all required checks/guard and a static production build, then affected Playwright specs. Commit final code, capture and inspect all six screenshots (G2 has no note), commit evidence/docs only, normal push and watch final-head CI to green. Keep draft and exact visual/review-skip wording.
+
+Follow-up 3 implementation and simplification complete: one shared predicate, no further production abstraction or behavioral refactor needed. Proof tests and required ruling comments preserved. Local checks passed: 3,625 full-suite tests, 2,722 guard tests, 126 browser cases; existing skips unchanged. Empirical comparison found zero outcome/score/threshold/label/explanation changes across 2,180 rows. Screenshot/evidence commit and final-head CI follow this code commit.
