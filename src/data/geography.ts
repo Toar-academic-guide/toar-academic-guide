@@ -1,12 +1,12 @@
 import type { GeographicRegion } from '@/types';
-import { INSTITUTIONS } from '@/data/institutions';
+import { INSTITUTION_BY_NAME } from '@/data/institutions';
 
 // ── Institution → region map ──────────────────────────────────────────────────
-// Auto-derived from the master INSTITUTIONS dictionary so that a single source
+// Auto-derived from the master name lookup (including institution aliases) so that a single source
 // of truth (institutions.ts) drives all region-based logic.
 // Any institution not in the master dict is treated as 'any'.
 export const INSTITUTION_REGIONS: Record<string, GeographicRegion> = Object.fromEntries(
-  INSTITUTIONS.map((inst) => [inst.name, inst.region]),
+  Object.entries(INSTITUTION_BY_NAME).map(([name, institution]) => [name, institution.region]),
 );
 
 // ── Display helpers ───────────────────────────────────────────────────────────

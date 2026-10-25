@@ -1,4 +1,5 @@
 import 'server-only';
+import { canonicalInstitutionId } from '@/data/institutionAliases';
 
 import { getPublicProgramPageData } from '@/lib/publicCataloguePages';
 import { canonicalProgramId } from '@/lib/seo/programAliases';
@@ -9,6 +10,8 @@ export async function getEnquiryTarget(programId: string, institutionId: string)
   const page =
     (await getPublicProgramPageData(canonicalId)) ??
     (canonicalId !== programId ? await getPublicProgramPageData(programId) : null);
-  const institution = page?.institutions.find((entry) => entry.id === institutionId);
+  const institution = page?.institutions.find(
+    (entry) => entry.id === canonicalInstitutionId(institutionId),
+  );
   return page && institution ? { program: page.program, institution } : null;
 }

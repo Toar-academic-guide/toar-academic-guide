@@ -70,6 +70,7 @@ vi.mock('@/lib/catalogueStatic', () => ({
 import {
   evaluateCatalogueReadiness,
   listCataloguePrograms,
+  listCatalogueInstitutions,
   resetDatabaseCatalogueSnapshotCache,
 } from '@/server/catalogue/queries';
 
@@ -475,4 +476,67 @@ describe('graphic-design identity repairs across the database cutover', () => {
       expect(hoistedMocks.getStaticCataloguePrograms).not.toHaveBeenCalled();
     },
   );
+});
+
+it('lists one canonical Braude institution for all persisted aliases without mutating raw rows', async () => {
+  mockEnv = { mode: 'database', hasDatabaseUrl: true, isProduction: true };
+  resetDatabaseCatalogueSnapshotCache();
+  const dataset = createDatabaseBackedDataset();
+  dataset.institutions.push({
+    ...dataset.institutions[0],
+    id: 'ort_braude',
+    name: 'בראודה',
+    universityId: 'ort_braude',
+  });
+  const { db } = createMockDb(dataset);
+  hoistedMocks.getDb.mockReturnValue(db);
+  const { data, meta } = await listCatalogueInstitutions();
+  expect(meta.catalogueSource).toBe('database');
+  expect(data.find((i) => i.id === 'braude')).toMatchObject({
+    id: 'braude',
+    name: 'המכללה האקדמית להנדסה אורט בראודה',
+    region: 'north',
+    domain: 'braude.ac.il',
+  });
+  expect(
+    data.filter((i) => ['braude', 'ort_braude', 'mon_12220708942'].includes(i.id)),
+  ).toHaveLength(1);
+  expect(data.find((i) => i.id === 'ort_braude')).toBeUndefined();
+  expect(dataset.institutions.find((i) => i.id === 'ort_braude')?.name).toBe('בראודה');
+  expect(dataset.institutions.some((i) => i.id === 'braude')).toBe(false);
+});
+
+it('lists Braude once when the database contains both aliases and the canonical Monday stub', async () => {
+  mockEnv = { mode: 'database', hasDatabaseUrl: true, isProduction: true };
+  resetDatabaseCatalogueSnapshotCache();
+  const base = createDatabaseBackedDataset();
+  const dataset = {
+    ...base,
+    institutions: [
+      ...base.institutions,
+      ...['ort_braude', 'mon_12220708942', 'braude'].map((id) => ({
+        ...base.institutions[0],
+        id,
+        name: 'המכללה האקדמית להנדסה בראודה',
+        domain: 'w3.braude.ac.il',
+        programUrl: 'https://w3.braude.ac.il/department/mechina/',
+        logoUrl: 'https://braude.ac.il/existing-logo.png',
+      })),
+    ],
+  };
+  hoistedMocks.getDb.mockReturnValue(createMockDb(dataset).db);
+  const result = await listCatalogueInstitutions();
+  const rows = result.data.filter((row) =>
+    ['ort_braude', 'mon_12220708942', 'braude'].includes(row.id),
+  );
+  expect(rows).toHaveLength(1);
+  expect(rows[0]).toMatchObject({
+    id: 'braude',
+    name: 'המכללה האקדמית להנדסה אורט בראודה',
+    region: 'north',
+    domain: 'braude.ac.il',
+    programUrl: 'https://www.braude.ac.il',
+    logoUrl: 'https://braude.ac.il/existing-logo.png',
+  });
+  expect(dataset.institutions.filter((row) => row.domain === 'w3.braude.ac.il')).toHaveLength(3);
 });

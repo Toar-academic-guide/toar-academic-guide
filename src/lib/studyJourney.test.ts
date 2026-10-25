@@ -1,3 +1,6 @@
+import braudeCsFixture from './__fixtures__/braudeCsCatalogue.json';
+import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
+import { catalogueAdmissionRequirements } from './catalogueDisplayText';
 import { describe, expect, it } from 'vitest';
 import {
   toggleLocation,
@@ -200,4 +203,28 @@ describe('approved journey', () => {
   it('groups degree results without hiding their contact rows', () => {
     expect(groupJourneyRows([], 'field')).toEqual([]);
   });
+});
+
+it('QA block 1: mon_12220708942_cs result detail retains published CS conditions after alias mapping', () => {
+  const program = structuredClone(braudeCsFixture.program) as CatalogueProgram;
+  const institutions = braudeCsFixture.institutions as CatalogueInstitution[];
+  const row = journeyRows(studyFields([program]), institutions).find(
+    (candidate) => candidate.program.id === 'mon_12220708942_cs',
+  )!;
+  expect(row).toBeDefined();
+  // StudyJourney selects its active result detail by the displayed institution name.
+  const detail = row.program.institutionDetails?.find(
+    (candidate) => candidate.institutionName === row.institution.name,
+  );
+  const requirements = catalogueAdmissionRequirements(
+    detail?.specificAdmissionNotes,
+    row.program.admissionRequirements,
+    row.program.id,
+  );
+  expect(requirements).toEqual(
+    braudeCsFixture.program.institutionDetails[0].specificAdmissionNotes,
+  );
+  for (const floor of ['75', '600', '115', '580']) expect(requirements.join(' ')).toContain(floor);
+  expect(detail?.programUrl).toBe('https://w3.braude.ac.il/intrested/');
+  expect(program).toEqual(braudeCsFixture.program);
 });

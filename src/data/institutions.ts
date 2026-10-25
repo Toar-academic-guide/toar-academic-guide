@@ -1,3 +1,8 @@
+import {
+  canonicalInstitutionId,
+  curatedCanonicalInstitution,
+  INSTITUTION_ALIASES,
+} from './institutionAliases';
 import type { GeographicRegion, UniversityId } from '@/types';
 
 // ── Institution ID union ──────────────────────────────────────────────────────
@@ -72,6 +77,7 @@ export type InstitutionId =
   | 'neri_bloomfield'
   | 'beit_ziv'
   // ── Engineering colleges ──────────────────────────────────────────────────
+  | 'braude'
   | 'ort_braude'
   | 'azrieli'
   | 'sce'
@@ -990,6 +996,17 @@ for (const inst of INSTITUTIONS) {
   }
 }
 
+// Canonical metadata comes from the curated entry, not the Monday URL matcher.
+const braudeNames = INSTITUTIONS.filter(
+  (institution) => canonicalInstitutionId(institution.id) === 'braude',
+).map((institution) => institution.name);
+const { index: braudeIndex, institution: braudeInstitution } = curatedCanonicalInstitution(
+  INSTITUTIONS,
+  'braude',
+  'ort_braude',
+);
+INSTITUTIONS[braudeIndex] = braudeInstitution;
+
 // ── Lookup tables ─────────────────────────────────────────────────────────────
 
 /** O(1) lookup by InstitutionId slug */
@@ -1005,3 +1022,11 @@ export const INSTITUTION_BY_ID = Object.fromEntries(
 export const INSTITUTION_BY_NAME: Record<string, InstitutionRecord> = Object.fromEntries(
   INSTITUTIONS.map((inst) => [inst.name, inst]),
 );
+
+// Keep legacy records, but resolve both legacy ids and Hebrew names to Braude.
+for (const alias of Object.keys(INSTITUTION_ALIASES)) {
+  INSTITUTION_BY_ID[alias as InstitutionId] = braudeInstitution;
+}
+for (const name of braudeNames) {
+  INSTITUTION_BY_NAME[name] = braudeInstitution;
+}

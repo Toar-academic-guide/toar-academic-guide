@@ -1,3 +1,4 @@
+import { canonicalInstitutionId } from '../institutionAliases';
 import repair from './catalogueContentRepair.json';
 import { INSTITUTION_BY_ID, INSTITUTION_BY_NAME, type InstitutionId } from '../institutions';
 import type { Program } from '../degrees/types';
@@ -49,7 +50,9 @@ export function applyCatalogueContentRepair<T extends Program>(program: T): T {
     if (
       !institution ||
       details.some(
-        (detail) => INSTITUTION_BY_NAME[detail.institutionName]?.id === row.institutionId,
+        (detail) =>
+          INSTITUTION_BY_NAME[detail.institutionName]?.id ===
+          canonicalInstitutionId(row.institutionId),
       )
     )
       continue;
@@ -78,7 +81,9 @@ export function applyCatalogueContentRepair<T extends Program>(program: T): T {
       : {}),
     institutionDetails: details.map((detail) => {
       const institutionId = INSTITUTION_BY_NAME[detail.institutionName]?.id;
-      const row = rows.find((candidate) => candidate.institutionId === institutionId);
+      const row = rows.find(
+        (candidate) => canonicalInstitutionId(candidate.institutionId) === institutionId,
+      );
       if (!row) return detail;
       return {
         ...detail,

@@ -1,0 +1,63 @@
+{
+  "program": {
+    "updatedAt": "2026-07-04T12:11:06.707Z",
+    "id": "mon_12220708942_cs",
+    "name": "מדעי המחשב - המכללה האקדמית להנדסה בראודה",
+    "isListed": true,
+    "institution": "המכללה האקדמית להנדסה בראודה",
+    "institutionId": "braude",
+    "type": "academic",
+    "category": "מדעי המחשב",
+    "profileScore": {
+      "AN": 3,
+      "TE": 3,
+      "CR": 3,
+      "SO": 3,
+      "LE": 3,
+      "OR": 3,
+      "DI": 0,
+      "ER": 0
+    },
+    "admissionType": "requirements",
+    "admissionRequirements": [],
+    "institutionDetails": [
+      {
+        "institutionName": "המכללה האקדמית להנדסה בראודה",
+        "durationYears": 3,
+        "estimatedStudentsPerYear": "לא ידוע",
+        "quantitativeMinRequirement": null,
+        "englishMinRequirement": null,
+        "specificAdmissionNotes": [
+          "בגרות מלאה בממוצע 75 ללא בונוסים, פסיכומטרי 600 לפחות וכמותי 115 לפחות.",
+          "מתמטיקה: 4 יחידות בציון 80 או 5 יחידות בציון 70; חלופה: מכינת קדם־הנדסה בציון 80. עם 4 יחידות בציון 85 או 5 יחידות בציון 75 ניתן להגיש מועמדות מפסיכומטרי 580.",
+          "אנגלית בבגרות: 4 יחידות בציון 75 או 5 יחידות בציון 70. נדרש סיווג אנגלית 85 ויע״ל 100 למי שנדרשים לפי כללי המכללה.",
+          "התוכנית נפתחה בהיתר המל״ג; הענקת התואר מותנית באישורה.",
+          "אפיק הבגרות הרגיל ללא פסיכומטרי אינו חל על מדעי המחשב. קיים מתווה נפרד לזכאים להקלות עקב המלחמה, עם דרישות הבגרות והשפה ובכפוף לאישור ולמכסה."
+        ],
+        "officialCalculatorUrl": "https://w3.braude.ac.il/intrested/",
+        "programUrl": "https://w3.braude.ac.il/intrested/",
+        "calculatorUrl": "https://w3.braude.ac.il/intrested/",
+        "programDescription": "No decisive admissions evidence was derived automatically."
+      }
+    ],
+    "linkedInstitutionIds": ["braude"]
+  },
+  "institutions": [
+    {
+      "updatedAt": "2026-07-04T12:11:06.707Z",
+      "id": "mon_12220708942",
+      "name": "המכללה האקדמית להנדסה בראודה",
+      "region": "center",
+      "domain": "w3.braude.ac.il",
+      "programUrl": "https://w3.braude.ac.il/intrested/"
+    },
+    {
+      "updatedAt": "2026-06-09T19:43:07.386Z",
+      "id": "braude",
+      "name": "המכללה האקדמית להנדסה אורט בראודה",
+      "region": "north",
+      "domain": "braude.ac.il",
+      "programUrl": "https://www.braude.ac.il"
+    }
+  ]
+}

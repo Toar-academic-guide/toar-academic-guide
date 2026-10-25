@@ -1,5 +1,7 @@
 import 'server-only';
 import { cache } from 'react';
+import { canonicalInstitutionId } from '@/data/institutionAliases';
+import { INSTITUTION_BY_NAME } from '@/data/institutions';
 
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import { catalogueAdmissionRequirements } from '@/lib/catalogueDisplayText';
@@ -12,6 +14,13 @@ import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 const PUBLIC_PROGRAMS = getStaticCataloguePrograms();
 const PUBLIC_INSTITUTIONS = getStaticCatalogueInstitutions();
 const STATIC_PROGRAM_BY_ID = new Map(PUBLIC_PROGRAMS.map((program) => [program.id, program]));
+
+function matchesInstitutionName(name: string, institution: CatalogueInstitution): boolean {
+  return (
+    name === institution.name ||
+    INSTITUTION_BY_NAME[name]?.id === canonicalInstitutionId(institution.id)
+  );
+}
 
 function hasGeneralIdentity(program: CatalogueProgram): boolean {
   const legacy = STATIC_PROGRAM_BY_ID.get(program.id);
@@ -88,7 +97,8 @@ export const loadPublicCatalogue = cache(async () => {
       linkedInstitutionIds: allInstitutions
         .filter(
           (institution) =>
-            providerIds.has(institution.id) || detailNames.includes(institution.name),
+            providerIds.has(institution.id) ||
+            detailNames.some((name) => matchesInstitutionName(name, institution)),
         )
         .map((institution) => institution.id),
     };
@@ -192,8 +202,8 @@ export async function getPublicProgramRequirementSources({
       ? catalogue.institutionProgramsByName.get(program.name)?.get(institution.id)
       : undefined;
 
-    const detail = requirementsProgram.institutionDetails?.find(
-      (entry) => entry.institutionName === institution.name,
+    const detail = requirementsProgram.institutionDetails?.find((entry) =>
+      matchesInstitutionName(entry.institutionName, institution),
     );
     const requirements = catalogueAdmissionRequirements(
       detail?.specificAdmissionNotes,
@@ -204,7 +214,9 @@ export async function getPublicProgramRequirementSources({
       isGeneral && program.isListed !== false && !hasRequirements(requirements) && !!specific;
     const sourceProgram = useSpecific ? specific : requirementsProgram;
     const sourceDetail = useSpecific
-      ? specific.institutionDetails?.find((entry) => entry.institutionName === institution.name)
+      ? specific.institutionDetails?.find((entry) =>
+          matchesInstitutionName(entry.institutionName, institution),
+        )
       : detail;
     // Match the source page's calculation exactly; never combine rows' requirements or URLs.
     const sourceRequirements = useSpecific
@@ -249,7 +261,9 @@ export async function getPublicInstitutionPageData(
   institutionId: string,
 ): Promise<PublicInstitutionPageData | null> {
   const catalogue = await loadPublicCatalogue();
-  const institution = catalogue.institutions.find((candidate) => candidate.id === institutionId);
+  const institution = catalogue.institutions.find(
+    (candidate) => candidate.id === canonicalInstitutionId(institutionId),
+  );
 
   if (!institution) {
     return null;

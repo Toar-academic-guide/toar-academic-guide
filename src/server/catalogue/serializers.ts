@@ -1,3 +1,4 @@
+import { canonicalInstitutionId } from '@/data/institutionAliases';
 import type { InstitutionDetail } from '@/data/degrees/types';
 import { DANON_PROGRAM_NAMES } from '@/data/admissions/danon';
 import { allPrograms } from '@/data/degrees';
@@ -44,17 +45,22 @@ export function serializeInstitutionRow(
   row: InstitutionRow,
   calculatorConfig?: UniversityCalculatorConfigRow,
 ): CatalogueInstitution {
+  const curatedBraude =
+    canonicalInstitutionId(row.id) === 'braude' ? INSTITUTION_BY_ID.braude : undefined;
   const institution: CatalogueInstitution = {
     updatedAt: row.updatedAt?.toISOString(),
     id: row.id as CatalogueInstitution['id'],
-    name: row.name,
-    region: row.region as CatalogueInstitution['region'],
-    domain: row.id === 'spieldocs' ? INSTITUTION_BY_ID.spieldocs.domain : (row.domain ?? undefined),
+    name: curatedBraude?.name ?? row.name,
+    region: (curatedBraude?.region ?? row.region) as CatalogueInstitution['region'],
+    domain:
+      curatedBraude?.domain ??
+      (row.id === 'spieldocs' ? INSTITUTION_BY_ID.spieldocs.domain : (row.domain ?? undefined)),
     logoUrl: row.logoUrl ?? undefined,
     programUrl:
-      row.id === 'spieldocs'
+      curatedBraude?.programUrl ??
+      (row.id === 'spieldocs'
         ? INSTITUTION_BY_ID.spieldocs.programUrl
-        : (row.programUrl ?? undefined),
+        : (row.programUrl ?? undefined)),
     calculatorUrl: row.calculatorUrl ?? undefined,
     universityId: (row.universityId ?? undefined) as CatalogueInstitution['universityId'],
     calculatorConfig: calculatorConfig ? serializeCalculatorConfigRow(calculatorConfig) : undefined,
@@ -228,7 +234,9 @@ export function serializeProgramRow(args: {
     name: DANON_PROGRAM_NAMES[program.id] ?? program.name,
     isListed: program.isListed,
     institution: program.institutionName,
-    institutionId: (program.institutionId ?? undefined) as CatalogueProgram['institutionId'],
+    institutionId: (program.institutionId
+      ? canonicalInstitutionId(program.institutionId)
+      : undefined) as CatalogueProgram['institutionId'],
     type: program.type,
     category: program.category,
     profileScore: staticProgram?.profileScore ?? {
@@ -260,7 +268,9 @@ export function serializeProgramRow(args: {
       alternativePathsByRequirementId,
       institutionsById,
     ),
-    linkedInstitutionIds: relations.map((relation) => relation.institutionId),
+    linkedInstitutionIds: [
+      ...new Set(relations.map((relation) => canonicalInstitutionId(relation.institutionId))),
+    ],
   };
   const repaired = [
     'haifa_psychology',
