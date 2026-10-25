@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import { evaluateAdmissionsForProgram } from '@/server/admissions/evaluator';
+import { evaluatePublishedNumericRoutes } from './publishedNumericRoutes';
 import type { AdmissionsEvaluationInput } from '@/types/admissionsEvaluation';
 
 vi.mock('server-only', () => ({}));
@@ -38,9 +39,9 @@ const strongProfile: Omit<AdmissionsEvaluationInput, 'degreeId'> = {
   },
 };
 
-describe('published numeric route bagrut label through the evaluator', () => {
+describe('published numeric route bagrut condition through the evaluator', () => {
   it.each(['ruppin_cs', 'ruppin_marine_bio'])(
-    '%s labels the bagrut condition as eligibility',
+    '%s meets the threshold without an assumed-bagrut condition',
     async (degreeId) => {
       const program = getStaticCataloguePrograms().find((row) => row.id === degreeId);
       expect(program).toBeDefined();
@@ -56,18 +57,44 @@ describe('published numeric route bagrut label through the evaluator', () => {
       });
       const result = report.results.find((row) => row.linkedInstitutionId === 'ruppin');
 
-      expect(result).toMatchObject({ decision: 'pending', score: 112, threshold: 100 });
-      expect(result?.additionalConditions?.[0]).toEqual({
-        id: 'bagrut_average',
-        label: 'זכאות לבגרות',
-        status: 'unconfirmed',
+      expect(result).toMatchObject({
+        kind: 'estimated',
+        decision: 'pending',
+        score: 112,
+        threshold: 100,
+        scoreLabel: 'ממוצע בגרות',
+        scoreAssessment: 'meets_threshold',
       });
-      const bagrutConditions = report.results
-        .flatMap((row) => row.additionalConditions ?? [])
-        .filter((condition) => condition.id === 'bagrut_average');
-      expect(bagrutConditions.map((condition) => condition.label)).not.toContain(
-        'עמידה בדרישות השפה',
+      expect(result?.additionalConditions).not.toContainEqual(
+        expect.objectContaining({ id: 'bagrut_average' }),
       );
+      expect(result?.additionalConditions).toEqual([]);
     },
   );
+
+  it('passes through route conditions without adding an assumed-bagrut condition', () => {
+    const conditions = [
+      { id: 'admissions_committee' as const, label: 'ראיון אישי', status: 'unconfirmed' as const },
+    ];
+    const result = evaluatePublishedNumericRoutes({
+      institution: getStaticCatalogueInstitutions().find((row) => row.id === 'ruppin')!,
+      routes: [
+        {
+          below: false,
+          missing: [],
+          label: 'ממוצע בגרות',
+          score: 112,
+          threshold: 100,
+          requirements: 'ממוצע בגרות 100 לפחות',
+          conditions,
+        },
+      ],
+      officialUrls: [],
+    });
+
+    expect(result.additionalConditions).not.toContainEqual(
+      expect.objectContaining({ id: 'bagrut_average' }),
+    );
+    expect(result.additionalConditions).toEqual(conditions);
+  });
 });
