@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import posthog from 'posthog-js';
+import ProgramTrackedLink from './ProgramTrackedLink';
 import {
   ArrowLeft,
   ArrowRight,
@@ -55,6 +56,7 @@ import ProgramShareButton from './ProgramShareButton';
 import AdmissionRequirements from './AdmissionRequirements';
 import RequirementTiles from './RequirementTiles';
 import AdmissionConditions from './AdmissionConditions';
+import TechnionThresholdNotice from './TechnionThresholdNotice';
 import { acceptedManualGateFootnote } from '@/lib/acceptedManualGateFootnote';
 import { isBatchCUnsupportedProgramId } from '@/data/admissions/batchCUnsupportedProgramIds';
 import { DANON_PROGRAM_URLS } from '@/data/admissions/danon';
@@ -685,6 +687,7 @@ export default function StudyJourney({
                 : row.fieldName}
           </button>
           <span className={`journey-status status-${status.group}`}>{status.label}</span>
+          <TechnionThresholdNotice programId={row.program.id} institutionId={row.institution.id} />
         </div>
         <div className="journey-row-actions">
           <button className="journey-contact" onClick={() => selectRow(row, 'inquiry')}>
@@ -1370,6 +1373,12 @@ export default function StudyJourney({
                     <AdmissionConditions conditions={activeRow.result?.additionalConditions} />
                   )}
                   <h2>תנאי קבלה</h2>
+                  {isBatchCUnsupported && (
+                    <TechnionThresholdNotice
+                      programId={activeRow.program.id}
+                      institutionId={activeRow.institution.id}
+                    />
+                  )}
                   {isBatchCUnsupported ? (
                     <p>{activeRow.result?.nextAction}</p>
                   ) : (
@@ -1404,13 +1413,21 @@ export default function StudyJourney({
                         </>
                       )}
                     {activeOfficialUrl && (
-                      <a target="_blank" rel="noopener noreferrer" href={activeOfficialUrl}>
+                      <ProgramTrackedLink
+                        event="institution_site_clicked"
+                        programId={activeRow.program.id}
+                        institutionId={activeRow.institution.id}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        href={activeOfficialUrl}
+                      >
                         לאתר המוסד
-                      </a>
+                      </ProgramTrackedLink>
                     )}
                     <ProgramShareButton
                       key={activeRow.program.id}
                       programId={activeRow.program.id}
+                      institutionId={activeRow.institution.id}
                       title={activeRow.fieldName}
                     />
                   </div>
@@ -1456,6 +1473,7 @@ export default function StudyJourney({
                 key={activeRow.id}
                 programId={activeRow.program.id}
                 institutionId={activeRow.institution.id}
+                evaluationInput={reports[activeRow.program.id]?.input}
                 surface="journey"
                 title={`${activeRow.fieldName} · ${activeRow.institution.name}`}
                 onBack={() => go('results')}

@@ -1,18 +1,24 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+const capture = vi.hoisted(() => vi.fn());
+vi.mock('posthog-js', () => ({ default: { capture } }));
 import ProgramShareButton from './ProgramShareButton';
 
 describe('programme sharing', () => {
   afterEach(() => {
+    capture.mockClear();
     cleanup();
     vi.unstubAllGlobals();
   });
 
   const url = () => `${window.location.origin}/programs/danon_cs`;
   function clickShare() {
-    render(<ProgramShareButton programId="danon_cs" title="קולינריה" />);
+    render(<ProgramShareButton programId="danon_cs" institutionId="danon" title="קולינריה" />);
     fireEvent.click(screen.getByRole('button', { name: 'שיתוף המסלול' }));
+    expect(capture.mock.calls).toEqual([
+      ['program_shared', { program_id: 'danon_cs', institution_id: 'danon' }],
+    ]);
   }
 
   it('uses native sharing when available', async () => {

@@ -3,6 +3,9 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+const capture = vi.hoisted(() => vi.fn());
+vi.mock('posthog-js', () => ({ default: { capture } }));
+
 let mockAuth = {
   configured: true,
   signInWithGoogle: vi.fn(),
@@ -22,6 +25,7 @@ import AuthScreen from '@/components/AuthScreen';
 
 describe('AuthScreen', () => {
   beforeEach(() => {
+    capture.mockReset();
     mockAuth = {
       configured: true,
       signInWithGoogle: vi.fn().mockResolvedValue({ error: null }),
@@ -52,6 +56,8 @@ describe('AuthScreen', () => {
     fireEvent.click(screen.getByRole('button', { name: 'התחבר' }));
 
     await waitFor(() => expect(onSuccess).toHaveBeenCalledWith('/app/saved-programs'));
+    expect(capture).toHaveBeenCalledWith('user_signed_in');
+    expect(JSON.stringify(capture.mock.calls)).not.toContain('user@example.com');
   });
 
   it('can open directly in signup mode', () => {
@@ -81,6 +87,8 @@ describe('AuthScreen', () => {
       }),
     );
     expect(onSuccess).not.toHaveBeenCalled();
+    await waitFor(() => expect(capture).toHaveBeenCalledWith('user_signed_up'));
+    expect(JSON.stringify(capture.mock.calls)).not.toContain('user@example.com');
     await waitFor(() =>
       expect(screen.getByText('שלחנו מייל לאישור החשבון. אשר אותו ואז חזור להתחבר.')).toBeTruthy(),
     );

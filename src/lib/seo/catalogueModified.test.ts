@@ -40,3 +40,10 @@ describe('catalogue sitemap provenance', () => {
     }
   });
 });
+
+it.each(['jerusalem_academy_classical', 'jerusalem_academy_jazz', 'jerusalem_academy_dance'])(
+  'uses the verified curriculum date for %s without changing its admission-source date',
+  (id) => {
+    expect(programModifiedAt(programs.find((p) => p.id === id)!)).toBe('2026-10-24');
+  },
+);

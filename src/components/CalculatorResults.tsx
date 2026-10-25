@@ -1,4 +1,5 @@
 'use client';
+import TechnionThresholdNotice from './TechnionThresholdNotice';
 import AdmissionConditions from './AdmissionConditions';
 import { acceptedManualGateFootnote } from '@/lib/acceptedManualGateFootnote';
 
@@ -857,6 +858,10 @@ export default function CalculatorResults({
                             />
                           )}
                           <p className="mt-1 text-[11px] text-slate-500">{result.nextAction}</p>
+                          <TechnionThresholdNotice
+                            programId={selectedProgram?.id}
+                            institutionId={institution.id}
+                          />
                           {!footnote && (
                             <AdmissionConditions conditions={result.additionalConditions} />
                           )}

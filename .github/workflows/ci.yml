@@ -233,6 +233,10 @@ jobs:
               CREATE ROLE app_runtime NOLOGIN;
             END IF;
 
+            IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'service_role') THEN
+              CREATE ROLE service_role NOLOGIN BYPASSRLS;
+            END IF;
+
             IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'ops_readonly') THEN
               CREATE ROLE ops_readonly NOLOGIN;
             END IF;
@@ -260,7 +264,7 @@ jobs:
           SOURCE_FRESHNESS_DB_INTEGRATION: '1'
           ALERT_DB_INTEGRATION: '1'
         run: |
-          npx vitest run src/db/client.integration.test.ts
+          npx vitest run src/db/client.integration.test.ts src/db/migrations/storeEnquiry.integration.test.ts scripts/verify-operational-db.integration.test.ts
           npm run test:publication:db
           npm run test:source-freshness:db
           npx vitest run src/server/admission-alerts/health.integration.test.ts src/server/admission-alerts/transitionProcessor.integration.test.ts src/server/admission-alerts/deliveryWorker.integration.test.ts src/server/admission-alerts/webhookUnsubscribe.integration.test.ts src/server/admission-alerts/lifecycleCompletion.integration.test.ts scripts/admission-alert-account-simulation.integration.test.ts

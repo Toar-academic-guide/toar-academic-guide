@@ -281,6 +281,27 @@
       "when": 1792578814706,
       "tag": "0039_catalogue_listing_repair",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1792884036364,
+      "tag": "0040_fractional_admission_thresholds",
+      "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1792889302589,
+      "tag": "0041_enquiries",
+      "breakpoints": true
+    },
+    {
+      "idx": 42,
+      "version": "7",
+      "when": 1792895073236,
+      "tag": "0042_store_enquiry_createdat_default",
+      "breakpoints": true
     }
   ]
 }

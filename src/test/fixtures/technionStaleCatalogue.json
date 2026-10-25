@@ -1,0 +1,80 @@
+[
+  {
+    "updatedAt": "2026-06-09T20:13:12.597Z",
+    "id": "technion_ee",
+    "name": "הנדסת חשמל",
+    "isListed": true,
+    "institution": "הטכניון – מכון טכנולוגי לישראל",
+    "institutionId": "technion",
+    "type": "academic",
+    "category": "הנדסה",
+    "profileScore": {
+      "AN": 4,
+      "TE": 4,
+      "CR": 0,
+      "SO": 0,
+      "LE": 1,
+      "OR": 2,
+      "DI": 3,
+      "ER": 2
+    },
+    "admissionType": "sekhem",
+    "admissionRequirements": [],
+    "thresholds": {
+      "technion": 94
+    },
+    "institutionDetails": [
+      {
+        "institutionName": "הטכניון – מכון טכנולוגי לישראל",
+        "durationYears": 4,
+        "estimatedStudentsPerYear": "כ-220 סטודנטים",
+        "quantitativeMinRequirement": 143,
+        "englishMinRequirement": null,
+        "specificAdmissionNotes": ["5 יח\"ל מתמטיקה — חובה", "5 יח\"ל פיזיקה — חובה"],
+        "officialCalculatorUrl": "https://admissions.technion.ac.il/",
+        "programUrl": "https://www.technion.ac.il",
+        "calculatorUrl": "https://admissions.technion.ac.il/"
+      }
+    ],
+    "linkedInstitutionIds": ["technion"]
+  },
+  {
+    "updatedAt": "2026-06-09T20:13:12.597Z",
+    "id": "technion_me",
+    "name": "הנדסת מכונות",
+    "isListed": true,
+    "institution": "הטכניון – מכון טכנולוגי לישראל",
+    "institutionId": "technion",
+    "type": "academic",
+    "category": "הנדסה",
+    "profileScore": {
+      "AN": 3,
+      "TE": 5,
+      "CR": 1,
+      "SO": 0,
+      "LE": 1,
+      "OR": 2,
+      "DI": 1,
+      "ER": 2
+    },
+    "admissionType": "sekhem",
+    "admissionRequirements": [],
+    "thresholds": {
+      "technion": 92
+    },
+    "institutionDetails": [
+      {
+        "institutionName": "הטכניון – מכון טכנולוגי לישראל",
+        "durationYears": 4,
+        "estimatedStudentsPerYear": "כ-200 סטודנטים",
+        "quantitativeMinRequirement": 140,
+        "englishMinRequirement": null,
+        "specificAdmissionNotes": ["5 יח\"ל מתמטיקה — חובה", "5 יח\"ל פיזיקה — חובה"],
+        "officialCalculatorUrl": "https://admissions.technion.ac.il/",
+        "programUrl": "https://www.technion.ac.il",
+        "calculatorUrl": "https://admissions.technion.ac.il/"
+      }
+    ],
+    "linkedInstitutionIds": ["technion"]
+  }
+]
