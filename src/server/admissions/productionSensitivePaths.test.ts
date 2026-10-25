@@ -28,6 +28,7 @@ describe('production-sensitive path classification', () => {
     'src/data/admissions/reviewedManifest.json',
     'src/server/admission-alerts/transitionWork.ts',
     'src/server/admissions/admissionsReleasePublisher.ts',
+    'scripts/lib/production-schema-snapshot.mjs',
     'scripts/production-sensitive-paths.mjs',
     'scripts/pre-pr-guard.mjs',
     'scripts/publish-admissions-release.mjs',

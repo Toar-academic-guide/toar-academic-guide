@@ -13,12 +13,13 @@ import {
 } from './productionSchemaPreflight';
 
 describe('production admissions schema preflight', () => {
-  it('tracks guarded SQL through 0040 separately from the Supabase journal', () => {
+  it('tracks guarded SQL through 0041 separately from the Supabase journal', () => {
     expect(GUARDED_PRODUCTION_MIGRATIONS.map(({ id }) => id)).toEqual([
       '0037',
       '0038',
       '0039',
       '0040',
+      '0041',
     ]);
     for (const { repositoryPath } of GUARDED_PRODUCTION_MIGRATIONS) {
       expect(readFileSync(repositoryPath, 'utf8').trim()).not.toBe('');
@@ -71,6 +72,115 @@ describe('production admissions schema preflight', () => {
           object: 'table:programs.column:is_listed',
         }),
       ]),
+    });
+  });
+
+  it.each([
+    [
+      'missing table',
+      'missing_table',
+      'table:enquiries',
+      (s: ProductionSchemaSnapshot) => {
+        delete s.tables.enquiries;
+      },
+    ],
+    [
+      'disabled RLS',
+      'rls_disabled',
+      'table:enquiries',
+      (s: ProductionSchemaSnapshot) => {
+        s.tables.enquiries.rowLevelSecurity = false;
+      },
+    ],
+    [
+      'unexpected policy',
+      'unexpected_policy',
+      'policy:enquiries_leak',
+      (s: ProductionSchemaSnapshot) => {
+        s.tables.enquiries.policies.push('enquiries_leak');
+      },
+    ],
+    [
+      'runtime grant',
+      'grant_mismatch',
+      'grant:app_runtime:enquiries',
+      (s: ProductionSchemaSnapshot) => {
+        s.tables.enquiries.grants.app_runtime = ['INSERT'];
+      },
+    ],
+    [
+      'browser grant',
+      'grant_mismatch',
+      'grant:anon:enquiries',
+      (s: ProductionSchemaSnapshot) => {
+        s.tables.enquiries.grants.anon = ['SELECT'];
+      },
+    ],
+    [
+      'PUBLIC grant',
+      'grant_mismatch',
+      'grant:PUBLIC:enquiries',
+      (s: ProductionSchemaSnapshot) => {
+        s.tables.enquiries.grants.PUBLIC = ['SELECT'];
+      },
+    ],
+    [
+      'missing service grant',
+      'grant_mismatch',
+      'grant:service_role:enquiries',
+      (s: ProductionSchemaSnapshot) => {
+        s.tables.enquiries.grants.service_role = [];
+      },
+    ],
+    [
+      'column grant',
+      'grant_mismatch',
+      'grant:app_runtime:enquiries.column:SELECT',
+      (s: ProductionSchemaSnapshot) => {
+        s.tables.enquiries.columnGrants.app_runtime = { SELECT: ['phone'] };
+      },
+    ],
+    [
+      'missing function',
+      'missing_function',
+      'function:store_enquiry(jsonb)',
+      (s: ProductionSchemaSnapshot) => {
+        delete s.functions['store_enquiry(jsonb)'];
+      },
+    ],
+    [
+      'unsafe function',
+      'function_config_mismatch',
+      'function:store_enquiry(jsonb)',
+      (s: ProductionSchemaSnapshot) => {
+        s.functionAccess!['store_enquiry(jsonb)'].securityDefiner = false;
+      },
+    ],
+    [
+      'unsafe search path',
+      'function_config_mismatch',
+      'function:store_enquiry(jsonb)',
+      (s: ProductionSchemaSnapshot) => {
+        s.functions['store_enquiry(jsonb)'] = ['search_path=public'];
+      },
+    ],
+    [
+      'function grant',
+      'grant_mismatch',
+      'function:store_enquiry(jsonb)',
+      (s: ProductionSchemaSnapshot) => {
+        s.functionAccess!['store_enquiry(jsonb)'].executeRoles.push('anon');
+      },
+    ],
+  ] as const)('rejects guarded 0041 drift: %s', (_name, code, object, mutate) => {
+    const snapshot = makeSnapshot();
+    mutate(snapshot);
+    expect(assessProductionSchema(snapshot)).toMatchObject({
+      status: 'drift',
+      safeToMigrate: false,
+      appliedThrough: '0036',
+      pendingMigrations: [],
+      issues: expect.arrayContaining([expect.objectContaining({ code, object })]),
     });
   });
 
@@ -1076,6 +1186,61 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
     }
   }
 
+  if (appliedCount === FORWARD_PRODUCTION_MIGRATIONS.length) {
+    tables.enquiries = {
+      columns: [
+        'request_id',
+        'name',
+        'phone',
+        'program_id',
+        'institution_id',
+        'program_name',
+        'institution_name',
+        'source_path',
+        'utm_source',
+        'utm_medium',
+        'utm_campaign',
+        'referrer',
+        'consent',
+        'consent_text',
+        'result_status',
+        'bagrut',
+        'psychometric',
+        'evaluation_input',
+        'created_at',
+      ],
+      columnTypes: {
+        request_id: 'uuid',
+        name: 'text',
+        phone: 'text',
+        program_id: 'text',
+        institution_id: 'text',
+        program_name: 'text',
+        institution_name: 'text',
+        source_path: 'text',
+        utm_source: 'character varying',
+        utm_medium: 'character varying',
+        utm_campaign: 'character varying',
+        referrer: 'character varying',
+        consent: 'boolean',
+        consent_text: 'text',
+        result_status: 'text',
+        bagrut: 'real',
+        psychometric: 'integer',
+        evaluation_input: 'jsonb',
+        created_at: 'timestamp with time zone',
+      },
+      constraints: ['enquiries_pkey', 'enquiries_result_status_check', 'enquiries_consent_check'],
+      indexes: ['enquiries_pkey'],
+      rowLevelSecurity: true,
+      policies: [],
+      columnGrants: {},
+      grants: {
+        service_role: ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'TRUNCATE', 'REFERENCES', 'TRIGGER'],
+      },
+    };
+  }
+
   return {
     migrationHistory: [
       ...BASELINE_PRODUCTION_MIGRATIONS,
@@ -1168,18 +1333,31 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
       ...(appliedIds.has('0034') ? ['admission_alert_account_deleted'] : []),
     ],
     functionAccess: appliedIds.has('0034')
-      ? Object.fromEntries(
-          ['delivery_recipient', 'cleanup_deleted_account', 'prune_retained_data'].map((name) => [
-            `admission_alert_private.${name}`,
-            {
-              securityDefiner: true,
-              executeRoles: name === 'cleanup_deleted_account' ? [] : ['app_runtime'],
-            },
-          ]),
-        )
+      ? Object.fromEntries([
+          ...(appliedCount === FORWARD_PRODUCTION_MIGRATIONS.length
+            ? [
+                [
+                  'store_enquiry(jsonb)',
+                  { securityDefiner: true, executeRoles: ['app_runtime', 'service_role'] },
+                ],
+              ]
+            : []),
+          ...['delivery_recipient', 'cleanup_deleted_account', 'prune_retained_data'].map(
+            (name) => [
+              `admission_alert_private.${name}`,
+              {
+                securityDefiner: true,
+                executeRoles: name === 'cleanup_deleted_account' ? [] : ['app_runtime'],
+              },
+            ],
+          ),
+        ])
       : {},
     functions: appliedIds.has('0014')
       ? {
+          ...(appliedCount === FORWARD_PRODUCTION_MIGRATIONS.length
+            ? { 'store_enquiry(jsonb)': ['search_path=""'] }
+            : {}),
           ...(appliedIds.has('0034')
             ? Object.fromEntries(
                 ['delivery_recipient', 'cleanup_deleted_account', 'prune_retained_data'].map(

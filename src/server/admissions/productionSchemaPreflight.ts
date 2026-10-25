@@ -9,6 +9,7 @@ import {
 export {
   BASELINE_PRODUCTION_MIGRATIONS,
   FORWARD_PRODUCTION_MIGRATIONS,
+  GUARDED_PRODUCTION_MIGRATIONS,
 } from './productionMigrationContract';
 export type { MigrationHistoryEntry, MigrationId } from './productionMigrationContract';
 
@@ -31,6 +32,7 @@ export type TableSnapshot = {
   constraints: string[];
   indexes: string[];
   rowLevelSecurity: boolean;
+  supportedPrivileges?: string[];
   policies: string[];
   grants: Record<string, string[]>;
   columnGrants: Record<string, Record<string, string[]>>;
@@ -89,6 +91,7 @@ export type ProductionSchemaIssue = {
     | 'function_config_mismatch'
     | 'rls_disabled'
     | 'missing_policy'
+    | 'unexpected_policy'
     | 'grant_mismatch'
     | 'public_role_grant';
   object: string;
@@ -573,9 +576,10 @@ export function assessProductionSchema(snapshot: ProductionSchemaSnapshot): Prod
   assessAdmissionsAutomationAccess(snapshot, applied, issues);
 
   // Older journal prefixes retain their existing migration checks. Once the
-  // journal is current, also require the separately applied 0037–0040 schema.
+  // journal is current, also require the separately applied 0037–0041 schema.
   if (appliedCount === FORWARD_PRODUCTION_MIGRATIONS.length) {
     for (const migration of GUARDED_PRODUCTION_MIGRATIONS) {
+      if ('tables' in migration) assessGuardedEnquiries(snapshot, migration, issues);
       for (const { table, column, type } of migration.columns) {
         const actual = snapshot.tables[table];
         if (!actual?.columns.includes(column)) {
@@ -1208,6 +1212,115 @@ function assessChangedObjects(
   }
 }
 
+function assessGuardedEnquiries(
+  snapshot: ProductionSchemaSnapshot,
+  migration: Extract<(typeof GUARDED_PRODUCTION_MIGRATIONS)[number], { id: '0041' }>,
+  issues: ProductionSchemaIssue[],
+) {
+  const table = snapshot.tables.enquiries;
+  const contract = migration.tables.enquiries;
+  if (!table) {
+    issues.push({
+      code: 'missing_table',
+      object: 'table:enquiries',
+      detail: 'Required guarded 0041 table is absent; do not replay historical SQL.',
+    });
+  } else {
+    for (const [column, type] of Object.entries(contract.columnTypes)) {
+      if (!table.columns.includes(column)) {
+        issues.push({
+          code: 'missing_column',
+          object: `table:enquiries.column:${column}`,
+          detail: 'Required guarded 0041 column is absent.',
+        });
+      } else if (table.columnTypes[column] !== type) {
+        issues.push({
+          code: 'column_type_mismatch',
+          object: `table:enquiries.column:${column}`,
+          detail: `Expected ${type}, found ${table.columnTypes[column] ?? 'absent'}.`,
+        });
+      }
+    }
+    for (const constraint of contract.constraints) {
+      if (!table.constraints.includes(constraint)) {
+        issues.push({
+          code: 'missing_constraint',
+          object: `constraint:${constraint}`,
+          detail: 'Required guarded 0041 constraint is absent.',
+        });
+      }
+    }
+    if (!table.rowLevelSecurity) {
+      issues.push({
+        code: 'rls_disabled',
+        object: 'table:enquiries',
+        detail: 'Guarded 0041 requires row-level security.',
+      });
+    }
+    for (const policy of table.policies) {
+      issues.push({
+        code: 'unexpected_policy',
+        object: `policy:${policy}`,
+        detail: 'Guarded 0041 requires no enquiries policies.',
+      });
+    }
+    for (const [role, privileges] of Object.entries(contract.grants)) {
+      const actual = normalizedPrivileges(table.grants[role] ?? []);
+      const expected = normalizedPrivileges(
+        role === 'service_role' ? (table.supportedPrivileges ?? privileges) : privileges,
+      );
+      if (actual.join(',') !== expected.join(',')) {
+        issues.push({
+          code: 'grant_mismatch',
+          object: `grant:${role}:enquiries`,
+          detail: `Expected [${expected.join(', ')}], found [${actual.join(', ')}].`,
+        });
+      }
+      // Effective column privileges include table privileges, which are already checked above.
+      if (privileges.length > 0) continue;
+      for (const [privilege, columns] of Object.entries(table.columnGrants[role] ?? {})) {
+        if (columns.length > 0)
+          issues.push({
+            code: 'grant_mismatch',
+            object: `grant:${role}:enquiries.column:${privilege}`,
+            detail: `Unexpected column privileges on [${columns.join(', ')}].`,
+          });
+      }
+    }
+  }
+  for (const fn of migration.functions) {
+    if (!snapshot.functions[fn]) {
+      issues.push({
+        code: 'missing_function',
+        object: `function:${fn}`,
+        detail: 'Required guarded 0041 function is absent.',
+      });
+      continue;
+    }
+    const access = snapshot.functionAccess?.[fn];
+    if (!snapshot.functions[fn].includes('search_path=""') || !access?.securityDefiner) {
+      issues.push({
+        code: 'function_config_mismatch',
+        object: `function:${fn}`,
+        detail: 'Guarded 0041 requires SECURITY DEFINER with an empty search_path.',
+      });
+    }
+    // Supabase may grant its trusted service_role EXECUTE by default. It is not
+    // required by 0041; app_runtime is required and all other checked roles denied.
+    if (
+      !access?.executeRoles.includes('app_runtime') ||
+      access.executeRoles.some((role) => !['app_runtime', 'service_role'].includes(role))
+    ) {
+      issues.push({
+        code: 'grant_mismatch',
+        object: `function:${fn}`,
+        detail:
+          'Expected app_runtime EXECUTE, optional trusted service_role, and no public/operational access.',
+      });
+    }
+  }
+}
+
 function assessAddedColumn(
   snapshot: ProductionSchemaSnapshot,
   applied: Set<MigrationId>,
@@ -1539,6 +1652,6 @@ function createdPrivateTable(
   );
 }
 
-function normalizedPrivileges(privileges: string[]) {
+function normalizedPrivileges(privileges: readonly string[]) {
   return [...new Set(privileges.map((privilege) => privilege.toUpperCase()))].sort();
 }
