@@ -15,9 +15,13 @@ jobs:
     name: Playwright against Vercel Preview
     runs-on: ubuntu-latest
     environment: preview-e2e
+    permissions:
+      contents: read
+      actions: write
+    # GitHub ref/ref_name are empty for these events: concurrency is per SHA.
     # Only accepted jobs enter this group; foreign/skipped events cannot cancel it.
     concurrency:
-      group: playwright-preview-${{ github.ref_name || github.event.deployment.sha }}
+      group: playwright-preview-${{ github.event.deployment.sha }}
       cancel-in-progress: true
     # Both Vercel projects use vercel[bot]; creator cannot distinguish them.
     if: >
@@ -34,25 +38,65 @@ jobs:
       VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
 
     steps:
-      - name: Log preview concurrency refs
+      - name: Cancel superseded Preview runs for this branch
+        id: superseded
         env:
-          PREVIEW_GITHUB_REF: ${{ github.ref }}
-          PREVIEW_GITHUB_REF_NAME: ${{ github.ref_name }}
-          DEPLOYMENT_SHA: ${{ github.event.deployment.sha }}
-          DEPLOYMENT_REF: ${{ github.event.deployment.ref }}
+          GH_TOKEN: ${{ github.token }}
+          DEPLOYED_SHA: ${{ github.event.deployment.sha }}
+        shell: bash
         run: |
-          echo "github.ref=$PREVIEW_GITHUB_REF"
-          echo "github.ref_name=$PREVIEW_GITHUB_REF_NAME"
-          echo "deployment.sha=$DEPLOYMENT_SHA"
-          echo "deployment.ref=$DEPLOYMENT_REF"
+          echo "already_tested=false" >> "$GITHUB_OUTPUT"
+          python3 - <<'PYTHON' || echo "::warning::Preview run coordination failed; running the full suite."
+          import json
+          import os
+          import subprocess
+
+          repo = os.environ["GITHUB_REPOSITORY"]
+          sha = os.environ["DEPLOYED_SHA"]
+
+          def api(endpoint, **filters):
+              command = ["gh", "api", "--method", "GET", f"repos/{repo}/{endpoint}"]
+              if filters:
+                  command += ["--paginate", "--slurp", "-f", "per_page=100"]
+              for key, value in filters.items():
+                  command += ["-f", f"{key}={value}"]
+              return json.loads(subprocess.check_output(command, text=True))
+
+          current = api(f'actions/runs/{os.environ["GITHUB_RUN_ID"]}')
+          workflow_runs = f'actions/workflows/{current["workflow_id"]}/runs'
+          branch = current.get("head_branch")
+          if branch and branch != "main":
+              for status in ("in_progress", "queued", "waiting"):
+                  for page in api(workflow_runs, branch=branch, status=status):
+                      for run in page["workflow_runs"]:
+                          if run["head_sha"] != sha and run["created_at"] < current["created_at"]:
+                              subprocess.run(["gh", "run", "cancel", str(run["id"]), "--repo", repo], check=True)
+
+          already_tested = False
+          for page in api(workflow_runs, head_sha=sha, status="completed"):
+              for run in page["workflow_runs"]:
+                  if run["head_sha"] != sha:
+                      continue
+                  for jobs_page in api(f'actions/runs/{run["id"]}/jobs', filter="latest"):
+                      if any(job["name"] == "Playwright against Vercel Preview" and
+                             job["conclusion"] == "success" for job in jobs_page["jobs"]):
+                          already_tested = True
+          # Publish only after every API call/cancellation succeeds: errors keep false.
+          if already_tested:
+              print("This SHA already has a successful Preview job; skipping heavy steps.")
+              with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+                  output.write("already_tested=true\n")
+          PYTHON
 
       - name: Checkout deployed commit
+        if: ${{ steps.superseded.outputs.already_tested != 'true' }}
         uses: actions/checkout@v7
         with:
           ref: ${{ github.event.deployment.sha }}
           fetch-depth: 0
 
       - name: Classify deployed changes (fail open)
+        if: ${{ steps.superseded.outputs.already_tested != 'true' }}
         id: classify
         env:
           DEPLOYED_SHA: ${{ github.event.deployment.sha }}
@@ -77,26 +121,26 @@ jobs:
         run: echo "Docs-only preview; dependency install and Playwright skipped."
 
       - name: Setup Node.js
-        if: ${{ steps.classify.outputs.docs_only != 'true' }}
+        if: ${{ steps.classify.outputs.docs_only != 'true' && steps.superseded.outputs.already_tested != 'true' }}
         uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
 
       - name: Install dependencies
-        if: ${{ steps.classify.outputs.docs_only != 'true' }}
+        if: ${{ steps.classify.outputs.docs_only != 'true' && steps.superseded.outputs.already_tested != 'true' }}
         run: npm ci
 
       - name: Install Playwright browsers
-        if: ${{ steps.classify.outputs.docs_only != 'true' }}
+        if: ${{ steps.classify.outputs.docs_only != 'true' && steps.superseded.outputs.already_tested != 'true' }}
         run: npx playwright install --with-deps chromium
 
       - name: Run Playwright against Vercel Preview
-        if: ${{ steps.classify.outputs.docs_only != 'true' }}
+        if: ${{ steps.classify.outputs.docs_only != 'true' && steps.superseded.outputs.already_tested != 'true' }}
         run: npm run test:e2e
 
       - name: Upload Playwright failure artifacts
-        if: ${{ failure() && steps.classify.outputs.docs_only != 'true' }}
+        if: ${{ failure() && steps.classify.outputs.docs_only != 'true' && steps.superseded.outputs.already_tested != 'true' }}
         uses: actions/upload-artifact@v7
         with:
           name: playwright-vercel-preview-failures

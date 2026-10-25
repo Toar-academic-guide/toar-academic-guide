@@ -27,17 +27,15 @@ Recorded 2026-10-25. Non-visual (CI only).
   Disposable Postgres uses an empty image on these PRs, which
   [GitHub supports for conditional services](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#jobsjob_idservicesservice_idimage).
   Quality runs fully. The PR gate additionally requires classifier success.
-- **Preview Playwright:** preserve the existing filters and add the exact
-  project's hostname prefix and team suffix. Both Vercel projects use
-  `vercel[bot]`, so creator is not a discriminator. Only accepted jobs enter
-  job-level branch concurrency with cancellation; workflow-level deployment
-  concurrency does not cancel running work. Checkout uses the deployed SHA and
-  full history, then the same base classifier examines `origin/main...SHA`.
-  Docs-only previews skip Node setup, npm and Playwright; classification errors
-  run the full suite. Initial logs expose `github.ref`, `github.ref_name`,
-  deployment SHA and deployment ref. **The coordinator must confirm the branch
-  concurrency key on this PR's Preview run:** Vercel's deployment ref is a SHA,
-  and `github.ref_name` being the branch remains unverified.
+- **Preview Playwright:** preserve the existing project/environment/host filters.
+  Both Vercel projects use `vercel[bot]`, so creator is not a discriminator.
+  Job concurrency is explicitly per deployed SHA with cancellation; workflow-level
+  deployment concurrency does not cancel running work. Before checkout, read
+  `head_branch` from the run API and cancel older other-SHA runs on that branch.
+  Reuse a completed successful Preview job for this SHA; API errors warn and run
+  the full suite. `actions: write` is job-scoped alongside `contents: read`.
+  Full-history checkout and the trusted base classifier still handle docs-only
+  changes. Both outputs gate Node setup, npm, Playwright and failure artifacts.
 - **Admission alerts:** processing runs hourly at :15, delivery at :37, retaining
   their existing variable gates. Cycle reset runs hourly at :23 only when either
   pipeline is enabled, plus a separate daily 01:41 UTC safety run regardless of
@@ -79,7 +77,30 @@ continue to report skipped. Any real quality/classification failure still blocks
 The separate deployment-triggered check is **Playwright against Vercel Preview**.
 PR Title and Ready PR Slack are separate, unchanged workflows.
 
-Docs-only proof: pending coordinator run
+Docs-only proof: [CI run 40170020188](https://github.com/Toar-academic-guide/toar-academic-guide/actions/runs/40170020188), conclusion **success**, on throwaway draft PR #293 (`codex/ci-diet-docs-proof`, base `codex/ci-diet`). The only change was `docs/ci-docs-only-proof.md`; the PR is now closed and its branch deleted. Coordinator-supplied job evidence:
+
+| Check                                   | Conclusion | Duration | Work performed                     |
+| --------------------------------------- | ---------- | -------: | ---------------------------------- |
+| Lint, typecheck & security              | Success    |      56s | Full                               |
+| Classify production-sensitive changes   | Success    |       4s | Full classification                |
+| Unit tests & coverage                   | Success    |       5s | Notice only                        |
+| Disposable Postgres migration and seed  | Success    |       4s | Notice only; no Postgres container |
+| Admissions evidence gates               | Success    |       3s | Notice only                        |
+| Production operational schema gate      | Success    |       3s | Existing gate                      |
+| Build application                       | Success    |       3s | Notice only                        |
+| Playwright PR smoke                     | Success    |       4s | Notice only                        |
+| Internal data-health smoke              | Success    |       6s | Notice only                        |
+| PR gate integrity                       | Success    |       4s | Existing gate                      |
+| Production operational schema preflight | Skipped    |        — | Main/manual behavior unchanged     |
+| E2E smoke tests                         | Skipped    |        — | Main/manual only                   |
+| DB-backed catalogue verification        | Skipped    |        — | Main/manual only                   |
+| Operational DB verification             | Skipped    |        — | Main/manual only                   |
+
+Estimated billed CI minutes: **~10**, versus **~19** for a full green PR run (~9 saved per eligible run). PR Title also succeeded. This proves the no-op checks still report success; the daily frequency of eligible documentation changes remains unmeasured.
+
+Preview branch discovery is verified: runs [40169430245](https://github.com/Toar-academic-guide/toar-academic-guide/actions/runs/40169430245) (`8813d4b`) and [40169568127](https://github.com/Toar-academic-guide/toar-academic-guide/actions/runs/40169568127) (`15c1a1a`) both had empty `github.ref` and `github.ref_name`; deployment SHA/ref were the commit SHA. Their ~9-minute executions overlapped at 06:34–06:41 UTC without cancellation. The run API returned `head_branch=codex/ci-diet`.
+
+The replacement keeps job concurrency explicitly per deployed SHA. Before checkout, an API step reads this run's branch and cancels older other-SHA runs of this workflow on that branch in `in_progress`, `queued` or `waiting`, excluding empty/main branches. It also checks completed same-SHA runs for a successful **Playwright against Vercel Preview** job (a skipped job does not qualify). That output and docs-only classification guard the heavy steps together. `actions: write` is scoped to this job, alongside `contents: read`; the environment remains unchanged and no explicit deployment API is called. Any API/cancellation error warns and leaves the full suite enabled. API cancellation and the once-per-SHA guard have not yet been measured after merge; the ~33 wall-minutes/day ceiling remains a ceiling, not claimed billed savings.
 
 ## Measurement and projections
 
@@ -100,28 +121,29 @@ Skipped foreign deployment events are excluded from billed Preview runs.
 The triggers remain: docs-only jobs become cheaper, not absent. Cancellation can
 shorten a superseded run but does not remove its start from run counts.
 
-| Workflow           | Runs per PR before → after                  |      Billed min/day before |                                 After projection, before unmeasured docs savings |
-| ------------------ | ------------------------------------------- | -------------------------: | -------------------------------------------------------------------------------: |
-| Playwright Preview | 2.97 → same starts                          |    ~411 (`178 / 4 × 9.24`) |          ~378–411; up to ~33/day cancellation ceiling, conditional on branch key |
-| CI, all events     | 2.39 → same PR starts; main/manual separate |                       ~640 |                     ~640, plus cost of preserving main runs previously cancelled |
-| Alert processing   | Not PR-triggered                            |                          0 |                                                                 0 while disabled |
-| Alert delivery     | Not PR-triggered                            |                          0 |                                                                 0 while disabled |
-| Alert cycle reset  | Not PR-triggered                            | 6.4 (`45 / 7`, each 1 min) | ~1 if the daily job retains its measured 1 min cost; hourly disabled runs bill 0 |
-| Ready PR Slack     | Unchanged                                   |                         23 |                                                                               23 |
-| PR Title           | Unchanged                                   |                       22.6 |                                                                             22.6 |
-| Total              | Same starts; shorter/no-op eligible jobs    |                     ~1,100 |         ~1,065–1,098 before unmeasured docs savings and additional main-run cost |
+| Workflow           | Runs per PR before → after                  |      Billed min/day before |                                       After projection, before unmeasured docs savings |
+| ------------------ | ------------------------------------------- | -------------------------: | -------------------------------------------------------------------------------------: |
+| Playwright Preview | 2.97 → same starts                          |    ~411 (`178 / 4 × 9.24`) | ~378–411; up to ~33/day cancellation ceiling, API cancellation; unmeasured after merge |
+| CI, all events     | 2.39 → same PR starts; main/manual separate |                       ~640 |                           ~640, plus cost of preserving main runs previously cancelled |
+| Alert processing   | Not PR-triggered                            |                          0 |                                                                       0 while disabled |
+| Alert delivery     | Not PR-triggered                            |                          0 |                                                                       0 while disabled |
+| Alert cycle reset  | Not PR-triggered                            | 6.4 (`45 / 7`, each 1 min) |       ~1 if the daily job retains its measured 1 min cost; hourly disabled runs bill 0 |
+| Ready PR Slack     | Unchanged                                   |                         23 |                                                                                     23 |
+| PR Title           | Unchanged                                   |                       22.6 |                                                                                   22.6 |
+| Total              | Same starts; shorter/no-op eligible jobs    |                     ~1,100 |               ~1,065–1,098 before unmeasured docs savings and additional main-run cost |
 
 CI's ~640/day comprises ~539/day PR+main, plus ~100/day dispatches:
 `141 / 4 × 10.1 + 48 / 4 × 15.3 ≈ 539`; `26 / 4 ≈ 6.5` dispatches/day
 at the supplied ~15 minutes each. A fully green PR costs ~19 billed minutes.
 Preview cancellation has an observed ceiling of `131 / 4 = 32.75` wall-minutes/day
 across 21 superseded runs. That is a ceiling, not guaranteed billed savings:
-rounding, runner timing and the unverified branch context affect the result.
+rounding, runner timing and the API cancellation mechanism affect the result.
+The API mechanism and once-per-SHA guard remain unmeasured after merge.
 
 The hostname filter earns **no duplicate-run savings**: the measured baseline
 already bills exactly one Preview run per head SHA; foreign project and other
-rejected events bill zero. Docs-only savings are unmeasured and are not credited
-in the projection. The baseline's broad docs candidate count, `3 / 68` (~4%),
+rejected events bill zero. The docs-only proof estimates ~9 minutes saved per eligible green PR run;
+its daily frequency is unmeasured and no daily savings are credited in the projection. The baseline's broad docs candidate count, `3 / 68` (~4%),
 used `.md OR docs/**`, which is wider than the safe policy here. Its raw sample
 is two WAF-documentation PRs and one `AGENTS.md` PR; all three are excluded
 under this policy, so that sample demonstrates no eligible docs-only savings. Notice-only jobs still incur runner billing, and
@@ -132,8 +154,8 @@ without unmeasured adjustments, remains about **31,950 minutes per 30-day month*
 (`1,065 × 30`), around **16 times** the private Free allowance of 2,000/month
 (~67/day). The baseline is ~33,000/month. These changes do not make current
 PR volume fit that budget; further coverage/product decisions are necessary.
-Re-measure job-level billed minutes after merge and the coordinator's docs-only
-proof run before claiming actual savings.
+Re-measure job-level billed minutes after merge before claiming actual daily
+savings; the coordinator's completed docs-only proof establishes only per-run cost.
 
 Live admission-alert subscribers: 0 (read-only SELECT count; 4 rows total, 2 notified + 2 cancelled, cycle 2026)
 
