@@ -200,16 +200,21 @@ export default function AdmissionRequirements({
             ))}
           </table>
           <p className="mt-3 text-xs text-[var(--text-muted)] [overflow-wrap:anywhere]">
-            {programId !== 'biu_law' &&
+            {institutionId !== 'tau' &&
+              programId !== 'biu_law' &&
               programId !== 'law' &&
               'עודכן לאחרונה: 25.10.2026 · מקור: אתר אוניברסיטת בר-אילן — '}
             <a
-              href={institutionLink(BIU_CALCULATOR_URL, 'biu')}
+              href={
+                institutionId === 'tau'
+                  ? institutionLink(floorChecks[0]?.sourceUrl, 'tau')
+                  : institutionLink(BIU_CALCULATOR_URL, 'biu')
+              }
               target="_blank"
               rel="noopener noreferrer"
               className="font-semibold text-[#6554b8] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2"
             >
-              המחשבון הרשמי של בר-אילן
+              {institutionId === 'tau' ? 'תנאי קבלה' : 'המחשבון הרשמי של בר-אילן'}
             </a>
             {programId === 'biu_ee' && (
               <>

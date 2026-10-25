@@ -22,7 +22,7 @@ import { BGU_ENGINEERING_METADATA_BY_PAIR_ID } from '@/data/admissions/bguEngine
 import type { AdmissionsExtraInputs } from '@/types/admissionsEvaluation';
 import type { AdmissionFact } from '@/data/degrees/types';
 import { getMondayAdmissionEvidenceByCatalogueInstitutionId } from '@/data/admissions/mondayEvidence';
-import { resultLabel } from '@/lib/studyJourney';
+import { resultExplanation, resultLabel } from '@/lib/studyJourney';
 import { DANON_PROGRAM_URLS } from '@/data/admissions/danon';
 import catalogueRepair from '@/data/admissions/catalogueContentRepair.json';
 import haifaPolicies from '@/data/admissions/haifaProgrammePolicies.json';
@@ -5026,7 +5026,12 @@ describe('TAU architecture manual screening', () => {
     expect(result.score).toBeUndefined();
     expect(result.threshold).toBeUndefined();
     expect(result.scoreAssessment).toBeUndefined();
+    expect(result.estimated).toBeUndefined();
     expect(result.officialUrls).toContain(url);
+    expect(resultExplanation(result, 'architecture')).toBe(result.explanation);
+    expect(resultLabel(result, false, false, 'architecture').label).toBe(
+      result.decision === 'below' ? 'לא עומד/ת בתנאי הסף' : 'נדרש מיון נוסף',
+    );
     expect(result.explanation).not.toMatch(/679|629|600|תיק עבודות|ראיון/);
     return result;
   }

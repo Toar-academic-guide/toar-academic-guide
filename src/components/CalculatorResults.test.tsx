@@ -290,12 +290,11 @@ describe('CalculatorResults', () => {
           name: `אנגלית בפסיכומטרי 100 ${english} ${englishStatus}`,
         }),
       ).toBeTruthy();
-      expect(
-        screen.getByRole('link', { name: 'תנאי קבלה', exact: true }).getAttribute('href'),
-      ).toBe(
+      expect(screen.getByRole('link', { name: 'תנאי קבלה' }).getAttribute('href')).toBe(
         'https://go.tau.ac.il/he/arts/ba/arch?v=admission-requirements&utm_source=myway&utm_medium=referral',
       );
       expect(screen.queryByText(/האימות.*טרם הושלם|בר-אילן|679|629/)).toBeNull();
+      expect(screen.queryByText(/הערכה: חישבנו לפי הממוצע הכללי/)).toBeNull();
       expect(screen.queryByText('מתקבלים', { exact: true })).toBeNull();
       expect(evaluation.results[0].decision).toBe(
         english < 100 || psychometric < 551 ? 'below' : 'unknown',

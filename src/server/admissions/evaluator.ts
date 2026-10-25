@@ -16,6 +16,7 @@ import {
   withScoreAssessment,
   type AdditionalCondition,
 } from './scoreAssessment';
+import { examSubject, mathAlternatives } from './publishedNumericRoutes';
 import { evaluateTauPhysiotherapyResult } from './tauPhysiotherapyEvaluation';
 import { evaluateMtaComputerScience } from './mtaComputerScienceEvaluation';
 import { evaluateMtaPublishedRoutes } from './mtaPublishedRoutesEvaluation';
@@ -61,6 +62,7 @@ import type {
   AdmissionsEvaluationReport,
   AdmissionsEvaluationResult,
   AdmissionsRequiredInput,
+  FloorCheckRow,
 } from '@/types/admissionsEvaluation';
 import type { SourceFreshnessStateRow } from '@/db/types';
 import { admissionsInputValue } from './admissionsInputValue';
@@ -191,6 +193,7 @@ export async function evaluateAdmissionsForProgram(args: {
     );
     const institutionId = result.linkedInstitutionId;
     const usesProxy =
+      !(program.id === 'architecture' && institutionId === 'tau') &&
       normalized.proxyInstitutions.has(institutionId) &&
       (institutionId === 'colman' || usesInstitutionAverageProxy(result, evaluationInput));
     const usesDirectRoute = normalized.proxyInstitutions.has(institutionId) && !usesProxy;
@@ -1503,32 +1506,6 @@ async function evaluateExactScores(args: {
       });
     }
 
-    if (exactTarget.targetId === 'tau-architecture-live') {
-      const psychometricEnglish = input.extraInputs?.psychometricEnglish;
-      if (typeof psychometricEnglish !== 'number') {
-        return requiredInputsResult(institution, ['psychometric_english']);
-      }
-      if (psychometricEnglish < 100) {
-        return exactGateFailureResult({
-          institution,
-          unmetRequirements: ['אנגלית בפסיכומטרי ברמת 100 ומעלה'],
-          requirementsUrl:
-            'https://go.tau.ac.il/he/engineering/ba/architecture?v=admission-requirements',
-        });
-      }
-      const proof = await runTauAdmissionsProof({
-        fetcher: timedFetcher,
-        program: exactTarget.program,
-        applicant: { bagrutAverage: input.bagrut, psychometric: input.psychometric },
-      });
-
-      return normalizeExactProofResult({
-        institution,
-        proof: proof.normalizedPayload,
-        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
-      });
-    }
-
     if (
       exactTarget.targetId === 'tau-biology-live' ||
       exactTarget.targetId === 'tau-biology-legacy-live'
@@ -2204,6 +2181,75 @@ function evaluateNonExactResult(args: {
   );
 
   if (entry.capability === 'manual_gate') {
+    if (entry.pairVerification?.pairId === 'architecture__tau') {
+      const { contract } = getProgramVerificationArtifact('architecture__tau')!;
+      const gates = contract.calculation.gates;
+      const psychometricMinimum = gates.find((gate) => gate.field === 'psychometric')!.minimum!;
+      const englishMinimum = gates.find((gate) => gate.field === 'psychometricEnglish')!.minimum!;
+      const screening = gates.find((gate) => gate.field === 'architectureScreeningTest')!;
+      const requirementsUrl = entry.sourceTarget!.officialUrl;
+      const english = input.extraInputs?.psychometricEnglish;
+      const { units, grade } = examSubject(input, 'mathematics');
+      const mathematics = mathAlternatives(input, [
+        [5, 70],
+        [4, 80],
+        [3, 90],
+      ]);
+      const floorChecks: FloorCheckRow[] = [
+        {
+          channel: 'תנאי קבלה',
+          label: 'פסיכומטרי',
+          displayValue: psychometricMinimum,
+          verdictThreshold: psychometricMinimum,
+          studentValue: input.psychometric,
+          status: input.psychometric >= psychometricMinimum ? 'pass' : 'miss',
+          sourceUrl: requirementsUrl,
+        },
+        {
+          channel: 'תנאי קבלה',
+          label: 'מתמטיקה',
+          displayValue: '5 יח״ל: 70; 4 יח״ל: 80; 3 יח״ל: 90',
+          verdictThreshold: units === 5 ? 70 : units === 4 ? 80 : 90,
+          studentValue:
+            units === undefined && grade === undefined
+              ? undefined
+              : `${units ?? '—'} יח״ל, ${grade ?? '—'}`,
+          status: mathematics.below ? 'miss' : mathematics.missing.length ? 'missing' : 'pass',
+          sourceUrl: requirementsUrl,
+        },
+        {
+          channel: 'תנאי קבלה',
+          label: 'אנגלית בפסיכומטרי',
+          displayValue: englishMinimum,
+          verdictThreshold: englishMinimum,
+          studentValue: english,
+          status: english === undefined ? 'missing' : english >= englishMinimum ? 'pass' : 'miss',
+          sourceUrl: 'https://go.tau.ac.il/he/ba/admissions',
+        },
+      ];
+      const unmet = floorChecks.filter((floor) => floor.status === 'miss');
+      return {
+        institution: publicInstitutionShape(institution),
+        linkedInstitutionId: institution.id,
+        capability: 'manual_gate',
+        kind: 'manual_gate',
+        decision: unmet.length ? 'below' : 'unknown',
+        confidence: 'high',
+        sourceLabel: 'נדרש מיון נוסף',
+        explanation: [
+          ...(unmet.length
+            ? [
+                `לא מתקיימים תנאי ההגשה: ${unmet.map((floor) => `${floor.label} ${floor.displayValue}`).join('; ')}.`,
+              ]
+            : []),
+          screening.description,
+        ].join(' '),
+        nextAction: 'בדקו באתר התוכנית את מועדי מבחן המיון ותנאי ההרשמה.',
+        officialUrls: [requirementsUrl, 'https://go.tau.ac.il/he/ba/admissions'],
+        floorChecks,
+      };
+    }
+
     const verifiedThreshold = getVerifiedProgramThreshold(entry.evidence, program.id);
     if (
       verifiedThreshold?.thresholdKind === 'invitation_to_manual_gate' &&
