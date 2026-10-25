@@ -1,5 +1,6 @@
 import { allPrograms, programsWithLegacyAdmissionFacts } from '@/data/degrees';
 import type { Program } from '@/data/degrees/types';
+import type { InstitutionId } from '@/data/institutions';
 import { buildCatalogueSeed } from '@/db/seeds/catalogueSeed';
 import { getRequirementsChecked } from '@/lib/requirementsChecked';
 import { applyCatalogueContentRepair } from './catalogueContentRepair';
@@ -15,7 +16,13 @@ describe('verified catalogue content repair', () => {
         checkedAt: '2026-10-21',
         sourceUrl: 'https://w3.braude.ac.il/intrested/',
       });
-      expect(getRequirementsChecked(entry.programId, { id: institutionId }, entry.notes)).toEqual({
+      expect(
+        getRequirementsChecked(
+          entry.programId,
+          { id: institutionId as InstitutionId },
+          entry.notes,
+        ),
+      ).toEqual({
         date: '21.10.2026',
         sourceUrl: 'https://w3.braude.ac.il/intrested/?utm_source=myway&utm_medium=referral',
       });
