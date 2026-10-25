@@ -1,0 +1,1 @@
+ALTER TABLE "admission_thresholds" ALTER COLUMN "threshold_value" SET DATA TYPE numeric;

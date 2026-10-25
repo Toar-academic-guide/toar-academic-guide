@@ -2,7 +2,9 @@ name: Expire Prior Admission Alert Cycles
 
 on:
   schedule:
-    - cron: '*/15 * * * *'
+    - cron: '23 * * * *'
+    # Retention must still run daily while processing and delivery are disabled.
+    - cron: '41 1 * * *'
   workflow_dispatch:
 
 permissions:
@@ -15,6 +17,11 @@ concurrency:
 jobs:
   expire-prior-cycles:
     name: Expire prior admission alert cycles
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.schedule == '41 1 * * *' ||
+      (github.event.schedule == '23 * * * *' &&
+        (vars.ADMISSION_ALERT_PROCESSING_ENABLED == 'true' || vars.ADMISSION_ALERT_DELIVERY_ENABLED == 'true'))
     runs-on: ubuntu-latest
     environment: admissions-publication
     env:

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import posthog from 'posthog-js';
 import { ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { getSessionAttribution } from '@/lib/sessionAttribution';
 import { ENQUIRY_CONSENT, type EnquiryInput } from '@/lib/enquiries';
 
 export default function EnquiryForm({
@@ -11,12 +12,14 @@ export default function EnquiryForm({
   title,
   onBack,
   surface = 'enquiry_page',
+  evaluationInput,
 }: {
   programId: string;
   institutionId: string;
   title: string;
   onBack?: () => void;
   surface?: string;
+  evaluationInput?: EnquiryInput['evaluationInput'];
 }) {
   const requestId = useRef<string | null>(null);
   const sending = useRef(false);
@@ -69,6 +72,8 @@ export default function EnquiryForm({
           institutionId,
           sourcePath: `${window.location.pathname}${window.location.hash}`.slice(0, 300),
           consent: true,
+          attribution: getSessionAttribution(),
+          ...(evaluationInput ? { evaluationInput } : {}),
         };
         let httpStatus: number | null = null;
         try {

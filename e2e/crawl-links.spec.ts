@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 async function mapLimited<T, R>(items: T[], limit: number, fn: (item: T) => Promise<R>) {
   const results: R[] = new Array(items.length);

@@ -108,6 +108,11 @@ import {
 import { runBguEngineeringAdmissionsProof } from '@/server/ingestion/adapters/bguEngineeringAdmissions';
 import { getProgramVerificationArtifact } from '@/data/admissions/tauProgramVerification';
 import { getHaifaInformationSystemsTrackArtifact } from '@/data/admissions/haifaInformationSystemsVerification';
+import { TECHNION_MEDICINE_INVITATION_THRESHOLD } from '@/data/admissions/technionThresholds';
+import {
+  getCodeReviewedTechnionWinterVerification,
+  TECHNION_THRESHOLD_URL,
+} from '@/data/admissions/technionProgramVerification';
 
 type AdmissionsEvaluationInput = AdmissionsEvaluationRequest & {
   psychometric: number;
@@ -140,7 +145,10 @@ export async function evaluateAdmissionsForProgram(args: {
     freshnessStatesBySourceId: suppliedFreshnessStates,
   } = args;
 
-  const exactSourceIds = exactSourceIdsForProgram(program, input.extraInputs);
+  const codeReviewedWinter = getCodeReviewedTechnionWinterVerification(`${program.id}__technion`);
+  const exactSourceIds = exactSourceIdsForProgram(program, input.extraInputs).filter(
+    (sourceId) => sourceId !== codeReviewedWinter?.contract.source.targetId,
+  );
 
   const freshnessLoad = suppliedFreshnessStates
     ? { status: 'loaded' as const, states: suppliedFreshnessStates }
@@ -175,7 +183,29 @@ export async function evaluateAdmissionsForProgram(args: {
     const entry = capabilityEntries.find(
       (item) => item.institutionId === result.linkedInstitutionId,
     );
-    const displayedResult = withVerifiedAdmissionInformation(result, entry, input);
+    // Medicine's 92 is an estimated MOR invitation score, not an admission cutoff.
+    // Keep the calculation, but do not turn either side of that estimate into a verdict.
+    const displayedResult: AdmissionsEvaluationResult =
+      program.id === 'technion_medicine' && result.linkedInstitutionId === 'technion'
+        ? {
+            ...result,
+            capability: result.score !== undefined ? 'score_only' : result.capability,
+            kind: result.score !== undefined ? 'exact' : result.kind,
+            decision: 'unknown',
+            confidence: result.score !== undefined ? 'medium' : result.confidence,
+            scoreLabel: 'סכם',
+            threshold: undefined,
+            scoreAssessment: undefined,
+            deltaNeeded: undefined,
+            additionalConditions: undefined,
+            sourceLabel: 'סכם לרפואה',
+            explanation:
+              `סף זימון משוער למבחן המו"ר: ${TECHNION_MEDICINE_INVITATION_THRESHOLD} (הערכה). זהו סף זימון משוער בלבד, ולא סף קבלה לרפואה.` +
+              (result.score === undefined ? ` ${result.explanation}` : ''),
+            nextAction: 'בדקו באתר הטכניון את תנאי המיון והקבלה העדכניים לרפואה.',
+            officialUrls: [TECHNION_THRESHOLD_URL],
+          }
+        : withVerifiedAdmissionInformation(result, entry, input);
     return {
       ...displayedResult,
       snapshot: createAdmissionsEvaluationSnapshot({ input, result: displayedResult }),

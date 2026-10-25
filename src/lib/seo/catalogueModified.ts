@@ -47,7 +47,11 @@ export function programModifiedAt(program: CatalogueProgram): string {
     programCheckedDates.get(program.id) ??
     programSourceDates.get(program.id) ??
     SOURCE_DATES['src/data/degrees/index.ts'];
-  return latestModified(sourceDate, program.updatedAt);
+  return latestModified(
+    sourceDate,
+    program.updatedAt,
+    ...(program.institutionDetails?.map((detail) => detail.curriculumCheckedAt) ?? []),
+  );
 }
 
 export function institutionModifiedAt(

@@ -16,7 +16,6 @@ export default defineConfig({
     extraHTTPHeaders: vercelAutomationBypassSecret
       ? {
           'x-vercel-protection-bypass': vercelAutomationBypassSecret,
-          'x-vercel-set-bypass-cookie': 'true',
         }
       : undefined,
     trace: 'on-first-retry',
