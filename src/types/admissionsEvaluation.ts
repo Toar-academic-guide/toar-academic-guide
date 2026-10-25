@@ -160,6 +160,8 @@ export interface AdmissionsExtraInputs
   colmanBagrutAverage?: number;
   colmanBagrutCertificateConfirmed?: boolean;
   bguBagrutAverage?: number;
+  /** Internal derivation marker; the HTTP input schema does not accept it. */
+  bguBagrutAverageEstimated?: true;
   tauApplicationRequirementsConfirmed?: boolean;
   tauManagementRequirementsConfirmed?: boolean;
   tauManagementAcademicRouteConfirmed?: boolean;
@@ -238,6 +240,7 @@ export type AdmissionsPairVerificationState =
   'exact' | 'withheld' | 'stale' | 'blocked' | 'authority_unavailable';
 
 export interface AdmissionsEvaluationInput {
+  bagrutAverageEstimated?: true;
   degreeId: string;
   psychometric?: number;
   bagrut?: number;
@@ -253,6 +256,8 @@ export interface AdmissionsEvaluationSnapshot {
 }
 
 export interface AdmissionsEvaluationResult {
+  estimated?: boolean;
+  estimationReason?: string;
   institution: Pick<
     CatalogueInstitution,
     | 'id'

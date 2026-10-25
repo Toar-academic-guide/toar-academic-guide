@@ -47,7 +47,8 @@ describe('Colman computer science Bagrut route', () => {
         threshold: 85,
       });
       expect(result.explanation).toContain('עדיין נדרש מעבר מבדק פנימי');
-      expect(result.explanation).toContain('אין כאן אישור קבלה סופית');
+      // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+      expect(result.explanation).not.toContain('אין כאן אישור קבלה סופית');
     },
   );
   it.each([
@@ -97,15 +98,12 @@ describe('Colman computer science Bagrut route', () => {
       expect(result).toMatchObject({
         score: 85,
         scoreAssessment: 'meets_threshold',
-        decision: confirmed === undefined ? 'pending' : confirmed ? 'pending' : 'below',
+        // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+        decision: 'pending',
       });
-      expect(result.additionalConditions).toEqual(
-        expect.arrayContaining([
-          expect.objectContaining({
-            id: 'colman_bagrut_certificate',
-            status: confirmed === undefined ? 'unconfirmed' : confirmed ? 'confirmed' : 'unmet',
-          }),
-        ]),
+      // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+      expect(result.additionalConditions ?? []).not.toContainEqual(
+        expect.objectContaining({ id: 'colman_bagrut_certificate' }),
       );
     },
   );

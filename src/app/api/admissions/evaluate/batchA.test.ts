@@ -86,3 +86,44 @@ describe('Batch A API dispatch with the real evaluator', () => {
     ).toMatchObject({ kind: 'needs_input', requiredInputs: ['math_units', 'math_grade'] });
   });
 });
+
+it.each([
+  { average: 50, estimated: true, status: 200 },
+  { average: 59, estimated: true, status: 400 },
+  { average: 50, estimated: undefined, status: 400 },
+])(
+  'validates a subject-derived low average honestly: $average / $estimated',
+  async ({ average, estimated, status }) => {
+    resetAdmissionsEvaluationRateLimitForTests();
+    const response = await POST(
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          degreeId: 'ono_cs',
+          psychometric: 650,
+          bagrut: average,
+          bagrutAverageEstimated: estimated,
+          extraInputs: {
+            bagrutSubjectRecord: {
+              schemaVersion: 2,
+              sector: 'jewish',
+              certificateType: 'internal',
+              complete: false,
+              subjects: [{ subjectId: 'mathematics', units: 5, grade: 50, assessmentKind: 'exam' }],
+            },
+          },
+        }),
+      }),
+    );
+    expect(response.status).toBe(status);
+    if (status === 200) {
+      const { data } = await response.json();
+      expect(data.input.bagrut).toBe(50);
+      expect(
+        data.results.find((row: AdmissionsEvaluationResult) => row.linkedInstitutionId === 'ono')
+          .requiredInputs ?? [],
+      ).not.toContain('bagrut_average');
+    }
+  },
+);

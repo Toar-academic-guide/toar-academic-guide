@@ -134,8 +134,7 @@ export function evaluateMtaPublishedRoutes({
     ],
   };
   const nextAction = 'פנו למרכז ייעוץ ורישום לאישור הנתונים ולבירור אפשרויות הקבלה.';
-  const estimate =
-    'ממוצע הבגרות והציון המשולב הם הערכה; המכללה מחשבת אותם לפי שיטתה. אין כאן אישור קבלה סופית.';
+  const estimate = 'ממוצע הבגרות והציון המשולב הם הערכה; המכללה מחשבת אותם לפי שיטתה.';
   const matched = routes.filter((route) => route.checks.every((check) => check.met));
 
   if (!matched.length) {
@@ -215,7 +214,7 @@ export function evaluateMtaPublishedRoutes({
     ),
     confirmationCondition(
       'bagrut_average',
-      'זכאות לבגרות, עמידה בתנאי הסף הכלליים ואישור הנתונים בידי המכללה',
+      'עמידה בתנאי הסף הכלליים ואישור הנתונים בידי המכללה',
       undefined,
     ),
   ];

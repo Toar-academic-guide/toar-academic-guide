@@ -1,5 +1,7 @@
 'use client';
 
+import AdmissionEstimate from './AdmissionEstimate';
+
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -1047,7 +1049,12 @@ export default function StudyJourney({
           <JourneyExactGrades
             initialRecord={draft.scores.bagrut?.subjectRecord}
             onComplete={(record) => {
-              patchScores({ bagrut: { subjectRecord: record } });
+              patchScores({
+                bagrut: {
+                  ...draft.scores.bagrut,
+                  subjectRecord: record,
+                },
+              });
               afterGrades();
             }}
           />
@@ -1371,6 +1378,7 @@ export default function StudyJourney({
                       </p>
                     )
                   )}
+                  <AdmissionEstimate result={activeRow.result} />
                   {activeFootnote && (
                     <AdmissionConditions
                       conditions={activeRow.result?.additionalConditions}

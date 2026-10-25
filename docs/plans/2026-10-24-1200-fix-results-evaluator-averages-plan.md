@@ -1,0 +1,107 @@
+---
+artifact_contract: ce-unified-plan/v1
+product_contract_source: legacy-requirements
+execution: code
+date: 2026-10-24
+---
+
+# Results evaluator averages
+
+## Goal Capsule
+
+Restore useful evaluations for average-only and subject-record applicants without inventing institutional formulas. Normalize inputs before capability selection; preserve exact provenance and explicitly flag proxies. This change authorizes a feature-branch push and PR, with no database writes, deployment, merge, or visual changes.
+
+## Product Contract
+
+### Requirements
+
+- R1. Preserve an entered overall average when saving subjects and derive an overall estimate when only subjects exist.
+- R2. Use existing BGU and TAU subject-average calculators in the main evaluator. Reuse Colman/Haifa calculators only if they already exist.
+- R3. Without subjects, use the supplied overall average as an institutional proxy; return `estimated: true` and a reason on affected rows. Default missing Haifa exam years to the current cycle without replacing supplied years.
+- R4. BGU mathematics gates accept a units/grade pair as well as structured subjects.
+- R5. HIT returns a student-readable Hebrew explanation instead of its English implementation note.
+- R6. BGU Psychology with Bagrut 112 and psychometric 690/720 returns accepted through the published psych-only route; 650 uses the regular formula or honest missing inputs. Registration availability is separate from numeric eligibility.
+
+Scope excludes UI labels, ordering, new questions, save/auth changes, new formulas, thresholds, and catalogue or database changes.
+
+## Planning Contract
+
+1. Normalize once before capability selection in `src/server/admissions/evaluator.ts`; do not mutate callers. Keep explicit institutional averages authoritative. Failed subject-calculator readiness must remain missing, rather than silently using a proxy.
+2. Add optional estimate metadata to `src/types/admissionsEvaluation.ts`. Estimated score results cannot claim exact institutional computation; preserve source failures and missing gates.
+3. Preserve wizard average through the existing completion callbacks in `src/components/StudyJourney.tsx`. No markup or copy changes.
+4. Do not infer psychometric subscores, qualifications, or missing subject grades. Haifa years are assumptions recorded in estimate reasons, never invented exam history.
+
+## Implementation Units
+
+### U1. Overall and institutional averages (R1–R3)
+
+Implement normalization and estimate provenance, preserving original request digests. Add focused tests in `src/server/admissions/evaluationInputs.test.ts` and integration assertions in `src/server/admissions/evaluator.test.ts`. Inspect existing average calculators and wizard callback ordering before implementation.
+
+The shared single/batch clients must send a derived overall average with checked request provenance when a profile has only subjects. Profile validation, calculator continuation and profile matching must use the same derived average while preserving the raw record and keeping official supplied averages authoritative.
+
+### U2. Gates and HIT explanation (R4–R5)
+
+Update BGU gate and capability handling for paired math inputs without fabricating a certificate record. Add regression cases in `src/server/admissions/evaluator.test.ts`.
+
+BGU Psychology addendum (R6): reproduce 650/690/720 against the current official source first; preserve the full source fingerprint while comparing admission rules separately from registration status. Keep all threshold checks, expose the current closed registration in the existing next action, and retain additional conditions. Add inclusive-boundary coverage at 679/680.
+
+### U3. Verification and delivery
+
+Add a reproducible matrix harness using the diagnosis catalogue and subject fixture, compare the branch baseline against the final implementation for 105/650 and 110/700, both average-only and subjects. Record missing-detail counts by subject and residual blockers.
+
+## Verification Contract
+
+Run new tests before implementation to establish failures where practical. Only the ten Jorje-adjudicated expectations may change, with row-specific source comments. All other existing expectations and numeric examples stay unchanged. Run focused tests, full unit suite, lint, typecheck, and `npm run guard:pre-pr`. Run the matrix through the actual evaluator using read-only official endpoints and catalogue snapshots; distinguish recorded source fixtures from live HTTP results. No DB writes, seeds, freshness workflow, GitHub comments, or deployment commands. Code-review pipelines are explicitly skipped by task instruction.
+
+## Definition of Done
+
+All six original behaviors and G1–G3 have unit coverage. The Oct 25 rulings supersede the earlier retained-failure publication exception: the full suite and pre-PR guard must pass without a bypass. Keep the PR draft for coordinator verification, and preserve the existing evidence table.
+
+## Oct 25 rulings implementation
+
+Authority: the supplied R1 PR #278 rulings dated 2026-10-25 and this run's explicit row-by-row instructions.
+
+1. Merge current main (including e0a90d0) without rebasing; preserve Technion source handling and shared API schema extraction.
+2. Add failing integration tests through the real evaluator/API for G1 estimate provenance, G2 inclusive 2% threshold bands for Colman and BGU, and G3 alternative-channel evidence. Use existing official response fixtures; no new formulas or numeric thresholds.
+3. Apply safeguards only to institution-average proxies. Direct psychometric scores and supplied institution averages keep existing verdicts. Defaulted exam years add estimate provenance but do not make a directly supplied score proxy-derived.
+4. Preserve estimate reasons and distinguish score lineage from other estimated inputs. Borderline proxy scores request subject grades and return unknown; proxy-below requires independently established failure of every other channel. Otherwise request subject grades without a verdict.
+5. Update only the ten authorized old expectations, with ruling/source comments. Rename the empty-response Psychology fixture, retain degraded/unknown with an honest next action, and add a valid-response estimated-score sibling. Psych-only accepted cases retain closed-registration and additional-condition information.
+6. Simplify the focused implementation without changing proof tests, then run lint, typecheck, format, the full unit suite and the real guard. Normal push only when all pass; update PR #278 body and inspect head CI. Do not edit workflows, guard, coverage requirements, UI components or copy rendering.
+
+Known student-visible behavior: G2/G3 replace uncertain proxy verdicts with requests for subject grades; result statuses/next actions can change through the existing rendering. No layout or rendering change is intended. Jorje retains product/source verification and coordinator readiness authority.
+
+## Jorje 06:40 follow-up: visual estimate disclosure
+
+Continue the existing CE plan under the explicit follow-up authority. Keep PR #278 draft pending Amit's visual approval.
+
+1. Merge bb041ef without rebasing, preserving smoke isolation and DB contract checks.
+2. Add failing evaluator tests: a G3 all-channel below must omit the rejection disclaimer; an open/unknown alternate channel must return no verdict. Preserve direct-route-only caveats where a different channel has not been assessed.
+3. Add failing component coverage for estimated true, false/absent and defaulted-year-only provenance. Reuse a small RTL muted footnote component in the journey detail and calculator result list. Derive honest wording from estimated/estimationReason; do not invent exam years or add icons/badges.
+4. Change only the authorized economics browser loop's expectations and title. Keep its academic-profile editing/RTL coverage reachable through the existing update-data action.
+5. Run required checks and a static production build; run the affected existing Playwright specs. Capture three scenarios at 1280/390 from the committed code SHA, inspect all six images and overflow/alignment, and commit evidence plus scenario README copies.
+6. Normal push after the real guard passes. Preserve the historical PR evidence table, add the follow-up ruling, visual changes, screenshot blob links and draft-approval statement. Watch final-head CI; inspect and fix in-scope failures without weakening gates or other expectations.
+
+No DB writes, external settings, workflow/guard/coverage edits, PR comments, ready transition or merge. The user's explicit existing-Playwright tooling request governs local browser verification and screenshots.
+
+## Follow-up 3: approved 07:24 estimate scope
+
+The coordinator explicitly approves superseding only estimated / estimationReason / notice assertions on subject-derived and non-calculated results. Preserve every other expected value and outcome. Add the exact supplied scope comment above every changed flag/reason assertion, and record the full supersession inventory in the PR.
+
+1. Test first: subject-derived inputs at HUJI and the four proxy institutions (including the exact client provenance marker); forbidden result kinds; calculated proxy results; Haifa year-only calculated/missing-input paths; client render gating even with a stale true flag.
+2. Introduce one shared calculated-result predicate (exclude needs_input/unsupported/requirements_only/degraded/authority_unavailable/tracked_missing_rule regardless of retained score; require a finite computed score or a concrete verdict for other kinds). Apply server metadata only after G2/G3; apply the same predicate in AdmissionEstimate. Preserve private proxy provenance and request-level derived-average validation.
+3. Stop forwarding raw subject-derived overall provenance as a public institution-average estimate. Keep subject calculations, numeric examples, formula/threshold values and every admission outcome unchanged.
+4. Use the saved 8d415df five-profile BEFORE run; run the same temporary offline/fresh-fixture harness against AFTER and compare all non-metadata result fields. Save all per-profile results, flagged counts/programmes/institutions/kinds and render counts in the requested QA directory. No harness commit.
+5. Simplify without changing proof tests, run all required checks/guard and a static production build, then affected Playwright specs. Commit final code, capture and inspect all six screenshots (G2 has no note), commit evidence/docs only, normal push and watch final-head CI to green. Keep draft and exact visual/review-skip wording.
+
+Follow-up 3 implementation and simplification complete: one shared predicate, no further production abstraction or behavioral refactor needed. Proof tests and required ruling comments preserved. Local checks passed: 3,625 full-suite tests, 2,722 guard tests, 126 browser cases; existing skips unchanged. Empirical comparison found zero outcome/score/threshold/label/explanation changes across 2,180 rows. Screenshot/evidence commit and final-head CI follow this code commit.
+
+## Follow-up 4: Amit full-bagrut ruling
+
+Session-settled: grade/average entry satisfies full-bagrut eligibility; legacy certificate fields are accepted but ignored. Remove standalone certificate controls and questions at Colman, BGU, HUJI and Haifa; strip certificate wording out of bundled language/application confirmations without assuming those other conditions. Preserve programme IDs, numeric formulas, G1–G3, estimate scope and genuine manual gates. No DB/schema changes. The cancelled remaining-confirmation sentence must not be implemented.
+
+1. Capture BEFORE at 47e0f47 with the temporary 436-pair/five-profile harness extended to retain conditions/required inputs/next actions. Save raw rows outside the repository.
+2. Test first: law 110/650 plain accepted/green, legacy true/false/absent certificate ignored, all-pair certificate-gate absence with typed averages and subjects, no removed controls even with old saved fields. Preserve genuine interview/portfolio/internal-test/missing-subject cases.
+3. Remove standalone gate producers in institution policies and Colman route evaluation; use accepted/exact for the previously certificate-only successful routes, preserve economics below and private G2/G3 guards. Retain mixed language/application conditions with only their real remaining purpose. Remove dead controls/state, keep payload validators and stored-field types compatible; ignore obsolete fields in evaluation.
+4. Update only gate-pinning expectations, adding the exact Amit ruling comment above each. If a protected independent outcome conflicts, stop on that point rather than changing it. Keep numeric record completeness/type inputs needed by institutional weighted-average formulas; they describe data completeness, not an admission certificate question.
+5. Run AFTER harness, report manual_gate transitions and remaining gates by condition id for overall_only/subjects_only; refresh estimate counts for all five profiles. Simplify inline without weakening proof tests. Run required checks, real guard, static build and affected existing browser specs.
+6. Commit code, capture/inspect eight desktop/mobile screenshots (economics, estimate, G2, law); keep G2 note absent and law plain green. Commit evidence/docs, normal push, update existing draft PR with superseded-assertion inventory and both sweeps, watch CI and correct-project preview to success. No review pipeline, ready transition, merge, DB/settings/workflow changes or bypass.

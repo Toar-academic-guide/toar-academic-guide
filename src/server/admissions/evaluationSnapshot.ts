@@ -26,6 +26,8 @@ type SnapshotResult = Pick<
   | 'evidenceItemId'
   | 'officialUrls'
   | 'degradationReason'
+  | 'estimated'
+  | 'estimationReason'
 >;
 
 export function createAdmissionsEvaluationSnapshot(args: {
@@ -62,6 +64,10 @@ export function createAdmissionsEvaluationSnapshot(args: {
     evaluationDigest: digest({
       inputDigest,
       ruleFingerprint,
+      ...(args.result.estimated && {
+        estimated: true,
+        estimationReason: args.result.estimationReason,
+      }),
       decision: args.result.decision,
       score: args.result.score ?? null,
       scoreLabel: args.result.scoreLabel ?? null,
@@ -80,6 +86,7 @@ export function createAdmissionsInputDigest(input: AdmissionsEvaluationInput): s
     degreeId: input.degreeId,
     psychometric: input.psychometric,
     bagrut: input.bagrut,
+    ...(input.bagrutAverageEstimated && { bagrutAverageEstimated: true }),
     extraInputs: input.extraInputs ?? {},
   });
 }
