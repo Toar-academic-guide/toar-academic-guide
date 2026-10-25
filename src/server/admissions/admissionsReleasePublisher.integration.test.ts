@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { drizzle } from 'drizzle-orm/postgres-js';
+import { and, eq } from 'drizzle-orm';
 import postgres from 'postgres';
 
 import * as schema from '@/db/schema';
@@ -117,13 +118,17 @@ describeWithPostgres('admissions release publisher with PostgreSQL', () => {
         and cycle = '2099'
     `;
     expect(proofValue).toEqual({ current_value: { value: 701 }, release_id: failedRelease!.id });
-    const [canonicalValue] = await sql<Array<{ threshold_value: number | null }>>`
-      select threshold_value
-      from public.admission_thresholds
-      where program_id = ${programId}
-        and institution_id = 'tau'
-        and threshold_kind = 'sekhem'
-    `;
+    // Use the application column mapper: PostgreSQL numeric is text on the raw wire.
+    const [canonicalValue] = await db
+      .select({ threshold_value: schema.admissionThresholds.thresholdValue })
+      .from(schema.admissionThresholds)
+      .where(
+        and(
+          eq(schema.admissionThresholds.programId, programId),
+          eq(schema.admissionThresholds.institutionId, 'tau'),
+          eq(schema.admissionThresholds.thresholdKind, 'sekhem'),
+        ),
+      );
     expect(canonicalValue?.threshold_value).toBe(700);
   });
 

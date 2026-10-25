@@ -18,7 +18,7 @@ import { selectRequirementTiles } from './requirementTiles';
 
 const programs = getStaticCataloguePrograms();
 const now = new Date('2026-10-23T12:00:00Z');
-function select(id: string, institutionId: string) {
+function select(id: string, institutionId: string, evaluationDate = now) {
   const program = programs.find((p) => p.id === id)!;
   const detail = program.institutionDetails?.find(
     (d) => d.institutionName === INSTITUTION_BY_ID[institutionId as InstitutionId]?.name,
@@ -31,11 +31,54 @@ function select(id: string, institutionId: string) {
       program.admissionRequirements,
       id,
     ),
-    now,
+    now: evaluationDate,
   });
 }
 
 describe('verified requirement tiles', () => {
+  it.each(['afeka_ee', 'afeka_softwareeng', 'afeka_cs'])(
+    'keeps %s alternative unit-and-score routes in the full requirements',
+    (id) => {
+      const program = programs.find((row) => row.id === id)!;
+      const requirements = catalogueAdmissionRequirements(
+        program.institutionDetails![0].specificAdmissionNotes,
+        program.admissionRequirements,
+        id,
+      );
+      expect(requirements).toEqual(program.admissionRequirements);
+      expect(requirements.join(' ')).toContain('כמותי 115 לפחות');
+      expect(requirements.join(' ')).not.toMatch(/ממוצע בגרות מינימלי|ציון פסיכומטרי מינימלי|550/);
+      expect(
+        selectRequirementTiles({
+          program,
+          institutionId: 'afeka',
+          requirements,
+          now: new Date('2026-10-24T12:00:00Z'),
+        }),
+      ).toEqual({ reason: 'insufficient_structured_data' });
+    },
+  );
+
+  it('keeps Haifa psychology composite and separate-track conditions in the full copy', () => {
+    const program = programs.find((row) => row.id === 'haifa_psychology')!;
+    const requirements = catalogueAdmissionRequirements(
+      program.institutionDetails![0].specificAdmissionNotes,
+      program.admissionRequirements,
+      program.id,
+    );
+    expect(requirements[0]).toBe('סכם 650 לפחות; ציונים 630–649 נמצאים בטווח ההמתנה.');
+    expect(requirements[2]).toMatch(/פסיפס \(מסלול נפרד.*סכם 680/);
+    expect(requirements.join(' ')).not.toMatch(/פסיכומטרי מינימלי|בגרות מינימלי/);
+    expect(
+      selectRequirementTiles({
+        program,
+        institutionId: 'haifa',
+        requirements,
+        now: new Date('2026-10-24T12:00:00Z'),
+      }),
+    ).toEqual({ reason: 'unclear_semantics' });
+  });
+
   it.each([
     ['law', 112],
     ['biu_law', 112],
@@ -56,7 +99,9 @@ describe('verified requirement tiles', () => {
     );
     expect(requirements.join(' ')).toContain(`ממוצע בגרות ${floor} לפחות`);
     expect(requirements.join(' ')).toContain('סיווג אנגלית 85 לפחות');
-    expect(select(id, 'biu')).toEqual({ reason: 'unclear_semantics' });
+    expect(select(id, 'biu', new Date('2026-10-25T12:00:00Z'))).toEqual({
+      reason: 'unclear_semantics',
+    });
   });
 
   it('uses alternatives only for explicit routes and keeps cumulative gates together', () => {

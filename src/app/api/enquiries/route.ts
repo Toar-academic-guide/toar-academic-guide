@@ -1,9 +1,19 @@
-import { createHash } from 'node:crypto';
+import { enquiryAttributionSchema } from '@/lib/leadAttribution';
+import { enquirySourcePath } from '@/lib/enquirySourcePath';
 import { after } from 'next/server';
 import { z } from 'zod';
-import { ENQUIRY_CONSENT } from '@/lib/enquiries';
+import type { EnquiryRecord, EnquiryResultStatus } from '@/lib/enquiries';
+import {
+  admissionsEvaluationSchema,
+  validateOverallBagrutAverage,
+} from '@/lib/admissionsEvaluationSchema';
+import { canonicalProgramId } from '@/lib/seo/programAliases';
+import { evaluateAdmissionsForProgram } from '@/server/admissions/evaluator';
+import { saveEnquiryBackup } from '@/server/enquiries/repository';
+import { sendEnquiryToMonday } from '@/server/enquiries/monday';
+import { notifyEnquiry } from '@/server/enquiries/notifications';
 import { getPostHogClient } from '@/lib/posthog-server';
-import { listCatalogueInstitutions, listCataloguePrograms } from '@/server/catalogue/queries';
+import { getEnquiryTarget } from '@/lib/enquiryTarget';
 
 export const runtime = 'nodejs';
 
@@ -21,13 +31,68 @@ const inputSchema = z
     sourcePath: z
       .string()
       .max(300)
-      .refine((value) => value.startsWith('/') && !value.startsWith('//')),
+      .refine((value) => value.startsWith('/') && !value.startsWith('//'))
+      .transform(enquirySourcePath),
     consent: z.literal(true),
+    attribution: enquiryAttributionSchema.optional(),
+    evaluationInput: admissionsEvaluationSchema
+      .extend({
+        extraInputs: admissionsEvaluationSchema.shape.extraInputs.unwrap().strict().optional(),
+      })
+      .strict()
+      .superRefine(validateOverallBagrutAverage)
+      .optional(),
   })
   .strict();
 
 function failure(status: number, message: string) {
   return Response.json({ error: { message } }, { status });
+}
+
+async function resolveEnquiry(input: z.infer<typeof inputSchema>): Promise<EnquiryRecord | null> {
+  let programName: string;
+  let institutionName = '';
+  let resultStatus: EnquiryResultStatus = 'unknown';
+  if (input.programId === 'psychometric-preparation' && input.institutionId === '') {
+    programName = 'הכנה לפסיכומטרי';
+    if (input.evaluationInput) return null;
+  } else {
+    const target = await getEnquiryTarget(input.programId, input.institutionId);
+    if (!target) return null;
+    const { program, institution } = target;
+    programName = program.name;
+    institutionName = institution.name;
+    if (input.evaluationInput) {
+      const degreeId = input.evaluationInput.degreeId;
+      if (degreeId !== program.id && degreeId !== canonicalProgramId(program.id)) {
+        return null;
+      }
+      try {
+        const report = await evaluateAdmissionsForProgram({
+          input: input.evaluationInput,
+          program,
+          institutions: [institution],
+        });
+        const decision = report.results.find(
+          (row) => row.linkedInstitutionId === institution.id,
+        )?.decision;
+        if (decision === 'accepted' || decision === 'below' || decision === 'eligible_to_apply') {
+          resultStatus = decision;
+        }
+      } catch {
+        console.error('[enquiries] evaluation failed', { requestId: input.requestId });
+      }
+    }
+  }
+  return {
+    ...input,
+    programName,
+    institutionName,
+    resultStatus,
+    bagrut: input.evaluationInput?.bagrut ?? null,
+    psychometric: input.evaluationInput?.psychometric ?? null,
+    createdAt: new Date(),
+  };
 }
 
 export async function POST(request: Request) {
@@ -38,7 +103,7 @@ export async function POST(request: Request) {
     return failure(415, 'פורמט הפנייה אינו תקין.');
   }
   const raw = await request.text();
-  if (Buffer.byteLength(raw) > 8192) return failure(413, 'הפנייה ארוכה מדי.');
+  if (Buffer.byteLength(raw) > 24_576) return failure(413, 'הפנייה ארוכה מדי.');
   let parsed;
   try {
     parsed = inputSchema.safeParse(JSON.parse(raw));
@@ -47,78 +112,44 @@ export async function POST(request: Request) {
   }
   if (!parsed.success) return failure(400, 'יש לבדוק את הפרטים ולאשר יצירת קשר.');
 
-  const token = process.env.MONDAY_API_TOKEN?.trim();
-  if (!token) return failure(503, 'לא ניתן לשלוח כרגע. הפרטים נשארו בטופס.');
   const input = parsed.data;
 
   try {
-    let programName: string;
-    let institutionName = '';
-    if (input.programId === 'psychometric-preparation' && input.institutionId === '') {
-      programName = 'הכנה לפסיכומטרי';
-    } else {
-      const [programs, institutions] = await Promise.all([
-        listCataloguePrograms(),
-        listCatalogueInstitutions(),
-      ]);
-      const program = programs.data.find((entry) => entry.id === input.programId);
-      const institution = institutions.data.find((entry) => entry.id === input.institutionId);
-      if (!program || !institution || !program.linkedInstitutionIds.includes(institution.id)) {
-        return failure(400, 'יש לבחור מסלול ומוסד מהרשימה.');
-      }
-      programName = program.name;
-      institutionName = institution.name;
+    const enquiry = await resolveEnquiry(input);
+    if (!enquiry) return failure(400, 'יש לבחור מסלול ומוסד מהרשימה.');
+    const [monday, database] = await Promise.allSettled([
+      sendEnquiryToMonday(enquiry),
+      saveEnquiryBackup(enquiry),
+    ]);
+    if (monday.status === 'rejected') {
+      console.error('[enquiries] monday write failed', { requestId: input.requestId });
     }
-    const now = new Date().toISOString();
-    const columns = {
-      phone_mm8ar2e2: {
-        phone: input.phone.replace(/^0/, '+972'),
-        countryShortName: 'IL',
-      },
-      text_mm8a6zex: programName,
-      text_mm8a4c4w: institutionName,
-      text_mm8ag00n: input.programId,
-      text_mm8am52m: input.sourcePath,
-      boolean_mm8abpda: { checked: 'true' },
-      long_text_mm8ay37r: { text: ENQUIRY_CONSENT },
-      date_mm8a880y: { date: now.slice(0, 10), time: now.slice(11, 19) },
-      text_mm8a78k: input.requestId,
-      color_mm8aqhym: { label: 'חדש' },
-    };
-    // A retry of this exact form must not create a second lead after a network timeout.
-    const idempotencyKey = createHash('sha256').update(JSON.stringify(input)).digest('hex');
-    const response = await fetch('https://api.monday.com/v2', {
-      method: 'POST',
-      headers: {
-        Authorization: token,
-        'Content-Type': 'application/json',
-        'API-Version': '2026-10',
-        'Idempotency-Key': idempotencyKey,
-      },
-      signal: AbortSignal.timeout(15000),
-      body: JSON.stringify({
-        query: `mutation WebsiteEnquiry($board: ID!, $name: String!, $columns: JSON!) {
-          create_item(board_id: $board, group_id: "topics", item_name: $name, column_values: $columns) { id }
-        }`,
-        variables: { board: '18436300533', name: input.name, columns: JSON.stringify(columns) },
-      }),
-    });
-    const result = await response.json();
-    if (!response.ok || result.errors?.length || !result.data?.create_item?.id) {
-      return failure(502, 'הפנייה לא נשלחה. הפרטים נשמרו בטופס ואפשר לנסות שוב.');
+    if (database.status === 'rejected') {
+      console.error('[enquiries] database write failed', { requestId: input.requestId });
     }
-    if (process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN?.trim()) {
-      try {
-        after(async () => {
+    if (monday.status === 'rejected' && database.status === 'rejected') {
+      return process.env.MONDAY_API_TOKEN?.trim()
+        ? failure(502, 'הפנייה לא נשלחה. הפרטים נשמרו בטופס ואפשר לנסות שוב.')
+        : failure(503, 'לא ניתן לשלוח כרגע. הפרטים נשארו בטופס.');
+    }
+    try {
+      after(async () => {
+        try {
+          await notifyEnquiry(enquiry, monday.status === 'fulfilled' ? monday.value : null);
+        } catch {
+          console.error('[enquiries] notification failed', { requestId: input.requestId });
+        }
+        if (process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN?.trim()) {
           try {
             const posthog = getPostHogClient();
             posthog.capture({
               distinctId: input.requestId,
               event: 'server_enquiry_created',
               properties: {
+                ...input.attribution,
                 program_id: input.programId,
                 institution_id: input.institutionId,
-                source_path: input.sourcePath.split(/[?#]/)[0],
+                source_path: input.sourcePath,
                 $process_person_profile: false,
               },
             });
@@ -126,13 +157,14 @@ export async function POST(request: Request) {
           } catch {
             // Analytics must never affect lead delivery.
           }
-        });
-      } catch {
-        // Scheduling analytics is also best effort.
-      }
+        }
+      });
+    } catch {
+      console.error('[enquiries] notification scheduling failed', { requestId: input.requestId });
     }
     return Response.json({ data: { received: true } }, { status: 201 });
   } catch {
+    console.error('[enquiries] catalogue resolution failed', { requestId: input.requestId });
     // Never return provider errors or log submitted personal details.
     return failure(502, 'לא הצלחנו לאשר את השליחה. אפשר לנסות שוב עם אותם פרטים.');
   }

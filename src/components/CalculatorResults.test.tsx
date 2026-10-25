@@ -53,6 +53,66 @@ vi.mock('posthog-js', () => ({
 
 const programs = getStaticCataloguePrograms();
 
+// Amit ruling 2026-10-25 07:30 via Jorje
+it.each([
+  [95, 'הסכם שלך 95, מעל סף הזימון המשוער (92)', 'text-green-700'],
+  [84.5, 'הסכם שלך 84.5, מתחת לסף הזימון המשוער (92)', 'text-slate-500'],
+  [92, 'הסכם שלך 92, מעל סף הזימון המשוער (92)', 'text-green-700'],
+] as const)(
+  'renders one medicine comparison for sekem %s without an admission verdict',
+  async (score, comparison, color) => {
+    hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
+      report([
+        {
+          institution: {
+            id: 'technion',
+            name: 'הטכניון – מכון טכנולוגי לישראל',
+            region: 'north',
+            domain: 'technion.ac.il',
+          },
+          linkedInstitutionId: 'technion',
+          capability: 'score_only',
+          kind: 'exact',
+          decision: 'unknown',
+          confidence: 'medium',
+          score,
+          scoreLabel: 'סכם',
+          sourceLabel: 'סכם לרפואה',
+          explanation:
+            'סף זימון משוער למבחן המו"ר: 92 (הערכה). זהו סף זימון משוער בלבד, ולא סף קבלה לרפואה.',
+          nextAction: 'בדקו באתר הטכניון את תנאי המיון והקבלה העדכניים לרפואה.',
+          officialUrls: ['https://admissions.technion.ac.il/calculator/'],
+        },
+      ]),
+    );
+    render(
+      <CalculatorResults
+        degreeId="technion_medicine"
+        programs={programs}
+        psychometric={720}
+        bagrut={110}
+        onBack={() => {}}
+      />,
+    );
+    expect(await screen.findByText('קבלה דרך מבחני מו"ר')).toBeTruthy();
+    // Amit ruling 2026-10-25 08:01 via Jorje
+    const chip = screen.getByLabelText('הטכניון – מכון טכנולוגי לישראל: קבלה דרך מבחני מו"ר');
+    expect(chip.classList.contains('bg-[#34D399]')).toBe(true);
+    expect(chip.className).not.toMatch(/violet|purple/);
+    const line = screen.getByText(comparison, { exact: true });
+    expect(line.classList.contains(color)).toBe(true);
+    expect(line.className).not.toMatch(/red|rose|amber|yellow|danger|warning/);
+    expect(screen.getAllByText(/הסכם שלך/)).toHaveLength(1);
+    expect(screen.queryByText('אין הכרעת קבלה')).toBeNull();
+    expect(screen.queryByText(/סף זימון משוער למבחן המו"ר/)).toBeNull();
+    expect(screen.queryByText(/סכם לרפואה|סכם 84\.5|סכם 95|סכם 92/)).toBeNull();
+    expect(screen.queryByLabelText(/הטכניון.*(?:מתחת לסף|מתקבל\/ת|אפשר להגיש מועמדות)/)).toBeNull();
+    expect(screen.getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toBe(
+      'https://admissions.technion.ac.il/calculator/?utm_source=myway&utm_medium=referral',
+    );
+  },
+);
+
 function report(results: AdmissionsEvaluationReport['results']): AdmissionsEvaluationReport {
   return {
     generatedAt: '2026-06-27T00:00:00.000Z',
@@ -995,7 +1055,9 @@ describe('CalculatorResults', () => {
     expect(screen.getByText(/אין סף ציונים אוטומטי שמונע הגשה/)).toBeTruthy();
   });
 
-  it('renders manual-gate threshold failures as below the official invitation score', async () => {
+  // Jorje ruling 2026-10-25: 92 is Technion's estimated MOR invitation threshold, not an admission threshold
+  // Amit ruling 2026-10-25 07:30 via Jorje
+  it('renders the estimated medicine MOR invitation threshold without an admission verdict or improvement gap', async () => {
     hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(
       report([
         {
@@ -1007,21 +1069,16 @@ describe('CalculatorResults', () => {
             universityId: 'technion',
           },
           linkedInstitutionId: 'technion',
-          capability: 'manual_gate',
-          kind: 'manual_gate',
-          decision: 'below',
-          confidence: 'high',
-          sourceLabel: 'סף זימון נדרש',
-          explanation: 'לפי המקור הרשמי, צריך להגיע לפחות לסכם 92 כדי לעבור לשלב המיון הידני.',
-          nextAction:
-            'שפרו את הנתונים שמופיעים בפער לפני הרשמה. גם מעבר סף הזימון לא מבטיח קבלה סופית.',
+          capability: 'score_only',
+          kind: 'exact',
+          decision: 'unknown',
+          confidence: 'medium',
+          sourceLabel: 'סכם לרפואה',
+          explanation:
+            'סף זימון משוער למבחן המו"ר: 92 (הערכה). זהו סף זימון משוער בלבד, ולא סף קבלה לרפואה.',
+          nextAction: 'בדקו באתר הטכניון את תנאי המיון והקבלה העדכניים לרפואה.',
           score: 84.5,
           scoreLabel: 'סכם',
-          threshold: 92,
-          deltaNeeded: {
-            psychometric: 100,
-            bagrut: 15,
-          },
         },
       ]),
     );
@@ -1036,9 +1093,12 @@ describe('CalculatorResults', () => {
       />,
     );
 
-    expect(await screen.findByLabelText('הטכניון – מכון טכנולוגי לישראל: מתחת לסף')).toBeTruthy();
-    expect(screen.getByText(/סכם 84\.5 · סף 92/)).toBeTruthy();
-    expect(screen.getByText(/צריך להגיע לפחות לסכם 92/)).toBeTruthy();
+    expect(await screen.findByText('הסכם שלך 84.5, מתחת לסף הזימון המשוער (92)')).toBeTruthy();
+    expect(screen.getByText('קבלה דרך מבחני מו"ר')).toBeTruthy();
+    expect(screen.queryByText(/סף זימון משוער למבחן המו"ר/)).toBeNull();
+    expect(screen.queryByLabelText(/הטכניון.*(?:מתחת לסף|מתקבל\/ת|אפשר להגיש מועמדות)/)).toBeNull();
+    expect(screen.queryByText(/סכם 84\.5 · סף 92/)).toBeNull();
+    expect(screen.queryByText(/\+100 פסיכומטרי|\+15 בגרות|שפרו את הנתונים/)).toBeNull();
   });
 
   it('renders a recoverable error state when the route request fails', async () => {
@@ -1089,6 +1149,34 @@ it('forwards degree-route profile inputs when optional generic scores are omitte
         psychometric: undefined,
         bagrut: undefined,
         extraInputs: expect.objectContaining(admissions),
+      }),
+    ),
+  );
+});
+
+it('keeps the subject profile when the displayed average was derived from that record', async () => {
+  hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(report([]));
+  const subjectRecord = {
+    schemaVersion: 1 as const,
+    sector: 'jewish' as const,
+    subjects: [{ subjectId: 'mathematics', units: 5, grade: 90 }],
+  };
+  render(
+    <CalculatorResults
+      degreeId="tau_cs"
+      programs={programs}
+      psychometric={650}
+      bagrut={90}
+      onBack={() => {}}
+      academicScores={{ psychometric: { overall: 650 }, bagrut: { subjectRecord } }}
+    />,
+  );
+  await waitFor(() =>
+    expect(hoistedMocks.fetchAdmissionsEvaluation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        bagrut: 90,
+        bagrutAverageEstimated: true,
+        extraInputs: expect.objectContaining({ bagrutSubjectRecord: subjectRecord }),
       }),
     ),
   );

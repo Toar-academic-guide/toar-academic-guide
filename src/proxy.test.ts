@@ -53,3 +53,72 @@ describe('calculator request middleware', () => {
     expect(response.headers.get('x-middleware-next')).toBe('1');
   });
 });
+
+describe('production Vercel alias', () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  it('redirects the production alias permanently, preserving the path and exact query', async () => {
+    vi.stubEnv('VERCEL_ENV', 'production');
+    const response = await proxy(
+      new NextRequest('https://toar-academic-guide.vercel.app/programs/cs?x=a%20b&x=2'),
+    );
+    expect(response.status).toBe(308);
+    expect(response.headers.get('location')).toBe(
+      'https://findmyway.co.il/programs/cs?x=a%20b&x=2',
+    );
+  });
+
+  it.each([
+    ['production', 'findmyway.co.il'],
+    ['preview', 'toar-academic-guide-git-feature.vercel.app'],
+    ['production', 'vercel.app.example.com'],
+  ])('passes through %s on %s', async (environment, host) => {
+    vi.stubEnv('VERCEL_ENV', environment);
+    const response = await proxy(new NextRequest(`https://${host}/programs/cs`));
+    expect(response.headers.get('location')).toBeNull();
+    expect(response.headers.get('x-middleware-next')).toBe('1');
+  });
+});
+
+describe('social short-link redirects', () => {
+  it.each([
+    ['/tt/', 'tiktok'],
+    ['/ig/', 'instagram'],
+    ['/fb/', 'facebook'],
+    ['/wa/', 'whatsapp'],
+  ])(
+    'redirects trailing-slash %s with 307 and discards incoming parameters',
+    async (path, source) => {
+      for (const query of ['', '?utm_source=other&email=private%40example.com']) {
+        mocks.getUser.mockClear();
+        const response = await proxy(new NextRequest(`https://findmyway.co.il${path}${query}`));
+        expect(response.status).toBe(307);
+        expect(response.headers.get('location')).toBe(
+          `https://findmyway.co.il/?utm_source=${source}`,
+        );
+        expect(mocks.getUser).not.toHaveBeenCalled();
+      }
+    },
+  );
+
+  it.each([
+    ['/tt', 'tiktok'],
+    ['/ig', 'instagram'],
+    ['/fb', 'facebook'],
+    ['/wa', 'whatsapp'],
+  ])('redirects %s before auth, with only the channel source', async (path, source) => {
+    mocks.getUser.mockClear();
+    const response = await proxy(
+      new NextRequest(
+        `https://findmyway.co.il${path}?utm_source=other&email=private%40example.com`,
+      ),
+    );
+    expect(response.status).toBe(307);
+    expect(response.headers.get('location')).toBe(`https://findmyway.co.il/?utm_source=${source}`);
+    expect(mocks.getUser).not.toHaveBeenCalled();
+  });
+  it('leaves longer paths alone', async () => {
+    const response = await proxy(new NextRequest('https://findmyway.co.il/tt/more'));
+    expect(response.headers.get('location')).toBeNull();
+  });
+});

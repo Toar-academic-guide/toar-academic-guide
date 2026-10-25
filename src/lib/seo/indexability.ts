@@ -1,4 +1,4 @@
-import { loadPublicCatalogue } from '@/lib/publicCataloguePages';
+import { loadPublicCatalogue, subjectProgramPages } from '@/lib/publicCataloguePages';
 import { canonicalProgramId } from './programAliases';
 
 type Catalogue = Awaited<ReturnType<typeof loadPublicCatalogue>>;
@@ -15,19 +15,22 @@ export async function isIndexableInstitution(id: string, catalogue?: Catalogue):
 }
 
 export async function isIndexableProgram(id: string, catalogue?: Catalogue): Promise<boolean> {
-  const { institutions, programs } = catalogue ?? (await loadPublicCatalogue());
+  catalogue ??= await loadPublicCatalogue();
+  const { institutions, programs, generalProgramIds } = catalogue;
   const program = programs.find((program) => program.id === id);
   return (
     canonicalProgramId(id) === id &&
     !id.startsWith('mon_') &&
     !!program &&
     program.isListed !== false &&
-    institutions.some((institution) => program.linkedInstitutionIds.includes(institution.id))
+    institutions.some((institution) => program.linkedInstitutionIds.includes(institution.id)) &&
+    // A subject page that links to no programme page is a thin hub: noindex,follow.
+    (!generalProgramIds.has(id) || subjectProgramPages(catalogue, program).size > 0)
   );
 }
 
-export async function indexableInstitutionIds(): Promise<string[]> {
-  const catalogue = await loadPublicCatalogue();
+export async function indexableInstitutionIds(catalogue?: Catalogue): Promise<string[]> {
+  catalogue ??= await loadPublicCatalogue();
   const flags = await Promise.all(
     catalogue.institutions.map((institution) => isIndexableInstitution(institution.id, catalogue)),
   );
@@ -36,8 +39,8 @@ export async function indexableInstitutionIds(): Promise<string[]> {
     .map((institution) => institution.id);
 }
 
-export async function indexableProgramIds(): Promise<string[]> {
-  const catalogue = await loadPublicCatalogue();
+export async function indexableProgramIds(catalogue?: Catalogue): Promise<string[]> {
+  catalogue ??= await loadPublicCatalogue();
   const flags = await Promise.all(
     catalogue.programs.map((program) => isIndexableProgram(program.id, catalogue)),
   );

@@ -15,5 +15,5 @@ export function architectureSourceResponse(url: string): string {
   }
   if (url.endsWith('/english-exam/')) return 'ציון אנגלית גבוה מ-104';
   if (url.endsWith('/knowledge-of-hebrew/')) return 'ציון של 121 לפחות';
-  return '<caption>אוקטובר 2026</caption><tr><td class="column-1">ארכיטקטורה*</td><td class="column-2">85 קבלה על בסיס מקום פנוי</td></tr>';
+  return '<table id="tablepress-485"><caption>אוקטובר 2026</caption><tr><td class="column-1">ארכיטקטורה*</td><td class="column-2">85 קבלה על בסיס מקום פנוי</td></tr></table>';
 }

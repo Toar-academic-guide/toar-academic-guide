@@ -121,7 +121,9 @@ export async function programLd({ program, institutions, isGeneral }: PublicProg
     ),
     inLanguage: 'he',
     ...(Number.isInteger(months) && months > 0 ? { timeToComplete: `P${months}M` } : {}),
-    // The catalogue has no explicit awarded-credential field; do not infer one from type.
+    ...(program.awardedCredential
+      ? { educationalCredentialAwarded: program.awardedCredential }
+      : {}),
   };
 }
 
@@ -154,7 +156,6 @@ const FAQ_PROGRAM_IDS = new Set([
   'ariel_psychology',
   'haifa_nursing',
   'ono_nursing',
-  'afeka_cs',
   'tau_law',
   'biu_law',
   'ruppin_cs',
@@ -179,6 +180,9 @@ const FAQ_PROGRAM_IDS = new Set([
   'biu_lifesciences',
   'hit_cs',
   'wingate_cs',
+  'ono_law',
+  'colmgmt_cs',
+  'haifa_psychology',
 ]);
 
 export function programFaqPageLd(

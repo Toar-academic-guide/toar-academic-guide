@@ -156,6 +156,19 @@
       "coverage": "published_conditions"
     },
     {
+      "programId": "haifa_psychology",
+      "institutionId": "haifa",
+      "sourceUrl": "https://admissions.haifa.ac.il/social-sciences/program/3268/",
+      "sourceSha256": "ce3270195a0ee34608b949f6b2b698b69a4de9fcf80007721f99a915b2232476",
+      "checkedAt": "2026-10-24",
+      "notes": [
+        "סכם 650 לפחות; ציונים 630–649 נמצאים בטווח ההמתנה.",
+        "נדרשת אנגלית ברמת טרום בסיסי לפחות ועברית 90 ביעלנט או במבחן הסיווג של האוניברסיטה, בקבלה על תנאי עד השלמה ל־120 בשנה א׳; אפשר גם להשלים קורס עברית באקדמיה במכינה.",
+        "תוכנית פסיפס (מסלול נפרד עם החוג לפילוסופיה): סכם 680 לפחות + ראיון קבלה."
+      ],
+      "coverage": "published_conditions"
+    },
+    {
       "programId": "haifa_sociology",
       "institutionId": "haifa",
       "sourceUrl": "https://admissions.haifa.ac.il/social-sciences/program/2968/",
@@ -575,15 +588,17 @@
     {
       "programId": "biu_law",
       "institutionId": "biu",
-      "sourceUrl": "https://www.biu.ac.il/registration-and-admission/information/acceptance-no-psychometry",
-      "sourceSha256": "7b872260e25eb2b78c3203951baddf5cc2a089c76406017e8cd35b17f2d2d4ad",
-      "checkedAt": "2026-10-23",
+      "sourceUrl": "https://shoham.biu.ac.il/kabala/",
+      "sourceSha256": "60124ba833887d74252920626d24c3308fccac65c45d2e67ab698e6c593a7adb",
+      "checkedAt": "2026-10-25",
       "notes": [
         "לתשפ״ז, ללא פסיכומטרי: ממוצע בגרות 112 לפחות, ואנגלית 5 יחידות בציון 90 לפחות.",
         "נדרשת זכאות לתעודת בגרות וסיווג אנגלית 85 לפחות. עברית 105 לפחות למי שנדרשים לבחינת יע״ל לפי כללי האוניברסיטה.",
         "אפיק פסיכומטרי או משולב: בדקו במחשבון הקבלה הרשמי של בר־אילן."
       ],
       "supportingSources": [
+        "https://law.biu.ac.il/node/129",
+        "https://www.biu.ac.il/registration-and-admission/information/acceptance-no-psychometry",
         "https://www.biu.ac.il/registration-and-admission/information/general-admission-req"
       ],
       "coverage": "published_conditions",
@@ -829,11 +844,11 @@
       "coverage": "published_conditions"
     },
     {
-      "programId": "rubin_graphic_design",
+      "programId": "rubin_classical",
       "institutionId": "rubin",
       "sourceUrl": "https://arts.tau.ac.il/music/kabla-I",
       "sourceSha256": "b565caed558f85d1e3efe5b575d5be7affb1eb1868d4be19d8f9e5a66c667b1a",
-      "checkedAt": "2026-10-21",
+      "checkedAt": "2026-10-24",
       "notes": [
         "תעודת בגרות ובחינה פסיכומטרית, בהתאם לתנאי הקבלה של אוניברסיטת תל אביב.",
         "בחינות כניסה בתיאוריה, פיתוח שמיעה ומיומנות מקלדת, ובחינה בנגינה או בזמרה או ריאיון לפי המגמה.",
@@ -841,10 +856,13 @@
       ],
       "coverage": "published_conditions",
       "identity": {
-        "name": "מוזיקה",
-        "category": "מוזיקה",
-        "type": "academic"
-      }
+        "name": "תואר ראשון במוזיקה",
+        "category": "מוזיקה ותיאטרון",
+        "type": "academic",
+        "awardedCredential": "B.Mus."
+      },
+      "programUrl": "https://go.tau.ac.il/he/arts/ba/music",
+      "durationYears": 4
     },
     {
       "programId": "mon_12220685575_graphic_design",
@@ -989,23 +1007,6 @@
       "coverage": "published_conditions"
     },
     {
-      "programId": "spieldocs_graphic_design",
-      "institutionId": "spieldocs",
-      "sourceUrl": "https://www.jsfs.co.il/registration",
-      "sourceSha256": "86a74780c2a7498d63c8847ccf73e2a5a02ed81df10c1cbedaea3b238b72bbc1",
-      "checkedAt": "2026-10-21",
-      "notes": [
-        "במסלול המלא לקולנוע: מבחני מיון בבית הספר וריאיון אישי למי שעוברים את המבחנים.",
-        "במסלול תסריטאות: מבחני בית וריאיון אישי למי שעוברים את שלב המיון."
-      ],
-      "coverage": "published_conditions",
-      "identity": {
-        "name": "קולנוע ותסריטאות",
-        "category": "קולנוע",
-        "type": "certificate"
-      }
-    },
-    {
       "programId": "minshar_graphic_design",
       "institutionId": "minshar",
       "sourceUrl": "https://www.minshar.org.il/visual-communication/acceptance-tasks/",
@@ -1098,27 +1099,30 @@
       "coverage": "published_conditions"
     },
     {
-      "programId": "jerusalem_academy_graphic_design",
+      "programId": "jerusalem_academy_dance",
       "institutionId": "jerusalem_academy",
       "sourceUrl": "https://www.jamd.ac.il/acceptance",
       "sourceSha256": "945128acee5f3f9997e357cf5ac2d5e22ed106dfad7047e2b86ca5a2f54790a6",
-      "checkedAt": "2026-10-21",
+      "checkedAt": "2026-10-24",
       "notes": [
         "בגרות מלאה, מכינה ייעודית מוכרת, מכינת 30+ או השלמת אפיק מעבר מהאוניברסיטה הפתוחה.",
-        "בחינות כניסה לפי המחלקה: במוזיקה בחינות תיאוריה וביצוע לפי התחום, ובמחול בחינה מעשית. הרפרטואר והדרישות נקבעים בכל מחלקה בנפרד."
+        "נדרשת בחינת כניסה מעשית במחול (אודישן), לפי דרישות הפקולטה למחול."
       ],
       "supportingSources": [
         {
-          "url": "https://www.jamd.ac.il/entrance_exams",
-          "sha256": "8e252696f43085d1fb2c482dd9644619954a28fef3879d86680a93a49499c00c"
+          "url": "https://jamd.ac.il/dance",
+          "sha256": "bc269826b4d55dfdd46da051b5cb1febe51ca45c696e2def98ef9a3c14e832ad"
         }
       ],
       "coverage": "published_conditions",
       "identity": {
-        "name": "מוזיקה ומחול",
-        "category": "מוזיקה ומחול",
-        "type": "academic"
-      }
+        "name": "תואר ראשון במחול",
+        "category": "מוזיקה ותיאטרון",
+        "type": "academic",
+        "awardedCredential": "B.Dance"
+      },
+      "programUrl": "https://jamd.ac.il/dance",
+      "durationYears": 4
     },
     {
       "programId": "mon_12220697940_graphic_design",
@@ -1537,6 +1541,51 @@
       ],
       "coverage": "published_conditions",
       "programUrl": "https://www.colman.ac.il/academics/ba/computer-science/"
+    },
+    {
+      "programId": "afeka_ee",
+      "institutionId": "afeka",
+      "sourceUrl": "https://www.afeka.ac.il/candidate/candidate-information-bsc/undergraduates/",
+      "sourceSha256": "6fa683075948f28ec51eac8dcf68b0c3c083f822f30a25b3d07ae9b6ba123a15",
+      "checkedAt": "2026-10-24",
+      "notes": [
+        "קבלה לפי בגרות: מתמטיקה 4 יחידות בציון 85 לפחות או 5 יחידות בציון 75 לפחות; אנגלית 4 יחידות בציון 70 לפחות או 5 יחידות בציון 60 לפחות; פיזיקה 5 יחידות בציון 60 לפחות או מכינה בפיזיקה בציון 70 לפחות.",
+        "קבלה לפי פסיכומטרי: 600 לפחות (רב־תחומי או בדגש כמותי) וגם כמותי 115 לפחות; מתמטיקה 4 יחידות בציון 80 לפחות או 5 יחידות בציון 70 לפחות, או מכינה במתמטיקה בציון 70 לפחות; פיזיקה 5 יחידות בציון 60 לפחות או מכינה בפיזיקה בציון 70 לפחות.",
+        "בכל המסלולים: זכאות לתעודת בגרות מלאה וסיווג אנגלית ברמת מתחילים/בסיסי לפני תחילת הלימודים (אמירנט או ציון האנגלית בפסיכומטרי)."
+      ],
+      "coverage": "published_conditions"
+    },
+    {
+      "programId": "afeka_cs",
+      "institutionId": "afeka",
+      "sourceUrl": "https://www.afeka.ac.il/candidate/candidate-information-bsc/admission-and-registration-in-science/",
+      "sourceSha256": "8bea4f6cda19dc7178fc78b642767766121d05f3544bf5008b35a7bd398201dc",
+      "checkedAt": "2026-10-24",
+      "notes": [
+        "קבלה לפי בגרות עם מקצוע מדעי מוגבר: מתמטיקה 4 יחידות בציון 85 לפחות או 5 יחידות בציון 75 לפחות; אנגלית 4 יחידות בציון 70 לפחות או 5 יחידות בציון 60 לפחות; פיזיקה או מדעי המחשב 5 יחידות בציון 60 לפחות, או מקצוע מדעי אחר 5 יחידות בציון 70 לפחות, או מכינה בפיזיקה או ביסודות התכנות והחשיבה הלוגית בציון 70 לפחות.",
+        "קבלה לפי בגרות ללא מקצוע מדעי מוגבר: מתמטיקה 4 יחידות בציון 90 לפחות או 5 יחידות בציון 80 לפחות; אנגלית 4 יחידות בציון 70 לפחות או 5 יחידות בציון 60 לפחות.",
+        "קבלה לפי פסיכומטרי: 620 לפחות (רב־תחומי או בדגש כמותי) וגם כמותי 115 לפחות; מתמטיקה 4 יחידות בציון 80 לפחות או 5 יחידות בציון 70 לפחות, או מכינה במתמטיקה בציון 70 לפחות.",
+        "קבלה לפי פסיכומטרי עם מקצוע מדעי מוגבר: 600 לפחות (רב־תחומי או בדגש כמותי) וגם כמותי 115 לפחות; מתמטיקה 4 יחידות בציון 80 לפחות או 5 יחידות בציון 70 לפחות, או מכינה במתמטיקה בציון 70 לפחות; פיזיקה 5 יחידות בציון 60 לפחות, או מקצוע מדעי אחר 5 יחידות בציון 70 לפחות, או מכינה בפיזיקה או ביסודות התכנות והחשיבה הלוגית בציון 70 לפחות.",
+        "המקצועות המדעיים האחרים: כימיה, ביולוגיה, אלקטרוניקה, אלקטרוניקה ומחשבים, מדעי ההנדסה, ביוטכנולוגיה, מערכות ביוטכנולוגיות, מדע חישובי ומדעי הנתונים.",
+        "בכל המסלולים: זכאות לתעודת בגרות מלאה וסיווג אנגלית ברמת מתחילים/בסיסי לפני תחילת הלימודים (אמירנט או ציון האנגלית בפסיכומטרי)."
+      ],
+      "coverage": "published_conditions"
+    },
+    {
+      "programId": "afeka_softwareeng",
+      "institutionId": "afeka",
+      "sourceUrl": "https://www.afeka.ac.il/candidate/candidate-information-bsc/admission-and-registration-in-science/",
+      "sourceSha256": "8bea4f6cda19dc7178fc78b642767766121d05f3544bf5008b35a7bd398201dc",
+      "checkedAt": "2026-10-24",
+      "notes": [
+        "קבלה לפי בגרות עם מקצוע מדעי מוגבר: מתמטיקה 4 יחידות בציון 85 לפחות או 5 יחידות בציון 75 לפחות; אנגלית 4 יחידות בציון 70 לפחות או 5 יחידות בציון 60 לפחות; פיזיקה או מדעי המחשב 5 יחידות בציון 60 לפחות, או מקצוע מדעי אחר 5 יחידות בציון 70 לפחות, או מכינה בפיזיקה או ביסודות התכנות והחשיבה הלוגית בציון 70 לפחות.",
+        "קבלה לפי בגרות ללא מקצוע מדעי מוגבר: מתמטיקה 4 יחידות בציון 90 לפחות או 5 יחידות בציון 80 לפחות; אנגלית 4 יחידות בציון 70 לפחות או 5 יחידות בציון 60 לפחות.",
+        "קבלה לפי פסיכומטרי: 620 לפחות (רב־תחומי או בדגש כמותי) וגם כמותי 115 לפחות; מתמטיקה 4 יחידות בציון 80 לפחות או 5 יחידות בציון 70 לפחות, או מכינה במתמטיקה בציון 70 לפחות.",
+        "קבלה לפי פסיכומטרי עם מקצוע מדעי מוגבר: 600 לפחות (רב־תחומי או בדגש כמותי) וגם כמותי 115 לפחות; מתמטיקה 4 יחידות בציון 80 לפחות או 5 יחידות בציון 70 לפחות, או מכינה במתמטיקה בציון 70 לפחות; פיזיקה 5 יחידות בציון 60 לפחות, או מקצוע מדעי אחר 5 יחידות בציון 70 לפחות, או מכינה בפיזיקה או ביסודות התכנות והחשיבה הלוגית בציון 70 לפחות.",
+        "המקצועות המדעיים האחרים: כימיה, ביולוגיה, אלקטרוניקה, אלקטרוניקה ומחשבים, מדעי ההנדסה, ביוטכנולוגיה, מערכות ביוטכנולוגיות, מדע חישובי ומדעי הנתונים.",
+        "בכל המסלולים: זכאות לתעודת בגרות מלאה וסיווג אנגלית ברמת מתחילים/בסיסי לפני תחילת הלימודים (אמירנט או ציון האנגלית בפסיכומטרי)."
+      ],
+      "coverage": "published_conditions"
     }
   ],
   "excludedPrograms": [

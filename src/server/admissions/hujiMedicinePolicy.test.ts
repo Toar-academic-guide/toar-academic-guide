@@ -148,7 +148,7 @@ describe('HUJI Medicine current official policy', () => {
     [{ hujiMedicineEnglishScore: 119 }],
     [{ hujiMedicineHebrewBasis: 'yael', hujiMedicineHebrewScore: 104 }],
     [{ hujiMedicineResidencyEligible: false }],
-    [{ hujiMedicineQualificationConfirmed: false }],
+
     [{ hujiMedicinePsychometricDate: '2026-05-01' }],
   ] as [Partial<HujiMedicineInputs>][])('rejects a known unmet prerequisite: %j', (patch) => {
     expect(resolveHujiMedicineAdmission(800, { ...eligible, ...patch })).toMatchObject({
@@ -190,3 +190,15 @@ describe('HUJI Medicine current official policy', () => {
     ).toMatchObject({ stage: 'final', score: 25.209, threshold: 25.783, decision: 'below' });
   });
 });
+
+// Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+it.each([undefined, false, true])(
+  'ignores obsolete medicine certificate confirmation %s',
+  (value) => {
+    expect(
+      resolveHujiMedicineAdmission(800, { ...eligible, hujiMedicineQualificationConfirmed: value }),
+    ).toEqual(
+      resolveHujiMedicineAdmission(800, { ...eligible, hujiMedicineQualificationConfirmed: true }),
+    );
+  },
+);

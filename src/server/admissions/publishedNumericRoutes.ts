@@ -45,7 +45,7 @@ export function anyOf(...gates: NumericGate[]): NumericGate {
 
 export function examSubject(
   input: AdmissionsEvaluationInput,
-  subjectId: 'mathematics' | 'english' | 'physics',
+  subjectId: 'mathematics' | 'english' | 'physics' | 'computer_science',
 ) {
   const extra = input.extraInputs;
   const record = extra?.bagrutSubjectRecord;
@@ -57,6 +57,7 @@ export function examSubject(
     return { units: subject?.units, grade: subject?.grade };
   if (subjectId === 'mathematics') return { units: extra?.mathUnits, grade: extra?.mathGrade };
   if (subjectId === 'english') return { units: extra?.englishUnits, grade: extra?.englishGrade };
+  if (subjectId === 'computer_science') return { units: extra?.csUnits, grade: extra?.csGrade };
   return { units: extra?.physicsUnits, grade: extra?.physicsGrade };
 }
 
@@ -112,7 +113,7 @@ export function evaluatePublishedNumericRoutes({
       additionalConditions: [
         {
           id: 'bagrut_average',
-          label: 'אישור זכאות לבגרות ועמידה בדרישות השפה',
+          label: 'עמידה בדרישות השפה',
           status: 'unconfirmed',
         },
         ...(match.conditions ?? []),

@@ -26,12 +26,16 @@ describe('home metadata inheritance', () => {
   });
 
   it('sets the canonical and complete Open Graph metadata only on the home page', () => {
-    expect(homeMetadata.alternates).toEqual({ canonical: '/' });
+    // Intentional (indexing brief): the home canonical is the slashed root URL.
+    // metadataBase is cleared on this page because Next 16 strips the root slash
+    // from a canonical resolved against it.
+    expect(homeMetadata.metadataBase).toBeNull();
+    expect(homeMetadata.alternates).toEqual({ canonical: 'https://findmyway.co.il/' });
     expect(homeMetadata.openGraph).toEqual({
       type: 'website',
       locale: 'he_IL',
       siteName: 'MyWay',
-      url: '/',
+      url: 'https://findmyway.co.il/',
       title: 'MyWay | הדרך שלך ללימודים',
       description: SITE_DESCRIPTION,
     });

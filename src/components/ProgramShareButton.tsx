@@ -1,12 +1,15 @@
 'use client';
 
 import { useState } from 'react';
+import posthog from 'posthog-js';
 
 export default function ProgramShareButton({
   programId,
+  institutionId,
   title,
 }: {
   programId: string;
+  institutionId: string;
   title: string;
 }) {
   const [pending, setPending] = useState(false);
@@ -14,6 +17,7 @@ export default function ProgramShareButton({
   const [manualUrl, setManualUrl] = useState('');
 
   async function share() {
+    posthog.capture('program_shared', { program_id: programId, institution_id: institutionId });
     const url = `${window.location.origin}/programs/${encodeURIComponent(programId)}`;
     setPending(true);
     setCopied(false);

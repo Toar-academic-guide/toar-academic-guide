@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { InstitutionId } from '@/data/institutions';
 import type { CatalogueProgram } from '@/types/catalogue';
@@ -9,10 +9,13 @@ vi.mock('server-only', () => ({}));
 vi.mock('@/env', () => ({ getCatalogueSourceMode: () => 'static' }));
 
 const hoisted = vi.hoisted(() => ({
+  capture: vi.fn(),
   notFound: vi.fn(() => {
     throw new Error('NEXT_NOT_FOUND');
   }),
 }));
+
+vi.mock('posthog-js', () => ({ default: { capture: hoisted.capture } }));
 
 vi.mock('next/navigation', () => ({
   usePathname: () => '/',
@@ -39,6 +42,7 @@ import ProgramPage, { generateMetadata } from './page';
 
 describe('ProgramPage', () => {
   beforeEach(() => {
+    hoisted.capture.mockReset();
     vi.mocked(listCataloguePrograms).mockResolvedValue({
       data: getStaticCataloguePrograms(),
       meta: {},
@@ -165,13 +169,68 @@ describe('ProgramPage', () => {
     }
   });
 
+  it('shows the regular Haifa psychology floor and keeps Pasifas separate', async () => {
+    render(await ProgramPage({ params: Promise.resolve({ programId: 'haifa_psychology' }) }));
+    const items = screen.getAllByRole('listitem').map((item) => item.textContent);
+    expect(items).toContain('סכם 650 לפחות; ציונים 630–649 נמצאים בטווח ההמתנה.');
+    expect(items).toContain(
+      'תוכנית פסיפס (מסלול נפרד עם החוג לפילוסופיה): סכם 680 לפחות + ראיון קבלה.',
+    );
+    expect(items.join(' ')).not.toMatch(
+      /ציון פסיכומטרי מינימלי|ממוצע בגרות מינימלי|אופק|מילואים|תואר קודם|האוניברסיטה הפתוחה/,
+    );
+  });
+
+  it.each(['afeka_ee', 'afeka_softwareeng', 'afeka_cs'])(
+    'renders %s complete official route copy without the obsolete shell',
+    async (programId) => {
+      render(await ProgramPage({ params: Promise.resolve({ programId }) }));
+      const items = screen.getAllByRole('listitem').map((item) => item.textContent);
+      const program = getStaticCataloguePrograms().find((row) => row.id === programId)!;
+      for (const note of program.admissionRequirements) expect(items).toContain(note);
+      expect(items.join(' ')).toContain('כמותי 115 לפחות');
+      expect(items.join(' ')).not.toMatch(
+        /ממוצע בגרות מינימלי|ציון פסיכומטרי מינימלי|550|בדרך לאפקה|הנדסאי/,
+      );
+    },
+  );
+
   describe('requirements checked line', () => {
     it.each([
-      ['ono_law', 'ono', 'https://www.ono.ac.il/curriculum/llb/'],
-      ['colmgmt_cs', 'colman', 'https://www.colman.ac.il/academics/ba/b-a-admission/'],
+      ['ono_law', 'ono', 'https://www.ono.ac.il/curriculum/llb/', '23.10.2026'],
+      [
+        'afeka_ee',
+        'afeka',
+        'https://www.afeka.ac.il/candidate/candidate-information-bsc/undergraduates/',
+        '24.10.2026',
+      ],
+      [
+        'afeka_softwareeng',
+        'afeka',
+        'https://www.afeka.ac.il/candidate/candidate-information-bsc/admission-and-registration-in-science/',
+        '24.10.2026',
+      ],
+      [
+        'afeka_cs',
+        'afeka',
+        'https://www.afeka.ac.il/candidate/candidate-information-bsc/admission-and-registration-in-science/',
+        '24.10.2026',
+      ],
+      [
+        'colmgmt_cs',
+        'colman',
+        'https://www.colman.ac.il/academics/ba/b-a-admission/',
+        '23.10.2026',
+      ],
+      [
+        'haifa_psychology',
+        'haifa',
+        'https://admissions.haifa.ac.il/social-sciences/program/3268/',
+        '24.10.2026',
+      ],
     ] as const)(
       'renders the packet stamp for %s and withholds it on note drift',
-      async (programId, institutionId, sourceUrl) => {
+      async (programId, institutionId, sourceUrl, date) => {
         const institution = getStaticCatalogueInstitutions().find(
           (item) => item.id === institutionId,
         )!;
@@ -182,7 +241,7 @@ describe('ProgramPage', () => {
           `${sourceUrl}?utm_source=myway&utm_medium=referral`,
         );
         expect(sourceLink.closest('p')!.textContent).toBe(
-          `עודכן לאחרונה: 23.10.2026 · מקור: אתר ${institution.name}`,
+          `עודכן לאחרונה: ${date} · מקור: אתר ${institution.name}`,
         );
         if (programId === 'colmgmt_cs') {
           expect(screen.getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toBe(
@@ -391,7 +450,11 @@ describe('ProgramPage', () => {
 
       view.unmount();
       render(await ProgramPage({ params: Promise.resolve({ programId: 'haifa_nursing' }) }));
-      expect(screen.getAllByRole('listitem').map((li) => li.textContent)).toEqual(haifaNotes);
+      expect(
+        within(screen.getByRole('heading', { name: 'תנאי קבלה' }).parentElement!)
+          .getAllByRole('listitem')
+          .map((li) => li.textContent),
+      ).toEqual(haifaNotes);
       expect(screen.queryByRole('link', { name: 'לפרטים המלאים' })).toBeNull();
     });
 
@@ -419,9 +482,11 @@ describe('ProgramPage', () => {
 
     it('keeps the existing placeholder on an institution-specific page without requirements', async () => {
       render(await ProgramPage({ params: Promise.resolve({ programId: 'ariel_nursing' }) }));
-      expect(screen.getByRole('listitem').textContent).toBe(
-        'לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד.',
-      );
+      expect(
+        within(screen.getByRole('heading', { name: 'תנאי קבלה' }).parentElement!).getByRole(
+          'listitem',
+        ).textContent,
+      ).toBe('לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד.');
       expect(screen.queryByRole('link', { name: 'לפרטים על המסלול' })).toBeNull();
     });
 
@@ -436,4 +501,24 @@ describe('ProgramPage', () => {
       expect(screen.queryByRole('link', { name: 'לפרטים המלאים' })).toBeNull();
     });
   });
+});
+
+it('tracks program page CTAs and official outbound links with only canonical IDs', async () => {
+  render(await ProgramPage({ params: Promise.resolve({ programId: 'colmgmt_cs' }) }));
+  const actions = [
+    ['בדיקת סיכויי קבלה', 'program_calculator_cta_clicked'],
+    ['יצירת קשר', 'program_contact_cta_clicked'],
+    ['לאתר המוסד', 'institution_site_clicked'],
+    ['למחשבון המכללה', 'institution_calculator_clicked'],
+  ];
+  for (const [label, event] of actions) {
+    const link = screen.getByRole('link', { name: label });
+    link.addEventListener('click', (e) => e.preventDefault());
+    fireEvent.click(link);
+    expect(hoisted.capture).toHaveBeenCalledWith(event, {
+      program_id: 'colmgmt_cs',
+      institution_id: 'colman',
+    });
+  }
+  expect(hoisted.capture.mock.calls).toHaveLength(4);
 });

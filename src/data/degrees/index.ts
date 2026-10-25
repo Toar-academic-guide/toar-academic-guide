@@ -12,7 +12,12 @@ import {
   DANON_PROGRAM_URLS,
 } from '../admissions/danon';
 import computingCourses from './computingCourses.json';
-import { applyCatalogueContentRepair } from '../admissions/catalogueContentRepair';
+import { applyJamdCurriculum } from './jamdCurriculum';
+import { repairSamSpiegelUrls } from '../admissions/samSpiegelUrls';
+import {
+  applyCatalogueContentRepair,
+  RETIRED_PROGRAM_IDS,
+} from '../admissions/catalogueContentRepair';
 import {
   mondayAdmissionsEvidence,
   type MondayAdmissionAlternativePath,
@@ -767,7 +772,19 @@ function buildSyntheticInstitutionDetail(program: Program): ProgramInstitutionDe
 }
 
 function enrichLegacyProgram(program: Program): Program {
-  if (program.id === 'ono_law' || program.id === 'ono_nursing') return program;
+  if (
+    [
+      'ono_law',
+      'ono_nursing',
+      'haifa_psychology',
+      'afeka_ee',
+      'afeka_softwareeng',
+      'afeka_cs',
+      'jerusalem_academy_dance',
+      'rubin_classical',
+    ].includes(program.id)
+  )
+    return program;
 
   const existingDetails = program.institutionDetails?.length ? [...program.institutionDetails] : [];
   const syntheticDetail = buildSyntheticInstitutionDetail(program);
@@ -822,6 +839,9 @@ for (const record of mondayAdmissionsEvidence) {
 
   for (const prog of matches) {
     const progId = `${programInstitutionKey}_${prog.id}`;
+    // Verified dance/music rows replace these mixed imports; Sam Spiegel's
+    // combined import duplicates its existing cinema and screenwriting rows.
+    if (RETIRED_PROGRAM_IDS.includes(progId)) continue;
 
     const existsInStatic =
       ACADEMIC_PROGRAMS.some((p) => p.id === progId) ||
@@ -1073,4 +1093,7 @@ export const programsWithLegacyAdmissionFacts = [
 });
 
 // Verified display copy is deliberately separate from inferred legacy calculation facts.
-export const allPrograms = programsWithLegacyAdmissionFacts.map(applyCatalogueContentRepair);
+export const allPrograms = programsWithLegacyAdmissionFacts.map((program) => {
+  const repaired = applyJamdCurriculum(applyCatalogueContentRepair(program));
+  return repaired.institutionId === 'spieldocs' ? repairSamSpiegelUrls(repaired) : repaired;
+});

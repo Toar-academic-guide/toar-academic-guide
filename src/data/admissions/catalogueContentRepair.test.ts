@@ -52,12 +52,124 @@ describe('verified catalogue content repair', () => {
     },
   );
 
-  it.each(['haifa_psychology', 'afeka_ee', 'afeka_softwareeng', 'hit_visual_comm'])(
-    'keeps the packet HOLD program %s unstamped',
-    (id) => {
-      expect(repair.requirements.some((row) => row.programId === id)).toBe(false);
-    },
-  );
+  it('re-encodes and stamps the regular Haifa psychology route', () => {
+    const program = allPrograms.find((item) => item.id === 'haifa_psychology')!;
+    const notes = program.institutionDetails![0].specificAdmissionNotes;
+    expect(notes).toEqual([
+      'סכם 650 לפחות; ציונים 630–649 נמצאים בטווח ההמתנה.',
+      'נדרשת אנגלית ברמת טרום בסיסי לפחות ועברית 90 ביעלנט או במבחן הסיווג של האוניברסיטה, בקבלה על תנאי עד השלמה ל־120 בשנה א׳; אפשר גם להשלים קורס עברית באקדמיה במכינה.',
+      'תוכנית פסיפס (מסלול נפרד עם החוג לפילוסופיה): סכם 680 לפחות + ראיון קבלה.',
+    ]);
+    expect(program.thresholds).toEqual({ haifa: 650 });
+    expect(program.institutionDetails![0].admissionFacts ?? []).toEqual([]);
+    expect(program.institutionDetails![0].admissionAlternativePaths ?? []).toEqual([]);
+    expect(repair.requirements.find((row) => row.programId === program.id)).toMatchObject({
+      institutionId: 'haifa',
+      sourceUrl: 'https://admissions.haifa.ac.il/social-sciences/program/3268/',
+      sourceSha256: 'ce3270195a0ee34608b949f6b2b698b69a4de9fcf80007721f99a915b2232476',
+      checkedAt: '2026-10-24',
+      coverage: 'published_conditions',
+      notes,
+    });
+    expect(getRequirementsChecked(program.id, { id: 'haifa' }, notes)).toEqual({
+      date: '24.10.2026',
+      sourceUrl:
+        'https://admissions.haifa.ac.il/social-sciences/program/3268/?utm_source=myway&utm_medium=referral',
+    });
+    expect(
+      getRequirementsChecked(
+        program.id,
+        { id: 'haifa' },
+        notes.map((note) => `${note} `),
+      ),
+    ).toBeUndefined();
+  });
+
+  it.each([
+    [
+      'afeka_ee',
+      'undergraduates/',
+      '6fa683075948f28ec51eac8dcf68b0c3c083f822f30a25b3d07ae9b6ba123a15',
+    ],
+    [
+      'afeka_softwareeng',
+      'admission-and-registration-in-science/',
+      '8bea4f6cda19dc7178fc78b642767766121d05f3544bf5008b35a7bd398201dc',
+    ],
+    [
+      'afeka_cs',
+      'admission-and-registration-in-science/',
+      '8bea4f6cda19dc7178fc78b642767766121d05f3544bf5008b35a7bd398201dc',
+    ],
+  ])('re-encodes and stamps %s without deriving cumulative floors', (id, path, sha) => {
+    const program = allPrograms.find((item) => item.id === id)!;
+    const notes = program.institutionDetails![0].specificAdmissionNotes;
+    const original = programsWithLegacyAdmissionFacts.find((item) => item.id === id)!;
+    expect(notes).toEqual(original.admissionRequirements);
+    expect(notes).toEqual(program.admissionRequirements);
+    expect(notes.join(' ')).not.toMatch(
+      /ממוצע בגרות מינימלי|ציון פסיכומטרי מינימלי|550|תואר קודם|הנדסאי|בדרך לאפקה/,
+    );
+    expect(notes.join(' ')).toContain('4 יחידות בציון 85 לפחות או 5 יחידות בציון 75 לפחות');
+    expect(notes.join(' ')).toContain('4 יחידות בציון 70 לפחות או 5 יחידות בציון 60 לפחות');
+    expect(notes.join(' ')).toContain('כמותי 115 לפחות');
+    expect(notes.join(' ')).toContain('זכאות לתעודת בגרות מלאה');
+    expect(notes.join(' ')).toContain('מתחילים/בסיסי לפני תחילת הלימודים');
+    expect(notes.join(' ')).toContain('4 יחידות בציון 80 לפחות או 5 יחידות בציון 70 לפחות');
+    expect(notes.join(' ')).toContain('מכינה במתמטיקה בציון 70 לפחות');
+    if (id === 'afeka_ee') {
+      expect(notes).toHaveLength(3);
+      expect(notes[1]).toContain('600 לפחות (רב־תחומי או בדגש כמותי) וגם כמותי 115 לפחות');
+      for (const route of notes.slice(0, 2)) {
+        expect(route).toContain('פיזיקה 5 יחידות בציון 60 לפחות או מכינה בפיזיקה בציון 70 לפחות');
+      }
+    } else {
+      expect(notes).toHaveLength(6);
+      expect(notes[0]).toContain('פיזיקה או מדעי המחשב 5 יחידות בציון 60 לפחות');
+      expect(notes[1]).toContain(
+        'ללא מקצוע מדעי מוגבר: מתמטיקה 4 יחידות בציון 90 לפחות או 5 יחידות בציון 80 לפחות',
+      );
+      expect(notes[2]).toContain('620 לפחות (רב־תחומי או בדגש כמותי) וגם כמותי 115 לפחות');
+      expect(notes[3]).toContain('600 לפחות (רב־תחומי או בדגש כמותי) וגם כמותי 115 לפחות');
+      expect(notes[3]).toContain(
+        'פיזיקה 5 יחידות בציון 60 לפחות, או מקצוע מדעי אחר 5 יחידות בציון 70 לפחות',
+      );
+      expect(notes[3]).not.toContain('מדעי המחשב');
+      for (const route of [notes[0], notes[3]]) {
+        expect(route).toContain('מכינה בפיזיקה או ביסודות התכנות והחשיבה הלוגית בציון 70 לפחות');
+      }
+      expect(notes[4]).toContain('כימיה, ביולוגיה, אלקטרוניקה');
+      expect(notes[4]).toContain('מדע חישובי ומדעי הנתונים');
+    }
+    expect(program.thresholds).toBeUndefined();
+    expect(program.minimumBagrut).toBeUndefined();
+    expect(program.minimumPsychometric).toBeUndefined();
+    expect(program.institutionDetails![0].admissionFacts ?? []).toEqual([]);
+    const sourceUrl = `https://www.afeka.ac.il/candidate/candidate-information-bsc/${path}`;
+    expect(repair.requirements.find((row) => row.programId === id)).toMatchObject({
+      institutionId: 'afeka',
+      sourceUrl,
+      sourceSha256: sha,
+      checkedAt: '2026-10-24',
+      coverage: 'published_conditions',
+      notes,
+    });
+    expect(getRequirementsChecked(id, { id: 'afeka' }, notes)).toEqual({
+      date: '24.10.2026',
+      sourceUrl: `${sourceUrl}?utm_source=myway&utm_medium=referral`,
+    });
+    expect(
+      getRequirementsChecked(
+        id,
+        { id: 'afeka' },
+        notes.map((note) => `${note} `),
+      ),
+    ).toBeUndefined();
+  });
+
+  it.each(['hit_visual_comm'])('keeps the packet HOLD program %s unstamped', (id) => {
+    expect(repair.requirements.some((row) => row.programId === id)).toBe(false);
+  });
 
   it.each([
     ['law', 112, [/אנגלית 5 יחידות בציון 90 לפחות/]],
@@ -86,9 +198,11 @@ describe('verified catalogue content repair', () => {
       (item) => item.programId === id && item.institutionId === 'biu',
     )!;
     expect(row).toBeDefined();
-    expect(row.checkedAt).toBe('2026-10-23');
+    expect(row.checkedAt).toBe(id === 'biu_law' ? '2026-10-25' : '2026-10-23');
     expect(row.sourceUrl).toBe(
-      'https://www.biu.ac.il/registration-and-admission/information/acceptance-no-psychometry',
+      id === 'biu_law'
+        ? 'https://shoham.biu.ac.il/kabala/'
+        : 'https://www.biu.ac.il/registration-and-admission/information/acceptance-no-psychometry',
     );
     const program = allPrograms.find((item) => item.id === id)!;
     const notes = program.institutionDetails!.find((detail) =>
