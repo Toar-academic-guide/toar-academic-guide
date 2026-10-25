@@ -192,13 +192,49 @@ describe('catalogue queries', () => {
     const base = createDatabaseBackedDataset();
     const dataset = {
       ...base,
-      institutions: ['tau', 'bgu'].map((id) => ({ ...base.institutions[0], id, name: id, universityId: id })),
+      institutions: ['tau', 'bgu'].map((id) => ({
+        ...base.institutions[0],
+        id,
+        name: id,
+        universityId: id,
+      })),
       programs: [{ ...base.programs[0], id: 'law', institutionId: null }],
-      programInstitutions: ['tau', 'bgu'].map((institutionId) => ({ programId: 'law', institutionId })),
-      admissionRequirements: ['tau', 'bgu'].map((institutionId) => ({ id: `law:${institutionId}`, programId: 'law', institutionId, admissionRequirements: [institutionId], specificAdmissionNotes: [institutionId] })),
-      admissionThresholds: ['tau', 'bgu'].map((institutionId) => ({ id: `law:${institutionId}:sekhem`, programId: 'law', institutionId, universityId: institutionId, thresholdKind: 'sekhem', thresholdValue: 700 })),
-      sourceUrls: ['tau', 'bgu'].map((institutionId) => ({ id: `law:${institutionId}:url`, programId: 'law', institutionId, admissionRequirementId: `law:${institutionId}`, kind: 'program', url: `https://${institutionId}.ac.il/law` })),
-      admissionFacts: ['tau', 'bgu'].map((institutionId) => ({ id: `law:${institutionId}:fact`, programId: 'law', institutionId, admissionRequirementId: `law:${institutionId}`, field: 'psychometric', kind: 'numeric_gate', valueNumber: 700 })),
+      programInstitutions: ['tau', 'bgu'].map((institutionId) => ({
+        programId: 'law',
+        institutionId,
+      })),
+      admissionRequirements: ['tau', 'bgu'].map((institutionId) => ({
+        id: `law:${institutionId}`,
+        programId: 'law',
+        institutionId,
+        admissionRequirements: [institutionId],
+        specificAdmissionNotes: [institutionId],
+      })),
+      admissionThresholds: ['tau', 'bgu'].map((institutionId) => ({
+        id: `law:${institutionId}:sekhem`,
+        programId: 'law',
+        institutionId,
+        universityId: institutionId,
+        thresholdKind: 'sekhem',
+        thresholdValue: 700,
+      })),
+      sourceUrls: ['tau', 'bgu'].map((institutionId) => ({
+        id: `law:${institutionId}:url`,
+        programId: 'law',
+        institutionId,
+        admissionRequirementId: `law:${institutionId}`,
+        kind: 'program',
+        url: `https://${institutionId}.ac.il/law`,
+      })),
+      admissionFacts: ['tau', 'bgu'].map((institutionId) => ({
+        id: `law:${institutionId}:fact`,
+        programId: 'law',
+        institutionId,
+        admissionRequirementId: `law:${institutionId}`,
+        field: 'psychometric',
+        kind: 'numeric_gate',
+        valueNumber: 700,
+      })),
     };
     hoistedMocks.getDb.mockReturnValue(createMockDb(dataset).db);
     const law = (await listCataloguePrograms()).data.find((row) => row.id === 'law')!;

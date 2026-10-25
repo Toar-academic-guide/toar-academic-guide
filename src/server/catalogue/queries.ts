@@ -451,6 +451,11 @@ export async function listCatalogueInstitutions(): Promise<
   };
 }
 
+// BGU has no law degree; preserve the shared programme for other institutions.
+function isListedProgramInstitution(row: { programId: string; institutionId: string }): boolean {
+  return row.programId !== 'law' || row.institutionId !== 'bgu';
+}
+
 export async function listCataloguePrograms(): Promise<CatalogueQueryResult<CatalogueProgram[]>> {
   const resolution = await resolveCatalogueSource();
 
@@ -485,18 +490,26 @@ export async function listCataloguePrograms(): Promise<CatalogueQueryResult<Cata
       .map((programRow) =>
         serializeProgramRow({
           program: programRow,
-          relations: snapshot.programInstitutions.filter((row) => row.programId === programRow.id),
+          relations: snapshot.programInstitutions.filter(
+            (row) => row.programId === programRow.id && isListedProgramInstitution(row),
+          ),
           requirements: snapshot.admissionRequirements.filter(
-            (row) => row.programId === programRow.id,
+            (row) => row.programId === programRow.id && isListedProgramInstitution(row),
           ),
-          thresholds: snapshot.admissionThresholds.filter((row) => row.programId === programRow.id),
-          sourceUrls: snapshot.sourceUrls.filter((row) => row.programId === programRow.id),
+          thresholds: snapshot.admissionThresholds.filter(
+            (row) => row.programId === programRow.id && isListedProgramInstitution(row),
+          ),
+          sourceUrls: snapshot.sourceUrls.filter(
+            (row) => row.programId === programRow.id && isListedProgramInstitution(row),
+          ),
           admissionsSourceCandidates: snapshot.admissionsSourceCandidates.filter(
-            (row) => row.programId === programRow.id,
+            (row) => row.programId === programRow.id && isListedProgramInstitution(row),
           ),
-          admissionFacts: snapshot.admissionFacts.filter((row) => row.programId === programRow.id),
+          admissionFacts: snapshot.admissionFacts.filter(
+            (row) => row.programId === programRow.id && isListedProgramInstitution(row),
+          ),
           admissionAlternativePaths: snapshot.admissionAlternativePaths.filter(
-            (row) => row.programId === programRow.id,
+            (row) => row.programId === programRow.id && isListedProgramInstitution(row),
           ),
           institutionsById,
         }),

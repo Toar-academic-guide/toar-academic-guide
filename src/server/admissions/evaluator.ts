@@ -11,6 +11,7 @@ import { evaluateBatchBManualPath, isBatchBManualProgram } from './batchBManualP
 import { evaluateTelhaiPublishedRoutes } from './telhaiPublishedRoutesEvaluation';
 import { evaluateOnoPublishedRoutes } from './onoPublishedRoutesEvaluation';
 import { evaluateRuppinComputerScience } from './ruppinComputerScienceEvaluation';
+import { evaluateRuppinMarineScience } from './ruppinMarineScienceEvaluation';
 import {
   confirmationCondition,
   withScoreAssessment,
@@ -152,29 +153,38 @@ export async function evaluateAdmissionsForProgram(args: {
   const normalized = normalizeEvaluationInputs(input);
   const evaluationInput = normalized.input;
   const codeReviewedWinter = getCodeReviewedTechnionWinterVerification(`${program.id}__technion`);
-  const exactSourceIds = exactSourceIdsForProgram(program, evaluationInput.extraInputs).filter(
-    (sourceId) => sourceId !== codeReviewedWinter?.contract.source.targetId,
-  );
+  const institutionPrograms = program.linkedInstitutionIds.map((institutionId) => ({
+    ...program,
+    id: program.id === 'medicine' ? canonicalProgramId(program.id, institutionId) : program.id,
+    linkedInstitutionIds: [institutionId],
+  }));
+  const exactSourceIds = institutionPrograms
+    .flatMap((targetProgram) =>
+      exactSourceIdsForProgram(targetProgram, evaluationInput.extraInputs),
+    )
+    .filter((sourceId) => sourceId !== codeReviewedWinter?.contract.source.targetId);
 
   const freshnessLoad = suppliedFreshnessStates
     ? { status: 'loaded' as const, states: suppliedFreshnessStates }
     : await loadFreshnessStatesBySourceIds(exactSourceIds);
-  const capabilityEntries = buildAdmissionsCapabilityMatrix({
-    program,
-    institutions,
-    deferredRequiredInputs: new Map(
-      institutions.map((institution) => [
-        institution.id,
-        independentAdmissionConditions(evaluationInput, program, institution).map(
-          (condition) => condition.id,
-        ),
-      ]),
-    ),
-    input: evaluationInput.extraInputs,
-    freshnessStatesBySourceId: freshnessLoad.states,
-    freshnessAuthorityUnavailable: freshnessLoad.status === 'unavailable',
-    now,
-  });
+  const capabilityEntries = institutionPrograms.flatMap((targetProgram) =>
+    buildAdmissionsCapabilityMatrix({
+      program: targetProgram,
+      institutions,
+      deferredRequiredInputs: new Map(
+        institutions.map((institution) => [
+          institution.id,
+          independentAdmissionConditions(evaluationInput, program, institution).map(
+            (condition) => condition.id,
+          ),
+        ]),
+      ),
+      input: evaluationInput.extraInputs,
+      freshnessStatesBySourceId: freshnessLoad.states,
+      freshnessAuthorityUnavailable: freshnessLoad.status === 'unavailable',
+      now,
+    }),
+  );
 
   const results = await evaluateCapabilityEntries({
     input: evaluationInput,
@@ -365,6 +375,10 @@ async function evaluateCapabilityEntries(args: {
       results[index] = evaluateOnoPublishedRoutes({ input, institution });
       continue;
     }
+    if (program.id === 'ruppin_marine_bio' && institution.id === 'ruppin') {
+      results[index] = evaluateRuppinMarineScience({ input, institution });
+      continue;
+    }
     if (program.id === 'ruppin_cs' && institution.id === 'ruppin') {
       results[index] = evaluateRuppinComputerScience({ input, institution });
       continue;
@@ -420,7 +434,7 @@ async function evaluateCapabilityEntries(args: {
     }
 
     if (
-      ['afeka_ee', 'afeka_softwareeng', 'afeka_cs'].includes(program.id) &&
+      ['afeka_ee', 'afeka_softwareeng', 'afeka_cs', 'afeka_biomedical'].includes(program.id) &&
       institution.id === 'afeka'
     ) {
       results[index] = evaluateAfekaPublishedRoutes({ input, institution });

@@ -581,21 +581,36 @@ describe('BGU Computer Science official proof', () => {
   });
 });
 
-
 describe('sweep38 medicine AND floors', () => {
   it.each([
     [679, 735, 'below'],
     [680, 734, 'below'],
     [680, 735, 'eligible_to_apply'],
     [681, 736, 'eligible_to_apply'],
-  ])('checks psychometric %s and weighted score %s', async (psychometric, score, derivedVerdict) => {
-    const request = context();
-    request.program = { ...request.program, id: 'bgu_medicine', pairId: 'bgu_medicine__bgu' };
-    request.applicant.psychometric = psychometric;
-    request.fetcher = vi.fn<typeof fetch>()
-      .mockResolvedValueOnce(jsonResponse({ items: [{ psycho_sekem: 735, psycho_value: 680, psycho_and_or: ' ובנוסף ' }] }))
-      .mockResolvedValueOnce(new Response(`<script>parent.main.document.mainForm.on_final_sekem.value = ${score};</script>`));
-    const proof = await runBguAdmissionsProof(request);
-    expect(proof.normalizedPayload).toMatchObject({ selectedScore: score, acceptanceThreshold: 735, derivedVerdict });
-  });
+  ])(
+    'checks psychometric %s and weighted score %s',
+    async (psychometric, score, derivedVerdict) => {
+      const request = context();
+      request.program = { ...request.program, id: 'bgu_medicine', pairId: 'bgu_medicine__bgu' };
+      request.applicant.psychometric = psychometric;
+      request.fetcher = vi
+        .fn<typeof fetch>()
+        .mockResolvedValueOnce(
+          jsonResponse({
+            items: [{ psycho_sekem: 735, psycho_value: 680, psycho_and_or: ' ובנוסף ' }],
+          }),
+        )
+        .mockResolvedValueOnce(
+          new Response(
+            `<script>parent.main.document.mainForm.on_final_sekem.value = ${score};</script>`,
+          ),
+        );
+      const proof = await runBguAdmissionsProof(request);
+      expect(proof.normalizedPayload).toMatchObject({
+        selectedScore: score,
+        acceptanceThreshold: 735,
+        derivedVerdict,
+      });
+    },
+  );
 });

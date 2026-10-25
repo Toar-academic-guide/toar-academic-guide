@@ -16,7 +16,11 @@ import { SITE_URL } from '@/lib/site';
 import { indexableProgramIds } from './indexability';
 import { programBreadcrumbLd, programLd } from './jsonLd';
 import { buildProgramMetadata } from './metadata';
-import { canonicalProgramId, canonicalProgramPath, PROGRAM_CANONICAL_ALIASES } from './programAliases';
+import {
+  canonicalProgramId,
+  canonicalProgramPath,
+  PROGRAM_CANONICAL_ALIASES,
+} from './programAliases';
 
 vi.mock('server-only', () => ({}));
 vi.mock('@/components/WayPageShell', () => ({
@@ -188,7 +192,6 @@ describe('canonical programme aliases', () => {
     },
   );
 });
-
 
 it('sweep38 scopes the medicine alias to BGU and preserves shared medicine URLs', () => {
   expect(canonicalProgramId('medicine', 'bgu')).toBe('bgu_medicine');

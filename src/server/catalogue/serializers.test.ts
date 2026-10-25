@@ -16,19 +16,36 @@ import type {
 
 describe('catalogue serializers', () => {
   it.each(['ruppin_marine_bio', 'afeka_biomedical'])(
-    'sweep38 repairs persisted %s requirements', (id) => {
+    'sweep38 repairs persisted %s requirements',
+    (id) => {
       const seed = buildCatalogueSeed();
       const requirement = seed.admissionRequirements.find((row) => row.programId === id)!;
-      const staleNotes = id === 'afeka_biomedical' ? ['ממוצע בגרות מינימלי: 80', 'ציון פסיכומטרי מינימלי: 530'] : ['500 / 75'];
+      const staleNotes =
+        id === 'afeka_biomedical'
+          ? ['ממוצע בגרות מינימלי: 80', 'ציון פסיכומטרי מינימלי: 530']
+          : ['500 / 75'];
       const result = serializeProgramRow({
-        program: { ...seed.programs.find((row) => row.id === id)!, name: id === 'ruppin_marine_bio' ? 'ביולוגיה ימית ומכמורת' : 'הנדסה רפואית' } as ProgramRow,
-        relations: seed.programInstitutions.filter((row) => row.programId === id) as ProgramInstitutionRow[],
-        requirements: [{ ...requirement, admissionRequirements: staleNotes, specificAdmissionNotes: staleNotes }] as AdmissionRequirementRow[],
-        thresholds: [], sourceUrls: [],
+        program: {
+          ...seed.programs.find((row) => row.id === id)!,
+          name:
+            id === 'ruppin_marine_bio'
+              ? 'ביולוגיה ימית ומכמורת'
+              : seed.programs.find((row) => row.id === id)!.name,
+        } as ProgramRow,
+        relations: seed.programInstitutions.filter(
+          (row) => row.programId === id,
+        ) as ProgramInstitutionRow[],
+        requirements: [
+          { ...requirement, admissionRequirements: staleNotes, specificAdmissionNotes: staleNotes },
+        ] as AdmissionRequirementRow[],
+        thresholds: [],
+        sourceUrls: [],
         institutionsById: new Map(seed.institutions.map((row) => [row.id, row as InstitutionRow])),
       });
       const expected = allPrograms.find((row) => row.id === id)!;
-      expect(result.institutionDetails![0].specificAdmissionNotes).toEqual(expected.institutionDetails![0].specificAdmissionNotes);
+      expect(result.institutionDetails![0].specificAdmissionNotes).toEqual(
+        expected.institutionDetails![0].specificAdmissionNotes,
+      );
       expect(result.name).toBe(expected.name);
       expect(result.id).toBe(id);
     },
@@ -36,7 +53,17 @@ describe('catalogue serializers', () => {
 
   it('sweep38 renames persisted marine science from the static official name', () => {
     const seed = buildCatalogueSeed();
-    const result = serializeProgramRow({ program: { ...seed.programs.find((row) => row.id === 'ruppin_marine_bio')!, name: 'ביולוגיה ימית ומכמורת' } as ProgramRow, relations: [], requirements: [], thresholds: [], sourceUrls: [], institutionsById: new Map() });
+    const result = serializeProgramRow({
+      program: {
+        ...seed.programs.find((row) => row.id === 'ruppin_marine_bio')!,
+        name: 'ביולוגיה ימית ומכמורת',
+      } as ProgramRow,
+      relations: [],
+      requirements: [],
+      thresholds: [],
+      sourceUrls: [],
+      institutionsById: new Map(),
+    });
     expect(result.name).toBe('מדעי הים והסביבה הימית');
   });
 
