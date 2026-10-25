@@ -121,7 +121,7 @@ describe('admissions review resolution dispatch workflow', () => {
     const resolve = step('resolve');
     expect(resolve.shell).toBe('bash');
     expect(resolve.run).toContain('set -euo pipefail');
-    expect(resolve.run).toMatch(/while IFS= read -r id; do/);
+    expect(resolve.run).toContain('for id in "${ids[@]}"; do');
     for (const action of ['approve', 'reject']) {
       expect(resolve.run).toContain(
         `npm run admissions:${action}-review -- "$id" --actor "$ACTOR"`,
@@ -131,6 +131,24 @@ describe('admissions review resolution dispatch workflow', () => {
     expect(resolve.run).toContain('3>&1');
     expect(resolve.run).not.toMatch(/\|\|\s*(?:true|:)|&\s*$/m);
     expect(JSON.stringify(resolveWorkflow())).not.toContain('continue-on-error');
+  });
+
+  it('loads a non-empty ID array and isolates every CLI invocation from stdin', () => {
+    const script = step('resolve').run!;
+    expect(script).toContain('mapfile -t ids < scratch/admissions-review-resolve/ids.txt');
+    const guard = '[[ "${#ids[@]}" -gt 0 ]]';
+    const loop = 'for id in "${ids[@]}"; do';
+    expect(script).toContain(guard);
+    expect(script).toContain(loop);
+    expect(script.indexOf('mapfile -t ids')).toBeLessThan(script.indexOf(guard));
+    expect(script.indexOf(guard)).toBeLessThan(script.indexOf(loop));
+    expect(script).not.toMatch(/\bwhile\b[^\n]*\bread\b/);
+    expect(script).not.toMatch(/\bdone\b[^\n]*<\s*scratch\/admissions-review-resolve\/ids\.txt/);
+    const invocations = script.match(/^.*npm run admissions:(?:approve|reject)-review.*$/gm);
+    expect(invocations).toHaveLength(2);
+    for (const invocation of invocations!) {
+      expect(invocation).toContain('--actor "$ACTOR" < /dev/null');
+    }
   });
 
   it('always uploads the audit file and pins every action to a version or SHA', () => {
