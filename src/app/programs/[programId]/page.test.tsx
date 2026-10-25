@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import { render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { InstitutionId } from '@/data/institutions';
 import type { CatalogueProgram } from '@/types/catalogue';
@@ -9,10 +9,13 @@ vi.mock('server-only', () => ({}));
 vi.mock('@/env', () => ({ getCatalogueSourceMode: () => 'static' }));
 
 const hoisted = vi.hoisted(() => ({
+  capture: vi.fn(),
   notFound: vi.fn(() => {
     throw new Error('NEXT_NOT_FOUND');
   }),
 }));
+
+vi.mock('posthog-js', () => ({ default: { capture: hoisted.capture } }));
 
 vi.mock('next/navigation', () => ({
   usePathname: () => '/',
@@ -39,6 +42,7 @@ import ProgramPage, { generateMetadata } from './page';
 
 describe('ProgramPage', () => {
   beforeEach(() => {
+    hoisted.capture.mockReset();
     vi.mocked(listCataloguePrograms).mockResolvedValue({
       data: getStaticCataloguePrograms(),
       meta: {},
@@ -497,4 +501,24 @@ describe('ProgramPage', () => {
       expect(screen.queryByRole('link', { name: 'לפרטים המלאים' })).toBeNull();
     });
   });
+});
+
+it('tracks program page CTAs and official outbound links with only canonical IDs', async () => {
+  render(await ProgramPage({ params: Promise.resolve({ programId: 'colmgmt_cs' }) }));
+  const actions = [
+    ['בדיקת סיכויי קבלה', 'program_calculator_cta_clicked'],
+    ['יצירת קשר', 'program_contact_cta_clicked'],
+    ['לאתר המוסד', 'institution_site_clicked'],
+    ['למחשבון המכללה', 'institution_calculator_clicked'],
+  ];
+  for (const [label, event] of actions) {
+    const link = screen.getByRole('link', { name: label });
+    link.addEventListener('click', (e) => e.preventDefault());
+    fireEvent.click(link);
+    expect(hoisted.capture).toHaveBeenCalledWith(event, {
+      program_id: 'colmgmt_cs',
+      institution_id: 'colman',
+    });
+  }
+  expect(hoisted.capture.mock.calls).toHaveLength(4);
 });

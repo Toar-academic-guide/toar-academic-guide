@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 for (const width of [1440, 390]) {
   test(`journey evaluates more than twelve programmes without exhausting its request quota at ${width}px`, async ({

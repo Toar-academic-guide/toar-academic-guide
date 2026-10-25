@@ -1,5 +1,12 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { UNIVERSITIES } from '@/data/degreesData';
+import reviewedManifest from '@/data/admissions/reviewedManifest.json';
+import staleTechnionCatalogue from '@/test/fixtures/technionStaleCatalogue.json';
+import {
+  getPublicProgramPageData,
+  getPublicProgramRequirementSources,
+} from '@/lib/publicCataloguePages';
+import { selectRequirementTiles } from '@/lib/requirementTiles';
 import {
   admissionAlternativePaths,
   admissionFacts,
@@ -177,6 +184,86 @@ describe('catalogue queries', () => {
     hoistedMocks.getStaticCataloguePrograms.mockClear();
     hoistedMocks.getStaticCatalogueInstitutions.mockClear();
   });
+
+  it.each(['technion_ee', 'technion_me'])(
+    'resolves %s winter page data from its published DB row, independently of legacy rows and display notes',
+    async (programId) => {
+      mockEnv = { mode: 'database', hasDatabaseUrl: true, isProduction: true };
+      const changes = reviewedManifest.changes;
+      const change = changes.find((item) => item.target.programId === programId)!;
+      expect(change.target).toEqual({ programId, institutionId: 'technion', cycle: '2027' });
+      const captured = staleTechnionCatalogue.find((item) => item.id === programId)!;
+      const base = createDatabaseBackedDataset();
+      const thresholdRows = changes.map((item) => ({
+        id: `${item.target.programId}:technion:technion:sekhem`,
+        programId: item.target.programId,
+        institutionId: 'technion',
+        universityId: 'technion',
+        thresholdKind: 'sekhem',
+        thresholdValue: item.before,
+      }));
+      const dataset = {
+        ...base,
+        institutions: [
+          {
+            ...base.institutions[0],
+            id: 'technion',
+            name: captured.institution,
+            universityId: 'technion',
+          },
+        ],
+        programs: changes.map((item) => ({
+          ...base.programs[0],
+          id: item.target.programId,
+          institutionId: 'technion',
+          institutionName: captured.institution,
+          name: item.target.programId,
+          admissionType: 'sekhem',
+        })),
+        programInstitutions: changes.map((item) => ({
+          programId: item.target.programId,
+          institutionId: 'technion',
+        })),
+        admissionThresholds: thresholdRows,
+        admissionRequirements: [
+          {
+            ...captured.institutionDetails[0],
+            id: `${programId}:technion`,
+            programId,
+            institutionId: 'technion',
+            admissionRequirements: captured.admissionRequirements,
+          },
+        ],
+      };
+      const { db, from } = createMockDb(dataset);
+      hoistedMocks.getDb.mockReturnValue(db);
+
+      const before = (await getPublicProgramPageData(programId))!;
+      expect(before.program.thresholds?.technion).toBe(change.before);
+
+      // Supply the publication's after-value on this exact row. Leave the
+      // legacy alias stale to catch accidentally reading its old cutoff.
+      thresholdRows.find((row) => row.programId === programId)!.thresholdValue = change.after;
+      resetDatabaseCatalogueSnapshotCache();
+      const published = (await getPublicProgramPageData(programId))!;
+      expect(published.isGeneral).toBe(false);
+      expect(published.program.thresholds?.technion).toBe(programId === 'technion_ee' ? 91.5 : 87);
+      const source = (await getPublicProgramRequirementSources(published)).technion;
+      expect(source.sourceProgramId).toBe(programId);
+      expect(source.program.thresholds?.technion).toBe(change.after);
+      expect(source.requirements).toEqual(captured.institutionDetails[0].specificAdmissionNotes);
+      expect(
+        selectRequirementTiles({
+          program: source.program,
+          institutionId: 'technion',
+          requirements: source.requirements,
+        }).model,
+      ).toBeUndefined();
+      expect(from).toHaveBeenCalledWith(admissionThresholds);
+      expect(from).toHaveBeenCalledWith(admissionRequirements);
+      expect(hoistedMocks.getStaticCataloguePrograms).not.toHaveBeenCalled();
+    },
+  );
 
   it('serves static catalogue data when source mode is static', async () => {
     const result = await listCataloguePrograms();

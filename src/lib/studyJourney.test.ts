@@ -13,6 +13,36 @@ import {
 import { getStaticCataloguePrograms, getStaticCatalogueInstitutions } from './catalogueStatic';
 import { evaluateBatchBManualPath } from '@/server/admissions/batchBManualPathEvaluation';
 import { PROGRAM_CANONICAL_ALIASES } from './seo/programAliases';
+import type { AdmissionsEvaluationResult } from '@/types/admissionsEvaluation';
+
+it.each(['exact', 'estimated'] as const)(
+  'preserves other programmes no-verdict status for kind %s',
+  (kind) => {
+    const result: AdmissionsEvaluationResult = {
+      institution: getStaticCatalogueInstitutions().find((i) => i.id === 'haifa')!,
+      linkedInstitutionId: 'haifa',
+      kind,
+      capability: kind,
+      decision: 'pending',
+      confidence: 'medium',
+      score: 520,
+      sourceLabel: 'תנאי קבלה',
+      explanation: 'בטווח המתנה',
+      nextAction: 'בדקו באתר המוסד',
+    };
+    expect(resultLabel(result, false, false, 'haifa_sociology')).toEqual({
+      label: 'אין הכרעת קבלה',
+      group: 'explore',
+    });
+    expect(
+      resultLabel({ ...result, linkedInstitutionId: 'technion' }, false, false, 'technion_cs'),
+    ).toEqual({ label: 'אין הכרעת קבלה', group: 'explore' });
+    expect(resultLabel(result, false, false, 'technion_medicine')).toEqual({
+      label: 'אין הכרעת קבלה',
+      group: 'explore',
+    });
+  },
+);
 
 describe('subject search synonyms', () => {
   it.each(['הנדסה', 'הנדסת', '  הנדסה  '])('matches engineering forms for %s', (query) => {

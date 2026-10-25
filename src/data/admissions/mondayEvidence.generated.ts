@@ -175,12 +175,13 @@ export const mondayAdmissionEvidenceRecords = [
       },
       {
         programId: 'technion_ee',
-        threshold: 94,
+        threshold: 91.5,
         sourceUrl:
           'https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/',
         sourceLabel: 'טכניון: מסלולי הלימוד לפי אפיקי הקבלה',
-        verifiedAt: '2026-06-30',
-        notes: 'הנדסת חשמל ומחשבים',
+        verifiedAt: '2026-10-25',
+        notes:
+          'הנדסת חשמל — סמסטר חורף תשפ״ז. באביב תשפ״ז: 94 — על בסיס מקום פנוי, מספר המקומות מצומצם.',
       },
       {
         programId: 'technion_industrial',
@@ -193,12 +194,12 @@ export const mondayAdmissionEvidenceRecords = [
       },
       {
         programId: 'technion_me',
-        threshold: 92,
+        threshold: 87,
         sourceUrl:
           'https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/',
         sourceLabel: 'טכניון: מסלולי הלימוד לפי אפיקי הקבלה',
-        verifiedAt: '2026-06-30',
-        notes: 'הנדסת מכונות',
+        verifiedAt: '2026-10-25',
+        notes: 'הנדסת מכונות — סמסטר חורף תשפ״ז.',
       },
       {
         programId: 'technion_medicine',

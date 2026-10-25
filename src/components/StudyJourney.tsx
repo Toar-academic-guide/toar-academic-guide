@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import posthog from 'posthog-js';
+import ProgramTrackedLink from './ProgramTrackedLink';
 import {
   ArrowLeft,
   ArrowRight,
@@ -38,6 +39,8 @@ import {
   groupJourneyRows,
   resultLabel,
   resultExplanation,
+  isTechnionMedicineScore,
+  formatJourneyScore,
   officialUrl,
   type JourneyLocation,
   type InstitutionType,
@@ -57,6 +60,8 @@ import ProgramShareButton from './ProgramShareButton';
 import AdmissionRequirements from './AdmissionRequirements';
 import RequirementTiles from './RequirementTiles';
 import AdmissionConditions from './AdmissionConditions';
+import TechnionThresholdNotice from './TechnionThresholdNotice';
+import TechnionMedicineComparison from './TechnionMedicineComparison';
 import { acceptedManualGateFootnote } from '@/lib/acceptedManualGateFootnote';
 import { isBatchCUnsupportedProgramId } from '@/data/admissions/batchCUnsupportedProgramIds';
 import { DANON_PROGRAM_URLS } from '@/data/admissions/danon';
@@ -511,7 +516,9 @@ export default function StudyJourney({
     const key = `${step}:${resultSignature}`;
     if (viewedResults.current === key) return;
     viewedResults.current = key;
-    const groups = rows.map((row) => resultLabel(row.result, row.failed).group);
+    const groups = rows.map(
+      (row) => resultLabel(row.result, row.failed, false, row.program.id).group,
+    );
     posthog.capture('journey_results_viewed', {
       result_count: rows.length,
       match_count: groups.filter((group) => group === 'match').length,
@@ -570,7 +577,7 @@ export default function StudyJourney({
   const contactInstitutionId = activeRow?.institution.id;
   const contactResultGroup =
     activeRow?.result || activeRow?.failed
-      ? resultLabel(activeRow.result, activeRow.failed).group
+      ? resultLabel(activeRow.result, activeRow.failed, false, activeRow.program.id).group
       : undefined;
   const previousContactStep = useRef<Step | null>(null);
   useEffect(() => {
@@ -700,12 +707,13 @@ export default function StudyJourney({
   );
   const visibleRows = rows.filter(
     (row) =>
-      (resultFilter === 'all' || resultLabel(row.result).group === resultFilter) &&
+      (resultFilter === 'all' ||
+        resultLabel(row.result, false, false, row.program.id).group === resultFilter) &&
       (!query || `${row.fieldName} ${row.institution.name}`.includes(query)),
   );
   const groups = groupJourneyRows(visibleRows, groupBy);
   const rowView = (row: JourneyRow) => {
-    const status = resultLabel(row.result, row.failed, calculating && !row.result);
+    const status = resultLabel(row.result, row.failed, calculating && !row.result, row.program.id);
     return (
       <article className="journey-result-row" key={row.id}>
         <div className="journey-row-info">
@@ -716,7 +724,15 @@ export default function StudyJourney({
                 ? row.institution.name
                 : row.fieldName}
           </button>
-          <span className={`journey-status status-${status.group}`}>{status.label}</span>
+          <span
+            className={`journey-status status-${isTechnionMedicineScore(row.result, row.program.id) && !row.failed ? 'match' : status.group}`}
+          >
+            {status.label}
+          </span>
+          {isTechnionMedicineScore(row.result, row.program.id) && !row.failed && (
+            <TechnionMedicineComparison score={row.result.score} />
+          )}
+          <TechnionThresholdNotice programId={row.program.id} institutionId={row.institution.id} />
         </div>
         <div className="journey-row-actions">
           <button className="journey-contact" onClick={() => selectRow(row, 'inquiry')}>
@@ -1369,16 +1385,21 @@ export default function StudyJourney({
                   </div>
                   {description && !isBatchCUnsupported && <p>{description}</p>}
                   <span
-                    className={`journey-status status-${resultLabel(activeRow.result, activeRow.failed).group}`}
+                    className={`journey-status status-${isTechnionMedicineScore(activeRow.result, activeRow.program.id) && !activeRow.failed ? 'match' : resultLabel(activeRow.result, activeRow.failed, false, activeRow.program.id).group}`}
                   >
                     {calculating && !activeRow.result && !activeRow.failed
                       ? 'מחשבים התאמה…'
-                      : resultLabel(activeRow.result, activeRow.failed).label}
+                      : resultLabel(activeRow.result, activeRow.failed, false, activeRow.program.id)
+                          .label}
                   </span>
-                  {resultExplanation(activeRow.result, activeRow.program.id) && (
-                    <p className="journey-result-explanation">
-                      {resultExplanation(activeRow.result, activeRow.program.id)}
-                    </p>
+                  {isTechnionMedicineScore(activeRow.result, activeRow.program.id) ? (
+                    <TechnionMedicineComparison score={activeRow.result.score} />
+                  ) : (
+                    resultExplanation(activeRow.result, activeRow.program.id) && (
+                      <p className="journey-result-explanation">
+                        {resultExplanation(activeRow.result, activeRow.program.id)}
+                      </p>
+                    )
                   )}
                   {activeFootnote && (
                     <AdmissionConditions
@@ -1386,17 +1407,25 @@ export default function StudyJourney({
                       footnote={activeFootnote}
                     />
                   )}
-                  {activeRow.result?.score != null && (
-                    <p>
-                      {activeRow.result.scoreLabel ?? 'ציון מחושב'}:{' '}
-                      {activeRow.result.score.toLocaleString('he-IL', { maximumFractionDigits: 2 })}
-                      {activeRow.result.threshold != null && ` · סף: ${activeRow.result.threshold}`}
-                    </p>
-                  )}
+                  {activeRow.result?.score != null &&
+                    !isTechnionMedicineScore(activeRow.result, activeRow.program.id) && (
+                      <p>
+                        {activeRow.result.scoreLabel ?? 'ציון מחושב'}:{' '}
+                        {formatJourneyScore(activeRow.result.score)}
+                        {activeRow.result.threshold != null &&
+                          ` · סף: ${activeRow.result.threshold}`}
+                      </p>
+                    )}
                   {!activeFootnote && (
                     <AdmissionConditions conditions={activeRow.result?.additionalConditions} />
                   )}
                   <h2>תנאי קבלה</h2>
+                  {isBatchCUnsupported && (
+                    <TechnionThresholdNotice
+                      programId={activeRow.program.id}
+                      institutionId={activeRow.institution.id}
+                    />
+                  )}
                   {isBatchCUnsupported ? (
                     <p>{activeRow.result?.nextAction}</p>
                   ) : (
@@ -1431,13 +1460,21 @@ export default function StudyJourney({
                         </>
                       )}
                     {activeOfficialUrl && (
-                      <a target="_blank" rel="noopener noreferrer" href={activeOfficialUrl}>
+                      <ProgramTrackedLink
+                        event="institution_site_clicked"
+                        programId={activeRow.program.id}
+                        institutionId={activeRow.institution.id}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        href={activeOfficialUrl}
+                      >
                         לאתר המוסד
-                      </a>
+                      </ProgramTrackedLink>
                     )}
                     <ProgramShareButton
                       key={activeRow.program.id}
                       programId={activeRow.program.id}
+                      institutionId={activeRow.institution.id}
                       title={activeRow.fieldName}
                     />
                   </div>
@@ -1483,6 +1520,7 @@ export default function StudyJourney({
                 key={activeRow.id}
                 programId={activeRow.program.id}
                 institutionId={activeRow.institution.id}
+                evaluationInput={reports[activeRow.program.id]?.input}
                 surface="journey"
                 title={`${activeRow.fieldName} · ${activeRow.institution.name}`}
                 onBack={() => go('results')}

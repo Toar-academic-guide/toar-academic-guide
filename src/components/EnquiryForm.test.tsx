@@ -3,6 +3,7 @@ import { StrictMode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import EnquiryForm from './EnquiryForm';
+import { getSessionAttribution } from '@/lib/sessionAttribution';
 
 const { capture } = vi.hoisted(() => ({ capture: vi.fn() }));
 vi.mock('posthog-js', () => ({ default: { capture } }));
@@ -10,6 +11,7 @@ vi.mock('posthog-js', () => ({ default: { capture } }));
 describe('EnquiryForm', () => {
   beforeEach(() => {
     capture.mockReset();
+    sessionStorage.clear();
     window.history.replaceState(null, '', '/enquiry?name=private#private');
   });
   afterEach(() => {
@@ -50,6 +52,7 @@ describe('EnquiryForm', () => {
         programId="physiotherapy"
         institutionId="tau"
         title="פיזיותרפיה"
+        evaluationInput={{ degreeId: 'physiotherapy', bagrut: 105.5, psychometric: 680 }}
         surface="journey"
       />,
     );
@@ -87,6 +90,7 @@ describe('EnquiryForm', () => {
       programId: 'physiotherapy',
       institutionId: 'tau',
       consent: true,
+      evaluationInput: { degreeId: 'physiotherapy', bagrut: 105.5, psychometric: 680 },
     });
     expect(capture.mock.calls[2]).toEqual([
       'enquiry_submitted',
@@ -97,6 +101,31 @@ describe('EnquiryForm', () => {
         source_path: '/enquiry',
       },
     ]);
+  });
+
+  it('submits first-touch attribution after navigation without adding visible fields', async () => {
+    window.history.replaceState(null, '', '/?utm_source=instagram&utm_campaign=fall_2026');
+    vi.spyOn(document, 'referrer', 'get').mockReturnValue(
+      'https://example.com/article?token=private',
+    );
+    getSessionAttribution();
+    window.history.replaceState(null, '', '/enquiry?utm_source=facebook');
+    const send = vi
+      .fn()
+      .mockResolvedValue(Response.json({ data: { received: true } }, { status: 201 }));
+    vi.stubGlobal('fetch', send);
+    render(<EnquiryForm programId="physiotherapy" institutionId="tau" title="פיזיותרפיה" />);
+    expect(document.querySelectorAll('form input')).toHaveLength(3);
+    fireEvent.change(screen.getByLabelText('שם מלא'), { target: { value: 'בדיקת MyWay' } });
+    fireEvent.change(screen.getByLabelText('מספר טלפון'), { target: { value: '0501234567' } });
+    fireEvent.click(screen.getByRole('checkbox'));
+    fireEvent.click(screen.getByRole('button', { name: 'שליחת בקשה' }));
+    await screen.findByRole('status');
+    expect(JSON.parse(send.mock.calls[0][1].body).attribution).toEqual({
+      utm_source: 'instagram',
+      utm_campaign: 'fall_2026',
+      referrer: 'https://example.com',
+    });
   });
 
   it.each([

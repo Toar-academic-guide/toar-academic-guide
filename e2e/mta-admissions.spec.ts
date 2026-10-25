@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import official from '../docs/admissions-verification/2026-10-23-mta-catalogue-nursing-business.json';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';

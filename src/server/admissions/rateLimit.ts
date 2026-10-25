@@ -9,18 +9,37 @@ const WINDOW_MS = 60_000;
 const MAX_REQUESTS_PER_WINDOW = 12;
 const rateLimitStore = new Map<string, RateLimitEntry>();
 
-function maxRequestsPerWindow(): number {
+function isStaticActionsSmoke(): boolean {
+  return (
+    process.env.CI === 'true' &&
+    process.env.GITHUB_ACTIONS === 'true' &&
+    process.env.CATALOGUE_SOURCE_MODE === 'static' &&
+    !process.env.VERCEL &&
+    !process.env.VERCEL_ENV
+  );
+}
+
+export function admissionsEvaluationClientKey(
+  clientKey: string,
+  testBucket: string | null,
+): string {
   if (
-    process.env.CI !== 'true' ||
-    process.env.GITHUB_ACTIONS !== 'true' ||
-    process.env.CATALOGUE_SOURCE_MODE !== 'static' ||
-    process.env.VERCEL ||
-    process.env.VERCEL_ENV
+    isStaticActionsSmoke() &&
+    process.env.ADMISSIONS_EVALUATION_E2E_ISOLATION === '1' &&
+    testBucket &&
+    /^[a-zA-Z0-9_-]{1,128}$/.test(testBucket)
   ) {
+    return `ci-e2e:${testBucket}:${clientKey}`;
+  }
+  return clientKey;
+}
+
+function maxRequestsPerWindow(): number {
+  if (!isStaticActionsSmoke() || process.env.ADMISSIONS_EVALUATION_E2E_ISOLATION === '1') {
     return MAX_REQUESTS_PER_WINDOW;
   }
 
-  // The isolated PR smoke server shares one localhost client key across the suite.
+  // Retain the legacy guarded override for callers outside the isolated smoke jobs.
   const limit = Number(process.env.ADMISSIONS_EVALUATION_CI_MAX_REQUESTS_PER_WINDOW);
   return Number.isSafeInteger(limit) && limit >= MAX_REQUESTS_PER_WINDOW && limit <= 1000
     ? limit

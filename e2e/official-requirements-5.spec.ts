@@ -1,18 +1,18 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 import official from '../docs/admissions-verification/2026-10-23-official-requirements-5.json';
 
-// The evaluate API allows 12 requests per minute per client. Give this spec its own
-// client key so earlier specs in the same run cannot exhaust its budget.
 const vercelAutomationBypassSecret = process.env.VERCEL_AUTOMATION_BYPASS_SECRET;
 test.use({
-  extraHTTPHeaders: {
-    'x-forwarded-for': '198.51.100.25',
-    ...(vercelAutomationBypassSecret
-      ? {
-          'x-vercel-protection-bypass': vercelAutomationBypassSecret,
-          'x-vercel-set-bypass-cookie': 'true',
-        }
-      : {}),
+  extraHTTPHeaders: async ({ extraHTTPHeaders }, use) => {
+    await use({
+      ...extraHTTPHeaders,
+      'x-forwarded-for': '198.51.100.25',
+      ...(vercelAutomationBypassSecret
+        ? {
+            'x-vercel-protection-bypass': vercelAutomationBypassSecret,
+          }
+        : {}),
+    });
   },
 });
 
