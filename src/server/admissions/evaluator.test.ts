@@ -5002,3 +5002,28 @@ it.each(['tlvyaffo_economics', 'ruppin_marine_bio'])(
     }
   },
 );
+
+
+describe('sweep38 wiring', () => {
+  it.each([
+    ['afeka_biomedical', 'afeka', { psychometric: 620, bagrut: 100, extraInputs: { mathUnits: 5, mathGrade: 70, englishUnits: 5, englishGrade: 59, physicsUnits: 5, physicsGrade: 59, psychometricMath: 115 } }, { decision: 'below', kind: 'exact' }],
+    ['afeka_biomedical', 'afeka', { psychometric: 600, extraInputs: { mathUnits: 5, mathGrade: 70, englishUnits: 5, englishGrade: 59, physicsUnits: 5, physicsGrade: 60 } }, { decision: 'unknown', kind: 'needs_input', requiredInputs: ['psychometric_math'] }],
+    ['afeka_biomedical', 'afeka', { psychometric: 400, extraInputs: { mathUnits: 5, mathGrade: 75, englishUnits: 5, englishGrade: 60, physicsUnits: 5, physicsGrade: 60 } }, { decision: 'accepted', kind: 'exact' }],
+    ['ruppin_marine_bio', 'ruppin', { psychometric: 500, bagrut: 75, extraInputs: { mathUnits: 4, mathGrade: 70 } }, { decision: 'below', kind: 'estimated' }],
+    ['ruppin_marine_bio', 'ruppin', { psychometric: 620, extraInputs: { mathUnits: 4, mathGrade: 70 } }, { decision: 'pending', kind: 'estimated', scoreAssessment: 'meets_threshold' }],
+    ['ruppin_marine_bio', 'ruppin', { bagrut: 100 }, { decision: 'unknown', kind: 'needs_input', requiredInputs: ['math_units', 'math_grade'] }],
+  ] as const)('dispatches %s at %s for %j', async (degreeId, institutionId, scores, expected) => {
+    const program = getStaticCataloguePrograms().find((row) => row.id === degreeId)!;
+    const fetcher = vi.fn<typeof fetch>();
+    const report = await evaluateAdmissionsForProgram({ program, institutions: getStaticCatalogueInstitutions(), input: { degreeId, ...scores }, fetcher });
+    expect(report.results.find((row) => row.linkedInstitutionId === institutionId)).toMatchObject(expected);
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+
+  it('resolves generic medicine at BGU through the canonical medicine target', async () => {
+    const program = { ...bguMedicine, id: 'medicine', minimumPsychometric: undefined, thresholds: { bgu: 760 } };
+    const report = await evaluateAdmissionsForProgram({ program, institutions, input: { degreeId: 'medicine', bagrut: 115, psychometric: 680 }, freshnessStatesBySourceId: qualifiedFreshnessStates(bguMedicine), fetcher: bguMockFetcher(735, 735) });
+    expect(report.results.find((row) => row.linkedInstitutionId === 'bgu')).toMatchObject({ kind: 'exact', decision: 'eligible_to_apply', threshold: 735 });
+    expect(report.program.id).toBe('medicine');
+  });
+});
