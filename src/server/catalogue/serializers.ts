@@ -6,6 +6,7 @@ import { applyJamdCurriculum } from '@/data/degrees/jamdCurriculum';
 import { repairSamSpiegelUrls } from '@/data/admissions/samSpiegelUrls';
 import { INSTITUTION_BY_ID } from '@/data/institutions';
 import { applyCatalogueContentRepair } from '@/data/admissions/catalogueContentRepair';
+import { applyHaifaOfficialUrls } from '@/data/admissions/haifaOfficialUrls';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type {
   AdmissionAlternativePathRow,
@@ -282,7 +283,7 @@ export function serializeProgramRow(args: {
     'rubin_classical',
   ].includes(program.id)
     ? applyCatalogueContentRepair(serialized)
-    : serialized;
+    : applyHaifaOfficialUrls(serialized);
   const curriculum = applyJamdCurriculum(repaired);
   return curriculum.institutionId === 'spieldocs' ? repairSamSpiegelUrls(curriculum) : curriculum;
 }

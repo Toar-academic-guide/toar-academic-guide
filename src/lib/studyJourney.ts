@@ -29,6 +29,18 @@ export interface StudyField {
   name: string;
   category: string;
   programs: CatalogueProgram[];
+  memberFieldIds?: string[];
+}
+
+const normalizeSubjectSearch = (text: string) =>
+  text
+    .trim()
+    .replace(/\s+/g, ' ')
+    .replace(/הנדסת(?=\s|$)/g, 'הנדסה')
+    .toLowerCase();
+
+export function matchesStudyField(field: Pick<StudyField, 'name'>, query: string): boolean {
+  return normalizeSubjectSearch(field.name).includes(normalizeSubjectSearch(query));
 }
 export interface JourneyRow {
   id: string;
@@ -115,7 +127,36 @@ export function studyFields(programs: CatalogueProgram[], includeUnlisted = fals
     if (field) field.programs.push(program);
     else fields.set(id, { id, name: displayName, category: program.category, programs: [program] });
   }
+  const engineeringFields = [...fields.values()].filter((field) =>
+    matchesStudyField(field, 'הנדסה'),
+  );
+  if (engineeringFields.length) {
+    const name = 'הנדסה וטכנולוגיה';
+    const hub = engineeringFields.find((field) => field.name === name) ?? {
+      id: name,
+      name,
+      category: 'הנדסה',
+      programs: [],
+    };
+    fields.set(hub.id, {
+      ...hub,
+      memberFieldIds: engineeringFields
+        .filter((field) => field.id !== hub.id)
+        .map((field) => field.id),
+    });
+  }
   return [...fields.values()].sort((a, b) => a.name.localeCompare(b.name, 'he'));
+}
+
+export function selectedStudyFieldIds(fields: StudyField[], selected: string[]): string[] {
+  return [
+    ...new Set(
+      selected.flatMap((id) => [
+        id,
+        ...(fields.find((field) => field.id === id)?.memberFieldIds ?? []),
+      ]),
+    ),
+  ];
 }
 
 export function journeyRows(

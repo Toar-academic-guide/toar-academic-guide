@@ -30,6 +30,8 @@ import {
   LOCATIONS,
   INSTITUTION_TYPES,
   studyFields,
+  matchesStudyField,
+  selectedStudyFieldIds,
   journeyRows,
   distinctRecommendations,
   toggleLocation,
@@ -213,9 +215,11 @@ function Chips<T extends string>({
 export default function StudyJourney({
   initialStep = 'home',
   browse,
+  initialProgramId,
 }: {
   initialStep?: Step;
   browse?: ReactNode;
+  initialProgramId?: string;
 }) {
   const auth = useAuth();
   const router = useRouter();
@@ -350,20 +354,48 @@ export default function StudyJourney({
     void loadCatalogue();
   }, [loadCatalogue]);
   const fields = useMemo(() => studyFields(programs), [programs]);
+  const selectedFieldIds = useMemo(
+    () => selectedStudyFieldIds(fields, draft.fields),
+    [fields, draft.fields],
+  );
   const allRows = useMemo(
     () => journeyRows(studyFields(programs, true), institutions),
     [programs, institutions],
   );
+  const preselectedProgram = useRef<string | null>(null);
+  useEffect(() => {
+    if (
+      !initialProgramId ||
+      !ready ||
+      catalogueLoading ||
+      preselectedProgram.current === initialProgramId
+    )
+      return;
+    const field = fields.find((entry) =>
+      entry.programs.some((program) => program.id === initialProgramId),
+    );
+    if (!field) return;
+    const row = allRows.find((entry) => entry.program.id === initialProgramId);
+    preselectedProgram.current = initialProgramId;
+    setDraft((current) => ({
+      ...current,
+      fields: [field.id],
+      locations: ['all'],
+      types: ['all'],
+      selectedRowId: row?.id,
+    }));
+    setActiveId(row?.id ?? null);
+  }, [initialProgramId, ready, catalogueLoading, fields, allRows]);
   const selectedRows = useMemo(
     () =>
       distinctRecommendations(allRows).filter(
         (row) =>
           row.program.isListed !== false &&
-          (!draft.fields.length || draft.fields.includes(row.fieldId)) &&
+          (!selectedFieldIds.length || selectedFieldIds.includes(row.fieldId)) &&
           matchesLocation(row.institution, draft.locations) &&
           matchesInstitutionType(row.institution, row.program, draft.types),
       ),
-    [allRows, draft.fields, draft.locations, draft.types],
+    [allRows, selectedFieldIds, draft.locations, draft.types],
   );
   const savedRows = useMemo(
     () => allRows.filter((row) => profile.savedProgramIds?.includes(row.program.id)),
@@ -408,13 +440,13 @@ export default function StudyJourney({
     const sets: Partial<Record<JourneyLocation, Set<string>>> = {};
     for (const row of allRows) {
       if (row.program.isListed === false) continue;
-      if (draft.fields.length && !draft.fields.includes(row.fieldId)) continue;
+      if (selectedFieldIds.length && !selectedFieldIds.includes(row.fieldId)) continue;
       if (!matchesInstitutionType(row.institution, row.program, draft.types)) continue;
       for (const area of institutionLocations(row.institution))
         (sets[area] ??= new Set()).add(row.institution.id);
     }
     return Object.fromEntries(Object.entries(sets).map(([area, ids]) => [area, ids.size]));
-  }, [allRows, draft.fields, draft.types]);
+  }, [allRows, selectedFieldIds, draft.types]);
   const patch = (updates: Partial<Draft>) => setDraft((current) => ({ ...current, ...updates }));
   const patchScores = (updates: Partial<AcademicScores>) =>
     patch({ scores: { ...draft.scores, ...updates } });
@@ -900,7 +932,7 @@ export default function StudyJourney({
               <Chips
                 items={Object.fromEntries(
                   fields
-                    .filter((field) => field.name.includes(query))
+                    .filter((field) => matchesStudyField(field, query))
                     .map((field) => [field.id, field.name]),
                 )}
                 selected={draft.fields}

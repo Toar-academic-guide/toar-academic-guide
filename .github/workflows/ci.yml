@@ -189,6 +189,10 @@ jobs:
         if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         run: npm run db:seed:dry-run
 
+      - name: Check Haifa catalogue official URLs
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
+        run: npm run check:haifa-urls -- --ci
+
   # ---------------------------------------------------------------------------
   # Job 3: Apply every migration and seed a clean PostgreSQL database
   # ---------------------------------------------------------------------------

@@ -11,9 +11,47 @@ import type {
   ProgramInstitutionRow,
   ProgramRow,
   UniversityCalculatorConfigRow,
+  SourceUrlRow,
 } from '@/db/types';
 
 describe('catalogue serializers', () => {
+  it.each([
+    ['haifa_cs', 'https://admissions.haifa.ac.il/computer-information-science/program/3210/'],
+    ['haifa_law', 'https://admissions.haifa.ac.il/law/program/3000/'],
+  ])(
+    'replaces persisted broken official URLs for %s without changing admissions data',
+    (id, programUrl) => {
+      const seed = buildCatalogueSeed();
+      const requirement = seed.admissionRequirements.find((row) => row.programId === id)!;
+      const result = serializeProgramRow({
+        program: seed.programs.find((row) => row.id === id)! as ProgramRow,
+        relations: seed.programInstitutions.filter(
+          (row) => row.programId === id,
+        ) as ProgramInstitutionRow[],
+        requirements: [requirement] as AdmissionRequirementRow[],
+        thresholds: seed.admissionThresholds.filter(
+          (row) => row.programId === id,
+        ) as AdmissionThresholdRow[],
+        sourceUrls: ['program', 'calculator'].map((kind) => ({
+          id: `old-${kind}`,
+          admissionRequirementId: requirement.id,
+          kind,
+          url: `https://www.haifa.ac.il/index.php/he/${kind}`,
+        })) as SourceUrlRow[],
+        institutionsById: new Map(seed.institutions.map((row) => [row.id, row as InstitutionRow])),
+      });
+      expect(result.institutionDetails![0]).toMatchObject({
+        programUrl,
+        calculatorUrl: 'https://admissions.haifa.ac.il/score-calculation/',
+        officialCalculatorUrl: 'https://admissions.haifa.ac.il/score-calculation/',
+        specificAdmissionNotes: requirement.specificAdmissionNotes,
+      });
+      expect(result.linkedInstitutionIds).toEqual(['haifa']);
+      expect(result.thresholds).toEqual(
+        allPrograms.find((program) => program.id === id)!.thresholds,
+      );
+    },
+  );
   it('preserves database updated_at timestamps for sitemap provenance', () => {
     const seed = buildCatalogueSeed();
     const updatedAt = new Date('2026-10-23T12:34:56Z');

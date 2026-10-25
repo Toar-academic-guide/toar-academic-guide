@@ -103,7 +103,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                 event="program_calculator_cta_clicked"
                 programId={program.id}
                 institutionId={institutions.length === 1 ? institutions[0].id : ''}
-                href={ROUTES.calculator}
+                href={`${ROUTES.calculator}?program=${encodeURIComponent(program.id)}`}
                 className="way-button-primary px-5 py-2.5 text-sm font-semibold transition"
               >
                 בדיקת סיכויי קבלה

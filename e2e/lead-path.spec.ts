@@ -70,7 +70,7 @@ for (const width of [1440, 390]) {
     await page.goto('/programs/colmgmt_cs?utm_source=facebook');
     await expect(
       page.getByRole('link', { name: 'בדיקת סיכויי קבלה', exact: true }),
-    ).toHaveAttribute('href', '/app/calculator');
+    ).toHaveAttribute('href', '/app/calculator?program=colmgmt_cs');
     await expect(page.getByRole('link', { name: 'לאתר המוסד', exact: true })).toHaveAttribute(
       'href',
       /utm_source=myway&utm_medium=referral/,

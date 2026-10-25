@@ -40,7 +40,7 @@ const SUBJECT_IDS_BY_WIZARD_LABEL: Record<string, string> = {
 
 export interface BagrutWizardSubjectInput {
   label: string;
-  units: number;
+  units: number | '';
   grade: number | '';
   assessmentKind?: BagrutAssessmentKind;
 }
@@ -92,10 +92,12 @@ export function buildBagrutSubjectRecord({
 }
 
 function isValidSubject(subject: BagrutWizardSubjectInput): subject is BagrutWizardSubjectInput & {
+  units: number;
   grade: number;
 } {
   return (
     subject.label.trim().length > 0 &&
+    typeof subject.units === 'number' &&
     Number.isInteger(subject.units) &&
     subject.units >= 1 &&
     subject.units <= 5 &&

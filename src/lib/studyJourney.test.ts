@@ -8,6 +8,8 @@ import {
   resultExplanation,
   groupJourneyRows,
   studyFields,
+  matchesStudyField,
+  selectedStudyFieldIds,
   journeyRows,
   distinctRecommendations,
 } from './studyJourney';
@@ -44,6 +46,90 @@ it.each(['exact', 'estimated'] as const)(
     });
   },
 );
+
+describe('subject search synonyms', () => {
+  it.each(['הנדסה', 'הנדסת', '  הנדסה  '])('matches engineering forms for %s', (query) => {
+    for (const name of ['הנדסת תוכנה', 'הנדסה אזרחית', 'הנדסה וטכנולוגיה', 'הנדסת חלל']) {
+      expect(matchesStudyField({ name }, query)).toBe(true);
+    }
+    expect(matchesStudyField({ name: 'מדעי המחשב' }, query)).toBe(false);
+  });
+
+  it('preserves specific and unrelated subject searches', () => {
+    expect(matchesStudyField({ name: 'הנדסת חשמל' }, 'הנדסה חשמל')).toBe(true);
+    expect(matchesStudyField({ name: 'הנדסת מכונות' }, 'הנדסה חשמל')).toBe(false);
+    expect(matchesStudyField({ name: 'מדעי המחשב' }, 'מדעי   המחשב')).toBe(true);
+    expect(matchesStudyField({ name: 'משפטים' }, 'משפט')).toBe(true);
+  });
+});
+
+describe('engineering search without catalogue hub rows', () => {
+  // The live catalogue has individual engineering programmes, with no row
+  // named "הנדסה וטכנולוגיה". The static catalogue also has broad hub rows.
+  const programs = getStaticCataloguePrograms().filter(
+    (program) =>
+      program.institutionId &&
+      program.isListed !== false &&
+      program.type === 'academic' &&
+      ((/הנדס[הת]/.test(program.name) && !program.name.startsWith('הנדסה וטכנולוגיה')) ||
+        program.id === 'tau_cs'),
+  );
+
+  it.each(['הנדסה', 'הנדסת'])(
+    'returns the hub and individual engineering chips for %s',
+    (query) => {
+      expect(programs.some((program) => program.name.startsWith('הנדסה וטכנולוגיה'))).toBe(false);
+      const names = studyFields(programs)
+        .filter((field) => matchesStudyField(field, query))
+        .map((field) => field.name);
+
+      expect(names).toContain('הנדסה וטכנולוגיה');
+      expect(names).toEqual(
+        expect.arrayContaining([
+          'הנדסה אזרחית',
+          'הנדסה ביורפואית',
+          'הנדסה כימית',
+          'הנדסת חשמל',
+          'הנדסת מכונות',
+          'הנדסת קול וסאונד',
+          'הנדסת תוכנה',
+          'הנדסת תעשייה וניהול',
+        ]),
+      );
+      expect(names).not.toContain('מדעי המחשב');
+    },
+  );
+
+  it('selects the family members without duplicating programmes or including unrelated subjects', () => {
+    const fields = studyFields(programs);
+    const hub = fields.find((field) => field.name === 'הנדסה וטכנולוגיה')!;
+    const ids = selectedStudyFieldIds(fields, [hub.id]);
+    const rows = journeyRows(fields, getStaticCatalogueInstitutions());
+    const selected = rows.filter((row) => ids.includes(row.fieldId));
+
+    expect(selected.length).toBeGreaterThan(0);
+    expect(selected.every((row) => /הנדס[הת]/.test(row.fieldName))).toBe(true);
+    expect(selected.some((row) => row.program.id === 'afeka_softwareeng')).toBe(true);
+    expect(selected.some((row) => row.program.id === 'tau_cs')).toBe(false);
+    expect(new Set(rows.map((row) => row.id)).size).toBe(rows.length);
+    expect(selectedStudyFieldIds(fields, [hub.id, 'ee']).filter((id) => id === 'ee')).toHaveLength(
+      1,
+    );
+  });
+
+  it('keeps a single hub when the catalogue already contains hub programmes', () => {
+    const fields = studyFields(getStaticCataloguePrograms());
+    expect(fields.filter((field) => field.name === 'הנדסה וטכנולוגיה')).toHaveLength(1);
+    expect(
+      fields.find((field) => field.name === 'הנדסה וטכנולוגיה')!.programs.length,
+    ).toBeGreaterThan(0);
+  });
+
+  it('does not create an empty engineering family for an unrelated catalogue', () => {
+    const cs = programs.find((program) => program.id === 'tau_cs')!;
+    expect(studyFields([cs]).map((field) => field.name)).toEqual(['מדעי המחשב']);
+  });
+});
 
 describe('approved journey', () => {
   it.each([

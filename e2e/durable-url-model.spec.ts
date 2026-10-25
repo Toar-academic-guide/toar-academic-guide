@@ -88,7 +88,7 @@ test.describe('durable URL model', () => {
     await expect(page.getByRole('heading', { name: 'מדעי המחשב' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'בדיקת סיכויי קבלה' })).toHaveAttribute(
       'href',
-      '/app/calculator',
+      '/app/calculator?program=cs',
     );
 
     await page.goto('/institutions/tau');
