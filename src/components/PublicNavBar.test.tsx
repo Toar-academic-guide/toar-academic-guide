@@ -25,10 +25,17 @@ describe('shared current navigation', () => {
         .getAllByRole('link')
         .map((link) => link.getAttribute('href')),
     ).toEqual(['/institutions', '/app/saved-programs', '/about']);
-    expect(screen.getByRole('link', { name: 'Way — עמוד הבית' }).getAttribute('href')).toBe('/');
+    expect(screen.getByRole('link', { name: 'MyWay' }).getAttribute('href')).toBe('/');
     expect(screen.getByRole('link', { name: 'כניסה' }).getAttribute('href')).toBe(
       '/login?next=%2Finstitutions',
     );
+  });
+
+  it('uses the approved transparent wordmark with the MyWay accessible name', () => {
+    render(<PublicNavBar />);
+    const logo = screen.getByRole('img', { name: 'MyWay' });
+    expect(logo.getAttribute('src')).toBe('/brand/myway-wordmark.svg');
+    expect(screen.getByRole('link', { name: 'MyWay' }).contains(logo)).toBe(true);
   });
 
   it('keeps journey callbacks and usable link destinations', () => {

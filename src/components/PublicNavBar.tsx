@@ -68,14 +68,11 @@ export default function PublicNavBar({
 
   return (
     <header dir="rtl" className={styles.header}>
-      <NavItem
-        href={ROUTES.home}
-        onClick={onGoHome}
-        label="Way — עמוד הבית"
-        className={styles.logo}
-      >
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/way-logo.png" alt="Way" width={82} height={42} />
+      <NavItem href={ROUTES.home} onClick={onGoHome} label="MyWay" className={styles.logo}>
+        <span dir="ltr">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/myway-wordmark.svg" alt="MyWay" width={606} height={186} />
+        </span>
       </NavItem>
       <nav aria-label="ניווט ראשי" className={styles.links}>
         <Link href={ROUTES.institutions}>מוסדות לימוד</Link>

@@ -588,7 +588,7 @@ describe('structured data', () => {
       name: 'MyWay',
       alternateName: SITE_ALT_NAMES,
       url: `${SITE_URL}/`,
-      logo: `${SITE_URL}/way-logo.png`,
+      logo: `${SITE_URL}/brand/myway-wordmark-1200.png`,
       areaServed: 'IL',
       knowsLanguage: 'he',
     });

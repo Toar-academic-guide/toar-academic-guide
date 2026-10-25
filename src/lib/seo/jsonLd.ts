@@ -19,7 +19,7 @@ export function organizationLd() {
     name: SITE_NAME,
     alternateName: SITE_ALT_NAMES,
     url: absoluteUrl(),
-    logo: absoluteUrl('/way-logo.png'),
+    logo: absoluteUrl('/brand/myway-wordmark-1200.png'),
     areaServed: 'IL',
     knowsLanguage: 'he',
   };
