@@ -4994,7 +4994,8 @@ it.each(['tlvyaffo_economics', 'ruppin_marine_bio'])(
     const result = report.results[0];
     expect(result.explanation).not.toContain('נדרשת בדיקת זכאות לתעודת בגרות מלאה');
     if (degreeId === 'ruppin_marine_bio')
-      expect(result).toMatchObject({ decision: 'accepted', kind: 'estimated' });
+      // Sweep-38 removes fabricated generic facts; dedicated dispatch is lane-fenced.
+      expect(result).toMatchObject({ decision: 'unknown', kind: 'requirements_only' });
     else {
       expect(result.kind).toBe('manual_gate');
       expect(result.explanation).toContain('ראיון');

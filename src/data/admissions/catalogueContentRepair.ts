@@ -14,7 +14,10 @@ type ContentRepair = {
   durationYears?: number;
 };
 
+// BGU has no LL.B.: https://www.bgu.ac.il/welcome/ba/catalog/
+// Capture: raw/official/bgu/sweep38_ba-catalog_20261025T163514.txt (checked 2026-10-25).
 export const RETIRED_PROGRAM_IDS = [
+  'bgu_law',
   'jerusalem_academy_graphic_design',
   'rubin_graphic_design',
   'spieldocs_graphic_design',
@@ -42,7 +45,7 @@ export function applyCatalogueContentRepair<T extends Program>(program: T): T {
   const afekaRoutes = rows.find(
     (row) =>
       row.institutionId === 'afeka' &&
-      ['afeka_ee', 'afeka_softwareeng', 'afeka_cs'].includes(row.programId),
+      ['afeka_ee', 'afeka_softwareeng', 'afeka_cs', 'afeka_biomedical'].includes(row.programId),
   );
   const details = [...(program.institutionDetails ?? [])];
   for (const row of rows) {
