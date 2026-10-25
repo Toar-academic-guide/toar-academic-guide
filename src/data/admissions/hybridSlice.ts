@@ -209,7 +209,8 @@ export const hybridAdmissionSlice: HybridAdmissionSliceEntry[] = [
     ],
     // Removed unpublished 500/75 gates. Official routes are alternatives, not cumulative.
     // https://www.ruppin.ac.il/faculties/ba/marine-science-and-environment/application-requirements/
-    // Capture: raw/official/ruppin/sweep38_marine-ba-requirements_chrome_20261025T163156.txt; reviewedManifest.json (2026-10-25).
+    // Capture: raw/official/ruppin/sweep38_marine-ba-requirements_chrome_20261025T163156.txt (2026-10-25).
+    // Gate evidence: docs/admissions-verification/2026-10-25-sweep38-official-source-corrections.md.
     facts: [],
     alternativePaths: [
       {

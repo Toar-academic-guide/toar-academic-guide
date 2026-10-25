@@ -84,46 +84,6 @@
     },
     {
       "target": {
-        "institutionId": "ruppin",
-        "programId": "ruppin_marine_bio",
-        "cycle": "2027"
-      },
-      "ruleKind": "minimum_gate",
-      "before": "psychometric 500; bagrut 75",
-      "after": "bagrut >=100 OR psychometric >=620; math 4u >=70 OR 5u pass",
-      "effectiveFrom": "2026-10-25",
-      "sourceProofs": [
-        {
-          "sourceId": "ruppin-ruppin_marine_bio-sweep38",
-          "digest": "sha256:c7ca921221a38dd9399f81dc95ad09a38a9993069628ab586105dd32d502dd64",
-          "excerpt": "Weighted Bagrut 100 OR psychometric 620; math 4 units 70 or 5 units pass. Composite 106 (psychometric 550) has no published formula. Checked 2026-10-25; capture: raw/official/ruppin/sweep38_marine-ba-requirements_chrome_20261025T163156.txt",
-          "url": "https://www.ruppin.ac.il/faculties/ba/marine-science-and-environment/application-requirements/",
-          "proofType": "exact_official"
-        }
-      ]
-    },
-    {
-      "target": {
-        "institutionId": "afeka",
-        "programId": "afeka_biomedical",
-        "cycle": "2027"
-      },
-      "ruleKind": "minimum_gate",
-      "before": "bagrut 80; psychometric 530 (legacy formula 550)",
-      "after": "engineering: bagrut math 4/85|5/75 + English 4/70|5/60 + physics 5/60; OR psych 600 + quant 115 + math 4/80|5/70 + physics 5/60",
-      "effectiveFrom": "2026-10-25",
-      "sourceProofs": [
-        {
-          "sourceId": "afeka-afeka_biomedical-sweep38",
-          "digest": "sha256:9db351af20481a775340e7e6a9f41830c9791fb1416e655df7c4dcab9e79b3c1",
-          "excerpt": "Biomedical is on the engineering page: physics required, no science-free 620 route. Prep, sekhem over 180 and prior study routes are not calculated. Checked 2026-10-25; capture: raw/official/afeka/sweep38_bsc-undergraduates_20261025T162537.txt",
-          "url": "https://www.afeka.ac.il/candidate/candidate-information-bsc/undergraduates/",
-          "proofType": "exact_official"
-        }
-      ]
-    },
-    {
-      "target": {
         "institutionId": "bgu",
         "programId": "medicine",
         "cycle": "2027"

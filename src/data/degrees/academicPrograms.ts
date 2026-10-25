@@ -2819,7 +2819,7 @@ export const academicPrograms: Program[] = [
     admissionType: 'requirements',
     // Engineering routes: https://www.afeka.ac.il/candidate/candidate-information-bsc/undergraduates/
     // Capture: raw/official/afeka/sweep38_bsc-undergraduates_20261025T162537.txt.
-    // Reviewed gate correction: reviewedManifest.json, sweep-38 (2026-10-25).
+    // Gate evidence: docs/admissions-verification/2026-10-25-sweep38-official-source-corrections.md.
     admissionRequirements: [
       'קבלה לפי בגרות: מתמטיקה 4 יחידות בציון 85 לפחות או 5 יחידות בציון 75 לפחות; אנגלית 4 יחידות בציון 70 לפחות או 5 יחידות בציון 60 לפחות; פיזיקה 5 יחידות בציון 60 לפחות או מכינה בפיזיקה בציון 70 לפחות.',
       'קבלה לפי פסיכומטרי: 600 לפחות (רב־תחומי או בדגש כמותי) וגם כמותי 115 לפחות; מתמטיקה 4 יחידות בציון 80 לפחות או 5 יחידות בציון 70 לפחות, או מכינה במתמטיקה בציון 70 לפחות; פיזיקה 5 יחידות בציון 60 לפחות או מכינה בפיזיקה בציון 70 לפחות.',

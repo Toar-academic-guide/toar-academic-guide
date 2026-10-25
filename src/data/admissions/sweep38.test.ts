@@ -5,16 +5,27 @@ import { allPrograms, programsWithLegacyAdmissionFacts } from '@/data/degrees';
 import { hybridAdmissionSlice } from './hybridSlice';
 import { RETIRED_PROGRAM_IDS } from './catalogueContentRepair';
 import manifest from './reviewedManifest.json';
+import repair from './catalogueContentRepair.json';
 
 describe('sweep-38 official catalogue corrections', () => {
-  it('records schema-valid official evidence for every changed gate and cutoff', () => {
+  it('keeps only numeric cutoffs in the publisher manifest and retains gate evidence in catalogue data', () => {
     expect(() => parseReviewedAdmissionsManifest(manifest)).not.toThrow();
-    for (const programId of ['ruppin_marine_bio', 'afeka_biomedical', 'medicine']) {
-      const changes = manifest.changes.filter((row) => row.target.programId === programId);
-      expect(changes).toHaveLength(1);
-      expect(changes[0].sourceProofs[0].excerpt).toContain('raw/official/');
-      expect(changes[0].sourceProofs[0].excerpt).toContain('2026-10-25');
+    for (const change of manifest.changes) {
+      expect(change.ruleKind).toBe('admission_cutoff');
+      expect(typeof change.before).toBe('number');
+      expect(typeof change.after).toBe('number');
     }
+    for (const programId of ['ruppin_marine_bio', 'afeka_biomedical']) {
+      expect(manifest.changes.some((row) => row.target.programId === programId)).toBe(false);
+      const evidence = repair.requirements.find((row) => row.programId === programId)!;
+      expect(evidence.checkedAt).toBe('2026-10-25');
+      expect(evidence.capturePath).toContain('raw/official/');
+      expect(evidence.sourceUrl).toMatch(/^https:\/\/www\.(ruppin|afeka)\.ac\.il\//);
+    }
+    const medicine = manifest.changes.filter((row) => row.target.programId === 'medicine');
+    expect(medicine).toHaveLength(1);
+    expect(medicine[0].sourceProofs[0].excerpt).toContain('raw/official/');
+    expect(medicine[0].sourceProofs[0].excerpt).toContain('2026-10-25');
   });
   it('keeps the marine ID with the official name and removes the false 500/75 gates', () => {
     const program = allPrograms.find((row) => row.id === 'ruppin_marine_bio')!;

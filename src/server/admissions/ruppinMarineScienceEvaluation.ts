@@ -10,7 +10,8 @@ import type { CatalogueInstitution } from '@/types/catalogue';
 // Official תשפ״ז routes, checked 2026-10-25:
 // https://www.ruppin.ac.il/faculties/ba/marine-science-and-environment/application-requirements/
 // Capture: raw/official/ruppin/sweep38_marine-ba-requirements_chrome_20261025T163156.txt,
-// lines 262–292. Gate correction recorded in reviewedManifest.json.
+// lines 262–292. Gate correction evidence is recorded in
+// docs/admissions-verification/2026-10-25-sweep38-official-source-corrections.md.
 // The 106 composite requires psychometric 550 but has NO published formula.
 // Keep it uncomputed and never request an institutional composite from the student.
 export function evaluateRuppinMarineScience({
