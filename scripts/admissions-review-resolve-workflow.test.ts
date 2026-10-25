@@ -250,7 +250,7 @@ describe('admissions review resolution dispatch workflow', () => {
           NODE_ENV: 'test',
           ACTION: 'reject',
           IDS: id,
-          ACTOR: 'operator',
+          ACTOR: 'jorje',
           TRIGGERING_ACTOR: 'github-operator',
           ...inputs,
         },
@@ -285,7 +285,7 @@ describe('admissions review resolution dispatch workflow', () => {
     const result = validate({
       ACTION: action,
       IDS: ` ${id},\t${otherId.toUpperCase()} `,
-      ACTOR: ' operator ',
+      ACTOR: ' jorje ',
     });
     expect(result.status).toBe(0);
     expect(result.stderr).toBe('');
