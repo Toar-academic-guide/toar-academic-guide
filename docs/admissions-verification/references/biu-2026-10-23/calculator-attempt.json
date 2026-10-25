@@ -1,0 +1,10 @@
+{
+  "capturedAt": "2026-10-23",
+  "url": "https://shoham.biu.ac.il/kabala/",
+  "driver": "existing Playwright Chromium, headless",
+  "httpStatus": 403,
+  "title": "403 Forbidden",
+  "body": "403 Forbidden\nTransaction ID:\nfa0cd9f609e3e467b3b4d6bd8ebf329ca68deffee7f7039eeb1d910305bc9d4f",
+  "compositeScoreObserved": false,
+  "formulaInferred": false
+}

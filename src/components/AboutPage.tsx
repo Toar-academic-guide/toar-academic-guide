@@ -7,7 +7,7 @@ const ABOUT_FOUNDERS_IMAGE_SRC = '/about-founders-temporary.png';
 export default function AboutPage() {
   return (
     <WayPageShell contentClassName="">
-      <main className="relative z-10 flex min-h-screen items-center px-4 pb-16 pt-32 sm:px-6 lg:pt-36">
+      <main className="relative z-10 flex items-center px-5 pb-16 pt-8 sm:px-8 lg:pt-12">
         <div className="mx-auto flex w-full max-w-5xl flex-col items-center text-center">
           <h1 className="max-w-4xl text-4xl font-semibold leading-tight text-[#445274] sm:text-6xl">
             הדרך שלנו התחילה בדיוק בצומת הזאת.
@@ -26,7 +26,7 @@ export default function AboutPage() {
           </div>
 
           <article className="mt-6 max-w-4xl rounded-[1.8rem] border border-white bg-white/78 p-6 shadow-[0_24px_80px_rgba(105,133,190,0.16)] backdrop-blur sm:p-9">
-            <p className="text-center text-lg leading-9 text-[#52607f]">
+            <p className="text-start text-lg leading-9 text-[#52607f]">
               אנחנו יונתן ועמית, חברים מאז התיכון. למדנו יחד פיזיקה ומחשבים, ובהמשך גם שירתנו יחד
               בצבא. אחרי השחרור כל אחד מאיתנו פנה לדרך אחרת. עמית המשיך לעולמות הטכנולוגיה, וכיום
               עובד בהייטק ולומד מדעי המחשב באופן מקוון באוניברסיטת לונדון, מסלול שמצא לאחר מחקר ארוך

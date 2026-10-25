@@ -3,10 +3,13 @@ import { bagrutExamSubjects } from '@/lib/bagrutSubjectRecord';
 import { evaluateTauEngineeringExactSciencesBonus } from './bagrutPolicies';
 
 /** Standard Israeli Bagrut route; alternative academic routes require university review. */
-export function evaluateTauComputerScienceGates(input: {
-  psychometric: number;
-  extraInputs?: AdmissionsExtraInputs;
-}): {
+export function evaluateTauComputerScienceGates(
+  input: {
+    psychometric: number;
+    extraInputs?: AdmissionsExtraInputs;
+  },
+  assessment?: 'scores',
+): {
   requiredInputs: AdmissionsRequiredInput[];
   unmetRequirements: string[];
   exactSciencesBonusEligible: boolean;
@@ -20,11 +23,11 @@ export function evaluateTauComputerScienceGates(input: {
   );
 
   if (!mathematics) requiredInputs.push('bagrut_subject_record');
-  if (extra?.tauApplicationRequirementsConfirmed === undefined) {
+  if (assessment !== 'scores' && extra?.tauApplicationRequirementsConfirmed === undefined) {
     requiredInputs.push('tau_application_requirements');
-  } else if (!extra.tauApplicationRequirementsConfirmed) {
+  } else if (assessment !== 'scores' && !extra?.tauApplicationRequirementsConfirmed) {
     unmetRequirements.push(
-      'זכאות לבגרות, אנגלית ברמת מתקדמים א׳, דרישות עברית והרשמה למדעי המחשב בעדיפות ראשונה',
+      'אנגלית ברמת מתקדמים א׳, דרישות עברית והרשמה למדעי המחשב בעדיפות ראשונה',
     );
   }
   if (input.psychometric < 660) unmetRequirements.push('פסיכומטרי 660 ומעלה במסלול הרגיל');

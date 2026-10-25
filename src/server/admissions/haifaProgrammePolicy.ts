@@ -75,6 +75,7 @@ export function evaluateHaifaProgrammePolicy(args: {
   input: AdmissionsEvaluationInput;
   score?: number;
   now: Date;
+  assessment?: 'scores';
 }): PolicyResult {
   const extra = args.input.extraInputs ?? {};
   if (args.programId === 'haifa_infosystems' && !extra.haifaInformationSystemsTrack)
@@ -91,18 +92,20 @@ export function evaluateHaifaProgrammePolicy(args: {
   const steps = [...(selectionSteps[policy.programme] ?? [])];
   let conditional = false;
   if (args.programId === 'haifa_infosystems' && track?.partnerRequired) {
-    if (extra.haifaInformationSystemsPartnerRequirementsConfirmed === undefined)
+    if (
+      args.assessment !== 'scores' &&
+      extra.haifaInformationSystemsPartnerRequirementsConfirmed === undefined
+    )
       missing.push('haifa_information_systems_partner_requirements');
-    else if (!extra.haifaInformationSystemsPartnerRequirementsConfirmed)
+    else if (
+      args.assessment !== 'scores' &&
+      !extra.haifaInformationSystemsPartnerRequirementsConfirmed
+    )
       reasons.push('במסלול דו־חוגי יש לעמוד גם בתנאי הקבלה של החוג השני.');
     steps.push(
-      'הבדיקה מתייחסת לצד מערכות המידע. אישרתם שאתם עומדים בתנאי החוג השני; תנאיו אינם מחושבים כאן.',
+      'הבדיקה מתייחסת לצד מערכות המידע. יש לבדוק בנפרד את תנאי החוג השני; תנאיו אינם מחושבים כאן.',
     );
   }
-  if (extra.haifaAdmissionQualification === undefined)
-    missing.push('haifa_admission_qualification');
-  else if (extra.haifaAdmissionQualification === 'none')
-    reasons.push('נדרשת תעודת בגרות מלאה או תעודה מקבילה שהוכרה באוניברסיטה.');
   if (policy.mathAlternatives.length) {
     if (extra.mathUnits === undefined) missing.push('math_units');
     if (extra.mathGrade === undefined) missing.push('math_grade');
@@ -224,7 +227,13 @@ export function evaluateHaifaProgrammePolicy(args: {
     policy.programme === 'law' &&
     (args.score >= 600 ||
       ((args.input.psychometric ?? 0) >= 660 &&
-        extra.haifaAdmissionQualification === 'full_bagrut'))
+        (args.input.bagrut !== undefined ||
+          extra.haifaBagrutAverage !== undefined ||
+          (extra.bagrutSubjectRecord?.subjects.length ?? 0) > 0 ||
+          extra.mathGrade !== undefined ||
+          extra.englishGrade !== undefined ||
+          extra.physicsGrade !== undefined ||
+          extra.csGrade !== undefined)))
   )
     return {
       kind: 'eligible',

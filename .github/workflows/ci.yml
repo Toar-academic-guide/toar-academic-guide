@@ -11,8 +11,10 @@ permissions:
   contents: read
 
 concurrency:
-  group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # Only superseded PRs may cancel: each main push owns its before...HEAD
+  # operational-schema preflight; replacing it could leave that diff unchecked.
+  group: ci-${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # ---------------------------------------------------------------------------
 # Job 1: Static analysis — lint, type check, format, security audit
@@ -23,6 +25,8 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       applicable: ${{ steps.classify.outputs.applicable }}
+      # The base policy may not emit this yet: empty/missing means run everything.
+      docs_only: ${{ steps.classify.outputs.docs_only }}
 
     steps:
       - name: Checkout repository history
@@ -50,15 +54,15 @@ jobs:
           if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
             node "$classifier" --all >> "$GITHUB_OUTPUT"
           elif [[ "$EVENT_NAME" == "pull_request" ]]; then
-            git diff --name-only "origin/$BASE_REF...HEAD" |
+            git diff --name-only --no-renames "origin/$BASE_REF...HEAD" |
               node "$classifier" >> "$GITHUB_OUTPUT"
           elif [[ -n "$BEFORE_SHA" ]] &&
             [[ "$BEFORE_SHA" != "0000000000000000000000000000000000000000" ]] &&
             git cat-file -e "$BEFORE_SHA^{commit}"; then
-            git diff --name-only "$BEFORE_SHA...HEAD" |
+            git diff --name-only --no-renames "$BEFORE_SHA...HEAD" |
               node "$classifier" >> "$GITHUB_OUTPUT"
           else
-            git diff --name-only HEAD^...HEAD |
+            git diff --name-only --no-renames HEAD^...HEAD |
               node "$classifier" >> "$GITHUB_OUTPUT"
           fi
 
@@ -150,28 +154,39 @@ jobs:
   test:
     name: Unit tests & coverage
     runs-on: ubuntu-latest
-    needs: quality
+    needs:
+      - production-sensitive-paths
+      - quality
     env:
       CI: true
       CATALOGUE_SOURCE_MODE: static
 
     steps:
+      - name: Docs-only PR (heavy steps skipped)
+        if: ${{ github.event_name == 'pull_request' && needs.production-sensitive-paths.outputs.docs_only == 'true' }}
+        run: echo "Docs-only PR; heavy steps skipped. This check still reports success."
+
       - name: Checkout repository
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         uses: actions/checkout@v7
 
       - name: Setup Node.js
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
 
       - name: Install dependencies
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         run: npm ci
 
       - name: Run tests with coverage
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         run: npm run test:coverage
 
       - name: Validate catalogue seed (dry-run)
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         run: npm run db:seed:dry-run
 
   # ---------------------------------------------------------------------------
@@ -180,10 +195,13 @@ jobs:
   db-migrations-and-seed:
     name: Disposable Postgres migration and seed
     runs-on: ubuntu-latest
-    needs: quality
+    needs:
+      - production-sensitive-paths
+      - quality
     services:
       postgres:
-        image: postgres:16
+        # An empty image disables the service (GitHub workflow syntax).
+        image: ${{ (github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true') && 'postgres:16' || '' }}
         env:
           POSTGRES_DB: toar_academic_guide_ci
           POSTGRES_USER: postgres
@@ -201,19 +219,27 @@ jobs:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/toar_academic_guide_ci
 
     steps:
+      - name: Docs-only PR (heavy steps skipped)
+        if: ${{ github.event_name == 'pull_request' && needs.production-sensitive-paths.outputs.docs_only == 'true' }}
+        run: echo "Docs-only PR; heavy steps skipped. This check still reports success."
+
       - name: Checkout repository
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         uses: actions/checkout@v7
 
       - name: Setup Node.js
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
 
       - name: Install dependencies
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         run: npm ci
 
       - name: Create disposable runtime roles
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         env:
           PGPASSWORD: postgres
         run: |
@@ -233,6 +259,10 @@ jobs:
               CREATE ROLE app_runtime NOLOGIN;
             END IF;
 
+            IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'service_role') THEN
+              CREATE ROLE service_role NOLOGIN BYPASSRLS;
+            END IF;
+
             IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'ops_readonly') THEN
               CREATE ROLE ops_readonly NOLOGIN;
             END IF;
@@ -241,26 +271,30 @@ jobs:
           SQL
 
       - name: Create disposable Auth contract
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         env:
           PGPASSWORD: postgres
         run: psql --host localhost --username postgres --dbname toar_academic_guide_ci --set ON_ERROR_STOP=1 --file scripts/disposable-auth-schema.sql
 
       - name: Apply migrations to disposable PostgreSQL
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         run: npm run db:migrate
 
       - name: Seed and verify the disposable catalogue
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         run: |
           npm run db:seed
           npm run db:seed:verify
 
       - name: Verify durable publication failure and retry lifecycle
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         env:
           APP_DB_INTEGRATION: '1'
           PUBLICATION_DB_INTEGRATION: '1'
           SOURCE_FRESHNESS_DB_INTEGRATION: '1'
           ALERT_DB_INTEGRATION: '1'
         run: |
-          npx vitest run src/db/client.integration.test.ts
+          npx vitest run src/db/client.integration.test.ts src/db/migrations/storeEnquiry.integration.test.ts scripts/verify-operational-db.integration.test.ts
           npm run test:publication:db
           npm run test:source-freshness:db
           npx vitest run src/server/admission-alerts/health.integration.test.ts src/server/admission-alerts/transitionProcessor.integration.test.ts src/server/admission-alerts/deliveryWorker.integration.test.ts src/server/admission-alerts/webhookUnsubscribe.integration.test.ts src/server/admission-alerts/lifecycleCompletion.integration.test.ts scripts/admission-alert-account-simulation.integration.test.ts
@@ -271,28 +305,39 @@ jobs:
   admissions-verify:
     name: Admissions evidence gates
     runs-on: ubuntu-latest
-    needs: quality
+    needs:
+      - production-sensitive-paths
+      - quality
     env:
       CI: true
       CATALOGUE_SOURCE_MODE: static
 
     steps:
+      - name: Docs-only PR (heavy steps skipped)
+        if: ${{ github.event_name == 'pull_request' && needs.production-sensitive-paths.outputs.docs_only == 'true' }}
+        run: echo "Docs-only PR; heavy steps skipped. This check still reports success."
+
       - name: Checkout repository
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         uses: actions/checkout@v7
 
       - name: Setup Node.js
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
 
       - name: Install dependencies
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         run: npm ci
 
       - name: Verify committed Monday admissions evidence
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         run: npm run monday:verify-admissions-evidence
 
       - name: Run admissions regression tests
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         run: |
           npm exec vitest -- \
             src/data/admissions/mondayEvidence.test.ts \
@@ -308,7 +353,9 @@ jobs:
   build:
     name: Build application
     runs-on: ubuntu-latest
+    if: ${{ !cancelled() && needs.test.result == 'success' && needs.db-migrations-and-seed.result == 'success' && needs.admissions-verify.result == 'success' && needs.operational-schema-gate.result == 'success' }}
     needs:
+      - production-sensitive-paths
       - test
       - db-migrations-and-seed
       - admissions-verify
@@ -318,19 +365,27 @@ jobs:
       CATALOGUE_SOURCE_MODE: static
 
     steps:
+      - name: Docs-only PR (heavy steps skipped)
+        if: ${{ github.event_name == 'pull_request' && needs.production-sensitive-paths.outputs.docs_only == 'true' }}
+        run: echo "Docs-only PR; heavy steps skipped. This check still reports success."
+
       - name: Checkout repository
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         uses: actions/checkout@v7
 
       - name: Setup Node.js
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
 
       - name: Install dependencies
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         run: npm ci
 
       - name: Build
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         run: npm run build
 
   # ---------------------------------------------------------------------------
@@ -339,39 +394,52 @@ jobs:
   e2e-pr:
     name: Playwright PR smoke
     runs-on: ubuntu-latest
-    needs: build
-    if: ${{ github.event_name == 'pull_request' }}
+    needs:
+      - production-sensitive-paths
+      - build
+    if: ${{ !cancelled() && needs.build.result == 'success' && github.event_name == 'pull_request' }}
     env:
       CI: true
       CATALOGUE_SOURCE_MODE: static
+      ADMISSIONS_EVALUATION_E2E_ISOLATION: '1'
 
     steps:
+      - name: Docs-only PR (heavy steps skipped)
+        if: ${{ github.event_name == 'pull_request' && needs.production-sensitive-paths.outputs.docs_only == 'true' }}
+        run: echo "Docs-only PR; heavy steps skipped. This check still reports success."
+
       - name: Checkout repository
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         uses: actions/checkout@v7
 
       - name: Setup Node.js
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
 
       - name: Install dependencies
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         run: npm ci
 
       - name: Install Playwright browsers
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         run: npx playwright install --with-deps chromium
 
       - name: Build application
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         run: npm run build
 
       - name: Run Playwright smoke tests
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         run: |
           npm start &
           npx --yes wait-on http://localhost:3000 --timeout 30000
           npm run test:e2e
 
       - name: Upload Playwright report
-        if: failure()
+        if: ${{ failure() && (github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true') }}
         uses: actions/upload-artifact@v7
         with:
           name: playwright-report-pr
@@ -384,7 +452,10 @@ jobs:
   internal-data-health-smoke:
     name: Internal data-health smoke
     runs-on: ubuntu-latest
-    needs: build
+    needs:
+      - production-sensitive-paths
+      - build
+    if: ${{ !cancelled() && needs.build.result == 'success' }}
     env:
       CI: true
       CATALOGUE_SOURCE_MODE: static
@@ -393,32 +464,42 @@ jobs:
       INTERNAL_ADMIN_E2E_TOKEN: ci-internal-data-health-smoke
 
     steps:
+      - name: Docs-only PR (heavy steps skipped)
+        if: ${{ github.event_name == 'pull_request' && needs.production-sensitive-paths.outputs.docs_only == 'true' }}
+        run: echo "Docs-only PR; heavy steps skipped. This check still reports success."
+
       - name: Checkout repository
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         uses: actions/checkout@v7
 
       - name: Setup Node.js
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
 
       - name: Install dependencies
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         run: npm ci
 
       - name: Install Playwright browsers
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         run: npx playwright install --with-deps chromium
 
       - name: Build application
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         run: npm run build
 
       - name: Run internal data-health smoke
+        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         run: |
           npm start &
           npx --yes wait-on http://localhost:3000 --timeout 30000
           npx playwright test e2e/internal-data-health.spec.ts
 
       - name: Upload internal data-health smoke report
-        if: failure()
+        if: ${{ failure() && (github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true') }}
         uses: actions/upload-artifact@v7
         with:
           name: playwright-report-internal-data-health
@@ -436,6 +517,7 @@ jobs:
     env:
       CI: true
       CATALOGUE_SOURCE_MODE: static
+      ADMISSIONS_EVALUATION_E2E_ISOLATION: '1'
 
     steps:
       - name: Checkout repository
@@ -539,3 +621,33 @@ jobs:
       - name: Verify operational database
         if: ${{ env.DATABASE_URL != '' || env.OPS_DATABASE_URL != '' }}
         run: npm run db:operational:verify
+
+  # ---------------------------------------------------------------------------
+  # Final PR gate: skipped builds or smokes must never produce a green PR
+  # ---------------------------------------------------------------------------
+  pr-gate-integrity:
+    name: PR gate integrity
+    runs-on: ubuntu-latest
+    if: ${{ always() && github.event_name == 'pull_request' }}
+    needs:
+      - production-sensitive-paths
+      - build
+      - e2e-pr
+      - internal-data-health-smoke
+
+    steps:
+      - name: Require successful PR build and smoke gates
+        env:
+          CLASSIFY_RESULT: ${{ needs.production-sensitive-paths.result }}
+          BUILD_RESULT: ${{ needs.build.result }}
+          PLAYWRIGHT_RESULT: ${{ needs.e2e-pr.result }}
+          DATA_HEALTH_RESULT: ${{ needs.internal-data-health-smoke.result }}
+        run: |
+          echo "Classify production-sensitive changes: $CLASSIFY_RESULT"
+          echo "Build application: $BUILD_RESULT"
+          echo "Playwright PR smoke: $PLAYWRIGHT_RESULT"
+          echo "Internal data-health smoke: $DATA_HEALTH_RESULT"
+          if [[ "$CLASSIFY_RESULT" != "success" || "$BUILD_RESULT" != "success" || "$PLAYWRIGHT_RESULT" != "success" || "$DATA_HEALTH_RESULT" != "success" ]]; then
+            echo "::error::Classification and all PR build and smoke gates must succeed; skipped, failed, or cancelled gates block the PR."
+            exit 1
+          fi

@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import posthog from 'posthog-js';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { Fragment, createElement, type ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -210,5 +211,27 @@ describe('AuthContext helpers', () => {
         },
       }),
     );
+  });
+});
+
+describe('analytics identity privacy', () => {
+  it('identifies restored and changed sessions with only the Supabase ID', async () => {
+    const user = { id: 'b783a6d4-0428-4ddd-827f-82d33251be52', email: 'private@example.com' };
+    let change!: (event: string, session: unknown) => void;
+    vi.mocked(posthog.identify).mockClear();
+    hoistedMocks.createSupabaseBrowserClient.mockReturnValue({
+      auth: {
+        getSession: vi.fn().mockResolvedValue({ data: { session: { user } } }),
+        onAuthStateChange: vi.fn((callback) => {
+          change = callback;
+          return { data: { subscription: { unsubscribe: vi.fn() } } };
+        }),
+      },
+    });
+    render(createElement(AuthProvider, null, createElement(AuthHarness)));
+    await waitFor(() => expect(posthog.identify).toHaveBeenCalledWith(user.id));
+    act(() => change('SIGNED_IN', { user }));
+    expect(vi.mocked(posthog.identify).mock.calls.every((args) => args.length === 1)).toBe(true);
+    expect(JSON.stringify(vi.mocked(posthog.identify).mock.calls)).not.toContain('@');
   });
 });

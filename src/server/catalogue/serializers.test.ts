@@ -1,8 +1,10 @@
 import { serializeInstitutionRow, serializeProgramRow } from '@/server/catalogue/serializers';
 import { allPrograms } from '@/data/degrees';
+import { buildCatalogueSeed } from '@/db/seeds/catalogueSeed';
 import type {
   AdmissionAlternativePathRow,
   AdmissionFactRow,
+  AdmissionThresholdRow,
   AdmissionRequirementRow,
   AdmissionsSourceCandidateRow,
   InstitutionRow,
@@ -12,6 +14,183 @@ import type {
 } from '@/db/types';
 
 describe('catalogue serializers', () => {
+  it('preserves database updated_at timestamps for sitemap provenance', () => {
+    const seed = buildCatalogueSeed();
+    const updatedAt = new Date('2026-10-23T12:34:56Z');
+    const institution = serializeInstitutionRow({
+      ...seed.institutions[0],
+      updatedAt,
+    } as InstitutionRow);
+    const program = serializeProgramRow({
+      program: { ...seed.programs[0], updatedAt } as ProgramRow,
+      relations: [],
+      requirements: [],
+      thresholds: [],
+      sourceUrls: [],
+      institutionsById: new Map(),
+    });
+    expect(institution.updatedAt).toBe('2026-10-23T12:34:56.000Z');
+    expect(program.updatedAt).toBe('2026-10-23T12:34:56.000Z');
+  });
+
+  it.each(['afeka_ee', 'afeka_softwareeng', 'afeka_cs'])(
+    'repairs persisted %s shells, facts and thresholds after a successful database read',
+    (id) => {
+      const seed = buildCatalogueSeed();
+      const requirement = seed.admissionRequirements.find((row) => row.programId === id)!;
+      const staleNotes = ['ממוצע בגרות מינימלי: 80', 'ציון פסיכומטרי מינימלי: 550'];
+      const result = serializeProgramRow({
+        program: seed.programs.find((row) => row.id === id)! as ProgramRow,
+        relations: seed.programInstitutions.filter(
+          (row) => row.programId === id,
+        ) as ProgramInstitutionRow[],
+        requirements: [
+          {
+            ...requirement,
+            admissionRequirements: staleNotes,
+            specificAdmissionNotes: staleNotes,
+            quantitativeMinRequirement: 550,
+            englishMinRequirement: 60,
+          },
+        ] as AdmissionRequirementRow[],
+        thresholds: ['sekhem', 'psychometric'].map((thresholdKind) => ({
+          id: `${id}:${thresholdKind}`,
+          programId: id,
+          universityId: 'afeka',
+          thresholdKind,
+          thresholdValue: 550,
+        })) as AdmissionThresholdRow[],
+        sourceUrls: [],
+        admissionFacts: [
+          ['psychometric', 550],
+          ['bagrut_average', 80],
+          ['math_units', 5],
+          ['physics_units', 5],
+        ].map(([field, valueNumber]) => ({
+          id: `${id}:${field}`,
+          admissionRequirementId: requirement.id,
+          kind: 'numeric_gate',
+          field,
+          valueNumber,
+        })) as AdmissionFactRow[],
+        admissionAlternativePaths: [
+          {
+            id: `${id}:prep`,
+            admissionRequirementId: requirement.id,
+            kind: 'prep_program',
+            title: 'בדרך לאפקה',
+            priority: 1,
+          },
+        ] as AdmissionAlternativePathRow[],
+        institutionsById: new Map(seed.institutions.map((row) => [row.id, row as InstitutionRow])),
+      });
+      const expected = allPrograms.find((program) => program.id === id)!;
+      expect(result.admissionRequirements).toEqual(expected.admissionRequirements);
+      expect(result.institutionDetails![0]).toMatchObject({
+        specificAdmissionNotes: expected.admissionRequirements,
+        programUrl: expected.institutionDetails![0].programUrl,
+        quantitativeMinRequirement: null,
+        englishMinRequirement: null,
+        admissionFacts: [],
+        admissionAlternativePaths: [],
+      });
+      expect(result.thresholds).toBeUndefined();
+      expect(result.directPsychometric).toBeUndefined();
+      expect(result.minimumBagrut).toBeUndefined();
+      expect(result.minimumPsychometric).toBeUndefined();
+      expect(result.linkedInstitutionIds).toEqual(['afeka']);
+    },
+  );
+
+  it('repairs persisted Haifa psychology floors without turning Pasifas into a main gate', () => {
+    const seed = buildCatalogueSeed();
+    const id = 'haifa_psychology';
+    const requirement = seed.admissionRequirements.find((row) => row.programId === id)!;
+    const result = serializeProgramRow({
+      program: seed.programs.find((row) => row.id === id)! as ProgramRow,
+      relations: seed.programInstitutions.filter(
+        (row) => row.programId === id,
+      ) as ProgramInstitutionRow[],
+      requirements: [
+        {
+          ...requirement,
+          specificAdmissionNotes: ['ציון פסיכומטרי מינימלי: 680', 'ממוצע בגרות מינימלי: 85'],
+        },
+      ] as AdmissionRequirementRow[],
+      thresholds: [
+        ...seed.admissionThresholds.filter((row) => row.programId === id),
+        {
+          id: 'legacy-direct',
+          programId: id,
+          universityId: 'haifa',
+          thresholdKind: 'psychometric',
+          thresholdValue: 680,
+        },
+      ] as AdmissionThresholdRow[],
+      sourceUrls: [],
+      admissionFacts: [
+        {
+          id: 'legacy-psych',
+          admissionRequirementId: requirement.id,
+          kind: 'numeric_gate',
+          field: 'psychometric',
+          valueNumber: 680,
+        },
+        {
+          id: 'legacy-bagrut',
+          admissionRequirementId: requirement.id,
+          kind: 'numeric_gate',
+          field: 'bagrut_average',
+          valueNumber: 85,
+        },
+      ] as AdmissionFactRow[],
+      institutionsById: new Map(seed.institutions.map((row) => [row.id, row as InstitutionRow])),
+    });
+    expect(result.institutionDetails![0].specificAdmissionNotes[0]).toBe(
+      'סכם 650 לפחות; ציונים 630–649 נמצאים בטווח ההמתנה.',
+    );
+    expect(result.institutionDetails![0].specificAdmissionNotes[2]).toMatch(
+      /פסיפס \(מסלול נפרד.*סכם 680.*ראיון/,
+    );
+    expect(result.institutionDetails![0].programUrl).toBe(
+      'https://admissions.haifa.ac.il/social-sciences/program/3268/',
+    );
+    expect(result.institutionDetails![0].admissionFacts ?? []).toEqual([]);
+    expect(result.thresholds).toEqual({ haifa: 650 });
+    expect(result.directPsychometric).toBeUndefined();
+    expect(result.minimumPsychometric).toBeUndefined();
+    expect(result.minimumBagrut).toBeUndefined();
+    expect(result.linkedInstitutionIds).toEqual(['haifa']);
+  });
+
+  it('presents the legacy Danon programme without repeating its subject', () => {
+    const program = {
+      id: 'danon_cs',
+      name: 'קולינריה - דנון - קולינריה',
+      institutionName: 'מכון דנון לבישול',
+      institutionId: 'danon',
+      type: 'certificate',
+      category: 'קולינריה',
+      riasecR: 1,
+      riasecI: 1,
+      riasecA: 1,
+      riasecS: 1,
+      riasecE: 1,
+      riasecC: 1,
+      admissionType: 'requirements',
+      isTauEngineering: false,
+    } as ProgramRow;
+    const result = serializeProgramRow({
+      program,
+      relations: [],
+      requirements: [],
+      thresholds: [],
+      sourceUrls: [],
+      institutionsById: new Map(),
+    });
+    expect(result.name).toBe('קולינריה — דנון');
+    expect(result.id).toBe('danon_cs');
+  });
   it('preserves missing durationYears as null instead of coercing to zero', () => {
     const program = {
       id: 'test_program',
@@ -264,6 +443,106 @@ describe('catalogue serializers', () => {
       formulaType: 'minimum_floors',
       minPsychometric: 560,
       minBagrut: 85,
+    });
+  });
+});
+
+describe('verified programme identity overlays on stale DB data', () => {
+  it.each([
+    [
+      'jerusalem_academy_graphic_design',
+      'jerusalem_academy_dance',
+      'jerusalem_academy',
+      'תואר ראשון במחול',
+      'B.Dance',
+    ],
+    [
+      'jerusalem_academy_dance',
+      'jerusalem_academy_dance',
+      'jerusalem_academy',
+      'תואר ראשון במחול',
+      'B.Dance',
+    ],
+    ['rubin_classical', 'rubin_classical', 'rubin', 'תואר ראשון במוזיקה', 'B.Mus.'],
+  ])(
+    'repairs %s without carrying invented score floors or descriptions',
+    (oldId, id, institutionId, name, credential) => {
+      const seed = buildCatalogueSeed();
+      const institution = seed.institutions.find(
+        (row) => row.id === institutionId,
+      )! as InstitutionRow;
+      const result = serializeProgramRow({
+        program: {
+          ...seed.programs[0],
+          id: oldId,
+          institutionId,
+          institutionName: institution.name,
+        } as ProgramRow,
+        relations: [{ programId: oldId, institutionId }] as ProgramInstitutionRow[],
+        requirements: [
+          {
+            id: `${oldId}:${institutionId}`,
+            programId: oldId,
+            institutionId,
+            durationYears: 3,
+            admissionRequirements: ['ממוצע בגרות 90'],
+            specificAdmissionNotes: ['Admission depends on manual review'],
+            programDescription: 'Mixed graphic design import',
+            quantitativeMinRequirement: 550,
+            englishMinRequirement: 80,
+          },
+        ] as AdmissionRequirementRow[],
+        thresholds: [
+          {
+            programId: oldId,
+            universityId: institutionId,
+            thresholdKind: 'sekhem',
+            thresholdValue: 550,
+          },
+        ] as AdmissionThresholdRow[],
+        sourceUrls: [],
+        institutionsById: new Map([[institutionId, institution]]),
+      });
+      expect(result).toMatchObject({
+        id,
+        name,
+        awardedCredential: credential,
+        admissionType: 'requirements',
+      });
+      expect(result.thresholds).toBeUndefined();
+      expect(result.institutionDetails![0]).toMatchObject({
+        durationYears: 4,
+        quantitativeMinRequirement: null,
+        englishMinRequirement: null,
+      });
+      expect(result.institutionDetails![0].programDescription).not.toBe(
+        'Mixed graphic design import',
+      );
+      if (id === 'jerusalem_academy_dance') {
+        expect(result.institutionDetails![0].programDescription).toBe(
+          'הלימודים לתואר B.Dance נמשכים ארבע שנים. הסטאז׳ מתקיים בשנה החמישית.',
+        );
+      } else {
+        expect(result.institutionDetails![0].programDescription).toBeUndefined();
+      }
+      expect(result.institutionDetails![0].specificAdmissionNotes).toEqual(
+        allPrograms.find((p) => p.id === id)!.institutionDetails![0].specificAdmissionNotes,
+      );
+    },
+  );
+
+  it('repairs the stale Sam Spiegel institution domain and homepage', () => {
+    const seed = buildCatalogueSeed();
+    const row = seed.institutions.find((i) => i.id === 'spieldocs')!;
+    expect(
+      serializeInstitutionRow({
+        ...row,
+        domain: 'spieldocs.ac.il',
+        programUrl: 'https://www.spieldocs.ac.il/',
+      } as InstitutionRow),
+    ).toMatchObject({
+      domain: 'www.jsfs.co.il',
+      programUrl: 'https://www.jsfs.co.il',
     });
   });
 });

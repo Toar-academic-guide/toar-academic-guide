@@ -3,6 +3,7 @@ import 'server-only';
 import { eq, inArray } from 'drizzle-orm';
 
 import { UNIVERSITIES } from '@/data/degreesData';
+import { RETIRED_PROGRAM_IDS } from '@/data/admissions/catalogueContentRepair';
 import { getDb } from '@/db/client';
 import {
   admissionAlternativePaths,
@@ -456,43 +457,46 @@ export async function listCataloguePrograms(): Promise<CatalogueQueryResult<Cata
     };
   }
 
-  const institutionIds = [
-    ...new Set(resolution.snapshot!.programInstitutions.map((row) => row.institutionId)),
-  ];
+  const snapshot = resolution.snapshot!;
+  const institutionIds = [...new Set(snapshot.programInstitutions.map((row) => row.institutionId))];
   const institutionRows =
     institutionIds.length === 0
       ? []
-      : resolution.snapshot!.institutions.filter((row) => institutionIds.includes(row.id));
+      : snapshot.institutions.filter((row) => institutionIds.includes(row.id));
   const institutionsById = new Map(institutionRows.map((row) => [row.id, row]));
+  const hasListedDance = snapshot.programs.some(
+    (program) => program.id === 'jerusalem_academy_dance' && program.isListed !== false,
+  );
 
   return {
-    data: resolution.snapshot!.programs.map((programRow) =>
-      serializeProgramRow({
-        program: programRow,
-        relations: resolution.snapshot!.programInstitutions.filter(
-          (row) => row.programId === programRow.id,
-        ),
-        requirements: resolution.snapshot!.admissionRequirements.filter(
-          (row) => row.programId === programRow.id,
-        ),
-        thresholds: resolution.snapshot!.admissionThresholds.filter(
-          (row) => row.programId === programRow.id,
-        ),
-        sourceUrls: resolution.snapshot!.sourceUrls.filter(
-          (row) => row.programId === programRow.id,
-        ),
-        admissionsSourceCandidates: resolution.snapshot!.admissionsSourceCandidates.filter(
-          (row) => row.programId === programRow.id,
-        ),
-        admissionFacts: resolution.snapshot!.admissionFacts.filter(
-          (row) => row.programId === programRow.id,
-        ),
-        admissionAlternativePaths: resolution.snapshot!.admissionAlternativePaths.filter(
-          (row) => row.programId === programRow.id,
-        ),
-        institutionsById,
-      }),
-    ),
+    data: snapshot.programs
+      .filter((row) => {
+        // Rollback preserves the allocated ID as an archive for saved references.
+        if (row.id === 'jerusalem_academy_dance' && row.isListed === false) return false;
+        if (!RETIRED_PROGRAM_IDS.includes(row.id)) return true;
+        // Until the packet is applied, serialize the original dance row under
+        // its corrected ID. Once present, the persisted canonical row owns it.
+        return row.id === 'jerusalem_academy_graphic_design' && !hasListedDance;
+      })
+      .map((programRow) =>
+        serializeProgramRow({
+          program: programRow,
+          relations: snapshot.programInstitutions.filter((row) => row.programId === programRow.id),
+          requirements: snapshot.admissionRequirements.filter(
+            (row) => row.programId === programRow.id,
+          ),
+          thresholds: snapshot.admissionThresholds.filter((row) => row.programId === programRow.id),
+          sourceUrls: snapshot.sourceUrls.filter((row) => row.programId === programRow.id),
+          admissionsSourceCandidates: snapshot.admissionsSourceCandidates.filter(
+            (row) => row.programId === programRow.id,
+          ),
+          admissionFacts: snapshot.admissionFacts.filter((row) => row.programId === programRow.id),
+          admissionAlternativePaths: snapshot.admissionAlternativePaths.filter(
+            (row) => row.programId === programRow.id,
+          ),
+          institutionsById,
+        }),
+      ),
     meta: resolution.meta,
   };
 }

@@ -25,6 +25,14 @@ const labels = [
   ]),
 ];
 const labelById = new Map(labels.map((label) => [subjectIdForWizardLabel(label), label]));
+const starterRows = new Set(
+  Object.values(SECTORS).flatMap((items) => items.map((item) => `${item.n}|${item.min}`)),
+);
+// A row the student never filled: an empty added row, or an untouched starter row.
+const isBlankRow = (row: BagrutWizardSubjectInput) =>
+  row.grade === '' &&
+  (row.assessmentKind ?? 'exam') === 'exam' &&
+  (row.label.trim() === '' || starterRows.has(`${row.label}|${row.units}`));
 const emptyRows = (sector: string): BagrutWizardSubjectInput[] =>
   SECTORS[sector].map((subject) => ({
     label: subject.n,
@@ -74,13 +82,14 @@ export default function JourneyExactGrades({
           setError('יש לבדוק את הציונים שזוהו ולאשר אותם.');
           return;
         }
+        const filledRows = rows.filter((row) => !isBlankRow(row));
         const record = buildBagrutSubjectRecord({
           sectorLabel: sector,
           certificateType: certificate || 'other',
           complete,
-          subjects: rows,
+          subjects: filledRows,
         });
-        if (!rows.length || record.subjects.length !== rows.length) {
+        if (!filledRows.length || record.subjects.length !== filledRows.length) {
           setError('יש להשלים את המקצוע, היחידות והציון בכל שורה ולוודא שאין כפילויות.');
           return;
         }
@@ -93,7 +102,19 @@ export default function JourneyExactGrades({
           <select
             value={sector}
             onChange={(event) => {
-              setSector(event.target.value);
+              const nextSector = event.target.value;
+              const defaults = emptyRows(sector);
+              const untouched =
+                rows.length === defaults.length &&
+                rows.every(
+                  (row, index) =>
+                    row.label === defaults[index].label &&
+                    row.units === defaults[index].units &&
+                    row.grade === '' &&
+                    row.assessmentKind === defaults[index].assessmentKind,
+                );
+              if (untouched) setRows(emptyRows(nextSector));
+              setSector(nextSector);
             }}
             required
           >
@@ -173,7 +194,7 @@ export default function JourneyExactGrades({
                   list="journey-bagrut-subjects"
                   aria-label={`מקצוע ${index + 1}`}
                   value={row.label}
-                  required
+                  required={!isBlankRow(row)}
                   onChange={(event) => change(index, { label: event.target.value })}
                 />
                 {row.assessmentKind !== 'exam' && (
@@ -189,7 +210,7 @@ export default function JourneyExactGrades({
                   min={1}
                   max={5}
                   step={1}
-                  required
+                  required={!isBlankRow(row)}
                   value={row.units}
                   onChange={(event) => change(index, { units: Number(event.target.value) })}
                 />
@@ -201,7 +222,7 @@ export default function JourneyExactGrades({
                   min={0}
                   max={100}
                   step={1}
-                  required
+                  required={!isBlankRow(row)}
                   value={row.grade}
                   onChange={(event) =>
                     change(index, {

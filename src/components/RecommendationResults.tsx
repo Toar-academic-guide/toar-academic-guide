@@ -1,5 +1,8 @@
 'use client';
 
+import AdmissionRequirements from './AdmissionRequirements';
+import { institutionLink } from '@/lib/institutionLinks';
+
 import { useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
@@ -49,6 +52,11 @@ import { INSTITUTION_BY_NAME } from '@/data/institutions';
 import InstitutionLogo from '@/components/InstitutionLogo';
 import type { Program } from '@/data/degrees/types';
 import { PROGRAM_FIELD_MAP, FIELD_ENRICHMENT } from '@/data/degrees/fieldEnrichment';
+import {
+  catalogueAdmissionRequirements,
+  catalogueDescription,
+  catalogueInstitutionDetail,
+} from '@/lib/catalogueDisplayText';
 import { getTopDimensions } from '@/utils/scoringEngine';
 
 interface Props {
@@ -470,8 +478,24 @@ function ProgramDetailView({
             <div className="mb-5 flex flex-col gap-3">
               <p className="text-xs font-semibold text-slate-500">אוניברסיטאות — פרטי קבלה</p>
               {sekhemInstitutions.map((p) => {
-                const detail = p.institutionDetails?.[0];
+                const detail = catalogueInstitutionDetail(programs, p, fieldId);
+                const description = catalogueDescription(detail?.programDescription);
+                const requirements = catalogueAdmissionRequirements(
+                  detail?.specificAdmissionNotes,
+                  p.admissionRequirements,
+                );
                 const instRecord = INSTITUTION_BY_NAME[p.institution];
+                const programUrl = institutionLink(
+                  detail?.programUrl ?? instRecord?.programUrl,
+                  instRecord?.id,
+                );
+                const calculatorUrl = institutionLink(
+                  detail?.calculatorUrl ??
+                    detail?.officialCalculatorUrl ??
+                    instRecord?.calculatorUrl,
+                  instRecord?.id,
+                  { fallbackToWebsite: false },
+                );
                 const region = instRecord?.region ?? INSTITUTION_REGIONS[p.institution];
                 const isPreferred =
                   geographicPreference &&
@@ -541,31 +565,27 @@ function ProgramDetailView({
                           </div>
                         )}
                         {/* Admission requirements headline + notes */}
-                        {detail.specificAdmissionNotes.length > 0 && (
+                        {requirements.length > 0 && (
                           <>
                             <p className="text-xs font-semibold text-slate-700">
                               מה נדרש כדי להתקבל
                             </p>
-                            <ul className="space-y-0.5" dir="rtl">
-                              {detail.specificAdmissionNotes.map((note, i) => (
-                                <li key={i} className="text-xs text-slate-600">
-                                  • {note}
-                                </li>
-                              ))}
-                            </ul>
+                            <AdmissionRequirements
+                              requirements={requirements}
+                              programId={p.id}
+                              institutionId={instRecord?.id}
+                            />
                           </>
                         )}
                         {/* Program description (expandable) */}
-                        {detail.programDescription && (
-                          <ExpandableDescription text={detail.programDescription} />
-                        )}
+                        {description && <ExpandableDescription text={description} />}
                         {/* Dual-action CTA — program info + admission calculator
                             Falls back to the master institution record URLs when
                             the program-level detail fields are absent. */}
                         <div className="flex flex-col gap-2 sm:flex-row">
-                          {(detail.programUrl ?? instRecord?.programUrl) && (
+                          {programUrl && (
                             <a
-                              href={detail.programUrl ?? instRecord?.programUrl}
+                              href={programUrl}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 active:scale-95"
@@ -573,18 +593,16 @@ function ProgramDetailView({
                               מידע על המסלול ↗
                             </a>
                           )}
-                          <a
-                            href={
-                              detail.calculatorUrl ??
-                              detail.officialCalculatorUrl ??
-                              instRecord?.calculatorUrl
-                            }
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#4f46e5] px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#4338ca] active:scale-95"
-                          >
-                            בדיקת סיכויי קבלה ומחשבון סכם ↗
-                          </a>
+                          {calculatorUrl && (
+                            <a
+                              href={calculatorUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#4f46e5] px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#4338ca] active:scale-95"
+                            >
+                              בדיקת סיכויי קבלה ומחשבון סכם ↗
+                            </a>
+                          )}
                         </div>
                       </>
                     )}
@@ -613,8 +631,24 @@ function ProgramDetailView({
                 מכללות ומוסדות — קבלה על פי דרישות
               </p>
               {reqInstitutions.map((p) => {
-                const detail = p.institutionDetails?.[0];
+                const detail = catalogueInstitutionDetail(programs, p, fieldId);
+                const description = catalogueDescription(detail?.programDescription);
+                const requirements = catalogueAdmissionRequirements(
+                  detail?.specificAdmissionNotes,
+                  p.admissionRequirements,
+                );
                 const instRecord = INSTITUTION_BY_NAME[p.institution];
+                const programUrl = institutionLink(
+                  detail?.programUrl ?? instRecord?.programUrl,
+                  instRecord?.id,
+                );
+                const calculatorUrl = institutionLink(
+                  detail?.calculatorUrl ??
+                    detail?.officialCalculatorUrl ??
+                    instRecord?.calculatorUrl,
+                  instRecord?.id,
+                  { fallbackToWebsite: false },
+                );
                 const region = instRecord?.region ?? INSTITUTION_REGIONS[p.institution];
                 const isPreferred =
                   geographicPreference &&
@@ -672,31 +706,27 @@ function ProgramDetailView({
                     {detail ? (
                       <>
                         {/* Admission requirements headline + notes from institutionDetails */}
-                        {detail.specificAdmissionNotes.length > 0 && (
+                        {requirements.length > 0 && (
                           <>
                             <p className="text-xs font-semibold text-slate-700">
                               מה נדרש כדי להתקבל
                             </p>
-                            <ul className="space-y-0.5" dir="rtl">
-                              {detail.specificAdmissionNotes.map((note, i) => (
-                                <li key={i} className="text-xs text-slate-600">
-                                  • {note}
-                                </li>
-                              ))}
-                            </ul>
+                            <AdmissionRequirements
+                              requirements={requirements}
+                              programId={p.id}
+                              institutionId={instRecord?.id}
+                            />
                           </>
                         )}
                         {/* Program description (expandable) */}
-                        {detail.programDescription && (
-                          <ExpandableDescription text={detail.programDescription} />
-                        )}
+                        {description && <ExpandableDescription text={description} />}
                         {/* Dual-action CTA — program info + admission portal
                             Falls back to the master institution record URLs when
                             the program-level detail fields are absent. */}
                         <div className="flex flex-col gap-2 sm:flex-row">
-                          {(detail.programUrl ?? instRecord?.programUrl) && (
+                          {programUrl && (
                             <a
-                              href={detail.programUrl ?? instRecord?.programUrl}
+                              href={programUrl}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="flex flex-1 items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 active:scale-95"
@@ -704,31 +734,27 @@ function ProgramDetailView({
                               מידע על המסלול ↗
                             </a>
                           )}
-                          <a
-                            href={
-                              detail.calculatorUrl ??
-                              detail.officialCalculatorUrl ??
-                              instRecord?.calculatorUrl
-                            }
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#4f46e5] px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#4338ca] active:scale-95"
-                          >
-                            בדיקת סיכויי קבלה ומחשבון סכם ↗
-                          </a>
+                          {calculatorUrl && (
+                            <a
+                              href={calculatorUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#4f46e5] px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#4338ca] active:scale-95"
+                            >
+                              בדיקת סיכויי קבלה ומחשבון סכם ↗
+                            </a>
+                          )}
                         </div>
                       </>
                     ) : (
-                      p.admissionRequirements.length > 0 && (
+                      requirements.length > 0 && (
                         <>
                           <p className="text-xs font-semibold text-slate-700">מה נדרש כדי להתקבל</p>
-                          <ul className="space-y-0.5">
-                            {p.admissionRequirements.map((req, i) => (
-                              <li key={i} className="text-xs text-slate-600">
-                                • {req}
-                              </li>
-                            ))}
-                          </ul>
+                          <AdmissionRequirements
+                            requirements={requirements}
+                            programId={p.id}
+                            institutionId={instRecord?.id}
+                          />
                         </>
                       )
                     )}

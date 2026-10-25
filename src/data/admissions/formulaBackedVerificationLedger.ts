@@ -1,4 +1,6 @@
 import { allPrograms } from '@/data/degrees';
+import { BIU_PUBLISHED_ROUTE_PROGRAM_IDS, BIU_PUBLISHED_ROUTES_URL } from './biuPublishedRoutes';
+import { evaluateProgramVerification } from '@/server/admissions/verification/programVerification';
 import {
   buildFormulaBackedPairInventory,
   FORMULA_BACKED_INSTITUTION_IDS,
@@ -212,9 +214,15 @@ const REVIEWED_PAIR_IDS_BY_INSTITUTION: Record<FormulaBackedInstitutionId, reado
     'technion_medicine__technion',
   ],
   colman: ['colmgmt_cs__colman'],
+  biu: BIU_PUBLISHED_ROUTE_PROGRAM_IDS.map((id) => `${id}__biu`),
 };
 
 const SOURCE_BY_INSTITUTION: Record<FormulaBackedInstitutionId, { url: string; reason: string }> = {
+  biu: {
+    url: BIU_PUBLISHED_ROUTES_URL,
+    reason:
+      'Official BIU תשפ״ז Bagrut-only routes are encoded as estimates. Institution-specific average calculation and final verdict replay are unverified; the composite calculator returned HTTP 403 in Chromium. No exact or final-admission claim is made.',
+  },
   tau: {
     url: 'https://go.tau.ac.il/graphql',
     reason:
@@ -254,6 +262,11 @@ const SOURCE_BY_INSTITUTION: Record<FormulaBackedInstitutionId, { url: string; r
  * like an implementation omission.
  */
 const WITHHELD_PAIR_EVIDENCE: Record<string, { url: string; reason: string }> = {
+  haifa_psychology__haifa: {
+    url: 'https://admissions.haifa.ac.il/social-sciences/program/3268/',
+    reason:
+      'הקבלה לפסיכולוגיה באוניברסיטת חיפה מבוססת על סכם 650 לפחות, עם טווח המתנה 630–649. עדיין אין חישוב מאומת שמאפשר לקבוע סיכויי קבלה לפי הבגרות והפסיכומטרי שהוזנו. בדקו במחשבון הרשמי של האוניברסיטה.',
+  },
   medicine__tau: {
     url: 'https://go.tau.ac.il/he/med/ba/med-doc?v=important-info',
     reason:
@@ -329,18 +342,17 @@ export function verifiedProgramEntry(
     | HaifaProgramVerificationMetadata,
 ): FormulaPairVerificationLedgerEntry {
   const { contract, fixtures } = artifact;
+  const verification = evaluateProgramVerification({
+    contract,
+    fixtures,
+    currentAdmissionCycle: contract.admissionCycle,
+    currentSourceFingerprint: contract.sourceFingerprint,
+  });
   return {
     pairId: contract.pairId,
     institutionId: contract.institutionId as FormulaBackedInstitutionId,
     admissionCycle: contract.admissionCycle as '2026-2027',
-    state:
-      contract.proof.state === 'blocked'
-        ? 'blocked'
-        : contract.proof.state === 'verified' &&
-            contract.proof.comparedScore &&
-            contract.proof.comparedVerdict
-          ? 'exact'
-          : 'withheld',
+    state: verification.state === 'authority_unavailable' ? 'withheld' : verification.state,
     officialProgramId: contract.officialProgramId,
     sourceUrl: 'requirementsUrl' in artifact ? artifact.requirementsUrl : contract.source.url,
     formulaFamily: contract.calculation.formulaFamily,

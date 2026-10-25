@@ -92,6 +92,16 @@ export interface AdmissionAlternativePath {
 export interface InstitutionDetail {
   institutionName: string;
   durationYears: number | null;
+  /** Null means no verified overall credit total for this programme row. */
+  creditPoints?: number | null;
+  departmentCredits?: {
+    id: string;
+    name: string;
+    creditPoints: number | null;
+    sourceUrl: string;
+  }[];
+  curriculumSourceUrl?: string;
+  curriculumCheckedAt?: string;
   estimatedStudentsPerYear: string;
   quantitativeMinRequirement: number | null;
   englishMinRequirement: number | null;
@@ -112,6 +122,10 @@ export interface InstitutionDetail {
 export interface Program {
   id: string;
   name: string;
+  /** Explicit official credential; never inferred from programme type. */
+  awardedCredential?: string;
+  /** False for withdrawn import placeholders; keep IDs available to saved links. */
+  isListed?: boolean;
   /** Hebrew display name — must match InstitutionRecord.name in INSTITUTION_BY_NAME */
   institution: string;
   /** Typed reference to the master institutions dictionary */

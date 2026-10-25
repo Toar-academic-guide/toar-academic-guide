@@ -212,6 +212,29 @@ export const ACADEMIC_PROGRAMS: Program[] = [
     admissionRequirements: [],
     thresholds: { tau: 640, huji: 630, technion: null, bgu: 590, haifa: 550, ariel: 580 },
     isTauEngineering: false,
+    institutionDetails: [
+      {
+        institutionName: 'אוניברסיטת תל אביב',
+        durationYears: null,
+        estimatedStudentsPerYear: '',
+        quantitativeMinRequirement: null,
+        englishMinRequirement: null,
+        // Official requirements for semester A, 2026–2027; checked 2026-10-21.
+        // These describe alternative routes, not additional calculator rules.
+        specificAdmissionNotes: [
+          'נדרשת עמידה בדרישות האוניברסיטה לבגרות או לתעודה שקולה, לעברית ולאנגלית, ובאחד מאפיקי הקבלה הבאים.',
+          'ציון התאמה העומד בסף החוג. אפשר לקבל תוספת של 5 נקודות עבור קורס מקוון מוכר אחד, או 10 נקודות עבור שניים, בציון 85 לפחות בכל קורס.',
+          'ללא פסיכומטרי: ממוצע בגרות 102 ומעלה; או תואר ראשון ממוסד מוכר בממוצע 80 לפחות; או תואר שני ממוסד מוכר בממוצע 85 לפחות; או תואר שלישי.',
+          'פסיכומטרי כללי 640 ומעלה וזכאות לבגרות.',
+          'לימודים אקדמיים חלקיים במוסד מוכר: לפחות 30 שעות סמסטריאליות בממוצע 85 ומעלה, ופסיכומטרי כללי 520 לפחות.',
+          'אפיק נוסף לבעלי תואר ראשון ממוסד מוכר: פסיכומטרי כללי 600 לפחות.',
+          'הלימודים דו־חוגיים, ויש לעמוד גם בתנאי החוג השני. קיים שילוב עם משפטים במסגרת לימודים לאחר תואר.',
+          'ההרשמה לחוג מתקיימת בסמסטר א׳ בלבד.',
+        ],
+        officialCalculatorUrl: '',
+        programUrl: 'https://go.tau.ac.il/he/social-sciences/ba/communications?v=requirements',
+      },
+    ],
   },
   {
     id: 'political_science',

@@ -1,7 +1,11 @@
 // @vitest-environment jsdom
 
 import { render, screen } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+vi.mock('@/context/AuthContext', () => ({
+  useAuth: () => ({ loading: false, user: null }),
+}));
 
 import DataHealthDashboard from './DataHealthDashboard';
 import type { DataHealthReadyReport } from '@/server/data-health/queries';
@@ -50,6 +54,7 @@ function reportWithRisks(): DataHealthReadyReport {
         haifa: { total: 27, exact: 0, withheld: 27, stale: 0, blocked: 0 },
         technion: { total: 14, exact: 0, withheld: 14, stale: 0, blocked: 0 },
         colman: { total: 1, exact: 0, withheld: 1, stale: 0, blocked: 0 },
+        biu: { total: 0, exact: 0, withheld: 0, stale: 0, blocked: 0 },
       },
     },
     runtimeFormulaVerification: {

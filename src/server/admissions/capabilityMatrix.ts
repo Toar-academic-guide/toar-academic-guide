@@ -1,4 +1,5 @@
 import { isBguQuantitativeRouteProgram } from '@/lib/calculatorInputRequirements';
+import { isBiuPublishedRoutePair } from '@/data/admissions/biuPublishedRoutes';
 import 'server-only';
 
 import { inArray } from 'drizzle-orm';
@@ -31,7 +32,10 @@ import type { AdmissionsProgramInput } from '@/server/ingestion/admissionsSource
 import { getProgramVerificationArtifact } from '@/data/admissions/tauProgramVerification';
 import { HUJI_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/hujiProgramVerification';
 import { BGU_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/bguProgramVerification';
-import { TECHNION_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/technionProgramVerification';
+import {
+  TECHNION_PROGRAM_VERIFICATION_ARTIFACTS,
+  getCodeReviewedTechnionWinterVerification,
+} from '@/data/admissions/technionProgramVerification';
 import {
   getHaifaProgramConfig,
   HAIFA_PROGRAM_VERIFICATION_ARTIFACTS,
@@ -723,6 +727,8 @@ export async function loadFreshnessStatesBySourceIds(
 }
 
 export function buildAdmissionsCapabilityMatrix(args: {
+  /** Runtime-only confirmations evaluated separately from numeric score inputs. */
+  deferredRequiredInputs?: Map<string, AdmissionsRequiredInput[]>;
   program: CatalogueProgram;
   institutions: CatalogueInstitution[];
   input?: AdmissionsExtraInputs;
@@ -783,6 +789,47 @@ export function buildAdmissionsCapabilityMatrix(args: {
         sourceTarget,
         evidence,
         freshnessState,
+      };
+    }
+
+    if (isBiuPublishedRoutePair(program.id, institutionId)) {
+      return {
+        institutionId,
+        capability: 'estimated',
+        formulaPairScope,
+        pairVerification,
+        evidence,
+      };
+    }
+
+    const codeReviewedWinter = getCodeReviewedTechnionWinterVerification(pairId);
+    if (codeReviewedWinter && pairVerification?.state === 'exact' && exactTarget) {
+      const verification = evaluateProgramVerification({
+        contract: codeReviewedWinter.contract,
+        fixtures: codeReviewedWinter.fixtures,
+        currentAdmissionCycle: pairVerification.admissionCycle,
+        currentSourceFingerprint: codeReviewedWinter.contract.sourceFingerprint,
+      });
+      const deferred = args.deferredRequiredInputs?.get(institutionId) ?? [];
+      const missing = requiredInputsMissingFrom(
+        input,
+        exactTarget.requiredInputs.filter((id) => !deferred.includes(id)),
+      );
+      return {
+        institutionId,
+        capability:
+          verification.capability !== 'exact'
+            ? verification.capability
+            : missing.length
+              ? 'needs_input'
+              : 'exact',
+        formulaPairScope,
+        pairVerification,
+        sourceTarget,
+        exactTarget,
+        evidence,
+        freshnessState,
+        ...(missing.length ? { requiredInputs: missing } : {}),
       };
     }
 
@@ -943,7 +990,21 @@ export function buildAdmissionsCapabilityMatrix(args: {
         };
       }
 
-      const missingRequiredInputs = requiredInputsMissingFrom(input, exactTarget.requiredInputs);
+      const deferred = args.deferredRequiredInputs?.get(institutionId) ?? [];
+      const missingRequiredInputs = requiredInputsMissingFrom(
+        input,
+        exactTarget.requiredInputs.filter(
+          (id) =>
+            !deferred.includes(id) &&
+            !(
+              id === 'bagrut_subject_record' &&
+              exactTarget.sourceTarget.adapterId === 'bgu' &&
+              ['cs', 'bgu_cs', 'datascience', 'bgu_datascience'].includes(program.id) &&
+              input?.mathUnits !== undefined &&
+              input.mathGrade !== undefined
+            ),
+        ),
+      );
       if (missingRequiredInputs.length > 0) {
         return {
           institutionId,

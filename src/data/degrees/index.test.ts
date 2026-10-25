@@ -2,18 +2,46 @@ import { describe, expect, it } from 'vitest';
 
 import { buildFormulaBackedPairInventory } from '../admissions/formulaBackedPairInventory';
 import { mondayAdmissionsEvidence } from '../admissions/mondayEvidence';
+import repair from '../admissions/catalogueContentRepair.json';
 import { INSTITUTIONS } from '../institutions';
-import { allPrograms } from './index';
+import { allPrograms, programsWithLegacyAdmissionFacts } from './index';
 
 type CatalogueProgramLike = (typeof allPrograms)[number];
 type InstitutionDetailLike = NonNullable<CatalogueProgramLike['institutionDetails']>[number];
+
+it.each(['afeka_ee', 'afeka_softwareeng', 'afeka_cs'])(
+  'keeps %s alternative routes out of legacy cumulative facts',
+  (id) => {
+    const program = allPrograms.find((row) => row.id === id)!;
+    expect(program.thresholds).toBeUndefined();
+    expect(program.institutionDetails).toHaveLength(1);
+    expect(program.institutionDetails![0].specificAdmissionNotes).toEqual(
+      program.admissionRequirements,
+    );
+    expect(program.institutionDetails![0].admissionFacts ?? []).toEqual([]);
+    expect(program.institutionDetails![0].admissionAlternativePaths ?? []).toEqual([]);
+  },
+);
+
+it.each([
+  ['colman_law', 'https://www.colman.ac.il/academics/ba/law/'],
+  ['colman_business', 'https://www.colman.ac.il/academics/ba/business-administration/'],
+])('uses the specific official programme URL for %s', (id, url) => {
+  const program = allPrograms.find((program) => program.id === id)!;
+  expect(program.institutionDetails).toHaveLength(1);
+  expect(program.institutionDetails![0]).toMatchObject({
+    programUrl: url,
+    officialCalculatorUrl: url,
+    admissionsSourceCandidates: [expect.objectContaining({ url })],
+  });
+});
 
 describe('formula-backed pair catalogue', () => {
   it('generates the current canonical formula-backed pair denominator', () => {
     const inventory = buildFormulaBackedPairInventory(allPrograms);
 
     expect(inventory.errors).toEqual([]);
-    expect(inventory.total).toBe(131);
+    expect(inventory.total).toBe(138);
     expect(inventory.totalsByInstitution).toEqual({
       tau: 33,
       huji: 28,
@@ -21,6 +49,7 @@ describe('formula-backed pair catalogue', () => {
       haifa: 27,
       technion: 14,
       colman: 1,
+      biu: 7,
     });
   });
 });
@@ -167,7 +196,7 @@ describe('dynamic Monday-derived programme inference', () => {
       expect.arrayContaining([
         expect.objectContaining({
           id: 'danon_culinary',
-          name: 'קולינריה - דנון - קולינריה',
+          name: 'קולינריה — דנון',
           category: 'קולינריה',
           type: 'certificate',
         }),
@@ -441,19 +470,25 @@ describe('dynamic Monday-derived programme inference', () => {
     );
   });
 
-  it('keeps only clearly computing-oriented Monday institutions in the cs fallback bucket', () => {
+  it('does not present computing courses as Computer Science degrees', () => {
     const csFallbacks = allPrograms.filter(
       (program) =>
         program.name.startsWith('מדעי המחשב - ') &&
         (program.id.startsWith('mon_') || program.id === 'hackeru_cs'),
     );
 
-    expect(csFallbacks.map((program) => program.id).sort()).toEqual([
+    expect(csFallbacks).toEqual([]);
+    for (const id of [
       'hackeru_cs',
       'mon_12341101353_cs',
       'mon_12341113400_cs',
       'mon_12341147475_cs',
-    ]);
+    ]) {
+      expect(allPrograms.find((program) => program.id === id)).toMatchObject({
+        type: 'certificate',
+        category: 'טכנולוגיה ופיתוח',
+      });
+    }
   });
 
   it('gives every Monday evidence record at least one institution-backed generated programme', () => {
@@ -525,13 +560,26 @@ describe('dynamic Monday-derived programme inference', () => {
     expect(missingDetails).toEqual([]);
   });
 
-  it('does not leave non-Ariel hard admissions requirements as unstructured text only', () => {
-    const uncovered = allPrograms.flatMap((program) => {
-      if (program.institutionId === 'ariel') {
+  it('structures non-Ariel legacy admission requirements before applying display-only source content', () => {
+    const uncovered = programsWithLegacyAdmissionFacts.flatMap((program) => {
+      if (
+        program.institutionId === 'ariel' ||
+        ['ono_law', 'ono_nursing', 'haifa_psychology'].includes(program.id)
+      ) {
         return [];
       }
 
       return (program.institutionDetails ?? []).flatMap((detail) => {
+        if (['biu_lifesciences', 'biu_biotech', 'biu_computational_bio'].includes(program.id)) {
+          // These fallback notes mirror the display overlay; #254's dedicated evaluator
+          // owns their route gates, rather than the legacy text-to-fact parser.
+          const row = repair.requirements.find(
+            (row) => row.programId === program.id && row.institutionId === 'biu',
+          );
+          expect(row).toBeDefined();
+          expect(detail.specificAdmissionNotes).toEqual(row!.notes);
+          return [];
+        }
         const texts = [...(detail.specificAdmissionNotes ?? []), ...program.admissionRequirements];
         const missing = texts.filter(
           (text) =>

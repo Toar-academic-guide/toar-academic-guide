@@ -1,0 +1,710 @@
+{
+  "cataloguePrograms": 405,
+  "publicPrograms": 397,
+  "tiled": 11,
+  "fallback": 386,
+  "tiledPrograms": [
+    {
+      "programId": "cs",
+      "tiled": true,
+      "sources": [
+        {
+          "institutionId": "tau",
+          "reason": "unverified"
+        },
+        {
+          "institutionId": "huji",
+          "reason": "unverified"
+        },
+        {
+          "institutionId": "technion",
+          "reason": "unverified"
+        },
+        {
+          "institutionId": "bgu",
+          "reason": "unverified"
+        },
+        {
+          "institutionId": "haifa",
+          "reason": "unverified"
+        },
+        {
+          "institutionId": "biu",
+          "reason": "unverified"
+        },
+        {
+          "institutionId": "ariel",
+          "reason": "unverified"
+        },
+        {
+          "institutionId": "reichman",
+          "reason": "unverified"
+        },
+        {
+          "institutionId": "telhai",
+          "reason": "unverified"
+        },
+        {
+          "institutionId": "afeka",
+          "reason": "unverified"
+        },
+        {
+          "institutionId": "mta",
+          "semantics": "alternatives"
+        },
+        {
+          "institutionId": "colman",
+          "semantics": "alternatives"
+        },
+        {
+          "institutionId": "ono",
+          "reason": "unverified"
+        },
+        {
+          "institutionId": "open_university",
+          "reason": "unverified"
+        }
+      ]
+    },
+    {
+      "programId": "law",
+      "tiled": true,
+      "sources": [
+        {
+          "institutionId": "tau",
+          "reason": "unclear_semantics"
+        },
+        {
+          "institutionId": "huji",
+          "reason": "unclear_semantics"
+        },
+        {
+          "institutionId": "haifa",
+          "reason": "unverified"
+        },
+        {
+          "institutionId": "biu",
+          "reason": "unclear_semantics"
+        },
+        {
+          "institutionId": "reichman",
+          "reason": "unverified"
+        },
+        {
+          "institutionId": "colman",
+          "semantics": "alternatives"
+        },
+        {
+          "institutionId": "ono",
+          "reason": "unverified"
+        }
+      ]
+    },
+    {
+      "programId": "business",
+      "tiled": true,
+      "sources": [
+        {
+          "institutionId": "tau",
+          "reason": "unclear_semantics"
+        },
+        {
+          "institutionId": "huji",
+          "reason": "unclear_semantics"
+        },
+        {
+          "institutionId": "bgu",
+          "reason": "unclear_semantics"
+        },
+        {
+          "institutionId": "reichman",
+          "reason": "unverified"
+        },
+        {
+          "institutionId": "mta",
+          "reason": "unverified"
+        },
+        {
+          "institutionId": "colman",
+          "semantics": "alternatives"
+        }
+      ]
+    },
+    {
+      "programId": "communication",
+      "tiled": true,
+      "sources": [
+        {
+          "institutionId": "tau",
+          "reason": "unverified"
+        },
+        {
+          "institutionId": "huji",
+          "reason": "unverified"
+        },
+        {
+          "institutionId": "bgu",
+          "semantics": "alternatives"
+        },
+        {
+          "institutionId": "haifa",
+          "reason": "unclear_semantics"
+        },
+        {
+          "institutionId": "ariel",
+          "reason": "unverified"
+        }
+      ]
+    },
+    {
+      "programId": "political_science",
+      "tiled": true,
+      "sources": [
+        {
+          "institutionId": "tau",
+          "reason": "unclear_semantics"
+        },
+        {
+          "institutionId": "huji",
+          "reason": "unverified"
+        },
+        {
+          "institutionId": "bgu",
+          "semantics": "alternatives"
+        },
+        {
+          "institutionId": "haifa",
+          "reason": "unclear_semantics"
+        }
+      ]
+    },
+    {
+      "programId": "education",
+      "tiled": true,
+      "sources": [
+        {
+          "institutionId": "tau",
+          "reason": "unclear_semantics"
+        },
+        {
+          "institutionId": "huji",
+          "reason": "unverified"
+        },
+        {
+          "institutionId": "bgu",
+          "semantics": "alternatives"
+        }
+      ]
+    },
+    {
+      "programId": "physiotherapy",
+      "tiled": true,
+      "sources": [
+        {
+          "institutionId": "tau",
+          "reason": "unclear_semantics"
+        },
+        {
+          "institutionId": "bgu",
+          "semantics": "cumulative"
+        },
+        {
+          "institutionId": "haifa",
+          "reason": "unverified"
+        }
+      ]
+    },
+    {
+      "programId": "tlvyaffo_cs",
+      "tiled": true,
+      "sources": [
+        {
+          "institutionId": "mta",
+          "semantics": "alternatives"
+        }
+      ]
+    },
+    {
+      "programId": "colmgmt_cs",
+      "tiled": true,
+      "sources": [
+        {
+          "institutionId": "colman",
+          "semantics": "alternatives"
+        }
+      ]
+    },
+    {
+      "programId": "colmgmt_business",
+      "tiled": true,
+      "sources": [
+        {
+          "institutionId": "colman",
+          "semantics": "alternatives"
+        }
+      ]
+    },
+    {
+      "programId": "colmgmt_law",
+      "tiled": true,
+      "sources": [
+        {
+          "institutionId": "colman",
+          "semantics": "alternatives"
+        }
+      ]
+    }
+  ],
+  "fallbackGroups": {
+    "unverified": [
+      "ee",
+      "me",
+      "biology",
+      "social_work",
+      "sports_science",
+      "huji_cs",
+      "huji_datascience",
+      "huji_psychology",
+      "huji_economics",
+      "huji_biology",
+      "huji_socialwork",
+      "huji_medicine",
+      "tau_cs",
+      "tau_datascience",
+      "tau_ee",
+      "tau_me",
+      "tau_industrial",
+      "tau_psychology",
+      "tau_economics",
+      "tau_biology",
+      "tau_socialwork",
+      "tau_medicine",
+      "technion_cs",
+      "technion_datascience",
+      "technion_ee",
+      "technion_me",
+      "technion_civil",
+      "technion_industrial",
+      "technion_biomedical",
+      "technion_medicine",
+      "bgu_cs",
+      "bgu_datascience",
+      "bgu_ee",
+      "bgu_me",
+      "bgu_industrial",
+      "bgu_economics",
+      "bgu_biology",
+      "bgu_nursing",
+      "bgu_socialwork",
+      "bgu_medicine",
+      "haifa_cs",
+      "haifa_psychology",
+      "haifa_law",
+      "haifa_economics",
+      "haifa_biology",
+      "haifa_socialwork",
+      "haifa_nursing",
+      "haifa_statistics",
+      "haifa_math",
+      "haifa_physiotherapy",
+      "biu_cs",
+      "biu_ee",
+      "biu_medicine",
+      "biu_lifesciences",
+      "biu_biotech",
+      "biu_computational_bio",
+      "biu_socialwork",
+      "biu_optometry",
+      "ariel_cs",
+      "ariel_ee",
+      "ariel_civil_eng",
+      "ariel_industrial_eng",
+      "ariel_me",
+      "ariel_chemical_eng",
+      "ariel_socialwork",
+      "ariel_architecture",
+      "ariel_molecular_bio",
+      "ariel_chemistry",
+      "ariel_math",
+      "ariel_physics",
+      "ariel_nutrition",
+      "ariel_nursing",
+      "reichman_cs",
+      "reichman_psychology",
+      "reichman_law",
+      "reichman_business",
+      "reichman_economics",
+      "telhai_cs",
+      "telhai_biology",
+      "telhai_nursing",
+      "telhai_socialwork",
+      "afeka_cs",
+      "afeka_softwareeng",
+      "afeka_ee",
+      "afeka_biomedical",
+      "tlvyaffo_business",
+      "tlvyaffo_economics",
+      "tlvyaffo_nursing",
+      "tlvyaffo_socialwork",
+      "colmgmt_economics",
+      "colmgmt_accounting",
+      "ono_law",
+      "ono_business",
+      "ono_cs",
+      "ono_nursing",
+      "reichman_infosystems",
+      "colmgmt_infosystems",
+      "tau_occupational_therapy",
+      "huji_occupational_therapy",
+      "ruppin_marine_bio",
+      "kinneret_sound_eng",
+      "open_university_cs",
+      "bezalel_industrial_design",
+      "bezalel_fine_arts",
+      "bezalel_photography",
+      "bezalel_fashion",
+      "shenkar_industrial_design",
+      "shenkar_fashion",
+      "shenkar_graphic_design",
+      "shenkar_animation",
+      "hit_visual_comm",
+      "hit_industrial_design",
+      "minshar_fine_arts",
+      "minshar_photography",
+      "minshar_animation",
+      "minshar_dance",
+      "samspiegel_cinema",
+      "samspiegel_screenwriting",
+      "samspiegel_documentary",
+      "danon_chef",
+      "danon_pastry",
+      "danon_culinary_arts",
+      "bishulim_chef",
+      "bishulim_pastry",
+      "bishulim_restaurant_mgmt",
+      "reidman_chinese_medicine",
+      "reidman_naturopathy",
+      "reidman_homeopathy",
+      "reidman_reflexology",
+      "broshim_homeopathy",
+      "broshim_psychotherapy",
+      "broshim_naturopathy",
+      "ono_ce_chinese_medicine",
+      "ono_ce_psychotherapy",
+      "pardeshana_integrative",
+      "hackeru_fullstack",
+      "hackeru_cyber",
+      "hackeru_data",
+      "elevation_cyber",
+      "elevation_fullstack",
+      "itc_data_science",
+      "johnbryce_cyber",
+      "johnbryce_cloud_devops",
+      "jerusalem_academy_classical",
+      "jerusalem_academy_jazz",
+      "rubin_classical",
+      "beit_zvi_directing",
+      "seminar_art_education",
+      "seminar_music_education",
+      "seminar_dance",
+      "wingate_coaching",
+      "huji_engineering",
+      "huji_prep",
+      "tau_engineering",
+      "technion_engineering",
+      "bgu_engineering",
+      "biu_engineering",
+      "biu_prep",
+      "haifa_engineering",
+      "open_university_engineering",
+      "ariel_engineering",
+      "telhai_general_academic",
+      "reichman_engineering",
+      "wingate_general_academic",
+      "afeka_engineering",
+      "shenkar_engineering",
+      "hit_engineering",
+      "sce_general_academic",
+      "azrieli_engineering",
+      "braude_engineering",
+      "braude_prep",
+      "ruppin_engineering",
+      "ruppin_prep",
+      "sapir_law",
+      "sapir_prep",
+      "emek_yezreel_general_academic",
+      "hadassah_general_academic",
+      "wizo_general_academic",
+      "beit_berl_graphic_design",
+      "ono_medicine",
+      "danon_culinary",
+      "mon_12220685573_culinary",
+      "mon_12220697934_certificate",
+      "beit_zvi_certificate",
+      "mon_12220697942_certificate",
+      "mon_12220696299_certificate",
+      "mon_12341108218_certificate",
+      "david_yellin_education",
+      "mon_12341128292_medicine",
+      "shaare_mishpat_law",
+      "ramat_gan_law",
+      "ramat_gan_business",
+      "schechter_certificate",
+      "mon_12341064237_beauty",
+      "mon_12341126300_education",
+      "herzog_general_academic",
+      "tech_management_engineering",
+      "mon_12341107541_engineering",
+      "netanya_law",
+      "netanya_business",
+      "seminar_certificate",
+      "tcb_engineering",
+      "sce_engineering",
+      "telhai_prep",
+      "sce_prep",
+      "mon_12341098184_prep",
+      "mon_12341128848_engineering",
+      "kinneret_engineering",
+      "mon_12341114114_engineering",
+      "telhai_engineering",
+      "mon_12341127690_certificate",
+      "mon_12341076875_engineering",
+      "atid_engineering",
+      "mon_12341126575_beauty",
+      "israel_academic_general_academic",
+      "mon_12341122479_certificate",
+      "mon_12341118768_general_academic",
+      "mon_12341091518_certificate",
+      "mon_12341092889_certificate",
+      "mon_12341114237_general_academic",
+      "open_university_certificate",
+      "achva_general_academic",
+      "mon_12341102793_engineering",
+      "sapir_certificate",
+      "mon_12341107292_general_academic",
+      "mon_12341128142_beauty",
+      "mon_12341098736_certificate",
+      "mon_12341126780_certificate",
+      "mon_12341126233_certificate",
+      "mon_12341108755_certificate",
+      "mon_12341091471_certificate",
+      "givat_washington_medicine",
+      "mon_12341142058_certificate",
+      "lfa_beauty",
+      "zefat_general_academic",
+      "mon_12341114281_certificate",
+      "mon_12341091651_certificate",
+      "mon_12341102883_certificate",
+      "mon_12341113217_certificate",
+      "kaye_education",
+      "mon_12341114949_certificate",
+      "mon_12341144078_certificate",
+      "mon_12341091770_certificate",
+      "beit_berl_general_academic",
+      "tiltan_medicine",
+      "mon_12341134516_certificate",
+      "mon_12341133521_certificate",
+      "peres_law",
+      "peres_business",
+      "mon_12341147363_certificate",
+      "mon_12341122838_certificate",
+      "mon_12341122522_certificate",
+      "mon_12341092241_certificate",
+      "mon_12341133625_certificate",
+      "aliya_certificate",
+      "mon_12341138527_certificate",
+      "mon_12341142616_education",
+      "orin_shpalter_certificate",
+      "mon_12341167854_certificate",
+      "bdo_academy_general_academic",
+      "mon_12341134798_general_academic",
+      "mon_12341149187_graphic_design",
+      "mon_12341165209_certificate",
+      "mon_12341113458_certificate",
+      "mon_12341134763_engineering",
+      "mon_12341144849_certificate",
+      "mon_12341129101_certificate",
+      "mon_12341148145_certificate",
+      "atid_certificate",
+      "mon_12341138357_certificate",
+      "mon_12341165356_certificate",
+      "mon_12341134000_certificate",
+      "mon_12341144937_certificate",
+      "mon_12341144341_certificate",
+      "mon_12341108613_certificate",
+      "mon_12341189515_certificate",
+      "mon_12341138594_certificate",
+      "mon_12341144650_general_academic",
+      "mon_12341150917_certificate",
+      "mon_12341167899_certificate",
+      "mon_12341141808_certificate",
+      "mon_12341134431_certificate",
+      "mon_12341166173_certificate",
+      "mon_12341138641_certificate",
+      "tiltan_graphic_design",
+      "mon_12341142727_certificate",
+      "tiltan_certificate",
+      "mon_12341137305_general_academic",
+      "mon_12341173466_certificate",
+      "mon_12341137650_certificate",
+      "mon_12341165867_certificate",
+      "mon_12341148361_certificate",
+      "mon_12341165912_certificate",
+      "mon_12341148232_beauty",
+      "mon_12341134405_certificate",
+      "mon_12341189317_certificate",
+      "mon_12341162526_general_academic",
+      "mon_12341166462_certificate",
+      "mon_12341167257_certificate",
+      "mon_12341139122_certificate",
+      "bdo_academy_certificate",
+      "mon_12341162554_certificate",
+      "mon_12341138289_certificate",
+      "johnbryce_certificate",
+      "mon_12341175059_certificate",
+      "mon_12341168601_certificate",
+      "lfa_certificate",
+      "mediteva_certificate",
+      "oranim_education",
+      "mon_12341168658_general_academic",
+      "mon_12341166504_certificate",
+      "mon_12341168659_graphic_design",
+      "idan_hahorut_education",
+      "mon_12341144956_certificate",
+      "mon_12341185806_certificate",
+      "mon_12341166735_certificate",
+      "mon_12341138306_certificate",
+      "givat_washington_certificate",
+      "mon_12341187468_certificate",
+      "mon_12341167283_certificate",
+      "mon_12341179463_education",
+      "mon_12341187728_certificate",
+      "mon_12341203959_engineering",
+      "high_q_certificate",
+      "kidum_certificate",
+      "mon_12341203595_certificate",
+      "mon_12341189852_certificate"
+    ],
+    "unclear_semantics, unverified": [
+      "psychology",
+      "medicine",
+      "economics",
+      "datascience",
+      "nursing",
+      "accounting",
+      "occupational_therapy",
+      "architecture"
+    ],
+    "unclear_semantics": [
+      "criminology",
+      "nutrition",
+      "pharmacy",
+      "huji_law",
+      "huji_business",
+      "tau_law",
+      "tau_business",
+      "bgu_psychology",
+      "bgu_business",
+      "haifa_accounting",
+      "haifa_communication",
+      "haifa_politicalscience",
+      "haifa_infosystems",
+      "haifa_sociology",
+      "biu_psychology",
+      "biu_law",
+      "biu_criminology",
+      "ariel_economics",
+      "ariel_psychology",
+      "ariel_communication",
+      "ariel_criminology",
+      "ariel_health_systems",
+      "tau_accounting",
+      "huji_accounting",
+      "bgu_accounting"
+    ],
+    "insufficient_structured_data": [
+      "rubin_graphic_design",
+      "bezalel_graphic_design",
+      "jerusalem_academy_graphic_design",
+      "mon_12220685575_graphic_design",
+      "spieldocs_graphic_design",
+      "minshar_graphic_design",
+      "mon_12220697938_graphic_design",
+      "nativ_graphic_design",
+      "mon_12220697940_graphic_design",
+      "mon_12220699120_graphic_design",
+      "mon_12341101957_graphic_design",
+      "mon_12341064485_graphic_design",
+      "mon_12341092879_graphic_design",
+      "mon_12341113400_cs",
+      "mon_12341101353_cs",
+      "hackeru_cs",
+      "mon_12341150395_graphic_design",
+      "mon_12341147475_cs",
+      "mon_12341134448_business"
+    ],
+    "incomplete": [
+      "mon_12341063909_graphic_design",
+      "mon_12341143672_business",
+      "mon_12341098628_business",
+      "mon_12341122982_graphic_design",
+      "reidman_medicine",
+      "mon_12341203461_graphic_design",
+      "mon_12341155561_business"
+    ]
+  },
+  "unclearSemantics": [
+    "psychology:bgu",
+    "psychology:biu",
+    "psychology:ariel",
+    "medicine:biu",
+    "law:tau",
+    "law:huji",
+    "law:biu",
+    "business:tau",
+    "business:huji",
+    "business:bgu",
+    "economics:ariel",
+    "datascience:technion",
+    "nursing:tau",
+    "accounting:tau",
+    "accounting:huji",
+    "accounting:bgu",
+    "accounting:haifa",
+    "occupational_therapy:bgu",
+    "occupational_therapy:haifa",
+    "architecture:technion",
+    "communication:haifa",
+    "political_science:tau",
+    "political_science:haifa",
+    "education:tau",
+    "physiotherapy:tau",
+    "criminology:biu",
+    "criminology:ariel",
+    "nutrition:huji",
+    "nutrition:ariel",
+    "pharmacy:huji",
+    "huji_law:huji",
+    "huji_business:huji",
+    "tau_law:tau",
+    "tau_business:tau",
+    "bgu_psychology:bgu",
+    "bgu_business:bgu",
+    "haifa_accounting:haifa",
+    "haifa_communication:haifa",
+    "haifa_politicalscience:haifa",
+    "haifa_infosystems:haifa",
+    "haifa_sociology:haifa",
+    "biu_psychology:biu",
+    "biu_law:biu",
+    "biu_criminology:biu",
+    "ariel_economics:ariel",
+    "ariel_psychology:ariel",
+    "ariel_communication:ariel",
+    "ariel_criminology:ariel",
+    "ariel_health_systems:ariel",
+    "tau_accounting:tau",
+    "huji_accounting:huji",
+    "bgu_accounting:bgu"
+  ]
+}

@@ -1,5 +1,14 @@
 'use client';
 
+import AdmissionEstimate from './AdmissionEstimate';
+import TechnionThresholdNotice from './TechnionThresholdNotice';
+import TechnionMedicineComparison from './TechnionMedicineComparison';
+import { isTechnionMedicineScore, resultLabel } from '@/lib/studyJourney';
+import AdmissionConditions from './AdmissionConditions';
+import { acceptedManualGateFootnote } from '@/lib/acceptedManualGateFootnote';
+
+import { institutionLink } from '@/lib/institutionLinks';
+
 import { allowsNoGenericBagrut, allowsNoPsychometric } from '@/lib/calculatorInputRequirements';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -28,7 +37,10 @@ import {
   type AdmissionsRouteResult,
   type AdmissionsRouteSearchResult,
 } from '@/lib/admissionsRouteClient';
-import { admissionsExtraInputsFromAcademicScores } from '@/lib/admissionsEvaluationProfile';
+import {
+  academicBagrutAverage,
+  admissionsExtraInputsFromAcademicScores,
+} from '@/lib/admissionsEvaluationProfile';
 import type { CatalogueProgram } from '@/types/catalogue';
 import type { AcademicScores, GeographicRegion } from '@/types';
 import type {
@@ -136,7 +148,6 @@ function formatResultSummary(result: AdmissionsEvaluationResult): string {
         [
           'tau_bagrut_average',
           'colman_bagrut_average',
-          'colman_bagrut_certificate',
           'bgu_bagrut_average',
           'tau_application_requirements',
           'bgu_language_requirements',
@@ -219,7 +230,7 @@ export default function CalculatorResults({
   const savedAcademicScoresMatchCalculation =
     (academicScores?.psychometric?.overall === psychometric ||
       (psychometric === undefined && allowsNoPsychometric(degreeId))) &&
-    (academicScores?.bagrut?.weightedAverage === bagrut ||
+    (academicBagrutAverage(academicScores) === bagrut ||
       (bagrut === undefined && allowsNoGenericBagrut(degreeId)));
   const haifaTrack =
     haifaTrackOverride ?? academicScores?.admissions?.haifaInformationSystemsTrack ?? '';
@@ -251,6 +262,10 @@ export default function CalculatorResults({
       degreeId,
       psychometric,
       bagrut,
+      ...(savedAcademicScoresMatchCalculation &&
+        academicScores?.bagrut?.weightedAverage === undefined &&
+        bagrut !== undefined &&
+        extraInputs?.bagrutSubjectRecord && { bagrutAverageEstimated: true as const }),
       ...(extraInputs ? { extraInputs } : {}),
     })
       .then((nextReport) => {
@@ -307,7 +322,15 @@ export default function CalculatorResults({
     return () => {
       cancelled = true;
     };
-  }, [bagrut, degreeId, extraInputs, psychometric, reloadToken]);
+  }, [
+    bagrut,
+    degreeId,
+    extraInputs,
+    psychometric,
+    reloadToken,
+    savedAcademicScoresMatchCalculation,
+    academicScores?.bagrut?.weightedAverage,
+  ]);
 
   const routeTarget = useMemo(
     () =>
@@ -341,7 +364,7 @@ export default function CalculatorResults({
   const routeProfileMatchesCalculation = Boolean(
     hasCompleteRouteProfile &&
     academicScores?.psychometric?.overall === psychometric &&
-    academicScores?.bagrut?.weightedAverage === bagrut,
+    academicBagrutAverage(academicScores) === bagrut,
   );
 
   async function handleAdmissionAlert() {
@@ -746,8 +769,12 @@ export default function CalculatorResults({
 
               <div className="flex flex-col gap-2">
                 {visible.map(({ institution, result }) => {
-                  const config =
-                    result.kind === 'exact'
+                  const footnote = acceptedManualGateFootnote(result);
+                  let config = result.scoreAssessment
+                    ? result.scoreAssessment === 'meets_threshold'
+                      ? { ...STATUS_CONFIG.exactAccepted, label: 'הציונים עומדים בסף' }
+                      : { ...STATUS_CONFIG.exactBelow, label: 'הציונים מתחת לסף' }
+                    : result.kind === 'exact'
                       ? result.decision === 'accepted'
                         ? { ...STATUS_CONFIG.exactAccepted, label: acceptedLabel() }
                         : result.decision === 'below'
@@ -798,7 +825,15 @@ export default function CalculatorResults({
                                     : result.kind === 'tracked_missing_rule'
                                       ? STATUS_CONFIG.trackedMissingRule
                                       : STATUS_CONFIG.unsupported;
+                  if (footnote) config = { ...STATUS_CONFIG.exactAccepted, label: 'מתקבלים' };
+                  const statusBackground = isTechnionMedicineScore(result, degreeId)
+                    ? STATUS_CONFIG.exactAccepted.bg
+                    : config.bg;
+                  const statusLabel = isTechnionMedicineScore(result, degreeId)
+                    ? resultLabel(result, false, false, degreeId).label
+                    : config.label;
                   const institutionType = getInstitutionType(institution);
+                  const sourceUrl = institutionLink(result.officialUrls?.[0], institution.id);
 
                   return (
                     <div
@@ -815,35 +850,58 @@ export default function CalculatorResults({
                           <p className="truncate text-sm font-bold text-slate-900">
                             {institution.name}
                           </p>
-                          <p className="text-[10px] text-slate-500" dir="ltr">
-                            {institutionType === 'university' ? 'אוניברסיטה' : 'מכללה'} ·{' '}
-                            {formatResultSummary(result)}
+                          <p className="text-[10px] text-slate-500">
+                            {institutionType === 'university' ? 'אוניברסיטה' : 'מכללה'}
+                            {!isTechnionMedicineScore(result, degreeId) &&
+                              ` · ${formatResultSummary(result)}`}
                           </p>
-                          <p className="mt-1 text-xs font-semibold text-slate-700">
-                            {result.sourceLabel}
-                          </p>
-                          <p className="mt-1 text-xs leading-relaxed text-slate-500">
-                            {result.explanation}
-                          </p>
-                          <p className="mt-1 text-[11px] text-slate-500">{result.nextAction}</p>
-                          {result.officialUrls && result.officialUrls.length > 0 ? (
+                          {isTechnionMedicineScore(result, degreeId) ? (
+                            <TechnionMedicineComparison score={result.score} />
+                          ) : (
+                            <>
+                              <p className="mt-1 text-xs font-semibold text-slate-700">
+                                {result.sourceLabel}
+                              </p>
+                              <p className="mt-1 text-xs leading-relaxed text-slate-500">
+                                {result.explanation}
+                              </p>
+                            </>
+                          )}
+                          <AdmissionEstimate result={result} />
+                          {footnote && (
+                            <AdmissionConditions
+                              conditions={result.additionalConditions}
+                              footnote={footnote}
+                            />
+                          )}
+                          {!isTechnionMedicineScore(result, degreeId) && (
+                            <p className="mt-1 text-[11px] text-slate-500">{result.nextAction}</p>
+                          )}
+                          <TechnionThresholdNotice
+                            programId={selectedProgram?.id}
+                            institutionId={institution.id}
+                          />
+                          {!footnote && (
+                            <AdmissionConditions conditions={result.additionalConditions} />
+                          )}
+                          {sourceUrl ? (
                             <a
-                              href={result.officialUrls[0]}
+                              href={sourceUrl}
                               target="_blank"
                               rel="noopener noreferrer"
                               dir="ltr"
-                              className="mt-1 inline-block max-w-full truncate text-[11px] font-semibold text-[#4f46e5] underline decoration-[#a5b4fc] underline-offset-2 hover:text-[#3730a3]"
+                              className="mt-1 inline-block max-w-full truncate text-right text-[11px] font-semibold text-[#4f46e5] underline decoration-[#a5b4fc] underline-offset-2 hover:text-[#3730a3]"
                             >
-                              {result.officialUrls[0]}
+                              לאתר המוסד
                             </a>
                           ) : null}
                         </div>
                       </div>
                       <span
-                        aria-label={`${institution.name}: ${config.label}`}
-                        className={`${config.bg} self-start rounded-full border-2 border-black px-3 py-1 text-[10px] font-extrabold text-black sm:self-center`}
+                        aria-label={`${institution.name}: ${statusLabel}`}
+                        className={`${statusBackground} self-start rounded-full border-2 border-black px-3 py-1 text-[10px] font-extrabold text-black sm:self-center`}
                       >
-                        {config.label}
+                        {statusLabel}
                       </span>
                     </div>
                   );
@@ -1080,6 +1138,7 @@ function VerifiedRoutePanel({
 }
 
 function RouteCard({ title, route }: { title: string; route: AdmissionsRouteResult }) {
+  const sourceUrl = institutionLink(route.verification.sourceUrl);
   return (
     <article className="rounded-xl border-2 border-black bg-white p-4">
       <h2 className="text-sm font-black text-slate-900">{title}</h2>
@@ -1097,9 +1156,9 @@ function RouteCard({ title, route }: { title: string; route: AdmissionsRouteResu
         אומת מול ציון {route.verification.score} וסף {route.verification.cutoff}. זהו חישוב קבלה, לא
         הבטחת קבלה סופית.
       </p>
-      {route.verification.sourceUrl ? (
+      {sourceUrl ? (
         <a
-          href={route.verification.sourceUrl}
+          href={sourceUrl}
           target="_blank"
           rel="noreferrer"
           className="mt-2 inline-block text-xs font-semibold text-[#4f46e5] underline"

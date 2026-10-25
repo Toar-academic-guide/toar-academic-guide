@@ -119,15 +119,16 @@ export function resolveBguEngineeringInputs(
   programId: BguEngineeringProgramId,
   input: AdmissionsEvaluationInput,
   now = new Date(),
+  assessment?: 'scores',
 ): BguEngineeringInputResolution {
   const config = BGU_ENGINEERING_PROGRAMS[programId];
-  const extra = input.extraInputs;
+  const extra = input.extraInputs ?? {};
   const details = extra?.bguEngineering;
   if (!details?.detailsConfirmed || !optionalDetailsValid(details, now))
     return { kind: 'needs_input', requiredInputs: ['bgu_engineering_details'] };
-  if (extra?.bguLanguageRequirementsConfirmed === undefined)
+  if (assessment !== 'scores' && extra?.bguLanguageRequirementsConfirmed === undefined)
     return { kind: 'needs_input', requiredInputs: ['bgu_language_requirements'] };
-  if (!extra.bguLanguageRequirementsConfirmed)
+  if (assessment !== 'scores' && !extra.bguLanguageRequirementsConfirmed)
     return { kind: 'below', reason: 'נדרשות אנגלית ברמה בסיסית ועברית ברמה ה׳ לנדרשים.' };
   const record = extra.bagrutSubjectRecord;
   const subjects = bagrutExamSubjects(record);

@@ -24,7 +24,7 @@ const psychometricScoresSchema = z.strictObject({
 });
 
 const bagrutRecordSchema = z.strictObject({
-  weightedAverage: boundedInteger(60, 120).optional(),
+  weightedAverage: z.number().min(60).max(120).optional(),
   subjectRecord: bagrutSubjectRecordSchema.optional(),
 });
 

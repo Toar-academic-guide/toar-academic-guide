@@ -286,9 +286,24 @@ export async function runAdmissionsReviewPreparationCli(
     await runAdmissionsReviewPreparation(argv, dependencies);
     exit(0);
   } catch (error) {
-    console.error(error instanceof Error ? error.message : error);
+    console.error(redactConnectionCredentials(cleanupErrorMessage(error)));
+    const seen = new Set([error]);
+    let cause = error?.cause;
+    for (let depth = 0; cause != null && depth < 5 && !seen.has(cause); depth += 1) {
+      seen.add(cause);
+      const name = cause.name ?? 'Error';
+      const code = cause.code != null ? ` [${cause.code}]` : '';
+      console.error(
+        redactConnectionCredentials(`Caused by: ${name}${code}: ${cleanupErrorMessage(cause)}`),
+      );
+      cause = cause.cause;
+    }
     exit(1);
   }
+}
+
+function redactConnectionCredentials(message) {
+  return message.replace(/([a-z][a-z0-9+.-]*:\/\/)[^\s]*@/gi, '$1***@');
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {

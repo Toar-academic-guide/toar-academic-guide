@@ -2,9 +2,11 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import EnquiryForm from '@/components/EnquiryForm';
 import WayPageShell from '@/components/WayPageShell';
-import { listCatalogueInstitutions, listCataloguePrograms } from '@/server/catalogue/queries';
+import { getEnquiryTarget } from '@/lib/enquiryTarget';
 
 export const dynamic = 'force-dynamic';
+
+export const metadata = { robots: { index: false, follow: true } };
 
 export default async function EnquiryPage({
   searchParams,
@@ -17,15 +19,9 @@ export default async function EnquiryPage({
   if (programId === 'psychometric-preparation' && institutionId === '') {
     title = 'הכנה לפסיכומטרי';
   } else {
-    const [programs, institutions] = await Promise.all([
-      listCataloguePrograms(),
-      listCatalogueInstitutions(),
-    ]);
-    const program = programs.data.find((entry) => entry.id === programId);
-    const institution = institutions.data.find((entry) => entry.id === institutionId);
-    if (!program || !institution || !program.linkedInstitutionIds.includes(institutionId))
-      notFound();
-    title = `${program.name} · ${institution.name}`;
+    const target = await getEnquiryTarget(programId, institutionId);
+    if (!target) notFound();
+    title = `${target.program.name} · ${target.institution.name}`;
   }
   return (
     <WayPageShell>

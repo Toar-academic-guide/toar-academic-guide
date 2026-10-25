@@ -218,6 +218,7 @@ export function buildCatalogueSeed(seedPrograms: Program[] = allPrograms): Catal
     programRows.push({
       id: program.id,
       name: program.name,
+      isListed: program.isListed ?? true,
       institutionName: program.institution,
       institutionId: primaryInstitutionId ?? null,
       type: program.type as 'academic' | 'certificate' | 'vocational',
@@ -786,6 +787,7 @@ export async function upsertCatalogueSeed(payload: CatalogueSeedPayload) {
         target: programs.id,
         set: {
           name: programs.name,
+          isListed: programs.isListed,
           institutionName: programs.institutionName,
           institutionId: programs.institutionId,
           type: programs.type,

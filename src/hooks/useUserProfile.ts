@@ -145,7 +145,14 @@ export function useUserProfile(): UseUserProfileResult {
       return false;
     }
 
-    const userId = user.id;
+    return persistProfileWrite(() => putProfileSnapshot(nextProfile, 'replace'), previousProfile);
+  }
+
+  async function persistProfileWrite(
+    write: () => Promise<UserProfile>,
+    previousProfile: UserProfile,
+  ) {
+    const userId = user!.id;
     const revision = latestWriteRevisionRef.current + 1;
     latestWriteRevisionRef.current = revision;
     setSyncing(true);
@@ -156,7 +163,7 @@ export function useUserProfile(): UseUserProfileResult {
         if (currentUserIdRef.current !== userId) {
           throw new Error('Profile owner changed before the save could start.');
         }
-        return putProfileSnapshot(nextProfile, 'replace');
+        return write();
       });
     profileWriteQueueRef.current = saveRequest.then(
       () => undefined,
@@ -219,16 +226,7 @@ export function useUserProfile(): UseUserProfileResult {
       return;
     }
 
-    setSyncing(true);
-    try {
-      const savedProfile = await mutateSavedProgram(programId, 'POST');
-      replaceProfileState(savedProfile);
-    } catch (error) {
-      setSyncError(toErrorMessage(error, 'שמירת התוכנית נכשלה.'));
-      replaceProfileState(previousProfile);
-    } finally {
-      setSyncing(false);
-    }
+    await persistProfileWrite(() => mutateSavedProgram(programId, 'POST'), previousProfile);
   }
 
   async function removeSavedProgram(programId: string) {
@@ -249,16 +247,7 @@ export function useUserProfile(): UseUserProfileResult {
       return;
     }
 
-    setSyncing(true);
-    try {
-      const savedProfile = await mutateSavedProgram(programId, 'DELETE');
-      replaceProfileState(savedProfile);
-    } catch (error) {
-      setSyncError(toErrorMessage(error, 'הסרת התוכנית נכשלה.'));
-      replaceProfileState(previousProfile);
-    } finally {
-      setSyncing(false);
-    }
+    await persistProfileWrite(() => mutateSavedProgram(programId, 'DELETE'), previousProfile);
   }
 
   return {
@@ -405,6 +394,7 @@ function hasMeaningfulDraft(profile: UserProfile): boolean {
     Boolean(profile.academicScores?.psychometric?.verbal) ||
     Boolean(profile.academicScores?.psychometric?.english) ||
     Boolean(profile.academicScores?.bagrut?.weightedAverage) ||
+    Boolean(profile.academicScores?.bagrut?.subjectRecord?.subjects.length) ||
     Object.values(profile.academicScores?.admissions ?? {}).some((value) => value !== undefined) ||
     (profile.savedProgramIds?.length ?? 0) > 0
   );

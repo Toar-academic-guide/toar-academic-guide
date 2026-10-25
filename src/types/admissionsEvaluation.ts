@@ -107,7 +107,12 @@ export type AdmissionsRequiredInput =
   | 'bagrut_sector'
   | 'tau_bagrut_average'
   | 'colman_bagrut_average'
+  | 'colman_internal_test'
   | 'colman_bagrut_certificate'
+  | 'reichman_application_requirements'
+  | 'institution_weighted_score'
+  | 'admissions_committee'
+  | 'mta_nursing_interview'
   | 'bgu_bagrut_average'
   | 'tau_application_requirements'
   | 'bgu_language_requirements'
@@ -155,6 +160,8 @@ export interface AdmissionsExtraInputs
   colmanBagrutAverage?: number;
   colmanBagrutCertificateConfirmed?: boolean;
   bguBagrutAverage?: number;
+  /** Internal derivation marker; the HTTP input schema does not accept it. */
+  bguBagrutAverageEstimated?: true;
   tauApplicationRequirementsConfirmed?: boolean;
   tauManagementRequirementsConfirmed?: boolean;
   tauManagementAcademicRouteConfirmed?: boolean;
@@ -233,6 +240,7 @@ export type AdmissionsPairVerificationState =
   'exact' | 'withheld' | 'stale' | 'blocked' | 'authority_unavailable';
 
 export interface AdmissionsEvaluationInput {
+  bagrutAverageEstimated?: true;
   degreeId: string;
   psychometric?: number;
   bagrut?: number;
@@ -248,6 +256,8 @@ export interface AdmissionsEvaluationSnapshot {
 }
 
 export interface AdmissionsEvaluationResult {
+  estimated?: boolean;
+  estimationReason?: string;
   institution: Pick<
     CatalogueInstitution,
     | 'id'
@@ -272,6 +282,12 @@ export interface AdmissionsEvaluationResult {
   threshold?: number | null;
   deltaNeeded?: DeltaNeeded;
   requiredInputs?: AdmissionsRequiredInput[];
+  scoreAssessment?: 'meets_threshold' | 'below_threshold';
+  additionalConditions?: {
+    id: AdmissionsRequiredInput;
+    label: string;
+    status: 'confirmed' | 'unconfirmed' | 'unmet';
+  }[];
   evidenceItemId?: string;
   evidenceItemName?: string;
   missingData?: string[];
@@ -287,4 +303,13 @@ export interface AdmissionsEvaluationReport {
   input: AdmissionsEvaluationInput;
   program: Pick<CatalogueProgram, 'id' | 'name'>;
   results: AdmissionsEvaluationResult[];
+}
+
+/** Journey requests share one applicant profile across a bounded set of programmes. */
+export type AdmissionsBatchInput = Omit<AdmissionsEvaluationInput, 'degreeId'> & {
+  degreeIds: string[];
+};
+export interface AdmissionsBatchReport {
+  reports: Record<string, AdmissionsEvaluationReport>;
+  failedDegreeIds: string[];
 }

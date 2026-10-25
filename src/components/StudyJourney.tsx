@@ -1,8 +1,13 @@
 'use client';
 
+import AdmissionEstimate from './AdmissionEstimate';
+
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import posthog from 'posthog-js';
+import ProgramTrackedLink from './ProgramTrackedLink';
 import {
   ArrowLeft,
   ArrowRight,
@@ -19,24 +24,29 @@ import {
 import { useAuth } from '@/context/AuthContext';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { fetchCatalogueInstitutions, fetchCataloguePrograms } from '@/lib/catalogueClient';
-import { fetchAdmissionsEvaluation } from '@/lib/admissionsEvaluationClient';
+import { fetchAdmissionsBatch } from '@/lib/admissionsEvaluationClient';
 import { admissionsExtraInputsFromAcademicScores } from '@/lib/admissionsEvaluationProfile';
 import {
   LOCATIONS,
   INSTITUTION_TYPES,
   studyFields,
   journeyRows,
+  distinctRecommendations,
   toggleLocation,
   institutionLocations,
   matchesLocation,
   matchesInstitutionType,
   groupJourneyRows,
   resultLabel,
+  resultExplanation,
+  isTechnionMedicineScore,
+  formatJourneyScore,
   officialUrl,
   type JourneyLocation,
   type InstitutionType,
   type JourneyRow,
 } from '@/lib/studyJourney';
+import { catalogueAdmissionRequirements, catalogueDescription } from '@/lib/catalogueDisplayText';
 import { userProfileSchema } from '@/server/user/profileSchema';
 import type { AcademicScores, RecommendedField, CareerAssessmentDraft } from '@/types';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
@@ -45,6 +55,17 @@ import { getRecommendations } from '@/utils/recommendationEngine';
 import JourneyRegionMap from './JourneyRegionMap';
 import EnquiryForm from './EnquiryForm';
 import WayPageShell from './WayPageShell';
+import PublicNavBar from './PublicNavBar';
+import ProgramShareButton from './ProgramShareButton';
+import AdmissionRequirements from './AdmissionRequirements';
+import RequirementTiles from './RequirementTiles';
+import AdmissionConditions from './AdmissionConditions';
+import TechnionThresholdNotice from './TechnionThresholdNotice';
+import TechnionMedicineComparison from './TechnionMedicineComparison';
+import { acceptedManualGateFootnote } from '@/lib/acceptedManualGateFootnote';
+import { isBatchCUnsupportedProgramId } from '@/data/admissions/batchCUnsupportedProgramIds';
+import { DANON_PROGRAM_URLS } from '@/data/admissions/danon';
+import { buildLoginPath, ROUTES } from '@/lib/routes';
 import './StudyJourney.css';
 
 const CareerAssessment = dynamic(() => import('./CareerAssessment'));
@@ -167,8 +188,15 @@ function Chips<T extends string>({
   );
 }
 
-export default function StudyJourney({ initialStep = 'home' }: { initialStep?: Step }) {
+export default function StudyJourney({
+  initialStep = 'home',
+  browse,
+}: {
+  initialStep?: Step;
+  browse?: ReactNode;
+}) {
   const auth = useAuth();
+  const router = useRouter();
   const {
     profile,
     updateProfile,
@@ -200,17 +228,25 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
   const [resultFilter, setResultFilter] = useState('all');
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [activeId, setActiveId] = useState<string | null>(null);
+  const [detailOrigin, setDetailOrigin] = useState<'saved' | 'results'>('results');
   const [compareIds, setCompareIds] = useState<string[]>([]);
   const [simulation, setSimulation] = useState<number | undefined>();
   const [message, setMessage] = useState('');
   const [resultLimit, setResultLimit] = useState(10);
 
-  const go = useCallback((next: Step) => {
-    setStep(next);
-    setMessage('');
-    if (window.location.hash !== `#${next}`) window.location.hash = next;
-    window.scrollTo({ top: 0, behavior: 'instant' });
-  }, []);
+  const go = useCallback(
+    (next: Step) => {
+      setStep(next);
+      setMessage('');
+      if (next === 'home') router.push(ROUTES.home);
+      else if (window.location.hash !== `#${next}`) {
+        // Preserve Next's route state when creating a journey history entry.
+        window.history.pushState(null, '', `#${next}`);
+      }
+      window.scrollTo({ top: 0, behavior: 'instant' });
+    },
+    [router],
+  );
   useEffect(() => {
     const stored = readDraft();
     hadStoredDraft.current = !!stored;
@@ -225,16 +261,38 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
     };
     readStep();
     window.addEventListener('hashchange', readStep);
-    return () => window.removeEventListener('hashchange', readStep);
+    window.addEventListener('popstate', readStep);
+    return () => {
+      window.removeEventListener('hashchange', readStep);
+      window.removeEventListener('popstate', readStep);
+    };
   }, [initialStep]);
-  const importedProfile = useRef(false);
+  const importedProfile = useRef<string | null>(null);
+  const profileIdentity = auth.user?.id ?? 'guest';
   useEffect(() => {
-    if (!ready || !hydrated || initialProfileStatus !== 'ready' || importedProfile.current) return;
-    importedProfile.current = true;
-    if (!hadStoredDraft.current && profile.academicScores) {
-      setDraft((current) => ({ ...current, scores: profile.academicScores ?? {} }));
+    if (
+      !ready ||
+      !hydrated ||
+      initialProfileStatus !== 'ready' ||
+      importedProfile.current === profileIdentity
+    )
+      return;
+    importedProfile.current = profileIdentity;
+    if (auth.user || !hadStoredDraft.current) {
+      const scores = profile.academicScores ?? {};
+      setDraft((current) => ({
+        ...current,
+        scores,
+        gradeMode: scores.bagrut?.subjectRecord
+          ? 'exact'
+          : scores.bagrut?.weightedAverage
+            ? 'quick'
+            : 'none',
+        psyMode: scores.psychometric?.overall ? 'score' : 'none',
+        target: undefined,
+      }));
     }
-  }, [ready, hydrated, initialProfileStatus, profile.academicScores]);
+  }, [ready, hydrated, initialProfileStatus, profile.academicScores, profileIdentity, auth.user]);
   useEffect(() => {
     if (!ready) return;
     try {
@@ -270,16 +328,24 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
     void loadCatalogue();
   }, [loadCatalogue]);
   const fields = useMemo(() => studyFields(programs), [programs]);
-  const allRows = useMemo(() => journeyRows(fields, institutions), [fields, institutions]);
+  const allRows = useMemo(
+    () => journeyRows(studyFields(programs, true), institutions),
+    [programs, institutions],
+  );
   const selectedRows = useMemo(
     () =>
-      allRows.filter(
+      distinctRecommendations(allRows).filter(
         (row) =>
+          row.program.isListed !== false &&
           (!draft.fields.length || draft.fields.includes(row.fieldId)) &&
           matchesLocation(row.institution, draft.locations) &&
           matchesInstitutionType(row.institution, row.program, draft.types),
       ),
     [allRows, draft.fields, draft.locations, draft.types],
+  );
+  const savedRows = useMemo(
+    () => allRows.filter((row) => profile.savedProgramIds?.includes(row.program.id)),
+    [allRows, profile.savedProgramIds],
   );
   const rows = useMemo(
     () =>
@@ -299,14 +365,27 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
         result: reports[active.program.id]?.results.find(
           (result) => result.linkedInstitutionId === active.institution.id,
         ),
+        failed: failedReports.includes(active.program.id),
       }
     : undefined;
+  const activeFootnote = acceptedManualGateFootnote(activeRow?.result);
+  const isBatchCUnsupported = activeRow
+    ? isBatchCUnsupportedProgramId(activeRow.program.id, activeRow.institution.id)
+    : false;
   const details = activeRow?.program.institutionDetails?.find(
     (detail) => detail.institutionName === activeRow.institution.name,
   );
+  const activeOfficialUrl = officialUrl(
+    (isBatchCUnsupported ? activeRow?.result?.officialUrls?.[0] : undefined) ??
+      details?.programUrl ??
+      activeRow?.institution.programUrl,
+    activeRow?.institution.id,
+  );
+  const description = catalogueDescription(details?.programDescription);
   const counts = useMemo(() => {
     const sets: Partial<Record<JourneyLocation, Set<string>>> = {};
     for (const row of allRows) {
+      if (row.program.isListed === false) continue;
       if (draft.fields.length && !draft.fields.includes(row.fieldId)) continue;
       if (!matchesInstitutionType(row.institution, row.program, draft.types)) continue;
       for (const area of institutionLocations(row.institution))
@@ -328,33 +407,31 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
     patch({ types: types.length ? types : ['all'] });
   };
   const evaluate = useCallback(
-    async (targets: JourneyRow[], scores: AcademicScores, target?: number) => {
+    async (targets: JourneyRow[], scores: AcademicScores, target?: number, retry = false) => {
       const version = ++calculation.current;
       setCalculating(true);
       setFailedReports([]);
-      setReports({});
+      if (!retry) setReports({});
       const ids = [...new Set(targets.map((row) => row.program.id))];
       const found: Record<string, AdmissionsEvaluationReport> = {};
       const failed: string[] = [];
-      // Keep requests bounded; catalogue browsing does not depend on a calculator response.
-      for (let index = 0; index < ids.length; index += 4) {
+      for (let index = 0; index < ids.length; index += 50) {
         if (calculation.current !== version) return;
-        await Promise.all(
-          ids.slice(index, index + 4).map(async (id) => {
-            try {
-              found[id] = await fetchAdmissionsEvaluation({
-                degreeId: id,
-                psychometric: target ?? scores.psychometric?.overall,
-                bagrut: scores.bagrut?.weightedAverage,
-                extraInputs: admissionsExtraInputsFromAcademicScores(scores),
-              });
-            } catch {
-              failed.push(id);
-            }
-          }),
-        );
+        const degreeIds = ids.slice(index, index + 50);
+        try {
+          const batch = await fetchAdmissionsBatch({
+            degreeIds,
+            psychometric: target ?? scores.psychometric?.overall,
+            bagrut: scores.bagrut?.weightedAverage,
+            extraInputs: admissionsExtraInputsFromAcademicScores(scores),
+          });
+          Object.assign(found, batch.reports);
+          failed.push(...batch.failedDegreeIds);
+        } catch {
+          failed.push(...degreeIds);
+        }
         if (calculation.current === version) {
-          setReports({ ...found });
+          setReports((current) => ({ ...(retry ? current : {}), ...found }));
           setFailedReports([...failed]);
         }
       }
@@ -362,32 +439,102 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
     },
     [],
   );
-  // Only the selected fields are evaluated upfront. Undecided visitors browse first.
+  // Saved programmes use account grades, independently of the current journey or simulation.
+  const evaluationScope =
+    step === 'saved'
+      ? 'saved'
+      : ['results', 'plan'].includes(step)
+        ? 'results'
+        : step === 'detail'
+          ? 'detail'
+          : null;
+  const evaluationTargets = useMemo(
+    () =>
+      evaluationScope === 'detail'
+        ? active
+          ? [active]
+          : []
+        : evaluationScope === 'saved'
+          ? savedRows
+          : selectedRows,
+    [evaluationScope, active, savedRows, selectedRows],
+  );
+  const usesSavedGrades =
+    evaluationScope === 'saved' || (evaluationScope === 'detail' && detailOrigin === 'saved');
+  const evaluationScores = usesSavedGrades
+    ? (profile.academicScores ?? EMPTY.scores)
+    : draft.scores;
+  const evaluationTarget = usesSavedGrades ? undefined : (simulation ?? draft.target);
   const resultSignature = JSON.stringify([
-    draft.fields,
-    draft.locations,
-    draft.types,
-    draft.scores,
-    draft.target,
-    simulation,
+    evaluationScope,
+    profileIdentity,
+    evaluationTargets.map((row) => row.id),
+    evaluationScores,
+    evaluationTarget,
   ]);
   const lastEvaluation = useRef('');
+  const viewedResults = useRef('');
   useEffect(() => {
-    if (!ready || catalogueLoading || !['results', 'plan'].includes(step)) return;
-    if (!draft.fields.length || !selectedRows.length || lastEvaluation.current === resultSignature)
+    if (!['results', 'plan'].includes(step)) {
+      viewedResults.current = '';
       return;
-    lastEvaluation.current = resultSignature;
-    void evaluate(selectedRows, draft.scores, simulation ?? draft.target);
+    }
+    if (!ready || catalogueLoading || catalogueError || calculating) return;
+    // Wait for the current calculation, including when older reports are still rendered.
+    if (draft.fields.length && rows.length && lastEvaluation.current !== resultSignature) return;
+    if (draft.fields.length && rows.some((row) => !row.result && !row.failed)) return;
+    const key = `${step}:${resultSignature}`;
+    if (viewedResults.current === key) return;
+    viewedResults.current = key;
+    const groups = rows.map(
+      (row) => resultLabel(row.result, row.failed, false, row.program.id).group,
+    );
+    posthog.capture('journey_results_viewed', {
+      result_count: rows.length,
+      match_count: groups.filter((group) => group === 'match').length,
+      improve_count: groups.filter((group) => group === 'improve').length,
+      explore_count: groups.filter((group) => group === 'explore').length,
+      has_psychometric: !!draft.scores.psychometric?.overall,
+      has_bagrut: !!(draft.scores.bagrut?.weightedAverage || draft.scores.bagrut?.subjectRecord),
+    });
   }, [
     step,
     ready,
     catalogueLoading,
-    resultSignature,
-    selectedRows,
+    catalogueError,
+    calculating,
     draft.fields.length,
     draft.scores,
-    draft.target,
-    simulation,
+    rows,
+    resultSignature,
+  ]);
+  useEffect(() => {
+    if (!ready || catalogueLoading || !evaluationScope) return;
+    if (['saved', 'detail'].includes(evaluationScope) && initialProfileStatus !== 'ready') return;
+    // A detail reached from results already has a report; a refreshed detail does not.
+    if (evaluationScope === 'detail' && (activeRow?.result || activeRow?.failed)) return;
+    if (evaluationScope === 'results' && !draft.fields.length) return;
+    if (!evaluationTargets.length) {
+      lastEvaluation.current = '';
+      calculation.current++;
+      setCalculating(false);
+      return;
+    }
+    if (lastEvaluation.current === resultSignature) return;
+    lastEvaluation.current = resultSignature;
+    void evaluate(evaluationTargets, evaluationScores, evaluationTarget);
+  }, [
+    evaluationScope,
+    activeRow?.result,
+    activeRow?.failed,
+    ready,
+    catalogueLoading,
+    initialProfileStatus,
+    resultSignature,
+    evaluationTargets,
+    evaluationScores,
+    evaluationTarget,
+    draft.fields.length,
     evaluate,
   ]);
   useEffect(
@@ -396,11 +543,41 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
     },
     [],
   );
+  const contactProgramId = activeRow?.program.id;
+  const contactInstitutionId = activeRow?.institution.id;
+  const contactResultGroup =
+    activeRow?.result || activeRow?.failed
+      ? resultLabel(activeRow.result, activeRow.failed, false, activeRow.program.id).group
+      : undefined;
+  const previousContactStep = useRef<Step | null>(null);
+  useEffect(() => {
+    const previous = previousContactStep.current;
+    if (previous === step || (step === 'inquiry' && !contactProgramId)) return;
+    previousContactStep.current = step;
+    if (step === 'offer') {
+      posthog.capture('journey_contact_clicked', {
+        program_id: 'psychometric-preparation',
+        institution_id: '',
+        surface: 'offer',
+      });
+    } else if (step === 'inquiry' && contactProgramId) {
+      posthog.capture('journey_contact_clicked', {
+        program_id: contactProgramId,
+        institution_id: contactInstitutionId,
+        surface:
+          previous && ['results', 'plan', 'saved'].includes(previous)
+            ? 'row'
+            : (previous ?? 'inquiry'),
+        ...(contactResultGroup ? { result_group: contactResultGroup } : {}),
+      });
+    }
+  }, [step, contactProgramId, contactInstitutionId, contactResultGroup]);
   const saveScores = async () => {
     if (!(await updateProfile({ academicScores: draft.scores })))
       setMessage('שמירת הציונים לא הושלמה. אפשר להמשיך ולנסות לשמור שוב בהמשך.');
   };
   const selectRow = (row: JourneyRow, next: Step) => {
+    setDetailOrigin(step === 'saved' ? 'saved' : 'results');
     setActiveId(row.id);
     setDraft((current) => ({ ...current, selectedRowId: row.id }));
     go(next);
@@ -427,7 +604,7 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
       'psy-target': 'psy-mode',
       review: 'psy-mode',
       results: 'review',
-      detail: 'results',
+      detail: detailOrigin,
       alternatives: 'detail',
       inquiry: 'detail',
       offer: 'results',
@@ -463,7 +640,7 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
     compare: 'משווים אפשרויות',
     improve: 'מה יקרה אם נשפר את הציון?',
     plan: 'האפשרויות עם ציון היעד',
-    missing: 'מדייקים את ההתאמה',
+    missing: 'השלמת נתונים לחישוב',
     questionnaire: 'מגלים מה מתאים לך',
     'quiz-result': 'הכיוונים שמתאימים לך',
     account: 'החשבון שלי',
@@ -500,19 +677,32 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
   );
   const visibleRows = rows.filter(
     (row) =>
-      (resultFilter === 'all' || resultLabel(row.result).group === resultFilter) &&
+      (resultFilter === 'all' ||
+        resultLabel(row.result, false, false, row.program.id).group === resultFilter) &&
       (!query || `${row.fieldName} ${row.institution.name}`.includes(query)),
   );
   const groups = groupJourneyRows(visibleRows, groupBy);
   const rowView = (row: JourneyRow) => {
-    const status = resultLabel(row.result);
+    const status = resultLabel(row.result, row.failed, calculating && !row.result, row.program.id);
     return (
       <article className="journey-result-row" key={row.id}>
         <div className="journey-row-info">
           <button className="journey-row-title" onClick={() => selectRow(row, 'detail')}>
-            {groupBy === 'field' ? row.institution.name : row.fieldName}
+            {step === 'saved'
+              ? `${row.fieldName} — ${row.institution.name}`
+              : groupBy === 'field'
+                ? row.institution.name
+                : row.fieldName}
           </button>
-          <span className={`journey-status status-${status.group}`}>{status.label}</span>
+          <span
+            className={`journey-status status-${isTechnionMedicineScore(row.result, row.program.id) && !row.failed ? 'match' : status.group}`}
+          >
+            {status.label}
+          </span>
+          {isTechnionMedicineScore(row.result, row.program.id) && !row.failed && (
+            <TechnionMedicineComparison score={row.result.score} />
+          )}
+          <TechnionThresholdNotice programId={row.program.id} institutionId={row.institution.id} />
         </div>
         <div className="journey-row-actions">
           <button className="journey-contact" onClick={() => selectRow(row, 'inquiry')}>
@@ -540,35 +730,14 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
 
   return (
     <WayPageShell navigation={null} contentClassName="" className="study-journey">
-      <header className="journey-nav">
-        <Link
-          href="/"
-          aria-label="Way — עמוד הבית"
-          onClick={(event) => {
-            event.preventDefault();
-            go('home');
-          }}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/way-logo.png" alt="Way" width={82} height={42} />
-        </Link>
-        <nav aria-label="ניווט ראשי">
-          <Link href="/institutions">מוסדות לימוד</Link>
-          <button onClick={() => go('saved')}>הרשימה שלי</button>
-          <Link href="/about">מי אנחנו</Link>
-        </nav>
-        {auth.user ? (
-          <button className="journey-pill" onClick={() => go('account')}>
-            החשבון שלי
-          </button>
-        ) : (
-          <Link className="journey-pill" href={`/login?next=${encodeURIComponent('/#' + step)}`}>
-            כניסה
-          </Link>
-        )}
-      </header>
+      <PublicNavBar
+        onGoHome={() => go('home')}
+        onGoToBucket={() => go('saved')}
+        onAccountClick={() => go('account')}
+        loginHref={buildLoginPath('/#' + step)}
+      />
       <main
-        className={`journey-main ${step === 'home' ? 'journey-home' : ''} ${step === 'intent' ? 'journey-intent' : ''}`}
+        className={`journey-main ${step === 'home' ? 'journey-home' : ''} ${step === 'intent' ? 'journey-intent' : ''} ${['subjects', 'grade-mode', 'grades-quick', 'grades-exact', 'psy-mode', 'psy-score', 'psy-target', 'review', 'detail', 'alternatives', 'quiz-result', 'improve', 'account', 'inquiry', 'offer'].includes(step) ? 'journey-main-narrow' : ''}`}
       >
         {step !== 'home' && (
           <>
@@ -600,9 +769,15 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                 הדרך <strong>ללימודים שלך</strong> מתחילה כאן.
               </p>
               <h1 ref={heading} tabIndex={-1}>
-                בוחרים <span>מה</span> ללמוד,
-                <br />
-                <span>איפה</span> ללמוד ו<span>איך</span> להתקבל.
+                <span className="journey-hero-line">
+                  בוחרים <em className="hero-what">מה</em> ללמוד,
+                </span>
+                <span className="journey-hero-line">
+                  <em className="hero-where">איפה</em> ללמוד
+                </span>
+                <span className="journey-hero-line">
+                  ו<em className="hero-how">איך</em> להתקבל.
+                </span>
               </h1>
               <p>בתוך ריבוי האפשרויות, Way עוזרת לעשות סדר ולבנות דרך שמתאימה לך. שנתחיל?</p>
               <Primary onClick={() => go('intent')}>עזרו לי לבחור מה ללמוד</Primary>
@@ -849,10 +1024,10 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
               ממוצע בגרות
               <input
                 type="number"
-                inputMode="numeric"
+                inputMode="decimal"
                 min={60}
                 max={120}
-                step={1}
+                step="any"
                 required
                 value={draft.scores.bagrut?.weightedAverage ?? ''}
                 onChange={(event) =>
@@ -873,7 +1048,12 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
           <JourneyExactGrades
             initialRecord={draft.scores.bagrut?.subjectRecord}
             onComplete={(record) => {
-              patchScores({ bagrut: { subjectRecord: record } });
+              patchScores({
+                bagrut: {
+                  ...draft.scores.bagrut,
+                  subjectRecord: record,
+                },
+              });
               afterGrades();
             }}
           />
@@ -1097,7 +1277,12 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                 <button
                   className="journey-text-button"
                   onClick={() =>
-                    void evaluate(selectedRows, draft.scores, simulation ?? draft.target)
+                    void evaluate(
+                      selectedRows.filter((row) => failedReports.includes(row.program.id)),
+                      draft.scores,
+                      simulation ?? draft.target,
+                      true,
+                    )
                   }
                 >
                   לנסות שוב
@@ -1159,64 +1344,115 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
               <p className="journey-subtitle">{activeRow.institution.name}</p>
               {step === 'detail' ? (
                 <>
-                  <p>{details?.programDescription}</p>
-                  <span className={`journey-status status-${resultLabel(activeRow.result).group}`}>
-                    {resultLabel(activeRow.result).label}
-                  </span>
-                  {activeRow.result?.score != null && (
-                    <p>
-                      {activeRow.result.scoreLabel ?? 'ציון מחושב'}:{' '}
-                      {activeRow.result.score.toFixed(2)}
-                      {activeRow.result.threshold != null && ` · סף: ${activeRow.result.threshold}`}
-                    </p>
-                  )}
-                  <h2>תנאי קבלה</h2>
-                  <ul className="journey-requirements">
-                    {(details?.specificAdmissionNotes?.length
-                      ? details.specificAdmissionNotes
-                      : activeRow.program.admissionRequirements
-                    ).map((text, index) => (
-                      <li key={index}>{text}</li>
-                    ))}
-                  </ul>
-                  <div className="journey-actions">
+                  <div className="journey-actions journey-detail-actions">
                     <Primary onClick={() => go('inquiry')}>יצירת קשר</Primary>
                     <button
                       className="journey-secondary"
+                      aria-pressed={
+                        profile.savedProgramIds?.includes(activeRow.program.id) ?? false
+                      }
                       onClick={() => void save(activeRow.program.id)}
                     >
-                      שמירה לרשימה
+                      {profile.savedProgramIds?.includes(activeRow.program.id)
+                        ? 'הסרה מהרשימה'
+                        : 'שמירה לרשימה'}
                     </button>
                   </div>
+                  {description && !isBatchCUnsupported && <p>{description}</p>}
+                  <span
+                    className={`journey-status status-${isTechnionMedicineScore(activeRow.result, activeRow.program.id) && !activeRow.failed ? 'match' : resultLabel(activeRow.result, activeRow.failed, false, activeRow.program.id).group}`}
+                  >
+                    {calculating && !activeRow.result && !activeRow.failed
+                      ? 'מחשבים התאמה…'
+                      : resultLabel(activeRow.result, activeRow.failed, false, activeRow.program.id)
+                          .label}
+                  </span>
+                  {isTechnionMedicineScore(activeRow.result, activeRow.program.id) ? (
+                    <TechnionMedicineComparison score={activeRow.result.score} />
+                  ) : (
+                    resultExplanation(activeRow.result, activeRow.program.id) && (
+                      <p className="journey-result-explanation">
+                        {resultExplanation(activeRow.result, activeRow.program.id)}
+                      </p>
+                    )
+                  )}
+                  <AdmissionEstimate result={activeRow.result} />
+                  {activeFootnote && (
+                    <AdmissionConditions
+                      conditions={activeRow.result?.additionalConditions}
+                      footnote={activeFootnote}
+                    />
+                  )}
+                  {activeRow.result?.score != null &&
+                    !isTechnionMedicineScore(activeRow.result, activeRow.program.id) && (
+                      <p>
+                        {activeRow.result.scoreLabel ?? 'ציון מחושב'}:{' '}
+                        {formatJourneyScore(activeRow.result.score)}
+                        {activeRow.result.threshold != null &&
+                          ` · סף: ${activeRow.result.threshold}`}
+                      </p>
+                    )}
+                  {!activeFootnote && (
+                    <AdmissionConditions conditions={activeRow.result?.additionalConditions} />
+                  )}
+                  <h2>תנאי קבלה</h2>
+                  {isBatchCUnsupported && (
+                    <TechnionThresholdNotice
+                      programId={activeRow.program.id}
+                      institutionId={activeRow.institution.id}
+                    />
+                  )}
+                  {isBatchCUnsupported ? (
+                    <p>{activeRow.result?.nextAction}</p>
+                  ) : (
+                    <RequirementTiles
+                      program={activeRow.program}
+                      preserveRequirements
+                      verificationIssue={activeRow.result?.degradationReason}
+                      institutionId={activeRow.institution.id}
+                      requirements={
+                        activeRow.program.isListed === false
+                          ? ['אין כרגע מידע עדכני על המסלול.']
+                          : catalogueAdmissionRequirements(
+                              details?.specificAdmissionNotes,
+                              activeRow.program.admissionRequirements,
+                              activeRow.program.id,
+                            )
+                      }
+                    />
+                  )}
                   <div className="journey-links">
-                    <button onClick={() => go('missing')}>לדייק את ההתאמה</button>
-                    <button onClick={() => go('alternatives')}>עוד דרכי קבלה</button>
-                    {officialUrl(details?.programUrl ?? activeRow.institution.programUrl) && (
-                      <a
+                    {!isBatchCUnsupported &&
+                      !DANON_PROGRAM_URLS[activeRow.program.id] &&
+                      activeRow.result?.degradationReason !==
+                        'incomplete_published_requirements' && (
+                        <>
+                          <button onClick={() => go('missing')}>
+                            {activeRow.result?.scoreAssessment
+                              ? 'עדכון נתונים ותנאים נוספים'
+                              : 'השלמת נתונים לחישוב'}
+                          </button>
+                          <button onClick={() => go('alternatives')}>עוד דרכי קבלה</button>
+                        </>
+                      )}
+                    {activeOfficialUrl && (
+                      <ProgramTrackedLink
+                        event="institution_site_clicked"
+                        programId={activeRow.program.id}
+                        institutionId={activeRow.institution.id}
                         target="_blank"
                         rel="noopener noreferrer"
-                        href={officialUrl(details?.programUrl ?? activeRow.institution.programUrl)}
+                        href={activeOfficialUrl}
                       >
                         לאתר המוסד
-                      </a>
+                      </ProgramTrackedLink>
                     )}
-                    <button
-                      onClick={async () => {
-                        const url = `${window.location.origin}/programs/${encodeURIComponent(activeRow.program.id)}`;
-                        try {
-                          if (navigator.share)
-                            await navigator.share({ title: activeRow.fieldName, url });
-                          else {
-                            await navigator.clipboard.writeText(url);
-                            setMessage('הקישור הועתק.');
-                          }
-                        } catch {
-                          /* Dismissed share sheet. */
-                        }
-                      }}
-                    >
-                      שיתוף המסלול
-                    </button>
+                    <ProgramShareButton
+                      key={activeRow.program.id}
+                      programId={activeRow.program.id}
+                      institutionId={activeRow.institution.id}
+                      title={activeRow.fieldName}
+                    />
                   </div>
                 </>
               ) : (
@@ -1226,8 +1462,16 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                       <article className="journey-alternative" key={path.id}>
                         <h2>{path.title}</h2>
                         <p>{path.description}</p>
-                        {officialUrl(path.url) && (
-                          <a href={officialUrl(path.url)} target="_blank" rel="noopener noreferrer">
+                        {officialUrl(path.url, activeRow.institution.id, {
+                          fallbackToWebsite: false,
+                        }) && (
+                          <a
+                            href={officialUrl(path.url, activeRow.institution.id, {
+                              fallbackToWebsite: false,
+                            })}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
                             לפרטים במוסד
                           </a>
                         )}
@@ -1252,6 +1496,8 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                 key={activeRow.id}
                 programId={activeRow.program.id}
                 institutionId={activeRow.institution.id}
+                evaluationInput={reports[activeRow.program.id]?.input}
+                surface="journey"
                 title={`${activeRow.fieldName} · ${activeRow.institution.name}`}
                 onBack={() => go('results')}
               />
@@ -1264,6 +1510,7 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
             <EnquiryForm
               programId="psychometric-preparation"
               institutionId=""
+              surface="journey"
               title="הכנה לפסיכומטרי"
               onBack={() => go('results')}
             />
@@ -1272,6 +1519,25 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
         {step === 'saved' && (
           <section>
             {catalogueStatus}
+            {calculating && <p role="status">בודקים את ההתאמה לציונים שלך…</p>}
+            {failedReports.length > 0 && (
+              <p role="alert">
+                חלק מהחישובים לא נטענו.{' '}
+                <button
+                  className="journey-text-button"
+                  onClick={() =>
+                    void evaluate(
+                      savedRows.filter((row) => failedReports.includes(row.program.id)),
+                      profile.academicScores ?? EMPTY.scores,
+                      undefined,
+                      true,
+                    )
+                  }
+                >
+                  לנסות שוב
+                </button>
+              </p>
+            )}
             {!profile.savedProgramIds?.length ? (
               <div className="journey-empty">
                 <Bookmark size={36} />
@@ -1280,22 +1546,26 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
               </div>
             ) : (
               <>
-                {allRows
-                  .filter((row) => profile.savedProgramIds?.includes(row.program.id))
-                  .map((row) => (
-                    <div className="journey-saved-row" key={row.id}>
-                      <label>
-                        <input
-                          type="checkbox"
-                          checked={compareIds.includes(row.id)}
-                          disabled={compareIds.length >= 3 && !compareIds.includes(row.id)}
-                          onChange={() => setCompareIds(toggle(compareIds, row.id))}
-                        />
-                        להשוואה
-                      </label>
-                      {rowView(row)}
-                    </div>
-                  ))}
+                {savedRows.map((row) => (
+                  <div className="journey-saved-row" key={row.id}>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={compareIds.includes(row.id)}
+                        disabled={compareIds.length >= 3 && !compareIds.includes(row.id)}
+                        onChange={() => setCompareIds(toggle(compareIds, row.id))}
+                      />
+                      להשוואה
+                    </label>
+                    {rowView({
+                      ...row,
+                      result: reports[row.program.id]?.results.find(
+                        (result) => result.linkedInstitutionId === row.institution.id,
+                      ),
+                      failed: failedReports.includes(row.program.id),
+                    })}
+                  </div>
+                ))}
                 <div className="journey-actions">
                   <Primary onClick={() => go('compare')} disabled={compareIds.length < 2}>
                     השוואת מסלולים
@@ -1320,11 +1590,21 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                 <article key={row.id}>
                   <h2>{row.fieldName}</h2>
                   <p>{row.institution.name}</p>
-                  <ul>
-                    {row.program.admissionRequirements.map((item, index) => (
-                      <li key={index}>{item}</li>
-                    ))}
-                  </ul>
+                  <AdmissionRequirements
+                    programId={row.program.id}
+                    institutionId={row.institution.id}
+                    requirements={
+                      row.program.isListed === false
+                        ? ['אין כרגע מידע עדכני על המסלול.']
+                        : catalogueAdmissionRequirements(
+                            row.program.institutionDetails?.find(
+                              (detail) => detail.institutionName === row.institution.name,
+                            )?.specificAdmissionNotes,
+                            row.program.admissionRequirements,
+                            row.program.id,
+                          )
+                    }
+                  />
                   <Primary onClick={() => selectRow(row, 'inquiry')}>יצירת קשר</Primary>
                 </article>
               ))}
@@ -1416,17 +1696,27 @@ export default function StudyJourney({ initialStep = 'home' }: { initialStep?: S
                 <ArrowLeft />
               </button>
             </div>
-            <button
-              className="journey-text-button"
-              onClick={async () => {
-                await auth.signOut();
-                go('home');
-              }}
-            >
-              יציאה מהחשבון
-            </button>
+            <Link className="journey-text-button" href={ROUTES.profile}>
+              הפרופיל שלי
+            </Link>
+            {auth.user ? (
+              <button
+                className="journey-text-button"
+                onClick={async () => {
+                  await auth.signOut();
+                  go('home');
+                }}
+              >
+                יציאה מהחשבון
+              </button>
+            ) : (
+              <Link className="journey-text-button" href={buildLoginPath('/#account')}>
+                כניסה לחשבון
+              </Link>
+            )}
           </section>
         )}
+        {step === 'home' && browse}
       </main>
     </WayPageShell>
   );

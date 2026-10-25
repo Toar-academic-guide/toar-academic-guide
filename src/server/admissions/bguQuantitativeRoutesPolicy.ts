@@ -92,41 +92,38 @@ export function resolveBguQuantitativeRoute(
     psychometric?: number;
     extraInputs?: AdmissionsExtraInputs;
   },
+  assessment?: 'scores',
 ): BguQuantitativeResolution {
   const config = bguQuantitativeProgramme(programId);
   if (!config) return { kind: 'below', reason: 'המסלול אינו אפיק כמותי שנבדק.' };
   const extra = applicant.extraInputs ?? {};
   const requiredInputs: AdmissionsRequiredInput[] = [];
-  if (extra.bguLanguageRequirementsConfirmed === undefined)
-    requiredInputs.push('bgu_language_requirements');
-  if (extra.bguCertificateRequirementsConfirmed === undefined)
-    requiredInputs.push('bgu_certificate_requirements');
-  if (extra.bguPriorAcademicStudies === undefined)
-    requiredInputs.push('bgu_prior_academic_studies');
-  if (extra.bguSecondTrackRequirementsConfirmed === undefined)
-    requiredInputs.push('bgu_second_track_requirements');
-  if (config.family === 'biology' && extra.bguApplicationPriority === undefined)
-    requiredInputs.push('bgu_application_priority');
-  if (requiredInputs.length) return { kind: 'needs_input', requiredInputs };
-  if (
-    !extra.bguLanguageRequirementsConfirmed ||
-    !extra.bguCertificateRequirementsConfirmed ||
-    !extra.bguSecondTrackRequirementsConfirmed
-  ) {
-    return {
-      kind: 'below',
-      reason: 'נדרשת תעודת קבלה מוכרת, דרישות השפה ועמידה בדרישות חוג או חטיבה נוספים, אם נבחרו.',
-    };
-  }
-  if (config.family === 'biology' && ![1, 2, 3].includes(extra.bguApplicationPriority!)) {
-    return { kind: 'below', reason: 'מדעי החיים נבדקים בעדיפות ראשונה, שנייה או שלישית בלבד.' };
-  }
-  if (
-    config.family !== 'biology' &&
-    extra.bguPriorAcademicStudies &&
-    extra.bguReturningOrChangingTrack === undefined
-  ) {
-    return { kind: 'needs_input', requiredInputs: ['bgu_returning_or_changing_track'] };
+  if (assessment !== 'scores') {
+    if (extra.bguLanguageRequirementsConfirmed === undefined)
+      requiredInputs.push('bgu_language_requirements');
+    if (extra.bguPriorAcademicStudies === undefined)
+      requiredInputs.push('bgu_prior_academic_studies');
+    if (extra.bguSecondTrackRequirementsConfirmed === undefined)
+      requiredInputs.push('bgu_second_track_requirements');
+    if (config.family === 'biology' && extra.bguApplicationPriority === undefined)
+      requiredInputs.push('bgu_application_priority');
+    if (requiredInputs.length) return { kind: 'needs_input', requiredInputs };
+    if (!extra.bguLanguageRequirementsConfirmed || !extra.bguSecondTrackRequirementsConfirmed) {
+      return {
+        kind: 'below',
+        reason: 'נדרשת עמידה בדרישות השפה ועמידה בדרישות חוג או חטיבה נוספים, אם נבחרו.',
+      };
+    }
+    if (config.family === 'biology' && ![1, 2, 3].includes(extra.bguApplicationPriority!)) {
+      return { kind: 'below', reason: 'מדעי החיים נבדקים בעדיפות ראשונה, שנייה או שלישית בלבד.' };
+    }
+    if (
+      config.family !== 'biology' &&
+      extra.bguPriorAcademicStudies &&
+      extra.bguReturningOrChangingTrack === undefined
+    ) {
+      return { kind: 'needs_input', requiredInputs: ['bgu_returning_or_changing_track'] };
+    }
   }
   const conditions: Conditions = {
     priorAcademicReview:

@@ -1,75 +1,35 @@
-import { colmanBagrutInputsShape } from '@/lib/colmanBagrutInputs';
-import { tauPhysiotherapyInputsShape } from '@/lib/tauPhysiotherapyInputs';
-import { hujiMedicineInputsShape } from '@/lib/hujiMedicineInputs';
-import { bguHealthInputsShape } from '@/lib/bguHealthInputs';
-import { bguQuantitativeInputShape } from '@/lib/bguQuantitativeInputs';
-import { bguPsychologyInputsShape } from '@/lib/bguPsychologyInputs';
-import { haifaAdmissionsInputsShape } from '@/lib/haifaAdmissionsInputs';
-import { bguSocialScienceInputsShape } from '@/lib/bguSocialScienceInputs';
+import { canonicalProgramId } from '@/lib/seo/programAliases';
 import { headers } from 'next/headers';
 import { z } from 'zod';
 
 import { ApiRouteError, toErrorResponse } from '@/app/api/_lib/errors';
 import { listCatalogueInstitutions, listCataloguePrograms } from '@/server/catalogue/queries';
 import { evaluateAdmissionsForProgram } from '@/server/admissions/evaluator';
-import { assertAdmissionsEvaluationRateLimit } from '@/server/admissions/rateLimit';
-import { bguEngineeringSchema } from '@/lib/bguEngineeringSchema';
+import { BATCH_B_PROGRAMS } from '@/server/admissions/batchBManualPathEvaluation';
 import {
-  admissionsBagrutSubjectRecordSchema,
-  bagrutSectorSchema,
-} from '@/lib/bagrutSubjectRecordSchema';
+  admissionsEvaluationClientKey,
+  assertAdmissionsEvaluationRateLimit,
+} from '@/server/admissions/rateLimit';
+import type { AdmissionsBatchReport } from '@/types/admissionsEvaluation';
+import {
+  admissionsEvaluationSchema,
+  validateOverallBagrutAverage,
+} from '@/lib/admissionsEvaluationSchema';
 
 export const dynamic = 'force-dynamic';
 
 const MAX_CONTENT_LENGTH_BYTES = 16_384;
 
-const admissionsEvaluationSchema = z.object({
-  degreeId: z.string().min(1),
-  psychometric: z.number().int().min(200).max(800).optional(),
-  bagrut: z.number().min(60).max(120).optional(),
-  extraInputs: z
-    .object({
-      bguEngineering: bguEngineeringSchema.optional(),
-      psychometricMath: z.number().int().min(50).max(150).optional(),
-      psychometricVerbal: z.number().int().min(50).max(150).optional(),
-      psychometricEnglish: z.number().int().min(50).max(150).optional(),
-      bagrutSubjectRecord: admissionsBagrutSubjectRecordSchema.optional(),
-      bagrutProfileSchemaVersion: z.union([z.literal(1), z.literal(2)]).optional(),
-      bagrutSector: bagrutSectorSchema.optional(),
-      mathUnits: z.number().int().min(3).max(5).optional(),
-      mathGrade: z.number().int().min(50).max(100).optional(),
-      englishUnits: z.number().int().min(3).max(5).optional(),
-      englishGrade: z.number().int().min(50).max(100).optional(),
-      physicsUnits: z.number().int().min(3).max(5).optional(),
-      physicsGrade: z.number().int().min(50).max(100).optional(),
-      csUnits: z.number().int().min(3).max(5).optional(),
-      csGrade: z.number().int().min(50).max(100).optional(),
-      tauBagrutAverage: z.number().min(50).max(130).optional(),
-      ...colmanBagrutInputsShape,
-      technionArchitectureBagrutAverage: z.number().min(0).max(119).optional(),
-      technionArchitectureExamScore: z.number().min(0).max(140).optional(),
-      technionArchitectureExamPassed: z.boolean().optional(),
-      technionArchitectureRequirementsConfirmed: z.boolean().optional(),
-      ...bguPsychologyInputsShape,
-      ...hujiMedicineInputsShape,
-      ...haifaAdmissionsInputsShape,
-      ...bguHealthInputsShape,
-      ...tauPhysiotherapyInputsShape,
-      ...bguSocialScienceInputsShape,
-      bguBagrutAverage: z.number().min(50).max(130).optional(),
-      tauApplicationRequirementsConfirmed: z.boolean().optional(),
-      tauManagementRequirementsConfirmed: z.boolean().optional(),
-      tauManagementAcademicRouteConfirmed: z.boolean().optional(),
-      tauManagementQualifyingMoocCount: z
-        .union([z.literal(0), z.literal(1), z.literal(2)])
-        .optional(),
-      tauManagementNoPsychometricMoocsConfirmed: z.boolean().optional(),
-      bguLanguageRequirementsConfirmed: z.boolean().optional(),
-      ...bguQuantitativeInputShape,
-      tauMathPlacementScore: z.number().min(0).max(100).optional(),
-    })
-    .optional(),
+const batchSchema = admissionsEvaluationSchema.omit({ degreeId: true }).extend({
+  degreeIds: z
+    .array(z.string().min(1))
+    .min(1)
+    .max(50)
+    .refine((ids) => new Set(ids).size === ids.length),
 });
+const requestSchema = z
+  .union([admissionsEvaluationSchema, batchSchema])
+  .superRefine(validateOverallBagrutAverage);
 
 export async function POST(request: Request) {
   try {
@@ -77,7 +37,7 @@ export async function POST(request: Request) {
     assertAdmissionsEvaluationRateLimit(await resolveClientKey());
 
     const body = await readJsonBody(request);
-    const parsed = admissionsEvaluationSchema.safeParse(body);
+    const parsed = requestSchema.safeParse(body);
     if (!parsed.success) {
       throw new ApiRouteError(
         400,
@@ -91,7 +51,35 @@ export async function POST(request: Request) {
       listCatalogueInstitutions(),
     ]);
 
-    const program = programsResult.data.find((entry) => entry.id === parsed.data.degreeId);
+    if ('degreeIds' in parsed.data) {
+      const { degreeIds, ...applicant } = parsed.data;
+      const batch: AdmissionsBatchReport = { reports: {}, failedDegreeIds: [] };
+      // One user action loads the catalogue once; at most four evaluators run together.
+      for (let index = 0; index < degreeIds.length; index += 4) {
+        await Promise.all(
+          degreeIds.slice(index, index + 4).map(async (degreeId) => {
+            const resolvedDegreeId = resolveEvaluationDegreeId(degreeId);
+            const program = programsResult.data.find((entry) => entry.id === resolvedDegreeId);
+            if (!program) {
+              batch.failedDegreeIds.push(degreeId);
+              return;
+            }
+            try {
+              batch.reports[degreeId] = await evaluateAdmissionsForProgram({
+                input: { ...applicant, degreeId: resolvedDegreeId },
+                program,
+                institutions: institutionsResult.data,
+              });
+            } catch {
+              batch.failedDegreeIds.push(degreeId);
+            }
+          }),
+        );
+      }
+      return Response.json({ data: batch });
+    }
+    const degreeId = resolveEvaluationDegreeId(parsed.data.degreeId);
+    const program = programsResult.data.find((entry) => entry.id === degreeId);
     if (!program) {
       throw new ApiRouteError(
         404,
@@ -101,7 +89,7 @@ export async function POST(request: Request) {
     }
 
     const report = await evaluateAdmissionsForProgram({
-      input: parsed.data,
+      input: { ...parsed.data, degreeId },
       program,
       institutions: institutionsResult.data,
     });
@@ -127,14 +115,18 @@ export async function POST(request: Request) {
   }
 }
 
+function resolveEvaluationDegreeId(degreeId: string): string {
+  // Existing manual-gate programmes have evaluator-owned IDs; preserve those routes.
+  return BATCH_B_PROGRAMS[degreeId] ? degreeId : canonicalProgramId(degreeId);
+}
+
 async function resolveClientKey() {
   const requestHeaders = await headers();
   const forwardedFor = requestHeaders.get('x-forwarded-for');
-  if (forwardedFor) {
-    return forwardedFor.split(',')[0].trim();
-  }
-
-  return requestHeaders.get('x-real-ip') ?? 'anonymous';
+  const clientKey = forwardedFor
+    ? forwardedFor.split(',')[0].trim()
+    : (requestHeaders.get('x-real-ip') ?? 'anonymous');
+  return admissionsEvaluationClientKey(clientKey, requestHeaders.get('x-myway-e2e-bucket'));
 }
 
 function assertContentLength(request: Request) {
