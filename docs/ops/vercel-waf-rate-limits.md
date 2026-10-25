@@ -264,7 +264,7 @@ Raw evidence: `evaluate-burst-2.json` beside `SUMMARY.md`.
 
 Of the `fra1` requests, **103 were inside the single clock minute 07:29**.
 Totals: 125 × 200, 25 × app-429, 0 × WAF-429; the first app-429 was at request
-**#58**. No response had an `x-vercel-mitigated` header. The ipify spot check (10/10 parallel requests returned `104.28.244.17`) was
+**#58**. No response had an `x-vercel-mitigated` header. The ipify spot check (10/10 parallel requests returned one egress IP from the pool) was
 misleading: Vercel's own request logs show the burst arrived from 8 client IPs
 (see below).
 The recovery single request returned **200** (`evaluate-after-burst-2.json`).
@@ -290,7 +290,7 @@ Read-only checks against the Vercel API and observability on 2026-10-25:
 | (a) Rules in the active/published config | `configVersion=active` returns `version: 2`, `firewallEnabled: true`, `changes: []`, both rule ids; `configVersion=draft` returns 404 (no pending draft)                                                                                        | OK                     |
 | (b) Action shape                         | `action.mitigate.action: "rate_limit"` with `rateLimit.action: "rate_limit"` (the dashboard's "Default (429)"; the Vercel CLI docs list `rate_limit` as "returns 429 (default)")                                                                | OK — not `log`/missing |
 | (c) Condition vs request                 | method `eq POST` + `path eq /api/admissions/evaluate`; logged requests have host `findmyway.co.il`, path `/api/admissions/evaluate` (no trailing slash), `x-matched-path: /api/admissions/evaluate`; the rule is not environment-scoped         | OK                     |
-| (d) Propagation / sources                | rules published 07:09–07:10; system bypass list empty; no active attack anomalies. **Observability grouped by `client_ip` for the 07:29 burst shows 8 client IPs** (`104.28.244.17/18/19/21`, `104.28.212.17/18/19/21`; max 39 requests per IP) | **Root cause**         |
+| (d) Propagation / sources                | rules published 07:09–07:10; system bypass list empty; no active attack anomalies. **Observability grouped by `client_ip` for the 07:29 burst shows 8 client IPs** (the test egress IP pool; max 39 requests per IP) | **Root cause**         |
 
 The box egresses through a Cloudflare WARP-style proxy that spreads new TCP
 connections across a pool of egress IPs. Each threaded/parallel test request
@@ -317,7 +317,7 @@ connection** (`curl --http2 --parallel`), which keeps one egress IP.
   90 × WAF-429 with `x-vercel-mitigated: deny`. Request indexes are submit order;
   with 15 in flight, arrival order differs slightly, so the WAF cut-over appears
   at #60 rather than exactly #61.
-- Vercel observability (07:42–07:44) for client IP `104.28.244.19`: **60 `allow`,
+- Vercel observability (07:42–07:44) for one egress IP from the pool: **60 `allow`,
   90 `rate_limit` attributed to `rule_myway_evaluate_rate_limit_wDLIXz`** —
   exactly the configured limit of 60.
 - Recovery: one POST at 07:44:28 (after ~70s) returned **200**.
