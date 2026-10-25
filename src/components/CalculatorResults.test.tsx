@@ -285,6 +285,12 @@ describe('CalculatorResults', () => {
       const studentMathsValue = within(table).getByRole('cell', { name: '5 יח״ל, 70' });
       expect(studentMathsValue.classList.contains('whitespace-nowrap')).toBe(true);
       expect(
+        within(table).getByRole('columnheader', { name: 'שלך' }).classList.contains('w-[20%]'),
+      ).toBe(true);
+      expect(
+        within(table).getByRole('columnheader', { name: 'בדיקה' }).classList.contains('w-[35%]'),
+      ).toBe(true);
+      expect(
         within(table).getByRole('row', { name: `פסיכומטרי 551 ${psychometric} ${psychStatus}` }),
       ).toBeTruthy();
       expect(
