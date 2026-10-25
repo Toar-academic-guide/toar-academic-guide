@@ -389,6 +389,52 @@ describe('CalculatorResults', () => {
     },
   );
 
+  it('renders TAU architecture maths as three whole lines with a non-wrapping needs-input badge', async () => {
+    const program = {
+      ...programs.find((row) => row.id === 'architecture')!,
+      linkedInstitutionIds: ['tau'],
+    };
+    const evaluation = await evaluateAdmissionsForProgram({
+      program,
+      institutions: getStaticCatalogueInstitutions(),
+      input: {
+        degreeId: 'architecture',
+        psychometric: 680,
+        bagrut: 110,
+        extraInputs: { psychometricEnglish: 110 },
+      },
+      freshnessStatesBySourceId: new Map(),
+      fetcher: vi.fn<typeof fetch>(),
+    });
+    hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(evaluation);
+    render(
+      <CalculatorResults
+        degreeId="architecture"
+        programs={[program]}
+        psychometric={680}
+        bagrut={110}
+        onBack={() => {}}
+      />,
+    );
+    const badge = await screen.findByLabelText('אוניברסיטת תל אביב: נדרשים נתונים');
+    expect(badge.classList.contains('whitespace-nowrap')).toBe(true);
+    expect(badge.classList.contains('shrink-0')).toBe(true);
+
+    const table = screen.getByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלך' });
+    const mathsRequirement = within(table).getByText('5 יח״ל: 70', { exact: true }).parentElement!;
+    expect(mathsRequirement.getAttribute('colspan')).toBe('4');
+    const lines = [...mathsRequirement.children];
+    expect(lines.map((line) => line.textContent)).toEqual([
+      '5 יח״ל: 70',
+      '4 יח״ל: 80',
+      '3 יח״ל: 90',
+    ]);
+    for (const line of lines) {
+      expect(line.classList.contains('block')).toBe(true);
+      expect(line.classList.contains('whitespace-nowrap')).toBe(true);
+    }
+  });
+
   it('allows the TAU architecture apply badge with no verdict when every floor passes', async () => {
     const program = {
       ...programs.find((row) => row.id === 'architecture')!,

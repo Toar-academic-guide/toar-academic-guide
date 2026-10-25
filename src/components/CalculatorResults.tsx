@@ -917,7 +917,7 @@ export default function CalculatorResults({
                       </div>
                       <span
                         aria-label={`${institution.name}: ${statusLabel}`}
-                        className={`${statusBackground} self-start rounded-full border-2 border-black px-3 py-1 text-[10px] font-extrabold text-black sm:self-center`}
+                        className={`${statusBackground} shrink-0 self-start rounded-full border-2 border-black px-3 py-1 text-[10px] font-extrabold whitespace-nowrap text-black sm:self-center`}
                       >
                         {statusLabel}
                       </span>

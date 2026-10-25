@@ -159,43 +159,72 @@ export default function AdmissionRequirements({
                 </tr>
                 {floorChecks
                   .filter((row) => row.channel === channel)
-                  .map((row, index) => (
-                    <tr
-                      key={`${row.label}:${index}`}
-                      className="border-b border-[var(--border)] align-top"
-                    >
-                      <th scope="row" className="py-2 pe-2 font-normal [overflow-wrap:anywhere]">
-                        <a
-                          href={institutionLink(row.sourceUrl, institutionId)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="underline decoration-[#c9c2e4] underline-offset-4 hover:text-[#6554b8] focus-visible:outline-2 focus-visible:outline-offset-2"
-                        >
-                          {row.label}
-                        </a>
-                      </th>
-                      <td className="py-2 pe-2 tabular-nums">{row.displayValue}</td>
-                      <td className="py-2 pe-2 tabular-nums">{row.studentValue ?? '—'}</td>
-                      <td className="py-2 [overflow-wrap:anywhere]">
-                        <span>
-                          {
-                            (
-                              {
-                                pass: 'עומד/ת',
-                                miss: 'לא עומד/ת',
-                                missing: 'חסר נתון',
-                                conflicting: 'מקורות סותרים',
-                                soft_miss: 'לפי המחשבון: קבלה מותנית בקורס הכנה בקיץ',
-                              } as const
-                            )[row.status]
+                  .map((row, index) => {
+                    const requirementLines =
+                      typeof row.displayValue === 'string' && row.displayValue.includes('; ')
+                        ? row.displayValue.split('; ')
+                        : undefined;
+                    return (
+                      <Fragment key={`${row.label}:${index}`}>
+                        <tr
+                          className={
+                            requirementLines
+                              ? 'align-top'
+                              : 'border-b border-[var(--border)] align-top'
                           }
-                        </span>
-                        {row.note && (
-                          <span className="mt-1 block text-[var(--text-muted)]">{row.note}</span>
+                        >
+                          <th
+                            scope="row"
+                            className="py-2 pe-2 font-normal [overflow-wrap:anywhere]"
+                          >
+                            <a
+                              href={institutionLink(row.sourceUrl, institutionId)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="underline decoration-[#c9c2e4] underline-offset-4 hover:text-[#6554b8] focus-visible:outline-2 focus-visible:outline-offset-2"
+                            >
+                              {row.label}
+                            </a>
+                          </th>
+                          <td className="py-2 pe-2 tabular-nums">
+                            {requirementLines ? null : row.displayValue}
+                          </td>
+                          <td className="py-2 pe-2 tabular-nums">{row.studentValue ?? '—'}</td>
+                          <td className="py-2 [overflow-wrap:anywhere]">
+                            <span>
+                              {
+                                (
+                                  {
+                                    pass: 'עומד/ת',
+                                    miss: 'לא עומד/ת',
+                                    missing: 'חסר נתון',
+                                    conflicting: 'מקורות סותרים',
+                                    soft_miss: 'לפי המחשבון: קבלה מותנית בקורס הכנה בקיץ',
+                                  } as const
+                                )[row.status]
+                              }
+                            </span>
+                            {row.note && (
+                              <span className="mt-1 block text-[var(--text-muted)]">
+                                {row.note}
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                        {requirementLines && (
+                          <tr className="border-b border-[var(--border)]">
+                            <td colSpan={4} className="pb-2 pe-2 tabular-nums">
+                              {requirementLines.map((line) => (
+                                <span key={line} className="block whitespace-nowrap">
+                                  {line}
+                                </span>
+                              ))}
+                            </td>
+                          </tr>
                         )}
-                      </td>
-                    </tr>
-                  ))}
+                      </Fragment>
+                    );
+                  })}
               </tbody>
             ))}
           </table>
