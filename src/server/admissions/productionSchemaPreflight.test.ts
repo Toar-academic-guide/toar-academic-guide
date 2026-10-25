@@ -68,7 +68,7 @@ describe('production admissions schema preflight', () => {
     expect(assessProductionSchema(snapshot)).toMatchObject({ status: 'current', issues: [] });
   });
 
-  it('tracks guarded SQL through 0042 separately from the Supabase journal', () => {
+  it('tracks guarded SQL through 0043 separately from the Supabase journal', () => {
     expect(GUARDED_PRODUCTION_MIGRATIONS.map(({ id }) => id)).toEqual([
       '0037',
       '0038',
@@ -76,6 +76,7 @@ describe('production admissions schema preflight', () => {
       '0040',
       '0041',
       '0042',
+      '0043',
     ]);
     for (const { repositoryPath } of GUARDED_PRODUCTION_MIGRATIONS) {
       expect(readFileSync(repositoryPath, 'utf8').trim()).not.toBe('');
@@ -1158,8 +1159,25 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
         policies: appliedIds.has('0025') ? ['ingestion_payloads_admissions_automation_insert'] : [],
       },
       review_items: {
-        grants: appliedIds.has('0025') ? ['INSERT'] : [],
-        policies: appliedIds.has('0025') ? ['review_items_admissions_automation_insert'] : [],
+        grants:
+          appliedCount === FORWARD_PRODUCTION_MIGRATIONS.length
+            ? ['INSERT', 'SELECT']
+            : appliedIds.has('0025')
+              ? ['INSERT']
+              : [],
+        columnGrants:
+          appliedCount === FORWARD_PRODUCTION_MIGRATIONS.length
+            ? { UPDATE: ['status', 'reviewed_at'] }
+            : {},
+        policies: [
+          ...(appliedIds.has('0025') ? ['review_items_admissions_automation_insert'] : []),
+          ...(appliedCount === FORWARD_PRODUCTION_MIGRATIONS.length
+            ? [
+                'review_items_admissions_automation_read',
+                'review_items_admissions_automation_update',
+              ]
+            : []),
+        ],
       },
       admission_thresholds: {
         grants: ['SELECT'],

@@ -166,6 +166,7 @@ const targetedTests = [
   'src/server/ingestion/admissionsLiveProofRunner.test.ts',
   'src/server/admissions/admissionsReleasePublisher.test.ts',
   'src/server/admissions/productionSchemaPreflight.test.ts',
+  'src/db/migrations/freshnessReviewHandoffAccessRls.test.ts',
   'src/server/admissions/rateLimit.test.ts',
   'src/server/admissions/e2eSmokeWorkflow.test.ts',
   'scripts/lib/production-schema-snapshot.test.ts',

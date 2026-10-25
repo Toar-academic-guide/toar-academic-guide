@@ -301,6 +301,7 @@ jobs:
           npx vitest run src/db/client.integration.test.ts src/db/migrations/storeEnquiry.integration.test.ts scripts/verify-operational-db.integration.test.ts
           npm run test:publication:db
           npm run test:source-freshness:db
+          npm run test:review-resolution:db
           npx vitest run src/server/admission-alerts/health.integration.test.ts src/server/admission-alerts/transitionProcessor.integration.test.ts src/server/admission-alerts/deliveryWorker.integration.test.ts src/server/admission-alerts/webhookUnsubscribe.integration.test.ts src/server/admission-alerts/lifecycleCompletion.integration.test.ts scripts/admission-alert-account-simulation.integration.test.ts
 
   # ---------------------------------------------------------------------------

@@ -65,6 +65,57 @@ describe.skipIf(!enabled)('operational schema snapshot with disposable PostgreSQ
       );
     }));
 
+  it('captures the guarded 0043 review resolution grants and policies', async () =>
+    isolated(async (tx) => {
+      const snapshot = (await loadProductionSchemaSnapshot(tx)) as ProductionSchemaSnapshot;
+      expect(snapshot.tables.review_items.grants.admissions_automation.sort()).toEqual([
+        'INSERT',
+        'SELECT',
+      ]);
+      expect(snapshot.tables.review_items.columnGrants.admissions_automation).toEqual({
+        UPDATE: ['reviewed_at', 'status'],
+      });
+      expect(snapshot.tables.review_items.policies).toEqual(
+        expect.arrayContaining([
+          'review_items_admissions_automation_read',
+          'review_items_admissions_automation_update',
+        ]),
+      );
+      expect(
+        (await report(tx)).issues.filter(({ object }) =>
+          object.includes('admissions_automation:review_items'),
+        ),
+      ).toEqual([]);
+    }));
+
+  it.each([
+    [
+      'REVOKE SELECT ON review_items FROM admissions_automation',
+      'grant_mismatch',
+      'grant:admissions_automation:review_items',
+    ],
+    [
+      'GRANT UPDATE ON review_items TO admissions_automation',
+      'grant_mismatch',
+      'grant:admissions_automation:review_items',
+    ],
+    [
+      'GRANT UPDATE(target_field) ON review_items TO admissions_automation',
+      'grant_mismatch',
+      'grant:admissions_automation:review_items.column:UPDATE',
+    ],
+    [
+      'DROP POLICY review_items_admissions_automation_update ON review_items',
+      'missing_policy',
+      'policy:review_items_admissions_automation_update',
+    ],
+  ])('detects review resolution permission drift: %s', async (mutation, code, object) =>
+    isolated(async (tx) => {
+      await tx.unsafe(mutation);
+      expect((await report(tx)).issues).toContainEqual(expect.objectContaining({ code, object }));
+    }),
+  );
+
   it('captures the 0042 body from PostgreSQL and rejects the pre-0042 body', async () =>
     isolated(async (tx) => {
       const fixed = readFileSync(

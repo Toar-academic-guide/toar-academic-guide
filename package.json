@@ -14,6 +14,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:publication:db": "vitest run src/server/admissions/admissionsReleasePublisher.integration.test.ts",
+    "test:review-resolution:db": "vitest run src/server/ingestion/reviewResolution.integration.test.ts",
     "test:source-freshness:db": "vitest run src/server/ingestion/sourceFreshness.integration.test.ts",
     "test:e2e": "playwright test",
     "lint": "eslint .",

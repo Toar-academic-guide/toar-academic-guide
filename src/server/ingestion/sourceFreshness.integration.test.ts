@@ -29,7 +29,7 @@ describeWithPostgres('source freshness review handoff permissions with PostgreSQ
     await sql.end({ timeout: 5 });
   });
 
-  it('allows admissions automation to create the complete private handoff, but not read it', async () => {
+  it('allows admissions automation to create the complete private handoff and read the review for resolution', async () => {
     await sql.begin(async (transaction) => {
       await transaction`set local role admissions_automation`;
       await transaction`
@@ -65,11 +65,10 @@ describeWithPostgres('source freshness review handoff permissions with PostgreSQ
       `;
     });
 
-    await expect(
-      sql.begin(async (transaction) => {
-        await transaction`set local role admissions_automation`;
-        await transaction`select id from public.review_items where id = ${reviewItemId}`;
-      }),
-    ).rejects.toThrow();
+    const rows = await sql.begin(async (transaction) => {
+      await transaction`set local role admissions_automation`;
+      return transaction`select id from public.review_items where id = ${reviewItemId}`;
+    });
+    expect(rows).toEqual([{ id: reviewItemId }]);
   });
 });
