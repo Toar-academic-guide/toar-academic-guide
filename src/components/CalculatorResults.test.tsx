@@ -396,7 +396,8 @@ describe('CalculatorResults', () => {
         />,
       );
       expect(await screen.findByText('הציונים עומדים בסף')).toBeTruthy();
-      expect(screen.getByText('תנאים נוספים לבדיקה')).toBeTruthy();
+      // Approved test update, Jorje 2026-10-25: bagrut_average condition removed (option A)
+      expect(screen.queryByText('תנאים נוספים לבדיקה') !== null).toBe(degreeId === 'ono_business');
       expect(screen.queryByText('מתקבלים')).toBeNull();
       expect(screen.queryByText('נדרש גם ריאיון קבלה. אישור סופי מהמכללה.')).toBeNull();
     },

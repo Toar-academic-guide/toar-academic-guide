@@ -89,8 +89,9 @@ describe('official BIU תשפ״ז published routes', () => {
         score: boundaryInputs[degreeId].bagrut,
       });
       expect(result.requiredInputs).toBeUndefined();
-      expect(result.additionalConditions).toContainEqual(
-        expect.objectContaining({ status: 'unconfirmed' }),
+      // Approved test update, Jorje 2026-10-25: bagrut_average condition removed (option A)
+      expect(result.additionalConditions).not.toContainEqual(
+        expect.objectContaining({ id: 'bagrut_average' }),
       );
       expect(result.explanation).toContain('לפי חישוב בר־אילן');
     },

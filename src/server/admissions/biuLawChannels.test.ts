@@ -116,7 +116,8 @@ describe('BIU law official admission channels are OR alternatives', () => {
       );
       if (psychometric >= 720) {
         expect(result).toMatchObject({ score: psychometric, threshold: 720 });
-        expect(result.additionalConditions).toContainEqual(
+        // Approved test update, Jorje 2026-10-25: bagrut_average condition removed (option A)
+        expect(result.additionalConditions).not.toContainEqual(
           expect.objectContaining({ id: 'bagrut_average', status: 'unconfirmed' }),
         );
       }

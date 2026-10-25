@@ -26,8 +26,9 @@ describe('Ono published alternatives', () => {
       expect(evaluate('ono_cs', scores)).toMatchObject({
         decision: 'pending',
         scoreAssessment: 'meets_threshold',
-        additionalConditions: expect.arrayContaining([
-          expect.objectContaining({ status: 'unconfirmed' }),
+        // Approved test update, Jorje 2026-10-25: bagrut_average condition removed (option A)
+        additionalConditions: expect.not.arrayContaining([
+          expect.objectContaining({ id: 'bagrut_average' }),
         ]),
       });
   });
