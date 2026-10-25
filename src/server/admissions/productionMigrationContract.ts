@@ -249,3 +249,30 @@ export const FORWARD_PRODUCTION_MIGRATIONS: ForwardProductionMigration[] = [
     legacyStatementFingerprints: ['6285f483628466394589deeaf818a0f7'],
   },
 ];
+
+// Applied via guarded SQL, without Supabase migration-history entries. These are
+// required postconditions, never pending migrations to replay. Data repairs in
+// 0038/0039 are documented deployments, not inferred from a schema snapshot.
+// Deployment record: /workspace/pm-research/db_changes.md (2026-10-25).
+export const GUARDED_PRODUCTION_MIGRATIONS = [
+  {
+    id: '0037',
+    repositoryPath: 'src/db/migrations/0037_fractional_bagrut_average.sql',
+    columns: [{ table: 'user_profiles', column: 'bagrut_weighted_average', type: 'real' }],
+  },
+  {
+    id: '0038',
+    repositoryPath: 'src/db/migrations/0038_correct_danon_classification.sql',
+    columns: [],
+  },
+  {
+    id: '0039',
+    repositoryPath: 'src/db/migrations/0039_catalogue_listing_repair.sql',
+    columns: [{ table: 'programs', column: 'is_listed', type: 'boolean' }],
+  },
+  {
+    id: '0040',
+    repositoryPath: 'src/db/migrations/0040_fractional_admission_thresholds.sql',
+    columns: [{ table: 'admission_thresholds', column: 'threshold_value', type: 'numeric' }],
+  },
+] as const;
