@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 for (const width of [390, 1280]) {
   test(`Technion programme pages show the official verification notice at ${width}px`, async ({

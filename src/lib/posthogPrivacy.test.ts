@@ -80,7 +80,7 @@ describe('PostHog payload privacy', () => {
       expect(result?.properties.nested).toEqual([
         { message: 'Call [redacted] please', numeric: '[redacted]' },
       ]);
-      expect(result?.properties.$current_url).toBe('https://example.com/?contact=[redacted]');
+      expect(result?.properties.$current_url).toBe('https://example.com/');
       // Internal UUIDs contain long digit groups but are not phone numbers.
       const serialized = JSON.stringify(result).replace(
         /12345678-1234-4234-8234-123456789012/g,
@@ -102,7 +102,7 @@ describe('PostHog payload privacy', () => {
       },
     });
     expect(result?.properties).toEqual({
-      $current_url: 'https://example.com/?contact=[redacted]',
+      $current_url: 'https://example.com/',
     });
   });
 
@@ -150,3 +150,82 @@ it.each(['qa-test%2540example.com', 'qa-test%252540example.com'])(
     expect(sanitizePostHogEvent({ distinctId: encoded, properties: {} })).toBeNull();
   },
 );
+
+describe('PostHog URL minimization', () => {
+  it.each([
+    '$current_url',
+    '$initial_current_url',
+    '$session_entry_url',
+    '$external_click_url',
+    'href',
+    'attr__href',
+  ])('drops the whole query and fragment from %s', (key) => {
+    const result = sanitizePostHogEvent({
+      properties: {
+        [key]:
+          'https://findmyway.co.il/programs/tau_cs?bagrut=105.5&score=%36%38%30&utm_source=psy750#psychometric_750',
+        utm_source: 'psy750',
+      },
+    });
+    expect(result?.properties[key]).toBe('https://findmyway.co.il/programs/tau_cs');
+    expect(result?.properties.utm_source).toBe('psy750');
+  });
+
+  it.each(['$pathname', '$initial_pathname', '$session_entry_pathname', '$prev_pageview_pathname'])(
+    'keeps only the path for %s',
+    (key) => {
+      const result = sanitizePostHogEvent({
+        properties: { [key]: '/programs/tau_cs?score=680#bagrut=105.5' },
+      });
+      expect(result?.properties[key]).toBe('/programs/tau_cs');
+    },
+  );
+
+  it.each(['$referrer', '$initial_referrer', '$session_entry_referrer'])(
+    'keeps %s origin-only for external and same-site sources',
+    (key) => {
+      for (const origin of ['https://example.com', 'https://findmyway.co.il']) {
+        for (const suffix of ['/680', '/psychometric_680', '/105.5', '/?score=680#750']) {
+          const result = sanitizePostHogEvent({ properties: { [key]: origin + suffix } });
+          expect(result?.properties[key]).toBe(origin);
+        }
+      }
+    },
+  );
+
+  it('minimizes nested person, session, replay and autocapture URL properties', () => {
+    const result = sanitizePostHogEvent({
+      properties: {
+        $set: {
+          $initial_current_url: 'https://findmyway.co.il/?score=680#750',
+          $initial_referrer: 'https://example.com/105.5',
+        },
+        $set_once: { $initial_pathname: '/enquiry?score=680#750' },
+        $snapshot_data: [{ data: { href: 'https://findmyway.co.il/?score=680#750' } }],
+        $elements: [{ attr__href: '/enquiry?program=tau_cs&institution=tau&score=680#750' }],
+      },
+    });
+    expect(result?.properties).toEqual({
+      $set: {
+        $initial_current_url: 'https://findmyway.co.il/',
+        $initial_referrer: 'https://example.com',
+      },
+      $set_once: { $initial_pathname: '/enquiry' },
+      $snapshot_data: [{ data: { href: 'https://findmyway.co.il/' } }],
+      $elements: [{ attr__href: '/enquiry' }],
+    });
+  });
+
+  it.each([
+    'javascript:alert(680)',
+    'data:text/plain,680',
+    'https://student:680@example.com/?score=750',
+    'https://[broken/?score=680',
+    '',
+  ])('fails closed for unsafe URL metadata: %s', (value) => {
+    const result = sanitizePostHogEvent({
+      properties: { $current_url: value, $session_entry_referrer: value },
+    });
+    expect(result?.properties).toEqual({ $current_url: null, $session_entry_referrer: null });
+  });
+});

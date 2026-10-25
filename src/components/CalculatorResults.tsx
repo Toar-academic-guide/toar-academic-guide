@@ -1,5 +1,7 @@
 'use client';
 import TechnionThresholdNotice from './TechnionThresholdNotice';
+import TechnionMedicineComparison from './TechnionMedicineComparison';
+import { isTechnionMedicineScore, resultLabel } from '@/lib/studyJourney';
 import AdmissionConditions from './AdmissionConditions';
 import { acceptedManualGateFootnote } from '@/lib/acceptedManualGateFootnote';
 
@@ -808,6 +810,12 @@ export default function CalculatorResults({
                                       ? STATUS_CONFIG.trackedMissingRule
                                       : STATUS_CONFIG.unsupported;
                   if (footnote) config = { ...STATUS_CONFIG.exactAccepted, label: 'מתקבלים' };
+                  const statusBackground = isTechnionMedicineScore(result, degreeId)
+                    ? STATUS_CONFIG.exactAccepted.bg
+                    : config.bg;
+                  const statusLabel = isTechnionMedicineScore(result, degreeId)
+                    ? resultLabel(result, false, false, degreeId).label
+                    : config.label;
                   const institutionType = getInstitutionType(institution);
                   const sourceUrl = institutionLink(result.officialUrls?.[0], institution.id);
 
@@ -827,22 +835,31 @@ export default function CalculatorResults({
                             {institution.name}
                           </p>
                           <p className="text-[10px] text-slate-500">
-                            {institutionType === 'university' ? 'אוניברסיטה' : 'מכללה'} ·{' '}
-                            {formatResultSummary(result)}
+                            {institutionType === 'university' ? 'אוניברסיטה' : 'מכללה'}
+                            {!isTechnionMedicineScore(result, degreeId) &&
+                              ` · ${formatResultSummary(result)}`}
                           </p>
-                          <p className="mt-1 text-xs font-semibold text-slate-700">
-                            {result.sourceLabel}
-                          </p>
-                          <p className="mt-1 text-xs leading-relaxed text-slate-500">
-                            {result.explanation}
-                          </p>
+                          {isTechnionMedicineScore(result, degreeId) ? (
+                            <TechnionMedicineComparison score={result.score} />
+                          ) : (
+                            <>
+                              <p className="mt-1 text-xs font-semibold text-slate-700">
+                                {result.sourceLabel}
+                              </p>
+                              <p className="mt-1 text-xs leading-relaxed text-slate-500">
+                                {result.explanation}
+                              </p>
+                            </>
+                          )}
                           {footnote && (
                             <AdmissionConditions
                               conditions={result.additionalConditions}
                               footnote={footnote}
                             />
                           )}
-                          <p className="mt-1 text-[11px] text-slate-500">{result.nextAction}</p>
+                          {!isTechnionMedicineScore(result, degreeId) && (
+                            <p className="mt-1 text-[11px] text-slate-500">{result.nextAction}</p>
+                          )}
                           <TechnionThresholdNotice
                             programId={selectedProgram?.id}
                             institutionId={institution.id}
@@ -864,10 +881,10 @@ export default function CalculatorResults({
                         </div>
                       </div>
                       <span
-                        aria-label={`${institution.name}: ${config.label}`}
-                        className={`${config.bg} self-start rounded-full border-2 border-black px-3 py-1 text-[10px] font-extrabold text-black sm:self-center`}
+                        aria-label={`${institution.name}: ${statusLabel}`}
+                        className={`${statusBackground} self-start rounded-full border-2 border-black px-3 py-1 text-[10px] font-extrabold text-black sm:self-center`}
                       >
-                        {config.label}
+                        {statusLabel}
                       </span>
                     </div>
                   );
