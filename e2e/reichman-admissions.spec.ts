@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 for (const width of [390, 1440]) {
   for (const degreeId of ['reichman_cs', 'reichman_law', 'reichman_psychology']) {

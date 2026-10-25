@@ -12,14 +12,70 @@ import {
   type ProductionSchemaSnapshot,
 } from './productionSchemaPreflight';
 
+const storeEnquiry0042 = readFileSync(
+  'src/db/migrations/0042_store_enquiry_createdat_default.sql',
+  'utf8',
+);
+const storeEnquiry0041 = storeEnquiry0042.replace(
+  "COALESCE((payload->>'createdAt')::timestamptz, now())",
+  "(payload->>'createdAt')::timestamptz",
+);
+
 describe('production admissions schema preflight', () => {
-  it('tracks guarded SQL through 0041 separately from the Supabase journal', () => {
+  it('fails closed when the snapshot did not capture function definitions', () => {
+    const snapshot = makeSnapshot();
+    delete snapshot.functionDefinitions;
+    expect(assessProductionSchema(snapshot).issues).toContainEqual(
+      expect.objectContaining({
+        code: 'function_body_mismatch',
+        object: 'function:store_enquiry(jsonb)',
+      }),
+    );
+  });
+
+  it.each([
+    storeEnquiry0041,
+    '',
+    undefined,
+    storeEnquiry0041 + "\n-- COALESCE((payload->>'createdAt')::timestamptz, now())",
+    storeEnquiry0041 + "\n/* COALESCE((payload->>'createdAt')::timestamptz, now()) */",
+    storeEnquiry0042.replace('createdAt', 'otherTimestamp'),
+    storeEnquiry0042.replace('now()', "'2000-01-01'::timestamptz"),
+  ])('rejects an obsolete or missing guarded 0042 function body (%#)', (definition) => {
+    const snapshot = makeSnapshot();
+    Object.assign(snapshot, { functionDefinitions: { 'store_enquiry(jsonb)': definition } });
+    expect(assessProductionSchema(snapshot)).toMatchObject({
+      status: 'drift',
+      safeToMigrate: false,
+      pendingMigrations: [],
+      issues: expect.arrayContaining([
+        expect.objectContaining({
+          code: 'function_body_mismatch',
+          object: 'function:store_enquiry(jsonb)',
+        }),
+      ]),
+    });
+  });
+
+  it.each([
+    storeEnquiry0042,
+    storeEnquiry0042
+      .replace('COALESCE(', 'coalesce (\n  ')
+      .replace('::timestamptz, now()', ' :: TIMESTAMPTZ , NOW ( )'),
+  ])('accepts the guarded 0042 body despite SQL formatting (%#)', (definition) => {
+    const snapshot = makeSnapshot();
+    Object.assign(snapshot, { functionDefinitions: { 'store_enquiry(jsonb)': definition } });
+    expect(assessProductionSchema(snapshot)).toMatchObject({ status: 'current', issues: [] });
+  });
+
+  it('tracks guarded SQL through 0042 separately from the Supabase journal', () => {
     expect(GUARDED_PRODUCTION_MIGRATIONS.map(({ id }) => id)).toEqual([
       '0037',
       '0038',
       '0039',
       '0040',
       '0041',
+      '0042',
     ]);
     for (const { repositoryPath } of GUARDED_PRODUCTION_MIGRATIONS) {
       expect(readFileSync(repositoryPath, 'utf8').trim()).not.toBe('');
@@ -1332,6 +1388,7 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
       ...(appliedIds.has('0014') ? ['admission_threshold_scope_invariant'] : []),
       ...(appliedIds.has('0034') ? ['admission_alert_account_deleted'] : []),
     ],
+    functionDefinitions: { 'store_enquiry(jsonb)': storeEnquiry0042 },
     functionAccess: appliedIds.has('0034')
       ? Object.fromEntries([
           ...(appliedCount === FORWARD_PRODUCTION_MIGRATIONS.length
