@@ -81,6 +81,66 @@
           "proofType": "exact_official"
         }
       ]
+    },
+    {
+      "target": {
+        "institutionId": "bgu",
+        "programId": "bgu_psychology",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 650,
+      "after": 680,
+      "effectiveFrom": "2026-10-25",
+      "sourceProofs": [
+        {
+          "sourceId": "bgu-bgu_psychology-live",
+          "digest": "sha256:89bf24300f5f564ca2cc23b527612e6ee90a5320282afcbcfc47c37dbcc79fb4",
+          "excerpt": "Official bgu-bgu_psychology-live admission cutoff: 680.",
+          "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=101&p_pat1=2&p_degree_level=1",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "bgu",
+        "programId": "psychology",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 650,
+      "after": 680,
+      "effectiveFrom": "2026-10-25",
+      "sourceProofs": [
+        {
+          "sourceId": "bgu-psychology-live",
+          "digest": "sha256:1854d782d807ac2d29faa8b7fe91829e26e710242b5b0e9d60a03f1fb1896014",
+          "excerpt": "Official bgu-psychology-live admission cutoff: 680.",
+          "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=101&p_pat1=2&p_degree_level=1",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "technion",
+        "programId": "technion_civil",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 88,
+      "after": 87,
+      "effectiveFrom": "2026-10-25",
+      "sourceProofs": [
+        {
+          "sourceId": "technion-technion_civil-live",
+          "digest": "sha256:313996b2a6e1496768b244a5944d8e628a41cbbe4a9055a64bd0b647ef0d203b",
+          "excerpt": "Official technion_civil admission cutoff: 87.",
+          "url": "https://admissions.technion.ac.il/calculator/",
+          "proofType": "exact_official"
+        }
+      ]
     }
   ]
 }
