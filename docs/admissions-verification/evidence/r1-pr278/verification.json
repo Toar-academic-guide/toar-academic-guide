@@ -1,7 +1,7 @@
 [
   {
     "filename": "economics-1280.png",
-    "codeSha": "372452c",
+    "codeSha": "6c339ad",
     "scenario": {
       "name": "economics",
       "program": "colmgmt_economics",
@@ -51,6 +51,7 @@
         "evaluationDigest": "sha256:92b8279318c9b333983179c0106881822f0a788a645757be7eea2ec8f0db4e68"
       }
     },
+    "noteVisible": true,
     "metrics": {
       "alignment": "right",
       "direction": "rtl",
@@ -62,7 +63,7 @@
   },
   {
     "filename": "economics-390.png",
-    "codeSha": "372452c",
+    "codeSha": "6c339ad",
     "scenario": {
       "name": "economics",
       "program": "colmgmt_economics",
@@ -112,6 +113,7 @@
         "evaluationDigest": "sha256:92b8279318c9b333983179c0106881822f0a788a645757be7eea2ec8f0db4e68"
       }
     },
+    "noteVisible": true,
     "metrics": {
       "alignment": "right",
       "direction": "rtl",
@@ -123,7 +125,7 @@
   },
   {
     "filename": "estimate-1280.png",
-    "codeSha": "372452c",
+    "codeSha": "6c339ad",
     "scenario": {
       "name": "estimate",
       "program": "colmgmt_law",
@@ -173,6 +175,7 @@
         "evaluationDigest": "sha256:7a1c5d233bd64913c34d8b5ba3812ba342dcc6f175d6d65cfea752fe97e358c8"
       }
     },
+    "noteVisible": true,
     "metrics": {
       "alignment": "right",
       "direction": "rtl",
@@ -184,7 +187,7 @@
   },
   {
     "filename": "estimate-390.png",
-    "codeSha": "372452c",
+    "codeSha": "6c339ad",
     "scenario": {
       "name": "estimate",
       "program": "colmgmt_law",
@@ -234,6 +237,7 @@
         "evaluationDigest": "sha256:7a1c5d233bd64913c34d8b5ba3812ba342dcc6f175d6d65cfea752fe97e358c8"
       }
     },
+    "noteVisible": true,
     "metrics": {
       "alignment": "right",
       "direction": "rtl",
@@ -245,7 +249,7 @@
   },
   {
     "filename": "g2-1280.png",
-    "codeSha": "372452c",
+    "codeSha": "6c339ad",
     "scenario": {
       "name": "g2",
       "program": "colmgmt_economics",
@@ -264,7 +268,7 @@
       "linkedInstitutionId": "colman",
       "capability": "needs_input",
       "kind": "needs_input",
-      "confidence": "medium",
+      "confidence": "high",
       "sourceLabel": "התאמה לפי הציונים",
       "officialUrls": [
         "https://www.colman.ac.il/academics/ba/economy/",
@@ -287,28 +291,27 @@
       "requiredInputs": [
         "bagrut_subject_record"
       ],
-      "estimated": true,
-      "estimationReason": "הממוצע הכללי 83.3 משמש אומדן לממוצע המוסדי; לא חושב ממקצועות הבגרות.",
       "snapshot": {
         "evaluatorVersion": "admissions-evaluator-v2",
         "ruleVersion": "admissions-evaluator-v2:colman:needs_input",
         "ruleFingerprint": "sha256:ee72e3cbf979bdad26942de4d0a95d08a9015d38c99889842ff35d304fe3d034",
         "inputDigest": "sha256:276e864da4b5c6bab1d6026d4a1fc3db25daad168934615233760c2a805b734c",
-        "evaluationDigest": "sha256:0c6ad9dfe13bf5bfc9943cfff48f26952fe045dc614b6169f587799cd5f97c23"
+        "evaluationDigest": "sha256:0ee3cc4f930c606fa67ba4c413197c028fd11d42b65332581bd538d0ff3a8df3"
       }
     },
+    "noteVisible": false,
     "metrics": {
       "alignment": "right",
       "direction": "rtl",
-      "fontSize": "12px",
-      "color": "rgb(94, 106, 131)",
+      "fontSize": "16px",
+      "color": "rgb(67, 80, 114)",
       "overflow": false
     },
     "errors": []
   },
   {
     "filename": "g2-390.png",
-    "codeSha": "372452c",
+    "codeSha": "6c339ad",
     "scenario": {
       "name": "g2",
       "program": "colmgmt_economics",
@@ -327,7 +330,7 @@
       "linkedInstitutionId": "colman",
       "capability": "needs_input",
       "kind": "needs_input",
-      "confidence": "medium",
+      "confidence": "high",
       "sourceLabel": "התאמה לפי הציונים",
       "officialUrls": [
         "https://www.colman.ac.il/academics/ba/economy/",
@@ -350,21 +353,20 @@
       "requiredInputs": [
         "bagrut_subject_record"
       ],
-      "estimated": true,
-      "estimationReason": "הממוצע הכללי 83.3 משמש אומדן לממוצע המוסדי; לא חושב ממקצועות הבגרות.",
       "snapshot": {
         "evaluatorVersion": "admissions-evaluator-v2",
         "ruleVersion": "admissions-evaluator-v2:colman:needs_input",
         "ruleFingerprint": "sha256:ee72e3cbf979bdad26942de4d0a95d08a9015d38c99889842ff35d304fe3d034",
         "inputDigest": "sha256:276e864da4b5c6bab1d6026d4a1fc3db25daad168934615233760c2a805b734c",
-        "evaluationDigest": "sha256:0c6ad9dfe13bf5bfc9943cfff48f26952fe045dc614b6169f587799cd5f97c23"
+        "evaluationDigest": "sha256:0ee3cc4f930c606fa67ba4c413197c028fd11d42b65332581bd538d0ff3a8df3"
       }
     },
+    "noteVisible": false,
     "metrics": {
       "alignment": "right",
       "direction": "rtl",
-      "fontSize": "12px",
-      "color": "rgb(94, 106, 131)",
+      "fontSize": "16px",
+      "color": "rgb(67, 80, 114)",
       "overflow": false
     },
     "errors": []
