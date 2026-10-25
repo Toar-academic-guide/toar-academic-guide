@@ -21,8 +21,16 @@ export const PROGRAM_RETIREMENT_REDIRECTS: Readonly<Record<string, string>> = {
   documentary: '/programs/cinema',
 };
 
-export function canonicalProgramId(id: string): string {
-  return PROGRAM_CANONICAL_ALIASES[id] ?? id;
+const INSTITUTION_PROGRAM_CANONICAL_ALIASES: Readonly<Record<string, string>> = {
+  'medicine@bgu': 'bgu_medicine',
+};
+
+export function canonicalProgramId(id: string, institutionId?: string): string {
+  return (
+    (institutionId ? INSTITUTION_PROGRAM_CANONICAL_ALIASES[`${id}@${institutionId}`] : undefined) ??
+    PROGRAM_CANONICAL_ALIASES[id] ??
+    id
+  );
 }
 
 export function canonicalProgramPath(id: string): string {

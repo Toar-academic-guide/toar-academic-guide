@@ -14,6 +14,93 @@ async function run(
 
 describe('approve admissions review CLI', () => {
   it.each([
+    [...args, '--triggering-actor'],
+    [...args, '--triggering-actor', ''],
+    [...args, '--triggering-actor', ' \t\n '],
+    [...args, '--triggering-actor', '--extra'],
+    [...args, '--triggering-actor', 'github-operator', '--triggering-actor', 'duplicate'],
+    [...args, '--triggering-actor', 'github-operator', '--extra'],
+    [...args, '--unknown', 'github-operator'],
+  ])(
+    'rejects invalid triggering actor arguments %j before loading the database',
+    async (...argv) => {
+      const approve = vi.fn();
+      const createViteServer = vi.fn();
+      const exit = vi.fn();
+      const stdout = vi.spyOn(console, 'log').mockImplementation(() => {});
+      const stderr = vi.spyOn(console, 'error').mockImplementation(() => {});
+      await run(argv as string[], { approve, createViteServer }, exit);
+      expect(exit).toHaveBeenCalledExactlyOnceWith(1);
+      expect(stderr).toHaveBeenCalledExactlyOnceWith(expect.stringContaining('Usage:'));
+      expect(stdout).not.toHaveBeenCalled();
+      expect(approve).not.toHaveBeenCalled();
+      expect(createViteServer).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
+    'approved',
+    'not_found',
+    'already_resolved',
+    'unsupported_target',
+    'invalid_proposed_value',
+    'stale_review',
+    'publication_failed',
+    'resolution_failed',
+  ])(
+    'adds the triggering actor and preserves the operator on every %s audit line',
+    async (status) => {
+      const entries = [
+        {
+          event: 'admissions_review_item_resolved',
+          action: 'approve',
+          reviewItemId: id,
+          actor: 'operator',
+          status,
+        },
+        {
+          event: 'admissions_review_item_resolved',
+          action: 'approve',
+          reviewItemId: id,
+          actor: 'operator',
+          status,
+        },
+      ];
+      const approve = vi.fn(
+        async (
+          _id: string,
+          options: {
+            actor: string;
+            auditLog: (entry: Record<string, unknown>) => void;
+          },
+        ) => {
+          expect(options.actor).toBe('operator');
+          for (const entry of entries) options.auditLog(entry);
+          if (status === 'resolution_failed') throw new Error('sensitive DB error');
+          return { status };
+        },
+      );
+      const createViteServer = vi.fn();
+      const exit = vi.fn();
+      vi.spyOn(console, 'log').mockImplementation(() => {});
+      const stderr = vi.spyOn(console, 'error').mockImplementation(() => {});
+      await run(
+        [...args, '--triggering-actor', ' github-operator '],
+        { approve, createViteServer },
+        exit,
+      );
+      expect(approve).toHaveBeenCalledOnce();
+      const auditLines = stderr.mock.calls.filter(([line]) => String(line).startsWith('{'));
+      expect(auditLines).toHaveLength(entries.length);
+      expect(auditLines.map(([line]) => JSON.parse(line))).toEqual(
+        entries.map((entry) => ({ ...entry, triggeringActor: 'github-operator' })),
+      );
+      expect(exit).toHaveBeenCalledExactlyOnceWith(status === 'approved' ? 0 : 1);
+      expect(createViteServer).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
     [],
     ['bad-id', '--actor', 'operator'],
     [id],

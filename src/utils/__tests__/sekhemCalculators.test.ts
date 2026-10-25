@@ -135,3 +135,27 @@ describe('sekhemCalculators', () => {
     });
   });
 });
+
+it('sweep38 removes the unpublished Afeka psychometric 550 gate', () => {
+  const afeka = UNIVERSITIES.find((row) => row.id === 'afeka')!;
+  const program = {
+    ...getProgram('afeka_ee'),
+    id: 'afeka_engineering',
+    thresholds: { afeka: 250 },
+  };
+  const result = evaluateUniversities(
+    [afeka],
+    program,
+    {
+      bagrut: 110,
+      psychometric: 400,
+      mathUnits: 5,
+      mathGrade: 90,
+      englishUnits: 5,
+      englishGrade: 90,
+    },
+    { hasMath5: true, hasPhysics5: false },
+  )[0];
+  expect(result.status).toBe('accepted');
+  expect(result.explanation ?? '').not.toContain('פסיכומטרי לפחות 550');
+});

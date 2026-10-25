@@ -19,15 +19,17 @@ const quietViteLogger = {
 
 function parseArguments(argv) {
   if (
-    argv.length !== 3 ||
+    (argv.length !== 3 && argv.length !== 5) ||
     argv[1] !== '--actor' ||
     !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(argv[0] ?? '') ||
     !argv[2]?.trim() ||
-    argv[2].startsWith('--')
+    argv[2].startsWith('--') ||
+    (argv.length === 5 &&
+      (argv[3] !== '--triggering-actor' || !argv[4]?.trim() || argv[4].trim().startsWith('--')))
   ) {
     throw new Error(usage);
   }
-  return { reviewItemId: argv[0], actor: argv[2].trim() };
+  return { reviewItemId: argv[0], actor: argv[2].trim(), triggeringActor: argv[4]?.trim() };
 }
 
 export async function runAdmissionsReviewApprovalCli(
@@ -40,7 +42,7 @@ export async function runAdmissionsReviewApprovalCli(
   let exitCode = 1;
   try {
     // Validate before loading any server modules or constructing a repository.
-    const { reviewItemId, actor } = parseArguments(argv);
+    const { reviewItemId, actor, triggeringActor } = parseArguments(argv);
     if (!approve) {
       vite = await createViteServer({
         root,
@@ -59,7 +61,8 @@ export async function runAdmissionsReviewApprovalCli(
     const result = await approve(reviewItemId, {
       actor,
       // Keep stdout machine-readable; the single audit event goes to stderr.
-      auditLog: (entry) => console.error(JSON.stringify(entry)),
+      auditLog: (entry) =>
+        console.error(JSON.stringify(triggeringActor ? { ...entry, triggeringActor } : entry)),
     });
     console.log(JSON.stringify(result));
     exitCode = result.status === 'approved' ? 0 : 1;
