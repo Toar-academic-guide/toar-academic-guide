@@ -4994,8 +4994,10 @@ it.each(['tlvyaffo_economics', 'ruppin_marine_bio'])(
     const result = report.results[0];
     expect(result.explanation).not.toContain('נדרשת בדיקת זכאות לתעודת בגרות מלאה');
     if (degreeId === 'ruppin_marine_bio')
-      // Sweep-38 removes fabricated generic facts; dedicated dispatch is lane-fenced.
-      expect(result).toMatchObject({ decision: 'unknown', kind: 'requirements_only' });
+      // Approved test update (Jorje 2026-10-25): official Ruppin marine requirements
+      // require mathematics (4 units ≥70 or 5 units pass), so without math grades the result needs input:
+      // https://www.ruppin.ac.il/faculties/ba/marine-science-and-environment/application-requirements/
+      expect(result).toMatchObject({ decision: 'unknown', kind: 'needs_input' });
     else {
       expect(result.kind).toBe('manual_gate');
       expect(result.explanation).toContain('ראיון');
