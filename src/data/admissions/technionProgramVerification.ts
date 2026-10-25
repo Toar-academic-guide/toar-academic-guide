@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { TECHNION_WINTER_CUTOFFS } from './technionWinterCutoffs';
 
 import type {
   AdmissionsProgramVerificationContract,
@@ -23,8 +24,8 @@ interface TechnionConfig {
 const CONFIGS: TechnionConfig[] = [
   { programId: 'cs', threshold: 91, verdict: 'accepted' },
   { programId: 'datascience', threshold: 91, verdict: 'accepted' },
-  { programId: 'ee', threshold: 91.5, verdict: 'accepted' },
-  { programId: 'me', threshold: 87, verdict: 'accepted' },
+  { programId: 'ee', threshold: TECHNION_WINTER_CUTOFFS.ee, verdict: 'accepted' },
+  { programId: 'me', threshold: TECHNION_WINTER_CUTOFFS.me, verdict: 'accepted' },
   { programId: 'medicine', threshold: 92, verdict: 'eligible_to_apply' },
   { programId: 'biomedical', threshold: 87, verdict: 'accepted' },
   { programId: 'civil', threshold: 87, verdict: 'accepted' },

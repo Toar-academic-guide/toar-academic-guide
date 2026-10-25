@@ -99,3 +99,91 @@ for (const width of [390, 1280]) {
     await page.screenshot({ path: testInfo.outputPath(`ee-verdict-${width}.png`), fullPage: true });
   });
 }
+
+for (const width of [390, 1280]) {
+  for (const [programId, name, winter] of [
+    ['technion_ee', 'הנדסת חשמל', 'בחורף תשפ"ז: סכם 91.5'],
+    ['technion_me', 'הנדסת מכונות', 'בחורף תשפ"ז: סכם 87'],
+  ]) {
+    test(`${programId} no-score detail puts winter before subjects at ${width}px`, async ({
+      page,
+    }) => {
+      test.setTimeout(120_000);
+      await page.setViewportSize({ width, height: 900 });
+      const explanation =
+        'כדי לחשב את המסלול במוסד זה צריך נתוני מקצועות בגרות שהמחשבון הרשמי משתמש בהם.';
+      await page.route('**/api/admissions/evaluate', async (route) => {
+        const input = route.request().postDataJSON();
+        const result = {
+          linkedInstitutionId: 'technion',
+          institution: { id: 'technion', name: 'הטכניון – מכון טכנולוגי לישראל' },
+          capability: 'needs_input',
+          kind: 'needs_input',
+          decision: 'unknown',
+          confidence: 'low',
+          sourceLabel: 'נדרשים נתונים נוספים',
+          explanation,
+          nextAction: 'השלימו את יחידות וציון המקצועות החסרים כדי לקבל הערכה למסלול.',
+          requiredInputs: ['bagrut_subject_record'],
+        };
+        const report = {
+          input,
+          program: { id: programId, name },
+          results: [result],
+          generatedAt: '2026-10-25T00:00:00Z',
+          evaluatorVersion: 'test',
+          inputDigest: 'test',
+        };
+        await route.fulfill({
+          json: {
+            data: input.degreeIds
+              ? { reports: { [programId]: report }, failedDegreeIds: [] }
+              : report,
+          },
+        });
+      });
+      await page.addInitScript((id) => {
+        sessionStorage.setItem(
+          'myway_study_journey_v2',
+          JSON.stringify({
+            fields: [],
+            locations: ['all'],
+            types: ['all'],
+            selectedRowId: `${id}:technion`,
+            scores: { bagrut: { weightedAverage: 110 }, psychometric: { overall: 750 } },
+          }),
+        );
+      }, programId);
+      await page.goto('/app/calculator#detail');
+      const detail = page.locator('.journey-narrow');
+      await expect(
+        page.getByRole('main').getByRole('heading', { name, exact: true }),
+      ).toBeVisible();
+      await expect(detail.locator('.journey-result-explanation')).toHaveText(explanation);
+      await expect(detail.getByRole('button', { name: 'יצירת קשר', exact: true })).toBeVisible();
+      await expect(detail.getByRole('button', { name: 'שמירה לרשימה', exact: true })).toBeVisible();
+      const subjects = ['5 יח"ל מתמטיקה — חובה', '5 יח"ל פיזיקה — חובה'];
+      for (const subject of subjects) await expect(detail.getByText(subject)).toBeVisible();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+        true,
+      );
+      if (programId === 'technion_me') await expect(detail.getByText(/באביב תשפ/)).toHaveCount(0);
+
+      // awaiting StudyJourney edit after #278 merges
+      test.fail();
+      const items = detail.getByRole('listitem');
+      await expect(items.first(), 'winter must be the first requirement').toHaveText(winter);
+      await expect(detail.getByText(winter, { exact: true })).toBeVisible();
+      await expect(items.nth(1)).toHaveText(subjects[0]);
+      await expect(items.nth(2)).toHaveText(subjects[1]);
+      if (programId === 'technion_ee') {
+        const spring = 'באביב תשפ"ז, על בסיס מקום פנוי: סכם 94 — מספר המקומות מצומצם';
+        await expect(detail.getByText(spring, { exact: true })).toBeVisible();
+        const text = await detail.innerText();
+        expect(text.indexOf(spring)).toBeGreaterThan(text.indexOf(subjects[1]));
+      } else {
+        await expect(detail.getByText(/באביב תשפ/)).toHaveCount(0);
+      }
+    });
+  }
+}
