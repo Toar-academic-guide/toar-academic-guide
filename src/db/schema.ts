@@ -1,7 +1,9 @@
 import {
   boolean,
+  check,
   index,
   integer,
+  numeric,
   jsonb,
   pgEnum,
   pgTable,
@@ -11,8 +13,11 @@ import {
   timestamp,
   uniqueIndex,
   uuid,
+  varchar,
 } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
+import type { EnquiryResultStatus } from '@/lib/enquiries';
+import type { AdmissionsEvaluationInput } from '@/types/admissionsEvaluation';
 import type {
   AdmissionsProfileInputs,
   AssessmentProgress,
@@ -236,6 +241,7 @@ export const programs = pgTable('programs', {
   institutionId: text('institution_id').references(() => institutions.id),
   type: programTypeEnum('type').notNull(),
   category: text('category').notNull(),
+  isListed: boolean('is_listed').default(true).notNull(),
   admissionType: admissionTypeEnum('admission_type').notNull(),
   riasecR: integer('riasec_r').notNull(),
   riasecI: integer('riasec_i').notNull(),
@@ -295,7 +301,7 @@ export const admissionThresholds = pgTable(
       .references(() => institutions.id, { onDelete: 'cascade' }),
     universityId: text('university_id').notNull(),
     thresholdKind: thresholdKindEnum('threshold_kind').notNull(),
-    thresholdValue: integer('threshold_value'),
+    thresholdValue: numeric('threshold_value', { mode: 'number' }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => ({
@@ -421,7 +427,7 @@ export const userProfiles = pgTable('user_profiles', {
   psychometricQuantitative: integer('psychometric_quantitative'),
   psychometricVerbal: integer('psychometric_verbal'),
   psychometricEnglish: integer('psychometric_english'),
-  bagrutWeightedAverage: integer('bagrut_weighted_average'),
+  bagrutWeightedAverage: real('bagrut_weighted_average'),
   admissionsInputs: jsonb('admissions_inputs').$type<AdmissionsProfileInputs>(),
   bagrutProfileVersionId: uuid('bagrut_profile_version_id').references(
     () => bagrutProfileVersions.id,
@@ -951,3 +957,35 @@ export const admissionAlertWebhookEvents = pgTable('admission_alert_webhook_even
   receivedAt: timestamp('received_at', { withTimezone: true }).defaultNow().notNull(),
   payloadMetadata: jsonb('payload_metadata').$type<Record<string, unknown>>().default({}).notNull(),
 });
+
+export const enquiries = pgTable(
+  'enquiries',
+  {
+    requestId: uuid('request_id').primaryKey(),
+    name: text('name').notNull(),
+    phone: text('phone').notNull(),
+    programId: text('program_id').notNull(),
+    institutionId: text('institution_id').notNull(),
+    programName: text('program_name').notNull(),
+    institutionName: text('institution_name').notNull(),
+    sourcePath: text('source_path').notNull(),
+    utmSource: varchar('utm_source', { length: 100 }),
+    utmMedium: varchar('utm_medium', { length: 100 }),
+    utmCampaign: varchar('utm_campaign', { length: 100 }),
+    referrer: varchar('referrer', { length: 256 }),
+    consent: boolean('consent').notNull(),
+    consentText: text('consent_text').notNull(),
+    resultStatus: text('result_status').$type<EnquiryResultStatus>().notNull(),
+    bagrut: real('bagrut'),
+    psychometric: integer('psychometric'),
+    evaluationInput: jsonb('evaluation_input').$type<AdmissionsEvaluationInput>(),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    check(
+      'enquiries_result_status_check',
+      sql`${table.resultStatus} in ('accepted', 'below', 'eligible_to_apply', 'unknown')`,
+    ),
+    check('enquiries_consent_check', sql`${table.consent} = true`),
+  ],
+);

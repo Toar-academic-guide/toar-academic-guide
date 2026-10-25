@@ -1,0 +1,47 @@
+{
+  "tlvyaffo_nursing:mta": {
+    "program": "tlvyaffo_nursing",
+    "institution": "mta",
+    "display_name": "סיעוד",
+    "reqs": [
+      "קבלה אוטומטית: ממוצע בגרות 90 ופסיכומטרי 520, בכפוף לתנאי הסף הכלליים של המכללה",
+      "לדיון בוועדת קבלה ולראיון אישי באחת החלופות: בגרות 90 ופסיכומטרי 500; או פסיכומטרי 520 וזכאות לבגרות; או ציון משולב 515 עם פסיכומטרי 430+",
+      "אנגלית: 85+ בפסיכומטרי או באמיר\"ם/אמירנ\"ט"
+    ],
+    "notes": [
+      "מי שלא עומדים בתנאי הקבלה האוטומטית יכולים לברר מול מרכז ייעוץ ורישום של המכללה אם אפשר להגיש מועמדות."
+    ],
+    "quant": null,
+    "english": 85,
+    "urls": {
+      "institution": "https://www.mta.ac.il",
+      "program": "https://www.mta.ac.il/program/nursing_bsn",
+      "calculator": "https://mtamn.mta.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1"
+    },
+    "requirements_source": "https://www.mta.ac.il/conditions_for_applying",
+    "cycle": "תשפ\"ז"
+  },
+  "tlvyaffo_business:mta": {
+    "program": "tlvyaffo_business",
+    "institution": "mta",
+    "display_name": "כלכלה וניהול",
+    "old_display_name": "מנהל עסקים",
+    "reqs": [
+      "קבלה אוטומטית באחת החלופות: בגרות 94 ופסיכומטרי 550; או פסיכומטרי 580 וזכאות לבגרות; או ציון משולב 580; או בגרות 96",
+      "חלופה נוספת: פסיכומטרי 600 וציון משולב 620 עם מתמטיקה 4 יח\"ל 65+",
+      "בכל החלופות הרגילות: מתמטיקה 4 יח\"ל 80+ או 5 יח\"ל 55+, ואנגלית 85+ בפסיכומטרי או באמיר\"ם/אמירנ\"ט"
+    ],
+    "notes": [
+      "מי שלא עומדים בתנאי הקבלה יכולים לברר מול מרכז ייעוץ ורישום של המכללה אם אפשר להגיש מועמדות. יש גם מכינה שמחליפה את הפסיכומטרי."
+    ],
+    "quant": null,
+    "english": 85,
+    "urls": {
+      "institution": "https://www.mta.ac.il",
+      "program": "https://www.mta.ac.il/program/management_economics_ba",
+      "calculator": "https://mtamn.mta.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1"
+    },
+    "requirements_source": "https://www.mta.ac.il/conditions_for_applying",
+    "cycle": "תשפ\"ז"
+  }
+}

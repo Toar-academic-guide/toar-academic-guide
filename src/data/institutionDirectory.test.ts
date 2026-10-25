@@ -1,9 +1,57 @@
 import { describe, expect, it } from 'vitest';
 
-import { getInstitutionDirectoryItems } from './institutionDirectory';
+import {
+  getInstitutionDirectoryItems,
+  getPublicInstitutionSourceUrl,
+} from './institutionDirectory';
 import yoramInstitutionLogos from './yoramInstitutionLogos.generated.json';
 
 describe('institution directory data', () => {
+  it('keeps the verified doula school in Israel and separates the two Tiltan schools', () => {
+    const institutions = getInstitutionDirectoryItems();
+    expect(institutions.find((item) => item.id === 'mon_12341122982')).toMatchObject({
+      sourceUrl: 'https://www.leidaschool.co.il/',
+      areas: expect.arrayContaining(['tel_aviv', 'center']),
+    });
+    expect(institutions.find((item) => item.id === 'mon_12341122982')?.areas).not.toContain(
+      'online',
+    );
+    expect(institutions.find((item) => item.id === 'mon_12341137918')?.sourceUrl).toBe(
+      'https://www.tiltan-college.co.il/about',
+    );
+  });
+  it('keeps aggregator and board URLs out of public directory items', () => {
+    const items = getInstitutionDirectoryItems();
+    for (const item of items) {
+      expect(item.sourceUrl ?? '').not.toMatch(/yoram\.walla\.co\.il/i);
+      expect(item.domain ?? '').not.toMatch(/yoram\.walla\.co\.il/i);
+      expect(item).not.toHaveProperty('mondayUrl');
+    }
+    expect(JSON.stringify(items)).not.toMatch(/monday\.com/i);
+  });
+
+  it('skips invalid, aggregator and board candidates and falls back in priority order', () => {
+    expect(
+      getPublicInstitutionSourceUrl([
+        'https://yoram.walla.co.il/institute/1',
+        'https://sub.yoram.walla.co.il/test',
+        'https://malichi-hub.monday.com/boards/18416803950',
+        'https://[invalid',
+        'https://user:pass@example.org',
+        'מקור: https://example.org/program',
+        'https://example.org/calculator',
+      ]),
+    ).toBe('https://example.org/program');
+    expect(
+      getPublicInstitutionSourceUrl([
+        'https://yoram.walla.co.il/institute/1 https://example.org/official',
+      ]),
+    ).toBe('https://example.org/official');
+    expect(
+      getPublicInstitutionSourceUrl(['https://yoram.walla.co.il/institute/1', null]),
+    ).toBeNull();
+  });
+
   it('builds one public directory item for every valid Monday institution row', () => {
     const institutions = getInstitutionDirectoryItems();
 
@@ -78,10 +126,10 @@ describe('institution directory data', () => {
     expect(byId.get('givat_washington')?.logoUrl).toBe('/institution-logos/givat-washington.png');
     expect(byId.get('danon')).toMatchObject({
       domain: 'danon.org.il',
-      sourceUrl: 'https://www.danon.org.il',
+      sourceUrl: 'https://www.danon.org.il/',
     });
     expect(byId.get('spieldocs')?.logoUrl).toContain('SamSpigelSchool.svg');
-    expect(byId.get('wizo')?.domain).toBe('wizo.org.il');
+    expect(byId.get('wizo')?.domain).toBe('lp.wizodzn.ac.il');
     expect(byId.get('mon_12220697934')).toMatchObject({
       domain: 'bpm-music.com',
       logoUrl: 'https://i1.sndcdn.com/avatars-000030802522-35lsuk-t500x500.jpg',

@@ -1,0 +1,44 @@
+{
+  "institution": {
+    "id": "mta",
+    "name": "המכללה האקדמית תל-אביב-יפו",
+    "region": "center",
+    "domain": "mta.ac.il",
+    "programUrl": "https://www.mta.ac.il"
+  },
+  "linkedInstitutionId": "mta",
+  "capability": "manual_gate",
+  "kind": "manual_gate",
+  "confidence": "medium",
+  "sourceLabel": "התאמה לפי הציונים",
+  "officialUrls": [
+    "https://www.mta.ac.il/conditions_for_applying",
+    "https://mtamn.mta.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1"
+  ],
+  "decision": "pending",
+  "score": 90,
+  "threshold": 90,
+  "scoreLabel": "ממוצע בגרות משוער — מסלול אוטומטי",
+  "scoreAssessment": "meets_threshold",
+  "explanation": "תנאי הציונים מתקיימים בחלופה: בגרות 90 לפחות ופסיכומטרי 520 לפחות — המסלול האוטומטי. ממוצע הבגרות והציון המשולב הם הערכה; המכללה מחשבת אותם לפי שיטתה. אין כאן אישור קבלה סופית.",
+  "nextAction": "פנו למרכז ייעוץ ורישום לאישור הנתונים ולבירור אפשרויות הקבלה.",
+  "additionalConditions": [
+    {
+      "id": "psychometric_english",
+      "label": "אנגלית 85 לפחות בפסיכומטרי או באמיר״ם/אמירנ״ט",
+      "status": "confirmed"
+    },
+    {
+      "id": "bagrut_average",
+      "label": "זכאות לבגרות, עמידה בתנאי הסף הכלליים ואישור הנתונים בידי המכללה",
+      "status": "unconfirmed"
+    }
+  ],
+  "snapshot": {
+    "evaluatorVersion": "admissions-evaluator-v2",
+    "ruleVersion": "admissions-evaluator-v2:mta:manual_gate",
+    "ruleFingerprint": "sha256:c26846547a4e3e7e887567976d76275e9914dfa467c4bb9261d2e48aed2f9127",
+    "inputDigest": "sha256:951c554a46bcd8b7aaaebffec0ce0be7d1245beb7d760ee97b107cd2d2542a90",
+    "evaluationDigest": "sha256:d345b8819be61b3e351f18d3b6db7ce1381d4436c383ca6c1c8b623a65bf4d1f"
+  }
+}

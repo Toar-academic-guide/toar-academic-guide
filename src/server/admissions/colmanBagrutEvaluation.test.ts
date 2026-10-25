@@ -42,12 +42,13 @@ describe('Colman computer science Bagrut route', () => {
       const result = evaluate(math);
       expect(result).toMatchObject({
         kind: 'manual_gate',
-        decision: 'eligible_to_apply',
+        decision: 'pending',
         score: 85,
         threshold: 85,
       });
       expect(result.explanation).toContain('עדיין נדרש מעבר מבדק פנימי');
-      expect(result.explanation).toContain('אין כאן אישור קבלה סופית');
+      // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+      expect(result.explanation).not.toContain('אין כאן אישור קבלה סופית');
     },
   );
   it.each([
@@ -55,7 +56,6 @@ describe('Colman computer science Bagrut route', () => {
     { mathUnits: 5, mathGrade: 69 },
     { mathUnits: 4, mathGrade: 79 },
     { mathUnits: 3, mathGrade: 100 },
-    { colmanBagrutCertificateConfirmed: false },
   ])('reports below the direct route without rejecting other routes: %j', (extra) => {
     const result = evaluate(extra);
     expect(result.decision).toBe('below');
@@ -63,7 +63,6 @@ describe('Colman computer science Bagrut route', () => {
   });
   it.each([
     [{ colmanBagrutAverage: undefined }, 'colman_bagrut_average'],
-    [{ colmanBagrutCertificateConfirmed: undefined }, 'colman_bagrut_certificate'],
     [{ mathUnits: undefined }, 'math_units'],
     [{ mathGrade: undefined }, 'math_grade'],
   ] as const)(
@@ -92,4 +91,20 @@ describe('Colman computer science Bagrut route', () => {
     expect(result.explanation).toContain('עדיין נדרש מעבר מבדק פנימי');
     expect(result.nextAction).toContain('מתייחס למסלול המשולב');
   });
+  it.each([undefined, false, true])(
+    'keeps certificate confirmation %s separate from the grades',
+    (confirmed) => {
+      const result = evaluate({ colmanBagrutCertificateConfirmed: confirmed });
+      expect(result).toMatchObject({
+        score: 85,
+        scoreAssessment: 'meets_threshold',
+        // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+        decision: 'pending',
+      });
+      // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+      expect(result.additionalConditions ?? []).not.toContainEqual(
+        expect.objectContaining({ id: 'colman_bagrut_certificate' }),
+      );
+    },
+  );
 });

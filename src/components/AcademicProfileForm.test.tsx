@@ -41,17 +41,13 @@ describe('AcademicProfileForm', () => {
       'value',
       '85.25',
     );
-    expect(screen.getByLabelText('האם יש לך זכאות לתעודת בגרות מלאה ומוכרת?')).toHaveProperty(
-      'value',
-      'true',
-    );
-    fireEvent.change(screen.getByLabelText('האם יש לך זכאות לתעודת בגרות מלאה ומוכרת?'), {
-      target: { value: 'false' },
-    });
+    // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+    expect(screen.queryByLabelText('האם יש לך זכאות לתעודת בגרות מלאה ומוכרת?')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
     await waitFor(() =>
       expect(onComplete).toHaveBeenCalledWith({
-        admissions: { colmanBagrutAverage: 85.25, colmanBagrutCertificateConfirmed: false },
+        // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+        admissions: { colmanBagrutAverage: 85.25 },
       }),
     );
   });
@@ -431,10 +427,8 @@ describe('AcademicProfileForm', () => {
         initialScores={{ admissions }}
       />,
     );
-    expect(screen.getByLabelText('תעודת הקבלה לאוניברסיטת חיפה')).toHaveProperty(
-      'value',
-      'full_bagrut',
-    );
+    // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+    expect(screen.queryByLabelText('תעודת הקבלה לאוניברסיטת חיפה')).toBeNull();
     expect(screen.getByLabelText('תאריך מבחן העברית בחיפה')).toHaveProperty('value', '2026-04-01');
     expect(screen.getByLabelText('מסלול מערכות מידע בחיפה')).toHaveProperty(
       'value',
@@ -825,13 +819,8 @@ it('retains Medicine inputs when reopened, edited and saved', async () => {
   expect(
     (screen.getByLabelText('ממוצע בגרות רשמי של העברית (60–127)') as HTMLInputElement).value,
   ).toBe('120.25');
-  expect(
-    (
-      screen.getByLabelText(
-        'זכאות לבגרות או תעודה חלופית מוכרת לרפואה בעברית?',
-      ) as HTMLSelectElement
-    ).value,
-  ).toBe('false');
+  // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+  expect(screen.queryByLabelText('זכאות לבגרות או תעודה חלופית מוכרת לרפואה בעברית?')).toBeNull();
   fireEvent.change(screen.getByLabelText('תאריך הפסיכומטרי לרפואה בעברית'), {
     target: { value: '2026-04-02' },
   });
@@ -963,7 +952,8 @@ it('saves and reopens health decimals, false and unknown values without generic 
     'value',
     '85.25',
   );
-  expect(screen.getByLabelText(/פיזיותרפיה: תעודת קבלה מוכרת/)).toHaveProperty('value', 'false');
+  // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+  expect(screen.getByLabelText(/פיזיותרפיה: אנגלית/)).toHaveProperty('value', 'false');
   expect(screen.getByLabelText('מועד הבחינה לריפוי בעיסוק')).toHaveProperty('value', '');
   fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
   await waitFor(() => expect(onComplete).toHaveBeenCalledWith({ admissions }));
@@ -980,5 +970,65 @@ it('saves and reopens health decimals, false and unknown values without generic 
     'value',
     '85.25',
   );
-  expect(screen.getByLabelText(/פיזיותרפיה: תעודת קבלה מוכרת/)).toHaveProperty('value', 'false');
+  // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+  expect(screen.getByLabelText(/פיזיותרפיה: אנגלית/)).toHaveProperty('value', 'false');
+});
+
+it('allows a subject-only profile to continue without asking for an overall average', async () => {
+  const onComplete = vi.fn().mockResolvedValue(true);
+  render(
+    <AcademicProfileForm
+      onComplete={onComplete}
+      onClearLocalProfileData={vi.fn()}
+      onSkip={vi.fn()}
+      initialScores={{
+        psychometric: { overall: 650 },
+        bagrut: {
+          subjectRecord: {
+            schemaVersion: 1,
+            sector: 'jewish',
+            subjects: [{ subjectId: 'mathematics', units: 5, grade: 90 }],
+          },
+        },
+      }}
+      alertContinuation={{
+        title: 'המשך למעקב',
+        submitLabel: 'שמור והמשך לבדיקת המעקב ←',
+        requiresStructuredBagrut: true,
+      }}
+    />,
+  );
+  fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לבדיקת המעקב ←' }));
+  await waitFor(() => expect(onComplete).toHaveBeenCalled());
+});
+
+it('Amit 07:33: legacy certificate fields render safely without full-bagrut controls', () => {
+  render(
+    <AcademicProfileForm
+      onComplete={vi.fn()}
+      onClearLocalProfileData={vi.fn()}
+      onSkip={vi.fn()}
+      initialScores={{
+        bagrut: { weightedAverage: 110 },
+        admissions: {
+          colmanBagrutAverage: 110,
+          colmanBagrutCertificateConfirmed: false,
+          bguCertificateRequirementsConfirmed: false,
+          hujiMedicineQualificationConfirmed: false,
+          haifaAdmissionQualification: 'none',
+        },
+      }}
+    />,
+  );
+  expect(screen.getByLabelText('ממוצע בגרות משוקלל של המכללה למינהל (50–130)')).toHaveProperty(
+    'value',
+    '110',
+  );
+  for (const label of [
+    'האם יש לך זכאות לתעודת בגרות מלאה ומוכרת?',
+    'תעודת בגרות מלאה או תעודת קבלה חלופית המוכרת בבן־גוריון',
+    'זכאות לבגרות או תעודה חלופית מוכרת לרפואה בעברית?',
+    'תעודת הקבלה לאוניברסיטת חיפה',
+  ])
+    expect(screen.queryByLabelText(label)).toBeNull();
 });

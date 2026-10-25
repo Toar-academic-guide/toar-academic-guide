@@ -4,40 +4,80 @@
   "changes": [
     {
       "target": {
-        "institutionId": "bgu",
-        "programId": "psychology",
+        "institutionId": "technion",
+        "programId": "technion_ee",
         "cycle": "2027"
       },
       "ruleKind": "admission_cutoff",
-      "before": 675,
-      "after": 650,
-      "effectiveFrom": "2026-09-27",
+      "before": 94,
+      "after": 91.5,
+      "effectiveFrom": "2026-10-25",
       "sourceProofs": [
         {
-          "sourceId": "bgu-psychology-live",
-          "digest": "sha256:69bd3b03bd3de64a32fcacf8ad5bb545423d31c12c30862c7d298728204e4a72",
-          "excerpt": "Main-campus Psychology (department 101, path 2) requires general score 650 and psychometric 650. Alternative routes remain subject to the official programme requirements.",
-          "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=101&p_pat1=2&p_degree_level=1",
+          "sourceId": "technion-technion_ee-live",
+          "digest": "sha256:8dd512d269f64e33325e0342c8bcd1c7ff1b70c9a6cfce5773e2eac9a89cb400",
+          "excerpt": "Winter תשפ\"ז initial table (tablepress-485): הנדסת חשמל 91.5.",
+          "url": "https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/",
           "proofType": "exact_official"
         }
       ]
     },
     {
       "target": {
-        "institutionId": "bgu",
-        "programId": "bgu_psychology",
+        "institutionId": "technion",
+        "programId": "technion_me",
         "cycle": "2027"
       },
       "ruleKind": "admission_cutoff",
-      "before": 675,
-      "after": 650,
-      "effectiveFrom": "2026-09-27",
+      "before": 92,
+      "after": 87,
+      "effectiveFrom": "2026-10-25",
       "sourceProofs": [
         {
-          "sourceId": "bgu-bgu_psychology-live",
-          "digest": "sha256:69bd3b03bd3de64a32fcacf8ad5bb545423d31c12c30862c7d298728204e4a72",
-          "excerpt": "Main-campus Psychology (department 101, path 2) requires general score 650 and psychometric 650. Alternative routes remain subject to the official programme requirements.",
-          "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=101&p_pat1=2&p_degree_level=1",
+          "sourceId": "technion-technion_me-live",
+          "digest": "sha256:8dd512d269f64e33325e0342c8bcd1c7ff1b70c9a6cfce5773e2eac9a89cb400",
+          "excerpt": "Winter תשפ\"ז initial table (tablepress-485): הנדסת מכונות 87.",
+          "url": "https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "technion",
+        "programId": "ee",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 94,
+      "after": 91.5,
+      "effectiveFrom": "2026-10-25",
+      "sourceProofs": [
+        {
+          "sourceId": "technion-ee-live",
+          "digest": "sha256:8dd512d269f64e33325e0342c8bcd1c7ff1b70c9a6cfce5773e2eac9a89cb400",
+          "excerpt": "Winter תשפ\"ז initial table (tablepress-485): הנדסת חשמל 91.5.",
+          "url": "https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "technion",
+        "programId": "me",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 92,
+      "after": 87,
+      "effectiveFrom": "2026-10-25",
+      "sourceProofs": [
+        {
+          "sourceId": "technion-me-live",
+          "digest": "sha256:8dd512d269f64e33325e0342c8bcd1c7ff1b70c9a6cfce5773e2eac9a89cb400",
+          "excerpt": "Winter תשפ\"ז initial table (tablepress-485): הנדסת מכונות 87.",
+          "url": "https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/",
           "proofType": "exact_official"
         }
       ]

@@ -5,6 +5,7 @@ import { Pool } from 'pg';
 
 import { requireDatabaseUrl } from '@/env';
 import * as schema from './schema';
+import { supabaseConnectionOptions } from './supabaseConnection';
 
 // Existing isolated transaction fixtures also use Drizzle's postgres.js adapter.
 export type AppDatabase = PgDatabase<
@@ -20,7 +21,7 @@ declare global {
 export function getDb(): AppDatabase {
   if (!globalThis.__toarAcademicGuideDb__) {
     const pool = new Pool({
-      connectionString: requireDatabaseUrl(),
+      ...supabaseConnectionOptions(requireDatabaseUrl()),
       // Queue overlapping requests: postgres.js pipelining can hang on Supavisor.
       max: 1,
       pipeline: false,

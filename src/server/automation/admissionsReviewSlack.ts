@@ -38,7 +38,7 @@ export function readAdmissionsReviewSlackConfig(
   return {
     slackBotToken: env.SLACK_BOT_TOKEN?.trim(),
     slackChannelId:
-      env.SLACK_READY_PR_CHANNEL_ID?.trim() ?? env.SLACK_ADMISSIONS_REVIEW_CHANNEL_ID?.trim(),
+      env.SLACK_READY_PR_CHANNEL_ID?.trim() || env.SLACK_ADMISSIONS_REVIEW_CHANNEL_ID?.trim(),
   };
 }
 

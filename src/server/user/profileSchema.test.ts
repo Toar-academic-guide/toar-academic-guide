@@ -8,6 +8,28 @@ import {
 } from '@/server/user/profileSchema';
 
 describe('userProfileSchema', () => {
+  it('preserves decimal Bagrut averages while retaining the existing range and integer psychometric scores', () => {
+    const profile = {
+      geographicPreference: 'any',
+      academicScores: { bagrut: { weightedAverage: 110.5 }, psychometric: { overall: 700 } },
+      savedProgramIds: ['tau_cs'],
+    };
+    expect(userProfileSchema.parse(profile)).toEqual(profile);
+    for (const weightedAverage of [59.99, 120.01, '110.5', NaN, Infinity]) {
+      expect(
+        userProfileSchema.safeParse({
+          ...profile,
+          academicScores: { bagrut: { weightedAverage } },
+        }).success,
+      ).toBe(false);
+    }
+    expect(
+      userProfileSchema.safeParse({
+        ...profile,
+        academicScores: { psychometric: { overall: 700.5 } },
+      }).success,
+    ).toBe(false);
+  });
   it('preserves Colman average and certificate confirmation in a saved profile', () => {
     const admissions = { colmanBagrutAverage: 85.25, colmanBagrutCertificateConfirmed: false };
     expect(

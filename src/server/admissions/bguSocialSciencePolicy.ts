@@ -23,6 +23,7 @@ export function resolveBguSocialScienceAdmission(
     extraInputs?: AdmissionsExtraInputs;
   },
   calculatedScore?: number,
+  assessment?: 'scores',
 ): BguSocialScienceAdmission {
   const programme = bguSocialScienceProgram(input.degreeId);
   if (!programme) throw new Error('Not a reviewed BGU social science programme');
@@ -34,82 +35,84 @@ export function resolveBguSocialScienceAdmission(
     if (value === undefined) missing.push(key);
     return value;
   };
-  requireBoolean(extra.bguSocialScienceRequirementsConfirmed, 'bgu_social_science_requirements');
-  requireBoolean(extra.bguReturningFromStudyBreak, 'bgu_returning_from_study_break');
-  if (extra.bguSocialScienceRequirementsConfirmed === false)
-    return {
-      kind: 'below',
-      reason: 'נדרשת תעודת קבלה מוכרת, תנאי החוג הנוסף ובעבודה סוציאלית גם עדיפות ההרשמה הנדרשת.',
-    };
-  if (route === 'education_conditional') {
-    if (programme !== 'education')
+  if (assessment !== 'scores' || route === 'education_conditional') {
+    requireBoolean(extra.bguSocialScienceRequirementsConfirmed, 'bgu_social_science_requirements');
+    requireBoolean(extra.bguReturningFromStudyBreak, 'bgu_returning_from_study_break');
+    if (extra.bguSocialScienceRequirementsConfirmed === false)
       return {
         kind: 'below',
-        reason:
-          'האפיק המותנה באנגלית תקף לחינוך בלבד; ההקלה הישנה בפוליטיקה וממשל הסתיימה ביולי 2026.',
+        reason: 'נדרשת עמידה בתנאי החוג הנוסף ובעבודה סוציאלית גם עדיפות ההרשמה הנדרשת.',
       };
-    requireBoolean(extra.bguHebrewRequirementsConfirmed, 'bgu_hebrew_requirements');
-    requireBoolean(extra.bguEnglishClassificationMissing, 'bgu_english_classification_missing');
-    requireBoolean(
-      extra.bguEducationEnglishConditionAcknowledged,
-      'bgu_education_english_condition',
-    );
-    if (!extra.bguEducationSecondDepartment) missing.push('bgu_education_second_department');
-    const english = bagrutExamSubjects(extra.bagrutSubjectRecord).find(
-      (subject) => subject.subjectId === 'english',
-    );
-    const units = english?.units ?? extra.englishUnits;
-    const grade = english?.grade ?? extra.englishGrade;
-    if (units === undefined) missing.push('english_units');
-    if (grade === undefined) missing.push('english_grade');
-    if (
-      extra.bguHebrewRequirementsConfirmed === false ||
-      extra.bguEnglishClassificationMissing === false ||
-      extra.bguEducationEnglishConditionAcknowledged === false ||
-      extra.bguEducationSecondDepartment === 'other' ||
-      (units !== undefined && units !== 5) ||
-      (grade !== undefined && grade < 80)
-    )
-      return {
-        kind: 'below',
-        reason:
-          'נדרשים אנגלית 5 יחידות בציון 80, היעדר סיווג באנגלית, עברית ה׳ או פטור וחוג שני מתוך פילוסופיה, לימודי מזרח תיכון, אמנות או לימודי מדינת ישראל. יש להגיע לרמת האנגלית הנדרשת עד סוף סמסטר א׳.',
-      };
-  } else {
-    requireBoolean(extra.bguSocialScienceLanguageConfirmed, 'bgu_social_science_language');
-    if (extra.bguSocialScienceLanguageConfirmed === false)
-      return {
-        kind: 'below',
-        reason: `נדרשים אנגלית בסיסי ועברית ${programme === 'social_work' ? 'ו׳' : 'ה׳'} לנדרשים או פטור תקף.`,
-      };
-  }
-  if (missing.length) return { kind: 'needs_input', requiredInputs: missing };
-  if (extra.bguReturningFromStudyBreak)
-    return {
-      kind: 'manual_gate',
-      reason: 'חזרה מהפסקת לימודים מחייבת דיון במחלקה; אי אפשר להסיק קבלה מהציונים בלבד.',
-    };
-  if (programme === 'social_work') {
-    if (!extra.bguSocialWorkAcademicBackground)
-      return { kind: 'needs_input', requiredInputs: ['bgu_social_work_academic_background'] };
-    if (extra.bguSocialWorkAcademicBackground !== 'none') {
-      if (extra.bguSocialWorkAcademicBackground === 'social_work') {
-        if (extra.bguSocialWorkAcademicAverage === undefined)
-          return { kind: 'needs_input', requiredInputs: ['bgu_social_work_academic_average'] };
-        if (extra.bguSocialWorkAcademicAverage < 85)
-          return {
-            kind: 'below',
-            reason:
-              'לרקע אקדמי קודם בעבודה סוציאלית נדרש ממוצע 85 ומעלה, בנוסף לתנאי הקבלה ולדיון בוועדה.',
-          };
-      }
-      if (extra.bguSocialWorkTranscriptProvided === undefined)
-        return { kind: 'needs_input', requiredInputs: ['bgu_social_work_transcript'] };
+    if (route === 'education_conditional') {
+      if (programme !== 'education')
+        return {
+          kind: 'below',
+          reason:
+            'האפיק המותנה באנגלית תקף לחינוך בלבד; ההקלה הישנה בפוליטיקה וממשל הסתיימה ביולי 2026.',
+        };
+      requireBoolean(extra.bguHebrewRequirementsConfirmed, 'bgu_hebrew_requirements');
+      requireBoolean(extra.bguEnglishClassificationMissing, 'bgu_english_classification_missing');
+      requireBoolean(
+        extra.bguEducationEnglishConditionAcknowledged,
+        'bgu_education_english_condition',
+      );
+      if (!extra.bguEducationSecondDepartment) missing.push('bgu_education_second_department');
+      const english = bagrutExamSubjects(extra.bagrutSubjectRecord).find(
+        (subject) => subject.subjectId === 'english',
+      );
+      const units = english?.units ?? extra.englishUnits;
+      const grade = english?.grade ?? extra.englishGrade;
+      if (units === undefined) missing.push('english_units');
+      if (grade === undefined) missing.push('english_grade');
+      if (
+        extra.bguHebrewRequirementsConfirmed === false ||
+        extra.bguEnglishClassificationMissing === false ||
+        extra.bguEducationEnglishConditionAcknowledged === false ||
+        extra.bguEducationSecondDepartment === 'other' ||
+        (units !== undefined && units !== 5) ||
+        (grade !== undefined && grade < 80)
+      )
+        return {
+          kind: 'below',
+          reason:
+            'נדרשים אנגלית 5 יחידות בציון 80, היעדר סיווג באנגלית, עברית ה׳ או פטור וחוג שני מתוך פילוסופיה, לימודי מזרח תיכון, אמנות או לימודי מדינת ישראל. יש להגיע לרמת האנגלית הנדרשת עד סוף סמסטר א׳.',
+        };
+    } else {
+      requireBoolean(extra.bguSocialScienceLanguageConfirmed, 'bgu_social_science_language');
+      if (extra.bguSocialScienceLanguageConfirmed === false)
+        return {
+          kind: 'below',
+          reason: `נדרשים אנגלית בסיסי ועברית ${programme === 'social_work' ? 'ו׳' : 'ה׳'} לנדרשים או פטור תקף.`,
+        };
+    }
+    if (missing.length) return { kind: 'needs_input', requiredInputs: missing };
+    if (extra.bguReturningFromStudyBreak)
       return {
         kind: 'manual_gate',
-        reason:
-          'מועמדים לעבודה סוציאלית עם רקע אקדמי קודם נדרשים להגיש גיליון ציונים מעודכן לדיון בוועדת הקבלה, גם בעמידה בחתכים. אין קבלה לשנה ב׳.',
+        reason: 'חזרה מהפסקת לימודים מחייבת דיון במחלקה; אי אפשר להסיק קבלה מהציונים בלבד.',
       };
+    if (programme === 'social_work') {
+      if (!extra.bguSocialWorkAcademicBackground)
+        return { kind: 'needs_input', requiredInputs: ['bgu_social_work_academic_background'] };
+      if (extra.bguSocialWorkAcademicBackground !== 'none') {
+        if (extra.bguSocialWorkAcademicBackground === 'social_work') {
+          if (extra.bguSocialWorkAcademicAverage === undefined)
+            return { kind: 'needs_input', requiredInputs: ['bgu_social_work_academic_average'] };
+          if (extra.bguSocialWorkAcademicAverage < 85)
+            return {
+              kind: 'below',
+              reason:
+                'לרקע אקדמי קודם בעבודה סוציאלית נדרש ממוצע 85 ומעלה, בנוסף לתנאי הקבלה ולדיון בוועדה.',
+            };
+        }
+        if (extra.bguSocialWorkTranscriptProvided === undefined)
+          return { kind: 'needs_input', requiredInputs: ['bgu_social_work_transcript'] };
+        return {
+          kind: 'manual_gate',
+          reason:
+            'מועמדים לעבודה סוציאלית עם רקע אקדמי קודם נדרשים להגיש גיליון ציונים מעודכן לדיון בוועדת הקבלה, גם בעמידה בחתכים. אין קבלה לשנה ב׳.',
+        };
+      }
     }
   }
 

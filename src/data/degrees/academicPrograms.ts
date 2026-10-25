@@ -696,8 +696,7 @@ const D: Record<string, InstitutionDetail[]> = {
     },
   ],
 
-  // ── אוניברסיטת רייכמן (IDC Herzliya) — requirements-track ───────────────
-  // ממוצע בגרות 100 לקבלה ישירה; אין סכ"ם — מפנה לדף הקבלה הרשמי
+  // ── אוניברסיטת רייכמן — published תשפ״ז routes ────────────────────────
   reichman_cs: [
     {
       institutionName: 'אוניברסיטת רייכמן',
@@ -706,10 +705,13 @@ const D: Record<string, InstitutionDetail[]> = {
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
       specificAdmissionNotes: [
-        'חובה ממוצע בגרות 100 ומעלה לקבלה ישירה במסלול המבוקש',
-        "מותנה ברמת אנגלית 'מתקדמים א' לפחות או ציון אמיר\"ם/פסיכומטרי תואם",
+        'ציון מתואם 705 ומעלה ופסיכומטרי 660 ומעלה, או ממוצע בגרות 108 ומעלה, או פסיכומטרי 720 ומעלה עם זכאות לבגרות.',
+        'במסלולי מתואם ובגרות: מתמטיקה 5 יחידות בציון 85 ומעלה. במסלול בגרות נדרשות גם 5 יחידות בפיזיקה, כימיה, ביולוגיה או מדעי המחשב (לא תכנון מערכות) בציון 85 ומעלה.',
+        'במסלול פסיכומטרי: מתמטיקה 5 יחידות בציון 80 ומעלה. קיימות גם אפשרויות קבלה הכוללות קורס הכנה במתמטיקה.',
       ],
-      officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/',
+      officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/calculator',
+      programUrl:
+        'https://www.runi.ac.il/schools/computer-science/undergraduate/?utm_source=myway&utm_medium=referral',
     },
   ],
   reichman_psychology: [
@@ -720,10 +722,12 @@ const D: Record<string, InstitutionDetail[]> = {
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
       specificAdmissionNotes: [
-        'חובה ממוצע בגרות 100 ומעלה לקבלה ישירה במסלול המבוקש',
-        "מותנה ברמת אנגלית 'מתקדמים א' לפחות או ציון אמיר\"ם/פסיכומטרי תואם",
+        'ציון מתואם 620 ומעלה, או ממוצע בגרות 100 ומעלה, או פסיכומטרי 640 ומעלה עם זכאות לבגרות.',
+        'מתמטיקה: 3 יחידות לפחות בציון 85 ומעלה. אנגלית: 4 יחידות לפחות בציון 90 ומעלה.',
       ],
-      officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/',
+      officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/calculator',
+      programUrl:
+        'https://www.runi.ac.il/schools/psychology/undergraduate/?utm_source=myway&utm_medium=referral',
     },
   ],
   reichman_law: [
@@ -734,10 +738,11 @@ const D: Record<string, InstitutionDetail[]> = {
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
       specificAdmissionNotes: [
-        'חובה ממוצע בגרות 100 ומעלה לקבלה ישירה במסלול המבוקש',
-        "מותנה ברמת אנגלית 'מתקדמים א' לפחות או ציון אמיר\"ם/פסיכומטרי תואם",
+        'ציון מתואם 650 ומעלה ופסיכומטרי 610 ומעלה, או ממוצע בגרות 100 ומעלה, או פסיכומטרי 700 ומעלה עם זכאות לבגרות.',
       ],
-      officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/',
+      officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/calculator',
+      programUrl:
+        'https://www.runi.ac.il/schools/law/undergraduate/?utm_source=myway&utm_medium=referral',
     },
   ],
   reichman_business: [
@@ -748,8 +753,10 @@ const D: Record<string, InstitutionDetail[]> = {
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
       specificAdmissionNotes: [
-        'חובה ממוצע בגרות 100 ומעלה לקבלה ישירה במסלול המבוקש',
-        "מותנה ברמת אנגלית 'מתקדמים א' לפחות או ציון אמיר\"ם/פסיכומטרי תואם",
+        'ציון מתואם 630 לפחות המחושב מהבגרות והפסיכומטרי, או ממוצע בגרות 100 ומעלה, או פסיכומטרי 700 לפחות',
+        'אנגלית 4 יחידות לפחות; במסלולי בגרות 100 ומתואם: מתמטיקה ברמת 3 יחידות בציון 100; במסלול הפסיכומטרי: כמותי 125 ומעלה',
+        'חלופת בגרות 95–99: מתמטיקה 4 יחידות לפחות בציון 80 ומקצוע מדעי 5 יחידות בציון 75 לפחות',
+        'ייתכן קורס הכנה במתמטיקה לפי היחידות והציון; נדרש אישור זכאות לבגרות ודרישות שפה',
       ],
       officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/',
     },
@@ -762,8 +769,9 @@ const D: Record<string, InstitutionDetail[]> = {
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
       specificAdmissionNotes: [
-        'חובה ממוצע בגרות 100 ומעלה לקבלה ישירה במסלול המבוקש',
-        "מותנה ברמת אנגלית 'מתקדמים א' לפחות או ציון אמיר\"ם/פסיכומטרי תואם",
+        'ציון מתואם 600 לפחות המחושב מהבגרות והפסיכומטרי, או ממוצע בגרות 100 ומעלה, או פסיכומטרי 680 לפחות',
+        'אנגלית 4 יחידות לפחות ומתמטיקה 4 יחידות בציון 75 או 5 יחידות בציון 60; במסלול הפסיכומטרי גם כמותי 125 ומעלה',
+        'מתמטיקה מתחת ל־4 יחידות בציון 85 או 5 יחידות בציון 65 מחייבת קורס הכנה; נדרש אישור זכאות לבגרות ודרישות שפה',
       ],
       officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/',
     },
@@ -875,10 +883,13 @@ const D: Record<string, InstitutionDetail[]> = {
       estimatedStudentsPerYear: 'כ-120 סטודנטים',
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
-      specificAdmissionNotes: ['ציון פסיכומטרי מינימלי: 680', 'ממוצע בגרות מינימלי: 85'],
+      specificAdmissionNotes: [
+        'סכם 650 לפחות; ציונים 630–649 נמצאים בטווח ההמתנה.',
+        'נדרשת אנגלית ברמת טרום בסיסי לפחות ועברית 90 ביעלנט או במבחן הסיווג של האוניברסיטה, בקבלה על תנאי עד השלמה ל־120 בשנה א׳; אפשר גם להשלים קורס עברית באקדמיה במכינה.',
+        'תוכנית פסיפס (מסלול נפרד עם החוג לפילוסופיה): סכם 680 לפחות + ראיון קבלה.',
+      ],
       officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif',
-      programUrl:
-        'https://www.haifa.ac.il/index.php/he/departments/departments-social-sciences/psychology',
+      programUrl: 'https://admissions.haifa.ac.il/social-sciences/program/3268/',
       calculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif',
     },
   ],
@@ -949,14 +960,15 @@ const D: Record<string, InstitutionDetail[]> = {
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
       specificAdmissionNotes: [
-        'ביולוגיה — חובה',
-        'ציון פסיכומטרי מינימלי: 580',
-        'ממוצע בגרות מינימלי: 76',
+        'ציון סכם 580 ומעלה (טווח המתנה 570–579) וגם ציון פסיכומטרי 550 לפחות',
+        '8 יחידות מדעיות בבגרות ומבחן אינטליגנציה רגשית ממוחשב',
+        'אנגלית ברמת בסיסי ומעלה ועברית 115 ומעלה',
+        'יש מסלולים נוספים, למשל בלי פסיכומטרי לבוגרי מגמת בריאות עם ממוצע 90 ומעלה, מכינת המדעים של האוניברסיטה, מעבר מהאוניברסיטה הפתוחה ומסלולים למשרתי מילואים ולמפונים. הפרטים בעמוד התוכנית.',
+        'האוניברסיטה שומרת לעצמה את הזכות לשנות את תנאי הקבלה.',
       ],
-      officialCalculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif',
-      programUrl:
-        'https://www.haifa.ac.il/index.php/he/departments/departments-social-welfare/nursing',
-      calculatorUrl: 'https://www.haifa.ac.il/index.php/he/admissions/sif',
+      officialCalculatorUrl: 'https://admissions.haifa.ac.il/score-calculation/',
+      programUrl: 'https://admissions.haifa.ac.il/social-welfare-health-sciences/program/2973/',
+      calculatorUrl: 'https://admissions.haifa.ac.il/score-calculation/',
     },
   ],
   haifa_communication: [
@@ -1115,7 +1127,13 @@ const D: Record<string, InstitutionDetail[]> = {
       estimatedStudentsPerYear: 'כ-120 סטודנטים',
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
-      specificAdmissionNotes: ['ביולוגיה ו/או כימיה — יתרון'],
+      specificAdmissionNotes: [
+        'לתשפ״ז, ללא פסיכומטרי: ממוצע בגרות 108 לפחות.',
+        'נדרשת אחת משתי האפשרויות: מתמטיקה 5 יחידות בציון 85 לפחות, או מכפלת ציון המתמטיקה במספר היחידות של 320 לפחות ובנוסף שני מקצועות מדעיים שונים בהיקף 5 יחידות ובציון 80 לפחות בכל אחד.',
+        'המקצועות המדעיים: ביולוגיה, ביוטכנולוגיה, מתמטיקה, כימיה, פיזיקה, הנדסה ומדעי המחשב. מתמטיקה יכולה להיחשב כאחד משני המקצועות אם היא עומדת בדרישה.',
+        'נדרשת זכאות לתעודת בגרות וסיווג אנגלית 85 לפחות. עברית 105 לפחות למי שנדרשים לבחינת יע״ל לפי כללי האוניברסיטה.',
+        'אפיק פסיכומטרי או משולב: בדקו במחשבון הקבלה הרשמי של בר־אילן.',
+      ],
       officialCalculatorUrl: 'https://shoham.biu.ac.il/kabala/',
     },
   ],
@@ -1126,7 +1144,13 @@ const D: Record<string, InstitutionDetail[]> = {
       estimatedStudentsPerYear: 'כ-60 סטודנטים',
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
-      specificAdmissionNotes: ['ביולוגיה ו/או כימיה 5 יח"ל — חובה'],
+      specificAdmissionNotes: [
+        'לתשפ״ז, ללא פסיכומטרי: ממוצע בגרות 108 לפחות.',
+        'נדרשת מכפלת ציון המתמטיקה במספר היחידות של 320 לפחות ובנוסף שני מקצועות מדעיים שונים בהיקף 5 יחידות ובציון 80 לפחות בכל אחד.',
+        'המקצועות המדעיים: ביולוגיה, ביוטכנולוגיה, מתמטיקה, כימיה, פיזיקה, הנדסה ומדעי המחשב. מתמטיקה יכולה להיחשב כאחד משני המקצועות אם היא עומדת בדרישה.',
+        'נדרשת זכאות לתעודת בגרות וסיווג אנגלית 85 לפחות. עברית 105 לפחות למי שנדרשים לבחינת יע״ל לפי כללי האוניברסיטה.',
+        'אפיק פסיכומטרי או משולב: בדקו במחשבון הקבלה הרשמי של בר־אילן.',
+      ],
       officialCalculatorUrl: 'https://shoham.biu.ac.il/kabala/',
     },
   ],
@@ -1137,7 +1161,11 @@ const D: Record<string, InstitutionDetail[]> = {
       estimatedStudentsPerYear: 'כ-40 סטודנטים',
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
-      specificAdmissionNotes: ['5 יח"ל מתמטיקה — חובה', 'ביולוגיה 5 יח"ל — יתרון גדול'],
+      specificAdmissionNotes: [
+        'לתשפ״ז, ללא פסיכומטרי: ממוצע בגרות 112 לפחות, ומתמטיקה 5 יחידות בציון 95 לפחות.',
+        'נדרשת זכאות לתעודת בגרות וסיווג אנגלית 85 לפחות. עברית 105 לפחות למי שנדרשים לבחינת יע״ל לפי כללי האוניברסיטה.',
+        'אפיק פסיכומטרי או משולב: בדקו במחשבון הקבלה הרשמי של בר־אילן.',
+      ],
       officialCalculatorUrl: 'https://shoham.biu.ac.il/kabala/',
     },
   ],
@@ -1737,7 +1765,7 @@ export const academicPrograms: Program[] = [
     profileScore: P.ee,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: null, huji: null, technion: 94, bgu: null },
+    thresholds: { tau: null, huji: null, technion: 91.5, bgu: null },
     institutionDetails: D['technion_ee'],
   },
   {
@@ -1750,7 +1778,7 @@ export const academicPrograms: Program[] = [
     profileScore: P.me,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: null, huji: null, technion: 92, bgu: null },
+    thresholds: { tau: null, huji: null, technion: 87, bgu: null },
     institutionDetails: D['technion_me'],
   },
   {
@@ -2073,7 +2101,11 @@ export const academicPrograms: Program[] = [
     category: 'מדעי הבריאות',
     profileScore: P.nursing,
     admissionType: 'sekhem',
-    admissionRequirements: [],
+    admissionRequirements: [
+      'ציון סכם 580 ומעלה (טווח המתנה 570–579) וגם ציון פסיכומטרי 550 לפחות',
+      '8 יחידות מדעיות בבגרות ומבחן אינטליגנציה רגשית ממוחשב',
+      'אנגלית ברמת בסיסי ומעלה ועברית 115 ומעלה',
+    ],
     thresholds: { haifa: 580 },
     institutionDetails: D['haifa_nursing'],
   },
@@ -2298,9 +2330,8 @@ export const academicPrograms: Program[] = [
     type: 'academic',
     category: 'מדעי החברה',
     profileScore: P.socialWork,
-    admissionType: 'sekhem',
-    admissionRequirements: [],
-    thresholds: { biu: 600 },
+    admissionType: 'requirements',
+    admissionRequirements: ['ראיון קבלה מחייב', 'בדקו ספי קבלה באתר בר־אילן'],
     institutionDetails: D['biu_socialwork'],
   },
   {
@@ -2634,7 +2665,12 @@ export const academicPrograms: Program[] = [
     category: 'כלכלה ועסקים',
     profileScore: P.business,
     admissionType: 'requirements',
-    admissionRequirements: [],
+    admissionRequirements: [
+      'ציון מתואם 630 לפחות המחושב מהבגרות והפסיכומטרי, או ממוצע בגרות 100 ומעלה, או פסיכומטרי 700 לפחות',
+      'אנגלית 4 יחידות לפחות; במסלולי בגרות 100 ומתואם: מתמטיקה ברמת 3 יחידות בציון 100; במסלול הפסיכומטרי: כמותי 125 ומעלה',
+      'חלופת בגרות 95–99: מתמטיקה 4 יחידות לפחות בציון 80 ומקצוע מדעי 5 יחידות בציון 75 לפחות',
+      'ייתכן קורס הכנה במתמטיקה לפי היחידות והציון; נדרש אישור זכאות לבגרות ודרישות שפה',
+    ],
     thresholds: { reichman: 0 },
     institutionDetails: D['reichman_business'],
   },
@@ -2647,7 +2683,11 @@ export const academicPrograms: Program[] = [
     category: 'כלכלה ועסקים',
     profileScore: P.economics,
     admissionType: 'requirements',
-    admissionRequirements: [],
+    admissionRequirements: [
+      'ציון מתואם 600 לפחות המחושב מהבגרות והפסיכומטרי, או ממוצע בגרות 100 ומעלה, או פסיכומטרי 680 לפחות',
+      'אנגלית 4 יחידות לפחות ומתמטיקה 4 יחידות בציון 75 או 5 יחידות בציון 60; במסלול הפסיכומטרי גם כמותי 125 ומעלה',
+      'מתמטיקה מתחת ל־4 יחידות בציון 85 או 5 יחידות בציון 65 מחייבת קורס הכנה; נדרש אישור זכאות לבגרות ודרישות שפה',
+    ],
     thresholds: { reichman: 0 },
     institutionDetails: D['reichman_economics'],
   },
@@ -2664,7 +2704,11 @@ export const academicPrograms: Program[] = [
     category: 'מדעי המחשב',
     profileScore: P.cs,
     admissionType: 'requirements',
-    admissionRequirements: ['בגרות מלאה', 'ממוצע בגרות מינימלי: 75', 'ציון פסיכומטרי מינימלי: 480'],
+    admissionRequirements: [
+      'זכאות לתעודת בגרות מלאה',
+      'פסיכומטרי 610 לפחות ומתמטיקה 4 יחידות בציון 85 או 5 יחידות בציון 75',
+      'ועדת קבלה: פסיכומטרי 585 עם מתמטיקה 4 יחידות בציון 85, או 570 עם 5 יחידות בציון 75',
+    ],
   },
   {
     id: 'telhai_biology',
@@ -2676,9 +2720,10 @@ export const academicPrograms: Program[] = [
     profileScore: P.biology,
     admissionType: 'requirements',
     admissionRequirements: [
-      'בגרות מלאה עם 5 יח"ל ביולוגיה ו/או כימיה',
-      'ממוצע בגרות מינימלי: 75',
-      'ציון פסיכומטרי מינימלי: 480',
+      'זכאות לתעודת בגרות מלאה ופסיכומטרי 570 לפחות; ועדת קבלה מפסיכומטרי 520',
+      'מתמטיקה: 4 יחידות בציון 75 או 5 יחידות בציון 65; 3 יחידות בכפוף לקורס הכנה בקיץ',
+      'מקצוע מדעי: 3 יחידות בציון 85, 4 יחידות בציון 75 או 5 יחידות בציון 65; ללא מקצוע מדעי נדרשים קורסי הכנה',
+      'אפשר לברר קבלה גם לפי ציון משולב שתל־חי מחשבת',
     ],
   },
   {
@@ -2691,10 +2736,9 @@ export const academicPrograms: Program[] = [
     profileScore: P.nursing,
     admissionType: 'requirements',
     admissionRequirements: [
-      'בגרות מלאה עם ביולוגיה',
-      'ממוצע בגרות מינימלי: 76',
-      'ציון פסיכומטרי מינימלי: 460',
-      'ראיון קבלה',
+      'בגרות מלאה עם ביולוגיה לפי דרישת החוג',
+      'ראיון קבלה ויום מיון',
+      'בדקו את ספי הציונים העדכניים באתר תל-חי',
     ],
   },
   {
@@ -2706,12 +2750,7 @@ export const academicPrograms: Program[] = [
     category: 'מדעי החברה',
     profileScore: P.socialWork,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'בגרות מלאה',
-      'ממוצע בגרות מינימלי: 72',
-      'ציון פסיכומטרי מינימלי: 450',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['בגרות מלאה', 'ראיון קבלה', 'בדקו את ספי הציונים העדכניים באתר תל-חי'],
   },
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -2727,11 +2766,13 @@ export const academicPrograms: Program[] = [
     profileScore: P.cs,
     admissionType: 'requirements',
     admissionRequirements: [
-      'בגרות מלאה עם 5 יח"ל מתמטיקה',
-      'ממוצע בגרות מינימלי: 80',
-      'ציון פסיכומטרי מינימלי: 550',
+      'קבלה לפי בגרות עם מקצוע מדעי מוגבר: מתמטיקה 4 יחידות בציון 85 לפחות או 5 יחידות בציון 75 לפחות; אנגלית 4 יחידות בציון 70 לפחות או 5 יחידות בציון 60 לפחות; פיזיקה או מדעי המחשב 5 יחידות בציון 60 לפחות, או מקצוע מדעי אחר 5 יחידות בציון 70 לפחות, או מכינה בפיזיקה או ביסודות התכנות והחשיבה הלוגית בציון 70 לפחות.',
+      'קבלה לפי בגרות ללא מקצוע מדעי מוגבר: מתמטיקה 4 יחידות בציון 90 לפחות או 5 יחידות בציון 80 לפחות; אנגלית 4 יחידות בציון 70 לפחות או 5 יחידות בציון 60 לפחות.',
+      'קבלה לפי פסיכומטרי: 620 לפחות (רב־תחומי או בדגש כמותי) וגם כמותי 115 לפחות; מתמטיקה 4 יחידות בציון 80 לפחות או 5 יחידות בציון 70 לפחות, או מכינה במתמטיקה בציון 70 לפחות.',
+      'קבלה לפי פסיכומטרי עם מקצוע מדעי מוגבר: 600 לפחות (רב־תחומי או בדגש כמותי) וגם כמותי 115 לפחות; מתמטיקה 4 יחידות בציון 80 לפחות או 5 יחידות בציון 70 לפחות, או מכינה במתמטיקה בציון 70 לפחות; פיזיקה 5 יחידות בציון 60 לפחות, או מקצוע מדעי אחר 5 יחידות בציון 70 לפחות, או מכינה בפיזיקה או ביסודות התכנות והחשיבה הלוגית בציון 70 לפחות.',
+      'המקצועות המדעיים האחרים: כימיה, ביולוגיה, אלקטרוניקה, אלקטרוניקה ומחשבים, מדעי ההנדסה, ביוטכנולוגיה, מערכות ביוטכנולוגיות, מדע חישובי ומדעי הנתונים.',
+      'בכל המסלולים: זכאות לתעודת בגרות מלאה וסיווג אנגלית ברמת מתחילים/בסיסי לפני תחילת הלימודים (אמירנט או ציון האנגלית בפסיכומטרי).',
     ],
-    thresholds: { afeka: 0 },
   },
   {
     id: 'afeka_softwareeng',
@@ -2743,11 +2784,13 @@ export const academicPrograms: Program[] = [
     profileScore: P.softwareEng,
     admissionType: 'requirements',
     admissionRequirements: [
-      'בגרות מלאה עם 5 יח"ל מתמטיקה',
-      'ממוצע בגרות מינימלי: 80',
-      'ציון פסיכומטרי מינימלי: 550',
+      'קבלה לפי בגרות עם מקצוע מדעי מוגבר: מתמטיקה 4 יחידות בציון 85 לפחות או 5 יחידות בציון 75 לפחות; אנגלית 4 יחידות בציון 70 לפחות או 5 יחידות בציון 60 לפחות; פיזיקה או מדעי המחשב 5 יחידות בציון 60 לפחות, או מקצוע מדעי אחר 5 יחידות בציון 70 לפחות, או מכינה בפיזיקה או ביסודות התכנות והחשיבה הלוגית בציון 70 לפחות.',
+      'קבלה לפי בגרות ללא מקצוע מדעי מוגבר: מתמטיקה 4 יחידות בציון 90 לפחות או 5 יחידות בציון 80 לפחות; אנגלית 4 יחידות בציון 70 לפחות או 5 יחידות בציון 60 לפחות.',
+      'קבלה לפי פסיכומטרי: 620 לפחות (רב־תחומי או בדגש כמותי) וגם כמותי 115 לפחות; מתמטיקה 4 יחידות בציון 80 לפחות או 5 יחידות בציון 70 לפחות, או מכינה במתמטיקה בציון 70 לפחות.',
+      'קבלה לפי פסיכומטרי עם מקצוע מדעי מוגבר: 600 לפחות (רב־תחומי או בדגש כמותי) וגם כמותי 115 לפחות; מתמטיקה 4 יחידות בציון 80 לפחות או 5 יחידות בציון 70 לפחות, או מכינה במתמטיקה בציון 70 לפחות; פיזיקה 5 יחידות בציון 60 לפחות, או מקצוע מדעי אחר 5 יחידות בציון 70 לפחות, או מכינה בפיזיקה או ביסודות התכנות והחשיבה הלוגית בציון 70 לפחות.',
+      'המקצועות המדעיים האחרים: כימיה, ביולוגיה, אלקטרוניקה, אלקטרוניקה ומחשבים, מדעי ההנדסה, ביוטכנולוגיה, מערכות ביוטכנולוגיות, מדע חישובי ומדעי הנתונים.',
+      'בכל המסלולים: זכאות לתעודת בגרות מלאה וסיווג אנגלית ברמת מתחילים/בסיסי לפני תחילת הלימודים (אמירנט או ציון האנגלית בפסיכומטרי).',
     ],
-    thresholds: { afeka: 0 },
   },
   {
     id: 'afeka_ee',
@@ -2759,11 +2802,10 @@ export const academicPrograms: Program[] = [
     profileScore: P.ee,
     admissionType: 'requirements',
     admissionRequirements: [
-      'בגרות מלאה עם 5 יח"ל מתמטיקה ו-5 יח"ל פיזיקה',
-      'ממוצע בגרות מינימלי: 80',
-      'ציון פסיכומטרי מינימלי: 550',
+      'קבלה לפי בגרות: מתמטיקה 4 יחידות בציון 85 לפחות או 5 יחידות בציון 75 לפחות; אנגלית 4 יחידות בציון 70 לפחות או 5 יחידות בציון 60 לפחות; פיזיקה 5 יחידות בציון 60 לפחות או מכינה בפיזיקה בציון 70 לפחות.',
+      'קבלה לפי פסיכומטרי: 600 לפחות (רב־תחומי או בדגש כמותי) וגם כמותי 115 לפחות; מתמטיקה 4 יחידות בציון 80 לפחות או 5 יחידות בציון 70 לפחות, או מכינה במתמטיקה בציון 70 לפחות; פיזיקה 5 יחידות בציון 60 לפחות או מכינה בפיזיקה בציון 70 לפחות.',
+      'בכל המסלולים: זכאות לתעודת בגרות מלאה וסיווג אנגלית ברמת מתחילים/בסיסי לפני תחילת הלימודים (אמירנט או ציון האנגלית בפסיכומטרי).',
     ],
-    thresholds: { afeka: 0 },
   },
   {
     id: 'afeka_biomedical',
@@ -2794,18 +2836,57 @@ export const academicPrograms: Program[] = [
     category: 'מדעי המחשב',
     profileScore: P.cs,
     admissionType: 'requirements',
-    admissionRequirements: ['בגרות מלאה', 'ממוצע בגרות מינימלי: 75', 'ציון פסיכומטרי מינימלי: 500'],
+    admissionRequirements: [
+      'קבלה אוטומטית באחת החלופות: ציון משולב 630; או פסיכומטרי 670 וזכאות לבגרות; או ממוצע בגרות 102 עם מתמטיקה 5 יח"ל 80+ או 4 יח"ל 95+',
+      'בכל החלופות: מתמטיקה 5 יח"ל 70+ או 4 יח"ל 90+, ואנגלית 100+ בפסיכומטרי או באמיר"ם/אמירנ"ט',
+      'מסלול מתוגבר: ממוצע בגרות 100 עם מתמטיקה 4 יח"ל 80+ או 5 יח"ל 60+; או ממוצע בגרות 95 ופסיכומטרי 550 עם אותה דרישת מתמטיקה',
+      'ציון משולב = (פסיכומטרי + (ממוצע בגרות − 30) × 10) ÷ 2, לפי ממוצע הבגרות שהמכללה מחשבת',
+    ],
+    institutionDetails: [
+      {
+        institutionName: 'המכללה האקדמית תל-אביב-יפו',
+        durationYears: null,
+        estimatedStudentsPerYear: '',
+        quantitativeMinRequirement: null,
+        englishMinRequirement: 100,
+        specificAdmissionNotes: [
+          'מי שלא עומדים בתנאי הקבלה האוטומטית יכולים לברר מול מרכז ייעוץ ורישום של המכללה אם אפשר להגיש מועמדות. יש גם מכינה שמחליפה את הפסיכומטרי.',
+        ],
+        programUrl: 'https://www.mta.ac.il/program/bsc_computer_science',
+        officialCalculatorUrl: 'https://mtamn.mta.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1',
+        calculatorUrl: 'https://mtamn.mta.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1',
+      },
+    ],
   },
   {
     id: 'tlvyaffo_business',
-    name: 'מנהל עסקים',
+    name: 'כלכלה וניהול',
     institution: 'המכללה האקדמית תל-אביב-יפו',
     institutionId: 'mta',
     type: 'academic',
     category: 'כלכלה ועסקים',
     profileScore: P.business,
     admissionType: 'requirements',
-    admissionRequirements: ['בגרות מלאה', 'ממוצע בגרות מינימלי: 70', 'ציון פסיכומטרי מינימלי: 450'],
+    admissionRequirements: [
+      'קבלה אוטומטית באחת החלופות: בגרות 94 ופסיכומטרי 550; או פסיכומטרי 580 וזכאות לבגרות; או ציון משולב 580; או בגרות 96',
+      'חלופה נוספת: פסיכומטרי 600 וציון משולב 620 עם מתמטיקה 4 יח"ל 65+',
+      'בכל החלופות הרגילות: מתמטיקה 4 יח"ל 80+ או 5 יח"ל 55+, ואנגלית 85+ בפסיכומטרי או באמיר"ם/אמירנ"ט',
+    ],
+    institutionDetails: [
+      {
+        institutionName: 'המכללה האקדמית תל-אביב-יפו',
+        durationYears: null,
+        estimatedStudentsPerYear: '',
+        quantitativeMinRequirement: null,
+        englishMinRequirement: 85,
+        specificAdmissionNotes: [
+          'מי שלא עומדים בתנאי הקבלה יכולים לברר מול מרכז ייעוץ ורישום של המכללה אם אפשר להגיש מועמדות. יש גם מכינה שמחליפה את הפסיכומטרי.',
+        ],
+        programUrl: 'https://www.mta.ac.il/program/management_economics_ba',
+        officialCalculatorUrl: 'https://mtamn.mta.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1',
+        calculatorUrl: 'https://mtamn.mta.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1',
+      },
+    ],
   },
   {
     id: 'tlvyaffo_economics',
@@ -2828,10 +2909,24 @@ export const academicPrograms: Program[] = [
     profileScore: P.nursing,
     admissionType: 'requirements',
     admissionRequirements: [
-      'בגרות מלאה עם ביולוגיה',
-      'ממוצע בגרות מינימלי: 72',
-      'ציון פסיכומטרי מינימלי: 440',
-      'ראיון קבלה',
+      'קבלה אוטומטית: ממוצע בגרות 90 ופסיכומטרי 520, בכפוף לתנאי הסף הכלליים של המכללה',
+      'לדיון בוועדת קבלה ולראיון אישי באחת החלופות: בגרות 90 ופסיכומטרי 500; או פסיכומטרי 520 וזכאות לבגרות; או ציון משולב 515 עם פסיכומטרי 430+',
+      'אנגלית: 85+ בפסיכומטרי או באמיר"ם/אמירנ"ט',
+    ],
+    institutionDetails: [
+      {
+        institutionName: 'המכללה האקדמית תל-אביב-יפו',
+        durationYears: null,
+        estimatedStudentsPerYear: '',
+        quantitativeMinRequirement: null,
+        englishMinRequirement: 85,
+        specificAdmissionNotes: [
+          'מי שלא עומדים בתנאי הקבלה האוטומטית יכולים לברר מול מרכז ייעוץ ורישום של המכללה אם אפשר להגיש מועמדות.',
+        ],
+        programUrl: 'https://www.mta.ac.il/program/nursing_bsn',
+        officialCalculatorUrl: 'https://mtamn.mta.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1',
+        calculatorUrl: 'https://mtamn.mta.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1',
+      },
     ],
   },
   {
@@ -2843,12 +2938,7 @@ export const academicPrograms: Program[] = [
     category: 'מדעי החברה',
     profileScore: P.socialWork,
     admissionType: 'requirements',
-    admissionRequirements: [
-      'בגרות מלאה',
-      'ממוצע בגרות מינימלי: 72',
-      'ציון פסיכומטרי מינימלי: 440',
-      'ראיון קבלה',
-    ],
+    admissionRequirements: ['ראיון קבלה', 'בדקו באתר המכללה אם המסלול פתוח להרשמה'],
   },
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -2864,10 +2954,25 @@ export const academicPrograms: Program[] = [
     profileScore: P.cs,
     admissionType: 'requirements',
     admissionRequirements: [
-      'מסלול בגרות: ממוצע בגרות משוקלל 85+',
-      'מתמטיקה: 5 יח"ל 70+ או 4 יח"ל 80+',
-      'מסלול בגרות ופסיכומטרי: עמידה בציון המשוקלל; פטור ממבדק פנימי בפסיכומטרי 600+ וכמותי 120+',
-      'חלופות קבלה: מבדק פנימי ומכינות שחקים/ריענון במתמטיקה לפי הצורך',
+      'מסלול בגרות: ממוצע בגרות משוקלל 85+, מתמטיקה 5 יח"ל 70+ או 4 יח"ל 80+, ומעבר מבדק פנימי',
+      'מסלול בגרות ופסיכומטרי: עמידה בציון המשוקלל של המכללה ומעבר מבדק פנימי; פטור מהמבדק בפסיכומטרי 600+ וכמותי 120+',
+      'מי שחסר להם הממוצע או ציון המתמטיקה יכולים להתקבל אחרי מכינת שחקים, מכינת ריענון במתמטיקה או שתיהן, לפי מה שחסר',
+    ],
+    institutionDetails: [
+      {
+        institutionName: 'מכללת ניהול – לימודים אקדמיים',
+        durationYears: null,
+        estimatedStudentsPerYear: '',
+        quantitativeMinRequirement: null,
+        englishMinRequirement: null,
+        specificAdmissionNotes: [
+          'המכללה לא מפרסמת את הציון המשוקלל הנדרש במסלול בגרות ופסיכומטרי, ולכן ההחלטה במסלול הזה היא שלה. כדאי לבדוק מול מרכז הרישום.',
+        ],
+        programUrl: 'https://www.colman.ac.il/academics/ba/computer-science/',
+        officialCalculatorUrl:
+          'https://wwwi.colman.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1',
+        calculatorUrl: 'https://wwwi.colman.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1',
+      },
     ],
   },
   {
@@ -2881,8 +2986,24 @@ export const academicPrograms: Program[] = [
     admissionType: 'requirements',
     admissionRequirements: [
       'מסלול בגרות: ממוצע בגרות משוקלל 85+',
-      'מסלול בגרות ופסיכומטרי: פסיכומטרי 555+ וכמותי 100+ ועמידה בציון המשוקלל',
-      'חלופת קבלה: מכינת שחקים למי שלא עומדים בסף',
+      'מסלול בגרות ופסיכומטרי: פסיכומטרי 555+, כמותי 100+ ועמידה בציון המשוקלל של המכללה',
+      'מי שלא עומדים בתנאי הקבלה יכולים להתקבל דרך מכינת שחקים',
+    ],
+    institutionDetails: [
+      {
+        institutionName: 'מכללת ניהול – לימודים אקדמיים',
+        durationYears: null,
+        estimatedStudentsPerYear: '',
+        quantitativeMinRequirement: null,
+        englishMinRequirement: null,
+        specificAdmissionNotes: [
+          'המכללה לא מפרסמת את הציון המשוקלל הנדרש במסלול בגרות ופסיכומטרי, ולכן ההחלטה במסלול הזה היא שלה. כדאי לבדוק מול מרכז הרישום.',
+        ],
+        programUrl: 'https://www.colman.ac.il/academics/ba/business-administration/',
+        officialCalculatorUrl:
+          'https://wwwi.colman.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1',
+        calculatorUrl: 'https://wwwi.colman.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1',
+      },
     ],
   },
   {
@@ -2899,6 +3020,22 @@ export const academicPrograms: Program[] = [
       'מסלול בגרות ופסיכומטרי: זכאות לבגרות, פסיכומטרי 540+ וכמותי 110+',
       'חלופת קבלה: מכינת שחקים למי שלא עומדים בסף',
     ],
+    institutionDetails: [
+      {
+        institutionName: 'מכללת ניהול – לימודים אקדמיים',
+        durationYears: null,
+        estimatedStudentsPerYear: '',
+        quantitativeMinRequirement: null,
+        englishMinRequirement: null,
+        specificAdmissionNotes: [
+          'לוחמים בשירות סדיר או קבע עם תעודת שחרור מסוג "זהב" יכולים להתקבל במתווה מיוחד בתנאים מקלים, בתוך חמש שנים מתום שנת השחרור.',
+        ],
+        officialCalculatorUrl:
+          'https://wwwi.colman.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1',
+        programUrl: 'https://www.colman.ac.il/academics/ba/economy/',
+        calculatorUrl: 'https://wwwi.colman.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1',
+      },
+    ],
   },
   {
     id: 'colmgmt_law',
@@ -2911,9 +3048,26 @@ export const academicPrograms: Program[] = [
     admissionType: 'requirements',
     admissionRequirements: [
       'מסלול בגרות: ממוצע בגרות משוקלל 100+',
-      'מסלול בגרות ופסיכומטרי: פסיכומטרי 540+ ועמידה בציון המשוקלל',
+      'מסלול בגרות ופסיכומטרי: פסיכומטרי 540+ ועמידה בציון המשוקלל של המכללה',
       'מסלול לאקדמאים: ממוצע תואר 80+ וראיון קבלה',
-      'חלופות קבלה: מכינת שחקים או בדיקת קבלה על תנאי דרך מרכז הרישום',
+      'משפטים וכלכלה (דו־חוגי): עמידה בתנאי הקבלה האוטומטית וראיון קבלה',
+      'מי שלא עומדים בתנאי הקבלה יכולים להתקבל דרך מכינת שחקים',
+    ],
+    institutionDetails: [
+      {
+        institutionName: 'מכללת ניהול – לימודים אקדמיים',
+        durationYears: null,
+        estimatedStudentsPerYear: '',
+        quantitativeMinRequirement: null,
+        englishMinRequirement: null,
+        specificAdmissionNotes: [
+          'המכללה לא מפרסמת את הציון המשוקלל הנדרש במסלול בגרות ופסיכומטרי, ולכן ההחלטה במסלול הזה היא שלה. כדאי לבדוק מול מרכז הרישום.',
+        ],
+        programUrl: 'https://www.colman.ac.il/academics/ba/law/',
+        officialCalculatorUrl:
+          'https://wwwi.colman.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1',
+        calculatorUrl: 'https://wwwi.colman.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1',
+      },
     ],
   },
   {
@@ -2926,9 +3080,9 @@ export const academicPrograms: Program[] = [
     profileScore: { AN: 3, TE: 0, CR: 0, SO: 1, LE: 3, OR: 5, DI: 2, ER: 2 },
     admissionType: 'requirements',
     admissionRequirements: [
-      'מסלול בגרות: ממוצע בגרות משוקלל 100+',
-      'מסלול בגרות ופסיכומטרי: פסיכומטרי 555+ וכמותי 100+ ועמידה בציון המשוקלל',
-      'חלופת קבלה: מכינת שחקים למי שלא עומדים בסף',
+      'מסלול בגרות: ממוצע משוקלל של המכללה 100 לפחות',
+      'מסלול בגרות ופסיכומטרי: פסיכומטרי 555 לפחות וכמותי 100 ומעלה, בכפוף לאישור השקלול של המכללה',
+      'זכאות לבגרות מלאה; אפשר לברר גם קבלה דרך מכינת שחקים',
     ],
   },
 
@@ -2945,10 +3099,69 @@ export const academicPrograms: Program[] = [
     profileScore: P.law,
     admissionType: 'requirements',
     admissionRequirements: [
-      'קבלה ישירה: ממוצע בגרות 95+ או פסיכומטרי 600 + בגרות מלאה',
-      'קבלה ישירה גם לבעלי תואר קודם, 24 נ"ז מהאוניברסיטה הפתוחה, או תעודת הנדסאי/ת',
-      'קבלה משוקללת: ראיון קבלה עם ממוצע בגרות 80-94 או פסיכומטרי 550 + בגרות מלאה',
-      'חלופות קבלה: אפיק מעבר לאקדמיה או מכינה קדם-אקדמית',
+      'קבלה ישירה: ממוצע בגרות 95 ומעלה, או פסיכומטרי 600 ומעלה ובגרות מלאה',
+      'קבלה משוקללת: ראיון קבלה, וגם ממוצע בגרות 80–94 או פסיכומטרי 550 ומעלה ובגרות מלאה',
+      'מעל גיל 30: ראיון קבלה ובגרות מלאה',
+      'תואר קודם ממוסד מוכר, 24 נ״ז מהאוניברסיטה הפתוחה או תעודת הנדסאי: קבלה ישירה. בעלי רקע לימודי קודם אחר: ראיון קבלה',
+    ],
+    institutionDetails: [
+      {
+        institutionName: 'המכללה האקדמית אונו',
+        durationYears: null,
+        estimatedStudentsPerYear: '',
+        quantitativeMinRequirement: null,
+        englishMinRequirement: null,
+        specificAdmissionNotes: [
+          'קבלה ישירה: ממוצע בגרות 95 ומעלה, או פסיכומטרי 600 ומעלה ובגרות מלאה',
+          'קבלה משוקללת: ראיון קבלה, וגם ממוצע בגרות 80–94 או פסיכומטרי 550 ומעלה ובגרות מלאה',
+          'מעל גיל 30: ראיון קבלה ובגרות מלאה',
+          'תואר קודם ממוסד מוכר, 24 נ״ז מהאוניברסיטה הפתוחה או תעודת הנדסאי: קבלה ישירה. בעלי רקע לימודי קודם אחר: ראיון קבלה',
+          'אפיק מעבר לאקדמיה: למי שיש בגרות מלאה ולא עומדים בתנאי הממוצע. צריך לעבור מקבץ קורסים אקדמיים לפני תחילת הלימודים.',
+          'המחשבון בודק רק ממוצע בגרות ופסיכומטרי. מסלול גיל 30+, תואר קודם ואפיק המעבר לא נבדקים בו.',
+        ],
+        officialCalculatorUrl: '',
+        programUrl: 'https://www.ono.ac.il/curriculum/llb/',
+        admissionFacts: [
+          {
+            id: 'ono_law:ono:fact:group:route%2Fbagrut:1',
+            kind: 'numeric_gate',
+            field: 'bagrut_average',
+            comparison: 'gte',
+            valueNumber: 80,
+            valueText: null,
+            unit: 'average',
+            description:
+              'ממוצע בגרות 80 לפחות (95 ומעלה: קבלה ישירה; 80–94: קבלה משוקללת עם ראיון)',
+            confidence: 'high',
+            isRequired: true,
+          },
+          {
+            id: 'ono_law:ono:fact:group:route%2Fpsych:1',
+            kind: 'numeric_gate',
+            field: 'psychometric',
+            comparison: 'gte',
+            valueNumber: 550,
+            valueText: null,
+            unit: 'points',
+            description:
+              'פסיכומטרי 550 לפחות ובגרות מלאה (600 ומעלה: קבלה ישירה; 550–599: קבלה משוקללת עם ראיון)',
+            confidence: 'high',
+            isRequired: true,
+          },
+          {
+            id: 'ono_law:ono:fact:interview',
+            kind: 'manual_gate',
+            field: 'interview',
+            comparison: 'present',
+            valueNumber: null,
+            valueText: 'ראיון קבלה',
+            unit: 'text',
+            description: 'ראיון קבלה בקבלה המשוקללת',
+            confidence: 'high',
+            isRequired: true,
+          },
+        ],
+      },
     ],
   },
   {
@@ -2961,10 +3174,9 @@ export const academicPrograms: Program[] = [
     profileScore: P.business,
     admissionType: 'requirements',
     admissionRequirements: [
-      'קבלה ישירה: ממוצע בגרות 95+ או פסיכומטרי 600 + בגרות מלאה',
-      'דרישת מתמטיקה: 3 יח"ל 75+ או 4 יח"ל 65+ או 5 יח"ל בציון עובר',
-      'קבלה משוקללת: ראיון קבלה עם ממוצע בגרות 80-94 או פסיכומטרי 550 + בגרות מלאה',
-      'חלופות קבלה: אפיק מעבר לאקדמיה או מכינה קדם-אקדמית',
+      'ממוצע בגרות 95 ומעלה או פסיכומטרי 600 לפחות, בכפוף לזכאות לבגרות מלאה',
+      'מסלול ראיון: ממוצע בגרות 80–94 או פסיכומטרי 550 לפחות',
+      'דרישות המתמטיקה תלויות בהתמחות; יש לאשר אותן מול המכללה',
     ],
   },
   {
@@ -2977,10 +3189,9 @@ export const academicPrograms: Program[] = [
     profileScore: P.cs,
     admissionType: 'requirements',
     admissionRequirements: [
-      'קבלה ישירה: ממוצע בגרות 100+',
-      'חלופת קבלה ישירה: פסיכומטרי 650 או שקלול בגרות ופסיכומטרי',
-      'דרישת מתמטיקה: 5 יח"ל 75+ או 4 יח"ל 95+',
-      'מסלולי הכנה: מכינה במדעי המחשב או מכינה במתמטיקה לפי ועדת הקבלה',
+      'זכאות לבגרות מלאה',
+      'ממוצע בגרות 100 ומעלה, או מתמטיקה 5 יחידות בציון 75 או 4 יחידות בציון 95, או פסיכומטרי 650 לפחות',
+      'שקלול בגרות ופסיכומטרי ואפשרויות מכינה נבדקים מול המכללה',
     ],
   },
   {
@@ -2993,10 +3204,55 @@ export const academicPrograms: Program[] = [
     profileScore: P.nursing,
     admissionType: 'requirements',
     admissionRequirements: [
-      'מסלול בסיסי: ממוצע בגרות 85+ ופסיכומטרי 520+',
-      'דרישות נוספות: ראיון קבלה, אנגלית ברמת מתקדמים א׳ לפחות, ועברית ברמת מתקדמים',
-      'מסלולי קבלה ייחודיים: לוחמים/מילואים ואפיק מעבר עם בגרות 85+ וראיון גם ללא פסיכומטרי',
-      'מסלול הישגים לימודיים: קבלה ללא פסיכומטרי לבעלי בגרות 100+/103+ בכפוף לראיון ודרישות שפה',
+      'ממוצע בגרות 85 ומעלה ופסיכומטרי 520 ומעלה, וראיון קבלה',
+      'בלי פסיכומטרי (אפיק מעבר): ממוצע בגרות 85 ומעלה, ראיון קבלה ועמידה בדרישות האקדמיות של המסלול',
+      'מסלולי מצוינות בלי פסיכומטרי: ממוצע בגרות 100 ומעלה עם 5 יח״ל במקצוע מדעי, או ממוצע בגרות 103 ומעלה',
+      'אנגלית ברמת מתקדמים א׳ לפחות ועברית ברמת מתקדמים (יע״ל 100 במסלול הרגיל, ציון גבוה יותר בחלק מהמסלולים)',
+    ],
+    institutionDetails: [
+      {
+        institutionName: 'המכללה האקדמית אונו',
+        durationYears: null,
+        estimatedStudentsPerYear: '',
+        quantitativeMinRequirement: null,
+        englishMinRequirement: null,
+        specificAdmissionNotes: [
+          'ממוצע בגרות 85 ומעלה ופסיכומטרי 520 ומעלה, וראיון קבלה',
+          'בלי פסיכומטרי (אפיק מעבר): ממוצע בגרות 85 ומעלה, ראיון קבלה ועמידה בדרישות האקדמיות של המסלול',
+          'מסלולי מצוינות בלי פסיכומטרי: ממוצע בגרות 100 ומעלה עם 5 יח״ל במקצוע מדעי, או ממוצע בגרות 103 ומעלה',
+          'אנגלית ברמת מתקדמים א׳ לפחות ועברית ברמת מתקדמים (יע״ל 100 במסלול הרגיל, ציון גבוה יותר בחלק מהמסלולים)',
+          'מסלולים ייחודיים: לוחמים, משרתי מילואים, מפונים ובני משפחה שכולה מתקבלים לפי ממוצע בגרות 85 ומעלה וראיון. בוגרי מגמת בריאות: ממוצע 90 במגמה וממוצע בגרות כולל 85 ומעלה.',
+          'המחשבון בודק רק את ממוצע הבגרות (85 לפחות בכל המסלולים). הפסיכומטרי, הראיון והשפות נבדקים במכללה.',
+        ],
+        officialCalculatorUrl: '',
+        programUrl: 'https://www.ono.ac.il/curriculum/nursing/',
+        admissionFacts: [
+          {
+            id: 'ono_nursing:ono:fact:bagrut',
+            kind: 'numeric_gate',
+            field: 'bagrut_average',
+            comparison: 'gte',
+            valueNumber: 85,
+            valueText: null,
+            unit: 'average',
+            description: 'ממוצע בגרות 85 לפחות (בכל מסלולי הקבלה שהמכללה מפרסמת)',
+            confidence: 'high',
+            isRequired: true,
+          },
+          {
+            id: 'ono_nursing:ono:fact:interview',
+            kind: 'manual_gate',
+            field: 'interview',
+            comparison: 'present',
+            valueNumber: null,
+            valueText: 'ראיון קבלה',
+            unit: 'text',
+            description: 'ראיון קבלה',
+            confidence: 'high',
+            isRequired: true,
+          },
+        ],
+      },
     ],
   },
 
@@ -3056,8 +3312,7 @@ export const academicPrograms: Program[] = [
     category: 'כלכלה ועסקים',
     profileScore: P.infoSystems,
     admissionType: 'requirements',
-    admissionRequirements: [],
-    thresholds: { reichman: 0 },
+    admissionRequirements: ['ראיון קבלה / ועדת קבלה', 'בדקו את תנאי המסלול באתר רייכמן'],
     institutionDetails: D['reichman_infosystems'],
   },
   {
@@ -3070,10 +3325,10 @@ export const academicPrograms: Program[] = [
     profileScore: P.infoSystems,
     admissionType: 'requirements',
     admissionRequirements: [
-      'קבלה אוטומטית: מסלולי בגרות ובגרות+פסיכומטרי עם דרישות מתמטיקה מוגברות',
-      'מתמטיקה: 5 יח"ל 70+ או 4 יח"ל 80+; חלופה נוספת עם כמותי 128+ ומתמטיקה 65/70+',
-      'קבלה על תנאי: ממוצע בגרות 90+ או מסלול בגרות 85-94.4 עם דרישות המתמטיקה',
-      'חלופת קבלה: מכינת שחקים למי שלא עומדים בסף',
+      'מסלול בגרות: ממוצע משוקלל של המכללה 95 לפחות',
+      'מתמטיקה: 5 יחידות בציון 70 או 4 יחידות בציון 80 לפחות',
+      'קבלה על תנאי במסלול בגרות: ממוצע 85–94.4 ודרישות המתמטיקה',
+      'מסלולים המשלבים פסיכומטרי דורשים אישור השקלול של המכללה; קיימת גם מכינת שחקים',
     ],
   },
 
@@ -3111,6 +3366,37 @@ export const academicPrograms: Program[] = [
   // ══════════════════════════════════════════════════════════════════════════
   // ביולוגיה ימית ומכמורת — Marine Biology (Ruppin Academic Center)
   // ══════════════════════════════════════════════════════════════════════════
+  {
+    id: 'ruppin_cs',
+    name: 'מדעי המחשב',
+    institution: 'המרכז האקדמי רופין',
+    institutionId: 'ruppin',
+    type: 'academic',
+    category: 'מדעי המחשב',
+    profileScore: P.cs,
+    admissionType: 'requirements',
+    admissionRequirements: [
+      'זכאות לבגרות מלאה או תעודה מוכרת מקבילה',
+      'ממוצע בגרות 100 ומעלה, או 98 עם מתמטיקה 5 יחידות בציון 80 או 4 יחידות בציון 95',
+      'חלופה: פסיכומטרי 600 ומעלה, או 590 עם כמותי 120 ומעלה',
+      'בכל מסלול: מתמטיקה 5 יחידות בציון 70 או 4 יחידות בציון 85; אחרת קורס קדם או מבחן פטור בציון 70',
+      'מסלול משולב דורש חישוב ואישור של רופין; אפשר לברר אותו מול הרישום',
+    ],
+    institutionDetails: [
+      {
+        institutionName: 'המרכז האקדמי רופין',
+        durationYears: null,
+        estimatedStudentsPerYear: '',
+        quantitativeMinRequirement: null,
+        englishMinRequirement: null,
+        specificAdmissionNotes: [],
+        programUrl:
+          'https://www.ruppin.ac.il/faculties/ba/computer-science/?utm_source=myway&utm_medium=referral',
+        officialCalculatorUrl:
+          'https://www.ruppin.ac.il/faculties/ba/computer-science/application-requirements/',
+      },
+    ],
+  },
   {
     id: 'ruppin_marine_bio',
     name: 'ביולוגיה ימית ומכמורת',
@@ -3172,3 +3458,10 @@ export const academicPrograms: Program[] = [
     ],
   },
 ];
+
+const mtaComputerScience = academicPrograms.find((program) => program.id === 'tlvyaffo_cs')!;
+academicPrograms.push({
+  ...mtaComputerScience,
+  id: 'mta_cs',
+  name: 'מדעי המחשב - המכללה האקדמית תל אביב-יפו',
+});

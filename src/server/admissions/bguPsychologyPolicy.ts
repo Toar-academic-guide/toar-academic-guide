@@ -32,11 +32,20 @@ export function resolveBguPsychologyAdmission(
   )
     return {
       kind: 'below',
-      reason:
-        'נדרשים אנגלית בסיסי, עברית ה׳ או פטור תקף, תעודת קבלה מוכרת ועמידה בתנאי החוג הנוסף.',
+      reason: 'נדרשים אנגלית בסיסי, עברית ה׳ או פטור תקף, עמידה בתנאי החוג הנוסף.',
     };
   if (missing.length) return { kind: 'needs_input', requiredInputs: missing };
 
+  return resolveBguPsychologyScores(input, score);
+}
+
+/** Numeric route assessment; entry and language confirmations are evaluated separately. */
+export function resolveBguPsychologyScores(
+  input: AdmissionsEvaluationInput,
+  score?: number,
+): Result {
+  const extra = input.extraInputs ?? {};
+  const missing: AdmissionsRequiredInput[] = [];
   const route = extra.bguPsychologyRoute ?? 'auto';
   const p = input.psychometric;
   const average = extra.bguBagrutAverage;

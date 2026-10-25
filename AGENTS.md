@@ -1,6 +1,6 @@
 <!-- BEGIN:nextjs-agent-rules -->
 
-# This is NOT the Next.js you know
+## This is NOT the Next.js you know
 
 This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
 
@@ -27,6 +27,12 @@ Always use the Compound Engineering plugin (`ce`) for project work. Pick the mos
 - `ce-compound` and `ce-compound-refresh` for capturing or refreshing project learnings.
 - `docs/solutions/` — documented solutions to past problems (bugs, best practices, workflow patterns), organized by category with YAML frontmatter. Relevant when implementing or debugging in documented areas.
 - `CONCEPTS.md` — shared domain vocabulary (entities, named processes, status concepts) at the repository root. Relevant when orienting to the codebase or discussing domain concepts.
+
+## UI copy / anti-slop
+
+- Avoid unnecessary secondary labels and descriptions. Let the layout do the explaining.
+- Prefer numbers, hierarchy, and whitespace over helper text under every field, tile, or requirement.
+- Don’t add redundant captions that restate what the primary label or layout already shows (RTL Hebrew UI included).
 
 ## GitHub Workflow
 
@@ -80,3 +86,16 @@ For database-backed catalogue, Supabase, Vercel, authentication, and `/internal/
 - Use Playwright or an equivalent browser check for the affected user flow before marking the work complete. For this app, that includes the landing-page calculator flow and `/internal/data-health` when either path is touched.
 - Do not replace a failing database-backed flow with static fallbacks as the primary fix. Static data is acceptable only for explicit local/static modes; production database mode should fail loudly and the database/query/permissions issue should be fixed.
 - In the PR description, include the concrete Supabase, Vercel/GitHub Actions, and browser verification performed, or explain why a check was impossible.
+
+## Product Language: Write for Prospective Students
+
+- Write user-facing copy in natural, concise Hebrew for people choosing what to study. Use familiar labels such as `תנאי קבלה`; do not add internal qualifiers such as `פומביים`, `ציבורי`, or `מאומת` unless the distinction is necessary for the user's decision.
+- Never expose ingestion diagnostics, evidence-review notes, database statuses, implementation details, or untranslated internal English as programme descriptions or admission requirements. Keep these in internal tools and logs. Legitimate programme names and qualifications such as IELTS may remain in their original language.
+- State missing information plainly and only where it affects the next action. Do not fill gaps with invented requirements, redundant explanations, or awkward literal translations. Preserve actual conditions, scores, thresholds, and uncertainty.
+- Before sharing screenshots or marking UI work ready, read the visible copy as a prospective student on desktop and mobile, including catalogue-fed descriptions and requirements. Verify that labels are useful, Hebrew reads naturally, and no internal text leaks into the interface.
+
+## Hebrew UI Alignment
+
+- Default all student-facing Hebrew text, labels, placeholders, and entered values to right alignment. Use centered alignment only where the component calls for it, such as a centered action or score. Do not leave text left-aligned because of English browser defaults.
+- Keep reading direction separate from alignment: email addresses, telephone numbers, URLs, and decimal numbers may need left-to-right character order, but their field or text block must still align right or deliberately center. Preserve punctuation, decimal points, editing, and caret behavior.
+- Verify alignment in a real browser on desktop and mobile, with both empty and filled fields. Include Bagrut averages, exact subject grades, psychometric scores, search, sign-in, registration, and contact fields. Check visible values and placeholders, not only the surrounding RTL container.

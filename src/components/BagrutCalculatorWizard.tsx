@@ -8,6 +8,7 @@ import { buildBagrutSubjectRecord } from '@/utils/bagrutSubjectRecord';
 // ── Sector → mandatory subjects ───────────────────────────────────────────────
 
 import { SECTORS, ALL_SUBJECTS } from '@/data/bagrutSubjects';
+import { withBet } from '@/lib/hebrew';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -286,7 +287,7 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
 
       {/* ── Step 1: Sector ───────────────────────────────────────────── */}
       {step === 1 && (
-        <div className="p-7">
+        <div className="p-4 sm:p-7">
           <h3 className="mb-1 text-xl font-black text-slate-900">מאיזה מגזר תעודת הבגרות שלך?</h3>
           <p className="mb-5 text-sm text-slate-500">
             הבחירה קובעת אילו מקצועות חובה יופיעו בשלב הבא
@@ -332,16 +333,18 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
 
       {/* ── Step 2: Mandatory ────────────────────────────────────────── */}
       {step === 2 && (
-        <div className="p-7">
+        <div className="p-4 sm:p-7">
           <h3 className="mb-1 text-xl font-black text-slate-900">מקצועות חובה</h3>
           <p className="mb-5 text-sm text-slate-500">הזינו יחידות לימוד וציון לכל מקצוע</p>
           <div className="mb-4 space-y-2">
             {sectorSubs.map((sub, i) => (
               <div
                 key={i}
-                className="flex items-center gap-3 rounded-xl border border-[#e0f9ff] bg-[#f8feff] px-4 py-2.5"
+                className="flex flex-wrap items-center gap-3 rounded-xl border border-[#e0f9ff] bg-[#f8feff] px-3 py-3 sm:px-4"
               >
-                <span className="flex-1 text-sm font-bold text-slate-900">{sub.n}</span>
+                <span className="w-full text-sm font-bold text-slate-900 sm:w-auto sm:flex-1">
+                  {sub.n}
+                </span>
                 <div className="flex flex-col items-center">
                   <span className="mb-1 text-[10px] font-semibold text-slate-400">יח׳</span>
                   <input
@@ -374,9 +377,9 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
                 ) && (
                   <button
                     type="button"
-                    aria-label={`הוסף עבודת גמר ב${sub.n}`}
+                    aria-label={`הוסף עבודת גמר ${withBet(sub.n)}`}
                     onClick={() => addFinalProject(sub.n)}
-                    className="rounded-lg border border-[#bae6fd] bg-white px-2 py-1 text-[10px] font-bold text-[#0891b2] hover:bg-[#e0f9ff]"
+                    className="min-h-11 rounded-lg border border-[#bae6fd] bg-white px-2 py-1 text-xs font-bold text-[#0891b2] hover:bg-[#e0f9ff]"
                   >
                     עבודת גמר +
                   </button>
@@ -397,7 +400,7 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
 
       {/* ── Step 3: Electives ────────────────────────────────────────── */}
       {step === 3 && (
-        <div className="p-7">
+        <div className="p-4 sm:p-7">
           <h3 className="mb-1 text-xl font-black text-slate-900">מקצועות בחירה</h3>
           <p className="mb-4 text-sm text-slate-500">הקלידו שם מקצוע או לחצו על החץ לרשימה המלאה</p>
 
@@ -414,7 +417,7 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
                   setDropOpen(true);
                 }}
                 onFocus={() => setDropOpen(true)}
-                className="min-w-0 flex-1 border-none bg-transparent px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400"
+                className="way-input-unframed min-w-0 flex-1 border-none bg-transparent px-4 py-3 text-sm text-slate-900 outline-none placeholder:text-slate-400"
               />
               <button
                 type="button"
@@ -438,18 +441,16 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
             </div>
 
             {dropOpen && filteredSubjects.length > 0 && (
-              <div className="absolute z-20 mt-1 max-h-48 w-full overflow-y-auto rounded-xl border border-[#bae6fd] bg-white shadow-lg">
+              <div className="absolute z-20 mt-1 max-h-48 w-full overflow-y-auto rounded-xl border border-[#bae6fd] bg-white! shadow-lg">
                 {filteredSubjects.map((s) => (
-                  <div
+                  <button
                     key={s}
-                    onMouseDown={(e) => {
-                      e.preventDefault();
-                      addElective(s);
-                    }}
-                    className="cursor-pointer border-b border-[#f0f9ff] px-4 py-2.5 text-sm text-slate-900 last:border-0 hover:bg-[#f0fbff] hover:text-[#0891b2]"
+                    type="button"
+                    onClick={() => addElective(s)}
+                    className="min-h-11 w-full cursor-pointer border-b border-[#f0f9ff] px-4 py-2.5 text-start text-sm text-slate-900 last:border-0 hover:bg-[#f0fbff] hover:text-[#0891b2]"
                   >
                     {s}
-                  </div>
+                  </button>
                 ))}
               </div>
             )}
@@ -465,9 +466,11 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
               electives.map((e, i) => (
                 <div
                   key={i}
-                  className="flex items-center gap-3 rounded-xl border border-[#e0f9ff] bg-[#f8feff] px-4 py-2.5"
+                  className="flex flex-wrap items-center gap-3 rounded-xl border border-[#e0f9ff] bg-[#f8feff] px-3 py-3 sm:px-4"
                 >
-                  <span className="flex-1 text-sm font-bold text-slate-900">{e.name}</span>
+                  <span className="w-full text-sm font-bold text-slate-900 sm:w-auto sm:flex-1">
+                    {e.name}
+                  </span>
                   <select
                     aria-label={`סוג הערכה ${e.name} ${i + 1}`}
                     value={e.assessmentKind}
@@ -514,7 +517,7 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
                     type="button"
                     onClick={() => removeElective(i)}
                     aria-label="הסר מקצוע"
-                    className="rounded-lg p-1.5 text-slate-400 transition hover:bg-red-50 hover:text-red-500"
+                    className="flex h-11 w-11 items-center justify-center rounded-lg text-slate-400 transition hover:bg-red-50 hover:text-red-500"
                   >
                     <X size={14} />
                   </button>
@@ -524,9 +527,9 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
                     ) && (
                       <button
                         type="button"
-                        aria-label={`הוסף עבודת גמר ב${e.name}`}
+                        aria-label={`הוסף עבודת גמר ${withBet(e.name)}`}
                         onClick={() => addFinalProject(e.name)}
-                        className="rounded-lg border border-[#bae6fd] bg-white px-2 py-1 text-[10px] font-bold text-[#0891b2] hover:bg-[#e0f9ff]"
+                        className="min-h-11 rounded-lg border border-[#bae6fd] bg-white px-2 py-1 text-xs font-bold text-[#0891b2] hover:bg-[#e0f9ff]"
                       >
                         גמר +
                       </button>
@@ -568,7 +571,7 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
 
       {/* ── Step 4: Result ───────────────────────────────────────────── */}
       {step === 4 && (
-        <div className="p-7">
+        <div className="p-4 sm:p-7">
           <h3 className="mb-4 text-xl font-black text-slate-900">אומדן ממוצע הציונים שלך</h3>
 
           <div className="mb-4 rounded-2xl border border-[#b8c4ff] bg-[#eef4ff] py-6 text-center">

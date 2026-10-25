@@ -11,6 +11,7 @@ import HaifaQualificationFields, {
 } from './HaifaQualificationFields';
 
 import { useState, useRef } from 'react';
+import { academicBagrutAverage } from '@/lib/admissionsEvaluationProfile';
 import { motion } from 'framer-motion';
 import { Upload, FileText, X, Brain, GraduationCap, Loader2 } from 'lucide-react';
 import type { AcademicScores, UserProfile } from '@/types';
@@ -136,9 +137,6 @@ export default function AcademicProfileForm({
   const [colmanBagrutAverage, setColmanBagrutAverage] = useState(
     initialScores?.admissions?.colmanBagrutAverage?.toString() ?? '',
   );
-  const [colmanBagrutCertificate, setColmanBagrutCertificate] = useState(
-    initialScores?.admissions?.colmanBagrutCertificateConfirmed?.toString() ?? '',
-  );
   const [bguBagrutAverage, setBguBagrutAverage] = useState(
     initialScores?.admissions?.bguBagrutAverage?.toString() ?? '',
   );
@@ -253,7 +251,6 @@ export default function AcademicProfileForm({
     setBagrutSubjectRecord(undefined);
     setTauBagrutAverage('');
     setColmanBagrutAverage('');
-    setColmanBagrutCertificate('');
     setPsychologyValues({});
     setMedicineValues({});
     setHealthValues({});
@@ -457,8 +454,6 @@ export default function AcademicProfileForm({
       return;
     }
     if (colmanAverage !== undefined) admissions.colmanBagrutAverage = colmanAverage;
-    if (colmanBagrutCertificate !== '')
-      admissions.colmanBagrutCertificateConfirmed = colmanBagrutCertificate === 'true';
     if (bguAverage !== undefined) admissions.bguBagrutAverage = bguAverage;
     const haifaAverage = optionalNumber(haifaBagrutAverage);
     const certificateYear = optionalNumber(haifaBagrutYear);
@@ -517,8 +512,8 @@ export default function AcademicProfileForm({
     if (
       alertContinuation?.requiresStructuredBagrut &&
       (!scores.psychometric?.overall ||
-        !scores.bagrut?.weightedAverage ||
-        !scores.bagrut.subjectRecord?.subjects.length)
+        academicBagrutAverage(scores) === undefined ||
+        !scores.bagrut?.subjectRecord?.subjects.length)
     ) {
       setError('כדי להפעיל מעקב צריך להשלים את מקצועות הבגרות והיחידות שלך.');
       setIsSaving(false);
@@ -611,7 +606,7 @@ export default function AcademicProfileForm({
       <div className="mx-auto flex max-w-2xl flex-col items-center gap-8">
         <motion.div
           {...fadeUp(0.18)}
-          className="w-full rounded-3xl border border-[#e5e7eb] bg-white p-8 shadow-lg md:p-10"
+          className="w-full rounded-3xl border border-[#e5e7eb] bg-white p-5 shadow-lg sm:p-8 md:p-10"
         >
           <div className="mb-8">
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">
@@ -987,23 +982,6 @@ export default function AcademicProfileForm({
                   </a>{' '}
                   נותן הערכה; הממוצע הקובע נקבע במרכז הרישום.
                 </p>
-                <label
-                  htmlFor="colman-bagrut-certificate"
-                  className="text-xs font-medium text-slate-600"
-                >
-                  האם יש לך זכאות לתעודת בגרות מלאה ומוכרת?
-                </label>
-                <select
-                  id="colman-bagrut-certificate"
-                  value={colmanBagrutCertificate}
-                  onChange={(event) => setColmanBagrutCertificate(event.target.value)}
-                  disabled={isSaving}
-                  className={inputBase}
-                >
-                  <option value="">לא ידוע</option>
-                  <option value="true">כן</option>
-                  <option value="false">לא</option>
-                </select>
               </div>
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="tau-bagrut-average" className="text-xs font-medium text-slate-600">
@@ -1128,9 +1106,8 @@ export default function AcademicProfileForm({
                 inputClassName={inputBase}
               />
               <label className="flex flex-col gap-1.5 text-xs font-medium text-slate-600">
-                האם מולאו תנאי ההגשה לתל אביב: זכאות לבגרות, אנגלית ברמת מתקדמים א׳ (100 לפחות
-                בפסיכומטרי או במבחן מיון נפרד באנגלית), דרישת העברית והרשמה בעדיפות ראשונה למדעי
-                המחשב?
+                האם מולאו תנאי ההגשה לתל אביב: אנגלית ברמת מתקדמים א׳ (100 לפחות בפסיכומטרי או במבחן
+                מיון נפרד באנגלית), דרישת העברית והרשמה בעדיפות ראשונה למדעי המחשב?
                 <select
                   aria-label="אישור תנאי הגשה לתל אביב"
                   value={tauApplicationRequirements}
@@ -1225,8 +1202,7 @@ export default function AcademicProfileForm({
                   <option value="false">לא</option>
                 </select>
                 <p className="text-xs leading-5 text-slate-500">
-                  תעודת בגרות מוכרת, עברית ואנגלית, לימודים קודמים מותרים ותנאי החוג השני לפי העמוד
-                  הרשמי.
+                  עברית ואנגלית, לימודים קודמים מותרים ותנאי החוג השני לפי העמוד הרשמי.
                 </p>
               </div>
               <div className="flex flex-col gap-1.5">

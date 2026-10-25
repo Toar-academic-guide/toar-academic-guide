@@ -1,9 +1,10 @@
 import { randomUUID } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { sql, eq } from 'drizzle-orm';
 import { afterAll, describe, expect, it, vi } from 'vitest';
 import { closeDb, getDb } from './client';
 import { queryRows } from './queryRows';
-import { userProfiles } from './schema';
+import { admissionThresholds, programs, savedPrograms, userProfiles } from './schema';
 
 vi.mock('server-only', () => ({}));
 import { getUserProfileSnapshot, replaceUserProfileSnapshot } from '@/server/user/profile';
@@ -18,6 +19,14 @@ describe.skipIf(!enabled)('application database driver with PostgreSQL', () => {
   afterAll(async () => {
     await getDb().delete(userProfiles).where(eq(userProfiles.userId, userId));
     await closeDb();
+  });
+
+  it('reads the seeded fractional EE threshold as an application number', async () => {
+    const [threshold] = await getDb()
+      .select({ value: admissionThresholds.thresholdValue })
+      .from(admissionThresholds)
+      .where(eq(admissionThresholds.programId, 'technion_ee'));
+    expect(threshold?.value).toBe(91.5);
   });
 
   it('settles overlapping parameterized and large reads without mixing results', async () => {
@@ -53,14 +62,55 @@ describe.skipIf(!enabled)('application database driver with PostgreSQL', () => {
       geographicPreference: 'any',
       academicScores: {
         psychometric: { overall: 680 },
-        bagrut: { weightedAverage: 100 },
+        bagrut: { weightedAverage: 110.5 },
         admissions: { tauBagrutAverage: 100, tauApplicationRequirementsConfirmed: true },
       },
     });
     expect((await getUserProfileSnapshot(userId)).academicScores).toMatchObject({
       psychometric: { overall: 680 },
-      bagrut: { weightedAverage: 100 },
+      bagrut: { weightedAverage: 110.5 },
       admissions: { tauBagrutAverage: 100, tauApplicationRequirementsConfirmed: true },
     });
+  });
+
+  it('corrects the legacy Danon classification without deleting saved references or changing admission data', async () => {
+    const db = getDb();
+    const migration = readFileSync(
+      new URL('./migrations/0038_correct_danon_classification.sql', import.meta.url),
+      'utf8',
+    );
+    await expect(
+      db.transaction(async (tx) => {
+        const [culinary] = await tx.select().from(programs).where(eq(programs.id, 'danon_chef'));
+        expect(culinary).toBeDefined();
+        const legacy = {
+          ...culinary,
+          id: 'danon_cs',
+          name: 'מדעי המחשב - דנון - קולינריה',
+          category: 'מדעי המחשב',
+        };
+        await tx.insert(programs).values(legacy);
+        await tx.insert(savedPrograms).values({ userId, programId: legacy.id });
+        await tx.execute(sql.raw(migration));
+        const [corrected] = await tx.select().from(programs).where(eq(programs.id, legacy.id));
+        expect(corrected).toEqual({
+          ...legacy,
+          name: 'קולינריה - דנון - קולינריה',
+          category: 'קולינריה',
+          updatedAt: expect.any(Date),
+        });
+        expect(
+          await tx.select().from(savedPrograms).where(eq(savedPrograms.userId, userId)),
+        ).toEqual([expect.objectContaining({ programId: legacy.id })]);
+        expect(await tx.select().from(programs).where(eq(programs.id, culinary.id))).toEqual([
+          culinary,
+        ]);
+        await tx.execute(sql.raw(migration));
+        expect(await tx.select().from(programs).where(eq(programs.id, legacy.id))).toEqual([
+          corrected,
+        ]);
+        throw new Error('rollback Danon fixture');
+      }),
+    ).rejects.toThrow('rollback Danon fixture');
   });
 });

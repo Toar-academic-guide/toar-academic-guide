@@ -1,0 +1,1 @@
+ALTER TABLE "user_profiles" ALTER COLUMN "bagrut_weighted_average" SET DATA TYPE real;

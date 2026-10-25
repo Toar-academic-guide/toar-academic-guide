@@ -1,0 +1,32 @@
+{
+  "institution": {
+    "id": "mta",
+    "name": "המכללה האקדמית תל-אביב-יפו",
+    "region": "center",
+    "domain": "mta.ac.il",
+    "programUrl": "https://www.mta.ac.il"
+  },
+  "linkedInstitutionId": "mta",
+  "capability": "needs_input",
+  "kind": "needs_input",
+  "confidence": "medium",
+  "sourceLabel": "תנאי קבלה",
+  "officialUrls": [
+    "https://www.mta.ac.il/conditions_for_applying",
+    "https://mtamn.mta.ac.il/yedion/fireflyweb.aspx?prgname=Reg_Calc_1"
+  ],
+  "decision": "unknown",
+  "requiredInputs": [
+    "math_units",
+    "math_grade"
+  ],
+  "explanation": "להשלמת הבדיקה נדרשים: יחידות במתמטיקה, ציון במתמטיקה.",
+  "nextAction": "השלימו את הנתונים החסרים בפרופיל האקדמי.",
+  "snapshot": {
+    "evaluatorVersion": "admissions-evaluator-v2",
+    "ruleVersion": "admissions-evaluator-v2:mta:needs_input",
+    "ruleFingerprint": "sha256:fd10ea2644ea165be8123bd6ed655894132a03f2a5399db007e835954fa565ab",
+    "inputDigest": "sha256:2cf9a990ea41521c3336d7cd5597b5a9c1edbd375a6003e3ec54669c9025a82b",
+    "evaluationDigest": "sha256:697c44e09ea6fea961689b6f04414b8d83dd0fbc3a293a69e612d673036282a7"
+  }
+}

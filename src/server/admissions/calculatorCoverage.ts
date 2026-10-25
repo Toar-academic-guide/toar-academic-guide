@@ -97,13 +97,15 @@ export const calculatorCoverageInventory: CalculatorCoverageEntry[] = [
     institutionId: 'biu',
     institutionName: 'Bar-Ilan University',
     mondayItemId: '12220699688',
-    officialUrl: 'https://in.biu.ac.il/Pages/Psychometric.aspx',
-    evidenceKind: 'browser_blocked',
-    intendedCapability: 'unsupported',
-    supportLevel: 'unsupported',
+    officialUrl:
+      'https://www.biu.ac.il/registration-and-admission/information/acceptance-no-psychometry',
+    evidenceKind: 'requirements_enrichment',
+    intendedCapability: 'estimated',
+    supportLevel: 'estimated',
     hasCalculatorConfig: true,
     hasSourceTarget: true,
-    nextAction: 'Move to Hermes/VPS browser automation lane',
+    nextAction:
+      'Seven published Bagrut-only pairs are estimated; remaining BIU pairs stay excluded. Obtain official composite formula and programme thresholds; calculator returns HTTP 403 in Chromium.',
   },
   {
     institutionId: 'haifa',
@@ -140,7 +142,7 @@ export const calculatorCoverageInventory: CalculatorCoverageEntry[] = [
     hasCalculatorConfig: true,
     hasSourceTarget: true,
     nextAction:
-      'Use the mapped sekhem estimate with blocked-source disclosure for thresholded programs, and keep the Hermes/VPS browser lane as the path to re-verify official thresholds.',
+      'Ariel programmes have no reliable admission calculation yet. Direct students to official programme requirements; formula and threshold verification remains follow-up work.',
   },
   {
     institutionId: 'reichman',
@@ -197,11 +199,12 @@ export const calculatorCoverageInventory: CalculatorCoverageEntry[] = [
     mondayItemId: '12220708944',
     officialUrl: 'https://www.mta.ac.il/conditions_for_applying',
     evidenceKind: 'requirements_enrichment',
-    intendedCapability: 'requirements_only',
-    supportLevel: 'requirements_only',
+    intendedCapability: 'manual_gate',
+    supportLevel: 'manual_gate',
     hasCalculatorConfig: false,
     hasSourceTarget: true,
-    nextAction: 'Reverse-engineer the secondary calculator link or represent as requirements-only',
+    nextAction:
+      'CS, nursing and economics-management have estimated published-route scores with separate confirmations; other MTA programs remain requirements-only. Verify institution-weighted Bagrut before exact claims.',
   },
   {
     institutionId: 'colman',

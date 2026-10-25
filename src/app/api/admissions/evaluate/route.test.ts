@@ -1,6 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { resetAdmissionsEvaluationRateLimitForTests } from '@/server/admissions/rateLimit';
+import { PROGRAM_CANONICAL_ALIASES } from '@/lib/seo/programAliases';
+import { BATCH_B_PROGRAMS } from '@/server/admissions/batchBManualPathEvaluation';
 
 const hoistedMocks = vi.hoisted(() => ({
   listCataloguePrograms: vi.fn(),
@@ -27,6 +29,113 @@ vi.mock('server-only', () => ({}));
 import { POST } from './route';
 
 describe('admissions evaluate route', () => {
+  const batchRequest = (body: unknown) =>
+    POST(
+      new Request('http://localhost/api/admissions/evaluate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(body),
+      }),
+    );
+
+  it.each(
+    Object.entries(PROGRAM_CANONICAL_ALIASES).filter(([aliasId]) => !BATCH_B_PROGRAMS[aliasId]),
+  )(
+    'resolves %s to %s for single and batch evaluation even when an alias row exists',
+    async (aliasId, canonicalId) => {
+      const program = { id: canonicalId, name: 'Canonical programme' };
+      hoistedMocks.listCataloguePrograms.mockResolvedValue({
+        data: [{ id: aliasId, name: 'Legacy programme' }, program],
+      });
+      for (const body of [{ degreeId: aliasId }, { degreeIds: [aliasId] }]) {
+        expect((await batchRequest(body)).status).toBe(200);
+        expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenLastCalledWith({
+          input: { degreeId: canonicalId },
+          program,
+          institutions: expect.any(Array),
+        });
+      }
+    },
+  );
+
+  it('reports the requested alias when its canonical evaluator fails', async () => {
+    hoistedMocks.listCataloguePrograms.mockResolvedValue({ data: [{ id: 'colmgmt_law' }] });
+    hoistedMocks.evaluateAdmissionsForProgram.mockRejectedValue(new Error('internal details'));
+    const response = await batchRequest({ degreeIds: ['colman_law'] });
+    expect(response.status).toBe(200);
+    await expect(response.json()).resolves.toEqual({
+      data: { reports: {}, failedDegreeIds: ['colman_law'] },
+    });
+    expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenCalledWith(
+      expect.objectContaining({ input: { degreeId: 'colmgmt_law' } }),
+    );
+  });
+
+  it('evaluates 24 programmes as one rate-limited request with shared inputs and at most four workers', async () => {
+    const degreeIds = Array.from({ length: 24 }, (_, i) => `programme-${i}`);
+    hoistedMocks.listCataloguePrograms.mockResolvedValue({ data: degreeIds.map((id) => ({ id })) });
+    let active = 0;
+    let peak = 0;
+    hoistedMocks.evaluateAdmissionsForProgram.mockImplementation(async ({ input }) => {
+      active++;
+      peak = Math.max(peak, active);
+      await new Promise((resolve) => setTimeout(resolve, 1));
+      active--;
+      return { input, results: [] };
+    });
+    const applicant = {
+      psychometric: 700,
+      bagrut: 110,
+      extraInputs: {
+        tauBagrutAverage: 110.25,
+        tauApplicationRequirementsConfirmed: false,
+        tauManagementQualifyingMoocCount: 0,
+      },
+    };
+    const response = await batchRequest({ degreeIds, ...applicant });
+    expect(response.status).toBe(200);
+    const { data } = await response.json();
+    expect(Object.keys(data.reports)).toHaveLength(24);
+    expect(data.failedDegreeIds).toEqual([]);
+    for (const id of degreeIds)
+      expect(data.reports[id].input).toEqual({ degreeId: id, ...applicant });
+    expect(peak).toBeLessThanOrEqual(4);
+    expect(hoistedMocks.listCataloguePrograms).toHaveBeenCalledTimes(1);
+    expect(hoistedMocks.listCatalogueInstitutions).toHaveBeenCalledTimes(1);
+    // The batch consumed one quota slot, not twenty-four.
+    expect((await batchRequest({ degreeId: degreeIds[0], ...applicant })).status).toBe(200);
+  });
+
+  it('keeps successful reports when another programme fails or is unknown', async () => {
+    hoistedMocks.listCataloguePrograms.mockResolvedValue({ data: [{ id: 'good' }, { id: 'bad' }] });
+    hoistedMocks.evaluateAdmissionsForProgram.mockImplementation(async ({ input }) => {
+      if (input.degreeId === 'bad') throw new Error('internal details');
+      return { input, results: [] };
+    });
+    const response = await batchRequest({ degreeIds: ['good', 'bad', 'missing'] });
+    const { data } = await response.json();
+    expect(response.status).toBe(200);
+    expect(Object.keys(data.reports)).toEqual(['good']);
+    expect(data.failedDegreeIds.sort()).toEqual(['bad', 'missing']);
+    expect(JSON.stringify(data)).not.toContain('internal details');
+  });
+
+  it.each([
+    { degreeIds: [] },
+    { degreeIds: ['duplicate', 'duplicate'] },
+    { degreeIds: Array.from({ length: 51 }, (_, i) => `p${i}`) },
+  ])('rejects empty, duplicate and oversized batches before evaluating', async ({ degreeIds }) => {
+    expect((await batchRequest({ degreeIds })).status).toBe(400);
+    expect(hoistedMocks.evaluateAdmissionsForProgram).not.toHaveBeenCalled();
+  });
+
+  it('retains the request rate limit for batches', async () => {
+    for (let i = 0; i < 12; i++) {
+      expect((await batchRequest({ degreeIds: ['tau_datascience'] })).status).toBe(200);
+    }
+    expect((await batchRequest({ degreeIds: ['tau_datascience'] })).status).toBe(429);
+  });
+
   it('forwards Colman Bagrut inputs without requiring generic average or psychometric', async () => {
     hoistedMocks.listCataloguePrograms.mockResolvedValue({
       data: [{ id: 'colmgmt_cs', name: 'CS', linkedInstitutionIds: ['colman'] }],
@@ -727,6 +836,37 @@ describe('admissions evaluate route', () => {
     expect(blocked.status).toBe(429);
     await expect(blocked.json()).resolves.toMatchObject({
       error: { code: 'ADMISSIONS_EVALUATION_RATE_LIMITED' },
+    });
+  });
+  describe('static Actions smoke bucket headers', () => {
+    beforeEach(() => {
+      vi.stubEnv('CI', 'true');
+      vi.stubEnv('GITHUB_ACTIONS', 'true');
+      vi.stubEnv('CATALOGUE_SOURCE_MODE', 'static');
+      vi.stubEnv('VERCEL', undefined);
+      vi.stubEnv('VERCEL_ENV', undefined);
+      vi.stubEnv('ADMISSIONS_EVALUATION_E2E_ISOLATION', '1');
+    });
+    afterEach(() => vi.unstubAllEnvs());
+
+    it('returns 429 on request 13 within one test and 200 for the next test', async () => {
+      hoistedMocks.headers.mockResolvedValue(
+        new Headers({
+          'x-forwarded-for': '127.0.0.1',
+          'x-myway-e2e-bucket': 'test-one',
+        }),
+      );
+      for (let i = 0; i < 12; i++) {
+        expect((await batchRequest({ degreeId: 'tau_datascience' })).status).toBe(200);
+      }
+      expect((await batchRequest({ degreeId: 'tau_datascience' })).status).toBe(429);
+      hoistedMocks.headers.mockResolvedValue(
+        new Headers({
+          'x-forwarded-for': '127.0.0.1',
+          'x-myway-e2e-bucket': 'test-two',
+        }),
+      );
+      expect((await batchRequest({ degreeId: 'tau_datascience' })).status).toBe(200);
     });
   });
 });

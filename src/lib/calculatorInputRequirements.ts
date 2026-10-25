@@ -34,6 +34,12 @@ export function allowsNoPsychometric(programId: string): boolean {
       'bgu_business',
       'bgu_industrial',
       'colmgmt_cs',
+      'colmgmt_law',
+      'colmgmt_business',
+      'colmgmt_economics',
+      'tlvyaffo_cs',
+      'mta_cs',
+      'tlvyaffo_business',
     ].includes(programId)
   );
 }
@@ -46,7 +52,21 @@ export function allowsNoGenericBagrut(programId: string): boolean {
     isHaifaProgram(programId) ||
     isBguHealthProgram(programId) ||
     bguSocialScienceProgram(programId) !== null ||
-    ['ee', 'bgu_ee', 'me', 'bgu_me', 'bgu_industrial', 'colmgmt_cs'].includes(programId)
+    [
+      'ee',
+      'bgu_ee',
+      'me',
+      'bgu_me',
+      'bgu_industrial',
+      'colmgmt_cs',
+      'colmgmt_law',
+      'colmgmt_business',
+      'colmgmt_economics',
+      'tlvyaffo_cs',
+      'mta_cs',
+      'tlvyaffo_business',
+      'tlvyaffo_nursing',
+    ].includes(programId)
   );
 }
 

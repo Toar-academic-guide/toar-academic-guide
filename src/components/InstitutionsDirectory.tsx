@@ -6,6 +6,7 @@ import { ArrowUpLeft, ExternalLink, MapPin, Search, SlidersHorizontal } from 'lu
 
 import InstitutionLogo from '@/components/InstitutionLogo';
 import WayPageShell from '@/components/WayPageShell';
+import { institutionLink } from '@/lib/institutionLinks';
 import type {
   InstitutionAreaFilter,
   InstitutionCategoryFilter,
@@ -89,19 +90,20 @@ function FilterButton({
   return (
     <button
       type="button"
+      aria-pressed={active}
       onClick={onClick}
       className={[
-        'inline-flex h-10 shrink-0 items-center gap-2 rounded-full border px-4 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fd8ff]',
+        'inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border px-4 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fd8ff]',
         active
-          ? 'border-[#7784e8] bg-[#7784e8] text-white shadow-[0_14px_30px_rgba(119,132,232,0.24)]'
+          ? 'border-[#5868c7] bg-[#5868c7] text-white shadow-[0_14px_30px_rgba(119,132,232,0.24)]'
           : 'border-[#d9e3f3] bg-white/80 text-[#647091] hover:border-[#b8c4ff] hover:bg-white hover:text-[#5262d9]',
       ].join(' ')}
     >
       <span>{label}</span>
       <span
         className={[
-          'rounded-full px-1.5 py-0.5 text-[10px]',
-          active ? 'bg-white/18 text-white' : 'bg-[#f0f4fa] text-[#72809a]',
+          'rounded-full px-1.5 py-0.5 text-[11px]',
+          active ? 'text-white' : 'bg-[#f0f4fa] text-[#596582]',
         ].join(' ')}
       >
         {count}
@@ -161,16 +163,12 @@ export default function InstitutionsDirectory({ institutions }: InstitutionsDire
     <WayPageShell contentClassName="">
       <main>
         <section className="relative z-10">
-          <div className="mx-auto grid max-w-6xl gap-10 px-4 pb-8 pt-32 sm:px-6 lg:grid-cols-[1.05fr_0.95fr] lg:items-end lg:pb-12 lg:pt-36">
+          <div className="mx-auto grid max-w-6xl gap-10 px-5 pb-8 pt-8 sm:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-end lg:pb-12 lg:pt-12">
             <div>
               <p className="text-sm font-bold text-[#7784e8]">מוסדות לימוד בישראל</p>
-              <h1 className="mt-3 max-w-3xl text-4xl font-semibold leading-tight text-[#445274] sm:text-6xl">
+              <h1 className="mt-3 max-w-3xl text-3xl font-semibold leading-tight text-[#445274] sm:text-4xl">
                 למצוא מוסד לפי מקום, סוג ותעודה
               </h1>
-              <p className="mt-5 max-w-2xl text-base leading-8 text-[#6f7a99] sm:text-lg">
-                קטלוג מוסדות מתוך Monday, מאורגן לחיפוש מהיר בין אוניברסיטאות, מכללות ובתי ספר
-                מקצועיים.
-              </p>
             </div>
 
             <div className="grid grid-cols-3 gap-3">
@@ -191,7 +189,7 @@ export default function InstitutionsDirectory({ institutions }: InstitutionsDire
           </div>
         </section>
 
-        <section className="relative z-10 mx-auto flex max-w-6xl flex-col gap-6 px-4 pb-16 pt-2 sm:px-6">
+        <section className="relative z-10 mx-auto flex max-w-6xl flex-col gap-6 px-5 pb-16 pt-2 sm:px-8">
           <div className="rounded-[1.6rem] border border-white bg-white/76 p-4 shadow-[0_24px_80px_rgba(105,133,190,0.16)] backdrop-blur sm:p-5">
             <label className="relative block">
               <Search
@@ -339,13 +337,13 @@ export default function InstitutionsDirectory({ institutions }: InstitutionsDire
                   <div className="mt-auto flex items-center justify-between gap-3 pt-5">
                     <Link
                       href={`/institutions/${institution.id}`}
-                      className="inline-flex h-10 items-center justify-center rounded-2xl bg-[#7784e8] px-4 text-sm font-bold text-white shadow-[0_14px_30px_rgba(119,132,232,0.22)] transition hover:bg-[#6574dc]"
+                      className="inline-flex h-10 items-center justify-center rounded-2xl bg-[#5868c7] px-4 text-sm font-bold text-white shadow-[0_14px_30px_rgba(119,132,232,0.22)] transition hover:bg-[#4b59b2]"
                     >
                       לעמוד המוסד
                     </Link>
                     {institution.sourceUrl && (
                       <a
-                        href={institution.sourceUrl}
+                        href={institutionLink(institution.sourceUrl)}
                         target="_blank"
                         rel="noreferrer"
                         className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-[#d9e3f3] bg-white/70 text-[#60708c] transition hover:bg-white hover:text-[#445274]"

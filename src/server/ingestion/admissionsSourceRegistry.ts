@@ -1409,9 +1409,10 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     category: 'requirements_only',
     reproducedFields: [],
     limitations: [
-      'No reverse-engineered calculator formula; only requirements enrichment data is available; a secondary calculator link exists but has not been parsed',
+      'CS, nursing and economics-management use the shared official combined-score formula with estimated Bagrut averages and separate confirmations. Other MTA programs have requirements enrichment only.',
     ],
-    nextAction: 'Reverse-engineer the secondary calculator link or represent as requirements-only',
+    nextAction:
+      'Verify institution-weighted Bagrut and remaining conditions for the three modeled programs; retain requirements-only handling for other MTA programs.',
   },
 ];
 

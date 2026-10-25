@@ -242,6 +242,7 @@ function buildDegreeChoices(programs: CatalogueProgram[]) {
   const choices = new Map<string, Omit<DegreeChoice, 'aboutText'>>();
 
   for (const program of programs) {
+    if (program.isListed === false) continue;
     const category = program.category.trim() || 'אחר';
     const name = program.name.trim();
     const key = name;

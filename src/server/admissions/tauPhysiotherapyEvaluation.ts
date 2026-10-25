@@ -1,3 +1,4 @@
+import { confirmationCondition, withScoreAssessment } from './scoreAssessment';
 import type {
   AdmissionsEvaluationInput,
   AdmissionsEvaluationResult,
@@ -70,8 +71,6 @@ export async function evaluateTauPhysiotherapyResult({
   const missing: AdmissionsRequiredInput[] = [];
   if (!extra?.tauPhysiotherapyRoute) missing.push('tau_physiotherapy_route');
   if (input.psychometric === undefined) missing.push('psychometric_overall');
-  if (extra?.tauPhysiotherapyRequirementsConfirmed === undefined)
-    missing.push('tau_physiotherapy_requirements');
   const math = bagrutExamSubjects(extra?.bagrutSubjectRecord).find(
     (subject) => subject.subjectId === 'mathematics',
   );
@@ -85,9 +84,6 @@ export async function evaluateTauPhysiotherapyResult({
   const unmet = [
     ...(input.psychometric !== undefined && input.psychometric < 630
       ? ['פסיכומטרי תקף 630 לפחות']
-      : []),
-    ...(extra?.tauPhysiotherapyRequirementsConfirmed === false
-      ? ['שאר תנאי ההגשה, כולל רישום במועד']
       : []),
     ...(!mathPasses && extra?.tauPhysiotherapyAcademicMathConfirmed === false
       ? ['מתמטיקה 4 יחידות בציון עובר או קורס אקדמי שאושר']
@@ -176,23 +172,32 @@ export async function evaluateTauPhysiotherapyResult({
         : score <= thresholds.rejection
           ? 'below'
           : 'pending';
-    return {
-      ...base,
-      capability: 'manual_gate',
-      kind: 'manual_gate',
-      decision,
-      confidence: 'high',
-      score,
-      scoreLabel: `סכם פיזיותרפיה${bonus ? ' כולל בונוס קורס 5 נקודות' : ''}`,
-      threshold: decision === 'below' ? thresholds.rejection : thresholds.acceptance,
-      explanation:
-        decision === 'below'
-          ? 'הסכם באפיק הבגרות אינו מעל סף הדחייה שפורסם לפיזיותרפיה. אפיק אקדמי אחר, אם מתאים, דורש חישוב מוסדי.'
-          : decision === 'pending'
-            ? 'הסכם בין סף הדחייה לסף הקבלה שפורסמו; נדרשת בדיקת האוניברסיטה.'
-            : 'הסכם עומד בסף המספרי שפורסם, ושאר תנאי ההגשה אושרו על ידך. ראיון ודירוג התאמה עדיין נדרשים; אין כאן אישור זימון או קבלה סופית.',
-      nextAction: 'בדקו מול האוניברסיטה את מצב הרישום, הזימון לראיון וההחלטה הסופית.',
-    };
+    return withScoreAssessment(
+      {
+        ...base,
+        capability: 'manual_gate',
+        kind: 'manual_gate',
+        decision,
+        confidence: 'high',
+        score,
+        scoreLabel: `סכם פיזיותרפיה${bonus ? ' כולל בונוס קורס 5 נקודות' : ''}`,
+        threshold: decision === 'below' ? thresholds.rejection : thresholds.acceptance,
+        explanation:
+          decision === 'below'
+            ? 'הסכם באפיק הבגרות אינו מעל סף הדחייה שפורסם לפיזיותרפיה. אפיק אקדמי אחר, אם מתאים, דורש חישוב מוסדי.'
+            : decision === 'pending'
+              ? 'הסכם בין סף הדחייה לסף הקבלה שפורסמו; נדרשת בדיקת האוניברסיטה.'
+              : 'הסכם עומד בסף המספרי שפורסם, יש לבדוק בנפרד את שאר תנאי ההגשה. ראיון ודירוג התאמה עדיין נדרשים; אין כאן אישור זימון או קבלה סופית.',
+        nextAction: 'בדקו מול האוניברסיטה את מצב הרישום, הזימון לראיון וההחלטה הסופית.',
+      },
+      [
+        confirmationCondition(
+          'tau_physiotherapy_requirements',
+          'שאר תנאי ההגשה, כולל רישום במועד',
+          extra?.tauPhysiotherapyRequirementsConfirmed,
+        ),
+      ],
+    );
   } catch (error) {
     return {
       ...base,

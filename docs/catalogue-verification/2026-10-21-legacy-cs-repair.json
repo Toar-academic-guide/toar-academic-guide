@@ -1,0 +1,1323 @@
+{
+  "checkedAt": "2026-10-21",
+  "importCommit": "dd1f901c65f052ab44a1ddee5400496a5a49349d",
+  "scope": "Legacy synthetic Computer Science records only; no admission thresholds changed. Withdrawn rows remain addressable but cannot be recommended. Retain is evidence of programme identity, not an admissions-rule verification.",
+  "programmes": [
+    {
+      "id": "wingate_cs",
+      "action": "correct",
+      "name": "חינוך גופני - המרכז האקדמי לוינסקי-וינגייט",
+      "category": "ספורט",
+      "type": "academic",
+      "officialUrl": "https://www.wincol.ac.il/academic/bachelor_degree/physical_education/about/"
+    },
+    {
+      "id": "hit_cs",
+      "action": "retain",
+      "officialUrl": "https://www.hit.ac.il/academic/sciences/bsc/"
+    },
+    {
+      "id": "mon_12220708940_cs",
+      "action": "retain",
+      "officialUrl": "https://www.sce.ac.il/academic-units1/ashdod/basic-sciences/computer-science"
+    },
+    {
+      "id": "mon_12220708941_cs",
+      "action": "retain",
+      "officialUrl": "https://www.jce.ac.il/degree-in-engineering/תואר-במדעי-המחשב-תואר-ראשון-b-sc-מכללת-עזר"
+    },
+    {
+      "id": "mon_12220708942_cs",
+      "action": "retain",
+      "officialUrl": "https://w3.braude.ac.il/department/software/bsc3-software/"
+    },
+    {
+      "id": "mta_cs",
+      "action": "retain",
+      "officialUrl": "https://www.mta.ac.il/faculty/computer_science_and_ai"
+    },
+    {
+      "id": "ruppin_cs",
+      "action": "retain",
+      "officialUrl": "https://www.ruppin.ac.il/faculties/ba/computer-science/"
+    },
+    {
+      "id": "mon_12220697668_cs",
+      "action": "retain",
+      "officialUrl": "https://www.sapir.ac.il/ba/computer_science"
+    },
+    {
+      "id": "mon_12220697671_cs",
+      "action": "correct",
+      "name": "מערכות מידע - המכללה האקדמית עמק יזרעאל",
+      "category": "מערכות מידע",
+      "type": "academic",
+      "officialUrl": "https://www.yvc.ac.il/degree/b-sc-in-information-systems-management/"
+    },
+    {
+      "id": "mon_12220685569_cs",
+      "action": "retain",
+      "officialUrl": "https://www.jmc.ac.il/תוכניות-לימוד/ביה-ס-הבינתחומי-לבריאות-חברה-ומדע/מדעי-המחשב/"
+    },
+    {
+      "id": "mon_12341167578_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכון עליה",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12220687656_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "המרכז האקדמי ויצו חיפה",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "colman_cs",
+      "action": "retain",
+      "officialUrl": "https://www.colman.ac.il/academics/ba/computer-science/"
+    },
+    {
+      "id": "bishulim_cs",
+      "action": "correct",
+      "name": "קולינריה - בישולים בית הספר הגבוה לקולינריה",
+      "category": "קולינריה",
+      "type": "certificate",
+      "officialUrl": "https://www.bishulim-school.com/"
+    },
+    {
+      "id": "mon_12220685573_cs",
+      "action": "correct",
+      "name": "קונדיטוריה - אסטלה - קונדיטוריה",
+      "category": "קולינריה",
+      "type": "certificate",
+      "officialUrl": "https://www.estella.co.il/"
+    },
+    {
+      "id": "mon_12220697934_cs",
+      "action": "correct",
+      "name": "מוזיקה והפקה - מכללת BPM",
+      "category": "מוזיקה ותיאטרון",
+      "type": "certificate",
+      "officialUrl": "https://www.bpm-music.com/"
+    },
+    {
+      "id": "beit_zvi_cs",
+      "action": "correct",
+      "name": "משחק - בית צבי בית ספר גבוה לאמנויות הבמה",
+      "category": "מוזיקה ותיאטרון",
+      "type": "vocational",
+      "officialUrl": "https://www.beit-zvi.com/?CategoryID=160"
+    },
+    {
+      "id": "mon_12220697942_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מוסררה ביה\"ס לאומנויות",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12220696299_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכון אבני",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341108218_cs",
+      "action": "correct",
+      "name": "ברמנים - זמן אמיתי",
+      "category": "תיירות ואירוח",
+      "type": "certificate",
+      "officialUrl": "https://www.zmanamiti.co.il/"
+    },
+    {
+      "id": "mon_12341126387_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "המכללה האקדמית לחינוך ע\"ש דוד ילין",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341128292_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכללת מדיסין",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341102997_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "המרכז האקדמי שערי מדע ומשפט",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341102212_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכון שכטר למדעי היהדות",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341064237_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "ירין שחף \\- בית הספר המוביל למקצועות היופי",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341126300_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "קמפוס לחדשנות בחינוך והוראה",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341128726_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "המכללה האקדמית הרצוג",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341091743_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "המכללה למינהל\\- רשת מכללות הנדסאים",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341107541_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "אורט \\- רשת מכללות הנדסאים",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341101519_cs",
+      "action": "retain",
+      "officialUrl": "https://www.netanya.ac.il/degree/bsc-in-computer-science-and-mathematics/"
+    },
+    {
+      "id": "seminar_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "סמינר הקיבוצים",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341138527_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכללת הנות",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341107895_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "המכללה הטכנולוגית באר שבע המרכז להשתלמויות",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341143342_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "SCE המכללה האקדמית להנדסה ע\"ש סמי שמעון",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341108864_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "המכינה הקדם אקדמית בתל חי",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341114234_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "המכינה הקדם אקדמית סמי שמעון",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341098184_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "המכינה הקדם אקדמית אריאל בשומרון",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341128848_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "הנדסאים תל-אביב",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341118864_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "המכללה הטכנולוגית רופין\\- מבית רשת מכללות עתיד",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341101391_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "המכללה הטכנולוגית כנרת",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341114114_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "הנדסאים אריאל",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341098142_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "המכללה הטכנולוגית להנדסאים תל חי",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341127690_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכללת ארז",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341076875_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "הנדסה בגובה בע\"מ",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341098712_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "עתיד \\- רשת מכללות טכנולוגיות",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341126575_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "איל מקיאג'\\- בית הספר הגבוה לאיפור",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341088622_cs",
+      "action": "retain",
+      "officialUrl": "https://iac.ac.il/faculty/מדעי-המחשב-תואר-ראשון-b-sc/"
+    },
+    {
+      "id": "mon_12341122479_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכללת אין ליין",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341118768_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "המכללה למדעי הבריאות וההתנהגות",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341091518_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "אורט \\- רשת מכללות ללימודי תעודה והסמכה",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341092889_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "סקסס קולג\\- Success college",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341114237_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "המכללה העסקית של לשכת המסחר ת\"א והמרכז",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341113399_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "חשיפה \\- האוניברסיטה הפתוחה",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341088658_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מירב",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341081785_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "המכללה האקדמית אחוה",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341113400_cs",
+      "action": "correct",
+      "name": "פיתוח תוכנה - קודינג אקדמי",
+      "category": "טכנולוגיה ופיתוח",
+      "type": "certificate",
+      "officialUrl": "https://www.coding-academy.org/"
+    },
+    {
+      "id": "mon_12341102793_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "המכללה הטכנולוגית נוף הגליל",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341141954_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "המרכז ללימודי חוץ והמשך ספיר",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341107292_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכללת ICCM - המכללה הבינ\"ל למאמנים ומנטורים",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341128142_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "LEE AMRON - בית הספר למקצועות היופי",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341098736_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכללת ללדת \\- מכללה ארצית למקצועות הלידה",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341114530_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "דיפלומה \\- ביה\"ס ללימודי תעודה והסמכה",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341126780_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "רוית אסף",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341126233_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכללת אפיק \\- הכשרות מקצועיות באונליין",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341108755_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "BMeniv",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341091471_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "ג'רוזלם פוסט",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341142058_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "ארגון מנהלי רכש ולוגיסטיקה בישראל",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341092393_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "אקדמיית LFA - המחלקה ללימודי מקצועות היופי",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341107297_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "המכללה האקדמית צפת",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341114281_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "היחידה הארצית לחקירות וביטחון",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341091651_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "בית הספר לנדל\"ן יסודות",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341102883_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכללת RES",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341113217_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "NLP PRO",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341117410_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "המכללה האקדמית לחינוך ע''ש קיי בבאר שבע",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341114949_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכון MSC",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341144078_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "נטאשה דנונה",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341101353_cs",
+      "action": "correct",
+      "name": "סייבר ואבטחת מידע - Israel Cyber Campus",
+      "category": "טכנולוגיה ופיתוח",
+      "type": "certificate",
+      "officialUrl": "https://www.israelcybercampus.com/"
+    },
+    {
+      "id": "mon_12341091770_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכללת DF פרויקטים והכשרות",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341137571_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "המכללה האקדמית בית ברל",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341134516_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "eazy פסיכומטרי",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341133521_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "המינהל הטכני בע\"מ",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341108662_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "המרכז האקדמי פרס",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "hackeru_cs",
+      "action": "correct",
+      "name": "קורסי הייטק - HackerU - מזניקים אותך לקריירה בהייטק",
+      "category": "טכנולוגיה ופיתוח",
+      "type": "certificate",
+      "officialUrl": "https://www.hackeru.co.il/"
+    },
+    {
+      "id": "mon_12341147363_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "בגרות ערב דה שליט ברחובות",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341122838_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכללת מישלב",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341122522_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכללת גישות",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341092241_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכללת פסגות \\- לימודי השקעות ויזמות",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341133625_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכון פתרונות",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341142616_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מאסטר קולג' המכללה לחינוך ויזמות",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341142920_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "אורין-שפלטר השכלה פיננסית",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341167854_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכללת השרון",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341122528_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "האקדמיה לפיננסים מבית BDO",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341134798_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכללת ELEVEN - ללימודי נומרולוגיה",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341149187_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכללת הבית",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341165209_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "IZIK - ZURI",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341113458_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "לימודי קוסמטיקה חוה זינגבוים",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341134763_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "אתגר מכללה להנדסה וטכנולוגיה",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341144849_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "המרכז לבטיחות אש והערכות למצבי חירום",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341129101_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "ספרדית בסנטר",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341148145_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "בית ספר לנדלן חכם",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341148006_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "בית ספר \"סאונד\" מבית רשת מכללות עתיד",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341138357_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "חרשן\\- כשהשקעה והצלחה נפגשים",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341165356_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "copywise - קופיווייז",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341134000_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכללת אורנ'ס",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341144937_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכללת תנופה",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341147475_cs",
+      "action": "correct",
+      "name": "סייבר ואבטחת מידע - KERNELiOS - Cyber Knowledge Center",
+      "category": "טכנולוגיה ופיתוח",
+      "type": "certificate",
+      "officialUrl": "https://www.kernelios.com/"
+    },
+    {
+      "id": "mon_12341144341_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "המכללה ליהלומים IGL",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341137886_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "המכללה הטכנולוגית באר שבע \\- הנדסאים",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341108613_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "HASTUDIO",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341189515_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מרכז י.נ.ר",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341138594_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "המרכז הארצי ללימודים",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341144650_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכללת כיוון",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341150917_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "New School",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341167899_cs",
+      "action": "correct",
+      "name": "קורסי הייטק - sv college",
+      "category": "טכנולוגיה ופיתוח",
+      "type": "certificate",
+      "officialUrl": "https://svcollege.co.il/"
+    },
+    {
+      "id": "mon_12341141808_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "פסגות \\- בית הספר לשמאות",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341168193_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "המכללה הטכנולוגית רופין\\- לימודי חוץ והכשרה טכנולוגית",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341108962_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכון עליה למגזר הערבי",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341134431_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "בית הספר לטארוט וחלומות של שגיא מנדלבוים",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341166173_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "קמפוס עולם המים",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341138641_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכללת IPC- Israel Professional College",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341142727_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "סימפלקס",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341161868_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "תילתן קמפוס חרדי",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341137305_cs",
+      "action": "correct",
+      "name": "בדיקות תוכנה - מכללת TechnoloGems",
+      "category": "טכנולוגיה ופיתוח",
+      "type": "certificate",
+      "officialUrl": "https://technologems.co.il/"
+    },
+    {
+      "id": "mon_12341173466_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "ברלינגטון אינגליש",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341147227_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "אורין-שפלטר השכלה פיננסית.",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341137650_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכללת נקסט",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341165867_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכללת הגל החדש",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341148361_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "\"מה כתבת?\" (לימודי גרפולוגיה ופענוח ציורים)",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341165912_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכללת תרפיית מימדים",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341148232_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "אמפייר אם – האקדמיה למצוינות במקצועות היופי",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341134405_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "סדנאות הבמה והמסך",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341189317_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכללת אלפא קוראל",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341162526_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "ALL4HORSES- המכללה המובילה להכשרת מדריכי רכיבה",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341166462_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "אלכס גורבצ'וב\\- למכור את עצמך לעולם",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341167257_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכללת ממי",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341139122_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "זינוק \\- הצלחה בדרך שלך",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341173326_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "BDO Academy",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341162554_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "המכון לאסיה",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341167263_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "FREE MEDIA",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341138289_cs",
+      "action": "correct",
+      "name": "קורסי הייטק - מכללת סמארט",
+      "category": "טכנולוגיה ופיתוח",
+      "type": "certificate",
+      "officialUrl": "https://smart-college.co.il/"
+    },
+    {
+      "id": "johnbryce_cs",
+      "action": "correct",
+      "name": "קורסי הייטק - ג'ון ברייס הדרכה",
+      "category": "טכנולוגיה ופיתוח",
+      "type": "certificate",
+      "officialUrl": "https://www.johnbryce.co.il/"
+    },
+    {
+      "id": "mon_12341175059_cs",
+      "action": "correct",
+      "name": "סייבר ואבטחת מידע - מכללת טכזון",
+      "category": "טכנולוגיה ופיתוח",
+      "type": "certificate",
+      "officialUrl": "https://tech-zone.co.il/"
+    },
+    {
+      "id": "mon_12341148655_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "תפנית",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341168601_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "אינגליש אקספרס",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341155971_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "דיאלוג",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341167376_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "אקדמיית LFA - המחלקה ללימודי מקצועות חופשיים",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341189545_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכללת מדיטבע",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341185928_cs",
+      "action": "correct",
+      "name": "מתמטיקה ומדעי המחשב עם תעודת הוראה - אורנים המכללה האקדמית לחינוך",
+      "category": "מדעי המחשב",
+      "type": "academic",
+      "officialUrl": "https://www.oranim.ac.il/sites/heb/academic-units/science-department-haifa/hugim/mathematics-physics-computer/Pages/default.aspx"
+    },
+    {
+      "id": "mon_12341168658_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "האקדמיה של Circle A Capital",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341166504_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "The Academy Slim Skin",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341168659_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכללת ג'אסט מיוזיק",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341203750_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכללת עידן ההורות",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341144956_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מרכז גישור ודיאלוג",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341185806_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מרכז מיכל דליות",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341166735_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "האילוף של בן\\- בית הספר להכשרת מאלפי כלבים",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341138306_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "LAGO ACADEMY",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341161220_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "בית ספר 'ליגה\" -בית הספר למאמנים ומדריכים בספורט גבעת ושינגטון",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341187468_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכללת Boutique Tattoo",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341167283_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "המרכז להכשרה חינוכית",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341179463_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "המרכז להורות משמעותית אשדוד",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341165560_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "סאבטקסט\\- המכללה ללימודי שפת גוף מבית מכללת עידן ההורות",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341187728_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "פרסייס\\- precise בית ספר מקצועי לתדמיתנות ותפירה עילית",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341203959_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "מכללה טכנולוגית F.D",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341179578_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "HIGH Q",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341161996_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "קידום \\- בגרויות",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341203595_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "רז אתגרים חינוכיים",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12341189852_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "תיכון תל אביב \\- סניף נתניה",
+      "category": "מסלולי לימוד",
+      "type": "certificate",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "mon_12242591498_cs",
+      "action": "withdraw_import_placeholder",
+      "name": "י",
+      "category": "מסלולי לימוד",
+      "type": "academic",
+      "reason": "No programme-specific evidence for the old default-CS import. Preserve ID and saved references; do not infer a replacement subject."
+    },
+    {
+      "id": "danon_cs",
+      "action": "retain",
+      "officialUrl": "https://www.danon.org.il/cuisine/"
+    }
+  ]
+}

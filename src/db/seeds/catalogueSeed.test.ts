@@ -7,6 +7,14 @@ import { UNIVERSITIES } from '@/data/degreesData';
 import { INSTITUTION_BY_ID, INSTITUTIONS, type InstitutionId } from '@/data/institutions';
 import type { Program } from '@/data/degrees/types';
 import { buildCatalogueSeed, buildCatalogueSeedVerificationReport } from '@/db/seeds/catalogueSeed';
+import { admissionThresholds } from '@/db/schema';
+
+const verifiedKeeperProgramUrls = [
+  ['tlvyaffo_cs', 'mta', 'https://www.mta.ac.il/program/bsc_computer_science'],
+  ['colmgmt_law', 'colman', 'https://www.colman.ac.il/academics/ba/law/'],
+  ['colmgmt_business', 'colman', 'https://www.colman.ac.il/academics/ba/business-administration/'],
+  ['colmgmt_cs', 'colman', 'https://www.colman.ac.il/academics/ba/computer-science/'],
+] as const;
 
 function duplicatedValues(values: string[]): string[] {
   const seen = new Set<string>();
@@ -23,6 +31,93 @@ function duplicatedValues(values: string[]): string[] {
 }
 
 describe('catalogueSeed', () => {
+  it('persists the fractional EE cutoff without integer coercion', () => {
+    const row = buildCatalogueSeed().admissionThresholds.find(
+      (entry) => entry.programId === 'technion_ee' && entry.universityId === 'technion',
+    )!;
+    expect(row.thresholdValue).toBe(91.5);
+    expect(admissionThresholds.thresholdValue.getSQLType()).toBe('numeric');
+    expect(admissionThresholds.thresholdValue.mapFromDriverValue('91.50')).toBe(91.5);
+    expect(admissionThresholds.thresholdValue.mapToDriverValue(row.thresholdValue!)).toBe('91.5');
+    expect(admissionThresholds.thresholdValue.mapFromDriverValue(94)).toBe(94);
+  });
+
+  it('preserves every seed row when the Danon culinary detail name is corrected', () => {
+    const beforeNameCorrection = allPrograms.map((program) =>
+      program.id === 'danon_culinary'
+        ? {
+            ...program,
+            institutionDetails: program.institutionDetails?.map((detail) => ({
+              ...detail,
+              institutionName: 'דנון - קולינריה',
+            })),
+          }
+        : program,
+    );
+    expect(buildCatalogueSeed()).toEqual(buildCatalogueSeed(beforeNameCorrection));
+  });
+
+  it.each(verifiedKeeperProgramUrls)(
+    'preserves the verified programme source URL for %s',
+    (programId, institutionId, url) => {
+      const payload = buildCatalogueSeed();
+      expect(
+        payload.sourceUrls.find((row) => row.id === `${programId}:${institutionId}:program`),
+      ).toEqual({
+        id: `${programId}:${institutionId}:program`,
+        admissionRequirementId: `${programId}:${institutionId}`,
+        programId,
+        institutionId,
+        kind: 'program',
+        url,
+      });
+    },
+  );
+
+  it('changes only keeper programme URLs and their version source snapshots', () => {
+    const urlsByProgramId = new Map<string, string>(
+      verifiedKeeperProgramUrls.map(([programId, , url]) => [programId, url]),
+    );
+    const withoutKeeperUrls = allPrograms.map((program) =>
+      urlsByProgramId.has(program.id)
+        ? {
+            ...program,
+            institutionDetails: program.institutionDetails?.map((detail) => {
+              const previous = { ...detail };
+              delete previous.programUrl;
+              return previous;
+            }),
+          }
+        : program,
+    );
+    const before = buildCatalogueSeed(withoutKeeperUrls);
+    const urlsByRequirementId = new Map<string, string>(
+      verifiedKeeperProgramUrls.map(([programId, institutionId, url]) => [
+        `${programId}:${institutionId}`,
+        url,
+      ]),
+    );
+    expect(buildCatalogueSeed()).toEqual({
+      ...before,
+      sourceUrls: before.sourceUrls.map((row) =>
+        row.kind === 'program' && row.programId && urlsByProgramId.has(row.programId)
+          ? { ...row, url: urlsByProgramId.get(row.programId) }
+          : row,
+      ),
+      requirementVersions: before.requirementVersions.map((row) =>
+        urlsByRequirementId.has(row.admissionRequirementId)
+          ? {
+              ...row,
+              sourceSnapshot: {
+                ...(row.sourceSnapshot as Record<string, unknown>),
+                program: urlsByRequirementId.get(row.admissionRequirementId),
+              },
+            }
+          : row,
+      ),
+    });
+  });
+
   it('keeps TAU Management and other Information Systems options without the extra TAU listing', () => {
     const payload = buildCatalogueSeed();
 
@@ -249,10 +344,7 @@ describe('catalogueSeed', () => {
     });
     expect(
       payload.admissionAlternativePaths.find((row) => row.id === 'ono_nursing:ono:alt:bridge'),
-    ).toMatchObject({
-      kind: 'transfer_path',
-      programId: 'ono_nursing',
-    });
+    ).toBeUndefined();
     expect(
       payload.admissionFacts.find((row) => row.id === 'sapir_law:sapir:fact:no-psychometric'),
     ).toMatchObject({

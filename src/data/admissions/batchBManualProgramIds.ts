@@ -1,0 +1,57 @@
+/** Batch B manual-gate programme IDs — client-safe; keep in sync with batchBManualPathEvaluation. */
+
+export const BATCH_B_MANUAL_PROGRAM_INSTITUTIONS: Readonly<Record<string, string>> = {
+  bezalel_industrial_design: 'bezalel',
+  bezalel_fine_arts: 'bezalel',
+  bezalel_photography: 'bezalel',
+  bezalel_fashion: 'bezalel',
+  shenkar_industrial_design: 'shenkar',
+  shenkar_fashion: 'shenkar',
+  shenkar_graphic_design: 'shenkar',
+  shenkar_animation: 'shenkar',
+  hit_visual_comm: 'hit',
+  hit_industrial_design: 'hit',
+  minshar_fine_arts: 'minshar',
+  minshar_photography: 'minshar',
+  minshar_animation: 'minshar',
+  minshar_dance: 'minshar',
+  samspiegel_cinema: 'spieldocs',
+  samspiegel_screenwriting: 'spieldocs',
+  jerusalem_academy_classical: 'jerusalem_academy',
+  jerusalem_academy_jazz: 'jerusalem_academy',
+  jerusalem_academy_dance: 'jerusalem_academy',
+  rubin_classical: 'rubin',
+  nativ_acting: 'nativ',
+  beit_zvi_acting: 'beit_zvi',
+  beit_zvi_directing: 'beit_zvi',
+  seminar_art_education: 'seminar',
+  seminar_music_education: 'seminar',
+  seminar_dance: 'seminar',
+  wingate_coaching: 'wingate',
+  wingate_physical_ed: 'wingate',
+  reidman_chinese_medicine: 'reidman',
+  reidman_naturopathy: 'reidman',
+  reidman_homeopathy: 'reidman',
+  reidman_reflexology: 'reidman',
+  broshim_homeopathy: 'broshim',
+  broshim_psychotherapy: 'broshim',
+  broshim_naturopathy: 'broshim',
+  ono_ce_chinese_medicine: 'ono_ce',
+  ono_ce_psychotherapy: 'ono_ce',
+  pardeshana_integrative: 'pardeshana',
+  bishulim_chef: 'bishulim',
+  bishulim_pastry: 'bishulim',
+  bishulim_restaurant_mgmt: 'bishulim',
+  telhai_nursing: 'telhai',
+  telhai_socialwork: 'telhai',
+  tlvyaffo_socialwork: 'mta',
+  ono_socialwork: 'ono',
+  reichman_infosystems: 'reichman',
+  ono_nursing: 'ono',
+} as const;
+
+export const BATCH_B_MANUAL_PROGRAM_IDS = Object.keys(BATCH_B_MANUAL_PROGRAM_INSTITUTIONS);
+
+export function isBatchBManualProgramId(programId: string, institutionId: string): boolean {
+  return BATCH_B_MANUAL_PROGRAM_INSTITUTIONS[programId] === institutionId;
+}

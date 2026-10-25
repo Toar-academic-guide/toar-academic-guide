@@ -65,6 +65,7 @@ function either(...conditions: Condition[]): Condition {
 /** All ordinary published routes; discretionary exceptional admission is not predicted. */
 export function evaluateTauManagementAdmission(
   input: TauManagementApplicant,
+  assessment?: 'scores',
 ): TauManagementAdmission {
   const result: TauManagementAdmission = {
     decision: 'below',
@@ -87,7 +88,7 @@ export function evaluateTauManagementAdmission(
   const confirmed = (field: ApplicantField) => check(field, (actual) => actual === true);
 
   const commonRequirements = confirmed('requirementsConfirmed');
-  if (commonRequirements.passed !== true) {
+  if (assessment !== 'scores' && commonRequirements.passed !== true) {
     return {
       ...result,
       decision: commonRequirements.passed === false ? 'below' : 'needs_input',

@@ -69,7 +69,7 @@ export default function QuizIntro({
 }: Props) {
   return (
     <WayPageShell
-      contentClassName="px-4 pb-14 pt-28 sm:px-6 lg:pt-32"
+      contentClassName="px-5 pb-14 pt-8 sm:px-8"
       navigation={
         <PublicNavBar
           authLoading={authLoading}

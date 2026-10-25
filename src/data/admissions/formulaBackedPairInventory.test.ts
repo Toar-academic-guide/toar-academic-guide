@@ -1,7 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
 import type { Program } from '@/data/degrees/types';
-import { buildFormulaBackedPairInventory, formulaBackedPairId } from './formulaBackedPairInventory';
+import {
+  buildFormulaBackedPairInventory,
+  formulaBackedPairId,
+  reconcileFormulaBackedSeedPairs,
+} from './formulaBackedPairInventory';
+import { allPrograms } from '@/data/degrees';
+import { BIU_PUBLISHED_ROUTE_PROGRAM_IDS } from './biuPublishedRoutes';
 
 function makeProgram(overrides: Partial<Program> = {}): Program {
   return {
@@ -19,6 +25,46 @@ function makeProgram(overrides: Partial<Program> = {}): Program {
 }
 
 describe('formulaBackedPairInventory', () => {
+  it('includes exactly the encoded BIU pairs and keeps future and deferred programmes excluded', () => {
+    const inventory = buildFormulaBackedPairInventory([
+      ...allPrograms,
+      makeProgram({ id: 'biu_future', institutionId: 'biu', thresholds: { biu: 700 } }),
+    ]);
+    const expected = BIU_PUBLISHED_ROUTE_PROGRAM_IDS.map((id) => `${id}__biu`).sort();
+    expect(
+      inventory.pairs
+        .filter((pair) => pair.institutionId === 'biu')
+        .map((pair) => pair.id)
+        .sort(),
+    ).toEqual(expected);
+    for (const programId of [
+      'cs',
+      'ee',
+      'psychology',
+      'medicine',
+      'biu_cs',
+      'biu_ee',
+      'biu_psychology',
+      'biu_medicine',
+      'biu_optometry',
+      'biu_future',
+    ]) {
+      expect(inventory.excludedPairs).toContainEqual(
+        expect.objectContaining({ programId, institutionId: 'biu' }),
+      );
+    }
+    const reconciliation = reconcileFormulaBackedSeedPairs(inventory, {
+      programs: allPrograms.map((program) => ({
+        id: program.id,
+        admissionType: program.admissionType,
+      })),
+      programInstitutions: [...inventory.pairs, ...inventory.excludedPairs].map((pair) => ({
+        programId: pair.programId,
+        institutionId: pair.institutionId,
+      })),
+    });
+    expect(reconciliation).toEqual({ isMatching: true, missingPairIds: [], unexpectedPairIds: [] });
+  });
   it('expands non-null legacy threshold maps into explicit pair identities', () => {
     const inventory = buildFormulaBackedPairInventory([
       makeProgram({

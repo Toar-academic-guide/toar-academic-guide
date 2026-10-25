@@ -1,9 +1,22 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './fixtures';
 
 test.describe('Smoke tests', () => {
+  test('crawl files are served with production URLs', async ({ request }) => {
+    const robots = await request.get('/robots.txt');
+    expect(robots.status()).toBe(200);
+    expect(await robots.text()).toContain('Sitemap: https://findmyway.co.il/sitemap.xml');
+    const sitemap = await request.get('/sitemap.xml');
+    expect(sitemap.status()).toBe(200);
+    expect(await sitemap.text()).toContain('<loc>https://findmyway.co.il/institutions/tau</loc>');
+    const llms = await request.get('/llms.txt');
+    expect(llms.status()).toBe(200);
+    expect(llms.headers()['content-type']).toContain('text/plain');
+    expect(await llms.text()).toContain('# MyWay (findmyway.co.il)');
+  });
+
   test('landing page loads and shows main heading', async ({ page }) => {
     await page.goto('/');
-    await expect(page).toHaveTitle(/Way|מה\.איפה\.איך/i);
+    await expect(page).toHaveTitle('MyWay | הדרך שלך ללימודים');
     // The page should render without a crash — verify a visible element exists
     const body = page.locator('body');
     await expect(body).toBeVisible();
@@ -34,7 +47,13 @@ test.describe('Smoke tests', () => {
     expect([401, 503]).toContain(response.status());
   });
 
-  test('no console errors on landing page', async ({ page }) => {
+  test('no console errors on landing page', async ({ page, baseURL }) => {
+    if (baseURL && ['localhost', '127.0.0.1', '[::1]'].includes(new URL(baseURL).hostname)) {
+      // Vercel serves this script at the edge; next start has no route for it.
+      await page.route(new URL('/_vercel/insights/script.js', baseURL).href, (route) =>
+        route.fulfill({ status: 200, contentType: 'application/javascript', body: '' }),
+      );
+    }
     const errors: string[] = [];
     page.on('console', (msg) => {
       if (msg.type() === 'error') {

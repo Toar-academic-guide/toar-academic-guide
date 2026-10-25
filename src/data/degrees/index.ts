@@ -7,11 +7,28 @@ import { ACADEMIC_PROGRAMS } from './academic';
 import { academicPrograms } from './academicPrograms';
 import { vocationalPrograms } from './vocationalPrograms';
 import {
+  DANON_BEGINNER_REQUIREMENT,
+  DANON_PROGRAM_NAMES,
+  DANON_PROGRAM_URLS,
+} from '../admissions/danon';
+import computingCourses from './computingCourses.json';
+import { applyJamdCurriculum } from './jamdCurriculum';
+import { repairSamSpiegelUrls } from '../admissions/samSpiegelUrls';
+import {
+  applyCatalogueContentRepair,
+  RETIRED_PROGRAM_IDS,
+} from '../admissions/catalogueContentRepair';
+import {
   mondayAdmissionsEvidence,
   type MondayAdmissionAlternativePath,
   type MondayAdmissionStructuredFact,
 } from '../admissions/mondayEvidence';
-import { INSTITUTION_BY_NAME, type InstitutionId, resolveUrl } from '../institutions';
+import {
+  INSTITUTION_BY_ID,
+  INSTITUTION_BY_NAME,
+  type InstitutionId,
+  resolveUrl,
+} from '../institutions';
 import type {
   Program,
   AdmissionAlternativePath,
@@ -90,6 +107,16 @@ const DYNAMIC_PROGRAM_MAP = [
 ];
 
 const dynamicPrograms: Program[] = [];
+const MONDAY_PROGRAM_URL_OVERRIDES: Readonly<Record<string, string>> = {
+  colman_law: 'https://www.colman.ac.il/academics/ba/law/',
+  colman_business: 'https://www.colman.ac.il/academics/ba/business-administration/',
+};
+const VERIFIED_KEEPER_PROGRAM_URLS: Readonly<Record<string, string>> = {
+  tlvyaffo_cs: 'https://www.mta.ac.il/program/bsc_computer_science',
+  colmgmt_law: 'https://www.colman.ac.il/academics/ba/law/',
+  colmgmt_business: 'https://www.colman.ac.il/academics/ba/business-administration/',
+  colmgmt_cs: 'https://www.colman.ac.il/academics/ba/computer-science/',
+};
 
 function mergeDynamicProgramDetails(existingProgram: Program, nextProgram: Program): Program {
   const existingDetails = existingProgram.institutionDetails ?? [];
@@ -745,6 +772,20 @@ function buildSyntheticInstitutionDetail(program: Program): ProgramInstitutionDe
 }
 
 function enrichLegacyProgram(program: Program): Program {
+  if (
+    [
+      'ono_law',
+      'ono_nursing',
+      'haifa_psychology',
+      'afeka_ee',
+      'afeka_softwareeng',
+      'afeka_cs',
+      'jerusalem_academy_dance',
+      'rubin_classical',
+    ].includes(program.id)
+  )
+    return program;
+
   const existingDetails = program.institutionDetails?.length ? [...program.institutionDetails] : [];
   const syntheticDetail = buildSyntheticInstitutionDetail(program);
   const details = syntheticDetail ? [...existingDetails, syntheticDetail] : existingDetails;
@@ -798,6 +839,9 @@ for (const record of mondayAdmissionsEvidence) {
 
   for (const prog of matches) {
     const progId = `${programInstitutionKey}_${prog.id}`;
+    // Verified dance/music rows replace these mixed imports; Sam Spiegel's
+    // combined import duplicates its existing cinema and screenwriting rows.
+    if (RETIRED_PROGRAM_IDS.includes(progId)) continue;
 
     const existsInStatic =
       ACADEMIC_PROGRAMS.some((p) => p.id === progId) ||
@@ -822,7 +866,8 @@ for (const record of mondayAdmissionsEvidence) {
     const type = isCertificateType ? 'certificate' : 'academic';
 
     const detailId = `${progId}:${instId}`;
-    const primarySourceUrl = resolveUrl(record.displayName, record.officialUrls);
+    const primarySourceUrl =
+      MONDAY_PROGRAM_URL_OVERRIDES[progId] ?? resolveUrl(record.displayName, record.officialUrls);
     const sourceCandidateId = primarySourceUrl ? `${detailId}:source:monday-evidence` : undefined;
     const sourceCandidates: AdmissionsSourceCandidate[] =
       sourceCandidateId && primarySourceUrl
@@ -836,8 +881,8 @@ for (const record of mondayAdmissionsEvidence) {
                   : ('generic' as const),
               confidence: record.confidence,
               url: primarySourceUrl,
-              title: `מקור מוסדי שנגזר מ-Monday עבור ${record.displayName}`,
-              notes: `Derived from Monday admissions evidence item ${record.itemId}. ${record.nextAction}`,
+              title: `מקור מוסדי עבור ${record.displayName}`,
+              notes: `Institutional evidence item ${record.itemId}. ${record.nextAction}`,
             },
           ]
         : [];
@@ -957,8 +1002,8 @@ for (const record of mondayAdmissionsEvidence) {
           quantitativeMinRequirement: null,
           englishMinRequirement: null,
           specificAdmissionNotes: record.limitations ? [...record.limitations] : [],
-          officialCalculatorUrl: resolveUrl(record.displayName, record.officialUrls) || '',
-          programUrl: resolveUrl(record.displayName, record.officialUrls),
+          officialCalculatorUrl: primarySourceUrl || '',
+          programUrl: primarySourceUrl,
           calculatorUrl: record.officialUrls.find(
             (url) => url.includes('calculator') && !url.includes('yoram.walla.co.il'),
           ),
@@ -994,9 +1039,61 @@ for (const record of mondayAdmissionsEvidence) {
 
 // Single combined catalogue.
 // Add future sub-modules by spreading their arrays here.
-export const allPrograms = [
+export const programsWithLegacyAdmissionFacts = [
   ...normalizeLegacyPrograms(ACADEMIC_PROGRAMS),
   ...normalizeLegacyPrograms(academicPrograms),
   ...normalizeLegacyPrograms(vocationalPrograms),
   ...dynamicPrograms,
-];
+].map((program): Program => {
+  const verifiedProgramUrl = VERIFIED_KEEPER_PROGRAM_URLS[program.id];
+  if (verifiedProgramUrl) {
+    return {
+      ...program,
+      institutionDetails: program.institutionDetails?.map((detail) => ({
+        ...detail,
+        programUrl: verifiedProgramUrl,
+      })),
+    };
+  }
+  const course = (
+    computingCourses as Record<string, { name: string; category: string; programUrl: string }>
+  )[program.id];
+  if (course) {
+    return {
+      ...program,
+      name: course.name,
+      category: course.category,
+      type: 'certificate',
+      institutionDetails: program.institutionDetails?.map((detail) => ({
+        ...detail,
+        programUrl: course.programUrl,
+      })),
+    };
+  }
+  const programUrl = DANON_PROGRAM_URLS[program.id];
+  if (program.institutionId !== 'danon' || !programUrl) return program;
+  return {
+    ...program,
+    name: DANON_PROGRAM_NAMES[program.id] ?? program.name,
+    admissionRequirements: [DANON_BEGINNER_REQUIREMENT],
+    institutionDetails: [
+      {
+        institutionName: INSTITUTION_BY_ID.danon.name,
+        durationYears: null,
+        estimatedStudentsPerYear: '',
+        quantitativeMinRequirement: null,
+        englishMinRequirement: null,
+        specificAdmissionNotes: [DANON_BEGINNER_REQUIREMENT],
+        officialCalculatorUrl: '',
+        programUrl,
+        admissionFacts: [],
+      },
+    ],
+  };
+});
+
+// Verified display copy is deliberately separate from inferred legacy calculation facts.
+export const allPrograms = programsWithLegacyAdmissionFacts.map((program) => {
+  const repaired = applyJamdCurriculum(applyCatalogueContentRepair(program));
+  return repaired.institutionId === 'spieldocs' ? repairSamSpiegelUrls(repaired) : repaired;
+});

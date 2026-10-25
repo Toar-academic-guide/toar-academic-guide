@@ -3,15 +3,55 @@ import { notFound } from 'next/navigation';
 import WayPageShell from '@/components/WayPageShell';
 
 import { getPublicInstitutionPageData } from '@/lib/publicCataloguePages';
+import { institutionProgramName } from '@/lib/institutionProgramName';
 import { ROUTES } from '@/lib/routes';
+import { buildInstitutionMetadata } from '@/lib/seo/metadata';
+import { institutionLd, institutionBreadcrumbLd } from '@/lib/seo/jsonLd';
+import JsonLd from '@/components/seo/JsonLd';
+import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
+
+export const dynamic = 'force-dynamic';
 
 interface InstitutionPageProps {
   params: Promise<{ institutionId: string }>;
 }
 
+function ProgramCards({
+  programs,
+  institution,
+  className = '',
+}: {
+  programs: CatalogueProgram[];
+  institution: CatalogueInstitution;
+  className?: string;
+}) {
+  return (
+    <div className={`grid gap-3 sm:grid-cols-2 ${className}`}>
+      {programs.map((program) => (
+        <Link
+          key={program.id}
+          href={`/programs/${encodeURIComponent(program.id)}`}
+          className="rounded-xl border border-slate-200 px-4 py-3 transition hover:border-slate-900"
+        >
+          <span className="block font-semibold">
+            {institutionProgramName(program, institution)}
+          </span>
+          {program.category !== program.name && (
+            <span className="mt-1 block text-sm text-slate-500">{program.category}</span>
+          )}
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+export async function generateMetadata({ params }: InstitutionPageProps) {
+  return buildInstitutionMetadata((await params).institutionId);
+}
+
 export default async function InstitutionPage({ params }: InstitutionPageProps) {
   const { institutionId } = await params;
-  const data = getPublicInstitutionPageData(institutionId);
+  const data = await getPublicInstitutionPageData(institutionId);
 
   if (!data) {
     notFound();
@@ -21,7 +61,8 @@ export default async function InstitutionPage({ params }: InstitutionPageProps) 
 
   return (
     <WayPageShell>
-      <main dir="rtl" className="px-4 py-10 text-slate-900 sm:px-6">
+      <JsonLd data={[institutionLd(data), institutionBreadcrumbLd(data)]} />
+      <main dir="rtl" className="px-4 py-10 text-right text-slate-900 sm:px-6">
         <section className="mx-auto flex max-w-4xl flex-col gap-8">
           <Link
             href={ROUTES.home}
@@ -33,9 +74,6 @@ export default async function InstitutionPage({ params }: InstitutionPageProps) 
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
             <p className="text-sm font-semibold text-cyan-700">מוסד לימודים</p>
             <h1 className="mt-2 text-3xl font-black sm:text-4xl">{institution.name}</h1>
-            <p className="mt-3 text-base text-slate-600">
-              עמוד ציבורי לשיתוף מוסד, מסלולים קשורים והמשך לבדיקה אישית באפליקציה.
-            </p>
 
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
@@ -54,19 +92,22 @@ export default async function InstitutionPage({ params }: InstitutionPageProps) 
           </div>
 
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-            <h2 className="text-xl font-bold">מסלולים קשורים</h2>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              {programs.slice(0, 12).map((program) => (
-                <Link
-                  key={program.id}
-                  href={`/programs/${program.id}`}
-                  className="rounded-xl border border-slate-200 px-4 py-3 transition hover:border-slate-900"
-                >
-                  <span className="block font-semibold">{program.name}</span>
-                  <span className="mt-1 block text-sm text-slate-500">{program.category}</span>
-                </Link>
-              ))}
-            </div>
+            <h2 className="text-xl font-bold">מסלולי לימוד</h2>
+            <ProgramCards
+              programs={programs.slice(0, 12)}
+              institution={institution}
+              className="mt-4"
+            />
+            {programs.length > 12 && (
+              <details className="mt-4 open:mt-3 [&[open]>summary]:hidden">
+                <summary className="cursor-pointer font-semibold text-cyan-700">
+                  {programs.length === 13
+                    ? 'הצגת מסלול נוסף'
+                    : `הצגת עוד ${programs.length - 12} מסלולים`}
+                </summary>
+                <ProgramCards programs={programs.slice(12)} institution={institution} />
+              </details>
+            )}
           </section>
         </section>
       </main>
