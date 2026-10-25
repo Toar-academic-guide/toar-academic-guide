@@ -113,7 +113,7 @@ export function evaluatePublishedNumericRoutes({
       additionalConditions: [
         {
           id: 'bagrut_average',
-          label: 'אישור זכאות לבגרות ועמידה בדרישות השפה',
+          label: 'עמידה בדרישות השפה',
           status: 'unconfirmed',
         },
         ...(match.conditions ?? []),

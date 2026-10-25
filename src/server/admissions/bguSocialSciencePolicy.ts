@@ -41,7 +41,7 @@ export function resolveBguSocialScienceAdmission(
     if (extra.bguSocialScienceRequirementsConfirmed === false)
       return {
         kind: 'below',
-        reason: 'נדרשת תעודת קבלה מוכרת, תנאי החוג הנוסף ובעבודה סוציאלית גם עדיפות ההרשמה הנדרשת.',
+        reason: 'נדרשת עמידה בתנאי החוג הנוסף ובעבודה סוציאלית גם עדיפות ההרשמה הנדרשת.',
       };
     if (route === 'education_conditional') {
       if (programme !== 'education')

@@ -11,7 +11,10 @@ import {
   assertAdmissionsEvaluationRateLimit,
 } from '@/server/admissions/rateLimit';
 import type { AdmissionsBatchReport } from '@/types/admissionsEvaluation';
-import { admissionsEvaluationSchema } from '@/lib/admissionsEvaluationSchema';
+import {
+  admissionsEvaluationSchema,
+  validateOverallBagrutAverage,
+} from '@/lib/admissionsEvaluationSchema';
 
 export const dynamic = 'force-dynamic';
 
@@ -24,7 +27,9 @@ const batchSchema = admissionsEvaluationSchema.omit({ degreeId: true }).extend({
     .max(50)
     .refine((ids) => new Set(ids).size === ids.length),
 });
-const requestSchema = z.union([admissionsEvaluationSchema, batchSchema]);
+const requestSchema = z
+  .union([admissionsEvaluationSchema, batchSchema])
+  .superRefine(validateOverallBagrutAverage);
 
 export async function POST(request: Request) {
   try {

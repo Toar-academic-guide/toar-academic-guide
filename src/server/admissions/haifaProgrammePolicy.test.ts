@@ -89,11 +89,14 @@ describe('current Haifa programme requirements', () => {
           now,
         }).kind,
       ).toBe('below');
-      expect(evaluate(programId, 850, { haifaAdmissionQualification: undefined })).toMatchObject({
-        kind: 'needs_input',
-        requiredInputs: expect.arrayContaining(['haifa_admission_qualification']),
-      });
-      expect(evaluate(programId, 850, { haifaAdmissionQualification: 'none' }).kind).toBe('below');
+      // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+      expect(evaluate(programId, 850, { haifaAdmissionQualification: undefined }).kind).toBe(
+        'eligible',
+      );
+      // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
+      expect(evaluate(programId, 850, { haifaAdmissionQualification: 'none' }).kind).toBe(
+        'eligible',
+      );
     }
   });
   it.each([
