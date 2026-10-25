@@ -222,18 +222,18 @@ export function evaluateBraudePublishedRoutes({
       ? []
       : [
           floor(
-            'psychometricMath',
+            'psychometric_math',
             `המרכיב הכמותי בפסיכומטרי: ${quant} לפחות`,
-            minimum(input.extraInputs?.psychometricMath, quant, 'psychometricMath'),
+            minimum(input.extraInputs?.psychometricMath, quant, 'psychometric_math'),
           ),
         ]),
     ...(english === undefined
       ? []
       : [
           floor(
-            'psychometricEnglish',
+            'psychometric_english',
             `המרכיב באנגלית בפסיכומטרי: ${english} לפחות`,
-            minimum(input.extraInputs?.psychometricEnglish, english, 'psychometricEnglish'),
+            minimum(input.extraInputs?.psychometricEnglish, english, 'psychometric_english'),
           ),
         ]),
     ...(englishBagrut
@@ -276,7 +276,7 @@ export function evaluateBraudePublishedRoutes({
       ? [unchecked('english_grade', 'דרישת הבגרות באנגלית טעונה בדיקה מול המכללה')]
       : []),
     ...(input.degreeId === 'braude_industrial_eng'
-      ? [unchecked('psychometricEnglish', 'דרישת הסיווג באנגלית טעונה בדיקה מול המכללה')]
+      ? [unchecked('psychometric_english', 'דרישת הסיווג באנגלית טעונה בדיקה מול המכללה')]
       : []),
   ];
   const primary = allOf(...floors);

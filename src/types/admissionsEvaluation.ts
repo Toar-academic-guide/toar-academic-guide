@@ -91,8 +91,6 @@ export type AdmissionsRequiredInput =
   | 'tau_management_academic_route'
   | 'tau_management_mooc_count'
   | 'tau_management_no_psychometric_moocs'
-  | 'psychometricMath'
-  | 'psychometricEnglish'
   | 'psychometric_math'
   | 'psychometric_verbal'
   | 'psychometric_english'
