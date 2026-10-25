@@ -117,7 +117,7 @@ export const TAU_DIGITAL_SCIENCES_CONTRACT: AdmissionsProgramVerificationContrac
     requiredInputs: ['psychometric_english', 'bagrut_subject_record'],
     cutoff: {
       acceptance: 652,
-      rejection: 632,
+      rejection: 651,
     },
     gates: [
       {
@@ -662,7 +662,7 @@ export const TAU_SOCIAL_WORK_CONTRACT: AdmissionsProgramVerificationContract = {
     requiredInputs: [],
     cutoff: {
       acceptance: 580,
-      rejection: 569,
+      rejection: 579,
     },
     gates: [
       {
@@ -1114,7 +1114,7 @@ export const TAU_BIOLOGY_CONTRACT: AdmissionsProgramVerificationContract = {
   calculation: {
     ...TAU_ARCHITECTURE_CONTRACT.calculation,
     formulaFamily: 'tau_hatama',
-    cutoff: { acceptance: 576, rejection: 570 },
+    cutoff: { acceptance: 576, rejection: 575 },
     gates: [
       {
         id: 'tau-biology:english-minimum',
@@ -1304,7 +1304,7 @@ export const TAU_ECONOMICS_CONTRACT: AdmissionsProgramVerificationContract = {
   source: { targetId: 'tau-economics-live', url: 'https://go.tau.ac.il/graphql' },
   calculation: {
     ...TAU_EDUCATION_CONTRACT.calculation,
-    cutoff: { acceptance: 610, rejection: 600 },
+    cutoff: { acceptance: 610, rejection: 609 },
     gates: [
       {
         id: 'tau-economics:english-minimum',
@@ -1426,7 +1426,7 @@ export const TAU_EE_CONTRACT: AdmissionsProgramVerificationContract = {
   source: { targetId: 'tau-ee-live', url: 'https://go.tau.ac.il/graphql' },
   calculation: {
     ...TAU_CS_TEMPLATE_CONTRACT.calculation,
-    cutoff: { acceptance: 710, rejection: 690 },
+    cutoff: { acceptance: 710, rejection: 709 },
     gates: [
       {
         id: 'tau-ee:english-minimum',
@@ -1487,7 +1487,7 @@ export const TAU_ME_CONTRACT: AdmissionsProgramVerificationContract = {
   source: { targetId: 'tau-me-live', url: 'https://go.tau.ac.il/graphql' },
   calculation: {
     ...TAU_EE_CONTRACT.calculation,
-    cutoff: { acceptance: 650, rejection: 616 },
+    cutoff: { acceptance: 650, rejection: 649 },
     gates: [
       {
         id: 'tau-me:english-minimum',
@@ -1608,7 +1608,7 @@ export const TAU_INDUSTRIAL_CONTRACT: AdmissionsProgramVerificationContract = {
   source: { targetId: 'tau-industrial-live', url: 'https://go.tau.ac.il/graphql' },
   calculation: {
     ...TAU_ME_CONTRACT.calculation,
-    cutoff: { acceptance: 667, rejection: 647 },
+    cutoff: { acceptance: 667, rejection: 666 },
     gates: [
       {
         id: 'tau-industrial:english-minimum',

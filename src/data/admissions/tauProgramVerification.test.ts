@@ -1,6 +1,21 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import {
+  TAU_BIOLOGY_CONTRACT,
+  TAU_LEGACY_BIOLOGY_CONTRACT,
+  TAU_ECONOMICS_CONTRACT,
+  TAU_LEGACY_ECONOMICS_CONTRACT,
+  TAU_INDUSTRIAL_CONTRACT,
+  TAU_EE_CONTRACT,
+  TAU_LEGACY_EE_CONTRACT,
+  TAU_ME_CONTRACT,
+  TAU_LEGACY_ME_CONTRACT,
+  TAU_LEGACY_SOCIAL_WORK_CONTRACT,
+  TAU_COMMUNICATION_CONTRACT,
+  TAU_POLITICAL_SCIENCE_CONTRACT,
+  TAU_EDUCATION_CONTRACT,
+  TAU_OCCUPATIONAL_CONTRACT,
+  TAU_LEGACY_OCCUPATIONAL_CONTRACT,
   TAU_DIGITAL_SCIENCES_CONTRACT,
   TAU_DIGITAL_SCIENCES_FIXTURES,
   TAU_NURSING_CONTRACT,
@@ -282,6 +297,49 @@ describe('TAU Digital Sciences verification artifact', () => {
         derivedVerdict: fixture.expected.verdict,
         matchedProgramIds: [TAU_SOCIAL_WORK_CONTRACT.officialProgramId],
       });
+    },
+  );
+});
+
+describe('TAU 2027 official rejection thresholds', () => {
+  it.each([
+    ['Biology', TAU_BIOLOGY_CONTRACT, 576, 575],
+    ['legacy Biology', TAU_LEGACY_BIOLOGY_CONTRACT, 576, 575],
+    ['Digital Sciences', TAU_DIGITAL_SCIENCES_CONTRACT, 652, 651],
+    ['generic Data Science', TAU_GENERIC_DATASCIENCE_CONTRACT, 652, 651],
+    ['Economics', TAU_ECONOMICS_CONTRACT, 610, 609],
+    ['legacy Economics', TAU_LEGACY_ECONOMICS_CONTRACT, 610, 609],
+    ['Industrial Engineering', TAU_INDUSTRIAL_CONTRACT, 667, 666],
+    ['Electrical Engineering', TAU_EE_CONTRACT, 710, 709],
+    ['legacy Electrical Engineering', TAU_LEGACY_EE_CONTRACT, 710, 709],
+    ['Mechanical Engineering', TAU_ME_CONTRACT, 650, 649],
+    ['legacy Mechanical Engineering', TAU_LEGACY_ME_CONTRACT, 650, 649],
+    ['Social Work', TAU_SOCIAL_WORK_CONTRACT, 580, 579],
+    ['legacy Social Work', TAU_LEGACY_SOCIAL_WORK_CONTRACT, 580, 579],
+  ] as const)(
+    'uses the official rejection cutoff and unchanged acceptance cutoff for %s',
+    (_name, contract, acceptance, rejection) => {
+      expect(contract.calculation.cutoff.acceptance).toBe(acceptance);
+      expect(contract.calculation.cutoff.rejection).toBe(rejection);
+    },
+  );
+
+  it('uses the official Digital Sciences cutoffs in the runtime policy', () => {
+    expect(TAU_DIGITAL_SCIENCES_POLICY.acceptanceCutoff).toBe(652);
+    expect(TAU_DIGITAL_SCIENCES_POLICY.rejectionCutoff).toBe(651);
+  });
+
+  it.each([
+    ['Communication', TAU_COMMUNICATION_CONTRACT, 530, 529],
+    ['Political Science', TAU_POLITICAL_SCIENCE_CONTRACT, 535, 534],
+    ['Education', TAU_EDUCATION_CONTRACT, 550, 549],
+    ['Occupational Therapy', TAU_OCCUPATIONAL_CONTRACT, 607, 606],
+    ['legacy Occupational Therapy', TAU_LEGACY_OCCUPATIONAL_CONTRACT, 607, 606],
+  ] as const)(
+    'preserves the explicit cutoffs for non-target descendant %s',
+    (_name, contract, acceptance, rejection) => {
+      expect(contract.calculation.cutoff.acceptance).toBe(acceptance);
+      expect(contract.calculation.cutoff.rejection).toBe(rejection);
     },
   );
 });

@@ -11,7 +11,7 @@ export const TAU_DIGITAL_SCIENCES_POLICY = {
   admissionCycle: '2026-2027',
   officialProgramId: '056011050000',
   acceptanceCutoff: 652,
-  rejectionCutoff: 632,
+  rejectionCutoff: 651,
   minimumPsychometric: 620,
   minimumEnglish: 100,
   mathRoutes: [
