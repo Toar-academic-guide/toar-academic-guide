@@ -2,6 +2,16 @@
 
 `technion_medicine` at `technion` retains its calculated sekem without an admission verdict. The 92 is an estimated MOR invitation threshold, not an admission threshold.
 
+## Amit ruling 2026-10-25 08:01 via Jorje
+
+The scored medicine status `קבלה דרך מבחני מו"ר` uses the existing success chip styling for both above and below profiles. The approved comparison lines are unchanged.
+
+- Journey list and detail chips reuse exactly `journey-status status-match`, the existing accepted/meets-cutoff badge classes. A narrow class override applies only to scored `technion_medicine` at `technion`, and does not mask a failed-result status.
+- `CalculatorResults` uses `STATUS_CONFIG.exactAccepted.bg` for this medicine chip, preserving the other shared badge classes and label.
+- This is a CSS-only override. `resultLabel(...).group` remains `explore`; medicine is not counted, filtered or sorted as an accepted match. The API remains unchanged (`unknown`, no threshold/scoreAssessment/deltaNeeded).
+- Other programmes keep their existing classes. A Haifa pending regression checks `journey-status status-explore` in list and detail views.
+- Tests first: the seven existing medicine parameter cases failed on the new success-chip assertions before implementation; the Haifa regression passed. All now pass. Test comments record `// Amit ruling 2026-10-25 08:01 via Jorje`.
+
 ## Amit ruling 2026-10-25 07:30 via Jorje
 
 The owner explicitly approved this visual change; no further mockup round is needed.
@@ -38,6 +48,8 @@ Test names:
 
 - `renders one medicine comparison for sekem %s without an admission verdict`: 95, 84.5, 92; exact copy, success/muted classes, no red/warning, one comparison, no old status/explanation, official referral link retained.
 - `shows one medicine comparison for sekem %s`: 95, 84.5, 92, 95.125; also verifies existing decimal formatting and Contact/Save.
+- The two parameterized component tests above now additionally check the existing green chip classes, absence of purple/violet styling, and unchanged comparison text. Journey cases verify both list and detail chips and assert that the result group remains `explore`.
+- `keeps Haifa pending chip in its existing no-verdict style`: preserves `journey-status status-explore` in list and detail views.
 - `preserves the medicine result explanation when no sekem is available`: existing input request and explanation.
 - `preserves other programmes no-verdict status for kind %s`: exact/estimated foreign programme and institution pairs remain generic.
 - `renders the estimated medicine MOR invitation threshold without an admission verdict or improvement gap`: approved legacy regression keeps its no-verdict/no-gap assertions with new copy.
@@ -45,23 +57,23 @@ Test names:
 
 Results:
 
-- Focused suites: **439 passed**.
-- Full unit suite: **3,541 passed, 86 skipped**. Database integration tests were not enabled.
+- Focused suites: **440 passed**.
+- Full unit suite: **3,542 passed, 86 skipped**. Database integration tests were not enabled.
 - Full lint, typecheck, format check, optimized production build, `git diff --check`: **passed**.
-- `npm run guard:pre-pr`: **passed, 2,635 tests in 106 files**, plus migration consistency, seed dry-run and evidence checks. No migration/seed was applied.
+- `npm run guard:pre-pr`: **passed, 2,636 tests in 106 files**, plus migration consistency, seed dry-run and evidence checks. No migration/seed was applied.
 - Design detector: no findings.
 
-`origin/main` at `bb041ef` was merged, never rebased. No other worktree was modified. No database/Supabase access, production deployment, environment/secret change, GitHub comment, force-push, hook bypass or draft-state change is part of this task. Final CI results for the pushed head are recorded on the PR.
+`origin/main` at `5ca84ce` was merged, never rebased. No other worktree was modified. No live database/Supabase access, production deployment, environment/secret change, GitHub comment, force-push, hook bypass or draft-state change is part of this task. Final CI results for the pushed head are recorded on the PR. CI jobs will not be rerun; any failure will be reported with its log excerpt, with fixes only for failures caused by this change.
 
 ## Screenshot evidence
 
-Code commit: `475e7c2`. The subsequent docs/evidence commit changes no application code. Screenshots use its optimized local production build, explicit static catalogue mode and `npm run start -- --port 3285`.
+Code commit: `281012e`. The subsequent docs/evidence commit changes no application code. Screenshots use its optimized local production build, explicit static catalogue mode and `npm run start -- --port 3285`.
 
 The browser uses the existing `/app/calculator#detail` route with synthetic ordinary Bagrut records and psychometric 800/500. Same-origin `/api/admissions/evaluate` POSTs run through the real built route and evaluator; they are **not intercepted or mocked in the browser**. Runtime-only in-memory freshness and official calculator/table fixtures supply scores 98.9/73.9 without any database connection or external calculator POST. Service workers are blocked; other browser non-GET requests are intercepted with synthetic HTTP 200. No lead is submitted.
 
-All four checks verify the actual local HTTP response retains `unknown` with no threshold/scoreAssessment/deltaNeeded, exact copy, one comparison only, new status, right alignment, Contact/Save visibility and no overflow. Computed above colour is existing green; below is `rgb(94, 106, 131)`, the muted token. All four images were visually inspected.
+All four checks verify the actual local HTTP response retains `unknown` with no threshold/scoreAssessment/deltaNeeded, exact copy, one comparison only, new status, right alignment, Contact/Save visibility and no overflow. The chip has `journey-status status-match` with computed background `rgb(229, 245, 236)` and text `rgb(33, 97, 65)` in both profiles. The comparison remains green above and `rgb(94, 106, 131)` (the muted token) below. All four images were visually inspected.
 
-Source: `/workspace/qa-evidence/technion-medicine-475e7c2/`. These four images replace the six obsolete captures with the old status.
+Source: `/workspace/qa-evidence/technion-medicine-281012e/`. These four images replace the previous purple-chip captures at the same committed filenames.
 
 | Profile | Desktop 1280px | Mobile 390px |
 | --- | --- | --- |
