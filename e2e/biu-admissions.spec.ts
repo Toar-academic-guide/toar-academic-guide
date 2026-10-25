@@ -1,4 +1,5 @@
 import { expect, test } from './fixtures';
+import { biuFloorVerdict } from '../src/lib/biuFloorPresentation';
 
 const cases: {
   id: string;
@@ -119,7 +120,14 @@ for (const width of [390, 1440]) {
       expect(result).toMatchObject({ decision: c.decision, kind: c.kind });
       expect(result.requiredInputs ?? []).not.toContain('institution_weighted_score');
       const explanation = page.locator('.journey-result-explanation');
-      await expect(explanation).toHaveText(result.explanation);
+      // Approved test update (Jorje, 2026-10-25): single verdict line replaces rejected prose paragraph
+      await expect(explanation).toHaveText(biuFloorVerdict(result.floorChecks));
+      await expect(explanation).toHaveCount(1);
+      const summary = await explanation.textContent();
+      expect(summary).not.toMatch(
+        /https?:\/\/|[a-z0-9-]+(?:\.[a-z0-9-]+)*\.(?:ac\.il|co\.il|org\.il|com)/i,
+      );
+      expect(summary).not.toMatch(/\n|\.\s+\S/);
       await expect(explanation).toHaveCSS('text-align', 'right');
       await expect(explanation).not.toContainText(/מתואם|מצרף|סכם/);
       const main = page.getByRole('main');

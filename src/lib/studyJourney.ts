@@ -257,6 +257,8 @@ export function resultLabel(
     return { label: 'עדיין לא ניתן לקבוע התאמה', group: 'explore' };
   if (result?.linkedInstitutionId === 'danon' && result.kind === 'requirements_only')
     return { label: 'הרשמה מול בית הספר', group: 'explore' };
+  if (result?.linkedInstitutionId === 'biu' && result.floorChecks && result.decision === 'below')
+    return { label: 'לא עומד/ת בתנאי הסף', group: 'improve' };
   if (
     result?.decision === 'accepted' &&
     result.kind === 'manual_gate' &&

@@ -30,7 +30,9 @@ describe('formulaBackedPairInventory', () => {
       ...allPrograms,
       makeProgram({ id: 'biu_future', institutionId: 'biu', thresholds: { biu: 700 } }),
     ]);
-    const expected = BIU_PUBLISHED_ROUTE_PROGRAM_IDS.map((id) => `${id}__biu`).sort();
+    const expected = [...BIU_PUBLISHED_ROUTE_PROGRAM_IDS, 'biu_cs', 'biu_ee', 'biu_socialwork']
+      .map((id) => `${id}__biu`)
+      .sort();
     expect(
       inventory.pairs
         .filter((pair) => pair.institutionId === 'biu')
@@ -42,8 +44,6 @@ describe('formulaBackedPairInventory', () => {
       'ee',
       'psychology',
       'medicine',
-      'biu_cs',
-      'biu_ee',
       'biu_psychology',
       'biu_medicine',
       'biu_optometry',

@@ -1,5 +1,6 @@
 import { allPrograms } from '@/data/degrees';
-import { BIU_PUBLISHED_ROUTE_PROGRAM_IDS, BIU_PUBLISHED_ROUTES_URL } from './biuPublishedRoutes';
+import { BIU_ROUTED_PROGRAM_IDS } from './biuPublishedRoutes';
+import { BIU_CALCULATOR_URL } from './biuChannels';
 import { evaluateProgramVerification } from '@/server/admissions/verification/programVerification';
 import {
   buildFormulaBackedPairInventory,
@@ -214,14 +215,14 @@ const REVIEWED_PAIR_IDS_BY_INSTITUTION: Record<FormulaBackedInstitutionId, reado
     'technion_medicine__technion',
   ],
   colman: ['colmgmt_cs__colman'],
-  biu: BIU_PUBLISHED_ROUTE_PROGRAM_IDS.map((id) => `${id}__biu`),
+  biu: BIU_ROUTED_PROGRAM_IDS.map((id) => `${id}__biu`),
 };
 
 const SOURCE_BY_INSTITUTION: Record<FormulaBackedInstitutionId, { url: string; reason: string }> = {
   biu: {
-    url: BIU_PUBLISHED_ROUTES_URL,
+    url: BIU_CALCULATOR_URL,
     reason:
-      'Official BIU תשפ״ז Bagrut-only routes are encoded as estimates. Institution-specific average calculation and final verdict replay are unverified; the composite calculator returned HTTP 403 in Chromium. No exact or final-admission claim is made.',
+      'Official BIU תשפ״ז floors and published routes are encoded as estimates. Passing floors never establishes admission. The institutional composite is not calculated; the official calculator is a link only. No exact or final-admission claim is made.',
   },
   tau: {
     url: 'https://go.tau.ac.il/graphql',

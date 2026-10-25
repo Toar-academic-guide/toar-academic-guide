@@ -51,7 +51,8 @@ describe('formula-backed verification ledger', () => {
       unexpectedPairIds: [],
       duplicatePairIds: [],
     });
-    expect(FORMULA_BACKED_VERIFICATION_LEDGER).toHaveLength(138);
+    // Approved by Jorje 2026-10-25 02:10 (4): final BIU brief §2 routes CS, EE and social work, adding three ledger records.
+    expect(FORMULA_BACKED_VERIFICATION_LEDGER).toHaveLength(141);
   });
 
   it('counts only fully proved pairs as exact', () => {
@@ -60,12 +61,14 @@ describe('formula-backed verification ledger', () => {
       FORMULA_BACKED_VERIFICATION_LEDGER,
     );
 
+    // Approved by Jorje 2026-10-25 02:10 (4): final BIU brief §2 adds three withheld pairs; exact remains 125.
     expect(completion).toMatchObject({
-      total: 138,
+      total: 141,
       exact: 125,
-      withheld: 12,
+      withheld: 15,
       isComplete: false,
     });
+    // Approved by Jorje 2026-10-25 02:10 (4): final BIU brief §2 expands BIU from seven to ten withheld pairs.
     expect(completion.totalsByInstitution).toEqual({
       tau: { total: 33, exact: 30, withheld: 3, stale: 0, blocked: 0 },
       huji: { total: 28, exact: 28, withheld: 0, stale: 0, blocked: 0 },
@@ -73,7 +76,7 @@ describe('formula-backed verification ledger', () => {
       haifa: { total: 27, exact: 25, withheld: 1, stale: 0, blocked: 1 },
       technion: { total: 14, exact: 14, withheld: 0, stale: 0, blocked: 0 },
       colman: { total: 1, exact: 0, withheld: 1, stale: 0, blocked: 0 },
-      biu: { total: 7, exact: 0, withheld: 7, stale: 0, blocked: 0 },
+      biu: { total: 10, exact: 0, withheld: 10, stale: 0, blocked: 0 },
     });
     expect(
       FORMULA_BACKED_VERIFICATION_LEDGER.filter((entry) => entry.state === 'exact').map(
@@ -131,7 +134,8 @@ describe('formula-backed verification ledger', () => {
       (entry) => entry.state === 'withheld',
     );
 
-    expect(withheld).toHaveLength(12);
+    // Approved by Jorje 2026-10-25 02:10 (4): final BIU brief §2 adds three estimated pairs without exact formula proof.
+    expect(withheld).toHaveLength(15);
     expect(withheld.every((entry) => entry.reason.length > 80)).toBe(true);
     expect(withheld.every((entry) => entry.sourceUrl.startsWith('https://'))).toBe(true);
     expect(

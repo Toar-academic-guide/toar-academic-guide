@@ -62,7 +62,7 @@ interface ProgramPairResolution {
 
 const INCLUDED_INSTITUTION_IDS = new Set<string>(FORMULA_BACKED_INSTITUTION_IDS);
 const EXCLUDED_INSTITUTION_IDS = new Set<string>(FORMULA_BACKED_EXCLUDED_INSTITUTION_IDS);
-const REVIEWED_REQUIREMENTS_PAIR_IDS = new Set(['colmgmt_cs__colman']);
+const REVIEWED_REQUIREMENTS_PAIR_IDS = new Set(['colmgmt_cs__colman', 'biu_socialwork__biu']);
 
 export function formulaBackedPairId(programId: string, institutionId: string): string {
   return `${programId}__${institutionId}`;

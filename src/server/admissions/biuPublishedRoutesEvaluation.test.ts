@@ -60,13 +60,21 @@ describe('official BIU תשפ״ז published routes', () => {
     '%s rejects weak scores without requesting a composite',
     (degreeId) => {
       const result = evaluate({ degreeId, bagrut: 70, psychometric: 420 });
-      expect(result).toMatchObject({
-        kind: 'estimated',
-        decision: 'below',
-        scoreAssessment: 'below_threshold',
-      });
+      if (degreeId === 'criminology' || degreeId === 'biu_criminology') {
+        // Approved by Jorje 2026-10-25 02:10 (1): https://shoham.biu.ac.il/kabala/ remarks publish no combined-channel floor.
+        expect(result).toMatchObject({ kind: 'estimated', decision: 'unknown' });
+        // Approved by Jorje 2026-10-25 02:10 (1): https://shoham.biu.ac.il/kabala/ remarks cannot support a below-threshold assessment.
+        expect(result.scoreAssessment).toBeUndefined();
+      } else {
+        expect(result).toMatchObject({
+          kind: 'estimated',
+          decision: 'below',
+          scoreAssessment: 'below_threshold',
+        });
+      }
       expect(result.requiredInputs).toBeUndefined();
-      if (degreeId !== 'biu_law') expect(result.explanation).toContain('למסלול ללא פסיכומטרי בלבד');
+      // Approved by Jorje 2026-10-25 02:10 (1)–(2): https://shoham.biu.ac.il/kabala/ remarks include psych channels for criminology and the three science tracks.
+      if (degreeId === 'law') expect(result.explanation).toContain('למסלול ללא פסיכומטרי בלבד');
     },
   );
 
@@ -92,8 +100,9 @@ describe('official BIU תשפ״ז published routes', () => {
     '%s honors the average boundary unless a published psychometric channel passes',
     (degreeId) => {
       const input = boundaryInputs[degreeId];
+      // Approved by Jorje 2026-10-25 02:10 (3): https://shoham.biu.ac.il/kabala/ remarks leave a viable combined channel; general law keeps its shipped route.
       expect(evaluate({ ...input, bagrut: input.bagrut! - 0.01, psychometric: 800 }).decision).toBe(
-        degreeId === 'biu_law' ? 'pending' : 'below',
+        degreeId === 'biu_law' ? 'pending' : degreeId === 'law' ? 'below' : 'unknown',
       );
     },
   );

@@ -62,7 +62,14 @@ describe('BIU API with real evaluator', () => {
       expect(boundary.requiredInputs).toBeUndefined();
       expect(boundary.explanation).not.toMatch(/סכם|מתואם|מצרף/);
       const weak = await evaluate(degreeId, { bagrut: 70, psychometric: 420 });
-      expect(weak).toMatchObject({ decision: 'below', scoreAssessment: 'below_threshold' });
+      if (degreeId === 'criminology' || degreeId === 'biu_criminology') {
+        // Approved by Jorje 2026-10-25 02:10 (1): https://shoham.biu.ac.il/kabala/ remarks publish no combined-channel floor.
+        expect(weak).toMatchObject({ decision: 'unknown' });
+        // Approved by Jorje 2026-10-25 02:10 (1): https://shoham.biu.ac.il/kabala/ remarks cannot support a below-threshold assessment.
+        expect(weak.scoreAssessment).toBeUndefined();
+      } else {
+        expect(weak).toMatchObject({ decision: 'below', scoreAssessment: 'below_threshold' });
+      }
       const missing = await evaluate(degreeId, {});
       expect(missing).toMatchObject({ kind: 'needs_input', decision: 'unknown' });
       expect(missing.requiredInputs).toContain('bagrut_average');

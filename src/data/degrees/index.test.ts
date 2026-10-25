@@ -41,7 +41,9 @@ describe('formula-backed pair catalogue', () => {
     const inventory = buildFormulaBackedPairInventory(allPrograms);
 
     expect(inventory.errors).toEqual([]);
-    expect(inventory.total).toBe(138);
+    // Approved by Jorje 2026-10-25 02:10 (4): final BIU brief §2 adds CS, EE and social work to the denominator.
+    expect(inventory.total).toBe(141);
+    // Approved by Jorje 2026-10-25 02:10 (4): final BIU brief §2 expands BIU from seven to ten routed pairs.
     expect(inventory.totalsByInstitution).toEqual({
       tau: 33,
       huji: 28,
@@ -49,7 +51,7 @@ describe('formula-backed pair catalogue', () => {
       haifa: 27,
       technion: 14,
       colman: 1,
-      biu: 7,
+      biu: 10,
     });
   });
 });
