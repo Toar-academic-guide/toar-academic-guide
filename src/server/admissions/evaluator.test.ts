@@ -2476,6 +2476,153 @@ describe('evaluateAdmissionsForProgram', () => {
     expect(result.explanation).toContain('אין צורך בפסיכומטרי');
   });
 
+  it('asks for structured subject inputs before returning an accepted score-based result', async () => {
+    const syntheticInstitution: CatalogueInstitution = {
+      // Test-only identity intentionally absent from the institution registry.
+      id: 'synthetic_score_institution' as CatalogueInstitution['id'],
+      name: 'מוסד בדיקה סינתטי',
+      region: 'center',
+      calculatorConfig: {
+        formulaType: 'minimum_floors',
+        scaleDescription: 'פסיכומטרי',
+      },
+    };
+    const scoreProgram: CatalogueProgram = {
+      id: 'structured_score_program',
+      name: 'הנדסת נתונים',
+      institution: 'מוסד בדיקה סינתטי',
+      institutionId: syntheticInstitution.id,
+      type: 'academic',
+      category: 'הנדסה',
+      profileScore: { AN: 5, TE: 4, CR: 1, SO: 1, LE: 1, OR: 3, DI: 5, ER: 3 },
+      admissionType: 'sekhem',
+      admissionRequirements: [],
+      thresholds: { synthetic_score_institution: 600 },
+      linkedInstitutionIds: ['synthetic_score_institution'],
+      institutionDetails: [
+        {
+          institutionName: 'מוסד בדיקה סינתטי',
+          durationYears: 4,
+          estimatedStudentsPerYear: 'לא ידוע',
+          quantitativeMinRequirement: null,
+          englishMinRequirement: null,
+          specificAdmissionNotes: [],
+          officialCalculatorUrl: '',
+          admissionFacts: [
+            {
+              id: 'structured_score_program:synthetic_score_institution:math-units',
+              kind: 'numeric_gate',
+              field: 'math_units',
+              comparison: 'gte',
+              valueNumber: 5,
+              valueText: null,
+              unit: 'units',
+              description: 'מתמטיקה ברמת 5 יח"ל',
+              confidence: 'high',
+              isRequired: true,
+            },
+          ],
+        },
+      ],
+    };
+
+    const report = await evaluateAdmissionsForProgram({
+      input: {
+        degreeId: 'structured_score_program',
+        psychometric: 760,
+        bagrut: 115,
+      },
+      program: scoreProgram,
+      institutions: [syntheticInstitution],
+    });
+
+    expect(report.results).toContainEqual(
+      expect.objectContaining({
+        linkedInstitutionId: 'synthetic_score_institution',
+        capability: 'needs_input',
+        kind: 'needs_input',
+        requiredInputs: ['math_units'],
+        decision: 'unknown',
+      }),
+    );
+  });
+
+  it.each([115, 118])(
+    'keeps an accepted estimated score with bagrut %s eligible when an interview remains',
+    async (bagrut) => {
+      const syntheticInstitution: CatalogueInstitution = {
+        // Test-only identity intentionally absent from the institution registry.
+        id: 'synthetic_score_institution' as CatalogueInstitution['id'],
+        name: 'מוסד בדיקה סינתטי',
+        region: 'center',
+        calculatorConfig: {
+          formulaType: 'minimum_floors',
+          scaleDescription: 'פסיכומטרי',
+        },
+      };
+      const scoreProgram: CatalogueProgram = {
+        id: 'structured_score_manual_program',
+        name: 'פסיכולוגיה יישומית',
+        institution: 'מוסד בדיקה סינתטי',
+        institutionId: syntheticInstitution.id,
+        type: 'academic',
+        category: 'פסיכולוגיה',
+        profileScore: { AN: 4, TE: 2, CR: 1, SO: 5, LE: 2, OR: 2, DI: 1, ER: 4 },
+        admissionType: 'sekhem',
+        admissionRequirements: [],
+        thresholds: { synthetic_score_institution: 600 },
+        linkedInstitutionIds: ['synthetic_score_institution'],
+        institutionDetails: [
+          {
+            institutionName: 'מוסד בדיקה סינתטי',
+            durationYears: 3,
+            estimatedStudentsPerYear: 'לא ידוע',
+            quantitativeMinRequirement: null,
+            englishMinRequirement: null,
+            specificAdmissionNotes: [],
+            officialCalculatorUrl: '',
+            admissionFacts: [
+              {
+                id: 'structured_score_manual_program:synthetic_score_institution:interview',
+                kind: 'manual_gate',
+                field: 'interview',
+                comparison: 'present',
+                valueNumber: null,
+                valueText: 'ראיון קבלה',
+                unit: 'text',
+                description: 'ראיון קבלה מחייב',
+                confidence: 'high',
+                isRequired: true,
+              },
+            ],
+          },
+        ],
+      };
+
+      const report = await evaluateAdmissionsForProgram({
+        input: {
+          degreeId: 'structured_score_manual_program',
+          psychometric: 760,
+          bagrut,
+        },
+        program: scoreProgram,
+        institutions: [syntheticInstitution],
+      });
+
+      expect(report.results).toContainEqual(
+        expect.objectContaining({
+          linkedInstitutionId: 'synthetic_score_institution',
+          capability: 'manual_gate',
+          kind: 'manual_gate',
+          decision: 'eligible_to_apply',
+          score: expect.any(Number),
+          threshold: 600,
+          explanation: expect.stringContaining('ראיון קבלה מחייב'),
+        }),
+      );
+    },
+  );
+
   it('withholds an unsupported BGU composite before inferring subject eligibility', async () => {
     const scoreProgram: CatalogueProgram = {
       id: 'structured_score_program',
@@ -2535,6 +2682,8 @@ describe('evaluateAdmissionsForProgram', () => {
       }),
     );
     expect(report.results[0]?.score).toBeUndefined();
+    expect(report.results[0]?.threshold).toBeUndefined();
+    expect(report.results[0]?.deltaNeeded).toBeUndefined();
     expect(report.results[0]?.requiredInputs).toBeUndefined();
   });
 

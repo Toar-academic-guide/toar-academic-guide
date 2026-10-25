@@ -1,6 +1,6 @@
 # Bagrut normalization — Option A, Ariel only
 
-Local implementation on `codex/bagrut-normalization-ariel-only`, starting from `d19466a` (main `214f0b7`, including #282). No push, PR, external messages, production DB/SQL, migrations, seed writes, manifests, Vercel, or environment changes. The final task spec outside the repo remains read-only.
+Local implementation on `codex/bagrut-normalization-ariel-only`, starting from `d19466a` (main `214f0b7`, including #282). The branch has been pushed and [PR #294](https://github.com/Toar-academic-guide/toar-academic-guide/pull/294) is open. This PM-fix follow-up is local only, with no push. No external messages, production DB/SQL, migrations, seed writes, manifests, Vercel, or environment changes. The final task spec outside the repo remains read-only.
 
 ## Formula and retained conditions
 
@@ -42,15 +42,17 @@ Tests 1 failed | 3 skipped (4)
 
 Full failure output: `/tmp/pf5-step1a-red.log`. The missing line, rather than imports or execution errors, caused the failure.
 
-The first full implementation run also found these three dependent cases in `src/server/admissions/evaluator.test.ts`:
+Jorje (2026-10-25) approved restoring these three original evaluator cases with their original names and behavior, using a fixture-only `synthetic_score_institution` instead of BGU:
 
-| Previous case | Change and reason |
+| Restored case | Assertions |
 |---|---|
-| `asks for structured subject inputs before returning an accepted score-based result` | The synthetic BGU programme depended on the invented composite passing first. Now asserts `score_only` metadata with `unsupported`/`unknown`, no score and no subject-input inference. |
-| `keeps an accepted estimated score with bagrut 115 eligible when an interview remains` | Now asserts unsupported/no verdict and no score, threshold or delta; an interview cannot supply an unpublished composite. |
-| Same case with Bagrut 118 | Same correction. |
+| `asks for structured subject inputs before returning an accepted score-based result` | `capability: needs_input`, `kind: needs_input`, `requiredInputs: ['math_units']`, `decision: unknown`. |
+| `keeps an accepted estimated score with bagrut 115 eligible when an interview remains` | `manual_gate` capability/kind, `eligible_to_apply`, numeric score, threshold 600, explanation containing `ראיון קבלה מחייב`. |
+| Same original case with Bagrut 118 | Same behavior as Bagrut 115. |
 
-These dependent changes follow the spec's permission to update evaluator tests expecting accepted/below from the removed composite. Fixtures and evaluator routing were not changed to preserve the old invented scores. Focused evaluator rerun: 424 passed. No other existing expectations moved.
+The institution is defined inside each test with a `minimum_floors` calculator configuration. `getCalculatorInstitutionsFromCatalogue` accepts the supplied configuration without a registry lookup; the capability matrix selects `estimated` when configuration and threshold are present; `evaluateUniversities` handles `minimum_floors` for any institution ID, returning a numeric psychometric score. Thus the fixtures need no registry, catalogue, data, or production edits and avoid TAU/Technion dependencies. Psychometric 760, Bagrut 115/118 and threshold 600 are unchanged. The original missing-subject assertions are preserved; the existing structured-result merger retains the base score on `needs_input`, so no new score-undefined assertion is made there.
+
+Separate BGU unsupported tests preserve the previous synthetic math-units and interview programme shapes (interview Bagrut 115 and 118). Each asserts `unsupported` / `unknown` and undefined score, threshold and delta. This keeps unsupported-composite coverage alongside the restored structured-input/manual-gate regressions.
 
 TAU assertions at `sekhemCalculators.test.ts:39/46/53` stay unchanged (696.6667, 686.6667, 800 clamp). The dedicated pin-17 regression is also unchanged. Postfreeze-2 owns their deliberate accuracy replacement.
 
@@ -77,7 +79,7 @@ The independent static capability matrix has 436 pairs, **35 unsupported**, 1 mi
 
 ## Nullable consumers and dead code
 
-Bucket analysis returns `no-data`, null score and no composite delta before numeric arithmetic. The card omits the full score/threshold badge for null or absent scores; for computed null it says `בדקו תנאי קבלה`, preserving the missing-input label for profiles without scores.
+Bucket analysis returns `no-data`, null score and no composite delta before numeric arithmetic. Jorje (2026-10-25): null sekhem shows no score badge, no no-data badge and no new copy. The original `ממתין לציונים` badge remains for `no-data` with undefined sekhem, including profiles without scores. The existing `sekhem != null` score-badge guard remains.
 
 UniversityCard and admissionsDecisionEngine receive null-safety only and remain in the repository. UniversityCard is used only by the unmounted ResultsDashboard; the decision engine is referenced only by its tests. ResultsDashboard itself reads status/counts and forwards result objects, with no score arithmetic or formatting, so it needs no edit. Server evaluator changes only three nullable score reads and their corresponding score labels (`null → undefined` at the response boundary).
 
@@ -85,9 +87,22 @@ UniversityCard and admissionsDecisionEngine receive null-safety only and remain 
 
 Used the repository's existing Playwright/Chromium on an isolated local SSR harness rendering the actual BucketList and engine with actual static programmes, real Tailwind CSS and local Rubik fonts. BEFORE renders load only the three relevant baseline modules from `d19466a`; AFTER renders load working files. A temporary Next Image default-export interop adjustment applies only inside the harness, not to repository code. External logo requests were blocked. No app server, API, DB, authentication, deployment or production checks are claimed.
 
-Captured before/after, filled/empty profiles at desktop 1440px and mobile 390px, including HUJI/BGU/Haifa/BIU CS plus TAU/Ariel controls (eight captures). AFTER filled: four concise no-score labels, only TAU/Ariel numeric badges, no misleading waiting-for-scores label; AFTER empty: no numeric badges. No horizontal overflow, all paragraph alignment right, no page errors. Read the visible Hebrew on both AFTER captures; no internal diagnostics leak into the changed labels.
+Captured before/after, filled/empty profiles at desktop 1440px and mobile 390px, including HUJI/BGU/Haifa/BIU CS plus TAU/Ariel controls (eight captures). Those earlier AFTER captures showed four no-score labels; that copy is superseded by the PM fix above. The PM-fix browser evidence below checks the final badge behavior. No horizontal overflow, all paragraph alignment right, no page errors. Read the visible Hebrew on both AFTER captures; no internal diagnostics leak into the changed labels.
 
 Screenshots and machine evidence: `/tmp/pf5-browser/{before,after}-{filled,empty}-{1440,390}.png`, `/tmp/pf5-browser/evidence.json`. These are local rendered evidence for Jorje/Amit, not a claim that visual approval was obtained. Contact/Save flows were not changed. Full interactive app verification and Jorje's source/product/visual gate remain for a later authorized delivery.
+
+## PM-fix verification — Jorje, 2026-10-25
+
+The approved follow-up restores the three original evaluator cases, keeps separate unsupported BGU coverage, reverts the badge copy and corrects PR status. Only `BucketList.tsx` changes production behavior. No push is performed; the coordinator owns publishing this single local commit.
+
+- `git fetch origin` followed by `git rev-list --left-right --count HEAD...origin/main`: 4 ahead / 0 behind before the PM-fix commit; no merge needed. `origin/main` matches the remote main SHA `214f0b7`.
+- Focused evaluator and bucket-list checks: 3 files / 437 tests passed, including 427 evaluator cases.
+- Full `npx vitest run`: 261 files passed, 13 skipped, zero failed; 4,115 tests passed, 1 pre-existing expected fail, 86 skipped, zero failed (4,202 total). The expected-fail remains `clientImportGraph.test.ts`'s StudyJourney server-dependency check; no skips or expected-fail markers were added.
+- `npm run typecheck` and `npm run lint`: exit 0. The synthetic ID uses a narrow test-only cast to the catalogue ID type; no registry extension is required.
+- `npm run guard:pre-pr`: exit 0; 118 targeted files / 2,880 tests passed, migration consistency, static grants, catalogue seed dry-run and committed evidence checks passed. The absent raw Monday export still skips local regeneration only. No DB connection or write was used.
+- Local Playwright/Chromium checked the actual BucketList, engine and static programmes in the isolated SSR harness at 1440px and 390px, with filled and empty profiles. Filled: HUJI/BGU/Haifa/BIU show no score/no-data badge or replacement copy; only the unchanged TAU/Ariel controls have numeric badges. Empty: all six original `ממתין לציונים` badges remain, with no numeric badge. No page errors or horizontal overflow; paragraph alignment is right. Visible Hebrew was read in desktop/mobile captures. This is local rendered verification, with no app/API/DB or deployed-flow claim.
+
+Logs: `/tmp/pf5-pm-{focused,full,typecheck,lint,guard,browser}.log`, `/tmp/pf5-pm-full.json`. Final screenshots and machine evidence: `/tmp/pf5-pm-browser/after-{filled,empty}-{1440,390}.png`, `/tmp/pf5-pm-browser/evidence.json`. The original external spec and all data, seeds, manifests, TAU and Technion code remain untouched.
 
 ## Simplification and checks
 

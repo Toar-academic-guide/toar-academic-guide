@@ -215,9 +215,9 @@ function BucketCard({ entry, onRemove }: { entry: BucketEntry; onRemove: (id: st
           )}
 
           {/* No-data badge */}
-          {status === 'no-data' && (
+          {status === 'no-data' && sekhem !== null && (
             <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-medium text-slate-500">
-              {sekhem === null ? 'בדקו תנאי קבלה' : 'ממתין לציונים'}
+              ממתין לציונים
             </span>
           )}
 
