@@ -162,7 +162,14 @@ describe('admissions review resolution dispatch workflow', () => {
       // Run only validation, with no database credentials and no CLI execution.
       return spawnSync('bash', ['-c', script], {
         cwd: dir,
-        env: { PATH: process.env.PATH, ACTION: 'reject', IDS: id, ACTOR: 'operator', ...inputs },
+        env: {
+          PATH: process.env.PATH,
+          NODE_ENV: 'test',
+          ACTION: 'reject',
+          IDS: id,
+          ACTOR: 'operator',
+          ...inputs,
+        },
         encoding: 'utf8',
         timeout: 5000,
       });
