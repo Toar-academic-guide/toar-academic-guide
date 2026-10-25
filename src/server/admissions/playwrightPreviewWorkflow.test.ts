@@ -27,6 +27,13 @@ describe('Vercel preview Playwright workflow', () => {
     );
     expect(workflow).toContain('path: test-results/');
     expect(playwrightConfig).toContain("'x-vercel-protection-bypass'");
-    expect(playwrightConfig).toContain("'x-vercel-set-bypass-cookie': 'true'");
+    expect(playwrightConfig).not.toContain("'x-vercel-set-bypass-cookie'");
+  });
+
+  it('keeps spec-specific protection bypass headers free of cookie-setting redirects', () => {
+    const spec = readFileSync('e2e/official-requirements-5.spec.ts', 'utf8');
+
+    expect(spec).toContain("'x-vercel-protection-bypass'");
+    expect(spec).not.toContain("'x-vercel-set-bypass-cookie'");
   });
 });

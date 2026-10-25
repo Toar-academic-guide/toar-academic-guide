@@ -47,7 +47,13 @@ test.describe('Smoke tests', () => {
     expect([401, 503]).toContain(response.status());
   });
 
-  test('no console errors on landing page', async ({ page }) => {
+  test('no console errors on landing page', async ({ page, baseURL }) => {
+    if (baseURL && ['localhost', '127.0.0.1', '[::1]'].includes(new URL(baseURL).hostname)) {
+      // Vercel serves this script at the edge; next start has no route for it.
+      await page.route(new URL('/_vercel/insights/script.js', baseURL).href, (route) =>
+        route.fulfill({ status: 200, contentType: 'application/javascript', body: '' }),
+      );
+    }
     const errors: string[] = [];
     page.on('console', (msg) => {
       if (msg.type() === 'error') {

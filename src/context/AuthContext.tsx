@@ -55,6 +55,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       setSession(data.session);
+      if (data.session?.user?.id) posthog.identify(data.session.user.id);
       setLoading(false);
     });
 
@@ -63,8 +64,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } = supabase.auth.onAuthStateChange((_event, nextSession) => {
       setSession(nextSession);
       setLoading(false);
-      if (nextSession?.user?.email) {
-        posthog.identify(nextSession.user.id, { email: nextSession.user.email });
+      if (nextSession?.user?.id) {
+        posthog.identify(nextSession.user.id);
       }
     });
 

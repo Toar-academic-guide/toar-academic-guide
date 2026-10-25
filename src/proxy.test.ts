@@ -79,3 +79,46 @@ describe('production Vercel alias', () => {
     expect(response.headers.get('x-middleware-next')).toBe('1');
   });
 });
+
+describe('social short-link redirects', () => {
+  it.each([
+    ['/tt/', 'tiktok'],
+    ['/ig/', 'instagram'],
+    ['/fb/', 'facebook'],
+    ['/wa/', 'whatsapp'],
+  ])(
+    'redirects trailing-slash %s with 307 and discards incoming parameters',
+    async (path, source) => {
+      for (const query of ['', '?utm_source=other&email=private%40example.com']) {
+        mocks.getUser.mockClear();
+        const response = await proxy(new NextRequest(`https://findmyway.co.il${path}${query}`));
+        expect(response.status).toBe(307);
+        expect(response.headers.get('location')).toBe(
+          `https://findmyway.co.il/?utm_source=${source}`,
+        );
+        expect(mocks.getUser).not.toHaveBeenCalled();
+      }
+    },
+  );
+
+  it.each([
+    ['/tt', 'tiktok'],
+    ['/ig', 'instagram'],
+    ['/fb', 'facebook'],
+    ['/wa', 'whatsapp'],
+  ])('redirects %s before auth, with only the channel source', async (path, source) => {
+    mocks.getUser.mockClear();
+    const response = await proxy(
+      new NextRequest(
+        `https://findmyway.co.il${path}?utm_source=other&email=private%40example.com`,
+      ),
+    );
+    expect(response.status).toBe(307);
+    expect(response.headers.get('location')).toBe(`https://findmyway.co.il/?utm_source=${source}`);
+    expect(mocks.getUser).not.toHaveBeenCalled();
+  });
+  it('leaves longer paths alone', async () => {
+    const response = await proxy(new NextRequest('https://findmyway.co.il/tt/more'));
+    expect(response.headers.get('location')).toBeNull();
+  });
+});
