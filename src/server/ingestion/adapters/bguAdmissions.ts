@@ -125,7 +125,16 @@ export async function runBguAdmissionsProof(
       throw new Error('Failed to parse weighted score from BGU response HTML');
     }
 
-    const derivedVerdict = weightedScore >= acceptanceThreshold ? config.verdict : 'below';
+    const psychometricFloor = parseOfficialNumeric(sourceItem.psycho_value);
+    const medicineRequiresBoth =
+      ['medicine', 'bgu_medicine'].includes(program.id) &&
+      parseOfficialNumeric(sourceItem.psycho_sekem) !== undefined &&
+      psychometricFloor !== undefined &&
+      String(sourceItem.psycho_and_or).trim() === 'ובנוסף';
+    const meetsPsychometricFloor =
+      !medicineRequiresBoth || context.applicant.psychometric >= psychometricFloor!;
+    const derivedVerdict =
+      weightedScore >= acceptanceThreshold && meetsPsychometricFloor ? config.verdict : 'below';
 
     return {
       id: program.targetId ?? `bgu-${program.id}-live`,

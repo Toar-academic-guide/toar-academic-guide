@@ -273,13 +273,11 @@ export function evaluateUniversities(
 
       const mathGate = (mathUnits === 5 && mathGrade >= 70) || (mathUnits === 4 && mathGrade >= 80);
       const engGate = engUnits >= 4 && engGrade >= 60;
-      const psyGate = scores.psychometric >= 550;
 
-      if (!mathGate || !engGate || !psyGate) {
+      if (!mathGate || !engGate) {
         const reasons = [];
         if (!mathGate) reasons.push('מתמטיקה (5 יח"ל בציון 70+ או 4 יח"ל בציון 80+)');
         if (!engGate) reasons.push('אנגלית (לפחות 4 יח"ל בציון 60+)');
-        if (!psyGate) reasons.push('פסיכומטרי לפחות 550');
 
         return {
           university,
@@ -288,7 +286,7 @@ export function evaluateUniversities(
           status: 'below',
           explanation: `אינו עומד בתנאי הסף של אפקה: חסר ${reasons.join(', ')}`,
           deltaNeeded: {
-            psychometric: !psyGate ? 550 - scores.psychometric : 0,
+            psychometric: 0,
             bagrut: 0,
           },
         };

@@ -232,7 +232,10 @@ export function serializeProgramRow(args: {
   const serialized: CatalogueProgram = {
     updatedAt: program.updatedAt?.toISOString(),
     id: program.id,
-    name: DANON_PROGRAM_NAMES[program.id] ?? program.name,
+    name:
+      (program.id === 'ruppin_marine_bio' ? staticProgram?.name : undefined) ??
+      DANON_PROGRAM_NAMES[program.id] ??
+      program.name,
     isListed: program.isListed,
     institution: program.institutionName,
     institutionId: (program.institutionId
@@ -278,6 +281,8 @@ export function serializeProgramRow(args: {
     'afeka_ee',
     'afeka_softwareeng',
     'afeka_cs',
+    'afeka_biomedical',
+    'ruppin_marine_bio',
     'jerusalem_academy_graphic_design',
     'jerusalem_academy_dance',
     'rubin_classical',
