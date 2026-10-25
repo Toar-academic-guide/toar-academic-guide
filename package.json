@@ -24,6 +24,7 @@
     "db:migrate": "drizzle-kit migrate",
     "db:migrate:check": "drizzle-kit check",
     "admissions:freshness": "node scripts/admissions-source-freshness.mjs",
+    "admissions:approve-review": "node scripts/approve-admissions-review.mjs",
     "admissions:prepare-review": "node scripts/prepare-admissions-review.mjs",
     "admissions:notify-review": "node scripts/notify-admissions-review.mjs",
     "admissions:slack-preflight": "node scripts/verify-admissions-review-slack.mjs",
