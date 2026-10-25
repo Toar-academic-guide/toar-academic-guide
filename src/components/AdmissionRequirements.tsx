@@ -186,8 +186,12 @@ export default function AdmissionRequirements({
                           <td className="py-2 pe-2 tabular-nums">
                             {requirementLines ? null : row.displayValue}
                           </td>
-                          <td className="py-2 pe-2 tabular-nums whitespace-nowrap">
-                            {row.studentValue ?? '—'}
+                          <td className="py-2 pe-2 tabular-nums">
+                            {typeof row.studentValue === 'string'
+                              ? row.studentValue
+                                  .replace(/(\d) +(יח״ל)/g, '$1\u00a0$2')
+                                  .replace(/(בציון) +(\d)/g, '$1\u00a0$2')
+                              : (row.studentValue ?? '—')}
                           </td>
                           <td className="py-2 [overflow-wrap:anywhere]">
                             <span>
