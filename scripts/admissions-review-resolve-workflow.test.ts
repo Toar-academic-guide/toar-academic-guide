@@ -212,7 +212,7 @@ describe('admissions review resolution dispatch workflow', () => {
   it.each(['mallory', 'Jorje', ' amit2', 'operator'])(
     'rejects non-allowlisted actor %j during validation',
     (actor) => {
-      const result = validate({ ACTOR: actor, TRIGGERING_ACTOR: 'github-operator' });
+      const result = validate({ ACTOR: actor, TRIGGERING_ACTOR: 'funksinatra' });
       expect(result.status).toBe(1);
       expect(result.stderr).toMatch(/Actor must be.*jorje.*amit/);
     },
@@ -221,7 +221,7 @@ describe('admissions review resolution dispatch workflow', () => {
   it.each(['jorje', 'amit', ' \tjorje\n ', ' amit '])(
     'accepts allowlisted actor %j after trimming during validation',
     (actor) => {
-      const result = validate({ ACTOR: actor, TRIGGERING_ACTOR: 'github-operator' });
+      const result = validate({ ACTOR: actor, TRIGGERING_ACTOR: 'funksinatra' });
       expect(result.status).toBe(0);
       expect(result.stderr).toBe('');
     },
@@ -232,6 +232,31 @@ describe('admissions review resolution dispatch workflow', () => {
     expect(result.status).toBe(1);
     expect(result.stderr).toMatch(/Triggering actor must be non-empty/);
   });
+
+  it('hard-codes only funksinatra in validation without a repository variable', () => {
+    expect(step('validate').run).toContain('[[ "$TRIGGERING_ACTOR" == \'funksinatra\' ]]');
+    expect(JSON.stringify(resolveWorkflow())).not.toContain('vars.');
+  });
+
+  it.each(
+    ['yonatanbucsi', '', 'FunkSinatra', ' funksinatra '].flatMap((triggeringActor) =>
+      ['jorje', 'amit'].map((actor) => ({ triggeringActor, actor })),
+    ),
+  )('rejects triggering actor $triggeringActor with human label $actor in validation', (inputs) => {
+    const result = validate({ ACTOR: inputs.actor, TRIGGERING_ACTOR: inputs.triggeringActor });
+    expect(result.status).toBe(1);
+    expect(result.stdout).toBe('');
+    expect(result.stderr).toMatch(/Triggering actor must be/);
+  });
+
+  it.each(['jorje', 'amit'])(
+    'accepts exactly funksinatra with human label %s in validation',
+    (actor) => {
+      const result = validate({ ACTOR: actor, TRIGGERING_ACTOR: 'funksinatra' });
+      expect(result.status).toBe(0);
+      expect(result.stderr).toBe('');
+    },
+  );
 
   function validate(inputs: {
     ACTION?: string;
@@ -251,7 +276,7 @@ describe('admissions review resolution dispatch workflow', () => {
           ACTION: 'reject',
           IDS: id,
           ACTOR: 'jorje',
-          TRIGGERING_ACTOR: 'github-operator',
+          TRIGGERING_ACTOR: 'funksinatra',
           ...inputs,
         },
         encoding: 'utf8',
