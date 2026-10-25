@@ -239,13 +239,13 @@ export function evaluateReichmanPublishedRoutes({
           : []),
         {
           id: 'reichman_application_requirements',
-          label: 'אישור זכאות לבגרות מלאה ועמידה בדרישות השפה',
+          label: 'עמידה בדרישות השפה',
           status: 'unconfirmed',
         },
       ],
       explanation: `הציונים שהוזנו עומדים בתנאי המסלול: ${match.requirements}.${psychologyRequirements}${newRequirements} זו הערכה; ממוצע הבגרות הקובע מחושב ברייכמן. עמידה בסף אינה אישור קבלה.`,
       nextAction:
-        'אפשר להמשיך להגשת מועמדות. יש לאשר זכאות לבגרות מלאה ודרישות שפה מול הרישום באוניברסיטת רייכמן.',
+        'אפשר להמשיך להגשת מועמדות. יש לבדוק את דרישות השפה מול הרישום באוניברסיטת רייכמן.',
     };
   const viable = routes.filter((route) => !route.below);
   if (viable.length) {

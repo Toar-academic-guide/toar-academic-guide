@@ -4,6 +4,7 @@ import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/re
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const hoisted = vi.hoisted(() => ({
+  profileSubmission: null as unknown | null,
   push: vi.fn(),
   fetchCataloguePrograms: vi.fn(),
   fetchCatalogueInstitutions: vi.fn(),
@@ -141,17 +142,19 @@ vi.mock('@/components/AcademicProfileForm', () => ({
       <button
         type="button"
         onClick={() =>
-          onComplete({
-            psychometric: { overall: 650 },
-            bagrut: {
-              weightedAverage: 102,
-              subjectRecord: {
-                schemaVersion: 1,
-                sector: 'jewish',
-                subjects: [{ subjectId: 'mathematics', units: 5, grade: 90 }],
+          onComplete(
+            hoisted.profileSubmission ?? {
+              psychometric: { overall: 650 },
+              bagrut: {
+                weightedAverage: 102,
+                subjectRecord: {
+                  schemaVersion: 1,
+                  sector: 'jewish',
+                  subjects: [{ subjectId: 'mathematics', units: 5, grade: 90 }],
+                },
               },
             },
-          })
+          )
         }
       >
         academic-profile
@@ -249,6 +252,7 @@ import AppExperience from './AppExperience';
 
 describe('AppExperience route entry', () => {
   beforeEach(() => {
+    hoisted.profileSubmission = null;
     hoisted.push.mockReset();
     hoisted.updateProfile.mockReset();
     hoisted.updateProfile.mockResolvedValue(true);
@@ -455,6 +459,27 @@ describe('AppExperience route entry', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'go-profile' }));
     expect(hoisted.push).toHaveBeenCalledWith('/app/profile');
+  });
+
+  it('continues a subject-only saved profile to the calculator with a derived overall average', async () => {
+    hoisted.profileSubmission = {
+      psychometric: { overall: 650 },
+      bagrut: {
+        subjectRecord: {
+          schemaVersion: 1,
+          sector: 'jewish',
+          subjects: [{ subjectId: 'mathematics', units: 5, grade: 90 }],
+        },
+      },
+    };
+    render(
+      <AppExperience
+        initialStep="academic-profile"
+        admissionAlertTarget={{ institutionId: 'tau', programId: 'tau_cs' }}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'academic-profile' }));
+    await waitFor(() => expect(screen.getByText('calculator-results:tau_cs:650:90')).toBeTruthy());
   });
 
   it('returns a validated alert continuation to the TAU result after the profile is saved', async () => {

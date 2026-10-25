@@ -1153,3 +1153,31 @@ it('forwards degree-route profile inputs when optional generic scores are omitte
     ),
   );
 });
+
+it('keeps the subject profile when the displayed average was derived from that record', async () => {
+  hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(report([]));
+  const subjectRecord = {
+    schemaVersion: 1 as const,
+    sector: 'jewish' as const,
+    subjects: [{ subjectId: 'mathematics', units: 5, grade: 90 }],
+  };
+  render(
+    <CalculatorResults
+      degreeId="tau_cs"
+      programs={programs}
+      psychometric={650}
+      bagrut={90}
+      onBack={() => {}}
+      academicScores={{ psychometric: { overall: 650 }, bagrut: { subjectRecord } }}
+    />,
+  );
+  await waitFor(() =>
+    expect(hoistedMocks.fetchAdmissionsEvaluation).toHaveBeenCalledWith(
+      expect.objectContaining({
+        bagrut: 90,
+        bagrutAverageEstimated: true,
+        extraInputs: expect.objectContaining({ bagrutSubjectRecord: subjectRecord }),
+      }),
+    ),
+  );
+});

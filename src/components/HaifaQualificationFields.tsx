@@ -15,15 +15,6 @@ type Field = {
 };
 const fields: Field[] = [
   {
-    key: 'haifaAdmissionQualification',
-    label: 'תעודת הקבלה לאוניברסיטת חיפה',
-    options: [
-      ['full_bagrut', 'תעודת בגרות מלאה'],
-      ['recognized_equivalent', 'תעודה מקבילה שהוכרה על ידי חיפה'],
-      ['none', 'אין תעודת קבלה מוכרת'],
-    ],
-  },
-  {
     key: 'haifaPsychometricMonth',
     label: 'חודש הבחינה הפסיכומטרית לחיפה',
     min: 1,

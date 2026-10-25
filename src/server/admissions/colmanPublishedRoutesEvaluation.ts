@@ -5,7 +5,6 @@ import {
   minimum,
   type PublishedNumericRoute,
 } from './publishedNumericRoutes';
-import { confirmationCondition, withScoreAssessment } from './scoreAssessment';
 import { COLMAN_BAGRUT_CALCULATOR_URL } from '@/lib/colmanBagrutInputs';
 import { canonicalProgramId } from '@/lib/seo/programAliases';
 import type {
@@ -54,8 +53,8 @@ export function evaluateColmanPublishedRoutes({
   const base = {
     institution,
     linkedInstitutionId: institution.id,
-    capability: 'manual_gate' as const,
-    kind: 'manual_gate' as const,
+    capability: 'exact' as const,
+    kind: 'exact' as const,
     confidence: 'high' as const,
     sourceLabel: 'תנאי קבלה',
     officialUrls: [
@@ -78,30 +77,21 @@ export function evaluateColmanPublishedRoutes({
         (route.unpublishedWeightedScore
           ? collegeDecides
           : `אפשר להגיש מועמדות גם עם זכאות לבגרות, פסיכומטרי ${route.psychometric} ומעלה וציון כמותי ${route.quantitative} ומעלה.`),
-      nextAction:
-        'פתחו את הפרופיל האקדמי והשלימו את ממוצע המכללה למינהל ואת אישור הזכאות לתעודת בגרות מלאה.',
+      nextAction: 'פתחו את הפרופיל האקדמי והשלימו את ממוצע המכללה למינהל.',
     };
   }
-  const conditions = [
-    confirmationCondition(
-      'colman_bagrut_certificate',
-      'זכאות לתעודת בגרות מלאה ומוכרת',
-      input.extraInputs?.colmanBagrutCertificateConfirmed,
-    ),
-  ];
   if (average >= route.average) {
-    return withScoreAssessment(
-      {
-        ...base,
-        decision: 'eligible_to_apply',
-        score: average,
-        scoreLabel: 'ממוצע בגרות משוקלל — מסלול בגרות',
-        threshold: route.average,
-        explanation: `תנאי הציונים למסלול הבגרות מתקיימים: ממוצע משוקלל ${route.average} לפחות. יש לאשר זכאות לבגרות מלאה; אין כאן אישור קבלה סופית.`,
-        nextAction: 'פנו למרכז הרישום לאישור הממוצע והזכאות לתעודת בגרות מלאה.',
-      },
-      conditions,
-    );
+    return {
+      ...base,
+      decision: 'accepted',
+      scoreAssessment: 'meets_threshold',
+      sourceLabel: 'התאמה לפי הציונים',
+      score: average,
+      scoreLabel: 'ממוצע בגרות משוקלל — מסלול בגרות',
+      threshold: route.average,
+      explanation: `תנאי הציונים למסלול הבגרות מתקיימים: ממוצע משוקלל ${route.average} לפחות.`,
+      nextAction: 'המשיכו להרשמה באתר המכללה.',
+    };
   }
   const bagrutBelow = `מסלול בגרות: הממוצע נמוך מ־${route.average}.`;
   const psychometricBelow =
@@ -111,18 +101,17 @@ export function evaluateColmanPublishedRoutes({
     quantitative !== undefined &&
     quantitative < route.quantitative;
   if (psychometricBelow || quantitativeBelow) {
-    return withScoreAssessment(
-      {
-        ...base,
-        decision: 'below',
-        score: average,
-        threshold: route.average,
-        scoreLabel: 'ממוצע בגרות משוקלל — מסלול בגרות',
-        explanation: `${bagrutBelow} במסלול בגרות ופסיכומטרי לא מתקיים הסף של ${psychometricBelow ? `פסיכומטרי ${route.psychometric}` : `כמותי ${route.quantitative}`}. זו אינה דחייה מכל מסלולי הקבלה.`,
-        nextAction: 'בדקו מול מרכז הרישום אפשרות קבלה דרך מכינת שחקים.',
-      },
-      conditions,
-    );
+    return {
+      ...base,
+      decision: 'below',
+      scoreAssessment: 'below_threshold',
+      sourceLabel: 'התאמה לפי הציונים',
+      score: average,
+      threshold: route.average,
+      scoreLabel: 'ממוצע בגרות משוקלל — מסלול בגרות',
+      explanation: `${bagrutBelow} במסלול בגרות ופסיכומטרי לא מתקיים הסף של ${psychometricBelow ? `פסיכומטרי ${route.psychometric}` : `כמותי ${route.quantitative}`}.`,
+      nextAction: 'בדקו מול מרכז הרישום אפשרות קבלה דרך מכינת שחקים.',
+    };
   }
   const missing: AdmissionsRequiredInput[] = [];
   if (input.psychometric === undefined) missing.push('psychometric_overall');
@@ -141,21 +130,22 @@ export function evaluateColmanPublishedRoutes({
     };
   }
   if (!route.unpublishedWeightedScore) {
-    return withScoreAssessment(
-      {
-        ...base,
-        decision: 'eligible_to_apply',
-        score: input.psychometric,
-        scoreLabel: 'פסיכומטרי — מסלול בגרות ופסיכומטרי',
-        threshold: route.psychometric,
-        explanation: `תנאי הציונים למסלול בגרות ופסיכומטרי מתקיימים: פסיכומטרי ${route.psychometric} ומעלה וציון כמותי ${route.quantitative} ומעלה. יש לאשר זכאות לבגרות מלאה; אין כאן אישור קבלה סופית.`,
-        nextAction: 'פנו למרכז הרישום לאישור הציונים והזכאות לתעודת בגרות מלאה.',
-      },
-      conditions,
-    );
+    return {
+      ...base,
+      decision: 'accepted',
+      scoreAssessment: 'meets_threshold',
+      sourceLabel: 'התאמה לפי הציונים',
+      score: input.psychometric,
+      scoreLabel: 'פסיכומטרי — מסלול בגרות ופסיכומטרי',
+      threshold: route.psychometric,
+      explanation: `תנאי הציונים למסלול בגרות ופסיכומטרי מתקיימים: פסיכומטרי ${route.psychometric} ומעלה וציון כמותי ${route.quantitative} ומעלה.`,
+      nextAction: 'המשיכו להרשמה באתר המכללה.',
+    };
   }
   return {
     ...base,
+    kind: 'manual_gate',
+    capability: 'manual_gate',
     decision: 'unknown',
     explanation: `${bagrutBelow} ${collegeDecides}`,
     nextAction: 'בדקו מול מרכז הרישום את הציון המשוקלל הנדרש ואת אפשרויות הקבלה.',
@@ -230,4 +220,19 @@ function evaluateColmanAdditionalRoutes({
     caveat:
       'ממוצע הבגרות כפוף לחישוב המכללה. מסלולים נוספים המשלבים פסיכומטרי דורשים בדיקה מול הרישום.',
   });
+}
+
+/** Assess alternate-channel hard floors using the same published route configuration. */
+export function colmanProxyChannelAssessment(input: AdmissionsEvaluationInput) {
+  const route = routes[canonicalProgramId(input.degreeId) as keyof typeof routes];
+  if (!route) return undefined;
+  const average = input.extraInputs?.colmanBagrutAverage;
+  return {
+    bagrutBelow: average !== undefined && average < route.average,
+    otherChannelsFailed:
+      (input.psychometric !== undefined && input.psychometric < route.psychometric) ||
+      (route.quantitative !== undefined &&
+        input.extraInputs?.psychometricMath !== undefined &&
+        input.extraInputs.psychometricMath < route.quantitative),
+  };
 }
