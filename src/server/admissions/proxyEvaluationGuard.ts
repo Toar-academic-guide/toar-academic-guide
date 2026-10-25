@@ -22,6 +22,7 @@ export function usesInstitutionAverageProxy(
 
 function otherBguPsychologyChannelsFailed(input: AdmissionsEvaluationInput) {
   const extra = input.extraInputs ?? {};
+  if (extra.bguPsychologyRoute === 'bagrut') return false;
   const psychometric = resolveBguPsychologyScores({
     ...input,
     extraInputs: { ...extra, bguPsychologyRoute: 'psychometric' },
@@ -36,7 +37,21 @@ function otherBguPsychologyChannelsFailed(input: AdmissionsEvaluationInput) {
     ...input,
     extraInputs: { ...extra, bguPsychologyRoute: 'bagrut' },
   });
-  return psychometric.kind === 'below' && preparatoryKnown && bagrut.kind === 'below';
+  return (
+    psychometric.kind === 'below' &&
+    preparatoryKnown &&
+    bagrut.kind === 'below' &&
+    bagrut.score !== undefined &&
+    bagrut.threshold !== undefined &&
+    !isBorderlineProxyScore(bagrut.score, bagrut.threshold)
+  );
+}
+
+function isBorderlineProxyScore(score: number, floor: number) {
+  // Ruling G2: /workspace/codex-tasks/r1-pr278-rulings-2026-10-25.md.
+  // Inclusive band: |score - floor| <= 0.02 * floor, only for a proxy-derived score.
+  // Scale-relative tolerance preserves decimal boundaries in binary floating point.
+  return floor > 0 && Math.abs(score - floor) <= (0.02 + Number.EPSILON * 4) * floor;
 }
 
 export function guardProxyEvaluation(
@@ -47,15 +62,11 @@ export function guardProxyEvaluation(
   const colman =
     result.linkedInstitutionId === 'colman' ? colmanProxyChannelAssessment(input) : undefined;
   const usesProxyScore = usesInstitutionAverageProxy(result, input);
-  // Ruling G2: /workspace/codex-tasks/r1-pr278-rulings-2026-10-25.md.
-  // Inclusive band: |score - floor| <= 0.02 * floor, only for a proxy-derived score.
-  // Scale-relative tolerance preserves inclusion when decimal inputs round in binary floating point.
   const borderline =
     usesProxyScore &&
     result.score !== undefined &&
     typeof result.threshold === 'number' &&
-    result.threshold > 0 &&
-    Math.abs(result.score - result.threshold) <= (0.02 + Number.EPSILON * 4) * result.threshold;
+    isBorderlineProxyScore(result.score, result.threshold);
   const proxyBelow =
     (usesProxyScore && result.score !== undefined && result.decision === 'below') ||
     colman?.bagrutBelow;

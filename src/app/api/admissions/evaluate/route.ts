@@ -1,4 +1,3 @@
-import { overallBagrutAverage } from '@/lib/bagrutSubjectRecord';
 import { canonicalProgramId } from '@/lib/seo/programAliases';
 import { headers } from 'next/headers';
 import { z } from 'zod';
@@ -9,16 +8,14 @@ import { evaluateAdmissionsForProgram } from '@/server/admissions/evaluator';
 import { BATCH_B_PROGRAMS } from '@/server/admissions/batchBManualPathEvaluation';
 import { assertAdmissionsEvaluationRateLimit } from '@/server/admissions/rateLimit';
 import type { AdmissionsBatchReport } from '@/types/admissionsEvaluation';
-import { admissionsEvaluationSchema as baseEvaluationSchema } from '@/lib/admissionsEvaluationSchema';
+import {
+  admissionsEvaluationSchema,
+  validateOverallBagrutAverage,
+} from '@/lib/admissionsEvaluationSchema';
 
 export const dynamic = 'force-dynamic';
 
 const MAX_CONTENT_LENGTH_BYTES = 16_384;
-
-const admissionsEvaluationSchema = baseEvaluationSchema.extend({
-  bagrut: z.number().min(0).max(120).optional(),
-  bagrutAverageEstimated: z.literal(true).optional(),
-});
 
 const batchSchema = admissionsEvaluationSchema.omit({ degreeId: true }).extend({
   degreeIds: z
@@ -29,23 +26,7 @@ const batchSchema = admissionsEvaluationSchema.omit({ degreeId: true }).extend({
 });
 const requestSchema = z
   .union([admissionsEvaluationSchema, batchSchema])
-  .superRefine((input, ctx) => {
-    if (input.bagrutAverageEstimated) {
-      const derived = overallBagrutAverage(input.extraInputs?.bagrutSubjectRecord);
-      if (derived === undefined || input.bagrut !== derived)
-        ctx.addIssue({
-          code: 'custom',
-          path: ['bagrut'],
-          message: 'Estimated overall average must match the subject record.',
-        });
-    } else if (input.bagrut !== undefined && input.bagrut < 60) {
-      ctx.addIssue({
-        code: 'custom',
-        path: ['bagrut'],
-        message: 'Entered overall average must be at least 60.',
-      });
-    }
-  });
+  .superRefine(validateOverallBagrutAverage);
 
 export async function POST(request: Request) {
   try {

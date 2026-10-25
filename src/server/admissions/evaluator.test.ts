@@ -4399,3 +4399,40 @@ describe('R1 ruling safeguards G1–G3', () => {
     expect(result.explanation).not.toContain('רשמי');
   });
 });
+
+it.each([
+  { bagrut: 110, bguPsychologyRoute: 'bagrut' as const },
+  { bagrut: 112, bguPsychologyRoute: 'score' as const },
+])(
+  'G3 withholds proxy-below when another Psychology score channel is untested or borderline: %j',
+  async ({ bagrut, bguPsychologyRoute }) => {
+    const program = { ...bguCs, id: 'bgu_psychology' };
+    const report = await evaluateAdmissionsForProgram({
+      program,
+      institutions,
+      input: {
+        degreeId: program.id,
+        bagrut,
+        psychometric: 650,
+        extraInputs: {
+          bguPsychologyRoute,
+          bguPreparatoryTrack: 'natural_life_sciences',
+          bguPreparatoryCompleted: true,
+          bguPreparatoryAverage: 80,
+        },
+      },
+      fetcher: async (url) =>
+        new Response(
+          String(url).includes('GetRdpData')
+            ? JSON.stringify(psychologyWalkthroughOfficial.rulePayload)
+            : 'parent.main.document.mainForm.on_final_sekem.value = 600;',
+        ),
+    });
+    expect(report.results[0]).toMatchObject({
+      kind: 'needs_input',
+      decision: 'unknown',
+      estimated: true,
+      requiredInputs: ['bagrut_subject_record'],
+    });
+  },
+);
