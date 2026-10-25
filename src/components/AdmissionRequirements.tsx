@@ -173,10 +173,7 @@ export default function AdmissionRequirements({
                               : 'border-b border-[var(--border)] align-top'
                           }
                         >
-                          <th
-                            scope="row"
-                            className="py-2 pe-2 font-normal [overflow-wrap:anywhere]"
-                          >
+                          <th scope="row" className="py-2 pe-2 font-normal">
                             <a
                               href={institutionLink(row.sourceUrl, institutionId)}
                               target="_blank"
