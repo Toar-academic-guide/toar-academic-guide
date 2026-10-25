@@ -1,6 +1,7 @@
 import {
   BASELINE_PRODUCTION_MIGRATIONS,
   FORWARD_PRODUCTION_MIGRATIONS,
+  GUARDED_PRODUCTION_MIGRATIONS,
   type MigrationHistoryEntry,
   type MigrationId,
 } from './productionMigrationContract';
@@ -570,6 +571,29 @@ export function assessProductionSchema(snapshot: ProductionSchemaSnapshot): Prod
   assessEnums(snapshot, applied, issues);
   assessChangedObjects(snapshot, applied, issues);
   assessAdmissionsAutomationAccess(snapshot, applied, issues);
+
+  // Older journal prefixes retain their existing migration checks. Once the
+  // journal is current, also require the separately applied 0037–0040 schema.
+  if (appliedCount === FORWARD_PRODUCTION_MIGRATIONS.length) {
+    for (const migration of GUARDED_PRODUCTION_MIGRATIONS) {
+      for (const { table, column, type } of migration.columns) {
+        const actual = snapshot.tables[table];
+        if (!actual?.columns.includes(column)) {
+          issues.push({
+            code: 'missing_column',
+            object: `table:${table}.column:${column}`,
+            detail: `Column required by guarded migration ${migration.id} is absent; do not replay historical SQL.`,
+          });
+        } else if (actual.columnTypes[column] !== type) {
+          issues.push({
+            code: 'column_type_mismatch',
+            object: `table:${table}.column:${column}`,
+            detail: `Guarded migration ${migration.id} requires ${type}, found ${actual.columnTypes[column] ?? 'absent'}; do not replay historical SQL.`,
+          });
+        }
+      }
+    }
+  }
 
   const appliedThrough =
     appliedCount > 0 ? (FORWARD_PRODUCTION_MIGRATIONS[appliedCount - 1]?.id ?? null) : null;

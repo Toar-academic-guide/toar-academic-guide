@@ -3,6 +3,7 @@ import { readFileSync } from 'node:fs';
 
 import { describe, expect, it } from 'vitest';
 
+import { GUARDED_PRODUCTION_MIGRATIONS } from './productionMigrationContract';
 import {
   BASELINE_PRODUCTION_MIGRATIONS,
   FORWARD_PRODUCTION_MIGRATIONS,
@@ -12,6 +13,67 @@ import {
 } from './productionSchemaPreflight';
 
 describe('production admissions schema preflight', () => {
+  it('tracks guarded SQL through 0040 separately from the Supabase journal', () => {
+    expect(GUARDED_PRODUCTION_MIGRATIONS.map(({ id }) => id)).toEqual([
+      '0037',
+      '0038',
+      '0039',
+      '0040',
+    ]);
+    for (const { repositoryPath } of GUARDED_PRODUCTION_MIGRATIONS) {
+      expect(readFileSync(repositoryPath, 'utf8').trim()).not.toBe('');
+    }
+    const snapshot = makeSnapshot();
+    expect(snapshot.migrationHistory).toHaveLength(
+      BASELINE_PRODUCTION_MIGRATIONS.length + FORWARD_PRODUCTION_MIGRATIONS.length,
+    );
+    expect(assessProductionSchema(snapshot)).toMatchObject({
+      status: 'current',
+      appliedThrough: '0036',
+      pendingMigrations: [],
+      issues: [],
+    });
+  });
+
+  it.each([
+    ['user_profiles', 'bagrut_weighted_average', 'integer'],
+    ['programs', 'is_listed', 'text'],
+    ['admission_thresholds', 'threshold_value', 'integer'],
+  ])('rejects drift in guarded 0037–0040 schema: %s.%s', (table, column, wrongType) => {
+    const snapshot = makeSnapshot();
+    snapshot.tables[table].columnTypes[column] = wrongType;
+    expect(assessProductionSchema(snapshot)).toMatchObject({
+      status: 'drift',
+      safeToMigrate: false,
+      pendingMigrations: [],
+      issues: expect.arrayContaining([
+        expect.objectContaining({
+          code: 'column_type_mismatch',
+          object: `table:${table}.column:${column}`,
+        }),
+      ]),
+    });
+  });
+
+  it('requires the guarded 0039 is_listed column without scheduling historical SQL again', () => {
+    const snapshot = makeSnapshot();
+    snapshot.tables.programs.columns = snapshot.tables.programs.columns.filter(
+      (column) => column !== 'is_listed',
+    );
+    delete snapshot.tables.programs.columnTypes.is_listed;
+    expect(assessProductionSchema(snapshot)).toMatchObject({
+      status: 'drift',
+      safeToMigrate: false,
+      pendingMigrations: [],
+      issues: expect.arrayContaining([
+        expect.objectContaining({
+          code: 'missing_column',
+          object: 'table:programs.column:is_listed',
+        }),
+      ]),
+    });
+  });
+
   it('allows migration 0036 only when the assessment-progress column is absent', () => {
     const snapshot = makeSnapshot({
       appliedCount: FORWARD_PRODUCTION_MIGRATIONS.findIndex(({ id }) => id === '0036'),
@@ -833,6 +895,13 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
   if (appliedIds.has('0036')) {
     tables.user_profiles.columns.push('assessment_progress');
     tables.user_profiles.columnTypes.assessment_progress = 'jsonb';
+    // Guarded SQL 0037–0040 is deployed without Supabase journal entries.
+    tables.user_profiles.columns.push('bagrut_weighted_average');
+    tables.user_profiles.columnTypes.bagrut_weighted_average = 'real';
+    tables.programs.columns.push('is_listed');
+    tables.programs.columnTypes.is_listed = 'boolean';
+    tables.admission_thresholds.columns.push('threshold_value');
+    tables.admission_thresholds.columnTypes.threshold_value = 'numeric';
   }
   if (appliedIds.has('0010')) {
     tables.user_profiles?.columns.push('bagrut_profile_version_id');
