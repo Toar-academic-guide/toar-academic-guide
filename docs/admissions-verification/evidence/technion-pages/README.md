@@ -25,10 +25,10 @@ were visually inspected for Hebrew copy, alignment, wrapping and complete CTAs.
 `browser-checks.json` records response status, first requirement, spring text,
 official source attribution, contact destination and overflow for each page.
 
-| Programme | 1280px | 390px |
-| --- | --- | --- |
-| EE | [Desktop](technion_ee-1280.png) | [Mobile](technion_ee-390.png) |
-| ME | [Desktop](technion_me-1280.png) | [Mobile](technion_me-390.png) |
+| Programme | 1280px               | 390px               |
+| --------- | -------------------- | ------------------- |
+| EE        | technion_ee-1280.png | technion_ee-390.png |
+| ME        | technion_me-1280.png | technion_me-390.png |
 
 ## Verification
 
@@ -49,3 +49,5 @@ official source attribution, contact destination and overflow for each page.
   static mode rather than claiming production database/browser verification.
 
 Code review: skipped (ce-code-review unavailable) — Encoded profile restriction.
+
+Screenshot PNGs are not committed (repo convention). They are kept with the QA evidence outside the repo.
