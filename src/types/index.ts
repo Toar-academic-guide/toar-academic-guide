@@ -16,7 +16,8 @@ export type AvoidanceTag =
   | 'bureaucracy' // forms, regulations, admin
   | 'solo-work'; // isolated screen / solo study
 
-// 'weighted_scaled': Sekhem = w_psy×Psy + w_bag×(Bagrut/120×800), range 200–800
+// 'weighted_scaled': TAU-only legacy until postfreeze-2; Ariel has its own formula.
+// HUJI/BGU/Haifa/BIU have no composite in the legacy calculator.
 // 'technion_linear': official formula Sekhem = 0.5×Bagrut + 0.075×Psy - 18, range ~60–100
 // 'minimum_floors': college model — separate minimum psychometric AND minimum bagrut
 export type FormulaType = 'weighted_scaled' | 'technion_linear' | 'minimum_floors';
@@ -62,7 +63,7 @@ export interface DeltaNeeded {
 
 export interface UniversityResult {
   university: University;
-  sekhem: number;
+  sekhem: number | null;
   threshold: number | null;
   status: 'accepted' | 'below' | 'unavailable';
   deltaNeeded?: DeltaNeeded;

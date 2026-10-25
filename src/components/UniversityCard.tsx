@@ -8,7 +8,11 @@ export default function UniversityCard({ result }: Props) {
   const { university, sekhem, threshold, status, deltaNeeded, admissionTrack } = result;
 
   const sekhemDisplay =
-    university.formulaType === 'technion_linear' ? sekhem.toFixed(1) : sekhem.toString();
+    sekhem === null
+      ? null
+      : university.formulaType === 'technion_linear'
+        ? sekhem.toFixed(1)
+        : sekhem.toString();
 
   if (status === 'unavailable') {
     return (
@@ -25,7 +29,7 @@ export default function UniversityCard({ result }: Props) {
   }
 
   const isAccepted = status === 'accepted';
-  const progressPct = threshold ? Math.min((sekhem / threshold) * 100, 100) : 0;
+  const progressPct = sekhem !== null && threshold ? Math.min((sekhem / threshold) * 100, 100) : 0;
 
   return (
     <div
@@ -60,32 +64,36 @@ export default function UniversityCard({ result }: Props) {
       </div>
 
       {/* Score row */}
-      <div className="flex justify-between">
-        <div className="flex flex-col gap-0.5">
-          <span className="text-xs text-gray-500">הסכם שלך</span>
-          <span
-            className={`text-2xl font-bold tabular-nums ${
-              isAccepted ? 'text-green-700' : 'text-red-600'
-            }`}
-          >
-            {sekhemDisplay}
-          </span>
-        </div>
-        <div className="flex flex-col items-end gap-0.5">
-          <span className="text-xs text-gray-500">סף קבלה</span>
-          <span className="text-2xl font-bold tabular-nums text-gray-600">{threshold}</span>
-        </div>
-      </div>
+      {sekhem !== null && (
+        <>
+          <div className="flex justify-between">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-xs text-gray-500">הסכם שלך</span>
+              <span
+                className={`text-2xl font-bold tabular-nums ${
+                  isAccepted ? 'text-green-700' : 'text-red-600'
+                }`}
+              >
+                {sekhemDisplay}
+              </span>
+            </div>
+            <div className="flex flex-col items-end gap-0.5">
+              <span className="text-xs text-gray-500">סף קבלה</span>
+              <span className="text-2xl font-bold tabular-nums text-gray-600">{threshold}</span>
+            </div>
+          </div>
 
-      {/* Progress bar */}
-      <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/70">
-        <div
-          className={`h-full rounded-full transition-all ${
-            isAccepted ? 'bg-green-500' : 'bg-red-400'
-          }`}
-          style={{ width: `${progressPct}%` }}
-        />
-      </div>
+          {/* Progress bar */}
+          <div className="h-1.5 w-full overflow-hidden rounded-full bg-white/70">
+            <div
+              className={`h-full rounded-full transition-all ${
+                isAccepted ? 'bg-green-500' : 'bg-red-400'
+              }`}
+              style={{ width: `${progressPct}%` }}
+            />
+          </div>
+        </>
+      )}
 
       {/* Delta hint */}
       {status === 'below' && deltaNeeded && (

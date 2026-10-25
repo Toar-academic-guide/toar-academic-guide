@@ -2476,7 +2476,7 @@ describe('evaluateAdmissionsForProgram', () => {
     expect(result.explanation).toContain('אין צורך בפסיכומטרי');
   });
 
-  it('asks for structured subject inputs before returning an accepted score-based result', async () => {
+  it('withholds an unsupported BGU composite before inferring subject eligibility', async () => {
     const scoreProgram: CatalogueProgram = {
       id: 'structured_score_program',
       name: 'הנדסת נתונים',
@@ -2529,15 +2529,17 @@ describe('evaluateAdmissionsForProgram', () => {
     expect(report.results).toContainEqual(
       expect.objectContaining({
         linkedInstitutionId: 'bgu',
-        capability: 'needs_input',
-        kind: 'needs_input',
-        requiredInputs: ['math_units'],
+        capability: 'score_only',
+        kind: 'unsupported',
+        decision: 'unknown',
       }),
     );
+    expect(report.results[0]?.score).toBeUndefined();
+    expect(report.results[0]?.requiredInputs).toBeUndefined();
   });
 
   it.each([115, 118])(
-    'keeps an accepted estimated score with bagrut %s eligible when an interview remains',
+    'withholds an unsupported BGU composite with bagrut %s when an interview remains',
     async (bagrut) => {
       const scoreProgram: CatalogueProgram = {
         id: 'structured_score_manual_program',
@@ -2591,14 +2593,14 @@ describe('evaluateAdmissionsForProgram', () => {
       expect(report.results).toContainEqual(
         expect.objectContaining({
           linkedInstitutionId: 'bgu',
-          capability: 'manual_gate',
-          kind: 'manual_gate',
-          decision: 'eligible_to_apply',
-          score: expect.any(Number),
-          threshold: 600,
-          explanation: expect.stringContaining('ראיון קבלה מחייב'),
+          capability: 'score_only',
+          kind: 'unsupported',
+          decision: 'unknown',
         }),
       );
+      expect(report.results[0]?.score).toBeUndefined();
+      expect(report.results[0]?.threshold).toBeUndefined();
+      expect(report.results[0]?.deltaNeeded).toBeUndefined();
     },
   );
 

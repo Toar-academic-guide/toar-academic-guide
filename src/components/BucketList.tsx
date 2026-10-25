@@ -194,16 +194,18 @@ function BucketCard({ entry, onRemove }: { entry: BucketEntry; onRemove: (id: st
         {/* Right cluster: score badge + remove button */}
         <div className="flex shrink-0 items-center gap-2">
           {/* Sekhem badge (qualified / gap) */}
-          {(status === 'qualified' || status === 'gap') && threshold !== undefined && (
-            <span
-              className={[
-                'rounded-full px-2.5 py-0.5 text-[11px] font-bold tabular-nums',
-                status === 'qualified' ? 'bg-green-100 text-green-800' : 'bg-red-50 text-red-700',
-              ].join(' ')}
-            >
-              {sekhem} / ≥{threshold}
-            </span>
-          )}
+          {(status === 'qualified' || status === 'gap') &&
+            sekhem != null &&
+            threshold !== undefined && (
+              <span
+                className={[
+                  'rounded-full px-2.5 py-0.5 text-[11px] font-bold tabular-nums',
+                  status === 'qualified' ? 'bg-green-100 text-green-800' : 'bg-red-50 text-red-700',
+                ].join(' ')}
+              >
+                {sekhem} / ≥{threshold}
+              </span>
+            )}
 
           {/* Requirements badge */}
           {status === 'requirements' && (
@@ -215,7 +217,7 @@ function BucketCard({ entry, onRemove }: { entry: BucketEntry; onRemove: (id: st
           {/* No-data badge */}
           {status === 'no-data' && (
             <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-medium text-slate-500">
-              ממתין לציונים
+              {sekhem === null ? 'בדקו תנאי קבלה' : 'ממתין לציונים'}
             </span>
           )}
 
