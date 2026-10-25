@@ -51,7 +51,13 @@ export function evaluateAfekaPublishedRoutes({
   input: AdmissionsEvaluationInput;
   institution: CatalogueInstitution;
 }): AdmissionsEvaluationResult {
-  const ee = input.degreeId === 'afeka_ee';
+  // Biomedical is on the ENGINEERING page, with EE (checked 2026-10-25):
+  // https://www.afeka.ac.il/candidate/candidate-information-bsc/undergraduates/
+  // raw/official/afeka/sweep38_bsc-undergraduates_20261025T162537.txt, lines 276–320.
+  // It is absent from the sciences page and must not get its science-free routes:
+  // https://www.afeka.ac.il/candidate/candidate-information-bsc/admission-and-registration-in-science/
+  // raw/official/afeka/sweep38_admission-science_20261025T162539.txt, around line 280.
+  const engineering = ['afeka_ee', 'afeka_biomedical'].includes(input.degreeId);
   const mathBagrut = mathAlternatives(input, [
     [4, 85],
     [5, 75],
@@ -70,11 +76,15 @@ export function evaluateAfekaPublishedRoutes({
   const routes = [
     {
       label: 'בגרות',
-      ...allOf(mathBagrut, english, ee ? physics : anyOf(physics, subjectGate(input, 'cs', 5, 60))),
+      ...allOf(
+        mathBagrut,
+        english,
+        engineering ? physics : anyOf(physics, subjectGate(input, 'cs', 5, 60)),
+      ),
     },
     // The official psychometric-with-science section lists physics, not CS.
     { label: 'פסיכומטרי עם פיזיקה', ...allOf(psych, physics) },
-    ...(!ee
+    ...(!engineering
       ? [
           {
             label: 'בגרות ללא מקצוע מדעי מוגבר',
@@ -95,7 +105,7 @@ export function evaluateAfekaPublishedRoutes({
   ];
   const caveat =
     'נדרש גם סיווג אנגלית ברמת מתחילים/בסיסי לפני תחילת הלימודים. חלופות של מכינה במתמטיקה או בפיזיקה בציון 70 אינן נבדקות בחישוב.' +
-    (ee
+    (engineering
       ? ''
       : ' גם מקצוע מדעי אחר ב־5 יחידות בציון 70 לפחות (כימיה, ביולוגיה, אלקטרוניקה, אלקטרוניקה ומחשבים, מדעי ההנדסה, ביוטכנולוגיה, מערכות ביוטכנולוגיות, מדע חישובי ומדעי הנתונים), או מכינה ביסודות התכנות והחשיבה הלוגית בציון 70, עשויים להתאים ואינם נבדקים בחישוב.');
   const base = {
@@ -106,7 +116,7 @@ export function evaluateAfekaPublishedRoutes({
     confidence: 'high' as const,
     sourceLabel: 'התאמה לפי הציונים',
     officialUrls: [
-      `https://www.afeka.ac.il/candidate/candidate-information-bsc/${ee ? 'undergraduates' : 'admission-and-registration-in-science'}/`,
+      `https://www.afeka.ac.il/candidate/candidate-information-bsc/${engineering ? 'undergraduates' : 'admission-and-registration-in-science'}/`,
     ],
   };
   const match = routes.find((route) => !route.below && !route.missing.length);

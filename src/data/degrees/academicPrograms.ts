@@ -833,11 +833,12 @@ const D: Record<string, InstitutionDetail[]> = {
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
       specificAdmissionNotes: [
-        'ציון פסיכומטרי מינימלי: 500',
-        'ממוצע בגרות מינימלי: 75',
-        '4–5 יח"ל מתמטיקה ומדעים — יתרון',
+        'ממוצע בגרות משוקלל עם בונוסים 100 לפחות או פסיכומטרי 620 לפחות.',
+        'מתמטיקה 4 יחידות בציון 70 לפחות או 5 יחידות בציון עובר; למי שאינם עומדים בדרישה קיימים קורס קדם או מבחן פטור.',
+        'מסלול ציון קבלה 106 ופסיכומטרי 550 לפחות קיים ברופין, אך אינו מחושב כאן משום שנוסחתו אינה מפורסמת. הממוצע הקובע מחושב ברופין.',
       ],
-      officialCalculatorUrl: 'https://www.ruppin.ac.il/departments/marine-science/',
+      officialCalculatorUrl:
+        'https://www.ruppin.ac.il/faculties/ba/marine-science-and-environment/application-requirements/',
     },
   ],
 
@@ -2816,12 +2817,14 @@ export const academicPrograms: Program[] = [
     category: 'הנדסה',
     profileScore: P.biomedical,
     admissionType: 'requirements',
+    // Engineering routes: https://www.afeka.ac.il/candidate/candidate-information-bsc/undergraduates/
+    // Capture: raw/official/afeka/sweep38_bsc-undergraduates_20261025T162537.txt.
+    // Reviewed gate correction: reviewedManifest.json, sweep-38 (2026-10-25).
     admissionRequirements: [
-      'בגרות מלאה עם 5 יח"ל מתמטיקה ופיזיקה',
-      'ממוצע בגרות מינימלי: 80',
-      'ציון פסיכומטרי מינימלי: 530',
+      'קבלה לפי בגרות: מתמטיקה 4 יחידות בציון 85 לפחות או 5 יחידות בציון 75 לפחות; אנגלית 4 יחידות בציון 70 לפחות או 5 יחידות בציון 60 לפחות; פיזיקה 5 יחידות בציון 60 לפחות או מכינה בפיזיקה בציון 70 לפחות.',
+      'קבלה לפי פסיכומטרי: 600 לפחות (רב־תחומי או בדגש כמותי) וגם כמותי 115 לפחות; מתמטיקה 4 יחידות בציון 80 לפחות או 5 יחידות בציון 70 לפחות, או מכינה במתמטיקה בציון 70 לפחות; פיזיקה 5 יחידות בציון 60 לפחות או מכינה בפיזיקה בציון 70 לפחות.',
+      'סיווג אנגלית ברמת מתחילים/בסיסי לפני תחילת הלימודים (אמירנט או ציון האנגלית בפסיכומטרי). סכם מעל 180 ומסלולי לימודים קודמים אינם נבדקים בחישוב.',
     ],
-    thresholds: { afeka: 0 },
   },
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -3399,18 +3402,19 @@ export const academicPrograms: Program[] = [
   },
   {
     id: 'ruppin_marine_bio',
-    name: 'ביולוגיה ימית ומכמורת',
+    name: 'מדעי הים והסביבה הימית',
     institution: 'המרכז האקדמי רופין',
     institutionId: 'ruppin',
     type: 'academic',
     category: 'מדעי החיים',
     profileScore: P.marineBiology,
     admissionType: 'requirements',
+    // Official source: https://www.ruppin.ac.il/faculties/ba/marine-science-and-environment/application-requirements/
+    // Capture: raw/official/ruppin/sweep38_marine-ba-requirements_chrome_20261025T163156.txt.
     admissionRequirements: [
-      'בגרות מלאה',
-      'ציון פסיכומטרי מינימלי: 500',
-      'ממוצע בגרות מינימלי: 75',
-      '4–5 יח"ל מתמטיקה ומדעים — יתרון',
+      'ממוצע בגרות משוקלל עם בונוסים 100 לפחות או פסיכומטרי 620 לפחות.',
+      'מתמטיקה 4 יחידות בציון 70 לפחות או 5 יחידות בציון עובר; למי שאינם עומדים בדרישה קיימים קורס קדם או מבחן פטור.',
+      'מסלול ציון קבלה 106 ופסיכומטרי 550 לפחות קיים ברופין, אך אינו מחושב כאן משום שנוסחתו אינה מפורסמת. הממוצע הקובע מחושב ברופין.',
     ],
     institutionDetails: D['ruppin_marine_bio'],
   },

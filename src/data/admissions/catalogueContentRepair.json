@@ -1586,6 +1586,34 @@
         "בכל המסלולים: זכאות לתעודת בגרות מלאה וסיווג אנגלית ברמת מתחילים/בסיסי לפני תחילת הלימודים (אמירנט או ציון האנגלית בפסיכומטרי)."
       ],
       "coverage": "published_conditions"
+    },
+    {
+      "programId": "ruppin_marine_bio",
+      "institutionId": "ruppin",
+      "sourceUrl": "https://www.ruppin.ac.il/faculties/ba/marine-science-and-environment/application-requirements/",
+      "sourceSha256": "c7ca921221a38dd9399f81dc95ad09a38a9993069628ab586105dd32d502dd64",
+      "checkedAt": "2026-10-25",
+      "capturePath": "raw/official/ruppin/sweep38_marine-ba-requirements_chrome_20261025T163156.txt",
+      "notes": [
+        "ממוצע בגרות משוקלל עם בונוסים 100 לפחות או פסיכומטרי 620 לפחות.",
+        "מתמטיקה 4 יחידות בציון 70 לפחות או 5 יחידות בציון עובר; למי שאינם עומדים בדרישה קיימים קורס קדם או מבחן פטור.",
+        "מסלול ציון קבלה 106 ופסיכומטרי 550 לפחות קיים ברופין, אך אינו מחושב כאן משום שנוסחתו אינה מפורסמת. הממוצע הקובע מחושב ברופין."
+      ],
+      "coverage": "published_conditions"
+    },
+    {
+      "programId": "afeka_biomedical",
+      "institutionId": "afeka",
+      "sourceUrl": "https://www.afeka.ac.il/candidate/candidate-information-bsc/undergraduates/",
+      "sourceSha256": "9db351af20481a775340e7e6a9f41830c9791fb1416e655df7c4dcab9e79b3c1",
+      "checkedAt": "2026-10-25",
+      "capturePath": "raw/official/afeka/sweep38_bsc-undergraduates_20261025T162537.txt",
+      "notes": [
+        "קבלה לפי בגרות: מתמטיקה 4 יחידות בציון 85 לפחות או 5 יחידות בציון 75 לפחות; אנגלית 4 יחידות בציון 70 לפחות או 5 יחידות בציון 60 לפחות; פיזיקה 5 יחידות בציון 60 לפחות או מכינה בפיזיקה בציון 70 לפחות.",
+        "קבלה לפי פסיכומטרי: 600 לפחות (רב־תחומי או בדגש כמותי) וגם כמותי 115 לפחות; מתמטיקה 4 יחידות בציון 80 לפחות או 5 יחידות בציון 70 לפחות, או מכינה במתמטיקה בציון 70 לפחות; פיזיקה 5 יחידות בציון 60 לפחות או מכינה בפיזיקה בציון 70 לפחות.",
+        "סיווג אנגלית ברמת מתחילים/בסיסי לפני תחילת הלימודים (אמירנט או ציון האנגלית בפסיכומטרי). סכם מעל 180 ומסלולי לימודים קודמים אינם נבדקים בחישוב."
+      ],
+      "coverage": "published_conditions"
     }
   ],
   "excludedPrograms": [
@@ -1593,8 +1621,10 @@
       "programId": "bgu_law",
       "institutionId": "bgu",
       "reason": "No law programme established in the official 2027 admissions catalogue; legacy generated placeholder.",
-      "sourceUrl": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1",
-      "sourceSha256": "c83ff409fd22543874fb78151d8b905196363d82eb9be16d2149fb63b4f059b3"
+      "sourceUrl": "https://www.bgu.ac.il/welcome/ba/catalog/",
+      "sourceSha256": "098e7a26df1f686702440ea803b35716b8ffaa0f635f868563c79872592d4f2d",
+      "checkedAt": "2026-10-25",
+      "capturePath": "raw/official/bgu/sweep38_ba-catalog_20261025T163514.txt"
     },
     {
       "programId": "colman_tourism",
