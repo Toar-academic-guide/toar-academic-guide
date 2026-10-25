@@ -147,6 +147,7 @@ const targetedTests = [
   'src/server/admissions/bguHealthRoutes.test.ts',
   'src/server/admissions/bguSocialScienceRoutes.test.ts',
   'src/server/ingestion/adapters/technionAdmissions.test.ts',
+  'src/server/admissions/technionWinterThresholds.test.ts',
   'src/server/ingestion/adapters/haifaAdmissions.test.ts',
   'src/server/admissions/haifaProgrammePolicy.test.ts',
   'src/server/admissions/verification/programVerification.test.ts',

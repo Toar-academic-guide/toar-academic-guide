@@ -12,7 +12,7 @@ import {
 
 export const TECHNION_THRESHOLD_URL =
   'https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/';
-const CAPTURED_AT = '2026-07-26T00:00:00.000Z';
+const CAPTURED_AT = '2026-10-25T00:00:00.000Z';
 
 interface TechnionConfig {
   programId: string;
@@ -23,8 +23,8 @@ interface TechnionConfig {
 const CONFIGS: TechnionConfig[] = [
   { programId: 'cs', threshold: 91, verdict: 'accepted' },
   { programId: 'datascience', threshold: 91, verdict: 'accepted' },
-  { programId: 'ee', threshold: 94, verdict: 'accepted' },
-  { programId: 'me', threshold: 92, verdict: 'accepted' },
+  { programId: 'ee', threshold: 91.5, verdict: 'accepted' },
+  { programId: 'me', threshold: 87, verdict: 'accepted' },
   { programId: 'medicine', threshold: 92, verdict: 'eligible_to_apply' },
   { programId: 'biomedical', threshold: 87, verdict: 'accepted' },
   { programId: 'civil', threshold: 87, verdict: 'accepted' },
@@ -55,6 +55,10 @@ function sourceFingerprint(config: TechnionConfig): string {
     .digest('hex')}`;
 }
 
+function capturedAtFor(config: TechnionConfig): string {
+  return ['ee', 'me'].includes(config.programId) ? CAPTURED_AT : '2026-07-26T00:00:00.000Z';
+}
+
 function fixturesFor(pairId: string, config: TechnionConfig): AdmissionsVerificationFixture[] {
   const fingerprint = sourceFingerprint(config);
   return [
@@ -66,7 +70,7 @@ function fixturesFor(pairId: string, config: TechnionConfig): AdmissionsVerifica
       input: { psychometric: 800, bagrut: 100, bagrutSubjectRecord: technionRecord(100) },
       expected: { score: 98.9, verdict: config.verdict },
       sourceFingerprint: fingerprint,
-      capturedAt: CAPTURED_AT,
+      capturedAt: capturedAtFor(config),
     },
     {
       id: `${pairId}:below:2026-2027`,
@@ -76,7 +80,7 @@ function fixturesFor(pairId: string, config: TechnionConfig): AdmissionsVerifica
       input: { psychometric: 500, bagrut: 95, bagrutSubjectRecord: technionRecord(95) },
       expected: { score: 73.9, verdict: 'below' },
       sourceFingerprint: fingerprint,
-      capturedAt: CAPTURED_AT,
+      capturedAt: capturedAtFor(config),
     },
   ];
 }
@@ -246,7 +250,7 @@ export const TECHNION_PROGRAM_VERIFICATION_METADATA: Record<
               state: 'verified',
               comparedScore: true,
               comparedVerdict: true,
-              liveComparedAt: CAPTURED_AT,
+              liveComparedAt: capturedAtFor(config),
               sourceFingerprint: fingerprint,
             },
           },
@@ -276,4 +280,16 @@ export function getTechnionProgramVerificationMetadata(pairId: string) {
 
 export function getTechnionProgramConfig(programId: string) {
   return configFor(programId);
+}
+
+// These reviewed winter pairs replay both the score and cutoff live. Persisted
+// catalogue/freshness rows may still describe the previous spring/stale cutoffs.
+export function getCodeReviewedTechnionWinterVerification(pairId: string) {
+  if (
+    !['ee__technion', 'technion_ee__technion', 'me__technion', 'technion_me__technion'].includes(
+      pairId,
+    )
+  )
+    return undefined;
+  return TECHNION_PROGRAM_VERIFICATION_METADATA[pairId];
 }

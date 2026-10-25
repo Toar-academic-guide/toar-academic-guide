@@ -1765,7 +1765,7 @@ export const academicPrograms: Program[] = [
     profileScore: P.ee,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: null, huji: null, technion: 94, bgu: null },
+    thresholds: { tau: null, huji: null, technion: 91.5, bgu: null },
     institutionDetails: D['technion_ee'],
   },
   {
@@ -1778,7 +1778,7 @@ export const academicPrograms: Program[] = [
     profileScore: P.me,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: null, huji: null, technion: 92, bgu: null },
+    thresholds: { tau: null, huji: null, technion: 87, bgu: null },
     institutionDetails: D['technion_me'],
   },
   {

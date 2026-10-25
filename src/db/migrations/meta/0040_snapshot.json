@@ -1,5 +1,5 @@
 {
-  "id": "34abff7a-e183-4567-9d67-375593f5a3ff",
+  "id": "750cb024-9464-4ec7-a42b-bb0db6beb935",
   "prevId": "463e3429-0602-4489-8ff5-33baadf4fcdd",
   "version": "7",
   "dialect": "postgresql",
@@ -2012,7 +2012,7 @@
         },
         "threshold_value": {
           "name": "threshold_value",
-          "type": "integer",
+          "type": "numeric",
           "primaryKey": false,
           "notNull": false
         },
@@ -2294,143 +2294,6 @@
       "uniqueConstraints": {},
       "policies": {},
       "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.enquiries": {
-      "name": "enquiries",
-      "schema": "",
-      "columns": {
-        "request_id": {
-          "name": "request_id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true
-        },
-        "name": {
-          "name": "name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "phone": {
-          "name": "phone",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "program_id": {
-          "name": "program_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "institution_id": {
-          "name": "institution_id",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "program_name": {
-          "name": "program_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "institution_name": {
-          "name": "institution_name",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "source_path": {
-          "name": "source_path",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "utm_source": {
-          "name": "utm_source",
-          "type": "varchar(100)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "utm_medium": {
-          "name": "utm_medium",
-          "type": "varchar(100)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "utm_campaign": {
-          "name": "utm_campaign",
-          "type": "varchar(100)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "referrer": {
-          "name": "referrer",
-          "type": "varchar(256)",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "consent": {
-          "name": "consent",
-          "type": "boolean",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "consent_text": {
-          "name": "consent_text",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "result_status": {
-          "name": "result_status",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "bagrut": {
-          "name": "bagrut",
-          "type": "real",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "psychometric": {
-          "name": "psychometric",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "evaluation_input": {
-          "name": "evaluation_input",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {},
-      "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "enquiries_result_status_check": {
-          "name": "enquiries_result_status_check",
-          "value": "\"enquiries\".\"result_status\" in ('accepted', 'below', 'eligible_to_apply', 'unknown')"
-        },
-        "enquiries_consent_check": {
-          "name": "enquiries_consent_check",
-          "value": "\"enquiries\".\"consent\" = true"
-        }
-      },
       "isRLSEnabled": false
     },
     "public.ingestion_jobs": {

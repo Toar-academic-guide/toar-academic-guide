@@ -3,6 +3,7 @@ import type { Program } from '@/data/degrees/types';
 import { selectRequirementTiles } from '@/lib/requirementTiles';
 import { ROUTES } from '@/lib/routes';
 import AdmissionRequirements, { RequirementList } from './AdmissionRequirements';
+import TechnionThresholdNotice from './TechnionThresholdNotice';
 
 export default function RequirementTiles({
   program,
@@ -27,11 +28,14 @@ export default function RequirementTiles({
   });
   if (!model)
     return (
-      <AdmissionRequirements
-        programId={program.id}
-        institutionId={institutionId}
-        requirements={requirements}
-      />
+      <>
+        <AdmissionRequirements
+          programId={program.id}
+          institutionId={institutionId}
+          requirements={requirements}
+        />
+        <TechnionThresholdNotice programId={program.id} institutionId={institutionId} />
+      </>
     );
   const details = [
     ...new Set(
@@ -42,6 +46,7 @@ export default function RequirementTiles({
   ];
   return (
     <div className="mt-3 text-right text-sm text-[#35415b]" dir="rtl">
+      <TechnionThresholdNotice programId={program.id} institutionId={institutionId} />
       <p className="mb-2 text-xs text-[var(--text-muted)]">
         {model.scope ? `${model.scope} · ` : ''}
         {model.semantics === 'alternatives' ? 'מספיק אחד מאלה:' : 'התנאים:'}

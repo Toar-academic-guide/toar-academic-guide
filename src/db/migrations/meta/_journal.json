@@ -285,8 +285,15 @@
     {
       "idx": 40,
       "version": "7",
-      "when": 1792862396867,
-      "tag": "0040_enquiries",
+      "when": 1792884036364,
+      "tag": "0040_fractional_admission_thresholds",
+      "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1792889302589,
+      "tag": "0041_enquiries",
       "breakpoints": true
     }
   ]

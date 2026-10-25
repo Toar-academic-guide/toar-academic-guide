@@ -1,3 +1,4 @@
+-- Companion to src/db/migrations/0041_enquiries.sql (generated after main 0040_fractional_admission_thresholds).
 -- Enquiries backup/apply/rollback packet. DO NOT run as part of app startup or PR verification.
 -- Preview shares production. An authorized operator must run this separately.
 -- Does not replay any historical migration (especially 0037-0039).
