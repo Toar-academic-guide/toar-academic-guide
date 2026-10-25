@@ -1,4 +1,5 @@
-import { enquiryAttributionSchema, referrerSchema } from './leadAttribution';
+import { referrerSchema } from './leadAttribution';
+import { SITE_URL } from './site';
 
 const emailAddress = /[\p{L}\p{N}.!#$%&'*+/=?^_`{|}~-]+@[\p{L}\p{N}.-]+\.[\p{L}]{2,}/giu;
 // Seven to fifteen digits cover local numbers through E.164, including URL-form spaces (+).
@@ -6,23 +7,30 @@ const phoneNumber =
   /(?<![\p{L}\p{N}])\+?\(?\d(?:[\s()+.\-\u2010-\u2015]*\d){6,14}(?![\p{L}\p{N}])/gu;
 const internalUuid = /^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i;
 
-function scrubCampaignUrl(value: unknown): unknown {
-  if (typeof value !== 'string') return value;
+const urlProperties = new Set([
+  '$current_url',
+  '$initial_current_url',
+  '$session_entry_url',
+  '$external_click_url',
+  'href',
+  'attr__href',
+]);
+
+function scrubUrl(value: unknown, mode: 'url' | 'path' | 'origin'): unknown {
+  if (typeof value !== 'string' || !value.trim()) return null;
+  const source = value.trim();
+  if (!source.startsWith('/') && !/^https?:\/\//i.test(source)) return null;
   try {
-    const url = new URL(value);
-    for (const key of ['utm_source', 'utm_medium', 'utm_campaign'] as const) {
-      const candidate = url.searchParams.get(key);
-      if (
-        candidate !== null &&
-        (!enquiryAttributionSchema.shape[key].safeParse(candidate).success ||
-          scrub(candidate) !== candidate)
-      ) {
-        url.searchParams.delete(key);
-      }
+    const url = new URL(source, mode === 'origin' ? undefined : SITE_URL);
+    if (!['http:', 'https:'].includes(url.protocol) || url.username || url.password) return null;
+    if (mode === 'origin') {
+      const parsed = referrerSchema.safeParse(url.origin);
+      return parsed.success ? url.origin : null;
     }
-    return url.href;
+    const relative = source.startsWith('/') && !source.startsWith('//');
+    return scrub(mode === 'path' || relative ? url.pathname : url.origin + url.pathname);
   } catch {
-    return value;
+    return null;
   }
 }
 
@@ -60,13 +68,17 @@ function scrub(value: unknown): unknown {
 }
 
 function scrubProperty(key: string, value: unknown): unknown {
-  if (/^(?:\$initial_|\$)?referrer$/.test(key)) {
+  if (/^\$(?:(?:initial|session_entry)_)?referrer$/.test(key)) {
+    return scrubUrl(value, 'origin');
+  }
+  if (key === 'referrer') {
     const parsed = referrerSchema.safeParse(value);
     return parsed.success ? parsed.data : null;
   }
-  if (key === '$current_url' || key === '$initial_current_url') {
-    return scrub(scrubCampaignUrl(value));
+  if (/^\$(?:(?:initial|session_entry|prev_pageview)_)?pathname$/.test(key)) {
+    return scrubUrl(value, 'path');
   }
+  if (urlProperties.has(key)) return scrubUrl(value, 'url');
   return scrub(value);
 }
 
