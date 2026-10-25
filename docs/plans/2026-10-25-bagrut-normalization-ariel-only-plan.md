@@ -13,7 +13,7 @@ execution: code
 
 Prospective students must not receive invented composite admission scores for HUJI, BGU, Haifa, or BIU. Ariel must use its published formula, while TAU keeps its existing results until postfreeze-2.
 
-This delivery is a local plan and intentionally failing tests, based on `b39067a8f7b2cbf5c53d9fccdd6763456e248dff`, on `codex/bagrut-normalization-ariel-only`. Implementation is a separate commit after the freeze is lifted. No production code, data, scripts, remote writes, DB operations, environment changes, push, PR, rebase, or merge are authorized now.
+Implementation is now authorized locally on `codex/bagrut-normalization-ariel-only`, starting at `d19466a` (includes main `214f0b7` and #282 BIU floor work). The earlier red-tests delivery remains historical evidence below. First commit the approved test adjustments, then implement and verify Option A in a separate local commit. No push, PR, GitHub writes, merge, rebase, amend, force, hook bypass, DB/SQL/seed/migration, Vercel, environment, secret, data, or manifest changes. Use ce-plan → ce-work → ce-simplify-code; no code/document review pipeline.
 
 Authority: the user brief and Addendum 1 override conflicting spec/skill instructions. The final external spec is `../codex-tasks/postfreeze-5-bagrut-normalization.md` (workspace task document, outside this repository; read-only). Its final Handoff to Oded and 18-pin table govern this plan. Standing rules and admissions accuracy workflow were read from the same task directory.
 
@@ -40,7 +40,7 @@ Ariel uses `(6.666 × B + P) / 2`, with derivatives `0.5` for P and `3.333` for 
 
 - R5. `UniversityResult.sekhem` becomes `number | null`. Bucket-list analysis must stop before rounding/comparison when no score exists, carrying no number and no composite delta.
 - R6. BucketList hides the whole score/threshold line for null scores. Retain the existing card, contact/save actions, and right-aligned Hebrew. No invented score, zero substitute, or estimate label.
-- R7. UniversityCard and admissionsDecisionEngine receive null-safety only; no deletion. The server evaluator changes only reads of `evaluation.sekhem`.
+- R7. UniversityCard, ResultsDashboard, and admissionsDecisionEngine receive null-safety only; no deletion. The server evaluator changes only reads of `evaluation.sekhem`.
 - R8. Ariel's script uses 6.666. BGU/BIU scripts print `not found: no published bagrut conversion` and no computed score or composite-based verdict.
 - R9. Keep all 18 pins, source-scan guard, null-render tests, and no-estimate API tests. Existing TAU assertions stay untouched.
 
@@ -110,7 +110,7 @@ The global `weighted_scaled` type remains for compatibility. Existing generic te
 
 Add an Ariel-only `sekhemAriel` function (or an explicit Ariel dispatcher branch) and its derivative dispatch. The source guard accepts that name or `calculateArielSekhem`, and only the literal 6.666 within that function/branch. Add the four-institution null dispatch and floor/direct evaluation path before score arithmetic. Widen return types. Re-comment generic formula claims, including `src/types/index.ts:19`. Retain TAU's helper name and calculation expressions. Replace the separately copied derivative expression with reuse of the legacy TAU conversion, restricted to TAU, so the source guard does not bless a second conversion site.
 
-**Execution note:** make the already-written tests pass; update only the two approved old expectations listed below.
+**Execution note:** before production edits, replace only the two approved old BGU score assertions with null, and replace the extra Ariel CLI rounding test as specified in U3. Run the new CLI test against the unchanged script, record its intended failure, and commit these test updates separately with this plan. Then make the tests pass.
 
 **Test scenarios:** pins 1–14, 17–18; four null delta cases; missing thresholds, high-score floors-met profiles, direct track, and BGU floor-only gaps. Existing minimum-floor, Reichman, Afeka, and Technion tests remain green. Pin 17 and the existing TAU pins must pass unchanged.
 
@@ -118,9 +118,9 @@ Add an Ariel-only `sekhemAriel` function (or an explicit Ariel dispatcher branch
 
 **Requirements:** R5–R7, KTD2–KTD3. **Dependencies:** U1.
 
-**Files:** `src/utils/bucketListEngine.ts`, `src/components/BucketList.tsx`, `src/components/UniversityCard.tsx`, `src/utils/admissionsDecisionEngine.ts`, `src/server/admissions/evaluator.ts`, `src/components/BucketList.bagrutNormalization.test.tsx`, `src/utils/__tests__/bagrutNormalization.optionA.test.ts`.
+**Files:** `src/utils/bucketListEngine.ts`, `src/components/BucketList.tsx`, `src/components/UniversityCard.tsx`, `src/components/ResultsDashboard.tsx`, `src/utils/admissionsDecisionEngine.ts`, `src/server/admissions/evaluator.ts`, `src/components/BucketList.bagrutNormalization.test.tsx`, `src/utils/__tests__/bagrutNormalization.optionA.test.ts`.
 
-Widen `BucketEntry.sekhem` to accept null and return no-data/null without delta before rounding a null score. Hide the full badge when null even if a qualified/gap entry is encountered. Distinguish unavailable formula from missing scores using existing profile/status context and concise copy. Make legacy formatting, comparisons, and explanations null-safe without deleting dead code. Server evaluator changes only its three `evaluation.sekhem` reads (`:2308`, `:2325`, `:2476` on base), using the existing nullable result shape and avoiding a score label when appropriate; do not change route selection or capability classification.
+Widen `BucketEntry.sekhem` to accept null and return no-data/null without delta before rounding a null score. Hide the full badge when null even if a qualified/gap entry is encountered. Distinguish unavailable formula from missing scores using existing profile/status context and concise copy. Make legacy formatting, comparisons, and explanations null-safe without deleting dead code. Server evaluator changes only its three `evaluation.sekhem` reads (re-check locations on d19466a after #282), using the existing nullable result shape and avoiding a score label when appropriate; do not change route selection or capability classification.
 
 **Test scenarios:** every saved programme across pin-18 profiles carries no numeric score for the four; no composite delta; mock null entries in both qualified/gap card states render no score/threshold line; retain programme title and remove action. A real engine run is covered separately by pin 18, so the render test isolates the consumer contract.
 
@@ -132,13 +132,13 @@ Widen `BucketEntry.sekhem` to accept null and return no-data/null without delta 
 
 Ariel uses its own published literal formula. BGU/BIU stop printing invented composites and composite verdicts, reporting the exact not-found message. Use the existing Vitest runner and Node child-process pattern; no new runner/package scripts.
 
-**Test scenarios:** pins 15–16; additionally Ariel B99.9/P701 rounds to 683 under the official constant, versus 684 today. Pin 15 itself passes today because rounding hides the small formula difference.
+**Test scenarios:** pins 15–16; replace the B99.9/P701 integer-rounding test with B120/P800, parsing a clearly labelled `Unrounded Sekhem: 799.96` line and asserting `toBeCloseTo(799.96, 2)`. Add that line using `toFixed(2)` while retaining existing rounded `Computed Sekhem:` lines and pin 15 unchanged. Jorje approved the replacement because no Ariel rounding rule is published; B99.9/P701 gives 683.47 before rounding. Confirm the new test fails on the unchanged script (missing line or legacy 800.00).
 
 ### U4. Evidence and implementation verification
 
 **Requirements:** R9. **Dependencies:** U1–U3.
 
-**Files:** `docs/admissions-verification/2026-10-25-bagrut-normalization.md` (new in implementation commit); this plan if evidence requires correction. No other implementation files are planned.
+**Files:** `docs/admissions-verification/2026-10-25-bagrut-normalization.md` (new in implementation commit); this plan if evidence requires correction. No other implementation files are planned. Re-run the static bucket coverage on this branch and record actual AFTER counts, source grep residues, test changes, and limitations. Confirm Ariel coefficient/rounding evidence in the supplied ba-registration-process 13:57 and ee-admission 14:03 captures and PM write-up; cite external paths without copying captures.
 
 Record source confidence, before/after coverage, actual test results, and direct browser evidence when implementation is authorized. Produce desktop/mobile screenshots for a saved programme at each affected institution; Jorje obtains Amit's visual approval before shipping. Do not declare this red-tests commit merge-ready.
 
@@ -205,7 +205,7 @@ Addendum 1 supersedes the earlier no-duplicate instruction: add the dedicated na
 
 ## Approved test update
 
-For Jorje: only the following existing expected values are authorized to move in the implementation commit. They are **not edited in this tests-only commit**.
+Jorje explicitly approved these two assertion-only changes in the first local test commit. No other byte of `sekhemCalculators.test.ts` may change, including the TAU assertions at lines 39/46/53. The CLI replacement in U3 is also approved; retain the old failure table below as historical red-test evidence.
 
 | Existing test / line | Current → implementation | Citation / preserved behavior |
 |---|---|---|
@@ -229,7 +229,7 @@ Plan: **null-safe only, no deletion**. UniversityCard currently formats before c
 1. The initial spec changed during research; the final spec and Addendum 1 now explicitly require 18 pins including the duplicate named TAU pin. This supersedes the original no-duplicate restriction.
 2. The final spec still says rename/re-comment; preserve `normalizeBagrut`'s name and exact TAU calculation per explicit user direction.
 3. Final spec leaves null versus omission open; the user settled `UniversityResult.sekhem: number | null` and null returns. BucketEntry accepts null; no numeric zero substitute, even for unavailable/missing-threshold cases.
-4. Pins 4, 12, 13, 15, and 17 pass today by design; they are regression guards, not claimed red tests. Pin 15 cannot distinguish constants after integer rounding. The additional CLI boundary detects that gap.
+4. Pins 4, 12, 13, 15, and 17 pass today by design; they are regression guards, not claimed red tests. Pin 15 cannot distinguish constants after integer rounding. The approved unrounded B120/P800 CLI assertion detects that gap without claiming an official rounding rule.
 5. Pin 18's required profiles are P/B 650/100, 750/115, 520/88. They include floors-met and floor-missed cases; all three public APIs are covered. Exact adapters/published routes are out of this guard.
 6. The source scan requires removal of copied `calculateDelta` conversion even though TAU math stays unchanged. Reuse the preserved TAU helper only within the TAU derivative path; never change TAU's observable derivative or normalizer body to appease the scan.
 7. Floors before direct is the literal outcome order used for the new branch. No current HUJI psychology conflict exists. Institution-specific alternate-channel interpretation stays with Eitan; do not invent new floors.
@@ -237,7 +237,7 @@ Plan: **null-safe only, no deletion**. UniversityCard currently formats before c
 9. Capability classifications are not legacy runtime coverage. Unsupported matrix counts may be unchanged even when 50 bucket scores disappear. Static catalogue measurements are not production DB measurements or traffic.
 10. Ownership: Oded implements bucketListEngine/BucketList/UI and shared type consumers; Eitan reviews admission accuracy and owns `src/data/admissions/**`, `src/data/degrees/**`. Do not edit those paths, `src/data/degreesData.ts` weights, or the catalogue seed. No external coordination messages are authorized in this run.
 11. Current no-data label implies missing scores; when a profile exists and conversion is unavailable, use KTD3's concise action. Visual approval and screenshots are owed during implementation, not claimed by these component tests.
-12. Freeze/queue rules forbid shipping now. This explicitly authorized plan/tests commit does not implement or lift the freeze. Source captures are supplied evidence; Ariel's live calculator was not run. HUJI/Haifa follow-ups, input range, TAU accuracy, data cleanup, schema/data changes, and deployment are out of scope.
+12. The current user brief authorizes local implementation after #282. Remote shipping remains forbidden. Source captures are supplied evidence; Ariel's live calculator was not run. HUJI/Haifa follow-ups, input range, TAU accuracy, data cleanup, schema/data changes, and deployment are out of scope.
 
 ---
 
@@ -245,13 +245,13 @@ Plan: **null-safe only, no deletion**. UniversityCard currently formats before c
 
 ### Verification
 
-Implementation commit commands, using real package.json scripts:
+Required checks before the implementation commit, using real package.json scripts:
 
 ```bash
 npm run lint
 npm run typecheck
-npm test
-npm run build
+npx vitest run
+npm run guard:pre-pr
 ```
 
 Focused red-tests command for this delivery:
@@ -293,7 +293,7 @@ npx tsx --conditions=react-server -e 'import {getStaticCataloguePrograms,getStat
 
 The final spec reports **0 evaluator pairs on the normalization path** in its three-profile simulation, with 32 scored pairs through other rules. This run cross-checked matrix classifications and bucket coverage, not that full evaluator simulation. Treat zero as supplied spec evidence, not a claim of a fresh authenticated/API/production check. At implementation, repeat the spec's in-memory `evaluateAdmissionsForProgram` simulation with the same profiles, rich extra inputs, failing live fetcher, and empty freshness map; record actual legacy calls and unsupported decisions. Do not change evaluator control flow to force the matrix count to match the bucket loss.
 
-### Local test results
+### Historical red-tests delivery results (before implementation)
 
 Focused run: **31 cases: 26 intended failures, 5 passing regression guards**, exit 1. All four files loaded and ran; no import, missing-file, compilation, or fixture failures. An initial ambiguous component title query was corrected before these final runs; both component failures now specifically expose the score/threshold span.
 
@@ -361,6 +361,6 @@ The source scan's exact diagnostic locations on base are `scripts/admissions-cal
 
 ## Definition of Done
 
-For this delivery: only this plan and test files are committed locally; all 18 pins are represented; all existing tests still pass; failures are the new behavioral assertions; typecheck introduces no test errors; source diagnostics enumerate real conversion sites. Record each case and outcome. No implementation or external write is performed.
+For the first local commit: only the approved test adjustments and this plan change; record the new CLI failure on the unchanged script.
 
-For the later implementation: red cases pass, only approved old BGU expectations change, all TAU pins pass unchanged, numeric coverage is 59/0 for the stated sets, source scan passes without broad allowlists, existing verified routes remain intact, lint/typecheck/tests/build pass, and Jorje completes source/product/visual verification before any merge decision.
+For the implementation commit: red cases pass, only approved old BGU expectations change, all TAU pins pass unchanged, numeric coverage is 59/0 for the stated sets, source scan passes without broad allowlists, existing verified routes remain intact, lint/typecheck/full Vitest/guard:pre-pr pass, and Jorje completes source/product/visual verification before any merge decision.

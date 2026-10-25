@@ -23,10 +23,11 @@ describe('postfreeze-5 standalone calculator scripts', () => {
     expect(output.match(/Computed Sekhem: \d+/g)).toEqual(Array(11).fill('Computed Sekhem: 683'));
   });
 
-  it('Ariel B99.9/P701 uses 6.666 at an integer-rounding boundary', () => {
-    const output = runCalculator('8_ariel.js', 99.9, 701);
-    // (6.666 * 99.9 + 701) / 2 = 683.4667; legacy conversion rounds 683.5 to 684.
-    expect(output.match(/Computed Sekhem: \d+/g)).toEqual(Array(11).fill('Computed Sekhem: 683'));
+  it('Ariel B120/P800 prints the unrounded composite 799.96', () => {
+    const output = runCalculator('8_ariel.js', 120, 800);
+    const unrounded = output.match(/^Unrounded Sekhem: (\d+\.\d{2})$/m);
+    expect(unrounded, 'missing labelled Unrounded Sekhem output').not.toBeNull();
+    expect(Number(unrounded?.[1])).toBeCloseTo(799.96, 2);
   });
 
   it.each(['4_bgu.js', '5_biu.js'])(
