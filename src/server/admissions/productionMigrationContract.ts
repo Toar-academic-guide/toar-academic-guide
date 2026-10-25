@@ -317,4 +317,12 @@ export const GUARDED_PRODUCTION_MIGRATIONS = [
     tables: { enquiries: GUARDED_ENQUIRIES_TABLE },
     functions: ['store_enquiry(jsonb)'],
   },
+  {
+    id: '0042',
+    repositoryPath: 'src/db/migrations/0042_store_enquiry_createdat_default.sql',
+    columns: [],
+    functionBodies: {
+      'store_enquiry(jsonb)': "COALESCE((payload->>'createdAt')::timestamptz, now())",
+    },
+  },
 ] as const;

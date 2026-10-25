@@ -45,6 +45,7 @@ export type ProductionSchemaSnapshot = {
   enums: Record<string, string[]>;
   triggers: string[];
   functions: Record<string, string[]>;
+  functionDefinitions?: Record<string, string>;
   functionAccess?: Record<string, { securityDefiner: boolean; executeRoles: string[] }>;
 };
 
@@ -89,6 +90,7 @@ export type ProductionSchemaIssue = {
     | 'missing_trigger'
     | 'missing_function'
     | 'function_config_mismatch'
+    | 'function_body_mismatch'
     | 'rls_disabled'
     | 'missing_policy'
     | 'unexpected_policy'
@@ -576,10 +578,25 @@ export function assessProductionSchema(snapshot: ProductionSchemaSnapshot): Prod
   assessAdmissionsAutomationAccess(snapshot, applied, issues);
 
   // Older journal prefixes retain their existing migration checks. Once the
-  // journal is current, also require the separately applied 0037–0041 schema.
+  // journal is current, also require the separately applied 0037–0042 schema.
   if (appliedCount === FORWARD_PRODUCTION_MIGRATIONS.length) {
     for (const migration of GUARDED_PRODUCTION_MIGRATIONS) {
       if ('tables' in migration) assessGuardedEnquiries(snapshot, migration, issues);
+      if ('functionBodies' in migration) {
+        for (const [fn, requiredSql] of Object.entries(migration.functionBodies)) {
+          const definition = snapshot.functionDefinitions?.[fn];
+          if (
+            !definition ||
+            !normalizeFunctionSql(definition).includes(normalizeFunctionSql(requiredSql))
+          ) {
+            issues.push({
+              code: 'function_body_mismatch',
+              object: `function:${fn}`,
+              detail: `Guarded ${migration.id} requires ${requiredSql}; function definition is missing or outdated. Do not replay historical SQL.`,
+            });
+          }
+        }
+      }
       for (const { table, column, type } of migration.columns) {
         const actual = snapshot.tables[table];
         if (!actual?.columns.includes(column)) {
@@ -1210,6 +1227,13 @@ function assessChangedObjects(
       }
     }
   }
+}
+
+function normalizeFunctionSql(sql: string): string {
+  return sql
+    .replace(/--[^\n]*|\/\*[\s\S]*?\*\//g, '')
+    .replace(/\s+/g, '')
+    .toLowerCase();
 }
 
 function assessGuardedEnquiries(

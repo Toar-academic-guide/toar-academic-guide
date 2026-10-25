@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 test('homepage canonical and JSON-LD use the slashed root URL', async ({ request }) => {
   const response = await request.get('/');

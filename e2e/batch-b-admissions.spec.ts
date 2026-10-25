@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './fixtures';
 
 const targets = [
   ['bezalel_industrial_design', 'bezalel', 'eligible_to_apply'],

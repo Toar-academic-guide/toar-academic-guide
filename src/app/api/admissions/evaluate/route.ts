@@ -6,7 +6,10 @@ import { ApiRouteError, toErrorResponse } from '@/app/api/_lib/errors';
 import { listCatalogueInstitutions, listCataloguePrograms } from '@/server/catalogue/queries';
 import { evaluateAdmissionsForProgram } from '@/server/admissions/evaluator';
 import { BATCH_B_PROGRAMS } from '@/server/admissions/batchBManualPathEvaluation';
-import { assertAdmissionsEvaluationRateLimit } from '@/server/admissions/rateLimit';
+import {
+  admissionsEvaluationClientKey,
+  assertAdmissionsEvaluationRateLimit,
+} from '@/server/admissions/rateLimit';
 import type { AdmissionsBatchReport } from '@/types/admissionsEvaluation';
 import {
   admissionsEvaluationSchema,
@@ -120,11 +123,10 @@ function resolveEvaluationDegreeId(degreeId: string): string {
 async function resolveClientKey() {
   const requestHeaders = await headers();
   const forwardedFor = requestHeaders.get('x-forwarded-for');
-  if (forwardedFor) {
-    return forwardedFor.split(',')[0].trim();
-  }
-
-  return requestHeaders.get('x-real-ip') ?? 'anonymous';
+  const clientKey = forwardedFor
+    ? forwardedFor.split(',')[0].trim()
+    : (requestHeaders.get('x-real-ip') ?? 'anonymous');
+  return admissionsEvaluationClientKey(clientKey, requestHeaders.get('x-myway-e2e-bucket'));
 }
 
 function assertContentLength(request: Request) {
