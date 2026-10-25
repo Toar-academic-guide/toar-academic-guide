@@ -69,3 +69,16 @@ Authority: the supplied R1 PR #278 rulings dated 2026-10-25 and this run's expli
 6. Simplify the focused implementation without changing proof tests, then run lint, typecheck, format, the full unit suite and the real guard. Normal push only when all pass; update PR #278 body and inspect head CI. Do not edit workflows, guard, coverage requirements, UI components or copy rendering.
 
 Known student-visible behavior: G2/G3 replace uncertain proxy verdicts with requests for subject grades; result statuses/next actions can change through the existing rendering. No layout or rendering change is intended. Jorje retains product/source verification and coordinator readiness authority.
+
+## Jorje 06:40 follow-up: visual estimate disclosure
+
+Continue the existing CE plan under the explicit follow-up authority. Keep PR #278 draft pending Amit's visual approval.
+
+1. Merge bb041ef without rebasing, preserving smoke isolation and DB contract checks.
+2. Add failing evaluator tests: a G3 all-channel below must omit the rejection disclaimer; an open/unknown alternate channel must return no verdict. Preserve direct-route-only caveats where a different channel has not been assessed.
+3. Add failing component coverage for estimated true, false/absent and defaulted-year-only provenance. Reuse a small RTL muted footnote component in the journey detail and calculator result list. Derive honest wording from estimated/estimationReason; do not invent exam years or add icons/badges.
+4. Change only the authorized economics browser loop's expectations and title. Keep its academic-profile editing/RTL coverage reachable through the existing update-data action.
+5. Run required checks and a static production build; run the affected existing Playwright specs. Capture three scenarios at 1280/390 from the committed code SHA, inspect all six images and overflow/alignment, and commit evidence plus scenario README copies.
+6. Normal push after the real guard passes. Preserve the historical PR evidence table, add the follow-up ruling, visual changes, screenshot blob links and draft-approval statement. Watch final-head CI; inspect and fix in-scope failures without weakening gates or other expectations.
+
+No DB writes, external settings, workflow/guard/coverage edits, PR comments, ready transition or merge. The user's explicit existing-Playwright tooling request governs local browser verification and screenshots.

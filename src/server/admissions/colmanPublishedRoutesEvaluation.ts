@@ -118,7 +118,7 @@ export function evaluateColmanPublishedRoutes({
         score: average,
         threshold: route.average,
         scoreLabel: 'ממוצע בגרות משוקלל — מסלול בגרות',
-        explanation: `${bagrutBelow} במסלול בגרות ופסיכומטרי לא מתקיים הסף של ${psychometricBelow ? `פסיכומטרי ${route.psychometric}` : `כמותי ${route.quantitative}`}. זו אינה דחייה מכל מסלולי הקבלה.`,
+        explanation: `${bagrutBelow} במסלול בגרות ופסיכומטרי לא מתקיים הסף של ${psychometricBelow ? `פסיכומטרי ${route.psychometric}` : `כמותי ${route.quantitative}`}.`,
         nextAction: 'בדקו מול מרכז הרישום אפשרות קבלה דרך מכינת שחקים.',
       },
       conditions,

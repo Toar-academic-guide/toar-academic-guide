@@ -1,4 +1,6 @@
 'use client';
+
+import AdmissionEstimate from './AdmissionEstimate';
 import TechnionThresholdNotice from './TechnionThresholdNotice';
 import AdmissionConditions from './AdmissionConditions';
 import { acceptedManualGateFootnote } from '@/lib/acceptedManualGateFootnote';
@@ -851,6 +853,7 @@ export default function CalculatorResults({
                           <p className="mt-1 text-xs leading-relaxed text-slate-500">
                             {result.explanation}
                           </p>
+                          <AdmissionEstimate result={result} />
                           {footnote && (
                             <AdmissionConditions
                               conditions={result.additionalConditions}

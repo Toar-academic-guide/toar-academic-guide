@@ -4436,3 +4436,28 @@ it.each([
     });
   },
 );
+
+it.each([
+  { psychometric: 420, quantitative: undefined, decision: 'below' },
+  { psychometric: 600, quantitative: 130, decision: 'unknown' },
+  { psychometric: undefined, quantitative: undefined, decision: 'unknown' },
+] as const)(
+  '06:40 ruling: G3 economics copy follows all-channel outcome %j',
+  async ({ psychometric, quantitative, decision }) => {
+    const program = getStaticCataloguePrograms().find((row) => row.id === 'colmgmt_economics')!;
+    const report = await evaluateAdmissionsForProgram({
+      program,
+      institutions: getStaticCatalogueInstitutions(),
+      input: {
+        degreeId: program.id,
+        bagrut: 70,
+        psychometric,
+        extraInputs: { psychometricMath: quantitative },
+      },
+    });
+    const result = report.results.find((row) => row.linkedInstitutionId === 'colman')!;
+    expect(result.decision).toBe(decision);
+    expect(result.explanation).not.toContain('זו אינה דחייה מכל מסלולי הקבלה.');
+    if (decision === 'unknown') expect(result.kind).toBe('needs_input');
+  },
+);
