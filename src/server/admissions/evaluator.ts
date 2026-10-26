@@ -28,6 +28,7 @@ import { evaluateColmanBagrutResult } from './colmanBagrutEvaluation';
 import { DANON_PROGRAM_URLS } from '@/data/admissions/danon';
 import catalogueContentRepair from '@/data/admissions/catalogueContentRepair.json';
 import { isHujiMedicineProgram } from '@/lib/hujiMedicineInputs';
+import { applyHujiPsychologyDirectRoute } from './hujiPsychologyDirectRoutePolicy';
 import {
   resolveHujiMedicineAdmission,
   HUJI_MEDICINE_REQUIREMENTS_URL,
@@ -1322,11 +1323,14 @@ async function evaluateExactScores(args: {
         },
       });
 
-      return normalizeExactProofResult({
+      const result = normalizeExactProofResult({
         institution,
         proof: proof.normalizedPayload,
         explanationPrefix: 'מקור רשמי של האוניברסיטה העברית',
       });
+      return ['huji_psychology', 'psychology'].includes(program.id)
+        ? applyHujiPsychologyDirectRoute(result, input.psychometric, proof.normalizedPayload)
+        : result;
     }
 
     if (
