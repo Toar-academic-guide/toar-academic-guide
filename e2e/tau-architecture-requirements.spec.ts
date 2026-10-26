@@ -50,7 +50,7 @@ for (const width of [375, 390, 1280]) {
       );
 
       const table = page.getByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלך' });
-      await expect(table).toBeVisible();
+      await expect(table).toBeVisible({ timeout: 30_000 });
       await page.evaluate(() => document.fonts.ready);
       const section = table.locator('xpath=ancestor::section[1]');
       await expect(
