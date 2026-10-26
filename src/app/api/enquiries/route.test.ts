@@ -1,3 +1,4 @@
+import { ENQUIRY_PREP_CONSENT } from '@/lib/enquiries';
 vi.mock('server-only', () => ({}));
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
@@ -532,5 +533,169 @@ describe('enquiry context and independent delivery', () => {
     expect((await POST(request())).status).toBe(201);
     await expect(after.mock.calls[0][0]()).resolves.toBeUndefined();
     expect(console.error).toHaveBeenCalled();
+  });
+});
+
+describe('separate prep consent at the API boundary', () => {
+  beforeEach(() => {
+    after.mockReset();
+    backup.mockReset().mockResolvedValue(undefined);
+    notify.mockReset().mockResolvedValue(undefined);
+    listCataloguePrograms.mockResolvedValue({
+      data: [getStaticCataloguePrograms().find((program) => program.id === 'physiotherapy')!],
+    });
+    listCatalogueInstitutions.mockResolvedValue({
+      data: [{ id: 'tau', name: 'אוניברסיטת תל אביב' }],
+    });
+    vi.stubEnv('NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN', '');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(Response.json({ data: { create_item: { id: '123' } } })),
+    );
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
+  });
+  it.each([undefined, false, true])(
+    'keeps institution consent and normalizes prep consent %s independently',
+    async (prepConsent) => {
+      expect(
+        (
+          await POST(
+            request({
+              ...(prepConsent === undefined ? {} : { prepConsent }),
+              prepConsentText: 'client forged text',
+              prepConsentAt: '2000-01-01',
+            }),
+          )
+        ).status,
+      ).toBe(201);
+      const saved = backup.mock.calls[0][0];
+      expect(saved.consent).toBe(true);
+      expect(saved.prepConsent).toBe(prepConsent === true);
+      expect(saved.prepConsentText).toBe(prepConsent ? ENQUIRY_PREP_CONSENT : null);
+      expect(saved.prepConsentAt).toEqual(prepConsent ? expect.any(Date) : null);
+      expect(saved.prepConsentAt?.getFullYear()).not.toBe(2000);
+    },
+  );
+  it('rejects non-boolean prep consent before delivery', async () => {
+    expect((await POST(request({ prepConsent: 'true' }))).status).toBe(400);
+    expect(backup).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
+  });
+});
+
+describe('safe enquiry failure reasons and isolated Slack delivery', () => {
+  const privateFields = { name: 'ישראל ישראלי', phone: '050-123-4567' };
+  const privateError = `${privateFields.name} ${privateFields.phone} 0501234567`;
+
+  beforeEach(() => {
+    after.mockReset();
+    backup.mockReset().mockResolvedValue(undefined);
+    notify.mockReset().mockResolvedValue(undefined);
+    vi.stubEnv('MONDAY_API_TOKEN', 'test-server-token');
+    vi.stubEnv('NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN', '');
+    listCataloguePrograms.mockResolvedValue({
+      data: [getStaticCataloguePrograms().find((program) => program.id === 'physiotherapy')!],
+    });
+    listCatalogueInstitutions.mockResolvedValue({
+      data: [{ id: 'tau', name: 'אוניברסיטת תל אביב' }],
+    });
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(Response.json({ data: { create_item: { id: '123456' } } })),
+    );
+    for (const method of ['error', 'warn', 'log', 'info'] as const)
+      vi.spyOn(console, method).mockImplementation(() => {});
+  });
+  afterEach(() => {
+    const allLogs = JSON.stringify(
+      (['error', 'warn', 'log', 'info'] as const).flatMap(
+        (method) => vi.mocked(console[method]).mock.calls,
+      ),
+    );
+    for (const value of [privateFields.name, privateFields.phone, '0501234567'])
+      expect(allLogs).not.toContain(value);
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
+  });
+
+  it.each(['rejection', 'synchronous throw'])(
+    'keeps the 201 and exactly one Monday write after Slack %s',
+    async (failure) => {
+      if (failure === 'rejection') notify.mockRejectedValue(new Error(privateError));
+      else
+        notify.mockImplementation(() => {
+          throw new Error(privateError);
+        });
+      const response = await POST(request(privateFields));
+      expect(response.status).toBe(201);
+      expect(notify).not.toHaveBeenCalled();
+      await expect(after.mock.calls[0][0]()).resolves.toBeUndefined();
+      expect(response.status).toBe(201);
+      expect(fetch).toHaveBeenCalledExactlyOnceWith(
+        'https://api.monday.com/v2',
+        expect.any(Object),
+      );
+      expect(notify).toHaveBeenCalledExactlyOnceWith(
+        expect.objectContaining({ requestId: enquiry.requestId }),
+        '123456',
+      );
+      expect(console.error).toHaveBeenCalledExactlyOnceWith('[enquiries] notification failed', {
+        requestId: enquiry.requestId,
+      });
+    },
+  );
+
+  it('logs not_configured with the request id when Monday is absent and the DB succeeds', async () => {
+    vi.stubEnv('MONDAY_API_TOKEN', '');
+    expect((await POST(request(privateFields))).status).toBe(201);
+    expect(backup).toHaveBeenCalledOnce();
+    expect(fetch).not.toHaveBeenCalled();
+    expect(console.error).toHaveBeenCalledExactlyOnceWith('[enquiries] monday write failed', {
+      requestId: enquiry.requestId,
+      reason: 'not_configured',
+    });
+    await after.mock.calls[0][0]();
+    expect(notify).toHaveBeenCalledWith(expect.any(Object), null);
+  });
+
+  it.each([
+    { error: new DOMException(privateError, 'TimeoutError'), reason: 'timeout' },
+    { error: new DOMException(privateError, 'AbortError'), reason: 'timeout' },
+    { error: { code: '57014', detail: privateError }, reason: 'timeout' },
+    {
+      error: new Error(privateError, { cause: { code: '57014', detail: privateError } }),
+      reason: 'timeout',
+    },
+    { error: new Error(privateError), reason: 'unknown' },
+    { error: new Error('Missing DATABASE_URL ' + privateError), reason: 'unknown' },
+    { error: { reason: privateError }, reason: 'unknown' },
+    { error: null, reason: 'unknown' },
+    { error: privateError, reason: 'unknown' },
+  ])('logs only a safe $reason for a failed DB backup ($error)', async ({ error, reason }) => {
+    backup.mockRejectedValue(error);
+    expect((await POST(request(privateFields))).status).toBe(201);
+    expect(console.error).toHaveBeenCalledExactlyOnceWith('[enquiries] database write failed', {
+      requestId: enquiry.requestId,
+      reason,
+    });
+  });
+
+  it('keeps exactly two safe reason logs when both destinations fail', async () => {
+    backup.mockRejectedValue(new Error(privateError));
+    vi.mocked(fetch).mockResolvedValue(Response.json({ errors: [{ message: privateError }] }));
+    expect((await POST(request(privateFields))).status).toBe(502);
+    expect(console.error).toHaveBeenCalledTimes(2);
+    expect(console.error).toHaveBeenNthCalledWith(1, '[enquiries] monday write failed', {
+      requestId: enquiry.requestId,
+      reason: 'not_acknowledged',
+    });
+    expect(console.error).toHaveBeenNthCalledWith(2, '[enquiries] database write failed', {
+      requestId: enquiry.requestId,
+      reason: 'unknown',
+    });
+    expect(after).not.toHaveBeenCalled();
   });
 });

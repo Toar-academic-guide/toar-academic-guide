@@ -23,6 +23,9 @@
   outline: 3px solid #6554b8;
   outline-offset: 4px;
 }
+.study-journey :where(dialog[aria-modal='true']) :focus-visible {
+  outline-offset: 3px !important;
+}
 .study-journey h1:focus {
   outline: none;
 }
@@ -572,7 +575,7 @@
   padding: 12px;
   min-height: 48px;
 }
-.study-journey input[type='checkbox'] {
+.study-journey input[type='checkbox']:not(:where(#consent-block input)) {
   width: 18px;
   height: 18px;
   flex-shrink: 0;

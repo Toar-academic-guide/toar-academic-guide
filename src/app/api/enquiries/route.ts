@@ -2,7 +2,11 @@ import { enquiryAttributionSchema } from '@/lib/leadAttribution';
 import { enquirySourcePath } from '@/lib/enquirySourcePath';
 import { after } from 'next/server';
 import { z } from 'zod';
-import type { EnquiryRecord, EnquiryResultStatus } from '@/lib/enquiries';
+import {
+  ENQUIRY_PREP_CONSENT,
+  type EnquiryRecord,
+  type EnquiryResultStatus,
+} from '@/lib/enquiries';
 import {
   admissionsEvaluationSchema,
   validateOverallBagrutAverage,
@@ -11,6 +15,7 @@ import { canonicalProgramId } from '@/lib/seo/programAliases';
 import { evaluateAdmissionsForProgram } from '@/server/admissions/evaluator';
 import { saveEnquiryBackup } from '@/server/enquiries/repository';
 import { sendEnquiryToMonday } from '@/server/enquiries/monday';
+import { enquiryFailureReason } from '@/server/enquiries/failureReason';
 import { notifyEnquiry } from '@/server/enquiries/notifications';
 import { getPostHogClient } from '@/lib/posthog-server';
 import { getEnquiryTarget } from '@/lib/enquiryTarget';
@@ -34,6 +39,16 @@ const inputSchema = z
       .refine((value) => value.startsWith('/') && !value.startsWith('//'))
       .transform(enquirySourcePath),
     consent: z.literal(true),
+    prepConsent: z.boolean().default(false),
+    // Client evidence is ignored; only the server can supply consent text/time.
+    prepConsentText: z
+      .unknown()
+      .optional()
+      .transform(() => undefined),
+    prepConsentAt: z
+      .unknown()
+      .optional()
+      .transform(() => undefined),
     attribution: enquiryAttributionSchema.optional(),
     evaluationInput: admissionsEvaluationSchema
       .extend({
@@ -86,6 +101,8 @@ async function resolveEnquiry(input: z.infer<typeof inputSchema>): Promise<Enqui
   }
   return {
     ...input,
+    prepConsentText: input.prepConsent ? ENQUIRY_PREP_CONSENT : null,
+    prepConsentAt: input.prepConsent ? new Date() : null,
     programName,
     institutionName,
     resultStatus,
@@ -122,10 +139,16 @@ export async function POST(request: Request) {
       saveEnquiryBackup(enquiry),
     ]);
     if (monday.status === 'rejected') {
-      console.error('[enquiries] monday write failed', { requestId: input.requestId });
+      console.error('[enquiries] monday write failed', {
+        requestId: input.requestId,
+        reason: enquiryFailureReason(monday.reason),
+      });
     }
     if (database.status === 'rejected') {
-      console.error('[enquiries] database write failed', { requestId: input.requestId });
+      console.error('[enquiries] database write failed', {
+        requestId: input.requestId,
+        reason: enquiryFailureReason(database.reason),
+      });
     }
     if (monday.status === 'rejected' && database.status === 'rejected') {
       return process.env.MONDAY_API_TOKEN?.trim()

@@ -1,10 +1,13 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import posthog from 'posthog-js';
-import { ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { CircleAlert, GraduationCap, LoaderCircle, Send, X } from 'lucide-react';
 import { getSessionAttribution } from '@/lib/sessionAttribution';
-import { ENQUIRY_CONSENT, type EnquiryInput } from '@/lib/enquiries';
+import { ENQUIRY_COPY as COPY, ENQUIRY_PREP_CONSENT, type EnquiryInput } from '@/lib/enquiries';
+
+const CONSENT_COLOR = '#666666';
+const consentStyle = { color: CONSENT_COLOR, fontSize: '12px', lineHeight: '18px' };
 
 export default function EnquiryForm({
   programId,
@@ -21,11 +24,28 @@ export default function EnquiryForm({
   surface?: string;
   evaluationInput?: EnquiryInput['evaluationInput'];
 }) {
+  const id = useId();
+  const dialog = useRef<HTMLDialogElement>(null);
+  const nameField = useRef<HTMLInputElement>(null);
+  const phoneField = useRef<HTMLInputElement>(null);
+  const successTitle = useRef<HTMLHeadingElement>(null);
   const requestId = useRef<string | null>(null);
   const sending = useRef(false);
-  const [status, setStatus] = useState<'idle' | 'sending' | 'sent'>('idle');
-  const [error, setError] = useState('');
   const viewed = useRef(false);
+  const [open, setOpen] = useState(true);
+  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'failed'>('idle');
+  const [errors, setErrors] = useState({ name: false, phone: false });
+  const institutionName = title.split(' · ').slice(1).join(' · ') || title;
+  const institutionLe = `ל${institutionName.replace(/^האוניברסיטה/, 'אוניברסיטה')}`;
+  const institutionMe = `מ${institutionName}`;
+  const [actionStart, actionButton, actionEnd] = COPY.actionNotice
+    .replace('{institution_le}', institutionLe)
+    .split('״');
+  const close = () => {
+    setOpen(false);
+    onBack?.();
+  };
+
   useEffect(() => {
     if (viewed.current) return;
     viewed.current = true;
@@ -37,129 +57,282 @@ export default function EnquiryForm({
     });
   }, [programId, institutionId, surface]);
 
-  if (status === 'sent') {
-    return (
-      <section role="status" className="rounded-2xl bg-white p-8 text-center">
-        <CheckCircle2 className="mx-auto mb-4 text-[#6554b8]" size={40} aria-hidden="true" />
-        <h2 className="text-2xl font-bold">הפנייה התקבלה</h2>
-        <p className="mt-3">צוות MyWay יחזור אליך בנושא {title}.</p>
-        {onBack && (
-          <button className="way-button-primary mt-6 px-6 py-3" onClick={onBack}>
-            חזרה לאפשרויות שלי
-          </button>
-        )}
-      </section>
-    );
+  useEffect(() => {
+    if (!open || !dialog.current) return;
+    const node = dialog.current;
+    const previousFocus = document.activeElement;
+    const previousOverflow = document.body.style.overflow;
+    if (typeof node.showModal === 'function') node.showModal();
+    else node.setAttribute('open', '');
+    document.body.style.overflow = 'hidden';
+    nameField.current?.focus();
+    return () => {
+      if (typeof node.close === 'function') node.close();
+      else node.removeAttribute('open');
+      document.body.style.overflow = previousOverflow;
+      if (previousFocus instanceof HTMLElement) previousFocus.focus();
+    };
+  }, [open]);
+
+  useEffect(() => {
+    if (status === 'sent') successTitle.current?.focus();
+  }, [status]);
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (sending.current) return;
+    const values = new FormData(event.currentTarget);
+    const name = String(values.get('name') ?? '').trim();
+    const phone = String(values.get('phone') ?? '').trim();
+    const invalid = {
+      name: name.length < 2,
+      phone: !/^(?:0|\+972)[2-9]\d{7,8}$/.test(phone.replace(/[\s()-]/g, '')),
+    };
+    setErrors(invalid);
+    if (invalid.name || invalid.phone) {
+      (invalid.name ? nameField : phoneField).current?.focus();
+      return;
+    }
+    sending.current = true;
+    setStatus('sending');
+    requestId.current ??= crypto.randomUUID();
+    const body: EnquiryInput = {
+      requestId: requestId.current,
+      name,
+      phone,
+      programId,
+      institutionId,
+      sourcePath: `${window.location.pathname}${window.location.hash}`.slice(0, 300),
+      consent: true,
+      prepConsent: values.has('prepConsent'),
+      attribution: getSessionAttribution(),
+      ...(evaluationInput ? { evaluationInput } : {}),
+    };
+    let httpStatus: number | null = null;
+    try {
+      const response = await fetch('/api/enquiries', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+      httpStatus = response.status;
+      const result = await response.json();
+      if (!response.ok || !result.data?.received) throw new Error('Unconfirmed enquiry');
+      posthog.capture('enquiry_submitted', {
+        program_id: programId,
+        institution_id: institutionId,
+        surface,
+        source_path: window.location.pathname,
+      });
+      setStatus('sent');
+    } catch {
+      posthog.capture('enquiry_submit_failed', {
+        program_id: programId,
+        institution_id: institutionId,
+        surface,
+        http_status: httpStatus,
+        reason: httpStatus === null ? 'network' : 'server',
+      });
+      setStatus('failed');
+    } finally {
+      sending.current = false;
+    }
   }
 
   return (
-    <form
-      className="space-y-6 rounded-2xl border border-[#dce2ef] bg-white/85 p-6 sm:p-8"
-      onSubmit={async (event) => {
-        event.preventDefault();
-        if (sending.current) return;
-        const values = new FormData(event.currentTarget);
-        if (!values.has('consent')) return;
-        sending.current = true;
-        setStatus('sending');
-        setError('');
-        requestId.current ??= crypto.randomUUID();
-        const body: EnquiryInput = {
-          requestId: requestId.current,
-          name: String(values.get('name')),
-          phone: String(values.get('phone')),
-          programId,
-          institutionId,
-          sourcePath: `${window.location.pathname}${window.location.hash}`.slice(0, 300),
-          consent: true,
-          attribution: getSessionAttribution(),
-          ...(evaluationInput ? { evaluationInput } : {}),
-        };
-        let httpStatus: number | null = null;
-        try {
-          const response = await fetch('/api/enquiries', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body),
-          });
-          httpStatus = response.status;
-          const result = await response.json();
-          if (!response.ok || !result.data?.received) {
-            throw new Error(result.error?.message ?? 'הפנייה לא נשלחה. אפשר לנסות שוב.');
-          }
-          posthog.capture('enquiry_submitted', {
-            program_id: programId,
-            institution_id: institutionId,
-            surface,
-            source_path: window.location.pathname,
-          });
-          setStatus('sent');
-        } catch (cause) {
-          posthog.capture('enquiry_submit_failed', {
-            program_id: programId,
-            institution_id: institutionId,
-            surface,
-            http_status: httpStatus,
-            reason: httpStatus === null ? 'network' : 'server',
-          });
-          setError(cause instanceof Error ? cause.message : 'לא ניתן לשלוח כרגע.');
-          setStatus('idle');
-        } finally {
-          sending.current = false;
-        }
-      }}
-    >
-      <div>
-        <h2 className="text-2xl font-bold">רוצה לשמוע עוד?</h2>
-        <p className="mt-2 text-[#596987]">{title}</p>
-      </div>
-      <div className="grid gap-5 sm:grid-cols-2">
-        <label className="grid gap-2 font-medium">
-          שם מלא
-          <input
-            name="name"
-            required
-            minLength={2}
-            maxLength={100}
-            autoComplete="name"
-            className="min-h-12 rounded-xl border border-[#cbd5e1] bg-white px-4 text-lg"
-          />
-        </label>
-        <label className="grid gap-2 font-medium">
-          מספר טלפון
-          <input
-            name="phone"
-            type="tel"
-            dir="ltr"
-            required
-            autoComplete="tel"
-            pattern="(?:0|\+972)[2-9][0-9 \(\)\-]{7,14}"
-            maxLength={22}
-            className="min-h-12 rounded-xl border border-[#cbd5e1] bg-white px-4 text-lg"
-          />
-        </label>
-      </div>
-      <label className="flex items-start gap-3 text-sm leading-6">
-        <input
-          type="checkbox"
-          name="consent"
-          required
-          className="mt-1 h-5 w-5 shrink-0 accent-[#6554b8]"
-        />
-        <span>{ENQUIRY_CONSENT}</span>
-      </label>
-      {error && (
-        <p role="alert" className="text-red-800">
-          {error}
-        </p>
+    <>
+      <section className="rounded-2xl border border-[#dce2ef] bg-white p-6 text-right" dir="rtl">
+        <h1 className="text-2xl font-bold">רוצה לשמוע עוד?</h1>
+        <p className="mt-2">{title}</p>
+        <button
+          type="button"
+          className="way-button-primary mt-4 px-6 py-3"
+          onClick={() => setOpen(true)}
+        >
+          יצירת קשר
+        </button>
+      </section>
+      {open && (
+        <dialog
+          ref={dialog}
+          aria-labelledby={`${id}-institution`}
+          aria-modal="true"
+          dir="rtl"
+          onCancel={(event) => {
+            event.preventDefault();
+            close();
+          }}
+          className="fixed inset-0 m-auto w-80 max-w-[calc(100%_-_32px)] max-h-[calc(100dvh_-_32px)] overflow-y-auto overscroll-contain rounded-2xl border-0 bg-[#ffffff] p-6 text-right text-[#0c1d45] shadow-2xl backdrop:bg-[#0c1d45]/50"
+        >
+          <button
+            type="button"
+            aria-label="סגירה"
+            onClick={close}
+            className="absolute left-2 top-2 flex size-11 items-center justify-center rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#6554b8]"
+          >
+            <X size={20} aria-hidden="true" focusable="false" />
+          </button>
+          <header className="mb-5 text-center">
+            <GraduationCap
+              className="mx-auto mb-3"
+              size={40}
+              aria-hidden="true"
+              focusable="false"
+            />
+            <h2 id={`${id}-institution`} className="text-lg font-semibold leading-6">
+              {institutionName}
+            </h2>
+          </header>
+          {status === 'sent' ? (
+            <section role="status" className="py-6 text-center">
+              <h3
+                ref={successTitle}
+                tabIndex={-1}
+                className="text-[23px] font-semibold leading-7 focus:outline-3 focus:outline-offset-3 focus:outline-[#6554b8]"
+              >
+                {COPY.successTitle}
+              </h3>
+              <p className="mt-2 text-(--text-body)">
+                {COPY.successBody.replace('{institution_me}', institutionMe)}
+              </p>
+            </section>
+          ) : (
+            <form noValidate onSubmit={handleSubmit}>
+              <p className="mb-2 text-[13px] leading-5 text-[#4b5563]">
+                <span aria-hidden="true" className="text-[#8c2438]">
+                  *
+                </span>{' '}
+                {COPY.requiredLegend}
+              </p>
+              <div className="grid gap-3">
+                {(['name', 'phone'] as const).map((field) => (
+                  <div key={field}>
+                    <label htmlFor={`${id}-${field}`} className="mb-1 block text-sm font-semibold">
+                      {field === 'name' ? COPY.nameLabel : COPY.phoneLabel}
+                      <span aria-hidden="true" className="text-[#8c2438]">
+                        {' '}
+                        *
+                      </span>
+                    </label>
+                    <input
+                      ref={field === 'name' ? nameField : phoneField}
+                      id={`${id}-${field}`}
+                      name={field}
+                      aria-label={field === 'name' ? COPY.nameLabel : COPY.phoneLabel}
+                      placeholder={field === 'name' ? COPY.namePlaceholder : COPY.phonePlaceholder}
+                      type={field === 'phone' ? 'tel' : 'text'}
+                      dir={field === 'phone' ? 'ltr' : 'rtl'}
+                      autoComplete={field === 'phone' ? 'tel' : 'name'}
+                      required
+                      aria-required="true"
+                      aria-invalid={errors[field] || undefined}
+                      aria-describedby={errors[field] ? `${id}-${field}-error` : undefined}
+                      maxLength={field === 'name' ? 100 : 22}
+                      readOnly={status === 'sending'}
+                      className={`min-h-11 w-full rounded-lg border border-[#7f8faa] bg-white px-3 py-[9px] text-right text-base leading-6 placeholder:text-[#666666]! placeholder:opacity-100 focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-[#6554b8] aria-invalid:border-[#8c2438]! ${field === 'phone' ? 'placeholder-shown:[direction:rtl]' : ''}`}
+                    />
+                    {errors[field] && (
+                      <p
+                        id={`${id}-${field}-error`}
+                        className="mt-1 flex items-center gap-2 text-sm leading-[21px] text-[#8c2438]"
+                      >
+                        <CircleAlert size={18} aria-hidden="true" focusable="false" />
+                        {field === 'name' ? COPY.nameError : COPY.phoneError}
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div
+                id="consent-block"
+                className="mb-3 mt-4 border-t border-[#dce2ef] pt-3"
+                style={{ backgroundColor: '#ffffff' }}
+              >
+                <div className="grid grid-cols-[44px_minmax(0,1fr)] items-start gap-2">
+                  <div className="flex size-11 items-center justify-center">
+                    <input
+                      id={`${id}-prep`}
+                      name="prepConsent"
+                      type="checkbox"
+                      aria-labelledby="consent-prep"
+                      aria-disabled={status === 'sending' || undefined}
+                      onClick={(event) => {
+                        if (sending.current) event.preventDefault();
+                      }}
+                      className="size-[22px] accent-[#5548aa]"
+                    />
+                  </div>
+                  <div className="pt-[10px]">
+                    <p id="action-consent" style={consentStyle}>
+                      {actionStart}
+                      <bdi dir="rtl">״{actionButton}״</bdi>
+                      {actionEnd}
+                    </p>
+                    <label
+                      id="consent-prep"
+                      htmlFor={`${id}-prep`}
+                      className="mt-1 block cursor-pointer"
+                      style={consentStyle}
+                    >
+                      {ENQUIRY_PREP_CONSENT.split('18')[0]}
+                      <bdi dir="ltr">18</bdi>
+                      {ENQUIRY_PREP_CONSENT.split('18')[1]}
+                    </label>
+                    <a
+                      id="privacy-link"
+                      href="/privacy"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex min-h-11 min-w-11 items-center underline underline-offset-4"
+                      style={consentStyle}
+                    >
+                      {COPY.privacyLink}
+                    </a>
+                  </div>
+                </div>
+              </div>
+              {status === 'failed' && (
+                <p role="alert" className="mb-3 text-sm leading-[21px] text-[#8c2438]">
+                  {COPY.serverError}
+                </p>
+              )}
+              <button
+                type="submit"
+                aria-describedby="action-consent"
+                aria-disabled={status === 'sending' || undefined}
+                aria-busy={status === 'sending' || undefined}
+                className="flex min-h-12 w-full items-center justify-center gap-[10px] rounded-[10px] bg-[#5548aa] px-4 py-3 text-base font-semibold! leading-6 text-white focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-[#6554b8]"
+              >
+                {status === 'sending' ? (
+                  <LoaderCircle
+                    size={20}
+                    className="motion-safe:animate-spin"
+                    aria-hidden="true"
+                    focusable="false"
+                  />
+                ) : (
+                  <Send
+                    size={20}
+                    className="rtl:-scale-x-100"
+                    aria-hidden="true"
+                    focusable="false"
+                  />
+                )}
+                {status === 'failed'
+                  ? COPY.retry
+                  : status === 'sending'
+                    ? COPY.loadingButton
+                    : COPY.button}
+              </button>
+              {status === 'sending' && (
+                <p role="status" className="sr-only">
+                  {COPY.loadingLive}
+                </p>
+              )}
+            </form>
+          )}
+        </dialog>
       )}
-      <button
-        disabled={status === 'sending'}
-        className="way-button-primary inline-flex min-h-12 items-center gap-3 px-7 py-3 font-bold disabled:opacity-60"
-      >
-        {status === 'sending' ? 'שולחים…' : 'שליחת בקשה'}
-        <ArrowLeft size={18} aria-hidden="true" />
-      </button>
-    </form>
+    </>
   );
 }
