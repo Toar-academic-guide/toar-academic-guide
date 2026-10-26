@@ -1,3 +1,4 @@
+import { HUJI_PSYCHOLOGY_DIRECT_ROUTE_PROGRAM_IDS } from '@/server/admissions/hujiPsychologyDirectRoutePolicy';
 import { canonicalInstitutionId } from '@/data/institutionAliases';
 import type { InstitutionDetail } from '@/data/degrees/types';
 import { DANON_PROGRAM_NAMES } from '@/data/admissions/danon';
@@ -223,7 +224,10 @@ export function serializeProgramRow(args: {
     } else if (
       threshold.thresholdValue !== null &&
       program.id !== 'haifa_psychology' &&
-      !(threshold.universityId === 'huji' && ['huji_psychology', 'psychology'].includes(program.id))
+      !(
+        threshold.universityId === 'huji' &&
+        HUJI_PSYCHOLOGY_DIRECT_ROUTE_PROGRAM_IDS.includes(program.id)
+      )
     ) {
       directPsychometricMap[threshold.universityId] = threshold.thresholdValue;
     }

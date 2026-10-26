@@ -1,6 +1,6 @@
 # HUJI psychology: direct psychometric route, תשפ״ז
 
-Checked 2026-10-26, Asia/Jerusalem. Phase 1 prepares the policy and catalogue correction; the evaluator hook is pending PR #304. No production database query or write was performed.
+Checked 2026-10-26, Asia/Jerusalem. The policy and catalogue correction now run through the exact evaluator hook after PR #304. No production database query or write was performed.
 
 ## Official evidence
 
@@ -33,13 +33,13 @@ The feed rows for tracks `300-7000` and `300-7009` agree:
 | `safReject` | 22.5 | Ordinary sekem rejection threshold, unchanged |
 | `hog_years2degree` | 3 | Dedicated programme duration corrected to three years |
 
-The policy uses validated feed thresholds. When a direct threshold is absent, its independent fallback is 725 or 690, supported by the programme capture above. The adapter returns undefined for missing, malformed, non-finite or out-of-range direct scores. The existing sekem parsing remains unchanged. PET below the Kidum threshold or missing PET leaves the normalized sekem result untouched. An already accepted sekem result stays accepted in the Kidum interval.
+The policy uses validated feed thresholds only. Missing `direct_pet` leaves the regular sekem result unchanged; missing `direct_pet_kidum` disables the Kidum gate. There is no fallback acceptance. The direct-score parser rejects missing, malformed, non-finite or out-of-range scores; the adapter omits their keys. The existing sekem parsing remains unchanged. PET below the Kidum threshold or missing PET leaves the normalized sekem result untouched. An already accepted sekem result stays accepted in the Kidum interval. Otherwise the manual gate retains the regular sekem score, threshold, score label, score assessment and official URLs, adding the Kidum URL.
 
 Per Jorje's ruling on 2026-10-26, the 22.5 threshold still drives the verdict but is no longer shown as a student-facing bullet on `huji_psychology` or the HUJI entry of `/programs/psychology`. The 725, 690 and 673 notes and the checked-date/source stamp remain unchanged. PET660/B90 remains exact/below against 22.5.
 
 The full-bagrut rule assumes a full certificate when a student enters an average or grades; no confirmation field or gate is added. No institutional composite is requested. The conditional Kidum sekem value is outside this task and is not encoded in the repair notes or policy.
 
-Both static psychology HUJI direct thresholds are corrected from 660 to 725. Persisted direct rows `huji_psychology:huji:huji:direct` and `psychology:huji:huji:direct` are masked at serialization. The dedicated programme receives corrected notes and provenance, and fact `huji_psychology:detail-0:legacy-fact-0` is filtered. Alternative-route notes are tested through the real legacy normalizer to ensure they do not create a required psychometric numeric gate.
+Both static psychology HUJI direct thresholds are corrected from 660 to 725. Persisted direct rows `huji_psychology:huji:huji:direct` and `psychology:huji:huji:direct` are masked at serialization. The dedicated programme receives corrected notes and provenance, and numeric psychometric facts with value 660 are filtered regardless of their generated IDs. Alternative-route notes are tested through the real legacy normalizer to ensure they do not create a required psychometric numeric gate.
 
 ## Formula confidence and uncertainty
 
@@ -53,10 +53,9 @@ Uncertainties retained:
 - Production database values and role grants were not queried; persisted 660 rows are represented by in-memory seed-shaped fixtures only.
 - Whether the earlier W40 sekhem correction from 725 to 22.5 was published is unverified.
 - The static `thresholds.huji` value 725 is a legacy sekhem-scale value. It remains unchanged by instruction; the exact feed path uses 22.5.
-- `evaluator.ts` remains untouched while PR #304 is pending. This phase does not enable the policy in the product.
 - No deployed or interactive browser verification was performed in this local-only phase. This is catalogue/policy work with no layout or field changes; visible Hebrew notes were checked in tests and read for natural wording, but desktop/mobile rendered copy still needs verification with the integration.
 
-## Verification evidence
+## Initial phase verification evidence (historical)
 
 Test-first output: `/workspace/codex-tasks/huji-psychology-direct-725.testfirst.txt`. Production code was unchanged during both recorded runs. The final initial run recorded 13 failing tests, one missing-policy suite and 48 passing tests, exposing the missing route fields, missing repair, stale 660 claims and pending evaluator integration.
 
@@ -65,3 +64,11 @@ After implementation, the focused run recorded 68 passing tests and exactly thre
 Final lint and typecheck passed with `DATABASE_URL` unset. The broader relevant run passed 709 tests and retained only the three expected hook failures (712 tests across 14 files). The unchanged pre-PR guard passed all 2,914 tests across its 119 selected files, local migration consistency, operational grant inspection, catalogue seed dry-run and committed admissions-evidence verification. Its fixed test-file list does not include the new pending-hook test file, so the guard passing does not establish that the new evaluator cases pass. No guard bypass, database write or publication workflow was used.
 
 The inline simplification pass preserved the proof tests and made no further code changes. The direct-score parser stays separate from the existing sekem parser to preserve the latter's behavior; the source comment on fallback thresholds and the approval markers on the three modified existing test lines are retained as required by the task. No code-review or multi-agent review pipeline ran.
+
+## PR #309 review fixes, 2026-10-26
+
+B1: the adapter emits defined direct fields only for `huji_psychology` and `psychology` at HUJI. The evaluator hook, serializer masking and adapter share `HUJI_PSYCHOLOGY_DIRECT_ROUTE_PROGRAM_IDS`. Non-psychology payload keys and normalized fingerprints stay identical to main, including law track `401-4100` even when its feed supplies direct thresholds. The two psychology pairs (`huji_psychology`, `psychology` at HUJI) will legitimately require one `changed_needs_review` freshness review because their payload gains direct fields. No freshness workflow was run.
+
+Test-first evidence is in `/workspace/codex-tasks/huji-psychology-review-fixes.testfirst.txt`: the same captured law fixture was run through actual `origin/main` code (`1962d1f`) and old head (`a0512de`), followed by 38 expected failures before production edits. The temporary main worktree was removed. Real evaluator tests cover PET 689/690/724/725 for both psychology IDs, missing direct fields, accepted sekem in the Kidum band, and manual gates retaining sekem details. The existing P730/B80 and P800/B70 direct acceptance, P700/B90 manual gate and P660/B90 below at 22.5 remain covered.
+
+With `DATABASE_URL` unset, the focused run passed 235 tests in 15 files; the full suite passed 4,465 tests (one expected failure, 97 skipped); lint and typecheck passed. The unchanged pre-PR guard passed 2,942 tests in 119 files plus migration consistency, operational-grant inspection, catalogue seed dry-run and committed admissions-evidence verification. The inline simplification pass kept the focused proof tests intact; no CE review pipeline ran. No deployed/browser verification, database write or publication was performed.

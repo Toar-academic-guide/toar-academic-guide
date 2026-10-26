@@ -117,7 +117,12 @@ export function applyCatalogueContentRepair<T extends Program>(program: T): T {
         ...(row.programId === 'huji_psychology' && row.institutionId === 'huji'
           ? {
               admissionFacts: detail.admissionFacts?.filter(
-                (fact) => fact.id !== 'huji_psychology:detail-0:legacy-fact-0',
+                (fact) =>
+                  !(
+                    fact.kind === 'numeric_gate' &&
+                    fact.field === 'psychometric' &&
+                    fact.valueNumber === 660
+                  ),
               ),
             }
           : {}),

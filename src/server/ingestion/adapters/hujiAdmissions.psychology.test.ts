@@ -3,7 +3,11 @@ import { gzipSync } from 'node:zlib';
 import feed from '@/test/fixtures/hujiPsychology2027.json';
 import { runHujiAdmissionsProof } from './hujiAdmissions';
 
-async function proofFor(values: Record<string, unknown>, trackNumber = '300-7000') {
+async function proofFor(
+  values: Record<string, unknown>,
+  trackNumber = '300-7000',
+  programId = 'huji_psychology',
+) {
   const source = structuredClone(feed);
   Object.assign(
     source.currentYearObj.find((row) => row.track_number === trackNumber)!,
@@ -14,7 +18,7 @@ async function proofFor(values: Record<string, unknown>, trackNumber = '300-7000
       .fn<typeof fetch>()
       .mockResolvedValue(new Response(gzipSync(JSON.stringify(source)))),
     applicant: { bagrutAverage: 90, psychometric: 660 },
-    program: { id: 'huji_psychology', name: 'פסיכולוגיה', externalId: trackNumber },
+    program: { id: programId, name: 'פסיכולוגיה', externalId: trackNumber },
   });
 }
 
@@ -35,6 +39,18 @@ describe('HUJI psychology feed direct thresholds', () => {
         },
       });
       expect(proof.normalizedPayload.selectedScore).toBeCloseTo(19.71195484, 8);
+    },
+  );
+
+  it.each(['huji_psychology', 'psychology'])(
+    'includes only defined direct fields for %s',
+    async (id) => {
+      const proof = await proofFor({ direct_30: undefined }, '300-7000', id);
+      expect(proof.normalizedPayload).toMatchObject({
+        directPsychometric: 725,
+        directPsychometricKidum: 690,
+      });
+      expect(proof.normalizedPayload).not.toHaveProperty('directPsychometric30Plus');
     },
   );
 
@@ -74,7 +90,7 @@ describe('HUJI psychology feed direct thresholds', () => {
       'directPsychometricKidum',
       'directPsychometric30Plus',
     ]) {
-      expect(proof.normalizedPayload[key]).toBeUndefined();
+      expect(proof.normalizedPayload).not.toHaveProperty(key); // Approved test update, Jorje 2026-10-26
     }
     expect(proof.normalizedPayload.acceptanceThreshold).toBe(22.5);
   });

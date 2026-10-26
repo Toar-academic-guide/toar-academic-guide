@@ -6,9 +6,12 @@ export interface HujiDirectPsychometricThresholds {
   directPsychometric30Plus?: number;
 }
 
+export const HUJI_PSYCHOLOGY_DIRECT_ROUTE_PROGRAM_IDS: readonly string[] = [
+  'huji_psychology',
+  'psychology',
+];
+
 // https://info.huji.ac.il/bachelor/Psychology — תשפ״ז, checked 2026-10-26.
-const FALLBACK_DIRECT_PET = 725;
-const FALLBACK_KIDUM_PET = 690;
 const PROGRAM_URL = 'https://info.huji.ac.il/bachelor/Psychology';
 const KIDUM_URL = 'https://info.huji.ac.il/reception-channels/Kidum';
 
@@ -19,8 +22,9 @@ export function applyHujiPsychologyDirectRoute(
 ): AdmissionsEvaluationResult {
   if (result.capability !== 'exact' || psychometric === undefined) return result;
 
-  const direct = feed.directPsychometric ?? FALLBACK_DIRECT_PET;
-  const kidum = feed.directPsychometricKidum ?? FALLBACK_KIDUM_PET;
+  const direct = feed.directPsychometric;
+  if (direct === undefined) return result;
+  const kidum = feed.directPsychometricKidum;
   if (psychometric >= direct) {
     return {
       ...result,
@@ -37,20 +41,16 @@ export function applyHujiPsychologyDirectRoute(
     };
   }
 
-  if (psychometric >= kidum && result.decision !== 'accepted') {
+  if (kidum !== undefined && psychometric >= kidum && result.decision !== 'accepted') {
     return {
       ...result,
       capability: 'manual_gate',
       kind: 'manual_gate',
       decision: 'unknown',
-      score: undefined,
-      scoreLabel: undefined,
-      threshold: undefined,
-      scoreAssessment: undefined,
       sourceLabel: 'מסלול ראויים לקידום',
       explanation: `קבלה ישירה מציון ${kidum} בפסיכומטרי מיועדת לראויים לקידום בדירוג של 30 נקודות לפחות מטעם האגודה לקידום החינוך.`,
       nextAction: 'בדקו את הדירוג ואת תנאי מסלול ראויים לקידום באתר האוניברסיטה.',
-      officialUrls: [PROGRAM_URL, KIDUM_URL],
+      officialUrls: [...new Set([...(result.officialUrls ?? []), PROGRAM_URL, KIDUM_URL])],
     };
   }
 

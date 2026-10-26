@@ -7,7 +7,10 @@ import {
   resolveHujiMedicineAdmission,
 } from '@/server/admissions/hujiMedicinePolicy';
 import { HUJI_MEDICINE_SOURCE_FINGERPRINT } from '@/data/admissions/hujiMedicineVerification';
-import type { HujiDirectPsychometricThresholds } from '@/server/admissions/hujiPsychologyDirectRoutePolicy';
+import {
+  HUJI_PSYCHOLOGY_DIRECT_ROUTE_PROGRAM_IDS,
+  type HujiDirectPsychometricThresholds,
+} from '@/server/admissions/hujiPsychologyDirectRoutePolicy';
 
 import {
   readOfficialResponseMetadata,
@@ -55,11 +58,18 @@ export async function runHujiAdmissionsProof(
 
     const acceptanceThreshold = parseNumber(year.safAccept);
     const rejectionThreshold = parseNumber(year.safReject);
-    const directThresholds: HujiDirectPsychometricThresholds = {
-      directPsychometric: parseDirectPsychometric(year.direct_pet),
-      directPsychometricKidum: parseDirectPsychometric(year.direct_pet_kidum),
-      directPsychometric30Plus: parseDirectPsychometric(year.direct_30),
-    };
+    const directThresholds: HujiDirectPsychometricThresholds = {};
+    if (HUJI_PSYCHOLOGY_DIRECT_ROUTE_PROGRAM_IDS.includes(program.id)) {
+      const fields = {
+        directPsychometric: year.direct_pet,
+        directPsychometricKidum: year.direct_pet_kidum,
+        directPsychometric30Plus: year.direct_30,
+      };
+      for (const key of Object.keys(fields) as Array<keyof HujiDirectPsychometricThresholds>) {
+        const value = parseDirectPsychometric(fields[key]);
+        if (value !== undefined) directThresholds[key] = value;
+      }
+    }
     if (acceptanceThreshold === undefined || rejectionThreshold === undefined) {
       throw new Error(`HUJI track ${trackNumber} has no numeric decision thresholds`);
     }

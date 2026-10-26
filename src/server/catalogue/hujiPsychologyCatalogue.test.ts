@@ -45,7 +45,9 @@ describe('HUJI psychology catalogue correction', () => {
             (row) => row.programId === programId,
           ) as AdmissionThresholdRow[],
           sourceUrls: [],
-          institutionsById: new Map(seed.institutions.map((row) => [row.id, row as InstitutionRow])),
+          institutionsById: new Map(
+            seed.institutions.map((row) => [row.id, row as InstitutionRow]),
+          ),
         }),
       );
       const { listCataloguePrograms, listCatalogueInstitutions } =
@@ -91,7 +93,8 @@ describe('HUJI psychology catalogue correction', () => {
     expect(detail.durationYears).toBe(3);
     expect(detail.programUrl).toBe('https://info.huji.ac.il/bachelor/Psychology');
     const notes = detail.specificAdmissionNotes.join(' ');
-    for (const text of ['725', '690', '673', '30', 'האגודה לקידום החינוך']) // Approved test update, Jorje 2026-10-26
+    for (const text of ['725', '690', '673', '30', 'האגודה לקידום החינוך'])
+      // Approved test update, Jorje 2026-10-26
       expect(notes).toContain(text);
     expect(notes).not.toMatch(/660|סכ[״"ם]*\s*21/);
     expect(
@@ -147,29 +150,36 @@ describe('HUJI psychology catalogue correction', () => {
     }
   });
 
-  it('removes only the identified legacy 660 fact', () => {
-    const program = allPrograms.find((row) => row.id === 'huji_psychology')!;
-    const legacyFact = {
-      id: 'huji_psychology:detail-0:legacy-fact-0',
-      kind: 'numeric_gate' as const,
-      field: 'psychometric' as const,
-      comparison: 'gte' as const,
-      valueNumber: 660,
-      valueText: null,
-      unit: 'points' as const,
-      confidence: 'high' as const,
-      description: 'פסיכומטרי 660 ומעלה',
-      isRequired: true,
-    };
-    const retained = { ...legacyFact, id: 'unrelated', field: 'psychometric_english' as const };
-    const corrected = applyCatalogueContentRepair({
-      ...program,
-      institutionDetails: [
-        { ...program.institutionDetails![0], admissionFacts: [legacyFact, retained] },
-      ],
-    });
-    expect(corrected.institutionDetails![0].admissionFacts).toEqual([retained]);
-  });
+  it.each(['huji_psychology:detail-0:legacy-fact-0', 'reordered:legacy-fact-7'])(
+    'removes the numeric PET 660 fact with id %s',
+    (id) => {
+      const program = allPrograms.find((row) => row.id === 'huji_psychology')!;
+      const legacyFact = {
+        id,
+        kind: 'numeric_gate' as const,
+        field: 'psychometric' as const,
+        comparison: 'gte' as const,
+        valueNumber: 660,
+        valueText: null,
+        unit: 'points' as const,
+        confidence: 'high' as const,
+        description: 'פסיכומטרי 660 ומעלה',
+        isRequired: true,
+      };
+      const retained = { ...legacyFact, id: 'unrelated', field: 'psychometric_english' as const };
+      const otherThreshold = { ...legacyFact, id: 'other-threshold', valueNumber: 725 };
+      const corrected = applyCatalogueContentRepair({
+        ...program,
+        institutionDetails: [
+          {
+            ...program.institutionDetails![0],
+            admissionFacts: [legacyFact, retained, otherThreshold],
+          },
+        ],
+      });
+      expect(corrected.institutionDetails![0].admissionFacts).toEqual([retained, otherThreshold]); // Approved test update, Jorje 2026-10-26
+    },
+  );
 
   it.each(['huji_psychology', 'psychology'])(
     'masks the persisted 660 direct row from %s page payload and evaluator input',
