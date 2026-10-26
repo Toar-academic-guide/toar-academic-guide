@@ -7,6 +7,10 @@ import {
   resolveHujiMedicineAdmission,
 } from '@/server/admissions/hujiMedicinePolicy';
 import { HUJI_MEDICINE_SOURCE_FINGERPRINT } from '@/data/admissions/hujiMedicineVerification';
+import {
+  HUJI_PSYCHOLOGY_DIRECT_ROUTE_PROGRAM_IDS,
+  type HujiDirectPsychometricThresholds,
+} from '@/server/admissions/hujiPsychologyDirectRoutePolicy';
 
 import {
   readOfficialResponseMetadata,
@@ -54,6 +58,18 @@ export async function runHujiAdmissionsProof(
 
     const acceptanceThreshold = parseNumber(year.safAccept);
     const rejectionThreshold = parseNumber(year.safReject);
+    const directThresholds: HujiDirectPsychometricThresholds = {};
+    if (HUJI_PSYCHOLOGY_DIRECT_ROUTE_PROGRAM_IDS.includes(program.id)) {
+      const fields = {
+        directPsychometric: year.direct_pet,
+        directPsychometricKidum: year.direct_pet_kidum,
+        directPsychometric30Plus: year.direct_30,
+      };
+      for (const key of Object.keys(fields) as Array<keyof HujiDirectPsychometricThresholds>) {
+        const value = parseDirectPsychometric(fields[key]);
+        if (value !== undefined) directThresholds[key] = value;
+      }
+    }
     if (acceptanceThreshold === undefined || rejectionThreshold === undefined) {
       throw new Error(`HUJI track ${trackNumber} has no numeric decision thresholds`);
     }
@@ -103,6 +119,7 @@ export async function runHujiAdmissionsProof(
         selectedScore,
         acceptanceThreshold,
         rejectionThreshold,
+        ...directThresholds,
         publicationMetric: 'formula_score',
         derivedVerdict,
         proofStatus: 'succeeded',
@@ -266,6 +283,9 @@ interface HujiSource {
     track_number?: string;
     safAccept?: number | string;
     safReject?: number | string;
+    direct_pet?: number | string;
+    direct_pet_kidum?: number | string;
+    direct_30?: number | string;
   }>;
   formulasObj: Array<{
     formula_type?: number | string;
@@ -316,6 +336,16 @@ async function readBoundedBody(response: Response, maxBytes: number): Promise<Bu
     chunks.map((chunk) => Buffer.from(chunk)),
     length,
   );
+}
+
+function parseDirectPsychometric(value: unknown): number | undefined {
+  if (
+    typeof value !== 'number' &&
+    (typeof value !== 'string' || !/^\d+(?:\.0+)?$/.test(value.trim()))
+  )
+    return undefined;
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed >= 200 && parsed <= 800 ? parsed : undefined;
 }
 
 function parseNumber(value: unknown): number | undefined {

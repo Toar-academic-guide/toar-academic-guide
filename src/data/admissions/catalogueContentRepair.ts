@@ -114,6 +114,18 @@ export function applyCatalogueContentRepair<T extends Program>(program: T): T {
               ),
             }
           : {}),
+        ...(row.programId === 'huji_psychology' && row.institutionId === 'huji'
+          ? {
+              admissionFacts: detail.admissionFacts?.filter(
+                (fact) =>
+                  !(
+                    fact.kind === 'numeric_gate' &&
+                    fact.field === 'psychometric' &&
+                    fact.valueNumber === 660
+                  ),
+              ),
+            }
+          : {}),
       };
     }),
   };
