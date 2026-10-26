@@ -303,9 +303,7 @@ describe('CalculatorResults', () => {
           name: `אנגלית בפסיכומטרי 100 ${english} ${englishStatus}`,
         }),
       ).toBeTruthy();
-      expect(screen.getByRole('link', { name: 'תנאי קבלה' }).getAttribute('href')).toBe(
-        'https://go.tau.ac.il/he/arts/ba/arch?v=admission-requirements&utm_source=myway&utm_medium=referral',
-      );
+      expect(screen.queryByRole('link', { name: 'תנאי קבלה' })).toBeNull();
       expect(screen.queryByText(/האימות.*טרם הושלם|בר-אילן|679|629/)).toBeNull();
       expect(screen.queryByText(/הערכה: חישבנו לפי הממוצע הכללי/)).toBeNull();
       expect(screen.queryByText('מתקבלים', { exact: true })).toBeNull();
@@ -477,8 +475,9 @@ describe('CalculatorResults', () => {
     expect(badge.classList.contains('shrink-0')).toBe(true);
 
     const table = screen.getByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלך' });
-    const mathsRequirement = within(table).getByText('5 יח״ל: 70', { exact: true }).parentElement!;
-    expect(mathsRequirement.getAttribute('colspan')).toBe('4');
+    const mathsRow = within(table).getByRole('rowheader', { name: 'מתמטיקה' }).closest('tr')!;
+    const mathsRequirement = within(mathsRow).getAllByRole('cell')[0];
+    expect(table.querySelectorAll('td[colspan]')).toHaveLength(0);
     const lines = [...mathsRequirement.children];
     expect(lines.map((line) => line.textContent)).toEqual([
       '5 יח״ל: 70',
