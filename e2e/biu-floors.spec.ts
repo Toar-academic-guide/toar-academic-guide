@@ -1,5 +1,94 @@
 import { expect, test } from './fixtures';
 
+test('biu_cs student values wrap only between whole unit tokens at 375px', async ({ page }) => {
+  test.setTimeout(150_000);
+  await page.setViewportSize({ width: 375, height: 1000 });
+  await page.addInitScript(() =>
+    sessionStorage.setItem(
+      'myway_study_journey_v2',
+      JSON.stringify({
+        fields: [],
+        locations: ['all'],
+        types: ['all'],
+        selectedRowId: 'biu_cs:biu',
+        scores: {
+          bagrut: {
+            weightedAverage: 105,
+            subjectRecord: {
+              schemaVersion: 1,
+              sector: 'jewish',
+              subjects: [{ subjectId: 'mathematics', units: 4, grade: 100 }],
+            },
+          },
+          psychometric: { overall: 700, english: 110 },
+        },
+      }),
+    ),
+  );
+  const evaluated = page.waitForResponse(
+    (response) =>
+      response.url().endsWith('/api/admissions/evaluate') &&
+      response.request().postDataJSON()?.degreeIds?.includes('biu_cs'),
+  );
+  await page.goto('/app/calculator#detail');
+  expect((await evaluated).status()).toBe(200);
+  const table = page.getByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלך' });
+  await expect(table).toBeVisible();
+  await page.evaluate(() => document.fonts.ready);
+  const cells = table.getByRole('cell', { name: '4 יח״ל בציון 100', exact: true });
+  expect(await cells.count()).toBeGreaterThan(0);
+  for (const cell of await cells.all()) {
+    const layout = await cell.evaluate((node) => {
+      const box = node.getBoundingClientRect();
+      const style = getComputedStyle(node);
+      const text = node.firstChild!;
+      const content = text.textContent!.replace(/\u00a0/g, ' ');
+      const rectsFor = (start: number, end: number) => {
+        const range = document.createRange();
+        range.setStart(text, start);
+        range.setEnd(text, end);
+        return Array.from(range.getClientRects(), (rect) => ({
+          left: rect.left,
+          right: rect.right,
+          top: rect.top,
+        }));
+      };
+      return {
+        box: { left: box.left, right: box.right },
+        contentBox: {
+          left: box.left + parseFloat(style.paddingLeft),
+          right: box.right - parseFloat(style.paddingRight),
+        },
+        textRects: rectsFor(0, content.length),
+        tokens: ['4 יח״ל', 'בציון 100'].map((token) => {
+          const start = content.indexOf(token);
+          return { token, rects: rectsFor(start, start + token.length) };
+        }),
+      };
+    });
+    expect(layout.textRects.length).toBeGreaterThan(0);
+    for (const rect of layout.textRects) {
+      expect
+        .soft(rect.left, 'student text stays inside the cell left edge')
+        .toBeGreaterThanOrEqual(layout.box.left - 0.5);
+      expect
+        .soft(rect.right, 'student text stays inside the cell right edge')
+        .toBeLessThanOrEqual(layout.box.right + 0.5);
+      expect
+        .soft(rect.left, 'student text preserves the cell left padding')
+        .toBeGreaterThanOrEqual(layout.contentBox.left - 0.5);
+      expect
+        .soft(rect.right, 'student text preserves the cell right padding')
+        .toBeLessThanOrEqual(layout.contentBox.right + 0.5);
+    }
+    for (const { token, rects } of layout.tokens) {
+      expect(rects.length, token).toBeGreaterThan(0);
+      expect(new Set(rects.map((rect) => rect.top)).size, `${token} stays on one line`).toBe(1);
+    }
+  }
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
 const cases = [
   {
     id: 'ee-conflicting',

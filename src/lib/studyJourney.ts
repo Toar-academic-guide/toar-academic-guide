@@ -257,7 +257,12 @@ export function resultLabel(
     return { label: 'עדיין לא ניתן לקבוע התאמה', group: 'explore' };
   if (result?.linkedInstitutionId === 'danon' && result.kind === 'requirements_only')
     return { label: 'הרשמה מול בית הספר', group: 'explore' };
-  if (result?.linkedInstitutionId === 'biu' && result.floorChecks && result.decision === 'below')
+  if (
+    result?.floorChecks &&
+    result.decision === 'below' &&
+    (result.linkedInstitutionId === 'biu' ||
+      (result.linkedInstitutionId === 'tau' && programId === 'architecture'))
+  )
     return { label: 'לא עומד/ת בתנאי הסף', group: 'improve' };
   if (
     result?.decision === 'accepted' &&
@@ -318,6 +323,7 @@ export function resultExplanation(
       return 'נתוני הקבלה הדרושים לחישוב אינם זמינים כרגע. אפשר לבדוק ישירות באתר המוסד.';
     case 'manual_gate':
       if (
+        (programId === 'architecture' && result.linkedInstitutionId === 'tau') ||
         (['tlvyaffo_cs', 'mta_cs', 'tlvyaffo_nursing', 'tlvyaffo_business'].includes(
           programId ?? '',
         ) &&
