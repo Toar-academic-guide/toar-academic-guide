@@ -185,10 +185,16 @@ export default function EnquiryForm({
           </header>
           {status === 'sent' ? (
             <section role="status" className="py-6 text-center">
-              <h3 ref={successTitle} tabIndex={-1} className="text-xl font-semibold">
+              <h3
+                ref={successTitle}
+                tabIndex={-1}
+                className="text-[23px] font-semibold leading-7 focus:outline-3 focus:outline-offset-3 focus:outline-[#6554b8]"
+              >
                 {COPY.successTitle}
               </h3>
-              <p className="mt-2">{COPY.successBody.replace('{institution_me}', institutionMe)}</p>
+              <p className="mt-2 text-(--text-body)">
+                {COPY.successBody.replace('{institution_me}', institutionMe)}
+              </p>
             </section>
           ) : (
             <form noValidate onSubmit={handleSubmit}>
@@ -248,7 +254,10 @@ export default function EnquiryForm({
                       name="prepConsent"
                       type="checkbox"
                       aria-labelledby="consent-prep"
-                      disabled={status === 'sending'}
+                      aria-disabled={status === 'sending' || undefined}
+                      onClick={(event) => {
+                        if (sending.current) event.preventDefault();
+                      }}
                       className="size-[22px] accent-[#5548aa]"
                     />
                   </div>
@@ -291,18 +300,18 @@ export default function EnquiryForm({
                 aria-describedby="action-consent"
                 aria-disabled={status === 'sending' || undefined}
                 aria-busy={status === 'sending' || undefined}
-                className="flex min-h-12 w-full items-center justify-center gap-[10px] rounded-[10px] bg-[#5548aa] px-4 py-3 text-base font-semibold leading-6 text-white focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-[#6554b8]"
+                className="flex min-h-12 w-full items-center justify-center gap-[10px] rounded-[10px] bg-[#5548aa] px-4 py-3 text-base font-semibold! leading-6 text-white focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-[#6554b8]"
               >
                 {status === 'sending' ? (
                   <LoaderCircle
-                    size={24}
+                    size={20}
                     className="motion-safe:animate-spin"
                     aria-hidden="true"
                     focusable="false"
                   />
                 ) : (
                   <Send
-                    size={24}
+                    size={20}
                     className="rtl:-scale-x-100"
                     aria-hidden="true"
                     focusable="false"

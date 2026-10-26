@@ -19,6 +19,95 @@ describe('EnquiryForm', () => {
     vi.unstubAllGlobals();
     window.history.replaceState(null, '', '/');
   });
+  it('matches the R7g submit icon size and important semibold weight', () => {
+    render(<EnquiryForm programId="cs" institutionId="tau" title="מדעי המחשב" />);
+    const button = screen.getByRole('button', { name: ENQUIRY_COPY.button });
+    expect(button.classList.contains('font-semibold!')).toBe(true);
+    const icon = button.querySelector('svg')!;
+    expect(icon.getAttribute('width')).toBe('20');
+    expect(icon.getAttribute('height')).toBe('20');
+  });
+
+  it('focuses the success heading with the R7g ring, size and body colour token', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(Response.json({ data: { received: true } }, { status: 201 })),
+    );
+    render(<EnquiryForm programId="cs" institutionId="tau" title="מדעי המחשב" />);
+    fireEvent.change(screen.getByLabelText(ENQUIRY_COPY.nameLabel), {
+      target: { value: 'בדיקת MyWay' },
+    });
+    fireEvent.change(screen.getByLabelText(ENQUIRY_COPY.phoneLabel), {
+      target: { value: '0501234567' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: ENQUIRY_COPY.button }));
+    const heading = await screen.findByRole('heading', { name: ENQUIRY_COPY.successTitle });
+    expect(document.activeElement).toBe(heading);
+    expect(heading.tabIndex).toBe(-1);
+    for (const className of [
+      'focus:outline-3',
+      'focus:outline-offset-3',
+      'focus:outline-[#6554b8]',
+      'text-[23px]',
+      'leading-7',
+      'font-semibold',
+    ]) {
+      expect(heading.classList.contains(className)).toBe(true);
+    }
+    expect(heading.nextElementSibling?.classList.contains('text-(--text-body)')).toBe(true);
+  });
+
+  it.each([false, true])(
+    'locks prep consent at checked=%s without native disabling or dimming, then unlocks for retry',
+    async (initialChecked) => {
+      let releaseSend!: (response: Response) => void;
+      const send = vi.fn().mockImplementation(
+        () =>
+          new Promise<Response>((resolve) => {
+            releaseSend = resolve;
+          }),
+      );
+      vi.stubGlobal('fetch', send);
+      render(<EnquiryForm programId="cs" institutionId="tau" title="מדעי המחשב" />);
+      fireEvent.change(screen.getByLabelText(ENQUIRY_COPY.nameLabel), {
+        target: { value: 'בדיקת MyWay' },
+      });
+      fireEvent.change(screen.getByLabelText(ENQUIRY_COPY.phoneLabel), {
+        target: { value: '0501234567' },
+      });
+      const checkbox = screen.getByRole('checkbox') as HTMLInputElement;
+      if (initialChecked) fireEvent.click(checkbox);
+      const submit = screen.getByRole('button', { name: ENQUIRY_COPY.button });
+      fireEvent.click(submit);
+      expect(checkbox.getAttribute('aria-disabled')).toBe('true');
+      expect(checkbox.disabled).toBe(false);
+      expect(checkbox.hasAttribute('disabled')).toBe(false);
+      expect(checkbox.className).not.toMatch(/opacity|dim|grayscale|brightness/);
+      expect(checkbox.classList.contains('size-[22px]')).toBe(true);
+      expect(checkbox.classList.contains('accent-[#5548aa]')).toBe(true);
+      expect(submit.querySelector('svg')?.getAttribute('width')).toBe('20');
+      expect(submit.querySelector('svg')?.getAttribute('height')).toBe('20');
+      fireEvent.click(checkbox);
+      expect(checkbox.checked).toBe(initialChecked);
+      fireEvent.click(document.getElementById('consent-prep')!);
+      expect(checkbox.checked).toBe(initialChecked);
+      releaseSend(Response.json({ error: { message: 'לא נשלח' } }, { status: 502 }));
+      await screen.findByRole('alert');
+      expect(checkbox.hasAttribute('aria-disabled')).toBe(false);
+      fireEvent.click(checkbox);
+      expect(checkbox.checked).toBe(!initialChecked);
+      fireEvent.click(screen.getByRole('button', { name: ENQUIRY_COPY.retry }));
+      expect(checkbox.getAttribute('aria-disabled')).toBe('true');
+      fireEvent.click(checkbox);
+      expect(checkbox.checked).toBe(!initialChecked);
+      releaseSend(Response.json({ error: { message: 'לא נשלח' } }, { status: 502 }));
+      await screen.findByRole('alert');
+      expect(checkbox.hasAttribute('aria-disabled')).toBe(false);
+      fireEvent.click(checkbox);
+      expect(checkbox.checked).toBe(initialChecked);
+    },
+  );
+
   it('tracks one view per mount, including Strict Mode, with only pathname attribution', () => {
     const form = (
       <StrictMode>
