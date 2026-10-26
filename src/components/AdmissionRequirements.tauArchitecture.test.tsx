@@ -59,6 +59,16 @@ async function evaluate(withMaths: boolean) {
 }
 
 function assertTable(table: HTMLElement) {
+  expect(
+    within(table)
+      .getAllByRole('columnheader')
+      .map((header) => header.className),
+  ).toEqual([
+    'w-[20%] py-2 pe-2 font-medium',
+    'w-[25%] py-2 pe-2 font-medium',
+    'w-[25%] py-2 pe-2 font-medium',
+    'w-[30%] py-2 font-medium',
+  ]);
   const mathsRow = within(table).getByRole('rowheader', { name: 'מתמטיקה' }).closest('tr')!;
   const required = within(mathsRow).getAllByRole('cell')[0];
   const lines = [...required.children];
@@ -74,7 +84,7 @@ function assertTable(table: HTMLElement) {
   expect(spanningCells[0].getAttribute('scope')).toBe('rowgroup');
   expect(spanningCells[0].getAttribute('colspan')).toBe('4');
   expect(spanningCells[0].textContent).toBe('דרישות סף');
-  for (const header of within(table).getAllByRole('rowheader')) {
+  for (const header of table.querySelectorAll('th[scope="row"]')) {
     const row = header.closest('tr')!;
     expect(within(row).getAllByRole('cell')[0].textContent?.trim()).not.toBe('');
     expect(row.classList.contains('border-b')).toBe(true);

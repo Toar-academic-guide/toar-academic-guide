@@ -2211,7 +2211,7 @@ function evaluateNonExactResult(args: {
       ]);
       const floorChecks: FloorCheckRow[] = [
         {
-          channel: 'תנאי קבלה',
+          channel: 'דרישות סף',
           label: 'פסיכומטרי',
           displayValue: psychometricMinimum,
           verdictThreshold: psychometricMinimum,
@@ -2220,7 +2220,7 @@ function evaluateNonExactResult(args: {
           sourceUrl: requirementsUrl,
         },
         {
-          channel: 'תנאי קבלה',
+          channel: 'דרישות סף',
           label: 'מתמטיקה',
           displayValue: '5 יח״ל: 70; 4 יח״ל: 80; 3 יח״ל: 90',
           verdictThreshold: units === 5 ? 70 : units === 4 ? 80 : 90,
@@ -2232,7 +2232,7 @@ function evaluateNonExactResult(args: {
           sourceUrl: requirementsUrl,
         },
         {
-          channel: 'תנאי קבלה',
+          channel: 'דרישות סף',
           label: 'אנגלית בפסיכומטרי',
           displayValue: englishMinimum,
           verdictThreshold: englishMinimum,
