@@ -176,3 +176,54 @@ it('keeps the rollback definition byte-identical to 0042 and pins its recorded S
     `-- PRE-0044 SHA256: ${createHash('sha256').update(definition).digest('hex')}`,
   );
 });
+
+it('requires the packet EXECUTE allowlist and names every disallowed grantee', () => {
+  const packet = readFileSync('supabase/packets/2026-10-26-enquiries-prep-consent.sql', 'utf8');
+  const preflight = packet.slice(
+    packet.indexOf('DO $preflight$'),
+    packet.indexOf('END $preflight$;'),
+  );
+  expect(preflight).toContain("aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner)))");
+  expect(preflight).toMatch(
+    /CASE WHEN a\.grantee = 0 THEN 'PUBLIC' ELSE pg_get_userbyid\(a\.grantee\) END/,
+  );
+  expect(preflight).toContain("grantee_name NOT IN ('postgres', 'service_role', 'app_runtime')");
+  expect(preflight).toMatch(
+    /IF disallowed_grantees IS NOT NULL THEN\s+RAISE EXCEPTION 'Unexpected store_enquiry EXECUTE grantees: %', disallowed_grantees;/,
+  );
+  expect(preflight).toContain(
+    "IF NOT has_function_privilege('app_runtime', 'public.store_enquiry(jsonb)', 'EXECUTE') THEN",
+  );
+  expect(preflight).toContain('relrowsecurity');
+  expect(preflight).toContain('pg_policy');
+  expect(packet).toContain('AS execute_allowlist_ok');
+});
+
+it('requires a private consent export and app rollback before the SQL rollback block', () => {
+  const packet = readFileSync('supabase/packets/2026-10-26-enquiries-prep-consent.sql', 'utf8');
+  const rollback = packet.slice(
+    packet.indexOf('-- ROLLBACK'),
+    packet.indexOf('/*', packet.indexOf('-- ROLLBACK')),
+  );
+  expect(rollback).toContain('revert the R7e app code first');
+  expect(rollback).toContain('PRIVATE operator file');
+  expect(rollback).toContain('never commit or share');
+  expect(rollback).toContain(
+    "\\copy (SELECT request_id, prep_consent, prep_consent_text, prep_consent_at FROM public.enquiries WHERE prep_consent OR prep_consent_text IS NOT NULL OR prep_consent_at IS NOT NULL) TO 'enquiries-prep-consent-before-rollback.csv' CSV HEADER",
+  );
+});
+
+it('retains inherited anon/authenticated EXECUTE checks after the direct ACL allowlist', () => {
+  const packet = readFileSync('supabase/packets/2026-10-26-enquiries-prep-consent.sql', 'utf8');
+  const preflight = packet.slice(
+    packet.indexOf('DO $preflight$'),
+    packet.indexOf('END $preflight$;'),
+  );
+  expect(preflight).toMatch(
+    /IF has_function_privilege\('anon', 'public\.store_enquiry\(jsonb\)', 'EXECUTE'\)\s+OR has_function_privilege\('authenticated', 'public\.store_enquiry\(jsonb\)', 'EXECUTE'\) THEN\s+RAISE EXCEPTION 'anon\/authenticated must not be able to EXECUTE public\.store_enquiry\(jsonb\) \(direct or inherited\)';\s+END IF;/,
+  );
+  expect(preflight).toContain("grantee_name NOT IN ('postgres', 'service_role', 'app_runtime')");
+  expect(preflight.indexOf("IF has_function_privilege('anon'")).toBeGreaterThan(
+    preflight.indexOf("RAISE EXCEPTION 'Unexpected store_enquiry EXECUTE grantees: %'"),
+  );
+});

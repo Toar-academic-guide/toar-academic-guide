@@ -35,6 +35,7 @@ SET LOCAL statement_timeout = '30s';
 DO $preflight$
 DECLARE
   definition text;
+  disallowed_grantees text;
   col record;
   actual record;
 BEGIN
@@ -52,13 +53,28 @@ BEGIN
     RAISE EXCEPTION 'Expected secured 0042 timestamp default';
   END IF;
   IF NOT (SELECT relrowsecurity FROM pg_class WHERE oid = 'public.enquiries'::regclass)
-     OR EXISTS (SELECT 1 FROM pg_policy WHERE polrelid = 'public.enquiries'::regclass)
-     OR NOT has_function_privilege('app_runtime', 'public.store_enquiry(jsonb)', 'EXECUTE')
-     OR has_function_privilege('anon', 'public.store_enquiry(jsonb)', 'EXECUTE')
-     OR has_function_privilege('authenticated', 'public.store_enquiry(jsonb)', 'EXECUTE')
-     OR EXISTS (SELECT 1 FROM pg_proc p, LATERAL aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) a
-                WHERE p.oid = 'public.store_enquiry(jsonb)'::regprocedure AND a.grantee = 0 AND a.privilege_type = 'EXECUTE') THEN
+     OR EXISTS (SELECT 1 FROM pg_policy WHERE polrelid = 'public.enquiries'::regclass) THEN
     RAISE EXCEPTION 'Unexpected 0041 security or function grants';
+  END IF;
+  -- PREFLIGHT EXECUTE: reject every grantee outside the trusted allowlist.
+  SELECT string_agg(grantee_name, ', ' ORDER BY grantee_name) INTO disallowed_grantees
+  FROM (
+    SELECT DISTINCT CASE WHEN a.grantee = 0 THEN 'PUBLIC' ELSE pg_get_userbyid(a.grantee) END AS grantee_name
+    FROM pg_proc p,
+         LATERAL aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) a
+    WHERE p.oid = 'public.store_enquiry(jsonb)'::regprocedure
+      AND a.privilege_type = 'EXECUTE'
+  ) AS execute_grants
+  WHERE grantee_name NOT IN ('postgres', 'service_role', 'app_runtime');
+  IF disallowed_grantees IS NOT NULL THEN
+    RAISE EXCEPTION 'Unexpected store_enquiry EXECUTE grantees: %', disallowed_grantees;
+  END IF;
+  IF NOT has_function_privilege('app_runtime', 'public.store_enquiry(jsonb)', 'EXECUTE') THEN
+    RAISE EXCEPTION 'app_runtime EXECUTE on public.store_enquiry(jsonb) is required';
+  END IF;
+  IF has_function_privilege('anon', 'public.store_enquiry(jsonb)', 'EXECUTE')
+     OR has_function_privilege('authenticated', 'public.store_enquiry(jsonb)', 'EXECUTE') THEN
+    RAISE EXCEPTION 'anon/authenticated must not be able to EXECUTE public.store_enquiry(jsonb) (direct or inherited)';
   END IF;
   FOR col IN SELECT * FROM (VALUES
     ('prep_consent', 'boolean', 'NO', 'false'),
@@ -119,7 +135,13 @@ SELECT p.oid::regprocedure AS identity,
        NOT has_function_privilege('anon', p.oid, 'EXECUTE') AS anon_cannot_execute,
        NOT has_function_privilege('authenticated', p.oid, 'EXECUTE') AS authenticated_cannot_execute,
        NOT EXISTS (SELECT 1 FROM aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) a
-                   WHERE a.grantee = 0 AND a.privilege_type = 'EXECUTE') AS public_cannot_execute
+                   WHERE a.grantee = 0 AND a.privilege_type = 'EXECUTE') AS public_cannot_execute,
+       NOT EXISTS (
+         SELECT 1 FROM aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner))) a
+         WHERE a.privilege_type = 'EXECUTE'
+           AND CASE WHEN a.grantee = 0 THEN 'PUBLIC' ELSE pg_get_userbyid(a.grantee) END
+               NOT IN ('postgres', 'service_role', 'app_runtime')
+       ) AS execute_allowlist_ok
 FROM pg_proc p WHERE p.oid = 'public.store_enquiry(jsonb)'::regprocedure;
 -- Compare owner/ACL to the private backup before accepting this transaction.
 COMMIT;
@@ -127,6 +149,10 @@ COMMIT;
 -- ROLLBACK: run ONLY this commented block, separately, after comparing the
 -- verbatim restore with the private captured pre-0044 definition. The function
 -- MUST be restored FIRST so lead capture continues when columns are dropped.
+-- Before rollback: (a) export the prep-consent rows to a PRIVATE operator file;
+-- never commit or share it. For example, in the private operator session:
+-- \copy (SELECT request_id, prep_consent, prep_consent_text, prep_consent_at FROM public.enquiries WHERE prep_consent OR prep_consent_text IS NOT NULL OR prep_consent_at IS NOT NULL) TO 'enquiries-prep-consent-before-rollback.csv' CSV HEADER
+-- (b) revert the R7e app code first, so no deployed code depends on these columns.
 /*
 BEGIN;
 SET LOCAL lock_timeout = '5s';

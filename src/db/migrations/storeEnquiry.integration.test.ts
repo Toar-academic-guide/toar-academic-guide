@@ -109,4 +109,56 @@ describe.skipIf(!enabled)('store_enquiry with disposable PostgreSQL', () => {
       }),
     ).rejects.toBe(rollback);
   });
+
+  it.each(['PUBLIC', 'anon', 'authenticated'] as const)(
+    'refuses the 0044 packet preflight when EXECUTE is granted to %s',
+    async (grantee) => {
+      const packet = readFileSync('supabase/packets/2026-10-26-enquiries-prep-consent.sql', 'utf8');
+      const preflight = packet.slice(
+        packet.indexOf('DO $preflight$'),
+        packet.indexOf('END $preflight$;') + 'END $preflight$;'.length,
+      );
+      const rollback = new Error('fixture rollback');
+      await expect(
+        client.begin(async (tx) => {
+          await tx`set local myway.apply_enquiries_prep_consent = '2026-10-26'`;
+          // Only the fixed role names above enter this disposable, rolled-back fixture.
+          await tx.unsafe(`GRANT EXECUTE ON FUNCTION public.store_enquiry(jsonb) TO ${grantee}`);
+          await expect(tx.savepoint((sp) => sp.unsafe(preflight))).rejects.toThrow(
+            new RegExp(`Unexpected store_enquiry EXECUTE grantees: .*\\b${grantee}\\b`), // Approved test update, Jorje 2026-10-26
+          );
+          throw rollback;
+        }),
+      ).rejects.toBe(rollback);
+    },
+  );
+
+  it('accepts the EXECUTE section with default migrated allowlisted grants', async (context) => {
+    const [functionOwner] = await client`
+        select pg_get_userbyid(proowner) as owner
+        from pg_proc where oid = 'public.store_enquiry(jsonb)'::regprocedure
+      `;
+    const owner = String(functionOwner.owner);
+    if (!['postgres', 'service_role', 'app_runtime'].includes(owner)) {
+      context.skip(
+        `Default store_enquiry function owner ${owner} is outside the EXECUTE allowlist`,
+      );
+    }
+    const packet = readFileSync('supabase/packets/2026-10-26-enquiries-prep-consent.sql', 'utf8');
+    const executeSection = packet.slice(
+      packet.indexOf('  -- PREFLIGHT EXECUTE:'),
+      packet.indexOf('  FOR col IN SELECT'),
+    );
+    const rollback = new Error('fixture rollback');
+    await expect(
+      client.begin(async (tx) => {
+        await expect(
+          tx.unsafe(
+            `DO $execute_test$ DECLARE disallowed_grantees text; BEGIN\n${executeSection}\nEND $execute_test$;`,
+          ),
+        ).resolves.toBeDefined();
+        throw rollback;
+      }),
+    ).rejects.toBe(rollback);
+  });
 });
