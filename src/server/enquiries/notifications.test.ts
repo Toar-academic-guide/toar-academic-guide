@@ -24,12 +24,9 @@ const enquiry = {
 };
 const mondayUrl = 'https://malichi-hub.monday.com/boards/18436300533/pulses/456';
 const expectedText = [
-  `program_id: ${enquiry.programId}`,
-  `program_name: ${enquiry.programName}`,
-  `institution_id: ${enquiry.institutionId}`,
-  `institution_name: ${enquiry.institutionName}`,
-  `result_status: ${enquiry.resultStatus}`,
-  `utm_source: ${enquiry.attribution.utm_source}`,
+  `פנייה חדשה: ${enquiry.programName} · ${enquiry.institutionName}`,
+  `מזהה פנייה: ${enquiry.requestId}`,
+  'הסכמה להעברה לחברת הכנה: לא',
 ].join('\n');
 
 describe('private enquiry Slack notifications', () => {
@@ -47,7 +44,7 @@ describe('private enquiry Slack notifications', () => {
     vi.restoreAllMocks();
   });
 
-  it('sends only the allowed catalogue, status, source and Monday link fields to the leads channel', async () => {
+  it('sends only the allowed catalogue, request, consent and Monday link fields to the leads channel', async () => {
     await notifyEnquiry(enquiry, '456');
     expect(fetch).toHaveBeenCalledOnce();
     const [url, options] = vi.mocked(fetch).mock.calls[0];
@@ -56,7 +53,7 @@ describe('private enquiry Slack notifications', () => {
     const serialized = options?.body as string;
     expect(JSON.parse(serialized)).toEqual({
       channel: 'C_LEADS',
-      text: `${expectedText}\n${mondayUrl}`,
+      text: `${expectedText}\nקישור במאנדיי: ${mondayUrl}`,
       blocks: [],
       unfurl_links: false,
       unfurl_media: false,
@@ -66,13 +63,13 @@ describe('private enquiry Slack notifications', () => {
       enquiry.phone,
       enquiry.email,
       enquiry.message,
-      enquiry.requestId,
       enquiry.attribution.utm_medium,
       enquiry.attribution.utm_campaign,
       enquiry.attribution.referrer,
     ]) {
       expect(serialized).not.toContain(privateValue);
     }
+    expect(serialized).toContain(enquiry.requestId);
     expect(serialized).not.toMatch(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/i);
     expect(serialized).not.toMatch(/(?:\+972[-\s]?|(?<!\d)0)[2-9](?:[-\s]?\d){7,8}(?!\d)/);
   });
@@ -95,14 +92,17 @@ describe('private enquiry Slack notifications', () => {
   it('keeps DB-only notifications within the same field allowlist', async () => {
     await notifyEnquiry(enquiry, null);
     const options = vi.mocked(fetch).mock.calls[0][1];
-    expect(JSON.parse(options?.body as string).text).toBe(expectedText);
+    expect(JSON.parse(options?.body as string).text).toBe(
+      `${expectedText}\nקישור במאנדיי: https://malichi-hub.monday.com/boards/18436300533`,
+    );
   });
 
   it('omits absent optional attribution without adding student fields', async () => {
-    await notifyEnquiry({ ...enquiry, attribution: undefined }, '456');
+    const withoutAttribution = { ...enquiry, attribution: undefined };
+    await notifyEnquiry(withoutAttribution, '456');
     const options = vi.mocked(fetch).mock.calls[0][1];
     expect(JSON.parse(options?.body as string).text).toBe(
-      `${expectedText.replace('\nutm_source: tiktok', '')}\n${mondayUrl}`,
+      `${expectedText}\nקישור במאנדיי: ${mondayUrl}`,
     );
   });
 
