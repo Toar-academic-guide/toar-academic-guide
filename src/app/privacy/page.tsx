@@ -13,7 +13,7 @@ export default function PrivacyPage() {
       <h2>{'1. מי אנחנו'}</h2>
       <p>
         {
-          'האתר findmyway.co.il ("MyWay", "האתר") מופעל על ידי עמית מליחי (עוסק פטור), [כתובת] ("אנחנו"). אנחנו בעלי השליטה במאגר המידע של האתר. לפניות בנושא פרטיות: '
+          'האתר findmyway.co.il ("MyWay", "האתר") מופעל על ידי עמית מליחי (עוסק פטור), שדרות יהודית 20, תל אביב 6701622 ("אנחנו"). אנחנו בעלי השליטה במאגר המידע של האתר. לפניות בנושא פרטיות: '
         }
         <a href="mailto:info@findmyway.co.il">
           <bdi dir="ltr">info@findmyway.co.il</bdi>
@@ -172,7 +172,7 @@ export default function PrivacyPage() {
       </p>
       <h2>{'11. יצירת קשר'}</h2>
       <p>
-        {'עמית מליחי, [כתובת], '}
+        {'עמית מליחי, שדרות יהודית 20, תל אביב 6701622, '}
         <a href="mailto:info@findmyway.co.il">
           <bdi dir="ltr">info@findmyway.co.il</bdi>
         </a>

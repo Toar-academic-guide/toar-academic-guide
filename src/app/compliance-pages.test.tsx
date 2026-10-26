@@ -8,6 +8,7 @@ import PrivacyPage, { metadata as privacyMetadata } from './privacy/page';
 import TermsPage, { metadata as termsMetadata } from './terms/page';
 import ContactPage, { metadata as contactMetadata } from './contact/page';
 import AccessibilityPage, { metadata as accessibilityMetadata } from './accessibility/page';
+import SiteFooter from '@/components/SiteFooter';
 
 vi.mock('@/components/PublicNavBar', () => ({ default: () => null }));
 vi.mock('@/components/WayBackdrop', () => ({ default: () => null }));
@@ -58,8 +59,8 @@ function normalize(text: string) {
 }
 
 function sourceText(text: string) {
-  // Hyphen list markers become semantic <li> elements rather than visible text.
-  return normalize(text.replace(/^- /gm, ''));
+  // Source "- " list markers render as literal "• " bullets inside semantic <li> elements.
+  return normalize(text.replace(/^- /gm, '• '));
 }
 
 function pageText(container: HTMLElement) {
@@ -130,9 +131,22 @@ describe('compliance pages', () => {
     expect(text).not.toMatch(/\d{9}/);
   });
 
-  it('privacy keeps its address placeholders without an identity number', () => {
+  it('privacy contains the operator address without placeholders or an identity number', () => {
     const text = pageText(markup(<PrivacyPage />));
-    expect(text).toContain('[כתובת]');
+    expect(text).toContain('שדרות יהודית 20, תל אביב 6701622');
+    expect(text).not.toContain('[כתובת]');
+    expect(text).not.toMatch(/\d{9}/);
+  });
+
+  it.each([
+    ['/terms', TermsPage],
+    ['/contact', ContactPage],
+    ['/accessibility', AccessibilityPage],
+    ['SiteFooter', SiteFooter],
+  ])('%s does not expose the privacy operator address or an identity number', (_, Component) => {
+    const text = markup(<Component />).textContent;
+    expect(text).not.toContain('שדרות יהודית');
+    expect(text).not.toContain('6701622');
     expect(text).not.toMatch(/\d{9}/);
   });
 
@@ -165,7 +179,7 @@ describe('compliance pages', () => {
       source
         .split('\n')
         .filter((line) => line.startsWith('- '))
-        .map((line) => line.slice(2)),
+        .map((line) => '• ' + line.slice(2)),
     );
     const email = container.querySelector('a[href="mailto:info@findmyway.co.il"]');
     expect(email?.textContent).toBe('info@findmyway.co.il');
