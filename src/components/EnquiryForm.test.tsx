@@ -19,6 +19,35 @@ describe('EnquiryForm', () => {
     vi.unstubAllGlobals();
     window.history.replaceState(null, '', '/');
   });
+  it('adds plain grey placeholders while preserving required labels and the phone RTL hook', () => {
+    render(<EnquiryForm programId="cs" institutionId="tau" title="מדעי המחשב" />);
+    expect(ENQUIRY_COPY.namePlaceholder).toBe('שם מלא');
+    expect(ENQUIRY_COPY.phonePlaceholder).toBe('מספר טלפון');
+    const name = screen.getByLabelText('שם', { exact: true }) as HTMLInputElement;
+    const phone = screen.getByLabelText('טלפון נייד', { exact: true }) as HTMLInputElement;
+    for (const [input, placeholder, labelText] of [
+      [name, ENQUIRY_COPY.namePlaceholder, 'שם'],
+      [phone, ENQUIRY_COPY.phonePlaceholder, 'טלפון נייד'],
+    ] as const) {
+      expect(input.getAttribute('placeholder')).toBe(placeholder);
+      expect(input.getAttribute('aria-label')).toBe(labelText);
+      expect(input.required).toBe(true);
+      expect(input.getAttribute('aria-required')).toBe('true');
+      expect(input.classList.contains('text-right')).toBe(true);
+      expect(input.classList.contains('placeholder:text-[#666666]!')).toBe(true);
+      expect(input.classList.contains('placeholder:opacity-100')).toBe(true);
+      const label = input.labels![0];
+      expect(label.textContent).toBe(`${labelText} *`);
+      const asterisk = label.querySelector('span')!;
+      expect(asterisk.textContent?.trim()).toBe('*');
+      expect(asterisk.getAttribute('aria-hidden')).toBe('true');
+      expect(asterisk.classList.contains('text-[#8c2438]')).toBe(true);
+    }
+    expect(name.getAttribute('dir')).toBe('rtl');
+    expect(phone.getAttribute('dir')).toBe('ltr');
+    expect(phone.classList.contains('placeholder-shown:[direction:rtl]')).toBe(true);
+  });
+
   it('matches the R7g submit icon size and important semibold weight', () => {
     render(<EnquiryForm programId="cs" institutionId="tau" title="מדעי המחשב" />);
     const button = screen.getByRole('button', { name: ENQUIRY_COPY.button });
@@ -266,6 +295,8 @@ it('pins all approved R7g state copy and the revised button in one place', () =>
     'אני רוצה שפרטיי יועברו גם לחברת הכנה לפסיכומטרי, שתחזור אליי בטלפון לגבי קורסים והטבות (לבני 18 ומעלה).',
   );
   expect(ENQUIRY_COPY).toMatchObject({
+    namePlaceholder: 'שם מלא',
+    phonePlaceholder: 'מספר טלפון',
     button: 'שליחת פרטים',
     loadingLive: 'שולחים את הפנייה',
     loadingButton: 'שליחת פרטים',

@@ -69,7 +69,11 @@ test('grouped results retain visible contact and save actions and selected conte
   const saved = page.getByRole('button', { name: 'שמירת פיזיותרפיה — אוניברסיטת תל אביב' });
   await saved.click();
   await expect(saved).toHaveAttribute('aria-pressed', 'true');
-  await page.getByRole('button', { name: 'יצירת קשר', exact: true }).first().click();
+  await page
+    .getByRole('article')
+    .filter({ has: saved })
+    .getByRole('button', { name: 'יצירת קשר', exact: true })
+    .click();
   await expect(page.getByRole('dialog', { name: 'אוניברסיטת תל אביב' })).toBeVisible(); // Approved test update, Jorje 2026-10-26
   await page.reload();
   await expect(page.getByLabel('שם', { exact: true })).toBeVisible(); // Approved test update, Jorje 2026-10-26

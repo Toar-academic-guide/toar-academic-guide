@@ -11,6 +11,8 @@ export const ENQUIRY_COPY = {
   button: 'שליחת פרטים',
   nameLabel: 'שם',
   phoneLabel: 'טלפון נייד',
+  namePlaceholder: 'שם מלא',
+  phonePlaceholder: 'מספר טלפון',
   requiredLegend: 'שדה חובה',
   actionNotice:
     'בלחיצה על ״שליחת פרטים״ פרטיך וטווח הציונים שלך יועברו {institution_le}, שיחזרו אליך בטלפון. אפשר לבטל בכל עת.',

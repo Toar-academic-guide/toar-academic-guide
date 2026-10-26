@@ -219,6 +219,7 @@ export default function EnquiryForm({
                       id={`${id}-${field}`}
                       name={field}
                       aria-label={field === 'name' ? COPY.nameLabel : COPY.phoneLabel}
+                      placeholder={field === 'name' ? COPY.namePlaceholder : COPY.phonePlaceholder}
                       type={field === 'phone' ? 'tel' : 'text'}
                       dir={field === 'phone' ? 'ltr' : 'rtl'}
                       autoComplete={field === 'phone' ? 'tel' : 'name'}
@@ -228,7 +229,7 @@ export default function EnquiryForm({
                       aria-describedby={errors[field] ? `${id}-${field}-error` : undefined}
                       maxLength={field === 'name' ? 100 : 22}
                       readOnly={status === 'sending'}
-                      className="min-h-11 w-full rounded-lg border border-[#7f8faa] bg-white px-3 py-[9px] text-right text-base leading-6 focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-[#6554b8] aria-invalid:border-[#8c2438]!"
+                      className={`min-h-11 w-full rounded-lg border border-[#7f8faa] bg-white px-3 py-[9px] text-right text-base leading-6 placeholder:text-[#666666]! placeholder:opacity-100 focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-[#6554b8] aria-invalid:border-[#8c2438]! ${field === 'phone' ? 'placeholder-shown:[direction:rtl]' : ''}`}
                     />
                     {errors[field] && (
                       <p

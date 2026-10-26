@@ -3,10 +3,59 @@
 import { readFileSync } from 'node:fs';
 import { render, screen, within } from '@testing-library/react';
 import { expect, it, vi } from 'vitest';
-import { ENQUIRY_PREP_CONSENT } from '@/lib/enquiries';
+import { ENQUIRY_COPY, ENQUIRY_PREP_CONSENT } from '@/lib/enquiries';
 import EnquiryForm from './EnquiryForm';
 
 vi.mock('posthog-js', () => ({ default: { capture: vi.fn() } }));
+
+it('scopes the parsed 3px focus-visible rule to the enquiry modal and keeps 4px elsewhere', () => {
+  const style = document.createElement('style');
+  style.textContent = readFileSync('src/components/StudyJourney.css', 'utf8');
+  document.head.append(style);
+
+  try {
+    render(
+      <div className="study-journey">
+        <EnquiryForm programId="cs" institutionId="tau" title="מדעי המחשב" surface="journey" />
+        <button type="button">המשך</button>
+      </div>,
+    );
+    // jsdom caches computed pseudo-class styles across focus changes; verify rules and matching.
+    const rules = Array.from(style.sheet!.cssRules).filter(
+      (rule): rule is CSSStyleRule => rule instanceof CSSStyleRule,
+    );
+    const journeyRule = rules.find(
+      (rule) => rule.selectorText === '.study-journey :focus-visible',
+    )!;
+    const modalRule = rules.find(
+      (rule) =>
+        rule.selectorText === ".study-journey :where(dialog[aria-modal='true']) :focus-visible",
+    )!;
+    expect(journeyRule).toBeDefined();
+    expect(modalRule).toBeDefined();
+    expect(journeyRule.style.getPropertyValue('outline')).toBe('3px solid #6554b8');
+    expect(journeyRule.style.getPropertyValue('outline-offset')).toBe('4px');
+    expect(modalRule.style.getPropertyValue('outline-offset')).toBe('3px');
+    expect(modalRule.style.getPropertyPriority('outline-offset')).toBe('important');
+    expect(modalRule.style.getPropertyValue('outline')).toBe('');
+    expect(rules.indexOf(modalRule)).toBeGreaterThan(rules.indexOf(journeyRule));
+    const dialog = within(screen.getByRole('dialog'));
+    for (const control of [
+      dialog.getByLabelText(ENQUIRY_COPY.nameLabel),
+      dialog.getByRole('button', { name: ENQUIRY_COPY.button }),
+    ]) {
+      control.focus();
+      expect(control.matches(journeyRule.selectorText)).toBe(true);
+      expect(control.matches(modalRule.selectorText)).toBe(true);
+    }
+    const outside = screen.getByRole('button', { name: 'המשך' });
+    outside.focus();
+    expect(outside.matches(journeyRule.selectorText)).toBe(true);
+    expect(outside.matches(modalRule.selectorText)).toBe(false);
+  } finally {
+    style.remove();
+  }
+});
 
 it('exempts only enquiry prep consent from the 18px journey checkbox rule', () => {
   const style = document.createElement('style');

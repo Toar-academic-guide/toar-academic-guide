@@ -24,6 +24,31 @@ for (const width of [1280, 390]) {
     await page.goto('/enquiry?program=cs&institution=tau');
     const dialog = page.getByRole('dialog', { name: 'אוניברסיטת תל אביב', exact: true });
     await expect(dialog).toBeVisible();
+    await test.step('grey Hebrew placeholders keep empty fields RTL and typed phone values LTR', async () => {
+      for (const [label, placeholder] of [
+        [ENQUIRY_COPY.nameLabel, ENQUIRY_COPY.namePlaceholder],
+        [ENQUIRY_COPY.phoneLabel, ENQUIRY_COPY.phonePlaceholder],
+      ]) {
+        const input = dialog.getByLabel(label, { exact: true });
+        await expect(input).toHaveValue('');
+        await expect(input).toHaveAttribute('placeholder', placeholder);
+        expect(await input.evaluate((node) => getComputedStyle(node, '::placeholder').color)).toBe(
+          'rgb(102, 102, 102)',
+        );
+        expect(
+          await input.evaluate((node) => getComputedStyle(node, '::placeholder').opacity),
+        ).toBe('1');
+        expect(await input.evaluate((node) => getComputedStyle(node).direction)).toBe('rtl');
+        expect(await input.evaluate((node) => getComputedStyle(node).textAlign)).toBe('right');
+      }
+      const phone = dialog.getByLabel(ENQUIRY_COPY.phoneLabel, { exact: true });
+      await expect(phone).toHaveAttribute('dir', 'ltr');
+      await phone.fill('0501234567');
+      expect(await phone.evaluate((node) => getComputedStyle(node).direction)).toBe('ltr');
+      expect(await phone.evaluate((node) => getComputedStyle(node).textAlign)).toBe('right');
+      await phone.clear();
+      expect(await phone.evaluate((node) => getComputedStyle(node).direction)).toBe('rtl');
+    });
     expect(await dialog.evaluate((node) => getComputedStyle(node).backgroundColor)).toBe(
       'rgb(255, 255, 255)',
     );
