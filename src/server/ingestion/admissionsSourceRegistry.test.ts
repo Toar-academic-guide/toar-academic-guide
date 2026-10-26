@@ -21,6 +21,7 @@ describe('admissionsSourceRegistry', () => {
 
   it.each([
     ['colman-computer-science-live', 'requirements_only'],
+    ['tau-architecture-live', 'manual_gate'],
     ['tau-medicine-live', 'manual_gate'],
     ['tau-medicine-legacy-live', 'manual_gate'],
     ['tau-physiotherapy-live', 'manual_gate'],
@@ -156,7 +157,6 @@ describe('admissionsSourceRegistry', () => {
       'tau-accounting-legacy-live',
       'tau-business-live',
       'tau-business-legacy-live',
-      'tau-architecture-live',
       'tau-biology-live',
       'tau-communication-live',
       'tau-political-science-live',
@@ -174,6 +174,27 @@ describe('admissionsSourceRegistry', () => {
       'tau-industrial-live',
       'tau-biology-legacy-live',
     ]);
+  });
+
+  it('keeps architecture screening separate from the raw TAU match score', () => {
+    const target = selectAdmissionsSourceTargets(['tau-architecture-live'])[0]!;
+    expect(target).toMatchObject({
+      officialUrl: 'https://go.tau.ac.il/he/arts/ba/arch?v=admission-requirements',
+      expectedCapability: 'score_only',
+      proofLevel: 'partial_official',
+      category: 'manual_gate',
+      defaultProgram: {
+        pairId: 'architecture__tau',
+        nodeId: 8209,
+        externalId: '088111010000',
+        searchText: 'https://go.tau.ac.il/he/arts/ba/arch?v=admission-requirements',
+        decisionMode: 'eligible_to_apply',
+      },
+    });
+    expect(target.limitations.join(' ')).toMatch(/50%.*50%/);
+    expect(target.limitations.join(' ')).toMatch(/mandatory.*screening test/i);
+    expect(target.limitations.join(' ')).not.toMatch(/portfolio|interview/i);
+    expect(selectAdmissionsSourceTargets()).not.toContain(target);
   });
 
   it('supports running one target at a time', () => {

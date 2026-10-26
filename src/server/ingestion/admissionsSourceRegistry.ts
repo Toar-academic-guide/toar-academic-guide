@@ -743,11 +743,11 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
     id: 'tau-architecture-live',
     institutionId: 'tau',
     institutionName: 'Tel Aviv University',
-    officialUrl: 'https://go.tau.ac.il/graphql',
+    officialUrl: 'https://go.tau.ac.il/he/arts/ba/arch?v=admission-requirements',
     adapterId: 'tau',
-    expectedCapability: 'decision_capable',
-    proofLevel: 'exact_official',
-    category: 'exact',
+    expectedCapability: 'score_only',
+    proofLevel: 'partial_official',
+    category: 'manual_gate',
     defaultApplicant: { bagrutAverage: 110, psychometric: 680 },
     defaultProgram: {
       targetId: 'tau-architecture-live',
@@ -757,6 +757,8 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
       nodeId: 8209,
       externalId: '088111010000',
       scoreField: 'hatama',
+      searchText: 'https://go.tau.ac.il/he/arts/ba/arch?v=admission-requirements',
+      decisionMode: 'eligible_to_apply',
     },
     reproducedFields: [
       'selectedScore',
@@ -765,10 +767,10 @@ export const admissionsSourceTargets: AdmissionsSourceTarget[] = [
       'officialVerdict',
     ],
     limitations: [
-      'Portfolio, interview, and other non-score architecture conditions remain manual.',
+      'Admission requires a mandatory architecture screening test: 50% match score and 50% screening-test score. The raw match score cannot establish an admission verdict.',
     ],
     nextAction:
-      'Keep the architecture node, English gate, manual conditions, fixtures, and thresholds under review.',
+      'Keep the psychometric, mathematics, English, and mandatory screening-test gates visible; TAU decides after screening.',
   },
   {
     id: 'tau-biology-live',

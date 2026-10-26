@@ -50,6 +50,7 @@ const WITHHELD_FORMULA_PAIR_CAPABILITIES: Record<
   string,
   Extract<AdmissionsEvaluationCapability, 'manual_gate' | 'requirements_only'>
 > = {
+  architecture__tau: 'manual_gate',
   colmgmt_cs__colman: 'manual_gate',
   medicine__tau: 'manual_gate',
   nutrition__tau: 'requirements_only',
@@ -430,6 +431,8 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
       nodeId: 8209,
       externalId: '088111010000',
       scoreField: 'hatama',
+      searchText: 'https://go.tau.ac.il/he/arts/ba/arch?v=admission-requirements',
+      decisionMode: 'eligible_to_apply',
     },
     requiredInputs: ['psychometric_english'],
   },

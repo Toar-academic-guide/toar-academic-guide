@@ -286,6 +286,7 @@ describe('buildAdmissionsCapabilityMatrix', () => {
   );
 
   it.each([
+    ['architecture', 'tau', 'manual_gate'],
     ['medicine', 'tau', 'manual_gate'],
     ['tau_medicine', 'tau', 'manual_gate'],
     ['physiotherapy', 'tau', 'manual_gate'],

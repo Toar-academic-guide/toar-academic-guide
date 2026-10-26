@@ -553,13 +553,7 @@ const TAU_CAPTURED_TARGETS: ReadonlyArray<
     [TAU_SOCIAL_WORK_ACCEPTED_APPLICANT, 679, 'accepted'],
     [TAU_SOCIAL_WORK_BELOW_APPLICANT, 496],
   ],
-  ...[
-    'tau-law-live',
-    'tau-law-legacy-live',
-    'tau-architecture-live',
-    'tau-biology-live',
-    'tau-biology-legacy-live',
-  ].map(
+  ...['tau-law-live', 'tau-law-legacy-live', 'tau-biology-live', 'tau-biology-legacy-live'].map(
     (targetId) =>
       [
         targetId,
@@ -667,6 +661,17 @@ Object.assign(
       capturedTauFixtures(targetId, accepted, below),
     ]),
   ),
+  {
+    'tau-architecture-live': [
+      {
+        captureId: 'tau-architecture-live:official-below:2026-07-31T10:11:16.543Z',
+        capturedAt: TAU_CAPTURED_AT,
+        officialUrl: 'https://go.tau.ac.il/he/arts/ba/arch?v=admission-requirements',
+        applicant: TAU_STANDARD_BELOW_620_APPLICANT,
+        expected: { score: 548, verdict: 'below' },
+      },
+    ] satisfies OfficialProgramProofCapture[],
+  },
 );
 
 function technionRecord(grade: number) {
