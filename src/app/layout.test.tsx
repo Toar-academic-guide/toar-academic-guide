@@ -9,8 +9,8 @@ vi.mock('server-only', () => ({}));
 vi.mock('@/context/AuthContext', () => ({
   AuthProvider: ({ children }: { children: ReactNode }) => children,
 }));
-vi.mock('@/components/seo/CatalogueLinks', () => ({
-  CatalogueFooter: () => <footer>Existing footer</footer>,
+vi.mock('@/components/SiteFooter', () => ({
+  default: () => <footer>Existing footer</footer>,
 }));
 vi.mock('@/components/seo/JsonLd', () => ({ default: () => null }));
 vi.mock('@vercel/analytics/next', () => ({ Analytics: () => null }));

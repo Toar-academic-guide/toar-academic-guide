@@ -13,9 +13,11 @@ export default function TermsPage() {
       <p className="text-sm text-[var(--text-muted)]">{'עדכון אחרון: 25.10.2026 · גרסה 1.0'}</p>
       <h2>{'1. כללי'}</h2>
       <p>
-        {
-          '1.1 האתר findmyway.co.il ("האתר", "MyWay") מופעל על ידי עמית מליחי (עוסק פטור), [כתובת] ("אנחנו").'
-        }
+        {'1.1 האתר findmyway.co.il ("האתר", "MyWay") מופעל על ידי עמית מליחי (עוסק פטור), '}
+        <a href="mailto:info@findmyway.co.il">
+          <bdi dir="ltr">info@findmyway.co.il</bdi>
+        </a>
+        {' ("אנחנו").'}
       </p>
       <p>
         {'1.2 השימוש באתר כפוף לתנאים אלה ולמדיניות הפרטיות ('}
@@ -142,7 +144,7 @@ export default function TermsPage() {
       </p>
       <h2>{'12. יצירת קשר'}</h2>
       <p>
-        {'עמית מליחי, [כתובת], '}
+        {'עמית מליחי (עוסק פטור), '}
         <a href="mailto:info@findmyway.co.il">
           <bdi dir="ltr">info@findmyway.co.il</bdi>
         </a>

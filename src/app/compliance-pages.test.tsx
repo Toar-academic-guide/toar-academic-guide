@@ -43,7 +43,7 @@ const pages = [
     Page: AccessibilityPage,
     metadata: accessibilityMetadata,
     title: 'הצהרת נגישות',
-    headings: [],
+    headings: ['מה עשינו באתר', 'מגבלות ידועות', 'נתקלתם בבעיה?'],
   },
 ];
 
@@ -55,6 +55,11 @@ function markup(element: ReactNode) {
 
 function normalize(text: string) {
   return text.replace(/\s+/g, ' ').trim();
+}
+
+function sourceText(text: string) {
+  // Hyphen list markers become semantic <li> elements rather than visible text.
+  return normalize(text.replace(/^- /gm, ''));
 }
 
 function pageText(container: HTMLElement) {
@@ -82,19 +87,27 @@ describe('compliance pages', () => {
       expect(emails.length).toBeGreaterThan(0);
       for (const email of emails) expect(email.textContent).toBe('info@findmyway.co.il');
       expect(container.textContent).not.toMatch(/\d{9}/);
-      expect(container.textContent).toContain('עמית מליחי (עוסק פטור)');
+      expect(container.textContent).toContain(
+        path === '/accessibility' ? 'עמית מליחי' : 'עמית מליחי (עוסק פטור)',
+      );
       expect(metadata.title).toBeTruthy();
       expect(metadata.alternates?.canonical).toBe(path);
       expect(container.querySelector('form')).toBeNull();
     });
   }
 
+  for (const { Page, path } of pages.filter(({ path }) => path !== '/contact')) {
+    it(`${path} preserves the entire approved copy`, () => {
+      const source = readFileSync(`src/content/legal${path}.he.txt`, 'utf8');
+      expect(pageText(markup(<Page />))).toBe(sourceText(source));
+    });
+  }
+
   for (const { Page, path } of pages.slice(0, 2)) {
-    it(`${path} preserves the entire approved copy, including numbering and address placeholders`, () => {
+    it(`${path} preserves the entire approved copy, including numbering`, () => {
       const source = readFileSync(`src/content/legal${path}.he.txt`, 'utf8');
       const container = markup(<Page />);
       expect(pageText(container)).toBe(normalize(source));
-      expect(container.textContent).toContain('[כתובת]');
       const update = container.querySelector('main p');
       expect(update?.textContent).toBe(source.split('\n')[1]);
       expect(update?.className).toContain('text-sm');
@@ -109,6 +122,20 @@ describe('compliance pages', () => {
     });
   }
 
+  it('terms use the business name and email without an address placeholder', () => {
+    const text = pageText(markup(<TermsPage />));
+    expect(text).not.toContain('[כתובת]');
+    expect(text).toContain('עמית מליחי (עוסק פטור)');
+    expect(text).toContain('info@findmyway.co.il');
+    expect(text).not.toMatch(/\d{9}/);
+  });
+
+  it('privacy keeps its address placeholders without an identity number', () => {
+    const text = pageText(markup(<PrivacyPage />));
+    expect(text).toContain('[כתובת]');
+    expect(text).not.toMatch(/\d{9}/);
+  });
+
   it('links the exact policy path and government URL without changing their text', () => {
     const policyLink = markup(<TermsPage />).querySelector('a[href="/privacy"]');
     expect(policyLink?.textContent).toBe('/privacy');
@@ -118,15 +145,36 @@ describe('compliance pages', () => {
     expect(governmentLink?.getAttribute('rel')).toBe('noopener noreferrer');
   });
 
-  it('contact and accessibility contain only their approved body strings', () => {
+  it('contact contains only its approved body strings', () => {
     const contact = markup(<ContactPage />);
     expect(pageText(contact)).toBe('יצירת קשר עמית מליחי (עוסק פטור) info@findmyway.co.il');
-    const accessibility = markup(<AccessibilityPage />);
-    expect(pageText(accessibility)).toBe(
-      'הצהרת נגישות [נוסח הצהרת הנגישות ממתין לאישור] עמית מליחי (עוסק פטור) info@findmyway.co.il',
+    expect(contact.querySelector('a bdi')?.getAttribute('dir')).toBe('ltr');
+  });
+
+  it('accessibility renders the approved statement with a list and email contact', () => {
+    const container = markup(<AccessibilityPage />);
+    expect(Array.from(container.querySelectorAll('h2'), (node) => node.textContent)).toEqual([
+      'מה עשינו באתר',
+      'מגבלות ידועות',
+      'נתקלתם בבעיה?',
+    ]);
+    expect(container.querySelectorAll('ul')).toHaveLength(1);
+    expect(container.querySelectorAll('ul > li')).toHaveLength(5);
+    const source = readFileSync('src/content/legal/accessibility.he.txt', 'utf8');
+    expect(Array.from(container.querySelectorAll('li'), (node) => node.textContent)).toEqual(
+      source
+        .split('\n')
+        .filter((line) => line.startsWith('- '))
+        .map((line) => line.slice(2)),
     );
-    for (const container of [contact, accessibility]) {
-      expect(container.querySelector('a bdi')?.getAttribute('dir')).toBe('ltr');
-    }
+    const email = container.querySelector('a[href="mailto:info@findmyway.co.il"]');
+    expect(email?.textContent).toBe('info@findmyway.co.il');
+    expect(email?.querySelector('bdi')?.getAttribute('dir')).toBe('ltr');
+    const text = pageText(container);
+    expect(text).not.toContain('[');
+    expect(text).not.toContain(']');
+    expect(text).not.toMatch(/0\d[\d-]{7,}/);
+    expect(text).not.toMatch(/\+972/);
+    expect(text).not.toMatch(/\d{9}/);
   });
 });

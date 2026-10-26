@@ -42,6 +42,39 @@ describe('UX P1 subject selection', () => {
     vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
   });
 
+  it.each(['home', 'subjects'] as const)(
+    'does not focus the journey heading on initial mount at %s',
+    async (initialStep) => {
+      render(<StudyJourney initialStep={initialStep} />);
+      const heading = await screen.findByRole('heading', { level: 1 });
+      expect(document.activeElement).not.toBe(heading);
+    },
+  );
+
+  it('does not focus the heading when restoring a draft and URL step on load', async () => {
+    window.history.replaceState(null, '', '/app/calculator#regions');
+    window.sessionStorage.setItem(
+      'myway_study_journey_v2',
+      JSON.stringify({ fields: ['cs'], locations: ['all'], types: ['all'], scores: {} }),
+    );
+    render(<StudyJourney initialStep="subjects" />);
+    const heading = await screen.findByRole('heading', { name: 'איפה את/ה רוצה ללמוד?' });
+    expect(document.activeElement).not.toBe(heading);
+  });
+
+  it('focuses the journey heading after the student continues and goes back', async () => {
+    render(<StudyJourney initialStep="subjects" />);
+    fireEvent.click((await screen.findAllByRole('button', { name: 'מדעי המחשב' }))[0]);
+    fireEvent.click(screen.getByRole('button', { name: 'המשך' }));
+    expect(document.activeElement).toBe(
+      screen.getByRole('heading', { name: 'איפה את/ה רוצה ללמוד?' }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'חזרה' }));
+    expect(document.activeElement).toBe(
+      screen.getByRole('heading', { name: 'מה מעניין אותך ללמוד?' }),
+    );
+  });
+
   it('finds every engineering subject and the hub when searching הנדסה', async () => {
     render(<StudyJourney initialStep="subjects" />);
     const search = await screen.findByRole('textbox', { name: 'חיפוש תחום לימודים' });

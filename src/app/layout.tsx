@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { Analytics } from '@vercel/analytics/next';
 import { AuthProvider } from '@/context/AuthContext';
-import { CatalogueFooter } from '@/components/seo/CatalogueLinks';
+import SiteFooter from '@/components/SiteFooter';
 import SkipLink from '@/components/SkipLink';
 import JsonLd from '@/components/seo/JsonLd';
 import { organizationLd, websiteLd } from '@/lib/seo/jsonLd';
@@ -36,7 +36,7 @@ export default function RootLayout({
         <SkipLink />
         <JsonLd data={[organizationLd(), websiteLd()]} />
         <AuthProvider>{children}</AuthProvider>
-        <CatalogueFooter />
+        <SiteFooter />
         {process.env.VERCEL === '1' && <Analytics />}
       </body>
     </html>
