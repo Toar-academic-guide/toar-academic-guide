@@ -42,7 +42,7 @@ describe('EnquiryForm', () => {
     });
     fireEvent.click(screen.getByRole('button', { name: ENQUIRY_COPY.button }));
     const heading = await screen.findByRole('heading', { name: ENQUIRY_COPY.successTitle });
-    expect(document.activeElement).toBe(heading);
+    await waitFor(() => expect(document.activeElement).toBe(heading));
     expect(heading.tabIndex).toBe(-1);
     for (const className of [
       'focus:outline-3',
