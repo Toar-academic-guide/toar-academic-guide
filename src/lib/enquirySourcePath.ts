@@ -2,6 +2,10 @@
 const staticPages = new Set([
   '/',
   '/about',
+  '/privacy',
+  '/terms',
+  '/contact',
+  '/accessibility',
   '/dev',
   '/login',
   '/signup',
