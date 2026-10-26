@@ -77,6 +77,59 @@ describe('HUJI psychology catalogue correction', () => {
     },
   );
 
+  it.each(['huji_psychology', 'psychology'])(
+    'shows the exact 30+ route conditions without referral wording in %s HUJI student copy',
+    async (id) => {
+      const seed = buildCatalogueSeed();
+      const institutions = seed.institutions.map((row) =>
+        serializeInstitutionRow(row as InstitutionRow),
+      );
+      const programs = ['huji_psychology', 'psychology'].map((programId) =>
+        serializeProgramRow({
+          program: seed.programs.find((row) => row.id === programId)! as ProgramRow,
+          relations: seed.programInstitutions.filter(
+            (row) => row.programId === programId,
+          ) as ProgramInstitutionRow[],
+          requirements: seed.admissionRequirements.filter(
+            (row) => row.programId === programId && row.institutionId === 'huji',
+          ) as AdmissionRequirementRow[],
+          thresholds: seed.admissionThresholds.filter(
+            (row) => row.programId === programId,
+          ) as AdmissionThresholdRow[],
+          sourceUrls: [],
+          institutionsById: new Map(
+            seed.institutions.map((row) => [row.id, row as InstitutionRow]),
+          ),
+        }),
+      );
+      const { listCataloguePrograms, listCatalogueInstitutions } =
+        await import('@/server/catalogue/queries');
+      vi.mocked(listCataloguePrograms).mockResolvedValue({ data: programs, meta: {} });
+      vi.mocked(listCatalogueInstitutions).mockResolvedValue({ data: institutions, meta: {} });
+      const { getPublicProgramPageData, getPublicProgramRequirementSources } =
+        await import('@/lib/publicCataloguePages');
+      const page = await getPublicProgramPageData(id);
+      expect(page).not.toBeNull();
+      const source = (await getPublicProgramRequirementSources(page!)).huji;
+      const detail = source.program.institutionDetails!.find(
+        (entry) => entry.institutionName === institutions.find((row) => row.id === 'huji')!.name,
+      )!;
+      for (const lines of [detail.specificAdmissionNotes, source.requirements]) {
+        expect(lines).toContain(
+          'לבני 30 ומעלה (שנולדו בשנת 1996 ולפניה, נדרשת זכאות לבגרות): ציון 673 ומעלה בפסיכומטרי.',
+        );
+      }
+      for (const copy of [
+        detail.specificAdmissionNotes.join(' '),
+        source.program.admissionRequirements.join(' '),
+        source.requirements.join(' '),
+      ]) {
+        expect(copy).not.toContain('יש לבדוק');
+        expect(copy).not.toContain('באתר האוניברסיטה');
+      }
+    },
+  );
+
   it('repairs dedicated programme copy and provenance without deriving a required PET gate', () => {
     const program = allPrograms.find((row) => row.id === 'huji_psychology')!;
     const detail = program.institutionDetails![0];

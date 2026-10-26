@@ -4,13 +4,14 @@ Checked 2026-10-26, Asia/Jerusalem. The policy and catalogue correction now run 
 
 ## Official evidence
 
-Captures live under `/workspace/pm-research/raw/official/huji/`. Only the following three official sources were used.
+Captures live under `/workspace/pm-research/raw/official/huji/`. Only the following four official sources were used.
 
 | Source | Capture time | Capture | SHA-256 |
 | --- | --- | --- | --- |
 | [Psychology programme](https://info.huji.ac.il/bachelor/Psychology) | 09:02 (09:02:17 +02:00) | `psych_chrome_20261026T090217+0200.html` | `ee19ad865370598dcbf35751e5559428a23026eb1d2c93e40a9866942e5c9414` |
 | [HUJI feed](https://go.huji.ac.il/jjson/huji.json.gz) | 09:04 (filename 09:03:57 +02:00) | `huji_json_20261026T090357+0200.json.gz` | `c26832f77de0743c86c9936cb8536025e7e84d79d7efc9a962dbf52f29811a6b` |
 | [Kidum channel](https://info.huji.ac.il/reception-channels/Kidum) | 09:03 (09:03:10 +02:00) | `kidum_chrome_20261026T090310+0200.html` | `2f3ca24af49859cea001999d1c4973ad577cd05d6d638b222451d3e8958b82ac` |
+| [30+ channel](https://info.huji.ac.il/reception-channels/JustPsychometric) | 12:21:36 +02:00 | `justpsychometric_chrome_20261026T122136+0200.html` | `a611c67c77468b41cc8c0f22084930fea7258549a9a45e13a8426ff5c41f6e15` |
 
 The decompressed feed `huji_json_20261026T090357+0200.json` has SHA-256 `dda7e236b59fec7d1646a6b07d91f9f1de7f93d64296e4666b58e4a0f631107a`. The programme text extract `psych_chrome_20261026T090217+0200.txt` has SHA-256 `ec2fab91b2f0558e16862fad15c80ba1124e476bafbd79c29c83e6b6af0a98a6`.
 
@@ -28,14 +29,14 @@ The feed rows for tracks `300-7000` and `300-7009` agree:
 | --- | --- | --- |
 | `direct_pet` | 725 | Pure policy: PET ≥725 yields direct accepted |
 | `direct_pet_kidum` | 690 | Pure policy: PET 690–724 yields text-only manual gate about the Kidum rating |
-| `direct_30` | 673 | Catalogue note only; no age-based automatic decision |
+| `direct_30` | 673 | Catalogue note only: לבני 30 ומעלה (שנולדו בשנת 1996 ולפניה, נדרשת זכאות לבגרות): ציון 673 ומעלה בפסיכומטרי. No age-based automatic decision. |
 | `safAccept` | 22.5 | Ordinary sekem acceptance threshold, unchanged |
 | `safReject` | 22.5 | Ordinary sekem rejection threshold, unchanged |
 | `hog_years2degree` | 3 | Dedicated programme duration corrected to three years |
 
 The policy uses validated feed thresholds only. Missing `direct_pet` leaves the regular sekem result unchanged; missing `direct_pet_kidum` disables the Kidum gate. There is no fallback acceptance. The direct-score parser rejects missing, malformed, non-finite or out-of-range scores; the adapter omits their keys. The existing sekem parsing remains unchanged. PET below the Kidum threshold or missing PET leaves the normalized sekem result untouched. An already accepted sekem result stays accepted in the Kidum interval. Otherwise the manual gate retains the regular sekem score, threshold, score label, score assessment and official URLs, adding the Kidum URL.
 
-Per Jorje's ruling on 2026-10-26, the 22.5 threshold still drives the verdict but is no longer shown as a student-facing bullet on `huji_psychology` or the HUJI entry of `/programs/psychology`. The 725, 690 and 673 notes and the checked-date/source stamp remain unchanged. PET660/B90 remains exact/below against 22.5.
+Per Jorje's ruling on 2026-10-26, the 22.5 threshold still drives the verdict but is no longer shown as a student-facing bullet on `huji_psychology` or the HUJI entry of `/programs/psychology`. The 725 and 690 notes and the checked-date/source stamp remain unchanged. The 673 note now uses the exact student line in the table above for both programme entries. The psychology page labels this route “ציון פסיכומטרי לקבלה ישירה לבני 30 ומעלה (לבעלי זכאות לבגרות)”; the feed supplies `direct_30` 673. The JustPsychometric capture states: “מועמדים שנולדו בשנת 1996 ולפניה - קבלתם אפשרית במרבית התחומים, גם ללא התחשבות בממוצע תעודת הבגרות (עם זאת, נדרשת זכאות לבגרות).” PET660/B90 remains exact/below against 22.5.
 
 The full-bagrut rule assumes a full certificate when a student enters an average or grades; no confirmation field or gate is added. No institutional composite is requested. The conditional Kidum sekem value is outside this task and is not encoded in the repair notes or policy.
 
