@@ -153,34 +153,31 @@ describe('HUJI psychology real exact path', () => {
     });
 
     // Jorje 2026-10-26 12:47: Kidum gate is text-only, no composite score or threshold.
-    it.each([690, 724])(
-      'shows a text-only Kidum gate at PET %i/B90',
-      async (pet) => {
-        const scores = { psychometric: pet, bagrut: 90 };
-        const result = await evaluate(scores, id);
-        const regular = await evaluate(scores, id, {
-          direct_pet: undefined,
-          direct_pet_kidum: undefined,
-        });
-        expect(regular.decision).toBe('below');
-        expect(result).toMatchObject({
-          capability: 'manual_gate',
-          kind: 'manual_gate',
-          decision: 'unknown',
-        });
-        expect(result.score).toBeUndefined(); // Approved test update, Jorje 2026-10-26
-        expect(result.threshold).toBeUndefined(); // Approved test update, Jorje 2026-10-26
-        expect(result.scoreLabel).toBeUndefined(); // Approved test update, Jorje 2026-10-26
-        expect(result.scoreAssessment).toBeUndefined(); // Approved test update, Jorje 2026-10-26
-        expect(result.explanation).toContain('ראויים לקידום');
-        expect(result.officialUrls).toEqual(
-          expect.arrayContaining([
-            ...(regular.officialUrls ?? []),
-            'https://info.huji.ac.il/reception-channels/Kidum',
-          ]),
-        );
-      },
-    );
+    it.each([690, 724])('shows a text-only Kidum gate at PET %i/B90', async (pet) => {
+      const scores = { psychometric: pet, bagrut: 90 };
+      const result = await evaluate(scores, id);
+      const regular = await evaluate(scores, id, {
+        direct_pet: undefined,
+        direct_pet_kidum: undefined,
+      });
+      expect(regular.decision).toBe('below');
+      expect(result).toMatchObject({
+        capability: 'manual_gate',
+        kind: 'manual_gate',
+        decision: 'unknown',
+      });
+      expect(result.score).toBeUndefined(); // Approved test update, Jorje 2026-10-26
+      expect(result.threshold).toBeUndefined(); // Approved test update, Jorje 2026-10-26
+      expect(result.scoreLabel).toBeUndefined(); // Approved test update, Jorje 2026-10-26
+      expect(result.scoreAssessment).toBeUndefined(); // Approved test update, Jorje 2026-10-26
+      expect(result.explanation).toContain('ראויים לקידום');
+      expect(result.officialUrls).toEqual(
+        expect.arrayContaining([
+          ...(regular.officialUrls ?? []),
+          'https://info.huji.ac.il/reception-channels/Kidum',
+        ]),
+      );
+    });
   });
 });
 
