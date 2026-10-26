@@ -2,6 +2,22 @@
   "checkedAt": "2026-10-21",
   "requirements": [
     {
+      "programId": "huji_psychology",
+      "institutionId": "huji",
+      "sourceUrl": "https://info.huji.ac.il/bachelor/Psychology",
+      "programUrl": "https://info.huji.ac.il/bachelor/Psychology",
+      "sourceSha256": "ee19ad865370598dcbf35751e5559428a23026eb1d2c93e40a9866942e5c9414",
+      "checkedAt": "2026-10-26",
+      "durationYears": 3,
+      "notes": [
+        "סף סכ״ם: 22.500 לפי אתר החוג באוניברסיטה העברית, נבדק ב־26.10.2026.",
+        "קבלה ישירה לבעלי תעודת בגרות: ציון 725 ומעלה בפסיכומטרי.",
+        "לראויים לקידום בלבד: ציון 690 ומעלה בפסיכומטרי, בכפוף לדירוג של 30 נקודות לפחות מטעם האגודה לקידום החינוך.",
+        "לבני 30 ומעלה מופיע סף של 673 בפסיכומטרי; יש לבדוק את תנאי האפיק באתר האוניברסיטה."
+      ],
+      "coverage": "published_conditions"
+    },
+    {
       "programId": "education",
       "institutionId": "tau",
       "sourceUrl": "https://go.tau.ac.il/he/education/ba?v=requirements",

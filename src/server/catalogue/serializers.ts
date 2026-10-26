@@ -220,7 +220,11 @@ export function serializeProgramRow(args: {
   for (const threshold of thresholds) {
     if (threshold.thresholdKind === 'sekhem') {
       thresholdMap[threshold.universityId] = threshold.thresholdValue;
-    } else if (threshold.thresholdValue !== null && program.id !== 'haifa_psychology') {
+    } else if (
+      threshold.thresholdValue !== null &&
+      program.id !== 'haifa_psychology' &&
+      !(threshold.universityId === 'huji' && ['huji_psychology', 'psychology'].includes(program.id))
+    ) {
       directPsychometricMap[threshold.universityId] = threshold.thresholdValue;
     }
   }
@@ -278,6 +282,7 @@ export function serializeProgramRow(args: {
   };
   const repaired = [
     'haifa_psychology',
+    'huji_psychology',
     'afeka_ee',
     'afeka_softwareeng',
     'afeka_cs',

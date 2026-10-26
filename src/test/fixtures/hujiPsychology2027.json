@@ -1,0 +1,40 @@
+{
+  "hogimInfoObj": [
+    {
+      "track_number": "300-7000",
+      "hog_regType": 2,
+      "hog_years2degree": "3"
+    },
+    {
+      "track_number": "300-7009",
+      "hog_regType": 2,
+      "hog_years2degree": "3"
+    }
+  ],
+  "currentYearObj": [
+    {
+      "track_number": "300-7000",
+      "safAccept": "22.5",
+      "safReject": "22.5",
+      "direct_pet": "725",
+      "direct_pet_kidum": "690",
+      "direct_30": "673"
+    },
+    {
+      "track_number": "300-7009",
+      "safAccept": "22.5",
+      "safReject": "22.5",
+      "direct_pet": "725",
+      "direct_pet_kidum": "690",
+      "direct_30": "673"
+    }
+  ],
+  "formulasObj": [
+    {
+      "formula_type": 2,
+      "formula_pet": "0.027468921",
+      "formula_avg": "0.145461915",
+      "formula_minus": "11.50910537"
+    }
+  ]
+}

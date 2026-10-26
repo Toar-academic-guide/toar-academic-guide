@@ -79,11 +79,11 @@ const D: Record<string, InstitutionDetail[]> = {
   huji_psychology: [
     {
       institutionName: 'האוניברסיטה העברית בירושלים',
-      durationYears: 4,
+      durationYears: 3,
       estimatedStudentsPerYear: 'כ-150 סטודנטים',
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
-      specificAdmissionNotes: ['קבלה ישירה בפסיכומטרי ≥ 660 (ללא תלות בסכ"ם)'],
+      specificAdmissionNotes: ['קבלה ישירה לבעלי תעודת בגרות: ציון 725 ומעלה בפסיכומטרי.'],
       officialCalculatorUrl: 'https://info.huji.ac.il/chishuv',
     },
   ],
@@ -1477,7 +1477,7 @@ export const academicPrograms: Program[] = [
     admissionType: 'sekhem',
     admissionRequirements: [],
     thresholds: { tau: null, huji: 725, technion: null, bgu: null },
-    directPsychometric: { huji: 660 },
+    directPsychometric: { huji: 725 },
     institutionDetails: D['huji_psychology'],
   },
   {

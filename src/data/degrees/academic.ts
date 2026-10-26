@@ -38,7 +38,7 @@ export const ACADEMIC_PROGRAMS: Program[] = [
     admissionRequirements: [],
     thresholds: { tau: 720, huji: 725, technion: null, bgu: 650, haifa: 650, biu: 665, ariel: 580 },
     isTauEngineering: false,
-    directPsychometric: { huji: 660 },
+    directPsychometric: { huji: 725 },
     minimumPsychometric: { bgu: 650 },
   },
   {

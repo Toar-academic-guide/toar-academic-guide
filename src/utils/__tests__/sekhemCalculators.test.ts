@@ -70,7 +70,7 @@ describe('sekhemCalculators', () => {
     const result = evaluateUniversities(
       [getUniversity('huji')],
       getProgram('huji_psychology'),
-      { psychometric: 660, bagrut: 90 },
+      { psychometric: 725, bagrut: 90 }, // Approved test update, Jorje 2026-10-26
       { hasMath5: false, hasPhysics5: false },
     )[0];
 
