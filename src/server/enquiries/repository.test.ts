@@ -1,3 +1,4 @@
+import { ENQUIRY_CONSENT, ENQUIRY_PREP_CONSENT } from '@/lib/enquiries';
 vi.mock('server-only', () => ({}));
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 const { execute, transaction, getDb } = vi.hoisted(() => ({
@@ -95,3 +96,29 @@ describe('private enquiry backup', () => {
     await expect(saveEnquiryBackup(enquiry)).rejects.toThrow('42P01');
   });
 });
+
+it.each([undefined, false, true])(
+  'writes server-owned separate prep consent for %s, retaining institution evidence',
+  async (prepConsent) => {
+    execute.mockReset().mockResolvedValue({ rows: [] });
+    transaction.mockImplementation((fn) => fn({ execute }));
+    getDb.mockReturnValue({ transaction });
+    const before = Date.now();
+    await saveEnquiryBackup({
+      ...enquiry,
+      prepConsent,
+      prepConsentText: 'forged text',
+      prepConsentAt: new Date('2000-01-01'),
+    });
+    const query = new PgDialect().sqlToQuery(execute.mock.calls[1][0]);
+    const payload = JSON.parse(query.params[0] as string);
+    expect(payload.consent).toBe(true);
+    expect(payload.consentText).toBe(ENQUIRY_CONSENT);
+    expect(payload.prepConsent).toBe(prepConsent === true);
+    expect(payload.prepConsentText).toBe(prepConsent ? ENQUIRY_PREP_CONSENT : null);
+    if (prepConsent) {
+      expect(Date.parse(payload.prepConsentAt)).toBeGreaterThanOrEqual(before);
+      expect(Date.parse(payload.prepConsentAt)).toBeLessThanOrEqual(Date.now());
+    } else expect(payload.prepConsentAt).toBeNull();
+  },
+);

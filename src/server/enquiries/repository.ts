@@ -3,7 +3,7 @@ import { enquirySourcePath } from '@/lib/enquirySourcePath';
 import { enquiryAttributionSchema } from '@/lib/leadAttribution';
 import { sql } from 'drizzle-orm';
 import { getDb } from '@/db/client';
-import { ENQUIRY_CONSENT, type EnquiryRecord } from '@/lib/enquiries';
+import { ENQUIRY_CONSENT, ENQUIRY_PREP_CONSENT, type EnquiryRecord } from '@/lib/enquiries';
 
 export async function saveEnquiryBackup(enquiry: EnquiryRecord): Promise<void> {
   // app_runtime cannot read this table; only this insert-only function is granted.
@@ -15,6 +15,9 @@ export async function saveEnquiryBackup(enquiry: EnquiryRecord): Promise<void> {
         sourcePath: enquirySourcePath(enquiry.sourcePath),
         attribution: enquiryAttributionSchema.parse(enquiry.attribution ?? {}),
         consentText: ENQUIRY_CONSENT,
+        prepConsent: enquiry.prepConsent === true,
+        prepConsentText: enquiry.prepConsent === true ? ENQUIRY_PREP_CONSENT : null,
+        prepConsentAt: enquiry.prepConsent === true ? new Date() : null,
       })}::jsonb)`,
     );
   });

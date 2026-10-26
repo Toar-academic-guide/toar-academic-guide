@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { ENQUIRY_COPY, ENQUIRY_PREP_CONSENT } from '@/lib/enquiries';
 import { StrictMode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
@@ -18,6 +19,124 @@ describe('EnquiryForm', () => {
     vi.unstubAllGlobals();
     window.history.replaceState(null, '', '/');
   });
+  it('adds plain grey placeholders while preserving required labels and the phone RTL hook', () => {
+    render(<EnquiryForm programId="cs" institutionId="tau" title="מדעי המחשב" />);
+    expect(ENQUIRY_COPY.namePlaceholder).toBe('שם מלא');
+    expect(ENQUIRY_COPY.phonePlaceholder).toBe('מספר טלפון');
+    const name = screen.getByLabelText('שם', { exact: true }) as HTMLInputElement;
+    const phone = screen.getByLabelText('טלפון נייד', { exact: true }) as HTMLInputElement;
+    for (const [input, placeholder, labelText] of [
+      [name, ENQUIRY_COPY.namePlaceholder, 'שם'],
+      [phone, ENQUIRY_COPY.phonePlaceholder, 'טלפון נייד'],
+    ] as const) {
+      expect(input.getAttribute('placeholder')).toBe(placeholder);
+      expect(input.getAttribute('aria-label')).toBe(labelText);
+      expect(input.required).toBe(true);
+      expect(input.getAttribute('aria-required')).toBe('true');
+      expect(input.classList.contains('text-right')).toBe(true);
+      expect(input.classList.contains('placeholder:text-[#666666]!')).toBe(true);
+      expect(input.classList.contains('placeholder:opacity-100')).toBe(true);
+      const label = input.labels![0];
+      expect(label.textContent).toBe(`${labelText} *`);
+      const asterisk = label.querySelector('span')!;
+      expect(asterisk.textContent?.trim()).toBe('*');
+      expect(asterisk.getAttribute('aria-hidden')).toBe('true');
+      expect(asterisk.classList.contains('text-[#8c2438]')).toBe(true);
+    }
+    expect(name.getAttribute('dir')).toBe('rtl');
+    expect(phone.getAttribute('dir')).toBe('ltr');
+    expect(phone.classList.contains('placeholder-shown:[direction:rtl]')).toBe(true);
+  });
+
+  it('matches the R7g submit icon size and important semibold weight', () => {
+    render(<EnquiryForm programId="cs" institutionId="tau" title="מדעי המחשב" />);
+    const button = screen.getByRole('button', { name: ENQUIRY_COPY.button });
+    expect(button.classList.contains('font-semibold!')).toBe(true);
+    const icon = button.querySelector('svg')!;
+    expect(icon.getAttribute('width')).toBe('20');
+    expect(icon.getAttribute('height')).toBe('20');
+  });
+
+  it('focuses the success heading with the R7g ring, size and body colour token', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(Response.json({ data: { received: true } }, { status: 201 })),
+    );
+    render(<EnquiryForm programId="cs" institutionId="tau" title="מדעי המחשב" />);
+    fireEvent.change(screen.getByLabelText(ENQUIRY_COPY.nameLabel), {
+      target: { value: 'בדיקת MyWay' },
+    });
+    fireEvent.change(screen.getByLabelText(ENQUIRY_COPY.phoneLabel), {
+      target: { value: '0501234567' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: ENQUIRY_COPY.button }));
+    const heading = await screen.findByRole('heading', { name: ENQUIRY_COPY.successTitle });
+    await waitFor(() => expect(document.activeElement).toBe(heading));
+    expect(heading.tabIndex).toBe(-1);
+    for (const className of [
+      'focus:outline-3',
+      'focus:outline-offset-3',
+      'focus:outline-[#6554b8]',
+      'text-[23px]',
+      'leading-7',
+      'font-semibold',
+    ]) {
+      expect(heading.classList.contains(className)).toBe(true);
+    }
+    expect(heading.nextElementSibling?.classList.contains('text-(--text-body)')).toBe(true);
+  });
+
+  it.each([false, true])(
+    'locks prep consent at checked=%s without native disabling or dimming, then unlocks for retry',
+    async (initialChecked) => {
+      let releaseSend!: (response: Response) => void;
+      const send = vi.fn().mockImplementation(
+        () =>
+          new Promise<Response>((resolve) => {
+            releaseSend = resolve;
+          }),
+      );
+      vi.stubGlobal('fetch', send);
+      render(<EnquiryForm programId="cs" institutionId="tau" title="מדעי המחשב" />);
+      fireEvent.change(screen.getByLabelText(ENQUIRY_COPY.nameLabel), {
+        target: { value: 'בדיקת MyWay' },
+      });
+      fireEvent.change(screen.getByLabelText(ENQUIRY_COPY.phoneLabel), {
+        target: { value: '0501234567' },
+      });
+      const checkbox = screen.getByRole('checkbox') as HTMLInputElement;
+      if (initialChecked) fireEvent.click(checkbox);
+      const submit = screen.getByRole('button', { name: ENQUIRY_COPY.button });
+      fireEvent.click(submit);
+      expect(checkbox.getAttribute('aria-disabled')).toBe('true');
+      expect(checkbox.disabled).toBe(false);
+      expect(checkbox.hasAttribute('disabled')).toBe(false);
+      expect(checkbox.className).not.toMatch(/opacity|dim|grayscale|brightness/);
+      expect(checkbox.classList.contains('size-[22px]')).toBe(true);
+      expect(checkbox.classList.contains('accent-[#5548aa]')).toBe(true);
+      expect(submit.querySelector('svg')?.getAttribute('width')).toBe('20');
+      expect(submit.querySelector('svg')?.getAttribute('height')).toBe('20');
+      fireEvent.click(checkbox);
+      expect(checkbox.checked).toBe(initialChecked);
+      fireEvent.click(document.getElementById('consent-prep')!);
+      expect(checkbox.checked).toBe(initialChecked);
+      releaseSend(Response.json({ error: { message: 'לא נשלח' } }, { status: 502 }));
+      await screen.findByRole('alert');
+      expect(checkbox.hasAttribute('aria-disabled')).toBe(false);
+      fireEvent.click(checkbox);
+      expect(checkbox.checked).toBe(!initialChecked);
+      fireEvent.click(screen.getByRole('button', { name: ENQUIRY_COPY.retry }));
+      expect(checkbox.getAttribute('aria-disabled')).toBe('true');
+      fireEvent.click(checkbox);
+      expect(checkbox.checked).toBe(!initialChecked);
+      releaseSend(Response.json({ error: { message: 'לא נשלח' } }, { status: 502 }));
+      await screen.findByRole('alert');
+      expect(checkbox.hasAttribute('aria-disabled')).toBe(false);
+      fireEvent.click(checkbox);
+      expect(checkbox.checked).toBe(initialChecked);
+    },
+  );
+
   it('tracks one view per mount, including Strict Mode, with only pathname attribution', () => {
     const form = (
       <StrictMode>
@@ -56,12 +175,12 @@ describe('EnquiryForm', () => {
         surface="journey"
       />,
     );
-    fireEvent.change(screen.getByLabelText('שם מלא'), { target: { value: 'בדיקת MyWay' } });
-    fireEvent.change(screen.getByLabelText('מספר טלפון'), { target: { value: '0501234567' } });
-    fireEvent.click(screen.getByRole('checkbox'));
-    fireEvent.click(screen.getByRole('button', { name: 'שליחת בקשה' }));
-    expect((await screen.findByRole('alert')).textContent).toContain('לא נשלח');
-    expect((screen.getByLabelText('שם מלא') as HTMLInputElement).value).toBe('בדיקת MyWay');
+    fireEvent.change(screen.getByLabelText('שם'), { target: { value: 'בדיקת MyWay' } }); // Approved test update, Jorje 2026-10-26
+    fireEvent.change(screen.getByLabelText('טלפון נייד'), { target: { value: '0501234567' } }); // Approved test update, Jorje 2026-10-26
+    // Approved test update, Jorje 2026-10-26: removed checkbox tick (institution consent = button press)
+    fireEvent.click(screen.getByRole('button', { name: ENQUIRY_COPY.button })); // Approved test update, Jorje 2026-10-26
+    expect((await screen.findByRole('alert')).textContent).toContain(ENQUIRY_COPY.serverError); // Approved test update, Jorje 2026-10-26
+    expect((screen.getByLabelText('שם') as HTMLInputElement).value).toBe('בדיקת MyWay'); // Approved test update, Jorje 2026-10-26
     expect(capture.mock.calls).toEqual([
       [
         'enquiry_form_viewed',
@@ -83,8 +202,11 @@ describe('EnquiryForm', () => {
         },
       ],
     ]);
-    fireEvent.click(screen.getByRole('button', { name: 'שליחת בקשה' }));
-    await waitFor(() => expect(screen.getByRole('status').textContent).toContain('הפנייה התקבלה'));
+    fireEvent.click(screen.getByRole('button', { name: ENQUIRY_COPY.retry })); // Approved test update, Jorje 2026-10-26
+    await // Approved test update, Jorje 2026-10-26
+    waitFor(() =>
+      expect(screen.getByRole('status').textContent).toContain(ENQUIRY_COPY.successTitle),
+    );
     expect(send.mock.calls[0][1].body).toBe(send.mock.calls[1][1].body);
     expect(JSON.parse(send.mock.calls[0][1].body)).toMatchObject({
       programId: 'physiotherapy',
@@ -116,10 +238,10 @@ describe('EnquiryForm', () => {
     vi.stubGlobal('fetch', send);
     render(<EnquiryForm programId="physiotherapy" institutionId="tau" title="פיזיותרפיה" />);
     expect(document.querySelectorAll('form input')).toHaveLength(3);
-    fireEvent.change(screen.getByLabelText('שם מלא'), { target: { value: 'בדיקת MyWay' } });
-    fireEvent.change(screen.getByLabelText('מספר טלפון'), { target: { value: '0501234567' } });
-    fireEvent.click(screen.getByRole('checkbox'));
-    fireEvent.click(screen.getByRole('button', { name: 'שליחת בקשה' }));
+    fireEvent.change(screen.getByLabelText('שם'), { target: { value: 'בדיקת MyWay' } }); // Approved test update, Jorje 2026-10-26
+    fireEvent.change(screen.getByLabelText('טלפון נייד'), { target: { value: '0501234567' } }); // Approved test update, Jorje 2026-10-26
+    // Approved test update, Jorje 2026-10-26: removed checkbox tick (institution consent = button press)
+    fireEvent.click(screen.getByRole('button', { name: ENQUIRY_COPY.button })); // Approved test update, Jorje 2026-10-26
     await screen.findByRole('status');
     expect(JSON.parse(send.mock.calls[0][1].body).attribution).toEqual({
       utm_source: 'instagram',
@@ -148,10 +270,10 @@ describe('EnquiryForm', () => {
           title="הכנה לפסיכומטרי"
         />,
       );
-      fireEvent.change(screen.getByLabelText('שם מלא'), { target: { value: 'בדיקת MyWay' } });
-      fireEvent.change(screen.getByLabelText('מספר טלפון'), { target: { value: '0501234567' } });
-      fireEvent.click(screen.getByRole('checkbox'));
-      fireEvent.click(screen.getByRole('button', { name: 'שליחת בקשה' }));
+      fireEvent.change(screen.getByLabelText('שם'), { target: { value: 'בדיקת MyWay' } }); // Approved test update, Jorje 2026-10-26
+      fireEvent.change(screen.getByLabelText('טלפון נייד'), { target: { value: '0501234567' } }); // Approved test update, Jorje 2026-10-26
+      // Approved test update, Jorje 2026-10-26: removed checkbox tick (institution consent = button press)
+      fireEvent.click(screen.getByRole('button', { name: ENQUIRY_COPY.button })); // Approved test update, Jorje 2026-10-26
       await screen.findByRole('alert');
       expect(capture.mock.calls[1]).toEqual([
         'enquiry_submit_failed',
@@ -166,4 +288,111 @@ describe('EnquiryForm', () => {
       expect(capture).toHaveBeenCalledTimes(2);
     },
   );
+});
+
+it('pins all approved R7g state copy and the revised button in one place', () => {
+  expect(ENQUIRY_PREP_CONSENT).toBe(
+    'אני רוצה שפרטיי יועברו גם לחברת הכנה לפסיכומטרי, שתחזור אליי בטלפון לגבי קורסים והטבות (לבני 18 ומעלה).',
+  );
+  expect(ENQUIRY_COPY).toMatchObject({
+    namePlaceholder: 'שם מלא',
+    phonePlaceholder: 'מספר טלפון',
+    button: 'שליחת פרטים',
+    loadingLive: 'שולחים את הפנייה',
+    loadingButton: 'שליחת פרטים',
+    successTitle: 'הפנייה נשלחה',
+    successLive: 'הפנייה נשלחה',
+    successBody: '{institution_me} יחזרו אליך בטלפון.',
+    serverError: 'השליחה נכשלה. נסו שוב.',
+    retry: 'ניסיון נוסף',
+    nameError: 'נא להזין שם',
+    phoneError: 'מספר נייד לא תקין',
+  });
+});
+
+it('starts with exactly one optional unchecked checkbox, named only by the prep sentence', () => {
+  render(
+    <EnquiryForm programId="tau_cs" institutionId="tau" title="מדעי המחשב · אוניברסיטת תל אביב" />,
+  );
+  const boxes = screen.getAllByRole('checkbox');
+  expect(boxes).toHaveLength(1);
+  expect(screen.getByRole('checkbox', { name: ENQUIRY_PREP_CONSENT })).toBe(boxes[0]);
+  expect((boxes[0] as HTMLInputElement).checked).toBe(false);
+  expect((boxes[0] as HTMLInputElement).required).toBe(false);
+  const button = screen.getByRole('button', { name: ENQUIRY_COPY.button });
+  const icon = button.querySelector('svg')!;
+  expect(icon.getAttribute('aria-hidden')).toBe('true');
+  expect(icon.getAttribute('focusable')).toBe('false');
+  expect(icon.classList.contains('rtl:-scale-x-100')).toBe(true);
+  const consent = ['action-consent', 'consent-prep', 'privacy-link'].map((id) =>
+    document.getElementById(id)!,
+  );
+  expect(
+    consent[0].compareDocumentPosition(consent[1]) & Node.DOCUMENT_POSITION_FOLLOWING,
+  ).toBeTruthy();
+  expect(
+    consent[1].compareDocumentPosition(consent[2]) & Node.DOCUMENT_POSITION_FOLLOWING,
+  ).toBeTruthy();
+  expect(consent[0].textContent).toContain('״שליחת פרטים״');
+  expect(consent[0].querySelector('bdi[dir="rtl"]')?.textContent).toBe('״שליחת פרטים״');
+});
+
+it.each([false, true])(
+  'submits institution consent with prepConsent=%s independently',
+  async (prepConsent) => {
+    const send = vi
+      .fn()
+      .mockResolvedValue(Response.json({ data: { received: true } }, { status: 201 }));
+    vi.stubGlobal('fetch', send);
+    try {
+      render(
+        <EnquiryForm
+          programId="tau_cs"
+          institutionId="tau"
+          title="מדעי המחשב · אוניברסיטת תל אביב"
+        />,
+      );
+      fireEvent.change(screen.getByLabelText(ENQUIRY_COPY.nameLabel), {
+        target: { value: 'בדיקת MyWay' },
+      });
+      fireEvent.change(screen.getByLabelText(ENQUIRY_COPY.phoneLabel), {
+        target: { value: '0501234567' },
+      });
+      if (prepConsent) fireEvent.click(screen.getByRole('checkbox'));
+      fireEvent.click(screen.getByRole('button', { name: ENQUIRY_COPY.button }));
+      await waitFor(() =>
+        expect(screen.getByRole('status').textContent).toContain(ENQUIRY_COPY.successTitle),
+      );
+      expect(JSON.parse(send.mock.calls[0][1].body)).toMatchObject({ consent: true, prepConsent });
+      expect(JSON.parse(send.mock.calls[0][1].body)).not.toHaveProperty('prepConsentText');
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  },
+);
+
+it('shows text errors for untouched required fields and keeps prep optional', () => {
+  const send = vi.fn();
+  vi.stubGlobal('fetch', send);
+  try {
+    render(
+      <EnquiryForm
+        programId="tau_cs"
+        institutionId="tau"
+        title="מדעי המחשב · אוניברסיטת תל אביב"
+      />,
+    );
+    fireEvent.submit(document.querySelector('form')!);
+    expect(screen.getByText(ENQUIRY_COPY.nameError)).toBeTruthy();
+    expect(screen.getByText(ENQUIRY_COPY.phoneError)).toBeTruthy();
+    for (const label of [ENQUIRY_COPY.nameLabel, ENQUIRY_COPY.phoneLabel]) {
+      const field = screen.getByLabelText(label) as HTMLInputElement;
+      expect(field.required).toBe(true);
+      expect(field.getAttribute('aria-required')).toBe('true');
+      expect(field.getAttribute('aria-invalid')).toBe('true');
+    }
+    expect(send).not.toHaveBeenCalled();
+  } finally {
+    vi.unstubAllGlobals();
+  }
 });

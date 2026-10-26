@@ -69,11 +69,15 @@ test('grouped results retain visible contact and save actions and selected conte
   const saved = page.getByRole('button', { name: 'שמירת פיזיותרפיה — אוניברסיטת תל אביב' });
   await saved.click();
   await expect(saved).toHaveAttribute('aria-pressed', 'true');
-  await page.getByRole('button', { name: 'יצירת קשר', exact: true }).first().click();
-  await expect(page.getByRole('heading', { name: 'רוצה לשמוע עוד?' })).toBeVisible();
+  await page
+    .getByRole('article')
+    .filter({ has: saved })
+    .getByRole('button', { name: 'יצירת קשר', exact: true })
+    .click();
+  await expect(page.getByRole('dialog', { name: 'אוניברסיטת תל אביב' })).toBeVisible(); // Approved test update, Jorje 2026-10-26
   await page.reload();
-  await expect(page.getByLabel('שם מלא', { exact: true })).toBeVisible();
-  await expect(page.getByLabel('מספר טלפון', { exact: true })).toBeVisible();
+  await expect(page.getByLabel('שם', { exact: true })).toBeVisible(); // Approved test update, Jorje 2026-10-26
+  await expect(page.getByLabel('טלפון נייד', { exact: true })).toBeVisible(); // Approved test update, Jorje 2026-10-26
 
   for (const degreeId of ['tau_datascience', 'bgu_cs', 'haifa_cs', 'technion_medicine']) {
     const response = await request.post('/api/admissions/evaluate', {

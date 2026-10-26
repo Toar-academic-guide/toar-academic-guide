@@ -341,4 +341,21 @@ export const GUARDED_PRODUCTION_MIGRATIONS = [
       },
     },
   },
+  {
+    id: '0044',
+    repositoryPath: 'src/db/migrations/0044_enquiries_prep_consent.sql',
+    columns: [
+      { table: 'enquiries', column: 'prep_consent', type: 'boolean' },
+      { table: 'enquiries', column: 'prep_consent_text', type: 'text' },
+      { table: 'enquiries', column: 'prep_consent_at', type: 'timestamp with time zone' },
+    ],
+    functionBodies: {
+      'store_enquiry(jsonb)': [
+        'prep_consent, prep_consent_text, prep_consent_at',
+        "COALESCE((payload->>'prepConsent')::boolean, false)",
+        "THEN payload->>'prepConsentText' ELSE NULL END",
+        "THEN (payload->>'prepConsentAt')::timestamptz ELSE NULL END",
+      ],
+    },
+  },
 ] as const;

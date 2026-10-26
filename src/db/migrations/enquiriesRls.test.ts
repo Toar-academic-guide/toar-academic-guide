@@ -76,10 +76,11 @@ it('keeps main 0040 and the regenerated enquiries 0041 in one valid Drizzle line
   expect(
     journal.entries.slice(-4).map((entry: { idx: number; tag: string }) => [entry.idx, entry.tag]),
   ).toEqual([
-    [40, '0040_fractional_admission_thresholds'],
+    // Approved test update, Jorje 2026-10-26: 0040 leaves the last four journal entries.
     [41, '0041_enquiries'],
     [42, '0042_store_enquiry_createdat_default'],
     [43, '0043_grant_admissions_automation_review_resolution'],
+    [44, '0044_enquiries_prep_consent'], // Approved test update, Jorje 2026-10-26
   ]);
   const previous = JSON.parse(readFileSync('src/db/migrations/meta/0040_snapshot.json', 'utf8'));
   const current = JSON.parse(readFileSync('src/db/migrations/meta/0041_snapshot.json', 'utf8'));
@@ -97,5 +98,132 @@ it('keeps main 0040 and the regenerated enquiries 0041 in one valid Drizzle line
   );
   expect(readFileSync('supabase/packets/2026-10-24-enquiries-table.sql', 'utf8')).toContain(
     'src/db/migrations/0041_enquiries.sql',
+  );
+});
+
+it('adds independent optional prep consent and preserves the insert-only 0042 function contract', () => {
+  const migration = readFileSync('src/db/migrations/0044_enquiries_prep_consent.sql', 'utf8');
+  const previous = readFileSync(
+    'src/db/migrations/0042_store_enquiry_createdat_default.sql',
+    'utf8',
+  );
+  expect(migration).toContain('"prep_consent" boolean DEFAULT false NOT NULL');
+  expect(migration).toContain('"prep_consent_text" text');
+  expect(migration).toContain('"prep_consent_at" timestamp with time zone');
+  for (const clause of [
+    'SECURITY DEFINER',
+    "SET search_path = ''",
+    'ON CONFLICT (request_id) DO NOTHING',
+    "COALESCE((payload->>'createdAt')::timestamptz, now())",
+  ]) {
+    expect(previous).toContain(clause);
+    expect(migration).toContain(clause);
+  }
+  expect(migration).toContain("COALESCE((payload->>'prepConsent')::boolean, false)");
+  expect(migration).toContain("payload->>'prepConsentText'");
+  expect(migration).toContain("payload->>'prepConsentAt'");
+  expect(migration).not.toMatch(/DROP|UPDATE public\.enquiries|ALTER COLUMN|GRANT/i);
+});
+
+it('provides an explicitly guarded, idempotent packet with a verbatim pre-0044 restore before column drops', () => {
+  const packet = readFileSync('supabase/packets/2026-10-26-enquiries-prep-consent.sql', 'utf8');
+  const previous = readFileSync(
+    'src/db/migrations/0042_store_enquiry_createdat_default.sql',
+    'utf8',
+  ).split('CREATE OR REPLACE FUNCTION')[1];
+  expect(packet).toContain('GUARDED SQL: Jorje applies after merge');
+  expect(packet).toContain('BACKUP');
+  expect(packet).toContain('PREFLIGHT');
+  expect(packet).toContain('sha256sum');
+  expect(packet).toContain('myway.apply_enquiries_prep_consent');
+  expect(packet).toContain('myway.rollback_enquiries_prep_consent');
+  expect(packet).toContain('CREATE OR REPLACE FUNCTION' + previous);
+  expect(packet.match(/ADD COLUMN IF NOT EXISTS/g)).toHaveLength(3);
+  const rollback = packet.slice(packet.indexOf('-- ROLLBACK'));
+  expect(rollback.indexOf('CREATE OR REPLACE FUNCTION')).toBeLessThan(
+    rollback.indexOf('DROP COLUMN'),
+  );
+  expect(rollback.match(/DROP COLUMN/g)).toHaveLength(3);
+});
+
+it('defines prep columns without granting direct contact access or adding an age field', () => {
+  const columns = getTableConfig(schema.enquiries).columns;
+  expect(columns.find((column) => column.name === 'prep_consent')).toMatchObject({
+    notNull: true,
+    default: false,
+  });
+  expect(columns.find((column) => column.name === 'prep_consent_text')).toMatchObject({
+    notNull: false,
+  });
+  expect(columns.find((column) => column.name === 'prep_consent_at')?.getSQLType()).toBe(
+    'timestamp with time zone',
+  );
+  expect(columns.some((column) => /age|is_adult/.test(column.name))).toBe(false);
+  const migration = readFileSync('src/db/migrations/0044_enquiries_prep_consent.sql', 'utf8');
+  expect(migration).not.toMatch(/GRANT|CREATE POLICY/);
+});
+
+it('keeps the rollback definition byte-identical to 0042 and pins its recorded SHA256', async () => {
+  const { createHash } = await import('node:crypto');
+  const packet = readFileSync('supabase/packets/2026-10-26-enquiries-prep-consent.sql', 'utf8');
+  const old = readFileSync('src/db/migrations/0042_store_enquiry_createdat_default.sql', 'utf8');
+  const definition = old.slice(old.indexOf('CREATE OR REPLACE FUNCTION'));
+  const embedded = packet
+    .split('-- BEGIN VERBATIM PRE-0044 DEFINITION (0042; hashed bytes start next line)\n')[1]
+    .split('-- END VERBATIM PRE-0044 DEFINITION')[0];
+  expect(embedded).toBe(definition);
+  expect(packet).toContain(
+    `-- PRE-0044 SHA256: ${createHash('sha256').update(definition).digest('hex')}`,
+  );
+});
+
+it('requires the packet EXECUTE allowlist and names every disallowed grantee', () => {
+  const packet = readFileSync('supabase/packets/2026-10-26-enquiries-prep-consent.sql', 'utf8');
+  const preflight = packet.slice(
+    packet.indexOf('DO $preflight$'),
+    packet.indexOf('END $preflight$;'),
+  );
+  expect(preflight).toContain("aclexplode(COALESCE(p.proacl, acldefault('f', p.proowner)))");
+  expect(preflight).toMatch(
+    /CASE WHEN a\.grantee = 0 THEN 'PUBLIC' ELSE pg_get_userbyid\(a\.grantee\) END/,
+  );
+  expect(preflight).toContain("grantee_name NOT IN ('postgres', 'service_role', 'app_runtime')");
+  expect(preflight).toMatch(
+    /IF disallowed_grantees IS NOT NULL THEN\s+RAISE EXCEPTION 'Unexpected store_enquiry EXECUTE grantees: %', disallowed_grantees;/,
+  );
+  expect(preflight).toContain(
+    "IF NOT has_function_privilege('app_runtime', 'public.store_enquiry(jsonb)', 'EXECUTE') THEN",
+  );
+  expect(preflight).toContain('relrowsecurity');
+  expect(preflight).toContain('pg_policy');
+  expect(packet).toContain('AS execute_allowlist_ok');
+});
+
+it('requires a private consent export and app rollback before the SQL rollback block', () => {
+  const packet = readFileSync('supabase/packets/2026-10-26-enquiries-prep-consent.sql', 'utf8');
+  const rollback = packet.slice(
+    packet.indexOf('-- ROLLBACK'),
+    packet.indexOf('/*', packet.indexOf('-- ROLLBACK')),
+  );
+  expect(rollback).toContain('revert the R7e app code first');
+  expect(rollback).toContain('PRIVATE operator file');
+  expect(rollback).toContain('never commit or share');
+  expect(rollback).toContain(
+    "\\copy (SELECT request_id, prep_consent, prep_consent_text, prep_consent_at FROM public.enquiries WHERE prep_consent OR prep_consent_text IS NOT NULL OR prep_consent_at IS NOT NULL) TO 'enquiries-prep-consent-before-rollback.csv' CSV HEADER",
+  );
+});
+
+it('retains inherited anon/authenticated EXECUTE checks after the direct ACL allowlist', () => {
+  const packet = readFileSync('supabase/packets/2026-10-26-enquiries-prep-consent.sql', 'utf8');
+  const preflight = packet.slice(
+    packet.indexOf('DO $preflight$'),
+    packet.indexOf('END $preflight$;'),
+  );
+  expect(preflight).toMatch(
+    /IF has_function_privilege\('anon', 'public\.store_enquiry\(jsonb\)', 'EXECUTE'\)\s+OR has_function_privilege\('authenticated', 'public\.store_enquiry\(jsonb\)', 'EXECUTE'\) THEN\s+RAISE EXCEPTION 'anon\/authenticated must not be able to EXECUTE public\.store_enquiry\(jsonb\) \(direct or inherited\)';\s+END IF;/,
+  );
+  expect(preflight).toContain("grantee_name NOT IN ('postgres', 'service_role', 'app_runtime')");
+  expect(preflight.indexOf("IF has_function_privilege('anon'")).toBeGreaterThan(
+    preflight.indexOf("RAISE EXCEPTION 'Unexpected store_enquiry EXECUTE grantees: %'"),
   );
 });
