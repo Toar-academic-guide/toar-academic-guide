@@ -1,3 +1,4 @@
+import { ENQUIRY_COPY } from '../src/lib/enquiries';
 import { expect, test } from './fixtures';
 
 // Give this spec its own evaluation budget when the full suite shares one server.
@@ -47,11 +48,11 @@ for (const width of [1440, 390]) {
     await page.getByRole('button', { name: 'יצירת קשר', exact: true }).first().click();
     await expect(page).toHaveURL(/#inquiry$/);
     await expect(page.locator('form input:not([type="checkbox"])')).toHaveCount(2);
-    await page.getByLabel('שם מלא', { exact: true }).fill('בדיקת MyWay');
-    await page.getByLabel('מספר טלפון', { exact: true }).fill('0501234567');
-    await page.getByRole('checkbox').check();
-    await page.getByRole('button', { name: 'שליחת בקשה', exact: true }).click();
-    await expect(page.getByRole('status')).toContainText('הפנייה התקבלה');
+    await page.getByLabel('שם', { exact: true }).fill('בדיקת MyWay'); // Approved test update, Jorje 2026-10-26
+    await page.getByLabel('טלפון נייד', { exact: true }).fill('0501234567'); // Approved test update, Jorje 2026-10-26
+    // Approved test update, Jorje 2026-10-26: removed checkbox tick (institution consent = button press)
+    await page.getByRole('button', { name: ENQUIRY_COPY.button, exact: true }).click(); // Approved test update, Jorje 2026-10-26
+    await expect(page.getByRole('status')).toContainText(ENQUIRY_COPY.successTitle); // Approved test update, Jorje 2026-10-26
     expect(submitted).toMatchObject({
       consent: true,
       evaluationInput: { bagrut: 105.5, psychometric: evaluatedPsychometric },
@@ -78,10 +79,10 @@ for (const width of [1440, 390]) {
     await expect(page.getByRole('link', { name: 'למחשבון המכללה', exact: true })).toBeVisible();
     await page.getByRole('link', { name: 'יצירת קשר', exact: true }).click();
     await expect(page).toHaveURL(/\/enquiry\?program=colmgmt_cs&institution=colman/);
-    await expect(page.getByRole('heading', { name: 'רוצה לשמוע עוד?' })).toBeVisible();
+    await expect(page.getByRole('dialog', { name: 'מכללת ניהול – לימודים אקדמיים' })).toBeVisible(); // Approved test update, Jorje 2026-10-26
     await expect(page.locator('form input:not([type="checkbox"])')).toHaveCount(2);
-    await expect(page.getByLabel('שם מלא', { exact: true })).toBeVisible();
-    await expect(page.getByLabel('מספר טלפון', { exact: true })).toBeVisible();
+    await expect(page.getByLabel('שם', { exact: true })).toBeVisible(); // Approved test update, Jorje 2026-10-26
+    await expect(page.getByLabel('טלפון נייד', { exact: true })).toBeVisible(); // Approved test update, Jorje 2026-10-26
     const attribution = await page.evaluate(() =>
       JSON.parse(sessionStorage.getItem('myway_lead_attribution_v1')!),
     );

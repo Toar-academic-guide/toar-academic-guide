@@ -578,16 +578,20 @@ export function assessProductionSchema(snapshot: ProductionSchemaSnapshot): Prod
   assessAdmissionsAutomationAccess(snapshot, applied, issues);
 
   // Older journal prefixes retain their existing migration checks. Once the
-  // journal is current, also require the separately applied 0037–0043 schema.
+  // journal is current, also require the separately applied 0037–0044 schema.
   if (appliedCount === FORWARD_PRODUCTION_MIGRATIONS.length) {
     for (const migration of GUARDED_PRODUCTION_MIGRATIONS) {
       if ('tables' in migration) assessGuardedEnquiries(snapshot, migration, issues);
       if ('functionBodies' in migration) {
         for (const [fn, requiredSql] of Object.entries(migration.functionBodies)) {
           const definition = snapshot.functionDefinitions?.[fn];
+          const fragments: readonly string[] =
+            typeof requiredSql === 'string' ? [requiredSql] : requiredSql;
           if (
             !definition ||
-            !normalizeFunctionSql(definition).includes(normalizeFunctionSql(requiredSql))
+            !fragments.every((fragment) =>
+              normalizeFunctionSql(definition).includes(normalizeFunctionSql(fragment)),
+            )
           ) {
             issues.push({
               code: 'function_body_mismatch',

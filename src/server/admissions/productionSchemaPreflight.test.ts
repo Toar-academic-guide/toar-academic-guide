@@ -12,6 +12,8 @@ import {
   type ProductionSchemaSnapshot,
 } from './productionSchemaPreflight';
 
+const storeEnquiry0044 = readFileSync('src/db/migrations/0044_enquiries_prep_consent.sql', 'utf8'); // Approved test update, Jorje 2026-10-26
+
 const storeEnquiry0042 = readFileSync(
   'src/db/migrations/0042_store_enquiry_createdat_default.sql',
   'utf8',
@@ -58,17 +60,17 @@ describe('production admissions schema preflight', () => {
   });
 
   it.each([
-    storeEnquiry0042,
-    storeEnquiry0042
+    storeEnquiry0044, // Approved test update, Jorje 2026-10-26
+    storeEnquiry0044 // Approved test update, Jorje 2026-10-26
       .replace('COALESCE(', 'coalesce (\n  ')
       .replace('::timestamptz, now()', ' :: TIMESTAMPTZ , NOW ( )'),
-  ])('accepts the guarded 0042 body despite SQL formatting (%#)', (definition) => {
+  ])('accepts the guarded 0044 body despite SQL formatting (%#)', (definition) => { // Approved test update, Jorje 2026-10-26
     const snapshot = makeSnapshot();
     Object.assign(snapshot, { functionDefinitions: { 'store_enquiry(jsonb)': definition } });
     expect(assessProductionSchema(snapshot)).toMatchObject({ status: 'current', issues: [] });
   });
 
-  it('tracks guarded SQL through 0043 separately from the Supabase journal', () => {
+  it('tracks guarded SQL through 0044 separately from the Supabase journal', () => { // Approved test update, Jorje 2026-10-26
     expect(GUARDED_PRODUCTION_MIGRATIONS.map(({ id }) => id)).toEqual([
       '0037',
       '0038',
@@ -77,6 +79,7 @@ describe('production admissions schema preflight', () => {
       '0041',
       '0042',
       '0043',
+      '0044', // Approved test update, Jorje 2026-10-26
     ]);
     for (const { repositoryPath } of GUARDED_PRODUCTION_MIGRATIONS) {
       expect(readFileSync(repositoryPath, 'utf8').trim()).not.toBe('');
@@ -1277,6 +1280,9 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
         'referrer',
         'consent',
         'consent_text',
+        'prep_consent', // Approved test update, Jorje 2026-10-26
+        'prep_consent_text', // Approved test update, Jorje 2026-10-26
+        'prep_consent_at', // Approved test update, Jorje 2026-10-26
         'result_status',
         'bagrut',
         'psychometric',
@@ -1298,6 +1304,9 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
         referrer: 'character varying',
         consent: 'boolean',
         consent_text: 'text',
+        prep_consent: 'boolean', // Approved test update, Jorje 2026-10-26
+        prep_consent_text: 'text', // Approved test update, Jorje 2026-10-26
+        prep_consent_at: 'timestamp with time zone', // Approved test update, Jorje 2026-10-26
         result_status: 'text',
         bagrut: 'real',
         psychometric: 'integer',
@@ -1406,7 +1415,7 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
       ...(appliedIds.has('0014') ? ['admission_threshold_scope_invariant'] : []),
       ...(appliedIds.has('0034') ? ['admission_alert_account_deleted'] : []),
     ],
-    functionDefinitions: { 'store_enquiry(jsonb)': storeEnquiry0042 },
+    functionDefinitions: { 'store_enquiry(jsonb)': storeEnquiry0044 }, // Approved test update, Jorje 2026-10-26
     functionAccess: appliedIds.has('0034')
       ? Object.fromEntries([
           ...(appliedCount === FORWARD_PRODUCTION_MIGRATIONS.length
@@ -1447,3 +1456,60 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
       : {},
   };
 }
+
+it('requires all three prep columns and the 0044 insert function in pre-0044 snapshots', () => {
+  const snapshot = makeSnapshot();
+  snapshot.tables.enquiries.columns = snapshot.tables.enquiries.columns.filter(
+    (name) => !name.startsWith('prep_'),
+  );
+  snapshot.functionDefinitions = { 'store_enquiry(jsonb)': storeEnquiry0042 };
+  const report = assessProductionSchema(snapshot);
+  expect(report.status).toBe('drift');
+  expect(report.safeToMigrate).toBe(false);
+  for (const column of ['prep_consent', 'prep_consent_text', 'prep_consent_at']) {
+    expect(report.issues).toContainEqual(
+      expect.objectContaining({
+        code: 'missing_column',
+        object: `table:enquiries.column:${column}`,
+      }),
+    );
+  }
+  expect(report.issues).toContainEqual(
+    expect.objectContaining({
+      code: 'function_body_mismatch',
+      object: 'function:store_enquiry(jsonb)',
+    }),
+  );
+});
+
+it.each([
+  ['prep_consent', 'text'],
+  ['prep_consent_text', 'boolean'],
+  ['prep_consent_at', 'timestamp without time zone'],
+])('rejects the wrong type for prep column %s', (column, type) => {
+  const snapshot = makeSnapshot();
+  snapshot.tables.enquiries.columnTypes[column] = type;
+  expect(assessProductionSchema(snapshot).issues).toContainEqual(
+    expect.objectContaining({
+      code: 'column_type_mismatch',
+      object: `table:enquiries.column:${column}`,
+    }),
+  );
+});
+
+it.each(['prepConsentText', 'prepConsentAt'])(
+  'requires the 0044 function to write %s, ignoring SQL comments',
+  (key) => {
+    const snapshot = makeSnapshot();
+    snapshot.functionDefinitions = {
+      'store_enquiry(jsonb)':
+        storeEnquiry0044.replaceAll(key, 'forgedKey') + `\n/* ${storeEnquiry0044} */`,
+    };
+    expect(assessProductionSchema(snapshot).issues).toContainEqual(
+      expect.objectContaining({
+        code: 'function_body_mismatch',
+        object: 'function:store_enquiry(jsonb)',
+      }),
+    );
+  },
+);

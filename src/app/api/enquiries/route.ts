@@ -2,7 +2,11 @@ import { enquiryAttributionSchema } from '@/lib/leadAttribution';
 import { enquirySourcePath } from '@/lib/enquirySourcePath';
 import { after } from 'next/server';
 import { z } from 'zod';
-import type { EnquiryRecord, EnquiryResultStatus } from '@/lib/enquiries';
+import {
+  ENQUIRY_PREP_CONSENT,
+  type EnquiryRecord,
+  type EnquiryResultStatus,
+} from '@/lib/enquiries';
 import {
   admissionsEvaluationSchema,
   validateOverallBagrutAverage,
@@ -34,6 +38,16 @@ const inputSchema = z
       .refine((value) => value.startsWith('/') && !value.startsWith('//'))
       .transform(enquirySourcePath),
     consent: z.literal(true),
+    prepConsent: z.boolean().default(false),
+    // Client evidence is ignored; only the server can supply consent text/time.
+    prepConsentText: z
+      .unknown()
+      .optional()
+      .transform(() => undefined),
+    prepConsentAt: z
+      .unknown()
+      .optional()
+      .transform(() => undefined),
     attribution: enquiryAttributionSchema.optional(),
     evaluationInput: admissionsEvaluationSchema
       .extend({
@@ -86,6 +100,8 @@ async function resolveEnquiry(input: z.infer<typeof inputSchema>): Promise<Enqui
   }
   return {
     ...input,
+    prepConsentText: input.prepConsent ? ENQUIRY_PREP_CONSENT : null,
+    prepConsentAt: input.prepConsent ? new Date() : null,
     programName,
     institutionName,
     resultStatus,

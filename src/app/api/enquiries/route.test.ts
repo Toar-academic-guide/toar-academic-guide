@@ -1,3 +1,4 @@
+import { ENQUIRY_PREP_CONSENT } from '@/lib/enquiries';
 vi.mock('server-only', () => ({}));
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
@@ -532,5 +533,55 @@ describe('enquiry context and independent delivery', () => {
     expect((await POST(request())).status).toBe(201);
     await expect(after.mock.calls[0][0]()).resolves.toBeUndefined();
     expect(console.error).toHaveBeenCalled();
+  });
+});
+
+describe('separate prep consent at the API boundary', () => {
+  beforeEach(() => {
+    after.mockReset();
+    backup.mockReset().mockResolvedValue(undefined);
+    notify.mockReset().mockResolvedValue(undefined);
+    listCataloguePrograms.mockResolvedValue({
+      data: [getStaticCataloguePrograms().find((program) => program.id === 'physiotherapy')!],
+    });
+    listCatalogueInstitutions.mockResolvedValue({
+      data: [{ id: 'tau', name: 'אוניברסיטת תל אביב' }],
+    });
+    vi.stubEnv('NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN', '');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(Response.json({ data: { create_item: { id: '123' } } })),
+    );
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
+  });
+  it.each([undefined, false, true])(
+    'keeps institution consent and normalizes prep consent %s independently',
+    async (prepConsent) => {
+      expect(
+        (
+          await POST(
+            request({
+              ...(prepConsent === undefined ? {} : { prepConsent }),
+              prepConsentText: 'client forged text',
+              prepConsentAt: '2000-01-01',
+            }),
+          )
+        ).status,
+      ).toBe(201);
+      const saved = backup.mock.calls[0][0];
+      expect(saved.consent).toBe(true);
+      expect(saved.prepConsent).toBe(prepConsent === true);
+      expect(saved.prepConsentText).toBe(prepConsent ? ENQUIRY_PREP_CONSENT : null);
+      expect(saved.prepConsentAt).toEqual(prepConsent ? expect.any(Date) : null);
+      expect(saved.prepConsentAt?.getFullYear()).not.toBe(2000);
+    },
+  );
+  it('rejects non-boolean prep consent before delivery', async () => {
+    expect((await POST(request({ prepConsent: 'true' }))).status).toBe(400);
+    expect(backup).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
   });
 });

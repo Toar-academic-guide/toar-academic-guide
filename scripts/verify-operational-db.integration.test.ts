@@ -138,6 +138,10 @@ describe.skipIf(!enabled)('operational schema snapshot with disposable PostgreSQ
         ]),
       });
       await tx.unsafe(fixed);
+      expect((await report(tx)).issues).toContainEqual(expect.objectContaining({ // Approved test update, Jorje 2026-10-26
+        code: 'function_body_mismatch', object: 'function:store_enquiry(jsonb)', // Approved test update, Jorje 2026-10-26
+      })); // Approved test update, Jorje 2026-10-26
+      await tx.unsafe(readFileSync('src/db/migrations/0044_enquiries_prep_consent.sql', 'utf8')); // Approved test update, Jorje 2026-10-26
       const snapshot = await loadProductionSchemaSnapshot(tx);
       expect(snapshot.functionDefinitions['store_enquiry(jsonb)']).toContain(
         "COALESCE((payload->>'createdAt')::timestamptz, now())",
