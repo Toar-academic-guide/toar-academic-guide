@@ -8,7 +8,8 @@ import SubjectIndexPage, { metadata as subjectIndexMetadata } from '@/app/progra
 import ProgramPage, { generateMetadata } from '@/app/programs/[programId]/page';
 import { institutionProgramName } from '@/lib/institutionProgramName';
 import { canonicalProgramId } from '@/lib/seo/programAliases';
-import { CatalogueBrowse, CatalogueFooter, RelatedPrograms } from '@/components/seo/CatalogueLinks';
+import { CatalogueBrowse, RelatedPrograms } from '@/components/seo/CatalogueLinks';
+import SiteFooter from '@/components/SiteFooter';
 import { getPublicBrowseLinks, getPublicRelatedPrograms } from './publicCatalogueLinks';
 
 vi.mock('server-only', () => ({}));
@@ -68,28 +69,48 @@ describe('server-rendered crawl paths', () => {
     expect(renderToStaticMarkup(<CatalogueBrowse {...links} />)).toContain('dir="rtl"');
   });
 
-  it('links the footer to the subject index, the directory and about, with no subject list', () => {
-    const hrefs = paths(renderToStaticMarkup(<CatalogueFooter />));
-    expect(hrefs).toEqual(['/programs', '/institutions', '/about']);
+  it('links SiteFooter to home, email, catalogue, saved programs and legal pages', () => {
+    const hrefs = paths(renderToStaticMarkup(<SiteFooter />));
+    expect(hrefs).toEqual([
+      '/',
+      'mailto:info@findmyway.co.il',
+      '/programs',
+      '/institutions',
+      '/about',
+      '/app/saved-programs',
+      '/privacy',
+      '/terms',
+      '/accessibility',
+      '/contact',
+    ]);
   });
 
-  it('keeps the homepage CTA and the footer links when the catalogue read fails', async () => {
+  it('keeps the homepage CTA and SiteFooter links when the catalogue read fails', async () => {
     const failure = () => Promise.reject(new Error('database unavailable'));
     queries.listCataloguePrograms.mockImplementationOnce(failure);
     const home = await ssr(<Home />);
     expect(home).toContain('עזרו לי לבחור מה ללמוד');
     expect(home).not.toContain('browse-title');
-    expect(paths(renderToStaticMarkup(<CatalogueFooter />))).toEqual([
+    expect(paths(renderToStaticMarkup(<SiteFooter />))).toEqual([
+      '/',
+      'mailto:info@findmyway.co.il',
       '/programs',
       '/institutions',
       '/about',
+      '/app/saved-programs',
+      '/privacy',
+      '/terms',
+      '/accessibility',
+      '/contact',
     ]);
   });
 
-  it('renders the footer as a contentinfo landmark without a second nav', () => {
-    const markup = renderToStaticMarkup(<CatalogueFooter />);
+  it('renders SiteFooter as a contentinfo landmark with two labelled navs', () => {
+    const markup = renderToStaticMarkup(<SiteFooter />);
     expect(markup.startsWith('<footer')).toBe(true);
-    expect(markup).not.toContain('<nav');
+    expect([...markup.matchAll(/<nav\b/g)]).toHaveLength(2);
+    expect(markup).toContain('aria-label="ניווט בכותרת התחתונה"');
+    expect(markup).toContain('aria-label="קישורים משפטיים"');
   });
 
   it('lists every subject hub on the indexable /programs page', async () => {
