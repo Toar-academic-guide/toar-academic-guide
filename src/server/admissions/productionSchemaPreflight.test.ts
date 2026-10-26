@@ -59,18 +59,20 @@ describe('production admissions schema preflight', () => {
     });
   });
 
-  it.each([
-    storeEnquiry0044, // Approved test update, Jorje 2026-10-26
-    storeEnquiry0044 // Approved test update, Jorje 2026-10-26
-      .replace('COALESCE(', 'coalesce (\n  ')
-      .replace('::timestamptz, now()', ' :: TIMESTAMPTZ , NOW ( )'),
-  ])('accepts the guarded 0044 body despite SQL formatting (%#)', (definition) => { // Approved test update, Jorje 2026-10-26
+  it // Approved test update, Jorje 2026-10-26
+    .each([
+      storeEnquiry0044, // Approved test update, Jorje 2026-10-26
+      storeEnquiry0044 // Approved test update, Jorje 2026-10-26
+        .replace('COALESCE(', 'coalesce (\n  ')
+        .replace('::timestamptz, now()', ' :: TIMESTAMPTZ , NOW ( )'),
+    ])('accepts the guarded 0044 body despite SQL formatting (%#)', (definition) => {
     const snapshot = makeSnapshot();
     Object.assign(snapshot, { functionDefinitions: { 'store_enquiry(jsonb)': definition } });
     expect(assessProductionSchema(snapshot)).toMatchObject({ status: 'current', issues: [] });
   });
 
-  it('tracks guarded SQL through 0044 separately from the Supabase journal', () => { // Approved test update, Jorje 2026-10-26
+  it(// Approved test update, Jorje 2026-10-26
+  'tracks guarded SQL through 0044 separately from the Supabase journal', () => {
     expect(GUARDED_PRODUCTION_MIGRATIONS.map(({ id }) => id)).toEqual([
       '0037',
       '0038',

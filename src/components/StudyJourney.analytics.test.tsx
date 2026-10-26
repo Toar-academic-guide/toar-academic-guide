@@ -144,7 +144,10 @@ describe('journey funnel analytics', () => {
         }
         fireEvent.click(screen.getAllByRole('button', { name: 'יצירת קשר' })[0]);
       }
-      await screen.findByRole('dialog', { name: surface === 'offer' ? 'הכנה לפסיכומטרי' : 'אוניברסיטת תל אביב' }); // Approved test update, Jorje 2026-10-26
+      await screen // Approved test update, Jorje 2026-10-26
+        .findByRole('dialog', {
+          name: surface === 'offer' ? 'הכנה לפסיכומטרי' : 'אוניברסיטת תל אביב',
+        });
       expect(events('journey_contact_clicked')).toEqual([
         [
           'journey_contact_clicked',

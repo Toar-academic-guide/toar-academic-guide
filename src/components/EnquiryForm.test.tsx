@@ -85,7 +85,10 @@ describe('EnquiryForm', () => {
       ],
     ]);
     fireEvent.click(screen.getByRole('button', { name: ENQUIRY_COPY.retry })); // Approved test update, Jorje 2026-10-26
-    await waitFor(() => expect(screen.getByRole('status').textContent).toContain(ENQUIRY_COPY.successTitle)); // Approved test update, Jorje 2026-10-26
+    await // Approved test update, Jorje 2026-10-26
+    waitFor(() =>
+      expect(screen.getByRole('status').textContent).toContain(ENQUIRY_COPY.successTitle),
+    );
     expect(send.mock.calls[0][1].body).toBe(send.mock.calls[1][1].body);
     expect(JSON.parse(send.mock.calls[0][1].body)).toMatchObject({
       programId: 'physiotherapy',
