@@ -35,6 +35,8 @@ The feed rows for tracks `300-7000` and `300-7009` agree:
 
 The policy uses validated feed thresholds. When a direct threshold is absent, its independent fallback is 725 or 690, supported by the programme capture above. The adapter returns undefined for missing, malformed, non-finite or out-of-range direct scores. The existing sekem parsing remains unchanged. PET below the Kidum threshold or missing PET leaves the normalized sekem result untouched. An already accepted sekem result stays accepted in the Kidum interval.
 
+Per Jorje's ruling on 2026-10-26, the 22.5 threshold still drives the verdict but is no longer shown as a student-facing bullet on `huji_psychology` or the HUJI entry of `/programs/psychology`. The 725, 690 and 673 notes and the checked-date/source stamp remain unchanged. PET660/B90 remains exact/below against 22.5.
+
 The full-bagrut rule assumes a full certificate when a student enters an average or grades; no confirmation field or gate is added. No institutional composite is requested. The conditional Kidum sekem value is outside this task and is not encoded in the repair notes or policy.
 
 Both static psychology HUJI direct thresholds are corrected from 660 to 725. Persisted direct rows `huji_psychology:huji:huji:direct` and `psychology:huji:huji:direct` are masked at serialization. The dedicated programme receives corrected notes and provenance, and fact `huji_psychology:detail-0:legacy-fact-0` is filtered. Alternative-route notes are tested through the real legacy normalizer to ensure they do not create a required psychometric numeric gate.

@@ -12,12 +12,68 @@ import type {
   ProgramInstitutionRow,
   ProgramRow,
 } from '@/db/types';
-import { serializeProgramRow } from './serializers';
+import { serializeInstitutionRow, serializeProgramRow } from './serializers';
+
+vi.mock('server-only', () => ({}));
+vi.mock('@/server/catalogue/queries', () => ({
+  listCataloguePrograms: vi.fn(),
+  listCatalogueInstitutions: vi.fn(),
+}));
 
 describe('HUJI psychology catalogue correction', () => {
   it.each(['huji_psychology', 'psychology'])('sets the static %s direct route to 725', (id) => {
     expect(allPrograms.find((row) => row.id === id)!.directPsychometric?.huji).toBe(725);
   });
+
+  it.each(['huji_psychology', 'psychology'])(
+    'omits sekem and internal verification wording from %s HUJI student copy',
+    async (id) => {
+      const seed = buildCatalogueSeed();
+      const institutions = seed.institutions.map((row) =>
+        serializeInstitutionRow(row as InstitutionRow),
+      );
+      const programs = ['huji_psychology', 'psychology'].map((programId) =>
+        serializeProgramRow({
+          program: seed.programs.find((row) => row.id === programId)! as ProgramRow,
+          relations: seed.programInstitutions.filter(
+            (row) => row.programId === programId,
+          ) as ProgramInstitutionRow[],
+          requirements: seed.admissionRequirements.filter(
+            (row) => row.programId === programId && row.institutionId === 'huji',
+          ) as AdmissionRequirementRow[],
+          thresholds: seed.admissionThresholds.filter(
+            (row) => row.programId === programId,
+          ) as AdmissionThresholdRow[],
+          sourceUrls: [],
+          institutionsById: new Map(seed.institutions.map((row) => [row.id, row as InstitutionRow])),
+        }),
+      );
+      const { listCataloguePrograms, listCatalogueInstitutions } =
+        await import('@/server/catalogue/queries');
+      vi.mocked(listCataloguePrograms).mockResolvedValue({ data: programs, meta: {} });
+      vi.mocked(listCatalogueInstitutions).mockResolvedValue({ data: institutions, meta: {} });
+      const { getPublicProgramPageData, getPublicProgramRequirementSources } =
+        await import('@/lib/publicCataloguePages');
+      const page = await getPublicProgramPageData(id);
+      expect(page).not.toBeNull();
+      const source = (await getPublicProgramRequirementSources(page!)).huji;
+      expect(source.sourceProgramId).toBe('huji_psychology');
+      const detail = source.program.institutionDetails!.find(
+        (entry) => entry.institutionName === institutions.find((row) => row.id === 'huji')!.name,
+      )!;
+      for (const copy of [
+        detail.specificAdmissionNotes.join(' '),
+        source.program.admissionRequirements.join(' '),
+        source.requirements.join(' '),
+      ]) {
+        for (const forbidden of ['סכ״ם', 'סכ"ם', 'נבדק ב']) expect(copy).not.toContain(forbidden);
+      }
+      for (const copy of [detail.specificAdmissionNotes.join(' '), source.requirements.join(' ')]) {
+        expect(copy).toContain('725');
+        expect(copy).toContain('690');
+      }
+    },
+  );
 
   it('repairs dedicated programme copy and provenance without deriving a required PET gate', () => {
     const program = allPrograms.find((row) => row.id === 'huji_psychology')!;
@@ -35,7 +91,7 @@ describe('HUJI psychology catalogue correction', () => {
     expect(detail.durationYears).toBe(3);
     expect(detail.programUrl).toBe('https://info.huji.ac.il/bachelor/Psychology');
     const notes = detail.specificAdmissionNotes.join(' ');
-    for (const text of ['22.500', '725', '690', '673', '30', 'האגודה לקידום החינוך'])
+    for (const text of ['725', '690', '673', '30', 'האגודה לקידום החינוך']) // Approved test update, Jorje 2026-10-26
       expect(notes).toContain(text);
     expect(notes).not.toMatch(/660|סכ[״"ם]*\s*21/);
     expect(
