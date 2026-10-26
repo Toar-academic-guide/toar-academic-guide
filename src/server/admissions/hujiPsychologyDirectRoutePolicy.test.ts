@@ -27,7 +27,8 @@ describe('HUJI psychology direct psychometric policy', () => {
     expect(applyHujiPsychologyDirectRoute(sekemResult, pet, thresholds)).toBe(sekemResult);
   });
 
-  it.each([690, 724])('retains sekem while requiring a Kidum rating at PET %i', (pet) => {
+  // Jorje 2026-10-26 12:47: Kidum gate is text-only, no composite score or threshold.
+  it.each([690, 724])('shows a text-only gate requiring a Kidum rating at PET %i', (pet) => {
     const result = applyHujiPsychologyDirectRoute(sekemResult, pet, thresholds);
     expect(result).toMatchObject({
       capability: 'manual_gate',
@@ -38,10 +39,10 @@ describe('HUJI psychology direct psychometric policy', () => {
     expect(result.explanation).toContain('ראויים לקידום');
     expect(result.explanation).toContain('30');
     expect(result.requiredInputs ?? []).toEqual([]);
-    expect(result.score).toBe(sekemResult.score); // Approved test update, Jorje 2026-10-26
-    expect(result.threshold).toBe(sekemResult.threshold); // Approved test update, Jorje 2026-10-26
-    expect(result.scoreLabel).toBe(sekemResult.scoreLabel);
-    expect(result.scoreAssessment).toBe(sekemResult.scoreAssessment);
+    expect(result.score).toBeUndefined(); // Approved test update, Jorje 2026-10-26
+    expect(result.threshold).toBeUndefined(); // Approved test update, Jorje 2026-10-26
+    expect(result.scoreLabel).toBeUndefined(); // Approved test update, Jorje 2026-10-26
+    expect(result.scoreAssessment).toBeUndefined(); // Approved test update, Jorje 2026-10-26
     expect(result.officialUrls).toEqual([
       ...sekemResult.officialUrls!,
       'https://info.huji.ac.il/bachelor/Psychology',

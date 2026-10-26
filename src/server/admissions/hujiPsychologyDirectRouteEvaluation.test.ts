@@ -50,6 +50,34 @@ describe('HUJI psychology real exact path', () => {
   });
 
   describe.each(['huji_psychology', 'psychology'])('%s boundaries through the evaluator', (id) => {
+    it.each([690, 700, 724])(
+      'shows a text-only Kidum gate with no sekem score or threshold at PET %i/B90',
+      async (pet) => {
+        const result = await evaluate({ psychometric: pet, bagrut: 90 }, id);
+        expect(result).toMatchObject({
+          capability: 'manual_gate',
+          kind: 'manual_gate',
+          decision: 'unknown',
+        });
+        expect(result.explanation).toContain('ראויים לקידום');
+        expect(result.score).toBeUndefined();
+        expect(result.threshold).toBeUndefined();
+        expect(result.scoreLabel).toBeUndefined();
+        expect(result.scoreAssessment).toBeUndefined();
+        expect(result.deltaNeeded).toBeUndefined();
+        expect(result.floorChecks).toBeUndefined();
+        const studentFacingFields = JSON.stringify({
+          explanation: result.explanation,
+          nextAction: result.nextAction,
+          sourceLabel: result.sourceLabel,
+          scoreLabel: result.scoreLabel,
+        });
+        for (const forbidden of ['20.81', '22.5', 'סכ״ם', 'סכם', 'נבדק ב']) {
+          expect(studentFacingFields).not.toContain(forbidden);
+        }
+      },
+    );
+
     it.each([
       { psychometric: 689, kind: 'exact', decision: 'below' },
       { psychometric: 690, kind: 'manual_gate', decision: 'unknown' },
@@ -60,13 +88,18 @@ describe('HUJI psychology real exact path', () => {
       expect(result).toMatchObject({ kind: boundary.kind, decision: boundary.decision });
       if (boundary.psychometric === 725) {
         expect(result).toMatchObject({ score: 725, threshold: 725, scoreLabel: 'פסיכומטרי' });
-      } else {
+      } else if (boundary.psychometric < 690) {
         expect(result.score).toBeCloseTo(
           0.027468921 * boundary.psychometric + 0.145461915 * 90 - 11.50910537,
           8,
         );
         expect(result.threshold).toBe(22.5);
         expect(result.scoreLabel).toBe('ציון התאמה');
+      } else {
+        expect(result.score).toBeUndefined(); // Approved test update, Jorje 2026-10-26
+        expect(result.threshold).toBeUndefined(); // Approved test update, Jorje 2026-10-26
+        expect(result.scoreLabel).toBeUndefined(); // Approved test update, Jorje 2026-10-26
+        expect(result.scoreAssessment).toBeUndefined(); // Approved test update, Jorje 2026-10-26
       }
     });
 
@@ -119,8 +152,9 @@ describe('HUJI psychology real exact path', () => {
       });
     });
 
+    // Jorje 2026-10-26 12:47: Kidum gate is text-only, no composite score or threshold.
     it.each([690, 724])(
-      'retains the regular score details in the Kidum gate at PET %i/B90',
+      'shows a text-only Kidum gate at PET %i/B90',
       async (pet) => {
         const scores = { psychometric: pet, bagrut: 90 };
         const result = await evaluate(scores, id);
@@ -134,10 +168,10 @@ describe('HUJI psychology real exact path', () => {
           kind: 'manual_gate',
           decision: 'unknown',
         });
-        expect(result.score).toBe(regular.score);
-        expect(result.threshold).toBe(regular.threshold);
-        expect(result.scoreLabel).toBe(regular.scoreLabel);
-        expect(result.scoreAssessment).toBe(regular.scoreAssessment);
+        expect(result.score).toBeUndefined(); // Approved test update, Jorje 2026-10-26
+        expect(result.threshold).toBeUndefined(); // Approved test update, Jorje 2026-10-26
+        expect(result.scoreLabel).toBeUndefined(); // Approved test update, Jorje 2026-10-26
+        expect(result.scoreAssessment).toBeUndefined(); // Approved test update, Jorje 2026-10-26
         expect(result.explanation).toContain('ראויים לקידום');
         expect(result.officialUrls).toEqual(
           expect.arrayContaining([
