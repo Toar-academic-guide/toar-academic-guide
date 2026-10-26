@@ -33,7 +33,18 @@ test('homepage browse links are in raw HTML inside a collapsed details', async (
   expect(hrefs).toContain('/programs');
   expect(hrefs).toContain('/institutions');
   const footer = anchors(html.split('<footer')[1] ?? '');
-  expect(footer).toEqual(['/programs', '/institutions', '/about']);
+  expect(footer).toEqual([
+    '/',
+    'mailto:info@findmyway.co.il',
+    '/programs',
+    '/institutions',
+    '/about',
+    '/app/saved-programs',
+    '/privacy',
+    '/terms',
+    '/accessibility',
+    '/contact',
+  ]);
 });
 
 test('subject index is indexable and self-canonical', async ({ request }) => {
@@ -157,7 +168,7 @@ for (const width of [320, 390, 768, 1024, 1440]) {
     const browse = page.locator('section[aria-labelledby="browse-title"]');
     await expect(browse).toBeVisible();
     await expect(browse).toHaveCSS('text-align', 'right');
-    await expect(page.getByRole('navigation')).toHaveCount(1);
+    await expect(page.getByRole('navigation')).toHaveCount(3);
     const subjects = browse.locator('a[href^="/programs/"]');
     await expect(subjects.first()).toBeHidden();
     await browse.locator('summary').click();

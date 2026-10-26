@@ -245,6 +245,7 @@ export default function StudyJourney({
   const [quizPrompt, setQuizPrompt] = useState(false);
   const dialog = useRef<HTMLDialogElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
+  const focusHeadingOnNavigation = useRef(false);
   const [quizDraft, setQuizDraft] = useState<CareerAssessmentDraft>();
   const [recommendations, setRecommendations] = useState<RecommendedField[]>([]);
   const [reports, setReports] = useState<Record<string, AdmissionsEvaluationReport>>({});
@@ -263,6 +264,7 @@ export default function StudyJourney({
 
   const go = useCallback(
     (next: Step) => {
+      focusHeadingOnNavigation.current = true;
       setStep(next);
       setMessage('');
       if (next === 'home') router.push(ROUTES.home);
@@ -282,8 +284,9 @@ export default function StudyJourney({
       setActiveId(stored.selectedRowId ?? null);
     }
     setReady(true);
-    const readStep = () => {
+    const readStep = (event?: Event) => {
       const hash = window.location.hash.slice(1);
+      focusHeadingOnNavigation.current = !!event;
       setStep(STEPS.includes(hash as Step) ? (hash as Step) : initialStep);
     };
     readStep();
@@ -329,6 +332,8 @@ export default function StudyJourney({
     }
   }, [draft, ready]);
   useEffect(() => {
+    if (!focusHeadingOnNavigation.current) return;
+    focusHeadingOnNavigation.current = false;
     heading.current?.focus({ preventScroll: true });
   }, [step]);
   useEffect(() => {

@@ -24,7 +24,7 @@ test.describe('Smoke tests', () => {
 
   test('page has a navigation bar', async ({ page }) => {
     await page.goto('/');
-    const nav = page.locator('nav');
+    const nav = page.getByRole('navigation', { name: 'ניווט ראשי' });
     await expect(nav).toBeVisible();
   });
 
