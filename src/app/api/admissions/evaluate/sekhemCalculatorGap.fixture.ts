@@ -100,6 +100,7 @@ export async function gapEvaluate(
   program: CatalogueProgram,
   institutionId: string,
   applicant = gapApplicant(),
+  fetcher = gapFetcher(),
 ) {
   const artifact = getProgramVerificationArtifact(`${program.id}__${institutionId}`);
   const freshnessStatesBySourceId = new Map<string, SourceFreshnessStateRow>();
@@ -128,7 +129,6 @@ export async function gapEvaluate(
       updatedAt: gapNow,
     });
   }
-  const fetcher = gapFetcher();
   const report = await evaluateAdmissionsForProgram({
     program: { ...program, linkedInstitutionIds: [institutionId] },
     institutions: getStaticCatalogueInstitutions(),

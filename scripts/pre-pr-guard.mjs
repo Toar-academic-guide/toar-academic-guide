@@ -85,6 +85,7 @@ const operationalReadGrants = {
 
 const targetedTests = [
   'src/data/degrees/index.test.ts',
+  'src/data/admissions/catalogueContentRepair.test.ts',
   'src/lib/seo/seo.test.ts',
   'src/lib/requirementTiles.test.ts',
   'src/components/RequirementTiles.test.tsx',

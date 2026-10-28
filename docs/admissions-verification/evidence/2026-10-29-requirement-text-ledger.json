@@ -1,0 +1,2653 @@
+{
+  "comparison": "Mathematics: f48b63c^ to current; English/Braude static identity:83b0ab1 to current. Historical index modules executed alongside current code and removed afterwards; no checkout/worktree change. Reconstructed pre-UX output exactly equals the original preserved baseline. Other imports shared where unchanged for the measured fields.",
+  "mathPairs": [
+    {
+      "id": "tau_me",
+      "institution": "tau",
+      "oldNotes": ["5 יח\"ל מתמטיקה — חובה", "בונוס +35/+25 על מתמטיקה/פיזיקה 5 יח\"ל"],
+      "newNotes": [
+        "מתמטיקה: 5 יחידות בציון 75 לפחות, או 4 יחידות בציון 85 לפחות עם בחינת סיווג במתמטיקה.",
+        "חלופה במתמטיקה: ציון 75 לפחות בכל אחד משני קורסים באותה אוניברסיטה מהרשימה הרשמית — חדו״א 1א, 1ב, 2א, 2ב או אלגברה בתל אביב; אינפי 1, אינפי 2, חדו״א ב או אלגברה ליניארית 1 או 2 באוניברסיטה הפתוחה. חלופה זו פוטרת מבחינת הסיווג.",
+        "בונוס +35/+25 על מתמטיקה/פיזיקה 5 יח\"ל"
+      ],
+      "oldFactDescriptions": ["מתמטיקה ברמת 5 יח\"ל"],
+      "newFactDescriptions": [
+        "מתמטיקה: 5 יחידות",
+        "ציון 75 לפחות במתמטיקה",
+        "מתמטיקה: 4 יחידות",
+        "ציון 85 לפחות במתמטיקה",
+        "בחינת סיווג במתמטיקה",
+        "חלופה במתמטיקה: ציון 75 לפחות בכל אחד משני קורסים באותה אוניברסיטה מהרשימה הרשמית — חדו״א 1א, 1ב, 2א, 2ב או אלגברה בתל אביב; אינפי 1, אינפי 2, חדו״א ב או אלגברה ליניארית 1 או 2 באוניברסיטה הפתוחה. חלופה זו פוטרת מבחינת הסיווג."
+      ]
+    },
+    {
+      "id": "me",
+      "institution": "tau",
+      "oldNotes": [],
+      "newNotes": [
+        "מתמטיקה: 5 יחידות בציון 75 לפחות, או 4 יחידות בציון 85 לפחות עם בחינת סיווג במתמטיקה.",
+        "חלופה במתמטיקה: ציון 75 לפחות בכל אחד משני קורסים באותה אוניברסיטה מהרשימה הרשמית — חדו״א 1א, 1ב, 2א, 2ב או אלגברה בתל אביב; אינפי 1, אינפי 2, חדו״א ב או אלגברה ליניארית 1 או 2 באוניברסיטה הפתוחה. חלופה זו פוטרת מבחינת הסיווג."
+      ],
+      "oldFactDescriptions": [],
+      "newFactDescriptions": [
+        "מתמטיקה: 5 יחידות",
+        "ציון 75 לפחות במתמטיקה",
+        "מתמטיקה: 4 יחידות",
+        "ציון 85 לפחות במתמטיקה",
+        "בחינת סיווג במתמטיקה",
+        "חלופה במתמטיקה: ציון 75 לפחות בכל אחד משני קורסים באותה אוניברסיטה מהרשימה הרשמית — חדו״א 1א, 1ב, 2א, 2ב או אלגברה בתל אביב; אינפי 1, אינפי 2, חדו״א ב או אלגברה ליניארית 1 או 2 באוניברסיטה הפתוחה. חלופה זו פוטרת מבחינת הסיווג."
+      ]
+    },
+    {
+      "id": "tau_ee",
+      "institution": "tau",
+      "oldNotes": ["5 יח\"ל מתמטיקה — חובה", "בונוס +35/+25 על מתמטיקה/פיזיקה 5 יח\"ל"],
+      "newNotes": [
+        "מתמטיקה: 5 יחידות בציון 80 לפחות, או 4 יחידות בציון 90 לפחות עם בחינת סיווג במתמטיקה.",
+        "חלופה במתמטיקה: ציון 75 לפחות בקורס מהרשימה הרשמית — חדו״א 1א, חדו״א 1ב או אלגברה ליניארית בתל אביב; אינפי 1, אינפי 2 או אלגברה ליניארית 1 באוניברסיטה הפתוחה.",
+        "בונוס +35/+25 על מתמטיקה/פיזיקה 5 יח\"ל"
+      ],
+      "oldFactDescriptions": ["מתמטיקה ברמת 5 יח\"ל"],
+      "newFactDescriptions": [
+        "מתמטיקה: 5 יחידות",
+        "ציון 80 לפחות במתמטיקה",
+        "מתמטיקה: 4 יחידות",
+        "ציון 90 לפחות במתמטיקה",
+        "בחינת סיווג במתמטיקה",
+        "חלופה במתמטיקה: ציון 75 לפחות בקורס מהרשימה הרשמית — חדו״א 1א, חדו״א 1ב או אלגברה ליניארית בתל אביב; אינפי 1, אינפי 2 או אלגברה ליניארית 1 באוניברסיטה הפתוחה."
+      ]
+    },
+    {
+      "id": "ee",
+      "institution": "tau",
+      "oldNotes": [],
+      "newNotes": [
+        "מתמטיקה: 5 יחידות בציון 80 לפחות, או 4 יחידות בציון 90 לפחות עם בחינת סיווג במתמטיקה.",
+        "חלופה במתמטיקה: ציון 75 לפחות בקורס מהרשימה הרשמית — חדו״א 1א, חדו״א 1ב או אלגברה ליניארית בתל אביב; אינפי 1, אינפי 2 או אלגברה ליניארית 1 באוניברסיטה הפתוחה."
+      ],
+      "oldFactDescriptions": [],
+      "newFactDescriptions": [
+        "מתמטיקה: 5 יחידות",
+        "ציון 80 לפחות במתמטיקה",
+        "מתמטיקה: 4 יחידות",
+        "ציון 90 לפחות במתמטיקה",
+        "בחינת סיווג במתמטיקה",
+        "חלופה במתמטיקה: ציון 75 לפחות בקורס מהרשימה הרשמית — חדו״א 1א, חדו״א 1ב או אלגברה ליניארית בתל אביב; אינפי 1, אינפי 2 או אלגברה ליניארית 1 באוניברסיטה הפתוחה."
+      ]
+    },
+    {
+      "id": "tau_industrial",
+      "institution": "tau",
+      "oldNotes": ["5 יח\"ל מתמטיקה — חובה"],
+      "newNotes": [
+        "מתמטיקה: 5 יחידות בציון 75 לפחות, או 4 יחידות בציון 85 לפחות עם בחינת סיווג במתמטיקה.",
+        "חלופה במתמטיקה: ציון 75 לפחות בכל אחד משני קורסים באותה אוניברסיטה מהרשימה הרשמית — חדו״א 1א, 1ב, 2א, 2ב או אלגברה בתל אביב; אינפי 1, אינפי 2, חדו״א ב או אלגברה ליניארית 1 או 2 באוניברסיטה הפתוחה. חלופה זו פוטרת מבחינת הסיווג."
+      ],
+      "oldFactDescriptions": ["מתמטיקה ברמת 5 יח\"ל"],
+      "newFactDescriptions": [
+        "מתמטיקה: 5 יחידות",
+        "ציון 75 לפחות במתמטיקה",
+        "מתמטיקה: 4 יחידות",
+        "ציון 85 לפחות במתמטיקה",
+        "בחינת סיווג במתמטיקה",
+        "חלופה במתמטיקה: ציון 75 לפחות בכל אחד משני קורסים באותה אוניברסיטה מהרשימה הרשמית — חדו״א 1א, 1ב, 2א, 2ב או אלגברה בתל אביב; אינפי 1, אינפי 2, חדו״א ב או אלגברה ליניארית 1 או 2 באוניברסיטה הפתוחה. חלופה זו פוטרת מבחינת הסיווג."
+      ]
+    },
+    {
+      "id": "tau_datascience",
+      "institution": "tau",
+      "oldNotes": [
+        "מתמטיקה: 5 יח\"ל בציון 75 ומעלה או 4 יח\"ל בציון 85 ומעלה",
+        "בונוס 10 לציון ההתאמה למי שנבחנו ב-5 יח\"ל מתמטיקה ופיזיקה בציון 55 ומעלה בכל אחד"
+      ],
+      "newNotes": [
+        "מתמטיקה: 5 יחידות בציון 75 לפחות, או 4 יחידות בציון 85 לפחות עם בחינת סיווג במתמטיקה או ציון 70 לפחות בכל אחד מהקורסים המקוונים גשר למתמטיקה אקדמית 1 ו־2.",
+        "בונוס 10 לציון ההתאמה למי שנבחנו ב-5 יח\"ל מתמטיקה ופיזיקה בציון 55 ומעלה בכל אחד"
+      ],
+      "oldFactDescriptions": [
+        "מתמטיקה ברמת 5 יח\"ל",
+        "ציון 75 ומעלה במתמטיקה 5 יח\"ל",
+        "מתמטיקה ברמת 4 יח\"ל",
+        "ציון 85 ומעלה במתמטיקה 4 יח\"ל"
+      ],
+      "newFactDescriptions": [
+        "מתמטיקה: 5 יחידות",
+        "ציון 75 לפחות במתמטיקה",
+        "מתמטיקה: 4 יחידות",
+        "ציון 85 לפחות במתמטיקה",
+        "בחינת סיווג במתמטיקה",
+        "ציון 70 לפחות בכל אחד מהקורסים גשר למתמטיקה אקדמית 1 ו־2"
+      ]
+    },
+    {
+      "id": "datascience",
+      "institution": "tau",
+      "oldNotes": [],
+      "newNotes": [
+        "מתמטיקה: 5 יחידות בציון 75 לפחות, או 4 יחידות בציון 85 לפחות עם בחינת סיווג במתמטיקה או ציון 70 לפחות בכל אחד מהקורסים המקוונים גשר למתמטיקה אקדמית 1 ו־2."
+      ],
+      "oldFactDescriptions": [],
+      "newFactDescriptions": [
+        "מתמטיקה: 5 יחידות",
+        "ציון 75 לפחות במתמטיקה",
+        "מתמטיקה: 4 יחידות",
+        "ציון 85 לפחות במתמטיקה",
+        "בחינת סיווג במתמטיקה",
+        "ציון 70 לפחות בכל אחד מהקורסים גשר למתמטיקה אקדמית 1 ו־2"
+      ]
+    },
+    {
+      "id": "tau_cs",
+      "institution": "tau",
+      "oldNotes": ["5 יח\"ל מתמטיקה — חובה", "בונוס +35 עבור 5 יח\"ל מתמטיקה"],
+      "newNotes": [
+        "מתמטיקה: 5 יחידות בציון 80 לפחות או 4 יחידות בציון 88 לפחות.",
+        "אפשר גם 5 יחידות בציון 70–79 או 4 יחידות בציון 75–87 עם ציון 75 לפחות בבחינת הסיווג במתמטיקה.",
+        "בונוס +35 עבור 5 יח\"ל מתמטיקה"
+      ],
+      "oldFactDescriptions": ["מתמטיקה ברמת 5 יח\"ל"],
+      "newFactDescriptions": [
+        "מתמטיקה: 5 יחידות",
+        "ציון 80 לפחות במתמטיקה",
+        "מתמטיקה: 4 יחידות",
+        "ציון 88 לפחות במתמטיקה",
+        "ציון 70 לפחות במתמטיקה",
+        "בחינת סיווג במתמטיקה בציון 75 לפחות",
+        "ציון 75 לפחות במתמטיקה"
+      ]
+    },
+    {
+      "id": "cs",
+      "institution": "tau",
+      "oldNotes": [],
+      "newNotes": [
+        "מתמטיקה: 5 יחידות בציון 80 לפחות או 4 יחידות בציון 88 לפחות.",
+        "אפשר גם 5 יחידות בציון 70–79 או 4 יחידות בציון 75–87 עם ציון 75 לפחות בבחינת הסיווג במתמטיקה."
+      ],
+      "oldFactDescriptions": [],
+      "newFactDescriptions": [
+        "מתמטיקה: 5 יחידות",
+        "ציון 80 לפחות במתמטיקה",
+        "מתמטיקה: 4 יחידות",
+        "ציון 88 לפחות במתמטיקה",
+        "ציון 70 לפחות במתמטיקה",
+        "בחינת סיווג במתמטיקה בציון 75 לפחות",
+        "ציון 75 לפחות במתמטיקה"
+      ]
+    },
+    {
+      "id": "technion_cs",
+      "institution": "technion",
+      "oldNotes": ["5 יח\"ל מתמטיקה — חובה מוחלטת"],
+      "newNotes": [
+        "מתמטיקה: 5 יחידות בציון 70 לפחות; בעלי 4 יחידות או ציון נמוך מ־70 ב־5 יחידות נדרשים לבחינת סיווג במתמטיקה בציון 70 לפחות.",
+        "פטור מבחינת הסיווג במתמטיקה: קורס חדו״א א׳ (20406) באוניברסיטה הפתוחה בציון 65 לפחות."
+      ],
+      "oldFactDescriptions": ["מתמטיקה ברמת 5 יח\"ל"],
+      "newFactDescriptions": [
+        "מתמטיקה: 5 יחידות",
+        "ציון 70 לפחות במתמטיקה",
+        "מתמטיקה: 4 יחידות לפחות",
+        "בחינת סיווג במתמטיקה בציון 70 לפחות",
+        "פטור מבחינת הסיווג במתמטיקה: קורס חדו״א א׳ (20406) באוניברסיטה הפתוחה בציון 65 לפחות."
+      ]
+    },
+    {
+      "id": "technion_datascience",
+      "institution": "technion",
+      "oldNotes": ["5 יח\"ל מתמטיקה — חובה מוחלטת"],
+      "newNotes": [
+        "מתמטיקה: 5 יחידות בציון 70 לפחות; בעלי 4 יחידות או ציון נמוך מ־70 ב־5 יחידות נדרשים לבחינת סיווג במתמטיקה בציון 70 לפחות.",
+        "פטור מבחינת הסיווג במתמטיקה: קורס חדו״א א׳ (20406) באוניברסיטה הפתוחה בציון 65 לפחות."
+      ],
+      "oldFactDescriptions": ["מתמטיקה ברמת 5 יח\"ל"],
+      "newFactDescriptions": [
+        "מתמטיקה: 5 יחידות",
+        "ציון 70 לפחות במתמטיקה",
+        "מתמטיקה: 4 יחידות לפחות",
+        "בחינת סיווג במתמטיקה בציון 70 לפחות",
+        "פטור מבחינת הסיווג במתמטיקה: קורס חדו״א א׳ (20406) באוניברסיטה הפתוחה בציון 65 לפחות."
+      ]
+    },
+    {
+      "id": "technion_ee",
+      "institution": "technion",
+      "oldNotes": ["5 יח\"ל מתמטיקה — חובה"],
+      "newNotes": [
+        "מתמטיקה: 5 יחידות בציון 70 לפחות; בעלי 4 יחידות או ציון נמוך מ־70 ב־5 יחידות נדרשים לבחינת סיווג במתמטיקה בציון 70 לפחות.",
+        "פטור מבחינת הסיווג במתמטיקה: קורס חדו״א א׳ (20406) באוניברסיטה הפתוחה בציון 65 לפחות."
+      ],
+      "oldFactDescriptions": ["מתמטיקה ברמת 5 יח\"ל"],
+      "newFactDescriptions": [
+        "מתמטיקה: 5 יחידות",
+        "ציון 70 לפחות במתמטיקה",
+        "מתמטיקה: 4 יחידות לפחות",
+        "בחינת סיווג במתמטיקה בציון 70 לפחות",
+        "פטור מבחינת הסיווג במתמטיקה: קורס חדו״א א׳ (20406) באוניברסיטה הפתוחה בציון 65 לפחות."
+      ]
+    },
+    {
+      "id": "technion_me",
+      "institution": "technion",
+      "oldNotes": ["5 יח\"ל מתמטיקה — חובה"],
+      "newNotes": [
+        "מתמטיקה: 5 יחידות בציון 70 לפחות; בעלי 4 יחידות או ציון נמוך מ־70 ב־5 יחידות נדרשים לבחינת סיווג במתמטיקה בציון 70 לפחות.",
+        "פטור מבחינת הסיווג במתמטיקה: קורס חדו״א א׳ (20406) באוניברסיטה הפתוחה בציון 65 לפחות."
+      ],
+      "oldFactDescriptions": ["מתמטיקה ברמת 5 יח\"ל"],
+      "newFactDescriptions": [
+        "מתמטיקה: 5 יחידות",
+        "ציון 70 לפחות במתמטיקה",
+        "מתמטיקה: 4 יחידות לפחות",
+        "בחינת סיווג במתמטיקה בציון 70 לפחות",
+        "פטור מבחינת הסיווג במתמטיקה: קורס חדו״א א׳ (20406) באוניברסיטה הפתוחה בציון 65 לפחות."
+      ]
+    },
+    {
+      "id": "technion_civil",
+      "institution": "technion",
+      "oldNotes": ["5 יח\"ל מתמטיקה — חובה"],
+      "newNotes": [
+        "מתמטיקה: 5 יחידות בציון 70 לפחות; בעלי 4 יחידות או ציון נמוך מ־70 ב־5 יחידות נדרשים לבחינת סיווג במתמטיקה בציון 70 לפחות.",
+        "פטור מבחינת הסיווג במתמטיקה: קורס חדו״א א׳ (20406) באוניברסיטה הפתוחה בציון 65 לפחות."
+      ],
+      "oldFactDescriptions": ["מתמטיקה ברמת 5 יח\"ל"],
+      "newFactDescriptions": [
+        "מתמטיקה: 5 יחידות",
+        "ציון 70 לפחות במתמטיקה",
+        "מתמטיקה: 4 יחידות לפחות",
+        "בחינת סיווג במתמטיקה בציון 70 לפחות",
+        "פטור מבחינת הסיווג במתמטיקה: קורס חדו״א א׳ (20406) באוניברסיטה הפתוחה בציון 65 לפחות."
+      ]
+    },
+    {
+      "id": "technion_industrial",
+      "institution": "technion",
+      "oldNotes": ["5 יח\"ל מתמטיקה — חובה"],
+      "newNotes": [
+        "מתמטיקה: 5 יחידות בציון 70 לפחות; בעלי 4 יחידות או ציון נמוך מ־70 ב־5 יחידות נדרשים לבחינת סיווג במתמטיקה בציון 70 לפחות.",
+        "פטור מבחינת הסיווג במתמטיקה: קורס חדו״א א׳ (20406) באוניברסיטה הפתוחה בציון 65 לפחות."
+      ],
+      "oldFactDescriptions": ["מתמטיקה ברמת 5 יח\"ל"],
+      "newFactDescriptions": [
+        "מתמטיקה: 5 יחידות",
+        "ציון 70 לפחות במתמטיקה",
+        "מתמטיקה: 4 יחידות לפחות",
+        "בחינת סיווג במתמטיקה בציון 70 לפחות",
+        "פטור מבחינת הסיווג במתמטיקה: קורס חדו״א א׳ (20406) באוניברסיטה הפתוחה בציון 65 לפחות."
+      ]
+    },
+    {
+      "id": "technion_biomedical",
+      "institution": "technion",
+      "oldNotes": ["5 יח\"ל מתמטיקה — חובה"],
+      "newNotes": [
+        "מתמטיקה: 5 יחידות בציון 70 לפחות; בעלי 4 יחידות או ציון נמוך מ־70 ב־5 יחידות נדרשים לבחינת סיווג במתמטיקה בציון 70 לפחות.",
+        "פטור מבחינת הסיווג במתמטיקה: קורס חדו״א א׳ (20406) באוניברסיטה הפתוחה בציון 65 לפחות."
+      ],
+      "oldFactDescriptions": ["מתמטיקה ברמת 5 יח\"ל"],
+      "newFactDescriptions": [
+        "מתמטיקה: 5 יחידות",
+        "ציון 70 לפחות במתמטיקה",
+        "מתמטיקה: 4 יחידות לפחות",
+        "בחינת סיווג במתמטיקה בציון 70 לפחות",
+        "פטור מבחינת הסיווג במתמטיקה: קורס חדו״א א׳ (20406) באוניברסיטה הפתוחה בציון 65 לפחות."
+      ]
+    },
+    {
+      "id": "cs",
+      "institution": "technion",
+      "oldNotes": [],
+      "newNotes": [
+        "מתמטיקה: 5 יחידות בציון 70 לפחות; בעלי 4 יחידות או ציון נמוך מ־70 ב־5 יחידות נדרשים לבחינת סיווג במתמטיקה בציון 70 לפחות.",
+        "פטור מבחינת הסיווג במתמטיקה: קורס חדו״א א׳ (20406) באוניברסיטה הפתוחה בציון 65 לפחות."
+      ],
+      "oldFactDescriptions": [],
+      "newFactDescriptions": [
+        "מתמטיקה: 5 יחידות",
+        "ציון 70 לפחות במתמטיקה",
+        "מתמטיקה: 4 יחידות לפחות",
+        "בחינת סיווג במתמטיקה בציון 70 לפחות",
+        "פטור מבחינת הסיווג במתמטיקה: קורס חדו״א א׳ (20406) באוניברסיטה הפתוחה בציון 65 לפחות."
+      ]
+    },
+    {
+      "id": "ee",
+      "institution": "technion",
+      "oldNotes": [],
+      "newNotes": [
+        "מתמטיקה: 5 יחידות בציון 70 לפחות; בעלי 4 יחידות או ציון נמוך מ־70 ב־5 יחידות נדרשים לבחינת סיווג במתמטיקה בציון 70 לפחות.",
+        "פטור מבחינת הסיווג במתמטיקה: קורס חדו״א א׳ (20406) באוניברסיטה הפתוחה בציון 65 לפחות."
+      ],
+      "oldFactDescriptions": [],
+      "newFactDescriptions": [
+        "מתמטיקה: 5 יחידות",
+        "ציון 70 לפחות במתמטיקה",
+        "מתמטיקה: 4 יחידות לפחות",
+        "בחינת סיווג במתמטיקה בציון 70 לפחות",
+        "פטור מבחינת הסיווג במתמטיקה: קורס חדו״א א׳ (20406) באוניברסיטה הפתוחה בציון 65 לפחות."
+      ]
+    },
+    {
+      "id": "me",
+      "institution": "technion",
+      "oldNotes": [],
+      "newNotes": [
+        "מתמטיקה: 5 יחידות בציון 70 לפחות; בעלי 4 יחידות או ציון נמוך מ־70 ב־5 יחידות נדרשים לבחינת סיווג במתמטיקה בציון 70 לפחות.",
+        "פטור מבחינת הסיווג במתמטיקה: קורס חדו״א א׳ (20406) באוניברסיטה הפתוחה בציון 65 לפחות."
+      ],
+      "oldFactDescriptions": [],
+      "newFactDescriptions": [
+        "מתמטיקה: 5 יחידות",
+        "ציון 70 לפחות במתמטיקה",
+        "מתמטיקה: 4 יחידות לפחות",
+        "בחינת סיווג במתמטיקה בציון 70 לפחות",
+        "פטור מבחינת הסיווג במתמטיקה: קורס חדו״א א׳ (20406) באוניברסיטה הפתוחה בציון 65 לפחות."
+      ]
+    },
+    {
+      "id": "datascience",
+      "institution": "technion",
+      "oldNotes": [
+        "מתמטיקה: 5 יחידות בציון 70 לפחות; בעלי 4 יחידות או ציון נמוך יותר ב־5 יחידות נדרשים לבחינת סיווג בציון 70 לפחות.",
+        "בטבלת חורף תשפ״ז מופיעים גם אפיקי בגרות מצוינת, בגרות ובחינת סיווג במתמטיקה, וריאיון לצד סכם. לכל אפיק תנאים נפרדים."
+      ],
+      "newNotes": [
+        "מתמטיקה: 5 יחידות בציון 70 לפחות; בעלי 4 יחידות או ציון נמוך יותר ב־5 יחידות נדרשים לבחינת סיווג בציון 70 לפחות.",
+        "בטבלת חורף תשפ״ז מופיעים גם אפיקי בגרות מצוינת, בגרות ובחינת סיווג במתמטיקה, וריאיון לצד סכם. לכל אפיק תנאים נפרדים."
+      ],
+      "oldFactDescriptions": [],
+      "newFactDescriptions": [
+        "מתמטיקה: 5 יחידות",
+        "ציון 70 לפחות במתמטיקה",
+        "מתמטיקה: 4 יחידות לפחות",
+        "בחינת סיווג במתמטיקה בציון 70 לפחות",
+        "פטור מבחינת הסיווג במתמטיקה: קורס חדו״א א׳ (20406) באוניברסיטה הפתוחה בציון 65 לפחות."
+      ]
+    }
+  ],
+  "englishProgrammes": [
+    {
+      "id": "technion_engineering",
+      "oldNotes": [
+        "The current official Technion admissions table, rechecked on 2026-07-05, lists הנדסת נתונים ומידע with threshold 91.",
+        "The current Technion undergraduate catalogue now presents this area under the faculty label מדעי הנתונים וההחלטות, and the official faculty PDF explicitly lists הנדסת נתונים ומידע as one of the three training tracks."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "bgu_engineering",
+      "oldNotes": [
+        "Official source requires browser/cookie/anti-bot handling before automation.",
+        "Update evidence reports score calculation without verified admission cutoff/status.",
+        "Verified: BGU's official calculator endpoints (!rg.acc_SubmitSekem and variants) still return a weighted score only; the decision-capable thresholds now come from the official programme admission-conditions API instead.",
+        "Re-checked on 2026-07-05: the official BGU medicine acceptance-conditions API for page node 2944 returns a structured medicine rule with psycho_sekem=735, psycho_value=680, and the current registration state.",
+        "BGU medicine remains a manual-gate flow even after verification: the published rule is a year-specific invitation threshold for continued screening, not a final automatic admission decision.",
+        "Re-checked on 2026-07-05: the public BGU sciences calculator (type=4) still does not expose medicine as a public department code, so the medicine rule must come from the official acceptance-conditions API rather than the legacy calculator.",
+        "The live BGU autocomplete search no longer returns any undergraduate degree page for law (queries: משפט and משפטים), so the stale BGU law catalogue mapping was removed instead of carrying an unverified cutoff."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "biu_engineering",
+      "oldNotes": [
+        "Official source requires browser/cookie/anti-bot handling before automation.",
+        "Bar-Ilan's calculator on shoham.biu.ac.il is still protected by Radware Bot Manager with hCaptcha, so it should not be treated as the only verification surface for current admissions logic.",
+        "The current official verification is limited to accessible BIU admissions content pages and the official pre-academic site, not a full reverse-engineered calculator run for every BIU programme.",
+        "The verified sources publish general bagrut, psychometric, English, Hebrew, no-psychometry, and pre-academic routes, but they do not prove one decision-capable threshold across every Bar-Ilan programme."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "biu_prep",
+      "oldNotes": [
+        "Official source requires browser/cookie/anti-bot handling before automation.",
+        "Bar-Ilan's calculator on shoham.biu.ac.il is still protected by Radware Bot Manager with hCaptcha, so it should not be treated as the only verification surface for current admissions logic.",
+        "The current official verification is limited to accessible BIU admissions content pages and the official pre-academic site, not a full reverse-engineered calculator run for every BIU programme.",
+        "The verified sources publish general bagrut, psychometric, English, Hebrew, no-psychometry, and pre-academic routes, but they do not prove one decision-capable threshold across every Bar-Ilan programme."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "ariel_engineering",
+      "oldNotes": [
+        "Official source requires browser/cookie/anti-bot handling before automation.",
+        "Verified on 2026-07-05: Ariel's calculator entrypoint on pniot.ariel.ac.il still requires a protected browser session; current plain HTTP GET and POST checks return HTTP/2 247 with the Radware bootstrap shell, and repeated browser probes still expose an empty body, no cookies, and no interactive admissions form even when retried from a persistent session and the local Chrome Default profile.",
+        "Verified on 2026-07-05: Ariel's newer official calculator routes on www.ariel.ac.il/wp/ also return HTTP/2 247 with only the anti-bot bootstrap script kramericaindustries.ac_v2.lib.js, and repeated browser snapshots still expose an empty body, no cookies, and no interactive elements on /מחשבון-נתוני-קבלה/ even when retried from a persistent session and the local Chrome Default profile.",
+        "Verified on 2026-07-05: a fresh headed agent-browser session (`ariel-final`) against /מחשבון-נתוני-קבלה/ stayed completely blank after a 12-second wait; the screenshot is an all-white page and the session network log shows only three requests: the 247 document, kramericaindustries.ac_v2.lib.js, and favicon.ico.",
+        "Verified on 2026-07-05: a newly discovered official computer-science admissions URL on www.ariel.ac.il/wp/cs/ is indexed with admissions snippets by search engines, but the current route also returns HTTP/2 247 and both curl and real-browser checks still render it as an empty shell rather than accessible admissions content from this environment.",
+        "Verified on 2026-07-05: even the current sitemap route https://www.ariel.ac.il/wp/sitemapindex.xml and WordPress REST routes such as /wp/wp-json/ return the same anti-bot bootstrap shell instead of navigable site structure or structured content.",
+        "Browser automation with a solvable real-browser challenge path, or a newly discovered static official source, is still required before Ariel can be promoted."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "telhai_general_academic",
+      "oldNotes": [
+        "Tel-Hai's main admissions and registration routes can still return Cloudflare challenge pages in direct browser sessions from this IP, so they should not be treated as the only verification surface for current admissions logic.",
+        "The current official verification is limited to accessible programme and preparatory pages that publish concrete thresholds and alternate admissions routes, not a single institution-wide threshold across every Tel-Hai programme.",
+        "The verified sources mix direct programme thresholds, committee ranges, score-replacement routes, and preparatory admission paths, so the product should stay at eligible-to-apply/manual-gate rather than accepted/below."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "reichman_engineering",
+      "oldNotes": [
+        "Reichman uses a bagrut-average gate (ממוצע בגרות 100 ומעלה לקבלה ישירה) plus an adapted-score formula for ranking, not a published per-program sekhem threshold.",
+        "The official calculator is a client-side ASP.NET WebForms bagrut-average helper; per-program adapted-score cutoffs are not published as a static table and remain behind the calculator."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "wingate_general_academic",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee.",
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 2
+    },
+    {
+      "id": "afeka_engineering",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "shenkar_engineering",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "hit_engineering",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "sce_general_academic",
+      "oldNotes": [
+        "The original SCE admissions URL cited on the Monday item is still Cloudflare-protected for plain HTTP clients, so it should not be treated as the sole verification surface.",
+        "The current official verification is limited to the accessible SCE applicant guide PDF and the live computer-science programme page cited here; it does not prove one college-wide admissions threshold across every SCE programme.",
+        "The verified sources publish a direct route (bagrut eligibility, psychometric or psychotechnic 580+, and mathematics gates) together with an official preparatory fallback for candidates who do not meet the direct route, so the product should stay at eligible-to-apply/manual-gate rather than accepted/below."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "azrieli_engineering",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "braude_engineering",
+      "oldNotes": [
+        "Braude's official admissions page publishes different psychometric-component and bagrut subject gates by department, so the institution cannot be collapsed into one reusable decision threshold.",
+        "The no-psychometric math-classification lane is limited to engineering tracks and explicitly excludes civil engineering and computer science, so the product should stay at eligible-to-apply/manual-gate rather than accepted/below."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "braude_prep",
+      "oldNotes": [
+        "Braude's official admissions page publishes different psychometric-component and bagrut subject gates by department, so the institution cannot be collapsed into one reusable decision threshold.",
+        "The no-psychometric math-classification lane is limited to engineering tracks and explicitly excludes civil engineering and computer science, so the product should stay at eligible-to-apply/manual-gate rather than accepted/below."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "ruppin_engineering",
+      "oldNotes": [
+        "Ruppin's main admissions and some programme pages can still return anti-bot shells from this IP, so they should not be treated as the only verification surface for current admissions logic.",
+        "The current official verification is limited to accessible Ruppin preparatory-programme pages that publish alternate admissions and prep routes, not a direct programme-by-programme threshold capture for every degree.",
+        "The verified Ruppin sources publish preparation and no-psychometry routes together with entry requirements for the preparatory tracks, but they do not prove one decision-capable threshold across every Ruppin programme.",
+        "The official technological-college page publishes document-level bagrut requirements together with preparatory and age-based alternate routes, so the current product treats this as structured manual eligibility rather than a final automated decision.",
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 3
+    },
+    {
+      "id": "ruppin_prep",
+      "oldNotes": [
+        "Ruppin's main admissions and some programme pages can still return anti-bot shells from this IP, so they should not be treated as the only verification surface for current admissions logic.",
+        "The current official verification is limited to accessible Ruppin preparatory-programme pages that publish alternate admissions and prep routes, not a direct programme-by-programme threshold capture for every degree.",
+        "The verified Ruppin sources publish preparation and no-psychometry routes together with entry requirements for the preparatory tracks, but they do not prove one decision-capable threshold across every Ruppin programme."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "sapir_law",
+      "oldNotes": [
+        "The current official verification for Sapir is limited to the law department page cited on the Monday item; it does not prove one institution-wide admissions rule across all Sapir programmes.",
+        "The law page mixes direct admission thresholds with assessment-task, exceptional, and prior-degree routes, so the product should stay at eligible-to-apply/manual-gate rather than accepted/below."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "sapir_prep",
+      "oldNotes": [
+        "The current official verification for Sapir is limited to the law department page cited on the Monday item; it does not prove one institution-wide admissions rule across all Sapir programmes.",
+        "The law page mixes direct admission thresholds with assessment-task, exceptional, and prior-degree routes, so the product should stay at eligible-to-apply/manual-gate rather than accepted/below."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "emek_yezreel_general_academic",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "bezalel_graphic_design",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "hadassah_general_academic",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "wizo_general_academic",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "beit_berl_graphic_design",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "colman_law",
+      "oldNotes": [
+        "Official Colman programme pages publish different automatic-admission thresholds by programme, so the institution cannot be collapsed into one reusable numeric rule.",
+        "Computer science and management-information-systems pages add programme-specific math gates and internal-test/preparatory routes, so the product should stay at eligible-to-apply/manual-gate rather than accepted/below."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "colman_business",
+      "oldNotes": [
+        "Official Colman programme pages publish different automatic-admission thresholds by programme, so the institution cannot be collapsed into one reusable numeric rule.",
+        "Computer science and management-information-systems pages add programme-specific math gates and internal-test/preparatory routes, so the product should stay at eligible-to-apply/manual-gate rather than accepted/below."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "ono_medicine",
+      "oldNotes": [
+        "Official Ono undergraduate curriculum pages publish programme-specific automatic and weighted/manual admission routes rather than one institution-wide numeric threshold.",
+        "The current official Ono curriculum catalogue exposes law, computer science, nursing, and business-specialization pages, but it no longer exposes exact current undergraduate pages for the stale catalogue entries עבודה סוציאלית and פסיכולוגיה."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "bishulim_culinary",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee.",
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 2
+    },
+    {
+      "id": "mon_12220697934_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "nativ_graphic_design",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "beit_zvi_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12220697942_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12220696299_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "david_yellin_education",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341128292_medicine",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "shaare_mishpat_law",
+      "oldNotes": [
+        "The official page publishes a direct bagrut-average route together with alternate exceptions-committee and preparatory routes, so the current product can only classify this as eligible-to-apply rather than a final acceptance decision."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "ramat_gan_law",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "ramat_gan_business",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "schechter_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341126300_education",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "herzog_general_academic",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "tech_management_engineering",
+      "oldNotes": [
+        "The official handesaim page publishes document-level מה\"ט requirements rather than a single final threshold, so the current product treats this as structured manual eligibility rather than a final automated decision."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341107541_engineering",
+      "oldNotes": [
+        "The official ORT handesaim page publishes document-level entry requirements together with a preparatory alternative route, so this row remains an eligibility/manual-gate flow rather than a final automated acceptance decision."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "netanya_law",
+      "oldNotes": [
+        "The current official verification for Netanya is limited to the current undergraduate pages cited here; it does not prove one institution-wide admission threshold across every programme.",
+        "The verified programme pages mix direct bagrut-based admission thresholds with interview, preparatory, prior-degree, and exceptional-admission lanes, so the product should stay at eligible-to-apply/manual-gate rather than accepted/below."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "netanya_business",
+      "oldNotes": [
+        "The current official verification for Netanya is limited to the current undergraduate pages cited here; it does not prove one institution-wide admission threshold across every programme.",
+        "The verified programme pages mix direct bagrut-based admission thresholds with interview, preparatory, prior-degree, and exceptional-admission lanes, so the product should stay at eligible-to-apply/manual-gate rather than accepted/below."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "seminar_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "tcb_engineering",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee.",
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 2
+    },
+    {
+      "id": "sce_engineering",
+      "oldNotes": [
+        "The official SCE sources publish a direct academic route with multiple numeric subject gates plus alternate psychotechnic and preparatory routes, so the current product should stay at eligible-to-apply/manual-gate rather than a final accepted decision."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "telhai_prep",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "sce_prep",
+      "oldNotes": [
+        "The official pre-academic page describes a numeric entrance-exam route together with refresh-course and classification handling, so the current product can surface eligibility but not a final acceptance decision."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341128848_engineering",
+      "oldNotes": [
+        "The official handesaim page publishes document-level מה\"ט requirements and a technological preparatory fallback, so the current product treats this as an eligibility/manual-gate flow rather than a final automated decision."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "kinneret_engineering",
+      "oldNotes": [
+        "The official Kinneret Technological College page publishes document-level מה\"ט requirements together with preparatory alternatives, so the current product treats this as structured manual eligibility rather than a final automated decision."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "telhai_engineering",
+      "oldNotes": [
+        "The official Tel-Hai handesaim page publishes document-level bagrut requirements rather than a single final threshold, so the current product treats this as structured manual eligibility rather than a final automated decision."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "atid_engineering",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341126575_beauty",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "israel_academic_general_academic",
+      "oldNotes": [
+        "The official page publishes a direct bagrut-average route together with alternate psychometric and preparatory routes for applicants below the direct threshold, so the current product treats this as structured eligibility rather than a final automated decision."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341118768_general_academic",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341091518_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341092889_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "open_university_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee.",
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 2
+    },
+    {
+      "id": "achva_general_academic",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341102793_engineering",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "sapir_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341107292_general_academic",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341098736_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "givat_washington_medicine",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341142058_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "lfa_beauty",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "zefat_general_academic",
+      "oldNotes": [
+        "The current official verification for Zefat is limited to the current undergraduate admission pages cited here; it does not prove one institution-wide admission threshold across every programme.",
+        "The verified programme pages mix bagrut-only routes, bagrut+psychometric alternatives, interview requirements, preparatory routes, and language gates, so the product should stay at eligible-to-apply/manual-gate rather than accepted/below."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341114281_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341113217_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "kaye_education",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341114949_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341144078_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341091770_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "beit_berl_general_academic",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "tiltan_medicine",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341133521_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "peres_law",
+      "oldNotes": [
+        "The current official verification for Peres is limited to the current undergraduate pages cited here; it does not prove one institution-wide admission threshold across every programme.",
+        "The dedicated admissions landing page may still sit behind a verification gate, but the current business and law programme pages publish usable official admission rules directly.",
+        "The verified programme pages mix direct admission thresholds, competitive or conditional lanes, and exceptional-admission routes, so the product should stay at eligible-to-apply/manual-gate rather than accepted/below."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "peres_business",
+      "oldNotes": [
+        "The current official verification for Peres is limited to the current undergraduate pages cited here; it does not prove one institution-wide admission threshold across every programme.",
+        "The dedicated admissions landing page may still sit behind a verification gate, but the current business and law programme pages publish usable official admission rules directly.",
+        "The verified programme pages mix direct admission thresholds, competitive or conditional lanes, and exceptional-admission routes, so the product should stay at eligible-to-apply/manual-gate rather than accepted/below."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341122838_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341122522_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341133625_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "aliya_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee.",
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 2
+    },
+    {
+      "id": "mon_12341138527_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341134763_engineering",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "atid_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341165356_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341134000_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341108613_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341189515_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341166173_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "tiltan_graphic_design",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "tiltan_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341165867_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341148361_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341165912_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341134405_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341189317_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341162526_general_academic",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341166462_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341167257_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "reidman_medicine",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "johnbryce_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mediteva_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "oranim_education",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341168659_graphic_design",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341185806_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341166735_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "givat_washington_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341187468_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341167283_certificate",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    },
+    {
+      "id": "mon_12341179463_education",
+      "oldNotes": [
+        "Admission depends on manual review such as interview, portfolio, exam, or committee."
+      ],
+      "newNotes": ["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."],
+      "affectedDetailCount": 1
+    }
+  ],
+  "headings": [
+    {
+      "id": "braude_engineering",
+      "field": "name",
+      "before": "הנדסה וטכנולוגיה - המכללה האקדמית להנדסה בראודה",
+      "after": "הנדסה וטכנולוגיה - המכללה האקדמית להנדסה אורט בראודה"
+    },
+    {
+      "id": "braude_engineering",
+      "field": "institution",
+      "before": "המכללה האקדמית להנדסה בראודה",
+      "after": "המכללה האקדמית להנדסה אורט בראודה"
+    },
+    {
+      "id": "braude_prep",
+      "field": "name",
+      "before": "מכינה קדם-אקדמית - המכללה האקדמית להנדסה בראודה",
+      "after": "מכינה קדם-אקדמית - המכללה האקדמית להנדסה אורט בראודה"
+    },
+    {
+      "id": "braude_prep",
+      "field": "institution",
+      "before": "המכללה האקדמית להנדסה בראודה",
+      "after": "המכללה האקדמית להנדסה אורט בראודה"
+    },
+    {
+      "id": "mon_12220708942_cs",
+      "field": "name",
+      "before": "מדעי המחשב - המכללה האקדמית להנדסה בראודה",
+      "after": "מדעי המחשב - המכללה האקדמית להנדסה אורט בראודה"
+    },
+    {
+      "id": "mon_12220708942_cs",
+      "field": "institution",
+      "before": "המכללה האקדמית להנדסה בראודה",
+      "after": "המכללה האקדמית להנדסה אורט בראודה"
+    }
+  ],
+  "notShippedHaifaCopy": {
+    "before": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה.",
+    "requestedAfter": "עדיין לא מחשבים את הסכם של חיפה כאן",
+    "status": "STOPPED: evaluator.ts961 outside grant; no student-visible copy change shipped."
+  },
+  "internalDescriptionRemovals": [
+    {
+      "id": "huji_engineering",
+      "detailIndex": 0,
+      "before": "Update evidence contains a decision-bearing status or both score formula and cutoff/threshold evidence.",
+      "after": null
+    },
+    {
+      "id": "huji_prep",
+      "detailIndex": 0,
+      "before": "Update evidence contains a decision-bearing status or both score formula and cutoff/threshold evidence.",
+      "after": null
+    },
+    {
+      "id": "tau_engineering",
+      "detailIndex": 0,
+      "before": "Update evidence contains a decision-bearing status or both score formula and cutoff/threshold evidence.",
+      "after": null
+    },
+    {
+      "id": "technion_engineering",
+      "detailIndex": 0,
+      "before": "Official Technion sources now align for the current data-science track: the admissions threshold table publishes הנדסת נתונים ומידע with threshold 91, and the current undergraduate catalogue groups that track under מדעי הנתונים וההחלטות. That is sufficient to promote the mapped technion_datascience catalogue entry to decision-capable coverage.",
+      "after": null
+    },
+    {
+      "id": "bgu_engineering",
+      "detailIndex": 0,
+      "before": "Official BGU admission-conditions responses now verify per-program thresholds and registration status for the current mapped BGU catalogue slice, including computer science, data science, electrical engineering, mechanical engineering, industrial engineering, psychology, biology, social work, economics, business, accounting, the nursing invitation rule, and the medicine invitation rule. The medicine page's current official API response publishes psycho_sekem=735 together with a psychometric floor of 680 for continued screening, which is enough to promote BGU out of tracked missing-rule coverage while still treating medicine as a manual-gate admissions path. Law no longer appears in the live undergraduate degree catalogue.",
+      "after": null
+    },
+    {
+      "id": "biu_engineering",
+      "detailIndex": 0,
+      "before": "Bar-Ilan's current official admissions pages, rechecked on 2026-07-05, now publish enough official admissions evidence to clear the blocker even without a solved calculator session: the general admissions page lists core bagrut and psychometric requirements together with English 85+ and YAEL 105+ baselines, the no-psychometry page lists direct bagrut-only routes and programme-specific minima, and the official pre-academic 30+ pages publish an alternate route that replaces the bagrut certificate for eligible candidates. That is enough to promote the cited BIU evidence slice out of the blocker queue, but not enough to claim a single decision-capable threshold across the whole university.",
+      "after": null
+    },
+    {
+      "id": "biu_prep",
+      "detailIndex": 0,
+      "before": "Bar-Ilan's current official admissions pages, rechecked on 2026-07-05, now publish enough official admissions evidence to clear the blocker even without a solved calculator session: the general admissions page lists core bagrut and psychometric requirements together with English 85+ and YAEL 105+ baselines, the no-psychometry page lists direct bagrut-only routes and programme-specific minima, and the official pre-academic 30+ pages publish an alternate route that replaces the bagrut certificate for eligible candidates. That is enough to promote the cited BIU evidence slice out of the blocker queue, but not enough to claim a single decision-capable threshold across the whole university.",
+      "after": null
+    },
+    {
+      "id": "haifa_engineering",
+      "detailIndex": 0,
+      "before": "Update evidence contains a decision-bearing status or both score formula and cutoff/threshold evidence.",
+      "after": null
+    },
+    {
+      "id": "open_university_engineering",
+      "detailIndex": 0,
+      "before": "Update or board evidence says there are no academic admission requirements.",
+      "after": null
+    },
+    {
+      "id": "ariel_engineering",
+      "detailIndex": 0,
+      "before": "Official Ariel admissions routes on both pniot.ariel.ac.il and www.ariel.ac.il/wp/ remain anti-bot protected in this environment: current plain HTTP checks reproduce HTTP/2 247 plus the Radware bootstrap shell, repeated real-browser probes still expose no cookies, no interactive elements, and no readable admissions content even when retried from a persistent session and the local Chrome Default profile, and a fresh headed session against the current calculator route still renders as a blank white page whose network trace never progresses beyond the 247 document, the Radware script, and favicon.ico. The newer WordPress REST endpoints are blocked the same way, and the newly discovered computer-science admissions URL is still not readable here.",
+      "after": null
+    },
+    {
+      "id": "telhai_general_academic",
+      "detailIndex": 0,
+      "before": "Tel-Hai's current official programme and preparatory pages, rechecked on 2026-07-05, now publish enough admissions evidence to clear the blocker even though some direct browser routes still trigger Cloudflare challenges: the official computer-science page lists bagrut eligibility plus psychometric 610 with mathematics gates and committee ranges, the official social-work page lists a weighted-score route of 605 or raw psychometric 615 with committee ranges, the official no-psychometry article lists alternate routes such as a psychometric-replacement score from core bagrut subjects, age-30+ preparatory admission, transfer-credit admission, and engineer-diploma admission, and the official Hamma preparatory page publishes concrete acceptance and completion conditions for science/computer-science and social-sciences candidates with missing requirements. That is enough to promote the cited Tel-Hai evidence slice out of the blocker queue, but not enough to claim a single decision-capable threshold across the whole college.",
+      "after": null
+    },
+    {
+      "id": "reichman_engineering",
+      "detailIndex": 0,
+      "before": "Official Reichman admissions pages verify the rule: ממוצע בגרות 100 ומעלה לקבלה ישירה במסלול המבוקש, plus דרישת אנגלית. The reverse-engineered adapted-score formula is Adapted = 4.812 × BagrutAverage + 0.5131 × Psychometric − 163.19, but no per-program adapted-score cutoff is published statically, so the product bucket is eligible-to-apply rather than accepted/below.",
+      "after": null
+    },
+    {
+      "id": "wingate_general_academic",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "wingate_general_academic",
+      "detailIndex": 1,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "afeka_engineering",
+      "detailIndex": 0,
+      "before": "Update evidence contains a decision-bearing status or both score formula and cutoff/threshold evidence.",
+      "after": null
+    },
+    {
+      "id": "afeka_engineering",
+      "detailIndex": 1,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "shenkar_engineering",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "hit_engineering",
+      "detailIndex": 0,
+      "before": "Update evidence contains a decision-bearing status or both score formula and cutoff/threshold evidence.",
+      "after": null
+    },
+    {
+      "id": "sce_general_academic",
+      "detailIndex": 0,
+      "before": "SCE's current official applicant guide and computer-science programme page, rechecked on 2026-07-05, now publish enough official admissions evidence to clear the blocker: the CS page lists bagrut eligibility, psychometric or psychotechnic 580+, and mathematics thresholds, while directing candidates who do not meet the route to the official preparatory programme. That is enough to promote the cited SCE evidence slice out of the blocker queue, but not enough to claim a single decision-capable threshold across the whole college.",
+      "after": null
+    },
+    {
+      "id": "azrieli_engineering",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "braude_engineering",
+      "detailIndex": 0,
+      "before": "Braude's official admissions page, rechecked on 2026-07-05, now provides structured department-level psychometric and bagrut requirements together with alternate admission routes through the dedicated engineering preparatory programme and the official math-classification exam lane. That is enough to promote the institution out of requirements_review, but not enough to derive one institution-wide decision rule.",
+      "after": null
+    },
+    {
+      "id": "braude_prep",
+      "detailIndex": 0,
+      "before": "Braude's official admissions page, rechecked on 2026-07-05, now provides structured department-level psychometric and bagrut requirements together with alternate admission routes through the dedicated engineering preparatory programme and the official math-classification exam lane. That is enough to promote the institution out of requirements_review, but not enough to derive one institution-wide decision rule.",
+      "after": null
+    },
+    {
+      "id": "ruppin_engineering",
+      "detailIndex": 0,
+      "before": "Ruppin's current official preparatory-programme pages, rechecked on 2026-07-05, now publish enough official admissions evidence to clear the blocker even though some direct admissions routes remain anti-bot protected from this IP: the main preparatory-programmes page explicitly offers preparation tracks and admission without psychometric, while the semesterly preparatory page publishes concrete entry rules such as bagrut eligibility with weighted average 75+ or psychometric 530+, mathematics gates, English classification handling, and programme-specific interview handling. That is enough to promote the cited Ruppin evidence slice out of the blocker queue, but not enough to claim a single decision-capable threshold across the whole institution.",
+      "after": null
+    },
+    {
+      "id": "ruppin_engineering",
+      "detailIndex": 1,
+      "before": "The current official Ruppin Technological College page publishes the standard מה\"ט bagrut requirements and also lists alternate routes through a technological preparatory programme or the age-35-plus track with 12 years of study. That is enough to move this row into structured eligibility coverage.",
+      "after": null
+    },
+    {
+      "id": "ruppin_engineering",
+      "detailIndex": 2,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "ruppin_prep",
+      "detailIndex": 0,
+      "before": "Ruppin's current official preparatory-programme pages, rechecked on 2026-07-05, now publish enough official admissions evidence to clear the blocker even though some direct admissions routes remain anti-bot protected from this IP: the main preparatory-programmes page explicitly offers preparation tracks and admission without psychometric, while the semesterly preparatory page publishes concrete entry rules such as bagrut eligibility with weighted average 75+ or psychometric 530+, mathematics gates, English classification handling, and programme-specific interview handling. That is enough to promote the cited Ruppin evidence slice out of the blocker queue, but not enough to claim a single decision-capable threshold across the whole institution.",
+      "after": null
+    },
+    {
+      "id": "sapir_law",
+      "detailIndex": 0,
+      "before": "Sapir's official law admissions page, rechecked on 2026-07-05, publishes a formal direct-admission route (psychometric over 650 or sekhem 87.5+) together with official assessment-based, preparatory, prior-degree, and exceptional manual routes. That is enough to promote the cited Sapir evidence slice out of requirements_review, but not enough to claim a single college-wide decision threshold.",
+      "after": null
+    },
+    {
+      "id": "sapir_prep",
+      "detailIndex": 0,
+      "before": "Sapir's official law admissions page, rechecked on 2026-07-05, publishes a formal direct-admission route (psychometric over 650 or sekhem 87.5+) together with official assessment-based, preparatory, prior-degree, and exceptional manual routes. That is enough to promote the cited Sapir evidence slice out of requirements_review, but not enough to claim a single college-wide decision threshold.",
+      "after": null
+    },
+    {
+      "id": "emek_yezreel_general_academic",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "bezalel_graphic_design",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "hadassah_general_academic",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "wizo_general_academic",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "beit_berl_graphic_design",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "colman_law",
+      "detailIndex": 0,
+      "before": "Official Colman undergraduate programme pages rechecked on 2026-07-05 consistently show a formal automatic-admission path plus fallback admission through preparatory/manual routes. That is enough to promote the institution out of requirements_review, but not enough to derive one decision-capable threshold for every mapped programme.",
+      "after": null
+    },
+    {
+      "id": "colman_business",
+      "detailIndex": 0,
+      "before": "Official Colman undergraduate programme pages rechecked on 2026-07-05 consistently show a formal automatic-admission path plus fallback admission through preparatory/manual routes. That is enough to promote the institution out of requirements_review, but not enough to derive one decision-capable threshold for every mapped programme.",
+      "after": null
+    },
+    {
+      "id": "ono_medicine",
+      "detailIndex": 0,
+      "before": "Official Ono curriculum pages rechecked on 2026-07-05 confirm formal admission rules for the current mapped Ono slice: law, computer science, nursing, and business-specialization routes all publish automatic or direct admission criteria plus alternate committee, interview, bridge, or preparatory paths. That is enough to promote Ono out of requirements_review as eligible-to-apply/manual-gate coverage once the stale catalogue mismatches are removed.",
+      "after": null
+    },
+    {
+      "id": "bishulim_culinary",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "bishulim_culinary",
+      "detailIndex": 1,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12220685573_culinary",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12220685575_graphic_design",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "mon_12220697934_certificate",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "minshar_graphic_design",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "mon_12220697938_graphic_design",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "nativ_graphic_design",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "mon_12220697940_graphic_design",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "beit_zvi_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12220697942_certificate",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "mon_12220696299_certificate",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "mon_12220699120_graphic_design",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "mon_12341108218_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "david_yellin_education",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "mon_12341128292_medicine",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "shaare_mishpat_law",
+      "detailIndex": 0,
+      "before": "The current official admissions page for שערי מדע ומשפט publishes a direct route with weighted bagrut average 85+ and also documents fallback routes through an exceptions committee or an approved preparatory programme. That is enough to promote this row out of structured-requirements backlog into structured eligibility coverage.",
+      "after": null
+    },
+    {
+      "id": "ramat_gan_law",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "ramat_gan_business",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "mon_12341063909_graphic_design",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "schechter_certificate",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "mon_12341064237_beauty",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341126300_education",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "herzog_general_academic",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "tech_management_engineering",
+      "detailIndex": 0,
+      "before": "The official handesaim admissions page for the College of Management network publishes the מה\"ט entry rule: full Israeli bagrut, or partial bagrut with passing grades in mathematics, English, and Hebrew. That is sufficient to move this row into structured manual-eligibility coverage.",
+      "after": null
+    },
+    {
+      "id": "mon_12341107541_engineering",
+      "detailIndex": 0,
+      "before": "The current official ORT handesaim page publishes the מה\"ט bagrut requirements and also lists a technological preparatory programme as an alternate route. That is enough to close the structured-requirements gap for this evidence-only row.",
+      "after": null
+    },
+    {
+      "id": "netanya_law",
+      "detailIndex": 0,
+      "before": "Netanya's official programme pages, rechecked on 2026-07-05, now publish formal direct-admission requirements together with manual or exceptional fallback routes for the currently verified slice: business administration and business+communication require bagrut 78+ with math and English placement conditions, while law requires bagrut 80+ and reviews 75-79 candidates by interview. That is enough to promote the institution out of requirements_review, but not enough to claim one decision-capable threshold across all Netanya programmes.",
+      "after": null
+    },
+    {
+      "id": "netanya_business",
+      "detailIndex": 0,
+      "before": "Netanya's official programme pages, rechecked on 2026-07-05, now publish formal direct-admission requirements together with manual or exceptional fallback routes for the currently verified slice: business administration and business+communication require bagrut 78+ with math and English placement conditions, while law requires bagrut 80+ and reviews 75-79 candidates by interview. That is enough to promote the institution out of requirements_review, but not enough to claim one decision-capable threshold across all Netanya programmes.",
+      "after": null
+    },
+    {
+      "id": "seminar_certificate",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "tcb_engineering",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "tcb_engineering",
+      "detailIndex": 1,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "sce_engineering",
+      "detailIndex": 0,
+      "before": "The current official SCE admissions sources publish a structured direct route: psychometric 580+ or equivalent psychotechnic handling, mathematics through one of two official routes, physics 5 יח\"ל 70+, and English 4 יח\"ל 60+. They also direct candidates who do not meet the direct route toward institutional alternate routes such as a preparatory track. That is enough to close this row as structured official eligibility coverage.",
+      "after": null
+    },
+    {
+      "id": "telhai_prep",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "sce_prep",
+      "detailIndex": 0,
+      "before": "The current official SCE pre-academic page publishes a 500+ psychometric or psychotechnic entrance-score route and explains the refresh-course and classification fallback for candidates without a sufficient score. That is enough to move this row into structured eligibility coverage.",
+      "after": null
+    },
+    {
+      "id": "mon_12341098184_prep",
+      "detailIndex": 0,
+      "before": "No decisive admissions evidence was derived automatically.",
+      "after": null
+    },
+    {
+      "id": "mon_12341128848_engineering",
+      "detailIndex": 0,
+      "before": "The current official Handesaim Tel-Aviv page publishes the standard מה\"ט bagrut requirements and an approved technological preparatory alternative route. That is enough to close the structured-requirements gap for this row.",
+      "after": null
+    },
+    {
+      "id": "kinneret_engineering",
+      "detailIndex": 0,
+      "before": "The current official Kinneret Technological College page publishes the standard מה\"ט bagrut requirements and the alternate preparatory routes through a technological or approved pre-academic preparatory programme. That is enough to close the structured-requirements gap for this row.",
+      "after": null
+    },
+    {
+      "id": "mon_12341114114_engineering",
+      "detailIndex": 0,
+      "before": "No decisive admissions evidence was derived automatically.",
+      "after": null
+    },
+    {
+      "id": "telhai_engineering",
+      "detailIndex": 0,
+      "before": "The current official Tel-Hai handesaim page publishes the standard full-or-partial bagrut route together with the explicit no-psychometric statement. That is enough to move this row into structured manual-eligibility coverage.",
+      "after": null
+    },
+    {
+      "id": "mon_12341127690_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341076875_engineering",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "atid_engineering",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "mon_12341126575_beauty",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "israel_academic_general_academic",
+      "detailIndex": 0,
+      "before": "The current official Ramat Gan Academic College page publishes a direct route with weighted bagrut average 80+ and also documents alternate routes through psychometric-based admission or a dedicated preparatory programme for applicants below that threshold. That is enough to promote this row out of the structured-requirements backlog into structured eligibility coverage.",
+      "after": null
+    },
+    {
+      "id": "mon_12341122479_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341118768_general_academic",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "mon_12341101957_graphic_design",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341064485_graphic_design",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341092879_graphic_design",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "mon_12341091518_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341092889_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341114237_general_academic",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "open_university_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "open_university_certificate",
+      "detailIndex": 1,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "open_university_certificate",
+      "detailIndex": 2,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "open_university_certificate",
+      "detailIndex": 3,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "open_university_certificate",
+      "detailIndex": 4,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "achva_general_academic",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "mon_12341113400_cs",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "mon_12341102793_engineering",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "sapir_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341107292_general_academic",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341128142_beauty",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341143672_business",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341098736_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341098628_business",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341126780_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341126233_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341108755_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341091471_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "givat_washington_medicine",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341142058_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "lfa_beauty",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "zefat_general_academic",
+      "detailIndex": 0,
+      "before": "Zefat's official admissions pages, rechecked on 2026-07-05, now publish formal programme-level requirements for the current verified slice: law requires bagrut 92 with personal interview and no psychometric, management information systems requires bagrut 92 with interview plus preparatory and technician routes, social work requires bagrut 92 with personal interview and no psychometric, and behavioral sciences publishes either bagrut 85+ without psychometric or bagrut 80+ with psychometric 450+ plus interview. That is enough to promote the cited Zefat evidence slice out of requirements_review, but not enough to claim one decision-capable threshold across all Zefat programmes.",
+      "after": null
+    },
+    {
+      "id": "mon_12341114281_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341091651_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341102883_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341113217_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "kaye_education",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "mon_12341114949_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341144078_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341101353_cs",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341091770_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "beit_berl_general_academic",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "tiltan_medicine",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341134516_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341133521_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "peres_law",
+      "detailIndex": 0,
+      "before": "Peres's official programme pages, rechecked on 2026-07-05, now publish formal admissions rules for the currently verified slice: business administration offers direct bagrut-based admission bands plus 30+ and preparatory routes, while law publishes minimum bagrut and composite-score gates together with competitive and exceptional-admission handling. That is enough to promote the cited Peres evidence slice out of requirements_review, but not enough to claim one decision-capable threshold across all Peres programmes.",
+      "after": null
+    },
+    {
+      "id": "peres_business",
+      "detailIndex": 0,
+      "before": "Peres's official programme pages, rechecked on 2026-07-05, now publish formal admissions rules for the currently verified slice: business administration offers direct bagrut-based admission bands plus 30+ and preparatory routes, while law publishes minimum bagrut and composite-score gates together with competitive and exceptional-admission handling. That is enough to promote the cited Peres evidence slice out of requirements_review, but not enough to claim one decision-capable threshold across all Peres programmes.",
+      "after": null
+    },
+    {
+      "id": "hackeru_cs",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341147363_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341122838_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341122522_certificate",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "mon_12341092241_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341133625_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "aliya_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "aliya_certificate",
+      "detailIndex": 1,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341138527_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341142616_education",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "orin_shpalter_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "orin_shpalter_certificate",
+      "detailIndex": 1,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341167854_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "bdo_academy_general_academic",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341134798_general_academic",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341149187_graphic_design",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341165209_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341113458_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341134763_engineering",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "mon_12341144849_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341129101_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341148145_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "atid_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341138357_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341165356_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341150395_graphic_design",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341134000_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341144937_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341147475_cs",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341144341_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341108613_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341189515_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341138594_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341144650_general_academic",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341122982_graphic_design",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341150917_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341167899_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341141808_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341134431_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341166173_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341134448_business",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341138641_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "tiltan_graphic_design",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "mon_12341142727_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "tiltan_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341137305_general_academic",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341173466_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341137650_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341165867_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341148361_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341165912_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341148232_beauty",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341134405_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341189317_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341162526_general_academic",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341166462_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341167257_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341139122_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "bdo_academy_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "reidman_medicine",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341162554_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341138289_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "johnbryce_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341175059_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341168601_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341203461_graphic_design",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "lfa_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mediteva_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "oranim_education",
+      "detailIndex": 0,
+      "before": "Evidence points to manual admissions gates rather than a numeric formula.",
+      "after": null
+    },
+    {
+      "id": "mon_12341168658_general_academic",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341166504_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341168659_graphic_design",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341155561_business",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "idan_hahorut_education",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "idan_hahorut_education",
+      "detailIndex": 1,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341144956_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341185806_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341166735_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341138306_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "givat_washington_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341187468_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341167283_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341179463_education",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341187728_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341203959_engineering",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "high_q_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "kidum_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341203595_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    },
+    {
+      "id": "mon_12341189852_certificate",
+      "detailIndex": 0,
+      "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
+      "after": null
+    }
+  ]
+}
