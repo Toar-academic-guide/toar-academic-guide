@@ -2,11 +2,12 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Metadata } from 'next';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import { listCatalogueInstitutions, listCataloguePrograms } from '@/server/catalogue/queries';
-import { loadPublicCatalogue } from '@/lib/publicCataloguePages';
+import { getPublicProgramPageData, loadPublicCatalogue } from '@/lib/publicCataloguePages';
+import { institutionProgramName } from '@/lib/institutionProgramName';
 import { buildSubjectHubs } from '@/lib/publicCatalogueLinks';
 import { generateMetadata } from '@/app/programs/[programId]/page';
 import { buildInstitutionMetadata, buildProgramMetadata } from './metadata';
-import { canonicalProgramId } from './programAliases';
+import { canonicalProgramId, PROGRAM_CANONICAL_ALIASES } from './programAliases';
 import { indexableInstitutionIds, indexableProgramIds } from './indexability';
 
 vi.mock('server-only', () => ({}));
@@ -44,6 +45,41 @@ function assertLimits(metadata: Metadata, canonical: string) {
 }
 
 describe('admission search templates', () => {
+  it('keeps the institution on every indexable programme and alias whenever a provider variant fits', async () => {
+    const programs = getStaticCataloguePrograms();
+    const aliases = Object.entries(PROGRAM_CANONICAL_ALIASES).flatMap(([alias, keeper]) => {
+      const program = programs.find((item) => item.id === keeper);
+      return program && !programs.some((item) => item.id === alias)
+        ? [{ ...program, id: alias }]
+        : [];
+    });
+    vi.mocked(listCataloguePrograms).mockResolvedValue({
+      data: [...programs, ...aliases],
+      meta: {},
+    });
+    const catalogue = await loadPublicCatalogue();
+    const programIds = await indexableProgramIds(catalogue);
+    const ids = [
+      ...programIds,
+      ...Object.entries(PROGRAM_CANONICAL_ALIASES)
+        .filter(([, keeper]) => programIds.includes(keeper))
+        .map(([alias]) => alias),
+    ];
+    for (const id of ids) {
+      const data = (await getPublicProgramPageData(canonicalProgramId(id)))!;
+      if (data.isGeneral || data.institutions.length !== 1) continue;
+      const institution = data.institutions[0];
+      const name = institutionProgramName(data.program, institution);
+      const variants = ['תנאי קבלה וסיכויי קבלה', 'תנאי קבלה', 'סיכויי קבלה', ''].map(
+        (phrase) => `${name} – ${institution.name}${phrase ? `: ${phrase}` : ''} | MyWay`,
+      );
+      if (!variants.some((title) => title.length <= 62)) continue;
+      const metadata = await buildProgramMetadata(id);
+      expect(String(metadata.title), id).toContain(institution.name);
+      expect(`${metadata.title} | MyWay`.length, id).toBeLessThanOrEqual(62);
+    }
+  }, 60_000);
+
   it('keeps both phrases and the provider on the 61-character biology title', async () => {
     const metadata = await buildProgramMetadata('tau_biology');
     expect(`${metadata.title} | MyWay`).toBe(

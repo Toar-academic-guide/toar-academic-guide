@@ -34,10 +34,8 @@ function titleCandidates(name: string, provider?: string, category?: string): st
   const identity = provider ? `${shortName} – ${cleanName(provider)}` : shortName;
   const names = [...new Set([identity, shortName])];
   const phrases = [SEARCH_PHRASES, 'תנאי קבלה', 'סיכויי קבלה', ''];
-  const candidates = phrases.flatMap((phrase) =>
-    names.map((label) => (phrase ? `${label}: ${phrase}` : label)),
-  );
-  // Keep source category disambiguation before shortening otherwise identical records.
+  const candidates = phrases.map((phrase) => (phrase ? `${identity}: ${phrase}` : identity));
+  // Exhaust provider/category identities before dropping the provider for keywords.
   if (category) {
     candidates.push(
       ...phrases.map(
@@ -45,6 +43,9 @@ function titleCandidates(name: string, provider?: string, category?: string): st
           `${identity}: מסלול ${withBet(cleanName(category))}${phrase ? `, ${phrase}` : ''}`,
       ),
     );
+  }
+  if (provider) {
+    candidates.push(...phrases.map((phrase) => (phrase ? `${shortName}: ${phrase}` : shortName)));
   }
   candidates.push(
     ...phrases.flatMap((phrase) => {
@@ -90,7 +91,7 @@ const buildUniqueTitles = cache(async () => {
     [...catalogue.generalProgramIds],
   ]);
   if (lastTitles?.identity === identity) return lastTitles.titles;
-  const entries = catalogue.programs
+  const entries: { key: string; candidates: string[]; provider?: string }[] = catalogue.programs
     .filter(
       (program) =>
         canonicalProgramId(program.id) === program.id &&
@@ -108,6 +109,7 @@ const buildUniqueTitles = cache(async () => {
       return {
         key: `program:${program.id}`,
         candidates: titleCandidates(identity.name, identity.provider, identity.category),
+        provider: identity.provider,
       };
     });
   entries.push(
@@ -130,10 +132,17 @@ const buildUniqueTitles = cache(async () => {
     for (const title of candidates) counts.set(title, (counts.get(title) ?? 0) + 1);
   const titles = new Map<string, string>();
   const used = new Set<string>();
-  for (const { key, candidates } of entries) {
-    const title =
-      candidates.find((candidate) => counts.get(candidate) === 1 && !used.has(candidate)) ??
-      candidates.find((candidate) => !used.has(candidate));
+  for (const { key, candidates, provider } of entries) {
+    const providerCandidates = provider
+      ? candidates.filter((candidate) => candidate.includes(cleanName(provider)))
+      : [];
+    const title = [providerCandidates, candidates]
+      .map(
+        (group) =>
+          group.find((candidate) => counts.get(candidate) === 1 && !used.has(candidate)) ??
+          group.find((candidate) => !used.has(candidate)),
+      )
+      .find(Boolean);
     if (!title) throw new Error(`No distinct SEO title for ${key}`);
     titles.set(key, title);
     used.add(title);
