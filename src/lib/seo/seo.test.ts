@@ -832,6 +832,9 @@ describe('structured data', () => {
           expect(visibleText).toContain(number);
         }
       }
+      expect(
+        document.querySelector('main')!.textContent!.match(/עודכן לאחרונה:/g) ?? [],
+      ).toHaveLength(source.checked ? 1 : 0);
       expect(faq.mainEntity).toHaveLength(1);
       // Visible FAQ questions and answers match the schema exactly, in order.
       expect(
@@ -844,6 +847,23 @@ describe('structured data', () => {
           (element) => element.textContent,
         ),
       ).toEqual(faq.mainEntity.map((entity) => entity.acceptedAnswer.text));
+    },
+  );
+
+  it.each(['afeka_ee', 'afeka_cs', 'afeka_softwareeng', 'bezalel_graphic_design'])(
+    'renders the requirements update stamp once on the non-FAQ programme page %s',
+    async (id) => {
+      const data = (await getPublicProgramPageData(id))!;
+      const sources = await getPublicProgramRequirementSources(data);
+      expect(sources[data.institutions[0].id].checked).toBeDefined();
+      expect(programFaqPageLd(data, sources)).toBeNull();
+      const document = new DOMParser().parseFromString(
+        renderToStaticMarkup(await ProgramPage({ params: Promise.resolve({ programId: id }) })),
+        'text/html',
+      );
+      expect(
+        document.querySelector('main')!.textContent!.match(/עודכן לאחרונה:/g) ?? [],
+      ).toHaveLength(1);
     },
   );
 
