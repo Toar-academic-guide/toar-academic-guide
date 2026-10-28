@@ -1946,6 +1946,12 @@ function normalizeExactProofResult(args: {
     };
   }
 
+  // BGU score mode retains independent conditions; a score match is not a waiting band.
+  const bguScoreMatch =
+    institution.id === 'bgu' &&
+    proof.source === 'bgu_quantitative_rdp_and_TevaSekem' &&
+    proof.scoreAssessment === 'meets_threshold' &&
+    score >= threshold;
   const derivedVerdict =
     proof.derivedVerdict === 'accepted' ||
     proof.derivedVerdict === 'below' ||
@@ -1977,17 +1983,21 @@ function normalizeExactProofResult(args: {
     sourceLabel:
       decision === 'eligible_to_apply'
         ? 'כשירות להמשך מיון'
-        : derivedVerdict === 'pending'
-          ? 'טווח המתנה רשמי'
-          : 'אימות רשמי',
+        : bguScoreMatch
+          ? 'התאמה לפי הציונים'
+          : derivedVerdict === 'pending'
+            ? 'טווח המתנה רשמי'
+            : 'אימות רשמי',
     explanation:
       decision === 'eligible_to_apply'
         ? `${explanationPrefix} אישר עמידה בסף המספרי. עדיין נדרשים מבדק התאמה, ולעיתים גם ראיון אישי; זו אינה קבלה סופית.`
-        : derivedVerdict === 'pending'
-          ? `${explanationPrefix} הציב את הציון בין סף הדחייה לסף הקבלה, ולכן עדיין אין החלטה סופית.`
-          : `${explanationPrefix} סיפק ציון וסף קבלה מעודכנים למסלול זה.`,
+        : bguScoreMatch
+          ? `${explanationPrefix} אישר שהציון עומד בסף המספרי למסלול זה.`
+          : derivedVerdict === 'pending'
+            ? `${explanationPrefix} הציב את הציון בין סף הדחייה לסף הקבלה, ולכן עדיין אין החלטה סופית.`
+            : `${explanationPrefix} סיפק ציון וסף קבלה מעודכנים למסלול זה.`,
     nextAction:
-      decision === 'accepted'
+      decision === 'accepted' || bguScoreMatch
         ? 'בדקו את דף ההרשמה הרשמי והשלימו את בדיקת העבר האקדמי, העברית ושאר דרישות המסמכים.'
         : decision === 'eligible_to_apply'
           ? 'השלימו את מבדק ההתאמה ועקבו אחר זימון אפשרי לראיון מטעם החוג.'

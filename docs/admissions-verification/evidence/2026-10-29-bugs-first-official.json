@@ -1,0 +1,204 @@
+{
+  "capturedAt": "2026-10-28",
+  "tauGraphqlCalls": [
+    {
+      "at": "2026-10-28T18:56:45.468083+00:00",
+      "request": {
+        "operationName": "getLastScore",
+        "variables": {
+          "scoresData": {
+            "prog": "calctziun",
+            "out": "json",
+            "reali10": 0,
+            "psicho": "700",
+            "bagrut": "92.1"
+          }
+        },
+        "query": "query getLastScore($scoresData: JSON!) { getLastScore(scoresData: $scoresData) { body __typename } }"
+      },
+      "status": 200,
+      "response": {
+        "data": {
+          "getLastScore": {
+            "body": {
+              "hatama": "600",
+              "bagrut": "92.1",
+              "psicho": "700",
+              "hatama_nihul": "639",
+              "hatama_refua": "599.67",
+              "hatama_handasa": "600",
+              "hatama_meduyakim": "600"
+            },
+            "__typename": "Response"
+          }
+        }
+      }
+    },
+    {
+      "at": "2026-10-28T18:59:54.620409+00:00",
+      "request": {
+        "operationName": "getLastScore",
+        "variables": {
+          "scoresData": {
+            "prog": "calctziun",
+            "out": "json",
+            "reali10": 1,
+            "psicho": "700",
+            "bagrut": "92.1"
+          }
+        },
+        "query": "query getLastScore($scoresData: JSON!) { getLastScore(scoresData: $scoresData) { body __typename } }"
+      },
+      "status": 200,
+      "response": {
+        "data": {
+          "getLastScore": {
+            "body": {
+              "hatama": "600",
+              "bagrut": "92.1",
+              "psicho": "700",
+              "hatama_nihul": "639",
+              "hatama_refua": "599.67",
+              "hatama_handasa": "610",
+              "hatama_meduyakim": "610"
+            },
+            "__typename": "Response"
+          }
+        }
+      }
+    },
+    {
+      "at": "2026-10-28T19:00:03.772687+00:00",
+      "request": {
+        "operationName": "getLastScore",
+        "variables": {
+          "scoresData": {
+            "prog": "calctziun",
+            "out": "json",
+            "reali10": 1,
+            "psicho": "700",
+            "bagrut": "109.14"
+          }
+        },
+        "query": "query getLastScore($scoresData: JSON!) { getLastScore(scoresData: $scoresData) { body __typename } }"
+      },
+      "status": 200,
+      "response": {
+        "data": {
+          "getLastScore": {
+            "body": {
+              "hatama": "685",
+              "bagrut": "109.14",
+              "psicho": "700",
+              "hatama_nihul": "688",
+              "hatama_refua": "684.92",
+              "hatama_handasa": "695",
+              "hatama_meduyakim": "695"
+            },
+            "__typename": "Response"
+          }
+        }
+      }
+    },
+    {
+      "at": "2026-10-28T19:01:00.385697+00:00",
+      "programme": "psychology",
+      "request": {
+        "operationName": "getProgramByIdAndLang",
+        "variables": {
+          "nid": 8275,
+          "langcode": "he"
+        },
+        "query": "query getProgramByIdAndLang($nid: Int!, $langcode: String!) { getProgramByIdAndLang(nid: $nid, langcode: $langcode) { nid title receipt_threshol rejection_thresh field_registration_comments field_plain_id_programs field_faculty_mamta } }"
+      },
+      "status": 200,
+      "response": {
+        "data": {
+          "getProgramByIdAndLang": {
+            "nid": "8275",
+            "title": "תואר ראשון בלימודי פסיכולוגיה ",
+            "receipt_threshol": [660],
+            "rejection_thresh": [659],
+            "field_registration_comments": null,
+            "field_plain_id_programs": ["107111050000", "107111030000"],
+            "field_faculty_mamta": "מדעי החברה"
+          }
+        }
+      }
+    },
+    {
+      "at": "2026-10-28T19:01:09.968958+00:00",
+      "programme": "law",
+      "request": {
+        "operationName": "getProgramByIdAndLang",
+        "variables": {
+          "nid": 11820,
+          "langcode": "he"
+        },
+        "query": "query getProgramByIdAndLang($nid: Int!, $langcode: String!) { getProgramByIdAndLang(nid: $nid, langcode: $langcode) { nid title receipt_threshol rejection_thresh field_registration_comments field_plain_id_programs field_faculty_mamta } }"
+      },
+      "status": 200,
+      "response": {
+        "data": {
+          "getProgramByIdAndLang": {
+            "nid": "11820",
+            "title": "תואר ראשון בלימודי משפטים",
+            "receipt_threshol": [647],
+            "rejection_thresh": [646],
+            "field_registration_comments": "<p><strong>הרישום פתוח לשנה ב' בלבד עד 8.8.26</strong></p>",
+            "field_plain_id_programs": ["141111010000"],
+            "field_faculty_mamta": "משפטים"
+          }
+        }
+      }
+    },
+    {
+      "at": "2026-10-28T19:01:19.598898+00:00",
+      "programme": "electrical_engineering",
+      "request": {
+        "operationName": "getProgramByIdAndLang",
+        "variables": {
+          "nid": 11233,
+          "langcode": "he"
+        },
+        "query": "query getProgramByIdAndLang($nid: Int!, $langcode: String!) { getProgramByIdAndLang(nid: $nid, langcode: $langcode) { nid title receipt_threshol rejection_thresh field_registration_comments field_plain_id_programs field_faculty_mamta } }"
+      },
+      "status": 200,
+      "response": {
+        "data": {
+          "getProgramByIdAndLang": {
+            "nid": "11233",
+            "title": "תואר ראשון בהנדסת חשמל ",
+            "receipt_threshol": [710, 710],
+            "rejection_thresh": [709, 709],
+            "field_registration_comments": null,
+            "field_plain_id_programs": ["051211010000"],
+            "field_faculty_mamta": "הנדסה"
+          }
+        }
+      }
+    }
+  ],
+  "assets": [
+    {
+      "url": "https://admissions.technion.ac.il/wp-content/plugins/technion-calculators/js/ckeck_errors.js?ver=2.0.8",
+      "sha256": "b8798a6c7f3e74db379d5bc159b9ebf0183d327f91cc2b01e3446be624c83d06",
+      "bytes": 22924
+    },
+    {
+      "url": "https://admissions.technion.ac.il/sekem-calculator/",
+      "sha256": "2bce014c9bdb7a0a8039429c6ee5db6874e463c35623d0e779fb3a43993e0ad8",
+      "bytes": 482513
+    },
+    {
+      "url": "https://applicants.haifa.ac.il/enrollmentChances/app/component/enrollmentChancesApp/controller/enrollmentChancesMain.controller.js",
+      "sha256": "fba3a744a77ee7f0b63ea747f7ba38fd5e2c097545eafac3b9b9fadbcd4e65c3",
+      "bytes": 33065
+    },
+    {
+      "url": "https://applicants.haifa.ac.il/enrollmentChances/app/component/enrollmentChancesApp/store/Model.js",
+      "sha256": "6e335c266529c3e703f71bb083b2af476d602352a66598c52432a3e79ce3b798",
+      "bytes": 16055
+    }
+  ]
+}

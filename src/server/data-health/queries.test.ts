@@ -345,10 +345,11 @@ describe('summarizeDataHealthRows', () => {
     expect(report.readiness.isReady).toBe(true);
     expect(report.readiness.issues).toEqual([]);
     // Approved by Jorje 2026-10-25 02:10 (4): final BIU brief §2 adds three withheld pairs; exact remains 125.
+    // Approved test update, Jorje 2026-10-28
     expect(report.formulaVerification).toMatchObject({
-      total: 141,
-      exact: 124,
-      withheld: 16,
+      total: 143,
+      exact: 123,
+      withheld: 19,
       isComplete: false,
     });
     expect(report.admissionRoutes).toMatchObject({

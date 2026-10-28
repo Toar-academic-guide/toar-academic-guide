@@ -182,6 +182,8 @@ const targetedTests = [
   'src/app/api/catalog/programs/route.test.ts',
   'src/app/api/catalog/institutions/route.test.ts',
   'src/app/api/admissions/evaluate/route.test.ts',
+  'src/app/api/admissions/evaluate/bugsFirst.test.ts',
+  'src/app/api/admissions/evaluate/aliases.test.ts',
   'src/app/api/admissions/evaluate/reichman.test.ts',
   'src/app/api/profile/route.test.ts',
   'src/server/user/profile.test.ts',
