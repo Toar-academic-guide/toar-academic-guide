@@ -5,13 +5,26 @@ import SekhemCalculator from '@/components/sekhem/SekhemCalculator';
 import { loadSekhemCalculatorOfferings } from '@/lib/sekhemCalculatorSupport';
 import { getPublicProgramPageData } from '@/lib/publicCataloguePages';
 import { canonicalProgramId, canonicalProgramPath } from '@/lib/seo/programAliases';
+import { absoluteUrl, SITE_NAME } from '@/lib/site';
+
+const title = 'מחשבון סכם וסיכויי קבלה לפי מוסד ותוכנית | MyWay';
+const description =
+  'מחשבון סכם וסיכויי קבלה בחינם: מזינים ציוני בגרות ופסיכומטרי, מחשבים סכם לפי נוסחאות המוסדות הנתמכים וממשיכים לבדיקת התוכנית שמעניינת אותך.';
+const canonical = absoluteUrl('/sekhem-calculator');
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
-  title: { absolute: 'מחשבון סכם וסיכויי קבלה לפי מוסד ותוכנית | MyWay' },
-  description:
-    'מחשבון סכם וסיכויי קבלה בחינם: מזינים ציוני בגרות ופסיכומטרי, מחשבים סכם לפי נוסחאות המוסדות הנתמכים וממשיכים לבדיקת התוכנית שמעניינת אותך.',
-  alternates: { canonical: 'https://findmyway.co.il/sekhem-calculator' },
+  title: { absolute: title },
+  description,
+  alternates: { canonical },
+  openGraph: {
+    title,
+    description,
+    url: canonical,
+    type: 'website',
+    locale: 'he_IL',
+    siteName: SITE_NAME,
+  },
 };
 
 export default async function Page({
