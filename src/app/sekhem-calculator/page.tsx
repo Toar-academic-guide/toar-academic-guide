@@ -61,12 +61,16 @@ export default async function Page({
         {unavailable ? (
           <section className="space-y-4">
             <p>אי אפשר לחשב כאן את סיכויי הקבלה לתוכנית הזו.</p>
-            {publicProgram && (
+            {publicProgram ? (
               <Link
                 className="block underline underline-offset-4"
                 href={canonicalProgramPath(publicProgram.id)}
               >
                 לתנאי הקבלה של התוכנית
+              </Link>
+            ) : (
+              <Link className="block underline underline-offset-4" href="/contact">
+                יצירת קשר
               </Link>
             )}
             <Link className="block underline underline-offset-4" href="/sekhem-calculator">
