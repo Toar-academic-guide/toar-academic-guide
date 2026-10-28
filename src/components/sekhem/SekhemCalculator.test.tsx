@@ -232,3 +232,22 @@ it('batches at fifty, preserves completed results, and retries failed programmes
   for (const [, init] of fetchMock.mock.calls.slice(1))
     expect(JSON.parse(String(init?.body)).degreeIds).toEqual(['program_50']);
 });
+
+it('keeps an HTTP service failure visible and retries the failed programmes', async () => {
+  fetchMock.mockResolvedValueOnce(
+    Response.json({ error: { code: 'UNAVAILABLE' } }, { status: 503 }),
+  );
+  render(<SekhemCalculator offerings={offerings} />);
+  examples();
+  submit();
+  expect((await screen.findByRole('alert')).textContent).toBe(
+    'לא הצלחנו לחשב כרגע. אפשר לנסות שוב.',
+  );
+  fireEvent.click(screen.getByRole('button', { name: 'לנסות שוב' }));
+  await screen.findByText('הציונים עומדים בתנאי הקבלה');
+  expect(screen.queryByRole('alert')).toBeNull();
+  expect(fetchMock.mock.calls.map(([, init]) => JSON.parse(String(init?.body)).degreeIds)).toEqual([
+    ['haifa_cs'],
+    ['haifa_cs'],
+  ]);
+});
