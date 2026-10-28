@@ -8,6 +8,7 @@ import { absoluteUrl, SITE_ALT_NAMES, SITE_NAME } from '@/lib/site';
 import type { InstitutionDirectoryItem } from '@/data/institutionDirectory';
 import { canonicalProgramPath } from './programAliases';
 import { institutionProgramName } from '@/lib/institutionProgramName';
+import { hasPublishedCompositeThreshold } from '@/lib/publishedCompositeThresholds';
 
 const ORGANIZATION_ID = absoluteUrl('/#organization');
 const WEBSITE_ID = absoluteUrl('/#website');
@@ -191,10 +192,22 @@ export function programFaqPageLd(
 ) {
   if (!FAQ_PROGRAM_IDS.has(program.id) || program.isListed === false) return null;
 
-  const question = (name: string, text: string) => ({
+  const question = (name: string, text: string, calculatorLink = false) => ({
     '@type': 'Question',
     name,
-    acceptedAnswer: { '@type': 'Answer', text },
+    acceptedAnswer: {
+      '@type': 'Answer',
+      text,
+      ...(calculatorLink
+        ? {
+            potentialAction: {
+              '@type': 'ViewAction',
+              name: 'מחשבון סכם וסיכויי קבלה',
+              target: absoluteUrl('/sekhem-calculator'),
+            },
+          }
+        : {}),
+    },
   });
   const mainEntity = institutions.flatMap((institution) => {
     const source = requirementSources[institution.id];
@@ -203,7 +216,11 @@ export function programFaqPageLd(
     // Use the page's display copy, including all additional conditions and caveats.
     // Do not infer routes or thresholds from calculator fields.
     return [
-      question('מהם תנאי הקבלה למסלול?', source.requirements.join(' ')),
+      question(
+        'מהם תנאי הקבלה למסלול?',
+        source.requirements.join(' '),
+        hasPublishedCompositeThreshold(source.requirements, institution.id, { forFaq: true }),
+      ),
       ...(source.checked
         ? [
             question(

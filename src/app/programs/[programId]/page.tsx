@@ -17,6 +17,7 @@ import { ROUTES } from '@/lib/routes';
 import { buildProgramMetadata } from '@/lib/seo/metadata';
 import { programLd, programBreadcrumbLd, programFaqPageLd } from '@/lib/seo/jsonLd';
 import JsonLd from '@/components/seo/JsonLd';
+import SekhemCalculatorLink from '@/components/seo/SekhemCalculatorLink';
 
 export const dynamic = 'force-dynamic';
 
@@ -142,6 +143,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
 
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
             <h2 className="text-xl font-bold">תנאי קבלה</h2>
+            <SekhemCalculatorLink data={data} sources={institutionRequirementSources} />
             {program.isListed === false ? (
               <p className="mt-4 text-sm text-slate-600">אין כרגע מידע עדכני על המסלול.</p>
             ) : (
