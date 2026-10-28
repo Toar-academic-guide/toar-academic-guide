@@ -391,9 +391,10 @@ test('Haifa supplementary inputs follow the latest evaluator response', async ({
   await expect(average).toBeVisible();
   await expect(hebrew).toBeVisible();
   await expect(average).not.toHaveAttribute('required', '');
-  await expect(page.getByTestId('institution-haifa').locator('[data-result-reason]')).toContainText(
+  await expect(page.getByTestId('institution-haifa').locator('[data-result-reason]')).toHaveText([
     'ממוצע בגרות רשמי של חיפה',
-  );
+    'הבסיס לדרישת העברית',
+  ]);
   await expect(
     page.getByTestId('institution-haifa').getByRole('link', { name: /ממוצע בגרות/ }),
   ).toHaveAttribute('href', '#haifaBagrutAverage');
