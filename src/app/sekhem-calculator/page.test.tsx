@@ -110,6 +110,9 @@ it('has one sitemap entry with the authored date and one llms entry', async () =
       .filter((line) => line.includes('/sekhem-calculator')),
   ).toHaveLength(1);
 });
+it('sets the Open Graph URL to the calculator canonical URL', () => {
+  expect(metadata.openGraph?.url).toBe('https://findmyway.co.il/sekhem-calculator');
+});
 it('does not turn catalogue failure into static calculator data', async () => {
   const { listCataloguePrograms } = await import('@/server/catalogue/queries');
   vi.spyOn(

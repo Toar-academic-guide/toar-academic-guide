@@ -437,6 +437,7 @@ test('public metadata, crawl links and homepage placement use the calculator URL
   await expect(page).toHaveTitle(title);
   await expect(page.locator('head title')).toHaveCount(1);
   await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', canonical);
+  await expect(page.locator('meta[property="og:url"]')).toHaveAttribute('content', canonical);
   await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', description);
   const sitemap = await request.get('/sitemap.xml');
   expect(sitemap.ok()).toBe(true);
