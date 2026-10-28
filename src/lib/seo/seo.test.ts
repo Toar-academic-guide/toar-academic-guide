@@ -39,8 +39,6 @@ import {
   institutionLd,
   organizationLd,
   programBreadcrumbLd,
-  programFaqEntries,
-  programFaqPageLd,
   programLd,
   websiteLd,
 } from './jsonLd';
@@ -652,8 +650,6 @@ describe('structured data', () => {
 
   it('renders graph envelopes with consistent apex node IDs and no unsupported content schemas', async () => {
     const page = (await getPublicProgramPageData('tau_cs'))!;
-    const faq = programFaqPageLd(page, await getPublicProgramRequirementSources(page));
-    expect(faq).toBeNull();
     const data = [
       organizationLd(),
       websiteLd(),
@@ -661,9 +657,8 @@ describe('structured data', () => {
       ...institutionDirectoryLd(getInstitutionDirectoryItems()),
       institutionLd((await getPublicInstitutionPageData('tau'))!),
       institutionBreadcrumbLd((await getPublicInstitutionPageData('tau'))!),
-      await programLd((await getPublicProgramPageData('tau_cs'))!),
-      programBreadcrumbLd((await getPublicProgramPageData('tau_cs'))!),
-      ...(faq ? [faq] : []),
+      await programLd(page),
+      programBreadcrumbLd(page),
     ];
     const markup = renderToStaticMarkup(JsonLd({ data }));
     const graph = JSON.parse(
@@ -685,7 +680,7 @@ describe('structured data', () => {
     );
   });
 
-  const faqProgramIds = [
+  const formerlyFaqProgramIds = [
     'bgu_psychology',
     'huji_law',
     'biu_psychology',
@@ -721,58 +716,70 @@ describe('structured data', () => {
     'haifa_psychology',
   ];
 
-  it('allows FAQPage for exactly the 33 approved programs', async () => {
-    const data = (await getPublicProgramPageData('huji_law'))!;
+  async function renderProgramSchema(id: string) {
+    // These live catalogue IDs are absent from the static catalogue used by the mock.
+    if (id === 'hit_cs' || id === 'wingate_cs') {
+      const institutionId = id === 'hit_cs' ? 'hit' : 'wingate';
+      const institution = institutions.find((item) => item.id === institutionId)!;
+      const templateId = id === 'hit_cs' ? 'cs' : 'wingate_physical_ed';
+      const program = applyCatalogueContentRepair({
+        ...programs.find((item) => item.id === templateId)!,
+        id,
+        institutionId,
+        institution: institution.name,
+        institutionDetails: [],
+      });
+      vi.mocked(listCataloguePrograms).mockResolvedValue({
+        data: [...programs, { ...program, linkedInstitutionIds: [institutionId] }],
+        meta: { catalogueSource: 'database' },
+      });
+    }
+    const data = (await getPublicProgramPageData(id))!;
     const sources = await getPublicProgramRequirementSources(data);
-    const candidateIds = new Set([...programs.map(({ id }) => id), ...faqProgramIds]);
-    const allowedIds = [...candidateIds].filter((id) =>
-      programFaqPageLd({ ...data, program: { ...data.program, id } }, sources),
+    const document = new DOMParser().parseFromString(
+      renderToStaticMarkup(await ProgramPage({ params: Promise.resolve({ programId: id }) })),
+      'text/html',
     );
-    expect(allowedIds).toHaveLength(33);
-    expect(allowedIds.sort()).toEqual([...faqProgramIds].sort());
+    const graph = JSON.parse(
+      document.querySelector('script[type="application/ld+json"]')!.textContent!,
+    );
+    return { data, sources, document, graph };
+  }
+
+  const noFaqProgramIds = [...formerlyFaqProgramIds, 'tau_cs', 'bgu_cs', 'afeka_ee', 'psychology'];
+
+  it('emits FAQPage on zero formerly-FAQ and control programme pages', async () => {
+    const allowedIds: string[] = [];
+    for (const id of noFaqProgramIds) {
+      const { graph } = await renderProgramSchema(id);
+      if (graph['@graph'].some((node: { '@type': string }) => node['@type'] === 'FAQPage')) {
+        allowedIds.push(id);
+      }
+    }
+    expect(allowedIds).toHaveLength(0);
+    expect(allowedIds.sort()).toEqual([]);
   });
 
-  it.each(faqProgramIds)(
-    'adds FAQPage alongside program and breadcrumb schema for %s using on-page facts',
+  it.each(noFaqProgramIds)(
+    'renders only program and breadcrumb schema without FAQ UI for %s and preserves on-page facts',
     async (id) => {
-      // These live catalogue IDs are absent from the static catalogue used by the mock.
-      if (id === 'hit_cs' || id === 'wingate_cs') {
-        const institutionId = id === 'hit_cs' ? 'hit' : 'wingate';
-        const institution = institutions.find((item) => item.id === institutionId)!;
-        const templateId = id === 'hit_cs' ? 'cs' : 'wingate_physical_ed';
-        const program = applyCatalogueContentRepair({
-          ...programs.find((item) => item.id === templateId)!,
-          id,
-          institutionId,
-          institution: institution.name,
-          institutionDetails: [],
-        });
-        vi.mocked(listCataloguePrograms).mockResolvedValue({
-          data: [...programs, { ...program, linkedInstitutionIds: [institutionId] }],
-          meta: { catalogueSource: 'database' },
-        });
-      }
-      const data = (await getPublicProgramPageData(id))!;
-      const sources = await getPublicProgramRequirementSources(data);
-      const faq = programFaqPageLd(data, sources)!;
-      expect(faq).toMatchObject({
-        '@type': 'FAQPage',
-        '@id': `${SITE_URL}/programs/${id}#faq`,
-        inLanguage: 'he',
-      });
-      const document = new DOMParser().parseFromString(
-        renderToStaticMarkup(await ProgramPage({ params: Promise.resolve({ programId: id }) })),
-        'text/html',
-      );
-      const graph = JSON.parse(
-        document.querySelector('script[type="application/ld+json"]')!.textContent!,
-      );
+      const { data, sources, document, graph } = await renderProgramSchema(id);
       expect(graph['@graph'].map((node: { '@type': string }) => node['@type'])).toEqual([
         'EducationalOccupationalProgram',
         'BreadcrumbList',
-        'FAQPage',
       ]);
-      expect(graph['@graph'][2]).toEqual(faq);
+      expect(JSON.stringify(graph)).not.toContain('FAQPage');
+      expect(document.querySelector('[data-testid=program-faq]')).toBeNull();
+      expect(
+        Array.from(document.querySelectorAll('main h2, main h3')).map(
+          (heading) => heading.textContent,
+        ),
+      ).not.toContain('שאלות נפוצות');
+      // Each institution's checked requirements retain their existing single stamp.
+      expect(
+        document.querySelector('main')!.textContent!.match(/עודכן לאחרונה:/g) ?? [],
+      ).toHaveLength(Object.values(sources).filter((source) => source.checked).length);
+      if (!formerlyFaqProgramIds.includes(id)) return;
       const visibleText =
         id === 'colmgmt_cs'
           ? document.querySelector('main')!.textContent!
@@ -780,9 +787,7 @@ describe('structured data', () => {
               .map((element) => element.textContent)
               .join(' ');
       const source = sources[data.institutions[0].id];
-      expect(faq.mainEntity[0].acceptedAnswer.text).toBe(source.requirements.join(' '));
       for (const requirement of source.requirements) {
-        expect(faq.mainEntity[0].acceptedAnswer.text).toContain(requirement);
         // BGU splits its first two requirements into three near-verbatim route bullets.
         // Colman presents the equivalent conditions in tiles and expanded details below.
         if (
@@ -793,7 +798,7 @@ describe('structured data', () => {
         }
       }
       if (id === 'colmgmt_cs') {
-        for (const [answerFact, pageFact] of [
+        for (const [, pageFact] of [
           ['ממוצע בגרות משוקלל 85+', '85בגרות'],
           ['מתמטיקה 5 יח"ל 70+ או 4 יח"ל 80+', 'מתמטיקה 5 יח"ל 70 / 4 יח"ל 80'],
           ['ומעבר מבדק פנימי', '+ מבדק פנימי'],
@@ -807,7 +812,6 @@ describe('structured data', () => {
           ],
           ['או שתיהן, לפי מה שחסר', 'חסרים שניהם: אחרי מבדק פנימי וסיום שתי המכינות בהצלחה.'],
         ]) {
-          expect(faq.mainEntity[0].acceptedAnswer.text).toContain(answerFact);
           expect(visibleText).toContain(pageFact);
         }
       }
@@ -820,37 +824,18 @@ describe('structured data', () => {
           sourceUrl:
             'https://admissions.haifa.ac.il/social-sciences/program/3268/?utm_source=myway&utm_medium=referral',
         });
-        expect(faq.mainEntity[0].acceptedAnswer.text).not.toMatch(/אופק|מילואים|תואר קודם/);
       }
-      for (const entity of faq.mainEntity) {
-        expect(entity['@type']).toBe('Question');
-        expect(entity.name).toMatch(/[א-ת]/);
-        expect(entity.acceptedAnswer['@type']).toBe('Answer');
-        expect(entity.acceptedAnswer.text.replace(data.institutions[0].name, '')).not.toMatch(
-          /[a-z]|מתואם|מצרף/i,
-        );
-        if (!source.requirements.some((text) => text.includes('סכם'))) {
-          expect(entity.acceptedAnswer.text).not.toContain('סכם');
-        }
-        for (const number of entity.acceptedAnswer.text.match(/\d+(?:\.\d+)?/g) ?? []) {
+      const checkedText = source.checked
+        ? `עודכן לאחרונה: ${source.checked.date}${source.checked.sourceUrl ? ` · מקור: אתר ${data.institutions[0].name}` : ''}`
+        : undefined;
+      for (const text of [source.requirements.join(' '), ...(checkedText ? [checkedText] : [])]) {
+        for (const number of text.match(/\d+(?:\.\d+)?/g) ?? []) {
           expect(visibleText).toContain(number);
         }
       }
-      expect(
-        document.querySelector('main')!.textContent!.match(/עודכן לאחרונה:/g) ?? [],
-      ).toHaveLength(source.checked ? 1 : 0);
-      expect(faq.mainEntity).toHaveLength(1);
-      // Visible FAQ questions and answers match the schema exactly, in order.
-      expect(
-        Array.from(document.querySelectorAll('section[data-testid=program-faq] h3')).map(
-          (element) => element.textContent,
-        ),
-      ).toEqual(faq.mainEntity.map((entity) => entity.name));
-      expect(
-        Array.from(document.querySelectorAll('section[data-testid=program-faq] p')).map(
-          (element) => element.textContent,
-        ),
-      ).toEqual(faq.mainEntity.map((entity) => entity.acceptedAnswer.text));
+      if (checkedText) {
+        expect(visibleText).toContain(checkedText);
+      }
     },
   );
 
@@ -860,7 +845,6 @@ describe('structured data', () => {
       const data = (await getPublicProgramPageData(id))!;
       const sources = await getPublicProgramRequirementSources(data);
       expect(sources[data.institutions[0].id].checked).toBeDefined();
-      expect(programFaqPageLd(data, sources)).toBeNull();
       const document = new DOMParser().parseFromString(
         renderToStaticMarkup(await ProgramPage({ params: Promise.resolve({ programId: id }) })),
         'text/html',
@@ -870,88 +854,6 @@ describe('structured data', () => {
       ).toHaveLength(1);
     },
   );
-
-  it.each(['bgu_psychology', 'colmgmt_cs', 'huji_law'])(
-    'builds FAQPage questions and answers from the shared FAQ entries for %s',
-    async (id) => {
-      const data = (await getPublicProgramPageData(id))!;
-      const sources = await getPublicProgramRequirementSources(data);
-      expect(programFaqPageLd(data, sources)!.mainEntity).toEqual(
-        programFaqEntries(data, sources)!.map(({ question, answer }) => ({
-          '@type': 'Question',
-          name: question,
-          acceptedAnswer: { '@type': 'Answer', text: answer },
-        })),
-      );
-    },
-  );
-
-  it('omits shared FAQ entries in every FAQPage omission case', async () => {
-    const data = (await getPublicProgramPageData('huji_law'))!;
-    const sources = await getPublicProgramRequirementSources(data);
-    const institutionId = data.institutions[0].id;
-    const cases: [typeof data, typeof sources][] = [
-      [{ ...data, program: { ...data.program, isListed: false } }, sources],
-      [data, {}],
-      [data, { [institutionId]: { ...sources[institutionId], requirements: [] } }],
-      ...[
-        'tau_cs',
-        'technion_cs',
-        'ariel_cs',
-        'afeka_ee',
-        'afeka_softwareeng',
-        'hit_visual_comm',
-        'huji_engineering',
-        'bezalel_graphic_design',
-        'afeka_cs',
-        'psychology',
-        'law',
-        'nursing',
-        'cs',
-        ...programs.filter((program) => program.id.startsWith('reichman_')).map(({ id }) => id),
-      ].map((id): [typeof data, typeof sources] => [
-        { ...data, program: { ...data.program, id } },
-        sources,
-      ]),
-    ];
-    for (const [candidate, requirementSources] of cases) {
-      expect(programFaqPageLd(candidate, requirementSources)).toBeNull();
-      expect(programFaqEntries(candidate, requirementSources)).toBeNull();
-    }
-  });
-
-  it('omits FAQs when scoped requirements are hidden or unavailable and for other programs', async () => {
-    const data = (await getPublicProgramPageData('huji_law'))!;
-    const sources = await getPublicProgramRequirementSources(data);
-    expect(
-      programFaqPageLd({ ...data, program: { ...data.program, isListed: false } }, sources),
-    ).toBeNull();
-    expect(programFaqPageLd(data, {})).toBeNull();
-    const institutionId = data.institutions[0].id;
-    expect(
-      programFaqPageLd(data, {
-        [institutionId]: { ...sources[institutionId], requirements: [] },
-      }),
-    ).toBeNull();
-    for (const id of [
-      'tau_cs',
-      'technion_cs',
-      'ariel_cs',
-      'afeka_ee',
-      'afeka_softwareeng',
-      'hit_visual_comm',
-      'huji_engineering',
-      'bezalel_graphic_design',
-      'afeka_cs',
-      'psychology',
-      'law',
-      'nursing',
-      'cs',
-      ...programs.filter((program) => program.id.startsWith('reichman_')).map(({ id }) => id),
-    ]) {
-      expect(programFaqPageLd({ ...data, program: { ...data.program, id } }, sources)).toBeNull();
-    }
-  });
 
   it.each([
     'tau_cs',
@@ -969,8 +871,6 @@ describe('structured data', () => {
     'cs',
     ...programs.filter((program) => program.id.startsWith('reichman_')).map(({ id }) => id),
   ])('omits FAQPage from the rendered non-allowlisted page %s', async (id) => {
-    const data = (await getPublicProgramPageData(id))!;
-    expect(programFaqPageLd(data, await getPublicProgramRequirementSources(data))).toBeNull();
     const document = new DOMParser().parseFromString(
       renderToStaticMarkup(await ProgramPage({ params: Promise.resolve({ programId: id }) })),
       'text/html',
