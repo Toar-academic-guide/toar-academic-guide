@@ -6,6 +6,7 @@ import { ApiRouteError, toErrorResponse } from '@/app/api/_lib/errors';
 import { listCatalogueInstitutions, listCataloguePrograms } from '@/server/catalogue/queries';
 import { evaluateAdmissionsForProgram } from '@/server/admissions/evaluator';
 import { BATCH_B_PROGRAMS } from '@/server/admissions/batchBManualPathEvaluation';
+import { serializeAdmissionsReport } from '@/lib/admissionsEvaluationSerialization';
 import {
   admissionsEvaluationClientKey,
   assertAdmissionsEvaluationRateLimit,
@@ -65,11 +66,12 @@ export async function POST(request: Request) {
               return;
             }
             try {
-              batch.reports[degreeId] = await evaluateAdmissionsForProgram({
+              const report = await evaluateAdmissionsForProgram({
                 input: { ...applicant, degreeId: resolvedDegreeId },
                 program,
                 institutions: institutionsResult.data,
               });
+              batch.reports[degreeId] = serializeAdmissionsReport(report);
             } catch {
               batch.failedDegreeIds.push(degreeId);
             }
@@ -94,7 +96,7 @@ export async function POST(request: Request) {
       institutions: institutionsResult.data,
     });
 
-    return Response.json({ data: report });
+    return Response.json({ data: serializeAdmissionsReport(report) });
   } catch (error) {
     if (error instanceof Error && error.message === 'RATE_LIMITED') {
       return Response.json(

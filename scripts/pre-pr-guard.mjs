@@ -37,6 +37,10 @@ const highRiskPathPatterns = [
   /^src\/server\/catalogue\//,
   /^src\/server\/data-health\//,
   /^src\/types\/admissionsEvaluation\.ts$/,
+  /^src\/app\/sekhem-calculator\//,
+  /^src\/components\/sekhem\//,
+  /^src\/app\/api\/admissions\/evaluate\//,
+  /^src\/lib\/(sekhemCalculator|admissionsEvaluationSerialization|publishedCompositeThresholds)/,
 ];
 
 const operationalReadGrants = {
@@ -115,7 +119,9 @@ const targetedTests = [
   'src/data/admissions/formulaBackedPairInventory.test.ts',
   'src/data/admissions/formulaBackedVerificationLedger.test.ts',
   'src/server/admissions/catalogueEvidenceCoverage.test.ts',
-  'src/server/admissions/calculatorCoverage.test.ts',
+  'src/lib/admissionsCoverageRetirement.test.ts',
+  'src/lib/admissionsEvaluationSerialization.test.ts',
+  'src/app/api/admissions/evaluate/serialization.test.ts',
   'src/server/admissions/capabilityMatrix.test.ts',
   'src/server/admissions/evaluator.test.ts',
   'src/server/admissions/evaluationInputs.test.ts',
