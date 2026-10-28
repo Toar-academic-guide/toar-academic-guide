@@ -11,7 +11,7 @@ export function hasPublishedCompositeThreshold(requirements: readonly string[]):
   // psychometric floor elsewhere in the same requirement. Institution and route
   // wording do not exempt a rendered threshold from linking to the calculator.
   const metric =
-    '(?:סכם|(?:ציון\\s+)?מתואם|(?:ציון\\s+)?מתאם|מצרף|ציון\\s+(?:משולב|התאמה|קבלה(?:\\s+משולב)?))';
+    '(?:באפיק\\s+המשולב\\s+נדרש\\s+ציון|סכם|(?:ציון\\s+)?מתואם|(?:ציון\\s+)?מתאם|מצרף|ציון\\s+(?:משולב|התאמה|קבלה(?:\\s+משולב)?))';
   const cutoff = new RegExp(
     `${metric}\\s*(?:(?:כמותי|הנדסי|הנדסה|ארכיטקטורה|לניהול|ניהול|מעל|לפחות|מינימלי|נדרש|קבלה|של)[:–-]?\\s+){0,3}[:–-]?\\s*(\\d{2,4}(?:\\.\\d+)?)`,
     'g',
