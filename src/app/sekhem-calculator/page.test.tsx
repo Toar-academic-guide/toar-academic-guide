@@ -62,6 +62,7 @@ it('does not link an unknown unavailable programme to a nonexistent public page'
   render(await Page({ searchParams: Promise.resolve({ program: 'not_a_public_programme' }) }));
   expect(screen.getByText('אי אפשר לחשב כאן את סיכויי הקבלה לתוכנית הזו.')).toBeTruthy();
   expect(screen.queryByRole('link', { name: 'לתנאי הקבלה של התוכנית' })).toBeNull();
+  expect(screen.getByRole('link', { name: 'יצירת קשר' }).getAttribute('href')).toBe('/contact');
   expect(screen.getByRole('link', { name: 'לחישוב תוכנית אחרת' }).getAttribute('href')).toBe(
     '/sekhem-calculator',
   );
@@ -72,7 +73,8 @@ it('offers only programmes in the runtime evaluator catalogue and refreshes memb
   const { getStaticCataloguePrograms } = await import('@/lib/catalogueStatic');
   const active = getStaticCataloguePrograms().filter((row) => !absentEvaluatorIds.includes(row.id));
   const query = vi.spyOn(await import('@/server/catalogue/queries'), 'listCataloguePrograms');
-  query.mockResolvedValue({ data: active, meta: {} });
+  const meta = { catalogueSourceMode: 'database', catalogueSource: 'database' } as const;
+  query.mockResolvedValue({ data: active, meta });
   const view = render(await Page({ searchParams: Promise.resolve({}) }));
   const ids = () =>
     within(screen.getByLabelText('תוכנית לימודים'))
@@ -84,7 +86,7 @@ it('offers only programmes in the runtime evaluator catalogue and refreshes memb
   expect(ids().filter((id) => absentEvaluatorIds.includes(id))).toEqual([]);
   expect(ids()).toContain('tau_law');
   view.unmount();
-  query.mockResolvedValue({ data: active.filter((row) => row.id !== 'tau_law'), meta: {} });
+  query.mockResolvedValue({ data: active.filter((row) => row.id !== 'tau_law'), meta });
   render(await Page({ searchParams: Promise.resolve({}) }));
   expect(ids()).not.toContain('tau_law');
 });

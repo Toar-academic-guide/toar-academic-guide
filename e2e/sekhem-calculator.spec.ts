@@ -535,6 +535,12 @@ for (const width of [1280, 390]) {
       await expect(page.getByRole('button', { name: 'לחשב את הסכם', exact: true })).toHaveCount(0);
       await expect(page.getByText('חלק מהתוכניות לא חושבו. אפשר לנסות שוב.')).toHaveCount(0);
     }
+    await page.goto('/sekhem-calculator?program=not_a_public_programme');
+    await expect(page.getByText('אי אפשר לחשב כאן את סיכויי הקבלה לתוכנית הזו.')).toBeVisible();
+    await expect(page.getByRole('link', { name: 'לתנאי הקבלה של התוכנית' })).toHaveCount(0);
+    await expect(
+      page.getByRole('main').getByRole('link', { name: 'יצירת קשר', exact: true }),
+    ).toHaveAttribute('href', '/contact');
     expect(mocks.batches).toHaveLength(0);
     expect(mocks.submissions).toHaveLength(0);
   });
