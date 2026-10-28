@@ -417,6 +417,53 @@ for (const width of [1280, 390]) {
   });
 }
 
+for (const width of [390, 360]) {
+  test(`complete example subject values fit inside their inputs at ${width}px`, async ({
+    page,
+    baseURL,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    const mocks = await installMocks(page, baseURL);
+    await page.goto('/sekhem-calculator');
+    await page.getByRole('button', { name: 'ערכים לדוגמה', exact: true }).click();
+    await page.evaluate(() => document.fonts.ready);
+    const subjects = page.locator('.journey-grade-table input[list]');
+    await expect(subjects).toHaveCount(9);
+    await expect(page.getByLabel('מקצוע 6', { exact: true })).toHaveValue('היסטוריה / תע״י');
+    for (const field of await subjects.all()) {
+      const size = await field.evaluate((node) => {
+        const input = node as HTMLInputElement;
+        const style = getComputedStyle(input);
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d')!;
+        context.font = `${style.fontWeight} ${style.fontSize} ${style.fontFamily}`;
+        return {
+          value: input.value,
+          client: input.clientWidth,
+          scroll: input.scrollWidth,
+          text: context.measureText(input.value).width,
+          available:
+            input.clientWidth - parseFloat(style.paddingLeft) - parseFloat(style.paddingRight),
+        };
+      });
+      expect(size.scroll, size.value).toBeLessThanOrEqual(size.client);
+      expect(size.text, size.value).toBeLessThanOrEqual(size.available);
+    }
+    await assertAlignedFields(page.locator('main'));
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+    await test
+      .info()
+      .attach(`example-certificate-${width}`, {
+        body: await page.screenshot({ fullPage: true }),
+        contentType: 'image/png',
+      });
+    expect(mocks.batches).toHaveLength(0);
+    expect(mocks.submissions).toHaveLength(0);
+  });
+}
+
 test('Haifa supplementary inputs follow the latest evaluator response', async ({
   page,
   baseURL,
