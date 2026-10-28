@@ -8,6 +8,8 @@ import { absoluteUrl, SITE_ALT_NAMES, SITE_NAME } from '@/lib/site';
 import type { InstitutionDirectoryItem } from '@/data/institutionDirectory';
 import { canonicalProgramPath } from './programAliases';
 import { institutionProgramName } from '@/lib/institutionProgramName';
+import { canLinkToSekhemCalculator } from '@/lib/sekhemCalculatorSupport';
+import type { CalculatorOffering } from '@/lib/sekhemCalculator';
 import { hasPublishedCompositeThreshold } from '@/lib/publishedCompositeThresholds';
 
 const ORGANIZATION_ID = absoluteUrl('/#organization');
@@ -189,6 +191,7 @@ const FAQ_PROGRAM_IDS = new Set([
 export function programFaqPageLd(
   { program, institutions }: PublicProgramPageData,
   requirementSources: Awaited<ReturnType<typeof getPublicProgramRequirementSources>>,
+  offerings?: readonly CalculatorOffering[],
 ) {
   if (!FAQ_PROGRAM_IDS.has(program.id) || program.isListed === false) return null;
 
@@ -219,7 +222,8 @@ export function programFaqPageLd(
       question(
         'מהם תנאי הקבלה למסלול?',
         source.requirements.join(' '),
-        hasPublishedCompositeThreshold(source.requirements),
+        canLinkToSekhemCalculator(source.program, institution.id, offerings) &&
+          hasPublishedCompositeThreshold(source.requirements),
       ),
       ...(source.checked
         ? [

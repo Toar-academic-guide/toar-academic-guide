@@ -1,6 +1,8 @@
 import 'server-only';
 import { cache } from 'react';
 import { canonicalProgramId } from './seo/programAliases';
+import { HAIFA_INFORMATION_SYSTEMS_TRACK_ARTIFACTS } from '@/data/admissions/haifaInformationSystemsVerification';
+import { verifiedProgramEntry } from '@/data/admissions/formulaBackedVerificationLedger';
 import { isBatchCUnsupportedProgramId } from '@/data/admissions/batchCUnsupportedProgramIds';
 import {
   formulaBackedPairScope,
@@ -55,6 +57,13 @@ export function calculatorOfferings(
       const target = specific ?? program;
       pairs.set(`${institution.id}:${target.id}`, {
         programId: target.id,
+        sourceProgramIds: [
+          ...new Set([
+            ...(pairs.get(`${institution.id}:${target.id}`)?.sourceProgramIds ?? []),
+            program.id,
+            target.id,
+          ]),
+        ],
         programName: target.name,
         institutionId: institution.id,
         institutionName: institution.name,
@@ -84,6 +93,13 @@ export function sekhemPairSupport(
   if (isBatchBManualProgram(program.id, institutionId)) return 'gate';
   const pairId = `${program.id}__${institutionId}`;
   const verification = getFormulaPairVerificationEntry(pairId);
+  if (
+    Object.values(HAIFA_INFORMATION_SYSTEMS_TRACK_ARTIFACTS).some(
+      (artifact) =>
+        artifact.contract.pairId === pairId && verifiedProgramEntry(artifact).state === 'exact',
+    )
+  )
+    return 'score';
   if (formulaBackedPairScope(pairId) === 'in_scope')
     return verification?.state === 'exact' ? 'score' : 'unverified';
   if (isBiuPublishedRoutePair(program.id, institutionId)) return 'floors';
@@ -103,3 +119,20 @@ export const loadSekhemCalculatorOfferings = cache(async () => {
     catalogue.generalProgramIds,
   );
 });
+
+export function canLinkToSekhemCalculator(
+  program: CatalogueProgram,
+  institutionId: string,
+  offerings?: readonly CalculatorOffering[],
+): boolean {
+  const support = sekhemPairSupport(program, institutionId);
+  return (
+    (support === 'score' || support === 'gate') &&
+    (!offerings ||
+      offerings.some(
+        (offering) =>
+          offering.institutionId === institutionId &&
+          (offering.programId === program.id || offering.sourceProgramIds?.includes(program.id)),
+      ))
+  );
+}

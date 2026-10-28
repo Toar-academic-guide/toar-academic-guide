@@ -14,6 +14,7 @@ import type {
 export interface CalculatorOffering {
   programId: string;
   programName: string;
+  sourceProgramIds?: string[];
   institutionId: string;
   institutionName: string;
 }

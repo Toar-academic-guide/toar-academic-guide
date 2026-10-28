@@ -2,6 +2,8 @@ import type {
   PublicProgramPageData,
   getPublicProgramRequirementSources,
 } from './publicCataloguePages';
+import { canLinkToSekhemCalculator } from './sekhemCalculatorSupport';
+import type { CalculatorOffering } from './sekhemCalculator';
 import { canonicalProgramId } from './seo/programAliases';
 
 type RequirementSources = Awaited<ReturnType<typeof getPublicProgramRequirementSources>>;
@@ -9,7 +11,7 @@ type RequirementSources = Awaited<ReturnType<typeof getPublicProgramRequirementS
 export function hasPublishedCompositeThreshold(requirements: readonly string[]): boolean {
   // Match an attached published cutoff, not formula coefficients, years or a
   // psychometric floor elsewhere in the same requirement. Institution and route
-  // wording do not exempt a rendered threshold from linking to the calculator.
+  // wording are checked separately from evaluator support for calculator links.
   const metric =
     '(?:באפיק\\s+המשולב\\s+נדרש\\s+ציון|סכם|(?:ציון\\s+)?מתואם|(?:ציון\\s+)?מתאם|מצרף|ציון\\s+(?:משולב|התאמה|קבלה(?:\\s+משולב)?))';
   const cutoff = new RegExp(
@@ -24,6 +26,7 @@ export function hasPublishedCompositeThreshold(requirements: readonly string[]):
 export function hasPublishedCompositeThresholds(
   { program, institutions }: PublicProgramPageData,
   sources: RequirementSources,
+  offerings?: readonly CalculatorOffering[],
 ): boolean {
   if (
     program.type !== 'academic' ||
@@ -32,7 +35,10 @@ export function hasPublishedCompositeThresholds(
     canonicalProgramId(program.id) !== program.id
   )
     return false;
-  return institutions.some((institution) =>
-    hasPublishedCompositeThreshold(sources[institution.id]?.requirements ?? []),
+  return institutions.some(
+    (institution) =>
+      !!sources[institution.id] &&
+      canLinkToSekhemCalculator(sources[institution.id].program, institution.id, offerings) &&
+      hasPublishedCompositeThreshold(sources[institution.id].requirements),
   );
 }

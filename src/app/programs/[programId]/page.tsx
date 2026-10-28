@@ -1,5 +1,6 @@
 import ProgramTrackedLink from '@/components/ProgramTrackedLink';
 import { RelatedPrograms } from '@/components/seo/CatalogueLinks';
+import { loadSekhemCalculatorOfferings } from '@/lib/sekhemCalculatorSupport';
 import SekhemCalculatorLink from '@/components/seo/SekhemCalculatorLink';
 import { getPublicRelatedPrograms, getPublicSubjectHub } from '@/lib/publicCatalogueLinks';
 import Link from 'next/link';
@@ -67,7 +68,8 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
   const { program, institutions, isGeneral, institutionProgramPaths } = data;
   const institutionRequirementSources = await getPublicProgramRequirementSources(data);
   const related = await getPublicRelatedPrograms(program.id);
-  const faq = programFaqPageLd(data, institutionRequirementSources);
+  const calculatorOfferings = await loadSekhemCalculatorOfferings();
+  const faq = programFaqPageLd(data, institutionRequirementSources, calculatorOfferings);
 
   return (
     <WayPageShell>
@@ -130,7 +132,11 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
           </section>
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
             <h2 className="text-xl font-bold">תנאי קבלה</h2>{' '}
-            <SekhemCalculatorLink data={data} sources={institutionRequirementSources} />{' '}
+            <SekhemCalculatorLink
+              data={data}
+              sources={institutionRequirementSources}
+              offerings={calculatorOfferings}
+            />{' '}
             {program.isListed === false ? (
               <p className="mt-4 text-sm text-slate-600">אין כרגע מידע עדכני על המסלול.</p>
             ) : (
