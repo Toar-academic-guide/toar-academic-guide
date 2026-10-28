@@ -81,19 +81,19 @@ Send sequential chunks of at most 50 unique degree IDs; render completed batches
 
 KTD2. **Reuse ordinary input handling, not institutional average algorithms.** Extract the controlled subject rows from `JourneyExactGrades.tsx:185` for shared use. Reuse `ALL_SUBJECTS`/`SECTORS`, `buildBagrutSubjectRecord`, `subjectIdForWizardLabel`, and `admissionsExtraInputsFromAcademicScores` (`src/lib/admissionsEvaluationProfile.ts:15`). Preserve entered rows and zero grades; reject duplicates and invalid integers before the builder can filter them. Ranges remain subjects1–5 units, grades0–100, total200–800, sections50–150. Do not synthesize a Hebrew subject or a missing section score.
 
-The existing API client already adds a unit-weighted generic average and `bagrutAverageEstimated: true` if omitted (`admissionsEvaluationClient.ts:71`); that is an existing transport compatibility behaviour, not a new institutional average formula. The page supplies the raw record and actual section values, not invented TAU/BGU/Haifa averages. Existing record/certificate metadata must remain truthful. Do not introduce a full-matriculation confirmation checkbox; unresolved sector/certificate context is handled in section6, not by changing policies.
+The existing API client already adds a unit-weighted generic average and `bagrutAverageEstimated: true` if omitted (`admissionsEvaluationClient.ts:71`); that is an existing transport compatibility behaviour, not a new institutional average formula. The page supplies the raw record and actual section values, not invented TAU/BGU/Haifa averages. Certificate type remains an explicit choice (unknown by default). Per the standing PM rule, entered grades imply full bagrut, so the page sets complete=true after validation. Do not introduce a full-matriculation confirmation checkbox; unresolved sector/certificate context is handled in section6, not by changing policies.
 
 The shared profile mapper can also project paired legacy fields. Omit a projected pair when its actual units/grade cannot satisfy the stricter HTTP schema (for example grade0 or units1–2); keep the original raw subject row intact. Never clamp a failed grade to50, discard it, or alter the subject record to make validation pass. Characterize any resulting missing-input gate against the evaluator rather than correcting it in the page.
 
-KTD3. **Let required inputs drive the optional UI.** After a response requests `haifa_bagrut_average`, reveal `ממוצע בגרות בחיפה` as an optional continuation input for those rows. After `haifa_hebrew_qualification`, reveal the existing Hebrew qualification choices; reveal Hebrew score/date only when requested. Reuse schema/labels/options in `src/lib/haifaAdmissionsInputs.ts:77` and a filtered mode of `HaifaQualificationFields`, instead of placing its whole questionnaire on the page. Other Haifa facts such as month, year or track appear only when actually requested and within agreed UI scope; otherwise offer the existing full calculator.
+KTD3. **Let required inputs drive the optional UI.** After a response requests `haifa_bagrut_average`, reveal `ממוצע בגרות בחיפה` as an optional continuation input for those rows. After `haifa_hebrew_qualification`, reveal the existing Hebrew qualification choices; reveal Hebrew score/date only when requested. Reuse schema/labels/options in `src/lib/haifaAdmissionsInputs.ts:77` and a filtered mode of `HaifaQualificationFields`, instead of placing its whole questionnaire on the page. Other Haifa facts such as month, year or track appear only when actually requested and within agreed UI scope; other uncollected needs remain an honest missing-input result.
 
 Requirement visibility is scoped to the latest completed response for the current input version. A new raw-profile submission starts without obsolete Haifa overrides; when the response no longer requests one, unmount its control and exclude its old value from subsequent requests. This handles Eitan's future average deriver and any future Hebrew derivation/default without a page change. Share common Haifa facts between affected rows, but do not infer qualification from interface language or psychometric total.
 
 KTD4. **Map returned metrics and verdicts without reinterpretation.** A finite score, its returned label and its same-result threshold are displayed together. Preserve ordinary score labels such as `פסיכומטרי` when a direct route wins; do not relabel700 as sekhem. `manual_gate` with an official composite (Haifa) remains a scored row. A missing score, null threshold, `needs_input`, stale/unverified source or withheld manual result does not become a computed admission match. Use the returned decision/scoreAssessment for the verdict; never recompute it from a rounded number.
 
-Use locale number formatting for presentation, retaining the three-decimal HUJI medicine exception. Ordinary non-HUJI HTTP values are unchanged by the serializer; an estimated Reichman value639.1652 may display639.17 with its estimate label. Mapping tests assert the explicit formatting contract as well as the underlying API value, rather than treating every formatted string as an unrounded calculation.
+Display the returned numeric fields exactly. Only the route serializer rounds HUJI scores (two decimals, medicine three). Do not round, recompute or reconstruct other values in presentation; numeric DOM assertions equal the same API row fields.
 
-Recommend putting Afeka/BIU **no-score** results in the single shared non-composite treatment, with detail links to their existing route/floor checks; do not create a grid of accepted/estimated badges with blank scores. A scored manual-gate result is different and is retained. Exact proposed shared line: **`בחלק מהמוסדות נבדקים תנאי קבלה בלי חישוב סכם.`** Keep a named Afeka link labelled **`יש גם אפיקי קבלה נוספים`**. Jorje/Amit must confirm this presentation decision. Reichman retains **`אומדן, עד לאישור המוסד`**, even if its returned route is direct psychometric. Do not recover its suppressed coordinated score by importing the legacy helper.
+Recommend putting Afeka/BIU **no-score** results in the single shared non-composite treatment, with detail links to their existing route/floor checks; do not create a grid of accepted/estimated badges with blank scores. A scored manual-gate result is different and is retained. Exact proposed shared line: **`בחלק מהמוסדות נבדקים תנאי קבלה בלי חישוב סכם.`** Keep a named Afeka link labelled **`יש גם אפיקי קבלה נוספים`**. This presentation is approved by the Phase 2 rulings; actionable no-score floor verdicts retain a programme selector and CTA without blank composite badges. Reichman retains **`אומדן, עד לאישור המוסד`**, even if its returned route is direct psychometric. Do not recover its suppressed coordinated score by importing the legacy helper.
 
 KTD5. **Round HUJI only at serialization.** Add a pure `src/lib/admissionsEvaluationSerialization.ts` helper called immediately before both `Response.json` returns (`route.ts:97`, `:122`). Copy the report/batch and transform finite HUJI result scores only; preserve other institutions and all unknown/additive response fields. No mutation of the evaluator report, recalculation, threshold rounding, comparison, digest regeneration or input transformation.
 
@@ -105,11 +105,11 @@ Verdicts remain those already computed on the raw value (`src/server/ingestion/a
 
 **Execution note:** in the later implementation, first write the NEW route serialization test against current POST handling and observe failure specifically because the HTTP response contains the long float; then add the helper and route wiring. No test is run during this planning phase.
 
-KTD6. **Reuse the lead flow intact.** The single CTA below results opens `EnquiryForm` with the explicitly selected real programme/institution pair, returned report input, `surface="sekhem_calculator"` and a return callback. Use the existing R7e title/consent/prep-consent behaviour; no new enquiry backend or attribution model. Multiple results require an explicit target choice, not a silent lead recipient. All tests intercept `/api/enquiries` before navigation, including retry/success cases.
+KTD6. **Reuse the lead flow intact.** Each institution group’s prominent CTA opens `EnquiryForm` with the explicitly selected real programme/institution pair, returned report input, `surface="sekhem_calculator"` and a return callback. Use the existing R7e title/consent/prep-consent behaviour; no new enquiry backend or attribution model. Multiple results require an explicit target choice, not a silent lead recipient. All tests intercept `/api/enquiries` before navigation, including retry/success cases.
 
 KTD7. **Keep SEO changes local.** Exact title: `מחשבון סכם וסיכויי קבלה לפי מוסד ותוכנית | MyWay`. Exact description: `מחשבון סכם וסיכויי קבלה בחינם: מזינים ציוני בגרות ופסיכומטרי, מחשבים סכם לפי נוסחאות המוסדות הנתמכים וממשיכים לבדיקת התוכנית שמעניינת אותך.` Canonical: `https://findmyway.co.il/sekhem-calculator`, including contextual query URLs. Use an absolute title to avoid duplicating the root suffix. Add one llms link and sitemap entry with a real authored content date, never build/request time. Homepage insertion belongs directly after the primary action in `StudyJourney.tsx:847`, labelled `מחשבון סכם וסיכויי קבלה`.
 
-Programme/FAQ links use rendering selectors outside `src/data/**`. Programme page gets one component insertion; matching JSON-LD FAQ answers get a fixed internal anchor with a visible counterpart beside their existing facts. Preserve the current33-programme FAQ allowlist, questions, freshness answers and all published facts. Narrowly update exact expected answer strings for the intentional anchor addition; do not relax existing number/copy assertions. No new visible FAQ accordion or nav work.
+Programme/FAQ links use rendering selectors outside `src/data/**`. Programme page gets one component insertion; matching JSON-LD FAQ Answers get a schema.org ViewAction targeting the calculator, with a visible counterpart beside their existing facts. Preserve the current33-programme FAQ allowlist, questions, freshness answers and all published facts. Keep every existing answer string unchanged. The necessary sitemap inventory assertion adds the new URL and changes 401 to 402 in a separate test(seo): [NEEDS APPROVAL] commit; no numerical/copy assertion is relaxed. No new visible FAQ accordion or nav work.
 
 ```mermaid
 flowchart TB
@@ -123,59 +123,61 @@ flowchart TB
   F --> H[Existing EnquiryForm for explicit target]
 ```
 
-**Next16:** package versions remain Next16.4.2 / React19.2.7. `node_modules` is absent; installed Next guides could not be read. Use the repository's async server catalogue, promised params/searchParams and client-island patterns in this plan. Before any implementation touching Next APIs, read the installed relevant guides under `node_modules/next/dist/docs/`. One `WayPageShell`; root layout already owns the footer. Do not install or launch Next in this phase.
+**Next16:** installed guides under `node_modules/next/dist/docs/` were read for server/client components, route handlers, metadata (especially `title.absolute`) and sitemap. Use promised searchParams, serializable client props and `title: { absolute: ... }`; POST remains uncached. One `WayPageShell` reserves `pt-28` navbar clearance; root layout owns the footer.
 
 ### 2. Exact implementation file list
 
-This is the planned later diff, not changes made now. **EITAN-LANE: NONE.** No types/evaluator/policy/data changes are required. The overlap tags reflect #317's supplied and previously inspected file list; recheck after integration.
+Implementation scope relative to baseline `215548a`. **EITAN-LANE: NONE.** The two #317 overlaps are minimal programme insertion and the separately committed sitemap expectation update. The existing calculator module and every forbidden lane file remain unchanged.
 
 | Tag | File | Purpose |
 |---|---|---|
-| [new] | `src/app/sekhem-calculator/page.tsx` | Public server page, metadata and live catalogue programme context. |
-| [new] | `src/app/sekhem-calculator/error.tsx` | Visible catalogue error/retry without static fallback. |
-| [new] | `src/components/sekhem/SekhemCalculator.tsx` | Raw form, batch requests, progressive results and existing enquiry modal. |
-| [new] | `src/components/sekhem/SekhemCalculatorResults.tsx` | Returned metrics, thresholds/verdicts, shared no-composite line and Afeka link. |
-| [new] | `src/components/sekhem/RequiredAdmissionsInputs.tsx` | Response-driven optional inputs and stale-field removal. |
-| [new] | `src/components/BagrutSubjectRows.tsx` | Controlled shared raw subject/units/grade/remove controls. |
-| [modify] | `src/components/JourneyExactGrades.tsx` | Reuse extracted rows without altering its existing workflow. |
-| [modify] | `src/components/HaifaQualificationFields.tsx` | Optional visible-field filter/compact mode; retain current default mode. |
-| [new] | `src/lib/sekhemCalculator.ts` | API-result mapping, programme identities and request/required-input state; no formula code. |
-| [new] | `src/lib/sekhemCalculatorPage.ts` | Approved copy, exact metadata and truthful modification-date constant. |
-| [new] | `src/lib/admissionsEvaluationSerialization.ts` | Immutable HUJI wire-score rounding, including medicine precision exception. |
-| [modify] | `src/app/api/admissions/evaluate/route.ts` | Apply the helper to existing single and batch responses after evaluation. |
-| [delete] | `src/server/admissions/calculatorCoverage.ts` | Retire the unused stale institution-level registry/aggregate wrapper. |
-| [delete] | `src/server/admissions/calculatorCoverage.test.ts` | Retire tests of that dead registry; preserve independent pair invariant below. |
-| [modify] | `scripts/pre-pr-guard.mjs` | Remove retired test reference; include new calculator/serialization paths and focused suites. |
-| [modify] | `.github/workflows/ci.yml` | Replace retired targeted-suite reference with its retained pair-invariant test; no new workflow. |
-| [new] | `src/lib/admissionsCoverageRetirement.test.ts` | Preserve live pair-coverage aggregate expectations against authoritative helpers, without the stale registry. |
-| [new] | `src/lib/admissionsEvaluationSerialization.test.ts` | Precision, immutability, identity, raw-verdict preservation and medicine exception. |
-| [new] | `src/app/api/admissions/evaluate/serialization.test.ts` | Test-first HTTP single/batch rounding regression; never edit aliases.test.ts. |
-| [new] | `src/lib/sekhemCalculator.test.ts` | Response mapping, chunk/identity handling and no formula inference. |
-| [new] | `src/lib/sekhemCalculatorGuard.test.ts` | New path/suite guard coverage and removal of retired test references. |
-| [new] | `src/app/sekhem-calculator/page.test.tsx` | Server catalogue/context handling and error boundary contract. |
-| [new] | `src/components/sekhem/SekhemCalculator.test.tsx` | Ordinary inputs, batching/errors and intercepted lead interactions. |
-| [new] | `src/components/sekhem/SekhemCalculator.mapping.test.tsx` | Evaluator -> serialized API -> real page mapping, using official fixture transports. |
-| [new] | `src/components/sekhem/RequiredAdmissionsInputs.test.tsx` | Haifa fields appear only when requested and disappear after derivation succeeds. |
-| [new] | `src/test/fixtures/sekhemCalculatorResponses.json` | Small curated, non-PII wire examples from the supplied audit; not a runtime coverage source. |
-| [new] | `src/test/fixtures/sekhemCalculatorCatalogueDelta.json` | Captured minimal Reichman/Wingate snapshot records for display-source merge/link regressions. |
-| [new] | `src/lib/publishedCompositeThresholds.ts` | Shared numeric published-threshold selector over resolved display requirements. |
-| [new] | `src/lib/publishedCompositeThresholds.test.ts` |42-page/14-FAQ static and37-page/15-FAQ snapshot inventory, with negative cases. |
-| [new] | `src/components/seo/SekhemCalculatorLink.tsx` | One compact contextual link driven by that selector. |
-| [new] | `src/components/seo/SekhemCalculatorLink.test.tsx` | Matching, deduplication and unrelated/no-data cases. |
-| [modify] #317-OVERLAP | `src/app/programs/[programId]/page.tsx` | Minimal import/render insertion using existing resolved requirement sources. |
-| [modify] | `src/lib/seo/jsonLd.ts` | Fixed calculator anchor in matching admission FAQ answers only. |
-| [modify] #317-OVERLAP | `src/lib/seo/seo.test.ts` | Exact answer-string updates for the anchor, retaining all existing facts/assertions. |
-| [modify] | `src/components/StudyJourney.tsx` | One homepage link directly below the main button. |
-| [modify] | `src/app/sitemap.ts` | Public calculator URL with actual content-modification date. |
-| [modify] | `public/llms.txt` | One discovery link, without thresholds or personal scores. |
-| [new] | `src/app/sekhem-calculator/seo.test.tsx` | Exact metadata, sitemap/llms/home/programme/FAQ links. |
-| [new] | `e2e/sekhem-calculator.spec.ts` | Real calculator/optional-field/lead browser flow with enquiry interception. |
-| [new] | `docs/admissions-verification/2026-10-28-sekhem-calculator-page.md` | Actual API/provenance checks and residual evaluator limitations, no new formulas. |
-| [modify] | `design-qa.md` | Later actual-preview1280/390 evidence and approval limitations. |
+| [modify] | `.github/workflows/ci.yml` | Replace retired targeted coverage test; run aggregate and serializer regressions. |
+| [modify] | `design-qa.md` | Local desktop/mobile verification and pending preview approval boundary. |
+| [new] | `docs/admissions-verification/2026-10-28-sekhem-calculator-page.md` | Retained-source parity evidence and explicit residual evaluator dependencies. |
+| [new] | `docs/plans/2026-10-28-feat-sekhem-calculator-page-plan.md` | Approved architecture, hard lanes, coverage and exact implementation scope. |
+| [new] | `e2e/sekhem-calculator.spec.ts` | 1280/390 real-page flows, mocked enquiries, response-owned numbers, SEO and local QA captures. |
+| [modify] | `playwright.config.ts` | Probe BASE_URL for the isolated test server instead of an unrelated checkout. |
+| [modify] | `public/llms.txt` | Add one public calculator discovery link. |
+| [modify] | `scripts/pre-pr-guard.mjs` | Retire dead coverage references and include calculator paths and regression suites. |
+| [modify] | `src/app/api/admissions/evaluate/route.ts` | Serialize HUJI scores after raw evaluation, for single and batch responses. |
+| [new] | `src/app/api/admissions/evaluate/serialization.test.ts` | Test-first real POST precision regression with retained official responses. |
+| [modify] #317-OVERLAP | `src/app/programs/[programId]/page.tsx` | Minimal import and contextual threshold-link insertion. |
+| [new] | `src/app/sekhem-calculator/error.tsx` | Visible catalogue failure and retry without static fallback. |
+| [new] | `src/app/sekhem-calculator/page.test.tsx` | Server page, metadata, catalogue failure and stable sitemap/llms contracts. |
+| [new] | `src/app/sekhem-calculator/page.tsx` | Public catalogue-backed route, absolute title, canonical and approved copy. |
+| [modify] | `src/app/sitemap.ts` | Add calculator URL with authored date 2026-10-28. |
+| [new] | `src/components/BagrutSubjectRows.test.tsx` | Exercise editing, adding and removing shared rows. |
+| [new] | `src/components/BagrutSubjectRows.tsx` | Shared controlled raw subject, units, grade and add/remove controls. |
+| [new] | `src/components/HaifaQualificationFields.filtered.test.tsx` | Verify filtered fields and unchanged default questionnaire behavior. |
+| [modify] | `src/components/HaifaQualificationFields.tsx` | Optional response-driven field filter and compact presentation; preserve defaults. |
+| [modify] | `src/components/JourneyExactGrades.tsx` | Reuse shared rows with existing behavior preserved. |
+| [modify] | `src/components/StudyJourney.tsx` | Homepage calculator link directly under the main action. |
+| [new] | `src/components/sekhem/RequiredAdmissionsInputs.test.tsx` | Verify requested-key mapping and optional Hebrew fields. |
+| [new] | `src/components/sekhem/RequiredAdmissionsInputs.tsx` | Optional Haifa controls selected by returned required-input keys. |
+| [new] | `src/components/sekhem/SekhemCalculator.test.tsx` | Payload, enquiry interception, missing fields, batching, partial retry and stale-response behavior. |
+| [new] | `src/components/sekhem/SekhemCalculator.tsx` | Raw profile, sequential batches, stale-result handling, optional extras and real lead targets. |
+| [new] | `src/components/sekhem/SekhemResults.mapping.test.tsx` | Real evaluator to batch API to UI parity across nine institutions and both Kidum IDs. |
+| [new] | `src/components/sekhem/SekhemResults.test.tsx` | Honesty, number ownership, gate text, no-score collapse, Ariel exclusion and CTA targets. |
+| [new] | `src/components/sekhem/SekhemResults.tsx` | API-owned metrics, thresholds, verdicts, actual gates and group CTAs. |
+| [new] | `src/components/sekhem/sekhem.css` | Shared-token responsive form styling, right-aligned values and accessible controls. |
+| [new] | `src/components/seo/SekhemCalculatorLink.tsx` | Selector-driven contextual programme link. |
+| [new] | `src/lib/admissionsCoverageRetirement.test.ts` | Preserve independent aggregate 141 total / 124 exact / 16 withheld. |
+| [new] | `src/lib/admissionsEvaluationSerialization.test.ts` | Rounding, immutability, raw verdict boundaries and medicine exception. |
+| [new] | `src/lib/admissionsEvaluationSerialization.ts` | Immutable HUJI score precision only; medicine keeps three decimals. |
+| [modify] | `src/lib/enquirySourcePath.ts` | Allow the real public calculator source path through existing attribution sanitization. |
+| [new] | `src/lib/playwrightServerConfig.test.ts` | Prevent cross-checkout server reuse when BASE_URL selects another local port. |
+| [new] | `src/lib/publishedCompositeThresholds.test.ts` | Exact static 41-page inventory and selector negative cases. |
+| [new] | `src/lib/publishedCompositeThresholds.ts` | Data-driven published-threshold eligibility; generic Ariel and TAU FAQ exclusions. |
+| [new] | `src/lib/sekhemCalculator.test.ts` | Input bounds, raw zero preservation, duplicate aliases, identities and institutional-policy readiness. |
+| [new] | `src/lib/sekhemCalculator.ts` | Real programme identities, raw input mapping and API-verdict presentation without formulas. |
+| [new] | `src/lib/sekhemCalculatorGuard.test.ts` | Guard formula ownership and retired coverage references. |
+| [modify] | `src/lib/seo/jsonLd.ts` | Add ViewAction calculator links to qualifying FAQ Answers without changing text. |
+| [new] | `src/lib/seo/sekhemThresholdLinks.test.tsx` | Eleven FAQ actions and rendered contextual programme links. |
+| [modify] #317-OVERLAP | `src/lib/seo/seo.test.ts` | Isolated NEEDS APPROVAL sitemap assertion change: one added URL, 401 to 402. |
+| [delete] | `src/server/admissions/calculatorCoverage.test.ts` | Delete stale registry expectations; retain independent aggregate elsewhere. |
+| [delete] | `src/server/admissions/calculatorCoverage.ts` | Delete dead stale coverage registry; no production importers. |
 
-Current-run change: this plan only. `sekhemCalculators.ts` and all its importers remain unchanged. Existing API client/profile helpers and all `src/data/**` are reused read-only. Any additional required file is a scope amendment, not silent permission to enter Eitan's lane.
-
-**#317 integration:** let it merge first, then merge main into this branch without rebase/force-push. Preserve its programme metadata and SSR whitespace. Only the two tagged files overlap its current change set. Avoid root page.tsx, shared metadata helpers, institution pages, navbar/footer, CatalogueLinks and its e2e files. Recheck the exact diff at implementation time; do not edit .github Actions beyond the existing targeted-test references required here.
+**Integration:** merge main after #317, without rebase or force-push. Preserve its metadata and SSR whitespace. No nav, root-page, institution-page or catalogue/data changes.
 
 ### 3. Live composite coverage, verified against code
 
@@ -345,13 +347,13 @@ Use boundary reports whose evaluator verdict is already established on raw value
 | Reichman | Audit economics coordinated639.1652/600 pending is estimated; business/law psychometric700/700 is labelled as psychometric; below CS with no returned score remains without a composite. Use existing route fixtures for actual evaluator parity; no institutional file edits. |
 | Afeka / BIU / HIT / Ariel | Afeka accepted/exact with no score, BIU floor/estimated with no score, HIT CS unsupported all avoid numeric sekhem; the proposed single-line treatment and Afeka link work. Ariel absent even in generic multi-institution responses. |
 
-Audit fixtures in `src/test/fixtures/sekhemCalculatorResponses.json` are small curated result examples, with no production headers, credentials, PII or share links; they do not replace full-fixture parity or become runtime coverage data. Do not copy external research scripts into tests or require `/workspace/pm-research` on CI.
+Parity tests reuse the repository’s retained official fixtures; browser-only response fixtures are inline in the e2e spec. No research scripts, runtime coverage fixtures or external research directory are required on CI.
 
-**Input/state tests:** empty initial form; exact sample action; add/remove/edit; normalized duplicate Hebrew aliases; zero grades; units/grade/total/section bounds; invalid decimals; maximum subject count; no composite field by accessible name, DOM or payload. Validate stale responses, progressive batches, failedDegreeIds,429/retry behaviour and no obsolete verdict after edits. New fields for sections/Haifa are right aligned in empty and filled states. Never infer sections, a missing subject or a qualification. Unknown required-input IDs offer a clear full-calculator continuation rather than a guessed value or internal field name.
+**Input/state tests:** empty initial form; exact sample action; add/remove/edit; normalized duplicate Hebrew aliases; zero grades; units/grade/total/section bounds; invalid decimals; maximum subject count; no composite field by accessible name, DOM or payload. Validate stale responses, progressive batches, failedDegreeIds,429/retry behaviour and no obsolete verdict after edits. New fields for sections/Haifa are right aligned in empty and filled states. Never infer sections, a missing subject or a qualification. Uncollected required inputs remain needs_input; never expose internal field names or invent missing data.
 
 **Backend-fix compatibility:** fixture transitions needs_input -> scored; no-score -> accepted/score; stale -> exact; pending -> accepted and same-ID alias correction must flow through the same mapper. No institution-specific hard-coded support count, fixed expected source failure or frontend alias rewrite. No broad metadata whitelist that would strip new fields Eitan adds.
 
-**SEO/links:** new tests check exact title/description/canonical, query-free canonical, public indexability, one sitemap entry with stable actual date under a changed test clock, one llms line and the homepage link directly below its existing main action. Assert all42 static page IDs/14 threshold-bearing FAQ answers and the37-page/15-FAQ supplied snapshot variant from section4, with full numerical content and a fixed safe anchor. Negative cases: formulas/years, ordinary psychometric floors, hidden/non-degree/alias records, absent data and freshness questions. No edits to FAQ/catalogue data. Use the small captured catalogue-delta fixture for DB-first/static-fallback merge tests; actual preview catalogue counts are reported independently of both snapshot expectations.
+**SEO/links:** new tests check exact title/description/canonical, query-free canonical, public indexability, one sitemap entry with stable actual date under a changed test clock, one llms line and the homepage link directly below its existing main action. Assert the approved 41 static page IDs and 11 FAQ actions with all existing answer text unchanged. The earlier snapshot inventories in section4 remain research context, not production allowlists. Negative cases: formulas/years, ordinary psychometric floors, hidden/non-degree/alias records, absent data and freshness questions. No edits to FAQ/catalogue data. The runtime selector always consumes resolved current display data; no production count is hard-coded and preview counts require a separate live verification.
 
 **Legacy cleanup:** new retirement test preserves the independent aggregate baseline using existing authoritative helpers. Guard tests require the new calculator/serialization paths and test suites, and absence of references to the deleted test. Full CI still runs every retained legacy formula/source-scan/Reichman test. No expected values in forbidden tests change.
 
@@ -381,7 +383,7 @@ Later real-preview verification must use actual routes/catalogue and intercepted
 | New section/Haifa labels | Proposed sections: `כמותי`, `מילולי`, `אנגלית בפסיכומטרי`; Haifa average: `ממוצע בגרות בחיפה`. Reuse existing Hebrew qualification options; do not confuse Bagrut English with psychometric English. New required fields use asterisks and accessible errors, no `(חובה)` captions. |
 | Result / lead copy | Proposed compact result labels: `סף קבלה`, `הציונים עומדים בתנאי הקבלה`, `הציונים מתחת לסף`, `חסרים נתונים לחישוב`, `נדרשת בדיקה מול המוסד`. CTA `קבלת מידע על התוכנית`, explicit `בחירת תוכנית` only where needed. Keep actual pending/manual/estimate semantics and Reichman's exact estimate label. These additions are absent from the copy sheet and need approval. |
 | Interaction override | Calculation is submit-based because official calls are asynchronous/rate-limited; edits invalidate results. Keep button `לחשב את הסכם`; do not claim instant locally recalculated results. |
-| Link counts / Ariel | Use the corrected42/14 static and37/15 snapshot inventories, including coordinated/adaptation thresholds and the live academic Wingate record. Existing published Ariel thresholds elsewhere remain unchanged; filter Ariel from all calculator targets/results even when incoming context has multiple institutions. No nav changes. |
+| Link counts / Ariel | Use the approved 41 static programme pages and 11 FAQ answers; exclude Ariel sources and TAU adaptation-only FAQ answers generically. Earlier 42/14 and37/15 inventories are research baselines only. Existing published Ariel thresholds elsewhere remain unchanged; filter Ariel from all calculator targets/results even when incoming context has multiple institutions. No nav changes. |
 
 All other non-navigation approved copy remains verbatim, including H1, intro, sample label, field errors, explanatory sections and footer disclaimer. The form starts empty; sample values appear only through `ערכים לדוגמה`. The approved collage is a baseline, not approval of new sections, conditional fields, programme groups, precision or lead placement. Later real-preview screenshots need the standing Amit+Yonatan approval through Jorje. No messages or approval requests are sent during this phase.
 
@@ -397,7 +399,7 @@ U2. **Retire only the dead registry.** Covers R2/R9. Delete calculatorCoverage/m
 
 U3. **Build the raw-input API client page.** Covers R1–R3/R5–R7. Extract/reuse subject controls; collect actual total/sections and truthful record metadata; batch live catalogue IDs; render returned metrics/caps and response-driven Haifa fields. Reuse the existing modal. Test backend response transitions and stale-request/field removal behaviour before treating the page as ready. Resolve no-score layout and additional field scope with Jorje.
 
-U4. **Add SEO and threshold links with minimal overlap.** Covers R8. After #317 integration by merging main, add the new selector/link component and small insertion points. Prove42/14 static and37/15 captured snapshot discovery, exact copy and all old FAQ facts. No data, institution rules, shared SEO helper redesign or nav modifications.
+U4. **Add SEO and threshold links with minimal overlap.** Covers R8. After #317 integration by merging main, add the new selector/link component and small insertion points. Prove approved 41-page/11-answer static discovery, exact copy and unchanged existing FAQ facts. No data, institution rules, shared SEO helper redesign or nav modifications.
 
 U5. **Verify end-to-end and document actual limits.** Covers R9. Run parity, input/optional-field, SEO, retirement and enquiry-intercept tests, then required repo checks and existing preview workflows. Confirm `toar-academic-guide` preview/catalogue and actual page behaviour; record Eitan dependencies and observed API changes. No DB writes or fresh production requests without later authorization. No screenshot or verification claims are made in this planning run.
 

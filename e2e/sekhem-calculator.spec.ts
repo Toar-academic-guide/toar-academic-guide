@@ -1,0 +1,427 @@
+import { expect, test, type Page } from './fixtures';
+import { ENQUIRY_COPY, ENQUIRY_PREP_CONSENT } from '../src/lib/enquiries';
+import type {
+  AdmissionsEvaluationInput,
+  AdmissionsEvaluationReport,
+  AdmissionsEvaluationResult,
+} from '../src/types/admissionsEvaluation';
+
+const title = 'מחשבון סכם וסיכויי קבלה לפי מוסד ותוכנית | MyWay';
+const canonical = 'https://findmyway.co.il/sekhem-calculator';
+const description =
+  'מחשבון סכם וסיכויי קבלה בחינם: מזינים ציוני בגרות ופסיכומטרי, מחשבים סכם לפי נוסחאות המוסדות הנתמכים וממשיכים לבדיקת התוכנית שמעניינת אותך.';
+const noScoreLine = 'בחלק מהמוסדות נבדקים תנאי קבלה בלי חישוב סכם.';
+const kidumText = 'מסלול ראויים לקידום';
+const compositeInput = /סכם|מתואם|מצרף|ציון משוקלל|sekhem|sekem|composite|weighted.?score/i;
+type Locator = ReturnType<Page['locator']>;
+
+type BatchRequest = Omit<AdmissionsEvaluationInput, 'degreeId'> & { degreeIds: string[] };
+
+function result(
+  institution: string,
+  overrides: Partial<AdmissionsEvaluationResult> = {},
+): AdmissionsEvaluationResult {
+  return {
+    institution: { id: institution, name: institution, region: 'מרכז', domain: 'university' },
+    linkedInstitutionId: institution,
+    kind: 'exact',
+    capability: 'exact',
+    decision: 'accepted',
+    confidence: 'high',
+    sourceLabel: 'תנאי הקבלה',
+    explanation: 'הציונים עומדים בתנאי הקבלה.',
+    nextAction: 'אפשר להגיש מועמדות.',
+    ...overrides,
+  };
+}
+
+// The browser characterizes the API response contract. Evaluator integration and
+// official numerical fixtures are exercised separately by the mapping unit tests.
+function apiResults(programId: string, needsHaifa: boolean): AdmissionsEvaluationResult[] {
+  return [
+    result('tau', { score: 639, scoreLabel: 'סכם', threshold: 610 }),
+    result(
+      'huji',
+      programId.includes('psychology')
+        ? {
+            kind: 'manual_gate',
+            capability: 'manual_gate',
+            decision: 'eligible_to_apply',
+            sourceLabel: kidumText,
+            explanation:
+              'מסלול ראויים לקידום מיועד לציון פסיכומטרי 690 ומעלה ולניקוד 30 באגודה לקידום החינוך.',
+          }
+        : { score: 21.12, scoreLabel: 'סכם', threshold: 20.75 },
+    ),
+    result('bgu', {
+      score: 648,
+      scoreLabel: 'סכם',
+      threshold: 735,
+      decision: 'below',
+      scoreAssessment: 'below_threshold',
+    }),
+    result(
+      'haifa',
+      needsHaifa
+        ? {
+            kind: 'needs_input',
+            capability: 'needs_input',
+            decision: 'unknown',
+            requiredInputs: ['haifa_bagrut_average', 'haifa_hebrew_qualification'],
+          }
+        : {
+            kind: 'manual_gate',
+            capability: 'manual_gate',
+            score: 706,
+            scoreLabel: 'סכם',
+            threshold: 700,
+            scoreAssessment: 'meets_threshold',
+            additionalConditions: [
+              { id: 'admissions_committee', label: 'ראיון', status: 'unconfirmed' },
+            ],
+          },
+    ),
+    result('technion', {
+      score: 84.4,
+      scoreLabel: 'סכם',
+      threshold: 91.5,
+      decision: 'below',
+      scoreAssessment: 'below_threshold',
+    }),
+    result('reichman', {
+      kind: 'estimated',
+      capability: 'estimated',
+      confidence: 'medium',
+      estimated: true,
+      score: 639.17,
+      scoreLabel: 'סכם',
+      threshold: 600,
+    }),
+    result('biu', { kind: 'estimated', capability: 'estimated', confidence: 'medium' }),
+    result('afeka'),
+    result('hit', { kind: 'unsupported', capability: 'unsupported', decision: 'unknown' }),
+    // A contaminated response must never make Ariel visible on this page.
+    result('ariel', { score: 999, threshold: 888 }),
+  ];
+}
+
+async function installMocks(page: Page, baseURL?: string, requestHaifa = false) {
+  const submissions: Record<string, unknown>[] = [];
+  const batches: BatchRequest[] = [];
+  const reports = new Map<string, AdmissionsEvaluationReport>();
+  const origin = new URL(baseURL ?? 'http://localhost:3000').origin;
+  // Analytics and other external mutations are irrelevant to this isolated flow.
+  await page.route('**/*', async (route) => {
+    const request = route.request();
+    if (!['GET', 'HEAD'].includes(request.method()) && new URL(request.url()).origin !== origin)
+      await route.abort();
+    else await route.continue();
+  });
+  // Install both POST interceptions before any navigation. Never continue either.
+  await page.route('**/api/enquiries', async (route) => {
+    expect(route.request().method()).toBe('POST');
+    submissions.push(route.request().postDataJSON());
+    await route.fulfill({ status: 201, json: { data: { received: true } } });
+  });
+  await page.route('**/api/admissions/evaluate', async (route) => {
+    expect(route.request().method()).toBe('POST');
+    const batch = route.request().postDataJSON() as BatchRequest;
+    expect(batch.degreeIds.length).toBeGreaterThan(0);
+    expect(batch.degreeIds.length).toBeLessThanOrEqual(50);
+    expect(new Set(batch.degreeIds).size).toBe(batch.degreeIds.length);
+    batches.push(batch);
+    const response: Record<string, AdmissionsEvaluationReport> = {};
+    for (const degreeId of batch.degreeIds) {
+      const input = { ...batch };
+      Reflect.deleteProperty(input, 'degreeIds');
+      const report: AdmissionsEvaluationReport = {
+        generatedAt: '2026-10-28T00:00:00.000Z',
+        evaluatorVersion: 'browser-response-contract',
+        inputDigest: 'browser-response-contract',
+        input: { ...input, degreeId },
+        program: { id: degreeId, name: degreeId },
+        results: apiResults(degreeId, requestHaifa && !batch.extraInputs?.haifaBagrutAverage),
+      };
+      response[degreeId] = report;
+      reports.set(degreeId, report);
+    }
+    await route.fulfill({ json: { data: { reports: response, failedDegreeIds: [] } } });
+  });
+  return { submissions, batches, reports };
+}
+
+async function fillProfile(page: Page) {
+  for (let row = 1; row <= 4; row++) {
+    await page.getByRole('spinbutton', { name: `ציון ${row}`, exact: true }).fill('90');
+  }
+  await page.getByLabel('פסיכומטרי — ציון כללי').fill('700');
+  await page.getByLabel('מילולי', { exact: true }).fill('130');
+  await page.getByLabel('כמותי', { exact: true }).fill('140');
+  await page.locator('#psychometric-english').fill('135');
+}
+
+async function assertAlignedFields(root: Locator) {
+  for (const field of await root
+    .locator('input:visible:not([type="checkbox"]), select:visible')
+    .all()) {
+    expect(await field.evaluate((node) => getComputedStyle(node).textAlign)).toBe('right');
+    const box = await field.boundingBox();
+    expect(box!.width).toBeGreaterThan(0);
+    expect(box!.x).toBeGreaterThanOrEqual(0);
+  }
+}
+
+async function assertNoCompositeInput(page: Page) {
+  const inputNames = await page.locator('main input, main select').evaluateAll((inputs) =>
+    inputs.map((node) => {
+      const input = node as HTMLInputElement | HTMLSelectElement;
+      return [
+        input.name,
+        input.getAttribute('aria-label'),
+        ...Array.from(input.labels ?? [], (label) => label.textContent),
+      ].join(' ');
+    }),
+  );
+  for (const name of inputNames) expect(name).not.toMatch(compositeInput);
+}
+
+function assertNoCompositePayload(value: unknown) {
+  if (!value || typeof value !== 'object') return;
+  for (const [key, child] of Object.entries(value)) {
+    expect(key).not.toMatch(compositeInput);
+    assertNoCompositePayload(child);
+  }
+}
+
+for (const width of [1280, 390]) {
+  test(`raw grades, honest results and mocked institution leads at ${width}px`, async ({
+    page,
+    baseURL,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    const errors: string[] = [];
+    page.on('pageerror', (error) => errors.push(error.message));
+    const mocks = await installMocks(page, baseURL);
+    await page.goto('/sekhem-calculator');
+    await expect(
+      page.getByRole('heading', { name: 'מחשבון סכם וסיכויי קבלה', exact: true }),
+    ).toBeVisible();
+    const headingBox = (await page
+      .getByRole('heading', {
+        name: 'מחשבון סכם וסיכויי קבלה',
+        exact: true,
+      })
+      .boundingBox())!;
+    const navbarBox = (await page
+      .getByRole('navigation', { name: 'ניווט ראשי' })
+      .locator('..')
+      .boundingBox())!;
+    expect(headingBox.y).toBeGreaterThanOrEqual(navbarBox.y + navbarBox.height);
+    await assertNoCompositeInput(page);
+    await assertAlignedFields(page.locator('main'));
+    await test.info().attach(`calculator-empty-${width}`, {
+      body: await page.screenshot(),
+      contentType: 'image/png',
+    });
+
+    await test.step('subject rows can be added and removed without submitting', async () => {
+      await page.getByRole('button', { name: 'הוספת מקצוע' }).click();
+      await page.getByLabel('מקצוע 5', { exact: true }).fill('כימיה');
+      await page.getByLabel('ציון 5', { exact: true }).fill('91');
+      await page.getByRole('button', { name: 'הסרת מקצוע 5' }).click();
+      await expect(page.getByLabel('מקצוע 5', { exact: true })).toHaveCount(0);
+      expect(mocks.batches).toHaveLength(0);
+    });
+    await fillProfile(page);
+    await assertAlignedFields(page.locator('main'));
+    await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'הסכם לפי מוסד ותוכנית' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'מחשבים…' })).toHaveCount(0);
+    expect(mocks.batches.length).toBeGreaterThan(0);
+    for (const batch of mocks.batches) {
+      expect(batch).toMatchObject({
+        psychometric: 700,
+        bagrut: 90,
+        extraInputs: { psychometricVerbal: 130, psychometricMath: 140, psychometricEnglish: 135 },
+      });
+      expect(batch.extraInputs?.bagrutSubjectRecord?.subjects).toHaveLength(4);
+      for (const subject of batch.extraInputs!.bagrutSubjectRecord!.subjects) {
+        expect(subject).toMatchObject({ units: 5, grade: 90 });
+      }
+      assertNoCompositePayload(batch);
+    }
+
+    await expect(page.getByText(noScoreLine, { exact: true })).toHaveCount(1);
+    await expect(page.locator('[data-testid="institution-ariel"]')).toHaveCount(0);
+    await expect(page.locator('main')).not.toContainText('אריאל');
+    await expect(page.locator('main')).not.toContainText('נדרשת בדיקה מול המוסד');
+    await expect(page.locator('main')).not.toContainText('שנת הנוסחה לא מצוינת');
+    await expect(page.getByText('אומדן, עד לאישור המוסד', { exact: true })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'יש גם אפיקי קבלה נוספים' })).toHaveAttribute(
+      'href',
+      '/institutions/afeka',
+    );
+    await expect(page.getByTestId('institution-haifa')).toContainText('ראיון');
+
+    await test.step('every visible numerical result comes from that API row', async () => {
+      for (const row of await page.locator('[data-testid^="result-"]').all()) {
+        const id = await row.getAttribute('data-testid');
+        const [, programId, institutionId] = id!.match(/^result-(.+)-([^-]+)$/)!;
+        const api = mocks.reports
+          .get(programId)!
+          .results.find((item) => item.linkedInstitutionId === institutionId)!;
+        for (const number of await row.locator('[data-result-number]').all()) {
+          const field = await number.getAttribute('data-result-number');
+          expect(await number.textContent()).toBe(String(api[field as 'score' | 'threshold']));
+        }
+        const renderedNumbers = (await row.innerText()).match(/\d+(?:\.\d+)?/g) ?? [];
+        for (const number of renderedNumbers) {
+          expect([api.score, api.threshold].map(String)).toContain(number);
+        }
+      }
+    });
+
+    await test.step('the HUJI psychology manual route keeps all numbers suppressed', async () => {
+      const huji = page.getByTestId('institution-huji');
+      const select = huji.getByRole('combobox');
+      const psychology = (
+        await select
+          .locator('option')
+          .evaluateAll((options) => options.map((option) => (option as HTMLOptionElement).value))
+      ).find((id) => id.includes('psychology'));
+      expect(psychology).toBeTruthy();
+      await select.selectOption(psychology!);
+      const row = huji.locator('[data-testid^="result-"]');
+      await expect(row).toHaveAttribute('data-kind', 'manual_gate');
+      await expect(row).toContainText(kidumText);
+      await expect(row.locator('[data-result-number]')).toHaveCount(0);
+      expect(await row.innerText()).not.toMatch(/\d/);
+    });
+
+    await test.step('every displayed institution has a real, selectable lead target', async () => {
+      await page.getByRole('heading', { name: 'הסכם לפי מוסד ותוכנית' }).scrollIntoViewIfNeeded();
+      await test.info().attach(`calculator-results-${width}`, {
+        body: await page.screenshot(),
+        contentType: 'image/png',
+      });
+      const groups = page.locator('[data-testid^="institution-"]');
+      expect(await groups.count()).toBeGreaterThanOrEqual(6);
+      for (const group of await groups.all()) {
+        const cta = group.getByRole('button', { name: 'קבלת מידע על התוכנית', exact: true });
+        await expect(cta).toHaveCount(1);
+        const select = group.getByRole('combobox');
+        if (await select.count()) {
+          const last = await select.locator('option').last().getAttribute('value');
+          await select.selectOption(last!);
+        }
+        await cta.focus();
+        await page.keyboard.press('Enter');
+        const dialog = page.getByRole('dialog');
+        await expect(dialog).toBeVisible();
+        await expect(dialog.getByRole('heading', { level: 2 })).toHaveText(
+          (await group.getByRole('heading', { level: 3 }).textContent())!,
+        );
+        await expect(
+          dialog.getByRole('checkbox', { name: ENQUIRY_PREP_CONSENT }),
+        ).not.toBeChecked();
+        await assertAlignedFields(dialog);
+        await page.keyboard.press('Escape');
+        await expect(dialog).toHaveCount(0);
+        await expect(cta).toBeFocused();
+      }
+      expect(mocks.submissions).toHaveLength(0);
+    });
+
+    const tau = page.getByTestId('institution-tau');
+    const selectedProgram = await tau.getByRole('combobox').inputValue();
+    await tau.getByRole('button', { name: 'קבלת מידע על התוכנית', exact: true }).click();
+    const dialog = page.getByRole('dialog');
+    await dialog.getByLabel(ENQUIRY_COPY.nameLabel, { exact: true }).fill('בדיקת MyWay');
+    await dialog.getByLabel(ENQUIRY_COPY.phoneLabel, { exact: true }).fill('0501234567');
+    await assertAlignedFields(dialog);
+    await dialog.getByRole('button', { name: ENQUIRY_COPY.button, exact: true }).click();
+    await expect(dialog.getByRole('status')).toContainText(ENQUIRY_COPY.successTitle);
+    expect(mocks.submissions).toHaveLength(1);
+    expect(mocks.submissions[0]).toMatchObject({
+      programId: selectedProgram,
+      institutionId: 'tau',
+      consent: true,
+      prepConsent: false,
+      sourcePath: '/sekhem-calculator',
+      evaluationInput: { degreeId: selectedProgram, psychometric: 700 },
+    });
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+    await page.keyboard.press('Escape');
+    await assertNoCompositeInput(page);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+    expect(errors).toEqual([]);
+  });
+}
+
+test('Haifa supplementary inputs follow the latest evaluator response', async ({
+  page,
+  baseURL,
+}) => {
+  const mocks = await installMocks(page, baseURL, true);
+  await page.goto('/sekhem-calculator');
+  const average = page.getByLabel('ממוצע בגרות בחיפה', { exact: true });
+  const hebrew = page.getByLabel('הבסיס לעמידה בדרישת העברית בחיפה', { exact: true });
+  await expect(average).toHaveCount(0);
+  await expect(hebrew).toHaveCount(0);
+  await fillProfile(page);
+  await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
+  await expect(average).toBeVisible();
+  await expect(hebrew).toBeVisible();
+  await expect(average).not.toHaveAttribute('required', '');
+  await expect(page.getByTestId('institution-haifa')).toContainText('חסרים נתונים לחישוב');
+  await average.fill('104');
+  await hebrew.selectOption('hebrew_school');
+  await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
+  await expect(average).toHaveCount(0);
+  await expect(hebrew).toHaveCount(0);
+  await expect(page.getByTestId('institution-haifa')).toContainText('706');
+  expect(mocks.batches.some((batch) => batch.extraInputs?.haifaBagrutAverage === 104)).toBe(true);
+  await page.getByLabel('פסיכומטרי — ציון כללי').fill('701');
+  await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
+  await expect(average).toBeVisible();
+  expect(mocks.batches.at(-1)!.extraInputs).not.toHaveProperty('haifaBagrutAverage');
+  expect(mocks.batches.at(-1)!.extraInputs).not.toHaveProperty('haifaHebrewQualification');
+  expect(mocks.submissions).toHaveLength(0);
+});
+
+test('public metadata, crawl links and homepage placement use the calculator URL', async ({
+  page,
+  baseURL,
+  request,
+}) => {
+  await installMocks(page, baseURL);
+  await page.goto('/sekhem-calculator');
+  await expect(page).toHaveTitle(title);
+  await expect(page.locator('head title')).toHaveCount(1);
+  await expect(page.locator('link[rel="canonical"]')).toHaveAttribute('href', canonical);
+  await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', description);
+  const sitemap = await request.get('/sitemap.xml');
+  expect(sitemap.ok()).toBe(true);
+  expect(await sitemap.text()).toMatch(
+    /<url>\s*<loc>https:\/\/findmyway\.co\.il\/sekhem-calculator<\/loc>\s*<lastmod>2026-10-28(?:T[^<]+)?<\/lastmod>/,
+  );
+  const llms = await request.get('/llms.txt');
+  expect(llms.ok()).toBe(true);
+  expect((await llms.text()).split('\n').filter((line) => line.includes(canonical))).toHaveLength(
+    1,
+  );
+  await page.goto('/');
+  const primary = page.getByRole('button', { name: 'עזרו לי לבחור מה ללמוד', exact: true });
+  const link = page.getByRole('link', { name: 'מחשבון סכם וסיכויי קבלה', exact: true });
+  await expect(link).toHaveAttribute('href', '/sekhem-calculator');
+  expect(await primary.evaluate((button) => button.nextElementSibling?.textContent?.trim())).toBe(
+    'מחשבון סכם וסיכויי קבלה',
+  );
+  const primaryBox = (await primary.boundingBox())!;
+  const linkBox = (await link.boundingBox())!;
+  expect(linkBox.y).toBeGreaterThanOrEqual(primaryBox.y + primaryBox.height);
+});
