@@ -330,7 +330,9 @@ describe('metadata', () => {
       locale: 'he_IL',
     });
     expect(meta.robots).toBeUndefined();
-    expect((await buildProgramMetadata('cs')).title).toBe('לימודי מדעי המחשב: תנאי קבלה וסיכויי קבלה');
+    expect((await buildProgramMetadata('cs')).title).toBe(
+      'לימודי מדעי המחשב: תנאי קבלה וסיכויי קבלה',
+    );
   });
 
   it('builds metadata and JSON-LD without computing admission requirement summaries', async () => {
@@ -356,7 +358,7 @@ describe('metadata', () => {
     expect(metadata.alternates).toEqual({ canonical: '/programs/danon_culinary' });
     expect(metadata.openGraph).toMatchObject({ url: '/programs/danon_culinary' });
     expect(metadata.robots).toBeUndefined();
-    expect(metadata.title).toBe('קולינריה — דנון: תנאי קבלה וסיכויי קבלה');
+    expect(metadata.title).toBe('קולינריה — דנון – מכון דנון לבישול: תנאי קבלה');
     expect((await buildProgramMetadata('danon_culinary')).title).toBe(metadata.title);
     expect(await indexableProgramIds()).not.toContain('danon_cs');
     expect((await sitemap()).map((entry) => entry.url)).not.toContain(
@@ -570,12 +572,14 @@ describe('metadata', () => {
     expect((await buildProgramMetadata('biology')).title).toBe(
       'לימודי ביולוגיה: תנאי קבלה וסיכויי קבלה',
     );
-    expect((await buildProgramMetadata('tau_biology')).title).toBe('ביולוגיה – אוניברסיטת תל אביב: תנאי קבלה וסיכויי קבלה');
+    expect((await buildProgramMetadata('tau_biology')).title).toBe(
+      'ביולוגיה – אוניברסיטת תל אביב: תנאי קבלה וסיכויי קבלה',
+    );
     expect((await buildProgramMetadata('nativ_acting')).title).toBe(
-      'משחק: תנאי קבלה וסיכויי קבלה',
+      'משחק – בית הספר למשחק ניסן נתיב: תנאי קבלה',
     );
     expect((await buildProgramMetadata('nativ_graphic_design')).title).toBe(
-      'משחק: תנאי קבלה וסיכויי קבלה',
+      'משחק – בית הספר למשחק ניסן נתיב: תנאי קבלה',
     );
   }, 15_000);
 });
