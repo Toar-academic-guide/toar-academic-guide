@@ -845,6 +845,12 @@ export default function StudyJourney({
               </h1>
               <p>בתוך ריבוי האפשרויות, Way עוזרת לעשות סדר ולבנות דרך שמתאימה לך. שנתחיל?</p>
               <Primary onClick={() => go('intent')}>עזרו לי לבחור מה ללמוד</Primary>
+              <Link
+                href="/sekhem-calculator"
+                className="inline-flex min-h-11 items-center justify-center underline"
+              >
+                מחשבון סכם וסיכויי קבלה
+              </Link>
               <small>אפשר להתחיל גם בלי כל הציונים. התוצאות הראשונות בלי הרשמה.</small>
             </div>
             <div className="journey-funnel" aria-label="מה ללמוד, איפה ללמוד ואיך להתקבל">

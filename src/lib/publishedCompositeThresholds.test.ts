@@ -123,7 +123,7 @@ describe('published composite threshold selector', () => {
     const sources = await getPublicProgramRequirementSources(data);
     for (const override of [
       { isListed: false },
-      { type: 'non_degree' as const },
+      { type: 'certificate' as const },
       { id: 'mon_saved' },
       { id: 'mta_cs' },
     ]) {
