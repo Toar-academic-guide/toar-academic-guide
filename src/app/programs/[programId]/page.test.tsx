@@ -124,7 +124,7 @@ describe('ProgramPage', () => {
     expect(heading.previousElementSibling?.textContent).toBe('הנדסה');
     expect(within(heading.parentElement!).queryByText('אוניברסיטת חיפה')).toBeNull();
     expect(await generateMetadata(props)).toMatchObject({
-      title: 'הנדסה וטכנולוגיה – אוניברסיטת חיפה',
+      title: 'הנדסה וטכנולוגיה – אוניברסיטת חיפה: תנאי קבלה',
       alternates: { canonical: '/programs/haifa_engineering' },
     });
   });
