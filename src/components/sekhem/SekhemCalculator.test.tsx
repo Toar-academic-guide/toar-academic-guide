@@ -96,12 +96,14 @@ it('fills a complete nine-subject example certificate and sends every raw subjec
     psychometricEnglish: 135,
   });
   expect(body.extraInputs.bagrutSubjectRecord.subjects).toEqual(
-    subjects.map(([, subjectId, units, grade]) => ({
-      subjectId,
-      units,
-      grade,
-      assessmentKind: 'exam',
-    })),
+    subjects
+      .map(([, subjectId, units, grade]) => ({
+        subjectId,
+        units,
+        grade,
+        assessmentKind: 'exam',
+      }))
+      .sort((a, b) => a.subjectId.localeCompare(b.subjectId)),
   );
   expect(fetchMock.mock.calls.every(([url]) => url === '/api/admissions/evaluate')).toBe(true);
 });

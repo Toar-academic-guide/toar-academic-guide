@@ -20,6 +20,20 @@ import './sekhem.css';
 const subjectNames = ['מתמטיקה', 'אנגלית', 'פיזיקה', 'מדעי המחשב'];
 const emptyRows = (): BagrutSubjectRow[] =>
   subjectNames.map((label) => ({ label, units: 5, grade: '', assessmentKind: 'exam' }));
+const exampleRows = (): BagrutSubjectRow[] =>
+  (
+    [
+      ['מתמטיקה', 5, 92],
+      ['אנגלית', 5, 95],
+      ['הבעה עברית', 2, 88],
+      ['תנ״ך', 2, 85],
+      ['ספרות', 2, 90],
+      ['היסטוריה / תע״י', 2, 87],
+      ['אזרחות', 2, 93],
+      ['פיזיקה', 5, 90],
+      ['מדעי המחשב', 5, 94],
+    ] as const
+  ).map(([label, units, grade]) => ({ label, units, grade, assessmentKind: 'exam' }));
 const numericHaifaKeys = new Set([
   'haifaBagrutAverage',
   'haifaBagrutYear',
@@ -171,15 +185,11 @@ export default function SekhemCalculator({
             className="min-h-11 text-sm underline"
             onClick={() => {
               invalidate();
-              setRows(
-                subjectNames.map((label, index) => ({
-                  label,
-                  units: 5,
-                  grade: [90, 85, 80, 95][index],
-                  assessmentKind: 'exam',
-                })),
-              );
+              setRows(exampleRows());
               setPsychometric('700');
+              setVerbal('130');
+              setQuantitative('140');
+              setEnglish('135');
             }}
           >
             ערכים לדוגמה
