@@ -57,9 +57,17 @@ function gateText(result: AdmissionsEvaluationResult): string[] {
   );
 }
 
-function InstitutionGroup({ entries, onEnquiry }: { entries: Entry[]; onEnquiry: Enquiry }) {
-  const [selected, setSelected] = useState<string>();
-  const entry = groupEntry(entries, selected);
+function InstitutionGroup({
+  entries,
+  entry,
+  onSelect,
+  onEnquiry,
+}: {
+  entries: Entry[];
+  entry: Entry;
+  onSelect: (programId: string) => void;
+  onEnquiry: Enquiry;
+}) {
   const { offering, report, result } = entry;
   const numberless = !hasResultNumber(entry);
   const gates = numberless && offering.institutionId === 'haifa' ? [] : gateText(result);
@@ -86,7 +94,7 @@ function InstitutionGroup({ entries, onEnquiry }: { entries: Entry[]; onEnquiry:
               <select
                 className="sekhem-input mt-1"
                 value={offering.programId}
-                onChange={(event) => setSelected(event.target.value)}
+                onChange={(event) => onSelect(event.target.value)}
               >
                 {entries.map((entry) => (
                   <option key={entry.offering.programId} value={entry.offering.programId}>
@@ -193,6 +201,7 @@ export default function SekhemResults({
   offerings: CalculatorOffering[];
   onEnquiry: Enquiry;
 }) {
+  const [selectedPrograms, setSelectedPrograms] = useState<Record<string, string>>({});
   const groups = new Map<string, Entry[]>();
   let uncomputable = false;
   let afeka = false;
@@ -226,12 +235,18 @@ export default function SekhemResults({
         <p className="mt-4 text-(--text-body)">בחלק מהמוסדות נבדקים תנאי קבלה בלי חישוב סכם.</p>
       )}
       {[...groups.entries()]
-        .sort(
-          ([, a], [, b]) =>
-            Number(hasResultNumber(groupEntry(b))) - Number(hasResultNumber(groupEntry(a))),
-        )
-        .map(([id, entries]) => (
-          <InstitutionGroup key={id} entries={entries} onEnquiry={onEnquiry} />
+        .map(([id, entries]) => ({ id, entries, entry: groupEntry(entries, selectedPrograms[id]) }))
+        .sort((a, b) => Number(hasResultNumber(b.entry)) - Number(hasResultNumber(a.entry)))
+        .map(({ id, entries, entry }) => (
+          <InstitutionGroup
+            key={id}
+            entries={entries}
+            entry={entry}
+            onSelect={(programId) =>
+              setSelectedPrograms((current) => ({ ...current, [id]: programId }))
+            }
+            onEnquiry={onEnquiry}
+          />
         ))}
       {afeka && (
         <Link
