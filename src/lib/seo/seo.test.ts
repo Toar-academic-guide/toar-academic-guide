@@ -302,7 +302,7 @@ describe('metadata', () => {
   it('builds institution-specific title, count, canonical and social metadata', async () => {
     const data = (await getPublicInstitutionPageData('tau'))!;
     const meta = await buildInstitutionMetadata('tau');
-    expect(meta.title).toBe(`${data.institution.name}: מסלולים ותנאי קבלה`);
+    expect(meta.title).toBe(`${data.institution.name}: תנאי קבלה וסיכויי קבלה`);
     expect(meta.description).toContain(data.institution.name);
     expect(meta.description).toContain(`${data.programs.length} מסלולי לימוד`);
     expect(meta.alternates).toEqual({ canonical: '/institutions/tau' });
@@ -320,7 +320,7 @@ describe('metadata', () => {
   it('distinguishes single-provider programs from generic multi-provider records', async () => {
     const data = (await getPublicProgramPageData('tau_cs'))!;
     const meta = await buildProgramMetadata('tau_cs');
-    expect(meta.title).toBe(`${data.program.name} – ${data.institutions[0].name}`);
+    expect(meta.title).toBe(`${data.program.name} – ${data.institutions[0].name}: תנאי קבלה`);
     expect(meta.alternates).toEqual({ canonical: '/programs/tau_cs' });
     expect(meta.openGraph).toMatchObject({
       title: meta.title,
@@ -330,7 +330,7 @@ describe('metadata', () => {
       locale: 'he_IL',
     });
     expect(meta.robots).toBeUndefined();
-    expect((await buildProgramMetadata('cs')).title).toBe('לימודי מדעי המחשב: באילו מוסדות לומדים');
+    expect((await buildProgramMetadata('cs')).title).toBe('לימודי מדעי המחשב: תנאי קבלה וסיכויי קבלה');
   });
 
   it('builds metadata and JSON-LD without computing admission requirement summaries', async () => {
@@ -356,7 +356,7 @@ describe('metadata', () => {
     expect(metadata.alternates).toEqual({ canonical: '/programs/danon_culinary' });
     expect(metadata.openGraph).toMatchObject({ url: '/programs/danon_culinary' });
     expect(metadata.robots).toBeUndefined();
-    expect(metadata.title).toBe('קולינריה — דנון – מכון דנון לבישול');
+    expect(metadata.title).toBe('קולינריה — דנון: תנאי קבלה וסיכויי קבלה');
     expect((await buildProgramMetadata('danon_culinary')).title).toBe(metadata.title);
     expect(await indexableProgramIds()).not.toContain('danon_cs');
     expect((await sitemap()).map((entry) => entry.url)).not.toContain(
@@ -403,7 +403,7 @@ describe('metadata', () => {
     const page = (await getPublicProgramPageData(program.id))!;
     expect(page.institutions.map((institution) => institution.id)).toEqual(['haifa']);
     expect((await buildProgramMetadata(program.id)).title).toBe(
-      'לימודי תחום עם מוסד אחד: באילו מוסדות לומדים',
+      'לימודי תחום עם מוסד אחד: תנאי קבלה וסיכויי קבלה',
     );
     expect(programBreadcrumbLd(page).itemListElement).toHaveLength(3);
   });
@@ -433,7 +433,7 @@ describe('metadata', () => {
       expect(page.isGeneral).toBe(true);
       expect(page.institutions.map((institution) => institution.id)).toEqual(expectedIds);
       const metadata = await buildProgramMetadata(id);
-      expect(metadata.title).toBe(`לימודי ${page.program.name}: באילו מוסדות לומדים`);
+      expect(metadata.title).toBe(`לימודי ${page.program.name}: תנאי קבלה וסיכויי קבלה`);
       expect(metadata.description).toContain(`ב-${expectedIds.length} מוסדות לימוד`);
       expect((await programLd(page)).provider.map((provider) => provider.url)).toEqual(
         expectedIds.map((institutionId) => `${SITE_URL}/institutions/${institutionId}`),
@@ -568,14 +568,14 @@ describe('metadata', () => {
       expect(title.endsWith(`(${id})`)).toBe(false);
     }
     expect((await buildProgramMetadata('biology')).title).toBe(
-      'לימודי ביולוגיה: באילו מוסדות לומדים',
+      'לימודי ביולוגיה: תנאי קבלה וסיכויי קבלה',
     );
-    expect((await buildProgramMetadata('tau_biology')).title).toBe('ביולוגיה – אוניברסיטת תל אביב');
+    expect((await buildProgramMetadata('tau_biology')).title).toBe('ביולוגיה – אוניברסיטת תל אביב: תנאי קבלה וסיכויי קבלה');
     expect((await buildProgramMetadata('nativ_acting')).title).toBe(
-      'משחק – בית הספר למשחק ניסן נתיב',
+      'משחק: תנאי קבלה וסיכויי קבלה',
     );
     expect((await buildProgramMetadata('nativ_graphic_design')).title).toBe(
-      'משחק – בית הספר למשחק ניסן נתיב',
+      'משחק: תנאי קבלה וסיכויי קבלה',
     );
   }, 15_000);
 });
