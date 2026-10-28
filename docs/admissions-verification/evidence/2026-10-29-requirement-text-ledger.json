@@ -1359,11 +1359,6 @@
       "after": "המכללה האקדמית להנדסה אורט בראודה"
     }
   ],
-  "notShippedHaifaCopy": {
-    "before": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה.",
-    "requestedAfter": "עדיין לא מחשבים את הסכם של חיפה כאן",
-    "status": "STOPPED: evaluator.ts961 outside grant; no student-visible copy change shipped."
-  },
   "internalDescriptionRemovals": [
     {
       "id": "huji_engineering",
@@ -2649,5 +2644,10 @@
       "before": "Evidence says there is no formal Bagrut/psychometric gate, but manual fit checks may remain.",
       "after": null
     }
-  ]
+  ],
+  "haifaCopy": {
+    "before": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה.",
+    "status": "FIXED: early Haifa dispatch under Oded’s narrow evaluator grant; explicit averages preserved.",
+    "after": "עדיין לא מחשבים את הסכם של חיפה כאן"
+  }
 }
