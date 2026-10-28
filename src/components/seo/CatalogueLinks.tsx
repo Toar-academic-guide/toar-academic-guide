@@ -16,7 +16,7 @@ export function HubLinks({ hubs }: { hubs: SubjectHub[] }) {
       {hubs.map((hub) => (
         <li key={hub.id}>
           <Link className={linkStyle} href={`/programs/${encodeURIComponent(hub.id)}`}>
-            {hub.name}
+            {hub.name}{' '}
           </Link>
         </li>
       ))}
@@ -42,21 +42,21 @@ export function CatalogueBrowse({
       <details>
         <summary className="cursor-pointer py-2">
           <h2 id="browse-title" className="inline text-xl font-bold">
-            מה ואיפה ללמוד
-          </h2>
-        </summary>
+            מה ואיפה ללמוד{' '}
+          </h2>{' '}
+        </summary>{' '}
         <div className="mt-6">
           <div className="mb-4 flex items-center justify-between gap-4">
-            <h3 className="text-lg font-bold">תחומי לימוד</h3>
+            <h3 className="text-lg font-bold">תחומי לימוד </h3>
             <Link className={`${linkStyle} text-sm`} href="/programs">
-              כל התחומים
+              כל התחומים{' '}
             </Link>
           </div>
           <HubLinks hubs={hubs.slice(0, HOME_SUBJECT_COUNT)} />
           <div className="mt-8 mb-4 flex items-center justify-between gap-4">
-            <h3 className="text-lg font-bold">מוסדות לימוד</h3>
+            <h3 className="text-lg font-bold">מוסדות לימוד </h3>
             <Link className={`${linkStyle} text-sm`} href="/institutions">
-              כל המוסדות
+              כל המוסדות{' '}
             </Link>
           </div>
           <ul className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2 lg:grid-cols-4">
@@ -66,7 +66,7 @@ export function CatalogueBrowse({
                   className={linkStyle}
                   href={`/institutions/${encodeURIComponent(institution.id)}`}
                 >
-                  {institution.name}
+                  {institution.name}{' '}
                 </Link>
               </li>
             ))}
@@ -105,17 +105,17 @@ export function CatalogueFooter() {
         <ul className="flex flex-wrap gap-x-8 gap-y-2 font-semibold">
           <li>
             <Link className={linkStyle} href="/programs">
-              תחומי לימוד
+              תחומי לימוד{' '}
             </Link>
           </li>
           <li>
             <Link className={linkStyle} href="/institutions">
-              מוסדות לימוד
+              מוסדות לימוד{' '}
             </Link>
           </li>
           <li>
             <Link className={linkStyle} href="/about">
-              מי אנחנו
+              מי אנחנו{' '}
             </Link>
           </li>
         </ul>
@@ -144,14 +144,14 @@ export function RelatedPrograms({
       className="border-t border-[var(--border)] pt-6 text-right"
     >
       <h2 id="related-title" className="mb-4 text-xl font-bold">
-        מסלולים נוספים
-      </h2>
+        מסלולים נוספים{' '}
+      </h2>{' '}
       {hubLink && (
         <Link
           className={`${linkStyle} mb-4 inline-block font-semibold`}
           href={`/programs/${encodeURIComponent(hub.id)}`}
         >
-          {hub.name}
+          {hub.name}{' '}
         </Link>
       )}
       <ul className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">
@@ -159,7 +159,7 @@ export function RelatedPrograms({
           <li key={program.id}>
             <Link className={linkStyle} href={`/programs/${encodeURIComponent(program.id)}`}>
               {institutions.find((institution) => institution.id === program.institutionId)?.name ??
-                program.institution}
+                program.institution}{' '}
             </Link>
           </li>
         ))}

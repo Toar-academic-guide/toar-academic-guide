@@ -32,16 +32,7 @@ interface ProgramPageProps {
 
 export async function generateMetadata({ params }: ProgramPageProps) {
   const { programId } = await params;
-  const metadata = await buildProgramMetadata(programId);
-  if (metadata.title) return metadata;
-  const data = await getPublicSubjectHub(programId);
-  return data
-    ? {
-        title: `לימודי ${data.hub.name}`,
-        alternates: { canonical: `/programs/${encodeURIComponent(data.hub.id)}` },
-        ...(data.hub.programLinks === 0 ? { robots: { index: false, follow: true } } : {}),
-      }
-    : metadata;
+  return buildProgramMetadata(programId);
 }
 
 export default async function ProgramPage({ params }: ProgramPageProps) {
@@ -58,7 +49,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
           data-page-kind="subject"
           className="mx-auto max-w-4xl px-4 py-10 text-right sm:px-6"
         >
-          <h1 className="mb-8 text-3xl font-bold">{subject.hub.name}</h1>
+          <h1 className="mb-8 text-3xl font-bold">{subject.hub.name}</h1>{' '}
           <ul className="grid gap-4 sm:grid-cols-2">
             {subject.hub.programs.map((program) => (
               <li key={program.id}>
@@ -68,7 +59,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                 >
                   {subject.institutions.find(
                     (institution) => institution.id === program.institutionId,
-                  )?.name ?? program.institution}
+                  )?.name ?? program.institution}{' '}
                 </Link>
               </li>
             ))}
@@ -98,13 +89,11 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
             href={ROUTES.home}
             className="text-sm font-semibold text-slate-500 hover:text-slate-900"
           >
-            חזרה לדף הבית
+            חזרה לדף הבית{' '}
           </Link>
-
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-            <p className="text-sm font-semibold text-cyan-700">{program.category}</p>
-            <h1 className="mt-2 text-3xl font-black sm:text-4xl">{program.name}</h1>
-
+            <p className="text-sm font-semibold text-cyan-700">{program.category}</p>{' '}
+            <h1 className="mt-2 text-3xl font-black sm:text-4xl">{program.name}</h1>{' '}
             <div className="mt-6 flex flex-wrap gap-3">
               <ProgramTrackedLink
                 event="program_calculator_cta_clicked"
@@ -113,26 +102,25 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                 href={`${ROUTES.calculator}?program=${encodeURIComponent(program.id)}`}
                 className="way-button-primary px-5 py-2.5 text-sm font-semibold transition"
               >
-                בדיקת סיכויי קבלה
+                בדיקת סיכויי קבלה{' '}
               </ProgramTrackedLink>
               <Link
                 href={ROUTES.assessment}
                 className="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
               >
-                התאמה אישית
+                התאמה אישית{' '}
               </Link>
             </div>
           </div>
-
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-            <h2 className="text-xl font-bold">מוסדות לימוד</h2>
+            <h2 className="text-xl font-bold">מוסדות לימוד</h2>{' '}
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
               {institutions.map((institution) => (
                 <div
                   key={institution.id}
                   className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-4 py-3"
                 >
-                  <Link href={institutionProgramPaths[institution.id]}>{institution.name}</Link>
+                  <Link href={institutionProgramPaths[institution.id]}>{institution.name} </Link>
                   <ProgramTrackedLink
                     event="program_contact_cta_clicked"
                     programId={program.id}
@@ -140,15 +128,14 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                     className="shrink-0 rounded-full border border-[#c9c2e4] px-3 py-2 text-sm text-[#6554b8]"
                     href={`/enquiry?program=${encodeURIComponent(program.id)}&institution=${encodeURIComponent(institution.id)}`}
                   >
-                    יצירת קשר
+                    יצירת קשר{' '}
                   </ProgramTrackedLink>
                 </div>
               ))}
             </div>
           </section>
-
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-            <h2 className="text-xl font-bold">תנאי קבלה</h2>
+            <h2 className="text-xl font-bold">תנאי קבלה</h2>{' '}
             {program.isListed === false ? (
               <p className="mt-4 text-sm text-slate-600">אין כרגע מידע עדכני על המסלול.</p>
             ) : (
@@ -201,7 +188,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                                   href={source.fullDetailsPath}
                                   className="font-semibold text-[#6554b8] underline"
                                 >
-                                  לפרטים המלאים
+                                  לפרטים המלאים{' '}
                                 </Link>
                               )}
                               {officialLink}
@@ -215,7 +202,8 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                                   rel="noopener noreferrer"
                                   className="text-xs text-[var(--text-muted)] hover:underline"
                                 >
-                                  למחשבון המכללה
+                                  {' '}
+                                  למחשבון המכללה{' '}
                                 </ProgramTrackedLink>
                               )}
                             </div>
@@ -228,7 +216,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                               href={source.fullDetailsPath}
                               className="font-semibold text-[#6554b8] underline"
                             >
-                              לפרטים על המסלול
+                              לפרטים על המסלול{' '}
                             </Link>
                           ) : (
                             <>
@@ -238,7 +226,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                                   href={institutionProgramPaths[institution.id]}
                                   className="font-semibold text-[#6554b8] underline"
                                 >
-                                  לדף המוסד
+                                  לדף המוסד{' '}
                                 </Link>
                               )}
                             </>
@@ -271,9 +259,8 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                 })}
               </div>
             )}
-          </section>
-          {faqEntries && <ProgramFaq entries={faqEntries} />}
-          <RelatedPrograms {...related} />
+          </section>{' '}
+          {faqEntries && <ProgramFaq entries={faqEntries} />} <RelatedPrograms {...related} />
         </section>
       </main>
     </WayPageShell>
