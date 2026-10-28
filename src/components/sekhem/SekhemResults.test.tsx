@@ -133,6 +133,24 @@ describe('API-only result rows', () => {
     expect(row.textContent).toContain('מסלול ראויים לקידום');
     expect(row.textContent).not.toMatch(/\d/);
   });
+  it('keeps a numberless architecture gate free of formula coefficients', () => {
+    renderReports([
+      report('tau', {
+        kind: 'manual_gate',
+        capability: 'manual_gate',
+        decision: 'eligible_to_apply',
+        score: undefined,
+        threshold: undefined,
+        sourceLabel: 'נדרש מיון נוסף',
+        explanation:
+          'ציון הקבלה מורכב מ־50% ציון ההתאמה ו־50% ציון מבחן מיון אדריכלי; מבחן המיון הוא חובה, ואוניברסיטת תל אביב מחליטה על הקבלה לאחריו.',
+      }),
+    ]);
+    const row = screen.getByTestId('result-psychology-tau');
+    expect(row.textContent).toContain('מבחן המיון הוא חובה');
+    expect(row.textContent).not.toMatch(/\d/);
+    expect(row.querySelector('[data-result-number]')).toBeNull();
+  });
   it('collapses no-score institutions into one honest line and hides Ariel', () => {
     renderReports(
       ['biu', 'afeka', 'hit', 'ariel'].map((id) =>
