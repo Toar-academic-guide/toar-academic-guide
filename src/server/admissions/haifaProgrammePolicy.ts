@@ -2,8 +2,36 @@ import evidence from '@/data/admissions/haifaProgrammePolicies.json';
 import { getHaifaInformationSystemsTrack } from '@/lib/haifaAdmissionsInputs';
 import type {
   AdmissionsEvaluationInput,
+  AdmissionsEvaluationResult,
   AdmissionsRequiredInput,
 } from '@/types/admissionsEvaluation';
+
+/** Official calculation remains external: https://admissions.haifa.ac.il/score-calculation/
+ * Evidence captured 2026-10-28; do not ask students for an institutional composite.
+ */
+export function haifaMissingRuleResult(
+  programId: string,
+  institution: AdmissionsEvaluationResult['institution'],
+): AdmissionsEvaluationResult {
+  const kind = ['psychology', 'haifa_psychology'].includes(programId)
+    ? 'authority_unavailable'
+    : 'tracked_missing_rule';
+  return {
+    institution,
+    linkedInstitutionId: institution.id,
+    capability: kind,
+    kind,
+    decision: 'unknown',
+    confidence: 'low',
+    sourceLabel: 'אין מספיק מידע',
+    explanation: 'עדיין לא מחשבים את הסכם של חיפה כאן',
+    nextAction: 'בדקו במחשבון הרשמי של אוניברסיטת חיפה.',
+    officialUrls: [
+      'https://admissions.haifa.ac.il/score-calculation/',
+      'https://applicants.haifa.ac.il/enrollmentChances/index.html',
+    ],
+  };
+}
 
 interface ProgrammePolicy {
   programme: string;

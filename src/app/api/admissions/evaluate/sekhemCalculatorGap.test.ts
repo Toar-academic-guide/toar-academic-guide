@@ -125,31 +125,28 @@ describe('#320 request-shape compatibility at 12fd33f', () => {
     ['static', gapPrograms, 20],
     ['saved audit', savedGapPrograms, 27],
   ] as const)(
-    'enumerates every %s Haifa pair and preserves its exact first-request blocker',
+    'enumerates every %s Haifa pair and returns the honest note without a composite ask',
     async (_label, rows, count) => {
       const haifa = programsFor('haifa', rows);
       expect(haifa).toHaveLength(count);
       for (const row of haifa) {
         const { result, fetcher } = await gapEvaluate(row, 'haifa');
         expect(result.score, row.id).toBeUndefined();
-        if (row.id === 'haifa_engineering') expect(result.kind, row.id).toBe('unsupported');
-        else if (['psychology', 'haifa_psychology'].includes(row.id))
+        if (['psychology', 'haifa_psychology'].includes(row.id))
           expect(result.kind, row.id).toBe('authority_unavailable');
-        else
-          expect(result, row.id).toMatchObject({
-            kind: 'needs_input',
-            requiredInputs: [
-              row.id === 'haifa_infosystems'
-                ? 'haifa_information_systems_track'
-                : 'haifa_bagrut_average',
-            ],
-          });
+        else {
+          // Approved test update, Jorje 2026-10-28
+          expect(result.kind, row.id).toBe('tracked_missing_rule');
+        }
+        expect(result.explanation, row.id).toBe('עדיין לא מחשבים את הסכם של חיפה כאן');
+        // Approved test update, Jorje 2026-10-28
+        expect(result.requiredInputs, row.id).toBeUndefined();
         expect(fetcher, row.id).not.toHaveBeenCalled();
       }
     },
   );
 
-  it('exposes the Haifa multi-submit dependency: average then Hebrew, dropping average requests it again', async () => {
+  it('preserves explicit Haifa averages while returning the honest note when they are absent', async () => {
     const first = await gapEvaluate(program('haifa_cs'), 'haifa');
     const second = await gapEvaluate(
       program('haifa_cs'),
@@ -161,9 +158,19 @@ describe('#320 request-shape compatibility at 12fd33f', () => {
       'haifa',
       gapApplicant({ haifaHebrewQualification: 'hebrew_school' }),
     );
-    expect(first.result.requiredInputs).toEqual(['haifa_bagrut_average']);
+    // Approved test update, Jorje 2026-10-28
+    expect(first.result.requiredInputs).toBeUndefined();
+    expect(first.result).toMatchObject({
+      kind: 'tracked_missing_rule',
+      explanation: 'עדיין לא מחשבים את הסכם של חיפה כאן',
+    });
     expect(second.result.requiredInputs).toEqual(['haifa_hebrew_qualification']);
-    expect(third.result.requiredInputs).toEqual(['haifa_bagrut_average']);
+    // Approved test update, Jorje 2026-10-28
+    expect(third.result.requiredInputs).toBeUndefined();
+    expect(third.result).toMatchObject({
+      kind: 'tracked_missing_rule',
+      explanation: 'עדיין לא מחשבים את הסכם של חיפה כאן',
+    });
     for (const { fetcher } of [first, second, third]) expect(fetcher).not.toHaveBeenCalled();
   });
 

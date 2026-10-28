@@ -1,20 +1,18 @@
 import { expect, it, vi } from 'vitest';
-import captures from './2026-10-29-bugs-first-official.json';
-import { calculateTauBagrutAverage } from '../../../src/server/admissions/bagrutPolicies';
-import { admissionsExtraInputsFromAcademicScores } from '../../../src/lib/admissionsEvaluationProfile';
-import { buildBagrutSubjectRecord } from '../../../src/utils/bagrutSubjectRecord';
+import captures from '../../../../../docs/admissions-verification/evidence/2026-10-29-bugs-first-official.json';
+import { calculateTauBagrutAverage } from '@/server/admissions/bagrutPolicies';
+import { admissionsExtraInputsFromAcademicScores } from '@/lib/admissionsEvaluationProfile';
+import { buildBagrutSubjectRecord } from '@/utils/bagrutSubjectRecord';
 import {
   gapApplicant,
   gapEvaluate,
   gapPrograms,
   programsFor,
   savedGapPrograms,
-} from '../../../src/app/api/admissions/evaluate/sekhemCalculatorGap.fixture';
+} from './sekhemCalculatorGap.fixture';
 
 vi.mock('server-only', () => ({}));
 
-// These requested contracts remain red because both fixes need evaluator edits
-// outside Jorje's grant. Current behaviour regressions remain unchanged and green.
 it('A/F every Haifa programme has the exact honest official-source note and never asks for its average', async () => {
   const failures = [];
   for (const [catalogue, programs] of [
@@ -23,9 +21,11 @@ it('A/F every Haifa programme has the exact honest official-source note and neve
   ] as const) {
     for (const program of programsFor('haifa', programs)) {
       const { result } = await gapEvaluate(program, 'haifa', gapApplicant());
-      const honest = ['tracked_missing_rule', 'authority_unavailable', 'unsupported'].includes(
-        result.kind,
-      );
+      const honest =
+        result.kind ===
+        (['psychology', 'haifa_psychology'].includes(program.id)
+          ? 'authority_unavailable'
+          : 'tracked_missing_rule');
       const officialLink = result.officialUrls?.some((url) => {
         const host = new URL(url).hostname;
         return host === 'admissions.haifa.ac.il' || host === 'applicants.haifa.ac.il';
@@ -47,7 +47,6 @@ it('A/F every Haifa programme has the exact honest official-source note and neve
         });
     }
   }
-  console.log(JSON.stringify({ ruling: 'A', failures }, null, 2));
   expect(failures, JSON.stringify(failures)).toEqual([]);
 });
 
@@ -81,13 +80,14 @@ it.each([
   ['tau_law', 'law', 685, 0],
   ['tau_ee', 'electrical_engineering', 695, 1],
 ] as const)(
-  'B %s sends109.14 and reproduces the captured official score%s',
+  'B %s sends the derived 109.14 average and reproduces the captured official score',
   async (id, programme, score, reali10) => {
     expect(calculateTauBagrutAverage(record)).toMatchObject({
       state: 'calculated',
       average: 109.14,
     });
-    // https://go.tau.ac.il/graphql, captured2026-10-28, item5 calls1–6:
+    // Source: docs/admissions-verification/evidence/2026-10-29-bugs-first-official.json
+    // https://go.tau.ac.il/graphql, captured 2026-10-28, item5 calls1–6:
     // raw92.1 gives hatama600/engineering610; derived109.14 gives685/695.
     // Serve the independently captured response matching the ACTUAL outbound average;
     // returning685 unconditionally would conceal the serialization defect.
@@ -116,23 +116,6 @@ it.each([
       fetcher,
     );
     const request = JSON.parse(String(fetcher.mock.calls[0]?.[1]?.body));
-    console.log(
-      JSON.stringify(
-        {
-          ruling: 'B',
-          id,
-          request: request.variables,
-          result: {
-            kind: result.kind,
-            score: result.score,
-            threshold: result.threshold,
-            decision: result.decision,
-          },
-        },
-        null,
-        2,
-      ),
-    );
     expect
       .soft(request.variables.scoresData)
       .toMatchObject({ bagrut: '109.14', psicho: '700', reali10 });

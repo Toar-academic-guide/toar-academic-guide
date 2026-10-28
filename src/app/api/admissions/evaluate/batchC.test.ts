@@ -40,18 +40,34 @@ describe('Batch C API dispatch', () => {
         const result = data.results.find(
           (row: AdmissionsEvaluationResult) => row.linkedInstitutionId === config.institutionId,
         );
-        expect(result).toMatchObject({
-          capability: 'unsupported',
-          kind: 'unsupported',
-          decision: 'unknown',
-          explanation: config.explanationHe,
-          nextAction: config.nextActionHe,
-        });
+        if (degreeId === 'haifa_engineering' && !('bagrut' in scores)) {
+          // Approved test update, Jorje 2026-10-28
+          expect(result).toMatchObject({
+            capability: 'tracked_missing_rule',
+            kind: 'tracked_missing_rule',
+            decision: 'unknown',
+            explanation: 'עדיין לא מחשבים את הסכם של חיפה כאן',
+            nextAction: 'בדקו במחשבון הרשמי של אוניברסיטת חיפה.',
+          });
+        } else {
+          expect(result).toMatchObject({
+            capability: 'unsupported',
+            kind: 'unsupported',
+            decision: 'unknown',
+            explanation: config.explanationHe,
+            nextAction: config.nextActionHe,
+          });
+        }
         expect(result.requiredInputs).toBeUndefined();
         expect(result.scoreAssessment).toBeUndefined();
         expect(result.score).toBeUndefined();
         expect(result.threshold).toBeUndefined();
-        expect(result.explanation).not.toMatch(/מתואם|סכם|מצרף|[a-zA-Z]/);
+        if (degreeId === 'haifa_engineering' && !('bagrut' in scores)) {
+          // Approved test update, Jorje 2026-10-28
+          expect(result.explanation).toBe('עדיין לא מחשבים את הסכם של חיפה כאן');
+        } else {
+          expect(result.explanation).not.toMatch(/מתואם|סכם|מצרף|[a-zA-Z]/);
+        }
       }
     },
   );

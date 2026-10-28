@@ -188,6 +188,7 @@ const targetedTests = [
   'src/app/api/admissions/evaluate/engineeringMath.test.ts',
   'src/app/api/admissions/evaluate/uxFollowups.test.ts',
   'src/app/api/admissions/evaluate/sekhemCalculatorGap.test.ts',
+  'src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts',
   'src/data/admissions/publicCatalogueCopy.test.ts',
   'src/lib/__tests__/TechnionMedicineComparison.test.tsx',
   'src/data/admissions/engineeringMathRequirements.test.ts',
