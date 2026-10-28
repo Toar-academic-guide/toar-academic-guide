@@ -28,7 +28,7 @@ beforeEach(() => {
 
 function assertLimits(metadata: Metadata, canonical: string) {
   expect(typeof metadata.title).toBe('string');
-  expect(`${metadata.title} | MyWay`.length).toBeLessThanOrEqual(60);
+  expect(`${metadata.title} | MyWay`.length).toBeLessThanOrEqual(62);
   expect(metadata.description).toBeTruthy();
   expect(metadata.description!.length).toBeLessThanOrEqual(160);
   for (const text of [metadata.title, metadata.description]) {
@@ -44,6 +44,38 @@ function assertLimits(metadata: Metadata, canonical: string) {
 }
 
 describe('admission search templates', () => {
+  it('keeps both phrases and the provider on the 61-character biology title', async () => {
+    const metadata = await buildProgramMetadata('tau_biology');
+    expect(`${metadata.title} | MyWay`).toBe(
+      'ביולוגיה – אוניברסיטת תל אביב: תנאי קבלה וסיכויי קבלה | MyWay',
+    );
+    expect(`${metadata.title} | MyWay`).toHaveLength(61);
+    assertLimits(metadata, '/programs/tau_biology');
+  });
+
+  it('includes the full provider and both phrases at exactly 62 rendered characters', async () => {
+    vi.mocked(listCataloguePrograms).mockResolvedValue({
+      data: getStaticCataloguePrograms().map((program) =>
+        program.id === 'tau_law' ? { ...program, name: 'אמנות במה' } : program,
+      ),
+      meta: {},
+    });
+    const metadata = await buildProgramMetadata('tau_law');
+    expect(`${metadata.title} | MyWay`).toBe(
+      'אמנות במה – אוניברסיטת תל אביב: תנאי קבלה וסיכויי קבלה | MyWay',
+    );
+    expect(`${metadata.title} | MyWay`).toHaveLength(62);
+    assertLimits(metadata, '/programs/tau_law');
+  });
+
+  it('retains the fallback for the 63-character full computer-science title', async () => {
+    const fullTitle = 'מדעי המחשב – אוניברסיטת תל אביב: תנאי קבלה וסיכויי קבלה | MyWay';
+    expect(fullTitle).toHaveLength(63);
+    const metadata = await buildProgramMetadata('tau_cs');
+    expect(`${metadata.title} | MyWay`).toBe('מדעי המחשב – אוניברסיטת תל אביב: תנאי קבלה | MyWay');
+    assertLimits(metadata, '/programs/tau_cs');
+  });
+
   it('includes program, provider and both search phrases when they fit', async () => {
     const metadata = await buildProgramMetadata('tau_law');
     for (const phrase of ['משפטים', 'אוניברסיטת תל אביב', 'תנאי קבלה', 'סיכויי קבלה']) {

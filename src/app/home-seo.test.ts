@@ -11,7 +11,7 @@ describe('homepage search metadata', () => {
       absolute: 'מחשבון סיכויי קבלה לתואר לפי בגרות ופסיכומטרי | MyWay',
     });
     expect(String((metadata.title as { absolute: string }).absolute).length).toBeLessThanOrEqual(
-      60,
+      62,
     );
   });
 

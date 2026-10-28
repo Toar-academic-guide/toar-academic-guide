@@ -1,7 +1,7 @@
 import { expect, test } from './fixtures';
 
 for (const width of [1280, 390]) {
-  for (const path of ['/programs/tau_cs', '/institutions/tau']) {
+  for (const path of ['/programs/tau_cs', '/programs/tau_biology', '/institutions/tau']) {
     test(`${path} search metadata and SSR boundaries at ${width}px`, async ({
       page,
       request,
@@ -20,8 +20,12 @@ for (const width of [1280, 390]) {
       await page.goto(path);
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
       const title = await page.title();
-      expect(title.length).toBeLessThanOrEqual(60);
+      expect(title.length).toBeLessThanOrEqual(62);
       expect(title).toContain('תנאי קבלה');
+      if (path === '/programs/tau_biology') {
+        expect(title).toBe('ביולוגיה – אוניברסיטת תל אביב: תנאי קבלה וסיכויי קבלה | MyWay');
+        expect(title).toHaveLength(61);
+      }
       expect(title).not.toMatch(/סכם|מתואם|מצרף|composite/i);
       const description = await page.locator('meta[name="description"]').getAttribute('content');
       expect(description!.length).toBeLessThanOrEqual(160);

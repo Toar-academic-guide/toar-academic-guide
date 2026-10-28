@@ -13,7 +13,7 @@ import { withBet } from '@/lib/hebrew';
 import { canonicalProgramId, canonicalProgramPath } from './programAliases';
 import { institutionProgramName } from '@/lib/institutionProgramName';
 
-const TITLE_BUDGET = 60 - ` | ${SITE_NAME}`.length;
+const TITLE_BUDGET = 62 - ` | ${SITE_NAME}`.length;
 const SEARCH_PHRASES = 'תנאי קבלה וסיכויי קבלה';
 
 function cleanName(name: string): string {
