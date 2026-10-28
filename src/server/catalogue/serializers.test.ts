@@ -734,3 +734,51 @@ describe('Braude persisted identity reconciliation', () => {
     },
   );
 });
+
+it('D serves the full Ort Braude CS identity from shortened persisted rows', () => {
+  const seed = buildCatalogueSeed();
+  const id = 'mon_12220708942_cs';
+  const alias = 'mon_12220708942';
+  const shortened = 'המכללה האקדמית להנדסה בראודה';
+  const institution = 'המכללה האקדמית להנדסה אורט בראודה';
+  const original = {
+    ...seed.programs[0],
+    id,
+    name: `מדעי המחשב - ${shortened}`,
+    institutionName: shortened,
+    institutionId: alias,
+  } as ProgramRow;
+  const result = serializeProgramRow({
+    program: original,
+    relations: [{ programId: id, institutionId: alias }],
+    requirements: [
+      {
+        ...seed.admissionRequirements[0],
+        id: `${id}:${alias}`,
+        programId: id,
+        institutionId: alias,
+      },
+    ] as AdmissionRequirementRow[],
+    thresholds: [],
+    sourceUrls: [],
+    institutionsById: new Map([
+      [alias, { ...seed.institutions[0], id: alias, name: shortened } as InstitutionRow],
+    ]),
+  });
+  expect(result).toMatchObject({ id, name: `מדעי המחשב - ${institution}`, institution });
+  expect(result.institutionDetails![0].institutionName).toBe(institution);
+  expect(original.name).toBe(`מדעי המחשב - ${shortened}`);
+});
+
+it('D already serves the canonical name for the shortened legacy Braude institution row', () => {
+  const row = {
+    ...buildCatalogueSeed().institutions[0],
+    id: 'mon_12220708942',
+    name: 'המכללה האקדמית להנדסה בראודה',
+  } as InstitutionRow;
+  expect(serializeInstitutionRow(row)).toMatchObject({
+    id: 'mon_12220708942',
+    name: 'המכללה האקדמית להנדסה אורט בראודה',
+  });
+  expect(row.name).toBe('המכללה האקדמית להנדסה בראודה');
+});

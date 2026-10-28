@@ -11,7 +11,8 @@ type ContentRepair = {
   notes: string[];
   sourceUrl: string;
   programUrl?: string;
-  identity?: Pick<Program, 'name' | 'category' | 'type' | 'awardedCredential'>;
+  identity?: Pick<Program, 'name' | 'type'> &
+    Partial<Pick<Program, 'institution' | 'category' | 'awardedCredential'>>;
   durationYears?: number;
 };
 
@@ -92,6 +93,9 @@ export function applyCatalogueContentRepair<T extends Program>(program: T): T {
       if (!row) return detail;
       return {
         ...detail,
+        // Braude identity: https://w3.braude.ac.il/, captured 2026-10-28.
+        // Requirement verification dates remain attached to the existing notes.
+        institutionName: row.identity?.institution ?? detail.institutionName,
         specificAdmissionNotes: row.notes,
         programUrl: row.programUrl ?? row.sourceUrl,
         ...(row.durationYears !== undefined ? { durationYears: row.durationYears } : {}),

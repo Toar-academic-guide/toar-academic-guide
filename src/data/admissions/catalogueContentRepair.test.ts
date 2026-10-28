@@ -367,3 +367,27 @@ describe('verified catalogue content repair', () => {
     expect(applyCatalogueContentRepair(input).institutionDetails![0].admissionFacts).toBe(facts);
   });
 });
+
+it('D repairs the legacy Braude CS static identity without changing its saved ID', () => {
+  const institution = 'המכללה האקדמית להנדסה אורט בראודה';
+  const shortened = 'המכללה האקדמית להנדסה בראודה';
+  const base = allPrograms.find((program) => program.id === 'braude_engineering')!;
+  const original: Program = {
+    ...base,
+    id: 'mon_12220708942_cs',
+    name: `מדעי המחשב - ${shortened}`,
+    institution: shortened,
+    institutionDetails: base.institutionDetails?.map((detail) => ({
+      ...detail,
+      institutionName: shortened,
+    })),
+  };
+  const result = applyCatalogueContentRepair(original);
+  expect(result).toMatchObject({
+    id: 'mon_12220708942_cs',
+    name: `מדעי המחשב - ${institution}`,
+    institution,
+  });
+  expect(result.institutionDetails![0].institutionName).toBe(institution);
+  expect(original.name).toBe(`מדעי המחשב - ${shortened}`);
+});

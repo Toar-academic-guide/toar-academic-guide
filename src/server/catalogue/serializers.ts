@@ -287,6 +287,7 @@ export function serializeProgramRow(args: {
   };
   const repaired = [
     'haifa_psychology',
+    'mon_12220708942_cs',
     'huji_psychology',
     'afeka_ee',
     'afeka_softwareeng',
