@@ -51,7 +51,7 @@ function NavItem({
         }
       }}
     >
-      {children}
+      {children}{' '}
     </Link>
   );
 }
@@ -75,11 +75,11 @@ export default function PublicNavBar({
         </span>
       </NavItem>
       <nav aria-label="ניווט ראשי" className={styles.links}>
-        <Link href={ROUTES.institutions}>מוסדות לימוד</Link>
+        <Link href={ROUTES.institutions}>מוסדות לימוד </Link>
         <NavItem href={ROUTES.savedPrograms} onClick={onGoToBucket}>
           הרשימה שלי
         </NavItem>
-        <Link href={ROUTES.about}>מי אנחנו</Link>
+        <Link href={ROUTES.about}>מי אנחנו </Link>{' '}
       </nav>
       {loading ? (
         <span className={styles.account} role="status" aria-label="טוען חשבון" aria-busy="true">
