@@ -59,6 +59,69 @@ const renderReports = (reports: AdmissionsEvaluationReport[]) => {
 };
 
 describe('API-only result rows', () => {
+  it('links each result card to its supplied canonical public programme page', () => {
+    const publicOfferings = offerings.map((offering) => ({
+      ...offering,
+      programPath: '/programs/psychology',
+    }));
+    render(
+      <SekhemResults
+        reports={[report('huji'), report('tau'), report('reichman')]}
+        offerings={publicOfferings}
+        onEnquiry={vi.fn()}
+      />,
+    );
+    for (const id of ['huji', 'tau', 'reichman']) {
+      const group = screen.getByTestId(`institution-${id}`);
+      expect(
+        within(group).getByRole('link', { name: 'לתנאי הקבלה של התוכנית' }).getAttribute('href'),
+      ).toBe('/programs/psychology');
+    }
+  });
+  it('does not invent a programme link for a result without a public page', () => {
+    const source = report('tau');
+    source.input.degreeId = source.program.id = 'no_public_page';
+    render(
+      <SekhemResults
+        reports={[source]}
+        offerings={[
+          {
+            programId: 'no_public_page',
+            programName: 'תוכנית ללא עמוד',
+            institutionId: 'tau',
+            institutionName: 'tau',
+          },
+        ]}
+        onEnquiry={vi.fn()}
+      />,
+    );
+    expect(screen.getByTestId('institution-tau')).toBeTruthy();
+    expect(screen.queryByRole('link', { name: 'לתנאי הקבלה של התוכנית' })).toBeNull();
+  });
+  it('updates the programme page link when the selected programme changes', () => {
+    const psychology = report('huji');
+    const law = report('huji');
+    law.input.degreeId = law.program.id = 'huji_law';
+    render(
+      <SekhemResults
+        reports={[psychology, law]}
+        offerings={[
+          { ...offerings[0], programPath: '/programs/psychology' },
+          {
+            ...offerings[0],
+            programId: 'huji_law',
+            programName: 'משפטים',
+            programPath: '/programs/huji_law',
+          },
+        ]}
+        onEnquiry={vi.fn()}
+      />,
+    );
+    fireEvent.change(screen.getByRole('combobox'), { target: { value: 'huji_law' } });
+    expect(screen.getByRole('link', { name: 'לתנאי הקבלה של התוכנית' }).getAttribute('href')).toBe(
+      '/programs/huji_law',
+    );
+  });
   it('renders only returned numbers and preserves the API verdict', () => {
     const source = report('huji', { score: 21.12, threshold: 21.12, decision: 'below' });
     renderReports([source]);

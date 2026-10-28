@@ -341,6 +341,17 @@ for (const width of [1280, 390]) {
           const last = await select.locator('option').last().getAttribute('value');
           await select.selectOption(last!);
         }
+        const resultId = await group
+          .locator('[data-testid^="result-"]')
+          .getAttribute('data-testid');
+        const institutionId = (await group.getAttribute('data-testid'))!.replace(
+          'institution-',
+          '',
+        );
+        const programId = resultId!.slice('result-'.length, -institutionId.length - 1);
+        await expect(
+          group.getByRole('link', { name: 'לתנאי הקבלה של התוכנית', exact: true }),
+        ).toHaveAttribute('href', `/programs/${programId}`);
         await cta.focus();
         await page.keyboard.press('Enter');
         const dialog = page.getByRole('dialog');

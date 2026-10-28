@@ -113,6 +113,20 @@ it('has one sitemap entry with the authored date and one llms entry', async () =
 it('sets the Open Graph URL to the calculator canonical URL', () => {
   expect(metadata.openGraph?.url).toBe('https://findmyway.co.il/sekhem-calculator');
 });
+it('supplies an existing canonical public programme page for every offered result', async () => {
+  const { loadSekhemCalculatorOfferings } = await import('@/lib/sekhemCalculatorSupport');
+  const { getPublicProgramPageData } = await import('@/lib/publicCataloguePages');
+  const { canonicalProgramPath } = await import('@/lib/seo/programAliases');
+  const offerings = await loadSekhemCalculatorOfferings();
+  expect(offerings.length).toBeGreaterThan(0);
+  for (const offering of offerings) {
+    expect(offering).toHaveProperty('programPath', canonicalProgramPath(offering.programId));
+    const page = await getPublicProgramPageData(offering.programId);
+    expect(page?.program.id).toBe(offering.programId);
+    expect(page?.program.type).toBe('academic');
+    expect(page?.program.isListed).not.toBe(false);
+  }
+});
 it('does not turn catalogue failure into static calculator data', async () => {
   const { listCataloguePrograms } = await import('@/server/catalogue/queries');
   vi.spyOn(
