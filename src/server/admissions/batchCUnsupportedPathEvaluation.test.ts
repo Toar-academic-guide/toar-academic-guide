@@ -69,7 +69,8 @@ describe('Batch C unsupported admission paths', () => {
             capability: 'tracked_missing_rule',
             kind: 'tracked_missing_rule',
             decision: 'unknown',
-            explanation: 'עדיין לא מחשבים את הסכם של חיפה כאן',
+            // Approved test update, Jorje 2026-10-29
+            explanation: 'עדיין לא מחשבים כאן את ציון הקבלה של חיפה',
             nextAction: 'בדקו במחשבון הרשמי של אוניברסיטת חיפה.',
           });
         } else {
@@ -83,12 +84,8 @@ describe('Batch C unsupported admission paths', () => {
         expect(result.scoreAssessment).toBeUndefined();
         expect(result.score).toBeUndefined();
         expect(result.threshold).toBeUndefined();
-        if (degreeId === 'haifa_engineering' && !('bagrut' in scores)) {
-          // Approved test update, Jorje 2026-10-28
-          expect(result.explanation).toBe('עדיין לא מחשבים את הסכם של חיפה כאן');
-        } else {
-          expect(result.explanation).not.toMatch(/מתואם|סכם|מצרף|[a-zA-Z]|מוחרג|פרויקט אימות/);
-        }
+        // Approved test update, Jorje 2026-10-29
+        expect(result.explanation).not.toMatch(/מתואם|סכם|מצרף|[a-zA-Z]|מוחרג|פרויקט אימות/);
         // Approved test update, Jorje 2026-10-28
         expect(result.nextAction).toBe(
           degreeId === 'haifa_engineering' && !('bagrut' in scores)
@@ -105,7 +102,8 @@ describe('Batch C unsupported admission paths', () => {
         // Approved test update, Jorje 2026-10-28
         expect(resultExplanation(result, degreeId)).toBe(
           degreeId === 'haifa_engineering' && !('bagrut' in scores)
-            ? 'עדיין לא מחשבים את הסכם של חיפה כאן'
+            ? // Approved test update, Jorje 2026-10-29
+              'עדיין לא מחשבים כאן את ציון הקבלה של חיפה'
             : config.explanationHe,
         );
         expect(resultLabel(result).group).toBe('explore');

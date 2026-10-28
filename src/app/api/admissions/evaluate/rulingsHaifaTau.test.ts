@@ -1,5 +1,9 @@
+import { createElement } from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
+import TechnionMedicineComparison from '@/components/TechnionMedicineComparison';
 import { expect, it, vi } from 'vitest';
 import captures from '../../../../../docs/admissions-verification/evidence/2026-10-29-bugs-first-official.json';
+import { TAU_ACCOUNTING_CONTRACT } from '@/data/admissions/tauProgramVerification';
 import { calculateTauBagrutAverage } from '@/server/admissions/bagrutPolicies';
 import { admissionsExtraInputsFromAcademicScores } from '@/lib/admissionsEvaluationProfile';
 import { buildBagrutSubjectRecord } from '@/utils/bagrutSubjectRecord';
@@ -33,7 +37,8 @@ it('A/F every Haifa programme has the exact honest official-source note and neve
       if (
         !honest ||
         !officialLink ||
-        result.explanation !== 'עדיין לא מחשבים את הסכם של חיפה כאן' ||
+        // Approved test update, Jorje 2026-10-29
+        result.explanation !== 'עדיין לא מחשבים כאן את ציון הקבלה של חיפה' ||
         result.explanation.includes('ממוצע בגרות רשמי של חיפה') ||
         result.requiredInputs?.includes('haifa_bagrut_average')
       )
@@ -48,6 +53,28 @@ it('A/F every Haifa programme has the exact honest official-source note and neve
     }
   }
   expect(failures, JSON.stringify(failures)).toEqual([]);
+});
+
+it('uses student terminology in the three admission-copy strings introduced by PR318', async () => {
+  const medicine = renderToStaticMarkup(createElement(TechnionMedicineComparison, { score: 92 }));
+  const { result: psychology } = await gapEvaluate(
+    gapPrograms.find((program) => program.id === 'haifa_psychology')!,
+    'haifa',
+    gapApplicant({ haifaBagrutAverage: 102 }),
+  );
+  const { result: haifa } = await gapEvaluate(
+    gapPrograms.find((program) => program.id === 'haifa_cs')!,
+    'haifa',
+    gapApplicant(),
+  );
+  expect(psychology.kind).toBe('authority_unavailable');
+  expect(psychology.explanation).toContain('650');
+  expect(haifa.explanation).toBe('עדיין לא מחשבים כאן את ציון הקבלה של חיפה');
+  expect(
+    [medicine, psychology.explanation, haifa.explanation].filter((text) =>
+      /מתואם|סכם|מצרף/.test(text),
+    ),
+  ).toEqual([]);
 });
 
 const record = buildBagrutSubjectRecord({
@@ -79,6 +106,10 @@ it.each([
   ['tau_psychology', 'psychology', 685, 0],
   ['tau_law', 'law', 685, 0],
   ['tau_ee', 'electrical_engineering', 695, 1],
+  // Official getLastScore capture: hatama_nihul=688 at109.14/PET700,
+  // 2026-10-29-bugs-first-official.json tauGraphqlCalls[2], captured2026-10-28T19:00:03.772687+00:00.
+  // Accounting maps to hatama_nihul; the engineering-only reali10 flag does not select that field.
+  ['tau_accounting', 'accounting', 688, 0],
 ] as const)(
   'B %s sends the derived 109.14 average and reproduces the captured official score',
   async (id, programme, score, reali10) => {
@@ -93,6 +124,21 @@ it.each([
     // returning685 unconditionally would conceal the serialization defect.
     const fetcher = vi.fn<typeof fetch>().mockImplementation(async (_url, options) => {
       const body = JSON.parse(String(options?.body));
+      if (programme === 'accounting' && body.operationName === 'getProgramByIdAndLang') {
+        // Programme-node transport stub uses the unchanged reviewed accounting contract;
+        // the score itself is selected independently from the raw official score capture below.
+        return Response.json({
+          data: {
+            getProgramByIdAndLang: {
+              nid: '11815',
+              field_plain_id_programs: [TAU_ACCOUNTING_CONTRACT.officialProgramId],
+              receipt_threshol: [TAU_ACCOUNTING_CONTRACT.calculation.cutoff.acceptance],
+              rejection_thresh: [TAU_ACCOUNTING_CONTRACT.calculation.cutoff.rejection],
+            },
+          },
+        });
+      }
+
       const capture =
         body.operationName === 'getLastScore'
           ? captures.tauGraphqlCalls.find(

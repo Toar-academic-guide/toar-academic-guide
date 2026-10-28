@@ -1524,7 +1524,7 @@ async function evaluateExactScores(args: {
         fetcher: timedFetcher,
         program: exactTarget.program,
         applicant: {
-          bagrutAverage: input.bagrut,
+          bagrutAverage: input.extraInputs?.tauBagrutAverage ?? input.bagrut,
           psychometric: input.psychometric,
         },
       });

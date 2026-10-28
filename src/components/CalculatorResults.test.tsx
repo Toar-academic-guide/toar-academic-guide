@@ -58,10 +58,13 @@ const programs = getStaticCataloguePrograms();
 
 // Amit ruling 2026-10-25 07:30 via Jorje
 it.each([
-  [95, 'הסכם שלך 95, מעל סף הזימון המשוער (92)', 'text-green-700'],
-  [84.5, 'הסכם שלך 84.5, מתחת לסף הזימון המשוער (92)', 'text-slate-500'],
+  // Approved test update, Jorje 2026-10-29
+  [95, 'ציון הקבלה שלך 95, מעל סף הזימון המשוער (92)', 'text-green-700'],
+  // Approved test update, Jorje 2026-10-29
+  [84.5, 'ציון הקבלה שלך 84.5, מתחת לסף הזימון המשוער (92)', 'text-slate-500'],
   // Approved test update, Jorje 2026-10-28
-  [92, 'הסכם שלך 92, בסף הזימון המשוער (92)', 'text-green-700'],
+  // Approved test update, Jorje 2026-10-29
+  [92, 'ציון הקבלה שלך 92, בסף הזימון המשוער (92)', 'text-green-700'],
 ] as const)(
   'renders one medicine comparison for sekem %s without an admission verdict',
   async (score, comparison, color) => {
@@ -106,7 +109,8 @@ it.each([
     const line = screen.getByText(comparison, { exact: true });
     expect(line.classList.contains(color)).toBe(true);
     expect(line.className).not.toMatch(/red|rose|amber|yellow|danger|warning/);
-    expect(screen.getAllByText(/הסכם שלך/)).toHaveLength(1);
+    // Approved test update, Jorje 2026-10-29
+    expect(screen.getAllByText(/ציון הקבלה שלך/)).toHaveLength(1);
     expect(screen.queryByText('אין הכרעת קבלה')).toBeNull();
     expect(screen.queryByText(/סף זימון משוער למבחן המו"ר/)).toBeNull();
     expect(screen.queryByText(/סכם לרפואה|סכם 84\.5|סכם 95|סכם 92/)).toBeNull();
@@ -1392,7 +1396,10 @@ describe('CalculatorResults', () => {
       />,
     );
 
-    expect(await screen.findByText('הסכם שלך 84.5, מתחת לסף הזימון המשוער (92)')).toBeTruthy();
+    // Approved test update, Jorje 2026-10-29
+    expect(
+      await screen.findByText('ציון הקבלה שלך 84.5, מתחת לסף הזימון המשוער (92)'),
+    ).toBeTruthy();
     expect(screen.getByText('קבלה דרך מבחני מו"ר')).toBeTruthy();
     expect(screen.queryByText(/סף זימון משוער למבחן המו"ר/)).toBeNull();
     expect(screen.queryByLabelText(/הטכניון.*(?:מתחת לסף|מתקבל\/ת|אפשר להגיש מועמדות)/)).toBeNull();

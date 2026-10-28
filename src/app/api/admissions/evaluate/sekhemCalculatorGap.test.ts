@@ -138,7 +138,8 @@ describe('#320 request-shape compatibility at 12fd33f', () => {
           // Approved test update, Jorje 2026-10-28
           expect(result.kind, row.id).toBe('tracked_missing_rule');
         }
-        expect(result.explanation, row.id).toBe('עדיין לא מחשבים את הסכם של חיפה כאן');
+        // Approved test update, Jorje 2026-10-29
+        expect(result.explanation, row.id).toBe('עדיין לא מחשבים כאן את ציון הקבלה של חיפה');
         // Approved test update, Jorje 2026-10-28
         expect(result.requiredInputs, row.id).toBeUndefined();
         expect(fetcher, row.id).not.toHaveBeenCalled();
@@ -162,14 +163,16 @@ describe('#320 request-shape compatibility at 12fd33f', () => {
     expect(first.result.requiredInputs).toBeUndefined();
     expect(first.result).toMatchObject({
       kind: 'tracked_missing_rule',
-      explanation: 'עדיין לא מחשבים את הסכם של חיפה כאן',
+      // Approved test update, Jorje 2026-10-29
+      explanation: 'עדיין לא מחשבים כאן את ציון הקבלה של חיפה',
     });
     expect(second.result.requiredInputs).toEqual(['haifa_hebrew_qualification']);
     // Approved test update, Jorje 2026-10-28
     expect(third.result.requiredInputs).toBeUndefined();
     expect(third.result).toMatchObject({
       kind: 'tracked_missing_rule',
-      explanation: 'עדיין לא מחשבים את הסכם של חיפה כאן',
+      // Approved test update, Jorje 2026-10-29
+      explanation: 'עדיין לא מחשבים כאן את ציון הקבלה של חיפה',
     });
     for (const { fetcher } of [first, second, third]) expect(fetcher).not.toHaveBeenCalled();
   });

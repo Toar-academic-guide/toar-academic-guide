@@ -46,7 +46,8 @@ describe('Batch C API dispatch', () => {
             capability: 'tracked_missing_rule',
             kind: 'tracked_missing_rule',
             decision: 'unknown',
-            explanation: 'עדיין לא מחשבים את הסכם של חיפה כאן',
+            // Approved test update, Jorje 2026-10-29
+            explanation: 'עדיין לא מחשבים כאן את ציון הקבלה של חיפה',
             nextAction: 'בדקו במחשבון הרשמי של אוניברסיטת חיפה.',
           });
         } else {
@@ -62,12 +63,8 @@ describe('Batch C API dispatch', () => {
         expect(result.scoreAssessment).toBeUndefined();
         expect(result.score).toBeUndefined();
         expect(result.threshold).toBeUndefined();
-        if (degreeId === 'haifa_engineering' && !('bagrut' in scores)) {
-          // Approved test update, Jorje 2026-10-28
-          expect(result.explanation).toBe('עדיין לא מחשבים את הסכם של חיפה כאן');
-        } else {
-          expect(result.explanation).not.toMatch(/מתואם|סכם|מצרף|[a-zA-Z]/);
-        }
+        // Approved test update, Jorje 2026-10-29
+        expect(result.explanation).not.toMatch(/מתואם|סכם|מצרף|[a-zA-Z]/);
       }
     },
   );

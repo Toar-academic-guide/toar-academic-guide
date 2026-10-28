@@ -24,7 +24,7 @@ export function haifaMissingRuleResult(
     decision: 'unknown',
     confidence: 'low',
     sourceLabel: 'אין מספיק מידע',
-    explanation: 'עדיין לא מחשבים את הסכם של חיפה כאן',
+    explanation: 'עדיין לא מחשבים כאן את ציון הקבלה של חיפה',
     nextAction: 'בדקו במחשבון הרשמי של אוניברסיטת חיפה.',
     officialUrls: [
       'https://admissions.haifa.ac.il/score-calculation/',

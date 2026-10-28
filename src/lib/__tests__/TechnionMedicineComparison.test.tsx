@@ -9,7 +9,8 @@ it.each([
   [91.9, 'מתחת לסף', 'text-slate-500'],
 ])('describes the medicine invitation boundary at %s', (score, relation, colour) => {
   render(<TechnionMedicineComparison score={score as number} />);
-  expect(screen.getByText(`הסכם שלך ${score}, ${relation} הזימון המשוער (92)`).className).toContain(
-    colour,
-  );
+  // Approved test update, Jorje 2026-10-29
+  expect(
+    screen.getByText(`ציון הקבלה שלך ${score}, ${relation} הזימון המשוער (92)`).className,
+  ).toContain(colour);
 });

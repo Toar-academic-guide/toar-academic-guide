@@ -126,11 +126,15 @@ describe('account grades in the homepage journey', () => {
 
   // Amit ruling 2026-10-25 07:30 via Jorje
   it.each([
-    [95, 'הסכם שלך 95, מעל סף הזימון המשוער (92)', 'text-green-700'],
-    [84.5, 'הסכם שלך 84.5, מתחת לסף הזימון המשוער (92)', 'text-slate-500'],
+    // Approved test update, Jorje 2026-10-29
+    [95, 'ציון הקבלה שלך 95, מעל סף הזימון המשוער (92)', 'text-green-700'],
+    // Approved test update, Jorje 2026-10-29
+    [84.5, 'ציון הקבלה שלך 84.5, מתחת לסף הזימון המשוער (92)', 'text-slate-500'],
     // Approved test update, Jorje 2026-10-28
-    [92, 'הסכם שלך 92, בסף הזימון המשוער (92)', 'text-green-700'],
-    [95.125, 'הסכם שלך 95.13, מעל סף הזימון המשוער (92)', 'text-green-700'],
+    // Approved test update, Jorje 2026-10-29
+    [92, 'ציון הקבלה שלך 92, בסף הזימון המשוער (92)', 'text-green-700'],
+    // Approved test update, Jorje 2026-10-29
+    [95.125, 'ציון הקבלה שלך 95.13, מעל סף הזימון המשוער (92)', 'text-green-700'],
   ] as const)('shows one medicine comparison for sekem %s', async (score, comparison, color) => {
     const program = getStaticCataloguePrograms().find((p) => p.id === 'technion_medicine')!;
     const institution = getStaticCatalogueInstitutions().find((i) => i.id === 'technion')!;
@@ -183,7 +187,8 @@ describe('account grades in the homepage journey', () => {
     const line = screen.getByText(comparison, { exact: true });
     expect(line.classList.contains(color)).toBe(true);
     expect(line.className).not.toMatch(/red|rose|amber|yellow|danger|warning/);
-    expect(screen.getAllByText(/הסכם שלך/)).toHaveLength(1);
+    // Approved test update, Jorje 2026-10-29
+    expect(screen.getAllByText(/ציון הקבלה שלך/)).toHaveLength(1);
     expect(screen.queryByText(/סף זימון משוער למבחן המו"ר/)).toBeNull();
     expect(screen.queryByText(/^סכם:/)).toBeNull();
     expect(screen.getByRole('button', { name: 'יצירת קשר' })).toBeTruthy();
@@ -198,10 +203,13 @@ describe('account grades in the homepage journey', () => {
 
   // Samuel QA A1 2026-10-25
   it.each([
-    [98.9, 'הסכם שלך 98.9, מעל סף הזימון המשוער (92)', 'text-green-700', 'status-match'],
+    // Approved test update, Jorje 2026-10-29
+    [98.9, 'ציון הקבלה שלך 98.9, מעל סף הזימון המשוער (92)', 'text-green-700', 'status-match'],
     // Approved test update, Jorje 2026-10-28
-    [92, 'הסכם שלך 92, בסף הזימון המשוער (92)', 'text-green-700', 'status-match'],
-    [73.9, 'הסכם שלך 73.9, מתחת לסף הזימון המשוער (92)', 'text-slate-500', 'status-match'],
+    // Approved test update, Jorje 2026-10-29
+    [92, 'ציון הקבלה שלך 92, בסף הזימון המשוער (92)', 'text-green-700', 'status-match'],
+    // Approved test update, Jorje 2026-10-29
+    [73.9, 'ציון הקבלה שלך 73.9, מתחת לסף הזימון המשוער (92)', 'text-slate-500', 'status-match'],
   ] as const)(
     'shows one comparison directly under the medicine list chip for sekem %s',
     async (score, text, color, badge) => {
@@ -238,8 +246,10 @@ describe('account grades in the homepage journey', () => {
       const chip = await screen.findByText('קבלה דרך מבחני מו"ר');
       const row = within(chip.closest('article')!);
       const line = row.getByText(text, { exact: true });
-      expect(row.getAllByText(/הסכם שלך/)).toHaveLength(1);
-      expect(screen.getAllByText(/הסכם שלך/)).toHaveLength(1);
+      // Approved test update, Jorje 2026-10-29
+      expect(row.getAllByText(/ציון הקבלה שלך/)).toHaveLength(1);
+      // Approved test update, Jorje 2026-10-29
+      expect(screen.getAllByText(/ציון הקבלה שלך/)).toHaveLength(1);
       expect(chip.nextElementSibling).toBe(line);
       expect(line.classList.contains(color)).toBe(true);
       expect(line.className).not.toMatch(/red|rose|amber|yellow|danger|warning/);
@@ -249,7 +259,8 @@ describe('account grades in the homepage journey', () => {
       expect(row.queryByText(/סף זימון משוער למבחן המו"ר|סכם:|שיפור/)).toBeNull();
       fireEvent.click(row.getByRole('button', { name: /פרטים על רפואה/ }));
       const detailLine = await screen.findByText(text, { exact: true });
-      expect(screen.getAllByText(/הסכם שלך/)).toHaveLength(1);
+      // Approved test update, Jorje 2026-10-29
+      expect(screen.getAllByText(/ציון הקבלה שלך/)).toHaveLength(1);
       expect(detailLine.className).toBe(line.className);
       expect(detailLine.classList.contains(color)).toBe(true);
     },
@@ -334,7 +345,8 @@ describe('account grades in the homepage journey', () => {
     expect(await screen.findByText('חסרים פרטים לחישוב')).toBeTruthy();
     expect(screen.getByText(explanation)).toBeTruthy();
     expect(screen.queryByText('קבלה דרך מבחני מו"ר')).toBeNull();
-    expect(screen.queryByText(/הסכם שלך/)).toBeNull();
+    // Approved test update, Jorje 2026-10-29
+    expect(screen.queryByText(/ציון הקבלה שלך/)).toBeNull();
   });
 
   it('changes only the calculator detail requirements while preserving the baseline decision and actions', async () => {
