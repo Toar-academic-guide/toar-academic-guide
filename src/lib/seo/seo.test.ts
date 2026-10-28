@@ -835,10 +835,17 @@ describe('structured data', () => {
       if (source.checked) {
         expect(visibleText).toContain(faq.mainEntity[1].acceptedAnswer.text);
       }
-      // The only addition is the schema script: no FAQ questions become visible UI.
-      for (const entity of faq.mainEntity) {
-        expect(document.querySelector('main')!.textContent).not.toContain(entity.name);
-      }
+      // Visible FAQ questions and answers match the schema exactly, in order.
+      expect(
+        Array.from(document.querySelectorAll('section[data-testid=program-faq] h3')).map(
+          (element) => element.textContent,
+        ),
+      ).toEqual(faq.mainEntity.map((entity) => entity.name));
+      expect(
+        Array.from(document.querySelectorAll('section[data-testid=program-faq] p')).map(
+          (element) => element.textContent,
+        ),
+      ).toEqual(faq.mainEntity.map((entity) => entity.acceptedAnswer.text));
     },
   );
 
