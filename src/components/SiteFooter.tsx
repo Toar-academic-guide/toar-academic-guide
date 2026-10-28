@@ -22,12 +22,12 @@ export default function SiteFooter() {
                 height={186}
                 unoptimized
                 className="h-[30px] w-auto md:h-[34px]"
-              />
+              />{' '}
             </Link>
             <p className="mb-3 mt-2 max-w-[340px] md:max-w-none">
-              בדיקת סיכויי קבלה לתוכניות לימודים לתואר, לפי הנתונים שהזנת.
+              בדיקת סיכויי קבלה לתוכניות לימודים לתואר, לפי הנתונים שהזנת.{' '}
             </p>
-            <h2 className="font-semibold leading-[22px] text-[#f8fbff]">יצירת קשר</h2>
+            <h2 className="font-semibold leading-[22px] text-[#f8fbff]">יצירת קשר</h2>{' '}
             <a
               href="mailto:info@findmyway.co.il"
               className={`${linkClassName} underline decoration-[#a9b5d1] decoration-1 hover:decoration-white hover:decoration-2`}
@@ -36,25 +36,25 @@ export default function SiteFooter() {
             </a>
           </div>
           <nav aria-label="ניווט בכותרת התחתונה" className="min-w-0">
-            <h2 className="font-semibold leading-[22px] text-[#f8fbff]">ניווט</h2>
+            <h2 className="font-semibold leading-[22px] text-[#f8fbff]">ניווט</h2>{' '}
             <ul>
               {FOOTER_NAV_LINKS.map(({ href, label }) => (
                 <li key={href}>
                   <Link href={href} className={linkClassName}>
                     {label}
-                  </Link>
+                  </Link>{' '}
                 </li>
               ))}
             </ul>
           </nav>
           <nav aria-label="קישורים משפטיים" className="min-w-0">
-            <h2 className="font-semibold leading-[22px] text-[#f8fbff]">מידע משפטי</h2>
+            <h2 className="font-semibold leading-[22px] text-[#f8fbff]">מידע משפטי</h2>{' '}
             <ul>
               {FOOTER_LEGAL_LINKS.map(({ href, label }) => (
                 <li key={href}>
                   <Link href={href} className={linkClassName}>
                     {label}
-                  </Link>
+                  </Link>{' '}
                 </li>
               ))}
             </ul>
@@ -62,10 +62,10 @@ export default function SiteFooter() {
         </div>
         <div className="flex flex-col items-start gap-3 border-t border-[#2b3d64] pb-6 pt-5 text-xs leading-[1.6] text-[#a9b5d1] md:flex-row md:items-center md:justify-between md:gap-6 md:py-4">
           <p className="max-w-[330px] md:max-w-none">
-            התוצאות הן הערכה בלבד; ההחלטה על קבלה היא של המוסד
+            התוצאות הן הערכה בלבד; ההחלטה על קבלה היא של המוסד{' '}
           </p>
           <p className="whitespace-nowrap">
-            <bdi dir="ltr">© 2026 MyWay</bdi>
+            <bdi dir="ltr">© 2026 MyWay</bdi>{' '}
           </p>
         </div>
       </div>
