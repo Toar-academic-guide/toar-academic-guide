@@ -15,6 +15,7 @@ import type {
   AdmissionsEvaluationInput,
   AdmissionsEvaluationResult,
 } from '@/types/admissionsEvaluation';
+import { formatSekhemNumber } from '@/lib/sekhemResultPresentation';
 import SekhemResults from './SekhemResults';
 
 const context = vi.hoisted(() => ({
@@ -277,7 +278,7 @@ describe('real evaluator → batch POST → calculator result rows', () => {
       expect(numbers).toHaveLength(returnedNumbers.length);
       for (const number of numbers) {
         const field = number.getAttribute('data-result-number') as 'score' | 'threshold';
-        expect(Number(number.textContent)).toBe(result[field]);
+        expect(number.textContent).toBe(formatSekhemNumber(result[field]!, profile.institutionId));
       }
       const expectedVerdict =
         result.kind === 'needs_input'

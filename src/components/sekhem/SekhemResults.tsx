@@ -1,5 +1,6 @@
 'use client';
 
+import { formatSekhemNumber } from '@/lib/sekhemResultPresentation';
 import { useState } from 'react';
 import Link from 'next/link';
 import { resultVerdict, type CalculatorOffering } from '@/lib/sekhemCalculator';
@@ -90,7 +91,7 @@ function InstitutionGroup({ entries, onEnquiry }: { entries: Entry[]; onEnquiry:
                   dir="ltr"
                   className="block text-3xl font-semibold tabular-nums"
                 >
-                  {String(result.score)}
+                  {formatSekhemNumber(result.score!, offering.institutionId)}
                 </span>
                 {result.scoreLabel && (
                   <span className="text-sm text-(--text-body)">{result.scoreLabel}</span>
@@ -101,7 +102,7 @@ function InstitutionGroup({ entries, onEnquiry }: { entries: Entry[]; onEnquiry:
               <div>
                 <span className="block text-sm text-(--text-body)">סף קבלה</span>
                 <span data-result-number="threshold" dir="ltr" className="tabular-nums">
-                  {String(result.threshold)}
+                  {formatSekhemNumber(result.threshold!, offering.institutionId)}
                 </span>
               </div>
             )}
