@@ -83,6 +83,26 @@ describe('public calculator ordinary input boundary', () => {
       offerings.length,
     );
   });
+  it('does not offer institution-wide placeholders as supported degrees', () => {
+    const offerings = calculatorOfferings(
+      getStaticCataloguePrograms(),
+      getStaticCatalogueInstitutions(),
+    );
+    const placeholders = [
+      'bgu_engineering',
+      'biu_engineering',
+      'biu_prep',
+      'haifa_engineering',
+      'reichman_engineering',
+      'tau_engineering',
+      'huji_engineering',
+      'huji_prep',
+      'technion_engineering',
+      'hit_engineering',
+      'afeka_engineering',
+    ];
+    expect(offerings.filter((row) => placeholders.includes(row.programId))).toEqual([]);
+  });
   it('uses the raw API verdict even when a rounded score equals the threshold', () => {
     const row = {
       kind: 'exact',
