@@ -2,9 +2,9 @@ import 'server-only';
 import { cache } from 'react';
 import { canonicalProgramId } from './seo/programAliases';
 import { HAIFA_INFORMATION_SYSTEMS_TRACK_ARTIFACTS } from '@/data/admissions/haifaInformationSystemsVerification';
-import { verifiedProgramEntry } from '@/data/admissions/formulaBackedVerificationLedger';
 import { isBatchCUnsupportedProgramId } from '@/data/admissions/batchCUnsupportedProgramIds';
 import {
+  verifiedProgramEntry,
   formulaBackedPairScope,
   getFormulaPairVerificationEntry,
 } from '@/data/admissions/formulaBackedVerificationLedger';
@@ -15,6 +15,12 @@ import { listCataloguePrograms } from '@/server/catalogue/queries';
 import { findAdmissionsEvaluationProgram } from './admissionsEvaluationProgram';
 import type { CalculatorOffering } from './sekhemCalculator';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
+
+const verifiedTrackPairIds = new Set(
+  Object.values(HAIFA_INFORMATION_SYSTEMS_TRACK_ARTIFACTS)
+    .filter((artifact) => verifiedProgramEntry(artifact).state === 'exact')
+    .map((artifact) => artifact.contract.pairId),
+);
 
 const institutionsInScope = new Set([
   'tau',
@@ -77,7 +83,6 @@ export function calculatorOfferings(
   );
 }
 
-/** Reuse evaluator-owned exclusions, formula verification and named manual routes. */
 export function sekhemPairSupport(
   program: CatalogueProgram,
   institutionId: string,
@@ -93,13 +98,7 @@ export function sekhemPairSupport(
   if (isBatchBManualProgram(program.id, institutionId)) return 'gate';
   const pairId = `${program.id}__${institutionId}`;
   const verification = getFormulaPairVerificationEntry(pairId);
-  if (
-    Object.values(HAIFA_INFORMATION_SYSTEMS_TRACK_ARTIFACTS).some(
-      (artifact) =>
-        artifact.contract.pairId === pairId && verifiedProgramEntry(artifact).state === 'exact',
-    )
-  )
-    return 'score';
+  if (verifiedTrackPairIds.has(pairId)) return 'score';
   if (formulaBackedPairScope(pairId) === 'in_scope')
     return verification?.state === 'exact' ? 'score' : 'unverified';
   if (isBiuPublishedRoutePair(program.id, institutionId)) return 'floors';
