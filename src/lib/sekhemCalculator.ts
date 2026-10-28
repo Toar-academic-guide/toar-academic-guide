@@ -5,9 +5,7 @@ import {
   type BagrutWizardSubjectInput,
 } from '@/utils/bagrutSubjectRecord';
 import { MAX_BAGRUT_SUBJECTS } from './bagrutSubjectLimits';
-import { canonicalProgramId } from './seo/programAliases';
 import type { BagrutCertificateType } from '@/types';
-import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type {
   AdmissionsBatchInput,
   AdmissionsEvaluationResult,
@@ -18,59 +16,6 @@ export interface CalculatorOffering {
   programName: string;
   institutionId: string;
   institutionName: string;
-}
-
-const institutionsInScope = new Set([
-  'tau',
-  'huji',
-  'bgu',
-  'haifa',
-  'technion',
-  'reichman',
-  'biu',
-  'afeka',
-  'hit',
-]);
-
-/** Identity comes from the public catalogue, not a formula/coverage registry. */
-export function calculatorOfferings(
-  programs: CatalogueProgram[],
-  institutions: CatalogueInstitution[],
-  generalProgramIds = new Set(programs.filter((p) => !p.institutionId).map((p) => p.id)),
-): CalculatorOffering[] {
-  const available = programs.filter(
-    (p) => p.type === 'academic' && p.isListed !== false && canonicalProgramId(p.id) === p.id,
-  );
-  const pairs = new Map<string, CalculatorOffering>();
-  for (const program of available) {
-    for (const institution of institutions) {
-      if (
-        !institutionsInScope.has(institution.id) ||
-        !program.linkedInstitutionIds.includes(institution.id)
-      )
-        continue;
-      const specific = generalProgramIds.has(program.id)
-        ? available.find(
-            (p) =>
-              !generalProgramIds.has(p.id) &&
-              p.institutionId === institution.id &&
-              p.name === program.name,
-          )
-        : undefined;
-      const target = specific ?? program;
-      pairs.set(`${institution.id}:${target.id}`, {
-        programId: target.id,
-        programName: target.name,
-        institutionId: institution.id,
-        institutionName: institution.name,
-      });
-    }
-  }
-  return [...pairs.values()].sort(
-    (a, b) =>
-      a.institutionName.localeCompare(b.institutionName, 'he') ||
-      a.programName.localeCompare(b.programName, 'he'),
-  );
 }
 
 export interface CalculatorProfile {

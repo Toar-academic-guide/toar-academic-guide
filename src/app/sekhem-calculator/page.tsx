@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 import WayPageShell from '@/components/WayPageShell';
 import SekhemCalculator from '@/components/sekhem/SekhemCalculator';
-import { loadPublicCatalogue } from '@/lib/publicCataloguePages';
-import { calculatorOfferings } from '@/lib/sekhemCalculator';
+import { loadSekhemCalculatorOfferings } from '@/lib/sekhemCalculatorSupport';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
@@ -17,12 +16,7 @@ export default async function Page({
 }: {
   searchParams: Promise<{ program?: string }>;
 }) {
-  const [catalogue, params] = await Promise.all([loadPublicCatalogue(), searchParams]);
-  const offerings = calculatorOfferings(
-    catalogue.programs,
-    catalogue.institutions,
-    catalogue.generalProgramIds,
-  );
+  const [offerings, params] = await Promise.all([loadSekhemCalculatorOfferings(), searchParams]);
   const initialProgramId = offerings.some((row) => row.programId === params.program)
     ? params.program
     : undefined;

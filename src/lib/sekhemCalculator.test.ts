@@ -1,5 +1,7 @@
-import { describe, expect, it } from 'vitest';
-import { buildSekhemInput, calculatorOfferings, resultVerdict } from './sekhemCalculator';
+vi.mock('server-only', () => ({}));
+import { calculatorOfferings } from './sekhemCalculatorSupport';
+import { describe, expect, it, vi } from 'vitest';
+import { buildSekhemInput, resultVerdict } from './sekhemCalculator';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from './catalogueStatic';
 import type { AdmissionsEvaluationResult } from '@/types/admissionsEvaluation';
 import {

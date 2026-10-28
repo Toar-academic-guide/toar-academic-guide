@@ -1,11 +1,10 @@
-import { canonicalProgramId } from '@/lib/seo/programAliases';
 import { headers } from 'next/headers';
 import { z } from 'zod';
 
 import { ApiRouteError, toErrorResponse } from '@/app/api/_lib/errors';
 import { listCatalogueInstitutions, listCataloguePrograms } from '@/server/catalogue/queries';
 import { evaluateAdmissionsForProgram } from '@/server/admissions/evaluator';
-import { BATCH_B_PROGRAMS } from '@/server/admissions/batchBManualPathEvaluation';
+import { findAdmissionsEvaluationProgram } from '@/lib/admissionsEvaluationProgram';
 import { serializeAdmissionsReport } from '@/lib/admissionsEvaluationSerialization';
 import {
   admissionsEvaluationClientKey,
@@ -59,15 +58,14 @@ export async function POST(request: Request) {
       for (let index = 0; index < degreeIds.length; index += 4) {
         await Promise.all(
           degreeIds.slice(index, index + 4).map(async (degreeId) => {
-            const resolvedDegreeId = resolveEvaluationDegreeId(degreeId);
-            const program = programsResult.data.find((entry) => entry.id === resolvedDegreeId);
+            const program = findAdmissionsEvaluationProgram(programsResult.data, degreeId);
             if (!program) {
               batch.failedDegreeIds.push(degreeId);
               return;
             }
             try {
               const report = await evaluateAdmissionsForProgram({
-                input: { ...applicant, degreeId: resolvedDegreeId },
+                input: { ...applicant, degreeId: program.id },
                 program,
                 institutions: institutionsResult.data,
               });
@@ -80,8 +78,7 @@ export async function POST(request: Request) {
       }
       return Response.json({ data: batch });
     }
-    const degreeId = resolveEvaluationDegreeId(parsed.data.degreeId);
-    const program = programsResult.data.find((entry) => entry.id === degreeId);
+    const program = findAdmissionsEvaluationProgram(programsResult.data, parsed.data.degreeId);
     if (!program) {
       throw new ApiRouteError(
         404,
@@ -91,7 +88,7 @@ export async function POST(request: Request) {
     }
 
     const report = await evaluateAdmissionsForProgram({
-      input: { ...parsed.data, degreeId },
+      input: { ...parsed.data, degreeId: program.id },
       program,
       institutions: institutionsResult.data,
     });
@@ -115,11 +112,6 @@ export async function POST(request: Request) {
       message: 'Unable to evaluate admissions right now.',
     });
   }
-}
-
-function resolveEvaluationDegreeId(degreeId: string): string {
-  // Existing manual-gate programmes have evaluator-owned IDs; preserve those routes.
-  return BATCH_B_PROGRAMS[degreeId] ? degreeId : canonicalProgramId(degreeId);
 }
 
 async function resolveClientKey() {
