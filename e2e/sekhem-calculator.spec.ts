@@ -561,10 +561,11 @@ test('retry clears a transient service error and shows the requested programme r
   await page.goto('/sekhem-calculator?program=tau_law');
   await fillProfile(page);
   await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
-  await expect(page.getByRole('alert')).toBeVisible();
+  const error = page.getByRole('main').getByRole('alert');
+  await expect(error).toHaveText('לא הצלחנו לחשב כרגע. אפשר לנסות שוב.');
   await page.getByRole('button', { name: 'לנסות שוב', exact: true }).click();
   await expect(page.getByTestId('institution-tau')).toContainText('הציונים עומדים בתנאי הקבלה');
-  await expect(page.getByRole('alert')).toHaveCount(0);
+  await expect(error).toHaveCount(0);
   expect(mocks.batches.flatMap((batch) => batch.degreeIds)).toEqual(['tau_law']);
   expect(mocks.submissions).toHaveLength(0);
 });
