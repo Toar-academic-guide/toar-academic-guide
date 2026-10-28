@@ -215,6 +215,23 @@ function assertNoCompositePayload(value: unknown) {
 }
 
 for (const width of [1280, 390]) {
+  test(`example fills all nine certificate subjects at ${width}px without sending enquiries`, async ({
+    page,
+    baseURL,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    const mocks = await installMocks(page, baseURL);
+    await page.goto('/sekhem-calculator');
+    await page.getByRole('button', { name: 'ערכים לדוגמה', exact: true }).click();
+    await expect(page.getByRole('button', { name: /^הסרת מקצוע / })).toHaveCount(9);
+    await expect(page.getByLabel('מקצוע 3', { exact: true })).toHaveValue('הבעה עברית');
+    await expect(page.getByLabel('מקצוע 7', { exact: true })).toHaveValue('אזרחות');
+    await expect(page.getByLabel('ציון 9', { exact: true })).toHaveValue('94');
+    await assertAlignedFields(page.locator('main'));
+    expect(mocks.batches).toHaveLength(0);
+    expect(mocks.submissions).toHaveLength(0);
+  });
+
   test(`raw grades, honest results and mocked institution leads at ${width}px`, async ({
     page,
     baseURL,

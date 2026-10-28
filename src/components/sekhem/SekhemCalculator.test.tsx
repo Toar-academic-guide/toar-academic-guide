@@ -59,6 +59,53 @@ function submit() {
   fireEvent.click(screen.getByRole('button', { name: 'לחשב את הסכם' }));
 }
 
+it('fills a complete nine-subject example certificate and sends every raw subject and PET section', async () => {
+  render(<SekhemCalculator offerings={offerings} />);
+  examples();
+  const subjects = [
+    ['מתמטיקה', 'mathematics', 5, 92],
+    ['אנגלית', 'english', 5, 95],
+    ['הבעה עברית', 'hebrew_expression', 2, 88],
+    ['תנ״ך', 'bible', 2, 85],
+    ['ספרות', 'literature', 2, 90],
+    ['היסטוריה / תע״י', 'history', 2, 87],
+    ['אזרחות', 'civics', 2, 93],
+    ['פיזיקה', 'physics', 5, 90],
+    ['מדעי המחשב', 'computer_science', 5, 94],
+  ] as const;
+  expect(screen.getAllByRole('button', { name: /^הסרת מקצוע / })).toHaveLength(9);
+  for (const [index, [label, , units, grade]] of subjects.entries()) {
+    expect(screen.getByLabelText(`מקצוע ${index + 1}`)).toHaveProperty('value', label);
+    expect(screen.getByLabelText(`יחידות ${index + 1}`)).toHaveProperty('value', String(units));
+    expect(screen.getByLabelText(`ציון ${index + 1}`)).toHaveProperty('value', String(grade));
+  }
+  expect(screen.getByLabelText(/פסיכומטרי — ציון כללי/)).toHaveProperty('value', '700');
+  for (const [label, value] of [
+    ['מילולי', '130'],
+    ['כמותי', '140'],
+    ['אנגלית', '135'],
+  ])
+    expect(screen.getByLabelText(label)).toHaveProperty('value', value);
+  submit();
+  await screen.findByText('הציונים עומדים בתנאי הקבלה');
+  const body = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
+  expect(body.psychometric).toBe(700);
+  expect(body.extraInputs).toMatchObject({
+    psychometricVerbal: 130,
+    psychometricMath: 140,
+    psychometricEnglish: 135,
+  });
+  expect(body.extraInputs.bagrutSubjectRecord.subjects).toEqual(
+    subjects.map(([, subjectId, units, grade]) => ({
+      subjectId,
+      units,
+      grade,
+      assessmentKind: 'exam',
+    })),
+  );
+  expect(fetchMock.mock.calls.every(([url]) => url === '/api/admissions/evaluate')).toBe(true);
+});
+
 it('sends raw rows in batch mode, exposes no composite input and opens the reused enquiry for its actual pair', async () => {
   const { container } = render(<SekhemCalculator offerings={offerings} />);
   examples();
@@ -66,11 +113,11 @@ it('sends raw rows in batch mode, exposes no composite input and opens the reuse
   await screen.findByText('הציונים עומדים בתנאי הקבלה');
   const body = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
   expect(body.degreeIds).toEqual(['haifa_cs']);
-  expect(body.extraInputs.bagrutSubjectRecord.subjects).toHaveLength(4);
+  expect(body.extraInputs.bagrutSubjectRecord.subjects).toHaveLength(9);
   expect(body.extraInputs.bagrutSubjectRecord.subjects).toContainEqual({
     subjectId: 'mathematics',
     units: 5,
-    grade: 90,
+    grade: 92,
     assessmentKind: 'exam',
   });
   expect(body.extraInputs.haifaBagrutAverage).toBeUndefined();
