@@ -14,6 +14,19 @@ const description =
 const noScoreLine = 'בחלק מהמוסדות נבדקים תנאי קבלה בלי חישוב סכם.';
 const kidumText = 'מסלול ראויים לקידום';
 const compositeInput = /סכם|מתואם|מצרף|ציון משוקלל|sekhem|sekem|composite|weighted.?score/i;
+const absentEvaluatorIds = [
+  'bgu_engineering',
+  'biu_engineering',
+  'biu_prep',
+  'haifa_engineering',
+  'reichman_engineering',
+  'tau_engineering',
+  'huji_engineering',
+  'huji_prep',
+  'technion_engineering',
+  'hit_engineering',
+  'afeka_engineering',
+];
 type Locator = ReturnType<Page['locator']>;
 
 type BatchRequest = Omit<AdmissionsEvaluationInput, 'degreeId'> & { degreeIds: string[] };
@@ -485,4 +498,55 @@ test('numberless cards explain missing inputs and unavailable result states', as
       await expect(row).not.toContainText('נדרשת בדיקה מול המוסד');
     }
   }
+});
+
+for (const width of [1280, 390]) {
+  test(`unavailable deep links never evaluate another programme at ${width}px`, async ({
+    page,
+    baseURL,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    const mocks = await installMocks(page, baseURL);
+    await page.goto('/sekhem-calculator');
+    const offered = await page
+      .getByLabel('תוכנית לימודים')
+      .locator('option')
+      .evaluateAll((options) => options.map((option) => (option as HTMLOptionElement).value));
+    expect(offered.filter((id) => absentEvaluatorIds.includes(id))).toEqual([]);
+    for (const id of absentEvaluatorIds) {
+      await page.goto(`/sekhem-calculator?program=${id}`);
+      await expect(page.getByText('אי אפשר לחשב כאן את סיכויי הקבלה לתוכנית הזו.')).toBeVisible();
+      await expect(page.getByRole('link', { name: 'לתנאי הקבלה של התוכנית' })).toHaveAttribute(
+        'href',
+        `/programs/${id}`,
+      );
+      await expect(page.getByRole('button', { name: 'לחשב את הסכם', exact: true })).toHaveCount(0);
+      await expect(page.getByText('חלק מהתוכניות לא חושבו. אפשר לנסות שוב.')).toHaveCount(0);
+    }
+    expect(mocks.batches).toHaveLength(0);
+    expect(mocks.submissions).toHaveLength(0);
+  });
+}
+
+test('retry clears a transient service error and shows the requested programme results', async ({
+  page,
+  baseURL,
+}) => {
+  const mocks = await installMocks(page, baseURL);
+  let failed = false;
+  await page.route('**/api/admissions/evaluate', async (route) => {
+    if (!failed) {
+      failed = true;
+      await route.fulfill({ status: 503, json: { error: { message: 'Unavailable' } } });
+    } else await route.fallback();
+  });
+  await page.goto('/sekhem-calculator?program=tau_law');
+  await fillProfile(page);
+  await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
+  await expect(page.getByRole('alert')).toBeVisible();
+  await page.getByRole('button', { name: 'לנסות שוב', exact: true }).click();
+  await expect(page.getByTestId('institution-tau')).toContainText('הציונים עומדים בתנאי הקבלה');
+  await expect(page.getByRole('alert')).toHaveCount(0);
+  expect(mocks.batches.flatMap((batch) => batch.degreeIds)).toEqual(['tau_law']);
+  expect(mocks.submissions).toHaveLength(0);
 });

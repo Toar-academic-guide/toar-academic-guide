@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { expect, it, vi } from 'vitest';
 vi.mock('server-only', () => ({}));
 vi.mock('@/components/WayPageShell', () => ({
@@ -16,6 +16,78 @@ vi.mock('@/server/catalogue/queries', async () => {
 import Page, { metadata } from './page';
 import sitemap from '@/app/sitemap';
 import { readFileSync } from 'node:fs';
+
+const absentEvaluatorIds = [
+  'bgu_engineering',
+  'biu_engineering',
+  'biu_prep',
+  'haifa_engineering',
+  'reichman_engineering',
+  'tau_engineering',
+  'huji_engineering',
+  'huji_prep',
+  'technion_engineering',
+  'hit_engineering',
+  'afeka_engineering',
+];
+
+it.each(absentEvaluatorIds)(
+  'shows an unavailable state for absent evaluator programme %s without evaluating another programme',
+  async (program) => {
+    const { getStaticCataloguePrograms } = await import('@/lib/catalogueStatic');
+    vi.spyOn(await import('@/server/catalogue/queries'), 'listCataloguePrograms').mockResolvedValue(
+      {
+        data: getStaticCataloguePrograms().filter((row) => !absentEvaluatorIds.includes(row.id)),
+        meta: {},
+      },
+    );
+    const fetcher = vi.fn<typeof fetch>(async () => Response.json({ data: { received: true } }));
+    vi.stubGlobal('fetch', fetcher);
+    try {
+      render(await Page({ searchParams: Promise.resolve({ program }) }));
+      expect(screen.getByText('אי אפשר לחשב כאן את סיכויי הקבלה לתוכנית הזו.')).toBeTruthy();
+      expect(
+        screen.getByRole('link', { name: 'לתנאי הקבלה של התוכנית' }).getAttribute('href'),
+      ).toBe(`/programs/${program}`);
+      expect(screen.queryByRole('button', { name: 'לחשב את הסכם' })).toBeNull();
+      expect(screen.queryByText('חלק מהתוכניות לא חושבו. אפשר לנסות שוב.')).toBeNull();
+      expect(fetcher).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  },
+);
+
+it('does not link an unknown unavailable programme to a nonexistent public page', async () => {
+  render(await Page({ searchParams: Promise.resolve({ program: 'not_a_public_programme' }) }));
+  expect(screen.getByText('אי אפשר לחשב כאן את סיכויי הקבלה לתוכנית הזו.')).toBeTruthy();
+  expect(screen.queryByRole('link', { name: 'לתנאי הקבלה של התוכנית' })).toBeNull();
+  expect(screen.getByRole('link', { name: 'לחישוב תוכנית אחרת' }).getAttribute('href')).toBe(
+    '/sekhem-calculator',
+  );
+  expect(screen.queryByRole('button', { name: 'לחשב את הסכם' })).toBeNull();
+});
+
+it('offers only programmes in the runtime evaluator catalogue and refreshes membership on the next render', async () => {
+  const { getStaticCataloguePrograms } = await import('@/lib/catalogueStatic');
+  const active = getStaticCataloguePrograms().filter((row) => !absentEvaluatorIds.includes(row.id));
+  const query = vi.spyOn(await import('@/server/catalogue/queries'), 'listCataloguePrograms');
+  query.mockResolvedValue({ data: active, meta: {} });
+  const view = render(await Page({ searchParams: Promise.resolve({}) }));
+  const ids = () =>
+    within(screen.getByLabelText('תוכנית לימודים'))
+      .getAllByRole('option')
+      .map((option) => (option as HTMLOptionElement).value)
+      .filter(Boolean);
+  expect(ids().length).toBeGreaterThan(0);
+  expect(ids().every((id) => active.some((row) => row.id === id))).toBe(true);
+  expect(ids().filter((id) => absentEvaluatorIds.includes(id))).toEqual([]);
+  expect(ids()).toContain('tau_law');
+  view.unmount();
+  query.mockResolvedValue({ data: active.filter((row) => row.id !== 'tau_law'), meta: {} });
+  render(await Page({ searchParams: Promise.resolve({}) }));
+  expect(ids()).not.toContain('tau_law');
+});
 
 it('renders an indexable public calculator with absolute title and canonical metadata', async () => {
   render(await Page({ searchParams: Promise.resolve({}) }));
