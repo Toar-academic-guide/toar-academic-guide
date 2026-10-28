@@ -39,6 +39,7 @@ import {
   institutionLd,
   organizationLd,
   programBreadcrumbLd,
+  programFaqEntries,
   programFaqPageLd,
   programLd,
   websiteLd,
@@ -849,6 +850,55 @@ describe('structured data', () => {
     },
   );
 
+  it.each(['bgu_psychology', 'colmgmt_cs', 'huji_law'])(
+    'builds FAQPage questions and answers from the shared FAQ entries for %s',
+    async (id) => {
+      const data = (await getPublicProgramPageData(id))!;
+      const sources = await getPublicProgramRequirementSources(data);
+      expect(programFaqPageLd(data, sources)!.mainEntity).toEqual(
+        programFaqEntries(data, sources)!.map(({ question, answer }) => ({
+          '@type': 'Question',
+          name: question,
+          acceptedAnswer: { '@type': 'Answer', text: answer },
+        })),
+      );
+    },
+  );
+
+  it('omits shared FAQ entries in every FAQPage omission case', async () => {
+    const data = (await getPublicProgramPageData('huji_law'))!;
+    const sources = await getPublicProgramRequirementSources(data);
+    const institutionId = data.institutions[0].id;
+    const cases: [typeof data, typeof sources][] = [
+      [{ ...data, program: { ...data.program, isListed: false } }, sources],
+      [data, {}],
+      [data, { [institutionId]: { ...sources[institutionId], requirements: [] } }],
+      ...[
+        'tau_cs',
+        'technion_cs',
+        'ariel_cs',
+        'afeka_ee',
+        'afeka_softwareeng',
+        'hit_visual_comm',
+        'huji_engineering',
+        'bezalel_graphic_design',
+        'afeka_cs',
+        'psychology',
+        'law',
+        'nursing',
+        'cs',
+        ...programs.filter((program) => program.id.startsWith('reichman_')).map(({ id }) => id),
+      ].map((id): [typeof data, typeof sources] => [
+        { ...data, program: { ...data.program, id } },
+        sources,
+      ]),
+    ];
+    for (const [candidate, requirementSources] of cases) {
+      expect(programFaqPageLd(candidate, requirementSources)).toBeNull();
+      expect(programFaqEntries(candidate, requirementSources)).toBeNull();
+    }
+  });
+
   it('omits FAQs when scoped requirements are hidden or unavailable and for other programs', async () => {
     const data = (await getPublicProgramPageData('huji_law'))!;
     const sources = await getPublicProgramRequirementSources(data);
@@ -904,6 +954,7 @@ describe('structured data', () => {
       renderToStaticMarkup(await ProgramPage({ params: Promise.resolve({ programId: id }) })),
       'text/html',
     );
+    expect(document.querySelector('[data-testid=program-faq]')).toBeNull();
     const graph = JSON.parse(
       document.querySelector('script[type="application/ld+json"]')!.textContent!,
     );
