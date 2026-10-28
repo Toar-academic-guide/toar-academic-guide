@@ -108,6 +108,8 @@ export function buildSekhemInput(
   const record = buildBagrutSubjectRecord({
     sectorLabel: profile.sector,
     certificateType: profile.certificate,
+    // PM rule: entering grades implies full bagrut; never add a confirmation gate.
+    complete: true,
     subjects: rows,
   });
   const extraInputs = admissionsExtraInputsFromAcademicScores({

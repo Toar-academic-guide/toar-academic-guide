@@ -27,7 +27,7 @@ export default async function Page({
     ? params.program
     : undefined;
   return (
-    <WayPageShell>
+    <WayPageShell contentClassName="pt-28">
       <main
         id="main-content"
         dir="rtl"

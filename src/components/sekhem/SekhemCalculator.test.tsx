@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, expect, it, vi } from 'vitest';
 import SekhemCalculator from './SekhemCalculator';
 import { ENQUIRY_COPY } from '@/lib/enquiries';
@@ -147,4 +147,88 @@ it('invalidates old results when grades change and reports request failure hones
   fetchMock.mockRejectedValueOnce(new Error('offline'));
   submit();
   expect((await screen.findByRole('alert')).textContent).toContain('לא הצלחנו לחשב כרגע');
+});
+
+it('serializes a response-requested Haifa yes/no answer as a boolean', async () => {
+  fetchMock.mockResolvedValueOnce(
+    Response.json({ data: response(['haifa_ot_unjustified_absence']) }),
+  );
+  render(<SekhemCalculator offerings={offerings} />);
+  examples();
+  submit();
+  fireEvent.change(
+    await screen.findByLabelText('היעדרות מריאיון בריפוי בעיסוק בחיפה ללא הצדקה וללא הודעה'),
+    { target: { value: 'false' } },
+  );
+  submit();
+  await screen.findByText('הציונים עומדים בתנאי הקבלה');
+  expect(
+    JSON.parse(String(fetchMock.mock.calls[1][1]?.body)).extraInputs.haifaOtUnjustifiedAbsence,
+  ).toBe(false);
+});
+
+it('ignores an in-flight response after the student changes a grade', async () => {
+  let finish!: (value: Response) => void;
+  fetchMock.mockReturnValueOnce(
+    new Promise<Response>((resolve) => {
+      finish = resolve;
+    }),
+  );
+  render(<SekhemCalculator offerings={offerings} />);
+  examples();
+  submit();
+  fireEvent.change(screen.getByLabelText('ציון 1'), { target: { value: '80' } });
+  await act(async () => finish(Response.json({ data: response() })));
+  expect(screen.queryByText('הציונים עומדים בתנאי הקבלה')).toBeNull();
+  expect(screen.queryByRole('button', { name: 'מחשבים…' })).toBeNull();
+  submit();
+  await screen.findByText('הציונים עומדים בתנאי הקבלה');
+  const body = JSON.parse(String(fetchMock.mock.calls[1][1]?.body));
+  expect(
+    body.extraInputs.bagrutSubjectRecord.subjects.find(
+      (row: { subjectId: string }) => row.subjectId === 'mathematics',
+    ).grade,
+  ).toBe(80);
+});
+
+it('batches at fifty, preserves completed results, and retries failed programmes only after an explicit action', async () => {
+  const many = Array.from({ length: 51 }, (_, index) => ({
+    ...offerings[0],
+    programId: `program_${index}`,
+    programName: `תוכנית ${index}`,
+  }));
+  let attempt = 0;
+  fetchMock.mockImplementation(async (url, init) => {
+    if (url === '/api/enquiries') return Response.json({ data: { received: true } });
+    const { degreeIds } = JSON.parse(String(init?.body)) as { degreeIds: string[] };
+    attempt++;
+    if (attempt === 2) return Response.json({ data: { reports: {}, failedDegreeIds: degreeIds } });
+    if (attempt === 3) return Response.json({ error: { code: 'RATE_LIMITED' } }, { status: 429 });
+    const reports = Object.fromEntries(
+      degreeIds.map((id) => [
+        id,
+        { ...response().reports.haifa_cs, input: { degreeId: id }, program: { id, name: id } },
+      ]),
+    );
+    return Response.json({ data: { reports, failedDegreeIds: [] } });
+  });
+  render(<SekhemCalculator offerings={many} />);
+  examples();
+  submit();
+  await screen.findByText('חלק מהתוכניות לא חושבו. אפשר לנסות שוב.');
+  expect(screen.getByText('הציונים עומדים בתנאי הקבלה')).toBeTruthy();
+  expect(
+    fetchMock.mock.calls.map(([, init]) => JSON.parse(String(init?.body)).degreeIds.length),
+  ).toEqual([50, 1]);
+  fireEvent.click(screen.getByRole('button', { name: 'לנסות שוב' }));
+  await screen.findByText('לא הצלחנו לחשב כרגע. אפשר לנסות שוב.');
+  expect(screen.getByText('הציונים עומדים בתנאי הקבלה')).toBeTruthy();
+  expect(fetchMock).toHaveBeenCalledTimes(3);
+  fireEvent.click(screen.getByRole('button', { name: 'לנסות שוב' }));
+  await waitFor(() => expect(screen.queryByRole('alert')).toBeNull());
+  expect(
+    screen.getByRole('combobox', { name: 'בחירת תוכנית' }).querySelectorAll('option'),
+  ).toHaveLength(51);
+  for (const [, init] of fetchMock.mock.calls.slice(1))
+    expect(JSON.parse(String(init?.body)).degreeIds).toEqual(['program_50']);
 });

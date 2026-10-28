@@ -19,6 +19,7 @@
 }
 .sekhem-calculator .journey-grade-table {
   width: 100%;
+  border-collapse: separate;
   border-spacing: 6px 8px;
   table-layout: fixed;
 }

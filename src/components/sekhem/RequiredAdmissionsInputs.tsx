@@ -3,7 +3,11 @@
 import HaifaQualificationFields, {
   type HaifaQualificationValues,
 } from '@/components/HaifaQualificationFields';
-import { HAIFA_PROFILE_KEYS, type HaifaAdmissionsInputs } from '@/lib/haifaAdmissionsInputs';
+import {
+  HAIFA_ADMISSION_YEAR,
+  HAIFA_PROFILE_KEYS,
+  type HaifaAdmissionsInputs,
+} from '@/lib/haifaAdmissionsInputs';
 import type { AdmissionsRequiredInput } from '@/types/admissionsEvaluation';
 
 export function requestedHaifaKeys(
@@ -11,7 +15,9 @@ export function requestedHaifaKeys(
 ): (keyof HaifaAdmissionsInputs)[] {
   return HAIFA_PROFILE_KEYS.filter((key) =>
     required.includes(
-      key.replace(/[A-Z]/g, (char) => `_${char.toLowerCase()}`) as AdmissionsRequiredInput,
+      key
+        .replace(/Confirmed$/, '')
+        .replace(/[A-Z]/g, (char) => `_${char.toLowerCase()}`) as AdmissionsRequiredInput,
     ),
   );
 }
@@ -36,12 +42,18 @@ export default function RequiredAdmissionsInputs({
       max: 130,
       step: 0.1,
     },
-    { key: 'haifaBagrutYear' as const, label: 'שנת הבגרות', min: 1948, max: 2026, step: 1 },
+    {
+      key: 'haifaBagrutYear' as const,
+      label: 'שנת הבגרות',
+      min: 1948,
+      max: HAIFA_ADMISSION_YEAR,
+      step: 1,
+    },
     {
       key: 'haifaPsychometricYear' as const,
       label: 'שנת הפסיכומטרי',
       min: 1948,
-      max: 2026,
+      max: HAIFA_ADMISSION_YEAR,
       step: 1,
     },
   ];

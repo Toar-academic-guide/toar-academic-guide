@@ -24,12 +24,17 @@ function gateText(result: AdmissionsEvaluationResult): string[] {
       ?.filter((condition) => condition.status !== 'confirmed')
       .map((condition) => condition.label) ?? [];
   // Text-only routes (including HUJI Kidum) deliberately have no numerical fields.
-  if (
-    result.kind === 'manual_gate' &&
-    !labels.length &&
-    /ראיון|ריאיון|מבחן|תיק עבודות|אודישן|ראויים לקידום|האגודה לקידום/.test(result.explanation)
-  )
-    labels.push(result.explanation);
+  const namesGate = /ראיון|ריאיון|מבחן|תיק עבודות|אודישן|ראויים לקידום|האגודה לקידום/;
+  if (result.kind === 'manual_gate' && !labels.length && namesGate.test(result.explanation)) {
+    const textOnly = !hasNumber(result.score) && !hasNumber(result.threshold);
+    // The returned route name preserves a deliberately number-free gate even
+    // when its longer explanation mentions a suppressed score band.
+    labels.push(
+      textOnly && /\d/.test(result.explanation) && namesGate.test(result.sourceLabel)
+        ? result.sourceLabel
+        : result.explanation,
+    );
+  }
   return labels.filter((label) => !label.includes('נדרשת בדיקה מול המוסד'));
 }
 

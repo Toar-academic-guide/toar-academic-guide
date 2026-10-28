@@ -98,6 +98,23 @@ describe('API-only result rows', () => {
     ]);
     expect(screen.getByText('ראיון אישי')).toBeTruthy();
   });
+  it('uses the returned route name when a text-only gate explanation contains hidden numerical bands', () => {
+    renderReports([
+      report('huji', {
+        kind: 'manual_gate',
+        capability: 'manual_gate',
+        decision: 'unknown',
+        score: undefined,
+        threshold: undefined,
+        sourceLabel: 'מסלול ראויים לקידום',
+        explanation:
+          'קבלה ישירה מציון 690 בפסיכומטרי מיועדת לראויים לקידום בדירוג של 30 נקודות לפחות מטעם האגודה לקידום החינוך.',
+      }),
+    ]);
+    const row = screen.getByTestId('result-psychology-huji');
+    expect(row.textContent).toContain('מסלול ראויים לקידום');
+    expect(row.textContent).not.toMatch(/\d/);
+  });
   it('collapses no-score institutions into one honest line and hides Ariel', () => {
     renderReports(
       ['biu', 'afeka', 'hit', 'ariel'].map((id) =>

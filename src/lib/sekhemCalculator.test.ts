@@ -2,6 +2,10 @@ import { describe, expect, it } from 'vitest';
 import { buildSekhemInput, calculatorOfferings, resultVerdict } from './sekhemCalculator';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from './catalogueStatic';
 import type { AdmissionsEvaluationResult } from '@/types/admissionsEvaluation';
+import {
+  calculateTauBagrutAverage,
+  calculateBguBagrutAverage,
+} from '@/server/admissions/bagrutPolicies';
 
 describe('public calculator ordinary input boundary', () => {
   const profile = {
@@ -28,7 +32,7 @@ describe('public calculator ordinary input boundary', () => {
       bagrutSubjectRecord: {
         schemaVersion: 2,
         certificateType: 'other',
-        complete: false,
+        complete: true,
         subjects: expect.arrayContaining([
           { subjectId: 'english', units: 2, grade: 0, assessmentKind: 'exam' },
         ]),
@@ -50,6 +54,20 @@ describe('public calculator ordinary input boundary', () => {
     },
     { psychometric: '199' },
     { quantitative: '151' },
+    { psychometric: '700.5' },
+    {
+      rows: Array.from({ length: 65 }, (_, index) => ({
+        label: `מקצוע ${index}`,
+        units: 1,
+        grade: 90,
+      })),
+    },
+    {
+      rows: [
+        { label: 'פיזיקה', units: 5, grade: 90 },
+        { label: 'פיסיקה', units: 4, grade: 85 },
+      ],
+    },
   ])('rejects invalid input without silently filtering rows: %j', (change) => {
     expect(() => buildSekhemInput({ ...profile, ...change })).toThrow();
   });
@@ -73,5 +91,25 @@ describe('public calculator ordinary input boundary', () => {
       threshold: 21.12,
     } as AdmissionsEvaluationResult;
     expect(resultVerdict(row)).toBe('הציונים מתחת לסף');
+  });
+  it('lets existing institutional policies compute from entered certificate rows without a full-matriculation checkbox', () => {
+    const input = buildSekhemInput({
+      ...profile,
+      certificate: 'internal',
+      rows: [
+        { label: 'מתמטיקה', units: 5, grade: 90 },
+        { label: 'אנגלית', units: 5, grade: 85 },
+        { label: 'פיזיקה', units: 5, grade: 80 },
+        { label: 'מדעי המחשב', units: 5, grade: 95 },
+        ...['אזרחות', 'היסטוריה', 'תנ״ך', 'ספרות', 'הבעה עברית'].map((label) => ({
+          label,
+          units: 2,
+          grade: 85,
+        })),
+      ],
+    });
+    const record = input.extraInputs!.bagrutSubjectRecord!;
+    expect(calculateTauBagrutAverage(record).state).toBe('calculated');
+    expect(calculateBguBagrutAverage(record).state).toBe('calculated');
   });
 });

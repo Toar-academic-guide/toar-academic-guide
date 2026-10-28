@@ -20,6 +20,16 @@ import './sekhem.css';
 const subjectNames = ['מתמטיקה', 'אנגלית', 'פיזיקה', 'מדעי המחשב'];
 const emptyRows = (): BagrutSubjectRow[] =>
   subjectNames.map((label) => ({ label, units: 5, grade: '', assessmentKind: 'exam' }));
+const numericHaifaKeys = new Set([
+  'haifaBagrutAverage',
+  'haifaBagrutYear',
+  'haifaPsychometricYear',
+  ...HAIFA_NUMERIC_QUALIFICATION_KEYS,
+]);
+const booleanHaifaKeys = new Set([
+  'haifaOtUnjustifiedAbsence',
+  'haifaInformationSystemsPartnerRequirementsConfirmed',
+]);
 
 export default function SekhemCalculator({
   offerings,
@@ -75,16 +85,15 @@ export default function SekhemCalculator({
         sector,
         certificate,
       });
-      const numeric = new Set([
-        'haifaBagrutAverage',
-        'haifaBagrutYear',
-        'haifaPsychometricYear',
-        ...HAIFA_NUMERIC_QUALIFICATION_KEYS,
-      ]);
       const extras = Object.fromEntries(
         requiredKeys
           .filter((key) => haifaValues[key]?.trim())
-          .map((key) => [key, numeric.has(key) ? Number(haifaValues[key]) : haifaValues[key]]),
+          .map((key) => {
+            const value = haifaValues[key];
+            if (numericHaifaKeys.has(key)) return [key, Number(value)];
+            if (booleanHaifaKeys.has(key)) return [key, value === 'true'];
+            return [key, value];
+          }),
       );
       applicant.extraInputs = {
         ...applicant.extraInputs,

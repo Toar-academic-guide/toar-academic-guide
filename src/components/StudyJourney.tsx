@@ -847,7 +847,7 @@ export default function StudyJourney({
               <Primary onClick={() => go('intent')}>עזרו לי לבחור מה ללמוד</Primary>
               <Link
                 href="/sekhem-calculator"
-                className="inline-flex min-h-11 items-center justify-center underline"
+                className="mt-2 flex min-h-11 w-fit items-center justify-center underline"
               >
                 מחשבון סכם וסיכויי קבלה
               </Link>
