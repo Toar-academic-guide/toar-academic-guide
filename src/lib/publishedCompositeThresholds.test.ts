@@ -45,11 +45,15 @@ export const STATIC_THRESHOLD_PAGE_IDS = [
   'haifa_politicalscience',
   'haifa_psychology',
   'haifa_sociology',
+  'huji_accounting',
+  'huji_business',
+  'huji_law',
   'law',
   'me',
   'nursing',
   'nutrition',
   'occupational_therapy',
+  'pharmacy',
   'physiotherapy',
   'political_science',
   'psychology',
@@ -71,7 +75,7 @@ export const STATIC_THRESHOLD_PAGE_IDS = [
 ];
 
 describe('published composite threshold selector', () => {
-  it('selects the 50 static pages from the same resolved requirements the page renders', async () => {
+  it('selects the 54 static pages from the same resolved requirements the page renders', async () => {
     const programs = getStaticCataloguePrograms();
     vi.mocked(listCataloguePrograms).mockResolvedValue({ data: programs, meta: {} });
     vi.mocked(listCatalogueInstitutions).mockResolvedValue({
@@ -86,7 +90,7 @@ describe('published composite threshold selector', () => {
       }),
     );
     expect(selected.filter(Boolean).sort()).toEqual(STATIC_THRESHOLD_PAGE_IDS);
-    expect(STATIC_THRESHOLD_PAGE_IDS).toHaveLength(50);
+    expect(STATIC_THRESHOLD_PAGE_IDS).toHaveLength(54);
   });
 
   it.each([
@@ -100,6 +104,7 @@ describe('published composite threshold selector', () => {
     'ציון משולב 515',
     'ציון קבלה משולב 560',
     'ציון קבלה 106',
+    'באפיק המשולב נדרש ציון 22.700 לפחות לפי חישוב האוניברסיטה.',
     'מצרף 620',
     'בחורף תשפ"ז: סכם 91.5',
   ])('recognizes a published threshold: %s', (text) => {

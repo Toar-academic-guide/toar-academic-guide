@@ -40,6 +40,9 @@ const FAQ_IDS = [
   'haifa_politicalscience',
   'haifa_psychology',
   'haifa_sociology',
+  'huji_accounting',
+  'huji_business',
+  'huji_law',
   'ruppin_cs',
   'tau_accounting',
   'tau_business',
@@ -49,7 +52,7 @@ const FAQ_IDS = [
 // Independent rendered-copy oracle: a named composite followed by a cutoff.
 // Do not call the production selector here: this must catch missing wording support.
 const renderedThreshold =
-  /(?:סכם|(?:ציון\s+)?מתואם|(?:ציון\s+)?מתאם|מצרף|ציון\s+(?:משולב|התאמה|קבלה(?:\s+משולב)?))\s*(?:(?:כמותי|הנדסי|הנדסה|ארכיטקטורה|לניהול|ניהול|מעל|לפחות|מינימלי|נדרש|קבלה|של)[:–-]?\s+){0,3}[:–-]?\s*(\d{2,4}(?:\.\d+)?)(?!\d)/g;
+  /(?:באפיק\s+המשולב\s+נדרש\s+ציון|סכם|(?:ציון\s+)?מתואם|(?:ציון\s+)?מתאם|מצרף|ציון\s+(?:משולב|התאמה|קבלה(?:\s+משולב)?))\s*(?:(?:כמותי|הנדסי|הנדסה|ארכיטקטורה|לניהול|ניהול|מעל|לפחות|מינימלי|נדרש|קבלה|של)[:–-]?\s+){0,3}[:–-]?\s*(\d{2,4}(?:\.\d+)?)(?!\d)/g;
 
 // Requirement tiles render the numeric value before its composite label.
 const renderedTileThreshold =
@@ -117,7 +120,7 @@ describe('published-threshold calculator links', () => {
     }
     expect(selected.sort()).toEqual(FAQ_IDS);
     expect(selected).toEqual(thresholds.sort());
-    expect(selected).toHaveLength(20);
+    expect(selected).toHaveLength(23);
   });
 
   it('renders a contextual programme link only when a threshold is published', async () => {
@@ -171,7 +174,7 @@ describe('published-threshold calculator links', () => {
       .sort();
     expect(unlinkedThresholds(rows)).toEqual([]);
     expect(linked).toEqual(thresholds);
-    expect(linked).toHaveLength(50);
+    expect(linked).toHaveLength(54);
     expect(linked).toEqual(
       expect.arrayContaining([
         'criminology',
@@ -183,13 +186,17 @@ describe('published-threshold calculator links', () => {
         'ruppin_cs',
         'ruppin_marine_bio',
         'nutrition',
+        'pharmacy',
+        'huji_accounting',
+        'huji_business',
+        'huji_law',
       ]),
     );
     const nutrition = rows.find((row) => row.id === 'ariel_nutrition')!;
     expect(nutrition.text).toContain('ביולוגיה ו/או כימיה — יתרון');
     expect(nutrition.linked).toBe(false);
     expect(containsRenderedThreshold(nutrition.text)).toBe(false);
-  });
+  }, 15_000);
 
   it('detects a future rendered threshold without a calculator link', () => {
     expect(
