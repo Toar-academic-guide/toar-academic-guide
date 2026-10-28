@@ -103,7 +103,7 @@ describe('published composite threshold selector', () => {
     'מצרף 620',
     'בחורף תשפ"ז: סכם 91.5',
   ])('recognizes a published threshold: %s', (text) => {
-    expect(hasPublishedCompositeThreshold([text], 'tau')).toBe(true);
+    expect(hasPublishedCompositeThreshold([text])).toBe(true);
   });
 
   it.each([
@@ -115,12 +115,11 @@ describe('published composite threshold selector', () => {
     'סכם לשנת 2026 טרם פורסם',
     'הסכם מתפרסם באתר המוסד',
   ])('rejects a floor, formula, year or unspecified threshold: %s', (text) => {
-    expect(hasPublishedCompositeThreshold([text], 'tau')).toBe(false);
+    expect(hasPublishedCompositeThreshold([text])).toBe(false);
   });
 
   it('links numeric thresholds regardless of institution', () => {
-    expect(hasPublishedCompositeThreshold(['סכם 620'], 'ariel')).toBe(true);
-    expect(hasPublishedCompositeThreshold(['סכם 620'], 'bgu')).toBe(true);
+    expect(hasPublishedCompositeThreshold(['סכם 620'])).toBe(true);
   });
 
   it('excludes hidden, non-degree, ingestion and alias pages despite their threshold text', async () => {
@@ -148,21 +147,11 @@ describe('published composite threshold selector', () => {
   });
 
   it('links TAU adaptation and prior-degree FAQ thresholds too', () => {
-    expect(hasPublishedCompositeThreshold(['ציון התאמה לניהול 610'], 'tau', { forFaq: true })).toBe(
-      true,
-    );
+    expect(hasPublishedCompositeThreshold(['ציון התאמה לניהול 610'])).toBe(true);
     expect(
-      hasPublishedCompositeThreshold(
-        ['ציון התאמה 647', 'לבעלי תואר ראשון: ציון משולב 1475 לפחות'],
-        'tau',
-        { forFaq: true },
-      ),
+      hasPublishedCompositeThreshold(['ציון התאמה 647', 'לבעלי תואר ראשון: ציון משולב 1475 לפחות']),
     ).toBe(true);
-    expect(
-      hasPublishedCompositeThreshold(['ציון התאמה 647', 'סכם 650'], 'tau', { forFaq: true }),
-    ).toBe(true);
-    expect(hasPublishedCompositeThreshold(['ציון התאמה 647'], 'haifa', { forFaq: true })).toBe(
-      true,
-    );
+    expect(hasPublishedCompositeThreshold(['ציון התאמה 647', 'סכם 650'])).toBe(true);
+    expect(hasPublishedCompositeThreshold(['ציון התאמה 647'])).toBe(true);
   });
 });

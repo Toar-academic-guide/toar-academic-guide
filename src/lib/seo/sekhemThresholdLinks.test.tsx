@@ -51,8 +51,21 @@ const FAQ_IDS = [
 const renderedThreshold =
   /(?:סכם|(?:ציון\s+)?מתואם|(?:ציון\s+)?מתאם|מצרף|ציון\s+(?:משולב|התאמה|קבלה(?:\s+משולב)?))\s*(?:(?:כמותי|הנדסי|הנדסה|ארכיטקטורה|לניהול|ניהול|מעל|לפחות|מינימלי|נדרש|קבלה|של)[:–-]?\s+){0,3}[:–-]?\s*(\d{2,4}(?:\.\d+)?)(?!\d)/g;
 
+// Requirement tiles render the numeric value before its composite label.
+const renderedTileThreshold =
+  /(\d{2,4}(?:\.\d+)?)\s*(?:סכם|ציון\s+(?:מתואם|מתאם|משולב|התאמה|קבלה))(?:\s|$)/g;
+
 function containsRenderedThreshold(text: string) {
-  return Array.from(text.matchAll(renderedThreshold)).some((match) => Number(match[1]) < 1900);
+  return [renderedThreshold, renderedTileThreshold].some((pattern) =>
+    Array.from(text.matchAll(pattern)).some((match) => Number(match[1]) < 1900),
+  );
+}
+
+function renderedRequirementText(section: Element) {
+  const walker = section.ownerDocument.createTreeWalker(section, NodeFilter.SHOW_TEXT);
+  const text = [];
+  while (walker.nextNode()) text.push(walker.currentNode.textContent);
+  return text.join(' ');
 }
 
 function unlinkedThresholds(rows: { id: string; text: string; linked: boolean }[]) {
@@ -144,7 +157,7 @@ describe('published-threshold calculator links', () => {
       const section = heading.parentElement!;
       rows.push({
         id: program.id,
-        text: section.textContent ?? '',
+        text: renderedRequirementText(section),
         linked: !!section.querySelector(`a[href="/sekhem-calculator?program=${program.id}"]`),
       });
     }

@@ -6,30 +6,19 @@ import { canonicalProgramId } from './seo/programAliases';
 
 type RequirementSources = Awaited<ReturnType<typeof getPublicProgramRequirementSources>>;
 
-export function hasPublishedCompositeThreshold(
-  requirements: readonly string[],
-  institutionId: string,
-  options: { forFaq?: boolean } = {},
-): boolean {
-  if (institutionId === 'ariel') return false;
+export function hasPublishedCompositeThreshold(requirements: readonly string[]): boolean {
   // Match an attached published cutoff, not formula coefficients, years or a
-  // psychometric floor elsewhere in the same requirement. TAU adaptation-only
-  // FAQ answers are deliberately excluded; the programme links still qualify.
+  // psychometric floor elsewhere in the same requirement. Institution and route
+  // wording do not exempt a rendered threshold from linking to the calculator.
   const metric =
-    options.forFaq && institutionId === 'tau'
-      ? '(?:סכם|(?:ציון\\s+)?מתואם|(?:ציון\\s+)?מתאם|מצרף|ציון\\s+משולב)'
-      : '(?:סכם|(?:ציון\\s+)?מתואם|(?:ציון\\s+)?מתאם|מצרף|ציון\\s+משולב|ציון\\s+התאמה)';
+    '(?:סכם|(?:ציון\\s+)?מתואם|(?:ציון\\s+)?מתאם|מצרף|ציון\\s+(?:משולב|התאמה|קבלה(?:\\s+משולב)?))';
   const cutoff = new RegExp(
     `${metric}\\s*(?:(?:כמותי|הנדסי|הנדסה|ארכיטקטורה|לניהול|ניהול|מעל|לפחות|מינימלי|נדרש|קבלה|של)[:–-]?\\s+){0,3}[:–-]?\\s*(\\d{2,4}(?:\\.\\d+)?)`,
     'g',
   );
-  return requirements.some((requirement) => {
-    // A prior-degree route is not the Bagrut/psychometric composite offered by
-    // this calculator. It does not turn a TAU adaptation answer into a match.
-    if (options.forFaq && institutionId === 'tau' && /לבעלי תואר|תואר קודם/.test(requirement))
-      return false;
-    return Array.from(requirement.matchAll(cutoff)).some((match) => Number(match[1]) < 1900);
-  });
+  return requirements.some((requirement) =>
+    Array.from(requirement.matchAll(cutoff)).some((match) => Number(match[1]) < 1900),
+  );
 }
 
 export function hasPublishedCompositeThresholds(
@@ -44,6 +33,6 @@ export function hasPublishedCompositeThresholds(
   )
     return false;
   return institutions.some((institution) =>
-    hasPublishedCompositeThreshold(sources[institution.id]?.requirements ?? [], institution.id),
+    hasPublishedCompositeThreshold(sources[institution.id]?.requirements ?? []),
   );
 }

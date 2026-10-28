@@ -219,7 +219,7 @@ export function programFaqPageLd(
       question(
         'מהם תנאי הקבלה למסלול?',
         source.requirements.join(' '),
-        hasPublishedCompositeThreshold(source.requirements, institution.id, { forFaq: true }),
+        hasPublishedCompositeThreshold(source.requirements),
       ),
       ...(source.checked
         ? [
