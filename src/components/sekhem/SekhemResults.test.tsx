@@ -256,12 +256,12 @@ describe('API-only result rows', () => {
     ]);
     const row = screen.getByTestId('result-psychology-tau');
     expect(row.querySelector('[data-result-reason]')?.textContent?.trim()).toBeTruthy();
-    expect(row.textContent).toContain('חסרים תנאי קבלה לחישוב');
+    expect(row.textContent).not.toContain('חסרים תנאי קבלה לחישוב');
   });
   it.each([
-    ['haifa', 'haifa_bagrut_average', 'ממוצע בגרות רשמי של חיפה'],
-    ['technion', 'bagrut_subject_record', 'הבעה עברית'],
-    ['bgu', 'bgu_bagrut_average', 'ממוצע הבגרות הרשמי של בן־גוריון'],
+    ['haifa', 'haifa_bagrut_average', 'עדיין לא מחשבים את הסכם של חיפה כאן'],
+    ['technion', 'bagrut_subject_record', 'בכל מקצועות הבגרות'],
+    ['bgu', 'bgu_bagrut_average', 'ממוצע הבגרות לפי כללי בן־גוריון'],
     ['tau', 'tau_physiotherapy_route', 'אפיק הקבלה לפיזיותרפיה'],
     ['huji', 'huji_medicine_assessment_score', 'ציון מו״ר/מרק״ם'],
   ] as const)('names the missing %s input %s', (id, key, label) => {
@@ -281,6 +281,7 @@ describe('API-only result rows', () => {
             programName: 'פסיכולוגיה',
             institutionId: id,
             institutionName: id,
+            programPath: '/programs/psychology',
           },
         ]}
         onEnquiry={vi.fn()}
@@ -288,12 +289,17 @@ describe('API-only result rows', () => {
     );
     const row = screen.getByTestId(`result-psychology-${id}`);
     expect(row.querySelector('[data-result-reason]')?.textContent).toContain(label);
-    if (id === 'haifa')
+    if (id === 'haifa') {
+      expect(row.querySelector('[data-result-reason]')?.textContent).toBe(
+        'עדיין לא מחשבים את הסכם של חיפה כאן',
+      );
+      expect(row.textContent).not.toContain('ממוצע בגרות רשמי של חיפה');
       expect(
-        within(row)
-          .getByRole('link', { name: /ממוצע בגרות/ })
+        within(screen.getByTestId('institution-haifa'))
+          .getByRole('link', { name: 'לתנאי הקבלה של התוכנית' })
           .getAttribute('href'),
-      ).toBe('#haifaBagrutAverage');
+      ).toBe('/programs/psychology');
+    }
   });
   it('starts with a numerical programme when available and preserves manual selection', () => {
     const missing = report('huji', {
@@ -317,8 +323,124 @@ describe('API-only result rows', () => {
     expect(screen.getByTestId('result-law-huji')).toBeTruthy();
     fireEvent.change(screen.getByLabelText('בחירת תוכנית'), { target: { value: 'psychology' } });
     expect(screen.getByTestId('result-psychology-huji').textContent).toContain(
-      'האימות הרשמי טרם הושלם',
+      'עדיין אין לנו מקור רשמי עדכני לחישוב',
     );
+  });
+  it.each([
+    'exact',
+    'estimated',
+    'needs_input',
+    'authority_unavailable',
+    'tracked_missing_rule',
+    'unsupported',
+    'degraded',
+    'open_admission',
+    'manual_gate',
+    'requirements_only',
+  ] as AdmissionsEvaluationKind[])(
+    'uses student Hebrew for numberless %s reasons across institutions',
+    (kind) => {
+      const ids = ['haifa', 'technion', 'bgu', 'tau', 'huji', 'reichman', 'biu', 'afeka', 'hit'];
+      const required: Record<string, AdmissionsRequiredInput> = {
+        haifa: 'haifa_bagrut_average',
+        technion: 'bagrut_subject_record',
+        bgu: 'bgu_bagrut_average',
+        tau: 'tau_physiotherapy_route',
+        huji: 'huji_medicine_assessment_score',
+      };
+      render(
+        <SekhemResults
+          reports={ids.map((id) =>
+            report(id, {
+              kind,
+              score: undefined,
+              threshold: undefined,
+              decision: 'below',
+              sourceLabel: 'מקור חסום',
+              explanation: 'bagrut_subject_record: authority_unavailable',
+              requiredInputs: kind === 'needs_input' && required[id] ? [required[id]] : [],
+            }),
+          )}
+          offerings={ids.map((id) => ({
+            ...offerings[0],
+            institutionId: id,
+            institutionName: id,
+            programPath: '/programs/psychology',
+          }))}
+          onEnquiry={vi.fn()}
+        />,
+      );
+      for (const id of ids) {
+        const row = screen.getByTestId(`result-psychology-${id}`);
+        const reasons = Array.from(
+          row.querySelectorAll('[data-result-reason]'),
+          (node) => node.textContent,
+        );
+        expect(reasons.length).toBeGreaterThan(0);
+        for (const text of reasons) {
+          expect(text?.trim()).toBeTruthy();
+          expect(text).not.toMatch(/מקור חסום|ממוצע בגרות רשמי של חיפה|[a-z]+_[a-z_]+/i);
+        }
+        if (id === 'haifa') expect(reasons).toEqual(['עדיין לא מחשבים את הסכם של חיפה כאן']);
+      }
+    },
+  );
+  it('places groups with a default number first and preserves order within both sets', () => {
+    const ids = ['haifa', 'tau', 'bgu', 'huji', 'technion', 'reichman'];
+    const numbered = new Set(['tau', 'huji', 'reichman']);
+    render(
+      <SekhemResults
+        reports={ids.map((id) =>
+          report(id, {
+            score: numbered.has(id) ? 0 : undefined,
+            threshold: undefined,
+            kind: numbered.has(id) ? 'exact' : 'needs_input',
+            decision: 'unknown',
+          }),
+        )}
+        offerings={ids.map((id) => ({ ...offerings[0], institutionId: id, institutionName: id }))}
+        onEnquiry={vi.fn()}
+      />,
+    );
+    expect(
+      screen.getAllByTestId(/^institution-/).map((node) => node.getAttribute('data-testid')),
+    ).toEqual(
+      ['tau', 'huji', 'reichman', 'haifa', 'bgu', 'technion'].map((id) => `institution-${id}`),
+    );
+  });
+  it('keeps the primary lead CTA on a numberless card without a public programme page', () => {
+    const { onEnquiry } = renderReports([
+      report('huji', { score: undefined, threshold: undefined, kind: 'needs_input' }),
+    ]);
+    expect(screen.getByRole('button', { name: 'קבלת מידע על התוכנית' })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'קבלת מידע על התוכנית' }));
+    expect(onEnquiry).toHaveBeenCalledTimes(1);
+  });
+  it('shows a secondary conditions link on a numberless card with a public page', () => {
+    render(
+      <SekhemResults
+        reports={[
+          report('haifa', {
+            score: undefined,
+            threshold: undefined,
+            kind: 'needs_input',
+            requiredInputs: ['haifa_bagrut_average'],
+          }),
+        ]}
+        offerings={[
+          { ...offerings[0], institutionId: 'haifa', programPath: '/programs/psychology' },
+        ]}
+        onEnquiry={vi.fn()}
+      />,
+    );
+    const link = screen.getByRole('link', { name: 'לתנאי הקבלה של התוכנית' });
+    expect(link.getAttribute('href')).toBe('/programs/psychology');
+    expect(link.classList.contains('way-button-secondary')).toBe(true);
+    expect(
+      screen
+        .getByRole('button', { name: 'קבלת מידע על התוכנית' })
+        .classList.contains('way-button-primary'),
+    ).toBe(true);
   });
   it('offers an explicit enquiry for every verdict group and keeps Reichman attribution', () => {
     const { onEnquiry } = renderReports([

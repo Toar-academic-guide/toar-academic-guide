@@ -433,12 +433,14 @@ test('Haifa supplementary inputs follow the latest evaluator response', async ({
   await expect(hebrew).toBeVisible();
   await expect(average).not.toHaveAttribute('required', '');
   await expect(page.getByTestId('institution-haifa').locator('[data-result-reason]')).toHaveText([
-    'ממוצע בגרות רשמי של חיפה',
-    'הבסיס לדרישת העברית',
+    'עדיין לא מחשבים את הסכם של חיפה כאן',
   ]);
+  await expect(page.locator('main')).not.toContainText('ממוצע בגרות רשמי של חיפה');
+  const haifa = page.getByTestId('institution-haifa');
+  const selectedProgram = await haifa.getByRole('combobox').inputValue();
   await expect(
-    page.getByTestId('institution-haifa').getByRole('link', { name: /ממוצע בגרות/ }),
-  ).toHaveAttribute('href', '#haifaBagrutAverage');
+    haifa.getByRole('link', { name: 'לתנאי הקבלה של התוכנית', exact: true }),
+  ).toHaveAttribute('href', `/programs/${selectedProgram}`);
   await expect(page.getByTestId('institution-haifa')).toContainText('חסרים נתונים לחישוב');
   await average.fill('104');
   await hebrew.selectOption('hebrew_school');
@@ -501,8 +503,8 @@ test('numberless cards explain missing inputs and unavailable result states', as
     decision: 'unknown',
     score: undefined,
     threshold: undefined,
-    sourceLabel: 'חסרים תנאי קבלה לחישוב',
-    explanation: 'המקור הרשמי אינו זמין לחישוב',
+    sourceLabel: 'מקור חסום',
+    explanation: 'bagrut_subject_record: authority_unavailable',
     requiredInputs: kind === 'needs_input' ? ['bagrut_subject_record'] : [],
   }));
   await page.goto('/sekhem-calculator');
@@ -525,6 +527,20 @@ test('numberless cards explain missing inputs and unavailable result states', as
         (await row.locator('[data-result-reason]').allTextContents()).join('').trim(),
       ).not.toBe('');
       await expect(row).not.toContainText('נדרשת בדיקה מול המוסד');
+      await expect(row).not.toContainText('מקור חסום');
+      await expect(row).not.toContainText('bagrut_subject_record');
+    }
+    await expect(page.locator('main')).not.toContainText('ממוצע בגרות רשמי של חיפה');
+    await expect(page.getByTestId('institution-haifa').locator('[data-result-reason]')).toHaveText([
+      'עדיין לא מחשבים את הסכם של חיפה כאן',
+    ]);
+    for (const group of await page.locator('[data-testid^="institution-"]').all()) {
+      await expect(
+        group.getByRole('button', { name: 'קבלת מידע על התוכנית', exact: true }),
+      ).toHaveCount(1);
+      await expect(
+        group.getByRole('link', { name: 'לתנאי הקבלה של התוכנית', exact: true }),
+      ).toHaveClass(/way-button-secondary/);
     }
   }
 });
