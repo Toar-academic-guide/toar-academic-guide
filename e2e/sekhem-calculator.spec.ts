@@ -1,4 +1,5 @@
 import { expect, test, type Page } from './fixtures';
+import { formatSekhemNumber } from '../src/lib/sekhemResultPresentation';
 import { ENQUIRY_COPY, ENQUIRY_PREP_CONSENT } from '../src/lib/enquiries';
 import type {
   AdmissionsEvaluationInput,
@@ -105,7 +106,12 @@ function apiResults(programId: string, needsHaifa: boolean): AdmissionsEvaluatio
   ];
 }
 
-async function installMocks(page: Page, baseURL?: string, requestHaifa = false) {
+async function installMocks(
+  page: Page,
+  baseURL?: string,
+  requestHaifa = false,
+  decorate?: (row: AdmissionsEvaluationResult) => AdmissionsEvaluationResult,
+) {
   const submissions: Record<string, unknown>[] = [];
   const batches: BatchRequest[] = [];
   const reports = new Map<string, AdmissionsEvaluationReport>();
@@ -140,7 +146,9 @@ async function installMocks(page: Page, baseURL?: string, requestHaifa = false) 
         inputDigest: 'browser-response-contract',
         input: { ...input, degreeId },
         program: { id: degreeId, name: degreeId },
-        results: apiResults(degreeId, requestHaifa && !batch.extraInputs?.haifaBagrutAverage),
+        results: apiResults(degreeId, requestHaifa && !batch.extraInputs?.haifaBagrutAverage).map(
+          (row) => (decorate ? decorate(row) : row),
+        ),
       };
       response[degreeId] = report;
       reports.set(degreeId, report);
@@ -272,11 +280,17 @@ for (const width of [1280, 390]) {
           .results.find((item) => item.linkedInstitutionId === institutionId)!;
         for (const number of await row.locator('[data-result-number]').all()) {
           const field = await number.getAttribute('data-result-number');
-          expect(await number.textContent()).toBe(String(api[field as 'score' | 'threshold']));
+          expect(await number.textContent()).toBe(
+            formatSekhemNumber(api[field as 'score' | 'threshold']!, institutionId),
+          );
         }
         const renderedNumbers = (await row.innerText()).match(/\d+(?:\.\d+)?/g) ?? [];
         for (const number of renderedNumbers) {
-          expect([api.score, api.threshold].map(String)).toContain(number);
+          expect(
+            [api.score, api.threshold]
+              .filter((value): value is number => typeof value === 'number')
+              .map((value) => formatSekhemNumber(value, institutionId)),
+          ).toContain(number);
         }
       }
     });
@@ -377,6 +391,12 @@ test('Haifa supplementary inputs follow the latest evaluator response', async ({
   await expect(average).toBeVisible();
   await expect(hebrew).toBeVisible();
   await expect(average).not.toHaveAttribute('required', '');
+  await expect(page.getByTestId('institution-haifa').locator('[data-result-reason]')).toContainText(
+    'ממוצע בגרות רשמי של חיפה',
+  );
+  await expect(
+    page.getByTestId('institution-haifa').getByRole('link', { name: /ממוצע בגרות/ }),
+  ).toHaveAttribute('href', '#haifaBagrutAverage');
   await expect(page.getByTestId('institution-haifa')).toContainText('חסרים נתונים לחישוב');
   await average.fill('104');
   await hebrew.selectOption('hebrew_school');
@@ -424,4 +444,44 @@ test('public metadata, crawl links and homepage placement use the calculator URL
   const primaryBox = (await primary.boundingBox())!;
   const linkBox = (await link.boundingBox())!;
   expect(linkBox.y).toBeGreaterThanOrEqual(primaryBox.y + primaryBox.height);
+});
+
+test('numberless cards explain missing inputs and unavailable result states', async ({
+  page,
+  baseURL,
+}) => {
+  let kind: AdmissionsEvaluationResult['kind'] = 'needs_input';
+  await installMocks(page, baseURL, false, (row) => ({
+    ...row,
+    kind,
+    capability: kind === 'degraded' ? 'blocked' : kind,
+    decision: 'unknown',
+    score: undefined,
+    threshold: undefined,
+    sourceLabel: 'חסרים תנאי קבלה לחישוב',
+    explanation: 'המקור הרשמי אינו זמין לחישוב',
+    requiredInputs: kind === 'needs_input' ? ['bagrut_subject_record'] : [],
+  }));
+  await page.goto('/sekhem-calculator');
+  await fillProfile(page);
+  for (const state of [
+    'needs_input',
+    'authority_unavailable',
+    'degraded',
+    'unsupported',
+    'manual_gate',
+  ] as const) {
+    kind = state;
+    await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
+    await expect(page.getByRole('button', { name: 'לחשב את הסכם', exact: true })).toBeEnabled();
+    const rows = page.locator('[data-testid^="result-"]');
+    expect(await rows.count()).toBeGreaterThan(0);
+    for (const row of await rows.all()) {
+      await expect(row.locator('[data-result-number]')).toHaveCount(0);
+      expect(
+        (await row.locator('[data-result-reason]').allTextContents()).join('').trim(),
+      ).not.toBe('');
+      await expect(row).not.toContainText('נדרשת בדיקה מול המוסד');
+    }
+  }
 });

@@ -3,6 +3,8 @@ import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import SekhemResults from './SekhemResults';
 import type {
+  AdmissionsEvaluationKind,
+  AdmissionsRequiredInput,
   AdmissionsEvaluationReport,
   AdmissionsEvaluationResult,
 } from '@/types/admissionsEvaluation';
@@ -147,6 +149,94 @@ describe('API-only result rows', () => {
     expect(screen.queryByText('עדיין לא נתמך')).toBeNull();
     expect(screen.getByRole('link', { name: 'יש גם אפיקי קבלה נוספים' }).getAttribute('href')).toBe(
       '/institutions/afeka',
+    );
+  });
+  it.each([
+    'exact',
+    'estimated',
+    'needs_input',
+    'authority_unavailable',
+    'tracked_missing_rule',
+    'unsupported',
+    'degraded',
+    'open_admission',
+    'manual_gate',
+    'requirements_only',
+  ] as AdmissionsEvaluationKind[])('explains a numberless %s result', (kind) => {
+    renderReports([
+      report('tau', {
+        kind,
+        score: undefined,
+        threshold: undefined,
+        decision: 'unknown',
+        sourceLabel: 'חסרים תנאי קבלה לחישוב',
+        explanation: '',
+      }),
+    ]);
+    const row = screen.getByTestId('result-psychology-tau');
+    expect(row.querySelector('[data-result-reason]')?.textContent?.trim()).toBeTruthy();
+    expect(row.textContent).toContain('חסרים תנאי קבלה לחישוב');
+  });
+  it.each([
+    ['haifa', 'haifa_bagrut_average', 'ממוצע בגרות רשמי של חיפה'],
+    ['technion', 'bagrut_subject_record', 'הבעה עברית'],
+    ['bgu', 'bgu_bagrut_average', 'ממוצע הבגרות הרשמי של בן־גוריון'],
+    ['tau', 'tau_physiotherapy_route', 'אפיק הקבלה לפיזיותרפיה'],
+    ['huji', 'huji_medicine_assessment_score', 'ציון מו״ר/מרק״ם'],
+  ] as const)('names the missing %s input %s', (id, key, label) => {
+    render(
+      <SekhemResults
+        reports={[
+          report(id, {
+            kind: 'needs_input',
+            score: undefined,
+            threshold: undefined,
+            requiredInputs: [key as AdmissionsRequiredInput],
+          }),
+        ]}
+        offerings={[
+          {
+            programId: 'psychology',
+            programName: 'פסיכולוגיה',
+            institutionId: id,
+            institutionName: id,
+          },
+        ]}
+        onEnquiry={vi.fn()}
+      />,
+    );
+    const row = screen.getByTestId(`result-psychology-${id}`);
+    expect(row.querySelector('[data-result-reason]')?.textContent).toContain(label);
+    if (id === 'haifa')
+      expect(
+        within(row)
+          .getByRole('link', { name: /ממוצע בגרות/ })
+          .getAttribute('href'),
+      ).toBe('#haifaBagrutAverage');
+  });
+  it('starts with a numerical programme when available and preserves manual selection', () => {
+    const missing = report('huji', {
+      score: undefined,
+      threshold: undefined,
+      kind: 'authority_unavailable',
+      sourceLabel: 'האימות הרשמי טרם הושלם',
+    });
+    const numeric = {
+      ...report('huji'),
+      input: { degreeId: 'law' },
+      program: { id: 'law', name: 'משפטים' },
+    };
+    render(
+      <SekhemResults
+        reports={[missing, numeric]}
+        offerings={[offerings[0], { ...offerings[0], programId: 'law', programName: 'משפטים' }]}
+        onEnquiry={vi.fn()}
+      />,
+    );
+    expect(screen.getByTestId('result-law-huji')).toBeTruthy();
+    fireEvent.change(screen.getByLabelText('בחירת תוכנית'), { target: { value: 'psychology' } });
+    expect(screen.getByTestId('result-psychology-huji').textContent).toContain(
+      'האימות הרשמי טרם הושלם',
     );
   });
   it('offers an explicit enquiry for every verdict group and keeps Reichman attribution', () => {
