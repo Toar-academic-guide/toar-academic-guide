@@ -21,29 +21,22 @@ import {
 import { programFaqPageLd } from './jsonLd';
 import SekhemCalculatorLink from '@/components/seo/SekhemCalculatorLink';
 import { canonicalProgramId } from './programAliases';
+import { calculatorOfferings, sekhemPairSupport } from '@/lib/sekhemCalculatorSupport';
 import ProgramPage from '@/app/programs/[programId]/page';
 
 const FAQ_IDS = [
-  'ariel_communication',
-  'ariel_criminology',
-  'ariel_economics',
-  'ariel_health_systems',
-  'ariel_psychology',
   'bgu_accounting',
   'bgu_business',
   'bgu_psychology',
-  'biu_psychology',
   'haifa_accounting',
   'haifa_communication',
   'haifa_infosystems',
   'haifa_nursing',
   'haifa_politicalscience',
-  'haifa_psychology',
   'haifa_sociology',
   'huji_accounting',
   'huji_business',
   'huji_law',
-  'ruppin_cs',
   'tau_accounting',
   'tau_business',
   'tau_law',
@@ -71,9 +64,14 @@ function renderedRequirementText(section: Element) {
   return text.join(' ');
 }
 
-function unlinkedThresholds(rows: { id: string; text: string; linked: boolean }[]) {
+function unlinkedThresholds(
+  rows: { id: string; text: string; linked: boolean; supported?: boolean }[],
+) {
   return rows
-    .filter(({ text, linked }) => containsRenderedThreshold(text) && !linked)
+    .filter(
+      ({ text, linked, supported }) =>
+        supported !== false && containsRenderedThreshold(text) && !linked,
+    )
     .map(({ id }) => id);
 }
 
@@ -102,7 +100,16 @@ describe('published-threshold calculator links', () => {
         if (entity.name === 'מהם תנאי הקבלה למסלול?') {
           // Preserve the exact published answer for linked AND unlinked answers.
           expect(answer.text).toBe(sources[data.institutions[0].id].requirements.join(' '));
-          if (containsRenderedThreshold(answer.text)) thresholds.push(program.id);
+          if (
+            containsRenderedThreshold(answer.text) &&
+            ['score', 'gate'].includes(
+              sekhemPairSupport(
+                sources[data.institutions[0].id].program,
+                data.institutions[0].id,
+              ) ?? '',
+            )
+          )
+            thresholds.push(program.id);
         }
         if ('potentialAction' in answer) {
           selected.push(program.id);
@@ -120,16 +127,16 @@ describe('published-threshold calculator links', () => {
     }
     expect(selected.sort()).toEqual(FAQ_IDS);
     expect(selected).toEqual(thresholds.sort());
-    expect(selected).toHaveLength(23);
+    expect(selected).toHaveLength(15);
   });
 
   it('renders a contextual programme link only when a threshold is published', async () => {
     for (const [id, expected] of [
-      ['haifa_psychology', true],
+      ['haifa_nursing', true],
       ['ariel_nutrition', false],
       ['nutrition', true],
-      ['ariel_economics', true],
-      ['ruppin_marine_bio', true],
+      ['ariel_economics', false],
+      ['ruppin_marine_bio', false],
     ] as const) {
       const data = (await getPublicProgramPageData(id))!;
       const sources = await getPublicProgramRequirementSources(data);
@@ -161,6 +168,13 @@ describe('published-threshold calculator links', () => {
       rows.push({
         id: program.id,
         text: renderedRequirementText(section),
+        supported: Object.entries(
+          await getPublicProgramRequirementSources((await getPublicProgramPageData(program.id))!),
+        ).some(
+          ([id, source]) =>
+            ['score', 'gate'].includes(sekhemPairSupport(source.program, id) ?? '') &&
+            containsRenderedThreshold(source.requirements.join(' ')),
+        ),
         linked: !!section.querySelector(`a[href="/sekhem-calculator?program=${program.id}"]`),
       });
     }
@@ -169,22 +183,15 @@ describe('published-threshold calculator links', () => {
       .map((row) => row.id)
       .sort();
     const thresholds = rows
-      .filter((row) => containsRenderedThreshold(row.text))
+      .filter((row) => row.supported && containsRenderedThreshold(row.text))
       .map((row) => row.id)
       .sort();
     expect(unlinkedThresholds(rows)).toEqual([]);
     expect(linked).toEqual(thresholds);
-    expect(linked).toHaveLength(54);
+    expect(linked).toHaveLength(40);
     expect(linked).toEqual(
       expect.arrayContaining([
-        'criminology',
-        'ariel_economics',
-        'ariel_psychology',
-        'ariel_communication',
-        'ariel_criminology',
-        'ariel_health_systems',
-        'ruppin_cs',
-        'ruppin_marine_bio',
+        'haifa_infosystems',
         'nutrition',
         'pharmacy',
         'huji_accounting',
@@ -192,11 +199,53 @@ describe('published-threshold calculator links', () => {
         'huji_law',
       ]),
     );
+    expect(linked.filter((id) => id.startsWith('ariel_') || id.startsWith('ruppin_'))).toEqual([]);
     const nutrition = rows.find((row) => row.id === 'ariel_nutrition')!;
     expect(nutrition.text).toContain('ביולוגיה ו/או כימיה — יתרון');
     expect(nutrition.linked).toBe(false);
     expect(containsRenderedThreshold(nutrition.text)).toBe(false);
   }, 15_000);
+
+  it('does not link a public legacy programme absent from the active evaluator catalogue', async () => {
+    vi.mocked(listCataloguePrograms).mockResolvedValue({
+      data: getStaticCataloguePrograms().filter((program) => program.id !== 'haifa_nursing'),
+      meta: {},
+    });
+    const html = renderToStaticMarkup(
+      await ProgramPage({ params: Promise.resolve({ programId: 'haifa_nursing' }) }),
+    );
+    const document = new DOMParser().parseFromString(html, 'text/html');
+    expect(document.querySelector('a[href="/sekhem-calculator?program=haifa_nursing"]')).toBeNull();
+    const faqScripts = Array.from(document.querySelectorAll('script[type="application/ld+json"]'))
+      .map((script) => script.textContent)
+      .join('');
+    expect(faqScripts).not.toContain('potentialAction');
+  });
+
+  it('every linked source maps to the same supported calculator offerings', async () => {
+    const offerings = calculatorOfferings(
+      getStaticCataloguePrograms(),
+      getStaticCatalogueInstitutions(),
+    );
+    for (const program of getStaticCataloguePrograms()) {
+      const data = (await getPublicProgramPageData(program.id))!;
+      const sources = await getPublicProgramRequirementSources(data);
+      const html = renderToStaticMarkup(<SekhemCalculatorLink data={data} sources={sources} />);
+      if (!html) continue;
+      expect(
+        Object.entries(sources).some(
+          ([id, source]) =>
+            ['score', 'gate'].includes(sekhemPairSupport(source.program, id) ?? '') &&
+            offerings.some(
+              (offering) =>
+                offering.institutionId === id &&
+                (offering.programId === source.program.id ||
+                  offering.programName === source.program.name),
+            ),
+        ),
+      ).toBe(true);
+    }
+  });
 
   it('detects a future rendered threshold without a calculator link', () => {
     expect(
@@ -208,6 +257,7 @@ describe('published-threshold calculator links', () => {
           linked: false,
         },
         { id: 'linked', text: 'ציון קבלה 106', linked: true },
+        { id: 'outside-calculator', text: 'ציון קבלה 580', linked: false, supported: false },
       ]),
     ).toEqual(['new_programme']);
   });
@@ -223,7 +273,7 @@ describe('published-threshold calculator links', () => {
     const link = heading.parentElement!.querySelector(
       'a[href="/sekhem-calculator?program=haifa_psychology"]',
     );
-    expect(link?.textContent).toBe('מחשבון סכם וסיכויי קבלה');
+    expect(link).toBeNull(); // This programme currently has no verified score or named gate.
     expect(heading.parentElement!.textContent).toContain('650');
   });
 });

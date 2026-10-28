@@ -19,20 +19,12 @@ import {
 
 export const STATIC_THRESHOLD_PAGE_IDS = [
   'accounting',
-  'afeka_biomedical',
   'architecture',
-  'ariel_communication',
-  'ariel_criminology',
-  'ariel_economics',
-  'ariel_health_systems',
-  'ariel_psychology',
   'bgu_accounting',
   'bgu_business',
   'bgu_psychology',
-  'biu_psychology',
   'business',
   'communication',
-  'criminology',
   'cs',
   'datascience',
   'economics',
@@ -43,7 +35,6 @@ export const STATIC_THRESHOLD_PAGE_IDS = [
   'haifa_infosystems',
   'haifa_nursing',
   'haifa_politicalscience',
-  'haifa_psychology',
   'haifa_sociology',
   'huji_accounting',
   'huji_business',
@@ -62,20 +53,15 @@ export const STATIC_THRESHOLD_PAGE_IDS = [
   'reichman_economics',
   'reichman_law',
   'reichman_psychology',
-  'ruppin_cs',
-  'ruppin_marine_bio',
   'tau_accounting',
   'tau_business',
   'tau_law',
   'technion_ee',
   'technion_me',
-  'tlvyaffo_business',
-  'tlvyaffo_cs',
-  'tlvyaffo_nursing',
 ];
 
 describe('published composite threshold selector', () => {
-  it('selects the 54 static pages from the same resolved requirements the page renders', async () => {
+  it('selects the 40 supported static pages from the same resolved requirements the page renders', async () => {
     const programs = getStaticCataloguePrograms();
     vi.mocked(listCataloguePrograms).mockResolvedValue({ data: programs, meta: {} });
     vi.mocked(listCatalogueInstitutions).mockResolvedValue({
@@ -90,7 +76,7 @@ describe('published composite threshold selector', () => {
       }),
     );
     expect(selected.filter(Boolean).sort()).toEqual(STATIC_THRESHOLD_PAGE_IDS);
-    expect(STATIC_THRESHOLD_PAGE_IDS).toHaveLength(54);
+    expect(STATIC_THRESHOLD_PAGE_IDS).toHaveLength(40);
   });
 
   it.each([
@@ -123,7 +109,7 @@ describe('published composite threshold selector', () => {
     expect(hasPublishedCompositeThreshold([text])).toBe(false);
   });
 
-  it('links numeric thresholds regardless of institution', () => {
+  it('recognizes numeric threshold wording independently of calculator eligibility', () => {
     expect(hasPublishedCompositeThreshold(['סכם 620'])).toBe(true);
   });
 
