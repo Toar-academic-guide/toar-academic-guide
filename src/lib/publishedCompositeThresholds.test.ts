@@ -21,12 +21,18 @@ export const STATIC_THRESHOLD_PAGE_IDS = [
   'accounting',
   'afeka_biomedical',
   'architecture',
+  'ariel_communication',
+  'ariel_criminology',
+  'ariel_economics',
+  'ariel_health_systems',
+  'ariel_psychology',
   'bgu_accounting',
   'bgu_business',
   'bgu_psychology',
   'biu_psychology',
   'business',
   'communication',
+  'criminology',
   'cs',
   'datascience',
   'economics',
@@ -42,6 +48,7 @@ export const STATIC_THRESHOLD_PAGE_IDS = [
   'law',
   'me',
   'nursing',
+  'nutrition',
   'occupational_therapy',
   'physiotherapy',
   'political_science',
@@ -51,6 +58,8 @@ export const STATIC_THRESHOLD_PAGE_IDS = [
   'reichman_economics',
   'reichman_law',
   'reichman_psychology',
+  'ruppin_cs',
+  'ruppin_marine_bio',
   'tau_accounting',
   'tau_business',
   'tau_law',
@@ -62,7 +71,7 @@ export const STATIC_THRESHOLD_PAGE_IDS = [
 ];
 
 describe('published composite threshold selector', () => {
-  it('selects the 41 static pages from the same resolved requirements the page renders', async () => {
+  it('selects the 50 static pages from the same resolved requirements the page renders', async () => {
     const programs = getStaticCataloguePrograms();
     vi.mocked(listCataloguePrograms).mockResolvedValue({ data: programs, meta: {} });
     vi.mocked(listCatalogueInstitutions).mockResolvedValue({
@@ -77,7 +86,7 @@ describe('published composite threshold selector', () => {
       }),
     );
     expect(selected.filter(Boolean).sort()).toEqual(STATIC_THRESHOLD_PAGE_IDS);
-    expect(STATIC_THRESHOLD_PAGE_IDS).toHaveLength(41);
+    expect(STATIC_THRESHOLD_PAGE_IDS).toHaveLength(50);
   });
 
   it.each([
@@ -89,6 +98,8 @@ describe('published composite threshold selector', () => {
     'ציון מתאם 600',
     'ציון התאמה לניהול 610',
     'ציון משולב 515',
+    'ציון קבלה משולב 560',
+    'ציון קבלה 106',
     'מצרף 620',
     'בחורף תשפ"ז: סכם 91.5',
   ])('recognizes a published threshold: %s', (text) => {
@@ -107,8 +118,8 @@ describe('published composite threshold selector', () => {
     expect(hasPublishedCompositeThreshold([text], 'tau')).toBe(false);
   });
 
-  it('excludes Ariel sources regardless of programme ID, without excluding other sources', () => {
-    expect(hasPublishedCompositeThreshold(['סכם 620'], 'ariel')).toBe(false);
+  it('links numeric thresholds regardless of institution', () => {
+    expect(hasPublishedCompositeThreshold(['סכם 620'], 'ariel')).toBe(true);
     expect(hasPublishedCompositeThreshold(['סכם 620'], 'bgu')).toBe(true);
   });
 
@@ -136,9 +147,9 @@ describe('published composite threshold selector', () => {
     }
   });
 
-  it('excludes TAU adaptation-only FAQ answers while allowing actual composite answers', () => {
+  it('links TAU adaptation and prior-degree FAQ thresholds too', () => {
     expect(hasPublishedCompositeThreshold(['ציון התאמה לניהול 610'], 'tau', { forFaq: true })).toBe(
-      false,
+      true,
     );
     expect(
       hasPublishedCompositeThreshold(
@@ -146,7 +157,7 @@ describe('published composite threshold selector', () => {
         'tau',
         { forFaq: true },
       ),
-    ).toBe(false);
+    ).toBe(true);
     expect(
       hasPublishedCompositeThreshold(['ציון התאמה 647', 'סכם 650'], 'tau', { forFaq: true }),
     ).toBe(true);
