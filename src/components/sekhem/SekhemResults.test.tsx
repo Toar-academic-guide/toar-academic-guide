@@ -69,6 +69,22 @@ describe('API-only result rows', () => {
     }
     expect(row.textContent).not.toContain('נדרשת בדיקה מול המוסד');
   });
+  it.each([
+    ['reichman', 635.7968000000001, '636'],
+    ['reichman', 700, '700'],
+    ['huji', 21.01, '21.01'],
+    ['huji', 25.186, '25.186'],
+  ] as const)(
+    'formats %s score %s as %s without changing the API value or verdict',
+    (id, score, shown) => {
+      const source = report(id, { score, threshold: 636, decision: 'below' });
+      renderReports([source]);
+      const row = screen.getByTestId(`result-psychology-${id}`);
+      expect(row.querySelector('[data-result-number="score"]')?.textContent).toBe(shown);
+      expect(within(row).getByText('הציונים מתחת לסף')).toBeTruthy();
+      expect(source.results[0].score).toBe(score);
+    },
+  );
   it('keeps the HUJI Kidum result text-only with its sourced gate text', () => {
     renderReports([
       report('huji', {
