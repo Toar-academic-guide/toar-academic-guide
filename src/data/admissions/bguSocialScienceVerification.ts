@@ -70,15 +70,16 @@ export function normalizeBguSocialScienceRule(programId: string, payload: unknow
       semester: 1,
     },
     ...Object.fromEntries(numeric.map((key) => [key, row[key]])),
-    ...Object.fromEntries(
+    ...(Object.fromEntries(
       textual.map((key) => [key, (row[key] as string).trim().replace(/\s+/g, ' ')]),
-    ),
+    ) as Record<(typeof textual)[number], string>),
   };
 }
 export function fingerprintBguSocialScienceRule(
   rule: NonNullable<ReturnType<typeof normalizeBguSocialScienceRule>>,
 ) {
-  return `sha256:${createHash('sha256').update(JSON.stringify(rule)).digest('hex')}`;
+  const { reg_status: _registrationStatus, ...admissionRules } = rule;
+  return `sha256:${createHash('sha256').update(JSON.stringify(admissionRules)).digest('hex')}`;
 }
 
 export const BGU_SOCIAL_SCIENCE_METADATA_BY_PAIR_ID = Object.fromEntries(

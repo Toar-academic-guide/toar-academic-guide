@@ -1,0 +1,42 @@
+{
+  "capturedAt": "2026-10-28",
+  "source": "/workspace/pm-research/bgu-attestation/captures",
+  "description": "Official API evidence formatted as JSON only; payloads unchanged. sourceSha256 is verified against the original supplied SHA256SUMS; sha256 verifies the stored formatted file. No student-facing registration copy.",
+  "files": [
+    {
+      "programme": "communication",
+      "filename": "communication.json",
+      "sha256": "97d4fc228bae7a74b77241c478d25eece449a0883986f08728d4c95f77613bcc",
+      "sourceSha256": "3227390d8e66f796922f0731cef1b6bf8bb8488733e5a5e7b049e3243992e94c",
+      "officialUrl": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=183&p_pat1=2&p_degree_level=1"
+    },
+    {
+      "programme": "biology",
+      "filename": "biology.json",
+      "sha256": "73622944265d930f92771c74fc05920b09cdaa13a8b9825dd83e9c5321611614",
+      "sourceSha256": "356fc7985722a02497da7ae1cbfc7499f2b6b16e4aa9ccd80d0a0f8663847d2a",
+      "officialUrl": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=205&p_pat1=15"
+    },
+    {
+      "programme": "business",
+      "filename": "business.json",
+      "sha256": "32984b2d960c5edca330a63765bda803ef734846e74870deeb734e3e4c1fcfbc",
+      "sourceSha256": "45cef96a9bf34aea0943d943a1d0013c23fb7db22f3d2be7a67c7ef4b19b87a4",
+      "officialUrl": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=142&p_pat1=1&p_spe1=1"
+    },
+    {
+      "programme": "economics",
+      "filename": "economics.json",
+      "sha256": "ba286835d68517846387f0f547cad686b871e2e10394dc1071f5ab54437caf0a",
+      "sourceSha256": "5e28fed1d41a352272588ae3c64cf1de9baff03656439b53e95fb489149738d6",
+      "officialUrl": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=142&p_pat1=3"
+    },
+    {
+      "programme": "accounting",
+      "filename": "accounting.json",
+      "sha256": "ee89ab1a5c45629f07a18fc12c6422967848373f650c4bae3a23cb7946230a28",
+      "sourceSha256": "379554c8b279e8481cae5c15b58f0d7283a13984806f214cf6a2d8e4ba3732f8",
+      "officialUrl": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=142&p_pat1=1&p_spe1=6"
+    }
+  ]
+}
