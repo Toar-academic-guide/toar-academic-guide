@@ -185,13 +185,15 @@ export default function SekhemCalculator({
             ערכים לדוגמה
           </button>
         </div>
-        <BagrutSubjectRows
-          rows={rows}
-          onChange={(next) => {
-            invalidate();
-            setRows(next);
-          }}
-        />
+        <div id="sekhem-bagrut-subjects" tabIndex={-1}>
+          <BagrutSubjectRows
+            rows={rows}
+            onChange={(next) => {
+              invalidate();
+              setRows(next);
+            }}
+          />
+        </div>
         <details className="my-4">
           <summary className="cursor-pointer py-2 text-sm">פרטי תעודת הבגרות</summary>
           <div className="grid gap-3 sm:grid-cols-2">

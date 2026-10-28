@@ -1,6 +1,10 @@
 'use client';
 
-import { formatSekhemNumber } from '@/lib/sekhemResultPresentation';
+import {
+  formatSekhemNumber,
+  resultInputReasons,
+  resultSourceReason,
+} from '@/lib/sekhemResultPresentation';
 import { useState } from 'react';
 import Link from 'next/link';
 import { resultVerdict, type CalculatorOffering } from '@/lib/sekhemCalculator';
@@ -40,12 +44,17 @@ function gateText(result: AdmissionsEvaluationResult): string[] {
 }
 
 function InstitutionGroup({ entries, onEnquiry }: { entries: Entry[]; onEnquiry: Enquiry }) {
-  const [selected, setSelected] = useState(entries[0].offering.programId);
+  const [selected, setSelected] = useState<string>();
   const { offering, report, result } =
-    entries.find((entry) => entry.offering.programId === selected) ?? entries[0];
+    entries.find((entry) => entry.offering.programId === selected) ??
+    entries.find((entry) => hasNumber(entry.result.score)) ??
+    entries[0];
   const gates = gateText(result);
   const score = hasNumber(result.score);
   const threshold = hasNumber(result.threshold);
+  const reasons = resultInputReasons(result);
+  if (!score && !gates.length && !reasons.length)
+    reasons.push({ text: resultSourceReason(result) });
   const verdict =
     result.kind === 'manual_gate' && !score && !threshold && !gates.length
       ? 'חסרים נתונים לחישוב'
@@ -113,8 +122,19 @@ function InstitutionGroup({ entries, onEnquiry }: { entries: Entry[]; onEnquiry:
             {verdict}
           </p>
           {gates.map((gate) => (
-            <p key={gate} className="mt-2 text-sm text-(--text-body)">
+            <p key={gate} data-result-reason className="mt-2 text-sm text-(--text-body)">
               {gate}
+            </p>
+          ))}
+          {reasons.map((reason) => (
+            <p key={reason.text} data-result-reason className="mt-2 text-sm text-(--text-body)">
+              {reason.href ? (
+                <a className="underline underline-offset-4" href={reason.href}>
+                  {reason.text}
+                </a>
+              ) : (
+                reason.text
+              )}
             </p>
           ))}
           {offering.institutionId === 'reichman' && (
@@ -160,7 +180,7 @@ export default function SekhemResults({
       uncomputable = true;
       afeka ||= offering.institutionId === 'afeka';
       // Keep actionable floor verdicts and their explicit lead targets, without blank-score badges.
-      if (!['accepted', 'below'].includes(result.decision)) continue;
+      if (!['accepted', 'below'].includes(result.decision) && !gateText(result).length) continue;
     }
     const entries = groups.get(offering.institutionId) ?? [];
     entries.push({ offering, report, result });
