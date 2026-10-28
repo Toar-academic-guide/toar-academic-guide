@@ -11,12 +11,12 @@ export function formatSekhemNumber(value: number, institutionId: string): string
 
 const inputLabels: Partial<Record<AdmissionsRequiredInput, string>> = {
   ...HAIFA_REQUIRED_INPUT_LABELS,
-  bagrut_subject_record:
-    'יחידות וציונים במקצועות הבגרות: אנגלית, ספרות, מתמטיקה, תנ״ך, אזרחות, הבעה עברית, היסטוריה ועברית',
+  haifa_bagrut_average: 'ממוצע הבגרות בחיפה',
+  bagrut_subject_record: 'יחידות וציונים בכל מקצועות הבגרות',
   bagrut_average: 'ממוצע הבגרות',
   bagrut_profile_version: 'פרטי תעודת הבגרות',
   bagrut_sector: 'מגזר תעודת הבגרות',
-  bgu_bagrut_average: 'ממוצע הבגרות הרשמי של בן־גוריון',
+  bgu_bagrut_average: 'ממוצע הבגרות לפי כללי בן־גוריון',
   tau_bagrut_average: 'ממוצע הבגרות לפי כללי תל אביב',
   tau_physiotherapy_route: 'אפיק הקבלה לפיזיותרפיה',
   tau_physiotherapy_requirements: 'תנאי הקבלה לפיזיותרפיה',
@@ -65,16 +65,37 @@ const inputTargets: Partial<Record<AdmissionsRequiredInput, string>> = {
 export function resultInputReasons(
   result: AdmissionsEvaluationResult,
 ): { text: string; href?: string }[] {
-  return [...new Set(result.requiredInputs ?? [])].flatMap((key) =>
-    inputLabels[key] ? [{ text: inputLabels[key]!, href: inputTargets[key] }] : [],
-  );
+  if (
+    result.linkedInstitutionId === 'haifa' &&
+    !Number.isFinite(result.score) &&
+    !Number.isFinite(result.threshold)
+  )
+    return [{ text: 'עדיין לא מחשבים את הסכם של חיפה כאן' }];
+  return [...new Set(result.requiredInputs ?? [])].flatMap((key) => {
+    if (!inputLabels[key]) return [];
+    const text =
+      result.linkedInstitutionId === 'technion' && key === 'bagrut_subject_record'
+        ? 'לחישוב הסכם בטכניון דרושים ציונים ויחידות בכל מקצועות הבגרות.'
+        : `לחישוב צריך להשלים: ${inputLabels[key]}.`;
+    return [{ text, href: inputTargets[key] }];
+  });
 }
 
-/** Keep hidden numerical bands and stale cutoffs out of numberless result copy. */
+/** Source diagnostics belong in the API; students get the consequence for their calculation. */
 export function resultSourceReason(result: AdmissionsEvaluationResult): string {
-  return (
-    [result.sourceLabel, result.explanation].find(
-      (text) => text.trim() && !/\d|נדרשת בדיקה מול המוסד/.test(text),
-    ) ?? 'לא התקבלו נתונים לחישוב התוכנית.'
-  );
+  switch (result.kind) {
+    case 'authority_unavailable':
+    case 'tracked_missing_rule':
+    case 'degraded':
+      return 'עדיין אין לנו מקור רשמי עדכני לחישוב.';
+    case 'unsupported':
+      return 'עדיין לא מחשבים סכם לתוכנית הזו כאן.';
+    case 'requirements_only':
+    case 'open_admission':
+      return 'בתוכנית הזו נבדקים תנאי הקבלה בלי חישוב סכם.';
+    case 'needs_input':
+      return 'חסרים ציונים או פרטים נוספים לחישוב הסכם.';
+    default:
+      return 'לא התקבלו כל הנתונים הדרושים לחישוב הסכם.';
+  }
 }

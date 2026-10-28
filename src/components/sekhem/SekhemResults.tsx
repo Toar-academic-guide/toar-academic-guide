@@ -22,6 +22,17 @@ type Enquiry = (offering: CalculatorOffering, report: AdmissionsEvaluationReport
 const noScoreInstitutions = new Set(['biu', 'afeka', 'hit']);
 const hasNumber = (value: number | null | undefined): value is number =>
   typeof value === 'number' && Number.isFinite(value);
+const hasResultNumber = (entry: Entry) =>
+  hasNumber(entry.result.score) || hasNumber(entry.result.threshold);
+
+function groupEntry(entries: Entry[], selected?: string): Entry {
+  return (
+    entries.find((entry) => entry.offering.programId === selected) ??
+    entries.find((entry) => hasNumber(entry.result.score)) ??
+    entries.find(hasResultNumber) ??
+    entries[0]
+  );
+}
 
 function gateText(result: AdmissionsEvaluationResult): string[] {
   const labels =
@@ -40,16 +51,18 @@ function gateText(result: AdmissionsEvaluationResult): string[] {
     const text = textOnly && /\d/.test(result.explanation) ? numberlessGate : result.explanation;
     if (text) labels.push(text);
   }
-  return labels.filter((label) => !label.includes('נדרשת בדיקה מול המוסד'));
+  return labels.filter(
+    (label) =>
+      !/נדרשת בדיקה מול המוסד|מקור חסום|ממוצע בגרות רשמי של חיפה|[a-z]+_[a-z_]+/i.test(label),
+  );
 }
 
 function InstitutionGroup({ entries, onEnquiry }: { entries: Entry[]; onEnquiry: Enquiry }) {
   const [selected, setSelected] = useState<string>();
-  const { offering, report, result } =
-    entries.find((entry) => entry.offering.programId === selected) ??
-    entries.find((entry) => hasNumber(entry.result.score)) ??
-    entries[0];
-  const gates = gateText(result);
+  const entry = groupEntry(entries, selected);
+  const { offering, report, result } = entry;
+  const numberless = !hasResultNumber(entry);
+  const gates = numberless && offering.institutionId === 'haifa' ? [] : gateText(result);
   const score = hasNumber(result.score);
   const threshold = hasNumber(result.threshold);
   const reasons = resultInputReasons(result);
@@ -85,7 +98,7 @@ function InstitutionGroup({ entries, onEnquiry }: { entries: Entry[]; onEnquiry:
           ) : (
             <p className="mt-1 text-(--text-body)">{offering.programName}</p>
           )}
-          {offering.programPath && (
+          {!numberless && offering.programPath && (
             <Link
               className="mt-2 inline-block text-sm underline underline-offset-4"
               href={offering.programPath}
@@ -150,13 +163,23 @@ function InstitutionGroup({ entries, onEnquiry }: { entries: Entry[]; onEnquiry:
           )}
         </div>
       </div>
-      <button
-        type="button"
-        className="way-button-primary mt-5 min-h-11 px-5 py-3"
-        onClick={() => onEnquiry(offering, report)}
-      >
-        קבלת מידע על התוכנית
-      </button>
+      <div className="mt-5 flex flex-wrap gap-3">
+        <button
+          type="button"
+          className="way-button-primary min-h-11 px-5 py-3"
+          onClick={() => onEnquiry(offering, report)}
+        >
+          קבלת מידע על התוכנית
+        </button>
+        {numberless && offering.programPath && (
+          <Link
+            className="way-button-secondary inline-flex min-h-11 items-center px-5 py-3"
+            href={offering.programPath}
+          >
+            לתנאי הקבלה של התוכנית
+          </Link>
+        )}
+      </div>
     </section>
   );
 }
@@ -202,9 +225,14 @@ export default function SekhemResults({
       {uncomputable && (
         <p className="mt-4 text-(--text-body)">בחלק מהמוסדות נבדקים תנאי קבלה בלי חישוב סכם.</p>
       )}
-      {[...groups.entries()].map(([id, entries]) => (
-        <InstitutionGroup key={id} entries={entries} onEnquiry={onEnquiry} />
-      ))}
+      {[...groups.entries()]
+        .sort(
+          ([, a], [, b]) =>
+            Number(hasResultNumber(groupEntry(b))) - Number(hasResultNumber(groupEntry(a))),
+        )
+        .map(([id, entries]) => (
+          <InstitutionGroup key={id} entries={entries} onEnquiry={onEnquiry} />
+        ))}
       {afeka && (
         <Link
           className="mt-3 inline-flex min-h-11 items-center underline underline-offset-4"
