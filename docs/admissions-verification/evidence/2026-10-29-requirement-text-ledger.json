@@ -2647,7 +2647,24 @@
   ],
   "haifaCopy": {
     "before": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה.",
-    "status": "FIXED: early Haifa dispatch under Oded’s narrow evaluator grant; explicit averages preserved.",
-    "after": "עדיין לא מחשבים את הסכם של חיפה כאן"
-  }
+    "status": "FIXED: exact2026-10-29 wording; same early Haifa dispatch and explicit-average preservation.",
+    "after": "עדיין לא מחשבים כאן את ציון הקבלה של חיפה"
+  },
+  "haifaWordingFollowUp": {
+    "before": "עדיין לא מחשבים את הסכם של חיפה כאן",
+    "after": "עדיין לא מחשבים כאן את ציון הקבלה של חיפה"
+  },
+  "pr318TerminologyFollowUp": [
+    {
+      "file": "src/components/TechnionMedicineComparison.tsx",
+      "line": 8,
+      "before": "הסכם שלך ${formatJourneyScore(score)}, ${relation} הזימון המשוער (${threshold})",
+      "after": "ציון הקבלה שלך ${formatJourneyScore(score)}, ${relation} הזימון המשוער (${threshold})"
+    },
+    {
+      "file": "src/data/admissions/formulaBackedVerificationLedger.ts",
+      "before": "מבוססת על סכם 650 לפחות",
+      "after": "מבוססת על ציון קבלה 650 לפחות"
+    }
+  ]
 }

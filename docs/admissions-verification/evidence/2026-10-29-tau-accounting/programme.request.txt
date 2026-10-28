@@ -1,0 +1,1 @@
+{"operationName":"getProgramByIdAndLang","variables":{"nid":11815,"langcode":"he"},"query":"query getProgramByIdAndLang($nid: Int!, $langcode: String!) { getProgramByIdAndLang(nid: $nid, langcode: $langcode) { nid title receipt_threshol rejection_thresh field_registration_comments field_plain_id_programs field_faculty_mamta } }"}

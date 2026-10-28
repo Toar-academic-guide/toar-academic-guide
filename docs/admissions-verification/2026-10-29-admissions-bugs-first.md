@@ -528,19 +528,19 @@ Final follow-up verification: **prettier passed; lint passed; typecheck passed; 
 
 ## Jorje rulings A/B/D/E/F (2026-10-28)
 
-This section supersedes earlier recommendations to collect a Haifa average and the earlier report-only disposition of the TAU average bug. The earlier evaluator stop is superseded by Oded’s narrow dispatch/15-site grant below; TAU accounting remains fenced. No live MyWay, Vercel-preview, BGU or other official-site requests were made in this follow-up; the supplied official captures were replayed locally. No DB writes, workflow runs, review pipeline or subagents. The latest continuation is local-only: Jorje will push and apply the prepared PR body.
+This section supersedes earlier recommendations to collect a Haifa average and the earlier report-only disposition of the TAU average bug. The earlier evaluator stop is superseded by Oded’s narrow dispatch/15-site grant below; TAU accounting remains fenced. U8/U9 replayed supplied official captures without live requests; U10’s two failed official TAU attempts are recorded below. No live MyWay or Vercel-preview request was made. No DB writes, workflow runs, review pipeline or subagents. The latest continuation is local-only: Jorje will push and apply the prepared PR body.
 
 ### A/F. Haifa honest state and exact wording — FIXED under the narrow grant
 
-Results without an available Haifa average now return exactly **עדיין לא מחשבים את הסכם של חיפה כאן**, using `tracked_missing_rule`; `psychology` and `haifa_psychology` retain `authority_unavailable`. Each result links to [Haifa score rules](https://admissions.haifa.ac.il/score-calculation/) and the [official calculator](https://applicants.haifa.ac.il/enrollmentChances/index.html), evidence captured **2026-10-28** under item4 and the calculator-gap investigation. There is no score, verdict, `haifa_bagrut_average` required input, or `ממוצע בגרות רשמי של חיפה` phrase. The official average formula is still not encoded; this change removes an inappropriate student question rather than inventing a calculation.
+Results without an available Haifa average now return exactly **עדיין לא מחשבים כאן את ציון הקבלה של חיפה**, using `tracked_missing_rule`; `psychology` and `haifa_psychology` retain `authority_unavailable`. Each result links to [Haifa score rules](https://admissions.haifa.ac.il/score-calculation/) and the [official calculator](https://applicants.haifa.ac.il/enrollmentChances/index.html), evidence captured **2026-10-28** under item4 and the calculator-gap investigation. There is no score, verdict, `haifa_bagrut_average` required input, or `ממוצע בגרות רשמי של חיפה` phrase. The official average formula is still not encoded; this change removes an inappropriate student question rather than inventing a calculation.
 
 `haifaMissingRuleResult` lives in `src/server/admissions/haifaProgrammePolicy.ts`; the evaluator adds only its import and a five-line availability dispatch before route/capability handling. This also precedes the IS track gate. The old Haifa average gate and official adapter call bodies are untouched. Explicit-average saved/API callers still follow their existing path: the regression supplying102, actual years2020/2025, Hebrew-school qualification and PET sections still reaches the official mocked score493. Existing raw-average-only proxy normalization is unchanged; this dispatch does not redefine that compatibility path. No result adds a new composite ask.
 
 The real Vitest contract in `src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts` covers all **20 static +27 saved-audit Haifa pairs**, asserting exact kind, exact F wording, official Haifa source link and absence of both forbidden phrase/input. On the unchanged post-merge evaluator, all47 failed (`expected [47 result mismatches] to deeply equal []`); after the dispatch the contract passes. Psychology remains withheld. The old AB diagnostic/config have been replaced by these guarded real tests; historical outputs remain in [the earlier evidence JSON](evidence/2026-10-29-rulings-abdef.json), with current red/green evidence in [the granted-fix receipt](evidence/2026-10-29-rulings-ab-granted.json).
 
-### B. TAU derived average — FIXED at15 permitted sites; accounting fenced/pending Oded
+### B. TAU derived average — original15 sites plus confirmed accounting follow-up
 
-The audit subject record derives **109.14** while the general input remains **92.1**. Every newly permitted TAU call now sends `input.extraInputs?.tauBagrutAverage ?? input.bagrut`; fallback without a derived average and all gates are preserved. CS already forwards extraInputs and selects the derived average in its adapter, so CS is unchanged. **Accounting is deliberately unchanged:** f3294358/post-merge lines1506–1530 are Oded’s queued ownership block; the raw-average call at1518 remains pending his change. The source bug therefore remains for accounting only among the16 reported outbound sites. No shared general-average rewrite, adapter refactor or other evaluator change was made.
+The audit subject record derives **109.14** while the general input remains **92.1**. Every newly permitted TAU call now sends `input.extraInputs?.tauBagrutAverage ?? input.bagrut`; fallback without a derived average and all gates are preserved. CS already forwards extraInputs and selects the derived average in its adapter, so CS is unchanged. **Accounting follow-up:** Oded has now confirmed the single forwarding line (old1518/current1527), which is corrected below after its own official-capture red test. The rest of that ownership block remains unchanged. No shared general-average rewrite, adapter refactor or other evaluator change was made.
 
 Three real tests select [captured official TAU GraphQL responses](evidence/2026-10-29-bugs-first-official.json) by the **actual outbound average**, captured **2026-10-28** from [TAU GraphQL](https://go.tau.ac.il/graphql). Before the fix, each test receives bagrut92.1 instead of109.14; psychology/law receive600 instead of685, and EE receives610 instead of695. After the fix the three request/score contracts pass; EE still submits `reali10=1`. The audit certificate, PET700 and sections140/130/135 match item5. No new live TAU request was made.
 
@@ -550,34 +550,34 @@ Three real tests select [captured official TAU GraphQL responses](evidence/2026-
 | `tau_law`        | 600 /647; below                      | 685 /647; accepted            | Numeric score clears the captured cutoff; existing registration-year source interpretation is unchanged |
 | `tau_ee`         | 610 /710; below                      | 695 /710; below               | Still below the engineering cutoff                                                                      |
 
-The earlier report incorrectly labeled EE’s captured threshold825; both old and new captured replays actually use710. This is a documentation correction, not a threshold-code change. These outcomes are local official-response replays, not preview/prod observations or a guarantee of institutional admission. Accounting remains fenced/pending; its captured-input bug has not been claimed fixed.
+The earlier report incorrectly labeled EE’s captured threshold825; both old and new captured replays actually use710. This is a documentation correction, not a threshold-code change. These outcomes are local official-response replays, not preview/prod observations or a guarantee of institutional admission. Accounting is covered by the confirmed one-line follow-up below; no other accounting gate or threshold is changed.
 
 ### Granted evaluator diff and ownership proof
 
 First merged `origin/main` (`2cb674a905dce47415e04a57a7082a55bd599b8a`) without conflicts, producing merge **14ca9602c28675a9bff06075f994ba71afa8a872**. Main introduced SEO changes, not evaluator changes, so pre-fix post-merge coordinates match f3294358. Affected merged tests pass (included in the689-test focused run).
 
-| Hunk / programme                                       | f3294358 and pre-fix post-merge line(s) | Current evaluator line(s) |
-| ------------------------------------------------------ | --------------------------------------- | ------------------------- |
-| Haifa helper import                                    | 82                                      | 82–86                     |
-| Haifa dispatch insertion                               | after345                                | 350–354                   |
-| TAU medicine                                           | 1373                                    | 1382                      |
-| TAU nursing                                            | 1403                                    | 1412                      |
-| TAU psychology                                         | 1436                                    | 1445                      |
-| TAU social work                                        | 1456                                    | 1465                      |
-| TAU law                                                | 1485                                    | 1494                      |
-| TAU communication                                      | 1549                                    | 1558–1561 (average1559)   |
-| TAU biology                                            | 1575                                    | 1587–1590 (average1588)   |
-| TAU political science                                  | 1601                                    | 1616–1619 (average1617)   |
-| TAU education                                          | 1628                                    | 1646–1649 (average1647)   |
-| TAU economics                                          | 1658                                    | 1679–1682 (average1680)   |
-| TAU electrical engineering                             | 1725                                    | 1749                      |
-| TAU mechanical engineering                             | 1764                                    | 1788                      |
-| TAU occupational therapy                               | 1797                                    | 1821–1824 (average1822)   |
-| TAU industrial engineering                             | 1833                                    | 1860                      |
-| TAU digital sciences                                   | 1863                                    | 1890                      |
-| **FENCED accounting: unchanged**                       | 1506–1530 (call1518)                    | 1515–1539 (call1527)      |
-| **FENCED withVerifiedAdmissionInformation: unchanged** | 273–326                                 | 277–330                   |
-| **Haifa gate/adapter bodies: unchanged**               | 957–1025                                | 966–1034                  |
+| Hunk / programme                                          | f3294358 and pre-fix post-merge line(s) | Current evaluator line(s) |
+| --------------------------------------------------------- | --------------------------------------- | ------------------------- |
+| Haifa helper import                                       | 82                                      | 82–86                     |
+| Haifa dispatch insertion                                  | after345                                | 350–354                   |
+| TAU medicine                                              | 1373                                    | 1382                      |
+| TAU nursing                                               | 1403                                    | 1412                      |
+| TAU psychology                                            | 1436                                    | 1445                      |
+| TAU social work                                           | 1456                                    | 1465                      |
+| TAU law                                                   | 1485                                    | 1494                      |
+| TAU communication                                         | 1549                                    | 1558–1561 (average1559)   |
+| TAU biology                                               | 1575                                    | 1587–1590 (average1588)   |
+| TAU political science                                     | 1601                                    | 1616–1619 (average1617)   |
+| TAU education                                             | 1628                                    | 1646–1649 (average1647)   |
+| TAU economics                                             | 1658                                    | 1679–1682 (average1680)   |
+| TAU electrical engineering                                | 1725                                    | 1749                      |
+| TAU mechanical engineering                                | 1764                                    | 1788                      |
+| TAU occupational therapy                                  | 1797                                    | 1821–1824 (average1822)   |
+| TAU industrial engineering                                | 1833                                    | 1860                      |
+| TAU digital sciences                                      | 1863                                    | 1890                      |
+| **Accounting: historical U9 fence, now one line granted** | 1506–1530 (call1518)                    | 1515–1539 (call1527)      |
+| **FENCED withVerifiedAdmissionInformation: unchanged**    | 273–326                                 | 277–330                   |
+| **Haifa gate/adapter bodies: unchanged**                  | 957–1025                                | 966–1034                  |
 
 Compared complete fenced text blocks byte-for-byte with f3294358. `git diff -U0 origin/main -- src/server/admissions/evaluator.ts` contains only the above import/dispatch/15 replacements plus the previously approved item3 BGU normalization hunks. Prettier expanded only the affected inline TAU applicant objects; no unrelated evaluator formatting change.
 
@@ -605,7 +605,7 @@ Only directly flipped Haifa assertions changed, each marked `// Approved test up
 | `batchCUnsupportedPathEvaluation.test.ts`, only empty-input `haifa_engineering` result | kind/capability unsupported                                                                        | tracked_missing_rule; exact F explanation/official-calculator nextAction                                 |
 | Same case, explanation assertion                                                       | rejects any `סכם` occurrence                                                                       | requires exact F wording; all other regex expectations retained                                          |
 | Same case, nextAction assertion                                                        | `בחרו את המסלול המדויק באתר המוסד ובדקו את תנאי הקבלה שלו.`                                        | `בדקו במחשבון הרשמי של אוניברסיטת חיפה.`                                                                 |
-| Same case, client `resultExplanation`                                                  | `תנאי הקבלה שונים בין המסלולים בתחום הזה, ולכן אין כאן חישוב קבלה שאפשר להסתמך עליו.`              | `עדיין לא מחשבים את הסכם של חיפה כאן`                                                                    |
+| Same case, client `resultExplanation`                                                  | `תנאי הקבלה שונים בין המסלולים בתחום הזה, ולכן אין כאן חישוב קבלה שאפשר להסתמך עליו.`              | `עדיין לא מחשבים כאן את ציון הקבלה של חיפה`                                                              |
 
 The first guard exposed the two BatchC empty-profile expectation changes; those assertions were updated only for A/F. Raw-average-only weak/strong BatchC inputs retain their existing normalized proxy and unsupported output. The full-profile Haifa contract always returns the honest note. The existing client may render its generic text for other tracked/unavailable result kinds; no client/component rendering is changed or claimed here. Jorje owns deployed verification.
 
@@ -849,9 +849,9 @@ The legacy institution ID `mon_12220708942` already serializes the full official
 
 ### C4. A/F wording — fixed under the narrow evaluator grant
 
-| Scope                                                    | Current text                                               | Requested exact text                | Status                                                                            |
-| -------------------------------------------------------- | ---------------------------------------------------------- | ----------------------------------- | --------------------------------------------------------------------------------- |
-| Haifa results without an available institutional average | לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה. | עדיין לא מחשבים את הסכם של חיפה כאן | FIXED: early Haifa dispatch; exact note and official source link, no average ask. |
+| Scope                                                    | Current text                                               | Requested exact text                      | Status                                                                            |
+| -------------------------------------------------------- | ---------------------------------------------------------- | ----------------------------------------- | --------------------------------------------------------------------------------- |
+| Haifa results without an available institutional average | לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה. | עדיין לא מחשבים כאן את ציון הקבלה של חיפה | FIXED: early Haifa dispatch; exact note and official source link, no average ask. |
 
 E changes no student-facing requirement text and adds no registration-availability note. Its full old/new fingerprint table is recorded under E below.
 
@@ -863,4 +863,61 @@ Final ruling-batch validation, **2026-10-29**: prettier, lint and typecheck pass
 
 ### Latest granted-fix checks and local delivery
 
-Inline ce-simplify-code pass kept the policy helper, minimal dispatcher, explicit forwarding/fallback and all proof tests. No generalization or additional production edit was justified; source/approval comments are retained as required evidence. Changed files were formatted; lint and typecheck passed. Final `env -u DATABASE_URL npm run guard:pre-pr` passed **3,193 tests /130 files**, without bypass; the granted-fix evidence receipt retains the complete failing-before output and final counts. No push, remote PR edit, live preview/prod request, DB mutation or workflow run. Prepared PR body: `/workspace/codex-tasks/pr318-body.md`, for Jorje to apply after his push.
+Inline ce-simplify-code pass kept the policy helper, minimal dispatcher, explicit forwarding/fallback and all proof tests. The subsequent U10 request changes the honest-note wording and confirms the final accounting line. No generalization or additional production edit was justified; source/approval comments are retained as required evidence. Changed files were formatted; lint and typecheck passed. Final `env -u DATABASE_URL npm run guard:pre-pr` passed **3,193 tests /130 files**, without bypass; the granted-fix evidence receipt retains the complete failing-before output and final counts. No push, remote PR edit, live preview/prod request, DB mutation or workflow run. Prepared PR body: `/workspace/codex-tasks/pr318-body.md`, for Jorje to apply after his push.
+
+## Confirmed accounting line, Haifa wording and terminology sweep (U10)
+
+Main fetch/merge check: origin/main remains2cb674a905dce47415e04a57a7082a55bd599b8a; already merged. This continuation starts at eada3c15 and remains local-only. Oded’s accounting confirmation covers only the outbound-average line at evaluator1527; the rest of1515–1539 and the verified-information wrapper are unchanged.
+
+### 1. Accounting — implemented and locally green
+
+The official shared TAU calculator response captured **2026-10-28T19:00:03.772687+00:00** contains `hatama_nihul: "688"` at Bagrut109.14/PET700. Accounting’s existing reviewed mapping selects that field (node11815, official programme121111050000). This is a captured official value, not a new formula or locally computed expectation. The capture’s engineering flag1 selects engineering/exact-science adjustments; accounting continues to submit flag0 and selects the management/accounting field. The score mock is chosen by the actual outgoing average: raw92.1 returns the captured639, derived109.14 returns the captured688.
+
+Source: [TAU GraphQL](https://go.tau.ac.il/graphql), captured2026-10-28; [original successful capture](evidence/2026-10-29-bugs-first-official.json), `tauGraphqlCalls[2].response.data.getLastScore.body.hatama_nihul`. File SHA-256: `af4f46eea662c09365b9aa8e878bdad3665d19fa7bd2a4ed71d46c631b400ba0`.
+
+Two read-only official replay attempts, spaced8.2seconds apart, returned HTTP200 HTML **Request Rejected** rather than GraphQL results. Their raw requests, HTML responses, timestamps and SHA-256 sums are saved in [accounting attempt evidence](evidence/2026-10-29-tau-accounting/manifest.json). They are not described as successful calculator responses. The test uses the existing successful capture; the programme-node mock uses the unchanged reviewed accounting contract for transport, not an invented new threshold.
+
+Red first: `B tau_accounting sends the derived 109.14 average and reproduces the captured official score` failed with outgoing92.1 instead of109.14 and `expected639 to be688`. After changing only evaluator1527 it passes. Same audit subject rows, PET700, sections140/130/135 and English135 are used. No threshold or accounting gate changed.
+
+### 2. Haifa wording — implemented and locally green
+
+| Scope                             | Before                              | After                                     |
+| --------------------------------- | ----------------------------------- | ----------------------------------------- |
+| All no-average Haifa result notes | עדיין לא מחשבים את הסכם של חיפה כאן | עדיין לא מחשבים כאן את ציון הקבלה של חיפה |
+
+Production helper and all four named test files now use the exact new sentence. Copy assertions carry `// Approved test update, Jorje 2026-10-29`. Both BatchC API and evaluator tests apply their complete forbidden-terminology regex to every card, with no Haifa exception. Psychology stays authority_unavailable, other no-average results tracked_missing_rule; no composite input is requested and explicit-average paths are preserved.
+
+Observed red before production wording change: the A/F47-pair contract, both static/saved Haifa sweeps, the first/third-submit contract and both BatchC Haifa cases failed on the old sentence. Together with accounting: **8 failures** before fixes (including the initial catalogue terminology sweep); the four accounting/Haifa regression files then passed **188 tests**.
+
+### 3. PR318-owned terminology — fixed under Jorje’s scope correction
+
+The terminology contract covers only student copy added or changed by this PR. Reviewing added production lines in `git diff origin/main...HEAD -- src` found the three strings below; tests, captured official responses, comments, parser regexes and identifiers were excluded from the copy inventory. The current diff against origin/main contains no other newly introduced student-visible institutional-composite wording. The medicine line was already expressly granted; only its prefix changes, preserving the at/above/below relation, inclusive green styling, formatting and threshold92.
+
+| Location / affected IDs                                                           | Before                                          | After                                                 |
+| --------------------------------------------------------------------------------- | ----------------------------------------------- | ----------------------------------------------------- |
+| `TechnionMedicineComparison.tsx:8`, `technion_medicine` comparison                | הסכם שלך {score}, {relation} הזימון המשוער (92) | ציון הקבלה שלך {score}, {relation} הזימון המשוער (92) |
+| `formulaBackedVerificationLedger.ts:268`, Haifa `psychology` / `haifa_psychology` | מבוססת על סכם 650 לפחות                         | מבוססת על ציון קבלה 650 לפחות                         |
+| Haifa no-average result note                                                      | previous exact note recorded in item2 above     | עדיין לא מחשבים כאן את ציון הקבלה של חיפה             |
+
+The psychology sentence’s remaining text, cutoff650/waiting630–649, official source link and authority_unavailable state are unchanged. The scoped test exercises the real medicine render, the actual explicit-average psychology withholding path, and the no-average Haifa result; it rejects all three forbidden terms in every one of those strings. It replaces both superseded universal sweep tests. `publicCatalogueCopy.test.ts` is restored exactly to eada3c15; inherited catalogue content is not rewritten to satisfy an out-of-scope test. Both BatchC regex guards remain universal with no Haifa exception.
+
+**Red before the copy fix:** one scoped terminology test plus14 medicine comparison cases failed, **15 failed /59 passed** across4 files. The scoped test reported exactly the old medicine render and old psychology explanation. Medicine boundary92/92.1/91.9 and list/detail/comparison cases could not find the newly expected text. After changing only the medicine prefix and psychology phrase, the nine affected suites passed **396 tests**. Detailed test names/failure messages are in [the follow-up receipt](evidence/2026-10-29-accounting-wording-follow-up.json).
+
+**Existing assertion updates:** all changed medicine comparison rows/regexes in CalculatorResults.test.tsx, StudyJourney.account.test.tsx and TechnionMedicineComparison.test.tsx carry `// Approved test update, Jorje 2026-10-29`. Their prefix changes from the old medicine wording to the new one; score rounding, boundary relation, colour, counts, placement, contact/save and no-verdict assertions stay intact. The no-score negative-comparison check remains preservation coverage and already passed before the prefix fix; it is not claimed as a red proof. No e2e spec references the comparison prefix or psychology sentence, so no e2e assertion update was needed. No UniversityCard change.
+
+### Pre-existing main copy — separate follow-up, unchanged in PR318
+
+The earlier broad investigation reported47 catalogue strings and21 result fields. Jorje explicitly ruled these pre-existing main values out of this PR’s scope. Their full IDs, paths and text remain in `inheritedMainCopyFollowUp` in [the follow-up JSON](evidence/2026-10-29-accounting-wording-follow-up.json), rather than in active failing tests.
+
+| Inherited copy                                        | Affected cards / location                                                                                                                | Follow-up                                                                       |
+| ----------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Catalogue admission notes containing the legacy terms | All47 rows and their programme IDs are listed in the JSON                                                                                | Separate catalogue wording batch; preserve source thresholds and legacy parsers |
+| BIU calculator scale description                      | cs, ee, law, criminology, biu_cs, biu_law, biu_ee, biu_lifesciences, biu_biotech, biu_computational_bio, biu_socialwork, biu_criminology | Existing institution configuration                                              |
+| BGU engineering missing-input explanation             | ee, me, bgu_ee, bgu_me, bgu_industrial                                                                                                   | Existing evaluator3321, outside this copy change                                |
+| TAU physiotherapy source label / explanation          | physiotherapy, two fields                                                                                                                | Existing tauPhysiotherapyEvaluation wording                                     |
+| Technion medicine sourceLabel / scoreLabel            | technion_medicine, two result fields                                                                                                     | Existing evaluator245/250; comparison prefix itself is corrected above          |
+| UniversityCard’s legacy own-score label               | `src/components/UniversityCard.tsx:71`                                                                                                   | Explicitly excluded; unchanged                                                  |
+
+All accounting/Haifa edits from the previous continuation are preserved: evaluator diff versus eada3c15 changes only1527; medicine component diff changes only line8. Main fetch/merge remains already up to date. No added field collection, thresholds, formula changes, DB writes, live MyWay/preview calls, review pipeline, publication or remote PR edit. Inline simplification preserves the scoped proof and existing helpers. Final formatting/lint/typecheck/guard results are recorded below after execution.
+
+Final scoped U10 validation: **Prettier, lint and typecheck passed**. `env -u DATABASE_URL npm run guard:pre-pr` passed **3,195 tests /130 files**, without bypass. The final production diff against origin/main has no added institutional-composite terms; evaluator versus eada3c15 changes only1527, the medicine component only8, and UniversityCard/publicCatalogueCopy.test.ts are byte-identical to eada3c15. Source-accounting evidence SHA-256 is unchanged. The inline simplification pass required no further edits and retained all proof assertions. Local conventional commits only; the prepared PR body remains at `/workspace/codex-tasks/pr318-body.md` for Jorje’s push/application. No blocker remains within the corrected scope; inherited copy is the explicit separate follow-up above.
