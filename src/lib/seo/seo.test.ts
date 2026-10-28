@@ -832,10 +832,7 @@ describe('structured data', () => {
           expect(visibleText).toContain(number);
         }
       }
-      expect(faq.mainEntity).toHaveLength(source.checked ? 2 : 1);
-      if (source.checked) {
-        expect(visibleText).toContain(faq.mainEntity[1].acceptedAnswer.text);
-      }
+      expect(faq.mainEntity).toHaveLength(1);
       // Visible FAQ questions and answers match the schema exactly, in order.
       expect(
         Array.from(document.querySelectorAll('section[data-testid=program-faq] h3')).map(
