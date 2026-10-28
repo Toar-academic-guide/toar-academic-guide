@@ -1,7 +1,10 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import WayPageShell from '@/components/WayPageShell';
 import SekhemCalculator from '@/components/sekhem/SekhemCalculator';
 import { loadSekhemCalculatorOfferings } from '@/lib/sekhemCalculatorSupport';
+import { getPublicProgramPageData } from '@/lib/publicCataloguePages';
+import { canonicalProgramId, canonicalProgramPath } from '@/lib/seo/programAliases';
 
 export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
@@ -17,9 +20,16 @@ export default async function Page({
   searchParams: Promise<{ program?: string }>;
 }) {
   const [offerings, params] = await Promise.all([loadSekhemCalculatorOfferings(), searchParams]);
-  const initialProgramId = offerings.some((row) => row.programId === params.program)
-    ? params.program
+  const requestedId = params.program ? canonicalProgramId(params.program) : undefined;
+  const initialProgramId = offerings.some((row) => row.programId === requestedId)
+    ? requestedId
     : undefined;
+  const unavailable = !!requestedId && !initialProgramId;
+  const publicPage = unavailable ? await getPublicProgramPageData(requestedId) : null;
+  const publicProgram =
+    publicPage?.program.type === 'academic' && publicPage.program.isListed !== false
+      ? publicPage.program
+      : undefined;
   return (
     <WayPageShell contentClassName="pt-28">
       <main
@@ -35,7 +45,24 @@ export default async function Page({
             ציוני הבגרות והפסיכומטרי שלך. סכם לפי מוסד ותוכנית.
           </p>
         </header>
-        <SekhemCalculator offerings={offerings} initialProgramId={initialProgramId} />
+        {unavailable ? (
+          <section className="space-y-4">
+            <p>אי אפשר לחשב כאן את סיכויי הקבלה לתוכנית הזו.</p>
+            {publicProgram && (
+              <Link
+                className="block underline underline-offset-4"
+                href={canonicalProgramPath(publicProgram.id)}
+              >
+                לתנאי הקבלה של התוכנית
+              </Link>
+            )}
+            <Link className="block underline underline-offset-4" href="/sekhem-calculator">
+              לחישוב תוכנית אחרת
+            </Link>
+          </section>
+        ) : (
+          <SekhemCalculator offerings={offerings} initialProgramId={initialProgramId} />
+        )}
         <section className="mt-14 space-y-7 leading-7">
           <div>
             <h2 className="text-xl font-semibold">מה הסכם אומר?</h2>
