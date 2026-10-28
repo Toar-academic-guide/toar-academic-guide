@@ -34,11 +34,11 @@ function gateText(result: AdmissionsEvaluationResult): string[] {
     const textOnly = !hasNumber(result.score) && !hasNumber(result.threshold);
     // The returned route name preserves a deliberately number-free gate even
     // when its longer explanation mentions a suppressed score band.
-    labels.push(
-      textOnly && /\d/.test(result.explanation) && namesGate.test(result.sourceLabel)
-        ? result.sourceLabel
-        : result.explanation,
-    );
+    const numberlessGate = [result.sourceLabel, ...result.explanation.split(/[.;,]/)]
+      .map((text) => text.trim())
+      .find((text) => namesGate.test(text) && !/\d/.test(text));
+    const text = textOnly && /\d/.test(result.explanation) ? numberlessGate : result.explanation;
+    if (text) labels.push(text);
   }
   return labels.filter((label) => !label.includes('נדרשת בדיקה מול המוסד'));
 }
