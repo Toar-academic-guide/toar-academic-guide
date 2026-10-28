@@ -15,14 +15,8 @@ import {
 import { catalogueAdmissionRequirements } from '@/lib/catalogueDisplayText';
 import { ROUTES } from '@/lib/routes';
 import { buildProgramMetadata } from '@/lib/seo/metadata';
-import {
-  programLd,
-  programBreadcrumbLd,
-  programFaqEntries,
-  programFaqPageLd,
-} from '@/lib/seo/jsonLd';
+import { programLd, programBreadcrumbLd } from '@/lib/seo/jsonLd';
 import JsonLd from '@/components/seo/JsonLd';
-import ProgramFaq from '@/components/seo/ProgramFaq';
 
 export const dynamic = 'force-dynamic';
 
@@ -72,12 +66,10 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
   const { program, institutions, isGeneral, institutionProgramPaths } = data;
   const institutionRequirementSources = await getPublicProgramRequirementSources(data);
   const related = await getPublicRelatedPrograms(program.id);
-  const faqEntries = programFaqEntries(data, institutionRequirementSources);
-  const faq = programFaqPageLd(data, institutionRequirementSources);
 
   return (
     <WayPageShell>
-      <JsonLd data={[await programLd(data), programBreadcrumbLd(data), ...(faq ? [faq] : [])]} />
+      <JsonLd data={[await programLd(data), programBreadcrumbLd(data)]} />
       <main
         dir="rtl"
         // Lets crawl tests tell subject pages from institution programme pages.
@@ -260,7 +252,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
               </div>
             )}
           </section>{' '}
-          {faqEntries && <ProgramFaq entries={faqEntries} />} <RelatedPrograms {...related} />
+          <RelatedPrograms {...related} />
         </section>
       </main>
     </WayPageShell>

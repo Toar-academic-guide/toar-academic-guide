@@ -1,8 +1,4 @@
-import type {
-  PublicInstitutionPageData,
-  PublicProgramPageData,
-  getPublicProgramRequirementSources,
-} from '@/lib/publicCataloguePages';
+import type { PublicInstitutionPageData, PublicProgramPageData } from '@/lib/publicCataloguePages';
 import { getPublicInstitutionPageData } from '@/lib/publicCataloguePages';
 import { absoluteUrl, SITE_ALT_NAMES, SITE_NAME } from '@/lib/site';
 import type { InstitutionDirectoryItem } from '@/data/institutionDirectory';
@@ -147,85 +143,6 @@ export function programBreadcrumbLd({ program, institutions, isGeneral }: Public
       path: canonicalProgramPath(program.id),
     },
   ]);
-}
-
-const FAQ_PROGRAM_IDS = new Set([
-  'bgu_psychology',
-  'huji_law',
-  'biu_psychology',
-  'ariel_psychology',
-  'haifa_nursing',
-  'ono_nursing',
-  'tau_law',
-  'biu_law',
-  'ruppin_cs',
-  'tau_business',
-  'bgu_business',
-  'haifa_infosystems',
-  'ariel_economics',
-  'huji_business',
-  'bgu_accounting',
-  'tau_accounting',
-  'huji_accounting',
-  'haifa_accounting',
-  'biu_criminology',
-  'ariel_criminology',
-  'ariel_communication',
-  'haifa_communication',
-  'haifa_politicalscience',
-  'haifa_sociology',
-  'ariel_health_systems',
-  'biu_computational_bio',
-  'biu_biotech',
-  'biu_lifesciences',
-  'hit_cs',
-  'wingate_cs',
-  'ono_law',
-  'colmgmt_cs',
-  'haifa_psychology',
-]);
-
-export interface ProgramFaqEntry {
-  question: string;
-  answer: string;
-}
-
-export function programFaqEntries(
-  { program, institutions }: PublicProgramPageData,
-  requirementSources: Awaited<ReturnType<typeof getPublicProgramRequirementSources>>,
-): ProgramFaqEntry[] | null {
-  if (!FAQ_PROGRAM_IDS.has(program.id) || program.isListed === false) return null;
-
-  const entries = institutions.flatMap((institution) => {
-    const source = requirementSources[institution.id];
-    if (!source?.requirements.length) return [];
-
-    // Use the page's display copy, including all additional conditions and caveats.
-    // Do not infer routes or thresholds from calculator fields.
-    return [{ question: 'מהם תנאי הקבלה למסלול?', answer: source.requirements.join(' ') }];
-  });
-  return entries.length ? entries : null;
-}
-
-export function programFaqPageLd(
-  data: PublicProgramPageData,
-  requirementSources: Awaited<ReturnType<typeof getPublicProgramRequirementSources>>,
-) {
-  const entries = programFaqEntries(data, requirementSources);
-  if (!entries) return null;
-
-  const question = (name: string, text: string) => ({
-    '@type': 'Question',
-    name,
-    acceptedAnswer: { '@type': 'Answer', text },
-  });
-
-  return {
-    '@type': 'FAQPage',
-    '@id': absoluteUrl(`${canonicalProgramPath(data.program.id)}#faq`),
-    inLanguage: 'he',
-    mainEntity: entries.map((entry) => question(entry.question, entry.answer)),
-  };
 }
 
 export function webApplicationLd() {
