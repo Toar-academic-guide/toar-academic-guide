@@ -408,6 +408,55 @@ describe('API-only result rows', () => {
       ['tau', 'huji', 'reichman', 'haifa', 'bgu', 'technion'].map((id) => `institution-${id}`),
     );
   });
+  it('ranks the displayed BGU communication card as numberless despite three numbered alternatives', () => {
+    const source = (id: string, programId: string, score?: number, threshold?: number) => ({
+      ...report(id, {
+        kind: score === undefined && threshold === undefined ? 'unsupported' : 'exact',
+        score,
+        threshold,
+        decision: 'unknown',
+      }),
+      input: { degreeId: programId },
+      program: { id: programId, name: programId },
+    });
+    const reports = [
+      source('bgu', 'bgu_communication'),
+      source('bgu', 'bgu_accounting', 600),
+      source('bgu', 'bgu_business', 610),
+      source('bgu', 'bgu_psychology', 620),
+      source('haifa', 'haifa_cs'),
+      source('tau', 'tau_law', undefined, 647),
+      source('huji', 'huji_law', 0),
+      source('technion', 'technion_cs'),
+    ];
+    const offered = reports.map((item) => ({
+      programId: item.program.id,
+      programName: item.program.name,
+      institutionId: item.results[0].linkedInstitutionId,
+      institutionName: item.results[0].linkedInstitutionId,
+    }));
+    const view = render(
+      <SekhemResults reports={reports} offerings={offered} onEnquiry={vi.fn()} />,
+    );
+    const picker = within(screen.getByTestId('institution-bgu')).getByRole('combobox');
+    // Preserve the existing numbered default, then retain the student's communication selection.
+    expect(picker).toHaveProperty('value', 'bgu_accounting');
+    fireEvent.change(picker, { target: { value: 'bgu_communication' } });
+    expect(
+      screen.getByTestId('result-bgu_communication-bgu').querySelector('[data-result-number]'),
+    ).toBeNull();
+    expect(picker).toHaveProperty('value', 'bgu_communication');
+    const order = () =>
+      screen.getAllByTestId(/^institution-/).map((node) => node.getAttribute('data-testid'));
+    expect(order()).toEqual(
+      ['tau', 'huji', 'bgu', 'haifa', 'technion'].map((id) => `institution-${id}`),
+    );
+    view.rerender(<SekhemResults reports={[...reports]} offerings={offered} onEnquiry={vi.fn()} />);
+    expect(picker).toHaveProperty('value', 'bgu_communication');
+    expect(order()).toEqual(
+      ['tau', 'huji', 'bgu', 'haifa', 'technion'].map((id) => `institution-${id}`),
+    );
+  });
   it('keeps the primary lead CTA on a numberless card without a public programme page', () => {
     const { onEnquiry } = renderReports([
       report('huji', { score: undefined, threshold: undefined, kind: 'needs_input' }),
