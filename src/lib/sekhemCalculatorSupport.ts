@@ -1,6 +1,6 @@
 import 'server-only';
 import { cache } from 'react';
-import { canonicalProgramId } from './seo/programAliases';
+import { canonicalProgramId, canonicalProgramPath } from './seo/programAliases';
 import { HAIFA_INFORMATION_SYSTEMS_TRACK_ARTIFACTS } from '@/data/admissions/haifaInformationSystemsVerification';
 import { isBatchCUnsupportedProgramId } from '@/data/admissions/batchCUnsupportedProgramIds';
 import {
@@ -63,6 +63,7 @@ export function calculatorOfferings(
       const target = specific ?? program;
       pairs.set(`${institution.id}:${target.id}`, {
         programId: target.id,
+        programPath: canonicalProgramPath(target.id),
         sourceProgramIds: [
           ...new Set([
             ...(pairs.get(`${institution.id}:${target.id}`)?.sourceProgramIds ?? []),

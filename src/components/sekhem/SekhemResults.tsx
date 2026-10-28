@@ -85,6 +85,14 @@ function InstitutionGroup({ entries, onEnquiry }: { entries: Entry[]; onEnquiry:
           ) : (
             <p className="mt-1 text-(--text-body)">{offering.programName}</p>
           )}
+          {offering.programPath && (
+            <Link
+              className="mt-2 inline-block text-sm underline underline-offset-4"
+              href={offering.programPath}
+            >
+              לתנאי הקבלה של התוכנית
+            </Link>
+          )}
         </div>
         <div
           data-testid={`result-${offering.programId}-${offering.institutionId}`}
