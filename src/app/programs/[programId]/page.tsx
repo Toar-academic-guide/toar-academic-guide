@@ -15,8 +15,14 @@ import {
 import { catalogueAdmissionRequirements } from '@/lib/catalogueDisplayText';
 import { ROUTES } from '@/lib/routes';
 import { buildProgramMetadata } from '@/lib/seo/metadata';
-import { programLd, programBreadcrumbLd, programFaqPageLd } from '@/lib/seo/jsonLd';
+import {
+  programLd,
+  programBreadcrumbLd,
+  programFaqEntries,
+  programFaqPageLd,
+} from '@/lib/seo/jsonLd';
 import JsonLd from '@/components/seo/JsonLd';
+import ProgramFaq from '@/components/seo/ProgramFaq';
 
 export const dynamic = 'force-dynamic';
 
@@ -75,6 +81,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
   const { program, institutions, isGeneral, institutionProgramPaths } = data;
   const institutionRequirementSources = await getPublicProgramRequirementSources(data);
   const related = await getPublicRelatedPrograms(program.id);
+  const faqEntries = programFaqEntries(data, institutionRequirementSources);
   const faq = programFaqPageLd(data, institutionRequirementSources);
 
   return (
@@ -265,6 +272,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
               </div>
             )}
           </section>
+          {faqEntries && <ProgramFaq entries={faqEntries} />}
           <RelatedPrograms {...related} />
         </section>
       </main>

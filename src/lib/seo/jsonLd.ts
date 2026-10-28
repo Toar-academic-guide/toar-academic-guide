@@ -185,42 +185,46 @@ const FAQ_PROGRAM_IDS = new Set([
   'haifa_psychology',
 ]);
 
-export function programFaqPageLd(
+export interface ProgramFaqEntry {
+  question: string;
+  answer: string;
+}
+
+export function programFaqEntries(
   { program, institutions }: PublicProgramPageData,
   requirementSources: Awaited<ReturnType<typeof getPublicProgramRequirementSources>>,
-) {
+): ProgramFaqEntry[] | null {
   if (!FAQ_PROGRAM_IDS.has(program.id) || program.isListed === false) return null;
+
+  const entries = institutions.flatMap((institution) => {
+    const source = requirementSources[institution.id];
+    if (!source?.requirements.length) return [];
+
+    // Use the page's display copy, including all additional conditions and caveats.
+    // Do not infer routes or thresholds from calculator fields.
+    return [{ question: 'מהם תנאי הקבלה למסלול?', answer: source.requirements.join(' ') }];
+  });
+  return entries.length ? entries : null;
+}
+
+export function programFaqPageLd(
+  data: PublicProgramPageData,
+  requirementSources: Awaited<ReturnType<typeof getPublicProgramRequirementSources>>,
+) {
+  const entries = programFaqEntries(data, requirementSources);
+  if (!entries) return null;
 
   const question = (name: string, text: string) => ({
     '@type': 'Question',
     name,
     acceptedAnswer: { '@type': 'Answer', text },
   });
-  const mainEntity = institutions.flatMap((institution) => {
-    const source = requirementSources[institution.id];
-    if (!source?.requirements.length) return [];
-
-    // Use the page's display copy, including all additional conditions and caveats.
-    // Do not infer routes or thresholds from calculator fields.
-    return [
-      question('מהם תנאי הקבלה למסלול?', source.requirements.join(' ')),
-      ...(source.checked
-        ? [
-            question(
-              'מתי עודכנו תנאי הקבלה?',
-              `עודכן לאחרונה: ${source.checked.date}${source.checked.sourceUrl ? ` · מקור: אתר ${institution.name}` : ''}`,
-            ),
-          ]
-        : []),
-    ];
-  });
-  if (!mainEntity.length) return null;
 
   return {
     '@type': 'FAQPage',
-    '@id': absoluteUrl(`${canonicalProgramPath(program.id)}#faq`),
+    '@id': absoluteUrl(`${canonicalProgramPath(data.program.id)}#faq`),
     inLanguage: 'he',
-    mainEntity,
+    mainEntity: entries.map((entry) => question(entry.question, entry.answer)),
   };
 }
 
