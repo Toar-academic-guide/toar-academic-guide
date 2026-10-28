@@ -238,3 +238,198 @@ The authoritative baseline replay restored the pre-item-6 production files, ran 
 Existing assertions directly changed for item 6, each marked with `// Approved test update, Jorje 2026-10-28`: `catalogueContentRepair.test.ts`, “preserves every existing numeric rule, fact and alternative path across the content overlay”. Before: all facts byte-equal. After: all **non-maths** facts byte-equal for the explicitly reviewed maths pairs, every fact still byte-equal for other pairs; new tests separately assert the exact grouped source-backed maths routes. Score thresholds, minima, alternative paths and non-maths copy remain checked unchanged. Two further existing test groups directly expected the erroneous five-only copy: `server/catalogue/queries.test.ts` for `technion_ee`/`technion_me` now expects winter cutoff + official maths alternatives + OU exemption + unchanged physics instead of winter cutoff + five-only maths + physics. `lib/__tests__/StudyJourney.technionWinter.test.tsx` (detail/compare × EE/ME) now asserts those three subject notes rather than the old two, with the ordered subject slice changing `[1,3)` → `[1,4)`; the physics lookup moves index1 → index2 while its before-spring assertion stays intact. These are tests only, outside `src/components`; no component is edited. All winter/spring thresholds, order checks and contact/save assertions remain. No unrelated existing assertion is changed.
 
 Final item-6 validation: `npx prettier --write` on all changed files, `npm run lint`, and `npm run typecheck` passed. `env -u DATABASE_URL npm run guard:pre-pr` passed **124 files / 3,128 tests**, including the two new regression files and the existing Technion no-score detail/compare test. The full `env -u DATABASE_URL npm test` passed **288 files; 4,686 tests passed, one expected failure, 101 skipped** (4,788 total; 14 files skipped). Item 6 adds 40 expanded cases. The required CE simplification pass reused the identical ME/industrial source wording without changing behavior; no review pipeline or subagent ran. Source/product verification by Jorje remains required. No deployed browser, Vercel or Supabase verification is claimed; the successful-read DB serializer regression exercises the stale persisted-data case locally without touching a database.
+
+## UX follow-ups (PR317 walkthrough)
+
+Capture/investigation date: **2026-10-28**. Scope: PR #318 after `83b0ab1`. Read the complete [walkthrough report](/workspace/qa-evidence/ux-walkthrough-2026-10-28-pr317/report.md), the supplied Braude/BGU text captures and the medicine-92 screenshot. This follow-up was planned before implementation; no CE review pipeline or subagent ran.
+
+### UX-1 — source fixed; persisted DB publication stopped
+
+The public English is present in repository data, not just an unknown remote row. `src/data/degrees/index.ts` copied `mondayAdmissionsEvidence[].limitations` into `specificAdmissionNotes` and `decisionReason` into `programDescription`. The originating Braude evidence is item **12220708942**, in `mondayEvidenceOverrides.json` and `mondayEvidence.generated.ts`. Its English explains evaluator limitations; it is not an admissions condition.
+
+The generator now keeps those internal fields in the evidence record, omits them from public descriptions, and uses the existing honest Hebrew fallback, **“לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד.”** Source-backed programme repairs still override that fallback. Originally empty notes stay empty: adding a placeholder there could incorrectly imply a manual admissions gate. No evidence record, ID, threshold, fact, alternative path or programme listing is deleted or changed.
+
+Official Braude sources, read-only and spaced, captured **2026-10-28**:
+
+- [Admissions requirements](https://w3.braude.ac.il/intrested/): a department-specific 2027 table, with differing psychometric/components/maths and other subject conditions. `braude_engineering` is an umbrella record; assigning one department's cutoff to it would be false.
+- [Preparatory programmes](https://w3.braude.ac.il/department/mechina/?yeudit#section-id-2): distinguishes the dedicated engineering preparatory programme from the shorter pre-engineering route, with different certificate/English/maths conditions. The generic `braude_prep` ID does not identify one route, so it links to this page without inventing a combined rule. This is an identity/route limitation, not a claim that Braude publishes no conditions.
+
+The regression sweeps **all 403 normalized/repaired static programmes**, including unlisted/course rows. It checks programme requirements, institution-specific notes, admission-fact descriptions/value text and alternative-path titles/descriptions. It rejects multiword Latin prose after a narrow qualification/course-code/URL allowlist. Legitimate `UX/UI` and `SOC Analyst` course names are preserved; generic words from developer sentences are not allowlisted. The authoritative baseline found **162 internal notes on 113 programme IDs**. All originate in `record.limitations`; the table below lists every affected programme, not just the two visited in QA. The original evidence remains intact. Verified Hebrew requirements and all structured admission facts are preserved.
+
+| Programme ID                       | Internal notes replaced by Hebrew fallback |
+| ---------------------------------- | ------------------------------------------ |
+| `technion_engineering`             | 2                                          |
+| `bgu_engineering`                  | 7                                          |
+| `biu_engineering`                  | 4                                          |
+| `biu_prep`                         | 4                                          |
+| `ariel_engineering`                | 7                                          |
+| `telhai_general_academic`          | 3                                          |
+| `reichman_engineering`             | 2                                          |
+| `wingate_general_academic`         | 2                                          |
+| `afeka_engineering`                | 1                                          |
+| `shenkar_engineering`              | 1                                          |
+| `hit_engineering`                  | 1                                          |
+| `sce_general_academic`             | 3                                          |
+| `azrieli_engineering`              | 1                                          |
+| `braude_engineering`               | 2                                          |
+| `braude_prep`                      | 2                                          |
+| `ruppin_engineering`               | 5                                          |
+| `ruppin_prep`                      | 3                                          |
+| `sapir_law`                        | 2                                          |
+| `sapir_prep`                       | 2                                          |
+| `emek_yezreel_general_academic`    | 1                                          |
+| `bezalel_graphic_design`           | 1                                          |
+| `hadassah_general_academic`        | 1                                          |
+| `wizo_general_academic`            | 1                                          |
+| `beit_berl_graphic_design`         | 1                                          |
+| `colman_law`                       | 2                                          |
+| `colman_business`                  | 2                                          |
+| `ono_medicine`                     | 2                                          |
+| `bishulim_culinary`                | 2                                          |
+| `mon_12220697934_certificate`      | 1                                          |
+| `nativ_graphic_design`             | 1                                          |
+| `beit_zvi_certificate`             | 1                                          |
+| `mon_12220697942_certificate`      | 1                                          |
+| `mon_12220696299_certificate`      | 1                                          |
+| `david_yellin_education`           | 1                                          |
+| `mon_12341128292_medicine`         | 1                                          |
+| `shaare_mishpat_law`               | 1                                          |
+| `ramat_gan_law`                    | 1                                          |
+| `ramat_gan_business`               | 1                                          |
+| `schechter_certificate`            | 1                                          |
+| `mon_12341126300_education`        | 1                                          |
+| `herzog_general_academic`          | 1                                          |
+| `tech_management_engineering`      | 1                                          |
+| `mon_12341107541_engineering`      | 1                                          |
+| `netanya_law`                      | 2                                          |
+| `netanya_business`                 | 2                                          |
+| `seminar_certificate`              | 1                                          |
+| `tcb_engineering`                  | 2                                          |
+| `sce_engineering`                  | 1                                          |
+| `telhai_prep`                      | 1                                          |
+| `sce_prep`                         | 1                                          |
+| `mon_12341128848_engineering`      | 1                                          |
+| `kinneret_engineering`             | 1                                          |
+| `telhai_engineering`               | 1                                          |
+| `atid_engineering`                 | 1                                          |
+| `mon_12341126575_beauty`           | 1                                          |
+| `israel_academic_general_academic` | 1                                          |
+| `mon_12341118768_general_academic` | 1                                          |
+| `mon_12341091518_certificate`      | 1                                          |
+| `mon_12341092889_certificate`      | 1                                          |
+| `open_university_certificate`      | 2                                          |
+| `achva_general_academic`           | 1                                          |
+| `mon_12341102793_engineering`      | 1                                          |
+| `sapir_certificate`                | 1                                          |
+| `mon_12341107292_general_academic` | 1                                          |
+| `mon_12341098736_certificate`      | 1                                          |
+| `givat_washington_medicine`        | 1                                          |
+| `mon_12341142058_certificate`      | 1                                          |
+| `lfa_beauty`                       | 1                                          |
+| `zefat_general_academic`           | 2                                          |
+| `mon_12341114281_certificate`      | 1                                          |
+| `mon_12341113217_certificate`      | 1                                          |
+| `kaye_education`                   | 1                                          |
+| `mon_12341114949_certificate`      | 1                                          |
+| `mon_12341144078_certificate`      | 1                                          |
+| `mon_12341091770_certificate`      | 1                                          |
+| `beit_berl_general_academic`       | 1                                          |
+| `tiltan_medicine`                  | 1                                          |
+| `mon_12341133521_certificate`      | 1                                          |
+| `peres_law`                        | 3                                          |
+| `peres_business`                   | 3                                          |
+| `mon_12341122838_certificate`      | 1                                          |
+| `mon_12341122522_certificate`      | 1                                          |
+| `mon_12341133625_certificate`      | 1                                          |
+| `aliya_certificate`                | 2                                          |
+| `mon_12341138527_certificate`      | 1                                          |
+| `mon_12341134763_engineering`      | 1                                          |
+| `atid_certificate`                 | 1                                          |
+| `mon_12341165356_certificate`      | 1                                          |
+| `mon_12341134000_certificate`      | 1                                          |
+| `mon_12341108613_certificate`      | 1                                          |
+| `mon_12341189515_certificate`      | 1                                          |
+| `mon_12341166173_certificate`      | 1                                          |
+| `tiltan_graphic_design`            | 1                                          |
+| `tiltan_certificate`               | 1                                          |
+| `mon_12341165867_certificate`      | 1                                          |
+| `mon_12341148361_certificate`      | 1                                          |
+| `mon_12341165912_certificate`      | 1                                          |
+| `mon_12341134405_certificate`      | 1                                          |
+| `mon_12341189317_certificate`      | 1                                          |
+| `mon_12341162526_general_academic` | 1                                          |
+| `mon_12341166462_certificate`      | 1                                          |
+| `mon_12341167257_certificate`      | 1                                          |
+| `reidman_medicine`                 | 1                                          |
+| `johnbryce_certificate`            | 1                                          |
+| `mediteva_certificate`             | 1                                          |
+| `oranim_education`                 | 1                                          |
+| `mon_12341168659_graphic_design`   | 1                                          |
+| `mon_12341185806_certificate`      | 1                                          |
+| `mon_12341166735_certificate`      | 1                                          |
+| `givat_washington_certificate`     | 1                                          |
+| `mon_12341187468_certificate`      | 1                                          |
+| `mon_12341167283_certificate`      | 1                                          |
+| `mon_12341179463_education`        | 1                                          |
+
+**Database boundary:** static/source corrections are complete; no deployed DB fix is claimed. `src/server/catalogue/serializers.ts:100` reads stored institution names and `:106` copies `admission_requirements.specific_admission_notes`; `:244`–`:249` retain stored programme names/institution labels. These Braude rows are not in that serializer's content-repair allowlist. Per the brief, no DB write or workaround was added. Persisted copies require a separately reviewed `reviewedManifest` **`canonical_change`**. Exact logical targets and proposed text:
+
+| Target                                                                                 | Proposed canonical change                                                                                                                                                                                                                                                                 |
+| -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `programs.id=braude_engineering`                                                       | `name`: `הנדסה וטכנולוגיה - המכללה האקדמית להנדסה אורט בראודה`; `institution_name`: `המכללה האקדמית להנדסה אורט בראודה`.                                                                                                                                                                  |
+| `admission_requirements` pair `(program_id=braude_engineering, institution_id=braude)` | `specific_admission_notes`: `["לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד."]`; remove the copied internal `program_description` if it matches the diagnostic, retaining the evidence in its internal source. Expected seed key `braude_engineering:braude`. Official admissions URL above. |
+| `programs.id=braude_prep`                                                              | `name`: `מכינה קדם-אקדמית - המכללה האקדמית להנדסה אורט בראודה`; same canonical `institution_name`.                                                                                                                                                                                        |
+| `admission_requirements` pair `(program_id=braude_prep, institution_id=braude)`        | Same Hebrew fallback and diagnostic-description removal; expected seed key `braude_prep:braude`; programme/calculator source link to the preparatory URL above.                                                                                                                           |
+| Other affected IDs in the table, **if persisted with the same diagnostic**             | Review each exact programme/institution pair against the current row before a canonical change. Replace only copied diagnostic fields; preserve official Hebrew conditions, facts, URLs and evidence. No persisted-row content or physical ID is asserted from an unperformed DB query.   |
+
+The pair selectors and expected seed keys come from `src/db/seeds/catalogueSeed.ts:244`; no seed was executed. Current physical requirement rows and their before-values must be confirmed by an authorized read-only check before a manifest is approved. This limitation is explicit rather than claiming a static change rewrites production.
+
+### UX-2 — fixed within the admissions policy grant
+
+For **both `psychology` and `bgu_psychology`, Bagrut98/psychometric600**, the mocked official BGU replay returns620 versus680. The entered Bagrut average is a proxy, not the derived BGU average; neither a failed proxy score nor an unknown preparatory history proves failure of every route. Asking for `bagrut_subject_record` is correct.
+
+`proxyEvaluationGuard.ts` already converts that result to `needs_input`, but previously spread the result without clearing620 and the computed gap. The narrow BGU-psychology branch now clears `score` and `deltaNeeded` when that conversion happens. The published680 threshold remains contextual data; no computed score is shown without the required inputs. The snapshot is created after the guard. Direct psychometric/recognised-prep routes and other institutions are unchanged. No edit to `evaluator.ts`, `requirementTiles.ts` or any UI is needed.
+
+Evidence: the walkthrough's `desktop-pr317-regression-mid-psychology-bgu-detail-textContent.txt` shows exactly620/680 beside the missing-subject request. Official-rule provenance is the existing [BGU main-campus conditions source](https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=101&p_pat1=2&p_degree_level=1), captured in `2026-09-27-bgu-psychology-official.json` and re-read locally2026-10-28. This follow-up does not make a new live BGU request or claim a new calculator capture.
+
+### UX-3 — fixed, one component expression only
+
+The sole production component edit is the comparison wording in `TechnionMedicineComparison.tsx:8`. Exactly92 reads **“הסכם שלך 92, בסף הזימון המשוער (92)”**;92.1 remains above and91.9 below. The existing `>=` styling expression is untouched: equality remains green. The estimated invitation threshold itself and admission semantics are unchanged.
+
+### UX-4 — static data fixed; historical DB heading stopped
+
+Braude-generated programme titles, programme institution names, detail institution names and source titles now use the existing curated `INSTITUTION_BY_ID.braude.name`, **“המכללה האקדמית להנדסה אורט בראודה”**, instead of the shortened Monday display name. All IDs are retained. Current Braude static records are `braude_engineering` and `braude_prep`.
+
+The official pages read above themselves use the shorter branding. This is the requested consistency change to MyWay's existing curated Ort name, not evidence of a new legal-name verification.
+
+The QA heading `mon_12220708942_cs` is absent from the current static catalogue. Its saved DB-backed fixture, `src/lib/__fixtures__/braudeCsCatalogue.json`, retains `מדעי המחשב - המכללה האקדמית להנדסה בראודה`. No new static ID is created to impersonate that historical row. A reviewed canonical change must target **`programs.id=mon_12220708942_cs`**, setting `name` to **`מדעי המחשב - המכללה האקדמית להנדסה אורט בראודה`** and `institution_name` to the curated full name. The fixture also identifies legacy **`institutions.id=mon_12220708942`** with the shortened name; review its name for the same canonical correction while preserving the ID. Its existing Hebrew CS conditions must stay intact. This is a persisted-data limit, not a component-built title; the serializer locations above carry these values through. No component heading code or serializer was changed.
+
+### Test-first record and validation
+
+| Test                                                                                             | Observed failing-before output                                                                         |
+| ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| `contains no English developer prose in any normalized public admission text`                    | `expected [ Array(162) ] to deeply equal []`; all diagnostic-bearing programme IDs listed above.       |
+| `braude_engineering uses Hebrew requirements and keeps evidence internal`                        | Expected Hebrew `/[א-ת]/`; received the two English evaluator paragraphs.                              |
+| `braude_prep uses Hebrew requirements and keeps evidence internal`                               | Same English-paragraph failure.                                                                        |
+| `uses the canonical Ort Braude name in every static Braude programme title and institution name` | Expected no shortened names; received six fields across the two programme records without `אורט`.      |
+| `psychology persona 98/600 requests subjects without presenting a computed score`                | `expected 620 to be undefined`; the needs-input assertion already passed.                              |
+| `bgu_psychology persona 98/600 requests subjects without presenting a computed score`            | Same `expected 620 to be undefined`.                                                                   |
+| `describes the medicine invitation boundary at 92`                                               | Could not find `הסכם שלך 92, בסף הזימון המשוער (92)`; rendered `מעל סף` with the existing green class. |
+
+The92.1/91.9 boundary/color cases already passed unchanged code and are preservation checks, not invented red failures. Test-only setup errors were corrected before the authoritative red runs: unavailable `toHaveClass` matcher, accidentally expecting the historical DB-only CS ID in static data, and missing operational-freshness fixtures in the BGU evaluator test. Authoritative logs are local under `/tmp/myway-pr318-ux/`; the behavior messages above are the durable record. The nine added expanded test cases all pass.
+
+Existing assertion updates, each carrying `// Approved test update, Jorje 2026-10-28`:
+
+| File/assertion                                               | Before → after                                                                                                                          |
+| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `CalculatorResults.test.tsx`, medicine92 table row           | `הסכם שלך 92, מעל סף הזימון המשוער (92)` → `הסכם שלך 92, בסף הזימון המשוער (92)`; green class and no-admission-verdict checks retained. |
+| `StudyJourney.account.test.tsx`, medicine92 detail table row | Same wording change; all styling, contact/save and comparison-count checks retained.                                                    |
+| Same file, medicine92 list-chip table row                    | Same wording change; `status-match`, green styling and comparison placement/count retained.                                             |
+
+The full capability-matrix preservation test caught and prevented adding fallback text to an originally empty note list, which otherwise implied a manual gate. Its expected rows remain unchanged. Comparing before/after static data also confirms **403 unchanged IDs and byte-equal numeric/fact/path metadata**.
+
+Final checks: `npx prettier --write` on every changed file; lint and typecheck passed. Required `env -u DATABASE_URL npm run guard:pre-pr`: **127 files / 3,137 tests passed**. Full `env -u DATABASE_URL npm test`: **291 files passed, 14 skipped; 4,695 tests passed, one expected failure, 101 skipped** (4,797 total). The three new regression files are added to the guard's existing targeted list. No assertion was skipped or loosened.
+
+Local Chromium verification used this worktree's dev server on port3001 with `DATABASE_URL`/`OPS_DATABASE_URL` unset and explicit static mode. **Ten checks passed**: medicine at91.9/92/92.1 ×390px/1280px, plus each Braude page at both widths. They checked the correct comparison wording, unchanged green/gray classes, right alignment, canonical Braude headings, Hebrew fallback, absent developer prose and no horizontal overflow. The real local catalogue was read; the medicine evaluation response was mocked to isolate the granted boundary wording. All external requests and non-GET requests except the fulfilled evaluator mock were blocked. Results/screenshots are local under `/tmp/myway-pr318-ux/`; this is local regression evidence, not deployed/approval screenshots or production verification. The dev server was stopped afterward. No DB connection or write, production MyWay request, migration, workflow run, message/comment, merge or main push occurred. Jorje retains source/product approval and the stopped DB canonical-change work.
+
+Files: `src/data/degrees/index.ts` (UX-1/UX-4); `src/server/admissions/proxyEvaluationGuard.ts` and `src/app/api/admissions/evaluate/uxFollowups.test.ts` (UX-2); the one granted component expression, two directly flipped component-test files and `src/lib/__tests__/TechnionMedicineComparison.test.tsx` (UX-3); `src/data/admissions/publicCatalogueCopy.test.ts`, the existing guard list and this verification document (shared). No source evidence, DB, route handler, workflow or unrelated component changed.

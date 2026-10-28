@@ -60,7 +60,8 @@ const programs = getStaticCataloguePrograms();
 it.each([
   [95, 'הסכם שלך 95, מעל סף הזימון המשוער (92)', 'text-green-700'],
   [84.5, 'הסכם שלך 84.5, מתחת לסף הזימון המשוער (92)', 'text-slate-500'],
-  [92, 'הסכם שלך 92, מעל סף הזימון המשוער (92)', 'text-green-700'],
+  // Approved test update, Jorje 2026-10-28
+  [92, 'הסכם שלך 92, בסף הזימון המשוער (92)', 'text-green-700'],
 ] as const)(
   'renders one medicine comparison for sekem %s without an admission verdict',
   async (score, comparison, color) => {

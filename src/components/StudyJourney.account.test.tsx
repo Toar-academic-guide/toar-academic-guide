@@ -128,7 +128,8 @@ describe('account grades in the homepage journey', () => {
   it.each([
     [95, 'הסכם שלך 95, מעל סף הזימון המשוער (92)', 'text-green-700'],
     [84.5, 'הסכם שלך 84.5, מתחת לסף הזימון המשוער (92)', 'text-slate-500'],
-    [92, 'הסכם שלך 92, מעל סף הזימון המשוער (92)', 'text-green-700'],
+    // Approved test update, Jorje 2026-10-28
+    [92, 'הסכם שלך 92, בסף הזימון המשוער (92)', 'text-green-700'],
     [95.125, 'הסכם שלך 95.13, מעל סף הזימון המשוער (92)', 'text-green-700'],
   ] as const)('shows one medicine comparison for sekem %s', async (score, comparison, color) => {
     const program = getStaticCataloguePrograms().find((p) => p.id === 'technion_medicine')!;
@@ -198,7 +199,8 @@ describe('account grades in the homepage journey', () => {
   // Samuel QA A1 2026-10-25
   it.each([
     [98.9, 'הסכם שלך 98.9, מעל סף הזימון המשוער (92)', 'text-green-700', 'status-match'],
-    [92, 'הסכם שלך 92, מעל סף הזימון המשוער (92)', 'text-green-700', 'status-match'],
+    // Approved test update, Jorje 2026-10-28
+    [92, 'הסכם שלך 92, בסף הזימון המשוער (92)', 'text-green-700', 'status-match'],
     [73.9, 'הסכם שלך 73.9, מתחת לסף הזימון המשוער (92)', 'text-slate-500', 'status-match'],
   ] as const)(
     'shows one comparison directly under the medicine list chip for sekem %s',
