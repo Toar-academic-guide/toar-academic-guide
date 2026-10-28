@@ -15,6 +15,74 @@ import type {
 } from '@/db/types';
 
 describe('catalogue serializers', () => {
+  it.each([
+    'tau_me',
+    'tau_ee',
+    'tau_industrial',
+    'tau_datascience',
+    'tau_cs',
+    'technion_cs',
+    'technion_datascience',
+    'technion_ee',
+    'technion_me',
+    'technion_civil',
+    'technion_industrial',
+    'technion_biomedical',
+  ])('item 6 repairs persisted %s mathematics after a database read', (id) => {
+    const seed = buildCatalogueSeed();
+    const requirement = seed.admissionRequirements.find((row) => row.programId === id)!;
+    const staleNotes = ['5 יח"ל מתמטיקה — חובה', 'דרישה אחרת שנשמרת'];
+    const result = serializeProgramRow({
+      program: seed.programs.find((row) => row.id === id)! as ProgramRow,
+      relations: seed.programInstitutions.filter(
+        (row) => row.programId === id,
+      ) as ProgramInstitutionRow[],
+      requirements: [
+        { ...requirement, admissionRequirements: staleNotes, specificAdmissionNotes: staleNotes },
+      ] as AdmissionRequirementRow[],
+      thresholds: seed.admissionThresholds.filter(
+        (row) => row.programId === id,
+      ) as AdmissionThresholdRow[],
+      sourceUrls: [],
+      admissionFacts: [
+        {
+          id: `${id}:stale-math`,
+          admissionRequirementId: requirement.id,
+          kind: 'numeric_gate',
+          field: 'math_units',
+          comparison: 'gte',
+          valueNumber: 5,
+          description: staleNotes[0],
+          confidence: 'high',
+          isRequired: true,
+        },
+      ] as AdmissionFactRow[],
+      institutionsById: new Map(seed.institutions.map((row) => [row.id, row as InstitutionRow])),
+    });
+    const detail = result.institutionDetails![0];
+    expect(detail.specificAdmissionNotes.join(' ')).toContain('4 יחידות');
+    expect(detail.specificAdmissionNotes).not.toContain(staleNotes[0]);
+    expect(detail.specificAdmissionNotes).toContain(staleNotes[1]);
+    expect(detail.admissionFacts).toContainEqual(
+      expect.objectContaining({
+        field: 'math_units',
+        valueNumber: 4,
+        groupKey: expect.stringMatching(/^math_route\//),
+      }),
+    );
+    expect(detail.admissionFacts!.every((fact) => fact.groupKey?.startsWith('math_route/'))).toBe(
+      true,
+    );
+    expect(result.id).toBe(id);
+    expect(result.thresholds).toEqual(
+      Object.fromEntries(
+        seed.admissionThresholds
+          .filter((row) => row.programId === id && row.thresholdKind === 'sekhem')
+          .map((row) => [row.universityId, row.thresholdValue]),
+      ),
+    );
+  });
+
   it.each(['ruppin_marine_bio', 'afeka_biomedical'])(
     'sweep38 repairs persisted %s requirements',
     (id) => {

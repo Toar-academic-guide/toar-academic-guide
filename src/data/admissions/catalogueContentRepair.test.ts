@@ -1,5 +1,5 @@
 import { allPrograms, programsWithLegacyAdmissionFacts } from '@/data/degrees';
-import type { Program } from '@/data/degrees/types';
+import type { AdmissionFact, Program } from '@/data/degrees/types';
 import type { InstitutionId } from '@/data/institutions';
 import { buildCatalogueSeed } from '@/db/seeds/catalogueSeed';
 import { getRequirementsChecked } from '@/lib/requirementsChecked';
@@ -331,7 +331,22 @@ describe('verified catalogue content repair', () => {
         const updated = after.institutionDetails!.find(
           (item) => item.institutionName === detail.institutionName,
         )!;
-        expect(updated.admissionFacts).toEqual(detail.admissionFacts);
+        const reviewedMath = updated.admissionsSourceCandidates?.some((source) =>
+          source.id.endsWith(':math-source'),
+        );
+        const withoutMath = (facts: AdmissionFact[] = []) =>
+          facts.filter(
+            (fact) =>
+              fact.field !== 'math_units' &&
+              fact.field !== 'math_grade' &&
+              !fact.groupKey?.startsWith('math_route/') &&
+              !(fact.field === 'exam' && /מתמטיק/.test(fact.description)),
+          );
+        // Approved test update, Jorje 2026-10-28
+        // Item 6 replaces only source-verified maths gates; preserve every other fact.
+        expect(reviewedMath ? withoutMath(updated.admissionFacts) : updated.admissionFacts).toEqual(
+          reviewedMath ? withoutMath(detail.admissionFacts) : detail.admissionFacts,
+        );
         expect(updated.admissionAlternativePaths).toEqual(detail.admissionAlternativePaths);
         expect(updated.quantitativeMinRequirement).toBe(detail.quantitativeMinRequirement);
         expect(updated.englishMinRequirement).toBe(detail.englishMinRequirement);

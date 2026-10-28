@@ -1,3 +1,4 @@
+import { applyEngineeringMathRequirements } from './engineeringMathRequirements';
 import { canonicalInstitutionId } from '../institutionAliases';
 import repair from './catalogueContentRepair.json';
 import { INSTITUTION_BY_ID, INSTITUTION_BY_NAME, type InstitutionId } from '../institutions';
@@ -27,8 +28,9 @@ export const RETIRED_PROGRAM_IDS = [
 const requirements = repair.requirements as ContentRepair[];
 const excludedIds = new Set(repair.excludedPrograms.map((row) => row.programId));
 
-/** Apply verified content after legacy normalization, never deriving admission facts. */
+/** Apply verified content after legacy normalization; maths facts use explicit source rules. */
 export function applyCatalogueContentRepair<T extends Program>(program: T): T {
+  program = applyEngineeringMathRequirements(program);
   if (program.id === 'jerusalem_academy_graphic_design') {
     program = { ...program, id: 'jerusalem_academy_dance' };
   }

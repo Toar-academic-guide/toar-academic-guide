@@ -63,6 +63,15 @@ The Technion adapter blocks ordinary Hebrew-expression certificates. Institution
 **Test expectation:** No behavior tests for report-only work.
 **Verification:** At most six spaced calls; failure evidence and any approved assertion changes listed; guard count recorded; PR URL delivered.
 
+### U6. Engineering mathematics alternatives
+
+**Goal:** Correct item-6 five-unit-only claims using official institution sources, preserving #310's existing requirement rendering and grouped admission-fact model.
+**Requirements:** Verify TAU mechanical and Technion electrical; sweep all catalogue engineering programmes, aliases and generic engineering placeholders; preserve the original UI/evaluator ownership fences.
+**Files:** src/data/admissions engineering rule/repair data and tests, src/data/degrees only if needed, tests under src/app/api/admissions/evaluate/, the existing verification document and evidence receipt, and the existing guard's test list if needed, evaluationInputs.ts for ordinary subject-derived maths fields, and catalogue/serializers.ts for the existing database-read repair path.
+**Approach:** Capture official programme/general mathematics pages with spaced read-only requests. Test static rows and repaired persisted rows before changes. Replace stale math facts with source-backed alternatives. Keep classification exams and academic-course alternatives explicit; do not invent exam inputs or a passed exam. Exercise any resulting evaluator change through the real evaluator with mocked official replay. Extend the existing repair path instead of adding UI or editing evaluator.ts outside item 3.
+**Test scenarios:** TAU mechanical 5/75 and 4/85 alternatives with classification/courses; EE-specific 5/80 and 4/90; industrial/digital published alternatives; Technion 5/70 direct versus classification 70 for four/five units; stale database notes/facts repaired; generic aliases agree; missing classification evidence never becomes a fabricated pass.
+**Verification:** New regressions fail before fixes; per-programme source/verdict table is recorded. Formatting, lint/typecheck and the database-free guard pass; push further commits on the same branch and update PR #318 with a separate Item 6 section. No review pipeline.
+
 ## Scope Boundaries
 
 No institution-wide unlocks from stale fixtures. No general alias refactor, UI changes, production access, deployment, or review pipeline. Live production and browser verification are deliberately excluded by this brief; local real-evaluator tests and direct official read-only calls are the available evidence. Jorje retains source/product acceptance and deployed verification.
