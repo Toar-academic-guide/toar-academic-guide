@@ -764,7 +764,20 @@ test('Technion medicine with an exact score and no cutoff has no verdict or succ
 for (const width of [1280, 390]) {
   test(`filtered biu_cs remains actionable at ${width}px`, async ({ page, baseURL }) => {
     await page.setViewportSize({ width, height: 900 });
-    const mocks = await installMocks(page, baseURL, false, row => row.linkedInstitutionId === 'biu' ? { ...row, kind: 'estimated', capability: 'estimated', decision: 'unknown', score: undefined, threshold: undefined, explanation: 'עמידה בתנאי הסף אינה אישור קבלה. יש לבדוק את השקלול במחשבון הרשמי של בר-אילן.' } : row);
+    const mocks = await installMocks(page, baseURL, false, (row) =>
+      row.linkedInstitutionId === 'biu'
+        ? {
+            ...row,
+            kind: 'estimated',
+            capability: 'estimated',
+            decision: 'unknown',
+            score: undefined,
+            threshold: undefined,
+            explanation:
+              'עמידה בתנאי הסף אינה אישור קבלה. יש לבדוק את השקלול במחשבון הרשמי של בר-אילן.',
+          }
+        : row,
+    );
     await page.goto('/sekhem-calculator?program=biu_cs');
     await page.getByRole('button', { name: 'ערכים לדוגמה', exact: true }).click();
     await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
@@ -773,7 +786,10 @@ for (const width of [1280, 390]) {
     await expect(card).toContainText('מדעי המחשב');
     await expect(card.locator('[data-testid^="result-"]')).toHaveCount(0);
     await expect(card).not.toContainText(/\d|עומדים|מתחת|עדיין לא/);
-    await expect(card.getByRole('link', { name: 'לתנאי הקבלה של התוכנית' })).toHaveAttribute('href', '/programs/biu_cs');
+    await expect(card.getByRole('link', { name: 'לתנאי הקבלה של התוכנית' })).toHaveAttribute(
+      'href',
+      '/programs/biu_cs',
+    );
     await card.getByRole('button', { name: 'קבלת מידע על התוכנית' }).click();
     const dialog = page.getByRole('dialog');
     await dialog.getByLabel(ENQUIRY_COPY.nameLabel, { exact: true }).fill('QA Test');
@@ -781,7 +797,11 @@ for (const width of [1280, 390]) {
     await dialog.getByRole('button', { name: ENQUIRY_COPY.button, exact: true }).click();
     await expect(dialog.getByRole('status')).toContainText(ENQUIRY_COPY.successTitle);
     expect(mocks.submissions).toHaveLength(1);
-    expect(mocks.submissions[0]).toMatchObject({ programId: 'biu_cs', institutionId: 'biu', evaluationInput: { degreeId: 'biu_cs', psychometric: 700 } });
+    expect(mocks.submissions[0]).toMatchObject({
+      programId: 'biu_cs',
+      institutionId: 'biu',
+      evaluationInput: { degreeId: 'biu_cs', psychometric: 700 },
+    });
   });
 
   test(`programme Back restores calculator state at ${width}px`, async ({ page, baseURL }) => {
@@ -792,7 +812,10 @@ for (const width of [1280, 390]) {
     await page.getByText('בחירת תחום לימודים', { exact: true }).click();
     await page.getByLabel('תוכנית לימודים').selectOption('bgu_psychology');
     await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
-    await page.getByTestId('institution-bgu').getByRole('link', { name: 'לתנאי הקבלה של התוכנית' }).click();
+    await page
+      .getByTestId('institution-bgu')
+      .getByRole('link', { name: 'לתנאי הקבלה של התוכנית' })
+      .click();
     await expect(page).toHaveURL(/\/programs\/bgu_psychology$/);
     await page.goBack();
     await expect(page.getByLabel('ציון 1', { exact: true })).toHaveValue('92');
@@ -809,7 +832,10 @@ for (const width of [1280, 390]) {
     const mocks = await installMocks(page, baseURL);
     await page.goto('/sekhem-calculator');
     await page.getByRole('button', { name: 'ערכים לדוגמה', exact: true }).click();
-    for (const [label, value, message] of [['ציון 1', '101', 'ציון בין 0 ל-100'], ['יחידות 1', '0', 'יחידות בין 1 ל-5']]) {
+    for (const [label, value, message] of [
+      ['ציון 1', '101', 'ציון בין 0 ל-100'],
+      ['יחידות 1', '0', 'יחידות בין 1 ל-5'],
+    ]) {
       const input = page.getByLabel(label, { exact: true });
       await input.fill(value);
       await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
@@ -820,8 +846,13 @@ for (const width of [1280, 390]) {
       await expect(page.locator(`[id="${id}"]`)).toHaveText(message);
       await expect(page.locator(`[id="${id}"]`)).toBeVisible();
       await assertAlignedFields(page.locator('main'));
-      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-      await test.info().attach(`range-error-${label}-${width}`, { body: await page.screenshot(), contentType: 'image/png' });
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+        true,
+      );
+      await test.info().attach(`range-error-${label}-${width}`, {
+        body: await page.screenshot(),
+        contentType: 'image/png',
+      });
       await input.fill(label.startsWith('ציון') ? '100' : '5');
     }
     expect(mocks.batches).toHaveLength(0);
@@ -842,3 +873,40 @@ test('calculator reload restores state without another evaluation', async ({ pag
   expect(mocks.batches).toHaveLength(1);
   expect(mocks.submissions).toHaveLength(0);
 });
+
+for (const width of [1280, 390]) {
+  test(`shared subject rows retain their default behavior at ${width}px`, async ({
+    page,
+    baseURL,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    const mocks = await installMocks(page, baseURL);
+    await page.goto('/app/calculator?program=tau_cs');
+    const next = page.getByRole('button', { name: 'המשך', exact: true });
+    await next.click();
+    await next.click();
+    await page.getByRole('button', { name: /יש לי ציונים לפי מקצוע/ }).click();
+    await page.getByRole('combobox', { name: 'סוג תעודה', exact: true }).selectOption('internal');
+    const units = page.getByLabel('יחידות 1', { exact: true });
+    const grade = page.getByLabel('ציון 1', { exact: true });
+    await expect(units).toHaveValue('');
+    await expect(grade).toHaveValue('');
+    await assertAlignedFields(page.locator('.journey-grade-table'));
+    await units.fill('5');
+    await grade.fill('90');
+    await expect(units).toHaveValue('5');
+    await expect(grade).toHaveValue('90');
+    await expect(units).not.toHaveAttribute('aria-invalid');
+    await expect(grade).not.toHaveAttribute('aria-describedby');
+    await assertAlignedFields(page.locator('.journey-grade-table'));
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+      true,
+    );
+    expect(mocks.batches).toHaveLength(0);
+    expect(mocks.submissions).toHaveLength(0);
+    await test.info().attach(`shared-subjects-${width}`, {
+      body: await page.screenshot({ fullPage: true }),
+      contentType: 'image/png',
+    });
+  });
+}

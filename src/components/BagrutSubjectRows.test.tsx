@@ -44,9 +44,18 @@ describe('BagrutSubjectRows', () => {
 
 it('associates supplied field errors with their numeric inputs', () => {
   const props = { fieldErrors: [{ units: 'יחידות בין 1 ל-5', grade: 'ציון בין 0 ל-100' }] };
-  const { rerender } = render(<BagrutSubjectRows rows={[{ label: 'מתמטיקה', units: 6, grade: 101, assessmentKind: 'exam' }]} onChange={() => {}} {...props} />);
+  const { rerender } = render(
+    <BagrutSubjectRows
+      rows={[{ label: 'מתמטיקה', units: 6, grade: 101, assessmentKind: 'exam' }]}
+      onChange={() => {}}
+      {...props}
+    />,
+  );
   const ids: string[] = [];
-  for (const [label, message] of [['יחידות 1', props.fieldErrors[0].units], ['ציון 1', props.fieldErrors[0].grade]]) {
+  for (const [label, message] of [
+    ['יחידות 1', props.fieldErrors[0].units],
+    ['ציון 1', props.fieldErrors[0].grade],
+  ]) {
     const input = screen.getByLabelText(label);
     expect(input.getAttribute('aria-invalid')).toBe('true');
     const id = input.getAttribute('aria-describedby')!;
@@ -54,7 +63,12 @@ it('associates supplied field errors with their numeric inputs', () => {
     expect(document.getElementById(id)?.textContent).toBe(message);
   }
   expect(new Set(ids).size).toBe(2);
-  rerender(<BagrutSubjectRows rows={[{ label: 'מתמטיקה', units: 5, grade: 100, assessmentKind: 'exam' }]} onChange={() => {}} />);
+  rerender(
+    <BagrutSubjectRows
+      rows={[{ label: 'מתמטיקה', units: 5, grade: 100, assessmentKind: 'exam' }]}
+      onChange={() => {}}
+    />,
+  );
   expect(screen.getByLabelText('ציון 1').hasAttribute('aria-invalid')).toBe(false);
   expect(screen.getByLabelText('יחידות 1').hasAttribute('aria-describedby')).toBe(false);
 });

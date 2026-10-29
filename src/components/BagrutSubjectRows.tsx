@@ -7,6 +7,8 @@ import type { BagrutWizardSubjectInput } from '@/utils/bagrutSubjectRecord';
 
 export type BagrutSubjectRow = BagrutWizardSubjectInput;
 
+export type BagrutFieldErrors = Partial<Record<'units' | 'grade', string>>[];
+
 export const bagrutSubjectLabels = [
   ...new Set([
     ...ALL_SUBJECTS,
@@ -19,11 +21,13 @@ export default function BagrutSubjectRows({
   onChange,
   isBlankRow = (row) => row.label.trim() === '' && row.grade === '',
   disabled = false,
+  fieldErrors,
 }: {
   rows: BagrutSubjectRow[];
   onChange: (rows: BagrutSubjectRow[]) => void;
   isBlankRow?: (row: BagrutSubjectRow) => boolean;
   disabled?: boolean;
+  fieldErrors?: BagrutFieldErrors;
 }) {
   const subjectListId = useId();
   const change = (index: number, updates: Partial<BagrutSubjectRow>) =>
@@ -61,6 +65,12 @@ export default function BagrutSubjectRows({
               </td>
               <td>
                 <input
+                  aria-invalid={fieldErrors?.[index]?.units ? true : undefined}
+                  aria-describedby={
+                    fieldErrors?.[index]?.units
+                      ? `${subjectListId}-${index}-units-error`
+                      : undefined
+                  }
                   aria-label={`יחידות ${index + 1}`}
                   type="number"
                   min={1}
@@ -75,9 +85,23 @@ export default function BagrutSubjectRows({
                     })
                   }
                 />
+                {fieldErrors?.[index]?.units && (
+                  <p
+                    id={`${subjectListId}-${index}-units-error`}
+                    className="mt-1 text-right text-xs text-[#8c2438]"
+                  >
+                    {fieldErrors[index].units}
+                  </p>
+                )}
               </td>
               <td>
                 <input
+                  aria-invalid={fieldErrors?.[index]?.grade ? true : undefined}
+                  aria-describedby={
+                    fieldErrors?.[index]?.grade
+                      ? `${subjectListId}-${index}-grade-error`
+                      : undefined
+                  }
                   aria-label={`ציון ${index + 1}`}
                   type="number"
                   min={0}
@@ -92,6 +116,14 @@ export default function BagrutSubjectRows({
                     })
                   }
                 />
+                {fieldErrors?.[index]?.grade && (
+                  <p
+                    id={`${subjectListId}-${index}-grade-error`}
+                    className="mt-1 text-right text-xs text-[#8c2438]"
+                  >
+                    {fieldErrors[index].grade}
+                  </p>
+                )}
               </td>
               <td>
                 <button

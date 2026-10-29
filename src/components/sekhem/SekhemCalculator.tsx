@@ -1,10 +1,14 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import BagrutSubjectRows, { type BagrutSubjectRow } from '@/components/BagrutSubjectRows';
+import BagrutSubjectRows, {
+  type BagrutSubjectRow,
+  type BagrutFieldErrors,
+} from '@/components/BagrutSubjectRows';
 import EnquiryForm from '@/components/EnquiryForm';
 import { subjectIdForWizardLabel } from '@/utils/bagrutSubjectRecord';
-import type { ResultInputTarget } from '@/lib/sekhemResultPresentation';
+import { institutionShortName, type ResultInputTarget } from '@/lib/sekhemResultPresentation';
+import { readSekhemSession, writeSekhemSession } from '@/lib/sekhemCalculatorSession';
 import { SECTORS } from '@/data/bagrutSubjects';
 import { fetchAdmissionsBatch } from '@/lib/admissionsEvaluationClient';
 import {
@@ -47,6 +51,21 @@ const booleanHaifaKeys = new Set([
   'haifaInformationSystemsPartnerRequirementsConfirmed',
 ]);
 
+function numericRowErrors(rows: BagrutSubjectRow[]): BagrutFieldErrors {
+  return rows.map((row) => {
+    const errors: BagrutFieldErrors[number] = {};
+    for (const [field, min, max, message] of [
+      ['units', 1, 5, 'יחידות בין 1 ל-5'],
+      ['grade', 0, 100, 'ציון בין 0 ל-100'],
+    ] as const) {
+      const value = row[field];
+      if (value !== '' && (!Number.isInteger(value) || value < min || value > max))
+        errors[field] = message;
+    }
+    return errors;
+  });
+}
+
 export default function SekhemCalculator({
   offerings,
   initialProgramId,
@@ -72,6 +91,11 @@ export default function SekhemCalculator({
     offering: CalculatorOffering;
     report: AdmissionsEvaluationReport;
   } | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<BagrutFieldErrors>([]);
+  const [restoredFor, setRestoredFor] = useState<{
+    offerings: CalculatorOffering[];
+    initialProgramId?: string;
+  } | null>(null);
   const subjectFields = useRef<HTMLDivElement>(null);
   const pendingFocus = useRef<{ index: number; field: 'grade' | 'units' } | null>(null);
   function focusSubject(index: number, field: 'grade' | 'units') {
@@ -86,7 +110,7 @@ export default function SekhemCalculator({
       focusSubject(target.index, target.field);
       pendingFocus.current = null;
     }
-  }, [rows]);
+  }, [rows, fieldErrors]);
 
   function focusResultInput(target: ResultInputTarget) {
     if ('inputId' in target) {
@@ -107,13 +131,94 @@ export default function SekhemCalculator({
   }
   const generation = useRef(0);
   const chosen = offerings.filter((row) => !programId || row.programId === programId);
-  const programs = [...new Map(offerings.map((row) => [row.programId, row.programName])).entries()];
+  const programs = [
+    ...new Map(
+      offerings.map((row) => [
+        row.programId,
+        `${row.programName} · ${institutionShortName(row.institutionId, row.institutionName)}`,
+      ]),
+    ).entries(),
+  ];
 
-  function invalidate() {
+  useEffect(() => {
+    const saved = readSekhemSession(offerings);
+    const explicit = offerings.some((row) => row.programId === initialProgramId)
+      ? initialProgramId
+      : undefined;
+    if (saved) {
+      setRows(saved.rows);
+      setPsychometric(saved.psychometric);
+      setVerbal(saved.verbal);
+      setQuantitative(saved.quantitative);
+      setEnglish(saved.english);
+      setSector(saved.sector);
+      setCertificate(saved.certificate);
+      const compatible = !explicit || explicit === saved.programId;
+      setProgramId(explicit ?? saved.programId);
+      setReports(compatible ? saved.reports : []);
+      setRequiredKeys(compatible ? saved.requiredKeys : []);
+      setHaifaValues(compatible ? saved.haifaValues : {});
+      setFailedIds(compatible ? saved.failedIds : []);
+    } else if (explicit) {
+      setProgramId(explicit);
+      setReports([]);
+      setRequiredKeys([]);
+      setHaifaValues({});
+      setFailedIds([]);
+    }
+    generation.current++;
+    setBusy(false);
+    setError('');
+    setEnquiry(null);
+    setRestoredFor({ offerings, initialProgramId });
+  }, [offerings, initialProgramId]);
+
+  useEffect(() => {
+    if (restoredFor?.offerings !== offerings || restoredFor.initialProgramId !== initialProgramId)
+      return;
+    const snapshot = {
+      rows,
+      psychometric,
+      verbal,
+      quantitative,
+      english,
+      sector,
+      certificate,
+      programId,
+      reports,
+      requiredKeys,
+      haifaValues,
+      failedIds,
+    };
+    const save = () => writeSekhemSession(snapshot);
+    save();
+    window.addEventListener('pagehide', save);
+    return () => window.removeEventListener('pagehide', save);
+  }, [
+    restoredFor,
+    offerings,
+    initialProgramId,
+    rows,
+    psychometric,
+    verbal,
+    quantitative,
+    english,
+    sector,
+    certificate,
+    programId,
+    reports,
+    requiredKeys,
+    haifaValues,
+    failedIds,
+  ]);
+
+  function invalidate(keepRequired = false) {
     generation.current++;
     setReports([]);
-    setRequiredKeys([]);
-    setHaifaValues({});
+    if (!keepRequired) {
+      setRequiredKeys([]);
+      setHaifaValues({});
+    }
     setFailedIds([]);
     setError('');
     setBusy(false);
@@ -123,6 +228,14 @@ export default function SekhemCalculator({
     if (busy) return;
     const version = ++generation.current;
     setError('');
+    const errors = numericRowErrors(rows);
+    const index = errors.findIndex((row) => row.units || row.grade);
+    if (index >= 0) {
+      pendingFocus.current = { index, field: errors[index].units ? 'units' : 'grade' };
+      setFieldErrors(errors);
+      return;
+    }
+    setFieldErrors([]);
     let applicant;
     try {
       applicant = buildSekhemInput({
@@ -221,6 +334,7 @@ export default function SekhemCalculator({
             onClick={() => {
               invalidate();
               setRows(exampleRows());
+              setFieldErrors([]);
               setPsychometric('700');
               setVerbal('130');
               setQuantitative('140');
@@ -233,9 +347,11 @@ export default function SekhemCalculator({
         <div ref={subjectFields} id="sekhem-bagrut-subjects" tabIndex={-1}>
           <BagrutSubjectRows
             rows={rows}
+            fieldErrors={fieldErrors}
             onChange={(next) => {
               invalidate();
               setRows(next);
+              if (fieldErrors.length) setFieldErrors(numericRowErrors(next));
             }}
           />
         </div>
@@ -348,7 +464,10 @@ export default function SekhemCalculator({
         <RequiredAdmissionsInputs
           keys={requiredKeys}
           values={haifaValues}
-          onChange={(key, value) => setHaifaValues((current) => ({ ...current, [key]: value }))}
+          onChange={(key, value) => {
+            invalidate(true);
+            setHaifaValues((current) => ({ ...current, [key]: value }));
+          }}
           disabled={busy}
         />
         {error && (
