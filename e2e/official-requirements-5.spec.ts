@@ -162,13 +162,11 @@ for (const width of [390, 1440]) {
         value.program === 'colmgmt_economics'
           ? [...value.requirements, ...value.notes]
           : value.notes
-      ).filter((line) => value.program !== 'ono_law' || line !== removedRow39Sentence);
+      )
+        // Live-page absence of the row 39 sentence is a post-SQL verification step; code-data absence is covered by unit tests.
+        .filter((line) => value.program !== 'ono_law' || line !== removedRow39Sentence);
       for (const line of expectedCopy)
         await expect(main.getByText(line, { exact: true })).toBeVisible();
-      if (value.program === 'ono_law') {
-        // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 39)
-        await expect(main.getByText(removedRow39Sentence, { exact: true })).not.toBeVisible();
-      }
       // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
       await expect(main.getByRole('link', { name: 'קבלו שיחה מהמוסד', exact: true })).toBeVisible();
       if (value.program === 'colmgmt_economics') {
