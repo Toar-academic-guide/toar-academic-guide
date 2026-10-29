@@ -14,7 +14,11 @@ test('exact grades submit with untouched blank starter rows and send only filled
 }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.goto('/');
-  await page.getByRole('button', { name: 'עזרו לי לבחור מה ללמוד' }).click();
+  await page.getByRole('link', { name: 'כניסה', exact: true }).waitFor();
+  await page.evaluate(() => {
+    window.location.hash = 'intent';
+  });
+  await page.getByRole('button', { name: 'כן', exact: true }).waitFor();
   await page.getByRole('button', { name: 'כן', exact: true }).click();
   await page.getByRole('button', { name: 'מדעי המחשב', exact: true }).click();
   await page.getByRole('button', { name: 'המשך', exact: true }).click();

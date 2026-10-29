@@ -873,7 +873,21 @@ export default function StudyJourney({
                 </span>
               </h1>
               <p>בתוך ריבוי האפשרויות, Way עוזרת לעשות סדר ולבנות דרך שמתאימה לך. שנתחיל?</p>
-              <Primary onClick={() => go('intent')}>עזרו לי לבחור מה ללמוד</Primary>
+              <Link href="/app/calculator" className="journey-primary journey-hero-cta">
+                בדקו לאן אתם מתקבלים
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  aria-hidden="true"
+                  focusable="false"
+                >
+                  <path
+                    fill="currentColor"
+                    d="M10.2 3.6c1 7 2.5 8.7 9 10.2-6.5 1.3-8 3.2-9 9-1.2-5.8-2.9-7.6-9-9 6.2-1.3 7.9-3.2 9-10.2m10.2-2.4c.4 2.1 1.1 2.7 2.4 3-1.3.4-2 1-2.4 3-.4-2-1-2.6-2.4-3 1.4-.3 2-.9 2.4-3"
+                  />
+                </svg>
+              </Link>
               <small>אפשר להתחיל גם בלי כל הציונים. התוצאות הראשונות בלי הרשמה.</small>
             </div>
             <div className="journey-funnel" aria-label="מה ללמוד, איפה ללמוד ואיך להתקבל">

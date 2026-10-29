@@ -236,6 +236,18 @@
   padding-inline: 28px;
   font-size: 17px;
 }
+.journey-hero-copy .journey-hero-cta {
+  min-height: 64px;
+  padding-inline: 40px;
+  border-radius: 16px;
+  font-size: 20px;
+  text-decoration: none;
+}
+.journey-hero-cta svg {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
 .journey-hero-copy small {
   display: block;
   font-size: 13px;
@@ -905,6 +917,11 @@
   .journey-hero-copy .journey-primary {
     width: 100%;
     font-size: 17px;
+  }
+  .journey-hero-copy .journey-hero-cta {
+    min-height: 60px;
+    padding-inline: 24px;
+    font-size: 18px;
   }
   .journey-hero-copy small {
     font-size: 12px;
