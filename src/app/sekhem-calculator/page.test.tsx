@@ -16,6 +16,8 @@ vi.mock('@/server/catalogue/queries', async () => {
 import Page, { metadata } from './page';
 import sitemap from '@/app/sitemap';
 import { readFileSync } from 'node:fs';
+import * as calculatorSupport from '@/lib/sekhemCalculatorSupport';
+import { sekhemCalculatorLd, webApplicationLd } from '@/lib/seo/jsonLd';
 
 const absentEvaluatorIds = [
   'bgu_engineering',
@@ -219,4 +221,124 @@ it('sends only active supported programmes in a full nine-subject run without a 
   } finally {
     vi.unstubAllGlobals();
   }
+});
+
+const answerHeadings = [
+  'מה זה סכם?',
+  'איך מחשבים כאן?',
+  'באילו מוסדות ותוכניות אפשר לבדוק כאן?',
+  'האם התוצאה מבטיחה קבלה?',
+];
+
+it.each(answerHeadings)('renders the answer heading %s', async (name) => {
+  render(await Page({ searchParams: Promise.resolve({}) }));
+  expect(screen.getByRole('heading', { level: 2, name })).toBeTruthy();
+});
+
+it('derives a distinct Hebrew-sorted institution list from the loaded offerings', async () => {
+  const loader = vi.spyOn(calculatorSupport, 'loadSekhemCalculatorOfferings').mockResolvedValue([
+    { programId: 'z_cs', programName: 'מדעי המחשב', institutionId: 'z', institutionName: 'תל אביב' },
+    { programId: 'a_cs', programName: 'מדעי המחשב', institutionId: 'a', institutionName: 'אפקה' },
+    { programId: 'a_ee', programName: 'הנדסת חשמל', institutionId: 'a', institutionName: 'אפקה' },
+  ]);
+  try {
+    render(await Page({ searchParams: Promise.resolve({}) }));
+    const section = screen.getByRole('region', { name: 'שאלות על מחשבון הסכם' });
+    const items = within(within(section).getByRole('list')).getAllByRole('listitem');
+    expect(items).toHaveLength(2);
+    expect(items.map((item) => item.textContent)).toEqual(['אפקה', 'תל אביב']);
+  } finally {
+    loader.mockRestore();
+  }
+});
+
+it('lists every distinct institution from the static catalogue offerings and nothing else', async () => {
+  const offerings = await calculatorSupport.loadSekhemCalculatorOfferings();
+  const expected = [...new Set(offerings.map((offering) => offering.institutionName))].sort(
+    (a, b) => a.localeCompare(b, 'he'),
+  );
+  expect(expected.length).toBeGreaterThan(0);
+  render(await Page({ searchParams: Promise.resolve({}) }));
+  const section = screen.getByRole('region', { name: 'שאלות על מחשבון הסכם' });
+  const items = within(within(section).getByRole('list')).getAllByRole('listitem');
+  expect(items.map((item) => item.textContent)).toEqual(expected);
+});
+
+it('keeps the answer section free of numbers and unsupported admission promises', async () => {
+  render(await Page({ searchParams: Promise.resolve({}) }));
+  const section = screen.getByRole('region', { name: 'שאלות על מחשבון הסכם' });
+  const text = section.textContent!;
+  expect(text).not.toMatch(/[0-9]/);
+  for (const phrase of ['לפי הנוסחה של כל מוסד', 'כל המוסדות', 'תתקבל']) {
+    expect(text).not.toContain(phrase);
+  }
+  const heading = within(section).getByRole('heading', {
+    level: 2,
+    name: 'האם התוצאה מבטיחה קבלה?',
+  });
+  expect(text.replace(heading.textContent!, '')).not.toContain('מבטיח');
+});
+
+it('renders all four answers below the unavailable block for an unknown programme', async () => {
+  render(await Page({ searchParams: Promise.resolve({ program: 'not_a_public_programme' }) }));
+  const unavailable = screen.getByText('אי אפשר לחשב כאן את סיכויי הקבלה לתוכנית הזו.');
+  for (const name of answerHeadings) {
+    const heading = screen.getByRole('heading', { level: 2, name });
+    expect(unavailable.compareDocumentPosition(heading) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+  }
+});
+
+it.each([undefined, 'not_a_public_programme'])(
+  'renders page-level WebApplication JSON-LD without FAQPage for programme %s',
+  async (program) => {
+    const { container } = render(await Page({ searchParams: Promise.resolve({ program }) }));
+    const scripts = Array.from(container.querySelectorAll('main script[type="application/ld+json"]'));
+    expect(scripts.length).toBeGreaterThan(0);
+    const graphs = scripts.map((script) => JSON.parse(script.textContent!));
+    const nodes = graphs.flatMap((graph) => graph['@graph']);
+    expect(nodes).toContainEqual(
+      expect.objectContaining({
+        '@type': 'WebApplication',
+        '@id': 'https://findmyway.co.il/sekhem-calculator#webapp',
+      }),
+    );
+    expect(JSON.stringify(graphs)).not.toContain('FAQPage');
+  },
+);
+
+it('describes the calculator application with canonical site relationships and no FAQPage', () => {
+  const application = sekhemCalculatorLd();
+  expect(application).toEqual({
+    '@type': 'WebApplication',
+    '@id': 'https://findmyway.co.il/sekhem-calculator#webapp',
+    name: 'מחשבון סכם וסיכויי קבלה',
+    url: 'https://findmyway.co.il/sekhem-calculator',
+    applicationCategory: 'EducationalApplication',
+    operatingSystem: 'Web',
+    inLanguage: 'he',
+    isAccessibleForFree: true,
+    offers: { '@type': 'Offer', price: 0, priceCurrency: 'ILS' },
+    featureList: ['חישוב סכם לפי תוכנית', 'הערכת סיכויי קבלה', 'קישור לתנאי הקבלה של התוכנית'],
+    publisher: { '@id': 'https://findmyway.co.il/#organization' },
+    isPartOf: { '@id': 'https://findmyway.co.il/#website' },
+  });
+  expect(JSON.stringify(application)).not.toContain('FAQPage');
+});
+
+it('preserves the complete homepage WebApplication node', () => {
+  expect(webApplicationLd()).toEqual({
+    '@type': 'WebApplication',
+    '@id': 'https://findmyway.co.il/#webapp',
+    name: 'MyWay',
+    url: 'https://findmyway.co.il/',
+    applicationCategory: 'EducationalApplication',
+    operatingSystem: 'Web',
+    inLanguage: 'he',
+    publisher: { '@id': 'https://findmyway.co.il/#organization' },
+    isPartOf: { '@id': 'https://findmyway.co.il/#website' },
+    offers: { '@type': 'Offer', price: 0, priceCurrency: 'ILS' },
+    featureList: ['שאלון התאמה ללימודים', 'קטלוג מוסדות ומסלולי לימוד', 'בדיקת סיכויי קבלה אישית'],
+  });
 });
