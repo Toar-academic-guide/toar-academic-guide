@@ -143,7 +143,7 @@ function isAllowedReturnPath(path: string) {
     return true;
   }
 
-  if (path === ROUTES.about || path === ROUTES.institutions) {
+  if (path === ROUTES.about || path === ROUTES.institutions || path === '/psychometric-dates') {
     return true;
   }
 
