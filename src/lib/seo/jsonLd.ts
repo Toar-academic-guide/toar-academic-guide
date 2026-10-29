@@ -161,6 +161,23 @@ export function webApplicationLd() {
   };
 }
 
+export function sekhemCalculatorLd() {
+  return {
+    '@type': 'WebApplication',
+    '@id': absoluteUrl('/sekhem-calculator#webapp'),
+    name: 'מחשבון סכם וסיכויי קבלה',
+    url: absoluteUrl('/sekhem-calculator'),
+    applicationCategory: 'EducationalApplication',
+    operatingSystem: 'Web',
+    inLanguage: 'he',
+    isAccessibleForFree: true,
+    offers: { '@type': 'Offer', price: 0, priceCurrency: 'ILS' },
+    featureList: ['חישוב סכם לפי תוכנית', 'הערכת סיכויי קבלה', 'קישור לתנאי הקבלה של התוכנית'],
+    publisher: { '@id': ORGANIZATION_ID },
+    isPartOf: { '@id': WEBSITE_ID },
+  };
+}
+
 export function institutionDirectoryLd(institutions: InstitutionDirectoryItem[]) {
   const url = absoluteUrl('/institutions');
   const listId = `${url}#institutions`;

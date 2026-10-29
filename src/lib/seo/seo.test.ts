@@ -34,6 +34,7 @@ import { canonicalProgramId } from './programAliases';
 import {
   breadcrumbLd,
   institutionDirectoryLd,
+  sekhemCalculatorLd,
   webApplicationLd,
   institutionBreadcrumbLd,
   institutionLd,
@@ -621,6 +622,48 @@ describe('structured data', () => {
       offers: { '@type': 'Offer', price: 0, priceCurrency: 'ILS' },
       publisher: { '@id': `${SITE_URL}/#organization` },
       isPartOf: { '@id': `${SITE_URL}/#website` },
+      featureList: [
+        'שאלון התאמה ללימודים',
+        'קטלוג מוסדות ומסלולי לימוד',
+        'בדיקת סיכויי קבלה אישית',
+      ],
+    });
+  });
+
+  it('describes the calculator application with its own canonical node and site relationships', () => {
+    expect(absoluteUrl('/sekhem-calculator#webapp')).toBe(
+      'https://findmyway.co.il/sekhem-calculator#webapp',
+    );
+    const application = sekhemCalculatorLd();
+    expect(application).toEqual({
+      '@type': 'WebApplication',
+      '@id': 'https://findmyway.co.il/sekhem-calculator#webapp',
+      name: 'מחשבון סכם וסיכויי קבלה',
+      url: 'https://findmyway.co.il/sekhem-calculator',
+      applicationCategory: 'EducationalApplication',
+      operatingSystem: 'Web',
+      inLanguage: 'he',
+      isAccessibleForFree: true,
+      offers: { '@type': 'Offer', price: 0, priceCurrency: 'ILS' },
+      featureList: ['חישוב סכם לפי תוכנית', 'הערכת סיכויי קבלה', 'קישור לתנאי הקבלה של התוכנית'],
+      publisher: { '@id': organizationLd()['@id'] },
+      isPartOf: { '@id': websiteLd()['@id'] },
+    });
+    expect(JSON.stringify(application)).not.toContain('FAQPage');
+  });
+
+  it('preserves the complete homepage WebApplication node alongside the calculator node', () => {
+    expect(webApplicationLd()).toEqual({
+      '@type': 'WebApplication',
+      '@id': 'https://findmyway.co.il/#webapp',
+      name: 'MyWay',
+      url: 'https://findmyway.co.il/',
+      applicationCategory: 'EducationalApplication',
+      operatingSystem: 'Web',
+      inLanguage: 'he',
+      publisher: { '@id': 'https://findmyway.co.il/#organization' },
+      isPartOf: { '@id': 'https://findmyway.co.il/#website' },
+      offers: { '@type': 'Offer', price: 0, priceCurrency: 'ILS' },
       featureList: [
         'שאלון התאמה ללימודים',
         'קטלוג מוסדות ומסלולי לימוד',

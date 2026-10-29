@@ -2,14 +2,16 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import WayPageShell from '@/components/WayPageShell';
 import SekhemCalculator from '@/components/sekhem/SekhemCalculator';
+import JsonLd from '@/components/seo/JsonLd';
 import { loadSekhemCalculatorOfferings } from '@/lib/sekhemCalculatorSupport';
 import { getPublicProgramPageData } from '@/lib/publicCataloguePages';
 import { canonicalProgramId, canonicalProgramPath } from '@/lib/seo/programAliases';
+import { sekhemCalculatorLd } from '@/lib/seo/jsonLd';
 import { absoluteUrl, SITE_NAME } from '@/lib/site';
 
 const title = 'מחשבון סכם וסיכויי קבלה לפי מוסד ותוכנית | MyWay';
 const description =
-  'מחשבון סכם וסיכויי קבלה בחינם: מזינים ציוני בגרות ופסיכומטרי, מחשבים סכם לפי נוסחאות המוסדות הנתמכים וממשיכים לבדיקת התוכנית שמעניינת אותך.';
+  'מחשבון סכם וסיכויי קבלה בחינם: מזינים ציוני בגרות ופסיכומטרי, בוחרים תוכנית נתמכת ומקבלים הערכה, עם קישור לתנאי הקבלה של התוכנית.';
 const canonical = absoluteUrl('/sekhem-calculator');
 
 export const dynamic = 'force-dynamic';
@@ -50,6 +52,7 @@ export default async function Page({
         dir="rtl"
         className="sekhem-calculator mx-auto max-w-3xl px-4 pb-16 pt-8 text-right sm:px-6"
       >
+        <JsonLd data={sekhemCalculatorLd()} />
         <header className="mb-8 text-center">
           <h1 className="text-3xl font-semibold leading-tight sm:text-4xl">
             מחשבון סכם וסיכויי קבלה
@@ -80,18 +83,27 @@ export default async function Page({
         ) : (
           <SekhemCalculator offerings={offerings} initialProgramId={initialProgramId} />
         )}
-        <section className="mt-14 space-y-7 leading-7">
+        <section className="mt-14 space-y-7 leading-7" aria-labelledby="sekhem-faq-title">
+          <h2 id="sekhem-faq-title" className="sr-only">
+            שאלות על מחשבון הסכם
+          </h2>
           <div>
-            <h2 className="text-xl font-semibold">מה הסכם אומר?</h2>
+            <h2 className="text-xl font-semibold">מה זה סכם?</h2>
             <p className="mt-2 text-(--text-body)">
-              לכל מוסד נוסחה וסולם ציונים משלו. הסכם הוא חלק מתנאי הקבלה; בקישור לתוכנית אפשר לבדוק
-              את התנאים הנוספים.
+              סכם הוא ציון קבלה שמשלב את ממוצע הבגרות ואת הציון הפסיכומטרי. כל מוסד קובע נוסחה וסולם
+              משלו, ובחלק מהמוסדות הוא נקרא בשם אחר.
             </p>
           </div>
           <div>
-            <h2 className="text-xl font-semibold">יש גם דרכים אחרות להתקבל</h2>
+            <h2 className="text-xl font-semibold">איך מחשבים כאן?</h2>
             <p className="mt-2 text-(--text-body)">
-              בחלק מהתוכניות יש אפיק ללא פסיכומטרי, אפיק על בסיס פסיכומטרי בלבד או קבלה דרך מכינה.
+              מזינים ציוני בגרות ופסיכומטרי, ומקבלים מיד את הסכם שלכם מול סף הקבלה של התוכנית.
+            </p>
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold">באילו מוסדות ותוכניות אפשר לבדוק כאן?</h2>
+            <p className="mt-2 text-(--text-body)">
+              המחשבון מכסה מספר הולך וגדל של מוסדות ותוכניות, ומתעדכן כל הזמן.
             </p>
           </div>
         </section>

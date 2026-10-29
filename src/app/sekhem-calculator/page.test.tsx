@@ -16,6 +16,8 @@ vi.mock('@/server/catalogue/queries', async () => {
 import Page, { metadata } from './page';
 import sitemap from '@/app/sitemap';
 import { readFileSync } from 'node:fs';
+import * as calculatorSupport from '@/lib/sekhemCalculatorSupport';
+import { sekhemCalculatorLd, webApplicationLd } from '@/lib/seo/jsonLd';
 
 const absentEvaluatorIds = [
   'bgu_engineering',
@@ -97,8 +99,14 @@ it('renders an indexable public calculator with absolute title and canonical met
   expect(metadata.title).toEqual({ absolute: 'מחשבון סכם וסיכויי קבלה לפי מוסד ותוכנית | MyWay' });
   expect(metadata.alternates?.canonical).toBe('https://findmyway.co.il/sekhem-calculator');
   expect(metadata.description).toBe(
-    'מחשבון סכם וסיכויי קבלה בחינם: מזינים ציוני בגרות ופסיכומטרי, מחשבים סכם לפי נוסחאות המוסדות הנתמכים וממשיכים לבדיקת התוכנית שמעניינת אותך.',
+    // Approved test update, Jorje 2026-10-29: meta no-overclaim
+    'מחשבון סכם וסיכויי קבלה בחינם: מזינים ציוני בגרות ופסיכומטרי, בוחרים תוכנית נתמכת ומקבלים הערכה, עם קישור לתנאי הקבלה של התוכנית.',
   );
+});
+it('uses the same estimate description without formula claims in metadata and Open Graph', () => {
+  expect(metadata.description).not.toContain('לפי נוסחאות');
+  expect(metadata.openGraph?.description).not.toContain('לפי נוסחאות');
+  expect(metadata.openGraph?.description).toBe(metadata.description);
 });
 it('has one sitemap entry with the authored date and one llms entry', async () => {
   const entries = (await sitemap()).filter(
@@ -219,4 +227,213 @@ it('sends only active supported programmes in a full nine-subject run without a 
   } finally {
     vi.unstubAllGlobals();
   }
+});
+
+// Approved test update, Jorje 2026-10-29 (answer-block list + guarantee Q removal)
+const answerHeadings = ['מה זה סכם?', 'איך מחשבים כאן?', 'באילו מוסדות ותוכניות אפשר לבדוק כאן?'];
+
+it.each(answerHeadings)('renders the answer heading %s', async (name) => {
+  render(await Page({ searchParams: Promise.resolve({}) }));
+  expect(screen.getByRole('heading', { level: 2, name })).toBeTruthy();
+});
+
+// Approved test update, Jorje 2026-10-29 (answer-block list + guarantee Q removal)
+// Approved test update, Jorje 2026-10-29 (answer-block copy swaps)
+it('omits lists and institution names from the answer section with mocked offerings', async () => {
+  const loader = vi.spyOn(calculatorSupport, 'loadSekhemCalculatorOfferings').mockResolvedValue([
+    {
+      programId: 'z_cs',
+      programName: 'מדעי המחשב',
+      institutionId: 'z',
+      institutionName: 'תל אביב',
+    },
+    { programId: 'a_cs', programName: 'מדעי המחשב', institutionId: 'a', institutionName: 'אפקה' },
+    { programId: 'a_ee', programName: 'הנדסת חשמל', institutionId: 'a', institutionName: 'אפקה' },
+  ]);
+  try {
+    render(await Page({ searchParams: Promise.resolve({}) }));
+    const section = screen.getByRole('region', { name: 'שאלות על מחשבון הסכם' });
+    expect(within(section).queryByRole('list')).toBeNull();
+    expect(within(section).queryAllByRole('listitem')).toHaveLength(0);
+    const heading = within(section).getByRole('heading', {
+      level: 2,
+      name: 'באילו מוסדות ותוכניות אפשר לבדוק כאן?',
+    });
+    expect(heading.nextElementSibling?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+      'המחשבון מכסה מספר הולך וגדל של מוסדות ותוכניות, ומתעדכן כל הזמן.',
+    );
+    for (const name of ['אפקה', 'תל אביב']) {
+      expect(section.textContent).not.toContain(name);
+    }
+  } finally {
+    loader.mockRestore();
+  }
+});
+
+// Approved test update, Jorje 2026-10-29 (answer-block list + guarantee Q removal)
+// Approved test update, Jorje 2026-10-29 (answer-block copy swaps)
+it('omits lists and every real catalogue institution name from the answer section', async () => {
+  const offerings = await calculatorSupport.loadSekhemCalculatorOfferings();
+  const institutionNames = [...new Set(offerings.map((offering) => offering.institutionName))];
+  expect(institutionNames.length).toBeGreaterThan(0);
+  render(await Page({ searchParams: Promise.resolve({}) }));
+  const section = screen.getByRole('region', { name: 'שאלות על מחשבון הסכם' });
+  expect(within(section).queryByRole('list')).toBeNull();
+  expect(within(section).queryAllByRole('listitem')).toHaveLength(0);
+  const heading = within(section).getByRole('heading', {
+    level: 2,
+    name: 'באילו מוסדות ותוכניות אפשר לבדוק כאן?',
+  });
+  expect(heading.nextElementSibling?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+    'המחשבון מכסה מספר הולך וגדל של מוסדות ותוכניות, ומתעדכן כל הזמן.',
+  );
+  for (const name of institutionNames) {
+    expect(section.textContent).not.toContain(name);
+  }
+});
+
+// Approved test update, Jorje 2026-10-29 (answer-block copy swaps)
+it('describes exactly how to calculate a sekhem here', async () => {
+  render(await Page({ searchParams: Promise.resolve({}) }));
+  const section = screen.getByRole('region', { name: 'שאלות על מחשבון הסכם' });
+  const heading = within(section).getByRole('heading', {
+    level: 2,
+    name: 'איך מחשבים כאן?',
+  });
+  expect(heading.nextElementSibling?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+    'מזינים ציוני בגרות ופסיכומטרי, ומקבלים מיד את הסכם שלכם מול סף הקבלה של התוכנית.',
+  );
+});
+
+// Approved test update, Jorje 2026-10-29 (answer-block copy swaps)
+it.each([undefined, 'not_a_public_programme'])(
+  'keeps the answer block free of estimate and guarantee wording for programme %s',
+  async (program) => {
+    render(await Page({ searchParams: Promise.resolve({ program }) }));
+    const section = screen.getByRole('region', { name: 'שאלות על מחשבון הסכם' });
+    for (const phrase of ['הערכה', 'מבטיח', 'הבטחה']) {
+      expect(section.textContent).not.toContain(phrase);
+    }
+  },
+);
+
+// Approved test update, Jorje 2026-10-29 (answer-block list + guarantee Q removal)
+it('keeps the answer section free of numbers and unsupported admission promises', async () => {
+  render(await Page({ searchParams: Promise.resolve({}) }));
+  const section = screen.getByRole('region', { name: 'שאלות על מחשבון הסכם' });
+  const text = section.textContent!;
+  expect(text).not.toMatch(/[0-9]/);
+  for (const phrase of ['לפי הנוסחה של כל מוסד', 'כל המוסדות', 'תתקבל']) {
+    expect(text).not.toContain(phrase);
+  }
+  expect(text).not.toContain('מבטיח');
+  expect(text).not.toContain('הערכה בלבד');
+});
+
+// Approved test update, Jorje 2026-10-29 (answer-block list + guarantee Q removal)
+it('renders all three answers below the unavailable block for an unknown programme', async () => {
+  render(await Page({ searchParams: Promise.resolve({ program: 'not_a_public_programme' }) }));
+  const unavailable = screen.getByText('אי אפשר לחשב כאן את סיכויי הקבלה לתוכנית הזו.');
+  for (const name of answerHeadings) {
+    const heading = screen.getByRole('heading', { level: 2, name });
+    expect(unavailable.compareDocumentPosition(heading) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+  }
+});
+
+// Approved test update, Jorje 2026-10-29 (answer-block list + guarantee Q removal)
+it('renders exactly three visible answer headings in order without the guarantee question', async () => {
+  render(await Page({ searchParams: Promise.resolve({}) }));
+  const section = screen.getByRole('region', { name: 'שאלות על מחשבון הסכם' });
+  const headings = within(section)
+    .getAllByRole('heading', { level: 2 })
+    .filter((heading) => !heading.classList.contains('sr-only'));
+  expect(headings).toHaveLength(3);
+  expect(headings.map((heading) => heading.textContent)).toEqual(answerHeadings);
+  expect(section.textContent).not.toContain('האם התוצאה מבטיחה קבלה?');
+});
+
+// Approved test update, Jorje 2026-10-29 (answer-block list + guarantee Q removal)
+it.each([undefined, 'not_a_public_programme'])(
+  'keeps all rendered page JSON-LD free of Q&A and removed answer text for programme %s',
+  async (program) => {
+    const offerings = await calculatorSupport.loadSekhemCalculatorOfferings();
+    const institutionNames = [
+      'אפקה',
+      'תל אביב',
+      ...new Set(offerings.map((offering) => offering.institutionName)),
+    ];
+    expect(offerings.length).toBeGreaterThan(0);
+    const { container } = render(await Page({ searchParams: Promise.resolve({ program }) }));
+    const scripts = Array.from(
+      container.querySelectorAll('main script[type="application/ld+json"]'),
+    );
+    expect(scripts.length).toBeGreaterThan(0);
+    const jsonLd = JSON.stringify(scripts.map((script) => JSON.parse(script.textContent!)));
+    for (const type of ['FAQPage', 'Question', 'Answer']) {
+      expect(jsonLd).not.toContain(type);
+    }
+    for (const name of institutionNames) {
+      expect(jsonLd).not.toContain(name);
+    }
+    expect(jsonLd).not.toContain('המחשבון כולל כרגע תוכניות במוסדות הבאים');
+    expect(jsonLd).not.toContain('האם התוצאה מבטיחה קבלה?');
+    expect(jsonLd).not.toContain('הערכה בלבד');
+  },
+);
+
+it.each([undefined, 'not_a_public_programme'])(
+  'renders page-level WebApplication JSON-LD without FAQPage for programme %s',
+  async (program) => {
+    const { container } = render(await Page({ searchParams: Promise.resolve({ program }) }));
+    const scripts = Array.from(
+      container.querySelectorAll('main script[type="application/ld+json"]'),
+    );
+    expect(scripts.length).toBeGreaterThan(0);
+    const graphs = scripts.map((script) => JSON.parse(script.textContent!));
+    const nodes = graphs.flatMap((graph) => graph['@graph']);
+    expect(nodes).toContainEqual(
+      expect.objectContaining({
+        '@type': 'WebApplication',
+        '@id': 'https://findmyway.co.il/sekhem-calculator#webapp',
+      }),
+    );
+    expect(JSON.stringify(graphs)).not.toContain('FAQPage');
+  },
+);
+
+it('describes the calculator application with canonical site relationships and no FAQPage', () => {
+  const application = sekhemCalculatorLd();
+  expect(application).toEqual({
+    '@type': 'WebApplication',
+    '@id': 'https://findmyway.co.il/sekhem-calculator#webapp',
+    name: 'מחשבון סכם וסיכויי קבלה',
+    url: 'https://findmyway.co.il/sekhem-calculator',
+    applicationCategory: 'EducationalApplication',
+    operatingSystem: 'Web',
+    inLanguage: 'he',
+    isAccessibleForFree: true,
+    offers: { '@type': 'Offer', price: 0, priceCurrency: 'ILS' },
+    featureList: ['חישוב סכם לפי תוכנית', 'הערכת סיכויי קבלה', 'קישור לתנאי הקבלה של התוכנית'],
+    publisher: { '@id': 'https://findmyway.co.il/#organization' },
+    isPartOf: { '@id': 'https://findmyway.co.il/#website' },
+  });
+  expect(JSON.stringify(application)).not.toContain('FAQPage');
+});
+
+it('preserves the complete homepage WebApplication node', () => {
+  expect(webApplicationLd()).toEqual({
+    '@type': 'WebApplication',
+    '@id': 'https://findmyway.co.il/#webapp',
+    name: 'MyWay',
+    url: 'https://findmyway.co.il/',
+    applicationCategory: 'EducationalApplication',
+    operatingSystem: 'Web',
+    inLanguage: 'he',
+    publisher: { '@id': 'https://findmyway.co.il/#organization' },
+    isPartOf: { '@id': 'https://findmyway.co.il/#website' },
+    offers: { '@type': 'Offer', price: 0, priceCurrency: 'ILS' },
+    featureList: ['שאלון התאמה ללימודים', 'קטלוג מוסדות ומסלולי לימוד', 'בדיקת סיכויי קבלה אישית'],
+  });
 });

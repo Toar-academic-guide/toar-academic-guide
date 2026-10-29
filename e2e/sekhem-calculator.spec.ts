@@ -10,7 +10,8 @@ import type {
 const title = 'מחשבון סכם וסיכויי קבלה לפי מוסד ותוכנית | MyWay';
 const canonical = 'https://findmyway.co.il/sekhem-calculator';
 const description =
-  'מחשבון סכם וסיכויי קבלה בחינם: מזינים ציוני בגרות ופסיכומטרי, מחשבים סכם לפי נוסחאות המוסדות הנתמכים וממשיכים לבדיקת התוכנית שמעניינת אותך.';
+  // Approved test update, Jorje 2026-10-29: meta no-overclaim
+  'מחשבון סכם וסיכויי קבלה בחינם: מזינים ציוני בגרות ופסיכומטרי, בוחרים תוכנית נתמכת ומקבלים הערכה, עם קישור לתנאי הקבלה של התוכנית.';
 const noScoreLine = 'בחלק מהמוסדות נבדקים תנאי קבלה בלי חישוב סכם.';
 const kidumText = 'מסלול ראויים לקידום';
 const compositeInput = /סכם|מתואם|מצרף|ציון משוקלל|sekhem|sekem|composite|weighted.?score/i;
