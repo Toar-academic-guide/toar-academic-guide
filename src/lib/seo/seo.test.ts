@@ -89,7 +89,7 @@ describe('crawl policy', () => {
     expect(llms.split('\n')).toContain(
       'Business model: MyWay is free for students; revenue comes from referring qualified leads to academic institutions.',
     );
-    expect(llms).toContain('Last updated: 2026-10-22');
+    expect(llms).toContain('Last updated: 2026-10-29');
   });
 
   it('separates wildcard, search and allowed training policies with operational exclusions', async () => {
