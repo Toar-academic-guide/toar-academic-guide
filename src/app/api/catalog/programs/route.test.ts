@@ -31,7 +31,6 @@ vi.mock('@/server/catalogue/queries', () => ({
 }));
 
 import { GET } from './route';
-import { BATCH_C_UNSUPPORTED_PROGRAM_INSTITUTIONS } from '@/data/admissions/batchCUnsupportedProgramIds';
 import { getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import { CatalogueQueryError } from '@/server/catalogue/queries';
 import type { CatalogueProgram } from '@/types/catalogue';
@@ -69,10 +68,16 @@ describe('catalogue programs route', () => {
     expect(body.meta.responseBytes).toBe(Buffer.byteLength(JSON.stringify(body)));
   });
 
-  it('appends missing Batch C programmes once and measures the returned programme list', async () => {
-    const databasePrograms = [{ id: 'computer_science', name: 'DB Computer Science' }];
+  it('requests Batch C fallback and measures exactly the programme list returned by the query', async () => {
+    const haifaEngineering = getStaticCataloguePrograms().find(
+      (program) => program.id === 'haifa_engineering',
+    )!;
+    const queryPrograms = [
+      { id: 'computer_science', name: 'DB Computer Science' },
+      haifaEngineering,
+    ];
     hoistedMocks.listCataloguePrograms.mockResolvedValue({
-      data: databasePrograms,
+      data: queryPrograms,
       meta: { catalogueSourceMode: 'database', catalogueSource: 'database', programCount: 1 },
     });
 
@@ -81,20 +86,17 @@ describe('catalogue programs route', () => {
     const programs = body.data as CatalogueProgram[];
 
     expect(response.status).toBe(200);
-    expect(programs[0]).toEqual(databasePrograms[0]);
+    expect(hoistedMocks.listCataloguePrograms).toHaveBeenCalledExactlyOnceWith({
+      includeBatchCCodeFallback: true,
+    });
+    expect(programs).toEqual(queryPrograms);
     expect(programs.filter((program) => program.id === 'haifa_engineering')).toEqual([
-      getStaticCataloguePrograms().find((program) => program.id === 'haifa_engineering'),
+      haifaEngineering,
     ]);
-    expect(
-      programs
-        .slice(1)
-        .every((program) => Object.hasOwn(BATCH_C_UNSUPPORTED_PROGRAM_INSTITUTIONS, program.id)),
-    ).toBe(true);
     expect(programs.some((program) => program.id === 'tau_datascience')).toBe(false);
     expect(programs.some((program) => program.id === 'not_a_real_programme_xyz')).toBe(false);
     expect(body.meta).toMatchObject({ catalogueSource: 'database', programCount: programs.length });
     expect(body.meta.responseBytes).toBe(Buffer.byteLength(JSON.stringify(body)));
-    expect(databasePrograms).toEqual([{ id: 'computer_science', name: 'DB Computer Science' }]);
   });
 
   it('keeps an existing Batch C DB row unchanged and in order without a duplicate', async () => {
@@ -114,7 +116,10 @@ describe('catalogue programs route', () => {
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(body.data.slice(0, 2)).toEqual(databasePrograms);
+    expect(hoistedMocks.listCataloguePrograms).toHaveBeenCalledExactlyOnceWith({
+      includeBatchCCodeFallback: true,
+    });
+    expect(body.data).toEqual(databasePrograms);
     expect(
       body.data.filter((program: CatalogueProgram) => program.id === haifaEngineering.id),
     ).toEqual([databasePrograms[1]]);
@@ -134,6 +139,9 @@ describe('catalogue programs route', () => {
     const body = await response.json();
 
     expect(response.status).toBe(503);
+    expect(hoistedMocks.listCataloguePrograms).toHaveBeenCalledExactlyOnceWith({
+      includeBatchCCodeFallback: true,
+    });
     expect(body.error).toEqual({
       code: 'CATALOGUE_UNAVAILABLE',
       message: 'DB unavailable',
@@ -150,6 +158,9 @@ describe('catalogue programs route', () => {
     const body = await response.json();
 
     expect(response.status).toBe(503);
+    expect(hoistedMocks.listCataloguePrograms).toHaveBeenCalledExactlyOnceWith({
+      includeBatchCCodeFallback: true,
+    });
     expect(body.error).toEqual({
       code: 'CATALOGUE_PROGRAMS_INTERNAL_ERROR',
       message: 'Unexpected failure',
