@@ -19,7 +19,7 @@ vi.mock('@/components/WayPageShell', () => ({
 vi.mock('@/components/StudyJourney', () => ({
   default: ({ browse }: { browse: React.ReactNode }) => (
     <>
-      <button>עזרו לי לבחור מה ללמוד</button>
+      <a href="/app/calculator">בדקו לאן אתם מתקבלים</a>
       {browse}
     </>
   ),
@@ -65,7 +65,7 @@ describe('server-rendered crawl paths', () => {
     expect(institutions).toHaveLength(8);
     expect(hrefs).toContain('/programs');
     expect(hrefs).toContain('/institutions');
-    expect(html).toContain('עזרו לי לבחור מה ללמוד');
+    expect(html).toContain('בדקו לאן אתם מתקבלים');
     expect(renderToStaticMarkup(<CatalogueBrowse {...links} />)).toContain('dir="rtl"');
   });
 
@@ -89,7 +89,7 @@ describe('server-rendered crawl paths', () => {
     const failure = () => Promise.reject(new Error('database unavailable'));
     queries.listCataloguePrograms.mockImplementationOnce(failure);
     const home = await ssr(<Home />);
-    expect(home).toContain('עזרו לי לבחור מה ללמוד');
+    expect(home).toContain('בדקו לאן אתם מתקבלים');
     expect(home).not.toContain('browse-title');
     expect(paths(renderToStaticMarkup(<SiteFooter />))).toEqual([
       '/',
