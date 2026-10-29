@@ -22,8 +22,12 @@ describe('verified catalogue content repair', () => {
     });
     const text = row.notes.join(' ');
     expect(text).toContain('כלכלה חד־מחלקתי – מנהל עסקים');
-    expect(text).toContain(`סכם כמותי ${policy.score} לפחות וגם פסיכומטרי ${policy.minimumPsychometric} לפחות`);
-    expect(text).toContain(`סכם כמותי ${policy.alternate!.score} ופסיכומטרי ${policy.alternate!.psychometric} לפחות`);
+    expect(text).toContain(
+      `סכם כמותי ${policy.score} לפחות וגם פסיכומטרי ${policy.minimumPsychometric} לפחות`,
+    );
+    expect(text).toContain(
+      `סכם כמותי ${policy.alternate!.score} ופסיכומטרי ${policy.alternate!.psychometric} לפחות`,
+    );
     expect(text).toContain(`ממוצע בגרות ${policy.directAverage} לפחות`);
     expect(text).toContain(`בממוצע ${policy.directPreparatoryAverage}`);
     expect(text).toContain('5 יחידות בציון 75 לפחות או 4 יחידות בציון 85 לפחות');
@@ -44,14 +48,12 @@ describe('verified catalogue content repair', () => {
     ['communication', '2026-10-21'],
     ['bgu_accounting', '2026-10-29'],
     ['bgu_business', '2026-10-29'],
-  ])(
-    'keeps the approved BGU verification date for %s',
-    (programId, checkedAt) => {
-      expect(repair.requirements.find(
-        (row) => row.programId === programId && row.institutionId === 'bgu',
-      )!.checkedAt).toBe(checkedAt);
-    },
-  );
+  ])('keeps the approved BGU verification date for %s', (programId, checkedAt) => {
+    expect(
+      repair.requirements.find((row) => row.programId === programId && row.institutionId === 'bgu')!
+        .checkedAt,
+    ).toBe(checkedAt);
+  });
 
   it.each(['braude', 'ort_braude', 'mon_12220708942'] as const)(
     'resolves the Braude CS requirements-checked footer for %s',
