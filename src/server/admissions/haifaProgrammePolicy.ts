@@ -20,7 +20,9 @@ export function haifaMissingRuleResult(
     input: AdmissionsEvaluationInput;
   },
 ): AdmissionsEvaluationResult | undefined {
-  if (context.averageIsProxy) {
+  const averageKnown =
+    context.averageIsProxy || context.input.extraInputs?.haifaBagrutAverage !== undefined;
+  if (averageKnown) {
     const policy = getHaifaProgrammePolicy(
       programId,
       context.input.extraInputs?.haifaInformationSystemsTrack,
@@ -282,7 +284,7 @@ export function evaluateHaifaProgrammePolicy(args: {
       kind: 'eligible',
       route: 'score',
       conditional,
-      reason: `הסכם עומד בסף ${policy.score.acceptance} ותנאי הסף האקדמיים שנמסרו מתקיימים. ההחלטה הסופית נתונה לאוניברסיטה.`,
+      reason: `ציון הקבלה עומד בסף ${policy.score.acceptance} ותנאי הסף האקדמיים שנמסרו מתקיימים. ההחלטה הסופית נתונה לאוניברסיטה.`,
       steps,
     };
   if (
@@ -308,7 +310,7 @@ export function evaluateHaifaProgrammePolicy(args: {
     return {
       kind: 'below',
       reasons: [
-        `הסכם נמוך מסף ההמתנה ${policy.score.publishedWaitingMinimum} במסלול הסכם הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג.`,
+        `ציון הקבלה נמוך מסף ההמתנה ${policy.score.publishedWaitingMinimum} במסלול הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג.`,
       ],
     };
   if (policy.programme === 'communication')
@@ -316,7 +318,7 @@ export function evaluateHaifaProgrammePolicy(args: {
       kind: 'eligible',
       route: 'ofek',
       conditional,
-      reason: 'הסכם נמצא בטווח אפיק אופק בתקשורת; אין כאן קבלה ישירה לתואר.',
+      reason: 'ציון הקבלה נמצא בטווח אפיק אופק בתקשורת; אין כאן קבלה ישירה לתואר.',
       steps: ['באפיק אופק נדרשים 2–3 קורסים בציון 70 לפחות, לפי תנאי החוג.', ...steps],
     };
   if (policy.programme === 'social_work')
@@ -324,7 +326,8 @@ export function evaluateHaifaProgrammePolicy(args: {
       kind: 'eligible',
       route: 'score',
       conditional,
-      reason: 'הסכם נמצא בטווח ההמתנה; גם מועמדים בטווח זה נדרשים למיון בחוג לעבודה סוציאלית.',
+      reason:
+        'ציון הקבלה נמצא בטווח ההמתנה; גם מועמדים בטווח זה נדרשים למיון בחוג לעבודה סוציאלית.',
       steps,
     };
   return {
@@ -333,8 +336,8 @@ export function evaluateHaifaProgrammePolicy(args: {
     conditional,
     reason:
       policy.programme === 'occupational_therapy'
-        ? 'הסכם נמצא בטווח ההמתנה 595–609. אין זכאות אוטומטית למיון; החוג עשוי לפנות למועמדים שנבחרו.'
-        : `הסכם נמצא בטווח ההמתנה ${policy.score.publishedWaitingMinimum}–${policy.score.acceptance - 1}; נדרשת החלטת החוג.`,
+        ? 'ציון הקבלה נמצא בטווח ההמתנה 595–609. אין זכאות אוטומטית למיון; החוג עשוי לפנות למועמדים שנבחרו.'
+        : `ציון הקבלה נמצא בטווח ההמתנה ${policy.score.publishedWaitingMinimum}–${policy.score.acceptance - 1}; נדרשת החלטת החוג.`,
     steps,
   };
 }
