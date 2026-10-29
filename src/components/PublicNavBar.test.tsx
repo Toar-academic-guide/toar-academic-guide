@@ -155,6 +155,60 @@ describe('shared current navigation', () => {
     expect(document.activeElement).toBe(outside);
   });
 
+  it.each(['מחשבונים', 'מה ללמוד?', 'איפה ללמוד?', 'הכנה וקבלה'])(
+    'returns focus to %s after an outside click leaves focus on body',
+    (label) => {
+      render(<PublicNavBar />);
+      const trigger = screen.getByRole('button', { name: label });
+      const panel = document.getElementById(trigger.getAttribute('aria-controls')!)!;
+      fireEvent.click(trigger);
+      trigger.focus();
+      trigger.blur(); // A non-focusable outside target leaves browser focus on body.
+      expect(document.activeElement).toBe(document.body);
+      fireEvent.click(document.body);
+      expect(panel.hidden).toBe(true);
+      expect(trigger.getAttribute('aria-expanded')).toBe('false');
+      expect(document.activeElement).toBe(trigger);
+    },
+  );
+
+  it.each([false, true])(
+    'returns focus to the hamburger after an outside click leaves focus on body (dropdown open: %s)',
+    (dropdownOpen) => {
+      render(<PublicNavBar />);
+      const hamburger = screen.getByRole('button', { name: 'תפריט ניווט' });
+      fireEvent.click(hamburger);
+      if (dropdownOpen) fireEvent.click(screen.getByRole('button', { name: 'מחשבונים' }));
+      (document.activeElement as HTMLElement).blur();
+      expect(document.activeElement).toBe(document.body);
+      fireEvent.click(document.body);
+      expect(hamburger.getAttribute('aria-expanded')).toBe('false');
+      expect(screen.getByRole('button', { name: 'מחשבונים' }).getAttribute('aria-expanded')).toBe(
+        'false',
+      );
+      expect(document.activeElement).toBe(hamburger);
+    },
+  );
+
+  it.each(['מחשבונים', 'מה ללמוד?', 'איפה ללמוד?', 'הכנה וקבלה', 'תפריט ניווט'])(
+    'keeps focus on an outside input when closing %s',
+    (label) => {
+      render(
+        <>
+          <PublicNavBar />
+          <input aria-label="outside input" />
+        </>,
+      );
+      const trigger = screen.getByRole('button', { name: label });
+      fireEvent.click(trigger);
+      const input = screen.getByRole('textbox', { name: 'outside input' });
+      input.focus();
+      fireEvent.click(input);
+      expect(trigger.getAttribute('aria-expanded')).toBe('false');
+      expect(document.activeElement).toBe(input);
+    },
+  );
+
   it('marks only the panel link matching the current pathname as current', () => {
     render(<PublicNavBar />);
     fireEvent.click(screen.getByRole('button', { name: 'איפה ללמוד?' }));
