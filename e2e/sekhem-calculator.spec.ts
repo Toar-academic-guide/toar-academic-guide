@@ -327,7 +327,26 @@ for (const width of [1280, 390]) {
             formatSekhemNumber(api[field as 'score' | 'threshold']!, institutionId),
           );
         }
-        const renderedNumbers = (await row.innerText()).match(/\d+(?:\.\d+)?/g) ?? [];
+        // Approved test update, Jorje 2026-10-29 (sales-copy row 22 gap guard)
+        const renderedText = await row.innerText();
+        let expectedGap: string | undefined;
+        if (
+          (api.decision === 'below' || api.scoreAssessment === 'below_threshold') &&
+          Number.isFinite(api.score) &&
+          Number.isFinite(api.threshold)
+        ) {
+          const gap = api.threshold! - api.score!;
+          if (Number.isFinite(gap) && gap > 0) {
+            const formattedGap = formatSekhemNumber(Number(gap.toPrecision(12)), institutionId);
+            if (Number(formattedGap) > 0) expectedGap = formattedGap;
+          }
+        }
+        // Approved test update, Jorje 2026-10-29 (sales-copy row 22 gap guard)
+        const gapPattern = /חסרות לכם (\d+(?:\.\d+)?) נקודות לסף/g;
+        const displayedGaps = [...renderedText.matchAll(gapPattern)].map((match) => match[1]);
+        expect(displayedGaps).toEqual(expectedGap ? [expectedGap] : []);
+        // Approved test update, Jorje 2026-10-29 (sales-copy row 22 gap guard)
+        const renderedNumbers = renderedText.replace(gapPattern, '').match(/\d+(?:\.\d+)?/g) ?? [];
         for (const number of renderedNumbers) {
           expect(
             [api.score, api.threshold]
@@ -739,7 +758,8 @@ test('Reichman CS below-route flags without scores never become an invented esti
   // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
   await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
   const row = page.getByTestId('result-reichman_cs-reichman');
-  await expect(row).toHaveText('הציונים אינם עומדים בתנאי הקבלה שנבדקו.');
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 22)
+  await expect(row).toHaveText('עוד לא בסף. בואו נמצא דרך.');
   await expect(row.locator('[data-result-number]')).toHaveCount(0);
   await assertStudentCards(page);
   expect(mocks.submissions).toHaveLength(0);

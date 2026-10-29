@@ -238,7 +238,8 @@ describe('API-only result rows', () => {
       }),
     ]);
     const row = screen.getByTestId('result-psychology-reichman');
-    expect(row.textContent).toContain('ציון הקבלה המשוער שלכם נמוך מהסף');
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 22)
+    expect(row.textContent).toContain('חסרות לכם 14 נקודות לסף');
     expect(row.querySelector('[data-result-number="score"]')?.textContent).toBe('636');
     expect(row.querySelector('[data-result-number="threshold"]')?.textContent).toBe('650');
     expect(row.textContent).not.toContain('עומדים');
@@ -255,7 +256,8 @@ describe('API-only result rows', () => {
       }),
     ]);
     const row = screen.getByTestId('result-psychology-reichman');
-    expect(row.textContent).toBe('הציונים אינם עומדים בתנאי הקבלה שנבדקו.');
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 22)
+    expect(row.textContent).toBe('עוד לא בסף. בואו נמצא דרך.');
     expect(row.querySelector('[data-result-number]')).toBeNull();
   });
   it('links each result card to its supplied canonical public programme page', () => {
@@ -325,7 +327,8 @@ describe('API-only result rows', () => {
     const source = report('huji', { score: 21.12, threshold: 21.12, decision: 'below' });
     renderReports([source]);
     const row = screen.getByTestId('result-psychology-huji');
-    expect(within(row).getByText('הציונים מתחת לסף')).toBeTruthy();
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 22)
+    expect(within(row).getByText('עוד לא בסף. בואו נמצא דרך.')).toBeTruthy();
     expect(within(row).getByText('סף קבלה')).toBeTruthy();
     for (const number of row.querySelectorAll('[data-result-number]')) {
       const field = number.getAttribute('data-result-number') as 'score' | 'threshold';
@@ -333,19 +336,21 @@ describe('API-only result rows', () => {
     }
     expect(row.textContent).not.toContain('נדרשת בדיקה מול המוסד');
   });
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 22)
   it.each([
-    ['reichman', 635.7968000000001, '636'],
-    ['reichman', 700, '700'],
-    ['huji', 21.01, '21.01'],
-    ['huji', 25.186, '25.186'],
+    ['reichman', 635.7968000000001, '636', 'עוד לא בסף. בואו נמצא דרך.'],
+    ['reichman', 700, '700', 'עוד לא בסף. בואו נמצא דרך.'],
+    ['huji', 21.01, '21.01', 'חסרות לכם 614.99 נקודות לסף'],
+    ['huji', 25.186, '25.186', 'חסרות לכם 610.814 נקודות לסף'],
   ] as const)(
     'formats %s score %s as %s without changing the API value or verdict',
-    (id, score, shown) => {
+    (id, score, shown, belowLabel) => {
       const source = report(id, { score, threshold: 636, decision: 'below' });
       renderReports([source]);
       const row = screen.getByTestId(`result-psychology-${id}`);
       expect(row.querySelector('[data-result-number="score"]')?.textContent).toBe(shown);
-      expect(within(row).getByText('הציונים מתחת לסף')).toBeTruthy();
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 22)
+      expect(within(row).getByText(belowLabel)).toBeTruthy();
       expect(source.results[0].score).toBe(score);
     },
   );
