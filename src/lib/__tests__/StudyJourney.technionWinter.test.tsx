@@ -30,7 +30,12 @@ vi.mock('@/lib/catalogueClient', () => ({
 vi.mock('@/lib/admissionsEvaluationClient', () => ({ fetchAdmissionsBatch: state.evaluate }));
 import StudyJourney from '@/components/StudyJourney';
 
-const subjects = ['5 יח"ל מתמטיקה — חובה', '5 יח"ל פיזיקה — חובה'];
+// Approved test update, Jorje 2026-10-28
+const subjects = [
+  'מתמטיקה: 5 יחידות בציון 70 לפחות; בעלי 4 יחידות או ציון נמוך מ־70 ב־5 יחידות נדרשים לבחינת סיווג במתמטיקה בציון 70 לפחות.',
+  'פטור מבחינת הסיווג במתמטיקה: קורס חדו״א א׳ (20406) באוניברסיטה הפתוחה בציון 65 לפחות.',
+  '5 יח"ל פיזיקה — חובה',
+];
 const spring = 'באביב תשפ"ז, על בסיס מקום פנוי: סכם 94 — מספר המקומות מצומצם';
 const explanation =
   'כדי לחשב את המסלול במוסד זה צריך נתוני מקצועות בגרות שהמחשבון הרשמי משתמש בהם.';
@@ -105,6 +110,7 @@ describe.each(['detail', 'compare'] as const)('Technion no-score %s requirements
         scope = screen.getByRole('heading', { name }).closest('article')!;
       }
       expect(scope).toBeTruthy();
+      // Approved test update, Jorje 2026-10-28
       for (const subject of subjects)
         expect(
           within(scope)
@@ -115,6 +121,7 @@ describe.each(['detail', 'compare'] as const)('Technion no-score %s requirements
     });
 
     it('loads the no-score view with subject requirements', () => {
+      // Approved test update, Jorje 2026-10-28
       for (const subject of subjects)
         expect(
           within(scope)
@@ -126,11 +133,12 @@ describe.each(['detail', 'compare'] as const)('Technion no-score %s requirements
     it('puts winter first, subjects next, and EE spring last', () => {
       const items = [...scope.querySelectorAll('li')].map((li) => li.textContent);
       expect(items[0], 'winter must be the first requirement').toBe(winter);
-      expect(items.slice(1, 3)).toEqual(subjects);
+      // Approved test update, Jorje 2026-10-28
+      expect(items.slice(1, 4)).toEqual(subjects);
       if (programId === 'technion_ee') {
         expect(scope.textContent).toContain(spring);
         const physics = within(scope).getByText(
-          (_, node) => node?.tagName === 'LI' && node.textContent === subjects[1],
+          (_, node) => node?.tagName === 'LI' && node.textContent === subjects[2],
         );
         const springLine = within(scope).getByText(spring);
         expect(

@@ -7,6 +7,7 @@ import { applyJamdCurriculum } from '@/data/degrees/jamdCurriculum';
 import { repairSamSpiegelUrls } from '@/data/admissions/samSpiegelUrls';
 import { INSTITUTION_BY_ID } from '@/data/institutions';
 import { applyCatalogueContentRepair } from '@/data/admissions/catalogueContentRepair';
+import { applyEngineeringMathRequirements } from '@/data/admissions/engineeringMathRequirements';
 import { applyHaifaOfficialUrls } from '@/data/admissions/haifaOfficialUrls';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type {
@@ -286,6 +287,7 @@ export function serializeProgramRow(args: {
   };
   const repaired = [
     'haifa_psychology',
+    'mon_12220708942_cs',
     'huji_psychology',
     'afeka_ee',
     'afeka_softwareeng',
@@ -298,6 +300,6 @@ export function serializeProgramRow(args: {
   ].includes(program.id)
     ? applyCatalogueContentRepair(serialized)
     : applyHaifaOfficialUrls(serialized);
-  const curriculum = applyJamdCurriculum(repaired);
+  const curriculum = applyJamdCurriculum(applyEngineeringMathRequirements(repaired));
   return curriculum.institutionId === 'spieldocs' ? repairSamSpiegelUrls(curriculum) : curriculum;
 }

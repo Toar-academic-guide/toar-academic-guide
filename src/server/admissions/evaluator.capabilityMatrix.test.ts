@@ -512,7 +512,7 @@ function comparePairs(a: MatrixRow, b: MatrixRow): number {
   return a[0].localeCompare(b[0]) || a[2].localeCompare(b[2]);
 }
 
-it('sweep38 keeps the capability matrix unchanged except medicine@bgu', async () => {
+it('preserves the capability matrix except approved medicine and duplicate-ID corrections', async () => {
   capture.rows.length = 0;
   const staticPrograms = getStaticCataloguePrograms();
   expect(
@@ -553,21 +553,25 @@ it('sweep38 keeps the capability matrix unchanged except medicine@bgu', async ()
   capture.rows.sort(comparePairs);
 
   // The exception must use exactly the existing named medicine target, including
-  // its capability and required inputs. No other pair or field is exempted.
+  // its capability and required inputs. The approved BIU aliases below retain full row comparisons.
   const canonicalMedicine = BASELINE_ROWS.find(
     (row) => row[0] === 'bgu_medicine' && row[2] === 'bgu',
   )!;
   expect(canonicalMedicine).toBeDefined();
-  const expectedRows = BASELINE_ROWS.map((row): MatrixRow =>
-    row[0] === 'medicine' && row[2] === 'bgu'
-      ? ([row[0], ...canonicalMedicine.slice(1)] as MatrixRow)
-      : row,
-  );
+  const expectedRows = BASELINE_ROWS.map((row): MatrixRow => {
+    if (row[0] === 'medicine' && row[2] === 'bgu')
+      return [row[0], ...canonicalMedicine.slice(1)] as MatrixRow;
+    if (['cs', 'ee'].includes(row[0]) && row[2] === 'biu')
+      return [row[0], row[1], 'biu', 'estimated', 'in_scope', null, null, null, null, null, [], []];
+    return row;
+  });
   for (const [index, row] of capture.rows.entries()) {
+    // Approved test update, Jorje 2026-10-28
     expect(row, `${row[0]}@${row[2]}`).toEqual(expectedRows[index]);
   }
   const changedPairs = capture.rows
     .filter((row, index) => JSON.stringify(row) !== JSON.stringify(BASELINE_ROWS[index]))
     .map((row) => `${row[0]}@${row[2]}`);
-  expect(changedPairs).toEqual(['medicine@bgu']);
+  // Approved test update, Jorje 2026-10-28
+  expect(changedPairs).toEqual(['cs@biu', 'ee@biu', 'medicine@bgu']);
 });

@@ -1,3 +1,5 @@
+import { institutionLink } from '@/lib/institutionLinks';
+import { HAIFA_NO_CALCULATION_NOTE } from '@/data/admissions/haifaNoCalculationNote';
 import { isBatchCUnsupportedProgramId } from '@/data/admissions/batchCUnsupportedProgramIds';
 import { FIELD_ENRICHMENT, PROGRAM_FIELD_MAP } from '@/data/degrees/fieldEnrichment';
 import { DANON_PROGRAM_NAMES } from '@/data/admissions/danon';
@@ -311,14 +313,19 @@ export function resultExplanation(
   if (result.degradationReason === 'incomplete_published_requirements') return undefined;
   if (result.linkedInstitutionId === 'danon' && result.kind === 'requirements_only')
     return undefined;
+  if (result.kind === 'tracked_missing_rule' || result.kind === 'authority_unavailable') {
+    if (result.explanation.trim() && !/[a-zA-Z]/.test(result.explanation))
+      return result.explanation;
+    return result.kind === 'authority_unavailable'
+      ? 'נתוני הקבלה הדרושים לחישוב אינם זמינים כרגע. אפשר לבדוק ישירות באתר המוסד.'
+      : 'אין כרגע חישוב קבלה מאומת למסלול הזה. אפשר לבדוק את התנאים העדכניים באתר המוסד.';
+  }
   switch (result.kind) {
     case 'requirements_only':
-    case 'tracked_missing_rule':
     case 'unsupported':
       if (isBatchCUnsupportedProgramId(programId ?? '', result.linkedInstitutionId))
         return result.explanation;
       return 'אין כרגע חישוב קבלה מאומת למסלול הזה. אפשר לבדוק את התנאים העדכניים באתר המוסד.';
-    case 'authority_unavailable':
     case 'degraded':
       return 'נתוני הקבלה הדרושים לחישוב אינם זמינים כרגע. אפשר לבדוק ישירות באתר המוסד.';
     case 'manual_gate':
@@ -357,3 +364,23 @@ export function groupJourneyRows(rows: JourneyRow[], groupBy: 'field' | 'institu
 }
 
 export { institutionLink as officialUrl } from '@/lib/institutionLinks';
+
+export function showsOfficialNoCalculationNote(result?: AdmissionsEvaluationResult): boolean {
+  return (
+    (result?.kind === 'tracked_missing_rule' || result?.kind === 'authority_unavailable') &&
+    result.explanation === HAIFA_NO_CALCULATION_NOTE &&
+    Boolean(result.officialUrls?.length && resultSourceLinks(result)?.length)
+  );
+}
+
+export function resultSourceLinks(result?: AdmissionsEvaluationResult, fallbackUrl?: string) {
+  if (result?.kind !== 'tracked_missing_rule' && result?.kind !== 'authority_unavailable')
+    return undefined;
+  const hasSources = Boolean(result.officialUrls?.length);
+  return (hasSources ? result.officialUrls! : [fallbackUrl]).flatMap((source, index) => {
+    const href = institutionLink(source, result.linkedInstitutionId);
+    return href
+      ? [{ href, label: hasSources ? (index === 0 ? 'למקור הרשמי' : 'למקור נוסף') : 'לאתר המוסד' }]
+      : [];
+  });
+}

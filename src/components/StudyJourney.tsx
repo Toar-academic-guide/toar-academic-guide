@@ -42,6 +42,8 @@ import {
   groupJourneyRows,
   resultLabel,
   resultExplanation,
+  resultSourceLinks,
+  showsOfficialNoCalculationNote,
   isTechnionMedicineScore,
   formatJourneyScore,
   officialUrl,
@@ -445,6 +447,8 @@ export default function StudyJourney({
       activeRow?.institution.programUrl,
     activeRow?.institution.id,
   );
+  const activeSourceLinks = resultSourceLinks(activeRow?.result, activeOfficialUrl);
+  const activeShowsNoCalculationNote = showsOfficialNoCalculationNote(activeRow?.result);
   const description = catalogueDescription(details?.programDescription);
   const counts = useMemo(() => {
     const sets: Partial<Record<JourneyLocation, Set<string>>> = {};
@@ -748,6 +752,7 @@ export default function StudyJourney({
   const groups = groupJourneyRows(visibleRows, groupBy);
   const rowView = (row: JourneyRow) => {
     const status = resultLabel(row.result, row.failed, calculating && !row.result, row.program.id);
+    const sourceLinks = resultSourceLinks(row.result, row.institution.programUrl);
     return (
       <article className="journey-result-row" key={row.id}>
         <div className="journey-row-info">
@@ -758,11 +763,35 @@ export default function StudyJourney({
                 ? row.institution.name
                 : row.fieldName}
           </button>
-          <span
-            className={`journey-status status-${isTechnionMedicineScore(row.result, row.program.id) && !row.failed ? 'match' : status.group}`}
-          >
-            {status.label}
-          </span>
+          {!showsOfficialNoCalculationNote(row.result) && (
+            <span
+              className={`journey-status status-${isTechnionMedicineScore(row.result, row.program.id) && !row.failed ? 'match' : status.group}`}
+            >
+              {status.label}
+            </span>
+          )}
+          {sourceLinks && (
+            <>
+              <p className="journey-result-explanation">
+                {resultExplanation(row.result, row.program.id)}
+              </p>
+              <div className="journey-links">
+                {sourceLinks.map(({ href, label }) => (
+                  <ProgramTrackedLink
+                    key={href}
+                    event="institution_site_clicked"
+                    programId={row.program.id}
+                    institutionId={row.institution.id}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href={href}
+                  >
+                    {label}
+                  </ProgramTrackedLink>
+                ))}
+              </div>
+            </>
+          )}
           {isTechnionMedicineScore(row.result, row.program.id) && !row.failed && (
             <TechnionMedicineComparison score={row.result.score} />
           )}
@@ -1431,14 +1460,20 @@ export default function StudyJourney({
                     </button>
                   </div>
                   {description && !isBatchCUnsupported && <p>{description}</p>}
-                  <span
-                    className={`journey-status status-${isTechnionMedicineScore(activeRow.result, activeRow.program.id) && !activeRow.failed ? 'match' : resultLabel(activeRow.result, activeRow.failed, false, activeRow.program.id).group}`}
-                  >
-                    {calculating && !activeRow.result && !activeRow.failed
-                      ? 'מחשבים התאמה…'
-                      : resultLabel(activeRow.result, activeRow.failed, false, activeRow.program.id)
-                          .label}
-                  </span>
+                  {!activeShowsNoCalculationNote && (
+                    <span
+                      className={`journey-status status-${isTechnionMedicineScore(activeRow.result, activeRow.program.id) && !activeRow.failed ? 'match' : resultLabel(activeRow.result, activeRow.failed, false, activeRow.program.id).group}`}
+                    >
+                      {calculating && !activeRow.result && !activeRow.failed
+                        ? 'מחשבים התאמה…'
+                        : resultLabel(
+                            activeRow.result,
+                            activeRow.failed,
+                            false,
+                            activeRow.program.id,
+                          ).label}
+                    </span>
+                  )}
                   {isTechnionMedicineScore(activeRow.result, activeRow.program.id) ? (
                     <TechnionMedicineComparison score={activeRow.result.score} />
                   ) : biuFloorResult ? (
@@ -1519,26 +1554,42 @@ export default function StudyJourney({
                       activeRow.result?.degradationReason !==
                         'incomplete_published_requirements' && (
                         <>
-                          <button onClick={() => go('missing')}>
-                            {activeRow.result?.scoreAssessment
-                              ? 'עדכון נתונים ותנאים נוספים'
-                              : 'השלמת נתונים לחישוב'}
-                          </button>
+                          {!activeShowsNoCalculationNote && (
+                            <button onClick={() => go('missing')}>
+                              {activeRow.result?.scoreAssessment
+                                ? 'עדכון נתונים ותנאים נוספים'
+                                : 'השלמת נתונים לחישוב'}
+                            </button>
+                          )}
                           <button onClick={() => go('alternatives')}>עוד דרכי קבלה</button>
                         </>
                       )}
-                    {activeOfficialUrl && (
-                      <ProgramTrackedLink
-                        event="institution_site_clicked"
-                        programId={activeRow.program.id}
-                        institutionId={activeRow.institution.id}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        href={activeOfficialUrl}
-                      >
-                        לאתר המוסד
-                      </ProgramTrackedLink>
-                    )}
+                    {activeSourceLinks
+                      ? activeSourceLinks.map(({ href, label }) => (
+                          <ProgramTrackedLink
+                            key={href}
+                            event="institution_site_clicked"
+                            programId={activeRow.program.id}
+                            institutionId={activeRow.institution.id}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            href={href}
+                          >
+                            {label}
+                          </ProgramTrackedLink>
+                        ))
+                      : activeOfficialUrl && (
+                          <ProgramTrackedLink
+                            event="institution_site_clicked"
+                            programId={activeRow.program.id}
+                            institutionId={activeRow.institution.id}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            href={activeOfficialUrl}
+                          >
+                            לאתר המוסד
+                          </ProgramTrackedLink>
+                        )}
                     <ProgramShareButton
                       key={activeRow.program.id}
                       programId={activeRow.program.id}

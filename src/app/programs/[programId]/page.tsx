@@ -17,7 +17,7 @@ import {
 import { catalogueAdmissionRequirements } from '@/lib/catalogueDisplayText';
 import { ROUTES } from '@/lib/routes';
 import { buildProgramMetadata } from '@/lib/seo/metadata';
-import { programLd, programBreadcrumbLd, programFaqPageLd } from '@/lib/seo/jsonLd';
+import { programLd, programBreadcrumbLd } from '@/lib/seo/jsonLd';
 import JsonLd from '@/components/seo/JsonLd';
 
 export const dynamic = 'force-dynamic';
@@ -69,11 +69,10 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
   const institutionRequirementSources = await getPublicProgramRequirementSources(data);
   const related = await getPublicRelatedPrograms(program.id);
   const calculatorOfferings = await loadSekhemCalculatorOfferings();
-  const faq = programFaqPageLd(data, institutionRequirementSources, calculatorOfferings);
 
   return (
     <WayPageShell>
-      <JsonLd data={[await programLd(data), programBreadcrumbLd(data), ...(faq ? [faq] : [])]} />
+      <JsonLd data={[await programLd(data), programBreadcrumbLd(data)]} />
       <main
         dir="rtl"
         // Lets crawl tests tell subject pages from institution programme pages.

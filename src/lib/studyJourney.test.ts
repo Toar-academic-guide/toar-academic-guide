@@ -1,3 +1,5 @@
+import { FORMULA_BACKED_VERIFICATION_LEDGER } from '@/data/admissions/formulaBackedVerificationLedger';
+import qaReplay from '../../docs/admissions-verification/evidence/2026-10-29-haifa-qa-replay.json';
 import braudeCsFixture from './__fixtures__/braudeCsCatalogue.json';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import { catalogueAdmissionRequirements } from './catalogueDisplayText';
@@ -6,6 +8,7 @@ import {
   toggleLocation,
   resultLabel,
   resultExplanation,
+  showsOfficialNoCalculationNote,
   groupJourneyRows,
   studyFields,
   matchesStudyField,
@@ -16,7 +19,10 @@ import {
 import { getStaticCataloguePrograms, getStaticCatalogueInstitutions } from './catalogueStatic';
 import { evaluateBatchBManualPath } from '@/server/admissions/batchBManualPathEvaluation';
 import { PROGRAM_CANONICAL_ALIASES } from './seo/programAliases';
-import type { AdmissionsEvaluationResult } from '@/types/admissionsEvaluation';
+import type {
+  AdmissionsEvaluationInput as AdmissionsEvaluationRequest,
+  AdmissionsEvaluationResult,
+} from '@/types/admissionsEvaluation';
 import { evaluateAdmissionsForProgram } from '@/server/admissions/evaluator';
 
 vi.mock('server-only', () => ({}));
@@ -388,3 +394,116 @@ it('QA block 1: mon_12220708942_cs result detail retains published CS conditions
   expect(detail?.programUrl).toBe('https://w3.braude.ac.il/intrested/');
   expect(program).toEqual(braudeCsFixture.program);
 });
+
+describe('H1 showsOfficialNoCalculationNote', () => {
+  it.each(['tracked_missing_rule', 'authority_unavailable'] as const)(
+    'recognizes the Haifa note with official sources for %s only',
+    (kind) => {
+      const result = {
+        ...qaReplay.h1.result,
+        kind,
+        capability: kind,
+      } as AdmissionsEvaluationResult;
+      expect(showsOfficialNoCalculationNote(result)).toBe(true);
+      for (const explanation of [
+        'המיפוי של מסלול מערכות המידע החד־חוגי הרגיל למחשבון הרשמי טרם אומת. לא ניתן לקבוע זכאות עבורו.',
+        'סף המחשבון אינו תואם את הסף שפורסם למסלול.',
+      ]) {
+        expect(showsOfficialNoCalculationNote({ ...result, explanation })).toBe(false);
+      }
+      expect(
+        showsOfficialNoCalculationNote({
+          ...qaReplay.h1.bgu.result,
+          kind,
+          capability: kind,
+        } as AdmissionsEvaluationResult),
+      ).toBe(false);
+      expect(showsOfficialNoCalculationNote({ ...result, officialUrls: [] })).toBe(false);
+      expect(showsOfficialNoCalculationNote({ ...result, officialUrls: undefined })).toBe(false);
+    },
+  );
+
+  it.each([
+    'exact',
+    'estimated',
+    'needs_input',
+    'manual_gate',
+    'requirements_only',
+    'unsupported',
+    'degraded',
+    'open_admission',
+  ] as const)('does not hide the chip for %s even with the note and official sources', (kind) => {
+    expect(
+      showsOfficialNoCalculationNote({ ...qaReplay.h1.result, kind } as AdmissionsEvaluationResult),
+    ).toBe(false);
+  });
+
+  it('does not hide the chip before a result is available', () => {
+    expect(showsOfficialNoCalculationNote(undefined)).toBe(false);
+  });
+});
+
+// H1: keep the real captured API explanation instead of substituting generic copy.
+it.each(['tracked_missing_rule', 'authority_unavailable'] as const)(
+  'H1 preserves the API explanation for %s at both institutions',
+  (kind) => {
+    for (const captured of [qaReplay.h1.result, qaReplay.h1.bgu.result]) {
+      expect(
+        resultExplanation({ ...captured, kind, capability: kind } as AdmissionsEvaluationResult),
+      ).toBe(captured.explanation);
+    }
+  },
+);
+
+it.each([
+  ['medicine', 'tau', 'authority_unavailable'],
+  ['tau_medicine', 'tau', 'authority_unavailable'],
+  ['physiotherapy', 'tau', 'authority_unavailable'],
+  ['colmgmt_cs', 'colman', 'authority_unavailable'],
+  ['colmgmt_cs', 'colman', 'tracked_missing_rule'],
+] as const)(
+  'H1 Latin ledger fallback for %s at %s (%s)',
+  async (programId, institutionId, kind) => {
+    const program = getStaticCataloguePrograms().find((p) => p.id === programId)!;
+    const institution = getStaticCatalogueInstitutions().find((i) => i.id === institutionId)!;
+    const evaluation = await evaluateAdmissionsForProgram({
+      program: { ...program, linkedInstitutionIds: [institutionId] },
+      institutions: [institution],
+      input: {
+        ...qaReplay.h1.request,
+        degreeId: programId,
+      } as unknown as AdmissionsEvaluationRequest,
+      freshnessStatesBySourceId: new Map(),
+      fetcher: vi
+        .fn<typeof fetch>()
+        .mockRejectedValue(new Error('No live requests in H1 regression')),
+      now: new Date('2026-10-29T00:00:00Z'),
+    });
+    // The named routes currently hit earlier Hebrew requirements/policy gates.
+    // Retain the evaluator's result shape and real links; replay the existing English
+    // ledger note as an unavailable API result, without inventing prose or live evidence.
+    const apiResult: AdmissionsEvaluationResult = {
+      ...evaluation.results[0],
+      kind,
+      capability: kind,
+      degradationReason: undefined,
+      officialUrls: evaluation.results[0].officialUrls ?? [
+        FORMULA_BACKED_VERIFICATION_LEDGER.find(
+          (row) => row.pairId === `${programId}__${institutionId}`,
+        )!.sourceUrl,
+      ],
+      explanation: FORMULA_BACKED_VERIFICATION_LEDGER.find(
+        (row) => row.pairId === `${programId}__${institutionId}`,
+      )!.reason,
+    };
+    expect(apiResult.kind).toBe(kind);
+    expect(apiResult.explanation).toMatch(/[a-zA-Z]/);
+    expect(apiResult.officialUrls?.length).toBeGreaterThan(0);
+    const generic =
+      kind === 'authority_unavailable'
+        ? 'נתוני הקבלה הדרושים לחישוב אינם זמינים כרגע. אפשר לבדוק ישירות באתר המוסד.'
+        : 'אין כרגע חישוב קבלה מאומת למסלול הזה. אפשר לבדוק את התנאים העדכניים באתר המוסד.';
+
+    expect(resultExplanation(apiResult, programId)).toBe(generic);
+  },
+);

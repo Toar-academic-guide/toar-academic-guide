@@ -18,29 +18,11 @@ import {
   getPublicProgramPageData,
   getPublicProgramRequirementSources,
 } from '@/lib/publicCataloguePages';
-import { programFaqPageLd } from './jsonLd';
+import * as jsonLd from './jsonLd';
 import SekhemCalculatorLink from '@/components/seo/SekhemCalculatorLink';
 import { canonicalProgramId } from './programAliases';
 import { calculatorOfferings, sekhemPairSupport } from '@/lib/sekhemCalculatorSupport';
 import ProgramPage from '@/app/programs/[programId]/page';
-
-const FAQ_IDS = [
-  'bgu_accounting',
-  'bgu_business',
-  'bgu_psychology',
-  'haifa_accounting',
-  'haifa_communication',
-  'haifa_infosystems',
-  'haifa_nursing',
-  'haifa_politicalscience',
-  'haifa_sociology',
-  'huji_accounting',
-  'huji_business',
-  'huji_law',
-  'tau_accounting',
-  'tau_business',
-  'tau_law',
-];
 
 // Independent rendered-copy oracle: a named composite followed by a cutoff.
 // Do not call the production selector here: this must catch missing wording support.
@@ -87,47 +69,18 @@ describe('published-threshold calculator links', () => {
     });
   });
 
-  it('links every existing admission FAQ answer with a rendered threshold without changing their published text', async () => {
-    const selected: string[] = [];
-    const thresholds: string[] = [];
-    for (const program of getStaticCataloguePrograms()) {
-      const data = (await getPublicProgramPageData(program.id))!;
-      const sources = await getPublicProgramRequirementSources(data);
-      const faq = programFaqPageLd(data, sources);
-      if (!faq) continue;
-      for (const entity of faq.mainEntity) {
-        const answer = entity.acceptedAnswer;
-        if (entity.name === 'מהם תנאי הקבלה למסלול?') {
-          // Preserve the exact published answer for linked AND unlinked answers.
-          expect(answer.text).toBe(sources[data.institutions[0].id].requirements.join(' '));
-          if (
-            containsRenderedThreshold(answer.text) &&
-            ['score', 'gate'].includes(
-              sekhemPairSupport(
-                sources[data.institutions[0].id].program,
-                data.institutions[0].id,
-              ) ?? '',
-            )
-          )
-            thresholds.push(program.id);
-        }
-        if ('potentialAction' in answer) {
-          selected.push(program.id);
-          expect(entity.name).toBe('מהם תנאי הקבלה למסלול?');
-          expect(answer.text).toBe(sources[data.institutions[0].id].requirements.join(' '));
-          expect(answer.potentialAction).toEqual({
-            '@type': 'ViewAction',
-            name: 'מחשבון סכם וסיכויי קבלה',
-            target: 'https://findmyway.co.il/sekhem-calculator',
-          });
-          const html = renderToStaticMarkup(<SekhemCalculatorLink data={data} sources={sources} />);
-          expect(html).toContain('href="/sekhem-calculator?program=');
-        }
-      }
-    }
-    expect(selected.sort()).toEqual(FAQ_IDS);
-    expect(selected).toEqual(thresholds.sort());
-    expect(selected).toHaveLength(15);
+  it('keeps FAQPage markup and FAQ calculator actions removed', async () => {
+    expect(jsonLd).not.toHaveProperty('programFaqPageLd');
+    const html = renderToStaticMarkup(
+      await ProgramPage({ params: Promise.resolve({ programId: 'tau_law' }) }),
+    );
+    const document = new DOMParser().parseFromString(html, 'text/html');
+    const structured = Array.from(document.querySelectorAll('script[type="application/ld+json"]'))
+      .map((script) => script.textContent)
+      .join('');
+    expect(structured).not.toContain('FAQPage');
+    expect(structured).not.toContain('potentialAction');
+    expect(html).toContain('href="/sekhem-calculator?program=tau_law"');
   });
 
   it('renders a contextual programme link only when a threshold is published', async () => {
@@ -220,6 +173,7 @@ describe('published-threshold calculator links', () => {
       .map((script) => script.textContent)
       .join('');
     expect(faqScripts).not.toContain('potentialAction');
+    expect(faqScripts).not.toContain('FAQPage');
   });
 
   it('every linked source maps to the same supported calculator offerings', async () => {

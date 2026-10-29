@@ -40,17 +40,30 @@ describe('Batch C API dispatch', () => {
         const result = data.results.find(
           (row: AdmissionsEvaluationResult) => row.linkedInstitutionId === config.institutionId,
         );
-        expect(result).toMatchObject({
-          capability: 'unsupported',
-          kind: 'unsupported',
-          decision: 'unknown',
-          explanation: config.explanationHe,
-          nextAction: config.nextActionHe,
-        });
+        if (degreeId === 'haifa_engineering' && !('bagrut' in scores)) {
+          // Approved test update, Jorje 2026-10-28
+          expect(result).toMatchObject({
+            capability: 'tracked_missing_rule',
+            kind: 'tracked_missing_rule',
+            decision: 'unknown',
+            // Approved test update, Jorje 2026-10-29
+            explanation: 'עדיין לא מחשבים כאן את ציון הקבלה של חיפה',
+            nextAction: 'בדקו במחשבון הרשמי של אוניברסיטת חיפה.',
+          });
+        } else {
+          expect(result).toMatchObject({
+            capability: 'unsupported',
+            kind: 'unsupported',
+            decision: 'unknown',
+            explanation: config.explanationHe,
+            nextAction: config.nextActionHe,
+          });
+        }
         expect(result.requiredInputs).toBeUndefined();
         expect(result.scoreAssessment).toBeUndefined();
         expect(result.score).toBeUndefined();
         expect(result.threshold).toBeUndefined();
+        // Approved test update, Jorje 2026-10-29
         expect(result.explanation).not.toMatch(/מתואם|סכם|מצרף|[a-zA-Z]/);
       }
     },

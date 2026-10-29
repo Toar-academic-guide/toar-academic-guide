@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { FORMULA_BACKED_VERIFICATION_LEDGER } from '@/data/admissions/formulaBackedVerificationLedger';
 
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -11,6 +12,11 @@ import { evaluateOnoPublishedRoutes } from '@/server/admissions/onoPublishedRout
 import { evaluateBatchBManualPath } from '@/server/admissions/batchBManualPathEvaluation';
 import { getStaticCatalogueInstitutions } from '@/lib/catalogueStatic';
 import { evaluateColmanBagrutResult } from '@/server/admissions/colmanBagrutEvaluation';
+import qaReplay from '../../docs/admissions-verification/evidence/2026-10-29-haifa-qa-replay.json';
+import type {
+  AdmissionsEvaluationInput as AdmissionsEvaluationRequest,
+  AdmissionsEvaluationResult,
+} from '@/types/admissionsEvaluation';
 import type { AdmissionsEvaluationReport } from '@/types/admissionsEvaluation';
 import { getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 
@@ -58,9 +64,13 @@ const programs = getStaticCataloguePrograms();
 
 // Amit ruling 2026-10-25 07:30 via Jorje
 it.each([
-  [95, 'הסכם שלך 95, מעל סף הזימון המשוער (92)', 'text-green-700'],
-  [84.5, 'הסכם שלך 84.5, מתחת לסף הזימון המשוער (92)', 'text-slate-500'],
-  [92, 'הסכם שלך 92, מעל סף הזימון המשוער (92)', 'text-green-700'],
+  // Approved test update, Jorje 2026-10-29
+  [95, 'ציון הקבלה שלך 95, מעל סף הזימון המשוער (92)', 'text-green-700'],
+  // Approved test update, Jorje 2026-10-29
+  [84.5, 'ציון הקבלה שלך 84.5, מתחת לסף הזימון המשוער (92)', 'text-slate-500'],
+  // Approved test update, Jorje 2026-10-28
+  // Approved test update, Jorje 2026-10-29
+  [92, 'ציון הקבלה שלך 92, בסף הזימון המשוער (92)', 'text-green-700'],
 ] as const)(
   'renders one medicine comparison for sekem %s without an admission verdict',
   async (score, comparison, color) => {
@@ -105,7 +115,8 @@ it.each([
     const line = screen.getByText(comparison, { exact: true });
     expect(line.classList.contains(color)).toBe(true);
     expect(line.className).not.toMatch(/red|rose|amber|yellow|danger|warning/);
-    expect(screen.getAllByText(/הסכם שלך/)).toHaveLength(1);
+    // Approved test update, Jorje 2026-10-29
+    expect(screen.getAllByText(/ציון הקבלה שלך/)).toHaveLength(1);
     expect(screen.queryByText('אין הכרעת קבלה')).toBeNull();
     expect(screen.queryByText(/סף זימון משוער למבחן המו"ר/)).toBeNull();
     expect(screen.queryByText(/סכם לרפואה|סכם 84\.5|סכם 95|סכם 92/)).toBeNull();
@@ -163,6 +174,159 @@ function route(id: string, durationWeeks: number, effortPoints: number) {
 }
 
 describe('CalculatorResults', () => {
+  it.each([
+    ['haifa', 'authority_unavailable'],
+    ['haifa', 'tracked_missing_rule'],
+    ['bgu', 'tracked_missing_rule'],
+  ] as const)(
+    'H1 hides the no-calculation status chip only for Haifa (%s, %s)',
+    async (institutionId, kind) => {
+      const captured = institutionId === 'haifa' ? qaReplay.h1.result : qaReplay.h1.bgu.result;
+      const result = { ...captured, kind, capability: kind } as AdmissionsEvaluationResult;
+      hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(report([result]));
+      render(
+        <CalculatorResults
+          degreeId={institutionId === 'haifa' ? 'haifa_psychology' : qaReplay.h1.bgu.programId}
+          programs={programs}
+          psychometric={700}
+          bagrut={86}
+          onBack={() => {}}
+        />,
+      );
+      expect(await screen.findByText(result.explanation, { exact: true })).toBeTruthy();
+      expect(screen.getByRole('link', { name: 'למקור הרשמי' })).toBeTruthy();
+      if (institutionId === 'haifa') {
+        expect(screen.queryByLabelText(/^אוניברסיטת חיפה: /)).toBeNull();
+        expect(screen.queryByText('האימות טרם הושלם')).toBeNull();
+        expect(screen.queryByText('חסר אימות רשמי')).toBeNull();
+      } else {
+        expect(screen.getByLabelText(`${result.institution.name}: חסר אימות רשמי`)).toBeTruthy();
+        expect(screen.getByText('חסר אימות רשמי')).toBeTruthy();
+      }
+    },
+  );
+
+  it.each([
+    ['haifa', 'authority_unavailable', true],
+    ['haifa', 'tracked_missing_rule', true],
+    ['bgu', 'authority_unavailable', true],
+    ['bgu', 'tracked_missing_rule', true],
+    ['bgu', 'authority_unavailable', false],
+    ['bgu', 'tracked_missing_rule', false],
+  ] as const)(
+    'H1 shows %s %s API explanation and all links (sources=%s)',
+    async (institutionId, kind, hasSources) => {
+      const captured = institutionId === 'haifa' ? qaReplay.h1.result : qaReplay.h1.bgu.result;
+      const result = {
+        ...captured,
+        kind,
+        capability: kind,
+        officialUrls: hasSources ? captured.officialUrls : [],
+      } as AdmissionsEvaluationResult;
+      const degreeId = institutionId === 'haifa' ? 'haifa_psychology' : qaReplay.h1.bgu.programId;
+      hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(report([result]));
+      render(
+        <CalculatorResults
+          degreeId={degreeId}
+          programs={programs}
+          psychometric={700}
+          bagrut={qaReplay.h1.request.bagrut}
+          onBack={() => {}}
+        />,
+      );
+      expect(await screen.findByText(result.explanation, { exact: true })).toBeTruthy();
+      if (hasSources) {
+        for (const source of captured.officialUrls) {
+          const expected = new URL(source);
+          const link = screen.getAllByRole('link').find((element) => {
+            const actual = new URL(element.getAttribute('href')!, window.location.origin);
+            return actual.origin === expected.origin && actual.pathname === expected.pathname;
+          });
+          expect(link, source).toBeTruthy();
+          expect(new URL(link!.getAttribute('href')!).searchParams.get('utm_source')).toBe('myway');
+        }
+        expect(screen.queryByRole('link', { name: 'לאתר המוסד' })).toBeNull();
+      } else {
+        expect(screen.getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toMatch(
+          /^https:\/\//,
+        );
+      }
+    },
+  );
+
+  it.each([
+    ['medicine', 'tau', 'authority_unavailable'],
+    ['tau_medicine', 'tau', 'authority_unavailable'],
+    ['physiotherapy', 'tau', 'authority_unavailable'],
+    ['colmgmt_cs', 'colman', 'authority_unavailable'],
+    ['colmgmt_cs', 'colman', 'tracked_missing_rule'],
+  ] as const)(
+    'H1 Latin fallback on CalculatorResults for %s at %s (%s) retains official links',
+    async (programId, institutionId, kind) => {
+      const program = getStaticCataloguePrograms().find((p) => p.id === programId)!;
+      const institution = getStaticCatalogueInstitutions().find((i) => i.id === institutionId)!;
+      const evaluation = await evaluateAdmissionsForProgram({
+        program: { ...program, linkedInstitutionIds: [institutionId] },
+        institutions: [institution],
+        input: {
+          ...qaReplay.h1.request,
+          degreeId: programId,
+        } as unknown as AdmissionsEvaluationRequest,
+        freshnessStatesBySourceId: new Map(),
+        fetcher: vi
+          .fn<typeof fetch>()
+          .mockRejectedValue(new Error('No live requests in H1 regression')),
+        now: new Date('2026-10-29T00:00:00Z'),
+      });
+      // The named routes currently hit earlier Hebrew requirements/policy gates.
+      // Retain the evaluator's result shape and real links; replay the existing English
+      // ledger note as an unavailable API result, without inventing prose or live evidence.
+      const apiResult: AdmissionsEvaluationResult = {
+        ...evaluation.results[0],
+        kind,
+        capability: kind,
+        degradationReason: undefined,
+        officialUrls: evaluation.results[0].officialUrls ?? [
+          FORMULA_BACKED_VERIFICATION_LEDGER.find(
+            (row) => row.pairId === `${programId}__${institutionId}`,
+          )!.sourceUrl,
+        ],
+        explanation: FORMULA_BACKED_VERIFICATION_LEDGER.find(
+          (row) => row.pairId === `${programId}__${institutionId}`,
+        )!.reason,
+      };
+      expect(apiResult.kind).toBe(kind);
+      expect(apiResult.explanation).toMatch(/[a-zA-Z]/);
+      expect(apiResult.officialUrls?.length).toBeGreaterThan(0);
+      const generic =
+        kind === 'authority_unavailable'
+          ? 'נתוני הקבלה הדרושים לחישוב אינם זמינים כרגע. אפשר לבדוק ישירות באתר המוסד.'
+          : 'אין כרגע חישוב קבלה מאומת למסלול הזה. אפשר לבדוק את התנאים העדכניים באתר המוסד.';
+
+      hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(report([apiResult]));
+      render(
+        <CalculatorResults
+          degreeId={programId}
+          programs={programs}
+          psychometric={700}
+          bagrut={86}
+          onBack={() => {}}
+        />,
+      );
+      expect(await screen.findByText(generic, { exact: true })).toBeTruthy();
+      expect(screen.queryByText(apiResult.explanation, { exact: true })).toBeNull();
+      for (const source of apiResult.officialUrls!) {
+        const expected = new URL(source);
+        expect(
+          screen.getAllByRole('link').some((element) => {
+            const actual = new URL(element.getAttribute('href')!, window.location.origin);
+            return actual.origin === expected.origin && actual.pathname === expected.pathname;
+          }),
+          source,
+        ).toBe(true);
+      }
+    },
+  );
   it.each([
     [85, 'הציונים עומדים בסף'],
     [84.99, 'הציונים מתחת לסף'],
@@ -1391,7 +1555,10 @@ describe('CalculatorResults', () => {
       />,
     );
 
-    expect(await screen.findByText('הסכם שלך 84.5, מתחת לסף הזימון המשוער (92)')).toBeTruthy();
+    // Approved test update, Jorje 2026-10-29
+    expect(
+      await screen.findByText('ציון הקבלה שלך 84.5, מתחת לסף הזימון המשוער (92)'),
+    ).toBeTruthy();
     expect(screen.getByText('קבלה דרך מבחני מו"ר')).toBeTruthy();
     expect(screen.queryByText(/סף זימון משוער למבחן המו"ר/)).toBeNull();
     expect(screen.queryByLabelText(/הטכניון.*(?:מתחת לסף|מתקבל\/ת|אפשר להגיש מועמדות)/)).toBeNull();

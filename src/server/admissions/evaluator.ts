@@ -79,7 +79,11 @@ import {
   type AdmissionsCapabilityEntry,
 } from './capabilityMatrix';
 import { runHaifaAdmissionsProof } from '@/server/ingestion/adapters/haifaAdmissions';
-import { evaluateHaifaProgrammePolicy, getHaifaProgrammePolicy } from './haifaProgrammePolicy';
+import {
+  evaluateHaifaProgrammePolicy,
+  getHaifaProgrammePolicy,
+  haifaMissingRuleResult,
+} from './haifaProgrammePolicy';
 import { getHaifaInformationSystemsTrack } from '@/lib/haifaAdmissionsInputs';
 import { HAIFA_REQUIRED_INPUT_LABELS } from '@/lib/haifaAdmissionsInputs';
 import { runTauAdmissionsProof } from '@/server/ingestion/adapters/tauAdmissions';
@@ -194,6 +198,7 @@ export async function evaluateAdmissionsForProgram(args: {
 
   const results = await evaluateCapabilityEntries({
     input: evaluationInput,
+    haifaAverageIsProxy: normalized.proxyInstitutions.has('haifa'),
     program,
     institutions,
     capabilityEntries,
@@ -327,6 +332,7 @@ function withVerifiedAdmissionInformation(
 
 async function evaluateCapabilityEntries(args: {
   input: AdmissionsEvaluationRequest;
+  haifaAverageIsProxy: boolean;
   program: CatalogueProgram;
   institutions: CatalogueInstitution[];
   capabilityEntries: AdmissionsCapabilityEntry[];
@@ -341,6 +347,21 @@ async function evaluateCapabilityEntries(args: {
     const institution = institutions.find((item) => item.id === entry.institutionId);
     if (!institution) {
       continue;
+    }
+
+    if (
+      institution.id === 'haifa' &&
+      (args.haifaAverageIsProxy || input.extraInputs?.haifaBagrutAverage === undefined)
+    ) {
+      const missingRule = haifaMissingRuleResult(program.id, publicInstitutionShape(institution), {
+        averageIsProxy: args.haifaAverageIsProxy,
+        capability: entry.capability,
+        input,
+      });
+      if (missingRule) {
+        results[index] = missingRule;
+        continue;
+      }
     }
 
     if (isBiuPublishedRoutePair(program.id, institution.id)) {
@@ -1370,7 +1391,7 @@ async function evaluateExactScores(args: {
         fetcher: timedFetcher,
         program: exactTarget.program,
         applicant: {
-          bagrutAverage: input.bagrut,
+          bagrutAverage: input.extraInputs?.tauBagrutAverage ?? input.bagrut,
           psychometric: input.psychometric,
         },
       });
@@ -1400,7 +1421,7 @@ async function evaluateExactScores(args: {
         fetcher: timedFetcher,
         program: exactTarget.program,
         applicant: {
-          bagrutAverage: input.bagrut,
+          bagrutAverage: input.extraInputs?.tauBagrutAverage ?? input.bagrut,
           psychometric: input.psychometric,
         },
       });
@@ -1433,7 +1454,7 @@ async function evaluateExactScores(args: {
         fetcher: timedFetcher,
         program: exactTarget.program,
         applicant: {
-          bagrutAverage: input.bagrut,
+          bagrutAverage: input.extraInputs?.tauBagrutAverage ?? input.bagrut,
           psychometric: input.psychometric,
         },
       });
@@ -1453,7 +1474,7 @@ async function evaluateExactScores(args: {
         fetcher: timedFetcher,
         program: exactTarget.program,
         applicant: {
-          bagrutAverage: input.bagrut,
+          bagrutAverage: input.extraInputs?.tauBagrutAverage ?? input.bagrut,
           psychometric: input.psychometric,
         },
       });
@@ -1482,7 +1503,7 @@ async function evaluateExactScores(args: {
         fetcher: timedFetcher,
         program: exactTarget.program,
         applicant: {
-          bagrutAverage: input.bagrut,
+          bagrutAverage: input.extraInputs?.tauBagrutAverage ?? input.bagrut,
           psychometric: input.psychometric,
         },
       });
@@ -1515,7 +1536,7 @@ async function evaluateExactScores(args: {
         fetcher: timedFetcher,
         program: exactTarget.program,
         applicant: {
-          bagrutAverage: input.bagrut,
+          bagrutAverage: input.extraInputs?.tauBagrutAverage ?? input.bagrut,
           psychometric: input.psychometric,
         },
       });
@@ -1546,7 +1567,10 @@ async function evaluateExactScores(args: {
       const proof = await runTauAdmissionsProof({
         fetcher: timedFetcher,
         program: exactTarget.program,
-        applicant: { bagrutAverage: input.bagrut, psychometric: input.psychometric },
+        applicant: {
+          bagrutAverage: input.extraInputs?.tauBagrutAverage ?? input.bagrut,
+          psychometric: input.psychometric,
+        },
       });
 
       return normalizeExactProofResult({
@@ -1572,7 +1596,10 @@ async function evaluateExactScores(args: {
       const proof = await runTauAdmissionsProof({
         fetcher: timedFetcher,
         program: exactTarget.program,
-        applicant: { bagrutAverage: input.bagrut, psychometric: input.psychometric },
+        applicant: {
+          bagrutAverage: input.extraInputs?.tauBagrutAverage ?? input.bagrut,
+          psychometric: input.psychometric,
+        },
       });
 
       return normalizeExactProofResult({
@@ -1598,7 +1625,10 @@ async function evaluateExactScores(args: {
       const proof = await runTauAdmissionsProof({
         fetcher: timedFetcher,
         program: exactTarget.program,
-        applicant: { bagrutAverage: input.bagrut, psychometric: input.psychometric },
+        applicant: {
+          bagrutAverage: input.extraInputs?.tauBagrutAverage ?? input.bagrut,
+          psychometric: input.psychometric,
+        },
       });
 
       return normalizeExactProofResult({
@@ -1625,7 +1655,10 @@ async function evaluateExactScores(args: {
       const proof = await runTauAdmissionsProof({
         fetcher: timedFetcher,
         program: exactTarget.program,
-        applicant: { bagrutAverage: input.bagrut, psychometric: input.psychometric },
+        applicant: {
+          bagrutAverage: input.extraInputs?.tauBagrutAverage ?? input.bagrut,
+          psychometric: input.psychometric,
+        },
       });
 
       return normalizeExactProofResult({
@@ -1655,7 +1688,10 @@ async function evaluateExactScores(args: {
       const proof = await runTauAdmissionsProof({
         fetcher: timedFetcher,
         program: exactTarget.program,
-        applicant: { bagrutAverage: input.bagrut, psychometric: input.psychometric },
+        applicant: {
+          bagrutAverage: input.extraInputs?.tauBagrutAverage ?? input.bagrut,
+          psychometric: input.psychometric,
+        },
       });
 
       return normalizeExactProofResult({
@@ -1722,7 +1758,7 @@ async function evaluateExactScores(args: {
         fetcher: timedFetcher,
         program: exactTarget.program,
         applicant: {
-          bagrutAverage: input.bagrut,
+          bagrutAverage: input.extraInputs?.tauBagrutAverage ?? input.bagrut,
           exactSciencesBonusEligible,
           psychometric: input.psychometric,
         },
@@ -1761,7 +1797,7 @@ async function evaluateExactScores(args: {
         fetcher: timedFetcher,
         program: exactTarget.program,
         applicant: {
-          bagrutAverage: input.bagrut,
+          bagrutAverage: input.extraInputs?.tauBagrutAverage ?? input.bagrut,
           exactSciencesBonusEligible,
           psychometric: input.psychometric,
         },
@@ -1794,7 +1830,10 @@ async function evaluateExactScores(args: {
       const proof = await runTauAdmissionsProof({
         fetcher: timedFetcher,
         program: exactTarget.program,
-        applicant: { bagrutAverage: input.bagrut, psychometric: input.psychometric },
+        applicant: {
+          bagrutAverage: input.extraInputs?.tauBagrutAverage ?? input.bagrut,
+          psychometric: input.psychometric,
+        },
       });
 
       return normalizeExactProofResult({
@@ -1830,7 +1869,7 @@ async function evaluateExactScores(args: {
         fetcher: timedFetcher,
         program: exactTarget.program,
         applicant: {
-          bagrutAverage: input.bagrut,
+          bagrutAverage: input.extraInputs?.tauBagrutAverage ?? input.bagrut,
           exactSciencesBonusEligible,
           psychometric: input.psychometric,
         },
@@ -1860,7 +1899,7 @@ async function evaluateExactScores(args: {
       fetcher: timedFetcher,
       program: exactTarget.program,
       applicant: {
-        bagrutAverage: input.bagrut,
+        bagrutAverage: input.extraInputs?.tauBagrutAverage ?? input.bagrut,
         psychometric: input.psychometric,
         exactSciencesBonusEligible: gateResult.exactSciencesBonusEligible,
       },
@@ -1946,6 +1985,12 @@ function normalizeExactProofResult(args: {
     };
   }
 
+  // BGU score mode retains independent conditions; a score match is not a waiting band.
+  const bguScoreMatch =
+    institution.id === 'bgu' &&
+    proof.source === 'bgu_quantitative_rdp_and_TevaSekem' &&
+    proof.scoreAssessment === 'meets_threshold' &&
+    score >= threshold;
   const derivedVerdict =
     proof.derivedVerdict === 'accepted' ||
     proof.derivedVerdict === 'below' ||
@@ -1977,17 +2022,21 @@ function normalizeExactProofResult(args: {
     sourceLabel:
       decision === 'eligible_to_apply'
         ? 'כשירות להמשך מיון'
-        : derivedVerdict === 'pending'
-          ? 'טווח המתנה רשמי'
-          : 'אימות רשמי',
+        : bguScoreMatch
+          ? 'התאמה לפי הציונים'
+          : derivedVerdict === 'pending'
+            ? 'טווח המתנה רשמי'
+            : 'אימות רשמי',
     explanation:
       decision === 'eligible_to_apply'
         ? `${explanationPrefix} אישר עמידה בסף המספרי. עדיין נדרשים מבדק התאמה, ולעיתים גם ראיון אישי; זו אינה קבלה סופית.`
-        : derivedVerdict === 'pending'
-          ? `${explanationPrefix} הציב את הציון בין סף הדחייה לסף הקבלה, ולכן עדיין אין החלטה סופית.`
-          : `${explanationPrefix} סיפק ציון וסף קבלה מעודכנים למסלול זה.`,
+        : bguScoreMatch
+          ? `${explanationPrefix} אישר שהציון עומד בסף המספרי למסלול זה.`
+          : derivedVerdict === 'pending'
+            ? `${explanationPrefix} הציב את הציון בין סף הדחייה לסף הקבלה, ולכן עדיין אין החלטה סופית.`
+            : `${explanationPrefix} סיפק ציון וסף קבלה מעודכנים למסלול זה.`,
     nextAction:
-      decision === 'accepted'
+      decision === 'accepted' || bguScoreMatch
         ? 'בדקו את דף ההרשמה הרשמי והשלימו את בדיקת העבר האקדמי, העברית ושאר דרישות המסמכים.'
         : decision === 'eligible_to_apply'
           ? 'השלימו את מבדק ההתאמה ועקבו אחר זימון אפשרי לראיון מטעם החוג.'

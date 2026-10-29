@@ -1,0 +1,1 @@
+{"operationName":"getLastScore","variables":{"scoresData":{"prog":"calctziun","out":"json","reali10":0,"psicho":"700","bagrut":"109.14"}},"query":"query getLastScore($scoresData: JSON!) { getLastScore(scoresData: $scoresData) { body __typename } }"}

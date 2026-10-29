@@ -137,7 +137,7 @@ describe('published composite threshold selector', () => {
     }
   });
 
-  it('links TAU adaptation and prior-degree FAQ thresholds too', () => {
+  it('recognises TAU adaptation and prior-degree published thresholds', () => {
     expect(hasPublishedCompositeThreshold(['ציון התאמה לניהול 610'])).toBe(true);
     expect(
       hasPublishedCompositeThreshold(['ציון התאמה 647', 'לבעלי תואר ראשון: ציון משולב 1475 לפחות']),

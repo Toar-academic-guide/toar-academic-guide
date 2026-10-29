@@ -262,12 +262,15 @@ const SOURCE_BY_INSTITUTION: Record<FormulaBackedInstitutionId, { url: string; r
  * from the current official source; otherwise a stale catalogue row can look
  * like an implementation omission.
  */
+const HAIFA_PSYCHOLOGY_WITHHELD_EVIDENCE = {
+  url: 'https://admissions.haifa.ac.il/social-sciences/program/3268/',
+  reason:
+    'הקבלה לפסיכולוגיה באוניברסיטת חיפה מבוססת על ציון קבלה 650 לפחות, עם טווח המתנה 630–649. עדיין אין חישוב מאומת שמאפשר לקבוע סיכויי קבלה לפי הבגרות והפסיכומטרי שהוזנו. בדקו במחשבון הרשמי של האוניברסיטה.',
+};
+
 const WITHHELD_PAIR_EVIDENCE: Record<string, { url: string; reason: string }> = {
-  haifa_psychology__haifa: {
-    url: 'https://admissions.haifa.ac.il/social-sciences/program/3268/',
-    reason:
-      'הקבלה לפסיכולוגיה באוניברסיטת חיפה מבוססת על סכם 650 לפחות, עם טווח המתנה 630–649. עדיין אין חישוב מאומת שמאפשר לקבוע סיכויי קבלה לפי הבגרות והפסיכומטרי שהוזנו. בדקו במחשבון הרשמי של האוניברסיטה.',
-  },
+  psychology__haifa: HAIFA_PSYCHOLOGY_WITHHELD_EVIDENCE,
+  haifa_psychology__haifa: HAIFA_PSYCHOLOGY_WITHHELD_EVIDENCE,
   medicine__tau: {
     url: 'https://go.tau.ac.il/he/med/ba/med-doc?v=important-info',
     reason:

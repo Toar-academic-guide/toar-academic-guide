@@ -108,6 +108,10 @@ const DYNAMIC_PROGRAM_MAP = [
 
 const dynamicPrograms: Program[] = [];
 const MONDAY_PROGRAM_URL_OVERRIDES: Readonly<Record<string, string>> = {
+  // Official Braude pages read 2026-10-28; the broad programme IDs do not identify
+  // a single department or preparatory route. Keep the admissions link specific.
+  braude_engineering: 'https://w3.braude.ac.il/intrested/',
+  braude_prep: 'https://w3.braude.ac.il/department/mechina/?yeudit#section-id-2',
   colman_law: 'https://www.colman.ac.il/academics/ba/law/',
   colman_business: 'https://www.colman.ac.il/academics/ba/business-administration/',
 };
@@ -868,6 +872,8 @@ for (const record of mondayAdmissionsEvidence) {
     const type = isCertificateType ? 'certificate' : 'academic';
 
     const detailId = `${progId}:${instId}`;
+    const publicInstitutionName =
+      instId === 'braude' ? INSTITUTION_BY_ID.braude.name : record.displayName;
     const primarySourceUrl =
       MONDAY_PROGRAM_URL_OVERRIDES[progId] ?? resolveUrl(record.displayName, record.officialUrls);
     const sourceCandidateId = primarySourceUrl ? `${detailId}:source:monday-evidence` : undefined;
@@ -883,7 +889,7 @@ for (const record of mondayAdmissionsEvidence) {
                   : ('generic' as const),
               confidence: record.confidence,
               url: primarySourceUrl,
-              title: `מקור מוסדי עבור ${record.displayName}`,
+              title: `מקור מוסדי עבור ${publicInstitutionName}`,
               notes: `Institutional evidence item ${record.itemId}. ${record.nextAction}`,
             },
           ]
@@ -987,8 +993,8 @@ for (const record of mondayAdmissionsEvidence) {
 
     const dynamicProgram: Program = {
       id: progId,
-      name: `${prog.name} - ${record.displayName}`,
-      institution: record.displayName,
+      name: `${prog.name} - ${publicInstitutionName}`,
+      institution: publicInstitutionName,
       institutionId: instId,
       type,
       category: prog.category,
@@ -998,18 +1004,21 @@ for (const record of mondayAdmissionsEvidence) {
       thresholds: {},
       institutionDetails: [
         {
-          institutionName: record.displayName,
+          institutionName: publicInstitutionName,
           durationYears: record.diplomaType?.includes('שנה') ? 1 : 3,
           estimatedStudentsPerYear: 'לא ידוע',
           quantitativeMinRequirement: null,
           englishMinRequirement: null,
-          specificAdmissionNotes: record.limitations ? [...record.limitations] : [],
+          // limitations/decisionReason remain internal in mondayAdmissionsEvidence.
+          // Reviewed programme copy is applied below by catalogueContentRepair.
+          specificAdmissionNotes: record.limitations.length
+            ? ['לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד.']
+            : [],
           officialCalculatorUrl: primarySourceUrl || '',
           programUrl: primarySourceUrl,
           calculatorUrl: record.officialUrls.find(
             (url) => url.includes('calculator') && !url.includes('yoram.walla.co.il'),
           ),
-          programDescription: record.decisionReason || undefined,
           ...(sourceCandidates.length > 0
             ? {
                 admissionsSourceCandidates: sourceCandidates,

@@ -15,6 +15,74 @@ import type {
 } from '@/db/types';
 
 describe('catalogue serializers', () => {
+  it.each([
+    'tau_me',
+    'tau_ee',
+    'tau_industrial',
+    'tau_datascience',
+    'tau_cs',
+    'technion_cs',
+    'technion_datascience',
+    'technion_ee',
+    'technion_me',
+    'technion_civil',
+    'technion_industrial',
+    'technion_biomedical',
+  ])('item 6 repairs persisted %s mathematics after a database read', (id) => {
+    const seed = buildCatalogueSeed();
+    const requirement = seed.admissionRequirements.find((row) => row.programId === id)!;
+    const staleNotes = ['5 יח"ל מתמטיקה — חובה', 'דרישה אחרת שנשמרת'];
+    const result = serializeProgramRow({
+      program: seed.programs.find((row) => row.id === id)! as ProgramRow,
+      relations: seed.programInstitutions.filter(
+        (row) => row.programId === id,
+      ) as ProgramInstitutionRow[],
+      requirements: [
+        { ...requirement, admissionRequirements: staleNotes, specificAdmissionNotes: staleNotes },
+      ] as AdmissionRequirementRow[],
+      thresholds: seed.admissionThresholds.filter(
+        (row) => row.programId === id,
+      ) as AdmissionThresholdRow[],
+      sourceUrls: [],
+      admissionFacts: [
+        {
+          id: `${id}:stale-math`,
+          admissionRequirementId: requirement.id,
+          kind: 'numeric_gate',
+          field: 'math_units',
+          comparison: 'gte',
+          valueNumber: 5,
+          description: staleNotes[0],
+          confidence: 'high',
+          isRequired: true,
+        },
+      ] as AdmissionFactRow[],
+      institutionsById: new Map(seed.institutions.map((row) => [row.id, row as InstitutionRow])),
+    });
+    const detail = result.institutionDetails![0];
+    expect(detail.specificAdmissionNotes.join(' ')).toContain('4 יחידות');
+    expect(detail.specificAdmissionNotes).not.toContain(staleNotes[0]);
+    expect(detail.specificAdmissionNotes).toContain(staleNotes[1]);
+    expect(detail.admissionFacts).toContainEqual(
+      expect.objectContaining({
+        field: 'math_units',
+        valueNumber: 4,
+        groupKey: expect.stringMatching(/^math_route\//),
+      }),
+    );
+    expect(detail.admissionFacts!.every((fact) => fact.groupKey?.startsWith('math_route/'))).toBe(
+      true,
+    );
+    expect(result.id).toBe(id);
+    expect(result.thresholds).toEqual(
+      Object.fromEntries(
+        seed.admissionThresholds
+          .filter((row) => row.programId === id && row.thresholdKind === 'sekhem')
+          .map((row) => [row.universityId, row.thresholdValue]),
+      ),
+    );
+  });
+
   it.each(['ruppin_marine_bio', 'afeka_biomedical'])(
     'sweep38 repairs persisted %s requirements',
     (id) => {
@@ -665,4 +733,52 @@ describe('Braude persisted identity reconciliation', () => {
       expect(serializeInstitutionRow(institution).id).toBe(alias);
     },
   );
+});
+
+it('D serves the full Ort Braude CS identity from shortened persisted rows', () => {
+  const seed = buildCatalogueSeed();
+  const id = 'mon_12220708942_cs';
+  const alias = 'mon_12220708942';
+  const shortened = 'המכללה האקדמית להנדסה בראודה';
+  const institution = 'המכללה האקדמית להנדסה אורט בראודה';
+  const original = {
+    ...seed.programs[0],
+    id,
+    name: `מדעי המחשב - ${shortened}`,
+    institutionName: shortened,
+    institutionId: alias,
+  } as ProgramRow;
+  const result = serializeProgramRow({
+    program: original,
+    relations: [{ programId: id, institutionId: alias }],
+    requirements: [
+      {
+        ...seed.admissionRequirements[0],
+        id: `${id}:${alias}`,
+        programId: id,
+        institutionId: alias,
+      },
+    ] as AdmissionRequirementRow[],
+    thresholds: [],
+    sourceUrls: [],
+    institutionsById: new Map([
+      [alias, { ...seed.institutions[0], id: alias, name: shortened } as InstitutionRow],
+    ]),
+  });
+  expect(result).toMatchObject({ id, name: `מדעי המחשב - ${institution}`, institution });
+  expect(result.institutionDetails![0].institutionName).toBe(institution);
+  expect(original.name).toBe(`מדעי המחשב - ${shortened}`);
+});
+
+it('D already serves the canonical name for the shortened legacy Braude institution row', () => {
+  const row = {
+    ...buildCatalogueSeed().institutions[0],
+    id: 'mon_12220708942',
+    name: 'המכללה האקדמית להנדסה בראודה',
+  } as InstitutionRow;
+  expect(serializeInstitutionRow(row)).toMatchObject({
+    id: 'mon_12220708942',
+    name: 'המכללה האקדמית להנדסה אורט בראודה',
+  });
+  expect(row.name).toBe('המכללה האקדמית להנדסה בראודה');
 });

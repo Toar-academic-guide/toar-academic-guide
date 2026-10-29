@@ -1,16 +1,9 @@
-import type {
-  PublicInstitutionPageData,
-  PublicProgramPageData,
-  getPublicProgramRequirementSources,
-} from '@/lib/publicCataloguePages';
+import type { PublicInstitutionPageData, PublicProgramPageData } from '@/lib/publicCataloguePages';
 import { getPublicInstitutionPageData } from '@/lib/publicCataloguePages';
 import { absoluteUrl, SITE_ALT_NAMES, SITE_NAME } from '@/lib/site';
 import type { InstitutionDirectoryItem } from '@/data/institutionDirectory';
 import { canonicalProgramPath } from './programAliases';
 import { institutionProgramName } from '@/lib/institutionProgramName';
-import { canLinkToSekhemCalculator } from '@/lib/sekhemCalculatorSupport';
-import type { CalculatorOffering } from '@/lib/sekhemCalculator';
-import { hasPublishedCompositeThreshold } from '@/lib/publishedCompositeThresholds';
 
 const ORGANIZATION_ID = absoluteUrl('/#organization');
 const WEBSITE_ID = absoluteUrl('/#website');
@@ -150,99 +143,6 @@ export function programBreadcrumbLd({ program, institutions, isGeneral }: Public
       path: canonicalProgramPath(program.id),
     },
   ]);
-}
-
-const FAQ_PROGRAM_IDS = new Set([
-  'bgu_psychology',
-  'huji_law',
-  'biu_psychology',
-  'ariel_psychology',
-  'haifa_nursing',
-  'ono_nursing',
-  'tau_law',
-  'biu_law',
-  'ruppin_cs',
-  'tau_business',
-  'bgu_business',
-  'haifa_infosystems',
-  'ariel_economics',
-  'huji_business',
-  'bgu_accounting',
-  'tau_accounting',
-  'huji_accounting',
-  'haifa_accounting',
-  'biu_criminology',
-  'ariel_criminology',
-  'ariel_communication',
-  'haifa_communication',
-  'haifa_politicalscience',
-  'haifa_sociology',
-  'ariel_health_systems',
-  'biu_computational_bio',
-  'biu_biotech',
-  'biu_lifesciences',
-  'hit_cs',
-  'wingate_cs',
-  'ono_law',
-  'colmgmt_cs',
-  'haifa_psychology',
-]);
-
-export function programFaqPageLd(
-  { program, institutions }: PublicProgramPageData,
-  requirementSources: Awaited<ReturnType<typeof getPublicProgramRequirementSources>>,
-  offerings?: readonly CalculatorOffering[],
-) {
-  if (!FAQ_PROGRAM_IDS.has(program.id) || program.isListed === false) return null;
-
-  const question = (name: string, text: string, calculatorLink = false) => ({
-    '@type': 'Question',
-    name,
-    acceptedAnswer: {
-      '@type': 'Answer',
-      text,
-      ...(calculatorLink
-        ? {
-            potentialAction: {
-              '@type': 'ViewAction',
-              name: 'מחשבון סכם וסיכויי קבלה',
-              target: absoluteUrl('/sekhem-calculator'),
-            },
-          }
-        : {}),
-    },
-  });
-  const mainEntity = institutions.flatMap((institution) => {
-    const source = requirementSources[institution.id];
-    if (!source?.requirements.length) return [];
-
-    // Use the page's display copy, including all additional conditions and caveats.
-    // Do not infer routes or thresholds from calculator fields.
-    return [
-      question(
-        'מהם תנאי הקבלה למסלול?',
-        source.requirements.join(' '),
-        canLinkToSekhemCalculator(source.program, institution.id, offerings) &&
-          hasPublishedCompositeThreshold(source.requirements),
-      ),
-      ...(source.checked
-        ? [
-            question(
-              'מתי עודכנו תנאי הקבלה?',
-              `עודכן לאחרונה: ${source.checked.date}${source.checked.sourceUrl ? ` · מקור: אתר ${institution.name}` : ''}`,
-            ),
-          ]
-        : []),
-    ];
-  });
-  if (!mainEntity.length) return null;
-
-  return {
-    '@type': 'FAQPage',
-    '@id': absoluteUrl(`${canonicalProgramPath(program.id)}#faq`),
-    inLanguage: 'he',
-    mainEntity,
-  };
 }
 
 export function webApplicationLd() {

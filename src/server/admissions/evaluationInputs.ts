@@ -2,7 +2,8 @@ import type {
   AdmissionsEvaluationInput,
   AdmissionsExtraInputs,
 } from '@/types/admissionsEvaluation';
-import { overallBagrutAverage } from '@/lib/bagrutSubjectRecord';
+import { ENGINEERING_MATH_PROGRAM_IDS } from '@/data/admissions/engineeringMathRequirements';
+import { bagrutExamSubjects, overallBagrutAverage } from '@/lib/bagrutSubjectRecord';
 import { HAIFA_ADMISSION_YEAR } from '@/lib/haifaAdmissionsInputs';
 import { calculateBguBagrutAverage, calculateTauBagrutAverage } from './bagrutPolicies';
 
@@ -10,6 +11,15 @@ import { calculateBguBagrutAverage, calculateTauBagrutAverage } from './bagrutPo
 export function normalizeEvaluationInputs(input: AdmissionsEvaluationInput) {
   const extraInputs: AdmissionsExtraInputs = { ...input.extraInputs };
   const record = extraInputs.bagrutSubjectRecord;
+  if (record && ENGINEERING_MATH_PROGRAM_IDS.has(input.degreeId)) {
+    const mathematics = bagrutExamSubjects(record).find(
+      (subject) => subject.subjectId === 'mathematics',
+    );
+    if (mathematics) {
+      extraInputs.mathUnits ??= mathematics.units;
+      extraInputs.mathGrade ??= mathematics.grade;
+    }
+  }
   const bagrut = input.bagrut ?? overallBagrutAverage(record);
   const reasons: Record<string, string[]> = {};
   const proxyInstitutions = new Set<string>();
