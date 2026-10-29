@@ -225,6 +225,8 @@ export default function SekhemResults({
 }) {
   const [selectedPrograms, setSelectedPrograms] = useState<Record<string, string>>({});
   const groups = new Map<string, Entry[]>();
+  const normalEntries: Entry[] = [];
+  const filteredEntries: Entry[] = [];
   let uncomputable = false;
   let afeka = false;
   for (const offering of offerings) {
@@ -245,9 +247,13 @@ export default function SekhemResults({
       // Keep actionable floor verdicts and their explicit lead targets, without blank-score badges.
       actionOnly = !['accepted', 'below'].includes(result.decision) && !gateText(result).length;
     }
-    const entries = groups.get(offering.institutionId) ?? [];
-    entries.push({ offering, report, result, actionOnly });
-    groups.set(offering.institutionId, entries);
+    (actionOnly ? filteredEntries : normalEntries).push({ offering, report, result, actionOnly });
+  }
+  for (const entry of normalEntries.length ? normalEntries : filteredEntries) {
+    const id = entry.offering.institutionId;
+    const entries = groups.get(id) ?? [];
+    entries.push(entry);
+    groups.set(id, entries);
   }
   return (
     <section aria-labelledby="sekhem-results-title" className="mt-12">

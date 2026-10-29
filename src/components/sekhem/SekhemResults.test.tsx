@@ -739,3 +739,52 @@ it.each(['biu', 'hit', 'afeka'])(
     expect(onEnquiry).toHaveBeenCalledWith(offering, source);
   },
 );
+
+it('keeps filtered entries hidden whenever at least one normal result survives', () => {
+  const normal = report('tau');
+  const filtered = report('biu', {
+    score: undefined,
+    threshold: undefined,
+    decision: 'unknown',
+    kind: 'estimated',
+  });
+  const { container } = render(
+    <SekhemResults reports={[normal, filtered]} offerings={offerings} onEnquiry={vi.fn()} />,
+  );
+  expect(screen.getByTestId('institution-tau')).toBeTruthy();
+  expect(screen.getByTestId('result-psychology-tau')).toBeTruthy();
+  expect(container.querySelector('[data-testid^="programme-actions-"]')).toBeNull();
+  expect(screen.queryByTestId('institution-biu')).toBeNull();
+  expect(screen.queryByTestId('result-psychology-biu')).toBeNull();
+  expect(screen.getAllByRole('button', { name: 'קבלת מידע על התוכנית' })).toHaveLength(1);
+});
+
+it('does not mix filtered programmes into a surviving institution group', () => {
+  const normal = report('biu');
+  const filtered = report('biu', {
+    score: undefined,
+    threshold: undefined,
+    decision: 'unknown',
+    kind: 'estimated',
+  });
+  filtered.input.degreeId = filtered.program.id = 'filtered_programme';
+  const { container } = render(
+    <SekhemResults
+      reports={[normal, filtered]}
+      offerings={[
+        offerings.find((offering) => offering.institutionId === 'biu')!,
+        {
+          programId: 'filtered_programme',
+          programName: 'תוכנית מסוננת',
+          institutionId: 'biu',
+          institutionName: 'biu',
+        },
+      ]}
+      onEnquiry={vi.fn()}
+    />,
+  );
+  expect(screen.getByTestId('result-psychology-biu')).toBeTruthy();
+  expect(screen.queryByRole('combobox', { name: 'בחירת תוכנית' })).toBeNull();
+  expect(screen.queryByText('תוכנית מסוננת')).toBeNull();
+  expect(container.querySelector('[data-testid^="programme-actions-"]')).toBeNull();
+});
