@@ -4,7 +4,10 @@ import { z } from 'zod';
 import { ApiRouteError, toErrorResponse } from '@/app/api/_lib/errors';
 import { listCatalogueInstitutions, listCataloguePrograms } from '@/server/catalogue/queries';
 import { evaluateAdmissionsForProgram } from '@/server/admissions/evaluator';
-import { findAdmissionsEvaluationProgram } from '@/lib/admissionsEvaluationProgram';
+import {
+  findAdmissionsEvaluationProgram,
+  resolveAdmissionsEvaluationInstitutions,
+} from '@/lib/admissionsEvaluationProgram';
 import { serializeAdmissionsReport } from '@/lib/admissionsEvaluationSerialization';
 import {
   admissionsEvaluationClientKey,
@@ -67,7 +70,10 @@ export async function POST(request: Request) {
               const report = await evaluateAdmissionsForProgram({
                 input: { ...applicant, degreeId: program.id },
                 program,
-                institutions: institutionsResult.data,
+                institutions: resolveAdmissionsEvaluationInstitutions(
+                  program,
+                  institutionsResult.data,
+                ),
               });
               batch.reports[degreeId] = serializeAdmissionsReport(report);
             } catch {
@@ -90,7 +96,7 @@ export async function POST(request: Request) {
     const report = await evaluateAdmissionsForProgram({
       input: { ...parsed.data, degreeId: program.id },
       program,
-      institutions: institutionsResult.data,
+      institutions: resolveAdmissionsEvaluationInstitutions(program, institutionsResult.data),
     });
 
     return Response.json({ data: serializeAdmissionsReport(report) });

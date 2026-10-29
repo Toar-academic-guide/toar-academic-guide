@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { resetAdmissionsEvaluationRateLimitForTests } from '@/server/admissions/rateLimit';
 import { PROGRAM_CANONICAL_ALIASES } from '@/lib/seo/programAliases';
 import { BATCH_B_PROGRAMS } from '@/server/admissions/batchBManualPathEvaluation';
+import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 
 const hoistedMocks = vi.hoisted(() => ({
   listCataloguePrograms: vi.fn(),
@@ -28,6 +29,10 @@ vi.mock('server-only', () => ({}));
 
 import { POST } from './route';
 
+const { evaluateAdmissionsForProgram: evaluateAdmissionsForProgramActual } = await vi.importActual<
+  typeof import('@/server/admissions/evaluator')
+>('@/server/admissions/evaluator');
+
 describe('admissions evaluate route', () => {
   const batchRequest = (body: unknown) =>
     POST(
@@ -37,6 +42,95 @@ describe('admissions evaluate route', () => {
         body: JSON.stringify(body),
       }),
     );
+
+  it.each([
+    { batch: false, missingInstitution: false },
+    { batch: false, missingInstitution: true },
+    { batch: true, missingInstitution: false },
+    { batch: true, missingInstitution: true },
+  ])(
+    'returns numberless unsupported with the real evaluator for missing haifa_engineering (batch=$batch, missingInstitution=$missingInstitution)',
+    async ({ batch, missingInstitution }) => {
+      const program = getStaticCataloguePrograms().find((row) => row.id === 'haifa_engineering')!;
+      const institution = getStaticCatalogueInstitutions().find((row) => row.id === 'haifa')!;
+      hoistedMocks.listCataloguePrograms.mockResolvedValue({ data: [] });
+      hoistedMocks.listCatalogueInstitutions.mockResolvedValue({
+        data: missingInstitution ? [] : [institution],
+      });
+      const fetcher = vi.fn<typeof fetch>().mockRejectedValue(new Error('Unexpected network call'));
+      hoistedMocks.evaluateAdmissionsForProgram.mockImplementation((args) =>
+        evaluateAdmissionsForProgramActual({
+          ...args,
+          fetcher,
+          freshnessStatesBySourceId: new Map(),
+        }),
+      );
+
+      for (const scores of [{}, { bagrut: 120, psychometric: 800 }]) {
+        const response = await batchRequest({
+          ...(batch
+            ? { degreeIds: ['haifa_engineering', 'not_a_real_programme_xyz'] }
+            : { degreeId: 'haifa_engineering' }),
+          ...scores,
+        });
+        expect(response.status).toBe(200);
+        const { data } = await response.json();
+        if (batch) expect(data.failedDegreeIds).toEqual(['not_a_real_programme_xyz']);
+        const report = batch ? data.reports.haifa_engineering : data;
+        expect(report.program.id).toBe('haifa_engineering');
+        expect(report.results).toHaveLength(1);
+        expect(report.results[0]).toMatchObject({
+          linkedInstitutionId: 'haifa',
+          capability: 'unsupported',
+          kind: 'unsupported',
+          decision: 'unknown',
+        });
+        for (const key of ['score', 'threshold', 'requiredInputs', 'scoreAssessment']) {
+          expect(report.results[0]).not.toHaveProperty(key);
+        }
+        expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenLastCalledWith({
+          input: { degreeId: 'haifa_engineering', ...scores },
+          program,
+          institutions: [institution],
+        });
+      }
+      expect(fetcher).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(['not_a_real_programme_xyz', 'tau_datascience'])(
+    'returns 404 for missing non-Batch C programme %s even if it exists in the code catalogue',
+    async (degreeId) => {
+      hoistedMocks.listCataloguePrograms.mockResolvedValue({ data: [] });
+      const response = await batchRequest({ degreeId });
+      expect(response.status).toBe(404);
+      await expect(response.json()).resolves.toMatchObject({
+        error: { code: 'ADMISSIONS_PROGRAM_NOT_FOUND' },
+      });
+      expect(hoistedMocks.evaluateAdmissionsForProgram).not.toHaveBeenCalled();
+    },
+  );
+
+  it('preserves Batch C DB programme and institution rows for single and batch requests', async () => {
+    const program = {
+      ...getStaticCataloguePrograms().find((row) => row.id === 'haifa_engineering')!,
+      name: 'DB programme',
+    };
+    const institution = {
+      ...getStaticCatalogueInstitutions().find((row) => row.id === 'haifa')!,
+      name: 'DB institution',
+    };
+    hoistedMocks.listCataloguePrograms.mockResolvedValue({ data: [program] });
+    hoistedMocks.listCatalogueInstitutions.mockResolvedValue({ data: [institution] });
+    for (const body of [{ degreeId: 'haifa_engineering' }, { degreeIds: ['haifa_engineering'] }]) {
+      expect((await batchRequest(body)).status).toBe(200);
+      expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenLastCalledWith({
+        input: { degreeId: 'haifa_engineering' },
+        program,
+        institutions: [institution],
+      });
+    }
+  });
 
   it.each(
     Object.entries(PROGRAM_CANONICAL_ALIASES).filter(([aliasId]) => !BATCH_B_PROGRAMS[aliasId]),
