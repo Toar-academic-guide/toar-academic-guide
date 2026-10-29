@@ -197,6 +197,46 @@ function haifaAnswer(result: Awaited<ReturnType<typeof gapEvaluate>>['result']) 
   return { capability, kind, decision, explanation, officialUrls };
 }
 
+function stripHashKeys(value: unknown): unknown {
+  if (Array.isArray(value)) return value.map(stripHashKeys);
+  if (value === null || typeof value !== 'object') return value;
+  return Object.fromEntries(
+    Object.entries(value)
+      .filter(([key]) => !/^(?:fingerprint|hash|digest)$|(?:Fingerprint|Hash|Digest)$/.test(key))
+      .map(([key, nested]) => [key, stripHashKeys(nested)]),
+  );
+}
+
+it('strips hash keys recursively while retaining all other answer fields', () => {
+  const answer = {
+    ruleFingerprint: '650',
+    fingerprint: '650',
+    hash: '650',
+    futureStudentFacingField: '650',
+    nested: [
+      {
+        sourceFingerprint: '650',
+        payloadHash: '650',
+        sourceDigest: '650',
+        hashExplanation: '650',
+        fingerprintLabel: '650',
+        explanation: '650',
+        threshold: 650,
+      },
+      '650',
+      null,
+    ],
+  };
+  expect(stripHashKeys(answer)).toEqual({
+    futureStudentFacingField: '650',
+    nested: [
+      { hashExplanation: '650', fingerprintLabel: '650', explanation: '650', threshold: 650 },
+      '650',
+      null,
+    ],
+  });
+});
+
 it.each(['haifa_psychology', 'psychology'])(
   'saved %s reaches its missing-month gate while a proxy keeps the Haifa note',
   async (id) => {
@@ -219,7 +259,9 @@ it.each(['haifa_psychology', 'psychology'])(
       officialUrls: expect.arrayContaining(haifaSources),
     });
     for (const answer of [result, proxyResult]) {
-      expect(JSON.stringify(answer)).not.toContain('650');
+      const stripped = stripHashKeys(answer);
+      // Approved test update: Jorje 2026-10-29, strip only rule-fingerprint/hash keys; every other field, including future student-facing ones, stays covered.
+      expect(JSON.stringify(stripped)).not.toContain('650');
       expect(answer.degradationReason).toBeUndefined();
     }
 
