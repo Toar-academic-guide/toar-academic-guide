@@ -1,3 +1,5 @@
+import { admissionScoreGap } from './admissionScoreGap';
+import { formatSekhemNumber } from './sekhemResultPresentation';
 import { institutionLink } from '@/lib/institutionLinks';
 import { HAIFA_NO_CALCULATION_NOTE } from '@/data/admissions/haifaNoCalculationNote';
 import { isBatchCUnsupportedProgramId } from '@/data/admissions/batchCUnsupportedProgramIds';
@@ -251,6 +253,10 @@ export function resultLabel(
   label: string;
   group: JourneyResultGroup;
 } {
+  const formatScore = (value: number) =>
+    result?.linkedInstitutionId === 'reichman'
+      ? formatSekhemNumber(value, 'reichman')
+      : formatJourneyScore(value);
   if (failed) return { label: 'החישוב לא נטען', group: 'explore' };
   if (loading) return { label: 'החישוב מתבצע…', group: 'explore' };
   if (isTechnionMedicineScore(result, programId))
@@ -275,29 +281,41 @@ export function resultLabel(
   if (result?.scoreAssessment)
     return result.scoreAssessment === 'meets_threshold'
       ? {
-          label: 'הציונים עומדים בסף',
+          label: 'עוברים את הסף ✓',
           group: result.additionalConditions?.some((condition) => condition.status === 'unmet')
             ? 'explore'
             : 'match',
         }
-      : { label: 'הציונים מתחת לסף', group: 'improve' };
+      : { label: admissionScoreGap(result, formatScore) ?? 'עוד לא בסף', group: 'improve' };
   if (result?.kind === 'open_admission') return { label: 'הרשמה פתוחה', group: 'match' };
   if (['exact', 'estimated'].includes(result?.kind ?? '') && result?.decision === 'accepted') {
-    return { label: result.kind === 'exact' ? 'עומד/ת בסף שחושב' : 'התאמה משוערת', group: 'match' };
+    return {
+      label: result.kind === 'exact' ? 'עומד/ת בסף שחושב' : 'עוברים את הסף ✓',
+      group: 'match',
+    };
   }
-  if (result?.decision === 'below') return { label: 'אפשר לשפר את הסיכוי', group: 'improve' };
+  if (result?.decision === 'below')
+    return {
+      label: admissionScoreGap(result, formatScore) ?? 'עוד לא בסף',
+      group: 'improve',
+    };
   if (result?.decision === 'eligible_to_apply')
     return { label: 'אפשר להגיש מועמדות', group: 'match' };
+  const scoreLabel = Number.isFinite(result?.threshold)
+    ? 'אין הכרעת קבלה'
+    : typeof result?.score === 'number' && Number.isFinite(result.score)
+      ? `הסכם שלכם: ${formatScore(result.score)}`
+      : 'אין הכרעת קבלה';
   const labels: Partial<Record<AdmissionsEvaluationResult['kind'], string>> = {
-    needs_input: 'חסרים פרטים לחישוב',
-    manual_gate: 'נדרש מיון נוסף',
+    needs_input: 'השלימו פרטים וקבלו תשובה',
+    manual_gate: 'השלב הבא: מיון במוסד',
     requirements_only: 'תנאי קבלה ללא חישוב',
-    unsupported: 'אין חישוב למסלול זה',
-    authority_unavailable: 'הנתונים הרשמיים אינם זמינים',
-    tracked_missing_rule: 'חסרים נתוני קבלה רשמיים',
-    degraded: 'החישוב אינו זמין כרגע',
-    exact: 'אין הכרעת קבלה',
-    estimated: 'אין הכרעת קבלה',
+    unsupported: 'בדיקה אישית מול המוסד',
+    authority_unavailable: 'בדיקה אישית מול המוסד',
+    tracked_missing_rule: 'בדיקה אישית מול המוסד',
+    degraded: 'בדיקה אישית מול המוסד',
+    exact: scoreLabel,
+    estimated: scoreLabel,
   };
   return {
     label: result ? (labels[result.kind] ?? 'טרם חושבה התאמה') : 'טרם חושבה התאמה',
@@ -309,7 +327,7 @@ export function resultExplanation(
   result?: AdmissionsEvaluationResult,
   programId?: string,
 ): string | undefined {
-  if (!result) return undefined;
+  if (!result || result.explanation === 'אין כרגע מידע עדכני על המסלול.') return undefined;
   if (result.degradationReason === 'incomplete_published_requirements') return undefined;
   if (result.linkedInstitutionId === 'danon' && result.kind === 'requirements_only')
     return undefined;
@@ -318,14 +336,14 @@ export function resultExplanation(
       return result.explanation;
     return result.kind === 'authority_unavailable'
       ? 'נתוני הקבלה הדרושים לחישוב אינם זמינים כרגע. אפשר לבדוק ישירות באתר המוסד.'
-      : 'אין כרגע חישוב קבלה מאומת למסלול הזה. אפשר לבדוק את התנאים העדכניים באתר המוסד.';
+      : 'תנאי הקבלה כאן למטה. רוצים תשובה אישית? השאירו פרטים והמוסד יחזור אליכם.';
   }
   switch (result.kind) {
     case 'requirements_only':
     case 'unsupported':
       if (isBatchCUnsupportedProgramId(programId ?? '', result.linkedInstitutionId))
         return result.explanation;
-      return 'אין כרגע חישוב קבלה מאומת למסלול הזה. אפשר לבדוק את התנאים העדכניים באתר המוסד.';
+      return 'תנאי הקבלה כאן למטה. רוצים תשובה אישית? השאירו פרטים והמוסד יחזור אליכם.';
     case 'degraded':
       return 'נתוני הקבלה הדרושים לחישוב אינם זמינים כרגע. אפשר לבדוק ישירות באתר המוסד.';
     case 'manual_gate':
@@ -341,7 +359,7 @@ export function resultExplanation(
         isBatchBManualProgramId(programId ?? '', result.linkedInstitutionId)
       )
         return result.explanation;
-      return 'בנוסף לציונים, צריך לבדוק את שלבי המיון ותנאי ההגשה של המוסד.';
+      return 'השלב הבא הוא המיון. כל הפרטים כאן.';
     default:
       return result.explanation;
   }

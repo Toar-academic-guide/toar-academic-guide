@@ -772,9 +772,11 @@ export default function StudyJourney({
           )}
           {sourceLinks && (
             <>
-              <p className="journey-result-explanation">
-                {resultExplanation(row.result, row.program.id)}
-              </p>
+              {resultExplanation(row.result, row.program.id) && (
+                <p className="journey-result-explanation">
+                  {resultExplanation(row.result, row.program.id)}
+                </p>
+              )}
               <div className="journey-links">
                 {sourceLinks.map(({ href, label }) => (
                   <ProgramTrackedLink
@@ -799,7 +801,7 @@ export default function StudyJourney({
         </div>
         <div className="journey-row-actions">
           <button className="journey-contact" onClick={() => selectRow(row, 'inquiry')}>
-            יצירת קשר
+            קבלו שיחה מהמוסד
           </button>
           <button
             className="journey-icon-button"
@@ -1271,9 +1273,7 @@ export default function StudyJourney({
                 ))}
               </div>
             )}
-            {step !== 'psy-score' && (
-              <p className="journey-helper">ציון היעד משמש לבדיקה בלבד ולא יחליף את הציון שלך.</p>
-            )}
+            {step !== 'psy-score' && <p className="journey-helper">בדקו מה ציון היעד פותח לכם.</p>}
             <div className="journey-actions">
               <Primary>{step === 'improve' ? 'לבדוק את האפשרויות' : 'המשך'}</Primary>
             </div>
@@ -1454,7 +1454,7 @@ export default function StudyJourney({
               {step === 'detail' ? (
                 <>
                   <div className="journey-actions journey-detail-actions">
-                    <Primary onClick={() => go('inquiry')}>יצירת קשר</Primary>
+                    <Primary onClick={() => go('inquiry')}>קבלו שיחה מהמוסד</Primary>
                     <button
                       className="journey-secondary"
                       aria-pressed={
@@ -1516,38 +1516,38 @@ export default function StudyJourney({
                   {!biuFloorResult && !activeFootnote && (
                     <AdmissionConditions conditions={activeRow.result?.additionalConditions} />
                   )}
-                  <h2>תנאי קבלה</h2>
-                  {isBatchCUnsupported && (
-                    <TechnionThresholdNotice
-                      programId={activeRow.program.id}
-                      institutionId={activeRow.institution.id}
-                    />
-                  )}
-                  {activeRow.result?.floorChecks ? (
-                    <AdmissionRequirements
-                      requirements={[]}
-                      programId={activeRow.program.id}
-                      institutionId={activeRow.institution.id}
-                      floorChecks={activeRow.result.floorChecks}
-                    />
-                  ) : isBatchCUnsupported ? (
-                    <p>{activeRow.result?.nextAction}</p>
-                  ) : (
-                    <RequirementTiles
-                      program={activeRow.program}
-                      preserveRequirements
-                      verificationIssue={activeRow.result?.degradationReason}
-                      institutionId={activeRow.institution.id}
-                      requirements={
-                        activeRow.program.isListed === false
-                          ? ['אין כרגע מידע עדכני על המסלול.']
-                          : journeyAdmissionRequirements(
-                              details?.specificAdmissionNotes,
-                              activeRow.program,
-                              activeRow.institution.id,
-                            )
-                      }
-                    />
+                  {activeRow.program.isListed !== false && (
+                    <>
+                      <h2>תנאי קבלה</h2>
+                      {isBatchCUnsupported && (
+                        <TechnionThresholdNotice
+                          programId={activeRow.program.id}
+                          institutionId={activeRow.institution.id}
+                        />
+                      )}
+                      {activeRow.result?.floorChecks ? (
+                        <AdmissionRequirements
+                          requirements={[]}
+                          programId={activeRow.program.id}
+                          institutionId={activeRow.institution.id}
+                          floorChecks={activeRow.result.floorChecks}
+                        />
+                      ) : isBatchCUnsupported ? (
+                        <p>{activeRow.result?.nextAction}</p>
+                      ) : (
+                        <RequirementTiles
+                          program={activeRow.program}
+                          preserveRequirements
+                          verificationIssue={activeRow.result?.degradationReason}
+                          institutionId={activeRow.institution.id}
+                          requirements={journeyAdmissionRequirements(
+                            details?.specificAdmissionNotes,
+                            activeRow.program,
+                            activeRow.institution.id,
+                          )}
+                        />
+                      )}
+                    </>
                   )}
                   {biuFloorResult?.decision === 'below' &&
                     biuFloorResult.floorCaveats?.some((caveat) => caveat.kind === 'reservist') && (
@@ -1563,11 +1563,7 @@ export default function StudyJourney({
                         'incomplete_published_requirements' && (
                         <>
                           {!activeShowsNoCalculationNote && (
-                            <button onClick={() => go('missing')}>
-                              {activeRow.result?.scoreAssessment
-                                ? 'עדכון נתונים ותנאים נוספים'
-                                : 'השלמת נתונים לחישוב'}
-                            </button>
+                            <button onClick={() => go('missing')}>השלימו וקבלו תשובה</button>
                           )}
                           <button onClick={() => go('alternatives')}>עוד דרכי קבלה</button>
                         </>
@@ -1629,9 +1625,9 @@ export default function StudyJourney({
                       </article>
                     ))
                   ) : (
-                    <p>אפשר לברר עם צוות MyWay אילו דרכי קבלה נוספות רלוונטיות לך.</p>
+                    <p>יש עוד דרכים להתקבל. השאירו פרטים והמוסד יחזור אליכם עם האפשרויות.</p>
                   )}
-                  <Primary onClick={() => go('inquiry')}>בואו נבדוק יחד</Primary>
+                  <Primary onClick={() => go('inquiry')}>קבלו שיחה מהמוסד</Primary>
                 </>
               )}
             </section>
@@ -1741,28 +1737,26 @@ export default function StudyJourney({
                 <article key={row.id}>
                   <h2>{row.fieldName}</h2>
                   <p>{row.institution.name}</p>
-                  <AdmissionRequirements
-                    programId={row.program.id}
-                    institutionId={row.institution.id}
-                    requirements={
-                      row.program.isListed === false
-                        ? ['אין כרגע מידע עדכני על המסלול.']
-                        : journeyAdmissionRequirements(
-                            row.program.institutionDetails?.find(
-                              (detail) => detail.institutionName === row.institution.name,
-                            )?.specificAdmissionNotes,
-                            row.program,
-                            row.institution.id,
-                          )
-                    }
-                  />
+                  {row.program.isListed !== false && (
+                    <AdmissionRequirements
+                      programId={row.program.id}
+                      institutionId={row.institution.id}
+                      requirements={journeyAdmissionRequirements(
+                        row.program.institutionDetails?.find(
+                          (detail) => detail.institutionName === row.institution.name,
+                        )?.specificAdmissionNotes,
+                        row.program,
+                        row.institution.id,
+                      )}
+                    />
+                  )}
                   {row.program.id === 'technion_ee' && (
                     <TechnionThresholdNotice
                       programId={row.program.id}
                       institutionId={row.institution.id}
                     />
                   )}
-                  <Primary onClick={() => selectRow(row, 'inquiry')}>יצירת קשר</Primary>
+                  <Primary onClick={() => selectRow(row, 'inquiry')}>קבלו שיחה מהמוסד</Primary>
                 </article>
               ))}
             {compareIds.length < 2 && (

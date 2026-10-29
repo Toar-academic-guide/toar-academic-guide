@@ -11,7 +11,7 @@ import { absoluteUrl, SITE_NAME } from '@/lib/site';
 
 const title = 'מחשבון סכם וסיכויי קבלה לפי מוסד ותוכנית | MyWay';
 const description =
-  'מחשבון סכם וסיכויי קבלה בחינם: מזינים ציוני בגרות ופסיכומטרי, בוחרים תוכנית נתמכת ומקבלים הערכה, עם קישור לתנאי הקבלה של התוכנית.';
+  'מחשבון סכם וסיכויי קבלה בחינם: מזינים ציוני בגרות ופסיכומטרי, בוחרים תוכנית נתמכת, עם קישור לתנאי הקבלה של התוכנית.';
 const canonical = absoluteUrl('/sekhem-calculator');
 
 export const dynamic = 'force-dynamic';
@@ -27,6 +27,7 @@ export const metadata: Metadata = {
     locale: 'he_IL',
     siteName: SITE_NAME,
   },
+  twitter: { card: 'summary', title, description },
 };
 
 export default async function Page({
@@ -58,12 +59,12 @@ export default async function Page({
             מחשבון סכם וסיכויי קבלה
           </h1>
           <p className="mt-4 text-(--text-body)">
-            ציוני הבגרות והפסיכומטרי שלך. סכם לפי מוסד ותוכנית.
+            מזינים בגרות ופסיכומטרי, ורואים מה הסכם שלכם פותח.
           </p>
         </header>
         {unavailable ? (
           <section className="space-y-4">
-            <p>אי אפשר לחשב כאן את סיכויי הקבלה לתוכנית הזו.</p>
+            <p>לתוכנית הזו: בדיקה אישית מול המוסד.</p>
             {publicProgram ? (
               <Link
                 className="block underline underline-offset-4"
@@ -88,10 +89,9 @@ export default async function Page({
             שאלות על מחשבון הסכם
           </h2>
           <div>
-            <h2 className="text-xl font-semibold">מה זה סכם?</h2>
+            <h2 className="text-xl font-semibold">הסכם: המפתח לקבלה</h2>
             <p className="mt-2 text-(--text-body)">
-              סכם הוא ציון קבלה שמשלב את ממוצע הבגרות ואת הציון הפסיכומטרי. כל מוסד קובע נוסחה וסולם
-              משלו, ובחלק מהמוסדות הוא נקרא בשם אחר.
+              כל מוסד מחשב אותו אחרת, ואנחנו עושים בשבילכם את החשבון.
             </p>
           </div>
           <div>

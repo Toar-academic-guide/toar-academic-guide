@@ -42,7 +42,8 @@ describe('crawler-visible SSR text boundaries', () => {
     const html = renderToString(
       await ProgramPage({ params: Promise.resolve({ programId: 'tau_cs' }) }),
     );
-    expect(crawlerText(html)).toMatch(/בדיקת סיכויי קבלה\s+התאמה אישית/);
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 37, 38)
+    expect(crawlerText(html)).toMatch(/בדקו אם אתם מתקבלים\s+מה מתאים לי\?/);
     expect(crawlerText(html)).not.toContain('קבלההתאמה');
   });
 
@@ -50,7 +51,8 @@ describe('crawler-visible SSR text boundaries', () => {
     const html = renderToString(
       await ProgramPage({ params: Promise.resolve({ programId: 'tau_cs' }) }),
     );
-    expect(crawlerText(html)).toMatch(/אוניברסיטת תל אביב\s+יצירת קשר/);
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+    expect(crawlerText(html)).toMatch(/אוניברסיטת תל אביב\s+קבלו שיחה מהמוסד/);
     expect(crawlerText(html)).not.toContain('אביביצירת');
   });
 

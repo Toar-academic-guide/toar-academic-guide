@@ -32,7 +32,8 @@ it('renders the approved dates, derived answer, closed badge, next label and sin
   expect(rows[0].textContent).toContain('ההרשמה נסגרה');
   expect(rows[1].textContent).toContain('המועד הקרוב');
   expect(within(main).getAllByText('המועד הקרוב')).toHaveLength(1);
-  const ctas = within(main).getAllByRole('link', { name: 'בדיקת סיכויי קבלה' });
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 41)
+  const ctas = within(main).getAllByRole('link', { name: 'יש לכם ציון? בדקו לאן אתם מתקבלים' });
   expect(ctas).toHaveLength(1);
   expect(ctas[0].getAttribute('href')).toBe('/sekhem-calculator');
   const stamp = within(main).getByText(/נבדק בתאריך/);
@@ -80,4 +81,22 @@ it('exports exact indexable metadata and request-time rendering', () => {
     twitter: { card: 'summary', title, description },
   });
   expect(metadata.robots).not.toEqual(expect.objectContaining({ index: false }));
+});
+
+it('keeps the source sentence and punctuation without the removed qualification', async () => {
+  const { container } = render(await Page());
+  const link = screen.getByRole('link', { name: /לוח הבחינות הרשמי לשנת/ });
+  const sentence = link.closest('p')!;
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 42)
+  expect(sentence.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+    'תאריכי 2027 ושפות הבחינה מופיעים גם בלוח הבחינות הרשמי לשנת 2027.',
+  );
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 42)
+  expect(link.nextSibling?.textContent).toBe('.');
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 42)
+  expect([...container.querySelectorAll('p')].every((p) => p.textContent?.trim())).toBe(true);
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 41)
+  expect(
+    screen.getByRole('link', { name: 'יש לכם ציון? בדקו לאן אתם מתקבלים' }).getAttribute('href'),
+  ).toBe('/sekhem-calculator');
 });

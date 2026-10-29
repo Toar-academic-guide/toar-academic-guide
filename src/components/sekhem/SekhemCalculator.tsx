@@ -480,17 +480,14 @@ export default function SekhemCalculator({
           disabled={busy}
           className="way-button-primary mt-5 min-h-12 w-full px-5 py-3"
         >
-          {busy ? 'מחשבים…' : 'לחשב את הסכם'}
+          {busy ? 'מחשבים…' : 'חשבו את הסכם שלי'}
         </button>
         {busy && (
           <p role="status" className="sr-only">
             החישוב מתבצע
           </p>
         )}
-        <p className="mt-3 text-sm leading-6 text-(--text-body)">
-          ממוצע הבגרות מחושב לפי כללי המוסד כשאפשר; אחרת מוצג אומדן.
-        </p>
-        <p className="mt-1 text-sm text-(--text-body)">השימוש במחשבון בחינם</p>
+        <p className="mt-3 text-sm text-(--text-body)">חינם, בלי הרשמה</p>
       </form>
       {reports.length > 0 && (
         <SekhemResults

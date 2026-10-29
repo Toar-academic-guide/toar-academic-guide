@@ -417,9 +417,11 @@ it('pins all approved R7g state copy and the revised button in one place', () =>
   expect(ENQUIRY_COPY).toMatchObject({
     namePlaceholder: 'שם מלא',
     phonePlaceholder: 'מספר טלפון',
-    button: 'שליחת פרטים',
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 19)
+    button: 'שלחו, והמוסד יחזור אליכם',
     loadingLive: 'שולחים את הפנייה',
-    loadingButton: 'שליחת פרטים',
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 19)
+    loadingButton: 'שלחו, והמוסד יחזור אליכם',
     successTitle: 'הפנייה נשלחה',
     successLive: 'הפנייה נשלחה',
     successBody: '{institution_me} יחזרו אליך בטלפון.',
@@ -556,4 +558,12 @@ it.each([
   expect(button.previousElementSibling?.textContent).toBe(
     `בלחיצה על שליחה אני מאשר/ת להעביר את פרטיי ${prefixed} בלבד`,
   );
+});
+
+it('uses the approved enquiry opening and action', () => {
+  render(<EnquiryForm programId="cs" institutionId="tau" title="מדעי המחשב" />);
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 17)
+  expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('רוצים תשובות ישר מהמוסד?');
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 18)
+  expect(screen.getByRole('button', { name: 'השאירו פרטים' })).toBeTruthy();
 });

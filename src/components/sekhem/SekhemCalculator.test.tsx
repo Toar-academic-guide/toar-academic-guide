@@ -57,7 +57,8 @@ function examples() {
   fireEvent.click(screen.getByRole('button', { name: 'ערכים לדוגמה' }));
 }
 function submit() {
-  fireEvent.click(screen.getByRole('button', { name: 'לחשב את הסכם' }));
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
+  fireEvent.click(screen.getByRole('button', { name: 'חשבו את הסכם שלי' }));
 }
 
 it.each([true, false])(
@@ -192,7 +193,8 @@ it('sends raw rows in batch mode, exposes no composite input and opens the reuse
     ].join(' ');
     expect(name).not.toMatch(/סכם|מתואם|מצרף|ציון משוקלל/);
   }
-  fireEvent.click(screen.getByRole('button', { name: 'קבלת מידע על התוכנית' }));
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+  fireEvent.click(screen.getByRole('button', { name: 'קבלו שיחה מהמוסד' }));
   const dialog = screen.getByRole('dialog');
   expect(dialog.textContent).toContain('אוניברסיטת חיפה');
   expect(screen.getByRole('checkbox')).toHaveProperty('checked', false);
@@ -540,4 +542,16 @@ it('restores failed programme IDs for an explicit retry without evaluating on mo
   fireEvent.click(screen.getByRole('button', { name: 'לנסות שוב' }));
   await screen.findByText('הציונים עומדים בתנאי הקבלה');
   expect(JSON.parse(String(fetchMock.mock.calls[1][1]?.body)).degreeIds).toEqual(['haifa_cs']);
+});
+
+it('keeps the free-use line directly after the action without the removed estimate block', () => {
+  const { container } = render(<SekhemCalculator offerings={offerings} />);
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 27, 28)
+  const button = screen.getByRole('button', { name: 'חשבו את הסכם שלי' });
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 27, 28)
+  expect(button.nextElementSibling?.textContent).toBe('חינם, בלי הרשמה');
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 27)
+  expect(container.textContent).not.toContain('ממוצע הבגרות מחושב לפי כללי המוסד כשאפשר');
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 27)
+  expect([...container.querySelectorAll('p')].every((p) => p.textContent?.trim())).toBe(true);
 });

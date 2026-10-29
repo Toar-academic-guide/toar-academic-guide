@@ -259,7 +259,8 @@ it.each([720, 730])(
       threshold: 720,
       scoreAssessment: 'meets_threshold',
     });
-    expect(resultLabel(result)).toEqual({ label: 'הציונים עומדים בסף', group: 'match' });
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 1)
+    expect(resultLabel(result)).toEqual({ label: 'עוברים את הסף ✓', group: 'match' });
     expect(result.explanation).toContain('עומד בסף');
     expect(result.explanation).not.toContain('בין סף הדחייה לסף הקבלה');
   },

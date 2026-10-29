@@ -645,7 +645,8 @@ describe('structured data', () => {
       inLanguage: 'he',
       isAccessibleForFree: true,
       offers: { '@type': 'Offer', price: 0, priceCurrency: 'ILS' },
-      featureList: ['חישוב סכם לפי תוכנית', 'הערכת סיכויי קבלה', 'קישור לתנאי הקבלה של התוכנית'],
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows Extra)
+      featureList: ['חישוב סכם לפי תוכנית', 'בדיקת סיכויי קבלה', 'קישור לתנאי הקבלה של התוכנית'],
       publisher: { '@id': organizationLd()['@id'] },
       isPartOf: { '@id': websiteLd()['@id'] },
     });

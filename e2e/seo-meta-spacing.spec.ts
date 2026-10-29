@@ -14,8 +14,10 @@ for (const width of [1280, 390]) {
         .replace(/<!--[^]*?-->|<[^>]*>/g, '');
       expect(rawText).not.toMatch(/קבלההתאמה|אביביצירת|לימודהרשימה|שלימי אנחנו/);
       if (path.startsWith('/programs/')) {
-        expect(rawText).toMatch(/בדיקת סיכויי קבלה\s+התאמה אישית/);
-        expect(rawText).toMatch(/אוניברסיטת תל אביב\s+יצירת קשר/);
+        // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 37, 38)
+        expect(rawText).toMatch(/בדקו אם אתם מתקבלים\s+מה מתאים לי\?/);
+        // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+        expect(rawText).toMatch(/אוניברסיטת תל אביב\s+קבלו שיחה מהמוסד/);
       }
       await page.goto(path);
       await expect(page.getByRole('heading', { level: 1 })).toBeVisible();

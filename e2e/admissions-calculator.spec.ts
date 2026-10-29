@@ -65,14 +65,18 @@ test('grouped results retain visible contact and save actions and selected conte
   await page.getByRole('button', { name: 'לגלות את האפשרויות שלי' }).click();
   expect((await pending).status()).toBe(200);
   await expect(page).toHaveURL(/\/app\/calculator#results$/);
-  await expect(page.getByRole('button', { name: 'יצירת קשר', exact: true }).first()).toBeVisible();
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+  await expect(
+    page.getByRole('button', { name: 'קבלו שיחה מהמוסד', exact: true }).first(),
+  ).toBeVisible();
   const saved = page.getByRole('button', { name: 'שמירת פיזיותרפיה — אוניברסיטת תל אביב' });
   await saved.click();
   await expect(saved).toHaveAttribute('aria-pressed', 'true');
   await page
     .getByRole('article')
     .filter({ has: saved })
-    .getByRole('button', { name: 'יצירת קשר', exact: true })
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+    .getByRole('button', { name: 'קבלו שיחה מהמוסד', exact: true })
     .click();
   await expect(page.getByRole('dialog', { name: 'אוניברסיטת תל אביב' })).toBeVisible(); // Approved test update, Jorje 2026-10-26
   await page.reload();

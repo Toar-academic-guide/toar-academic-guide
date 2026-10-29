@@ -11,7 +11,8 @@ const title = 'מחשבון סכם וסיכויי קבלה לפי מוסד ות�
 const canonical = 'https://findmyway.co.il/sekhem-calculator';
 const description =
   // Approved test update, Jorje 2026-10-29: meta no-overclaim
-  'מחשבון סכם וסיכויי קבלה בחינם: מזינים ציוני בגרות ופסיכומטרי, בוחרים תוכנית נתמכת ומקבלים הערכה, עם קישור לתנאי הקבלה של התוכנית.';
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows Extra)
+  'מחשבון סכם וסיכויי קבלה בחינם: מזינים ציוני בגרות ופסיכומטרי, בוחרים תוכנית נתמכת, עם קישור לתנאי הקבלה של התוכנית.';
 const noScoreLine = 'בחלק מהמוסדות נבדקים תנאי קבלה בלי חישוב סכם.';
 const kidumText = 'מסלול ראויים לקידום';
 const compositeInput = /סכם|מתואם|מצרף|ציון משוקלל|sekhem|sekem|composite|weighted.?score/i;
@@ -280,7 +281,8 @@ for (const width of [1280, 390]) {
     });
     await fillProfile(page);
     await assertAlignedFields(page.locator('main'));
-    await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
+    await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
     await expect(page.getByRole('heading', { name: 'הסכם לפי מוסד ותוכנית' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'מחשבים…' })).toHaveCount(0);
     expect(mocks.batches.length).toBeGreaterThan(0);
@@ -298,12 +300,14 @@ for (const width of [1280, 390]) {
     }
 
     await assertStudentCards(page);
-    await expect(page.getByText(noScoreLine, { exact: true })).toHaveCount(1);
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 27)
+    await expect(page.getByText(noScoreLine, { exact: true })).toHaveCount(0);
     await expect(page.locator('[data-testid="institution-ariel"]')).toHaveCount(0);
     await expect(page.locator('main')).not.toContainText('אריאל');
     await expect(page.locator('main')).not.toContainText('נדרשת בדיקה מול המוסד');
     await expect(page.locator('main')).not.toContainText('שנת הנוסחה לא מצוינת');
-    await expect(page.getByText('אומדן, עד לאישור המוסד', { exact: true })).toBeVisible();
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 27)
+    await expect(page.getByText('אומדן, עד לאישור המוסד', { exact: true })).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'יש גם אפיקי קבלה נוספים' })).toHaveAttribute(
       'href',
       '/institutions/afeka',
@@ -323,7 +327,26 @@ for (const width of [1280, 390]) {
             formatSekhemNumber(api[field as 'score' | 'threshold']!, institutionId),
           );
         }
-        const renderedNumbers = (await row.innerText()).match(/\d+(?:\.\d+)?/g) ?? [];
+        // Approved test update, Jorje 2026-10-29 (sales-copy row 22 gap guard)
+        const renderedText = await row.innerText();
+        let expectedGap: string | undefined;
+        if (
+          (api.decision === 'below' || api.scoreAssessment === 'below_threshold') &&
+          Number.isFinite(api.score) &&
+          Number.isFinite(api.threshold)
+        ) {
+          const gap = api.threshold! - api.score!;
+          if (Number.isFinite(gap) && gap > 0) {
+            const formattedGap = formatSekhemNumber(Number(gap.toPrecision(12)), institutionId);
+            if (Number(formattedGap) > 0) expectedGap = formattedGap;
+          }
+        }
+        // Approved test update, Jorje 2026-10-29 (sales-copy row 22 gap guard)
+        const gapPattern = /חסרות לכם (\d+(?:\.\d+)?) נקודות לסף/g;
+        const displayedGaps = [...renderedText.matchAll(gapPattern)].map((match) => match[1]);
+        expect(displayedGaps).toEqual(expectedGap ? [expectedGap] : []);
+        // Approved test update, Jorje 2026-10-29 (sales-copy row 22 gap guard)
+        const renderedNumbers = renderedText.replace(gapPattern, '').match(/\d+(?:\.\d+)?/g) ?? [];
         for (const number of renderedNumbers) {
           expect(
             [api.score, api.threshold]
@@ -364,7 +387,8 @@ for (const width of [1280, 390]) {
         nodes.map((node) => node.getAttribute('data-testid')!),
       )) {
         const group = page.getByTestId(id);
-        const cta = group.getByRole('button', { name: 'קבלת מידע על התוכנית', exact: true });
+        // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+        const cta = group.getByRole('button', { name: 'קבלו שיחה מהמוסד', exact: true });
         await expect(cta).toHaveCount(1);
         const select = group.getByRole('combobox');
         if (await select.count()) {
@@ -403,7 +427,8 @@ for (const width of [1280, 390]) {
 
     const tau = page.getByTestId('institution-tau');
     const selectedProgram = await tau.getByRole('combobox').inputValue();
-    await tau.getByRole('button', { name: 'קבלת מידע על התוכנית', exact: true }).click();
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+    await tau.getByRole('button', { name: 'קבלו שיחה מהמוסד', exact: true }).click();
     const dialog = page.getByRole('dialog');
     await dialog.getByLabel(ENQUIRY_COPY.nameLabel, { exact: true }).fill('בדיקת MyWay');
     await dialog.getByLabel(ENQUIRY_COPY.phoneLabel, { exact: true }).fill('0501234567');
@@ -487,12 +512,14 @@ test('Haifa supplementary inputs follow the latest evaluator response', async ({
   await expect(average).toHaveCount(0);
   await expect(hebrew).toHaveCount(0);
   await fillProfile(page);
-  await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
+  await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
   await expect(average).toBeVisible();
   await expect(hebrew).toBeVisible();
   await expect(average).not.toHaveAttribute('required', '');
   await expect(page.getByTestId('institution-haifa').locator('[data-result-reason]')).toHaveText([
-    'עדיין לא מחשבים כאן את ציון הקבלה של חיפה',
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 24)
+    'חיפה: בדיקה אישית מול המוסד',
   ]);
   await expect(page.locator('main')).not.toContainText('ממוצע בגרות רשמי של חיפה');
   const haifa = page.getByTestId('institution-haifa');
@@ -501,17 +528,20 @@ test('Haifa supplementary inputs follow the latest evaluator response', async ({
     haifa.getByRole('link', { name: 'לתנאי הקבלה של התוכנית', exact: true }),
   ).toHaveAttribute('href', `/programs/${selectedProgram}`);
   await expect(page.getByTestId('institution-haifa')).toContainText(
-    'עדיין לא מחשבים כאן את ציון הקבלה של חיפה',
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 24)
+    'חיפה: בדיקה אישית מול המוסד',
   );
   await average.fill('104');
   await hebrew.selectOption('hebrew_school');
-  await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
+  await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
   await expect(average).toHaveCount(0);
   await expect(hebrew).toHaveCount(0);
   await expect(page.getByTestId('institution-haifa')).toContainText('706');
   expect(mocks.batches.some((batch) => batch.extraInputs?.haifaBagrutAverage === 104)).toBe(true);
   await page.getByLabel('פסיכומטרי — ציון כללי').fill('701');
-  await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
+  await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
   await expect(average).toBeVisible();
   expect(mocks.batches.at(-1)!.extraInputs).not.toHaveProperty('haifaBagrutAverage');
   expect(mocks.batches.at(-1)!.extraInputs).not.toHaveProperty('haifaHebrewQualification');
@@ -576,8 +606,10 @@ test('numberless cards explain missing inputs and unavailable result states', as
     'manual_gate',
   ] as const) {
     kind = state;
-    await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
-    await expect(page.getByRole('button', { name: 'לחשב את הסכם', exact: true })).toBeEnabled();
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
+    await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
+    await expect(page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true })).toBeEnabled();
     await assertStudentCards(page);
     const rows = page.locator('[data-testid^="result-"]');
     expect(await rows.count()).toBeGreaterThan(0);
@@ -592,11 +624,13 @@ test('numberless cards explain missing inputs and unavailable result states', as
     }
     await expect(page.locator('main')).not.toContainText('ממוצע בגרות רשמי של חיפה');
     await expect(page.getByTestId('institution-haifa').locator('[data-result-reason]')).toHaveText([
-      'עדיין לא מחשבים כאן את ציון הקבלה של חיפה',
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 24)
+      'חיפה: בדיקה אישית מול המוסד',
     ]);
     for (const group of await page.locator('[data-testid^="institution-"]').all()) {
       await expect(
-        group.getByRole('button', { name: 'קבלת מידע על התוכנית', exact: true }),
+        // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+        group.getByRole('button', { name: 'קבלו שיחה מהמוסד', exact: true }),
       ).toHaveCount(1);
       await expect(
         group.getByRole('link', { name: 'לתנאי הקבלה של התוכנית', exact: true }),
@@ -620,16 +654,21 @@ for (const width of [1280, 390]) {
     expect(offered.filter((id) => absentEvaluatorIds.includes(id))).toEqual([]);
     for (const id of absentEvaluatorIds) {
       await page.goto(`/sekhem-calculator?program=${id}`);
-      await expect(page.getByText('אי אפשר לחשב כאן את סיכויי הקבלה לתוכנית הזו.')).toBeVisible();
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 26)
+      await expect(page.getByText('לתוכנית הזו: בדיקה אישית מול המוסד.')).toBeVisible();
       await expect(page.getByRole('link', { name: 'לתנאי הקבלה של התוכנית' })).toHaveAttribute(
         'href',
         `/programs/${id}`,
       );
-      await expect(page.getByRole('button', { name: 'לחשב את הסכם', exact: true })).toHaveCount(0);
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
+      await expect(page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true })).toHaveCount(
+        0,
+      );
       await expect(page.getByText('חלק מהתוכניות לא חושבו. אפשר לנסות שוב.')).toHaveCount(0);
     }
     await page.goto('/sekhem-calculator?program=not_a_public_programme');
-    await expect(page.getByText('אי אפשר לחשב כאן את סיכויי הקבלה לתוכנית הזו.')).toBeVisible();
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 26)
+    await expect(page.getByText('לתוכנית הזו: בדיקה אישית מול המוסד.')).toBeVisible();
     await expect(page.getByRole('link', { name: 'לתנאי הקבלה של התוכנית' })).toHaveCount(0);
     await expect(
       page.getByRole('main').getByRole('link', { name: 'יצירת קשר', exact: true }),
@@ -653,7 +692,8 @@ test('retry clears a transient service error and shows the requested programme r
   });
   await page.goto('/sekhem-calculator?program=tau_law');
   await fillProfile(page);
-  await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
+  await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
   const error = page.getByRole('main').getByRole('alert');
   await expect(error).toHaveText('לא הצלחנו לחשב כרגע. אפשר לנסות שוב.');
   await page.getByRole('button', { name: 'לנסות שוב', exact: true }).click();
@@ -680,7 +720,8 @@ test('a missing subject action adds its row and focuses its grade', async ({ pag
   await page.goto('/sekhem-calculator?program=tau_ee');
   await fillProfile(page);
   await page.getByRole('button', { name: 'הסרת מקצוע 3', exact: true }).click();
-  await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
+  await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
   await assertStudentCards(page);
   await page
     .getByTestId('institution-tau')
@@ -714,9 +755,11 @@ test('Reichman CS below-route flags without scores never become an invented esti
   );
   await page.goto('/sekhem-calculator?program=reichman_cs');
   await fillProfile(page);
-  await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
+  await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
   const row = page.getByTestId('result-reichman_cs-reichman');
-  await expect(row).toHaveText('הציונים אינם עומדים בתנאי הקבלה שנבדקו.');
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 22)
+  await expect(row).toHaveText('עוד לא בסף. בואו נמצא דרך.');
   await expect(row.locator('[data-result-number]')).toHaveCount(0);
   await assertStudentCards(page);
   expect(mocks.submissions).toHaveLength(0);
@@ -741,7 +784,8 @@ test('Technion medicine with an exact score and no cutoff has no verdict or succ
   );
   await page.goto('/sekhem-calculator?program=technion_medicine');
   await fillProfile(page);
-  await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
+  await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
   const card = page.getByTestId('institution-technion');
   const row = page.getByTestId('result-technion_medicine-technion');
   await expect(row.locator('[data-result-number="score"]')).toHaveText('87.6');
@@ -781,7 +825,8 @@ for (const width of [1280, 390]) {
     );
     await page.goto('/sekhem-calculator?program=biu_cs');
     await page.getByRole('button', { name: 'ערכים לדוגמה', exact: true }).click();
-    await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
+    await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
     const card = page.getByTestId('programme-actions-biu');
     await expect(card).toBeVisible();
     await expect(card).toContainText('מדעי המחשב');
@@ -792,7 +837,8 @@ for (const width of [1280, 390]) {
       'href',
       '/programs/biu_cs',
     );
-    await card.getByRole('button', { name: 'קבלת מידע על התוכנית' }).click();
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+    await card.getByRole('button', { name: 'קבלו שיחה מהמוסד' }).click();
     const dialog = page.getByRole('dialog');
     await dialog.getByLabel(ENQUIRY_COPY.nameLabel, { exact: true }).fill('QA Test');
     await dialog.getByLabel(ENQUIRY_COPY.phoneLabel, { exact: true }).fill('0500000000');
@@ -813,7 +859,8 @@ for (const width of [1280, 390]) {
     await page.getByRole('button', { name: 'ערכים לדוגמה', exact: true }).click();
     await page.getByText('בחירת תחום לימודים', { exact: true }).click();
     await page.getByLabel('תוכנית לימודים').selectOption('bgu_psychology');
-    await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
+    await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
     await page
       .getByTestId('institution-bgu')
       .getByRole('link', { name: 'לתנאי הקבלה של התוכנית' })
@@ -840,7 +887,8 @@ for (const width of [1280, 390]) {
     ]) {
       const input = page.getByLabel(label, { exact: true });
       await input.fill(value);
-      await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
+      await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
       await expect(input).toBeFocused();
       await expect(input).toBeInViewport();
       await expect(input).toHaveAttribute('aria-invalid', 'true');
@@ -866,7 +914,8 @@ test('calculator reload restores state without another evaluation', async ({ pag
   const mocks = await installMocks(page, baseURL);
   await page.goto('/sekhem-calculator?program=tau_law');
   await page.getByRole('button', { name: 'ערכים לדוגמה', exact: true }).click();
-  await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
+  await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
   await expect(page.getByTestId('institution-tau')).toContainText('639');
   await page.reload();
   await expect(page.getByLabel('ציון 1', { exact: true })).toHaveValue('92');
@@ -928,7 +977,8 @@ for (const width of [1280, 390]) {
       await page.getByRole('button', { name: 'ערכים לדוגמה', exact: true }).click();
       const input = page.getByLabel(label, { exact: true });
       await input.fill(value);
-      await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
+      await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
       await expect(input).toBeFocused();
       await expect(input).toBeInViewport();
       await expect(input).toHaveAttribute('aria-invalid', 'true');
@@ -981,7 +1031,8 @@ for (const width of [1280, 390]) {
     const valid = page.getByLabel('ציון 4', { exact: true });
     await first.fill('130');
     await second.fill('6');
-    await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
+    await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
     await expect(first).toBeFocused();
     await expect(second).not.toBeFocused();
     const appearance = (input: Locator) =>

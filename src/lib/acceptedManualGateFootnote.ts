@@ -14,5 +14,5 @@ export function acceptedManualGateFootnote(
     (condition) => condition.id === 'admissions_committee' && condition.status === 'unconfirmed',
   );
   if (!gate) return undefined;
-  return `נדרש גם ${gate.label.replace(/ראיון/g, 'ריאיון')}. אישור סופי מהמכללה.`;
+  return `השלב הבא: ${gate.label.replace(/ראיון/g, 'ריאיון')}.`;
 }

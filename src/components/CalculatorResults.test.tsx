@@ -301,7 +301,8 @@ describe('CalculatorResults', () => {
       const generic =
         kind === 'authority_unavailable'
           ? 'נתוני הקבלה הדרושים לחישוב אינם זמינים כרגע. אפשר לבדוק ישירות באתר המוסד.'
-          : 'אין כרגע חישוב קבלה מאומת למסלול הזה. אפשר לבדוק את התנאים העדכניים באתר המוסד.';
+          : // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 6)
+            'תנאי הקבלה כאן למטה. רוצים תשובה אישית? השאירו פרטים והמוסד יחזור אליכם.';
 
       hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(report([apiResult]));
       render(
@@ -328,8 +329,10 @@ describe('CalculatorResults', () => {
     },
   );
   it.each([
-    [85, 'הציונים עומדים בסף'],
-    [84.99, 'הציונים מתחת לסף'],
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 1)
+    [85, 'עוברים את הסף ✓'],
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 2)
+    [84.99, 'חסרות לכם 0.01 נקודות לסף'],
   ])(
     'labels the Colman route for average %s and provides profile editing',
     async (average, label) => {
@@ -827,7 +830,8 @@ describe('CalculatorResults', () => {
       />,
     );
     expect(await screen.findByText('מתקבלים')).toBeTruthy();
-    const footnote = screen.getByText('נדרש גם ריאיון קבלה. אישור סופי מהמכללה.');
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 11)
+    const footnote = screen.getByText('השלב הבא: ריאיון קבלה.');
     expect(footnote.className).toContain('text-slate-400');
     expect(footnote.className).toContain('text-xs');
     expect(screen.getByText(result.explanation)).toBeTruthy();
@@ -856,11 +860,13 @@ describe('CalculatorResults', () => {
           onBack={vi.fn()}
         />,
       );
-      expect(await screen.findByText('הציונים עומדים בסף')).toBeTruthy();
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 1)
+      expect(await screen.findByText('עוברים את הסף ✓')).toBeTruthy();
       // Approved test update, Jorje 2026-10-25: bagrut_average condition removed (option A)
       expect(screen.queryByText('תנאים נוספים לבדיקה') !== null).toBe(degreeId === 'ono_business');
       expect(screen.queryByText('מתקבלים')).toBeNull();
-      expect(screen.queryByText('נדרש גם ריאיון קבלה. אישור סופי מהמכללה.')).toBeNull();
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 11)
+      expect(screen.queryByText('השלב הבא: ריאיון קבלה.')).toBeNull();
     },
   );
 

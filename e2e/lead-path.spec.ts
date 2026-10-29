@@ -49,7 +49,8 @@ for (const width of [1440, 390]) {
     await page.evaluate(() =>
       window.history.replaceState(null, '', '/?utm_source=facebook#results'),
     );
-    await page.getByRole('button', { name: 'יצירת קשר', exact: true }).first().click();
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+    await page.getByRole('button', { name: 'קבלו שיחה מהמוסד', exact: true }).first().click();
     await expect(page).toHaveURL(/#inquiry$/);
     await expect(page.locator('form input:not([type="checkbox"])')).toHaveCount(2);
     await page.getByLabel('שם', { exact: true }).fill('בדיקת MyWay'); // Approved test update, Jorje 2026-10-26
@@ -74,14 +75,16 @@ for (const width of [1440, 390]) {
     await page.goto('/wa');
     await page.goto('/programs/colmgmt_cs?utm_source=facebook');
     await expect(
-      page.getByRole('link', { name: 'בדיקת סיכויי קבלה', exact: true }),
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 37)
+      page.getByRole('link', { name: 'בדקו אם אתם מתקבלים', exact: true }),
     ).toHaveAttribute('href', '/app/calculator?program=colmgmt_cs');
     await expect(page.getByRole('link', { name: 'לאתר המוסד', exact: true })).toHaveAttribute(
       'href',
       /utm_source=myway&utm_medium=referral/,
     );
     await expect(page.getByRole('link', { name: 'למחשבון המכללה', exact: true })).toBeVisible();
-    await page.getByRole('link', { name: 'יצירת קשר', exact: true }).click();
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+    await page.getByRole('link', { name: 'קבלו שיחה מהמוסד', exact: true }).click();
     await expect(page).toHaveURL(/\/enquiry\?program=colmgmt_cs&institution=colman/);
     await expect(page.getByRole('dialog', { name: 'מכללת ניהול – לימודים אקדמיים' })).toBeVisible(); // Approved test update, Jorje 2026-10-26
     await expect(page.locator('form input:not([type="checkbox"])')).toHaveCount(2);

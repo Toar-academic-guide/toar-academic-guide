@@ -23,7 +23,15 @@ describe('official requirements batch1 preservation and Colman economics', () =>
     (pairId, value) => {
       expect(seed.admissionRequirements.find((row) => row.id === pairId)).toMatchObject({
         admissionRequirements: value.requirements,
-        specificAdmissionNotes: value.notes,
+        // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 39)
+        specificAdmissionNotes:
+          pairId === 'ono_law:ono'
+            ? value.notes.filter(
+                (note) =>
+                  note !==
+                  'המחשבון בודק רק ממוצע בגרות ופסיכומטרי. מסלול גיל 30+, תואר קודם ואפיק המעבר לא נבדקים בו.',
+              )
+            : value.notes,
       });
       expect(seed.sourceUrls.find((row) => row.id === `${pairId}:program`)?.url).toBe(
         value.programUrl,
