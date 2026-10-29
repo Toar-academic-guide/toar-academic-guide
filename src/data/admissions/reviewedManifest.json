@@ -4,80 +4,20 @@
   "changes": [
     {
       "target": {
-        "institutionId": "technion",
-        "programId": "technion_ee",
+        "institutionId": "bgu",
+        "programId": "bgu_accounting",
         "cycle": "2027"
       },
       "ruleKind": "admission_cutoff",
-      "before": 94,
-      "after": 91.5,
-      "effectiveFrom": "2026-10-25",
+      "before": 610,
+      "after": 620,
+      "effectiveFrom": "2026-10-29",
       "sourceProofs": [
         {
-          "sourceId": "technion-technion_ee-live",
-          "digest": "sha256:8dd512d269f64e33325e0342c8bcd1c7ff1b70c9a6cfce5773e2eac9a89cb400",
-          "excerpt": "Winter תשפ\"ז initial table (tablepress-485): הנדסת חשמל 91.5.",
-          "url": "https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/",
-          "proofType": "exact_official"
-        }
-      ]
-    },
-    {
-      "target": {
-        "institutionId": "technion",
-        "programId": "technion_me",
-        "cycle": "2027"
-      },
-      "ruleKind": "admission_cutoff",
-      "before": 92,
-      "after": 87,
-      "effectiveFrom": "2026-10-25",
-      "sourceProofs": [
-        {
-          "sourceId": "technion-technion_me-live",
-          "digest": "sha256:8dd512d269f64e33325e0342c8bcd1c7ff1b70c9a6cfce5773e2eac9a89cb400",
-          "excerpt": "Winter תשפ\"ז initial table (tablepress-485): הנדסת מכונות 87.",
-          "url": "https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/",
-          "proofType": "exact_official"
-        }
-      ]
-    },
-    {
-      "target": {
-        "institutionId": "technion",
-        "programId": "ee",
-        "cycle": "2027"
-      },
-      "ruleKind": "admission_cutoff",
-      "before": 94,
-      "after": 91.5,
-      "effectiveFrom": "2026-10-25",
-      "sourceProofs": [
-        {
-          "sourceId": "technion-ee-live",
-          "digest": "sha256:8dd512d269f64e33325e0342c8bcd1c7ff1b70c9a6cfce5773e2eac9a89cb400",
-          "excerpt": "Winter תשפ\"ז initial table (tablepress-485): הנדסת חשמל 91.5.",
-          "url": "https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/",
-          "proofType": "exact_official"
-        }
-      ]
-    },
-    {
-      "target": {
-        "institutionId": "technion",
-        "programId": "me",
-        "cycle": "2027"
-      },
-      "ruleKind": "admission_cutoff",
-      "before": 92,
-      "after": 87,
-      "effectiveFrom": "2026-10-25",
-      "sourceProofs": [
-        {
-          "sourceId": "technion-me-live",
-          "digest": "sha256:8dd512d269f64e33325e0342c8bcd1c7ff1b70c9a6cfce5773e2eac9a89cb400",
-          "excerpt": "Winter תשפ\"ז initial table (tablepress-485): הנדסת מכונות 87.",
-          "url": "https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/",
+          "sourceId": "bgu-bgu_accounting-live",
+          "digest": "sha256:379554c8b279e8481cae5c15b58f0d7283a13984806f214cf6a2d8e4ba3732f8",
+          "excerpt": "כלכלה חד מחלקתי - חשבונאות: סכם כמותי 620; פסיכומטרי 620.",
+          "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=142&p_pat1=1&p_spe1=6&p_degree_level=1",
           "proofType": "exact_official"
         }
       ]
@@ -85,19 +25,119 @@
     {
       "target": {
         "institutionId": "bgu",
-        "programId": "medicine",
+        "programId": "bgu_biology",
         "cycle": "2027"
       },
       "ruleKind": "admission_cutoff",
-      "before": 760,
-      "after": 735,
-      "effectiveFrom": "2026-10-25",
+      "before": 610,
+      "after": 585,
+      "effectiveFrom": "2026-10-29",
       "sourceProofs": [
         {
-          "sourceId": "bgu-medicine-sweep38",
-          "digest": "sha256:8632337f881d83dc69a33a9f32bb00e4e2adb387b62692c37fac2c0ddce7c4cd",
-          "excerpt": "Medicine: psycho_sekem 735 AND psycho_value 680. Runtime alias and psychometric gate remain blocked by the lane fence. Checked 2026-10-25; capture: raw/official/bgu/sweep38_medicine-rdp_20261025T163448.txt",
-          "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=471&p_pat1=1&p_degree_level=8",
+          "sourceId": "bgu-bgu_biology-live",
+          "digest": "sha256:356fc7985722a02497da7ae1cbfc7499f2b6b16e4aa9ccd80d0a0f8663847d2a",
+          "excerpt": "מדעי החיים ראשי: psycho_sekem 585; psycho_value 585.",
+          "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=205&p_pat1=15&p_degree_level=1",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "bgu",
+        "programId": "business",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 590,
+      "after": 620,
+      "effectiveFrom": "2026-10-29",
+      "sourceProofs": [
+        {
+          "sourceId": "bgu-business-live",
+          "digest": "sha256:45cef96a9bf34aea0943d943a1d0013c23fb7db22f3d2be7a67c7ef4b19b87a4",
+          "excerpt": "כלכלה חד מחלקתי - מנהל עסקים: סכם כמותי 620; פסיכומטרי 600.",
+          "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=142&p_pat1=1&p_spe1=1&p_degree_level=1",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "bgu",
+        "programId": "bgu_business",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 590,
+      "after": 620,
+      "effectiveFrom": "2026-10-29",
+      "sourceProofs": [
+        {
+          "sourceId": "bgu-bgu_business-live",
+          "digest": "sha256:45cef96a9bf34aea0943d943a1d0013c23fb7db22f3d2be7a67c7ef4b19b87a4",
+          "excerpt": "כלכלה חד מחלקתי - מנהל עסקים: סכם כמותי 620; פסיכומטרי 600.",
+          "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=142&p_pat1=1&p_spe1=1&p_degree_level=1",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "bgu",
+        "programId": "economics",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 615,
+      "after": 620,
+      "effectiveFrom": "2026-10-29",
+      "sourceProofs": [
+        {
+          "sourceId": "bgu-economics-live",
+          "digest": "sha256:5e28fed1d41a352272588ae3c64cf1de9baff03656439b53e95fb489149738d6",
+          "excerpt": "כלכלה ראשי: סכם כמותי 620; פסיכומטרי 600.",
+          "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=142&p_pat1=3&p_degree_level=1",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "bgu",
+        "programId": "bgu_economics",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 615,
+      "after": 620,
+      "effectiveFrom": "2026-10-29",
+      "sourceProofs": [
+        {
+          "sourceId": "bgu-bgu_economics-live",
+          "digest": "sha256:5e28fed1d41a352272588ae3c64cf1de9baff03656439b53e95fb489149738d6",
+          "excerpt": "כלכלה ראשי: סכם כמותי 620; פסיכומטרי 600.",
+          "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=142&p_pat1=3&p_degree_level=1",
+          "proofType": "exact_official"
+        }
+      ]
+    },
+    {
+      "target": {
+        "institutionId": "bgu",
+        "programId": "communication",
+        "cycle": "2027"
+      },
+      "ruleKind": "admission_cutoff",
+      "before": 590,
+      "after": 520,
+      "effectiveFrom": "2026-10-29",
+      "sourceProofs": [
+        {
+          "sourceId": "bgu-communication-live",
+          "digest": "sha256:3227390d8e66f796922f0731cef1b6bf8bb8488733e5a5e7b049e3243992e94c",
+          "excerpt": "תקשורת דו מחלקתי: psycho_sekem 520; psycho_value 520.",
+          "url": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=183&p_pat1=2&p_degree_level=1",
           "proofType": "exact_official"
         }
       ]
